@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-23 19:30+0200\n"
+"POT-Creation-Date: 2012-03-03 22:22+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Besmir Godole <bgodole@myopera.com>\n"
 "Language-Team: \n"
@@ -14,250 +14,288 @@ msgstr ""
 "X-Poedit-Country: ALBANIA\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: ../build/src/preferences_gen.h:328
+#: ../build/src/preferences_gen.h:370
 msgid "gui options"
 msgstr "mundësitë grafike"
 
-#: ../build/src/preferences_gen.h:330
+#: ../build/src/preferences_gen.h:372
 msgid "filename of your custom theme in share/darktable/"
 msgstr "skeda e motivit tuaj të zgjedhur në share/darktable/"
 
-#: ../build/src/preferences_gen.h:338
-#: ../build/src/preferences_gen.h:355
-#: ../build/src/preferences_gen.h:371
-#: ../build/src/preferences_gen.h:386
-#: ../build/src/preferences_gen.h:402
-#: ../build/src/preferences_gen.h:419
-#: ../build/src/preferences_gen.h:436
-#: ../build/src/preferences_gen.h:453
-#: ../build/src/preferences_gen.h:468
-#: ../build/src/preferences_gen.h:484
-#: ../build/src/preferences_gen.h:501
-#: ../build/src/preferences_gen.h:517
-#: ../build/src/preferences_gen.h:549
-#: ../build/src/preferences_gen.h:565
-#: ../build/src/preferences_gen.h:581
-#: ../build/src/preferences_gen.h:598
-#: ../build/src/preferences_gen.h:615
-#: ../build/src/preferences_gen.h:631
-#: ../build/src/preferences_gen.h:647
-#: ../build/src/preferences_gen.h:663
-#: ../build/src/preferences_gen.h:680
+#: ../build/src/preferences_gen.h:380
+#: ../build/src/preferences_gen.h:397
+#: ../build/src/preferences_gen.h:413
+#: ../build/src/preferences_gen.h:428
+#: ../build/src/preferences_gen.h:444
+#: ../build/src/preferences_gen.h:461
+#: ../build/src/preferences_gen.h:478
+#: ../build/src/preferences_gen.h:493
+#: ../build/src/preferences_gen.h:509
+#: ../build/src/preferences_gen.h:526
+#: ../build/src/preferences_gen.h:543
+#: ../build/src/preferences_gen.h:559
+#: ../build/src/preferences_gen.h:593
+#: ../build/src/preferences_gen.h:609
+#: ../build/src/preferences_gen.h:625
+#: ../build/src/preferences_gen.h:642
+#: ../build/src/preferences_gen.h:659
+#: ../build/src/preferences_gen.h:676
+#: ../build/src/preferences_gen.h:693
+#: ../build/src/preferences_gen.h:709
+#: ../build/src/preferences_gen.h:725
+#: ../build/src/preferences_gen.h:741
+#: ../build/src/preferences_gen.h:757
+#: ../build/src/preferences_gen.h:774
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "klikimi dy herë e rikthen te `%s'"
 
-#: ../build/src/preferences_gen.h:341
-#: ../build/src/preferences_gen.h:601
+#: ../build/src/preferences_gen.h:383
+#: ../build/src/preferences_gen.h:645
 msgid " (needs a restart) "
 msgstr "(duhet rinisur)"
 
-#: ../build/src/preferences_gen.h:346
+#: ../build/src/preferences_gen.h:388
 msgid "size of the side panels in pixels"
 msgstr "masa në piksel e paneleve anësore"
 
-#: ../build/src/preferences_gen.h:358
+#: ../build/src/preferences_gen.h:400
 msgid " (needs a restart)"
 msgstr "(duhet rinisur)"
 
-#: ../build/src/preferences_gen.h:363
+#: ../build/src/preferences_gen.h:405
 msgid "don't use embedded preview jpeg, always use half-size raw"
 msgstr "nuk përdor jpeg për të parashikuar, po gjysmën e brutos"
 
-#: ../build/src/preferences_gen.h:378
+#: ../build/src/preferences_gen.h:420
 msgid "ask before removing images"
 msgstr "pyes para se të heq imazhin"
 
-#: ../build/src/preferences_gen.h:389
+#: ../build/src/preferences_gen.h:431
 msgid "always ask the user before any image is removed from db."
 msgstr "gjithmonë pyet përdoruesin para se imazhi të hiqet nga db"
 
-#: ../build/src/preferences_gen.h:394
+#: ../build/src/preferences_gen.h:436
 msgid "ask before deleting images"
 msgstr "pyes para se të fshij imazhin"
 
-#: ../build/src/preferences_gen.h:405
+#: ../build/src/preferences_gen.h:447
 msgid "always ask the user before any image file is deleted."
 msgstr "gjithmonë pyet përdoruesin para se imazhi të fshihet"
 
-#: ../build/src/preferences_gen.h:410
-msgid "downsample the preview pixels"
-msgstr "zvogëloj shëmbëllimin e pikselëve të parashikuar"
-
-#: ../build/src/preferences_gen.h:422
-msgid "this value smaller than 1.0 downsamples the preview pixels in darkroom mode for faster feedback."
-msgstr "vlera më e vogël se 1.0 zvogëlon shëmbëllimin e pikselëve të parashikuar në dhomën e errët për të reaguar më shpejt"
-
-#: ../build/src/preferences_gen.h:427
+#: ../build/src/preferences_gen.h:452
 msgid "number of folder levels to show in lists"
 msgstr "numri i nivelit të dosjeve që tregoj në listë"
 
-#: ../build/src/preferences_gen.h:439
+#: ../build/src/preferences_gen.h:464
 msgid "the number of folder levels to show in film roll names, starting from the right"
 msgstr "numri i nivelit të dosjeve që tregohen në emrat e filmave, duke nisur nga e djathta"
 
-#: ../build/src/preferences_gen.h:444
+#: ../build/src/preferences_gen.h:469
 msgid "initial rating when importing filmrolls"
 msgstr "vlerësimi fillestar për filmin e importuar"
 
-#: ../build/src/preferences_gen.h:460
+#: ../build/src/preferences_gen.h:485
 msgid "enable filmstrip in darkroom mode"
 msgstr "aktivizoj shiritin e filmit në dhomën e errët"
 
-#: ../build/src/preferences_gen.h:475
-msgid "maximum resolution of lighttable thumbnails"
-msgstr "rezolucioni maksimal i parashikimeve në tabelën e ndriçuar"
+#: ../build/src/preferences_gen.h:500
+msgid "maximum width of lighttable thumbnails"
+msgstr "gjerësia e parashikimeve në tabelën e ndriçuar"
 
-#: ../build/src/preferences_gen.h:487
+#: ../build/src/preferences_gen.h:512
 msgid ""
-"keep this value low for fast thumbnail creation (allowed: 160-1300)\n"
+"maximum lighttable width of thumbnails. adjust to your screen.\n"
 "(needs a restart and will invalidate current thumbnail caches)."
 msgstr ""
-"mbani vlerën e ulët për të krijuar shpejt parashikimet (lejohen: 160-1300)\n"
-"(duhet rinisur dhe do zhvlerësojë depon aktuale të parashikimeve)."
+"gjerësia maksimale e parashikimeve në tabelën e ndriçuar, vendoset sipas ekranit.\n"
+"(duhet rinisur dhe do zhvlerësojë depot aktuale të parashikimeve)."
 
-#: ../build/src/preferences_gen.h:492
+#: ../build/src/preferences_gen.h:517
+msgid "maximum height of lighttable thumbnails"
+msgstr "gjatësia e parashikimeve në tabelën e ndriçuar"
+
+#: ../build/src/preferences_gen.h:529
+msgid ""
+"maximum lighttable height of thumbnails. adjust to your screen.\n"
+"(needs a restart and will invalidate current thumbnail caches)."
+msgstr ""
+"gjatësia maksimale e parashikimeve në tabelën e ndriçuar, vendoset sipas ekranit.\n"
+"(duhet rinisur dhe do zhvlerësojë depot aktuale të parashikimeve)."
+
+#: ../build/src/preferences_gen.h:534
 msgid "jpeg quality of on-disk thumbnails"
 msgstr "cilësia e parashikimeve jpeg në disk"
 
-#: ../build/src/preferences_gen.h:504
+#: ../build/src/preferences_gen.h:546
 msgid "affects only the thumbnail cache used for quick startup."
 msgstr "prek vetëm depon e parashikimeve që përdoret për nisjen e shpejtë"
 
-#: ../build/src/preferences_gen.h:509
+#: ../build/src/preferences_gen.h:551
 msgid "ask before deleting a tag"
 msgstr "pyes para se të heq etiketën"
 
-#: ../build/src/preferences_gen.h:539
+#: ../build/src/preferences_gen.h:583
 msgid "core options"
 msgstr "mundësitë qendrore"
 
-#: ../build/src/preferences_gen.h:541
+#: ../build/src/preferences_gen.h:585
 msgid "database file"
 msgstr "skeda e bazës informative"
 
-#: ../build/src/preferences_gen.h:552
+#: ../build/src/preferences_gen.h:596
 msgid "filename relative to ~/.config/darktable or starting with a slash (needs a restart)."
 msgstr "emri i skedës në lidhje me ~/.config/darktable ose duke nisur me vizën e pjerrët ndarëse (duhet rinisur)"
 
-#: ../build/src/preferences_gen.h:557
+#: ../build/src/preferences_gen.h:601
 msgid "image cache file"
 msgstr "skeda e depos së imazheve"
 
-#: ../build/src/preferences_gen.h:568
+#: ../build/src/preferences_gen.h:612
 msgid "filename relative to ~/.cache/darktable or starting with a slash (needs a restart)."
 msgstr "emri i skedës në lidhje me ~/.cache/darktable ose duke nisur me vizën e pjerrët ndarëse (duhet rinisur)"
 
-#: ../build/src/preferences_gen.h:573
+#: ../build/src/preferences_gen.h:617
 msgid "image cache file backup"
 msgstr "kopjoj skedën e depos së imazheve"
 
-#: ../build/src/preferences_gen.h:584
+#: ../build/src/preferences_gen.h:628
 msgid "creates backup of cachefile to prevent loss of thumbnails generated at crashes etc (needs a restart)."
-msgstr "krijoni kopjen e depos për të parandaluar humbjen e parashikimeve që lind nga mbylljet e papritura etj. (duhet rinisur)"
+msgstr "krijoni kopjen e depos për të parandaluar humbjet e parashikimeve që lindin nga mbylljet e papritura etj. (duhet rinisur)"
 
-#: ../build/src/preferences_gen.h:589
+#: ../build/src/preferences_gen.h:633
 msgid "memory in bytes to use for mipmap cache"
 msgstr "kujtesa në bajt që përdor depoja mipmap"
 
-#: ../build/src/preferences_gen.h:606
+#: ../build/src/preferences_gen.h:650
 msgid "export multiple images in parallel"
 msgstr "eksportoj paralelisht imazhet shumëfishe"
 
-#: ../build/src/preferences_gen.h:618
+#: ../build/src/preferences_gen.h:662
 msgid "set this variable to num_threads if you want multithreaded export to process multiple images at a time. be warned: every thread will need about 1GB of memory. setting this to 1 switches on per-image parallelization."
 msgstr "vendosni variablën në num_threads nëse për të procesuar njëkohësisht imazhet shumëfishe doni të eksportoni me shumë faza. kujdes: secila fazë do përdorë rreth 1GB të kujtesës. nëse e vendosni 1 kalohet te paralelizmi për imazh."
 
-#: ../build/src/preferences_gen.h:623
+#: ../build/src/preferences_gen.h:667
+msgid "host memory limit (in MB) for tiling"
+msgstr "kufiri pritës i kujtesës (në MB) për pllakëzimin"
+
+#: ../build/src/preferences_gen.h:679
+msgid "this variable controls the maximum amount of memory (in MB) a module may use during image processing. lower values will force memory hungry modules to process image with increasing number of tiles. setting this to 0 will omit any limit. values below 500 will be treated as 500. needs a restart."
+msgstr "kjo variabël kontrollon sasinë maksimale të kujtesë (në MB) që një modul mund të përdorë gjatë procesimit të imazhit. vlerat e ulëta do detyrojnë modulet intensive që të procesojnë imazhin duke rritur numrin e pllakave. nëse vendoset 0 do hiqet çdo kufi. vlerat nën 500 do trajtohen si 500. (duhet rinisur)"
+
+#: ../build/src/preferences_gen.h:684
+msgid "minimum amount of memory (in MB) for a single buffer in tiling"
+msgstr "kujtesa minimale (në MB) për një tampon imazhi të vetëm"
+
+#: ../build/src/preferences_gen.h:696
+msgid "if set to a positive, non-zero value this variable defines the minimum amount of memory (in MB) that tiling should take for a single image buffer. has precedence over heuristics based on host_memory_limit. needs a restart."
+msgstr "nëse vendoset vlerë pozitive, jo zero, kjo variabël kontrollon sasinë minimale të kujtesës (në MB) që duhet të zërë pllakëzimi për një tampon imazhi të vetëm. ka përparësi mbi host_memory_limit. (duhet rinisur)"
+
+#: ../build/src/preferences_gen.h:701
 msgid "write a redundant sidecar file for each image"
 msgstr "shkruaj skedën shoqëruese për secilin imazh"
 
-#: ../build/src/preferences_gen.h:634
+#: ../build/src/preferences_gen.h:712
 msgid "these files can later be re-imported into a different database, preserving your changes to the image."
 msgstr "skedat mund të riimportohen më vonë në një bazë tjetër informative, dhe ruajnë ndryshimet te imazhi"
 
-#: ../build/src/preferences_gen.h:639
+#: ../build/src/preferences_gen.h:717
 msgid "activate OpenCL support (experimental)"
 msgstr "aktivizoj garantimin e OpenCL-së (eksperimentale)"
 
-#: ../build/src/preferences_gen.h:650
-msgid "if found, use OpenCL runtime on your system for improved processing speed. this code is still experimental and not complete. expect random crashes."
-msgstr "nëse gjendet, sistemi juaj do përdorë veprimin e OpenCL-së për të rritur shpejtësinë e procesimit. kodi është akoma eksperimental dhe i paplotë. mund të ngecë rastësisht."
+#: ../build/src/preferences_gen.h:728
+msgid "if found, use OpenCL runtime on your system for improved processing speed. this code is still experimental and not complete. please report crashes to forum darktable-devel at sourceforge.net"
+msgstr "nëse gjendet, sistemi juaj do përdorë OpenCL-në për të rritur shpejtësinë e procesimit. kodi është akoma eksperimental dhe i paplotë. ju lutemi raportoni të metat në forumin darktable-devel at sourceforge.net."
 
-#: ../build/src/preferences_gen.h:655
+#: ../build/src/preferences_gen.h:733
+msgid "always use lcms2 during export"
+msgstr "gjithmonë përdor lcms2 gjatë eksportit"
+
+#: ../build/src/preferences_gen.h:744
+msgid "this is about 28x as slow as the default."
+msgstr "kjo është rreth 28x më e ngadaltë sesa ajo tipike"
+
+#: ../build/src/preferences_gen.h:749
 msgid "do high quality resampling during export"
-msgstr "ekspotoj duke rishëmbëllyer me cilësi të lartë"
+msgstr "eksportoj duke rishëmbëllyer me cilësi të lartë"
 
-#: ../build/src/preferences_gen.h:666
+#: ../build/src/preferences_gen.h:760
 msgid "the image will first be processed in full resolution, and downscaled at the very end. this can result in better quality sometimes, but will always be slower."
-msgstr "imazhi do procesohet në fillim në rezolucionin e plotë, dhe shëmbëllimi do zvogëlohet në fund. ndonjëherë, kjo do rezultojë në cilësi më të mirë, por gjithmonë do jetë më e ngadaltë."
+msgstr "imazhi do procesohet në fillim në rezolucionin e plotë, dhe shëmbëllimi do zvogëlohet në fund. ndonjëherë kjo do rezultojë në cilësi më të mirë, por gjithmonë do jetë më e ngadaltë."
 
-#: ../build/src/preferences_gen.h:671
+#: ../build/src/preferences_gen.h:765
 msgid "password storage backend to use"
 msgstr "përdor rezervën e pasme për fjalëkalimin"
 
-#: ../build/src/preferences_gen.h:683
+#: ../build/src/preferences_gen.h:777
 msgid "the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring"
 msgstr "rezerva e pasme për pwstorage: 0 - asnjë, 1 - gconf (nuk përdor), 2 - kwallet, 3 - gnome keyring"
 
-#: ../src/common/collection.c:319
+#: ../src/common/collection.c:431
 #: ../src/iop/bilateral.cc:366
-#: ../src/iop/channelmixer.c:353
-#: ../src/iop/channelmixer.c:370
-#: ../src/iop/temperature.c:527
-#: ../src/libs/collect.c:234
-#: ../src/libs/collect.c:236
+#: ../src/iop/channelmixer.c:354
+#: ../src/iop/channelmixer.c:371
+#: ../src/iop/temperature.c:529
+#: ../src/libs/collect.c:240
+#: ../src/libs/collect.c:242
 msgid "red"
 msgstr "kuqe"
 
-#: ../src/common/collection.c:320
-#: ../src/libs/collect.c:240
-#: ../src/libs/collect.c:242
+#: ../src/common/collection.c:432
+#: ../src/libs/collect.c:246
+#: ../src/libs/collect.c:248
 msgid "yellow"
 msgstr "verdhë"
 
-#: ../src/common/collection.c:321
+#: ../src/common/collection.c:433
 #: ../src/iop/bilateral.cc:367
-#: ../src/iop/channelmixer.c:354
-#: ../src/iop/channelmixer.c:373
-#: ../src/iop/temperature.c:528
-#: ../src/libs/collect.c:246
-#: ../src/libs/collect.c:248
+#: ../src/iop/channelmixer.c:355
+#: ../src/iop/channelmixer.c:374
+#: ../src/iop/temperature.c:530
+#: ../src/libs/collect.c:252
+#: ../src/libs/collect.c:254
 msgid "green"
 msgstr "gjelbër"
 
-#: ../src/common/collection.c:322
+#: ../src/common/collection.c:434
 #: ../src/iop/bilateral.cc:368
-#: ../src/iop/channelmixer.c:355
-#: ../src/iop/channelmixer.c:376
-#: ../src/iop/temperature.c:529
-#: ../src/libs/collect.c:252
-#: ../src/libs/collect.c:254
+#: ../src/iop/channelmixer.c:356
+#: ../src/iop/channelmixer.c:377
+#: ../src/iop/temperature.c:531
+#: ../src/libs/collect.c:258
+#: ../src/libs/collect.c:260
 msgid "blue"
 msgstr "blu"
 
-#: ../src/common/collection.c:323
-#: ../src/libs/collect.c:258
-#: ../src/libs/collect.c:260
+#: ../src/common/collection.c:435
+#: ../src/libs/collect.c:264
+#: ../src/libs/collect.c:266
 msgid "purple"
 msgstr "vjollcë"
 
 #. history
-#: ../src/common/collection.c:329
-#: ../src/libs/collect.c:218
-#: ../src/libs/collect.c:220
+#: ../src/common/collection.c:441
+#: ../src/libs/collect.c:224
+#: ../src/libs/collect.c:226
 msgid "altered"
 msgstr "e prekur"
 
-#: ../src/common/darktable.c:149
+#: ../src/common/collection.c:574
+#, c-format
+msgid "%d image of %d in current collection is selected"
+msgid_plural "%d images of %d in current collection are selected"
+msgstr[0] "%d imazh i seleksionuar nga %d në koleksion"
+msgstr[1] "%d imazhe të seleksionuara nga %d në koleksion"
+
+#: ../src/common/darktable.c:160
 msgid "darktable has trapped an illegal instruction which probably means that an invalid processor optimized codepath is used for your cpu, please try reproduce the crash running 'gdb darktable' from the console and post the backtrace log to mailing list with information about your CPU and where you got the package from."
 msgstr "darktable ka kapur një udhëzim ilegal që mund të tregojë se për cpu-në tuaj përdoret një shteg i gabuar i kodit të përmirësuar të procesorit. ju lutemi provoni ta riprodhoni ngecjen duke ekzekutuar nga konsoli 'gdb darktable' dhe postoni të dhënat në listën me postime bashkë me informacionin rreth CPU-së tuaj dhe nga e morët paketimin."
 
-#: ../src/common/darktable.c:186
+#: ../src/common/darktable.c:198
 msgid "SIMD extensions found: "
 msgstr "Zgjatimet SIMD të gjetura:"
 
-#: ../src/common/darktable.c:202
+#: ../src/common/darktable.c:214
 #, c-format
 msgid ""
 "darktable is very cpu intensive and uses SSE2 SIMD instructions for heavy calculations. This gives a better user experience but also defines a minimum processor requirement.\n"
@@ -272,108 +310,114 @@ msgstr ""
 "\n"
 "%s"
 
-#: ../src/common/darktable.c:567
+#: ../src/common/darktable.c:550
 #, c-format
 msgid "found strange path `%s'"
 msgstr "gjen shtegun e çuditshëm `%s'"
 
-#: ../src/common/darktable.c:595
+#: ../src/common/darktable.c:578
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "gabim në hapjen e direktorisë `%s'"
 
-#: ../src/common/darktable.c:616
-#: ../src/gui/gtk.c:1000
+#: ../src/common/darktable.c:598
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "skeda `%s' ka format të panjohur!"
 
-#: ../src/common/darktable.c:628
-#: ../src/gui/gtk.c:985
+#: ../src/common/darktable.c:609
+#: ../src/libs/import.c:345
 #, c-format
 msgid "error loading file `%s'"
 msgstr "gabim në hapjen e skedës `%s'"
 
-#: ../src/common/history.c:117
+#: ../src/common/film.c:330
+msgid "no supported images was found to be imported"
+msgstr "nuk gjen imazhet e garantuara që importohen"
+
+#: ../src/common/film.c:341
+#, c-format
+msgid "importing %d image"
+msgid_plural "importing %d images"
+msgstr[0] "importon %d imazh"
+msgstr[1] "importon %d imazhe"
+
+#: ../src/common/history.c:109
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr "duhet të kopjoni historikun nga një imazh përpara se ta ngjitni te një tjetër"
 
-#: ../src/common/history.c:180
-#: ../src/common/history.c:208
-#: ../src/common/styles.c:238
-#: ../src/develop/develop.c:961
+#: ../src/common/history.c:163
+#: ../src/common/history.c:174
+#: ../src/common/styles.c:270
+#: ../src/develop/develop.c:778
+#: ../src/libs/history.c:151
 msgid "on"
 msgstr "ndez"
 
-#: ../src/common/history.c:180
-#: ../src/common/history.c:208
-#: ../src/common/styles.c:238
-#: ../src/develop/develop.c:961
+#: ../src/common/history.c:163
+#: ../src/common/history.c:174
+#: ../src/common/styles.c:270
+#: ../src/develop/develop.c:778
+#: ../src/libs/history.c:151
 msgid "off"
 msgstr "fik"
 
-#: ../src/common/image.c:193
+#: ../src/common/image.c:98
 msgid "orphaned image"
 msgstr "imazh jetim"
 
-#. fprintf(stderr, "[image_reimport] could not open %s\n", filename);
-#. dt_image_cleanup(img); // still locked buffers. cache will clean itself after a while.
-#: ../src/common/image.c:576
-#, c-format
-msgid "image `%s' is not available"
-msgstr "imazhi `%s' nuk mundësohet"
-
-#: ../src/common/imageio.c:860
+#: ../src/common/imageio.c:487
 msgid "failed to allocate memory for export, please lower the threads used for export or buy more memory."
 msgstr "dështon shpërndarja e kujtesës për eksport, ju lutemi zvogëloni fazat që përdorni për eksport ose blini më shumë kujtesë."
 
-#: ../src/common/styles.c:73
+#: ../src/common/imageio.c:496
+#: ../src/common/mipmap_cache.c:873
+#, c-format
+msgid "image `%s' is not available!"
+msgstr "imazhi `%s' nuk mundësohet!"
+
+#: ../src/common/styles.c:87
 #, c-format
 msgid "style with name '%s' already exists"
 msgstr "stili me emrin '%s' ekziston më parë"
 
-#: ../src/common/styles.c:123
+#: ../src/common/styles.c:154
 #, c-format
 msgid "style named '%s' successfully created"
 msgstr "stili '%s' u krijua me sukses"
 
-#: ../src/common/styles.c:290
+#: ../src/common/styles.c:322
 #, c-format
 msgid "style file for %s exists"
 msgstr "skeda e stilit për %s ekziston"
 
-#: ../src/common/styles.c:333
+#: ../src/common/styles.c:365
 #, c-format
 msgid "style %s was sucessfully saved"
 msgstr "stili %s u ruajt me sukses"
 
-#: ../src/common/styles.c:508
+#: ../src/common/styles.c:540
 #, c-format
 msgid "style %s was sucessfully imported"
 msgstr "stili %s u krijua me sukses"
 
-#: ../src/common/variables.c:207
-#: ../src/iop/clipping.c:952
+#: ../src/common/variables.c:213
+#: ../src/iop/clipping.c:965
 #, c-format
 msgid "none"
 msgstr "asnjë"
 
-#: ../src/control/control.c:943
-#: ../src/control/control.c:946
+#: ../src/control/control.c:934
+#: ../src/control/control.c:937
 msgid "working.."
 msgstr "punon..."
 
-#: ../src/control/control.c:1027
+#: ../src/control/control.c:1017
 #, c-format
 msgid "switch to %s mode"
 msgstr "kaloni te %s"
 
-#: ../src/control/control.c:1035
-#, c-format
-msgid "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
-msgstr "<span color=\"#7f7f7f\"><big><b>%s</b></big></span>"
-
-#: ../src/control/jobs/camera_jobs.c:37
+#: ../src/control/jobs/camera_jobs.c:35
 #, c-format
 msgid "importing image %s"
 msgstr "importon imazhin %s"
@@ -385,387 +429,390 @@ msgid_plural "capturing %d images"
 msgstr[0] "nxjerr %d imazh"
 msgstr[1] "nxjerr %d imazhe"
 
-#: ../src/control/jobs/camera_jobs.c:102
+#: ../src/control/jobs/camera_jobs.c:100
 msgid "please set your camera to manual mode first!"
 msgstr "ju lutem vendosni në fillim kamerën në mënyrën manuale!"
 
-#: ../src/control/jobs/camera_jobs.c:290
+#: ../src/control/jobs/camera_jobs.c:292
 #, c-format
 msgid "%d/%d imported to %s"
 msgstr "importoi %d/%d te %s"
 
-#: ../src/control/jobs/camera_jobs.c:355
+#: ../src/control/jobs/camera_jobs.c:358
 msgid "starting to import images from camera"
 msgstr "nis importin e imazheve nga kamera"
 
-#: ../src/control/jobs/camera_jobs.c:375
+#: ../src/control/jobs/camera_jobs.c:378
 #, c-format
 msgid "failed to create import path `%s', import aborted."
 msgstr "dështoi krijimi i shtegut të importit `%s', ndërpret importin."
 
-#: ../src/control/jobs/camera_jobs.c:384
+#: ../src/control/jobs/camera_jobs.c:387
 #, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
 msgstr[0] "importon %d imazh nga kamera"
 msgstr[1] "importon %d imazhe nga kamera"
 
-#: ../src/control/jobs/camera_jobs.c:406
+#: ../src/control/jobs/camera_jobs.c:409
 msgid "failed to create filmroll for camera import, import aborted."
 msgstr "dështoi krijimi i filmit për importin nga kamera, ndërpret importin."
 
-#: ../src/control/jobs/control_jobs.c:80
+#: ../src/control/jobs/control_jobs.c:81
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "shkrin %d imazh"
 msgstr[1] "shkrin %d imazhe"
 
-#: ../src/control/jobs/control_jobs.c:95
+#: ../src/control/jobs/control_jobs.c:102
 msgid "exposure bracketing only works on raw images"
 msgstr "ekspozimi me hapësirë punon vetëm për imazhet bruto"
 
-#: ../src/control/jobs/control_jobs.c:105
+#: ../src/control/jobs/control_jobs.c:111
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "dështoi marrja e tamponit bruto nga imazhi `%s'"
 
-#: ../src/control/jobs/control_jobs.c:124
+#: ../src/control/jobs/control_jobs.c:130
 msgid "images have to be of same size!"
 msgstr "imazhet duhet të kenë masën njësoj!"
 
-#: ../src/control/jobs/control_jobs.c:175
+#: ../src/control/jobs/control_jobs.c:183
 #, c-format
 msgid "wrote merged hdr `%s'"
 msgstr "shkroi hdr e shkrirë `%s'"
 
-#: ../src/control/jobs/control_jobs.c:199
+#: ../src/control/jobs/control_jobs.c:207
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "dublon %d imazh"
 msgstr[1] "dublon %d imazhe"
 
-#: ../src/control/jobs/control_jobs.c:222
+#: ../src/control/jobs/control_jobs.c:230
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "rrokullis %d imazh"
 msgstr[1] "rrokullis %d imazhe"
 
-#: ../src/control/jobs/control_jobs.c:244
+#: ../src/control/jobs/control_jobs.c:252
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "heq %d imazh"
 msgstr[1] "heq %d imazhe"
 
-#: ../src/control/jobs/control_jobs.c:296
+#: ../src/control/jobs/control_jobs.c:303
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "fshin %d imazh"
 msgstr[1] "fshin %d imazhe"
 
-#: ../src/control/jobs/control_jobs.c:454
+#: ../src/control/jobs/control_jobs.c:457
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural "do you really want to remove %d selected images from the collection?"
 msgstr[0] "vërtet do e hiqni nga koleksioni imazhin e seleksionuar?"
 msgstr[1] "vërtet do i hiqni nga koleksioni imazhet e seleksionuara?"
 
-#: ../src/control/jobs/control_jobs.c:456
+#: ../src/control/jobs/control_jobs.c:459
 msgid "remove images?"
 msgstr "do i hiqni imazhet?"
 
-#: ../src/control/jobs/control_jobs.c:486
+#: ../src/control/jobs/control_jobs.c:489
 #, c-format
-msgid "do you really want to PHYSICALLY delete %d selected image from disk?"
-msgid_plural "do you really want to PHYSICALLY delete %d selected images from disk?"
-msgstr[0] "vërtet do e fshini FIZIKISHT nga disku imazhin e seleksionuar?"
-msgstr[1] "vërtet do i fshini FIZIKISHT nga disku imazhet e seleksionuara?"
+msgid "do you really want to physically delete %d selected image from disk?"
+msgid_plural "do you really want to physically delete %d selected images from disk?"
+msgstr[0] "vërtet do e fshini fizikisht nga disku %d imazh të seleksionuar?"
+msgstr[1] "vërtet do i fshini fizikisht nga disku %d imazhet e seleksionuara?"
 
-#: ../src/control/jobs/control_jobs.c:488
+#: ../src/control/jobs/control_jobs.c:491
 msgid "delete images?"
 msgstr "do i fshini imazhet?"
 
-#: ../src/control/jobs/control_jobs.c:526
+#: ../src/control/jobs/control_jobs.c:529
 msgid "failed to get parameters from storage module, aborting export.."
 msgstr "dështoi marrja e parametrave nga moduli i rezervës, ndërpret eksportin..."
 
-#: ../src/control/jobs/control_jobs.c:529
+#: ../src/control/jobs/control_jobs.c:532
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "eksporton %d imazh..."
 msgstr[1] "eksporton %d imazhe..."
 
-#: ../src/control/jobs/control_jobs.c:531
+#: ../src/control/jobs/control_jobs.c:534
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "eksporton %d imazh te %s"
 msgstr[1] "eksporton %d imazhe te %s"
 
-#: ../src/control/jobs/control_jobs.c:582
-#: ../src/control/jobs/control_jobs.c:583
-#: ../src/views/darkroom.c:371
+#: ../src/control/jobs/control_jobs.c:592
+#: ../src/control/jobs/control_jobs.c:593
+#: ../src/views/darkroom.c:446
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "imazhi `%s' nuk mundësohet tani"
 
-#: ../src/control/jobs/image_jobs.c:39
-#, c-format
-msgid "loading image %s"
-msgstr "hap imazhin %s"
-
-#: ../src/develop/develop.c:854
+#: ../src/develop/develop.c:674
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: moduli `%s' version tjetër: %d != %d"
 
-#: ../src/develop/imageop.c:396
-#: ../src/develop/imageop.c:415
-#: ../src/develop/imageop.c:959
+#: ../src/develop/imageop.c:403
+#: ../src/develop/imageop.c:1205
 #, c-format
 msgid "%s is switched on"
 msgstr "%s është ndezur"
 
-#: ../src/develop/imageop.c:396
-#: ../src/develop/imageop.c:415
-#: ../src/develop/imageop.c:959
+#: ../src/develop/imageop.c:403
+#: ../src/develop/imageop.c:1205
 #, c-format
 msgid "%s is switched off"
 msgstr "%s është fikur"
 
-#: ../src/develop/imageop.c:593
+#: ../src/develop/imageop.c:570
+#: ../src/gui/accelerators.c:606
+#: ../src/gui/accelerators.c:683
+#: ../src/gui/accelerators.c:807
+#: ../src/gui/accelerators.c:829
+#: ../src/gui/presets.c:175
+#: ../src/gui/presets.c:202
+#: ../src/gui/presets.c:482
+#: ../src/libs/lib.c:209
+#: ../src/libs/lib.c:229
+#: ../src/libs/lib.c:828
+msgid "preset"
+msgstr "paracaktimi"
+
+#: ../src/develop/imageop.c:611
 msgctxt "accel"
 msgid "fusion"
 msgstr "përzierja"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:598
+#: ../src/develop/imageop.c:616
 msgctxt "accel"
 msgid "show plugin"
 msgstr "tregoj spinën"
 
-#: ../src/develop/imageop.c:599
+#: ../src/develop/imageop.c:617
 msgctxt "accel"
 msgid "enable plugin"
 msgstr "aktivizoj spinën"
 
-#: ../src/develop/imageop.c:602
-#: ../src/libs/lib.c:399
+#: ../src/develop/imageop.c:620
+#: ../src/libs/lib.c:423
 msgctxt "accel"
 msgid "reset plugin parameters"
 msgstr "rikthej parametrat e spinës"
 
-#: ../src/develop/imageop.c:604
-#: ../src/libs/lib.c:404
+#: ../src/develop/imageop.c:622
+#: ../src/libs/lib.c:428
 msgctxt "accel"
 msgid "show preset menu"
-msgstr "tregoj menynë e paravendosjeve"
-
-#: ../src/develop/imageop.c:950
-msgid " (deprecated)"
-msgstr " (i zhvlerësuar)"
-
-#: ../src/develop/imageop.c:980
-#: ../src/libs/lib.c:566
-msgid "reset parameters"
-msgstr "riktheni parametrat"
-
-#: ../src/develop/imageop.c:981
-#: ../src/libs/lib.c:573
-msgid "presets"
-msgstr "paravendosje"
+msgstr "tregoj menynë e paracaktimeve"
 
 #. hack to indent the drop down box
-#: ../src/develop/imageop.c:1005
+#: ../src/develop/imageop.c:1081
 msgid "blend"
 msgstr "shkrij"
 
-#: ../src/develop/imageop.c:1006
+#: ../src/develop/imageop.c:1082
 msgid "mode"
 msgstr "mënyra"
 
-#: ../src/develop/imageop.c:1010
+#: ../src/develop/imageop.c:1086
 #: ../src/iop/watermark.c:714
 msgid "opacity"
 msgstr "opake"
 
-#: ../src/develop/imageop.c:1012
+#: ../src/develop/imageop.c:1088
 msgid "normal"
 msgstr "normale"
 
-#: ../src/develop/imageop.c:1013
+#: ../src/develop/imageop.c:1089
 msgid "lighten"
 msgstr "ndriçoj"
 
-#: ../src/develop/imageop.c:1014
+#: ../src/develop/imageop.c:1090
 msgid "darken"
 msgstr "errësoj"
 
-#: ../src/develop/imageop.c:1015
+#: ../src/develop/imageop.c:1091
 msgid "multiply"
 msgstr "shumëzoj"
 
-#: ../src/develop/imageop.c:1016
+#: ../src/develop/imageop.c:1092
 msgid "average"
 msgstr "mesatare"
 
-#: ../src/develop/imageop.c:1017
+#: ../src/develop/imageop.c:1093
 msgid "addition"
 msgstr "plus"
 
-#: ../src/develop/imageop.c:1018
+#: ../src/develop/imageop.c:1094
 msgid "subtract"
 msgstr "minus"
 
-#: ../src/develop/imageop.c:1019
+#: ../src/develop/imageop.c:1095
 msgid "difference"
 msgstr "diferencë"
 
-#: ../src/develop/imageop.c:1020
+#: ../src/develop/imageop.c:1096
 msgid "screen"
 msgstr "ekran"
 
-#: ../src/develop/imageop.c:1021
+#: ../src/develop/imageop.c:1097
 msgid "overlay"
 msgstr "mbishtresë"
 
-#: ../src/develop/imageop.c:1022
+#: ../src/develop/imageop.c:1098
 msgid "softlight"
 msgstr "dritë e dobët"
 
-#: ../src/develop/imageop.c:1023
+#: ../src/develop/imageop.c:1099
 msgid "hardlight"
 msgstr "dritë e fortë"
 
-#: ../src/develop/imageop.c:1024
+#: ../src/develop/imageop.c:1100
 msgid "vividlight"
 msgstr "dritë e gjallë"
 
-#: ../src/develop/imageop.c:1025
+#: ../src/develop/imageop.c:1101
 msgid "linearlight"
 msgstr "dritë lineare"
 
-#: ../src/develop/imageop.c:1026
+#: ../src/develop/imageop.c:1102
 msgid "pinlight"
 msgstr "dritë majuce"
 
-#: ../src/develop/imageop.c:1027
-#: ../src/iop/channelmixer.c:352
-#: ../src/iop/colorzones.c:847
-#: ../src/iop/colorzones.c:863
+#: ../src/develop/imageop.c:1103
+#: ../src/iop/channelmixer.c:353
+#: ../src/iop/colorize.c:448
+#: ../src/iop/colorzones.c:861
+#: ../src/iop/colorzones.c:877
 msgid "lightness"
 msgstr "ndriçimi"
 
-#: ../src/develop/imageop.c:1028
-#: ../src/iop/atrous.c:1361
-#: ../src/iop/equalizer.c:344
+#: ../src/develop/imageop.c:1104
+#: ../src/iop/atrous.c:1386
+#: ../src/iop/equalizer.c:343
 #: ../src/iop/nlmeans.c:454
 msgid "chroma"
 msgstr "kromi"
 
 #. adding the labels
-#: ../src/develop/imageop.c:1029
-#: ../src/iop/channelmixer.c:350
-#: ../src/iop/colorzones.c:845
-#: ../src/iop/colorzones.c:865
-#: ../src/iop/graduatednd.c:592
+#: ../src/develop/imageop.c:1105
+#: ../src/iop/channelmixer.c:351
+#: ../src/iop/colorize.c:394
+#: ../src/iop/colorzones.c:859
+#: ../src/iop/colorzones.c:879
+#: ../src/iop/graduatednd.c:586
 #: ../src/iop/splittoning.c:495
 #: ../src/iop/splittoning.c:554
 msgid "hue"
 msgstr "boja"
 
-#. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_basic_widget,TRUE,TRUE,0);
-#. add button for color plugins
-#. _iop_modulegroups_color_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
-#: ../src/develop/imageop.c:1030
-#: ../src/gui/iop_modulegroups.c:235
+#: ../src/develop/imageop.c:1106
 msgid "color"
 msgstr "ngjyra"
 
-#: ../src/develop/imageop.c:1033
+#: ../src/develop/imageop.c:1109
 msgid "enable blending"
 msgstr "aktivizoni shkrirjen"
 
-#: ../src/develop/imageop.c:1034
+#: ../src/develop/imageop.c:1110
 msgid "set the opacity of the blending"
 msgstr "përcaktoni tejdukshmërinë e shkrirjes"
 
-#: ../src/develop/imageop.c:1035
+#: ../src/develop/imageop.c:1111
 msgid "choose blending mode"
 msgstr "zgjidhni mënyrën e shkrirjes"
+
+#: ../src/develop/imageop.c:1184
+#: ../src/libs/lib.c:688
+msgid "reset parameters"
+msgstr "riktheni parametrat"
+
+#: ../src/develop/imageop.c:1193
+#: ../src/gui/preferences.c:393
+#: ../src/libs/lib.c:701
+msgid "presets"
+msgstr "paracaktime"
 
 #: ../src/dtgtk/resetlabel.c:61
 msgid "double-click to reset"
 msgstr "klikimi dy herë e rikthen"
 
-#: ../src/gui/accelerators.c:30
-#: ../src/gui/accelerators.c:74
+#: ../src/gui/accelerators.c:32
+#: ../src/gui/accelerators.c:76
 msgctxt "accel"
 msgid "global"
 msgstr "global"
 
-#: ../src/gui/accelerators.c:37
-#: ../src/gui/accelerators.c:81
+#: ../src/gui/accelerators.c:39
+#: ../src/gui/accelerators.c:83
 msgctxt "accel"
 msgid "views"
 msgstr "pamje"
 
-#: ../src/gui/accelerators.c:44
-#: ../src/gui/accelerators.c:58
-#: ../src/gui/accelerators.c:61
-#: ../src/gui/accelerators.c:64
-#: ../src/gui/accelerators.c:67
-#: ../src/gui/accelerators.c:90
-#: ../src/gui/accelerators.c:108
-#: ../src/gui/accelerators.c:113
-#: ../src/gui/accelerators.c:118
-#: ../src/gui/accelerators.c:123
+#: ../src/gui/accelerators.c:46
+#: ../src/gui/accelerators.c:60
+#: ../src/gui/accelerators.c:63
+#: ../src/gui/accelerators.c:66
+#: ../src/gui/accelerators.c:69
+#: ../src/gui/accelerators.c:92
+#: ../src/gui/accelerators.c:110
+#: ../src/gui/accelerators.c:115
+#: ../src/gui/accelerators.c:120
+#: ../src/gui/accelerators.c:125
 msgctxt "accel"
 msgid "image operations"
 msgstr "operacionet e imazhit"
 
-#: ../src/gui/accelerators.c:51
-#: ../src/gui/accelerators.c:99
+#: ../src/gui/accelerators.c:53
+#: ../src/gui/accelerators.c:101
 msgctxt "accel"
 msgid "plugins"
 msgstr "spina"
 
-#: ../src/gui/accelerators.c:59
-#: ../src/gui/accelerators.c:111
+#: ../src/gui/accelerators.c:61
+#: ../src/gui/accelerators.c:113
 msgctxt "accel"
 msgid "increase"
 msgstr "rrit"
 
-#: ../src/gui/accelerators.c:62
-#: ../src/gui/accelerators.c:116
+#: ../src/gui/accelerators.c:64
+#: ../src/gui/accelerators.c:118
 msgctxt "accel"
 msgid "decrease"
 msgstr "ul"
 
-#: ../src/gui/accelerators.c:65
-#: ../src/gui/accelerators.c:121
+#: ../src/gui/accelerators.c:67
+#: ../src/gui/accelerators.c:123
 msgctxt "accel"
 msgid "reset"
 msgstr "rikthej"
 
-#: ../src/gui/accelerators.c:68
-#: ../src/gui/accelerators.c:126
+#: ../src/gui/accelerators.c:70
+#: ../src/gui/accelerators.c:128
 msgctxt "accel"
 msgid "edit"
 msgstr "editoj"
 
-#: ../src/gui/background_jobs.c:33
-msgid "background jobs"
-msgstr "puna në sfond"
+#: ../src/gui/accelerators.c:668
+#: ../src/libs/lib.c:274
+msgid "deleting preset for obsolete module"
+msgstr "fshin paracaktimin për modulin e vjetër"
 
 #: ../src/gui/camera_import_dialog.c:236
 msgid "store value as default"
-msgstr "rezervoni vlerën si tipike"
+msgstr "rezervoni si vlerën tipike"
 
 #: ../src/gui/camera_import_dialog.c:243
 msgid "reset value to default"
@@ -795,7 +842,7 @@ msgstr "ju lutem prisni sjelljen e parashikimeve të imazheve nga kamera..."
 
 #. jobcode
 #: ../src/gui/camera_import_dialog.c:289
-#: ../src/libs/capture.c:104
+#: ../src/libs/capture.c:109
 msgid "jobcode"
 msgstr "kodi i punës"
 
@@ -814,12 +861,12 @@ msgstr "përgjithësi"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
 #: ../src/gui/camera_import_dialog.c:327
-#: ../src/gui/gtk.c:892
+#: ../src/libs/import.c:403
 msgid "ignore jpeg files"
 msgstr "përbuz skedat jpeg"
 
 #: ../src/gui/camera_import_dialog.c:328
-#: ../src/gui/gtk.c:893
+#: ../src/libs/import.c:404
 msgid "do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."
 msgstr "nuk hap skedat me zgjatimin .jpg ose .jpeg. kjo mund të duhet kur në direktori keni bruto+jpeg."
 
@@ -829,7 +876,7 @@ msgstr "fshij originalet pas importit"
 
 #: ../src/gui/camera_import_dialog.c:337
 msgid "check this option if you want to delete images on camera after download to computer"
-msgstr "me këtë mundësinë mund të fshini imazhet në kamerë pasi i shkarkoni në kompjuter"
+msgstr "fshini imazhet në kamerë pasi të shkarkohen në kompjuter"
 
 #: ../src/gui/camera_import_dialog.c:341
 msgid "override today's date"
@@ -841,7 +888,7 @@ msgid ""
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
 msgstr ""
-"me këtë mundësinë mund të tërhiqni datën e vërtetë kur shtrini variablat:\n"
+"tërhiqni datën e vërtetë kur shtrini variablat:\n"
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
 
@@ -886,7 +933,7 @@ msgstr "aktivizoj kopjen"
 
 #: ../src/gui/camera_import_dialog.c:393
 msgid "check this option to enable automatic backup of imported images"
-msgstr "me këtë mundësinë mund të aktivizoni kopjen automatike të imazheve të importuara"
+msgstr "aktivizoni kopjen automatike të imazheve të importuara"
 
 #: ../src/gui/camera_import_dialog.c:395
 msgid "warn if no backup destinations are present"
@@ -894,7 +941,7 @@ msgstr "njoftoj nëse nuk ka destinacione për kopje"
 
 #: ../src/gui/camera_import_dialog.c:397
 msgid "check this option to get an interactive warning if no backupdestinations are present"
-msgstr "me këtë mundësinë mund të njoftoheni nëse nuk ka destinacione të pranishme për kopje"
+msgstr "njoftohuni nëse nuk ka destinacione të pranishme për kopje"
 
 #: ../src/gui/camera_import_dialog.c:399
 msgid "backup foldername"
@@ -917,712 +964,369 @@ msgid "settings"
 msgstr "parametra"
 
 #. Lets run dialog
-#: ../src/gui/camera_import_dialog.c:589
+#: ../src/gui/camera_import_dialog.c:590
 msgid "select the images from the list below that you want to import into a new filmroll"
-msgstr "seleksiononi nga lista më poshtë imazhet që doni të importoni në filmin e ri"
+msgstr "seleksiononi imazhet më poshtë që doni të importoni në filmin e ri"
 
-#: ../src/gui/camera_import_dialog.c:634
+#: ../src/gui/camera_import_dialog.c:635
 msgid "please set the basedirectory settings before importing"
 msgstr "ju lutem përcaktoni vendosjet e direktorisë bazë para importit"
 
-#: ../src/gui/camera_import_dialog.c:641
+#: ../src/gui/camera_import_dialog.c:642
 msgid "please set the subdirectory settings before importing"
 msgstr "ju lutem përcaktoni vendosjet e nëndirektorisë para importit"
 
-#: ../src/gui/camera_import_dialog.c:648
+#: ../src/gui/camera_import_dialog.c:649
 msgid "please set the filenamepattern settings before importing"
 msgstr "ju lutem përcaktoni vendosjet e modelit të skedave para importit"
 
-#: ../src/gui/camera_import_dialog.c:655
+#: ../src/gui/camera_import_dialog.c:656
 msgid "please use YYYY-MM-DD format for date override"
 msgstr "ju lutemi përdorni formatin VVVV-MM-DD për tërheqjen e datës"
 
-#. Add the rescan button
-#: ../src/gui/devices.c:145
-msgid "scan for devices"
-msgstr "skanoj pajisjet"
-
-#: ../src/gui/devices.c:147
-msgid "scan for newly attached devices"
-msgstr "skanoni pajisjet e lidhura të fundit"
-
-#: ../src/gui/devices.c:172
-#, c-format
-msgid "device \"%s\" connected on port \"%s\"."
-msgstr "pajisja \"%s\" është lidhur në portin \"%s\""
-
-#: ../src/gui/devices.c:180
-msgid "import from camera"
-msgstr "importoj nga kamera"
-
-#: ../src/gui/devices.c:182
-msgid "tethered shoot"
-msgstr "pozimi i komanduar"
-
-#. No supported devices is detected lets notice user..
-#: ../src/gui/devices.c:202
-msgid "no supported devices found"
-msgstr "nuk gjen pajisjet e garantuara"
-
-#: ../src/gui/gtk.c:577
-msgid "organize and develop images from digital cameras"
-msgstr "organizoni dhe zhvilloni imazhet nga kamerat digjitale"
-
-#: ../src/gui/gtk.c:582
-msgid "* developers *"
-msgstr "* arkitektë *"
-
-#: ../src/gui/gtk.c:587
-msgid "* ubuntu packaging, color management, video tutorials *"
-msgstr "* paketimi për ubuntu, menaxhimi i ngjyrave, videoleksione *"
-
-#: ../src/gui/gtk.c:590
-msgid "* networking, battle testing, translation expert *"
-msgstr "* rrjeti, testimi luftarak, eksperti i përkthimeve *"
-
-#: ../src/gui/gtk.c:593
-msgid "* contributors *"
-msgstr "* kontributorë *"
-
-#: ../src/gui/gtk.c:641
-msgid "translator-credits"
-msgstr "Besmir Godole <bgodole@myopera.com>"
-
-#: ../src/gui/gtk.c:865
-msgid "import film"
-msgstr "importoj filmin"
-
-#: ../src/gui/gtk.c:884
-msgid "import directories recursively"
-msgstr "importoj direktoritë si rekursive"
-
-#: ../src/gui/gtk.c:885
-msgid "recursively import subdirectories. each directory goes into a new film roll."
-msgstr "importoj nëndirektoritë në mënyrën rekursive. secila direktori shkon në filmin e ri."
-
-#: ../src/gui/gtk.c:936
-msgid "import image"
-msgstr "importoj imazhin"
-
-#: ../src/gui/gtk.c:961
-msgid "supported images"
-msgstr "imazhet e garantuara"
-
-#: ../src/gui/gtk.c:966
-#: ../src/libs/copy_history.c:79
-#: ../src/libs/styles.c:259
-msgid "all files"
-msgstr "gjithë skedat"
-
-#: ../src/gui/gtk.c:1345
-msgid "take snapshot"
-msgstr "bëj një pozë"
-
-#: ../src/gui/gtk.c:1346
-msgid "take snapshot to compare with another image or the same image at another stage of development"
-msgstr "bëni një pozë për ta krahasuar me një imazh tjetër ose me të njëjtin imazh në fazën e zhvillimit"
-
 #. register keys for view switching
-#: ../src/gui/gtk.c:1391
+#: ../src/gui/gtk.c:772
 msgctxt "accel"
 msgid "capture view"
-msgstr "dhoma e pozës"
+msgstr "dhoma e fotografimit"
 
-#: ../src/gui/gtk.c:1392
+#: ../src/gui/gtk.c:773
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "tabela e ndriçuar"
 
-#: ../src/gui/gtk.c:1393
+#: ../src/gui/gtk.c:774
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "dhoma e errët"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:1409
+#: ../src/gui/gtk.c:793
 msgctxt "accel"
 msgid "quit"
 msgstr "dal"
 
 #. Contrast and brightness accelerators
-#: ../src/gui/gtk.c:1416
+#: ../src/gui/gtk.c:800
 msgctxt "accel"
 msgid "increase brightness"
 msgstr "ngre shkëlqimin"
 
-#: ../src/gui/gtk.c:1418
+#: ../src/gui/gtk.c:802
 msgctxt "accel"
 msgid "decrease brightness"
 msgstr "ul shkëlqimin"
 
-#: ../src/gui/gtk.c:1420
+#: ../src/gui/gtk.c:804
 msgctxt "accel"
 msgid "increase contrast"
 msgstr "ngre kontrastin"
 
-#: ../src/gui/gtk.c:1422
+#: ../src/gui/gtk.c:806
 msgctxt "accel"
 msgid "decrease contrast"
 msgstr "ul kontrastin"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:1443
+#: ../src/gui/gtk.c:827
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "vë ekranin e plotë"
 
-#: ../src/gui/gtk.c:1444
+#: ../src/gui/gtk.c:828
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "dal nga ekrani i plotë"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:1456
+#: ../src/gui/gtk.c:840
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "vë kornizat anësore"
 
+#. toggle view of header
+#: ../src/gui/gtk.c:843
+msgctxt "accel"
+msgid "toggle header"
+msgstr "vë kreun"
+
 #. View-switch
-#: ../src/gui/gtk.c:1459
+#: ../src/gui/gtk.c:847
 msgctxt "accel"
 msgid "switch view"
 msgstr "ndërroj pamjen"
 
-#: ../src/gui/gtk.c:1643
-msgid "<span color=\"#7f7f7f\"><big><b>light table mode</b></big></span>"
-msgstr "<span color=\"#7f7f7f\"><big><b>tabela e ndriçuar</b></big></span>"
-
-#. Adding the list label
-#: ../src/gui/gtk.c:1660
-msgid "list"
-msgstr "listoj"
-
-#: ../src/gui/gtk.c:1668
-msgid "all"
-msgstr "të gjitha"
-
-#: ../src/gui/gtk.c:1669
-msgid "unstarred"
-msgstr "pa yll"
-
-#: ../src/gui/gtk.c:1670
-msgid "1 star"
-msgstr "1 yll"
-
-#: ../src/gui/gtk.c:1671
-msgid "2 star"
-msgstr "2 yje"
-
-#: ../src/gui/gtk.c:1672
-msgid "3 star"
-msgstr "3 yje"
-
-#: ../src/gui/gtk.c:1673
-msgid "4 star"
-msgstr "4 yje"
-
-#: ../src/gui/gtk.c:1674
-msgid "5 star"
-msgstr "5 yje"
-
-#: ../src/gui/gtk.c:1675
-msgid "rejected"
-msgstr "të refuzuara"
-
-#. Adding the sort label
-#: ../src/gui/gtk.c:1683
-msgid "images sorted by"
-msgstr "imazhet nga"
-
-#: ../src/gui/gtk.c:1691
-#: ../src/gui/gtk.c:1932
-msgid "filename"
-msgstr "emri"
-
-#: ../src/gui/gtk.c:1692
-msgid "time"
-msgstr "ora"
-
-#: ../src/gui/gtk.c:1693
-msgid "rating"
-msgstr "vlerësimi"
-
-#: ../src/gui/gtk.c:1694
-msgid "id"
-msgstr "id"
-
-#: ../src/gui/gtk.c:1695
-msgid "color label"
-msgstr "ngjyra"
-
-#: ../src/gui/gtk.c:1706
-msgid "show global preferences"
-msgstr "tregoni pëlqimet globale"
-
-#: ../src/gui/gtk.c:1767
-msgid "about darktable"
-msgstr "për darktable"
-
-#: ../src/gui/gtk.c:1810
-msgid "navigation"
-msgstr "lundrimi"
-
-#: ../src/gui/gtk.c:1877
-#: ../src/libs/collect.h:33
-msgid "history"
-msgstr "historiku"
-
-#: ../src/gui/gtk.c:1931
-msgid "image id"
-msgstr "id imazhi"
-
-#: ../src/gui/gtk.c:1933
-#: ../src/gui/presets.c:283
-msgid "model"
-msgstr "modeli"
-
-#: ../src/gui/gtk.c:1934
-#: ../src/gui/presets.c:290
-msgid "maker"
-msgstr "marka"
-
-#. aperture
-#: ../src/gui/gtk.c:1935
-#: ../src/gui/presets.c:332
-#: ../src/libs/camera.c:516
-msgid "aperture"
-msgstr "diafragma"
-
-#. exposure
-#: ../src/gui/gtk.c:1936
-#: ../src/gui/presets.c:317
-#: ../src/iop/exposure.c:45
-#: ../src/iop/exposure.c:384
-#: ../src/iop/relight.c:316
-msgid "exposure"
-msgstr "ekspozimi"
-
-#: ../src/gui/gtk.c:1937
-msgid "f-length"
-msgstr "largësia-f"
-
-#: ../src/gui/gtk.c:1938
-msgid "distance"
-msgstr "distanca"
-
-#. iso
-#: ../src/gui/gtk.c:1939
-#: ../src/gui/presets.c:304
-#: ../src/libs/camera.c:546
-msgid "iso"
-msgstr "iso"
-
-#: ../src/gui/gtk.c:1940
-msgid "date/time"
-msgstr "data/ora"
-
-#: ../src/gui/gtk.c:1941
-#: ../src/gui/presets.c:297
-msgid "lens"
-msgstr "objektivi"
-
-#: ../src/gui/gtk.c:1942
-#: ../src/iop/relight.c:319
-msgid "width"
-msgstr "gjerësia"
-
-#: ../src/gui/gtk.c:1943
-msgid "height"
-msgstr "gjatësia"
-
-#: ../src/gui/gtk.c:1944
-#: ../src/libs/collect.h:29
-msgid "film roll"
-msgstr "filmi"
-
-#: ../src/gui/gtk.c:1945
-#: ../src/imageio/storage/flickr.c:506
-#: ../src/imageio/storage/gallery.c:154
-#: ../src/imageio/storage/picasa.c:767
-#: ../src/libs/collect.h:35
-#: ../src/libs/metadata.c:285
-msgid "title"
-msgstr "titulli"
-
-#: ../src/gui/gtk.c:1946
-#: ../src/libs/collect.h:37
-#: ../src/libs/metadata.c:311
-msgid "creator"
-msgstr "krijuesi"
-
-#: ../src/gui/gtk.c:1947
-#: ../src/imageio/storage/picasa.c:769
-#: ../src/libs/collect.h:39
-#: ../src/libs/metadata.c:337
-msgid "rights"
-msgstr "të drejta"
-
-#: ../src/gui/gtk.c:1962
-msgid "image information"
-msgstr "informacione"
-
-#. Attaching the label to hold the information
-#: ../src/gui/gtk.c:1992
-msgid "-"
-msgstr "-"
-
-#: ../src/gui/gtk.c:2018
-msgid "snapshots"
-msgstr "poza"
-
-#: ../src/gui/gtk.c:2058
-msgctxt "global import"
-msgid "import"
-msgstr "importoj"
-
-#. Adding the single import button
-#: ../src/gui/gtk.c:2084
-#: ../src/iop/borders.c:401
-#: ../src/iop/clipping.c:919
-msgid "image"
-msgstr "imazh"
-
-#: ../src/gui/gtk.c:2086
-msgid "select one or more images to import"
-msgstr "seleksiononi një a më shumë imazhe për të importuar"
-
-#. Adding the import button
-#: ../src/gui/gtk.c:2097
-msgid "folder"
-msgstr "dosje"
-
-#: ../src/gui/gtk.c:2100
-msgid "select a folder to import as film roll"
-msgstr "seleksiononi dosjen për të importuar si film"
-
-#: ../src/gui/gtk.c:2264
-msgid "histogram"
-msgstr "histogrami"
-
-#: ../src/gui/gtk.c:2364
-msgid "more plugins"
-msgstr "spina të tjera"
-
-#: ../src/gui/gtk.c:2459
-msgid "mean"
-msgstr "mes"
-
-#: ../src/gui/gtk.c:2460
-msgid "min"
-msgstr "min"
-
-#: ../src/gui/gtk.c:2461
-msgid "max"
-msgstr "maks"
-
-#: ../src/gui/gtk.c:2474
-msgid "rgb"
-msgstr "rgb"
-
-#: ../src/gui/gtk.c:2475
-msgid "Lab"
-msgstr "Lab"
-
-#. Creating the colorpicker output label
-#: ../src/gui/gtk.c:2487
-msgid "(---)"
-msgstr "( ---)"
-
-#: ../src/gui/gtk.c:2500
-msgid "zoomable light table"
-msgstr "tabela zmadhuese"
-
-#. FIXME: Hack to get a translated name without the need to touch the .po files
-#. char* n = _("zoomable light table\nfile manager");
-#. while(*n != '\n') n++; n++;
-#. return n;
-#: ../src/gui/gtk.c:2501
-#: ../src/libs/file_manager.c:43
-msgid "file manager"
-msgstr "menaxheri i skedave"
-
-#: ../src/gui/histogram.c:35
-#: ../src/gui/histogram.c:190
-msgid ""
-"drag to change exposure,\n"
-"doubleclick resets"
-msgstr ""
-"shtyjeni dhe ndryshoni ekspozimin,\n"
-"klikimi dy herë e rikthen"
-
-#: ../src/gui/histogram.c:185
-msgid ""
-"drag to change black point,\n"
-"doubleclick resets"
-msgstr ""
-"shtyjeni dhe ndryshoni të zezën,\n"
-"klikimi dy herë e rikthen"
-
-#: ../src/gui/iop_history.c:95
-#, c-format
-msgid "applied style `%s' on current image"
-msgstr "aplikon stilin `%s' te imazhi"
-
-#: ../src/gui/iop_history.c:128
-msgid "no styles have been created yet"
-msgstr "akoma nuk janë krijuar stilet"
-
-#: ../src/gui/iop_history.c:137
-msgid "compress history stack"
-msgstr "ngjesh historikun"
-
-#: ../src/gui/iop_history.c:138
-msgid "create a minimal history stack which produces the same image"
-msgstr "krijoni tufën minimale të historikut dhe prodhoni të njëjtin imazh"
-
-#: ../src/gui/iop_history.c:146
-msgid "create a style from the current history stack"
-msgstr "krijoni stilin nga historiku aktual"
-
-#: ../src/gui/iop_history.c:152
-msgid "applies a style selected from popup menu"
-msgstr "zbatoni stilin e seleksionuar nga menyja"
-
-#: ../src/gui/iop_history.c:177
-#: ../src/gui/iop_history.c:268
-msgid "0 - original"
-msgstr "0 - origjinal"
-
-#. gtk_widget_set_size_request (bbox,-1,22);
-#. add buttong for active pipe
-#: ../src/gui/iop_modulegroups.c:215
-msgid "active"
-msgstr "aktive"
-
-#: ../src/gui/iop_modulegroups.c:217
-msgid "the modules used in active pipe"
-msgstr "modulet që përdor në gypin aktiv"
-
-#. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_activepipe_widget,TRUE,TRUE,0);
-#. add buttong for active pipe
-#: ../src/gui/iop_modulegroups.c:221
-msgid "favorite"
-msgstr "lehtësi"
-
-#: ../src/gui/iop_modulegroups.c:223
-msgid "show modules explicit specified by user"
-msgstr "modulet që ka zgjedhur përdoruesi"
-
-#. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_userdefined_widget,TRUE,TRUE,0);
-#. add button for basic plugins
-#. _iop_modulegroups_basic_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
-#: ../src/gui/iop_modulegroups.c:228
-msgid "basic"
-msgstr "kryesore"
-
-#: ../src/gui/iop_modulegroups.c:230
-msgid "basic group"
-msgstr "grupi i kryesoreve"
-
-#: ../src/gui/iop_modulegroups.c:237
-msgid "color group"
-msgstr "grupi i ngjyrave"
-
-#. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_color_widget,TRUE,TRUE,0);
-#. add button for correction plugins
-#. _iop_modulegroups_correct_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
-#: ../src/gui/iop_modulegroups.c:242
-msgid "correct"
-msgstr "korrigjoj"
-
-#: ../src/gui/iop_modulegroups.c:244
-msgid "correction group"
-msgstr "grupi i korrigjimit"
-
-#. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_correct_widget,TRUE,TRUE,0);
-#. add buttons for artistic plugins
-#. _iop_modulegroups_effect_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0	);
-#: ../src/gui/iop_modulegroups.c:249
-msgid "effect"
-msgstr "efekte"
-
-#: ../src/gui/iop_modulegroups.c:251
-msgid "effect group"
-msgstr "grupi i efekteve"
-
-#: ../src/gui/preferences.c:67
+#: ../src/gui/preferences.c:217
 msgid "darktable preferences"
 msgstr "pëlqimet e darktable"
 
-#: ../src/gui/preferences.c:69
+#: ../src/gui/preferences.c:219
 msgid "close"
 msgstr "mbyll"
 
-#: ../src/gui/preferences.c:116
+#: ../src/gui/preferences.c:406
+msgid "module"
+msgstr "moduli"
+
+#: ../src/gui/preferences.c:420
+msgid "name"
+msgstr "emri"
+
+#. exif
+#: ../src/gui/preferences.c:427
+#: ../src/gui/preferences.c:1260
+#: ../src/gui/presets.c:319
+#: ../src/libs/metadata_view.c:69
+msgid "model"
+msgstr "modeli"
+
+#: ../src/gui/preferences.c:434
+#: ../src/gui/preferences.c:1267
+#: ../src/gui/presets.c:326
+#: ../src/libs/metadata_view.c:70
+msgid "maker"
+msgstr "marka"
+
+#: ../src/gui/preferences.c:441
+#: ../src/gui/preferences.c:1274
+#: ../src/gui/presets.c:333
+#: ../src/libs/collect.h:41
+#: ../src/libs/metadata_view.c:71
+msgid "lens"
+msgstr "objektivi"
+
+#. iso
+#: ../src/gui/preferences.c:448
+#: ../src/gui/preferences.c:1281
+#: ../src/gui/presets.c:340
+#: ../src/libs/camera.c:560
+#: ../src/libs/collect.h:42
+#: ../src/libs/metadata_view.c:76
+msgid "iso"
+msgstr "iso"
+
+#. exposure
+#: ../src/gui/preferences.c:455
+#: ../src/gui/preferences.c:1294
+#: ../src/gui/presets.c:353
+#: ../src/iop/exposure.c:43
+#: ../src/iop/exposure.c:391
+#: ../src/iop/relight.c:322
+#: ../src/libs/metadata_view.c:73
+msgid "exposure"
+msgstr "ekspozimi"
+
+#. aperture
+#: ../src/gui/preferences.c:462
+#: ../src/gui/preferences.c:1309
+#: ../src/gui/presets.c:368
+#: ../src/libs/camera.c:530
+#: ../src/libs/collect.h:43
+#: ../src/libs/metadata_view.c:72
+msgid "aperture"
+msgstr "diafragma"
+
+#. focal length
+#: ../src/gui/preferences.c:469
+#: ../src/gui/preferences.c:1324
+#: ../src/gui/presets.c:383
+#: ../src/libs/camera.c:540
+#: ../src/libs/metadata_view.c:74
+msgid "focal length"
+msgstr "largësia fokale"
+
+#: ../src/gui/preferences.c:476
+#: ../src/iop/exposure.c:397
+msgid "auto"
+msgstr "auto"
+
+#: ../src/gui/preferences.c:522
 msgid "shortcuts"
 msgstr "shkurtore"
 
-#: ../src/gui/preferences.c:131
+#: ../src/gui/preferences.c:537
 msgid "shortcut"
 msgstr "shkurtorja"
 
-#: ../src/gui/preferences.c:138
+#: ../src/gui/preferences.c:544
 msgid "binding"
 msgstr "njësimi"
 
 #. Adding the restore defaults button
-#: ../src/gui/preferences.c:177
+#: ../src/gui/preferences.c:583
 msgid "default"
 msgstr "tipike"
 
 #. Adding the import/export buttons
-#: ../src/gui/preferences.c:186
+#: ../src/gui/preferences.c:592
 msgctxt "preferences"
 msgid "import"
 msgstr "importoj"
 
 #. Export Button
-#: ../src/gui/preferences.c:193
-#: ../src/libs/export.c:557
-#: ../src/libs/styles.c:368
+#: ../src/gui/preferences.c:599
+#: ../src/libs/export.c:562
+#: ../src/libs/styles.c:373
 msgid "export"
 msgstr "eksportoj"
 
-#: ../src/gui/preferences.c:454
+#: ../src/gui/preferences.c:899
 msgid "press key combination to remap..."
 msgstr "shtypni tastet e kombinuara për të përpiluar..."
 
-#: ../src/gui/preferences.c:587
+#: ../src/gui/preferences.c:1032
 msgid "select file to export"
 msgstr "seleksionoj skedën për të eksportuar"
 
-#: ../src/gui/preferences.c:614
+#: ../src/gui/preferences.c:1059
 msgid "select file to import"
 msgstr "seleksionoj skedën për të importuar"
 
-#: ../src/gui/preferences.c:660
+#: ../src/gui/preferences.c:1105
 msgid "Are you sure you want to restore the default keybindings?  This will erase any modifications you have made."
-msgstr "Jeni i sigurt për rivendosjen e njësimit të tasteve tipike? Kjo do fshijë çdo modifikim të kryer."
+msgstr "jeni i sigurt për rivendosjen e njësimit të tasteve tipike? kjo do fshijë çdo modifikim të kryer."
 
-#: ../src/gui/presets.c:122
-#: ../src/gui/presets.c:575
-#: ../src/gui/presets.c:588
-#: ../src/libs/lib.c:62
-msgid "(default)"
-msgstr "(tipike)"
-
-#: ../src/gui/presets.c:233
+#: ../src/gui/preferences.c:1210
+#: ../src/gui/presets.c:267
 #, c-format
 msgid "edit `%s' for module `%s'"
 msgstr "editoj `%s' për modulin `%s'"
 
-#: ../src/gui/presets.c:258
-#: ../src/libs/lib.c:147
-msgid "name of the preset"
-msgstr "emri i paravendosjes"
-
-#: ../src/gui/presets.c:262
-#: ../src/libs/lib.c:151
+#: ../src/gui/preferences.c:1239
+#: ../src/gui/presets.c:298
+#: ../src/libs/lib.c:162
 msgid "description or further information"
 msgstr "përshkrimi ose informacioni i mëtejshëm"
 
-#: ../src/gui/presets.c:264
+#: ../src/gui/preferences.c:1241
+#: ../src/gui/presets.c:300
 msgid "auto apply this preset to matching images"
-msgstr "autozbatoj paravendosjen për imazhet e ngjashme"
+msgstr "autozbatoj paracaktimin për imazhet e ngjashme"
 
-#: ../src/gui/presets.c:266
+#: ../src/gui/preferences.c:1243
+#: ../src/gui/presets.c:302
 msgid "only show this preset for matching images"
-msgstr "tregoj paravendosjen vetëm për imazhet e ngjashme"
+msgstr "tregoj paracaktimin vetëm për imazhet e ngjashme"
 
-#: ../src/gui/presets.c:267
+#: ../src/gui/preferences.c:1244
+#: ../src/gui/presets.c:303
 msgid "be very careful with this option. this might be the last time you see your preset."
-msgstr "kujdes me këtë mundësinë: mund të jetë hera e fundit që e shikoni paravendosjen tuaj."
+msgstr "kujdes me këtë: mund të jetë hera e fundit që e shikoni paracaktimin tuaj."
 
-#: ../src/gui/presets.c:282
+#: ../src/gui/preferences.c:1259
+#: ../src/gui/presets.c:318
 #, c-format
 msgid "string to match model (use % as wildcard)"
 msgstr "simboli që krahason modelin (përdor % si faktor)"
 
-#: ../src/gui/presets.c:289
+#: ../src/gui/preferences.c:1266
+#: ../src/gui/presets.c:325
 #, c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr "simboli që krahason markën (përdor % si faktor)"
 
-#: ../src/gui/presets.c:296
+#: ../src/gui/preferences.c:1273
+#: ../src/gui/presets.c:332
 #, c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr "simboli që krahason objektivin (përdor % si faktor)"
 
-#: ../src/gui/presets.c:308
+#: ../src/gui/preferences.c:1285
+#: ../src/gui/presets.c:344
 msgid "minimum iso value"
 msgstr "vlera iso minimale"
 
-#: ../src/gui/presets.c:312
+#: ../src/gui/preferences.c:1289
+#: ../src/gui/presets.c:348
 msgid "maximum iso value"
 msgstr "vlera iso maksimale"
 
-#: ../src/gui/presets.c:322
+#: ../src/gui/preferences.c:1299
+#: ../src/gui/presets.c:358
 msgid "minimum exposure time"
 msgstr "koha minimale e ekspozimit"
 
-#: ../src/gui/presets.c:323
+#: ../src/gui/preferences.c:1300
+#: ../src/gui/presets.c:359
 msgid "maximum exposure time"
 msgstr "koha maksimale e ekspozimit"
 
-#: ../src/gui/presets.c:337
+#: ../src/gui/preferences.c:1314
+#: ../src/gui/presets.c:373
 msgid "minimum aperture value"
 msgstr "vlera minimale e hapjes së diafragmës"
 
-#: ../src/gui/presets.c:338
+#: ../src/gui/preferences.c:1315
+#: ../src/gui/presets.c:374
 msgid "maximum aperture value"
 msgstr "vlera maksimale e hapjes së diafragmës"
 
-#. focal length
-#: ../src/gui/presets.c:347
-#: ../src/libs/camera.c:526
-msgid "focal length"
-msgstr "largësia fokale"
-
-#: ../src/gui/presets.c:354
+#: ../src/gui/preferences.c:1331
+#: ../src/gui/presets.c:390
 msgid "minimum focal length"
 msgstr "largësia fokale minimale"
 
-#: ../src/gui/presets.c:355
+#: ../src/gui/preferences.c:1332
+#: ../src/gui/presets.c:391
 msgid "maximum focal length"
 msgstr "largësia fokale maksimale"
 
+#: ../src/gui/presets.c:127
+#: ../src/gui/presets.c:682
+#: ../src/gui/presets.c:695
+#: ../src/libs/lib.c:67
+msgid "(default)"
+msgstr "(tipike)"
+
+#: ../src/gui/presets.c:170
+#, c-format
+msgid "do you really want to delete the preset `%s'?"
+msgstr "vërtet do e fshini paracaktimin `%s'?"
+
+#: ../src/gui/presets.c:171
+msgid "delete preset?"
+msgstr "do e fshini paracaktimin"
+
+#: ../src/gui/presets.c:294
+#: ../src/libs/lib.c:158
+msgid "name of the preset"
+msgstr "emri i paracaktimit"
+
 #. then show edit dialog
-#: ../src/gui/presets.c:420
-#: ../src/gui/presets.c:429
-#: ../src/gui/presets.c:438
-#: ../src/libs/lib.c:183
-#: ../src/libs/lib.c:191
-#: ../src/libs/lib.c:198
+#: ../src/gui/presets.c:475
+#: ../src/gui/presets.c:482
+#: ../src/gui/presets.c:484
+#: ../src/gui/presets.c:486
+#: ../src/libs/lib.c:193
+#: ../src/libs/lib.c:201
+#: ../src/libs/lib.c:209
+#: ../src/libs/lib.c:211
+#: ../src/libs/lib.c:213
 msgid "new preset"
-msgstr "paravendosje e re"
+msgstr "paracaktimi i ri"
 
-#: ../src/gui/presets.c:618
-#: ../src/libs/lib.c:322
+#: ../src/gui/presets.c:725
+#: ../src/libs/lib.c:340
 msgid "edit this preset.."
-msgstr "editoj paravendosjen..."
+msgstr "editoj paracaktimin..."
 
-#: ../src/gui/presets.c:622
-#: ../src/libs/lib.c:326
+#: ../src/gui/presets.c:729
+#: ../src/libs/lib.c:344
 msgid "delete this preset"
-msgstr "fshij paravendosjen"
+msgstr "fshij paracaktimin"
 
 #. only show if it is not the default already
-#: ../src/gui/presets.c:630
+#: ../src/gui/presets.c:737
 msgid "use preset as default"
-msgstr "përdor paravendosjen si tipike"
+msgstr "përdor si paracaktimin tipik"
 
-#: ../src/gui/presets.c:637
-#: ../src/libs/lib.c:333
+#: ../src/gui/presets.c:744
+#: ../src/libs/lib.c:351
 msgid "store new preset.."
-msgstr "ruaj paravendosjen e re..."
+msgstr "ruaj paracaktimin e ri..."
 
 #. only show this if presets already contains a default
-#: ../src/gui/presets.c:648
+#: ../src/gui/presets.c:755
 msgid "remove default"
 msgstr "heq tipiken"
 
@@ -1659,56 +1363,12 @@ msgstr "pika"
 msgid "can't create style out of unaltered image"
 msgstr "nuk mund të krijojë stil nga imazhi i paprekur"
 
-#: ../src/gui/tool_colorlabels.c:41
-msgid ""
-"toggle red label\n"
-"of selected images (f1)"
-msgstr ""
-"vini etiketën e kuqe\n"
-"te imazhet e seleksionuara (f1)"
-
-#: ../src/gui/tool_colorlabels.c:46
-msgid ""
-"toggle yellow label\n"
-"of selected images (f2)"
-msgstr ""
-"vini etiketën e verdhë\n"
-"te imazhet e seleksionuara (f2)"
-
-#: ../src/gui/tool_colorlabels.c:51
-msgid ""
-"toggle green label\n"
-"of selected images (f3)"
-msgstr ""
-"vini etiketën e gjelbër\n"
-"te imazhet e seleksionuara (f3)"
-
-#: ../src/gui/tool_colorlabels.c:56
-msgid ""
-"toggle blue label\n"
-"of selected images (f4)"
-msgstr ""
-"vini etiketën blu\n"
-"te imazhet e seleksionuara (f4)"
-
-#: ../src/gui/tool_colorlabels.c:61
-msgid ""
-"toggle purple label\n"
-"of selected images (f5)"
-msgstr ""
-"vini etiketën vjollcë\n"
-"te imazhet e seleksionuara (f5)"
-
-#: ../src/gui/tool_colorlabels.c:66
-msgid "clear all labels of selected images"
-msgstr "pastroni të gjitha etiketat nga imazhet e seleksionuara"
-
-#: ../src/imageio/format/copy.c:142
-#: ../src/libs/copy_history.c:189
+#: ../src/imageio/format/copy.c:143
+#: ../src/libs/copy_history.c:194
 msgid "copy"
 msgstr "kopjoj"
 
-#: ../src/imageio/format/copy.c:150
+#: ../src/imageio/format/copy.c:154
 msgid ""
 "do a 1:1 copy of the selected files.\n"
 "the global options below do not apply!"
@@ -1716,42 +1376,42 @@ msgstr ""
 "bëni kopje 1:1 të imazheve të seleksionuara,\n"
 "nuk zbatohen mundësitë globale më poshtë!"
 
-#: ../src/imageio/format/exr.cc:163
+#: ../src/imageio/format/exr.cc:169
 msgid "openexr"
 msgstr "openexr"
 
-#: ../src/imageio/format/jpeg.c:631
+#: ../src/imageio/format/jpeg.c:634
 msgid "8-bit jpg"
 msgstr "8-bit jpg"
 
-#: ../src/imageio/format/jpeg.c:651
-#: ../src/libs/camera.c:566
+#: ../src/imageio/format/jpeg.c:654
+#: ../src/libs/camera.c:580
 msgid "quality"
 msgstr "cilësia"
 
-#: ../src/imageio/format/pfm.c:141
+#: ../src/imageio/format/pfm.c:90
 msgid "float pfm"
 msgstr "float pfm"
 
-#: ../src/imageio/format/png.c:376
+#: ../src/imageio/format/png.c:377
 msgid "8/16-bit png"
 msgstr "8/16-bit png"
 
-#: ../src/imageio/format/png.c:394
-#: ../src/imageio/format/tiff.c:239
+#: ../src/imageio/format/png.c:398
+#: ../src/imageio/format/tiff.c:242
 msgid "8-bit"
 msgstr "8-bit"
 
-#: ../src/imageio/format/png.c:399
-#: ../src/imageio/format/tiff.c:244
+#: ../src/imageio/format/png.c:403
+#: ../src/imageio/format/tiff.c:247
 msgid "16-bit"
 msgstr "16-bit"
 
-#: ../src/imageio/format/ppm.c:93
+#: ../src/imageio/format/ppm.c:96
 msgid "16-bit ppm"
 msgstr "16-bit ppm"
 
-#: ../src/imageio/format/rgbe.c:562
+#: ../src/imageio/format/rgbe.c:529
 msgid "float hdr"
 msgstr "float hdr"
 
@@ -1759,19 +1419,19 @@ msgstr "float hdr"
 msgid "8/16-bit tiff"
 msgstr "8/16-bit tiff"
 
-#: ../src/imageio/storage/disk.c:55
+#: ../src/imageio/storage/disk.c:56
 msgid "file on disk"
 msgstr "skeda në disk"
 
-#: ../src/imageio/storage/disk.c:63
-#: ../src/imageio/storage/disk.c:132
+#: ../src/imageio/storage/disk.c:64
+#: ../src/imageio/storage/disk.c:133
 #: ../src/imageio/storage/gallery.c:77
 #: ../src/imageio/storage/gallery.c:148
-#: ../src/libs/styles.c:219
+#: ../src/libs/styles.c:222
 msgid "select directory"
 msgstr "seleksionoj direktorinë"
 
-#: ../src/imageio/storage/disk.c:106
+#: ../src/imageio/storage/disk.c:107
 msgid ""
 "enter the path where to put exported images:\n"
 "$(ROLL_NAME) - roll of the input image\n"
@@ -1797,7 +1457,7 @@ msgid ""
 "$(HOME_FOLDER) - home folder\n"
 "$(DESKTOP_FOLDER) - desktop folder"
 msgstr ""
-"shtegu ku duhen vendosur imazhet e eksportuara:\n"
+"shtegu ku do vendosen imazhet e eksportuara:\n"
 "$(ROLL_NAME) - filmi i imazhit input\n"
 "$(FILE_DIRECTORY) - direktoria e imazhit input\n"
 "$(FILE_NAME) - emri bazë i imazhit input\n"
@@ -1821,15 +1481,15 @@ msgstr ""
 "$(HOME_FOLDER) - dosja e shtëpisë\n"
 "$(DESKTOP_FOLDER) - dosja e tryezës"
 
-#: ../src/imageio/storage/disk.c:196
-#: ../src/imageio/storage/gallery.c:232
+#: ../src/imageio/storage/disk.c:195
+#: ../src/imageio/storage/gallery.c:234
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "nuk mund të krijojë direktorinë `%s'!"
 
 #: ../src/imageio/storage/disk.c:232
-#: ../src/imageio/storage/email.c:110
-#: ../src/imageio/storage/gallery.c:336
+#: ../src/imageio/storage/email.c:108
+#: ../src/imageio/storage/gallery.c:378
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgstr "eksportoi %d/%d te `%s%s'"
@@ -1838,108 +1498,138 @@ msgstr "eksportoi %d/%d te `%s%s'"
 msgid "send as email"
 msgstr "dërgoj si letër-e"
 
-#: ../src/imageio/storage/flickr.c:114
+#: ../src/imageio/storage/flickr.c:117
 #, c-format
 msgid "flickr authentication: %s"
 msgstr "vërtetimi te flickr: %s"
 
-#: ../src/imageio/storage/flickr.c:189
+#: ../src/imageio/storage/flickr.c:192
 msgid "step 1: a new window or tab of your browser should have been loaded. you have to login into your flickr account there and authorize darktable to upload photos before continuing."
 msgstr "hapi 1: në shfletuesin tuaj do hapet një dritare ose fushë e re. para se të vijoni, duhet të paraqiteni te kontoja juaj në flickr dhe të autorizoni darktable që të ngarkojë fotot."
 
-#: ../src/imageio/storage/flickr.c:190
+#: ../src/imageio/storage/flickr.c:193
 msgid "step 2: click the ok button once you are done."
 msgstr "hapi 2: klikoni butonin ok kur të mbaroni."
 
-#: ../src/imageio/storage/flickr.c:197
+#: ../src/imageio/storage/flickr.c:200
 msgid "flickr authentication"
 msgstr "vërtetimi te flickr"
 
-#: ../src/imageio/storage/flickr.c:335
+#: ../src/imageio/storage/flickr.c:340
 msgid "flickr webalbum"
 msgstr "albumi te flickr"
 
-#: ../src/imageio/storage/flickr.c:359
-#: ../src/imageio/storage/flickr.c:399
-#: ../src/imageio/storage/flickr.c:815
-#: ../src/imageio/storage/flickr.c:821
+#: ../src/imageio/storage/flickr.c:364
+#: ../src/imageio/storage/flickr.c:404
+#: ../src/imageio/storage/flickr.c:869
+#: ../src/imageio/storage/flickr.c:875
 msgid "not authenticated"
 msgstr "nuk u vërtetua"
 
-#: ../src/imageio/storage/flickr.c:395
-#: ../src/imageio/storage/flickr.c:811
+#: ../src/imageio/storage/flickr.c:400
+#: ../src/imageio/storage/flickr.c:865
 #: ../src/imageio/storage/picasa.c:643
 msgid "authenticated"
 msgstr "u vërtetua"
 
 #. Add standard action
-#: ../src/imageio/storage/flickr.c:414
+#: ../src/imageio/storage/flickr.c:419
 msgid "without album"
 msgstr "pa album"
 
 #. Add standard action
-#: ../src/imageio/storage/flickr.c:415
-#: ../src/imageio/storage/flickr.c:443
+#: ../src/imageio/storage/flickr.c:420
+#: ../src/imageio/storage/flickr.c:448
 #: ../src/imageio/storage/picasa.c:666
 #: ../src/imageio/storage/picasa.c:707
 msgid "create new album"
 msgstr "krijoj albumin e ri"
 
-#: ../src/imageio/storage/flickr.c:500
+#: ../src/imageio/storage/flickr.c:505
 msgid "flickr user"
 msgstr "përdoruesi flickr"
 
-#: ../src/imageio/storage/flickr.c:501
+#: ../src/imageio/storage/flickr.c:506
 msgid "photosets"
 msgstr "sete me foto"
 
-#: ../src/imageio/storage/flickr.c:504
-msgid "click login button to start"
-msgstr "klikoni butonin paraqitem që të filloni"
-
 #: ../src/imageio/storage/flickr.c:507
+msgid "visible to"
+msgstr "i hapur për"
+
+#: ../src/imageio/storage/flickr.c:510
+msgid "click login button to start"
+msgstr "klikoni butonin paraqitem si fillim"
+
+#. xmp
+#: ../src/imageio/storage/flickr.c:512
+#: ../src/imageio/storage/gallery.c:154
+#: ../src/imageio/storage/picasa.c:767
+#: ../src/libs/collect.h:36
+#: ../src/libs/metadata.c:298
+#: ../src/libs/metadata_view.c:82
+msgid "title"
+msgstr "titulli"
+
+#: ../src/imageio/storage/flickr.c:513
 #: ../src/imageio/storage/picasa.c:768
 msgid "summary"
 msgstr "përmbledhja"
 
-#: ../src/imageio/storage/flickr.c:540
+#: ../src/imageio/storage/flickr.c:547
 msgid "my new photoset"
 msgstr "seti i ri me foto"
 
-#: ../src/imageio/storage/flickr.c:541
+#: ../src/imageio/storage/flickr.c:548
 #: ../src/imageio/storage/picasa.c:809
 msgid "exported from darktable"
 msgstr "eksportoi darktable"
 
-#: ../src/imageio/storage/flickr.c:557
+#: ../src/imageio/storage/flickr.c:564
 #: ../src/imageio/storage/picasa.c:827
 msgid "refresh album list"
 msgstr "rifreskoni listën e albumeve"
 
-#: ../src/imageio/storage/flickr.c:559
+#: ../src/imageio/storage/flickr.c:566
 msgid "login"
 msgstr "paraqitem"
 
-#: ../src/imageio/storage/flickr.c:560
+#: ../src/imageio/storage/flickr.c:567
 msgid "Flickr login"
 msgstr "Paraqitem te Flickr"
 
-#: ../src/imageio/storage/flickr.c:567
-msgid "make images public"
-msgstr "bëj imazhet publike"
-
-#: ../src/imageio/storage/flickr.c:568
+#: ../src/imageio/storage/flickr.c:574
 #: ../src/imageio/storage/picasa.c:834
 msgid "export tags"
 msgstr "eksportoj etiketat"
 
+#: ../src/imageio/storage/flickr.c:578
+msgid "you"
+msgstr "ju"
+
+#: ../src/imageio/storage/flickr.c:579
+msgid "friends"
+msgstr "miqtë"
+
+#: ../src/imageio/storage/flickr.c:580
+msgid "family"
+msgstr "familja"
+
+#: ../src/imageio/storage/flickr.c:581
+msgid "friends + family"
+msgstr "miqtë & familja"
+
+#: ../src/imageio/storage/flickr.c:582
+msgid "everyone"
+msgstr "këdo"
+
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/flickr.c:748
+#: ../src/imageio/storage/flickr.c:772
 #, c-format
 msgid "%d/%d exported to flickr webalbum"
 msgstr "eksportoi %d/%d te albumi te flickr"
 
-#: ../src/imageio/storage/flickr.c:823
+#: ../src/imageio/storage/flickr.c:877
 msgid "Flickr account not authenticated"
 msgstr "kontoja te flickr nuk u vërtetua"
 
@@ -1973,7 +1663,7 @@ msgid ""
 "$(HOME_FOLDER) - home folder\n"
 "$(DESKTOP_FOLDER) - desktop folder"
 msgstr ""
-"shtegu ku duhen vendosur imazhet e eksportuara:\n"
+"shtegu ku do vendosen imazhet e eksportuara:\n"
 "$(ROLL_NAME) - filmi i imazhit input\n"
 "$(FILE_DIRECTORY) - direktoria e imazhit input\n"
 "$(FILE_NAME) - emri bazë i imazhit input\n"
@@ -1999,7 +1689,7 @@ msgstr ""
 
 #: ../src/imageio/storage/gallery.c:160
 msgid "enter the title of the website"
-msgstr "shkruani titullin e truallit në rrjetë"
+msgstr "shkruani titullin e faqes në internet"
 
 #: ../src/imageio/storage/picasa.c:604
 msgid "picasa webalbum"
@@ -2022,6 +1712,12 @@ msgstr "fjalëkalimi"
 msgid "albums"
 msgstr "albume"
 
+#: ../src/imageio/storage/picasa.c:769
+#: ../src/libs/collect.h:40
+#: ../src/libs/metadata.c:350
+msgid "rights"
+msgstr "të drejta"
+
 #: ../src/imageio/storage/picasa.c:808
 msgid "my new album"
 msgstr "albumi im i ri"
@@ -2035,41 +1731,6 @@ msgstr "album publik"
 msgid "%d/%d exported to picasa webalbum"
 msgstr "eksportoi %d/%d te picasa webalbum"
 
-#. make sure you put all your translatable strings into _() !
-#: ../src/iop/anlfyeni.c:81
-msgid "local contrast 2"
-msgstr "kontrasti lokal 2"
-
-#: ../src/iop/anlfyeni.c:290
-msgid "sensitivity of edge detection"
-msgstr "ndjeshmëria e diktimit këndor"
-
-#: ../src/iop/anlfyeni.c:291
-msgid "sensitivity"
-msgstr "ndjeshmëria"
-
-#: ../src/iop/anlfyeni.c:294
-msgid "spatial extent of the effect around edges"
-msgstr "shtrirja hapësinore e efektit në kënde"
-
-#: ../src/iop/anlfyeni.c:295
-#: ../src/iop/lens.c:1400
-#: ../src/iop/vignette.c:883
-#: ../src/iop/watermark.c:716
-msgid "scale"
-msgstr "shkalla"
-
-#: ../src/iop/anlfyeni.c:298
-msgid "strength of the local contrast"
-msgstr "forca e kontrastit lokal"
-
-#: ../src/iop/anlfyeni.c:299
-#: ../src/iop/bloom.c:346
-#: ../src/iop/grain.c:524
-#: ../src/iop/hotpixels.c:293
-msgid "strength"
-msgstr "forca"
-
 #: ../src/iop/atrous.c:116
 msgid "equalizer"
 msgstr "barazuesi"
@@ -2080,182 +1741,186 @@ msgctxt "accel"
 msgid "mix"
 msgstr "kombinimi"
 
-#: ../src/iop/atrous.c:759
+#: ../src/iop/atrous.c:760
 msgid "enhance coarse"
 msgstr "rrit ashpërsinë"
 
-#: ../src/iop/atrous.c:773
+#: ../src/iop/atrous.c:774
 msgid "sharpen and denoise (strong)"
 msgstr "qartësoj dhe imtësoj (fort)"
 
-#: ../src/iop/atrous.c:787
+#: ../src/iop/atrous.c:788
 msgid "sharpen and denoise"
 msgstr "qartësoj dhe imtësoj"
 
-#: ../src/iop/atrous.c:801
-#: ../src/iop/equalizer.c:260
+#: ../src/iop/atrous.c:802
+#: ../src/iop/equalizer.c:259
 msgid "sharpen (strong)"
 msgstr "qartësoj (fort)"
 
-#: ../src/iop/atrous.c:815
+#: ../src/iop/atrous.c:816
 msgctxt "atrous"
 msgid "sharpen"
 msgstr "qartësoj"
 
-#: ../src/iop/atrous.c:829
-#: ../src/iop/equalizer.c:286
+#: ../src/iop/atrous.c:830
+msgid "chroma denoise"
+msgstr "imtësimi i kromit"
+
+#: ../src/iop/atrous.c:844
+#: ../src/iop/equalizer.c:285
 msgid "denoise"
 msgstr "imtësoj"
 
-#: ../src/iop/atrous.c:845
-#: ../src/iop/equalizer.c:296
+#: ../src/iop/atrous.c:860
+#: ../src/iop/equalizer.c:295
 msgid "denoise (strong)"
 msgstr "imtësoj (fort)"
 
-#: ../src/iop/atrous.c:860
-#: ../src/iop/bloom.c:68
+#: ../src/iop/atrous.c:875
+#: ../src/iop/bloom.c:66
 msgid "bloom"
 msgstr "rrezatimi"
 
-#: ../src/iop/atrous.c:874
+#: ../src/iop/atrous.c:889
 msgid "clarity (subtle)"
 msgstr "pastërti (delikate)"
 
-#: ../src/iop/atrous.c:888
+#: ../src/iop/atrous.c:903
 msgid "clarity"
 msgstr "pastërti"
 
-#: ../src/iop/atrous.c:1136
-#: ../src/iop/atrous.c:1140
+#: ../src/iop/atrous.c:1161
+#: ../src/iop/atrous.c:1165
 msgid "coarse"
 msgstr "ashpër"
 
-#: ../src/iop/atrous.c:1142
-#: ../src/iop/atrous.c:1146
+#: ../src/iop/atrous.c:1167
+#: ../src/iop/atrous.c:1171
 msgid "fine"
 msgstr "imët"
 
-#: ../src/iop/atrous.c:1153
+#: ../src/iop/atrous.c:1178
 msgid "contrasty"
 msgstr "kontrasti"
 
-#: ../src/iop/atrous.c:1154
-#: ../src/iop/atrous.c:1158
+#: ../src/iop/atrous.c:1179
+#: ../src/iop/atrous.c:1183
 msgid "smooth"
 msgstr "butë"
 
-#: ../src/iop/atrous.c:1159
+#: ../src/iop/atrous.c:1184
 msgid "noisy"
 msgstr "grimca"
 
 #. case atrous_s:
-#: ../src/iop/atrous.c:1162
+#: ../src/iop/atrous.c:1187
 msgid "bold"
 msgstr "qartë"
 
-#: ../src/iop/atrous.c:1163
+#: ../src/iop/atrous.c:1188
 msgid "dull"
 msgstr "zbehtë"
 
-#: ../src/iop/atrous.c:1359
-#: ../src/iop/equalizer.c:343
+#: ../src/iop/atrous.c:1384
+#: ../src/iop/equalizer.c:342
 #: ../src/iop/nlmeans.c:452
 msgid "luma"
 msgstr "luma"
 
-#: ../src/iop/atrous.c:1360
+#: ../src/iop/atrous.c:1385
 msgid "change lightness at each feature size"
 msgstr "ndryshoni ndriçimin"
 
-#: ../src/iop/atrous.c:1362
+#: ../src/iop/atrous.c:1387
 msgid "change color saturation at each feature size"
 msgstr "ndryshoni ngopjen e ngjyrave"
 
-#: ../src/iop/atrous.c:1363
+#: ../src/iop/atrous.c:1388
 #: ../src/iop/highpass.c:498
 msgid "sharpness"
 msgstr "qartësia"
 
-#: ../src/iop/atrous.c:1364
+#: ../src/iop/atrous.c:1389
 msgid "sharpness of edges at each feature size"
 msgstr "ndryshoni qartësinë e cepave"
 
-#: ../src/iop/atrous.c:1400
+#: ../src/iop/atrous.c:1427
 #: ../src/iop/soften.c:370
 msgid "mix"
 msgstr "kombinimi"
 
-#: ../src/iop/atrous.c:1401
+#: ../src/iop/atrous.c:1428
 msgid "make effect stronger or weaker"
 msgstr "bëni efektin më të fortë ose të dobët"
 
-#: ../src/iop/basecurve.c:52
+#: ../src/iop/basecurve.c:51
 #: ../src/iop/profile_gamma.c:199
-#: ../src/iop/tonecurve.c:153
+#: ../src/iop/tonecurve.c:214
 msgid "linear"
 msgstr "lineare"
 
-#: ../src/iop/basecurve.c:53
+#: ../src/iop/basecurve.c:52
 msgid "dark contrast"
 msgstr "kontrast i errët"
 
-#: ../src/iop/basecurve.c:54
+#: ../src/iop/basecurve.c:53
 msgid "canon eos like"
 msgstr "si canon eos"
 
-#: ../src/iop/basecurve.c:55
+#: ../src/iop/basecurve.c:54
 msgid "nikon like"
 msgstr "si nikon"
 
-#: ../src/iop/basecurve.c:56
+#: ../src/iop/basecurve.c:55
 msgid "sony alpha like"
 msgstr "si sony alpha"
 
-#: ../src/iop/basecurve.c:57
+#: ../src/iop/basecurve.c:56
 msgid "pentax like"
 msgstr "si pentax"
 
-#: ../src/iop/basecurve.c:58
+#: ../src/iop/basecurve.c:57
 msgid "olympus like"
 msgstr "si olympus"
 
-#: ../src/iop/basecurve.c:59
+#: ../src/iop/basecurve.c:58
 msgid "panasonic like"
 msgstr "si panasonic"
 
-#: ../src/iop/basecurve.c:60
+#: ../src/iop/basecurve.c:59
 msgid "leica like"
 msgstr "si leica"
 
-#: ../src/iop/basecurve.c:61
+#: ../src/iop/basecurve.c:60
 msgid "kodak easyshare like"
 msgstr "si kodak easyshare"
 
-#: ../src/iop/basecurve.c:62
+#: ../src/iop/basecurve.c:61
 msgid "konica minolta like"
 msgstr "si konica minolta"
 
-#: ../src/iop/basecurve.c:63
+#: ../src/iop/basecurve.c:62
 msgid "samsung like"
 msgstr "si samsung"
 
-#: ../src/iop/basecurve.c:64
+#: ../src/iop/basecurve.c:63
 msgid "fujifilm like"
 msgstr "si fujifilm"
 
-#: ../src/iop/basecurve.c:65
+#: ../src/iop/basecurve.c:64
 msgid "fotogenetic (point & shoot)"
 msgstr "fotozhenike (kamerë e thjeshtë)"
 
-#: ../src/iop/basecurve.c:66
+#: ../src/iop/basecurve.c:65
 msgid "fotogenetic (EV3)"
 msgstr "fotozhenike (EV3)"
 
-#: ../src/iop/basecurve.c:142
+#: ../src/iop/basecurve.c:141
 msgid "base curve"
 msgstr "kurba bazë"
 
-#: ../src/iop/basecurve.c:634
+#: ../src/iop/basecurve.c:643
 msgid ""
 "abscissa: input, ordinate: output \n"
 "works on RGB channels"
@@ -2270,26 +1935,27 @@ msgstr "imtësimi (bilateral)"
 #: ../src/iop/bilateral.cc:91
 #: ../src/iop/lowpass.c:114
 #: ../src/iop/sharpen.c:94
+#: ../src/iop/shadhi.c:117
 msgctxt "accel"
 msgid "radius"
 msgstr "rrezja"
 
 #: ../src/iop/bilateral.cc:92
-#: ../src/iop/channelmixer.c:123
+#: ../src/iop/channelmixer.c:124
 #: ../src/iop/temperature.c:111
 msgctxt "accel"
 msgid "red"
 msgstr "kuqe"
 
 #: ../src/iop/bilateral.cc:93
-#: ../src/iop/channelmixer.c:124
+#: ../src/iop/channelmixer.c:125
 #: ../src/iop/temperature.c:112
 msgctxt "accel"
 msgid "green"
 msgstr "gjelbër"
 
 #: ../src/iop/bilateral.cc:94
-#: ../src/iop/channelmixer.c:125
+#: ../src/iop/channelmixer.c:126
 #: ../src/iop/temperature.c:113
 msgctxt "accel"
 msgid "blue"
@@ -2312,141 +1978,155 @@ msgid "how much to blur blue"
 msgstr "paqartësia e blusë"
 
 #: ../src/iop/bilateral.cc:365
-#: ../src/iop/clahe.c:344
+#: ../src/iop/clahe.c:342
 #: ../src/iop/lowpass.c:715
 #: ../src/iop/sharpen.c:553
+#: ../src/iop/shadhi.c:819
 msgid "radius"
 msgstr "rrezja"
 
-#: ../src/iop/bloom.c:85
+#: ../src/iop/bloom.c:83
 #: ../src/iop/soften.c:88
 msgctxt "accel"
 msgid "size"
 msgstr "masa"
 
-#: ../src/iop/bloom.c:86
+#: ../src/iop/bloom.c:84
 #: ../src/iop/hotpixels.c:78
 #: ../src/iop/sharpen.c:96
 msgctxt "accel"
 msgid "threshold"
 msgstr "pragu"
 
-#: ../src/iop/bloom.c:87
+#: ../src/iop/bloom.c:85
 #: ../src/iop/grain.c:341
 #: ../src/iop/hotpixels.c:79
 msgctxt "accel"
 msgid "strength"
 msgstr "forca"
 
-#: ../src/iop/bloom.c:342
+#: ../src/iop/bloom.c:340
 #: ../src/iop/soften.c:363
-#: ../src/libs/camera.c:576
+#: ../src/libs/camera.c:590
 msgid "size"
 msgstr "masa"
 
-#: ../src/iop/bloom.c:344
-#: ../src/iop/hotpixels.c:286
+#: ../src/iop/bloom.c:342
+#: ../src/iop/hotpixels.c:285
 #: ../src/iop/sharpen.c:559
 msgid "threshold"
 msgstr "pragu"
 
-#: ../src/iop/bloom.c:352
+#: ../src/iop/bloom.c:344
+#: ../src/iop/grain.c:524
+#: ../src/iop/hotpixels.c:292
+msgid "strength"
+msgstr "forca"
+
+#: ../src/iop/bloom.c:350
 msgid "the size of bloom"
 msgstr "masa e rrezatimit"
 
-#: ../src/iop/bloom.c:353
+#: ../src/iop/bloom.c:351
 msgid "the threshold of light"
 msgstr "pragu i dritës"
 
-#: ../src/iop/bloom.c:354
+#: ../src/iop/bloom.c:352
 msgid "the strength of bloom"
 msgstr "forca e rrezatimit"
 
-#: ../src/iop/borders.c:66
+#: ../src/iop/borders.c:67
 msgid "framing"
 msgstr "korniza"
 
-#: ../src/iop/borders.c:83
+#: ../src/iop/borders.c:84
 msgctxt "accel"
 msgid "swap aspect ratio"
 msgstr "këmbej përmasat"
 
-#: ../src/iop/borders.c:85
+#: ../src/iop/borders.c:86
 msgctxt "accel"
 msgid "border size"
 msgstr "masa e kornizës"
 
-#: ../src/iop/borders.c:86
+#: ../src/iop/borders.c:87
 msgctxt "accel"
 msgid "pick gui color from image"
-msgstr "marr ngjyrën nga imazhi"
-
-#: ../src/iop/borders.c:206
-msgid "15:10 postcard black"
-msgstr "15:10 kartëpostale e zezë"
+msgstr "mbledh ngjyrën nga imazhi"
 
 #: ../src/iop/borders.c:208
 msgid "15:10 postcard white"
-msgstr "15:10 kartëpostale e bardhë"
+msgstr "15:10 kartolinë e bardhë"
 
-#: ../src/iop/borders.c:305
+#: ../src/iop/borders.c:210
+msgid "15:10 postcard black"
+msgstr "15:10 kartolinë e zezë"
+
+#: ../src/iop/borders.c:312
 msgid "select frame color"
 msgstr "seleksionoj ngjyrën e kornizës"
 
-#: ../src/iop/borders.c:391
+#: ../src/iop/borders.c:398
 msgid "border size"
 msgstr "masa e kornizës"
 
-#: ../src/iop/borders.c:394
+#: ../src/iop/borders.c:401
 msgid "size of the border in percent of the full image"
-msgstr "masa e kornizës në përqindje me imazhin e plotë"
+msgstr "përqindja e kornizës kundrejt imazhit"
 
-#: ../src/iop/borders.c:397
-#: ../src/iop/clipping.c:913
+#: ../src/iop/borders.c:404
+#: ../src/iop/clipping.c:923
 msgid "aspect"
 msgstr "përmasa"
 
-#: ../src/iop/borders.c:402
-#: ../src/iop/clipping.c:920
+#. add import singel image buttons
+#: ../src/iop/borders.c:408
+#: ../src/iop/clipping.c:929
+#: ../src/libs/import.c:461
+msgid "image"
+msgstr "imazh"
+
+#: ../src/iop/borders.c:409
+#: ../src/iop/clipping.c:930
 msgid "golden cut"
 msgstr "prerje e artë"
 
-#: ../src/iop/borders.c:403
-#: ../src/iop/clipping.c:921
+#: ../src/iop/borders.c:410
+#: ../src/iop/clipping.c:931
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/borders.c:404
-#: ../src/iop/clipping.c:922
+#: ../src/iop/borders.c:411
+#: ../src/iop/clipping.c:932
 msgid "3:2"
 msgstr "3:2"
 
-#: ../src/iop/borders.c:405
-#: ../src/iop/clipping.c:923
+#: ../src/iop/borders.c:412
+#: ../src/iop/clipping.c:933
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:406
-#: ../src/iop/clipping.c:924
+#: ../src/iop/borders.c:413
+#: ../src/iop/clipping.c:935
 msgid "square"
 msgstr "katror"
 
-#: ../src/iop/borders.c:407
-#: ../src/iop/clipping.c:925
+#: ../src/iop/borders.c:414
+#: ../src/iop/clipping.c:936
 msgid "DIN"
 msgstr "DIN"
 
-#: ../src/iop/borders.c:408
-#: ../src/iop/clipping.c:926
+#: ../src/iop/borders.c:415
+#: ../src/iop/clipping.c:937
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:409
+#: ../src/iop/borders.c:416
 msgid "constant border"
 msgstr "kornizë konstante"
 
-#: ../src/iop/borders.c:412
-#: ../src/iop/clipping.c:935
+#: ../src/iop/borders.c:420
+#: ../src/iop/clipping.c:948
 msgid ""
 "set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
@@ -2456,18 +2136,18 @@ msgstr ""
 
 #. TODO: what about this?
 #. g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (aspect_flip), self);
-#: ../src/iop/borders.c:419
+#: ../src/iop/borders.c:427
 msgid "swap the aspect ratio"
 msgstr "këmbeni përmasat"
 
-#: ../src/iop/borders.c:424
+#: ../src/iop/borders.c:432
 msgid "frame color"
 msgstr "ngjyra e kornizës"
 
-#: ../src/iop/borders.c:429
-#: ../src/iop/colorzones.c:852
+#: ../src/iop/borders.c:437
+#: ../src/iop/colorzones.c:866
 msgid "pick gui color from image"
-msgstr "merrni ngjyrën nga imazhi"
+msgstr "mblidhni ngjyrën nga imazhi"
 
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/cacorrect.c:57
@@ -2486,19 +2166,20 @@ msgstr ""
 "korrigjimi automatik i aberracionit kromatik\n"
 "punon vetëm për imazhet bruto"
 
-#: ../src/iop/channelmixer.c:108
+#: ../src/iop/channelmixer.c:109
 msgid "channel mixer"
 msgstr "mikseri i kanaleve"
 
-#: ../src/iop/channelmixer.c:348
+#: ../src/iop/channelmixer.c:349
 msgid "output channel"
 msgstr "kanali output"
 
-#: ../src/iop/channelmixer.c:351
-#: ../src/iop/colorcorrection.c:205
-#: ../src/iop/colorzones.c:846
-#: ../src/iop/colorzones.c:864
-#: ../src/iop/graduatednd.c:593
+#: ../src/iop/channelmixer.c:352
+#: ../src/iop/colorcorrection.c:203
+#: ../src/iop/colorize.c:395
+#: ../src/iop/colorzones.c:860
+#: ../src/iop/colorzones.c:878
+#: ../src/iop/graduatednd.c:587
 #: ../src/iop/lowpass.c:717
 #: ../src/iop/soften.c:365
 #: ../src/iop/splittoning.c:496
@@ -2507,235 +2188,227 @@ msgstr "kanali output"
 msgid "saturation"
 msgstr "ngopja"
 
-#: ../src/iop/channelmixer.c:356
+#: ../src/iop/channelmixer.c:357
 msgid "gray"
 msgstr "gri"
 
-#: ../src/iop/channelmixer.c:361
+#: ../src/iop/channelmixer.c:362
 msgid "source channels"
 msgstr "kanalet burimore"
 
-#: ../src/iop/channelmixer.c:369
+#: ../src/iop/channelmixer.c:370
 msgid "amount of red channel in the output channel"
 msgstr "sasia e kanalit kuqe në kanalin output"
 
-#: ../src/iop/channelmixer.c:372
+#: ../src/iop/channelmixer.c:373
 msgid "amount of green channel in the output channel"
 msgstr "sasia e kanalit gjelbër në kanalin output"
 
-#: ../src/iop/channelmixer.c:375
+#: ../src/iop/channelmixer.c:376
 msgid "amount of blue channel in the output channel"
 msgstr "sasia e kanalit blu në kanalin output"
 
-#: ../src/iop/channelmixer.c:397
+#: ../src/iop/channelmixer.c:398
 msgid "swap R and B"
 msgstr "këmbej K dhe B"
 
-#: ../src/iop/channelmixer.c:403
+#: ../src/iop/channelmixer.c:404
 msgid "swap G and B"
 msgstr "këmbej GJ dhe B"
 
-#: ../src/iop/channelmixer.c:409
+#: ../src/iop/channelmixer.c:410
 msgid "color contrast boost"
 msgstr "ngre kontrastin e ngjyrave"
 
-#: ../src/iop/channelmixer.c:415
+#: ../src/iop/channelmixer.c:416
 msgid "color details boost"
 msgstr "ngre detajet e ngjyrave"
 
-#: ../src/iop/channelmixer.c:421
+#: ../src/iop/channelmixer.c:422
 msgid "color artifacts boost"
 msgstr "ngre artifaktet e ngjyrave"
 
-#: ../src/iop/channelmixer.c:427
+#: ../src/iop/channelmixer.c:428
 msgid "b/w"
 msgstr "b/z"
 
-#: ../src/iop/channelmixer.c:433
+#: ../src/iop/channelmixer.c:434
 msgid "b/w artifacts boost"
 msgstr "ngre artifaktet b/z"
 
-#: ../src/iop/channelmixer.c:439
+#: ../src/iop/channelmixer.c:440
 msgid "b/w smooth skin"
 msgstr "lëmoj lëkurën në b/z"
 
-#: ../src/iop/channelmixer.c:445
+#: ../src/iop/channelmixer.c:446
 msgid "b/w blue artifacts reduce"
 msgstr "ul artifaktet blu në b/z"
 
-#: ../src/iop/clahe.c:68
+#: ../src/iop/clahe.c:66
 msgid "local contrast"
 msgstr "kontrasti lokal"
 
-#: ../src/iop/clahe.c:346
+#: ../src/iop/clahe.c:344
 #: ../src/iop/sharpen.c:556
 msgid "amount"
 msgstr "sasia"
 
-#: ../src/iop/clahe.c:355
+#: ../src/iop/clahe.c:353
 msgid "size of features to preserve"
 msgstr "masa e veçorive të ruajtura"
 
-#: ../src/iop/clahe.c:356
+#: ../src/iop/clahe.c:354
 msgid "strength of the effect"
 msgstr "forca e efektit"
 
-#: ../src/iop/clipping.c:151
+#: ../src/iop/clipping.c:162
 msgid "crop and rotate"
 msgstr "formati dhe rrotullimi"
 
-#: ../src/iop/clipping.c:592
-msgid "rotate by  90"
-msgstr "rrotulloj me 90"
-
-#: ../src/iop/clipping.c:594
-msgid "rotate by -90"
-msgstr "rrotulloj me -90"
-
-#: ../src/iop/clipping.c:596
-msgid "rotate by 180"
-msgstr "rrotulloj me 180"
-
 #. -------------------------------------------
-#: ../src/iop/clipping.c:880
-#: ../src/iop/clipping.c:969
+#: ../src/iop/clipping.c:890
+#: ../src/iop/clipping.c:982
 msgid "flip"
 msgstr "rrokullis"
 
-#: ../src/iop/clipping.c:887
+#: ../src/iop/clipping.c:897
 msgid "flip image horizontally"
 msgstr "rrokullisni imazhin horizontalisht"
 
-#: ../src/iop/clipping.c:888
+#: ../src/iop/clipping.c:898
 msgid "flip image vertically"
 msgstr "rrokullisni imazhin vertikalisht"
 
-#: ../src/iop/clipping.c:891
+#: ../src/iop/clipping.c:901
 msgid "angle"
 msgstr "këndi"
 
-#: ../src/iop/clipping.c:895
+#: ../src/iop/clipping.c:905
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "klikoni imazhin me të djathtën dhe hiqni një vijë të drejtë"
 
-#: ../src/iop/clipping.c:900
+#: ../src/iop/clipping.c:910
 msgid "keystone h"
 msgstr "themeli h"
 
-#: ../src/iop/clipping.c:901
+#: ../src/iop/clipping.c:911
 msgid "adjust perspective for horizontal keystone distortion"
 msgstr "perspektiva e shtrembërimit të themelit horizontal"
 
-#: ../src/iop/clipping.c:907
+#: ../src/iop/clipping.c:917
 msgid "keystone v"
 msgstr "themeli v"
 
-#: ../src/iop/clipping.c:908
+#: ../src/iop/clipping.c:918
 msgid "adjust perspective for vertical keystone distortion"
 msgstr "perspektiva e shtrembërimit të themelit vertikal"
 
-#: ../src/iop/clipping.c:918
+#: ../src/iop/clipping.c:928
 msgid "free"
 msgstr "i lirë"
 
-#: ../src/iop/clipping.c:942
+#: ../src/iop/clipping.c:934
+msgid "5:4"
+msgstr "5:4"
+
+#: ../src/iop/clipping.c:955
 msgid "swap the aspect ratio (ctrl-x)"
 msgstr "këmbeni përmasat (ctrl-x)"
 
-#: ../src/iop/clipping.c:949
+#: ../src/iop/clipping.c:962
 msgid "guides"
 msgstr "udhëzuesi"
 
-#: ../src/iop/clipping.c:953
+#: ../src/iop/clipping.c:966
 msgid "grid"
 msgstr "rrjetë"
 
-#: ../src/iop/clipping.c:954
+#: ../src/iop/clipping.c:967
 msgid "rules of thirds"
 msgstr "rregulla e treshit"
 
-#: ../src/iop/clipping.c:955
+#: ../src/iop/clipping.c:968
 msgid "diagonal method"
 msgstr "metoda diagonale"
 
-#: ../src/iop/clipping.c:956
+#: ../src/iop/clipping.c:969
 msgid "harmonious triangles"
 msgstr "trekëndësha harmonikë"
 
-#: ../src/iop/clipping.c:957
+#: ../src/iop/clipping.c:970
 msgid "golden mean"
 msgstr "mesatare e artë"
 
-#: ../src/iop/clipping.c:959
+#: ../src/iop/clipping.c:972
 msgid "with this option, you can display guide lines to help compose your photograph."
-msgstr "me këtë mundësinë mund të tregoni vijat udhëzuese që ndihmojnë për të kompozuar fotografinë"
+msgstr "tregoni vijat udhëzuese që ndihmojnë për të kompozuar fotografinë"
 
-#: ../src/iop/clipping.c:963
+#: ../src/iop/clipping.c:976
 msgid "type"
 msgstr "lloji"
 
-#: ../src/iop/clipping.c:976
+#: ../src/iop/clipping.c:989
 msgid "flip guides horizontally"
 msgstr "rrokullisni udhëzuesin horizontalisht"
 
-#: ../src/iop/clipping.c:977
+#: ../src/iop/clipping.c:990
 msgid "flip guides vertically"
 msgstr "rrokullisni udhëzuesin vertikalisht"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:979
+#: ../src/iop/clipping.c:992
 msgid "golden sections"
 msgstr "sektorët e artë"
 
-#: ../src/iop/clipping.c:981
+#: ../src/iop/clipping.c:994
 msgid "enable this option to show golden sections."
 msgstr "tregoni sektorët e artë"
 
-#: ../src/iop/clipping.c:984
+#: ../src/iop/clipping.c:997
 msgid "spiral sections"
 msgstr "sektorët spiralë"
 
-#: ../src/iop/clipping.c:985
+#: ../src/iop/clipping.c:998
 msgid "enable this option to show golden spiral sections."
 msgstr "tregoni sektorët spiralë"
 
-#: ../src/iop/clipping.c:988
+#: ../src/iop/clipping.c:1001
 msgid "golden spiral"
 msgstr "spirale e artë"
 
-#: ../src/iop/clipping.c:989
+#: ../src/iop/clipping.c:1002
 msgid "enable this option to show a golden spiral guide."
 msgstr "tregoni spiralen e artë"
 
-#: ../src/iop/clipping.c:992
+#: ../src/iop/clipping.c:1005
 msgid "golden triangles"
 msgstr "trekëndëshat e artë"
 
-#: ../src/iop/clipping.c:993
+#: ../src/iop/clipping.c:1006
 msgid "enable this option to show golden triangles."
 msgstr "tregoni trekëndëshat e artë"
 
-#: ../src/iop/clipping.c:1581
+#: ../src/iop/clipping.c:1663
 msgctxt "accel"
 msgid "commit"
 msgstr "shpall"
 
-#: ../src/iop/clipping.c:1583
+#: ../src/iop/clipping.c:1665
 msgctxt "accel"
 msgid "swap the aspect ratio"
 msgstr "këmbeni përmasat"
 
-#: ../src/iop/clipping.c:1585
+#: ../src/iop/clipping.c:1667
 msgctxt "accel"
 msgid "angle"
 msgstr "këndi"
 
-#: ../src/iop/clipping.c:1586
+#: ../src/iop/clipping.c:1668
 msgctxt "accel"
 msgid "keystone h"
 msgstr "themeli h"
 
-#: ../src/iop/clipping.c:1587
+#: ../src/iop/clipping.c:1669
 msgctxt "accel"
 msgid "keystone v"
 msgstr "themeli v"
@@ -2765,17 +2438,17 @@ msgstr "blu vs verdhë"
 
 #: ../src/iop/colorcontrast.c:280
 msgid "steepness of the a* curve in Lab"
-msgstr "ngritja e kurbës a* në Lab"
+msgstr "pingulja e kurbës a* në Lab"
 
 #: ../src/iop/colorcontrast.c:282
 msgid "steepness of the b* curve in Lab"
-msgstr "ngritja e kurbës b* në Lab"
+msgstr "pingulja e kurbës b* në Lab"
 
-#: ../src/iop/colorcorrection.c:44
+#: ../src/iop/colorcorrection.c:42
 msgid "color correction"
 msgstr "korrigjimi i ngjyrave"
 
-#: ../src/iop/colorcorrection.c:60
+#: ../src/iop/colorcorrection.c:58
 #: ../src/iop/lowpass.c:116
 #: ../src/iop/soften.c:89
 #: ../src/iop/vignette.c:129
@@ -2783,11 +2456,11 @@ msgctxt "accel"
 msgid "saturation"
 msgstr "ngopja"
 
-#: ../src/iop/colorcorrection.c:183
+#: ../src/iop/colorcorrection.c:181
 msgid "draw a rectangle to give a tint"
 msgstr "vizatoni një drejtkëndësh për të ngjyruar"
 
-#: ../src/iop/colorcorrection.c:204
+#: ../src/iop/colorcorrection.c:202
 msgid "set the global saturation"
 msgstr "ngopja globale"
 
@@ -2800,7 +2473,7 @@ msgid "unsupported input profile has been replaced by linear rgb!"
 msgstr "profili i pagarantuar input është zëvendësuar me rgb lineare"
 
 #: ../src/iop/colorin.c:651
-#: ../src/libs/export.c:515
+#: ../src/libs/export.c:520
 msgid "profile"
 msgstr "profili"
 
@@ -2817,18 +2490,18 @@ msgid "sRGB (e.g. jpg)"
 msgstr "sRGB (p.sh. jpg)"
 
 #: ../src/iop/colorin.c:665
-#: ../src/iop/colorout.c:815
 #: ../src/iop/colorout.c:816
 #: ../src/iop/colorout.c:817
-#: ../src/libs/export.c:465
+#: ../src/iop/colorout.c:818
+#: ../src/libs/export.c:470
 msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
 #: ../src/iop/colorin.c:667
-#: ../src/iop/colorout.c:803
 #: ../src/iop/colorout.c:804
 #: ../src/iop/colorout.c:805
-#: ../src/libs/export.c:477
+#: ../src/iop/colorout.c:806
+#: ../src/libs/export.c:482
 msgid "linear RGB"
 msgstr "RGB lineare"
 
@@ -2845,135 +2518,180 @@ msgstr "XYZ lineare"
 msgid "icc profiles in %s/color/in or %s/color/in"
 msgstr "profilet icc në %s/color/in ose %s/color/in"
 
-#: ../src/iop/colorout.c:47
+#: ../src/iop/colorize.c:73
+msgid "colorize"
+msgstr "ngjyrimi"
+
+#: ../src/iop/colorize.c:89
+msgctxt "accel"
+msgid "pick color"
+msgstr "mbledh ngjyrën"
+
+#: ../src/iop/colorize.c:90
+msgctxt "accel"
+msgid "lightness"
+msgstr "ndriçimi"
+
+#: ../src/iop/colorize.c:91
+msgctxt "accel"
+msgid "source mix"
+msgstr "kombinimi i burimit"
+
+#: ../src/iop/colorize.c:250
+#: ../src/iop/splittoning.c:340
+msgid "select tone color"
+msgstr "seleksionoj ngjyrën e tonit"
+
+#: ../src/iop/colorize.c:428
+msgid "select the hue tone"
+msgstr "seleksiononi tonin e bojës"
+
+#: ../src/iop/colorize.c:438
+#: ../src/iop/splittoning.c:538
+msgid "select the saturation shadow tone"
+msgstr "seleksiononi tonin e ngopjes për hijet"
+
+#: ../src/iop/colorize.c:454
+msgid "source mix"
+msgstr "kombinimi burimor"
+
+#: ../src/iop/colorize.c:459
+msgid "lightness of color"
+msgstr "ndriçimi i ngjyrës"
+
+#: ../src/iop/colorize.c:460
+msgid "mix value of source lightness"
+msgstr "kombinimi i ndriçimit burimor"
+
+#: ../src/iop/colorout.c:48
 msgid "output color profile"
 msgstr "profili i ngjyrave output"
 
-#: ../src/iop/colorout.c:540
+#: ../src/iop/colorout.c:541
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "profili i pagarantuar output është zëvendësuar me sRGB!"
 
-#: ../src/iop/colorout.c:677
-#: ../src/iop/colorout.c:684
+#: ../src/iop/colorout.c:678
+#: ../src/iop/colorout.c:685
 msgid "soft proof"
 msgstr "soft proof"
 
-#: ../src/iop/colorout.c:767
+#: ../src/iop/colorout.c:768
 msgid "output intent"
 msgstr "synimi output"
 
-#: ../src/iop/colorout.c:768
+#: ../src/iop/colorout.c:769
 msgid "output profile"
 msgstr "profili output"
 
-#: ../src/iop/colorout.c:769
+#: ../src/iop/colorout.c:770
 msgid "softproof profile"
 msgstr "profili softproof"
 
-#: ../src/iop/colorout.c:771
+#: ../src/iop/colorout.c:772
 msgid "display intent"
 msgstr "synimi i ekranit"
 
-#: ../src/iop/colorout.c:772
+#: ../src/iop/colorout.c:773
 msgid "display profile"
 msgstr "profili i ekranit"
 
-#: ../src/iop/colorout.c:779
-#: ../src/iop/colorout.c:784
-#: ../src/libs/export.c:448
+#: ../src/iop/colorout.c:780
+#: ../src/iop/colorout.c:785
+#: ../src/libs/export.c:453
 msgid "perceptual"
 msgstr "perceptuesi"
 
-#: ../src/iop/colorout.c:780
-#: ../src/iop/colorout.c:785
-#: ../src/libs/export.c:449
+#: ../src/iop/colorout.c:781
+#: ../src/iop/colorout.c:786
+#: ../src/libs/export.c:454
 msgid "relative colorimetric"
 msgstr "kolorimetria relative"
 
-#: ../src/iop/colorout.c:781
-#: ../src/iop/colorout.c:786
-#: ../src/libs/export.c:450
+#: ../src/iop/colorout.c:782
+#: ../src/iop/colorout.c:787
+#: ../src/libs/export.c:455
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "ngopja"
 
-#: ../src/iop/colorout.c:782
-#: ../src/iop/colorout.c:787
-#: ../src/libs/export.c:451
+#: ../src/iop/colorout.c:783
+#: ../src/iop/colorout.c:788
+#: ../src/libs/export.c:456
 msgid "absolute colorimetric"
 msgstr "kolorimetria absolute"
 
-#: ../src/iop/colorout.c:797
 #: ../src/iop/colorout.c:798
 #: ../src/iop/colorout.c:799
-#: ../src/libs/export.c:526
+#: ../src/iop/colorout.c:800
+#: ../src/libs/export.c:531
 msgid "system display profile"
 msgstr "profili i ekranit të sistemit"
 
-#: ../src/iop/colorout.c:809
 #: ../src/iop/colorout.c:810
 #: ../src/iop/colorout.c:811
-#: ../src/libs/export.c:458
+#: ../src/iop/colorout.c:812
+#: ../src/libs/export.c:463
 msgid "sRGB (web-safe)"
 msgstr "sRGB (për internet)"
 
-#: ../src/iop/colorout.c:840
+#: ../src/iop/colorout.c:841
 msgid "rendering intent"
 msgstr "synimi i zhvillimit"
 
-#: ../src/iop/colorout.c:841
+#: ../src/iop/colorout.c:842
 #, c-format
 msgid "icc profiles in %s/color/out or %s/color/out"
 msgstr "profilet icc në %s/color/out ose %s/color/out"
 
-#: ../src/iop/colorout.c:843
+#: ../src/iop/colorout.c:844
 #, c-format
 msgid "display icc profiles in %s/color/out or %s/color/out"
 msgstr "profilet icc të ekranit në %s/color/out ose %s/color/out"
 
-#: ../src/iop/colorout.c:845
+#: ../src/iop/colorout.c:846
 #, c-format
 msgid "softproof icc profiles in %s/color/out or %s/color/out"
 msgstr "profilet icc softproof në %s/color/out ose %s/color/out"
 
-#: ../src/iop/colorout.c:879
+#: ../src/iop/colorout.c:880
 msgctxt "accel"
 msgid "toggle softproofing"
 msgstr "vë softproofing"
 
-#: ../src/iop/colortransfer.c:108
+#: ../src/iop/colortransfer.c:105
 msgid "color transfer"
 msgstr "transferimi i ngjyrave"
 
-#: ../src/iop/colortransfer.c:119
+#: ../src/iop/colortransfer.c:116
 msgctxt "accel"
 msgid "acquire"
 msgstr "marr"
 
-#: ../src/iop/colortransfer.c:120
-#: ../src/libs/metadata.c:256
+#: ../src/iop/colortransfer.c:117
+#: ../src/libs/metadata.c:270
 msgctxt "accel"
 msgid "apply"
 msgstr "zbatoj"
 
-#: ../src/iop/colortransfer.c:658
+#: ../src/iop/colortransfer.c:656
 msgid "number of clusters to find in image"
 msgstr "numri i elementeve që gjeni te imazhi"
 
-#: ../src/iop/colortransfer.c:662
+#: ../src/iop/colortransfer.c:660
 msgid "acquire"
 msgstr "marr"
 
-#: ../src/iop/colortransfer.c:664
+#: ../src/iop/colortransfer.c:662
 msgid "analyze this image"
 msgstr "analizoni imazhin"
 
-#: ../src/iop/colortransfer.c:668
-#: ../src/libs/metadata.c:362
+#: ../src/iop/colortransfer.c:666
+#: ../src/libs/metadata.c:375
 msgid "apply"
 msgstr "zbatoj"
 
-#: ../src/iop/colortransfer.c:669
+#: ../src/iop/colortransfer.c:667
 msgid "apply previously analyzed image look to this image"
 msgstr "zbatoni te imazhi pamjen e imazhit të analizuar më parë"
 
@@ -2995,13 +2713,13 @@ msgstr "filtër polarizues"
 
 #: ../src/iop/colorzones.c:350
 msgid "natural skin tones"
-msgstr "tone natyrore të lëkurës"
+msgstr "tone natyrale të lëkurës"
 
 #: ../src/iop/colorzones.c:389
 msgid "black & white film"
 msgstr "bardhë e zi"
 
-#: ../src/iop/colorzones.c:841
+#: ../src/iop/colorzones.c:855
 msgid "select by"
 msgstr "seleksionoj nga"
 
@@ -3015,24 +2733,24 @@ msgid "edge threshold"
 msgstr "pragu këndor"
 
 #. //////////////////////////
-#: ../src/iop/demosaic.c:1151
+#: ../src/iop/demosaic.c:1152
 #: ../src/iop/highlights.c:413
 msgid "method"
 msgstr "metoda"
 
-#: ../src/iop/demosaic.c:1154
+#: ../src/iop/demosaic.c:1155
 msgid "ppg"
 msgstr "ppg"
 
-#: ../src/iop/demosaic.c:1155
+#: ../src/iop/demosaic.c:1156
 msgid "AMaZE"
 msgstr "AMaZE"
 
-#: ../src/iop/demosaic.c:1156
+#: ../src/iop/demosaic.c:1157
 msgid "demosaicing raw data method"
 msgstr "metoda e dematricimit të informacionit bruto"
 
-#: ../src/iop/demosaic.c:1161
+#: ../src/iop/demosaic.c:1162
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -3042,57 +2760,57 @@ msgstr ""
 "lë 0.0 për fikjen,\n"
 "lë 1.0 për përbuzjen e këndeve"
 
-#: ../src/iop/demosaic.c:1162
+#: ../src/iop/demosaic.c:1163
 msgid "edge threshold"
 msgstr "pragu këndor"
 
-#: ../src/iop/demosaic.c:1166
+#: ../src/iop/demosaic.c:1167
 msgid "color smoothing"
 msgstr "sheshoj ngjyrat"
 
-#: ../src/iop/demosaic.c:1171
+#: ../src/iop/demosaic.c:1173
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "numri i hapave medianë për sheshimin e ngjyrave pas dematricimit"
 
 #. //////////////////////////
-#: ../src/iop/demosaic.c:1175
+#: ../src/iop/demosaic.c:1177
 msgid "match greens"
 msgstr "barazoj të gjelbrën"
 
-#: ../src/iop/demosaic.c:1178
+#: ../src/iop/demosaic.c:1180
 msgid "disabled"
 msgstr "çaktivizuar"
 
-#: ../src/iop/demosaic.c:1179
+#: ../src/iop/demosaic.c:1181
 msgid "local average"
 msgstr "mesatare lokale"
 
-#: ../src/iop/demosaic.c:1180
+#: ../src/iop/demosaic.c:1182
 msgid "full average"
 msgstr "mesatare e plotë"
 
-#: ../src/iop/demosaic.c:1181
+#: ../src/iop/demosaic.c:1183
 msgid "full and local average"
 msgstr "mesatare e plotë dhe lokale"
 
-#: ../src/iop/demosaic.c:1182
-msgid "green channels mathing method"
-msgstr "metoda a krahasimit të kanalit gjelbër"
+#: ../src/iop/demosaic.c:1184
+msgid "green channels matching method"
+msgstr "metoda e krahasimit të kanalit gjelbër"
 
-#: ../src/iop/equalizer.c:43
+#: ../src/iop/equalizer.c:42
 msgid "legacy equalizer"
 msgstr "barazuesi i vjetër"
 
-#: ../src/iop/equalizer.c:270
+#: ../src/iop/equalizer.c:269
 msgctxt "equalizer"
 msgid "sharpen"
 msgstr "qartësoj"
 
-#: ../src/iop/equalizer.c:276
+#: ../src/iop/equalizer.c:275
 msgid "null"
 msgstr "nul"
 
-#: ../src/iop/equalizer.c:304
+#: ../src/iop/equalizer.c:303
 msgid ""
 "this module will be removed in the future\n"
 "and is only here so you can switch it off\n"
@@ -3101,64 +2819,86 @@ msgstr ""
 "ky modul do hiqet më vonë, dhe ndodhet këtu\n"
 "vetëm për ta fikur që të kaloni në barazuesin e ri."
 
-#: ../src/iop/exposure.c:62
+#: ../src/iop/exposure.c:60
 msgctxt "accel"
 msgid "black"
 msgstr "zezë"
 
-#: ../src/iop/exposure.c:63
+#: ../src/iop/exposure.c:61
 #: ../src/iop/relight.c:103
 msgctxt "accel"
 msgid "exposure"
 msgstr "ekspozimi"
 
-#: ../src/iop/exposure.c:64
+#: ../src/iop/exposure.c:62
 msgctxt "accel"
 msgid "auto-exposure"
 msgstr "autoekspozimi"
 
-#: ../src/iop/exposure.c:379
+#: ../src/iop/exposure.c:386
 msgid "adjust the black level"
-msgstr "ndreqni nivelin e të zezës"
+msgstr "korrigjoni nivelin e të zezës"
 
-#: ../src/iop/exposure.c:380
+#: ../src/iop/exposure.c:387
 msgid "black"
 msgstr "zezë"
 
-#: ../src/iop/exposure.c:383
+#: ../src/iop/exposure.c:390
 msgid "adjust the exposure correction"
 msgstr "korrigjoni ekspozimin"
 
-#: ../src/iop/exposure.c:390
-msgid "auto"
-msgstr "auto"
-
-#: ../src/iop/exposure.c:393
+#: ../src/iop/exposure.c:400
 msgid "percentage of bright values clipped out"
 msgstr "përqindja e vlerave të shkurtuara nga shkëlqimi"
 
+#: ../src/iop/flip.c:74
+msgid "orientation"
+msgstr "orientimi"
+
+#: ../src/iop/flip.c:194
+msgid "flip horizontally"
+msgstr "rrokullisni horizontalisht"
+
+#: ../src/iop/flip.c:196
+msgid "flip vertically"
+msgstr "rrokullisni vertikalisht"
+
+#: ../src/iop/flip.c:198
+msgid "rotate by -90"
+msgstr "rrotulloj me -90"
+
+#: ../src/iop/flip.c:200
+msgid "rotate by  90"
+msgstr "rrotulloj me 90"
+
+#: ../src/iop/flip.c:202
+msgid "rotate by 180"
+msgstr "rrotulloj me 180"
+
+#: ../src/iop/flip.c:300
+msgid "rotate"
+msgstr "rrotullimi"
+
+#: ../src/iop/flip.c:305
+msgid "rotate 90 degrees ccw"
+msgstr "rrotulloni 90 gradë kundërorar"
+
+#: ../src/iop/flip.c:311
+msgid "rotate 90 degrees cw"
+msgstr "rrotulloni 90 gradë orar"
+
+#: ../src/iop/flip.c:324
+msgctxt "accel"
+msgid "rotate 90 degrees ccw"
+msgstr "rrotulloni 90 gradë kundërorar"
+
+#: ../src/iop/flip.c:326
+msgctxt "accel"
+msgid "rotate 90 degrees cw"
+msgstr "rrotulloni 90 gradë orar"
+
 #: ../src/iop/gamma.c:38
 msgctxt "modulename"
-msgid "gamma"
-msgstr "gama"
-
-#: ../src/iop/gamma.c:50
-msgctxt "accel"
-msgid "linear"
-msgstr "lineare"
-
-#: ../src/iop/gamma.c:51
-msgctxt "accel"
-msgid "gamma"
-msgstr "gama"
-
-#: ../src/iop/gamma.c:184
-msgctxt "gammaslider"
-msgid "linear"
-msgstr "linear"
-
-#: ../src/iop/gamma.c:185
-msgctxt "gammaslider"
 msgid "gamma"
 msgstr "gama"
 
@@ -3238,35 +2978,35 @@ msgctxt "accel"
 msgid "split"
 msgstr "ndarja"
 
-#: ../src/iop/graduatednd.c:602
+#: ../src/iop/graduatednd.c:596
 msgid "density"
 msgstr "dendësia"
 
-#: ../src/iop/graduatednd.c:604
+#: ../src/iop/graduatednd.c:598
 msgid "compression"
 msgstr "trysnia"
 
-#: ../src/iop/graduatednd.c:606
+#: ../src/iop/graduatednd.c:600
 msgid "rotation"
 msgstr "rrotullimi"
 
-#: ../src/iop/graduatednd.c:608
+#: ../src/iop/graduatednd.c:602
 msgid "split"
 msgstr "ndarja"
 
-#: ../src/iop/graduatednd.c:645
+#: ../src/iop/graduatednd.c:639
 msgid "select the hue tone of filter"
-msgstr "seleksiononi tonin e bojës për filtrin"
+msgstr "seleksiononi tonin e bojës"
 
-#: ../src/iop/graduatednd.c:659
+#: ../src/iop/graduatednd.c:653
 msgid "select the saturation of filter"
-msgstr "seleksiononi tonin e ngopjes për filtrin"
+msgstr "seleksiononi tonin e ngopjes"
 
-#: ../src/iop/graduatednd.c:666
+#: ../src/iop/graduatednd.c:660
 msgid "the density in EV for the filter"
 msgstr "dendësia në EV e filtrit"
 
-#: ../src/iop/graduatednd.c:668
+#: ../src/iop/graduatednd.c:662
 #, no-c-format
 msgid ""
 "compression of graduation:\n"
@@ -3275,11 +3015,11 @@ msgstr ""
 "trysnia e gradimit:\n"
 "0% = e butë, 100% = e fortë"
 
-#: ../src/iop/graduatednd.c:669
+#: ../src/iop/graduatednd.c:663
 msgid "rotation of filter -180 to 180 degrees"
 msgstr "rrotullimi i filtrit -180 në 180 gradë"
 
-#: ../src/iop/graduatednd.c:670
+#: ../src/iop/graduatednd.c:664
 msgid "offset of filter in angle of rotation"
 msgstr "ofseti i filtrit në këndin e rrotullimit"
 
@@ -3306,7 +3046,7 @@ msgstr "ashpërsia"
 
 #: ../src/iop/highlights.c:82
 msgid "highlight reconstruction"
-msgstr "rindërtimi i dritave lart"
+msgstr "rindërtimi i reflekseve"
 
 #: ../src/iop/highlights.c:99
 msgctxt "accel"
@@ -3320,12 +3060,12 @@ msgstr "shkrij C"
 
 #: ../src/iop/highlights.c:101
 msgctxt "accel"
-msgid "blend h"
-msgstr "shkrij h"
+msgid "blend H"
+msgstr "shkrij H"
 
 #: ../src/iop/highlights.c:416
 msgid "clip highlights"
-msgstr "shkurtoj dritat lart"
+msgstr "shkurtoj reflekset"
 
 #: ../src/iop/highlights.c:417
 msgid "reconstruct in LCh"
@@ -3333,7 +3073,7 @@ msgstr "rindërtoj në LCh"
 
 #: ../src/iop/highlights.c:418
 msgid "highlight reconstruction method"
-msgstr "metoda e rindërtimit të dritave lart"
+msgstr "metoda e rindërtimit të reflekseve"
 
 #: ../src/iop/highlights.c:428
 msgid "blend lightness (0 is same as clipping)"
@@ -3379,34 +3119,34 @@ msgstr "ngre kontrastin"
 
 #: ../src/iop/highpass.c:505
 msgid "the sharpness of highpass filter"
-msgstr "qartësia e filtrit me frekuencë të lartë"
+msgstr "qartësia e filtrit"
 
 #: ../src/iop/highpass.c:506
 msgid "the contrast of highpass filter"
-msgstr "kontrasti i filtrit me frekuencë të lartë"
+msgstr "kontrasti i filtrit"
 
 #: ../src/iop/hotpixels.c:67
 msgid "hot pixels"
 msgstr "pikselët e nxehtë"
 
-#: ../src/iop/hotpixels.c:167
+#: ../src/iop/hotpixels.c:166
 #, c-format
 msgid "fixed %d pixels"
 msgstr "%d të ndrequr"
 
-#: ../src/iop/hotpixels.c:287
+#: ../src/iop/hotpixels.c:286
 msgid "lower threshold for hot pixel"
 msgstr "pragu i poshtëm për pikselët e nxehtë"
 
-#: ../src/iop/hotpixels.c:294
+#: ../src/iop/hotpixels.c:293
 msgid "strength of hot pixel correction"
 msgstr "forca e korrigjimit të pikselëve të nxehtë"
 
-#: ../src/iop/hotpixels.c:299
+#: ../src/iop/hotpixels.c:298
 msgid "detect by 3 neighbours"
 msgstr "diktoj me 3 të afërt"
 
-#: ../src/iop/hotpixels.c:306
+#: ../src/iop/hotpixels.c:305
 msgid "mark fixed pixels"
 msgstr "shënoj pikselët e ndrequr"
 
@@ -3417,11 +3157,11 @@ msgstr "përmbys"
 #: ../src/iop/invert.c:66
 msgctxt "accel"
 msgid "pick color of film material from image"
-msgstr "merrni ngjyrën e materialit të filmit nga imazhi"
+msgstr "mblidhni ngjyrën e materialit filmik nga imazhi"
 
 #: ../src/iop/invert.c:137
 msgid "select color of film material"
-msgstr "seleksiononi ngjyrën e materialit të filmit"
+msgstr "seleksionoj ngjyrën e materialit filmik"
 
 #: ../src/iop/invert.c:305
 msgid "this doesn't work for raw/hdr images."
@@ -3429,11 +3169,11 @@ msgstr "nuk funksionon për imazhet bruto/hdr."
 
 #: ../src/iop/invert.c:310
 msgid "color of film material"
-msgstr "ngjyra e materialit të filmit"
+msgstr "ngjyra e materialit filmik"
 
 #: ../src/iop/invert.c:342
 msgid "pick color of film material from image"
-msgstr "merrni ngjyrën e materialit të filmit nga imazhi"
+msgstr "mblidhni ngjyrën e materialit filmik nga imazhi"
 
 #: ../src/iop/lens.c:46
 msgid "lens correction"
@@ -3479,9 +3219,9 @@ msgstr "modeli i kamerës"
 #: ../src/iop/lens.c:71
 msgctxt "accel"
 msgid "lens model"
-msgstr "modeli i thjerrës"
+msgstr "modeli i objektivit"
 
-#: ../src/iop/lens.c:752
+#: ../src/iop/lens.c:754
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -3494,7 +3234,7 @@ msgstr ""
 "montimi:\t\t%s\n"
 "faktori format:\t%.1f"
 
-#: ../src/iop/lens.c:1046
+#: ../src/iop/lens.c:1050
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -3513,91 +3253,97 @@ msgstr ""
 "lloji:\t\t%s\n"
 "montime:\t\t%s"
 
-#: ../src/iop/lens.c:1076
+#: ../src/iop/lens.c:1080
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:1076
+#: ../src/iop/lens.c:1080
 msgid "focal length (mm)"
 msgstr "largësia fokale (mm)"
 
-#: ../src/iop/lens.c:1082
-#: ../src/iop/lens.c:1097
-#: ../src/iop/lens.c:1108
+#: ../src/iop/lens.c:1086
+#: ../src/iop/lens.c:1101
+#: ../src/iop/lens.c:1112
 msgid "reset from exif data"
 msgstr "riktheni nga të dhënat exif"
 
-#: ../src/iop/lens.c:1091
+#: ../src/iop/lens.c:1095
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1091
+#: ../src/iop/lens.c:1095
 msgid "f-number (aperture)"
 msgstr "numri-f (hapja e diafragmës)"
 
-#: ../src/iop/lens.c:1102
+#: ../src/iop/lens.c:1106
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1102
+#: ../src/iop/lens.c:1106
 msgid "distance to subject"
 msgstr "distanca nga subjekti"
 
-#: ../src/iop/lens.c:1336
+#: ../src/iop/lens.c:1341
 msgid "find camera"
 msgstr "gjeni kamerën"
 
-#: ../src/iop/lens.c:1352
+#: ../src/iop/lens.c:1358
 msgid "find lens"
 msgstr "gjeni objektivin"
 
 #. target geometry
-#: ../src/iop/lens.c:1380
+#: ../src/iop/lens.c:1386
 msgid "geometry"
 msgstr "gjeometria"
 
-#: ../src/iop/lens.c:1385
+#: ../src/iop/lens.c:1391
 msgid "target geometry"
 msgstr "gjeometria e synuar"
 
-#: ../src/iop/lens.c:1386
+#: ../src/iop/lens.c:1392
 msgid "rectilinear"
 msgstr "drejtvizore"
 
-#: ../src/iop/lens.c:1387
+#: ../src/iop/lens.c:1393
 msgid "fish-eye"
 msgstr "sy peshku"
 
-#: ../src/iop/lens.c:1388
+#: ../src/iop/lens.c:1394
 msgid "panoramic"
 msgstr "panoramike"
 
-#: ../src/iop/lens.c:1389
+#: ../src/iop/lens.c:1395
 msgid "equirectangular"
 msgstr "barabrinjëse"
 
-#: ../src/iop/lens.c:1407
+#: ../src/iop/lens.c:1406
+#: ../src/iop/vignette.c:883
+#: ../src/iop/watermark.c:716
+msgid "scale"
+msgstr "shkalla"
+
+#: ../src/iop/lens.c:1413
 msgid "auto scale"
 msgstr "autoshkallëzoni"
 
 #. reverse direction
-#: ../src/iop/lens.c:1414
+#: ../src/iop/lens.c:1420
 msgid "reverse"
 msgstr "prapësoj"
 
-#: ../src/iop/lens.c:1415
+#: ../src/iop/lens.c:1421
 msgid "apply distortions instead of correcting them"
 msgstr "zbatoni shtrembërimet dhe mos i korrigjoni ato"
 
-#: ../src/iop/lens.c:1424
+#: ../src/iop/lens.c:1430
 msgid "tca R"
 msgstr "tca K"
 
-#: ../src/iop/lens.c:1425
+#: ../src/iop/lens.c:1431
 msgid "tca B"
 msgstr "tca B"
 
-#: ../src/iop/lens.c:1430
+#: ../src/iop/lens.c:1436
 msgid ""
 "override transversal chromatic aberration correction for red channel\n"
 "leave at 1.0 for defaults"
@@ -3605,7 +3351,7 @@ msgstr ""
 "korrigjoni aberracionin kromatik tërthor në kanalin kuqe\n"
 "lë 1.0 për tipiken"
 
-#: ../src/iop/lens.c:1431
+#: ../src/iop/lens.c:1437
 msgid ""
 "override transversal chromatic aberration correction for blue channel\n"
 "leave at 1.0 for defaults"
@@ -3613,76 +3359,84 @@ msgstr ""
 "korrigjoni aberracionin kromatik tërthor në kanalin blu\n"
 "lë 1.0 për tipiken"
 
-#: ../src/iop/lowlight.c:80
+#: ../src/iop/levels.c:40
+msgid "levels"
+msgstr "nivele"
+
+#: ../src/iop/levels.c:218
+msgid "drag handles to set black, grey, and white points.  operates on L channel."
+msgstr "shtyni shënuesit për të caktuar pikën e zezë, gri dhe të bardhë. vepron në kanalin L."
+
+#: ../src/iop/lowlight.c:79
 msgid "lowlight vision"
 msgstr "shikimi i ulët"
 
-#: ../src/iop/lowlight.c:97
+#: ../src/iop/lowlight.c:96
 msgctxt "accel"
 msgid "blue shift"
 msgstr "dritësia e blusë"
 
-#: ../src/iop/lowlight.c:261
+#: ../src/iop/lowlight.c:260
 msgid "daylight"
 msgstr "dritë ditore"
 
-#: ../src/iop/lowlight.c:278
+#: ../src/iop/lowlight.c:277
 msgid "indoor bright"
 msgstr "e brendshme e shkëlqyer"
 
-#: ../src/iop/lowlight.c:295
+#: ../src/iop/lowlight.c:294
 msgid "indoor dim"
 msgstr "e brendshme e zbehtë"
 
-#: ../src/iop/lowlight.c:312
+#: ../src/iop/lowlight.c:311
 msgid "indoor dark"
 msgstr "errësirë e brendshme"
 
-#: ../src/iop/lowlight.c:329
+#: ../src/iop/lowlight.c:328
 msgid "twilight"
 msgstr "muzg"
 
-#: ../src/iop/lowlight.c:346
+#: ../src/iop/lowlight.c:345
 msgid "night street lit"
 msgstr "rrugë nate e ndriçuar"
 
-#: ../src/iop/lowlight.c:363
+#: ../src/iop/lowlight.c:362
 msgid "night street"
 msgstr "rrugë nate"
 
-#: ../src/iop/lowlight.c:380
+#: ../src/iop/lowlight.c:379
 msgid "night street dark"
 msgstr "rrugë nate e errët"
 
-#: ../src/iop/lowlight.c:398
+#: ../src/iop/lowlight.c:397
 msgid "night"
 msgstr "natë"
 
-#: ../src/iop/lowlight.c:546
-#: ../src/iop/lowlight.c:550
+#: ../src/iop/lowlight.c:545
+#: ../src/iop/lowlight.c:549
 msgid "dark"
 msgstr "errët"
 
-#: ../src/iop/lowlight.c:553
-#: ../src/iop/lowlight.c:557
+#: ../src/iop/lowlight.c:552
+#: ../src/iop/lowlight.c:556
 msgid "bright"
 msgstr "shkëlqyer"
 
-#: ../src/iop/lowlight.c:560
-#: ../src/iop/lowlight.c:562
+#: ../src/iop/lowlight.c:559
+#: ../src/iop/lowlight.c:561
 msgid "day vision"
 msgstr "ditë"
 
-#: ../src/iop/lowlight.c:564
-#: ../src/iop/lowlight.c:566
+#: ../src/iop/lowlight.c:563
+#: ../src/iop/lowlight.c:565
 msgid "night vision"
 msgstr "natë"
 
-#: ../src/iop/lowlight.c:732
+#: ../src/iop/lowlight.c:746
 msgid "blue shift"
 msgstr "dritësia e blusë"
 
-#: ../src/iop/lowlight.c:735
+#: ../src/iop/lowlight.c:749
 msgid "blueness in shadows"
 msgstr "ngjyra blu në hije"
 
@@ -3697,7 +3451,7 @@ msgstr "kontrasti"
 
 #: ../src/iop/lowpass.c:663
 msgid "local contrast mask"
-msgstr "maska e kontrastit lokal"
+msgstr "maskë e kontrastit lokal"
 
 #: ../src/iop/lowpass.c:702
 msgid "filter order"
@@ -3729,17 +3483,21 @@ msgstr "rrezja e paqartësisë së gausit"
 
 #: ../src/iop/lowpass.c:723
 msgid "the contrast of lowpass filter"
-msgstr "kontrasti i filtrit me frekuencë të ulët"
+msgstr "kontrasti i filtrit"
 
 #: ../src/iop/lowpass.c:724
 msgid "the color saturation of lowpass filter"
-msgstr "ngopja e ngjyrave të filtrit me frekuencë të ulët"
+msgstr "ngopja e ngjyrave të filtrit"
 
-#: ../src/iop/monochrome.c:62
+#: ../src/iop/monochrome.c:63
 msgid "monochrome"
 msgstr "monokromi"
 
-#: ../src/iop/monochrome.c:294
+#: ../src/iop/monochrome.c:85
+msgid "red filter"
+msgstr "filtër i kuq"
+
+#: ../src/iop/monochrome.c:317
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr "shtyni dhe rrëshqitni miun për të ndrequr filtrin virtual të ngjyrave"
 
@@ -3765,35 +3523,39 @@ msgstr "sheshimi i shkëlqimit"
 msgid "how much to smooth colors"
 msgstr "sheshimi i ngjyrave"
 
-#: ../src/iop/overexposed.c:59
+#: ../src/iop/overexposed.c:61
 msgid "overexposed"
 msgstr "mbiekspozimi"
 
-#: ../src/iop/overexposed.c:69
+#: ../src/iop/overexposed.c:71
 msgctxt "accel"
 msgid "lower threshold"
 msgstr "pragu i poshtëm"
 
-#: ../src/iop/overexposed.c:70
+#: ../src/iop/overexposed.c:72
 msgctxt "accel"
-msgid "upper threshold"
-msgstr "pragu i sipërm"
-
-#: ../src/iop/overexposed.c:277
-msgid "lower threshold"
-msgstr "pragu i poshtëm"
-
-#: ../src/iop/overexposed.c:281
 msgid "upper threshold"
 msgstr "pragu i sipërm"
 
 #: ../src/iop/overexposed.c:286
+msgid "lower threshold"
+msgstr "pragu i poshtëm"
+
+#: ../src/iop/overexposed.c:290
+msgid "upper threshold"
+msgstr "pragu i sipërm"
+
+#: ../src/iop/overexposed.c:295
 msgid "threshold of what shall be considered underexposed"
 msgstr "pragu që konsiderohet më pak i ekspozuar"
 
-#: ../src/iop/overexposed.c:287
+#: ../src/iop/overexposed.c:296
 msgid "threshold of what shall be considered overexposed"
 msgstr "pragu që konsiderohet i mbiekspozuar"
+
+#: ../src/iop/overexposed.c:303
+msgid "toggle over/under exposed indication"
+msgstr "vini treguesin e mbi/nënekspozimit"
 
 #: ../src/iop/profile_gamma.c:38
 msgid "unbreak input profile"
@@ -3830,7 +3592,7 @@ msgctxt "accel"
 msgid "noise threshold"
 msgstr "pragu i grimcave"
 
-#: ../src/iop/rawdenoise.c:362
+#: ../src/iop/rawdenoise.c:359
 msgid "noise threshold"
 msgstr "pragu i grimcave"
 
@@ -3851,19 +3613,24 @@ msgctxt "accel"
 msgid "width"
 msgstr "gjerësia"
 
-#: ../src/iop/relight.c:331
+#: ../src/iop/relight.c:325
+#: ../src/libs/metadata_view.c:78
+msgid "width"
+msgstr "gjerësia"
+
+#: ../src/iop/relight.c:337
 msgid "select the center of fill-light"
 msgstr "seleksiononi qendrën për t'u dritësuar"
 
-#: ../src/iop/relight.c:349
+#: ../src/iop/relight.c:355
 msgid "toggle tool for picking median lightness in image"
-msgstr "zgjidhni dritësimin median të imazhit"
+msgstr "mblidhni dritësimin median të imazhit"
 
-#: ../src/iop/relight.c:350
+#: ../src/iop/relight.c:356
 msgid "the fill-light in EV"
 msgstr "dritësimi në EV"
 
-#: ../src/iop/relight.c:352
+#: ../src/iop/relight.c:358
 #, no-c-format
 msgid "width of fill-light area defined in zones"
 msgstr "gjerësia në zona për t'u dritësuar"
@@ -3928,12 +3695,12 @@ msgstr "tonaliteti i ndarë"
 #: ../src/iop/splittoning.c:94
 msgctxt "accel"
 msgid "pick primary color"
-msgstr "kap ngjyrën parësore"
+msgstr "mbledh ngjyrën parësore"
 
 #: ../src/iop/splittoning.c:96
 msgctxt "accel"
 msgid "pick secondary color"
-msgstr "kap ngjyrën dytësore"
+msgstr "mbledh ngjyrën dytësore"
 
 #: ../src/iop/splittoning.c:99
 msgctxt "accel"
@@ -3941,6 +3708,7 @@ msgid "balance"
 msgstr "balanca"
 
 #: ../src/iop/splittoning.c:100
+#: ../src/iop/shadhi.c:118
 msgctxt "accel"
 msgid "compress"
 msgstr "trysnia"
@@ -3951,7 +3719,7 @@ msgstr "trysnia"
 #. compress : 0
 #: ../src/iop/splittoning.c:126
 msgid "authentic sepia"
-msgstr "sepia e vërtetë"
+msgstr "sepie e vërtetë"
 
 #. shadows: #446CBB
 #. highlights: #446CBB
@@ -3959,7 +3727,7 @@ msgstr "sepia e vërtetë"
 #. compress : 5.22
 #: ../src/iop/splittoning.c:135
 msgid "authentic cyanotype"
-msgstr "cianotipi i vërtetë"
+msgstr "cianotip i vërtetë"
 
 #. shadows : #A16C5E
 #. highlights : #A16C5E
@@ -3967,7 +3735,7 @@ msgstr "cianotipi i vërtetë"
 #. compress : 0
 #: ../src/iop/splittoning.c:144
 msgid "authentic platinotype"
-msgstr "platinotipi i vërtetë"
+msgstr "platinotip i vërtetë"
 
 #. shadows: #211A14
 #. highlights: #D9D0C7
@@ -3977,12 +3745,9 @@ msgstr "platinotipi i vërtetë"
 msgid "chocolate brown"
 msgstr "çokollatë kafe"
 
-#: ../src/iop/splittoning.c:340
-msgid "select tone color"
-msgstr "seleksionoj ngjyrën e tonit"
-
 #. Shadows
 #: ../src/iop/splittoning.c:482
+#: ../src/iop/shadhi.c:817
 msgid "shadows"
 msgstr "hije"
 
@@ -3990,28 +3755,26 @@ msgstr "hije"
 msgid "select the hue tone for shadows"
 msgstr "seleksiononi tonin e bojës për hijet"
 
-#: ../src/iop/splittoning.c:538
-msgid "select the saturation shadow tone"
-msgstr "seleksiononi tonin e ngopjes për hijet"
-
 #. Highlights
 #: ../src/iop/splittoning.c:541
+#: ../src/iop/shadhi.c:818
 msgid "highlights"
-msgstr "dritat lart"
+msgstr "reflekse"
 
 #: ../src/iop/splittoning.c:588
 msgid "select the hue tone for highlights"
-msgstr "seleksiononi tonin e bojës për dritat lart"
+msgstr "seleksiononi tonin e bojës për reflekset"
 
 #: ../src/iop/splittoning.c:598
 msgid "select the saturation highlights tone"
-msgstr "seleksiononi tonin e ngopjes për dritat lart"
+msgstr "seleksiononi tonin e ngopjes për reflekset"
 
 #: ../src/iop/splittoning.c:608
 msgid "balance"
 msgstr "balanca"
 
 #: ../src/iop/splittoning.c:614
+#: ../src/iop/shadhi.c:820
 msgid "compress"
 msgstr "trysnia"
 
@@ -4023,7 +3786,9 @@ msgstr "balanca për qendrën e tonalitetit të ndarë"
 msgid ""
 "compress the effect on highlighs/shadows and\n"
 "preserve midtones"
-msgstr "dendësoni efektin për dritat lart/hijet dhe ruani tonet e mesme"
+msgstr ""
+"dendësoni efektin për reflekset/hijet\n"
+"dhe ruani tonet e mesme"
 
 #: ../src/iop/spots.c:64
 msgid "spot removal"
@@ -4067,57 +3832,91 @@ msgctxt "accel"
 msgid "temperature out"
 msgstr "temperatura në dalje"
 
-#: ../src/iop/temperature.c:522
+#: ../src/iop/temperature.c:524
 msgid "tint"
 msgstr "ngjyruesi"
 
-#: ../src/iop/temperature.c:523
+#: ../src/iop/temperature.c:525
 msgid "temperature in"
 msgstr "temperatura në hyrje"
 
-#: ../src/iop/temperature.c:525
+#: ../src/iop/temperature.c:527
 msgid "temperature out"
 msgstr "temperatura në dalje"
 
-#: ../src/iop/temperature.c:548
+#: ../src/iop/temperature.c:550
 msgid "camera white balance"
 msgstr "balancimi i bardhësisë në kamerë"
 
-#: ../src/iop/temperature.c:549
+#: ../src/iop/temperature.c:551
 msgid "spot white balance"
 msgstr "dalloj balancimin e bardhësisë"
 
-#: ../src/iop/temperature.c:550
+#: ../src/iop/temperature.c:552
 msgid "passthrough"
 msgstr "kalimtar"
 
-#: ../src/iop/temperature.c:576
+#: ../src/iop/temperature.c:578
 msgid "fine tune white balance preset"
 msgstr "ndreqni balancimin e bardhësisë"
 
-#: ../src/iop/tonecurve.c:42
+#: ../src/iop/tonecurve.c:41
 msgid "tone curve"
 msgstr "kurba e toneve"
 
-#: ../src/iop/tonecurve.c:149
+#: ../src/iop/tonecurve.c:208
 msgid "low contrast"
-msgstr "kontrasti i ulët"
+msgstr "kontrast i ulët"
 
-#: ../src/iop/tonecurve.c:163
+#: ../src/iop/tonecurve.c:224
 msgid "med contrast"
 msgstr "kontrast i mesëm"
 
-#: ../src/iop/tonecurve.c:173
+#: ../src/iop/tonecurve.c:234
 msgid "high contrast"
 msgstr "kontrast i lartë"
 
-#: ../src/iop/tonecurve.c:294
+#: ../src/iop/tonecurve.c:416
+msgid "  L  "
+msgstr "  L  "
+
+#: ../src/iop/tonecurve.c:417
+msgid "tonecurve for L channel"
+msgstr "kurba e toneve për kanalin L"
+
+#: ../src/iop/tonecurve.c:418
+msgid "  a  "
+msgstr "  a  "
+
+#: ../src/iop/tonecurve.c:419
+msgid "tonecurve for a channel"
+msgstr "kurba e toneve për kanalin a"
+
+#: ../src/iop/tonecurve.c:420
+msgid "  b  "
+msgstr "  b  "
+
+#: ../src/iop/tonecurve.c:421
+msgid "tonecurve for b channel"
+msgstr "kurba e toneve për kanalin b"
+
+#: ../src/iop/tonecurve.c:440
+msgid "double click to reset curve"
+msgstr "klikimi dy herë e rikthen kurbën"
+
+#: ../src/iop/tonecurve.c:456
+msgid "auto scale chroma"
+msgstr "autoshkallëzoj kromin"
+
+#: ../src/iop/tonecurve.c:461
 msgid ""
-"abscissa: input, ordinate: output \n"
-"works on L channel"
+"if checked a and b curves have no effect and are\n"
+"not displayed. chroma values (a and b) of each pixel\n"
+"are then adjusted based on L curve data."
 msgstr ""
-"abshisa: input, ordinata: output \n"
-"punon në kanalin L"
+"nëse zgjidhet, kurbat a dhe b nuk kanë efekt dhe nuk\n"
+"tregohen. vlerat e kromit (a dhe b) për çdo piksel\n"
+"do përshtaten sipas të dhënave të kurbës L."
 
 #: ../src/iop/tonemap.cc:77
 msgid "tone mapping"
@@ -4138,6 +3937,7 @@ msgid "contrast compression"
 msgstr "trysnia e kontrastit"
 
 #: ../src/iop/tonemap.cc:314
+#: ../src/iop/shadhi.c:832
 msgid "spatial extent"
 msgstr "shtrirja hapësinore"
 
@@ -4146,6 +3946,7 @@ msgid "velvia"
 msgstr "velvia"
 
 #: ../src/iop/velvia.c:94
+#: ../src/iop/vibrance.c:80
 msgctxt "accel"
 msgid "vibrance"
 msgstr "dinamika"
@@ -4156,6 +3957,8 @@ msgid "mid-tones bias"
 msgstr "tonet e mesme"
 
 #: ../src/iop/velvia.c:274
+#: ../src/iop/vibrance.c:63
+#: ../src/iop/vibrance.c:196
 msgid "vibrance"
 msgstr "dinamika"
 
@@ -4169,7 +3972,11 @@ msgstr "forca e ngopjes së shtuar"
 
 #: ../src/iop/velvia.c:283
 msgid "how much to spare highlights and shadows"
-msgstr "lirimi i dritave lart dhe hijeve"
+msgstr "lirimi i reflekseve dhe hijeve"
+
+#: ../src/iop/vibrance.c:201
+msgid "the amount of vibrance"
+msgstr "sasia e dinamikës"
 
 #: ../src/iop/vignette.c:110
 msgid "vignetting"
@@ -4266,7 +4073,7 @@ msgstr ""
 
 #: ../src/iop/vignette.c:917
 msgid "enable to have the ratio automatically follow the image size"
-msgstr "aktivizoni raportin që ndjek automatikisht masën e imazhit"
+msgstr "raporti do ndjekë automatikisht masën e imazhit"
 
 #: ../src/iop/vignette.c:918
 msgid "width-to-height ratio"
@@ -4443,7 +4250,7 @@ msgstr "BB automatike"
 msgid "zone system"
 msgstr "sistemi zonal"
 
-#: ../src/iop/zonesystem.c:374
+#: ../src/iop/zonesystem.c:372
 msgid ""
 "lightness zones\n"
 "use mouse scrollwheel to change the number of zones\n"
@@ -4455,77 +4262,81 @@ msgstr ""
 "klikimi me të majtën në tablo krijon një shënues\n"
 "klikimi me të djathtën mbi shënues e fshin atë"
 
+#: ../src/libs/backgroundjobs.c:68
+msgid "background jobs"
+msgstr "puna në sfond"
+
 #: ../src/libs/camera.c:80
 msgid "camera settings"
 msgstr "parametrat e kamerës"
 
-#: ../src/libs/camera.c:102
+#: ../src/libs/camera.c:107
 msgctxt "accel"
 msgid "capture image(s)"
 msgstr "nxjerr imazhet"
 
-#: ../src/libs/camera.c:138
+#: ../src/libs/camera.c:143
 msgid "toggle view property in center view"
 msgstr "vini pamjen në qendër"
 
-#: ../src/libs/camera.c:211
+#: ../src/libs/camera.c:215
 msgid "connection with camera lost, exiting tethering mode"
-msgstr "humb lidhjen me kamerën, del nga dhoma e pozës"
+msgstr "humb lidhjen me kamerën, del nga dhoma e fotografimit"
 
-#: ../src/libs/camera.c:354
+#: ../src/libs/camera.c:368
 msgid "battery"
 msgstr "bateria"
 
-#: ../src/libs/camera.c:354
+#: ../src/libs/camera.c:368
 msgid "n/a"
 msgstr "n/a"
 
 #. Camera control
-#: ../src/libs/camera.c:425
+#: ../src/libs/camera.c:439
 msgid "camera control"
 msgstr "kontrolli i kamerës"
 
-#: ../src/libs/camera.c:429
+#: ../src/libs/camera.c:443
 msgid "modes"
 msgstr "mënyra"
 
-#: ../src/libs/camera.c:430
+#: ../src/libs/camera.c:444
 msgid "timer (s)"
 msgstr "matësi (s)"
 
-#: ../src/libs/camera.c:431
+#: ../src/libs/camera.c:445
 msgid "count"
 msgstr "numri"
 
-#: ../src/libs/camera.c:432
+#: ../src/libs/camera.c:446
 msgid "brackets"
 msgstr "hapësira"
 
-#: ../src/libs/camera.c:433
+#: ../src/libs/camera.c:447
 msgid "bkt. steps"
 msgstr "pjesët"
 
-#: ../src/libs/camera.c:469
+#: ../src/libs/camera.c:483
 msgid "capture image(s)"
 msgstr "nxjerr imazhet"
 
-#: ../src/libs/camera.c:472
+#: ../src/libs/camera.c:486
 msgid "toggle delayed capture mode"
 msgstr "vini mënyrën e nxjerrjes me vonesë"
 
-#: ../src/libs/camera.c:473
+#: ../src/libs/camera.c:487
 msgid "toggle sequenced capture mode"
 msgstr "vini mënyrën e nxjerrjes në sekuencë"
 
-#: ../src/libs/camera.c:474
+#: ../src/libs/camera.c:488
 msgid "toggle bracketed capture mode"
 msgstr "vini mënyrën e nxjerrjes me hapësirë"
 
-#: ../src/libs/camera.c:475
+#: ../src/libs/camera.c:489
 msgid "the count of seconds before actually doing a capture"
 msgstr "numri i sekondave para nxjerrjes së vërtetë"
 
-#: ../src/libs/camera.c:476
+#: ../src/libs/camera.c:490
 msgid ""
 "the amount of images to capture in a sequence,\n"
 "you can use this in conjuction with delayed mode to create stop-motion sequences."
@@ -4533,11 +4344,11 @@ msgstr ""
 "sasia e imazheve që nxirrni në sekuencë.\n"
 "mund të përdoret bashkë me vonesën për të krijuar sekuenca me lëvizje të ndalura."
 
-#: ../src/libs/camera.c:477
+#: ../src/libs/camera.c:491
 msgid "the amount of brackets on each side of centered shoot, amount of images = (brackets*2)+1."
 msgstr "sasia e hapësirave në çdo anë të pozës qëndrore, sasia e imazheve = = (brackets*2)+1."
 
-#: ../src/libs/camera.c:478
+#: ../src/libs/camera.c:492
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usally 3 steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets."
@@ -4545,40 +4356,40 @@ msgstr ""
 "sasia e pjesëve për hapësirë. pjesët konfigurohen në kamerë dhe ka zakonisht 3 pjesë për stop\n"
 "në fjalë të tjera, 3 pjesë janë 1EV pjesë të ekspozimit mes hapësirës."
 
-#: ../src/libs/camera.c:492
+#: ../src/libs/camera.c:506
 msgid "properties"
 msgstr "veti"
 
-#: ../src/libs/camera.c:496
+#: ../src/libs/camera.c:510
 msgid "program"
 msgstr "programi"
 
-#: ../src/libs/camera.c:506
+#: ../src/libs/camera.c:520
 msgid "focus mode"
 msgstr "fokusimi"
 
-#: ../src/libs/camera.c:536
+#: ../src/libs/camera.c:550
 msgid "shutterspeed2"
 msgstr "shpejt.shkrepësi"
 
-#: ../src/libs/camera.c:556
+#: ../src/libs/camera.c:570
 msgid "wb"
 msgstr "bb"
 
 #. user specified properties
-#: ../src/libs/camera.c:625
+#: ../src/libs/camera.c:639
 msgid "additional properties"
 msgstr "vetitë shtesë"
 
-#: ../src/libs/camera.c:629
+#: ../src/libs/camera.c:643
 msgid "label"
 msgstr "etiketa"
 
-#: ../src/libs/camera.c:635
+#: ../src/libs/camera.c:649
 msgid "property"
 msgstr "vetia"
 
-#: ../src/libs/camera.c:647
+#: ../src/libs/camera.c:661
 msgid "add user property"
 msgstr "shtoj vetinë e përdoruesit"
 
@@ -4586,178 +4397,264 @@ msgstr "shtoj vetinë e përdoruesit"
 msgid "session"
 msgstr "sesioni"
 
-#: ../src/libs/capture.c:112
+#: ../src/libs/capture.c:117
 msgid "create"
 msgstr "krijoj"
 
-#: ../src/libs/collect.c:83
+#: ../src/libs/collect.c:85
 msgid "collect images"
 msgstr "koleksioni i imazheve"
 
-#: ../src/libs/collect.c:224
-#: ../src/libs/collect.c:226
+#: ../src/libs/collect.c:230
+#: ../src/libs/collect.c:232
 msgid "not altered"
 msgstr "e paprekur"
 
-#: ../src/libs/collect.c:348
-#: ../src/libs/collect.c:362
-#: ../src/libs/collect.c:628
+#: ../src/libs/collect.c:371
+#: ../src/libs/collect.c:385
+#: ../src/libs/collect.c:652
 msgid "clear this rule"
 msgstr "pastroj rregullin"
 
-#: ../src/libs/collect.c:353
+#: ../src/libs/collect.c:376
 msgid "clear this rule or add new rules"
 msgstr "pastroni rregullin ose shtoni rregulla të reja"
 
-#: ../src/libs/collect.c:634
+#: ../src/libs/collect.c:658
 msgid "narrow down search"
 msgstr "ngushtoj kërkimin"
 
-#: ../src/libs/collect.c:638
+#: ../src/libs/collect.c:662
 msgid "add more images"
 msgstr "shtoj imazhe të tjera"
 
-#: ../src/libs/collect.c:642
+#: ../src/libs/collect.c:666
 msgid "exclude images"
 msgstr "përjashtoj imazhet"
 
-#: ../src/libs/collect.c:648
+#: ../src/libs/collect.c:672
 msgid "change to: and"
 msgstr "ndryshoj në: dhe"
 
-#: ../src/libs/collect.c:652
+#: ../src/libs/collect.c:676
 msgid "change to: or"
 msgstr "ndryshoj në: ose"
 
-#: ../src/libs/collect.c:656
+#: ../src/libs/collect.c:680
 msgid "change to: except"
 msgstr "ndryshoj në: përveç"
 
-#: ../src/libs/collect.c:704
+#: ../src/libs/collect.c:733
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "shkruani kërkesën, përdorni `%' si faktor"
 
 #: ../src/libs/collect.h:30
+msgid "film roll"
+msgstr "filmi"
+
+#: ../src/libs/collect.h:31
 msgid "camera"
 msgstr "kamera"
 
-#: ../src/libs/collect.h:31
+#: ../src/libs/collect.h:32
 msgid "tag"
 msgstr "etiketa"
 
-#: ../src/libs/collect.h:32
+#: ../src/libs/collect.h:33
 msgid "date"
 msgstr "data"
 
 #: ../src/libs/collect.h:34
-msgid "colorlabel"
+#: ../src/libs/history.c:55
+msgid "history"
+msgstr "historiku"
+
+#: ../src/libs/collect.h:35
+#: ../src/libs/tools/filter.c:126
+msgid "color label"
 msgstr "ngjyra"
 
-#: ../src/libs/collect.h:36
-#: ../src/libs/metadata.c:298
+#: ../src/libs/collect.h:37
+#: ../src/libs/metadata.c:311
 msgid "description"
 msgstr "përshkrimi"
 
 #: ../src/libs/collect.h:38
 #: ../src/libs/metadata.c:324
+#: ../src/libs/metadata_view.c:83
+msgid "creator"
+msgstr "krijuesi"
+
+#: ../src/libs/collect.h:39
+#: ../src/libs/metadata.c:337
 msgid "publisher"
 msgstr "publikuesi"
 
-#: ../src/libs/copy_history.c:46
+#: ../src/libs/collect.h:44
+#: ../src/libs/metadata_view.c:66
+#: ../src/libs/tools/filter.c:122
+msgid "filename"
+msgstr "emri"
+
+#: ../src/libs/colorpicker.c:36
+msgid "color picker"
+msgstr "mbledhësi i ngjyrave"
+
+#: ../src/libs/colorpicker.c:61
+msgctxt "accel"
+msgid "add sample"
+msgstr "shtoj kampionin"
+
+#: ../src/libs/colorpicker.c:319
+msgid "hover to highlight sample on canvas, click to lock sample"
+msgstr "lëvizni mausin për të theksuar kampionin në kanavavacë, klikoni për ta kyçur"
+
+#: ../src/libs/colorpicker.c:439
+msgid "live samples"
+msgstr "kampionët e drejtpërdrejtë"
+
+#: ../src/libs/colorpicker.c:497
+msgid "point"
+msgstr "pikë"
+
+#: ../src/libs/colorpicker.c:499
+msgid "area"
+msgstr "zonë"
+
+#: ../src/libs/colorpicker.c:522
+#: ../src/libs/colorpicker.c:574
+msgid "mean"
+msgstr "mes"
+
+#: ../src/libs/colorpicker.c:524
+#: ../src/libs/colorpicker.c:576
+msgid "min"
+msgstr "min"
+
+#: ../src/libs/colorpicker.c:526
+#: ../src/libs/colorpicker.c:578
+msgid "max"
+msgstr "maks"
+
+#: ../src/libs/colorpicker.c:539
+#: ../src/libs/colorpicker.c:590
+msgid "rgb"
+msgstr "rgb"
+
+#: ../src/libs/colorpicker.c:541
+#: ../src/libs/colorpicker.c:592
+msgid "Lab"
+msgstr "Lab"
+
+#: ../src/libs/colorpicker.c:557
+msgid "restrict histogram to selection"
+msgstr "kufizoj histogramin te seleksionimi"
+
+#: ../src/libs/colorpicker.c:614
+msgid "display sample areas on image"
+msgstr "tregoj zonat e kampionit në imazh"
+
+#: ../src/libs/copy_history.c:47
 msgid "history stack"
 msgstr "historiku"
 
-#: ../src/libs/copy_history.c:64
+#: ../src/libs/copy_history.c:70
 msgid "open sidecar file"
 msgstr "hapni skedën shoqëruese"
 
-#: ../src/libs/copy_history.c:74
+#: ../src/libs/copy_history.c:80
 msgid "xmp sidecar files"
 msgstr "skeda shoqëruese xmp"
 
-#: ../src/libs/copy_history.c:93
+#: ../src/libs/copy_history.c:85
+#: ../src/libs/import.c:326
+#: ../src/libs/styles.c:262
+msgid "all files"
+msgstr "gjithë skedat"
+
+#: ../src/libs/copy_history.c:99
 #, c-format
 msgid "error loading file '%s'"
 msgstr "gabim në hapjen e skedës '%s'"
 
-#: ../src/libs/copy_history.c:191
+#: ../src/libs/copy_history.c:196
 msgid ""
 "copy history stack of\n"
 "first selected image (ctrl-c)"
 msgstr "kopjoni tufën e historikut nga imazhi i parë i seleksionuar (ctrl-c)"
 
-#: ../src/libs/copy_history.c:194
+#: ../src/libs/copy_history.c:199
 msgid "discard"
 msgstr "flak"
 
-#: ../src/libs/copy_history.c:196
+#: ../src/libs/copy_history.c:201
 msgid ""
 "discard history stack of\n"
 "all selected images"
-msgstr "flakni tufën e historikut nga të gjitha imazhet e seleksionuara"
+msgstr "flakni tufën e historikut nga imazhet e seleksionuara"
 
-#: ../src/libs/copy_history.c:203
+#: ../src/libs/copy_history.c:208
 msgid "append"
 msgstr "bashkëlidh"
 
-#: ../src/libs/copy_history.c:204
+#: ../src/libs/copy_history.c:209
 msgid "overwrite"
 msgstr "mbishkruaj"
 
-#: ../src/libs/copy_history.c:205
+#: ../src/libs/copy_history.c:210
 msgid "how to handle existing history"
 msgstr "trajtoni historikun ekzistues"
 
-#: ../src/libs/copy_history.c:209
+#: ../src/libs/copy_history.c:214
 msgid "paste"
 msgstr "ngjit"
 
-#: ../src/libs/copy_history.c:210
+#: ../src/libs/copy_history.c:215
 msgid ""
 "paste history stack to\n"
 "all selected images (ctrl-v)"
-msgstr "ngjitni tufën e historikut te të gjitha imazhet e seleksionuara (ctrl-v)"
+msgstr "ngjitni tufën e historikut te imazhet e seleksionuara (ctrl-v)"
 
-#: ../src/libs/copy_history.c:218
+#: ../src/libs/copy_history.c:223
 msgid "load sidecar file"
 msgstr "hap shoqëruesen"
 
-#: ../src/libs/copy_history.c:220
+#: ../src/libs/copy_history.c:225
 msgid ""
 "open an xmp sidecar file\n"
 "and apply it to selected images"
 msgstr "hapni skedën shoqëruese xmp dhe e zbatoni te imazhet e seleksionuara"
 
-#: ../src/libs/copy_history.c:223
+#: ../src/libs/copy_history.c:228
 msgid "write sidecar files"
 msgstr "shkruaj shoqëruesen"
 
-#: ../src/libs/copy_history.c:225
+#: ../src/libs/copy_history.c:230
 msgid "write history stack and tags to xmp sidecar files"
 msgstr "shkruani tufën e historikut dhe etiketat te skeda shoqëruese xmp"
 
-#: ../src/libs/copy_history.c:254
+#: ../src/libs/copy_history.c:259
 msgctxt "accel"
 msgid "copy"
 msgstr "kopjoj"
 
-#: ../src/libs/copy_history.c:255
+#: ../src/libs/copy_history.c:260
 msgctxt "accel"
 msgid "discard"
 msgstr "flak"
 
-#: ../src/libs/copy_history.c:256
+#: ../src/libs/copy_history.c:261
 msgctxt "accel"
 msgid "paste"
 msgstr "ngjit"
 
-#: ../src/libs/copy_history.c:257
+#: ../src/libs/copy_history.c:262
 msgctxt "accel"
-msgid "load sidecar file"
-msgstr "hap shoqëruesen"
+msgid "load sidecar files"
+msgstr "hap shoqërueset"
 
-#: ../src/libs/copy_history.c:258
+#: ../src/libs/copy_history.c:263
 msgctxt "accel"
 msgid "write sidecar files"
 msgstr "shkruaj shoqëruesen"
@@ -4766,19 +4663,19 @@ msgstr "shkruaj shoqëruesen"
 msgid "export selected"
 msgstr "eksportoj"
 
-#: ../src/libs/export.c:381
+#: ../src/libs/export.c:386
 msgid "target storage"
 msgstr "rezerva e synuar"
 
-#: ../src/libs/export.c:401
+#: ../src/libs/export.c:406
 msgid "file format"
 msgstr "formati i skedës"
 
-#: ../src/libs/export.c:416
+#: ../src/libs/export.c:421
 msgid "global options"
 msgstr "mundësitë globale"
 
-#: ../src/libs/export.c:420
+#: ../src/libs/export.c:425
 msgid ""
 "maximum output width\n"
 "set to 0 for no scaling"
@@ -4786,7 +4683,7 @@ msgstr ""
 "gjerësia maksimale në output,\n"
 "lë 0 kur nuk shkallëzon"
 
-#: ../src/libs/export.c:422
+#: ../src/libs/export.c:427
 msgid ""
 "maximum output height\n"
 "set to 0 for no scaling"
@@ -4802,42 +4699,51 @@ msgstr ""
 #. g_signal_connect (G_OBJECT (d->height), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
 #. g_signal_connect (G_OBJECT (d->height), "focus-out-event", G_CALLBACK(focus_out), NULL);
 #.
-#: ../src/libs/export.c:434
+#: ../src/libs/export.c:439
 msgid "max size"
 msgstr "masa maks."
 
-#: ../src/libs/export.c:439
+#: ../src/libs/export.c:444
 msgid "x"
 msgstr "x"
 
-#: ../src/libs/export.c:443
+#: ../src/libs/export.c:448
 msgid "intent"
 msgstr "synimi"
 
 #. gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-#: ../src/libs/export.c:447
-#: ../src/libs/export.c:521
+#: ../src/libs/export.c:452
+#: ../src/libs/export.c:526
 msgid "image settings"
 msgstr "parametrat e imazhit"
 
-#: ../src/libs/export.c:548
+#: ../src/libs/export.c:553
 #, c-format
 msgid "output icc profiles in %s/color/out or %s/color/out"
 msgstr "profilet icc në output në %s/color/out ose %s/color/out"
 
-#: ../src/libs/export.c:559
+#: ../src/libs/export.c:564
 msgid "export with current settings (ctrl-e)"
-msgstr "eksportoni me parametrat aktuale (ctrl-e)"
+msgstr "eksportoni me parametrat aktualë (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:754
-#: ../src/libs/styles.c:70
-#: ../src/views/darkroom.c:1252
+#: ../src/libs/export.c:759
+#: ../src/libs/styles.c:69
+#: ../src/views/darkroom.c:1267
 msgctxt "accel"
 msgid "export"
 msgstr "eksportoj"
 
-#: ../src/libs/file_manager.c:90
+#. FIXME: Hack to get a translated name without the need to touch the .po files
+#. char* n = _("zoomable light table\nfile manager");
+#. while(*n != '\n') n++; n++;
+#. return n;
+#: ../src/libs/file_manager.c:43
+#: ../src/libs/tools/lighttable.c:92
+msgid "file manager"
+msgstr "menaxheri i skedave"
+
+#: ../src/libs/file_manager.c:95
 msgid ""
 "ls\t\t\t\t\tlist content of directory\n"
 "cd <dir>\t\t\tchange directory\n"
@@ -4855,304 +4761,555 @@ msgstr ""
 "rm <file>\t\t\tfshini <file>\n"
 "rmdir <dir>\t\t\tfshini direktorinë boshe"
 
+#: ../src/libs/histogram.c:52
+msgid "histogram"
+msgstr "histogrami"
+
+#: ../src/libs/histogram.c:102
+#: ../src/libs/histogram.c:279
+msgid ""
+"drag to change exposure,\n"
+"doubleclick resets"
+msgstr ""
+"shtyjeni dhe ndryshoni ekspozimin,\n"
+"klikimi dy herë e rikthen"
+
+#: ../src/libs/histogram.c:274
+msgid ""
+"drag to change black point,\n"
+"doubleclick resets"
+msgstr ""
+"shtyjeni dhe ndryshoni të zezën,\n"
+"klikimi dy herë e rikthen"
+
+#: ../src/libs/history.c:75
+msgctxt "accel"
+msgid "create style from history"
+msgstr "krijoni stilin nga historiku"
+
+#: ../src/libs/history.c:77
+msgctxt "accel"
+msgid "apply style from popup menu"
+msgstr "zbatoni stilin e seleksionuar nga menyja"
+
+#: ../src/libs/history.c:79
+msgctxt "accel"
+msgid "compress history stack"
+msgstr "ngjesh historikun"
+
+#: ../src/libs/history.c:106
+msgid "compress history stack"
+msgstr "ngjesh historikun"
+
+#: ../src/libs/history.c:108
+msgid "create a minimal history stack which produces the same image"
+msgstr "krijoni tufën minimale të historikut dhe prodhoni të njëjtin imazh"
+
+#: ../src/libs/history.c:116
+msgid "create a style from the current history stack"
+msgstr "krijoni stilin nga historiku aktual"
+
+#: ../src/libs/history.c:179
+#: ../src/libs/snapshots.c:386
+msgid "original"
+msgstr "origjinali"
+
 #: ../src/libs/image.c:43
 msgid "selected image[s]"
 msgstr "imazhet e seleksionuara"
 
-#: ../src/libs/image.c:88
+#: ../src/libs/image.c:87
 msgid "remove"
 msgstr "heq"
 
-#: ../src/libs/image.c:90
+#: ../src/libs/image.c:89
 msgid "remove from the collection"
 msgstr "hiqni nga koleksioni"
 
-#: ../src/libs/image.c:94
-#: ../src/libs/styles.c:361
-#: ../src/libs/tagging.c:441
+#: ../src/libs/image.c:93
+#: ../src/libs/styles.c:366
+#: ../src/libs/tagging.c:465
 msgid "delete"
 msgstr "fshij"
 
-#: ../src/libs/image.c:96
+#: ../src/libs/image.c:95
 msgid "physically delete from disk"
 msgstr "fshini fizikisht nga disku"
 
-#: ../src/libs/image.c:103
+#: ../src/libs/image.c:102
 msgid "create hdr"
 msgstr "krijoj hdr"
 
-#: ../src/libs/image.c:107
+#: ../src/libs/image.c:106
 msgid "create a high dynamic range image from selected shots"
 msgstr "krijoni një imazh me rreze dinamike të lartë nga pozat e seleksionuara"
 
-#: ../src/libs/image.c:109
+#: ../src/libs/image.c:108
 msgid "duplicate"
 msgstr "dubloj"
 
-#: ../src/libs/image.c:111
+#: ../src/libs/image.c:110
 msgid "add a duplicate to the collection"
-msgstr "shtoni dublikatën te koleksioni"
+msgstr "shtoni dublikatën në koleksion"
 
-#: ../src/libs/image.c:121
+#: ../src/libs/image.c:120
 msgid "rotate selected images 90 degrees ccw"
 msgstr "rrotulloni 90 gradë kundërorar"
 
-#: ../src/libs/image.c:127
+#: ../src/libs/image.c:126
 msgid "rotate selected images 90 degrees cw"
 msgstr "rrotulloni 90 gradë orar"
 
-#: ../src/libs/image.c:132
+#: ../src/libs/image.c:131
 msgid "reset rotation"
 msgstr "rikthej rrotullimin"
 
-#: ../src/libs/image.c:134
+#: ../src/libs/image.c:133
 msgid "reset rotation to exif data"
 msgstr "riktheni rrotullimin nga të dhënat exif"
 
-#: ../src/libs/image.c:150
+#: ../src/libs/image.c:149
 msgctxt "accel"
 msgid "remove from collection"
 msgstr "heq nga koleksioni"
 
-#: ../src/libs/image.c:152
+#: ../src/libs/image.c:151
 msgctxt "accel"
 msgid "delete from disk"
 msgstr "fshij nga disku"
 
-#: ../src/libs/image.c:154
+#: ../src/libs/image.c:153
 msgctxt "accel"
 msgid "rotate selected images 90 degrees cw"
 msgstr "rrotulloj 90 gradë orar"
 
-#: ../src/libs/image.c:157
+#: ../src/libs/image.c:156
 msgctxt "accel"
 msgid "rotate selected images 90 degrees ccw"
 msgstr "rrotulloj 90 gradë kundërorar"
 
-#: ../src/libs/image.c:159
+#: ../src/libs/image.c:158
 msgctxt "accel"
 msgid "create hdr"
 msgstr "krijoj hdr"
 
-#: ../src/libs/image.c:160
+#: ../src/libs/image.c:159
 msgctxt "accel"
 msgid "duplicate"
 msgstr "dubloj"
 
-#: ../src/libs/image.c:161
+#: ../src/libs/image.c:160
 msgctxt "accel"
 msgid "reset rotation"
 msgstr "rikthej rrotullimin"
 
-#: ../src/libs/lib.c:125
+#: ../src/libs/import.c:60
+msgid "import"
+msgstr "importoj"
+
+#: ../src/libs/import.c:81
+msgctxt "accel"
+msgid "scan for devices"
+msgstr "skanoj pajisjet"
+
+#: ../src/libs/import.c:82
+msgctxt "accel"
+msgid "import from camera"
+msgstr "importoj nga kamera"
+
+#: ../src/libs/import.c:83
+msgctxt "accel"
+msgid "tethered shoot"
+msgstr "fotografimi me komandë"
+
+#: ../src/libs/import.c:84
+msgctxt "accel"
+msgid "import image"
+msgstr "importoj imazhin"
+
+#. add the rescan button
+#: ../src/libs/import.c:163
+msgid "scan for devices"
+msgstr "skanoj pajisjet"
+
+#: ../src/libs/import.c:166
+msgid "scan for newly attached devices"
+msgstr "skanoni pajisjet e lidhura të fundit"
+
+#: ../src/libs/import.c:193
+#, c-format
+msgid "device \"%s\" connected on port \"%s\"."
+msgstr "pajisja \"%s\" është lidhur në portin \"%s\""
+
+#: ../src/libs/import.c:201
+msgid "import from camera"
+msgstr "importoj nga kamera"
+
+#: ../src/libs/import.c:205
+msgid "tethered shoot"
+msgstr "fotografimi me komandë"
+
+#. No supported devices is detected lets notice user..
+#: ../src/libs/import.c:227
+msgid "no supported devices found"
+msgstr "nuk gjen pajisjet e garantuara"
+
+#: ../src/libs/import.c:296
+msgid "import image"
+msgstr "importoj imazhin"
+
+#: ../src/libs/import.c:321
+msgid "supported images"
+msgstr "imazhet e garantuara"
+
+#: ../src/libs/import.c:359
+msgid "file has unknown format!"
+msgstr "skeda ka format të panjohur!"
+
+#: ../src/libs/import.c:376
+msgid "import film"
+msgstr "importoj filmin"
+
+#: ../src/libs/import.c:395
+msgid "import directories recursively"
+msgstr "importoj direktoritë si rekursive"
+
+#: ../src/libs/import.c:396
+msgid "recursively import subdirectories. each directory goes into a new film roll."
+msgstr "importoni nëndirektoritë në mënyrën rekursive. secila direktori shkon në filmin e ri."
+
+#: ../src/libs/import.c:464
+msgid "select one or more images to import"
+msgstr "seleksiononi një a më shumë imazhe për të importuar"
+
+#. adding the import folder button
+#: ../src/libs/import.c:473
+msgid "folder"
+msgstr "dosje"
+
+#: ../src/libs/import.c:477
+msgid "select a folder to import as film roll"
+msgstr "seleksiononi dosjen për të importuar si film"
+
+#: ../src/libs/keywords.c:60
+msgid "keywords"
+msgstr "fjalët kyç"
+
+#: ../src/libs/lib.c:134
 #, c-format
 msgid "edit `%s'"
 msgstr "editoj `%s'"
 
-#: ../src/libs/lib.c:256
-msgid "deleting preset for obsolete module"
-msgstr "fshin paravendosjen për modulin e vjetër"
-
-#: ../src/libs/metadata.c:51
+#: ../src/libs/metadata.c:52
 msgid "metadata editor"
 msgstr "metadata"
 
-#: ../src/libs/metadata.c:80
+#: ../src/libs/metadata.c:86
 msgid "<leave unchanged>"
 msgstr "<pa ndryshuar>"
 
-#: ../src/libs/metadata.c:255
+#: ../src/libs/metadata.c:269
 msgctxt "accel"
 msgid "clear"
 msgstr "pastroj"
 
-#: ../src/libs/metadata.c:355
+#: ../src/libs/metadata.c:368
 msgid "clear"
 msgstr "pastroj"
 
-#: ../src/libs/metadata.c:357
+#: ../src/libs/metadata.c:370
 msgid "remove metadata from selected images"
 msgstr "hiqni metadatën nga imazhet e seleksionuara"
 
-#: ../src/libs/metadata.c:364
+#: ../src/libs/metadata.c:377
 msgid "write metadata for selected images"
 msgstr "shkruani metadatën te imazhet e seleksionuara"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:396
+#: ../src/libs/metadata.c:412
 msgid "CC-by"
 msgstr "CC-by"
 
-#: ../src/libs/metadata.c:396
+#: ../src/libs/metadata.c:412
 msgid "Creative Commons Attribution (CC-BY)"
 msgstr "Creative Commons Attribution (CC-BY)"
 
-#: ../src/libs/metadata.c:397
+#: ../src/libs/metadata.c:413
 msgid "CC-by-sa"
 msgstr "CC-by-sa"
 
-#: ../src/libs/metadata.c:397
+#: ../src/libs/metadata.c:413
 msgid "Creative Commons Attribution-ShareAlike (CC-BY-SA)"
 msgstr "Creative Commons Attribution-ShareAlike (CC-BY-SA)"
 
-#: ../src/libs/metadata.c:398
+#: ../src/libs/metadata.c:414
 msgid "CC-by-nd"
 msgstr "CC-by-nd"
 
-#: ../src/libs/metadata.c:398
+#: ../src/libs/metadata.c:414
 msgid "Creative Commons Attribution-NoDerivs (CC-BY-ND)"
 msgstr "Creative Commons Attribution-NoDerivs (CC-BY-ND)"
 
-#: ../src/libs/metadata.c:399
+#: ../src/libs/metadata.c:415
 msgid "CC-by-nc"
 msgstr "CC-by-nc"
 
-#: ../src/libs/metadata.c:399
+#: ../src/libs/metadata.c:415
 msgid "Creative Commons Attribution-NonCommercial (CC-BY-NC)"
 msgstr "Creative Commons Attribution-NonCommercial (CC-BY-NC)"
 
-#: ../src/libs/metadata.c:400
+#: ../src/libs/metadata.c:416
 msgid "CC-by-nc-sa"
 msgstr "CC-by-nc-sa"
 
-#: ../src/libs/metadata.c:400
+#: ../src/libs/metadata.c:416
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
 msgstr "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
 
-#: ../src/libs/metadata.c:401
+#: ../src/libs/metadata.c:417
 msgid "CC-by-nc-nd"
 msgstr "CC-by-nc-nd"
 
-#: ../src/libs/metadata.c:401
+#: ../src/libs/metadata.c:417
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"
 msgstr "Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"
 
-#: ../src/libs/metadata.c:402
+#: ../src/libs/metadata.c:418
 msgid "all rights reserved"
 msgstr "gjithë të drejtat e rezervuara"
 
-#: ../src/libs/metadata.c:402
+#: ../src/libs/metadata.c:418
 msgid "All rights reserved."
 msgstr "gjithë të drejtat e rezervuara."
 
-#: ../src/libs/recentcollect.c:49
+#. internal
+#: ../src/libs/metadata_view.c:64
+msgid "filmroll"
+msgstr "filmi"
+
+#: ../src/libs/metadata_view.c:65
+msgid "image id"
+msgstr "id imazhi"
+
+#: ../src/libs/metadata_view.c:75
+msgid "focus distance"
+msgstr "distanca-f"
+
+#: ../src/libs/metadata_view.c:77
+msgid "datetime"
+msgstr "data/ora"
+
+#: ../src/libs/metadata_view.c:79
+msgid "height"
+msgstr "gjatësia"
+
+#: ../src/libs/metadata_view.c:84
+msgid "copyright"
+msgstr "të drejta"
+
+#: ../src/libs/metadata_view.c:97
+msgid "image information"
+msgstr "informacione"
+
+#: ../src/libs/modulegroups.c:88
+msgid "modulegroups"
+msgstr "grupi i moduleve"
+
+#: ../src/libs/modulegroups.c:127
+msgid "show modules explicit specified by user"
+msgstr "modulet që ka zgjedhur përdoruesi"
+
+#: ../src/libs/modulegroups.c:132
+msgid "the modules used in active pipe"
+msgstr "modulet që përdor në gypin aktiv"
+
+#: ../src/libs/modulegroups.c:137
+msgid "basic group"
+msgstr "grupi kryesor"
+
+#: ../src/libs/modulegroups.c:142
+msgid "correction group"
+msgstr "grupi i korrigjimit"
+
+#: ../src/libs/modulegroups.c:147
+msgid "color group"
+msgstr "grupi i ngjyrave"
+
+#: ../src/libs/modulegroups.c:152
+msgid "tone group"
+msgstr "grupi i toneve"
+
+#: ../src/libs/modulegroups.c:157
+msgid "effect group"
+msgstr "grupi i efekteve"
+
+#: ../src/libs/modulelist.c:46
+msgid "more plugins"
+msgstr "spina të tjera"
+
+#. construct tooltip text into option
+#: ../src/libs/modulelist.c:101
+#, c-format
+msgid "show %s"
+msgstr "tregoni %s"
+
+#. construct tooltip text into option
+#: ../src/libs/modulelist.c:117
+#, c-format
+msgid "%s as favorite"
+msgstr "%s te lehtësitë"
+
+#. construct tooltip text into option
+#: ../src/libs/modulelist.c:133
+#, c-format
+msgid "hide %s"
+msgstr "fshehni %s"
+
+#: ../src/libs/navigation.c:55
+msgid "navigation"
+msgstr "lundrimi"
+
+#: ../src/libs/recentcollect.c:50
 msgid "recently used collections"
 msgstr "koleksioni i fundit"
 
-#: ../src/libs/recentcollect.c:143
+#: ../src/libs/recentcollect.c:149
 #, c-format
 msgid " and "
 msgstr " dhe "
 
-#: ../src/libs/recentcollect.c:146
+#: ../src/libs/recentcollect.c:152
 #, c-format
 msgid " or "
 msgstr " ose "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/recentcollect.c:149
+#: ../src/libs/recentcollect.c:155
 #, c-format
 msgid " but not "
 msgstr " por jo "
 
-#: ../src/libs/select.c:34
+#: ../src/libs/select.c:36
 msgid "select"
 msgstr "seleksionoj"
 
-#: ../src/libs/select.c:123
+#: ../src/libs/select.c:96
 msgid "select all"
 msgstr "të gjitha"
 
-#: ../src/libs/select.c:125
+#: ../src/libs/select.c:98
 msgid "select all images in current collection (ctrl-a)"
-msgstr "seleksiononi të gjitha imazhet te koleksioni aktual (ctrl-a)"
+msgstr "seleksiononi të gjitha imazhet në koleksion (ctrl-a)"
 
-#: ../src/libs/select.c:129
+#: ../src/libs/select.c:102
 msgid "select none"
 msgstr "asnjë"
 
-#: ../src/libs/select.c:131
+#: ../src/libs/select.c:104
 msgid "clear selection (ctrl-shift-a)"
 msgstr "pastroni seleksionimin (ctrl-shift-a)"
 
-#: ../src/libs/select.c:138
+#: ../src/libs/select.c:111
 msgid "invert selection"
 msgstr "përmbys"
 
-#: ../src/libs/select.c:139
+#: ../src/libs/select.c:112
 msgid ""
 "select unselected images\n"
 "in current collection (ctrl-!)"
-msgstr "seleksiononi imazhet e paseleksionuara te koleksioni aktual (ctrl-!)"
+msgstr "seleksiononi imazhet e paseleksionuara në koleksion (ctrl-!)"
 
-#: ../src/libs/select.c:144
+#: ../src/libs/select.c:117
 msgid "select film roll"
 msgstr "filmin"
 
-#: ../src/libs/select.c:146
+#: ../src/libs/select.c:119
 msgid ""
 "select all images which are in the same\n"
 "film roll as the selected images"
-msgstr "seleksiononi të gjitha imazhet që janë në një film me imazhet e seleksionuara"
+msgstr "seleksiononi imazhet që janë në një film me imazhet e seleksionuara"
 
-#: ../src/libs/select.c:153
+#: ../src/libs/select.c:126
 msgid "select untouched"
 msgstr "të paprekura"
 
-#: ../src/libs/select.c:155
+#: ../src/libs/select.c:128
 msgid ""
 "select untouched images in\n"
 "current collection"
-msgstr "seleksiononi imazhet e paprekura te koleksioni aktual"
+msgstr "seleksiononi imazhet e paprekura në koleksion"
 
-#: ../src/libs/select.c:171
+#: ../src/libs/select.c:144
 msgctxt "accel"
 msgid "select all"
 msgstr "të gjitha"
 
-#: ../src/libs/select.c:173
+#: ../src/libs/select.c:146
 msgctxt "accel"
 msgid "select none"
 msgstr "asnjë"
 
-#: ../src/libs/select.c:175
+#: ../src/libs/select.c:148
 msgctxt "accel"
 msgid "invert selection"
 msgstr "përmbys"
 
-#: ../src/libs/select.c:177
+#: ../src/libs/select.c:150
 msgctxt "accel"
 msgid "select film roll"
 msgstr "filmin"
 
-#: ../src/libs/select.c:178
+#: ../src/libs/select.c:151
 msgctxt "accel"
 msgid "select untouched"
 msgstr "të paprekura"
 
-#: ../src/libs/styles.c:46
+#: ../src/libs/snapshots.c:81
+msgid "snapshots"
+msgstr "poza"
+
+#: ../src/libs/snapshots.c:101
+msgctxt "accel"
+msgid "take snapshot"
+msgstr "bëj një pozë"
+
+#. create take snapshot button
+#: ../src/libs/snapshots.c:308
+msgid "take snapshot"
+msgstr "bëj një pozë"
+
+#: ../src/libs/snapshots.c:312
+msgid "take snapshot to compare with another image or the same image at another stage of development"
+msgstr "bëni një pozë për ta krahasuar me një imazh tjetër ose me të njëjtin imazh në fazën e zhvillimit"
+
+#: ../src/libs/snapshots.c:394
+msgid "unknown"
+msgstr "i panjohur"
+
+#: ../src/libs/styles.c:47
 msgid "styles"
 msgstr "stile"
 
-#: ../src/libs/styles.c:69
+#: ../src/libs/styles.c:68
+#: ../src/libs/tagging.c:73
 msgctxt "accel"
 msgid "delete"
 msgstr "fshij"
 
-#: ../src/libs/styles.c:71
+#: ../src/libs/styles.c:70
 msgctxt "accel"
 msgid "import"
 msgstr "importoj"
 
-#: ../src/libs/styles.c:241
+#: ../src/libs/styles.c:244
 msgid "select style"
 msgstr "seleksionoj stilin"
 
-#: ../src/libs/styles.c:254
+#: ../src/libs/styles.c:257
 msgid "darktable style files"
 msgstr "skedat e stilit te darktable"
 
-#: ../src/libs/styles.c:328
+#: ../src/libs/styles.c:332
 msgid ""
 "available styles,\n"
 "doubleclick to apply"
@@ -5160,46 +5317,61 @@ msgstr ""
 "stilet e mundshme,\n"
 "klikimi dy herë e zbaton"
 
-#: ../src/libs/styles.c:334
+#: ../src/libs/styles.c:338
 msgid "enter style name"
 msgstr "shkruani emrin e stilit"
 
-#: ../src/libs/styles.c:347
+#: ../src/libs/styles.c:351
 msgid "create duplicate"
 msgstr "krijoj dublikatën"
 
-#: ../src/libs/styles.c:351
+#: ../src/libs/styles.c:355
 msgid "creates a duplicate of the image before applying style"
 msgstr "krijoni dublikatën e imazhit para zbatimit të stilit"
 
 #. TODO: Unfinished stuff
-#: ../src/libs/styles.c:355
+#: ../src/libs/styles.c:359
 msgid "edit"
 msgstr "editoj"
 
-#: ../src/libs/styles.c:364
+#: ../src/libs/styles.c:369
 msgid "deletes the selected style in list above"
 msgstr "fshini stilin e seleksionuar në listën më sipër"
 
-#: ../src/libs/styles.c:370
+#: ../src/libs/styles.c:375
 msgid "export the selected style into a style file"
 msgstr "eksportoni stilin e seleksionuar në skedën e stilit"
 
 #. Import Button
-#: ../src/libs/styles.c:374
+#: ../src/libs/styles.c:379
 msgctxt "styles"
 msgid "import"
 msgstr "importoj"
 
-#: ../src/libs/styles.c:376
+#: ../src/libs/styles.c:381
 msgid "import style from a style file"
 msgstr "importoni stilin nga një skedë"
 
-#: ../src/libs/tagging.c:51
+#: ../src/libs/tagging.c:55
 msgid "tagging"
 msgstr "etiketoj"
 
-#: ../src/libs/tagging.c:287
+#: ../src/libs/tagging.c:70
+msgctxt "accel"
+msgid "attach"
+msgstr "bashkëngjit"
+
+#: ../src/libs/tagging.c:71
+msgctxt "accel"
+msgid "detach"
+msgstr "shkëput"
+
+#: ../src/libs/tagging.c:72
+msgctxt "accel"
+msgid "new"
+msgstr "e re"
+
+#: ../src/libs/tagging.c:302
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -5214,11 +5386,11 @@ msgstr[1] ""
 "vërtet do e fshini etiketën `%s'?\n"
 "me këtë etiketë janë shënuar %d imazhe!"
 
-#: ../src/libs/tagging.c:290
+#: ../src/libs/tagging.c:305
 msgid "delete tag?"
 msgstr "do e fshini etiketën?"
 
-#: ../src/libs/tagging.c:374
+#: ../src/libs/tagging.c:395
 msgid ""
 "attached tags,\n"
 "doubleclick to detach"
@@ -5226,27 +5398,27 @@ msgstr ""
 "etiketat e bashkëngjitura,\n"
 "klikimi dy herë e shkëput"
 
-#: ../src/libs/tagging.c:381
+#: ../src/libs/tagging.c:402
 msgid "attach"
 msgstr "bashkëngjit"
 
-#: ../src/libs/tagging.c:382
+#: ../src/libs/tagging.c:404
 msgid "attach tag to all selected images"
-msgstr "bashkëngjitni etiketën te të gjitha imazhet e seleksionuara"
+msgstr "bashkëngjitni etiketën te imazhet e seleksionuara"
 
-#: ../src/libs/tagging.c:387
+#: ../src/libs/tagging.c:409
 msgid "detach"
 msgstr "shkëput"
 
-#: ../src/libs/tagging.c:388
+#: ../src/libs/tagging.c:411
 msgid "detach tag from all selected images"
-msgstr "shkëputni etiketën nga të gjitha imazhet e seleksionuara"
+msgstr "shkëputni etiketën nga imazhet e seleksionuara"
 
-#: ../src/libs/tagging.c:402
+#: ../src/libs/tagging.c:425
 msgid "enter tag name"
 msgstr "shkruani emrin e etiketës"
 
-#: ../src/libs/tagging.c:428
+#: ../src/libs/tagging.c:451
 msgid ""
 "related tags,\n"
 "doubleclick to attach"
@@ -5254,300 +5426,507 @@ msgstr ""
 "etiketat e ngjashme,\n"
 "klikimi dy herë e bashkëngjit"
 
-#: ../src/libs/tagging.c:435
+#: ../src/libs/tagging.c:458
 msgid "new"
 msgstr "e re"
 
-#: ../src/libs/tagging.c:436
+#: ../src/libs/tagging.c:460
 msgid ""
 "create a new tag with the\n"
 "name you entered"
 msgstr "krijoni etiketën e re sipas emrit"
 
-#: ../src/libs/tagging.c:442
+#: ../src/libs/tagging.c:467
 msgid "delete selected tag"
 msgstr "fshini etiketën e seleksionuar"
 
-#: ../src/views/capture.c:91
-msgid "capture"
-msgstr "pozimi"
+#: ../src/libs/tools/colorlabels.c:38
+msgid "colorlabels"
+msgstr "ngjyrat"
 
-#: ../src/views/capture.c:252
+#. setup list of tooltips
+#: ../src/libs/tools/colorlabels.c:69
+msgid ""
+"toggle red label\n"
+"of selected images (f1)"
+msgstr ""
+"vini etiketën e kuqe\n"
+"te imazhet e seleksionuara (f1)"
+
+#: ../src/libs/tools/colorlabels.c:70
+msgid ""
+"toggle yellow label\n"
+"of selected images (f2)"
+msgstr ""
+"vini etiketën e verdhë\n"
+"te imazhet e seleksionuara (f2)"
+
+#: ../src/libs/tools/colorlabels.c:71
+msgid ""
+"toggle green label\n"
+"of selected images (f3)"
+msgstr ""
+"vini etiketën e gjelbër\n"
+"te imazhet e seleksionuara (f3)"
+
+#: ../src/libs/tools/colorlabels.c:72
+msgid ""
+"toggle blue label\n"
+"of selected images (f4)"
+msgstr ""
+"vini etiketën blu\n"
+"te imazhet e seleksionuara (f4)"
+
+#: ../src/libs/tools/colorlabels.c:73
+msgid ""
+"toggle purple label\n"
+"of selected images (f5)"
+msgstr ""
+"vini etiketën vjollcë\n"
+"te imazhet e seleksionuara (f5)"
+
+#: ../src/libs/tools/colorlabels.c:74
+msgid "clear all labels of selected images"
+msgstr "pastroni etiketat nga imazhet e seleksionuara"
+
+#: ../src/libs/tools/darktable.c:47
+msgid "darktable"
+msgstr "darktable"
+
+#: ../src/libs/tools/darktable.c:165
+msgid "organize and develop images from digital cameras"
+msgstr "organizoni dhe zhvilloni imazhet nga kamerat digjitale"
+
+#: ../src/libs/tools/darktable.c:170
+msgid "* developers *"
+msgstr "* arkitektë *"
+
+#: ../src/libs/tools/darktable.c:175
+msgid "* ubuntu packaging, color management, video tutorials *"
+msgstr "* paketimi për ubuntu, menaxhimi i ngjyrave, videoleksione *"
+
+#: ../src/libs/tools/darktable.c:178
+msgid "* opencl pipeline: *"
+msgstr "* gypi opencl: *"
+
+#: ../src/libs/tools/darktable.c:181
+msgid "* networking, battle testing, translation expert *"
+msgstr "* rrjeti, testimi luftarak, eksperti i përkthimeve *"
+
+#: ../src/libs/tools/darktable.c:184
+msgid "* contributors *"
+msgstr "* kontributorë *"
+
+#: ../src/libs/tools/darktable.c:224
+msgid "translator-credits"
+msgstr "Besmir Godole <bgodole@myopera.com>"
+
+#: ../src/libs/tools/filmstrip.c:99
+msgid "filmstrip"
+msgstr "shiriti i filmit"
+
+#. setup rating key accelerators
+#. Initializing accelerators
+#. Rating keys
+#: ../src/libs/tools/filmstrip.c:125
+#: ../src/views/lighttable.c:1075
+msgctxt "accel"
+msgid "rate desert"
+msgstr "braktis vlerësimin"
+
+#: ../src/libs/tools/filmstrip.c:126
+#: ../src/views/lighttable.c:1076
+msgctxt "accel"
+msgid "rate 1"
+msgstr "vlerësoj 1"
+
+#: ../src/libs/tools/filmstrip.c:127
+#: ../src/views/lighttable.c:1077
+msgctxt "accel"
+msgid "rate 2"
+msgstr "vlerësoj 2"
+
+#: ../src/libs/tools/filmstrip.c:128
+#: ../src/views/lighttable.c:1078
+msgctxt "accel"
+msgid "rate 3"
+msgstr "vlerësoj 3"
+
+#: ../src/libs/tools/filmstrip.c:129
+#: ../src/views/lighttable.c:1079
+msgctxt "accel"
+msgid "rate 4"
+msgstr "vlerësoj 4"
+
+#: ../src/libs/tools/filmstrip.c:130
+#: ../src/views/lighttable.c:1080
+msgctxt "accel"
+msgid "rate 5"
+msgstr "vlerësoj 5"
+
+#: ../src/libs/tools/filmstrip.c:131
+#: ../src/views/lighttable.c:1081
+msgctxt "accel"
+msgid "rate reject"
+msgstr "refuzoj vlerësimin"
+
+#. setup history key accelerators
+#: ../src/libs/tools/filmstrip.c:135
+msgctxt "accel"
+msgid "copy history"
+msgstr "kopjoj historikun"
+
+#: ../src/libs/tools/filmstrip.c:137
+msgctxt "accel"
+msgid "paste history"
+msgstr "ngjit historikun"
+
+#: ../src/libs/tools/filmstrip.c:139
+msgctxt "accel"
+msgid "discard history"
+msgstr "flak historikun"
+
+#. setup color label accelerators
+#. Color keys
+#: ../src/libs/tools/filmstrip.c:145
+#: ../src/views/lighttable.c:1094
+msgctxt "accel"
+msgid "color red"
+msgstr "ngjyra e kuqe"
+
+#: ../src/libs/tools/filmstrip.c:146
+#: ../src/views/lighttable.c:1095
+msgctxt "accel"
+msgid "color yellow"
+msgstr "ngjyra e verdhë"
+
+#: ../src/libs/tools/filmstrip.c:147
+#: ../src/views/lighttable.c:1096
+msgctxt "accel"
+msgid "color green"
+msgstr "ngjyra e gjelbër"
+
+#: ../src/libs/tools/filmstrip.c:148
+#: ../src/views/lighttable.c:1097
+msgctxt "accel"
+msgid "color blue"
+msgstr "ngjyra blu"
+
+#: ../src/libs/tools/filmstrip.c:149
+#: ../src/views/lighttable.c:1098
+msgctxt "accel"
+msgid "color purple"
+msgstr "ngjyra vjollcë"
+
+#: ../src/libs/tools/filter.c:50
+msgid "filter"
+msgstr "filtroj"
+
+#. list label
+#: ../src/libs/tools/filter.c:92
+msgid "view"
+msgstr "pamja"
+
+#: ../src/libs/tools/filter.c:98
+msgid "all"
+msgstr "të gjitha"
+
+#: ../src/libs/tools/filter.c:99
+msgid "unstarred"
+msgstr "pa yll"
+
+#: ../src/libs/tools/filter.c:100
+msgid "1 star"
+msgstr "1 yll"
+
+#: ../src/libs/tools/filter.c:101
+msgid "2 star"
+msgstr "2 yje"
+
+#: ../src/libs/tools/filter.c:102
+msgid "3 star"
+msgstr "3 yje"
+
+#: ../src/libs/tools/filter.c:103
+msgid "4 star"
+msgstr "4 yje"
+
+#: ../src/libs/tools/filter.c:104
+msgid "5 star"
+msgstr "5 yje"
+
+#: ../src/libs/tools/filter.c:105
+msgid "rejected"
+msgstr "të refuzuara"
+
+#. sort by label
+#: ../src/libs/tools/filter.c:116
+msgid "sort by"
+msgstr "radhit sipas"
+
+#: ../src/libs/tools/filter.c:123
+msgid "time"
+msgstr "ora"
+
+#: ../src/libs/tools/filter.c:124
+msgid "rating"
+msgstr "vlerësimi"
+
+#: ../src/libs/tools/filter.c:125
+msgid "id"
+msgstr "id"
+
+#: ../src/libs/tools/lighttable.c:55
+#: ../src/views/lighttable.c:105
+msgid "lighttable"
+msgstr "tabela e ndriçuar"
+
+#: ../src/libs/tools/lighttable.c:91
+msgid "zoomable light table"
+msgstr "tabela zmadhuese"
+
+#: ../src/libs/tools/lighttable.c:121
+msgctxt "accel"
+msgid "zoom max"
+msgstr "zmadhimi maks"
+
+#: ../src/libs/tools/lighttable.c:123
+msgctxt "accel"
+msgid "zoom in"
+msgstr "zmadhoj"
+
+#: ../src/libs/tools/lighttable.c:125
+msgctxt "accel"
+msgid "zoom out"
+msgstr "zvogëloj"
+
+#: ../src/libs/tools/lighttable.c:127
+msgctxt "accel"
+msgid "zoom min"
+msgstr "zmadhimi min"
+
+#: ../src/libs/tools/module_toolbox.c:36
+msgid "module toolbox"
+msgstr "kutia e moduleve"
+
+#: ../src/libs/tools/ratings.c:49
+msgid "ratings"
+msgstr "vlerësime"
+
+#: ../src/libs/tools/view_toolbox.c:36
+msgid "view toolbox"
+msgstr "kutia e pamjes"
+
+#: ../src/libs/tools/viewswitcher.c:46
+msgid "viewswitcher"
+msgstr "ndërruesi i pamjes"
+
+#: ../src/views/capture.c:100
+msgid "tethering"
+msgstr "fotografimi"
+
+#: ../src/views/capture.c:286
 #, c-format
 msgid "failed to create session path %s."
 msgstr "dështoi krijimi i shtegut të sesionit %s"
 
-#: ../src/views/capture.c:266
+#: ../src/views/capture.c:300
 #, c-format
 msgid "new session initiated '%s'"
 msgstr "nis sesionin e ri '%s'"
 
+#: ../src/views/capture.c:387
+msgid "no camera with tethering support available for use..."
+msgstr "nuk ka kamerë që garanton fotografimin me komandë..."
+
 #. Setup key accelerators in capture view...
 #. Film strip shortcuts
-#: ../src/views/capture.c:616
-#: ../src/views/darkroom.c:1240
+#: ../src/views/capture.c:458
+#: ../src/views/darkroom.c:1255
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "vë shiritin e filmit"
 
-#: ../src/views/darkroom.c:68
+#: ../src/views/darkroom.c:75
 msgid "darkroom"
 msgstr "dhoma e errët"
 
-#. construct tooltip text into option
-#: ../src/views/darkroom.c:305
-#, c-format
-msgid "show %s"
-msgstr "tregoni %s"
-
-#. construct tooltip text into option
-#: ../src/views/darkroom.c:320
-#, c-format
-msgid "%s as favorite"
-msgstr "%s te lehtësitë"
-
-#. construct tooltip text into option
-#: ../src/views/darkroom.c:335
-#, c-format
-msgid "hide %s"
-msgstr "fshehni %s"
-
 #. fail :(
-#: ../src/views/darkroom.c:360
+#: ../src/views/darkroom.c:435
 msgid "no image selected!"
 msgstr "asnjë imazh i seleksionuar!"
 
+#: ../src/views/darkroom.c:722
+msgid "no userdefined presets for favorite modules were found"
+msgstr "nuk gjen paracaktimet për modulet e pëlqyera"
+
+#: ../src/views/darkroom.c:727
+#, c-format
+msgid "applied style `%s' on current image"
+msgstr "aplikon stilin `%s' te imazhi"
+
+#: ../src/views/darkroom.c:759
+msgid "no styles have been created yet"
+msgstr "akoma nuk janë krijuar stilet"
+
+#: ../src/views/darkroom.c:791
+msgid "quick access to presets of your favorites"
+msgstr "aksesi i shpejtë në paracaktimet tuaja të pëlqyera"
+
+#: ../src/views/darkroom.c:805
+msgid "quick access for applying any of your styles"
+msgstr "aksesi i shpejtë për të zbatuar stilet tuaja"
+
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1244
+#: ../src/views/darkroom.c:1259
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "afroj"
 
-#: ../src/views/darkroom.c:1246
+#: ../src/views/darkroom.c:1261
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "mbush"
 
-#: ../src/views/darkroom.c:1248
+#: ../src/views/darkroom.c:1263
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "fiksoj"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1256
+#: ../src/views/darkroom.c:1271
 msgctxt "accel"
 msgid "image forward"
 msgstr "imazhi para"
 
-#: ../src/views/darkroom.c:1258
+#: ../src/views/darkroom.c:1273
 msgctxt "accel"
 msgid "image back"
 msgstr "imazhi pas"
 
-#: ../src/views/filmstrip.c:86
-msgid "film strip"
-msgstr "shiriti i filmit"
-
-#. Registering keyboard accelerators
-#. Ratings
-#. Initializing accelerators
-#. Rating keys
-#: ../src/views/filmstrip.c:421
-#: ../src/views/lighttable.c:1202
-msgctxt "accel"
-msgid "rate desert"
-msgstr "braktis vlerësimin"
-
-#: ../src/views/filmstrip.c:422
-#: ../src/views/lighttable.c:1203
-msgctxt "accel"
-msgid "rate 1"
-msgstr "vlerësoj 1"
-
-#: ../src/views/filmstrip.c:423
-#: ../src/views/lighttable.c:1204
-msgctxt "accel"
-msgid "rate 2"
-msgstr "vlerësoj 2"
-
-#: ../src/views/filmstrip.c:424
-#: ../src/views/lighttable.c:1205
-msgctxt "accel"
-msgid "rate 3"
-msgstr "vlerësoj 3"
-
-#: ../src/views/filmstrip.c:425
-#: ../src/views/lighttable.c:1206
-msgctxt "accel"
-msgid "rate 4"
-msgstr "vlerësoj 4"
-
-#: ../src/views/filmstrip.c:426
-#: ../src/views/lighttable.c:1207
-msgctxt "accel"
-msgid "rate 5"
-msgstr "vlerësoj 5"
-
-#: ../src/views/filmstrip.c:427
-#: ../src/views/lighttable.c:1208
-msgctxt "accel"
-msgid "rate reject"
-msgstr "refuzoj vlerësimin"
-
-#. History
-#: ../src/views/filmstrip.c:430
-msgctxt "accel"
-msgid "history copy"
-msgstr "kopjoj historikun"
-
-#: ../src/views/filmstrip.c:432
-msgctxt "accel"
-msgid "history paste"
-msgstr "ngjit historikun"
-
-#: ../src/views/filmstrip.c:434
-msgctxt "accel"
-msgid "history discard"
-msgstr "flak historikun"
-
-#. Coloring
-#. Color keys
-#: ../src/views/filmstrip.c:438
-#: ../src/views/lighttable.c:1231
-msgctxt "accel"
-msgid "color red"
-msgstr "ngjyra e kuqe"
-
-#: ../src/views/filmstrip.c:439
-#: ../src/views/lighttable.c:1232
-msgctxt "accel"
-msgid "color yellow"
-msgstr "ngjyra e verdhë"
-
-#: ../src/views/filmstrip.c:440
-#: ../src/views/lighttable.c:1233
-msgctxt "accel"
-msgid "color green"
-msgstr "ngjyra e gjelbër"
-
-#: ../src/views/filmstrip.c:441
-#: ../src/views/lighttable.c:1234
-msgctxt "accel"
-msgid "color blue"
-msgstr "ngjyra blu"
-
-#: ../src/views/filmstrip.c:442
-#: ../src/views/lighttable.c:1235
-msgctxt "accel"
-msgid "color purple"
-msgstr "ngjyra vjollcë"
-
-#. Scrolling
-#: ../src/views/filmstrip.c:445
-msgctxt "accel"
-msgid "scroll forward"
-msgstr "rrëshqas para"
-
-#: ../src/views/filmstrip.c:446
-msgctxt "accel"
-msgid "scroll back"
-msgstr "rrëshqas pas"
-
-#: ../src/views/lighttable.c:108
-msgid "lighttable"
-msgstr "tabela e ndriçuar"
-
-#: ../src/views/lighttable.c:255
+#: ../src/views/lighttable.c:265
 msgid "this collection is empty."
 msgstr "koleksioni është i zbrazët."
 
-#: ../src/views/lighttable.c:257
+#: ../src/views/lighttable.c:267
 msgid "if you didn't import any images yet"
 msgstr "nëse nuk keni importuar imazhe të reja,"
 
-#: ../src/views/lighttable.c:259
+#: ../src/views/lighttable.c:269
 msgid "do that from the top left expander."
 msgstr "mund ta bëni duke hapur panelin e parë."
 
-#: ../src/views/lighttable.c:266
+#: ../src/views/lighttable.c:276
 msgid "try to relax the filter settings in the top panel"
-msgstr "mund të përcaktoni një filtër në panelin sipër"
+msgstr "mund të përcaktoni filtrin në panelin sipër"
 
-#: ../src/views/lighttable.c:273
+#: ../src/views/lighttable.c:283
 msgid "or in the collection plugin in the left panel."
 msgstr "ose te koleksioni në panelin majtas."
 
-#. Zoom keys
-#: ../src/views/lighttable.c:1211
-msgctxt "accel"
-msgid "zoom max"
-msgstr "zmadhimi maks"
-
-#: ../src/views/lighttable.c:1213
-msgctxt "accel"
-msgid "zoom in"
-msgstr "zmadhoj"
-
-#: ../src/views/lighttable.c:1215
-msgctxt "accel"
-msgid "zoom out"
-msgstr "zvogëloj"
-
-#: ../src/views/lighttable.c:1217
-msgctxt "accel"
-msgid "zoom min"
-msgstr "zmadhimi min"
-
 #. Navigation keys
-#: ../src/views/lighttable.c:1221
+#: ../src/views/lighttable.c:1084
 msgctxt "accel"
 msgid "navigate up"
 msgstr "lundroj sipër"
 
-#: ../src/views/lighttable.c:1223
+#: ../src/views/lighttable.c:1086
 msgctxt "accel"
 msgid "navigate down"
 msgstr "lundroj poshtë"
 
-#: ../src/views/lighttable.c:1225
+#: ../src/views/lighttable.c:1088
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "lundroj në faqen sipër"
 
-#: ../src/views/lighttable.c:1227
+#: ../src/views/lighttable.c:1090
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "lundroj në faqen poshtë"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1238
+#: ../src/views/lighttable.c:1101
 msgctxt "accel"
 msgid "scroll up"
 msgstr "rrëshqas sipër"
 
-#: ../src/views/lighttable.c:1240
+#: ../src/views/lighttable.c:1103
 msgctxt "accel"
 msgid "scroll down"
 msgstr "rrëshqas poshtë"
 
-#: ../src/views/lighttable.c:1242
+#: ../src/views/lighttable.c:1105
 msgctxt "accel"
 msgid "scroll left"
 msgstr "rrëshqas majtas"
 
-#: ../src/views/lighttable.c:1244
+#: ../src/views/lighttable.c:1107
 msgctxt "accel"
 msgid "scroll right"
 msgstr "rrëshqas djathtas"
 
-#: ../src/views/lighttable.c:1246
+#: ../src/views/lighttable.c:1109
 msgctxt "accel"
 msgid "scroll center"
 msgstr "rrëshqas në mes"
 
 #. Preview key
-#: ../src/views/lighttable.c:1250
+#: ../src/views/lighttable.c:1113
 msgctxt "accel"
 msgid "preview"
 msgstr "parashikoj"
+
+#: ../src/common/ratings.c:32
+#, c-format
+msgid "applying rating %d to %d image"
+msgid_plural "applying rating %d to %d images"
+msgstr[0] "aplikon vlerësimin %d te %d imazh"
+msgstr[1] "aplikon vlerësimin %d te %d imazhe"
+
+#: ../src/common/ratings.c:60
+msgid "no images selected to apply rating"
+msgstr "asnjë imazh i seleksionuar për t'u vlerësuar"
+
+#: ../src/libs/tools/hinter.c:42
+msgid "hinter"
+msgstr "këshilluesi"
+
+#: ../src/libs/tools/global_toolbox.c:36
+msgid "preferences"
+msgstr "pëlqime"
+
+#: ../src/libs/tools/global_toolbox.c:75
+msgid "show global preferences"
+msgstr "tregoni pëlqimet globale"
+
+#: ../src/iop/shadhi.c:99
+msgid "shadows and highlights"
+msgstr "hijet dhe reflekset"
+
+#: ../src/iop/shadhi.c:115
+msgctxt "accel"
+msgid "shadows"
+msgstr "hije"
+
+#: ../src/iop/shadhi.c:116
+msgctxt "accel"
+msgid "highlights"
+msgstr "reflekse"
+
+#: ../src/iop/shadhi.c:830
+msgid "lighten shadows"
+msgstr "ndriçoni hijet"
+
+#: ../src/iop/shadhi.c:831
+msgid "darken highlights"
+msgstr "errësoni reflekset"
+
+#: ../src/iop/shadhi.c:833
+msgid ""
+"compress the effect on shadows/highlights and\n"
+"preserve midtones"
+msgstr ""
+"dendësoni efektin për hijet/reflekset\n"
+"dhe ruani tonet e mesme"
 
