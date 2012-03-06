@@ -790,7 +790,7 @@ key_swap_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_control_queue_redraw_center();
 }
 
-static void key_commit_callback(GtkAccelGroup *accel_group,
+static gboolean key_commit_callback(GtkAccelGroup *accel_group,
                                 GObject *acceleratable,
                                 guint keyval, GdkModifierType modifier,
                                 gpointer data)
@@ -799,6 +799,7 @@ static void key_commit_callback(GtkAccelGroup *accel_group,
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t   *p = (dt_iop_clipping_params_t   *)self->params;
   commit_box(self, g, p);
+  return TRUE;
 }
 
 static void

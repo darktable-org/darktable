@@ -49,20 +49,20 @@
 
 DT_MODULE(1)
 
-static void star_key_accel_callback(GtkAccelGroup *accel_group,
+static gboolean star_key_accel_callback(GtkAccelGroup *accel_group,
                                     GObject *acceleratable, guint keyval,
                                     GdkModifierType modifier, gpointer data);
-static void go_up_key_accel_callback(GtkAccelGroup *accel_group,
+static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group,
                                      GObject *acceleratable, guint keyval,
                                      GdkModifierType modifier, gpointer data);
-static void go_down_key_accel_callback(GtkAccelGroup *accel_group,
+static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group,
                                        GObject *acceleratable, guint keyval,
                                        GdkModifierType modifier, gpointer data);
-static void
+static gboolean
 go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                            guint keyval, GdkModifierType modifier,
                            gpointer data);
-static void
+static gboolean
 go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                              guint keyval, GdkModifierType modifier,
                              gpointer data);
@@ -692,7 +692,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   }
 }
 
-static void
+static gboolean
 go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                          guint keyval, GdkModifierType modifier, gpointer data)
 {
@@ -700,9 +700,10 @@ go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->offset = 0;
   dt_control_queue_redraw_center();
+  return TRUE;
 }
 
-static void
+static gboolean
 go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                            guint keyval, GdkModifierType modifier, gpointer data)
 {
@@ -710,9 +711,10 @@ go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->offset = 0x1fffffff;
   dt_control_queue_redraw_center();
+  return TRUE;
 }
 
-static void
+static gboolean
 go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                            guint keyval, GdkModifierType modifier,
                            gpointer data)
@@ -724,9 +726,10 @@ go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->offset = MAX(lib->offset - offset_delta, 0);
   dt_control_queue_redraw_center();
+  return TRUE;
 }
 
-static void
+static gboolean
 go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                              guint keyval, GdkModifierType modifier,
                              gpointer data)
@@ -738,9 +741,10 @@ go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->offset = MIN(lib->offset + offset_delta, lib->collection_count);
   dt_control_queue_redraw_center();
+  return TRUE;
 }
 
-static void
+static gboolean
 star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                         guint keyval, GdkModifierType modifier, gpointer data)
 {
@@ -798,6 +802,7 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
     default:
       break;
   }
+  return TRUE;
 }
 
 static void _lighttable_mipamps_updated_signal_callback(gpointer instance, gpointer user_data)

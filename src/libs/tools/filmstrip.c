@@ -78,21 +78,21 @@ static gboolean _lib_filmstrip_button_press_callback(GtkWidget *widget, GdkEvent
 static void _lib_filmstrip_collection_changed_callback(gpointer instance, gpointer user_data);
 
 /* key accelerators callback */
-static void _lib_filmstrip_copy_history_key_accel_callback(GtkAccelGroup *accel_group,
-							   GObject *aceeleratable, guint keyval,
-							   GdkModifierType modifier, gpointer data);
-static void _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *accel_group,
-							    GObject *aceeleratable, guint keyval,
-							    GdkModifierType modifier, gpointer data);
-static void _lib_filmstrip_discard_history_key_accel_callback(GtkAccelGroup *accel_group,
-							      GObject *aceeleratable, guint keyval,
-							      GdkModifierType modifier, gpointer data);
-static void _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_group,
-						      GObject *aceeleratable, guint keyval,
-						      GdkModifierType modifier, gpointer data);
-static void _lib_filmstrip_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
-							  GObject *aceeleratable, guint keyval,
-							  GdkModifierType modifier, gpointer data);
+static gboolean _lib_filmstrip_copy_history_key_accel_callback(GtkAccelGroup *accel_group,
+                                GObject *aceeleratable, guint keyval,
+                                GdkModifierType modifier, gpointer data);
+static gboolean _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *accel_group,
+                                GObject *aceeleratable, guint keyval,
+                                GdkModifierType modifier, gpointer data);
+static gboolean _lib_filmstrip_discard_history_key_accel_callback(GtkAccelGroup *accel_group,
+                                GObject *aceeleratable, guint keyval,
+                                GdkModifierType modifier, gpointer data);
+static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_group,
+                                GObject *aceeleratable, guint keyval,
+                                GdkModifierType modifier, gpointer data);
+static gboolean _lib_filmstrip_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
+                                GObject *aceeleratable, guint keyval,
+                                GdkModifierType modifier, gpointer data);
 
 const char* name()
 {
@@ -254,12 +254,12 @@ void gui_init(dt_lib_module_t *self)
   d->filmstrip = gtk_event_box_new();
 
   gtk_widget_add_events(d->filmstrip, 
-			GDK_POINTER_MOTION_MASK | 
-			GDK_POINTER_MOTION_HINT_MASK | 
-			GDK_BUTTON_PRESS_MASK | 
-			GDK_BUTTON_RELEASE_MASK |
-			GDK_SCROLL_MASK |
-			GDK_LEAVE_NOTIFY_MASK);
+              GDK_POINTER_MOTION_MASK | 
+              GDK_POINTER_MOTION_HINT_MASK | 
+              GDK_BUTTON_PRESS_MASK | 
+              GDK_BUTTON_RELEASE_MASK |
+              GDK_SCROLL_MASK |
+              GDK_LEAVE_NOTIFY_MASK);
 
   /* connect callbacks */
   g_signal_connect (G_OBJECT (d->filmstrip), "expose-event",
@@ -269,9 +269,9 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect (G_OBJECT (d->filmstrip), "scroll-event",
                     G_CALLBACK (_lib_filmstrip_scroll_callback), self);
   g_signal_connect (G_OBJECT (d->filmstrip), "motion-notify-event",
-		    G_CALLBACK(_lib_filmstrip_motion_notify_callback), self);
+                    G_CALLBACK(_lib_filmstrip_motion_notify_callback), self);
   g_signal_connect (G_OBJECT (d->filmstrip), "leave-notify-event",
-		    G_CALLBACK(_lib_filmstrip_mouse_leave_callback), self);
+                    G_CALLBACK(_lib_filmstrip_mouse_leave_callback), self);
 
   
   /* set size of filmstrip */
@@ -282,13 +282,13 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *size_handle = gtk_event_box_new();
   gtk_widget_set_size_request(size_handle,-1,10);
   gtk_widget_add_events(size_handle, 
-			GDK_POINTER_MOTION_MASK | 
-			GDK_POINTER_MOTION_HINT_MASK | 
-			GDK_BUTTON_PRESS_MASK | 
-			GDK_BUTTON_RELEASE_MASK |
-			GDK_ENTER_NOTIFY_MASK |
-			GDK_LEAVE_NOTIFY_MASK
-			);
+              GDK_POINTER_MOTION_MASK | 
+              GDK_POINTER_MOTION_HINT_MASK | 
+              GDK_BUTTON_PRESS_MASK | 
+              GDK_BUTTON_RELEASE_MASK |
+              GDK_ENTER_NOTIFY_MASK |
+              GDK_LEAVE_NOTIFY_MASK
+              );
 
   g_signal_connect (G_OBJECT (size_handle), "button-press-event",
                     G_CALLBACK (_lib_filmstrip_size_handle_button_callback), self);
@@ -297,12 +297,11 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect (G_OBJECT (size_handle), "motion-notify-event",
                     G_CALLBACK (_lib_filmstrip_size_handle_motion_notify_callback), self);
   g_signal_connect (G_OBJECT (size_handle), "leave-notify-event",
-		    G_CALLBACK(_lib_filmstrip_size_handle_cursor_callback), self);
+                    G_CALLBACK(_lib_filmstrip_size_handle_cursor_callback), self);
   g_signal_connect (G_OBJECT (size_handle), "enter-notify-event",
-		    G_CALLBACK(_lib_filmstrip_size_handle_cursor_callback), self);
+                    G_CALLBACK(_lib_filmstrip_size_handle_cursor_callback), self);
 
 
-  
   gtk_box_pack_start(GTK_BOX(self->widget), size_handle, FALSE, FALSE,0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->filmstrip, FALSE, FALSE,0);
 
@@ -314,27 +313,25 @@ void gui_init(dt_lib_module_t *self)
 
   /* connect signal handler */
   dt_control_signal_connect(darktable.signals, 
-			    DT_SIGNAL_COLLECTION_CHANGED,
-			    G_CALLBACK(_lib_filmstrip_collection_changed_callback),
-			    (gpointer)self);
+                  DT_SIGNAL_COLLECTION_CHANGED,
+                  G_CALLBACK(_lib_filmstrip_collection_changed_callback),
+                  (gpointer)self);
   dt_control_signal_connect(darktable.signals, 
-			    DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-			    G_CALLBACK(_lib_filmstrip_collection_changed_callback),
-			    (gpointer)self);
-  
-
+                  DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+                  G_CALLBACK(_lib_filmstrip_collection_changed_callback),
+                  (gpointer)self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   /* disconnect from signals */
   dt_control_signal_disconnect(darktable.signals,
-			       G_CALLBACK(_lib_filmstrip_collection_changed_callback),
-			       (gpointer)self);
+                    G_CALLBACK(_lib_filmstrip_collection_changed_callback),
+                    (gpointer)self);
 
   /* unset viewmanager proxy */
   darktable.view_manager->proxy.filmstrip.module = NULL;
-  
+
   /* cleaup */
   g_free(self->data);
   self->data = NULL;
@@ -634,54 +631,57 @@ int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self)
   return strip->activated_image;
 }
 
-static void _lib_filmstrip_copy_history_key_accel_callback(GtkAccelGroup *accel_group,
+static gboolean _lib_filmstrip_copy_history_key_accel_callback(GtkAccelGroup *accel_group,
                                                            GObject *aceeleratable, guint keyval,
                                                            GdkModifierType modifier, gpointer data)
 {
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  if(mouse_over_id <= 0) return;
+  if(mouse_over_id <= 0) return FALSE;
   strip->history_copy_imgid = mouse_over_id;
 
   /* check if images is currently loaded in darkroom */
   if (dt_dev_is_current_image(darktable.develop, mouse_over_id))
     dt_dev_write_history(darktable.develop);
+  return TRUE;
 }
 
-static void _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *accel_group,
+static gboolean _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *accel_group,
                                                             GObject *aceeleratable, guint keyval,
                                                             GdkModifierType modifier, gpointer data)
 {
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
-  if (strip->history_copy_imgid==-1) return;
+  if (strip->history_copy_imgid==-1) return FALSE;
 
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  if(mouse_over_id <= 0) return;
+  if(mouse_over_id <= 0) return FALSE;
 
   int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
 
   dt_history_copy_and_paste_on_image(strip->history_copy_imgid, mouse_over_id, (mode == 0)?TRUE:FALSE);
   dt_control_queue_redraw_center();
+  return TRUE;
 }
 
-static void _lib_filmstrip_discard_history_key_accel_callback(GtkAccelGroup *accel_group,
+static gboolean _lib_filmstrip_discard_history_key_accel_callback(GtkAccelGroup *accel_group,
                                                               GObject *aceeleratable, guint keyval,
                                                               GdkModifierType modifier, gpointer data)
 {
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
-  if (strip->history_copy_imgid==-1) return;
+  if (strip->history_copy_imgid==-1) return FALSE;
 
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  if(mouse_over_id <= 0) return;
+  if(mouse_over_id <= 0) return FALSE;
 
   dt_history_delete_on_image(mouse_over_id);
   dt_control_queue_redraw_center();
+  return TRUE;
 }
 
-static void _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_group,
+static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_group,
                                                       GObject *aceeleratable, guint keyval,
                                                       GdkModifierType modifier, gpointer data)
 {
@@ -699,7 +699,7 @@ static void _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_group
     {
       int32_t mouse_over_id;
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-      if (mouse_over_id <= 0) return;
+      if (mouse_over_id <= 0) return FALSE;
       /* get image from cache */
       const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
       dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
@@ -722,16 +722,18 @@ static void _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_group
     default:
       break;
     }
+    return TRUE;
 }
 
-static void _lib_filmstrip_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
-							  GObject *acceleratable, guint keyval,
-							  GdkModifierType modifier, gpointer data)
+static gboolean _lib_filmstrip_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
+                                GObject *acceleratable, guint keyval,
+                                GdkModifierType modifier, gpointer data)
 {
   dt_colorlabels_key_accel_callback(NULL, NULL, 0, 0, data);
   /* redraw filmstrip */
   if(darktable.view_manager->proxy.filmstrip.module)
     gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
+  return TRUE;
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

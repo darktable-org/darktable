@@ -61,7 +61,7 @@ flags ()
 }
 
 
-static void key_softproof_callback(GtkAccelGroup *accel_group,
+static gboolean key_softproof_callback(GtkAccelGroup *accel_group,
                                    GObject *acceleratable,
                                    guint keyval, GdkModifierType modifier,
                                    gpointer data)
@@ -82,6 +82,7 @@ static void key_softproof_callback(GtkAccelGroup *accel_group,
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   dt_control_queue_redraw_center();
+  return TRUE;
 }
 
 int

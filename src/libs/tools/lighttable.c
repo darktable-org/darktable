@@ -40,13 +40,13 @@ static void _lib_lighttable_layout_changed (GtkComboBox *widget, gpointer user_d
 /* zoom spinbutton change callback */
 static void _lib_lighttable_zoom_changed (GtkRange *range, gpointer user_data);
 /* zoom key accel callback */
-static void _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+static gboolean _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                         guint keyval, GdkModifierType modifier, gpointer data);
-static void _lib_lighttable_key_accel_zoom_min_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+static gboolean _lib_lighttable_key_accel_zoom_min_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                         guint keyval, GdkModifierType modifier, gpointer data);
-static void _lib_lighttable_key_accel_zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+static gboolean _lib_lighttable_key_accel_zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
 						       guint keyval, GdkModifierType modifier, gpointer data);
-static void _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+static gboolean _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                         guint keyval, GdkModifierType modifier, gpointer data);
 
 
@@ -181,23 +181,25 @@ static void _lib_lighttable_set_zoom(dt_lib_module_t *self, gint zoom)
   gtk_range_set_value(GTK_RANGE(d->zoom), zoom);
 }
 
-static void _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-							guint keyval, GdkModifierType modifier, gpointer data)
+static gboolean _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                                        guint keyval, GdkModifierType modifier, gpointer data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
   gtk_range_set_value(GTK_RANGE(d->zoom), 1);
+  return TRUE;
 }
 
-static void _lib_lighttable_key_accel_zoom_min_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+static gboolean _lib_lighttable_key_accel_zoom_min_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                         guint keyval, GdkModifierType modifier, gpointer data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
   gtk_range_set_value(GTK_RANGE(d->zoom), DT_LIBRARY_MAX_ZOOM);
+  return TRUE;
 }
 
-static void _lib_lighttable_key_accel_zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+static gboolean _lib_lighttable_key_accel_zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                         guint keyval, GdkModifierType modifier, gpointer data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)data;
@@ -206,9 +208,10 @@ static void _lib_lighttable_key_accel_zoom_in_callback(GtkAccelGroup *accel_grou
   if(zoom <= 1) zoom = 1;
   else zoom--;
   gtk_range_set_value(GTK_RANGE(d->zoom), zoom);
+  return TRUE;
 }
 
-static void _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+static gboolean _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                         guint keyval, GdkModifierType modifier, gpointer data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)data;
@@ -219,5 +222,7 @@ static void _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel_gro
   else
     zoom++;
   gtk_range_set_value(GTK_RANGE(d->zoom), zoom);
+  return TRUE;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

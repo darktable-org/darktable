@@ -58,12 +58,13 @@ typedef struct
   gboolean        in_plugin;
 } StyleData;
 
-static void _apply_style_shortcut_callback(GtkAccelGroup *accel_group,
+static gboolean _apply_style_shortcut_callback(GtkAccelGroup *accel_group,
                                    GObject *acceleratable,
                                    guint keyval, GdkModifierType modifier,
                                    gpointer data)
 {
     dt_styles_apply_to_selection (data,0);
+    return TRUE;
 }
 
 static void _destroy_style_shortcut_callback(gpointer data,GClosure *closure)

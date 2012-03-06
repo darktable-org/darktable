@@ -110,7 +110,7 @@ void dt_colorlabels_toggle_label (const int imgid, const int color)
   sqlite3_finalize(stmt);
 }
 
-void dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
+gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
                                        GObject *acceleratable, guint keyval,
                                        GdkModifierType modifier, gpointer data)
 {
@@ -155,6 +155,7 @@ void dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
   // TODO: move color labels to image_t cache and sync via write_get!
   dt_image_synch_xmp(selected);
   dt_control_queue_redraw_center();
+  return TRUE;
 }
 
 //FIXME: XMP uses Red, Green, ... while we use red, green, ... What should this function return?

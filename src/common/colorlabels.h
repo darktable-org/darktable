@@ -19,7 +19,7 @@ void dt_colorlabels_remove_label (const int imgid, const int color);
 /** get the name of the color for a given number (could be replaced by an array) */
 const char* dt_colorlabels_to_string(int label);
 
-void dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
+gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
                                        GObject *acceleratable, guint keyval,
                                        GdkModifierType modifier, gpointer data);
 

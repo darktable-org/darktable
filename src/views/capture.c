@@ -123,7 +123,7 @@ void capture_view_switch_key_accel(void *p)
     dt_ctl_switch_mode_to( DT_CAPTURE );
 }
 
-void film_strip_key_accel(GtkAccelGroup *accel_group,
+gboolean film_strip_key_accel(GtkAccelGroup *accel_group,
                           GObject *acceleratable,
                           guint keyval, GdkModifierType modifier,
                           gpointer data)
@@ -131,6 +131,7 @@ void film_strip_key_accel(GtkAccelGroup *accel_group,
   dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module; 
   gboolean vs = dt_lib_is_visible(m);
   dt_lib_set_visible(m,!vs);
+  return TRUE;
 }
 
 
@@ -465,3 +466,5 @@ void connect_key_accels(dt_view_t *self)
                                      (gpointer)self, NULL);
   dt_accel_connect_view(self, "toggle film strip", closure);
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

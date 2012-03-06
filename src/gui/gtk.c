@@ -156,7 +156,7 @@ static void key_accel_changed(GtkAccelMap *object,
 
 }
 
-static void brightness_key_accel_callback(GtkAccelGroup *accel_group,
+static gboolean brightness_key_accel_callback(GtkAccelGroup *accel_group,
                                           GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier,
                                           gpointer data)
@@ -167,9 +167,10 @@ static void brightness_key_accel_callback(GtkAccelGroup *accel_group,
     dt_gui_brightness_decrease();
 
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+  return TRUE;
 }
 
-static void contrast_key_accel_callback(GtkAccelGroup *accel_group,
+static gboolean contrast_key_accel_callback(GtkAccelGroup *accel_group,
                                         GObject *acceleratable, guint keyval,
                                         GdkModifierType modifier,
                                         gpointer data)
@@ -180,9 +181,10 @@ static void contrast_key_accel_callback(GtkAccelGroup *accel_group,
     dt_gui_contrast_decrease();
 
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+  return TRUE;
 }
 
-static void fullscreen_key_accel_callback(GtkAccelGroup *accel_group,
+static gboolean fullscreen_key_accel_callback(GtkAccelGroup *accel_group,
                                           GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier,
                                           gpointer data)
@@ -211,15 +213,17 @@ static void fullscreen_key_accel_callback(GtkAccelGroup *accel_group,
 
   /* redraw center view */
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+  return TRUE;
 }
 
-static void view_switch_key_accel_callback(GtkAccelGroup *accel_group,
+static gboolean view_switch_key_accel_callback(GtkAccelGroup *accel_group,
                                           GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier,
                                           gpointer data)
 {
   dt_ctl_switch_mode();
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+  return TRUE;
 }
 
 static gboolean
@@ -254,7 +258,7 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
       /* special case show header */
       g_snprintf(key, 512, "%s/ui/show_header", cv->module_name);
       if (dt_conf_get_bool(key)) 
-	dt_ui_panel_show(ui, DT_UI_PANEL_TOP, show);
+        dt_ui_panel_show(ui, DT_UI_PANEL_TOP, show);
 
     } break;
    
@@ -502,7 +506,7 @@ void quit()
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
-static void _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
+static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
                                                 GObject *acceleratable,
                                                 guint keyval,
                                                 GdkModifierType modifier,
@@ -537,13 +541,15 @@ static void _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
 
   /* try switch to mode */
   dt_ctl_switch_mode_to (mode);
+  return TRUE;
 }
 
-static void quit_callback(GtkAccelGroup *accel_group,
+static gboolean quit_callback(GtkAccelGroup *accel_group,
                           GObject *acceleratable, guint keyval,
                           GdkModifierType modifier)
 {
   quit();
+  return TRUE; // for the sake of completeness ...
 }
 
 static gboolean
@@ -1034,12 +1040,12 @@ void init_main_table(GtkWidget *container)
   gtk_widget_set_size_request(cda, -1, 500);
   gtk_widget_set_app_paintable(cda, TRUE);
   gtk_widget_set_events(cda,
-			GDK_POINTER_MOTION_MASK
-			| GDK_POINTER_MOTION_HINT_MASK
-			| GDK_BUTTON_PRESS_MASK
-			| GDK_BUTTON_RELEASE_MASK
-			| GDK_ENTER_NOTIFY_MASK
-			| GDK_LEAVE_NOTIFY_MASK);
+            GDK_POINTER_MOTION_MASK
+            | GDK_POINTER_MOTION_HINT_MASK
+            | GDK_BUTTON_PRESS_MASK
+            | GDK_BUTTON_RELEASE_MASK
+            | GDK_ENTER_NOTIFY_MASK
+            | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_can_focus(cda, TRUE);
   gtk_widget_set_visible(cda, TRUE);
 
@@ -1048,9 +1054,9 @@ void init_main_table(GtkWidget *container)
 
   /* center should redraw when signal redraw center is raised*/
   dt_control_signal_connect(darktable.signals, 
-			    DT_SIGNAL_CONTROL_REDRAW_CENTER, 
-			    G_CALLBACK(_ui_widget_redraw_callback), 
-			    darktable.gui->ui->center);
+            DT_SIGNAL_CONTROL_REDRAW_CENTER, 
+            G_CALLBACK(_ui_widget_redraw_callback), 
+            darktable.gui->ui->center);
 
   /* initialize the center bottom panel */
   _ui_init_panel_center_bottom(darktable.gui->ui, widget);
@@ -1176,13 +1182,13 @@ void dt_ui_restore_panels(dt_ui_t *ui)
   {
     /* restore the visibile state of panels */
     for (int k=0;k<DT_UI_PANEL_SIZE;k++)
-      {
-	g_snprintf(key, 512, "%s/ui/%s_visible",cv->module_name, _ui_panel_config_names[k]);
-	if (dt_conf_key_exists(key))
-	  gtk_widget_set_visible(ui->panels[k], dt_conf_get_bool(key));
-	else
-	  gtk_widget_set_visible(ui->panels[k], 1);
-      }
+    {
+      g_snprintf(key, 512, "%s/ui/%s_visible",cv->module_name, _ui_panel_config_names[k]);
+      if (dt_conf_key_exists(key))
+        gtk_widget_set_visible(ui->panels[k], dt_conf_get_bool(key));
+      else
+        gtk_widget_set_visible(ui->panels[k], 1);
+    }
   }
 }
 
@@ -1306,7 +1312,7 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
   gtk_widget_set_name(widget, "right");
   gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 0, 0, 5);
   gtk_table_attach(GTK_TABLE(container), widget, 3, 4, 1, 2,
-		   GTK_SHRINK, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
+            GTK_SHRINK, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
 
   /* set panel width */
   gtk_widget_set_size_request(widget,dt_conf_get_int("panel_width"), -1);
@@ -1357,7 +1363,7 @@ static void _ui_init_panel_bottom(dt_ui_t *ui, GtkWidget *container)
   /* create the panel box */
   ui->panels[DT_UI_PANEL_BOTTOM] = widget = gtk_hbox_new(FALSE, 0);
   gtk_table_attach(GTK_TABLE(container), widget, 1, 4, 2, 3,
-		   GTK_EXPAND | GTK_FILL | GTK_SHRINK, GTK_SHRINK, 0, 0); 
+            GTK_EXPAND | GTK_FILL | GTK_SHRINK, GTK_SHRINK, 0, 0); 
 
   /* add the container */
   ui->containers[DT_UI_CONTAINER_PANEL_BOTTOM] = gtk_hbox_new(TRUE,0);
@@ -1418,3 +1424,5 @@ static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
   if(i_own_lock) dt_control_gdk_unlock();
 
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
