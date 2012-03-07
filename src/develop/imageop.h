@@ -1,6 +1,6 @@
 /*
 		This file is part of darktable,
-		copyright (c) 2009--2011 johannes hanika.
+		copyright (c) 2009--2012 johannes hanika.
 		copyright (c) 2011 henrik andersson.
 
 		darktable is free software: you can redistribute it and/or modify
@@ -78,6 +78,10 @@ typedef struct dt_iop_module_so_t
   dt_dev_operation_t op;
   /** other stuff that may be needed by the module, not only in gui mode. inited only once, has to be read-only then. */
   dt_iop_global_data_t *data;
+  /** gui is also only inited once at startup. */
+  dt_iop_gui_data_t *gui_data;
+  /** which results in this widget here, too. */
+  GtkWidget *widget;
 
   /** this initializes static, hardcoded presets for this module and is called only once per run of dt. */
   void (*init_presets)    (struct dt_iop_module_so_t *self);
@@ -171,7 +175,7 @@ typedef struct dt_iop_module_t
   struct dt_develop_blend_params_t *blend_params, *default_blendop_params;
   /** holder for blending ui control */
   gpointer blend_data;
-  /** child widget which is added to the GtkExpander. */
+  /** child widget which is added to the GtkExpander. copied from module_so_t. */
   GtkWidget *widget;
   /** off button, somewhere in header, common to all plug-ins. */
   GtkDarktableToggleButton *off;
