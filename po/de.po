@@ -1,9 +1,10 @@
+#: ../src/libs/colorpicker.c:550
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-03-04 23:06+0100\n"
-"PO-Revision-Date: 2012-03-04 23:08+0100\n"
+"POT-Creation-Date: 2012-03-07 12:42+0100\n"
+"PO-Revision-Date: 2012-03-07 12:41+0100\n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: German\n"
 "Language: \n"
@@ -419,13 +420,13 @@ msgstr ""
 "anderes Bild angewandt werden kann."
 
 #: ../src/common/history.c:163 ../src/common/history.c:174
-#: ../src/common/styles.c:270 ../src/develop/develop.c:778
+#: ../src/common/styles.c:271 ../src/develop/develop.c:778
 #: ../src/libs/history.c:151
 msgid "on"
 msgstr "ein"
 
 #: ../src/common/history.c:163 ../src/common/history.c:174
-#: ../src/common/styles.c:270 ../src/develop/develop.c:778
+#: ../src/common/styles.c:271 ../src/develop/develop.c:778
 #: ../src/libs/history.c:151
 msgid "off"
 msgstr "aus"
@@ -447,32 +448,32 @@ msgstr ""
 msgid "image `%s' is not available!"
 msgstr "Bild ‚%s‘ ist nicht verfügbar!"
 
-#: ../src/common/styles.c:87
+#: ../src/common/styles.c:88
 #, c-format
 msgid "style with name '%s' already exists"
 msgstr "Stil mit dem Namen ‚%s‘ existiert bereits"
 
-#: ../src/common/styles.c:154
+#: ../src/common/styles.c:155
 #, c-format
 msgid "style named '%s' successfully created"
 msgstr "Stil mit dem Namen ‚%s‘ erfolgreich angelegt"
 
-#: ../src/common/styles.c:322
+#: ../src/common/styles.c:323
 #, c-format
 msgid "style file for %s exists"
 msgstr "Stil-Datei für ‚%s‘ existiert bereits"
 
-#: ../src/common/styles.c:365
+#: ../src/common/styles.c:366
 #, c-format
 msgid "style %s was sucessfully saved"
 msgstr "Stil ‚%s‘ erfolgreich gespeichert"
 
-#: ../src/common/styles.c:540
+#: ../src/common/styles.c:541
 #, c-format
 msgid "style %s was sucessfully imported"
 msgstr "Stil ‚%s‘ erfolgreich importiert"
 
-#: ../src/common/variables.c:213 ../src/iop/clipping.c:965
+#: ../src/common/variables.c:213 ../src/iop/clipping.c:966
 #, c-format
 msgid "none"
 msgstr "keine"
@@ -652,9 +653,9 @@ msgstr "%s ist eingeschaltet"
 msgid "%s is switched off"
 msgstr "%s ist ausgeschaltet"
 
-#: ../src/develop/imageop.c:571 ../src/gui/accelerators.c:606
-#: ../src/gui/accelerators.c:683 ../src/gui/accelerators.c:807
-#: ../src/gui/accelerators.c:829 ../src/gui/presets.c:175
+#: ../src/develop/imageop.c:571 ../src/gui/accelerators.c:612
+#: ../src/gui/accelerators.c:690 ../src/gui/accelerators.c:818
+#: ../src/gui/accelerators.c:841 ../src/gui/presets.c:175
 #: ../src/gui/presets.c:202 ../src/gui/presets.c:482 ../src/libs/lib.c:209
 #: ../src/libs/lib.c:229 ../src/libs/lib.c:850
 msgid "preset"
@@ -852,7 +853,7 @@ msgctxt "accel"
 msgid "edit"
 msgstr "bearbeiten"
 
-#: ../src/gui/accelerators.c:668 ../src/libs/lib.c:274
+#: ../src/gui/accelerators.c:674 ../src/libs/lib.c:274
 msgid "deleting preset for obsolete module"
 msgstr "lösche Voreinstellung für obsoletes Modul"
 
@@ -1072,73 +1073,73 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "Zum Überschreiben des Datums bitte als Format YYYY-MM-DD benutzen"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:772
+#: ../src/gui/gtk.c:778
 msgctxt "accel"
 msgid "capture view"
 msgstr "Aufnahme-Ansicht"
 
-#: ../src/gui/gtk.c:773
+#: ../src/gui/gtk.c:779
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "Leuchttisch-Ansicht"
 
-#: ../src/gui/gtk.c:774
+#: ../src/gui/gtk.c:780
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "Dunkelkammer-Ansicht"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:793
+#: ../src/gui/gtk.c:799
 msgctxt "accel"
 msgid "quit"
 msgstr "verlassen"
 
 #. Contrast and brightness accelerators
-#: ../src/gui/gtk.c:800
+#: ../src/gui/gtk.c:806
 msgctxt "accel"
 msgid "increase brightness"
 msgstr "Helligkeit erhöhen"
 
-#: ../src/gui/gtk.c:802
+#: ../src/gui/gtk.c:808
 msgctxt "accel"
 msgid "decrease brightness"
 msgstr "Helligkeit verringern"
 
-#: ../src/gui/gtk.c:804
+#: ../src/gui/gtk.c:810
 msgctxt "accel"
 msgid "increase contrast"
 msgstr "Kontrast erhöhen"
 
-#: ../src/gui/gtk.c:806
+#: ../src/gui/gtk.c:812
 msgctxt "accel"
 msgid "decrease contrast"
 msgstr "Kontrast verringern"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:827
+#: ../src/gui/gtk.c:833
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "Vollbild umschalten"
 
-#: ../src/gui/gtk.c:828
+#: ../src/gui/gtk.c:834
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "Vollbild verlassen"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:840
+#: ../src/gui/gtk.c:846
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "Seitenränder umschalten"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:843
+#: ../src/gui/gtk.c:849
 msgctxt "accel"
 msgid "toggle header"
 msgstr "Kopfzeile umschalten"
 
 #. View-switch
-#: ../src/gui/gtk.c:847
+#: ../src/gui/gtk.c:853
 msgctxt "accel"
 msgid "switch view"
 msgstr "Ansicht wechseln"
@@ -2090,40 +2091,40 @@ msgstr "Randgröße"
 msgid "size of the border in percent of the full image"
 msgstr "Größe des Randes in Prozent des ganzen Bildes"
 
-#: ../src/iop/borders.c:404 ../src/iop/clipping.c:923
+#: ../src/iop/borders.c:404 ../src/iop/clipping.c:924
 msgid "aspect"
 msgstr "Format"
 
 #. add import singel image buttons
-#: ../src/iop/borders.c:408 ../src/iop/clipping.c:929 ../src/libs/import.c:461
+#: ../src/iop/borders.c:408 ../src/iop/clipping.c:930 ../src/libs/import.c:461
 msgid "image"
 msgstr "Bild"
 
-#: ../src/iop/borders.c:409 ../src/iop/clipping.c:930
+#: ../src/iop/borders.c:409 ../src/iop/clipping.c:931
 msgid "golden cut"
 msgstr "Goldener Schnitt"
 
-#: ../src/iop/borders.c:410 ../src/iop/clipping.c:931
+#: ../src/iop/borders.c:410 ../src/iop/clipping.c:932
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/borders.c:411 ../src/iop/clipping.c:932
+#: ../src/iop/borders.c:411 ../src/iop/clipping.c:933
 msgid "3:2"
 msgstr "3:2"
 
-#: ../src/iop/borders.c:412 ../src/iop/clipping.c:933
+#: ../src/iop/borders.c:412 ../src/iop/clipping.c:934
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:413 ../src/iop/clipping.c:935
+#: ../src/iop/borders.c:413 ../src/iop/clipping.c:936
 msgid "square"
 msgstr "quadratisch"
 
-#: ../src/iop/borders.c:414 ../src/iop/clipping.c:936
+#: ../src/iop/borders.c:414 ../src/iop/clipping.c:937
 msgid "DIN"
 msgstr "DIN"
 
-#: ../src/iop/borders.c:415 ../src/iop/clipping.c:937
+#: ../src/iop/borders.c:415 ../src/iop/clipping.c:938
 msgid "16:9"
 msgstr "16:9"
 
@@ -2131,7 +2132,7 @@ msgstr "16:9"
 msgid "constant border"
 msgstr "konstanter Rahmen"
 
-#: ../src/iop/borders.c:420 ../src/iop/clipping.c:948
+#: ../src/iop/borders.c:420 ../src/iop/clipping.c:949
 msgid ""
 "set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
@@ -2269,156 +2270,156 @@ msgid "crop and rotate"
 msgstr "Zuschneiden und drehen"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:890 ../src/iop/clipping.c:982
+#: ../src/iop/clipping.c:891 ../src/iop/clipping.c:983
 msgid "flip"
 msgstr "spiegeln"
 
-#: ../src/iop/clipping.c:897
+#: ../src/iop/clipping.c:898
 msgid "flip image horizontally"
 msgstr "Bild horizontal spiegeln"
 
-#: ../src/iop/clipping.c:898
+#: ../src/iop/clipping.c:899
 msgid "flip image vertically"
 msgstr "Bild vertikal spiegeln"
 
-#: ../src/iop/clipping.c:901
+#: ../src/iop/clipping.c:902
 msgid "angle"
 msgstr "Winkel"
 
 # sehr unschön :-(
-#: ../src/iop/clipping.c:905
+#: ../src/iop/clipping.c:906
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 "Mit rechter Maustaste ins Bild klicken und eine Linie ziehen, um eine gerade "
 "Kante zu markieren"
 
-#: ../src/iop/clipping.c:910
+#: ../src/iop/clipping.c:911
 msgid "keystone h"
 msgstr "Trapezkorrektur h"
 
-#: ../src/iop/clipping.c:911
+#: ../src/iop/clipping.c:912
 msgid "adjust perspective for horizontal keystone distortion"
 msgstr "Perspektive für horizontale Trapezverzerrung anpassen"
 
-#: ../src/iop/clipping.c:917
+#: ../src/iop/clipping.c:918
 msgid "keystone v"
 msgstr "Trapezkorrektur v"
 
-#: ../src/iop/clipping.c:918
+#: ../src/iop/clipping.c:919
 msgid "adjust perspective for vertical keystone distortion"
 msgstr "Perspektive für vertikale Trapezverzerrung anpassen"
 
-#: ../src/iop/clipping.c:928
+#: ../src/iop/clipping.c:929
 msgid "free"
 msgstr "frei"
 
-#: ../src/iop/clipping.c:934
+#: ../src/iop/clipping.c:935
 msgid "5:4"
 msgstr "5:4"
 
-#: ../src/iop/clipping.c:955
+#: ../src/iop/clipping.c:956
 msgid "swap the aspect ratio (ctrl-x)"
 msgstr "Seitenverhältnis tauschen (Strg-x)"
 
-#: ../src/iop/clipping.c:962
+#: ../src/iop/clipping.c:963
 msgid "guides"
 msgstr "Hilfslinien"
 
-#: ../src/iop/clipping.c:966
+#: ../src/iop/clipping.c:967
 msgid "grid"
 msgstr "Gitter"
 
-#: ../src/iop/clipping.c:967
+#: ../src/iop/clipping.c:968
 msgid "rules of thirds"
 msgstr "Drittelregel"
 
-#: ../src/iop/clipping.c:968
+#: ../src/iop/clipping.c:969
 msgid "diagonal method"
 msgstr "Diagonalen"
 
-#: ../src/iop/clipping.c:969
+#: ../src/iop/clipping.c:970
 msgid "harmonious triangles"
 msgstr "harmonische Dreiecke"
 
-#: ../src/iop/clipping.c:970
+#: ../src/iop/clipping.c:971
 msgid "golden mean"
 msgstr "goldener Schnitt"
 
-#: ../src/iop/clipping.c:972
+#: ../src/iop/clipping.c:973
 msgid ""
 "with this option, you can display guide lines to help compose your "
 "photograph."
 msgstr "Hilfslinien anzeigen, die beim Komponieren der Fotographie helfen."
 
-#: ../src/iop/clipping.c:976
+#: ../src/iop/clipping.c:977
 msgid "type"
 msgstr "Typ"
 
-#: ../src/iop/clipping.c:989
+#: ../src/iop/clipping.c:990
 msgid "flip guides horizontally"
 msgstr "Hilfslinien horizontal spiegeln"
 
-#: ../src/iop/clipping.c:990
+#: ../src/iop/clipping.c:991
 msgid "flip guides vertically"
 msgstr "Hilfslinien vertikal spiegeln"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:992
+#: ../src/iop/clipping.c:993
 msgid "golden sections"
 msgstr "Goldener Schnitt"
 
-#: ../src/iop/clipping.c:994
+#: ../src/iop/clipping.c:995
 msgid "enable this option to show golden sections."
 msgstr "Diese Option auswählen, um den Goldenen Schnitt anzuzeigen"
 
-#: ../src/iop/clipping.c:997
+#: ../src/iop/clipping.c:998
 msgid "spiral sections"
 msgstr "Rechtecke d. Spirale"
 
-#: ../src/iop/clipping.c:998
+#: ../src/iop/clipping.c:999
 msgid "enable this option to show golden spiral sections."
 msgstr ""
 "Diese Option auswählen, um die Bereiche der goldenen Spirale anzuzeigen"
 
-#: ../src/iop/clipping.c:1001
+#: ../src/iop/clipping.c:1002
 msgid "golden spiral"
 msgstr "Goldene Spirale"
 
-#: ../src/iop/clipping.c:1002
+#: ../src/iop/clipping.c:1003
 msgid "enable this option to show a golden spiral guide."
 msgstr "Diese Option auswählen, um eine Goldene Spirale anzuzeigen"
 
-#: ../src/iop/clipping.c:1005
+#: ../src/iop/clipping.c:1006
 msgid "golden triangles"
 msgstr "Goldene Dreiecke"
 
-#: ../src/iop/clipping.c:1006
+#: ../src/iop/clipping.c:1007
 msgid "enable this option to show golden triangles."
 msgstr "Diese Option auswählen, um Goldene Dreiecke anzuzeigen"
 
-#: ../src/iop/clipping.c:1663
+#: ../src/iop/clipping.c:1664
 msgctxt "accel"
 msgid "commit"
 msgstr "Änderungen übernehmen"
 
-#: ../src/iop/clipping.c:1665
+#: ../src/iop/clipping.c:1666
 msgctxt "accel"
 msgid "swap the aspect ratio"
 msgstr "Seitenverhältnis tauschen"
 
-#: ../src/iop/clipping.c:1667
+#: ../src/iop/clipping.c:1668
 msgctxt "accel"
 msgid "angle"
 msgstr "Winkel"
 
 # war "Trapezkorrektur h", aber zu lang für GUI (Bug?)
-#: ../src/iop/clipping.c:1668
+#: ../src/iop/clipping.c:1669
 msgctxt "accel"
 msgid "keystone h"
 msgstr "Trapezkorrektur h"
 
 # siehe "keystone h"
-#: ../src/iop/clipping.c:1669
+#: ../src/iop/clipping.c:1670
 msgctxt "accel"
 msgid "keystone v"
 msgstr "Trapezkorrektur v"
@@ -2496,14 +2497,14 @@ msgstr "Erweiterte Farb-Matrix"
 msgid "sRGB (e.g. jpg)"
 msgstr "sRGB (z.B. JPEG)"
 
-#: ../src/iop/colorin.c:665 ../src/iop/colorout.c:816
-#: ../src/iop/colorout.c:817 ../src/iop/colorout.c:818
+#: ../src/iop/colorin.c:665 ../src/iop/colorout.c:817
+#: ../src/iop/colorout.c:818 ../src/iop/colorout.c:819
 #: ../src/libs/export.c:470
 msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
-#: ../src/iop/colorin.c:667 ../src/iop/colorout.c:804
-#: ../src/iop/colorout.c:805 ../src/iop/colorout.c:806
+#: ../src/iop/colorin.c:667 ../src/iop/colorout.c:805
+#: ../src/iop/colorout.c:806 ../src/iop/colorout.c:807
 #: ../src/libs/export.c:482
 msgid "linear RGB"
 msgstr "lineares RGB"
@@ -2568,85 +2569,85 @@ msgstr "Mischanteil der Helligkeit des Ursprungsbildes"
 msgid "output color profile"
 msgstr "Ausgabefarbprofil"
 
-#: ../src/iop/colorout.c:541
+#: ../src/iop/colorout.c:542
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "nicht unterstütztes Ausgabeprofil wurde durch sRGB ersetzt!"
 
-#: ../src/iop/colorout.c:678 ../src/iop/colorout.c:685
+#: ../src/iop/colorout.c:679 ../src/iop/colorout.c:686
 msgid "soft proof"
 msgstr "Softproof"
 
-#: ../src/iop/colorout.c:768
+#: ../src/iop/colorout.c:769
 msgid "output intent"
 msgstr "Ausgabevorsatz"
 
-#: ../src/iop/colorout.c:769
+#: ../src/iop/colorout.c:770
 msgid "output profile"
 msgstr "Ausgabeprofil"
 
-#: ../src/iop/colorout.c:770
+#: ../src/iop/colorout.c:771
 msgid "softproof profile"
 msgstr "Softproof-Profil"
 
-#: ../src/iop/colorout.c:772
+#: ../src/iop/colorout.c:773
 msgid "display intent"
 msgstr "Anzeigevorsatz"
 
-#: ../src/iop/colorout.c:773
+#: ../src/iop/colorout.c:774
 msgid "display profile"
 msgstr "Anzeigeprofil"
 
-#: ../src/iop/colorout.c:780 ../src/iop/colorout.c:785
+#: ../src/iop/colorout.c:781 ../src/iop/colorout.c:786
 #: ../src/libs/export.c:453
 msgid "perceptual"
 msgstr "Wahrnehmung"
 
-#: ../src/iop/colorout.c:781 ../src/iop/colorout.c:786
+#: ../src/iop/colorout.c:782 ../src/iop/colorout.c:787
 #: ../src/libs/export.c:454
 msgid "relative colorimetric"
 msgstr "Kolorimetrisch (relativ)"
 
-#: ../src/iop/colorout.c:782 ../src/iop/colorout.c:787
+#: ../src/iop/colorout.c:783 ../src/iop/colorout.c:788
 #: ../src/libs/export.c:455
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Sättigung"
 
-#: ../src/iop/colorout.c:783 ../src/iop/colorout.c:788
+#: ../src/iop/colorout.c:784 ../src/iop/colorout.c:789
 #: ../src/libs/export.c:456
 msgid "absolute colorimetric"
 msgstr "Kolorimetrisch (absolut)"
 
-#: ../src/iop/colorout.c:798 ../src/iop/colorout.c:799
-#: ../src/iop/colorout.c:800 ../src/libs/export.c:531
+#: ../src/iop/colorout.c:799 ../src/iop/colorout.c:800
+#: ../src/iop/colorout.c:801 ../src/libs/export.c:531
 msgid "system display profile"
 msgstr "System-Bildschirmprofil"
 
-#: ../src/iop/colorout.c:810 ../src/iop/colorout.c:811
-#: ../src/iop/colorout.c:812 ../src/libs/export.c:463
+#: ../src/iop/colorout.c:811 ../src/iop/colorout.c:812
+#: ../src/iop/colorout.c:813 ../src/libs/export.c:463
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web-sicher)"
 
-#: ../src/iop/colorout.c:841
+#: ../src/iop/colorout.c:842
 msgid "rendering intent"
 msgstr "Wiedergabeabsicht"
 
-#: ../src/iop/colorout.c:842
+#: ../src/iop/colorout.c:843
 #, c-format
 msgid "icc profiles in %s/color/out or %s/color/out"
 msgstr "ICC-Profile in %s/color/out oder %s/color/out"
 
-#: ../src/iop/colorout.c:844
+#: ../src/iop/colorout.c:845
 #, c-format
 msgid "display icc profiles in %s/color/out or %s/color/out"
 msgstr "Anzeige-ICC-Profile in %s/color/out oder %s/color/out"
 
-#: ../src/iop/colorout.c:846
+#: ../src/iop/colorout.c:847
 #, c-format
 msgid "softproof icc profiles in %s/color/out or %s/color/out"
 msgstr "Softproof-ICC-Profile in %s/color/out oder %s/color/out"
 
-#: ../src/iop/colorout.c:880
+#: ../src/iop/colorout.c:881
 msgctxt "accel"
 msgid "toggle softproofing"
 msgstr "Softproofing umschalten"
@@ -2867,24 +2868,24 @@ msgstr "um 90° drehen"
 msgid "rotate by 180"
 msgstr "um 180° drehen"
 
-#: ../src/iop/flip.c:300
+#: ../src/iop/flip.c:302
 msgid "rotate"
 msgstr "drehen"
 
-#: ../src/iop/flip.c:305
+#: ../src/iop/flip.c:307
 msgid "rotate 90 degrees ccw"
 msgstr "um 90° gegen den Uhrzeigersinn drehen"
 
-#: ../src/iop/flip.c:311
+#: ../src/iop/flip.c:313
 msgid "rotate 90 degrees cw"
 msgstr "um 90° im Uhrzeigersinn drehen"
 
-#: ../src/iop/flip.c:324
+#: ../src/iop/flip.c:326
 msgctxt "accel"
 msgid "rotate 90 degrees ccw"
 msgstr "um 90° gegen den Uhrzeigersinn drehen"
 
-#: ../src/iop/flip.c:326
+#: ../src/iop/flip.c:328
 msgctxt "accel"
 msgid "rotate 90 degrees cw"
 msgstr "um 90° im Uhrzeigersinn drehen"
@@ -3494,7 +3495,7 @@ msgstr ""
 
 #: ../src/iop/nlmeans.c:62
 msgid "denoise (non-local means)"
-msgstr "Entrauschen (nicht-lokale Mittelwerte)"
+msgstr "Entrauschen (nicht-lokales Mittel)"
 
 #: ../src/iop/nlmeans.c:79
 msgctxt "accel"
@@ -4728,7 +4729,7 @@ msgstr "mit aktuellen Einstellungen exportieren (Strg-e)"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:759 ../src/libs/styles.c:69
-#: ../src/views/darkroom.c:1267
+#: ../src/views/darkroom.c:1272
 msgctxt "accel"
 msgid "export"
 msgstr "exportieren"
@@ -5550,37 +5551,37 @@ msgstr "Filmstreifen"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:125 ../src/views/lighttable.c:1075
+#: ../src/libs/tools/filmstrip.c:125 ../src/views/lighttable.c:1089
 msgctxt "accel"
 msgid "rate desert"
 msgstr "kein Stern"
 
-#: ../src/libs/tools/filmstrip.c:126 ../src/views/lighttable.c:1076
+#: ../src/libs/tools/filmstrip.c:126 ../src/views/lighttable.c:1090
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 Stern"
 
-#: ../src/libs/tools/filmstrip.c:127 ../src/views/lighttable.c:1077
+#: ../src/libs/tools/filmstrip.c:127 ../src/views/lighttable.c:1091
 msgctxt "accel"
 msgid "rate 2"
 msgstr "2 Stern"
 
-#: ../src/libs/tools/filmstrip.c:128 ../src/views/lighttable.c:1078
+#: ../src/libs/tools/filmstrip.c:128 ../src/views/lighttable.c:1092
 msgctxt "accel"
 msgid "rate 3"
 msgstr "3 Stern"
 
-#: ../src/libs/tools/filmstrip.c:129 ../src/views/lighttable.c:1079
+#: ../src/libs/tools/filmstrip.c:129 ../src/views/lighttable.c:1093
 msgctxt "accel"
 msgid "rate 4"
 msgstr "4 Stern"
 
-#: ../src/libs/tools/filmstrip.c:130 ../src/views/lighttable.c:1080
+#: ../src/libs/tools/filmstrip.c:130 ../src/views/lighttable.c:1094
 msgctxt "accel"
 msgid "rate 5"
 msgstr "5 Stern"
 
-#: ../src/libs/tools/filmstrip.c:131 ../src/views/lighttable.c:1081
+#: ../src/libs/tools/filmstrip.c:131 ../src/views/lighttable.c:1095
 msgctxt "accel"
 msgid "rate reject"
 msgstr "abgelehnt"
@@ -5603,27 +5604,27 @@ msgstr "Verlauf verwerfen"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:145 ../src/views/lighttable.c:1094
+#: ../src/libs/tools/filmstrip.c:145 ../src/views/lighttable.c:1108
 msgctxt "accel"
 msgid "color red"
 msgstr "Farbmarkierung Rot"
 
-#: ../src/libs/tools/filmstrip.c:146 ../src/views/lighttable.c:1095
+#: ../src/libs/tools/filmstrip.c:146 ../src/views/lighttable.c:1109
 msgctxt "accel"
 msgid "color yellow"
 msgstr "Farbmarkierung Gelb"
 
-#: ../src/libs/tools/filmstrip.c:147 ../src/views/lighttable.c:1096
+#: ../src/libs/tools/filmstrip.c:147 ../src/views/lighttable.c:1110
 msgctxt "accel"
 msgid "color green"
 msgstr "Farbmarkierung Grün"
 
-#: ../src/libs/tools/filmstrip.c:148 ../src/views/lighttable.c:1097
+#: ../src/libs/tools/filmstrip.c:148 ../src/views/lighttable.c:1111
 msgctxt "accel"
 msgid "color blue"
 msgstr "Farbmarkierung Blau"
 
-#: ../src/libs/tools/filmstrip.c:149 ../src/views/lighttable.c:1098
+#: ../src/libs/tools/filmstrip.c:149 ../src/views/lighttable.c:1112
 msgctxt "accel"
 msgid "color purple"
 msgstr "Farbmarkierung Violett"
@@ -5686,7 +5687,7 @@ msgstr "Bewertung"
 msgid "id"
 msgstr "ID"
 
-#: ../src/libs/tools/lighttable.c:55 ../src/views/lighttable.c:105
+#: ../src/libs/tools/lighttable.c:55 ../src/views/lighttable.c:106
 msgid "lighttable"
 msgstr "Leuchttisch"
 
@@ -5735,23 +5736,23 @@ msgstr "Ansichtwechsler"
 msgid "tethering"
 msgstr "Tethering"
 
-#: ../src/views/capture.c:286
+#: ../src/views/capture.c:287
 #, c-format
 msgid "failed to create session path %s."
 msgstr "Fehler beim Erstellen des Sitzungs-Pfades %s."
 
-#: ../src/views/capture.c:300
+#: ../src/views/capture.c:301
 #, c-format
 msgid "new session initiated '%s'"
 msgstr "neue Sitzung ‚%s‘ gestartet"
 
-#: ../src/views/capture.c:387
+#: ../src/views/capture.c:388
 msgid "no camera with tethering support available for use..."
 msgstr "keine Kamera mit Tethering-Unterstützung verfügbar ..."
 
 #. Setup key accelerators in capture view...
 #. Film strip shortcuts
-#: ../src/views/capture.c:458 ../src/views/darkroom.c:1255
+#: ../src/views/capture.c:459 ../src/views/darkroom.c:1260
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "Filmstreifen umschalten"
@@ -5765,124 +5766,124 @@ msgstr "Dunkelkammer"
 msgid "no image selected!"
 msgstr "Kein Bild ausgewählt!"
 
-#: ../src/views/darkroom.c:722
+#: ../src/views/darkroom.c:727
 msgid "no userdefined presets for favorite modules were found"
 msgstr ""
 "keine benutzerdefinierten Voreinstellungen für Favoriten-Module gefunden"
 
-#: ../src/views/darkroom.c:727
+#: ../src/views/darkroom.c:732
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "Stil ‚%s‘ auf aktuelles Bild angewandt"
 
-#: ../src/views/darkroom.c:759
+#: ../src/views/darkroom.c:764
 msgid "no styles have been created yet"
 msgstr "es wurde noch kein Stil angelegt"
 
-#: ../src/views/darkroom.c:791
+#: ../src/views/darkroom.c:796
 msgid "quick access to presets of your favorites"
 msgstr "Schnellzugriff auf Voreinstellungen der Favoriten"
 
-#: ../src/views/darkroom.c:805
+#: ../src/views/darkroom.c:810
 msgid "quick access for applying any of your styles"
 msgstr "Schnellzugriff um einen Stil anzuwenden"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1259
+#: ../src/views/darkroom.c:1264
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "Nahansicht"
 
-#: ../src/views/darkroom.c:1261
+#: ../src/views/darkroom.c:1266
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "Ansicht füllen"
 
-#: ../src/views/darkroom.c:1263
+#: ../src/views/darkroom.c:1268
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "Ansicht einpassen"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1271
+#: ../src/views/darkroom.c:1276
 msgctxt "accel"
 msgid "image forward"
 msgstr "nächstes Bild"
 
-#: ../src/views/darkroom.c:1273
+#: ../src/views/darkroom.c:1278
 msgctxt "accel"
 msgid "image back"
 msgstr "vorheriges Bild"
 
-#: ../src/views/lighttable.c:265
+#: ../src/views/lighttable.c:266
 msgid "this collection is empty."
 msgstr "Diese Kollektion ist leer."
 
-#: ../src/views/lighttable.c:267
+#: ../src/views/lighttable.c:268
 msgid "if you didn't import any images yet"
 msgstr "Falls noch keine Bilder importiert wurden"
 
-#: ../src/views/lighttable.c:269
+#: ../src/views/lighttable.c:270
 msgid "do that from the top left expander."
 msgstr "kann dies links oben gemacht werden."
 
-#: ../src/views/lighttable.c:276
+#: ../src/views/lighttable.c:277
 msgid "try to relax the filter settings in the top panel"
 msgstr "Filterregeln in der oberen Leiste anpassen"
 
-#: ../src/views/lighttable.c:283
+#: ../src/views/lighttable.c:284
 msgid "or in the collection plugin in the left panel."
 msgstr "oder links im Sammlungs-Plugin."
 
 #. Navigation keys
-#: ../src/views/lighttable.c:1084
+#: ../src/views/lighttable.c:1098
 msgctxt "accel"
 msgid "navigate up"
 msgstr "navigiere hoch"
 
-#: ../src/views/lighttable.c:1086
+#: ../src/views/lighttable.c:1100
 msgctxt "accel"
 msgid "navigate down"
 msgstr "navigiere runter"
 
-#: ../src/views/lighttable.c:1088
+#: ../src/views/lighttable.c:1102
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "navigiere Seite hoch"
 
-#: ../src/views/lighttable.c:1090
+#: ../src/views/lighttable.c:1104
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "navigiere Seite runter"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1101
+#: ../src/views/lighttable.c:1115
 msgctxt "accel"
 msgid "scroll up"
 msgstr "scrolle nach oben"
 
-#: ../src/views/lighttable.c:1103
+#: ../src/views/lighttable.c:1117
 msgctxt "accel"
 msgid "scroll down"
 msgstr "scrolle nach unten"
 
-#: ../src/views/lighttable.c:1105
+#: ../src/views/lighttable.c:1119
 msgctxt "accel"
 msgid "scroll left"
 msgstr "scrolle nach links"
 
-#: ../src/views/lighttable.c:1107
+#: ../src/views/lighttable.c:1121
 msgctxt "accel"
 msgid "scroll right"
 msgstr "scrolle nach rechts"
 
-#: ../src/views/lighttable.c:1109
+#: ../src/views/lighttable.c:1123
 msgctxt "accel"
 msgid "scroll center"
 msgstr "scrolle in die Mitte"
 
 #. Preview key
-#: ../src/views/lighttable.c:1113
+#: ../src/views/lighttable.c:1127
 msgctxt "accel"
 msgid "preview"
 msgstr "Vorschau"
