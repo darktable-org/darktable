@@ -43,6 +43,11 @@
 #define BLEND_ONLY_LIGHTNESS				8
 
 
+#ifndef M_PI
+#define M_PI           3.14159265358979323846  // should be defined by the OpenCL compiler acc. to standard
+#endif
+
+
 const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
 
 
