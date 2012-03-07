@@ -2,9 +2,9 @@
 # Copyright (c) 2012, James C. McPherson. All rights reserved.
 #
 
-set name=pkg.fmri value=pkg:/darktable/darktable-git@0.9.3,1.0.0
-set name=pkg.summary value="darktable (built from git 39a6c55fbb56d506)"
-set name=pkg.description value="darktable (built from git 39a6c55fbb56d506)"
+set name=pkg.fmri value=pkg:/darktable/darktable-git@1.0,1.0.0
+set name=pkg.summary value="darktable (built from git 1904f9fd74c3a337ef95fc1f03d7c0cf932450ce)"
+set name=pkg.description value="darktable (built from git 1904f9fd74c3a337ef95fc1f03d7c0cf932450ce)"
 set name=info.classification \
     value="org.opensolaris.category.2008:Development/Distribution Tools"
 
