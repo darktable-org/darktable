@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2009--2012 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -53,8 +53,7 @@ dt_iop_colorin_params_t;
 
 typedef struct dt_iop_colorin_gui_data_t
 {
-  GtkVBox *vbox1, *vbox2;
-  GtkComboBox *cbox1, *cbox2;
+  GtkWidget *cbox1, *cbox2;
   GList *profiles;
 }
 dt_iop_colorin_gui_data_t;
