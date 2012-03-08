@@ -357,13 +357,13 @@ static void _add_sample(GtkButton *widget, gpointer self)
 
   for(i = 0; i < 3; i++)
     sample->picked_color_lab_max[i] =
-        darktable.lib->proxy.colorpicker.picked_color_lab_mean[i];
+        darktable.lib->proxy.colorpicker.picked_color_lab_max[i];
   for(i = 0; i < 3; i++)
     sample->picked_color_lab_mean[i] =
-        darktable.lib->proxy.colorpicker.picked_color_lab_min[i];
+        darktable.lib->proxy.colorpicker.picked_color_lab_mean[i];
   for(i = 0; i < 3; i++)
     sample->picked_color_lab_min[i] =
-        darktable.lib->proxy.colorpicker.picked_color_lab_max[i];
+        darktable.lib->proxy.colorpicker.picked_color_lab_min[i];
   for(i = 0; i < 3; i++)
     sample->picked_color_rgb_max[i] =
         darktable.lib->proxy.colorpicker.picked_color_rgb_max[i];
