@@ -1,10 +1,9 @@
-#: ../src/libs/colorpicker.c:550
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-03-07 12:42+0100\n"
-"PO-Revision-Date: 2012-03-07 12:41+0100\n"
+"PO-Revision-Date: 2012-03-08 14:26+0100\n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: German\n"
 "Language: \n"
@@ -4615,7 +4614,7 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:223
 msgid "load sidecar file"
-msgstr "Begleitdateien laden"
+msgstr "Begleitdatei laden"
 
 #: ../src/libs/copy_history.c:225
 msgid ""
@@ -4627,7 +4626,7 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:228
 msgid "write sidecar files"
-msgstr "Begleitdateien schreiben"
+msgstr "Begleitdatei schreiben"
 
 #: ../src/libs/copy_history.c:230
 msgid "write history stack and tags to xmp sidecar files"
