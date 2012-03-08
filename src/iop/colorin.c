@@ -667,7 +667,7 @@ void gui_init(struct dt_iop_module_t *self)
   snprintf(tooltip, 1024, _("icc profiles in %s/color/in or %s/color/in"), confdir, datadir);
   g_object_set(G_OBJECT(g->cbox2), "tooltip-text", tooltip, (char *)NULL);
 
-  g_signal_connect (G_OBJECT (g->cbox2), "changed",
+  g_signal_connect (G_OBJECT (g->cbox2), "value-changed",
                     G_CALLBACK (profile_changed),
                     (gpointer)self);
 }

@@ -18,7 +18,6 @@
 #ifndef DARKTABLE_IOP_COLOROUT_H
 #define DARKTABLE_IOP_COLOROUT_H
 
-#include "dtgtk/togglebutton.h"
 #include "common/colorspaces.h"
 #include "develop/imageop.h"
 #include "iop/colorin.h" // common structs
@@ -48,8 +47,7 @@ dt_iop_colorout_params_t;
 typedef struct dt_iop_colorout_gui_data_t
 {
   gboolean softproof_enabled;
-  GtkVBox *vbox1, *vbox2;
-  GtkComboBox *cbox1, *cbox2, *cbox3, *cbox4,*cbox5;
+  GtkWidget *cbox1, *cbox2, *cbox3, *cbox4,*cbox5;
   GList *profiles;
 
 }
