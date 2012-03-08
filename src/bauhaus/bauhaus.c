@@ -892,13 +892,13 @@ dt_bauhaus_combobox_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer us
   if(event->direction == GDK_SCROLL_UP)
   {
     dt_iop_request_focus(w->module);
-    dt_bauhaus_combobox_set(widget, d->active-1);
+    dt_bauhaus_combobox_set(widget, CLAMP(d->active-1, 0, d->num_labels-1));
     return TRUE;
   }
   else if(event->direction == GDK_SCROLL_DOWN)
   {
     dt_iop_request_focus(w->module);
-    dt_bauhaus_combobox_set(widget, d->active+1);
+    dt_bauhaus_combobox_set(widget, CLAMP(d->active+1, 0, d->num_labels-1));
     return TRUE;
   }
   return FALSE;
