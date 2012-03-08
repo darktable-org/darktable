@@ -17,8 +17,7 @@
 */
 #include "develop/imageop.h"
 #include "common/opencl.h"
-#include "dtgtk/slider.h"
-#include "dtgtk/resetlabel.h"
+#include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "common/darktable.h"
@@ -49,10 +48,10 @@ dt_iop_demosaic_params_t;
 
 typedef struct dt_iop_demosaic_gui_data_t
 {
-  GtkDarktableSlider *scale1;
-  GtkComboBox *greeneq;
+  GtkWidget *scale1;
+  GtkWidget *greeneq;
   GtkWidget *color_smoothing;
-  GtkComboBox *demosaic_method;
+  GtkWidget *demosaic_method;
 }
 dt_iop_demosaic_gui_data_t;
 
@@ -97,6 +96,7 @@ typedef enum dt_iop_demosaic_greeneq_t
   DT_IOP_GREEN_EQ_BOTH = 3
 }
 dt_iop_demosaic_greeneq_t;
+
 static void
 amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in, float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out, const int filters);
 
@@ -1068,38 +1068,38 @@ void gui_update   (struct dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  dtgtk_slider_set_value(g->scale1, p->median_thrs);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->color_smoothing), p->color_smoothing);
-  gtk_combo_box_set_active(g->greeneq, p->green_eq);
-  gtk_combo_box_set_active(g->demosaic_method, p->demosaicing_method);
+  dt_bauhaus_slider_set(g->scale1, p->median_thrs);
+  dt_bauhaus_combobox_set(g->color_smoothing, p->color_smoothing);
+  dt_bauhaus_combobox_set(g->greeneq, p->green_eq);
+  dt_bauhaus_combobox_set(g->demosaic_method, p->demosaicing_method);
 }
 
 static void
-median_thrs_callback (GtkDarktableSlider *slider, gpointer user_data)
+median_thrs_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  p->median_thrs = dtgtk_slider_get_value(slider);
+  p->median_thrs = dt_bauhaus_slider_get(slider);
   if(p->median_thrs < 0.001f) p->median_thrs = 0.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-color_smoothing_callback (GtkSpinButton *button, gpointer user_data)
+color_smoothing_callback (GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  p->color_smoothing = gtk_spin_button_get_value(GTK_SPIN_BUTTON(button));
+  p->color_smoothing = dt_bauhaus_combobox_get(button);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-greeneq_callback (GtkComboBox *combo, dt_iop_module_t *self)
+greeneq_callback (GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  int active = gtk_combo_box_get_active(combo);
+  int active = dt_bauhaus_combobox_get(combo);
   switch(active)
   {
     case DT_IOP_GREEN_EQ_FULL:
@@ -1120,10 +1120,10 @@ greeneq_callback (GtkComboBox *combo, dt_iop_module_t *self)
 }
 
 static void
-demosaic_method_callback(GtkComboBox *combo, dt_iop_module_t *self)
+demosaic_method_callback(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  int active = gtk_combo_box_get_active(combo);
+  int active = dt_bauhaus_combobox_get(combo);
 
   switch(active)
   {
@@ -1144,54 +1144,47 @@ void gui_init     (struct dt_iop_module_t *self)
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
 
-  self->widget = gtk_table_new(4, 2, FALSE);
-  gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
-  gtk_table_set_col_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
 
-  ////////////////////////////
-  GtkWidget *label_dm = dtgtk_reset_label_new(_("method"), self, &p->demosaicing_method, sizeof(uint32_t));
-  gtk_table_attach(GTK_TABLE(self->widget), label_dm, 0, 1, 0, 1, GTK_FILL, 0, 0, 0);
-  g->demosaic_method = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(g->demosaic_method, _("ppg"));
-  gtk_combo_box_append_text(g->demosaic_method, _("AMaZE"));
+  g->demosaic_method = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_combobox_add(g->demosaic_method, _("ppg"));
+  dt_bauhaus_combobox_add(g->demosaic_method, _("AMaZE"));
+  dt_bauhaus_widget_set_label(g->demosaic_method, _("method"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method, TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->demosaic_method), "tooltip-text", _("demosaicing raw data method"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->demosaic_method), 1, 2, 0, 1, GTK_FILL|GTK_EXPAND, 0, 0, 0);
-  ////////////////////////////
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.000, 0.001, p->median_thrs, 3));
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.001, p->median_thrs, 3);
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("threshold for edge-aware median.\nset to 0.0 to switch off.\nset to 1.0 to ignore edges."), (char *)NULL);
-  dtgtk_slider_set_label(g->scale1,_("edge threshold"));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->scale1), 0, 2, 1, 2, GTK_FILL|GTK_EXPAND, 0, 0, 0);
+  dt_bauhaus_widget_set_label(g->scale1, _("edge threshold"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->scale1, TRUE, TRUE, 0);
 
-  GtkWidget *widget;
-  widget = dtgtk_reset_label_new(_("color smoothing"), self, &p->color_smoothing, sizeof(uint32_t));
-  gtk_table_attach(GTK_TABLE(self->widget), widget, 0, 1, 2, 3, GTK_FILL, 0, 0, 0);
-  g->color_smoothing = gtk_spin_button_new_with_range(0, 5, 1);
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->color_smoothing), 0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->color_smoothing), p->color_smoothing);
-  dt_gui_key_accel_block_on_focus(g->color_smoothing);
+  g->color_smoothing = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->color_smoothing, _("color smoothing"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->color_smoothing, TRUE, TRUE, 0);
+  dt_bauhaus_combobox_add(g->color_smoothing, _("off"));
+  dt_bauhaus_combobox_add(g->color_smoothing, _("one time"));
+  dt_bauhaus_combobox_add(g->color_smoothing, _("two times"));
+  dt_bauhaus_combobox_add(g->color_smoothing, _("three times"));
+  dt_bauhaus_combobox_add(g->color_smoothing, _("four times"));
+  dt_bauhaus_combobox_add(g->color_smoothing, _("five times"));
   g_object_set(G_OBJECT(g->color_smoothing), "tooltip-text", _("how many color smoothing median steps after demosaicing"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), g->color_smoothing, 1, 2, 2, 3, GTK_FILL|GTK_EXPAND, 0, 0, 0);
 
-  ////////////////////////////
-  GtkWidget *label_ge = dtgtk_reset_label_new(_("match greens"), self, &p->green_eq, sizeof(uint32_t));
-  gtk_table_attach(GTK_TABLE(self->widget), label_ge, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
-  g->greeneq = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(g->greeneq, _("disabled"));
-  gtk_combo_box_append_text(g->greeneq, _("local average"));
-  gtk_combo_box_append_text(g->greeneq, _("full average"));
-  gtk_combo_box_append_text(g->greeneq, _("full and local average"));
+  g->greeneq = dt_bauhaus_combobox_new(self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->greeneq, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(g->greeneq, _("match greens"));
+  dt_bauhaus_combobox_add(g->greeneq, _("disabled"));
+  dt_bauhaus_combobox_add(g->greeneq, _("local average"));
+  dt_bauhaus_combobox_add(g->greeneq, _("full average"));
+  dt_bauhaus_combobox_add(g->greeneq, _("full and local average"));
   g_object_set(G_OBJECT(g->greeneq), "tooltip-text", _("green channels matching method"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->greeneq), 1, 2, 3, 4, GTK_FILL|GTK_EXPAND, 0, 0, 0);
-  ////////////////////////////
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (median_thrs_callback), self);
   g_signal_connect (G_OBJECT (g->color_smoothing), "value-changed",
                     G_CALLBACK (color_smoothing_callback), self);
-  g_signal_connect (G_OBJECT (g->greeneq), "changed",
+  g_signal_connect (G_OBJECT (g->greeneq), "value-changed",
                     G_CALLBACK (greeneq_callback), self);
-  g_signal_connect (G_OBJECT (g->demosaic_method), "changed",
+  g_signal_connect (G_OBJECT (g->demosaic_method), "value-changed",
                     G_CALLBACK (demosaic_method_callback), self);
 }
 
