@@ -33,6 +33,7 @@ endif()
 if(APPLE)
 	message("-- Mac OSX build detected, setting default features")
 	set(USE_OPENCL OFF)
+	set(USE_OPENMP OFF)
 	set(USE_CAMERA_SUPPORT ON)
 	set(BUILD_SLIDESHOW OFF)
 
