@@ -4,6 +4,7 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # luojie <lililjlj@gmail.com>, 2012.
 # Cherrot Luo <admin@cherrot.com>, 2012.
+# jiero <lililjlj@gmail.com>, 2012. , 2012.
 #
 #: ../src/libs/colorpicker.c:550
 msgid ""
@@ -11,14 +12,14 @@ msgstr ""
 "Project-Id-Version: git-bd1547418\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-02-24 23:45+0800\n"
-"PO-Revision-Date: 2012-02-25 04:57+0800\n"
-"Last-Translator: Cherrot Luo <admin@cherrot.com>\n"
-"Language-Team: Chinese <i18n-zh@googlegroups.com>\n"
+"PO-Revision-Date: 2012-03-08 22:59+1100\n"
+"Last-Translator: jiero <lililjlj@gmail.com>\n"
+"Language-Team: 汉语 <i18n-zh@googlegroups.com>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bits\n"
-"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 #: ../build/src/preferences_gen.h:356
 msgid "gui options"
@@ -58,15 +59,15 @@ msgstr " (需要重启生效)"
 
 #: ../build/src/preferences_gen.h:391
 msgid "don't use embedded preview jpeg but half-size raw"
-msgstr "不使用嵌入JPEG预览的RAW，而是使用一半尺寸的RAW"
+msgstr "预览文件使用一半尺寸的raw，忽略内嵌的jpeg"
 
 #: ../build/src/preferences_gen.h:402
 msgid ""
 "check this option to not use the embedded jpeg from the raw file but process "
 "the raw data. this is slower but gives you color managed thumbnails."
 msgstr ""
-"勾选此项将不会使用RAW文件中嵌入的JPEG，而是用RAW数据创建，这样会更慢，但是缩"
-"略图更精确。"
+"勾选此项将不会使用raw文件中嵌入的jpeg，而是用raw数据创建，这样会更慢，色彩把"
+"握更精确。"
 
 #: ../build/src/preferences_gen.h:407
 msgid "ask before removing images from database"
@@ -266,8 +267,8 @@ msgid ""
 "very end. this can result in better quality sometimes, but will always be "
 "slower."
 msgstr ""
-"首先在全分辨率下处理图像，最后再缩小图片。这样往往能得到更高的质量，但速度会"
-"更慢。"
+"首先在全分辨率下处理图像，最后再缩小。这样往往能得到更高的质量，但速度会更"
+"慢。"
 
 #: ../build/src/preferences_gen.h:739
 msgid "password storage backend to use"
@@ -352,7 +353,7 @@ msgid ""
 "%s"
 msgstr ""
 "darktable非常依赖CPU并且使用SSE2 SIMD指令集用于繁重的计算。这带来了更佳的用户"
-"体验，但同时规定了最小的CPU需求。\n"
+"体验，但同时规定了最低CPU需求。\n"
 "\n"
 "您的系统使用的CPU不支持SSE2。darktable将退出。\n"
 "\n"
@@ -653,7 +654,7 @@ msgstr "显示预置菜单"
 #. hack to indent the drop down box
 #: ../src/develop/imageop.c:1081
 msgid "blend"
-msgstr "混合(blend)"
+msgstr "混合"
 
 #: ../src/develop/imageop.c:1082
 msgid "mode"
@@ -1024,7 +1025,7 @@ msgstr "捕获视图"
 #: ../src/gui/gtk.c:773
 msgctxt "accel"
 msgid "lighttable view"
-msgstr "亮光桌视图"
+msgstr "光台视图"
 
 #: ../src/gui/gtk.c:774
 msgctxt "accel"
@@ -1107,7 +1108,7 @@ msgstr "名称"
 #: ../src/gui/preferences.c:427 ../src/gui/preferences.c:1260
 #: ../src/gui/presets.c:319 ../src/libs/metadata_view.c:69
 msgid "model"
-msgstr "模型"
+msgstr "型号"
 
 #: ../src/gui/preferences.c:434 ../src/gui/preferences.c:1267
 #: ../src/gui/presets.c:326 ../src/libs/metadata_view.c:70
@@ -1146,7 +1147,7 @@ msgstr "光圈"
 #: ../src/gui/presets.c:383 ../src/libs/camera.c:540
 #: ../src/libs/metadata_view.c:74
 msgid "focal length"
-msgstr "焦距"
+msgstr "镜头焦距"
 
 #: ../src/gui/preferences.c:476 ../src/iop/exposure.c:397
 msgid "auto"
@@ -1202,7 +1203,7 @@ msgstr "你确定要恢复默认键盘绑定？这将会抹掉你所做的任何
 #: ../src/gui/preferences.c:1210 ../src/gui/presets.c:267
 #, c-format
 msgid "edit `%s' for module `%s'"
-msgstr "编辑 `%s' --针对模块 `%s'"
+msgstr "编辑 `%s' ——> 模块 `%s'"
 
 #: ../src/gui/preferences.c:1239 ../src/gui/presets.c:298
 #: ../src/libs/lib.c:162
@@ -1310,7 +1311,7 @@ msgstr "作为默认预置使用"
 
 #: ../src/gui/presets.c:744 ../src/libs/lib.c:351
 msgid "store new preset.."
-msgstr "存储新的预设.."
+msgstr "存为新的预设.."
 
 #. only show this if presets already contains a default
 #: ../src/gui/presets.c:755
@@ -1788,7 +1789,6 @@ msgid "clarity"
 msgstr "清晰度"
 
 #: ../src/iop/atrous.c:1151 ../src/iop/atrous.c:1155
-#, fuzzy
 msgid "coarse"
 msgstr "粗"
 
@@ -1921,7 +1921,7 @@ msgstr ""
 
 #: ../src/iop/bilateral.cc:75
 msgid "denoise (bilateral filter)"
-msgstr "降噪(双边滤镜)"
+msgstr "降噪(双边滤波)"
 
 #: ../src/iop/bilateral.cc:91 ../src/iop/lowpass.c:114 ../src/iop/sharpen.c:94
 #: ../src/iop/shadhi.c:117
@@ -1994,7 +1994,7 @@ msgstr "阈值"
 
 #: ../src/iop/bloom.c:350
 msgid "the size of bloom"
-msgstr ""
+msgstr "bloom 尺寸"
 
 #: ../src/iop/bloom.c:351
 msgid "the threshold of light"
@@ -2002,7 +2002,7 @@ msgstr "光阈值"
 
 #: ../src/iop/bloom.c:352
 msgid "the strength of bloom"
-msgstr ""
+msgstr "bloom 力度"
 
 #: ../src/iop/borders.c:67
 msgid "framing"
@@ -2189,7 +2189,6 @@ msgid "b/w artifacts boost"
 msgstr "b/w 伪影增加"
 
 #: ../src/iop/channelmixer.c:440
-#, fuzzy
 msgid "b/w smooth skin"
 msgstr "b/w 平滑皮肤"
 
@@ -2211,7 +2210,7 @@ msgstr "保持特性大小"
 
 #: ../src/iop/clahe.c:354
 msgid "strength of the effect"
-msgstr "效果的强度"
+msgstr "效果的力度"
 
 #: ../src/iop/clipping.c:162
 msgid "crop and rotate"
@@ -2256,7 +2255,7 @@ msgstr "设置垂直梯形失真的角度"
 
 #: ../src/iop/clipping.c:928
 msgid "free"
-msgstr "免费"
+msgstr "自由"
 
 #: ../src/iop/clipping.c:934
 msgid "5:4"
@@ -2408,7 +2407,6 @@ msgid "saturation"
 msgstr "饱和度"
 
 #: ../src/iop/colorcorrection.c:181
-#, fuzzy
 msgid "draw a rectangle to give a tint"
 msgstr "绘制长方形给予淡色调"
 
@@ -2712,7 +2710,7 @@ msgstr "匹配绿色"
 
 #: ../src/iop/demosaic.c:1180
 msgid "disabled"
-msgstr "失效的"
+msgstr "不使用"
 
 #: ../src/iop/demosaic.c:1181
 msgid "local average"
@@ -2720,11 +2718,11 @@ msgstr "局部平均"
 
 #: ../src/iop/demosaic.c:1182
 msgid "full average"
-msgstr "全部平均"
+msgstr "整体平均"
 
 #: ../src/iop/demosaic.c:1183
 msgid "full and local average"
-msgstr "全部和局部平均"
+msgstr "整体和局部平均"
 
 #: ../src/iop/demosaic.c:1184
 msgid "green channels matching method"
@@ -2965,11 +2963,11 @@ msgstr "粗糙"
 
 #: ../src/iop/grain.c:520
 msgid "the grain size (~iso of the film)"
-msgstr "颗粒大小（~胶片的ISO感光度）"
+msgstr "颗粒大小（胶片的ISO感光度）"
 
 #: ../src/iop/grain.c:521
 msgid "the strength of applied grain"
-msgstr "应用颗粒的强度"
+msgstr "应用颗粒的力度"
 
 #: ../src/iop/grain.c:522
 msgid "coarseness"
@@ -3071,7 +3069,7 @@ msgstr "减小热像素的阈值"
 
 #: ../src/iop/hotpixels.c:293
 msgid "strength of hot pixel correction"
-msgstr "热像素校正强度"
+msgstr "热像素校正力度"
 
 #: ../src/iop/hotpixels.c:298
 msgid "detect by 3 neighbours"
@@ -3189,7 +3187,7 @@ msgstr "mm 毫米"
 
 #: ../src/iop/lens.c:1080
 msgid "focal length (mm)"
-msgstr "焦距 (mm)"
+msgstr "镜头焦距 (mm)"
 
 #: ../src/iop/lens.c:1086 ../src/iop/lens.c:1101 ../src/iop/lens.c:1112
 msgid "reset from exif data"
@@ -3283,7 +3281,7 @@ msgstr ""
 
 #: ../src/iop/levels.c:40
 msgid "levels"
-msgstr "级别"
+msgstr "色阶"
 
 #: ../src/iop/levels.c:213
 msgid ""
@@ -3569,7 +3567,7 @@ msgstr "去模糊的空间范围"
 
 #: ../src/iop/sharpen.c:555
 msgid "strength of the sharpen"
-msgstr "锐化强度"
+msgstr "锐化力度"
 
 #: ../src/iop/sharpen.c:558
 msgid "threshold to activate sharpen"
@@ -3766,7 +3764,7 @@ msgstr "点白平衡"
 
 #: ../src/iop/temperature.c:552
 msgid "passthrough"
-msgstr "直通"
+msgstr ""
 
 #: ../src/iop/temperature.c:578
 msgid "fine tune white balance preset"
@@ -3853,9 +3851,8 @@ msgid "spatial extent"
 msgstr "空间范围"
 
 #: ../src/iop/velvia.c:77
-#, fuzzy
 msgid "velvia"
-msgstr "velvia"
+msgstr ""
 
 #: ../src/iop/velvia.c:94 ../src/iop/vibrance.c:80
 msgctxt "accel"
@@ -3877,7 +3874,7 @@ msgstr "中间调偏色"
 
 #: ../src/iop/velvia.c:282
 msgid "the strength of saturation boost"
-msgstr "饱和度增加的强度"
+msgstr "饱和度增加的力度"
 
 #: ../src/iop/velvia.c:283
 msgid "how much to spare highlights and shadows"
@@ -3894,7 +3891,7 @@ msgstr "暗角"
 #: ../src/iop/vignette.c:127
 msgctxt "accel"
 msgid "fall-off strength"
-msgstr "减小强度"
+msgstr "减小力度"
 
 #: ../src/iop/vignette.c:130
 msgctxt "accel"
@@ -3927,7 +3924,7 @@ msgstr "自动化"
 # 根据日语版本猜测
 #: ../src/iop/vignette.c:885
 msgid "fall-off strength"
-msgstr "光衰减强度"
+msgstr "光衰减力度"
 
 #: ../src/iop/vignette.c:889
 msgid "horizontal center"
@@ -3955,11 +3952,11 @@ msgstr "暗角图像结束光衰减的比例半径"
 
 #: ../src/iop/vignette.c:912
 msgid "strength of effect on brightness"
-msgstr "亮度效果的强度"
+msgstr "亮度效果的力度"
 
 #: ../src/iop/vignette.c:913
 msgid "strength of effect on saturation"
-msgstr "饱和度效果的强度"
+msgstr "饱和度效果的力度"
 
 #: ../src/iop/vignette.c:914
 msgid "horizontal offset of center of the effect"
@@ -4157,9 +4154,8 @@ msgid "Auto WB"
 msgstr "自动白平衡"
 
 #: ../src/iop/zonesystem.c:86
-#, fuzzy
 msgid "zone system"
-msgstr "分区曝光系统"
+msgstr "明度分区系统"
 
 #: ../src/iop/zonesystem.c:372
 msgid ""
@@ -4263,7 +4259,6 @@ msgid ""
 msgstr "中心图像每边的包围曝光数量。得到相片总数 = (包围曝光量数*2)+1"
 
 #: ../src/libs/camera.c:492
-#, fuzzy
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usally 3 "
 "steps per stop\n"
@@ -4319,7 +4314,7 @@ msgstr "创建"
 
 #: ../src/libs/collect.c:85
 msgid "collect images"
-msgstr "收集图片"
+msgstr "采集图片"
 
 #: ../src/libs/collect.c:230 ../src/libs/collect.c:232
 msgid "not altered"
@@ -5060,7 +5055,7 @@ msgstr "显示 %s"
 #: ../src/libs/modulelist.c:117
 #, c-format
 msgid "%s as favorite"
-msgstr "%s 作为最爱"
+msgstr "%s 启用"
 
 #. construct tooltip text into option
 #: ../src/libs/modulelist.c:133
@@ -5130,9 +5125,7 @@ msgstr "选择胶卷"
 msgid ""
 "select all images which are in the same\n"
 "film roll as the selected images"
-msgstr ""
-"选择同一图像卷中全部的图片\n"
-"图"
+msgstr "选择同一图像卷中全部的图片"
 
 #: ../src/libs/select.c:126
 msgid "select untouched"
@@ -5334,15 +5327,15 @@ msgstr ""
 
 #: ../src/libs/tagging.c:458
 msgid "new"
-msgstr "新"
+msgstr "新建标签"
 
 #: ../src/libs/tagging.c:460
 msgid ""
 "create a new tag with the\n"
 "name you entered"
 msgstr ""
-"以输入的名创建\n"
-"一个新标签"
+"输入名称创建\n"
+"一个新的标签"
 
 #: ../src/libs/tagging.c:467
 msgid "delete selected tag"
@@ -5574,11 +5567,11 @@ msgstr "id"
 
 #: ../src/libs/tools/lighttable.c:55 ../src/views/lighttable.c:105
 msgid "lighttable"
-msgstr "lighttable 亮光桌"
+msgstr "光台"
 
 #: ../src/libs/tools/lighttable.c:91
 msgid "zoomable light table"
-msgstr "可缩放的 light table 亮光桌"
+msgstr "可缩放的光台"
 
 #: ../src/libs/tools/lighttable.c:121
 msgctxt "accel"
@@ -5704,19 +5697,19 @@ msgstr "这个集合是空的。"
 
 #: ../src/views/lighttable.c:267
 msgid "if you didn't import any images yet"
-msgstr "若还没有导入图片"
+msgstr "若您还没有导入图片"
 
 #: ../src/views/lighttable.c:269
 msgid "do that from the top left expander."
-msgstr "从顶部面板左上角开始"
+msgstr "请从顶部左上角的面板扩展开始。"
 
 #: ../src/views/lighttable.c:276
 msgid "try to relax the filter settings in the top panel"
-msgstr "试着解开顶部面板的过滤设置"
+msgstr "使用顶部面板的过滤设置"
 
 #: ../src/views/lighttable.c:283
 msgid "or in the collection plugin in the left panel."
-msgstr "或者左面板的集合插件"
+msgstr "或者左面板的集合插件。"
 
 #. Navigation keys
 #: ../src/views/lighttable.c:1080
@@ -5853,15 +5846,13 @@ msgstr "最小角锥限制"
 
 #: ../src/iop/shrecovery.c:444
 msgid "the strength of lighten"
-msgstr "加亮强度"
+msgstr "加亮力度度"
 
 #: ../src/iop/shrecovery.c:445
-#, fuzzy
 msgid "optimal exposedness"
-msgstr "最佳曝光"
+msgstr "最优化曝光"
 
 #: ../src/iop/shrecovery.c:446
-#, fuzzy
 msgid "exposedness deviation"
 msgstr "曝光误差"
 
