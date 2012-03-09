@@ -89,6 +89,16 @@ static inline int dt_version()
 #define M_PI 3.14159265358979323846
 #endif
 
+// Golden number (1+sqrt(5))/2
+#ifndef PHI
+#define PHI 1.61803398874989479F
+#endif
+
+// 1/PHI
+#ifndef INVPHI
+#define INVPHI 0.61803398874989479F
+#endif
+
 // NaN-safe clamping (NaN compares false, and will thus result in H)
 #define CLAMPS(A, L, H) ((A) > (L) ? ((A) < (H) ? (A) : (H)) : (L))
 
