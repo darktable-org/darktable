@@ -420,12 +420,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->aspect), "tooltip-text", _("set the aspect ratio (w:h)\npress ctrl-x to swap sides"), (char *)NULL);
 
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->aspect), 1, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_aspectflip, CPF_STYLE_FLAT);
-  g->swap_button = button;
-  // TODO: what about this?
-  //g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (aspect_flip), self);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("swap the aspect ratio"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), button, 2, 3, 1, 2, GTK_EXPAND, 0, 0, 0);
 
   g->colorpick = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE));
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), 24, 24);
