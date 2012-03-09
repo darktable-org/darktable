@@ -384,8 +384,6 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  // TODO: clean out!
-  // TODO: insert color picker!
   self->gui_data = malloc(sizeof(dt_iop_borders_gui_data_t));
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
