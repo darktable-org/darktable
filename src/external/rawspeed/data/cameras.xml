@@ -275,6 +275,30 @@
     <Crop x="0" y="0" width="2808" height="1872"/>
     <Sensor black="0" white="15600"/>
   </Camera>
+  <Camera make="Canon" model="Canon EOS 5D Mark III">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="124" y="82" width="-2" height="0"/>
+    <Sensor black="1024" white="16383"/>
+  <BlackAreas>
+    <Vertical x="0" width="120"/>
+    <Horizontal y="2" height="78"/>
+  </BlackAreas>
+  </Camera>
+  <!-- Unconfirmed: -->
+  <Camera make="Canon" model="Canon EOS 5D Mark III" mode="sRaw1">
+    <Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="0" white="16383"/>
+  </Camera>
+  <!-- Unconfirmed: -->
+  <Camera make="Canon" model="Canon EOS 5D Mark III" mode="sRaw2">
+    <Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="0" white="16383"/>
+  </Camera>
   <Camera make="Canon" model="Canon EOS 7D">
     <CFA width="2" height="2">
       <Color x="0" y="0">GREEN</Color>
@@ -382,10 +406,10 @@
   </Camera>
   <Camera make="Canon" model="Canon EOS-1D Mark III">
     <CFA width="2" height="2">
-      <Color x="0" y="0">RED</Color>
+      <Color x="0" y="0">BLUE</Color>
       <Color x="1" y="0">GREEN</Color>
       <Color x="0" y="1">GREEN</Color>
-      <Color x="1" y="1">BLUE</Color>
+      <Color x="1" y="1">RED</Color>
     </CFA>
     <Crop x="78" y="20" width="3906" height="2600"/>
     <Sensor black="1023" white="15100"/>
@@ -724,6 +748,19 @@
     </CFA>
     <Crop x="0" y="0" width="3898" height="2610"/>
     <Sensor black="0" white="16383"/>
+  </Camera>
+  <Camera make="NIKON CORPORATION" model="NIKON D4">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="2" y="0" width="-50" height="0"/>
+    <Sensor black="0" white="16383"/>
+		<BlackAreas>
+			<Vertical x="4984" width="8"/>
+		</BlackAreas>
   </Camera>
   <Camera make="NIKON CORPORATION" model="NIKON D5100"  decoder_version="2">
     <CFA width="2" height="2">
@@ -1846,7 +1883,15 @@
 		<Horizontal y="0" height="2"/>
 	</BlackAreas>  
   </Camera>  
-    <Camera make="SAMSUNG" model="NX5">
+  <Camera make="SAMSUNG" model="NX200" decoder_version="1">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
+      <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="48" y="4" width="-60" height="-28"/>
+    <Sensor black="0" white="4095"/>
+  </Camera>  
+  <Camera make="SAMSUNG" model="NX5">
     <CFA width="2" height="2">
       <Color x="0" y="0">BLUE</Color><Color x="1" y="0">GREEN</Color>
       <Color x="0" y="1">GREEN</Color><Color x="1" y="1">RED</Color>
