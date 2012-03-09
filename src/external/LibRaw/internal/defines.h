@@ -22,10 +22,8 @@ it under the terms of the one of three licenses as you choose:
 */
 
 #define NO_JPEG
-#ifndef USE_JASPER
 #define NO_JASPER
-#endif
-#define DCRAW_VERSION "9.12"
+#define DCRAW_VERSION "9.10"
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -54,11 +52,6 @@ it under the terms of the one of three licenses as you choose:
 #define NO_LCMS
 #endif
 #ifndef NO_JASPER
-#undef PACKAGE_BUGREPORT
-#undef PACKAGE_NAME
-#undef PACKAGE_STRING
-#undef PACKAGE_TARNAME
-#undef PACKAGE_VERSION
 #include <jasper/jasper.h>	/* Decode RED camera movies */
 #endif
 #ifndef NO_JPEG
@@ -84,6 +77,10 @@ it under the terms of the one of three licenses as you choose:
 #include <unistd.h>
 #include <utime.h>
 #include <netinet/in.h>
+#endif
+
+#ifdef __APPLE__
+#include <strings.h>		/* For strcasecmp */
 #endif
 
 #ifdef LJPEG_DECODE
