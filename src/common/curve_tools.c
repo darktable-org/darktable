@@ -753,8 +753,8 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
 {
   int i = 0, n;
 
-  float x[20];
-  float y[20];
+  float x[20] = {0};
+  float y[20] = {0};
   float *ypp;
 
   //The box points  are what the anchor points are relative
