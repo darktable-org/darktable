@@ -642,7 +642,7 @@
       <key>/schemas/apps/darktable/plugins/lighttable/filmstrip/height</key>
       <applyto>/apps/darktable/plugins/lighttable/filmstrip/height</applyto>
       <owner>darktable</owner>
-      <type>120</type>
+      <type>int</type>
       <default>TRUE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
