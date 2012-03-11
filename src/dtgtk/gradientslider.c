@@ -229,6 +229,7 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
   g_return_val_if_fail(DTGTK_IS_GRADIENT_SLIDER(widget), FALSE);
   g_return_val_if_fail(event != NULL, FALSE);
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
+  if(!style) style = gtk_rc_get_style(widget);
   int state = gtk_widget_get_state(widget);
 
   /*int x = widget->allocation.x;

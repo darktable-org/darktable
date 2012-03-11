@@ -109,6 +109,7 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
 
   /* get the current style */
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
+  if(!style) style = gtk_rc_get_style(widget);
   
   cairo_t *cr = gdk_cairo_create(widget->window);
 
