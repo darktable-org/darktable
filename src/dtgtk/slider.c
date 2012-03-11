@@ -466,6 +466,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   if (widget->allocation.width<=1) return FALSE;
 
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
+  if(!style) style = gtk_rc_get_style(widget);
   GtkDarktableSlider *slider=DTGTK_SLIDER(widget);
   int state = gtk_widget_get_state(widget);
   int width = widget->allocation.width;

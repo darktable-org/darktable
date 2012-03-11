@@ -33,13 +33,17 @@ endif()
 if(APPLE)
 	message("-- Mac OSX build detected, setting default features")
 	set(USE_OPENCL OFF)
+	set(USE_OPENMP OFF)
 	set(USE_CAMERA_SUPPORT ON)
 	set(BUILD_SLIDESHOW OFF)
 
 	# setup mac ports path...
 	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /opt/local/lib)
 	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} /opt/local/include)
-	
+
+	set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} -D_DARWIN_C_SOURCE)
+	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -D_DARWIN_C_SOURCE)
+
 	set(LIBS ${LIBS} -Wl,-framework -Wl,Carbon)
 
 	if(USE_OPENCL)
