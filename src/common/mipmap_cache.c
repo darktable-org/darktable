@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/fcntl.h>
+#include <limits.h>
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <errno.h>
@@ -171,10 +172,13 @@ _write_buffer(const uint32_t key, const void *data, void *user_data)
   return 0;
 }
 
-static void
+static int
 dt_mipmap_cache_get_filename(
   gchar* mipmapfilename, size_t size)
 {
+  int r = -1;
+  char* abspath = NULL;
+
   // Directory
   char cachedir[1024];
   dt_util_get_user_cache_dir(cachedir, sizeof(cachedir));
@@ -184,12 +188,17 @@ dt_mipmap_cache_get_filename(
   if (!strcmp(dbfilename, ":memory:"))
   {
     snprintf(mipmapfilename, size, "%s", dbfilename);
-    return;
+    r = 0;
+    goto exit;
   }
 
-  char* abspath = realpath(dbfilename, NULL);
+  abspath = malloc(PATH_MAX);
   if (!abspath)
-    abspath = strdup(dbfilename);
+    goto exit;
+
+  if (!realpath(dbfilename, abspath))
+    snprintf(abspath, PATH_MAX, "%s", dbfilename);
+
   GChecksum* chk = g_checksum_new(G_CHECKSUM_SHA1);
   g_checksum_update(chk, (guchar*)abspath, strlen(abspath));
   const gchar *filename = g_checksum_get_string(chk);
@@ -198,15 +207,25 @@ dt_mipmap_cache_get_filename(
     snprintf(mipmapfilename, size, "%s/%s", cachedir, DT_MIPMAP_CACHE_DEFAULT_FILE_NAME);
   else
     snprintf(mipmapfilename, size, "%s/%s-%s", cachedir, DT_MIPMAP_CACHE_DEFAULT_FILE_NAME, filename);
-  free(abspath);
+
   g_checksum_free(chk);
+  r = 0;
+
+exit:
+    free(abspath);
+
+    return r;
 }
 
 static int
 dt_mipmap_cache_serialize(dt_mipmap_cache_t *cache)
 {
   gchar dbfilename[1024];
-  dt_mipmap_cache_get_filename(dbfilename, sizeof(dbfilename));
+  if (dt_mipmap_cache_get_filename(dbfilename, sizeof(dbfilename)))
+  {
+    fprintf(stderr, "[mipmap_cache] could not retrieve cache filename; not serializing\n");
+    return 1;
+  }
   if (!strcmp(dbfilename, ":memory:"))
   {
     fprintf(stderr, "[mipmap_cache] library is in memory; not serializing\n");
@@ -265,7 +284,11 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
   int file_width[mip+1], file_height[mip+1];
 
   gchar dbfilename[1024];
-  dt_mipmap_cache_get_filename(dbfilename, sizeof(dbfilename));
+  if (dt_mipmap_cache_get_filename(dbfilename, sizeof(dbfilename)))
+  {
+    fprintf(stderr, "[mipmap_cache] could not retrieve cache filename; not deserializing\n");
+    return 1;
+  }
   if (!strcmp(dbfilename, ":memory:"))
   {
     fprintf(stderr, "[mipmap_cache] library is in memory; not deserializing\n");
