@@ -263,7 +263,7 @@ dt_imageio_open_raw(
   raw->params.document_mode = 2; // color scaling (clip,wb,max) and black point, but no demosaic
   raw->params.output_color = 0;
   raw->params.output_bps = 16;
-  raw->params.user_flip = -1;
+  raw->params.user_flip = -1; // -1 means: use orientation from raw
   raw->params.gamm[0] = 1.0;
   raw->params.gamm[1] = 1.0;
   // raw->params.user_qual = img->raw_params.demosaic_method; // 3: AHD, 2: PPG, 1: VNG
@@ -296,6 +296,9 @@ dt_imageio_open_raw(
   image = libraw_dcraw_make_mem_image(raw, &ret);
   HANDLE_ERRORS(ret, 1);
 
+  // fallback for broken exif read in case of phase one H25
+  if(!strncmp(img->exif_maker, "Phase One", 9))
+    img->orientation = raw->sizes.flip;
   // filters seem only ever to take a useful value after unpack/process
   img->filters = raw->idata.filters;
   img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;

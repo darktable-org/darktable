@@ -947,8 +947,15 @@ _init_8(
   const int altered = dt_image_altered(imgid);
   int res = 1;
 
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+  const int orientation = dt_image_orientation(cimg);
+  // the orientation for this camera is not read correctly from exiv2, so we need
+  // to go the full libraw path (as the thumbnail will be flipped the wrong way round)
+  const int incompatible = !strncmp(cimg->exif_maker, "Phase One", 9);
+  dt_image_cache_read_release(darktable.image_cache, cimg);
+
   // try to load the embedded thumbnail first
-  if(!altered && !dt_conf_get_bool("never_use_embedded_thumb"))
+  if(!altered && !dt_conf_get_bool("never_use_embedded_thumb") && !incompatible)
   {
     int ret;
     char filename[DT_MAX_PATH_LEN];
@@ -965,10 +972,6 @@ _init_8(
         if(!dt_imageio_jpeg_read(&jpg, tmp))
         {
           // scale to fit
-          const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-          const int orientation = dt_image_orientation(cimg);
-          dt_image_cache_read_release(darktable.image_cache, cimg);
-
           dt_iop_flip_and_zoom_8(tmp, jpg.width, jpg.height, buf, wd, ht, orientation, width, height);
           res = 0;
         }
