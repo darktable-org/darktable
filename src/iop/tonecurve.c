@@ -625,17 +625,21 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   cairo_translate(cr, 0, height);
 
   // draw lum h istogram in background
-  dt_develop_t *dev = darktable.develop;
-  float *hist, hist_max;
-  hist = dev->histogram_pre_tonecurve;
-  hist_max = dev->histogram_pre_tonecurve_max;
-  if(hist_max > 0 && ch == ch_L)
+  // only if module is enabled
+  if (self->enabled)
   {
-    cairo_save(cr);
-    cairo_scale(cr, width/63.0, -(height-5)/(float)hist_max);
-    cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-    dt_draw_histogram_8(cr, hist, 3);
-    cairo_restore(cr);
+    dt_develop_t *dev = darktable.develop;
+    float *hist, hist_max;
+    hist = dev->histogram_pre_tonecurve;
+    hist_max = dev->histogram_pre_tonecurve_max;
+    if(hist_max > 0 && ch == ch_L)
+    {
+      cairo_save(cr);
+      cairo_scale(cr, width/63.0, -(height-5)/(float)hist_max);
+      cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
+      dt_draw_histogram_8(cr, hist, 3);
+      cairo_restore(cr);
+    }
   }
 
   if(c->mouse_y > 0 || c->dragging)
