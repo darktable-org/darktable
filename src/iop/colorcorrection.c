@@ -19,13 +19,12 @@
 #include "config.h"
 #endif
 #include "common/colorspaces.h"
-#include "iop/colorcorrection.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "bauhaus/bauhaus.h"
 #include "develop/imageop.h"
-#include "dtgtk/resetlabel.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -36,6 +35,32 @@ DT_MODULE(1)
 
 #define DT_COLORCORRECTION_INSET 5
 #define DT_COLORCORRECTION_MAX 40.
+
+typedef struct dt_iop_colorcorrection_params_t
+{
+  float hia, hib, loa, lob, saturation;
+}
+dt_iop_colorcorrection_params_t;
+
+typedef struct dt_iop_colorcorrection_gui_data_t
+{
+  GtkDrawingArea *area;
+  GtkWidget *slider;
+  float press_x, press_y, mouse_x, mouse_y;
+  int selected, dragging;
+  dt_iop_colorcorrection_params_t press_params;
+  cmsHPROFILE hsRGB;
+  cmsHPROFILE hLab;
+  cmsHTRANSFORM xform;
+}
+dt_iop_colorcorrection_gui_data_t;
+
+typedef struct dt_iop_colorcorrection_data_t
+{
+  float a_scale, a_base, b_scale, b_base, saturation;
+}
+dt_iop_colorcorrection_data_t;
+
 
 const char *name()
 {
@@ -51,18 +76,6 @@ int
 groups ()
 {
   return IOP_GROUP_COLOR;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_colorcorrection_gui_data_t *g =
-      (dt_iop_colorcorrection_gui_data_t*)self->gui_data;
-  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->scale5));
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -84,41 +97,23 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)p1;
-#ifdef HAVE_GEGL
-  // pull in new params to gegl
-  gegl_node_set(piece->input, "high_a_delta", p->hia, "high_b_delta", p->hib, "low_a_delta", p->loa, "low_b_delta", p->lob, "saturation", p->saturation, NULL);
-#else
   dt_iop_colorcorrection_data_t *d = (dt_iop_colorcorrection_data_t *)piece->data;
   d->a_scale = (p->hia - p->loa)/100.0;
   d->a_base  = p->loa;
   d->b_scale = (p->hib - p->lob)/100.0;
   d->b_base  = p->lob;
   d->saturation = p->saturation;
-#endif
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // create part of the gegl pipeline
-  piece->data = NULL;
-  dt_iop_colorcorrection_params_t *default_params = (dt_iop_colorcorrection_params_t *)self->default_params;
-  piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:whitebalance", "high_a_delta", default_params->hia, "high_b_delta", default_params->hib, "low_a_delta", default_params->loa, "low_b_delta", default_params->lob, "saturation", default_params->saturation, NULL);
-#else
   piece->data = malloc(sizeof(dt_iop_colorcorrection_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
-#endif
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // clean up everything again.
-  (void)gegl_node_remove_child(pipe->gegl, piece->input);
-  // no free necessary, no data is alloc'ed
-#else
   free(piece->data);
-#endif
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -126,7 +121,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale5, p->saturation);
+  dt_bauhaus_slider_set(g->slider, p->saturation);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -155,7 +150,7 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-static void sat_callback (GtkDarktableSlider *slider, gpointer user_data);
+static void sat_callback (GtkWidget *slider, gpointer user_data);
 static gboolean dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 static gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 static gboolean dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
@@ -172,7 +167,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->selected = g->dragging = 0;
   g->press_x = g->press_y = -1;
 
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
   g->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
@@ -194,17 +189,12 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->area), "scroll-event",
                     G_CALLBACK (dt_iop_colorcorrection_scrolled), self);
 
-  g->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox), TRUE, TRUE, 0);
-  GtkWidget *vbox = gtk_vbox_new(FALSE,0);
-  gtk_box_pack_start(GTK_BOX(g->hbox), GTK_WIDGET(vbox), TRUE, TRUE, 5);
-  g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-3.0, 3.0, 0.01, p->saturation,2));
-  g_object_set (GTK_OBJECT(g->scale5), "tooltip-text", _("set the global saturation"), (char *)NULL);
-  dtgtk_slider_set_label(g->scale5,_("saturation"));
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);
+  g->slider = dt_bauhaus_slider_new_with_range(self, -3.0f, 3.0f, 0.01f, p->saturation, 2);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->slider, TRUE, TRUE, 0);
+  g_object_set (GTK_OBJECT(g->slider), "tooltip-text", _("set the global saturation"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->slider,_("saturation"));
 
-
-  g_signal_connect (G_OBJECT (g->scale5), "value-changed",
+  g_signal_connect (G_OBJECT (g->slider), "value-changed",
                     G_CALLBACK (sat_callback), self);
   g->hsRGB = dt_colorspaces_create_srgb_profile();
   g->hLab  = dt_colorspaces_create_lab_profile();
@@ -222,12 +212,12 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-static void sat_callback (GtkDarktableSlider *slider, gpointer user_data)
+static void sat_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
-  p->saturation = dtgtk_slider_get_value(slider);
+  p->saturation = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
@@ -405,9 +395,9 @@ static gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScrol
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
-  if(event->direction == GDK_SCROLL_UP   && p->saturation > -3.0) p->saturation -= 0.1;
-  if(event->direction == GDK_SCROLL_DOWN && p->saturation <  3.0) p->saturation += 0.1;
-  dtgtk_slider_set_value(g->scale5, p->saturation);
+  if(event->direction == GDK_SCROLL_UP   && p->saturation > -3.0) p->saturation += 0.1;
+  if(event->direction == GDK_SCROLL_DOWN && p->saturation <  3.0) p->saturation -= 0.1;
+  dt_bauhaus_slider_set(g->slider, p->saturation);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
