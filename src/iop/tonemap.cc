@@ -281,7 +281,7 @@ void connect_key_accels(dt_iop_module_t *self)
     module->params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
     module->default_params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
     module->default_enabled = 1;
-  module->priority = 160; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 156; // module order created by iop_dependencies.py, do not edit!
     module->params_size = sizeof(dt_iop_tonemapping_params_t);
     module->gui_data = NULL;
   }
