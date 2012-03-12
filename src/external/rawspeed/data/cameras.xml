@@ -406,10 +406,10 @@
   </Camera>
   <Camera make="Canon" model="Canon EOS-1D Mark III">
     <CFA width="2" height="2">
-      <Color x="0" y="0">BLUE</Color>
+      <Color x="0" y="0">RED</Color>
       <Color x="1" y="0">GREEN</Color>
       <Color x="0" y="1">GREEN</Color>
-      <Color x="1" y="1">RED</Color>
+      <Color x="1" y="1">BLUE</Color>
     </CFA>
     <Crop x="78" y="20" width="3906" height="2600"/>
     <Sensor black="1023" white="15100"/>
