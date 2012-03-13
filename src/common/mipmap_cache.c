@@ -873,6 +873,15 @@ _init_f(
 {
   const uint32_t wd = *width, ht = *height;
 
+  /* do not even try to process file if it isnt available */
+  char filename[2048] = {0};
+  dt_image_full_path(imgid, filename, 2048);
+  if (strlen(filename) == 0 || !g_file_test(filename, G_FILE_TEST_EXISTS))
+  {
+    *width = *height = 0;
+    return;
+  }
+
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
 
