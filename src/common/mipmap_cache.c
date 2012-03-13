@@ -965,7 +965,16 @@ _init_8(
     const uint32_t          imgid,
     const dt_mipmap_size_t  size)
 {
-  const uint32_t wd = *width, ht = *height;
+  const uint32_t wd = *width, ht = *height;  
+
+  /* do not even try to process file if it isnt available */
+  char filename[2048] = {0};
+  dt_image_full_path(imgid, filename, 2048);
+  if (strlen(filename) == 0 || !g_file_test(filename, G_FILE_TEST_EXISTS))
+  {
+    *width = *height = 0;
+    return;
+  }
 
   const int altered = dt_image_altered(imgid);
   int res = 1;
