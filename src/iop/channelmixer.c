@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  copyright (c) 2010 Henrik Andersson.
+  copyright (c) 2010-2012 Henrik Andersson.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -366,13 +366,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->dtlabel2), TRUE, TRUE, 5);
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-2.0, 2.0, 0.005, p->red[CHANNEL_RED] , 3));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-2.0, 2.0, 0.005, p->red[CHANNEL_RED] , 3));
   g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("amount of red channel in the output channel"), (char *)NULL);
   dtgtk_slider_set_label(g->scale1,_("red"));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-2.0, 2.0, 0.005, p->green[CHANNEL_RED] , 3));
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-2.0, 2.0, 0.005, p->green[CHANNEL_RED] , 3));
   g_object_set (GTK_OBJECT(g->scale2), "tooltip-text", _("amount of green channel in the output channel"), (char *)NULL);
   dtgtk_slider_set_label(g->scale2,_("green"));
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-2.0, 2.0, 0.005, p->blue[CHANNEL_RED] , 3));
+  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-2.0, 2.0, 0.005, p->blue[CHANNEL_RED] , 3));
   g_object_set (GTK_OBJECT(g->scale3), "tooltip-text", _("amount of blue channel in the output channel"), (char *)NULL);
   dtgtk_slider_set_label(g->scale3,_("blue"));
 
