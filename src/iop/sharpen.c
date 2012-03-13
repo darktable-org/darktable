@@ -220,7 +220,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_sharpen_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 
-  if (dev_m != NULL) clReleaseMemObject(dev_m);
+  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   return TRUE;
 
 error:
