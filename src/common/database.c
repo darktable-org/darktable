@@ -108,6 +108,7 @@ dt_database_t *dt_database_init(char *alternative)
   
   sqlite3_exec(db->handle, "PRAGMA synchronous = OFF", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "PRAGMA journal_mode = MEMORY", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "PRAGMA page_size = 32768", NULL, NULL, NULL);
 
   g_free(dbname);
   return db;

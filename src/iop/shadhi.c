@@ -634,8 +634,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   err = dt_opencl_enqueue_copy_buffer_to_image(devid, dev_temp2, dev_out, 0, origin, region);
   if(err != CL_SUCCESS) goto error;
 
-  if (dev_temp1 != NULL) clReleaseMemObject(dev_temp1);
-  if (dev_temp2 != NULL) clReleaseMemObject(dev_temp2);
+  if (dev_temp1 != NULL) dt_opencl_release_mem_object(dev_temp1);
+  if (dev_temp2 != NULL) dt_opencl_release_mem_object(dev_temp2);
   return TRUE;
 
 error:
