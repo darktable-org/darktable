@@ -1,9 +1,10 @@
+#: ../src/libs/colorpicker.c:550
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-03-07 12:42+0100\n"
-"PO-Revision-Date: 2012-03-08 14:26+0100\n"
+"POT-Creation-Date: 2012-03-14 16:36+0100\n"
+"PO-Revision-Date: 2012-03-14 16:29+0100\n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: German\n"
 "Language: \n"
@@ -400,9 +401,8 @@ msgstr "Datei ‚%s‘ hat ein unbekanntes Format!"
 msgid "error loading file `%s'"
 msgstr "Fehler beim Laden von Datei ‚%s‘"
 
-# FIXME
 #: ../src/common/film.c:330
-msgid "no supported images was found to be imported"
+msgid "no supported images were found to be imported"
 msgstr "keine unterstützten Bilder zum Importieren gefunden"
 
 #: ../src/common/film.c:341
@@ -434,7 +434,7 @@ msgstr "aus"
 msgid "orphaned image"
 msgstr "verwaistes Bild"
 
-#: ../src/common/imageio.c:487
+#: ../src/common/imageio.c:490
 msgid ""
 "failed to allocate memory for export, please lower the threads used for "
 "export or buy more memory."
@@ -442,7 +442,7 @@ msgstr ""
 "Fehler beim Reservieren von Speicher zum Exportieren, bitte die Anzahl "
 "Threads für den Export herabsetzen oder mehr Speicher kaufen."
 
-#: ../src/common/imageio.c:496 ../src/common/mipmap_cache.c:873
+#: ../src/common/imageio.c:499 ../src/common/mipmap_cache.c:905
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "Bild ‚%s‘ ist nicht verfügbar!"
@@ -472,7 +472,7 @@ msgstr "Stil ‚%s‘ erfolgreich gespeichert"
 msgid "style %s was sucessfully imported"
 msgstr "Stil ‚%s‘ erfolgreich importiert"
 
-#: ../src/common/variables.c:213 ../src/iop/clipping.c:966
+#: ../src/common/variables.c:213 ../src/iop/clipping.c:961
 #, c-format
 msgid "none"
 msgstr "keine"
@@ -2090,40 +2090,40 @@ msgstr "Randgröße"
 msgid "size of the border in percent of the full image"
 msgstr "Größe des Randes in Prozent des ganzen Bildes"
 
-#: ../src/iop/borders.c:404 ../src/iop/clipping.c:924
+#: ../src/iop/borders.c:404 ../src/iop/clipping.c:919
 msgid "aspect"
 msgstr "Format"
 
 #. add import singel image buttons
-#: ../src/iop/borders.c:408 ../src/iop/clipping.c:930 ../src/libs/import.c:461
+#: ../src/iop/borders.c:408 ../src/iop/clipping.c:925 ../src/libs/import.c:461
 msgid "image"
 msgstr "Bild"
 
-#: ../src/iop/borders.c:409 ../src/iop/clipping.c:931
+#: ../src/iop/borders.c:409 ../src/iop/clipping.c:926
 msgid "golden cut"
 msgstr "Goldener Schnitt"
 
-#: ../src/iop/borders.c:410 ../src/iop/clipping.c:932
+#: ../src/iop/borders.c:410 ../src/iop/clipping.c:927
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/borders.c:411 ../src/iop/clipping.c:933
+#: ../src/iop/borders.c:411 ../src/iop/clipping.c:928
 msgid "3:2"
 msgstr "3:2"
 
-#: ../src/iop/borders.c:412 ../src/iop/clipping.c:934
+#: ../src/iop/borders.c:412 ../src/iop/clipping.c:929
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:413 ../src/iop/clipping.c:936
+#: ../src/iop/borders.c:413 ../src/iop/clipping.c:931
 msgid "square"
 msgstr "quadratisch"
 
-#: ../src/iop/borders.c:414 ../src/iop/clipping.c:937
+#: ../src/iop/borders.c:414 ../src/iop/clipping.c:932
 msgid "DIN"
 msgstr "DIN"
 
-#: ../src/iop/borders.c:415 ../src/iop/clipping.c:938
+#: ../src/iop/borders.c:415 ../src/iop/clipping.c:933
 msgid "16:9"
 msgstr "16:9"
 
@@ -2131,7 +2131,7 @@ msgstr "16:9"
 msgid "constant border"
 msgstr "konstanter Rahmen"
 
-#: ../src/iop/borders.c:420 ../src/iop/clipping.c:949
+#: ../src/iop/borders.c:420 ../src/iop/clipping.c:944
 msgid ""
 "set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
@@ -2139,17 +2139,11 @@ msgstr ""
 "Seitenverhältnis setzen (b:h)\n"
 "Drücke Strg-x um die Seiten zu tauschen"
 
-#. TODO: what about this?
-#. g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (aspect_flip), self);
-#: ../src/iop/borders.c:427
-msgid "swap the aspect ratio"
-msgstr "Seitenverhältnis tauschen"
-
-#: ../src/iop/borders.c:432
+#: ../src/iop/borders.c:426
 msgid "frame color"
 msgstr "Farbe"
 
-#: ../src/iop/borders.c:437 ../src/iop/colorzones.c:866
+#: ../src/iop/borders.c:431 ../src/iop/colorzones.c:866
 msgid "pick gui color from image"
 msgstr "GUI-Farbe aus dem Bild übernehmen"
 
@@ -2269,156 +2263,154 @@ msgid "crop and rotate"
 msgstr "Zuschneiden und drehen"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:891 ../src/iop/clipping.c:983
+#: ../src/iop/clipping.c:886 ../src/iop/clipping.c:978
 msgid "flip"
 msgstr "spiegeln"
 
-#: ../src/iop/clipping.c:898
+#: ../src/iop/clipping.c:893
 msgid "flip image horizontally"
 msgstr "Bild horizontal spiegeln"
 
-#: ../src/iop/clipping.c:899
+#: ../src/iop/clipping.c:894
 msgid "flip image vertically"
 msgstr "Bild vertikal spiegeln"
 
-#: ../src/iop/clipping.c:902
+#: ../src/iop/clipping.c:897
 msgid "angle"
 msgstr "Winkel"
 
 # sehr unschön :-(
-#: ../src/iop/clipping.c:906
+#: ../src/iop/clipping.c:901
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 "Mit rechter Maustaste ins Bild klicken und eine Linie ziehen, um eine gerade "
 "Kante zu markieren"
 
-#: ../src/iop/clipping.c:911
+#: ../src/iop/clipping.c:906
 msgid "keystone h"
 msgstr "Trapezkorrektur h"
 
-#: ../src/iop/clipping.c:912
+#: ../src/iop/clipping.c:907
 msgid "adjust perspective for horizontal keystone distortion"
 msgstr "Perspektive für horizontale Trapezverzerrung anpassen"
 
-#: ../src/iop/clipping.c:918
+#: ../src/iop/clipping.c:913
 msgid "keystone v"
 msgstr "Trapezkorrektur v"
 
-#: ../src/iop/clipping.c:919
+#: ../src/iop/clipping.c:914
 msgid "adjust perspective for vertical keystone distortion"
 msgstr "Perspektive für vertikale Trapezverzerrung anpassen"
 
-#: ../src/iop/clipping.c:929
+#: ../src/iop/clipping.c:924
 msgid "free"
 msgstr "frei"
 
-#: ../src/iop/clipping.c:935
+#: ../src/iop/clipping.c:930
 msgid "5:4"
 msgstr "5:4"
 
-#: ../src/iop/clipping.c:956
+#: ../src/iop/clipping.c:951
 msgid "swap the aspect ratio (ctrl-x)"
 msgstr "Seitenverhältnis tauschen (Strg-x)"
 
-#: ../src/iop/clipping.c:963
+#: ../src/iop/clipping.c:958
 msgid "guides"
 msgstr "Hilfslinien"
 
-#: ../src/iop/clipping.c:967
+#: ../src/iop/clipping.c:962
 msgid "grid"
 msgstr "Gitter"
 
-#: ../src/iop/clipping.c:968
+#: ../src/iop/clipping.c:963
 msgid "rules of thirds"
 msgstr "Drittelregel"
 
-#: ../src/iop/clipping.c:969
+#: ../src/iop/clipping.c:964
 msgid "diagonal method"
 msgstr "Diagonalen"
 
-#: ../src/iop/clipping.c:970
+#: ../src/iop/clipping.c:965
 msgid "harmonious triangles"
 msgstr "harmonische Dreiecke"
 
-#: ../src/iop/clipping.c:971
+#: ../src/iop/clipping.c:966
 msgid "golden mean"
 msgstr "goldener Schnitt"
 
-#: ../src/iop/clipping.c:973
+#: ../src/iop/clipping.c:968
 msgid ""
 "with this option, you can display guide lines to help compose your "
 "photograph."
 msgstr "Hilfslinien anzeigen, die beim Komponieren der Fotographie helfen."
 
-#: ../src/iop/clipping.c:977
+#: ../src/iop/clipping.c:972
 msgid "type"
 msgstr "Typ"
 
-#: ../src/iop/clipping.c:990
+#: ../src/iop/clipping.c:985
 msgid "flip guides horizontally"
 msgstr "Hilfslinien horizontal spiegeln"
 
-#: ../src/iop/clipping.c:991
+#: ../src/iop/clipping.c:986
 msgid "flip guides vertically"
 msgstr "Hilfslinien vertikal spiegeln"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:993
+#: ../src/iop/clipping.c:988
 msgid "golden sections"
 msgstr "Goldener Schnitt"
 
-#: ../src/iop/clipping.c:995
+#: ../src/iop/clipping.c:990
 msgid "enable this option to show golden sections."
 msgstr "Diese Option auswählen, um den Goldenen Schnitt anzuzeigen"
 
-#: ../src/iop/clipping.c:998
+#: ../src/iop/clipping.c:993
 msgid "spiral sections"
 msgstr "Rechtecke d. Spirale"
 
-#: ../src/iop/clipping.c:999
+#: ../src/iop/clipping.c:994
 msgid "enable this option to show golden spiral sections."
 msgstr ""
 "Diese Option auswählen, um die Bereiche der goldenen Spirale anzuzeigen"
 
-#: ../src/iop/clipping.c:1002
+#: ../src/iop/clipping.c:997
 msgid "golden spiral"
 msgstr "Goldene Spirale"
 
-#: ../src/iop/clipping.c:1003
+#: ../src/iop/clipping.c:998
 msgid "enable this option to show a golden spiral guide."
 msgstr "Diese Option auswählen, um eine Goldene Spirale anzuzeigen"
 
-#: ../src/iop/clipping.c:1006
+#: ../src/iop/clipping.c:1001
 msgid "golden triangles"
 msgstr "Goldene Dreiecke"
 
-#: ../src/iop/clipping.c:1007
+#: ../src/iop/clipping.c:1002
 msgid "enable this option to show golden triangles."
 msgstr "Diese Option auswählen, um Goldene Dreiecke anzuzeigen"
 
-#: ../src/iop/clipping.c:1664
+#: ../src/iop/clipping.c:1659
 msgctxt "accel"
 msgid "commit"
 msgstr "Änderungen übernehmen"
 
-#: ../src/iop/clipping.c:1666
+#: ../src/iop/clipping.c:1661
 msgctxt "accel"
 msgid "swap the aspect ratio"
 msgstr "Seitenverhältnis tauschen"
 
-#: ../src/iop/clipping.c:1668
+#: ../src/iop/clipping.c:1663
 msgctxt "accel"
 msgid "angle"
 msgstr "Winkel"
 
-# war "Trapezkorrektur h", aber zu lang für GUI (Bug?)
-#: ../src/iop/clipping.c:1669
+#: ../src/iop/clipping.c:1664
 msgctxt "accel"
 msgid "keystone h"
 msgstr "Trapezkorrektur h"
 
-# siehe "keystone h"
-#: ../src/iop/clipping.c:1670
+#: ../src/iop/clipping.c:1665
 msgctxt "accel"
 msgid "keystone v"
 msgstr "Trapezkorrektur v"
@@ -3052,11 +3044,10 @@ msgctxt "accel"
 msgid "blend C"
 msgstr "mische C"
 
-# FIXME: should be 'h', not 'H'
 #: ../src/iop/highlights.c:101
 msgctxt "accel"
-msgid "blend H"
-msgstr "mische H"
+msgid "blend h"
+msgstr "mische h"
 
 #: ../src/iop/highlights.c:416
 msgid "clip highlights"
@@ -3842,7 +3833,7 @@ msgstr "Weißabgleich manuell setzen"
 msgid "passthrough"
 msgstr "Durchschleifen"
 
-#: ../src/iop/temperature.c:578
+#: ../src/iop/temperature.c:579
 msgid "fine tune white balance preset"
 msgstr "Weißabgleichsvorgabe feinabstimmen"
 
@@ -4763,7 +4754,7 @@ msgstr ""
 msgid "histogram"
 msgstr "Histogramm"
 
-#: ../src/libs/histogram.c:102 ../src/libs/histogram.c:279
+#: ../src/libs/histogram.c:102 ../src/libs/histogram.c:280
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets"
@@ -4771,7 +4762,7 @@ msgstr ""
 "Ziehen, um die Belichtung zu ändern,\n"
 "Doppelklick zum Zurücksetzen"
 
-#: ../src/libs/histogram.c:274
+#: ../src/libs/histogram.c:275
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets"
@@ -5515,31 +5506,31 @@ msgstr ""
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/tools/darktable.c:165
+#: ../src/libs/tools/darktable.c:166
 msgid "organize and develop images from digital cameras"
 msgstr "Organisiere und entwickle Bilder von Digitalkameras"
 
-#: ../src/libs/tools/darktable.c:170
+#: ../src/libs/tools/darktable.c:171
 msgid "* developers *"
 msgstr "* Entwickler *"
 
-#: ../src/libs/tools/darktable.c:175
+#: ../src/libs/tools/darktable.c:176
 msgid "* ubuntu packaging, color management, video tutorials *"
 msgstr "* Ubuntu-Paketierung, Farbmanagement, Video-Anleitungen *"
 
-#: ../src/libs/tools/darktable.c:178
+#: ../src/libs/tools/darktable.c:179
 msgid "* opencl pipeline: *"
 msgstr "* OpenCL-Pipeline: *"
 
-#: ../src/libs/tools/darktable.c:181
+#: ../src/libs/tools/darktable.c:182
 msgid "* networking, battle testing, translation expert *"
 msgstr "* Netzwerken, Battle-Testen, Übersetzungsexperte *"
 
-#: ../src/libs/tools/darktable.c:184
+#: ../src/libs/tools/darktable.c:185
 msgid "* contributors *"
 msgstr "* Mitwirkende *"
 
-#: ../src/libs/tools/darktable.c:222
+#: ../src/libs/tools/darktable.c:223
 msgid "translator-credits"
 msgstr "Tobias Ellinghaus"
 
@@ -5940,12 +5931,16 @@ msgstr ""
 "komprimiere den Effekt in den\n"
 "Schatten/Spitzlichtern und erhalte die Mitten"
 
+#~ msgid "swap the aspect ratio"
+#~ msgstr "Seitenverhältnis tauschen"
+
+# FIXME: should be 'h', not 'H'
+#~ msgctxt "accel"
+#~ msgid "blend H"
+#~ msgstr "mische H"
+
 #~ msgid "And all those of you that made previous releases possible"
 #~ msgstr "Und alle, die frühere Releases möglich gemacht haben"
-
-#~ msgctxt "accel"
-#~ msgid "blend h"
-#~ msgstr "mische h"
 
 #~ msgid "ask before deleting images"
 #~ msgstr "Vor dem Löschen von Bildern nachfragen"
