@@ -108,7 +108,7 @@ void gui_init(dt_lib_module_t *self)
   memset(&uncategorized,0,sizeof(GtkTreeIter));
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), 
-			      "select name,icon,description from tags", -1, &stmt, NULL);
+			      "SELECT name,icon,description FROM tags ORDER BY UPPER(name) DESC", -1, &stmt, NULL);
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
     if(strchr((const char *)sqlite3_column_text(stmt, 0),'|')==0)
