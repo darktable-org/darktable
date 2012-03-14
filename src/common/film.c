@@ -327,7 +327,7 @@ void dt_film_import1(dt_film_t *film)
   images = _film_recursive_get_files(film->dirname, recursive, &images);
   if(g_list_length(images) == 0) 
   {
-    dt_control_log(_("no supported images was found to be imported"));
+    dt_control_log(_("no supported images were found to be imported"));
     return;
   }
 
