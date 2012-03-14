@@ -609,15 +609,25 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
 
   if(fabs(d->contrast) <= 1.0f)
   {
+    // linear curve for contrast up to +/- 1
     for(int k=0; k<0x10000; k++) d->table[k] = d->contrast*(100.0f*k/0x10000 - 50.0f) + 50.0f;
   }
   else
   {
-    for(int k=0; k<0x10000; k++) d->table[k] = 100.0f*k/0x10000; // identity for the moment 
+    // sigmoidal curve for contrast above +/-1 1
+    // going from (0,0) to (1,100) or (0,100) to (1,0), respectively
+    const float boost = 5.0f;
+    const float contrastm1sq = boost*(fabs(d->contrast) - 1.0f)*(fabs(d->contrast) - 1.0f);
+    const float contrastscale = copysign(sqrt(1.0f + contrastm1sq), d->contrast);
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(d) schedule(static)
+#endif
+    for(int k=0; k<0x10000; k++)
+    {
+      float kx2m1 = 2.0f*(float)k/0x10000 - 1.0f;
+      d->table[k] = 50.0f * (contrastscale * kx2m1 / sqrtf(1.0f + contrastm1sq * kx2m1 * kx2m1) + 1.0f);
+    }
   }
-
-  for(int k=0; k<0x10000; k+=4096) printf("%.5f  ", d->table[k]);
-  printf("\n");
 
   // now the extrapolation stuff:
   const float x[4] = {0.7f, 0.8f, 0.9f, 1.0f};
@@ -746,7 +756,7 @@ void gui_init(struct dt_iop_module_t *self)
 #endif
 
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 200.0, 0.1, p->radius, 2));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-1.0, 1.0, 0.01, p->contrast, 2));
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-3.0, 3.0, 0.01, p->contrast, 2));
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-3.0, 3.0, 0.01, p->saturation, 2));
   dtgtk_slider_set_label(g->scale1,_("radius"));
   dtgtk_slider_set_label(g->scale2,_("contrast"));
