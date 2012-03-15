@@ -98,7 +98,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend L"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend C"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend H"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend h"));
 //  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend L");
 //  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend C");
 //  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend h");
@@ -111,7 +111,7 @@ void connect_key_accels(dt_iop_module_t *self)
 
   dt_accel_connect_slider_iop(self, "blend L", GTK_WIDGET(g->blendL));
   dt_accel_connect_slider_iop(self, "blend C", GTK_WIDGET(g->blendC));
-  dt_accel_connect_slider_iop(self, "blend H", GTK_WIDGET(g->blendh));
+  dt_accel_connect_slider_iop(self, "blend h", GTK_WIDGET(g->blendh));
 }
 
 static const float xyz_rgb[3][3] =    /* XYZ from RGB */

@@ -210,13 +210,13 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
   switch(property)
   {
     case 0: // film roll
-      snprintf(query, 1024, "select distinct folder, id from film_rolls where folder like '%%%s%%'  order by id", escaped_text);
+      snprintf(query, 1024, "select distinct folder, id from film_rolls where folder like '%%%s%%'  order by id DESC", escaped_text);
       break;
     case 1: // camera
       snprintf(query, 1024, "select distinct maker || ' ' || model as model, 1 from images where maker || ' ' || model like '%%%s%%' order by model", escaped_text);
       break;
     case 2: // tag
-      snprintf(query, 1024, "select distinct name, id from tags where name like '%%%s%%'", escaped_text);
+      snprintf(query, 1024, "SELECT distinct name, id FROM tags WHERE name LIKE '%%%s%%' ORDER BY UPPER(name)", escaped_text);
       break;
     case 4: // History, 2 hardcoded alternatives
       gtk_list_store_append(GTK_LIST_STORE(model), &iter);
@@ -304,7 +304,7 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
       break;
 
     default: // case 3: // day
-      snprintf(query, 1024, "select distinct datetime_taken, 1 from images where datetime_taken like '%%%s%%' order by datetime_taken", escaped_text);
+      snprintf(query, 1024, "SELECT DISTINCT datetime_taken, 1 FROM images WHERE datetime_taken LIKE '%%%s%%' ORDER BY datetime_taken DESC", escaped_text);
       break;
   }
   g_free(escaped_text);

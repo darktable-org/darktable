@@ -1,10 +1,15 @@
 #
+# This packaging manifest file is
 # Copyright (c) 2012, James C. McPherson. All rights reserved.
 #
+#
+# Darktable Photo Workflow Software is released under the GPL 3.0
+#
 
-set name=pkg.fmri value=pkg:/darktable/darktable-git@1.0,1.0.0
-set name=pkg.summary value="darktable (built from git 1904f9fd74c3a337ef95fc1f03d7c0cf932450ce)"
-set name=pkg.description value="darktable (built from git 1904f9fd74c3a337ef95fc1f03d7c0cf932450ce)"
+
+set name=pkg.fmri value=pkg:/darktable/darktable@1.0,1.0.0
+set name=pkg.summary value="darktable v1.0"
+set name=pkg.description value="Darktable Photo Workflow Software"
 set name=info.classification \
     value="org.opensolaris.category.2008:Development/Distribution Tools"
 
@@ -15,19 +20,13 @@ set name=info.classification \
 set name=org.opensolaris.noincorp value=true
 set name=variant.arch value=i386
 set name=variant.opensolaris.zone value=global value=nonglobal
-#dir  path=etc owner=root group=sys mode=0755
-#dir  path=etc/gconf owner=root group=sys mode=0755
-#dir  path=etc/gconf/schemas owner=root group=sys mode=0755
-#file path=etc/gconf/schemas/darktable.schemas owner=root group=root mode=644 \
-#    restart_fmri=svc:/application/desktop-cache/gconf-cache:default
+
 dir  path=opt owner=root group=sys mode=755
 dir  path=opt/darktable owner=root group=root mode=755
 dir  path=opt/darktable/bin owner=root group=root mode=755
 file path=opt/darktable/bin/darktable owner=root group=root mode=755
 file path=opt/darktable/bin/darktable-cltest owner=root group=root mode=755
 file path=opt/darktable/bin/darktable-viewer owner=root group=root mode=755
-dir  path=opt/darktable/include owner=root group=root mode=755
-dir  path=opt/darktable/include/OpenEXR owner=root group=root mode=755
 dir  path=opt/darktable/lib owner=root group=root mode=755
 dir  path=opt/darktable/lib/darktable owner=root group=root mode=755
 dir  path=opt/darktable/lib/darktable/views owner=root group=root mode=755
@@ -56,13 +55,13 @@ file path=opt/darktable/lib/darktable/plugins/librelight.so owner=root group=roo
 file path=opt/darktable/lib/darktable/plugins/libhotpixels.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/libcolorcontrast.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/libcolorize.so owner=root group=root mode=755
-file path=opt/darktable/lib/darktable/plugins/libanlfyeni.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/libsoften.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/libhighlights.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/imageio/storage/libpicasa.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/imageio/storage/libgallery.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/imageio/storage/libemail.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/imageio/storage/libdisk.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/imageio/storage/libflickr.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/imageio/format/libexr.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/imageio/format/libjpeg.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/imageio/format/libtiff.so owner=root group=root mode=755
@@ -124,7 +123,6 @@ file path=opt/darktable/lib/darktable/plugins/libsplittoning.so owner=root group
 file path=opt/darktable/lib/darktable/plugins/libbasecurve.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/libbloom.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/liblens.so owner=root group=root mode=755
-file path=opt/darktable/lib/darktable/plugins/libshrecovery.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/liblowlight.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/libtemperature.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/libzonesystem.so owner=root group=root mode=755
@@ -135,11 +133,10 @@ file path=opt/darktable/lib/darktable/plugins/libgamma.so owner=root group=root 
 file path=opt/darktable/lib/darktable/plugins/liblowpass.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/libcacorrect.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/libatrous.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libshadhi.so owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/libdarktable.so owner=root group=root mode=755
 
 
-dir  path=opt/darktable/share owner=root group=root mode=755
-dir  path=opt/darktable/share/aclocal owner=root group=root mode=755
 dir  path=usr owner=root group=sys mode=0755
 dir  path=usr/share owner=root group=sys mode=755
 dir  path=usr/share/applications owner=root group=other mode=755
@@ -147,6 +144,8 @@ file path=usr/share/applications/darktable.desktop owner=root \
     group=root mode=644
 dir  path=opt/darktable/share/darktable owner=root group=root mode=755
 file path=opt/darktable/share/darktable/darktable.gtkrc owner=root group=root \
+    mode=644
+file path=opt/darktable/share/darktable/darktablerc owner=root group=root \
     mode=644
 file path=opt/darktable/share/darktable/gdb_commands owner=root group=root \
     mode=644
@@ -170,12 +169,12 @@ file path=opt/darktable/share/darktable/kernels/programs.conf owner=root \
 file path=opt/darktable/share/darktable/kernels/sharpen.cl owner=root \
     group=root mode=644
 dir  path=opt/darktable/share/darktable/pixmaps owner=root group=root mode=755
+file path=opt/darktable/share/darktable/pixmaps/idbutton.png owner=root \
+    group=root mode=644
 dir  path=opt/darktable/share/darktable/pixmaps/plugins owner=root group=root \
     mode=755
 dir  path=opt/darktable/share/darktable/pixmaps/plugins/darkroom owner=root \
     group=root mode=755
-file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/anlfyeni.png \
-    owner=root group=root mode=644
 file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/atrous.png \
     owner=root group=root mode=644
 file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/basecurve.png \
@@ -295,9 +294,6 @@ file path=opt/darktable/share/darktable/watermarks/hasselblad.svg owner=root \
 file path=opt/darktable/share/darktable/watermarks/promo.svg owner=root \
     group=root mode=644
 dir  path=opt/darktable/share/doc owner=root group=root mode=755
-dir  path=opt/darktable/share/doc/OpenEXR-1.7.0 owner=root group=root mode=755
-dir  path=opt/darktable/share/doc/OpenEXR-1.7.0/examples owner=root group=root \
-    mode=755
 dir  path=opt/darktable/share/doc/darktable owner=root group=root mode=755
 file path=opt/darktable/share/doc/darktable/AUTHORS owner=root group=root \
     mode=644
@@ -307,18 +303,8 @@ file path=opt/darktable/share/doc/darktable/README owner=root group=root \
     mode=644
 file path=opt/darktable/share/doc/darktable/README.Solaris owner=root \
     group=root mode=644
-file path=opt/darktable/share/doc/darktable/Solaris_diffs owner=root \
-    group=root mode=644
 file path=opt/darktable/share/doc/darktable/TRANSLATORS owner=root group=root \
     mode=644
-dir  path=opt/darktable/share/doc/ilmbase-1.0.2 owner=root group=root mode=755
-dir  path=opt/darktable/share/doc/lcms2 owner=root group=root mode=755
-dir  path=opt/darktable/share/doc/tiff-4.0.0 owner=root group=root mode=755
-dir  path=opt/darktable/share/doc/tiff-4.0.0/html owner=root group=root mode=755
-dir  path=opt/darktable/share/doc/tiff-4.0.0/html/images owner=root group=root \
-    mode=755
-dir  path=opt/darktable/share/doc/tiff-4.0.0/html/man owner=root group=root \
-    mode=755
 dir  path=usr owner=root group=sys mode=755
 dir  path=usr/share owner=root group=sys mode=755
 dir  path=usr/share/icons owner=root group=other mode=755
@@ -445,11 +431,17 @@ dir  path=opt/darktable/share/locale/th/LC_MESSAGES owner=root group=root \
     mode=755
 file path=opt/darktable/share/locale/th/LC_MESSAGES/darktable.mo owner=root \
     group=root mode=644
+dir  path=opt/darktable/share/locale/zh_CN owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/zh_CN/LC_MESSAGES owner=root group=root \
+    mode=755
+file path=opt/darktable/share/locale/zh_CN/LC_MESSAGES/darktable.mo owner=root \
+    group=root mode=644
 dir  path=opt/darktable/share/man owner=root group=root mode=755
 dir  path=opt/darktable/share/man/man1 owner=root group=root mode=755
 file path=opt/darktable/share/man/man1/darktable.1 owner=root group=root \
     mode=644
 dir  path=opt/darktable/share/man/man3 owner=root group=root mode=755
+
 depend type=require fmri=pkg://JMCP/darktable/library/OpenEXR
 depend type=require fmri=pkg://JMCP/darktable/library/exiv2
 depend type=require fmri=pkg://JMCP/darktable/library/flickcurl
@@ -462,7 +454,10 @@ depend type=require fmri=pkg://JMCP/darktable/library/tiff4
 # If C++ wasn't so crazy, we could require either the SFE or Solaris
 # versions of the runtime.
 #depend type=require-any fmri=pkg://sfe/runtime/gcc fmri=pkg://system/library/gcc-45-runtime
+
 depend type=require fmri=pkg://sfe/runtime/gcc
+depend type=require fmri=pkg://sfe/library/libiconv
+
 depend type=require fmri=pkg://solaris/image/library/libjpeg
 depend type=require fmri=pkg://solaris/library/libxml2
 depend type=require fmri=pkg://solaris/system/library
@@ -470,8 +465,6 @@ depend type=require fmri=pkg://solaris/web/curl
 depend type=require fmri=pkg://solaris/x11/library/libxevie
 depend type=require fmri=pkg://solaris/database/sqlite-3
 depend type=require fmri=pkg://solaris/library/zlib
-depend type=require fmri=pkg://sfe/library/libiconv
-
 depend type=require fmri=pkg://solaris/x11/library/mesa
 depend type=require fmri=pkg://solaris/service/opengl/ogl-select
 
