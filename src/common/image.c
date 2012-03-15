@@ -157,8 +157,8 @@ void dt_image_set_flip(const int32_t imgid, const int32_t orientation)
     num = 1 + sqlite3_column_int(stmt, 0);
   }
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid, num, module, operation, op_params, enabled, blendop_params) values"
-      " (?1, ?2, 1, 'flip', ?3, 1, 0) ", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid, num, module, operation, op_params, enabled, blendop_params, blendop_version) values"
+      " (?1, ?2, 1, 'flip', ?3, 1, null, 0) ", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, &orientation, sizeof(int32_t), SQLITE_TRANSIENT);

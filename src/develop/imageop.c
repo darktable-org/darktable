@@ -31,7 +31,8 @@
 #include "dtgtk/button.h"
 #include "dtgtk/icon.h"
 #include "dtgtk/tristatebutton.h"
-#include "dtgtk/tristatebutton.h"
+#include "dtgtk/slider.h"
+#include "dtgtk/gradientslider.h"
 #include "libs/modulegroups.h"
 
 #include <strings.h>
@@ -42,13 +43,10 @@
 #include <gmodule.h>
 #include <xmmintrin.h>
 
-typedef struct _iop_gui_blend_data_t
-{
-  dt_iop_module_t *module;
-  GtkWidget *blend_modes_combo;
-  GtkWidget *opacity_slider;
-}
-_iop_gui_blend_data_t;
+
+static dt_develop_blend_params_t _default_blendop_params= {DEVELOP_BLEND_DISABLED, 100.0, 0, 0,
+                                                          { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+                                                            0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f } };
 
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
@@ -58,15 +56,14 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   memcpy(module->default_params, module->factory_params, module->params_size);
   module->default_enabled = module->factory_enabled;
 
-  dt_develop_blend_params_t default_blendop_params= {DEVELOP_BLEND_DISABLED,100.0,0};
   memset(module->default_blendop_params, 0, sizeof(dt_develop_blend_params_t));
-  memcpy(module->default_blendop_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
-  memcpy(module->blend_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
+  memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
+  memcpy(module->blend_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
 
   const dt_image_t *img = &module->dev->image_storage;
   // select matching default:
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, operation, blendop_params from presets where operation = ?1 and op_version = ?2 and "
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, operation, blendop_params, blendop_version from presets where operation = ?1 and op_version = ?2 and "
                               "autoapply=1 and "
                               "?3 like model and ?4 like maker and ?5 like lens and "
                               "?6 between iso_min and iso_max and "
@@ -114,14 +111,23 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
     int enabled = sqlite3_column_int(stmt, 1);
     bl_params = sqlite3_column_blob(stmt, 3);
     int bl_length = sqlite3_column_bytes(stmt, 3);
+    int bl_version = sqlite3_column_int(stmt, 4);
     if(op_params && (op_length == module->params_size))
     {
       // printf("got default for image %d and operation %s\n", img->id, sqlite3_column_text(stmt, 2));
       memcpy(module->default_params, op_params, op_length);
       module->default_enabled = enabled;
-      if(bl_params && (bl_length == sizeof(dt_develop_blend_params_t)))
+      if(bl_params &&  (bl_version = dt_develop_blend_version()) && (bl_length == sizeof(dt_develop_blend_params_t)))
       {
         memcpy(module->default_blendop_params, bl_params, sizeof(dt_develop_blend_params_t));
+      }
+      else if (bl_params)
+      {
+        bl_params = dt_develop_blend_legacy_params(module, bl_params, bl_version, module->default_blendop_params, dt_develop_blend_version(), bl_length) == 0 ? bl_params : (void *)1;
+      }
+      else
+      {
+        bl_params = (void *)1;
       }
     }
     else
@@ -132,7 +138,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
     // global default
     sqlite3_finalize(stmt);
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, blendop_params from presets where operation = ?1 and op_version = ?2 and def=1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, blendop_params, blendop_version from presets where operation = ?1 and op_version = ?2 and def=1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
 
@@ -143,13 +149,22 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
       int enabled = sqlite3_column_int(stmt, 1);
       bl_params = sqlite3_column_blob(stmt, 2);
       int bl_length = sqlite3_column_bytes(stmt, 2);
+      int bl_version = sqlite3_column_int(stmt, 3);
       if(op_params && (op_length == module->params_size))
       {
         memcpy(module->default_params, op_params, op_length);
         module->default_enabled = enabled;
-        if(bl_params && (bl_length == sizeof(dt_develop_blend_params_t)))
+        if(bl_params &&  (bl_version = dt_develop_blend_version()) && (bl_length == sizeof(dt_develop_blend_params_t)))
         {
           memcpy(module->default_blendop_params, bl_params, sizeof(dt_develop_blend_params_t));
+        }
+        else if (bl_params)
+        {
+           bl_params = dt_develop_blend_legacy_params(module, bl_params, bl_version, module->default_blendop_params, dt_develop_blend_version(), bl_length) == 0 ? bl_params : (void *)1;
+        }
+        else
+        {
+          bl_params = (void *)1;
         }
       }
       else
@@ -359,10 +374,10 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->blend_params=g_malloc(sizeof(dt_develop_blend_params_t));
   module->default_blendop_params=g_malloc(sizeof(dt_develop_blend_params_t));
   memset(module->blend_params, 0, sizeof(dt_develop_blend_params_t));
-  dt_develop_blend_params_t default_blendop_params= {DEVELOP_BLEND_DISABLED,100.0,0};
+  // dt_develop_blend_params_t default_blendop_params= {DEVELOP_BLEND_DISABLED,100.0,0};
   memset(module->default_blendop_params, 0, sizeof(dt_develop_blend_params_t));
-  memcpy(module->default_blendop_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
-  memcpy(module->blend_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
+  memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
+  memcpy(module->blend_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
 
   if(module->priority == 0)
   {
@@ -378,10 +393,10 @@ void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t 
   module->init_pipe(module, pipe, piece);
   piece->blendop_data = malloc(sizeof(dt_develop_blend_params_t));
   memset(piece->blendop_data, 0, sizeof(dt_develop_blend_params_t));
-  dt_develop_blend_params_t default_blendop_params= {DEVELOP_BLEND_DISABLED,100.0,0};
+  //dt_develop_blend_params_t default_blendop_params= {DEVELOP_BLEND_DISABLED,100.0,0};
   memset(module->default_blendop_params, 0, sizeof(dt_develop_blend_params_t));
-  memcpy(module->default_blendop_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
-  memcpy(module->blend_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
+  memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
+  memcpy(module->blend_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
   /// FIXME: Commmit params is already done in module
   dt_iop_commit_params(module, module->default_params, module->default_blendop_params, pipe, piece);
 }
@@ -737,10 +752,15 @@ void dt_iop_gui_update(dt_iop_module_t *module)
     module->gui_update(module);
     if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
-      _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
+      dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
       
-      dt_bauhaus_combobox_set(bd->blend_modes_combo, module->blend_params->mode);
+      dt_bauhaus_combobox_set(bd->blend_modes_combo, dt_iop_gui_blending_mode_seq(bd, module->blend_params->mode));
       dt_bauhaus_slider_set(bd->opacity_slider, module->blend_params->opacity);
+      if(bd->blendif_support)
+      {
+        gtk_toggle_button_set_active(bd->blendif_enable, module->blend_params->blendif & (1<<31));
+        dt_iop_gui_update_blendif(module);
+      }
     }
     if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
   }
@@ -893,24 +913,6 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 }
 
 
-static void
-_blendop_mode_callback (GtkWidget *combo, _iop_gui_blend_data_t *data)
-{
-  data->module->blend_params->mode = dt_bauhaus_combobox_get(data->blend_modes_combo);
-  if(data->module->blend_params->mode != DEVELOP_BLEND_DISABLED)
-    gtk_widget_show(GTK_WIDGET(data->opacity_slider));
-  else
-    gtk_widget_hide(GTK_WIDGET(data->opacity_slider));
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
-}
-
-static void
-_blendop_opacity_callback (GtkWidget *slider, _iop_gui_blend_data_t *data)
-{
-  data->module->blend_params->opacity = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
-}
-
 /*
  * NEW EXPANDER
  */
@@ -939,9 +941,23 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
     gtk_widget_show(pluginui);
 
     /* ensure that blending widgets are show as the should */
-    _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
-    if (bd != NULL && dt_bauhaus_combobox_get(bd->blend_modes_combo) == DEVELOP_BLEND_DISABLED)
-      gtk_widget_hide(GTK_WIDGET(bd->opacity_slider));
+    dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
+    if (bd != NULL)
+    {
+      if(dt_bauhaus_combobox_get(bd->blend_modes_combo) == DEVELOP_BLEND_DISABLED)
+      {
+        gtk_widget_hide(GTK_WIDGET(bd->opacity_slider));
+        if(bd->blendif_support)
+        {
+          gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
+          gtk_widget_hide(GTK_WIDGET(bd->blendif_enable));
+        }
+      }
+      else if(bd->blendif_support && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bd->blendif_enable)) == FALSE)
+      {
+        gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
+      }
+    }
 
     /* set this module to receive focus / draw events*/
     dt_iop_request_focus(module);
@@ -1042,56 +1058,6 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
     return TRUE;
   }
   return FALSE;
-}
-
-void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
-{
-  /* create and add blend mode if module supports it */
-  if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
-  {
-    module->blend_data = g_malloc(sizeof(_iop_gui_blend_data_t));
-    _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
-    bd->module = module;
-
-    bd->blend_modes_combo = dt_bauhaus_combobox_new(module);
-    dt_bauhaus_widget_set_label(bd->blend_modes_combo, _("blend mode"));
-    bd->opacity_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 1, 100.0, 0);
-    dt_bauhaus_widget_set_label(bd->opacity_slider, _("opacity"));
-    dt_bauhaus_slider_set_format(bd->opacity_slider, "%.0f%%");
-    module->fusion_slider = bd->opacity_slider;
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("off"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("normal"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("lighten"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("darken"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("multiply"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("average"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("addition"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("subtract"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("difference"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("screen"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("overlay"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("softlight"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("hardlight"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("vividlight"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("linearlight"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("pinlight"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("lightness"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("chroma"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("hue"));
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("color"));
-
-    dt_bauhaus_combobox_set(bd->blend_modes_combo, 0);
-    gtk_object_set(GTK_OBJECT(bd->opacity_slider), "tooltip-text", _("set the opacity of the blending"), (char *)NULL);
-    gtk_object_set(GTK_OBJECT(bd->blend_modes_combo), "tooltip-text", _("choose blending mode"), (char *)NULL);
-
-    g_signal_connect (G_OBJECT (bd->opacity_slider), "value-changed",
-                      G_CALLBACK (_blendop_opacity_callback), bd);
-    g_signal_connect (G_OBJECT (bd->blend_modes_combo), "value-changed",
-                      G_CALLBACK (_blendop_mode_callback), bd);
-
-    gtk_box_pack_start(GTK_BOX(iopw), bd->blend_modes_combo, TRUE, TRUE,0);
-    gtk_box_pack_start(GTK_BOX(iopw), bd->opacity_slider, TRUE, TRUE,0);
-  }
 }
 
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)

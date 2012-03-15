@@ -24,6 +24,7 @@
 #include "develop/blend.h"
 
 #include <gtk/gtk.h>
+#include <assert.h>
 
 
 void dt_accel_path_global(char *s, size_t n, const char* path)
@@ -572,7 +573,7 @@ static gboolean preset_iop_module_callback(GtkAccelGroup *accel_group,
   const char* name = callback_description->name;
 
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, blendop_params from presets where operation = ?1 and name = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, blendop_params, blendop_version from presets where operation = ?1 and name = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, name, strlen(name), SQLITE_TRANSIENT);
 
@@ -583,14 +584,19 @@ static gboolean preset_iop_module_callback(GtkAccelGroup *accel_group,
     int enabled = sqlite3_column_int(stmt, 1);
     const void *blendop_params = sqlite3_column_blob(stmt, 2);
     int bl_length = sqlite3_column_bytes(stmt, 2);
+    int blendop_version = sqlite3_column_int(stmt, 3);
     if(op_params && (op_length == module->params_size))
     {
       memcpy(module->params, op_params, op_length);
       module->enabled = enabled;
     }
-    if (blendop_params && (bl_length == sizeof(dt_develop_blend_params_t)))
+    if (blendop_params && (blendop_version == dt_develop_blend_version()) && (bl_length == sizeof(dt_develop_blend_params_t)))
     {
       memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
+    }
+    else if (blendop_params && dt_develop_blend_legacy_params(module, blendop_params, blendop_version, module->blend_params, dt_develop_blend_version(), bl_length) == 0)
+    {
+      // do nothing
     }
     else
     {
