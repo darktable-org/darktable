@@ -321,10 +321,12 @@ dt_get_total_memory()
   if(!f) return 0;
   size_t mem = 0;
   char *line = NULL;
-  size_t len = 128;
+  size_t len = 0;
   if(getline(&line, &len, f) != -1)
     mem = atol(line + 10);
   fclose(f);
+  if(len > 0)
+    free(line);
   return mem;
 #elif defined(__APPLE__)
   int mib[2] = { CTL_HW, HW_MEMSIZE };
