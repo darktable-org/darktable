@@ -22,6 +22,7 @@
 #include "common/mipmap_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_dng.h"
+#include "common/similarity.h"
 #include "common/exif.h"
 #include "common/film.h"
 #include "common/imageio_module.h"
@@ -29,6 +30,7 @@
 #include "common/tags.h"
 #include "control/conf.h"
 #include "control/jobs/control_jobs.h"
+
 #include "gui/gtk.h"
 
 #include <glib.h>
@@ -70,6 +72,255 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
   return 0;
 }
 
+
+#define _INDEXER_UPDATE_HISTOGRAM		1
+#define _INDEXER_UPDATE_LIGHTMAP		2
+#define _INDEXER_IMAGE_FILE_REMOVED		4
+
+typedef struct _control_indexer_img_t
+{
+  uint32_t id;
+  uint32_t flags;
+} _control_indexer_img_t;
+
+int32_t dt_control_indexer_job_run(dt_job_t *job)
+{
+  
+  /* 
+   * First pass run thru ALL images and collect the ones who needs to update
+   *  \TODO in the future lets have a indexer table with ids filed with images
+   *  thats need some kind of reindexing.. all mark dirty functions adds image
+   *  to this table--
+   */
+  GList *images=NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select images.id,film_rolls.folder||'/'||images.filename,images.histogram,images.lightmap from images,film_rolls where film_rolls.id = images.film_id", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    _control_indexer_img_t *idximg=g_malloc(sizeof( _control_indexer_img_t));
+    memset(idximg,0,sizeof(_control_indexer_img_t));
+    idximg->id = sqlite3_column_int(stmt,0);
+
+    /* first check if image file exists on disk */
+    const char *filename = (const char *)sqlite3_column_text(stmt, 1);
+    if (filename && !g_file_test(filename, G_FILE_TEST_IS_REGULAR))
+      idximg->flags |= _INDEXER_IMAGE_FILE_REMOVED;
+   
+    
+    /* check if histogram should be updated */
+    if (sqlite3_column_bytes(stmt, 2) != sizeof(dt_similarity_histogram_t))
+      idximg->flags |= _INDEXER_UPDATE_HISTOGRAM;
+
+    /* check if lightmap should be updated */
+    if (sqlite3_column_bytes(stmt, 3) != sizeof(dt_similarity_lightmap_t))
+      idximg->flags |= _INDEXER_UPDATE_LIGHTMAP;
+    
+
+    /* if image is flagged add to collection */
+    if (idximg->flags != 0)
+      images = g_list_append(images, idximg);
+    else
+      g_free(idximg);
+  }
+  sqlite3_finalize(stmt);
+  
+  
+  /*
+   * Second pass, run thru collected images thats
+   *  need reindexing...
+   */
+  GList *imgitem = g_list_first(images);
+  if(imgitem)
+  {
+    char message[512]= {0};
+    double fraction=0;
+    int total = g_list_length(images);
+
+    /* background job plate only if more then one image is reindexed */
+    snprintf(message, 512, ngettext ("re-indexing %d image", "re-indexing %d images", total), total );
+    const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+    
+    do {
+      /* get the _control_indexer_img_t pointer */
+      _control_indexer_img_t *idximg = imgitem->data;
+      
+      /*
+       * Check if image has been delete from disk
+       */
+      if ((idximg->flags&_INDEXER_IMAGE_FILE_REMOVED))
+      {
+        /* file does not exist on disk lets delete image reference from database */
+        //char query[512]={0};
+        
+        // \TODO dont delete move to an temp table and let user to revalidate
+        
+        /*sprintf(query,"delete from history where imgid=%d",idximg->id); 
+        DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
+        sprintf(query,"delete from tagged_images where imgid=%d",idximg->id); 
+        DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
+        sprintf(query,"delete from images where id=%d",idximg->id); 
+        DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);*/
+      
+        /* no need to additional work */
+        continue;
+      }
+
+      
+      /*
+       *  Check if image histogram or lightmap should be updated.
+       *   those indexing that involves a image pipe should fall into this
+       */
+      if ( (idximg->flags&_INDEXER_UPDATE_HISTOGRAM) ||  (idximg->flags&_INDEXER_UPDATE_LIGHTMAP) )
+      {
+	/* get a mipmap of image to analyse */
+	dt_mipmap_buffer_t buf;
+	dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, idximg->id, DT_MIPMAP_2, DT_MIPMAP_BLOCKING);
+
+	if (!(buf.width * buf.height))
+	  continue;
+
+	/*
+	 * Generate similarity histogram data if requested
+	 */
+	if ( (idximg->flags&_INDEXER_UPDATE_HISTOGRAM) )
+        {
+	  dt_similarity_histogram_t histogram;
+	  float bucketscale = (float)DT_SIMILARITY_HISTOGRAM_BUCKETS/(float)0xff;
+	  for(int j=0;j<(4*buf.width*buf.height);j+=4)
+          {
+	    /* swap rgb and scale to bucket index */
+	    uint8_t rgb[3];
+            
+	    for(int k=0; k<3; k++)
+	      rgb[k] = (int)((buf.buf[j+2-k]/(float)0xff) * bucketscale);
+	    
+	    /* distribute rgb into buckets */
+	    for(int k=0; k<3; k++)
+	      histogram.rgbl[rgb[k]][k]++;
+	    
+	    /* distribute lum into buckets */
+	    uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
+	    histogram.rgbl[lum][3]++;
+	  }
+          
+	  for(int k=0; k<DT_SIMILARITY_HISTOGRAM_BUCKETS; k++) 
+	    for (int j=0;j<4;j++) 
+	      histogram.rgbl[k][j] /= (buf.width*buf.height);
+	  
+	  /* store the histogram data */
+	  dt_similarity_histogram_store(idximg->id, &histogram);
+          
+	}                  
+          
+	/*
+	 * Generate scaledowned similarity lightness map if requested
+	 */
+	if ( (idximg->flags&_INDEXER_UPDATE_LIGHTMAP) )
+        {
+	  dt_similarity_lightmap_t lightmap;
+	  memset(&lightmap,0,sizeof(dt_similarity_lightmap_t));
+          
+	  /* 
+	   * create a pixbuf out of the image for downscaling 
+	   */
+	  
+	  /* first of setup a standard rgb buffer, swap bgr in same routine */
+	  uint8_t *rgbbuf = g_malloc(buf.width*buf.height*3);
+	  for(int j=0;j<(buf.width*buf.height);j++)
+	    for(int k=0;k<3;k++)
+	      rgbbuf[3*j+k] = buf.buf[4*j+2-k];
+	  
+	  
+	  /* then create pixbuf and scale down to lightmap size */
+	  GdkPixbuf *source = gdk_pixbuf_new_from_data(rgbbuf,GDK_COLORSPACE_RGB,FALSE,8,buf.width,buf.height,(buf.width*3),NULL,NULL);
+	  GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source,DT_SIMILARITY_LIGHTMAP_SIZE,DT_SIMILARITY_LIGHTMAP_SIZE,GDK_INTERP_HYPER);
+          
+	  /* copy scaled data into lightmap */
+	  uint8_t min=0xff,max=0;
+	  uint8_t *spixels = gdk_pixbuf_get_pixels(scaled);
+          
+	  for(int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++)
+          {
+	    /* copy rgb */
+	    for(int k=0;k<3;k++)
+	      lightmap.pixels[4*j+k] = spixels[3*j+k];
+	    
+	    /* average intensity into 4th channel */
+	    lightmap.pixels[4*j+3] =  (lightmap.pixels[4*j+0]+ lightmap.pixels[4*j+1]+ lightmap.pixels[4*j+2])/3.0;
+	    min = MAX(0,MIN(min, lightmap.pixels[4*j+3]));
+	    max = MIN(0xff,MAX(max, lightmap.pixels[4*j+3]));
+	  }
+	  
+	  /* contrast stretch each channel in lightmap 
+	   *  TODO: do we want this...
+	   */
+	  float scale=0;
+	  int range = max-min;
+	  if(range==0) 
+	    scale = 1.0;
+	  else 
+	    scale = 0xff/range;
+	  for(int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++)
+          {
+	    for(int k=0;k<4;k++)
+	      lightmap.pixels[4*j+k] = (lightmap.pixels[4*j+k]-min)*scale;
+	  }
+	  
+	  /* free some resources */
+	  gdk_pixbuf_unref(scaled);
+	  gdk_pixbuf_unref(source);
+            
+	  g_free(rgbbuf);
+          
+	  /* store the lightmap */
+	  dt_similarity_lightmap_store(idximg->id, &lightmap);
+	}
+	
+	
+	/* no use for buffer anymore release the mipmap */
+	dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+	
+      }        
+      
+      /* update background progress */
+      if (total>1)
+      {
+	fraction+=1.0/total;
+	dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
+      }
+      
+    } while ((imgitem=g_list_next(imgitem)) && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED);
+    
+    
+    /* cleanup */
+    if (total>1)
+      dt_control_backgroundjobs_destroy(darktable.control, jid);
+  }
+  
+  
+  /* 
+   * Indexing opertions finished, lets reschedule the indexer 
+   * unless control is shutting down...
+   */
+  if(dt_control_running())
+    dt_control_start_indexer();
+  
+  return 0;
+}
+
+
+typedef struct _control_match_similar_job_param_t {
+  uint32_t imgid;
+  dt_similarity_t data;
+} _control_match_similar_job_param_t;
+
+int32_t dt_control_match_similar_job_run(dt_job_t *job)
+{
+  _control_match_similar_job_param_t *t = (_control_match_similar_job_param_t *)job->param;
+  dt_similarity_match_image(t->imgid, &t->data);
+  return 0;
+}
+  
 int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 {
   long int imgid = -1;
@@ -380,6 +631,21 @@ void dt_control_merge_hdr_job_init(dt_job_t *job)
   dt_control_image_enumerator_job_init(t);
 }
 
+void dt_control_indexer_job_init(dt_job_t *job)
+{
+  dt_control_job_init(job, "image indexer");
+  job->execute = &dt_control_indexer_job_run;
+}
+
+void dt_control_match_similar_job_init(dt_job_t *job, uint32_t imgid,dt_similarity_t *data)
+{
+  dt_control_job_init(job, "match similar images");  
+  job->execute = &dt_control_match_similar_job_run;
+  _control_match_similar_job_param_t *t = (_control_match_similar_job_param_t *)job->param;
+  t->imgid = imgid;
+  t->data = *data;
+}
+
 void dt_control_duplicate_images_job_init(dt_job_t *job)
 {
   dt_control_job_init(job, "duplicate images");
@@ -420,6 +686,18 @@ void dt_control_merge_hdr()
   dt_control_add_job(darktable.control, &j);
 }
 
+void dt_control_match_similar(dt_similarity_t *data)
+{
+  dt_job_t j;
+  GList *selected = dt_collection_get_selected(darktable.collection);
+  if(selected)
+  {
+    dt_control_match_similar_job_init(&j, (long int)selected->data, data);
+    dt_control_add_job(darktable.control, &j);
+  } else
+    dt_control_log(_("select an image as target for search of similar images"));
+}
+
 void dt_control_duplicate_images()
 {
   dt_job_t j;
@@ -456,6 +734,7 @@ void dt_control_remove_images()
                                     GTK_BUTTONS_YES_NO,
                                     ngettext("do you really want to remove %d selected image from the collection?", 
                                              "do you really want to remove %d selected images from the collection?", number), number);
+
     gtk_window_set_title(GTK_WINDOW(dialog), _("remove images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
@@ -488,6 +767,7 @@ void dt_control_delete_images()
                                     GTK_BUTTONS_YES_NO,
                                     ngettext("do you really want to physically delete %d selected image from disk?",
                                              "do you really want to physically delete %d selected images from disk?", number), number);
+
     gtk_window_set_title(GTK_WINDOW(dialog), _("delete images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
@@ -639,5 +919,12 @@ void dt_control_export()
   dt_control_export_job_init(&j);
   dt_control_add_job(darktable.control, &j);
 }
+
+void dt_control_start_indexer() {
+  dt_job_t j;
+  dt_control_indexer_job_init(&j);
+  dt_control_add_background_job(darktable.control, &j, 10);
+}
+
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -449,7 +449,6 @@ void dt_image_init(dt_image_t *img)
   img->exif_exposure = img->exif_aperture = img->exif_iso = img->exif_focal_length = img->exif_focus_distance = 0;
 }
 
-
 // *******************************************************
 // xmp stuff
 // *******************************************************

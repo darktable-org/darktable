@@ -681,6 +681,10 @@ dt_imageio_open(
     const char  *filename,          // full path
     dt_mipmap_cache_allocator_t a)  // allocate via dt_mipmap_cache_alloc
 {
+  /* first of all, check if file exists, dont bother to test loading if not exists */
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
+    return !DT_IMAGEIO_OK;
+  
   dt_imageio_retval_t ret = DT_IMAGEIO_FILE_CORRUPTED;
   
   /* check if file is ldr using magic's */
@@ -695,9 +699,10 @@ dt_imageio_open(
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_hdr(img, filename, a);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)      // failsafing, if ldr magic test fails..
-      ret = dt_imageio_open_ldr(img, filename, a);
+    ret = dt_imageio_open_ldr(img, filename, a);
 
   img->flags &= ~DT_IMAGE_THUMBNAIL;
+
   img->dirty = 1;
   return ret;
 }

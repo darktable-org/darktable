@@ -57,5 +57,9 @@ void dt_control_flip_images(const int32_t cw);
 void dt_control_remove_images();
 void dt_control_export();
 void dt_control_merge_hdr();
+struct dt_similarity_t;
+void dt_control_match_similar(struct dt_similarity_t *data);
+
+void dt_control_start_indexer();
 
 #endif

@@ -396,6 +396,7 @@ gui_reset (dt_lib_module_t *self)
   dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
   dt_conf_set_int("plugins/lighttable/collect/item0", 0);
   dt_conf_set_string("plugins/lighttable/collect/string0", "%");
+  dt_collection_set_query_flags(darktable.collection,COLLECTION_QUERY_FULL);
   dt_collection_update_query(darktable.collection);
 }
 

@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika, henrik andersson.
+    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2010--2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,6 +48,12 @@
 #include <string.h>
 #include <glib/gstdio.h>
 #include <gdk/gdkkeysyms.h>
+
+/* the queue can have scheduled jobs but all
+    the workers is sleeping, so this kicks the workers
+    on timed interval.
+*/
+static void * _control_worker_kicker(void *ptr);
 
 void dt_ctl_settings_default(dt_control_t *c)
 {
@@ -308,7 +315,7 @@ void dt_control_create_database_schema()
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create table settings (settings blob)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create table film_rolls (id integer primary key, datetime_accessed char(20), folder varchar(1024))", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create table images (id integer primary key, film_id integer, width int, height int, filename varchar, maker varchar, model varchar, lens varchar, exposure real, aperture real, iso real, focal_length real, focus_distance real, datetime_taken char(20), flags integer, output_width integer, output_height integer, crop real, raw_parameters integer, raw_denoise_threshold real, raw_auto_bright_threshold real, raw_black real, raw_maximum real, caption varchar, description varchar, license varchar, sha1sum char(40), orientation integer)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create table images (id integer primary key, film_id integer, width int, height int, filename varchar, maker varchar, model varchar, lens varchar, exposure real, aperture real, iso real, focal_length real, focus_distance real, datetime_taken char(20), flags integer, output_width integer, output_height integer, crop real, raw_parameters integer, raw_denoise_threshold real, raw_auto_bright_threshold real, raw_black real, raw_maximum real, caption varchar, description varchar, license varchar, sha1sum char(40), orientation integer ,histogram blob, lightmap blob)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create table selected_images (imgid integer)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create table history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer,blendop_params blob,blendop_version integer)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create table tags (id integer primary key, name varchar, icon blob, description varchar, flags integer)", NULL, NULL, NULL);
@@ -343,26 +350,42 @@ void dt_control_init(dt_control_t *s)
   dt_pthread_mutex_init(&s->queue_mutex, NULL);
   dt_pthread_mutex_init(&s->run_mutex, NULL);
 
-  int k;
-  for(k=0; k<DT_CONTROL_MAX_JOBS; k++) s->idle[k] = k;
-  s->idle_top = DT_CONTROL_MAX_JOBS;
-  s->queued_top = 0;
   // start threads
   s->num_threads = CLAMP(dt_conf_get_int ("worker_threads"), 1, 8);
   s->thread = (pthread_t *)malloc(sizeof(pthread_t)*s->num_threads);
   dt_pthread_mutex_lock(&s->run_mutex);
   s->running = 1;
   dt_pthread_mutex_unlock(&s->run_mutex);
-  for(k=0; k<s->num_threads; k++)
+  for(int k=0; k<s->num_threads; k++)
     pthread_create(&s->thread[k], NULL, dt_control_work, s);
-  for(k=0; k<DT_CTL_WORKER_RESERVED; k++)
+  
+  /* create queue kicker thread */
+  pthread_create(&s->kick_on_workers_thread, NULL, _control_worker_kicker, s);
+  
+  for(int k=0; k<DT_CTL_WORKER_RESERVED; k++)
   {
     s->new_res[k] = 0;
     pthread_create(&s->thread_res[k], NULL, dt_control_work_res, s);
+
+#if 0
+    /* check if thread created is the worker thread, then
+        set scheduling information for the thread to nice level. */
+    if (k == DT_CTL_WORKER_7)
+    {
+      int res;
+      struct sched_param sched_params;
+      sched_params.sched_priority = sched_get_priority_min(SCHED_RR);
+      if((res=pthread_setschedparam(s->thread_res[k], SCHED_RR, &sched_params))!=0)
+        fprintf(stderr,"Failed to set background thread schedueling to nice level: %d.",res);
+
+    } 
+#endif
+    
   }
   s->button_down = 0;
   s->button_down_which = 0;
 
+  
   // init database schema:
   int rc;
   sqlite3_stmt *stmt;
@@ -422,7 +445,6 @@ void dt_control_init(dt_control_t *s)
       sqlite3_exec(dt_database_get(darktable.db), "create table color_labels (imgid integer, color integer)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db), "drop table mipmaps", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db), "drop table mipmap_timestamps", NULL, NULL, NULL);
-
       sqlite3_exec(dt_database_get(darktable.db), "create table styles (name varchar,description varchar)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db), "create table style_items (styleid integer,num integer,module integer,operation varchar(256),op_params blob,enabled integer)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db), "create table meta_data (id integer,key integer,value varchar)", NULL, NULL, NULL);
@@ -432,6 +454,8 @@ void dt_control_init(dt_control_t *s)
       sqlite3_exec(dt_database_get(darktable.db), "update images set orientation = -1 where orientation is NULL", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db), "alter table images add column focus_distance real", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db), "update images set focus_distance = -1 where focus_distance is NULL", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "alter table images add column histogram blob", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "alter table images add column lightmap blob", NULL, NULL, NULL);
 
       // add column for blendops
       sqlite3_exec(dt_database_get(darktable.db), "alter table history add column blendop_params blob", NULL, NULL, NULL);
@@ -512,6 +536,12 @@ void dt_control_shutdown(dt_control_t *s)
   dt_pthread_mutex_unlock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
 
+  /* cancel background job if any */
+  dt_control_job_cancel(&s->job_res[DT_CTL_WORKER_7]);
+  
+  /* first wait for kick_on_workers_thread */
+  pthread_join(s->kick_on_workers_thread, NULL);
+  
   // gdk_threads_leave();
   int k;
   for(k=0; k<s->num_threads; k++)
@@ -520,6 +550,8 @@ void dt_control_shutdown(dt_control_t *s)
   for(k=0; k<DT_CTL_WORKER_RESERVED; k++)
     // pthread_kill(s->thread_res[k], 9);
     pthread_join(s->thread_res[k], NULL);
+  
+   
   // gdk_threads_enter();
 }
 
@@ -632,21 +664,59 @@ int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
   return 0;
 }
 
+
 int32_t dt_control_run_job(dt_control_t *s)
 {
-  dt_job_t *j;
-  int32_t i;
+  dt_job_t *j=NULL,*bj=NULL;
   dt_pthread_mutex_lock(&s->queue_mutex);
-  // dt_print(DT_DEBUG_CONTROL, "[run_job] %d\n", s->queued_top);
-  if(s->queued_top == 0)
+  
+  /* check if queue is empty */
+  if(g_list_length(s->queue) == 0)
   {
     dt_pthread_mutex_unlock(&s->queue_mutex);
     return -1;
   }
-  i = s->queued[--s->queued_top];
-  j = s->job + i;
+    
+  /* go thru the queue and find one normal job and a background job
+      that is up for execution.*/
+  time_t ts_now = time(NULL);
+  GList *jobitem=g_list_first(s->queue);
+  if(jobitem)
+    do
+    {
+      dt_job_t *tj = jobitem->data;
+      
+      /* check if it's a scheduled job and is waiting to be executed */
+      if(!bj && (tj->ts_execute > tj->ts_added) && tj->ts_execute <= ts_now)
+        bj = tj;
+      else if ((tj->ts_execute < tj->ts_added) && !j) 
+        j = tj;
+      
+      /* if we got a normal job, and a background job, we are finished */
+      if(bj && j) break;
+      
+    } while ((jobitem = g_list_next(jobitem)));
+
+  /* remove the found jobs from queue */
+  if (bj)
+     s->queue = g_list_remove(s->queue, bj);
+  
+  if (j)
+     s->queue = g_list_remove(s->queue, j);
+  
+  /* unlock the queue */
   dt_pthread_mutex_unlock(&s->queue_mutex);
 
+  /* push background job on reserved backgruond worker */
+ if(bj)
+ {
+    dt_control_add_job_res(s,bj,DT_CTL_WORKER_7);
+    g_free (bj);
+ }
+  /* dont continue if we dont have have a job to execute */
+  if(!j)
+    return -1;
+  
   /* change state to running */
   dt_pthread_mutex_lock (&j->wait_mutex);
   if (dt_control_job_get_state (j) == DT_JOB_STATE_QUEUED)
@@ -665,13 +735,12 @@ int32_t dt_control_run_job(dt_control_t *s)
     dt_print(DT_DEBUG_CONTROL, "[run_job-] %02d %f ", DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
     dt_control_job_print(j);
     dt_print(DT_DEBUG_CONTROL, "\n");
+    
+    /* free job */
+    g_free(j);
   }
   dt_pthread_mutex_unlock (&j->wait_mutex);
 
-  dt_pthread_mutex_lock(&s->queue_mutex);
-  assert(s->idle_top < DT_CONTROL_MAX_JOBS);
-  s->idle[s->idle_top++] = i;
-  dt_pthread_mutex_unlock(&s->queue_mutex);
   return 0;
 }
 
@@ -692,30 +761,65 @@ int32_t dt_control_add_job_res(dt_control_t *s, dt_job_t *job, int32_t res)
   return 0;
 }
 
+/* Background jobs will be timestamped and added to queue
+    the queue will then check ts and detect if its background job
+    and place it on the job_res if its available... 
+*/
+int32_t dt_control_add_background_job(dt_control_t *s, dt_job_t *job, time_t delay)
+{
+  /* setup timestamps */
+  job->ts_added = time(NULL);
+  job->ts_execute = job->ts_added+delay;
+  
+  /* pass the job further to scheduled jobs worker */
+  return dt_control_add_job(s,job);
+}
+
 int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
 {
-  int32_t i;
+  /* set ts_added if unset */
+  if (job->ts_added == 0)
+     job->ts_added = time(NULL);
+  
   dt_pthread_mutex_lock(&s->queue_mutex);
-  for(i=0; i<s->queued_top; i++)
+  
+  /* check if equivalent job exist in queue, and discard job
+      if duplicate found .*/
+  GList *jobitem = g_list_first(s->queue);
+  if(jobitem)
+    do {
+      if(!memcmp(job, jobitem->data, sizeof(dt_job_t)))
+      {
+        dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in queue\n");
+        _control_job_set_state (job,DT_JOB_STATE_DISCARDED);
+        dt_pthread_mutex_unlock(&s->queue_mutex);
+        return -1;
+      }
+    } while((jobitem=g_list_next(jobitem)));
+
+  /* check if bgjob and if its already running then discard job */
+  if (job->ts_execute && 
+      s->job_res[DT_CTL_WORKER_7].execute == job->execute) 
   {
-    // find equivalent job and quit if already there
-    const int j = s->queued[i];
-    if(!memcmp(job, s->job + j, sizeof(dt_job_t)))
-    {
-      dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in queue\n");
-      dt_pthread_mutex_unlock(&s->queue_mutex);
-      return -1;
-    }
+    fprintf(stderr,"BGJOB ALREADY RUNNING!!!\n");
+    dt_print(DT_DEBUG_CONTROL, "[add_job] found bgjob already running, dropping job\n");
+    _control_job_set_state (job,DT_JOB_STATE_DISCARDED);
+    dt_pthread_mutex_unlock(&s->queue_mutex);
+    return -1;
   }
-  dt_print(DT_DEBUG_CONTROL, "[add_job] %d ", s->idle_top);
+    
+  dt_print(DT_DEBUG_CONTROL, "[add_job] %d ", g_list_length(s->queue));
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
-  if(s->idle_top != 0)
+  
+  /* add job to queue if not full, otherwise discard the job */
+  if( g_list_length(s->queue) < DT_CONTROL_MAX_JOBS)
   {
-    i = --s->idle_top;
-    _control_job_set_state (job,DT_JOB_STATE_QUEUED);
-    s->job[s->idle[i]] = *job;
-    s->queued[s->queued_top++] = s->idle[i];
+    /* allocate storage for the job, and set job state */
+    dt_job_t *thejob = g_malloc(sizeof(dt_job_t));
+    memcpy(thejob,job,sizeof(dt_job_t));
+    _control_job_set_state (thejob,DT_JOB_STATE_QUEUED);
+    s->queue = g_list_append(s->queue, thejob);
     dt_pthread_mutex_unlock(&s->queue_mutex);
   }
   else
@@ -740,21 +844,25 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
   dt_print(DT_DEBUG_CONTROL, "[revive_job] ");
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
-  for(int i=0; i<s->queued_top; i++)
-  {
-    // find equivalent job and push it up on top of the stack.
-    const int j = s->queued[i];
-    if(!memcmp(job, s->job + j, sizeof(dt_job_t)))
-    {
-      found_j = j;
-      dt_print(DT_DEBUG_CONTROL, "[revive_job] found job in queue at position %d, moving to %d\n", i, s->queued_top);
-      memmove(s->queued + i, s->queued + i + 1, sizeof(int32_t) * (s->queued_top - i - 1));
-      s->queued[s->queued_top-1] = j;
-    }
-  }
-  dt_pthread_mutex_unlock(&s->queue_mutex);
+  
+  /* find equivalent job and move it to top of the stack */
+  GList *jobitem = g_list_first(s->queue);
+  if (jobitem)
+    do {
+      if(!memcmp(job, jobitem->data, sizeof(dt_job_t)))
+      {
+        s->queue = g_list_remove_link(s->queue, jobitem);
+        s->queue = g_list_insert(s->queue, jobitem->data, 0);
+        g_free(jobitem);
+        found_j = 1;
+        break;
+      }
+    } while((jobitem=g_list_next(jobitem)));
 
-  // notify workers
+  /* unlock the queue */
+  dt_pthread_mutex_unlock(&s->queue_mutex);
+  
+  /* notify workers */
   dt_pthread_mutex_lock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
   dt_pthread_mutex_unlock(&s->cond_mutex);
@@ -799,6 +907,18 @@ void *dt_control_work_res(void *ptr)
       dt_pthread_mutex_unlock(&s->cond_mutex);
       pthread_setcancelstate(old, NULL);
     }
+  }
+  return NULL;
+}
+
+void * _control_worker_kicker(void *ptr) {
+  dt_control_t *s = (dt_control_t *)ptr;
+  while(dt_control_running())
+  {
+      sleep(2);
+      dt_pthread_mutex_lock(&s->cond_mutex);
+      pthread_cond_broadcast(&s->cond);
+      dt_pthread_mutex_unlock(&s->cond_mutex);
   }
   return NULL;
 }

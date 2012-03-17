@@ -40,6 +40,7 @@
 #include "libs/lib.h"
 #include "views/view.h"
 #include "control/control.h"
+#include "control/jobs/control_jobs.h"
 #include "control/signal.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
@@ -618,11 +619,15 @@ int dt_init(int argc, char *argv[], const int init_gui)
     dt_ctl_switch_mode_to(DT_LIBRARY);
   }
 
+  /* start the indexer background job */
+  dt_control_start_indexer();
+
   if(darktable.unmuted & DT_DEBUG_MEMORY)
   {
     fprintf(stderr, "[memory] after successful startup\n");
     dt_print_mem_usage();
   }
+
   return 0;
 }
 
