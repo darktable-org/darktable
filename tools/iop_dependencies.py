@@ -276,6 +276,9 @@ def add_edges(gr):
   gr.add_edge(('colorin', 'bilateral'))
   gr.add_edge(('bilateral', 'demosaic'))
   gr.add_edge(('colorout', 'equalizer'))
+  # for smooth b/w images, we want chroma denoise to go before
+  # color zones, where chrome can affect luma:
+  gr.add_edge(('colorzones', 'equalizer'))
   gr.add_edge(('equalizer', 'colorin'))
 
 
