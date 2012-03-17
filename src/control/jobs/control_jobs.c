@@ -267,8 +267,8 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
 	  }
 	  
 	  /* free some resources */
-	  gdk_pixbuf_unref(scaled);
-	  gdk_pixbuf_unref(source);
+	  g_object_unref(scaled);
+	  g_object_unref(source);
             
 	  g_free(rgbbuf);
           
