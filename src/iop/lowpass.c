@@ -22,18 +22,13 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
 #include "control/control.h"
 #include "common/debug.h"
 #include "common/opencl.h"
-#include "dtgtk/togglebutton.h"
-#include "dtgtk/slider.h"
-#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -66,10 +61,8 @@ dt_iop_lowpass_params_t;
 
 typedef struct dt_iop_lowpass_gui_data_t
 {
-  GtkVBox   *vbox1,  *vbox2, vbox3;
-  GtkWidget  *label1,*label2, label3;		     // radius, contrast, saturation
-  GtkDarktableSlider *scale1,*scale2,*scale3;       // radius, contrast, saturation
-  GtkComboBox        *order;			    // order of gaussian
+  GtkWidget *scale1,*scale2,*scale3;       // radius, contrast, saturation
+  GtkWidget *order;			    // order of gaussian
 }
 dt_iop_lowpass_gui_data_t;
 
@@ -108,22 +101,6 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t*)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "radius", GTK_WIDGET(g->scale1));
-  dt_accel_connect_slider_iop(self, "contrast", GTK_WIDGET(g->scale2));
-  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->scale3));
-}
 
 static 
 void compute_gauss_params(const float sigma, dt_iop_gaussian_order_t order, float *a0, float *a1, float *a2, float *a3, 
@@ -538,32 +515,32 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
 
 static void
-radius_callback (GtkDarktableSlider *slider, gpointer user_data)
+radius_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
-  p->radius= dtgtk_slider_get_value(slider);
+  p->radius= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-contrast_callback (GtkDarktableSlider *slider, gpointer user_data)
+contrast_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
-  p->contrast = dtgtk_slider_get_value(slider);
+  p->contrast = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-saturation_callback (GtkDarktableSlider *slider, gpointer user_data)
+saturation_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
-  p->saturation = dtgtk_slider_get_value(slider);
+  p->saturation = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -623,9 +600,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale1, p->radius);
-  dtgtk_slider_set_value(g->scale2, p->contrast);
-  dtgtk_slider_set_value(g->scale3, p->saturation);
+  dt_bauhaus_slider_set(g->scale1, p->radius);
+  dt_bauhaus_slider_set(g->scale2, p->contrast);
+  dt_bauhaus_slider_set(g->scale3, p->saturation);
   //gtk_combo_box_set_active(g->order, p->order);
 }
 
@@ -694,7 +671,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
 
 #if 0 // gaussian is order not user selectable here, as it does not make much sense for a lowpass filter
   GtkBox *hbox  = GTK_BOX(gtk_hbox_new(FALSE, 5));
@@ -709,16 +686,16 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(hbox, GTK_WIDGET(g->order), TRUE, TRUE, 0);
 #endif
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 200.0, 0.1, p->radius, 2));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-1.0, 1.0, 0.01, p->contrast, 2));
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-3.0, 3.0, 0.01, p->saturation, 2));
-  dtgtk_slider_set_label(g->scale1,_("radius"));
-  dtgtk_slider_set_label(g->scale2,_("contrast"));
-  dtgtk_slider_set_label(g->scale3,_("saturation"));
+  g->scale1 = dt_bauhaus_slider_new_with_range(self,0.1, 200.0, 0.1, p->radius, 2);
+  g->scale2 = dt_bauhaus_slider_new_with_range(self,-1.0, 1.0, 0.01, p->contrast, 2);
+  g->scale3 = dt_bauhaus_slider_new_with_range(self,-3.0, 3.0, 0.01, p->saturation, 2);
+  dt_bauhaus_widget_set_label(g->scale1,_("radius"));
+  dt_bauhaus_widget_set_label(g->scale2,_("contrast"));
+  dt_bauhaus_widget_set_label(g->scale3,_("saturation"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->scale1, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->scale2, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->scale3, TRUE, TRUE, 0);
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the radius of gaussian blur"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the contrast of lowpass filter"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("the color saturation of lowpass filter"), (char *)NULL);
@@ -740,3 +717,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
+
