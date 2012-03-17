@@ -1,6 +1,6 @@
 /*
 		This file is part of darktable,
-		copyright (c) 2011 ulrich pegelow.
+		copyright (c) 2011--2012 ulrich pegelow.
 
 		darktable is free software: you can redistribute it and/or modify
 		it under the terms of the GNU General Public License as published by
@@ -72,6 +72,8 @@ typedef struct dt_iop_lowpass_data_t
   float radius;
   float contrast;
   float saturation;
+  float table[0x10000];        // precomputed look-up table for contrast curve
+  float unbounded_coeffs[2];   // approximation for extrapolation
 }
 dt_iop_lowpass_data_t;
 
@@ -199,7 +201,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const float radius = fmax(0.1f, d->radius);
   const float sigma = radius * roi_in->scale / piece ->iscale;
-  const float contrast = d->contrast;
   const float saturation = d->saturation;
 
   size_t origin[] = {0, 0, 0};
@@ -211,6 +212,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   cl_mem dev_temp1 = NULL;
   cl_mem dev_temp2 = NULL;
+  cl_mem dev_m = NULL;
+  cl_mem dev_coeffs = NULL;
 
   // get intermediate vector buffers with read-write access
   dev_temp1 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*bpp);
@@ -218,6 +221,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dev_temp2 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*bpp);
   if(dev_temp2 == NULL) goto error;
 
+  dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
+  if(dev_m == NULL) goto error;
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*2, d->unbounded_coeffs);
+  if(dev_coeffs == NULL) goto error;
 
   // compute gaussian parameters
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
@@ -302,8 +309,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 1, sizeof(cl_mem), (void *)&dev_temp2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 4, sizeof(float), (void *)&contrast);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 5, sizeof(float), (void *)&saturation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 4, sizeof(float), (void *)&saturation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 5, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 6, sizeof(cl_mem), (void *)&dev_coeffs);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lowpass_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -311,11 +319,16 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   err = dt_opencl_enqueue_copy_buffer_to_image(devid, dev_temp2, dev_out, 0, origin, region);
   if(err != CL_SUCCESS) goto error;
 
+  if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
+  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   if (dev_temp1 != NULL) dt_opencl_release_mem_object(dev_temp1);
   if (dev_temp2 != NULL) dt_opencl_release_mem_object(dev_temp2);
+
   return TRUE;
 
 error:
+  if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
+  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   if (dev_temp1 != NULL) dt_opencl_release_mem_object(dev_temp1);
   if (dev_temp2 != NULL) dt_opencl_release_mem_object(dev_temp2);
   dt_print(DT_DEBUG_OPENCL, "[opencl_lowpass] couldn't enqueue kernel! %d\n", err);
@@ -506,7 +519,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
-    out[k*ch+0] = CLAMPF(out[k*ch+0]*data->contrast + 50.0f * (1.0f - data->contrast), Labmin[0], Labmax[0]);
+    out[k*ch+0] = (out[k*ch+0] < 100.0f) ? data->table[CLAMP((int)(out[k*ch+0]/100.0f*0x10000ul), 0, 0xffff)] : 
+      dt_iop_eval_exp(data->unbounded_coeffs, out[k*ch+0]/100.0f);
     out[k*ch+1] = CLAMPF(out[k*ch+1]*data->saturation, Labmin[1], Labmax[1]);
     out[k*ch+2] = CLAMPF(out[k*ch+2]*data->saturation, Labmin[2], Labmax[2]);
     out[k*ch+3] = CLAMPF(out[k*ch+3], Labmin[3], Labmax[3]);
@@ -569,6 +583,36 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
   d->radius = p->radius;
   d->contrast = p->contrast;
   d->saturation = p->saturation;
+
+  if(fabs(d->contrast) <= 1.0f)
+  {
+    // linear curve for contrast up to +/- 1
+    for(int k=0; k<0x10000; k++) d->table[k] = d->contrast*(100.0f*k/0x10000 - 50.0f) + 50.0f;
+  }
+  else
+  {
+    // sigmoidal curve for contrast above +/-1 1
+    // going from (0,0) to (1,100) or (0,100) to (1,0), respectively
+    const float boost = 5.0f;
+    const float contrastm1sq = boost*(fabs(d->contrast) - 1.0f)*(fabs(d->contrast) - 1.0f);
+    const float contrastscale = copysign(sqrt(1.0f + contrastm1sq), d->contrast);
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(d) schedule(static)
+#endif
+    for(int k=0; k<0x10000; k++)
+    {
+      float kx2m1 = 2.0f*(float)k/0x10000 - 1.0f;
+      d->table[k] = 50.0f * (contrastscale * kx2m1 / sqrtf(1.0f + contrastm1sq * kx2m1 * kx2m1) + 1.0f);
+    }
+  }
+
+  // now the extrapolation stuff:
+  const float x[4] = {0.7f, 0.8f, 0.9f, 1.0f};
+  const float y[4] = {d->table[CLAMP((int)(x[0]*0x10000ul), 0, 0xffff)],
+                      d->table[CLAMP((int)(x[1]*0x10000ul), 0, 0xffff)],
+                      d->table[CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
+                      d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]};
+  dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
 #endif
 }
 
@@ -578,9 +622,11 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   // create part of the gegl pipeline
   piece->data = NULL;
 #else
-  piece->data = malloc(sizeof(dt_iop_lowpass_data_t));
+  dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)malloc(sizeof(dt_iop_lowpass_data_t));
+  piece->data =  (void *)d;
   memset(piece->data,0,sizeof(dt_iop_lowpass_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
+  for(int k=0; k<0x10000; k++) d->table[k] = 100.0f*k/0x10000; // identity
 #endif
 }
 
@@ -687,7 +733,7 @@ void gui_init(struct dt_iop_module_t *self)
 #endif
 
   g->scale1 = dt_bauhaus_slider_new_with_range(self,0.1, 200.0, 0.1, p->radius, 2);
-  g->scale2 = dt_bauhaus_slider_new_with_range(self,-1.0, 1.0, 0.01, p->contrast, 2);
+  g->scale2 = dt_bauhaus_slider_new_with_range(self,-3.0, 3.0, 0.01, p->contrast, 2);
   g->scale3 = dt_bauhaus_slider_new_with_range(self,-3.0, 3.0, 0.01, p->saturation, 2);
   dt_bauhaus_widget_set_label(g->scale1,_("radius"));
   dt_bauhaus_widget_set_label(g->scale2,_("contrast"));

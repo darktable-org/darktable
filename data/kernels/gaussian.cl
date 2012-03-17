@@ -115,8 +115,28 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
 }
 
 
+float
+lookup_unbounded(read_only image2d_t lut, const float x, global float *a)
+{
+  // in case the curve is marked as linear, return the fast
+  // path to linear unbounded (does not clip x at 1)
+  if(a[0] >= 0.0f)
+  {
+    if(x < 1.0f)
+    {
+      const int xi = clamp(x*65535.0f, 0.0f, 65535.0f);
+      const int2 p = (int2)((xi & 0xff), (xi >> 8));
+      return read_imagef(lut, sampleri, p).x;
+    }
+    else return a[0] * native_powr(x, a[1]);
+  }
+  else return x;
+}
+
+
 kernel void 
-lowpass_mix(global float4 *in, global float4 *out, unsigned int width, unsigned int height, const float contrast, const float saturation)
+lowpass_mix(global float4 *in, global float4 *out, unsigned int width, unsigned int height, const float saturation, 
+            read_only image2d_t table, global float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -129,7 +149,7 @@ lowpass_mix(global float4 *in, global float4 *out, unsigned int width, unsigned 
   const float4 Labmin = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
   const float4 Labmax = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
 
-  o.x = i.x*contrast + 50.0f * (1.0f - contrast);
+  o.x = lookup_unbounded(table, i.x/100.0f, a);
   o.y = i.y*saturation;
   o.z = i.z*saturation;
   o.w = i.w;
