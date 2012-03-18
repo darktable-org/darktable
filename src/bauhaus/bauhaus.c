@@ -94,6 +94,36 @@ draw_slider_line(cairo_t *cr, float pos, float off, float scale, const int width
 // -------------------------------
 
 static gboolean
+dt_bauhaus_popup_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  gtk_widget_queue_draw(darktable.bauhaus->popup_area);
+  dt_bauhaus_widget_t *w = darktable.bauhaus->current;
+  switch(w->type)
+  {
+    case DT_BAUHAUS_COMBOBOX:
+      {
+        gint wx, wy;
+        GtkWidget *w = GTK_WIDGET(darktable.bauhaus->current);
+        const int ht = w->allocation.height;
+        const int skip = ht + 10;
+        gdk_window_get_origin (gtk_widget_get_window (w), &wx, &wy);
+        dt_bauhaus_combobox_data_t *d = &darktable.bauhaus->current->data.combobox;
+        if(event->direction == GDK_SCROLL_UP)
+          dt_bauhaus_combobox_set(w, CLAMP(d->active-1, 0, d->num_labels-1));
+        else
+          dt_bauhaus_combobox_set(w, CLAMP(d->active+1, 0, d->num_labels-1));
+        gdk_window_move(gtk_widget_get_window(darktable.bauhaus->popup_window), wx, wy - d->active * skip);
+      }
+      break;
+    case DT_BAUHAUS_SLIDER:
+      break;
+    default:
+      break;
+  }
+  return TRUE;
+}
+
+static gboolean
 dt_bauhaus_popup_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   // remember mouse position for motion effects in draw
@@ -242,6 +272,8 @@ dt_bauhaus_init()
                     G_CALLBACK (dt_bauhaus_popup_button_press), (gpointer)NULL);
   g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "key-press-event",
                     G_CALLBACK (dt_bauhaus_popup_key_press), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "scroll-event",
+                    G_CALLBACK (dt_bauhaus_popup_scroll), (gpointer)NULL);
 }
 
 void
@@ -855,8 +887,15 @@ dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
 
   gint wx, wy;
   gdk_window_get_origin (gtk_widget_get_window (GTK_WIDGET(w)), &wx, &wy);
-  gtk_window_move(GTK_WINDOW(darktable.bauhaus->popup_window), wx, wy);
   // dt_control_key_accelerators_off (darktable.control);
+
+  // gtk_widget_get_window will return null if not shown yet.
+  // it is needed for gdk_window_move, and gtk_window move will
+  // sometimes be ignored. this is why we always call both...
+  // we also don't want to show befor move, as this results in noticable flickering.
+  GdkWindow *window = gtk_widget_get_window(darktable.bauhaus->popup_window);
+  if(window) gdk_window_move(window, wx, wy);
+  gtk_window_move(GTK_WINDOW(darktable.bauhaus->popup_window), wx, wy);
   gtk_widget_show_all(darktable.bauhaus->popup_window);
   gtk_widget_grab_focus(darktable.bauhaus->popup_area);
 }
