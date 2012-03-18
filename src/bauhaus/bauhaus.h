@@ -132,6 +132,26 @@ typedef struct dt_bauhaus_t
   int keys_cnt;
   // our custom signals
   guint signals[DT_BAUHAUS_LAST_SIGNAL];
+
+  // appearance relevant stuff:
+  // sizes and fonts:
+  float scale;          // gui scale multiplier
+  int widget_space;     // space between widgets in a module
+  int line_space;       // space between lines of text in e.g. the combo box
+  int line_height;      // height of a line of text
+  float marker_size;    // height of the slider indicator
+  float label_font_size;// percent of line height to fill with font for labels
+  float value_font_size;// percent of line height to fill with font for values
+  char label_font[256]; // font to draw the label with
+  char value_font[256]; // font to draw the value with
+
+  // colors:
+  float bg_normal;      // background without focus
+  float bg_focus;       // background with focus
+  float text;           // text color
+  float grid;           // background lines
+  float indicator;      // meaningful lines
+  float insensitive;    // alpha for insensitive elements
 }
 dt_bauhaus_t;
 
