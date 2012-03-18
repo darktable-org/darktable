@@ -157,6 +157,12 @@ typedef struct dt_view_manager_t
       void (*add)(struct dt_lib_module_t *,GtkWidget *);
     } module_toolbox;
 
+    /* filter toolbox proxy object */
+    struct {
+        struct dt_lib_module_t *module;
+        void (*reset_filter)(struct dt_lib_module_t *);
+    } filter;
+
     /* module collection proxy object */
     struct {
       struct dt_lib_module_t *module;
@@ -248,6 +254,11 @@ const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm);
 
 /** update the collection module */
 void dt_view_collection_update(const dt_view_manager_t *vm);
+
+/*
+ * Filter dropdown proxy
+ */
+void dt_view_filter_reset_to_show_all(const dt_view_manager_t *vm);
 
 /*
  * NEW filmstrip api

@@ -1028,6 +1028,15 @@ void dt_view_toggle_selection(int imgid)
   }
 }
 
+/**
+ * \brief Reset filter back to "all images"
+ */
+void dt_view_filter_reset_to_show_all(const dt_view_manager_t *vm)
+{
+    if (vm->proxy.filter.module && vm->proxy.filter.reset_filter)
+        vm->proxy.filter.reset_filter(vm->proxy.filter.module);
+}
+
 void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate )
 {
   //g_return_if_fail(vm->proxy.filmstrip.module!=NULL); // This can happend here for debugging

@@ -336,6 +336,10 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
     GSList *it = list;
     int id = 0;
     int filmid = 0;
+
+    /* reset filter to display all images, otherwise view may remain empty */
+    dt_view_filter_reset_to_show_all(darktable.view_manager);
+
     while(it)
     {
       filename = (char *)it->data;
@@ -417,6 +421,9 @@ static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
     char *filename = NULL, *first_filename = NULL;
     GSList *list = gtk_file_chooser_get_filenames (GTK_FILE_CHOOSER (filechooser));
     GSList *it = list;
+
+    /* reset filter to display all images, otherwise view may remain empty */
+    dt_view_filter_reset_to_show_all(darktable.view_manager);
 
     /* for each selected folder add import job */
     while(it)
