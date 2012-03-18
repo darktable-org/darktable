@@ -49,6 +49,13 @@ if(APPLE)
 	if(USE_OPENCL)
 	  set(LIBS ${LIBS} -Wl,-framework -Wl,OpenCL)
 	endif(USE_OPENCL)
+
+        # Detect the OS X version: Use '/usr/bin/sw_vers -productVersion' to extract V from '10.V.x'.
+        EXEC_PROGRAM(/usr/bin/sw_vers ARGS -productVersion OUTPUT_VARIABLE MACOSX_VERSION_RAW)
+        STRING(REGEX REPLACE "10\\.([0-9]).*" "\\1" MACOSX_VERSION "${MACOSX_VERSION_RAW}")
+        if(${MACOSX_VERSION} LESS 7)
+          add_definitions("-DAPPLE_NEED_DPRINTF")
+        endif()
 endif(APPLE)
 
 if(WIN32)
