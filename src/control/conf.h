@@ -69,7 +69,7 @@ static inline void dt_conf_set_float(const char *name, float val)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
   const int num = dt_conf_get_var_pos(name);
-  snprintf(darktable.conf->varval[num], DT_CONF_MAX_VAR_BUF, "%f", val);
+  g_ascii_dtostr(darktable.conf->varval[num], DT_CONF_MAX_VAR_BUF, val);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
 }
 
