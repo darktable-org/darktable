@@ -1,5 +1,18 @@
 <gconfschemafile>
   <schemalist>
+    <schema>
+      <key>/schemas/apps/darktable/bauhaus/scale</key>
+      <applyto>/apps/darktable/bauhaus/scale</applyto>
+      <owner>darktable</owner>
+      <type>float</type>
+      <default>1.4</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>widget scale</short>
+        <long>scaling factor for bauhaus widgets, will affect font size</long>
+      </locale>
+    </schema>
+
     <schema><!--tab:core-->
       <key>/schemas/apps/darktable/database</key>
       <applyto>/apps/darktable/database</applyto>
