@@ -42,8 +42,6 @@
 #define DT_IS_BAUHAUS_WIDGET_CLASS(obj)    (G_TYPE_CHECK_CLASS_TYPE ((obj), DT_BAUHAUS_WIDGET_TYPE))
 #define DT_BAUHAUS_WIDGET_GET_CLASS        (G_TYPE_INSTANCE_GET_CLASS ((obj), DT_BAUHAUS_WIDGET_TYPE, DtBauausWidgetClass))
 
-#define DT_BAUHAUS_SPACE 15
-
 typedef enum dt_bauhaus_type_t
 {
   DT_BAUHAUS_SLIDER = 1,
@@ -154,6 +152,14 @@ typedef struct dt_bauhaus_t
   float insensitive;    // alpha for insensitive elements
 }
 dt_bauhaus_t;
+
+static inline int
+dt_bauhaus_get_widget_space()
+{
+  return darktable.bauhaus->scale * darktable.bauhaus->widget_space;
+}
+#define DT_BAUHAUS_SPACE dt_bauhaus_get_widget_space()
+
 
 void dt_bauhaus_init();
 void dt_bauhaus_cleanup();

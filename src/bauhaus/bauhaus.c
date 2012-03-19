@@ -17,6 +17,7 @@
 */
 
 #include "bauhaus/bauhaus.h"
+#include "control/conf.h"
 
 // new type dt_bauhaus_widget_t, gtk functions start with dt_bh (so they don't collide with ours), we inherit from drawing area
 G_DEFINE_TYPE (DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA);
@@ -33,6 +34,118 @@ static void
 dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w);
 static void
 dt_bauhaus_widget_reject(dt_bauhaus_widget_t *w);
+
+
+
+static int
+get_line_space()
+{
+  return darktable.bauhaus->scale * darktable.bauhaus->line_space;
+}
+
+static int
+get_line_height()
+{
+  return darktable.bauhaus->scale * darktable.bauhaus->line_height;
+}
+
+static float
+get_marker_size()
+{
+  return darktable.bauhaus->scale * darktable.bauhaus->marker_size;
+}
+
+static float
+get_label_font_size()
+{
+  return get_line_height() * darktable.bauhaus->label_font_size;
+}
+
+static float
+get_value_font_size()
+{
+  return get_line_height() * darktable.bauhaus->value_font_size;
+}
+
+static void
+set_label_font(cairo_t *cr)
+{
+  cairo_select_font_face (cr, darktable.bauhaus->label_font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, get_label_font_size());
+}
+
+static void
+set_value_font(cairo_t *cr)
+{
+  cairo_select_font_face (cr, darktable.bauhaus->value_font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, get_value_font_size());
+}
+
+static void
+set_bg_normal(cairo_t *cr)
+{
+  cairo_set_source_rgb(cr, 
+      darktable.bauhaus->bg_normal,
+      darktable.bauhaus->bg_normal,
+      darktable.bauhaus->bg_normal);
+}
+
+static void
+set_bg_focus(cairo_t *cr)
+{
+  cairo_set_source_rgb(cr, 
+      darktable.bauhaus->bg_focus,
+      darktable.bauhaus->bg_focus,
+      darktable.bauhaus->bg_focus);
+}
+
+static void
+set_text_color(cairo_t *cr, int sensitive)
+{
+  if(sensitive)
+    cairo_set_source_rgb(cr, 
+        darktable.bauhaus->text,
+        darktable.bauhaus->text,
+        darktable.bauhaus->text);
+  else
+    cairo_set_source_rgba(cr, 
+        darktable.bauhaus->text,
+        darktable.bauhaus->text,
+        darktable.bauhaus->text,
+        darktable.bauhaus->insensitive);
+}
+
+static void
+set_grid_color(cairo_t *cr, int sensitive)
+{
+  if(sensitive)
+    cairo_set_source_rgb(cr, 
+        darktable.bauhaus->grid,
+        darktable.bauhaus->grid,
+        darktable.bauhaus->grid);
+  else
+    cairo_set_source_rgba(cr, 
+        darktable.bauhaus->grid,
+        darktable.bauhaus->grid,
+        darktable.bauhaus->grid,
+        darktable.bauhaus->insensitive);
+}
+
+static void
+set_indicator_color(cairo_t *cr, int sensitive)
+{
+  if(sensitive)
+    cairo_set_source_rgb(cr, 
+        darktable.bauhaus->indicator,
+        darktable.bauhaus->indicator,
+        darktable.bauhaus->indicator);
+  else
+    cairo_set_source_rgba(cr, 
+        darktable.bauhaus->indicator,
+        darktable.bauhaus->indicator,
+        darktable.bauhaus->indicator,
+        darktable.bauhaus->insensitive);
+}
 
 
 // -------------------------------
@@ -75,8 +188,7 @@ get_slider_line_offset(float pos, float scale, float x, float y, float ht, const
 static void
 draw_slider_line(cairo_t *cr, float pos, float off, float scale, const int width, const int height, const int ht)
 {
-  // TODO: pos is normalized position [0,1], offset is on that scale.
-  // TODO: respect inset_left and inset_right!
+  // pos is normalized position [0,1], offset is on that scale.
   // ht is in pixels here
   const float l = 4.0f/width;
   const float r = 1.0f-(ht+4.0f)/width;
@@ -105,7 +217,7 @@ dt_bauhaus_popup_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_
         gint wx, wy;
         GtkWidget *w = GTK_WIDGET(darktable.bauhaus->current);
         const int ht = w->allocation.height;
-        const int skip = ht + 10;
+        const int skip = ht + get_line_space();
         gdk_window_get_origin (gtk_widget_get_window (w), &wx, &wy);
         dt_bauhaus_combobox_data_t *d = &darktable.bauhaus->current->data.combobox;
         if(event->direction == GDK_SCROLL_UP)
@@ -230,8 +342,16 @@ dt_bauhaus_init()
   darktable.bauhaus->current = NULL;
   darktable.bauhaus->popup_area = gtk_drawing_area_new();
 
-  // TODO: get from config
-  darktable.bauhaus->scale = 1.0f;
+  const float scale = dt_conf_get_float("bauhaus/scale");
+  if(scale < 1.0 || scale > 5.0)
+  {
+    darktable.bauhaus->scale = 1.4f;
+    dt_conf_set_float("bauhaus/scale", 1.4);
+  }
+  else
+  {
+    darktable.bauhaus->scale = scale;
+  }
   darktable.bauhaus->widget_space = 7;
   darktable.bauhaus->line_space = 5;
   darktable.bauhaus->line_height = 9;
@@ -240,8 +360,8 @@ dt_bauhaus_init()
   darktable.bauhaus->value_font_size = 0.8f;
   strncpy(darktable.bauhaus->label_font, "sans-serif", 256);
   strncpy(darktable.bauhaus->value_font, "sans-serif", 256);
-  darktable.bauhaus->bg_normal = 0.2f;
-  darktable.bauhaus->bg_focus = 0.3f;
+  darktable.bauhaus->bg_normal = 0.145098f;
+  darktable.bauhaus->bg_focus = 0.207843f;
   darktable.bauhaus->text = 1.f;
   darktable.bauhaus->grid = .1f;
   darktable.bauhaus->indicator = .6f;
@@ -321,123 +441,6 @@ dt_bauhaus_combobox_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer us
 static gboolean
 dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 
-
-// TODO: map DT_BAUHAUS_SPACE to this:
-static int
-dt_bauhaus_get_widget_space()
-{
-  return darktable.bauhaus->scale * darktable.bauhaus->widget_space;
-}
-
-static int
-get_line_space()
-{
-  return darktable.bauhaus->scale * darktable.bauhaus->line_space;
-}
-
-static int
-get_line_height()
-{
-  return darktable.bauhaus->scale * darktable.bauhaus->line_height;
-}
-
-static float
-get_marker_size()
-{
-  return darktable.bauhaus->scale * darktable.bauhaus->marker_size;
-}
-
-static float
-get_label_font_size()
-{
-  return get_line_height() * darktable.bauhaus->label_font_size;
-}
-
-static float
-get_value_font_size()
-{
-  return get_line_height() * darktable.bauhaus->value_font_size;
-}
-
-static void
-set_label_font(cairo_t *cr)
-{
-  cairo_select_font_face (cr, darktable.bauhaus->label_font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-  cairo_set_font_size (cr, get_label_font_size());
-}
-
-static void
-set_value_font(cairo_t *cr)
-{
-  cairo_select_font_face (cr, darktable.bauhaus->value_font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-  cairo_set_font_size (cr, get_value_font_size());
-}
-
-static void
-set_bg_normal(cairo_t *cr)
-{
-  cairo_set_source_rgb(cr, 
-      darktable.bauhaus->bg_normal,
-      darktable.bauhaus->bg_normal,
-      darktable.bauhaus->bg_normal);
-}
-
-static void
-set_bg_focus(cairo_t *cr)
-{
-  cairo_set_source_rgb(cr, 
-      darktable.bauhaus->bg_focus,
-      darktable.bauhaus->bg_focus,
-      darktable.bauhaus->bg_focus);
-}
-
-static void
-set_text_color(cairo_t *cr, int sensitive)
-{
-  if(sensitive)
-    cairo_set_source_rgb(cr, 
-        darktable.bauhaus->text,
-        darktable.bauhaus->text,
-        darktable.bauhaus->text);
-  else
-    cairo_set_source_rgba(cr, 
-        darktable.bauhaus->text,
-        darktable.bauhaus->text,
-        darktable.bauhaus->text,
-        darktable.bauhaus->insensitive);
-}
-
-static void
-set_grid_color(cairo_t *cr, int sensitive)
-{
-  if(sensitive)
-    cairo_set_source_rgb(cr, 
-        darktable.bauhaus->grid,
-        darktable.bauhaus->grid,
-        darktable.bauhaus->grid);
-  else
-    cairo_set_source_rgba(cr, 
-        darktable.bauhaus->grid,
-        darktable.bauhaus->grid,
-        darktable.bauhaus->grid,
-        darktable.bauhaus->insensitive);
-}
-
-static void
-set_indicator_color(cairo_t *cr, int sensitive)
-{
-  if(sensitive)
-    cairo_set_source_rgb(cr, 
-        darktable.bauhaus->indicator,
-        darktable.bauhaus->indicator,
-        darktable.bauhaus->indicator);
-  else
-    cairo_set_source_rgba(cr, 
-        darktable.bauhaus->indicator,
-        darktable.bauhaus->indicator,
-        darktable.bauhaus->indicator,
-        darktable.bauhaus->insensitive);
-}
 
 // end static init/cleanup
 // =================================================
@@ -639,10 +642,10 @@ dt_bauhaus_draw_label(dt_bauhaus_widget_t *w, cairo_t *cr)
 {
   // draw label:
   GtkWidget *widget = GTK_WIDGET(w);
-  const int height = widget->allocation.height;
   cairo_save(cr);
   set_text_color(cr, gtk_widget_is_sensitive(widget));
-  cairo_move_to(cr, 2, get_font_size());
+  // TODO: also borders into config?
+  cairo_move_to(cr, 2, get_label_font_size());
   set_label_font(cr);
   cairo_show_text(cr, w->label);
   cairo_restore(cr);
@@ -799,9 +802,9 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         cairo_save(cr);
         set_indicator_color(cr, 1);
         cairo_set_line_width(cr, 1.);
-        cairo_translate(cr, (l + (d->oldpos+mouse_off)*(r-l))*wd, ht*.8f);
+        cairo_translate(cr, (l + (d->oldpos+mouse_off)*(r-l))*wd, get_label_font_size());
         cairo_scale(cr, 1.0f, -1.0f);
-        draw_equilateral_triangle(cr, ht*0.35f);
+        draw_equilateral_triangle(cr, ht*get_marker_size());
         cairo_fill_preserve(cr);
         cairo_set_line_width(cr, 1.0f);
         set_grid_color(cr, 1);
@@ -818,7 +821,7 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         const float fint = (int)f;
         snprintf(text, 256, d->format, fint);
         cairo_text_extents (cr, text, &ext);
-        cairo_move_to (cr, wd-4-ht-ext.x_advance, ht*0.8);
+        cairo_move_to (cr, wd-4-ht-ext.x_advance, get_value_font_size());
         snprintf(text, 256, d->format, f);
         cairo_show_text(cr, text);
         cairo_restore(cr);
@@ -839,7 +842,7 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
           if(!strncmp(text, darktable.bauhaus->keys, darktable.bauhaus->keys_cnt))
           {
             cairo_text_extents (cr, text, &ext);
-            cairo_move_to (cr, wd-4-ht-ext.width, ht*0.8 + (10+ht)*k);
+            cairo_move_to (cr, wd-4-ht-ext.width, get_value_font_size() + (get_line_space()+ht)*k);
             cairo_show_text(cr, text);
             k++;
           }
@@ -859,7 +862,7 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   {
     cairo_save(cr);
     cairo_text_extents_t ext;
-    set_text_color(cr);
+    set_text_color(cr, 1);
     set_value_font(cr);
     // make extra large
     cairo_set_font_size (cr, .2*height);
@@ -935,14 +938,14 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
           cairo_save(cr);
           const float l = 4.0f/width;
           const float r = 1.0f-(height+4.0f)/width;
-          cairo_set_source_rgb(cr, .6, .6, .6);
-          cairo_translate(cr, (l + d->pos*(r-l))*width, height*.8f);
+          set_indicator_color(cr, 1);
+          cairo_translate(cr, (l + d->pos*(r-l))*width, get_label_font_size());
           cairo_scale(cr, 1.0f, -1.0f);
-          draw_equilateral_triangle(cr, height*0.35f); // 0.3
+          draw_equilateral_triangle(cr, height*get_marker_size());
           // cairo_fill(cr);
           cairo_fill_preserve(cr);
           cairo_set_line_width(cr, 1.);
-          cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+          set_grid_color(cr, 1);
           cairo_stroke(cr);
           cairo_restore(cr);
 
@@ -952,11 +955,10 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
           const float fint = (int)f;
           snprintf(text, 256, d->format, fint);
           cairo_text_extents_t ext;
-          cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-          cairo_set_font_size (cr, .8*height);
+          set_value_font(cr);
           cairo_text_extents (cr, text, &ext);
-          cairo_set_source_rgb(cr, 1., 1., 1.);
-          cairo_move_to (cr, width-4-height-ext.x_advance, height*0.8);
+          set_text_color(cr, 1);
+          cairo_move_to (cr, width-4-height-ext.x_advance, get_value_font_size());
           snprintf(text, 256, d->format, f);
           cairo_show_text(cr, text);
         }
@@ -1013,7 +1015,7 @@ dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
       GtkAllocation tmp;
       gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-      gtk_widget_set_size_request(darktable.bauhaus->popup_area, tmp.width, (tmp.height+10) * d->num_labels);
+      gtk_widget_set_size_request(darktable.bauhaus->popup_area, tmp.width, (tmp.height+get_line_space()) * d->num_labels);
       break;
     }
     default:
@@ -1158,11 +1160,12 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
   {
     case DT_BAUHAUS_SLIDER:
     {
+      // hack to do screenshots from popup:
       // if(event->string[0] == 'p') return system("scrot");
       // else
       if(darktable.bauhaus->keys_cnt + 2 < 64 &&
-        (event->string[0] == 46 ||
-        (event->string[0] >= 48 && event->string[0] <= 57)))
+       ((event->string[0] >= 43 && event->string[0] <= 46) ||  // .,-+
+        (event->string[0] >= 48 && event->string[0] <= 57)))   // 0-9
       {
         darktable.bauhaus->keys[darktable.bauhaus->keys_cnt++] = event->string[0];
         gtk_widget_queue_draw(darktable.bauhaus->popup_area);
