@@ -343,7 +343,7 @@ dt_bauhaus_init()
   darktable.bauhaus->popup_area = gtk_drawing_area_new();
 
   const float scale = dt_conf_get_float("bauhaus/scale");
-  if(scale < 1.0 || scale > 5.0)
+  if(scale < .5 || scale > 5.0)
   {
     darktable.bauhaus->scale = 1.4f;
     dt_conf_set_float("bauhaus/scale", 1.4);
