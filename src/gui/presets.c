@@ -72,7 +72,7 @@ void dt_gui_presets_init()
   // create table or fail if it is already there.
   sqlite3_exec(dt_database_get(darktable.db), "create table presets "
                "(name varchar, description varchar, operation varchar, op_version integer, op_params blob, enabled integer, "
-               "blendop_params blob, blendop_version integer"
+               "blendop_params blob, blendop_version integer, "
                "model varchar, maker varchar, lens varchar, "
                "iso_min real, iso_max real, exposure_min real, exposure_max real, aperture_min real, aperture_max real, "
                "focal_length_min real, focal_length_max real, "
