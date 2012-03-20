@@ -17,6 +17,7 @@
 */
 #include <string.h>
 #include <glib.h>
+#include "control/control.h"
 #include "control/signal.h"
 
 typedef struct dt_control_signal_t
@@ -79,7 +80,9 @@ dt_control_signal_t *dt_control_signal_init()
 
 void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t signal) 
 {
+  gboolean i_own_lock = dt_control_gdk_lock();
   g_signal_emit_by_name(G_OBJECT(ctlsig->sink), _signal_name[signal]);
+  if (i_own_lock) dt_control_gdk_unlock();
 }
 
 void dt_control_signal_connect(const dt_control_signal_t *ctlsig,dt_signal_t signal, GCallback cb, gpointer user_data)
