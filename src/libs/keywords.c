@@ -369,6 +369,10 @@ static void _lib_keywords_drag_data_received_callback(GtkWidget *w,
       _lib_keywords_string_from_path(dtag, 1024, model, dpath);
       _lib_keywords_string_from_path(stag, 1024, model, spath);
 
+      /* reject drop onto ourself */
+      if (strcmp(dtag,stag) == 0)
+	goto reject_drop;
+
        /* updated tags in database */
       dt_tag_reorganize(stag,dtag);
 
@@ -388,6 +392,7 @@ static void _lib_keywords_drag_data_received_callback(GtkWidget *w,
   }   
  
   /* reject drop */
+reject_drop:
   gtk_drag_finish (dctx, FALSE, FALSE, time);
 }
 
