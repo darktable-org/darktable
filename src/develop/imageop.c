@@ -393,9 +393,6 @@ void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t 
   module->init_pipe(module, pipe, piece);
   piece->blendop_data = malloc(sizeof(dt_develop_blend_params_t));
   memset(piece->blendop_data, 0, sizeof(dt_develop_blend_params_t));
-  //dt_develop_blend_params_t default_blendop_params= {DEVELOP_BLEND_DISABLED,100.0,0};
-  memset(module->default_blendop_params, 0, sizeof(dt_develop_blend_params_t));
-  memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
   memcpy(module->blend_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
   /// FIXME: Commmit params is already done in module
   dt_iop_commit_params(module, module->default_params, module->default_blendop_params, pipe, piece);
