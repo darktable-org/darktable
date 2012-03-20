@@ -258,7 +258,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
       svgdata = svgdoc;
     }
 
-    svgdoc = _string_substitute(svgdata,"$(IMAGE.FILENAME)",PACKAGE_VERSION);
+    svgdoc = _string_substitute(svgdata,"$(IMAGE.FILENAME)",image->filename);
     if( svgdoc != svgdata )
     {
       g_free(svgdata);
