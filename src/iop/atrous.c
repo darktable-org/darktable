@@ -821,6 +821,48 @@ void init_presets (dt_iop_module_so_t *self)
     p.x[atrous_L][k] = k/(BANDS-1.0);
     p.x[atrous_c][k] = k/(BANDS-1.0);
     p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.y[atrous_L][k] = .5f;
+    p.y[atrous_c][k] = .5f;
+    p.y[atrous_s][k] = .0f;
+    p.x[atrous_Lt][k] = k/(BANDS-1.0);
+    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.y[atrous_Lt][k] = fmaxf(0.0f, (.30f*k/(float)BANDS) - 0.20f);
+    p.y[atrous_ct][k] = .30f*k/(float)BANDS;
+  }
+  dt_gui_presets_add_generic(_("denoise (subtle) 100"), self->op, self->version(), &p, sizeof(p), 1);
+  for(int k=0; k<BANDS; k++)
+  {
+    p.x[atrous_L][k] = k/(BANDS-1.0);
+    p.x[atrous_c][k] = k/(BANDS-1.0);
+    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.y[atrous_L][k] = .5f;
+    p.y[atrous_c][k] = .5f;
+    p.y[atrous_s][k] = .0f;
+    p.x[atrous_Lt][k] = k/(BANDS-1.0);
+    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.y[atrous_Lt][k] = fmaxf(0.0f, (.30f*k/(float)BANDS) - 0.15f);
+    p.y[atrous_ct][k] = .30f*k/(float)BANDS;
+  }
+  dt_gui_presets_add_generic(_("denoise (subtle) 200"), self->op, self->version(), &p, sizeof(p), 1);
+  for(int k=0; k<BANDS; k++)
+  {
+    p.x[atrous_L][k] = k/(BANDS-1.0);
+    p.x[atrous_c][k] = k/(BANDS-1.0);
+    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.y[atrous_L][k] = .5f;
+    p.y[atrous_c][k] = .5f;
+    p.y[atrous_s][k] = .0f;
+    p.x[atrous_Lt][k] = k/(BANDS-1.0);
+    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.y[atrous_Lt][k] = fmaxf(0.0f, (.30f*k/(float)BANDS) - 0.10f);
+    p.y[atrous_ct][k] = .30f*k/(float)BANDS;
+  }
+  dt_gui_presets_add_generic(_("denoise (subtle) 400"), self->op, self->version(), &p, sizeof(p), 1);
+  for(int k=0; k<BANDS; k++)
+  {
+    p.x[atrous_L][k] = k/(BANDS-1.0);
+    p.x[atrous_c][k] = k/(BANDS-1.0);
+    p.x[atrous_s][k] = k/(BANDS-1.0);
     p.y[atrous_L][k] = .5f;//-.2f*k/(float)BANDS;
     p.y[atrous_c][k] = .5f;//fmaxf(0.0f, .5f-.3f*k/(float)BANDS);
     p.y[atrous_s][k] = .5f;
