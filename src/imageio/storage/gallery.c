@@ -306,15 +306,17 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
     snprintf(pair->line, 4096,
              "\n"
-             "      <div><a class=\"dia\" href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
+             "      <div><a class=\"dia\" rel=\"lightbox[viewer]\" title=\"%s - %s\" href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
              "      <h1>%s</h1>\n"
-             "      %s<br/><span class=\"tags\">%s</span></div>\n", relsubfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
+             "      %s<br/><span class=\"tags\">%s</span></div>\n", title?title:relfilename, description?description:"&nbsp;", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
 
     char next[256];
     sprintf(next, "img_%d.html", (num)%total+1);
 
     char prev[256];
     sprintf(prev, "img_%d.html", (num==1)?total:num-1);
+
+/* Becomes unecessary with the Lightbox image viewer overlay
 
     FILE* subfile = fopen(subfilename, "wb");
     fprintf(subfile,
@@ -344,7 +346,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
           "</html>\n",
           relfilename, title?title:relfilename, prev, next, relfilename, relfilename, description?description:"&nbsp;", tags?tags:"&nbsp;");
     fclose(subfile);
-
+*/
     pair->pos = num;
     g_free(title);
     g_free(description);
@@ -428,7 +430,45 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   copy_res("/style/style.css", filename);
   sprintf(c, "/style/favicon.ico");
   copy_res("/style/favicon.ico", filename);
-
+  sprintf(c, "/style/bullet.gif");
+  copy_res("/style/bullet.gif", filename);
+  sprintf(c, "/style/close.gif");
+  copy_res("/style/close.gif", filename);
+  sprintf(c, "/style/closelabel.gif");
+  copy_res("/style/closelabel.gif", filename);
+  sprintf(c, "/style/donate-button.gif");
+  copy_res("/style/donate-button.gif", filename);
+  sprintf(c, "/style/download-icon.gif");
+  copy_res("/style/download-icon.gif", filename);
+  sprintf(c, "/style/image-1.jpg");
+  copy_res("/style/image-1.jpg", filename);
+  sprintf(c, "/style/lightbox.css");
+  copy_res("/style/lightbox.css", filename);
+  sprintf(c, "/style/loading.gif");
+  copy_res("/style/loading.gif", filename);
+  sprintf(c, "/style/nextlabel.gif");
+  copy_res("/style/nextlabel.gif", filename);
+  sprintf(c, "/style/prevlabel.gif");
+  copy_res("/style/prevlabel.gif", filename);
+  sprintf(c, "/style/thumb-1.jpg");
+  copy_res("/style/thumb-1.jpg", filename);
+  
+  // create subdir   js for lightbox2 viewer scripts
+  sprintf(c, "/js");
+  g_mkdir_with_parents(filename, 0755);
+  sprintf(c, "/js/builder.js");
+  copy_res("/js/builder.js", filename);
+  sprintf(c, "/js/effects.js");
+  copy_res("/js/effects.js", filename);
+  sprintf(c, "/js/lightbox.js");
+  copy_res("/js/lightbox.js", filename);
+  sprintf(c, "/js/lightbox-web.js");
+  copy_res("/js/lightbox-web.js", filename);
+  sprintf(c, "/js/prototype.js");
+  copy_res("/js/prototype.js", filename);
+  sprintf(c, "/js/scriptaculous.js");
+  copy_res("/js/scriptaculous.js", filename);
+  
   sprintf(c, "/index.html");
 
   const char *title = d->title;
@@ -442,6 +482,10 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
           "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n"
           "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\" />\n"
           "    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\" />\n"
+          "    <link rel=\"stylesheet\" href=\"style/lightbox.css\" type=\"text/css\" media=\"screen\" />"
+          "    <script type=\"text/javascript\" src=\"js/prototype.js\"></script>\n"
+          "    <script type=\"text/javascript\" src=\"js/scriptaculous.js?load=effects,builder\"></script>\n"
+          "    <script type=\"text/javascript\" src=\"js/lightbox.js\"></script>\n"
           "    <title>%s</title>\n"
           "  </head>\n"
           "  <body>\n"
