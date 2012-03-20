@@ -644,14 +644,19 @@ int
 dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 {
   // unset gtk rc from kde:
-  char path[1024], datadir[1024];
-  dt_util_get_datadir(datadir, 1024);
-  gchar *themefile = dt_conf_get_string("themefile");
-  if(themefile && themefile[0] == '/') snprintf(path, 1023, "%s", themefile);
-  else snprintf(path, 1023, "%s/%s", datadir, themefile ? themefile : "darktable.gtkrc");
-  if(!g_file_test(path, G_FILE_TEST_EXISTS))
-    snprintf(path, 1023, "%s/%s", DARKTABLE_DATADIR, themefile ? themefile : "darktable.gtkrc");
-  (void)setenv("GTK2_RC_FILES", path, 1);
+  char gtkrc[PATH_MAX], path[PATH_MAX], datadir[PATH_MAX], configdir[PATH_MAX];
+  dt_util_get_datadir(datadir, PATH_MAX);
+  dt_util_get_user_config_dir(configdir, PATH_MAX);
+ 
+  g_snprintf(gtkrc, PATH_MAX, "%s/darktable.gtkrc", configdir);
+  
+  if (!g_file_test(gtkrc, G_FILE_TEST_EXISTS))
+    g_snprintf(gtkrc, PATH_MAX, "%s/darktable.gtkrc", datadir);
+   
+  if (g_file_test(gtkrc, G_FILE_TEST_EXISTS))
+    (void)setenv("GTK2_RC_FILES", gtkrc, 1);  
+  else
+    fprintf(stderr, "[gtk_init] could not found darktable.gtkrc");
 
   /* lets zero mem */
   memset(gui,0,sizeof(dt_gui_gtk_t));
@@ -673,14 +678,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gui->center_tooltip = 0;
   gui->presets_popup_menu = NULL;
   
-  if(g_file_test(path, G_FILE_TEST_EXISTS)) gtk_rc_parse (path);
-  else
-  {
-    fprintf(stderr, "[gtk_init] could not find `%s' in . or %s!\n", themefile, datadir);
-    g_free(themefile);
-    return 1;
-  }
-  g_free(themefile);
+  if(g_file_test(gtkrc, G_FILE_TEST_EXISTS)) 
+    gtk_rc_parse (gtkrc);
 
   // Initializing the shortcut groups
   darktable.control->accelerators = gtk_accel_group_new();
@@ -712,8 +711,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   //  dt_gui_background_jobs_init();
 
   /* Have the delete event (window close) end the program */
-  dt_util_get_datadir(datadir, 1024);
-  snprintf(path, 1024, "%s/icons", datadir);
+  dt_util_get_datadir(datadir, PATH_MAX);
+  snprintf(path, PATH_MAX, "%s/icons", datadir);
   gtk_icon_theme_append_search_path (gtk_icon_theme_get_default (), path);
 
   widget = dt_ui_center(darktable.gui->ui);

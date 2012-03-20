@@ -14,19 +14,6 @@
     </schema>
 
     <schema><!--tab:gui-->
-      <key>/schemas/apps/darktable/themefile</key>
-      <applyto>/apps/darktable/themefile</applyto>
-      <owner>darktable</owner>
-      <type>string</type>
-      <default>darktable.gtkrc</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short>filename of your custom theme in share/darktable/</short>
-        <long> (needs a restart) </long>
-      </locale>
-    </schema>
-
-    <schema><!--tab:gui-->
       <key>/schemas/apps/darktable/panel_width</key>
       <applyto>/apps/darktable/panel_width</applyto>
       <owner>darktable</owner>
