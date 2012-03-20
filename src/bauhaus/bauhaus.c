@@ -516,7 +516,8 @@ dt_bauhaus_combobox_destroy(dt_bauhaus_widget_t *widget, gpointer user_data)
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-  g_list_free_full(d->labels, g_free);
+  g_list_foreach(d->labels,(GFunc)g_free,NULL);
+  g_list_free(d->labels);
   d->labels = NULL;
   d->num_labels = 0;
 }
