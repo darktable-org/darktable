@@ -2,7 +2,7 @@
 #lightbox img{ width: auto; height: auto;}
 #lightbox a img{ border: none; }
 
-#outerImageContainer{ position: relative; background-color: #D0D0D0; width: 250px; height: 250px; margin: 0 auto; }
+#outerImageContainer{ position: relative; background-color: #222222; width: 250px; height: 250px; margin: 0 auto; }
 #imageContainer{ padding: 10px; }
 
 #loading{ position: absolute; top: 40%; left: 0%; height: 25%; width: 100%; text-align: center; line-height: 0; }
