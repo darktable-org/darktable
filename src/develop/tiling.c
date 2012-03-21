@@ -569,9 +569,11 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
     dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, iroi_full.width, iroi_full.height, iroi_full.x, iroi_full.y);
 
     /* make sure data fits into input/output buffers */
-    if(tile_wd_in*tile_ht_in < iroi_full.width*iroi_full.height || tile_wd_out*tile_ht_out >= oroi_full.width*oroi_full.height)
+    if(tile_wd_in*tile_ht_in < iroi_full.width*iroi_full.height || tile_wd_out*tile_ht_out < oroi_full.width*oroi_full.height)
     {
       dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] input/output buffers exceed estimated maximum size for module '%s'\n", self->op);
+      dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] input given %d x %d vs needed: %d x %d\n", tile_wd_in, tile_ht_in, iroi_full.width, iroi_full.height);
+      dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] output given: %d x %d vs needed: %d x %d\n", tile_wd_out, tile_ht_out, oroi_full.width, oroi_full.height);
       goto fallback;
     }
 
@@ -1105,9 +1107,11 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
 
 
     /* make sure data fits into input/output buffers */
-    if(tile_wd_in*tile_ht_in < iroi_full.width*iroi_full.height || tile_wd_out*tile_ht_out >= oroi_full.width*oroi_full.height)
+    if(tile_wd_in*tile_ht_in < iroi_full.width*iroi_full.height || tile_wd_out*tile_ht_out < oroi_full.width*oroi_full.height)
     {
       dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_roi] input/output buffers exceed estimated maximum size for module '%s'\n", self->op);
+      dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_roi] input given %d x %d vs needed: %d x %d\n", tile_wd_in, tile_ht_in, iroi_full.width, iroi_full.height);
+      dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_roi] output given: %d x %d vs needed: %d x %d\n", tile_wd_out, tile_ht_out, oroi_full.width, oroi_full.height);
       goto error;
     }
 
