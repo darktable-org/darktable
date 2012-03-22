@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2011-2012 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,11 +25,11 @@
 #ifdef HAVE_GEGL
 #include <gegl.h>
 #endif
+#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
-#include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -54,7 +54,7 @@ dt_iop_soften_params_t;
 typedef struct dt_iop_soften_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
-  GtkDarktableSlider *scale1,*scale2,*scale3,*scale4;       // size,saturation,brightness,amount
+  GtkWidget *scale1,*scale2,*scale3,*scale4;       // size,saturation,brightness,amount
 }
 dt_iop_soften_gui_data_t;
 
@@ -83,6 +83,7 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
+#if 0 // BAUHAUS dont support keyaccels yet
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "size"));
@@ -100,6 +101,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "brightness", GTK_WIDGET(g->scale3));
   dt_accel_connect_slider_iop(self, "mix", GTK_WIDGET(g->scale4));
 }
+#endif
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -232,42 +234,42 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 }
 
 static void
-size_callback (GtkDarktableSlider *slider, gpointer user_data)
+size_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)self->params;
-  p->size= dtgtk_slider_get_value(slider);
+  p->size= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-saturation_callback (GtkDarktableSlider *slider, gpointer user_data)
+saturation_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)self->params;
-  p->saturation = dtgtk_slider_get_value(slider);
+  p->saturation = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-brightness_callback (GtkDarktableSlider *slider, gpointer user_data)
+brightness_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)self->params;
-  p->brightness = dtgtk_slider_get_value(slider);
+  p->brightness = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-amount_callback (GtkDarktableSlider *slider, gpointer user_data)
+amount_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)self->params;
-  p->amount = dtgtk_slider_get_value(slider);
+  p->amount = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -315,10 +317,10 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_soften_gui_data_t *g = (dt_iop_soften_gui_data_t *)self->gui_data;
   dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale1, p->size);
-  dtgtk_slider_set_value(g->scale2, p->saturation);
-  dtgtk_slider_set_value(g->scale3, p->brightness);
-  dtgtk_slider_set_value(g->scale4, p->amount);
+  dt_bauhaus_slider_set(g->scale1, p->size);
+  dt_bauhaus_slider_set(g->scale2, p->saturation);
+  dt_bauhaus_slider_set(g->scale3, p->brightness);
+  dt_bauhaus_slider_set(g->scale4, p->amount);
 }
 
 void init(dt_iop_module_t *module)
@@ -351,45 +353,48 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_soften_gui_data_t *g = (dt_iop_soften_gui_data_t *)self->gui_data;
   dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, p->size, 2));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, p->saturation, 2));
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-2.0, 2.0, 0.01, p->brightness, 2));
-  g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, p->amount, 2));
-  dtgtk_slider_set_label(g->scale1,_("size"));
-  dtgtk_slider_set_unit(g->scale1,"%");
-  dtgtk_slider_set_label(g->scale2,_("saturation"));
-  dtgtk_slider_set_unit(g->scale2,"%");
-  dtgtk_slider_set_label(g->scale3,_("brightness"));
-  dtgtk_slider_set_unit(g->scale3,"EV");
-  dtgtk_slider_set_force_sign(g->scale3, TRUE);
-  dtgtk_slider_set_label(g->scale4,_("mix"));
-  dtgtk_slider_set_unit(g->scale4,"%");
-  dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_format_type(g->scale4,DARKTABLE_SLIDER_FORMAT_PERCENT);
-
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  
+  /* size */
+  g->scale1 = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 2, p->size, 2);
+  dt_bauhaus_slider_set_format(g->scale1,"%.0f%%");
+  dt_bauhaus_widget_set_label(g->scale1,_("size"));
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the size of blur"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the saturation of blur"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("the brightness of blur"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("the mix of effect"), (char *)NULL);
-
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (size_callback), self);
+
+  /* saturation */
+  g->scale2 = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 2, p->saturation, 2);
+  dt_bauhaus_slider_set_format(g->scale2,"%.0f%%");
+  dt_bauhaus_widget_set_label(g->scale2,_("saturation"));
+  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the saturation of blur"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
                     G_CALLBACK (saturation_callback), self);
+  
+  /* brightness */
+  g->scale3 = dt_bauhaus_slider_new_with_range(self,-2.0, 2.0, 0.01, p->brightness, 2);
+  dt_bauhaus_slider_set_format(g->scale3,"%.2fEV");
+  dt_bauhaus_widget_set_label(g->scale3,_("brightness"));
+  g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("the brightness of blur"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
                     G_CALLBACK (brightness_callback), self);
+ 
+  /* amount */
+  // TODO: deprecate this function in favor for blending
+  g->scale4 = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 2, p->amount, 2);
+  dt_bauhaus_slider_set_format(g->scale4,"%.0f%%");
+  dt_bauhaus_widget_set_label(g->scale4,_("mix"));
+  g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("the mix of effect"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale4), "value-changed",
                     G_CALLBACK (amount_callback), self);
+
+
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
+
 
 }
 
