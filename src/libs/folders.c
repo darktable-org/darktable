@@ -21,7 +21,10 @@
 #include "common/debug.h"
 #include "common/tags.h"
 #include "common/collection.h"
+#include "common/utility.h"
 #include "control/conf.h"
+#include "control/control.h"
+
 #include "libs/lib.h"
 
 DT_MODULE(1)
@@ -92,6 +95,183 @@ void connect_key_accels(dt_lib_module_t *self)
 
 #define UNCATEGORIZED_TAG "uncategorized"
 
+static void
+_folder_tree (GtkTreeView *tree, sqlite3_stmt *stmt)
+{
+  GtkTreeStore *store = gtk_tree_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+
+  GVolumeMonitor *gv_monitor;
+  gv_monitor = g_volume_monitor_get ();
+
+  GList *gv_list, *gd_list;
+  gd_list = g_volume_monitor_get_connected_drives(gv_monitor);
+  gv_list = g_volume_monitor_get_volumes(gv_monitor);
+
+  if(gv_list && gd_list)
+   g_volume_get_name(g_list_nth_data(gv_list,0));
+   g_drive_get_name(g_list_nth_data(gd_list,0));
+
+  // initialize the model with the paths
+
+  while (sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    if(strchr((const char *)sqlite3_column_text(stmt, 2),'/')==0)
+    {
+      // Do nothing here
+    }
+    else
+    {
+      int level = 0;
+      char *value;
+      GtkTreeIter current,iter;
+      char *path = g_strdup((char *)sqlite3_column_text(stmt, 2));
+      char *pch = strtok((char *)sqlite3_column_text(stmt, 2),"/");
+      while (pch != NULL) 
+      {
+        gboolean found=FALSE;
+        int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),level>0?&current:NULL);
+        /* find child with name, if not found create and continue */
+        for (int k=0;k<children;k++)
+        {
+          if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &iter, level>0?&current:NULL, k))
+          {
+            gtk_tree_model_get (GTK_TREE_MODEL(store), &iter, 0, &value, -1);
+        
+            if (strcmp(value, pch)==0)
+            {
+              current = iter;
+              found = TRUE;
+              break;
+            }
+          }
+        }
+
+        /* lets add new path and assign current */
+        if (!found)
+        {
+          const char *pth = g_strndup (path, strstr(path, pch)-path);
+          const char *pth2 = g_strconcat(pth, pch, NULL);
+          //strstr(path, pch)[0]='\0';
+          gtk_tree_store_insert(store, &iter, level>0?&current:NULL,0);
+          gtk_tree_store_set(store, &iter, 0, pch, 1, pth2, -1);
+          current = iter;
+        }
+
+        level++;
+        pch = strtok(NULL, "/");
+      } 
+    }  
+  }
+
+  /* add the treeview to show filmroll tree*/
+  GtkCellRenderer *renderer;
+
+  renderer = gtk_cell_renderer_text_new ();
+  gtk_tree_view_insert_column_with_attributes(tree,
+                                               -1,      
+                                               "",  
+                                               renderer,
+                                               "text", 0,
+                                               NULL);
+
+  gtk_tree_view_set_headers_visible(tree, FALSE);
+
+  gtk_tree_view_set_model(tree, GTK_TREE_MODEL(store));
+
+  /* free store, treeview has its own storage now */
+  g_object_unref(store);
+  
+}
+
+static void _lib_folders_string_from_path(char *dest,size_t ds, 
+					   GtkTreeModel *model, 
+					   GtkTreePath *path)
+{
+  g_assert(model!=NULL);
+  g_assert(path!=NULL);
+
+  GList *components = NULL;
+  GtkTreePath *wp = gtk_tree_path_copy(path);
+  GtkTreeIter iter;
+
+  /* get components of path */
+  while (1)
+  {
+    GValue value;
+    memset(&value,0,sizeof(GValue));
+
+    /* get iter from path, break out if fail */
+    if (!gtk_tree_model_get_iter(model, &iter, wp))
+      break;
+
+    /* add component to begin of list */
+    gtk_tree_model_get_value(model, &iter, 0, &value);
+    if ( !(gtk_tree_path_get_depth(wp) == 1))
+    {
+      components = g_list_insert(components, 
+				 g_strdup(g_value_get_string(&value)), 
+				 0);
+    }
+    g_value_unset(&value);
+
+    /* get parent of current path break out if we are at root */
+    if (!gtk_tree_path_up(wp) || gtk_tree_path_get_depth(wp) == 0)
+      break;
+  }
+
+  /* build the tag string from components */
+  int dcs = 0;
+
+  if(g_list_length(components) == 0) dcs += g_snprintf(dest+dcs, ds-dcs," ");
+		      
+  for(int i=0;i<g_list_length(components);i++) 
+  {
+    dcs += g_snprintf(dest+dcs, ds-dcs,
+		      "%s%s",
+		      (gchar *)g_list_nth_data(components, i),
+		      (i < g_list_length(components)-1) ? "/" : "");
+  }
+  
+  /* free data */
+  gtk_tree_path_free(wp);
+  
+
+}
+
+static void _lib_folders_update_collection(GtkTreeView *view, GtkTreePath *tp)
+{
+  dt_collection_set_filter_flags(darktable.collection, COLLECTION_QUERY_USE_ONLY_WHERE_EXT);
+  // COLLECTION_FILTER_ATLEAST_RATING needed also? there is not path for this code with the above tag, but should it?
+  // TODO: disable this flag in collect.c
+  
+  char folder[1024]={0};
+  _lib_folders_string_from_path(folder, 1024, gtk_tree_view_get_model(view), tp);
+  
+  gchar *wq = NULL;
+  dt_util_dstrcat(wq, "film_id in (select id from film_rolls where folder like '%s'", folder);
+  
+  dt_collection_set_extended_where(darktable.collection, wq); //TODO query string
+  
+  dt_collection_update(darktable.collection);
+}
+
+static void
+tree_row_activated (GtkTreeView *view, GtkTreePath *path, gpointer user_data)
+{
+  GtkTreeIter iter;
+  GtkTreeModel *model = NULL;
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
+  if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
+  gchar *text;
+  gtk_tree_model_get (model, &iter, 1, &text, -1);
+//loop trhough all selected rows
+  //entry_key_press();
+ 
+  _lib_folders_update_collection(view, path);
+
+  dt_control_queue_redraw_center(); 
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -104,118 +284,27 @@ void gui_init(dt_lib_module_t *self)
 
   /* intialize the tree store with known tags */
   // TODO: COPY HERE WHAT IT IS ALREADY DONE //
-  sqlite3_stmt *stmt;
-
-  GtkTreeIter uncategorized, temp;  
-  memset(&uncategorized,0,sizeof(GtkTreeIter));
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), 
-			      "SELECT name,icon,description FROM tags ORDER BY UPPER(name) DESC", -1, &stmt, NULL);
-  while (sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    if(strchr((const char *)sqlite3_column_text(stmt, 0),'|')==0)
-    {
-      /* add uncategorized root iter if not exists */
-      if (!uncategorized.stamp)
-      {
-	gtk_tree_store_insert(store, &uncategorized, NULL,0);
-	gtk_tree_store_set(store, &uncategorized, 0, _(UNCATEGORIZED_TAG), -1);
-      }
-
-      /* adding a uncategorized tag */
-      gtk_tree_store_insert(store, &temp, &uncategorized,0);
-      gtk_tree_store_set(store, &temp, 0, sqlite3_column_text(stmt, 0), -1); 
-
-    }
-    else
-    {
-      int level = 0;
-      char *value;
-      GtkTreeIter current,iter;
-      char *pch = strtok((char *)sqlite3_column_text(stmt, 0),"|");
-      while (pch != NULL) 
-      {
-	gboolean found=FALSE;
-	int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),level>0?&current:NULL);
-	/* find child with name, if not found create and continue */
-	for (int k=0;k<children;k++)
-	{
-	  if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &iter, level>0?&current:NULL, k))
-	  {
-	    gtk_tree_model_get (GTK_TREE_MODEL(store), &iter, 0, &value, -1);
-	    
-	    if (strcmp(value, pch)==0)
-	    {
-	      current = iter;
-	      found = TRUE;
-	      break;
-	    }
-	  }
-	}
-
-	/* lets add new keyword and assign current */
-	if (!found)
-	{
-	  gtk_tree_store_insert(store, &iter, level>0?&current:NULL,0);
-	  gtk_tree_store_set(store, &iter, 0, pch, -1);
-	  current = iter;
-	}
-
-	level++;
-	pch = strtok(NULL, "|");
-      }
-      
-    }
-    
-  }
-
-  /* add the treeview to show hirarchy tags*/
-  GtkCellRenderer *renderer;
-
-  d->view = GTK_TREE_VIEW (gtk_tree_view_new());
-
-  renderer = gtk_cell_renderer_text_new ();
-  gtk_tree_view_insert_column_with_attributes(d->view,
-                                               -1,      
-                                               "",  
-                                               renderer,
-                                               "text", 0,
-                                               NULL);
-
-  gtk_tree_view_set_headers_visible(d->view, FALSE);
-
-  gtk_tree_view_set_model(d->view, GTK_TREE_MODEL(store));
-
-  /* setup dnd source and destination within treeview */
-  /* static const GtkTargetEntry dnd_target = { "keywords-reorganize",
-					     GTK_TARGET_SAME_WIDGET, 0};
-  
-  gtk_tree_view_enable_model_drag_source(d->view, 
-					 GDK_BUTTON1_MASK, 
-					 &dnd_target, 1, GDK_ACTION_MOVE);
-  
-  gtk_tree_view_enable_model_drag_dest(d->view, &dnd_target, 1, GDK_ACTION_MOVE);
- */ 
-  /* setup drag and drop signals */
- /* g_signal_connect(G_OBJECT(d->view),"drag-data-received",
-		   G_CALLBACK(_lib_keywords_drag_data_received_callback),
-		   self);
-  
-  g_signal_connect(G_OBJECT(d->view),"drag-data-get",
-		   G_CALLBACK(_lib_keywords_drag_data_get_callback),
-		   self);
-*/
-  /* add callback when keyword is activated */
-  g_signal_connect(G_OBJECT(d->view), "row-activated", 
-		   G_CALLBACK(_lib_folders_update_collection), self); 
-
-
+  // Folder browser
+  GtkBox *box_tree; 
+  GtkTreeView *tree = GTK_TREE_VIEW(gtk_tree_view_new()); 
+  box_tree = GTK_BOX(gtk_hbox_new(FALSE,5)); 
+           
+  gtk_container_add(GTK_CONTAINER(box_tree), GTK_WIDGET(tree)); 
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box_tree), TRUE, TRUE, 0); 
+  g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d); 
+         
+  char query[1024]; 
+  sqlite3_stmt *stmt; 
+  snprintf(query, 1024, "select * from film_rolls"); 
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL); 
+                      
+  //Populate the tree  
+  _folder_tree (tree, stmt); 
+  sqlite3_finalize(stmt); 
 
   /* free store, treeview has its own storage now */
   g_object_unref(store);
   
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->view), TRUE,FALSE,0);
-
   gtk_widget_show_all(GTK_WIDGET(d->view));
   
 
@@ -257,7 +346,7 @@ static void _gtk_tree_move_iter(GtkTreeStore *store, GtkTreeIter *source, GtkTre
 
 }
 
-static void _lib_keywords_drag_data_get_callback(GtkWidget *w,
+/*static void _lib_keywords_drag_data_get_callback(GtkWidget *w,
 						 GdkDragContext *dctx,
 						 GtkSelectionData *data,
 						 guint info,
@@ -284,6 +373,7 @@ static void _lib_keywords_drag_data_get_callback(GtkWidget *w,
   }
 
 }
+*/
 
 /* builds a keyword string out of GtkTreePath */
 static void _lib_keywords_string_from_path(char *dest,size_t ds, 
@@ -396,23 +486,5 @@ static void _lib_keywords_drag_data_received_callback(GtkWidget *w,
   /* reject drop */
 reject_drop:
   gtk_drag_finish (dctx, FALSE, FALSE, time);
-}
-
-static void _lib_folders_update_collection(GtkTreeView *view, gtkTreePath *tp,
-                          GtkTreeViewColumn *tvc, gpointer user_data)
-{
-  dt_collection_set_filter_flags(darktable.collection, COLLECTION_QUERY_USE_ONLY_WHERE_EXT);
-  // COLLECTION_FILTER_ATLEAST_RATING needed also? there is not path for this code with the above tag, but should it?
-  // TODO: disable this flag in collect.c
-  
-  char folder[1024]={0};
-  _lib_folders_string_from_path(folder, 1024, gtk_tree_view_get_model(view), tp);
-  
-  gchar *wq = NULL;
-  dt_util_dtstrcat(wq, "film_id in (select id from film_rolls where folder like '%s'", folder);
-  
-  dt_collection_set_extended_where(darktable.collection, wq); //TODO query string
-  
-  dt_collection_update(darktable.collection);
 }
 
