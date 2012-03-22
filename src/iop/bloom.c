@@ -1,6 +1,6 @@
 /*
 		This file is part of darktable,
-		copyright (c) 2010 Henrik Andersson.
+		copyright (c) 2010-2012 Henrik Andersson.
 
 		darktable is free software: you can redistribute it and/or modify
 		it under the terms of the GNU General Public License as published by
@@ -18,14 +18,12 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
-#include "dtgtk/slider.h"
-#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <stdlib.h>
@@ -49,7 +47,7 @@ typedef struct dt_iop_bloom_gui_data_t
 {
   GtkVBox   *vbox;
   GtkWidget  *label1,*label2,*label3;			// size,threshold,strength
-  GtkDarktableSlider *scale1,*scale2,*scale3;       // size,threshold,strength
+  GtkWidget *scale1,*scale2,*scale3;       // size,threshold,strength
 }
 dt_iop_bloom_gui_data_t;
 
@@ -77,7 +75,7 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
-
+#if 0 // No approach for key accels in bauhaus yet
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "size"));
@@ -92,6 +90,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "threshold", GTK_WIDGET(g->scale2));
   dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->scale3));
 }
+#endif
 
 #define GAUSS(a,b,c,x) (a*pow(2.718281828,(-pow((x-b),2)/(pow(c,2)))))
 
@@ -221,32 +220,32 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 }
 
 static void
-strength_callback (GtkDarktableSlider *slider, gpointer user_data)
+strength_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
-  p->strength = dtgtk_slider_get_value(slider);
+  p->strength = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-threshold_callback (GtkDarktableSlider *slider, gpointer user_data)
+threshold_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
-  p->threshold = dtgtk_slider_get_value(slider);
+  p->threshold = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-size_callback (GtkDarktableSlider *slider, gpointer user_data)
+size_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
-  p->size= dtgtk_slider_get_value(slider);
+  p->size = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -292,9 +291,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_bloom_gui_data_t *g = (dt_iop_bloom_gui_data_t *)self->gui_data;
   dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale1, p->size);
-  dtgtk_slider_set_value(g->scale2, p->threshold);
-  dtgtk_slider_set_value(g->scale3, p->strength);
+  dt_bauhaus_slider_set(g->scale1, p->size);
+  dt_bauhaus_slider_set(g->scale2, p->threshold);
+  dt_bauhaus_slider_set(g->scale3, p->strength);
 }
 
 void init(dt_iop_module_t *module)
@@ -327,29 +326,29 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_bloom_gui_data_t *g = (dt_iop_bloom_gui_data_t *)self->gui_data;
   dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 100.0, 1.0, p->size, 0));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 100.0, 1.0, p->threshold, 0));
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 100.0, 1.0, p->strength, 0));
-  dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_format_type(g->scale3,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_label(g->scale1,_("size"));
-  dtgtk_slider_set_unit(g->scale1,"%");
-  dtgtk_slider_set_label(g->scale2,_("threshold"));
-  dtgtk_slider_set_unit(g->scale2,"%");
-  dtgtk_slider_set_label(g->scale3,_("strength"));
-  dtgtk_slider_set_unit(g->scale3,"%");
-
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  /* size */
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->size, 0);
+  dt_bauhaus_slider_set_format(g->scale1,"%.0f%%");
+  dt_bauhaus_widget_set_label(g->scale1,_("size"));
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the size of bloom"), (char *)NULL);
+
+  /* threshold */
+  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->threshold, 0);
+  dt_bauhaus_slider_set_format(g->scale2,"%.0f%%");
+  dt_bauhaus_widget_set_label(g->scale2,_("threshold"));
   g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the threshold of light"), (char *)NULL);
+
+  /* strength */
+  g->scale3 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->strength, 0);
+  dt_bauhaus_slider_set_format(g->scale3,"%.0f%%");
+  dt_bauhaus_widget_set_label(g->scale3,_("strength"));
   g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("the strength of bloom"), (char *)NULL);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (size_callback), self);

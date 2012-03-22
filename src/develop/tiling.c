@@ -157,18 +157,18 @@ _default_process_tiling_ptp (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   }
 
   /* calculate optimal size of tiles */
-  float available = dt_conf_get_int("host_memory_limit")*1024*1024;
-  assert(available >= 500*1024*1024);
+  float available = (float)dt_conf_get_int("host_memory_limit")*1024.0f*1024.0f;
+  assert(available >= 500.0f*1024.0f*1024.0f);
   /* correct for size of ivoid and ovoid which are needed on top of tiling */
-  available = _max(available - (roi_out->width*roi_out->height*out_bpp) - (roi_in->width*roi_in->height*in_bpp) - tiling.overhead, 0);
+  available = fmax(available - (roi_out->width*roi_out->height*out_bpp) - (roi_in->width*roi_in->height*in_bpp) - tiling.overhead, 0);
 
   /* we ignore the above value if singlebuffer_limit (is defined and) is higher than available/tiling.factor.
      this will mainly allow tiling for modules with high and "unpredictable" memory demand which is
      reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
-  float singlebuffer = dt_conf_get_int("singlebuffer_limit")*1024*1024;
-  singlebuffer = _max(singlebuffer, 1024*1024);
+  float singlebuffer = (float)dt_conf_get_int("singlebuffer_limit")*1024.0f*1024.0f;
+  singlebuffer = fmax(singlebuffer, 1024.0f*1024.0f);
   assert(tiling.factor > 1.0f);
-  singlebuffer = _max(available / tiling.factor, singlebuffer);
+  singlebuffer = fmax(available / tiling.factor, singlebuffer);
 
   int width = roi_in->width;
   int height = roi_in->height;
@@ -384,18 +384,18 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   }
 
   /* calculate optimal size of tiles */
-  float available = dt_conf_get_int("host_memory_limit")*1024*1024;
-  assert(available >= 500*1024*1024);
+  float available = (float)dt_conf_get_int("host_memory_limit")*1024.0f*1024.0f;
+  assert(available >= 500.0f*1024.0f*1024.0f);
   /* correct for size of ivoid and ovoid which are needed on top of tiling */
-  available = _max(available - (roi_out->width*roi_out->height*out_bpp) - (roi_in->width*roi_in->height*in_bpp) - tiling.overhead, 0);
+  available = fmax(available - (roi_out->width*roi_out->height*out_bpp) - (roi_in->width*roi_in->height*in_bpp) - tiling.overhead, 0);
 
   /* we ignore the above value if singlebuffer_limit (is defined and) is higher than available/tiling.factor.
      this will mainly allow tiling for modules with high and "unpredictable" memory demand which is
      reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
-  float singlebuffer = dt_conf_get_int("singlebuffer_limit")*1024*1024;
-  singlebuffer = _max(singlebuffer, 1024*1024);
+  float singlebuffer = (float)dt_conf_get_int("singlebuffer_limit")*1024.0f*1024.0f;
+  singlebuffer = fmax(singlebuffer, 1024.0f*1024.0f);
   assert(tiling.factor > 1.0f);
-  singlebuffer = _max(available / tiling.factor, singlebuffer);
+  singlebuffer = fmax(available / tiling.factor, singlebuffer);
 
   int width = _max(roi_in->width, roi_out->width);
   int height = _max(roi_in->height, roi_out->height);
@@ -671,7 +671,7 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
 
 
   /* calculate optimal size of tiles */
-  float headroom = (float)dt_conf_get_int("opencl_memory_headroom")*1024*1024;
+  float headroom = (float)dt_conf_get_int("opencl_memory_headroom")*1024.0f*1024.0f;
   headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
   const float available = darktable.opencl->dev[devid].max_global_mem - headroom;
   const float singlebuffer = fmin(fmax((available - tiling.overhead) / tiling.factor, 0.0f), darktable.opencl->dev[devid].max_mem_alloc);
