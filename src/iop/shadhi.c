@@ -797,10 +797,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
-  g->scale1 = dt_bauhaus_slider_new_with_range(self,0, 200.0, 0.1, p->shadows, 2);
-  g->scale2 = dt_bauhaus_slider_new_with_range(self,0, 200.0, 0.1, p->highlights, 2);
-  g->scale3 = dt_bauhaus_slider_new_with_range(self,0.1, 200.0, 0.1, p->radius, 2);
-  g->scale4 = dt_bauhaus_slider_new_with_range(self,0, 100.0, 0.1, p->compress, 2);
+  g->scale1 = dt_bauhaus_slider_new_with_range(self,0, 200.0, 2., p->shadows, 2);
+  g->scale2 = dt_bauhaus_slider_new_with_range(self,0, 200.0, 2., p->highlights, 2);
+  g->scale3 = dt_bauhaus_slider_new_with_range(self,0.1, 200.0, 2., p->radius, 2);
+  g->scale4 = dt_bauhaus_slider_new_with_range(self,0, 100.0, 2., p->compress, 2);
   dt_bauhaus_widget_set_label(g->scale1,_("shadows"));
   dt_bauhaus_widget_set_label(g->scale2,_("highlights"));
   dt_bauhaus_widget_set_label(g->scale3,_("radius"));

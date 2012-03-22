@@ -623,7 +623,7 @@ mouse_moved (GtkWidget *w, GdkEventMotion *event, gpointer user_data)
   dt_control_mouse_moved(event->x, event->y, event->state & 0xf);
   gint x, y;
   gdk_window_get_pointer(event->window, &x, &y, NULL);
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean
