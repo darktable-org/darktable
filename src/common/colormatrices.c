@@ -240,6 +240,11 @@ static dt_profiled_colormatrix_t dt_vendor_colormatrices[] =
 {
   // Pascal de Bruijn, DIY ColorChecker, daylight, well lit
   { "Canon EOS 50D",                { 665588, 259155, -37750}, {  61172,  790497, -117310}, {237442,  -49667,  979965}, {946487, 1000000, 1082657}},
+
+  // Pascal de Bruijn, DIY ColorChecker, daylight, well lit
+  { "Canon EOS 400D DIGITAL",       { 582764, 267334,   -687}, { 190277,  756851,  -13443}, {191177,  -24185,  839035}, {970703, 1000000, 1091827}},
+  { "Canon EOS DIGITAL REBEL XTi",  { 582764, 267334,   -687}, { 190277,  756851,  -13443}, {191177,  -24185,  839035}, {970703, 1000000, 1091827}},
+  { "Canon EOS Kiss Digital X",     { 582764, 267334,   -687}, { 190277,  756851,  -13443}, {191177,  -24185,  839035}, {970703, 1000000, 1091827}},
 };
 
 static const int dt_vendor_colormatrix_cnt = sizeof(dt_vendor_colormatrices)/sizeof(dt_profiled_colormatrix_t);
