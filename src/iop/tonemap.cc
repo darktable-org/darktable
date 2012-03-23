@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 Thierry Leconte.
+    copyright (c) 2012 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,11 +38,10 @@ extern "C"
 #ifdef HAVE_GEGL
 #include <gegl.h>
 #endif
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
-#include "dtgtk/slider.h"
-#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
@@ -62,7 +62,7 @@ extern "C"
 
   typedef struct dt_iop_tonemapping_gui_data_t
   {
-    GtkDarktableSlider *contrast, *Fsize;
+    GtkWidget *contrast, *Fsize;
   }
   dt_iop_tonemapping_gui_data_t;
 
@@ -90,6 +90,7 @@ extern "C"
     return IOP_FLAGS_SUPPORTS_BLENDING;
   }
 
+#if 0 // BAUHAUS doesnt support keyaccels yet.
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE,
@@ -107,6 +108,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "spatial extent",
                               GTK_WIDGET(g->Fsize));
 }
+#endif
 
   void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
   {
@@ -213,22 +215,22 @@ void connect_key_accels(dt_iop_module_t *self)
 // GUI
 //
   static void
-  contrast_callback (GtkDarktableSlider *slider, gpointer user_data)
+  contrast_callback (GtkWidget *slider, gpointer user_data)
   {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     if(self->dt->gui->reset) return;
     dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)self->params;
-    p->contrast = dtgtk_slider_get_value(slider);
+    p->contrast = dt_bauhaus_slider_get(slider);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
 
   static void
-  Fsize_callback (GtkDarktableSlider *slider, gpointer user_data)
+  Fsize_callback (GtkWidget *slider, gpointer user_data)
   {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     if(self->dt->gui->reset) return;
     dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)self->params;
-    p->Fsize = dtgtk_slider_get_value(slider);
+    p->Fsize = dt_bauhaus_slider_get(slider);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
 
@@ -256,8 +258,8 @@ void connect_key_accels(dt_iop_module_t *self)
     dt_iop_module_t *module = (dt_iop_module_t *)self;
     dt_iop_tonemapping_gui_data_t *g = (dt_iop_tonemapping_gui_data_t *)self->gui_data;
     dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)module->params;
-    dtgtk_slider_set_value(g->contrast, p->contrast);
-    dtgtk_slider_set_value(g->Fsize, p->Fsize*100.0);
+    dt_bauhaus_slider_set(g->contrast, p->contrast);
+    dt_bauhaus_slider_set(g->Fsize, p->Fsize*100.0);
   }
 
   void reload_defaults(dt_iop_module_t *module)
@@ -300,20 +302,21 @@ void connect_key_accels(dt_iop_module_t *self)
     dt_iop_tonemapping_gui_data_t *g = (dt_iop_tonemapping_gui_data_t *)self->gui_data;
     dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)self->params;
 
-    self->widget = gtk_hbox_new(FALSE, 0);
-    GtkWidget *vbox = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
-    gtk_box_pack_start(GTK_BOX(self->widget), vbox, TRUE, TRUE, 5);
+    self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
-    g->contrast = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 5.0000, 0.1, p->contrast, 3));
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->contrast), TRUE, TRUE, 0);
-    dtgtk_slider_set_label(g->contrast,_("contrast compression"));
-    g_signal_connect (G_OBJECT (g->contrast), "value-changed",G_CALLBACK (contrast_callback), self);
+    /* contrast */
+    g->contrast = dt_bauhaus_slider_new_with_range(self,1.0, 5.0000, 0.1, p->contrast, 3);
 
-    g->Fsize = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0,100.0, 1.0, p->Fsize*100.0, 1));
-    dtgtk_slider_set_format_type(g->Fsize, DARKTABLE_SLIDER_FORMAT_PERCENT);
-    dtgtk_slider_set_label(g->Fsize,_("spatial extent"));
-    dtgtk_slider_set_unit(g->Fsize,(gchar *)"%");
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->Fsize), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->contrast), TRUE, TRUE, 0);
+    dt_bauhaus_widget_set_label(g->contrast,_("contrast compression"));
+    g_signal_connect (G_OBJECT (g->contrast), "value-changed",
+		      G_CALLBACK (contrast_callback), self);
+
+    /* spatial extent */
+    g->Fsize = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->Fsize*100.0, 1);
+    dt_bauhaus_slider_set_format(g->Fsize,"%.0f%%");
+    dt_bauhaus_widget_set_label(g->Fsize,_("spatial extent"));
+    gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->Fsize), TRUE, TRUE, 0);
     g_signal_connect (G_OBJECT (g->Fsize), "value-changed",G_CALLBACK (Fsize_callback), self);
   }
 
