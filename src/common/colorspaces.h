@@ -51,6 +51,9 @@ cmsHPROFILE dt_colorspaces_create_xyzimatrix_profile(float cam_xyz[3][3]);
 /** create a ICC virtual profile from the shipped presets in darktable. */
 cmsHPROFILE dt_colorspaces_create_darktable_profile(const char *makermodel);
 
+/** create a ICC virtual profile from the shipped vendor matrices in darktable. */
+cmsHPROFILE dt_colorspaces_create_vendor_profile(const char *makermodel);
+
 /** just get the associated transformation matrix, for manual application. */
 int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix);
 

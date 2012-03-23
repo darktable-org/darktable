@@ -427,6 +427,60 @@ dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)
 }
 
 cmsHPROFILE
+dt_colorspaces_create_vendor_profile(const char *makermodel)
+{
+  dt_profiled_colormatrix_t *preset = NULL;
+  for(int k=0; k<dt_vendor_colormatrix_cnt; k++)
+  {
+    if(!strcmp(makermodel, dt_vendor_colormatrices[k].makermodel))
+    {
+      preset = dt_vendor_colormatrices + k;
+      break;
+    }
+  }
+  if(!preset) return NULL;
+
+  const float wxyz = preset->white[0]+preset->white[1]+preset->white[2];
+  const float rxyz = preset->rXYZ[0] +preset->rXYZ[1] +preset->rXYZ[2];
+  const float gxyz = preset->gXYZ[0] +preset->gXYZ[1] +preset->gXYZ[2];
+  const float bxyz = preset->bXYZ[0] +preset->bXYZ[1] +preset->bXYZ[2];
+  cmsCIExyY       WP = {preset->white[0]/wxyz, preset->white[1]/wxyz, 1.0};
+  cmsCIExyYTRIPLE XYZPrimaries   =
+  {
+    {preset->rXYZ[0]/rxyz, preset->rXYZ[1]/rxyz, 1.0},
+    {preset->gXYZ[0]/gxyz, preset->gXYZ[1]/gxyz, 1.0},
+    {preset->bXYZ[0]/bxyz, preset->bXYZ[1]/bxyz, 1.0}
+  };
+  cmsToneCurve *Gamma[3];
+  cmsHPROFILE  hp;
+
+  Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
+
+  hp = cmsCreateRGBProfile(&WP, &XYZPrimaries, Gamma);
+  cmsFreeToneCurve(Gamma[0]);
+  if (hp == NULL) return NULL;
+
+  char name[512];
+  snprintf(name, 512, "darktable vendor %s", makermodel);
+  cmsSetProfileVersion(hp, 2.1);
+  cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
+  cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu1, "en", "US", name);
+  cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu2, "en", "US", name);
+  cmsWriteTag(hp, cmsSigDeviceMfgDescTag,   mlu0);
+  cmsWriteTag(hp, cmsSigDeviceModelDescTag, mlu1);
+  // this will only be displayed when the embedded profile is read by for example GIMP
+  cmsWriteTag(hp, cmsSigProfileDescriptionTag, mlu2);
+  cmsMLUfree(mlu0);
+  cmsMLUfree(mlu1);
+  cmsMLUfree(mlu2);
+
+  return hp;
+}
+
+cmsHPROFILE
 dt_colorspaces_create_darktable_profile(const char *makermodel)
 {
   dt_profiled_colormatrix_t *preset = NULL;
