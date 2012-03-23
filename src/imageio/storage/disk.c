@@ -198,8 +198,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     }
 
     c = filename + strlen(filename);
-    for(; c>filename && *c != '.' && *c != '/' ; c--);
-    if(c <= filename || *c=='/') c = filename + strlen(filename);
+    // remove everything after the last '.'. this destroys any file name with dots in it since $(FILE_NAME) already comes without the original extension.
+//     for(; c>filename && *c != '.' && *c != '/' ; c--);
+//     if(c <= filename || *c=='/') c = filename + strlen(filename);
 
     sprintf(c,".%s",ext);
 
