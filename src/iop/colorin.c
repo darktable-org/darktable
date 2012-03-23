@@ -367,6 +367,13 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->input = dt_colorspaces_create_darktable_profile(makermodel);
     if(!d->input) sprintf(p->iccprofile, "cmatrix");
   }
+  if(!strcmp(p->iccprofile, "vendor"))
+  {
+    char makermodel[1024];
+    dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
+    d->input = dt_colorspaces_create_vendor_profile(makermodel);
+    if(!d->input) sprintf(p->iccprofile, "cmatrix");
+  }
   if(!strcmp(p->iccprofile, "cmatrix"))
   {
     // color matrix
@@ -572,6 +579,20 @@ void gui_init(struct dt_iop_module_t *self)
     }
   }
 
+  // darktable vendor matrix, if applicable
+  for(int k=0; k<dt_vendor_colormatrix_cnt; k++)
+  {
+    if(!strcmp(makermodel, dt_vendor_colormatrices[k].makermodel))
+    {
+      prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+      g_strlcpy(prof->filename, "vendor", sizeof(prof->filename));
+      g_strlcpy(prof->name, "vendor", sizeof(prof->name));
+      g->profiles = g_list_append(g->profiles, prof);
+      prof->pos = ++pos;
+      break;
+    }
+  }
+
   // sRGB for ldr image input
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "sRGB", sizeof(prof->filename));
@@ -662,6 +683,8 @@ void gui_init(struct dt_iop_module_t *self)
       dt_bauhaus_combobox_add(g->cbox2, _("standard color matrix"));
     else if(!strcmp(prof->name, "darktable"))
       dt_bauhaus_combobox_add(g->cbox2, _("enhanced color matrix"));
+    else if(!strcmp(prof->name, "vendor"))
+      dt_bauhaus_combobox_add(g->cbox2, _("vendor color matrix"));
     else if(!strcmp(prof->name, "sRGB"))
       dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. jpg)"));
     else if(!strcmp(prof->name, "adobergb"))
