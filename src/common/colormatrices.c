@@ -229,6 +229,8 @@ static const int dt_profiled_colormatrix_cnt = sizeof(dt_profiled_colormatrices)
 
 static dt_profiled_colormatrix_t dt_vendor_colormatrices[] =
 {
+  // Pascal de Bruijn, DIY ColorChecker, daylight, well lit
+  { "Canon EOS 50D",                { 665588, 259155, -37750}, {  61172,  790497, -117310}, {237442,  -49667,  979965}, {946487, 1000000, 1082657}},
 };
 
 static const int dt_vendor_colormatrix_cnt = sizeof(dt_vendor_colormatrices)/sizeof(dt_profiled_colormatrix_t);
