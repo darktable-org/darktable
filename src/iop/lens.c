@@ -483,6 +483,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   memcpy(module->params, &tmp, sizeof(dt_iop_lensfun_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_lensfun_params_t));
+  module->default_enabled = 0;
 }
 
 void init(dt_iop_module_t *module)

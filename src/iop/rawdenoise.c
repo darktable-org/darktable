@@ -283,6 +283,7 @@ void reload_defaults(dt_iop_module_t *module)
   // can't be switched on for non-raw images:
   if(dt_image_is_raw(&module->dev->image_storage)) module->hide_enable_button = 0;
   else module->hide_enable_button = 1;
+  module->default_enabled = 0;
 }
 
 void init(dt_iop_module_t *module)

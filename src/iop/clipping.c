@@ -600,6 +600,7 @@ void reload_defaults(dt_iop_module_t *self)
   };
   memcpy(self->params, &tmp, sizeof(dt_iop_clipping_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_clipping_params_t));
+  self->default_enabled = 0;
 }
 
 static void

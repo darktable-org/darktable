@@ -206,6 +206,7 @@ void init_presets (dt_iop_module_so_t *self)
 void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_flip_params_t tmp = (dt_iop_flip_params_t) { 0 };
+  self->default_enabled = 0;
   if(self->dev->image_storage.legacy_flip.user_flip != 0 &&
      self->dev->image_storage.legacy_flip.user_flip != 0xff)
   {
