@@ -463,6 +463,7 @@ void reload_defaults(dt_iop_module_t *self)
     tmp.aspect = 1.0f/tmp.aspect;
   memcpy(self->params, &tmp, sizeof(dt_iop_borders_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_borders_params_t));
+  self->default_enabled = 0;
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

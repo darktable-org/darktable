@@ -253,6 +253,7 @@ void reload_defaults(dt_iop_module_t *self)
   // can't be switched on for raw and hdr images:
   if(dt_image_is_raw(&self->dev->image_storage)) self->hide_enable_button = 1;
   else self->hide_enable_button = 0;
+  self->default_enabled = 0;
 }
 
 void init(dt_iop_module_t *module)

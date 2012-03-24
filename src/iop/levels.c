@@ -159,6 +159,7 @@ void gui_update(struct dt_iop_module_t *self)
 void reload_defaults(dt_iop_module_t *self)
 {
   memcpy(self->params, self->default_params, sizeof(dt_iop_levels_params_t));
+  self->default_enabled = 0;
 }
 
 void init(dt_iop_module_t *module)
