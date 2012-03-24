@@ -90,25 +90,23 @@ extern "C"
     return IOP_FLAGS_SUPPORTS_BLENDING;
   }
 
-#if 0 // BAUHAUS doesnt support keyaccels yet.
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE,
-                               NC_("accel", "contrast compression"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "spatial extent"));
-}
+  void init_key_accels(dt_iop_module_so_t *self)
+  {
+    dt_accel_register_slider_iop(self, FALSE,
+        NC_("accel", "contrast compression"));
+    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "spatial extent"));
+  }
 
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_tonemapping_gui_data_t *g =
+  void connect_key_accels(dt_iop_module_t *self)
+  {
+    dt_iop_tonemapping_gui_data_t *g =
       (dt_iop_tonemapping_gui_data_t*)self->gui_data;
 
-  dt_accel_connect_slider_iop(self, "contrast compression",
-                              GTK_WIDGET(g->contrast));
-  dt_accel_connect_slider_iop(self, "spatial extent",
-                              GTK_WIDGET(g->Fsize));
-}
-#endif
+    dt_accel_connect_slider_iop(self, "contrast compression",
+        GTK_WIDGET(g->contrast));
+    dt_accel_connect_slider_iop(self, "spatial extent",
+        GTK_WIDGET(g->Fsize));
+  }
 
   void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
   {

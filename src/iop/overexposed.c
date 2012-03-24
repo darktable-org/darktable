@@ -61,7 +61,6 @@ int groups()
   return IOP_GROUP_COLOR;
 }
 
-#if 0 // BAUHAUS dont support keyaccels yet.
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lower threshold"));
@@ -76,7 +75,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "lower threshold", GTK_WIDGET(g->lower));
   dt_accel_connect_slider_iop(self, "upper threshold", GTK_WIDGET(g->upper));
 }
-#endif
 
 // FIXME: I'm not sure if this is the best test (all >= / <= threshold), but it seems to work.
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)

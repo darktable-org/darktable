@@ -77,7 +77,6 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
   return sizeof(float);
 }
 
-#if 0
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "noise threshold"));
@@ -91,7 +90,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "noise threshold",
                               GTK_WIDGET(g->threshold));
 }
-#endif 
+
 #if 0
 static int
 FC(const int row, const int col, const unsigned int filters)

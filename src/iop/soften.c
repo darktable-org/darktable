@@ -83,7 +83,6 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
-#if 0 // BAUHAUS dont support keyaccels yet
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "size"));
@@ -101,7 +100,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "brightness", GTK_WIDGET(g->scale3));
   dt_accel_connect_slider_iop(self, "mix", GTK_WIDGET(g->scale4));
 }
-#endif
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {

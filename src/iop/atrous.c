@@ -127,6 +127,18 @@ flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mix"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_accel_connect_slider_iop(self ,"mix",
+      ((dt_iop_atrous_gui_data_t*)self->gui_data)->mix);
+}
+
+
 #define ALIGNED(a) __attribute__((aligned(a)))
 #define VEC4(a) {(a), (a), (a), (a)}
 

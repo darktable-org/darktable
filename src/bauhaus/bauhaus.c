@@ -24,7 +24,6 @@
 // new type dt_bauhaus_widget_t, gtk functions start with dt_bh (so they don't collide with ours), we inherit from drawing area
 G_DEFINE_TYPE (DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA);
 
-
 // fwd declare
 static void dt_bauhaus_hide_popup();
 static void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w);

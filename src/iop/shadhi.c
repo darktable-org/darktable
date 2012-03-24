@@ -106,7 +106,6 @@ groups ()
   return IOP_GROUP_TONE;
 }
 
-#if 0 // TODO: port slider key accels to bauhaus slider
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows"));
@@ -124,7 +123,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "radius", GTK_WIDGET(g->scale3));
   dt_accel_connect_slider_iop(self, "compress", GTK_WIDGET(g->scale4));
 }
-#endif
 
 
 static 

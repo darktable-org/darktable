@@ -147,7 +147,6 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
-#if 0 // BAUSHAUS doesnt support keyaccels yet
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "density"));
@@ -166,7 +165,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->scale3));
   dt_accel_connect_slider_iop(self, "split", GTK_WIDGET(g->scale4));
 }
-#endif
 
 static inline float
 f (const float t, const float c, const float x)

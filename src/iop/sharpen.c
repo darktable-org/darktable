@@ -87,25 +87,21 @@ flags ()
 }
 
 
-#if 0
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  // TODO: port to dt_bauhaus sliders!
-  // dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
-  // dt_accel_register_slider_iop(self, FALSE, NC_("accel", "amount"));
-  // dt_accel_register_slider_iop(self, FALSE, NC_("accel", "threshold"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "amount"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "threshold"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_sharpen_gui_data_t *g = (dt_iop_sharpen_gui_data_t*)self->gui_data;
 
-  // TODO: port to dt_bauhaus sliders!
-  // dt_accel_connect_slider_iop(self, "radius", g->scale1);
-  // dt_accel_connect_slider_iop(self, "amount", g->scale2);
-  // dt_accel_connect_slider_iop(self, "threshold", g->scale3);
+  dt_accel_connect_slider_iop(self, "radius", g->scale1);
+  dt_accel_connect_slider_iop(self, "amount", g->scale2);
+  dt_accel_connect_slider_iop(self, "threshold", g->scale3);
 }
-#endif
 
 #ifdef HAVE_OPENCL
 int

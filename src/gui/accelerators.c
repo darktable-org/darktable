@@ -418,6 +418,10 @@ static gboolean slider_reset_callback(GtkAccelGroup *accel_group,
 void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
                                  GtkWidget *slider)
 {
+  // just make this callback safe for bauhaus sliders for now:
+  // TODO: implement it for these widgets, too!
+  // (we check for their inheritance from gtk drawing area, that's simpler)
+  if(GTK_IS_DRAWING_AREA(slider)) return;
   gchar increase_path[256];
   gchar decrease_path[256];
   gchar reset_path[256];

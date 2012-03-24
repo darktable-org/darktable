@@ -97,7 +97,6 @@ groups ()
   return IOP_GROUP_TONE;
 }
 
-#if 0 // BAUHAUS doesnt support keyaccels yet
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "exposure"));
@@ -112,7 +111,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "width", GTK_WIDGET(g->scale2));
 }
 
-#endif
 
 #define GAUSS(a,b,c,x) (a*pow(2.718281828,(-pow((x-b),2)/(pow(c,2)))))
 

@@ -103,6 +103,21 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "radius", GTK_WIDGET(g->scale1));
+  dt_accel_connect_slider_iop(self, "contrast", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->scale3));
+}
 
 static 
 void compute_gauss_params(const float sigma, dt_iop_gaussian_order_t order, float *a0, float *a1, float *a2, float *a3, 
