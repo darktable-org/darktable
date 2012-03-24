@@ -77,7 +77,7 @@ uint32_t container()
 
 int position()
 {
-  return 398;
+  return 410;
 }
 
 void init_key_accels(dt_lib_module_t *self)
@@ -108,7 +108,7 @@ _folder_tree (GtkTreeView *tree, sqlite3_stmt *stmt)
   gv_list = g_volume_monitor_get_volumes(gv_monitor);
 
   if(gv_list && gd_list)
-   g_volume_get_name(g_list_nth_data(gv_list,0));
+   fprintf(stderr, g_volume_get_name(g_list_nth_data(gv_list,0)));
    g_drive_get_name(g_list_nth_data(gd_list,0));
 
   // initialize the model with the paths
@@ -206,7 +206,7 @@ static void _lib_folders_string_from_path(char *dest,size_t ds,
 
     /* add component to begin of list */
     gtk_tree_model_get_value(model, &iter, 0, &value);
-    if ( !(gtk_tree_path_get_depth(wp) == 1))
+    if ( !(gtk_tree_path_get_depth(wp) == 0))
     {
       components = g_list_insert(components, 
 				 g_strdup(g_value_get_string(&value)), 
@@ -215,21 +215,25 @@ static void _lib_folders_string_from_path(char *dest,size_t ds,
     g_value_unset(&value);
 
     /* get parent of current path break out if we are at root */
-    if (!gtk_tree_path_up(wp) || gtk_tree_path_get_depth(wp) == 0)
+//    if (!gtk_tree_path_up(wp) || gtk_tree_path_get_depth(wp) == 0)
+    if (!gtk_tree_path_up(wp))
       break;
   }
 
   /* build the tag string from components */
   int dcs = 0;
 
-  if(g_list_length(components) == 0) dcs += g_snprintf(dest+dcs, ds-dcs," ");
+  if(g_list_length(components) == 0) 
+    dcs += g_snprintf(dest+dcs, ds-dcs," ");
+  else
+    dcs += g_snprintf(dest+dcs, ds-dcs,"/");
 		      
   for(int i=0;i<g_list_length(components);i++) 
   {
     dcs += g_snprintf(dest+dcs, ds-dcs,
 		      "%s%s",
 		      (gchar *)g_list_nth_data(components, i),
-		      (i < g_list_length(components)-1) ? "/" : "");
+		      (i < g_list_length(components)-1) ? "/" : "%");
   }
   
   /* free data */
@@ -240,19 +244,51 @@ static void _lib_folders_string_from_path(char *dest,size_t ds,
 
 static void _lib_folders_update_collection(GtkTreeView *view, GtkTreePath *tp)
 {
-  dt_collection_set_filter_flags(darktable.collection, COLLECTION_QUERY_USE_ONLY_WHERE_EXT);
   // COLLECTION_FILTER_ATLEAST_RATING needed also? there is not path for this code with the above tag, but should it?
   // TODO: disable this flag in collect.c
   
   char folder[1024]={0};
   _lib_folders_string_from_path(folder, 1024, gtk_tree_view_get_model(view), tp);
   
-  gchar *wq = NULL;
-  dt_util_dstrcat(wq, "film_id in (select id from film_rolls where folder like '%s'", folder);
+  gchar *complete_query = NULL;
+
+  complete_query = dt_util_dstrcat(complete_query, "film_id in (select id from film_rolls where folder like '%s')", folder);
   
-  dt_collection_set_extended_where(darktable.collection, wq); //TODO query string
-  
+  dt_collection_set_extended_where(darktable.collection, complete_query);
+
+  dt_collection_set_query_flags(darktable.collection, (dt_collection_get_query_flags (darktable.collection) | COLLECTION_QUERY_USE_WHERE_EXT));
+
+//  dt_collection_set_query_flags(darktable.collection, (dt_collection_get_query_flags (darktable.collection) & ~COLLECTION_QUERY_USE_LIMIT));
+
+  dt_collection_set_filter_flags (darktable.collection, (dt_collection_get_filter_flags (darktable.collection) & ~COLLECTION_FILTER_FILM_ID));
+
   dt_collection_update(darktable.collection);
+
+  g_free(complete_query);
+
+
+  // remove from selected images where not in this query.
+  sqlite3_stmt *stmt = NULL;
+  const gchar *cquery = dt_collection_get_query(darktable.collection);
+  complete_query = NULL;
+  if(cquery && cquery[0] != '\0')
+  {
+    complete_query = dt_util_dstrcat(complete_query, "delete from selected_images where imgid not in (%s)", cquery);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), complete_query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    /* free allocated strings */
+    g_free(complete_query);
+  }
+
+  dt_control_queue_redraw_center();
+   
+  /* raise signal of collection change, only if this is an orginal */
+  if (!darktable.collection->clone)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 }
 
 static void
@@ -319,172 +355,4 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-
-static void _gtk_tree_move_iter(GtkTreeStore *store, GtkTreeIter *source, GtkTreeIter *dest)
-{
-  /* create copy of iter and insert into destinatation */
-  GtkTreeIter ni;
-  GValue value;
-  memset(&value,0,sizeof(GValue));
-
-  gtk_tree_model_get_value(GTK_TREE_MODEL(store), source, 0, &value);
-  gtk_tree_store_insert(store, &ni, dest,0);
-  gtk_tree_store_set(store, &ni, 0, g_strdup(g_value_get_string(&value)), -1);   
-
-  /* for each children recurse into */
-  int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store), source);
-  for (int k=0;k<children;k++)
-  {
-    GtkTreeIter child;
-    if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &child, source, k))
-      _gtk_tree_move_iter(store, &child, &ni);
-  
-  }
-
-  /* iter copied lets remove source */
-  gtk_tree_store_remove(store, source);
-
-}
-
-/*static void _lib_keywords_drag_data_get_callback(GtkWidget *w,
-						 GdkDragContext *dctx,
-						 GtkSelectionData *data,
-						 guint info,
-						 guint time,
-						 gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_keywords_t *d = (dt_lib_keywords_t*)self->data;
-  
-  /* get iter of item to drag to ssetup drag data */
-  GtkTreeIter iter;
-  GtkTreeModel *model = NULL;
-  GtkTreeSelection *s = gtk_tree_view_get_selection(d->view);
-  
-  if (gtk_tree_selection_get_selected(s,&model,&iter))
-  {
-
-    /* get tree path as string out of iter into selection data */
-    GtkTreePath *path = NULL;
-    path = gtk_tree_model_get_path(model,&iter);
-    gchar *sp = gtk_tree_path_to_string(path);
-   
-    gtk_selection_data_set(data,data->target, 8, (const guchar *)sp, strlen(sp));
-  }
-
-}
-*/
-
-/* builds a keyword string out of GtkTreePath */
-static void _lib_keywords_string_from_path(char *dest,size_t ds, 
-					   GtkTreeModel *model, 
-					   GtkTreePath *path)
-{
-  g_assert(model!=NULL);
-  g_assert(path!=NULL);
-
-  GList *components = NULL;
-  GtkTreePath *wp = gtk_tree_path_copy(path);
-  GtkTreeIter iter;
-
-  /* get components of path */
-  while (1)
-  {
-    GValue value;
-    memset(&value,0,sizeof(GValue));
-
-    /* get iter from path, break out if fail */
-    if (!gtk_tree_model_get_iter(model, &iter, wp))
-      break;
-
-    /* add component to begin of list */
-    gtk_tree_model_get_value(model, &iter, 0, &value);
-    if ( !(gtk_tree_path_get_depth(wp) == 1 &&
-	   strcmp(g_value_get_string(&value), _(UNCATEGORIZED_TAG)) == 0))
-    {
-      components = g_list_insert(components, 
-				 g_strdup(g_value_get_string(&value)), 
-				 0);
-    }
-    g_value_unset(&value);
-
-    /* get parent of current path break out if we are at root */
-    if (!gtk_tree_path_up(wp) || gtk_tree_path_get_depth(wp) == 0)
-      break;
-  }
-
-  /* build the tag string from components */
-  int dcs = 0;
-
-  if(g_list_length(components) == 0) dcs += g_snprintf(dest+dcs, ds-dcs," ");
-		      
-  for(int i=0;i<g_list_length(components);i++) 
-  {
-    dcs += g_snprintf(dest+dcs, ds-dcs,
-		      "%s%s",
-		      (gchar *)g_list_nth_data(components, i),
-		      (i < g_list_length(components)-1) ? "|" : "");
-  }
-  
-  /* free data */
-  gtk_tree_path_free(wp);
-  
-
-}
-
-static void _lib_keywords_drag_data_received_callback(GtkWidget *w,
-					  GdkDragContext *dctx,
-					  guint x,
-					  guint y,
-					  GtkSelectionData *data,
-					  guint info,
-					  guint time,
-					  gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_keywords_t *d = (dt_lib_keywords_t*)self->data;
-
-  GtkTreePath *dpath;
-  GtkTreeViewDropPosition dpos;
-  GtkTreeModel *model = gtk_tree_view_get_model(d->view);
-
-  if (data->format == 8)
-  {
-    if (gtk_tree_view_get_dest_row_at_pos(d->view, x, y, &dpath, &dpos))
-    {
-      /* fetch tree iter of source and dest dnd operation */
-      GtkTreePath *spath = gtk_tree_path_new_from_string((char *)data->data);      
-     
-      char dtag[1024];
-      char stag[1024];
-      
-      _lib_keywords_string_from_path(dtag, 1024, model, dpath);
-      _lib_keywords_string_from_path(stag, 1024, model, spath);
-
-      /* reject drop onto ourself */
-      if (strcmp(dtag,stag) == 0)
-	goto reject_drop;
-
-       /* updated tags in database */
-      dt_tag_reorganize(stag,dtag);
-
-      /* lets move the source iter into dest iter */
-      GtkTreeIter sit,dit;
-      gtk_tree_model_get_iter(model, &sit, spath);
-      gtk_tree_model_get_iter(model, &dit, dpath);
-     
-      _gtk_tree_move_iter(GTK_TREE_STORE(model), &sit, &dit);
-      
-      /* accept drop */
-      gtk_drag_finish(dctx, TRUE, FALSE, time);
-
-      
-    }
-
-  }   
- 
-  /* reject drop */
-reject_drop:
-  gtk_drag_finish (dctx, FALSE, FALSE, time);
-}
 
