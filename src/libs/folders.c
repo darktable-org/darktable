@@ -95,10 +95,27 @@ void connect_key_accels(dt_lib_module_t *self)
 
 #define UNCATEGORIZED_TAG "uncategorized"
 
+static int
+_count_images(const char *path)
+{
+  sqlite3_stmt *stmt = NULL;
+  gchar query[1024] = {0};
+  int count = 0;
+
+  snprintf(query, 1024, "select count(id) from images where film_id in (select id from film_rolls where folder like '%s%s')", path, "%");
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if (sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0); 
+  sqlite3_finalize(stmt);
+
+  return count;
+}
+
 static void
 _folder_tree (GtkTreeView *tree, sqlite3_stmt *stmt)
 {
-  GtkTreeStore *store = gtk_tree_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+  GtkTreeStore *store = gtk_tree_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
+  //GtkTreeStore *store = gtk_tree_store_new(3, G_TYPE_STRING, G_TYPE_INT);
 
   GVolumeMonitor *gv_monitor;
   gv_monitor = g_volume_monitor_get ();
@@ -152,8 +169,11 @@ _folder_tree (GtkTreeView *tree, sqlite3_stmt *stmt)
           const char *pth = g_strndup (path, strstr(path, pch)-path);
           const char *pth2 = g_strconcat(pth, pch, NULL);
           //strstr(path, pch)[0]='\0';
+
+          int count = _count_images(pth2);
           gtk_tree_store_insert(store, &iter, level>0?&current:NULL,0);
-          gtk_tree_store_set(store, &iter, 0, pch, 1, pth2, -1);
+          gtk_tree_store_set(store, &iter, 0, pch, 1, pth2, 2, count, -1);
+          //gtk_tree_store_set(store, &iter, 0, pch, 1, count, -1);
           current = iter;
         }
 
@@ -164,15 +184,15 @@ _folder_tree (GtkTreeView *tree, sqlite3_stmt *stmt)
   }
 
   /* add the treeview to show filmroll tree*/
-  GtkCellRenderer *renderer;
+  GtkCellRenderer *renderer, *renderer2;
 
   renderer = gtk_cell_renderer_text_new ();
-  gtk_tree_view_insert_column_with_attributes(tree,
-                                               -1,      
-                                               "",  
-                                               renderer,
-                                               "text", 0,
-                                               NULL);
+  renderer2 = gtk_cell_renderer_text_new ();
+  gtk_tree_view_insert_column_with_attributes(tree, -1, "", renderer,
+                                               "text", 0, NULL);
+
+  gtk_tree_view_insert_column_with_attributes(tree,-1,"", renderer2,
+                                               "text", 2, NULL);
 
   gtk_tree_view_set_headers_visible(tree, FALSE);
 
@@ -244,8 +264,6 @@ static void _lib_folders_string_from_path(char *dest,size_t ds,
 
 static void _lib_folders_update_collection(GtkTreeView *view, GtkTreePath *tp)
 {
-  // COLLECTION_FILTER_ATLEAST_RATING needed also? there is not path for this code with the above tag, but should it?
-  // TODO: disable this flag in collect.c
   
   char folder[1024]={0};
   _lib_folders_string_from_path(folder, 1024, gtk_tree_view_get_model(view), tp);
@@ -318,9 +336,7 @@ void gui_init(dt_lib_module_t *self)
 
   GtkTreeStore *store = gtk_tree_store_new(1, G_TYPE_STRING);
 
-  /* intialize the tree store with known tags */
-  // TODO: COPY HERE WHAT IT IS ALREADY DONE //
-  // Folder browser
+  /* intialize the tree store */
   GtkBox *box_tree; 
   GtkTreeView *tree = GTK_TREE_VIEW(gtk_tree_view_new()); 
   box_tree = GTK_BOX(gtk_hbox_new(FALSE,5)); 
@@ -343,7 +359,6 @@ void gui_init(dt_lib_module_t *self)
   
   gtk_widget_show_all(GTK_WIDGET(d->view));
   
-
 }
 
 void gui_cleanup(dt_lib_module_t *self)
