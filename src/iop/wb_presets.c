@@ -3685,6 +3685,16 @@ const wb_data wb_preset[] = {
   { "SONY", "NEX-5", Flash, 2,			{ 2.9883, 1, 1.1289, 0 } },
   { "SONY", "NEX-5", Flash, 3,			{ 3.0742, 1, 1.0938, 0 } },
 
+  { "SONY", "NEX-7", Daylight, 0,		{ 2.695313, 1, 1.425781, 0 } },
+  { "SONY", "NEX-7", Shade, 0,			{ 3.214844, 1, 1.1875,   0 } },
+  { "SONY", "NEX-7", Cloudy, 0,			{ 2.914063, 1, 1.316406, 0 } },
+  { "SONY", "NEX-7", Tungsten, 0,		{ 1.660156, 1, 2.445313, 0 } },
+  { "SONY", "NEX-7", Fluorescent, -1,		{ 1.902344, 1, 2.402344, 0 } },
+  { "SONY", "NEX-7", Fluorescent, 0,		{ 2.421875, 1, 1.957031, 0 } },
+  { "SONY", "NEX-7", Fluorescent, 1,		{ 2.566406, 1, 1.496094, 0 } },
+  { "SONY", "NEX-7", Fluorescent, 2,		{ 2.894531, 1, 1.332031, 0 } },
+  { "SONY", "NEX-7", Flash, 0,			{ 3.050781, 1, 1.347656, 0 } },
+
   { "SONY", "SLT-A55V", Daylight, -3,		{ 2.3320, 1, 1.6758, 0 } },
   { "SONY", "SLT-A55V", Daylight, -2,		{ 2.3984, 1, 1.6172, 0 } },
   { "SONY", "SLT-A55V", Daylight, -1,		{ 2.4727, 1, 1.5625, 0 } },
