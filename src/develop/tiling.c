@@ -555,9 +555,21 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
     oroi_full.width = _max(oroi_full.width, oroi_good.x + oroi_good.width - oroi_full.x);
     oroi_full.height = _max(oroi_full.height, oroi_good.y + oroi_good.height - oroi_full.y);
 
+    /* clamp to not exceed roi_out */
+    oroi_full.x = _max(oroi_full.x, roi_out->x);
+    oroi_full.y = _max(oroi_full.y, roi_out->y);
+    oroi_full.width = _min(oroi_full.width, roi_out->width + roi_out->x - oroi_full.x);
+    oroi_full.height = _min(oroi_full.height, roi_out->height + roi_out->y - oroi_full.y);
 
     /* calculate final iroi_full */
     self->modify_roi_in(self, piece, &oroi_full, &iroi_full);
+
+    /* clamp to not exceed roi_in */
+    iroi_full.x = _max(iroi_full.x, roi_in->x);
+    iroi_full.y = _max(iroi_full.y, roi_in->y);
+    iroi_full.width = _min(iroi_full.width, roi_in->width + roi_in->x - iroi_full.x);
+    iroi_full.height = _min(iroi_full.height, roi_in->height + roi_in->y - iroi_full.y);
+
 
     //_print_roi(&iroi_full, "tile iroi_full");
     //_print_roi(&oroi_full, "tile oroi_full");
@@ -1084,9 +1096,21 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
     oroi_full.width = _max(oroi_full.width, oroi_good.x + oroi_good.width - oroi_full.x);
     oroi_full.height = _max(oroi_full.height, oroi_good.y + oroi_good.height - oroi_full.y);
 
+    /* clamp to not exceed roi_out */
+    oroi_full.x = _max(oroi_full.x, roi_out->x);
+    oroi_full.y = _max(oroi_full.y, roi_out->y);
+    oroi_full.width = _min(oroi_full.width, roi_out->width + roi_out->x - oroi_full.x);
+    oroi_full.height = _min(oroi_full.height, roi_out->height + roi_out->y - oroi_full.y);
+
 
     /* calculate final iroi_full */
     self->modify_roi_in(self, piece, &oroi_full, &iroi_full);
+
+    /* clamp to not exceed roi_in */
+    iroi_full.x = _max(iroi_full.x, roi_in->x);
+    iroi_full.y = _max(iroi_full.y, roi_in->y);
+    iroi_full.width = _min(iroi_full.width, roi_in->width + roi_in->x - iroi_full.x);
+    iroi_full.height = _min(iroi_full.height, roi_in->height + roi_in->y - iroi_full.y);
 
     //_print_roi(&iroi_full, "tile iroi_full");
     //_print_roi(&oroi_full, "tile oroi_full");
