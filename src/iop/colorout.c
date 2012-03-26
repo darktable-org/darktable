@@ -323,7 +323,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
   const int ch = piece->colors;
 
-  if(d->cmatrix[0] != -0.666f)
+  if(!isnan(d->cmatrix[0]))
   {
     //fprintf(stderr,"Using cmatrix codepath\n");
     // convert to rgb using matrix
@@ -372,14 +372,11 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
   {
     float *in  = (float*)ivoid;
     float *out = (float*)ovoid;
+    const int rowsize=roi_out->width * 3;
     //fprintf(stderr,"Using xform codepath\n");
 
-    // lcms2 fallback, slow:
-    int rowsize=roi_out->width*3;
-
-    // FIXME: breaks :(
-#if 0//def _OPENMP
-    #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d, rowsize)
+#ifdef _OPENMP
+    #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in)
 #endif
     for (int k=0; k<roi_out->height; k++)
     {
@@ -395,8 +392,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         Lab[li+2] = in[m+ii+2];
       }
 
-      // lcms is not thread safe, so use local copy
-      cmsDoTransform (d->xform[dt_get_thread_num()], Lab, rgb, roi_out->width);
+      cmsDoTransform (d->xform, Lab, rgb, roi_out->width);
 
       for (int l=0; l<roi_out->width; l++)
       {
@@ -474,13 +470,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     g->softproof_enabled = p->softproof_enabled;
   }
   const int num_threads = dt_get_num_threads();
-  for (int t=0; t<num_threads; t++)
-    if (d->xform[t])
-    {
-      cmsDeleteTransform(d->xform[t]);
-      d->xform[t] = NULL;
-    }
-  d->cmatrix[0] = -0.666f;
+  if (d->xform)
+  {
+      cmsDeleteTransform(d->xform);
+      d->xform = 0;
+  }
+  d->cmatrix[0] = NAN;
   d->lut[0][0] = -1.0f;
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
@@ -518,7 +513,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 
   /* TODO: the use of bpc should be userconfigurable either from module or preference pane */
   /* softproof flag and black point compensation */
-  transformFlags |= (d->softproof_enabled ? cmsFLAGS_SOFTPROOFING|cmsFLAGS_BLACKPOINTCOMPENSATION : 0);
+  transformFlags |= (d->softproof_enabled ? cmsFLAGS_SOFTPROOFING|cmsFLAGS_NOCACHE|cmsFLAGS_BLACKPOINTCOMPENSATION : 0);
       
 
 
@@ -526,18 +521,20 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if (d->softproof_enabled || (pipe->type == DT_DEV_PIXELPIPE_EXPORT && high_quality_processing) || 
           dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
   {
-    d->cmatrix[0] = -0.666f;
+    d->cmatrix[0] = NAN;
     piece->process_cl_ready = 0;
-    for(int t=0; t<num_threads; t++)
-      d->xform[t] = cmsCreateProofingTransform(
-                      d->Lab,TYPE_Lab_FLT, d->output, TYPE_RGB_FLT,
-                      d->softproof, outintent,
-                      INTENT_RELATIVE_COLORIMETRIC,
-                      transformFlags);
+    d->xform = cmsCreateProofingTransform(d->Lab,
+                                          TYPE_Lab_FLT,
+                                          d->output,
+                                          TYPE_RGB_FLT,
+                                          d->softproof,
+                                          outintent,
+                                          INTENT_RELATIVE_COLORIMETRIC,
+                                          transformFlags);
   }
 
   // user selected a non-supported output profile, check that:
-  if (!d->xform[0] && d->cmatrix[0] == -0.666f)
+  if (!d->xform && isnan(d->cmatrix[0]))
   {
     dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
     if (d->output)
@@ -545,15 +542,18 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->output = dt_colorspaces_create_srgb_profile();
     if (d->softproof_enabled || dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
-      d->cmatrix[0] = -0.666f;
+      d->cmatrix[0] = NAN;
       piece->process_cl_ready = 0;
       for (int t=0; t<num_threads; t++)
 	
-        d->xform[t] = cmsCreateProofingTransform(
-                        d->Lab,TYPE_Lab_FLT, d->output, TYPE_RGB_FLT,
-                        d->softproof, outintent,
-                        INTENT_RELATIVE_COLORIMETRIC,
-			transformFlags);
+        d->xform = cmsCreateProofingTransform(d->Lab,
+                                              TYPE_Lab_FLT,
+                                              d->output,
+                                              TYPE_RGB_FLT,
+                                              d->softproof,
+                                              outintent,
+                                              INTENT_RELATIVE_COLORIMETRIC,
+                                              transformFlags);
     }
   }
 
@@ -587,9 +587,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   d->softproof_enabled = 0;
   d->softproof = d->output = NULL;
-  d->xform = (cmsHTRANSFORM *)malloc(sizeof(cmsHTRANSFORM)*dt_get_num_threads());
-  for(int t=0; t<dt_get_num_threads(); t++)
-    d->xform[t] = NULL;
+  d->xform = 0;
   d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
 }
@@ -599,11 +597,12 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   if(d->output) dt_colorspaces_cleanup_profile(d->output);
   dt_colorspaces_cleanup_profile(d->Lab);
-  for(int t=0; t<dt_get_num_threads(); t++)
-    if(d->xform[t])
-      cmsDeleteTransform(d->xform[t]);
+  if (d->xform)
+  {
+      cmsDeleteTransform(d->xform);
+      d->xform = 0;
+  }
 
-  free(d->xform);
   free(piece->data);
 }
 
