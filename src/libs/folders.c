@@ -93,8 +93,6 @@ void connect_key_accels(dt_lib_module_t *self)
                               GTK_WIDGET(d->scan_devices)); */
 }
 
-#define UNCATEGORIZED_TAG "uncategorized"
-
 static int
 _count_images(const char *path)
 {
@@ -111,8 +109,8 @@ _count_images(const char *path)
   return count;
 }
 
-static void
-_folder_tree (GtkTreeView *tree, sqlite3_stmt *stmt)
+static GtkTreeStore *
+_folder_tree (sqlite3_stmt *stmt)
 {
   GtkTreeStore *store = gtk_tree_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
   //GtkTreeStore *store = gtk_tree_store_new(3, G_TYPE_STRING, G_TYPE_INT);
@@ -183,24 +181,114 @@ _folder_tree (GtkTreeView *tree, sqlite3_stmt *stmt)
     }  
   }
 
-  /* add the treeview to show filmroll tree*/
+  return (store);
+}
+
+
+static GtkTreeModel *
+_create_filtered_tree (GtkTreeModel *model, gchar *mount_path)
+{
+  GtkTreeModel *filter;
+  GtkTreePath  *path;
+    
+  /* Create path to set as virtual root */
+  
+  GtkTreeIter current, iter;
+  char *pch = strtok(mount_path, "/");
+  char *value;
+  int level = 0;
+  gboolean found = FALSE;
+
+  while (pch != NULL)
+  {
+    found=FALSE;
+    int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(model),level>0?&current:NULL);
+    /* find child with name, if not found create and continue */
+    for (int k=0;k<children;k++)
+    {
+      if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(model), &iter, level>0?&current:NULL, k))
+      {
+        gtk_tree_model_get (GTK_TREE_MODEL(model), &iter, 0, &value, -1);
+        
+        if (strcmp(value, pch)==0)
+        {
+          current = iter;
+          found = TRUE;
+          break;
+        }
+      }
+    }
+
+    if (!found) break;
+    level++;
+    pch = strtok(NULL, "/");
+  }
+
+  if (!found) return NULL;
+
+  path = gtk_tree_model_get_path (GTK_TREE_MODEL(model), &iter);
+
+  /* Create filter and set virtual root */
+  filter = gtk_tree_model_filter_new (model, path);
+  gtk_tree_path_free (path);
+
+  return (filter);
+                             
+  /* Create treeview with model */
+//  treeview = gtk_tree_view_new_with_model (filter);
+                                      
+  /* Create display components of tree view */
+//  create_treeview_display (GTK_TREE_VIEW(treeview));
+                                               
+//  return (treeview); 
+}
+
+static GtkTreeView *
+_create_treeview_display (GtkTreeModel *model)
+{
+  GtkTreeView *treeview;
+  GtkCellRenderer *renderer, *renderer2;
+
+  treeview = GTK_TREE_VIEW(gtk_tree_view_new ());
+
+  renderer = gtk_cell_renderer_text_new ();
+  renderer2 = gtk_cell_renderer_text_new ();
+/*  GtkTreeViewColumn *column1, *column2;
   GtkCellRenderer *renderer, *renderer2;
 
   renderer = gtk_cell_renderer_text_new ();
   renderer2 = gtk_cell_renderer_text_new ();
-  gtk_tree_view_insert_column_with_attributes(tree, -1, "", renderer,
-                                               "text", 0, NULL);
+ 
+  column1 = gtk_tree_view_column_new_with_attributes ("", renderer,
+                                            "sizing", GTK_TREE_VIEW_COLUMN_FIXED,
+                                            "expand", TRUE,
+                                            NULL);
 
-  gtk_tree_view_insert_column_with_attributes(tree,-1,"", renderer2,
-                                               "text", 2, NULL);
+  column2 = gtk_tree_view_column_new_with_attributes("", renderer2,
+                                           "sizing", GTK_TREE_VIEW_COLUMN_FIXED,
+                                           "min-width", 10,
+                                           NULL);
+  gtk_tree_view_insert_column (tree, column1, 0);
+  gtk_tree_view_insert_column (tree, column2, 1); */
 
-  gtk_tree_view_set_headers_visible(tree, FALSE);
+  gtk_tree_view_insert_column_with_attributes(treeview, -1, "", renderer,
+                                               "text", 0,
+                                                NULL);
 
-  gtk_tree_view_set_model(tree, GTK_TREE_MODEL(store));
+  gtk_tree_view_insert_column_with_attributes(treeview, -1, "", renderer2,
+                                               "text", 2,
+                                                NULL);
+
+  gtk_tree_view_set_level_indentation (treeview, 1);
+
+  gtk_tree_view_set_headers_visible(treeview, FALSE);
+
+  gtk_tree_view_set_model(treeview, GTK_TREE_MODEL(model));
 
   /* free store, treeview has its own storage now */
-  g_object_unref(store);
-  
+  g_object_unref(model);
+
+  return (treeview);
 }
 
 static void _lib_folders_string_from_path(char *dest,size_t ds, 
@@ -338,24 +426,62 @@ void gui_init(dt_lib_module_t *self)
 
   /* intialize the tree store */
   GtkBox *box_tree; 
-  GtkTreeView *tree = GTK_TREE_VIEW(gtk_tree_view_new()); 
-  box_tree = GTK_BOX(gtk_hbox_new(FALSE,5)); 
-           
-  gtk_container_add(GTK_CONTAINER(box_tree), GTK_WIDGET(tree)); 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box_tree), TRUE, TRUE, 0); 
-  g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d); 
-         
   char query[1024]; 
   sqlite3_stmt *stmt; 
   snprintf(query, 1024, "select * from film_rolls"); 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL); 
                       
   //Populate the tree  
-  _folder_tree (tree, stmt); 
+  store = _folder_tree (stmt); 
   sqlite3_finalize(stmt); 
+  
+  /* set the UI */
+  GtkTreeView *tree; 
+  box_tree = GTK_BOX(gtk_vbox_new(FALSE,5)); 
+           
+  GVolumeMonitor *gv_monitor;
+  gv_monitor = g_volume_monitor_get ();
 
-  /* free store, treeview has its own storage now */
-  g_object_unref(store);
+  GList *gm_list;
+  gm_list = g_volume_monitor_get_mounts(gv_monitor);
+
+  GtkWidget *button;
+  // Add a button for local filesystem, to keep UI consistency
+  button = gtk_button_new_with_label (_("Local HDD"));
+  gtk_container_add(GTK_CONTAINER(box_tree), GTK_WIDGET(button));
+
+  tree = _create_treeview_display(GTK_TREE_MODEL(store));
+  gtk_container_add(GTK_CONTAINER(box_tree), GTK_WIDGET(tree));
+
+  GtkTreeModel *model;
+
+  for (int i=0;i<g_list_length(gm_list);i++)
+  {
+    GMount *mount;
+    GFile *file;
+
+    mount = (GMount *)g_list_nth_data(gm_list, i);
+    file = g_mount_get_root(mount);
+    
+    /* TODO: We should only add devices in which we already have filmrolls imported */
+    /* TODO: Pack a gtkbox and a gtktreeview together with a button, to show that part of the tree */
+
+    model = _create_filtered_tree (GTK_TREE_MODEL(store), g_file_get_path(file));
+
+    if (!model)
+    {
+      button = gtk_button_new_with_label (g_mount_get_name(mount));
+      gtk_container_add(GTK_CONTAINER(box_tree), GTK_WIDGET(button));
+
+      tree = _create_treeview_display(GTK_TREE_MODEL(model));
+
+      gtk_container_add(GTK_CONTAINER(box_tree), GTK_WIDGET(tree));
+    }
+  }
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box_tree), TRUE, TRUE, 0); 
+  g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d); 
+         
   
   gtk_widget_show_all(GTK_WIDGET(d->view));
   
