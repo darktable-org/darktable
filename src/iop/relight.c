@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010-2012 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,13 +25,12 @@
 #ifdef HAVE_GEGL
 #include <gegl.h>
 #endif
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "common/debug.h"
 #include "dtgtk/togglebutton.h"
-#include "dtgtk/resetlabel.h"
-#include "dtgtk/slider.h"
 #include "dtgtk/gradientslider.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -68,7 +67,7 @@ typedef struct dt_iop_relight_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;                                            // left and right controlboxes
   GtkLabel  *label1,*label2,*label3;            		       	// ev, center, width
-  GtkDarktableSlider *scale1,*scale2;        			// ev,width
+  GtkWidget *scale1,*scale2;        			// ev,width
   GtkDarktableGradientSlider *gslider1;				// center
   GtkDarktableToggleButton *tbutton1;                     // Pick median lightess
 }
@@ -111,6 +110,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "exposure", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "width", GTK_WIDGET(g->scale2));
 }
+
 
 #define GAUSS(a,b,c,x) (a*pow(2.718281828,(-pow((x-b),2)/(pow(c,2)))))
 
@@ -170,22 +170,22 @@ picker_callback (GtkDarktableToggleButton *button, gpointer user_data)
 }
 
 static void
-ev_callback (GtkDarktableSlider *slider, gpointer user_data)
+ev_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
-  p->ev = dtgtk_slider_get_value(slider);
+  p->ev = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-width_callback (GtkDarktableSlider *slider, gpointer user_data)
+width_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
-  p->width = dtgtk_slider_get_value(slider);
+  p->width = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -249,11 +249,10 @@ void gui_update(struct dt_iop_module_t *self)
   self->color_picker_box[2] = self->color_picker_box[3] = .75f;
   self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
 
-
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)module->params;
-  dtgtk_slider_set_value (g->scale1, p->ev);
-  dtgtk_slider_set_value (g->scale2, p->width);
+  dt_bauhaus_slider_set(g->scale1, p->ev);
+  dt_bauhaus_slider_set(g->scale2, p->width);
   dtgtk_gradient_slider_set_value(g->gslider1,p->center);
 }
 
@@ -313,16 +312,25 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+
   g_signal_connect (G_OBJECT (self->widget), "expose-event", G_CALLBACK (expose), self);
 
-  /* adding the labels */
-  g->scale1 = DTGTK_SLIDER (dtgtk_slider_new_with_range (DARKTABLE_SLIDER_BAR,-2.0, 2.0,0.05, p->ev, 2));
-  g->scale2 = DTGTK_SLIDER (dtgtk_slider_new_with_range (DARKTABLE_SLIDER_BAR,2, 10, 0.5, p->width, 1));
-  dtgtk_slider_set_label(g->scale1, _("exposure"));
-  dtgtk_slider_set_unit(g->scale1, "EV");
-  dtgtk_slider_set_force_sign(g->scale1, TRUE);
-  dtgtk_slider_set_label(g->scale2, _("width"));
+  /* exposure */
+  g->scale1 = dt_bauhaus_slider_new_with_range(self,-2.0, 2.0,0.05, p->ev, 2);
+  dt_bauhaus_slider_set_format(g->scale1,"%.2fEV");
+  dt_bauhaus_widget_set_label(g->scale1,_("exposure"));
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the fill-light in EV"), (char *)NULL);
+  g_signal_connect (G_OBJECT (g->scale1), "value-changed",
+                    G_CALLBACK (ev_callback), self);
+  /* width*/
+  g->scale2 = dt_bauhaus_slider_new_with_range(self,2, 10, 0.5, p->width, 1);
+  dt_bauhaus_slider_set_format(g->scale2,"%.1f");
+  dt_bauhaus_widget_set_label(g->scale2,_("width"));
+  /* xgettext:no-c-format */
+  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("width of fill-light area defined in zones"), (char *)NULL);
+  g_signal_connect (G_OBJECT (g->scale2), "value-changed",
+                    G_CALLBACK (width_callback), self);
 
   /* lightnessslider */
   GtkBox *hbox=GTK_BOX (gtk_hbox_new (FALSE,2));
@@ -353,14 +361,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   g_object_set(G_OBJECT(g->tbutton1), "tooltip-text", _("toggle tool for picking median lightness in image"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the fill-light in EV"), (char *)NULL);
-  /* xgettext:no-c-format */
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("width of fill-light area defined in zones"), (char *)NULL);
 
-  g_signal_connect (G_OBJECT (g->scale1), "value-changed",
-                    G_CALLBACK (ev_callback), self);
-  g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-                    G_CALLBACK (width_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

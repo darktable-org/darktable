@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2010 Tobias Ellinghaus.
-    copyright (c) 2011 henrik andersson.
+    copyright (c) 2011-2012 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,12 +21,11 @@
 #endif
 #include <stdlib.h>
 #include <cairo.h>
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
-#include "dtgtk/slider.h"
 #include "dtgtk/button.h"
-#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 
@@ -40,11 +39,7 @@ typedef struct dt_iop_overexposed_params_t
 
 typedef struct dt_iop_overexposed_gui_data_t
 {
-  GtkVBox             *vbox;
-  GtkWidget           *label1;
-  GtkWidget           *label2;
-  GtkDarktableSlider  *lower;
-  GtkDarktableSlider  *upper;
+  GtkWidget           *lower, *upper;
 // 	int                  width;
 // 	int                  height;
 // 	unsigned char       *mask;
@@ -181,21 +176,21 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 // 	}
 // }
 
-static void lower_callback (GtkDarktableSlider *slider, gpointer user_data)
+static void lower_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_overexposed_params_t *p = (dt_iop_overexposed_params_t *)self->params;
-  p->lower = dtgtk_slider_get_value(slider);
+  p->lower = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void upper_callback (GtkDarktableSlider *slider, gpointer user_data)
+static void upper_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_overexposed_params_t *p = (dt_iop_overexposed_params_t *)self->params;
-  p->upper = dtgtk_slider_get_value(slider);
+  p->upper = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -229,8 +224,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_overexposed_gui_data_t *g = (dt_iop_overexposed_gui_data_t *)self->gui_data;
   dt_iop_overexposed_params_t *p   = (dt_iop_overexposed_params_t *)module->params;
-  dtgtk_slider_set_value(g->lower, p->lower);
-  dtgtk_slider_set_value(g->upper, p->upper);
+  dt_bauhaus_slider_set(g->lower, p->lower);
+  dt_bauhaus_slider_set(g->upper, p->upper);
 }
 
 void init(dt_iop_module_t *module)
@@ -277,26 +272,26 @@ void gui_init(struct dt_iop_module_t *self)
 
 // 	g->mask = NULL;
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox     = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
+  self->widget =gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
-  g->lower = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->lower, 2));
-  dtgtk_slider_set_format_type(g->lower,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_label(g->lower,_("lower threshold"));
-  dtgtk_slider_set_unit(g->lower,"%");
-  g->upper = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->upper, 2));
-  dtgtk_slider_set_format_type(g->upper,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_label(g->upper,_("upper threshold"));
-  dtgtk_slider_set_unit(g->upper,"%");
-
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->lower), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->upper), TRUE, TRUE, 0);
+  /* lower */
+  g->lower = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 0.1, p->lower, 2);
+  dt_bauhaus_slider_set_format(g->lower,"%.0f%%");
+  dt_bauhaus_widget_set_label(g->lower,_("lower threshold"));
   g_object_set(G_OBJECT(g->lower), "tooltip-text", _("threshold of what shall be considered underexposed"), (char *)NULL);
-  g_object_set(G_OBJECT(g->upper), "tooltip-text", _("threshold of what shall be considered overexposed"), (char *)NULL);
+  g_signal_connect (G_OBJECT (g->lower), "value-changed", 
+		    G_CALLBACK (lower_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->lower), TRUE, TRUE, 0);
 
-  g_signal_connect (G_OBJECT (g->lower), "value-changed", G_CALLBACK (lower_callback), self);
-  g_signal_connect (G_OBJECT (g->upper), "value-changed", G_CALLBACK (upper_callback), self);
+  /* upper */
+  g->upper = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->upper, 2);
+  dt_bauhaus_slider_set_format(g->upper,"%.0f%%");
+  dt_bauhaus_widget_set_label(g->upper,_("upper threshold"));  
+  g_object_set(G_OBJECT(g->upper), "tooltip-text", _("threshold of what shall be considered overexposed"), (char *)NULL);
+  g_signal_connect (G_OBJECT (g->upper), "value-changed", 
+		    G_CALLBACK (upper_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->upper), TRUE, TRUE, 0);
+
 
   /* add quicktool button for enable/disable the plugin */
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);

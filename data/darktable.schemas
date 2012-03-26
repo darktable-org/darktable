@@ -1723,7 +1723,7 @@
       <applyto>/apps/darktable/plugins/darkroom/colorcorrection/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
-      <default>FALSE</default>
+      <default>TRUE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
@@ -1736,7 +1736,7 @@
       <applyto>/apps/darktable/plugins/darkroom/colorin/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
-      <default>FALSE</default>
+      <default>TRUE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
@@ -1749,7 +1749,7 @@
       <applyto>/apps/darktable/plugins/darkroom/colorout/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
-      <default>FALSE</default>
+      <default>TRUE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
@@ -1775,7 +1775,7 @@
       <applyto>/apps/darktable/plugins/darkroom/atrous/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
-      <default>FALSE</default>
+      <default>TRUE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
@@ -1879,20 +1879,7 @@
       <applyto>/apps/darktable/plugins/darkroom/basecurve/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
-      <default>FALSE</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short></short>
-        <long></long>
-      </locale>
-    </schema>
-
-    <schema>
-      <key>/schemas/apps/darktable/plugins/darkroom/rawimport/visible</key>
-      <applyto>/apps/darktable/plugins/darkroom/rawimport/visible</applyto>
-      <owner>darktable</owner>
-      <type>bool</type>
-      <default>FALSE</default>
+      <default>TRUE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
@@ -1905,7 +1892,7 @@
       <applyto>/apps/darktable/plugins/darkroom/colorzones/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
-      <default>FALSE</default>
+      <default>TRUE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
@@ -2007,6 +1994,292 @@
     <schema>
       <key>/schemas/apps/darktable/plugins/darkroom/graduatednd/visible</key>
       <applyto>/apps/darktable/plugins/darkroom/graduatednd/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/watermark/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/watermark/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/cacorrect/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/cacorrect/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/rawdenoise/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/rawdenoise/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/hotpixels/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/hotpixels/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/demosaic/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/demosaic/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/highlights/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/highlights/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/tonemap/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/tonemap/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/spots/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/spots/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/bilateral/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/bilateral/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/bloom/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/bloom/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/colortransfer/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/colortransfer/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/colorize/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/colorize/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/vibrance/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/vibrance/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/lowlight/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/lowlight/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/shadhi/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/shadhi/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/lowpass/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/lowpass/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/relight/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/relight/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/highpass/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/highpass/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/colorcontrast/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/colorcontrast/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/channelmixer/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/channelmixer/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/vignette/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/vignette/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/splittoning/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/splittoning/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>TRUE</default>

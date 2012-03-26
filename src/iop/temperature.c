@@ -132,6 +132,30 @@ flags ()
   return IOP_FLAGS_ALLOW_TILING;
 }
 
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "tint"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "temperature in"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "temperature out"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_temperature_gui_data_t *g =
+    (dt_iop_temperature_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "tint", GTK_WIDGET(g->scale_tint));
+  dt_accel_connect_slider_iop(self, "temperature in", GTK_WIDGET(g->scale_k));
+  dt_accel_connect_slider_iop(self, "temperature out", GTK_WIDGET(g->scale_k_out));
+  dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->scale_r));
+  dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale_g));
+  dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale_b));
+}
+
+
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {

@@ -75,7 +75,6 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
-#if 0 // No approach for key accels in bauhaus yet
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "size"));
@@ -90,7 +89,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "threshold", GTK_WIDGET(g->scale2));
   dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->scale3));
 }
-#endif
 
 #define GAUSS(a,b,c,x) (a*pow(2.718281828,(-pow((x-b),2)/(pow(c,2)))))
 

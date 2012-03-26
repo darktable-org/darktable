@@ -1887,9 +1887,8 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
     dt_accel_connect_button_iop(module, "show preset menu",
                                 module->presets_button);
 
-  // TODO: port to bauhaus sliders
-  // if(module->fusion_slider)
-  //   dt_accel_connect_slider_iop(module, "fusion", module->fusion_slider);
+  if(module->fusion_slider)
+    dt_accel_connect_slider_iop(module, "fusion", module->fusion_slider);
 
   sqlite3_stmt *stmt;
   // don't know for which image. show all we got:

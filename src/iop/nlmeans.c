@@ -74,6 +74,20 @@ flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "luma"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "chroma"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "luma", GTK_WIDGET(g->luma));
+  dt_accel_connect_slider_iop(self, "chroma", GTK_WIDGET(g->chroma));
+}
+
 /** modify regions of interest (optional, per pixel ops don't need this) */
 // void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in);
 // void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in);

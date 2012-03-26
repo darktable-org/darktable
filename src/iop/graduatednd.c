@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010-2012 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,14 +25,13 @@
 #ifdef HAVE_GEGL
 #include <gegl.h>
 #endif
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
-#include "dtgtk/slider.h"
 #include "dtgtk/gradientslider.h"
-#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -116,7 +115,7 @@ typedef struct dt_iop_graduatednd_gui_data_t
 {
   GtkVBox   *vbox;
   GtkWidget  *label1,*label2,*label3,*label4,*label5,*label6;            			      // density, compression, rotation, offset, hue, saturation
-  GtkDarktableSlider *scale1,*scale2,*scale3,*scale4;        // density, compression, rotation, offset
+  GtkWidget *scale1,*scale2,*scale3,*scale4;        // density, compression, rotation, offset
   GtkDarktableGradientSlider *gslider1,*gslider2;		// hue, saturation
 }
 dt_iop_graduatednd_gui_data_t;
@@ -413,43 +412,43 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 }
 
 static void
-density_callback (GtkDarktableSlider *slider, gpointer user_data)
+density_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
-  p->density = dtgtk_slider_get_value(slider);
+  p->density = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-compression_callback (GtkDarktableSlider *slider, gpointer user_data)
+compression_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
-  p->compression = dtgtk_slider_get_value(slider);
+  p->compression = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-rotation_callback (GtkDarktableSlider *slider, gpointer user_data)
+rotation_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
-  p->rotation= dtgtk_slider_get_value(slider);
+  p->rotation= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 
 static void
-offset_callback (GtkDarktableSlider *slider, gpointer user_data)
+offset_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
-  p->offset= dtgtk_slider_get_value(slider);
+  p->offset= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -499,10 +498,10 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)module->params;
-  dtgtk_slider_set_value (g->scale1, p->density);
-  dtgtk_slider_set_value (g->scale2, p->compression);
-  dtgtk_slider_set_value (g->scale3, p->rotation);
-  dtgtk_slider_set_value (g->scale4, p->offset);
+  dt_bauhaus_slider_set(g->scale1, p->density);
+  dt_bauhaus_slider_set(g->scale2, p->compression);
+  dt_bauhaus_slider_set(g->scale3, p->rotation);
+  dt_bauhaus_slider_set(g->scale4, p->offset);
   dtgtk_gradient_slider_set_value(g->gslider1,p->hue);
   dtgtk_gradient_slider_set_value(g->gslider2,p->saturation);
 }
@@ -576,36 +575,45 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  
+  /* density */
+  g->scale1 = dt_bauhaus_slider_new_with_range(self,-8.0, 8.0, 0.1, p->density, 2);
+  dt_bauhaus_slider_set_format(g->scale1,"%.2fEV");
+  dt_bauhaus_widget_set_label(g->scale1,_("density"));
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the density in EV for the filter"), (char *)NULL);
+  g_signal_connect (G_OBJECT (g->scale1), "value-changed",
+                    G_CALLBACK (density_callback), self);
+  
+  /* compression */
+  g->scale2 = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 1.0, p->compression, 0);
+  dt_bauhaus_slider_set_format(g->scale2,"%.0f%%");
+  dt_bauhaus_widget_set_label(g->scale2,_("compression"));
+  /* xgettext:no-c-format */
+  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("compression of graduation:\n0% = soft, 100% = hard"), (char *)NULL);
+  g_signal_connect (G_OBJECT (g->scale2), "value-changed",
+                    G_CALLBACK (compression_callback), self);
 
+  /* rotation */
+  g->scale3 = dt_bauhaus_slider_new_with_range(self,-180, 180,0.5, p->rotation, 2);
+  dt_bauhaus_widget_set_label(g->scale3,_("rotation"));
+  dt_bauhaus_slider_set_format(g->scale3,"%.2f°");
+  g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("rotation of filter -180 to 180 degrees"), (char *)NULL);
+  g_signal_connect (G_OBJECT (g->scale3), "value-changed",
+                    G_CALLBACK (rotation_callback), self);
+  /* offset */
+  g->scale4 = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 1.0, p->offset, 0);
+  dt_bauhaus_slider_set_format(g->scale4,"%.0f%%");
+  dt_bauhaus_widget_set_label(g->scale4,_("split"));
+  g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("offset of filter in angle of rotation"), (char *)NULL);
+  g_signal_connect (G_OBJECT (g->scale4), "value-changed",
+                    G_CALLBACK (offset_callback), self);
 
-  /* adding the labels */
-
-  g->label5 = dtgtk_reset_label_new(_("hue"), self, &p->hue, sizeof(float));
-  g->label6 = dtgtk_reset_label_new(_("saturation"), self, &p->saturation, sizeof(float));
-
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-8.0, 8.0, 0.1, p->density, 2));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->compression, 0));
-  dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-180, 180,0.5, p->rotation, 2));
-  g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->offset, 0));
-  dtgtk_slider_set_format_type(g->scale4,DARKTABLE_SLIDER_FORMAT_PERCENT);
-
-  dtgtk_slider_set_label(g->scale1,_("density"));
-  dtgtk_slider_set_unit(g->scale1,"EV");
-  dtgtk_slider_set_label(g->scale2,_("compression"));
-  dtgtk_slider_set_unit(g->scale2,"%");
-  dtgtk_slider_set_label(g->scale3,_("rotation"));
-  dtgtk_slider_set_unit(g->scale3,"°");
-  dtgtk_slider_set_label(g->scale4,_("split"));
-  dtgtk_slider_set_unit(g->scale4,"%");
-
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
+  /* add widgets to ui */
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
 
   /* hue slider */
   int lightness=32768;
@@ -640,7 +648,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->gslider1), "value-changed",
                     G_CALLBACK (hue_callback), self);
 
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->gslider1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->gslider1), TRUE, TRUE, 0);
 
   /* saturation slider */
   g->gslider2=DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color((GdkColor)
@@ -654,23 +662,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->gslider2), "value-changed",
                     G_CALLBACK (saturation_callback), self);
 
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->gslider2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->gslider2), TRUE, TRUE, 0);
 
-
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the density in EV for the filter"), (char *)NULL);
-  /* xgettext:no-c-format */
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("compression of graduation:\n0% = soft, 100% = hard"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("rotation of filter -180 to 180 degrees"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("offset of filter in angle of rotation"), (char *)NULL);
-
-  g_signal_connect (G_OBJECT (g->scale1), "value-changed",
-                    G_CALLBACK (density_callback), self);
-  g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-                    G_CALLBACK (compression_callback), self);
-  g_signal_connect (G_OBJECT (g->scale3), "value-changed",
-                    G_CALLBACK (rotation_callback), self);
-  g_signal_connect (G_OBJECT (g->scale4), "value-changed",
-                    G_CALLBACK (offset_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

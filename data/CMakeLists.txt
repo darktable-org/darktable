@@ -24,8 +24,11 @@ install(FILES ${SHARE_FILES} DESTINATION ${SHARE_INSTALL})
 #
 # web gallery export support files:
 #
-set(WEB_FILES style/style.css style/favicon.ico)
-install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/style/)
+FILE(GLOB WEB_FILES "style/*")
+install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/style)
+
+FILE(GLOB WEB_FILES "js/*")
+install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/js)
 
 #
 # Install other system shares

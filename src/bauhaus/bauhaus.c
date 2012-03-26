@@ -18,10 +18,11 @@
 
 #include "bauhaus/bauhaus.h"
 #include "control/conf.h"
+#include "common/darktable.h"
+#include "gui/gtk.h"
 
 // new type dt_bauhaus_widget_t, gtk functions start with dt_bh (so they don't collide with ours), we inherit from drawing area
 G_DEFINE_TYPE (DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA);
-
 
 // fwd declare
 static void dt_bauhaus_hide_popup();
@@ -34,7 +35,10 @@ static void
 dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w);
 static void
 dt_bauhaus_widget_reject(dt_bauhaus_widget_t *w);
-
+static gboolean
+dt_bauhaus_root_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
+static gboolean
+dt_bauhaus_root_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 
 
 static int
@@ -205,6 +209,48 @@ draw_slider_line(cairo_t *cr, float pos, float off, float scale, const int width
 }
 // -------------------------------
 
+// handlers on the root window, to close popup:
+static gboolean
+dt_bauhaus_root_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+{
+  if(darktable.bauhaus->current)
+  {
+    const float tol = 100;
+    gint wx, wy;
+    GtkWidget *widget = darktable.bauhaus->popup_window;
+    gdk_window_get_origin (gtk_widget_get_window (widget), &wx, &wy);
+    if(event->x_root > wx + widget->allocation.width + tol || event->y_root > wy + widget->allocation.height + tol ||
+       event->x_root < (int)wx - tol || event->y_root < (int)wy - tol)
+    {
+      dt_bauhaus_widget_reject(darktable.bauhaus->current);
+      dt_bauhaus_hide_popup();
+    }
+    return TRUE;
+  }
+  // make sure to propagate the event further
+  return FALSE;
+}
+
+static gboolean
+dt_bauhaus_root_button_press(GtkWidget *wd, GdkEventButton *event, gpointer user_data)
+{
+  const float tol = 100;
+  gint wx, wy;
+  GtkWidget *widget = darktable.bauhaus->popup_window;
+  gdk_window_get_origin (gtk_widget_get_window (widget), &wx, &wy);
+  if(darktable.bauhaus->current &&
+    (event->x_root > wx + widget->allocation.width + tol || event->y_root > wy + widget->allocation.height + tol ||
+     event->x_root < (int)wx - tol || event->y_root < (int)wy - tol))
+  {
+    dt_bauhaus_widget_reject(darktable.bauhaus->current);
+    dt_bauhaus_hide_popup();
+    return TRUE;
+  }
+  // make sure to propagate the event further
+  return FALSE;
+}
+
+
 static gboolean
 dt_bauhaus_popup_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
@@ -269,8 +315,17 @@ dt_bauhaus_popup_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointe
 static gboolean
 dt_bauhaus_popup_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  // TODO: make popup disappear, send accept signal or don't?
-  // dt_bauhaus_hide_popup();
+  // all that doesn't seem to work (more events are created than necessary, exits at random
+  // during popup already etc.
+#if 0
+  // if(event->x > widget->allocation.width + 20 || event->y > widget->allocation.height + 20 ||
+     // event->x < -20 || event->y < -20)
+  if(!event->state)
+  {
+    dt_bauhaus_widget_reject(darktable.bauhaus->current);
+    dt_bauhaus_hide_popup();
+  }
+#endif
   return TRUE;
 }
 
@@ -341,6 +396,13 @@ dt_bauhaus_init()
   darktable.bauhaus->keys_cnt = 0;
   darktable.bauhaus->current = NULL;
   darktable.bauhaus->popup_area = gtk_drawing_area_new();
+
+  // connect signal to eventually clean up our popup if we go too far away and such:
+  GtkWidget *root_window = dt_ui_main_window(darktable.gui->ui);
+  g_signal_connect (G_OBJECT (root_window), "motion-notify-event",
+                    G_CALLBACK (dt_bauhaus_root_motion_notify), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (root_window), "button-press-event",
+                    G_CALLBACK (dt_bauhaus_root_button_press), (gpointer)NULL);
 
   const float scale = dt_conf_get_float("bauhaus/scale");
   if(scale < .5 || scale > 5.0)
