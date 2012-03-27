@@ -28,12 +28,12 @@
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#ifdef HAVE_GPHOTO2
 #include "gui/camera_import_dialog.h"
+#endif
 #include "libs/lib.h"
 
 DT_MODULE(1)
-
-// #ifdef HAVE_GPHOTO2
 
 
 #ifdef HAVE_GPHOTO2
@@ -44,7 +44,9 @@ static void _lib_import_ui_devices_update(dt_lib_module_t *self);
 
 typedef struct dt_lib_import_t
 {
+#ifdef HAVE_GPHOTO2
   dt_camctl_listener_t camctl_listener;
+#endif
   GtkButton *import_file;
   GtkButton *import_directory;
   GtkButton *import_camera;
