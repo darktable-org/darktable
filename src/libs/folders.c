@@ -188,7 +188,7 @@ _folder_tree (sqlite3_stmt *stmt)
 static GtkTreeModel *
 _create_filtered_tree (GtkTreeModel *model, gchar *mount_path)
 {
-  GtkTreeModel *filter;
+  GtkTreeModel *filter = NULL;
   GtkTreePath  *path;
     
   /* Create path to set as virtual root */
@@ -219,12 +219,14 @@ _create_filtered_tree (GtkTreeModel *model, gchar *mount_path)
       }
     }
 
-    if (!found) break;
+    if (!found)
+      break;
     level++;
     pch = strtok(NULL, "/");
   }
 
-  if (!found) return NULL;
+  if (!found)
+    return NULL;
 
   path = gtk_tree_model_get_path (GTK_TREE_MODEL(model), &iter);
 
@@ -442,6 +444,9 @@ void gui_init(dt_lib_module_t *self)
   GVolumeMonitor *gv_monitor;
   gv_monitor = g_volume_monitor_get ();
 
+  g_signal_connect(G_OBJECT(gv_monitor), "mount-added", G_CALLBACK(mount_added), d);
+  g_signal_connect(G_OBJECT(gv_monitor), "mount-removed", G_cALLBACK(mount_removed), d);
+
   GList *gm_list;
   gm_list = g_volume_monitor_get_mounts(gv_monitor);
 
@@ -452,6 +457,8 @@ void gui_init(dt_lib_module_t *self)
 
   tree = _create_treeview_display(GTK_TREE_MODEL(store));
   gtk_container_add(GTK_CONTAINER(box_tree), GTK_WIDGET(tree));
+  
+  g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d); 
 
   GtkTreeModel *model;
 
@@ -467,8 +474,7 @@ void gui_init(dt_lib_module_t *self)
     /* TODO: Pack a gtkbox and a gtktreeview together with a button, to show that part of the tree */
 
     model = _create_filtered_tree (GTK_TREE_MODEL(store), g_file_get_path(file));
-
-    if (!model)
+    if (model != NULL)
     {
       button = gtk_button_new_with_label (g_mount_get_name(mount));
       gtk_container_add(GTK_CONTAINER(box_tree), GTK_WIDGET(button));
@@ -476,12 +482,12 @@ void gui_init(dt_lib_module_t *self)
       tree = _create_treeview_display(GTK_TREE_MODEL(model));
 
       gtk_container_add(GTK_CONTAINER(box_tree), GTK_WIDGET(tree));
+      
+      g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d); 
     }
   }
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box_tree), TRUE, TRUE, 0); 
-  g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d); 
-         
   
   gtk_widget_show_all(GTK_WIDGET(d->view));
   
