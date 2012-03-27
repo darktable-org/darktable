@@ -626,11 +626,11 @@ modify_roi_in (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
   roi_in->y = MAX(0, roi_in->y & ~1);
 
   // clamp numeric inaccuracies to full buffer, to avoid scaling/copying in pixelpipe:
-  if(piece->pipe->image.width - roi_in->width < 10 && piece->pipe->image.height - roi_in->height < 10)
-  {
+  if(abs(piece->pipe->image.width - roi_in->width) < MAX(ceilf(1.0f/roi_out->scale), 10))
     roi_in->width  = piece->pipe->image.width;
+
+  if(abs(piece->pipe->image.height - roi_in->height) < MAX(ceilf(1.0f/roi_out->scale), 10))
     roi_in->height = piece->pipe->image.height;
-  }
 }
 
 void
@@ -977,7 +977,16 @@ error:
 
 void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
-  tiling->factor = 3.25f; // in + out + tmp + green_eq (1/4 full)
+
+  tiling->factor = ((float)roi_in->width*roi_in->height + (float)roi_out->width*roi_out->height)/((float)roi_in->width*roi_in->height);
+
+  if(roi_out->scale > 0.999f)
+    tiling->factor += 0.25f; // in + out + green_eq (1/4 full)
+  else if(roi_out->scale > 0.5f)
+    tiling->factor += 1.25f; // in + out + tmp + green_eq (1/4 full)
+  else
+    tiling->factor += 0.25f; // in + out + tmp (1/4 full)
+
   tiling->overhead = 0;
   tiling->overlap = 5; // take care of border handling
   tiling->xalign = 2; // Bayer pattern
