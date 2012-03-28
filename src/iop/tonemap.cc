@@ -114,8 +114,8 @@ extern "C"
     const int ch = piece->colors;
 
     int width,height,size;
-    float sigma_s;
-    const float sigma_r=0.4;
+    float inv_sigma_s;
+    const float inv_sigma_r=1.0/0.4;
 
     width=roi_in->width;
     height=roi_in->height;
@@ -123,8 +123,9 @@ extern "C"
     const float iw=piece->buf_in.width*roi_out->scale;
     const float ih=piece->buf_in.height*roi_out->scale;
 
-    sigma_s=(data->Fsize/100.0)*fminf(iw,ih);
-    if(sigma_s<3.0) sigma_s=3.0;
+    inv_sigma_s=(data->Fsize/100.0) * fminf(iw,ih);
+    if(inv_sigma_s<3.0) inv_sigma_s=3.0;
+    inv_sigma_s = 1.0/inv_sigma_s;
 
     PermutohedralLattice<3,2> lattice(size, omp_get_max_threads());
 
@@ -143,7 +144,7 @@ extern "C"
         float L = 0.2126*in[0]+ 0.7152*in[1] + 0.0722*in[2];
         if(L<=0.0) L=1e-6;
         L = logf(L);
-        float pos[3] = {i/sigma_s, j/sigma_s, L/sigma_r};
+        float pos[3] = {i*inv_sigma_s, j*inv_sigma_s, L*inv_sigma_r};
         float val[2] = {L,  1.0};
         lattice.splat(pos, val, index, thread);
       }
@@ -237,7 +238,7 @@ extern "C"
     dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)p1;
     dt_iop_tonemapping_data_t *d = (dt_iop_tonemapping_data_t *)piece->data;
     d->contrast = p->contrast;
-    d->Fsize = p->Fsize/100.0;
+    d->Fsize = p->Fsize;
   }
 
   void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -257,7 +258,7 @@ extern "C"
     dt_iop_tonemapping_gui_data_t *g = (dt_iop_tonemapping_gui_data_t *)self->gui_data;
     dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)module->params;
     dt_bauhaus_slider_set(g->contrast, p->contrast);
-    dt_bauhaus_slider_set(g->Fsize, p->Fsize*100.0);
+    dt_bauhaus_slider_set(g->Fsize, p->Fsize);
   }
 
   void reload_defaults(dt_iop_module_t *module)
@@ -269,7 +270,7 @@ extern "C"
 
     dt_iop_tonemapping_params_t tmp = (dt_iop_tonemapping_params_t)
     {
-      2.5,0.1
+      2.5,30
     };
     memcpy(module->params, &tmp, sizeof(dt_iop_tonemapping_params_t));
     memcpy(module->default_params, &tmp, sizeof(dt_iop_tonemapping_params_t));
@@ -311,7 +312,7 @@ extern "C"
 		      G_CALLBACK (contrast_callback), self);
 
     /* spatial extent */
-    g->Fsize = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->Fsize*100.0, 1);
+    g->Fsize = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->Fsize, 1);
     dt_bauhaus_slider_set_format(g->Fsize,"%.0f%%");
     dt_bauhaus_widget_set_label(g->Fsize,_("spatial extent"));
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->Fsize), TRUE, TRUE, 0);
