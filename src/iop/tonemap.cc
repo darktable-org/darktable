@@ -114,8 +114,8 @@ void connect_key_accels(dt_iop_module_t *self)
     const int ch = piece->colors;
 
     int width,height,size;
-    float sigma_s;
-    const float sigma_r=0.4;
+    float inv_sigma_s;
+    const float inv_sigma_r=1.0/0.4;
 
     width=roi_in->width;
     height=roi_in->height;
@@ -123,8 +123,9 @@ void connect_key_accels(dt_iop_module_t *self)
     const float iw=piece->buf_in.width*roi_out->scale;
     const float ih=piece->buf_in.height*roi_out->scale;
 
-    sigma_s=(data->Fsize/100.0)*fminf(iw,ih);
-    if(sigma_s<3.0) sigma_s=3.0;
+    inv_sigma_s=(data->Fsize/100.0) * fminf(iw,ih);
+    if(inv_sigma_s<3.0) inv_sigma_s=3.0;
+    inv_sigma_s = 1.0/inv_sigma_s;
 
     PermutohedralLattice<3,2> lattice(size, omp_get_max_threads());
 
@@ -143,7 +144,7 @@ void connect_key_accels(dt_iop_module_t *self)
         float L = 0.2126*in[0]+ 0.7152*in[1] + 0.0722*in[2];
         if(L<=0.0) L=1e-6;
         L = logf(L);
-        float pos[3] = {i/sigma_s, j/sigma_s, L/sigma_r};
+        float pos[3] = {i*inv_sigma_s, j*inv_sigma_s, L*inv_sigma_r};
         float val[2] = {L,  1.0};
         lattice.splat(pos, val, index, thread);
       }
@@ -237,7 +238,7 @@ void connect_key_accels(dt_iop_module_t *self)
     dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)p1;
     dt_iop_tonemapping_data_t *d = (dt_iop_tonemapping_data_t *)piece->data;
     d->contrast = p->contrast;
-    d->Fsize = p->Fsize/100.0;
+    d->Fsize = p->Fsize;
   }
 
   void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -257,7 +258,7 @@ void connect_key_accels(dt_iop_module_t *self)
     dt_iop_tonemapping_gui_data_t *g = (dt_iop_tonemapping_gui_data_t *)self->gui_data;
     dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)module->params;
     dtgtk_slider_set_value(g->contrast, p->contrast);
-    dtgtk_slider_set_value(g->Fsize, p->Fsize*100.0);
+    dtgtk_slider_set_value(g->Fsize, p->Fsize);
   }
 
   void reload_defaults(dt_iop_module_t *module)
@@ -269,7 +270,7 @@ void connect_key_accels(dt_iop_module_t *self)
 
     dt_iop_tonemapping_params_t tmp = (dt_iop_tonemapping_params_t)
     {
-      2.5,0.1
+      2.5,30
     };
     memcpy(module->params, &tmp, sizeof(dt_iop_tonemapping_params_t));
     memcpy(module->default_params, &tmp, sizeof(dt_iop_tonemapping_params_t));
@@ -309,7 +310,7 @@ void connect_key_accels(dt_iop_module_t *self)
     dtgtk_slider_set_label(g->contrast,_("contrast compression"));
     g_signal_connect (G_OBJECT (g->contrast), "value-changed",G_CALLBACK (contrast_callback), self);
 
-    g->Fsize = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0,100.0, 1.0, p->Fsize*100.0, 1));
+    g->Fsize = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0,100.0, 1.0, p->Fsize, 1));
     dtgtk_slider_set_format_type(g->Fsize, DARKTABLE_SLIDER_FORMAT_PERCENT);
     dtgtk_slider_set_label(g->Fsize,_("spatial extent"));
     dtgtk_slider_set_unit(g->Fsize,(gchar *)"%");
