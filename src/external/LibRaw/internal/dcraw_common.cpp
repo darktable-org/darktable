@@ -6347,7 +6347,7 @@ void CLASS parse_sinar_ia()
 
 void CLASS parse_phase_one (int base)
 {
-  unsigned entries, tag, type, len, data, save, i, c;
+  unsigned entries, tag, type, len, data, save, i, j, c;
   float romm_cam[3][3];
   char *cp;
 
@@ -6368,8 +6368,9 @@ void CLASS parse_phase_one (int base)
     switch (tag) {
       case 0x100:  flip = "0653"[data & 3]-'0';  break;
       case 0x106:
-	for (i=0; i < 9; i++)
-	  romm_cam[0][i] = getreal(11);
+    for (i=0; i < 3; i++)
+      for (j=0; j < 3; j++)
+       romm_cam[i][j] = getreal(11);
 	romm_coeff (romm_cam);
 	break;
       case 0x107:
@@ -7273,20 +7274,26 @@ void CLASS adobe_coeff (const char *p_make, const char *p_model)
   int i, j;
 
   sprintf (name, "%s %s", p_make, p_model);
-  for (i=0; i < sizeof table / sizeof *table; i++)
+  for (i=0; i < sizeof table / sizeof *table; i++) {
     if (!strncmp (name, table[i].prefix, strlen(table[i].prefix))) {
       if (table[i].t_black)   black   = (ushort) table[i].t_black;
       if (table[i].t_maximum) maximum = (ushort) table[i].t_maximum;
       if (table[i].trans[0]) {
-        for (j=0; j < 12; j++)
+        double *const cam_xyz_ptr = &(cam_xyz[0][0]);
 #ifdef LIBRAW_LIBRARY_BUILD
-          imgdata.color.cam_xyz[0][j] = 
+        float *const color_cam_xyz_ptr = &(imgdata.color.cam_xyz[0][0]);
 #endif
-	  cam_xyz[0][j] = table[i].trans[j] / 10000.0;
-      cam_xyz_coeff (cam_xyz);
+        for (j=0; j < 12; j++) {
+#ifdef LIBRAW_LIBRARY_BUILD
+          color_cam_xyz_ptr[j] =
+#endif
+          cam_xyz_ptr[j] = table[i].trans[j] / 10000.0;
+        }
+        cam_xyz_coeff (cam_xyz);
       }
       break;
     }
+  }
 }
 
 void CLASS simple_coeff (int index)
