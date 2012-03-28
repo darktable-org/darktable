@@ -421,32 +421,14 @@ tree_row_activated (GtkTreeView *view, GtkTreePath *path, gpointer user_data)
   dt_control_queue_redraw_center(); 
 }
 
-static void mount_added (GVolumeMonitor *volume_monitor, GMount *mount, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_folders_t *d = (dt_lib_folders_t *)self->d;
-    
-  d->mounts = g_volume_monitor_get_mounts(d->gv_monitor);
-  _draw_tree_gui(self);
-}
-
-static void mount_removed (GVolumeMonitor *volume_monitor, GMount *mount, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_folders_t *d = (dt_lib_folders_t *)self->data;
-  
-  d->mounts = g_volume_monitor_get_mounts(d->gv_monitor);
-  _draw_tree_gui(self);
-}
 
 static void _draw_tree_gui (dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_folders_t *d = (dt_lib_folders_t *)self->data;
   
   /* Destroy old tree */
   if (d->box_tree)
-    gtk_widget_destroy(d->box_tree);
+    gtk_widget_destroy(GTK_WIDGET(d->box_tree));
 
   d->box_tree = GTK_BOX(gtk_vbox_new(FALSE,5)); 
 	
@@ -465,7 +447,7 @@ static void _draw_tree_gui (dt_lib_module_t *self)
   
   g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d); 
 
-  for (int i=0;i<g_list_length(gm_list);i++)
+  for (int i=0;i<g_list_length(d->mounts);i++)
   {
     GtkTreeModel *model; 
     GMount *mount;
@@ -489,8 +471,27 @@ static void _draw_tree_gui (dt_lib_module_t *self)
   }
   
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->box_tree), TRUE, TRUE, 0); 
-  gtk_widget_show_all(GTK_WIDGET(d->view));
+//  gtk_widget_show_all(GTK_WIDGET(view));
 }
+
+static void mount_added (GVolumeMonitor *volume_monitor, GMount *mount, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_folders_t *d = (dt_lib_folders_t *)self->data;
+    
+  d->mounts = g_volume_monitor_get_mounts(d->gv_monitor);
+  _draw_tree_gui(self);
+}
+
+static void mount_removed (GVolumeMonitor *volume_monitor, GMount *mount, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_folders_t *d = (dt_lib_folders_t *)self->data;
+  
+  d->mounts = g_volume_monitor_get_mounts(d->gv_monitor);
+  _draw_tree_gui(self);
+}
+
 
 
 void gui_init(dt_lib_module_t *self)
@@ -502,7 +503,6 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_vbox_new(FALSE, 5);
 
   /* intialize the tree store */
-  GtkBox *box_tree; 
   char query[1024]; 
   sqlite3_stmt *stmt; 
   snprintf(query, 1024, "select * from film_rolls"); 
@@ -515,11 +515,11 @@ void gui_init(dt_lib_module_t *self)
   /* set the UI */      
   d->gv_monitor = g_volume_monitor_get ();
 
-  g_signal_connect(G_OBJECT(gv_monitor), "mount-added", G_CALLBACK(mount_added), d);
-  g_signal_connect(G_OBJECT(gv_monitor), "mount-removed", G_CALLBACK(mount_removed), d);
+  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-added", G_CALLBACK(mount_added), d);
+  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-removed", G_CALLBACK(mount_removed), d);
 
-  d->mounts = g_volume_monitor_get_mounts(gv_monitor);
-  _draw_tree_gui(d);
+  d->mounts = g_volume_monitor_get_mounts(d->gv_monitor);
+  _draw_tree_gui(self);
   
 }
 
