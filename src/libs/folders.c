@@ -31,8 +31,13 @@ DT_MODULE(1)
 
 typedef struct dt_lib_folders_t
 {
+  /* data */
   GtkTreeStore *store;
-  GtkTreeView *view;
+  GList *mounts;
+  
+  /* gui */
+  GVolumeMonitor *gv_monitor;
+  GtkBox *box_tree;
 }
 dt_lib_folders_t;
 
@@ -416,6 +421,78 @@ tree_row_activated (GtkTreeView *view, GtkTreePath *path, gpointer user_data)
   dt_control_queue_redraw_center(); 
 }
 
+static void mount_added (GVolumeMonitor *volume_monitor, GMount *mount, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_folders_t *d = (dt_lib_folders_t *)self->d;
+    
+  d->mounts = g_volume_monitor_get_mounts(d->gv_monitor);
+  _draw_tree_gui(self);
+}
+
+static void mount_removed (GVolumeMonitor *volume_monitor, GMount *mount, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_folders_t *d = (dt_lib_folders_t *)self->data;
+  
+  d->mounts = g_volume_monitor_get_mounts(d->gv_monitor);
+  _draw_tree_gui(self);
+}
+
+static void _draw_tree_gui (dt_lib_module_t *self)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_folders_t *d = (dt_lib_folders_t *)self->data;
+  
+  /* Destroy old tree */
+  if (d->box_tree)
+    gtk_widget_destroy(d->box_tree);
+
+  d->box_tree = GTK_BOX(gtk_vbox_new(FALSE,5)); 
+	
+  /* set the UI */
+  GtkTreeView *tree; 
+  GtkWidget *button;
+        
+  // Add a button for local filesystem, to keep UI consistency
+  button = gtk_button_new_with_label (_("Local HDD"));
+  gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(button));
+  
+   /* TODO: this tree should only show internal fs filmrolls */
+   /* TODO: if we are freeing passed model in _create_treeview_display, how does it work later? */
+  tree = _create_treeview_display(GTK_TREE_MODEL(d->store));
+  gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(tree));
+  
+  g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d); 
+
+  for (int i=0;i<g_list_length(gm_list);i++)
+  {
+    GtkTreeModel *model; 
+    GMount *mount;
+    GFile *file;
+
+    mount = (GMount *)g_list_nth_data(d->mounts, i);
+    file = g_mount_get_root(mount);
+    
+    model = _create_filtered_tree (GTK_TREE_MODEL(d->store), g_file_get_path(file));
+    if (model != NULL)
+    {
+      button = gtk_button_new_with_label (g_mount_get_name(mount));
+      gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(button));
+
+      tree = _create_treeview_display(GTK_TREE_MODEL(model));
+
+      gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(tree));
+      
+      g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d); 
+    }
+  }
+  
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->box_tree), TRUE, TRUE, 0); 
+  gtk_widget_show_all(GTK_WIDGET(d->view));
+}
+
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -423,8 +500,6 @@ void gui_init(dt_lib_module_t *self)
   memset(d,0,sizeof(dt_lib_folders_t));
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 5);
-
-  GtkTreeStore *store = gtk_tree_store_new(1, G_TYPE_STRING);
 
   /* intialize the tree store */
   GtkBox *box_tree; 
@@ -434,62 +509,17 @@ void gui_init(dt_lib_module_t *self)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL); 
                       
   //Populate the tree  
-  store = _folder_tree (stmt); 
+  d->store = _folder_tree (stmt); 
   sqlite3_finalize(stmt); 
   
-  /* set the UI */
-  GtkTreeView *tree; 
-  box_tree = GTK_BOX(gtk_vbox_new(FALSE,5)); 
-           
-  GVolumeMonitor *gv_monitor;
-  gv_monitor = g_volume_monitor_get ();
+  /* set the UI */      
+  d->gv_monitor = g_volume_monitor_get ();
 
   g_signal_connect(G_OBJECT(gv_monitor), "mount-added", G_CALLBACK(mount_added), d);
-  g_signal_connect(G_OBJECT(gv_monitor), "mount-removed", G_cALLBACK(mount_removed), d);
+  g_signal_connect(G_OBJECT(gv_monitor), "mount-removed", G_CALLBACK(mount_removed), d);
 
-  GList *gm_list;
-  gm_list = g_volume_monitor_get_mounts(gv_monitor);
-
-  GtkWidget *button;
-  // Add a button for local filesystem, to keep UI consistency
-  button = gtk_button_new_with_label (_("Local HDD"));
-  gtk_container_add(GTK_CONTAINER(box_tree), GTK_WIDGET(button));
-
-  tree = _create_treeview_display(GTK_TREE_MODEL(store));
-  gtk_container_add(GTK_CONTAINER(box_tree), GTK_WIDGET(tree));
-  
-  g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d); 
-
-  GtkTreeModel *model;
-
-  for (int i=0;i<g_list_length(gm_list);i++)
-  {
-    GMount *mount;
-    GFile *file;
-
-    mount = (GMount *)g_list_nth_data(gm_list, i);
-    file = g_mount_get_root(mount);
-    
-    /* TODO: We should only add devices in which we already have filmrolls imported */
-    /* TODO: Pack a gtkbox and a gtktreeview together with a button, to show that part of the tree */
-
-    model = _create_filtered_tree (GTK_TREE_MODEL(store), g_file_get_path(file));
-    if (model != NULL)
-    {
-      button = gtk_button_new_with_label (g_mount_get_name(mount));
-      gtk_container_add(GTK_CONTAINER(box_tree), GTK_WIDGET(button));
-
-      tree = _create_treeview_display(GTK_TREE_MODEL(model));
-
-      gtk_container_add(GTK_CONTAINER(box_tree), GTK_WIDGET(tree));
-      
-      g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d); 
-    }
-  }
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box_tree), TRUE, TRUE, 0); 
-  
-  gtk_widget_show_all(GTK_WIDGET(d->view));
+  d->mounts = g_volume_monitor_get_mounts(gv_monitor);
+  _draw_tree_gui(d);
   
 }
 
