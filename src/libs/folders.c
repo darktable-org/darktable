@@ -186,12 +186,12 @@ _folder_tree (sqlite3_stmt *stmt)
     }  
   }
 
-  return (store);
+  return store;
 }
 
 
 static GtkTreeModel *
-_create_filtered_tree (GtkTreeModel *model, gchar *mount_path)
+_create_filtered_root_model (GtkTreeModel *model, gchar *mount_path)
 {
   GtkTreeModel *filter = NULL;
   GtkTreePath  *path;
@@ -239,15 +239,52 @@ _create_filtered_tree (GtkTreeModel *model, gchar *mount_path)
   filter = gtk_tree_model_filter_new (model, path);
   gtk_tree_path_free (path);
 
-  return (filter);
+  return filter;
                              
-  /* Create treeview with model */
-//  treeview = gtk_tree_view_new_with_model (filter);
-                                      
-  /* Create display components of tree view */
-//  create_treeview_display (GTK_TREE_VIEW(treeview));
-                                               
-//  return (treeview); 
+}
+
+static gboolean
+_filter_func (GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data)
+{
+
+  gboolean visible = TRUE;
+  GList *mounts = (GList *)user_data;
+  gchar *path;
+  GFile *mount_path, *filmrollpath;
+  
+  gtk_tree_model_get(model, iter, 1, &path, -1);
+  filmrollpath = g_file_new_for_path (path);
+  
+  for (i=0; i < g_list_length (mounts); i++)
+  {
+    location = g_mount_get_default_location(g_list_nth_data(mounts, i));
+    if (g_file_has_parent(filmrollpath, location))
+	{
+	  /* Once we find a match, we know we don't want to show that branch */
+	  visible = FALSE;
+	  break;
+	}
+  }
+  
+  return visible;
+}
+
+
+static GtkTreeModel *
+_create_filtered_model (GtkTreeModel *model, GList *mounts)
+{
+   GtkTreeModel *filter = NULL;
+   GtkTreePath *path;
+   
+   /* Create a path to set as virtual root of the new model */
+   path = gtk_tree_path_new_from_string ("1");
+   
+   /* Create filter and set visible filter function */
+   filter = gtk_tree_model_filter_new (model, path);
+   gtk_tree_model_filter_set_visible_func(GTK_TREE_MODEL_FILTER(filter),
+                (GtkTreeModelFilterVisibleFunc)filter_func, mounts, NULL );
+   
+   return filter;
 }
 
 static GtkTreeView *
@@ -295,7 +332,7 @@ _create_treeview_display (GtkTreeModel *model)
   /* free store, treeview has its own storage now */
   g_object_unref(model);
 
-  return (treeview);
+  return treeview;
 }
 
 static void _lib_folders_string_from_path(char *dest,size_t ds, 
@@ -361,6 +398,8 @@ static void _lib_folders_update_collection(GtkTreeView *view, GtkTreePath *tp)
 {
   
   char folder[1024]={0};
+  /* We have the full path stored in the second column, so we don't need this function
+  /* or we don't need the column */ 
   _lib_folders_string_from_path(folder, 1024, gtk_tree_view_get_model(view), tp);
   
   gchar *complete_query = NULL;
@@ -370,8 +409,6 @@ static void _lib_folders_update_collection(GtkTreeView *view, GtkTreePath *tp)
   dt_collection_set_extended_where(darktable.collection, complete_query);
 
   dt_collection_set_query_flags(darktable.collection, (dt_collection_get_query_flags (darktable.collection) | COLLECTION_QUERY_USE_WHERE_EXT));
-
-//  dt_collection_set_query_flags(darktable.collection, (dt_collection_get_query_flags (darktable.collection) & ~COLLECTION_QUERY_USE_LIMIT));
 
   dt_collection_set_filter_flags (darktable.collection, (dt_collection_get_filter_flags (darktable.collection) & ~COLLECTION_FILTER_FILM_ID));
 
@@ -424,6 +461,7 @@ tree_row_activated (GtkTreeView *view, GtkTreePath *path, gpointer user_data)
 
 static void _draw_tree_gui (dt_lib_module_t *self)
 {
+  GtkTreeModel *model;
   dt_lib_folders_t *d = (dt_lib_folders_t *)self->data;
   
   /* Destroy old tree */
@@ -436,27 +474,27 @@ static void _draw_tree_gui (dt_lib_module_t *self)
   GtkTreeView *tree; 
   GtkWidget *button;
         
-  // Add a button for local filesystem, to keep UI consistency
+  /* Add a button for local filesystem, to keep UI consistency */
   button = gtk_button_new_with_label (_("Local HDD"));
   gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(button));
   
-   /* TODO: this tree should only show internal fs filmrolls */
-   /* TODO: if we are freeing passed model in _create_treeview_display, how does it work later? */
-  tree = _create_treeview_display(GTK_TREE_MODEL(d->store));
+  /* Show only filmrolls in the system */
+  model = _create_filtered_model(GTK_TREE_MODEL(d->store));
+  tree = _create_treeview_display(GTK_TREE_MODEL(model));
   gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(tree));
   
   g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d); 
 
   for (int i=0;i<g_list_length(d->mounts);i++)
   {
-    GtkTreeModel *model; 
+     
     GMount *mount;
     GFile *file;
 
     mount = (GMount *)g_list_nth_data(d->mounts, i);
     file = g_mount_get_root(mount);
     
-    model = _create_filtered_tree (GTK_TREE_MODEL(d->store), g_file_get_path(file));
+    model = _create_filtered_root_model (GTK_TREE_MODEL(d->store), g_file_get_path(file));
     if (model != NULL)
     {
       button = gtk_button_new_with_label (g_mount_get_name(mount));
@@ -471,10 +509,10 @@ static void _draw_tree_gui (dt_lib_module_t *self)
   }
   
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->box_tree), TRUE, TRUE, 0); 
-//  gtk_widget_show_all(GTK_WIDGET(view));
+
 }
 
-static void mount_added (GVolumeMonitor *volume_monitor, GMount *mount, gpointer user_data)
+static void mount_changed (GVolumeMonitor *volume_monitor, GMount *mount, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_folders_t *d = (dt_lib_folders_t *)self->data;
@@ -482,17 +520,6 @@ static void mount_added (GVolumeMonitor *volume_monitor, GMount *mount, gpointer
   d->mounts = g_volume_monitor_get_mounts(d->gv_monitor);
   _draw_tree_gui(self);
 }
-
-static void mount_removed (GVolumeMonitor *volume_monitor, GMount *mount, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_folders_t *d = (dt_lib_folders_t *)self->data;
-  
-  d->mounts = g_volume_monitor_get_mounts(d->gv_monitor);
-  _draw_tree_gui(self);
-}
-
-
 
 void gui_init(dt_lib_module_t *self)
 {
@@ -515,8 +542,9 @@ void gui_init(dt_lib_module_t *self)
   /* set the UI */      
   d->gv_monitor = g_volume_monitor_get ();
 
-  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-added", G_CALLBACK(mount_added), d);
-  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-removed", G_CALLBACK(mount_removed), d);
+  /*g_signal_connect(G_OBJECT(d->gv_monitor), "mount-added", G_CALLBACK(mount_changed), self);
+  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-removed", G_CALLBACK(mount_changed), self);*/
+  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-changed", G_CALLBACK(mount_changed), self);
 
   d->mounts = g_volume_monitor_get_mounts(d->gv_monitor);
   _draw_tree_gui(self);
