@@ -405,19 +405,14 @@ static void _lib_folders_update_collection(GtkTreeView *view, GtkTreePath *tp)
   gchar *folder;
   GtkTreeModel *model;
   GtkTreeIter iter;
-  GValue value;
 
   model = gtk_tree_view_get_model(view);
   gtk_tree_model_get_iter (model, &iter, tp);
-  gtk_tree_model_get_value (model, &iter, 1, &value);
+  gtk_tree_model_get (model, &iter, 1, &folder, -1);
 
-  folder = g_strdup(g_value_get_string(&value));
-
-  g_value_unset(&value);
-  
   gchar *complete_query = NULL;
 
-  complete_query = dt_util_dstrcat(complete_query, "film_id in (select id from film_rolls where folder like '%s')", folder);
+  complete_query = dt_util_dstrcat(complete_query, "film_id in (select id from film_rolls where folder like '%s%s')", folder, "%");
   
   dt_collection_set_extended_where(darktable.collection, complete_query);
 
@@ -555,8 +550,8 @@ void gui_init(dt_lib_module_t *self)
   /* set the UI */      
   d->gv_monitor = g_volume_monitor_get ();
 
-  /*g_signal_connect(G_OBJECT(d->gv_monitor), "mount-added", G_CALLBACK(mount_changed), self);
-  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-removed", G_CALLBACK(mount_changed), self);*/
+  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-added", G_CALLBACK(mount_changed), self);
+  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-removed", G_CALLBACK(mount_changed), self);
   g_signal_connect(G_OBJECT(d->gv_monitor), "mount-changed", G_CALLBACK(mount_changed), self);
 
   d->mounts = g_volume_monitor_get_mounts(d->gv_monitor);
