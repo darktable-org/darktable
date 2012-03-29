@@ -255,10 +255,10 @@ _filter_func (GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data)
   gtk_tree_model_get(model, iter, 1, &path, -1);
   filmrollpath = g_file_new_for_path (path);
   
-  for (i=0; i < g_list_length (mounts); i++)
+  for (int i=0; i < g_list_length (mounts); i++)
   {
-    location = g_mount_get_default_location(g_list_nth_data(mounts, i));
-    if (g_file_has_parent(filmrollpath, location))
+    mount_path = g_mount_get_default_location(g_list_nth_data(mounts, i));
+    if (g_file_has_parent(filmrollpath, mount_path))
 	{
 	  /* Once we find a match, we know we don't want to show that branch */
 	  visible = FALSE;
@@ -282,7 +282,7 @@ _create_filtered_model (GtkTreeModel *model, GList *mounts)
    /* Create filter and set visible filter function */
    filter = gtk_tree_model_filter_new (model, path);
    gtk_tree_model_filter_set_visible_func(GTK_TREE_MODEL_FILTER(filter),
-                (GtkTreeModelFilterVisibleFunc)filter_func, mounts, NULL );
+                (GtkTreeModelFilterVisibleFunc)_filter_func, mounts, NULL );
    
    return filter;
 }
@@ -335,7 +335,7 @@ _create_treeview_display (GtkTreeModel *model)
   return treeview;
 }
 
-static void _lib_folders_string_from_path(char *dest,size_t ds, 
+/*static void _lib_folders_string_from_path(char *dest,size_t ds, 
 					   GtkTreeModel *model, 
 					   GtkTreePath *path)
 {
@@ -345,19 +345,19 @@ static void _lib_folders_string_from_path(char *dest,size_t ds,
   GList *components = NULL;
   GtkTreePath *wp = gtk_tree_path_copy(path);
   GtkTreeIter iter;
-
+*/
   /* get components of path */
-  while (1)
+/*  while (1)
   {
     GValue value;
     memset(&value,0,sizeof(GValue));
-
+*/
     /* get iter from path, break out if fail */
-    if (!gtk_tree_model_get_iter(model, &iter, wp))
+/*    if (!gtk_tree_model_get_iter(model, &iter, wp))
       break;
-
+*/
     /* add component to begin of list */
-    gtk_tree_model_get_value(model, &iter, 0, &value);
+/*    gtk_tree_model_get_value(model, &iter, 0, &value);
     if ( !(gtk_tree_path_get_depth(wp) == 0))
     {
       components = g_list_insert(components, 
@@ -365,15 +365,15 @@ static void _lib_folders_string_from_path(char *dest,size_t ds,
 				 0);
     }
     g_value_unset(&value);
-
+*/
     /* get parent of current path break out if we are at root */
 //    if (!gtk_tree_path_up(wp) || gtk_tree_path_get_depth(wp) == 0)
-    if (!gtk_tree_path_up(wp))
+/*    if (!gtk_tree_path_up(wp))
       break;
   }
-
+*/
   /* build the tag string from components */
-  int dcs = 0;
+/*  int dcs = 0;
 
   if(g_list_length(components) == 0) 
     dcs += g_snprintf(dest+dcs, ds-dcs," ");
@@ -387,20 +387,33 @@ static void _lib_folders_string_from_path(char *dest,size_t ds,
 		      (gchar *)g_list_nth_data(components, i),
 		      (i < g_list_length(components)-1) ? "/" : "%");
   }
-  
+*/  
   /* free data */
-  gtk_tree_path_free(wp);
+/*  gtk_tree_path_free(wp);
   
 
 }
-
+*/
 static void _lib_folders_update_collection(GtkTreeView *view, GtkTreePath *tp)
 {
   
-  char folder[1024]={0};
+  //char folder[1024]={0};
   /* We have the full path stored in the second column, so we don't need this function
-  /* or we don't need the column */ 
-  _lib_folders_string_from_path(folder, 1024, gtk_tree_view_get_model(view), tp);
+   * or we don't need the column */ 
+  //_lib_folders_string_from_path(folder, 1024, gtk_tree_view_get_model(view), tp);
+
+  gchar *folder;
+  GtkTreeModel *model;
+  GtkTreeIter iter;
+  GValue value;
+
+  model = gtk_tree_view_get_model(view);
+  gtk_tree_model_get_iter (model, &iter, tp);
+  gtk_tree_model_get_value (model, &iter, 1, &value);
+
+  folder = g_strdup(g_value_get_string(&value));
+
+  g_value_unset(&value);
   
   gchar *complete_query = NULL;
 
@@ -479,7 +492,7 @@ static void _draw_tree_gui (dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(button));
   
   /* Show only filmrolls in the system */
-  model = _create_filtered_model(GTK_TREE_MODEL(d->store));
+  model = _create_filtered_model(GTK_TREE_MODEL(d->store), d->mounts);
   tree = _create_treeview_display(GTK_TREE_MODEL(model));
   gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(tree));
   
