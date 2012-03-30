@@ -64,7 +64,19 @@ const char *_ui_panel_config_names[] = {
   "bottom"
 }; 
 
+typedef struct dt_panel_t
+{
+  GtkWidget *container, *header_surface, *footer_surface, *window, *border;
+  char name[256];
+  int number;
+  gint top, bottom, right, left;
+  GtkAttachOptions attach_x, attach_y;
+} dt_panel_t;
+
 typedef struct dt_ui_t {
+  /* primary table */
+  GtkWidget *main_table;
+
   /* container widgets */
   GtkWidget *containers[DT_UI_CONTAINER_SIZE];
 
@@ -72,7 +84,7 @@ typedef struct dt_ui_t {
   GtkWidget *borders[DT_UI_BORDER_SIZE];
 
   /* panel widgets */
-  GtkWidget *panels[DT_UI_PANEL_SIZE];
+  dt_panel_t panels[DT_UI_PANEL_SIZE];
 
   /* center widget */
   GtkWidget *center;
@@ -100,6 +112,27 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container);
 static void _ui_init_panel_bottom(dt_ui_t *ui, GtkWidget *container);
 /* generic callback for redraw widget signals */
 static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget);
+
+/* Callbacks for detaching the panels */
+static void _init_panel_header(dt_panel_t *panel);
+static void _detach_panel_callback(GtkButton *button, gpointer panel);
+static void _attach_panel_callback(GtkButton *button, gpointer panel);
+static gboolean _panel_window_expose_callback(GtkWidget *widget,
+                                              GdkEvent *event,
+                                              gpointer user_data);
+static gboolean _panel_header_click_event(GtkWidget *widget,
+                                          GdkEventButton *event,
+                                          gpointer data);
+static gboolean _panel_header_expose_event(GtkWidget *widget,
+                                           GdkEventExpose *event,
+                                           gpointer data);
+static gboolean _panel_footer_click_event(GtkWidget *widget,
+                                          GdkEventButton *event,
+                                          gpointer data);
+static gboolean _panel_footer_expose_event(GtkWidget *widget,
+                                          GdkEventExpose *event,
+                                          gpointer data);
+
 
 /*
  * OLD UI API
@@ -953,6 +986,7 @@ void init_widgets()
   // Showing everything
   gtk_widget_show_all(dt_ui_main_window(darktable.gui->ui));
 
+//<<<<<<< HEAD
   /* hide panels depending on last ui state */
   for(int k=0;k<DT_UI_PANEL_SIZE;k++)
   {
@@ -967,11 +1001,23 @@ void init_widgets()
     if(!dt_conf_key_exists(key))
       dt_conf_set_bool(key,TRUE);
 
+    // TODO LGU
     if (!dt_conf_get_bool(key))
-      gtk_widget_set_visible(darktable.gui->ui->panels[k],FALSE);
+      gtk_widget_set_visible(darktable.gui->ui->panels[k].container,FALSE);
+    else if (k == DT_UI_PANEL_LEFT && darktable.gui->ui->panels[DT_UI_PANEL_LEFT].window )
+      gtk_widget_hide(darktable.gui->widgets.left_border);
+    else if (k == DT_UI_PANEL_RIGHT && darktable.gui->ui->panels[DT_UI_PANEL_RIGHT].window )
+      gtk_widget_hide(darktable.gui->widgets.right_border);
+
 
   }
 
+/*=======
+  if(darktable.gui->ui->panels[DT_UI_PANEL_LEFT].window)
+    gtk_widget_hide(darktable.gui->widgets.left_border);
+  if(darktable.gui->ui->panels[DT_UI_PANEL_RIGHT].window)
+    gtk_widget_hide(darktable.gui->widgets.right_border);
+//>>>>>>> origin/detachable */
 }
 
 void init_main_table(GtkWidget *container)
@@ -979,7 +1025,13 @@ void init_main_table(GtkWidget *container)
   GtkWidget *widget;
 
   // Creating the table
+// TODO LGU
+//<<<<<<< HEAD
   widget = gtk_table_new(3, 5, FALSE);
+/*=======
+  widget = gtk_table_new(2, 5, FALSE); */
+  darktable.gui->ui->main_table = widget; /*
+>>>>>>> origin/detachable */
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
   gtk_widget_show(widget);
 
@@ -1128,6 +1180,7 @@ void dt_ui_container_clear(struct dt_ui_t *ui, const dt_ui_container_t c)
   gtk_container_foreach(GTK_CONTAINER(ui->containers[c]), (GtkCallback)gtk_widget_destroy, (gpointer)c);
 }
 
+// TODO LGU
 void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui)
 {
   char key[512];
@@ -1159,6 +1212,7 @@ void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui)
   dt_conf_set_int(key, state);
 }
 
+// TODO LGU
 void dt_ui_restore_panels(dt_ui_t *ui)
 {
   /* restore visible state of panels for current view */
@@ -1184,17 +1238,17 @@ void dt_ui_restore_panels(dt_ui_t *ui)
     {
       g_snprintf(key, 512, "%s/ui/%s_visible",cv->module_name, _ui_panel_config_names[k]);
       if (dt_conf_key_exists(key))
-        gtk_widget_set_visible(ui->panels[k], dt_conf_get_bool(key));
+        // TODO LGU
+        gtk_widget_set_visible(ui->panels[k].container, dt_conf_get_bool(key));
       else
-        gtk_widget_set_visible(ui->panels[k], 1);
+        gtk_widget_set_visible(ui->panels[k].container, 1);
     }
   }
 }
 
 void dt_ui_panel_show(dt_ui_t *ui,const dt_ui_panel_t p, gboolean show)
 {
-  //if(!GTK_IS_WIDGET(ui->panels[p])) return;
-  g_return_if_fail(GTK_IS_WIDGET(ui->panels[p]));
+  g_return_if_fail(GTK_IS_WIDGET(ui->panels[p].container));
 
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   char key[512];
@@ -1202,16 +1256,15 @@ void dt_ui_panel_show(dt_ui_t *ui,const dt_ui_panel_t p, gboolean show)
   dt_conf_set_bool(key, show);
 
   if(show)
-    gtk_widget_show(ui->panels[p]);
+    gtk_widget_show(ui->panels[p].container);
   else
-    gtk_widget_hide(ui->panels[p]);
+    gtk_widget_hide(ui->panels[p].container);
 }
 
 gboolean dt_ui_panel_visible(dt_ui_t *ui,const dt_ui_panel_t p)
 {
-  //if(!GTK_IS_WIDGET(ui->panels[p])) return FALSE;
-  g_return_val_if_fail(GTK_IS_WIDGET(ui->panels[p]),FALSE);
-  return gtk_widget_get_visible(ui->panels[p]);
+  g_return_val_if_fail(GTK_IS_WIDGET(ui->panels[p].container),FALSE);
+  return gtk_widget_get_visible(ui->panels[p].container);
 }
 
 GtkWidget *dt_ui_center(dt_ui_t *ui)
@@ -1272,13 +1325,14 @@ static GtkWidget * _ui_init_panel_container_bottom(GtkWidget *container)
   gtk_box_pack_start(GTK_BOX(container),w,FALSE,FALSE,DT_UI_PANEL_MODULE_SPACING);
   return w;
 }
-     
+
 static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
 {
   GtkWidget *widget;
   
   /* create left panel main widget and add it to ui */
-  widget = ui->panels[DT_UI_PANEL_LEFT] = gtk_alignment_new(.5, .5, 1, 1);
+  widget = ui->panels[DT_UI_PANEL_LEFT].container
+           = gtk_alignment_new(.5, .5, 1, 1);
   gtk_widget_set_name(widget, "left");
   gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 0, 5, 0);
   gtk_table_attach(GTK_TABLE(container), widget, 1, 2, 1, 2,
@@ -1291,6 +1345,9 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
   container = widget;
   widget = gtk_vbox_new(FALSE, 0);
   gtk_container_add(GTK_CONTAINER(container), widget);
+
+  // Adding the panel header
+  _init_panel_header(&ui->panels[DT_UI_PANEL_LEFT]);
   
   /* add top,center,bottom*/
   container = widget;
@@ -1299,7 +1356,9 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
   ui->containers[DT_UI_CONTAINER_PANEL_LEFT_BOTTOM] = _ui_init_panel_container_bottom(container);
   
   /* lets show all widgets */
-  gtk_widget_show_all(ui->panels[DT_UI_PANEL_LEFT]);  
+  gtk_widget_show_all(ui->panels[DT_UI_PANEL_LEFT].container);
+  if(!ui->panels[DT_UI_PANEL_LEFT].window)
+    gtk_widget_hide(ui->panels[DT_UI_PANEL_LEFT].footer_surface);
 }
 
 static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
@@ -1307,7 +1366,8 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
   GtkWidget *widget;
 
   /* create left panel main widget and add it to ui */
-  widget = ui->panels[DT_UI_PANEL_RIGHT] = gtk_alignment_new(.5, .5, 1, 1);
+  widget = ui->panels[DT_UI_PANEL_RIGHT].container =
+           gtk_alignment_new(.5, .5, 1, 1);
   gtk_widget_set_name(widget, "right");
   gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 0, 0, 5);
   gtk_table_attach(GTK_TABLE(container), widget, 3, 4, 1, 2,
@@ -1322,6 +1382,9 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
   gtk_container_add(GTK_CONTAINER(container), widget);
   gtk_widget_set_size_request(widget, 0, -1);
 
+  // Adding the panel header
+  _init_panel_header(&ui->panels[DT_UI_PANEL_RIGHT]);
+
   /* add top,center,bottom*/
   container = widget;
   ui->containers[DT_UI_CONTAINER_PANEL_RIGHT_TOP] = _ui_init_panel_container_top(container);
@@ -1329,7 +1392,9 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
   ui->containers[DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM] = _ui_init_panel_container_bottom(container);
 
   /* lets show all widgets */
-  gtk_widget_show_all(ui->panels[DT_UI_PANEL_RIGHT]);
+  gtk_widget_show_all(ui->panels[DT_UI_PANEL_RIGHT].container);
+  if(!ui->panels[DT_UI_PANEL_RIGHT].window)
+    gtk_widget_hide(ui->panels[DT_UI_PANEL_RIGHT].footer_surface);
 }
 
 static void _ui_init_panel_top(dt_ui_t *ui, GtkWidget *container)
@@ -1337,7 +1402,7 @@ static void _ui_init_panel_top(dt_ui_t *ui, GtkWidget *container)
   GtkWidget *widget;
 
   /* create the panel box */
-  ui->panels[DT_UI_PANEL_TOP] = widget = gtk_hbox_new(FALSE, 0);
+  ui->panels[DT_UI_PANEL_TOP].container = widget = gtk_hbox_new(FALSE, 0);
   gtk_table_attach(GTK_TABLE(container), widget, 1, 4, 0, 1,
                    GTK_EXPAND | GTK_FILL | GTK_SHRINK, GTK_SHRINK, 0, 0);
 
@@ -1360,7 +1425,7 @@ static void _ui_init_panel_bottom(dt_ui_t *ui, GtkWidget *container)
   GtkWidget *widget;
 
   /* create the panel box */
-  ui->panels[DT_UI_PANEL_BOTTOM] = widget = gtk_hbox_new(FALSE, 0);
+  ui->panels[DT_UI_PANEL_BOTTOM].container = widget = gtk_hbox_new(FALSE, 0);
   gtk_table_attach(GTK_TABLE(container), widget, 1, 4, 2, 3,
             GTK_EXPAND | GTK_FILL | GTK_SHRINK, GTK_SHRINK, 0, 0); 
 
@@ -1375,7 +1440,9 @@ static void _ui_init_panel_center_top(dt_ui_t *ui, GtkWidget *container)
   GtkWidget *widget;
 
   /* create the panel box */
-  ui->panels[DT_UI_PANEL_CENTER_TOP] = widget = gtk_hbox_new(FALSE, 0);
+  ui->panels[DT_UI_PANEL_CENTER_TOP].container
+      = widget
+        = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
 
   /* add container for center top left */
@@ -1397,7 +1464,9 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
   GtkWidget *widget;
 
   /* create the panel box */
-  ui->panels[DT_UI_PANEL_CENTER_BOTTOM] = widget = gtk_hbox_new(FALSE, 0);
+  ui->panels[DT_UI_PANEL_CENTER_BOTTOM].container
+      = widget
+        = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
 
   /* adding the center bottom left toolbox */
@@ -1422,6 +1491,328 @@ static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
   gtk_widget_queue_draw(widget);
   if(i_own_lock) dt_control_gdk_unlock();
 
+}
+
+static void _init_panel_header(dt_panel_t *panel)
+{
+  // Collecting info to fill out the dt_panel_t struct
+  panel->window = NULL;
+  for(int i = 0; i < DT_UI_PANEL_SIZE; i++)
+    if(panel == &darktable.gui->ui->panels[i])
+      panel->number = i;
+  switch(panel->number)
+  {
+  case DT_UI_PANEL_LEFT:
+    strcpy(panel->name, "left");
+    panel->border = darktable.gui->widgets.left_border;
+    break;
+
+  case DT_UI_PANEL_RIGHT:
+    strcpy(panel->name, "right");
+    panel->border = darktable.gui->widgets.right_border;
+    break;
+  }
+
+  gtk_container_child_get(GTK_CONTAINER(darktable.gui->ui->main_table),
+                          panel->container,
+                          "top-attach", &panel->top,
+                          "bottom-attach", &panel->bottom,
+                          "left-attach", &panel->left,
+                          "right-attach", &panel->right,
+                          "x-options", &panel->attach_x,
+                          "y-options", &panel->attach_y,
+                          NULL);
+
+
+  // Adding the header widgets
+  GtkWidget *vbox = gtk_bin_get_child(GTK_BIN(panel->container));
+  g_return_if_fail(vbox);
+
+  GtkWidget *container = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), container, FALSE, TRUE, 0);
+
+  // Header drawing area for standalone window
+  panel->header_surface = gtk_drawing_area_new();
+  gtk_widget_set_events(panel->header_surface,
+                        GDK_BUTTON_PRESS_MASK | GDK_EXPOSURE_MASK);
+  g_signal_connect(G_OBJECT(panel->header_surface), "button-press-event",
+                   G_CALLBACK(_panel_header_click_event), panel);
+  g_signal_connect(G_OBJECT(panel->header_surface), "expose-event",
+                   G_CALLBACK(_panel_header_expose_event), panel);
+
+  gtk_box_pack_start(GTK_BOX(container), panel->header_surface, TRUE, TRUE, 0);
+
+  // Attachment button
+  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_detach_panel,
+                                       CPF_STYLE_FLAT);
+  gtk_box_pack_start(GTK_BOX(container), button, FALSE, TRUE, 0);
+  gtk_widget_set_size_request(button, 20, -1);
+
+  g_signal_connect(G_OBJECT(button), "clicked",
+                   G_CALLBACK(_detach_panel_callback), panel);
+
+  // Adding the footer widget
+  panel->footer_surface = gtk_drawing_area_new();
+  gtk_widget_set_size_request(panel->footer_surface, -1, 16);
+  gtk_widget_set_events(panel->footer_surface,
+                        GDK_BUTTON_PRESS_MASK | GDK_EXPOSURE_MASK);
+  g_signal_connect(G_OBJECT(panel->footer_surface), "button-press-event",
+                   G_CALLBACK(_panel_footer_click_event), panel);
+  g_signal_connect(G_OBJECT(panel->footer_surface), "expose-event",
+                   G_CALLBACK(_panel_footer_expose_event), panel);
+
+  gtk_box_pack_end(GTK_BOX(vbox), panel->footer_surface, FALSE, TRUE, 0);
+
+  // Checking for attachment, and detaching if necessary
+  char key[256];
+  snprintf(key, 256, "ui_last/%s_panel_detached", panel->name);
+  if(dt_conf_get_int(key))
+    _detach_panel_callback(GTK_BUTTON(button), panel);
+}
+
+static void _detach_panel_callback(GtkButton *button, gpointer data)
+{
+  char key[256];
+  gint x, y, width, height;
+  dt_panel_t *panel = (dt_panel_t*)data;
+
+  // Setting gconf
+  snprintf(key, 256, "ui_last/%s_panel_detached", panel->name);
+  dt_conf_set_int(key, TRUE);
+
+  // Retrieving size/position from gconf
+  snprintf(key, 256, "ui_last/%s_panel_x", panel->name);
+  x = dt_conf_get_int(key);
+  snprintf(key, 256, "ui_last/%s_panel_y", panel->name);
+  y = dt_conf_get_int(key);
+  snprintf(key, 256, "ui_last/%s_panel_w", panel->name);
+  width = dt_conf_get_int(key);
+  snprintf(key, 256, "ui_last/%s_panel_h", panel->name);
+  height = dt_conf_get_int(key);
+
+  // Re-parenting the panel
+  g_object_ref(panel->container);
+  gtk_container_remove(GTK_CONTAINER(darktable.gui->ui->main_table),
+                       panel->container);
+  panel->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  gtk_container_add(GTK_CONTAINER(panel->window), panel->container);
+  g_object_unref(panel->container);
+
+
+  // Setting the correct window appearance
+  if(!width)
+    width = dt_conf_get_int("panel_width") + 10;
+  if(!height)
+    gtk_window_get_size(GTK_WINDOW(darktable.gui->ui->main_window),
+                        NULL, &height);
+
+  gtk_widget_show(panel->window);
+  gtk_window_set_decorated(GTK_WINDOW(panel->window), FALSE);
+  gtk_window_set_keep_above(GTK_WINDOW(panel->window), TRUE);
+  gtk_window_set_skip_taskbar_hint(GTK_WINDOW(panel->window), TRUE);
+  gtk_window_set_skip_pager_hint(GTK_WINDOW(panel->window), TRUE);
+  gtk_window_resize(GTK_WINDOW(panel->window), width, height);
+  gtk_window_move(GTK_WINDOW(panel->window), x, y);
+
+  // Attaching window signals
+  g_signal_connect(G_OBJECT(panel->window), "expose-event",
+                   G_CALLBACK(_panel_window_expose_callback), panel);
+
+  // Switching the button icon and callback
+  dtgtk_button_set_paint(DTGTK_BUTTON(button), dtgtk_cairo_paint_attach_panel,
+                         CPF_STYLE_FLAT);
+  g_signal_handlers_disconnect_by_func(G_OBJECT(button),
+                                       G_CALLBACK(_detach_panel_callback),
+                                       data);
+  g_signal_connect(G_OBJECT(button), "clicked",
+                   G_CALLBACK(_attach_panel_callback), data);
+
+  // Showing the footer
+  gtk_widget_show(panel->footer_surface);
+
+  // Hiding the border
+  gtk_widget_hide(panel->border);
+
+}
+
+static void _attach_panel_callback(GtkButton *button, gpointer data)
+{
+  char key[256];
+  dt_panel_t *panel = (dt_panel_t*)data;
+  GtkWidget *container = darktable.gui->ui->main_table;
+
+  // Setting gconf
+  snprintf(key, 256, "ui_last/%s_panel_detached", panel->name);
+  dt_conf_set_int(key, FALSE);
+
+  // Attaching the panel
+  g_object_ref(panel->container);
+  gtk_container_remove(GTK_CONTAINER(panel->window), panel->container);
+  gtk_widget_destroy(panel->window);
+  panel->window = NULL;
+
+  gtk_table_attach(GTK_TABLE(container), panel->container,
+                   panel->left, panel->right, panel->top, panel->bottom,
+                   panel->attach_x, panel->attach_y, 0, 0);
+  gtk_widget_show(panel->container);
+  g_object_unref(panel->container);
+
+  // Switching the button label and callback
+  dtgtk_button_set_paint(DTGTK_BUTTON(button), dtgtk_cairo_paint_detach_panel,
+                         CPF_STYLE_FLAT);
+  g_signal_handlers_disconnect_by_func(G_OBJECT(button),
+                                       G_CALLBACK(_attach_panel_callback),
+                                       data);
+  g_signal_connect(G_OBJECT(button), "clicked",
+                   G_CALLBACK(_detach_panel_callback), data);
+
+  // Hiding the footer
+  gtk_widget_hide(panel->footer_surface);
+
+  // Showing the border
+  gtk_widget_show(panel->border);
+
+}
+
+static gboolean _panel_window_expose_callback(GtkWidget *widget,
+                                              GdkEvent *event,
+                                              gpointer user_data)
+{
+  char key[256];
+  gint x, y, width, height;
+  dt_panel_t *panel = (dt_panel_t*)user_data;
+
+  gdk_window_get_geometry(gtk_widget_get_window(widget),
+                          &x, &y, &width, &height, NULL);
+
+  snprintf(key, 256, "ui_last/%s_panel_x", panel->name);
+  dt_conf_set_int(key, x);
+  snprintf(key, 256, "ui_last/%s_panel_y", panel->name);
+  dt_conf_set_int(key, y);
+  snprintf(key, 256, "ui_last/%s_panel_w", panel->name);
+  dt_conf_set_int(key, width);
+  snprintf(key, 256, "ui_last/%s_panel_h", panel->name);
+  dt_conf_set_int(key, height);
+
+  return FALSE;
+}
+
+static gboolean _panel_header_click_event(GtkWidget *widget,
+                                          GdkEventButton *event,
+                                          gpointer data)
+{
+  dt_panel_t *panel = (dt_panel_t*)data;
+
+  if(panel->window && event->button == 1)
+    gtk_window_begin_move_drag(GTK_WINDOW(panel->window), event->button,
+                               event->x_root, event->y_root, event->time);
+
+  return FALSE;
+}
+
+static gboolean _panel_header_expose_event(GtkWidget *widget,
+                                           GdkEventExpose *event,
+                                           gpointer data)
+{
+  dt_panel_t *panel = (dt_panel_t*)data;
+  if(!panel->window) return FALSE;
+  if(!dt_control_running()) return TRUE;
+
+  float width = widget->allocation.width, height = widget->allocation.height;
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+                                                    width, height);
+  cairo_t *cr = cairo_create(cst);
+  GtkStyle *style = gtk_widget_get_style(dt_ui_center(darktable.gui->ui));
+
+  // Clearing the background
+  cairo_set_source_rgb (cr,
+                        style->bg[GTK_STATE_NORMAL].red/65535.0,
+                        style->bg[GTK_STATE_NORMAL].green/65535.0,
+                        style->bg[GTK_STATE_NORMAL].blue/65535.0);
+  cairo_paint(cr);
+
+  // Drawing the horizontal lines
+  cairo_set_source_rgb(cr, .6, .6, .6);
+  cairo_set_line_width(cr, 2);
+
+  for(int i = 1; i <= 3; i++)
+  {
+    cairo_move_to(cr, 3, (height / 4.0) * i);
+    cairo_rel_line_to(cr, width - 6, 0);
+    cairo_stroke(cr);
+  }
+
+  // Drawing back to the surface
+  cairo_destroy(cr);
+  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
+  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+  cairo_paint(cr_pixmap);
+  cairo_destroy(cr_pixmap);
+  cairo_surface_destroy(cst);
+  return TRUE;
+}
+
+static gboolean _panel_footer_click_event(GtkWidget *widget,
+                                          GdkEventButton *event,
+                                          gpointer data)
+{
+  dt_panel_t *panel = (dt_panel_t*)data;
+  GtkAllocation alloc;
+  gtk_widget_get_allocation(widget, &alloc);
+
+  if(panel->window
+     && event->button == 1
+     && event->x >= alloc.width - alloc.height)
+    gtk_window_begin_resize_drag(GTK_WINDOW(panel->window),
+                                 GDK_WINDOW_EDGE_SOUTH_EAST,
+                                 event->button,
+                                 event->x_root, event->y_root,
+                                 event->time);
+
+  return FALSE;
+}
+
+static gboolean _panel_footer_expose_event(GtkWidget *widget,
+                                          GdkEventExpose *event,
+                                          gpointer data)
+{
+  dt_panel_t *panel = (dt_panel_t*)data;
+  if(!panel->window) return FALSE;
+  if(!dt_control_running()) return TRUE;
+
+  float width = widget->allocation.width, height = widget->allocation.height;
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+                                                    width, height);
+  cairo_t *cr = cairo_create(cst);
+  GtkStyle *style = gtk_widget_get_style(dt_ui_center(darktable.gui->ui));
+
+  // Clearing the background
+  cairo_set_source_rgb (cr,
+                        style->bg[GTK_STATE_NORMAL].red/65535.0,
+                        style->bg[GTK_STATE_NORMAL].green/65535.0,
+                        style->bg[GTK_STATE_NORMAL].blue/65535.0);
+  cairo_paint(cr);
+
+  // Drawing the diagonal lines
+  cairo_set_source_rgb(cr, .6, .6, .6);
+  cairo_set_line_width(cr, 2);
+
+  for(int i = 4; i <= 16; i+= 4)
+  {
+    cairo_move_to(cr, width, height - i);
+    cairo_line_to(cr, width - i, height);
+    cairo_stroke(cr);
+  }
+
+  // Drawing back to the surface
+  cairo_destroy(cr);
+  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
+  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+  cairo_paint(cr_pixmap);
+  cairo_destroy(cr_pixmap);
+  cairo_surface_destroy(cst);
+
+  return TRUE;
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

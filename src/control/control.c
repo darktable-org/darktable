@@ -1350,6 +1350,72 @@ void dt_control_queue_redraw_widget(GtkWidget *widget)
 }
 
 
+/*
+void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
+{
+  if(mode==DT_MODE_NONE) return;
+  int8_t bit;
+
+  bit = dt_conf_get_int("ui_last/panel_header");
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, (bit&(1<<mode)) ? TRUE : FALSE);
+
+  if(!dt_conf_get_int("ui_last/left_panel_detached"))
+  {
+    bit = dt_conf_get_int("ui_last/panel_left");
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, (bit&(1<<mode)) ? TRUE : FALSE);
+  }
+
+  if(!dt_conf_get_int("ui_last/right_panel_detached"))
+  {
+    bit = dt_conf_get_int("ui_last/panel_right");
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, (bit&(1<<mode)) ? TRUE : FALSE);
+  }
+
+  bit = dt_conf_get_int("ui_last/panel_top");
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, (bit&(1<<mode)) ? TRUE : FALSE);
+
+  bit = dt_conf_get_int("ui_last/panel_bottom");
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, (bit&(1<<mode)) ? TRUE : FALSE);
+
+}
+
+void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
+{
+  int8_t bit;
+  // store header panel visible state
+  bit = dt_conf_get_int("ui_last/panel_header");
+  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT)) bit |= 1<<mode;
+  else bit &= ~(1<<mode);
+  dt_conf_set_int("ui_last/panel_header",bit);
+
+  // store left panel visible state
+  bit = dt_conf_get_int("ui_last/panel_left");
+  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT)) bit |= 1<<mode;
+  else bit &= ~(1<<mode);
+  dt_conf_set_int("ui_last/panel_left",bit);
+
+  // store right panel visible state
+  bit = dt_conf_get_int("ui_last/panel_right");
+  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_RIGHT)) bit |= 1<<mode;
+  else bit &= ~(1<<mode);
+  dt_conf_set_int("ui_last/panel_right",bit);
+
+  // store top panel visible state
+  bit = dt_conf_get_int("ui_last/panel_top");
+  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP)) bit |= 1<<mode;
+  else bit &= ~(1<<mode);
+  dt_conf_set_int("ui_last/panel_top",bit);
+
+  // store bottom panel visible state
+  bit = dt_conf_get_int("ui_last/panel_bottom");
+  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM)) bit |= 1<<mode;
+  else bit &= ~(1<<mode);
+  dt_conf_set_int("ui_last/panel_bottom",bit);
+
+
+}
+*/
+
 int dt_control_key_pressed_override(guint key, guint state)
 {
   dt_control_accels_t* accels = &darktable.control->accels;
@@ -1360,9 +1426,17 @@ int dt_control_key_pressed_override(guint key, guint state)
   if(key == accels->global_sideborders.accel_key
      && state == accels->global_sideborders.accel_mods)
   {
+// TODO LGU
+// HEAD
     /* toggle panel viewstate */
     dt_ui_toggle_panels_visibility(darktable.gui->ui);
     
+/* ====
+    gboolean visible = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT);
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, !visible);
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, !visible);
+>> detachable */
+
     /* trigger invalidation of centerview to reprocess pipe */
     dt_dev_invalidate(darktable.develop);
 

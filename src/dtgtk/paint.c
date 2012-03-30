@@ -947,4 +947,52 @@ void dtgtk_cairo_paint_modulegroup_effect(cairo_t *cr, gint x, gint y, gint w, g
   cairo_stroke(cr);
 }
 
+void dtgtk_cairo_paint_detach_panel(cairo_t *cr, gint x, gint y, gint w, gint h,
+                                    gint flags)
+{
+  gint s=w<h?w:h;
+  cairo_translate(cr, x+(w/2.)-(s/2.), y+(h/2.)-(s/2.));
+  cairo_scale(cr, s, s);
+
+  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
+
+  // Adding the upward triangle
+  cairo_move_to(cr, 0, 0.6);
+  cairo_line_to(cr, 0.5, 0);
+  cairo_line_to(cr, 1, 0.6);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+
+  // Adding the lower line
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
+  cairo_set_line_width(cr, 0.1);
+  cairo_move_to(cr, 0, 0.8);
+  cairo_line_to(cr, 1, 0.8);
+  cairo_stroke(cr);
+}
+
+void dtgtk_cairo_paint_attach_panel(cairo_t *cr, gint x, gint y, gint w, gint h,
+                                    gint flags)
+{
+  gint s=w<h?w:h;
+  cairo_translate(cr, x+(w/2.)-(s/2.), y+(h/2.)-(s/2.));
+  cairo_scale(cr, s, s);
+
+  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
+
+  // Adding the upward triangle
+  cairo_move_to(cr, 0, 0);
+  cairo_line_to(cr, 1, 0);
+  cairo_line_to(cr, 0.5, 0.6);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+
+  // Adding the lower line
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
+  cairo_set_line_width(cr, 0.1);
+  cairo_move_to(cr, 0, 0.8);
+  cairo_line_to(cr, 1, 0.8);
+  cairo_stroke(cr);
+}
+
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

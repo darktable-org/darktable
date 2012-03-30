@@ -120,6 +120,11 @@ void dtgtk_cairo_paint_modulegroup_correct(cairo_t *cr, gint x, gint y, gint w, 
 /** paint effect modulgroup icon */
 void dtgtk_cairo_paint_modulegroup_effect(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
 
+/** paint detach panel icon */
+void dtgtk_cairo_paint_detach_panel(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+/** paint attach panel icon */
+void dtgtk_cairo_paint_attach_panel(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+
 #endif
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
