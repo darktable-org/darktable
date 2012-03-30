@@ -986,7 +986,6 @@ void init_widgets()
   // Showing everything
   gtk_widget_show_all(dt_ui_main_window(darktable.gui->ui));
 
-//<<<<<<< HEAD
   /* hide panels depending on last ui state */
   for(int k=0;k<DT_UI_PANEL_SIZE;k++)
   {
@@ -1001,23 +1000,14 @@ void init_widgets()
     if(!dt_conf_key_exists(key))
       dt_conf_set_bool(key,TRUE);
 
-    // TODO LGU
+    // If the panel is detached, we hide the container panel
     if (k == DT_UI_PANEL_LEFT && darktable.gui->ui->panels[DT_UI_PANEL_LEFT].window )
       gtk_widget_hide(darktable.gui->widgets.left_border);
     else if (k == DT_UI_PANEL_RIGHT && darktable.gui->ui->panels[DT_UI_PANEL_RIGHT].window )
       gtk_widget_hide(darktable.gui->widgets.right_border);
     else if (!dt_conf_get_bool(key))
       gtk_widget_set_visible(darktable.gui->ui->panels[k].container,FALSE);
-
-
   }
-
-/*=======
-  if(darktable.gui->ui->panels[DT_UI_PANEL_LEFT].window)
-    gtk_widget_hide(darktable.gui->widgets.left_border);
-  if(darktable.gui->ui->panels[DT_UI_PANEL_RIGHT].window)
-    gtk_widget_hide(darktable.gui->widgets.right_border);
-//>>>>>>> origin/detachable */
 }
 
 void init_main_table(GtkWidget *container)
@@ -1025,13 +1015,8 @@ void init_main_table(GtkWidget *container)
   GtkWidget *widget;
 
   // Creating the table
-// TODO LGU
-//<<<<<<< HEAD
   widget = gtk_table_new(3, 5, FALSE);
-/*=======
-  widget = gtk_table_new(2, 5, FALSE); */
-  darktable.gui->ui->main_table = widget; /*
->>>>>>> origin/detachable */
+  darktable.gui->ui->main_table = widget;
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
   gtk_widget_show(widget);
 
@@ -1257,7 +1242,10 @@ void dt_ui_panel_show(dt_ui_t *ui,const dt_ui_panel_t p, gboolean show)
 
   if(show)
     gtk_widget_show(ui->panels[p].container);
-  else
+  else if (p == DT_UI_PANEL_LEFT || p == DT_UI_PANEL_RIGHT) {
+    if (! darktable.gui->ui->panels[p].window)
+      gtk_widget_hide(ui->panels[p].container);
+  } else
     gtk_widget_hide(ui->panels[p].container);
 }
 
