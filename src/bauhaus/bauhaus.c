@@ -234,17 +234,19 @@ dt_bauhaus_root_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer
 static gboolean
 dt_bauhaus_root_button_press(GtkWidget *wd, GdkEventButton *event, gpointer user_data)
 {
-  const float tol = 100;
-  gint wx, wy;
-  GtkWidget *widget = darktable.bauhaus->popup_window;
-  gdk_window_get_origin (gtk_widget_get_window (widget), &wx, &wy);
-  if(darktable.bauhaus->current &&
-    (event->x_root > wx + widget->allocation.width + tol || event->y_root > wy + widget->allocation.height + tol ||
-     event->x_root < (int)wx - tol || event->y_root < (int)wy - tol))
+  if(darktable.bauhaus->current)
   {
-    dt_bauhaus_widget_reject(darktable.bauhaus->current);
-    dt_bauhaus_hide_popup();
-    return TRUE;
+    const float tol = 100;
+    gint wx, wy;
+    GtkWidget *widget = darktable.bauhaus->popup_window;
+    gdk_window_get_origin (gtk_widget_get_window (widget), &wx, &wy);
+    if((event->x_root > wx + widget->allocation.width + tol || event->y_root > wy + widget->allocation.height + tol ||
+        event->x_root < (int)wx - tol || event->y_root < (int)wy - tol))
+    {
+      dt_bauhaus_widget_reject(darktable.bauhaus->current);
+      dt_bauhaus_hide_popup();
+      return TRUE;
+    }
   }
   // make sure to propagate the event further
   return FALSE;
@@ -1234,13 +1236,13 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         gtk_widget_queue_draw(darktable.bauhaus->popup_area);
       }
       else if(darktable.bauhaus->keys_cnt > 0 &&
-             (event->keyval == GDK_KEY_BackSpace || event->keyval == GDK_KEY_Delete))
+             (event->keyval == GDK_BackSpace || event->keyval == GDK_Delete))
       {
         darktable.bauhaus->keys[--darktable.bauhaus->keys_cnt] = 0;
         gtk_widget_queue_draw(darktable.bauhaus->popup_area);
       }
       else if(darktable.bauhaus->keys_cnt > 0 && darktable.bauhaus->keys_cnt + 1 < 64 &&
-             (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter))
+             (event->keyval == GDK_Return || event->keyval == GDK_KP_Enter))
       {
         // accept input
         darktable.bauhaus->keys[darktable.bauhaus->keys_cnt] = 0;
@@ -1250,7 +1252,7 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         memset(darktable.bauhaus->keys, 0, 64);
         dt_bauhaus_hide_popup();
       }
-      else if(event->keyval == GDK_KEY_Escape)
+      else if(event->keyval == GDK_Escape)
       {
         // discard input and close popup
         darktable.bauhaus->keys_cnt = 0;
@@ -1271,13 +1273,13 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         gtk_widget_queue_draw(darktable.bauhaus->popup_area);
       }
       else if(darktable.bauhaus->keys_cnt > 0 &&
-             (event->keyval == GDK_KEY_BackSpace || event->keyval == GDK_KEY_Delete))
+             (event->keyval == GDK_BackSpace || event->keyval == GDK_Delete))
       {
         darktable.bauhaus->keys[--darktable.bauhaus->keys_cnt] = 0;
         gtk_widget_queue_draw(darktable.bauhaus->popup_area);
       }
       else if(darktable.bauhaus->keys_cnt > 0 && darktable.bauhaus->keys_cnt + 1 < 64 &&
-             (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter))
+             (event->keyval == GDK_Return || event->keyval == GDK_KP_Enter))
       {
         // accept first line:
         darktable.bauhaus->end_mouse_y = 0;
@@ -1287,7 +1289,7 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         memset(darktable.bauhaus->keys, 0, 64);
         dt_bauhaus_hide_popup();
       }
-      else if(event->keyval == GDK_KEY_Escape)
+      else if(event->keyval == GDK_Escape)
       {
         // discard input and close popup
         darktable.bauhaus->keys_cnt = 0;
