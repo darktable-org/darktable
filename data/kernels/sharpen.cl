@@ -33,29 +33,24 @@ sharpen_hblur(read_only image2d_t in, write_only image2d_t out, global const flo
   if(y >= height) return;
 
   /* read pixel and fill center part of buffer */
-  if(x < width)
-  {
-    pixel = read_imagef(in, sampleri, (int2)(x, y));
-    buffer[rad + lid] = pixel.x;
-  }
+  pixel = read_imagef(in, sampleri, (int2)(x, y));
+  buffer[rad + lid] = pixel.x;
 
   /* left wing of buffer */
   for(int n=0; n <= rad/lsz; n++)
   {
-    const int l = n*lsz + lid + 1;
+    const int l = mad24(n, lsz, lid + 1);
     if(l > rad) continue;
     const int xx = mad24((int)get_group_id(0), lsz, -l);
-    if(xx < 0) break;
     buffer[rad - l] = read_imagef(in, sampleri, (int2)(xx, y)).x;
   }
     
   /* right wing of buffer */
   for(int n=0; n <= rad/lsz; n++)
   {
-    const int r = n*lsz + (lsz - lid);
+    const int r = mad24(n, lsz, lsz - lid);
     if(r > rad) continue;
     const int xx = mad24((int)get_group_id(0), lsz, lsz - 1 + r);
-    if(xx >= width) break;
     buffer[rad + lsz - 1 + r] = read_imagef(in, sampleri, (int2)(xx, y)).x;
   }
 
@@ -71,7 +66,6 @@ sharpen_hblur(read_only image2d_t in, write_only image2d_t out, global const flo
 
   for (int i=-rad; i<rad; i++)
   {
-    if (x + i < 0 || x + i >= width) continue;
     sum += buffer[i] * m[i];
     weight += m[i];
   }
@@ -93,29 +87,24 @@ sharpen_vblur(read_only image2d_t in, write_only image2d_t out, global const flo
   if(x >= width) return;
 
   /* read pixel and fill center part of buffer */
-  if(y < height)
-  {
-    pixel = read_imagef(in, sampleri, (int2)(x, y));
-    buffer[rad + lid] = pixel.x;
-  }
+  pixel = read_imagef(in, sampleri, (int2)(x, y));
+  buffer[rad + lid] = pixel.x;
 
   /* left wing of buffer */
   for(int n=0; n <= rad/lsz; n++)
   {
-    const int l = n*lsz + lid + 1;
+    const int l = mad24(n, lsz, lid + 1);
     if(l > rad) continue;
     const int yy = mad24((int)get_group_id(1), lsz, -l);
-    if(yy < 0) break;
     buffer[rad - l] = read_imagef(in, sampleri, (int2)(x, yy)).x;
   }
     
   /* right wing of buffer */
   for(int n=0; n <= rad/lsz; n++)
   {
-    const int r = n*lsz + (lsz - lid);
+    const int r = mad24(n, lsz, lsz - lid);
     if(r > rad) continue;
     const int yy = mad24((int)get_group_id(1), lsz, lsz - 1 + r);
-    if(yy >= height) break;
     buffer[rad + lsz - 1 + r] = read_imagef(in, sampleri, (int2)(x, yy)).x;
   }
 
@@ -131,7 +120,6 @@ sharpen_vblur(read_only image2d_t in, write_only image2d_t out, global const flo
 
   for (int i=-rad; i<rad; i++)
   {
-    if (y + i < 0 || y + i >= height) continue;
     sum += buffer[i] * m[i];
     weight += m[i];
   }
