@@ -37,6 +37,7 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "iop/lens.h"
+#include "common/interpolation.h"
 
 DT_MODULE(2)
 
@@ -150,15 +151,11 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
           {
             const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
             const int ii = (int)pi0, jj = (int)pi1;
-            if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2)
+            static const int filterwidth = 2;
+            if(ii >= (filterwidth-1) && jj >= (filterwidth-1) && ii < roi_in->width-filterwidth && jj < roi_in->height-filterwidth)
             {
-              const float fi = pi0 - ii, fj = pi1 - jj;
-              const float* inp = in + ch*(roi_in->width*jj+ii) + c;
-              buf[c] = // in[ch*(roi_in->width*jj + ii) + c];
-                ((1.0f-fj)*(1.0f-fi)*inp[0] +
-                 (1.0f-fj)*(     fi)*inp[ch] +
-                 (     fj)*(     fi)*inp[ch+ch_width] +
-                 (     fj)*(1.0f-fi)*inp[ch_width]);
+              const float *inp = in + ch*(roi_in->width*jj+ii) + c;
+              buf[c] = dt_lanczos_apply(inp, pi0, pi1, filterwidth, ch, ch_width);
             }
             else buf[c] = 0.0f;
           }
@@ -244,15 +241,11 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
           {
             const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
             const int ii = (int)pi0, jj = (int)pi1;
-            if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2)
+            static const int filterwidth = 2;
+            if(ii >= (filterwidth-1) && jj >= (filterwidth-1) && ii < roi_in->width-filterwidth && jj < roi_in->height-filterwidth)
             {
-              const float fi = pi0 - ii, fj = pi1 - jj;
               const float *inp = d->tmpbuf + ch*(roi_in->width*jj+ii)+c;
-              out[c] = // in[ch*(roi_in->width*jj + ii) + c];
-                ((1.0f-fj)*(1.0f-fi)*inp[0] +
-                 (1.0f-fj)*(     fi)*inp[ch] +
-                 (     fj)*(     fi)*inp[ch_width+ch] +
-                 (     fj)*(1.0f-fi)*inp[ch_width]);
+              out[c] = dt_lanczos_apply(inp, pi0, pi1, filterwidth, ch, ch_width);
             }
             else out[c] = 0.0f;
           }
