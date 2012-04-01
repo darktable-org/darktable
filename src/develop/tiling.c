@@ -769,7 +769,7 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
   for(int k=0; k<3; k++)
     processed_maximum_saved[k] = piece->pipe->processed_maximum[k];
 
-
+#if 0
   /* get opencl input and output buffers, to be re-used for all tiles.
      For "end-tiles" these buffers will only be partly filled; the acutally used part
      is then correctly reflected in iroi and oroi which we give to the respective
@@ -779,7 +779,7 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
   if(input == NULL) goto error;
   output = dt_opencl_alloc_device(devid, width, height, out_bpp);
   if(output == NULL) goto error;
-
+#endif
 
   /* iterate over tiles */
   for(int tx=0; tx<tiles_x; tx++)
@@ -806,6 +806,12 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
 
 
     dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_ptp] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, wd, ht, tx*tile_wd, ty*tile_ht);
+
+    /* get input and output buffers */
+    input = dt_opencl_alloc_device(devid, wd, ht, in_bpp);
+    if(input == NULL) goto error;
+    output = dt_opencl_alloc_device(devid, wd, ht, out_bpp);
+    if(output == NULL) goto error;
 
     /* non-blocking memory transfer: host input buffer -> opencl/device tile */
     err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, origin, region, ipitch, CL_FALSE);
@@ -843,9 +849,16 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
       ooffs += overlap*opitch;
     }
 
+
     /* non-blocking memory transfer: opencl/device tile -> host output buffer */
     err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, origin, region, opitch, CL_FALSE);
     if(err != CL_SUCCESS) goto error;
+
+    /* release input and output buffers */
+    dt_opencl_release_mem_object(input);
+    input = NULL;
+    dt_opencl_release_mem_object(output);
+    output = NULL;
 
     /* block until opencl queue has finished to free all used event handlers. needed here as with
        some OpenCL implementations we would otherwise run out of them */
@@ -1000,13 +1013,14 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
     processed_maximum_saved[k] = piece->pipe->processed_maximum[k];
 
 
+#if 0
   /* get opencl input and output buffers, to be re-used for all tiles.
      These buffers will only be partly filled. */
   input = dt_opencl_alloc_device(devid, tile_wd_in, tile_ht_in, in_bpp);
   if(input == NULL) goto error;
   output = dt_opencl_alloc_device(devid, tile_wd_out, tile_ht_out, out_bpp);
   if(output == NULL) goto error;
-
+#endif
 
   /* iterate over tiles */
   for(int tx=0; tx<tiles_x; tx++)
@@ -1052,42 +1066,6 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
       goto error;
     }
 
-#if 0
-    dt_iop_roi_t iroi_probe = iroi_full;
-    int iter = 10;						// maximum number of iterations
-
-    /* iterative search to get a matching oroi_full. start by probing start value of oroi_full and
-       get corresponding input roi into iroi_probe. If search converges iroi_probe gets identical
-       to iroi_full (taking limit delta into account) */
-    self->modify_roi_in(self, piece, &oroi_full, &iroi_probe);
-    
-    while ((abs((int)iroi_probe.x - (int)iroi_full.x) > delta || 
-           abs((int)iroi_probe.y - (int)iroi_full.y) > delta ||
-           abs((int)iroi_probe.width - (int)iroi_full.width) > delta ||
-           abs((int)iroi_probe.height - (int)iroi_full.height) > delta) &&
-           iter > 0)
-    {
-      //_print_roi(&iroi_probe, "tile iroi_probe");
-      //_print_roi(&oroi_full, "tile oroi_full old");
-      
-      oroi_full.x += (iroi_full.x - iroi_probe.x) * oroi_full.scale / iroi_full.scale;
-      oroi_full.y += (iroi_full.y - iroi_probe.y) * oroi_full.scale / iroi_full.scale;
-      oroi_full.width += (iroi_full.width - iroi_probe.width) * oroi_full.scale / iroi_full.scale;
-      oroi_full.height += (iroi_full.height - iroi_probe.height) * oroi_full.scale / iroi_full.scale;
-
-      //_print_roi(&oroi_full, "tile oroi_full new");
-
-      self->modify_roi_in(self, piece, &oroi_full, &iroi_probe);
-      iter--;
-    }
-
-    /* if we can not find a matching oroi_full we do not proceed */
-    if (iter <= 0)
-    {
-      dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_roi] can not handle requested roi's. tiling for module '%s' not possible.\n", self->op);
-      goto error;
-    }
-#endif
 
     /* make sure that oroi_full at least covers the range of oroi_good.
        this step is needed due to the possibility of rounding errors */
@@ -1139,6 +1117,12 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
       goto error;
     }
 
+    /* get opencl input and output buffers */
+    input = dt_opencl_alloc_device(devid, iroi_full.width, iroi_full.height, in_bpp);
+    if(input == NULL) goto error;
+
+    output = dt_opencl_alloc_device(devid, oroi_full.width, oroi_full.height, out_bpp);
+    if(output == NULL) goto error;
 
     /* non-blocking memory transfer: host input buffer -> opencl/device tile */
     err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, iorigin, iregion, ipitch, CL_FALSE);
@@ -1164,6 +1148,12 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
     /* non-blocking memory transfer: opencl/device tile -> host output buffer */
     err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, oorigin, oregion, opitch, CL_FALSE);
     if(err != CL_SUCCESS) goto error;
+
+    /* release input and output buffers */
+    dt_opencl_release_mem_object(input);
+    input = NULL;
+    dt_opencl_release_mem_object(output);
+    output = NULL;
 
     /* block until opencl queue has finished to free all used event handlers. needed here as with
        some OpenCL implementations we would otherwise run out of them */
