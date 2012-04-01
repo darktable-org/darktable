@@ -24,6 +24,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "common/debug.h"
+#include "common/interpolation.h"
 #include "dtgtk/label.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
@@ -412,16 +413,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         po[1] -= roi_in->y;
 
         const int ii = (int)po[0], jj = (int)po[1];
-        if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2)
+        const int filterwidth = 2;
+        if(ii >= (filterwidth-1) && jj >= (filterwidth-1) && ii < roi_in->width-filterwidth && jj < roi_in->height-filterwidth)
         {
           const float *in = ((float *)ivoid) + ch*(roi_in->width*jj+ii);
-          const float fi = po[0] - ii, fj = po[1] - jj;
           for(int c=0; c<3; c++,in++)
-            out[c] =
-              ((1.0f-fj)*(1.0f-fi)*in[0] +
-               (1.0f-fj)*(     fi)*in[ch] +
-               (     fj)*(     fi)*in[ch_width+ch] +
-               (     fj)*(1.0f-fi)*in[ch_width]);
+            out[c] = dt_lanczos_apply(in, po[0], po[1], filterwidth, ch, ch_width);
         }
         else for(int c=0; c<3; c++) out[c] = 0.0f;
       }
