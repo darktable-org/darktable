@@ -234,17 +234,19 @@ dt_bauhaus_root_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer
 static gboolean
 dt_bauhaus_root_button_press(GtkWidget *wd, GdkEventButton *event, gpointer user_data)
 {
-  const float tol = 100;
-  gint wx, wy;
-  GtkWidget *widget = darktable.bauhaus->popup_window;
-  gdk_window_get_origin (gtk_widget_get_window (widget), &wx, &wy);
-  if(darktable.bauhaus->current &&
-    (event->x_root > wx + widget->allocation.width + tol || event->y_root > wy + widget->allocation.height + tol ||
-     event->x_root < (int)wx - tol || event->y_root < (int)wy - tol))
+  if(darktable.bauhaus->current)
   {
-    dt_bauhaus_widget_reject(darktable.bauhaus->current);
-    dt_bauhaus_hide_popup();
-    return TRUE;
+    const float tol = 100;
+    gint wx, wy;
+    GtkWidget *widget = darktable.bauhaus->popup_window;
+    gdk_window_get_origin (gtk_widget_get_window (widget), &wx, &wy);
+    if((event->x_root > wx + widget->allocation.width + tol || event->y_root > wy + widget->allocation.height + tol ||
+        event->x_root < (int)wx - tol || event->y_root < (int)wy - tol))
+    {
+      dt_bauhaus_widget_reject(darktable.bauhaus->current);
+      dt_bauhaus_hide_popup();
+      return TRUE;
+    }
   }
   // make sure to propagate the event further
   return FALSE;
