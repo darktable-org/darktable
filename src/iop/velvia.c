@@ -25,11 +25,10 @@
 #ifdef HAVE_GEGL
 #include <gegl.h>
 #endif
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
-#include "dtgtk/slider.h"
-#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
@@ -60,8 +59,8 @@ dt_iop_velvia_params1_t;
 typedef struct dt_iop_velvia_gui_data_t
 {
   GtkVBox   *vbox;
-  GtkDarktableSlider *strength_scale;
-  GtkDarktableSlider *bias_scale;
+  GtkWidget *strength_scale;
+  GtkWidget *bias_scale;
 }
 dt_iop_velvia_gui_data_t;
 
@@ -88,7 +87,7 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
-
+#if 0 // BAUHAUS doesnt support keyaccels yet...
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "vibrance"));
@@ -104,6 +103,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "mid-tones bias",
                               GTK_WIDGET(g->bias_scale));
 }
+#endif
 
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
@@ -170,22 +170,22 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 }
 
 static void
-strength_callback (GtkDarktableSlider *slider, gpointer user_data)
+strength_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)self->params;
-  p->strength = dtgtk_slider_get_value(slider);
+  p->strength = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-bias_callback (GtkDarktableSlider *slider, gpointer user_data)
+bias_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)self->params;
-  p->bias= dtgtk_slider_get_value(slider);
+  p->bias= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -231,8 +231,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_velvia_gui_data_t *g = (dt_iop_velvia_gui_data_t *)self->gui_data;
   dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)module->params;
-  dtgtk_slider_set_value(g->strength_scale, p->strength);
-  dtgtk_slider_set_value(g->bias_scale, p->bias);
+  dt_bauhaus_slider_set(g->strength_scale, p->strength);
+  dt_bauhaus_slider_set(g->bias_scale, p->bias);
 }
 
 void init(dt_iop_module_t *module)
@@ -265,25 +265,23 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_velvia_gui_data_t *g = (dt_iop_velvia_gui_data_t *)self->gui_data;
   dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
-  g->strength_scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1, p->strength, 0));
-  dtgtk_slider_set_format_type(g->strength_scale,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_label(g->strength_scale,_("vibrance"));
-  dtgtk_slider_set_unit(g->strength_scale,"%");
-  g->bias_scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->bias, 2));
-  dtgtk_slider_set_format_type(g->bias_scale,DARKTABLE_SLIDER_FORMAT_RATIO);
-  dtgtk_slider_set_label(g->bias_scale,_("mid-tones bias"));
-
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->strength_scale), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->bias_scale), TRUE, TRUE, 0);
+  /* strength */
+  g->strength_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1, p->strength, 0);
+  dt_bauhaus_slider_set_format(g->strength_scale,"%.0f%%");
+  dt_bauhaus_widget_set_label(g->strength_scale,_("strength"));
   g_object_set(G_OBJECT(g->strength_scale), "tooltip-text", _("the strength of saturation boost"), (char *)NULL);
-  g_object_set(G_OBJECT(g->bias_scale), "tooltip-text", _("how much to spare highlights and shadows"), (char *)NULL);
-
   g_signal_connect (G_OBJECT (g->strength_scale), "value-changed",
                     G_CALLBACK (strength_callback), self);
+  
+  /* bias */
+  g->bias_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.01, p->bias, 2);
+  dt_bauhaus_widget_set_label(g->bias_scale,_("mid-tones bias"));
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->strength_scale), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->bias_scale), TRUE, TRUE, 0);
+  g_object_set(G_OBJECT(g->bias_scale), "tooltip-text", _("how much to spare highlights and shadows"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->bias_scale), "value-changed",
                     G_CALLBACK (bias_callback), self);
 }

@@ -719,14 +719,7 @@ void dt_control_remove_images()
     GtkWidget *dialog;
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-    sqlite3_stmt *stmt = NULL;
-    int number = 0;
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(imgid) from selected_images", -1, &stmt, NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      number = sqlite3_column_int(stmt, 0);
-    }
+    int number = dt_collection_get_selected_count(darktable.collection);
 
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
         GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -752,14 +745,7 @@ void dt_control_delete_images()
     GtkWidget *dialog;
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-    sqlite3_stmt *stmt = NULL;
-    int number = 0;
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(imgid) from selected_images", -1, &stmt, NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      number = sqlite3_column_int(stmt, 0);
-    }
+    int number = dt_collection_get_selected_count(darktable.collection);
 
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
         GTK_DIALOG_DESTROY_WITH_PARENT,
