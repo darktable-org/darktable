@@ -277,31 +277,51 @@ flickcurl_upload_status static *_flickr_api_upload_photo( dt_storage_flickr_para
   if (tags)
   {
 
-    gchar **array;
     int i, length;
+	
+	GList *split_tags;
 
     length = g_list_length(tags);
     if (length > 0)
     {
-      array = g_malloc(sizeof(gchar*)*(length+1));
-
       for (i=0; i<length; i++)
       {
-        dt_tag_t *t = g_list_nth_data(tags,i);
+        dt_tag_t *t = g_list_nth_data(tags, i);
 
         if (t)
-	{
+        {
           if (!g_ascii_strncasecmp(t->tag, "darktable|", 10))
           {
-            array[i] = g_strdup("darktable");
-          } else
-            array[i] = g_strconcat ("\"", t->tag, "\"", NULL);
+            split_tags = g_list_append(split_tags, "darktable");
+          }
+          else
+          {
+		    gchar *pch;
+		    pch = strtok (t->tag, "|");
+			if (pch != NULL)
+            {
+			  while (pch)
+              {
+                split_tags = g_list_append (split_tags, g_strconcat ("\"", pch, "\"", NULL));
+				pch = strtok (NULL, "|");
+              }
+			}
+			else
+			  split_tags = g_list_append (split_tags, g_strconcat ("\"", t->tag, "\"", NULL));
         }
-
       }
-      array[length] = NULL;
-      params->tags = g_strjoinv(" ",array);
-      g_strfreev(array);
+	  
+	  length = g_list_length(split_tags);
+	  gchar *taglist = NULL;
+	  
+	  for (i=0; i<length; i++)
+	  {
+	    taglist = g_strconcat (taglist, g_list_nth_data(split_tags, i), " ", NULL);
+	  }
+	  
+      params->tags = g_strdup(taglist);
+      g_free(taglist);
+	  g_list_free(split_tags);
     }
   }
   params->photo_file = fname; //fname should be the URI of temp file
