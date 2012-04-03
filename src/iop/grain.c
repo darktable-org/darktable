@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010-2012 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,11 +25,10 @@
 #ifdef HAVE_GEGL
 #include <gegl.h>
 #endif
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
-#include "dtgtk/slider.h"
-#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
@@ -66,7 +65,7 @@ typedef struct dt_iop_grain_gui_data_t
 {
   GtkVBox   *vbox;
   GtkWidget  *label1,*label2,*label3;	      // channel, scale, strength
-  GtkDarktableSlider *scale1,*scale2;       // scale, strength
+  GtkWidget *scale1,*scale2;       // scale, strength
 }
 dt_iop_grain_gui_data_t;
 
@@ -335,6 +334,7 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
+#if 0 // BAUHAUS doesnt support keyaccels yet...
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "coarseness"));
@@ -348,6 +348,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "coarseness", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->scale2));
 }
+
+#endif
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -409,22 +411,22 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 }
 
 static void
-scale_callback (GtkDarktableSlider *slider, gpointer user_data)
+scale_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
-  p->scale = dtgtk_slider_get_value(slider)/53.3;
+  p->scale = dt_bauhaus_slider_get(slider)/53.3;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-strength_callback (GtkDarktableSlider *slider, gpointer user_data)
+strength_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
-  p->strength= dtgtk_slider_get_value(slider);
+  p->strength= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -472,8 +474,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_grain_gui_data_t *g = (dt_iop_grain_gui_data_t *)self->gui_data;
   dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)module->params;
 
-  dtgtk_slider_set_value(g->scale1, p->scale*53.3);
-  dtgtk_slider_set_value(g->scale2, p->strength);
+  dt_bauhaus_slider_set(g->scale1, p->scale*53.3);
+  dt_bauhaus_slider_set(g->scale2, p->strength);
 }
 
 void init(dt_iop_module_t *module)
@@ -507,25 +509,23 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_grain_gui_data_t *g = (dt_iop_grain_gui_data_t *)self->gui_data;
   dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 100.0, 3200.0, 20.0, p->scale*53.3, 0));
-  dtgtk_slider_set_snap(g->scale1, 20);
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 100.0, 1.0, p->strength, 2));
-  dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  /* courseness */
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 100.0, 3200.0, 20.0, p->scale*53.3, 0);
+  dt_bauhaus_widget_set_label(g->scale1, _("coarseness"));
+  dt_bauhaus_slider_set_format(g->scale1,"%.0fISO");
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the grain size (~iso of the film)"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the strength of applied grain"), (char *)NULL);
-  dtgtk_slider_set_label(g->scale1,_("coarseness"));
-  dtgtk_slider_set_unit(g->scale1,"ISO");
-  dtgtk_slider_set_label(g->scale2,_("strength"));
-  dtgtk_slider_set_unit(g->scale2,"%");
-
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (scale_callback), self);
+
+  /* strength */
+  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->strength, 2);
+  dt_bauhaus_widget_set_label(g->scale2, _("strength"));
+  dt_bauhaus_slider_set_format(g->scale2,"%.0f%%");  
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the strength of applied grain"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
                     G_CALLBACK (strength_callback), self);
 
