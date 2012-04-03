@@ -132,40 +132,111 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const int width
   write_imagef (out, (int2)(x, y), color);
 }
 
-#if 0
+
+// This median filter is inspired by GPL code from socles, an OpenCL image processing library.
+
+#define cas(a, b)				\
+	do {					\
+		float x = a;			\
+		int c = a > b;			\
+		a = c ? b : a;			\
+		b = c ? x : b;			\
+	} while (0)
+
+
+// 3x3 median filter
+// uses a sorting network to sort entirely in registers with no branches
 __kernel void
-color_smoothing(__read_only image2d_t in, __write_only image2d_t out)
+color_smoothing(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height)
 {
-  // TODO: load image block into shared memory
-  // TODO: median filter this - 1 px border
-  // TODO: output whole block..?
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  // TODO: see if we can speed this up significantly by pre-loading into local mem
+
+  float4 t0 = read_imagef(in, sampleri, (int2) ( x-1, y-1 ));
+  float4 t1 = read_imagef(in, sampleri, (int2) ( x,   y-1 ));
+  float4 t2 = read_imagef(in, sampleri, (int2) ( x+1, y-1 ));
+  float4 t3 = read_imagef(in, sampleri, (int2) ( x-1, y   ));
+  float4 t4 = read_imagef(in, sampleri, (int2) ( x,   y   ));
+  float4 t5 = read_imagef(in, sampleri, (int2) ( x+1, y   ));
+  float4 t6 = read_imagef(in, sampleri, (int2) ( x-1, y+1 ));
+  float4 t7 = read_imagef(in, sampleri, (int2) ( x,   y+1 ));
+  float4 t8 = read_imagef(in, sampleri, (int2) ( x+1, y+1 ));
+
+  // 3x3 median for R
+  float s0 = t0.x - t0.y;
+  float s1 = t1.x - t1.y;
+  float s2 = t2.x - t2.y;
+  float s3 = t3.x - t3.y;
+  float s4 = t4.x - t4.y;
+  float s5 = t5.x - t5.y;
+  float s6 = t6.x - t6.y;
+  float s7 = t7.x - t7.y;
+  float s8 = t8.x - t8.y;
+
+  cas(s1, s2);
+  cas(s4, s5);
+  cas(s7, s8);
+  cas(s0, s1);
+  cas(s3, s4);
+  cas(s6, s7);
+  cas(s1, s2);
+  cas(s4, s5);
+  cas(s7, s8);
+  cas(s0, s3);
+  cas(s5, s8);
+  cas(s4, s7);
+  cas(s3, s6);
+  cas(s1, s4);
+  cas(s2, s5);
+  cas(s4, s7);
+  cas(s4, s2);
+  cas(s6, s4);
+  cas(s4, s2);
+
+  t4.x = clamp(s4 + t4.y, 0.0f, 1.0f);
 
 
-  float med[9];
-  // TODO: put to constant memory:
-  const uint8_t opt[] = /* Optimal 9-element median search */
-  { 1,2, 4,5, 7,8, 0,1, 3,4, 6,7, 1,2, 4,5, 7,8,
-    0,3, 5,8, 4,7, 3,6, 1,4, 2,5, 4,7, 4,2, 6,4, 4,2 };
+  // 3x3 median for B
+  s0 = t0.z - t0.y;
+  s1 = t1.z - t1.y;
+  s2 = t2.z - t2.y;
+  s3 = t3.z - t3.y;
+  s4 = t4.z - t4.y;
+  s5 = t5.z - t5.y;
+  s6 = t6.z - t6.y;
+  s7 = t7.z - t7.y;
+  s8 = t8.z - t8.y;
 
-  // TODO: get 9 nb pixels and store c-g
-  // TODO: sort
-  // TODO: synchthreads (block boundaries: bad luck)
-  // TODO: push median
-      for (int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
-        out[4*(j*roi_out->width + i) + 3] = out[4*(j*roi_out->width + i) + c];
-      for (int j=1;j<roi_out->height-1;j++) for(int i=1;i<roi_out->width-1;i++)
-      {
-        int k = 0;
-        for (int jj=-1;jj<=1;jj++) for(int ii=-1;ii<=1;ii++) med[k++] = out[4*((j+jj)*roi_out->width + i + ii) + 3] - out[4*((j+jj)*roi_out->width + i + ii) + 1];
-        for (int ii=0; ii < sizeof opt; ii+=2)
-          if     (med[opt[ii]] > med[opt[ii+1]])
-            SWAP (med[opt[ii]] , med[opt[ii+1]]);
-        out[4*(j*roi_out->width + i) + c] = CLAMPS(med[4] + out[4*(j*roi_out->width + i) + 1], 0.0f, 1.0f);
-      }
-    }
-  }
+  cas(s1, s2);
+  cas(s4, s5);
+  cas(s7, s8);
+  cas(s0, s1);
+  cas(s3, s4);
+  cas(s6, s7);
+  cas(s1, s2);
+  cas(s4, s5);
+  cas(s7, s8);
+  cas(s0, s3);
+  cas(s5, s8);
+  cas(s4, s7);
+  cas(s3, s6);
+  cas(s1, s4);
+  cas(s2, s5);
+  cas(s4, s7);
+  cas(s4, s2);
+  cas(s6, s4);
+  cas(s4, s2);
+
+  t4.z = clamp(s4 + t4.y, 0.0f, 1.0f);
+
+  write_imagef(out, (int2) (x, y), t4);
 }
-#endif
+
+
 
 
 /**

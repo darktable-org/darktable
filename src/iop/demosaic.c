@@ -66,6 +66,7 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_zoom_half_size;
   int kernel_downsample;
   int kernel_border_interpolate;
+  int kernel_color_smoothing;
 }
 dt_iop_demosaic_global_data_t;
 
@@ -965,6 +966,50 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
+  dev_tmp = dev_green_eq = NULL;
+
+  // color smoothing
+  if(data->color_smoothing)
+  {
+    dev_tmp = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, 4*sizeof(float));
+    if (dev_tmp == NULL) goto error;
+
+    const int width = roi_out->width;
+    const int height = roi_out->height;
+    size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1 };
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { width, height, 1 };
+    // two buffer references for our ping-pong
+    cl_mem dev_t1 = dev_out;
+    cl_mem dev_t2 = dev_tmp;
+
+    for(int pass = 0; pass < data->color_smoothing; pass++)
+    {
+
+      dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 0, sizeof(cl_mem), &dev_t1);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 1, sizeof(cl_mem), &dev_t2);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 2, sizeof(int), &width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 3, sizeof(int), &height);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_color_smoothing, sizes);
+      if(err != CL_SUCCESS) goto error;
+
+      // swap dev_t1 and dev_t2
+      cl_mem t = dev_t1;
+      dev_t1 = dev_t2;
+      dev_t2 = t;
+    }
+
+    // after last step we find final output in dev_t1.
+    // let's see if this is in dev_tmp and needs to be copied to dev_out
+    if(dev_t1 == dev_tmp)
+    {
+      // copy data from dev_tmp -> dev_out
+      err = dt_opencl_enqueue_copy_image(devid, dev_tmp, dev_out, origin, origin, region);
+      if(err != CL_SUCCESS) goto error;
+    }
+  }
+
+  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
 
 error:
@@ -977,15 +1022,19 @@ error:
 
 void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
+  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
 
-  tiling->factor = ((float)roi_in->width*roi_in->height + (float)roi_out->width*roi_out->height)/((float)roi_in->width*roi_in->height);
+  float ioratio = (float)roi_out->width*roi_out->height/((float)roi_in->width*roi_in->height);
+  float smooth = data->color_smoothing ? ioratio : 0.0f;
+
+  tiling->factor = 1.0f + ioratio;
 
   if(roi_out->scale > 0.999f)
-    tiling->factor += 0.25f; // in + out + green_eq (1/4 full)
+    tiling->factor += fmax(0.25f, smooth);
   else if(roi_out->scale > 0.5f)
-    tiling->factor += 1.25f; // in + out + tmp + green_eq (1/4 full)
+    tiling->factor += fmax(1.25f, smooth);
   else
-    tiling->factor += 0.25f; // in + out + tmp (1/4 full)
+    tiling->factor += fmax(0.25f, smooth);
 
   tiling->overhead = 0;
   tiling->overlap = 5; // take care of border handling
@@ -1025,6 +1074,7 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_ppg_redblue        = dt_opencl_create_kernel(program, "ppg_demosaic_redblue");
   gd->kernel_downsample         = dt_opencl_create_kernel(program, "clip_and_zoom");
   gd->kernel_border_interpolate = dt_opencl_create_kernel(program, "border_interpolate");
+  gd->kernel_color_smoothing    = dt_opencl_create_kernel(program, "color_smoothing");
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -1046,6 +1096,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_ppg_redblue);
   dt_opencl_free_kernel(gd->kernel_downsample);
   dt_opencl_free_kernel(gd->kernel_border_interpolate);
+  dt_opencl_free_kernel(gd->kernel_color_smoothing);
   free(module->data);
   module->data = NULL;
 }
