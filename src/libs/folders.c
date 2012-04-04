@@ -146,9 +146,37 @@ _folder_tree (sqlite3_stmt *stmt)
       GtkTreeIter current,iter;
       char *path = g_strdup((char *)sqlite3_column_text(stmt, 2));
       char *pch = strtok((char *)sqlite3_column_text(stmt, 2),"/");
+	  char *external = g_strdup((char *)sqlite3_column_text(stmt, 3));
+	  
+	  gboolean found=FALSE;
+ 	  
+	  int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),NULL);
+      for (int k=0;k<children;k++)
+	  {
+		if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &iter, NULL, k))
+		{
+		  gtk_tree_model_get (GTK_TREE_MODEL(store), &iter, 0, &value, -1);
+			
+		  if (strcmp(value, external)==0)
+		  {
+		    found = TRUE;
+			break;
+		  }
+	    }
+	  }
+	  
+	  if (!found)
+	  {
+	    gtk_tree_store_insert(store, &iter, NULL, 0);
+		gtk_tree_store_set(store, &iter, 0, external);
+		current = iter;
+	  }
+	  
+	  level=1;
+	  
       while (pch != NULL) 
       {
-        gboolean found=FALSE;
+        found = FALSE;
         int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),level>0?&current:NULL);
         /* find child with name, if not found create and continue */
         for (int k=0;k<children;k++)
@@ -244,9 +272,9 @@ _create_filtered_root_model (GtkTreeModel *model, gchar *mount_path)
 }
 
 static gboolean
-_filter_func (GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data)
+_filter_mounts (GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data)
 {
-
+  /* We have to filter here known external mount paths, not currently mounted */
   gboolean visible = TRUE;
   GList *mounts = (GList *)user_data;
   gchar *path;
@@ -265,7 +293,7 @@ _filter_func (GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data)
 	  break;
 	}
   }
-  
+       
   return visible;
 }
 
@@ -273,18 +301,43 @@ _filter_func (GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data)
 static GtkTreeModel *
 _create_filtered_model (GtkTreeModel *model, GList *mounts)
 {
-   GtkTreeModel *filter = NULL;
-   GtkTreePath *path;
+  GtkTreeModel *filter = NULL;
+  GtkTreePath *path;
+  GtkTreeIter *iter, *child;
+  
+  iter = child = NULL;
    
-   /* Create a path to set as virtual root of the new model */
-   path = gtk_tree_path_new_from_string ("1");
+  /* Create a path to set as virtual root of the new model */
+  path = gtk_tree_path_new_first();
    
-   /* Create filter and set visible filter function */
-   filter = gtk_tree_model_filter_new (model, path);
-   gtk_tree_model_filter_set_visible_func(GTK_TREE_MODEL_FILTER(filter),
-                (GtkTreeModelFilterVisibleFunc)_filter_func, mounts, NULL );
-   
-   return filter;
+  /* Create filter and set visible filter function */
+  filter = gtk_tree_model_filter_new (model, path);
+  gtk_tree_model_filter_set_visible_func(GTK_TREE_MODEL_FILTER(filter),
+               (GtkTreeModelFilterVisibleFunc)_filter_mounts, mounts, NULL );
+				
+  /* Filter level */
+  if (gtk_tree_model_get_iter_first (filter, iter))
+  {
+	while (gtk_tree_model_iter_has_child(filter, iter)
+	{
+	  if (gtk_tree_model_iter_n_children(filter, iter) > 1)
+	  {
+	    gtk_tree_model_iter_children(filter, child, iter);
+		iter = child;
+	  }
+	  else
+	    break;
+    gtk_tree_model_iter_free(iter);
+	}
+	
+  path = gtk_tree_model_get_path (filter, &iter);
+
+  /* Create filter and set virtual root */
+  filter = gtk_tree_model_filter_new (model, path);
+  gtk_tree_path_free (path);	
+  }
+  
+  return filter;
 }
 
 static GtkTreeView *
@@ -481,19 +534,22 @@ static void _draw_tree_gui (dt_lib_module_t *self)
   /* set the UI */
   GtkTreeView *tree; 
   GtkWidget *button;
+  GtkTreeIter iter, child;
+  GValue value;
         
   /* Add a button for local filesystem, to keep UI consistency */
-  button = gtk_button_new_with_label (_("Local HDD"));
-  gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(button));
+  //button = gtk_button_new_with_label (_("Local HDD"));
+  //gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(button));
   
   /* Show only filmrolls in the system */
-  model = _create_filtered_model(GTK_TREE_MODEL(d->store), d->mounts);
-  tree = _create_treeview_display(GTK_TREE_MODEL(model));
-  gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(tree));
+  //model = _create_filtered_model(GTK_TREE_MODEL(d->store), d->mounts);
   
-  g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d); 
+  //tree = _create_treeview_display(GTK_TREE_MODEL(model));
+  //gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(tree));
+  
+  //g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d); 
 
-  for (int i=0;i<g_list_length(d->mounts);i++)
+  /*for (int i=0;i<g_list_length(d->mounts);i++)
   {
      
     GMount *mount;
@@ -515,7 +571,52 @@ static void _draw_tree_gui (dt_lib_module_t *self)
       g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d); 
     }
   }
+*/
+
+  /* TODO: Use currently mounted device to show/no show that part of the tree */
+  for (int i=0; i<gtk_tree_model_iter_n_children(GTK_TREE_MODEL(d->store)); i++)
+  {
+    gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(d->store), &iter, NULL, i);
+	gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, 0, &value, -1);
+	
+	if (strcmp(value, "Local")==0)
+	{
+	  /* Add a button for local filesystem, to keep UI consistency */
+      button = gtk_button_new_with_label (_("Local HDD"));
+	}
+	else
+	{
+	  button = gtk_button_new_with_label ((gchar *)value);
+	}
+	gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(button));
   
+    model = gtk_tree_model_filter_new (GTK_TREE_MODEL(d->store), &iter);
+	/* Filter level */
+    if (gtk_tree_model_get_iter_first (model, &iter))
+    {
+	  while (gtk_tree_model_iter_has_child(model, &iter)
+	  {
+	    if (gtk_tree_model_iter_n_children(model, &iter) > 1)
+	    {
+	      gtk_tree_model_iter_children(model, &child, &iter);
+		  iter = child;
+	    }
+	    else
+	      break;
+        gtk_tree_model_iter_free(&iter);
+	  }
+	
+      path = gtk_tree_model_get_path (model, &iter);
+
+      /* Create filter and set virtual root */
+      model = gtk_tree_model_filter_new (model, path);
+      gtk_tree_path_free (path);	
+    }
+	tree = _create_treeview_display(GTK_TREE_MODEL(model));
+    gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(tree));
+	
+	g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d);
+  }
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->box_tree), TRUE, TRUE, 0); 
 
 }
