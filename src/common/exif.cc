@@ -1008,8 +1008,21 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     char *value = (char *)sqlite3_column_text(stmt, 0);
+	gchar *temp, *pch;
     if (g_strrstr(value, "|"))
       v2->read((char *)value);
+	  
+	  pch = strtok(value, "|");
+	  while (pch != NULL)
+	  {
+	    g_strconcat(temp, pch, ",", NULL);
+		pch = strtok(NULL, "|");
+	  }
+	  temp[g_strlen(temp)-1] = "\0";
+	  v1->read((char *)temp);
+	  
+	 /* TODO: add also IPTC tags in Iptc.Application2.Keywords key */
+	  
     else
       v1->read((char *)value);
   }
@@ -1021,7 +1034,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   // color labels
   char val[2048];
   Exiv2::Value::AutoPtr v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
-  v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
+  /* Already initialized v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.*/
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select color from color_labels where imgid=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
