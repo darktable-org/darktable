@@ -147,24 +147,60 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const int width
 // 3x3 median filter
 // uses a sorting network to sort entirely in registers with no branches
 __kernel void
-color_smoothing(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height)
+color_smoothing(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, local float4 *buffer)
 {
+  const int lxid = get_local_id(0);
+  const int lyid = get_local_id(1);
+  const int lxsz = get_local_size(0);
+  const int lysz = get_local_size(1);
+  
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+  const int gxoffs = x - lxid; 
+  const int gyoffs = y - lyid;
+
+  const int buffwd = lxsz + 2;
+  const int buffht = lysz + 2;
+  const int buffsz = buffwd * buffht;
+  const int gsz = lxsz * lysz;
+  const int lidx = lyid * lxsz + lxid;
+  const int nchunks = buffsz % gsz == 0 ? buffsz/gsz - 1 : buffsz/gsz;
+
+  for(int n=0; n <= nchunks; n++)
+  {
+    const int bufidx = (n * gsz) + lidx;
+    if(bufidx >= buffsz) break;
+
+    // get position in buffer coordinates
+    const int bufx = bufidx % buffwd;
+    const int bufy = bufidx / buffwd;
+
+    // from here to position in global coordinates
+    const int gx = bufx - 1 + gxoffs;
+    const int gy = bufy - 1 + gyoffs;
+
+    // don't read more than needed
+    if(gx >= width + 1 || gy >= height + 1) continue;
+
+    buffer[bufidx] = read_imagef(in, sampleri, (int2)(gx, gy));
+  }
+
+  barrier(CLK_LOCAL_MEM_FENCE);
 
   if(x >= width || y >= height) return;
 
-  // TODO: see if we can speed this up significantly by pre-loading into local mem
+  // re-position buffer
+  buffer += (lyid + 1) * buffwd + lxid + 1;
 
-  float4 t0 = read_imagef(in, sampleri, (int2) ( x-1, y-1 ));
-  float4 t1 = read_imagef(in, sampleri, (int2) ( x,   y-1 ));
-  float4 t2 = read_imagef(in, sampleri, (int2) ( x+1, y-1 ));
-  float4 t3 = read_imagef(in, sampleri, (int2) ( x-1, y   ));
-  float4 t4 = read_imagef(in, sampleri, (int2) ( x,   y   ));
-  float4 t5 = read_imagef(in, sampleri, (int2) ( x+1, y   ));
-  float4 t6 = read_imagef(in, sampleri, (int2) ( x-1, y+1 ));
-  float4 t7 = read_imagef(in, sampleri, (int2) ( x,   y+1 ));
-  float4 t8 = read_imagef(in, sampleri, (int2) ( x+1, y+1 ));
+  float4 t0 = buffer[-buffwd - 1];
+  float4 t1 = buffer[-buffwd];
+  float4 t2 = buffer[-buffwd + 1];
+  float4 t3 = buffer[-1];
+  float4 t4 = buffer[0];
+  float4 t5 = buffer[1];
+  float4 t6 = buffer[buffwd - 1];
+  float4 t7 = buffer[buffwd];
+  float4 t8 = buffer[buffwd + 1];
 
   // 3x3 median for R
   float s0 = t0.x - t0.y;

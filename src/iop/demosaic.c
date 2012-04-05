@@ -32,7 +32,7 @@
 #include <xmmintrin.h>
 
 #define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
-
+#define BLOCKSIZE  2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
 DT_MODULE(3)
 
@@ -976,7 +976,42 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     const int width = roi_out->width;
     const int height = roi_out->height;
-    size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1 };
+
+    // prepare local work group
+    size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
+    size_t workgroupsize = 0;          // the maximum number of items in a work group
+    unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
+  
+    // Make sure blocksize is not too large. As our kernel is very register hungry we
+    // can not take the maximum possible work group size. We optimize in three steps. 
+    // First calculate the maximum permissible workgroup size 
+    // Second reduce it by a factor of 2 in both dimensions (and hope that's sufficient)
+    // Third check if we need to further reduce in order to match local memory size
+    int blocksize = BLOCKSIZE;
+    if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS)
+    {
+
+      while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize*blocksize > workgroupsize)
+      {
+        if(blocksize == 1) break;
+        blocksize >>= 1;    
+      }
+
+      blocksize = (blocksize == 1) ? 1 : blocksize >> 1;
+
+      while((blocksize+2)*(blocksize+2)*4*sizeof(float) > localmemsize)
+      {
+        if(blocksize == 1) break;
+        blocksize >>= 1;    
+      }
+    }
+    else
+    {
+      blocksize = 1;   // slow but safe
+    }
+
+    size_t sizes[] = { ROUNDUP(width, blocksize), ROUNDUP(height, blocksize), 1 };
+    size_t local[] = { blocksize, blocksize, 1 };
     size_t origin[] = { 0, 0, 0 };
     size_t region[] = { width, height, 1 };
     // two buffer references for our ping-pong
@@ -990,7 +1025,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 1, sizeof(cl_mem), &dev_t2);
       dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 2, sizeof(int), &width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 3, sizeof(int), &height);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_color_smoothing, sizes);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 4, (blocksize+2)*(blocksize+2)*4*sizeof(float), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_color_smoothing, sizes, local);
       if(err != CL_SUCCESS) goto error;
 
       // swap dev_t1 and dev_t2
