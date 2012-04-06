@@ -981,37 +981,41 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
     size_t workgroupsize = 0;          // the maximum number of items in a work group
     unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
+    size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
   
     // Make sure blocksize is not too large. As our kernel is very register hungry we
-    // can not take the maximum possible work group size. We optimize in three steps. 
-    // First calculate the maximum permissible workgroup size 
-    // Second reduce it by a factor of 2 in both dimensions (and hope that's sufficient)
-    // Third check if we need to further reduce in order to match local memory size
+    // need to take maximum work group size into account
     int blocksize = BLOCKSIZE;
-    if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS)
+    int blockwd;
+    int blockht;
+    if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
+       dt_opencl_get_kernel_work_group_size(devid, gd->kernel_color_smoothing, &kernelworkgroupsize) == CL_SUCCESS)
     {
 
-      while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize*blocksize > workgroupsize)
+      while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize*blocksize > workgroupsize ||
+            (blocksize+2)*(blocksize+2)*4*sizeof(float) > localmemsize)
       {
         if(blocksize == 1) break;
         blocksize >>= 1;    
       }
 
-      blocksize = (blocksize == 1) ? 1 : blocksize >> 1;
+      blockwd = blockht = blocksize;
 
-      while((blocksize+2)*(blocksize+2)*4*sizeof(float) > localmemsize)
-      {
-        if(blocksize == 1) break;
-        blocksize >>= 1;    
-      }
+      if(blockwd * blockht > kernelworkgroupsize)
+        blockht = kernelworkgroupsize / blockwd;
+
+      // speed optimized limits for my NVIDIA GTS450
+      // TODO: find out if this is good for other systems as well
+      blockwd = blockwd > 16 ? 16 : blockwd;
+      blockht = blockht > 8 ? 8 : blockht;
     }
     else
     {
-      blocksize = 1;   // slow but safe
+      blockwd = blockht = 1;   // slow but safe
     }
 
-    size_t sizes[] = { ROUNDUP(width, blocksize), ROUNDUP(height, blocksize), 1 };
-    size_t local[] = { blocksize, blocksize, 1 };
+    size_t sizes[] = { ROUNDUP(width, blockwd), ROUNDUP(height, blockht), 1 };
+    size_t local[] = { blockwd, blockht, 1 };
     size_t origin[] = { 0, 0, 0 };
     size_t region[] = { width, height, 1 };
     // two buffer references for our ping-pong
@@ -1025,7 +1029,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 1, sizeof(cl_mem), &dev_t2);
       dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 2, sizeof(int), &width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 3, sizeof(int), &height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 4, (blocksize+2)*(blocksize+2)*4*sizeof(float), NULL);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 4, (blockwd+2)*(blockht+2)*4*sizeof(float), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_color_smoothing, sizes, local);
       if(err != CL_SUCCESS) goto error;
 
