@@ -33,6 +33,9 @@
 #define DT_GUI_CURVE_EDITOR_INSET 5
 #define DT_GUI_CURVE_INFL .3f
 
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+
+
 DT_MODULE(1)
 
 const char *name()
@@ -102,6 +105,47 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
 
 }
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
+  dt_iop_levels_global_data_t *gd = (dt_iop_levels_global_data_t *)self->data;
+
+  cl_mem dev_lut = NULL;
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  dev_lut = dt_opencl_copy_host_to_device(devid, d->lut, 256, 256, sizeof(float));
+  if(dev_lut == NULL) goto error;
+
+  size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
+  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 0, sizeof(cl_mem), &dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 1, sizeof(cl_mem), &dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 2, sizeof(int), &width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 3, sizeof(int), &height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 4, sizeof(cl_mem), &dev_lut);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 5, sizeof(float), &d->in_low);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 6, sizeof(float), &d->in_high);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 7, sizeof(float), &d->in_inv_gamma);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_levels, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  dt_opencl_release_mem_object(dev_lut);
+  return TRUE;
+
+error:
+  if (dev_lut != NULL) dt_opencl_release_mem_object(dev_lut);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_levels] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+
 
 //void init_presets (dt_iop_module_so_t *self)
 //{
@@ -181,10 +225,10 @@ void init(dt_iop_module_t *module)
 
 void init_global(dt_iop_module_so_t *module)
 {
-  //const int program = 2; // basic.cl, from programs.conf
+  const int program = 2; // basic.cl, from programs.conf
   dt_iop_levels_global_data_t *gd = (dt_iop_levels_global_data_t *)malloc(sizeof(dt_iop_levels_global_data_t));
   module->data = gd;
-  //gd->kernel_levels = dt_opencl_create_kernel(program, "levels");      do not try to load kernel unless we have one
+  gd->kernel_levels = dt_opencl_create_kernel(program, "levels");
 }
 
 void cleanup_global(dt_iop_module_so_t *module)

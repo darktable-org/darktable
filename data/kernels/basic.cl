@@ -448,3 +448,48 @@ colorout (read_only image2d_t in, write_only image2d_t out, const int width, con
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+
+/* kernel for the levels plugin */
+kernel void
+levels (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+        read_only image2d_t lut, const float in_low, const float in_high, const float in_inv_gamma)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  const float L = pixel.x;
+  const float L_in = pixel.x/100.0f;
+
+  if(L_in <= in_low)
+  {
+    pixel.x = 0.0f;
+  }
+  else if(L_in >= in_high)
+  {
+    float percentage = (L_in - in_low) / (in_high - in_low);
+    pixel.x = 100.0f * pow(percentage, in_inv_gamma);
+  }
+  else
+  {
+    float percentage = (L_in - in_low) / (in_high - in_low);
+    pixel.x = lookup(lut, percentage);
+  }
+
+  if(L_in > 0.01f)
+  {
+    pixel.y *= pixel.x/L;
+    pixel.z *= pixel.x/L;
+  }
+  else
+  {
+    pixel.y *= pixel.x;
+    pixel.z *= pixel.x;
+  }
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+
