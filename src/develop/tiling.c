@@ -98,14 +98,15 @@ _print_roi(const dt_iop_roi_t *roi, const char *label)
 
 /* iterative search to get a matching oroi_full. start by probing start value of oroi and
    get corresponding input roi into iroi_probe. If search converges, then iroi_probe gets identical
-   to iroi (taking limit delta into account) */
+   to iroi (taking limit delta into account).
+   We try two times, second time with assumption that image is flipped. */
 static int
 _fit_output_to_input_roi(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *iroi, dt_iop_roi_t *oroi, int delta, int iter) 
 {
-  /* this algorithm is simplicistic and will converge in frequent but not all cases.
-     TODO: find a more versatile but still fast algorithm . */
-
   dt_iop_roi_t iroi_probe = *iroi;
+
+  int save_iter = iter;
+  dt_iop_roi_t save_oroi = *oroi;
 
   self->modify_roi_in(self, piece, oroi, &iroi_probe);
     
@@ -129,7 +130,37 @@ _fit_output_to_input_roi(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_i
     iter--;
   }
 
-  return (iter > 0);
+  if (iter > 0) return TRUE;
+
+  /* it did not converge. retry with the assumption that the image is flipped */
+  iter = save_iter;
+  *oroi = save_oroi;
+
+  self->modify_roi_in(self, piece, oroi, &iroi_probe);
+    
+  while ((abs((int)iroi_probe.x - (int)iroi->x) > delta || 
+         abs((int)iroi_probe.y - (int)iroi->y) > delta ||
+         abs((int)iroi_probe.width - (int)iroi->width) > delta ||
+         abs((int)iroi_probe.height - (int)iroi->height) > delta) &&
+         iter > 0)
+  {
+    //_print_roi(&iroi_probe, "tile iroi_probe");
+    //_print_roi(oroi, "tile oroi old");
+      
+    oroi->x += (iroi->y - iroi_probe.y) * oroi->scale / iroi->scale;
+    oroi->y += (iroi->x - iroi_probe.x) * oroi->scale / iroi->scale;
+    oroi->width += (iroi->height - iroi_probe.height) * oroi->scale / iroi->scale;
+    oroi->height += (iroi->width - iroi_probe.width) * oroi->scale / iroi->scale;
+
+    //_print_roi(oroi, "tile oroi new");
+
+    self->modify_roi_in(self, piece, oroi, &iroi_probe);
+    iter--;
+  }
+
+  if (iter > 0) return TRUE;  
+
+  return FALSE;
 }
 
 
