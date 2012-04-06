@@ -151,19 +151,15 @@ color_smoothing(__read_only image2d_t in, __write_only image2d_t out, const int 
 {
   const int lxid = get_local_id(0);
   const int lyid = get_local_id(1);
-  const int lxsz = get_local_size(0);
-  const int lysz = get_local_size(1);
-  
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  const int gxoffs = x - lxid; 
-  const int gyoffs = y - lyid;
 
+  const int lxsz = get_local_size(0);
   const int buffwd = lxsz + 2;
-  const int buffht = lysz + 2;
-  const int buffsz = buffwd * buffht;
-  const int gsz = lxsz * lysz;
+  const int buffsz = (get_local_size(0) + 2) * (get_local_size(1) + 2);
+  const int gsz = get_local_size(0) * get_local_size(1);
   const int lidx = lyid * lxsz + lxid;
+
   const int nchunks = buffsz % gsz == 0 ? buffsz/gsz - 1 : buffsz/gsz;
 
   for(int n=0; n <= nchunks; n++)
@@ -171,13 +167,9 @@ color_smoothing(__read_only image2d_t in, __write_only image2d_t out, const int 
     const int bufidx = (n * gsz) + lidx;
     if(bufidx >= buffsz) break;
 
-    // get position in buffer coordinates
-    const int bufx = bufidx % buffwd;
-    const int bufy = bufidx / buffwd;
-
-    // from here to position in global coordinates
-    const int gx = bufx - 1 + gxoffs;
-    const int gy = bufy - 1 + gyoffs;
+    // get position in buffer coordinates and from there translate to position in global coordinates
+    const int gx = (bufidx % buffwd) - 1 + x - lxid;
+    const int gy = (bufidx / buffwd) - 1 + y - lyid;
 
     // don't read more than needed
     if(gx >= width + 1 || gy >= height + 1) continue;
@@ -192,26 +184,18 @@ color_smoothing(__read_only image2d_t in, __write_only image2d_t out, const int 
   // re-position buffer
   buffer += (lyid + 1) * buffwd + lxid + 1;
 
-  float4 t0 = buffer[-buffwd - 1];
-  float4 t1 = buffer[-buffwd];
-  float4 t2 = buffer[-buffwd + 1];
-  float4 t3 = buffer[-1];
-  float4 t4 = buffer[0];
-  float4 t5 = buffer[1];
-  float4 t6 = buffer[buffwd - 1];
-  float4 t7 = buffer[buffwd];
-  float4 t8 = buffer[buffwd + 1];
+  float4 o = buffer[0];
 
   // 3x3 median for R
-  float s0 = t0.x - t0.y;
-  float s1 = t1.x - t1.y;
-  float s2 = t2.x - t2.y;
-  float s3 = t3.x - t3.y;
-  float s4 = t4.x - t4.y;
-  float s5 = t5.x - t5.y;
-  float s6 = t6.x - t6.y;
-  float s7 = t7.x - t7.y;
-  float s8 = t8.x - t8.y;
+  float s0 = buffer[-buffwd - 1].x - buffer[-buffwd - 1].y;
+  float s1 = buffer[-buffwd].x - buffer[-buffwd].y;
+  float s2 = buffer[-buffwd + 1].x - buffer[-buffwd + 1].y;
+  float s3 = buffer[-1].x - buffer[-1].y;
+  float s4 = buffer[0].x - buffer[0].y;
+  float s5 = buffer[1].x - buffer[1].y;
+  float s6 = buffer[buffwd - 1].x - buffer[buffwd - 1].y;
+  float s7 = buffer[buffwd].x - buffer[buffwd].y;
+  float s8 = buffer[buffwd + 1].x - buffer[buffwd + 1].y;
 
   cas(s1, s2);
   cas(s4, s5);
@@ -233,19 +217,19 @@ color_smoothing(__read_only image2d_t in, __write_only image2d_t out, const int 
   cas(s6, s4);
   cas(s4, s2);
 
-  t4.x = clamp(s4 + t4.y, 0.0f, 1.0f);
+  o.x = clamp(s4 + o.y, 0.0f, 1.0f);
 
 
   // 3x3 median for B
-  s0 = t0.z - t0.y;
-  s1 = t1.z - t1.y;
-  s2 = t2.z - t2.y;
-  s3 = t3.z - t3.y;
-  s4 = t4.z - t4.y;
-  s5 = t5.z - t5.y;
-  s6 = t6.z - t6.y;
-  s7 = t7.z - t7.y;
-  s8 = t8.z - t8.y;
+  s0 = buffer[-buffwd - 1].z - buffer[-buffwd - 1].y;
+  s1 = buffer[-buffwd].z - buffer[-buffwd].y;
+  s2 = buffer[-buffwd + 1].z - buffer[-buffwd + 1].y;
+  s3 = buffer[-1].z - buffer[-1].y;
+  s4 = buffer[0].z - buffer[0].y;
+  s5 = buffer[1].z - buffer[1].y;
+  s6 = buffer[buffwd - 1].z - buffer[buffwd - 1].y;
+  s7 = buffer[buffwd].z - buffer[buffwd].y;
+  s8 = buffer[buffwd + 1].z - buffer[buffwd + 1].y;
 
   cas(s1, s2);
   cas(s4, s5);
@@ -267,9 +251,9 @@ color_smoothing(__read_only image2d_t in, __write_only image2d_t out, const int 
   cas(s6, s4);
   cas(s4, s2);
 
-  t4.z = clamp(s4 + t4.y, 0.0f, 1.0f);
+  o.z = clamp(s4 + o.y, 0.0f, 1.0f);
 
-  write_imagef(out, (int2) (x, y), t4);
+  write_imagef(out, (int2) (x, y), o);
 }
 
 
