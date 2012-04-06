@@ -367,23 +367,41 @@ clip_rotate(read_only image2d_t in, write_only image2d_t out, const int width, c
 }
 
 
-
-#if 0
-void
-Lab_to_XYZ(float *lab, float *xyz)
+/* we use this exp approximation to maintain full identity with cpu path */
+float 
+fast_expf(const float x)
 {
-	const float epsilon = 0.008856f, kappa = 903.3f;
-	xyz[1] = (lab[0]<=kappa*epsilon) ?
-		(lab[0]/kappa) : (native_powr((lab[0]+16.0f)/116.0f, 3.0f));
-	const float fy = (xyz[1]<=epsilon) ? ((kappa*xyz[1]+16.0f)/116.0f) : ((lab[0]+16.0f)/116.0f);
-	const float fz = fy - lab[2]/200.0f;
-	const float fx = lab[1]/500.0f + fy;
-	xyz[2] = (native_powr(fz, 3.0f)<=epsilon) ? ((116.0f*fz-16.0f)/kappa) : (native_powr(fz, 3.0f));
-	xyz[0] = (native_powr(fx, 3.0f)<=epsilon) ? ((116.0f*fx-16.0f)/kappa) : (native_powr(fx, 3.0f));
-  xyz[0] *= 0.9642;
-  xyz[2] *= 0.8249;
+  // meant for the range [-100.0f, 0.0f]. largest error ~ -0.06 at 0.0f.
+  // will get _a_lot_ worse for x > 0.0f (9000 at 10.0f)..
+  const int i1 = 0x3f800000u;
+  // e^x, the comment would be 2^x
+  const int i2 = 0x402DF854u;//0x40000000u;
+  // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
+  // without max clamping (doesn't work for large x, but is faster):
+  const int k0 = i1 + x * (i2 - i1);
+  const int k = k0 > 0 ? k0 : 0;
+  const float f = *(const float *)&k;
+  return f;
 }
-#else
+
+
+/* kernel for monochrome */
+__kernel void
+monochrome(read_only image2d_t in, write_only image2d_t out, const int width, const int height, 
+           const float a, const float b, const float size)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  pixel.x *= fast_expf(-clamp(((pixel.y - a)*(pixel.y - a) + (pixel.z - b)*(pixel.z - b))/(2.0f * size), 0.0f, 1.0f));
+  pixel.y = pixel.z = 0.0f;
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+
 float
 lab_f_inv(float x)
 {
@@ -404,7 +422,6 @@ Lab_to_XYZ(float *Lab, float *XYZ)
   XYZ[1] = d50[1]*lab_f_inv(fy);
   XYZ[2] = d50[2]*lab_f_inv(fz);
 }
-#endif
 
 /* kernel for the plugin colorout, fast matrix + shaper path only */
 kernel void
