@@ -192,27 +192,36 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
   size_t workgroupsize = 0;          // the maximum number of items in a work group
   unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
+  size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
   
   // make sure blocksize is not too large
   int blocksize = BLOCKSIZE;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS)
+  int blockwd;
+  int blockht;
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
+     dt_opencl_get_kernel_work_group_size(devid, gd->kernel_gaussian_transpose, &kernelworkgroupsize) == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] 
+    while(blocksize > maxsizes[0] || blocksize > maxsizes[1]
           || blocksize*blocksize > workgroupsize || blocksize*(blocksize+1)*bpp > localmemsize)
     {
       if(blocksize == 1) break;
       blocksize >>= 1;    
     }
+
+    blockwd = blockht = blocksize;
+
+    if(blockwd * blockht > kernelworkgroupsize)
+      blockht = kernelworkgroupsize / blockwd;
   }
   else
   {
-    blocksize = 1;   // slow but safe
+    blockwd = blockht = 1;   // slow but safe
   }
 
   // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
-  const int bwidth = width % blocksize == 0 ? width : (width / blocksize + 1)*blocksize;
-  const int bheight = height % blocksize == 0 ? height : (height / blocksize + 1)*blocksize;
+  const int bwidth = width % blockwd == 0 ? width : (width / blockwd + 1)*blockwd;
+  const int bheight = height % blockht == 0 ? height : (height / blockht + 1)*blockht;
 
   const float radius = fmax(0.1f, d->radius);
   const float sigma = radius * roi_in->scale / piece ->iscale;
@@ -221,7 +230,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t origin[] = {0, 0, 0};
   size_t region[] = {width, height, 1};
 
-  size_t local[] = {blocksize, blocksize, 1};
+  size_t local[] = {blockwd, blockht, 1};
 
   size_t sizes[3];
 
