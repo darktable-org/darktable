@@ -289,19 +289,23 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
 }
 
 
-#if 0
 /* kernel for the colorcorrection plugin. */
 __kernel void
-colorcorrection (read_only image2d_t in, write_only image2d_t out, float saturation, float a_scale, float a_base, float b_scale, float b_base)
+colorcorrection (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                 const float saturation, const float a_scale, const float a_base, 
+                 const float b_scale, const float b_base)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   pixel.y = saturation*(pixel.y + pixel.x * a_scale + a_base);
   pixel.z = saturation*(pixel.z + pixel.x * b_scale + b_base);
   write_imagef (out, (int2)(x, y), pixel);
 }
-#endif
+
 
 void
 mul_mat_vec_2(const float4 m, const float2 *p, float2 *o)
