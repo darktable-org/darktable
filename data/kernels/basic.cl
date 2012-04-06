@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2009--2012 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -301,40 +301,68 @@ colorcorrection (read_only image2d_t in, write_only image2d_t out, float saturat
   pixel.z = saturation*(pixel.z + pixel.x * b_scale + b_base);
   write_imagef (out, (int2)(x, y), pixel);
 }
-
-// TODO: 2 crop and rotate
-__kernel void
-clipping (read_only image2d_t in, write_only image2d_t out)
-{
-// only crop, no rot fast and sharp path:
-  if(!d->flags && d->angle == 0.0 && d->keystone > 1 && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
-  {
-    float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-    write_imagef (out, (int2)(x, y), pixel);
-  }
-  else
-  {
-    out = ((float *)o)+ch*roi_out->width*j + ch*i;
-    float pi[2], po[2];
-
-    pi[0] = roi_out->x + roi_out->scale*d->cix + i + .5;
-    pi[1] = roi_out->y + roi_out->scale*d->ciy + j + .5;
-    // transform this point using matrix m
-    if(d->flip) {pi[1] -= d->tx*roi_out->scale; pi[0] -= d->ty*roi_out->scale;}
-    else        {pi[0] -= d->tx*roi_out->scale; pi[1] -= d->ty*roi_out->scale;}
-    pi[0] /= roi_out->scale; pi[1] /= roi_out->scale;
-    backtransform(pi, po, d->m, d->k, d->keystone);
-    po[0] *= roi_in->scale; po[1] *= roi_in->scale;
-    po[0] += d->tx*roi_in->scale;  po[1] += d->ty*roi_in->scale;
-    // transform this point to roi_in
-    po[0] -= roi_in->x; po[1] -= roi_in->y;
-
-    const int ii = (int)po[0], jj = (int)po[1];
-    float4 pixel = read_imagef(in, samplerf, (int2)(ii, jj));
-    write_imagef (out, (int2)(x, y), pixel);
-  }
-}
 #endif
+
+void
+mul_mat_vec_2(const float4 m, const float2 *p, float2 *o)
+{
+  (*o).x = (*p).x*m.x + (*p).y*m.y;
+  (*o).y = (*p).x*m.z + (*p).y*m.w;
+}
+
+void
+backtransform(float2 *p, float2 *o, const float4 m, const float2 t)
+{
+  (*p).y /= (1.0f + (*p).x*t.x);
+  (*p).x /= (1.0f + (*p).y*t.y);
+  mul_mat_vec_2(m, p, o);
+}
+
+
+/* kernel for clip&rotate */
+__kernel void
+clip_rotate(read_only image2d_t in, write_only image2d_t out, const int width, const int height, 
+            const int in_width, const int in_height,
+            const int2 roi_in, const int2 roi_out, const float scale_in, const float scale_out,
+            const int flip, const float2 ci, const float2 t, const float2 k, const float4 mat)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float2 pi, po;
+  
+  pi.x = roi_out.x + scale_out * ci.x + x + 0.5f;
+  pi.y = roi_out.y + scale_out * ci.y + y + 0.5f;
+
+  pi.x -= flip ? t.y * scale_out : t.x * scale_out;
+  pi.y -= flip ? t.x * scale_out : t.y * scale_out;
+
+  pi /= scale_out;
+  backtransform(&pi, &po, mat, k);
+  po *= scale_in;
+
+  po.x += t.x * scale_in;
+  po.y += t.y * scale_in;
+
+  po.x -= roi_in.x;
+  po.y -= roi_in.y;
+
+  const int ii = (int)po.x;
+  const int jj = (int)po.y;
+
+  float4 o;
+
+  if (ii >=0 && jj >= 0 && ii <= in_width-2 && jj <= in_height-2)
+    o = read_imagef(in, samplerf, po);
+  else
+    o = (float4)0.0f;
+
+  write_imagef (out, (int2)(x, y), o);
+}
+
+
 
 #if 0
 void
