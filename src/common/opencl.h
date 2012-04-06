@@ -134,6 +134,9 @@ int dt_opencl_get_max_work_item_sizes(const int dev, size_t *sizes);
 /** return max size per dimension in sizes[3] and max total size in workgroupsize */
 int dt_opencl_get_work_group_limits(const int dev, size_t *sizes, size_t *workgroupsize, unsigned long *localmemsize);
 
+/** return max workgroup size for a specifc kernel */
+int dt_opencl_get_kernel_work_group_size(const int dev, const int kernel, size_t *kernelworkgroupsize);
+
 /** attach arg. */
 int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, const size_t size, const void *arg);
 
@@ -259,6 +262,10 @@ static inline int  dt_opencl_get_max_work_item_sizes(const int dev, size_t *size
   return -1;
 }
 static inline int dt_opencl_get_work_group_limits(const int dev, size_t *sizes, size_t *workgroupsize, unsigned long *localmemsize)
+{
+  return -1;
+}
+static inline int dt_opencl_get_kernel_work_group_size(const int dev, const int kernel, size_t *kernelworkgroupsize)
 {
   return -1;
 }

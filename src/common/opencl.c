@@ -498,6 +498,15 @@ int dt_opencl_get_work_group_limits(const int dev, size_t *sizes, size_t *workgr
 }
 
 
+int dt_opencl_get_kernel_work_group_size(const int dev, const int kernel, size_t *kernelworkgroupsize)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  if(!cl->inited || dev < 0) return -1;
+  if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return -1;
+
+  return (cl->dlocl->symbols->dt_clGetKernelWorkGroupInfo)(cl->dev[dev].kernel[kernel], cl->dev[dev].devid, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), kernelworkgroupsize, NULL);
+}
+
 
 int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, const size_t size, const void *arg)
 {
