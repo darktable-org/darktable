@@ -560,7 +560,7 @@
       </locale>
     </schema>
 
-    <schema>
+    <schema><!--tab:gui-->
       <key>/schemas/apps/darktable/ui_last/import_ignore_jpegs</key>
       <applyto>/apps/darktable/ui_last/import_ignore_jpegs</applyto>
       <owner>darktable</owner>
@@ -568,12 +568,12 @@
       <default>FALSE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>ignore jpeg images when importing film rolls.</short>
+        <short>ignore jpeg images when importing film rolls</short>
         <long>when having raw+jpeg images together in one directory it makes no sense to import both. with this flag one can ignore all jpegs found.</long>
       </locale>
     </schema>
 
-    <schema>
+    <schema><!--tab:gui-->
       <key>/schemas/apps/darktable/ui_last/import_recursive</key>
       <applyto>/apps/darktable/ui_last/import_recursive</applyto>
       <owner>darktable</owner>
@@ -581,7 +581,59 @@
       <default>FALSE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>recursive directory traversal when importing filmrolls.</short>
+        <short>recursive directory traversal when importing filmrolls</short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema><!--tab:gui-->
+      <key>/schemas/apps/darktable/ui_last/import_last_creator</key>
+      <applyto>/apps/darktable/ui_last/import_last_creator</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>creator to be applied when importing</short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema><!--tab:gui-->
+      <key>/schemas/apps/darktable/ui_last/import_last_publisher</key>
+      <applyto>/apps/darktable/ui_last/import_last_publisher</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>publisher to be applied when importing</short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema><!--tab:gui-->
+      <key>/schemas/apps/darktable/ui_last/import_last_rights</key>
+      <applyto>/apps/darktable/ui_last/import_last_rights</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>rights to be applied when importing</short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema><!--tab:gui-->
+      <key>/schemas/apps/darktable/ui_last/import_last_tags</key>
+      <applyto>/apps/darktable/ui_last/import_last_tags</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>comma separated tags to be applied when importing</short>
         <long></long>
       </locale>
     </schema>

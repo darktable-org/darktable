@@ -292,6 +292,12 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
 
 #endif // HAVE_GPHOTO2
 
+static void _lib_import_apply_metadata_toggled(GtkWidget *widget, gpointer user_data)
+{
+  GtkWidget *table = GTK_WIDGET(user_data);
+  gtk_widget_set_sensitive(table, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+}
+
 static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_data) 
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
@@ -328,9 +334,93 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
   gtk_file_filter_set_name(filter, _("all files"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
+  // add extra lines to 'extra'. don't forget to destroy the widgets later.
+  GtkWidget *expander = gtk_expander_new(_("import options"));
+  gtk_expander_set_expanded(GTK_EXPANDER(expander), dt_conf_get_bool("ui_last/import_options_expanded"));
+
+  GtkWidget *frame = gtk_frame_new(NULL);
+  gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_IN);
+  GtkWidget *alignment = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 8, 8, 8, 8);
+  GtkWidget *event_box = gtk_event_box_new();
+  gtk_container_add(GTK_CONTAINER(frame), event_box);
+  gtk_container_add(GTK_CONTAINER(event_box), alignment);
+  gtk_container_add(GTK_CONTAINER(alignment), expander);
+
+  GtkWidget *extra;
+  extra = gtk_vbox_new(FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(expander), extra);
+
+  // default metadata
+  GtkWidget *apply_metadata;
+  GtkWidget *table, *label, *creator, *publisher, *rights, *tags;
+  apply_metadata = gtk_check_button_new_with_label (_("apply metadata on import"));
+  g_object_set(apply_metadata, "tooltip-text", _("apply some metadata to all newly imported images."), NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (apply_metadata), dt_conf_get_bool("ui_last/import_apply_metadata"));
+  gtk_box_pack_start(GTK_BOX (extra), apply_metadata, FALSE, FALSE, 0);
+
+  GValue value = {0, };
+  g_value_init(&value, G_TYPE_INT);
+  gtk_widget_style_get_property(apply_metadata, "indicator-size", &value);
+  gint indicator_size = g_value_get_int(&value);
+//   gtk_widget_style_get_property(apply_metadata, "indicator-spacing", &value);
+//   gint indicator_spacing = g_value_get_int(&value);
+
+  table = gtk_table_new(6, 3, FALSE);
+  gtk_table_set_row_spacings(GTK_TABLE(table), 5);
+  gtk_table_set_col_spacings(GTK_TABLE(table), 5);
+  alignment = gtk_alignment_new(0, 0, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 2*indicator_size, 0);
+  gtk_container_add(GTK_CONTAINER(alignment), table);
+  gtk_box_pack_start(GTK_BOX (extra), alignment, FALSE, FALSE, 0);
+
+  creator = gtk_entry_new();
+  gtk_widget_set_size_request(creator, 300, -1);
+  gtk_entry_set_text(GTK_ENTRY(creator), dt_conf_get_string("ui_last/import_last_creator"));
+  publisher = gtk_entry_new();
+  gtk_entry_set_text(GTK_ENTRY(publisher), dt_conf_get_string("ui_last/import_last_publisher"));
+  rights = gtk_entry_new();
+  gtk_entry_set_text(GTK_ENTRY(rights), dt_conf_get_string("ui_last/import_last_rights"));
+  tags = gtk_entry_new();
+  g_object_set(tags, "tooltip-text", _("comma separated list of tags"), NULL);
+  gtk_entry_set_text(GTK_ENTRY(tags), dt_conf_get_string("ui_last/import_last_tags"));
+
+  label = gtk_label_new(_("creator"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), creator, 1, 2, 0, 1, GTK_FILL, 0, 0, 0);
+
+  label = gtk_label_new(_("publisher"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), publisher, 1, 2, 1, 2, GTK_FILL, 0, 0, 0);
+
+  label = gtk_label_new(_("rights"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), rights, 1, 2, 2, 3, GTK_FILL, 0, 0, 0);
+
+  label = gtk_label_new(_("tags"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), tags, 1, 2, 3, 4, GTK_FILL, 0, 0, 0);
+
+  gtk_widget_show_all(frame);
+  gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (filechooser), frame);
+
+  g_signal_connect(apply_metadata, "toggled", G_CALLBACK (_lib_import_apply_metadata_toggled), table);
+  _lib_import_apply_metadata_toggled(apply_metadata, table); // needed since the apply_metadata starts being turned off,
+                                                             // and setting it to off doesn't emit the 'toggled' signal ...
+
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dt_conf_set_string("ui_last/import_last_directory", gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser)));
+    dt_conf_set_bool("ui_last/import_options_expanded", gtk_expander_get_expanded(GTK_EXPANDER (expander)));
+    dt_conf_set_bool("ui_last/import_apply_metadata", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (apply_metadata)));
+    dt_conf_set_string("ui_last/import_last_creator", gtk_entry_get_text(GTK_ENTRY(creator)));
+    dt_conf_set_string("ui_last/import_last_publisher", gtk_entry_get_text(GTK_ENTRY(publisher)));
+    dt_conf_set_string("ui_last/import_last_rights", gtk_entry_get_text(GTK_ENTRY(rights)));
+    dt_conf_set_string("ui_last/import_last_tags", gtk_entry_get_text(GTK_ENTRY(tags)));
 
     char *filename = NULL;
     dt_film_t film;
@@ -372,6 +462,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
       }
     }
   }
+  gtk_widget_destroy(frame);
   gtk_widget_destroy (filechooser);
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
@@ -393,15 +484,27 @@ static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER (filechooser), last_directory);
 
   // add extra lines to 'extra'. don't forget to destroy the widgets later.
+  GtkWidget *expander = gtk_expander_new(_("import options"));
+  gtk_expander_set_expanded(GTK_EXPANDER(expander), dt_conf_get_bool("ui_last/import_options_expanded"));
+
+  GtkWidget *frame = gtk_frame_new(NULL);
+  gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_IN);
+  GtkWidget *alignment = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 8, 8, 8, 8);
+  GtkWidget *event_box = gtk_event_box_new();
+  gtk_container_add(GTK_CONTAINER(frame), event_box);
+  gtk_container_add(GTK_CONTAINER(event_box), alignment);
+  gtk_container_add(GTK_CONTAINER(alignment), expander);
+
   GtkWidget *extra;
   extra = gtk_vbox_new(FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(expander), extra);
 
   // recursive opening.
   GtkWidget *recursive;
   recursive = gtk_check_button_new_with_label (_("import directories recursively"));
   g_object_set(recursive, "tooltip-text", _("recursively import subdirectories. each directory goes into a new film roll."), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (recursive), dt_conf_get_bool("ui_last/import_recursive"));
-  gtk_widget_show (recursive);
   gtk_box_pack_start(GTK_BOX (extra), recursive, FALSE, FALSE, 0);
 
   // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
@@ -409,16 +512,81 @@ static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
   ignore_jpeg = gtk_check_button_new_with_label (_("ignore jpeg files"));
   g_object_set(ignore_jpeg, "tooltip-text", _("do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (ignore_jpeg), dt_conf_get_bool("ui_last/import_ignore_jpegs"));
-  gtk_widget_show (ignore_jpeg);
   gtk_box_pack_start(GTK_BOX (extra), ignore_jpeg, FALSE, FALSE, 0);
 
-  gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (filechooser), extra);
+  // default metadata
+  GtkWidget *apply_metadata;
+  GtkWidget *table, *label, *creator, *publisher, *rights, *tags;
+  apply_metadata = gtk_check_button_new_with_label (_("apply metadata on import"));
+  g_object_set(apply_metadata, "tooltip-text", _("apply some metadata to all newly imported images."), NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (apply_metadata), dt_conf_get_bool("ui_last/import_apply_metadata"));
+  gtk_box_pack_start(GTK_BOX (extra), apply_metadata, FALSE, FALSE, 0);
 
+  GValue value = {0, };
+  g_value_init(&value, G_TYPE_INT);
+  gtk_widget_style_get_property(apply_metadata, "indicator-size", &value);
+  gint indicator_size = g_value_get_int(&value);
+//   gtk_widget_style_get_property(apply_metadata, "indicator-spacing", &value);
+//   gint indicator_spacing = g_value_get_int(&value);
+
+  table = gtk_table_new(6, 3, FALSE);
+  gtk_table_set_row_spacings(GTK_TABLE(table), 5);
+  gtk_table_set_col_spacings(GTK_TABLE(table), 5);
+  alignment = gtk_alignment_new(0, 0, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 2*indicator_size, 0);
+  gtk_container_add(GTK_CONTAINER(alignment), table);
+  gtk_box_pack_start(GTK_BOX (extra), alignment, FALSE, FALSE, 0);
+
+  creator = gtk_entry_new();
+  gtk_widget_set_size_request(creator, 300, -1);
+  gtk_entry_set_text(GTK_ENTRY(creator), dt_conf_get_string("ui_last/import_last_creator"));
+  publisher = gtk_entry_new();
+  gtk_entry_set_text(GTK_ENTRY(publisher), dt_conf_get_string("ui_last/import_last_publisher"));
+  rights = gtk_entry_new();
+  gtk_entry_set_text(GTK_ENTRY(rights), dt_conf_get_string("ui_last/import_last_rights"));
+  tags = gtk_entry_new();
+  g_object_set(tags, "tooltip-text", _("comma separated list of tags"), NULL);
+  gtk_entry_set_text(GTK_ENTRY(tags), dt_conf_get_string("ui_last/import_last_tags"));
+
+  label = gtk_label_new(_("creator"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), creator, 1, 2, 0, 1, GTK_FILL, 0, 0, 0);
+
+  label = gtk_label_new(_("publisher"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), publisher, 1, 2, 1, 2, GTK_FILL, 0, 0, 0);
+
+  label = gtk_label_new(_("rights"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), rights, 1, 2, 2, 3, GTK_FILL, 0, 0, 0);
+
+  label = gtk_label_new(_("tags"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), tags, 1, 2, 3, 4, GTK_FILL, 0, 0, 0);
+
+  gtk_widget_show_all(frame);
+  gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (filechooser), frame);
+
+  g_signal_connect(apply_metadata, "toggled", G_CALLBACK (_lib_import_apply_metadata_toggled), table);
+  _lib_import_apply_metadata_toggled(apply_metadata, table); // needed since the apply_metadata starts being turned off,
+                                                             // and setting it to off doesn't emit the 'toggled' signal ...
+
+  // run the dialog
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dt_conf_set_bool("ui_last/import_recursive", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (recursive)));
     dt_conf_set_bool("ui_last/import_ignore_jpegs", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ignore_jpeg)));
     dt_conf_set_string("ui_last/import_last_directory", gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser)));
+    dt_conf_set_bool("ui_last/import_options_expanded", gtk_expander_get_expanded(GTK_EXPANDER (expander)));
+    dt_conf_set_bool("ui_last/import_apply_metadata", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (apply_metadata)));
+    dt_conf_set_string("ui_last/import_last_creator", gtk_entry_get_text(GTK_ENTRY(creator)));
+    dt_conf_set_string("ui_last/import_last_publisher", gtk_entry_get_text(GTK_ENTRY(publisher)));
+    dt_conf_set_string("ui_last/import_last_rights", gtk_entry_get_text(GTK_ENTRY(rights)));
+    dt_conf_set_string("ui_last/import_last_tags", gtk_entry_get_text(GTK_ENTRY(tags)));
 
     char *filename = NULL, *first_filename = NULL;
     GSList *list = gtk_file_chooser_get_filenames (GTK_FILE_CHOOSER (filechooser));
@@ -433,7 +601,7 @@ static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
       filename = (char *)it->data;
       dt_film_import(filename);
       if (!first_filename)
-	first_filename = dt_util_dstrcat(g_strdup(filename), "%%");
+      first_filename = dt_util_dstrcat(g_strdup(filename), "%%");
       g_free (filename);
       it = g_slist_next(it);
     }
@@ -441,19 +609,17 @@ static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
     /* update collection to view import */
     if (first_filename)
     {
-	dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
-	dt_conf_set_int("plugins/lighttable/collect/item0", 0);
-	dt_conf_set_string("plugins/lighttable/collect/string0",first_filename);
-	dt_collection_update_query(darktable.collection);
-	g_free(first_filename);
+      dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
+      dt_conf_set_int("plugins/lighttable/collect/item0", 0);
+      dt_conf_set_string("plugins/lighttable/collect/string0",first_filename);
+      dt_collection_update_query(darktable.collection);
+      g_free(first_filename);
     }
 
 
     g_slist_free (list);
   }
-  gtk_widget_destroy(recursive);
-  gtk_widget_destroy(ignore_jpeg);
-  gtk_widget_destroy(extra);
+  gtk_widget_destroy(frame);
   gtk_widget_destroy (filechooser);
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
@@ -519,3 +685,5 @@ void gui_cleanup(dt_lib_module_t *self)
   g_free(self->data);
   self->data = NULL;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

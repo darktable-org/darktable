@@ -31,6 +31,7 @@ extern "C"
 #include "common/metadata.h"
 #include "common/tags.h"
 #include "common/debug.h"
+#include "control/conf.h"
 }
 // #include <libexif/exif-data.h>
 #include <exiv2/easyaccess.hpp>
@@ -240,7 +241,12 @@ int dt_exif_read(dt_image_t *img, const char* path)
       dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
     }
 
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Artist")))
+    const char* str = dt_conf_get_string("ui_last/import_last_creator");
+    if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE && str != NULL && str[0] != '\0')
+    {
+      dt_metadata_set(img->id, "Xmp.dc.creator", str);
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Artist")))
          != exifData.end() )
     {
       std::string str = pos->print(&exifData);
@@ -267,12 +273,50 @@ int dt_exif_read(dt_image_t *img, const char* path)
       dt_metadata_set(img->id, "Xmp.dc.description", str.c_str());
     }
 
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Copyright")))
+    str = dt_conf_get_string("ui_last/import_last_rights");
+    if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE && str != NULL && str[0] != '\0')
+    {
+      dt_metadata_set(img->id, "Xmp.dc.rights", str);
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Copyright")))
          != exifData.end() )
     {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
     }
+
+    // some more metadata fields set in the import dialog
+    str = dt_conf_get_string("ui_last/import_last_publisher");
+    if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE && str != NULL && str[0] != '\0')
+    {
+      dt_metadata_set(img->id, "Xmp.dc.publisher", str);
+    }
+    str = dt_conf_get_string("ui_last/import_last_tags");
+    if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE && str != NULL && str[0] != '\0')
+    {
+      char *start = g_strdup(str);
+      char *end = start + strlen(start);
+      // split the string into single tags
+      char *tmp = start, *tag = start;
+      while(tmp < end)
+      {
+        tmp++;
+        if(*tmp == ',' || *tmp == '\0')
+        {
+          *tmp = '\0';
+          if(*tag != '\0')
+          {
+            // add the tag to the image
+            guint tagid = 0;
+            dt_tag_new(tag,&tagid);
+            dt_tag_attach(tagid, img->id);
+          }
+          tag = tmp+1;
+        }
+      }
+      g_free(start);
+    }
+
 
     // workaround for an exiv2 bug writing random garbage into exif_lens for this camera:
     // http://dev.exiv2.org/issues/779
@@ -626,8 +670,8 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1", -1, &stmt_upd_tagxtag, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1, &stmt_ins_tagged, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update tagxtag set count = count + 1 where "
-			      "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
-			      "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt_upd_tagxtag2, NULL);
+                    "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
+                    "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt_upd_tagxtag2, NULL);
   for (int i=0; i<cnt; i++)
   {
     int tagid = -1;
@@ -637,25 +681,25 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
       const char *tag = pos->toString(i).c_str();
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt_sel_id, 1, tag, strlen(tag), SQLITE_TRANSIENT);
       if(sqlite3_step(stmt_sel_id) == SQLITE_ROW)
-	tagid = sqlite3_column_int(stmt_sel_id, 0);
+      tagid = sqlite3_column_int(stmt_sel_id, 0);
       sqlite3_reset(stmt_sel_id);
       sqlite3_clear_bindings(stmt_sel_id);
       
       if (tagid > 0)
       {
-	if (k == 1)
-	{
-	  DT_DEBUG_SQLITE3_BIND_INT(stmt_ins_tagxtag, 1, tagid);
-	  sqlite3_step(stmt_ins_tagxtag);
-	  sqlite3_reset(stmt_ins_tagxtag);
-	  sqlite3_clear_bindings(stmt_ins_tagxtag);
-	  
-	  DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_tagxtag, 1, tagid);
-	  sqlite3_step(stmt_upd_tagxtag);
-	  sqlite3_reset(stmt_upd_tagxtag);
-	  sqlite3_clear_bindings(stmt_upd_tagxtag);
-	}
-	break;
+        if (k == 1)
+        {
+          DT_DEBUG_SQLITE3_BIND_INT(stmt_ins_tagxtag, 1, tagid);
+          sqlite3_step(stmt_ins_tagxtag);
+          sqlite3_reset(stmt_ins_tagxtag);
+          sqlite3_clear_bindings(stmt_ins_tagxtag);
+
+          DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_tagxtag, 1, tagid);
+          sqlite3_step(stmt_upd_tagxtag);
+          sqlite3_reset(stmt_upd_tagxtag);
+          sqlite3_clear_bindings(stmt_upd_tagxtag);
+        }
+        break;
       }
       fprintf(stderr,"Creating tag: %s\n", tag);
       // create this tag (increment id, leave icon empty), retry.
@@ -706,8 +750,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
 
     // consistency: strip all tags from image (tagged_image, tagxtag)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update tagxtag set count = count - 1 where "
-				"(id2 in (select tagid from tagged_images where imgid = ?2)) or "
-				"(id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
+                  "(id2 in (select tagid from tagged_images where imgid = ?2)) or "
+                  "(id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
