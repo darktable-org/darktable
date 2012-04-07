@@ -55,6 +55,12 @@ void dt_tag_detach_by_string(const char *name, gint imgid);
 /** retreives a list of tags of specified imgid \param[out] result a list of dt_tag_t. */
 uint32_t dt_tag_get_attached(gint imgid,GList **result);
 
+/** get a string of tags, all serialized, and separated with separator */
+gchar* dt_tag_get_list(gint imgid, gchar *separator);
+
+/** get a string of only hierarchical tags, all serialized, and separated with separator */
+gchar *dt_tag_get_hierarchical(gint imgid, gchar *separator);
+
 /** retreives a list of suggested tags matching keyword. \param[in] keyword the keyword to search \param[out] result a pointer to list populated with result. \return the count \note the limit of result is decided by conf value "xxx" */
 uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result);
 
