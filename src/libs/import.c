@@ -17,6 +17,7 @@
 */
 
 #include "common/darktable.h"
+#include "common/debug.h"
 #include "common/film.h"
 #include "common/collection.h"
 #include "common/image_cache.h"
@@ -64,12 +65,15 @@ typedef struct dt_lib_import_metadata_t
   GtkWidget *ignore_jpeg;
   GtkWidget *expander;
   GtkWidget *apply_metadata;
+  GtkWidget *presets;
   GtkWidget *creator;
   GtkWidget *publisher;
   GtkWidget *rights;
   GtkWidget *tags;
 }
 dt_lib_import_metadata_t;
+
+enum {NAME_COLUMN, CREATOR_COLUMN, PUBLISHER_COLUMN, RIGHTS_COLUMN, N_COLUMNS};
 
 const char* name()
 {
@@ -306,10 +310,54 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
 
 #endif // HAVE_GPHOTO2
 
+static void _lib_import_metadata_changed(GtkWidget *widget, GtkComboBox *box)
+{
+  gtk_combo_box_set_active(box, -1);
+}
+
 static void _lib_import_apply_metadata_toggled(GtkWidget *widget, gpointer user_data)
 {
   GtkWidget *table = GTK_WIDGET(user_data);
   gtk_widget_set_sensitive(table, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+}
+
+static void _lib_import_presets_changed(GtkWidget *widget, dt_lib_import_metadata_t *data)
+{
+  GtkTreeIter iter;
+
+  if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget), &iter) == TRUE)
+  {
+    GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(widget));
+    GValue value = {0,};
+    gchar *sv;
+
+    gtk_tree_model_get_value(model, &iter, CREATOR_COLUMN, &value);
+    if((sv=(gchar*)g_value_get_string(&value))!=NULL && sv[0] != '\0')
+    {
+      g_signal_handlers_block_by_func(data->creator, _lib_import_metadata_changed, data->presets);
+      gtk_entry_set_text(GTK_ENTRY(data->creator), sv);
+      g_signal_handlers_unblock_by_func(data->creator, _lib_import_metadata_changed, data->presets);
+    }
+    g_value_unset(&value);
+
+    gtk_tree_model_get_value(model, &iter, PUBLISHER_COLUMN, &value);
+    if((sv=(gchar*)g_value_get_string(&value))!=NULL && sv[0] != '\0')
+    {
+      g_signal_handlers_block_by_func(data->publisher, _lib_import_metadata_changed, data->presets);
+      gtk_entry_set_text(GTK_ENTRY(data->publisher), sv);
+      g_signal_handlers_unblock_by_func(data->publisher, _lib_import_metadata_changed, data->presets);
+    }
+    g_value_unset(&value);
+
+    gtk_tree_model_get_value(model, &iter, RIGHTS_COLUMN, &value);
+    if((sv=(gchar*)g_value_get_string(&value))!=NULL && sv[0] != '\0')
+    {
+      g_signal_handlers_block_by_func(data->rights, _lib_import_metadata_changed, data->presets);
+      gtk_entry_set_text(GTK_ENTRY(data->rights), sv);
+      g_signal_handlers_unblock_by_func(data->rights, _lib_import_metadata_changed, data->presets);
+    }
+    g_value_unset(&value);
+  }
 }
 
 static GtkWidget* _lib_import_get_extra_widget(dt_lib_import_metadata_t *data, gboolean import_folder)
@@ -381,31 +429,83 @@ static GtkWidget* _lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
   g_object_set(tags, "tooltip-text", _("comma separated list of tags"), NULL);
   gtk_entry_set_text(GTK_ENTRY(tags), dt_conf_get_string("ui_last/import_last_tags"));
 
+  // presets from the metadata plugin
+  GtkCellRenderer *renderer;
+  GtkTreeIter iter;
+  GtkListStore *model = gtk_list_store_new(N_COLUMNS,
+                                           G_TYPE_STRING /*name*/,
+                                           G_TYPE_STRING /*creator*/,
+                                           G_TYPE_STRING /*publisher*/,
+                                           G_TYPE_STRING /*rights*/);
+
+  GtkWidget *presets = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
+  renderer = gtk_cell_renderer_text_new();
+  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(presets), renderer, FALSE);
+  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(presets), renderer, "text", NAME_COLUMN, NULL);
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, op_params from presets where operation = \"metadata\"", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    void *op_params = (void *)sqlite3_column_blob(stmt, 1);
+    int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
+
+    char *buf         = (char* )op_params;
+    char *title       = buf;
+    buf += strlen(title) + 1;
+    char *description = buf;
+    buf += strlen(description) + 1;
+    char *rights     = buf;
+    buf += strlen(rights) + 1;
+    char *creator     = buf;
+    buf += strlen(creator) + 1;
+    char *publisher   = buf;
+
+    if(op_params_size == strlen(title) + strlen(description) + strlen(rights) + strlen(creator) + strlen(publisher) + 5)
+    {
+      gtk_list_store_append(model, &iter);
+      gtk_list_store_set (model, &iter,
+                          NAME_COLUMN, (char *)sqlite3_column_text(stmt, 0),
+                          CREATOR_COLUMN, creator,
+                          PUBLISHER_COLUMN, publisher,
+                          RIGHTS_COLUMN, rights,
+                          -1);
+    }
+  }
+  sqlite3_finalize(stmt);
+
+  int line = 0;
+
+  label = gtk_label_new(_("preset"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line+1, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), presets, 1, 2, line, line+1, GTK_FILL, 0, 0, 0);
+  line++;
+
   label = gtk_label_new(_("creator"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), creator, 1, 2, 0, 1, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line+1, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), creator, 1, 2, line, line+1, GTK_FILL, 0, 0, 0);
+  line++;
 
   label = gtk_label_new(_("publisher"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), publisher, 1, 2, 1, 2, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line+1, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), publisher, 1, 2, line, line+1, GTK_FILL, 0, 0, 0);
+  line++;
 
   label = gtk_label_new(_("rights"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), rights, 1, 2, 2, 3, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line+1, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), rights, 1, 2, line, line+1, GTK_FILL, 0, 0, 0);
+  line++;
 
   label = gtk_label_new(_("tags"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), tags, 1, 2, 3, 4, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line+1, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), tags, 1, 2, line, line+1, GTK_FILL, 0, 0, 0);
 
   gtk_widget_show_all(frame);
-
-  g_signal_connect(apply_metadata, "toggled", G_CALLBACK (_lib_import_apply_metadata_toggled), table);
-  _lib_import_apply_metadata_toggled(apply_metadata, table); // needed since the apply_metadata starts being turned off,
-                                                             // and setting it to off doesn't emit the 'toggled' signal ...
 
   if(data != NULL)
   {
@@ -414,11 +514,22 @@ static GtkWidget* _lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
     data->ignore_jpeg = ignore_jpeg;
     data->expander = expander;
     data->apply_metadata = apply_metadata;
+    data->presets = presets;
     data->creator = creator;
     data->publisher = publisher;
     data->rights = rights;
     data->tags = tags;
   }
+
+  g_signal_connect(apply_metadata, "toggled", G_CALLBACK (_lib_import_apply_metadata_toggled), table);
+  _lib_import_apply_metadata_toggled(apply_metadata, table); // needed since the apply_metadata starts being turned off,
+                                                             // and setting it to off doesn't emit the 'toggled' signal ...
+
+  g_signal_connect(presets, "changed", G_CALLBACK(_lib_import_presets_changed), data);
+  g_signal_connect(GTK_ENTRY(creator), "changed", G_CALLBACK (_lib_import_metadata_changed), presets);
+  g_signal_connect(GTK_ENTRY(publisher), "changed", G_CALLBACK (_lib_import_metadata_changed), presets);
+  g_signal_connect(GTK_ENTRY(rights), "changed", G_CALLBACK (_lib_import_metadata_changed), presets);
+
   return frame;
 }
 
