@@ -96,7 +96,7 @@ typedef struct dt_storage_flickr_params_t
 /** Authenticates and retreives an initialized flickr api object */
 _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_data_t *ui);
 
-flickcurl_upload_status static *_flickr_api_upload_photo(dt_storage_flickr_params_t *params, char *data, char *caption, char *description,GList * tags );
+flickcurl_upload_status static *_flickr_api_upload_photo(dt_storage_flickr_params_t *params, char *data, char *caption, char *description, gint imgid);
 
 void static _flickr_api_free( _flickr_api_context_t *ctx )
 {
@@ -261,7 +261,7 @@ _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_dat
 }
 
 
-flickcurl_upload_status static *_flickr_api_upload_photo( dt_storage_flickr_params_t *p, char *fname, char *caption, char *description, GList * tags )
+flickcurl_upload_status static *_flickr_api_upload_photo( dt_storage_flickr_params_t *p, char *fname, char *caption, char *description, gint imgid )
 {
 
   flickcurl_upload_params *params = g_malloc(sizeof(flickcurl_upload_params));
@@ -274,56 +274,8 @@ flickcurl_upload_status static *_flickr_api_upload_photo( dt_storage_flickr_para
   params->title = caption;
   params->description = description;
 
-  if (tags)
-  {
-
-    int i, length;
-	
-	GList *split_tags;
-
-    length = g_list_length(tags);
-    if (length > 0)
-    {
-      for (i=0; i<length; i++)
-      {
-        dt_tag_t *t = g_list_nth_data(tags, i);
-
-        if (t)
-        {
-          if (!g_ascii_strncasecmp(t->tag, "darktable|", 10))
-          {
-            split_tags = g_list_append(split_tags, "darktable");
-          }
-          else
-          {
-		    gchar *pch;
-		    pch = strtok (t->tag, "|");
-			if (pch != NULL)
-            {
-			  while (pch)
-              {
-                split_tags = g_list_append (split_tags, g_strconcat ("\"", pch, "\"", NULL));
-				pch = strtok (NULL, "|");
-              }
-			}
-			else
-			  split_tags = g_list_append (split_tags, g_strconcat ("\"", t->tag, "\"", NULL));
-        }
-      }
-	  
-	  length = g_list_length(split_tags);
-	  gchar *taglist = NULL;
-	  
-	  for (i=0; i<length; i++)
-	  {
-	    taglist = g_strconcat (taglist, g_list_nth_data(split_tags, i), " ", NULL);
-	  }
-	  
-      params->tags = g_strdup(taglist);
-      g_free(taglist);
-	  g_list_free(split_tags);
-    }
-  }
+  if (imgid)
+    params->tags = dt_tag_get_list(imgid, ",");
   params->photo_file = fname; //fname should be the URI of temp file
 
   params->is_public = (int) p->public_perm;
@@ -670,10 +622,10 @@ gui_reset (dt_imageio_module_storage_t *self)
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
-  int result=1;
+  gint result=1;
   dt_storage_flickr_params_t *p=(dt_storage_flickr_params_t *)sdata;
   flickcurl_upload_status *photo_status;
-
+  gint tags=0;
 
   const char *ext = format->extension(fdata);
 
@@ -689,11 +641,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   char *caption = NULL;
   char *description = NULL;
-  GList *tags = NULL;
 
-  // Fetch the attached tags of image id if exported..
-  if( p->export_tags == TRUE )
-    dt_tag_get_attached(imgid,&tags);
 
   gint fd=g_mkstemp(fname);
   fprintf(stderr,"tempfile: %s\n",fname);
@@ -732,6 +680,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 //TODO: Check if this could be done in threads, so we enhace export time by using
 //      upload time for one image to export another image to disk.
   // Upload image
+  // Do we export tags?
+  if( p->export_tags == TRUE )
+    tags = imgid;
   photo_status = _flickr_api_upload_photo( p, fname, caption, description, tags );
   if( !photo_status )
   {
