@@ -19,6 +19,10 @@
 const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
 const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
 
+#ifndef M_PI
+#define M_PI           3.14159265358979323846  // should be defined by the OpenCL compiler acc. to standard
+#endif
+
 int
 FC(const int row, const int col, const unsigned int filters)
 {
@@ -491,5 +495,64 @@ levels (read_only image2d_t in, write_only image2d_t out, const int width, const
 
   write_imagef (out, (int2)(x, y), pixel);
 }
+
+
+/* kernel for the colorzones plugin */
+enum
+{
+  DT_IOP_COLORZONES_L = 0,
+  DT_IOP_COLORZONES_C = 1,
+  DT_IOP_COLORZONES_h = 2
+};
+
+
+kernel void
+colorzones (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int channel,
+            read_only image2d_t table_L, read_only image2d_t table_a, read_only image2d_t table_b)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  const float a = pixel.y;
+  const float b = pixel.z;
+  const float h = fmod(atan2(b, a) + 2.0f*M_PI, 2.0f*M_PI)/(2.0f*M_PI);
+  const float C = sqrt(b*b + a*a);
+
+  float select = 0.0f;
+  float blend = 0.0f;
+
+  switch(channel)
+  {
+    case DT_IOP_COLORZONES_L:
+      select = fmin(1.0f, pixel.x/100.0f);
+      break;
+    case DT_IOP_COLORZONES_C:
+      select = fmin(1.0f, C/128.0f);
+      break;
+    default:
+    case DT_IOP_COLORZONES_h:
+      select = h;
+      blend = pow(1.0f - C/128.0f, 2.0f);
+      break;
+  }
+
+  const float Lm = (blend * 0.5f + (1.0f-blend)*lookup(table_L, select)) - 0.5f;
+  const float hm = (blend * 0.5f + (1.0f-blend)*lookup(table_b, select)) - 0.5f;
+  blend *= blend; // saturation isn't as prone to artifacts:
+  // const float Cm = 2.0 * (blend*.5f + (1.0f-blend)*lookup(d->lut[1], select));
+  const float Cm = 2.0f * lookup(table_a, select);
+  const float L = pixel.x * pow(2.0f, 4.0f*Lm);
+
+  pixel.x = L;
+  pixel.y = cos(2.0f*M_PI*(h + hm)) * Cm * C;
+  pixel.z = sin(2.0f*M_PI*(h + hm)) * Cm * C;
+
+  write_imagef (out, (int2)(x, y), pixel); 
+}
+
 
 
