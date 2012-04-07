@@ -57,6 +57,20 @@ typedef struct dt_lib_import_t
 }
 dt_lib_import_t;
 
+typedef struct dt_lib_import_metadata_t
+{
+  GtkWidget *frame;
+  GtkWidget *recursive;
+  GtkWidget *ignore_jpeg;
+  GtkWidget *expander;
+  GtkWidget *apply_metadata;
+  GtkWidget *creator;
+  GtkWidget *publisher;
+  GtkWidget *rights;
+  GtkWidget *tags;
+}
+dt_lib_import_metadata_t;
+
 const char* name()
 {
   return _("import");
@@ -298,42 +312,8 @@ static void _lib_import_apply_metadata_toggled(GtkWidget *widget, gpointer user_
   gtk_widget_set_sensitive(table, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
 }
 
-static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_data) 
+static GtkWidget* _lib_import_get_extra_widget(dt_lib_import_metadata_t *data, gboolean import_folder)
 {
-  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import image"),
-                           GTK_WINDOW (win),
-                           GTK_FILE_CHOOSER_ACTION_OPEN,
-                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                           GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                           (char *)NULL);
-
-  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
-
-  char *last_directory = dt_conf_get_string("ui_last/import_last_directory");
-  if(last_directory != NULL)
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER (filechooser), last_directory);
-
-  char *cp, **extensions, ext[1024];
-  GtkFileFilter *filter;
-  filter = GTK_FILE_FILTER(gtk_file_filter_new());
-  extensions = g_strsplit(dt_supported_extensions, ",", 100);
-  for(char **i=extensions; *i!=NULL; i++)
-  {
-    snprintf(ext, 1024, "*.%s", *i);
-    gtk_file_filter_add_pattern(filter, ext);
-    gtk_file_filter_add_pattern(filter, cp=g_ascii_strup(ext, -1));
-    g_free(cp);
-  }
-  g_strfreev(extensions);
-  gtk_file_filter_set_name(filter, _("supported images"));
-  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
-
-  filter = GTK_FILE_FILTER(gtk_file_filter_new());
-  gtk_file_filter_add_pattern(filter, "*");
-  gtk_file_filter_set_name(filter, _("all files"));
-  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
-
   // add extra lines to 'extra'. don't forget to destroy the widgets later.
   GtkWidget *expander = gtk_expander_new(_("import options"));
   gtk_expander_set_expanded(GTK_EXPANDER(expander), dt_conf_get_bool("ui_last/import_options_expanded"));
@@ -350,6 +330,22 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
   GtkWidget *extra;
   extra = gtk_vbox_new(FALSE, 0);
   gtk_container_add(GTK_CONTAINER(expander), extra);
+
+  GtkWidget *recursive = NULL, *ignore_jpeg = NULL;
+  if(import_folder == TRUE)
+  {
+    // recursive opening.
+    recursive = gtk_check_button_new_with_label (_("import directories recursively"));
+    g_object_set(recursive, "tooltip-text", _("recursively import subdirectories. each directory goes into a new film roll."), NULL);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (recursive), dt_conf_get_bool("ui_last/import_recursive"));
+    gtk_box_pack_start(GTK_BOX (extra), recursive, FALSE, FALSE, 0);
+
+    // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
+    ignore_jpeg = gtk_check_button_new_with_label (_("ignore jpeg files"));
+    g_object_set(ignore_jpeg, "tooltip-text", _("do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."), NULL);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (ignore_jpeg), dt_conf_get_bool("ui_last/import_ignore_jpegs"));
+    gtk_box_pack_start(GTK_BOX (extra), ignore_jpeg, FALSE, FALSE, 0);
+  }
 
   // default metadata
   GtkWidget *apply_metadata;
@@ -406,21 +402,84 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
   gtk_table_attach(GTK_TABLE(table), tags, 1, 2, 3, 4, GTK_FILL, 0, 0, 0);
 
   gtk_widget_show_all(frame);
-  gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (filechooser), frame);
 
   g_signal_connect(apply_metadata, "toggled", G_CALLBACK (_lib_import_apply_metadata_toggled), table);
   _lib_import_apply_metadata_toggled(apply_metadata, table); // needed since the apply_metadata starts being turned off,
                                                              // and setting it to off doesn't emit the 'toggled' signal ...
 
+  if(data != NULL)
+  {
+    data->frame = frame;
+    data->recursive = recursive;
+    data->ignore_jpeg = ignore_jpeg;
+    data->expander = expander;
+    data->apply_metadata = apply_metadata;
+    data->creator = creator;
+    data->publisher = publisher;
+    data->rights = rights;
+    data->tags = tags;
+  }
+  return frame;
+}
+
+static void _lib_import_evaluate_extra_widget(dt_lib_import_metadata_t *data, gboolean import_folder)
+{
+  if(import_folder == TRUE)
+  {
+    dt_conf_set_bool("ui_last/import_recursive", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (data->recursive)));
+    dt_conf_set_bool("ui_last/import_ignore_jpegs", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (data->ignore_jpeg)));
+  }
+  dt_conf_set_bool("ui_last/import_options_expanded", gtk_expander_get_expanded(GTK_EXPANDER (data->expander)));
+  dt_conf_set_bool("ui_last/import_apply_metadata", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (data->apply_metadata)));
+  dt_conf_set_string("ui_last/import_last_creator", gtk_entry_get_text(GTK_ENTRY(data->creator)));
+  dt_conf_set_string("ui_last/import_last_publisher", gtk_entry_get_text(GTK_ENTRY(data->publisher)));
+  dt_conf_set_string("ui_last/import_last_rights", gtk_entry_get_text(GTK_ENTRY(data->rights)));
+  dt_conf_set_string("ui_last/import_last_tags", gtk_entry_get_text(GTK_ENTRY(data->tags)));
+}
+
+static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_data)
+{
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import image"),
+                           GTK_WINDOW (win),
+                           GTK_FILE_CHOOSER_ACTION_OPEN,
+                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                           GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                           (char *)NULL);
+
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
+
+  char *last_directory = dt_conf_get_string("ui_last/import_last_directory");
+  if(last_directory != NULL)
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER (filechooser), last_directory);
+
+  char *cp, **extensions, ext[1024];
+  GtkFileFilter *filter;
+  filter = GTK_FILE_FILTER(gtk_file_filter_new());
+  extensions = g_strsplit(dt_supported_extensions, ",", 100);
+  for(char **i=extensions; *i!=NULL; i++)
+  {
+    snprintf(ext, 1024, "*.%s", *i);
+    gtk_file_filter_add_pattern(filter, ext);
+    gtk_file_filter_add_pattern(filter, cp=g_ascii_strup(ext, -1));
+    g_free(cp);
+  }
+  g_strfreev(extensions);
+  gtk_file_filter_set_name(filter, _("supported images"));
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+
+  filter = GTK_FILE_FILTER(gtk_file_filter_new());
+  gtk_file_filter_add_pattern(filter, "*");
+  gtk_file_filter_set_name(filter, _("all files"));
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+
+  dt_lib_import_metadata_t metadata;
+  gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (filechooser), _lib_import_get_extra_widget(&metadata, FALSE));
+
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dt_conf_set_string("ui_last/import_last_directory", gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser)));
-    dt_conf_set_bool("ui_last/import_options_expanded", gtk_expander_get_expanded(GTK_EXPANDER (expander)));
-    dt_conf_set_bool("ui_last/import_apply_metadata", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (apply_metadata)));
-    dt_conf_set_string("ui_last/import_last_creator", gtk_entry_get_text(GTK_ENTRY(creator)));
-    dt_conf_set_string("ui_last/import_last_publisher", gtk_entry_get_text(GTK_ENTRY(publisher)));
-    dt_conf_set_string("ui_last/import_last_rights", gtk_entry_get_text(GTK_ENTRY(rights)));
-    dt_conf_set_string("ui_last/import_last_tags", gtk_entry_get_text(GTK_ENTRY(tags)));
+    _lib_import_evaluate_extra_widget(&metadata, FALSE);
 
     char *filename = NULL;
     dt_film_t film;
@@ -462,7 +521,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
       }
     }
   }
-  gtk_widget_destroy(frame);
+  gtk_widget_destroy(metadata.frame);
   gtk_widget_destroy (filechooser);
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
@@ -483,110 +542,14 @@ static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
   if(last_directory != NULL)
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER (filechooser), last_directory);
 
-  // add extra lines to 'extra'. don't forget to destroy the widgets later.
-  GtkWidget *expander = gtk_expander_new(_("import options"));
-  gtk_expander_set_expanded(GTK_EXPANDER(expander), dt_conf_get_bool("ui_last/import_options_expanded"));
-
-  GtkWidget *frame = gtk_frame_new(NULL);
-  gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_IN);
-  GtkWidget *alignment = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 8, 8, 8, 8);
-  GtkWidget *event_box = gtk_event_box_new();
-  gtk_container_add(GTK_CONTAINER(frame), event_box);
-  gtk_container_add(GTK_CONTAINER(event_box), alignment);
-  gtk_container_add(GTK_CONTAINER(alignment), expander);
-
-  GtkWidget *extra;
-  extra = gtk_vbox_new(FALSE, 0);
-  gtk_container_add(GTK_CONTAINER(expander), extra);
-
-  // recursive opening.
-  GtkWidget *recursive;
-  recursive = gtk_check_button_new_with_label (_("import directories recursively"));
-  g_object_set(recursive, "tooltip-text", _("recursively import subdirectories. each directory goes into a new film roll."), NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (recursive), dt_conf_get_bool("ui_last/import_recursive"));
-  gtk_box_pack_start(GTK_BOX (extra), recursive, FALSE, FALSE, 0);
-
-  // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-  GtkWidget *ignore_jpeg;
-  ignore_jpeg = gtk_check_button_new_with_label (_("ignore jpeg files"));
-  g_object_set(ignore_jpeg, "tooltip-text", _("do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."), NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (ignore_jpeg), dt_conf_get_bool("ui_last/import_ignore_jpegs"));
-  gtk_box_pack_start(GTK_BOX (extra), ignore_jpeg, FALSE, FALSE, 0);
-
-  // default metadata
-  GtkWidget *apply_metadata;
-  GtkWidget *table, *label, *creator, *publisher, *rights, *tags;
-  apply_metadata = gtk_check_button_new_with_label (_("apply metadata on import"));
-  g_object_set(apply_metadata, "tooltip-text", _("apply some metadata to all newly imported images."), NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (apply_metadata), dt_conf_get_bool("ui_last/import_apply_metadata"));
-  gtk_box_pack_start(GTK_BOX (extra), apply_metadata, FALSE, FALSE, 0);
-
-  GValue value = {0, };
-  g_value_init(&value, G_TYPE_INT);
-  gtk_widget_style_get_property(apply_metadata, "indicator-size", &value);
-  gint indicator_size = g_value_get_int(&value);
-//   gtk_widget_style_get_property(apply_metadata, "indicator-spacing", &value);
-//   gint indicator_spacing = g_value_get_int(&value);
-
-  table = gtk_table_new(6, 3, FALSE);
-  gtk_table_set_row_spacings(GTK_TABLE(table), 5);
-  gtk_table_set_col_spacings(GTK_TABLE(table), 5);
-  alignment = gtk_alignment_new(0, 0, 1, 1);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 2*indicator_size, 0);
-  gtk_container_add(GTK_CONTAINER(alignment), table);
-  gtk_box_pack_start(GTK_BOX (extra), alignment, FALSE, FALSE, 0);
-
-  creator = gtk_entry_new();
-  gtk_widget_set_size_request(creator, 300, -1);
-  gtk_entry_set_text(GTK_ENTRY(creator), dt_conf_get_string("ui_last/import_last_creator"));
-  publisher = gtk_entry_new();
-  gtk_entry_set_text(GTK_ENTRY(publisher), dt_conf_get_string("ui_last/import_last_publisher"));
-  rights = gtk_entry_new();
-  gtk_entry_set_text(GTK_ENTRY(rights), dt_conf_get_string("ui_last/import_last_rights"));
-  tags = gtk_entry_new();
-  g_object_set(tags, "tooltip-text", _("comma separated list of tags"), NULL);
-  gtk_entry_set_text(GTK_ENTRY(tags), dt_conf_get_string("ui_last/import_last_tags"));
-
-  label = gtk_label_new(_("creator"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), creator, 1, 2, 0, 1, GTK_FILL, 0, 0, 0);
-
-  label = gtk_label_new(_("publisher"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), publisher, 1, 2, 1, 2, GTK_FILL, 0, 0, 0);
-
-  label = gtk_label_new(_("rights"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), rights, 1, 2, 2, 3, GTK_FILL, 0, 0, 0);
-
-  label = gtk_label_new(_("tags"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), tags, 1, 2, 3, 4, GTK_FILL, 0, 0, 0);
-
-  gtk_widget_show_all(frame);
-  gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (filechooser), frame);
-
-  g_signal_connect(apply_metadata, "toggled", G_CALLBACK (_lib_import_apply_metadata_toggled), table);
-  _lib_import_apply_metadata_toggled(apply_metadata, table); // needed since the apply_metadata starts being turned off,
-                                                             // and setting it to off doesn't emit the 'toggled' signal ...
+  dt_lib_import_metadata_t metadata;
+  gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (filechooser), _lib_import_get_extra_widget(&metadata, TRUE));
 
   // run the dialog
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
-    dt_conf_set_bool("ui_last/import_recursive", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (recursive)));
-    dt_conf_set_bool("ui_last/import_ignore_jpegs", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ignore_jpeg)));
     dt_conf_set_string("ui_last/import_last_directory", gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser)));
-    dt_conf_set_bool("ui_last/import_options_expanded", gtk_expander_get_expanded(GTK_EXPANDER (expander)));
-    dt_conf_set_bool("ui_last/import_apply_metadata", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (apply_metadata)));
-    dt_conf_set_string("ui_last/import_last_creator", gtk_entry_get_text(GTK_ENTRY(creator)));
-    dt_conf_set_string("ui_last/import_last_publisher", gtk_entry_get_text(GTK_ENTRY(publisher)));
-    dt_conf_set_string("ui_last/import_last_rights", gtk_entry_get_text(GTK_ENTRY(rights)));
-    dt_conf_set_string("ui_last/import_last_tags", gtk_entry_get_text(GTK_ENTRY(tags)));
+    _lib_import_evaluate_extra_widget(&metadata, TRUE);
 
     char *filename = NULL, *first_filename = NULL;
     GSList *list = gtk_file_chooser_get_filenames (GTK_FILE_CHOOSER (filechooser));
@@ -619,7 +582,7 @@ static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
 
     g_slist_free (list);
   }
-  gtk_widget_destroy(frame);
+  gtk_widget_destroy(metadata.frame);
   gtk_widget_destroy (filechooser);
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
