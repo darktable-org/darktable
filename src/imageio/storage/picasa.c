@@ -105,7 +105,7 @@ static _picasa_api_context_t *_picasa_api_authenticate(const char *username,cons
 
 static int _picasa_api_get_feed(_picasa_api_context_t *ctx);
 static int _picasa_api_create_album(_picasa_api_context_t *ctx);
-static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *data, int size , char *caption, char *description,GList * tags );
+static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *data, int size , char *caption, char *description, gint imgid );
 
 /** Grow and fill _buffer_t with recieved data... */
 static size_t _picasa_api_buffer_write_func(void *ptr, size_t size, size_t nmemb, void *stream)
@@ -202,7 +202,7 @@ static _picasa_api_context_t *_picasa_api_authenticate(const char *username,cons
 }
 
 
-static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *data, int size , char *caption, char *description,GList * tags )
+static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *data, int size , char *caption, char *description, gint imgid )
 {
   _buffer_t buffer;
   memset(&buffer,0,sizeof(_buffer_t));
@@ -260,20 +260,15 @@ static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , ch
   curl_easy_getinfo(ctx->curl_handle,CURLINFO_RESPONSE_CODE,&result );
 
   // If we want to add tags let's do...
-  if( result == 201 && g_list_length(tags) > 0 )
+  if( result == 201 && imgid > 0 )
   {
     // Image was created , fine.. and result have the fully created photo xml entry..
     // Let's perform an update of the photos keywords with tags passed along to this function..
     // and use picasa photo update api to add keywords to the photo...
 
     // Build the keywords content string
-    gchar keywords[4096]= {0};
-    for( int i=0; i<g_list_length( tags ); i++)
-    {
-      g_strlcat(keywords,((dt_tag_t *)g_list_nth_data(tags,i))->tag,4096);
-      if( i < g_list_length( tags )-1)
-        g_strlcat(keywords,", ",4096);
-    }
+    gchar *keywords = NULL;
+    keywords = dt_tag_get_list(imgid, ",");
 
     xmlDocPtr doc;
     xmlNodePtr entryNode;
@@ -899,6 +894,7 @@ gui_reset (dt_imageio_module_storage_t *self)
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
+  gint tags = 0;
   int result=1;
   dt_storage_picasa_params_t *p=(dt_storage_picasa_params_t *)sdata;
 
@@ -930,11 +926,6 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   char *caption="a image";
   char *description="";
   char *mime="image/jpeg";
-  GList *tags=NULL;
-
-  // Fetch the attached tags of image id if exported..
-  if( p->export_tags == TRUE )
-    dt_tag_get_attached(imgid,&tags);
 
   // Ok, maybe a dt_imageio_export_to_buffer would suit here !?
   gint fd=g_mkstemp(fname);
@@ -967,6 +958,10 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 #ifdef _OPENMP
   #pragma omp critical
 #endif
+  // Fetch the attached tags of image id if exported..
+  if( p->export_tags == TRUE )
+    tags = imgid;
+
   // Upload image to picasa
   if( _picasa_api_upload_photo( p->picasa_api, mime , data, size , caption, description, tags ) == 201 )
     result=0;
