@@ -130,41 +130,49 @@ void gui_init(dt_lib_module_t *self)
       int level = 0;
       char *value;
       GtkTreeIter current,iter;
-      char *pch = strtok((char *)sqlite3_column_text(stmt, 0),"|");
-      while (pch != NULL) 
+      char **pch = g_strsplit((char *)sqlite3_column_text(stmt, 0),"|", -1);
+
+      if (pch != NULL)
       {
-	gboolean found=FALSE;
-	int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),level>0?&current:NULL);
-	/* find child with name, if not found create and continue */
-	for (int k=0;k<children;k++)
-	{
-	  if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &iter, level>0?&current:NULL, k))
-	  {
-	    gtk_tree_model_get (GTK_TREE_MODEL(store), &iter, 0, &value, -1);
+        int j = 0;
+        while (pch[j] != NULL) 
+        {
+	        gboolean found=FALSE;
+	        int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),level>0?&current:NULL);
+	        /* find child with name, if not found create and continue */
+	        for (int k=0;k<children;k++)
+	        {
+	          if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &iter, level>0?&current:NULL, k))
+	          {
+	            gtk_tree_model_get (GTK_TREE_MODEL(store), &iter, 0, &value, -1);
 	    
-	    if (strcmp(value, pch)==0)
-	    {
-	      current = iter;
-	      found = TRUE;
-	      break;
-	    }
-	  }
-	}
+	            if (strcmp(value, pch[j])==0)
+	            {
+	              current = iter;
+	              found = TRUE;
+                j++;
+	              break;
+	            }
+	          }
+	        }
+       
 
-	/* lets add new keyword and assign current */
-	if (!found)
-	{
-	  gtk_tree_store_insert(store, &iter, level>0?&current:NULL,0);
-	  gtk_tree_store_set(store, &iter, 0, pch, -1);
-	  current = iter;
-	}
+	        /* lets add new keyword and assign current */
+  	      if (!found)
+	        {
+	          gtk_tree_store_insert(store, &iter, level>0?&current:NULL,0);
+	          gtk_tree_store_set(store, &iter, 0, pch[j], -1);
+	          current = iter;
+	        }
 
-	level++;
-	pch = strtok(NULL, "|");
-      }
+	        level++;
+          j++;
+        }
+
+        g_strfreev(pch);
       
+      }
     }
-    
   }
 
   /* add the treeview to show hirarchy tags*/
