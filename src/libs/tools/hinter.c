@@ -96,6 +96,8 @@ void _lib_hinter_set_message(dt_lib_module_t *self, const char *message)
 
   int c = 0;
   char *str = g_strdup(message);
+  /* FIXME: If this code is re-enabled, strtok() should be changed 
+   * for g_strsplit() for thread-safeness */
   char *s = strtok(str," ");
   gchar *markup=NULL;
 
