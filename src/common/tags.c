@@ -307,7 +307,7 @@ gchar* dt_tag_get_list(gint imgid, gchar *separator)
     value = g_strdup(t->tag);
 
     gchar *pch;
-    if (g_strrstr(value, "|") && !g_strrstr(value, "darktable|"))
+    if (g_strrstr(value, "|") && !g_str_has_prefix(value, "darktable|"))
     {
 	    pch = strtok(value, "|");
 
@@ -317,7 +317,7 @@ gchar* dt_tag_get_list(gint imgid, gchar *separator)
         pch = strtok(NULL, "|");
 	    }
 	  }
-    else if (!g_strrstr(value, "darktable|"))
+    else if (!g_str_has_prefix(value, "darktable|"))
       tags = g_list_prepend(tags, g_strdup(value));
     g_free (t);
   }
@@ -349,7 +349,7 @@ gchar *dt_tag_get_hierarchical(gint imgid, gchar *separator)
     value = g_strdup(t->tag);
 
     /* Only return hierarchical tags */
-    if (g_strrstr(value, "|") && !g_strrstr(value, "darktable"))
+    if (g_strrstr(value, "|") && !g_str_has_prefix(value, "darktable|"))
       tags = g_list_prepend(tags, value);
 
     g_free (t);
