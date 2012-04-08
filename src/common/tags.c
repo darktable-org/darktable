@@ -306,16 +306,22 @@ gchar* dt_tag_get_list(gint imgid, gchar *separator)
     t = g_list_nth_data (taglist, i);
     value = g_strdup(t->tag);
 
-    gchar *pch;
+    gchar **pch;
     if (g_strrstr(value, "|") && !g_str_has_prefix(value, "darktable|"))
     {
-	    pch = strtok(value, "|");
+      int j = 0;
 
-      while (pch != NULL)
-	    {
-        tags = g_list_prepend(tags, g_strdup(pch));
-        pch = strtok(NULL, "|");
-	    }
+	    pch = g_strsplit(value, "|", -1);
+      
+      if (pch != NULL)
+      {
+        while (pch[j] != NULL)
+	      {
+          tags = g_list_prepend(tags, g_strdup(pch[j]));
+          j++;
+	      }
+        g_strfreev(pch);
+      }
 	  }
     else if (!g_str_has_prefix(value, "darktable|"))
       tags = g_list_prepend(tags, g_strdup(value));
