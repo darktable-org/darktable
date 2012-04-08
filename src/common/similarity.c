@@ -134,6 +134,11 @@ void dt_similarity_match_image(uint32_t imgid,dt_similarity_t *data)
       memcpy(&orginal_lightmap, sqlite3_column_blob(stmt, 1), sizeof(dt_similarity_lightmap_t));
     
   }
+  else
+  {
+    all_ok_for_match = FALSE;
+    dt_control_log(_("this image has not been indexed yet."));
+  }
   sqlite3_reset(stmt);
   sqlite3_clear_bindings(stmt);
   
@@ -264,3 +269,5 @@ void dt_similarity_lightmap_dirty(uint32_t imgid)
   sqlite3_step(stmt);
   sqlite3_finalize (stmt);
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

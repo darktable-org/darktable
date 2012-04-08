@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2011-2012 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,11 +25,10 @@
 #ifdef HAVE_GEGL
 #include <gegl.h>
 #endif
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
-#include "dtgtk/slider.h"
-#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
@@ -48,7 +47,7 @@ dt_iop_vibrance_params_t;
 
 typedef struct dt_iop_vibrance_gui_data_t
 {
-  GtkDarktableSlider *amount_scale;
+  GtkWidget *amount_scale;
 }
 dt_iop_vibrance_gui_data_t;
 
@@ -74,7 +73,7 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
-
+#if 0 // BAUHAUS doesnt support keyaccels yet...
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "vibrance"));
@@ -87,6 +86,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "vibrance",
                               GTK_WIDGET(g->amount_scale));
 }
+#endif
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -121,12 +121,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 }
 
 static void
-amount_callback (GtkDarktableSlider *slider, gpointer user_data)
+amount_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_vibrance_params_t *p = (dt_iop_vibrance_params_t *)self->params;
-  p->amount = dtgtk_slider_get_value(slider);
+  p->amount = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -154,7 +154,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_vibrance_gui_data_t *g = (dt_iop_vibrance_gui_data_t *)self->gui_data;
   dt_iop_vibrance_params_t *p = (dt_iop_vibrance_params_t *)module->params;
-  dtgtk_slider_set_value(g->amount_scale, p->amount);
+  dt_bauhaus_slider_set(g->amount_scale, p->amount);
 }
 
 void init(dt_iop_module_t *module)
@@ -187,19 +187,14 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_vibrance_gui_data_t *g = (dt_iop_vibrance_gui_data_t *)self->gui_data;
   dt_iop_vibrance_params_t *p = (dt_iop_vibrance_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  GtkVBox *vbox =  GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);;
 
-  g->amount_scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1, p->amount, 0));
-  dtgtk_slider_set_format_type(g->amount_scale,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_label(g->amount_scale,_("vibrance"));
-  dtgtk_slider_set_unit(g->amount_scale,"%");
- 
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->amount_scale), TRUE, TRUE, 0);
- 
+  /* vibrance */
+  g->amount_scale = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 1, p->amount, 0);
+  dt_bauhaus_slider_set_format(g->amount_scale,"%.0f%%");
+  dt_bauhaus_widget_set_label(g->amount_scale,_("vibrance"));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->amount_scale), TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->amount_scale), "tooltip-text", _("the amount of vibrance"), (char *)NULL);
-
   g_signal_connect (G_OBJECT (g->amount_scale), "value-changed",
                     G_CALLBACK (amount_callback), self);
 }

@@ -56,7 +56,8 @@ get_line_height()
 static float
 get_marker_size()
 {
-  return darktable.bauhaus->scale * darktable.bauhaus->marker_size;
+  // will be fraction of the height, so doesn't depend on scale itself.
+  return darktable.bauhaus->marker_size;
 }
 
 static float

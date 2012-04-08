@@ -32,7 +32,7 @@ style "clearlooks-default"
   GtkTreeView::expander_size = 14
   GtkTreeView::odd_row_color = "#1E1E1E"
   GtkTreeView::even_row_color = "#1E1E1E"
-  GtkExpander::expander_size = 0 #12
+  GtkExpander::expander_size = 12
   GtkExpander::focus-padding = 2
   GtkProgressBar::min-horizontal-bar-height = 12
   font_name = "Sans ${GTKRC_FONT_SIZE}"

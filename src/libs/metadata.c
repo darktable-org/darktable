@@ -455,6 +455,7 @@ void* get_params(dt_lib_module_t *self, int *size)
   return params;
 }
 
+// WARNING: also change src/libs/import.c when changing this!
 int set_params(dt_lib_module_t *self, const void *params, int size)
 {
   char *buf         = (char* )params;

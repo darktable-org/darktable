@@ -18,12 +18,12 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "common/debug.h"
-#include "dtgtk/slider.h"
 #include "dtgtk/label.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -87,10 +87,10 @@ dt_iop_channelmixer_params_t;
 typedef struct dt_iop_channelmixer_gui_data_t
 {
   GtkVBox   *vbox;
-  GtkComboBox *combo1;                                           // Output channel
+  GtkWidget *combo1;                                           // Output channel
   GtkDarktableLabel *dtlabel1,*dtlabel2;                      // output channel, source channels
   GtkLabel  *label1,*label2,*label3;	 	                          // red, green, blue
-  GtkDarktableSlider *scale1,*scale2,*scale3;      	      // red, green, blue
+  GtkWidget *scale1,*scale2,*scale3;      	      // red, green, blue
 }
 dt_iop_channelmixer_gui_data_t;
 
@@ -119,6 +119,8 @@ groups ()
 {
   return IOP_GROUP_COLOR;
 }
+
+#if 0 // BAUHAUS doesnt support keyaccels yet...
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
@@ -135,6 +137,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale2));
   dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale3));
 }
+#endif
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -212,36 +215,36 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 }
 
 static void
-red_callback(GtkDarktableSlider *slider, gpointer user_data)
+red_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
-  p->red[ gtk_combo_box_get_active( g->combo1 ) ]= dtgtk_slider_get_value(slider);
+  p->red[ dt_bauhaus_combobox_get( g->combo1 ) ]= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-green_callback(GtkDarktableSlider *slider, gpointer user_data)
+green_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
-  p->green[ gtk_combo_box_get_active( g->combo1 ) ]= dtgtk_slider_get_value(slider);
+  p->green[ dt_bauhaus_combobox_get( g->combo1 ) ]= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 
 static void
-blue_callback(GtkDarktableSlider *slider, gpointer user_data)
+blue_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
-  p->blue[ gtk_combo_box_get_active( g->combo1 ) ]= dtgtk_slider_get_value(slider);
+  p->blue[ dt_bauhaus_combobox_get( g->combo1 ) ]= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -254,9 +257,9 @@ output_callback(GtkComboBox *combo, gpointer user_data)
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
 
   // p->output_channel= gtk_combo_box_get_active(combo);
-  dtgtk_slider_set_value( g->scale1, p->red[ gtk_combo_box_get_active( g->combo1 ) ] );
-  dtgtk_slider_set_value( g->scale2, p->green[ gtk_combo_box_get_active( g->combo1 ) ] );
-  dtgtk_slider_set_value( g->scale3, p->blue[ gtk_combo_box_get_active( g->combo1 ) ] );
+  dt_bauhaus_slider_set( g->scale1, p->red[ dt_bauhaus_combobox_get( g->combo1 ) ] );
+  dt_bauhaus_slider_set( g->scale2, p->green[ dt_bauhaus_combobox_get( g->combo1 ) ] );
+  dt_bauhaus_slider_set( g->scale3, p->blue[ dt_bauhaus_combobox_get( g->combo1 ) ] );
   //dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -307,9 +310,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)module->params;
 // gtk_combo_box_set_active(g->combo1, p->output_channel);
-  dtgtk_slider_set_value(g->scale1, p->red[ gtk_combo_box_get_active( g->combo1 ) ] );
-  dtgtk_slider_set_value(g->scale2, p->green[ gtk_combo_box_get_active( g->combo1 ) ] );
-  dtgtk_slider_set_value(g->scale3, p->blue[ gtk_combo_box_get_active( g->combo1 ) ] );
+  dt_bauhaus_slider_set(g->scale1, p->red[ dt_bauhaus_combobox_get( g->combo1 ) ] );
+  dt_bauhaus_slider_set(g->scale2, p->green[ dt_bauhaus_combobox_get( g->combo1 ) ] );
+  dt_bauhaus_slider_set(g->scale3, p->blue[ dt_bauhaus_combobox_get( g->combo1 ) ] );
 }
 
 void init(dt_iop_module_t *module)
@@ -344,51 +347,51 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
-  g->dtlabel1 = DTGTK_LABEL( dtgtk_label_new(_("output channel"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT) );
-  g->combo1 = GTK_COMBO_BOX( gtk_combo_box_new_text() );
-  gtk_combo_box_append_text(g->combo1,_("hue"));
-  gtk_combo_box_append_text(g->combo1,_("saturation"));
-  gtk_combo_box_append_text(g->combo1,_("lightness"));
-  gtk_combo_box_append_text(g->combo1,_("red"));
-  gtk_combo_box_append_text(g->combo1,_("green"));
-  gtk_combo_box_append_text(g->combo1,_("blue"));
-  gtk_combo_box_append_text(g->combo1,_("gray"));
-  gtk_combo_box_set_active(g->combo1, CHANNEL_RED );
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->dtlabel1), TRUE, TRUE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->combo1), TRUE, TRUE, 5);
+  /* output */
+  g->combo1 = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->combo1, "destination");
+  dt_bauhaus_combobox_add(g->combo1,_("hue"));
+  dt_bauhaus_combobox_add(g->combo1,_("saturation"));
+  dt_bauhaus_combobox_add(g->combo1,_("lightness"));
+  dt_bauhaus_combobox_add(g->combo1,_("red"));
+  dt_bauhaus_combobox_add(g->combo1,_("green"));
+  dt_bauhaus_combobox_add(g->combo1,_("blue"));
+  dt_bauhaus_combobox_add(g->combo1,_("gray"));
+  dt_bauhaus_combobox_set(g->combo1, CHANNEL_RED );
 
-  g->dtlabel2 = DTGTK_LABEL( dtgtk_label_new(_("source channels"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT) );
-  GtkBox *hbox = GTK_BOX( gtk_hbox_new(FALSE, 0));
-  g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
+  g_signal_connect (G_OBJECT (g->combo1), "value-changed",
+                    G_CALLBACK (output_callback), self);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->dtlabel2), TRUE, TRUE, 5);
-
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-2.0, 2.0, 0.005, p->red[CHANNEL_RED] , 3));
+  /* red */
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->red[CHANNEL_RED] , 3);
   g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("amount of red channel in the output channel"), (char *)NULL);
-  dtgtk_slider_set_label(g->scale1,_("red"));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-2.0, 2.0, 0.005, p->green[CHANNEL_RED] , 3));
-  g_object_set (GTK_OBJECT(g->scale2), "tooltip-text", _("amount of green channel in the output channel"), (char *)NULL);
-  dtgtk_slider_set_label(g->scale2,_("green"));
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-2.0, 2.0, 0.005, p->blue[CHANNEL_RED] , 3));
-  g_object_set (GTK_OBJECT(g->scale3), "tooltip-text", _("amount of blue channel in the output channel"), (char *)NULL);
-  dtgtk_slider_set_label(g->scale3,_("blue"));
-
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
-
+  dt_bauhaus_widget_set_label(g->scale1,_("red"));
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (red_callback), self);
+
+  /* green */
+  g->scale2 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->green[CHANNEL_RED] , 3);
+  g_object_set (GTK_OBJECT(g->scale2), "tooltip-text", _("amount of green channel in the output channel"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->scale2,_("green"));
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
                     G_CALLBACK (green_callback), self);
+
+  /* blue */
+  g->scale3 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->blue[CHANNEL_RED] , 3);
+  g_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("amount of blue channel in the output channel"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->scale3,_("blue"));
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
                     G_CALLBACK (blue_callback), self);
-  g_signal_connect (G_OBJECT (g->combo1), "changed",
-                    G_CALLBACK (output_callback), self);
+
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->combo1), TRUE, TRUE, 0);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+
 }
 
 void init_presets (dt_iop_module_so_t *self)
