@@ -20,6 +20,7 @@
 #include "develop/pixelpipe.h"
 #include "develop/blend.h"
 #include "common/opencl.h"
+#include "control/control.h"
 
 #include <string.h>
 #include <strings.h>
@@ -183,7 +184,7 @@ _default_process_tiling_ptp (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   /* tiling really does not make sense in these cases. standard process() is not better or worse than we are */
   if(tiling.factor < 2.2f && tiling.overhead < 0.2f * roi_in->width * roi_in->height * max_bpp)
   {
-    dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] tiling rejected for module '%s' as no real memory saving can be reached\n", self->op);
+    dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] no need to use tiling for module '%s' as no real memory saving to be expected\n", self->op);
     goto fallback;
   }
 
@@ -261,7 +262,7 @@ _default_process_tiling_ptp (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   if(tiles_x * tiles_y > DT_TILING_MAXTILES)
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] gave up tiling for module '%s'. too many tiles: %d x %d\n", self->op, tiles_x, tiles_y);
-    goto fallback;
+    goto error;
   }
 
 
@@ -273,13 +274,13 @@ _default_process_tiling_ptp (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   if(input == NULL)
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] could not alloc input buffer for module '%s'\n", self->op);
-    goto fallback;
+    goto error;
   }
   output = dt_alloc_align(64, width*height*out_bpp);
   if(output == NULL)
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] could not alloc output buffer for module '%s'\n", self->op);
-    goto fallback;
+    goto error;
   }
 
   /* store processed_maximum to be re-used and aggregated */
@@ -370,6 +371,10 @@ _default_process_tiling_ptp (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   if(output != NULL) free(output);
   return;
 
+error:
+  dt_control_log(_("tiling failed for module '%s'. output might be garbled."), self->op);
+  // fall through
+
 fallback:
   if(input != NULL) free(input);
   if(output != NULL) free(output);
@@ -410,7 +415,7 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   /* tiling really does not make sense in these cases. standard process() is not better or worse than we are */
   if(tiling.factor < 2.2f && tiling.overhead < 0.2f * roi_in->width * roi_in->height * max_bpp)
   {
-    dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] tiling rejected for module '%s' as no real memory saving can be reached\n", self->op);
+    dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] no need to use tiling for module '%s' as no real memory saving to be expected\n", self->op);
     goto fallback;
   }
 
@@ -491,7 +496,7 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   if(tiles_x * tiles_y > DT_TILING_MAXTILES)
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] gave up tiling for module '%s'. too many tiles: %d x %d\n", self->op, tiles_x, tiles_y);
-    goto fallback;
+    goto error;
   }
 
   /* calculate tile width and height excl. overlap (i.e. the good part) for output.
@@ -525,13 +530,13 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   if(input == NULL)
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] could not alloc input buffer for module '%s'\n", self->op);
-    goto fallback;
+    goto error;
   }
   output = dt_alloc_align(64, tile_wd_out*tile_ht_out*out_bpp);
   if(output == NULL)
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] could not alloc output buffer for module '%s'\n", self->op);
-    goto fallback;
+    goto error;
   }
 
   /* iterate over tiles */
@@ -576,7 +581,7 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
     if (!_fit_output_to_input_roi(self, piece, &iroi_full, &oroi_full, delta, 10))
     {
       dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] can not handle requested roi's. tiling for module '%s' not possible.\n", self->op);
-      goto fallback;
+      goto error;
     }
 
     /* make sure that oroi_full at least covers the range of oroi_good.
@@ -617,7 +622,7 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
       dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] input/output buffers exceed estimated maximum size for module '%s'\n", self->op);
       dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] input given %d x %d vs needed: %d x %d\n", tile_wd_in, tile_ht_in, iroi_full.width, iroi_full.height);
       dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] output given: %d x %d vs needed: %d x %d\n", tile_wd_out, tile_ht_out, oroi_full.width, oroi_full.height);
-      goto fallback;
+      goto error;
     }
 
     /* prepare input tile buffer */
@@ -665,6 +670,9 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   if(output != NULL) free(output);
   return;
 
+error:
+  dt_control_log(_("tiling failed for module '%s'. output might be garbled."), self->op);
+  // fall through
 
 fallback:
   if(input != NULL) free(input);
