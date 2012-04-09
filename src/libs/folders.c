@@ -575,6 +575,10 @@ static void _draw_tree_gui (dt_lib_module_t *self)
 #endif
 
   /* TODO: Use currently mounted device to show/no show that part of the tree */
+  
+  GtkTreePath *root = gtk_tree_path_new_first();
+  gtk_tree_model_get_iter (GTK_TREE_MODEL(d->store), &iter, root);
+  
   for (int i=0; i<gtk_tree_model_iter_n_children(GTK_TREE_MODEL(d->store), NULL); i++)
   {
     gtk_tree_model_iter_nth_child (GTK_TREE_MODEL(d->store), &iter, NULL, i);
