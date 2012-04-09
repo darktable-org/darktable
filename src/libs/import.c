@@ -24,6 +24,7 @@
 #include "common/mipmap_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_jpeg.h"
+#include "common/dt_logo_128x128.h"
 #include "libraw/libraw.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -563,11 +564,7 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   preview = GTK_WIDGET(data);
   filename = gtk_file_chooser_get_preview_filename(file_chooser);
 
-  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-  {
-    gtk_file_chooser_set_preview_widget_active(file_chooser, FALSE);
-    return;
-  }
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) goto no_preview_fallback;
 
   pixbuf = gdk_pixbuf_new_from_file_at_size(filename, 128, 128, NULL);
   have_preview = (pixbuf != NULL);
@@ -623,6 +620,12 @@ libraw_fail:
       libraw_close(raw);
       have_preview = FALSE;
     }
+  }
+  if(!have_preview)
+  {
+no_preview_fallback:
+    pixbuf = gdk_pixbuf_new_from_inline(-1, dt_logo_128x128, FALSE, NULL);
+    have_preview = TRUE;
   }
   if(have_preview)
     gtk_image_set_from_pixbuf(GTK_IMAGE(preview), pixbuf);
