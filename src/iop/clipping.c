@@ -284,9 +284,13 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
       }
     }
   }
+
   // sanity check.
+  if(roi_out->x < 0) roi_out->x = 0;
+  if(roi_out->y < 0) roi_out->y = 0;
   if(roi_out->width  < 1) roi_out->width  = 1;
   if(roi_out->height < 1) roi_out->height = 1;
+
   // save rotation crop on output buffer in world scale:
   d->cix = roi_out->x;
   d->ciy = roi_out->y;
@@ -359,6 +363,12 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     roi_in->width  = roi_out->width;
     roi_in->height = roi_out->height;
   }
+
+  // sanity check.
+  roi_in->x = CLAMP(roi_in->x, 0, piece->iwidth);
+  roi_in->y = CLAMP(roi_in->y, 0, piece->iheight);
+  roi_in->width = CLAMP(roi_in->width, 1, piece->iwidth - roi_in->x);
+  roi_in->height = CLAMP(roi_in->height, 1, piece->iheight - roi_in->y);
 }
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above),
