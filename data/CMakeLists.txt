@@ -72,7 +72,7 @@ install(FILES gdb_commands DESTINATION ${SHARE_INSTALL})
         COMMAND 
           join -1 1 -2 1 -o 1.2 2.2 ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_keys ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_values | 
           sed -e 's/ /=/g' > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_in
-          || (echo "*** error: please check if you have coreutils installed! we need grep, sed, nl, and join ***" &1>&2 | false)
+          || (echo "*** error: please check if you have coreutils installed! we need grep, sed, nl, and join ***" 1>&2 | false)
           && grep plugins ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_in > /dev/null && mv ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_in ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
           # only move over if something is in there at all.
         
@@ -84,7 +84,7 @@ install(FILES gdb_commands DESTINATION ${SHARE_INSTALL})
         COMMAND 
           join -1 1 -2 1 -o '1.2 2.2' ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_keys ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_values | 
           sed -e 's/ /=/g' > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_in
-          || (echo "*** error: please check if you have coreutils installed! we need grep, sed, nl, and join ***" &1>&2 | false)
+          || (echo "*** error: please check if you have coreutils installed! we need grep, sed, nl, and join ***" 1>&2 | false)
           && grep plugins ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_in > /dev/null && mv ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_in ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
           # only move over if something is in there at all.
         
