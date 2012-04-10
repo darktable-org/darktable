@@ -22,6 +22,10 @@
 #include "common/collection.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
+#include "common/imageio.h"
+#include "common/imageio_jpeg.h"
+#include "common/dt_logo_128x128.h"
+#include "libraw/libraw.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs/camera_jobs.h"
@@ -548,6 +552,90 @@ static void _lib_import_evaluate_extra_widget(dt_lib_import_metadata_t *data, gb
   dt_conf_set_string("ui_last/import_last_tags", gtk_entry_get_text(GTK_ENTRY(data->tags)));
 }
 
+// TODO: use orientation to correctly rotate the image.
+// maybe this should be (partly) in common/imageio.[c|h]?
+static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer data)
+{
+  GtkWidget *preview;
+  char *filename;
+  GdkPixbuf *pixbuf = NULL;
+  gboolean have_preview = FALSE;
+
+  preview = GTK_WIDGET(data);
+  filename = gtk_file_chooser_get_preview_filename(file_chooser);
+
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) goto no_preview_fallback;
+
+  pixbuf = gdk_pixbuf_new_from_file_at_size(filename, 128, 128, NULL);
+  have_preview = (pixbuf != NULL);
+  if(!have_preview)
+  {
+    // raw image thumbnail
+    int ret;
+    libraw_data_t *raw = libraw_init(0);
+    libraw_processed_image_t *image = NULL;
+    ret = libraw_open_file(raw, filename);
+    if(ret) goto libraw_fail;
+    ret = libraw_unpack_thumb(raw);
+    if(ret) goto libraw_fail;
+    ret = libraw_adjust_sizes_info_only(raw);
+    if(ret) goto libraw_fail;
+
+    image = libraw_dcraw_make_mem_thumb(raw, &ret);
+    if(!image || ret) goto libraw_fail;
+//     const int orientation = raw->sizes.flip;
+
+    GdkPixbuf *tmp;
+    GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
+    have_preview = gdk_pixbuf_loader_write(loader, image->data, image->data_size, NULL);
+    tmp = gdk_pixbuf_loader_get_pixbuf(loader);
+    gdk_pixbuf_loader_close(loader, NULL);
+    float ratio;
+    if(image->type == LIBRAW_IMAGE_JPEG)
+    {
+      // jpeg
+      dt_imageio_jpeg_t jpg;
+      if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto libraw_fail;
+      ratio = 1.0*jpg.height/jpg.width;
+    }
+    else
+    {
+      // bmp -- totally untested
+      ratio = 1.0*image->height/image->width;
+    }
+    int width = 128, height = 128*ratio;
+    pixbuf = gdk_pixbuf_scale_simple(tmp, width, height, GDK_INTERP_BILINEAR);
+
+    if(loader)
+      g_object_unref(loader);
+
+    // clean up raw stuff.
+    libraw_recycle(raw);
+    libraw_close(raw);
+    free(image);
+    if(0)
+    {
+libraw_fail:
+      // fprintf(stderr,"[imageio] %s: %s\n", filename, libraw_strerror(ret));
+      libraw_close(raw);
+      have_preview = FALSE;
+    }
+  }
+  if(!have_preview)
+  {
+no_preview_fallback:
+    pixbuf = gdk_pixbuf_new_from_inline(-1, dt_logo_128x128, FALSE, NULL);
+    have_preview = TRUE;
+  }
+  if(have_preview)
+    gtk_image_set_from_pixbuf(GTK_IMAGE(preview), pixbuf);
+  if(pixbuf)
+    g_object_unref(pixbuf);
+  g_free(filename);
+
+  gtk_file_chooser_set_preview_widget_active(file_chooser, have_preview);
+}
+
 static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_data)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
@@ -583,6 +671,10 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
   gtk_file_filter_add_pattern(filter, "*");
   gtk_file_filter_set_name(filter, _("all files"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+
+  GtkWidget *preview = gtk_image_new();
+  gtk_file_chooser_set_preview_widget(GTK_FILE_CHOOSER(filechooser), preview);
+  g_signal_connect(filechooser, "update-preview", G_CALLBACK (_lib_import_update_preview), preview);
 
   dt_lib_import_metadata_t metadata;
   gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (filechooser), _lib_import_get_extra_widget(&metadata, FALSE));

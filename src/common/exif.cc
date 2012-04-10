@@ -1047,25 +1047,24 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   // get tags from db, store in dublin core
   Exiv2::Value::AutoPtr v1 = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
   Exiv2::Value::AutoPtr v2 = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name from tags join tagged_images on tagged_images.tagid = tags.id where imgid = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    char *value = (char *)sqlite3_column_text(stmt, 0);
-    if (g_strrstr(value, "|"))
-      v2->read((char *)value);
-    else
-      v1->read((char *)value);
-  }
-  sqlite3_finalize(stmt);
 
+  gchar *tags = NULL;
+  gchar *hierarchical = NULL;
+
+  tags = dt_tag_get_list(imgid, ",");
+  v1->read((char *)tags);
+
+  hierarchical = dt_tag_get_hierarchical(imgid, ",");
+  v2->read((char *)hierarchical);
+  
   xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v1.get());
   xmpData.add(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"), v2.get());
+  /* TODO: Add tags to IPTC namespace as well */
 
   // color labels
   char val[2048];
   Exiv2::Value::AutoPtr v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
-  v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
+  /* Already initialized v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.*/
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select color from color_labels where imgid=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
