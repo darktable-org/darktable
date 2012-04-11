@@ -405,7 +405,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       if (fabsf(diff) > data->threshold)
       {
         const float detail = copysignf(fmaxf(fabsf(diff) - data->threshold, 0.0), diff);
-        out[0] = fmaxf(0.0, in[0] + detail*data->amount);
+        out[0] = in[0] + detail*data->amount;
       }
       else out[0] = in[0];
       out += ch;
