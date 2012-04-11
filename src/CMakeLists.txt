@@ -9,7 +9,6 @@ FILE(GLOB SOURCE_FILES
   "common/cache.c"
   "common/collection.c" 
   "common/colorlabels.c" 
-  "common/colormatrices.c" 
   "common/colorspaces.c" 
   "common/darktable.c" 
   "common/database.c"
