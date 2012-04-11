@@ -163,7 +163,8 @@ sharpen_mix(read_only image2d_t in_a, read_only image2d_t in_b, write_only image
   float4 Labmax = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
 
   float delta = pixel.x - blurredx;
-  float amount = sharpen * copysign(max(0.0f, fabs(delta) - thrs), delta);
-  write_imagef (out, (int2)(x, y), clamp((float4)(pixel.x + amount, pixel.y, pixel.z, pixel.w), Labmin, Labmax));
+  float amount = sharpen * copysign(fmax(0.0f, fabs(delta) - thrs), delta);
+  pixel.x = pixel.x + amount;
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
