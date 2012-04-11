@@ -798,25 +798,23 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
 
   // draw same things as original widget, for visual consistency:
   dt_bauhaus_clear(w, cr);
-  dt_bauhaus_draw_label(w, cr);
-  dt_bauhaus_draw_quad(w, cr);
 
   // draw line around popup
   cairo_set_line_width(cr, 1.0);
   cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
-  cairo_move_to(cr, 1.0, 2.0*ht);
+  cairo_move_to(cr, 1.0, 3.0*ht);
   cairo_line_to(cr, 1.0, height-1);
   cairo_line_to(cr, width-1, height-1);
-  cairo_line_to(cr, width-1, 2.0*ht);
+  cairo_line_to(cr, width-1, 3.0*ht);
   cairo_stroke(cr);
   // fade in line around popup:
   for(int k=0;k<4;k++)
   {
     cairo_set_line_width(cr, (k+1)/4.0f);
-    cairo_move_to(cr, 1.0, ht*(1.f + k/4.0f));
-    cairo_line_to(cr, 1.0, ht*(1.f + (k+1)/4.0f));
-    cairo_move_to(cr, width-1.0, ht*(1.f + k/4.0f));
-    cairo_line_to(cr, width-1.0, ht*(1.f + (k+1)/4.0f));
+    cairo_move_to(cr, 1.0, ht*(2.f + k/4.0f));
+    cairo_line_to(cr, 1.0, ht*(2.f + (k+1)/4.0f));
+    cairo_move_to(cr, width-1.0, ht*(2.f + k/4.0f));
+    cairo_line_to(cr, width-1.0, ht*(2.f + (k+1)/4.0f));
     cairo_stroke(cr);
   }
 
@@ -826,12 +824,25 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
     case DT_BAUHAUS_SLIDER:
       {
         dt_bauhaus_slider_data_t *d = &w->data.slider;
+
+        // draw line for orientation
+        // TODO: merge with code in expose, and extend to gradient sliders
+        cairo_save(cr);
+        set_grid_color(cr, .9);
+        cairo_rectangle(cr, 2, 0.7*ht, width-4-ht-2, 0.2*ht);
+        cairo_fill_preserve(cr);
+        cairo_set_line_width(cr, 1.);
+        set_grid_color(cr, 1.);
+        cairo_stroke(cr);
+        cairo_restore(cr);
+
         cairo_save(cr);
         cairo_set_line_width(cr, 1.);
         set_grid_color(cr, 1);
         const int num_scales = 1.f/d->scale;
-        // const int rounded_pos = d->pos/d->scale;
-        // for(int k=rounded_pos - num_scales;k<=rounded_pos + num_scales;k++)
+        // don't draw over orientation line
+        cairo_rectangle(cr, 0.0f, 0.9*ht, width, height);
+        cairo_clip(cr);
         for(int k=0;k<num_scales;k++)
         {
           const float off = k*d->scale - d->oldpos;
@@ -841,15 +852,8 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         }
         cairo_restore(cr);
 
-#if 0
-        // draw indicator line
-        cairo_save(cr);
-        cairo_set_source_rgb(cr, .6, .6, .6);
-        cairo_set_line_width(cr, 2.);
-        draw_slider_line(cr, pos, 0.0f, scale, width, height, ht);
-        cairo_stroke(cr);
-        cairo_restore(cr);
-#endif
+        dt_bauhaus_draw_label(w, cr);
+        dt_bauhaus_draw_quad(w, cr);
 
         // draw mouse over indicator line
         cairo_save(cr);
@@ -895,6 +899,9 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
       break;
     case DT_BAUHAUS_COMBOBOX:
       {
+        dt_bauhaus_draw_label(w, cr);
+        dt_bauhaus_draw_quad(w, cr);
+
         dt_bauhaus_combobox_data_t *d = &w->data.combobox;
         cairo_save(cr);
         set_text_color(cr, 1);
