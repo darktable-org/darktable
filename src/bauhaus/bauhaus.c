@@ -958,16 +958,16 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 
   dt_bauhaus_clear(w, cr);
 
-  // draw label and quad area at right end
-  dt_bauhaus_draw_label(w, cr);
-  dt_bauhaus_draw_quad(w, cr);
-
   // draw type specific content:
   cairo_save(cr);
   cairo_set_line_width(cr, 1.0);
   switch(w->type)
   {
     case DT_BAUHAUS_COMBOBOX:
+      // draw label and quad area at right end
+      dt_bauhaus_draw_label(w, cr);
+      dt_bauhaus_draw_quad(w, cr);
+
       if(gtk_widget_is_sensitive(widget))
       {
         dt_bauhaus_combobox_data_t *d = &w->data.combobox;
@@ -987,16 +987,19 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       {
         dt_bauhaus_slider_data_t *d = &w->data.slider;
 
-#if 0
-        // line for orientation? looks crappy:
+        // line for orientation?
+        // TODO: fill this one with a color gradient for gradient sliders
         cairo_save(cr);
-        cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+        set_grid_color(cr, .9);
+        cairo_rectangle(cr, 2, 0.7*height, width-4-height-2, 0.2*height);
+        cairo_fill_preserve(cr);
         cairo_set_line_width(cr, 1.);
-        cairo_move_to(cr, 2, 0.8*height);
-        cairo_line_to(cr, width-4-height, 0.9*height);
+        set_grid_color(cr, 1.);
         cairo_stroke(cr);
         cairo_restore(cr);
-#endif
+
+        dt_bauhaus_draw_label(w, cr);
+        dt_bauhaus_draw_quad(w, cr);
 
         if(gtk_widget_is_sensitive(widget))
         {
