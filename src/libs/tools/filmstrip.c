@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2011-2012 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -509,7 +509,10 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
   const int img_pointerx = (int)fmodf(pointerx, wd);
   const int img_pointery = (int)pointery;
 
-  const int max_cols = (int)(width/(float)wd);
+  int max_cols = (int)(width/(float)wd);
+  if (max_cols%2 == 0)
+    max_cols += 1;
+
   const int col_start = max_cols/2 - strip->offset;
   const int empty_edge = (width - (max_cols * wd))/2;
   int step_res = SQLITE_ROW;
@@ -524,8 +527,11 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
   if(!query)
     return FALSE;
 
-  if(offset < 0)                strip->offset = offset = 0;
-  if(offset > count-1) strip->offset = offset = count-1;
+  if(offset < 0)                
+    strip->offset = offset = 0;
+  if(offset > count-1) 
+    strip->offset = offset = count-1;
+
   // dt_view_set_scrollbar(self, offset, count, max_cols, 0, 1, 1);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
