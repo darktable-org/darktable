@@ -136,9 +136,14 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
     double fraction=0;
     int total = g_list_length(images);
 
+    guint *jid = NULL;
+
     /* background job plate only if more then one image is reindexed */
-    snprintf(message, 512, ngettext ("re-indexing %d image", "re-indexing %d images", total), total );
-    const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+    if (total > 1)
+    {
+      snprintf(message, 512, ngettext ("re-indexing %d image", "re-indexing %d images", total), total );
+      jid = (guint *)dt_control_backgroundjobs_create(darktable.control, 0, message);
+    }
 
     do {
       /* get the _control_indexer_img_t pointer */
@@ -283,7 +288,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
       }        
 
       /* update background progress */
-      if (total>1)
+      if (jid)
       {
         fraction+=1.0/total;
         dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
@@ -293,7 +298,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
 
 
     /* cleanup */
-    if (total>1)
+    if (jid)
       dt_control_backgroundjobs_destroy(darktable.control, jid);
   }
 
