@@ -796,17 +796,6 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
         return -1;
       }
     } while((jobitem=g_list_next(jobitem)));
-
-  /* check if bgjob and if its already running then discard job */
-  if (job->ts_execute && 
-      s->job_res[DT_CTL_WORKER_7].execute == job->execute) 
-  {
-    fprintf(stderr,"BGJOB ALREADY RUNNING!!!\n");
-    dt_print(DT_DEBUG_CONTROL, "[add_job] found bgjob already running, dropping job\n");
-    _control_job_set_state (job,DT_JOB_STATE_DISCARDED);
-    dt_pthread_mutex_unlock(&s->queue_mutex);
-    return -1;
-  }
     
   dt_print(DT_DEBUG_CONTROL, "[add_job] %d ", g_list_length(s->queue));
   dt_control_job_print(job);
