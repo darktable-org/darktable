@@ -43,6 +43,7 @@ typedef struct dt_lib_filmstrip_t
   int32_t last_selected_id;
   int32_t mouse_over_id;
   int32_t offset;
+  int32_t collection_count;
   int32_t history_copy_imgid;
   gdouble pointerx,pointery;
   dt_view_image_over_t image_over;
@@ -417,8 +418,14 @@ static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w,GdkEventScroll *e, g
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
-  if (e->direction == GDK_SCROLL_UP || e->direction == GDK_SCROLL_LEFT) strip->offset--;
-  else strip->offset++;
+  /* change the offset */
+  if (strip->offset > 0 && (e->direction == GDK_SCROLL_UP || e->direction == GDK_SCROLL_LEFT)) 
+    strip->offset--;
+  else if(strip->offset < strip->collection_count-1 && (e->direction == GDK_SCROLL_DOWN || e->direction == GDK_SCROLL_RIGHT)) 
+    strip->offset++;
+  else
+    return TRUE;
+
   gtk_widget_queue_draw(self->widget);
   return TRUE;
 }
@@ -520,7 +527,7 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
   sqlite3_stmt *stmt = NULL;
 
   /* get the count of current collection */
-  int count = dt_collection_get_count (darktable.collection);
+  strip->collection_count = dt_collection_get_count (darktable.collection);
 
   /* get the collection query */
   const gchar *query=dt_collection_get_query (darktable.collection);
@@ -529,8 +536,8 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
 
   if(offset < 0)                
     strip->offset = offset = 0;
-  if(offset > count-1) 
-    strip->offset = offset = count-1;
+  if(offset > strip->collection_count-1) 
+    strip->offset = offset = strip->collection_count-1;
 
   // dt_view_set_scrollbar(self, offset, count, max_cols, 0, 1, 1);
 
