@@ -510,12 +510,6 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
   const float wd = height;
   const float ht = height;
 
-  /* mouse over image position in filmstrip */
-  const int seli = (pointery > 0 && pointery <= ht) ? pointerx / (float)wd : -1;
-
-  const int img_pointerx = (int)fmodf(pointerx, wd);
-  const int img_pointery = (int)pointery;
-
   int max_cols = (int)(width/(float)wd) + 2;
   if (max_cols%2 == 0)
     max_cols += 1;
@@ -525,6 +519,13 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
   int step_res = SQLITE_ROW;
 
   sqlite3_stmt *stmt = NULL;
+
+  /* mouse over image position in filmstrip */
+  pointerx -= empty_edge;
+  const int seli = (pointery > 0 && pointery <= ht) ? pointerx / (float)wd : -1;
+  const int img_pointerx = (int)fmodf(pointerx, wd);
+  const int img_pointery = (int)pointery;
+
 
   /* get the count of current collection */
   strip->collection_count = dt_collection_get_count (darktable.collection);
