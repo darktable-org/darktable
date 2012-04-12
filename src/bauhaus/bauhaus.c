@@ -563,6 +563,8 @@ dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, fl
   d->scale = 5.0f*step/(max-min);
   snprintf(d->format, 24, "%%.0%df", digits);
 
+  d->grad_cnt = 0;
+
   g_signal_connect (G_OBJECT (w), "button-press-event",
                     G_CALLBACK (dt_bauhaus_slider_button_press), (gpointer)NULL);
   g_signal_connect (G_OBJECT (w), "scroll-event",
@@ -633,6 +635,37 @@ int dt_bauhaus_combobox_get(GtkWidget *widget)
   return d->active;
 }
 
+void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g, float b)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  // need to replace stop?
+  for(int k=0;k<d->grad_cnt;k++)
+  {
+    if(d->grad_pos[k] == stop)
+    {
+      d->grad_col[k][0] = r;
+      d->grad_col[k][1] = g;
+      d->grad_col[k][2] = b;
+      return;
+    }
+  }
+  // new stop:
+  if(d->grad_cnt < 10)
+  {
+    int k = d->grad_cnt ++;
+    d->grad_pos[k] = stop;
+    d->grad_col[k][0] = r;
+    d->grad_col[k][1] = g;
+    d->grad_col[k][2] = b;
+  }
+  else
+  {
+    fprintf(stderr, "[bauhaus_slider_set_stop] only 10 stops allowed.\n");
+  }
+}
+
 
 // TODO: into draw.h
 static void
@@ -701,6 +734,46 @@ dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
   }
   cairo_restore(cr);
 #endif
+}
+
+static void
+dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
+{
+  // draw line for orientation in slider
+  GtkWidget *widget = GTK_WIDGET(w);
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+  const int wd = widget->allocation.width;
+  const int ht = widget->allocation.height;
+  cairo_save(cr);
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  cairo_pattern_t *gradient = NULL;
+  if(d->grad_cnt > 0)
+  {
+    gradient = cairo_pattern_create_linear(0, 0, wd-4-ht-2, ht);
+    cairo_pattern_reference(gradient);
+    for(int k=0;k<d->grad_cnt;k++)
+      cairo_pattern_add_color_stop_rgba(gradient, d->grad_pos[k],
+          d->grad_col[k][0],
+          d->grad_col[k][1],
+          d->grad_col[k][2],
+          .4f);
+    cairo_set_source(cr, gradient);
+  }
+  else
+  {
+    // regular baseline
+    set_grid_color(cr, .9f);
+  }
+
+  cairo_rectangle(cr, 2, 0.7*ht, wd-4-ht-2, 0.2*ht);
+  cairo_fill_preserve(cr);
+  cairo_set_line_width(cr, 1.);
+  set_grid_color(cr, 1.);
+  cairo_stroke(cr);
+  cairo_restore(cr);
+
+  if(d->grad_cnt > 0)
+    cairo_pattern_destroy(gradient);
 }
 
 static void
@@ -825,16 +898,7 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
       {
         dt_bauhaus_slider_data_t *d = &w->data.slider;
 
-        // draw line for orientation
-        // TODO: merge with code in expose, and extend to gradient sliders
-        cairo_save(cr);
-        set_grid_color(cr, .9);
-        cairo_rectangle(cr, 2, 0.7*ht, width-4-ht-2, 0.2*ht);
-        cairo_fill_preserve(cr);
-        cairo_set_line_width(cr, 1.);
-        set_grid_color(cr, 1.);
-        cairo_stroke(cr);
-        cairo_restore(cr);
+        dt_bauhaus_draw_baseline(w, cr);
 
         cairo_save(cr);
         cairo_set_line_width(cr, 1.);
@@ -994,17 +1058,8 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       {
         dt_bauhaus_slider_data_t *d = &w->data.slider;
 
-        // line for orientation?
-        // TODO: fill this one with a color gradient for gradient sliders
-        cairo_save(cr);
-        set_grid_color(cr, .9);
-        cairo_rectangle(cr, 2, 0.7*height, width-4-height-2, 0.2*height);
-        cairo_fill_preserve(cr);
-        cairo_set_line_width(cr, 1.);
-        set_grid_color(cr, 1.);
-        cairo_stroke(cr);
-        cairo_restore(cr);
-
+        // line for orientation
+        dt_bauhaus_draw_baseline(w, cr);
         dt_bauhaus_draw_label(w, cr);
         dt_bauhaus_draw_quad(w, cr);
 
