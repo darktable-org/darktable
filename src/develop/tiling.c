@@ -625,7 +625,7 @@ _default_process_tiling_ptp (struct dt_iop_module_t *self, struct dt_dev_pixelpi
      this will mainly allow tiling for modules with high and "unpredictable" memory demand which is
      reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
   float singlebuffer = (float)dt_conf_get_int("singlebuffer_limit")*1024.0f*1024.0f;
-  singlebuffer = fmax(singlebuffer, 1024.0f*1024.0f);
+  singlebuffer = fmax(singlebuffer, 2.0f*1024.0f*1024.0f);
   assert(tiling.factor > 1.0f);
   singlebuffer = fmax(available / tiling.factor, singlebuffer);
 
@@ -857,7 +857,7 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
      this will mainly allow tiling for modules with high and "unpredictable" memory demand which is
      reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
   float singlebuffer = (float)dt_conf_get_int("singlebuffer_limit")*1024.0f*1024.0f;
-  singlebuffer = fmax(singlebuffer, 1024.0f*1024.0f);
+  singlebuffer = fmax(singlebuffer, 2.0f*1024.0f*1024.0f);
   assert(tiling.factor > 1.0f);
   singlebuffer = fmax(available / tiling.factor, singlebuffer);
 
