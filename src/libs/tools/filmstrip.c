@@ -516,7 +516,7 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
   const int img_pointerx = (int)fmodf(pointerx, wd);
   const int img_pointery = (int)pointery;
 
-  int max_cols = (int)(width/(float)wd);
+  int max_cols = (int)(width/(float)wd) + 2;
   if (max_cols%2 == 0)
     max_cols += 1;
 
