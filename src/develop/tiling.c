@@ -1111,8 +1111,7 @@ fallback:
 void
 default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int in_bpp)
 {
-  /* TODO: if more modules behave like "clipping" and "flip", we could invest a new module flag to easily identify them */
-  if(memcmp(roi_in, roi_out, sizeof(struct dt_iop_roi_t)) || !strcmp(self->op, "clipping") || !strcmp(self->op, "flip"))
+  if(memcmp(roi_in, roi_out, sizeof(struct dt_iop_roi_t)) || (self->flags() & IOP_FLAGS_TILING_FULL_ROI))
     _default_process_tiling_roi (self, piece, ivoid, ovoid, roi_in, roi_out, in_bpp);
   else
     _default_process_tiling_ptp (self, piece, ivoid, ovoid, roi_in, roi_out, in_bpp);
@@ -1620,8 +1619,7 @@ error:
 int
 default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int in_bpp)
 {
-  /* TODO: if more modules behave like "clipping" and "flip", we could invest a new module flag to easily identify them */
-  if(memcmp(roi_in, roi_out, sizeof(struct dt_iop_roi_t)) || !strcmp(self->op, "clipping") || !strcmp(self->op, "flip"))
+  if(memcmp(roi_in, roi_out, sizeof(struct dt_iop_roi_t)) || (self->flags() & IOP_FLAGS_TILING_FULL_ROI))
     return _default_process_tiling_cl_roi(self, piece, ivoid, ovoid, roi_in, roi_out, in_bpp);
   else
     return _default_process_tiling_cl_ptp(self, piece, ivoid, ovoid, roi_in, roi_out, in_bpp);

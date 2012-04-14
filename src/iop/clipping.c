@@ -180,7 +180,7 @@ groups ()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI;
 }
 
 int
