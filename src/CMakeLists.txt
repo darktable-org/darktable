@@ -345,6 +345,13 @@ if(NOT DONT_USE_RAWSPEED)
   add_subdirectory(external/rawspeed)
 endif(NOT DONT_USE_RAWSPEED)
 
+# libsquish for compressed thumbnails:
+add_dependencies(lib_darktable squish)
+add_library(squish_static STATIC IMPORTED)
+set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/squish/libsquish.a)
+target_link_libraries(lib_darktable ${LIBS} squish_static)
+add_subdirectory(external/squish)
+
 install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 list(APPEND LIBS lib_darktable)
 
