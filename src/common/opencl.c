@@ -619,6 +619,25 @@ int dt_opencl_enqueue_copy_buffer_to_image(const int devid, cl_mem src_buffer, c
   return err;
 }
 
+int dt_opencl_read_buffer_from_device(const int devid, void *host, void *device, const size_t offset, const size_t size, const int blocking)
+{
+  if(!darktable.opencl->inited) return -1;
+
+  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Read Buffer (from device to host)]");
+
+  return (darktable.opencl->dlocl->symbols->dt_clEnqueueReadBuffer)(darktable.opencl->dev[devid].cmd_queue, device, blocking, offset, size, host, 0, NULL, eventp);
+}
+
+int dt_opencl_write_buffer_to_device(const int devid, void *host, void *device, const size_t offset, const size_t size, const int blocking)
+{
+  if(!darktable.opencl->inited) return -1;
+
+  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Write Buffer (from host to device)]");
+
+  return (darktable.opencl->dlocl->symbols->dt_clEnqueueWriteBuffer)(darktable.opencl->dev[devid].cmd_queue, device, blocking, offset, size, host, 0, NULL, eventp);
+}
+
+
 void* dt_opencl_copy_host_to_device_constant(const int devid, const int size, void *host)
 {
   if(!darktable.opencl->inited || devid < 0) return NULL;
