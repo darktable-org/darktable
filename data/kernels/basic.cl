@@ -371,6 +371,29 @@ clip_rotate(read_only image2d_t in, write_only image2d_t out, const int width, c
 }
 
 
+
+/* kernel for flip */
+__kernel void
+flip(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int orientation)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  int nx = (orientation & 4) ? y : x;
+  int ny = (orientation & 4) ? x : y;
+  int wd = (orientation & 4) ? height : width;
+  int ht = (orientation & 4) ? width : height;
+  nx = (orientation & 2) ? wd - nx - 1 : nx;
+  ny = (orientation & 1) ? ht - ny - 1 : ny;
+
+  write_imagef (out, (int2)(nx, ny), pixel);
+}
+
+
 /* we use this exp approximation to maintain full identity with cpu path */
 float 
 fast_expf(const float x)
