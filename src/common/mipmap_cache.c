@@ -153,6 +153,10 @@ _write_buffer(const uint32_t key, const void *data, void *user_data)
   written = fwrite(&key, sizeof(uint32_t), 1, d->f);
   if(written != 1) return 1;
 
+#if 0
+  // TODO: just fwrite the full blob!
+  written = fwrite(buf.buf, (
+#else
   dt_mipmap_buffer_t buf;
   buf.width  = dsc->width;
   buf.height = dsc->height;
@@ -166,9 +170,7 @@ _write_buffer(const uint32_t key, const void *data, void *user_data)
   if(written != 1) return 1;
   written = fwrite(d->blob, sizeof(uint8_t), length, d->f);
   if(written != length) return 1;
-
-
-//  fprintf(stderr, "[mipmap_cache] serializing image %u (%d x %d) with %d bytes in level %d\n", get_imgid(key), buf.width, buf.height, length, d->mip);
+#endif
 
   return 0;
 }
@@ -232,6 +234,8 @@ dt_mipmap_cache_serialize(dt_mipmap_cache_t *cache)
     fprintf(stderr, "[mipmap_cache] library is in memory; not serializing\n");
     return 0;
   }
+
+  // TODO: store compression type
 
   // only store smallest thumbs.
   const dt_mipmap_size_t mip = DT_MIPMAP_2;
@@ -310,6 +314,7 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
     goto read_finalize;
   }
 
+  // TODO: also read compression type
   // read version info:
   const int32_t magic = DT_MIPMAP_CACHE_FILE_MAGIC + DT_MIPMAP_CACHE_FILE_VERSION;
   int32_t magic_file = 0;
@@ -337,8 +342,10 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
       goto read_finalize;
     }
   }
+  // TODO: adjust to compression:
   blob = (uint8_t *)malloc(4*sizeof(uint8_t)*file_width[mip]*file_height[mip]);
 
+  // TODO: just read the blob, no jpg compression
   while(!feof(f))
   {
     int level = 0;
@@ -515,6 +522,12 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)dt_mipmap_cache_static_dead_image;
   dead_image_f((dt_mipmap_buffer_t *)(dsc+1));
 
+
+  cache->compression_type = 0;
+  // CLAMPS(dt_conf_get_int("cache_compression"), 0, 2);
+  dt_print(DT_DEBUG_CACHE, "[mipmap_cache_init] using %s\n", cache->compression_type == 0 ? "no compression" :
+      (cache->compression_type == 1 ? "low quality compression" : "slow high quality compression"));
+
   // adjust numbers to be large enough to hold what mem limit suggests.
   // we want at least 100MB, and consider 2G just still reasonable.
   const uint32_t max_mem = CLAMPS(dt_conf_get_int("cache_memory"), 100u<<20, 2u<<30)/5;
@@ -544,9 +557,17 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     const int width  = cache->mip[k].max_width;
     const int height = cache->mip[k].max_height;
     if(k == DT_MIPMAP_F)
+    {
       cache->mip[k].buffer_size = (4 + 4 * width * height)*sizeof(float);
+    }
     else
-      cache->mip[k].buffer_size = (4 + width * height)*sizeof(uint32_t);
+    {
+      // adjust this for dxt compression:
+      if(cache->compression_type)
+        cache->mip[k].buffer_size = 4*sizeof(uint32_t) + (width/4 * height/4)*8;
+      else
+        cache->mip[k].buffer_size = (4 + width * height)*sizeof(uint32_t);
+    }
     cache->mip[k].size = k;
     // level of parallelism also gives minimum size (which is twice that)
     // is rounded to a power of two by the cache anyways, we might as well.
