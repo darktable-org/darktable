@@ -236,7 +236,8 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   dt_iop_sharpen_data_t *d = (dt_iop_sharpen_data_t *)piece->data;
   const int rad = MIN(MAXR, ceilf(d->radius * roi_in->scale / piece->iscale));
 
-  tiling->factor = 2;
+  tiling->factor = 2.0f;
+  tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = rad;
   tiling->xalign = 1;

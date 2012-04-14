@@ -519,6 +519,7 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   float ioratio = (float)roi_out->width*roi_out->height/((float)roi_in->width*roi_in->height);
 
   tiling->factor = 1.0f + ioratio; // in + out, no temp
+  tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 0;
   tiling->xalign = 1;

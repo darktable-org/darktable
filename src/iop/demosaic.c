@@ -1076,6 +1076,7 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   else
     tiling->factor += fmax(0.25f, smooth);
 
+  tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 5; // take care of border handling
   tiling->xalign = 2; // Bayer pattern

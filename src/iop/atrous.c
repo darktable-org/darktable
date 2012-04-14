@@ -638,7 +638,8 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
   const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
 
-  tiling->factor = 2 + 1 + max_scale;
+  tiling->factor = 3.0f + max_scale;  // in + out + tmp + scale buffers
+  tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = max_filter_radius;
   tiling->xalign = 1;

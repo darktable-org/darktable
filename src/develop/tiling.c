@@ -548,8 +548,8 @@ _nm_fit_output_to_input_roi(struct dt_iop_module_t *self, struct dt_dev_pixelpip
 
 
 /* find a matching oroi_full by probing start value of oroi and get corresponding input roi into iroi_probe.
-   We search in two steps. first by a simplicistic iterative search which will succeed in most cases. start. 
-   If this does not converge we do a downhill simplex (nelder-mead) fitting */
+   We search in two steps. first by a simplicistic iterative search which will succeed in most cases.
+   If this does not converge, we do a downhill simplex (nelder-mead) fitting */
 static int
 _fit_output_to_input_roi(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *iroi, dt_iop_roi_t *oroi, int delta, int iter) 
 {
@@ -584,7 +584,7 @@ _fit_output_to_input_roi(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_i
   *oroi = save_oroi;
 
   // simplicistic approach did not converge.
-  // try simplex downhill fit now.
+  // try simplex downhill fitting now.
   // it's crucial that we have a good starting point in oroi, else this
   // will not converge as well.
   int fit = _nm_fit_output_to_input_roi(self, piece, iroi, oroi, delta);
@@ -626,16 +626,17 @@ _default_process_tiling_ptp (struct dt_iop_module_t *self, struct dt_dev_pixelpi
      reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
   float singlebuffer = (float)dt_conf_get_int("singlebuffer_limit")*1024.0f*1024.0f;
   singlebuffer = fmax(singlebuffer, 2.0f*1024.0f*1024.0f);
-  assert(tiling.factor > 1.0f);
-  singlebuffer = fmax(available / tiling.factor, singlebuffer);
+  float factor = fmax(tiling.factor, 1.0f);
+  float maxbuf = fmax(tiling.maxbuf, 1.0f);
+  singlebuffer = fmax(available / factor, singlebuffer);
 
   int width = roi_in->width;
   int height = roi_in->height;
 
   /* shrink tile size in case it would exceed singlebuffer size */
-  if((float)width*height*max_bpp > singlebuffer)
+  if((float)width*height*max_bpp*maxbuf > singlebuffer)
   {
-    const float scale = singlebuffer/(width*height*max_bpp);
+    const float scale = singlebuffer/(width*height*max_bpp*maxbuf);
 
     /* TODO: can we make this more efficient to minimize total overlap between tiles? */
     if(width < height && scale >= 0.333f)
@@ -858,16 +859,17 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
      reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
   float singlebuffer = (float)dt_conf_get_int("singlebuffer_limit")*1024.0f*1024.0f;
   singlebuffer = fmax(singlebuffer, 2.0f*1024.0f*1024.0f);
-  assert(tiling.factor > 1.0f);
-  singlebuffer = fmax(available / tiling.factor, singlebuffer);
+  float factor = fmax(tiling.factor, 1.0f);
+  float maxbuf = fmax(tiling.maxbuf, 1.0f);
+  singlebuffer = fmax(available / factor, singlebuffer);
 
   int width = _max(roi_in->width, roi_out->width);
   int height = _max(roi_in->height, roi_out->height);
 
   /* shrink tile size in case it would exceed singlebuffer size */
-  if((float)width*height*max_bpp > singlebuffer)
+  if((float)width*height*max_bpp*maxbuf > singlebuffer)
   {
-    const float scale = singlebuffer/(width*height*max_bpp);
+    const float scale = singlebuffer/(width*height*max_bpp*maxbuf);
 
     /* TODO: can we make this more efficient to minimize total overlap between tiles? */
     if(width < height && scale >= 0.333f)
@@ -1144,14 +1146,16 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
   float headroom = (float)dt_conf_get_int("opencl_memory_headroom")*1024.0f*1024.0f;
   headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
   const float available = darktable.opencl->dev[devid].max_global_mem - headroom;
-  const float singlebuffer = fmin(fmax((available - tiling.overhead) / tiling.factor, 0.0f), darktable.opencl->dev[devid].max_mem_alloc);
+  float factor = fmax(tiling.factor, 1.0f);
+  const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f), darktable.opencl->dev[devid].max_mem_alloc);
+  float maxbuf = fmax(tiling.maxbuf, 1.0f);
   int width = _min(roi_in->width, darktable.opencl->dev[devid].max_image_width);
   int height = _min(roi_in->height, darktable.opencl->dev[devid].max_image_height);
 
   /* shrink tile size in case it would exceed singlebuffer size */
-  if((float)width*height*max_bpp > singlebuffer)
+  if((float)width*height*max_bpp*maxbuf > singlebuffer)
   {
-    const float scale = singlebuffer/(width*height*max_bpp);
+    const float scale = singlebuffer/(width*height*max_bpp*maxbuf);
 
     if(width < height && scale >= 0.333f)
     { 
@@ -1367,15 +1371,17 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
   float headroom = (float)dt_conf_get_int("opencl_memory_headroom")*1024*1024;
   headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
   const float available = darktable.opencl->dev[devid].max_global_mem - headroom;
-  const float singlebuffer = fmin(fmax((available - tiling.overhead) / tiling.factor, 0.0f), darktable.opencl->dev[devid].max_mem_alloc);
+  float factor = fmax(tiling.factor, 1.0f);
+  const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f), darktable.opencl->dev[devid].max_mem_alloc);
+  float maxbuf = fmax(tiling.maxbuf, 1.0f);
 
   int width = _min(_max(roi_in->width, roi_out->width), darktable.opencl->dev[devid].max_image_width);
   int height = _min(_max(roi_in->height, roi_out->height), darktable.opencl->dev[devid].max_image_height);
 
   /* shrink tile size in case it would exceed singlebuffer size */
-  if((float)width*height*max_bpp > singlebuffer)
+  if((float)width*height*max_bpp*maxbuf > singlebuffer)
   {
-    const float scale = singlebuffer/(width*height*max_bpp);
+    const float scale = singlebuffer/(width*height*max_bpp*maxbuf);
 
     if(width < height && scale >= 0.333f)
     { 
@@ -1640,6 +1646,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
 void default_tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
   tiling->factor = 2.0f;
+  tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 0;
   tiling->xalign = 1;
