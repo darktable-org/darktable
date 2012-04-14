@@ -16,6 +16,7 @@ set(SQUISH_SOURCES
 # build libsquish
 #
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+add_definitions("-DSQUISH_USE_SSE=2")
 
 add_library(squish STATIC ${SQUISH_SOURCES})
 target_link_libraries(squish)

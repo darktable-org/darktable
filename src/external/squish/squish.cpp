@@ -31,6 +31,7 @@
 #include "colourblock.h"
 #include "alpha.h"
 #include "singlecolourfit.h"
+#include "csquish.h"
 
 namespace squish {
 
@@ -245,3 +246,14 @@ void DecompressImage( u8* rgba, const int width, const int height, void const* b
 }
 
 } // namespace squish
+
+// c compatibilty stuff:
+void squish_compress_image  (uint8_t const *rgba, const int width, const int height, void * blocks, int flags)
+{
+  squish::CompressImage(rgba, width, height, blocks, flags);
+}
+void squish_decompress_image(uint8_t *rgba, const int width, const int height, void const* blocks, int flags)
+{
+  squish::DecompressImage(rgba, width, height, blocks, flags);
+}
+

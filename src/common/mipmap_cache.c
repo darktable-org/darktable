@@ -25,6 +25,7 @@
 #include "control/conf.h"
 #include "control/jobs.h"
 #include "libraw/libraw.h"
+#include "squish/csquish.h"
 
 #include <assert.h>
 #include <string.h>
