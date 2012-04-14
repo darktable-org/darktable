@@ -87,7 +87,6 @@ static void dt_remove_known_keys(Exiv2::XmpData &xmp)
   }
 }
 
-
 int dt_exif_read(dt_image_t *img, const char* path)
 {
   try
