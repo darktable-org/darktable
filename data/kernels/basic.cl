@@ -555,4 +555,25 @@ colorzones (read_only image2d_t in, write_only image2d_t out, const int width, c
 }
 
 
+/* kernel for the zonesystem plugin */
+kernel void
+zonesystem (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int size,
+            global float *zonemap_offset, global float *zonemap_scale)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  const float rzscale = (float)(size-1)/100.0f;
+  const int rz = clamp((int)(pixel.x*rzscale), 0, size-2);
+  const float zs = ((rz > 0) ? (zonemap_offset[rz]/pixel.x) : 0) + zonemap_scale[rz];
+
+  pixel *= (float4)zs;
+
+  write_imagef (out, (int2)(x, y), pixel); 
+}
+
 
