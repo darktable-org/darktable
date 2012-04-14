@@ -1109,3 +1109,56 @@ libraw_fail:
   // TODO: if output is cropped, don't use mipf!
 }
 
+// compression stuff: alloc a buffer if needed
+uint8_t*
+dt_mipmap_cache_alloc_scratchmem(
+    const dt_mipmap_cache_t *cache)
+{
+  const size_t size = cache->mip[DT_MIPMAP_3].max_width *
+                      cache->mip[DT_MIPMAP_3].max_height;
+
+  if(cache->compression_type)
+    return dt_alloc_align(64, size * 4 * sizeof(uint8_t));
+  else // no compression, no buffer:
+    return NULL;
+}
+
+// decompress the raw mipmapm buffer into the scratchmemory.
+// returns a pointer to the decompressed memory block. that's because
+// for uncompressed settings, it will point directly to the mipmap
+// buffer and scratchmem can be NULL.
+uint8_t*
+dt_mipmap_cache_decompress(
+    const dt_mipmap_buffer_t *buf,
+    uint8_t *scratchmem)
+{
+  if(darktable.mipmap_cache->compression_type)
+  {
+    squish_decompress_image(scratchmem, buf->width, buf->height, buf->buf, squish_dxt1);
+    return scratchmem;
+  }
+  else
+  {
+    return buf->buf;
+  }
+}
+
+// writes the scratchmem buffer to compressed
+// format into the mipmap cache. does nothing
+// if compression is disabled.
+void
+dt_mipmap_cache_compress(
+    dt_mipmap_buffer_t *buf,
+    uint8_t *const scratchmem)
+{
+  // only do something if compression is on:
+  if(darktable.mipmap_cache->compression_type)
+  {
+    int flags = squish_dxt1;
+    // low quality:
+    if(darktable.mipmap_cache->compression_type == 1) flags |= squish_colour_range_fit;
+    squish_compress_image(scratchmem, buf->width, buf->height, buf->buf, squish_dxt1);
+  }
+}
+
+
