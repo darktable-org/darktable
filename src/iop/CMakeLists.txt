@@ -8,7 +8,7 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 	profile_gamma colorcontrast lowpass vibrance 
 	channelmixer graduatednd relight zonesystem demosaic atrous tonemap 
   colortransfer colorize invert shadhi
-  cacorrect overexposed bloom soften clahe equalizer highpass hotpixels lowlight spots rawdenoise borders nlmeans levels flip)
+  cacorrect overexposed bloom soften clahe equalizer highpass hotpixels lowlight spots rawdenoise borders nlmeans levels flip globaltonemap)
 
 add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")
@@ -60,6 +60,7 @@ add_library(colorize MODULE "colorize.c")
 add_library(invert MODULE "invert.c")
 add_library(vibrance MODULE "vibrance.c")
 add_library(flip MODULE "flip.c")
+add_library(globaltonemap MODULE "globaltonemap.c")
 
 if(RSVG2_FOUND)
 	add_library(watermark MODULE "watermark.c")

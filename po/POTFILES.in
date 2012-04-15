@@ -19,6 +19,7 @@ src/develop/develop.c
 src/develop/imageop.c
 src/dtgtk/resetlabel.c
 src/dtgtk/slider.c
+src/libs/similarity.c
 src/gui/accelerators.c
 src/gui/camera_import_dialog.c
 src/gui/gtk.c
