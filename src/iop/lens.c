@@ -127,7 +127,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
                     LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
       // acquire temp memory for distorted pixel coords
-      const size_t req2 = roi_in->width*2*3*sizeof(float);
+      const size_t req2 = roi_out->width*2*3*sizeof(float);
       if(req2 > 0 && d->tmpbuf2_len < req2*dt_get_num_threads())
       {
         d->tmpbuf2_len = req2*dt_get_num_threads();
