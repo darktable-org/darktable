@@ -98,6 +98,33 @@ void connect_key_accels(dt_lib_module_t *self)
                               GTK_WIDGET(d->scan_devices)); */
 }
 
+static boolean
+_filmroll_is_present(const gchar *path)
+{
+  return g_file_test(path, G_FILE_TEST_IS_DIR);
+}
+
+static void
+_show_filmroll_present(GtkTreeViewColumn *column,
+                  GtkCellRenderer   *renderer,
+                  GtkTreeModel      *model,
+                  GtkTreeIter       *iter,
+                  gpointer          user_data)
+{
+  gchar *path, *pch;
+  gtk_tree_model_get(model, iter, 1, &path, -1);
+  gtk_tree_model_get(model, iter, 0, &pch, -1);
+  
+  g_object_set(renderer, "text", pch, NULL);
+  g_object_set(renderer, "strikethrough", TRUE, NULL);
+  
+  if (!_filmroll_is_present(path))
+    g_object_set(renderer, "strikethrough-set", TRUE, NULL);
+  else
+    g_object_set(renderer, "strikethrough-set", FALSE, NULL);
+}
+
+
 static int
 _count_images(const char *path)
 {
@@ -128,7 +155,6 @@ _folder_tree (sqlite3_stmt *stmt)
   gv_list = g_volume_monitor_get_volumes(gv_monitor);
 
   if(gv_list && gd_list)
-   fprintf(stderr, g_volume_get_name(g_list_nth_data(gv_list,0)));
    g_drive_get_name(g_list_nth_data(gd_list,0));
 
   // initialize the model with the paths
@@ -275,7 +301,9 @@ _create_filtered_root_model (GtkTreeModel *model, gchar *mount_path)
   return filter;
                              
 }
+#endif
 
+#if 0
 static gboolean
 _filter_mounts (GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data)
 {
@@ -346,15 +374,14 @@ _create_treeview_display (GtkTreeModel *model)
 {
   GtkTreeView *treeview;
   GtkCellRenderer *renderer, *renderer2;
+  GtkTreeViewColumn *column1, *column2;
 
   treeview = GTK_TREE_VIEW(gtk_tree_view_new ());
 
   renderer = gtk_cell_renderer_text_new ();
   renderer2 = gtk_cell_renderer_text_new ();
-/*  GtkTreeViewColumn *column1, *column2;
-  GtkCellRenderer *renderer, *renderer2;
 
-  renderer = gtk_cell_renderer_text_new ();
+/*  renderer = gtk_cell_renderer_text_new ();
   renderer2 = gtk_cell_renderer_text_new ();
  
   column1 = gtk_tree_view_column_new_with_attributes ("", renderer,
@@ -369,13 +396,26 @@ _create_treeview_display (GtkTreeModel *model)
   gtk_tree_view_insert_column (tree, column1, 0);
   gtk_tree_view_insert_column (tree, column2, 1); */
 
-  gtk_tree_view_insert_column_with_attributes(treeview, -1, "", renderer,
+  column1 = gtk_tree_view_column_new();
+  column2 = gtk_tree_view_column_new();
+
+  gtk_tree_view_column_pack_start(column1, renderer, TRUE);
+  gtk_tree_view_column_pack_start(column2, renderer2, TRUE);
+ 
+  gtk_tree_view_insert_column(treeview, column1, 0);
+  gtk_tree_view_insert_column(treeview, column2, 1);
+
+/*  gtk_tree_view_insert_column_with_attributes(treeview, -1, "", renderer,
                                                "text", 0,
                                                 NULL);
 
   gtk_tree_view_insert_column_with_attributes(treeview, -1, "", renderer2,
                                                "text", 2,
                                                 NULL);
+*/
+
+  gtk_tree_view_column_add_attribute(column2, renderer2, "text", 2);
+  gtk_tree_view_column_set_cell_data_func(column1, renderer, _show_filmroll_present, NULL, NULL);
 
   gtk_tree_view_set_level_indentation (treeview, 1);
 
@@ -606,6 +646,7 @@ static void _draw_tree_gui (dt_lib_module_t *self)
 
 }
 
+#if 0
 static void mount_changed (GVolumeMonitor *volume_monitor, GMount *mount, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -614,6 +655,7 @@ static void mount_changed (GVolumeMonitor *volume_monitor, GMount *mount, gpoint
   d->mounts = g_volume_monitor_get_mounts(d->gv_monitor);
   _draw_tree_gui(self);
 }
+#endif
 
 void gui_init(dt_lib_module_t *self)
 {
@@ -636,9 +678,9 @@ void gui_init(dt_lib_module_t *self)
   /* set the UI */      
   d->gv_monitor = g_volume_monitor_get ();
 
-  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-added", G_CALLBACK(mount_changed), self);
-  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-removed", G_CALLBACK(mount_changed), self);
-  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-changed", G_CALLBACK(mount_changed), self);
+//  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-added", G_CALLBACK(mount_changed), self);
+//  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-removed", G_CALLBACK(mount_changed), self);
+//  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-changed", G_CALLBACK(mount_changed), self);
 
   d->mounts = g_volume_monitor_get_mounts(d->gv_monitor);
   _draw_tree_gui(self);
