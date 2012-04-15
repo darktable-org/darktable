@@ -34,19 +34,19 @@ gaussian_transpose(global float4 *in, global float4 *out, unsigned int width, un
 
   if((x < width) && (y < height))
   {
-    unsigned int iindex = y * width + x;
-    buffer[get_local_id(1)*(blocksize+1)+get_local_id(0)] = in[iindex];
+    const unsigned int iindex = mad24(y, width, x);
+    buffer[mad24(get_local_id(1), blocksize + 1, get_local_id(0))] = in[iindex];
   }
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  x = get_group_id(1) * blocksize + get_local_id(0);
-  y = get_group_id(0) * blocksize + get_local_id(1);
+  x = mad24(get_group_id(1), blocksize, get_local_id(0));
+  y = mad24(get_group_id(0), blocksize, get_local_id(1));
 
   if((x < height) && (y < width))
   {
-    unsigned int oindex = y * height + x;
-    out[oindex] = buffer[get_local_id(0)*(blocksize+1)+get_local_id(1)];
+    const unsigned int oindex = mad24(y, height, x);
+    out[oindex] = buffer[mad24(get_local_id(0), blocksize + 1, get_local_id(1))];
   }
 }
 
@@ -56,7 +56,7 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
                   const float a0, const float a1, const float a2, const float a3, const float b1, const float b2,
                   const float coefp, const float coefn)
 {
-  const int x = get_global_id(0);
+  const unsigned int x = get_global_id(0);
 
   if(x >= width) return;
 
@@ -81,19 +81,21 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
  
   for(int y=0; y<height; y++)
   {
-    xc = clamp(in[x + y * width], Labmin, Labmax);
+    const int idx = mad24((unsigned int)y, width, x);
+
+    xc = clamp(in[idx], Labmin, Labmax);
     yc = (a0 * xc) + (a1 * xp) - (b1 * yp) - (b2 * yb);
 
     xp = xc;
     yb = yp;
     yp = yc;
 
-    out[x + y*width] = yc;
+    out[idx] = yc;
 
   }
 
   // backward filter
-  xn = clamp(in[x + (height-1)*width], Labmin, Labmax);
+  xn = clamp(in[mad24(height - 1, width, x)], Labmin, Labmax);
   xa = xn;
   yn = xn * coefn;
   ya = yn;
@@ -101,7 +103,9 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
 
   for(int y=height-1; y>-1; y--)
   {
-    xc = clamp(in[x + y * width], Labmin, Labmax);
+    const int idx = mad24((unsigned int)y, width, x);
+
+    xc = clamp(in[idx], Labmin, Labmax);
     yc = (a2 * xn) + (a3 * xa) - (b1 * yn) - (b2 * ya);
 
     xa = xn; 
@@ -109,7 +113,7 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
     ya = yn; 
     yn = yc;
 
-    out[x + y*width] += yc;
+    out[idx] += yc;
 
   }
 }
@@ -138,12 +142,14 @@ kernel void
 lowpass_mix(global float4 *in, global float4 *out, unsigned int width, unsigned int height, const float saturation, 
             read_only image2d_t table, global float *a)
 {
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
+  const unsigned int x = get_global_id(0);
+  const unsigned int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 i = in[x + y*width];
+  const int idx = mad24(y, width, x);
+
+  float4 i = in[idx];
   float4 o;
 
   const float4 Labmin = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
@@ -154,7 +160,7 @@ lowpass_mix(global float4 *in, global float4 *out, unsigned int width, unsigned 
   o.z = i.z*saturation;
   o.w = i.w;
 
-  out[x + y*width] = clamp(o, Labmin, Labmax);
+  out[idx] = clamp(o, Labmin, Labmax);
 }
 
 
@@ -211,12 +217,14 @@ kernel void
 shadows_highlights_mix(global float4 *inout, global float4 *mask, unsigned int width, unsigned int height, 
                        const float shadows, const float highlights, const float compress)
 {
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
+  const unsigned int x = get_global_id(0);
+  const unsigned int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 io = inout[x + y*width];
+  const int idx = mad24(y, width, x);
+
+  float4 io = inout[idx];
   float4 m;
   float xform;
 
@@ -224,7 +232,7 @@ shadows_highlights_mix(global float4 *inout, global float4 *mask, unsigned int w
   const float4 Labmax = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
 
   /* blurred, inverted and desaturaed mask in m */
-  m.x = 100.0f - mask[x + y*width].x;
+  m.x = 100.0f - mask[idx].x;
   m.y = 0.0f;
   m.z = 0.0f;
 
@@ -236,5 +244,5 @@ shadows_highlights_mix(global float4 *inout, global float4 *mask, unsigned int w
   xform = clamp(0.01f * m.x/(1.0f-compress) - compress/(1.0f-compress), 0.0f, 1.0f);
   io = overlay(io, m, shadows, xform);
 
-  inout[x + y*width] = clamp(io, Labmin, Labmax);
+  inout[idx] = clamp(io, Labmin, Labmax);
 }

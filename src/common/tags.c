@@ -287,7 +287,7 @@ uint32_t dt_tag_get_attached(gint imgid,GList **result)
   return count;
 }
 
-gchar* dt_tag_get_list(gint imgid, gchar *separator)
+gchar* dt_tag_get_list(gint imgid, const gchar *separator)
 {
   gchar *result = NULL;
   GList *taglist = NULL;
@@ -335,7 +335,7 @@ gchar* dt_tag_get_list(gint imgid, gchar *separator)
   return result;
 }
 
-gchar *dt_tag_get_hierarchical(gint imgid, gchar *separator)
+gchar *dt_tag_get_hierarchical(gint imgid, const gchar *separator)
 {
   GList *taglist = NULL;
   GList *tags = NULL;

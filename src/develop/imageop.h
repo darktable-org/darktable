@@ -55,8 +55,9 @@ struct dt_develop_tiling_t;
 #define	IOP_FLAGS_SUPPORTS_BLENDING	2			// Does provide blending modes
 #define	IOP_FLAGS_DEPRECATED	        4
 #define IOP_FLAGS_BLEND_ONLY_LIGHTNESS	8			// Does only blend with L-channel in Lab space. Keeps a, b of original image.
-#define IOP_FLAGS_ALLOW_TILING         16                       // Does allow tile-wise processing (currently only via opencl)
+#define IOP_FLAGS_ALLOW_TILING         16                       // Does allow tile-wise processing (valid for CPU and GPU processing)
 #define IOP_FLAGS_HIDDEN               32                       // Hide the iop from userinterface
+#define IOP_FLAGS_TILING_FULL_ROI      64                       // Tiling code has to expect arbitrary roi's for this module (incl. flipping, mirroring etc.)
 
 typedef struct dt_iop_params_t
 {

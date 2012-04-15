@@ -21,6 +21,7 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/opencl.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -40,6 +41,9 @@ DT_MODULE(1)
 #define DT_IOP_COLORZONES_RES 64
 #define DT_IOP_COLORZONES_BANDS 6
 #define DT_IOP_COLORZONES_LUT_RES 0x10000
+
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+
 
 typedef enum dt_iop_colorzones_channel_t
 {
@@ -88,6 +92,12 @@ typedef struct dt_iop_colorzones_data_t
 }
 dt_iop_colorzones_data_t;
 
+typedef struct dt_iop_colorzones_global_data_t
+{
+  int kernel_colorzones;
+}
+dt_iop_colorzones_global_data_t;
+
 const char
 *name()
 {
@@ -96,7 +106,7 @@ const char
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 int
@@ -156,6 +166,66 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     out[1] = cosf(2.0*M_PI*(h + hm)) * Cm * C;
     out[2] = sinf(2.0*M_PI*(h + hm)) * Cm * C;
   }
+}
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)piece->data;
+  dt_iop_colorzones_global_data_t *gd = (dt_iop_colorzones_global_data_t *)self->data;
+  cl_mem dev_L, dev_a, dev_b = NULL;
+  cl_int err = -999;
+
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  dev_L = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
+  dev_a = dt_opencl_copy_host_to_device(devid, d->lut[1], 256, 256, sizeof(float));
+  dev_b = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
+  if (dev_L == NULL || dev_a == NULL || dev_b == NULL) goto error;
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 4, sizeof(int), (void *)&d->channel); 
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 5, sizeof(cl_mem), (void *)&dev_L);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 6, sizeof(cl_mem), (void *)&dev_a);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 7, sizeof(cl_mem), (void *)&dev_b);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorzones, sizes);
+
+  if(err != CL_SUCCESS) goto error;
+  dt_opencl_release_mem_object(dev_L);
+  dt_opencl_release_mem_object(dev_a);
+  dt_opencl_release_mem_object(dev_b); 
+  return TRUE;
+
+error:
+  if (dev_L != NULL) dt_opencl_release_mem_object(dev_L);
+  if (dev_a != NULL) dt_opencl_release_mem_object(dev_a);
+  if (dev_b != NULL) dt_opencl_release_mem_object(dev_b);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorzones] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 2; // basic.cl, from programs.conf
+  dt_iop_colorzones_global_data_t *gd = (dt_iop_colorzones_global_data_t *)malloc(sizeof(dt_iop_colorzones_global_data_t));
+  module->data = gd;
+  gd->kernel_colorzones = dt_opencl_create_kernel(program, "colorzones");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_colorzones_global_data_t *gd = (dt_iop_colorzones_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_colorzones);
+  free(module->data);
+  module->data = NULL;
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

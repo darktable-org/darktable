@@ -61,6 +61,14 @@ typedef struct dt_iop_lensfun_gui_data_t
 }
 dt_iop_lensfun_gui_data_t;
 
+typedef struct dt_iop_lensfun_global_data_t
+{
+  lfDatabase *db;
+  int kernel_lens_distort;
+  int kernel_lens_vignette;
+}
+dt_iop_lensfun_global_data_t;
+
 typedef struct dt_iop_lensfun_data_t
 {
   lfLens *lens;

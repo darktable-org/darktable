@@ -140,13 +140,15 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
   size_t workgroupsize = 0;          // the maximum number of items in a work group
   unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
+  size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
   
   // make sure blocksize is not too large
   int blocksize = BLOCKSIZE;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS)
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
+     dt_opencl_get_kernel_work_group_size(devid, gd->kernel_sharpen_hblur, &kernelworkgroupsize) == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] 
+    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize > kernelworkgroupsize
           || blocksize > workgroupsize || (blocksize+2*rad)*sizeof(float) > localmemsize)
     {
       if(blocksize == 1) break;
@@ -234,7 +236,8 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   dt_iop_sharpen_data_t *d = (dt_iop_sharpen_data_t *)piece->data;
   const int rad = MIN(MAXR, ceilf(d->radius * roi_in->scale / piece->iscale));
 
-  tiling->factor = 2;
+  tiling->factor = 2.0f;
+  tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = rad;
   tiling->xalign = 1;

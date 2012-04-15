@@ -159,6 +159,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     if(darktable.unmuted & DT_DEBUG_OPENCL)
     {
       printf("[opencl_init] device %d: %s \n", k, infostr);
+      printf("     GLOBAL_MEM_SIZE:          %.0fMB\n", (double)cl->dev[dev].max_global_mem/1024.0/1024.0);
       (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(infoint), &infoint, NULL);
       printf("     MAX_WORK_GROUP_SIZE:      %zd\n", infoint);
       (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(infoint), &infoint, NULL);
@@ -498,6 +499,15 @@ int dt_opencl_get_work_group_limits(const int dev, size_t *sizes, size_t *workgr
 }
 
 
+int dt_opencl_get_kernel_work_group_size(const int dev, const int kernel, size_t *kernelworkgroupsize)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  if(!cl->inited || dev < 0) return -1;
+  if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return -1;
+
+  return (cl->dlocl->symbols->dt_clGetKernelWorkGroupInfo)(cl->dev[dev].kernel[kernel], cl->dev[dev].devid, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), kernelworkgroupsize, NULL);
+}
+
 
 int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, const size_t size, const void *arg)
 {
@@ -608,6 +618,25 @@ int dt_opencl_enqueue_copy_buffer_to_image(const int devid, cl_mem src_buffer, c
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_image] could not copy buffer: %d\n", err);
   return err;
 }
+
+int dt_opencl_read_buffer_from_device(const int devid, void *host, void *device, const size_t offset, const size_t size, const int blocking)
+{
+  if(!darktable.opencl->inited) return -1;
+
+  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Read Buffer (from device to host)]");
+
+  return (darktable.opencl->dlocl->symbols->dt_clEnqueueReadBuffer)(darktable.opencl->dev[devid].cmd_queue, device, blocking, offset, size, host, 0, NULL, eventp);
+}
+
+int dt_opencl_write_buffer_to_device(const int devid, void *host, void *device, const size_t offset, const size_t size, const int blocking)
+{
+  if(!darktable.opencl->inited) return -1;
+
+  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Write Buffer (from host to device)]");
+
+  return (darktable.opencl->dlocl->symbols->dt_clEnqueueWriteBuffer)(darktable.opencl->dev[devid].cmd_queue, device, blocking, offset, size, host, 0, NULL, eventp);
+}
+
 
 void* dt_opencl_copy_host_to_device_constant(const int devid, const int size, void *host)
 {
