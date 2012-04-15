@@ -600,3 +600,51 @@ zonesystem (read_only image2d_t in, write_only image2d_t out, const int width, c
 }
 
 
+/* kernels for the lens plugin */
+kernel void
+lens_distort (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+              const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel;
+
+  float rx, ry;
+  const int piwidth = 2*3*width;
+  global float *ppi = pi + mad24(y, piwidth, 2*3*x);
+
+  rx = ppi[0] - roi_in_x;
+  ry = ppi[1] - roi_in_y;
+  pixel.x = (rx >= 0 && ry >= 0 && rx <= iwidth - 1 && ry <= iheight - 1) ? read_imagef(in, samplerf, (float2)(rx, ry)).x : 0.0f;
+
+  rx = ppi[2] - roi_in_x;
+  ry = ppi[3] - roi_in_y;
+  pixel.y = (rx >= 0 && ry >= 0 && rx <= iwidth - 1 && ry <= iheight - 1) ? read_imagef(in, samplerf, (float2)(rx, ry)).y : 0.0f;
+
+  rx = ppi[4] - roi_in_x;
+  ry = ppi[5] - roi_in_y;
+  pixel.z = (rx >= 0 && ry >= 0 && rx <= iwidth - 1 && ry <= iheight - 1) ? read_imagef(in, samplerf, (float2)(rx, ry)).z : 0.0f;
+
+  pixel.w = 1.0f;
+
+  write_imagef (out, (int2)(x, y), pixel); 
+}
+
+
+kernel void
+lens_vignette (read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float4 *pi)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 scale = pi[mad24(y, width, x)]/(float4)0.5f;
+
+  write_imagef (out, (int2)(x, y), pixel*scale); 
+}
+
