@@ -20,6 +20,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
+#include "common/opencl.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -49,7 +50,9 @@
   Ilford HP5		23		37		40		Generic B/W		24	68	8
 */
 
-#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
+#define CLIP(x)                 ((x<0)?0.0:(x>1.0)?1.0:x)
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+
 DT_MODULE(1)
 
 typedef  enum _channelmixer_output_t
@@ -103,6 +106,12 @@ typedef struct dt_iop_channelmixer_data_t
 }
 dt_iop_channelmixer_data_t;
 
+typedef struct dt_iop_channelmixer_global_data_t
+{
+  int kernel_channelmixer;
+}
+dt_iop_channelmixer_global_data_t;
+
 
 const char *name()
 {
@@ -111,7 +120,7 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 int
@@ -212,6 +221,77 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       in += ch;
     }
   }
+}
+
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_channelmixer_data_t *data = (dt_iop_channelmixer_data_t *)piece->data;
+  dt_iop_channelmixer_global_data_t *gd = (dt_iop_channelmixer_global_data_t *)self->data;
+
+  cl_mem dev_red = NULL;
+  cl_mem dev_green = NULL;
+  cl_mem dev_blue = NULL;
+
+  cl_int err = -999;
+
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  const int gray_mix_mode = (data->red[CHANNEL_GRAY] != 0.0f && data->green[CHANNEL_GRAY] != 0.0f &&  data->blue[CHANNEL_GRAY] != 0.0f) ? TRUE : FALSE;
+
+  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+
+  dev_red = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*CHANNEL_SIZE, data->red);
+  if (dev_red == NULL) goto error;
+  dev_green = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*CHANNEL_SIZE, data->green);
+  if (dev_green == NULL) goto error;
+  dev_blue = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*CHANNEL_SIZE, data->blue);
+  if (dev_blue == NULL) goto error;
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 4, sizeof(int), (void *)&gray_mix_mode);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 5, sizeof(cl_mem), (void *)&dev_red);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 6, sizeof(cl_mem), (void *)&dev_green);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 7, sizeof(cl_mem), (void *)&dev_blue);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_channelmixer, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  dt_opencl_release_mem_object(dev_red);
+  dt_opencl_release_mem_object(dev_green);
+  dt_opencl_release_mem_object(dev_blue);
+
+  return TRUE;
+
+error:
+  if(dev_red != NULL) dt_opencl_release_mem_object(dev_red);
+  if(dev_green != NULL) dt_opencl_release_mem_object(dev_green);
+  if(dev_blue != NULL) dt_opencl_release_mem_object(dev_blue);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_channelmixer] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 8; // extended.cl, from programs.conf
+  dt_iop_channelmixer_global_data_t *gd = (dt_iop_channelmixer_global_data_t *)malloc(sizeof(dt_iop_channelmixer_global_data_t));
+  module->data = gd;
+  gd->kernel_channelmixer = dt_opencl_create_kernel(program, "channelmixer");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_channelmixer_global_data_t *gd = (dt_iop_channelmixer_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_channelmixer);
+  free(module->data);
+  module->data = NULL;
 }
 
 static void

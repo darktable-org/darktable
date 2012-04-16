@@ -136,8 +136,136 @@ relight (read_only image2d_t in, write_only image2d_t out, const int width, cons
 }
 
 
+float4 RGB_2_HSL(const float4 RGB)
+{
+  float H, S, L;
+
+  // assumes that each channel is scaled to [0; 1]
+  float R = RGB.x;
+  float G = RGB.y;
+  float B = RGB.z;
+
+  float var_Min = fmin(R, fmin(G, B));
+  float var_Max = fmax(R, fmax(G, B));
+  float del_Max = var_Max - var_Min;
+
+  L = (var_Max + var_Min) / 2.0f;
+
+  if (del_Max == 0.0f)
+  {
+    H = 0.0f;
+    S = 0.0f;
+  }
+  else
+  {
+    if (L < 0.5f) S = del_Max / (var_Max + var_Min);
+    else          S = del_Max / (2.0f - var_Max - var_Min);
+
+    float del_R = (((var_Max - R) / 6.0f) + (del_Max / 2.0f)) / del_Max;
+    float del_G = (((var_Max - G) / 6.0f) + (del_Max / 2.0f)) / del_Max;
+    float del_B = (((var_Max - B) / 6.0f) + (del_Max / 2.0f)) / del_Max;
+
+    if      (R == var_Max) H = del_B - del_G;
+    else if (G == var_Max) H = (1.0f / 3.0f) + del_R - del_B;
+    else if (B == var_Max) H = (2.0f / 3.0f) + del_G - del_R;
+
+    if (H < 0.0f) H += 1.0f;
+    if (H > 1.0f) H -= 1.0f;
+  }
+
+  return (float4)(H, S, L, RGB.w);
+}
 
 
+float Hue_2_RGB(float v1, float v2, float vH)
+{
+  if (vH < 0.0f) vH += 1.0f;
+  if (vH > 1.0f) vH -= 1.0f;
+  if ((6.0f * vH) < 1.0f) return (v1 + (v2 - v1) * 6.0f * vH);
+  if ((2.0f * vH) < 1.0f) return (v2);
+  if ((3.0f * vH) < 2.0f) return (v1 + (v2 - v1) * ((2.0f / 3.0f) - vH) * 6.0f);
+  return (v1);
+}
+
+
+float4 HSL_2_RGB(const float4 HSL)
+{
+  float R, G, B;
+
+  float H = HSL.x;
+  float S = HSL.y;
+  float L = HSL.z;
+
+  float var_1, var_2;
+
+  if (S == 0.0f)
+  {
+    R = B = G = L;
+  }
+  else
+  {
+    if (L < 0.5f) var_2 = L * (1.0f + S);
+    else          var_2 = (L + S) - (S * L);
+
+    var_1 = 2.0f * L - var_2;
+
+    R = Hue_2_RGB(var_1, var_2, H + (1.0f / 3.0f)); 
+    G = Hue_2_RGB(var_1, var_2, H);
+    B = Hue_2_RGB(var_1, var_2, H - (1.0f / 3.0f));
+  } 
+
+  // returns RGB scaled to [0; 1] for each channel
+  return (float4)(R, G, B, HSL.w);
+}
+
+
+typedef  enum _channelmixer_output_t
+{
+  CHANNEL_HUE=0,
+  CHANNEL_SATURATION,
+  CHANNEL_LIGHTNESS,
+  CHANNEL_RED,
+  CHANNEL_GREEN,
+  CHANNEL_BLUE,
+  CHANNEL_GRAY,
+  CHANNEL_SIZE
+} _channelmixer_output_t;
+
+
+__kernel void
+channelmixer (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+              const int gray_mix_mode, global const float *red, global const float *green, global const float *blue)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  float hmix = clamp(pixel.x * red[CHANNEL_HUE], 0.0f, 1.0f) + pixel.y * green[CHANNEL_HUE] + pixel.z * blue[CHANNEL_HUE];
+  float smix = clamp(pixel.x * red[CHANNEL_SATURATION], 0.0f, 1.0f) + pixel.y * green[CHANNEL_SATURATION] + pixel.z * blue[CHANNEL_SATURATION];
+  float lmix = clamp(pixel.x * red[CHANNEL_LIGHTNESS], 0.0f, 1.0f) + pixel.y * green[CHANNEL_LIGHTNESS] + pixel.z * blue[CHANNEL_LIGHTNESS];
+
+  if( hmix != 0.0f || smix != 0.0f || lmix != 0.0f )
+  {
+    float4 hsl = RGB_2_HSL(pixel);
+    hsl.x = (hmix != 0.0f ) ? hmix : hsl.x;
+    hsl.y = (smix != 0.0f ) ? smix : hsl.y;
+    hsl.z = (lmix != 0.0f ) ? lmix : hsl.z;
+    pixel = HSL_2_RGB(hsl);
+  }
+
+  float graymix = clamp(pixel.x * red[CHANNEL_GRAY]+ pixel.y * green[CHANNEL_GRAY] + pixel.z * blue[CHANNEL_GRAY], 0.0f, 1.0f);
+
+  float rmix = clamp(pixel.x * red[CHANNEL_RED] + pixel.y * green[CHANNEL_RED] + pixel.z * blue[CHANNEL_RED], 0.0f, 1.0f);
+  float gmix = clamp(pixel.x * red[CHANNEL_GREEN] + pixel.y * green[CHANNEL_GREEN] + pixel.z * blue[CHANNEL_GREEN], 0.0f, 1.0f);
+  float bmix = clamp(pixel.x * red[CHANNEL_BLUE] + pixel.y * green[CHANNEL_BLUE] + pixel.z * blue[CHANNEL_BLUE], 0.0f, 1.0f);
+
+  pixel = gray_mix_mode ? (float4)(graymix, graymix, graymix, pixel.w) : (float4)(rmix, gmix, bmix, pixel.w);
+
+  write_imagef (out, (int2)(x, y), pixel); 
+}
 
 
 
