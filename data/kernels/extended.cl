@@ -79,3 +79,22 @@ graduatedndm (read_only image2d_t in, write_only image2d_t out, const int width,
   write_imagef (out, (int2)(x, y), pixel); 
 }
 
+__kernel void
+colorize (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+          const float mix, const float L, const float a, const float b)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  pixel.x = pixel.x * mix + L - 50.0f * mix;
+  pixel.y = a;
+  pixel.z = b;
+
+  write_imagef (out, (int2)(x, y), pixel); 
+}
+
+
