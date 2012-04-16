@@ -40,7 +40,7 @@
 #include <xmmintrin.h>
 
 #define DT_MIPMAP_CACHE_FILE_MAGIC 0xD71337
-#define DT_MIPMAP_CACHE_FILE_VERSION 21
+#define DT_MIPMAP_CACHE_FILE_VERSION 22
 #define DT_MIPMAP_CACHE_DEFAULT_FILE_NAME "mipmaps"
 
 #define DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE (1<<0)
@@ -101,6 +101,17 @@ dead_image_f(dt_mipmap_buffer_t *buf)
 }
 
 static inline int32_t
+compressed_buffer_size(const int32_t compression_type, const int width, const int height)
+{
+  // need 8 byte for each 4x4 block of pixels.
+  // round correctly, so a 3x3 image will still consume one block:
+  if(compression_type)
+    return ((width-1)/4 + 1) * ((height-1)/4 + 1) * 8;
+  else // uncompressed:
+    return width*height*sizeof(uint32_t);
+}
+
+static inline int32_t
 buffer_is_broken(dt_mipmap_buffer_t *buf)
 {
   if(!buf->buf) return 0;
@@ -135,6 +146,7 @@ typedef struct _iterate_data_t
 {
   FILE *f;
   uint8_t *blob;
+  int compression_type;
   dt_mipmap_size_t mip;
 }
 _iterate_data_t;
@@ -153,24 +165,35 @@ _write_buffer(const uint32_t key, const void *data, void *user_data)
   written = fwrite(&key, sizeof(uint32_t), 1, d->f);
   if(written != 1) return 1;
 
-#if 0
-  // TODO: just fwrite the full blob!
-  written = fwrite(buf.buf, (
-#else
-  dt_mipmap_buffer_t buf;
-  buf.width  = dsc->width;
-  buf.height = dsc->height;
-  buf.imgid  = get_imgid(key);
-  buf.size   = get_size(key);
-  // skip to next 8-byte alignment, for sse buffers.
-  buf.buf    = (uint8_t *)(dsc+1);
+  if(d->compression_type)
+  {
+    // write buffer size, wd, ht and the full blob, as it is in memory.
+    const int32_t length = compressed_buffer_size(d->compression_type, dsc->width, dsc->height);
+    written = fwrite(&length, sizeof(int32_t), 1, d->f);
+    if(written != 1) return 1;
+    written = fwrite(&dsc->width, sizeof(int32_t), 1, d->f);
+    if(written != 1) return 1;
+    written = fwrite(&dsc->height, sizeof(int32_t), 1, d->f);
+    if(written != 1) return 1;
+    written = fwrite(d->blob, sizeof(uint8_t), length, d->f);
+    if(written != length) return 1;
+  }
+  else
+  {
+    dt_mipmap_buffer_t buf;
+    buf.width  = dsc->width;
+    buf.height = dsc->height;
+    buf.imgid  = get_imgid(key);
+    buf.size   = get_size(key);
+    // skip to next 8-byte alignment, for sse buffers.
+    buf.buf    = (uint8_t *)(dsc+1);
 
-  const int32_t length = dt_imageio_jpeg_compress(buf.buf, d->blob, buf.width, buf.height, MIN(100, MAX(10, dt_conf_get_int("database_cache_quality"))));
-  written = fwrite(&length, sizeof(int32_t), 1, d->f);
-  if(written != 1) return 1;
-  written = fwrite(d->blob, sizeof(uint8_t), length, d->f);
-  if(written != length) return 1;
-#endif
+    const int32_t length = dt_imageio_jpeg_compress(buf.buf, d->blob, buf.width, buf.height, MIN(100, MAX(10, dt_conf_get_int("database_cache_quality"))));
+    written = fwrite(&length, sizeof(int32_t), 1, d->f);
+    if(written != 1) return 1;
+    written = fwrite(d->blob, sizeof(uint8_t), length, d->f);
+    if(written != length) return 1;
+  }
 
   return 0;
 }
@@ -235,8 +258,6 @@ dt_mipmap_cache_serialize(dt_mipmap_cache_t *cache)
     return 0;
   }
 
-  // TODO: store compression type
-
   // only store smallest thumbs.
   const dt_mipmap_size_t mip = DT_MIPMAP_2;
 
@@ -254,6 +275,10 @@ dt_mipmap_cache_serialize(dt_mipmap_cache_t *cache)
   written = fwrite(&magic, sizeof(int32_t), 1, f);
   if(written != 1) goto write_error;
 
+  // store compression type
+  written = fwrite(&cache->compression_type, sizeof(int32_t), 1, f);
+  if(written != 1) goto write_error;
+
   for(int i=0;i<=mip;i++)
   {
     // print max sizes for this cache
@@ -266,6 +291,7 @@ dt_mipmap_cache_serialize(dt_mipmap_cache_t *cache)
   for(int i=0;i<=mip;i++)
   {
     d.mip = (dt_mipmap_size_t)i;
+    d.compression_type = cache->compression_type;
     if(dt_cache_for_all(&cache->mip[i].cache, _write_buffer, &d)) goto write_error;
   }
 
@@ -314,7 +340,6 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
     goto read_finalize;
   }
 
-  // TODO: also read compression type
   // read version info:
   const int32_t magic = DT_MIPMAP_CACHE_FILE_MAGIC + DT_MIPMAP_CACHE_FILE_VERSION;
   int32_t magic_file = 0;
@@ -326,6 +351,19 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
         fprintf(stderr, "[mipmap_cache] cache version too old, dropping `%s' cache\n", dbfilename);
     else
         fprintf(stderr, "[mipmap_cache] invalid cache file, dropping `%s' cache\n", dbfilename);
+    goto read_finalize;
+  }
+
+  // also read compression type and yell out on missmatch.
+  int32_t compression = -1;
+  rd = fread(&compression, sizeof(int32_t), 1, f);
+  if(rd != 1) goto read_error;
+  if(compression != cache->compression_type)
+  {
+    fprintf(stderr, "[mipmap_cache] cache is %s, but settings say we should use %s, dropping `%s' cache\n",
+        compression == 0 ? "uncompressed" : (compression == 1 ? "low quality compressed" : "high quality compressed"),
+        cache->compression_type == 0 ? "no compression" : (cache->compression_type == 1 ? "low quality compression" : "high quality compression"),
+        dbfilename);
     goto read_finalize;
   }
 
@@ -342,10 +380,10 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
       goto read_finalize;
     }
   }
-  // TODO: adjust to compression:
-  blob = (uint8_t *)malloc(4*sizeof(uint8_t)*file_width[mip]*file_height[mip]);
 
-  // TODO: just read the blob, no jpg compression
+  if(compression_type) blob = NULL;
+  else blob = malloc(sizeof(uint32_t)*file_width[mip]*file_height[mip]);
+
   while(!feof(f))
   {
     int level = 0;
@@ -357,26 +395,42 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
     if(rd != 1) break; // first value is break only, goes to eof.
     int32_t length = 0;
     rd = fread(&length, sizeof(int32_t), 1, f);
-//    fprintf(stderr, "[mipmap_cache] thumbnail for image %d length %d bytes (%d x %d) in level %d\n", get_imgid(key), length, file_width[level], file_height[level], level);
-    if(rd != 1 || length > 4*sizeof(uint8_t)*file_width[level]*file_height[level])
-      goto read_error;
-    rd = fread(blob, sizeof(uint8_t), length, f);
-    if(rd != length) goto read_error;
+    if(rd != 1) goto read_error;
 
-    dt_imageio_jpeg_t jpg;
     uint8_t *data = (uint8_t *)dt_cache_read_get(&cache->mip[level].cache, key);
-
     struct dt_mipmap_buffer_dsc* dsc = (struct dt_mipmap_buffer_dsc*)data;
     if(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE)
     {
-      if(dt_imageio_jpeg_decompress_header(blob, length, &jpg) ||
-          (jpg.width > file_width[level] || jpg.height > file_height[level]) ||
-          dt_imageio_jpeg_decompress(&jpg, data+sizeof(*dsc)))
+      if(cache->compression_type)
       {
-        fprintf(stderr, "[mipmap_cache] failed to decompress thumbnail for image %d!\n", get_imgid(key));
+        int32_t wd, ht;
+        rd = fread(&wd, sizeof(int32_t), 1, f);
+        if(rd != 1) goto read_error;
+        rd = fread(&ht, sizeof(int32_t), 1, f);
+        if(rd != 1) goto read_error;
+        dsc->width = wd;
+        dsc->height = ht;
+        // directly read from disk into cache:
+        rd = fread(data + sizeof(*dsc), length, f);
+        if(rd != length) goto read_error;
       }
-      dsc->width = jpg.width;
-      dsc->height = jpg.height;
+      else
+      {
+        // jpg too large?
+        if(length > sizeof(uint32_t)*file_width[mip]*file_height[mip]) goto read_error;
+        rd = fread(blob, sizeof(uint8_t), length, f);
+        if(rd != length) goto read_error;
+        // no compression, the image is still compressed on disk, as jpg
+        dt_imageio_jpeg_t jpg;
+        if(dt_imageio_jpeg_decompress_header(blob, length, &jpg) ||
+            (jpg.width > file_width[level] || jpg.height > file_height[level]) ||
+            dt_imageio_jpeg_decompress(&jpg, data+sizeof(*dsc)))
+        {
+          fprintf(stderr, "[mipmap_cache] failed to decompress thumbnail for image %d!\n", get_imgid(key));
+        }
+        dsc->width = jpg.width;
+        dsc->height = jpg.height;
+      }
       dsc->flags &= ~DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
       // these come write locked in case idata[3] == 1, so release that!
       dt_cache_write_release(&cache->mip[level].cache, key);
