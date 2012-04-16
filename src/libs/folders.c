@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012 Jose Carlos Garcia Sogo.
-	based on keywords.c
+    copyright (c) 2012 Jose Carlos Garcia Sogo
+    based on keywords.c
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -69,7 +69,6 @@ const char* name()
   return _("folders");
 }
 
-
 uint32_t views()
 {
   return DT_VIEW_LIGHTTABLE;
@@ -96,6 +95,153 @@ void connect_key_accels(dt_lib_module_t *self)
 
   dt_accel_connect_button_lib(self, "scan for devices",
                               GTK_WIDGET(d->scan_devices)); */
+}
+
+void
+view_popup_menu_onDoSomething (GtkWidget *menuitem, gpointer userdata)
+{
+  GtkTreeView *treeview = GTK_TREE_VIEW(userdata);
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("search filmroll"),
+                         GTK_WINDOW (win),
+                         GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                         GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                         (char *)NULL);
+
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+  
+  gchar *filmroll_path = NULL;
+  GtkTreeSelection *selection;
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  
+  model = gtk_tree_view_get_model(treeview);
+  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+  gtk_tree_selection_get_selected(selection, &model, &iter);
+  gtk_tree_model_get(model, &iter, 1, &filmroll_path, -1);
+
+  if(filmroll_path != NULL)
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER (filechooser), filmroll_path);
+  else
+    goto error;
+ 
+  // run the dialog
+  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    gint id;
+    sqlite3_stmt *stmt;
+    gchar *query;
+    gchar *new_path = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser));
+    
+    query = dt_util_dstrcat(query, "select id from film_rolls where folder like %s", filmroll_path);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+      id = sqlite3_column_int(stmt, 0);
+ 
+    g_free(query);
+ 
+    /* TODO */
+    /* change path in db to new filmroll path */
+    query = dt_util_dstrcat(query, "update film_rolls set folder=?1 where id=?2");
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    
+    /* reset filter to display all images, otherwise view may remain empty */
+    dt_view_filter_reset_to_show_all(darktable.view_manager);
+    
+    /* update collection to view missing filmroll */
+    /* TODO */
+    if (first_filename)
+    {
+      _lib_folders_update_collection(filmroll);
+       g_free(first_filename);
+    }
+  }
+
+error:
+  /* TODO: Say something wrong happened */
+  gtk_widget_destroy (filechooser);
+}
+
+void
+view_popup_menu (GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
+{
+  GtkWidget *menu, *menuitem;
+
+  menu = gtk_menu_new();
+
+  menuitem = gtk_menu_item_new_with_label("_(Search filmroll...)");
+
+  g_signal_connect(menuitem, "activate",
+                   (GCallback) view_popup_menu_onSearchFilmroll, treeview);
+
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+  gtk_widget_show_all(menu);
+
+  /* Note: event can be NULL here when called from view_onPopupMenu;
+   *  gdk_event_get_time() accepts a NULL argument */
+  gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
+                 (event != NULL) ? event->button : 0,
+                 gdk_event_get_time((GdkEvent*)event));
+}
+
+gboolean
+view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
+{
+  /* single click with the right mouse button? */
+  if (event->type == GDK_BUTTON_PRESS  &&  event->button == 3)
+  {
+    GtkTreeSelection *selection;
+
+    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+
+    /* Note: gtk_tree_selection_count_selected_rows() does not
+     *   exist in gtk+-2.0, only in gtk+ >= v2.2 ! */
+    if (gtk_tree_selection_count_selected_rows(selection)  <= 1)
+    {
+       GtkTreePath *path;
+
+       /* Get tree path for row that was clicked */
+       if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview),
+                                         (gint) event->x, 
+                                         (gint) event->y,
+                                         &path, NULL, NULL, NULL))
+       {
+         gtk_tree_selection_unselect_all(selection);
+         gtk_tree_selection_select_path(selection, path);
+         gtk_tree_path_free(path);
+       }
+    }
+    view_popup_menu(treeview, event, userdata);
+
+    return TRUE; /* we handled this */
+  }
+  return FALSE; /* we did not handle this */
+}
+
+gboolean
+view_onPopupMenu (GtkWidget *treeview, gpointer userdata)
+{
+  view_popup_menu(treeview, NULL, userdata);
+
+  return TRUE; /* we handled this */
+}
+
+static int
+_count_images(const char *path)
+{
+  sqlite3_stmt *stmt = NULL;
+  gchar query[1024] = {0};
+  int count = 0;
+
+  snprintf(query, 1024, "select count(id) from images where film_id in (select id from film_rolls where folder like '%s%s')", path, "%");
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if (sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0); 
+  sqlite3_finalize(stmt);
+
+  return count;
 }
 
 static boolean
@@ -145,17 +291,6 @@ static GtkTreeStore *
 _folder_tree (sqlite3_stmt *stmt)
 {
   GtkTreeStore *store = gtk_tree_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
-  //GtkTreeStore *store = gtk_tree_store_new(3, G_TYPE_STRING, G_TYPE_INT);
-
-  GVolumeMonitor *gv_monitor;
-  gv_monitor = g_volume_monitor_get ();
-
-  GList *gv_list, *gd_list;
-  gd_list = g_volume_monitor_get_connected_drives(gv_monitor);
-  gv_list = g_volume_monitor_get_volumes(gv_monitor);
-
-  if(gv_list && gd_list)
-   g_drive_get_name(g_list_nth_data(gd_list,0));
 
   // initialize the model with the paths
 
@@ -486,9 +621,10 @@ static void _lib_folders_string_from_path(char *dest,size_t ds,
   /* free data */
   gtk_tree_path_free(wp);
 }
+*/
 #endif
 
-static void _lib_folders_update_collection(GtkTreeView *view, GtkTreePath *tp)
+static void _lib_folders_update_collection(Gconst gchar *filmroll)
 {
   
   //char folder[1024]={0};
@@ -496,17 +632,9 @@ static void _lib_folders_update_collection(GtkTreeView *view, GtkTreePath *tp)
    * or we don't need the column */ 
   //_lib_folders_string_from_path(folder, 1024, gtk_tree_view_get_model(view), tp);
 
-  gchar *folder;
-  GtkTreeModel *model;
-  GtkTreeIter iter;
-
-  model = gtk_tree_view_get_model(view);
-  gtk_tree_model_get_iter (model, &iter, tp);
-  gtk_tree_model_get (model, &iter, 1, &folder, -1);
-
   gchar *complete_query = NULL;
 
-  complete_query = dt_util_dstrcat(complete_query, "film_id in (select id from film_rolls where folder like '%s%s')", folder, "%");
+  complete_query = dt_util_dstrcat(complete_query, "film_id in (select id from film_rolls where folder like '%s%s')", filmroll, "%");
   
   dt_collection_set_extended_where(darktable.collection, complete_query);
 
@@ -550,14 +678,12 @@ tree_row_activated (GtkTreeView *view, GtkTreePath *path, gpointer user_data)
   GtkTreeModel *model = NULL;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
   if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
-  gchar *text;
-  gtk_tree_model_get (model, &iter, 1, &text, -1);
-//loop trhough all selected rows
-  //entry_key_press();
- 
-  _lib_folders_update_collection(view, path);
-
-  dt_control_queue_redraw_center(); 
+  
+  /* Only one row at a time can be selected */
+  gchar *filmroll;
+  gtk_tree_model_get (model, &iter, 1, &filmroll, -1);
+   
+  _lib_folders_update_collection(filmroll);
 }
 
 
@@ -641,6 +767,8 @@ static void _draw_tree_gui (dt_lib_module_t *self)
     gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(tree));
 	
     g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d);
+    g_signal_connect(G_OBJECT (tree), "button-press-event", G_CALLBACK (view_onButtonPressed), NULL);
+    g_signal_connect(G_OBJECT (tree), "popup-menu", G_CALLBACK (view_onPopupMenu), NULL);
   }
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->box_tree), TRUE, TRUE, 0); 
 
