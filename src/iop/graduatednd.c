@@ -28,16 +28,20 @@
 #include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "control/control.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
+#include "common/opencl.h"
 #include "dtgtk/gradientslider.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include <xmmintrin.h>
 
-#define CLIP(x) ((x<0.0f)?0.0f:(x>1.0f)?1.0f:x)
+#define CLIP(x) 		((x<0.0f)?0.0f:(x>1.0f)?1.0f:x)
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+
 DT_MODULE(1)
 
 typedef struct dt_iop_graduatednd_params_t
@@ -50,6 +54,14 @@ typedef struct dt_iop_graduatednd_params_t
   float saturation;
 }
 dt_iop_graduatednd_params_t;
+
+typedef struct dt_iop_graduatednd_global_data_t
+{
+  int kernel_graduatedndp;
+  int kernel_graduatedndm;
+}
+dt_iop_graduatednd_global_data_t;
+
 
 void init_presets (dt_iop_module_so_t *self)
 {
@@ -138,7 +150,7 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI;
 }
 
 int
@@ -410,6 +422,94 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   _mm_sfence();
 }
+
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_graduatednd_data_t *data = (dt_iop_graduatednd_data_t *)piece->data;
+  dt_iop_graduatednd_global_data_t *gd = (dt_iop_graduatednd_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  const int ix= (roi_in->x);
+  const int iy= (roi_in->y);
+  const float iw=piece->buf_in.width*roi_out->scale;
+  const float ih=piece->buf_in.height*roi_out->scale;
+  const float hw=iw/2.0;
+  const float hh=ih/2.0;
+  const float hw_inv=1.0/hw;
+  const float hh_inv=1.0/hh;
+  const float v=(-data->rotation/180)*M_PI;
+  const float sinv=sin(v);
+  const float cosv=cos(v);
+  const float filter_radie=sqrt((hh*hh)+(hw*hw))/hh;
+  const float offset=data->offset/100.0*2;
+  const float density=data->density;
+
+  float color[4] = { 0.0f };
+  hsl2rgb(color,data->hue,data->saturation,0.5);
+  if (density < 0)
+    for ( int l=0; l<3; l++ )
+      color[l] = 1.0f - color[l];
+
+#if 1
+  const float filter_compression = 1.0/filter_radie/(1.0-(0.5+(data->compression/100.0)*0.9/2.0))*0.5;
+#else
+  const float compression = data->compression/100.0f;
+  const float t = 1.0f - .8f/(.8f + compression);
+  const float c = 1.0f + 1000.0f*powf(4.0, compression);
+#endif
+
+  const float length_base = (sinv * (-1.0+ix*hw_inv) - cosv * (-1.0+iy*hh_inv) - 1.0 + offset) * filter_compression;
+  const float length_inc_y = -cosv * hh_inv * filter_compression;
+  const float length_inc_x =  sinv * hw_inv * filter_compression;
+
+  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+
+  int kernel = density > 0 ? gd->kernel_graduatedndp : gd->kernel_graduatedndm;
+
+  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, kernel, 4, 4*sizeof(float), (void *)color);
+  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(float), (void *)&density);
+  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(float), (void *)&length_base);
+  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(float), (void *)&length_inc_x);
+  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(float), (void *)&length_inc_y);
+  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  if(err != CL_SUCCESS) goto error;
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_graduatednd] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 8; // extended.cl, from programs.conf
+  dt_iop_graduatednd_global_data_t *gd = (dt_iop_graduatednd_global_data_t *)malloc(sizeof(dt_iop_graduatednd_global_data_t));
+  module->data = gd;
+  gd->kernel_graduatedndp = dt_opencl_create_kernel(program, "graduatedndp");
+  gd->kernel_graduatedndm = dt_opencl_create_kernel(program, "graduatedndm");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_graduatednd_global_data_t *gd = (dt_iop_graduatednd_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_graduatedndp);
+  dt_opencl_free_kernel(gd->kernel_graduatedndm);
+  free(module->data);
+  module->data = NULL;
+}
+
 
 static void
 density_callback (GtkWidget *slider, gpointer user_data)
