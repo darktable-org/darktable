@@ -30,13 +30,16 @@
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "common/debug.h"
+#include "common/opencl.h"
 #include "dtgtk/togglebutton.h"
 #include "dtgtk/gradientslider.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 
-#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
+#define CLIP(x)                 ((x<0)?0.0:(x>1.0)?1.0:x)
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+
 DT_MODULE(1)
 
 typedef struct dt_iop_relight_params_t
@@ -81,6 +84,12 @@ typedef struct dt_iop_relight_data_t
 }
 dt_iop_relight_data_t;
 
+typedef struct dt_iop_relight_global_data_t
+{
+  int kernel_relight;
+}
+dt_iop_relight_global_data_t;
+
 const char *name()
 {
   return _("fill light");
@@ -88,7 +97,7 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES|IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 int
@@ -150,6 +159,58 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[2] = in[2];
     }
   }
+}
+
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_relight_data_t *data = (dt_iop_relight_data_t *)piece->data;
+  dt_iop_relight_global_data_t *gd = (dt_iop_relight_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  const float center = data->center;
+  const float wings = data->width;
+  const float ev = data->ev;
+
+  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 4, sizeof(float), (void *)&center);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 5, sizeof(float), (void *)&wings);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 6, sizeof(float), (void *)&ev);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_relight, sizes);
+  if(err != CL_SUCCESS) goto error;
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_relight] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 8; // extended.cl, from programs.conf
+  dt_iop_relight_global_data_t *gd = (dt_iop_relight_global_data_t *)malloc(sizeof(dt_iop_relight_global_data_t));
+  module->data = gd;
+  gd->kernel_relight = dt_opencl_create_kernel(program, "relight");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_relight_global_data_t *gd = (dt_iop_relight_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_relight);
+  free(module->data);
+  module->data = NULL;
 }
 
 static void

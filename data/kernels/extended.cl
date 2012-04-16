@@ -98,3 +98,48 @@ colorize (read_only image2d_t in, write_only image2d_t out, const int width, con
 }
 
 
+float 
+GAUSS(float center, float wings, float x)
+{
+  const float b = -1.0f + center * 2.0f;
+  const float c = (wings / 10.0f) / 2.0f;
+  return exp(-(x-b)*(x-b)/(c*c));
+}
+
+
+__kernel void
+relight (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+         const float center, const float wings, const float ev)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  const float lightness = pixel.x/100.0f;
+  const float value = -1.0f+(lightness*2.0f);
+  float gauss = GAUSS(center, wings, value);
+
+  if(isnan(gauss) || isinf(gauss))
+    gauss = 0.0f;
+
+  float relight = 1.0f / exp2(-ev * clamp(gauss, 0.0f, 1.0f));
+
+  if(isnan(relight) || isinf(relight))
+    relight = 1.0f;
+
+  pixel.x = 100.0f * clamp(lightness*relight, 0.0f, 1.0f);
+
+  write_imagef (out, (int2)(x, y), pixel); 
+}
+
+
+
+
+
+
+
+
+
