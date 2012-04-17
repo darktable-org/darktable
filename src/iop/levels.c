@@ -33,9 +33,6 @@
 #define DT_GUI_CURVE_EDITOR_INSET 5
 #define DT_GUI_CURVE_INFL .3f
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
-
-
 DT_MODULE(1)
 
 const char *name()
@@ -123,7 +120,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dev_lut = dt_opencl_copy_host_to_device(devid, d->lut, 256, 256, sizeof(float));
   if(dev_lut == NULL) goto error;
 
-  size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
+  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
   dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 0, sizeof(cl_mem), &dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 1, sizeof(cl_mem), &dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 2, sizeof(int), &width);

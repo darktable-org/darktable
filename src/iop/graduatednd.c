@@ -40,7 +40,6 @@
 #include <xmmintrin.h>
 
 #define CLIP(x) 		((x<0.0f)?0.0f:(x>1.0f)?1.0f:x)
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 DT_MODULE(1)
 
@@ -469,7 +468,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const float length_inc_y = -cosv * hh_inv * filter_compression;
   const float length_inc_x =  sinv * hw_inv * filter_compression;
 
-  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
 
   int kernel = density > 0 ? gd->kernel_graduatedndp : gd->kernel_graduatedndm;
 

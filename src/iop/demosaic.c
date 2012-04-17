@@ -31,7 +31,6 @@
 // we assume people have -msee support.
 #include <xmmintrin.h>
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 #define BLOCKSIZE  2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
 DT_MODULE(3)
@@ -767,7 +766,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     const int width = roi_out->width;
     const int height = roi_out->height;
-    size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
+    size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
      // 1:1 demosaic
     dev_green_eq = NULL;
     if(data->green_eq != DT_IOP_GREEN_EQ_NO)
@@ -842,7 +841,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if (dev_tmp == NULL) goto error;
     const int width = roi_in->width;
     const int height = roi_in->height;
-    size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
+    size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
     if(data->green_eq != DT_IOP_GREEN_EQ_NO)
     {
       // green equilibration
@@ -907,8 +906,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     // scale temp buffer to output buffer
     int zero = 0;
-    sizes[0] = ROUNDUP(roi_out->width, 4);
-    sizes[1] = ROUNDUP(roi_out->height, 4);
+    sizes[0] = ROUNDUPWD(roi_out->width);
+    sizes[1] = ROUNDUPHT(roi_out->height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 0, sizeof(cl_mem), &dev_tmp);
     dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 1, sizeof(cl_mem), &dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 2, sizeof(int), &roi_out->width);
@@ -932,7 +931,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       if (dev_tmp == NULL) goto error;
       const int width = roi_in->width;
       const int height = roi_in->height;
-      size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
+      size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
 
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 0, sizeof(cl_mem), &dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 1, sizeof(cl_mem), &dev_tmp);
@@ -948,7 +947,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     const int width = roi_out->width;
     const int height = roi_out->height;
-    size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
+    size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 0, sizeof(cl_mem), &dev_pix);
     dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 1, sizeof(cl_mem), &dev_out);

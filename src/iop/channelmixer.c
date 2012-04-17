@@ -51,7 +51,6 @@
 */
 
 #define CLIP(x)                 ((x<0)?0.0:(x>1.0)?1.0:x)
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 DT_MODULE(1)
 
@@ -243,7 +242,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const int gray_mix_mode = (data->red[CHANNEL_GRAY] != 0.0f && data->green[CHANNEL_GRAY] != 0.0f &&  data->blue[CHANNEL_GRAY] != 0.0f) ? TRUE : FALSE;
 
-  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
 
   dev_red = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*CHANNEL_SIZE, data->red);
   if (dev_red == NULL) goto error;

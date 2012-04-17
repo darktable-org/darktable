@@ -806,6 +806,27 @@ int dt_opencl_image_fits_device(const int devid, const size_t width, const size_
 }
 
 
+/** round size to a multiple of the value given in config parameter opencl_size_roundup */
+int dt_opencl_roundup(int size)
+{
+  static int roundup = -1;
+
+  /* first time run */
+  if(roundup < 0)
+  {
+    roundup = dt_conf_get_int("opencl_size_roundup");
+
+    /* if not yet defined (or unsane), set a sane default */
+    if(roundup <= 0)
+    {
+      roundup = 16;
+      dt_conf_set_int("opencl_size_roundup", roundup);
+    }
+  }
+
+  return (size % roundup == 0 ? size : (size / roundup + 1) * roundup);
+}
+
 
 /** check if opencl is inited */
 int dt_opencl_is_inited(void)

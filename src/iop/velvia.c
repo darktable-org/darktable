@@ -38,7 +38,6 @@
 
 // NaN-safe clip: NaN compares false and will result in 0.0
 #define CLIP(x)                 (((x)>=0.0)?((x)<=1.0?(x):1.0):0.0)
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 DT_MODULE(2)
 
@@ -195,7 +194,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const float strength = data->strength/100.0f;
   const float bias = data->bias;
 
-  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
 
   if(strength <= 0.0f)
   {
