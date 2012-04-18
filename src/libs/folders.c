@@ -27,6 +27,9 @@
 
 #include "libs/lib.h"
 
+
+static void _lib_folders_update_collection(const gchar *filmroll);
+
 DT_MODULE(1)
 
 typedef struct dt_lib_folders_t
@@ -34,7 +37,7 @@ typedef struct dt_lib_folders_t
   /* data */
   GtkTreeStore *store;
   GList *mounts;
-  
+
   /* gui */
   GVolumeMonitor *gv_monitor;
   GtkBox *box_tree;
@@ -98,11 +101,20 @@ void connect_key_accels(dt_lib_module_t *self)
 }
 
 void
-view_popup_menu_onDoSomething (GtkWidget *menuitem, gpointer userdata)
+view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
 {
   GtkTreeView *treeview = GTK_TREE_VIEW(userdata);
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("search filmroll"),
+  GtkWidget *filechooser;
+
+  GtkTreeSelection *selection;
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+
+  gchar *filmroll_path = NULL;
+  gchar *new_path = NULL;
+
+  filechooser = gtk_file_chooser_dialog_new (_("search filmroll"),
                          GTK_WINDOW (win),
                          GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
                          GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -110,12 +122,7 @@ view_popup_menu_onDoSomething (GtkWidget *menuitem, gpointer userdata)
                          (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
-  
-  gchar *filmroll_path = NULL;
-  GtkTreeSelection *selection;
-  GtkTreeIter iter;
-  GtkTreeModel *model;
-  
+
   model = gtk_tree_view_get_model(treeview);
   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
   gtk_tree_selection_get_selected(selection, &model, &iter);
@@ -125,42 +132,54 @@ view_popup_menu_onDoSomething (GtkWidget *menuitem, gpointer userdata)
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER (filechooser), filmroll_path);
   else
     goto error;
- 
+
   // run the dialog
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
-    gint id;
+    gint id = -1;
     sqlite3_stmt *stmt;
-    gchar *query;
-    gchar *new_path = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser));
-    
-    query = dt_util_dstrcat(query, "select id from film_rolls where folder like %s", filmroll_path);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-    if (sqlite3_step(stmt) == SQLITE_ROW)
-      id = sqlite3_column_int(stmt, 0);
- 
-    g_free(query);
- 
-    /* TODO */
-    /* change path in db to new filmroll path */
-    query = dt_util_dstrcat(query, "update film_rolls set folder=?1 where id=?2");
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-    
-    /* reset filter to display all images, otherwise view may remain empty */
-    dt_view_filter_reset_to_show_all(darktable.view_manager);
-    
-    /* update collection to view missing filmroll */
-    /* TODO */
-    if (first_filename)
+    gchar *query = NULL;
+    new_path = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser));
+    if (new_path)
     {
-      _lib_folders_update_collection(filmroll);
-       g_free(first_filename);
+      query = dt_util_dstrcat(query, "select id from film_rolls where folder like '%s'", filmroll_path);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if (sqlite3_step(stmt) == SQLITE_ROW)
+        id = sqlite3_column_int(stmt, 0);
+      else
+        goto error;
+
+      g_free(query);
+      query = NULL;
+
+      /* change path in db to new filmroll path */
+      query = dt_util_dstrcat(query, "update film_rolls set folder=?1 where id=?2");
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, new_path, strlen(new_path), SQLITE_STATIC);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, id);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+
+      g_free(query);
+
+      /* reset filter to display all images, otherwise view may remain empty */
+      dt_view_filter_reset_to_show_all(darktable.view_manager);
+
+      /* update collection to view missing filmroll */
+      _lib_folders_update_collection(new_path);
+      g_free(new_path);
     }
+    else
+      goto error;
   }
 
 error:
   /* TODO: Say something wrong happened */
   gtk_widget_destroy (filechooser);
+  dt_control_log(_("Problem selecting new path for the filmroll in %s"), filmroll_path);
+
+  g_free(filmroll_path);
+  g_free(new_path);
 }
 
 void
@@ -170,7 +189,7 @@ view_popup_menu (GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
 
   menu = gtk_menu_new();
 
-  menuitem = gtk_menu_item_new_with_label("_(Search filmroll...)");
+  menuitem = gtk_menu_item_new_with_label(_("Search filmroll..."));
 
   g_signal_connect(menuitem, "activate",
                    (GCallback) view_popup_menu_onSearchFilmroll, treeview);
@@ -204,7 +223,7 @@ view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event, gpointer userd
 
        /* Get tree path for row that was clicked */
        if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview),
-                                         (gint) event->x, 
+                                         (gint) event->x,
                                          (gint) event->y,
                                          &path, NULL, NULL, NULL))
        {
@@ -238,13 +257,13 @@ _count_images(const char *path)
   snprintf(query, 1024, "select count(id) from images where film_id in (select id from film_rolls where folder like '%s%s')", path, "%");
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if (sqlite3_step(stmt) == SQLITE_ROW)
-    count = sqlite3_column_int(stmt, 0); 
+    count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
   return count;
 }
 
-static boolean
+static gboolean
 _filmroll_is_present(const gchar *path)
 {
   return g_file_test(path, G_FILE_TEST_IS_DIR);
@@ -260,32 +279,16 @@ _show_filmroll_present(GtkTreeViewColumn *column,
   gchar *path, *pch;
   gtk_tree_model_get(model, iter, 1, &path, -1);
   gtk_tree_model_get(model, iter, 0, &pch, -1);
-  
+
   g_object_set(renderer, "text", pch, NULL);
   g_object_set(renderer, "strikethrough", TRUE, NULL);
-  
+
   if (!_filmroll_is_present(path))
     g_object_set(renderer, "strikethrough-set", TRUE, NULL);
   else
     g_object_set(renderer, "strikethrough-set", FALSE, NULL);
 }
 
-
-static int
-_count_images(const char *path)
-{
-  sqlite3_stmt *stmt = NULL;
-  gchar query[1024] = {0};
-  int count = 0;
-
-  snprintf(query, 1024, "select count(id) from images where film_id in (select id from film_rolls where folder like '%s%s')", path, "%");
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  if (sqlite3_step(stmt) == SQLITE_ROW)
-    count = sqlite3_column_int(stmt, 0); 
-  sqlite3_finalize(stmt);
-
-  return count;
-}
 
 static GtkTreeStore *
 _folder_tree (sqlite3_stmt *stmt)
@@ -312,9 +315,9 @@ _folder_tree (sqlite3_stmt *stmt)
 
       if (external == NULL)
         external = g_strdup("Local");
-	  
+
       gboolean found=FALSE;
- 	    
+
       root = gtk_tree_path_new_first();
       gtk_tree_model_get_iter (GTK_TREE_MODEL(store), &iter, root);
 
@@ -324,7 +327,7 @@ _folder_tree (sqlite3_stmt *stmt)
         if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &iter, NULL, k))
         {
           gtk_tree_model_get (GTK_TREE_MODEL(store), &iter, 0, &value, -1);
-        
+
           if (strcmp(value, external)==0)
           {
             found = TRUE;
@@ -333,16 +336,16 @@ _folder_tree (sqlite3_stmt *stmt)
           }
 	      }
       }
-	  
+
       if (!found)
       {
         gtk_tree_store_insert(store, &iter, NULL, 0);
         gtk_tree_store_set(store, &iter, 0, external, -1);
         current = iter;
       }
-    
+
       level=1;
-      while (pch != NULL) 
+      while (pch != NULL)
       {
         found = FALSE;
         int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),level>0?&current:NULL);
@@ -352,7 +355,7 @@ _folder_tree (sqlite3_stmt *stmt)
           if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &iter, level>0?&current:NULL, k))
           {
             gtk_tree_model_get (GTK_TREE_MODEL(store), &iter, 0, &value, -1);
-          
+
             if (strcmp(value, pch)==0)
             {
               current = iter;
@@ -377,7 +380,7 @@ _folder_tree (sqlite3_stmt *stmt)
         level++;
         pch = strtok(NULL, "/");
       }
-    }  
+    }
   }
 
   return store;
@@ -389,9 +392,9 @@ _create_filtered_root_model (GtkTreeModel *model, gchar *mount_path)
 {
   GtkTreeModel *filter = NULL;
   GtkTreePath  *path;
-    
+
   /* Create path to set as virtual root */
-  
+
   GtkTreeIter current, iter;
   char *pch = strtok(mount_path, "/");
   char *value;
@@ -408,7 +411,7 @@ _create_filtered_root_model (GtkTreeModel *model, gchar *mount_path)
       if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(model), &iter, level>0?&current:NULL, k))
       {
         gtk_tree_model_get (GTK_TREE_MODEL(model), &iter, 0, &value, -1);
-        
+
         if (strcmp(value, pch)==0)
         {
           current = iter;
@@ -434,7 +437,7 @@ _create_filtered_root_model (GtkTreeModel *model, gchar *mount_path)
   gtk_tree_path_free (path);
 
   return filter;
-                             
+
 }
 #endif
 
@@ -447,10 +450,10 @@ _filter_mounts (GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data)
   GList *mounts = (GList *)user_data;
   gchar *path;
   GFile *mount_path, *filmrollpath;
-  
+
   gtk_tree_model_get(model, iter, 1, &path, -1);
   filmrollpath = g_file_new_for_path (path);
-  
+
   for (int i=0; i < g_list_length (mounts); i++)
   {
     mount_path = g_mount_get_default_location(g_list_nth_data(mounts, i));
@@ -461,7 +464,7 @@ _filter_mounts (GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data)
 	  break;
 	}
   }
-       
+
   return visible;
 }
 #endif
@@ -472,12 +475,12 @@ _create_filtered_model (GtkTreeModel *model, GtkTreeIter iter)
   GtkTreeModel *filter = NULL;
   GtkTreePath *path;
   GtkTreeIter child;
-  
+
 #if 0
-  GtkTreeIter *iter = NULL;   
+  GtkTreeIter *iter = NULL;
   /* Create a path to set as virtual root of the new model */
   path = gtk_tree_path_new_first();
-   
+
   /* Create filter and set visible filter function */
   filter = gtk_tree_model_filter_new (model, path);
   gtk_tree_model_filter_set_visible_func(GTK_TREE_MODEL_FILTER(filter),
@@ -494,13 +497,13 @@ _create_filtered_model (GtkTreeModel *model, GtkTreeIter iter)
     else
       break;
 	}
-	
+
   path = gtk_tree_model_get_path (model, &iter);
 
   /* Create filter and set virtual root */
   filter = gtk_tree_model_filter_new (model, path);
-  gtk_tree_path_free (path);	
-   
+  gtk_tree_path_free (path);
+
   return filter;
 }
 
@@ -518,7 +521,7 @@ _create_treeview_display (GtkTreeModel *model)
 
 /*  renderer = gtk_cell_renderer_text_new ();
   renderer2 = gtk_cell_renderer_text_new ();
- 
+
   column1 = gtk_tree_view_column_new_with_attributes ("", renderer,
                                             "sizing", GTK_TREE_VIEW_COLUMN_FIXED,
                                             "expand", TRUE,
@@ -536,7 +539,7 @@ _create_treeview_display (GtkTreeModel *model)
 
   gtk_tree_view_column_pack_start(column1, renderer, TRUE);
   gtk_tree_view_column_pack_start(column2, renderer2, TRUE);
- 
+
   gtk_tree_view_insert_column(treeview, column1, 0);
   gtk_tree_view_insert_column(treeview, column2, 1);
 
@@ -565,8 +568,8 @@ _create_treeview_display (GtkTreeModel *model)
 }
 
 #if 0
-static void _lib_folders_string_from_path(char *dest,size_t ds, 
-					   GtkTreeModel *model, 
+static void _lib_folders_string_from_path(char *dest,size_t ds,
+					   GtkTreeModel *model,
 					   GtkTreePath *path)
 {
   g_assert(model!=NULL);
@@ -590,8 +593,8 @@ static void _lib_folders_string_from_path(char *dest,size_t ds,
     gtk_tree_model_get_value(model, &iter, 0, &value);
     if ( !(gtk_tree_path_get_depth(wp) == 0))
     {
-      components = g_list_insert(components, 
-				 g_strdup(g_value_get_string(&value)), 
+      components = g_list_insert(components,
+				 g_strdup(g_value_get_string(&value)),
 				 0);
     }
     g_value_unset(&value);
@@ -605,37 +608,37 @@ static void _lib_folders_string_from_path(char *dest,size_t ds,
   /* build the tag string from components */
   int dcs = 0;
 
-  if(g_list_length(components) == 0) 
+  if(g_list_length(components) == 0)
     dcs += g_snprintf(dest+dcs, ds-dcs," ");
   else
     dcs += g_snprintf(dest+dcs, ds-dcs,"/");
-		      
-  for(int i=0;i<g_list_length(components);i++) 
+
+  for(int i=0;i<g_list_length(components);i++)
   {
     dcs += g_snprintf(dest+dcs, ds-dcs,
 		      "%s%s",
 		      (gchar *)g_list_nth_data(components, i),
 		      (i < g_list_length(components)-1) ? "/" : "%");
   }
-  
+
   /* free data */
   gtk_tree_path_free(wp);
 }
 */
 #endif
 
-static void _lib_folders_update_collection(Gconst gchar *filmroll)
+static void _lib_folders_update_collection(const gchar *filmroll)
 {
-  
+
   //char folder[1024]={0};
   /* We have the full path stored in the second column, so we don't need this function
-   * or we don't need the column */ 
+   * or we don't need the column */
   //_lib_folders_string_from_path(folder, 1024, gtk_tree_view_get_model(view), tp);
 
   gchar *complete_query = NULL;
 
   complete_query = dt_util_dstrcat(complete_query, "film_id in (select id from film_rolls where folder like '%s%s')", filmroll, "%");
-  
+
   dt_collection_set_extended_where(darktable.collection, complete_query);
 
   dt_collection_set_query_flags(darktable.collection, (dt_collection_get_query_flags (darktable.collection) | COLLECTION_QUERY_USE_WHERE_EXT));
@@ -665,7 +668,7 @@ static void _lib_folders_update_collection(Gconst gchar *filmroll)
   }
 
   dt_control_queue_redraw_center();
-   
+
   /* raise signal of collection change, only if this is an orginal */
   if (!darktable.collection->clone)
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
@@ -678,11 +681,11 @@ tree_row_activated (GtkTreeView *view, GtkTreePath *path, gpointer user_data)
   GtkTreeModel *model = NULL;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
   if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
-  
+
   /* Only one row at a time can be selected */
   gchar *filmroll;
   gtk_tree_model_get (model, &iter, 1, &filmroll, -1);
-   
+
   _lib_folders_update_collection(filmroll);
 }
 
@@ -691,40 +694,40 @@ static void _draw_tree_gui (dt_lib_module_t *self)
 {
   GtkTreeModel *model;
   dt_lib_folders_t *d = (dt_lib_folders_t *)self->data;
-  
+
   /* Destroy old tree */
   if (d->box_tree)
     gtk_widget_destroy(GTK_WIDGET(d->box_tree));
 
-  d->box_tree = GTK_BOX(gtk_vbox_new(FALSE,5)); 
-	
+  d->box_tree = GTK_BOX(gtk_vbox_new(FALSE,5));
+
   /* set the UI */
-  GtkTreeView *tree; 
+  GtkTreeView *tree;
   GtkWidget *button;
   GtkTreeIter iter;
   GValue value;
-#if 0        
+#if 0
   /* Add a button for local filesystem, to keep UI consistency */
   button = gtk_button_new_with_label (_("Local HDD"));
   gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(button));
-  
+
   /* Show only filmrolls in the system */
   model = _create_filtered_model(GTK_TREE_MODEL(d->store), d->mounts);
-  
+
   tree = _create_treeview_display(GTK_TREE_MODEL(model));
   gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(tree));
-  
-  g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d); 
+
+  g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d);
 
   for (int i=0;i<g_list_length(d->mounts);i++)
   {
-     
+
     GMount *mount;
     GFile *file;
 
     mount = (GMount *)g_list_nth_data(d->mounts, i);
     file = g_mount_get_root(mount);
-    
+
     model = _create_filtered_root_model (GTK_TREE_MODEL(d->store), g_file_get_path(file));
     if (model != NULL)
     {
@@ -734,24 +737,24 @@ static void _draw_tree_gui (dt_lib_module_t *self)
       tree = _create_treeview_display(GTK_TREE_MODEL(model));
 
       gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(tree));
-      
-      g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d); 
+
+      g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d);
     }
   }
 #endif
 
   /* TODO: Use currently mounted device to show/no show that part of the tree */
-  
+
   GtkTreePath *root = gtk_tree_path_new_first();
   gtk_tree_model_get_iter (GTK_TREE_MODEL(d->store), &iter, root);
-  
+
   for (int i=0; i<gtk_tree_model_iter_n_children(GTK_TREE_MODEL(d->store), NULL); i++)
   {
     gtk_tree_model_iter_nth_child (GTK_TREE_MODEL(d->store), &iter, NULL, i);
   	gtk_tree_model_get_value (GTK_TREE_MODEL(d->store), &iter, 0, &value);
 
     const gchar *mount_name = g_value_get_string(&value);
-	
+
     if (strcmp(mount_name, "Local")==0)
     {
       /* Add a button for local filesystem, to keep UI consistency */
@@ -765,12 +768,12 @@ static void _draw_tree_gui (dt_lib_module_t *self)
     model = _create_filtered_model(GTK_TREE_MODEL(d->store), iter);
     tree = _create_treeview_display(GTK_TREE_MODEL(model));
     gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(tree));
-	
+
     g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d);
     g_signal_connect(G_OBJECT (tree), "button-press-event", G_CALLBACK (view_onButtonPressed), NULL);
     g_signal_connect(G_OBJECT (tree), "popup-menu", G_CALLBACK (view_onPopupMenu), NULL);
   }
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->box_tree), TRUE, TRUE, 0); 
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->box_tree), TRUE, TRUE, 0);
 
 }
 
@@ -779,7 +782,7 @@ static void mount_changed (GVolumeMonitor *volume_monitor, GMount *mount, gpoint
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_folders_t *d = (dt_lib_folders_t *)self->data;
-    
+
   d->mounts = g_volume_monitor_get_mounts(d->gv_monitor);
   _draw_tree_gui(self);
 }
@@ -794,16 +797,16 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_vbox_new(FALSE, 5);
 
   /* intialize the tree store */
-  char query[1024]; 
-  sqlite3_stmt *stmt; 
-  snprintf(query, 1024, "select * from film_rolls"); 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL); 
-                      
-  //Populate the tree  
-  d->store = _folder_tree (stmt); 
-  sqlite3_finalize(stmt); 
-  
-  /* set the UI */      
+  char query[1024];
+  sqlite3_stmt *stmt;
+  snprintf(query, 1024, "select * from film_rolls");
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+
+  //Populate the tree
+  d->store = _folder_tree (stmt);
+  sqlite3_finalize(stmt);
+
+  /* set the UI */
   d->gv_monitor = g_volume_monitor_get ();
 
 //  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-added", G_CALLBACK(mount_changed), self);
@@ -812,11 +815,11 @@ void gui_init(dt_lib_module_t *self)
 
   d->mounts = g_volume_monitor_get_mounts(d->gv_monitor);
   _draw_tree_gui(self);
-  
+
 }
 
 void gui_cleanup(dt_lib_module_t *self)
-{ 
+{
   // dt_lib_import_t *d = (dt_lib_import_t*)self->data;
 
   /* cleanup mem */
