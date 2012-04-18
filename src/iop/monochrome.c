@@ -36,8 +36,6 @@ DT_MODULE(1)
 #define DT_COLORCORRECTION_INSET 5
 #define DT_COLORCORRECTION_MAX 40.
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
-
 typedef struct dt_iop_monochrome_params_t
 {
   float a, b, size;
@@ -145,7 +143,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
+  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 0, sizeof(cl_mem), &dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 1, sizeof(cl_mem), &dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 2, sizeof(int), &width);

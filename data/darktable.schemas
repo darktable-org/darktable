@@ -183,6 +183,19 @@
       </locale>
     </schema>
 
+    <schema>
+      <key>/schemas/apps/darktable/opencl_size_roundup</key>
+      <applyto>/apps/darktable/opencl_size_roundup</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>16</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>round opencl work group sizes to a multiple of</short>
+        <long>in opencl processing round width/height of global work groups to a multiple of this value. reasonable values are powers of 2. this parameter can have high impact on opencl performance.</long>
+      </locale>
+    </schema>
+
     <schema><!--tab:gui-->
       <key>/schemas/apps/darktable/ask_before_remove</key>
       <applyto>/apps/darktable/ask_before_remove</applyto>

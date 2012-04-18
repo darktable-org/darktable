@@ -43,6 +43,15 @@
 #include <mach/mach.h>
 #include <sys/sysctl.h>
 #endif
+#if defined(__DragonFly__) || defined(__FreeBSD__)
+typedef	unsigned int	u_int;
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#endif
+#if defined(__NetBSD__) || defined(__OpenBSD__)
+#include <sys/param.h>
+#include <sys/sysctl.h>
+#endif
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -330,8 +339,16 @@ dt_get_total_memory()
   if(len > 0)
     free(line);
   return mem;
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) || \
+ defined(__DragonFly__) || \
+ defined(__FreeBSD__) || \
+ defined(__NetBSD__) || \
+ defined(__OpenBSD__)
+#if defined(__APPLE__)
   int mib[2] = { CTL_HW, HW_MEMSIZE };
+#else
+  int mib[2] = { CTL_HW, HW_PHYSMEM };
+#endif
   uint64_t physical_memory;
   size_t length = sizeof(uint64_t);
   sysctl(mib, 2, (void *)&physical_memory, &length, (void *)NULL, 0);

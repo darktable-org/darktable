@@ -35,7 +35,6 @@
 #define INSET 5
 #define INFL .3f
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 DT_MODULE(1)
 
@@ -552,7 +551,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const int width = roi_out->width;
   const int height = roi_out->height;
-  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
   size_t origin[] = { 0, 0, 0};
   size_t region[] = { width, height, 1};
 

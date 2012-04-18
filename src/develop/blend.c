@@ -20,7 +20,6 @@
 #include "blend.h"
 
 #define CLAMP_RANGE(x,y,z)      (CLAMP(x,y,z))
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 typedef void (_blend_row_func)(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag);
 
@@ -1492,7 +1491,7 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   const unsigned blendif = d->blendif;
 
 
-  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*4*DEVELOP_BLENDIF_MAX, d->blendif_parameters);
   if (dev_m == NULL) goto error;
 

@@ -28,8 +28,6 @@
 #include <stdlib.h>
 #include <xmmintrin.h>
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
-
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
 DT_MODULE(1)
@@ -127,7 +125,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   float max_L = 100.0f, max_C = 256.0f;
   float nL = 1.0f/(d->luma*max_L), nC = 1.0f/(d->chroma*max_C);
   nL *= nL; nC *= nC;
-  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 2, sizeof(int), (void *)&width);

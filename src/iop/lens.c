@@ -40,8 +40,6 @@
 #include "gui/draw.h"
 #include "iop/lens.h"
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
-
 
 DT_MODULE(2)
 
@@ -320,8 +318,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t origin[] = { 0, 0, 0};
   size_t iregion[] = { iwidth, iheight, 1};
   size_t oregion[] = { owidth, oheight, 1};
-  size_t isizes[] = { ROUNDUP(iwidth, 4), ROUNDUP(iheight, 4), 1};
-  size_t osizes[] = { ROUNDUP(owidth, 4), ROUNDUP(oheight, 4), 1};
+  size_t isizes[] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1};
+  size_t osizes[] = { ROUNDUPWD(owidth), ROUNDUPHT(oheight), 1};
 
   tmpbuf = (float *)dt_alloc_align(16, tmpbuflen);
   if(tmpbuf == NULL) goto error;

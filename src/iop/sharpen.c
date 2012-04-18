@@ -39,8 +39,6 @@ DT_MODULE(1)
 #define MAXR 12
 #define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
-
 typedef struct dt_iop_sharpen_params_t
 {
   float radius, amount, threshold;
@@ -172,7 +170,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   /* horizontal blur */
   sizes[0] = bwidth;
-  sizes[1] = ROUNDUP(height, 4);
+  sizes[1] = ROUNDUPHT(height);
   sizes[2] = 1;
   local[0] = blocksize;
   local[1] = 1;
@@ -189,7 +187,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
   /* vertical blur */
-  sizes[0] = ROUNDUP(width, 4);
+  sizes[0] = ROUNDUPWD(width);
   sizes[1] = bheight;
   sizes[2] = 1;
   local[0] = 1;
@@ -207,8 +205,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
   /* mixing out and in -> out */
-  sizes[0] = ROUNDUP(width, 4);
-  sizes[1] = ROUNDUP(height, 4);
+  sizes[0] = ROUNDUPWD(width);
+  sizes[1] = ROUNDUPHT(height);
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 1, sizeof(cl_mem), (void *)&dev_out);

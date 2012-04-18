@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "common/colorspaces.h"
+#include "common/opencl.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -36,7 +37,6 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-
 
 DT_MODULE(1)
 
@@ -68,6 +68,13 @@ typedef struct dt_iop_colorize_data_t
 }
 dt_iop_colorize_data_t;
 
+typedef struct dt_iop_colorize_global_data_t
+{
+  int kernel_colorize;
+}
+dt_iop_colorize_global_data_t;
+
+
 const char *name()
 {
   return _("colorize");
@@ -75,7 +82,7 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 int
@@ -143,6 +150,72 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
   }
 }
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_colorize_data_t *data = (dt_iop_colorize_data_t *)piece->data;
+  dt_iop_colorize_global_data_t *gd = (dt_iop_colorize_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  /* create Lab */
+  float rgb[3]={0}, XYZ[3]={0}, Lab[3]={0};
+  hsl2rgb(rgb,data->hue, data->saturation, data->lightness/100.0);
+
+  XYZ[0] = (rgb[0] * 0.5767309) + (rgb[1] * 0.1855540) + (rgb[2] * 0.1881852);
+  XYZ[1] = (rgb[0] * 0.2973769) + (rgb[1] * 0.6273491) + (rgb[2] * 0.0752741);
+  XYZ[2] = (rgb[0] * 0.0270343) + (rgb[1] * 0.0706872) + (rgb[2] * 0.9911085);
+  
+  dt_XYZ_to_Lab(XYZ,Lab);
+
+
+  /* a/b components */
+  const float L = Lab[0];
+  const float a = Lab[1];
+  const float b = Lab[2];
+  const float mix = data->source_lightness_mix/100.0f;
+
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 4, sizeof(float), (void *)&mix);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 5, sizeof(float), (void *)&L);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 6, sizeof(float), (void *)&a);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 7, sizeof(float), (void *)&b);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorize, sizes);
+  if(err != CL_SUCCESS) goto error;
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorize] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 8; // extended.cl, from programs.conf
+  dt_iop_colorize_global_data_t *gd = (dt_iop_colorize_global_data_t *)malloc(sizeof(dt_iop_colorize_global_data_t));
+  module->data = gd;
+  gd->kernel_colorize = dt_opencl_create_kernel(program, "colorize");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_colorize_global_data_t *gd = (dt_iop_colorize_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_colorize);
+  free(module->data);
+  module->data = NULL;
+}
+
 
 static void
 lightness_callback (GtkDarktableSlider *slider, gpointer user_data)

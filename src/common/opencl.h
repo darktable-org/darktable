@@ -40,6 +40,10 @@
 #include <CL/cl.h>
 // #pragma GCC diagnostic
 
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+#define ROUNDUPWD(a)            dt_opencl_roundup(a)
+#define ROUNDUPHT(a)            dt_opencl_roundup(a)
+
 
 /**
  * Accounting information used for OpenCL events.
@@ -199,6 +203,9 @@ void dt_opencl_release_mem_object(void *mem);
 
 /** check if image size fit into limits given by OpenCL runtime */
 int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp, const float factor, const size_t overhead);
+
+/** round size to a multiple of the value given in config parameter opencl_size_roundup */
+int dt_opencl_roundup(int size);
 
 /** get global memory of device */
 cl_ulong dt_opencl_get_max_global_mem(const int devid);

@@ -10,7 +10,6 @@ FILE(GLOB SOURCE_FILES
   "common/cache.c"
   "common/collection.c" 
   "common/colorlabels.c" 
-  "common/colormatrices.c" 
   "common/colorspaces.c" 
   "common/curve_tools.c"
   "common/darktable.c" 
@@ -237,10 +236,11 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -fno-strict-aliasing")
 # c++ code doesn't like -Werror (libraw)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fno-strict-aliasing")
 
-if(NOT APPLE)
+if(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
   # apple build fails on deprecated warnings..
+  # and too many warnings reported by Clang for now
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
-endif(NOT APPLE)
+endif(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
 
 if(NOT WIN32)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
@@ -264,13 +264,18 @@ else()
  	set(MARCH "-mtune=generic")
 endif()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -mfpmath=sse -g")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -g")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations ${MARCH}")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g -D_DEBUG")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -mfpmath=sse -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -g")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations ${MARCH}")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -D_DEBUG")
-  
+if(CMAKE_COMPILER_IS_GNUCC)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
+endif()
+if(CMAKE_COMPILER_IS_GNUCXX)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
+endif()
 
 #
 # Generate config.h

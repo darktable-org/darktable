@@ -58,6 +58,19 @@ if(APPLE)
         endif()
 endif(APPLE)
 
+if(CMAKE_COMPILER_IS_GNUCC)
+	EXEC_PROGRAM(${CMAKE_CXX_COMPILER}
+                     ARGS --version
+		     OUTPUT_VARIABLE _GCC_COMPILER_VERSION
+        )
+	STRING(REGEX REPLACE ".* ([0-9])\\.([0-9])\\.[0-9] .*" "\\1\\2" _GCC_COMPILER_VERSION ${_GCC_COMPILER_VERSION})
+	if(_GCC_COMPILER_VERSION VERSION_LESS 43)
+		message("-- Disable OpenMP with GCC 4.2 and older")
+		set(USE_OPENMP OFF)
+	endif(_GCC_COMPILER_VERSION VERSION_LESS 43)
+	set(_GCC_COMPILER_VERSION)
+endif(CMAKE_COMPILER_IS_GNUCC)
+
 if(WIN32)
  message("-- Win32 build detected, setting default features")
   set(USE_CAMERA_SUPPORT OFF)
@@ -193,6 +206,7 @@ set(THEME_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/icons/${THEME})
 # we need some specific functions:
 IF(CMAKE_SYSTEM MATCHES "SunOS.*")
 add_definitions("-D_XOPEN_SOURCE=600")
+elseif(CMAKE_SYSTEM_NAME MATCHES "^(DragonFly|FreeBSD|NetBSD|OpenBSD)$")
 else(CMAKE_SYSTEM MATCHES "SunOS.*")
 add_definitions("-D_XOPEN_SOURCE=700")
 endif(CMAKE_SYSTEM MATCHES "SunOS.*")

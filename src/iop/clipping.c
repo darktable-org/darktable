@@ -44,8 +44,6 @@
 #include <gdk/gdkkeysyms.h>
 #include <assert.h>
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
-
 DT_MODULE(3)
 
 // number of gui ratios in combo box
@@ -486,7 +484,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     float k[2]  = { d->k_h, d->k_v };
     float m[4]  = { d->m[0], d->m[1], d->m[2], d->m[3] };
 
-    size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
+    size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
     dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 0, sizeof(cl_mem), &dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 1, sizeof(cl_mem), &dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 2, sizeof(int), &width);
