@@ -319,4 +319,26 @@ colorcontrast (read_only image2d_t in, write_only image2d_t out, const int width
 }
 
 
+__kernel void
+vibrance (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const float amount)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  const float sw = sqrt(pixel.y*pixel.y + pixel.z*pixel.z)/256.0f;
+  const float ls = 1.0f - amount * sw * 0.25f;
+  const float ss = 1.0f + amount * sw;
+
+  pixel.x *= ls;
+  pixel.y *= ss;
+  pixel.z *= ss;
+
+  write_imagef (out, (int2)(x, y), pixel); 
+}
+
+
 
