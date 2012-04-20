@@ -32,8 +32,6 @@
 #define DT_GUI_CURVE_EDITOR_INSET 5
 #define DT_GUI_CURVE_INFL .3f
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
-
 DT_MODULE(3)
 
 const char *name()
@@ -90,7 +88,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int height = roi_in->height;
   const int autoscale_ab = d->autoscale_ab;
 
-  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
   dev_L = dt_opencl_copy_host_to_device(devid, d->table[ch_L], 256, 256, sizeof(float));
   dev_a = dt_opencl_copy_host_to_device(devid, d->table[ch_a], 256, 256, sizeof(float));
   dev_b = dt_opencl_copy_host_to_device(devid, d->table[ch_b], 256, 256, sizeof(float));

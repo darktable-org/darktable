@@ -68,6 +68,7 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("database_cache_quality", 89);
 
   dt_conf_set_bool ("ui_last/fullscreen", FALSE);
+  dt_conf_set_bool ("ui_last/maximized", FALSE);
   dt_conf_set_int  ("ui_last/view", DT_MODE_NONE);
 
   dt_conf_set_int  ("ui_last/window_x",      0);
@@ -171,7 +172,13 @@ int dt_control_load_config(dt_control_t *c)
   gtk_window_resize(GTK_WINDOW(widget), width, height);
   int fullscreen = dt_conf_get_bool("ui_last/fullscreen");
   if(fullscreen) gtk_window_fullscreen  (GTK_WINDOW(widget));
-  else           gtk_window_unfullscreen(GTK_WINDOW(widget));
+  else
+  {
+    gtk_window_unfullscreen(GTK_WINDOW(widget));
+    int maximized  = dt_conf_get_bool("ui_last/maximized");
+    if(maximized) gtk_window_maximize(GTK_WINDOW(widget));
+    else          gtk_window_unmaximize(GTK_WINDOW(widget));
+  }
   return 0;
 }
 
@@ -184,6 +191,7 @@ int dt_control_write_config(dt_control_t *c)
   dt_conf_set_int ("ui_last/window_y",  y);
   dt_conf_set_int ("ui_last/window_w",  widget->allocation.width);
   dt_conf_set_int ("ui_last/window_h",  widget->allocation.height);
+  dt_conf_set_bool("ui_last/maximized", (gdk_window_get_state(widget->window) & GDK_WINDOW_STATE_MAXIMIZED));
 
   sqlite3_stmt *stmt;
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
@@ -1439,3 +1447,5 @@ void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, con
   if (s->proxy.backgroundjobs.module)
     s->proxy.backgroundjobs.set_cancellable(s->proxy.backgroundjobs.module, key, job);
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

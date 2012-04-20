@@ -21,9 +21,11 @@
 #endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "common/debug.h"
+#include "common/opencl.h"
 #include "dtgtk/label.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
@@ -134,6 +136,12 @@ typedef struct dt_iop_clipping_data_t
 }
 dt_iop_clipping_data_t;
 
+typedef struct dt_iop_clipping_global_data_t
+{
+  int kernel_clip_rotate;
+}
+dt_iop_clipping_global_data_t;
+
 static void commit_box(dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g,
                         dt_iop_clipping_params_t *p);
 
@@ -166,6 +174,11 @@ int
 groups ()
 {
   return IOP_GROUP_BASIC;
+}
+
+int flags()
+{
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI;
 }
 
 int
@@ -269,9 +282,13 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
       }
     }
   }
+
   // sanity check.
+  if(roi_out->x < 0) roi_out->x = 0;
+  if(roi_out->y < 0) roi_out->y = 0;
   if(roi_out->width  < 1) roi_out->width  = 1;
   if(roi_out->height < 1) roi_out->height = 1;
+
   // save rotation crop on output buffer in world scale:
   d->cix = roi_out->x;
   d->ciy = roi_out->y;
@@ -344,6 +361,12 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     roi_in->width  = roi_out->width;
     roi_in->height = roi_out->height;
   }
+
+  // sanity check.
+  roi_in->x = CLAMP(roi_in->x, 0, piece->iwidth);
+  roi_in->y = CLAMP(roi_in->y, 0, piece->iheight);
+  roi_in->width = CLAMP(roi_in->width, 1, piece->iwidth - roi_in->x);
+  roi_in->height = CLAMP(roi_in->height, 1, piece->iheight - roi_in->y);
 }
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above),
@@ -429,6 +452,98 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
 }
 
+
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
+  dt_iop_clipping_global_data_t *gd = (dt_iop_clipping_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  // only crop, no rot fast and sharp path:
+  if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
+  {
+    size_t origin[] = {0, 0, 0};
+    size_t region[] = {width, height, 1};
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    if(err != CL_SUCCESS) goto error;
+  }
+  else
+  {
+    int roi[2]  = { roi_in->x, roi_in->y };
+    int roo[2]  = { roi_out->x, roi_out->y };
+    float ci[2] = { d->cix, d->ciy };
+    float t[2]  = { d->tx, d->ty };
+    float k[2]  = { d->k_h, d->k_v };
+    float m[4]  = { d->m[0], d->m[1], d->m[2], d->m[3] };
+
+    size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 0, sizeof(cl_mem), &dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 1, sizeof(cl_mem), &dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 2, sizeof(int), &width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 3, sizeof(int), &height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 4, sizeof(int), &roi_in->width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 5, sizeof(int), &roi_in->height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 6, 2*sizeof(int), &roi);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 7, 2*sizeof(int), &roo);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 8, sizeof(float), &roi_in->scale);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 9, sizeof(float), &roi_out->scale);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 10, sizeof(int), &d->flip);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 11, 2*sizeof(float), &ci);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 12, 2*sizeof(float), &t);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 13, 2*sizeof(float), &k);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate, 14, 4*sizeof(float), &m);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_clip_rotate, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_clipping] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
+{
+  float ioratio = (float)roi_out->width*roi_out->height/((float)roi_in->width*roi_in->height);
+
+  tiling->factor = 1.0f + ioratio; // in + out, no temp
+  tiling->maxbuf = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = 0;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+  return;
+}
+
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 2; // basic.cl from programs.conf
+  dt_iop_clipping_global_data_t *gd = (dt_iop_clipping_global_data_t *)malloc(sizeof(dt_iop_clipping_global_data_t));
+  module->data = gd;
+  gd->kernel_clip_rotate = dt_opencl_create_kernel(program, "clip_rotate");
+}
+
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_clipping_global_data_t *gd = (dt_iop_clipping_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_clip_rotate);
+  free(module->data);
+  module->data = NULL;
+}
+
+
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)p1;
@@ -488,6 +603,7 @@ void gui_focus (struct dt_iop_module_t *self, gboolean in)
     }
   }
 }
+
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {

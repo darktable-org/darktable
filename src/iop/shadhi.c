@@ -40,7 +40,6 @@
 #define CLAMP_RANGE(x,y,z) (CLAMP(x,y,z))
 
 #define BLOCKSIZE 64		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 DT_MODULE(1)
 
@@ -488,10 +487,14 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
   size_t workgroupsize = 0;          // the maximum number of items in a work group
   unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
-  
+  size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
+   
   // make sure blocksize is not too large
   size_t blocksize = BLOCKSIZE;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS)
+  int blockwd;
+  int blockht;
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
+     dt_opencl_get_kernel_work_group_size(devid, gd->kernel_gaussian_transpose, &kernelworkgroupsize) == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
     while(blocksize > maxsizes[0] || blocksize > maxsizes[1] 
@@ -500,15 +503,20 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       if(blocksize == 1) break;
       blocksize >>= 1;    
     }
+
+    blockwd = blockht = blocksize;
+
+    if(blockwd * blockht > kernelworkgroupsize)
+      blockht = kernelworkgroupsize / blockwd;
   }
   else
   {
-    blocksize = 1;   // slow but safe
+    blockwd = blockht = 1;   // slow but safe
   }
 
   // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
-  const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1)*blocksize;
-  const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1)*blocksize;
+  const size_t bwidth = width % blockwd == 0 ? width : (width / blockwd + 1)*blockwd;
+  const size_t bheight = height % blockht == 0 ? height : (height / blockht + 1)*blockht;
 
   const float radius = fmax(0.1f, d->radius);
   const float sigma = radius * roi_in->scale / piece ->iscale;
@@ -519,7 +527,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t origin[] = {0, 0, 0};
   size_t region[] = {width, height, 1};
 
-  size_t local[] = {blocksize, blocksize, 1};
+  size_t local[] = {blockwd, blockht, 1};
 
   size_t sizes[3];
 
@@ -542,7 +550,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
   // first blur step: column by column with dev_temp1 -> dev_temp2
-  sizes[0] = ROUNDUP(width, 4);
+  sizes[0] = ROUNDUPWD(width);
   sizes[1] = 1;
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
@@ -575,7 +583,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
 
   // second blur step: column by column of transposed image with dev_temp1 -> dev_temp2 (!! height <-> width !!)
-  sizes[0] = ROUNDUP(height, 4);
+  sizes[0] = ROUNDUPWD(height);
   sizes[1] = 1;
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
@@ -613,8 +621,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
   // final mixing step with dev_temp1 as mask: dev_temp2 -> dev_temp2
-  sizes[0] = ROUNDUP(width, 4);
-  sizes[1] = ROUNDUP(height, 4);
+  sizes[0] = ROUNDUPWD(width);
+  sizes[1] = ROUNDUPHT(height);
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 0, sizeof(cl_mem), (void *)&dev_temp2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 1, sizeof(cl_mem), (void *)&dev_temp1);
@@ -649,7 +657,8 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   const float radius = fmax(0.1f, d->radius);
   const float sigma = radius * roi_in->scale / piece ->iscale;
 
-  tiling->factor = 4; // in + out + 2*temp
+  tiling->factor = 4.0f; // in + out + 2*temp
+  tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 4*sigma;
   tiling->xalign = 1;

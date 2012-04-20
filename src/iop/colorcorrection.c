@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "common/colorspaces.h"
+#include "common/opencl.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
@@ -61,6 +62,11 @@ typedef struct dt_iop_colorcorrection_data_t
 }
 dt_iop_colorcorrection_data_t;
 
+typedef struct dt_iop_colorcorrection_global_data_t
+{
+  int kernel_colorcorrection;
+}
+dt_iop_colorcorrection_global_data_t;
 
 const char *name()
 {
@@ -69,7 +75,7 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES|IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 int
@@ -105,6 +111,59 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     in += ch;
   }
 }
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_colorcorrection_data_t *d = (dt_iop_colorcorrection_data_t *)piece->data;
+  dt_iop_colorcorrection_global_data_t *gd = (dt_iop_colorcorrection_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 0, sizeof(cl_mem), &dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 1, sizeof(cl_mem), &dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 2, sizeof(int), &width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 3, sizeof(int), &height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 4, sizeof(float), &d->saturation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 5, sizeof(float), &d->a_scale);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 6, sizeof(float), &d->a_base);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 7, sizeof(float), &d->b_scale);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 8, sizeof(float), &d->b_base);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorcorrection, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorcorrection] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 2; // basic.cl from programs.conf
+  dt_iop_colorcorrection_global_data_t *gd = (dt_iop_colorcorrection_global_data_t *)malloc(sizeof(dt_iop_colorcorrection_global_data_t));
+  module->data = gd;
+  gd->kernel_colorcorrection = dt_opencl_create_kernel(program, "colorcorrection");
+}
+
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_colorcorrection_global_data_t *gd = (dt_iop_colorcorrection_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_colorcorrection);
+  free(module->data);
+  module->data = NULL;
+}
+
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
