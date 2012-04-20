@@ -639,13 +639,10 @@ static void _lib_folders_update_collection(const gchar *filmroll)
 
   complete_query = dt_util_dstrcat(complete_query, "film_id in (select id from film_rolls where folder like '%s%s')", filmroll, "%");
 
-  dt_collection_set_extended_where(darktable.collection, complete_query);
+  dt_conf_set_string("plugins/lighttable/where_ext_query", complete_query);
+  dt_conf_set_bool("plugins/lighttable/alt_query", 1);
 
-  dt_collection_set_query_flags(darktable.collection, (dt_collection_get_query_flags (darktable.collection) | COLLECTION_QUERY_USE_WHERE_EXT));
-
-  dt_collection_set_filter_flags (darktable.collection, (dt_collection_get_filter_flags (darktable.collection) & ~COLLECTION_FILTER_FILM_ID));
-
-  dt_collection_update(darktable.collection);
+  dt_collection_update_query(darktable.collection);
 
   g_free(complete_query);
 

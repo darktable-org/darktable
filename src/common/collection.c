@@ -503,37 +503,51 @@ get_query_string(const int property, const gchar *escaped_text, char *query)
 void
 dt_collection_update_query(const dt_collection_t *collection)
 {
-  char query[1024], confname[200];
   gchar *complete_query = NULL;
+  const gboolean alt_query = dt_conf_get_bool("plugins/lighttable/alt_query");
 
-  const int num_rules = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules"), 1, 10);
-  char *conj[] = {"and", "or", "and not"};
-  
-  complete_query = dt_util_dstrcat(complete_query, "(");
-
-  for(int i=0; i<num_rules; i++)
+  if(!alt_query)
   {
-    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
-    const int property = dt_conf_get_int(confname);
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
-    gchar *text = dt_conf_get_string(confname);
-    if(!text) break;
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i);
-    const int mode = dt_conf_get_int(confname);
+    char query[1024], confname[200];
+
+    const int num_rules = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules"), 1, 10);
+    char *conj[] = {"and", "or", "and not"};
+
+    complete_query = dt_util_dstrcat(complete_query, "(");
+
+    for(int i=0; i<num_rules; i++)
+    {
+      snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
+      const int property = dt_conf_get_int(confname);
+      snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
+      gchar *text = dt_conf_get_string(confname);
+      if(!text) break;
+      snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i);
+      const int mode = dt_conf_get_int(confname);
+      gchar *escaped_text = dt_util_str_replace(text, "'", "''");
+
+      get_query_string(property, escaped_text, query);
+
+      if(i > 0)
+        complete_query = dt_util_dstrcat(complete_query, " %s %s", conj[mode], query);
+      else
+        complete_query = dt_util_dstrcat(complete_query, "%s", query);
+
+      g_free(escaped_text);
+      g_free(text);
+    }
+
+    complete_query = dt_util_dstrcat(complete_query, ")");
+  }
+  else
+  {
+    gchar *text = dt_conf_get_string("plugins/lighttable/where_ext_query");
     gchar *escaped_text = dt_util_str_replace(text, "'", "''");
 
-    get_query_string(property, escaped_text, query);
-
-    if(i > 0) 
-      complete_query = dt_util_dstrcat(complete_query, " %s %s", conj[mode], query);
-    else 
-      complete_query = dt_util_dstrcat(complete_query, "%s", query);
-
+    complete_query = dt_util_dstrcat(complete_query, "%s", escaped_text);
     g_free(escaped_text);
     g_free(text);
   }
-
-  complete_query = dt_util_dstrcat(complete_query, ")");
 
   // printf("complete query: `%s'\n", complete_query);
 
