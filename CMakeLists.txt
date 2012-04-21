@@ -18,6 +18,7 @@ option(INSTALL_IOP_EXPERIMENTAL "Also install unstable, unfinished, broken, and 
 option(INSTALL_IOP_LEGACY "Also install old plugins we want to get rid of." OFF)
 option(BINARY_PACKAGE_BUILD "Sets march optimization to generic" OFF)
 option(APRIL_FOOLS "Add the \"file manager\" (a shell) to lighttable mode" OFF)
+option(GTK3_MIGRATION_CHECKS "Help getting darktable ready for GTK3" OFF)
 
 # Generate multi arch triplet
 EXECUTE_PROCESS(COMMAND dpkg-architecture -qDEB_HOST_MULTIARCH OUTPUT_VARIABLE CMAKE_ARCH_TRIPLET OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -166,6 +167,13 @@ if(USE_OPENCL)
 else()
 	SET(HAVE_OPENCL 0)
 endif(USE_OPENCL)
+
+# See http://developer.gnome.org/gtk3/3.0/gtk-migrating-2-to-3.html
+if(GTK3_MIGRATION_CHECKS)
+	message("-- Add defines to help GTK3 migration")
+	set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-DGTK_DISABLE_SINGLE_INCLUDES -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGSEAL_ENABLE")
+	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-DGTK_DISABLE_SINGLE_INCLUDES -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGSEAL_ENABLE")
+endif(GTK3_MIGRATION_CHECKS)
 
 #
 # Test SSE level
