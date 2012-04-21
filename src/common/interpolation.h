@@ -151,5 +151,20 @@ dt_interpolation_compute(const float* in, const float x, const float y, enum dt_
   return  s/(normh*normv);
 }
 
+static inline enum dt_interpolation
+dt_interpolation_get_type()
+{
+  enum dt_interpolation itype = DT_INTERPOLATION_BILINEAR;
+  gchar* uipref = dt_conf_get_string("plugins/lighttable/export/pixel_interpolator");
+  for (int i=0; uipref && i<DT_INTERPOLATOR_MAX; i++) {
+    if (!strcmp(uipref, dt_interpolator[i].name)) {
+      itype = dt_interpolator[i].id;
+      break;
+    }
+  }
+  g_free(uipref);
+  return itype;
+}
+
 #endif /* INTERPOLATION_H */
 

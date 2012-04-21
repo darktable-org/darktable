@@ -47,9 +47,6 @@
 
 DT_MODULE(3)
 
-// XXX: add user preference
-static const int dt_interpolation_filter = DT_INTERPOLATION_BILINEAR;
-
 // number of gui ratios in combo box
 #define NUM_RATIOS 10
 
@@ -402,7 +399,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   else
   {
-    const struct dt_interpolation_desc* interpolation = &dt_interpolator[dt_interpolation_filter];
+    enum dt_interpolation itype = dt_interpolation_get_type();
+    const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
 
 #ifdef _OPENMP
     #pragma omp parallel for schedule(static) default(none) shared(d,ivoid,ovoid,roi_in,roi_out)
@@ -445,7 +443,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         {
           const float *in = ((float *)ivoid) + ch*(roi_in->width*jj+ii);
           for(int c=0; c<3; c++,in++)
-            out[c] = dt_interpolation_compute(in, po[0], po[1], dt_interpolation_filter, ch, ch_width);
+            out[c] = dt_interpolation_compute(in, po[0], po[1], itype, ch, ch_width);
         }
         else for(int c=0; c<3; c++) out[c] = 0.0f;
       }

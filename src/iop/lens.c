@@ -44,9 +44,6 @@
 
 DT_MODULE(2)
 
-// XXX: add user preference
-static const int dt_interpolation_filter = DT_INTERPOLATION_BILINEAR;
-
 const char*
 name()
 {
@@ -148,7 +145,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
 
-      const struct dt_interpolation_desc* interpolation = &dt_interpolator[dt_interpolation_filter];
+      enum dt_interpolation itype = dt_interpolation_get_type();
+      const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
 
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(roi_out, roi_in, in, d, ovoid, modifier) schedule(static)
@@ -169,7 +167,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
             if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
             {
               const float *inp = in + ch*(roi_in->width*jj+ii) + c;
-              buf[c] = dt_interpolation_compute(inp, pi0, pi1, dt_interpolation_filter, ch, ch_width);
+              buf[c] = dt_interpolation_compute(inp, pi0, pi1, itype, ch, ch_width);
             }
             else buf[c] = 0.0f;
           }
@@ -240,7 +238,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
 
-      const struct dt_interpolation_desc* interpolation = &dt_interpolator[dt_interpolation_filter];
+      enum dt_interpolation itype = dt_interpolation_get_type();
+      const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
 
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(roi_in, roi_out, d, ovoid, modifier) schedule(static)
@@ -261,7 +260,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
             if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
             {
               const float *inp = d->tmpbuf + ch*(roi_in->width*jj+ii)+c;
-              out[c] = dt_interpolation_compute(inp, pi0, pi1, dt_interpolation_filter, ch, ch_width);
+              out[c] = dt_interpolation_compute(inp, pi0, pi1, itype, ch, ch_width);
             }
             else out[c] = 0.0f;
           }
@@ -578,7 +577,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
       }
     }
 
-    const struct dt_interpolation_desc* interpolation = &dt_interpolator[dt_interpolation_filter];
+    enum dt_interpolation itype = dt_interpolation_get_type();
+    const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
 
     roi_in->x = fmaxf(0.0f, xm-interpolation->width);
     roi_in->y = fmaxf(0.0f, ym-interpolation->width);
