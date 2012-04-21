@@ -178,7 +178,7 @@ _write_buffer(const uint32_t key, const void *data, void *user_data)
     if(written != 1) return 1;
     written = fwrite(&dsc->height, sizeof(int32_t), 1, d->f);
     if(written != 1) return 1;
-    written = fwrite(d->blob, sizeof(uint8_t), length, d->f);
+    written = fwrite(dsc+1, sizeof(uint8_t), length, d->f);
     if(written != length) return 1;
   }
   else
@@ -413,6 +413,7 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
         if(rd != 1) goto read_error;
         dsc->width = wd;
         dsc->height = ht;
+        if(length != compressed_buffer_size(cache->compression_type, wd, ht)) goto read_error;
         // directly read from disk into cache:
         rd = fread(data + sizeof(*dsc), 1, length, f);
         if(rd != length) goto read_error;
