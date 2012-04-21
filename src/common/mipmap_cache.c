@@ -580,8 +580,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   dead_image_f((dt_mipmap_buffer_t *)(dsc+1));
 
 
-  cache->compression_type = 0;
-  // CLAMPS(dt_conf_get_int("cache_compression"), 0, 2);
+  cache->compression_type = CLAMPS(dt_conf_get_int("cache_compression"), 0, 2);
   dt_print(DT_DEBUG_CACHE, "[mipmap_cache_init] using %s\n", cache->compression_type == 0 ? "no compression" :
       (cache->compression_type == 1 ? "low quality compression" : "slow high quality compression"));
 
@@ -815,6 +814,7 @@ dt_mipmap_cache_read_get(
         else
         {
           // 8-bit thumbs, possibly need to be compressed:
+          // TODO: alloc that once per thread?
           uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(cache);
           if(scratchmem)
           {
@@ -825,6 +825,7 @@ dt_mipmap_cache_read_get(
             buf->size   = mip;
             buf->buf = (uint8_t *)(dsc+1);
             dt_mipmap_cache_compress(buf, scratchmem);
+            free(scratchmem);
           }
           else
           {
