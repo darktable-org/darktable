@@ -32,6 +32,7 @@
 #include "develop/imageop.h"
 #include "develop/tiling.h"
 #include "common/opencl.h"
+#include "common/interpolation.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
 #include "dtgtk/resetlabel.h"
@@ -39,11 +40,11 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "iop/lens.h"
-#include "common/interpolation.h"
 
 
 DT_MODULE(2)
 
+static const int dt_lanczos_filterwidth = 2;
 
 const char*
 name()
@@ -161,11 +162,10 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
           {
             const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
             const int ii = (int)pi0, jj = (int)pi1;
-            static const int filterwidth = 2;
-            if(ii >= (filterwidth-1) && jj >= (filterwidth-1) && ii < roi_in->width-filterwidth && jj < roi_in->height-filterwidth)
+            if(ii >= (dt_lanczos_filterwidth-1) && jj >= (dt_lanczos_filterwidth-1) && ii < roi_in->width-dt_lanczos_filterwidth && jj < roi_in->height-dt_lanczos_filterwidth)
             {
               const float *inp = in + ch*(roi_in->width*jj+ii) + c;
-              buf[c] = dt_lanczos_apply(inp, pi0, pi1, filterwidth, ch, ch_width);
+              buf[c] = dt_lanczos_apply(inp, pi0, pi1, dt_lanczos_filterwidth, ch, ch_width);
             }
             else buf[c] = 0.0f;
           }
@@ -251,11 +251,10 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
           {
             const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
             const int ii = (int)pi0, jj = (int)pi1;
-            static const int filterwidth = 2;
-            if(ii >= (filterwidth-1) && jj >= (filterwidth-1) && ii < roi_in->width-filterwidth && jj < roi_in->height-filterwidth)
+            if(ii >= (dt_lanczos_filterwidth-1) && jj >= (dt_lanczos_filterwidth-1) && ii < roi_in->width-dt_lanczos_filterwidth && jj < roi_in->height-dt_lanczos_filterwidth)
             {
               const float *inp = d->tmpbuf + ch*(roi_in->width*jj+ii)+c;
-              out[c] = dt_lanczos_apply(inp, pi0, pi1, filterwidth, ch, ch_width);
+              out[c] = dt_lanczos_apply(inp, pi0, pi1, dt_lanczos_filterwidth, ch, ch_width);
             }
             else out[c] = 0.0f;
           }
@@ -571,10 +570,10 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
         }
       }
     }
-    roi_in->x = fmaxf(0.0f, xm);
-    roi_in->y = fmaxf(0.0f, ym);
-    roi_in->width = fminf(orig_w-roi_in->x, xM - roi_in->x + 10);
-    roi_in->height = fminf(orig_h-roi_in->y, yM - roi_in->y + 10);
+    roi_in->x = fmaxf(0.0f, xm-dt_lanczos_filterwidth);
+    roi_in->y = fmaxf(0.0f, ym-dt_lanczos_filterwidth);
+    roi_in->width = fminf(orig_w-roi_in->x, xM - roi_in->x + dt_lanczos_filterwidth);
+    roi_in->height = fminf(orig_h-roi_in->y, yM - roi_in->y + dt_lanczos_filterwidth);
   }
   lf_modifier_destroy(modifier);
 }

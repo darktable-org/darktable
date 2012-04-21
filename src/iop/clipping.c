@@ -47,6 +47,8 @@
 
 DT_MODULE(3)
 
+static const int dt_lanczos_filterwidth = 2;
+
 // number of gui ratios in combo box
 #define NUM_RATIOS 10
 
@@ -436,12 +438,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         po[1] -= roi_in->y;
 
         const int ii = (int)po[0], jj = (int)po[1];
-        const int filterwidth = 2;
-        if(ii >= (filterwidth-1) && jj >= (filterwidth-1) && ii < roi_in->width-filterwidth && jj < roi_in->height-filterwidth)
+        if(ii >= (dt_lanczos_filterwidth-1) && jj >= (dt_lanczos_filterwidth-1) && ii < roi_in->width-dt_lanczos_filterwidth && jj < roi_in->height-dt_lanczos_filterwidth)
         {
           const float *in = ((float *)ivoid) + ch*(roi_in->width*jj+ii);
           for(int c=0; c<3; c++,in++)
-            out[c] = dt_lanczos_apply(in, po[0], po[1], filterwidth, ch, ch_width);
+            out[c] = dt_lanczos_apply(in, po[0], po[1], dt_lanczos_filterwidth, ch, ch_width);
         }
         else for(int c=0; c<3; c++) out[c] = 0.0f;
       }
