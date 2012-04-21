@@ -45,6 +45,7 @@ foreach my $author (keys %commit_description) {
 			}
 		}
 	}
+	next if not @commit_list;
 	$filtered_commits{$author}=[@commit_list];
 }
 
