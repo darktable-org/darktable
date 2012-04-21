@@ -47,7 +47,8 @@
 
 DT_MODULE(3)
 
-static const int dt_lanczos_filterwidth = 2;
+// XXX: add user preference
+static const int dt_interpolation_filter = DT_INTERPOLATION_BILINEAR;
 
 // number of gui ratios in combo box
 #define NUM_RATIOS 10
@@ -401,6 +402,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   else
   {
+    const struct dt_interpolation_desc* interpolation = &dt_interpolator[dt_interpolation_filter];
+
 #ifdef _OPENMP
     #pragma omp parallel for schedule(static) default(none) shared(d,ivoid,ovoid,roi_in,roi_out)
 #endif
@@ -438,11 +441,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         po[1] -= roi_in->y;
 
         const int ii = (int)po[0], jj = (int)po[1];
-        if(ii >= (dt_lanczos_filterwidth-1) && jj >= (dt_lanczos_filterwidth-1) && ii < roi_in->width-dt_lanczos_filterwidth && jj < roi_in->height-dt_lanczos_filterwidth)
+        if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
         {
           const float *in = ((float *)ivoid) + ch*(roi_in->width*jj+ii);
           for(int c=0; c<3; c++,in++)
-            out[c] = dt_lanczos_apply(in, po[0], po[1], dt_lanczos_filterwidth, ch, ch_width);
+            out[c] = dt_interpolation_compute(in, po[0], po[1], dt_interpolation_filter, ch, ch_width);
         }
         else for(int c=0; c<3; c++) out[c] = 0.0f;
       }
