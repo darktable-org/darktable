@@ -30,6 +30,9 @@
 
 DT_MODULE(1)
 
+static gboolean _lib_tagging_tag_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval, GdkModifierType modifier, dt_lib_module_t *self);
+
+
 typedef struct dt_lib_tagging_t
 {
   char keyword[1024];
@@ -38,6 +41,7 @@ typedef struct dt_lib_tagging_t
   int imgsel;
 
   GtkWidget *attach_button, *detach_button, *new_button, *delete_button;
+  GtkWidget *edit_popup;
 }
 dt_lib_tagging_t;
 
@@ -71,6 +75,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "detach"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "new"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "delete"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "tag"), GDK_t, GDK_CONTROL_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -81,6 +86,7 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "detach", d->detach_button);
   dt_accel_connect_button_lib(self, "new", d->new_button);
   dt_accel_connect_button_lib(self, "delete", d->delete_button);
+  dt_accel_connect_lib(self, "tag", g_cclosure_new(G_CALLBACK(_lib_tagging_tag_callback), self, NULL));
 }
 
 static void
@@ -491,3 +497,88 @@ gui_cleanup (dt_lib_module_t *self)
   free(self->data);
   self->data = NULL;
 }
+
+// http://stackoverflow.com/questions/4631388/transparent-floating-gtkentry which references code from a GPLv3 application (Inform 7)
+static gboolean
+_lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t*)self->data;
+  switch(event->keyval) {
+    case GDK_Escape:
+      gtk_widget_destroy(d->edit_popup);
+      return TRUE;
+    case GDK_Return:
+    case GDK_KP_Enter: {
+      /* here, do whatever you need to do when finished editing */
+      const gchar *tag = gtk_entry_get_text(GTK_ENTRY(entry));
+      /* create new tag */
+      guint tid=0;
+      dt_tag_new(tag, &tid);
+      /* get id of the image under the cursor */
+      int32_t mouse_over_id = 0;
+      DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+      if(mouse_over_id > 0)
+      {
+        /* attach tag to selected images  */
+        dt_tag_attach(tid, mouse_over_id);
+        update(self, 1);
+        update(self, 0);
+      }
+      gtk_widget_destroy(d->edit_popup);
+      return TRUE;
+    }
+  }
+  return FALSE; /* event not handled */
+}
+
+// FIXME: add a better way to determine the position of the floating entry box!
+static gboolean
+_lib_tagging_tag_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval, GdkModifierType modifier, dt_lib_module_t* self)
+{
+  static const gint entry_width = 150;
+  dt_lib_tagging_t *d = (dt_lib_tagging_t*)self->data;
+
+  gint px, py, w, h, x, y;
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+  gdk_window_get_origin(gtk_widget_get_window(window), &px, &py);
+  gdk_window_get_size(gtk_widget_get_window(window),&w,&h);
+
+  x = px + 0.5*(w-entry_width);
+  y = py + h - 70;
+
+  GtkWidget *edit_popup = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  d->edit_popup = edit_popup;
+  /* stackoverflow.com/questions/1925568/how-to-give-keyboard-focus-to-a-pop-up-gtk-window */
+  GTK_WIDGET_SET_FLAGS(edit_popup, GTK_CAN_FOCUS);
+  gtk_window_set_decorated(GTK_WINDOW(edit_popup), FALSE);
+  gtk_window_set_has_frame(GTK_WINDOW(edit_popup), FALSE);
+  gtk_window_set_type_hint(GTK_WINDOW(edit_popup), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
+  gtk_window_set_transient_for(GTK_WINDOW(edit_popup), GTK_WINDOW(window));
+  gtk_window_set_gravity(GTK_WINDOW(edit_popup), GDK_GRAVITY_CENTER);
+  gtk_window_set_opacity(GTK_WINDOW(edit_popup), 0.8);
+
+  GtkWidget *entry = gtk_entry_new();
+  gtk_widget_set_size_request(entry, entry_width, -1);
+  gtk_widget_add_events(entry, GDK_FOCUS_CHANGE_MASK);
+
+  GtkEntryCompletion *completion = gtk_entry_completion_new();
+  gtk_entry_completion_set_model(completion, gtk_tree_view_get_model(GTK_TREE_VIEW(d->related)));
+  gtk_entry_completion_set_text_column(completion, 0);
+  gtk_entry_completion_set_inline_completion(completion, TRUE);
+  gtk_entry_set_completion(GTK_ENTRY(entry), completion);
+
+  gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
+  gtk_container_add(GTK_CONTAINER(edit_popup), entry);
+  g_signal_connect_swapped(entry, "focus-out-event", G_CALLBACK(gtk_widget_destroy), edit_popup);
+  g_signal_connect(entry, "key-press-event", G_CALLBACK(_lib_tagging_tag_key_press), self);
+
+  gtk_widget_show_all(edit_popup);
+  gtk_window_move(GTK_WINDOW(edit_popup), x, y);
+  /* GDK_GRAVITY_CENTER seems to have no effect? */
+  gtk_widget_grab_focus(entry);
+  gtk_window_present(GTK_WINDOW(edit_popup));
+
+  return TRUE;
+}
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -89,7 +89,6 @@ static void dt_remove_known_keys(Exiv2::XmpData &xmp)
   }
 }
 
-
 int dt_exif_read(dt_image_t *img, const char* path)
 {
   try
@@ -1052,11 +1051,13 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   gchar *hierarchical = NULL;
 
   tags = dt_tag_get_list(imgid, ",");
-  v1->read((char *)tags);
+  if(tags)
+    v1->read((char *)tags);
 
   hierarchical = dt_tag_get_hierarchical(imgid, ",");
-  v2->read((char *)hierarchical);
-  
+  if(hierarchical)
+    v2->read((char *)hierarchical);
+
   xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v1.get());
   xmpData.add(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"), v2.get());
   /* TODO: Add tags to IPTC namespace as well */
@@ -1141,6 +1142,8 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     num ++;
   }
   sqlite3_finalize (stmt);
+  g_free(tags);
+  g_free(hierarchical);
 }
 
 int dt_exif_xmp_attach (const int imgid, const char* filename)

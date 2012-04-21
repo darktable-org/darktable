@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2011-2012 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ typedef struct dt_lib_filmstrip_t
   int32_t last_selected_id;
   int32_t mouse_over_id;
   int32_t offset;
+  int32_t collection_count;
   int32_t history_copy_imgid;
   gdouble pointerx,pointery;
   dt_view_image_over_t image_over;
@@ -417,8 +418,14 @@ static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w,GdkEventScroll *e, g
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
-  if (e->direction == GDK_SCROLL_UP || e->direction == GDK_SCROLL_LEFT) strip->offset--;
-  else strip->offset++;
+  /* change the offset */
+  if (strip->offset > 0 && (e->direction == GDK_SCROLL_UP || e->direction == GDK_SCROLL_LEFT)) 
+    strip->offset--;
+  else if(strip->offset < strip->collection_count-1 && (e->direction == GDK_SCROLL_DOWN || e->direction == GDK_SCROLL_RIGHT)) 
+    strip->offset++;
+  else
+    return TRUE;
+
   gtk_widget_queue_draw(self->widget);
   return TRUE;
 }
@@ -503,29 +510,36 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
   const float wd = height;
   const float ht = height;
 
-  /* mouse over image position in filmstrip */
-  const int seli = (pointery > 0 && pointery <= ht) ? pointerx / (float)wd : -1;
+  int max_cols = (int)(width/(float)wd) + 2;
+  if (max_cols%2 == 0)
+    max_cols += 1;
 
-  const int img_pointerx = (int)fmodf(pointerx, wd);
-  const int img_pointery = (int)pointery;
-
-  const int max_cols = (int)(width/(float)wd);
   const int col_start = max_cols/2 - strip->offset;
   const int empty_edge = (width - (max_cols * wd))/2;
   int step_res = SQLITE_ROW;
 
   sqlite3_stmt *stmt = NULL;
 
+  /* mouse over image position in filmstrip */
+  pointerx -= empty_edge;
+  const int seli = (pointery > 0 && pointery <= ht) ? pointerx / (float)wd : -1;
+  const int img_pointerx = (int)fmodf(pointerx, wd);
+  const int img_pointery = (int)pointery;
+
+
   /* get the count of current collection */
-  int count = dt_collection_get_count (darktable.collection);
+  strip->collection_count = dt_collection_get_count (darktable.collection);
 
   /* get the collection query */
   const gchar *query=dt_collection_get_query (darktable.collection);
   if(!query)
     return FALSE;
 
-  if(offset < 0)                strip->offset = offset = 0;
-  if(offset > count-1) strip->offset = offset = count-1;
+  if(offset < 0)                
+    strip->offset = offset = 0;
+  if(offset > strip->collection_count-1) 
+    strip->offset = offset = strip->collection_count-1;
+
   // dt_view_set_scrollbar(self, offset, count, max_cols, 0, 1, 1);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
