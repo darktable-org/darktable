@@ -103,9 +103,12 @@ dead_image_f(dt_mipmap_buffer_t *buf)
 static inline int32_t
 compressed_buffer_size(const int32_t compression_type, const int width, const int height)
 {
-  // need 8 byte for each 4x4 block of pixels.
-  // round correctly, so a 3x3 image will still consume one block:
-  if(compression_type)
+  if(width <= 8 && height <= 8)
+    // skulls are uncompressed
+    return 8*8*sizeof(uint32_t);
+  else if(compression_type)
+    // need 8 byte for each 4x4 block of pixels.
+    // round correctly, so a 3x3 image will still consume one block:
     return ((width-1)/4 + 1) * ((height-1)/4 + 1) * 8;
   else // uncompressed:
     return width*height*sizeof(uint32_t);
@@ -381,7 +384,7 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
     }
   }
 
-  if(compression_type) blob = NULL;
+  if(cache->compression_type) blob = NULL;
   else blob = malloc(sizeof(uint32_t)*file_width[mip]*file_height[mip]);
 
   while(!feof(f))
@@ -411,7 +414,7 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
         dsc->width = wd;
         dsc->height = ht;
         // directly read from disk into cache:
-        rd = fread(data + sizeof(*dsc), length, f);
+        rd = fread(data + sizeof(*dsc), 1, length, f);
         if(rd != length) goto read_error;
       }
       else
@@ -616,11 +619,8 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     }
     else
     {
-      // adjust this for dxt compression:
-      if(cache->compression_type)
-        cache->mip[k].buffer_size = 4*sizeof(uint32_t) + (width/4 * height/4)*8;
-      else
-        cache->mip[k].buffer_size = (4 + width * height)*sizeof(uint32_t);
+      // header + adjusted for dxt compression:
+      cache->mip[k].buffer_size = 4*sizeof(uint32_t) + compressed_buffer_size(cache->compression_type, width, height);
     }
     cache->mip[k].size = k;
     // level of parallelism also gives minimum size (which is twice that)
@@ -809,9 +809,28 @@ dt_mipmap_cache_read_get(
           }
         }
         else if(mip == DT_MIPMAP_F)
+        {
           _init_f((float *)(dsc+1), &dsc->width, &dsc->height, imgid);
+        }
         else
-          _init_8((uint8_t *)(dsc+1), &dsc->width, &dsc->height, imgid, mip);
+        {
+          // 8-bit thumbs, possibly need to be compressed:
+          uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(cache);
+          if(scratchmem)
+          {
+            _init_8(scratchmem, &dsc->width, &dsc->height, imgid, mip);
+            buf->width  = dsc->width;
+            buf->height = dsc->height;
+            buf->imgid  = imgid;
+            buf->size   = mip;
+            buf->buf = (uint8_t *)(dsc+1);
+            dt_mipmap_cache_compress(buf, scratchmem);
+          }
+          else
+          {
+            _init_8((uint8_t *)(dsc+1), &dsc->width, &dsc->height, imgid, mip);
+          }
+        }
         dsc->flags &= ~DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
         // drop the write lock
         dt_cache_write_release(&cache->mip[mip].cache, key);
@@ -1207,7 +1226,7 @@ dt_mipmap_cache_decompress(
     const dt_mipmap_buffer_t *buf,
     uint8_t *scratchmem)
 {
-  if(darktable.mipmap_cache->compression_type)
+  if(darktable.mipmap_cache->compression_type && buf->width > 8 && buf->height > 8)
   {
     squish_decompress_image(scratchmem, buf->width, buf->height, buf->buf, squish_dxt1);
     return scratchmem;
@@ -1226,8 +1245,8 @@ dt_mipmap_cache_compress(
     dt_mipmap_buffer_t *buf,
     uint8_t *const scratchmem)
 {
-  // only do something if compression is on:
-  if(darktable.mipmap_cache->compression_type)
+  // only do something if compression is on, don't compress skulls:
+  if(darktable.mipmap_cache->compression_type && buf->width > 8 && buf->height > 8)
   {
     int flags = squish_dxt1;
     // low quality:

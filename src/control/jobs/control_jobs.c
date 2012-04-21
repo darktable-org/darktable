@@ -92,6 +92,9 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
    *  thats need some kind of reindexing.. all mark dirty functions adds image
    *  to this table--
    */
+  // temp memory for uncompressed images:
+  uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
+
   GList *images=NULL;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select images.id,film_rolls.folder||'/'||images.filename,images.histogram,images.lightmap from images,film_rolls where film_rolls.id = images.film_id", -1, &stmt, NULL);
@@ -180,6 +183,8 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
         /* get a mipmap of image to analyse */
         dt_mipmap_buffer_t buf;
         dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, idximg->id, DT_MIPMAP_2, DT_MIPMAP_BLOCKING);
+        // pointer owned by the cache or == scratchmem, no need to free this one:
+        uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
 
         if (!(buf.width * buf.height))
           continue;
@@ -197,7 +202,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
             uint8_t rgb[3];
 
             for(int k=0; k<3; k++)
-              rgb[k] = (int)((buf.buf[j+2-k]/(float)0xff) * bucketscale);
+              rgb[k] = (int)((buf_decompressed[j+2-k]/(float)0xff) * bucketscale);
 
             /* distribute rgb into buckets */
             for(int k=0; k<3; k++)
@@ -233,7 +238,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
           uint8_t *rgbbuf = g_malloc(buf.width*buf.height*3);
           for(int j=0;j<(buf.width*buf.height);j++)
             for(int k=0;k<3;k++)
-              rgbbuf[3*j+k] = buf.buf[4*j+2-k];
+              rgbbuf[3*j+k] = buf_decompressed[4*j+2-k];
 
 
           /* then create pixbuf and scale down to lightmap size */
@@ -302,6 +307,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
       dt_control_backgroundjobs_destroy(darktable.control, jid);
   }
 
+  free(scratchmem);
 
   /* 
    * Indexing opertions finished, lets reschedule the indexer 
