@@ -743,6 +743,19 @@
     </schema>
 
     <schema><!--tab:gui-->
+      <key>/schemas/apps/darktable/cache_compression</key>
+      <applyto>/apps/darktable/cache_compression</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>compression of thumbnail images</short>
+        <long>0 - no compression in memory, jpg on disk. 1 - fast, low quality dxt1. 2 - slow, high quality dxt1 (same memory as 1).</long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/database_cache_quality</key>
       <applyto>/apps/darktable/database_cache_quality</applyto>
       <owner>darktable</owner>
@@ -754,7 +767,6 @@
         <long>affects only the thumbnail cache used for quick startup.</long>
       </locale>
     </schema>
-
     
     <schema>
       <key>/schemas/apps/darktable/plugins/lighttable/layout</key>
