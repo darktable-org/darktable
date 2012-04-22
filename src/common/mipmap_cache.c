@@ -625,7 +625,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     cache->mip[k].size = k;
     // level of parallelism also gives minimum size (which is twice that)
     // is rounded to a power of two by the cache anyways, we might as well.
-    uint32_t thumbnails = MAX(2*parallel, nearest_power_of_two((uint32_t)((float)max_mem/cache->mip[k].buffer_size)));
+    uint32_t thumbnails = MAX(2, nearest_power_of_two((uint32_t)((float)max_mem/cache->mip[k].buffer_size)));
     while(thumbnails > 2*parallel && thumbnails * cache->mip[k].buffer_size > max_mem) thumbnails /= 2;
 
     // try to utilize that memory well (use 90% quota), the hopscotch paper claims good scalability up to
@@ -653,7 +653,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   // for this buffer, because it can be very busy during import, we want the minimum
   // number of entries in the hashtable to be 16, but leave the quota as is. the dynamic
   // alloc/free properties of this cache take care that no more memory is required.
-  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, MAX(16, max_mem_bufs), parallel, 64, 0.9f*max_mem_bufs);
+  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, MAX(2, max_mem_bufs), parallel, 64, 0.9f*max_mem_bufs);
   dt_cache_set_allocate_callback(&cache->mip[DT_MIPMAP_FULL].cache,
       dt_mipmap_cache_allocate_dynamic, &cache->mip[DT_MIPMAP_FULL]);
   // dt_cache_set_cleanup_callback(&cache->mip[DT_MIPMAP_FULL].cache,
