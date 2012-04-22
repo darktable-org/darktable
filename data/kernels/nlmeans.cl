@@ -35,7 +35,6 @@ const sampler_t samplerc =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP     
     Brute force GPU-code: 136s
     Optimized CPU-code: 27s
 
-    Warning: there is still a difference in the level of noise reduction between CPU and GPU !!!
 */
 
 
@@ -211,63 +210,22 @@ nlmeans_accu(read_only image2d_t in, read_only image2d_t U2_in, read_only image2
 
 
 kernel void
-nlmeans_finish(read_only image2d_t U2, read_only image2d_t U3, write_only image2d_t out, const int width, const int height)
+nlmeans_finish(read_only image2d_t in, read_only image2d_t U2, read_only image2d_t U3, write_only image2d_t out, 
+               const int width, const int height, const float4 weight)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
+  float4 i  = read_imagef(in, sampleri, (int2)(x, y));
   float4 u2 = read_imagef(U2, sampleri, (int2)(x, y));
   float  u3 = read_imagef(U3, sampleri, (int2)(x, y)).x;
 
-  write_imagef(out, (int2)(x, y), u2/u3);
+  float4 o = i * ((float4)1.0f - weight) + u2/u3 * weight;
+
+  write_imagef(out, (int2)(x, y), o);
 }
 
 
-#if 0
-kernel void
-nlmeans (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int P, const int K, const float nL, const float nC)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  const int maxx = width - 1;
-  const int maxy = height - 1;
-  const float4 norm2 = (float4)(nL, nC, nC, 1.0f);
-
-
-  if(x >= width || y >= height) return;
-
-  const float4 acc   = (float4)(0.0f);
-  // brute force (superslow baseline)!
-  // for each shift vector
-  for(int kj=-K;kj<=K;kj++)
-  {
-    for(int ki=-K;ki<=K;ki++)
-    {
-      float dist = 0.0f;
-      for(int pj=-P;pj<=P;pj++)
-      {
-        for(int pi=-P;pi<=P;pi++)
-        {
-          float4 p1  = read_imagef(in, sampleri, (int2)(ICLAMP(x+pi, 0, maxx), ICLAMP(y+pj, 0, maxy)));
-          float4 p2  = read_imagef(in, sampleri, (int2)(ICLAMP(x+pi+ki, 0, maxx), ICLAMP(y+pj+kj, 0, maxy)));
-          float4 tmp = (p1 - p2)*norm2;
-          dist += tmp.x + tmp.y + tmp.z;
-        }
-      }
-      float4 pin = read_imagef(in, sampleri, (int2)(ICLAMP(x+ki, 0, maxx), ICLAMP(y+kj, 0, maxy)));
-      dist = gh(dist);
-      acc.x += dist * pin.x;
-      acc.y += dist * pin.y;
-      acc.z += dist * pin.z;
-      acc.w += dist;
-    }
-  }
-  acc.x *= 1.0f/acc.w;
-  acc.y *= 1.0f/acc.w;
-  acc.z *= 1.0f/acc.w;
-  write_imagef (out, (int2)(x, y), acc);
-}
-#endif
 
