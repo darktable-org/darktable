@@ -651,12 +651,9 @@ dt_cache_read_get(
   dt_cache_bucket_t *last_bucket = NULL;
   dt_cache_bucket_t *compare_bucket = start_bucket;
 
+retry_cache_full:
   while(1)
   {
-    // we might be allocing, so first try to clean up.
-    // also wait if we can't free more than the requested fill ratio.
-    if(dt_cache_gc(cache, 0.8f)) goto wait;
-
     // block and try our luck
     dt_cache_lock(&segment->lock);
 
@@ -690,6 +687,16 @@ wait:;
     s.tv_usec = 5000;
     select(0, NULL, NULL, NULL, &s);
     sched_yield();
+  }
+
+  // we will be allocing, so first try to clean up.
+  // also wait if we can't free more than the requested fill ratio.
+  if(cache->cost > 0.8f * cache->cost_quota)
+  {
+    dt_cache_unlock(&segment->lock);
+    // need to roll back all the way to get a consistent lock state:
+    dt_cache_gc(cache, 0.8f);
+    goto retry_cache_full;
   }
 
   if(cache->optimize_cacheline)
