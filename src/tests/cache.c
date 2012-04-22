@@ -81,5 +81,48 @@ int main(int argc, char *arg[])
   fprintf(stderr, "[passed] cache lru consistency after removals, have %d entries left.\n", size);
 
   dt_cache_cleanup(&cache);
+
+
+
+  {
+  // now a harder case: a cache with only one entry and a lot of threads fighting over it:
+  dt_cache_t cache2;
+  // really hammer it, make quota insanely low:
+  // capacity 1 num threads 1 cache line size 64 ignored, quota 2 (80% => 1)
+  dt_cache_init(&cache2, 1, 1, 64, 2);
+  dt_cache_set_allocate_callback(&cache2, alloc_dummy, NULL);
+
+#ifdef _OPENMP
+#  pragma omp parallel for default(none) schedule(guided) shared(cache2, stderr) num_threads(16)
+#endif
+  for(int k=0;k<100000;k++)
+  {
+    void *data = (void *)(long int)k;
+    const int size = 0;//dt_cache_size(&cache);
+    const int con1 = dt_cache_contains(&cache2, k);
+    const int val1 = (int)(long int)dt_cache_read_get(&cache2, k);
+    const int val2 = (int)(long int)dt_cache_read_get(&cache2, k);
+    // fprintf(stderr, "\rinserted number %d, size %d, value %d - %d, contains %d - %d", k, size, val1, val2, con1, con2);
+    const int con2 = dt_cache_contains(&cache2, k);
+    assert (con1 == 0);
+    assert (con2 == 1);
+    assert (val2 == k);
+    dt_cache_read_release(&cache2, k);
+    dt_cache_read_release(&cache2, k);
+  }
+  dt_cache_print_locked(&cache2);
+  // fprintf(stderr, "\n");
+  fprintf(stderr, "[passed] inserting 100000 entries concurrently\n");
+
+  const int size = dt_cache_size(&cache2);
+  const int lru_cnt   = lru_check_consistency(&cache2);
+  const int lru_cnt_r = lru_check_consistency_reverse(&cache2);
+  // fprintf(stderr, "lru list contains %d|%d/%d entries\n", lru_cnt, lru_cnt_r, size);
+  assert(size == lru_cnt);
+  assert(lru_cnt_r == lru_cnt);
+  fprintf(stderr, "[passed] cache lru consistency after removals, have %d entries left.\n", size);
+  dt_cache_cleanup(&cache2);
+  }
+
   exit(0);
 }
