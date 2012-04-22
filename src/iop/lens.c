@@ -353,7 +353,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     cam = lf_db_find_cameras_ext(dt_iop_lensfun_db,
                                  NULL, p->camera, 0);
-    if(cam) camera = cam[0];
+    if(cam)
+    {
+        camera = cam[0];
+        p->crop = cam[0]->CropFactor;
+    }
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   }
   if(p->lens[0])
@@ -369,12 +373,14 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       {
         // add manual d->lens stuff:
         lfLensCalibTCA tca;
+        memset(&tca, 0, sizeof(lfLensCalibTCA));
         tca.Focal = 0;
         tca.Model = LF_TCA_MODEL_LINEAR;
         tca.Terms[0] = p->tca_b;
         tca.Terms[1] = p->tca_r;
-        if(d->lens->CalibTCA) for (int i=0; d->lens->CalibTCA[i]; i++)
-            lf_lens_remove_calib_tca (d->lens, i);
+        if(d->lens->CalibTCA) 
+          while (d->lens->CalibTCA[0])
+            lf_lens_remove_calib_tca (d->lens, 0);
         lf_lens_add_calib_tca (d->lens, &tca);
       }
       lf_free (lens);
