@@ -79,7 +79,7 @@ nlmeans_dist(read_only image2d_t in, write_only image2d_t U4, const int width, c
   float4 tmp = (p1 - p2)*(p1 - p2)*norm2;
   float dist = tmp.x + tmp.y + tmp.z;
   
-  write_imagef (U4, (int2)(x, y), (float4)(dist, 0.0f, 0.0f, 0.0f));
+  write_imagef (U4, (int2)(x, y), dist);
 }
 
 kernel void
@@ -126,7 +126,7 @@ nlmeans_horiz(read_only image2d_t U4_in, write_only image2d_t U4_out, const int 
     distacc += buffer[pi];
   }
 
-  write_imagef (U4_out, (int2)(x, y), (float4)(distacc, 0.0f, 0.0f, 0.0f));
+  write_imagef (U4_out, (int2)(x, y), distacc);
 }
 
 
@@ -176,14 +176,14 @@ nlmeans_vert(read_only image2d_t U4_in, write_only image2d_t U4_out, const int w
 
   distacc = gh(distacc);
 
-  write_imagef (U4_out, (int2)(x, y), (float4)(distacc, 0.0f, 0.0f, 0.0f));
+  write_imagef (U4_out, (int2)(x, y), distacc);
 }
 
 
 
 kernel void
-nlmeans_accu(read_only image2d_t in, read_only image2d_t U2_in, read_only image2d_t U3_in, read_only image2d_t U4_in,
-             write_only image2d_t U2_out, write_only image2d_t U3_out, const int width, const int height, 
+nlmeans_accu(read_only image2d_t in, read_only image2d_t U2_in, read_only image2d_t U4_in,
+             write_only image2d_t U2_out, const int width, const int height, 
              const int2 q)
 {
   const int x = get_global_id(0);
@@ -195,22 +195,24 @@ nlmeans_accu(read_only image2d_t in, read_only image2d_t U2_in, read_only image2
   float4 u1_mq = read_imagef(in, sampleri, (int2)(x, y) - q);
 
   float4 u2    = read_imagef(U2_in, sampleri, (int2)(x, y));
-  float  u3    = read_imagef(U3_in, sampleri, (int2)(x, y)).x;
 
   float  u4    = read_imagef(U4_in, sampleri, (int2)(x, y)).x;
   float  u4_mq = read_imagef(U4_in, sampleri, (int2)(x, y) - q).x;
 
+  float u3 = u2.w;
   float u4_mq_dd = u4_mq * ddirac(q);
+
   u2 += (u4 * u1_pq) + (u4_mq_dd * u1_mq);
   u3 += (u4 + u4_mq_dd);
+
+  u2.w = u3;
   
   write_imagef(U2_out, (int2)(x, y), u2);
-  write_imagef(U3_out, (int2)(x, y), (float4)(u3, 0.0f, 0.0f, 0.0f));
 }
 
 
 kernel void
-nlmeans_finish(read_only image2d_t in, read_only image2d_t U2, read_only image2d_t U3, write_only image2d_t out, 
+nlmeans_finish(read_only image2d_t in, read_only image2d_t U2, write_only image2d_t out, 
                const int width, const int height, const float4 weight)
 {
   const int x = get_global_id(0);
@@ -220,9 +222,10 @@ nlmeans_finish(read_only image2d_t in, read_only image2d_t U2, read_only image2d
 
   float4 i  = read_imagef(in, sampleri, (int2)(x, y));
   float4 u2 = read_imagef(U2, sampleri, (int2)(x, y));
-  float  u3 = read_imagef(U3, sampleri, (int2)(x, y)).x;
+  float  u3 = u2.w;
 
   float4 o = i * ((float4)1.0f - weight) + u2/u3 * weight;
+  o.w = i.w;
 
   write_imagef(out, (int2)(x, y), o);
 }
