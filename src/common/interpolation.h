@@ -31,11 +31,13 @@ typedef float (*dt_interpolation_func)(float width, float t);
 /** available interpolations */
 enum dt_interpolation
 {
-  DT_INTERPOLATION_BILINEAR=0,
+  DT_INTERPOLATION_FIRST=0,
+  DT_INTERPOLATION_BILINEAR=DT_INTERPOLATION_FIRST,
   DT_INTERPOLATION_BICUBIC,
   DT_INTERPOLATION_LANCZOS2,
   DT_INTERPOLATION_LANCZOS3,
-  DT_INTERPOLATOR_MAX
+  DT_INTERPOLATION_LAST,
+  DT_INTERPOLATION_DEFAULT=DT_INTERPOLATION_BILINEAR,
 };
 
 /** Interpolation description */
@@ -231,9 +233,9 @@ dt_interpolation_compute(const float* in, const float x, const float y, enum dt_
 static inline enum dt_interpolation
 dt_interpolation_get_type()
 {
-  enum dt_interpolation itype = DT_INTERPOLATION_BILINEAR;
+  enum dt_interpolation itype = DT_INTERPOLATION_DEFAULT;
   gchar* uipref = dt_conf_get_string("plugins/lighttable/export/pixel_interpolator");
-  for (int i=0; uipref && i<DT_INTERPOLATOR_MAX; i++) {
+  for (int i=DT_INTERPOLATION_FIRST; uipref && i<DT_INTERPOLATION_LAST; i++) {
     if (!strcmp(uipref, dt_interpolator[i].name)) {
       itype = dt_interpolator[i].id;
       break;
