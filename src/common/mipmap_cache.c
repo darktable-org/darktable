@@ -820,8 +820,6 @@ dt_mipmap_cache_read_get(
           if(scratchmem)
           {
             _init_8(scratchmem, &dsc->width, &dsc->height, imgid, mip);
-            // TODO: super annoying, patch libsquish to ignore alpha!
-            for(int k=0;k<dsc->width*dsc->height;k++) scratchmem[4*k+3] = 255;
             buf->width  = dsc->width;
             buf->height = dsc->height;
             buf->imgid  = imgid;

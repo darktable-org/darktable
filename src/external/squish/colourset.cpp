@@ -32,8 +32,8 @@ ColourSet::ColourSet( u8 const* rgba, int mask, int flags )
 	m_transparent( false )
 {
 	// check the compression mode for dxt1
-	bool isDxt1 = ( ( flags & kDxt1 ) != 0 );
-	bool weightByAlpha = ( ( flags & kWeightColourByAlpha ) != 0 );
+	// bool isDxt1 = true;//( ( flags & kDxt1 ) != 0 );
+	// bool weightByAlpha = false;//( ( flags & kWeightColourByAlpha ) != 0 );
 
 	// create the minimal set
 	for( int i = 0; i < 16; ++i )
@@ -46,6 +46,7 @@ ColourSet::ColourSet( u8 const* rgba, int mask, int flags )
 			continue;
 		}
 	
+#if 0
 		// check for transparent pixels when using dxt1
 		if( isDxt1 && rgba[4*i + 3] < 128 )
 		{
@@ -53,6 +54,7 @@ ColourSet::ColourSet( u8 const* rgba, int mask, int flags )
 			m_transparent = true;
 			continue;
 		}
+#endif
 
 		// loop over previous points for a match
 		for( int j = 0;; ++j )
@@ -66,11 +68,11 @@ ColourSet::ColourSet( u8 const* rgba, int mask, int flags )
 				float z = ( float )rgba[4*i + 2] / 255.0f;
 				
 				// ensure there is always non-zero weight even for zero alpha
-				float w = ( float )( rgba[4*i + 3] + 1 ) / 256.0f;
+				// float w = ( float )( rgba[4*i + 3] + 1 ) / 256.0f;
 
 				// add the point
 				m_points[m_count] = Vec3( x, y, z );
-				m_weights[m_count] = ( weightByAlpha ? w : 1.0f );
+				m_weights[m_count] = 1.0f;//( weightByAlpha ? w : 1.0f );
 				m_remap[i] = m_count;
 				
 				// advance
@@ -83,18 +85,18 @@ ColourSet::ColourSet( u8 const* rgba, int mask, int flags )
 			bool match = ( ( mask & oldbit ) != 0 )
 				&& ( rgba[4*i] == rgba[4*j] )
 				&& ( rgba[4*i + 1] == rgba[4*j + 1] )
-				&& ( rgba[4*i + 2] == rgba[4*j + 2] )
-				&& ( rgba[4*j + 3] >= 128 || !isDxt1 );
+				&& ( rgba[4*i + 2] == rgba[4*j + 2] );
+				// && ( rgba[4*j + 3] >= 128 || !isDxt1 );
 			if( match )
 			{
 				// get the index of the match
 				int index = m_remap[j];
 				
 				// ensure there is always non-zero weight even for zero alpha
-				float w = ( float )( rgba[4*i + 3] + 1 ) / 256.0f;
+				// float w = ( float )( rgba[4*i + 3] + 1 ) / 256.0f;
 
 				// map to this point and increase the weight
-				m_weights[index] += ( weightByAlpha ? w : 1.0f );
+				m_weights[index] ++; //+= ( weightByAlpha ? w : 1.0f );
 				m_remap[i] = index;
 				break;
 			}
