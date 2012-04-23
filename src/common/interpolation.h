@@ -81,8 +81,10 @@ _dt_interpolation_func_bicubic(float width, float t)
   return r;
 }
 
-#define DT_LANCZOS_EPSILON 0.0000001f
+#define DT_LANCZOS_EPSILON (1e-9f)
 
+#if 0
+// Canonic version
 static inline float
 _dt_interpolation_func_lanczos(float width, float t)
 {
@@ -97,6 +99,62 @@ _dt_interpolation_func_lanczos(float width, float t)
   }
   return r;
 }
+#else
+/* Fast lanczos version, no calls to math.h functions, too accurate, too slow
+ *
+ * Based on a forum entry at
+ * http://devmaster.net/forums/topic/4648-fast-and-accurate-sinecosine/
+ *
+ * Apart the fast sine function approximation, the only trick is to compute:
+ * sin(pi.t) = sin(a.pi + r.pi) where t = a + r = trunc(t) + r
+ *           = sin(a.pi).cos(r.pi) + sin(r.pi).cos(a.pi)
+ *           =         0*cos(r.pi) + sin(r.pi).cos(a.pi)
+ *           = sign.sin(r.pi) where sign =  1 if the a is even
+ *                                       = -1 if the a is odd
+ *
+ * Of course we know that lanczos func will only be called for
+ * the range -width < t < width so we can additionally avoid the
+ * range check.  */
+
+static inline float
+_dt_fabsf_fast(float x)
+{
+    union { float f; uint32_t i; } ux;
+    ux.f = x;
+    ux.i &= 0x7fffffff;
+    return ux.f;
+}
+
+// Valid for [-pi pi] only
+static inline float
+_dt_sinf_fast(float t)
+{
+    static const float a = 4/(M_PI*M_PI);
+    static const float p = 0.225f;
+
+    t = a*t*(M_PI - _dt_fabsf_fast(t));
+
+    return p*(t*_dt_fabsf_fast(t) - t) + t;
+}
+
+static inline float
+_dt_interpolation_func_lanczos(float width, float t)
+{
+  /* Compute a value for sinf(pi.t) in [-pi pi] for which the value will be
+   * correct */
+  int a = (int)t;
+  float r = t - (float)a;
+
+  // Compute the correct sign for sinf(pi.r)
+  union { float f; uint32_t i; } sign;
+  sign.i = ((a&1)<<31) | 0x3f800000;
+
+  return (DT_LANCZOS_EPSILON + width*sign.f*_dt_sinf_fast(M_PI*r)*_dt_sinf_fast(M_PI*t/width))/(DT_LANCZOS_EPSILON + M_PI*M_PI*t*t);
+}
+
+#endif
+
+#undef DT_LANCZOS_EPSILON
 
 /* --------------------------------------------------------------------------
  * Interpolators
