@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2011 johannes hanika.
+    copyright (c) 2012 Ulrich Pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,8 +19,24 @@
 
 const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
 const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
+const sampler_t samplerc =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP         | CLK_FILTER_NEAREST;
 
 #define ICLAMP(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
+
+
+
+/* 
+    To speed up processing we use an algorithm proposed from B. Goossens, H.Q. Luong, J. Aelterman, A. Pizurica,  and W. Philips, 
+    "A GPU-Accelerated Real-Time NLMeans Algorithm for Denoising Color Video Sequences", in Proc. ACIVS (2), 2010, pp.46-57. 
+
+    Benchmarking figures (export of a 20MPx image on a i7-2600 with an NVIDIA GTS450):
+
+    This GPU-code: 18s
+    Brute force GPU-code: 136s
+    Optimized CPU-code: 27s
+
+*/
+
 
 float gh(const float f)
 {
@@ -28,97 +45,190 @@ float gh(const float f)
   return 1.0f/(1.0f + fabs(f)*spread);
 }
 
+
+float ddirac(const int2 q)
+{
+  return ((q.x || q.y) ? 1.0f : 0.0f);
+}
+
+
 kernel void
-nlmeans (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int P, const int K, const float nL, const float nC)
+nlmeans_init(write_only image2d_t out, const int width, const int height)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  const int maxx = width - 1;
-  const int maxy = height - 1;
-  const float4 norm2 = (float4)(nL, nC, nC, 1.0f);
-
-#if 0
-  // this is 20s (compared to 29s brute force below) but still unusable:
-  // load a block of shared memory, initialize to zero
-  local float4 block[32*32];//get_local_size(0)*get_local_size(1)];
-  block[get_local_id(0)  + get_local_id(1) * get_local_size(0)] = (float4)0.0f;
-  barrier(CLK_LOCAL_MEM_FENCE);
 
   if(x >= width || y >= height) return;
 
-  // coalesced mem accesses:
-  const float4 p1  = read_imagef(in, sampleri, (int2)(x, y));
-
-  // for each shift vector
-  for(int kj=-K;kj<=K;kj++)
-  {
-    for(int ki=-K;ki<=K;ki++)
-    {
-      const float4 p2  = read_imagef(in, sampleri, (int2)(ICLAMP(x+ki, 0, maxx), ICLAMP(y+kj, 0, maxy)));
-      const float4 tmp = (p1 - p2)*norm2;
-      const float dist = tmp.x + tmp.y + tmp.z;
-      for(int pj=-P;pj<=P;pj++)
-      {
-        for(int pi=-P;pi<=P;pi++)
-        {
-          float4 p2 = read_imagef(in, sampleri, (int2)(ICLAMP(x+pi+ki, 0, maxx), ICLAMP(y+pj+kj, 0, maxy)));
-          p2.w = dist;
-          const int i = get_local_id(0) + pi, j = get_local_id(1) + pj;
-          if(i >= 0 && i < get_local_size(0) && j >= 0 && j < get_local_size(1))
-          {
-            // TODO: for non-linear gh(), this produces results different than the CPU
-            block[i + get_local_size(0) * j].x += gh(p2.x);
-            block[i + get_local_size(0) * j].y += gh(p2.y);
-            block[i + get_local_size(0) * j].z += gh(p2.z);
-            block[i + get_local_size(0) * j].w += gh(p2.w);
-          }
-        }
-      }
-    }
-  }
-  // write back normalized shm
-  barrier(CLK_LOCAL_MEM_FENCE);
-  const float4 tmp = block[get_local_id(0)  + get_local_id(1) * get_local_size(0)];
-  tmp.x *= 1.0f/tmp.w;
-  tmp.y *= 1.0f/tmp.w;
-  tmp.z *= 1.0f/tmp.w;
-  write_imagef (out, (int2)(x, y), tmp);
-#endif
-
-
-#if 1
-  if(x >= width || y >= height) return;
-
-  const float4 acc   = (float4)(0.0f);
-  // brute force (superslow baseline)!
-  // for each shift vector
-  for(int kj=-K;kj<=K;kj++)
-  {
-    for(int ki=-K;ki<=K;ki++)
-    {
-      float dist = 0.0f;
-      for(int pj=-P;pj<=P;pj++)
-      {
-        for(int pi=-P;pi<=P;pi++)
-        {
-          float4 p1  = read_imagef(in, sampleri, (int2)(ICLAMP(x+pi, 0, maxx), ICLAMP(y+pj, 0, maxy)));
-          float4 p2  = read_imagef(in, sampleri, (int2)(ICLAMP(x+pi+ki, 0, maxx), ICLAMP(y+pj+kj, 0, maxy)));
-          float4 tmp = (p1 - p2)*norm2;
-          dist += tmp.x + tmp.y + tmp.z;
-        }
-      }
-      float4 pin = read_imagef(in, sampleri, (int2)(ICLAMP(x+ki, 0, maxx), ICLAMP(y+kj, 0, maxy)));
-      dist = gh(dist);
-      acc.x += dist * pin.x;
-      acc.y += dist * pin.y;
-      acc.z += dist * pin.z;
-      acc.w += dist;
-    }
-  }
-  acc.x *= 1.0f/acc.w;
-  acc.y *= 1.0f/acc.w;
-  acc.z *= 1.0f/acc.w;
-  write_imagef (out, (int2)(x, y), acc);
-#endif
+  write_imagef (out, (int2)(x, y), (float4)0.0f);
 }
+              
+
+kernel void
+nlmeans_dist(read_only image2d_t in, write_only image2d_t U4, const int width, const int height, 
+             const int2 q, const float nL2, const float nC2)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const float4 norm2 = (float4)(nL2, nC2, nC2, 1.0f);
+
+  if(x >= width || y >= height) return;
+
+  float4 p1 = read_imagef(in, sampleri, (int2)(x, y));
+  float4 p2 = read_imagef(in, sampleri, (int2)(x, y) + q);
+  float4 tmp = (p1 - p2)*(p1 - p2)*norm2;
+  float dist = tmp.x + tmp.y + tmp.z;
+  
+  write_imagef (U4, (int2)(x, y), dist);
+}
+
+kernel void
+nlmeans_horiz(read_only image2d_t U4_in, write_only image2d_t U4_out, const int width, const int height, 
+              const int2 q, const int P, local float *buffer)
+{
+  const int lid = get_local_id(0);
+  const int lsz = get_local_size(0);
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(y >= height) return;
+
+  /* fill center part of buffer */
+  buffer[P + lid] = read_imagef(U4_in, samplerc, (int2)(x, y)).x;
+
+  /* left wing of buffer */
+  for(int n=0; n <= P/lsz; n++)
+  {
+    const int l = mad24(n, lsz, lid + 1);
+    if(l > P) continue;
+    const int xx = mad24((int)get_group_id(0), lsz, -l);
+    buffer[P - l] = read_imagef(U4_in, samplerc, (int2)(xx, y)).x;
+  }
+    
+  /* right wing of buffer */
+  for(int n=0; n <= P/lsz; n++)
+  {
+    const int r = mad24(n, lsz, lsz - lid);
+    if(r > P) continue;
+    const int xx = mad24((int)get_group_id(0), lsz, lsz - 1 + r);
+    buffer[P + lsz - 1 + r] = read_imagef(U4_in, samplerc, (int2)(xx, y)).x;
+  }
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  if(x >= width) return;
+
+  buffer += lid + P;
+
+  float distacc = 0.0f;
+  for(int pi = -P; pi <= P; pi++)
+  {
+    distacc += buffer[pi];
+  }
+
+  write_imagef (U4_out, (int2)(x, y), distacc);
+}
+
+
+kernel void
+nlmeans_vert(read_only image2d_t U4_in, write_only image2d_t U4_out, const int width, const int height, 
+              const int2 q, const int P, local float *buffer)
+{
+  const int lid = get_local_id(1);
+  const int lsz = get_local_size(1);
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width) return;
+
+  /* fill center part of buffer */
+  buffer[P + lid] = read_imagef(U4_in, samplerc, (int2)(x, y)).x;
+
+  /* left wing of buffer */
+  for(int n=0; n <= P/lsz; n++)
+  {
+    const int l = mad24(n, lsz, lid + 1);
+    if(l > P) continue;
+    const int yy = mad24((int)get_group_id(1), lsz, -l);
+    buffer[P - l] = read_imagef(U4_in, samplerc, (int2)(x, yy)).x;
+  }
+
+  /* right wing of buffer */
+  for(int n=0; n <= P/lsz; n++)
+  {
+    const int r = mad24(n, lsz, lsz - lid);
+    if(r > P) continue;
+    const int yy = mad24((int)get_group_id(1), lsz, lsz - 1 + r);
+    buffer[P + lsz - 1 + r] = read_imagef(U4_in, samplerc, (int2)(x, yy)).x;
+  }
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  if(y >= height) return;
+
+  buffer += lid + P;
+
+  float distacc = 0.0f;
+  for(int pj = -P; pj <= P; pj++)
+  {
+    distacc += buffer[pj];
+  }
+
+  distacc = gh(distacc);
+
+  write_imagef (U4_out, (int2)(x, y), distacc);
+}
+
+
+
+kernel void
+nlmeans_accu(read_only image2d_t in, read_only image2d_t U2_in, read_only image2d_t U4_in,
+             write_only image2d_t U2_out, const int width, const int height, 
+             const int2 q)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 u1_pq = read_imagef(in, sampleri, (int2)(x, y) + q);
+  float4 u1_mq = read_imagef(in, sampleri, (int2)(x, y) - q);
+
+  float4 u2    = read_imagef(U2_in, sampleri, (int2)(x, y));
+
+  float  u4    = read_imagef(U4_in, sampleri, (int2)(x, y)).x;
+  float  u4_mq = read_imagef(U4_in, sampleri, (int2)(x, y) - q).x;
+
+  float u3 = u2.w;
+  float u4_mq_dd = u4_mq * ddirac(q);
+
+  u2 += (u4 * u1_pq) + (u4_mq_dd * u1_mq);
+  u3 += (u4 + u4_mq_dd);
+
+  u2.w = u3;
+  
+  write_imagef(U2_out, (int2)(x, y), u2);
+}
+
+
+kernel void
+nlmeans_finish(read_only image2d_t in, read_only image2d_t U2, write_only image2d_t out, 
+               const int width, const int height, const float4 weight)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 i  = read_imagef(in, sampleri, (int2)(x, y));
+  float4 u2 = read_imagef(U2, sampleri, (int2)(x, y));
+  float  u3 = u2.w;
+
+  float4 o = i * ((float4)1.0f - weight) + u2/u3 * weight;
+  o.w = i.w;
+
+  write_imagef(out, (int2)(x, y), o);
+}
+
+
 
