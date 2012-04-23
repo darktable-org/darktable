@@ -32,6 +32,7 @@ typedef float (*dt_interpolation_func)(float width, float t);
 enum dt_interpolation
 {
   DT_INTERPOLATION_BILINEAR=0,
+  DT_INTERPOLATION_BICUBIC,
   DT_INTERPOLATION_LANCZOS2,
   DT_INTERPOLATION_LANCZOS3,
   DT_INTERPOLATOR_MAX
@@ -63,6 +64,23 @@ _dt_interpolation_func_bilinear(float width, float t)
   return r;
 }
 
+static inline float
+_dt_interpolation_func_bicubic(float width, float t)
+{
+  float r;
+  t = fabsf(t);
+  if (t>=2.f) {
+    r = 0.f;
+  } else if (t>1.f && t<2.f) {
+    float t2 = t*t;
+    r = 0.5f*(t*(-t2 + 5.f*t - 8.f) + 4.f);
+  } else {
+    float t2 = t*t;
+    r = 0.5f*(t*(3.f*t2 - 5.f*t) + 2.f);
+  }
+  return r;
+}
+
 #define DT_LANCZOS_EPSILON 0.0000001f
 
 static inline float
@@ -87,6 +105,7 @@ _dt_interpolation_func_lanczos(float width, float t)
 static const struct dt_interpolation_desc dt_interpolator[] =
 {
     {DT_INTERPOLATION_BILINEAR, "bilinear", 1, &_dt_interpolation_func_bilinear},
+    {DT_INTERPOLATION_BICUBIC,  "bicubic",  2, &_dt_interpolation_func_bicubic},
     {DT_INTERPOLATION_LANCZOS2, "lanczos2", 2, &_dt_interpolation_func_lanczos},
     {DT_INTERPOLATION_LANCZOS3, "lanczos3", 3, &_dt_interpolation_func_lanczos},
 };

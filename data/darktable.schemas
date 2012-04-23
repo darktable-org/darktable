@@ -1596,7 +1596,7 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>pixel interpolator</short>
-        <long>pixel interpolator used in rotation and lens correction (bilinear, lanczos2, lanczos3).</long>
+        <long>pixel interpolator used in rotation and lens correction (bilinear, bicubic, lanczos2, lanczos3).</long>
       </locale>
     </schema>
     
