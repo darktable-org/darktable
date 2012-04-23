@@ -458,6 +458,15 @@ read_finalize:
 static void _init_f(float   *buf, uint32_t *width, uint32_t *height, const uint32_t imgid);
 static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint32_t imgid, const dt_mipmap_size_t size);
 
+static int32_t
+scratchmem_allocate(void *data, const uint32_t key, int32_t *cost, void **buf)
+{
+  dt_mipmap_cache_one_t *c = (dt_mipmap_cache_one_t *)data;
+  // slot is exactly aligned with encapsulated cache's position and already allocated
+  *cost = c->buffer_size;
+  return 0;
+}
+
 int32_t
 dt_mipmap_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **buf)
 {
@@ -608,6 +617,25 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     cache->mip[k].max_height = cache->mip[k+1].max_height / 2;
   }
 
+  // initialize some per-thread cached scratchmem for uncompressed buffers during thumb creation:
+  if(cache->compression_type)
+  {
+    cache->scratchmem.max_width = wd;
+    cache->scratchmem.max_height = ht;
+    cache->scratchmem.buffer_size = wd*ht*sizeof(uint32_t);
+    cache->scratchmem.size = DT_MIPMAP_3; // at max.
+    dt_cache_init(&cache->scratchmem.cache, parallel, parallel, 64, 0.9f*parallel*wd*ht*sizeof(uint32_t));
+    // might have been rounded to power of two:
+    const int cnt = dt_cache_capacity(&cache->scratchmem.cache);
+    cache->scratchmem.buf = dt_alloc_align(64, cnt * wd*ht*sizeof(uint32_t));
+    dt_cache_static_allocation(&cache->scratchmem.cache, (uint8_t *)cache->scratchmem.buf, wd*ht*sizeof(uint32_t));
+    dt_cache_set_allocate_callback(&cache->scratchmem.cache,
+        scratchmem_allocate, &cache->scratchmem);
+    dt_print(DT_DEBUG_CACHE,
+        "[mipmap_cache_init] cache has % 5d entries for temporary compression buffers (% 4.02f MB).\n",
+        cnt, cnt* wd*ht*sizeof(uint32_t)/(1024.0*1024.0));
+  }
+
   for(int k=0;k<=DT_MIPMAP_F;k++)
   {
     // buffer stores width and height + actual data
@@ -626,7 +654,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     // level of parallelism also gives minimum size (which is twice that)
     // is rounded to a power of two by the cache anyways, we might as well.
     uint32_t thumbnails = MAX(2, nearest_power_of_two((uint32_t)((float)max_mem/cache->mip[k].buffer_size)));
-    while(thumbnails > 2*parallel && thumbnails * cache->mip[k].buffer_size > max_mem) thumbnails /= 2;
+    while(thumbnails > parallel && thumbnails * cache->mip[k].buffer_size > max_mem) thumbnails /= 2;
 
     // try to utilize that memory well (use 90% quota), the hopscotch paper claims good scalability up to
     // even more than that.
@@ -641,13 +669,12 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     // dt_cache_set_cleanup_callback(&cache->mip[k].cache,
         // &dt_mipmap_cache_deallocate, &cache->mip[k]);
 
-
     dt_print(DT_DEBUG_CACHE,
         "[mipmap_cache_init] cache has % 5d entries for mip %d (% 4.02f MB).\n",
         thumbnails, k, thumbnails * cache->mip[k].buffer_size/(1024.0*1024.0));
   }
   // full buffer needs dynamic alloc:
-  const int full_entries = 2*parallel;
+  const int full_entries = parallel;
   int32_t max_mem_bufs = nearest_power_of_two(full_entries);
 
   // for this buffer, because it can be very busy during import, we want the minimum
@@ -675,6 +702,13 @@ void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
     free(cache->mip[k].buf);
   }
   dt_cache_cleanup(&cache->mip[DT_MIPMAP_FULL].cache);
+
+  // clean up temporary buffers for decompressed images, if any:
+  if(cache->compression_type)
+  {
+    dt_cache_cleanup(&cache->scratchmem.cache);
+    free(cache->scratchmem.buf);
+  }
 }
 
 void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
@@ -693,6 +727,14 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
     100.0f*(float)cache->mip[k].cache.cost/(float)cache->mip[k].cache.cost_quota,
     dt_cache_size(&cache->mip[k].cache),
     dt_cache_capacity(&cache->mip[k].cache));
+  if(cache->compression_type)
+  {
+    printf("[mipmap_cache] scratch fill %.2f/%.2f MB (%.2f%% in %u/%u buffers)\n", cache->scratchmem.cache.cost/(1024.0*1024.0),
+      cache->scratchmem.cache.cost_quota/(1024.0*1024.0),
+      100.0f*(float)cache->scratchmem.cache.cost/(float)cache->scratchmem.cache.cost_quota,
+      dt_cache_size(&cache->scratchmem.cache),
+      dt_cache_capacity(&cache->scratchmem.cache));
+  }
   printf("\n\n");
   // very verbose stats about locks/users
   //dt_cache_print(&cache->mip[DT_MIPMAP_3].cache);
@@ -815,10 +857,13 @@ dt_mipmap_cache_read_get(
         else
         {
           // 8-bit thumbs, possibly need to be compressed:
-          // TODO: alloc that once per thread?
-          uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(cache);
-          if(scratchmem)
+          if(cache->compression_type)
           {
+            // get per-thread temporary storage without malloc from a separate cache:
+            const int key = (int)pthread_self();
+            // const void *cbuf =
+            dt_cache_read_get(&cache->scratchmem.cache, key);
+            uint8_t *scratchmem = (uint8_t *)dt_cache_write_get(&cache->scratchmem.cache, key);
             _init_8(scratchmem, &dsc->width, &dsc->height, imgid, mip);
             buf->width  = dsc->width;
             buf->height = dsc->height;
@@ -826,7 +871,8 @@ dt_mipmap_cache_read_get(
             buf->size   = mip;
             buf->buf = (uint8_t *)(dsc+1);
             dt_mipmap_cache_compress(buf, scratchmem);
-            free(scratchmem);
+            dt_cache_write_release(&cache->scratchmem.cache, key);
+            dt_cache_read_release(&cache->scratchmem.cache, key);
           }
           else
           {
