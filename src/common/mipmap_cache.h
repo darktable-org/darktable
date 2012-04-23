@@ -100,6 +100,8 @@ typedef struct dt_mipmap_cache_t
   dt_mipmap_cache_one_t mip[DT_MIPMAP_NONE];
   // global setting: which compression type are we using?
   int compression_type; // 0 - none, 1 - low quality, 2 - slow
+  // per-thread cache of uncompressed buffers, in case compression is requested.
+  dt_mipmap_cache_one_t scratchmem;
 }
 dt_mipmap_cache_t;
 
