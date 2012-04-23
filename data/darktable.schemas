@@ -1586,7 +1586,20 @@
         <long>the image will first be processed in full resolution, and downscaled at the very end. this can result in better quality sometimes, but will always be slower.</long>
       </locale>
     </schema>
-
+    
+    <schema><!--tab:core-->
+      <key>/schemas/apps/darktable/plugins/lighttable/export/pixel_interpolator</key>
+      <applyto>/apps/darktable/plugins/lighttable/export/pixel_interpolator</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default>bilinear</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>pixel interpolator</short>
+        <long>pixel interpolator used in rotation and lens correction (bilinear, bicubic, lanczos2, lanczos3).</long>
+      </locale>
+    </schema>
+    
     <schema>
       <key>/schemas/apps/darktable/plugins/lighttable/export/width</key>
       <applyto>/apps/darktable/plugins/lighttable/export/width</applyto>
