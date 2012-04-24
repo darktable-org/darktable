@@ -118,15 +118,6 @@ _dt_interpolation_func_lanczos(float width, float t)
  * the range -width < t < width so we can additionally avoid the
  * range check.  */
 
-static inline float
-_dt_fabsf_fast(float x)
-{
-    union { float f; uint32_t i; } ux;
-    ux.f = x;
-    ux.i &= 0x7fffffff;
-    return ux.f;
-}
-
 // Valid for [-pi pi] only
 static inline float
 _dt_sinf_fast(float t)
@@ -134,9 +125,9 @@ _dt_sinf_fast(float t)
     static const float a = 4/(M_PI*M_PI);
     static const float p = 0.225f;
 
-    t = a*t*(M_PI - _dt_fabsf_fast(t));
+    t = a*t*(M_PI - fabsf(t));
 
-    return p*(t*_dt_fabsf_fast(t) - t) + t;
+    return p*(t*fabsf(t) - t) + t;
 }
 
 static inline float
