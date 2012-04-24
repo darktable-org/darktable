@@ -860,7 +860,7 @@ dt_mipmap_cache_read_get(
           if(cache->compression_type)
           {
             // get per-thread temporary storage without malloc from a separate cache:
-            const int key = (int)pthread_self();
+            const int key = dt_control_get_threadid();
             // const void *cbuf =
             dt_cache_read_get(&cache->scratchmem.cache, key);
             uint8_t *scratchmem = (uint8_t *)dt_cache_write_get(&cache->scratchmem.cache, key);

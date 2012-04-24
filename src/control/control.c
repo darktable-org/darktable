@@ -868,20 +868,16 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
 
 int32_t dt_control_get_threadid()
 {
-  int32_t threadid = 0;
-  while( !pthread_equal(darktable.control->thread[threadid],pthread_self()) && threadid < darktable.control->num_threads-1)
-    threadid++;
-  assert(pthread_equal(darktable.control->thread[threadid],pthread_self()));
-  return threadid;
+  for(int k=0;k<darktable.control->num_threads;k++)
+    if(pthread_equal(darktable.control->thread[k], pthread_self())) return k;
+  return darktable.control->num_threads;
 }
 
 int32_t dt_control_get_threadid_res()
 {
-  int32_t threadid = 0;
-  while(!pthread_equal(darktable.control->thread_res[threadid],pthread_self()) && threadid < DT_CTL_WORKER_RESERVED-1)
-    threadid++;
-  assert(pthread_equal(darktable.control->thread_res[threadid], pthread_self()));
-  return threadid;
+  for(int k=0;k<DT_CTL_WORKER_RESERVED-1;k++)
+    if(pthread_equal(darktable.control->thread[k], pthread_self())) return k;
+  return DT_CTL_WORKER_RESERVED;
 }
 
 void *dt_control_work_res(void *ptr)
