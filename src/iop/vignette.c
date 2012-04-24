@@ -29,6 +29,7 @@
 #include "develop/imageop.h"
 #include "develop/blend.h"
 #include "control/control.h"
+#include "common/opencl.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
@@ -105,6 +106,12 @@ typedef struct dt_iop_vignette_data_t
 }
 dt_iop_vignette_data_t;
 
+typedef struct dt_iop_vignette_global_data_t
+{
+  int kernel_vignette;
+}
+dt_iop_vignette_global_data_t;
+
 const char *name()
 {
   return _("vignetting");
@@ -112,7 +119,7 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI;
 }
 
 int
@@ -682,6 +689,128 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
   }
 }
+
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_vignette_data_t *data = (dt_iop_vignette_data_t *)piece->data;
+  dt_iop_vignette_global_data_t *gd = (dt_iop_vignette_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  const dt_iop_roi_t *buf_in = &piece->buf_in;
+
+  /* Center coordinates of buf_in, these should not consider buf_in->{x,y}! */
+  const dt_iop_vector_2d_t buf_center =
+  {
+    buf_in->width * .5f,
+    buf_in->height * .5f
+  };
+  /* Center coordinates of vignette center */
+  const dt_iop_vector_2d_t vignette_center =
+  {
+    buf_center.x + data->center.x * buf_in->width / 2.0,
+    buf_center.y + data->center.y * buf_in->height / 2.0
+  };
+  /* Coordinates of vignette_center in terms of roi_in */
+  const dt_iop_vector_2d_t roi_center =
+  {
+    vignette_center.x * roi_in->scale - roi_in->x,
+    vignette_center.y * roi_in->scale - roi_in->y
+  };
+  float xscale;
+  float yscale;
+
+  /* w/h ratio follows piece dimensions */
+  if (data->autoratio)
+  {
+    xscale=2.0/(buf_in->width*roi_out->scale);
+    yscale=2.0/(buf_in->height*roi_out->scale);
+  }
+  else				/* specified w/h ratio, scale proportional to longest side */
+  {
+    const float basis = 2.0 / (MAX(buf_in->height, buf_in->width) * roi_out->scale);
+    // w/h ratio from 0-1 use as-is
+    if (data->whratio <= 1.0)
+    {
+      yscale=basis;
+      xscale=yscale/data->whratio;
+    }
+    // w/h ratio from 1-2 interpret as 1-inf
+    // that is, the h/w ratio + 1
+    else
+    {
+      xscale=basis;
+      yscale=xscale/(2.0-data->whratio);
+    }
+  }
+  const float dscale=data->scale/100.0;
+  // A minimum falloff is used, based on the image size, to smooth out aliasing artifacts
+  const float min_falloff=100.0/MIN(buf_in->width, buf_in->height);
+  const float fscale=MAX(data->falloff_scale,min_falloff)/100.0;
+  const float shape=MAX(data->shape,0.001);
+  const float exp1=2.0/shape;
+  const float exp2=shape/2.0;
+  // Pre-scale the center offset
+  const dt_iop_vector_2d_t roi_center_scaled =
+  {
+    roi_center.x * xscale,
+    roi_center.y * yscale
+  };
+
+  float scale[2] = { xscale, yscale };
+  float roi_center_scaled_f[2] = { roi_center_scaled.x, roi_center_scaled.y };
+  float expt[2] = { exp1, exp2 };
+  float brightness = data->brightness;
+  float saturation = data->saturation;
+
+  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 0, sizeof(cl_mem), &dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 1, sizeof(cl_mem), &dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 2, sizeof(int), &width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 3, sizeof(int), &height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 4, 2*sizeof(float), &scale);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 5, 2*sizeof(float), &roi_center_scaled_f);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 6, 2*sizeof(float), &expt);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 7, sizeof(float), &dscale);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 8, sizeof(float), &fscale);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 9, sizeof(float), &brightness);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 10, sizeof(float), &saturation);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vignette, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_vignette] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 8; // extended.cl from programs.conf
+  dt_iop_vignette_global_data_t *gd = (dt_iop_vignette_global_data_t *)malloc(sizeof(dt_iop_vignette_global_data_t));
+  module->data = gd;
+  gd->kernel_vignette = dt_opencl_create_kernel(program, "vignette");
+}
+
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_vignette_global_data_t *gd = (dt_iop_vignette_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_vignette);
+  free(module->data);
+  module->data = NULL;
+}
+
 
 static void
 scale_callback (GtkDarktableSlider *slider, gpointer user_data)
