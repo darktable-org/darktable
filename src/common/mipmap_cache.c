@@ -674,13 +674,13 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
         thumbnails, k, thumbnails * cache->mip[k].buffer_size/(1024.0*1024.0));
   }
   // full buffer needs dynamic alloc:
-  const int full_entries = parallel;
+  const int full_entries = MAX(2, parallel); // even with one thread you want two buffers. one for dr one for thumbs.
   int32_t max_mem_bufs = nearest_power_of_two(full_entries);
 
   // for this buffer, because it can be very busy during import, we want the minimum
   // number of entries in the hashtable to be 16, but leave the quota as is. the dynamic
   // alloc/free properties of this cache take care that no more memory is required.
-  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, MAX(2, max_mem_bufs), parallel, 64, 0.9f*max_mem_bufs);
+  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, max_mem_bufs, parallel, 64, max_mem_bufs);
   dt_cache_set_allocate_callback(&cache->mip[DT_MIPMAP_FULL].cache,
       dt_mipmap_cache_allocate_dynamic, &cache->mip[DT_MIPMAP_FULL]);
   // dt_cache_set_cleanup_callback(&cache->mip[DT_MIPMAP_FULL].cache,
