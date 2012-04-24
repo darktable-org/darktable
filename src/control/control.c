@@ -875,9 +875,9 @@ int32_t dt_control_get_threadid()
 
 int32_t dt_control_get_threadid_res()
 {
-  for(int k=0;k<DT_CTL_WORKER_RESERVED-1;k++)
-    if(pthread_equal(darktable.control->thread[k], pthread_self())) return k;
-  return DT_CTL_WORKER_RESERVED;
+  for(int k=0;k<DT_CTL_WORKER_RESERVED;k++)
+    if(pthread_equal(darktable.control->thread_res[k], pthread_self())) return k;
+  return DT_CTL_WORKER_RESERVED;  
 }
 
 void *dt_control_work_res(void *ptr)
