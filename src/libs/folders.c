@@ -100,8 +100,17 @@ void connect_key_accels(dt_lib_module_t *self)
                               GTK_WIDGET(d->scan_devices)); */
 }
 
-void
-view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
+void view_popup_menu_onSync (GtkWidget *menuitem, gpointer userdata)
+{
+ 
+}
+
+void view_popup_menu_onRemove (GtkWidget *menuitem, gpointer userdata)
+{
+
+}
+
+void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
 {
   GtkTreeView *treeview = GTK_TREE_VIEW(userdata);
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
@@ -153,6 +162,10 @@ view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
       query = NULL;
 
       /* change path in db to new filmroll path */
+      /* FIXME: This only works if we are updating the path of a filmroll, not
+       * if it is a parent folder. We should change this for a more generic 
+       * code in which the missing folder is deleted (with the filmrolls in it)
+       * and the new folder (with subfolders) are imported */
       query = dt_util_dstrcat(query, "update film_rolls set folder=?1 where id=?2");
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, new_path, strlen(new_path), SQLITE_STATIC);
@@ -174,7 +187,7 @@ view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
   }
 
 error:
-  /* TODO: Say something wrong happened */
+  /* Something wrong happened */
   gtk_widget_destroy (filechooser);
   dt_control_log(_("Problem selecting new path for the filmroll in %s"), filmroll_path);
 
@@ -189,12 +202,22 @@ view_popup_menu (GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
 
   menu = gtk_menu_new();
 
-  menuitem = gtk_menu_item_new_with_label(_("Search filmroll..."));
-
+  menuitem = gtk_menu_item_new_with_label(_("search filmroll..."));
   g_signal_connect(menuitem, "activate",
                    (GCallback) view_popup_menu_onSearchFilmroll, treeview);
-
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+  /* FIXME: give some functionality */
+  menuitem = gtk_menu_item_new_with_label(_("sync..."));
+  g_signal_connect(menuitem, "activate",
+                   (GCallback) view_popup_menu_onSync, treeview);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+  /* FIXME: give some functionality */
+  menuitem = gtk_menu_item_new_with_label(_("remove..."));
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+  g_signal_connect(menuitem, "activate",
+                   (GCallback) view_popup_menu_onRemove, treeview);
 
   gtk_widget_show_all(menu);
 
@@ -649,7 +672,6 @@ static void _lib_folders_update_collection(const gchar *filmroll)
 
   g_free(complete_query);
 
-
   // remove from selected images where not in this query.
   sqlite3_stmt *stmt = NULL;
   const gchar *cquery = dt_collection_get_query(darktable.collection);
@@ -666,8 +688,6 @@ static void _lib_folders_update_collection(const gchar *filmroll)
     /* free allocated strings */
     g_free(complete_query);
   }
-
-  dt_control_queue_redraw_center();
 
   /* raise signal of collection change, only if this is an orginal */
   if (!darktable.collection->clone)
