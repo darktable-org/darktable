@@ -157,11 +157,12 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   /* set number of rules */
   snprintf(confname, 200, "plugins/lighttable/collect/num_rules");
   dt_conf_set_int(confname, p->rules);
-  
+
   /* update ui */
   _lib_collect_gui_update(self);
 
   /* update view */
+  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 
   return 0;
@@ -397,6 +398,7 @@ gui_reset (dt_lib_module_t *self)
   dt_conf_set_int("plugins/lighttable/collect/item0", 0);
   dt_conf_set_string("plugins/lighttable/collect/string0", "%");
   dt_collection_set_query_flags(darktable.collection,COLLECTION_QUERY_FULL);
+  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -408,6 +410,7 @@ combo_changed (GtkComboBox *combo, dt_lib_collect_rule_t *d)
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;
   changed_callback(NULL, d);
+  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -428,6 +431,7 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
   gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
   g_free(text);
   changed_callback(NULL, d->rule + active);
+  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
 }
@@ -456,6 +460,7 @@ entry_activated (GtkWidget *entry, dt_lib_collect_rule_t *d)
       changed_callback(NULL, d);
     }
   }
+  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -514,6 +519,7 @@ menuitem_and (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     dt_lib_collect_t *c = get_collect(d);
     c->active_rule = active;
   }
+  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -531,6 +537,7 @@ menuitem_or (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     dt_conf_set_string(confname, "");
     dt_conf_set_int("plugins/lighttable/collect/num_rules", active+1);
   }
+  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -548,6 +555,7 @@ menuitem_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     dt_conf_set_string(confname, "");
     dt_conf_set_int("plugins/lighttable/collect/num_rules", active+1);
   }
+  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -562,6 +570,7 @@ menuitem_change_and (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", num);
     dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND);
   }
+  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -576,6 +585,7 @@ menuitem_change_or (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", num);
     dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_OR);
   }
+  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -590,6 +600,7 @@ menuitem_change_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", num);
     dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND_NOT);
   }
+  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -638,6 +649,7 @@ menuitem_clear (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
       g_free(string);
     }
   }
+  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 

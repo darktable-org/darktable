@@ -431,9 +431,10 @@ static void _lib_keywords_add_collection_rule(GtkTreeView *view, GtkTreePath *tp
   /* set tag rule type */
   snprintf(confname, 200, "plugins/lighttable/collect/item%1d", rule);
   dt_conf_set_int(confname, 2);
-  
+
   dt_conf_set_int("plugins/lighttable/collect/num_rules", rule+1);
 
   dt_view_collection_update(darktable.view_manager);
+  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
