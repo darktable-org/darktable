@@ -17,6 +17,7 @@ src/control/jobs/film_jobs.c
 src/control/jobs/image_jobs.c
 src/develop/develop.c
 src/develop/imageop.c
+src/develop/tiling.c
 src/dtgtk/resetlabel.c
 src/dtgtk/slider.c
 src/libs/similarity.c
