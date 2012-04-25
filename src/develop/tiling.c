@@ -932,8 +932,8 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
   /* calculate tile width and height excl. overlap (i.e. the good part) for output.
      values are important for all following processing steps. */
-  const int tile_wd = roi_out->width % tiles_x == 0 ? roi_out->width / tiles_x : roi_out->width / tiles_x + 1;
-  const int tile_ht = roi_out->height % tiles_y == 0 ? roi_out->height / tiles_y : roi_out->height / tiles_y + 1;
+  const int tile_wd = _align_up(roi_out->width % tiles_x == 0 ? roi_out->width / tiles_x : roi_out->width / tiles_x + 1, xyalign);
+  const int tile_ht = _align_up(roi_out->height % tiles_y == 0 ? roi_out->height / tiles_y : roi_out->height / tiles_y + 1, xyalign);
 
   dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] use tiling on module '%s' for image with full input size %d x %d\n", self->op, roi_in->width, roi_in->height);
   dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] (%d x %d) tiles with max dimensions %d x %d\n", tiles_x, tiles_y, width, height);
@@ -1443,8 +1443,8 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
 
   /* calculate tile width and height excl. overlap (i.e. the good part) for output.
      important for all following processing steps. */
-  const int tile_wd = roi_out->width % tiles_x == 0 ? roi_out->width / tiles_x : roi_out->width / tiles_x + 1;
-  const int tile_ht = roi_out->height % tiles_y == 0 ? roi_out->height / tiles_y : roi_out->height / tiles_y + 1;
+  const int tile_wd = _align_up(roi_out->width % tiles_x == 0 ? roi_out->width / tiles_x : roi_out->width / tiles_x + 1, xyalign);
+  const int tile_ht = _align_up(roi_out->height % tiles_y == 0 ? roi_out->height / tiles_y : roi_out->height / tiles_y + 1, xyalign);
 
 
   dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_roi] use tiling on module '%s' for image with full input size %d x %d\n", self->op, roi_in->width, roi_in->height);
