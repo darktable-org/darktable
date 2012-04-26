@@ -226,6 +226,9 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
 
     /* remove old obsolete thumbnails */
     dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+
+    /* redraw center view to update visible mipmaps */
+    dt_control_queue_redraw_center();
   }
 }
 
