@@ -247,6 +247,7 @@ new_button_clicked (GtkButton *button, gpointer user_data)
 
   /** attach tag to selected images  */
   dt_tag_attach(tid,-1);
+  dt_image_synch_xmp(-1);
 
   update(self, 1);
 }
@@ -265,6 +266,7 @@ entry_activated (GtkButton *button, gpointer user_data)
 
   /** attach tag to selected images  */
   dt_tag_attach(tid,-1);
+  dt_image_synch_xmp(-1);
 
   update(self, 1);
   update(self, 0);
@@ -522,6 +524,7 @@ _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t
         dt_tag_new(tag, &tid);
         /* attach tag to selected images  */
         dt_tag_attach(tid, d->floating_tag_imgid);
+        dt_image_synch_xmp(d->floating_tag_imgid);
         update(self, 1);
         update(self, 0);
       }
