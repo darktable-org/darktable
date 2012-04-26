@@ -293,27 +293,20 @@ int dt_exif_read(dt_image_t *img, const char* path)
     str = dt_conf_get_string("ui_last/import_last_tags");
     if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE && str != NULL && str[0] != '\0')
     {
-      char *start = g_strdup(str);
-      char *end = start + strlen(start);
-      // split the string into single tags
-      char *tmp = start, *tag = start;
-      while(tmp < end)
+      gchar **tokens = g_strsplit(str, ",", 0);
+      if(tokens)
       {
-        tmp++;
-        if(*tmp == ',' || *tmp == '\0')
+        gchar **entry = tokens;
+        while(*entry)
         {
-          *tmp = '\0';
-          if(*tag != '\0')
-          {
-            // add the tag to the image
-            guint tagid = 0;
-            dt_tag_new(tag,&tagid);
-            dt_tag_attach(tagid, img->id);
-          }
-          tag = tmp+1;
+          // add the tag to the image
+          guint tagid = 0;
+          dt_tag_new(*entry,&tagid);
+          dt_tag_attach(tagid, img->id);
+          entry++;
         }
       }
-      g_free(start);
+      g_strfreev(tokens);
     }
 
 
