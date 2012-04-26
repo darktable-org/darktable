@@ -238,6 +238,7 @@ new_button_clicked (GtkButton *button, gpointer user_data)
 
   /** attach tag to selected images  */
   dt_tag_attach(tid,-1);
+  dt_image_synch_xmp(-1);
 
   update(self, 1);
 }
@@ -256,6 +257,7 @@ entry_activated (GtkButton *button, gpointer user_data)
 
   /** attach tag to selected images  */
   dt_tag_attach(tid,-1);
+  dt_image_synch_xmp(-1);
 
   update(self, 1);
   update(self, 0);
