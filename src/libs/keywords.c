@@ -150,12 +150,10 @@ void gui_init(dt_lib_module_t *self)
 	      {
 		current = iter;
 		found = TRUE;
-		j++;
 		break;
 	      }
 	    }
 	  }
-	  
 	  
 	  /* lets add new keyword and assign current */
 	  if (!found)
