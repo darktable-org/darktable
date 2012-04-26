@@ -17,7 +17,6 @@
 */
 
 #include "common/darktable.h"
-#include "common/image.h"
 #include "common/tags.h"
 #include "common/debug.h"
 #include "control/conf.h"
@@ -197,7 +196,6 @@ void dt_tag_attach(guint tagid,gint imgid)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
-  dt_image_synch_xmp(imgid);
 }
 
 void dt_tag_attach_list(GList *tags,gint imgid)
@@ -248,7 +246,6 @@ void dt_tag_detach(guint tagid,gint imgid)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
-  dt_image_synch_xmp(imgid);
 }
 
 void dt_tag_detach_by_string(const char *name, gint imgid)

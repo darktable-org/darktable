@@ -174,6 +174,7 @@ attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
 
   dt_tag_attach(tagid,imgsel);
+  dt_image_synch_xmp(imgsel);
 }
 
 static void
@@ -195,6 +196,7 @@ detach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
 
   dt_tag_detach(tagid,imgsel);
+  dt_image_synch_xmp(imgsel);
 }
 
 static void
