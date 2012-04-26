@@ -137,40 +137,40 @@ void gui_init(dt_lib_module_t *self)
         int j = 0;
         while (pch[j] != NULL) 
         {
-	        gboolean found=FALSE;
-	        int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),level>0?&current:NULL);
-	        /* find child with name, if not found create and continue */
-	        for (int k=0;k<children;k++)
-	        {
-	          if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &iter, level>0?&current:NULL, k))
-	          {
-	            gtk_tree_model_get (GTK_TREE_MODEL(store), &iter, 0, &value, -1);
-	    
-	            if (strcmp(value, pch[j])==0)
-	            {
-	              current = iter;
-	              found = TRUE;
-                j++;
-	              break;
-	            }
-	          }
-	        }
-       
-
-	        /* lets add new keyword and assign current */
-  	      if (!found)
-	        {
-	          gtk_tree_store_insert(store, &iter, level>0?&current:NULL,0);
-	          gtk_tree_store_set(store, &iter, 0, pch[j], -1);
-	          current = iter;
-	        }
-
-	        level++;
-          j++;
+	  gboolean found=FALSE;
+	  int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),level>0?&current:NULL);
+	  /* find child with name, if not found create and continue */
+	  for (int k=0;k<children;k++)
+	  {
+	    if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &iter, level>0?&current:NULL, k))
+	    {
+	      gtk_tree_model_get (GTK_TREE_MODEL(store), &iter, 0, &value, -1);
+	      
+	      if (strcmp(value, pch[j])==0)
+	      {
+		current = iter;
+		found = TRUE;
+		j++;
+		break;
+	      }
+	    }
+	  }
+	  
+	  
+	  /* lets add new keyword and assign current */
+	  if (!found)
+	  {
+	    gtk_tree_store_insert(store, &iter, level>0?&current:NULL,0);
+	    gtk_tree_store_set(store, &iter, 0, pch[j], -1);
+	    current = iter;
+	  }
+	  
+	  level++;
+	  j++;
         }
-
+	
         g_strfreev(pch);
-      
+	
       }
     }
   }
