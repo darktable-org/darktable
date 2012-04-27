@@ -1637,6 +1637,23 @@ const wb_data wb_preset[] = {
   { "NIKON", "D3X", "2700K", 0,			{ 1.253906, 1, 2.605469, 0 } },
   { "NIKON", "D3X", "5000K", 0,			{ 2.105469, 1, 1.460938, 0 } },
 
+  { "NIKON", "D4", Incandescent, 0,		{ 1.281250, 1, 2.371094, 0 } },
+  { "NIKON", "D4", SodiumVaporFluorescent, 0,	{ 1.195313, 1, 2.589844, 0 } },
+  { "NIKON", "D4", WarmWhiteFluorescent, 0,	{ 1.277344, 1, 2.109375, 0 } },
+  { "NIKON", "D4", WhiteFluorescent, 0,		{ 1.488281, 1, 2.476563, 0 } },
+  { "NIKON", "D4", CoolWhiteFluorescent, 0,	{ 1.855469, 1, 2.156250, 0 } },
+  { "NIKON", "D4", DayWhiteFluorescent, 0,	{ 1.867188, 1, 1.476563, 0 } },
+  { "NIKON", "D4", DaylightFluorescent, 0,	{ 2.132813, 1, 1.156250, 0 } },
+  { "NIKON", "D4", HighTempMercuryVaporFluorescent, 0, { 2.546875, 1, 1.425781, 0 } },
+  { "NIKON", "D4", DirectSunlight, 0,		{ 2.019531, 1, 1.437500, 0 } },
+  { "NIKON", "D4", Flash, 0,			{ 2.300781, 1, 1.253906, 0 } },
+  { "NIKON", "D4", Cloudy, 0,			{ 2.175781, 1, 1.300781, 0 } },
+  { "NIKON", "D4", Shade, 0,			{ 2.511719, 1, 1.164063, 0 } },
+  { "NIKON", "D4", "2700K", 0,			{ 1.167969, 1, 2.710938, 0 } },
+  { "NIKON", "D4", "3000K", 0,			{ 1.281250, 1, 2.363281, 0 } },
+  { "NIKON", "D4", "5000K", 0,			{ 1.972656, 1, 1.488281, 0 } },
+  { "NIKON", "D4", "6500K", 0,			{ 2.261719, 1, 1.242188, 0 } },
+
   { "NIKON", "D100", Incandescent, -3,		{ 1.527344, 1, 2.539062, 0 } }, /*3300K*/
   { "NIKON", "D100", Incandescent, -2,		{ 1.476562, 1, 2.656250, 0 } }, /*3200K*/
   { "NIKON", "D100", Incandescent, -1,		{ 1.457031, 1, 2.707031, 0 } }, /*3100K*/
