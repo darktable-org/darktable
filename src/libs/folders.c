@@ -24,6 +24,7 @@
 #include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "control/jobs.h"
 
 #include "libs/lib.h"
 
@@ -103,11 +104,6 @@ void connect_key_accels(dt_lib_module_t *self)
 void view_popup_menu_onSync (GtkWidget *menuitem, gpointer userdata)
 {
  
-}
-
-void view_popup_menu_onRemove (GtkWidget *menuitem, gpointer userdata)
-{
-
 }
 
 void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
@@ -195,6 +191,32 @@ error:
   g_free(new_path);
 }
 
+void view_popup_menu_onRemove (GtkWidget *menuitem, gpointer userdata)
+{
+  GtkTreeView *treeview = GTK_TREE_VIEW(userdata);
+
+  GtkTreeSelection *selection;
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+
+  gchar *filmroll_path = NULL;
+  gchar *fullq = NULL;
+  
+  /* Get info about the filmroll (or parent) selected */
+  model = gtk_tree_view_get_model(treeview);
+  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+  gtk_tree_selection_get_selected(selection, &model, &iter);
+  gtk_tree_model_get(model, &iter, 1, &filmroll_path, -1);
+
+  /* Clean selected images, and add to the table those which are going to be deleted */
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
+ 
+  fullq = dt_util_dstrcat(fullq, "insert into selected_images select id from images where film_id  in (select id from film_rolls where folder like '%s%%')", filmroll_path);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
+
+  dt_control_remove_images();
+}
+
 void
 view_popup_menu (GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
 {
@@ -213,7 +235,6 @@ view_popup_menu (GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
                    (GCallback) view_popup_menu_onSync, treeview);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
-  /* FIXME: give some functionality */
   menuitem = gtk_menu_item_new_with_label(_("remove..."));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
   g_signal_connect(menuitem, "activate",
@@ -277,7 +298,7 @@ _count_images(const char *path)
   gchar query[1024] = {0};
   int count = 0;
 
-  snprintf(query, 1024, "select count(id) from images where film_id in (select id from film_rolls where folder like '%s%s')", path, "%");
+  snprintf(query, 1024, "select count(id) from images where film_id in (select id from film_rolls where folder like '%s%%')", path);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if (sqlite3_step(stmt) == SQLITE_ROW)
     count = sqlite3_column_int(stmt, 0);
@@ -660,7 +681,7 @@ static void _lib_folders_update_collection(const gchar *filmroll)
 
   gchar *complete_query = NULL;
 
-  complete_query = dt_util_dstrcat(complete_query, "film_id in (select id from film_rolls where folder like '%s%s')", filmroll, "%");
+  complete_query = dt_util_dstrcat(complete_query, "film_id in (select id from film_rolls where folder like '%s%%')", filmroll);
 
   dt_conf_set_string("plugins/lighttable/where_ext_query", complete_query);
   dt_conf_set_bool("plugins/lighttable/alt_query", 1);
