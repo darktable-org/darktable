@@ -279,11 +279,11 @@ int dt_opencl_finish(const int devid)
 
   cl_int err = (cl->dlocl->symbols->dt_clFinish)(cl->dev[devid].cmd_queue);
 
-  // take the opportunity to release some event handles, but without
+  // take the opportunity to release some event handles, but without printing
   // sumary statistics
-  dt_opencl_events_flush(devid, 0);
+  cl_int success = dt_opencl_events_flush(devid, 0);
 
-  return err;
+  return (err == CL_SUCCESS && success == CL_COMPLETE);
 }
 
 int dt_opencl_enqueue_barrier(const int devid)

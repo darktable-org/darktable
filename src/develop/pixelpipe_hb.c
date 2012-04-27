@@ -60,6 +60,7 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t
   pipe->processed_width  = pipe->backbuf_width  = pipe->iwidth = 0;
   pipe->processed_height = pipe->backbuf_height = pipe->iheight = 0;
   pipe->nodes = NULL;
+  pipe->dev = NULL;
   pipe->backbuf_size = size;
   if(!dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, pipe->backbuf_size))
     return 0;
@@ -553,10 +554,11 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       int valid_input_on_gpu_only = (cl_mem_input != NULL);
       
       /* general remark: in case of opencl errors within modules or out-of-memory on GPU, we transparently
-         fall back to the respective cpu module and continue in pixelpipe. If we encounter late errors(*), we set 
-         pipe->opencl_error=1, return this function with value 1, and leave appropriate action to the calling function,
-         which normally would restart pixelpipe without opencl.
-         (*) late errors are sometimes detected when trying to get back data from device into host memory */
+         fall back to the respective cpu module and continue in pixelpipe. If we encounter errors we set 
+         pipe->opencl_error=1, return this function with value 1, and leave appropriate action to the calling 
+         function, which normally would restart pixelpipe without opencl.
+         Late errors are sometimes detected when trying to get back data from device into host memory and
+         are treated in the same manner. */
 
       /* try to enter opencl path after checking some module specific pre-requisites */
       if(module->process_cl && piece->process_cl_ready)
@@ -605,6 +607,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           /* process blending */
           if (success_opencl)
             success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+
+
+          /* synchronization point for opencl pipe */
+          if (success_opencl)
+            success_opencl = dt_opencl_finish(pipe->devid);
+
         }
         else if(module->flags() & IOP_FLAGS_ALLOW_TILING)
         {
@@ -640,6 +648,10 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           /* do process blending on cpu (this is anyhow fast enough) */
           if (success_opencl)
             dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
+
+          /* synchronization point for opencl pipe */
+          if (success_opencl)
+            success_opencl = dt_opencl_finish(pipe->devid);
         }
         else
         {
@@ -647,6 +659,16 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           success_opencl = FALSE;
         }
 
+        /* if we got a shutdown or pipe has changed in between, make sure we release cl_mem_input and *cl_mem_output if needed. 
+           Rest of cleanup is done upstream */
+        if(pipe->shutdown || pipe->changed != DT_DEV_PIPE_UNCHANGED)
+        {
+          if (cl_mem_input) dt_opencl_release_mem_object(cl_mem_input);
+          if (*cl_mem_output) dt_opencl_release_mem_object(*cl_mem_output);
+          cl_mem_input = *cl_mem_output = NULL;
+          dt_pthread_mutex_unlock(&pipe->busy_mutex);
+          return 1;
+        }
         
         // if (rand() % 20 == 0) success_opencl = FALSE; // Test code: simulate spurious failures
 
@@ -707,6 +729,13 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           /* process blending on cpu */
           dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
         }
+
+        if(pipe->shutdown)
+        {
+          dt_pthread_mutex_unlock(&pipe->busy_mutex);
+          return 1;
+        }
+
       }
       else
       {
@@ -746,6 +775,13 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
         /* process blending */
         dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
+
+        if(pipe->shutdown)
+        {
+          dt_pthread_mutex_unlock(&pipe->busy_mutex);
+          return 1;
+        }
+
       }
 
       /* input is still only on GPU? Let's invalidate CPU input buffer then */

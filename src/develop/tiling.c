@@ -1313,6 +1313,11 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
     /* block until opencl queue has finished to free all used event handlers. needed here as with
        some OpenCL implementations we would otherwise run out of them */
     dt_opencl_finish(devid);
+
+    if(dt_iop_breakpoint(piece->pipe->dev, piece->pipe))
+    {
+      goto abort;
+    }
   }
 
   /* copy back final processed_maximum */
@@ -1322,6 +1327,11 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
   if(input != NULL) dt_opencl_release_mem_object(input);
   if(output != NULL) dt_opencl_release_mem_object(output);
   return TRUE;
+
+abort:
+  if(input != NULL) dt_opencl_release_mem_object(input);
+  if(output != NULL) dt_opencl_release_mem_object(output);
+  return FALSE;
 
 error:
   /* copy back stored processed_maximum */
@@ -1590,6 +1600,12 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
     /* block until opencl queue has finished to free all used event handlers. needed here as with
        some OpenCL implementations we would otherwise run out of them */
     dt_opencl_finish(devid);
+
+    if(dt_iop_breakpoint(piece->pipe->dev, piece->pipe))
+    {
+      goto abort;
+    }
+
   }
 
   /* copy back final processed_maximum */
@@ -1599,6 +1615,11 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
   if(input != NULL) dt_opencl_release_mem_object(input);
   if(output != NULL) dt_opencl_release_mem_object(output);
   return TRUE;
+
+abort:
+  if(input != NULL) dt_opencl_release_mem_object(input);
+  if(output != NULL) dt_opencl_release_mem_object(output);
+  return FALSE;
 
 error:
   /* copy back stored processed_maximum */
