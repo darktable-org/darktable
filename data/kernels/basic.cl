@@ -690,3 +690,51 @@ overexposed (read_only image2d_t in, write_only image2d_t out, const int width, 
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+
+/* kernel for the lowlight plugin. */
+kernel void
+lowlight (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+          const float4 XYZ_sw, read_only image2d_t lut)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float c = 0.5f;
+  const float threshold = 0.01f;
+
+  float4 XYZ;
+  float V;
+  float w;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  Lab_to_XYZ((float*)&pixel, (float *)&XYZ);
+
+  // calculate scotopic luminance
+  if (XYZ.x > threshold)
+  {
+    // normal flow
+    V = XYZ.y * ( 1.33f * ( 1.0f + (XYZ.y+XYZ.z)/XYZ.x) - 1.68f );
+  }
+  else
+  {
+    // low red flow, avoids "snow" on dark noisy areas
+    V = XYZ.y * ( 1.33f * ( 1.0f + (XYZ.y+XYZ.z)/threshold) - 1.68f );
+  }
+
+  // scale using empiric coefficient and fit inside limits
+  V = clamp(c*V, 0.0f, 1.0f);
+
+  // blending coefficient from curve
+  w = lookup(lut, pixel.x/100.0f);
+
+  XYZ = w * XYZ + (1.0f - w) * V * XYZ_sw;
+
+  XYZ_to_Lab((float *)&XYZ, (float *)&pixel);
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+
