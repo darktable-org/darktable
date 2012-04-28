@@ -85,6 +85,8 @@ typedef struct _control_indexer_img_t
 
 int32_t dt_control_indexer_job_run(dt_job_t *job)
 {
+  // if no indexing was requested, bail out:
+  if(!dt_conf_get_bool("run_similarity_indexer")) return 0;
 
   /* 
    * First pass run thru ALL images and collect the ones who needs to update
@@ -151,6 +153,8 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
     do {
       // bail out if we're shutting down:
       if(!dt_control_running()) break;
+      // if indexer was switched off during runtime, respect that as soon as we can:
+      if(!dt_conf_get_bool("run_similarity_indexer")) break;
 
       /* get the _control_indexer_img_t pointer */
       _control_indexer_img_t *idximg = imgitem->data;
