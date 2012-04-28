@@ -149,6 +149,9 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
     }
 
     do {
+      // bail out if we're shutting down:
+      if(!dt_control_running()) break;
+
       /* get the _control_indexer_img_t pointer */
       _control_indexer_img_t *idximg = imgitem->data;
 
