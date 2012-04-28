@@ -934,7 +934,7 @@
         <option>gnome keyring</option>
       </enum>
     </type>
-    <default>0</default>
+    <default>none</default>
     <shortdescription>password storage backend to use</shortdescription>
     <longdescription>the storage backend for password storage: none, kwallet, gnome keyring</longdescription>
   </dtconfig>
