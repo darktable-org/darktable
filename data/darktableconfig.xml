@@ -927,10 +927,16 @@
   </dtconfig>
   <dtconfig prefs="core">
     <name>plugins/pwstorage/pwstorage_backend</name>
-    <type>int</type>
+    <type>
+      <enum>
+        <option>none</option>
+        <option>kwallet</option>
+        <option>gnome keyring</option>
+      </enum>
+    </type>
     <default>0</default>
     <shortdescription>password storage backend to use</shortdescription>
-    <longdescription>the storage backend for password storage: 0 - none, 2 - kwallet, 3 - gnome keyring</longdescription>
+    <longdescription>the storage backend for password storage: none, kwallet, gnome keyring</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/iccprofile</name>
