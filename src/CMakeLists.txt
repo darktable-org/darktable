@@ -38,7 +38,6 @@ FILE(GLOB SOURCE_FILES
   "common/utility.c" 
   "common/variables.c" 
   "common/pwstorage/pwstorage.c" 
-  "common/pwstorage/backend_gconf.c"
   "common/opencl.c"
   "common/dynload.c"
   "common/dlopencl.c"

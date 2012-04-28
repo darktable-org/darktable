@@ -19,7 +19,6 @@
 #endif
 
 #include "pwstorage.h"
-#include "backend_gconf.h"
 
 #ifdef HAVE_GKEYRING
 #include "backend_gkeyring.h"
