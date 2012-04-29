@@ -161,7 +161,7 @@ if(Gettext_FOUND)
 endif(Gettext_FOUND)
 endif(USE_NLS)
 
-# needed to generate file "create_preferences.sh" accordingly
+# needed to generate file "preferences_gen.h" accordingly
 if(USE_OPENCL)
 	SET(HAVE_OPENCL 1)
 else()
@@ -219,18 +219,27 @@ else(CMAKE_SYSTEM MATCHES "SunOS.*")
 add_definitions("-D_XOPEN_SOURCE=700")
 endif(CMAKE_SYSTEM MATCHES "SunOS.*")
 
+# we need an xslt interpreter to generate preferences_gen.h and darktablerc
+find_program(Xsltproc_BIN xsltproc)
+if(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+	message(STATUS "Missing xsltproc")
+	find_program(Saxon_BIN saxon-xslt)
+	if(${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+		message(STATUS "Missing saxon-xslt")
+		message(FATAL_ERROR "No xslt interpreter found")
+	else(${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+		message(STATUS "Found saxon-xslt")
+	endif(${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+else(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+	message(STATUS "Found xsltproc")
+endif(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+
 # lets continue into build directories
 add_subdirectory(src)
 add_subdirectory(data)
 add_subdirectory(doc)
 
 include(cmake/darktable-packaging.cmake)
-
-# create_preferences.sh depending on opencl
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/tools/create_preferences.sh.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/create_preferences.sh"
-    IMMEDIATE @ONLY)
 
 # uninstall target
 configure_file(

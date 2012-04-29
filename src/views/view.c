@@ -759,13 +759,16 @@ dt_view_image_expose(
   {
     cairo_translate(cr, -.5f*buf.width, -.5f*buf.height);
     cairo_set_source_surface (cr, surface, 0, 0);
-    if(buf.width <= 8 && buf.height <= 8)
+    // set filter no nearest:
+    // in skull mode, we want to see big pixels.
+    // in 1 iir mode for the right mip, we want to see exactly what the pipe gave us, 1:1 pixel for pixel.
+    // in between, filtering just makes stuff go unsharp.
+    if((buf.width <= 8 && buf.height <= 8) || fabsf(scale - 1.0f) < 0.01f)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
     cairo_rectangle(cr, 0, 0, buf.width, buf.height);
     cairo_fill(cr);
     cairo_surface_destroy (surface);
 
-    if(zoom == 1) cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
     cairo_rectangle(cr, 0, 0, buf.width, buf.height);
   }
 
