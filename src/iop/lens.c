@@ -149,7 +149,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
       const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
 
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_out, roi_in, in, d, ovoid, modifier) schedule(static)
+      #pragma omp parallel for default(none) shared(roi_out, roi_in, in, d, ovoid, modifier, itype, interpolation) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
@@ -242,7 +242,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
       const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
 
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_in, roi_out, d, ovoid, modifier) schedule(static)
+      #pragma omp parallel for default(none) shared(roi_in, roi_out, d, ovoid, modifier, itype, interpolation) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
