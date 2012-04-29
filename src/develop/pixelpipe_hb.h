@@ -30,7 +30,6 @@
  * will be freed at the end.
  */
 struct dt_iop_module_t;
-struct dt_dev_pixelpipe_t;
 
 /** region of interest */
 typedef struct dt_iop_roi_t
@@ -98,8 +97,6 @@ typedef struct dt_dev_pixelpipe_t
   float processed_maximum[3];
   // gegl instances of pixel pipeline, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;
-  // the dev structure this pipe belongs to
-  struct dt_develop_t *dev;
   // event flag
   dt_dev_pixelpipe_change_t changed;
   // backbuffer (output)

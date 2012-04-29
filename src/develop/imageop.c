@@ -42,6 +42,8 @@
 #include <string.h>
 #include <gmodule.h>
 #include <xmmintrin.h>
+#include <time.h>
+#include <sys/select.h>
 
 
 static dt_develop_blend_params_t _default_blendop_params= {DEVELOP_BLEND_DISABLED, 100.0, 0, 0,
@@ -1176,11 +1178,22 @@ GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module)
 
 int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
 {
-  if(dev == NULL || pipe == NULL) return 0;
   if(pipe != dev->preview_pipe) sched_yield();
   if(pipe != dev->preview_pipe && pipe->changed == DT_DEV_PIPE_ZOOMED) return 1;
   if((pipe->changed != DT_DEV_PIPE_UNCHANGED && pipe->changed != DT_DEV_PIPE_ZOOMED) || dev->gui_leaving) return 1;
   return 0;
+}
+
+void dt_iop_nap(uint32_t usec)
+{
+  // relinquish processor
+  sched_yield();
+
+  // additionally wait the given amount of time 
+  struct timeval s;
+  s.tv_sec = 0;
+  s.tv_usec = usec;
+  select(0, NULL, NULL, NULL, &s);
 }
 
 void

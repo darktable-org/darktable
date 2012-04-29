@@ -60,7 +60,6 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t
   pipe->processed_width  = pipe->backbuf_width  = pipe->iwidth = 0;
   pipe->processed_height = pipe->backbuf_height = pipe->iheight = 0;
   pipe->nodes = NULL;
-  pipe->dev = NULL;
   pipe->backbuf_size = size;
   if(!dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, pipe->backbuf_size))
     return 0;
@@ -659,9 +658,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           success_opencl = FALSE;
         }
 
-        /* if we got a shutdown or pipe has changed in between, make sure we release cl_mem_input and *cl_mem_output if needed. 
-           Rest of cleanup is done upstream */
-        if(pipe->shutdown || pipe->changed != DT_DEV_PIPE_UNCHANGED)
+        if(pipe->shutdown)
         {
           if (cl_mem_input) dt_opencl_release_mem_object(cl_mem_input);
           if (*cl_mem_output) dt_opencl_release_mem_object(*cl_mem_output);

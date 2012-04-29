@@ -314,6 +314,9 @@ void dt_iop_reload_defaults(dt_iop_module_t *module);
 /** let plugins have breakpoints: */
 int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe);
 
+/** allow plugins to relinquish CPU and go to sleep for some time */
+void dt_iop_nap(uint32_t usec);
+
 /** colorspace enums */
 typedef enum dt_iop_colorspace_type_t
 {
