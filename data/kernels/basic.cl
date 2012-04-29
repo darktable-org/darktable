@@ -648,3 +648,93 @@ lens_vignette (read_only image2d_t in, write_only image2d_t out, const int width
   write_imagef (out, (int2)(x, y), pixel*scale); 
 }
 
+
+/* kernel to fill an image with a color (for the borders plugin). */
+kernel void
+borders_fill (write_only image2d_t out, const int width, const int height, const float4 color)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  write_imagef (out, (int2)(x, y), color);
+}
+
+
+/* kernel for the overexposed plugin. */
+kernel void
+overexposed (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+             const float lower, const float upper)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  if(pixel.x >= upper || pixel.y >= upper || pixel.z >= upper)
+  {
+    pixel.x = 1.0f;
+    pixel.y = 0.0f;
+    pixel.z = 0.0f;
+  }
+  else if(pixel.x <= lower || pixel.y <= lower || pixel.z <= lower)
+  {
+    pixel.x = 0.0f;
+    pixel.y = 0.0f;
+    pixel.z = 1.0f;
+  }
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+
+/* kernel for the lowlight plugin. */
+kernel void
+lowlight (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+          const float4 XYZ_sw, read_only image2d_t lut)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float c = 0.5f;
+  const float threshold = 0.01f;
+
+  float4 XYZ;
+  float V;
+  float w;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  Lab_to_XYZ((float*)&pixel, (float *)&XYZ);
+
+  // calculate scotopic luminance
+  if (XYZ.x > threshold)
+  {
+    // normal flow
+    V = XYZ.y * ( 1.33f * ( 1.0f + (XYZ.y+XYZ.z)/XYZ.x) - 1.68f );
+  }
+  else
+  {
+    // low red flow, avoids "snow" on dark noisy areas
+    V = XYZ.y * ( 1.33f * ( 1.0f + (XYZ.y+XYZ.z)/threshold) - 1.68f );
+  }
+
+  // scale using empiric coefficient and fit inside limits
+  V = clamp(c*V, 0.0f, 1.0f);
+
+  // blending coefficient from curve
+  w = lookup(lut, pixel.x/100.0f);
+
+  XYZ = w * XYZ + (1.0f - w) * V * XYZ_sw;
+
+  XYZ_to_Lab((float *)&XYZ, (float *)&pixel);
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+

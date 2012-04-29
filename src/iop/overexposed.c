@@ -25,6 +25,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
+#include "common/opencl.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -51,6 +52,13 @@ typedef struct dt_iop_overexposed_data_t
   float upper;
 } dt_iop_overexposed_data_t;
 
+typedef struct dt_iop_overexposed_global_data_t
+{
+  int kernel_overexposed;
+}
+dt_iop_overexposed_global_data_t;
+
+
 const char* name()
 {
   return _("overexposed");
@@ -59,6 +67,11 @@ const char* name()
 int groups()
 {
   return IOP_GROUP_COLOR;
+}
+
+int flags()
+{
+  return IOP_FLAGS_ALLOW_TILING;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -130,6 +143,58 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
   }
 }
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_overexposed_data_t *d = (dt_iop_overexposed_data_t *)piece->data;
+  dt_iop_overexposed_global_data_t *gd = (dt_iop_overexposed_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  const float lower  = d->lower / 100.0f;
+  const float upper  = d->upper / 100.0f;
+
+  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 0, sizeof(cl_mem), &dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 1, sizeof(cl_mem), &dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 2, sizeof(int), &width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 3, sizeof(int), &height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 4, sizeof(float), &lower);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 5, sizeof(float), &upper);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_overexposed, sizes);
+  if(err != CL_SUCCESS) goto error;
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_overexposed] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 2; // basic.cl from programs.conf
+  dt_iop_overexposed_global_data_t *gd = (dt_iop_overexposed_global_data_t *)malloc(sizeof(dt_iop_overexposed_global_data_t));
+  module->data = gd;
+  gd->kernel_overexposed = dt_opencl_create_kernel(program, "overexposed");
+}
+
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_overexposed_global_data_t *gd = (dt_iop_overexposed_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_overexposed);
+  free(module->data);
+  module->data = NULL;
+}
+
 
 // void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery){
 // 	dt_iop_overexposed_gui_data_t *data = (dt_iop_overexposed_gui_data_t*)self->gui_data;
