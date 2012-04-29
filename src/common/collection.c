@@ -542,10 +542,8 @@ dt_collection_update_query(const dt_collection_t *collection)
   else
   {
     gchar *text = dt_conf_get_string("plugins/lighttable/where_ext_query");
-    gchar *escaped_text = dt_util_str_replace(text, "'", "''");
 
-    complete_query = dt_util_dstrcat(complete_query, "%s", escaped_text);
-    g_free(escaped_text);
+    complete_query = dt_util_dstrcat(complete_query, "%s", text);
     g_free(text);
   }
 
