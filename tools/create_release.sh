@@ -7,7 +7,7 @@ read
 
 # prefix rc with ~, so debian thinks its less than
 dt_decoration=$(git describe --tags $branch | sed 's,^release-,,;s,-,+,;s,-,~,;' | sed 's/rc/~rc/')
-git archive master --prefix=darktable-$dt_decoration/ -o darktable-$dt_decoration.tar
+git archive HEAD --prefix=darktable-$dt_decoration/ -o darktable-$dt_decoration.tar
 
 mkdir -p tmp
 cd tmp

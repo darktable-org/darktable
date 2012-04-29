@@ -1,0 +1,12 @@
+<!ELEMENT dtconfiglist (dtconfig)*>
+<!ELEMENT dtconfig (name,type,default,shortdescription?,longdescription?)>
+<!ATTLIST dtconfig
+	prefs (core|gui) #IMPLIED
+>
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT type (#PCDATA|enum)*>
+<!ELEMENT enum (option)+>
+<!ELEMENT option (#PCDATA)>
+<!ELEMENT default (#PCDATA)>
+<!ELEMENT shortdescription (#PCDATA)>
+<!ELEMENT longdescription (#PCDATA)>
