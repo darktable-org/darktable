@@ -349,10 +349,13 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   }
 
   // adjust roi_in to minimally needed region
-  roi_in->x      = aabb_in[0]-2;
-  roi_in->y      = aabb_in[1]-2;
-  roi_in->width  = aabb_in[2]-aabb_in[0]+4;
-  roi_in->height = aabb_in[3]-aabb_in[1]+4;
+  // +/-1 stands for imprecision in transform
+  enum dt_interpolation itype = dt_interpolation_get_type();
+  const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
+  roi_in->x      = aabb_in[0] - interpolation->width - 1;
+  roi_in->y      = aabb_in[1] - interpolation->width - 1;
+  roi_in->width  = aabb_in[2]-aabb_in[0]+2*(interpolation->width+1);
+  roi_in->height = aabb_in[3]-aabb_in[1]+2*(interpolation->width+1);
 
   if(d->angle == 0.0f && d->all_off)
   {
