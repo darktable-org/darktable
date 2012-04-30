@@ -774,6 +774,12 @@ dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
   const int ht = widget->allocation.height;
   cairo_save(cr);
   dt_bauhaus_slider_data_t *d = &w->data.slider;
+  
+  // have a `fill ratio feel'
+  set_indicator_color(cr, .9f);
+  cairo_rectangle(cr, 2, 0.7*ht, d->pos*(wd-4-ht-2), 0.2*ht);
+  cairo_fill(cr);
+
   cairo_pattern_t *gradient = NULL;
   if(d->grad_cnt > 0)
   {
@@ -1096,7 +1102,6 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 
         // line for orientation
         dt_bauhaus_draw_baseline(w, cr);
-        dt_bauhaus_draw_label(w, cr);
         dt_bauhaus_draw_quad(w, cr);
 
         if(gtk_widget_is_sensitive(widget))
@@ -1129,6 +1134,8 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
           snprintf(text, 256, d->format, f);
           cairo_show_text(cr, text);
         }
+        // label on top of marker:
+        dt_bauhaus_draw_label(w, cr);
       }
       break;
     default:
