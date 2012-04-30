@@ -855,6 +855,20 @@
     <shortdescription>do high quality resampling during export</shortdescription>
     <longdescription>the image will first be processed in full resolution, and downscaled at the very end. this can result in better quality sometimes, but will always be slower.</longdescription>
   </dtconfig>
+  <dtconfig prefs="core">
+    <name>plugins/lighttable/export/pixel_interpolator</name>
+    <type>
+      <enum>
+        <option>bilinear</option>
+        <option>bicubic</option>
+        <option>lanczos2</option>
+        <option>lanczos3</option>
+      </enum>
+    </type>
+    <default>bilinear</default>
+    <shortdescription>pixel interpolator</shortdescription>
+    <longdescription>pixel interpolator used in rotation and lens correction (bilinear, bicubic, lanczos2, lanczos3).</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/width</name>
     <type>int</type>
