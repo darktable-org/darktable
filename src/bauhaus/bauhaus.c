@@ -995,7 +995,7 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         set_value_font(cr);
         char text[256];
         const float f = d->min + (d->oldpos+mouse_off)*(d->max-d->min);
-        const float fint = (int)f;
+        const float fint = floorf(f);
         snprintf(text, 256, d->format, fint);
         cairo_text_extents (cr, text, &ext);
         cairo_move_to (cr, wd-4-ht-ext.x_advance, get_value_font_size());
@@ -1124,7 +1124,7 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
           // TODO: merge that text with combo
           char text[256];
           const float f = d->min + d->pos*(d->max-d->min);
-          const float fint = (int)f;
+          const float fint = floorf(f);
           snprintf(text, 256, d->format, fint);
           cairo_text_extents_t ext;
           set_value_font(cr);
