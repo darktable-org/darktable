@@ -11,6 +11,7 @@
   GtkWidget *hbox = gtk_hbox_new(5, FALSE);
   GtkWidget *vbox1 = gtk_vbox_new(5, TRUE);
   GtkWidget *vbox2 = gtk_vbox_new(5, TRUE);
+  char tooltip[1024];
   gtk_box_pack_start(GTK_BOX(hbox), vbox1, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), vbox2, FALSE, FALSE, 0);
   GtkWidget *alignment = gtk_alignment_new(0.5, 0.0, 1.0, 0.0);
@@ -154,7 +155,8 @@
 		<xsl:text>  widget = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(widget), dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
   g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
-  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", _("double click to reset to `</xsl:text><xsl:value-of select="default"/><xsl:text>'"), (char *)NULL);
+  snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
+  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
 </xsl:text>
 	</xsl:template>
 
@@ -163,7 +165,8 @@
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
   g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
-  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", _("double click to reset to `</xsl:text><xsl:value-of select="default"/><xsl:text>'"), (char *)NULL);
+  snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
+  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
 </xsl:text>
 	</xsl:template>
 
@@ -172,7 +175,8 @@
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 5);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_float("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
   g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
-  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", _("double click to reset to `</xsl:text><xsl:value-of select="default"/><xsl:text>'"), (char *)NULL);
+  snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
+  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
 </xsl:text>
 	</xsl:template>
 
@@ -180,7 +184,8 @@
 		<xsl:text>  widget = gtk_check_button_new();
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
   g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
-  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", _("double click to reset to `</xsl:text><xsl:value-of select="translate(default, $lowercase, $uppercase)"/><xsl:text>'"), (char *)NULL);
+  snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="translate(default, $lowercase, $uppercase)"/><xsl:text>");
+  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
 </xsl:text>
 	</xsl:template>
 
@@ -199,7 +204,8 @@
 		<xsl:text>    gtk_combo_box_set_active(GTK_COMBO_BOX(widget), pos);
   }
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
-  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", _("double click to reset to `</xsl:text><xsl:value-of select="default"/><xsl:text>'"), (char *)NULL);
+  snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
+  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
 </xsl:text>
 	</xsl:template>
 

@@ -25,6 +25,7 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/opencl.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -73,6 +74,13 @@ typedef struct dt_iop_lowlight_data_t
 }
 dt_iop_lowlight_data_t;
 
+typedef struct dt_iop_lowlight_global_data_t
+{
+  int kernel_lowlight;
+}
+dt_iop_lowlight_global_data_t;
+
+
 const char
 *name()
 {
@@ -81,7 +89,7 @@ const char
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_ALLOW_TILING;
 }
 
 int
@@ -171,6 +179,68 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     dt_XYZ_to_Lab(XYZ,out);
   }
 }
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_lowlight_data_t *d = (dt_iop_lowlight_data_t *)piece->data;
+  dt_iop_lowlight_global_data_t *gd = (dt_iop_lowlight_global_data_t *)self->data;
+
+  cl_mem dev_m = NULL;
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  // scotopic white, blue saturated
+  float Lab_sw[3] = { 100.0f , 0.0f , -d->blueness };
+  float XYZ_sw[4];
+
+  dt_Lab_to_XYZ(Lab_sw, XYZ_sw);
+
+  dev_m = dt_opencl_copy_host_to_device(devid, d->lut, 256, 256, sizeof(float));
+  if (dev_m == NULL) goto error;
+
+  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowlight, 0, sizeof(cl_mem), &dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowlight, 1, sizeof(cl_mem), &dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowlight, 2, sizeof(int), &width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowlight, 3, sizeof(int), &height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowlight, 4, 4*sizeof(float), &XYZ_sw);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowlight, 5, sizeof(cl_mem), &dev_m);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lowlight, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  dt_opencl_release_mem_object(dev_m);
+  return TRUE;
+
+error:
+  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_lowlight] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 2; // basic.cl from programs.conf
+  dt_iop_lowlight_global_data_t *gd = (dt_iop_lowlight_global_data_t *)malloc(sizeof(dt_iop_lowlight_global_data_t));
+  module->data = gd;
+  gd->kernel_lowlight = dt_opencl_create_kernel(program, "lowlight");
+}
+
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_lowlight_global_data_t *gd = (dt_iop_lowlight_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_lowlight);
+  free(module->data);
+  module->data = NULL;
+}
+
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {

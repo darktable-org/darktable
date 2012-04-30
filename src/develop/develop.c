@@ -72,7 +72,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->preview_pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
     dt_dev_pixelpipe_init(dev->pipe);
     dt_dev_pixelpipe_init(dev->preview_pipe);
-
+    
     dev->histogram = (float *)malloc(sizeof(float)*4*256);
     dev->histogram_pre_tonecurve = (float *)malloc(sizeof(float)*4*256);
     dev->histogram_pre_levels = (float*)malloc(sizeof(float) * 4 * 256);

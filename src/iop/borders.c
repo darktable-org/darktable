@@ -23,6 +23,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "common/debug.h"
+#include "common/opencl.h"
 #include "dtgtk/label.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
@@ -60,6 +61,13 @@ typedef struct dt_iop_borders_gui_data_t
 }
 dt_iop_borders_gui_data_t;
 
+typedef struct dt_iop_borders_global_data_t
+{
+  int kernel_borders_fill;
+}
+dt_iop_borders_global_data_t;
+
+
 typedef struct dt_iop_borders_params_t dt_iop_borders_data_t;
 
 const char *name()
@@ -77,6 +85,11 @@ int
 operation_tags ()
 {
   return IOP_TAG_DISTORT;
+}
+
+int flags()
+{
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -179,6 +192,69 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     memcpy(out, in, cp_stride);
   }
 }
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
+  dt_iop_borders_global_data_t *gd = (dt_iop_borders_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  const int bw = (piece->buf_out.width  - piece->buf_in.width ) * roi_in->scale;
+  const int bh = (piece->buf_out.height - piece->buf_in.height) * roi_in->scale;
+  const int bx = MAX(bw/2 - roi_out->x, 0);
+  const int by = MAX(bh/2 - roi_out->y, 0);
+
+  const float col[4] = {d->color[0], d->color[1], d->color[2], 1.0f};
+
+  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+  dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 0, sizeof(cl_mem), &dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 1, sizeof(int), &width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 2, sizeof(int), &height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 3, 4*sizeof(float), &col);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_borders_fill, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  size_t iorigin[] = { 0, 0, 0};
+  size_t oorigin[] = { bx, by, 0};
+  size_t region[] = { roi_in->width, roi_in->height, 1};
+
+  // copy original input from dev_in -> dev_out as starting point
+  err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, oorigin, region);
+  if(err != CL_SUCCESS) goto error;
+
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_borders] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 2; // basic.cl from programs.conf
+  dt_iop_borders_global_data_t *gd = (dt_iop_borders_global_data_t *)malloc(sizeof(dt_iop_borders_global_data_t));
+  module->data = gd;
+  gd->kernel_borders_fill = dt_opencl_create_kernel(program, "borders_fill");
+}
+
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_borders_global_data_t *gd = (dt_iop_borders_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_borders_fill);
+  free(module->data);
+  module->data = NULL;
+}
+
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
