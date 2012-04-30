@@ -19,6 +19,7 @@ option(INSTALL_IOP_LEGACY "Also install old plugins we want to get rid of." OFF)
 option(BINARY_PACKAGE_BUILD "Sets march optimization to generic" OFF)
 option(APRIL_FOOLS "Add the \"file manager\" (a shell) to lighttable mode" OFF)
 option(GTK3_MIGRATION_CHECKS "Help getting darktable ready for GTK3" OFF)
+option(USE_XMLLINT "Run xmllint to test if darktableconfig.xml is valid" ON)
 
 # Generate multi arch triplet
 EXECUTE_PROCESS(COMMAND dpkg-architecture -qDEB_HOST_MULTIARCH OUTPUT_VARIABLE CMAKE_ARCH_TRIPLET OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -233,6 +234,15 @@ if(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
 else(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
 	message(STATUS "Found xsltproc")
 endif(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+
+# do we have xmllint?
+if(USE_XMLLINT)
+	find_program(Xmllint_BIN xmllint)
+	if(${Xmllint_BIN} STREQUAL "Xmllint_BIN-NOTFOUND")
+		message(STATUS "Could NOT find xmllint")
+		set(USE_XMLLINT OFF)
+	endif(${Xmllint_BIN} STREQUAL "Xmllint_BIN-NOTFOUND")
+endif(USE_XMLLINT)
 
 # lets continue into build directories
 add_subdirectory(src)

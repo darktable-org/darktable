@@ -49,6 +49,19 @@ install(FILES gdb_commands DESTINATION ${SHARE_INSTALL})
 #
 # Transform darktableconfig.xml into darktablerc
 #
+
+if(USE_XMLLINT)
+	execute_process(
+		COMMAND ${Xmllint_BIN} --valid ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../data/
+		OUTPUT_QUIET ERROR_QUIET
+		RESULT_VARIABLE Xmllint_RES
+	)
+	if(NOT ${Xmllint_RES} EQUAL 0 )
+		message(FATAL_ERROR "data/darktableconfig.xml is not valid")
+	endif(NOT ${Xmllint_RES} EQUAL 0 )
+endif(USE_XMLLINT)
+
 if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
   add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml
