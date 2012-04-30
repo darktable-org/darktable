@@ -42,6 +42,9 @@ typedef struct dt_lib_folders_t
   /* gui */
   GVolumeMonitor *gv_monitor;
   GtkBox *box_tree;
+
+  GPtrArray *buttons;
+  GPtrArray *trees;
 }
 dt_lib_folders_t;
 
@@ -189,6 +192,7 @@ error:
 
   g_free(filmroll_path);
   g_free(new_path);
+ 
 }
 
 void view_popup_menu_onRemove (GtkWidget *menuitem, gpointer userdata)
@@ -335,8 +339,13 @@ _show_filmroll_present(GtkTreeViewColumn *column,
 
 
 static GtkTreeStore *
-_folder_tree (sqlite3_stmt *stmt)
+_folder_tree ()
 {
+  /* intialize the tree store */
+  char query[1024];
+  sqlite3_stmt *stmt;
+  snprintf(query, 1024, "select * from film_rolls");
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   GtkTreeStore *store = gtk_tree_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
 
   // initialize the model with the paths
@@ -727,7 +736,7 @@ tree_row_activated (GtkTreeView *view, GtkTreePath *path, gpointer user_data)
   _lib_folders_update_collection(filmroll);
 }
 
-
+#if 0
 static void _draw_tree_gui (dt_lib_module_t *self)
 {
   GtkTreeModel *model;
@@ -786,7 +795,11 @@ static void _draw_tree_gui (dt_lib_module_t *self)
   GtkTreePath *root = gtk_tree_path_new_first();
   gtk_tree_model_get_iter (GTK_TREE_MODEL(d->store), &iter, root);
 
-  for (int i=0; i<gtk_tree_model_iter_n_children(GTK_TREE_MODEL(d->store), NULL); i++)
+  int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(d->store), NULL);
+  d->buttons = g_ptr_array_sized_(children);
+  d->trees = g_prt_array_sized(children);
+
+  for (int i=0; i<children; i++)
   {
     gtk_tree_model_iter_nth_child (GTK_TREE_MODEL(d->store), &iter, NULL, i);
   	gtk_tree_model_get_value (GTK_TREE_MODEL(d->store), &iter, 0, &value);
@@ -802,9 +815,12 @@ static void _draw_tree_gui (dt_lib_module_t *self)
     {
       button = gtk_button_new_with_label (mount_name);
     }
+    g_ptr_array_add(d->buttons, (gpointer) button);
     gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(button));
+    
     model = _create_filtered_model(GTK_TREE_MODEL(d->store), iter);
     tree = _create_treeview_display(GTK_TREE_MODEL(model));
+    g_ptr_array_add(d->trees, (gpointer) tree);
     gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(tree));
 
     g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d);
@@ -814,6 +830,7 @@ static void _draw_tree_gui (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->box_tree), TRUE, TRUE, 0);
 
 }
+#endif
 
 #if 0
 static void mount_changed (GVolumeMonitor *volume_monitor, GMount *mount, gpointer user_data)
@@ -826,6 +843,113 @@ static void mount_changed (GVolumeMonitor *volume_monitor, GMount *mount, gpoint
 }
 #endif
 
+void destroy_widget (gpointer data)
+{
+  GtkWidget *widget = (GtkWidget *)data;
+
+  gtk_widget_destroy(widget);
+}
+
+
+void
+ _lib_folders_gui_update(dt_lib_module_t *self)
+{
+#if 0
+  pthread_t tid;
+  tid = pthread_self();
+
+  fprintf(stderr, "[folders] Updating the module UI from thread %d\n", (int)tid);
+#endif
+
+  dt_lib_folders_t *d = (dt_lib_folders_t *)self->data;
+
+  const int old = darktable.gui->reset;
+  darktable.gui->reset = 1;
+
+  d->store = _folder_tree();
+
+  GtkWidget *button;
+  GtkTreeView *tree;
+
+  /* We have already inited the GUI once, clean around */
+  if (d->buttons != NULL)
+  {
+    for (int i=0; i<d->buttons->len; i++)
+    {
+      button = GTK_WIDGET(g_ptr_array_index (d->buttons, i));
+      g_ptr_array_free(d->buttons, TRUE);
+    }
+  }
+
+  if (d->trees != NULL)
+  {
+    for (int i=0; i<d->trees->len; i++)
+    {
+      tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
+      g_ptr_array_free(d->trees, TRUE);
+    }
+  }
+
+  /* set the UI */
+  GtkTreeModel *model;
+  GtkTreeIter iter;
+  
+  GtkTreePath *root = gtk_tree_path_new_first();
+  gtk_tree_model_get_iter (GTK_TREE_MODEL(d->store), &iter, root);
+
+  int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(d->store), NULL);
+  d->buttons = g_ptr_array_sized_new(children);
+  g_ptr_array_set_free_func (d->buttons, destroy_widget);
+
+  d->trees = g_ptr_array_sized_new(children);
+  g_ptr_array_set_free_func (d->trees, destroy_widget);
+
+  for (int i=0; i<children; i++)
+  {
+    GValue value;
+    memset(&value,0,sizeof(GValue));
+    gtk_tree_model_iter_nth_child (GTK_TREE_MODEL(d->store), &iter, NULL, i);
+
+  	gtk_tree_model_get_value (GTK_TREE_MODEL(d->store), &iter, 0, &value);
+    
+    const gchar *mount_name = g_value_get_string(&value);
+
+    g_value_unset(&value);
+
+    if (strcmp(mount_name, "Local")==0)
+    {
+      /* Add a button for local filesystem, to keep UI consistency */
+      button = gtk_button_new_with_label (_("Local HDD"));
+    }
+    else
+    {
+      button = gtk_button_new_with_label (mount_name);
+    }
+    g_ptr_array_add(d->buttons, (gpointer) button);
+    gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(button));
+    
+    model = _create_filtered_model(GTK_TREE_MODEL(d->store), iter);
+    tree = _create_treeview_display(GTK_TREE_MODEL(model));
+    g_ptr_array_add(d->trees, (gpointer) tree);
+    gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(tree));
+
+    g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d);
+    g_signal_connect(G_OBJECT (tree), "button-press-event", G_CALLBACK (view_onButtonPressed), NULL);
+    g_signal_connect(G_OBJECT (tree), "popup-menu", G_CALLBACK (view_onPopupMenu), NULL);
+  }
+
+  darktable.gui->reset = old;
+
+  gtk_widget_show_all(GTK_WIDGET(d->box_tree));
+
+}
+
+static void
+collection_updated(gpointer instance,gpointer self)
+{
+  _lib_folders_gui_update((dt_lib_module_t *)self);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -834,17 +958,14 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 5);
 
-  /* intialize the tree store */
-  char query[1024];
-  sqlite3_stmt *stmt;
-  snprintf(query, 1024, "select * from film_rolls");
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  dt_control_signal_connect(darktable.signals, 
+			    DT_SIGNAL_COLLECTION_CHANGED,
+			    G_CALLBACK(collection_updated),
+			    self);
 
-  //Populate the tree
-  d->store = _folder_tree (stmt);
-  sqlite3_finalize(stmt);
+  d->box_tree = GTK_BOX(gtk_vbox_new(FALSE,5));
 
-  /* set the UI */
+  /* set the monitor */
   d->gv_monitor = g_volume_monitor_get ();
 
 //  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-added", G_CALLBACK(mount_changed), self);
@@ -852,15 +973,23 @@ void gui_init(dt_lib_module_t *self)
 //  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-changed", G_CALLBACK(mount_changed), self);
 
   d->mounts = g_volume_monitor_get_mounts(d->gv_monitor);
-  _draw_tree_gui(self);
+  
+  _lib_folders_gui_update(self);
 
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->box_tree), TRUE, TRUE, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  // dt_lib_import_t *d = (dt_lib_import_t*)self->data;
+  dt_lib_folders_t *d = (dt_lib_folders_t*)self->data;
+
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self);
 
   /* cleanup mem */
+  g_ptr_array_free(d->buttons, TRUE);
+  g_ptr_array_free(d->trees, TRUE);
+
+  /* TODO: Cleanup gtktreestore and gtktreemodel all arounf the code */
   g_free(self->data);
   self->data = NULL;
 }
