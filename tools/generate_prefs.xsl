@@ -83,21 +83,23 @@
 
 <xsl:template match="dtconfig" mode="tab_block">
 	<xsl:text>
-  label = gtk_label_new(_("</xsl:text><xsl:value-of select="shortdescription"/><xsl:text>"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  labelev = gtk_event_box_new();
-  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-  gtk_container_add(GTK_CONTAINER(labelev), label);
+  {
+    label = gtk_label_new(_("</xsl:text><xsl:value-of select="shortdescription"/><xsl:text>"));
+    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+    labelev = gtk_event_box_new();
+    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+    gtk_container_add(GTK_CONTAINER(labelev), label);
 </xsl:text>
 	<xsl:apply-templates select="." mode="tab"/>
-	<xsl:text>  gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);</xsl:text>
+	<xsl:text>    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);</xsl:text>
 	<xsl:if test="longdescription != ''">
-		<xsl:text>&#xA;  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("</xsl:text><xsl:value-of select="longdescription"/><xsl:text>"), (char *)NULL);</xsl:text>
+		<xsl:text>&#xA;    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("</xsl:text><xsl:value-of select="longdescription"/><xsl:text>"), (char *)NULL);</xsl:text>
 	</xsl:if>
 	<xsl:text>
-  gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), (gpointer)widget);
+    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
+    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), (gpointer)widget);
+  }
 </xsl:text>
 </xsl:template>
 
@@ -152,62 +154,82 @@
 
 <!-- TAB -->
 	<xsl:template match="dtconfig[type='string']" mode="tab">
-		<xsl:text>  widget = gtk_entry_new();
-  gtk_entry_set_text(GTK_ENTRY(widget), dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
-  g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
-  snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
-  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
+		<xsl:text>    widget = gtk_entry_new();
+    gtk_entry_set_text(GTK_ENTRY(widget), dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
+    g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
+    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
+    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
 </xsl:text>
 	</xsl:template>
 
 	<xsl:template match="dtconfig[type='int']" mode="tab">
-		<xsl:text>  widget = gtk_spin_button_new_with_range(0, 1000000000, 1);
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
-  g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
-  snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
-  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
+		<xsl:text>    gint min = 0;&#xA;    gint max = 1000000000;&#xA;</xsl:text>
+		<xsl:apply-templates select="type" mode="range"/>
+		<xsl:text>    widget = gtk_spin_button_new_with_range(min, max, 1);
+    gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
+    g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
+    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
+    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
 </xsl:text>
 	</xsl:template>
 
 	<xsl:template match="dtconfig[type='float']" mode="tab">
-	<xsl:text>  widget = gtk_spin_button_new_with_range(-1000000000.0, 1000000000.0, 0.001);
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 5);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_float("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
-  g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
-  snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
-  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
+		<xsl:text>    float min = -1000000000.0;&#xA;    float max = 1000000000.0;&#xA;</xsl:text>
+		<xsl:apply-templates select="type" mode="range"/>
+		<xsl:text>    widget = gtk_spin_button_new_with_range(min, max, 0.001);
+    gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 5);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_float("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
+    g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
+    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
+    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
 </xsl:text>
 	</xsl:template>
 
   	<xsl:template match="dtconfig[type='bool']" mode="tab">
-		<xsl:text>  widget = gtk_check_button_new();
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
-  g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
-  snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="translate(default, $lowercase, $uppercase)"/><xsl:text>");
-  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
+		<xsl:text>    widget = gtk_check_button_new();
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
+    g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
+    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="translate(default, $lowercase, $uppercase)"/><xsl:text>");
+    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
 </xsl:text>
 	</xsl:template>
 
 	<xsl:template match="dtconfig[type/enum]" mode="tab">
-		<xsl:text>  widget = gtk_combo_box_new_text();
-  {
-    gchar *str = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
-    gint pos = -1;
+		<xsl:text>    widget = gtk_combo_box_new_text();
+    {
+      gchar *str = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
+      gint pos = -1;
 </xsl:text>
 		<xsl:for-each select="./type/enum/option">
-			<xsl:text>    gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "</xsl:text><xsl:value-of select="."/><xsl:text>");
-    if(pos == -1 &amp;&amp; strcmp(str, "</xsl:text><xsl:value-of select="."/><xsl:text>") == 0)
-      pos = </xsl:text><xsl:value-of select="position()-1" /><xsl:text>;
+			<xsl:text>      gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "</xsl:text><xsl:value-of select="."/><xsl:text>");
+      if(pos == -1 &amp;&amp; strcmp(str, "</xsl:text><xsl:value-of select="."/><xsl:text>") == 0)
+        pos = </xsl:text><xsl:value-of select="position()-1" /><xsl:text>;
 </xsl:text>
 		</xsl:for-each>
-		<xsl:text>    gtk_combo_box_set_active(GTK_COMBO_BOX(widget), pos);
-  }
-  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
-  snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
-  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
+		<xsl:text>      gtk_combo_box_set_active(GTK_COMBO_BOX(widget), pos);
+    }
+    g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
+    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
+    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
 </xsl:text>
 	</xsl:template>
+
+<!-- Grab min/max from input. Is there a better way? -->
+	<xsl:template match="type[@min and @max]" mode="range" priority="5">
+		<xsl:text>    min = </xsl:text><xsl:value-of select="@min"/><xsl:text>;&#xA;</xsl:text>
+		<xsl:text>    max = </xsl:text><xsl:value-of select="@max"/><xsl:text>;&#xA;</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="type[@min]" mode="range" priority="3">
+		<xsl:text>    min = </xsl:text><xsl:value-of select="@min"/><xsl:text>;&#xA;</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="type[@max]" mode="range" priority="3">
+		<xsl:text>    max = </xsl:text><xsl:value-of select="@max"/><xsl:text>;&#xA;</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="type" mode="range"  priority="1"/>
 
 
 </xsl:stylesheet>
