@@ -589,8 +589,13 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)dt_mipmap_cache_static_dead_image;
   dead_image_f((dt_mipmap_buffer_t *)(dsc+1));
 
-
-  cache->compression_type = CLAMPS(dt_conf_get_int("cache_compression"), 0, 2);
+  gchar *compression = dt_conf_get_string("cache_compression");
+  if(!strcmp(compression, "off"))
+    cache->compression_type = 0;
+  else if(!strcmp(compression, "low quality"))
+    cache->compression_type = 1;
+  else
+    cache->compression_type = 2;
   dt_print(DT_DEBUG_CACHE, "[mipmap_cache_init] using %s\n", cache->compression_type == 0 ? "no compression" :
       (cache->compression_type == 1 ? "low quality compression" : "slow high quality compression"));
 

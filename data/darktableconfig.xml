@@ -402,10 +402,16 @@
   </dtconfig>
   <dtconfig prefs="gui">
     <name>cache_compression</name>
-    <type>int</type>
-    <default>0</default>
+    <type>
+      <enum>
+        <option>off</option>
+        <option>low quality</option>
+        <option>slow</option>
+      </enum>
+    </type>
+    <default>off</default>
     <shortdescription>compression of thumbnail images</shortdescription>
-    <longdescription>0 - no compression in memory, jpg on disk. 1 - fast, low quality dxt1. 2 - slow, high quality dxt1 (same memory as 1).</longdescription>
+    <longdescription>off - no compression in memory, jpg on disk. fast, low quality dxt1. slow, high quality dxt1 (same memory as low quality variant).</longdescription>
   </dtconfig>
   <dtconfig>
     <name>database_cache_quality</name>
