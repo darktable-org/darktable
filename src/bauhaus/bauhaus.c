@@ -600,6 +600,8 @@ dt_bauhaus_combobox_new(dt_iop_module_t *self)
   d->num_labels = 0;
   d->defpos = 0;
   d->active = d->defpos;
+  d->editable = 0;
+  memset(d->text, 0, sizeof(d->text));
   g_signal_connect (G_OBJECT (w), "button-press-event",
                     G_CALLBACK (dt_bauhaus_combobox_button_press), (gpointer)NULL);
   g_signal_connect (G_OBJECT (w), "scroll-event",
@@ -616,6 +618,32 @@ void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text)
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->num_labels++;
   d->labels = g_list_append(d->labels, g_strdup(text));
+}
+
+void dt_bauhaus_combobox_set_editable(GtkWidget *widget, int editable)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  d->editable = editable ? 1 : 0;
+}
+
+const char* dt_bauhaus_combobox_get_text(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return 0;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  if(!d->editable) return 0;
+  return d->text;
+}
+
+void dt_bauhaus_combobox_set_text(GtkWidget *widget, const char *text)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  if(!d->editable) return;
+  strncpy(d->text, text, sizeof(d->text));
 }
 
 void dt_bauhaus_combobox_set(GtkWidget *widget, int pos)
@@ -839,6 +867,15 @@ dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
       }
       // didn't find it, but had only one choice?
       if(k == 1) dt_bauhaus_combobox_set(widget, kk);
+      if(d->editable && k == 0)
+      {
+        // alternatively: if editable always only use text?
+        // didn't find any match anymore?
+        memset(d->text, 0, sizeof(d->text));
+        strncpy(d->text, darktable.bauhaus->keys, MIN(darktable.bauhaus->keys_cnt, sizeof(d->text)));
+        // select custom entry
+        dt_bauhaus_combobox_set(widget, -1);
+      }
       break;
     }
     case DT_BAUHAUS_SLIDER:
@@ -1042,16 +1079,15 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       if(gtk_widget_is_sensitive(widget))
       {
         dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+        gchar *text = d->text;
         if(d->active >= 0)
-        {
-          cairo_text_extents_t ext;
-          set_text_color(cr, 1);
-          set_label_font(cr);
-          gchar *text = (gchar *)g_list_nth_data(d->labels, d->active);
-          cairo_text_extents (cr, text, &ext);
-          cairo_move_to (cr, width-4-height-ext.width, get_label_font_size());
-          cairo_show_text(cr, text);
-        }
+          text = (gchar *)g_list_nth_data(d->labels, d->active);
+        cairo_text_extents_t ext;
+        set_text_color(cr, 1);
+        set_label_font(cr);
+        cairo_text_extents (cr, text, &ext);
+        cairo_move_to (cr, width-4-height-ext.width, get_label_font_size());
+        cairo_show_text(cr, text);
       }
       break;
     case DT_BAUHAUS_SLIDER:
@@ -1335,6 +1371,7 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
       if(darktable.bauhaus->keys_cnt + 2 < 64 &&
         (event->string[0] >= 32 && event->string[0] <= 126))
       {
+        // only accept key input if still valid or editable?
         darktable.bauhaus->keys[darktable.bauhaus->keys_cnt++] = event->string[0];
         gtk_widget_queue_draw(darktable.bauhaus->popup_area);
       }
