@@ -319,6 +319,18 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t isizes[] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1};
   size_t osizes[] = { ROUNDUPWD(owidth), ROUNDUPHT(oheight), 1};
 
+  if(!d->lens->Maker)
+  {
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, oregion);
+    if(err != CL_SUCCESS) goto error;
+    return TRUE;
+  }
+
+  enum dt_interpolation itype = dt_interpolation_get_type();
+
+  // no opencl support for higher level interpolation yet
+  if(itype != DT_INTERPOLATION_BILINEAR) return FALSE;
+
   tmpbuf = (float *)dt_alloc_align(16, tmpbuflen);
   if(tmpbuf == NULL) goto error;
 
@@ -328,12 +340,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dev_tmpbuf = dt_opencl_alloc_device_buffer(devid, tmpbuflen);
   if(dev_tmpbuf == NULL) goto error;
 
-  if(!d->lens->Maker)
-  {
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, oregion);
-    if(err != CL_SUCCESS) goto error;
-    return TRUE;
-  }
 
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);

@@ -479,6 +479,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   }
   else
   {
+    enum dt_interpolation itype = dt_interpolation_get_type();
+
+    // no opencl support for higher level interpolation yet
+    if(itype != DT_INTERPOLATION_BILINEAR) return FALSE;
+
     int roi[2]  = { roi_in->x, roi_in->y };
     int roo[2]  = { roi_out->x, roi_out->y };
     float ci[2] = { d->cix, d->ciy };
