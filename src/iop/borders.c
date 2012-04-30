@@ -24,8 +24,8 @@
 #include "control/conf.h"
 #include "common/debug.h"
 #include "common/opencl.h"
+#include "bauhaus/bauhaus.h"
 #include "dtgtk/label.h"
-#include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/togglebutton.h"
 #include "dtgtk/button.h"
@@ -53,11 +53,10 @@ dt_iop_borders_params_t;
 
 typedef struct dt_iop_borders_gui_data_t
 {
-  GtkDarktableSlider *size;
-  GtkComboBoxEntry *aspect;
+  GtkWidget *size;
+  GtkWidget *aspect;
   GtkDarktableButton *colorpick;
   float aspect_ratios[9];
-  GtkWidget *swap_button;
 }
 dt_iop_borders_gui_data_t;
 
@@ -94,8 +93,6 @@ int flags()
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_iop(self, FALSE, NC_("accel", "swap aspect ratio"),
-                        0, 0);
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "border size"));
   dt_accel_register_iop(self, FALSE, NC_("accel", "pick gui color from image"),
                         0, 0);
@@ -104,8 +101,6 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t*)self->gui_data;
-  dt_accel_connect_button_iop(self, "swap aspect ratio",
-                              g->swap_button);
   dt_accel_connect_button_iop(self, "pick gui color from image",
                               GTK_WIDGET(g->colorpick));
   dt_accel_connect_slider_iop(self, "border size", GTK_WIDGET(g->size));
@@ -331,26 +326,25 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 }
 
 static void
-aspect_changed (GtkComboBox *combo, dt_iop_module_t *self)
+aspect_changed (GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
-  int which = gtk_combo_box_get_active(combo);
+  int which = dt_bauhaus_combobox_get(combo);
   if (which < 0)
   {
     p->aspect = self->dev->image_storage.width/(float)self->dev->image_storage.height;
-    gchar *text = gtk_combo_box_get_active_text(combo);
+    const char* text = dt_bauhaus_combobox_get_text(combo);
     if(text)
     {
-      gchar *c = text;
+      const char *c = text;
       while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
       if(c < text + strlen(text) - 1)
       {
-        *c = '\0';
+        // *c = '\0'; // not needed, atof will stop there.
         c++;
         p->aspect = atof(text) / atof(c);
       }
-      g_free(text);
     }
   }
   else if (which < 9)
@@ -364,11 +358,11 @@ aspect_changed (GtkComboBox *combo, dt_iop_module_t *self)
 }
 
 static void
-size_callback (GtkDarktableSlider *slider, dt_iop_module_t *self)
+size_callback (GtkWidget *slider, dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
-  p->size = dtgtk_slider_get_value(slider)/100.0;
+  p->size = dt_bauhaus_slider_get(slider)/100.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -414,13 +408,13 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
-  dtgtk_slider_set_value(g->size, p->size*100.0);
+  dt_bauhaus_slider_set(g->size, p->size*100.0f);
   int k = 0;
   for(;k<9;k++)
   {
     if(fabsf(p->aspect - g->aspect_ratios[k]) < 0.0001f)
     {
-      gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect), k);
+      dt_bauhaus_combobox_set(g->aspect, k);
       break;
     }
   }
@@ -428,8 +422,8 @@ void gui_update(struct dt_iop_module_t *self)
   {
     char text[128];
     snprintf(text, 128, "%.3f:1", p->aspect);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect), -1);
-    gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(g->aspect))), text);
+    dt_bauhaus_combobox_set(g->aspect, -1);
+    dt_bauhaus_combobox_set_text(g->aspect, text);
   }
 
   GdkColor c;
@@ -464,48 +458,48 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
 
-  self->widget = gtk_table_new(3, 3, FALSE);
-  gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
-  gtk_table_set_col_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
-  g->size = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 50.0, 1.0, p->size*100.0, 2));
-  dtgtk_slider_set_label(g->size, _("border size"));
-  dtgtk_slider_set_unit(g->size, "%");
+
+  g->size = dt_bauhaus_slider_new_with_range(self, 0.0, 50.0, 0.5, p->size*100.0, 2);
+  dt_bauhaus_widget_set_label(g->size, _("border size"));
+  dt_bauhaus_slider_set_format(g->size, "%.2f%%");
   g_signal_connect (G_OBJECT (g->size), "value-changed", G_CALLBACK (size_callback), self);
   g_object_set(G_OBJECT(g->size), "tooltip-text", _("size of the border in percent of the full image"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->size), 0, 3, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->size, TRUE, TRUE, 0);
 
-  GtkWidget *label = dtgtk_reset_label_new (_("aspect"), self, &p->aspect, sizeof(float));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(label), 0, 1, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  g->aspect = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_combobox_set_editable(g->aspect, 1);
+  dt_bauhaus_widget_set_label(g->aspect, _("aspect"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->aspect, TRUE, TRUE, 0);
 
-  g->aspect = GTK_COMBO_BOX_ENTRY(gtk_combo_box_entry_new_text());
-  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("image"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("golden cut"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("1:2"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("3:2"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("4:3"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("square"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("DIN"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("16:9"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("constant border"));
-  dt_gui_key_accel_block_on_focus(gtk_bin_get_child(GTK_BIN(g->aspect)));
+  dt_bauhaus_combobox_add(g->aspect, _("image"));
+  dt_bauhaus_combobox_add(g->aspect, _("golden cut"));
+  dt_bauhaus_combobox_add(g->aspect, _("1:2"));
+  dt_bauhaus_combobox_add(g->aspect, _("3:2"));
+  dt_bauhaus_combobox_add(g->aspect, _("4:3"));
+  dt_bauhaus_combobox_add(g->aspect, _("square"));
+  dt_bauhaus_combobox_add(g->aspect, _("DIN"));
+  dt_bauhaus_combobox_add(g->aspect, _("16:9"));
+  dt_bauhaus_combobox_add(g->aspect, _("constant border"));
 
-  g_signal_connect (G_OBJECT (g->aspect), "changed", G_CALLBACK (aspect_changed), self);
-  g_object_set(G_OBJECT(g->aspect), "tooltip-text", _("set the aspect ratio (w:h)\npress ctrl-x to swap sides"), (char *)NULL);
+  g_signal_connect (G_OBJECT (g->aspect), "value-changed", G_CALLBACK (aspect_changed), self);
+  g_object_set(G_OBJECT(g->aspect), "tooltip-text", _("select the aspect ratio or right click and type your own (w:h)"), (char *)NULL);
 
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->aspect), 1, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-
-  g->colorpick = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE));
+  GtkWidget *box = gtk_hbox_new(FALSE, 0);
+  g->colorpick = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE | CPF_STYLE_FLAT));
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), 24, 24);
-  label = dtgtk_reset_label_new (_("frame color"), self, &p->color, 3*sizeof(float));
+  GtkWidget *label = dtgtk_reset_label_new (_("frame color"), self, &p->color, 3*sizeof(float));
   g_signal_connect (G_OBJECT (g->colorpick), "clicked", G_CALLBACK (colorpick_callback), self);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->colorpick), 1, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
   g_object_set(G_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
   gtk_widget_set_size_request(tb, 24, 24);
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
-  gtk_table_attach(GTK_TABLE(self->widget), tb, 2, 3, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+
+  gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->colorpick), FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), tb, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
 
   g->aspect_ratios[0] = self->dev->image_storage.width/(float)self->dev->image_storage.height;
   if(g->aspect_ratios[0] < 1.0f)

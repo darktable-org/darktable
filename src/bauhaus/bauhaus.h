@@ -73,6 +73,8 @@ typedef struct dt_bauhaus_combobox_data_t
   int num_labels; // number of elements
   int active;     // currently active element
   int defpos;     // default position
+  int editable;   // 1 if arbitrary text may be typed
+  char text[180]; // roughly as much as a slider
   GList *labels;  // list of elements
 }
 dt_bauhaus_combobox_data_t;
@@ -187,6 +189,9 @@ GtkWidget* dt_bauhaus_combobox_new(dt_iop_module_t *self);
 
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text);
 void dt_bauhaus_combobox_set(GtkWidget *w, int pos);
+void dt_bauhaus_combobox_set_editable(GtkWidget *w, int editable);
+const char* dt_bauhaus_combobox_get_text(GtkWidget *w);
+void dt_bauhaus_combobox_set_text(GtkWidget *w, const char *text);
 int  dt_bauhaus_combobox_get(GtkWidget *w);
 
 #endif

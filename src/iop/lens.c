@@ -32,6 +32,7 @@
 #include "develop/imageop.h"
 #include "develop/tiling.h"
 #include "common/opencl.h"
+#include "common/interpolation.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
 #include "dtgtk/resetlabel.h"
@@ -42,7 +43,6 @@
 
 
 DT_MODULE(2)
-
 
 const char*
 name()
@@ -144,8 +144,12 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         free(d->tmpbuf2);
         d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
+
+      enum dt_interpolation itype = dt_interpolation_get_type();
+      const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
+
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_out, roi_in, in, d, ovoid, modifier) schedule(static)
+      #pragma omp parallel for default(none) shared(roi_out, roi_in, in, d, ovoid, modifier, itype, interpolation) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
@@ -160,15 +164,10 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
           {
             const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
             const int ii = (int)pi0, jj = (int)pi1;
-            if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2)
+            if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
             {
-              const float fi = pi0 - ii, fj = pi1 - jj;
-              const float* inp = in + ch*(roi_in->width*jj+ii) + c;
-              buf[c] = // in[ch*(roi_in->width*jj + ii) + c];
-                ((1.0f-fj)*(1.0f-fi)*inp[0] +
-                 (1.0f-fj)*(     fi)*inp[ch] +
-                 (     fj)*(     fi)*inp[ch+ch_width] +
-                 (     fj)*(1.0f-fi)*inp[ch_width]);
+              const float *inp = in + ch*(roi_in->width*jj+ii) + c;
+              buf[c] = dt_interpolation_compute(inp, pi0, pi1, itype, ch, ch_width);
             }
             else buf[c] = 0.0f;
           }
@@ -238,8 +237,12 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         free(d->tmpbuf2);
         d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
+
+      enum dt_interpolation itype = dt_interpolation_get_type();
+      const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
+
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_in, roi_out, d, ovoid, modifier) schedule(static)
+      #pragma omp parallel for default(none) shared(roi_in, roi_out, d, ovoid, modifier, itype, interpolation) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
@@ -254,15 +257,10 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
           {
             const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
             const int ii = (int)pi0, jj = (int)pi1;
-            if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2)
+            if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
             {
-              const float fi = pi0 - ii, fj = pi1 - jj;
               const float *inp = d->tmpbuf + ch*(roi_in->width*jj+ii)+c;
-              out[c] = // in[ch*(roi_in->width*jj + ii) + c];
-                ((1.0f-fj)*(1.0f-fi)*inp[0] +
-                 (1.0f-fj)*(     fi)*inp[ch] +
-                 (     fj)*(     fi)*inp[ch_width+ch] +
-                 (     fj)*(1.0f-fi)*inp[ch_width]);
+              out[c] = dt_interpolation_compute(inp, pi0, pi1, itype, ch, ch_width);
             }
             else out[c] = 0.0f;
           }
@@ -321,6 +319,18 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t isizes[] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1};
   size_t osizes[] = { ROUNDUPWD(owidth), ROUNDUPHT(oheight), 1};
 
+  if(!d->lens->Maker)
+  {
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, oregion);
+    if(err != CL_SUCCESS) goto error;
+    return TRUE;
+  }
+
+  enum dt_interpolation itype = dt_interpolation_get_type();
+
+  // no opencl support for higher level interpolation yet
+  if(itype != DT_INTERPOLATION_BILINEAR) return FALSE;
+
   tmpbuf = (float *)dt_alloc_align(16, tmpbuflen);
   if(tmpbuf == NULL) goto error;
 
@@ -330,12 +340,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dev_tmpbuf = dt_opencl_alloc_device_buffer(devid, tmpbuflen);
   if(dev_tmpbuf == NULL) goto error;
 
-  if(!d->lens->Maker)
-  {
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, oregion);
-    if(err != CL_SUCCESS) goto error;
-    return TRUE;
-  }
 
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
@@ -578,10 +582,14 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
         }
       }
     }
-    roi_in->x = fmaxf(0.0f, xm);
-    roi_in->y = fmaxf(0.0f, ym);
-    roi_in->width = fminf(orig_w-roi_in->x, xM - roi_in->x + 10);
-    roi_in->height = fminf(orig_h-roi_in->y, yM - roi_in->y + 10);
+
+    enum dt_interpolation itype = dt_interpolation_get_type();
+    const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
+
+    roi_in->x = fmaxf(0.0f, xm-interpolation->width);
+    roi_in->y = fmaxf(0.0f, ym-interpolation->width);
+    roi_in->width = fminf(orig_w-roi_in->x, xM - roi_in->x + interpolation->width);
+    roi_in->height = fminf(orig_h-roi_in->y, yM - roi_in->y + interpolation->width);
   }
   lf_modifier_destroy(modifier);
 }

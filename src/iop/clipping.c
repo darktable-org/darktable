@@ -25,6 +25,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "common/debug.h"
+#include "common/interpolation.h"
 #include "common/opencl.h"
 #include "dtgtk/label.h"
 #include "dtgtk/slider.h"
@@ -348,10 +349,13 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   }
 
   // adjust roi_in to minimally needed region
-  roi_in->x      = aabb_in[0]-2;
-  roi_in->y      = aabb_in[1]-2;
-  roi_in->width  = aabb_in[2]-aabb_in[0]+4;
-  roi_in->height = aabb_in[3]-aabb_in[1]+4;
+  // +/-1 stands for imprecision in transform
+  enum dt_interpolation itype = dt_interpolation_get_type();
+  const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
+  roi_in->x      = aabb_in[0] - interpolation->width - 1;
+  roi_in->y      = aabb_in[1] - interpolation->width - 1;
+  roi_in->width  = aabb_in[2]-aabb_in[0]+2*(interpolation->width+1);
+  roi_in->height = aabb_in[3]-aabb_in[1]+2*(interpolation->width+1);
 
   if(d->angle == 0.0f && d->all_off)
   {
@@ -398,8 +402,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   else
   {
+    enum dt_interpolation itype = dt_interpolation_get_type();
+    const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
+
 #ifdef _OPENMP
-    #pragma omp parallel for schedule(static) default(none) shared(d,ivoid,ovoid,roi_in,roi_out)
+    #pragma omp parallel for schedule(static) default(none) shared(d,ivoid,ovoid,roi_in,roi_out,itype,interpolation)
 #endif
     // (slow) point-by-point transformation.
     // TODO: optimize with scanlines and linear steps between?
@@ -435,16 +442,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         po[1] -= roi_in->y;
 
         const int ii = (int)po[0], jj = (int)po[1];
-        if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2)
+        if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
         {
           const float *in = ((float *)ivoid) + ch*(roi_in->width*jj+ii);
-          const float fi = po[0] - ii, fj = po[1] - jj;
           for(int c=0; c<3; c++,in++)
-            out[c] =
-              ((1.0f-fj)*(1.0f-fi)*in[0] +
-               (1.0f-fj)*(     fi)*in[ch] +
-               (     fj)*(     fi)*in[ch_width+ch] +
-               (     fj)*(1.0f-fi)*in[ch_width]);
+            out[c] = dt_interpolation_compute(in, po[0], po[1], itype, ch, ch_width);
         }
         else for(int c=0; c<3; c++) out[c] = 0.0f;
       }
@@ -477,6 +479,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   }
   else
   {
+    enum dt_interpolation itype = dt_interpolation_get_type();
+
+    // no opencl support for higher level interpolation yet
+    if(itype != DT_INTERPOLATION_BILINEAR) return FALSE;
+
     int roi[2]  = { roi_in->x, roi_in->y };
     int roo[2]  = { roi_out->x, roi_out->y };
     float ci[2] = { d->cix, d->ciy };
