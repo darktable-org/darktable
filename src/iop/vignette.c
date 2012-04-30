@@ -30,7 +30,7 @@
 #include "develop/blend.h"
 #include "control/control.h"
 #include "common/opencl.h"
-#include "dtgtk/slider.h"
+#include "bauhaus/bauhaus.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -81,15 +81,15 @@ dt_iop_vignette_params_t;
 
 typedef struct dt_iop_vignette_gui_data_t
 {
-  GtkDarktableSlider *scale;
-  GtkDarktableSlider *falloff_scale;
-  GtkDarktableSlider *brightness;
-  GtkDarktableSlider *saturation;
-  GtkDarktableSlider *center_x;
-  GtkDarktableSlider *center_y;
+  GtkWidget *scale;
+  GtkWidget *falloff_scale;
+  GtkWidget *brightness;
+  GtkWidget *saturation;
+  GtkWidget *center_x;
+  GtkWidget *center_y;
   GtkToggleButton *autoratio;
-  GtkDarktableSlider *whratio;
-  GtkDarktableSlider *shape;
+  GtkWidget *whratio;
+  GtkWidget *shape;
 }
 dt_iop_vignette_gui_data_t;
 
@@ -138,7 +138,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "vertical center"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shape"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "width-height ratio"));
-  }
+}
 
 void connect_key_accels(dt_iop_module_t *self)
 {
@@ -454,8 +454,8 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     }
     else if(grab == 1) // move the center
     {
-      dtgtk_slider_set_value(g->center_x, pzx*2.0 - 1.0);
-      dtgtk_slider_set_value(g->center_y, pzy*2.0 - 1.0);
+      dt_bauhaus_slider_set(g->center_x, pzx*2.0 - 1.0);
+      dt_bauhaus_slider_set(g->center_y, pzy*2.0 - 1.0);
     }
     else if(grab ==  2) // change the width
     {
@@ -469,21 +469,21 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
       {
         if(which == GDK_CONTROL_MASK)
         {
-          dtgtk_slider_set_value(g->scale, new_scale);
+          dt_bauhaus_slider_set(g->scale, new_scale);
         }
         else
         {
-          dtgtk_slider_set_value(g->whratio, ratio);
+          dt_bauhaus_slider_set(g->whratio, ratio);
         }
       }
       else
       {
-        dtgtk_slider_set_value(g->scale, new_scale);
+        dt_bauhaus_slider_set(g->scale, new_scale);
 
         if(which != GDK_CONTROL_MASK)
         {
           float new_whratio = 2.0 - 1.0 / ratio;
-          dtgtk_slider_set_value(g->whratio, new_whratio);
+          dt_bauhaus_slider_set(g->whratio, new_whratio);
         }
       }
     }
@@ -499,22 +499,22 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
         if(which == GDK_CONTROL_MASK)
         {
           float new_scale = 100.0 * new_vignette_h / max;
-          dtgtk_slider_set_value(g->scale, new_scale);
+          dt_bauhaus_slider_set(g->scale, new_scale);
         }
         else
         {
-          dtgtk_slider_set_value(g->whratio, 2.0-ratio);
+          dt_bauhaus_slider_set(g->whratio, 2.0-ratio);
         }
       }
       else
       {
         float new_scale = 100.0 * new_vignette_h / max;
-        dtgtk_slider_set_value(g->scale, new_scale);
+        dt_bauhaus_slider_set(g->scale, new_scale);
 
         if(which != GDK_CONTROL_MASK)
         {
           float new_whratio = 1.0 / ratio;
-          dtgtk_slider_set_value(g->whratio, new_whratio);
+          dt_bauhaus_slider_set(g->whratio, new_whratio);
         }
       }
     }
@@ -524,7 +524,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
       float max = 0.5*((p->whratio <= 1.0)?bigger_side*p->whratio:bigger_side);
       float delta_x = MIN(max, MAX(0.0, new_vignette_fx - vignette_w));
       float new_falloff = 100.0 * delta_x / max;
-      dtgtk_slider_set_value(g->falloff_scale, new_falloff);
+      dt_bauhaus_slider_set(g->falloff_scale, new_falloff);
     }
     else if(grab == 16) // change the falloff on the top
     {
@@ -532,7 +532,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
       float max = 0.5*((p->whratio > 1.0)?bigger_side*(2.0-p->whratio):bigger_side);
       float delta_y = MIN(max, MAX(0.0, new_vignette_fy - vignette_h));
       float new_falloff = 100.0 * delta_y / max;
-      dtgtk_slider_set_value(g->falloff_scale, new_falloff);
+      dt_bauhaus_slider_set(g->falloff_scale, new_falloff);
     }
     dt_control_queue_redraw_center();
     return 1;
@@ -813,72 +813,72 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 
 static void
-scale_callback (GtkDarktableSlider *slider, gpointer user_data)
+scale_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->scale= dtgtk_slider_get_value(slider);
+  p->scale = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-falloff_scale_callback (GtkDarktableSlider *slider, gpointer user_data)
+falloff_scale_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->falloff_scale= dtgtk_slider_get_value(slider);
+  p->falloff_scale = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-brightness_callback (GtkDarktableSlider *slider, gpointer user_data)
+brightness_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->brightness= dtgtk_slider_get_value(slider);
+  p->brightness = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-saturation_callback (GtkDarktableSlider *slider, gpointer user_data)
+saturation_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->saturation = dtgtk_slider_get_value(slider);
+  p->saturation = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-centerx_callback (GtkDarktableSlider *slider, gpointer user_data)
+centerx_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->center.x = dtgtk_slider_get_value(slider);
+  p->center.x = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-centery_callback (GtkDarktableSlider *slider, gpointer user_data)
+centery_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->center.y = dtgtk_slider_get_value(slider);
+  p->center.y = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-shape_callback (GtkDarktableSlider *slider, gpointer user_data)
+shape_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->shape = dtgtk_slider_get_value(slider);
+  p->shape = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -895,22 +895,18 @@ autoratio_callback (GtkToggleButton *button, gpointer user_data)
 }
 
 static void
-whratio_callback (GtkDarktableSlider *slider, gpointer user_data)
+whratio_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->whratio = dtgtk_slider_get_value(slider);
+  p->whratio = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)p1;
-#ifdef HAVE_GEGL
-  fprintf(stderr, "[vignette] TODO: implement gegl version!\n");
-  // pull in new params to gegl
-#else
   dt_iop_vignette_data_t *d = (dt_iop_vignette_data_t *)piece->data;
   d->scale = p->scale;
   d->falloff_scale = p->falloff_scale;
@@ -920,29 +916,17 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->autoratio=p->autoratio;
   d->whratio=p->whratio;
   d->shape=p->shape;
-#endif
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // create part of the gegl pipeline
-  piece->data = NULL;
-#else
   piece->data = malloc(sizeof(dt_iop_vignette_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
-#endif
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // clean up everything again.
-  (void)gegl_node_remove_child(pipe->gegl, piece->input);
-  // no free necessary, no data is alloc'ed
-#else
   free(piece->data);
-#endif
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -950,15 +934,15 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale, p->scale);
-  dtgtk_slider_set_value(g->falloff_scale, p->falloff_scale);
-  dtgtk_slider_set_value(g->brightness, p->brightness);
-  dtgtk_slider_set_value(g->saturation, p->saturation);
-  dtgtk_slider_set_value(g->center_x, p->center.x);
-  dtgtk_slider_set_value(g->center_y, p->center.y);
+  dt_bauhaus_slider_set(g->scale, p->scale);
+  dt_bauhaus_slider_set(g->falloff_scale, p->falloff_scale);
+  dt_bauhaus_slider_set(g->brightness, p->brightness);
+  dt_bauhaus_slider_set(g->saturation, p->saturation);
+  dt_bauhaus_slider_set(g->center_x, p->center.x);
+  dt_bauhaus_slider_set(g->center_y, p->center.y);
   gtk_toggle_button_set_active(g->autoratio, p->autoratio);
-  dtgtk_slider_set_value(g->whratio, p->whratio);
-  dtgtk_slider_set_value(g->shape, p->shape);
+  dt_bauhaus_slider_set(g->whratio, p->whratio);
+  dt_bauhaus_slider_set(g->shape, p->shape);
   gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
 }
 
@@ -991,50 +975,48 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_vignette_gui_data_t));
   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  GtkWidget *vbox, *hbox, *label1;
+  GtkWidget *hbox, *label1;
 
-  self->widget = gtk_hbox_new(FALSE, 0);
-  vbox = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
   label1 = dtgtk_reset_label_new (_("automatic ratio"), self, &p->autoratio, sizeof p->autoratio);
 
-  g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.5, p->scale, 2));
-  g->falloff_scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->falloff_scale, 2));
-  g->brightness = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-1.0, 1.0, 0.01, p->brightness, 3));
-  g->saturation = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-1.0, 1.0, 0.01, p->saturation, 3));
-  g->center_x = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-1.0, 1.0, 0.01, p->center.x, 3));
-  g->center_y = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-1.0, 1.0, 0.01, p->center.y, 3));
-  g->shape = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 5.0, 0.1, p->shape, 2));
+  g->scale         = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 0.5, p->scale, 2);
+  g->falloff_scale = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 1.0, p->falloff_scale, 2);
+  g->brightness    = dt_bauhaus_slider_new_with_range(self,-1.0, 1.0, 0.01, p->brightness, 3);
+  g->saturation    = dt_bauhaus_slider_new_with_range(self,-1.0, 1.0, 0.01, p->saturation, 3);
+  g->center_x      = dt_bauhaus_slider_new_with_range(self,-1.0, 1.0, 0.01, p->center.x, 3);
+  g->center_y      = dt_bauhaus_slider_new_with_range(self,-1.0, 1.0, 0.01, p->center.y, 3);
+  g->shape         = dt_bauhaus_slider_new_with_range(self,0.0, 5.0, 0.1, p->shape, 2);
+  g->whratio       = dt_bauhaus_slider_new_with_range(self,0.0, 2.0, 0.01, p->shape, 3);
   g->autoratio = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("automatic")));
-  g->whratio = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 2.0, 0.01, p->shape, 3));
 
-  dtgtk_slider_set_label(g->scale,_("scale"));
-  dtgtk_slider_set_unit(g->scale,"%");
-  dtgtk_slider_set_label(g->falloff_scale,_("fall-off strength"));
-  dtgtk_slider_set_unit(g->falloff_scale,"%");
-  dtgtk_slider_set_label(g->brightness,_("brightness"));
-  dtgtk_slider_set_label(g->saturation,_("saturation"));
-  dtgtk_slider_set_label(g->center_x,_("horizontal center"));
-  dtgtk_slider_set_label(g->center_y,_("vertical center"));
-  dtgtk_slider_set_label(g->shape,_("shape"));
-  dtgtk_slider_set_label(g->whratio,_("width/height ratio"));
+  dt_bauhaus_slider_set_format(g->scale,"%.02f%%");
+  dt_bauhaus_slider_set_format(g->falloff_scale,"%.02f%%");
+  dt_bauhaus_widget_set_label(g->scale,_("scale"));
+  dt_bauhaus_widget_set_label(g->falloff_scale,_("fall-off strength"));
+  dt_bauhaus_widget_set_label(g->brightness,_("brightness"));
+  dt_bauhaus_widget_set_label(g->saturation,_("saturation"));
+  dt_bauhaus_widget_set_label(g->center_x,_("horizontal center"));
+  dt_bauhaus_widget_set_label(g->center_y,_("vertical center"));
+  dt_bauhaus_widget_set_label(g->shape,_("shape"));
+  dt_bauhaus_widget_set_label(g->whratio,_("width/height ratio"));
 
   gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
 
-  hbox= gtk_hbox_new(FALSE,0);
+  hbox = gtk_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->autoratio), TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->falloff_scale), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->brightness), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->saturation), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->center_x), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->center_y), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->shape), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->whratio), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->scale, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->falloff_scale, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->brightness, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->center_x, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->center_y, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->shape, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->whratio, TRUE, TRUE, 0);
 
   g_object_set(G_OBJECT(g->scale), "tooltip-text", _("the radii scale of vignette for start of fall-off"), (char *)NULL);
   g_object_set(G_OBJECT(g->falloff_scale), "tooltip-text", _("the radii scale of vignette for end of fall-off"), (char *)NULL);
@@ -1045,12 +1027,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->shape), "tooltip-text", _("shape factor\n0 produces a rectangle\n1 produces a circle or elipse\n2 produces a diamond"), (char *)NULL);
   g_object_set(G_OBJECT(g->autoratio), "tooltip-text", _("enable to have the ratio automatically follow the image size"), (char *)NULL);
   g_object_set(G_OBJECT(g->whratio), "tooltip-text", _("width-to-height ratio"), (char *)NULL);
-
-  dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale),DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_format_type(DTGTK_SLIDER(g->falloff_scale),DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_format_type(DTGTK_SLIDER(g->center_x),DARKTABLE_SLIDER_FORMAT_RATIO);
-  dtgtk_slider_set_format_type(DTGTK_SLIDER(g->center_y),DARKTABLE_SLIDER_FORMAT_RATIO);
-  dtgtk_slider_set_format_type(DTGTK_SLIDER(g->whratio),DARKTABLE_SLIDER_FORMAT_RATIO);
 
   g_signal_connect (G_OBJECT (g->scale), "value-changed",
                     G_CALLBACK (scale_callback), self);
