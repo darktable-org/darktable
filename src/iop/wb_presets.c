@@ -2888,6 +2888,14 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-620", Flash, 0,		{ 2.039063, 1, 1.195313, 0 } },
   { "OLYMPUS", "E-620", Flash, 7,		{ 2.276786, 1.142857, 1, 0 } },
 
+  { "OLYMPUS", "E-M5", Daylight, 0,		{ 2.1016, 1, 1.8047, 0 } },
+  { "OLYMPUS", "E-M5", Shade, 0,		{ 2.5000, 1, 1.4219, 0 } },
+  { "OLYMPUS", "E-M5", Cloudy, 0,		{ 2.3047, 1, 1.6250, 0 } },
+  { "OLYMPUS", "E-M5", Incandescent, 0,		{ 1.3125, 1, 3.2422, 0 } },
+  { "OLYMPUS", "E-M5", Fluorescent, 0,		{ 2.0234, 1, 2.5781, 0 } },
+  { "OLYMPUS", "E-M5", Underwater, 0,		{ 1.6250, 1, 2.4844, 0 } },
+  { "OLYMPUS", "E-M5", Flash, 0,		{ 2.3750, 1, 1.6016, 0 } },
+
   { "OLYMPUS", "E-P1", Daylight, 0,		{ 1.835938, 1, 1.351563, 0 } },
   { "OLYMPUS", "E-P1", Shade, 0,		{ 2.195313, 1, 1.046875, 0 } },
   { "OLYMPUS", "E-P1", Cloudy, 0,		{ 2.031250, 1, 1.203125, 0 } },
