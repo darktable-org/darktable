@@ -81,9 +81,9 @@
   <dtconfig prefs="core">
     <name>opencl</name>
     <type>bool</type>
-    <default>false</default>
-    <shortdescription>activate opencl support (experimental)</shortdescription>
-    <longdescription>if found, use opencl runtime on your system for improved processing speed. this code is still experimental and not complete. please report crashes to the mailinglist darktable-devel at lists.sourceforge.net</longdescription>
+    <default>true</default>
+    <shortdescription>activate opencl support</shortdescription>
+    <longdescription>if found, use opencl runtime on your system for improved processing speed. can be switched on and off at any time.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_library</name>
