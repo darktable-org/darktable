@@ -685,7 +685,7 @@ void gui_init (struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
   g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
 
-  g->scale_tint  = dt_bauhaus_slider_new_with_range(self,0.1, 8.0, .001,1.0,3);
+  g->scale_tint  = dt_bauhaus_slider_new_with_range(self,0.1, 8.0, .01,1.0,3);
   g->scale_k     = dt_bauhaus_slider_new_with_range(self,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.,5000.0,0);
   g->scale_k_out = dt_bauhaus_slider_new_with_range(self,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.,5000.0,0);
   g->scale_r     = dt_bauhaus_slider_new_with_range(self,0.0, 8.0, .001,p->coeffs[0],3);
