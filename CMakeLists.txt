@@ -59,17 +59,13 @@ if(APPLE)
 endif(APPLE)
 
 if(CMAKE_COMPILER_IS_GNUCC)
-	EXEC_PROGRAM(${CMAKE_CXX_COMPILER}
-                     ARGS --version
-		     OUTPUT_VARIABLE _GCC_COMPILER_VERSION
-        )
-	STRING(REGEX REPLACE ".* ([0-9])\\.([0-9])\\.[0-9] .*" "\\1\\2" _GCC_COMPILER_VERSION ${_GCC_COMPILER_VERSION})
-	if(_GCC_COMPILER_VERSION VERSION_LESS 43)
-		message("-- Disable OpenMP with GCC 4.2 and older")
+  execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
+      OUTPUT_VARIABLE GCC_VERSION)
+  if (GCC_VERSION VERSION_LESS 4.3)
+		message("-- Disabling OpenMP because GCC is 4.2 or older!")
 		set(USE_OPENMP OFF)
-	endif(_GCC_COMPILER_VERSION VERSION_LESS 43)
-	set(_GCC_COMPILER_VERSION)
-endif(CMAKE_COMPILER_IS_GNUCC)
+  endif()
+endif()
 
 if(WIN32)
  message("-- Win32 build detected, setting default features")
