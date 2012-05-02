@@ -327,9 +327,9 @@ backtransform(float2 *p, float2 *o, const float4 m, const float2 t)
 }
 
 
-/* kernel for clip&rotate */
+/* kernel for clip&rotate: calculate positions */
 __kernel void
-clip_rotate(read_only image2d_t in, write_only image2d_t out, const int width, const int height, 
+clip_rotate_prep(read_only image2d_t in, write_only image2d_t out, const int width, const int height, 
             const int in_width, const int in_height,
             const int2 roi_in, const int2 roi_out, const float scale_in, const float scale_out,
             const int flip, const float2 ci, const float2 t, const float2 k, const float4 mat)
@@ -357,6 +357,25 @@ clip_rotate(read_only image2d_t in, write_only image2d_t out, const int width, c
   po.x -= roi_in.x;
   po.y -= roi_in.y;
 
+  float4 o = (float4)(po.x, po.y, 0.0f, 0.0f);
+
+  write_imagef (out, (int2)(x, y), o);
+}
+
+
+/* kernel for clip&rotate: bilinear interpolation (using opencl builtin interpolation) */
+__kernel void
+clip_rotate_bilinear(read_only image2d_t in, read_only image2d_t pos, write_only image2d_t out, const int width, const int height,
+                     const int in_width, const int in_height, local float4 *buffer)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int z = get_global_id(2);
+
+  if(x >= width || y >= height || z != 0) return;
+
+  float2 po = read_imagef(pos, sampleri, (int2)(x, y)).xy;
+
   const int ii = (int)po.x;
   const int jj = (int)po.y;
 
@@ -370,6 +389,77 @@ clip_rotate(read_only image2d_t in, write_only image2d_t out, const int width, c
   write_imagef (out, (int2)(x, y), o);
 }
 
+
+float
+interpolation_func_bicubic(float t)
+{
+  float r;
+  t = fabs(t);
+
+  r = (t >= 2.0f) ? 0.0f : ((t > 1.0f) ? (0.5f*(t*(-t*t + 5.0f*t - 8.0f) + 4.0f)) : (0.5f*(t*(3.0f*t*t - 5.0f*t) + 2.0f)));
+
+  return r;
+}
+
+
+/* kernel for clip&rotate: bicubic interpolation */
+__kernel void
+clip_rotate_bicubic(read_only image2d_t in, read_only image2d_t pos, write_only image2d_t out, const int width, const int height,
+                     const int in_width, const int in_height, local float4 *buffer)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int z = get_global_id(2);
+  const int xlsz = get_local_size(0);
+  const int zlsz = get_local_size(2);
+  const int xlid = get_local_id(0);
+  const int ylid = get_local_id(1);
+
+  const int kwidth = 2;
+  const int bufwd = 4;
+  const int bufsz = 16;
+
+  if(x >= width || y >= height) return;
+
+  // get our part of buffer
+  buffer += (ylid * xlsz + xlid) * bufsz;
+
+  // TODO: check if we should do this only for z == 0?
+  float2 po = read_imagef(pos, sampleri, (int2)(x, y)).xy;
+
+  // Find closest integer position
+  int tx = po.x;
+  int ty = po.y;
+
+  // now fill buffer
+  for(int n=0; n <= bufsz/zlsz; n++)
+  {
+    const int l = mad24(n, zlsz, z);
+    if(l >= bufsz) break;
+
+    int ii = l % bufwd - kwidth + 1;
+    int jj = l / bufwd - kwidth + 1;
+
+    // TODO: check speed-up if we pre-calculate convolutions kernels once per row/column
+    float wx = interpolation_func_bicubic((float)(tx + ii) - po.x);
+    float wy = interpolation_func_bicubic((float)(ty + jj) - po.y);
+    float w = wx * wy;
+
+    buffer[l]   = read_imagef(in, sampleri, (int2)(tx + ii, ty + jj)) * w;
+    buffer[l].w = w;
+  }  
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  // TODO: check speed-up of parallel summation
+  if(z != 0) return;
+
+  float4 o = (float4)0.0f;
+
+  for(int n=0; n < bufsz; n++) o += buffer[n];
+
+  write_imagef (out, (int2)(x, y), o / o.w);
+}
 
 
 /* kernel for flip */
