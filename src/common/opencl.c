@@ -37,11 +37,6 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   cl->dlocl = NULL;
   int exclude_opencl = 0;
 
-  // preliminary disable opencl in prefs. We will re-set it to previous state later if possible
-  // Will remain disabled if initialization fails.
-  const int prefs = dt_conf_get_bool("opencl");
-  dt_conf_set_bool("opencl", FALSE);
-
   // user selectable parameter defines minimum requirement on GPU memory
   // default is 768MB
   // values below 256 will be (re)set to 256
@@ -235,9 +230,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] successfully initialized.\n");
     cl->num_devs = dev;
     cl->inited = 1;
-    cl->enabled = prefs;
-    // set preferences to saved state
-    dt_conf_set_bool("opencl", prefs);
+    cl->enabled = dt_conf_get_bool("opencl");
   }
   else
   {

@@ -45,7 +45,7 @@
   </dtconfig>
   <dtconfig prefs="core">
     <name>host_memory_limit</name>
-    <type>int</type>
+    <type min="500">int</type>
     <default>1500</default>
     <shortdescription>host memory limit (in MB) for tiling</shortdescription>
     <longdescription>this variable controls the maximum amount of memory (in MB) a module may use during image processing. lower values will force memory hungry modules to process image with increasing number of tiles. setting this to 0 will omit any limit. values below 500 will be treated as 500. needs a restart.</longdescription>
@@ -81,9 +81,9 @@
   <dtconfig prefs="core">
     <name>opencl</name>
     <type>bool</type>
-    <default>false</default>
-    <shortdescription>activate opencl support (experimental)</shortdescription>
-    <longdescription>if found, use opencl runtime on your system for improved processing speed. this code is still experimental and not complete. please report crashes to the mailinglist darktable-devel at lists.sourceforge.net</longdescription>
+    <default>true</default>
+    <shortdescription>activate opencl support</shortdescription>
+    <longdescription>if found, use opencl runtime on your system for improved processing speed. can be switched on and off at any time.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_library</name>
@@ -360,7 +360,7 @@
   </dtconfig>
   <dtconfig prefs="gui">
     <name>ui_last/import_initial_rating</name>
-    <type>int</type>
+    <type min="0" max="5">int</type>
     <default>1</default>
     <shortdescription>initial import rating</shortdescription>
     <longdescription>initial star rating for all images when importing a filmroll</longdescription>

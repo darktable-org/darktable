@@ -5,6 +5,10 @@
 >
 <!ELEMENT name (#PCDATA)>
 <!ELEMENT type (#PCDATA|enum)*>
+<!ATTLIST type
+	min CDATA #IMPLIED
+	max CDATA #IMPLIED
+>
 <!ELEMENT enum (option)+>
 <!ELEMENT option (#PCDATA)>
 <!ELEMENT default (#PCDATA)>
