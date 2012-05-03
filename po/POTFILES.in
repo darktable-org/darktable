@@ -1,5 +1,5 @@
 build/src/preferences_gen.h
-data/darktable.schemas
+data/darktableconfig.xml
 src/common/collection.c
 src/common/darktable.h
 src/common/darktable.c
