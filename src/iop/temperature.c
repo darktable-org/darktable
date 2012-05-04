@@ -43,6 +43,7 @@ typedef struct dt_iop_temperature_global_data_t
 {
   int kernel_whitebalance_1ui;
   int kernel_whitebalance_4f;
+  int kernel_whitebalance_1f;
 }
 dt_iop_temperature_global_data_t;
 
@@ -273,12 +274,24 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const int devid = piece->pipe->devid;
   const int filters = dt_image_flipped_filter(&piece->pipe->image);
-  const int ui = ((piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW) && filters);
   float coeffs[3] = {d->coeffs[0], d->coeffs[1], d->coeffs[2]};
-  if(ui) for(int k=0; k<3; k++) coeffs[k] /= 65535.0f;
   cl_mem dev_coeffs = NULL;
   cl_int err = -999;
+  int kernel = -1;
 
+  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && piece->pipe->image.bpp != 4)
+  {
+    kernel = gd->kernel_whitebalance_1ui;
+    for(int k=0; k<3; k++) coeffs[k] /= 65535.0f;
+  }
+  else if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && piece->pipe->image.bpp == 4)
+  {
+    kernel = gd->kernel_whitebalance_1f;
+  }
+  else
+  {
+    kernel = gd->kernel_whitebalance_4f;
+  }
 
   dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3, coeffs);
   if (dev_coeffs == NULL) goto error;
@@ -287,21 +300,17 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int height = roi_in->height;
 
   size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
-  const int kernel = ui ? gd->kernel_whitebalance_1ui : gd->kernel_whitebalance_4f;
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
   dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&dev_coeffs);
-  if(ui)
-  {
-    dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(uint32_t), (void *)&filters);
-    dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(uint32_t), (void *)&roi_out->x);
-    dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(uint32_t), (void *)&roi_out->y);
-  }
+  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(uint32_t), (void *)&filters);
+  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(uint32_t), (void *)&roi_out->x);
+  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(uint32_t), (void *)&roi_out->y);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
-  dt_opencl_finish(devid);
+
   dt_opencl_release_mem_object(dev_coeffs);
   for(int k=0; k<3; k++)
     piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
@@ -428,6 +437,7 @@ void init_global(dt_iop_module_so_t *module)
   module->data = gd;
   gd->kernel_whitebalance_1ui = dt_opencl_create_kernel(program, "whitebalance_1ui");
   gd->kernel_whitebalance_4f  = dt_opencl_create_kernel(program, "whitebalance_4f");
+  gd->kernel_whitebalance_1f  = dt_opencl_create_kernel(program, "whitebalance_1f");
 }
 
 void init (dt_iop_module_t *module)
@@ -452,6 +462,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_whitebalance_1ui);
   dt_opencl_free_kernel(gd->kernel_whitebalance_4f);
+  dt_opencl_free_kernel(gd->kernel_whitebalance_1f);
   free(module->data);
   module->data = NULL;
 }
