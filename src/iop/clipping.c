@@ -145,6 +145,8 @@ typedef struct dt_iop_clipping_global_data_t
   int kernel_clip_rotate_prep;
   int kernel_clip_rotate_bilinear;
   int kernel_clip_rotate_bicubic;
+  int kernel_clip_rotate_lanczos2;
+  int kernel_clip_rotate_lanczos3;
 }
 dt_iop_clipping_global_data_t;
 
@@ -506,7 +508,16 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
         buf = 16;
         crkernel = gd->kernel_clip_rotate_bicubic;
         break;
-
+      case DT_INTERPOLATION_LANCZOS2:
+        zblocksize = 16;
+        buf = 16;
+        crkernel = gd->kernel_clip_rotate_lanczos2;
+        break;
+      case DT_INTERPOLATION_LANCZOS3:
+        zblocksize = 64;
+        buf = 36;
+        crkernel = gd->kernel_clip_rotate_lanczos3;
+        break;
       default:
         return FALSE;
     }
@@ -640,6 +651,8 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_clip_rotate_prep = dt_opencl_create_kernel(program, "clip_rotate_prep");
   gd->kernel_clip_rotate_bilinear = dt_opencl_create_kernel(program, "clip_rotate_bilinear");
   gd->kernel_clip_rotate_bicubic = dt_opencl_create_kernel(program, "clip_rotate_bicubic");
+  gd->kernel_clip_rotate_lanczos2 = dt_opencl_create_kernel(program, "clip_rotate_lanczos2");
+  gd->kernel_clip_rotate_lanczos3 = dt_opencl_create_kernel(program, "clip_rotate_lanczos3");
 }
 
 
@@ -649,6 +662,8 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_clip_rotate_prep);
   dt_opencl_free_kernel(gd->kernel_clip_rotate_bilinear);
   dt_opencl_free_kernel(gd->kernel_clip_rotate_bicubic);
+  dt_opencl_free_kernel(gd->kernel_clip_rotate_lanczos2);
+  dt_opencl_free_kernel(gd->kernel_clip_rotate_lanczos3);
   free(module->data);
   module->data = NULL;
 }
