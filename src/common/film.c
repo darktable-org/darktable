@@ -404,12 +404,14 @@ void dt_film_import1(dt_film_t *film)
   } while( (image = g_list_next(image)) != NULL);
   
   dt_control_backgroundjobs_destroy(darktable.control, jid);
+  dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_CHANGED);
 
 }
 
 int dt_film_import(const char *dirname)
 {
   return dt_film_import_blocking(dirname,0);
+  dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_CHANGED);
 }
 
 void dt_film_remove_empty()
@@ -419,6 +421,8 @@ void dt_film_remove_empty()
                         "delete from film_rolls where id in (select id from film_rolls as B where "
                         "(select count(A.id) from images as A where A.film_id=B.id)=0)",
                         NULL, NULL, NULL);
+
+  dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_CHANGED);
 }
 
 int dt_film_is_empty(const int id)
@@ -483,6 +487,7 @@ void dt_film_remove(const int id)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   // dt_control_update_recent_films();
+  dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_CHANGED);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -71,6 +71,9 @@ typedef enum dt_signal_t
   /** \brief This signal is raised when collection query is changed */
   DT_SIGNAL_COLLECTION_CHANGED,
 
+  /** \brief This signal is raised when a filmroll is added/deleted/changed */
+  DT_SIGNAL_FILMROLLS_CHANGED,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 }

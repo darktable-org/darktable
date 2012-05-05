@@ -959,7 +959,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_vbox_new(FALSE, 5);
 
   dt_control_signal_connect(darktable.signals, 
-			    DT_SIGNAL_COLLECTION_CHANGED,
+			    DT_SIGNAL_FILMROLLS_CHANGED,
 			    G_CALLBACK(collection_updated),
 			    self);
 

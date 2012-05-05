@@ -40,6 +40,8 @@ static char *_signal_name[DT_SIGNAL_COUNT] =
 
   "dt-collection-changed",                        // DT_SIGNAL_COLLECTION_CHANGED
 
+  "dt-filmrolls-changed",                         // DT_SIGNAL_FILMROLLS_CHANGED
+
   /* Develop related signals */
   "dt-develop-initialized",                       // DT_SIGNAL_DEVELOP_INITIALIZED
   "dt-develop-mipmap-updated",                    // DT_SIGNAL_DEVELOP_MIPMAP_UPDATED
