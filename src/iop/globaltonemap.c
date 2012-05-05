@@ -120,7 +120,7 @@ static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpi
       float *inp = in + ch*k;
       float *outp = out + ch*k;
       float l = inp[0]/100.0;
-      outp[0] = 100.0 * (l/1.0f+l);
+      outp[0] = 100.0 * (l/(1.0f+l));
       outp[1] = inp[1];
       outp[2] = inp[2];
     }
@@ -135,14 +135,15 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   const int ch = piece->colors;
 
   /* precalcs */
-  float lwmax = 0.0f;
+  const float eps = 0.0001f;
+  float lwmax = eps;
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
     float *inp = in + ch*k;
-    lwmax = fmax(lwmax, (inp[0]*0.01f));
+    lwmax = MAX(lwmax, (inp[0]*0.01f));
   }
   const float ldc = data->drago.max_light * 0.01 / log10f(lwmax+1); 
-  const float bl = logf(data->drago.bias) / logf(0.5);
+  const float bl = logf(MAX(eps, data->drago.bias)) / logf(0.5);
 
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, in, out, lwmax) schedule(static)
@@ -152,7 +153,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
       float *inp = in + ch*k;
       float *outp = out + ch*k;
       float lw = inp[0]*0.01f;
-      outp[0] = 100.0f * (ldc * logf(lw + 1) / logf(2.0f + (powf(lw/lwmax,bl)) * 8.0)); 
+      outp[0] = 100.0f * (ldc * logf(MAX(eps, lw + 1.0f)) / logf(MAX(eps, 2.0f + (powf(lw/lwmax,bl)) * 8.0f)));
       outp[1] = inp[1];
       outp[2] = inp[2];
     }
@@ -174,7 +175,7 @@ static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe
       float *inp = in + ch*k;
       float *outp = out + ch*k;
       float l = inp[0]/100.0;
-      float x = fmax(0, l-0.004);
+      float x = MAX(0.0f, l-0.004f);
       outp[0] = 100.0 * ((x*(6.2*x+.5))/(x*(6.2*x+1.7)+0.06));
       outp[1] = inp[1];
       outp[2] = inp[2];
