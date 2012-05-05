@@ -21,6 +21,9 @@
 #include "common/darktable.h"
 #include "gui/gtk.h"
 
+// define this to get boxes instead of arrow indicators, more like our previous version was:
+// #define DT_BAUHAUS_OLD
+
 // new type dt_bauhaus_widget_t, gtk functions start with dt_bh (so they don't collide with ours), we inherit from drawing area
 G_DEFINE_TYPE (DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA);
 
@@ -53,12 +56,14 @@ get_line_height()
   return darktable.bauhaus->scale * darktable.bauhaus->line_height;
 }
 
+#ifndef DT_BAUHAUS_OLD
 static float
 get_marker_size()
 {
   // will be fraction of the height, so doesn't depend on scale itself.
   return darktable.bauhaus->marker_size;
 }
+#endif
 
 static float
 get_label_font_size()
@@ -695,7 +700,7 @@ void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g,
 }
 
 
-// TODO: into draw.h
+#ifndef DT_BAUHAUS_OLD
 static void
 draw_equilateral_triangle(cairo_t *cr, float radius)
 {
@@ -706,6 +711,41 @@ draw_equilateral_triangle(cairo_t *cr, float radius)
   cairo_line_to(cr,  sin, -cos);
   cairo_line_to(cr, 0.0, radius);
 }
+#endif
+
+static void
+dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t *cr)
+{
+  // draw scale indicator
+  GtkWidget *widget = GTK_WIDGET(w);
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+  const int wd = widget->allocation.width;
+  const int ht = widget->allocation.height;
+  cairo_save(cr);
+  // dt_bauhaus_slider_data_t *d = &w->data.slider;
+  
+  const float l = 4.0f/wd;
+  const float r = 1.0f-(ht+4.0f)/wd;
+  set_indicator_color(cr, 1);
+#ifndef DT_BAUHAUS_OLD
+  cairo_translate(cr, (l + pos*(r-l))*wd, get_label_font_size());
+  cairo_scale(cr, 1.0f, -1.0f);
+  draw_equilateral_triangle(cr, ht*get_marker_size());
+  cairo_fill_preserve(cr);
+  cairo_set_line_width(cr, 1.);
+  set_grid_color(cr, 1);
+  cairo_stroke(cr);
+#else
+  cairo_translate(cr, (l + pos*(r-l))*wd, 0);
+  cairo_set_line_width(cr, 1.);
+  cairo_move_to(cr, 0.0f, 0.0f);
+  cairo_line_to(cr, 0.0f, ht);
+  set_grid_color(cr, 1);
+  cairo_stroke(cr);
+#endif
+  cairo_restore(cr);
+}
+
 
 static void
 dt_bauhaus_clear(dt_bauhaus_widget_t *w, cairo_t *cr)
@@ -775,10 +815,11 @@ dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
   cairo_save(cr);
   dt_bauhaus_slider_data_t *d = &w->data.slider;
   
-  // have a `fill ratio feel'
-  set_indicator_color(cr, .9f);
-  cairo_rectangle(cr, 2, 0.7*ht, d->pos*(wd-4-ht-2), 0.2*ht);
-  cairo_fill(cr);
+#ifdef DT_BAUHAUS_OLD
+  const float htm = 0.0f, htM = ht;
+#else
+  const float htm = 0.7f*ht, htM = 0.2*ht;
+#endif
 
   cairo_pattern_t *gradient = NULL;
   if(d->grad_cnt > 0)
@@ -790,7 +831,7 @@ dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
           d->grad_col[k][0],
           d->grad_col[k][1],
           d->grad_col[k][2],
-          .4f);
+          .2f);
     cairo_set_source(cr, gradient);
   }
   else
@@ -799,11 +840,17 @@ dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
     set_grid_color(cr, .9f);
   }
 
-  cairo_rectangle(cr, 2, 0.7*ht, wd-4-ht-2, 0.2*ht);
+  cairo_rectangle(cr, 2, htm, wd-4-ht-2, htM);
   cairo_fill_preserve(cr);
   cairo_set_line_width(cr, 1.);
   set_grid_color(cr, 1.);
   cairo_stroke(cr);
+
+  // have a `fill ratio feel'
+  set_indicator_color(cr, .9f);
+  cairo_rectangle(cr, 2, htm, d->pos*(wd-4-ht-2), htM);
+  cairo_fill(cr);
+
   cairo_restore(cr);
 
   if(d->grad_cnt > 0)
@@ -973,20 +1020,8 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         cairo_stroke(cr);
         cairo_restore(cr);
 
-        const float l = 4.0f/width;
-        const float r = 1.0f-(ht+4.0f)/width;
         // draw indicator
-        cairo_save(cr);
-        set_indicator_color(cr, 1);
-        cairo_set_line_width(cr, 1.);
-        cairo_translate(cr, (l + (d->oldpos+mouse_off)*(r-l))*wd, get_label_font_size());
-        cairo_scale(cr, 1.0f, -1.0f);
-        draw_equilateral_triangle(cr, ht*get_marker_size());
-        cairo_fill_preserve(cr);
-        cairo_set_line_width(cr, 1.0f);
-        set_grid_color(cr, 1);
-        cairo_stroke(cr);
-        cairo_restore(cr);
+        dt_bauhaus_draw_indicator(w, d->oldpos+mouse_off, cr);
 
         // draw numerical value:
         cairo_save(cr);
@@ -1106,20 +1141,7 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 
         if(gtk_widget_is_sensitive(widget))
         {
-          // draw scale indicator
-          cairo_save(cr);
-          const float l = 4.0f/width;
-          const float r = 1.0f-(height+4.0f)/width;
-          set_indicator_color(cr, 1);
-          cairo_translate(cr, (l + d->pos*(r-l))*width, get_label_font_size());
-          cairo_scale(cr, 1.0f, -1.0f);
-          draw_equilateral_triangle(cr, height*get_marker_size());
-          // cairo_fill(cr);
-          cairo_fill_preserve(cr);
-          cairo_set_line_width(cr, 1.);
-          set_grid_color(cr, 1);
-          cairo_stroke(cr);
-          cairo_restore(cr);
+          dt_bauhaus_draw_indicator(w, d->pos, cr);
 
           // TODO: merge that text with combo
           char text[256];
