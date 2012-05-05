@@ -350,8 +350,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
   // adjust roi_in to minimally needed region
   // +/-1 stands for imprecision in transform
-  enum dt_interpolation itype = dt_interpolation_get_type();
-  const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
+  const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   roi_in->x      = aabb_in[0] - interpolation->width - 1;
   roi_in->y      = aabb_in[1] - interpolation->width - 1;
   roi_in->width  = aabb_in[2]-aabb_in[0]+2*(interpolation->width+1);
@@ -402,11 +401,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   else
   {
-    enum dt_interpolation itype = dt_interpolation_get_type();
-    const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
+    const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
 #ifdef _OPENMP
-    #pragma omp parallel for schedule(static) default(none) shared(d,ivoid,ovoid,roi_in,roi_out,itype,interpolation)
+    #pragma omp parallel for schedule(static) default(none) shared(d,ivoid,ovoid,roi_in,roi_out,interpolation)
 #endif
     // (slow) point-by-point transformation.
     // TODO: optimize with scanlines and linear steps between?
@@ -446,7 +444,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         {
           const float *in = ((float *)ivoid) + ch*(roi_in->width*jj+ii);
           for(int c=0; c<3; c++,in++)
-            out[c] = dt_interpolation_compute(in, po[0], po[1], itype, ch, ch_width);
+            out[c] = dt_interpolation_compute_sample(interpolation, in, po[0], po[1], ch, ch_width);
         }
         else for(int c=0; c<3; c++) out[c] = 0.0f;
       }
@@ -479,10 +477,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   }
   else
   {
-    enum dt_interpolation itype = dt_interpolation_get_type();
+    const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
     // no opencl support for higher level interpolation yet
-    if(itype != DT_INTERPOLATION_BILINEAR) return FALSE;
+    if(interpolation->id != DT_INTERPOLATION_BILINEAR) return FALSE;
 
     int roi[2]  = { roi_in->x, roi_in->y };
     int roo[2]  = { roi_out->x, roi_out->y };
