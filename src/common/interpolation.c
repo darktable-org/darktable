@@ -26,7 +26,11 @@
 #include <assert.h>
 
 /* --------------------------------------------------------------------------
- * Functions
+ * Interpolation kernels
+ * ------------------------------------------------------------------------*/
+
+/* --------------------------------------------------------------------------
+ * Bilinear interpolation
  * ------------------------------------------------------------------------*/
 
 static inline float
@@ -41,6 +45,24 @@ _dt_interpolation_func_bilinear(float width, float t)
   }
   return r;
 }
+
+static inline __m128
+_mm_abs_ps(__m128 t)
+{
+    static const uint32_t signmask[4] = { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
+    return _mm_and_ps(*(__m128*)signmask, t);
+}
+
+static inline __m128
+_dt_interpolation_func_bilinear_sse(__m128 width, __m128 t)
+{
+    static const __m128 one = { 1.f, 1.f, 1.f, 1.f};
+    return _mm_sub_ps(one, _mm_abs_ps(t));
+}
+
+/* --------------------------------------------------------------------------
+ * Bicubic interpolation
+ * ------------------------------------------------------------------------*/
 
 static inline float
 _dt_interpolation_func_bicubic(float width, float t)
@@ -59,10 +81,60 @@ _dt_interpolation_func_bicubic(float width, float t)
   return r;
 }
 
+static inline __m128
+_dt_interpolation_func_bicubic_sse(__m128 width, __m128 t)
+{
+    static const __m128 half  = { .5f, .5f, .5f, .5f};
+    static const __m128 one   = { 1.f, 1.f, 1.f, 1.f};
+    static const __m128 two   = { 2.f, 2.f, 2.f, 2.f};
+    static const __m128 three = { 3.f, 3.f, 3.f, 3.f};
+    static const __m128 four  = { 4.f, 4.f, 4.f, 4.f};
+    static const __m128 five  = { 5.f, 5.f, 5.f, 5.f};
+    static const __m128 eight = { 8.f, 8.f, 8.f, 8.f};
+
+    t = _mm_abs_ps(t);
+    __m128 t2 = _mm_mul_ps(t, t);
+
+    /* Compute 1 < t < 2 case:
+     * 0.5f*(t*(-t2 + 5.f*t - 8.f) + 4.f)
+     * half*(t*(mt2 + t5 - eight) + four)
+     * half*(t*(mt2 + t5_sub_8) + four)
+     * half*(t*(mt2_add_t5_sub_8) + four) */
+    __m128 t5 = _mm_mul_ps(five, t);
+    __m128 t5_sub_8 = _mm_sub_ps(t5, eight);
+    __m128 zero = _mm_setzero_ps();
+    __m128 mt2 = _mm_sub_ps(zero, t2);
+    __m128 mt2_add_t5_sub_8 = _mm_add_ps(mt2, t5_sub_8);
+    __m128 a = _mm_mul_ps(t, mt2_add_t5_sub_8);
+    __m128 b = _mm_add_ps(a, four);
+    __m128 r12 = _mm_mul_ps(b, half);
+
+    /* Compute case < 1
+     * 0.5f*(t*(3.f*t2 - 5.f*t) + 2.f) */
+    __m128 t23 = _mm_mul_ps(three, t2);
+    __m128 c = _mm_sub_ps(t23, t5);
+    __m128 d = _mm_mul_ps(t, c);
+    __m128 e = _mm_add_ps(d, two);
+    __m128 r01 = _mm_mul_ps(half, e);
+
+    // Compute masks fr keeping correct components
+    __m128 mask01 = _mm_cmple_ps(t, one);
+    __m128 mask12 = _mm_cmpgt_ps(t, one);
+    r01 = _mm_and_ps(mask01, r01);
+    r12 = _mm_and_ps(mask12, r12);
+
+
+    return _mm_or_ps(r01, r12);
+}
+
+/* --------------------------------------------------------------------------
+ * Lanczos interpolation
+ * ------------------------------------------------------------------------*/
+
 #define DT_LANCZOS_EPSILON (1e-9f)
 
 #if 0
-// Canonic version
+// Canonic version left here for reference
 static inline float
 _dt_interpolation_func_lanczos(float width, float t)
 {
@@ -77,7 +149,8 @@ _dt_interpolation_func_lanczos(float width, float t)
   }
   return r;
 }
-#else
+#endif
+
 /* Fast lanczos version, no calls to math.h functions, too accurate, too slow
  *
  * Based on a forum entry at
@@ -106,6 +179,29 @@ _dt_sinf_fast(float t)
     return t*(p*(fabsf(t) - 1) + 1);
 }
 
+static inline __m128
+_dt_sinf_fast_sse(__m128 t)
+{
+    static const __m128 a = {4.f/(M_PI*M_PI), 4.f/(M_PI*M_PI), 4.f/(M_PI*M_PI), 4.f/(M_PI*M_PI)};
+    static const __m128 p = {0.225f, 0.225f, 0.225f, 0.225f};
+    static const __m128 pi = {M_PI, M_PI, M_PI, M_PI};
+
+    // m4 = a*t*(M_PI - fabsf(t));
+    __m128 m1 = _mm_abs_ps(t);
+    __m128 m2 = _mm_sub_ps(pi, m1);
+    __m128 m3 = _mm_mul_ps(t, m2);
+    __m128 m4 = _mm_mul_ps(a, m3);
+
+    // p*(m4*fabsf(m4) - m4) + m4;
+    __m128 n1 = _mm_abs_ps(m4);
+    __m128 n2 = _mm_mul_ps(m4, n1);
+    __m128 n3 = _mm_sub_ps(n2, m4);
+    __m128 n4 = _mm_mul_ps(p, n3);
+
+    return _mm_add_ps(n4, m4);
+}
+
+
 static inline float
 _dt_interpolation_func_lanczos(float width, float t)
 {
@@ -121,20 +217,73 @@ _dt_interpolation_func_lanczos(float width, float t)
   return (DT_LANCZOS_EPSILON + width*sign.f*_dt_sinf_fast(M_PI*r)*_dt_sinf_fast(M_PI*t/width))/(DT_LANCZOS_EPSILON + M_PI*M_PI*t*t);
 }
 
-#endif
+static inline __m128
+_dt_interpolation_func_lanczos_sse(__m128 width, __m128 t)
+{
+    /* Compute a value for sinf(pi.t) in [-pi pi] for which the value will be
+     * correct */
+    __m128i a = _mm_cvtps_epi32(t);
+    __m128 r = _mm_sub_ps(t, _mm_cvtepi32_ps(a));
+
+    // Compute the correct sign for sinf(pi.r)
+    static const uint32_t fone[] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000};
+    static const uint32_t ione[] = { 1, 1, 1, 1};
+    static const __m128 eps = {DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON};
+    static const __m128 pi = {M_PI, M_PI, M_PI, M_PI};
+    static const __m128 pi2 = {M_PI*M_PI, M_PI*M_PI, M_PI*M_PI, M_PI*M_PI};
+
+    __m128i isign = _mm_and_si128(*(__m128i*)ione, a);
+    isign = _mm_slli_epi64(isign, 31);
+    isign = _mm_or_si128(*(__m128i*)fone, isign);
+    __m128 fsign = _mm_castsi128_ps(isign);
+
+    __m128 num = _mm_mul_ps(width, fsign);
+    num = _mm_mul_ps(num, _dt_sinf_fast_sse(_mm_mul_ps(pi, r)));
+    num = _mm_mul_ps(num, _dt_sinf_fast_sse(_mm_div_ps(_mm_mul_ps(pi, t), width)));
+    num = _mm_add_ps(eps, num);
+
+    __m128 den = _mm_mul_ps(pi2, _mm_mul_ps(t, t));
+    den = _mm_add_ps(eps, den);
+
+    return _mm_div_ps(num, den);
+}
 
 #undef DT_LANCZOS_EPSILON
 
 /* --------------------------------------------------------------------------
- * Interpolators
+ * All our known interpolators
  * ------------------------------------------------------------------------*/
 
 static const struct dt_interpolation dt_interpolator[] =
 {
-    {DT_INTERPOLATION_BILINEAR, "bilinear", 1, &_dt_interpolation_func_bilinear},
-    {DT_INTERPOLATION_BICUBIC,  "bicubic",  2, &_dt_interpolation_func_bicubic},
-    {DT_INTERPOLATION_LANCZOS2, "lanczos2", 2, &_dt_interpolation_func_lanczos},
-    {DT_INTERPOLATION_LANCZOS3, "lanczos3", 3, &_dt_interpolation_func_lanczos},
+  {
+    .id = DT_INTERPOLATION_BILINEAR,
+    .name = "bilinear",
+    .width = 1,
+    .func = &_dt_interpolation_func_bilinear,
+    .funcsse = &_dt_interpolation_func_bilinear_sse
+  },
+  {
+    .id = DT_INTERPOLATION_BICUBIC,
+    .name = "bicubic",
+    .width = 2,
+    .func = &_dt_interpolation_func_bicubic,
+    .funcsse = &_dt_interpolation_func_bicubic_sse
+  },
+  {
+    .id = DT_INTERPOLATION_LANCZOS2,
+    .name = "lanczos2",
+    .width = 2,
+    .func = &_dt_interpolation_func_lanczos,
+    .funcsse = &_dt_interpolation_func_lanczos_sse
+  },
+  {
+    .id = DT_INTERPOLATION_LANCZOS3,
+    .name = "lanczos3",
+    .width = 3,
+    .func = &_dt_interpolation_func_lanczos,
+    .funcsse = &_dt_interpolation_func_lanczos_sse
+  },
 };
 
 /* --------------------------------------------------------------------------
@@ -200,6 +349,10 @@ dt_interpolation_compute_sample(
   }
   return  s/(normh*normv);
 }
+
+/* --------------------------------------------------------------------------
+ * Interpolation factory
+ * ------------------------------------------------------------------------*/
 
 const struct dt_interpolation*
 dt_interpolation_new(
