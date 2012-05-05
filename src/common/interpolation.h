@@ -57,11 +57,11 @@ static inline float
 _dt_interpolation_func_bilinear(float width, float t)
 {
   float r;
-
-  if (t>1.f || t<-1.f) {
+  t = fabsf(t);
+  if (t>1.f) {
     r = 0.f;
   } else {
-    r = 1.f - fabsf(t);
+    r = 1.f - t;
   }
   return r;
 }
@@ -127,7 +127,7 @@ _dt_sinf_fast(float t)
 
     t = a*t*(M_PI - fabsf(t));
 
-    return p*(t*fabsf(t) - t) + t;
+    return t*(p*(fabsf(t) - 1) + 1);
 }
 
 static inline float
