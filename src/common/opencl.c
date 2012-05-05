@@ -228,8 +228,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
         if(programname[0] == '\0') continue;
         snprintf(filename, 1024, "%s/kernels/%s", dtpath, programname);
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
-        const int prog = dt_opencl_load_program(k, filename);
-        if(dt_opencl_build_program(k, prog))
+        const int prog = dt_opencl_load_program(dev, filename);
+        if(dt_opencl_build_program(dev, prog))
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
           goto finally;
