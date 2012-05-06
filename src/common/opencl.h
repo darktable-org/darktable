@@ -22,6 +22,7 @@
 #include "config.h"
 #endif
 
+#define DT_OPENCL_MAX_PLATFORMS 5
 #define DT_OPENCL_MAX_PROGRAMS 256
 #define DT_OPENCL_MAX_KERNELS 512
 #define DT_OPENCL_EVENTLISTSIZE 256
