@@ -69,37 +69,57 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     }
 
   cl_int err;
-  cl_platform_id all_platforms[5];
-  cl_platform_id platform = NULL;
-  cl_uint num_platforms = 5;
-  err = (cl->dlocl->symbols->dt_clGetPlatformIDs) (5, all_platforms, &num_platforms);
+  cl_platform_id all_platforms[DT_OPENCL_MAX_PLATFORMS];
+  cl_uint all_num_devices[DT_OPENCL_MAX_PLATFORMS];
+  cl_uint num_platforms = DT_OPENCL_MAX_PLATFORMS;
+  err = (cl->dlocl->symbols->dt_clGetPlatformIDs) (DT_OPENCL_MAX_PLATFORMS, all_platforms, &num_platforms);
   if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get platforms: %d\n", err);
     goto finally;
   }
-  platform = all_platforms[0];
 
-  // get the number of GPU devices available to the platform
-  // the other common option is CL_DEVICE_TYPE_GPU/CPU (but the latter doesn't work with the nvidia drivers)
-  cl_uint num_devices = 0;
-  err = (cl->dlocl->symbols->dt_clGetDeviceIDs)(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &num_devices);
-  if(err != CL_SUCCESS)
+  if(num_platforms == 0)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get device id size: %d\n", err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] no opencl platform available\n");
     goto finally;
   }
+
+  for(int n=0; n < num_platforms; n++)
+  {
+    cl_platform_id platform = all_platforms[n];
+    // get the number of GPU devices available to the platforms
+    // the other common option is CL_DEVICE_TYPE_GPU/CPU (but the latter doesn't work with the nvidia drivers)
+    err = (cl->dlocl->symbols->dt_clGetDeviceIDs)(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &(all_num_devices[n]));
+    if(err != CL_SUCCESS)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get device id size: %d\n", err);
+      goto finally;
+    }
+  }
+
+  cl_uint num_devices = 0;
+  for(int n=0; n < num_platforms; n++) num_devices += all_num_devices[n];
 
   // create the device list
   cl->dev = (dt_opencl_device_t *)malloc(sizeof(dt_opencl_device_t)*num_devices);
   cl_device_id *devices = (cl_device_id *)malloc(sizeof(cl_device_id)*num_devices);
-  err = (cl->dlocl->symbols->dt_clGetDeviceIDs)(platform, CL_DEVICE_TYPE_ALL, num_devices, devices, NULL);
-  if(err != CL_SUCCESS)
+
+  cl_device_id *devs = devices;
+  for(int n=0; n < num_platforms; n++)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get devices list: %d\n", err);
-    goto finally;
+    cl_platform_id platform = all_platforms[n];
+    err = (cl->dlocl->symbols->dt_clGetDeviceIDs)(platform, CL_DEVICE_TYPE_ALL, all_num_devices[n], devs, NULL);
+    if(err != CL_SUCCESS)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get devices list: %d\n", err);
+      goto finally;
+    }
+    devs += all_num_devices[n];
   }
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d devices\n", num_devices);
+ 
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d device%s\n", num_devices, num_devices > 1 ? "s" : "");
+
   int dev = 0;
   for(int k=0; k<num_devices; k++)
   {
@@ -208,8 +228,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
         if(programname[0] == '\0') continue;
         snprintf(filename, 1024, "%s/kernels/%s", dtpath, programname);
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
-        const int prog = dt_opencl_load_program(k, filename);
-        if(dt_opencl_build_program(k, prog))
+        const int prog = dt_opencl_load_program(dev, filename);
+        if(dt_opencl_build_program(dev, prog))
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
           goto finally;
