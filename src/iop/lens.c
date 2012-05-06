@@ -42,6 +42,10 @@
 #include "iop/lens.h"
 
 
+#define BLOCKSIZE  2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
+#define ZBLOCKSIZE 64
+
+
 DT_MODULE(2)
 
 const char*
@@ -318,6 +322,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t oregion[] = { owidth, oheight, 1};
   size_t isizes[] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1};
   size_t osizes[] = { ROUNDUPWD(owidth), ROUNDUPHT(oheight), 1};
+  size_t sizes[3];
+  size_t local[3];
 
   if(!d->lens->Maker)
   {
@@ -328,8 +334,88 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   enum dt_interpolation itype = dt_interpolation_get_type();
 
-  // no opencl support for higher level interpolation yet
-  if(itype != DT_INTERPOLATION_BILINEAR) return FALSE;
+  int blocksize = BLOCKSIZE;
+  int zblocksize = ZBLOCKSIZE;
+  int xblocksize = 1;
+  int yblocksize = 1;
+  int buf = 36;
+  int ldkernel = -1;
+
+  switch(itype)
+  {
+    case DT_INTERPOLATION_BILINEAR:
+      zblocksize = 1;
+      buf = 0;
+      ldkernel = gd->kernel_lens_distort_bilinear;
+      break;
+    case DT_INTERPOLATION_BICUBIC:
+      zblocksize = 16;
+      buf = 16;
+      ldkernel = gd->kernel_lens_distort_bicubic;
+      break;
+    case DT_INTERPOLATION_LANCZOS2:
+      zblocksize = 16;
+      buf = 16;
+      ldkernel = gd->kernel_lens_distort_lanczos2;
+      break;
+    case DT_INTERPOLATION_LANCZOS3:
+      zblocksize = 64;
+      buf = 36;
+      ldkernel = gd->kernel_lens_distort_lanczos3;
+      break;
+    default:
+      return FALSE;
+  }
+
+  // prepare local work group
+  size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
+  size_t workgroupsize = 0;          // the maximum number of items in a work group
+  unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
+  size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
+  
+  // make sure blocksize etc. is not too large
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
+     dt_opencl_get_kernel_work_group_size(devid, ldkernel, &kernelworkgroupsize) == CL_SUCCESS)
+  {
+    // reduce blocksizes step by step until it fits to limits
+    while(zblocksize > maxsizes[2])
+    {
+      if(zblocksize == 1) break;
+      zblocksize >>= 1;
+    }
+
+    while(blocksize > kernelworkgroupsize || blocksize > workgroupsize || (blocksize/zblocksize)*(buf*2*sizeof(float)) > localmemsize)
+    {
+      if(blocksize == 1) break;
+      blocksize >>= 1;    
+    }
+
+    xblocksize = blocksize / zblocksize;
+    while(xblocksize > maxsizes[0])
+    {
+      if(xblocksize == 1) break;
+      xblocksize >>= 1;
+    }
+
+    yblocksize = blocksize / (xblocksize * zblocksize);
+    while(yblocksize > maxsizes[1])
+    {
+      if(yblocksize == 1) break;
+      yblocksize >>= 1;
+    }
+
+  }
+  else
+  {
+    blocksize = 1;   // slow but safe
+    xblocksize = 1;
+    yblocksize = 1;
+    zblocksize = 1;
+  }
+
+  // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
+  const size_t bowidth = owidth % xblocksize == 0 ? owidth : (owidth / xblocksize + 1)*xblocksize;
+  const size_t boheight = oheight % yblocksize == 0 ? oheight : (oheight / yblocksize + 1)*yblocksize;
 
   tmpbuf = (float *)dt_alloc_align(16, tmpbuflen);
   if(tmpbuf == NULL) goto error;
@@ -371,17 +457,35 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, owidth*oheight*2*3*sizeof(float), CL_FALSE);
       if(err != CL_SUCCESS) goto error;
 
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 0, sizeof(cl_mem), (void *)&dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 1, sizeof(cl_mem), (void *)&dev_tmp);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 2, sizeof(int), (void *)&owidth);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 3, sizeof(int), (void *)&oheight);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 4, sizeof(int), (void *)&iwidth);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 5, sizeof(int), (void *)&iheight);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 6, sizeof(int), (void *)&roi_in_x);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 7, sizeof(int), (void *)&roi_in_y);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 8, sizeof(cl_mem), (void *)&dev_tmpbuf); 
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lens_distort, osizes);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort_start, 0, sizeof(cl_mem), (void *)&dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort_start, 1, sizeof(int), (void *)&owidth);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort_start, 2, sizeof(int), (void *)&oheight);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lens_distort_start, osizes);
       if(err != CL_SUCCESS) goto error;
+
+      for(int ch = 0; ch < 3; ch++)
+      {
+        sizes[0] = bowidth;
+        sizes[1] = boheight;
+        sizes[2] = zblocksize;
+        local[0] = xblocksize;
+        local[1] = yblocksize;
+        local[2] = zblocksize;
+        dt_opencl_set_kernel_arg(devid, ldkernel, 0, sizeof(cl_mem), (void *)&dev_in);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 1, sizeof(cl_mem), (void *)&dev_tmp);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 2, sizeof(cl_mem), (void *)&dev_tmp);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 3, sizeof(int), (void *)&owidth);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 4, sizeof(int), (void *)&oheight);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 5, sizeof(int), (void *)&ch);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 6, sizeof(int), (void *)&iwidth);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 7, sizeof(int), (void *)&iheight);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 8, sizeof(int), (void *)&roi_in_x);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 9, sizeof(int), (void *)&roi_in_y);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 10, sizeof(cl_mem), (void *)&dev_tmpbuf);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 11, xblocksize*yblocksize*buf*2*sizeof(float), NULL);
+        err = dt_opencl_enqueue_kernel_2d_with_local(devid, ldkernel, sizes, local);
+        if(err != CL_SUCCESS) goto error;
+      }
 
     }
     else
@@ -480,17 +584,35 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, owidth*oheight*2*3*sizeof(float), CL_FALSE);
       if(err != CL_SUCCESS) goto error;
 
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 0, sizeof(cl_mem), (void *)&dev_tmp);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 1, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 2, sizeof(int), (void *)&owidth);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 3, sizeof(int), (void *)&oheight);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 4, sizeof(int), (void *)&iwidth);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 5, sizeof(int), (void *)&iheight);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 6, sizeof(int), (void *)&roi_in_x);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 7, sizeof(int), (void *)&roi_in_y);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort, 8, sizeof(cl_mem), (void *)&dev_tmpbuf); 
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lens_distort, osizes);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort_start, 0, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort_start, 1, sizeof(int), (void *)&owidth);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_distort_start, 2, sizeof(int), (void *)&oheight);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lens_distort_start, osizes);
       if(err != CL_SUCCESS) goto error;
+
+      for(int ch = 0; ch < 3; ch++)
+      {
+        sizes[0] = bowidth;
+        sizes[1] = boheight;
+        sizes[2] = zblocksize;
+        local[0] = xblocksize;
+        local[1] = yblocksize;
+        local[2] = zblocksize;
+        dt_opencl_set_kernel_arg(devid, ldkernel, 0, sizeof(cl_mem), (void *)&dev_tmp);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 1, sizeof(cl_mem), (void *)&dev_out);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 2, sizeof(cl_mem), (void *)&dev_out);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 3, sizeof(int), (void *)&owidth);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 4, sizeof(int), (void *)&oheight);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 5, sizeof(int), (void *)&ch);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 6, sizeof(int), (void *)&iwidth);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 7, sizeof(int), (void *)&iheight);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 8, sizeof(int), (void *)&roi_in_x);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 9, sizeof(int), (void *)&roi_in_y);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 10, sizeof(cl_mem), (void *)&dev_tmpbuf);
+        dt_opencl_set_kernel_arg(devid, ldkernel, 11, xblocksize*yblocksize*buf*2*sizeof(float), NULL);
+        err = dt_opencl_enqueue_kernel_2d_with_local(devid, ldkernel, sizes, local);
+        if(err != CL_SUCCESS) goto error;
+      }
     }
     else
     {
@@ -521,7 +643,7 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
   tiling->factor = 4.5f;  // in + out + tmp + tmpbuf
   tiling->maxbuf = 1.5f;
   tiling->overhead = 0;
-  tiling->overlap = 0;
+  tiling->overlap = 4;
   tiling->xalign = 1;
   tiling->yalign = 1;
   return;
@@ -692,7 +814,11 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)malloc(sizeof(dt_iop_lensfun_global_data_t));
   module->data = gd;
-  gd->kernel_lens_distort = dt_opencl_create_kernel(program, "lens_distort");
+  gd->kernel_lens_distort_start = dt_opencl_create_kernel(program, "lens_distort_start");
+  gd->kernel_lens_distort_bilinear = dt_opencl_create_kernel(program, "lens_distort_bilinear");
+  gd->kernel_lens_distort_bicubic = dt_opencl_create_kernel(program, "lens_distort_bicubic");
+  gd->kernel_lens_distort_lanczos2 = dt_opencl_create_kernel(program, "lens_distort_lanczos2");
+  gd->kernel_lens_distort_lanczos3 = dt_opencl_create_kernel(program, "lens_distort_lanczos3");
   gd->kernel_lens_vignette = dt_opencl_create_kernel(program, "lens_vignette");
 
   lfDatabase *dt_iop_lensfun_db = lf_db_new();
@@ -783,7 +909,11 @@ void cleanup_global(dt_iop_module_so_t *module)
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   lf_db_destroy(dt_iop_lensfun_db);
 
-  dt_opencl_free_kernel(gd->kernel_lens_distort);
+  dt_opencl_free_kernel(gd->kernel_lens_distort_start);
+  dt_opencl_free_kernel(gd->kernel_lens_distort_bilinear);
+  dt_opencl_free_kernel(gd->kernel_lens_distort_bicubic);
+  dt_opencl_free_kernel(gd->kernel_lens_distort_lanczos2);
+  dt_opencl_free_kernel(gd->kernel_lens_distort_lanczos3);
   dt_opencl_free_kernel(gd->kernel_lens_vignette);
   free(module->data);
   module->data = NULL;

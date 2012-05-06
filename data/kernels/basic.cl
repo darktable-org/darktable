@@ -612,6 +612,279 @@ clip_rotate_lanczos3(read_only image2d_t in, read_only image2d_t pos, write_only
 }
 
 
+/* kernels for the lens plugin */
+kernel void
+lens_distort_start (write_only image2d_t out, const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = (float4)(0.0f, 0.0f, 0.0f, 1.0f);
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+
+/* kernels for the lens plugin: bilinear interpolation */
+kernel void
+lens_distort_bilinear (read_only image2d_t src, read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+              const int channel, const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi,
+              local float4 *buffer)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  pi += 2*channel;
+
+  const int piwidth = 2*3*width;
+  global float *ppi = pi + mad24(y, piwidth, 2*3*x);
+
+  float rx = ppi[0] - roi_in_x;
+  float ry = ppi[1] - roi_in_y;
+
+  if(rx < 0 || ry < 0 || rx >= iwidth || ry >= iheight) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 source = read_imagef(src, samplerf, (float2)(rx, ry));
+
+  ((float *)&pixel)[channel] = ((float *)&source)[channel];
+
+  write_imagef (out, (int2)(x, y), pixel); 
+}
+
+
+/* kernels for the lens plugin: bicubic interpolation */
+kernel void
+lens_distort_bicubic (read_only image2d_t src, read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+              const int channel, const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi,
+              local float2 *buffer)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int z = get_global_id(2);
+  const int xlsz = get_local_size(0);
+  const int zlsz = get_local_size(2);
+  const int xlid = get_local_id(0);
+  const int ylid = get_local_id(1);
+
+  const int kwidth = 2;
+  const int bufwd = 4;
+  const int bufsz = 16;
+
+  if(x >= width || y >= height || z >= bufsz) return;
+
+  // get our part of buffer
+  buffer += (ylid * xlsz + xlid) * bufsz;
+
+  pi += 2*channel;
+
+  const int piwidth = 2*3*width;
+  global float *ppi = pi + mad24(y, piwidth, 2*3*x);
+
+  float rx = ppi[0] - roi_in_x;
+  float ry = ppi[1] - roi_in_y;
+
+  if(rx < 0 || ry < 0 || rx >= iwidth || ry >= iheight) return;
+
+  // Find closest integer position
+  int tx = rx;
+  int ty = ry;
+
+  // now fill buffer
+  for(int n=0; n <= bufsz/zlsz; n++)
+  {
+    const int l = mad24(n, zlsz, z);
+    if(l >= bufsz) break;
+
+    int ii = l % bufwd - kwidth + 1;
+    int jj = l / bufwd - kwidth + 1;
+
+    // TODO: check speed-up if we pre-calculate convolutions kernels once per row/column
+    float wx = interpolation_func_bicubic((float)(tx + ii) - rx);
+    float wy = interpolation_func_bicubic((float)(ty + jj) - ry);
+    float w = wx * wy;
+
+    float4 source = read_imagef(src, sampleri, (int2)(tx + ii, ty + jj));
+    buffer[l].x = ((float *)&source)[channel] * w;
+    buffer[l].y = w;
+  }  
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  if(z != 0) return;
+
+  float2 o = (float2)0.0f;
+  for(int n=0; n < bufsz; n++) o += buffer[n];
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  ((float *)&pixel)[channel] = o.x / o.y;
+
+  write_imagef (out, (int2)(x, y), pixel); 
+}
+
+
+/* kernels for the lens plugin: lanczos2 interpolation */
+kernel void
+lens_distort_lanczos2 (read_only image2d_t src, read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+              const int channel, const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi,
+              local float2 *buffer)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int z = get_global_id(2);
+  const int xlsz = get_local_size(0);
+  const int zlsz = get_local_size(2);
+  const int xlid = get_local_id(0);
+  const int ylid = get_local_id(1);
+
+  const int kwidth = 2;
+  const int bufwd = 4;
+  const int bufsz = 16;
+
+  if(x >= width || y >= height || z >= bufsz) return;
+
+  // get our part of buffer
+  buffer += (ylid * xlsz + xlid) * bufsz;
+
+  pi += 2*channel;
+
+  const int piwidth = 2*3*width;
+  global float *ppi = pi + mad24(y, piwidth, 2*3*x);
+
+  float rx = ppi[0] - roi_in_x;
+  float ry = ppi[1] - roi_in_y;
+
+  if(rx < 0 || ry < 0 || rx >= iwidth || ry >= iheight) return;
+
+  // Find closest integer position
+  int tx = rx;
+  int ty = ry;
+
+  // now fill buffer
+  for(int n=0; n <= bufsz/zlsz; n++)
+  {
+    const int l = mad24(n, zlsz, z);
+    if(l >= bufsz) break;
+
+    int ii = l % bufwd - kwidth + 1;
+    int jj = l / bufwd - kwidth + 1;
+
+    // TODO: check speed-up if we pre-calculate convolutions kernels once per row/column
+    float wx = interpolation_func_lanczos(2, (float)(tx + ii) - rx);
+    float wy = interpolation_func_lanczos(2, (float)(ty + jj) - ry);
+    float w = wx * wy;
+
+    float4 source = read_imagef(src, sampleri, (int2)(tx + ii, ty + jj));
+    buffer[l].x = ((float *)&source)[channel] * w;
+    buffer[l].y = w;
+  }  
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  if(z != 0) return;
+
+  float2 o = (float2)0.0f;
+  for(int n=0; n < bufsz; n++) o += buffer[n];
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  ((float *)&pixel)[channel] = o.x / o.y;
+
+  write_imagef (out, (int2)(x, y), pixel); 
+}
+
+
+/* kernels for the lens plugin: lanczos3 interpolation */
+kernel void
+lens_distort_lanczos3 (read_only image2d_t src, read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+              const int channel, const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi,
+              local float2 *buffer)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int z = get_global_id(2);
+  const int xlsz = get_local_size(0);
+  const int zlsz = get_local_size(2);
+  const int xlid = get_local_id(0);
+  const int ylid = get_local_id(1);
+
+  const int kwidth = 3;
+  const int bufwd = 6;
+  const int bufsz = 36;
+
+  if(x >= width || y >= height || z >= bufsz) return;
+
+  // get our part of buffer
+  buffer += (ylid * xlsz + xlid) * bufsz;
+
+  pi += 2*channel;
+
+  const int piwidth = 2*3*width;
+  global float *ppi = pi + mad24(y, piwidth, 2*3*x);
+
+  float rx = ppi[0] - roi_in_x;
+  float ry = ppi[1] - roi_in_y;
+
+  if(rx < 0 || ry < 0 || rx >= iwidth || ry >= iheight) return;
+
+  // Find closest integer position
+  int tx = rx;
+  int ty = ry;
+
+  // now fill buffer
+  for(int n=0; n <= bufsz/zlsz; n++)
+  {
+    const int l = mad24(n, zlsz, z);
+    if(l >= bufsz) break;
+
+    int ii = l % bufwd - kwidth + 1;
+    int jj = l / bufwd - kwidth + 1;
+
+    // TODO: check speed-up if we pre-calculate convolutions kernels once per row/column
+    float wx = interpolation_func_lanczos(3, (float)(tx + ii) - rx);
+    float wy = interpolation_func_lanczos(3, (float)(ty + jj) - ry);
+    float w = wx * wy;
+
+    float4 source = read_imagef(src, sampleri, (int2)(tx + ii, ty + jj));
+    buffer[l].x = ((float *)&source)[channel] * w;
+    buffer[l].y = w;
+  }  
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  if(z != 0) return;
+
+  float2 o = (float2)0.0f;
+  for(int n=0; n < bufsz; n++) o += buffer[n];
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  ((float *)&pixel)[channel] = o.x / o.y;
+
+  write_imagef (out, (int2)(x, y), pixel); 
+}
+
+
+
+kernel void
+lens_vignette (read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float4 *pi)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 scale = pi[mad24(y, width, x)]/(float4)0.5f;
+
+  write_imagef (out, (int2)(x, y), pixel*scale); 
+}
+
 
 
 
@@ -843,53 +1116,6 @@ zonesystem (read_only image2d_t in, write_only image2d_t out, const int width, c
 }
 
 
-/* kernels for the lens plugin */
-kernel void
-lens_distort (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-              const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  float4 pixel;
-
-  float rx, ry;
-  const int piwidth = 2*3*width;
-  global float *ppi = pi + mad24(y, piwidth, 2*3*x);
-
-  rx = ppi[0] - roi_in_x;
-  ry = ppi[1] - roi_in_y;
-  pixel.x = (rx >= 0 && ry >= 0 && rx <= iwidth - 1 && ry <= iheight - 1) ? read_imagef(in, samplerf, (float2)(rx, ry)).x : 0.0f;
-
-  rx = ppi[2] - roi_in_x;
-  ry = ppi[3] - roi_in_y;
-  pixel.y = (rx >= 0 && ry >= 0 && rx <= iwidth - 1 && ry <= iheight - 1) ? read_imagef(in, samplerf, (float2)(rx, ry)).y : 0.0f;
-
-  rx = ppi[4] - roi_in_x;
-  ry = ppi[5] - roi_in_y;
-  pixel.z = (rx >= 0 && ry >= 0 && rx <= iwidth - 1 && ry <= iheight - 1) ? read_imagef(in, samplerf, (float2)(rx, ry)).z : 0.0f;
-
-  pixel.w = 1.0f;
-
-  write_imagef (out, (int2)(x, y), pixel); 
-}
-
-
-kernel void
-lens_vignette (read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float4 *pi)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  float4 scale = pi[mad24(y, width, x)]/(float4)0.5f;
-
-  write_imagef (out, (int2)(x, y), pixel*scale); 
-}
 
 
 /* kernel to fill an image with a color (for the borders plugin). */
