@@ -196,7 +196,7 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   }
   orientation ^= 4;             // flip axes
 
-  if(cw == 2) orientation = -1; // reset
+  if(cw == 2) orientation = 0; // reset
   dt_image_set_flip(imgid, orientation);
 }
 
