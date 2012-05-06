@@ -148,7 +148,7 @@ void dt_image_print_exif(const dt_image_t *img, char *line, int len)
 void dt_image_set_flip(const int32_t imgid, const int32_t orientation)
 {
   sqlite3_stmt *stmt;
-  // push new orientation to sql
+  // push new orientation to sql via additional history entry:
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), " select MAX(num) from history where imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   int num = 0;
@@ -165,6 +165,8 @@ void dt_image_set_flip(const int32_t imgid, const int32_t orientation)
   sqlite3_step (stmt);
   sqlite3_finalize(stmt);
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+  // write that through to xmp:
+  dt_image_write_sidecar_file(imgid);
 }
 
 void dt_image_flip(const int32_t imgid, const int32_t cw)
@@ -194,7 +196,7 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   }
   orientation ^= 4;             // flip axes
 
-  if(cw == 2) orientation = -1; // reset
+  if(cw == 2) orientation = 0; // reset
   dt_image_set_flip(imgid, orientation);
 }
 
