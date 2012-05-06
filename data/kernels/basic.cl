@@ -415,6 +415,28 @@ interpolation_func_bicubic(float t)
 
 #define DT_LANCZOS_EPSILON (1e-9f)
 
+#if 0
+float
+interpolation_func_lanczos(float width, float t)
+{
+  float ta = fabs(t);
+
+  float r = (ta > width) ? 0.0f : ((ta < DT_LANCZOS_EPSILON) ? 1.0f : width*native_sin(M_PI*t)*native_sin(M_PI*t/width)/(M_PI*M_PI*t*t));
+
+  return r;
+}
+#else
+float
+sinf_fast(float t)
+{
+  const float a = 4/(M_PI*M_PI);
+  const float p = 0.225f;
+
+  t = a*t*(M_PI - fabs(t));
+
+  return p*(t*fabs(t) - t) + t;
+}
+
 float
 interpolation_func_lanczos(float width, float t)
 {
@@ -427,8 +449,9 @@ interpolation_func_lanczos(float width, float t)
   union { float f; unsigned int i; } sign;
   sign.i = ((a&1)<<31) | 0x3f800000;
 
-  return (DT_LANCZOS_EPSILON + width*sign.f*native_sin(M_PI*r)*native_sin(M_PI*t/width))/(DT_LANCZOS_EPSILON + M_PI*M_PI*t*t);
+  return (DT_LANCZOS_EPSILON + width*sign.f*sinf_fast(M_PI*r)*sinf_fast(M_PI*t/width))/(DT_LANCZOS_EPSILON + M_PI*M_PI*t*t);
 }
+#endif
 
 
 
