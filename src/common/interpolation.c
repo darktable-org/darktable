@@ -361,7 +361,7 @@ compute_kernel_sse(
 }
 
 /* --------------------------------------------------------------------------
- * Interpolation function (see usage in iop/lens.c and iop/clipping.c)
+ * Sample interpolation function (see usage in iop/lens.c and iop/clipping.c)
  * ------------------------------------------------------------------------*/
 
 float
@@ -394,6 +394,57 @@ dt_interpolation_compute_sample(
     in += linestride;
   }
   return  s/(normh*normv);
+}
+
+/* --------------------------------------------------------------------------
+ * Pixel interpolation function (see usage in iop/lens.c and iop/clipping.c)
+ * ------------------------------------------------------------------------*/
+
+void
+dt_interpolation_compute_pixel4c(
+  const struct dt_interpolation* itor,
+  const float* in,
+  const float* out,
+  const float x, const float y,
+  const int linestride)
+{
+  assert(itor->width < 4);
+  assert(samplestride == 4);
+
+  // Quite a bit of space for kernels
+  float kernelh[8] __attribute__((aligned(16)));
+  float kernelv[8] __attribute__((aligned(16)));
+  __m128 vkernelh[8];
+  __m128 vkernelv[8];
+
+  // Compute both horizontal and vertical kernels
+  float normh = compute_kernel_sse(itor, kernelh, x);
+  float normv = compute_kernel_sse(itor, kernelv, y);
+
+  // We will process four components a time, duplicate the information
+  for (int i=0; i<2*itor->width; i++) {
+    vkernelh[i] = _mm_set_ps1(kernelh[i]);
+    vkernelv[i] = _mm_set_ps1(kernelv[i]);
+  }
+
+  // Precompute the inverse of the filter norm for later use
+  __m128 oonorm = _mm_set_ps1(1.f/(normh*normv));
+
+  // Go to top left pixel
+  in = in - (itor->width-1)*(4 + linestride);
+
+  // Apply the kernel
+  __m128 pixel = _mm_setzero_ps();
+  for (int i=0; i<2*itor->width; i++) {
+    __m128 h = _mm_setzero_ps();
+    for (int j=0; j<2*itor->width; j++) {
+      h = _mm_add_ps(h, _mm_mul_ps(vkernelh[j], *(__m128*)&in[j*4]));
+    }
+    pixel = _mm_add_ps(pixel, _mm_mul_ps(vkernelv[i],h));
+    in += linestride;
+  }
+
+  *(__m128*)out = _mm_mul_ps(pixel, oonorm);
 }
 
 /* --------------------------------------------------------------------------

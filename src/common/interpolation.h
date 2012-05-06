@@ -77,6 +77,31 @@ dt_interpolation_compute_sample(
   const int samplestride,
   const int linestride);
 
+/** Compute an interpolated 4 component pixel.
+ *
+ * This function computes a full 4 component pixel. This helps a bit speedwise
+ * as interpolation coordinates are supposed to be the same for all components.
+ * Thus we can share horizontal and vertical interpolation kernels accross all
+ * components
+ *
+ * NB: a pixel is to be four floats big in stride
+ *
+ * @param in Input samples
+ * @param out Output sample
+ * @param itor interpolator to be used
+ * @param x X-Coordinate of the requested sample
+ * @param y Y-Coordinate of the requested sample
+ * @param linestride Stride in bytes for complete line
+ *
+ */
+void
+dt_interpolation_compute_pixel4c(
+  const struct dt_interpolation* itor,
+  const float* in,
+  const float* out,
+  const float x, const float y,
+  const int linestride);
+
 /** Get an interpolator from type
  * @param type Interpolator to search for
  * @return requested interpolator or default if not found (this function can't fail)

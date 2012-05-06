@@ -388,6 +388,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
   const int ch_width = ch*roi_in->width;
 
+  assert(ch == 4);
+
   // only crop, no rot fast and sharp path:
   if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
   {
@@ -450,8 +452,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
         {
           const float *in = ((float *)ivoid) + ch*(roi_in->width*jj+ii);
-          for(int c=0; c<3; c++,in++)
-            out[c] = dt_interpolation_compute_sample(interpolation, in, po[0], po[1], ch, ch_width);
+          dt_interpolation_compute_pixel4c(interpolation, in, out, po[0], po[1], ch_width);
         }
         else for(int c=0; c<3; c++) out[c] = 0.0f;
       }
