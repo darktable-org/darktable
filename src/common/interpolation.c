@@ -314,6 +314,52 @@ compute_kernel(
   return norm;
 }
 
+static inline float
+compute_kernel_sse(
+  const struct dt_interpolation* itor,
+  float* kernel,
+  float t)
+{
+  /* Find closest integer position and then offset that to match first
+   * filtered sample position */
+  t = t - (float)((int)t) + (float)itor->width - 1.f;
+
+  // Prepare t vector to compute four values a loop
+  static const __m128 first = {  0.f, -1.f, -2.f, -3.f};
+  static const __m128 iter  = { -4.f, -4.f, -4.f, -4.f};
+  __m128 vt = _mm_add_ps(_mm_set_ps1(t), first);
+  __m128 vw = _mm_set_ps1((float)itor->width);
+
+  // Prepare counters (math kept stupid for understanding)
+  int i = 0;
+  int runs = (2*itor->width + 3)/4;
+
+  while (i<runs) {
+    // Compute the values
+    __m128 vr = itor->funcsse(vw, vt);
+
+    // Accum norm
+    *(__m128*)kernel = vr;
+
+    // Prepare next iter
+    vt = _mm_add_ps(vt, iter);
+    kernel += 4;
+    i++;
+  }
+
+  // compute norm now
+  float norm = 0.f;
+  i = 0;
+  kernel -= 4*runs;
+  while (i<2*itor->width) {
+    norm += *kernel;
+    kernel++;
+    i++;
+  }
+
+  return norm;
+}
+
 /* --------------------------------------------------------------------------
  * Interpolation function (see usage in iop/lens.c and iop/clipping.c)
  * ------------------------------------------------------------------------*/
@@ -327,12 +373,12 @@ dt_interpolation_compute_sample(
 {
   assert(itor->width < 4);
 
-  float kernelh[6];
-  float kernelv[6];
+  float kernelh[8] __attribute__((aligned(16)));
+  float kernelv[8] __attribute__((aligned(16)));
 
   // Compute both horizontal and vertical kernels
-  float normh = compute_kernel(itor, kernelh, x);
-  float normv = compute_kernel(itor, kernelv, y);
+  float normh = compute_kernel_sse(itor, kernelh, x);
+  float normv = compute_kernel_sse(itor, kernelv, y);
 
   // Go to top left pixel
   in = in - (itor->width-1)*(samplestride + linestride);
