@@ -545,7 +545,11 @@ _create_filtered_model (GtkTreeModel *model, GtkTreeIter iter)
     if (gtk_tree_model_iter_n_children(model, &iter) == 1)
     {
       gtk_tree_model_iter_children(model, &child, &iter);
-      iter = child;
+
+      if (gtk_tree_model_iter_n_children(model, &child) != 0)
+        iter = child;
+      else
+        break;
     }
     else
       break;
@@ -912,11 +916,9 @@ void
 
   	gtk_tree_model_get_value (GTK_TREE_MODEL(d->store), &iter, 0, &value);
     
-    const gchar *mount_name = g_value_get_string(&value);
+    gchar *mount_name = g_value_dup_string(&value);
 
-    g_value_unset(&value);
-
-    if (strcmp(mount_name, "Local")==0)
+    if (g_strcmp0(mount_name, "Local")==0)
     {
       /* Add a button for local filesystem, to keep UI consistency */
       button = gtk_button_new_with_label (_("Local HDD"));
@@ -936,6 +938,9 @@ void
     g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d);
     g_signal_connect(G_OBJECT (tree), "button-press-event", G_CALLBACK (view_onButtonPressed), NULL);
     g_signal_connect(G_OBJECT (tree), "popup-menu", G_CALLBACK (view_onPopupMenu), NULL);
+    
+    g_value_unset(&value);
+    g_free(mount_name);
   }
 
   darktable.gui->reset = old;

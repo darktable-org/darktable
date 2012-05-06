@@ -242,17 +242,37 @@ dt_film_import_blocking(const char *dirname, const int blocking)
     gchar *mount_name = NULL;
     if (mounts != NULL)
     {
-      GFile *mount_path, *filmrollpath;
-      filmrollpath = g_file_new_for_path (dirname);
+      GFile *mount_gfile;
+      GMount *filmroll_mount;
+      GError *error;
+      gchar *filmroll_path;
+      
+      filmroll_mount = g_file_find_enclosing_mount(g_file_new_for_path(dirname), NULL, &error);
+      filmroll_path = g_file_get_path((g_mount_get_default_location(filmroll_mount)));
       
       for (int i=0; i < g_list_length (mounts); i++)
       {
-        mount_path = g_mount_get_default_location(g_list_nth_data(mounts, i));
-        if (g_file_has_parent(filmrollpath, mount_path))
+        gchar *p;
+
+        mount_gfile = g_mount_get_default_location(g_list_nth_data(mounts, i));
+        p = g_file_get_path(mount_gfile);
+        
+        if (g_strcmp0(p, filmroll_path))
+        {
           mount_name = g_mount_get_name(g_list_nth_data(mounts, i));
-        else
-          mount_name = g_strdup("Local");
+          break;
+        }
+
+        g_free(p);
+        g_object_unref (mount_gfile);
       }
+
+      g_object_unref (filmroll_mount);
+      g_free (filmroll_path);
+
+      /* We haven't found the device in the list of connected devices. Let's suppose it is local */
+      if (mount_name == NULL)
+        mount_name = g_strdup("Local");
     }
     else
       mount_name = g_strdup("Local");
