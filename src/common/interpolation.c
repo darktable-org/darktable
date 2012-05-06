@@ -34,7 +34,7 @@
  * ------------------------------------------------------------------------*/
 
 static inline float
-_dt_interpolation_func_bilinear(float width, float t)
+bilinear(float width, float t)
 {
   float r;
   t = fabsf(t);
@@ -54,7 +54,7 @@ _mm_abs_ps(__m128 t)
 }
 
 static inline __m128
-_dt_interpolation_func_bilinear_sse(__m128 width, __m128 t)
+bilinear_sse(__m128 width, __m128 t)
 {
     static const __m128 one = { 1.f, 1.f, 1.f, 1.f};
     return _mm_sub_ps(one, _mm_abs_ps(t));
@@ -65,7 +65,7 @@ _dt_interpolation_func_bilinear_sse(__m128 width, __m128 t)
  * ------------------------------------------------------------------------*/
 
 static inline float
-_dt_interpolation_func_bicubic(float width, float t)
+bicubic(float width, float t)
 {
   float r;
   t = fabsf(t);
@@ -82,7 +82,7 @@ _dt_interpolation_func_bicubic(float width, float t)
 }
 
 static inline __m128
-_dt_interpolation_func_bicubic_sse(__m128 width, __m128 t)
+bicubic_sse(__m128 width, __m128 t)
 {
     static const __m128 half  = { .5f, .5f, .5f, .5f};
     static const __m128 one   = { 1.f, 1.f, 1.f, 1.f};
@@ -136,7 +136,7 @@ _dt_interpolation_func_bicubic_sse(__m128 width, __m128 t)
 #if 0
 // Canonic version left here for reference
 static inline float
-_dt_interpolation_func_lanczos(float width, float t)
+lanczos(float width, float t)
 {
   float r;
 
@@ -169,7 +169,7 @@ _dt_interpolation_func_lanczos(float width, float t)
 
 // Valid for [-pi pi] only
 static inline float
-_dt_sinf_fast(float t)
+sinf_fast(float t)
 {
     static const float a = 4/(M_PI*M_PI);
     static const float p = 0.225f;
@@ -180,7 +180,7 @@ _dt_sinf_fast(float t)
 }
 
 static inline __m128
-_dt_sinf_fast_sse(__m128 t)
+sinf_fast_sse(__m128 t)
 {
     static const __m128 a = {4.f/(M_PI*M_PI), 4.f/(M_PI*M_PI), 4.f/(M_PI*M_PI), 4.f/(M_PI*M_PI)};
     static const __m128 p = {0.225f, 0.225f, 0.225f, 0.225f};
@@ -203,7 +203,7 @@ _dt_sinf_fast_sse(__m128 t)
 
 
 static inline float
-_dt_interpolation_func_lanczos(float width, float t)
+lanczos(float width, float t)
 {
   /* Compute a value for sinf(pi.t) in [-pi pi] for which the value will be
    * correct */
@@ -214,11 +214,11 @@ _dt_interpolation_func_lanczos(float width, float t)
   union { float f; uint32_t i; } sign;
   sign.i = ((a&1)<<31) | 0x3f800000;
 
-  return (DT_LANCZOS_EPSILON + width*sign.f*_dt_sinf_fast(M_PI*r)*_dt_sinf_fast(M_PI*t/width))/(DT_LANCZOS_EPSILON + M_PI*M_PI*t*t);
+  return (DT_LANCZOS_EPSILON + width*sign.f*sinf_fast(M_PI*r)*sinf_fast(M_PI*t/width))/(DT_LANCZOS_EPSILON + M_PI*M_PI*t*t);
 }
 
 static inline __m128
-_dt_interpolation_func_lanczos_sse(__m128 width, __m128 t)
+lanczos_sse(__m128 width, __m128 t)
 {
     /* Compute a value for sinf(pi.t) in [-pi pi] for which the value will be
      * correct */
@@ -238,8 +238,8 @@ _dt_interpolation_func_lanczos_sse(__m128 width, __m128 t)
     __m128 fsign = _mm_castsi128_ps(isign);
 
     __m128 num = _mm_mul_ps(width, fsign);
-    num = _mm_mul_ps(num, _dt_sinf_fast_sse(_mm_mul_ps(pi, r)));
-    num = _mm_mul_ps(num, _dt_sinf_fast_sse(_mm_div_ps(_mm_mul_ps(pi, t), width)));
+    num = _mm_mul_ps(num, sinf_fast_sse(_mm_mul_ps(pi, r)));
+    num = _mm_mul_ps(num, sinf_fast_sse(_mm_div_ps(_mm_mul_ps(pi, t), width)));
     num = _mm_add_ps(eps, num);
 
     __m128 den = _mm_mul_ps(pi2, _mm_mul_ps(t, t));
@@ -260,29 +260,29 @@ static const struct dt_interpolation dt_interpolator[] =
     .id = DT_INTERPOLATION_BILINEAR,
     .name = "bilinear",
     .width = 1,
-    .func = &_dt_interpolation_func_bilinear,
-    .funcsse = &_dt_interpolation_func_bilinear_sse
+    .func = &bilinear,
+    .funcsse = &bilinear_sse
   },
   {
     .id = DT_INTERPOLATION_BICUBIC,
     .name = "bicubic",
     .width = 2,
-    .func = &_dt_interpolation_func_bicubic,
-    .funcsse = &_dt_interpolation_func_bicubic_sse
+    .func = &bicubic,
+    .funcsse = &bicubic_sse
   },
   {
     .id = DT_INTERPOLATION_LANCZOS2,
     .name = "lanczos2",
     .width = 2,
-    .func = &_dt_interpolation_func_lanczos,
-    .funcsse = &_dt_interpolation_func_lanczos_sse
+    .func = &lanczos,
+    .funcsse = &lanczos_sse
   },
   {
     .id = DT_INTERPOLATION_LANCZOS3,
     .name = "lanczos3",
     .width = 3,
-    .func = &_dt_interpolation_func_lanczos,
-    .funcsse = &_dt_interpolation_func_lanczos_sse
+    .func = &lanczos,
+    .funcsse = &lanczos_sse
   },
 };
 
@@ -291,7 +291,7 @@ static const struct dt_interpolation dt_interpolator[] =
  * ------------------------------------------------------------------------*/
 
 static inline float
-_dt_interpolation_compute_kernel(
+compute_kernel(
   const struct dt_interpolation* itor,
   float* kernel,
   float t)
@@ -331,8 +331,8 @@ dt_interpolation_compute_sample(
   float kernelv[6];
 
   // Compute both horizontal and vertical kernels
-  float normh = _dt_interpolation_compute_kernel(itor, kernelh, x);
-  float normv = _dt_interpolation_compute_kernel(itor, kernelv, y);
+  float normh = compute_kernel(itor, kernelh, x);
+  float normv = compute_kernel(itor, kernelv, y);
 
   // Go to top left pixel
   in = in - (itor->width-1)*(samplestride + linestride);
