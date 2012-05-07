@@ -290,8 +290,16 @@ static const struct dt_interpolation dt_interpolator[] =
  * Kernel utility method
  * ------------------------------------------------------------------------*/
 
+/** Computes an upsampling filtering kernel
+ *
+ * @param itor [in] Interpolator used
+ * @param kernel [out] resulting itor->width*2 filter taps
+ * @param t [in] Interpolated coordinate
+ *
+ * @return kernel norm
+ */
 static inline float
-compute_kernel(
+compute_upsampling_kernel(
   const struct dt_interpolation* itor,
   float* kernel,
   float t)
@@ -314,8 +322,16 @@ compute_kernel(
   return norm;
 }
 
+/** Computes an upsampling filtering kernel (SSE version, four taps per inner loop)
+ *
+ * @param itor [in] Interpolator used
+ * @param kernel [out] resulting itor->width*2 filter taps (array must be at least (itor->width*2+3)/4*4 floats long)
+ * @param t [in] Interpolated coordinate
+ *
+ * @return kernel norm
+ */
 static inline float
-compute_kernel_sse(
+compute_upsampling_kernel_sse(
   const struct dt_interpolation* itor,
   float* kernel,
   float t)
@@ -377,8 +393,8 @@ dt_interpolation_compute_sample(
   float kernelv[8] __attribute__((aligned(16)));
 
   // Compute both horizontal and vertical kernels
-  float normh = compute_kernel_sse(itor, kernelh, x);
-  float normv = compute_kernel_sse(itor, kernelv, y);
+  float normh = compute_upsampling_kernel_sse(itor, kernelh, x);
+  float normv = compute_upsampling_kernel_sse(itor, kernelv, y);
 
   // Go to top left pixel
   in = in - (itor->width-1)*(samplestride + linestride);
@@ -417,8 +433,8 @@ dt_interpolation_compute_pixel4c(
   __m128 vkernelv[8];
 
   // Compute both horizontal and vertical kernels
-  float normh = compute_kernel_sse(itor, kernelh, x);
-  float normv = compute_kernel_sse(itor, kernelv, y);
+  float normh = compute_upsampling_kernel_sse(itor, kernelh, x);
+  float normv = compute_upsampling_kernel_sse(itor, kernelv, y);
 
   // We will process four components a time, duplicate the information
   for (int i=0; i<2*itor->width; i++) {
