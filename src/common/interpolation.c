@@ -338,10 +338,10 @@ compute_kernel_sse(
     // Compute the values
     __m128 vr = itor->funcsse(vw, vt);
 
-    // Accum norm
+    // Save result
     *(__m128*)kernel = vr;
 
-    // Prepare next iter
+    // Prepare next iteration
     vt = _mm_add_ps(vt, iter);
     kernel += 4;
     i++;
@@ -409,7 +409,6 @@ dt_interpolation_compute_pixel4c(
   const int linestride)
 {
   assert(itor->width < 4);
-  assert(samplestride == 4);
 
   // Quite a bit of space for kernels
   float kernelh[8] __attribute__((aligned(16)));
