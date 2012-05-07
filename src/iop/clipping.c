@@ -45,9 +45,6 @@
 #include <gdk/gdkkeysyms.h>
 #include <assert.h>
 
-#define BLOCKSIZE  2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
-#define ZBLOCKSIZE 64
-
 DT_MODULE(3)
 
 // number of gui ratios in combo box
@@ -142,7 +139,6 @@ dt_iop_clipping_data_t;
 
 typedef struct dt_iop_clipping_global_data_t
 {
-  int kernel_clip_rotate_prep;
   int kernel_clip_rotate_bilinear;
   int kernel_clip_rotate_bicubic;
   int kernel_clip_rotate_lanczos2;
@@ -487,11 +483,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   }
   else
   {
-    int blocksize = BLOCKSIZE;
-    int zblocksize = ZBLOCKSIZE;
-    int xblocksize = 1;
-    int yblocksize = 1;
-    int buf = 36;
     int crkernel = -1;
 
     enum dt_interpolation itype = dt_interpolation_get_type();
@@ -499,78 +490,20 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     switch(itype)
     {
       case DT_INTERPOLATION_BILINEAR:
-        zblocksize = 1;
-        buf = 0;
         crkernel = gd->kernel_clip_rotate_bilinear;
         break;
       case DT_INTERPOLATION_BICUBIC:
-        zblocksize = 16;
-        buf = 16;
         crkernel = gd->kernel_clip_rotate_bicubic;
         break;
       case DT_INTERPOLATION_LANCZOS2:
-        zblocksize = 16;
-        buf = 16;
         crkernel = gd->kernel_clip_rotate_lanczos2;
         break;
       case DT_INTERPOLATION_LANCZOS3:
-        zblocksize = 64;
-        buf = 36;
         crkernel = gd->kernel_clip_rotate_lanczos3;
         break;
       default:
         return FALSE;
     }
-
-    // prepare local work group
-    size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
-    size_t workgroupsize = 0;          // the maximum number of items in a work group
-    unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
-    size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
-  
-    // make sure blocksize etc. is not too large
-    if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-       dt_opencl_get_kernel_work_group_size(devid, crkernel, &kernelworkgroupsize) == CL_SUCCESS)
-    {
-      // reduce blocksizes step by step until it fits to limits
-      while(zblocksize > maxsizes[2])
-      {
-        if(zblocksize == 1) break;
-        zblocksize >>= 1;
-      }
-
-      while(blocksize > kernelworkgroupsize || blocksize > workgroupsize || (blocksize/zblocksize)*(buf*4*sizeof(float)) > localmemsize)
-      {
-        if(blocksize == 1) break;
-        blocksize >>= 1;    
-      }
-
-      xblocksize = blocksize / zblocksize;
-      while(xblocksize > maxsizes[0])
-      {
-        if(xblocksize == 1) break;
-        xblocksize >>= 1;
-      }
-
-      yblocksize = blocksize / (xblocksize * zblocksize);
-      while(yblocksize > maxsizes[1])
-      {
-        if(yblocksize == 1) break;
-        yblocksize >>= 1;
-      }
-
-    }
-    else
-    {
-      blocksize = 1;   // slow but safe
-      xblocksize = 1;
-      yblocksize = 1;
-      zblocksize = 1;
-    }
-
-    // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
-    const size_t bwidth = width % xblocksize == 0 ? width : (width / xblocksize + 1)*xblocksize;
-    const size_t bheight = height % yblocksize == 0 ? height : (height / yblocksize + 1)*yblocksize;
 
     int roi[2]  = { roi_in->x, roi_in->y };
     int roo[2]  = { roi_out->x, roi_out->y };
@@ -580,44 +513,26 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     float m[4]  = { d->m[0], d->m[1], d->m[2], d->m[3] };
 
     size_t sizes[3];
-    size_t local[3];
 
     sizes[0] = ROUNDUPWD(width);
     sizes[1] = ROUNDUPHT(height);
     sizes[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 0, sizeof(cl_mem), &dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 1, sizeof(cl_mem), &dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 2, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 3, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 4, sizeof(int), &roi_in->width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 5, sizeof(int), &roi_in->height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 6, 2*sizeof(int), &roi);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 7, 2*sizeof(int), &roo);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 8, sizeof(float), &roi_in->scale);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 9, sizeof(float), &roi_out->scale);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 10, sizeof(int), &d->flip);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 11, 2*sizeof(float), &ci);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 12, 2*sizeof(float), &t);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 13, 2*sizeof(float), &k);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 14, 4*sizeof(float), &m);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_clip_rotate_prep, sizes);
-    if(err != CL_SUCCESS) goto error;
-
-    sizes[0] = bwidth;
-    sizes[1] = bheight;
-    sizes[2] = zblocksize;
-    local[0] = xblocksize;
-    local[1] = yblocksize;
-    local[2] = zblocksize;
     dt_opencl_set_kernel_arg(devid, crkernel, 0, sizeof(cl_mem), &dev_in);
     dt_opencl_set_kernel_arg(devid, crkernel, 1, sizeof(cl_mem), &dev_out);
-    dt_opencl_set_kernel_arg(devid, crkernel, 2, sizeof(cl_mem), &dev_out);
-    dt_opencl_set_kernel_arg(devid, crkernel, 3, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, crkernel, 4, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, crkernel, 5, sizeof(int), &roi_in->width);
-    dt_opencl_set_kernel_arg(devid, crkernel, 6, sizeof(int), &roi_in->height);
-    dt_opencl_set_kernel_arg(devid, crkernel, 7, xblocksize*yblocksize*buf*4*sizeof(float), NULL);
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, crkernel, sizes, local);
+    dt_opencl_set_kernel_arg(devid, crkernel, 2, sizeof(int), &width);
+    dt_opencl_set_kernel_arg(devid, crkernel, 3, sizeof(int), &height);
+    dt_opencl_set_kernel_arg(devid, crkernel, 4, sizeof(int), &roi_in->width);
+    dt_opencl_set_kernel_arg(devid, crkernel, 5, sizeof(int), &roi_in->height);
+    dt_opencl_set_kernel_arg(devid, crkernel, 6, 2*sizeof(int), &roi);
+    dt_opencl_set_kernel_arg(devid, crkernel, 7, 2*sizeof(int), &roo);
+    dt_opencl_set_kernel_arg(devid, crkernel, 8, sizeof(float), &roi_in->scale);
+    dt_opencl_set_kernel_arg(devid, crkernel, 9, sizeof(float), &roi_out->scale);
+    dt_opencl_set_kernel_arg(devid, crkernel, 10, sizeof(int), &d->flip);
+    dt_opencl_set_kernel_arg(devid, crkernel, 11, 2*sizeof(float), &ci);
+    dt_opencl_set_kernel_arg(devid, crkernel, 12, 2*sizeof(float), &t);
+    dt_opencl_set_kernel_arg(devid, crkernel, 13, 2*sizeof(float), &k);
+    dt_opencl_set_kernel_arg(devid, crkernel, 14, 4*sizeof(float), &m);
+    err = dt_opencl_enqueue_kernel_2d(devid, crkernel, sizes);
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -648,7 +563,6 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 2; // basic.cl from programs.conf
   dt_iop_clipping_global_data_t *gd = (dt_iop_clipping_global_data_t *)malloc(sizeof(dt_iop_clipping_global_data_t));
   module->data = gd;
-  gd->kernel_clip_rotate_prep = dt_opencl_create_kernel(program, "clip_rotate_prep");
   gd->kernel_clip_rotate_bilinear = dt_opencl_create_kernel(program, "clip_rotate_bilinear");
   gd->kernel_clip_rotate_bicubic = dt_opencl_create_kernel(program, "clip_rotate_bicubic");
   gd->kernel_clip_rotate_lanczos2 = dt_opencl_create_kernel(program, "clip_rotate_lanczos2");
@@ -659,7 +573,6 @@ void init_global(dt_iop_module_so_t *module)
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_clipping_global_data_t *gd = (dt_iop_clipping_global_data_t *)module->data;
-  dt_opencl_free_kernel(gd->kernel_clip_rotate_prep);
   dt_opencl_free_kernel(gd->kernel_clip_rotate_bilinear);
   dt_opencl_free_kernel(gd->kernel_clip_rotate_bicubic);
   dt_opencl_free_kernel(gd->kernel_clip_rotate_lanczos2);
