@@ -71,13 +71,11 @@ typedef struct dt_iop_tonecurve_gui_data_t
   GtkHBox *hbox;
   GtkDrawingArea *area;
   GtkSizeGroup *sizegroup;
-  GtkLabel *label;
-  GtkToggleButton *autoscale_ab;
+  GtkWidget *autoscale_ab;
   GtkNotebook* channel_tabs;
   tonecurve_channel_t channel;
   double mouse_x, mouse_y;
-  int selected, dragging, x_move;
-  double selected_offset, selected_y, selected_min, selected_max;
+  int selected;
   float draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
   float draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
   float draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];
@@ -117,7 +115,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
-static gboolean dt_iop_tonecurve_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 
