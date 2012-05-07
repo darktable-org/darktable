@@ -353,8 +353,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
   // adjust roi_in to minimally needed region
   // +/-1 stands for imprecision in transform
-  enum dt_interpolation itype = dt_interpolation_get_type();
-  const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
+  const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   roi_in->x      = aabb_in[0] - interpolation->width - 1;
   roi_in->y      = aabb_in[1] - interpolation->width - 1;
   roi_in->width  = aabb_in[2]-aabb_in[0]+2*(interpolation->width+1);
@@ -385,6 +384,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
   const int ch_width = ch*roi_in->width;
 
+  assert(ch == 4);
+
   // only crop, no rot fast and sharp path:
   if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
   {
@@ -405,11 +406,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   else
   {
-    enum dt_interpolation itype = dt_interpolation_get_type();
-    const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
+    const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
 #ifdef _OPENMP
-    #pragma omp parallel for schedule(static) default(none) shared(d,ivoid,ovoid,roi_in,roi_out,itype,interpolation)
+    #pragma omp parallel for schedule(static) default(none) shared(d,ivoid,ovoid,roi_in,roi_out,interpolation)
 #endif
     // (slow) point-by-point transformation.
     // TODO: optimize with scanlines and linear steps between?
@@ -448,8 +448,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
         {
           const float *in = ((float *)ivoid) + ch*(roi_in->width*jj+ii);
-          for(int c=0; c<3; c++,in++)
-            out[c] = dt_interpolation_compute(in, po[0], po[1], itype, ch, ch_width);
+          dt_interpolation_compute_pixel4c(interpolation, in, out, po[0], po[1], ch_width);
         }
         else for(int c=0; c<3; c++) out[c] = 0.0f;
       }
@@ -485,9 +484,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     int crkernel = -1;
 
-    enum dt_interpolation itype = dt_interpolation_get_type();
+    const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
-    switch(itype)
+    switch(interpolation->id)
     {
       case DT_INTERPOLATION_BILINEAR:
         crkernel = gd->kernel_clip_rotate_bilinear;

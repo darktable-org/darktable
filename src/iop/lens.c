@@ -149,11 +149,10 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
 
-      enum dt_interpolation itype = dt_interpolation_get_type();
-      const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
+      const struct  dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_out, roi_in, in, d, ovoid, modifier, itype, interpolation) schedule(static)
+      #pragma omp parallel for default(none) shared(roi_out, roi_in, in, d, ovoid, modifier, interpolation) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
@@ -171,7 +170,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
             if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
             {
               const float *inp = in + ch*(roi_in->width*jj+ii) + c;
-              buf[c] = dt_interpolation_compute(inp, pi0, pi1, itype, ch, ch_width);
+              buf[c] = dt_interpolation_compute_sample(interpolation, inp, pi0, pi1, ch, ch_width);
             }
             else buf[c] = 0.0f;
           }
@@ -242,11 +241,10 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
 
-      enum dt_interpolation itype = dt_interpolation_get_type();
-      const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
+      const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_in, roi_out, d, ovoid, modifier, itype, interpolation) schedule(static)
+      #pragma omp parallel for default(none) shared(roi_in, roi_out, d, ovoid, modifier, interpolation) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
@@ -264,7 +262,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
             if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
             {
               const float *inp = d->tmpbuf + ch*(roi_in->width*jj+ii)+c;
-              out[c] = dt_interpolation_compute(inp, pi0, pi1, itype, ch, ch_width);
+              out[c] = dt_interpolation_compute_sample(interpolation, inp, pi0, pi1, ch, ch_width);
             }
             else out[c] = 0.0f;
           }
@@ -332,7 +330,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     return TRUE;
   }
 
-  enum dt_interpolation itype = dt_interpolation_get_type();
+  const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
   int blocksize = BLOCKSIZE;
   int zblocksize = ZBLOCKSIZE;
@@ -341,7 +339,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   int buf = 36;
   int ldkernel = -1;
 
-  switch(itype)
+  switch(interpolation->id)
   {
     case DT_INTERPOLATION_BILINEAR:
       zblocksize = 1;
@@ -705,9 +703,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
       }
     }
 
-    enum dt_interpolation itype = dt_interpolation_get_type();
-    const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
-
+    const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
     roi_in->x = fmaxf(0.0f, xm-interpolation->width);
     roi_in->y = fmaxf(0.0f, ym-interpolation->width);
     roi_in->width = fminf(orig_w-roi_in->x, xM - roi_in->x + interpolation->width);
