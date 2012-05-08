@@ -720,7 +720,7 @@ void init_global(dt_iop_module_so_t *module)
 #endif
   {
     char path[1024];
-    dt_util_get_datadir(path, 1024);
+    dt_loc_get_datadir(path, 1024);
     char *c = path + strlen(path);
     for(; c>path && *c != '/'; c--);
     sprintf(c, "/lensfun");

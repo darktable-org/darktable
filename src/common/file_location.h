@@ -23,19 +23,17 @@
 #include <gtk/gtk.h>
 
 /** returns the users home directory */
-gchar* dt_util_get_home_dir(const gchar* user);
-/** fixes the given path by replacing a possible tilde with the correct home directory */
-gchar* dt_util_fix_path(const gchar* path);
+gchar* dt_loc_get_home_dir(const gchar* user);
 
 /** get systemwide data dir */
-void dt_util_get_datadir(char *datadir, size_t bufsize);
+void dt_loc_get_datadir(char *datadir, size_t bufsize);
 /** get the plugin dir */
-void dt_util_get_plugindir(char *plugindir, size_t bufsize);
+void dt_loc_get_plugindir(char *plugindir, size_t bufsize);
 /** get user local dir */
-void dt_util_get_user_local_dir(char *localdir, size_t bufsize);
+void dt_loc_get_user_local_dir(char *localdir, size_t bufsize);
 /** get user config dir */
-void dt_util_get_user_config_dir(char *configdir, size_t bufsize);
+void dt_loc_get_user_config_dir(char *configdir, size_t bufsize);
 /** get user cache dir */
-void dt_util_get_user_cache_dir(char *cachedir, size_t bufsize);
+void dt_loc_get_user_cache_dir(char *cachedir, size_t bufsize);
 
 #endif

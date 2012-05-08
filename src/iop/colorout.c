@@ -723,8 +723,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   // read {conf,data}dir/color/out/*.icc
   char datadir[1024], confdir[1024], dirname[1024], filename[1024];
-  dt_util_get_user_config_dir(confdir, 1024);
-  dt_util_get_datadir(datadir, 1024);
+  dt_loc_get_user_config_dir(confdir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
   snprintf(dirname, 1024, "%s/color/out", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
     snprintf(dirname, 1024, "%s/color/out", datadir);

@@ -27,9 +27,9 @@
 #include <config.h>
 #endif
 
-#include "utility.h"
+#include "file_location.h"
 
-gchar* dt_util_get_home_dir(const gchar* user)
+gchar* dt_loc_get_home_dir(const gchar* user)
 {
   if (user == NULL || g_strcmp0(user, g_get_user_name()) == 0) {
     const char* home_dir = g_getenv("HOME");
@@ -70,53 +70,10 @@ gchar* dt_util_get_home_dir(const gchar* user)
 #endif
 }
 
-gchar* dt_util_fix_path(const gchar* path)
+
+void dt_loc_get_user_config_dir (char *data, size_t bufsize)
 {
-  if (path == NULL || strlen(path) == 0) {
-    return NULL;
-  }
-
-  gchar* rpath = NULL;
-
-  /* check if path has a prepended tilde */
-  if (path[0] == '~') {
-    int len    = strlen(path);
-    char* user = NULL;
-    int off    = 1;
-
-    /* if the character after the tilde is not a slash we parse
-     * the path until the next slash to extend this part with the
-     * home directory of the specified user
-     *
-     * e.g.: ~foo will be evaluated as the home directory of the
-     * user foo */
-
-    if (len > 1 && path[1] != '/') {
-      while (path[off] != '\0' && path[off] != '/') {
-        ++off;
-      }
-
-      user = g_strndup(path + 1, off - 1);
-    }
-
-    gchar* home_path = dt_util_get_home_dir(user);
-    g_free(user);
-
-    if (home_path == NULL) {
-      return g_strdup(path);
-    }
-
-    rpath = g_build_filename(home_path, path + off, NULL);
-  } else {
-    rpath = g_strdup(path);
-  }
-
-  return rpath;
-}
-
-void dt_util_get_user_config_dir (char *data, size_t bufsize)
-{
-  gchar *homedir = dt_util_get_home_dir(NULL);
+  gchar *homedir = dt_loc_get_home_dir(NULL);
 
   if(homedir)
   {
@@ -129,9 +86,9 @@ void dt_util_get_user_config_dir (char *data, size_t bufsize)
 }
 
 
-void dt_util_get_user_cache_dir (char *data, size_t bufsize)
+void dt_loc_get_user_cache_dir (char *data, size_t bufsize)
 {
-  gchar *homedir = dt_util_get_home_dir(NULL);
+  gchar *homedir = dt_loc_get_home_dir(NULL);
   if(homedir)
   {
     g_snprintf (data,bufsize,"%s/.cache/darktable",homedir);
@@ -141,9 +98,9 @@ void dt_util_get_user_cache_dir (char *data, size_t bufsize)
   }
 }
 
-void dt_util_get_user_local_dir (char *data, size_t bufsize)
+void dt_loc_get_user_local_dir (char *data, size_t bufsize)
 {
-  gchar *homedir = dt_util_get_home_dir(NULL);
+  gchar *homedir = dt_loc_get_home_dir(NULL);
   if(homedir)
   {
     g_snprintf(data,bufsize,"%s/.local",homedir);
@@ -153,7 +110,7 @@ void dt_util_get_user_local_dir (char *data, size_t bufsize)
   }
 }
 
-void dt_util_get_plugindir(char *datadir, size_t bufsize)
+void dt_loc_get_plugindir(char *datadir, size_t bufsize)
 {
 #if defined(__MACH__) || defined(__APPLE__)
   gchar *curr = g_get_current_dir();
@@ -191,7 +148,7 @@ void dt_util_get_plugindir(char *datadir, size_t bufsize)
 #endif
 }
 
-void dt_util_get_datadir(char *datadir, size_t bufsize)
+void dt_loc_get_datadir(char *datadir, size_t bufsize)
 {
 #if defined(__MACH__) || defined(__APPLE__)
   gchar *curr = g_get_current_dir();

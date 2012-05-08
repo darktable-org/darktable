@@ -210,7 +210,7 @@ dt_mipmap_cache_get_filename(
 
   // Directory
   char cachedir[1024];
-  dt_util_get_user_cache_dir(cachedir, sizeof(cachedir));
+  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
   // Build the mipmap filename
   const gchar *dbfilename = dt_database_get_path(darktable.db);

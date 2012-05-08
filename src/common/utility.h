@@ -31,4 +31,6 @@ gchar* dt_util_str_replace(const gchar* string, const gchar* pattern, const gcha
 guint dt_util_str_occurence(const gchar *haystack,const gchar *needle);
 /** generate a string from the elements of the list, separated by separator. the list is freed, the result has to be freed. */
 gchar* dt_util_glist_to_str(const gchar* separator, GList * items, const unsigned int count);
+/** fixes the given path by replacing a possible tilde with the correct home directory */
+gchar* dt_util_fix_path(const gchar* path);
 #endif

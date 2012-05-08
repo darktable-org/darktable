@@ -389,7 +389,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // thread-safe init:
   dt_exif_init();
   char datadir[1024];
-  dt_util_get_user_config_dir (datadir,1024);
+  dt_loc_get_user_config_dir (datadir,1024);
   char filename[1024];
   snprintf(filename, 1024, "%s/darktablerc", datadir);
 
