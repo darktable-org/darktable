@@ -376,6 +376,61 @@ compute_upsampling_kernel_sse(
   return norm;
 }
 
+// Avoid libc ceil for now. Maybe we'll revert to libc later
+static inline float
+ceil_fast(
+  float x)
+{
+  if (x <= 0.f) {
+    return (float)(int)x;
+  } else {
+    return -((float)(int)-x) + 1.f;
+  }
+}
+
+/** Computes a downsampling filtering kernel
+ *
+ * @param itor [in] Interpolator used
+ * @param kernelsize [out] Number of taps
+ * @param kernel [out] resulting taps (at least itor->width/inoout elements for no overflow)
+ * @param outoinratio [in] "out samples" over "in samples" ratio
+ * @param xout [in] Output coordinate
+ *
+ * @return kernel norm
+ */
+static inline float
+compute_downsampling_kernel(
+  const struct dt_interpolation* itor,
+  int* kernelsize,
+  float* kernel,
+  float outoinratio,
+  int xout)
+{
+  // Keep this at hand
+  float w = (float)itor->width;
+
+  /* Compute the phase difference between output pixel and its
+   * input corresponding input pixel */
+  float xin = ceil_fast(((float)xout-w)/outoinratio);
+
+  // Compute first interpolator parameter
+  float t = xin*outoinratio - (float)xout;
+
+  // Will hold kernel norm
+  float norm = 0.f;
+
+  // Compute all filter taps
+  *kernelsize = 0;
+  while (t<w) {
+    *kernel = itor->func(w, t);
+    norm += *kernel;
+    t += outoinratio;
+    (*kernelsize)++;
+  }
+
+  return norm;
+}
+
 /* --------------------------------------------------------------------------
  * Sample interpolation function (see usage in iop/lens.c and iop/clipping.c)
  * ------------------------------------------------------------------------*/
