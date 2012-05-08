@@ -21,6 +21,7 @@
 #include "control/control.h"
 #include "common/imageio.h"
 #include "common/image_cache.h"
+#include "common/file_location.h"
 #include "common/styles.h"
 #include "common/tags.h"
 #include "common/debug.h"

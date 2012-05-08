@@ -36,6 +36,7 @@ extern "C"
 #include "common/exif.h"
 #include "common/darktable.h"
 #include "common/colorspaces.h"
+#include "common/file_location.h"
 }
 
 // define this function, it is only declared in rawspeed:

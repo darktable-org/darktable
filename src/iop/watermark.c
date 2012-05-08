@@ -42,6 +42,7 @@
 
 #include "common/metadata.h"
 #include "common/utility.h"
+#include "common/file_location.h"
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE(1)
