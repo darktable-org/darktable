@@ -79,6 +79,7 @@ static int usage(const char *argv0)
 #ifdef HAVE_OPENCL
   printf(" [--disable-opencl]");
 #endif
+  printf(" [--library <library file>]");
   printf("\n");
   return 1;
 }

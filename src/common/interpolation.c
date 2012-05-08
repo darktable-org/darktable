@@ -409,7 +409,7 @@ dt_interpolation_compute_pixel4c(
   const int linestride)
 {
   assert(itor->width < 4);
-  assert(samplestride == 4);
+  //assert(samplestride == 4);
 
   // Quite a bit of space for kernels
   float kernelh[8] __attribute__((aligned(16)));
