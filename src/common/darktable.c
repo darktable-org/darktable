@@ -81,6 +81,7 @@ static int usage(const char *argv0)
 #endif
   printf(" [--library <library file>]");
   printf(" [--datadir <data directory>]");
+  printf(" [--plugindir <plugin directory>]");
   printf("\n");
   return 1;
 }
@@ -312,6 +313,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // database
   gchar *dbfilenameFromCommand = NULL;
   char *datadirFromCommand = NULL;
+  char *plugindirFromCommand = NULL;
 
   darktable.num_openmp_threads = 1;
 #ifdef _OPENMP
@@ -339,6 +341,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
       else if(!strcmp(argv[k], "--datadir"))
       {
         datadirFromCommand = argv[++k];
+      }
+      else if(!strcmp(argv[k], "--plugindir"))
+      {
+        plugindirFromCommand = argv[++k];
       }
       else if(argv[k][1] == 'd' && argc > k+1)
       {
@@ -379,6 +385,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   omp_set_num_threads(darktable.num_openmp_threads);
 #endif
   dt_loc_init_datadir(datadirFromCommand);
+  dt_loc_init_plugindir(plugindirFromCommand);
 
   g_type_init();
 

@@ -28,7 +28,7 @@ gchar* dt_loc_get_home_dir(const gchar* user);
 /** init systemwide data dir */
 void dt_loc_init_datadir(const char* datadir);
 /** get the plugin dir */
-void dt_loc_get_plugindir(char *plugindir, size_t bufsize);
+void dt_loc_init_plugindir(const char *plugindir);
 /** get user local dir */
 void dt_loc_get_user_local_dir(char *localdir, size_t bufsize);
 /** get user config dir */
@@ -38,4 +38,5 @@ void dt_loc_get_user_cache_dir(char *cachedir, size_t bufsize);
 
 /* temporary backward_compatibility*/
 inline void dt_loc_get_datadir(char *datadir, size_t bufsize){snprintf(datadir, bufsize, "%s",darktable.datadir);};
+void dt_loc_get_plugindir(char *plugindir, size_t bufsize);
 #endif

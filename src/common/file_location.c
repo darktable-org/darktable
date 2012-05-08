@@ -110,42 +110,47 @@ void dt_loc_get_user_local_dir (char *data, size_t bufsize)
   }
 }
 
-void dt_loc_get_plugindir(char *datadir, size_t bufsize)
+void dt_loc_init_plugindir(const char *plugindir)
 {
+  darktable.plugindir = malloc(1024);
+  if(plugindir) {
+	  snprintf(darktable.plugindir, 1024, "%s", plugindir);
+  } else {
 #if defined(__MACH__) || defined(__APPLE__)
-  gchar *curr = g_get_current_dir();
-  int contains = 0;
-  for(int k=0; darktable.progname[k] != 0; k++) if(darktable.progname[k] == '/')
-    {
-      contains = 1;
-      break;
-    }
-  if(darktable.progname[0] == '/') // absolute path
-    snprintf(datadir, bufsize, "%s", darktable.progname);
-  else if(contains) // relative path
-    snprintf(datadir, bufsize, "%s/%s", curr, darktable.progname);
-  else
-  {
-    // no idea where we have been called. use compiled in path
-    g_free(curr);
-    snprintf(datadir, bufsize, "%s/darktable", DARKTABLE_LIBDIR);
-    return;
-  }
-  size_t len = MIN(strlen(datadir), bufsize);
-  char *t = datadir + len; // strip off bin/darktable
-  for(; t>datadir && *t!='/'; t--);
-  t--;
-  if(*t == '.' && *(t-1) != '.')
-  {
-    for(; t>datadir && *t!='/'; t--);
-    t--;
-  }
-  for(; t>datadir && *t!='/'; t--);
-  g_strlcpy(t, "/lib/darktable", bufsize-(t-datadir));
-  g_free(curr);
+	  gchar *curr = g_get_current_dir();
+	  int contains = 0;
+	  for(int k=0; darktable.progname[k] != 0; k++) if(darktable.progname[k] == '/')
+	  {
+		  contains = 1;
+		  break;
+	  }
+	  if(darktable.progname[0] == '/') // absolute path
+		  snprintf(darktable.plugindir, 1024, "%s", darktable.progname);
+	  else if(contains) // relative path
+		  snprintf(darktable.plugindir, 1024, "%s/%s", curr, darktable.progname);
+	  else
+	  {
+		  // no idea where we have been called. use compiled in path
+		  g_free(curr);
+		  snprintf(darktable.plugindir, 1024, "%s/darktable", DARKTABLE_LIBDIR);
+		  return;
+	  }
+	  size_t len = MIN(strlen(darktable.plugindir), 1024);
+	  char *t = darktable.plugindir + len; // strip off bin/darktable
+	  for(; t>darktable.plugindir && *t!='/'; t--);
+	  t--;
+	  if(*t == '.' && *(t-1) != '.')
+	  {
+		  for(; t>darktable.plugindir && *t!='/'; t--);
+		  t--;
+	  }
+	  for(; t>darktable.plugindir && *t!='/'; t--);
+	  g_strlcpy(t, "/lib/darktable", 1024-(t-darktable.plugindir));
+	  g_free(curr);
 #else
-  snprintf(datadir, bufsize, "%s/darktable", DARKTABLE_LIBDIR);
+	  snprintf(darktable.plugindir, 1024, "%s/darktable", DARKTABLE_LIBDIR);
 #endif
+  }
 }
 
 void dt_loc_init_datadir(const char *datadir)
@@ -192,5 +197,6 @@ void dt_loc_init_datadir(const char *datadir)
 }
 
 
+void dt_loc_get_plugindir(char *plugindir, size_t bufsize){snprintf(plugindir, bufsize, "%s",darktable.plugindir);};
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
