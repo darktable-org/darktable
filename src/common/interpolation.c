@@ -420,12 +420,12 @@ compute_downsampling_kernel(
   float norm = 0.f;
 
   // Compute all filter taps
-  *kernelsize = 0;
-  while (t<w) {
+  *kernelsize = (int)((w-t)/outoinratio);
+  for (int i=0; i<*kernelsize; i++) {
     *kernel = itor->func(w, t);
     norm += *kernel;
     t += outoinratio;
-    (*kernelsize)++;
+    kernel++;
   }
 
   return norm;
