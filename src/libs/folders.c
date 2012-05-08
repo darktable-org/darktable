@@ -510,11 +510,6 @@ _create_treeview_display (GtkTreeModel *model)
 static void _lib_folders_update_collection(const gchar *filmroll)
 {
 
-  //char folder[1024]={0};
-  /* We have the full path stored in the second column, so we don't need this function
-   * or we don't need the column */
-  //_lib_folders_string_from_path(folder, 1024, gtk_tree_view_get_model(view), tp);
-
   gchar *complete_query = NULL;
 
   complete_query = dt_util_dstrcat(complete_query, "film_id in (select id from film_rolls where folder like '%s%%')", filmroll);
