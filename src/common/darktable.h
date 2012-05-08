@@ -177,6 +177,7 @@ typedef struct darktable_t
   dt_pthread_mutex_t db_insert;
   dt_pthread_mutex_t plugin_threadsafe;
   char *progname;
+  char *datadir;
 }
 darktable_t;
 
