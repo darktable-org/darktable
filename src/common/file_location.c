@@ -98,15 +98,20 @@ void dt_loc_get_user_cache_dir (char *data, size_t bufsize)
   }
 }
 
-void dt_loc_get_user_local_dir (char *data, size_t bufsize)
+void dt_loc_init_user_local_dir (const char *localdir)
 {
-  gchar *homedir = dt_loc_get_home_dir(NULL);
-  if(homedir)
-  {
-    g_snprintf(data,bufsize,"%s/.local",homedir);
-    if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE)
-      g_mkdir_with_parents (data,0700);
-    g_free(homedir);
+  darktable.localdir = malloc(1024);
+  if(localdir) {
+	  snprintf(darktable.localdir, 1024, "%s", localdir);
+  } else {
+	  gchar *homedir = dt_loc_get_home_dir(NULL);
+	  if(homedir)
+	  {
+		  g_snprintf(darktable.localdir,1024,"%s/.local",homedir);
+		  if (g_file_test (darktable.localdir,G_FILE_TEST_EXISTS)==FALSE)
+			  g_mkdir_with_parents (darktable.localdir,0700);
+		  g_free(homedir);
+	  }
   }
 }
 

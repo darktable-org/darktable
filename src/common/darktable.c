@@ -82,6 +82,7 @@ static int usage(const char *argv0)
   printf(" [--library <library file>]");
   printf(" [--datadir <data directory>]");
   printf(" [--plugindir <plugin directory>]");
+  printf(" [--localdir <local directory>]");
   printf("\n");
   return 1;
 }
@@ -314,6 +315,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   gchar *dbfilenameFromCommand = NULL;
   char *datadirFromCommand = NULL;
   char *plugindirFromCommand = NULL;
+  char *localdirFromCommand = NULL;
 
   darktable.num_openmp_threads = 1;
 #ifdef _OPENMP
@@ -345,6 +347,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
       else if(!strcmp(argv[k], "--plugindir"))
       {
         plugindirFromCommand = argv[++k];
+      }
+      else if(!strcmp(argv[k], "--localdir"))
+      {
+        localdirFromCommand = argv[++k];
       }
       else if(argv[k][1] == 'd' && argc > k+1)
       {
@@ -386,6 +392,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
 #endif
   dt_loc_init_datadir(datadirFromCommand);
   dt_loc_init_plugindir(plugindirFromCommand);
+  dt_loc_init_user_local_dir(localdirFromCommand);
 
   g_type_init();
 
