@@ -439,89 +439,6 @@ _folder_tree ()
   return store;
 }
 
-#if 0
-static GtkTreeModel *
-_create_filtered_root_model (GtkTreeModel *model, gchar *mount_path)
-{
-  GtkTreeModel *filter = NULL;
-  GtkTreePath  *path;
-
-  /* Create path to set as virtual root */
-
-  GtkTreeIter current, iter;
-  char *pch = strtok(mount_path, "/");
-  char *value;
-  int level = 0;
-  gboolean found = FALSE;
-
-  while (pch != NULL)
-  {
-    found=FALSE;
-    int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(model),level>0?&current:NULL);
-    /* find child with name, if not found create and continue */
-    for (int k=0;k<children;k++)
-    {
-      if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(model), &iter, level>0?&current:NULL, k))
-      {
-        gtk_tree_model_get (GTK_TREE_MODEL(model), &iter, 0, &value, -1);
-
-        if (strcmp(value, pch)==0)
-        {
-          current = iter;
-          found = TRUE;
-          break;
-        }
-      }
-    }
-
-    if (!found)
-      break;
-    level++;
-    pch = strtok(NULL, "/");
-  }
-
-  if (!found)
-    return NULL;
-
-  path = gtk_tree_model_get_path (GTK_TREE_MODEL(model), &iter);
-
-  /* Create filter and set virtual root */
-  filter = gtk_tree_model_filter_new (model, path);
-  gtk_tree_path_free (path);
-
-  return filter;
-
-}
-#endif
-
-#if 0
-static gboolean
-_filter_mounts (GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data)
-{
-  /* We have to filter here known external mount paths, not currently mounted */
-  gboolean visible = TRUE;
-  GList *mounts = (GList *)user_data;
-  gchar *path;
-  GFile *mount_path, *filmrollpath;
-
-  gtk_tree_model_get(model, iter, 1, &path, -1);
-  filmrollpath = g_file_new_for_path (path);
-
-  for (int i=0; i < g_list_length (mounts); i++)
-  {
-    mount_path = g_mount_get_default_location(g_list_nth_data(mounts, i));
-    if (g_file_has_parent(filmrollpath, mount_path))
-	{
-	  /* Once we find a match, we know we don't want to show that branch */
-	  visible = FALSE;
-	  break;
-	}
-  }
-
-  return visible;
-}
-#endif
-
 static GtkTreeModel *
 _create_filtered_model (GtkTreeModel *model, GtkTreeIter iter)
 {
@@ -529,16 +446,6 @@ _create_filtered_model (GtkTreeModel *model, GtkTreeIter iter)
   GtkTreePath *path;
   GtkTreeIter child;
 
-#if 0
-  GtkTreeIter *iter = NULL;
-  /* Create a path to set as virtual root of the new model */
-  path = gtk_tree_path_new_first();
-
-  /* Create filter and set visible filter function */
-  filter = gtk_tree_model_filter_new (model, path);
-  gtk_tree_model_filter_set_visible_func(GTK_TREE_MODEL_FILTER(filter),
-               (GtkTreeModelFilterVisibleFunc)_filter_mounts, mounts, NULL );
-#endif
   /* Filter level */
   while (gtk_tree_model_iter_has_child(model, &iter))
   {
@@ -576,21 +483,6 @@ _create_treeview_display (GtkTreeModel *model)
   renderer = gtk_cell_renderer_text_new ();
   renderer2 = gtk_cell_renderer_text_new ();
 
-/*  renderer = gtk_cell_renderer_text_new ();
-  renderer2 = gtk_cell_renderer_text_new ();
-
-  column1 = gtk_tree_view_column_new_with_attributes ("", renderer,
-                                            "sizing", GTK_TREE_VIEW_COLUMN_FIXED,
-                                            "expand", TRUE,
-                                            NULL);
-
-  column2 = gtk_tree_view_column_new_with_attributes("", renderer2,
-                                           "sizing", GTK_TREE_VIEW_COLUMN_FIXED,
-                                           "min-width", 10,
-                                           NULL);
-  gtk_tree_view_insert_column (tree, column1, 0);
-  gtk_tree_view_insert_column (tree, column2, 1); */
-
   column1 = gtk_tree_view_column_new();
   column2 = gtk_tree_view_column_new();
 
@@ -599,15 +491,6 @@ _create_treeview_display (GtkTreeModel *model)
 
   gtk_tree_view_insert_column(treeview, column1, 0);
   gtk_tree_view_insert_column(treeview, column2, 1);
-
-/*  gtk_tree_view_insert_column_with_attributes(treeview, -1, "", renderer,
-                                               "text", 0,
-                                                NULL);
-
-  gtk_tree_view_insert_column_with_attributes(treeview, -1, "", renderer2,
-                                               "text", 2,
-                                                NULL);
-*/
 
   gtk_tree_view_column_add_attribute(column2, renderer2, "text", 2);
   gtk_tree_view_column_set_cell_data_func(column1, renderer, _show_filmroll_present, NULL, NULL);
@@ -623,66 +506,6 @@ _create_treeview_display (GtkTreeModel *model)
 
   return treeview;
 }
-
-#if 0
-static void _lib_folders_string_from_path(char *dest,size_t ds,
-					   GtkTreeModel *model,
-					   GtkTreePath *path)
-{
-  g_assert(model!=NULL);
-  g_assert(path!=NULL);
-
-  GList *components = NULL;
-  GtkTreePath *wp = gtk_tree_path_copy(path);
-  GtkTreeIter iter;
-
-  /* get components of path */
-  while (1)
-  {
-    GValue value;
-    memset(&value,0,sizeof(GValue));
-
-    /* get iter from path, break out if fail */
-    if (!gtk_tree_model_get_iter(model, &iter, wp))
-      break;
-
-    /* add component to begin of list */
-    gtk_tree_model_get_value(model, &iter, 0, &value);
-    if ( !(gtk_tree_path_get_depth(wp) == 0))
-    {
-      components = g_list_insert(components,
-				 g_strdup(g_value_get_string(&value)),
-				 0);
-    }
-    g_value_unset(&value);
-
-    /* get parent of current path break out if we are at root */
-//    if (!gtk_tree_path_up(wp) || gtk_tree_path_get_depth(wp) == 0)
-    if (!gtk_tree_path_up(wp))
-      break;
-  }
-
-  /* build the tag string from components */
-  int dcs = 0;
-
-  if(g_list_length(components) == 0)
-    dcs += g_snprintf(dest+dcs, ds-dcs," ");
-  else
-    dcs += g_snprintf(dest+dcs, ds-dcs,"/");
-
-  for(int i=0;i<g_list_length(components);i++)
-  {
-    dcs += g_snprintf(dest+dcs, ds-dcs,
-		      "%s%s",
-		      (gchar *)g_list_nth_data(components, i),
-		      (i < g_list_length(components)-1) ? "/" : "%");
-  }
-
-  /* free data */
-  gtk_tree_path_free(wp);
-}
-*/
-#endif
 
 static void _lib_folders_update_collection(const gchar *filmroll)
 {
@@ -740,101 +563,6 @@ tree_row_activated (GtkTreeView *view, GtkTreePath *path, gpointer user_data)
   _lib_folders_update_collection(filmroll);
 }
 
-#if 0
-static void _draw_tree_gui (dt_lib_module_t *self)
-{
-  GtkTreeModel *model;
-  dt_lib_folders_t *d = (dt_lib_folders_t *)self->data;
-
-  /* Destroy old tree */
-  if (d->box_tree)
-    gtk_widget_destroy(GTK_WIDGET(d->box_tree));
-
-  d->box_tree = GTK_BOX(gtk_vbox_new(FALSE,5));
-
-  /* set the UI */
-  GtkTreeView *tree;
-  GtkWidget *button;
-  GtkTreeIter iter;
-  GValue value;
-#if 0
-  /* Add a button for local filesystem, to keep UI consistency */
-  button = gtk_button_new_with_label (_("Local HDD"));
-  gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(button));
-
-  /* Show only filmrolls in the system */
-  model = _create_filtered_model(GTK_TREE_MODEL(d->store), d->mounts);
-
-  tree = _create_treeview_display(GTK_TREE_MODEL(model));
-  gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(tree));
-
-  g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d);
-
-  for (int i=0;i<g_list_length(d->mounts);i++)
-  {
-
-    GMount *mount;
-    GFile *file;
-
-    mount = (GMount *)g_list_nth_data(d->mounts, i);
-    file = g_mount_get_root(mount);
-
-    model = _create_filtered_root_model (GTK_TREE_MODEL(d->store), g_file_get_path(file));
-    if (model != NULL)
-    {
-      button = gtk_button_new_with_label (g_mount_get_name(mount));
-      gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(button));
-
-      tree = _create_treeview_display(GTK_TREE_MODEL(model));
-
-      gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(tree));
-
-      g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d);
-    }
-  }
-#endif
-
-  /* TODO: Use currently mounted device to show/no show that part of the tree */
-
-  GtkTreePath *root = gtk_tree_path_new_first();
-  gtk_tree_model_get_iter (GTK_TREE_MODEL(d->store), &iter, root);
-
-  int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(d->store), NULL);
-  d->buttons = g_ptr_array_sized_(children);
-  d->trees = g_prt_array_sized(children);
-
-  for (int i=0; i<children; i++)
-  {
-    gtk_tree_model_iter_nth_child (GTK_TREE_MODEL(d->store), &iter, NULL, i);
-  	gtk_tree_model_get_value (GTK_TREE_MODEL(d->store), &iter, 0, &value);
-
-    const gchar *mount_name = g_value_get_string(&value);
-
-    if (strcmp(mount_name, "Local")==0)
-    {
-      /* Add a button for local filesystem, to keep UI consistency */
-      button = gtk_button_new_with_label (_("Local HDD"));
-    }
-    else
-    {
-      button = gtk_button_new_with_label (mount_name);
-    }
-    g_ptr_array_add(d->buttons, (gpointer) button);
-    gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(button));
-    
-    model = _create_filtered_model(GTK_TREE_MODEL(d->store), iter);
-    tree = _create_treeview_display(GTK_TREE_MODEL(model));
-    g_ptr_array_add(d->trees, (gpointer) tree);
-    gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(tree));
-
-    g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d);
-    g_signal_connect(G_OBJECT (tree), "button-press-event", G_CALLBACK (view_onButtonPressed), NULL);
-    g_signal_connect(G_OBJECT (tree), "popup-menu", G_CALLBACK (view_onPopupMenu), NULL);
-  }
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->box_tree), TRUE, TRUE, 0);
-
-}
-#endif
 
 #if 0
 static void mount_changed (GVolumeMonitor *volume_monitor, GMount *mount, gpointer user_data)
@@ -858,13 +586,6 @@ void destroy_widget (gpointer data)
 void
  _lib_folders_gui_update(dt_lib_module_t *self)
 {
-#if 0
-  pthread_t tid;
-  tid = pthread_self();
-
-  fprintf(stderr, "[folders] Updating the module UI from thread %d\n", (int)tid);
-#endif
-
   dt_lib_folders_t *d = (dt_lib_folders_t *)self->data;
 
   const int old = darktable.gui->reset;
