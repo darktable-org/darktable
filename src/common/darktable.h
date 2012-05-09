@@ -180,6 +180,7 @@ typedef struct darktable_t
   char *datadir;
   char *plugindir;
   char *localdir;
+  char *configdir;
 }
 darktable_t;
 
