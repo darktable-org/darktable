@@ -34,11 +34,12 @@ void dt_loc_init_user_local_dir(const char *localdir);
 /** get user config dir */
 void dt_loc_init_user_config_dir(const char *configdir);
 /** get user cache dir */
-void dt_loc_get_user_cache_dir(char *cachedir, size_t bufsize);
+void dt_loc_init_user_cache_dir(const char *cachedir);
 
 /* temporary backward_compatibility*/
 inline void dt_loc_get_datadir(char *datadir, size_t bufsize){snprintf(datadir, bufsize, "%s",darktable.datadir);};
 void dt_loc_get_plugindir(char *plugindir, size_t bufsize);
 inline void dt_loc_get_user_local_dir(char *localdir, size_t bufsize){snprintf(localdir, bufsize, "%s",darktable.localdir);};
 void dt_loc_get_user_config_dir(char *configdir, size_t bufsize);
+void dt_loc_get_user_cache_dir(char *cachedir, size_t bufsize);
 #endif

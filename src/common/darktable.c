@@ -84,6 +84,7 @@ static int usage(const char *argv0)
   printf(" [--plugindir <plugin directory>]");
   printf(" [--localdir <local directory>]");
   printf(" [--configdir <user config directory>]");
+  printf(" [--cachedir <user config directory>]");
   printf("\n");
   return 1;
 }
@@ -318,6 +319,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   char *plugindirFromCommand = NULL;
   char *localdirFromCommand = NULL;
   char *configdirFromCommand = NULL;
+  char *cachedirFromCommand = NULL;
 
   darktable.num_openmp_threads = 1;
 #ifdef _OPENMP
@@ -357,6 +359,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
       else if(!strcmp(argv[k], "--configdir"))
       {
         configdirFromCommand = argv[++k];
+      }
+      else if(!strcmp(argv[k], "--cachedir"))
+      {
+        cachedirFromCommand = argv[++k];
       }
       else if(argv[k][1] == 'd' && argc > k+1)
       {
@@ -400,6 +406,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   dt_loc_init_plugindir(plugindirFromCommand);
   dt_loc_init_user_local_dir(localdirFromCommand);
   dt_loc_init_user_config_dir(configdirFromCommand);
+  dt_loc_init_user_cache_dir(cachedirFromCommand);
 
   g_type_init();
 

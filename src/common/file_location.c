@@ -91,15 +91,20 @@ void dt_loc_init_user_config_dir (const char *configdir)
 }
 
 
-void dt_loc_get_user_cache_dir (char *data, size_t bufsize)
+void dt_loc_init_user_cache_dir (const char *cachedir)
 {
-  gchar *homedir = dt_loc_get_home_dir(NULL);
-  if(homedir)
-  {
-    g_snprintf (data,bufsize,"%s/.cache/darktable",homedir);
-    if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE)
-      g_mkdir_with_parents (data,0700);
-    g_free(homedir);
+  darktable.cachedir = malloc(1024);
+  if(cachedir) {
+	  snprintf(darktable.cachedir, 1024, "%s", cachedir);
+  } else {
+	  gchar *homedir = dt_loc_get_home_dir(NULL);
+	  if(homedir)
+	  {
+		  g_snprintf (darktable.cachedir,1024,"%s/.cache/darktable",homedir);
+		  if (g_file_test (darktable.cachedir,G_FILE_TEST_EXISTS)==FALSE)
+			  g_mkdir_with_parents (darktable.cachedir,0700);
+		  g_free(homedir);
+	  }
   }
 }
 
@@ -210,4 +215,5 @@ void dt_loc_init_datadir(const char *datadir)
 void dt_loc_get_plugindir(char *plugindir, size_t bufsize){snprintf(plugindir, bufsize, "%s",darktable.plugindir);};
 
 void dt_loc_get_user_config_dir(char *configdir, size_t bufsize){snprintf(configdir, bufsize, "%s",darktable.configdir);};
+void dt_loc_get_user_cache_dir(char *cachedir, size_t bufsize){snprintf(cachedir, bufsize, "%s",darktable.cachedir);};
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
