@@ -29,11 +29,15 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
+#include "common/opencl.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <xmmintrin.h>
+
+#define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
+#define REDUCESIZE 64
 
 // NaN-safe clip: NaN compares false and will result in 0.0
 #define CLIP(x) (((x)>=0.0)?((x)<=1.0?(x):1.0):0.0)
@@ -78,6 +82,16 @@ typedef struct dt_iop_global_tonemap_data_t
 }
 dt_iop_global_tonemap_data_t;
 
+typedef struct dt_iop_global_tonemap_global_data_t
+{
+  int kernel_pixelmax_first;
+  int kernel_pixelmax_second;
+  int kernel_global_tonemap_reinhard;
+  int kernel_global_tonemap_drago;
+  int kernel_global_tonemap_filmic;
+}
+dt_iop_global_tonemap_global_data_t;
+
 const char *name()
 {
   return _("global tonemap");
@@ -85,7 +99,9 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING; // we can not allow tiling at the moment. drago requires to get the absolute maximum l-value
+                                                                    // of the image. tiling conflicts with this need. this implies that opencl will only be used
+                                                                    // in darkroom mode, not during export of larger images.
 }
 
 int
@@ -198,6 +214,171 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     break;
   }
 }
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_global_tonemap_data_t *d = (dt_iop_global_tonemap_data_t *)piece->data;
+  dt_iop_global_tonemap_global_data_t *gd = (dt_iop_global_tonemap_global_data_t *)self->data;
+
+  cl_int err = -999;
+  cl_mem dev_m = NULL;
+  cl_mem dev_r = NULL;
+  const int devid = piece->pipe->devid;
+  int gtkernel = -1;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+  float parameters[4] = { 0.0f };
+
+  // prepare local work group
+  size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
+  size_t workgroupsize = 0;          // the maximum number of items in a work group
+  unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
+  size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
+  
+  // make sure blocksize is not too large
+  int blocksize = BLOCKSIZE;
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
+     dt_opencl_get_kernel_work_group_size(devid, gd->kernel_pixelmax_first, &kernelworkgroupsize) == CL_SUCCESS)
+  {
+    // reduce blocksize step by step until it fits to limits
+    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize*blocksize > kernelworkgroupsize
+          || blocksize*blocksize > workgroupsize || blocksize*blocksize*sizeof(float) > localmemsize)
+    {
+      if(blocksize == 1) break;
+      blocksize >>= 1;    
+    }
+  }
+  else
+  {
+    blocksize = 1;   // slow but safe
+  }
+
+  
+
+  // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
+  const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1)*blocksize;
+  const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1)*blocksize;
+
+  switch(d->operator) {
+  case OPERATOR_REINHARD:
+    gtkernel = gd->kernel_global_tonemap_reinhard;
+    break;
+  case OPERATOR_DRAGO:
+    gtkernel = gd->kernel_global_tonemap_drago;
+    break;
+  case OPERATOR_FILMIC:
+    gtkernel = gd->kernel_global_tonemap_filmic;
+    break;
+  }
+
+  if(d->operator == OPERATOR_DRAGO)
+  {
+    size_t sizes[3];
+    size_t local[3];
+
+    int bufsize = (bwidth / blocksize) * (bheight / blocksize); 
+    int reducesize = maxsizes[0] < REDUCESIZE ? maxsizes[0] : REDUCESIZE;
+
+    dev_m = dt_opencl_alloc_device_buffer(devid, bufsize*sizeof(float));
+    if(dev_m == NULL) goto error;
+
+    dev_r = dt_opencl_alloc_device_buffer(devid, reducesize*sizeof(float));
+    if(dev_r == NULL) goto error;
+
+    sizes[0] = bwidth;
+    sizes[1] = bheight;
+    sizes[2] = 1;
+    local[0] = blocksize;
+    local[1] = blocksize;
+    local[2] = 1;
+    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 0, sizeof(cl_mem), &dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 1, sizeof(int), &width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 2, sizeof(int), &height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 3, sizeof(cl_mem), &dev_m);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 4, blocksize*blocksize*sizeof(float), NULL);
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_first, sizes, local);
+    if(err != CL_SUCCESS) goto error;
+
+
+    sizes[0] = reducesize;
+    sizes[1] = 1;
+    sizes[2] = 1;
+    local[0] = reducesize;
+    local[1] = 1;
+    local[2] = 1;
+    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 0, sizeof(cl_mem), &dev_m);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 1, sizeof(cl_mem), &dev_r);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 2, sizeof(int), &bufsize);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 3, reducesize*sizeof(float), NULL);
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_second, sizes, local);
+    if(err != CL_SUCCESS) goto error;
+
+    float maximum[reducesize];
+    err = dt_opencl_read_buffer_from_device(devid, (void*)maximum, dev_r, 0, reducesize*sizeof(float), CL_TRUE);
+    if(err != CL_SUCCESS) goto error;
+
+    dt_opencl_release_mem_object(dev_r);
+    dt_opencl_release_mem_object(dev_m);
+
+    const float eps = 0.0001f;
+    const float lwmax = MAX(eps, (maximum[0]*0.01f));
+    const float ldc = d->drago.max_light * 0.01f / log10f(lwmax + 1.0f); 
+    const float bl = logf(MAX(eps, d->drago.bias)) / logf(0.5f);
+
+    parameters[0] = eps;
+    parameters[1] = ldc;
+    parameters[2] = bl;
+    parameters[3] = lwmax;
+  }
+
+  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+  dt_opencl_set_kernel_arg(devid, gtkernel, 0, sizeof(cl_mem), &dev_in);
+  dt_opencl_set_kernel_arg(devid, gtkernel, 1, sizeof(cl_mem), &dev_out);
+  dt_opencl_set_kernel_arg(devid, gtkernel, 2, sizeof(int), &width);
+  dt_opencl_set_kernel_arg(devid, gtkernel, 3, sizeof(int), &height);
+  dt_opencl_set_kernel_arg(devid, gtkernel, 4, 4*sizeof(float), &parameters);
+  err = dt_opencl_enqueue_kernel_2d(devid, gtkernel, sizes);
+  if(err != CL_SUCCESS) goto error;
+  return TRUE;
+
+error:
+  if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  if(dev_r != NULL) dt_opencl_release_mem_object(dev_r);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_global_tonemap] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 8; // extended.cl from programs.conf
+  dt_iop_global_tonemap_global_data_t *gd = (dt_iop_global_tonemap_global_data_t *)malloc(sizeof(dt_iop_global_tonemap_global_data_t));
+  module->data = gd;
+  gd->kernel_pixelmax_first = dt_opencl_create_kernel(program, "pixelmax_first");
+  gd->kernel_pixelmax_second = dt_opencl_create_kernel(program, "pixelmax_second");
+  gd->kernel_global_tonemap_reinhard = dt_opencl_create_kernel(program, "global_tonemap_reinhard");
+  gd->kernel_global_tonemap_drago = dt_opencl_create_kernel(program, "global_tonemap_drago");
+  gd->kernel_global_tonemap_filmic = dt_opencl_create_kernel(program, "global_tonemap_filmic");
+}
+
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_global_tonemap_global_data_t *gd = (dt_iop_global_tonemap_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_pixelmax_first);
+  dt_opencl_free_kernel(gd->kernel_pixelmax_second);
+  dt_opencl_free_kernel(gd->kernel_global_tonemap_reinhard);
+  dt_opencl_free_kernel(gd->kernel_global_tonemap_drago);
+  dt_opencl_free_kernel(gd->kernel_global_tonemap_filmic);
+  free(module->data);
+  module->data = NULL;
+}
+
+
 
 static void
 operator_callback (GtkWidget *combobox, gpointer user_data)
