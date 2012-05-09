@@ -290,8 +290,16 @@ static const struct dt_interpolation dt_interpolator[] =
  * Kernel utility method
  * ------------------------------------------------------------------------*/
 
+/** Computes an upsampling filtering kernel
+ *
+ * @param itor [in] Interpolator used
+ * @param kernel [out] resulting itor->width*2 filter taps
+ * @param t [in] Interpolated coordinate
+ *
+ * @return kernel norm
+ */
 static inline float
-compute_kernel(
+compute_upsampling_kernel(
   const struct dt_interpolation* itor,
   float* kernel,
   float t)
@@ -314,8 +322,16 @@ compute_kernel(
   return norm;
 }
 
+/** Computes an upsampling filtering kernel (SSE version, four taps per inner loop)
+ *
+ * @param itor [in] Interpolator used
+ * @param kernel [out] resulting itor->width*2 filter taps (array must be at least (itor->width*2+3)/4*4 floats long)
+ * @param t [in] Interpolated coordinate
+ *
+ * @return kernel norm
+ */
 static inline float
-compute_kernel_sse(
+compute_upsampling_kernel_sse(
   const struct dt_interpolation* itor,
   float* kernel,
   float t)
@@ -338,10 +354,10 @@ compute_kernel_sse(
     // Compute the values
     __m128 vr = itor->funcsse(vw, vt);
 
-    // Accum norm
+    // Save result
     *(__m128*)kernel = vr;
 
-    // Prepare next iter
+    // Prepare next iteration
     vt = _mm_add_ps(vt, iter);
     kernel += 4;
     i++;
@@ -355,6 +371,61 @@ compute_kernel_sse(
     norm += *kernel;
     kernel++;
     i++;
+  }
+
+  return norm;
+}
+
+// Avoid libc ceil for now. Maybe we'll revert to libc later
+static inline float
+ceil_fast(
+  float x)
+{
+  if (x <= 0.f) {
+    return (float)(int)x;
+  } else {
+    return -((float)(int)-x) + 1.f;
+  }
+}
+
+/** Computes a downsampling filtering kernel
+ *
+ * @param itor [in] Interpolator used
+ * @param kernelsize [out] Number of taps
+ * @param kernel [out] resulting taps (at least itor->width/inoout elements for no overflow)
+ * @param outoinratio [in] "out samples" over "in samples" ratio
+ * @param xout [in] Output coordinate
+ *
+ * @return kernel norm
+ */
+static inline float
+compute_downsampling_kernel(
+  const struct dt_interpolation* itor,
+  int* kernelsize,
+  float* kernel,
+  float outoinratio,
+  int xout)
+{
+  // Keep this at hand
+  float w = (float)itor->width;
+
+  /* Compute the phase difference between output pixel and its
+   * input corresponding input pixel */
+  float xin = ceil_fast(((float)xout-w)/outoinratio);
+
+  // Compute first interpolator parameter
+  float t = xin*outoinratio - (float)xout;
+
+  // Will hold kernel norm
+  float norm = 0.f;
+
+  // Compute all filter taps
+  *kernelsize = 0;
+  while (t<w) {
+    *kernel = itor->func(w, t);
+    norm += *kernel;
+    t += outoinratio;
+    (*kernelsize)++;
   }
 
   return norm;
@@ -377,8 +448,8 @@ dt_interpolation_compute_sample(
   float kernelv[8] __attribute__((aligned(16)));
 
   // Compute both horizontal and vertical kernels
-  float normh = compute_kernel_sse(itor, kernelh, x);
-  float normv = compute_kernel_sse(itor, kernelv, y);
+  float normh = compute_upsampling_kernel_sse(itor, kernelh, x);
+  float normv = compute_upsampling_kernel_sse(itor, kernelv, y);
 
   // Go to top left pixel
   in = in - (itor->width-1)*(samplestride + linestride);
@@ -409,7 +480,6 @@ dt_interpolation_compute_pixel4c(
   const int linestride)
 {
   assert(itor->width < 4);
-  //assert(samplestride == 4);
 
   // Quite a bit of space for kernels
   float kernelh[8] __attribute__((aligned(16)));
@@ -418,8 +488,8 @@ dt_interpolation_compute_pixel4c(
   __m128 vkernelv[8];
 
   // Compute both horizontal and vertical kernels
-  float normh = compute_kernel_sse(itor, kernelh, x);
-  float normv = compute_kernel_sse(itor, kernelv, y);
+  float normh = compute_upsampling_kernel_sse(itor, kernelh, x);
+  float normv = compute_upsampling_kernel_sse(itor, kernelv, y);
 
   // We will process four components a time, duplicate the information
   for (int i=0; i<2*itor->width; i++) {
