@@ -64,6 +64,14 @@ void init_presets (dt_iop_module_so_t *self)
   p.lob = 0.0f;
   p.saturation = 1.0f;
   dt_gui_presets_add_generic(_("warming filter"), self->op, self->version(), &p, sizeof(p), 1);
+
+  p.hia = 0.95f;
+  p.loa = -3.55f;
+  p.hib = -4.5f;
+  p.lob = -0.0f;
+  p.saturation = 1.0f;
+  dt_gui_presets_add_generic(_("cooling filter"), self->op, self->version(), &p, sizeof(p), 1);
+
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
