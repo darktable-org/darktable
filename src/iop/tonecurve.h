@@ -88,7 +88,7 @@ typedef struct dt_iop_tonecurve_data_t
   int curve_nodes[3];          // number of nodes
   int curve_type[3];           // curve style (e.g. CUBIC_SPLINE)
   float table[3][0x10000];     // precomputed look-up tables for tone curve
-  float unbounded_coeffs[2];   // approximation for extrapolation of L
+  float unbounded_coeffs[3];   // approximation for extrapolation of L
   int autoscale_ab;
 }
 dt_iop_tonecurve_data_t;

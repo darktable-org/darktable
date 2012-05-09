@@ -95,7 +95,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dev_b = dt_opencl_copy_host_to_device(devid, d->table[ch_b], 256, 256, sizeof(float));
   if (dev_L == NULL || dev_a == NULL || dev_b == NULL) goto error;
 
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*2, d->unbounded_coeffs);
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3, d->unbounded_coeffs);
   if (dev_coeffs == NULL) goto error;
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -129,6 +129,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   const int ch = piece->colors;
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
+  const float xm = 1.0f/d->unbounded_coeffs[0];
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
 #endif
@@ -143,7 +144,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       const float L_in = in[0]/100.0f;
 
-      out[0] = (L_in < 1.0f) ? d->table[ch_L][CLAMP((int)(L_in*0xfffful), 0, 0xffff)] :
+      out[0] = (L_in < xm) ? d->table[ch_L][CLAMP((int)(L_in*0xfffful), 0, 0xffff)] :
         dt_iop_eval_exp(d->unbounded_coeffs, L_in);
 
       if (d->autoscale_ab == 0)
@@ -264,7 +265,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->autoscale_ab = p->tonecurve_autoscale_ab;
 
   // now the extrapolation stuff (for L curve only):
-  const float x[4] = {0.7f, 0.8f, 0.9f, 1.0f};
+  const float xm = p->tonecurve[ch_L][p->tonecurve_nodes[ch_L]-1].x;
+  const float x[4] = {0.7f*xm, 0.8f*xm, 0.9f*xm, 1.0f*xm};
   const float y[4] = {d->table[ch_L][CLAMP((int)(x[0]*0x10000ul), 0, 0xffff)],
                       d->table[ch_L][CLAMP((int)(x[1]*0x10000ul), 0, 0xffff)],
                       d->table[ch_L][CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
@@ -543,6 +545,15 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   dt_draw_curve_t *minmax_curve = c->minmax_curve[ch];
   dt_draw_curve_calc_values(minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_xs, c->draw_ys);
 
+  const float xm = tonecurve[nodes-1].x;
+  const float x[4] = {0.7f*xm, 0.8f*xm, 0.9f*xm, 1.0f*xm};
+  const float y[4] = {c->draw_ys[CLAMP((int)(x[0]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)],
+                      c->draw_ys[CLAMP((int)(x[1]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)],
+                      c->draw_ys[CLAMP((int)(x[2]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)],
+                      c->draw_ys[CLAMP((int)(x[3]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)]};
+  float unbounded_coeffs[3];
+  dt_iop_estimate_exp(x, y, 4, unbounded_coeffs);
+
   // for(int k=0; k<p->tonecurve_nodes[ch]; k++)
     // fprintf(stderr, "curve point %d %f %f\n", k, p->tonecurve[ch][k].x, p->tonecurve[ch][k].y);
 
@@ -636,7 +647,7 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   cairo_translate(cr, 0, height);
 
   // const float arrw = 7.0f;
-  for(int k=1; k<nodes-1; k++)
+  for(int k=0; k<nodes; k++)
   {
     cairo_arc(cr, tonecurve[k].x*width, -tonecurve[k].y*height, 3, 0, 2.*M_PI);
     cairo_stroke(cr);
@@ -704,7 +715,19 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   cairo_set_source_rgb(cr, .9, .9, .9);
   // cairo_set_line_cap  (cr, CAIRO_LINE_CAP_SQUARE);
   cairo_move_to(cr, 0, -height*c->draw_ys[0]);
-  for(int k=1; k<DT_IOP_TONECURVE_RES; k++) cairo_line_to(cr, k*width/(DT_IOP_TONECURVE_RES-1.0), - height*c->draw_ys[k]);
+  for(int k=1; k<DT_IOP_TONECURVE_RES; k++)
+  {
+    const float xx = k/(DT_IOP_TONECURVE_RES-1.0);
+    if(xx > xm)
+    {
+      const float yy = dt_iop_eval_exp(unbounded_coeffs, xx);
+      cairo_line_to(cr, xx*width, - height*yy);
+    }
+    else
+    {
+      cairo_line_to(cr, xx*width, - height*c->draw_ys[k]);
+    }
+  }
   cairo_stroke(cr);
 
 finally:

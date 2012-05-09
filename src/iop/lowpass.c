@@ -72,7 +72,7 @@ typedef struct dt_iop_lowpass_data_t
   float contrast;
   float saturation;
   float table[0x10000];        // precomputed look-up table for contrast curve
-  float unbounded_coeffs[2];   // approximation for extrapolation
+  float unbounded_coeffs[3];   // approximation for extrapolation
 }
 dt_iop_lowpass_data_t;
 
@@ -246,7 +246,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
   if(dev_m == NULL) goto error;
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*2, d->unbounded_coeffs);
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3, d->unbounded_coeffs);
   if(dev_coeffs == NULL) goto error;
 
   // compute gaussian parameters
