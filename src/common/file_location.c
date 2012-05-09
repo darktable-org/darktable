@@ -73,15 +73,15 @@ gchar* dt_loc_get_home_dir(const gchar* user)
 
 void dt_loc_init_user_config_dir (const char *configdir)
 {
-  darktable.configdir = malloc(1024);
+  darktable.configdir = malloc(4096);
   if(configdir) {
-	  snprintf(darktable.configdir, 1024, "%s", configdir);
+	  snprintf(darktable.configdir, 4096, "%s", configdir);
   } else {
 	  gchar *homedir = dt_loc_get_home_dir(NULL);
 
 	  if(homedir)
 	  {
-		  g_snprintf (darktable.configdir,1024,"%s/.config/darktable",homedir);
+		  g_snprintf (darktable.configdir,4096,"%s/.config/darktable",homedir);
 		  if (g_file_test (darktable.configdir,G_FILE_TEST_EXISTS)==FALSE)
 			  g_mkdir_with_parents (darktable.configdir,0700);
 
@@ -93,14 +93,14 @@ void dt_loc_init_user_config_dir (const char *configdir)
 
 void dt_loc_init_user_cache_dir (const char *cachedir)
 {
-  darktable.cachedir = malloc(1024);
+  darktable.cachedir = malloc(4096);
   if(cachedir) {
-	  snprintf(darktable.cachedir, 1024, "%s", cachedir);
+	  snprintf(darktable.cachedir, 4096, "%s", cachedir);
   } else {
 	  gchar *homedir = dt_loc_get_home_dir(NULL);
 	  if(homedir)
 	  {
-		  g_snprintf (darktable.cachedir,1024,"%s/.cache/darktable",homedir);
+		  g_snprintf (darktable.cachedir,4096,"%s/.cache/darktable",homedir);
 		  if (g_file_test (darktable.cachedir,G_FILE_TEST_EXISTS)==FALSE)
 			  g_mkdir_with_parents (darktable.cachedir,0700);
 		  g_free(homedir);
@@ -110,14 +110,14 @@ void dt_loc_init_user_cache_dir (const char *cachedir)
 
 void dt_loc_init_user_local_dir (const char *localdir)
 {
-  darktable.localdir = malloc(1024);
+  darktable.localdir = malloc(4096);
   if(localdir) {
-	  snprintf(darktable.localdir, 1024, "%s", localdir);
+	  snprintf(darktable.localdir, 4096, "%s", localdir);
   } else {
 	  gchar *homedir = dt_loc_get_home_dir(NULL);
 	  if(homedir)
 	  {
-		  g_snprintf(darktable.localdir,1024,"%s/.local",homedir);
+		  g_snprintf(darktable.localdir,4096,"%s/.local",homedir);
 		  if (g_file_test (darktable.localdir,G_FILE_TEST_EXISTS)==FALSE)
 			  g_mkdir_with_parents (darktable.localdir,0700);
 		  g_free(homedir);
@@ -127,9 +127,9 @@ void dt_loc_init_user_local_dir (const char *localdir)
 
 void dt_loc_init_plugindir(const char *plugindir)
 {
-  darktable.plugindir = malloc(1024);
+  darktable.plugindir = malloc(4096);
   if(plugindir) {
-	  snprintf(darktable.plugindir, 1024, "%s", plugindir);
+	  snprintf(darktable.plugindir, 4096, "%s", plugindir);
   } else {
 #if defined(__MACH__) || defined(__APPLE__)
 	  gchar *curr = g_get_current_dir();
@@ -140,17 +140,17 @@ void dt_loc_init_plugindir(const char *plugindir)
 		  break;
 	  }
 	  if(darktable.progname[0] == '/') // absolute path
-		  snprintf(darktable.plugindir, 1024, "%s", darktable.progname);
+		  snprintf(darktable.plugindir, 4096, "%s", darktable.progname);
 	  else if(contains) // relative path
-		  snprintf(darktable.plugindir, 1024, "%s/%s", curr, darktable.progname);
+		  snprintf(darktable.plugindir, 4096, "%s/%s", curr, darktable.progname);
 	  else
 	  {
 		  // no idea where we have been called. use compiled in path
 		  g_free(curr);
-		  snprintf(darktable.plugindir, 1024, "%s/darktable", DARKTABLE_LIBDIR);
+		  snprintf(darktable.plugindir, 4096, "%s/darktable", DARKTABLE_LIBDIR);
 		  return;
 	  }
-	  size_t len = MIN(strlen(darktable.plugindir), 1024);
+	  size_t len = MIN(strlen(darktable.plugindir), 4096);
 	  char *t = darktable.plugindir + len; // strip off bin/darktable
 	  for(; t>darktable.plugindir && *t!='/'; t--);
 	  t--;
@@ -160,19 +160,19 @@ void dt_loc_init_plugindir(const char *plugindir)
 		  t--;
 	  }
 	  for(; t>darktable.plugindir && *t!='/'; t--);
-	  g_strlcpy(t, "/lib/darktable", 1024-(t-darktable.plugindir));
+	  g_strlcpy(t, "/lib/darktable", 4096-(t-darktable.plugindir));
 	  g_free(curr);
 #else
-	  snprintf(darktable.plugindir, 1024, "%s/darktable", DARKTABLE_LIBDIR);
+	  snprintf(darktable.plugindir, 4096, "%s/darktable", DARKTABLE_LIBDIR);
 #endif
   }
 }
 
 void dt_loc_init_datadir(const char *datadir)
 {
-  darktable.datadir = malloc(1024);
+  darktable.datadir = malloc(4096);
   if(datadir) {
-	  snprintf(darktable.datadir, 1024, "%s", datadir);
+	  snprintf(darktable.datadir, 4096, "%s", datadir);
   } else {
 #if defined(__MACH__) || defined(__APPLE__)
 	  gchar *curr = g_get_current_dir();
@@ -183,17 +183,17 @@ void dt_loc_init_datadir(const char *datadir)
 		  break;
 	  }
 	  if(darktable.progname[0] == '/') // absolute path
-		  snprintf(darktable.datadir, 1024, "%s", darktable.progname);
+		  snprintf(darktable.datadir, 4096, "%s", darktable.progname);
 	  else if(contains) // relative path
-		  snprintf(darktable.datadir, 1024, "%s/%s", curr, darktable.progname);
+		  snprintf(darktable.datadir, 4096, "%s/%s", curr, darktable.progname);
 	  else
 	  {
 		  // no idea where we have been called. use compiled in path
 		  g_free(curr);
-		  snprintf(darktable.datadir, 1024, "%s", DARKTABLE_DATADIR);
+		  snprintf(darktable.datadir, 4096, "%s", DARKTABLE_DATADIR);
 		  return;
 	  }
-	  size_t len = MIN(strlen(darktable.datadir), 1024);
+	  size_t len = MIN(strlen(darktable.datadir), 4096);
 	  char *t = darktable.datadir + len; // strip off bin/darktable
 	  for(; t>darktable.datadir && *t!='/'; t--);
 	  t--;
@@ -203,10 +203,10 @@ void dt_loc_init_datadir(const char *datadir)
 		  t--;
 	  }
 	  for(; t>darktable.datadir && *t!='/'; t--);
-	  g_strlcpy(t, "/share/darktable", 1024-(t-darktable.datadir));
+	  g_strlcpy(t, "/share/darktable", 4096-(t-darktable.datadir));
 	  g_free(curr);
 #else
-	  snprintf(darktable.datadir, 1024, "%s", DARKTABLE_DATADIR);
+	  snprintf(darktable.datadir, 4096, "%s", DARKTABLE_DATADIR);
 #endif
   }
 }
