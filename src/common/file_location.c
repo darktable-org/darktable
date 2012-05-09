@@ -108,19 +108,26 @@ void dt_loc_init_user_cache_dir (const char *cachedir)
   }
 }
 
-void dt_loc_init_user_local_dir (const char *localdir)
+int dt_loc_init_tmp_dir (const char *tmpdir)
 {
-  darktable.localdir = malloc(4096);
-  if(localdir) {
-	  snprintf(darktable.localdir, 4096, "%s", localdir);
+  darktable.tmpdir = malloc(4096);
+  if(tmpdir) {
+	  snprintf(darktable.tmpdir, 4096, "%s", tmpdir);
+	  if (g_file_test (darktable.tmpdir,G_FILE_TEST_EXISTS)==FALSE)
+		  return 1;
+	  else
+		  return 0;
   } else {
 	  gchar *homedir = dt_loc_get_home_dir(NULL);
 	  if(homedir)
 	  {
-		  g_snprintf(darktable.localdir,4096,"%s/.local",homedir);
-		  if (g_file_test (darktable.localdir,G_FILE_TEST_EXISTS)==FALSE)
-			  g_mkdir_with_parents (darktable.localdir,0700);
+		  g_snprintf(darktable.tmpdir,4096,"%s/.local/tmp",homedir);
+		  if (g_file_test (darktable.tmpdir,G_FILE_TEST_EXISTS)==FALSE)
+			  g_mkdir_with_parents (darktable.tmpdir,0700);
 		  g_free(homedir);
+		  return 0;
+	  } else {
+		  return 1;
 	  }
   }
 }

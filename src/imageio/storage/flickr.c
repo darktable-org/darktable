@@ -633,9 +633,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   /* construct a temporary file name */
   char fname[4096]= {0};
-  dt_loc_get_user_local_dir (fname,4096);
-  g_strlcat (fname,"/tmp",4096);
-  g_mkdir_with_parents(fname,0700);
+  dt_loc_get_tmp_dir (fname,4096);
   g_strlcat (fname,"/darktable.XXXXXX.",4096);
   g_strlcat(fname,ext,4096);
 

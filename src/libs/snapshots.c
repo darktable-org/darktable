@@ -317,11 +317,7 @@ void gui_init(dt_lib_module_t *self)
    */
   char wdname[32]={0};
   char localtmpdir[4096]={0};
-  dt_loc_get_user_local_dir (localtmpdir,4096);
-  strcat(localtmpdir,"/tmp");
-
-  /* make ensure that tmp directory exists */
-  g_mkdir_with_parents(localtmpdir,0700);
+  dt_loc_get_tmp_dir (localtmpdir,4096);
 
   for (long k=0;k<d->size;k++)
   {

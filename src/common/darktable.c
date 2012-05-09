@@ -82,7 +82,7 @@ static int usage(const char *argv0)
   printf(" [--library <library file>]");
   printf(" [--datadir <data directory>]");
   printf(" [--plugindir <plugin directory>]");
-  printf(" [--localdir <local directory>]");
+  printf(" [--tmpdir <tmp directory>]");
   printf(" [--configdir <user config directory>]");
   printf(" [--cachedir <user config directory>]");
   printf("\n");
@@ -317,7 +317,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   gchar *dbfilenameFromCommand = NULL;
   char *datadirFromCommand = NULL;
   char *plugindirFromCommand = NULL;
-  char *localdirFromCommand = NULL;
+  char *tmpdirFromCommand = NULL;
   char *configdirFromCommand = NULL;
   char *cachedirFromCommand = NULL;
 
@@ -352,9 +352,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
       {
         plugindirFromCommand = argv[++k];
       }
-      else if(!strcmp(argv[k], "--localdir"))
+      else if(!strcmp(argv[k], "--tmpdir"))
       {
-        localdirFromCommand = argv[++k];
+        tmpdirFromCommand = argv[++k];
       }
       else if(!strcmp(argv[k], "--configdir"))
       {
@@ -404,7 +404,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
 #endif
   dt_loc_init_datadir(datadirFromCommand);
   dt_loc_init_plugindir(plugindirFromCommand);
-  dt_loc_init_user_local_dir(localdirFromCommand);
+  if(dt_loc_init_tmp_dir(tmpdirFromCommand)) {
+	  printf(_("ERROR : invalid temporary directory : %s\n"),darktable.tmpdir);
+	  return usage(argv[0]);
+  }
   dt_loc_init_user_config_dir(configdirFromCommand);
   dt_loc_init_user_cache_dir(cachedirFromCommand);
 
