@@ -173,13 +173,13 @@ lookup_unbounded(read_only image2d_t lut, const float x, global float *a)
   // path to linear unbounded (does not clip x at 1)
   if(a[0] >= 0.0f)
   {
-    if(x < 1.0f)
+    if(x < 1.0f/a[0])
     {
       const int xi = clamp(x*65535.0f, 0.0f, 65535.0f);
       const int2 p = (int2)((xi & 0xff), (xi >> 8));
       return read_imagef(lut, sampleri, p).x;
     }
-    else return a[0] * native_powr(x, a[1]);
+    else return a[1] * native_powr(x*a[0], a[2]);
   }
   else return x;
 }
@@ -239,8 +239,8 @@ colorin (read_only image2d_t in, write_only image2d_t out, const int width, cons
 
   float cam[3], XYZ[3], Lab[3];
   cam[0] = lookup_unbounded(lutr, pixel.x, a);
-  cam[1] = lookup_unbounded(lutg, pixel.y, a+2);
-  cam[2] = lookup_unbounded(lutb, pixel.z, a+4);
+  cam[1] = lookup_unbounded(lutg, pixel.y, a+3);
+  cam[2] = lookup_unbounded(lutb, pixel.z, a+6);
 
   if(map_blues)
   {
@@ -1004,8 +1004,8 @@ colorout (read_only image2d_t in, write_only image2d_t out, const int width, con
     for(int j=0;j<3;j++) rgb[i] += mat[3*i+j]*XYZ[j];
   }
   pixel.x = lookup_unbounded(lutr, rgb[0], a);
-  pixel.y = lookup_unbounded(lutg, rgb[1], a+2);
-  pixel.z = lookup_unbounded(lutb, rgb[2], a+4);
+  pixel.y = lookup_unbounded(lutg, rgb[1], a+3);
+  pixel.z = lookup_unbounded(lutb, rgb[2], a+6);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
