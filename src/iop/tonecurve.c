@@ -554,9 +554,6 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   float unbounded_coeffs[3];
   dt_iop_estimate_exp(x, y, 4, unbounded_coeffs);
 
-  // for(int k=0; k<p->tonecurve_nodes[ch]; k++)
-    // fprintf(stderr, "curve point %d %f %f\n", k, p->tonecurve[ch][k].x, p->tonecurve[ch][k].y);
-
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -769,14 +766,12 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
     {
       tonecurve[c->selected].x = mx;
       tonecurve[c->selected].y = my;
-      fprintf(stderr, "moving point %d to %f %f\n", c->selected, mx, my);
 
       // delete vertex if order has changed:
       if(nodes > 2)
       if((c->selected > 0 && tonecurve[c->selected-1].x >= mx) ||
          (c->selected < nodes-1 && tonecurve[c->selected+1].x <= mx))
       {
-        fprintf(stderr, "deleting point %d\n", c->selected);
         for(int k=c->selected; k<nodes-1; k++)
         {
           tonecurve[k].x = tonecurve[k+1].x;
@@ -802,7 +797,6 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
       }
       for(int i=nodes; i>c->selected; i--)
       {
-        fprintf(stderr, "moving pt %d <- %d\n", i, i-1);
         tonecurve[i].x = tonecurve[i-1].x;
         tonecurve[i].y = tonecurve[i-1].y;
       }
@@ -810,7 +804,6 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
       tonecurve[c->selected].x = mx;
       tonecurve[c->selected].y = my;
       p->tonecurve_nodes[ch] ++;
-      fprintf(stderr, "created point %d/%d at %f %f\n", c->selected, p->tonecurve_nodes[ch], mx, my);
       dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
   }
