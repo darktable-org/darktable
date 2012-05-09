@@ -496,7 +496,7 @@ float *catmull_rom_set ( int n, float x[], float y[])
     }
   }
   //nc_merror(delta, "spline_cubic_set");
-  m = (float *)calloc(n-1,sizeof(float));
+  m = (float *)calloc(n,sizeof(float));
   //nc_merror(m, "spline_cubic_set");
 
   //calculate the slopes
