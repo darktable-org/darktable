@@ -325,14 +325,15 @@ void init(dt_iop_module_t *module)
         {0.0, 0.0}, {1.0, 1.0}
       },
       {
-        {0.0, 0.0}, {1.0, 1.0}
+        {0.0, 0.0}, {0.5, 0.5}, {1.0, 1.0}
       },
       {
-        {0.0, 0.0}, {1.0, 1.0}
+        {0.0, 0.0}, {0.5, 0.5}, {1.0, 1.0}
       }
     },
-    { 2, 2, 2 },					// number of nodes per curve
+    { 2, 3, 3 },					// number of nodes per curve
     { CATMULL_ROM, CATMULL_ROM, CATMULL_ROM},  // curve types
+    // { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE}, // seems broken (last tangent is off)
     // { CUBIC_SPLINE, CUBIC_SPLINE, CUBIC_SPLINE},
     1,							// autoscale_ab
     0
