@@ -30,7 +30,7 @@
 #include "gui/gtk.h"
 #include "common/opencl.h"
 
-#define DT_GUI_CURVE_EDITOR_INSET 5
+#define DT_GUI_CURVE_EDITOR_INSET 1
 #define DT_GUI_CURVE_INFL .3f
 
 DT_MODULE(3)
