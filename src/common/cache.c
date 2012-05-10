@@ -652,6 +652,8 @@ dt_cache_read_get(
     dt_cache_t     *cache,
     const uint32_t  key)
 {
+  assert(key != DT_CACHE_EMPTY_KEY);
+
   // this is the blocking variant, we might need to allocate stuff.
   // also we have to retry if failed.
 
