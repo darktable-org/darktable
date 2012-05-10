@@ -500,12 +500,12 @@ float *catmull_rom_set ( int n, float x[], float y[])
   //nc_merror(m, "spline_cubic_set");
 
   //calculate the slopes
-  m[0] = (y[1]-y[0]);///(x[1]-x[0]);
+  m[0] = (y[1]-y[0])/(x[1]-x[0]);
   for (i=1; i<n-1; i++)
   {
-    m[i] = (y[i+1]-y[i-1])/2.0;//*(x[i+1]-x[i-1]));
+    m[i] = (y[i+1]-y[i-1])/(x[i+1]-x[i-1]);
   }
-  m[n-1] = (y[n-1]-y[n-2]);//(x[n-1]-y[n-2]);
+  m[n-1] = (y[n-1]-y[n-2])/(x[n-1]-y[n-2]);
 
   return m;
 }
