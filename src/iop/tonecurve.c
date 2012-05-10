@@ -334,8 +334,8 @@ void init(dt_iop_module_t *module)
       }
     },
     { 2, 3, 3 },					// number of nodes per curve
-    { CATMULL_ROM, CATMULL_ROM, CATMULL_ROM},  // curve types
-    // { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE}, // seems broken (last tangent is off)
+    // { CATMULL_ROM, CATMULL_ROM, CATMULL_ROM},  // curve types
+    { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE},
     // { CUBIC_SPLINE, CUBIC_SPLINE, CUBIC_SPLINE},
     1,							// autoscale_ab
     0
@@ -789,12 +789,13 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
         c->selected = 0;
       else for(int k=1; k<nodes; k++)
       {
-        if(tonecurve[k].x > mx || k == nodes-1)
+        if(tonecurve[k].x > mx)
         {
           c->selected = k;
           break;
         }
       }
+      if(c->selected == -1) c->selected = nodes;
       for(int i=nodes; i>c->selected; i--)
       {
         tonecurve[i].x = tonecurve[i-1].x;
