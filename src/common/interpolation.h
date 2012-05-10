@@ -19,6 +19,8 @@
 #ifndef INTERPOLATION_H
 #define INTERPOLATION_H
 
+#include "develop/pixelpipe_hb.h"
+
 #include <xmmintrin.h>
 
 /** Available interpolations */
@@ -109,6 +111,16 @@ dt_interpolation_compute_pixel4c(
 const struct dt_interpolation*
 dt_interpolation_new(
   enum dt_interpolation_type type);
+
+void
+dt_interpolation_resample(
+  const struct dt_interpolation* itor,
+  float *out,
+  const dt_iop_roi_t* const roi_out,
+  const int32_t out_stride,
+  const float* const in,
+  const dt_iop_roi_t* const roi_in,
+  const int32_t in_stride);
 
 #endif /* INTERPOLATION_H */
 
