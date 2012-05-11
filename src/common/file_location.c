@@ -186,4 +186,6 @@ void dt_loc_get_plugindir(char *plugindir, size_t bufsize){snprintf(plugindir, b
 
 void dt_loc_get_user_config_dir(char *configdir, size_t bufsize){snprintf(configdir, bufsize, "%s",darktable.configdir);};
 void dt_loc_get_user_cache_dir(char *cachedir, size_t bufsize){snprintf(cachedir, bufsize, "%s",darktable.cachedir);};
+void dt_loc_get_tmp_dir(char *tmpdir, size_t bufsize){snprintf(tmpdir, bufsize, "%s",darktable.tmpdir);};
+void dt_loc_get_datadir(char *datadir, size_t bufsize){snprintf(datadir, bufsize, "%s",darktable.datadir);};
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

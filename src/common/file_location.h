@@ -37,9 +37,9 @@ void dt_loc_init_user_config_dir(const char *configdir);
 void dt_loc_init_user_cache_dir(const char *cachedir);
 
 /* temporary backward_compatibility*/
-inline void dt_loc_get_datadir(char *datadir, size_t bufsize){snprintf(datadir, bufsize, "%s",darktable.datadir);};
+void dt_loc_get_datadir(char *datadir, size_t bufsize);
 void dt_loc_get_plugindir(char *plugindir, size_t bufsize);
-inline void dt_loc_get_tmp_dir(char *tmpdir, size_t bufsize){snprintf(tmpdir, bufsize, "%s",darktable.tmpdir);};
+void dt_loc_get_tmp_dir(char *tmpdir, size_t bufsize);
 void dt_loc_get_user_config_dir(char *configdir, size_t bufsize);
 void dt_loc_get_user_cache_dir(char *cachedir, size_t bufsize);
 #endif
