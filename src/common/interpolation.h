@@ -112,6 +112,17 @@ const struct dt_interpolation*
 dt_interpolation_new(
   enum dt_interpolation_type type);
 
+/** Image resampler.
+ *
+ * Resamples the image "in" to "out" according to roi values.
+ * @param itor [in] Interpolator to use
+ * @param out [out] Will hold the resampled image
+ * @param roi_out [in] Region of interest of the resampled image
+ * @param out_stride [in] Output line stride in <strong>bytes</strong>
+ * @param in [in] Will hold the resampled image
+ * @param roi_in [in] Region of interest of the original image
+ * @param in_stride [in] Input line stride in <strong>bytes</strong>
+ */
 void
 dt_interpolation_resample(
   const struct dt_interpolation* itor,

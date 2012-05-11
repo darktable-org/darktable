@@ -817,7 +817,7 @@ dt_interpolation_resample(
 
       for (int iy=0; iy < vl; iy++) {
         // This is our input line
-        const float* i = in + in_stride*vindex[viidx++];
+        const float* i = (float*)((char*)in + in_stride*vindex[viidx++]);
 
         float hs[3] = {0.f, 0.f, 0.f};
 
@@ -842,7 +842,7 @@ dt_interpolation_resample(
       }
 
       // Output pixel is ready
-      float* o = &out[oy*out_stride + ox*4];
+      float* o = (float*)((char*)out + oy*out_stride + ox*4);
       o[0] = s[0];
       o[1] = s[1];
       o[2] = s[2];
