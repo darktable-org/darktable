@@ -92,23 +92,6 @@ void dt_loc_init_user_config_dir (const char *configdir)
 }
 
 
-void dt_loc_init_user_cache_dir (const char *cachedir)
-{
-  darktable.cachedir = malloc(4096);
-  if(cachedir) {
-	  snprintf(darktable.cachedir, 4096, "%s", cachedir);
-  } else {
-	  gchar *homedir = dt_loc_get_home_dir(NULL);
-	  if(homedir)
-	  {
-		  g_snprintf (darktable.cachedir,4096,"%s/.cache/darktable",homedir);
-		  if (g_file_test (darktable.cachedir,G_FILE_TEST_EXISTS)==FALSE)
-			  g_mkdir_with_parents (darktable.cachedir,0700);
-		  g_free(homedir);
-	  }
-  }
-}
-
 static gchar * dt_loc_init_generic (const char *value,const char*default_value)
 {
   if(value) {
@@ -116,7 +99,7 @@ static gchar * dt_loc_init_generic (const char *value,const char*default_value)
 		  return NULL;
 	  return dt_util_fix_path(value);
   } else {
-	  gchar* result = dt_util_fix_path(DARKTABLE_TMPDIR);
+	  gchar* result = dt_util_fix_path(DARKTABLE_CACHEDIR);
 	  if (g_file_test (result,G_FILE_TEST_EXISTS)==FALSE)
 		  g_mkdir_with_parents (result,0700);
 	  return result;
@@ -126,10 +109,15 @@ static gchar * dt_loc_init_generic (const char *value,const char*default_value)
 int dt_loc_init_tmp_dir (const char *tmpdir)
 {
 	darktable.tmpdir = dt_loc_init_generic(tmpdir,DARKTABLE_TMPDIR);
-	printf("%s\n",darktable.tmpdir);
 	if(darktable.tmpdir == NULL)return 1;
 	return 0;
 }
+void dt_loc_init_user_cache_dir (const char *cachedir)
+{
+	darktable.cachedir = dt_loc_init_generic(cachedir,DARKTABLE_CACHEDIR);
+	printf("%s\n",darktable.cachedir);
+}
+
 void dt_loc_init_plugindir(const char *plugindir)
 {
   darktable.plugindir = malloc(4096);
