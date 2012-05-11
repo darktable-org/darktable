@@ -169,45 +169,16 @@ void dt_loc_init_plugindir(const char *plugindir)
 
 void dt_loc_init_datadir(const char *datadir)
 {
-  darktable.datadir = malloc(4096);
-  if(datadir) {
-	  snprintf(darktable.datadir, 4096, "%s", datadir);
-  } else {
 #if defined(__MACH__) || defined(__APPLE__)
-	  gchar *curr = g_get_current_dir();
-	  int contains = 0;
-	  for(int k=0; darktable.progname[k] != 0; k++) if(darktable.progname[k] == '/')
-	  {
-		  contains = 1;
-		  break;
-	  }
-	  if(darktable.progname[0] == '/') // absolute path
-		  snprintf(darktable.datadir, 4096, "%s", darktable.progname);
-	  else if(contains) // relative path
-		  snprintf(darktable.datadir, 4096, "%s/%s", curr, darktable.progname);
-	  else
-	  {
-		  // no idea where we have been called. use compiled in path
-		  g_free(curr);
-		  snprintf(darktable.datadir, 4096, "%s", DARKTABLE_DATADIR);
-		  return;
-	  }
-	  size_t len = MIN(strlen(darktable.datadir), 4096);
-	  char *t = darktable.datadir + len; // strip off bin/darktable
-	  for(; t>darktable.datadir && *t!='/'; t--);
-	  t--;
-	  if(*t == '.' && *(t-1) != '.')
-	  {
-		  for(; t>darktable.datadir && *t!='/'; t--);
-		  t--;
-	  }
-	  for(; t>darktable.datadir && *t!='/'; t--);
-	  g_strlcpy(t, "/share/darktable", 4096-(t-darktable.datadir));
-	  g_free(curr);
+	char*directory = find_install_dir("/share/darktable");
+	if(datadir || !directory) {
+		darktable.datadir = dt_loc_init_generic(datadir,DARKTABLE_DATADIR);
+	} else {
+		darktable.datadir = directory;
+	}
 #else
-	  snprintf(darktable.datadir, 4096, "%s", DARKTABLE_DATADIR);
+	darktable.datadir = dt_loc_init_generic(datadir,DARKTABLE_DATADIR);
 #endif
-  }
 }
 
 
