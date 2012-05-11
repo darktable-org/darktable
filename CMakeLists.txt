@@ -158,6 +158,11 @@ if(Gettext_FOUND)
 endif(Gettext_FOUND)
 endif(USE_NLS)
 
+#find a temporary directory
+if(NOT TMP_DIR)
+	SET(TMP_DIR "~/.local/tmp")
+endif(NOT TMP_DIR)
+	
 # needed to generate file "preferences_gen.h" accordingly
 if(USE_OPENCL)
 	SET(HAVE_OPENCL 1)
