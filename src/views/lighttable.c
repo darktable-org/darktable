@@ -942,15 +942,17 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
         DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
         const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
         dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
-        if(!image) return 0;
-        if(lib->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
-        else if(lib->image_over == DT_VIEW_REJECT && ((image->flags & 0x7) == 6)) image->flags &= ~0x7;
-        else
+        if(image)
         {
-          image->flags &= ~0x7;
-          image->flags |= lib->image_over;
+          if(lib->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
+          else if(lib->image_over == DT_VIEW_REJECT && ((image->flags & 0x7) == 6)) image->flags &= ~0x7;
+          else
+          {
+            image->flags &= ~0x7;
+            image->flags |= lib->image_over;
+          }
+          dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
         }
-        dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
         dt_image_cache_read_release(darktable.image_cache, image);
         break;
       }
