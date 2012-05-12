@@ -589,13 +589,13 @@ dt_interpolation_new(
 static inline int
 clip_index(
   int idx,
-  int length)
+  int min,
+  int max)
 {
-  // XXX only clipping for now. check wrapping or mirroring
-  if (idx < 0) {
-    idx = 0;
-  } else if (idx > length - 1) {
-    idx = length - 1;
+  if (idx < min) {
+    idx = min;
+  } else if (idx > max) {
+    idx = max;
   }
   return idx;
 }
@@ -640,7 +640,10 @@ static int
 prepare_resampling_plan(
   const struct dt_interpolation* itor,
   int in,
+  const int in_x0,
   int out,
+  const int out_x0,
+  float scale,
   int** plength,
   float** pkernel,
   int** pindex)
@@ -650,7 +653,7 @@ prepare_resampling_plan(
   *pkernel = NULL;
   *pindex = NULL;
 
-  if (in == out) {
+  if (scale == 1.f) {
     // No resampling required
     return 0;
   }
@@ -665,7 +668,7 @@ prepare_resampling_plan(
   size_t kernelreq = 0;
   size_t indexreq = 0;
 
-  if (in > out) {
+  if (scale > 1.f) {
     // Upscale... the easy one. The values are exact
     nindex = 2*itor->width*out;
     nkernel = 2*itor->width*out;
@@ -673,8 +676,8 @@ prepare_resampling_plan(
     kernelreq = nkernel*sizeof(float);
   } else {
     // Downscale... going for worst case values memory wise
-    nindex = 2*itor->width*out/in;
-    nkernel = 2*itor->width*out/in;
+    nindex = 2*itor->width*scale;
+    nkernel = 2*itor->width*scale;
     indexreq = nindex*sizeof(int);
     kernelreq = nkernel*sizeof(float);
   }
@@ -688,7 +691,7 @@ prepare_resampling_plan(
   int* lengths = blob;
   int* index = (int*)(lengths + nlengths);
   float* kernel = (float*)(index + nindex);
-  if (in>out) {
+  if (scale > 1.f) {
     int kidx = 0;
     int iidx = 0;
     int lidx = 0;
@@ -698,7 +701,7 @@ prepare_resampling_plan(
       lidx++;
 
       // Projected position in input samples
-      float fx = (float)(x*out)/(float)in;
+      float fx = (float)(out_x0 + x)*scale;
 
       // Compute the filter kernel at that position
       int first;
@@ -713,19 +716,18 @@ prepare_resampling_plan(
        * NB: use the same loop to put in place the index list */
       for (int tap=0; tap<2*itor->width; tap++) {
         kernel[kidx++] *= norm;
-        index[iidx++] = clip_index(first++, in);
+        index[iidx++] = clip_index(first++, in_x0, in_x0+in-1);
       }
     }
-  } else if (in<out) {
+  } else {
     int kidx = 0;
     int iidx = 0;
     int lidx = 0;
-    float ratio = (float)out/(float)in;
     for (int x=0; x<out; x++) {
       // Compute downsampling kernel centered on output position
       int taps;
       int first;
-      float norm = compute_downsampling_kernel(itor, &taps, &first, &kernel[kidx], ratio, x);
+      float norm = compute_downsampling_kernel(itor, &taps, &first, &kernel[kidx], scale, out_x0 + x);
 
       // Now we know how many samples will be used for this output pixel
       lengths[lidx] = taps;
@@ -737,7 +739,7 @@ prepare_resampling_plan(
       // Precomputed normalized filter kernel and index list
       for (int tap=0; tap<taps; tap++) {
         kernel[kidx++] *= norm;
-        index[iidx++] = clip_index(first++, in);
+        index[iidx++] = clip_index(first++, in_x0, in_x0+in-1);
       }
     }
   }
@@ -774,15 +776,15 @@ dt_interpolation_resample(
    * because they're annoying and can be optimized quite a bit. I'd like
    * first to validate the complicated code path before adding simpler but
    * faster ones */
-  assert(roi_out->width != roi_in->width && roi_out->height != roi_in->height);
+  assert(roi_out->scale != 1.f);
 
   // Prepare resampling plans once and for all
-  r = prepare_resampling_plan(itor, roi_in->width, roi_out->width, &hlength, &hkernel, &hindex);
+  r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale, &hlength, &hkernel, &hindex);
   if (r) {
     goto exit;
   }
 
-  r = prepare_resampling_plan(itor, roi_in->height, roi_out->height, &vlength, &vkernel, &vindex);
+  r = prepare_resampling_plan(itor, roi_in->height, roi_in->y, roi_out->height, roi_out->y, roi_out->scale, &vlength, &vkernel, &vindex);
   if (r) {
     goto exit;
   }

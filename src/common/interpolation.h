@@ -114,7 +114,17 @@ dt_interpolation_new(
 
 /** Image resampler.
  *
- * Resamples the image "in" to "out" according to roi values.
+ * Resamples the image "in" to "out" according to roi values. Here is the
+ * exact contract:
+ * <ul>
+ * <li>The resampling is isotropic (same for both x and y directions),
+ * represented by roi_out->scale</li>
+ * <li>It generates roi_out->width samples horizontally whose positions span
+ * from roi_out->x to roi_out->x + roi_out->width</li>
+ * <li>It generates roi_out->height samples vertically whose positions span
+ * from roi_out->y to roi_out->y + roi_out->height</li>
+ * </ul>
+ *
  * @param itor [in] Interpolator to use
  * @param out [out] Will hold the resampled image
  * @param roi_out [in] Region of interest of the resampled image
