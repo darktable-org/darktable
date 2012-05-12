@@ -96,10 +96,10 @@ nearest_power_of_two(const uint32_t value)
 static void
 dt_cache_sleep_ms(uint32_t ms)
 {
-       struct timeval s;
-       s.tv_sec = ms / 1000;
-       s.tv_usec = (ms % 1000) * 1000U;
-       select(0, NULL, NULL, NULL, &s);
+  struct timeval s;
+  s.tv_sec = ms / 1000;
+  s.tv_usec = (ms % 1000) * 1000U;
+  select(0, NULL, NULL, NULL, &s);
 }
 
 #if 0
@@ -698,7 +698,7 @@ dt_cache_read_get(
     break;
 wait:;
     // try again in 5 milliseconds
-               dt_cache_sleep_ms(5);
+    dt_cache_sleep_ms(5);
   }
 
   if(cache->optimize_cacheline)
@@ -1051,7 +1051,7 @@ dt_cache_write_get(dt_cache_t *cache, const uint32_t key)
     break;
 wait:;
     // try again in 5 milliseconds
-               dt_cache_sleep_ms(5);
+    dt_cache_sleep_ms(5);
   }
   dt_cache_unlock(&segment->lock);
   // clear user error, he should hold a read lock already, so this has to be there.
