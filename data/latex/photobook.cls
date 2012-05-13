@@ -1,22 +1,35 @@
-\nonstopmode
+%\nonstopmode
+\ProvidesClass{photobook}[2012/05/10 darktable book print]
+\NeedsTeXFormat{LaTeX2e}
+\LoadClass[10pt,final,openany]{book}
 
-\documentclass[10pt,final,openany]{book}
-\usepackage{graphicx}
+\DeclareOption{draftmode}{\newcommand{\draftmode}{}}
+
+\ProcessOptions\relax
+
+
+\RequirePackage{ifthen}
+\RequirePackage{calc}
+\RequirePackage{graphicx}
+\ifthenelse{\isundefined{\draftmode}}{
 \graphicspath{{./images/}}
+}{
+\graphicspath{{./thumbnails/}}
+}
 
 \frenchspacing
-\usepackage{microtype}
+\RequirePackage{microtype}
 
 % bera comes with texlive-fonts-extra
-\usepackage[T1]{fontenc}
-\usepackage{textcomp}
-\usepackage[scaled=0.95]{berasans}
-\usepackage[scaled=0.95]{beraserif}
-\usepackage[scaled=0.95]{beramono}
+\RequirePackage[T1]{fontenc}
+\RequirePackage{textcomp}
+\RequirePackage[scaled=0.95]{berasans}
+\RequirePackage[scaled=0.95]{beraserif}
+\RequirePackage[scaled=0.95]{beramono}
 \renewcommand{\familydefault}{\sfdefault}
 
-\usepackage{pict2e}
-\usepackage{color}
+\RequirePackage{pict2e}
+\RequirePackage{color}
 
 \setlength{\unitlength}{1mm}
 
@@ -25,7 +38,7 @@
 \newcommand{\fimg}[2]{\fbox{\includegraphics[width=#1]{#2}}}
 
 \definecolor{darkblue}{rgb}{0.,0.,0.25}
-\usepackage{hyperref}
+\RequirePackage{hyperref}
 \hypersetup{pdftitle={\dttitle},
   pdfsubject={\dtsubject},
   pdfauthor={\dtauthor},
@@ -56,7 +69,7 @@
 % trim (and that again for secure border to important content)
 % 3.175mm
 
-\usepackage[paperwidth=279.4mm, paperheight=215.9mm,   % letter
+\RequirePackage[paperwidth=279.4mm, paperheight=215.9mm,   % letter
             % bindingoffset=31.725mm,  % would be all the rest,
             % but we want it to be centered, so we can use a global trim size
             % set total to the dimensions of the trimmed part (as required above)
@@ -131,9 +144,13 @@
 % - The MediaBox defines the size of the entire document
 % - The ArtBox or TrimBox defines the extent of the printable area.
 % - If the file is to be printed with bleed, a BleedBox must be defined. It must be larger than  the TrimBox/ArtBox, but smaller than the MediaBox.
+\ifthenelse{\isundefined{\draftmode}}{
 \pdfpageattr{%/MediaBox [0 0 693.36000 594.00000]
-% /TrimBox [0.00000 9.00000 684.36000 585.00000]}
 /TrimBox [98.929133757 35.99999996 693.07086 576.00]}
+}{
+\pdfpageattr{%/MediaBox [0 0 693.36000 594.00000]
+/CropBox[98.929133757 35.99999996 693.07086 576.00]}
+}
 % test with:
 % convert -define pdf:use-trimbox=true header.pdf cropped.png
 % /CropBox [98.929133757 35.99999996 693.07086 576.00]} % <-- works, but auto-crops everything away.

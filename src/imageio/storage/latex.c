@@ -203,7 +203,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     dt_variables_expand(d->vp, d->filename, TRUE);
     g_strlcpy(tmp_dir, dt_variables_get_result(d->vp), 1024);
 
-    // if filenamepattern is a directory just let att ${FILE_NAME} as default..
+    // if filenamepattern is a directory just add ${FILE_NAME} as default..
     if ( g_file_test(tmp_dir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename)-1)[0]=='/' || (d->filename+strlen(d->filename)-1)[0]=='\\') )
       snprintf (d->filename+strlen(d->filename), 1024-strlen(d->filename), "/$(FILE_NAME)");
 
@@ -298,10 +298,12 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     snprintf(relfilename, 256, "%s", c);
 
     snprintf(pair->line, 4096,
-        "\\begin{picture}(\\paperwidthnum,\\paperheightnum)(0, 0)\n"
+        "\\vbox to \\imgheight {\n"
+        " \\hfil\\includegraphics[width=\\imgwidth,height=\\imgheight,keepaspectratio]{%s}\\hfil\n"
+        "  \\vfil\n"
+        "}\n"
         "\\drawtrimcorners\n"
-        "\\put(0, 0){\\includegraphics[width=\\imgwidth,height=\\imgheight,keepaspectratio]{%s}}\n"
-        "\\end{picture}\n\\newpage\n\n", relfilename);
+        "\\newpage\n\n", relfilename);
 
     pair->pos = num;
     // g_free(title);
@@ -363,8 +365,8 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   snprintf(filename, 1024, "%s", d->cached_dirname);
   char *c = filename + strlen(filename);
 
-  sprintf(c, "/header.tex");
-  copy_res("/latex/header.tex", filename);
+  sprintf(c, "/photobook.cls");
+  copy_res("/latex/photobook.cls", filename);
   
   sprintf(c, "/main.tex");
 
@@ -377,7 +379,7 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
     "\\newcommand{\\dtauthor}{the author}\n"
     "\\newcommand{\\dtsubject}{the matter}\n"
     "\\newcommand{\\dtkeywords}{this, that}\n"
-    "\\input header.tex\n"
+    "\\documentclass{photobook} %% use [draftmode] for preview\n"
     "\\begin{document}\n"
     "\\maketitle\n"
     "\\pagestyle{empty}\n",
