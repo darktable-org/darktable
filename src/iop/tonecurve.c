@@ -398,6 +398,22 @@ area_resized(GtkWidget *widget, GdkEvent *event, gpointer user_data)
   return TRUE;
 }
 
+static void
+pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+{
+  self->request_color_pick = gtk_toggle_button_get_active(togglebutton);
+  if(darktable.gui->reset) return;
+  
+  /* set the area sample size*/
+  if (self->request_color_pick)
+    dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+  
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  dt_iop_request_focus(self);
+}
+
+
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_tonecurve_gui_data_t));
@@ -434,9 +450,16 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_object_set(G_OBJECT(c->channel_tabs), "homogeneous", TRUE, (char *)NULL);
 
+  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
+  g_object_set(G_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
+
+  GtkWidget *notebook = gtk_hbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(notebook), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(notebook), GTK_WIDGET(tb), FALSE, FALSE, 0);
+
   GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), vbox, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->channel_tabs), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(notebook), TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page",
                    G_CALLBACK (tab_switch), self);
@@ -462,6 +485,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_tonecurve_enter_notify), self);
   g_signal_connect (G_OBJECT (c->area), "configure-event",
                     G_CALLBACK (area_resized), self);
+  g_signal_connect (G_OBJECT(tb), "toggled", 
+                    G_CALLBACK (pick_toggled), self);
 
   c->autoscale_ab = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->autoscale_ab, _("scale chroma"));
@@ -508,6 +533,14 @@ static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossin
   c->mouse_y = -fabsf(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
+}
+
+
+static void picker_scale(const float *in, float *out)
+{
+  out[0] = CLAMP(in[0] / 100.0f, 0.0f, 1.0f);
+  out[1] = CLAMP((in[1] + 128.0f)/256.0f, 0.0f, 1.0f);
+  out[2] = CLAMP((in[2] + 128.0f)/256.0f, 0.0f, 1.0f);
 }
 
 static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
@@ -668,6 +701,16 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   {
     dt_develop_t *dev = darktable.develop;
     float *hist, hist_max;
+    float *raw_mean, *raw_min, *raw_max;
+    float *raw_mean_output;
+    float picker_mean[3], picker_min[3], picker_max[3];
+    char text[256];
+
+    raw_mean = self->picked_color;
+    raw_min = self->picked_color_min;
+    raw_max = self->picked_color_max;
+    raw_mean_output = self->picked_output_color;
+
     hist = dev->histogram_pre_tonecurve;
     hist_max = dev->histogram_pre_tonecurve_max;
     if(hist_max > 0 && ch == ch_L)
@@ -677,6 +720,30 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
       dt_draw_histogram_8(cr, hist, 3);
       cairo_restore(cr);
+    }
+
+    if(self->request_color_pick)
+    {
+      picker_scale(raw_mean, picker_mean);
+      picker_scale(raw_min, picker_min);
+      picker_scale(raw_max, picker_max);
+
+      cairo_set_source_rgba(cr, 0.6, 0.6, 0.6, 0.33);
+      cairo_rectangle(cr, width*picker_min[ch], 0, width*fmax(picker_max[ch]-picker_min[ch], 0.0f), -height);
+      cairo_fill(cr);
+      cairo_set_source_rgba(cr, 0.9, 0.9, 0.9, 0.5);
+      cairo_move_to(cr, width*picker_mean[ch], 0);
+      cairo_line_to(cr, width*picker_mean[ch], -height);
+      cairo_stroke(cr);
+
+      snprintf(text, 256, "%.1f → %.1f", raw_mean[ch], raw_mean_output[ch]);
+
+      cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+      cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+      cairo_set_font_size (cr, 0.06*height);
+      cairo_move_to (cr, 0.02f*width, -0.94*height);
+      cairo_show_text(cr, text);
+      cairo_stroke(cr);
     }
   }
 

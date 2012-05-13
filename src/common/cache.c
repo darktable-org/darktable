@@ -337,9 +337,11 @@ void
 dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threads, int32_t cache_line_size, int32_t cost_quota)
 {
   const uint32_t adj_num_threads = nearest_power_of_two(num_threads);
-  cache->cache_mask = cache_line_size / sizeof(dt_cache_bucket_t) - 1;
   // FIXME: if switching this on, lru lists need to move, too! (because they work by bucket and not by key)
   cache->optimize_cacheline = 0;//1;
+  // No cache_mask offsetting required when not optimizing for cachelines --RAM
+  cache->cache_mask = cache->optimize_cacheline ?
+    cache_line_size / sizeof(dt_cache_bucket_t) - 1 : 0;
   cache->segment_mask = adj_num_threads - 1;
   // cache->segment_shift = calc_div_shift(nearest_power_of_two(num_threads/(float)adj_num_threads)-1);
   // we want a minimum of four entries, as the hopscotch code below proceeds by disregarding the first bucket in the list,
@@ -650,6 +652,8 @@ dt_cache_read_get(
     dt_cache_t     *cache,
     const uint32_t  key)
 {
+  assert(key != DT_CACHE_EMPTY_KEY);
+
   // this is the blocking variant, we might need to allocate stuff.
   // also we have to retry if failed.
 
