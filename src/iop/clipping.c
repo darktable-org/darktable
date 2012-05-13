@@ -516,12 +516,13 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
     // if only one side changed, force aspect by two adjacent in equal parts
     // 1 2 4 8 : x y w h
 
+    double clip_x = g->clip_x, clip_y = g->clip_y, clip_w = g->clip_w, clip_h = g->clip_h;
+
     // aspect = wd*w/ht*h
     // if we only modified one dim, respectively, we wanted these values:
-    const float target_h = wd*g->clip_w/(ht*aspect);
-    const float target_w = ht*g->clip_h*aspect/wd;
+    const double target_h = (double)wd*g->clip_w/(double)(ht*aspect);
+    const double target_w = (double)ht*g->clip_h*aspect/(double)wd;
     // i.e. target_w/h = w/target_h = aspect
-
 
     // first fix aspect ratio:
 
@@ -529,66 +530,71 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
     if     (grab == 1+2)
     {
       // move x y
-      g->clip_x = g->clip_x + g->clip_w - (target_w + g->clip_w)*.5;
-      g->clip_y = g->clip_y + g->clip_h - (target_h + g->clip_h)*.5;
-      g->clip_w = (target_w + g->clip_w)*.5f;
-      g->clip_h = (target_h + g->clip_h)*.5f;
+      clip_x = clip_x + clip_w - (target_w + clip_w)*.5;
+      clip_y = clip_y + clip_h - (target_h + clip_h)*.5;
+      clip_w = (target_w + clip_w)*.5;
+      clip_h = (target_h + clip_h)*.5;
     }
     else if(grab == 2+4) // move y w
     {
-      g->clip_y = g->clip_y + g->clip_h - (target_h + g->clip_h)*.5;
-      g->clip_w = (target_w + g->clip_w)*.5;
-      g->clip_h = (target_h + g->clip_h)*.5;
+      clip_y = clip_y + clip_h - (target_h + clip_h)*.5;
+      clip_w = (target_w + clip_w)*.5;
+      clip_h = (target_h + clip_h)*.5;
     }
     else if(grab == 4+8) // move w h
     {
-      g->clip_w = (target_w + g->clip_w)*.5;
-      g->clip_h = (target_h + g->clip_h)*.5;
+      clip_w = (target_w + clip_w)*.5;
+      clip_h = (target_h + clip_h)*.5;
     }
     else if(grab == 8+1) // move h x
     {
-      g->clip_h = (target_h + g->clip_h)*.5;
-      g->clip_x = g->clip_x + g->clip_w - (target_w + g->clip_w)*.5;
-      g->clip_w = (target_w + g->clip_w)*.5;
+      clip_h = (target_h + clip_h)*.5;
+      clip_x = clip_x + clip_w - (target_w + clip_w)*.5;
+      clip_w = (target_w + clip_w)*.5;
     }
     else if(grab & 5) // dragged either x or w (1 4)
     {
       // change h and move y, h equally
-      const float off = target_h - g->clip_h;
-      g->clip_h = g->clip_h + off;
-      g->clip_y = g->clip_y - .5f*off;
+      const double off = target_h - clip_h;
+      clip_h = clip_h + off;
+      clip_y = clip_y - .5*off;
     }
     else if(grab & 10) // dragged either y or h (2 8)
     {
       // channge w and move x, w equally
-      const float off = target_w - g->clip_w;
-      g->clip_w = g->clip_w + off;
-      g->clip_x = g->clip_x - .5f*off;
+      const double off = target_w - clip_w;
+      clip_w = clip_w + off;
+      clip_x = clip_x - .5*off;
     }
 
     // now fix outside boxes:
-    if(g->clip_x < 0)
+    if(clip_x < 0)
     {
-      g->clip_h *= (g->clip_w + g->clip_x)/g->clip_w;
-      g->clip_w  =  g->clip_w + g->clip_x;
-      g->clip_x  = 0;
+      clip_h *= (clip_w + clip_x)/clip_w;
+      clip_w  =  clip_w + clip_x;
+      clip_x  = 0;
     }
-    if(g->clip_y < 0)
+    if(clip_y < 0)
     {
-      g->clip_w *= (g->clip_h + g->clip_y)/g->clip_h;
-      g->clip_h  =  g->clip_h + g->clip_y;
-      g->clip_y  =  0;
+      clip_w *= (clip_h + clip_y)/clip_h;
+      clip_h  =  clip_h + clip_y;
+      clip_y  =  0;
     }
-    if(g->clip_x + g->clip_w > 1.0)
+    if(clip_x + clip_w > 1.0)
     {
-      g->clip_h *= (1.0 - g->clip_x)/g->clip_w;
-      g->clip_w  =  1.0 - g->clip_x;
+      clip_h *= (1.0 - clip_x)/clip_w;
+      clip_w  =  1.0 - clip_x;
     }
-    if(g->clip_y + g->clip_h > 1.0)
+    if(clip_y + clip_h > 1.0)
     {
-      g->clip_w *= (1.0 - g->clip_y)/g->clip_h;
-      g->clip_h  =  1.0 - g->clip_y;
+      clip_w *= (1.0 - clip_y)/clip_h;
+      clip_h  =  1.0 - clip_y;
     }
+    g->clip_x = clip_x;
+    g->clip_y = clip_y;
+    g->clip_w = clip_w;
+    g->clip_h = clip_h;
+
   }
 }
 
