@@ -1363,6 +1363,11 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
   }
   _mm_sfence();
 #else
+  volatile static int displayedwarning = 0;
+  if (!displayedwarning) {
+    fprintf(stderr, "warning: using experimental resampling code\n");
+    displayedwarning = 1;
+  }
   const struct dt_interpolation* itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   dt_interpolation_resample(itor, out, roi_out, out_stride*4*sizeof(float), in, roi_in, in_stride*4*sizeof(float));
 #endif

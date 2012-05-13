@@ -759,10 +759,17 @@ prepare_resampling_plan(
 }
 
 #if 0
-#define debug_info(...) do { fprintf(stderr, __VA_ARGS__); while (0)
+#define debug_info(...) do { fprintf(stderr, __VA_ARGS__); } while (0)
 #else
 #define debug_info(...)
 #endif
+
+#if 0
+#define debug_extra(...) do { fprintf(stderr, __VA_ARGS__); } while (0)
+#else
+#define debug_extra(...)
+#endif
+
 
 void
 dt_interpolation_resample(
@@ -831,7 +838,7 @@ dt_interpolation_resample(
 
     // Process each output column
     for (int ox=0; ox < roi_out->width; ox++) {
-      debug_info("output %p [% 4d % 4d]\n", out, ox, oy);
+      debug_extra("output %p [% 4d % 4d]\n", out, ox, oy);
 
       // This will hold the resulting pixel
       float s[3] = {0.f, 0.f, 0.f};
