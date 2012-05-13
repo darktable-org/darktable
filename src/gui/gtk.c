@@ -1170,12 +1170,9 @@ void dt_ui_restore_panels(dt_ui_t *ui)
   uint32_t state = dt_conf_get_int(key);
   if (state)
   {
-    /* restore previous panel view states */
+    /* hide all panels */
     for (int k=0;k<DT_UI_PANEL_SIZE;k++)
-      dt_ui_panel_show(ui, k, (state>>k)&1);
-    
-    /* clear state */
-    dt_conf_set_int(key, 0);
+      dt_ui_panel_show(ui, k, FALSE);
   }
   else
   {
