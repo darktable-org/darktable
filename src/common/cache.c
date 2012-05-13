@@ -341,7 +341,7 @@ dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threa
   cache->optimize_cacheline = 0;//1;
   // No cache_mask offsetting required when not optimizing for cachelines --RAM
   cache->cache_mask = cache->optimize_cacheline ?
-	cache_line_size / sizeof(dt_cache_bucket_t) - 1 : 0;
+    cache_line_size / sizeof(dt_cache_bucket_t) - 1 : 0;
   cache->segment_mask = adj_num_threads - 1;
   // cache->segment_shift = calc_div_shift(nearest_power_of_two(num_threads/(float)adj_num_threads)-1);
   // we want a minimum of four entries, as the hopscotch code below proceeds by disregarding the first bucket in the list,
