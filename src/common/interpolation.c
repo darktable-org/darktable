@@ -790,12 +790,31 @@ dt_interpolation_resample(
 
   int r;
 
-  /* XXX: Artificially reject plans where one of the dimensions is not
-   * resampled. This specific cases will be dealt with in a later version
-   * because they're annoying and can be optimized quite a bit. I'd like
-   * first to validate the complicated code path before adding simpler but
-   * faster ones */
-  assert(roi_out->scale != 1.f);
+  debug_info(
+    "resampling %p (%dx%d@%dx%d scale %f) -> %p (%dx%d@%dx%d scale %f)\n",
+    in,
+    roi_in->width, roi_in->height, roi_in->x, roi_in->y, roi_in->scale,
+    out,
+    roi_out->width, roi_out->height, roi_out->x, roi_out->y, roi_out->scale);
+
+  // Fast code path for 1:1 copy, only cropping area can change
+  if (roi_out->scale == 1.f) {
+    const int x0 = roi_out->x*4*sizeof(float);
+    const int l = roi_out->width*4*sizeof(float);
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(out)
+#endif
+    for (int y=0; y<roi_out->height; y++) {
+      float* i = (float*)((char*)in + in_stride*(y + roi_out->y) + x0);
+      float* o = (float*)((char*)out + out_stride*y);
+      memcpy(o, i, l);
+    }
+
+    // All done, so easy case
+    return;
+  }
+
+  // Generic non 1:1 case... much more complicated :D
 
   // Prepare resampling plans once and for all
   r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale, &hlength, &hkernel, &hindex);
@@ -812,14 +831,6 @@ dt_interpolation_resample(
   int vlidx = 0; // V(ertical) L(ength) I(n)d(e)x
   int vkidx = 0; // V(ertical) K(ernel) I(n)d(e)x
   int viidx = 0; // V(ertical) I(ndex) I(n)d(e)x
-
-  debug_info(
-    "output %p requested\n"
-    "in: %dx%d@%dx%d scale %f\n"
-    "out: %dx%d@%dx%d scale %f\n",
-    out,
-    roi_in->width, roi_in->height, roi_in->x, roi_in->y, roi_in->scale,
-    roi_out->width, roi_out->height, roi_out->x, roi_out->y, roi_out->scale);
 
   /* XXX: add a touch of OpenMP here, make sure the spanwed job do use
    * correct indexes in the resampling plans (probably needs indexing
