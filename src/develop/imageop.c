@@ -19,6 +19,7 @@
 #include "common/opencl.h"
 #include "common/dtpthread.h"
 #include "common/debug.h"
+#include "common/interpolation.h"
 #include "bauhaus/bauhaus.h"
 #include "control/control.h"
 #include "develop/imageop.h"
@@ -1301,11 +1302,13 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw
   }
 }
 
+#define USE_WELL_TESTED_BILINEAR 1
 
 void
 dt_iop_clip_and_zoom(float *out, const float *const in,
                      const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride)
 {
+#if USE_WELL_TESTED_BILINEAR
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
   const float px_footprint = .9f/roi_out->scale;
@@ -1359,6 +1362,10 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
     }
   }
   _mm_sfence();
+#else
+  const struct dt_interpolation* itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  dt_interpolation_resample(itor, out, roi_out, out_stride*4*sizeof(float), in, roi_in, in_stride*4*sizeof(float));
+#endif
 }
 
 static int

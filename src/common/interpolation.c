@@ -676,14 +676,14 @@ prepare_resampling_plan(
     kernelreq = nkernel*sizeof(float);
   } else {
     // Downscale... going for worst case values memory wise
-    nindex = 2*itor->width*scale;
-    nkernel = 2*itor->width*scale;
+    nindex = 2*itor->width*(int)(ceil_fast((float)out/scale));
+    nkernel = 2*itor->width*(int)(ceil_fast((float)out/scale));
     indexreq = nindex*sizeof(int);
     kernelreq = nkernel*sizeof(float);
   }
 
   void *blob = NULL;
-  posix_memalign(blob, 16, kernelreq + lengthreq + indexreq);
+  posix_memalign(&blob, 16, kernelreq + lengthreq + indexreq);
   if (!blob) {
     return 1;
   }
@@ -710,13 +710,16 @@ prepare_resampling_plan(
       // Precompute the inverse of the norm
       norm = 1.f/norm;
 
+      // Fix index of first filtered sample
+      first -= in_x0;
+
       /* Unlike single pixel or single sample code, here it's interesting to
        * precompute the normalized filter kernel as this will avoid dividing
        * by the norm for all processed samples/pixels
        * NB: use the same loop to put in place the index list */
       for (int tap=0; tap<2*itor->width; tap++) {
         kernel[kidx++] *= norm;
-        index[iidx++] = clip_index(first++, in_x0, in_x0+in-1);
+        index[iidx++] = clip_index(first++, 0, in-1);
       }
     }
   } else {
@@ -736,10 +739,13 @@ prepare_resampling_plan(
       // Precompute inverse of the norm
       norm = 1.f/norm;
 
+      // Fix index of first filtered sample
+      first -= in_x0;
+
       // Precomputed normalized filter kernel and index list
       for (int tap=0; tap<taps; tap++) {
         kernel[kidx++] *= norm;
-        index[iidx++] = clip_index(first++, in_x0, in_x0+in-1);
+        index[iidx++] = clip_index(first++, 0, in-1);
       }
     }
   }
@@ -751,6 +757,12 @@ prepare_resampling_plan(
 
   return 0;
 }
+
+#if 0
+#define debug_info(...) do { fprintf(stderr, __VA_ARGS__); while (0)
+#else
+#define debug_info(...)
+#endif
 
 void
 dt_interpolation_resample(
@@ -794,6 +806,14 @@ dt_interpolation_resample(
   int vkidx = 0; // V(ertical) K(ernel) I(n)d(e)x
   int viidx = 0; // V(ertical) I(ndex) I(n)d(e)x
 
+  debug_info(
+    "output %p requested\n"
+    "in: %dx%d@%dx%d scale %f\n"
+    "out: %dx%d@%dx%d scale %f\n",
+    out,
+    roi_in->width, roi_in->height, roi_in->x, roi_in->y, roi_in->scale,
+    roi_out->width, roi_out->height, roi_out->x, roi_out->y, roi_out->scale);
+
   /* XXX: add a touch of OpenMP here, make sure the spanwed job do use
    * correct indexes in the resampling plans (probably needs indexing
    * kernels and index array with line instead of linear progress of
@@ -811,6 +831,8 @@ dt_interpolation_resample(
 
     // Process each output column
     for (int ox=0; ox < roi_out->width; ox++) {
+      debug_info("output %p [% 4d % 4d]\n", out, ox, oy);
+
       // This will hold the resulting pixel
       float s[3] = {0.f, 0.f, 0.f};
 
@@ -823,7 +845,7 @@ dt_interpolation_resample(
 
         float hs[3] = {0.f, 0.f, 0.f};
 
-        for (int ix; ix< hl; ix++) {
+        for (int ix=0; ix< hl; ix++) {
           // Apply the precomputed filter kernel
           int baseidx = hindex[hiidx++]*4;
           float htap = hkernel[hkidx++];
@@ -844,7 +866,7 @@ dt_interpolation_resample(
       }
 
       // Output pixel is ready
-      float* o = (float*)((char*)out + oy*out_stride + ox*4);
+      float* o = (float*)((char*)out + oy*out_stride + ox*4*sizeof(float));
       o[0] = s[0];
       o[1] = s[1];
       o[2] = s[2];
