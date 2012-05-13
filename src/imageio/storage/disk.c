@@ -222,10 +222,20 @@ failed:
   if(fail) return 1;
 
   /* export image to file */
-  dt_imageio_export(imgid, filename, format, fdata);
+  if(dt_imageio_export(imgid, filename, format, fdata) != 0)
+  {
+    fprintf(stderr, "[imageio_storage_disk] could not export to file: `%s'!\n", filename);
+    dt_control_log(_("could not export to file `%s'!"), filename);
+    return 1;
+  }
 
   /* now write xmp into that container, if possible */
-  dt_exif_xmp_attach(imgid, filename);
+  if(dt_exif_xmp_attach(imgid, filename) != 0)
+  {
+    fprintf(stderr, "[imageio_storage_disk] could not attach xmp data to file: `%s'!\n", filename);
+    dt_control_log(_("could not attach xmp data to file `%s'!"), filename);
+    return 1;
+  }
 
   printf("[export_job] exported to `%s'\n", filename);
   char *trunc = filename + strlen(filename) - 32;
