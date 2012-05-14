@@ -413,6 +413,29 @@ pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 }
 
 
+static gboolean scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+
+  int ch = c->channel;
+  dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
+  int autoscale_ab = p->tonecurve_autoscale_ab;
+
+  // if autoscale_ab is on: do not modify a and b curves
+  if (autoscale_ab && ch != ch_L) return TRUE;
+
+  if(c->selected >= 0)
+  {
+    if(event->direction == GDK_SCROLL_UP  ) tonecurve[c->selected].y = MAX(0.0f, tonecurve[c->selected].y + 0.001f);
+    if(event->direction == GDK_SCROLL_DOWN) tonecurve[c->selected].y = MIN(1.0f, tonecurve[c->selected].y - 0.001f);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(widget);
+  }
+  return TRUE;
+}
+
 
 void gui_init(struct dt_iop_module_t *self)
 {
@@ -487,6 +510,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (area_resized), self);
   g_signal_connect (G_OBJECT(tb), "toggled", 
                     G_CALLBACK (pick_toggled), self);
+  g_signal_connect (G_OBJECT (c->area), "scroll-event",
+                    G_CALLBACK (scrolled), self);
 
   c->autoscale_ab = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->autoscale_ab, _("scale chroma"));
@@ -919,9 +944,11 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
           p->tonecurve[ch][k].x = d->tonecurve[ch][k].x;
           p->tonecurve[ch][k].y = d->tonecurve[ch][k].y;
       }
+      c->selected = -2; // avoid motion notify re-inserting immediately.
       dt_dev_add_history_item(darktable.develop, self, TRUE);
       gtk_widget_queue_draw(self->widget);
     }
+    return TRUE;
   }
   return FALSE;
 }
