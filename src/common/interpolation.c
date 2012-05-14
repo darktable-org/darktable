@@ -602,6 +602,22 @@ clip_index(
   return idx;
 }
 
+/** Make sure length will keep alignment is base pointer is aligned too
+ *
+ * @param l Length required
+ * @param align Required alignment for next chained chunk
+ *
+ * @return Required length for keeping alignment ok if chaining data chunks
+ */
+static inline size_t
+increase_for_alignment(
+  size_t l,
+  size_t align)
+{
+  align -= 1;
+  return (l + align) & (~align);
+}
+
 /** Prepares the resampling plan
  *
  * This consists of the following informations
@@ -662,7 +678,7 @@ prepare_resampling_plan(
 
   // Compute common upsampling/downsampling memory requirements
   int nlengths = out;
-  size_t lengthreq = nlengths*sizeof(int);
+  size_t lengthreq = increase_for_alignment(nlengths*sizeof(int), SSE_ALIGNMENT);
 
   // Left these as they depend on sampling case
   int nkernel;
@@ -674,14 +690,14 @@ prepare_resampling_plan(
     // Upscale... the easy one. The values are exact
     nindex = 2*itor->width*out;
     nkernel = 2*itor->width*out;
-    indexreq = nindex*sizeof(int);
-    kernelreq = nkernel*sizeof(float);
+    indexreq = increase_for_alignment(nindex*sizeof(int), SSE_ALIGNMENT);
+    kernelreq = increase_for_alignment(nkernel*sizeof(float), SSE_ALIGNMENT);
   } else {
     // Downscale... going for worst case values memory wise
     nindex = 2*itor->width*(int)(ceil_fast((float)out/scale));
     nkernel = 2*itor->width*(int)(ceil_fast((float)out/scale));
-    indexreq = nindex*sizeof(int);
-    kernelreq = nkernel*sizeof(float);
+    indexreq = increase_for_alignment(nindex*sizeof(int), SSE_ALIGNMENT);
+    kernelreq = increase_for_alignment(nkernel*sizeof(float), SSE_ALIGNMENT);
   }
 
   void *blob = NULL;
@@ -691,8 +707,8 @@ prepare_resampling_plan(
   }
 
   int* lengths = blob;
-  int* index = (int*)(lengths + nlengths);
-  float* kernel = (float*)(index + nindex);
+  int* index = (int*)((char*)lengths + lengthreq);
+  float* kernel = (float*)((char*)index + indexreq);
   if (scale > 1.f) {
     int kidx = 0;
     int iidx = 0;
