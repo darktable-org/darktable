@@ -26,6 +26,7 @@
 #include <assert.h>
 
 #define SSE_ALIGNMENT 16
+#define DEBUG_RESAMPLING_TIMING 0
 
 /* --------------------------------------------------------------------------
  * Interpolation kernels
@@ -452,6 +453,79 @@ compute_downsampling_kernel(
   return norm;
 }
 
+
+/** Computes a downsampling filtering kernel (SSE version)
+ *
+ * @param itor [in] Interpolator used
+ * @param kernelsize [out] Number of taps
+ * @param kernel [out] resulting taps (at least itor->width/inoout elements for no overflow)
+ * @param first [out] index of the first sample for which the kernel is to be applied
+ * @param outoinratio [in] "out samples" over "in samples" ratio
+ * @param xout [in] Output coordinate
+ *
+ * @return kernel norm
+ */
+static inline float
+compute_downsampling_kernel_sse(
+  const struct dt_interpolation* itor,
+  int* taps,
+  int* first,
+  float* kernel,
+  float outoinratio,
+  int xout)
+{
+  // Keep this at hand
+  float w = (float)itor->width;
+
+  /* Compute the phase difference between output pixel and its
+   * input corresponding input pixel */
+  float xin = ceil_fast(((float)xout-w)/outoinratio);
+  if (first) {
+    *first = (int)xin;
+  }
+
+  // Compute first interpolator parameter
+  float t = xin*outoinratio - (float)xout;
+
+  // Compute all filter taps
+  *taps = (int)((w-t)/outoinratio);
+
+  // Bootstrap vector t
+  static const __m128 bootstrap = { 0.f, 1.f, 2.f, 3.f};
+  const __m128 iter = _mm_set_ps1(4.f*outoinratio);
+  const __m128 vw = _mm_set_ps1(w);
+  __m128 vt = _mm_add_ps(_mm_set_ps1(t), _mm_mul_ps(_mm_set_ps1(outoinratio), bootstrap));
+
+  // Prepare counters (math kept stupid for understanding)
+  int i = 0;
+  int runs = (*taps + 3)/4;
+
+  while (i<runs) {
+    // Compute the values
+    __m128 vr = itor->funcsse(vw, vt);
+
+    // Save result
+    *(__m128*)kernel = vr;
+
+    // Prepare next iteration
+    vt = _mm_add_ps(vt, iter);
+    kernel += 4;
+    i++;
+  }
+
+  // compute norm now
+  float norm = 0.f;
+  i = 0;
+  kernel -= 4*runs;
+  while (i<*taps) {
+    norm += *kernel;
+    kernel++;
+    i++;
+  }
+
+  return norm;
+}
+
 /* --------------------------------------------------------------------------
  * Sample interpolation function (see usage in iop/lens.c and iop/clipping.c)
  * ------------------------------------------------------------------------*/
@@ -685,23 +759,28 @@ prepare_resampling_plan(
   int nindex;
   size_t kernelreq = 0;
   size_t indexreq = 0;
+  size_t scratchreq = 0;
 
   if (scale > 1.f) {
     // Upscale... the easy one. The values are exact
     nindex = 2*itor->width*out;
     nkernel = 2*itor->width*out;
     indexreq = increase_for_alignment(nindex*sizeof(int), SSE_ALIGNMENT);
-    kernelreq = increase_for_alignment(nkernel*sizeof(float), SSE_ALIGNMENT);
+    kernelreq = increase_for_alignment(nkernel*sizeof(float), SSE_ALIGNMENT) + 4*sizeof(float);
+    // NB: because sse versions compute four taps a time
   } else {
     // Downscale... going for worst case values memory wise
-    nindex = 2*itor->width*(int)(ceil_fast((float)out/scale));
-    nkernel = 2*itor->width*(int)(ceil_fast((float)out/scale));
+    int tapsapixel = ceil_fast((float)2*(float)itor->width/scale);
+    nindex = out*tapsapixel;
+    nkernel = out*tapsapixel;
     indexreq = increase_for_alignment(nindex*sizeof(int), SSE_ALIGNMENT);
     kernelreq = increase_for_alignment(nkernel*sizeof(float), SSE_ALIGNMENT);
+    scratchreq = tapsapixel*sizeof(float) + 4*sizeof(float);
+    // NB: because sse versions compute four taps a time
   }
 
   void *blob = NULL;
-  posix_memalign(&blob, SSE_ALIGNMENT, kernelreq + lengthreq + indexreq);
+  posix_memalign(&blob, SSE_ALIGNMENT, kernelreq + lengthreq + indexreq + scratchreq);
   if (!blob) {
     return 1;
   }
@@ -709,6 +788,7 @@ prepare_resampling_plan(
   int* lengths = blob;
   int* index = (int*)((char*)lengths + lengthreq);
   float* kernel = (float*)((char*)index + indexreq);
+  float* scratchpad = (float*)((char*)kernel + kernelreq);
   if (scale > 1.f) {
     int kidx = 0;
     int iidx = 0;
@@ -723,7 +803,7 @@ prepare_resampling_plan(
 
       // Compute the filter kernel at that position
       int first;
-      float norm = compute_upsampling_kernel(itor, &kernel[kidx], &first, fx);
+      float norm = compute_upsampling_kernel_sse(itor, &kernel[kidx], &first, fx);
 
       // Precompute the inverse of the norm
       norm = 1.f/norm;
@@ -745,7 +825,10 @@ prepare_resampling_plan(
       // Compute downsampling kernel centered on output position
       int taps;
       int first;
-      float norm = compute_downsampling_kernel(itor, &taps, &first, &kernel[kidx], scale, out_x0 + x);
+      float norm = compute_downsampling_kernel_sse(itor, &taps, &first, scratchpad, scale, out_x0 + x);
+
+      // Copy to final destination
+      memcpy(&kernel[kidx], scratchpad, taps*sizeof(float));
 
       // Now we know how many samples will be used for this output pixel
       lengths[lidx] = taps;
@@ -782,6 +865,17 @@ prepare_resampling_plan(
 #define debug_extra(...)
 #endif
 
+
+
+#if DEBUG_RESAMPLING_TIMING
+static inline int64_t
+getts()
+{
+  struct timeval t;
+  gettimeofday(&t, NULL);
+  return t.tv_sec*INT64_C(1000000) + t.tv_usec;
+}
+#endif
 
 void
 dt_interpolation_resample(
@@ -827,6 +921,9 @@ dt_interpolation_resample(
   }
 
   // Generic non 1:1 case... much more complicated :D
+#if DEBUG_RESAMPLING_TIMING
+  int64_t ts_plan = getts();
+#endif
 
   // Prepare resampling plans once and for all
   r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale, &hlength, &hkernel, &hindex);
@@ -838,6 +935,14 @@ dt_interpolation_resample(
   if (r) {
     goto exit;
   }
+
+#if DEBUG_RESAMPLING_TIMING
+  ts_plan = getts() - ts_plan;
+#endif
+
+#if DEBUG_RESAMPLING_TIMING
+  int64_t ts_resampling = getts();
+#endif
 
   // Initialize column resampling indexes
   int vlidx = 0; // V(ertical) L(ength) I(n)d(e)x
@@ -914,6 +1019,11 @@ dt_interpolation_resample(
     viidx += vl;
     vkidx += vl;
   }
+
+#if DEBUG_RESAMPLING_TIMING
+  ts_resampling = getts() - ts_resampling;
+  debug_info("resampling %p plan:%"PRId64"us resampling:%"PRId64"us\n", in, ts_plan, ts_resampling);
+#endif
 
 exit:
   free(hlength);
