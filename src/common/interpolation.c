@@ -710,9 +710,6 @@ prepare_resampling_plan(
       // Precompute the inverse of the norm
       norm = 1.f/norm;
 
-      // Fix index of first filtered sample
-      first -= in_x0;
-
       /* Unlike single pixel or single sample code, here it's interesting to
        * precompute the normalized filter kernel as this will avoid dividing
        * by the norm for all processed samples/pixels
@@ -738,9 +735,6 @@ prepare_resampling_plan(
 
       // Precompute inverse of the norm
       norm = 1.f/norm;
-
-      // Fix index of first filtered sample
-      first -= in_x0;
 
       // Precomputed normalized filter kernel and index list
       for (int tap=0; tap<taps; tap++) {
