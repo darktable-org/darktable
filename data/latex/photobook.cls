@@ -147,10 +147,10 @@
 % - If the file is to be printed with bleed, a BleedBox must be defined. It must be larger than  the TrimBox/ArtBox, but smaller than the MediaBox.
 \ifthenelse{\isundefined{\draftmode}}{
 \pdfpageattr{/MediaBox [0 0 792.0 612.0]
-/TrimBox [49.4645668785 18.0 693.070866141732 576]}
+/TrimBox [49.4645668785 18.0 742.535433 594.0]}
 }{
 \pdfpageattr{/MediaBox [0 0 792.0 612.0]
-/CropBox [49.4645668785 18.0 693.070866141732 576]}
+/CropBox [49.4645668785 18.0 742.535433 594.0]}
 }
 % test with:
 % convert -define pdf:use-trimbox=true header.pdf cropped.png
