@@ -97,28 +97,28 @@
   \moveto(-\trimnum, 0)
   \lineto(0, 0)
   \strokepath
-  \moveto(0, -\trimnum)
+  \moveto(0, \trimnum)
   \lineto(0, 0)
   \strokepath
 
-  \moveto(\paperwidthplustrimnum, \paperheightnum)
-  \lineto(\paperwidthnum, \paperheightnum)
+  \moveto(\paperwidthplustrimnum, -\paperheightnum)
+  \lineto(\paperwidthnum, -\paperheightnum)
   \strokepath
-  \moveto(\paperwidthnum, \paperheightplustrimnum)
-  \lineto(\paperwidthnum, \paperheightnum)
+  \moveto(\paperwidthnum, -\paperheightplustrimnum)
+  \lineto(\paperwidthnum, -\paperheightnum)
   \strokepath
 
-  \moveto(-\trimnum, \paperheightnum)
-  \lineto(0, \paperheightnum)
+  \moveto(-\trimnum, -\paperheightnum)
+  \lineto(0, -\paperheightnum)
   \strokepath
-  \moveto(0, \paperheightplustrimnum)
-  \lineto(0, \paperheightnum)
+  \moveto(0, -\paperheightplustrimnum)
+  \lineto(0, -\paperheightnum)
   \strokepath
 
   \moveto(\paperwidthplustrimnum, 0)
   \lineto(\paperwidthnum, 0)
   \strokepath
-  \moveto(\paperwidthnum, -\trimnum)
+  \moveto(\paperwidthnum, \trimnum)
   \lineto(\paperwidthnum, 0)
   \strokepath
 }
@@ -140,21 +140,21 @@
 /Trapped (False)
 /GTS_PDFXVersion (PDF/X-3:2002)
 }
-% pdf unit is 1/72 inch
+% pdf unit is 1/72 inch or 25.4/72 mm
 % PDF/X-3 files contain extra operators that define the bleed and trim area.
 % - The MediaBox defines the size of the entire document
 % - The ArtBox or TrimBox defines the extent of the printable area.
 % - If the file is to be printed with bleed, a BleedBox must be defined. It must be larger than  the TrimBox/ArtBox, but smaller than the MediaBox.
 \ifthenelse{\isundefined{\draftmode}}{
-\pdfpageattr{%/MediaBox [0 0 693.36000 594.00000]
-/TrimBox [98.929133757 35.99999996 693.07086 576.00]}
+\pdfpageattr{/MediaBox [0 0 792.0 612.0]
+/TrimBox [49.4645668785 18.0 693.070866141732 576]}
 }{
-\pdfpageattr{%/MediaBox [0 0 693.36000 594.00000]
-/CropBox[98.929133757 35.99999996 693.07086 576.00]}
+\pdfpageattr{/MediaBox [0 0 792.0 612.0]
+/CropBox [49.4645668785 18.0 693.070866141732 576]}
 }
 % test with:
 % convert -define pdf:use-trimbox=true header.pdf cropped.png
-% /CropBox [98.929133757 35.99999996 693.07086 576.00]} % <-- works, but auto-crops everything away.
+% or by passing [draftmode] to this class.
 \pdfminorversion=3
 \pdfcatalog{
 /OutputIntents [ <<
