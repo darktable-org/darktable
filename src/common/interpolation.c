@@ -25,6 +25,8 @@
 #include <glib.h>
 #include <assert.h>
 
+#define SSE_ALIGNMENT 16
+
 /* --------------------------------------------------------------------------
  * Interpolation kernels
  * ------------------------------------------------------------------------*/
@@ -463,8 +465,8 @@ dt_interpolation_compute_sample(
 {
   assert(itor->width < 4);
 
-  float kernelh[8] __attribute__((aligned(16)));
-  float kernelv[8] __attribute__((aligned(16)));
+  float kernelh[8] __attribute__((aligned(SSE_ALIGNMENT)));
+  float kernelv[8] __attribute__((aligned(SSE_ALIGNMENT)));
 
   // Compute both horizontal and vertical kernels
   float normh = compute_upsampling_kernel_sse(itor, kernelh, NULL, x);
@@ -501,8 +503,8 @@ dt_interpolation_compute_pixel4c(
   assert(itor->width < 4);
 
   // Quite a bit of space for kernels
-  float kernelh[8] __attribute__((aligned(16)));
-  float kernelv[8] __attribute__((aligned(16)));
+  float kernelh[8] __attribute__((aligned(SSE_ALIGNMENT)));
+  float kernelv[8] __attribute__((aligned(SSE_ALIGNMENT)));
   __m128 vkernelh[8];
   __m128 vkernelv[8];
 
@@ -683,7 +685,7 @@ prepare_resampling_plan(
   }
 
   void *blob = NULL;
-  posix_memalign(&blob, 16, kernelreq + lengthreq + indexreq);
+  posix_memalign(&blob, SSE_ALIGNMENT, kernelreq + lengthreq + indexreq);
   if (!blob) {
     return 1;
   }
