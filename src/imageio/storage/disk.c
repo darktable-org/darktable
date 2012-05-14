@@ -31,6 +31,8 @@
 #include "dtgtk/paint.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <glib.h>
+#include <glib/gstdio.h>
 
 DT_MODULE(1)
 
@@ -193,6 +195,13 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     {
       fprintf(stderr, "[imageio_storage_disk] could not create directory: `%s'!\n", dirname);
       dt_control_log(_("could not create directory `%s'!"), dirname);
+      fail = 1;
+      goto failed;
+    }
+    if(g_access(dirname, W_OK) != 0)
+    {
+      fprintf(stderr, "[imageio_storage_disk] could not write to directory: `%s'!\n", dirname);
+      dt_control_log(_("could not write to directory `%s'!"), dirname);
       fail = 1;
       goto failed;
     }
