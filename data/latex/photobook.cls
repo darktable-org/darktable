@@ -22,6 +22,7 @@
 
 % bera comes with texlive-fonts-extra
 \RequirePackage[T1]{fontenc}
+\RequirePackage{ae,aecompl}
 \RequirePackage{textcomp}
 \RequirePackage[scaled=0.95]{berasans}
 \RequirePackage[scaled=0.95]{beraserif}
