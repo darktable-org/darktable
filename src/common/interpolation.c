@@ -22,12 +22,177 @@
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <glib.h>
 #include <assert.h>
 
+// Defines minimum alignment requirement for critical SIMD code
 #define SSE_ALIGNMENT 16
+
+// Defines the maximum kernel half length
+// !! Make sure to sync this with the filter array !!
+#define MAX_HALF_FILTER_WIDTH 3
+
+// Add code for timing resampling function
 #define DEBUG_RESAMPLING_TIMING 0
 
+// Add debug info messages to stderr
+#define DEBUG_PRINT_INFO 0
+
+// Add *verbose* (like one msg per pixel out) debug message to stderr
+#define DEBUG_PRINT_VERBOSE 0
+
+/* --------------------------------------------------------------------------
+ * Debug helpers
+ * ------------------------------------------------------------------------*/
+
+#if DEBUG_RESAMPLING_TIMING
+#include <sys/time.h>
+#endif
+
+#if DEBUG_PRINT_INFO
+#define debug_info(...) do { fprintf(stderr, __VA_ARGS__); } while (0)
+#else
+#define debug_info(...)
+#endif
+
+#if DEBUG_PRINT_VERBOSE
+#define debug_extra(...) do { fprintf(stderr, __VA_ARGS__); } while (0)
+#else
+#define debug_extra(...)
+#endif
+
+#if DEBUG_RESAMPLING_TIMING
+static inline int64_t
+getts()
+{
+  struct timeval t;
+  gettimeofday(&t, NULL);
+  return t.tv_sec*INT64_C(1000000) + t.tv_usec;
+}
+#endif
+
+/* --------------------------------------------------------------------------
+ * Generic helpers
+ * ------------------------------------------------------------------------*/
+
+/** Compute ceil value of a float
+ * @remark Avoid libc ceil for now. Maybe we'll revert to libc later.
+ * @param x Value to ceil
+ * @return ceil value
+ */
+static inline float
+ceil_fast(
+  float x)
+{
+  if (x <= 0.f) {
+    return (float)(int)x;
+  } else {
+    return -((float)(int)-x) + 1.f;
+  }
+}
+
+/** Compute absolute value
+ * @param t Vector of 4 floats
+ * @return Vector of their absolute values
+ */static inline __m128
+_mm_abs_ps(__m128 t)
+{
+    static const uint32_t signmask[4] = { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
+    return _mm_and_ps(*(__m128*)signmask, t);
+}
+
+/** Clip into specified range
+ * @param idx index to filter
+ * @param length length of line
+ */
+static inline int
+clip(
+  int i,
+  int min,
+  int max)
+{
+  if (i < min) {
+    i = min;
+  } else if (i > max) {
+    i = max;
+  }
+  return i;
+}
+
+/** Make sure an aligned chunk will not misalign its following chunk
+ * proposing an adapted length
+ *
+ * @param l Length required for current chunk
+ * @param align Required alignment for next chunk
+ *
+ * @return Required length for keeping alignment ok if chaining data chunks
+ */
+static inline size_t
+increase_for_alignment(
+  size_t l,
+  size_t align)
+{
+  align -= 1;
+  return (l + align) & (~align);
+}
+
+/** Compute an approximate sine.
+ * This function behaves correctly for the range [-pi pi] only.
+ * It has the following properties:
+ * <ul>
+ *   <li>It has exact values for 0, pi/2, pi, -pi/2, -pi</li>
+ *   <li>It has matching derivatives to sine for these same points</li>
+ *   <li>Its relative error margin is <= 1% iirc</li>
+ *   <li>It computational cost is 5 mults + 3 adds + 2 abs</li>
+ * </ul>
+ * @param t Radian parameter
+ * @return guess what
+ */
+static inline float
+sinf_fast(float t)
+{
+    static const float a = 4/(M_PI*M_PI);
+    static const float p = 0.225f;
+
+    t = a*t*(M_PI - fabsf(t));
+
+    return t*(p*(fabsf(t) - 1) + 1);
+}
+
+/** Compute an approximate sine (SSE version, four sines a call).
+ * This function behaves correctly for the range [-pi pi] only.
+ * It has the following properties:
+ * <ul>
+ *   <li>It has exact values for 0, pi/2, pi, -pi/2, -pi</li>
+ *   <li>It has matching derivatives to sine for these same points</li>
+ *   <li>Its relative error margin is <= 1% iirc</li>
+ *   <li>It computational cost is 5 mults + 3 adds + 2 abs</li>
+ * </ul>
+ * @param t Radian parameter
+ * @return guess what
+ */
+static inline __m128
+sinf_fast_sse(__m128 t)
+{
+    static const __m128 a = {4.f/(M_PI*M_PI), 4.f/(M_PI*M_PI), 4.f/(M_PI*M_PI), 4.f/(M_PI*M_PI)};
+    static const __m128 p = {0.225f, 0.225f, 0.225f, 0.225f};
+    static const __m128 pi = {M_PI, M_PI, M_PI, M_PI};
+
+    // m4 = a*t*(M_PI - fabsf(t));
+    __m128 m1 = _mm_abs_ps(t);
+    __m128 m2 = _mm_sub_ps(pi, m1);
+    __m128 m3 = _mm_mul_ps(t, m2);
+    __m128 m4 = _mm_mul_ps(a, m3);
+
+    // p*(m4*fabsf(m4) - m4) + m4;
+    __m128 n1 = _mm_abs_ps(m4);
+    __m128 n2 = _mm_mul_ps(m4, n1);
+    __m128 n3 = _mm_sub_ps(n2, m4);
+    __m128 n4 = _mm_mul_ps(p, n3);
+
+    return _mm_add_ps(n4, m4);
+}
 /* --------------------------------------------------------------------------
  * Interpolation kernels
  * ------------------------------------------------------------------------*/
@@ -47,13 +212,6 @@ bilinear(float width, float t)
     r = 1.f - t;
   }
   return r;
-}
-
-static inline __m128
-_mm_abs_ps(__m128 t)
-{
-    static const uint32_t signmask[4] = { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
-    return _mm_and_ps(*(__m128*)signmask, t);
 }
 
 static inline __m128
@@ -137,7 +295,7 @@ bicubic_sse(__m128 width, __m128 t)
 #define DT_LANCZOS_EPSILON (1e-9f)
 
 #if 0
-// Canonic version left here for reference
+// Reference version left here for ... documentation
 static inline float
 lanczos(float width, float t)
 {
@@ -169,41 +327,6 @@ lanczos(float width, float t)
  * Of course we know that lanczos func will only be called for
  * the range -width < t < width so we can additionally avoid the
  * range check.  */
-
-// Valid for [-pi pi] only
-static inline float
-sinf_fast(float t)
-{
-    static const float a = 4/(M_PI*M_PI);
-    static const float p = 0.225f;
-
-    t = a*t*(M_PI - fabsf(t));
-
-    return t*(p*(fabsf(t) - 1) + 1);
-}
-
-static inline __m128
-sinf_fast_sse(__m128 t)
-{
-    static const __m128 a = {4.f/(M_PI*M_PI), 4.f/(M_PI*M_PI), 4.f/(M_PI*M_PI), 4.f/(M_PI*M_PI)};
-    static const __m128 p = {0.225f, 0.225f, 0.225f, 0.225f};
-    static const __m128 pi = {M_PI, M_PI, M_PI, M_PI};
-
-    // m4 = a*t*(M_PI - fabsf(t));
-    __m128 m1 = _mm_abs_ps(t);
-    __m128 m2 = _mm_sub_ps(pi, m1);
-    __m128 m3 = _mm_mul_ps(t, m2);
-    __m128 m4 = _mm_mul_ps(a, m3);
-
-    // p*(m4*fabsf(m4) - m4) + m4;
-    __m128 n1 = _mm_abs_ps(m4);
-    __m128 n2 = _mm_mul_ps(m4, n1);
-    __m128 n3 = _mm_sub_ps(n2, m4);
-    __m128 n4 = _mm_mul_ps(p, n3);
-
-    return _mm_add_ps(n4, m4);
-}
-
 
 static inline float
 lanczos(float width, float t)
@@ -257,6 +380,11 @@ lanczos_sse(__m128 width, __m128 t)
  * All our known interpolators
  * ------------------------------------------------------------------------*/
 
+/* !!! !!! !!!
+ * Make sure MAX_HALF_FILTER_WIDTH is at least equal to the maximum width
+ * of this filter list. Otherwise bad things will happen
+ * !!! !!! !!!
+ */
 static const struct dt_interpolation dt_interpolator[] =
 {
   {
@@ -290,7 +418,7 @@ static const struct dt_interpolation dt_interpolator[] =
 };
 
 /* --------------------------------------------------------------------------
- * Kernel utility method
+ * Kernel utility methods
  * ------------------------------------------------------------------------*/
 
 /** Computes an upsampling filtering kernel
@@ -393,18 +521,6 @@ compute_upsampling_kernel_sse(
   return norm;
 }
 
-// Avoid libc ceil for now. Maybe we'll revert to libc later
-static inline float
-ceil_fast(
-  float x)
-{
-  if (x <= 0.f) {
-    return (float)(int)x;
-  } else {
-    return -((float)(int)-x) + 1.f;
-  }
-}
-
 /** Computes a downsampling filtering kernel
  *
  * @param itor [in] Interpolator used
@@ -454,11 +570,11 @@ compute_downsampling_kernel(
 }
 
 
-/** Computes a downsampling filtering kernel (SSE version)
+/** Computes a downsampling filtering kernel (SSE version, four taps per inner loop iteration)
  *
  * @param itor [in] Interpolator used
  * @param kernelsize [out] Number of taps
- * @param kernel [out] resulting taps (at least itor->width/inoout elements for no overflow)
+ * @param kernel [out] resulting taps (at least itor->width/inoout + 4 elements for no overflow)
  * @param first [out] index of the first sample for which the kernel is to be applied
  * @param outoinratio [in] "out samples" over "in samples" ratio
  * @param xout [in] Output coordinate
@@ -566,6 +682,8 @@ dt_interpolation_compute_sample(
  * Pixel interpolation function (see usage in iop/lens.c and iop/clipping.c)
  * ------------------------------------------------------------------------*/
 
+#define MAX_KERNEL_REQ ((2*MAX_HALF_FILTER_WIDTH + 3) & (~3))
+
 void
 dt_interpolation_compute_pixel4c(
   const struct dt_interpolation* itor,
@@ -574,13 +692,13 @@ dt_interpolation_compute_pixel4c(
   const float x, const float y,
   const int linestride)
 {
-  assert(itor->width < 4);
+  assert(itor->width < (MAX_HALF_FILTER_WIDTH+1));
 
   // Quite a bit of space for kernels
-  float kernelh[8] __attribute__((aligned(SSE_ALIGNMENT)));
-  float kernelv[8] __attribute__((aligned(SSE_ALIGNMENT)));
-  __m128 vkernelh[8];
-  __m128 vkernelv[8];
+  float kernelh[MAX_KERNEL_REQ] __attribute__((aligned(SSE_ALIGNMENT)));
+  float kernelv[MAX_KERNEL_REQ] __attribute__((aligned(SSE_ALIGNMENT)));
+  __m128 vkernelh[2*MAX_HALF_FILTER_WIDTH];
+  __m128 vkernelv[2*MAX_HALF_FILTER_WIDTH];
 
   // Compute both horizontal and vertical kernels
   float normh = compute_upsampling_kernel_sse(itor, kernelh, NULL, x);
@@ -658,41 +776,7 @@ dt_interpolation_new(
  * Image resampling
  * ------------------------------------------------------------------------*/
 
-/** Clip index into range
- * @param idx index to filter
- * @param length length of line
- */
-static inline int
-clip_index(
-  int idx,
-  int min,
-  int max)
-{
-  if (idx < min) {
-    idx = min;
-  } else if (idx > max) {
-    idx = max;
-  }
-  return idx;
-}
-
-/** Make sure length will keep alignment is base pointer is aligned too
- *
- * @param l Length required
- * @param align Required alignment for next chained chunk
- *
- * @return Required length for keeping alignment ok if chaining data chunks
- */
-static inline size_t
-increase_for_alignment(
-  size_t l,
-  size_t align)
-{
-  align -= 1;
-  return (l + align) & (~align);
-}
-
-/** Prepares the resampling plan
+/** Prepares a 1D resampling plan
  *
  * This consists of the following informations
  * <ul>
@@ -814,7 +898,7 @@ prepare_resampling_plan(
        * NB: use the same loop to put in place the index list */
       for (int tap=0; tap<2*itor->width; tap++) {
         kernel[kidx++] *= norm;
-        index[iidx++] = clip_index(first++, 0, in-1);
+        index[iidx++] = clip(first++, 0, in-1);
       }
     }
   } else {
@@ -840,7 +924,7 @@ prepare_resampling_plan(
       // Precomputed normalized filter kernel and index list
       for (int tap=0; tap<taps; tap++) {
         kernel[kidx++] *= norm;
-        index[iidx++] = clip_index(first++, 0, in-1);
+        index[iidx++] = clip(first++, 0, in-1);
       }
     }
   }
@@ -852,30 +936,6 @@ prepare_resampling_plan(
 
   return 0;
 }
-
-#if 0
-#define debug_info(...) do { fprintf(stderr, __VA_ARGS__); } while (0)
-#else
-#define debug_info(...)
-#endif
-
-#if 0
-#define debug_extra(...) do { fprintf(stderr, __VA_ARGS__); } while (0)
-#else
-#define debug_extra(...)
-#endif
-
-
-
-#if DEBUG_RESAMPLING_TIMING
-static inline int64_t
-getts()
-{
-  struct timeval t;
-  gettimeofday(&t, NULL);
-  return t.tv_sec*INT64_C(1000000) + t.tv_usec;
-}
-#endif
 
 void
 dt_interpolation_resample(
@@ -907,6 +967,9 @@ dt_interpolation_resample(
   if (roi_out->scale == 1.f) {
     const int x0 = roi_out->x*4*sizeof(float);
     const int l = roi_out->width*4*sizeof(float);
+#if DEBUG_RESAMPLING_TIMING
+  int64_t ts_resampling = getts();
+#endif
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(out)
 #endif
@@ -915,7 +978,10 @@ dt_interpolation_resample(
       float* o = (float*)((char*)out + out_stride*y);
       memcpy(o, i, l);
     }
-
+#if DEBUG_RESAMPLING_TIMING
+  ts_resampling = getts() - ts_resampling;
+  fprintf(stderr, "resampling %p plan:0us resampling:%"PRId64"us\n", in, ts_resampling);
+#endif
     // All done, so easy case
     return;
   }
@@ -1020,10 +1086,13 @@ dt_interpolation_resample(
 
 #if DEBUG_RESAMPLING_TIMING
   ts_resampling = getts() - ts_resampling;
-  debug_info("resampling %p plan:%"PRId64"us resampling:%"PRId64"us\n", in, ts_plan, ts_resampling);
+  fprintf(stderr, "resampling %p plan:%"PRId64"us resampling:%"PRId64"us\n", in, ts_plan, ts_resampling);
 #endif
 
 exit:
+  /* Free the resampling plans. It's nasty to optimize allocs like that, but
+   * it simplifies the code :-D. The length array is in fact the only memory
+   * allocated. */
   free(hlength);
   free(vlength);
 }
