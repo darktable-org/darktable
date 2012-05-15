@@ -19,7 +19,7 @@
 
 /* Define this to != 0 if you want to enable new resampling code comming from
  * interpolation.c instead of the well tested bilinear filtering here */
-#define USE_NEW_RESAMPLING_CODE 0
+#define USE_NEW_RESAMPLING_CODE 1
 
 #include "common/opencl.h"
 #include "common/dtpthread.h"
