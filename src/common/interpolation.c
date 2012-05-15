@@ -969,7 +969,7 @@ dt_interpolation_resample(
       debug_extra("output %p [% 4d % 4d]\n", out, ox, oy);
 
       // This will hold the resulting pixel
-      float s[3] = {0.f, 0.f, 0.f};
+      __m128 vs = _mm_setzero_ps();
 
       // Number of horizontal samples contributing to the output
       int hl = hlength[hlidx++]; // H(orizontal) L(ength)
@@ -978,22 +978,20 @@ dt_interpolation_resample(
         // This is our input line
         const float* i = (float*)((char*)in + in_stride*vindex[viidx++]);
 
-        float hs[3] = {0.f, 0.f, 0.f};
+        __m128 vhs = _mm_setzero_ps();
 
         for (int ix=0; ix< hl; ix++) {
           // Apply the precomputed filter kernel
           int baseidx = hindex[hiidx++]*4;
           float htap = hkernel[hkidx++];
-          hs[0] += i[baseidx + 0]*htap;
-          hs[1] += i[baseidx + 1]*htap;
-          hs[2] += i[baseidx + 2]*htap;
+          __m128 vhtap = _mm_set_ps1(htap);
+          vhs = _mm_add_ps(vhs, _mm_mul_ps(*(__m128*)&i[baseidx], vhtap));
         }
 
         // Accumulate contribution from this line
         float vtap = vkernel[vkidx++];
-        s[0] += hs[0]*vtap;
-        s[1] += hs[1]*vtap;
-        s[2] += hs[2]*vtap;
+        __m128 vvtap = _mm_set_ps1(vtap);
+        vs = _mm_add_ps(vs, _mm_mul_ps(vhs, vvtap));
 
         // Reset horizontal resampling context
         hkidx -= hl;
@@ -1002,9 +1000,7 @@ dt_interpolation_resample(
 
       // Output pixel is ready
       float* o = (float*)((char*)out + oy*out_stride + ox*4*sizeof(float));
-      o[0] = s[0];
-      o[1] = s[1];
-      o[2] = s[2];
+      _mm_stream_ps(o, vs);
 
       // Reset vertical resampling context
       viidx -= vl;
@@ -1019,6 +1015,8 @@ dt_interpolation_resample(
     viidx += vl;
     vkidx += vl;
   }
+
+  _mm_sfence();
 
 #if DEBUG_RESAMPLING_TIMING
   ts_resampling = getts() - ts_resampling;
