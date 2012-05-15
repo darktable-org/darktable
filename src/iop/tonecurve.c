@@ -761,10 +761,10 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
         picker_scale(sample->picked_color_lab_min, picker_min);
         picker_scale(sample->picked_color_lab_max, picker_max);
 
-        cairo_set_source_rgba(cr, 0.5, 0.5, 0.5, 0.33);
+        cairo_set_source_rgba(cr, 0.5, 0.7, 0.5, 0.15);
         cairo_rectangle(cr, width*picker_min[ch], 0, width*fmax(picker_max[ch]-picker_min[ch], 0.0f), -height);
         cairo_fill(cr);
-        cairo_set_source_rgba(cr, 0.7, 0.7, 0.7, 0.5);
+        cairo_set_source_rgba(cr, 0.5, 0.7, 0.5, 0.5);
         cairo_move_to(cr, width*picker_mean[ch], 0);
         cairo_line_to(cr, width*picker_mean[ch], -height);
         cairo_stroke(cr);
@@ -777,10 +777,10 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
       picker_scale(raw_min, picker_min);
       picker_scale(raw_max, picker_max);
 
-      cairo_set_source_rgba(cr, 0.6, 0.6, 0.6, 0.33);
+      cairo_set_source_rgba(cr, 0.7, 0.5, 0.5, 0.33);
       cairo_rectangle(cr, width*picker_min[ch], 0, width*fmax(picker_max[ch]-picker_min[ch], 0.0f), -height);
       cairo_fill(cr);
-      cairo_set_source_rgba(cr, 0.9, 0.9, 0.9, 0.5);
+      cairo_set_source_rgba(cr, 0.9, 0.7, 0.7, 0.5);
       cairo_move_to(cr, width*picker_mean[ch], 0);
       cairo_line_to(cr, width*picker_mean[ch], -height);
       cairo_stroke(cr);
