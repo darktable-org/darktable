@@ -810,6 +810,7 @@ dt_interpolation_new(
  * @param pkernel [out] Array of filter kernel taps
  * @param pindex [out] Array of sample indexes to be used for applying each kernel tap
  * arrays of informations
+ * @param pmeta [out] Array of int triplets (length, kernel, index) telling where to start for an arbitrary out position meta[3*out]
  * @return 0 for success, !0 for failure
  */
 static int
@@ -822,12 +823,16 @@ prepare_resampling_plan(
   float scale,
   int** plength,
   float** pkernel,
-  int** pindex)
+  int** pindex,
+  int** pmeta)
 {
   // Safe return values
   *plength = NULL;
   *pkernel = NULL;
   *pindex = NULL;
+  if (pmeta) {
+	  *pmeta = NULL;
+  }
 
   if (scale == 1.f) {
     // No resampling required
@@ -844,6 +849,7 @@ prepare_resampling_plan(
   size_t kernelreq = 0;
   size_t indexreq = 0;
   size_t scratchreq = 0;
+  size_t metareq = pmeta ? 3*sizeof(int)*out : 0;
 
   if (scale > 1.f) {
     // Upscale... the easy one. The values are exact
@@ -864,20 +870,33 @@ prepare_resampling_plan(
   }
 
   void *blob = NULL;
-  posix_memalign(&blob, SSE_ALIGNMENT, kernelreq + lengthreq + indexreq + scratchreq);
+  size_t totalreq = kernelreq + lengthreq + indexreq + scratchreq + metareq;
+  posix_memalign(&blob, SSE_ALIGNMENT, totalreq);
   if (!blob) {
     return 1;
   }
 
-  int* lengths = blob;
-  int* index = (int*)((char*)lengths + lengthreq);
-  float* kernel = (float*)((char*)index + indexreq);
-  float* scratchpad = (float*)((char*)kernel + kernelreq);
+  int* lengths = (int*)blob;
+  blob = (char*)blob + lengthreq;
+  int* index = (int*)blob;
+  blob = (char*)blob + indexreq;
+  float* kernel = (float*)blob;
+  blob = (char*)blob + kernelreq;
+  float* scratchpad = scratchreq ? (float*)blob : NULL;
+  blob = (char*)blob + scratchreq;
+  int* meta = metareq ? (int*)blob : NULL;
+  blob = (char*)blob + metareq;
   if (scale > 1.f) {
     int kidx = 0;
     int iidx = 0;
     int lidx = 0;
+    int midx = 0;
     for (int x=0; x<out; x++) {
+      if (meta) {
+        meta[midx++] = lidx;
+        meta[midx++] = kidx;
+        meta[midx++] = iidx;
+      }
       // For upsampling the number of taps is always the width of the filter
       lengths[lidx] = 2*itor->width;
       lidx++;
@@ -905,7 +924,14 @@ prepare_resampling_plan(
     int kidx = 0;
     int iidx = 0;
     int lidx = 0;
+    int midx = 0;
     for (int x=0; x<out; x++) {
+      if (meta) {
+        meta[midx++] = lidx;
+        meta[midx++] = kidx;
+        meta[midx++] = iidx;
+      }
+
       // Compute downsampling kernel centered on output position
       int taps;
       int first;
@@ -933,7 +959,9 @@ prepare_resampling_plan(
   *plength = lengths;
   *pindex = index;
   *pkernel = kernel;
-
+  if (pmeta) {
+    *pmeta = meta;
+  }
   return 0;
 }
 
@@ -953,6 +981,7 @@ dt_interpolation_resample(
   int* vindex = NULL;
   int* vlength = NULL;
   float* vkernel = NULL;
+  int* vmeta = NULL;
 
   int r;
 
@@ -992,12 +1021,12 @@ dt_interpolation_resample(
 #endif
 
   // Prepare resampling plans once and for all
-  r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale, &hlength, &hkernel, &hindex);
+  r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale, &hlength, &hkernel, &hindex, NULL);
   if (r) {
     goto exit;
   }
 
-  r = prepare_resampling_plan(itor, roi_in->height, roi_in->y, roi_out->height, roi_out->y, roi_out->scale, &vlength, &vkernel, &vindex);
+  r = prepare_resampling_plan(itor, roi_in->height, roi_in->y, roi_out->height, roi_out->y, roi_out->scale, &vlength, &vkernel, &vindex, &vmeta);
   if (r) {
     goto exit;
   }
@@ -1010,11 +1039,6 @@ dt_interpolation_resample(
   int64_t ts_resampling = getts();
 #endif
 
-  // Initialize column resampling indexes
-  int vlidx = 0; // V(ertical) L(ength) I(n)d(e)x
-  int vkidx = 0; // V(ertical) K(ernel) I(n)d(e)x
-  int viidx = 0; // V(ertical) I(ndex) I(n)d(e)x
-
   /* XXX: add a touch of OpenMP here, make sure the spanwed job do use
    * correct indexes in the resampling plans (probably needs indexing
    * kernels and index array with line instead of linear progress of
@@ -1022,6 +1046,11 @@ dt_interpolation_resample(
    * correct working of the resampling plans*/
   // Process each output line
   for (int oy=0; oy<roi_out->height; oy++) {
+    // Initialize column resampling indexes
+    int vlidx = vmeta[3*oy + 0]; // V(ertical) L(ength) I(n)d(e)x
+    int vkidx = vmeta[3*oy + 1]; // V(ertical) K(ernel) I(n)d(e)x
+    int viidx = vmeta[3*oy + 2]; // V(ertical) I(ndex) I(n)d(e)x
+
     // Initialize row resampling indexes
     int hlidx = 0; // H(orizontal) L(ength) I(n)d(e)x
     int hkidx = 0; // H(orizontal) K(ernel) I(n)d(e)x
