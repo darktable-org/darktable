@@ -3397,6 +3397,15 @@ const wb_data wb_preset[] = {
   { "SAMSUNG", "NX100", "5500K", 0,		{ 1.683993, 1, 0.847587, 0 } },
   { "SAMSUNG", "NX100", "6500K", 0,		{ 2.102913, 1, 0.883064, 0 } },
 
+  // SAMSUNG NX200 Firmware Version 1.04
+  { "SAMSUNG", "NX200", Daylight, 0,		{ 2.773438, 1, 1.625000, 0 } },
+  { "SAMSUNG", "NX200", Cloudy, 0,		{ 2.902344, 1, 1.546875, 0 } },
+  { "SAMSUNG", "NX200", WhiteFluorescent, 0,	{ 2.445313, 1, 2.316406, 0 } },
+  { "SAMSUNG", "NX200", NeutralFluorescent, 0,	{ 2.746094, 1, 1.937500, 0 } },
+  { "SAMSUNG", "NX200", DaylightFluorescent, 0,	{ 3.214844, 1, 1.679688, 0 } },
+  { "SAMSUNG", "NX200", Tungsten, 0,		{ 1.511719, 1, 2.941406, 0 } },
+  { "SAMSUNG", "NX200", Flash, 0,		{ 2.914063, 1, 1.191406, 0 } },
+
   { "SONY", "DSLR-A100", Daylight, -3,		{ 1.601562, 1, 2.101562, 0 } },
   { "SONY", "DSLR-A100", Daylight, 0,		{ 1.746094, 1, 1.843750, 0 } },
   { "SONY", "DSLR-A100", Daylight, 3,		{ 1.914062, 1, 1.628906, 0 } },
