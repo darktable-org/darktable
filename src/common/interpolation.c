@@ -1039,12 +1039,10 @@ dt_interpolation_resample(
   int64_t ts_resampling = getts();
 #endif
 
-  /* XXX: add a touch of OpenMP here, make sure the spanwed job do use
-   * correct indexes in the resampling plans (probably needs indexing
-   * kernels and index array with line instead of linear progress of
-   * individual pixel lengths); Do this later, validate first the
-   * correct working of the resampling plans*/
   // Process each output line
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(out, hindex, hlength, hkernel, vindex, vlength, vkernel, vmeta)
+#endif
   for (int oy=0; oy<roi_out->height; oy++) {
     // Initialize column resampling indexes
     int vlidx = vmeta[3*oy + 0]; // V(ertical) L(ength) I(n)d(e)x
