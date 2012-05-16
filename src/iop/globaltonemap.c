@@ -99,9 +99,7 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING; // we can not allow tiling at the moment. drago requires to get the absolute maximum l-value
-                                                                    // of the image. tiling conflicts with this need. this implies that opencl will only be used
-                                                                    // in darkroom mode, not during export of larger images.
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING; 
 }
 
 int
@@ -221,6 +219,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 {
   dt_iop_global_tonemap_data_t *d = (dt_iop_global_tonemap_data_t *)piece->data;
   dt_iop_global_tonemap_global_data_t *gd = (dt_iop_global_tonemap_global_data_t *)self->data;
+
+  // check if we are in a tiling context and want OPERATOR_DRAGO. This does not work as drago
+  // needs the maximum L-value of the whole image. Let's return FALSE, which will then fall back
+  // to cpu processing
+  if(piece->pipe->tiling && d->operator == OPERATOR_DRAGO) return FALSE;
 
   cl_int err = -999;
   cl_mem dev_m = NULL;
