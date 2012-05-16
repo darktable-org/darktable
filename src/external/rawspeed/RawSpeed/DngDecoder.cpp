@@ -313,10 +313,10 @@ RawImage DngDecoder::decodeRawInternal() {
   } catch (TiffParserException e) {
     ThrowRDE("DNG Decoder: Image could not be read:\n%s", e.what());
   }
-  iPoint2D new_size(mRaw->dim.x, mRaw->dim.y);
 
   // Crop
   if (raw->hasEntry(ACTIVEAREA)) {
+    iPoint2D new_size(mRaw->dim.x, mRaw->dim.y);
     const uint32 *corners = raw->getEntry(ACTIVEAREA)->getIntArray();
     if (iPoint2D(corners[1], corners[0]).isThisInside(mRaw->dim)) {
       if (iPoint2D(corners[3], corners[2]).isThisInside(mRaw->dim)) {
@@ -325,11 +325,11 @@ RawImage DngDecoder::decodeRawInternal() {
         mRaw->subFrame(top_left, new_size);
       }
     }
+  }
 
-  } else if (raw->hasEntry(DEFAULTCROPORIGIN)) {
-
+  if (raw->hasEntry(DEFAULTCROPORIGIN)) {
     iPoint2D top_left(0, 0);
-
+    iPoint2D new_size(mRaw->dim.x, mRaw->dim.y);
     if (raw->getEntry(DEFAULTCROPORIGIN)->type == TIFF_LONG) {
       const uint32* tl = raw->getEntry(DEFAULTCROPORIGIN)->getIntArray();
       const uint32* sz = raw->getEntry(DEFAULTCROPSIZE)->getIntArray();
@@ -344,6 +344,14 @@ RawImage DngDecoder::decodeRawInternal() {
         top_left = iPoint2D(tl[0], tl[1]);
         new_size = iPoint2D(sz[0], sz[1]);
       }
+    } else if (raw->getEntry(DEFAULTCROPORIGIN)->type == TIFF_RATIONAL) {
+      // Crop as rational numbers, really?
+      const uint32* tl = raw->getEntry(DEFAULTCROPORIGIN)->getIntArray();
+      const uint32* sz = raw->getEntry(DEFAULTCROPSIZE)->getIntArray();
+      if (iPoint2D(tl[0]/tl[1],tl[2]/tl[3]).isThisInside(mRaw->dim) && iPoint2D(sz[0]/sz[1],sz[2]/sz[3]).isThisInside(mRaw->dim)) {
+        top_left = iPoint2D(tl[0]/tl[1],tl[2]/tl[3]);
+        new_size = iPoint2D(iPoint2D(sz[0]/sz[1],sz[2]/sz[3]));
+      }
     }
     mRaw->subFrame(top_left, new_size);
     if (top_left.x %2 == 1)
@@ -351,8 +359,8 @@ RawImage DngDecoder::decodeRawInternal() {
     if (top_left.y %2 == 1)
       mRaw->cfa.shiftDown();
   }
-  // Linearization
 
+  // Linearization
   if (raw->hasEntry(LINEARIZATIONTABLE)) {
     const ushort16* intable = raw->getEntry(LINEARIZATIONTABLE)->getShortArray();
     uint32 len =  raw->getEntry(LINEARIZATIONTABLE)->count;

@@ -98,7 +98,7 @@ ceil_fast(
  */static inline __m128
 _mm_abs_ps(__m128 t)
 {
-    static const uint32_t signmask[4] = { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
+    static const uint32_t signmask[4] __attribute__((aligned(SSE_ALIGNMENT))) = { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
     return _mm_and_ps(*(__m128*)signmask, t);
 }
 
@@ -352,8 +352,8 @@ lanczos_sse(__m128 width, __m128 t)
     __m128 r = _mm_sub_ps(t, _mm_cvtepi32_ps(a));
 
     // Compute the correct sign for sinf(pi.r)
-    static const uint32_t fone[] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000};
-    static const uint32_t ione[] = { 1, 1, 1, 1};
+    static const uint32_t fone[] __attribute__((aligned(SSE_ALIGNMENT))) = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000};
+    static const uint32_t ione[] __attribute__((aligned(SSE_ALIGNMENT))) = { 1, 1, 1, 1};
     static const __m128 eps = {DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON};
     static const __m128 pi = {M_PI, M_PI, M_PI, M_PI};
     static const __m128 pi2 = {M_PI*M_PI, M_PI*M_PI, M_PI*M_PI, M_PI*M_PI};
@@ -871,8 +871,8 @@ prepare_resampling_plan(
 
   void *blob = NULL;
   size_t totalreq = kernelreq + lengthreq + indexreq + scratchreq + metareq;
-  posix_memalign(&blob, SSE_ALIGNMENT, totalreq);
-  if (!blob) {
+  int r = posix_memalign(&blob, SSE_ALIGNMENT, totalreq);
+  if (r) {
     return 1;
   }
 

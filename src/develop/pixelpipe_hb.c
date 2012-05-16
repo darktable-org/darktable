@@ -67,6 +67,7 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t
   pipe->processing = 0;
   pipe->shutdown = 0;
   pipe->opencl_error = 0;
+  pipe->tiling = 0;
   pipe->input_timestamp = 0;
   dt_pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
   dt_pthread_mutex_init(&(pipe->busy_mutex), NULL);
