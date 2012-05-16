@@ -30,7 +30,7 @@ namespace RawSpeed {
 
 SrwDecoder::SrwDecoder(TiffIFD *rootIFD, FileMap* file):
 RawDecoder(file), mRootIFD(rootIFD) {
-  decoderVersion = 1;
+  decoderVersion = 2;
 }
 
 SrwDecoder::~SrwDecoder(void) {
@@ -55,13 +55,21 @@ RawImage SrwDecoder::decodeRawInternal() {
 
   if (32769 == compression)
   {
-    this->decodeUncompressed(raw, false);
+    bool bit_order = false;  // Default guess
+    map<string,string>::iterator msb_hint = hints.find("msb_override");
+    if (msb_hint != hints.end())
+      bit_order = (0 == (msb_hint->second).compare("true"));
+    this->decodeUncompressed(raw, bit_order);
     return mRaw;
   }
 
   if (32770 == compression)
   {
-    this->decodeUncompressed(raw, bits == 12);
+    bool bit_order = (bits == 12);  // Default guess
+    map<string,string>::iterator msb_hint = hints.find("msb_override");
+    if (msb_hint != hints.end())
+      bit_order = (0 == (msb_hint->second).compare("true"));
+    this->decodeUncompressed(raw, bit_order);
     return mRaw;
   }
   ThrowRDE("Srw Decoder: Unsupported compression");
