@@ -864,8 +864,8 @@ prepare_resampling_plan(
   }
 
   void *blob = NULL;
-  posix_memalign(&blob, SSE_ALIGNMENT, kernelreq + lengthreq + indexreq + scratchreq);
-  if (!blob) {
+  int r = posix_memalign(&blob, SSE_ALIGNMENT, kernelreq + lengthreq + indexreq + scratchreq);
+  if (r) {
     return 1;
   }
 
