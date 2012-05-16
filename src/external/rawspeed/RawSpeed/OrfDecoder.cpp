@@ -256,7 +256,7 @@ void OrfDecoder::checkSupport(CameraMetaData *meta) {
 
 void OrfDecoder::decodeMetaData(CameraMetaData *meta) {
   int iso = 0;
-  mRaw->cfa.setCFA(CFA_RED, CFA_GREEN, CFA_GREEN2, CFA_BLUE);
+  mRaw->cfa.setCFA(CFA_RED, CFA_GREEN, CFA_GREEN, CFA_BLUE);
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
 
   if (data.empty())
