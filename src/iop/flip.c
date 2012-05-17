@@ -138,6 +138,8 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
     roi_out->width  = roi_in->height;
     roi_out->height = roi_in->width;
   }
+
+  piece->pipe->iflipped = d->orientation & 4;
 }
 
 // 2nd pass: which roi would this operation need as input to fill the given output region?
@@ -241,7 +243,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)p1;
   dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
   d->orientation = p->orientation;
-  piece->pipe->iflipped = d->orientation & 4;
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
