@@ -177,6 +177,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     XYZ[2] = w * XYZ[2] + (1.0f - w) * XYZ_s[2];
 
     dt_XYZ_to_Lab(XYZ,out);
+
+    out[3] = in[3];
   }
 }
 

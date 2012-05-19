@@ -400,7 +400,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float *out = ((float *)ovoid)+ch*roi_out->width*j;
       for(int i=0; i<roi_out->width; i++)
       {
-        for(int c=0; c<3; c++) out[c] = in[c];
+        for(int c=0; c<4; c++) out[c] = in[c];
         out += ch;
         in += ch;
       }
@@ -452,7 +452,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           const float *in = ((float *)ivoid) + ch*(roi_in->width*jj+ii);
           dt_interpolation_compute_pixel4c(interpolation, in, out, po[0], po[1], ch_width);
         }
-        else for(int c=0; c<3; c++) out[c] = 0.0f;
+        else for(int c=0; c<4; c++) out[c] = 0.0f;
       }
     }
   }

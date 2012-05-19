@@ -141,6 +141,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       outp[1] = inp[1];
       outp[2] = inp[2];
     }
+
+    outp[3] = inp[3];
   }
 }
 

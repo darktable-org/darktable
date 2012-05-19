@@ -267,6 +267,22 @@ _blendop_blendif_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *mo
   dt_iop_request_focus(module);
 }
 
+static void
+_blendop_blendif_showmask_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *module)
+{
+  dt_develop_blend_params_t *bp = module->blend_params;
+
+  module->request_mask_display = gtk_toggle_button_get_active(togglebutton);
+  if(darktable.gui->reset) return;
+
+  if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
+  dt_iop_request_focus(module);
+
+  // hack! in order to force instant redraw we toggle an unused bit in blendif params
+  // TODO: need to find a better way to trigger redraw
+  bp->blendif ^= (1<<30);
+  dt_dev_add_history_item(darktable.develop, module, TRUE);
+}
 
 
 static gboolean
@@ -498,10 +514,12 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
     g_object_set(G_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
 
+    GtkWidget *sm = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT);
+    g_object_set(G_OBJECT(sm), "tooltip-text", _("display mask"), (char *)NULL);
 
     gtk_box_pack_start(GTK_BOX(notebook), GTK_WIDGET(bd->channel_tabs), FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(notebook), GTK_WIDGET(tb), FALSE, FALSE, 0);
-
+    gtk_box_pack_end(GTK_BOX(notebook), GTK_WIDGET(sm), FALSE, FALSE, 0);
 
     bd->lower_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
     bd->upper_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
@@ -573,6 +591,9 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
 
     g_signal_connect (G_OBJECT(tb), "toggled", 
                       G_CALLBACK (_blendop_blendif_pick_toggled), module);
+
+    g_signal_connect (G_OBJECT(sm), "toggled", 
+                      G_CALLBACK (_blendop_blendif_showmask_toggled), module);
 
 
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(notebook), TRUE, FALSE, 0);

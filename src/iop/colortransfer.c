@@ -389,6 +389,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           out[j+2] += weight[c] * ((Lab[2] - mean[c][1])*data->var[mapio[c]][1]/var[c][1] + data->mean[mapio[c]][1]);
         }
 #endif
+        out[j+3] = in[j+3];
         j+=ch;
       }
     }

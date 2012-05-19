@@ -109,6 +109,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
   float *out = (float *)ovoid;
   const int ch = piece->colors;
   const int ch_width = ch*roi_in->width;
+  const int mask_display = piece->pipe->mask_display;
 
   const unsigned int pixelformat = ch == 3 ? LF_CR_3 (RED, GREEN, BLUE) : LF_CR_4 (RED, GREEN, BLUE, UNKNOWN);
 
@@ -169,6 +170,19 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
               buf[c] = dt_interpolation_compute_sample(interpolation, inp, pi0, pi1, ch, ch_width);
             }
             else buf[c] = 0.0f;
+          }
+
+          if(mask_display)
+          {
+            float *pi = (float *)(((char *)d->tmpbuf2) + req2*dt_get_thread_num()) + 2; // take green channel distortion also for alpha channel
+            const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
+            const int ii = (int)pi0, jj = (int)pi1;
+            if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
+            {
+              const float *inp = in + ch*(roi_in->width*jj+ii) + 3;
+              buf[3] = dt_interpolation_compute_sample(interpolation, inp, pi0, pi1, ch, ch_width);
+            }
+            else buf[3] = 0.0f;
           }
         }
       }
@@ -261,6 +275,19 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
               out[c] = dt_interpolation_compute_sample(interpolation, inp, pi0, pi1, ch, ch_width);
             }
             else out[c] = 0.0f;
+          }
+
+          if(mask_display)
+          {
+            float *pi = (float *)(((char *)d->tmpbuf2) + req2*dt_get_thread_num()) + 2; // take green channel distortion also for alpha channel
+            const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
+            const int ii = (int)pi0, jj = (int)pi1;
+            if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
+            {
+              const float *inp = d->tmpbuf + ch*(roi_in->width*jj+ii) + 3;
+              out[3] = dt_interpolation_compute_sample(interpolation, inp, pi0, pi1, ch, ch_width);
+            }
+            else out[3] = 0.0f;
           }
           out += ch;
         }

@@ -236,7 +236,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
     // forward filter
-    for(int k=0; k<4; k++)
+    for(int k=0; k<3; k++)
     {
       xp[k] = CLAMPF(in[i*ch+k], Labmin[k], Labmax[k]);
       yb[k] = xp[k] * coefp;
@@ -261,7 +261,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
 
     // backward filter
-    for(int k=0; k<4; k++)
+    for(int k=0; k<3; k++)
     {
       xn[k] = CLAMPF(in[((roi_out->height - 1) * roi_out->width + i)*ch+k], Labmin[k], Labmax[k]);
       xa[k] = xn[k];
@@ -273,7 +273,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k<4; k++)
+      for(int k=0; k<3; k++)
       {      
         xc[k] = CLAMPF(in[offset+k], Labmin[k], Labmax[k]);
 
@@ -306,7 +306,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
     // forward filter
-    for(int k=0; k<4; k++)
+    for(int k=0; k<3; k++)
     {
       xp[k] = CLAMPF(temp[j*roi_out->width*ch+k], Labmin[k], Labmax[k]);
       yb[k] = xp[k] * coefp;
@@ -317,7 +317,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k<4; k++)
+      for(int k=0; k<3; k++)
       {
         xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
         yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
@@ -331,7 +331,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
 
     // backward filter
-    for(int k=0; k<4; k++)
+    for(int k=0; k<3; k++)
     {
       xn[k] = CLAMPF(temp[((j + 1)*roi_out->width - 1)*ch + k], Labmin[k], Labmax[k]);
       xa[k] = xn[k];
@@ -343,7 +343,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k<4; k++)
+      for(int k=0; k<3; k++)
       {      
         xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
 
@@ -369,7 +369,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     out[j+0] = 100.0f - out[j+0];
     out[j+1] = 0.0f;
     out[j+2] = 0.0f;
-    out[j+3] = 1.0f;
   }
 
   const float max[4] = {1.0f, 1.0f, 1.0f, 1.0f };
@@ -463,6 +462,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
     _Lab_rescale(ta, &out[j]);
   }
+
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 
   free(temp);
 }

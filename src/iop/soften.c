@@ -238,6 +238,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     out[index+0] = in[index+0]*(1-amount) + CLIP(out[index+0])*amount;
     out[index+1] = in[index+1]*(1-amount) + CLIP(out[index+1])*amount;
     out[index+2] = in[index+2]*(1-amount) + CLIP(out[index+2])*amount;
+    out[index+3] = in[index+3];
   }
 
   for(int i=0; i<3; ++i)

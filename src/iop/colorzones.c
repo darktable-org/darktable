@@ -163,6 +163,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     out[0] = L;
     out[1] = cosf(2.0*M_PI*(h + hm)) * Cm * C;
     out[2] = sinf(2.0*M_PI*(h + hm)) * Cm * C;
+    out[3] = in[3];
   }
 }
 
