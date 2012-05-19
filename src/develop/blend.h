@@ -103,6 +103,7 @@ typedef struct dt_blendop_t
   int kernel_blendop_Lab;
   int kernel_blendop_RAW;
   int kernel_blendop_rgb;
+  int kernel_blendop_copy_alpha;
 }
 dt_blendop_t;
 

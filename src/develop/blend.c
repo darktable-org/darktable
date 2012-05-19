@@ -1558,6 +1558,25 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(cl_mem), (void *)&dev_m);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
+
+  /* we transfer alpha channel of input if mask_display was set by an _earlier_ module */
+  if(piece->pipe->mask_display && cst != iop_cs_RAW)
+  {
+    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 0, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 1, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 2, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 4, sizeof(int), (void *)&height);
+    err = dt_opencl_enqueue_kernel_2d(devid, darktable.blendop->kernel_blendop_copy_alpha, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+
+  /* check if _this_ module should expose mask. */
+  if(self->request_mask_display && self->dev->gui_attached && self == self->dev->gui_module && piece->pipe == self->dev->pipe && (d->blendif & (1<<31)))
+  {
+    piece->pipe->mask_display = 1;
+  }
+
   dt_opencl_release_mem_object(dev_m);
   return TRUE;
 
@@ -1576,8 +1595,9 @@ void dt_develop_blend_init(dt_blendop_t *gd)
   gd->kernel_blendop_Lab = dt_opencl_create_kernel(program, "blendop_Lab");
   gd->kernel_blendop_RAW = dt_opencl_create_kernel(program, "blendop_RAW");
   gd->kernel_blendop_rgb = dt_opencl_create_kernel(program, "blendop_rgb");
+  gd->kernel_blendop_copy_alpha = dt_opencl_create_kernel(program, "blendop_copy_alpha");
 #else
-  gd->kernel_blendop_Lab = gd->kernel_blendop_RAW = gd->kernel_blendop_rgb = -1;
+  gd->kernel_blendop_Lab = gd->kernel_blendop_RAW = gd->kernel_blendop_rgb = gd->kernel_blendop_copy_alpha = -1;
 #endif
 }
 

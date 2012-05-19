@@ -82,6 +82,7 @@ typedef struct dt_iop_lowpass_global_data_t
   // int kernel_gaussian_row;
   int kernel_gaussian_transpose;
   int kernel_lowpass_mix;
+  int kernel_gaussian_copy_alpha;
 }
 dt_iop_lowpass_global_data_t;
 
@@ -341,6 +342,20 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   // copy final result from dev_temp2 -> dev_out
   err = dt_opencl_enqueue_copy_buffer_to_image(devid, dev_temp2, dev_out, 0, origin, region);
   if(err != CL_SUCCESS) goto error;
+
+  if(piece->pipe->mask_display)
+  {
+    sizes[0] = ROUNDUPWD(width);
+    sizes[1] = ROUNDUPWD(height);
+    sizes[2] = 1;
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 0, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 1, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 2, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 4, sizeof(int), (void *)&height);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_gaussian_copy_alpha, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
 
   if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
   if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
@@ -701,6 +716,7 @@ void init_global(dt_iop_module_so_t *module)
   //gd->kernel_gaussian_row = dt_opencl_create_kernel(program, "gaussian_row");
   gd->kernel_gaussian_transpose = dt_opencl_create_kernel(program, "gaussian_transpose");
   gd->kernel_lowpass_mix = dt_opencl_create_kernel(program, "lowpass_mix");
+  gd->kernel_gaussian_copy_alpha = dt_opencl_create_kernel(program, "gaussian_copy_alpha");
 }
 
 void init_presets (dt_iop_module_so_t *self)
@@ -730,6 +746,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   //dt_opencl_free_kernel(gd->kernel_gaussian_row);
   dt_opencl_free_kernel(gd->kernel_gaussian_transpose);
   dt_opencl_free_kernel(gd->kernel_lowpass_mix);
+  dt_opencl_free_kernel(gd->kernel_gaussian_copy_alpha);
   free(module->data);
   module->data = NULL;
 }

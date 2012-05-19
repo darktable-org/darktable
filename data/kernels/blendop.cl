@@ -453,6 +453,9 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
   /* scale L back to [0; 100] and a,b to [-128; 128] */
   o *= scale;
 
+  /* save opacity in alpha channel */
+  o.w = opacity;
+
   /* if module wants to blend only lightness, set a and b to values of input image (saved before scaling) */
   if (blendflag & BLEND_ONLY_LIGHTNESS)
   {
@@ -721,7 +724,25 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
       break;
   }
 
+  /* save opacity in alpha channel */
+  o.w = opacity;
+
   write_imagef(out, (int2)(x, y), o);
+}
+
+
+__kernel void
+blendop_copy_alpha (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in_a, sampleri, (int2)(x, y));
+  pixel.w = read_imagef(in_b, sampleri, (int2)(x, y)).w;
+
+  write_imagef(out, (int2)(x, y), pixel);
 }
 
 
