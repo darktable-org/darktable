@@ -1486,7 +1486,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
     }
 
     /* check if _this_ module should expose mask. */
-    if(self->request_mask_display && self->dev->gui_attached && piece->pipe == self->dev->pipe && (d->blendif & (1<<31)))
+    if(self->request_mask_display && self->dev->gui_attached && self == self->dev->gui_module && piece->pipe == self->dev->pipe && (d->blendif & (1<<31)))
     {
       piece->pipe->mask_display = 1;
     }
