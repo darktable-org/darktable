@@ -241,10 +241,10 @@ static dt_profiled_colormatrix_t dt_vendor_colormatrices[] =
   // Pascal de Bruijn, DIY ColorChecker, daylight, well lit
   { "Canon EOS 50D",                { 665588, 259155, -37750}, {  61172,  790497, -117310}, {237442,  -49667,  979965}, {946487, 1000000, 1082657}},
 
-  // Pascal de Bruijn, DIY ColorChecker, daylight, well lit
-  { "Canon EOS 400D DIGITAL",       { 582764, 267334,   -687}, { 190277,  756851,  -13443}, {191177,  -24185,  839035}, {970703, 1000000, 1091827}},
-  { "Canon EOS DIGITAL REBEL XTi",  { 582764, 267334,   -687}, { 190277,  756851,  -13443}, {191177,  -24185,  839035}, {970703, 1000000, 1091827}},
-  { "Canon EOS Kiss Digital X",     { 582764, 267334,   -687}, { 190277,  756851,  -13443}, {191177,  -24185,  839035}, {970703, 1000000, 1091827}},
+  // Pascal de Bruijn, ColorChecker Classic, daylight, well lit
+  { "Canon EOS 400D DIGITAL",       { 561768, 248581,  21408}, { 211548,  774429,  -57526}, {190887,  -22995,  861008}, {961594, 1000000, 1086395}},
+  { "Canon EOS DIGITAL REBEL XTi",  { 561768, 248581,  21408}, { 211548,  774429,  -57526}, {190887,  -22995,  861008}, {961594, 1000000, 1086395}},
+  { "Canon EOS Kiss Digital X",     { 561768, 248581,  21408}, { 211548,  774429,  -57526}, {190887,  -22995,  861008}, {961594, 1000000, 1086395}},
 
   // Pascal de Bruijn, ColorChecker Classic, daylight, well lit
   { "SAMSUNG NX100",                { 590607, 279297,  29831}, { 245789,  745789,  -84747}, {127808,  -25101,  879822}, {955185, 1000000, 1089981}},
