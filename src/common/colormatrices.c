@@ -257,3 +257,9 @@ static dt_profiled_colormatrix_t dt_vendor_colormatrices[] =
 
 static const int dt_vendor_colormatrix_cnt = sizeof(dt_vendor_colormatrices)/sizeof(dt_profiled_colormatrix_t);
 
+static dt_profiled_colormatrix_t dt_alternate_colormatrices[] =
+{
+};
+
+static const int dt_alternate_colormatrix_cnt = sizeof(dt_alternate_colormatrices)/sizeof(dt_profiled_colormatrix_t);
+
