@@ -565,6 +565,10 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   filename = gtk_file_chooser_get_preview_filename(file_chooser);
 
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) goto no_preview_fallback;
+  // don't create dng thumbnails to avoid crashes in libtiff when these are hdr:
+  char *c = filename + strlen(filename);
+  while(c > filename && *c != '.') c--;
+  if(!strcasecmp(c, ".dng")) goto no_preview_fallback;
 
   pixbuf = gdk_pixbuf_new_from_file_at_size(filename, 128, 128, NULL);
   have_preview = (pixbuf != NULL);
