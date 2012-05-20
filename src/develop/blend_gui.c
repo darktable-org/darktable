@@ -488,8 +488,8 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
 
     bd->blendif_box = GTK_VBOX(gtk_vbox_new(FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING));
     GtkWidget *vbox = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
-    GtkWidget *biftb = gtk_hbox_new(FALSE,5);
-    GtkWidget *bifnb = gtk_hbox_new(FALSE,10);
+    GtkWidget *biftb = gtk_hbox_new(FALSE,0);
+    GtkWidget *bifnb = gtk_hbox_new(FALSE,0);
     GtkWidget *dummybox1 = gtk_hbox_new(FALSE,0);
     GtkWidget *dummybox2 = gtk_hbox_new(FALSE,0);
     GtkWidget *uplabel = gtk_hbox_new(FALSE,0);
@@ -603,10 +603,10 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(bd->lower_slider), TRUE, FALSE, 0);
 
     gtk_box_pack_start(GTK_BOX(biftb), GTK_WIDGET(bd->blendif_enable), FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(dummybox1), biftb, TRUE, TRUE, 5);
+    gtk_box_pack_start(GTK_BOX(dummybox1), biftb, TRUE, TRUE, 0);
 
     gtk_box_pack_start(GTK_BOX(bifnb), GTK_WIDGET(vbox), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(dummybox2), bifnb, TRUE, TRUE, 10);
+    gtk_box_pack_start(GTK_BOX(dummybox2), bifnb, TRUE, TRUE, 0);
 
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), dummybox2,TRUE,TRUE,0);
 
