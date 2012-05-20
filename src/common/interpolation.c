@@ -26,6 +26,19 @@
 #include <glib.h>
 #include <assert.h>
 
+/** Border extrapolation modes */
+enum border_mode
+{
+  BORDER_REPLICATE, // aaaa|abcdefg|gggg
+  BORDER_WRAP,      // defg|abcdefg|abcd
+  BORDER_MIRROR,    // edcb|abcdefg|fedc
+  BORDER_CLAMP      // ....|abcdefg|....
+};
+
+/* Supporting them all might be overkill, let the compiler trim all
+ * unecessary modes in clip */
+#define RESAMPLING_BORDER_MODE BORDER_REPLICATE
+
 // Defines minimum alignment requirement for critical SIMD code
 #define SSE_ALIGNMENT 16
 
@@ -110,13 +123,41 @@ static inline int
 clip(
   int i,
   int min,
-  int max)
+  int max,
+  enum border_mode mode)
 {
-  if (i < min) {
-    i = min;
-  } else if (i > max) {
-    i = max;
+  switch (mode) {
+  case BORDER_REPLICATE:
+    if (i < min) {
+      i = min;
+    } else if (i > max) {
+      i = max;
+    }
+    break;
+  case BORDER_MIRROR:
+    if (i < min) {
+      i = min - i;
+    } else if (i > max) {
+      i = 2*max - i;
+    }
+    break;
+  case BORDER_WRAP:
+    if (i < min) {
+      i = max - (min - i);
+    } else if (i > max) {
+      i = min + (i - max);
+    }
+    break;
+  case BORDER_CLAMP:
+    if (i < min || i > max) {
+      /* Should not be used as is, we prevent -1 usage, filtering the taps
+       * we clip the sample indexes for. So understand this function is
+       * specific to its caller. */
+      i = -1;
+    }
+    break;
   }
+
   return i;
 }
 
@@ -425,15 +466,14 @@ static const struct dt_interpolation dt_interpolator[] =
  *
  * @param itor [in] Interpolator used
  * @param kernel [out] resulting itor->width*2 filter taps
+ * @param norm [out] Kernel norm
  * @param first [out] first input sample index used
- * @param t [in] Interpolated coordinate
- *
- * @return kernel norm
- */
-static inline float
+ * @param t [in] Interpolated coordinate */
+static inline void
 compute_upsampling_kernel(
   const struct dt_interpolation* itor,
   float* kernel,
+  float* norm,
   int* first,
   float t)
 {
@@ -447,32 +487,35 @@ compute_upsampling_kernel(
   t = t - (float)f;
 
   // Will hold kernel norm
-  float norm = 0.f;
+  float n = 0.f;
 
   // Compute the raw kernel
   for (int i=0; i<2*itor->width; i++) {
     float tap = itor->func((float)itor->width, t);
-    norm += tap;
+    n += tap;
     kernel[i] = tap;
     t -= 1.f;
   }
-
-  return norm;
+  if (norm) {
+    *norm = n;
+  }
 }
 
 /** Computes an upsampling filtering kernel (SSE version, four taps per inner loop)
  *
  * @param itor [in] Interpolator used
  * @param kernel [out] resulting itor->width*2 filter taps (array must be at least (itor->width*2+3)/4*4 floats long)
+ * @param norm [out] Kernel norm
  * @param first [out] first input sample index used
  * @param t [in] Interpolated coordinate
  *
  * @return kernel norm
  */
-static inline float
+static inline void
 compute_upsampling_kernel_sse(
   const struct dt_interpolation* itor,
   float* kernel,
+  float* norm,
   int* first,
   float t)
 {
@@ -509,16 +552,17 @@ compute_upsampling_kernel_sse(
   }
 
   // compute norm now
-  float norm = 0.f;
-  i = 0;
-  kernel -= 4*runs;
-  while (i<2*itor->width) {
-    norm += *kernel;
-    kernel++;
-    i++;
+  if (norm) {
+    float n = 0.f;
+    i = 0;
+    kernel -= 4*runs;
+    while (i<2*itor->width) {
+      n += *kernel;
+      kernel++;
+      i++;
+    }
+    *norm = n;
   }
-
-  return norm;
 }
 
 /** Computes a downsampling filtering kernel
@@ -526,18 +570,17 @@ compute_upsampling_kernel_sse(
  * @param itor [in] Interpolator used
  * @param kernelsize [out] Number of taps
  * @param kernel [out] resulting taps (at least itor->width/inoout elements for no overflow)
+ * @param norm [out] Kernel norm
  * @param first [out] index of the first sample for which the kernel is to be applied
  * @param outoinratio [in] "out samples" over "in samples" ratio
- * @param xout [in] Output coordinate
- *
- * @return kernel norm
- */
-static inline float
+ * @param xout [in] Output coordinate */
+static inline void
 compute_downsampling_kernel(
   const struct dt_interpolation* itor,
   int* taps,
   int* first,
   float* kernel,
+  float* norm,
   float outoinratio,
   int xout)
 {
@@ -555,18 +598,20 @@ compute_downsampling_kernel(
   float t = xin*outoinratio - (float)xout;
 
   // Will hold kernel norm
-  float norm = 0.f;
+  float n = 0.f;
 
   // Compute all filter taps
   *taps = (int)((w-t)/outoinratio);
   for (int i=0; i<*taps; i++) {
     *kernel = itor->func(w, t);
-    norm += *kernel;
+    n += *kernel;
     t += outoinratio;
     kernel++;
   }
 
-  return norm;
+  if (norm) {
+    *norm = n;
+  }
 }
 
 
@@ -575,18 +620,17 @@ compute_downsampling_kernel(
  * @param itor [in] Interpolator used
  * @param kernelsize [out] Number of taps
  * @param kernel [out] resulting taps (at least itor->width/inoout + 4 elements for no overflow)
+ * @param norm [out] Kernel norm
  * @param first [out] index of the first sample for which the kernel is to be applied
  * @param outoinratio [in] "out samples" over "in samples" ratio
- * @param xout [in] Output coordinate
- *
- * @return kernel norm
- */
-static inline float
+ * @param xout [in] Output coordinate */
+static inline void
 compute_downsampling_kernel_sse(
   const struct dt_interpolation* itor,
   int* taps,
   int* first,
   float* kernel,
+  float* norm,
   float outoinratio,
   int xout)
 {
@@ -630,16 +674,17 @@ compute_downsampling_kernel_sse(
   }
 
   // compute norm now
-  float norm = 0.f;
-  i = 0;
-  kernel -= 4*runs;
-  while (i<*taps) {
-    norm += *kernel;
-    kernel++;
-    i++;
+  if (norm) {
+    float n = 0.f;
+    i = 0;
+    kernel -= 4*runs;
+    while (i<*taps) {
+      n += *kernel;
+      kernel++;
+      i++;
+    }
+    *norm = n;
   }
-
-  return norm;
 }
 
 /* --------------------------------------------------------------------------
@@ -659,8 +704,10 @@ dt_interpolation_compute_sample(
   float kernelv[8] __attribute__((aligned(SSE_ALIGNMENT)));
 
   // Compute both horizontal and vertical kernels
-  float normh = compute_upsampling_kernel_sse(itor, kernelh, NULL, x);
-  float normv = compute_upsampling_kernel_sse(itor, kernelv, NULL, y);
+  float normh;
+  float normv;
+  compute_upsampling_kernel_sse(itor, kernelh, &normh, NULL, x);
+  compute_upsampling_kernel_sse(itor, kernelv, &normv, NULL, y);
 
   // Go to top left pixel
   in = in - (itor->width-1)*(samplestride + linestride);
@@ -701,8 +748,10 @@ dt_interpolation_compute_pixel4c(
   __m128 vkernelv[2*MAX_HALF_FILTER_WIDTH];
 
   // Compute both horizontal and vertical kernels
-  float normh = compute_upsampling_kernel_sse(itor, kernelh, NULL, x);
-  float normv = compute_upsampling_kernel_sse(itor, kernelv, NULL, y);
+  float normh;
+  float normv;
+  compute_upsampling_kernel_sse(itor, kernelh, &normh, NULL, x);
+  compute_upsampling_kernel_sse(itor, kernelv, &normv, NULL, y);
 
   // We will process four components a time, duplicate the information
   for (int i=0; i<2*itor->width; i++) {
@@ -840,34 +889,24 @@ prepare_resampling_plan(
   }
 
   // Compute common upsampling/downsampling memory requirements
-  int nlengths = out;
-  size_t lengthreq = increase_for_alignment(nlengths*sizeof(int), SSE_ALIGNMENT);
-
-  // Left these as they depend on sampling case
-  int nkernel;
-  int nindex;
-  size_t kernelreq = 0;
-  size_t indexreq = 0;
-  size_t scratchreq = 0;
-  size_t metareq = pmeta ? 3*sizeof(int)*out : 0;
-
+  int maxtapsapixel;
   if (scale > 1.f) {
     // Upscale... the easy one. The values are exact
-    nindex = 2*itor->width*out;
-    nkernel = 2*itor->width*out;
-    indexreq = increase_for_alignment(nindex*sizeof(int), SSE_ALIGNMENT);
-    kernelreq = increase_for_alignment(nkernel*sizeof(float), SSE_ALIGNMENT) + 4*sizeof(float);
-    // NB: because sse versions compute four taps a time
+    maxtapsapixel = 2*itor->width;
   } else {
     // Downscale... going for worst case values memory wise
-    int tapsapixel = ceil_fast((float)2*(float)itor->width/scale);
-    nindex = out*tapsapixel;
-    nkernel = out*tapsapixel;
-    indexreq = increase_for_alignment(nindex*sizeof(int), SSE_ALIGNMENT);
-    kernelreq = increase_for_alignment(nkernel*sizeof(float), SSE_ALIGNMENT);
-    scratchreq = tapsapixel*sizeof(float) + 4*sizeof(float);
-    // NB: because sse versions compute four taps a time
+    maxtapsapixel = ceil_fast((float)2*(float)itor->width/scale);
   }
+
+  int nlengths = out;
+  int nindex = maxtapsapixel*out;
+  int nkernel = maxtapsapixel*out;
+  size_t lengthreq = increase_for_alignment(nlengths*sizeof(int), SSE_ALIGNMENT);
+  size_t indexreq = increase_for_alignment(nindex*sizeof(int), SSE_ALIGNMENT);
+  size_t kernelreq = increase_for_alignment(nkernel*sizeof(float), SSE_ALIGNMENT);
+  size_t scratchreq = maxtapsapixel*sizeof(float) + 4*sizeof(float);
+  // NB: because sse versions compute four taps a time
+  size_t metareq = pmeta ? 3*sizeof(int)*out : 0;
 
   void *blob = NULL;
   size_t totalreq = kernelreq + lengthreq + indexreq + scratchreq + metareq;
@@ -886,6 +925,14 @@ prepare_resampling_plan(
   blob = (char*)blob + scratchreq;
   int* meta = metareq ? (int*)blob : NULL;
   blob = (char*)blob + metareq;
+
+  /* setting this as a const should help the compilers trim all unecessary
+   * codepaths */
+  const enum border_mode bordermode = RESAMPLING_BORDER_MODE;
+
+  /* Upscale and downscale differ in subtle points, getting rid of code
+   * duplication might have been tricky and i prefer keeping the code
+   * as straight as possible */
   if (scale > 1.f) {
     int kidx = 0;
     int iidx = 0;
@@ -897,27 +944,45 @@ prepare_resampling_plan(
         meta[midx++] = kidx;
         meta[midx++] = iidx;
       }
-      // For upsampling the number of taps is always the width of the filter
-      lengths[lidx] = 2*itor->width;
-      lidx++;
 
       // Projected position in input samples
       float fx = (float)(out_x0 + x)*scale;
 
       // Compute the filter kernel at that position
       int first;
-      float norm = compute_upsampling_kernel_sse(itor, &kernel[kidx], &first, fx);
+      compute_upsampling_kernel_sse(itor, scratchpad, NULL, &first, fx);
+
+      /* Check lower bound pixel index and skip as many pixels as necessary to
+       * fall into range */
+      int tap_first = 0;
+      if (bordermode == BORDER_CLAMP && first < 0) {
+        tap_first = -first;
+      }
+
+      // Same for upper bound pixel
+      int tap_last = 2*itor->width;
+      if (bordermode == BORDER_CLAMP && first + 2*itor->width >= in) {
+        tap_last = in - first;
+      }
+
+      // Track number of taps that will be used
+      lengths[lidx++] = tap_last - tap_first;
 
       // Precompute the inverse of the norm
+      float norm = 0.f;
+      for (int tap=tap_first; tap<tap_last; tap++) {
+        norm += scratchpad[tap];
+      }
       norm = 1.f/norm;
 
       /* Unlike single pixel or single sample code, here it's interesting to
        * precompute the normalized filter kernel as this will avoid dividing
        * by the norm for all processed samples/pixels
        * NB: use the same loop to put in place the index list */
-      for (int tap=0; tap<2*itor->width; tap++) {
-        kernel[kidx++] *= norm;
-        index[iidx++] = clip(first++, 0, in-1);
+      first += tap_first;
+      for (int tap=tap_first; tap<tap_last; tap++) {
+        kernel[kidx++] = scratchpad[tap]*norm;
+        index[iidx++] = clip(first++, 0, in-1, bordermode);
       }
     }
   } else {
@@ -935,22 +1000,39 @@ prepare_resampling_plan(
       // Compute downsampling kernel centered on output position
       int taps;
       int first;
-      float norm = compute_downsampling_kernel_sse(itor, &taps, &first, scratchpad, scale, out_x0 + x);
+      compute_downsampling_kernel_sse(itor, &taps, &first, scratchpad, NULL, scale, out_x0 + x);
 
-      // Copy to final destination
-      memcpy(&kernel[kidx], scratchpad, taps*sizeof(float));
+      /* Check lower bound pixel index and skip as many pixels as necessary to
+       * fall into range */
+      int tap_first = 0;
+      if (bordermode == BORDER_CLAMP && first < 0) {
+        tap_first = -first;
+      }
 
-      // Now we know how many samples will be used for this output pixel
-      lengths[lidx] = taps;
-      lidx++;
+      // Same for upper bound pixel
+      int tap_last = taps;
+      if (bordermode == BORDER_CLAMP && first + taps >= in) {
+        tap_last = in - first;
+      }
 
-      // Precompute inverse of the norm
+      // Track number of taps that will be used
+      lengths[lidx++] = tap_last - tap_first;
+
+      // Precompute the inverse of the norm
+      float norm = 0.f;
+      for (int tap=tap_first; tap<tap_last; tap++) {
+        norm += scratchpad[tap];
+      }
       norm = 1.f/norm;
 
-      // Precomputed normalized filter kernel and index list
-      for (int tap=0; tap<taps; tap++) {
-        kernel[kidx++] *= norm;
-        index[iidx++] = clip(first++, 0, in-1);
+      /* Unlike single pixel or single sample code, here it's interesting to
+       * precompute the normalized filter kernel as this will avoid dividing
+       * by the norm for all processed samples/pixels
+       * NB: use the same loop to put in place the index list */
+      first += tap_first;
+      for (int tap=tap_first; tap<tap_last; tap++) {
+        kernel[kidx++] = scratchpad[tap]*norm;
+        index[iidx++] = clip(first++, 0, in-1, bordermode);
       }
     }
   }
