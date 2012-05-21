@@ -789,7 +789,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->x_move = -1;
   c->mouse_radius = 1.0/DT_IOP_LOWLIGHT_BANDS;
 
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_drawing_area_size(c->area, 195, 195);
