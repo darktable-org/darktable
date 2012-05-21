@@ -765,7 +765,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
       dt_bauhaus_slider_set(bd->opacity_slider, module->blend_params->opacity);
       if(bd->blendif_support)
       {
-        gtk_toggle_button_set_active(bd->blendif_enable, module->blend_params->blendif & (1<<31));
+        dt_bauhaus_combobox_set(bd->blendif_enable, module->blend_params->blendif & (1<<31));
         dt_iop_gui_update_blendif(module);
       }
     }
@@ -960,7 +960,7 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
           gtk_widget_hide(GTK_WIDGET(bd->blendif_enable));
         }
       }
-      else if(bd->blendif_support && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bd->blendif_enable)) == FALSE)
+      else if(bd->blendif_support && (dt_bauhaus_combobox_get(bd->blendif_enable) == 0))
       {
         gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
       }
