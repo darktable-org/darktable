@@ -354,8 +354,8 @@ gchar *dt_tag_get_hierarchical(gint imgid, const gchar *separator)
     t = g_list_nth_data (taglist, i);
     value = g_strdup(t->tag);
 
-    /* Only return hierarchical tags */
-    if (g_strrstr(value, "|") && !g_str_has_prefix(value, "darktable|"))
+    /* return all tags, but omit the internal darktable ones: */
+    if (!g_str_has_prefix(value, "darktable|"))
       tags = g_list_prepend(tags, value);
 
     g_free (t);
