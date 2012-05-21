@@ -144,8 +144,8 @@ _blendop_mode_callback (GtkWidget *combo, dt_iop_gui_blend_data_t *data)
     gtk_widget_show(data->opacity_slider);
     if(data->blendif_support)
     {
-      gtk_widget_show(GTK_WIDGET(data->blendif_enable));
-      if(gtk_toggle_button_get_active(data->blendif_enable))
+      gtk_widget_show(data->blendif_enable);
+      if(dt_bauhaus_combobox_get(data->blendif_enable))
         gtk_widget_show(GTK_WIDGET(data->blendif_box));
     }
   }
@@ -169,9 +169,9 @@ _blendop_opacity_callback (GtkWidget *slider, dt_iop_gui_blend_data_t *data)
 }
 
 static void
-_blendop_blendif_callback(GtkToggleButton *b, dt_iop_gui_blend_data_t *data)
+_blendop_blendif_callback(GtkWidget *b, dt_iop_gui_blend_data_t *data)
 {
-  if(gtk_toggle_button_get_active(b))
+  if(dt_bauhaus_combobox_get(b))
   {
     data->module->blend_params->blendif |= (1<<31);
     gtk_widget_show(GTK_WIDGET(data->blendif_box));
@@ -471,17 +471,14 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
 
 
     bd->blendif_box = GTK_VBOX(gtk_vbox_new(FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING));
-    GtkWidget *vbox = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
-    GtkWidget *biftb = gtk_hbox_new(FALSE,5);
-    GtkWidget *bifnb = gtk_hbox_new(FALSE,10);
-    GtkWidget *dummybox1 = gtk_hbox_new(FALSE,0);
-    GtkWidget *dummybox2 = gtk_hbox_new(FALSE,0);
     GtkWidget *uplabel = gtk_hbox_new(FALSE,0);
     GtkWidget *lowlabel = gtk_hbox_new(FALSE,0);
     GtkWidget *notebook = gtk_hbox_new(FALSE,0);
 
-    bd->blendif_enable = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("blend if ...")));
-    gtk_toggle_button_set_active(bd->blendif_enable, 0);
+    bd->blendif_enable = dt_bauhaus_combobox_new(module);
+    dt_bauhaus_widget_set_label(bd->blendif_enable, _("blend"));
+    dt_bauhaus_combobox_add(bd->blendif_enable, _("uniformly"));
+    dt_bauhaus_combobox_add(bd->blendif_enable, _("only, if.."));
 
     bd->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
@@ -559,7 +556,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     g_signal_connect (G_OBJECT (bd->upper_slider), "expose-event",
                       G_CALLBACK (_blendop_blendif_expose), module);
 
-    g_signal_connect (G_OBJECT (bd->blendif_enable), "toggled",
+    g_signal_connect (G_OBJECT (bd->blendif_enable), "value-changed",
                       G_CALLBACK (_blendop_blendif_callback), bd);
 
     g_signal_connect(G_OBJECT (bd->channel_tabs), "switch_page",
@@ -575,22 +572,14 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
                       G_CALLBACK (_blendop_blendif_pick_toggled), module);
 
 
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(notebook), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(uplabel), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(bd->upper_slider), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(lowlabel), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(bd->lower_slider), TRUE, FALSE, 0);
-
-    gtk_box_pack_start(GTK_BOX(biftb), GTK_WIDGET(bd->blendif_enable), FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(dummybox1), biftb, TRUE, TRUE, 5);
-
-    gtk_box_pack_start(GTK_BOX(bifnb), GTK_WIDGET(vbox), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(dummybox2), bifnb, TRUE, TRUE, 10);
-
-    gtk_box_pack_start(GTK_BOX(bd->blendif_box), dummybox2,TRUE,TRUE,0);
+    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(notebook), TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(uplabel), TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(bd->upper_slider), TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(lowlabel), TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(bd->lower_slider), TRUE, FALSE, 0);
 
     gtk_box_pack_end(GTK_BOX(blendw), GTK_WIDGET(bd->blendif_box),TRUE,TRUE,0);
-    gtk_box_pack_end(GTK_BOX(blendw), dummybox1,TRUE,TRUE,0);
+    gtk_box_pack_end(GTK_BOX(blendw), GTK_WIDGET(bd->blendif_enable),TRUE,TRUE,0);
   }
 }
 
