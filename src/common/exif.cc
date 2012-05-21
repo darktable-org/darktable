@@ -633,14 +633,10 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
     strncpy(tagbuf, tag2, 1024);
     int tagid = -1;
     char *tag = tagbuf;
-    char *next_tag = strstr(tag, ",");
-    if(next_tag)
-    {
-      next_tag[0] = 0;
-      next_tag++;
-    }
     while(tag)
     {
+      char *next_tag = strstr(tag, ",");
+      if(next_tag) *(next_tag++) = 0;
       // check if tag is available, get its id:
       for (int k=0; k<2; k++)
       {
@@ -686,12 +682,6 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
       sqlite3_clear_bindings(stmt_upd_tagxtag2);
 
       tag = next_tag;
-      if(tag) next_tag = strstr(tag, ",");
-      if(next_tag)
-      {
-        next_tag[0] = 0;
-        next_tag++;
-      }
     }
   }
   sqlite3_finalize(stmt_sel_id);
@@ -845,8 +835,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     
     if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"))) != xmpData.end() )
       _exif_import_tags(img,pos);
-
-    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.subject"))) != xmpData.end() )
+    else if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.subject"))) != xmpData.end() )
       _exif_import_tags(img,pos);
 
     if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.colorlabels"))) != xmpData.end() )
@@ -1017,12 +1006,24 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   gchar *hierarchical = NULL;
 
   tags = dt_tag_get_list(imgid, ",");
-  if(tags)
-    v1->read((char *)tags);
+  char *beg = tags;
+  while(beg)
+  {
+    char *next = strstr(beg, ",");
+    if(next) *(next++) = 0;
+    v1->read(beg);
+    beg = next;
+  }
 
   hierarchical = dt_tag_get_hierarchical(imgid, ",");
-  if(hierarchical)
-    v2->read((char *)hierarchical);
+  beg = hierarchical;
+  while(beg)
+  {
+    char *next = strstr(beg, ",");
+    if(next) *(next++) = 0;
+    v2->read(beg);
+    beg = next;
+  }
 
   xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v1.get());
   xmpData.add(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"), v2.get());
