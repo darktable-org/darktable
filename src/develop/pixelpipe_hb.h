@@ -89,6 +89,8 @@ typedef struct dt_dev_pixelpipe_t
   float *input;
   // width and height of input buffer
   int iwidth, iheight;
+  // is image flipped?
+  int iflipped;
   // input actually just downscaled buffer? iscale*iwidth = actual width
   float iscale;
   // dimensions of processed buffer
@@ -113,6 +115,10 @@ typedef struct dt_dev_pixelpipe_t
   int opencl_enabled;
   // opencl error detected?
   int opencl_error;
+  // running in a tiling context?
+  int tiling;
+  // should this pixelpipe display a mask in the end?
+  int mask_display;
   // input data based on this timestamp:
   int input_timestamp;
   dt_dev_pixelpipe_type_t type;

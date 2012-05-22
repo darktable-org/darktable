@@ -126,6 +126,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       out[0] = color_filter(in[0], in[1], in[2], d->a, d->b, d->size);
       out[1] = out[2] = 0.0f;
+      out[3] = in[3];
     }
   }
 }

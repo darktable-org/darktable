@@ -47,7 +47,7 @@ graduatedndp (read_only image2d_t in, write_only image2d_t out, const int width,
   dens *= dens;
   dens *= dens;
 
-  pixel = fmax((float4)0.0f, pixel / (color + ((float4)1.0f - color) * (float4)dens));
+  pixel.xyz = fmax((float4)0.0f, pixel / (color + ((float4)1.0f - color) * (float4)dens)).xyz;
       
   write_imagef (out, (int2)(x, y), pixel); 
 }
@@ -75,7 +75,7 @@ graduatedndm (read_only image2d_t in, write_only image2d_t out, const int width,
   dens *= dens;
   dens *= dens;
 
-  pixel = fmax((float4)0.0f, pixel * (color + ((float4)1.0f - color) * (float4)dens));
+  pixel.xyz = fmax((float4)0.0f, pixel * (color + ((float4)1.0f - color) * (float4)dens)).xyz;
       
   write_imagef (out, (int2)(x, y), pixel); 
 }
@@ -314,7 +314,7 @@ colorcontrast (read_only image2d_t in, write_only image2d_t out, const int width
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  pixel = clamp(pixel * scale + offset, Labmin, Labmax);
+  pixel.xyz = clamp(pixel * scale + offset, Labmin, Labmax).xyz;
 
   write_imagef (out, (int2)(x, y), pixel); 
 }
@@ -412,8 +412,151 @@ splittoning (read_only image2d_t in, write_only image2d_t out, const int width, 
 
     float4 mixrgb = HSL_2_RGB(hsl);
 
-    pixel = clamp(pixel * (1.0f - ra) + mixrgb * ra, (float4)0.0f, (float4)1.0f);
+    pixel.xyz = clamp(pixel * (1.0f - ra) + mixrgb * ra, (float4)0.0f, (float4)1.0f).xyz;
   }
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+/* kernels to get the maximum value of an image */
+kernel void
+pixelmax_first (read_only image2d_t in, const int width, const int height, global float *accu, local float *buffer)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int xlsz = get_local_size(0);
+  const int ylsz = get_local_size(1);
+  const int xlid = get_local_id(0);
+  const int ylid = get_local_id(1);
+
+  const int l = ylid * xlsz + xlid;
+
+  buffer[l] = (x < width && y < height) ? read_imagef(in, sampleri, (int2)(x, y)).x : -INFINITY;
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  const int lsz = xlsz * ylsz;
+
+  for(int offset = lsz / 2; offset > 0; offset = offset / 2)
+  {
+    if (l < offset)
+    {
+      float other = buffer[l + offset];
+      float mine =  buffer[l];
+      buffer[l] = (mine > other) ? mine : other;
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+  }
+
+  const int xgid = get_group_id(0);
+  const int ygid = get_group_id(1);
+  const int xgsz = get_num_groups(0);
+  const int ygsz = get_num_groups(1);  
+
+  const int m = ygid * xgsz + xgid;
+  accu[m] = buffer[0];
+}
+
+
+
+__kernel void 
+pixelmax_second(global float* input, global float *result, const int length, local float *buffer)
+{
+  int x = get_global_id(0);
+  float accu = -INFINITY;
+
+  while (x < length)
+  {
+    float element = input[x];
+    accu = (accu > element) ? accu : element;
+    x += get_global_size(0);
+  }
+  
+  int lid = get_local_id(0);
+  buffer[lid] = accu;
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  for(int offset = get_local_size(0) / 2; offset > 0; offset = offset / 2)
+  {
+    if (lid < offset)
+    {
+      float other = buffer[lid + offset];
+      float mine = buffer[lid];
+      buffer[lid] = (mine > other) ? mine : other;
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+  }
+
+  if (lid == 0)
+  {
+    result[get_group_id(0)] = buffer[0];
+  }
+}
+
+
+/* kernel for the global tonemap plugin: reinhard */
+kernel void
+global_tonemap_reinhard (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+            const float4 parameters)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  float l = pixel.x * 0.01f;
+
+  pixel.x = 100.0f * (l/(1.0f + l));
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+
+
+/* kernel for the global tonemap plugin: drago */
+kernel void
+global_tonemap_drago (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+            const float4 parameters)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float eps = parameters.x;
+  const float ldc = parameters.y; 
+  const float bl = parameters.z;
+  const float lwmax = parameters.w;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  float lw = pixel.x * 0.01f;
+
+  pixel.x = 100.0f * (ldc * log(fmax(eps, lw + 1.0f)) / log(fmax(eps, 2.0f + (pow(lw/lwmax,bl)) * 8.0f)));
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+
+/* kernel for the global tonemap plugin: filmic */
+kernel void
+global_tonemap_filmic (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+            const float4 parameters)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  float l = pixel.x * 0.01f;
+  float m = fmax(0.0f, l - 0.004f);
+
+  pixel.x = 100.0f * ((m*(6.2f*m+.5f))/(m*(6.2f*m+1.7f)+0.06f));
 
   write_imagef (out, (int2)(x, y), pixel);
 }

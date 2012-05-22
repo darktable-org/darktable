@@ -372,6 +372,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     out[index] = out[index]*0.5 + in[index]*0.5;
     out[index] = LCLIP(50.0f+((out[index]-50.0f)*contrast_scale));
     out[index+1] = out[index+2] = 0.0f;		// desaturate a and b in Lab space
+    out[index+3] = in[index+3];
   }
 }
 

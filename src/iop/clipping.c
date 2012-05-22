@@ -45,9 +45,6 @@
 #include <gdk/gdkkeysyms.h>
 #include <assert.h>
 
-#define BLOCKSIZE  2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
-#define ZBLOCKSIZE 64
-
 DT_MODULE(3)
 
 // number of gui ratios in combo box
@@ -142,7 +139,6 @@ dt_iop_clipping_data_t;
 
 typedef struct dt_iop_clipping_global_data_t
 {
-  int kernel_clip_rotate_prep;
   int kernel_clip_rotate_bilinear;
   int kernel_clip_rotate_bicubic;
   int kernel_clip_rotate_lanczos2;
@@ -357,8 +353,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
   // adjust roi_in to minimally needed region
   // +/-1 stands for imprecision in transform
-  enum dt_interpolation itype = dt_interpolation_get_type();
-  const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
+  const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   roi_in->x      = aabb_in[0] - interpolation->width - 1;
   roi_in->y      = aabb_in[1] - interpolation->width - 1;
   roi_in->width  = aabb_in[2]-aabb_in[0]+2*(interpolation->width+1);
@@ -374,10 +369,12 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   }
 
   // sanity check.
-  roi_in->x = CLAMP(roi_in->x, 0, piece->iwidth);
-  roi_in->y = CLAMP(roi_in->y, 0, piece->iheight);
-  roi_in->width = CLAMP(roi_in->width, 1, piece->iwidth - roi_in->x);
-  roi_in->height = CLAMP(roi_in->height, 1, piece->iheight - roi_in->y);
+  const int scwidth = (piece->pipe->iflipped ? piece->pipe->iheight : piece->pipe->iwidth)*so;
+  const int scheight = (piece->pipe->iflipped ? piece->pipe->iwidth : piece->pipe->iheight)*so;
+  roi_in->x = CLAMP(roi_in->x, 0, scwidth);
+  roi_in->y = CLAMP(roi_in->y, 0, scheight);
+  roi_in->width = CLAMP(roi_in->width, 1, scwidth - roi_in->x);
+  roi_in->height = CLAMP(roi_in->height, 1, scheight - roi_in->y);
 }
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above),
@@ -388,6 +385,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   const int ch = piece->colors;
   const int ch_width = ch*roi_in->width;
+
+  assert(ch == 4);
 
   // only crop, no rot fast and sharp path:
   if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
@@ -401,7 +400,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float *out = ((float *)ovoid)+ch*roi_out->width*j;
       for(int i=0; i<roi_out->width; i++)
       {
-        for(int c=0; c<3; c++) out[c] = in[c];
+        for(int c=0; c<4; c++) out[c] = in[c];
         out += ch;
         in += ch;
       }
@@ -409,11 +408,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   else
   {
-    enum dt_interpolation itype = dt_interpolation_get_type();
-    const struct dt_interpolation_desc* interpolation = &dt_interpolator[itype];
+    const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
 #ifdef _OPENMP
-    #pragma omp parallel for schedule(static) default(none) shared(d,ivoid,ovoid,roi_in,roi_out,itype,interpolation)
+    #pragma omp parallel for schedule(static) default(none) shared(d,ivoid,ovoid,roi_in,roi_out,interpolation)
 #endif
     // (slow) point-by-point transformation.
     // TODO: optimize with scanlines and linear steps between?
@@ -452,10 +450,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
         {
           const float *in = ((float *)ivoid) + ch*(roi_in->width*jj+ii);
-          for(int c=0; c<3; c++,in++)
-            out[c] = dt_interpolation_compute(in, po[0], po[1], itype, ch, ch_width);
+          dt_interpolation_compute_pixel4c(interpolation, in, out, po[0], po[1], ch_width);
         }
-        else for(int c=0; c<3; c++) out[c] = 0.0f;
+        else for(int c=0; c<4; c++) out[c] = 0.0f;
       }
     }
   }
@@ -487,90 +484,27 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   }
   else
   {
-    int blocksize = BLOCKSIZE;
-    int zblocksize = ZBLOCKSIZE;
-    int xblocksize = 1;
-    int yblocksize = 1;
-    int buf = 36;
     int crkernel = -1;
 
-    enum dt_interpolation itype = dt_interpolation_get_type();
+    const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
-    switch(itype)
+    switch(interpolation->id)
     {
       case DT_INTERPOLATION_BILINEAR:
-        zblocksize = 1;
-        buf = 0;
         crkernel = gd->kernel_clip_rotate_bilinear;
         break;
       case DT_INTERPOLATION_BICUBIC:
-        zblocksize = 16;
-        buf = 16;
         crkernel = gd->kernel_clip_rotate_bicubic;
         break;
       case DT_INTERPOLATION_LANCZOS2:
-        zblocksize = 16;
-        buf = 16;
         crkernel = gd->kernel_clip_rotate_lanczos2;
         break;
       case DT_INTERPOLATION_LANCZOS3:
-        zblocksize = 64;
-        buf = 36;
         crkernel = gd->kernel_clip_rotate_lanczos3;
         break;
       default:
         return FALSE;
     }
-
-    // prepare local work group
-    size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
-    size_t workgroupsize = 0;          // the maximum number of items in a work group
-    unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
-    size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
-  
-    // make sure blocksize etc. is not too large
-    if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-       dt_opencl_get_kernel_work_group_size(devid, crkernel, &kernelworkgroupsize) == CL_SUCCESS)
-    {
-      // reduce blocksizes step by step until it fits to limits
-      while(zblocksize > maxsizes[2])
-      {
-        if(zblocksize == 1) break;
-        zblocksize >>= 1;
-      }
-
-      while(blocksize > kernelworkgroupsize || blocksize > workgroupsize || (blocksize/zblocksize)*(buf*4*sizeof(float)) > localmemsize)
-      {
-        if(blocksize == 1) break;
-        blocksize >>= 1;    
-      }
-
-      xblocksize = blocksize / zblocksize;
-      while(xblocksize > maxsizes[0])
-      {
-        if(xblocksize == 1) break;
-        xblocksize >>= 1;
-      }
-
-      yblocksize = blocksize / (xblocksize * zblocksize);
-      while(yblocksize > maxsizes[1])
-      {
-        if(yblocksize == 1) break;
-        yblocksize >>= 1;
-      }
-
-    }
-    else
-    {
-      blocksize = 1;   // slow but safe
-      xblocksize = 1;
-      yblocksize = 1;
-      zblocksize = 1;
-    }
-
-    // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
-    const size_t bwidth = width % xblocksize == 0 ? width : (width / xblocksize + 1)*xblocksize;
-    const size_t bheight = height % yblocksize == 0 ? height : (height / yblocksize + 1)*yblocksize;
 
     int roi[2]  = { roi_in->x, roi_in->y };
     int roo[2]  = { roi_out->x, roi_out->y };
@@ -580,44 +514,26 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     float m[4]  = { d->m[0], d->m[1], d->m[2], d->m[3] };
 
     size_t sizes[3];
-    size_t local[3];
 
     sizes[0] = ROUNDUPWD(width);
     sizes[1] = ROUNDUPHT(height);
     sizes[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 0, sizeof(cl_mem), &dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 1, sizeof(cl_mem), &dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 2, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 3, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 4, sizeof(int), &roi_in->width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 5, sizeof(int), &roi_in->height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 6, 2*sizeof(int), &roi);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 7, 2*sizeof(int), &roo);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 8, sizeof(float), &roi_in->scale);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 9, sizeof(float), &roi_out->scale);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 10, sizeof(int), &d->flip);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 11, 2*sizeof(float), &ci);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 12, 2*sizeof(float), &t);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 13, 2*sizeof(float), &k);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_clip_rotate_prep, 14, 4*sizeof(float), &m);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_clip_rotate_prep, sizes);
-    if(err != CL_SUCCESS) goto error;
-
-    sizes[0] = bwidth;
-    sizes[1] = bheight;
-    sizes[2] = zblocksize;
-    local[0] = xblocksize;
-    local[1] = yblocksize;
-    local[2] = zblocksize;
     dt_opencl_set_kernel_arg(devid, crkernel, 0, sizeof(cl_mem), &dev_in);
     dt_opencl_set_kernel_arg(devid, crkernel, 1, sizeof(cl_mem), &dev_out);
-    dt_opencl_set_kernel_arg(devid, crkernel, 2, sizeof(cl_mem), &dev_out);
-    dt_opencl_set_kernel_arg(devid, crkernel, 3, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, crkernel, 4, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, crkernel, 5, sizeof(int), &roi_in->width);
-    dt_opencl_set_kernel_arg(devid, crkernel, 6, sizeof(int), &roi_in->height);
-    dt_opencl_set_kernel_arg(devid, crkernel, 7, xblocksize*yblocksize*buf*4*sizeof(float), NULL);
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, crkernel, sizes, local);
+    dt_opencl_set_kernel_arg(devid, crkernel, 2, sizeof(int), &width);
+    dt_opencl_set_kernel_arg(devid, crkernel, 3, sizeof(int), &height);
+    dt_opencl_set_kernel_arg(devid, crkernel, 4, sizeof(int), &roi_in->width);
+    dt_opencl_set_kernel_arg(devid, crkernel, 5, sizeof(int), &roi_in->height);
+    dt_opencl_set_kernel_arg(devid, crkernel, 6, 2*sizeof(int), &roi);
+    dt_opencl_set_kernel_arg(devid, crkernel, 7, 2*sizeof(int), &roo);
+    dt_opencl_set_kernel_arg(devid, crkernel, 8, sizeof(float), &roi_in->scale);
+    dt_opencl_set_kernel_arg(devid, crkernel, 9, sizeof(float), &roi_out->scale);
+    dt_opencl_set_kernel_arg(devid, crkernel, 10, sizeof(int), &d->flip);
+    dt_opencl_set_kernel_arg(devid, crkernel, 11, 2*sizeof(float), &ci);
+    dt_opencl_set_kernel_arg(devid, crkernel, 12, 2*sizeof(float), &t);
+    dt_opencl_set_kernel_arg(devid, crkernel, 13, 2*sizeof(float), &k);
+    dt_opencl_set_kernel_arg(devid, crkernel, 14, 4*sizeof(float), &m);
+    err = dt_opencl_enqueue_kernel_2d(devid, crkernel, sizes);
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -648,7 +564,6 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 2; // basic.cl from programs.conf
   dt_iop_clipping_global_data_t *gd = (dt_iop_clipping_global_data_t *)malloc(sizeof(dt_iop_clipping_global_data_t));
   module->data = gd;
-  gd->kernel_clip_rotate_prep = dt_opencl_create_kernel(program, "clip_rotate_prep");
   gd->kernel_clip_rotate_bilinear = dt_opencl_create_kernel(program, "clip_rotate_bilinear");
   gd->kernel_clip_rotate_bicubic = dt_opencl_create_kernel(program, "clip_rotate_bicubic");
   gd->kernel_clip_rotate_lanczos2 = dt_opencl_create_kernel(program, "clip_rotate_lanczos2");
@@ -659,7 +574,6 @@ void init_global(dt_iop_module_so_t *module)
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_clipping_global_data_t *gd = (dt_iop_clipping_global_data_t *)module->data;
-  dt_opencl_free_kernel(gd->kernel_clip_rotate_prep);
   dt_opencl_free_kernel(gd->kernel_clip_rotate_bilinear);
   dt_opencl_free_kernel(gd->kernel_clip_rotate_bicubic);
   dt_opencl_free_kernel(gd->kernel_clip_rotate_lanczos2);
@@ -757,12 +671,13 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
     // if only one side changed, force aspect by two adjacent in equal parts
     // 1 2 4 8 : x y w h
 
+    double clip_x = g->clip_x, clip_y = g->clip_y, clip_w = g->clip_w, clip_h = g->clip_h;
+
     // aspect = wd*w/ht*h
     // if we only modified one dim, respectively, we wanted these values:
-    const float target_h = wd*g->clip_w/(ht*aspect);
-    const float target_w = ht*g->clip_h*aspect/wd;
+    const double target_h = (double)wd*g->clip_w/(double)(ht*aspect);
+    const double target_w = (double)ht*g->clip_h*aspect/(double)wd;
     // i.e. target_w/h = w/target_h = aspect
-
 
     // first fix aspect ratio:
 
@@ -770,66 +685,71 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
     if     (grab == 1+2)
     {
       // move x y
-      g->clip_x = g->clip_x + g->clip_w - (target_w + g->clip_w)*.5;
-      g->clip_y = g->clip_y + g->clip_h - (target_h + g->clip_h)*.5;
-      g->clip_w = (target_w + g->clip_w)*.5f;
-      g->clip_h = (target_h + g->clip_h)*.5f;
+      clip_x = clip_x + clip_w - (target_w + clip_w)*.5;
+      clip_y = clip_y + clip_h - (target_h + clip_h)*.5;
+      clip_w = (target_w + clip_w)*.5;
+      clip_h = (target_h + clip_h)*.5;
     }
     else if(grab == 2+4) // move y w
     {
-      g->clip_y = g->clip_y + g->clip_h - (target_h + g->clip_h)*.5;
-      g->clip_w = (target_w + g->clip_w)*.5;
-      g->clip_h = (target_h + g->clip_h)*.5;
+      clip_y = clip_y + clip_h - (target_h + clip_h)*.5;
+      clip_w = (target_w + clip_w)*.5;
+      clip_h = (target_h + clip_h)*.5;
     }
     else if(grab == 4+8) // move w h
     {
-      g->clip_w = (target_w + g->clip_w)*.5;
-      g->clip_h = (target_h + g->clip_h)*.5;
+      clip_w = (target_w + clip_w)*.5;
+      clip_h = (target_h + clip_h)*.5;
     }
     else if(grab == 8+1) // move h x
     {
-      g->clip_h = (target_h + g->clip_h)*.5;
-      g->clip_x = g->clip_x + g->clip_w - (target_w + g->clip_w)*.5;
-      g->clip_w = (target_w + g->clip_w)*.5;
+      clip_h = (target_h + clip_h)*.5;
+      clip_x = clip_x + clip_w - (target_w + clip_w)*.5;
+      clip_w = (target_w + clip_w)*.5;
     }
     else if(grab & 5) // dragged either x or w (1 4)
     {
       // change h and move y, h equally
-      const float off = target_h - g->clip_h;
-      g->clip_h = g->clip_h + off;
-      g->clip_y = g->clip_y - .5f*off;
+      const double off = target_h - clip_h;
+      clip_h = clip_h + off;
+      clip_y = clip_y - .5*off;
     }
     else if(grab & 10) // dragged either y or h (2 8)
     {
       // channge w and move x, w equally
-      const float off = target_w - g->clip_w;
-      g->clip_w = g->clip_w + off;
-      g->clip_x = g->clip_x - .5f*off;
+      const double off = target_w - clip_w;
+      clip_w = clip_w + off;
+      clip_x = clip_x - .5*off;
     }
 
     // now fix outside boxes:
-    if(g->clip_x < 0)
+    if(clip_x < 0)
     {
-      g->clip_h *= (g->clip_w + g->clip_x)/g->clip_w;
-      g->clip_w  =  g->clip_w + g->clip_x;
-      g->clip_x  = 0;
+      clip_h *= (clip_w + clip_x)/clip_w;
+      clip_w  =  clip_w + clip_x;
+      clip_x  = 0;
     }
-    if(g->clip_y < 0)
+    if(clip_y < 0)
     {
-      g->clip_w *= (g->clip_h + g->clip_y)/g->clip_h;
-      g->clip_h  =  g->clip_h + g->clip_y;
-      g->clip_y  =  0;
+      clip_w *= (clip_h + clip_y)/clip_h;
+      clip_h  =  clip_h + clip_y;
+      clip_y  =  0;
     }
-    if(g->clip_x + g->clip_w > 1.0)
+    if(clip_x + clip_w > 1.0)
     {
-      g->clip_h *= (1.0 - g->clip_x)/g->clip_w;
-      g->clip_w  =  1.0 - g->clip_x;
+      clip_h *= (1.0 - clip_x)/clip_w;
+      clip_w  =  1.0 - clip_x;
     }
-    if(g->clip_y + g->clip_h > 1.0)
+    if(clip_y + clip_h > 1.0)
     {
-      g->clip_w *= (1.0 - g->clip_y)/g->clip_h;
-      g->clip_h  =  1.0 - g->clip_y;
+      clip_w *= (1.0 - clip_y)/clip_h;
+      clip_h  =  1.0 - clip_y;
     }
+    g->clip_x = clip_x;
+    g->clip_y = clip_y;
+    g->clip_w = clip_w;
+    g->clip_h = clip_h;
+
   }
 }
 

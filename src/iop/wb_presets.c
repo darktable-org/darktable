@@ -374,6 +374,14 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS 5D Mark II", Flash, 8,	{ 2.653320, 1, 1.339844, 0 } },
   { "Canon", "EOS 5D Mark II", Flash, 9,	{ 2.680664, 1, 1.321289, 0 } },
 
+  /* Canon EOS 5D Mark III Firmware Version 1.1.2 */
+  { "Canon", "EOS 5D Mark III", Cloudy, 0,	{ 2.216797, 1, 1.490234, 0 } },
+  { "Canon", "EOS 5D Mark III", Flash, 0,	{ 2.291016, 1, 1.464844, 0 } },
+  { "Canon", "EOS 5D Mark III", Fluorescent, 0,	{ 1.809570, 1, 2.300781, 0 } },
+  { "Canon", "EOS 5D Mark III", Shade, 0,	{ 2.365234, 1, 1.381836, 0 } },
+  { "Canon", "EOS 5D Mark III", Daylight, 0,	{ 2.060547, 1, 1.618164, 0 } },
+  { "Canon", "EOS 5D Mark III", Tungsten, 0,	{ 1.484375, 1, 2.398438, 0 } },
+
   /* Fine-tuning for the 7D are the camera's Amber-Blue bracketing. */
   { "Canon", "EOS 7D", Daylight, -3,		{ 2.036, 1, 1.595, 0 } },
   { "Canon", "EOS 7D", Daylight, 0,		{ 2.120, 1, 1.506, 0 } },
@@ -3388,6 +3396,15 @@ const wb_data wb_preset[] = {
   { "SAMSUNG", "NX100", "5000K", 0,		{ 1.676277, 1, 1.097728, 0 } },
   { "SAMSUNG", "NX100", "5500K", 0,		{ 1.683993, 1, 0.847587, 0 } },
   { "SAMSUNG", "NX100", "6500K", 0,		{ 2.102913, 1, 0.883064, 0 } },
+
+  // SAMSUNG NX200 Firmware Version 1.04
+  { "SAMSUNG", "NX200", Daylight, 0,		{ 2.773438, 1, 1.625000, 0 } },
+  { "SAMSUNG", "NX200", Cloudy, 0,		{ 2.902344, 1, 1.546875, 0 } },
+  { "SAMSUNG", "NX200", WhiteFluorescent, 0,	{ 2.445313, 1, 2.316406, 0 } },
+  { "SAMSUNG", "NX200", NeutralFluorescent, 0,	{ 2.746094, 1, 1.937500, 0 } },
+  { "SAMSUNG", "NX200", DaylightFluorescent, 0,	{ 3.214844, 1, 1.679688, 0 } },
+  { "SAMSUNG", "NX200", Tungsten, 0,		{ 1.511719, 1, 2.941406, 0 } },
+  { "SAMSUNG", "NX200", Flash, 0,		{ 2.914063, 1, 1.191406, 0 } },
 
   { "SONY", "DSLR-A100", Daylight, -3,		{ 1.601562, 1, 2.101562, 0 } },
   { "SONY", "DSLR-A100", Daylight, 0,		{ 1.746094, 1, 1.843750, 0 } },

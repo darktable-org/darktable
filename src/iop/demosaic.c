@@ -756,6 +756,20 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
 
+  // Demosaic mode AMAZE not implemented in OpenCL yet. Fall back to cpu path then.
+  if(data->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaicing method AMAZE not implemented yet in OpenCL\n");
+    return FALSE;
+  }
+
+  // If in tiling context we can not green-equalize over full image. Fall back to cpu path then.
+  if(piece->pipe->tiling && (data->green_eq == DT_IOP_GREEN_EQ_FULL || data->green_eq == DT_IOP_GREEN_EQ_BOTH))
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] cannot green-equalize over full image in tiling context\n");
+    return FALSE;
+  }
+
   const int devid = piece->pipe->devid;
 
   cl_mem dev_tmp = NULL;

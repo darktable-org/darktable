@@ -246,3 +246,19 @@ shadows_highlights_mix(global float4 *inout, global float4 *mask, unsigned int w
 
   inout[idx] = clamp(io, Labmin, Labmax);
 }
+
+
+__kernel void
+gaussian_copy_alpha (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in_a, sampleri, (int2)(x, y));
+  pixel.w = read_imagef(in_b, sampleri, (int2)(x, y)).w;
+
+  write_imagef(out, (int2)(x, y), pixel);
+}
+

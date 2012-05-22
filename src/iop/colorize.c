@@ -147,6 +147,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[l+0] = L-lmix + in[l+0]*mix;
       out[l+1] = a;
       out[l+2] = b;
+      out[l+3] = in[l+3];
     }
   }
 }

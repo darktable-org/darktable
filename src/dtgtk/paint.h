@@ -82,6 +82,8 @@ void dtgtk_cairo_paint_aspectflip(cairo_t *cr,gint x,gint y,gint w,gint h,gint f
 void dtgtk_cairo_paint_label(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint a color picker icon - a pipette for bigger buttons */
 void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a display mask icon */
+void dtgtk_cairo_paint_showmask(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint alignment icon */
 void dtgtk_cairo_paint_alignment(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint styles icon */

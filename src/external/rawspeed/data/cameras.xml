@@ -749,6 +749,16 @@
     <Crop x="0" y="0" width="3898" height="2610"/>
     <Sensor black="0" white="16383"/>
   </Camera>
+  <Camera make="NIKON CORPORATION" model="NIKON D3200">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-48" height="0"/>
+    <Sensor black="0" white="16383"/>
+  </Camera>
   <Camera make="NIKON CORPORATION" model="NIKON D4">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
@@ -1203,6 +1213,16 @@
     </CFA>
     <Crop x="0" y="0" width="2576" height="1924"/>
     <Sensor black="32" white="1023"/>
+  </Camera>
+  <Camera make="OLYMPUS IMAGING CORP." model="E-M5">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="250" white="4095"/>
   </Camera>
   <Camera make="OLYMPUS IMAGING CORP." model="E-P1">
     <CFA width="2" height="2">
@@ -1894,13 +1914,27 @@
 		<Horizontal y="0" height="2"/>
 	</BlackAreas>  
   </Camera>  
-  <Camera make="SAMSUNG" model="NX200" decoder_version="1">
+  <Camera make="SAMSUNG" model="NX20" decoder_version="2">
     <CFA width="2" height="2">
       <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
       <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
     </CFA>
     <Crop x="48" y="4" width="-60" height="-28"/>
     <Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="msb_override" value="false"/>
+		</Hints>		
+  </Camera>  
+  <Camera make="SAMSUNG" model="NX200" decoder_version="2">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">RED</Color>
+      <Color x="0" y="1">BLUE</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="48" y="4" width="-60" height="-60"/>
+    <Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="msb_override" value="false"/>
+		</Hints>		
   </Camera>  
   <Camera make="SAMSUNG" model="NX5">
     <CFA width="2" height="2">

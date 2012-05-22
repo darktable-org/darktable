@@ -127,6 +127,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
       _mm_store_ps(out, (_mm_load_ps(in)-blackv)*scalev);
   }
+
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
+
   for(int k=0; k<3; k++) piece->pipe->processed_maximum[k] *= scale;
 }
 

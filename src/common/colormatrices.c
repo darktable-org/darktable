@@ -49,6 +49,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Xavier Besse, CMP Digital Target 3, direct sunlight, well lit
   { "Canon EOS 5D Mark II",         { 967590, 399139,  36026}, { -52094,  819046, -232071}, {144455, -143158, 1069305}, {864227, 899139, 741547}},
 
+  // Russell Harrison, Wolf Faust IT8, direct sunlight, well lit
+  { "Canon EOS 5D Mark III",        { 947891, 312958,  -7126}, { 163071, 1301834, -276596}, { 75928, -363388, 1272232}, {741272, 757050, 662430}},
+
   // Deacon MacMillan, Kodak Q60 (IT8), strobe, well lit
   { "Canon EOS 5D",                 { 971420, 386429,   5753}, { 176849, 1141586, -137955}, { 81909, -284790, 1198090}, {753662, 783997, 645142}},
 
@@ -149,6 +152,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
 
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "NIKON D700",                   { 789261, 332016,  34149}, { 270386,  985748, -129135}, {  4074, -230209,  999008}, {798172, 826721, 673126}},
+
+  // Mauro Fuentes, ColorChecker Passport, direct sunlight, well lit
+  { "NIKON D800",                   { 792038, 268860,  33951}, { 289093, 1169876, -251740}, {-32654, -340393, 1127960}, {782806, 804443, 659058}},
 
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "NIKON COOLPIX P7000",          { 804947, 229630,  97717}, { 178146, 1138763, -395233}, { 88699, -282013, 1234650}, {809998, 842819, 682144}},

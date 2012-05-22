@@ -64,7 +64,6 @@ dt_iop_lensfun_gui_data_t;
 typedef struct dt_iop_lensfun_global_data_t
 {
   lfDatabase *db;
-  int kernel_lens_distort_start;
   int kernel_lens_distort_bilinear;
   int kernel_lens_distort_bicubic;
   int kernel_lens_distort_lanczos2;

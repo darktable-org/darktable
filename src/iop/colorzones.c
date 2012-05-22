@@ -28,6 +28,7 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
+#include "bauhaus/bauhaus.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -163,6 +164,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     out[0] = L;
     out[1] = cosf(2.0*M_PI*(h + hm)) * Cm * C;
     out[2] = sinf(2.0*M_PI*(h + hm)) * Cm * C;
+    out[3] = in[3];
   }
 }
 
@@ -294,7 +296,7 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
-  gtk_combo_box_set_active(GTK_COMBO_BOX(g->select_by), 2-p->channel);
+  dt_bauhaus_combobox_set(g->select_by, 2-p->channel);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -874,13 +876,13 @@ colorzones_tab_switch(GtkNotebook *notebook, GtkNotebookPage *page, guint page_n
 }
 
 static void
-select_by_changed(GtkComboBox *widget, gpointer user_data)
+select_by_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
   memcpy(p, self->default_params, sizeof(dt_iop_colorzones_params_t));
-  p->channel = 2 - (dt_iop_colorzones_channel_t)gtk_combo_box_get_active(widget);
+  p->channel = 2 - (dt_iop_colorzones_channel_t)dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
@@ -916,29 +918,13 @@ void gui_init(struct dt_iop_module_t *self)
   c->dragging = 0;
   c->x_move = -1;
   c->mouse_radius = 1.0/DT_IOP_COLORZONES_BANDS;
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
 
-  // select by which dimension
-  GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 5));
-  GtkWidget *label = gtk_label_new(_("select by"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0f, 0.5f);
-  c->select_by = gtk_combo_box_new_text();
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("hue"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("saturation"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("lightness"));
-  gtk_box_pack_start(GTK_BOX(hbox), c->select_by, TRUE, TRUE, 0);
-  g_signal_connect (G_OBJECT (c->select_by), "changed", G_CALLBACK (select_by_changed), (gpointer)self);
-
-  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-  g_object_set(G_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
-  g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
-  gtk_box_pack_start(GTK_BOX(hbox), tb, FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
   // tabs
-  GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));//DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+  GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
@@ -951,7 +937,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_object_set(G_OBJECT(c->channel_tabs), "homogeneous", TRUE, (char *)NULL);
 
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
+  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
+  g_object_set(G_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
+  g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
+  gtk_box_pack_end(GTK_BOX(hbox), tb, FALSE, FALSE, 0);
+
 
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page",
                    G_CALLBACK (colorzones_tab_switch), self);
@@ -961,6 +952,17 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
   gtk_drawing_area_size(c->area, 195, 195);
+
+  // select by which dimension
+  c->select_by = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(c->select_by, _("select by"));
+  g_object_set(G_OBJECT(c->select_by), "tooltip-text", _("choose selection criterion, will be the abscissa in the graph"), (char *)NULL);
+  dt_bauhaus_combobox_add(c->select_by, _("hue"));
+  dt_bauhaus_combobox_add(c->select_by, _("saturation"));
+  dt_bauhaus_combobox_add(c->select_by, _("lightness"));
+  gtk_box_pack_start(GTK_BOX(self->widget), c->select_by, TRUE, TRUE, 0);
+  g_signal_connect (G_OBJECT (c->select_by), "value-changed", G_CALLBACK (select_by_changed), (gpointer)self);
+
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",

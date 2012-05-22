@@ -67,6 +67,8 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t
   pipe->processing = 0;
   pipe->shutdown = 0;
   pipe->opencl_error = 0;
+  pipe->tiling = 0;
+  pipe->mask_display = 0;
   pipe->input_timestamp = 0;
   dt_pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
   dt_pthread_mutex_init(&(pipe->busy_mutex), NULL);
@@ -77,6 +79,7 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
 {
   pipe->iwidth  = width;
   pipe->iheight = height;
+  pipe->iflipped = 0;
   pipe->iscale = iscale;
   pipe->input = input;
   pipe->image = dev->image_storage;
@@ -1321,6 +1324,9 @@ restart:
 
   // image max is normalized before
   for(int k=0; k<3; k++) pipe->processed_maximum[k] = 1.0f; // dev->image->maximum;
+
+  // mask display off as a starting point
+  pipe->mask_display = 0;
 
   void *buf = NULL;
   void *cl_mem_out = NULL;

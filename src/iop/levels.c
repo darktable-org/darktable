@@ -98,6 +98,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         out[2] = in[2] * out[0]/0.01f;
       }
 
+      out[3] = in[3];
+
     }
   }
 

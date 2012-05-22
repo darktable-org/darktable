@@ -230,6 +230,10 @@ extern "C"
         }
       }
     }
+
+    if(piece->pipe->mask_display)
+      dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+
   }
 
   static void

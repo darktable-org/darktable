@@ -33,14 +33,12 @@ float spline_cubic_val( int n, float t[], float tval, float y[],
                         float ypp[]);
 float catmull_rom_val ( int n, float x[], float xval, float y[],
                         float tangents[]);
-float monotone_hermite_val ( int n, float x[], float xval, float y[],
-                             float tangents[]);
 
 float *spline_cubic_set( int n, float t[], float y[]);
 float *catmull_rom_set ( int n, float x[], float y[]);
 float *monotone_hermite_set ( int n, float x[], float y[]);
 
-float (*spline_val[])(int, float [], float, float [], float []) = {spline_cubic_val, catmull_rom_val, monotone_hermite_val };
+float (*spline_val[])(int, float [], float, float [], float []) = {spline_cubic_val, catmull_rom_val, catmull_rom_val };
 
 float *(*spline_set[])(int, float [], float []) = {spline_cubic_set, catmull_rom_set, monotone_hermite_set};
 
@@ -419,29 +417,31 @@ float *monotone_hermite_set ( int n, float x[], float y[])
       return NULL;
     }
   }
-  delta = (float *)calloc(n-1,sizeof(float));
+
+  delta = (float *)calloc(n,sizeof(float));
   //nc_merror(delta, "spline_cubic_set");
-  m = (float *)calloc(n-1,sizeof(float));
+  m = (float *)calloc(n,sizeof(float));
   //nc_merror(m, "spline_cubic_set");
   //calculate the slopes
   for (i = 0; i<n-1; i++)
   {
     delta[i] = (y[i+1]-y[i])/(x[i+1]-x[i]);
   }
+  delta[n-1] = delta[n-2];
 
   m[0] = delta[0];
-  m[n-2] = delta[n-2];
+  m[n-1] = delta[n-1];
 
-  for (i=1; i<n-2; i++)
+  for (i=1; i<n-1; i++)
   {
-    m[i] = (delta[i-1]+delta[i])/2.0;
+    m[i] = (delta[i-1]+delta[i])*.5f;
   }
-  for (i=0; i<n-1; i++)
+  for (i=0; i<n; i++)
   {
     if (fabs(delta[i]) < EPSILON)
     {
-      m[i] = 0.0;
-      m[i+1] = 0.0;
+      m[i] = 0.0f;
+      m[i+1] = 0.0f;
       i++;
     }
     else
@@ -449,10 +449,10 @@ float *monotone_hermite_set ( int n, float x[], float y[])
       alpha = m[i]/delta[i];
       beta = m[i+1]/delta[i];
       tau = alpha*alpha+beta*beta;
-      if (tau > 9.0)
+      if (tau > 9.0f)
       {
-        m[i] = 3.0*alpha*delta[i]/sqrtf(tau);
-        m[i+1] = 3.0*beta*delta[i]/sqrtf(tau);
+        m[i] = 3.0f*alpha*delta[i]/sqrtf(tau);
+        m[i+1] = 3.0f*beta*delta[i]/sqrtf(tau);
         i++;
       }
     }
@@ -496,16 +496,16 @@ float *catmull_rom_set ( int n, float x[], float y[])
     }
   }
   //nc_merror(delta, "spline_cubic_set");
-  m = (float *)calloc(n-1,sizeof(float));
+  m = (float *)calloc(n,sizeof(float));
   //nc_merror(m, "spline_cubic_set");
 
   //calculate the slopes
-  m[0] = (y[1]-y[0]);///(x[1]-x[0]);
-  for (i=1; i<n-2; i++)
+  m[0] = (y[1]-y[0])/(x[1]-x[0]);
+  for (i=1; i<n-1; i++)
   {
-    m[i] = (y[i+1]-y[i-1])/2.0;//*(x[i+1]-x[i-1]));
+    m[i] = (y[i+1]-y[i-1])/(x[i+1]-x[i-1]);
   }
-  m[n-2] = (y[n-1]-y[n-2]);//(x[n-1]-y[n-2]);
+  m[n-1] = (y[n-1]-y[n-2])/(x[n-1]-x[n-2]);
 
   return m;
 }
@@ -537,20 +537,13 @@ float interpolate_val( int n, float x[], float xval, float y[], float tangents[]
 float catmull_rom_val ( int n, float x[], float xval, float y[],
                         float tangents[])
 {
-  float dx;
-  float h;
-  int i;
-  int ival;
-  float yval;
-  float h00,h01,h10,h11;
-  float m0, m1;
 //
 //  Determine the interval [ T(I), T(I+1) ] that contains TVAL.
 //  Values below T[0] or above T[N-1] use extrapolation.
 //
-  ival = n - 2;
+  int ival = n - 2;
 
-  for ( i = 0; i < n-2; i++ )
+  for ( int i = 0; i < n-2; i++ )
   {
     if ( xval < x[i+1] )
     {
@@ -559,82 +552,23 @@ float catmull_rom_val ( int n, float x[], float xval, float y[],
     }
   }
 
-  m0 = tangents[ival];
-  m1 = tangents[ival+1];
+  const float m0 = tangents[ival];
+  const float m1 = tangents[ival+1];
 //
 //  In the interval I, the polynomial is in terms of a normalized
 //  coordinate between 0 and 1.
 //
-  h = x[ival+1] - x[ival];
-  dx = (xval-x[ival])/h;
+  const float h = x[ival+1] - x[ival];
+  const float dx = (xval-x[ival])/h;
+  const float dx2 = dx*dx;
+  const float dx3 = dx*dx2;
 
-  h00 = ( 2.0 * dx*dx*dx) - (3.0 * dx*dx) + 1.0;
-  h10 = ( 1.0 * dx*dx*dx) - (2.0 * dx*dx) + dx;
-  h01 = (-2.0 * dx*dx*dx) + (3.0 * dx*dx);
-  h11 = ( 1.0 * dx*dx*dx) - (1.0 * dx*dx);
+  const float h00 = ( 2.0 * dx3) - (3.0 * dx2) + 1.0;
+  const float h10 = ( 1.0 * dx3) - (2.0 * dx2) + dx;
+  const float h01 = (-2.0 * dx3) + (3.0 * dx2);
+  const float h11 = ( 1.0 * dx3) - (1.0 * dx2);
 
-  h = 1;
-  yval = (h00 * y[ival]) + (h10 * h * m0) + (h01 * y[ival+1]) + (h11 * h * m1);
-
-  return yval;
-}
-
-/*************************************************************
- * monotone_hermite_val:
- *      piecewise monotone hermite spline interpolation
- *
- *      n = number of control points
- *      x = input x array
- *      xval = input value where to interpolate the data
- *      y = input y array
- *      tangent = input array of tangents
- *  output:
- *      interpolated value at xval
- *
- *************************************************************/
-float monotone_hermite_val ( int n, float x[], float xval, float y[],
-                             float tangents[])
-{
-  float dx;
-  float h;
-  int i;
-  int ival;
-  float yval;
-  float h00,h01,h10,h11;
-  float m0, m1;
-//
-//  Determine the interval [ T(I), T(I+1) ] that contains TVAL.
-//  Values below T[0] or above T[N-1] use extrapolation.
-//
-  ival = n - 2;
-
-  for ( i = 0; i < n-2; i++ )
-  {
-    if ( xval < x[i+1] )
-    {
-      ival = i;
-      break;
-    }
-  }
-
-  m0 = tangents[ival];
-  m1 = tangents[ival+1];
-//
-//  In the interval I, the polynomial is in terms of a normalized
-//  coordinate between 0 and 1.
-//
-  h = x[ival+1] - x[ival];
-  dx = (xval-x[ival])/h;
-
-  h00 = ( 2.0 * dx*dx*dx) - (3.0 * dx*dx) + 1.0;
-  h10 = ( 1.0 * dx*dx*dx) - (2.0 * dx*dx) + dx;
-  h01 = (-2.0 * dx*dx*dx) + (3.0 * dx*dx);
-  h11 = ( 1.0 * dx*dx*dx) - (1.0 * dx*dx);
-
-  //h = 1;
-  yval = (h00 * y[ival]) + (h10 * h * m0) + (h01 * y[ival+1]) + (h11 * h * m1);
-
-  return yval;
+  return (h00 * y[ival]) + (h10 * h * m0) + (h01 * y[ival+1]) + (h11 * h * m1);
 }
 
 

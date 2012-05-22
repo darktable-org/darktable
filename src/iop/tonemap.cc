@@ -198,6 +198,7 @@ extern "C"
         out[0]=in[0]*Ln;
         out[1]=in[1]*Ln;
         out[2]=in[2]*Ln;
+        out[3]=in[3];
       }
     }
     // also process the clipping point, as good as we can without knowing
