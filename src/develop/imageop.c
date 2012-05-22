@@ -765,7 +765,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
       dt_bauhaus_slider_set(bd->opacity_slider, module->blend_params->opacity);
       if(bd->blendif_support)
       {
-        dt_bauhaus_combobox_set(bd->blendif_enable, module->blend_params->blendif & (1<<31));
+        dt_bauhaus_combobox_set(bd->blendif_enable, (module->blend_params->blendif & (1<<31)) != 0);
         dt_iop_gui_update_blendif(module);
       }
     }
