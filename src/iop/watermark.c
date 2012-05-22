@@ -22,9 +22,6 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -389,7 +386,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
 //   fprintf(stderr,"Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
     g_free (image);
-    memcpy(ovoid, ivoid, sizeof(float)*3*roi_out->width*roi_out->height);
+    memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
   }
 
@@ -443,6 +440,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[0] = ((1.0-alpha)*in[0]) + (alpha*(sd[2]/255.0));
       out[1] = ((1.0-alpha)*in[1]) + (alpha*(sd[1]/255.0));
       out[2] = ((1.0-alpha)*in[2]) + (alpha*(sd[0]/255.0));
+      out[3] = in[3];
 
       out+=ch;
       in+=ch;

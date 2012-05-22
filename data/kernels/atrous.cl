@@ -58,6 +58,7 @@ eaw_decompose (__read_only image2d_t in, __write_only image2d_t coarse, __write_
     wgt += w;
   }
   sum /= wgt;
+  sum.w = pixel.w;
 
   write_imagef (detail, (int2)(x, y), pixel - sum);
   write_imagef (coarse, (int2)(x, y), sum);
@@ -81,6 +82,7 @@ eaw_synthesize (__write_only image2d_t out, __read_only image2d_t coarse, __read
   float4 d = read_imagef(detail, sampleri, (int2)(x, y));
   float4 amount = copysign(max((float4)(0.0f), fabs(d) - threshold), d);
   float4 sum = c + boost*amount;
+  sum.w = c.w;
   write_imagef (out, (int2)(x, y), sum);
 }
 

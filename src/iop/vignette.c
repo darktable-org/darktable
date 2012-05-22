@@ -667,7 +667,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
 
       // Let's apply weighted effect on brightness and desaturation
-      float col0=in[0], col1=in[1], col2=in[2];
+      float col0=in[0], col1=in[1], col2=in[2], col3=in[3];
       if( weight > 0 )
       {
         // Then apply falloff vignette
@@ -686,6 +686,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[0]=col0;
       out[1]=col1;
       out[2]=col2;
+      out[3]=col3;
     }
   }
 }

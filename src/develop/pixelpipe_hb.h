@@ -117,6 +117,8 @@ typedef struct dt_dev_pixelpipe_t
   int opencl_error;
   // running in a tiling context?
   int tiling;
+  // should this pixelpipe display a mask in the end?
+  int mask_display;
   // input data based on this timestamp:
   int input_timestamp;
   dt_dev_pixelpipe_type_t type;

@@ -103,6 +103,7 @@ typedef struct dt_blendop_t
   int kernel_blendop_Lab;
   int kernel_blendop_RAW;
   int kernel_blendop_rgb;
+  int kernel_blendop_copy_alpha;
 }
 dt_blendop_t;
 
@@ -135,7 +136,7 @@ typedef struct dt_iop_gui_blend_data_t
   dt_iop_gui_blendop_modes_t modes[30];
   int number_modes;
   GtkWidget *iopw;
-  GtkToggleButton *blendif_enable;
+  GtkWidget *blendif_enable;
   GtkVBox *box;
   GtkVBox *blendif_box;
   GtkDarktableGradientSlider *upper_slider;

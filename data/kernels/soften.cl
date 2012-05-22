@@ -251,6 +251,7 @@ soften_mix(read_only image2d_t in_a, read_only image2d_t in_b, write_only image2
   float4 processed = read_imagef(in_b, sampleri, (int2)(x, y));
 
   float4 pixel = original * (1.0f - amount) + clamp(processed, (float4)0.0f, (float4)1.0f) * amount;
+  pixel.w = original.w;
 
   write_imagef (out, (int2)(x, y), pixel);
 }

@@ -47,7 +47,7 @@ graduatedndp (read_only image2d_t in, write_only image2d_t out, const int width,
   dens *= dens;
   dens *= dens;
 
-  pixel = fmax((float4)0.0f, pixel / (color + ((float4)1.0f - color) * (float4)dens));
+  pixel.xyz = fmax((float4)0.0f, pixel / (color + ((float4)1.0f - color) * (float4)dens)).xyz;
       
   write_imagef (out, (int2)(x, y), pixel); 
 }
@@ -75,7 +75,7 @@ graduatedndm (read_only image2d_t in, write_only image2d_t out, const int width,
   dens *= dens;
   dens *= dens;
 
-  pixel = fmax((float4)0.0f, pixel * (color + ((float4)1.0f - color) * (float4)dens));
+  pixel.xyz = fmax((float4)0.0f, pixel * (color + ((float4)1.0f - color) * (float4)dens)).xyz;
       
   write_imagef (out, (int2)(x, y), pixel); 
 }
@@ -314,7 +314,7 @@ colorcontrast (read_only image2d_t in, write_only image2d_t out, const int width
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  pixel = clamp(pixel * scale + offset, Labmin, Labmax);
+  pixel.xyz = clamp(pixel * scale + offset, Labmin, Labmax).xyz;
 
   write_imagef (out, (int2)(x, y), pixel); 
 }
@@ -412,7 +412,7 @@ splittoning (read_only image2d_t in, write_only image2d_t out, const int width, 
 
     float4 mixrgb = HSL_2_RGB(hsl);
 
-    pixel = clamp(pixel * (1.0f - ra) + mixrgb * ra, (float4)0.0f, (float4)1.0f);
+    pixel.xyz = clamp(pixel * (1.0f - ra) + mixrgb * ra, (float4)0.0f, (float4)1.0f).xyz;
   }
 
   write_imagef (out, (int2)(x, y), pixel);

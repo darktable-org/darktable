@@ -82,6 +82,7 @@ typedef struct dt_iop_lowpass_global_data_t
   // int kernel_gaussian_row;
   int kernel_gaussian_transpose;
   int kernel_lowpass_mix;
+  int kernel_gaussian_copy_alpha;
 }
 dt_iop_lowpass_global_data_t;
 
@@ -342,6 +343,20 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   err = dt_opencl_enqueue_copy_buffer_to_image(devid, dev_temp2, dev_out, 0, origin, region);
   if(err != CL_SUCCESS) goto error;
 
+  if(piece->pipe->mask_display)
+  {
+    sizes[0] = ROUNDUPWD(width);
+    sizes[1] = ROUNDUPWD(height);
+    sizes[2] = 1;
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 0, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 1, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 2, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 4, sizeof(int), (void *)&height);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_gaussian_copy_alpha, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+
   if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
   if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   if (dev_temp1 != NULL) dt_opencl_release_mem_object(dev_temp1);
@@ -412,7 +427,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
     // forward filter
-    for(int k=0; k<4; k++)
+    for(int k=0; k<3; k++)
     {
       xp[k] = CLAMPF(in[i*ch+k], Labmin[k], Labmax[k]);
       yb[k] = xp[k] * coefp;
@@ -423,7 +438,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k<4; k++)
+      for(int k=0; k<3; k++)
       {
         xc[k] = CLAMPF(in[offset+k], Labmin[k], Labmax[k]);
         yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
@@ -437,7 +452,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
 
     // backward filter
-    for(int k=0; k<4; k++)
+    for(int k=0; k<3; k++)
     {
       xn[k] = CLAMPF(in[((roi_out->height - 1) * roi_out->width + i)*ch+k], Labmin[k], Labmax[k]);
       xa[k] = xn[k];
@@ -449,7 +464,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k<4; k++)
+      for(int k=0; k<3; k++)
       {      
         xc[k] = CLAMPF(in[offset+k], Labmin[k], Labmax[k]);
 
@@ -482,7 +497,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
     // forward filter
-    for(int k=0; k<4; k++)
+    for(int k=0; k<3; k++)
     {
       xp[k] = CLAMPF(temp[j*roi_out->width*ch+k], Labmin[k], Labmax[k]);
       yb[k] = xp[k] * coefp;
@@ -493,7 +508,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k<4; k++)
+      for(int k=0; k<3; k++)
       {
         xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
         yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
@@ -507,7 +522,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
 
     // backward filter
-    for(int k=0; k<4; k++)
+    for(int k=0; k<3; k++)
     {
       xn[k] = CLAMPF(temp[((j + 1)*roi_out->width - 1)*ch + k], Labmin[k], Labmax[k]);
       xa[k] = xn[k];
@@ -519,7 +534,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k<4; k++)
+      for(int k=0; k<3; k++)
       {      
         xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
 
@@ -539,7 +554,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   free(temp);
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(out,data,roi_out) schedule(static)
+  #pragma omp parallel for default(none) shared(in,out,data,roi_out) schedule(static)
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
@@ -547,7 +562,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       dt_iop_eval_exp(data->unbounded_coeffs, out[k*ch+0]/100.0f);
     out[k*ch+1] = CLAMPF(out[k*ch+1]*data->saturation, Labmin[1], Labmax[1]);
     out[k*ch+2] = CLAMPF(out[k*ch+2]*data->saturation, Labmin[2], Labmax[2]);
-    out[k*ch+3] = CLAMPF(out[k*ch+3], Labmin[3], Labmax[3]);
+    out[k*ch+3] = in[k*ch+3];
   }
 }
 
@@ -701,6 +716,7 @@ void init_global(dt_iop_module_so_t *module)
   //gd->kernel_gaussian_row = dt_opencl_create_kernel(program, "gaussian_row");
   gd->kernel_gaussian_transpose = dt_opencl_create_kernel(program, "gaussian_transpose");
   gd->kernel_lowpass_mix = dt_opencl_create_kernel(program, "lowpass_mix");
+  gd->kernel_gaussian_copy_alpha = dt_opencl_create_kernel(program, "gaussian_copy_alpha");
 }
 
 void init_presets (dt_iop_module_so_t *self)
@@ -730,6 +746,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   //dt_opencl_free_kernel(gd->kernel_gaussian_row);
   dt_opencl_free_kernel(gd->kernel_gaussian_transpose);
   dt_opencl_free_kernel(gd->kernel_lowpass_mix);
+  dt_opencl_free_kernel(gd->kernel_gaussian_copy_alpha);
   free(module->data);
   module->data = NULL;
 }
