@@ -460,7 +460,7 @@ int dt_imageio_export(
     dt_imageio_module_data_t   *format_params)
 {
   return dt_imageio_export_with_flags(imgid, filename, format, format_params,
-      0, 0, dt_conf_get_bool("plugins/lighttable/export/high_quality_processing"));
+      0, 0, dt_conf_get_bool("plugins/lighttable/export/high_quality_processing"), 0);
 }
 
 // internal function: to avoid exif blob reading + 8-bit byteorder flag + high-quality override
@@ -471,7 +471,8 @@ int dt_imageio_export_with_flags(
     dt_imageio_module_data_t   *format_params,
     const int32_t               ignore_exif,
     const int32_t               display_byteorder,
-    const int32_t               high_quality)
+    const int32_t               high_quality,
+    const int32_t               thumbnail_export)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
@@ -482,10 +483,13 @@ int dt_imageio_export_with_flags(
   const int wd = img->width;
   const int ht = img->height;
 
+  int res = 0;
+
   dt_times_t start;
   dt_get_times(&start);
   dt_dev_pixelpipe_t pipe;
-  if(!dt_dev_pixelpipe_init_export(&pipe, wd, ht))
+  res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht) : dt_dev_pixelpipe_init_export(&pipe, wd, ht);
+  if(!res)
   {
     dt_control_log(_("failed to allocate memory for export, please lower the threads used for export or buy more memory."));
     dt_dev_cleanup(&dev);
@@ -632,7 +636,7 @@ int dt_imageio_export_with_flags(
 
   format_params->width  = processed_width;
   format_params->height = processed_height;
-  int res = 0;
+
   if(!ignore_exif)
   {
     int length;
