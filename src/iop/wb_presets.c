@@ -3065,6 +3065,18 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-PL2", "3300K", 0,		{ 1.0547, 1, 2.0625, 0 } },
   { "OLYMPUS", "E-PL2", "5000K", 0,		{ 1.4062, 1, 1.4922, 0 } },
 
+  /* Firmware version 1.3 */
+  { "OLYMPUS", "E-PL3", Daylight, 0,		{ 1.976562, 1, 1.453125, 0 } },
+  { "OLYMPUS", "E-PL3", Shade, 0,		{ 2.382812, 1, 1.156250, 0 } },
+  { "OLYMPUS", "E-PL3", Cloudy, 0,		{ 2.164063, 1, 1.335938, 0 } },
+  { "OLYMPUS", "E-PL3", Tungsten, 0,		{ 1.171875, 1, 2.468750, 0 } },
+  { "OLYMPUS", "E-PL3", Fluorescent, 0,		{ 1.953125, 1, 1.937500, 0 } },
+  { "OLYMPUS", "E-PL3", Underwater, 0,		{ 2.390625, 1, 1.484375, 0 } },
+  { "OLYMPUS", "E-PL3", Flash, 0,		{ 2.585938, 1, 1.250000, 0 } },
+  { "OLYMPUS", "E-PL3", "2300K", 0,		{ 1, 1.207547, 3.754717, 0 } },
+  { "OLYMPUS", "E-PL3", "3000K", 0,		{ 1.273437, 1, 2.273437, 0 } },
+  { "OLYMPUS", "E-PL3", "5000K", 0,		{ 1.906250, 1, 1.515625, 0 } },
+
   { "OLYMPUS", "SP500UZ", Daylight, -7,		{ 1.136719, 1, 2.359375, 0 } },
   { "OLYMPUS", "SP500UZ", Daylight, 0,		{ 1.960937, 1, 1.585937, 0 } },
   { "OLYMPUS", "SP500UZ", Daylight, 7,		{ 3.927660, 1.089362, 1, 0 } },
