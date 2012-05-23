@@ -3058,7 +3058,7 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-PL2", Shade, 0,		{ 1.7422, 1, 1.1094, 0 } },
   { "OLYMPUS", "E-PL2", Cloudy, 0,		{ 1.6172, 1, 1.2891, 0 } },
   { "OLYMPUS", "E-PL2", Tungsten, 0,		{ 1, 1.1327, 2.9115, 0 } },
-  { "OLYMPUS", "E-PL2", CoolWhiteFluorescent, 0, { 1.3828, 1, 2.0859, 0 } },
+  { "OLYMPUS", "E-PL2", Fluorescent, 0,		{ 1.3828, 1, 2.0859, 0 } },
   { "OLYMPUS", "E-PL2", Flash, 0,		{ 1.6016, 1, 1.2891, 0 } },
   { "OLYMPUS", "E-PL2", "2700K", 0,		{ 1, 1.1852, 3.1852, 0 } },
   { "OLYMPUS", "E-PL2", "3000K", 0,		{ 1, 1.0492, 2.4672, 0 } },
