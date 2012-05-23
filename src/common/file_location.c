@@ -99,7 +99,7 @@ static gchar * dt_loc_init_generic (const char *value,const char*default_value)
 		  return NULL;
 	  return dt_util_fix_path(value);
   } else {
-	  gchar* result = dt_util_fix_path(DARKTABLE_CACHEDIR);
+	  gchar* result = dt_util_fix_path(default_value);
 	  if (g_file_test (result,G_FILE_TEST_EXISTS)==FALSE)
 		  g_mkdir_with_parents (result,0700);
 	  return result;
