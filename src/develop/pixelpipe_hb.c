@@ -39,10 +39,40 @@
 
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
+static char *_pipe_type_to_str(int pipe_type)
+{
+  char *r;
+
+  switch(pipe_type)
+  {
+    case DT_DEV_PIXELPIPE_PREVIEW:
+      r = "preview";
+      break;
+    case DT_DEV_PIXELPIPE_FULL:
+      r = "full";
+      break;
+    case DT_DEV_PIXELPIPE_THUMBNAIL:
+      r = "thumbnail";
+      break;
+    case DT_DEV_PIXELPIPE_EXPORT:
+    default:
+      r = "export";
+    break;
+  }
+  return r;
+}
+
 int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
   int res = dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*width*height, 2);
   pipe->type = DT_DEV_PIXELPIPE_EXPORT;
+  return res;
+}
+
+int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
+{
+  int res = dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*width*height, 2);
+  pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
   return res;
 }
 
@@ -424,7 +454,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, roi_out->width, pipe->iwidth);
       }
     }
-    dt_show_times(&start, "[dev_pixelpipe]", "initing base buffer [%s]", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
+    dt_show_times(&start, "[dev_pixelpipe]", "initing base buffer [%s]", _pipe_type_to_str(pipe->type));
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
   }
   else
@@ -862,7 +892,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 #endif
 
     dt_show_times(&start, "[dev_pixelpipe]", "processing `%s' [%s]", module->name(),
-                  pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
+                  _pipe_type_to_str(pipe->type));
     // in case we get this buffer from the cache, also get the processed max:
     for(int k=0; k<3; k++) piece->processed_maximum[k] = pipe->processed_maximum[k];
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
@@ -1353,7 +1383,7 @@ restart:
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
     dt_dev_pixelpipe_flush_caches(pipe);
     dt_dev_pixelpipe_change(pipe, dev);
-    dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] falling back to cpu path\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
+    dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] falling back to cpu path\n", _pipe_type_to_str(pipe->type));
     goto restart;  // try again (this time without opencl)
   }
 
