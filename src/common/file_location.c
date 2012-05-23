@@ -163,7 +163,9 @@ void dt_loc_init_plugindir(const char *plugindir)
 		darktable.plugindir = directory;
 	}
 #else
-	darktable.plugindir = dt_loc_init_generic(plugindir,DARKTABLE_LIBDIR);
+	char tmp[4096];
+	snprintf(tmp,4096,"%s/darktable",DARKTABLE_LIBDIR);
+	darktable.plugindir = dt_loc_init_generic(plugindir,tmp);
 #endif
 }
 
