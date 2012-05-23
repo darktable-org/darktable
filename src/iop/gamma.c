@@ -53,17 +53,43 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   dt_iop_gamma_data_t *d = (dt_iop_gamma_data_t *)piece->data;
   const int ch = piece->colors;
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, o, i, d) schedule(static)
-#endif
-  for(int k=0; k<roi_out->height; k++)
+
+  if(piece->pipe->mask_display)
   {
-    const float *in = ((float *)i) + ch*k*roi_out->width;
-    uint8_t *out = ((uint8_t *)o) + ch*k*roi_out->width;
-    for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
+    const float yellow[3] = { 1.0f, 1.0f, 0.0f };
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(roi_out, o, i, d) schedule(static)
+#endif
+    for(int k=0; k<roi_out->height; k++)
     {
-      for(int c=0; c<3; c++)
-        out[2-c] = d->table[(uint16_t)CLAMP((int)(0xfffful*in[c]), 0, 0xffff)];
+      const float *in = ((float *)i) + ch*k*roi_out->width;
+      uint8_t *out = ((uint8_t *)o) + ch*k*roi_out->width;
+      for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
+      {
+        float gray = 0.3f*in[0] + 0.59f*in[1] + 0.11f*in[2];
+        float alpha = in[3];
+        for(int c=0; c<3; c++)
+        {
+          float value = gray * (1.0f - alpha) + yellow[c] * alpha;
+          out[2-c] = d->table[(uint16_t)CLAMP((int)(0xfffful*value), 0, 0xffff)];
+        }
+      }
+    }
+  }
+  else
+  {
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(roi_out, o, i, d) schedule(static)
+#endif
+    for(int k=0; k<roi_out->height; k++)
+    {
+      const float *in = ((float *)i) + ch*k*roi_out->width;
+      uint8_t *out = ((uint8_t *)o) + ch*k*roi_out->width;
+      for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
+      {
+        for(int c=0; c<3; c++)
+          out[2-c] = d->table[(uint16_t)CLAMP((int)(0xfffful*in[c]), 0, 0xffff)];
+      }
     }
   }
 }

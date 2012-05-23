@@ -31,6 +31,8 @@
 #include "dtgtk/paint.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <glib.h>
+#include <glib/gstdio.h>
 
 DT_MODULE(1)
 
@@ -196,6 +198,13 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
       fail = 1;
       goto failed;
     }
+    if(g_access(dirname, W_OK) != 0)
+    {
+      fprintf(stderr, "[imageio_storage_disk] could not write to directory: `%s'!\n", dirname);
+      dt_control_log(_("could not write to directory `%s'!"), dirname);
+      fail = 1;
+      goto failed;
+    }
 
     c = filename + strlen(filename);
     // remove everything after the last '.'. this destroys any file name with dots in it since $(FILE_NAME) already comes without the original extension.
@@ -222,10 +231,20 @@ failed:
   if(fail) return 1;
 
   /* export image to file */
-  dt_imageio_export(imgid, filename, format, fdata);
+  if(dt_imageio_export(imgid, filename, format, fdata) != 0)
+  {
+    fprintf(stderr, "[imageio_storage_disk] could not export to file: `%s'!\n", filename);
+    dt_control_log(_("could not export to file `%s'!"), filename);
+    return 1;
+  }
 
   /* now write xmp into that container, if possible */
-  dt_exif_xmp_attach(imgid, filename);
+  if(dt_exif_xmp_attach(imgid, filename) != 0)
+  {
+    fprintf(stderr, "[imageio_storage_disk] could not attach xmp data to file: `%s'!\n", filename);
+    dt_control_log(_("could not attach xmp data to file `%s'!"), filename);
+    return 1;
+  }
 
   printf("[export_job] exported to `%s'\n", filename);
   char *trunc = filename + strlen(filename) - 32;

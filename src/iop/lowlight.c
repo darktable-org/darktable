@@ -33,7 +33,7 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
-#include "dtgtk/slider.h"
+#include "bauhaus/bauhaus.h"
 
 DT_MODULE(1)
 
@@ -53,7 +53,7 @@ typedef struct dt_iop_lowlight_gui_data_t
 {
   dt_draw_curve_t *transition_curve;        // curve for gui to draw
 
-  GtkDarktableSlider *scale_blueness;
+  GtkWidget *scale_blueness;
   GtkDrawingArea *area;
   double mouse_x, mouse_y, mouse_pick;
   float mouse_radius;
@@ -108,8 +108,7 @@ void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *g =
       (dt_iop_lowlight_gui_data_t*)self->gui_data;
-  dt_accel_connect_slider_iop(self, "blue shift",
-                              GTK_WIDGET(g->scale_blueness));
+  dt_accel_connect_slider_iop(self, "blue shift", g->scale_blueness);
 }
 
 static float
@@ -177,6 +176,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     XYZ[2] = w * XYZ[2] + (1.0f - w) * XYZ_s[2];
 
     dt_XYZ_to_Lab(XYZ,out);
+
+    out[3] = in[3];
   }
 }
 
@@ -278,7 +279,7 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *g = (dt_iop_lowlight_gui_data_t *)self->gui_data;
   dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
-  dtgtk_slider_set_value(g->scale_blueness, p->blueness);
+  dt_bauhaus_slider_set(g->scale_blueness, p->blueness);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -765,12 +766,12 @@ lowlight_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 }
 
 static void
-blueness_callback (GtkDarktableSlider *slider, gpointer user_data)
+blueness_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
-  p->blueness = dtgtk_slider_get_value(slider);
+  p->blueness = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -790,7 +791,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->x_move = -1;
   c->mouse_radius = 1.0/DT_IOP_LOWLIGHT_BANDS;
 
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_drawing_area_size(c->area, 195, 195);
@@ -811,11 +812,9 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (c->area), "scroll-event",
                     G_CALLBACK (lowlight_scrolled), self);
 
-  c->scale_blueness = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 5.0, p->blueness, 2));
-  dtgtk_slider_set_default_value(c->scale_blueness, p->blueness);
-  dtgtk_slider_set_label(c->scale_blueness,_("blue shift"));
-  dtgtk_slider_set_unit(c->scale_blueness,"%");
-  dtgtk_slider_set_format_type(c->scale_blueness,DARKTABLE_SLIDER_FORMAT_PERCENT);
+  c->scale_blueness = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->blueness, 2);
+  dt_bauhaus_widget_set_label(c->scale_blueness, _("blue shift"));
+  dt_bauhaus_slider_set_format(c->scale_blueness, "%0.2f%%");
   g_object_set(G_OBJECT(c->scale_blueness), "tooltip-text", _("blueness in shadows"), (char *)NULL);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->scale_blueness), TRUE, TRUE, 5);

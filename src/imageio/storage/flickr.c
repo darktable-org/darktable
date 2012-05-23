@@ -670,7 +670,13 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   }
   dt_image_cache_read_release(darktable.image_cache, img);
 
-  dt_imageio_export(imgid, fname, format, fdata);
+  if(dt_imageio_export(imgid, fname, format, fdata) != 0)
+  {
+    fprintf(stderr, "[imageio_storage_flickr] could not export to file: `%s'!\n", fname);
+    dt_control_log(_("could not export to file `%s'!"), fname);
+    result = 0;
+    goto cleanup;
+  }
 
 #ifdef _OPENMP
   #pragma omp critical

@@ -722,6 +722,8 @@ _default_process_tiling_ptp (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   for(int tx=0; tx<tiles_x; tx++)
     for(int ty=0; ty<tiles_y; ty++)  
   {
+    piece->pipe->tiling = 1;
+
     size_t wd = tx * tile_wd + width > roi_in->width  ? roi_in->width - tx * tile_wd : width;
     size_t ht = ty * tile_ht + height > roi_in->height ? roi_in->height- ty * tile_ht : height;
 
@@ -796,6 +798,7 @@ _default_process_tiling_ptp (struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
   if(input != NULL) free(input);
   if(output != NULL) free(output);
+  piece->pipe->tiling = 0;
   return;
 
 error:
@@ -805,6 +808,7 @@ error:
 fallback:
   if(input != NULL) free(input);
   if(output != NULL) free(output);
+  piece->pipe->tiling = 0;
   dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] fall back to standard processing for module '%s'\n", self->op);
   self->process(self, piece, ivoid, ovoid, roi_in, roi_out);
   return;
@@ -949,6 +953,8 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   for(int tx=0; tx<tiles_x; tx++)
     for(int ty=0; ty<tiles_y; ty++)  
   {
+    piece->pipe->tiling = 1;
+
     /* the output dimensions of the good part of this specific tile */
     size_t wd = (tx + 1) * tile_wd > roi_out->width  ? roi_out->width - tx * tile_wd : tile_wd;
     size_t ht = (ty + 1) * tile_ht > roi_out->height ? roi_out->height- ty * tile_ht : tile_ht;
@@ -1088,6 +1094,7 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
   if(input != NULL) free(input);
   if(output != NULL) free(output);
+  piece->pipe->tiling = 0;
   return;
 
 error:
@@ -1097,6 +1104,7 @@ error:
 fallback:
   if(input != NULL) free(input);
   if(output != NULL) free(output);
+  piece->pipe->tiling = 0;
   dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] fall back to standard processing for module '%s'\n", self->op);
   self->process(self, piece, ivoid, ovoid, roi_in, roi_out);
   return;
@@ -1235,6 +1243,8 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
   for(int tx=0; tx<tiles_x; tx++)
     for(int ty=0; ty<tiles_y; ty++)  
   {
+    piece->pipe->tiling = 1;
+
     size_t wd = tx * tile_wd + width > roi_in->width  ? roi_in->width - tx * tile_wd : width;
     size_t ht = ty * tile_ht + height > roi_in->height ? roi_in->height- ty * tile_ht : height;
 
@@ -1321,6 +1331,7 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
 
   if(input != NULL) dt_opencl_release_mem_object(input);
   if(output != NULL) dt_opencl_release_mem_object(output);
+  piece->pipe->tiling = 0;
   return TRUE;
 
 error:
@@ -1329,6 +1340,7 @@ error:
     piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
   if(input != NULL) dt_opencl_release_mem_object(input);
   if(output != NULL) dt_opencl_release_mem_object(output);
+  piece->pipe->tiling = 0;
   dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_opencl_ptp] couldn't run process_cl() for module '%s' in tiling mode: %d\n", self->op, err);
   return FALSE;
 }
@@ -1462,6 +1474,8 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
   for(int tx=0; tx<tiles_x; tx++)
     for(int ty=0; ty<tiles_y; ty++)  
   {
+    piece->pipe->tiling = 1;
+
     /* the output dimensions of the good part of this specific tile */
     size_t wd = (tx + 1) * tile_wd > roi_out->width  ? roi_out->width - tx * tile_wd : tile_wd;
     size_t ht = (ty + 1) * tile_ht > roi_out->height ? roi_out->height- ty * tile_ht : tile_ht;
@@ -1599,6 +1613,7 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
 
   if(input != NULL) dt_opencl_release_mem_object(input);
   if(output != NULL) dt_opencl_release_mem_object(output);
+  piece->pipe->tiling = 0;
   return TRUE;
 
 error:
@@ -1607,6 +1622,7 @@ error:
     piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
   if(input != NULL) dt_opencl_release_mem_object(input);
   if(output != NULL) dt_opencl_release_mem_object(output);
+  piece->pipe->tiling = 0;
   dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_opencl_roi] couldn't run process_cl() for module '%s' in tiling mode: %d\n", self->op, err);
   return FALSE;
 }

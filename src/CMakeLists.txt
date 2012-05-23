@@ -365,6 +365,19 @@ set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT
 target_link_libraries(lib_darktable ${LIBS} squish_static)
 add_subdirectory(external/squish)
 
+# libcolord-gtk:
+find_package(ColordGtk)
+if(COLORDGTK_FOUND)
+  message(STATUS "Using colord to fetch color profiles")
+  include_directories(${COLORDGTK_INCLUDE_DIRS})
+  list(APPEND LIBS ${COLORDGTK_LIBRARIES})
+  add_definitions("-DUSE_COLORDGTK")
+#   add_dependencies(lib_darktable colord-gtk)
+else(COLORDGTK_FOUND)
+  message(STATUS "Either colord is missing or too old (<0.1.20)")
+endif(COLORDGTK_FOUND)
+
+
 install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 list(APPEND LIBS lib_darktable)
 

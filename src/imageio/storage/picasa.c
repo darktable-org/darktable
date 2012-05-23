@@ -946,7 +946,13 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   }
   dt_image_cache_read_release(darktable.image_cache, img);
 
-  dt_imageio_export(imgid, fname, format, fdata);
+  if(dt_imageio_export(imgid, fname, format, fdata) != 0)
+  {
+    fprintf(stderr, "[imageio_storage_picasa] could not export to file: `%s'!\n", fname);
+    dt_control_log(_("could not export to file `%s'!"), fname);
+    result = 1;
+    goto cleanup;
+  }
 
   // Open the temp file and read image to memory
   GMappedFile *imgfile = g_mapped_file_new(fname,FALSE,NULL);
@@ -969,6 +975,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   // And remove from filesystem..
   unlink( fname );
+
+cleanup:
+
   g_free( caption );
   if(desc)
   {
@@ -976,7 +985,8 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     g_list_free(desc);
   }
 
-  dt_control_log(_("%d/%d exported to picasa webalbum"), num, total );
+  if(!result)
+    dt_control_log(_("%d/%d exported to picasa webalbum"), num, total );
   return result;
 }
 

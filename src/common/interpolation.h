@@ -19,6 +19,8 @@
 #ifndef INTERPOLATION_H
 #define INTERPOLATION_H
 
+#include "develop/pixelpipe_hb.h"
+
 #include <xmmintrin.h>
 
 /** Available interpolations */
@@ -109,6 +111,37 @@ dt_interpolation_compute_pixel4c(
 const struct dt_interpolation*
 dt_interpolation_new(
   enum dt_interpolation_type type);
+
+/** Image resampler.
+ *
+ * Resamples the image "in" to "out" according to roi values. Here is the
+ * exact contract:
+ * <ul>
+ * <li>The resampling is isotropic (same for both x and y directions),
+ * represented by roi_out->scale</li>
+ * <li>It generates roi_out->width samples horizontally whose positions span
+ * from roi_out->x to roi_out->x + roi_out->width</li>
+ * <li>It generates roi_out->height samples vertically whose positions span
+ * from roi_out->y to roi_out->y + roi_out->height</li>
+ * </ul>
+ *
+ * @param itor [in] Interpolator to use
+ * @param out [out] Will hold the resampled image
+ * @param roi_out [in] Region of interest of the resampled image
+ * @param out_stride [in] Output line stride in <strong>bytes</strong>
+ * @param in [in] Will hold the resampled image
+ * @param roi_in [in] Region of interest of the original image
+ * @param in_stride [in] Input line stride in <strong>bytes</strong>
+ */
+void
+dt_interpolation_resample(
+  const struct dt_interpolation* itor,
+  float *out,
+  const dt_iop_roi_t* const roi_out,
+  const int32_t out_stride,
+  const float* const in,
+  const dt_iop_roi_t* const roi_in,
+  const int32_t in_stride);
 
 #endif /* INTERPOLATION_H */
 

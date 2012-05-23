@@ -356,7 +356,13 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   /* export image to file */
-  dt_imageio_export(imgid, filename, format, fdata);
+  if(dt_imageio_export(imgid, filename, format, fdata) != 0)
+  {
+    fprintf(stderr, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
+    dt_control_log(_("could not export to file `%s'!"), filename);
+    return 1;
+  }
+
   /* also export thumbnail: */
   // write with reduced resolution:
   const int max_width  = fdata->max_width;
@@ -369,7 +375,12 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   if(c <= filename || *c=='/') c = filename + strlen(filename);
   const char *ext = format->extension(fdata);
   sprintf(c,"-thumb.%s",ext);
-  dt_imageio_export(imgid, filename, format, fdata);
+  if(dt_imageio_export(imgid, filename, format, fdata) != 0)
+  {
+    fprintf(stderr, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
+    dt_control_log(_("could not export to file `%s'!"), filename);
+    return 1;
+  }
   // restore for next image:
   fdata->max_width = max_width;
   fdata->max_height = max_height;

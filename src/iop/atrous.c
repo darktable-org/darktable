@@ -501,6 +501,10 @@ process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, voi
  
   for(int k=0; k<max_scale; k++) free(detail[k]);
   free(tmp);
+
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(i, o, width, height);
+
   return;
 
 error:

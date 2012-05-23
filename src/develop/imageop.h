@@ -152,6 +152,8 @@ typedef struct dt_iop_module_t
   int32_t hide_enable_button;
   /** set to 1 if you want an input color picked during next eval. gui mode only. */
   int32_t request_color_pick;
+  /** set to 1 if you want the mask to be transfered into alpha channel during next eval. gui mode only. */
+  int32_t request_mask_display;
   /** bounding box in which the mean color is requested. */
   float color_picker_box[4];
   /** single point to pick if in point mode */
@@ -423,6 +425,25 @@ static inline float dt_iop_eval_exp(const float *const coeff, const float x)
 
 /** Connects common accelerators to an iop module */
 void dt_iop_connect_common_accels(dt_iop_module_t *module);
+
+/** Copy alpha channel 1:1 from input to output */
+static inline void dt_iop_alpha_copy(const void *ivoid, void *ovoid, const int width, const int height)
+{
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(ovoid,ivoid)
+#endif
+  for(int j=0; j<height; j++)
+  {
+    const float *in  = ((const float *)ivoid)+4*width*j+3;
+    float *out = ((float *)ovoid)+4*width*j+3;
+    for(int i=0; i<width; i++)
+    {
+      *out = *in;
+      out += 4;
+      in += 4;
+    }
+  }
+}
 
 #endif
 

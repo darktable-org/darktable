@@ -158,12 +158,13 @@ highpass_mix(read_only image2d_t in_a, read_only image2d_t in_b, write_only imag
   float4 o = 0.0f;
   float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
-  float4 min = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
-  float4 max = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
+  float4 min = (float4)(0.0f, -128.0f, -128.0f, -INFINITY);
+  float4 max = (float4)(100.0f, 128.0f, 128.0f, INFINITY);
 
   o.x = 50.0f+((0.5f * a.x + 0.5f * b.x) - 50.0f)*contrast_scale;
   o.y = 0.0f;
   o.z = 0.0f;
+  o.w = a.w;
 
   write_imagef (out, (int2)(x, y), clamp(o, min, max));
 }

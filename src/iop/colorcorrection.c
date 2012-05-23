@@ -128,6 +128,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     out[0] = in[0];
     out[1] = d->saturation*(in[1] + in[0] * d->a_scale + d->a_base);
     out[2] = d->saturation*(in[2] + in[0] * d->b_scale + d->b_base);
+    out[3] = in[3];
     out += ch;
     in += ch;
   }

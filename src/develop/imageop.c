@@ -16,9 +16,17 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+/* Define this to != 0 if you want to enable new resampling code comming from
+ * interpolation.c instead of the well tested bilinear filtering here */
+#define USE_NEW_RESAMPLING_CODE 0
+
 #include "common/opencl.h"
 #include "common/dtpthread.h"
 #include "common/debug.h"
+#if USE_NEW_RESAMPLING_CODE
+#include "common/interpolation.h"
+#endif
 #include "bauhaus/bauhaus.h"
 #include "control/control.h"
 #include "develop/imageop.h"
@@ -44,7 +52,6 @@
 #include <xmmintrin.h>
 #include <time.h>
 #include <sys/select.h>
-
 
 static dt_develop_blend_params_t _default_blendop_params= {DEVELOP_BLEND_DISABLED, 100.0, 0, 0,
                                                           { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
@@ -317,6 +324,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->color_picker_box[0] = module->color_picker_box[1] = .25f;
   module->color_picker_box[2] = module->color_picker_box[3] = .75f;
   module->color_picker_point[0] = module->color_picker_point[1] = 0.5f;
+  module->request_mask_display = 0;
   module->enabled = module->default_enabled = 1; // all modules enabled by default.
   g_strlcpy(module->op, so->op, 20);
 
@@ -757,7 +765,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
       dt_bauhaus_slider_set(bd->opacity_slider, module->blend_params->opacity);
       if(bd->blendif_support)
       {
-        gtk_toggle_button_set_active(bd->blendif_enable, module->blend_params->blendif & (1<<31));
+        dt_bauhaus_combobox_set(bd->blendif_enable, (module->blend_params->blendif & (1<<31)) != 0);
         dt_iop_gui_update_blendif(module);
       }
     }
@@ -952,7 +960,7 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
           gtk_widget_hide(GTK_WIDGET(bd->blendif_enable));
         }
       }
-      else if(bd->blendif_support && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bd->blendif_enable)) == FALSE)
+      else if(bd->blendif_support && (dt_bauhaus_combobox_get(bd->blendif_enable) == 0))
       {
         gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
       }
@@ -1301,11 +1309,11 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw
   }
 }
 
-
 void
 dt_iop_clip_and_zoom(float *out, const float *const in,
                      const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride)
 {
+#if !USE_NEW_RESAMPLING_CODE
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
   const float px_footprint = .9f/roi_out->scale;
@@ -1359,6 +1367,15 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
     }
   }
   _mm_sfence();
+#else
+  static int displayedinfo = 0;
+  if (!displayedinfo) {
+    fprintf(stderr, "info: using new resampling code. Feedback welcome\n");
+    displayedinfo = 1;
+  }
+  const struct dt_interpolation* itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  dt_interpolation_resample(itor, out, roi_out, out_stride*4*sizeof(float), in, roi_in, in_stride*4*sizeof(float));
+#endif
 }
 
 static int

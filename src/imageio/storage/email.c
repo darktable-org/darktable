@@ -99,7 +99,13 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   attachment->file = g_build_filename( tmpdir, filename, (char *)NULL );
 
-  dt_imageio_export(imgid, attachment->file, format, fdata);
+  if(dt_imageio_export(imgid, attachment->file, format, fdata) != 0)
+  {
+    fprintf(stderr, "[imageio_storage_email] could not export to file: `%s'!\n", attachment->file);
+    dt_control_log(_("could not export to file `%s'!"), attachment->file);
+    return 1;
+  }
+
 
   char *trunc = attachment->file + strlen(attachment->file) - 32;
   if(trunc < attachment->file) trunc = attachment->file;
