@@ -21,6 +21,7 @@
 #include "control/control.h"
 #include "common/imageio.h"
 #include "common/image_cache.h"
+#include "common/file_location.h"
 #include "common/styles.h"
 #include "common/tags.h"
 #include "common/debug.h"
@@ -138,7 +139,7 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
 
     /* backup style to disk */
     char stylesdir[1024];
-    dt_util_get_user_config_dir(stylesdir, 1024);
+    dt_loc_get_user_config_dir(stylesdir, 1024);
     g_strlcat(stylesdir,"/styles",1024);
     g_mkdir_with_parents(stylesdir,00755);
 
