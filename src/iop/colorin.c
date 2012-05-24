@@ -575,7 +575,7 @@ void gui_init(struct dt_iop_module_t *self)
   // darktable built-in, if applicable
   for(int k=0; k<dt_profiled_colormatrix_cnt; k++)
   {
-    if(!strcmp(makermodel, dt_profiled_colormatrices[k].makermodel))
+    if(!strcasecmp(makermodel, dt_profiled_colormatrices[k].makermodel))
     {
       prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
       g_strlcpy(prof->filename, "darktable", sizeof(prof->filename));
