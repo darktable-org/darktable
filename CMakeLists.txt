@@ -114,7 +114,7 @@ if(WIN32)
 	set(SHARE_INSTALL "." CACHE STRING "Data file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
 else(WIN32)
 	if(NOT SHARE_INSTALL)
-		set(SHARE_INSTALL "share/darktable" CACHE STRING "Data file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
+		set(SHARE_INSTALL "share" CACHE STRING "Data file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
 	endif(NOT SHARE_INSTALL)
 endif(WIN32)
 

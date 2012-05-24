@@ -19,16 +19,16 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.gtkrc.in ${CMAKE_CURRENT_B
 # Add files that should go into shared
 #
 set(SHARE_FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.gtkrc)
-install(FILES ${SHARE_FILES} DESTINATION ${SHARE_INSTALL})
+install(FILES ${SHARE_FILES} DESTINATION ${SHARE_INSTALL}/darktable)
 
 #
 # web gallery export support files:
 #
 FILE(GLOB WEB_FILES "style/*")
-install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/style)
+install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/style)
 
 FILE(GLOB WEB_FILES "js/*")
-install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/js)
+install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/js)
 
 #
 # Install other system shares
@@ -39,12 +39,12 @@ install(FILES darktable.desktop DESTINATION ./share/applications)
 # Install watermarks
 #
 FILE(GLOB WATERMARKS "watermarks/*.svg")
-install(FILES ${WATERMARKS} DESTINATION ${SHARE_INSTALL}/watermarks)
+install(FILES ${WATERMARKS} DESTINATION ${SHARE_INSTALL}/darktable/watermarks)
 
 #
 # Install gdb command file for backtrace generation
 #
-install(FILES gdb_commands DESTINATION ${SHARE_INSTALL})
+install(FILES gdb_commands DESTINATION ${SHARE_INSTALL}/darktable)
 
 #
 # Transform darktableconfig.xml into darktablerc
@@ -85,5 +85,5 @@ add_custom_target(darktablerc ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktabler
 # first of all install darktablerc file into share as template
 # postinst script should copy this into users homedirectory
 # $HOME/.config/darktable/darktable.rc
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${SHARE_INSTALL}/)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${SHARE_INSTALL}/darktable/)
 
