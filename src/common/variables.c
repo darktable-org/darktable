@@ -19,6 +19,7 @@
 #include "common/colorlabels.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/file_location.h"
 #include "common/metadata.h"
 #include "common/variables.h"
 #include "common/utility.h"
@@ -100,7 +101,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   gboolean got_value=FALSE;
   struct tm *tim=localtime(&params->data->time);
 
-  const gchar *homedir = dt_util_get_home_dir(NULL);
+  const gchar *homedir = dt_loc_get_home_dir(NULL);
 
   gchar *pictures_folder=NULL;
 

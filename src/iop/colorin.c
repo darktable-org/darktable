@@ -353,7 +353,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   piece->process_cl_ready = 1;
   char datadir[1024];
   char filename[1024];
-  dt_util_get_datadir(datadir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
   if(!strcmp(p->iccprofile, "darktable"))
   {
     char makermodel[1024];
@@ -603,8 +603,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   // read {userconfig,datadir}/color/in/*.icc, in this order.
   char datadir[1024], confdir[1024], dirname[1024], filename[1024];
-  dt_util_get_user_config_dir(confdir, 1024);
-  dt_util_get_datadir(datadir, 1024);
+  dt_loc_get_user_config_dir(confdir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
   snprintf(dirname, 1024, "%s/color/in", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
     snprintf(dirname, 1024, "%s/color/in", datadir);

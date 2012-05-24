@@ -485,8 +485,8 @@ gui_init (dt_lib_module_t *self)
 
   // read datadir/color/out/*.icc
   char datadir[1024], confdir[1024], dirname[1024], filename[1024];
-  dt_util_get_user_config_dir(confdir, 1024);
-  dt_util_get_datadir(datadir, 1024);
+  dt_loc_get_user_config_dir(confdir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   snprintf(dirname, 1024, "%s/color/out", confdir);
