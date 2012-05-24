@@ -375,12 +375,12 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS 5D Mark II", Flash, 9,	{ 2.680664, 1, 1.321289, 0 } },
 
   /* Canon EOS 5D Mark III Firmware Version 1.1.2 */
-  { "Canon", "EOS 5D Mark III", Cloudy, 0,	{ 2.216797, 1, 1.490234, 0 } },
-  { "Canon", "EOS 5D Mark III", Flash, 0,	{ 2.291016, 1, 1.464844, 0 } },
-  { "Canon", "EOS 5D Mark III", Fluorescent, 0,	{ 1.809570, 1, 2.300781, 0 } },
-  { "Canon", "EOS 5D Mark III", Shade, 0,	{ 2.365234, 1, 1.381836, 0 } },
   { "Canon", "EOS 5D Mark III", Daylight, 0,	{ 2.060547, 1, 1.618164, 0 } },
+  { "Canon", "EOS 5D Mark III", Shade, 0,	{ 2.365234, 1, 1.381836, 0 } },
+  { "Canon", "EOS 5D Mark III", Cloudy, 0,	{ 2.216797, 1, 1.490234, 0 } },
   { "Canon", "EOS 5D Mark III", Tungsten, 0,	{ 1.484375, 1, 2.398438, 0 } },
+  { "Canon", "EOS 5D Mark III", Fluorescent, 0,	{ 1.809570, 1, 2.300781, 0 } },
+  { "Canon", "EOS 5D Mark III", Flash, 0,	{ 2.291016, 1, 1.464844, 0 } },
 
   /* Fine-tuning for the 7D are the camera's Amber-Blue bracketing. */
   { "Canon", "EOS 7D", Daylight, -3,		{ 2.036, 1, 1.595, 0 } },
@@ -1238,6 +1238,8 @@ const wb_data wb_preset[] = {
   { "FUJIFILM", "FinePix X100", "3300K", 0,	{ 1.0066, 1, 2.1060, 0 } },
   { "FUJIFILM", "FinePix X100", "5000K", 0,	{ 1.4536, 1, 1.3742, 0 } },
 
+
+
   { "Leica Camera AG", "M8 Digital Camera", Cloudy, 0, { 2.136719, 1, 1.168213, 0 } },
   { "Leica Camera AG", "M8 Digital Camera", Daylight, 0, { 2.007996, 1, 1.268982, 0 } },
   { "Leica Camera AG", "M8 Digital Camera", Flash, 0, { 2.164490, 1, 1.177795, 0 } },
@@ -1245,13 +1247,13 @@ const wb_data wb_preset[] = {
   { "Leica Camera AG", "M8 Digital Camera", Shade, 0, { 2.197754, 1, 1.111084, 0 } },
   { "Leica Camera AG", "M8 Digital Camera", Tungsten, 0, { 1.160034, 1, 2.028381, 0 } },
 
-  { "Leica", "M9 Digital Camera", Tungsten, 0,		{ 1.321288, 1, 2.077024, 0 } },
-  { "Leica", "M9 Digital Camera", Fluorescent, 0,	{ 1.673827, 1, 1.855043, 0 } },
+  { "Leica", "M9 Digital Camera", Tungsten, 0,	{ 1.321288, 1, 2.077024, 0 } },
+  { "Leica", "M9 Digital Camera", Fluorescent, 0, { 1.673827, 1, 1.855043, 0 } },
   { "Leica", "M9 Digital Camera", DaylightFluorescent, 0, { 2.224852, 1, 1.388000, 0 } },
-  { "Leica", "M9 Digital Camera", Daylight, 0,		{ 2.013733, 1, 1.364869, 0 } },
-  { "Leica", "M9 Digital Camera", Flash, 0,		{ 1.980652, 1, 1.331111, 0 } },
-  { "Leica", "M9 Digital Camera", Cloudy, 0,		{ 2.146728, 1, 1.252197, 0 } },
-  { "Leica", "M9 Digital Camera", Shade, 0,		{ 2.249268, 1, 1.179015, 0 } },
+  { "Leica", "M9 Digital Camera", Daylight, 0,	{ 2.013733, 1, 1.364869, 0 } },
+  { "Leica", "M9 Digital Camera", Flash, 0,	{ 1.980652, 1, 1.331111, 0 } },
+  { "Leica", "M9 Digital Camera", Cloudy, 0,	{ 2.146728, 1, 1.252197, 0 } },
+  { "Leica", "M9 Digital Camera", Shade, 0,	{ 2.249268, 1, 1.179015, 0 } },
 
   { "Leica Camera AG", "R8 - Digital Back DMR", Incandescent, 0, { 1, 1.109985, 2.430664, 0 } },
   { "Leica Camera AG", "R8 - Digital Back DMR", Fluorescent, 0, { 1.234985, 1, 1.791138, 0 } },
@@ -2896,13 +2898,28 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-620", Flash, 0,		{ 2.039063, 1, 1.195313, 0 } },
   { "OLYMPUS", "E-620", Flash, 7,		{ 2.276786, 1.142857, 1, 0 } },
 
+  /* -7/+7 fine tuning is -7/+7 in amber-blue and zero in green-magenta */
+  { "OLYMPUS", "E-M5", Daylight, -7,		{ 1.8047, 1, 2.0547, 0 } },
   { "OLYMPUS", "E-M5", Daylight, 0,		{ 2.1016, 1, 1.8047, 0 } },
+  { "OLYMPUS", "E-M5", Daylight, 7,		{ 2.3906, 1, 1.5469, 0 } },
+  { "OLYMPUS", "E-M5", Shade, -7,		{ 2.1484, 1, 1.6172, 0 } },
   { "OLYMPUS", "E-M5", Shade, 0,		{ 2.5000, 1, 1.4219, 0 } },
+  { "OLYMPUS", "E-M5", Shade, 7,		{ 2.8437, 1, 1.2187, 0 } },
+  { "OLYMPUS", "E-M5", Cloudy, -7,		{ 1.9766, 1, 1.8516, 0 } },
   { "OLYMPUS", "E-M5", Cloudy, 0,		{ 2.3047, 1, 1.6250, 0 } },
+  { "OLYMPUS", "E-M5", Cloudy, 7,		{ 2.6250, 1, 1.3906, 0 } },
+  { "OLYMPUS", "E-M5", Incandescent, -7,	{ 1.1250, 1, 3.6953, 0 } },
   { "OLYMPUS", "E-M5", Incandescent, 0,		{ 1.3125, 1, 3.2422, 0 } },
+  { "OLYMPUS", "E-M5", Incandescent, 7,		{ 1.4922, 1, 2.7812, 0 } },
+  { "OLYMPUS", "E-M5", Fluorescent, -7,		{ 1.7344, 1, 2.9375, 0 } },
   { "OLYMPUS", "E-M5", Fluorescent, 0,		{ 2.0234, 1, 2.5781, 0 } },
+  { "OLYMPUS", "E-M5", Fluorescent, 7,		{ 2.3047, 1, 2.2109, 0 } },
+  { "OLYMPUS", "E-M5", Underwater, -7,		{ 1.3906, 1, 2.8281, 0 } },
   { "OLYMPUS", "E-M5", Underwater, 0,		{ 1.6250, 1, 2.4844, 0 } },
+  { "OLYMPUS", "E-M5", Underwater, 7,		{ 1.8516, 1, 2.1328, 0 } },
+  { "OLYMPUS", "E-M5", Flash, -7,		{ 2.0391, 1, 1.8203, 0 } },
   { "OLYMPUS", "E-M5", Flash, 0,		{ 2.3750, 1, 1.6016, 0 } },
+  { "OLYMPUS", "E-M5", Flash, 7,		{ 2.7031, 1, 1.3750, 0 } },
 
   { "OLYMPUS", "E-P1", Daylight, 0,		{ 1.835938, 1, 1.351563, 0 } },
   { "OLYMPUS", "E-P1", Shade, 0,		{ 2.195313, 1, 1.046875, 0 } },
@@ -3041,14 +3058,31 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-P3", Flash, 0,		{ 2.2109, 1, 1.3672, 0 } },
 
   /* Firmware version 1.2 */
+  /* -7/+7 fine tuning is -7/+7 in amber-blue and zero in green-magenta */
+  { "OLYMPUS", "E-PL1", Daylight, -7,		{ 1.492188, 1, 1.531250, 0 } },
   { "OLYMPUS", "E-PL1", Daylight, 0,		{ 1.726562, 1, 1.343750, 0 } },
+  { "OLYMPUS", "E-PL1", Daylight, 7,		{ 1.984375, 1, 1.148438, 0 } },
+  { "OLYMPUS", "E-PL1", Shade, -7,		{ 1.796875, 1, 1.171875, 0 } },
   { "OLYMPUS", "E-PL1", Shade, 0,		{ 2.085937, 1, 1.039062, 0 } },
+  { "OLYMPUS", "E-PL1", Shade, 7,		{ 2.699115, 1.132743, 1, 0 } },
+  { "OLYMPUS", "E-PL1", Cloudy, -7,		{ 1.640625, 1, 1.367187, 0 } },
   { "OLYMPUS", "E-PL1", Cloudy, 0,		{ 1.906250, 1, 1.210938, 0 } },
+  { "OLYMPUS", "E-PL1", Cloudy, 7,		{ 2.179688, 1, 1.031250, 0 } },
+  { "OLYMPUS", "E-PL1", Incandescent, -7,	{ 1, 1.174312, 3.467890, 0 } },
   { "OLYMPUS", "E-PL1", Incandescent, 0,	{ 1, 1.015873, 2.619048, 0 } },
+  { "OLYMPUS", "E-PL1", Incandescent, 7,	{ 1.125000, 1, 2.226562, 0 } },
+  { "OLYMPUS", "E-PL1", WhiteFluorescent, -7,	{ 1.421875, 1, 2.234375, 0 } },
   { "OLYMPUS", "E-PL1", WhiteFluorescent, 0,	{ 1.648437, 1, 1.960937, 0 } },
+  { "OLYMPUS", "E-PL1", WhiteFluorescent, 7,	{ 1.882812, 1, 1.679687, 0 } },
+  { "OLYMPUS", "E-PL1", NeutralFluorescent, -7,	{ 1.390625, 1, 1.945313, 0 } },
   { "OLYMPUS", "E-PL1", NeutralFluorescent, 0,	{ 1.609375, 1, 1.710938, 0 } },
+  { "OLYMPUS", "E-PL1", NeutralFluorescent, 7,	{ 1.851563, 1, 1.468750, 0 } },
+  { "OLYMPUS", "E-PL1", DaylightFluorescent, -7, { 1.750000, 1, 1.507812, 0 } },
   { "OLYMPUS", "E-PL1", DaylightFluorescent, 0,	{ 2.015625, 1, 1.328125, 0 } },
+  { "OLYMPUS", "E-PL1", DaylightFluorescent, 7,	{ 2.320313, 1.140625, 1, 0 } },
+  { "OLYMPUS", "E-PL1", Flash, -7,		{ 1.640625, 1, 1.367187, 0 } },
   { "OLYMPUS", "E-PL1", Flash, 0,		{ 1.898438, 1, 1.203125, 0 } },
+  { "OLYMPUS", "E-PL1", Flash, 7,		{ 2.179688, 1, 1.031250, 0 } },
   { "OLYMPUS", "E-PL1", "2700K", 0,		{ 1, 1.075630, 2.924370, 0 } },
   { "OLYMPUS", "E-PL1", "3000K", 0,		{ 1.085937, 1, 2.312500, 0 } },
   { "OLYMPUS", "E-PL1", "3300K", 0,		{ 1.218750, 1, 1.976562, 0 } },
@@ -3066,15 +3100,31 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-PL2", "5000K", 0,		{ 1.4062, 1, 1.4922, 0 } },
 
   /* Firmware version 1.3 */
+  /* -7/+7 fine tuning is -7/+7 in amber-blue and zero in green-magenta */
+  { "OLYMPUS", "E-PL3", Daylight, -7,		{ 1.695313, 1, 1.656250, 0 } },
   { "OLYMPUS", "E-PL3", Daylight, 0,		{ 1.976562, 1, 1.453125, 0 } },
+  { "OLYMPUS", "E-PL3", Daylight, 7,		{ 2.250000, 1, 1.242187, 0 } },
+  { "OLYMPUS", "E-PL3", Shade, -7,		{ 2.046875, 1, 1.312500, 0 } },
   { "OLYMPUS", "E-PL3", Shade, 0,		{ 2.382812, 1, 1.156250, 0 } },
+  { "OLYMPUS", "E-PL3", Shade, 7,		{ 2.732283, 1.007874, 1, 0 } },
+  { "OLYMPUS", "E-PL3", Cloudy, -7,		{ 1.859375, 1, 1.515625, 0 } },
   { "OLYMPUS", "E-PL3", Cloudy, 0,		{ 2.164063, 1, 1.335938, 0 } },
+  { "OLYMPUS", "E-PL3", Cloudy, 7,		{ 2.460937, 1, 1.148437, 0 } },
+  { "OLYMPUS", "E-PL3", Tungsten, -7,		{ 1.007812, 1, 2.812500, 0 } },
   { "OLYMPUS", "E-PL3", Tungsten, 0,		{ 1.171875, 1, 2.468750, 0 } },
+  { "OLYMPUS", "E-PL3", Tungsten, 7,		{ 1.335937, 1, 2.117187, 0 } },
+  { "OLYMPUS", "E-PL3", Fluorescent, -7,	{ 1.679688, 1, 2.203125, 0 } },
   { "OLYMPUS", "E-PL3", Fluorescent, 0,		{ 1.953125, 1, 1.937500, 0 } },
+  { "OLYMPUS", "E-PL3", Fluorescent, 7,		{ 2.226562, 1, 1.664062, 0 } },
+  { "OLYMPUS", "E-PL3", Underwater, -7,		{ 1.812500, 1, 1.789062, 0 } },
   { "OLYMPUS", "E-PL3", Underwater, 0,		{ 2.390625, 1, 1.484375, 0 } },
+  { "OLYMPUS", "E-PL3", Underwater, 7,		{ 2.429688, 1, 1.335937, 0 } },
+  { "OLYMPUS", "E-PL3", Flash, -7,		{ 2.218750, 1, 1.421875, 0 } },
   { "OLYMPUS", "E-PL3", Flash, 0,		{ 2.585938, 1, 1.250000, 0 } },
-  { "OLYMPUS", "E-PL3", "2300K", 0,		{ 1, 1.207547, 3.754717, 0 } },
+  { "OLYMPUS", "E-PL3", Flash, 7,		{ 2.945313, 1, 1.070312, 0 } },
+  { "OLYMPUS", "E-PL3", "2700K", 0,		{ 1.117187, 1, 2.570312, 0 } },
   { "OLYMPUS", "E-PL3", "3000K", 0,		{ 1.273437, 1, 2.273437, 0 } },
+  { "OLYMPUS", "E-PL3", "3300K", 0,		{ 1.414062, 1, 2.015625, 0 } },
   { "OLYMPUS", "E-PL3", "5000K", 0,		{ 1.906250, 1, 1.515625, 0 } },
 
   { "OLYMPUS", "SP500UZ", Daylight, -7,		{ 1.136719, 1, 2.359375, 0 } },
@@ -3167,7 +3217,7 @@ const wb_data wb_preset[] = {
   { "Panasonic", "DMC-GF1", Shade, 0,		{ 2.395437, 1, 1.193916, 0 } },
   { "Panasonic", "DMC-GF1", Incandescent, 0,	{ 1.365019, 1, 2.117871, 0 } },
   { "Panasonic", "DMC-GF1", Flash, 0,		{ 2.353612, 1, 1.231939, 0 } },
-  
+
   { "Panasonic", "DMC-GX1", Daylight, 0,	{ 2.7925, 1, 1.5472, 0 } },
   { "Panasonic", "DMC-GX1", Cloudy, 0,		{ 2.9660, 1, 1.4528, 0 } },
   { "Panasonic", "DMC-GX1", Shade, 0,		{ 3.2642, 1, 1.3698, 0 } },
@@ -3179,7 +3229,7 @@ const wb_data wb_preset[] = {
   { "Panasonic", "DMC-GX1", "5000K", 0,		{ 2.6679, 1, 1.6264, 0 } },
   { "Panasonic", "DMC-GX1", "5500K", 0,		{ 2.7925, 1, 1.5472, 0 } },
   { "Panasonic", "DMC-GX1", "6500K", 0,		{ 3.0679, 1, 1.4189, 0 } },
-  
+
   { "Panasonic", "DMC-L1", Daylight, 0,		{ 1.980989, 1, 1.444867, 0 } },
   { "Panasonic", "DMC-L1", Cloudy, 0,		{ 2.129278, 1, 1.300380, 0 } },
   { "Panasonic", "DMC-L1", Shade, 0,		{ 2.361217, 1, 1.167300, 0 } },
