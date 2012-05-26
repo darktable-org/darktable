@@ -53,12 +53,6 @@ extern "C"
         LibRaw *ip = (LibRaw*) lr->parent_class;
         return ip->unpack_function_name();
     }
-    int libraw_rotate_fuji_raw(libraw_data_t* lr)
-    {
-        if(!lr) return EINVAL;
-        LibRaw *ip = (LibRaw*) lr->parent_class;
-        return ip->rotate_fuji_raw();
-    }
 
     void libraw_subtract_black(libraw_data_t* lr)
     {
@@ -67,13 +61,6 @@ extern "C"
         ip->subtract_black();
     }
 
-
-    int libraw_add_masked_borders_to_bitmap(libraw_data_t* lr)
-    {
-        if(!lr) return EINVAL;
-        LibRaw *ip = (LibRaw*) lr->parent_class;
-        return ip->add_masked_borders_to_bitmap();
-    }
 
     int libraw_open_file(libraw_data_t* lr, const char *file)
     {
@@ -189,6 +176,25 @@ extern "C"
     void libraw_dcraw_clear_mem(libraw_processed_image_t* p)
     {
         LibRaw::dcraw_clear_mem(p);
+    }
+
+    int  libraw_raw2image(libraw_data_t* lr)
+    {
+        if(!lr) return EINVAL;
+        LibRaw *ip = (LibRaw*) lr->parent_class;
+        return ip->raw2image();
+    }
+    void  libraw_free_image(libraw_data_t* lr)
+    {
+        if(!lr) return;
+        LibRaw *ip = (LibRaw*) lr->parent_class;
+        ip->free_image();
+    }
+    int  libraw_get_decoder_info(libraw_data_t* lr,libraw_decoder_info_t *d)
+    {
+        if(!lr || !d) return EINVAL;
+        LibRaw *ip = (LibRaw*) lr->parent_class;
+        return ip->get_decoder_info(d);
     }
 #ifdef __cplusplus
 }
