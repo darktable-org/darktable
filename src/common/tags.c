@@ -184,10 +184,11 @@ void dt_tag_attach(guint tagid,gint imgid)
     sqlite3_finalize(stmt);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-      "UPDATE tagxtag SET count = count + 1 WHERE (id1 = ?1 AND id2 IN "
-      "(SELECT tagid FROM tagged_images WHERE imgid = ?2)) OR (id2 = ?1 "
-      "AND id1 IN (SELECT tagid FROM tagged_images WHERE imgid = ?2))",
-	-1, &stmt, NULL);
+      "UPDATE tagxtag SET count = count + 1 WHERE "
+      "(id1 = ?1 AND id2 IN (SELECT tagid FROM tagged_images WHERE imgid = ?2)) "
+      "OR "
+      "(id2 = ?1 AND id1 IN (SELECT tagid FROM tagged_images WHERE imgid = ?2))",
+      -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step(stmt);
@@ -439,7 +440,7 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
    */
 
   /* Quick sanity check - is keyword empty? If so .. return 0 */
-  if (keyword[0] == '\0')
+  if (keyword == 0)
     return 0;
 
   /* SELECT T.id FROM tags T WHERE T.name LIKE '%%%s%%';  --> into temp table */
