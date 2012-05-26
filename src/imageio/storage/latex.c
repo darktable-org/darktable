@@ -330,7 +330,7 @@ static void
 copy_res(const char *src, const char *dst)
 {
   char share[1024];
-  dt_util_get_datadir(share, 1024);
+  dt_loc_get_datadir(share, 1024);
   gchar *sourcefile = g_build_filename(share, src, NULL);
   char* content = NULL;
   FILE *fin = fopen(sourcefile, "rb");
