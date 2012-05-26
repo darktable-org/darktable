@@ -33,6 +33,8 @@ it under the terms of the one of three licenses as you choose:
 
 //imgdata image
 #define image           (imgdata.image)
+#define raw_image       (imgdata.rawdata.raw_image)
+#define color_image       (imgdata.rawdata.color_image)
 
 // imgdata.sizes
 #define raw_height      (imgdata.sizes.raw_height)
