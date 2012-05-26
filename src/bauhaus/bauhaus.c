@@ -845,7 +845,7 @@ dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
 #ifdef DT_BAUHAUS_OLD
   const float htm = 0.0f, htM = ht;
 #else
-  const float htm = 0.7f*ht, htM = 0.2*ht;
+  const float htm = 0.65f*ht, htM = 0.25*ht;
 #endif
 
   cairo_pattern_t *gradient = NULL;
@@ -868,15 +868,17 @@ dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
   }
 
   cairo_rectangle(cr, 2, htm, wd-4-ht-2, htM);
-  cairo_fill_preserve(cr);
+  cairo_fill(cr);
+
+  // have a `fill ratio feel'
+  set_indicator_color(cr, .95f);
+  cairo_rectangle(cr, 2, htm, d->pos*(wd-4-ht-2), htM);
+  cairo_fill(cr);
+
+  cairo_rectangle(cr, 2, htm, wd-4-ht-2, htM);
   cairo_set_line_width(cr, 1.);
   set_grid_color(cr, 1.);
   cairo_stroke(cr);
-
-  // have a `fill ratio feel'
-  set_indicator_color(cr, .9f);
-  cairo_rectangle(cr, 2, htm, d->pos*(wd-4-ht-2), htM);
-  cairo_fill(cr);
 
   cairo_restore(cr);
 
