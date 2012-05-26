@@ -795,9 +795,8 @@ void gui_init(struct dt_iop_module_t *self)
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
     if(!strcmp(prof->name, "X profile"))
     {
-      gtk_combo_box_append_text(g->cbox2, _("system display profile"));
+      // the system display profile is only suitable for display purposes
       gtk_combo_box_append_text(g->cbox3, _("system display profile"));
-      gtk_combo_box_append_text(g->cbox5, _("system display profile"));	/// TODO: this is useless, but here for test
     }
     else if(!strcmp(prof->name, "linear_rgb"))
     {
