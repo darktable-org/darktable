@@ -684,6 +684,7 @@ void dt_bauhaus_combobox_set(GtkWidget *widget, int pos)
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->active = CLAMP(pos, -1, d->num_labels-1);
+  gtk_widget_queue_draw(GTK_WIDGET(w));
   g_signal_emit_by_name(G_OBJECT(w), "value-changed");
 }
 

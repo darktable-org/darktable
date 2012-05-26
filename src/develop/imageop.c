@@ -1091,7 +1091,11 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   /* connect mouse button callbacks for focus and presets */
   g_signal_connect(G_OBJECT(pluginui), "button-press-event", G_CALLBACK(_iop_plugin_body_button_press), module);
   /* avoid scrolling with wheel, it's distracting (you'll end up over a control, and scroll it's value) */
+  g_signal_connect(G_OBJECT(pluginui_frame), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
   g_signal_connect(G_OBJECT(pluginui), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
+  g_signal_connect(G_OBJECT(header_evb), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
+  g_signal_connect(G_OBJECT(expander), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
+  g_signal_connect(G_OBJECT(header), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
 
   /* steup the header box */
   gtk_container_add(GTK_CONTAINER(header_evb), header);
