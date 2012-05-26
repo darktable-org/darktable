@@ -996,6 +996,13 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
 }
 
 static gboolean
+_iop_plugin_body_scrolled(GtkWidget *w, GdkEvent *e, gpointer user_data)
+{
+  // just make sure nothing happens:
+  return TRUE;
+}
+
+static gboolean
 _iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
@@ -1014,7 +1021,8 @@ _iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_dat
   return FALSE;
 }
 
-static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+static gboolean
+_iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   GtkWidget *pluginui = dt_iop_gui_get_widget(module);
@@ -1082,6 +1090,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   module->header = header;
   /* connect mouse button callbacks for focus and presets */
   g_signal_connect(G_OBJECT(pluginui), "button-press-event", G_CALLBACK(_iop_plugin_body_button_press), module);
+  /* avoid scrolling with wheel, it's distracting (you'll end up over a control, and scroll it's value) */
+  g_signal_connect(G_OBJECT(pluginui), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
 
   /* steup the header box */
   gtk_container_add(GTK_CONTAINER(header_evb), header);
