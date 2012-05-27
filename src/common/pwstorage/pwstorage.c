@@ -42,7 +42,7 @@ const dt_pwstorage_t* dt_pwstorage_new()
   if(pwstorage == NULL)
     return NULL;
 
-  const gchar* _backend_str = dt_conf_get_string( "plugins/pwstorage/pwstorage_backend" );
+  gchar* _backend_str = dt_conf_get_string( "plugins/pwstorage/pwstorage_backend" );
   gint _backend = -1;
 
   if(strcmp(_backend_str, "none") == 0)
@@ -51,6 +51,8 @@ const dt_pwstorage_t* dt_pwstorage_new()
     _backend = PW_STORAGE_BACKEND_KWALLET;
   else if(strcmp(_backend_str, "gnome keyring") == 0)
     _backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
+
+  g_free(_backend_str);
 
   switch(_backend)
   {
