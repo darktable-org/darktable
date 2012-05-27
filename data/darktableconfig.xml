@@ -405,8 +405,8 @@
     <type>
       <enum>
         <option>off</option>
-        <option>low quality</option>
-        <option>slow</option>
+        <option>low quality (fast)</option>
+        <option>high quality (slow)</option>
       </enum>
     </type>
     <default>off</default>
