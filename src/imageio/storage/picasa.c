@@ -898,6 +898,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   int result=1;
   dt_storage_picasa_params_t *p=(dt_storage_picasa_params_t *)sdata;
 
+  int fail = 0;
 #ifdef _OPENMP // synch parallel store
   #pragma omp critical
 #endif
@@ -905,8 +906,10 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     if( _picasa_api_create_album( p->picasa_api ) != 201 )
     {
       dt_control_log("failed to create picasa album");
-      return 1;
+      fail = 1;
     }
+
+  if(fail) return 1;
 
   const char *ext = format->extension(fdata);
 
