@@ -277,6 +277,8 @@ void _camera_process_jobb(const dt_camctl_t *c,const dt_camera_t *camera, gpoint
       dt_print(DT_DEBUG_CAMCTL,"[camera_control] process of unknown job type %lx\n",(unsigned long int)j->type);
       break;
   }
+
+  g_free(j);
 }
 
 void _camctl_lock(const dt_camctl_t *c,const dt_camera_t *cam)
