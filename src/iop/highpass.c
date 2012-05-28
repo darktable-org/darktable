@@ -499,7 +499,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
   /* sharpness */
-  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->sharpness, 2);
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->sharpness, 2);
   dt_bauhaus_widget_set_label(g->scale1,_("sharpness"));
   dt_bauhaus_slider_set_format(g->scale1,"%.0f%%");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
@@ -508,7 +508,7 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (sharpness_callback), self);
 
   /* contrast boost */
-  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->contrast, 2);
+  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->contrast, 2);
   dt_bauhaus_widget_set_label(g->scale2,_("contrast boost"));
   dt_bauhaus_slider_set_format(g->scale2,"%.0f%%");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);

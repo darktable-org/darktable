@@ -145,12 +145,11 @@ if [ "$BUILD_TYPE" =  "" ]; then
 	BUILD_TYPE=Release
 fi
 
+KERNELNAME=`uname -s`
 # If no Make tasks given, try to be smart
 if [ "$(($MAKE_TASKS < 1))" -eq 1 ]; then
-	if [ `uname -s` = "SunOS" ]; then
+	if [ "$KERNELNAME" = "SunOS" ]; then
 		MAKE_TASKS=$( /usr/sbin/psrinfo |wc -l )
-		MAKE=gmake
-		PATH=/usr/gnu/bin:$PATH ; export PATH
 	else
 		if [ -r /proc/cpuinfo ]; then
 			MAKE_TASKS=$(grep -c "^processor" /proc/cpuinfo)
@@ -160,8 +159,14 @@ if [ "$(($MAKE_TASKS < 1))" -eq 1 ]; then
 				MAKE_TASKS=$TMP_CORES
 			fi
 		fi
-		MAKE=make
 	fi
+fi
+
+if [ "$KERNELNAME" = "SunOS" ]; then
+	MAKE=gmake
+	PATH=/usr/gnu/bin:$PATH ; export PATH
+else
+	MAKE=make
 fi
 
 # Being smart may fail :D

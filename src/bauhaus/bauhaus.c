@@ -338,6 +338,23 @@ dt_bauhaus_popup_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpoint
 }
 
 static gboolean
+dt_bauhaus_popup_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  if(darktable.bauhaus->current &&
+    (darktable.bauhaus->current->type == DT_BAUHAUS_COMBOBOX) &&
+    (event->button == 1) &&
+    (event->y > GTK_WIDGET(darktable.bauhaus->current)->allocation.height))
+  {
+    // only accept left mouse click
+    darktable.bauhaus->end_mouse_x = event->x;
+    darktable.bauhaus->end_mouse_y = event->y;
+    dt_bauhaus_widget_accept(darktable.bauhaus->current);
+    dt_bauhaus_hide_popup();
+  }
+  return TRUE;
+}
+
+static gboolean
 dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   if(event->button == 1)
@@ -479,6 +496,10 @@ dt_bauhaus_init()
                     G_CALLBACK (dt_bauhaus_popup_leave_notify), (gpointer)NULL);
   g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "button-press-event",
                     G_CALLBACK (dt_bauhaus_popup_button_press), (gpointer)NULL);
+  // this is connected to the widget itself, not the popup. we're only interested
+  // in mouse release events that are initiated by a press on the original widget.
+  // g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "button-release-event",
+  //                   G_CALLBACK (dt_bauhaus_popup_button_release), (gpointer)NULL);
   g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "key-press-event",
                     G_CALLBACK (dt_bauhaus_popup_key_press), (gpointer)NULL);
   g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "scroll-event",
@@ -537,6 +558,12 @@ dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
 
   g_signal_connect (G_OBJECT (w), "expose-event",
                     G_CALLBACK (dt_bauhaus_expose), NULL);
+
+  // for combobox, where mouse-release triggers a selection, we need to catch this
+  // event where the mouse-press occurred, which will be this widget. we just pass
+  // it on though:
+  g_signal_connect (G_OBJECT (w), "button-release-event",
+                    G_CALLBACK (dt_bauhaus_popup_button_release), (gpointer)NULL);
 }
 
 void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *text)
@@ -657,6 +684,7 @@ void dt_bauhaus_combobox_set(GtkWidget *widget, int pos)
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->active = CLAMP(pos, -1, d->num_labels-1);
+  gtk_widget_queue_draw(GTK_WIDGET(w));
   g_signal_emit_by_name(G_OBJECT(w), "value-changed");
 }
 
@@ -818,7 +846,7 @@ dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
 #ifdef DT_BAUHAUS_OLD
   const float htm = 0.0f, htM = ht;
 #else
-  const float htm = 0.7f*ht, htM = 0.2*ht;
+  const float htm = 0.65f*ht, htM = 0.25*ht;
 #endif
 
   cairo_pattern_t *gradient = NULL;
@@ -841,15 +869,17 @@ dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
   }
 
   cairo_rectangle(cr, 2, htm, wd-4-ht-2, htM);
-  cairo_fill_preserve(cr);
+  cairo_fill(cr);
+
+  // have a `fill ratio feel'
+  set_indicator_color(cr, .95f);
+  cairo_rectangle(cr, 2, htm, d->pos*(wd-4-ht-2), htM);
+  cairo_fill(cr);
+
+  cairo_rectangle(cr, 2, htm, wd-4-ht-2, htM);
   cairo_set_line_width(cr, 1.);
   set_grid_color(cr, 1.);
   cairo_stroke(cr);
-
-  // have a `fill ratio feel'
-  set_indicator_color(cr, .9f);
-  cairo_rectangle(cr, 2, htm, d->pos*(wd-4-ht-2), htM);
-  cairo_fill(cr);
 
   cairo_restore(cr);
 
@@ -1050,17 +1080,30 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         set_value_font(cr);
         cairo_text_extents_t ext;
         GList *it = d->labels;
-        int k = 0;
+        int k = 0, i = 0;
         while(it)
         {
           gchar *text = (gchar *)it->data;
           if(!strncmp(text, darktable.bauhaus->keys, darktable.bauhaus->keys_cnt))
           {
-            cairo_text_extents (cr, text, &ext);
-            cairo_move_to (cr, wd-4-ht-ext.width, get_value_font_size() + (get_line_space()+ht)*k);
-            cairo_show_text(cr, text);
+            if(i == d->active)
+            {
+              // highlight currently active item:
+              set_indicator_color(cr, 1);
+              cairo_text_extents (cr, text, &ext);
+              cairo_move_to (cr, wd-4-ht-ext.width, get_value_font_size() + (get_line_space()+ht)*k);
+              cairo_show_text(cr, text);
+              set_text_color(cr, 1);
+            }
+            else
+            {
+              cairo_text_extents (cr, text, &ext);
+              cairo_move_to (cr, wd-4-ht-ext.width, get_value_font_size() + (get_line_space()+ht)*k);
+              cairo_show_text(cr, text);
+            }
             k++;
           }
+          i++;
           it = g_list_next(it);
         }
         cairo_restore(cr);
@@ -1493,15 +1536,4 @@ dt_bauhaus_slider_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpoin
   // TODO: highlight?
   return TRUE;
 }
-
-
-#if 0
-static gboolean
-dt_bauhaus_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
-{
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
-  dt_bauhaus_hide_popup();
-  return TRUE;
-}
-#endif
 

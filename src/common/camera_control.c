@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "common/camera_control.h"
+#include "control/control.h"
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -34,6 +35,8 @@ typedef enum _camctl_camera_job_type_t
   _JOB_TYPE_DETECT_DEVICES,
   /** Remotly executes a capture. */
   _JOB_TYPE_EXECUTE_CAPTURE,
+  /** Fetch a preview for live view. */
+  _JOB_TYPE_EXECUTE_LIVE_VIEW,
   /** Read a copy of remote camera config into cache. */
   _JOB_TYPE_READ_CONFIG,
   /** Writes changed properties in cache to camera */
@@ -78,7 +81,7 @@ void _camera_configuration_merge(const dt_camctl_t *c,const dt_camera_t *camera,
 void _camera_add_job(const dt_camctl_t *c,const dt_camera_t *camera, gpointer job);
 /** Get a job from the queue */
 gpointer _camera_get_job( const dt_camctl_t *c, const dt_camera_t *camera );
-void _camera_process_jobb(const dt_camctl_t *c,const dt_camera_t *camera, gpointer job);
+static void _camera_process_job(const dt_camctl_t *c,const dt_camera_t *camera, gpointer job);
 
 /** Dispatch functions for listener interfaces */
 const char *_dispatch_request_image_path(const dt_camctl_t *c,const dt_camera_t *camera);
@@ -210,7 +213,7 @@ gpointer _camera_get_job( const dt_camctl_t *c,const dt_camera_t *camera )
 }
 
 
-void _camera_process_jobb(const dt_camctl_t *c,const dt_camera_t *camera, gpointer job)
+static void _camera_process_job(const dt_camctl_t *c,const dt_camera_t *camera, gpointer job)
 {
   dt_camera_t *cam=(dt_camera_t *)camera;
   _camctl_camera_job_t *j = (_camctl_camera_job_t *)job;
@@ -248,6 +251,44 @@ void _camera_process_jobb(const dt_camctl_t *c,const dt_camera_t *camera, gpoint
     }
     break;
 
+    case _JOB_TYPE_EXECUTE_LIVE_VIEW:
+    {
+      CameraFile *fp = NULL;
+      int res = GP_OK;
+      const gchar* data = NULL;
+      unsigned long int data_size = 0;
+
+      gp_file_new(&fp);
+
+      if( (res = gp_camera_capture_preview (cam->gpcam, fp, c->gpcontext)) != GP_OK )
+      {
+        dt_print (DT_DEBUG_CAMCTL,"[camera_control] live view failed to capture preview: %s\n", gp_result_as_string(res));
+      }
+      else if( (res = gp_file_get_data_and_size(fp, &data, &data_size)) != GP_OK )
+      {
+        dt_print (DT_DEBUG_CAMCTL,"[camera_control] live view failed to get preview data: %s\n", gp_result_as_string(res));
+      }
+      else
+      {
+        // everything worked
+        GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
+        if(gdk_pixbuf_loader_write(loader, (guchar*)data, data_size, NULL) == TRUE)
+        {
+          dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
+          if(cam->live_view_pixbuf != NULL)
+            g_object_unref(cam->live_view_pixbuf);
+          cam->live_view_pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
+          dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
+        }
+        gdk_pixbuf_loader_close(loader, NULL);
+      }
+      if(fp)
+        gp_file_free(fp);
+      dt_pthread_mutex_unlock(&cam->live_view_synch);
+      dt_control_queue_redraw_center();
+    }
+    break;
+
     case _JOB_TYPE_SET_PROPERTY:
     {
       _camctl_camera_set_property_job_t *spj=(_camctl_camera_set_property_job_t *)job;
@@ -277,6 +318,62 @@ void _camera_process_jobb(const dt_camctl_t *c,const dt_camera_t *camera, gpoint
       dt_print(DT_DEBUG_CAMCTL,"[camera_control] process of unknown job type %lx\n",(unsigned long int)j->type);
       break;
   }
+
+  g_free(j);
+}
+
+/*************/
+/* LIVE VIEW */
+/*************/
+static void *dt_camctl_camera_get_live_view(void* data)
+{
+  dt_camctl_t *camctl = (dt_camctl_t*)data;
+  dt_camera_t *cam = (dt_camera_t*)camctl->active_camera;
+  dt_print (DT_DEBUG_CAMCTL,"[camera_control] live view thread started\n");
+
+  while(cam->is_live_viewing == TRUE)
+  {
+    dt_pthread_mutex_lock(&cam->live_view_synch);
+    _camctl_camera_job_t *job = g_malloc(sizeof(_camctl_camera_job_t));
+    job->type = _JOB_TYPE_EXECUTE_LIVE_VIEW;
+    _camera_add_job( camctl, cam, job);
+
+//     g_usleep((1.0/15)*G_USEC_PER_SEC); // never update faster than 15 FPS. going too fast will result in too many redraws without a real benefit
+  }
+  dt_print (DT_DEBUG_CAMCTL,"[camera_control] live view thread stopped\n");
+  return NULL;
+}
+
+gboolean dt_camctl_camera_start_live_view(const dt_camctl_t *c)
+{
+  dt_camctl_t *camctl = (dt_camctl_t*)c;
+  dt_camera_t *cam = (dt_camera_t*)camctl->active_camera;
+  if( cam == NULL )
+  {
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to start live view, camera==NULL\n");
+    return FALSE;
+  }
+  else
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Starting live view\n");
+
+  if(cam->can_live_view == FALSE)
+  {
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Camera does not support live view\n");
+    return FALSE;
+  }
+  cam->is_live_viewing = TRUE;
+  pthread_create(&cam->live_view_thread, NULL, &dt_camctl_camera_get_live_view, (void*)camctl);
+  return TRUE;
+}
+
+void dt_camctl_camera_stop_live_view(const dt_camctl_t *c)
+{
+  dt_camctl_t *camctl = (dt_camctl_t*)c;
+  dt_camera_t *cam = (dt_camera_t*)camctl->active_camera;
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] Stopping live view\n");
+  cam->is_live_viewing = FALSE;
+  pthread_join(cam->live_view_thread, NULL);
+  //TODO: tell camera to get back to normal state (close mirror)
 }
 
 void _camctl_lock(const dt_camctl_t *c,const dt_camera_t *cam)
@@ -400,6 +497,8 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
     gp_list_get_name (available_cameras, i, &camera->model);
     gp_list_get_value (available_cameras, i, &camera->port);
     dt_pthread_mutex_init(&camera->config_lock, NULL);
+    dt_pthread_mutex_init(&camera->live_view_pixbuf_mutex, NULL);
+    dt_pthread_mutex_init(&camera->live_view_synch, NULL);
 
     // if(strcmp(camera->port,"usb:")==0) { g_free(camera); continue; }
     GList *citem;
@@ -481,7 +580,7 @@ static void *_camera_event_thread(void *data)
     // Let's check if there are jobs in queue to process
     gpointer job;
     while( (job=_camera_get_job(camctl,camera)) != NULL )
-      _camera_process_jobb(camctl,camera,job);
+      _camera_process_job(camctl,camera,job);
 
     // Check it jobs did change the configuration
     if( camera->config_changed == TRUE )
@@ -512,6 +611,7 @@ gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
 
     // Check for abilities
     if( (a.operations&GP_OPERATION_CAPTURE_IMAGE) ) cam->can_tether=TRUE;
+    if( (a.operations&GP_OPERATION_CAPTURE_PREVIEW) ) cam->can_live_view=TRUE;
     if(  cam->can_tether && (a.operations&GP_OPERATION_CONFIG) ) cam->can_config=TRUE;
     if( !(a.file_operations&GP_FILE_OPERATION_NONE) ) cam->can_import=TRUE;
 
@@ -986,58 +1086,45 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
 {
   CameraEventType event;
   gpointer data;
-  gboolean wait_timedout=FALSE;
-  while( !wait_timedout )
+  if( gp_camera_wait_for_event( cam->gpcam, 30, &event, &data, c->gpcontext ) == GP_OK )
   {
-    if( gp_camera_wait_for_event( cam->gpcam, 100, &event, &data, c->gpcontext ) == GP_OK )
+    if( event == GP_EVENT_UNKNOWN )
     {
-      if( event == GP_EVENT_UNKNOWN )
+      /* this is really some undefined behavior, seems like its
+      camera driver dependent... very ugly! */
+      if( strstr( (char *)data, "4006" ) || // Nikon PTP driver
+        (strstr((char *)data, "PTP Property") && strstr((char *)data, "changed"))  // Some Canon driver maybe all ??
+      )
       {
-	/* this is really some undefined behavior, seems like its
-	 camera driver dependent... very ugly! */
-        if( strstr( (char *)data, "4006" ) || // Nikon PTP driver
-	    (strstr((char *)data, "PTP Property") && strstr((char *)data, "changed"))  // Some Canon driver maybe all ??
-
-	    )
-        {
-          // Property change event occured on camera
-          // let's update cache and signalling
-	  dt_print(DT_DEBUG_CAMCTL, "[camera_control] Camera configuration change event, lets update internal configuration cache.\n");
-          _camera_configuration_update(c,cam);
-        }
+        // Property change event occured on camera
+        // let's update cache and signalling
+        dt_print(DT_DEBUG_CAMCTL, "[camera_control] Camera configuration change event, lets update internal configuration cache.\n");
+        _camera_configuration_update(c,cam);
       }
-      else if( event == GP_EVENT_FILE_ADDED )
-      {
-        if( cam->is_tethering )
-        {
-          dt_print(DT_DEBUG_CAMCTL,"[camera_control] Camera file added event\n");
-          CameraFilePath *fp = (CameraFilePath *)data;
-          CameraFile *destination;
-          const char *output_path = _dispatch_request_image_path(c,cam);
-          if( !output_path ) output_path="/tmp";
-          const char *fname = _dispatch_request_image_filename(c,fp->name,cam);
-          if( !fname ) fname=fp->name;
-
-          char *output = g_build_filename(output_path,fname,(char *)NULL);
-
-          int handle = open( output, O_CREAT | O_WRONLY,0666);
-          gp_file_new_from_fd( &destination , handle );
-          gp_camera_file_get( cam->gpcam, fp->folder , fp->name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
-          close( handle );
-
-          // Notify listerners of captured image
-          _dispatch_camera_image_downloaded(c,cam,output);
-          g_free(output);
-        }
-      }
-      else if( event == GP_EVENT_TIMEOUT )
-        wait_timedout=TRUE;
     }
-    else
+    else if( event == GP_EVENT_FILE_ADDED )
     {
-      wait_timedout=TRUE;
-      // dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to wait for camera event\n");
+      if( cam->is_tethering )
+      {
+        dt_print(DT_DEBUG_CAMCTL,"[camera_control] Camera file added event\n");
+        CameraFilePath *fp = (CameraFilePath *)data;
+        CameraFile *destination;
+        const char *output_path = _dispatch_request_image_path(c,cam);
+        if( !output_path ) output_path="/tmp";
+        const char *fname = _dispatch_request_image_filename(c,fp->name,cam);
+        if( !fname ) fname=fp->name;
 
+        char *output = g_build_filename(output_path,fname,(char *)NULL);
+
+        int handle = open( output, O_CREAT | O_WRONLY,0666);
+        gp_file_new_from_fd( &destination , handle );
+        gp_camera_file_get( cam->gpcam, fp->folder , fp->name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
+        close( handle );
+
+        // Notify listerners of captured image
+        _dispatch_camera_image_downloaded(c,cam,output);
+        g_free(output);
+      }
     }
   }
 }
