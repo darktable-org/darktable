@@ -1,30 +1,30 @@
 /*
-		This file is part of darktable,
-		copyright (c) 2010-2011 henrik andersson.
+    This file is part of darktable,
+    copyright (c) 2010-2011 henrik andersson.
 
-		darktable is free software: you can redistribute it and/or modify
-		it under the terms of the GNU General Public License as published by
-		the Free Software Foundation, either version 3 of the License, or
-		(at your option) any later version.
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-		darktable is distributed in the hope that it will be useful,
-		but WITHOUT ANY WARRANTY; without even the implied warranty of
-		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-		GNU General Public License for more details.
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-		You should have received a copy of the GNU General Public License
-		along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /** this is the view for the capture module.
-	The capture module purpose is to allow a workflow for capturing images
-	which is module extendable but main purpos is to support tethered capture
-	using gphoto library.
+    The capture module purpose is to allow a workflow for capturing images
+    which is module extendable but main purpos is to support tethered capture
+    using gphoto library.
 
-	When entered a session is constructed = one empty filmroll might be same filmroll
-	as earlier created dependent on capture filesystem structure...
+    When entered a session is constructed = one empty filmroll might be same filmroll
+    as earlier created dependent on capture filesystem structure...
 
-	TODO: How to pass initialized data such as dt_camera_t ?
+    TODO: How to pass initialized data such as dt_camera_t ?
 
 */
 
@@ -64,7 +64,7 @@ DT_MODULE(1)
 typedef struct dt_capture_t
 {
   /** The current image activated in capture view, either latest tethered shoot
-  	or manually picked from filmstrip view...
+    or manually picked from filmstrip view...
   */
   int32_t image_id;
 
@@ -321,16 +321,35 @@ void configure(dt_view_t *self, int wd, int ht)
 void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_capture_t *lib=(dt_capture_t*)self->data;
+  dt_camera_t *cam = (dt_camera_t*)darktable.camctl->active_camera;
   lib->image_over = DT_VIEW_DESERT;
   lib->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
 
-  // First of all draw image if availble
-  if( lib->image_id >= 0 )
+  if( cam->is_live_viewing == TRUE) // display the preview
+  {
+    dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
+    if(GDK_IS_PIXBUF(cam->live_view_pixbuf))
+    {
+      gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
+      gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
+      float w = width-(MARGIN*2.0f);
+      float h = height-(MARGIN*2.0f);
+      float scale = 1.0;
+      if(pw > w) scale = w/pw;
+      if(ph > h) scale = MIN(scale, h/ph);
+      cairo_translate(cr, (width - scale*pw)*0.5, (height - scale*ph)*0.5);
+      cairo_scale(cr, scale, scale);
+      gdk_cairo_set_source_pixbuf(cr, cam->live_view_pixbuf, 0, 0);
+      cairo_paint(cr);
+    }
+    dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
+  }
+  else if( lib->image_id >= 0 )  // First of all draw image if availble
   {
     cairo_translate(cr,MARGIN, MARGIN);
     dt_view_image_expose(&(lib->image_over), lib->image_id, 
-			 cr, width-(MARGIN*2.0f), height-(MARGIN*2.0f), 1, 
-			 pointerx, pointery);
+              cr, width-(MARGIN*2.0f), height-(MARGIN*2.0f), 1, 
+              pointerx, pointery);
   }
 }
 
