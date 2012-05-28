@@ -411,7 +411,7 @@
     </type>
     <default>off</default>
     <shortdescription>compression of thumbnail images</shortdescription>
-    <longdescription>off - no compression in memory, jpg on disk. fast, low quality dxt1. slow, high quality dxt1 (same memory as low quality variant).</longdescription>
+    <longdescription>off - no compression in memory, jpg on disk. low quality - dxt1 (fast). high quality - dxt1, same memory as low quality variant but slower.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>database_cache_quality</name>
