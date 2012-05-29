@@ -598,6 +598,20 @@ void
   d->store = _folder_tree();
 
   GtkWidget *button;
+  GtkTreeView *tree;
+
+  /* We have already inited the GUI once, clean around */
+  if (d->buttons != NULL)
+  {
+    for (int i=0; i<d->buttons->len; i++)
+    {
+      button = GTK_WIDGET(g_ptr_array_index (d->buttons, i));
+      g_ptr_array_free(d->buttons, TRUE);
+    }
+  }
+   
+  if (d->trees != NULL)
+  {
     for (int i=0; i<d->trees->len; i++)
     {
       tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
