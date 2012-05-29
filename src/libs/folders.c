@@ -150,29 +150,39 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
     new_path = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser));
     if (new_path)
     {
-      query = dt_util_dstrcat(query, "select id from film_rolls where folder like '%s'", filmroll_path);
+      gchar *old = NULL;
+      query = dt_util_dstrcat(query, "select id,folder from film_rolls where folder like '%s%%'", filmroll_path);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-      if (sqlite3_step(stmt) == SQLITE_ROW)
+      g_free(query);
+
+      while (sqlite3_step(stmt) == SQLITE_ROW)
+      {
         id = sqlite3_column_int(stmt, 0);
-      else
-        goto error;
+        old = sqlite3_column_text(stmt, 1);
+        //dt_film_remove(id);
 
-      g_free(query);
-      query = NULL;
+        query = dt_util_dstrcat(query, "update film_rolls set folder=?1 where id=?2");
 
-      /* change path in db to new filmroll path */
-      /* FIXME: This only works if we are updating the path of a filmroll, not
-       * if it is a parent folder. We should change this for a more generic 
-       * code in which the missing folder is deleted (with the filmrolls in it)
-       * and the new folder (with subfolders) are imported */
-      query = dt_util_dstrcat(query, "update film_rolls set folder=?1 where id=?2");
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, new_path, strlen(new_path), SQLITE_STATIC);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, id);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
+        if (g_str_has_prefix(old, filmroll_path))
+        {
+          gchar trailing[1024];
+          gchar final[1024];
 
-      g_free(query);
+          g_snprintf(trailing, 1024, "%s", old + strlen(filmroll_path));
+
+          /* TODO: Check if this works */
+          g_snprintf(final, 1024, "%s/%s", new_path, old+strlen(filmroll_path));
+
+
+          sqlite3_stmt *stmt2;
+          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
+          DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 1, final, strlen(final), SQLITE_STATIC);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt2, 2, id);
+          sqlite3_step(stmt2);
+          sqlite3_finalize(stmt2);
+        }
+        g_free(query);
+      }
 
       /* reset filter to display all images, otherwise view may remain empty */
       dt_view_filter_reset_to_show_all(darktable.view_manager);
@@ -191,8 +201,7 @@ error:
   dt_control_log(_("Problem selecting new path for the filmroll in %s"), filmroll_path);
 
   g_free(filmroll_path);
-  g_free(new_path);
- 
+  g_free(new_path); 
 }
 
 void view_popup_menu_onRemove (GtkWidget *menuitem, gpointer userdata)
@@ -589,20 +598,6 @@ void
   d->store = _folder_tree();
 
   GtkWidget *button;
-  GtkTreeView *tree;
-
-  /* We have already inited the GUI once, clean around */
-  if (d->buttons != NULL)
-  {
-    for (int i=0; i<d->buttons->len; i++)
-    {
-      button = GTK_WIDGET(g_ptr_array_index (d->buttons, i));
-      g_ptr_array_free(d->buttons, TRUE);
-    }
-  }
-
-  if (d->trees != NULL)
-  {
     for (int i=0; i<d->trees->len; i++)
     {
       tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
@@ -714,5 +709,3 @@ void gui_cleanup(dt_lib_module_t *self)
   g_free(self->data);
   self->data = NULL;
 }
-
-
