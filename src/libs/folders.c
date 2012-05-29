@@ -116,7 +116,7 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
   GtkWidget *filechooser;
 
   GtkTreeSelection *selection;
-  GtkTreeIter iter;
+  GtkTreeIter iter, child;
   GtkTreeModel *model;
 
   gchar *filmroll_path = NULL;
@@ -134,6 +134,8 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
   model = gtk_tree_view_get_model(treeview);
   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
   gtk_tree_selection_get_selected(selection, &model, &iter);
+  child = iter;
+  gtk_tree_model_iter_parent(model, &iter, &child);
   gtk_tree_model_get(model, &iter, 1, &filmroll_path, -1);
 
   if(filmroll_path != NULL)
@@ -158,9 +160,9 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
       while (sqlite3_step(stmt) == SQLITE_ROW)
       {
         id = sqlite3_column_int(stmt, 0);
-        old = sqlite3_column_text(stmt, 1);
+        old = (gchar *) sqlite3_column_text(stmt, 1);
         //dt_film_remove(id);
-
+        query = NULL;
         query = dt_util_dstrcat(query, "update film_rolls set folder=?1 where id=?2");
 
         if (g_str_has_prefix(old, filmroll_path))
