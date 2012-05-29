@@ -331,14 +331,32 @@ static void *dt_camctl_camera_get_live_view(void* data)
   dt_camera_t *cam = (dt_camera_t*)camctl->active_camera;
   dt_print (DT_DEBUG_CAMCTL,"[camera_control] live view thread started\n");
 
+  int frames= 0;
+  double capture_time = dt_get_wtime();
+
   while(cam->is_live_viewing == TRUE)
   {
     dt_pthread_mutex_lock(&cam->live_view_synch);
+
+    // calculate FPS
+    double current_time = dt_get_wtime();
+    if(current_time - capture_time >= 1.0){
+      // a second has passed
+      dt_print(DT_DEBUG_CAMCTL, "%d fps\n", frames+1);
+      frames = 0;
+      capture_time = current_time;
+    }
+    else
+    {
+      // just increase the frame counter
+      frames++;
+    }
+
     _camctl_camera_job_t *job = g_malloc(sizeof(_camctl_camera_job_t));
     job->type = _JOB_TYPE_EXECUTE_LIVE_VIEW;
     _camera_add_job( camctl, cam, job);
 
-//     g_usleep((1.0/15)*G_USEC_PER_SEC); // never update faster than 15 FPS. going too fast will result in too many redraws without a real benefit
+    g_usleep((1.0/15)*G_USEC_PER_SEC); // never update faster than 15 FPS. going too fast will result in too many redraws without a real benefit
   }
   dt_print (DT_DEBUG_CAMCTL,"[camera_control] live view thread stopped\n");
   return NULL;
