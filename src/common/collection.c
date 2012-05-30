@@ -446,7 +446,7 @@ get_query_string(const int property, const gchar *escaped_text, char *query)
       break;
     case 2: // tag
       snprintf(query, 1024, "(id in (select imgid from tagged_images as a join "
-               "tags as b on a.tagid = b.id where name like '%%%s%%'))", escaped_text);
+               "tags as b on a.tagid = b.id where name like '%s'))", escaped_text);
       break;
 
       // TODO: How to handle images without metadata? In the moment they are not shown.
