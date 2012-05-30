@@ -119,7 +119,7 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
   GtkTreeIter iter, child;
   GtkTreeModel *model;
 
-  gchar *filmroll_path = NULL;
+  gchar *tree_path = NULL;
   gchar *new_path = NULL;
 
   filechooser = gtk_file_chooser_dialog_new (_("search filmroll"),
@@ -136,10 +136,10 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
   gtk_tree_selection_get_selected(selection, &model, &iter);
   child = iter;
   gtk_tree_model_iter_parent(model, &iter, &child);
-  gtk_tree_model_get(model, &iter, 1, &filmroll_path, -1);
+  gtk_tree_model_get(model, &child, 1, &tree_path, -1);
 
-  if(filmroll_path != NULL)
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER (filechooser), filmroll_path);
+  if(tree_path != NULL)
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER (filechooser), tree_path);
   else
     goto error;
 
@@ -149,11 +149,16 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
     gint id = -1;
     sqlite3_stmt *stmt;
     gchar *query = NULL;
+
+    /* If we want to allow the user to just select the folder, we have to use 
+     * gtk_file_chooser_get_uri() instead. THe code should be adjusted then,
+     * as it returns a file:/// URI and with utf8 characters escaped.
+     */
     new_path = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser));
     if (new_path)
     {
       gchar *old = NULL;
-      query = dt_util_dstrcat(query, "select id,folder from film_rolls where folder like '%s%%'", filmroll_path);
+      query = dt_util_dstrcat(query, "select id,folder from film_rolls where folder like '%s%%'", tree_path);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       g_free(query);
 
@@ -161,48 +166,55 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
       {
         id = sqlite3_column_int(stmt, 0);
         old = (gchar *) sqlite3_column_text(stmt, 1);
-        //dt_film_remove(id);
+        
         query = NULL;
         query = dt_util_dstrcat(query, "update film_rolls set folder=?1 where id=?2");
 
-        if (g_str_has_prefix(old, filmroll_path))
+        gchar trailing[1024];
+        gchar final[1024];
+
+        if (g_strcmp0(old, tree_path))
         {
-          gchar trailing[1024];
-          gchar final[1024];
-
-          g_snprintf(trailing, 1024, "%s", old + strlen(filmroll_path));
-
-          /* TODO: Check if this works */
-          g_snprintf(final, 1024, "%s/%s", new_path, old+strlen(filmroll_path));
-
-
-          sqlite3_stmt *stmt2;
-          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
-          DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 1, final, strlen(final), SQLITE_STATIC);
-          DT_DEBUG_SQLITE3_BIND_INT(stmt2, 2, id);
-          sqlite3_step(stmt2);
-          sqlite3_finalize(stmt2);
+          g_snprintf(trailing, 1024, "%s", old + strlen(tree_path)+1);
+          g_snprintf(final, 1024, "%s/%s", new_path, trailing);
         }
-        g_free(query);
+        else
+        {
+          g_snprintf(final, 1024, "%s", new_path);
+        }
+
+        sqlite3_stmt *stmt2;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 1, final, strlen(final), SQLITE_STATIC);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt2, 2, id);
+        sqlite3_step(stmt2);
+        sqlite3_finalize(stmt2);
       }
+      g_free(query);
+      g_free(old);
 
       /* reset filter to display all images, otherwise view may remain empty */
       dt_view_filter_reset_to_show_all(darktable.view_manager);
 
       /* update collection to view missing filmroll */
       _lib_folders_update_collection(new_path);
-      g_free(new_path);
+
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
     }
     else
       goto error;
   }
+  g_free(tree_path);
+  g_free(new_path);
+  gtk_widget_destroy (filechooser);
+  return;
 
 error:
   /* Something wrong happened */
   gtk_widget_destroy (filechooser);
-  dt_control_log(_("Problem selecting new path for the filmroll in %s"), filmroll_path);
+  dt_control_log(_("Problem selecting new path for the filmroll in %s"), tree_path);
 
-  g_free(filmroll_path);
+  g_free(tree_path);
   g_free(new_path); 
 }
 
