@@ -547,8 +547,26 @@ gui_init (dt_lib_module_t *self)
     gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
   }
+  else if( (prop=_lib_property_add_new(lib, _("focus mode"),"drivemode"))!=NULL )
+  {
+    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
+    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+    g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
+  }
 
   if( (prop=_lib_property_add_new(lib, _("aperture"),"f-number"))!=NULL )
+  {
+    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
+    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+    g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
+  }
+  else if( (prop=_lib_property_add_new(lib, _("aperture"),"aperture"))!=NULL ) // for Canon cameras
   {
     hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
@@ -569,6 +587,15 @@ gui_init (dt_lib_module_t *self)
   }
 
   if( (prop=_lib_property_add_new(lib, _("shutterspeed2"),"shutterspeed2"))!=NULL )
+  {
+    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
+    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+    g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
+  }
+  else if( (prop=_lib_property_add_new(lib, _("shutterspeed"),"shutterspeed"))!=NULL ) // Canon, again
   {
     hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
