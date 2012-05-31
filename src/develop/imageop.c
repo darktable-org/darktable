@@ -17,16 +17,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Define this to != 0 if you want to enable new resampling code comming from
- * interpolation.c instead of the well tested bilinear filtering here */
-#define USE_NEW_RESAMPLING_CODE 1
-
 #include "common/opencl.h"
 #include "common/dtpthread.h"
 #include "common/debug.h"
-#if USE_NEW_RESAMPLING_CODE
 #include "common/interpolation.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "control/control.h"
 #include "develop/imageop.h"
@@ -1327,69 +1321,8 @@ void
 dt_iop_clip_and_zoom(float *out, const float *const in,
                      const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride)
 {
-#if !USE_NEW_RESAMPLING_CODE
-  // adjust to pixel region and don't sample more than scale/2 nbs!
-  // pixel footprint on input buffer, radius:
-  const float px_footprint = .9f/roi_out->scale;
-  // how many 2x2 blocks can be sampled inside that area
-  const int samples = ((int)px_footprint)/2;
-
-  // init gauss with sigma = samples (half footprint)
-
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(out)
-#endif
-  for(int y=0; y<roi_out->height; y++)
-  {
-    float *outc = out + 4*(out_stride*y);
-    for(int x=0; x<roi_out->width; x++)
-    {
-      __m128 col = _mm_setzero_ps();
-      // _mm_prefetch
-      // upper left corner:
-      float fx = (x + roi_out->x)/roi_out->scale, fy = (y + roi_out->y)/roi_out->scale;
-      int px = (int)fx, py = (int)fy;
-      const float dx = fx - px, dy = fy - py;
-      const __m128 d0 = _mm_set1_ps((1.0f-dx)*(1.0f-dy));
-      const __m128 d1 = _mm_set1_ps((dx)*(1.0f-dy));
-      const __m128 d2 = _mm_set1_ps((1.0f-dx)*(dy));
-      const __m128 d3 = _mm_set1_ps(dx*dy);
-
-      // const float *inc = in + 4*(py*roi_in->width + px);
-
-      float num=0.0f;
-      // for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
-      for(int j=MAX(0, py-samples); j<=MIN(roi_in->height-2, py+samples); j++)
-        for(int i=MAX(0, px-samples); i<=MIN(roi_in->width -2, px+samples); i++)
-        {
-          __m128 p0 = _mm_mul_ps(d0, _mm_load_ps(in + 4*(i + in_stride*j)));
-          __m128 p1 = _mm_mul_ps(d1, _mm_load_ps(in + 4*(i + 1 + in_stride*j)));
-          __m128 p2 = _mm_mul_ps(d2, _mm_load_ps(in + 4*(i + in_stride*(j+1))));
-          __m128 p3 = _mm_mul_ps(d3, _mm_load_ps(in + 4*(i + 1 + in_stride*(j+1))));
-
-          col = _mm_add_ps(col, _mm_add_ps(_mm_add_ps(p0, p1), _mm_add_ps(p2, p3)));
-          num++;
-        }
-      // col = _mm_mul_ps(col, _mm_set1_ps(1.0f/((2.0f*samples+1.0f)*(2.0f*samples+1.0f))));
-      if(num == 0.0f)
-        col = _mm_load_ps(in + 4*(CLAMPS(px, 0, roi_in->width-1) + in_stride*CLAMPS(py, 0, roi_in->height-1)));
-      else
-        col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
-      // memcpy(outc, &col, 4*sizeof(float));
-      _mm_stream_ps(outc, col);
-      outc += 4;
-    }
-  }
-  _mm_sfence();
-#else
-  static int displayedinfo = 0;
-  if (!displayedinfo) {
-    fprintf(stderr, "info: using new resampling code. Feedback welcome\n");
-    displayedinfo = 1;
-  }
   const struct dt_interpolation* itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   dt_interpolation_resample(itor, out, roi_out, out_stride*4*sizeof(float), in, roi_in, in_stride*4*sizeof(float));
-#endif
 }
 
 static int
