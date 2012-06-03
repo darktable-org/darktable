@@ -224,8 +224,19 @@ transform(float *x, float *o, const float *m, const float t_h, const float t_v)
 
 // 1st pass: how large would the output be, given this input roi?
 // this is always called with the full buffer before processing.
-void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
+void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in_orig)
 {
+  const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+
+  /* Account for interpolation constraints right now, so when doing the
+   * backtransform in modify_roi_in all nicely fits */
+  dt_iop_roi_t roi_in_d = *roi_in_orig;
+  dt_iop_roi_t* roi_in = &roi_in_d;
+  roi_in->x += interpolation->width;
+  roi_in->y += interpolation->width;
+  roi_in->width -= 2*interpolation->width;
+  roi_in->height -= 2*interpolation->width;
+
   *roi_out = *roi_in;
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
 
@@ -352,12 +363,11 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   }
 
   // adjust roi_in to minimally needed region
-  // +/-1 stands for imprecision in transform
   const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  roi_in->x      = aabb_in[0] - interpolation->width - 1;
-  roi_in->y      = aabb_in[1] - interpolation->width - 1;
-  roi_in->width  = aabb_in[2]-aabb_in[0]+2*(interpolation->width+1);
-  roi_in->height = aabb_in[3]-aabb_in[1]+2*(interpolation->width+1);
+  roi_in->x      = aabb_in[0] - interpolation->width;
+  roi_in->y      = aabb_in[1] - interpolation->width;
+  roi_in->width  = aabb_in[2]-aabb_in[0]+2*interpolation->width;
+  roi_in->height = aabb_in[3]-aabb_in[1]+2*interpolation->width;
 
   if(d->angle == 0.0f && d->all_off)
   {
