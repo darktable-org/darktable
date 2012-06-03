@@ -23,6 +23,7 @@
 #endif
 
 #include "common/darktable.h"
+#include "common/file_location.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
@@ -58,7 +59,7 @@ static inline int dt_conf_get_var_pos(const char *name)
 
   // and get the default value from default darktablerc:
   char buf[1024], defaultrc[1024];
-  dt_util_get_datadir(buf, 1024);
+  dt_loc_get_datadir(buf, 1024);
   snprintf(defaultrc, 1024, "%s/darktablerc", buf);
   FILE *f = fopen(defaultrc, "rb");
   char line[1024];
@@ -202,7 +203,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename)
   if(!f)
   {
     char buf[1024], defaultrc[1024];
-    dt_util_get_datadir(buf, 1024);
+    dt_loc_get_datadir(buf, 1024);
     snprintf(defaultrc, 1024, "%s/darktablerc", buf);
     f = fopen(defaultrc, "rb");
     defaults = 1;

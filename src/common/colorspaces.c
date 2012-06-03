@@ -353,7 +353,7 @@ dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)
   dt_profiled_colormatrix_t *preset = NULL;
   for(int k=0; k<dt_profiled_colormatrix_cnt; k++)
   {
-    if(!strcmp(makermodel, dt_profiled_colormatrices[k].makermodel))
+    if(!strcasecmp(makermodel, dt_profiled_colormatrices[k].makermodel))
     {
       preset = dt_profiled_colormatrices + k;
       break;
@@ -432,7 +432,7 @@ dt_colorspaces_create_darktable_profile(const char *makermodel)
   dt_profiled_colormatrix_t *preset = NULL;
   for(int k=0; k<dt_profiled_colormatrix_cnt; k++)
   {
-    if(!strcmp(makermodel, dt_profiled_colormatrices[k].makermodel))
+    if(!strcasecmp(makermodel, dt_profiled_colormatrices[k].makermodel))
     {
       preset = dt_profiled_colormatrices + k;
       break;
@@ -591,11 +591,11 @@ int
 dt_colorspaces_find_profile(char *filename, const int filename_len, const char *profile, const char *inout)
 {
   char datadir[1024];
-  dt_util_get_user_config_dir(datadir, 1024);
+  dt_loc_get_user_config_dir(datadir, 1024);
   snprintf(filename, filename_len, "%s/color/%s/%s", datadir, inout, profile);
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
   {
-    dt_util_get_datadir(datadir, 1024);
+    dt_loc_get_datadir(datadir, 1024);
     snprintf(filename, filename_len, "%s/color/%s/%s", datadir, inout, profile);
     if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return 1;
   }

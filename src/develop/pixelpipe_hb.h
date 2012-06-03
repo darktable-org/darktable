@@ -71,7 +71,8 @@ typedef enum dt_dev_pixelpipe_type_t
 {
   DT_DEV_PIXELPIPE_EXPORT,
   DT_DEV_PIXELPIPE_FULL,
-  DT_DEV_PIXELPIPE_PREVIEW
+  DT_DEV_PIXELPIPE_PREVIEW,
+  DT_DEV_PIXELPIPE_THUMBNAIL
 }
 dt_dev_pixelpipe_type_t;
 
@@ -135,6 +136,8 @@ struct dt_develop_t;
 int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
 // inits the pixelpipe with settings optimized for full-image export (no history stack cache)
 int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
+// inits the pixelpipe with settings optimized for thumbnail export (no history stack cache)
+int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
 // inits the pixelpipe with given cacheline size and number of entries.
 int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t entries);
 // constructs a new input gegl_buffer from given RGB float array.

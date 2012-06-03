@@ -19,7 +19,10 @@
 #define DARKTABLE_H
 
 // just to be sure. the build system should set this for us already:
-#ifndef _XOPEN_SOURCE
+#if defined __DragonFly__ || defined __FreeBSD__ || \
+    defined __NetBSD__ || defined __OpenBSD__
+  #define _WITH_DPRINTF
+#elif !defined _XOPEN_SOURCE
   #define _XOPEN_SOURCE 700 // for localtime_r and dprintf
 #endif
 #ifdef HAVE_CONFIG_H
@@ -177,6 +180,11 @@ typedef struct darktable_t
   dt_pthread_mutex_t db_insert;
   dt_pthread_mutex_t plugin_threadsafe;
   char *progname;
+  char *datadir;
+  char *plugindir;
+  char *tmpdir;
+  char *configdir;
+  char *cachedir;
 }
 darktable_t;
 

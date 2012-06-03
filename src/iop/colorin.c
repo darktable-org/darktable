@@ -353,7 +353,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   piece->process_cl_ready = 1;
   char datadir[1024];
   char filename[1024];
-  dt_util_get_datadir(datadir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
   if(!strcmp(p->iccprofile, "darktable"))
   {
     char makermodel[1024];
@@ -555,7 +555,7 @@ void gui_init(struct dt_iop_module_t *self)
   // darktable built-in, if applicable
   for(int k=0; k<dt_profiled_colormatrix_cnt; k++)
   {
-    if(!strcmp(makermodel, dt_profiled_colormatrices[k].makermodel))
+    if(!strcasecmp(makermodel, dt_profiled_colormatrices[k].makermodel))
     {
       prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
       g_strlcpy(prof->filename, "darktable", sizeof(prof->filename));
@@ -603,8 +603,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   // read {userconfig,datadir}/color/in/*.icc, in this order.
   char datadir[1024], confdir[1024], dirname[1024], filename[1024];
-  dt_util_get_user_config_dir(confdir, 1024);
-  dt_util_get_datadir(datadir, 1024);
+  dt_loc_get_user_config_dir(confdir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
   snprintf(dirname, 1024, "%s/color/in", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
     snprintf(dirname, 1024, "%s/color/in", datadir);

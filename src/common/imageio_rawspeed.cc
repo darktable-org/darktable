@@ -36,6 +36,7 @@ extern "C"
 #include "common/exif.h"
 #include "common/darktable.h"
 #include "common/colorspaces.h"
+#include "common/file_location.h"
 }
 
 // define this function, it is only declared in rawspeed:
@@ -99,7 +100,7 @@ dt_imageio_open_rawspeed(
       if(meta == NULL)
       {
         char datadir[1024], camfile[1024];
-        dt_util_get_datadir(datadir, 1024);
+        dt_loc_get_datadir(datadir, 1024);
         snprintf(camfile, 1024, "%s/rawspeed/cameras.xml", datadir);
         // never cleaned up (only when dt closes)
         meta = new CameraMetaData(camfile);

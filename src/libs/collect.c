@@ -211,7 +211,7 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
   switch(property)
   {
     case 0: // film roll
-      snprintf(query, 1024, "select distinct folder, id from film_rolls where folder like '%%%s%%'  order by id DESC", escaped_text);
+      snprintf(query, 1024, "select distinct folder, id from film_rolls where folder like '%%%s%%'  order by folder desc", escaped_text);
       break;
     case 1: // camera
       snprintf(query, 1024, "select distinct maker || ' ' || model as model, 1 from images where maker || ' ' || model like '%%%s%%' order by model", escaped_text);

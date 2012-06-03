@@ -929,11 +929,13 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
   else
   {
     // minimum area around the node to select it:
-    float min = .1f;
+    float min = .04f;
+    min *= min; // comparing against square
     int nearest = -1;
     for(int k=0; k<nodes; k++)
     {
-      float dist = fabsf(mx - tonecurve[k].x);
+      float dist = (my - tonecurve[k].y)*(my - tonecurve[k].y)
+                 + (mx - tonecurve[k].x)*(mx - tonecurve[k].x);
       if(dist < min)
       {
         min = dist;

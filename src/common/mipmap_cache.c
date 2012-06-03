@@ -210,7 +210,7 @@ dt_mipmap_cache_get_filename(
 
   // Directory
   char cachedir[1024];
-  dt_util_get_user_cache_dir(cachedir, sizeof(cachedir));
+  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
   // Build the mipmap filename
   const gchar *dbfilename = dt_database_get_path(darktable.db);
@@ -1234,8 +1234,8 @@ libraw_fail:
     dat.head.max_width  = wd;
     dat.head.max_height = ht;
     dat.buf = buf;
-    // export with flags: ignore exif (don't load from disk), don't swap byte order, and don't do hq processing
-    res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, 1, 1, 0);
+    // export with flags: ignore exif (don't load from disk), don't swap byte order, don't do hq processing, and signal we want thumbnail export
+    res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, 1, 1, 0, 1);
     if(!res)
     {
       // might be smaller, or have a different aspect than what we got as input.

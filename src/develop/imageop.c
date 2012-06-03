@@ -19,7 +19,7 @@
 
 /* Define this to != 0 if you want to enable new resampling code comming from
  * interpolation.c instead of the well tested bilinear filtering here */
-#define USE_NEW_RESAMPLING_CODE 0
+#define USE_NEW_RESAMPLING_CODE 1
 
 #include "common/opencl.h"
 #include "common/dtpthread.h"
@@ -602,7 +602,7 @@ void dt_iop_load_modules_so()
   darktable.iop = NULL;
   char plugindir[1024], op[20];
   const gchar *d_name;
-  dt_util_get_plugindir(plugindir, 1024);
+  dt_loc_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/plugins", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return;
@@ -996,6 +996,13 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
 }
 
 static gboolean
+_iop_plugin_body_scrolled(GtkWidget *w, GdkEvent *e, gpointer user_data)
+{
+  // just make sure nothing happens:
+  return TRUE;
+}
+
+static gboolean
 _iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
@@ -1014,7 +1021,8 @@ _iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_dat
   return FALSE;
 }
 
-static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+static gboolean
+_iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   GtkWidget *pluginui = dt_iop_gui_get_widget(module);
@@ -1082,6 +1090,12 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   module->header = header;
   /* connect mouse button callbacks for focus and presets */
   g_signal_connect(G_OBJECT(pluginui), "button-press-event", G_CALLBACK(_iop_plugin_body_button_press), module);
+  /* avoid scrolling with wheel, it's distracting (you'll end up over a control, and scroll it's value) */
+  g_signal_connect(G_OBJECT(pluginui_frame), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
+  g_signal_connect(G_OBJECT(pluginui), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
+  g_signal_connect(G_OBJECT(header_evb), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
+  g_signal_connect(G_OBJECT(expander), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
+  g_signal_connect(G_OBJECT(header), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
 
   /* steup the header box */
   gtk_container_add(GTK_CONTAINER(header_evb), header);

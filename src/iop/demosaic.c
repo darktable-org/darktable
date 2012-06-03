@@ -21,6 +21,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "common/darktable.h"
+#include "common/interpolation.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/tiling.h"
@@ -767,6 +768,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(piece->pipe->tiling && (data->green_eq == DT_IOP_GREEN_EQ_FULL || data->green_eq == DT_IOP_GREEN_EQ_BOTH))
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] cannot green-equalize over full image in tiling context\n");
+    return FALSE;
+  }
+
+  const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  if(interpolation->id != DT_INTERPOLATION_BILINEAR && roi_out->scale <= .99999f && roi_out->scale > 0.5f)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] only bilinear interpolation mode supported here\n");
     return FALSE;
   }
 
