@@ -695,8 +695,12 @@ float
 dt_interpolation_compute_sample(
   const struct dt_interpolation* itor,
   const float* in,
-  const float x, const float y,
-  const int samplestride, const int linestride)
+  const float x,
+  const float y,
+  const int width,
+  const int height,
+  const int samplestride,
+  const int linestride)
 {
   assert(itor->width < 4);
 
@@ -709,20 +713,39 @@ dt_interpolation_compute_sample(
   compute_upsampling_kernel_sse(itor, kernelh, &normh, NULL, x);
   compute_upsampling_kernel_sse(itor, kernelv, &normv, NULL, y);
 
-  // Go to top left pixel
-  in = in - (itor->width-1)*(samplestride + linestride);
+  const int ix = (int)x;
+  const int iy = (int)y;
 
-  // Apply the kernel
-  float s = 0.f;
-  for (int i=0; i<2*itor->width; i++) {
-    float h = 0.0f;
-    for (int j=0; j<2*itor->width; j++) {
-      h += kernelh[j]*in[j*samplestride];
+  /* Now 2 cases, the pixel + filter width goes outside the image
+   * in that case we have to use index clipping to keep all reads
+   * in the input image (slow path) or we are sure it won't fall
+   * outside and can do more simple code */
+  float r;
+  if (   ix >= (itor->width-1)
+      && iy >= (itor->width-1)
+      && ix <  (width-itor->width)
+      && iy <  (height-itor->width)) {
+    // Inside image boundary case
+
+    // Go to top left pixel
+    in = (float *)in + linestride*iy + ix*samplestride;
+    in = in - (itor->width-1)*(samplestride + linestride);
+
+    // Apply the kernel
+    float s = 0.f;
+    for (int i=0; i<2*itor->width; i++) {
+      float h = 0.0f;
+      for (int j=0; j<2*itor->width; j++) {
+        h += kernelh[j]*in[j*samplestride];
+      }
+      s += kernelv[i]*h;
+      in += linestride;
     }
-    s += kernelv[i]*h;
-    in += linestride;
+    r = s/(normh*normv);
+  } else {
+    r = 0.f;
   }
-  return  s/(normh*normv);
+  return r;
 }
 
 /* --------------------------------------------------------------------------
@@ -735,8 +758,11 @@ void
 dt_interpolation_compute_pixel4c(
   const struct dt_interpolation* itor,
   const float* in,
-  const float* out,
-  const float x, const float y,
+  float* out,
+  const float x,
+  const float y,
+  const int width,
+  const int height,
   const int linestride)
 {
   assert(itor->width < (MAX_HALF_FILTER_WIDTH+1));
@@ -762,21 +788,40 @@ dt_interpolation_compute_pixel4c(
   // Precompute the inverse of the filter norm for later use
   __m128 oonorm = _mm_set_ps1(1.f/(normh*normv));
 
-  // Go to top left pixel
-  in = in - (itor->width-1)*(4 + linestride);
+  /* Now 2 cases, the pixel + filter width goes outside the image
+   * in that case we have to use index clipping to keep all reads
+   * in the input image (slow path) or we are sure it won't fall
+   * outside and can do more simple code */
+  int ix = (int)x;
+  int iy = (int)y;
 
-  // Apply the kernel
-  __m128 pixel = _mm_setzero_ps();
-  for (int i=0; i<2*itor->width; i++) {
-    __m128 h = _mm_setzero_ps();
-    for (int j=0; j<2*itor->width; j++) {
-      h = _mm_add_ps(h, _mm_mul_ps(vkernelh[j], *(__m128*)&in[j*4]));
+  if (   ix >= (itor->width-1)
+      && iy >= (itor->width-1)
+      && ix <  (width-itor->width)
+      && iy <  (height-itor->width)) {
+    // Inside image boundary case
+
+    // Go to top left pixel
+    in = (float *)in + linestride*iy + ix*4;
+    in = in - (itor->width-1)*(4 + linestride);
+
+    // Apply the kernel
+    __m128 pixel = _mm_setzero_ps();
+    for (int i=0; i<2*itor->width; i++) {
+      __m128 h = _mm_setzero_ps();
+      for (int j=0; j<2*itor->width; j++) {
+        h = _mm_add_ps(h, _mm_mul_ps(vkernelh[j], *(__m128*)&in[j*4]));
+      }
+      pixel = _mm_add_ps(pixel, _mm_mul_ps(vkernelv[i],h));
+      in += linestride;
     }
-    pixel = _mm_add_ps(pixel, _mm_mul_ps(vkernelv[i],h));
-    in += linestride;
-  }
 
-  *(__m128*)out = _mm_mul_ps(pixel, oonorm);
+    *(__m128*)out = _mm_mul_ps(pixel, oonorm);
+  } else {
+    // TODO: use index clipping function here
+    __m128 zero = _mm_setzero_ps();
+    _mm_stream_ps(out, zero);
+  }
 }
 
 /* --------------------------------------------------------------------------

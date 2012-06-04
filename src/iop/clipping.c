@@ -456,13 +456,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         po[0] -= roi_in->x;
         po[1] -= roi_in->y;
 
-        const int ii = (int)po[0], jj = (int)po[1];
-        if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
-        {
-          const float *in = ((float *)ivoid) + ch*(roi_in->width*jj+ii);
-          dt_interpolation_compute_pixel4c(interpolation, in, out, po[0], po[1], ch_width);
-        }
-        else for(int c=0; c<4; c++) out[c] = 0.0f;
+        dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, po[0], po[1], roi_in->width, roi_in->height, ch_width);
       }
     }
   }
