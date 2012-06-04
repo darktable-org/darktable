@@ -1116,7 +1116,7 @@ static void restore_defaults(GtkButton *button, gpointer data)
     while(ops)
     {
       op = (dt_iop_module_so_t*)ops->data;
-      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show", op->op);
+      snprintf(accelpath, 256, "<Darktable>/darkroom/modules/%s/show", op->op);
       gtk_accel_map_change_entry(accelpath, 0, 0, TRUE);
       ops = g_list_next(ops);
     }

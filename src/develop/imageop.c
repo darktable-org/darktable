@@ -628,11 +628,11 @@ void dt_iop_load_modules_so()
     if(!(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       // Adding the optional show accelerator to the table (blank)
-      dt_accel_register_iop(module, FALSE, NC_("accel", "show plugin"), 0, 0);
-      dt_accel_register_iop(module, FALSE, NC_("accel", "enable plugin"), 0, 0);
+      dt_accel_register_iop(module, FALSE, NC_("accel", "show module"), 0, 0);
+      dt_accel_register_iop(module, FALSE, NC_("accel", "enable module"), 0, 0);
 
       dt_accel_register_iop(module, FALSE,
-                            NC_("accel", "reset plugin parameters"), 0, 0);
+                            NC_("accel", "reset module parameters"), 0, 0);
       dt_accel_register_iop(module, FALSE,
                             NC_("accel", "show preset menu"), 0, 0);
     }
@@ -1850,16 +1850,16 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
   // Connecting the (optional) module show accelerator
   closure = g_cclosure_new(G_CALLBACK(show_module_callback),
                            module, NULL);
-  dt_accel_connect_iop(module, "show plugin", closure);
+  dt_accel_connect_iop(module, "show module", closure);
 
   // Connecting the (optional) module switch accelerator
   closure = g_cclosure_new(G_CALLBACK(enable_module_callback),
                            module, NULL);
-  dt_accel_connect_iop(module, "enable plugin", closure);
+  dt_accel_connect_iop(module, "enable module", closure);
 
   // Connecting the reset and preset buttons
   if(module->reset_button)
-    dt_accel_connect_button_iop(module, "reset plugin parameters",
+    dt_accel_connect_button_iop(module, "reset module parameters",
                                 module->reset_button);
   if(module->presets_button)
     dt_accel_connect_button_iop(module, "show preset menu",
