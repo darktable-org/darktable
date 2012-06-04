@@ -19,7 +19,6 @@
 #endif
 
 #include "pwstorage.h"
-#include "backend_gconf.h"
 
 #ifdef HAVE_GKEYRING
 #include "backend_gkeyring.h"
@@ -43,7 +42,17 @@ const dt_pwstorage_t* dt_pwstorage_new()
   if(pwstorage == NULL)
     return NULL;
 
-  gint _backend = dt_conf_get_int( "plugins/pwstorage/pwstorage_backend" );
+  gchar* _backend_str = dt_conf_get_string( "plugins/pwstorage/pwstorage_backend" );
+  gint _backend = -1;
+
+  if(strcmp(_backend_str, "none") == 0)
+    _backend = PW_STORAGE_BACKEND_NONE;
+  else if(strcmp(_backend_str, "kwallet") == 0)
+    _backend = PW_STORAGE_BACKEND_KWALLET;
+  else if(strcmp(_backend_str, "gnome keyring") == 0)
+    _backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
+
+  g_free(_backend_str);
 
   switch(_backend)
   {
@@ -52,13 +61,7 @@ const dt_pwstorage_t* dt_pwstorage_new()
     case PW_STORAGE_BACKEND_NONE:
       pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_NONE;
       pwstorage->backend_context = NULL;
-      dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] no storage backend. not storing username/password. please change in gconf: \"plugins/pwstorage/pwstorage_backend\".\n");
-      break;
-    case PW_STORAGE_BACKEND_GCONF:
-      // this is so important that I want it to be printed in any case. so g_printerr() instead of dt_print()
-      g_printerr("[pwstorage_new] WARNING: you are using gconf for username/password storage! they are being stored unencrypted on your hard disk.\n");
-      pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_GCONF;
-      pwstorage->backend_context = NULL;
+      dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] no storage backend. not storing username/password. please change in preferences, core tab.\n");
       break;
     case PW_STORAGE_BACKEND_KWALLET:
 #ifdef HAVE_KWALLET
@@ -101,7 +104,11 @@ const dt_pwstorage_t* dt_pwstorage_new()
       break;
   }
 
-  dt_conf_set_int( "plugins/pwstorage/pwstorage_backend", pwstorage->pw_storage_backend );
+  switch(pwstorage->pw_storage_backend){
+    case PW_STORAGE_BACKEND_NONE: dt_conf_set_string( "plugins/pwstorage/pwstorage_backend", "none" ); break;
+    case PW_STORAGE_BACKEND_KWALLET: dt_conf_set_string( "plugins/pwstorage/pwstorage_backend", "kwallet" ); break;
+    case PW_STORAGE_BACKEND_GNOME_KEYRING: dt_conf_set_string( "plugins/pwstorage/pwstorage_backend", "gnome keyring" ); break;
+  }
 
   return pwstorage;
 }
@@ -114,9 +121,6 @@ void dt_pwstorage_destroy(const dt_pwstorage_t *pwstorage)
   {
     case PW_STORAGE_BACKEND_NONE:
       // nothing to be done
-    case PW_STORAGE_BACKEND_GCONF:
-      // nothing to be done
-      break;
     case PW_STORAGE_BACKEND_KWALLET:
 #ifdef HAVE_KWALLET
       g_free(pwstorage->backend_context);
@@ -137,9 +141,6 @@ gboolean dt_pwstorage_set(const gchar* slot, GHashTable* table)
   {
     case PW_STORAGE_BACKEND_NONE:
       dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_set] no backend. not storing anything.\n");
-      break;
-    case PW_STORAGE_BACKEND_GCONF:
-      return dt_pwstorage_gconf_set(slot, table);
       break;
     case PW_STORAGE_BACKEND_KWALLET:
 #ifdef HAVE_KWALLET
@@ -167,9 +168,6 @@ GHashTable* dt_pwstorage_get(const gchar* slot)
     case PW_STORAGE_BACKEND_NONE:
       dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_get] no backend. not reading anything.\n");
       break;
-    case PW_STORAGE_BACKEND_GCONF:
-      return dt_pwstorage_gconf_get(slot);
-      break;
     case PW_STORAGE_BACKEND_KWALLET:
 #ifdef HAVE_KWALLET
       return dt_pwstorage_kwallet_get(slot);
@@ -188,3 +186,5 @@ GHashTable* dt_pwstorage_get(const gchar* slot)
 
   return g_hash_table_new(g_str_hash, g_str_equal);
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

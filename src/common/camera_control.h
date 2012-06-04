@@ -48,6 +48,8 @@ typedef struct dt_camera_t
   gboolean can_import;
   /** This camera/device can do tethered shoots. */
   gboolean can_tether;
+  /** This camera/device can do live view. */
+  gboolean can_live_view;
   /** This camera/device can be remote controlled. */
   gboolean can_config;
 
@@ -70,6 +72,17 @@ typedef struct dt_camera_t
 
   /** gphoto2 context */
   GPContext *gpcontext;
+
+  /** Live view */
+  gboolean is_live_viewing;
+  /** The last preview image fromthe camera */
+  GdkPixbuf *live_view_pixbuf;
+  /** The thread adding the live view jobs */
+  pthread_t live_view_thread;
+  /** A guard so that writing and reading the pixbuf don't interfere */
+  dt_pthread_mutex_t live_view_pixbuf_mutex;
+  /** A flag to tell the live view thread that the last job was completed */
+  dt_pthread_mutex_t live_view_synch;
 }
 dt_camera_t;
 
@@ -196,6 +209,10 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images,
 
 /** Execute remote capture of camera.*/
 void dt_camctl_camera_capture(const dt_camctl_t *c,const dt_camera_t *cam);
+/** Start live view of camera.*/
+gboolean dt_camctl_camera_start_live_view(const dt_camctl_t *c);
+/** Stop live view of camera.*/
+void dt_camctl_camera_stop_live_view(const dt_camctl_t *c);
 /** Returns a model string of camera.*/
 const char *dt_camctl_camera_get_model(const dt_camctl_t *c,const dt_camera_t *cam);
 
@@ -214,3 +231,5 @@ const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c,const
 void dt_camctl_camera_build_property_menu (const dt_camctl_t *c,const dt_camera_t *cam,GtkMenu **menu, GCallback item_activate, gpointer user_data);
 
 #endif
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -19,16 +19,16 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.gtkrc.in ${CMAKE_CURRENT_B
 # Add files that should go into shared
 #
 set(SHARE_FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.gtkrc)
-install(FILES ${SHARE_FILES} DESTINATION ${SHARE_INSTALL})
+install(FILES ${SHARE_FILES} DESTINATION ${SHARE_INSTALL}/darktable)
 
 #
 # web gallery export support files:
 #
 FILE(GLOB WEB_FILES "style/*")
-install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/style)
+install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/style)
 
 FILE(GLOB WEB_FILES "js/*")
-install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/js)
+install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/js)
 
 #
 # Install other system shares
@@ -39,66 +39,51 @@ install(FILES darktable.desktop DESTINATION ./share/applications)
 # Install watermarks
 #
 FILE(GLOB WATERMARKS "watermarks/*.svg")
-install(FILES ${WATERMARKS} DESTINATION ${SHARE_INSTALL}/watermarks)
+install(FILES ${WATERMARKS} DESTINATION ${SHARE_INSTALL}/darktable/watermarks)
 
 #
 # Install gdb command file for backtrace generation
 #
-install(FILES gdb_commands DESTINATION ${SHARE_INSTALL})
+install(FILES gdb_commands DESTINATION ${SHARE_INSTALL}/darktable)
 
 #
-# Setup some custom commands to generate a darktablerc template
-# out of the darktable.schemas file.
- add_custom_command (
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_keys
-    COMMAND 
-        grep '<key>' ${CMAKE_CURRENT_SOURCE_DIR}/darktable.schemas | 
-        sed -e 's/<key>//g' -e 's/<\\/key>//g' -e 's/\\/schemas\\/apps\\/darktable\\///g' | 
-        nl -s: | 
-        sed -e 's/^[ \\t]*//\;s/[ \\t]*$$//' > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_keys
+# Transform darktableconfig.xml into darktablerc
+#
+
+if(USE_XMLLINT)
+	execute_process(
+		COMMAND ${Xmllint_BIN} --valid ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../data/
+		OUTPUT_QUIET ERROR_QUIET
+		RESULT_VARIABLE Xmllint_RES
+	)
+	if(NOT ${Xmllint_RES} EQUAL 0 )
+		message(FATAL_ERROR "data/darktableconfig.xml is not valid")
+	endif(NOT ${Xmllint_RES} EQUAL 0 )
+endif(USE_XMLLINT)
+
+if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+  add_custom_command(
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
+    COMMAND ${Xsltproc_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
   )
- 
-  add_custom_command (
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_values
-    COMMAND 
-        grep '<default>' ${CMAKE_CURRENT_SOURCE_DIR}/darktable.schemas | 
-        sed -e 's/<default>//g' -e 's/<\\/default>//g' | 
-        nl -s: | 
-        sed -e 's/^[ \\t]*//\;s/[ \\t]*$$//' > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_values
-        
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_keys
-  )
- 
-  if(NOT APPLE)
-    add_custom_command (
+else(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+  if(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+    add_custom_command(
+      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml
       OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
-        COMMAND 
-          join -1 1 -2 1 -o 1.2 2.2 ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_keys ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_values | 
-          sed -e 's/ /=/g' > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_in
-          || (echo "*** error: please check if you have coreutils installed! we need grep, sed, nl, and join ***" &1>&2 | false)
-          && grep plugins ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_in > /dev/null && mv ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_in ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
-          # only move over if something is in there at all.
-        
-      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_values
+      COMMAND ${Saxon_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
     )
-  else()
-    add_custom_command (
-      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
-        COMMAND 
-          join -1 1 -2 1 -o '1.2 2.2' ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_keys ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_values | 
-          sed -e 's/ /=/g' > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_in
-          || (echo "*** error: please check if you have coreutils installed! we need grep, sed, nl, and join ***" &1>&2 | false)
-          && grep plugins ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_in > /dev/null && mv ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_in ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
-          # only move over if something is in there at all.
-        
-      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_values
-    )
-  endif(NOT APPLE)
- 
-  add_custom_target(darktablerc ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktablerc)
- 
-  # first of all install darktablerc file into share as template
-  # postinst script should copy this into users homedirectory 
-  # $HOME/.config/darktable/darktable.rc
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${SHARE_INSTALL}/)
+  else(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+    message(FATAL_ERROR "Don't know how to generate darktablerc")
+  endif(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+endif(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+
+add_custom_target(darktablerc ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktablerc)
+
+# first of all install darktablerc file into share as template
+# postinst script should copy this into users homedirectory
+# $HOME/.config/darktable/darktable.rc
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${SHARE_INSTALL}/darktable/)
 

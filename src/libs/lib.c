@@ -420,7 +420,7 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
   if (module->gui_reset)
   {
     dt_accel_register_lib(module,
-                          NC_("accel", "reset plugin parameters"), 0, 0);
+                          NC_("accel", "reset module parameters"), 0, 0);
   }
   if(module->get_params)
   {
@@ -461,7 +461,7 @@ dt_lib_load_modules ()
   dt_lib_module_t *module;
   char plugindir[1024], plugin_name[256];
   const gchar *d_name;
-  dt_util_get_plugindir(plugindir, 1024);
+  dt_loc_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/plugins/lighttable", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
@@ -834,7 +834,7 @@ void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
 void dt_lib_connect_common_accels(dt_lib_module_t *module)
 {
 	if(module->reset_button)
-		dt_accel_connect_button_lib(module, "reset plugin parameters",
+		dt_accel_connect_button_lib(module, "reset module parameters",
 				module->reset_button);
 	if(module->presets_button)
 		dt_accel_connect_button_lib(module, "show preset menu",

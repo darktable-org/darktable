@@ -127,7 +127,7 @@ int init(int argc, char *arg[])
 }
 
 static void
-shutdown()
+dtv_shutdown()
 {
   // close all dt related stuff.
   dt_cleanup();
@@ -315,6 +315,6 @@ int main(int argc, char *arg[])
     dt_conf_set_string("plugins/lighttable/export/iccprofile", oldprofile);
     g_free(oldprofile);
   }
-  shutdown();
+  dtv_shutdown();
 }
 

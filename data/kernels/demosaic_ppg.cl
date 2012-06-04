@@ -132,40 +132,131 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const int width
   write_imagef (out, (int2)(x, y), color);
 }
 
-#if 0
+
+// This median filter is inspired by GPL code from socles, an OpenCL image processing library.
+
+#define cas(a, b)				\
+	do {					\
+		float x = a;			\
+		int c = a > b;			\
+		a = c ? b : a;			\
+		b = c ? x : b;			\
+	} while (0)
+
+
+// 3x3 median filter
+// uses a sorting network to sort entirely in registers with no branches
 __kernel void
-color_smoothing(__read_only image2d_t in, __write_only image2d_t out)
+color_smoothing(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, local float4 *buffer)
 {
-  // TODO: load image block into shared memory
-  // TODO: median filter this - 1 px border
-  // TODO: output whole block..?
+  const int lxid = get_local_id(0);
+  const int lyid = get_local_id(1);
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
 
+  const int lxsz = get_local_size(0);
+  const int buffwd = lxsz + 2;
+  const int buffsz = (get_local_size(0) + 2) * (get_local_size(1) + 2);
+  const int gsz = get_local_size(0) * get_local_size(1);
+  const int lidx = lyid * lxsz + lxid;
 
-  float med[9];
-  // TODO: put to constant memory:
-  const uint8_t opt[] = /* Optimal 9-element median search */
-  { 1,2, 4,5, 7,8, 0,1, 3,4, 6,7, 1,2, 4,5, 7,8,
-    0,3, 5,8, 4,7, 3,6, 1,4, 2,5, 4,7, 4,2, 6,4, 4,2 };
+  const int nchunks = buffsz % gsz == 0 ? buffsz/gsz - 1 : buffsz/gsz;
 
-  // TODO: get 9 nb pixels and store c-g
-  // TODO: sort
-  // TODO: synchthreads (block boundaries: bad luck)
-  // TODO: push median
-      for (int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
-        out[4*(j*roi_out->width + i) + 3] = out[4*(j*roi_out->width + i) + c];
-      for (int j=1;j<roi_out->height-1;j++) for(int i=1;i<roi_out->width-1;i++)
-      {
-        int k = 0;
-        for (int jj=-1;jj<=1;jj++) for(int ii=-1;ii<=1;ii++) med[k++] = out[4*((j+jj)*roi_out->width + i + ii) + 3] - out[4*((j+jj)*roi_out->width + i + ii) + 1];
-        for (int ii=0; ii < sizeof opt; ii+=2)
-          if     (med[opt[ii]] > med[opt[ii+1]])
-            SWAP (med[opt[ii]] , med[opt[ii+1]]);
-        out[4*(j*roi_out->width + i) + c] = CLAMPS(med[4] + out[4*(j*roi_out->width + i) + 1], 0.0f, 1.0f);
-      }
-    }
+  for(int n=0; n <= nchunks; n++)
+  {
+    const int bufidx = (n * gsz) + lidx;
+    if(bufidx >= buffsz) break;
+
+    // get position in buffer coordinates and from there translate to position in global coordinates
+    const int gx = (bufidx % buffwd) - 1 + x - lxid;
+    const int gy = (bufidx / buffwd) - 1 + y - lyid;
+
+    // don't read more than needed
+    if(gx >= width + 1 || gy >= height + 1) continue;
+
+    buffer[bufidx] = read_imagef(in, sampleri, (int2)(gx, gy));
   }
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  if(x >= width || y >= height) return;
+
+  // re-position buffer
+  buffer += (lyid + 1) * buffwd + lxid + 1;
+
+  float4 o = buffer[0];
+
+  // 3x3 median for R
+  float s0 = buffer[-buffwd - 1].x - buffer[-buffwd - 1].y;
+  float s1 = buffer[-buffwd].x - buffer[-buffwd].y;
+  float s2 = buffer[-buffwd + 1].x - buffer[-buffwd + 1].y;
+  float s3 = buffer[-1].x - buffer[-1].y;
+  float s4 = buffer[0].x - buffer[0].y;
+  float s5 = buffer[1].x - buffer[1].y;
+  float s6 = buffer[buffwd - 1].x - buffer[buffwd - 1].y;
+  float s7 = buffer[buffwd].x - buffer[buffwd].y;
+  float s8 = buffer[buffwd + 1].x - buffer[buffwd + 1].y;
+
+  cas(s1, s2);
+  cas(s4, s5);
+  cas(s7, s8);
+  cas(s0, s1);
+  cas(s3, s4);
+  cas(s6, s7);
+  cas(s1, s2);
+  cas(s4, s5);
+  cas(s7, s8);
+  cas(s0, s3);
+  cas(s5, s8);
+  cas(s4, s7);
+  cas(s3, s6);
+  cas(s1, s4);
+  cas(s2, s5);
+  cas(s4, s7);
+  cas(s4, s2);
+  cas(s6, s4);
+  cas(s4, s2);
+
+  o.x = clamp(s4 + o.y, 0.0f, 1.0f);
+
+
+  // 3x3 median for B
+  s0 = buffer[-buffwd - 1].z - buffer[-buffwd - 1].y;
+  s1 = buffer[-buffwd].z - buffer[-buffwd].y;
+  s2 = buffer[-buffwd + 1].z - buffer[-buffwd + 1].y;
+  s3 = buffer[-1].z - buffer[-1].y;
+  s4 = buffer[0].z - buffer[0].y;
+  s5 = buffer[1].z - buffer[1].y;
+  s6 = buffer[buffwd - 1].z - buffer[buffwd - 1].y;
+  s7 = buffer[buffwd].z - buffer[buffwd].y;
+  s8 = buffer[buffwd + 1].z - buffer[buffwd + 1].y;
+
+  cas(s1, s2);
+  cas(s4, s5);
+  cas(s7, s8);
+  cas(s0, s1);
+  cas(s3, s4);
+  cas(s6, s7);
+  cas(s1, s2);
+  cas(s4, s5);
+  cas(s7, s8);
+  cas(s0, s3);
+  cas(s5, s8);
+  cas(s4, s7);
+  cas(s3, s6);
+  cas(s1, s4);
+  cas(s2, s5);
+  cas(s4, s7);
+  cas(s4, s2);
+  cas(s6, s4);
+  cas(s4, s2);
+
+  o.z = clamp(s4 + o.y, 0.0f, 1.0f);
+
+  write_imagef(out, (int2) (x, y), o);
 }
-#endif
+
+
 
 
 /**

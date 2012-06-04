@@ -33,8 +33,6 @@
 
 #define exposure2white(x)	exp2f(-(x))
 #define white2exposure(x)	-dt_log2f(fmaxf(0.001, x))
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
-
 
 DT_MODULE(2)
 
@@ -92,7 +90,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 2, sizeof(int), (void *)&width);
@@ -129,6 +127,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
       _mm_store_ps(out, (_mm_load_ps(in)-blackv)*scalev);
   }
+
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
+
   for(int k=0; k<3; k++) piece->pipe->processed_maximum[k] *= scale;
 }
 

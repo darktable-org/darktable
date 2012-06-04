@@ -21,12 +21,14 @@
 FIND_PATH(LCMS2_INCLUDE_DIR lcms2.h
   /usr/include
   /usr/local/include
+  HINTS ENV LCMS2_INCLUDE_DIR
   PATH_SUFFIXES lcms2
 )
 
 FIND_LIBRARY(LCMS2_LIBRARY
   NAMES ${LCMS2_NAMES} lcms2 liblcms2 lcms2dll
   PATHS /usr/lib /usr/local/lib
+  HINTS ENV LCMS2_LIBDIR
 )
 
 include(FindPackageHandleStandardArgs)

@@ -1,0 +1,216 @@
+-------------------------------------------------------------------
+Sat Apr 28 06:48:17 UTC 2012 - toganm@opensuse.org
+
+- Update to release 1.0.3
+  + Usability improvements:
+    * Filmstrip centers on selected image
+  + Behavioral changes:
+    * Improved (hierarchical) tag export for flickr and friends
+  + Camera support:
+    * Improved Sony NEX-7 support
+    * Initial camera support for Nikon D800 and Sony SLT-A57
+    * White balance updates for Canon EOS Rebel T3, Olympus E-5 & Nikon
+      D800
+  + Various:
+    * New subtle denoise preset for equalizer
+    * Various build fixes
+    * Numerous other fixes
+ 
+
+-------------------------------------------------------------------
+Thu Mar 15 07:52:17 UTC 2012 - toganm@opensuse.org
+
+- Upgrade to release 1.0
+  + new cameras supported
+    * Leica M9
+    * NX100/NX5/NX10/NX11
+    * Panasonic DMC-GX1
+    * Pentax K-r
+    * Canon Powershot S100
+    * Olympus XZ-1
+    * Olympus E-P3
+    * Sony DSLR A330
+    * Sony NEX-5N
+    * Canon EOS 1000D
+    * Canon EOS 600D
+    * Sony Alpha 390
+    * Fuji Finepix HS20EXR 
+  + new and updated translations (we now have chinese!)
+  + new image cache
+    * faster concurrent access and insertion
+    * reduces needed memory
+    * more thumbnails stored on disk
+    * read embedded jpegs for creating thumbnails (faster folder
+      import)
+  + increased general speed on sqlite3 (journaled, pagesize
+    optimizations)
+  + reworked, modular ui
+  + keyboard shortcuts support - key accelerators (GSoC)
+  + quicktool bar: exposure, presets and styles
+  + new color picker
+  + web gallery export now with next/prev buttons per image
+  + removed gconf: not used anymore, we have our own backend
+  + bugfixes
+  + there have been issues with memory on 32-bit systems. seems to
+    be okay currently, but something to keep in mind. use 64-bits
+    if you can
+-------------------------------------------------------------------
+Tue Feb 28 12:06:27 UTC 2012 - fcrozat@suse.com
+
+- Add darktable-fix-deprecation.patch to fix glib deprecation.
+
+-------------------------------------------------------------------
+Tue Nov  8 09:07:37 UTC 2011 - toganm@opensuse.org
+
+- Upgrade to release 0.9.3:
+  + sse optimizations
+    * non-local means
+    * graduated density
+    * velvia
+    * color management
+    * equalizer
+    * zone system
+
+  + updated translations
+    * ru,fr,es,ja,it,sq,pl,nl,de
+
+  + more presets
+    * split toning
+    * tone curve
+    * equalizer
+    * color zones
+
+  + lots of bugfixes
+    * tiling code (low mem/opencl)
+    * gcc 4.6 compat
+  + updates
+    * libraw 0.14b2
+    * rawspeed r379
+   as well as more basecurves and color matrices.
+
+- added Mesa-devel to BuildRequires
+-------------------------------------------------------------------
+Sun Sep 18 17:17:12 UTC 2011 - jengelh@medozas.de
+
+- Remove redundant tags/sections from specfile
+  (cf. packaging guidelines)
+
+-------------------------------------------------------------------
+Tue Sep 13 22:36:51 UTC 2011 - toganm@opensuse.org
+
+- Added dbus-1-glib-devel to BuildRequires 
+
+-------------------------------------------------------------------
+Sat Sep  3 13:13:43 UTC 2011 - toganm@opensuse.org
+
+- Update to bugfix release 0.9.2:
+  + there are no new features, just
+    * updated translations
+    * tiling for memory hungry operations and as workaround for old
+      opencl 1.0 drivers
+    * new color matrices and white balance presets
+    * a lot of stability issues have been resolved
+    * a lot of performance improvements (more sse code, better
+      opencl code)
+  + Removed 0001-Remove-dependancy-on-git.patch
+-------------------------------------------------------------------
+Tue Jul 26 07:14:25 UTC 2011 - toganm@opensuse.org
+
+- Updated to bugfix release 0.9.1 
+  + new rawspeed, dcraw, libraw
+  + fixed various segfaults and deadlocks
+  + the pipeline is now more real HDR (no more gamut clipping in
+    between)
+  + fixed a nasty bug which could cause complete loss of history
+    for an image
+  + darktable-faster now plays nicely with darktablerc (non-gconf)
+  + lots of opencl improvements
+  + updated translations
+  + second part of our GSoC: customizable keyboard shortcuts!
+
+
+
+-------------------------------------------------------------------
+Tue Jul  5 13:56:48 UTC 2011 - toganm@opensuse.org
+
+-Release 0.9:
+    + run-time switchable opencl to exploit all the power of your GPU
+      whenever you decide to install the driver
+    + many new plugins, including a spot removal tool, better denoising
+      (on raw pixels and non-local means) and many more
+    + blend operations, overlay your plugin only 20 percent if you want
+    + spot removal tool
+    + low light vision tool
+    + non-local-means denoising (relatively fast for nlmeans, but still
+      slow)
+    + first part of the google summer of code project
+      already merged
+    + framing plugin (adds postcard borders to match
+      given aspect ratio)
+    + tonemapping a lot faster now (probably the fastest high-dimensional
+      bilateral filter)
+    + changed images come with the darktable|changed tag
+
+- removed darktable-08 related patches as they are now in the upstream
+- use RPM optflags
+-------------------------------------------------------------------
+Fri Jun 17 16:14:09 UTC 2011 - fcrozat@suse.com
+
+- Add darktable-0.8-unused_variables.patch and
+  darktable-0.8-clean_up_set_but_unused_variables.patch to fix
+  build with gcc 4.6
+- Add darktable-0.8-default_generic_optimizations.patch and
+  darktable-0.8-binary_package_build.patch: don't optimize build
+  for build system.
+- Ensure package is build with debuginfo.
+
+-------------------------------------------------------------------
+Fri Jun 10 13:39:01 UTC 2011 - fcrozat@suse.com
+
+- Add libflickcurl-devel BuildRequires to get Flickr upload
+  support.
+
+-------------------------------------------------------------------
+Thu Mar  3 23:20:59 UTC 2011 - toganm@opensuse.org
+
+- Fix building for x86_64  
+
+-------------------------------------------------------------------
+Wed Feb 23 16:45:28 UTC 2011 - fcrozat@novell.com
+
+- Release 0.8:
+  + much faster image loading due to rawspeed, an awesome new
+    library by klaus post @rawstudio
+  + lots of performance improvements in our caches and pixel
+    pipelines (together with the above like 5x--10x)
+  + gpu computing using opencl (for graphics boards that support
+    it) for a lot of common plugins, to give a huge performance
+    boost
+  + overhauled collection plugin for more flexible image
+    collections
+  + metadata editor (set author and copyright information etc)
+  + fast demosaicing now done on roi and in floating point
+  + HDR bracketing and tone mapping (somewhat experimental)
+  + flickr upload
+  + lots of new color matrices and white balance presets
+  + lots of bugfixes
+  + Updated translations
+
+-------------------------------------------------------------------
+Mon Dec 13 13:53:26 UTC 2010 - fcrozat@novell.com
+
+- Release 0.7.1 : 
+ * some more white balance presets
+ * layout fixes for overlong profile names
+ * styles now actually work
+
+-------------------------------------------------------------------
+Tue Nov 23 16:04:01 UTC 2010 - bitshuffler@opensuse.org
+
+- Update to 0.7.
+
+-------------------------------------------------------------------
+Wed Sep  1 17:52:38 UTC 2010 - bitshuffler@opensuse.org
+
+- Initial package
+

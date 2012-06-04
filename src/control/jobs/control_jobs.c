@@ -85,6 +85,8 @@ typedef struct _control_indexer_img_t
 
 int32_t dt_control_indexer_job_run(dt_job_t *job)
 {
+  // if no indexing was requested, bail out:
+  if(!dt_conf_get_bool("run_similarity_indexer")) return 0;
 
   /* 
    * First pass run thru ALL images and collect the ones who needs to update
@@ -92,6 +94,9 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
    *  thats need some kind of reindexing.. all mark dirty functions adds image
    *  to this table--
    */
+  // temp memory for uncompressed images:
+  uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
+
   GList *images=NULL;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select images.id,film_rolls.folder||'/'||images.filename,images.histogram,images.lightmap from images,film_rolls where film_rolls.id = images.film_id", -1, &stmt, NULL);
@@ -136,11 +141,21 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
     double fraction=0;
     int total = g_list_length(images);
 
+    guint *jid = NULL;
+
     /* background job plate only if more then one image is reindexed */
-    snprintf(message, 512, ngettext ("re-indexing %d image", "re-indexing %d images", total), total );
-    const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+    if (total > 1)
+    {
+      snprintf(message, 512, ngettext ("re-indexing %d image", "re-indexing %d images", total), total );
+      jid = (guint *)dt_control_backgroundjobs_create(darktable.control, 0, message);
+    }
 
     do {
+      // bail out if we're shutting down:
+      if(!dt_control_running()) break;
+      // if indexer was switched off during runtime, respect that as soon as we can:
+      if(!dt_conf_get_bool("run_similarity_indexer")) break;
+
       /* get the _control_indexer_img_t pointer */
       _control_indexer_img_t *idximg = imgitem->data;
 
@@ -175,6 +190,8 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
         /* get a mipmap of image to analyse */
         dt_mipmap_buffer_t buf;
         dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, idximg->id, DT_MIPMAP_2, DT_MIPMAP_BLOCKING);
+        // pointer owned by the cache or == scratchmem, no need to free this one:
+        uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
 
         if (!(buf.width * buf.height))
           continue;
@@ -192,7 +209,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
             uint8_t rgb[3];
 
             for(int k=0; k<3; k++)
-              rgb[k] = (int)((buf.buf[j+2-k]/(float)0xff) * bucketscale);
+              rgb[k] = (int)((buf_decompressed[j+2-k]/(float)0xff) * bucketscale);
 
             /* distribute rgb into buckets */
             for(int k=0; k<3; k++)
@@ -228,7 +245,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
           uint8_t *rgbbuf = g_malloc(buf.width*buf.height*3);
           for(int j=0;j<(buf.width*buf.height);j++)
             for(int k=0;k<3;k++)
-              rgbbuf[3*j+k] = buf.buf[4*j+2-k];
+              rgbbuf[3*j+k] = buf_decompressed[4*j+2-k];
 
 
           /* then create pixbuf and scale down to lightmap size */
@@ -283,7 +300,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
       }        
 
       /* update background progress */
-      if (total>1)
+      if (jid)
       {
         fraction+=1.0/total;
         dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
@@ -293,10 +310,11 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
 
 
     /* cleanup */
-    if (total>1)
+    if (jid)
       dt_control_backgroundjobs_destroy(darktable.control, jid);
   }
 
+  free(scratchmem);
 
   /* 
    * Indexing opertions finished, lets reschedule the indexer 

@@ -22,9 +22,6 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -42,6 +39,7 @@
 
 #include "common/metadata.h"
 #include "common/utility.h"
+#include "common/file_location.h"
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE(1)
@@ -181,8 +179,8 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
 
   gchar *svgdoc=NULL;
   gchar configdir[1024],datadir[1024], *filename;
-  dt_util_get_datadir(datadir, 1024);
-  dt_util_get_user_config_dir(configdir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
+  dt_loc_get_user_config_dir(configdir, 1024);
   g_strlcat(datadir,"/watermarks/",1024);
   g_strlcat(configdir,"/watermarks/",1024);
   g_strlcat(datadir,data->filename,1024);
@@ -389,7 +387,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
 //   fprintf(stderr,"Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
     g_free (image);
-    memcpy(ovoid, ivoid, sizeof(float)*3*roi_out->width*roi_out->height);
+    memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
   }
 
@@ -443,6 +441,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[0] = ((1.0-alpha)*in[0]) + (alpha*(sd[2]/255.0));
       out[1] = ((1.0-alpha)*in[1]) + (alpha*(sd[1]/255.0));
       out[2] = ((1.0-alpha)*in[2]) + (alpha*(sd[0]/255.0));
+      out[3] = in[3];
 
       out+=ch;
       in+=ch;
@@ -486,8 +485,8 @@ static void refresh_watermarks( dt_iop_module_t *self )
   int count=0;
   const gchar *d_name = NULL;
   gchar configdir[1024],datadir[1024],filename[2048];
-  dt_util_get_datadir(datadir, 1024);
-  dt_util_get_user_config_dir(configdir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
+  dt_loc_get_user_config_dir(configdir, 1024);
   g_strlcat(datadir,"/watermarks",1024);
   g_strlcat(configdir,"/watermarks",1024);
 

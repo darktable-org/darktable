@@ -58,6 +58,11 @@ typedef struct dt_bauhaus_slider_data_t
   float defpos;   // default value (normalized)
   float min, max; // min and max range
   float scale;    // step width for loupe mode
+
+  float grad_col[10][3]; // colors for gradient slider
+  int   grad_cnt;        // how many stops
+  float grad_pos[10];    // and position of these.
+
   char format[24];// numeric value is printed with this string
 }
 dt_bauhaus_slider_data_t;
@@ -68,6 +73,8 @@ typedef struct dt_bauhaus_combobox_data_t
   int num_labels; // number of elements
   int active;     // currently active element
   int defpos;     // default position
+  int editable;   // 1 if arbitrary text may be typed
+  char text[180]; // roughly as much as a slider
   GList *labels;  // list of elements
 }
 dt_bauhaus_combobox_data_t;
@@ -175,12 +182,16 @@ GtkWidget* dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, fl
 void dt_bauhaus_slider_set(GtkWidget *w, float pos);
 float dt_bauhaus_slider_get(GtkWidget *w);
 void dt_bauhaus_slider_set_format(GtkWidget *w, const char *format);
+void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g, float b);
 
 // combobox:
 GtkWidget* dt_bauhaus_combobox_new(dt_iop_module_t *self);
 
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text);
 void dt_bauhaus_combobox_set(GtkWidget *w, int pos);
+void dt_bauhaus_combobox_set_editable(GtkWidget *w, int editable);
+const char* dt_bauhaus_combobox_get_text(GtkWidget *w);
+void dt_bauhaus_combobox_set_text(GtkWidget *w, const char *text);
 int  dt_bauhaus_combobox_get(GtkWidget *w);
 
 #endif

@@ -79,6 +79,12 @@ static int usage(const char *argv0)
 #ifdef HAVE_OPENCL
   printf(" [--disable-opencl]");
 #endif
+  printf(" [--library <library file>]");
+  printf(" [--datadir <data directory>]");
+  printf(" [--moduledir <module directory>]");
+  printf(" [--tmpdir <tmp directory>]");
+  printf(" [--configdir <user config directory>]");
+  printf(" [--cachedir <user config directory>]");
   printf("\n");
   return 1;
 }
@@ -309,6 +315,11 @@ int dt_init(int argc, char *argv[], const int init_gui)
    
   // database
   gchar *dbfilenameFromCommand = NULL;
+  char *datadirFromCommand = NULL;
+  char *moduledirFromCommand = NULL;
+  char *tmpdirFromCommand = NULL;
+  char *configdirFromCommand = NULL;
+  char *cachedirFromCommand = NULL;
 
   darktable.num_openmp_threads = 1;
 #ifdef _OPENMP
@@ -332,6 +343,26 @@ int dt_init(int argc, char *argv[], const int init_gui)
       else if(!strcmp(argv[k], "--library"))
       {
         dbfilenameFromCommand = argv[++k];
+      }
+      else if(!strcmp(argv[k], "--datadir"))
+      {
+        datadirFromCommand = argv[++k];
+      }
+      else if(!strcmp(argv[k], "--moduledir"))
+      {
+        moduledirFromCommand = argv[++k];
+      }
+      else if(!strcmp(argv[k], "--tmpdir"))
+      {
+        tmpdirFromCommand = argv[++k];
+      }
+      else if(!strcmp(argv[k], "--configdir"))
+      {
+        configdirFromCommand = argv[++k];
+      }
+      else if(!strcmp(argv[k], "--cachedir"))
+      {
+        cachedirFromCommand = argv[++k];
       }
       else if(argv[k][1] == 'd' && argc > k+1)
       {
@@ -371,6 +402,14 @@ int dt_init(int argc, char *argv[], const int init_gui)
 #ifdef _OPENMP
   omp_set_num_threads(darktable.num_openmp_threads);
 #endif
+  dt_loc_init_datadir(datadirFromCommand);
+  dt_loc_init_plugindir(moduledirFromCommand);
+  if(dt_loc_init_tmp_dir(tmpdirFromCommand)) {
+	  printf(_("ERROR : invalid temporary directory : %s\n"),darktable.tmpdir);
+	  return usage(argv[0]);
+  }
+  dt_loc_init_user_config_dir(configdirFromCommand);
+  dt_loc_init_user_cache_dir(cachedirFromCommand);
 
   g_type_init();
 
@@ -388,7 +427,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // thread-safe init:
   dt_exif_init();
   char datadir[1024];
-  dt_util_get_user_config_dir (datadir,1024);
+  dt_loc_get_user_config_dir (datadir,1024);
   char filename[1024];
   snprintf(filename, 1024, "%s/darktablerc", datadir);
 

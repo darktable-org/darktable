@@ -403,6 +403,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[0] = in[0]+((100.0*(noise*(strength)))*GRAIN_LIGHTNESS_STRENGTH_SCALE);
       out[1] = in[1];
       out[2] = in[2];
+      out[3] = in[3];
 
       out += ch;
       in += ch;

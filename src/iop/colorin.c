@@ -34,7 +34,6 @@
 #include <assert.h>
 #include <string.h>
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 DT_MODULE(1)
 
@@ -145,7 +144,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*9, d->cmatrix);
   if (dev_m == NULL) goto error;
   dev_r = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
@@ -154,7 +153,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if (dev_g == NULL) goto error;
   dev_b = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
   if (dev_b == NULL) goto error;
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*2*3, (float *)d->unbounded_coeffs);
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3*3, (float *)d->unbounded_coeffs);
   if (dev_coeffs == NULL) goto error;
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -330,6 +329,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
     }
   }
+
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -351,7 +353,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   piece->process_cl_ready = 1;
   char datadir[1024];
   char filename[1024];
-  dt_util_get_datadir(datadir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
   if(!strcmp(p->iccprofile, "darktable"))
   {
     char makermodel[1024];
@@ -553,7 +555,7 @@ void gui_init(struct dt_iop_module_t *self)
   // darktable built-in, if applicable
   for(int k=0; k<dt_profiled_colormatrix_cnt; k++)
   {
-    if(!strcmp(makermodel, dt_profiled_colormatrices[k].makermodel))
+    if(!strcasecmp(makermodel, dt_profiled_colormatrices[k].makermodel))
     {
       prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
       g_strlcpy(prof->filename, "darktable", sizeof(prof->filename));
@@ -601,8 +603,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   // read {userconfig,datadir}/color/in/*.icc, in this order.
   char datadir[1024], confdir[1024], dirname[1024], filename[1024];
-  dt_util_get_user_config_dir(confdir, 1024);
-  dt_util_get_datadir(datadir, 1024);
+  dt_loc_get_user_config_dir(confdir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
   snprintf(dirname, 1024, "%s/color/in", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
     snprintf(dirname, 1024, "%s/color/in", datadir);

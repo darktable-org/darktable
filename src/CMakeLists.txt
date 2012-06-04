@@ -10,13 +10,13 @@ FILE(GLOB SOURCE_FILES
   "common/cache.c"
   "common/collection.c" 
   "common/colorlabels.c" 
-  "common/colormatrices.c" 
   "common/colorspaces.c" 
   "common/curve_tools.c"
   "common/darktable.c" 
   "common/database.c"
   "common/exif.cc" 
   "common/film.c" 
+  "common/file_location.c" 
   "common/fswatch.c" 
   "common/history.c" 
   "common/image.c" 
@@ -30,6 +30,7 @@ FILE(GLOB SOURCE_FILES
   "common/imageio_rgbe.c" 
   "common/imageio_tiff.c" 
   "common/imageio_rawspeed.cc" 
+  "common/interpolation.c" 
   "common/metadata.c" 
   "common/mipmap_cache.c"
   "common/styles.c" 
@@ -39,7 +40,6 @@ FILE(GLOB SOURCE_FILES
   "common/utility.c" 
   "common/variables.c" 
   "common/pwstorage/pwstorage.c" 
-  "common/pwstorage/backend_gconf.c"
   "common/opencl.c"
   "common/dynload.c"
   "common/dlopencl.c"
@@ -237,10 +237,11 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -fno-strict-aliasing")
 # c++ code doesn't like -Werror (libraw)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fno-strict-aliasing")
 
-if(NOT APPLE)
+if(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
   # apple build fails on deprecated warnings..
+  # and too many warnings reported by Clang for now
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
-endif(NOT APPLE)
+endif(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
 
 if(NOT WIN32)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
@@ -264,13 +265,18 @@ else()
  	set(MARCH "-mtune=generic")
 endif()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -mfpmath=sse -g")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -g")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations ${MARCH}")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g -D_DEBUG")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -mfpmath=sse -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -g")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations ${MARCH}")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -D_DEBUG")
-  
+if(CMAKE_COMPILER_IS_GNUCC)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
+endif()
+if(CMAKE_COMPILER_IS_GNUCXX)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
+endif()
 
 #
 # Generate config.h
@@ -282,11 +288,23 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 #
 # Setup generation of preference dialog files..
 #
-add_custom_command(
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/../create_preferences.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_preferences.sh.in
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/../create_preferences.sh ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktable.schemas > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
-)
+if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+	add_custom_command(
+		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+		COMMAND ${Xsltproc_BIN} --stringparam HAVE_OPENCL ${HAVE_OPENCL} ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+	)
+else(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+	if(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+		add_custom_command(
+			DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml
+			OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+			COMMAND ${Saxon_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl HAVE_OPENCL=${HAVE_OPENCL} > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+		)
+	else(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+		message(FATAL_ERROR "Don't know how to generate preferences")
+	endif(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+endif(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
 
 #
 # Generate mapping of key strings to internal metadata id
@@ -339,6 +357,26 @@ if(NOT DONT_USE_RAWSPEED)
   # compile rawspeed
   add_subdirectory(external/rawspeed)
 endif(NOT DONT_USE_RAWSPEED)
+
+# libsquish for compressed thumbnails:
+add_dependencies(lib_darktable squish)
+add_library(squish_static STATIC IMPORTED)
+set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/squish/libsquish.a)
+target_link_libraries(lib_darktable ${LIBS} squish_static)
+add_subdirectory(external/squish)
+
+# libcolord-gtk:
+find_package(ColordGtk)
+if(COLORDGTK_FOUND)
+  message(STATUS "Using colord to fetch color profiles")
+  include_directories(${COLORDGTK_INCLUDE_DIRS})
+  list(APPEND LIBS ${COLORDGTK_LIBRARIES})
+  add_definitions("-DUSE_COLORDGTK")
+#   add_dependencies(lib_darktable colord-gtk)
+else(COLORDGTK_FOUND)
+  message(STATUS "Either colord is missing or too old (<0.1.20)")
+endif(COLORDGTK_FOUND)
+
 
 install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 list(APPEND LIBS lib_darktable)

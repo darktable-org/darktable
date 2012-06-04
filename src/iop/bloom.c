@@ -112,16 +112,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   /* get the thresholded lights into buffer */
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) private(in, out) shared(ivoid, ovoid, roi_out, roi_in, data,blurlightness) schedule(static)
+  #pragma omp parallel for default(none) shared(ivoid, ovoid, roi_out, roi_in, data,blurlightness) schedule(static)
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
-    out = ((float *)ovoid) + ch*k;
-    float L = out[0]*scale;
+    float *inp = ((float *)ivoid) + ch*k;
+    float L = inp[0]*scale;
     if (L>data->threshold)
       blurlightness[k] = L;
 
-    out +=ch;
+    inp +=ch;
   }
 
 
@@ -210,6 +210,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     outp[1] = inp[1];
     outp[2] = inp[2];
   }
+
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 
   if(scanline)
     free(scanline);

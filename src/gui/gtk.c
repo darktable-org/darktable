@@ -678,8 +678,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 {
   // unset gtk rc from kde:
   char gtkrc[PATH_MAX], path[PATH_MAX], datadir[PATH_MAX], configdir[PATH_MAX];
-  dt_util_get_datadir(datadir, PATH_MAX);
-  dt_util_get_user_config_dir(configdir, PATH_MAX);
+  dt_loc_get_datadir(datadir, PATH_MAX);
+  dt_loc_get_user_config_dir(configdir, PATH_MAX);
  
   g_snprintf(gtkrc, PATH_MAX, "%s/darktable.gtkrc", configdir);
   
@@ -744,7 +744,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   //  dt_gui_background_jobs_init();
 
   /* Have the delete event (window close) end the program */
-  dt_util_get_datadir(datadir, PATH_MAX);
+  dt_loc_get_datadir(datadir, PATH_MAX);
   snprintf(path, PATH_MAX, "%s/icons", datadir);
   gtk_icon_theme_append_search_path (gtk_icon_theme_get_default (), path);
 
@@ -1209,12 +1209,9 @@ void dt_ui_restore_panels(dt_ui_t *ui)
   uint32_t state = dt_conf_get_int(key);
   if (state)
   {
-    /* restore previous panel view states */
+    /* hide all panels */
     for (int k=0;k<DT_UI_PANEL_SIZE;k++)
-      dt_ui_panel_show(ui, k, (state>>k)&1);
-    
-    /* clear state */
-    dt_conf_set_int(key, 0);
+      dt_ui_panel_show(ui, k, FALSE);
   }
   else
   {

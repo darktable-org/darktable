@@ -80,6 +80,8 @@ dt_control_signal_t *dt_control_signal_init()
 
 void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t signal) 
 {
+  // ignore all signals on shutdown, especially don't lock anything..
+  if(!dt_control_running()) return;
   gboolean i_own_lock = dt_control_gdk_lock();
   g_signal_emit_by_name(G_OBJECT(ctlsig->sink), _signal_name[signal]);
   if (i_own_lock) dt_control_gdk_unlock();

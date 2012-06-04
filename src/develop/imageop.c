@@ -16,9 +16,11 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/opencl.h"
 #include "common/dtpthread.h"
 #include "common/debug.h"
+#include "common/interpolation.h"
 #include "bauhaus/bauhaus.h"
 #include "control/control.h"
 #include "develop/imageop.h"
@@ -42,7 +44,8 @@
 #include <string.h>
 #include <gmodule.h>
 #include <xmmintrin.h>
-
+#include <time.h>
+#include <sys/select.h>
 
 static dt_develop_blend_params_t _default_blendop_params= {DEVELOP_BLEND_DISABLED, 100.0, 0, 0,
                                                           { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
@@ -315,6 +318,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->color_picker_box[0] = module->color_picker_box[1] = .25f;
   module->color_picker_box[2] = module->color_picker_box[3] = .75f;
   module->color_picker_point[0] = module->color_picker_point[1] = 0.5f;
+  module->request_mask_display = 0;
   module->enabled = module->default_enabled = 1; // all modules enabled by default.
   g_strlcpy(module->op, so->op, 20);
 
@@ -592,7 +596,7 @@ void dt_iop_load_modules_so()
   darktable.iop = NULL;
   char plugindir[1024], op[20];
   const gchar *d_name;
-  dt_util_get_plugindir(plugindir, 1024);
+  dt_loc_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/plugins", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return;
@@ -624,11 +628,11 @@ void dt_iop_load_modules_so()
     if(!(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       // Adding the optional show accelerator to the table (blank)
-      dt_accel_register_iop(module, FALSE, NC_("accel", "show plugin"), 0, 0);
-      dt_accel_register_iop(module, FALSE, NC_("accel", "enable plugin"), 0, 0);
+      dt_accel_register_iop(module, FALSE, NC_("accel", "show module"), 0, 0);
+      dt_accel_register_iop(module, FALSE, NC_("accel", "enable module"), 0, 0);
 
       dt_accel_register_iop(module, FALSE,
-                            NC_("accel", "reset plugin parameters"), 0, 0);
+                            NC_("accel", "reset module parameters"), 0, 0);
       dt_accel_register_iop(module, FALSE,
                             NC_("accel", "show preset menu"), 0, 0);
     }
@@ -755,7 +759,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
       dt_bauhaus_slider_set(bd->opacity_slider, module->blend_params->opacity);
       if(bd->blendif_support)
       {
-        gtk_toggle_button_set_active(bd->blendif_enable, module->blend_params->blendif & (1<<31));
+        dt_bauhaus_combobox_set(bd->blendif_enable, (module->blend_params->blendif & (1<<31)) != 0);
         dt_iop_gui_update_blendif(module);
       }
     }
@@ -950,7 +954,7 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
           gtk_widget_hide(GTK_WIDGET(bd->blendif_enable));
         }
       }
-      else if(bd->blendif_support && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bd->blendif_enable)) == FALSE)
+      else if(bd->blendif_support && (dt_bauhaus_combobox_get(bd->blendif_enable) == 0))
       {
         gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
       }
@@ -986,6 +990,13 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
 }
 
 static gboolean
+_iop_plugin_body_scrolled(GtkWidget *w, GdkEvent *e, gpointer user_data)
+{
+  // just make sure nothing happens:
+  return TRUE;
+}
+
+static gboolean
 _iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
@@ -1004,7 +1015,8 @@ _iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_dat
   return FALSE;
 }
 
-static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+static gboolean
+_iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   GtkWidget *pluginui = dt_iop_gui_get_widget(module);
@@ -1072,6 +1084,12 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   module->header = header;
   /* connect mouse button callbacks for focus and presets */
   g_signal_connect(G_OBJECT(pluginui), "button-press-event", G_CALLBACK(_iop_plugin_body_button_press), module);
+  /* avoid scrolling with wheel, it's distracting (you'll end up over a control, and scroll it's value) */
+  g_signal_connect(G_OBJECT(pluginui_frame), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
+  g_signal_connect(G_OBJECT(pluginui), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
+  g_signal_connect(G_OBJECT(header_evb), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
+  g_signal_connect(G_OBJECT(expander), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
+  g_signal_connect(G_OBJECT(header), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
 
   /* steup the header box */
   gtk_container_add(GTK_CONTAINER(header_evb), header);
@@ -1182,6 +1200,18 @@ int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
   return 0;
 }
 
+void dt_iop_nap(uint32_t usec)
+{
+  // relinquish processor
+  sched_yield();
+
+  // additionally wait the given amount of time 
+  struct timeval s;
+  s.tv_sec = 0;
+  s.tv_usec = usec;
+  select(0, NULL, NULL, NULL, &s);
+}
+
 void
 dt_iop_flip_and_zoom_8(
     const uint8_t *in,
@@ -1287,64 +1317,12 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw
   }
 }
 
-
 void
 dt_iop_clip_and_zoom(float *out, const float *const in,
                      const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride)
 {
-  // adjust to pixel region and don't sample more than scale/2 nbs!
-  // pixel footprint on input buffer, radius:
-  const float px_footprint = .9f/roi_out->scale;
-  // how many 2x2 blocks can be sampled inside that area
-  const int samples = ((int)px_footprint)/2;
-
-  // init gauss with sigma = samples (half footprint)
-
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(out)
-#endif
-  for(int y=0; y<roi_out->height; y++)
-  {
-    float *outc = out + 4*(out_stride*y);
-    for(int x=0; x<roi_out->width; x++)
-    {
-      __m128 col = _mm_setzero_ps();
-      // _mm_prefetch
-      // upper left corner:
-      float fx = (x + roi_out->x)/roi_out->scale, fy = (y + roi_out->y)/roi_out->scale;
-      int px = (int)fx, py = (int)fy;
-      const float dx = fx - px, dy = fy - py;
-      const __m128 d0 = _mm_set1_ps((1.0f-dx)*(1.0f-dy));
-      const __m128 d1 = _mm_set1_ps((dx)*(1.0f-dy));
-      const __m128 d2 = _mm_set1_ps((1.0f-dx)*(dy));
-      const __m128 d3 = _mm_set1_ps(dx*dy);
-
-      // const float *inc = in + 4*(py*roi_in->width + px);
-
-      float num=0.0f;
-      // for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
-      for(int j=MAX(0, py-samples); j<=MIN(roi_in->height-2, py+samples); j++)
-        for(int i=MAX(0, px-samples); i<=MIN(roi_in->width -2, px+samples); i++)
-        {
-          __m128 p0 = _mm_mul_ps(d0, _mm_load_ps(in + 4*(i + in_stride*j)));
-          __m128 p1 = _mm_mul_ps(d1, _mm_load_ps(in + 4*(i + 1 + in_stride*j)));
-          __m128 p2 = _mm_mul_ps(d2, _mm_load_ps(in + 4*(i + in_stride*(j+1))));
-          __m128 p3 = _mm_mul_ps(d3, _mm_load_ps(in + 4*(i + 1 + in_stride*(j+1))));
-
-          col = _mm_add_ps(col, _mm_add_ps(_mm_add_ps(p0, p1), _mm_add_ps(p2, p3)));
-          num++;
-        }
-      // col = _mm_mul_ps(col, _mm_set1_ps(1.0f/((2.0f*samples+1.0f)*(2.0f*samples+1.0f))));
-      if(num == 0.0f)
-        col = _mm_load_ps(in + 4*(CLAMPS(px, 0, roi_in->width-1) + in_stride*CLAMPS(py, 0, roi_in->height-1)));
-      else
-        col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
-      // memcpy(outc, &col, 4*sizeof(float));
-      _mm_stream_ps(outc, col);
-      outc += 4;
-    }
-  }
-  _mm_sfence();
+  const struct dt_interpolation* itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  dt_interpolation_resample(itor, out, roi_out, out_stride*4*sizeof(float), in, roi_in, in_stride*4*sizeof(float));
 }
 
 static int
@@ -1872,16 +1850,16 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
   // Connecting the (optional) module show accelerator
   closure = g_cclosure_new(G_CALLBACK(show_module_callback),
                            module, NULL);
-  dt_accel_connect_iop(module, "show plugin", closure);
+  dt_accel_connect_iop(module, "show module", closure);
 
   // Connecting the (optional) module switch accelerator
   closure = g_cclosure_new(G_CALLBACK(enable_module_callback),
                            module, NULL);
-  dt_accel_connect_iop(module, "enable plugin", closure);
+  dt_accel_connect_iop(module, "enable module", closure);
 
   // Connecting the reset and preset buttons
   if(module->reset_button)
-    dt_accel_connect_button_iop(module, "reset plugin parameters",
+    dt_accel_connect_button_iop(module, "reset module parameters",
                                 module->reset_button);
   if(module->presets_button)
     dt_accel_connect_button_iop(module, "show preset menu",

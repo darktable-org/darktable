@@ -89,9 +89,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   /* construct a temporary file name */
   char tmpdir[4096]= {0};
-  dt_util_get_user_local_dir (tmpdir,4096);
-  g_strlcat (tmpdir,"/tmp",4096);
-  g_mkdir_with_parents(tmpdir,0700);
+  dt_loc_get_tmp_dir (tmpdir,4096);
 
   char dirname[4096];
   dt_image_full_path(imgid, dirname, 1024);
@@ -101,7 +99,13 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   attachment->file = g_build_filename( tmpdir, filename, (char *)NULL );
 
-  dt_imageio_export(imgid, attachment->file, format, fdata);
+  if(dt_imageio_export(imgid, attachment->file, format, fdata) != 0)
+  {
+    fprintf(stderr, "[imageio_storage_email] could not export to file: `%s'!\n", attachment->file);
+    dt_control_log(_("could not export to file `%s'!"), attachment->file);
+    return 1;
+  }
+
 
   char *trunc = attachment->file + strlen(attachment->file) - 32;
   if(trunc < attachment->file) trunc = attachment->file;

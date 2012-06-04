@@ -61,6 +61,17 @@ typedef struct dt_iop_lensfun_gui_data_t
 }
 dt_iop_lensfun_gui_data_t;
 
+typedef struct dt_iop_lensfun_global_data_t
+{
+  lfDatabase *db;
+  int kernel_lens_distort_bilinear;
+  int kernel_lens_distort_bicubic;
+  int kernel_lens_distort_lanczos2;
+  int kernel_lens_distort_lanczos3;
+  int kernel_lens_vignette;
+}
+dt_iop_lensfun_global_data_t;
+
 typedef struct dt_iop_lensfun_data_t
 {
   lfLens *lens;
@@ -78,6 +89,7 @@ typedef struct dt_iop_lensfun_data_t
   lfLensType target_geom;
 }
 dt_iop_lensfun_data_t;
+
 
 void init(dt_iop_module_t *module);
 void cleanup(dt_iop_module_t *module);

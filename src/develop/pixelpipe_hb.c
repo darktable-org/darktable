@@ -39,10 +39,40 @@
 
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
+static char *_pipe_type_to_str(int pipe_type)
+{
+  char *r;
+
+  switch(pipe_type)
+  {
+    case DT_DEV_PIXELPIPE_PREVIEW:
+      r = "preview";
+      break;
+    case DT_DEV_PIXELPIPE_FULL:
+      r = "full";
+      break;
+    case DT_DEV_PIXELPIPE_THUMBNAIL:
+      r = "thumbnail";
+      break;
+    case DT_DEV_PIXELPIPE_EXPORT:
+    default:
+      r = "export";
+    break;
+  }
+  return r;
+}
+
 int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
   int res = dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*width*height, 2);
   pipe->type = DT_DEV_PIXELPIPE_EXPORT;
+  return res;
+}
+
+int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
+{
+  int res = dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*width*height, 2);
+  pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
   return res;
 }
 
@@ -67,6 +97,8 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t
   pipe->processing = 0;
   pipe->shutdown = 0;
   pipe->opencl_error = 0;
+  pipe->tiling = 0;
+  pipe->mask_display = 0;
   pipe->input_timestamp = 0;
   dt_pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
   dt_pthread_mutex_init(&(pipe->busy_mutex), NULL);
@@ -77,6 +109,7 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
 {
   pipe->iwidth  = width;
   pipe->iheight = height;
+  pipe->iflipped = 0;
   pipe->iscale = iscale;
   pipe->input = input;
   pipe->image = dev->image_storage;
@@ -421,7 +454,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, roi_out->width, pipe->iwidth);
       }
     }
-    dt_show_times(&start, "[dev_pixelpipe]", "initing base buffer [%s]", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
+    dt_show_times(&start, "[dev_pixelpipe]", "initing base buffer [%s]", _pipe_type_to_str(pipe->type));
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
   }
   else
@@ -553,10 +586,11 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       int valid_input_on_gpu_only = (cl_mem_input != NULL);
       
       /* general remark: in case of opencl errors within modules or out-of-memory on GPU, we transparently
-         fall back to the respective cpu module and continue in pixelpipe. If we encounter late errors(*), we set 
-         pipe->opencl_error=1, return this function with value 1, and leave appropriate action to the calling function,
-         which normally would restart pixelpipe without opencl.
-         (*) late errors are sometimes detected when trying to get back data from device into host memory */
+         fall back to the respective cpu module and continue in pixelpipe. If we encounter errors we set 
+         pipe->opencl_error=1, return this function with value 1, and leave appropriate action to the calling 
+         function, which normally would restart pixelpipe without opencl.
+         Late errors are sometimes detected when trying to get back data from device into host memory and
+         are treated in the same manner. */
 
       /* try to enter opencl path after checking some module specific pre-requisites */
       if(module->process_cl && piece->process_cl_ready)
@@ -605,6 +639,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           /* process blending */
           if (success_opencl)
             success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+
+
+          /* synchronization point for opencl pipe */
+          if (success_opencl)
+            success_opencl = dt_opencl_finish(pipe->devid);
+
         }
         else if(module->flags() & IOP_FLAGS_ALLOW_TILING)
         {
@@ -640,6 +680,10 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           /* do process blending on cpu (this is anyhow fast enough) */
           if (success_opencl)
             dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
+
+          /* synchronization point for opencl pipe */
+          if (success_opencl)
+            success_opencl = dt_opencl_finish(pipe->devid);
         }
         else
         {
@@ -647,6 +691,14 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           success_opencl = FALSE;
         }
 
+        if(pipe->shutdown)
+        {
+          if (cl_mem_input) dt_opencl_release_mem_object(cl_mem_input);
+          if (*cl_mem_output) dt_opencl_release_mem_object(*cl_mem_output);
+          cl_mem_input = *cl_mem_output = NULL;
+          dt_pthread_mutex_unlock(&pipe->busy_mutex);
+          return 1;
+        }
         
         // if (rand() % 20 == 0) success_opencl = FALSE; // Test code: simulate spurious failures
 
@@ -707,6 +759,13 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           /* process blending on cpu */
           dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
         }
+
+        if(pipe->shutdown)
+        {
+          dt_pthread_mutex_unlock(&pipe->busy_mutex);
+          return 1;
+        }
+
       }
       else
       {
@@ -746,6 +805,13 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
         /* process blending */
         dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
+
+        if(pipe->shutdown)
+        {
+          dt_pthread_mutex_unlock(&pipe->busy_mutex);
+          return 1;
+        }
+
       }
 
       /* input is still only on GPU? Let's invalidate CPU input buffer then */
@@ -826,7 +892,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 #endif
 
     dt_show_times(&start, "[dev_pixelpipe]", "processing `%s' [%s]", module->name(),
-                  pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
+                  _pipe_type_to_str(pipe->type));
     // in case we get this buffer from the cache, also get the processed max:
     for(int k=0; k<3; k++) piece->processed_maximum[k] = pipe->processed_maximum[k];
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
@@ -1289,6 +1355,9 @@ restart:
   // image max is normalized before
   for(int k=0; k<3; k++) pipe->processed_maximum[k] = 1.0f; // dev->image->maximum;
 
+  // mask display off as a starting point
+  pipe->mask_display = 0;
+
   void *buf = NULL;
   void *cl_mem_out = NULL;
   int out_bpp;
@@ -1314,7 +1383,7 @@ restart:
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
     dt_dev_pixelpipe_flush_caches(pipe);
     dt_dev_pixelpipe_change(pipe, dev);
-    dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] falling back to cpu path\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
+    dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] falling back to cpu path\n", _pipe_type_to_str(pipe->type));
     goto restart;  // try again (this time without opencl)
   }
 

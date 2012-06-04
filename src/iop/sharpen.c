@@ -39,8 +39,6 @@ DT_MODULE(1)
 #define MAXR 12
 #define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
-
 typedef struct dt_iop_sharpen_params_t
 {
   float radius, amount, threshold;
@@ -140,13 +138,15 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
   size_t workgroupsize = 0;          // the maximum number of items in a work group
   unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
+  size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
   
   // make sure blocksize is not too large
   int blocksize = BLOCKSIZE;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS)
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
+     dt_opencl_get_kernel_work_group_size(devid, gd->kernel_sharpen_hblur, &kernelworkgroupsize) == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] 
+    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize > kernelworkgroupsize
           || blocksize > workgroupsize || (blocksize+2*rad)*sizeof(float) > localmemsize)
     {
       if(blocksize == 1) break;
@@ -170,7 +170,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   /* horizontal blur */
   sizes[0] = bwidth;
-  sizes[1] = ROUNDUP(height, 4);
+  sizes[1] = ROUNDUPHT(height);
   sizes[2] = 1;
   local[0] = blocksize;
   local[1] = 1;
@@ -187,7 +187,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
   /* vertical blur */
-  sizes[0] = ROUNDUP(width, 4);
+  sizes[0] = ROUNDUPWD(width);
   sizes[1] = bheight;
   sizes[2] = 1;
   local[0] = 1;
@@ -205,8 +205,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
   /* mixing out and in -> out */
-  sizes[0] = ROUNDUP(width, 4);
-  sizes[1] = ROUNDUP(height, 4);
+  sizes[0] = ROUNDUPWD(width);
+  sizes[1] = ROUNDUPHT(height);
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -234,7 +234,8 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   dt_iop_sharpen_data_t *d = (dt_iop_sharpen_data_t *)piece->data;
   const int rad = MIN(MAXR, ceilf(d->radius * roi_in->scale / piece->iscale));
 
-  tiling->factor = 2;
+  tiling->factor = 2.0f;
+  tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = rad;
   tiling->xalign = 1;
@@ -405,13 +406,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       if (fabsf(diff) > data->threshold)
       {
         const float detail = copysignf(fmaxf(fabsf(diff) - data->threshold, 0.0), diff);
-        out[0] = fmaxf(0.0, in[0] + detail*data->amount);
+        out[0] = in[0] + detail*data->amount;
       }
       else out[0] = in[0];
       out += ch;
       in += ch;
     }
   }
+
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
     
 static void

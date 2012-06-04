@@ -28,7 +28,11 @@
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
 
+#define FLOATING_ENTRY_WIDTH 150
+
 DT_MODULE(1)
+
+static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval, GdkModifierType modifier, dt_lib_module_t *self);
 
 typedef struct dt_lib_tagging_t
 {
@@ -38,6 +42,9 @@ typedef struct dt_lib_tagging_t
   int imgsel;
 
   GtkWidget *attach_button, *detach_button, *new_button, *delete_button;
+
+  GtkWidget *floating_tag_window;
+  int floating_tag_imgid;
 }
 dt_lib_tagging_t;
 
@@ -71,6 +78,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "detach"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "new"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "delete"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "tag"), GDK_t, GDK_CONTROL_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -81,6 +89,7 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "detach", d->detach_button);
   dt_accel_connect_button_lib(self, "new", d->new_button);
   dt_accel_connect_button_lib(self, "delete", d->delete_button);
+  dt_accel_connect_lib(self, "tag", g_cclosure_new(G_CALLBACK(_lib_tagging_tag_show), self, NULL));
 }
 
 static void
@@ -238,6 +247,7 @@ new_button_clicked (GtkButton *button, gpointer user_data)
 
   /** attach tag to selected images  */
   dt_tag_attach(tid,-1);
+  dt_image_synch_xmp(-1);
 
   update(self, 1);
 }
@@ -256,6 +266,7 @@ entry_activated (GtkButton *button, gpointer user_data)
 
   /** attach tag to selected images  */
   dt_tag_attach(tid,-1);
+  dt_image_synch_xmp(-1);
 
   update(self, 1);
   update(self, 0);
@@ -491,3 +502,96 @@ gui_cleanup (dt_lib_module_t *self)
   free(self->data);
   self->data = NULL;
 }
+
+// http://stackoverflow.com/questions/4631388/transparent-floating-gtkentry
+static gboolean
+_lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t*)self->data;
+  switch(event->keyval) {
+    case GDK_Escape:
+      gtk_widget_destroy(d->floating_tag_window);
+      return TRUE;
+    case GDK_Tab:
+      return TRUE;
+    case GDK_Return:
+    case GDK_KP_Enter: {
+      if(d->floating_tag_imgid > 0) // this should never fail
+      {
+        const gchar *tag = gtk_entry_get_text(GTK_ENTRY(entry));
+        /* create new tag */
+        guint tid=0;
+        dt_tag_new(tag, &tid);
+        /* attach tag to selected images  */
+        dt_tag_attach(tid, d->floating_tag_imgid);
+        dt_image_synch_xmp(d->floating_tag_imgid);
+        update(self, 1);
+        update(self, 0);
+      }
+      gtk_widget_destroy(d->floating_tag_window);
+      return TRUE;
+    }
+  }
+  return FALSE; /* event not handled */
+}
+
+static gboolean
+_lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval, GdkModifierType modifier, dt_lib_module_t* self)
+{
+  int mouse_over_id = 0;
+  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  if(mouse_over_id > 0)
+  {
+    dt_lib_tagging_t *d = (dt_lib_tagging_t*)self->data;
+    d->floating_tag_imgid = mouse_over_id;
+
+    gint x, y;
+    gint px, py, w, h;
+    GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+    GtkWidget *center = dt_ui_center(darktable.gui->ui);
+    gdk_window_get_origin(gtk_widget_get_window(center), &px, &py);
+    gdk_window_get_size(gtk_widget_get_window(center),&w,&h);
+    x = px + 0.5*(w-FLOATING_ENTRY_WIDTH);
+    y = py + h - 50;
+
+    /* put the floating box at the mouse pointer */
+//     gint pointerx, pointery;
+//     gtk_widget_get_pointer(center, &pointerx, &pointery);
+//     x = px + pointerx + 1;
+//     y = py + pointery + 1;
+
+    d->floating_tag_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    /* stackoverflow.com/questions/1925568/how-to-give-keyboard-focus-to-a-pop-up-gtk-window */
+    GTK_WIDGET_SET_FLAGS(d->floating_tag_window, GTK_CAN_FOCUS);
+    gtk_window_set_decorated(GTK_WINDOW(d->floating_tag_window), FALSE);
+    gtk_window_set_has_frame(GTK_WINDOW(d->floating_tag_window), FALSE);
+    gtk_window_set_type_hint(GTK_WINDOW(d->floating_tag_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
+    gtk_window_set_transient_for(GTK_WINDOW(d->floating_tag_window), GTK_WINDOW(window));
+    gtk_window_set_opacity(GTK_WINDOW(d->floating_tag_window), 0.8);
+    gtk_window_move(GTK_WINDOW(d->floating_tag_window), x, y);
+
+
+    GtkWidget *entry = gtk_entry_new();
+    gtk_widget_set_size_request(entry, FLOATING_ENTRY_WIDTH, -1);
+    gtk_widget_add_events(entry, GDK_FOCUS_CHANGE_MASK);
+
+    GtkEntryCompletion *completion = gtk_entry_completion_new();
+    gtk_entry_completion_set_model(completion, gtk_tree_view_get_model(GTK_TREE_VIEW(d->related)));
+    gtk_entry_completion_set_text_column(completion, 0);
+    gtk_entry_completion_set_inline_completion(completion, TRUE);
+    gtk_entry_set_completion(GTK_ENTRY(entry), completion);
+
+    gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
+    gtk_container_add(GTK_CONTAINER(d->floating_tag_window), entry);
+    g_signal_connect_swapped(entry, "focus-out-event", G_CALLBACK(gtk_widget_destroy), d->floating_tag_window);
+    g_signal_connect(entry, "key-press-event", G_CALLBACK(_lib_tagging_tag_key_press), self);
+
+    gtk_widget_show_all(d->floating_tag_window);
+    gtk_widget_grab_focus(entry);
+    gtk_window_present(GTK_WINDOW(d->floating_tag_window));
+  }
+
+  return TRUE;
+}
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

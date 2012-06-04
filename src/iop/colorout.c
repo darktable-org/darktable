@@ -36,8 +36,6 @@
 #include <string.h>
 #include <gdk/gdkkeysyms.h>
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
-
 DT_MODULE(3)
 
 static gchar *_get_profile_from_pos(GList *profiles, int pos);
@@ -246,7 +244,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
 
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*9, d->cmatrix);
   if (dev_m == NULL) goto error;
@@ -256,7 +254,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if (dev_g == NULL) goto error;
   dev_b = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
   if (dev_g == NULL) goto error;
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*2*3, (float *)d->unbounded_coeffs);
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3*3, (float *)d->unbounded_coeffs);
   if (dev_coeffs == NULL) goto error;
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -403,6 +401,9 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
       }
     }
   }
+
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 static cmsHPROFILE _create_profile(gchar *iccprofile)
@@ -725,8 +726,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   // read {conf,data}dir/color/out/*.icc
   char datadir[1024], confdir[1024], dirname[1024], filename[1024];
-  dt_util_get_user_config_dir(confdir, 1024);
-  dt_util_get_datadir(datadir, 1024);
+  dt_loc_get_user_config_dir(confdir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
   snprintf(dirname, 1024, "%s/color/out", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
     snprintf(dirname, 1024, "%s/color/out", datadir);
@@ -789,9 +790,8 @@ void gui_init(struct dt_iop_module_t *self)
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
     if(!strcmp(prof->name, "X profile"))
     {
-      dt_bauhaus_combobox_add(g->cbox2, _("system display profile"));
+      // the system display profile is only suitable for display purposes
       dt_bauhaus_combobox_add(g->cbox3, _("system display profile"));
-      dt_bauhaus_combobox_add(g->cbox5, _("system display profile"));	/// TODO: this is useless, but here for test
     }
     else if(!strcmp(prof->name, "linear_rgb"))
     {

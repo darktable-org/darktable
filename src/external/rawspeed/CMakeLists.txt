@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-install(FILES data/cameras.xml data/showcameras.xsl DESTINATION ${SHARE_INSTALL}/rawspeed)
+install(FILES data/cameras.xml data/showcameras.xsl DESTINATION ${SHARE_INSTALL}/darktable/rawspeed)
 
 set(RAWSPEED_SOURCES
   "RawSpeed/CameraSensorInfo.cpp"

@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2011 henrik andersson.
+    copyright (c) 2011--2012 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -569,6 +569,7 @@ film_strip_activated(const int imgid, void *data)
   dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dt_dev_change_image(dev, imgid);
+  dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
   // force redraw
   dt_control_queue_redraw();
 }
@@ -619,8 +620,10 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
         return;
       }
 
+      if (!dev->image_loading) {
+        dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
+      }
       dt_dev_change_image(dev, imgid);
-      dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
 
     }
     sqlite3_finalize(stmt);
@@ -730,6 +733,11 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
 static void _darkroom_ui_apply_style_activate_callback(gchar *name)
 {
   dt_control_log(_("applied style `%s' on current image"),name);
+ 
+  /* write current history changes so nothing gets lost */
+  dt_dev_write_history(darktable.develop);
+  
+  /* apply style on image and reload*/
   dt_styles_apply_to_image (name, FALSE, darktable.develop->image_storage.id);
   dt_dev_reload_image(darktable.develop, darktable.develop->image_storage.id);
 }

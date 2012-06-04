@@ -24,6 +24,7 @@
 #include <string.h>
 #include "common/colorspaces.h"
 #include "common/debug.h"
+#include "common/opencl.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -73,6 +74,13 @@ typedef struct dt_iop_splittoning_data_t
 }
 dt_iop_splittoning_data_t;
 
+typedef struct dt_iop_splittoning_global_data_t
+{
+  int kernel_splittoning;
+}
+dt_iop_splittoning_global_data_t;
+
+
 const char *name()
 {
   return _("split toning");
@@ -80,7 +88,7 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 int
@@ -165,23 +173,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *out;
   const int ch = piece->colors;
 
-  // Get lowest/highest l in image
-  float lhigh=0.0;
-  float llow=1.0;
-
-  in  = (float *)ivoid;
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(in,roi_out,lhigh,llow) schedule(static)
-#endif
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
-  {
-    int index = k*ch;
-    float h,s,l;
-    rgb2hsl(&in[index],&h,&s,&l);
-    lhigh=fmax(lhigh,l);
-    llow=fmin(llow,l);
-  }
-
   const float compress=(data->compress/110.0)/2.0;  // Dont allow 100% compression..
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(ivoid,ovoid,roi_out,data) private(in,out) schedule(static)
@@ -215,9 +206,71 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         out[1]=in[1];
         out[2]=in[2];
       }
+
+      out[3]=in[3];
     }
   }
 }
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_splittoning_data_t *d = (dt_iop_splittoning_data_t *)piece->data;
+  dt_iop_splittoning_global_data_t *gd = (dt_iop_splittoning_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  const float compress = (d->compress/110.0)/2.0;  // Dont allow 100% compression..
+  const float balance = d->balance;
+  const float shadow_hue = d->shadow_hue;
+  const float shadow_saturation = d->shadow_saturation;
+  const float highlight_hue = d->highlight_hue;
+  const float highlight_saturation = d->highlight_saturation;
+
+  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 0, sizeof(cl_mem), &dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 1, sizeof(cl_mem), &dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 2, sizeof(int), &width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 3, sizeof(int), &height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 4, sizeof(float), &compress);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 5, sizeof(float), &balance);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 6, sizeof(float), &shadow_hue);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 7, sizeof(float), &shadow_saturation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 8, sizeof(float), &highlight_hue);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 9, sizeof(float), &highlight_saturation);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_splittoning, sizes);
+  if(err != CL_SUCCESS) goto error;
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_splittoning] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 8; // extended.cl from programs.conf
+  dt_iop_splittoning_global_data_t *gd = (dt_iop_splittoning_global_data_t *)malloc(sizeof(dt_iop_splittoning_global_data_t));
+  module->data = gd;
+  gd->kernel_splittoning = dt_opencl_create_kernel(program, "splittoning");
+}
+
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_splittoning_global_data_t *gd = (dt_iop_splittoning_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_splittoning);
+  free(module->data);
+  module->data = NULL;
+}
+
 
 static void
 balance_callback (GtkDarktableSlider *slider, gpointer user_data)

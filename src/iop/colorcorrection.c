@@ -19,10 +19,12 @@
 #include "config.h"
 #endif
 #include "common/colorspaces.h"
+#include "common/opencl.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/imageop.h"
 
@@ -46,9 +48,7 @@ typedef struct dt_iop_colorcorrection_gui_data_t
 {
   GtkDrawingArea *area;
   GtkWidget *slider;
-  float press_x, press_y, mouse_x, mouse_y;
-  int selected, dragging;
-  dt_iop_colorcorrection_params_t press_params;
+  int selected;
   cmsHPROFILE hsRGB;
   cmsHPROFILE hLab;
   cmsHTRANSFORM xform;
@@ -61,6 +61,11 @@ typedef struct dt_iop_colorcorrection_data_t
 }
 dt_iop_colorcorrection_data_t;
 
+typedef struct dt_iop_colorcorrection_global_data_t
+{
+  int kernel_colorcorrection;
+}
+dt_iop_colorcorrection_global_data_t;
 
 const char *name()
 {
@@ -69,13 +74,32 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES|IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 int
 groups ()
 {
   return IOP_GROUP_COLOR;
+}
+
+void init_presets (dt_iop_module_so_t *self)
+{
+  dt_iop_colorcorrection_params_t p;
+
+  p.hia = -0.95f;
+  p.loa = 3.55f;
+  p.hib = 4.5f;
+  p.lob = 0.0f;
+  p.saturation = 1.0f;
+  dt_gui_presets_add_generic(_("warming filter"), self->op, self->version(), &p, sizeof(p), 1);
+
+  p.hia = 0.95f;
+  p.loa = -3.55f;
+  p.hib = -4.5f;
+  p.lob = -0.0f;
+  p.saturation = 1.0f;
+  dt_gui_presets_add_generic(_("cooling filter"), self->op, self->version(), &p, sizeof(p), 1);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -101,10 +125,64 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     out[0] = in[0];
     out[1] = d->saturation*(in[1] + in[0] * d->a_scale + d->a_base);
     out[2] = d->saturation*(in[2] + in[0] * d->b_scale + d->b_base);
+    out[3] = in[3];
     out += ch;
     in += ch;
   }
 }
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_colorcorrection_data_t *d = (dt_iop_colorcorrection_data_t *)piece->data;
+  dt_iop_colorcorrection_global_data_t *gd = (dt_iop_colorcorrection_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 0, sizeof(cl_mem), &dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 1, sizeof(cl_mem), &dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 2, sizeof(int), &width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 3, sizeof(int), &height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 4, sizeof(float), &d->saturation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 5, sizeof(float), &d->a_scale);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 6, sizeof(float), &d->a_base);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 7, sizeof(float), &d->b_scale);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcorrection, 8, sizeof(float), &d->b_base);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorcorrection, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorcorrection] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 2; // basic.cl from programs.conf
+  dt_iop_colorcorrection_global_data_t *gd = (dt_iop_colorcorrection_global_data_t *)malloc(sizeof(dt_iop_colorcorrection_global_data_t));
+  module->data = gd;
+  gd->kernel_colorcorrection = dt_opencl_create_kernel(program, "colorcorrection");
+}
+
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_colorcorrection_global_data_t *gd = (dt_iop_colorcorrection_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_colorcorrection);
+  free(module->data);
+  module->data = NULL;
+}
+
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -166,7 +244,6 @@ static void sat_callback (GtkWidget *slider, gpointer user_data);
 static gboolean dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 static gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 static gboolean dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
-static gboolean dt_iop_colorcorrection_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_iop_colorcorrection_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 static gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
 
@@ -174,10 +251,8 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_colorcorrection_gui_data_t));
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
-  dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
 
-  g->selected = g->dragging = 0;
-  g->press_x = g->press_y = -1;
+  g->selected = 0;
 
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
   g->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
@@ -185,15 +260,15 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(g->area));
   gtk_drawing_area_size(g->area, 258, 258);
-  g_object_set (GTK_OBJECT(g->area), "tooltip-text", _("draw a rectangle to give a tint"), (char *)NULL);
+  g_object_set (GTK_OBJECT(g->area), "tooltip-text", _("drag the line for split toning. "
+        "bright means highlights, dark means shadows. "
+        "use mouse wheel to change saturation."), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (g->area), "expose-event",
                     G_CALLBACK (dt_iop_colorcorrection_expose), self);
   g_signal_connect (G_OBJECT (g->area), "button-press-event",
                     G_CALLBACK (dt_iop_colorcorrection_button_press), self);
-  g_signal_connect (G_OBJECT (g->area), "button-release-event",
-                    G_CALLBACK (dt_iop_colorcorrection_button_release), self);
   g_signal_connect (G_OBJECT (g->area), "motion-notify-event",
                     G_CALLBACK (dt_iop_colorcorrection_motion_notify), self);
   g_signal_connect (G_OBJECT (g->area), "leave-notify-event",
@@ -201,7 +276,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->area), "scroll-event",
                     G_CALLBACK (dt_iop_colorcorrection_scrolled), self);
 
-  g->slider = dt_bauhaus_slider_new_with_range(self, -3.0f, 3.0f, 0.01f, p->saturation, 2);
+  g->slider = dt_bauhaus_slider_new_with_range(self, -3.0f, 3.0f, 0.01f, 1.0f, 2);
   gtk_box_pack_start(GTK_BOX(self->widget), g->slider, TRUE, TRUE, 0);
   g_object_set (GTK_OBJECT(g->slider), "tooltip-text", _("set the global saturation"), (char *)NULL);
   dt_bauhaus_widget_set_label(g->slider,_("saturation"));
@@ -234,12 +309,12 @@ static void sat_callback (GtkWidget *slider, gpointer user_data)
   gtk_widget_queue_draw(self->widget);
 }
 
-static gboolean dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean
+dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   dt_iop_colorcorrection_params_t *p  = (dt_iop_colorcorrection_params_t *)self->params;
-  dt_iop_colorcorrection_params_t *p1 = &g->press_params;
 
   const int inset = DT_COLORCORRECTION_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
@@ -273,49 +348,29 @@ static gboolean dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose 
       cairo_fill(cr);
     }
   float loa, hia, lob, hib;
-  if(!g->dragging) p1 = p;
-  loa = .5f*(width + width*p1->loa/(float)DT_COLORCORRECTION_MAX);
-  hia = .5f*(width + width*p1->hia/(float)DT_COLORCORRECTION_MAX);
-  lob = .5f*(height + height*p1->lob/(float)DT_COLORCORRECTION_MAX);
-  hib = .5f*(height + height*p1->hib/(float)DT_COLORCORRECTION_MAX);
+  loa = .5f*(width + width*p->loa/(float)DT_COLORCORRECTION_MAX);
+  hia = .5f*(width + width*p->hia/(float)DT_COLORCORRECTION_MAX);
+  lob = .5f*(height + height*p->lob/(float)DT_COLORCORRECTION_MAX);
+  hib = .5f*(height + height*p->hib/(float)DT_COLORCORRECTION_MAX);
   cairo_set_line_width(cr, 2.);
-  if(g->dragging)
-  {
-    cairo_rectangle(cr, loa, lob, hia-loa, hib-lob);
-    if(g->selected & 1) loa = /*MIN(g->selected < 0xf ? hia :  INFINITY,*/ loa + g->mouse_x-g->press_x;//);
-    if(g->selected & 2) lob = /*MIN(g->selected < 0xf ? hib :  INFINITY,*/ lob + g->mouse_y-g->press_y;//);
-    if(g->selected & 4) hia = /*MAX(g->selected < 0xf ? loa : -INFINITY,*/ hia + g->mouse_x-g->press_x;//);
-    if(g->selected & 8) hib = /*MAX(g->selected < 0xf ? lob : -INFINITY,*/ hib + g->mouse_y-g->press_y;//);
-    p->loa = (2.0*loa - width) *DT_COLORCORRECTION_MAX/(float)width;
-    p->hia = (2.0*hia - width) *DT_COLORCORRECTION_MAX/(float)width;
-    p->lob = (2.0*lob - height)*DT_COLORCORRECTION_MAX/(float)height;
-    p->hib = (2.0*hib - height)*DT_COLORCORRECTION_MAX/(float)height;
-  }
-  else
-  {
-    cairo_set_source_rgb(cr, .1, .1, .1);
-    cairo_move_to(cr, loa, hib);
-    cairo_line_to(cr, loa, lob);
-    cairo_line_to(cr, hia, lob);
-    cairo_stroke(cr);
-    cairo_set_source_rgb(cr, .9, .9, .9);
-    cairo_move_to(cr, hia, lob);
-    cairo_line_to(cr, hia, hib);
-    cairo_line_to(cr, loa, hib);
-    cairo_stroke(cr);
-    cairo_rectangle(cr, loa, lob, hia-loa, hib-lob);
-    if(g->selected & 1) loa = loa < hia ? loa-7 : loa+7;
-    if(g->selected & 2) lob = lob < hib ? lob-7 : lob+7;
-    if(g->selected & 4) hia = loa < hia ? hia+7 : hia-7;
-    if(g->selected & 8) hib = lob < hib ? hib+7 : hib-7;
-  }
-  cairo_set_fill_rule (cr, CAIRO_FILL_RULE_EVEN_ODD);
-  cairo_set_source_rgba(cr, .9, .9, .9, .5);
-  cairo_rectangle(cr, loa, lob, hia-loa, hib-lob);
-  cairo_fill_preserve(cr);
+  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
+  cairo_move_to(cr, loa, lob);
+  cairo_line_to(cr, hia, hib);
   cairo_stroke(cr);
-  if(g->dragging)
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+  cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+  if(g->selected == 1)
+    cairo_arc(cr, loa, lob, 5, 0, 2.*M_PI);
+  else
+    cairo_arc(cr, loa, lob, 3, 0, 2.*M_PI);
+  cairo_fill(cr);
+
+  cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
+  if(g->selected == 2)
+    cairo_arc(cr, hia, hib, 5, 0, 2.*M_PI);
+  else
+    cairo_arc(cr, hia, hib, 3, 0, 2.*M_PI);
+  cairo_fill(cr);
 
   cairo_destroy(cr);
   cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
@@ -326,83 +381,72 @@ static gboolean dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose 
   return TRUE;
 }
 
-static gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+static gboolean
+dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
   const int inset = DT_COLORCORRECTION_INSET;
   int width = widget->allocation.width - 2*inset, height = widget->allocation.height - 2*inset;
-  g->mouse_x = CLAMP(event->x - inset, 0, width);
-  g->mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
-  if(!g->dragging)
+  const float mouse_x = CLAMP(event->x - inset, 0, width);
+  const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
+  const float ma = (2.0*mouse_x - width) *DT_COLORCORRECTION_MAX/(float)width;
+  const float mb = (2.0*mouse_y - height)*DT_COLORCORRECTION_MAX/(float)height;
+  if(event->state & GDK_BUTTON1_MASK)
   {
-    g->press_x = g->mouse_x;
-    g->press_y = g->mouse_y;
-    const float loa = .5f*(width + width*p->loa/(float)DT_COLORCORRECTION_MAX),
-                hia = .5f*(width + width*p->hia/(float)DT_COLORCORRECTION_MAX),
-                lob = .5f*(height + height*p->lob/(float)DT_COLORCORRECTION_MAX),
-                hib = .5f*(height + height*p->hib/(float)DT_COLORCORRECTION_MAX);
+    if(g->selected == 1)
+    {
+      p->loa = ma;
+      p->lob = mb;
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+    }
+    else if(g->selected == 2)
+    {
+      p->hia = ma;
+      p->hib = mb;
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+    }
+  }
+  else
+  {
     g->selected = 0;
-    if(loa <= hia)
-    {
-      if(g->press_x <= loa) g->selected |= 1;
-      if(g->press_x >= hia) g->selected |= 4;
-    }
-    else
-    {
-      if(g->press_x <= hia) g->selected |= 4;
-      if(g->press_x >= loa) g->selected |= 1;
-    }
-    if(lob <= hib)
-    {
-      if(g->press_y <= lob) g->selected |= 2;
-      if(g->press_y >= hib) g->selected |= 8;
-    }
-    else
-    {
-      if(g->press_y <= hib) g->selected |= 8;
-      if(g->press_y >= lob) g->selected |= 2;
-    }
-    if(g->press_x > MIN(loa, hia) && g->press_x < MAX(hia,loa) && g->press_y > MIN(lob,hib) && g->press_y < MAX(hib,lob)) g->selected = 0xf;
-    g->press_params = *p;
+    const float thrs = 10.0f;
+    const float distlo = (p->loa-ma)*(p->loa-ma) + (p->lob-mb)*(p->lob-mb);
+    const float disthi = (p->hia-ma)*(p->hia-ma) + (p->hib-mb)*(p->hib-mb);
+    if(distlo < thrs*thrs) g->selected = 1;
+    else if(disthi < thrs*thrs) g->selected = 2;
   }
   gtk_widget_queue_draw(self->widget);
   return TRUE;
 }
 
-static gboolean dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean
+dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  if(event->button == 1)
+  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
+    // double click resets:
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-    dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
-    g->dragging = 1;
+    dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
+    dt_iop_colorcorrection_params_t *d = (dt_iop_colorcorrection_params_t *)self->factory_params;
+    memcpy(p, d, sizeof(*p));
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;
   }
   return FALSE;
 }
 
-static gboolean dt_iop_colorcorrection_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
-{
-  if(event->button == 1)
-  {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-    dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
-    g->dragging = 0;
-    return TRUE;
-  }
-  return FALSE;
-}
-
-static gboolean dt_iop_colorcorrection_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean
+dt_iop_colorcorrection_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   gtk_widget_queue_draw(self->widget);
   return TRUE;
 }
 
-static gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+static gboolean
+dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;

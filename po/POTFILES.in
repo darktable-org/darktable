@@ -1,5 +1,5 @@
 build/src/preferences_gen.h
-data/darktable.schemas
+data/darktableconfig.xml
 src/common/collection.c
 src/common/darktable.h
 src/common/darktable.c
@@ -17,8 +17,11 @@ src/control/jobs/film_jobs.c
 src/control/jobs/image_jobs.c
 src/develop/develop.c
 src/develop/imageop.c
+src/develop/tiling.c
+src/develop/blend_gui.c
 src/dtgtk/resetlabel.c
 src/dtgtk/slider.c
+src/libs/similarity.c
 src/gui/accelerators.c
 src/gui/camera_import_dialog.c
 src/gui/gtk.c

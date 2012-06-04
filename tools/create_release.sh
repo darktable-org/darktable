@@ -1,13 +1,13 @@
 #!/bin/bash
 
-git log release-0.9.3..master | grep ^Author: | sed 's/ <.*//; s/^Author: //' | sort | uniq -c | sort -nr
+git log release-1.0.3..HEAD| grep ^Author: | sed 's/ <.*//; s/^Author: //' | sort | uniq -c | sort -nr
 
 echo "are you sure these guys received proper credit in the about dialog?"
 read
 
 # prefix rc with ~, so debian thinks its less than
 dt_decoration=$(git describe --tags $branch | sed 's,^release-,,;s,-,+,;s,-,~,;' | sed 's/rc/~rc/')
-git archive master --prefix=darktable-$dt_decoration/ -o darktable-$dt_decoration.tar
+git archive HEAD --prefix=darktable-$dt_decoration/ -o darktable-$dt_decoration.tar
 
 mkdir -p tmp
 cd tmp

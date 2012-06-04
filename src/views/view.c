@@ -95,7 +95,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   view->height = view->width = 100; // set to non-insane defaults before first expose/configure.
   g_strlcpy(view->module_name, module, 64);
   char plugindir[1024];
-  dt_util_get_plugindir(plugindir, 1024);
+  dt_loc_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/views", 1024);
   gchar *libname = g_module_build_path(plugindir, (const gchar *)module);
   view->module = g_module_open(libname, G_MODULE_BIND_LAZY);
@@ -625,6 +625,16 @@ dt_view_image_expose(
     int32_t px,
     int32_t py)
 {
+  // this function is not thread-safe (gui-thread only), so we
+  // can safely allocate this leaking bit of memory to decompress thumbnails:
+  static int first_time = 1;
+  static uint8_t *scratchmem = NULL;
+  if(first_time)
+  {
+    // scratchmem might still be NULL after this, if compression is off.
+    scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
+    first_time = 0;
+  }
   cairo_save (cr);
   float bgcol = 0.4, fontcol = 0.425, bordercol = 0.1, outlinecol = 0.2;
   int selected = 0, altered = 0, imgsel;
@@ -721,11 +731,15 @@ dt_view_image_expose(
       imgid,
       mip,
       0);
+  // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
+  // so get the real pointer back:
+  uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
+
   cairo_surface_t *surface = NULL;
   if(buf.buf)
   {
     const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
-    surface = cairo_image_surface_create_for_data (buf.buf, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
+    surface = cairo_image_surface_create_for_data (buf_decompressed, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
     if(zoom == 1)
     {
       scale = fminf(
@@ -745,13 +759,16 @@ dt_view_image_expose(
   {
     cairo_translate(cr, -.5f*buf.width, -.5f*buf.height);
     cairo_set_source_surface (cr, surface, 0, 0);
-    if(buf.width <= 8 && buf.height <= 8)
+    // set filter no nearest:
+    // in skull mode, we want to see big pixels.
+    // in 1 iir mode for the right mip, we want to see exactly what the pipe gave us, 1:1 pixel for pixel.
+    // in between, filtering just makes stuff go unsharp.
+    if((buf.width <= 8 && buf.height <= 8) || fabsf(scale - 1.0f) < 0.01f)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
     cairo_rectangle(cr, 0, 0, buf.width, buf.height);
     cairo_fill(cr);
     cairo_surface_destroy (surface);
 
-    if(zoom == 1) cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
     cairo_rectangle(cr, 0, 0, buf.width, buf.height);
   }
 

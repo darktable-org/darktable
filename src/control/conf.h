@@ -23,6 +23,7 @@
 #endif
 
 #include "common/darktable.h"
+#include "common/file_location.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
@@ -51,9 +52,38 @@ static inline int dt_conf_get_var_pos(const char *name)
   {
     if(!strncmp(name, darktable.conf->varname[i], DT_CONF_MAX_VAR_BUF)) return i;
   }
+  // not found, give it a new slot:
   int num = darktable.conf->num++;
   snprintf(darktable.conf->varname[num], DT_CONF_MAX_VAR_BUF, "%s", name);
   memset(darktable.conf->varval[num], 0, DT_CONF_MAX_VAR_BUF);
+
+  // and get the default value from default darktablerc:
+  char buf[1024], defaultrc[1024];
+  dt_loc_get_datadir(buf, 1024);
+  snprintf(defaultrc, 1024, "%s/darktablerc", buf);
+  FILE *f = fopen(defaultrc, "rb");
+  char line[1024];
+  int read = 0;
+  if(!f) return num;
+  while(!feof(f))
+  {
+    read = fscanf(f, "%[^\n]\n", line);
+    if(read > 0)
+    {
+      char *c = line;
+      while(*c != '=' && c < line + strlen(line)) c++;
+      if(*c == '=')
+      {
+        *c = '\0';
+        if(!strncmp(line, name, DT_CONF_MAX_VAR_BUF))
+        {
+          strncpy(darktable.conf->varval[num], c+1, DT_CONF_MAX_VAR_BUF);
+          break;
+        }
+      }
+    }
+  }
+  fclose(f);
   return num;
 }
 
@@ -173,7 +203,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename)
   if(!f)
   {
     char buf[1024], defaultrc[1024];
-    dt_util_get_datadir(buf, 1024);
+    dt_loc_get_datadir(buf, 1024);
     snprintf(defaultrc, 1024, "%s/darktablerc", buf);
     f = fopen(defaultrc, "rb");
     defaults = 1;

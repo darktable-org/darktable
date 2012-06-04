@@ -35,7 +35,6 @@
 #define INSET 5
 #define INFL .3f
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 DT_MODULE(1)
 
@@ -502,6 +501,10 @@ process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, voi
  
   for(int k=0; k<max_scale; k++) free(detail[k]);
   free(tmp);
+
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(i, o, width, height);
+
   return;
 
 error:
@@ -552,7 +555,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const int width = roi_out->width;
   const int height = roi_out->height;
-  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
   size_t origin[] = { 0, 0, 0};
   size_t region[] = { width, height, 1};
 
@@ -638,7 +641,8 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
   const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
 
-  tiling->factor = 2 + 1 + max_scale;
+  tiling->factor = 3.0f + max_scale;  // in + out + tmp + scale buffers
+  tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = max_filter_radius;
   tiling->xalign = 1;

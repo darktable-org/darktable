@@ -21,6 +21,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "common/darktable.h"
+#include "common/interpolation.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/tiling.h"
@@ -31,8 +32,7 @@
 // we assume people have -msee support.
 #include <xmmintrin.h>
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
-
+#define BLOCKSIZE  2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
 DT_MODULE(3)
 
@@ -66,6 +66,7 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_zoom_half_size;
   int kernel_downsample;
   int kernel_border_interpolate;
+  int kernel_color_smoothing;
 }
 dt_iop_demosaic_global_data_t;
 
@@ -626,11 +627,11 @@ modify_roi_in (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
   roi_in->y = MAX(0, roi_in->y & ~1);
 
   // clamp numeric inaccuracies to full buffer, to avoid scaling/copying in pixelpipe:
-  if(piece->pipe->image.width - roi_in->width < 10 && piece->pipe->image.height - roi_in->height < 10)
-  {
+  if(abs(piece->pipe->image.width - roi_in->width) < MAX(ceilf(1.0f/roi_out->scale), 10))
     roi_in->width  = piece->pipe->image.width;
+
+  if(abs(piece->pipe->image.height - roi_in->height) < MAX(ceilf(1.0f/roi_out->scale), 10))
     roi_in->height = piece->pipe->image.height;
-  }
 }
 
 void
@@ -756,6 +757,27 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
 
+  // Demosaic mode AMAZE not implemented in OpenCL yet. Fall back to cpu path then.
+  if(data->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaicing method AMAZE not implemented yet in OpenCL\n");
+    return FALSE;
+  }
+
+  // If in tiling context we can not green-equalize over full image. Fall back to cpu path then.
+  if(piece->pipe->tiling && (data->green_eq == DT_IOP_GREEN_EQ_FULL || data->green_eq == DT_IOP_GREEN_EQ_BOTH))
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] cannot green-equalize over full image in tiling context\n");
+    return FALSE;
+  }
+
+  const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  if(interpolation->id != DT_INTERPOLATION_BILINEAR && roi_out->scale <= .99999f && roi_out->scale > 0.5f)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] only bilinear interpolation mode supported here\n");
+    return FALSE;
+  }
+
   const int devid = piece->pipe->devid;
 
   cl_mem dev_tmp = NULL;
@@ -766,7 +788,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     const int width = roi_out->width;
     const int height = roi_out->height;
-    size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
+    size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
      // 1:1 demosaic
     dev_green_eq = NULL;
     if(data->green_eq != DT_IOP_GREEN_EQ_NO)
@@ -841,7 +863,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if (dev_tmp == NULL) goto error;
     const int width = roi_in->width;
     const int height = roi_in->height;
-    size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
+    size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
     if(data->green_eq != DT_IOP_GREEN_EQ_NO)
     {
       // green equilibration
@@ -906,8 +928,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     // scale temp buffer to output buffer
     int zero = 0;
-    sizes[0] = ROUNDUP(roi_out->width, 4);
-    sizes[1] = ROUNDUP(roi_out->height, 4);
+    sizes[0] = ROUNDUPWD(roi_out->width);
+    sizes[1] = ROUNDUPHT(roi_out->height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 0, sizeof(cl_mem), &dev_tmp);
     dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 1, sizeof(cl_mem), &dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 2, sizeof(int), &roi_out->width);
@@ -931,7 +953,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       if (dev_tmp == NULL) goto error;
       const int width = roi_in->width;
       const int height = roi_in->height;
-      size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
+      size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
 
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 0, sizeof(cl_mem), &dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 1, sizeof(cl_mem), &dev_tmp);
@@ -947,7 +969,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     const int width = roi_out->width;
     const int height = roi_out->height;
-    size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
+    size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 0, sizeof(cl_mem), &dev_pix);
     dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 1, sizeof(cl_mem), &dev_out);
@@ -965,6 +987,90 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
+  dev_tmp = dev_green_eq = NULL;
+
+  // color smoothing
+  if(data->color_smoothing)
+  {
+    dev_tmp = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, 4*sizeof(float));
+    if (dev_tmp == NULL) goto error;
+
+    const int width = roi_out->width;
+    const int height = roi_out->height;
+
+    // prepare local work group
+    size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
+    size_t workgroupsize = 0;          // the maximum number of items in a work group
+    unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
+    size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
+  
+    // Make sure blocksize is not too large. As our kernel is very register hungry we
+    // need to take maximum work group size into account
+    int blocksize = BLOCKSIZE;
+    int blockwd;
+    int blockht;
+    if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
+       dt_opencl_get_kernel_work_group_size(devid, gd->kernel_color_smoothing, &kernelworkgroupsize) == CL_SUCCESS)
+    {
+
+      while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize*blocksize > workgroupsize ||
+            (blocksize+2)*(blocksize+2)*4*sizeof(float) > localmemsize)
+      {
+        if(blocksize == 1) break;
+        blocksize >>= 1;    
+      }
+
+      blockwd = blockht = blocksize;
+
+      if(blockwd * blockht > kernelworkgroupsize)
+        blockht = kernelworkgroupsize / blockwd;
+
+      // speed optimized limits for my NVIDIA GTS450
+      // TODO: find out if this is good for other systems as well
+      blockwd = blockwd > 16 ? 16 : blockwd;
+      blockht = blockht > 8 ? 8 : blockht;
+    }
+    else
+    {
+      blockwd = blockht = 1;   // slow but safe
+    }
+
+    size_t sizes[] = { ROUNDUP(width, blockwd), ROUNDUP(height, blockht), 1 };
+    size_t local[] = { blockwd, blockht, 1 };
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { width, height, 1 };
+    // two buffer references for our ping-pong
+    cl_mem dev_t1 = dev_out;
+    cl_mem dev_t2 = dev_tmp;
+
+    for(int pass = 0; pass < data->color_smoothing; pass++)
+    {
+
+      dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 0, sizeof(cl_mem), &dev_t1);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 1, sizeof(cl_mem), &dev_t2);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 2, sizeof(int), &width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 3, sizeof(int), &height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 4, (blockwd+2)*(blockht+2)*4*sizeof(float), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_color_smoothing, sizes, local);
+      if(err != CL_SUCCESS) goto error;
+
+      // swap dev_t1 and dev_t2
+      cl_mem t = dev_t1;
+      dev_t1 = dev_t2;
+      dev_t2 = t;
+    }
+
+    // after last step we find final output in dev_t1.
+    // let's see if this is in dev_tmp and needs to be copied to dev_out
+    if(dev_t1 == dev_tmp)
+    {
+      // copy data from dev_tmp -> dev_out
+      err = dt_opencl_enqueue_copy_image(devid, dev_tmp, dev_out, origin, origin, region);
+      if(err != CL_SUCCESS) goto error;
+    }
+  }
+
+  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
 
 error:
@@ -977,7 +1083,21 @@ error:
 
 void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
-  tiling->factor = 3.25f; // in + out + tmp + green_eq (1/4 full)
+  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
+
+  float ioratio = (float)roi_out->width*roi_out->height/((float)roi_in->width*roi_in->height);
+  float smooth = data->color_smoothing ? ioratio : 0.0f;
+
+  tiling->factor = 1.0f + ioratio;
+
+  if(roi_out->scale > 0.999f)
+    tiling->factor += fmax(0.25f, smooth);
+  else if(roi_out->scale > 0.5f)
+    tiling->factor += fmax(1.25f, smooth);
+  else
+    tiling->factor += fmax(0.25f, smooth);
+
+  tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 5; // take care of border handling
   tiling->xalign = 2; // Bayer pattern
@@ -1016,6 +1136,7 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_ppg_redblue        = dt_opencl_create_kernel(program, "ppg_demosaic_redblue");
   gd->kernel_downsample         = dt_opencl_create_kernel(program, "clip_and_zoom");
   gd->kernel_border_interpolate = dt_opencl_create_kernel(program, "border_interpolate");
+  gd->kernel_color_smoothing    = dt_opencl_create_kernel(program, "color_smoothing");
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -1037,6 +1158,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_ppg_redblue);
   dt_opencl_free_kernel(gd->kernel_downsample);
   dt_opencl_free_kernel(gd->kernel_border_interpolate);
+  dt_opencl_free_kernel(gd->kernel_color_smoothing);
   free(module->data);
   module->data = NULL;
 }
