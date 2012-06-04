@@ -665,8 +665,32 @@ const char* dt_bauhaus_combobox_get_text(GtkWidget *widget)
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_COMBOBOX) return 0;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-  if(!d->editable) return 0;
+  if(!d->editable)
+  {
+    if(d->active < 0 || d->active >= d->num_labels) return 0;
+    return (const char *)g_list_nth_data(d->labels, d->active);
+  }
   return d->text;
+}
+
+void dt_bauhaus_combobox_clear(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  d->active = 0;
+  g_list_foreach(d->labels,(GFunc)g_free,NULL);
+  g_list_free(d->labels);
+  d->labels = NULL;
+  d->num_labels = 0;
+}
+
+const GList* dt_bauhaus_combobox_get_labels(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return 0;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  return d->labels;
 }
 
 void dt_bauhaus_combobox_set_text(GtkWidget *widget, const char *text)
@@ -780,7 +804,7 @@ dt_bauhaus_clear(dt_bauhaus_widget_t *w, cairo_t *cr)
 {
   // clear bg with background color
   cairo_save(cr);
-  if(darktable.develop->gui_module == w->module)
+  if(w->module && darktable.develop->gui_module == w->module)
     set_bg_focus(cr);
   else
     set_bg_normal(cr);
