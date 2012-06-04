@@ -51,7 +51,7 @@ void dt_accel_path_lib(char *s, size_t n, char *module,
                               const char* path)
 {
   snprintf(s, n, "<Darktable>/%s/%s/%s",
-           NC_("accel", "plugins"), module, path);
+           NC_("accel", "modules"), module, path);
 }
 
 void dt_accel_paths_slider_iop(char *s[], size_t n, char *module,
@@ -99,7 +99,7 @@ static void dt_accel_path_lib_translated(char *s, size_t n,
                                          const char* path)
 {
   snprintf(s, n, "<Darktable>/%s/%s/%s",
-           C_("accel", "plugins"), module->name(),
+           C_("accel", "modules"), module->name(),
            g_dpgettext2(NULL, "accel", path));
 }
 

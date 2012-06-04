@@ -441,8 +441,29 @@ void reload_defaults(dt_iop_module_t *module)
       }
       if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
       {
-        // could not get useful info!
-        tmp.coeffs[0] = tmp.coeffs[1] = tmp.coeffs[2] = 1.0f;
+        // could not get useful info, try presets:
+        char makermodel[1024];
+        char *model = makermodel;
+        dt_colorspaces_get_makermodel_split(makermodel, 1024, &model,
+            module->dev->image_storage.exif_maker,
+            module->dev->image_storage.exif_model);
+        for(int i=0; i<wb_preset_count; i++)
+        {
+          if(!strcmp(wb_preset[i].make,  makermodel) &&
+             !strcmp(wb_preset[i].model, model))
+          {
+            // just take the first preset we find for this camera
+            for(int k=0; k<3; k++) tmp.coeffs[k] = wb_preset[i].channel[k];
+            break;
+          }
+        }
+        if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
+        {
+          // final security net: hardcoded default that fits most cams.
+          tmp.coeffs[0] = 2.0f;
+          tmp.coeffs[1] = 1.0f;
+          tmp.coeffs[2] = 1.5f;
+        }
       }
       else
       {

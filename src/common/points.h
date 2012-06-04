@@ -22,7 +22,9 @@
 
 // lamer version for obsolete archs:
 
-#ifndef _XOPEN_SOURCE
+#if !defined _XOPEN_SOURCE && \
+    !defined(__DragonFly__) && !defined(__FreeBSD__) && \
+    !defined(__NetBSD__) && !defined(__OpenBSD__)
 #define _XOPEN_SOURCE
 #endif
 

@@ -17,11 +17,14 @@
 */
 
 /* getpwnam_r availibility check */
-#if defined __APPLE__ || defined _POSIX_C_SOURCE >= 1 || defined _XOPEN_SOURCE || defined _BSD_SOURCE || defined _SVID_SOURCE || defined _POSIX_SOURCE
+#if defined __APPLE__ || defined _POSIX_C_SOURCE >= 1 || \
+    defined _XOPEN_SOURCE || defined _BSD_SOURCE || defined _SVID_SOURCE || \
+    defined _POSIX_SOURCE || defined __DragonFly__ || defined __FreeBSD__ || \
+    defined __NetBSD__ || defined __OpenBSD__
 #include <pwd.h>
 #include <sys/types.h>
-#include "darktable.h"
 #include "config.h"
+#define HAVE_GETPWNAM_R 1
 #endif
 
 #ifdef HAVE_CONFIG_H
@@ -29,6 +32,7 @@
 #endif
 
 #include "file_location.h"
+#include "darktable.h"
 
 gchar* dt_loc_get_home_dir(const gchar* user)
 {
@@ -37,7 +41,7 @@ gchar* dt_loc_get_home_dir(const gchar* user)
     return g_strdup((home_dir != NULL) ? home_dir : g_get_home_dir());
   }
 
-#if defined _POSIX_C_SOURCE >= 1 || defined _XOPEN_SOURCE || defined _BSD_SOURCE || defined _SVID_SOURCE || defined _POSIX_SOURCE
+#if defined HAVE_GETPWNAM_R
   /* if the given username is not the same as the current one, we try
    * to retreive the pw dir from the password file entry */
   struct passwd pwd;

@@ -331,14 +331,32 @@ static void *dt_camctl_camera_get_live_view(void* data)
   dt_camera_t *cam = (dt_camera_t*)camctl->active_camera;
   dt_print (DT_DEBUG_CAMCTL,"[camera_control] live view thread started\n");
 
+  int frames= 0;
+  double capture_time = dt_get_wtime();
+
   while(cam->is_live_viewing == TRUE)
   {
     dt_pthread_mutex_lock(&cam->live_view_synch);
+
+    // calculate FPS
+    double current_time = dt_get_wtime();
+    if(current_time - capture_time >= 1.0){
+      // a second has passed
+      dt_print(DT_DEBUG_CAMCTL, "%d fps\n", frames+1);
+      frames = 0;
+      capture_time = current_time;
+    }
+    else
+    {
+      // just increase the frame counter
+      frames++;
+    }
+
     _camctl_camera_job_t *job = g_malloc(sizeof(_camctl_camera_job_t));
     job->type = _JOB_TYPE_EXECUTE_LIVE_VIEW;
     _camera_add_job( camctl, cam, job);
 
-//     g_usleep((1.0/15)*G_USEC_PER_SEC); // never update faster than 15 FPS. going too fast will result in too many redraws without a real benefit
+    g_usleep((1.0/15)*G_USEC_PER_SEC); // never update faster than 15 FPS. going too fast will result in too many redraws without a real benefit
   }
   dt_print (DT_DEBUG_CAMCTL,"[camera_control] live view thread stopped\n");
   return NULL;
@@ -362,6 +380,7 @@ gboolean dt_camctl_camera_start_live_view(const dt_camctl_t *c)
     return FALSE;
   }
   cam->is_live_viewing = TRUE;
+  dt_camctl_camera_set_property(darktable.camctl, NULL, "eosviewfinder", "1");
   pthread_create(&cam->live_view_thread, NULL, &dt_camctl_camera_get_live_view, (void*)camctl);
   return TRUE;
 }
@@ -373,7 +392,20 @@ void dt_camctl_camera_stop_live_view(const dt_camctl_t *c)
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] Stopping live view\n");
   cam->is_live_viewing = FALSE;
   pthread_join(cam->live_view_thread, NULL);
-  //TODO: tell camera to get back to normal state (close mirror)
+  //tell camera to get back to normal state (close mirror)
+  // this should work like this:
+//   dt_camctl_camera_set_property(darktable.camctl, NULL, "eosviewfinder", "0");
+  // but it doesn't, passing a string isn't ok in this case. I guess that's a TODO.
+  // for the time being I'll do it manually (not nice, I know).
+  CameraWidget *config;
+  CameraWidget *widget;
+  gp_camera_get_config( cam->gpcam, &config, camctl->gpcontext );
+  if(  gp_widget_get_child_by_name ( config, "eosviewfinder", &widget) == GP_OK)
+  {
+    int zero=0;
+    gp_widget_set_value ( widget , &zero);
+    gp_camera_set_config( cam->gpcam, config, camctl->gpcontext );
+  }
 }
 
 void _camctl_lock(const dt_camctl_t *c,const dt_camera_t *cam)

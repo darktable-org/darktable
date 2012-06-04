@@ -263,6 +263,7 @@ static gboolean _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
   gtk_range_set_value(GTK_RANGE(d->zoom), 1);
+  //FIXME: scroll to active image
   return TRUE;
 }
 
