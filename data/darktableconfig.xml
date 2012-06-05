@@ -812,6 +812,13 @@
     <shortdescription>ask before deleting a tag</shortdescription>
     <longdescription/>
   </dtconfig>
+  <dtconfig prefs="gui">
+    <name>plugins/imageio/storage/disk/overwrite_existing_files</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>overwrite existing files when export to disk</shortdescription>
+    <longdescription>if checked, export module will overwrite existing files! You can override this using export module checkbox</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>ui_last/expander_metadata</name>
     <type>int</type>

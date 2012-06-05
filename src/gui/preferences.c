@@ -244,7 +244,6 @@ void dt_gui_preferences_show()
     gtk_tree_path_free(darktable.control->accel_remap_path);
     darktable.control->accel_remap_path = NULL;
   }
-
 }
 
 static void tree_insert_presets(GtkTreeStore *tree_model){

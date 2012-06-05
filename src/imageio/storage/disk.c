@@ -40,6 +40,7 @@ DT_MODULE(1)
 typedef struct disk_t
 {
   GtkEntry *entry;
+  GtkCheckButton *check_overwrite;
 }
 disk_t;
 
@@ -48,6 +49,7 @@ typedef struct dt_imageio_disk_t
 {
   char filename[1024];
   dt_variables_params_t *vp;
+  gboolean overwrite;
 }
 dt_imageio_disk_t;
 
@@ -93,11 +95,15 @@ gui_init (dt_imageio_module_storage_t *self)
 {
   disk_t *d = (disk_t *)malloc(sizeof(disk_t));
   self->gui_data = (void *)d;
-  self->widget = gtk_hbox_new(FALSE, 5);
+  self->widget = gtk_vbox_new(FALSE, 5);
   GtkWidget *widget;
-
+  GtkWidget *hbox;
+  
+  printf("@@@@ gui_init\n");
+  hbox = gtk_hbox_new(FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
   widget = gtk_entry_new();
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
   gchar *dir = dt_conf_get_string("plugins/imageio/storage/disk/file_directory");
   if(dir)
   {
@@ -133,8 +139,16 @@ gui_init (dt_imageio_module_storage_t *self)
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, 18, 18);
   g_object_set(G_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
+
+  widget = gtk_check_button_new_with_label(_("overwrite existing files"));
+  gtk_box_pack_start(GTK_BOX(self->widget), widget, TRUE, FALSE, 0);
+
+  d->check_overwrite = GTK_CHECK_BUTTON(widget);
+  // TODO: assign using global option
+  gboolean overwrite = dt_conf_get_bool("plugins/imageio/storage/disk/overwrite_existing_files");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), overwrite);
 }
 
 void
@@ -161,10 +175,12 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   char dirname[1024]= {0};
   dt_image_full_path(imgid, dirname, 1024);
   int fail = 0;
+  
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
 
+    
     // if filenamepattern is a directory just let att ${FILE_NAME} as default..
     if ( g_file_test(d->filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename))[0]=='/' || (d->filename+strlen(d->filename))[0]=='\\') )
       snprintf (d->filename+strlen(d->filename), 1024-strlen(d->filename), "$(FILE_NAME)");
@@ -213,17 +229,20 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
     sprintf(c,".%s",ext);
 
-    /* prevent overwrite of files */
     int seq=1;
 failed:
-    if (!fail && g_file_test (filename,G_FILE_TEST_EXISTS))
-    {
-      do
+
+    if (d->overwrite == FALSE) {
+      /* prevent overwrite of files */
+      if (!fail && g_file_test (filename,G_FILE_TEST_EXISTS))
       {
-        sprintf(c,"_%.2d.%s",seq,ext);
-        seq++;
+        do
+        {
+          sprintf(c,"_%.2d.%s",seq,ext);
+          seq++;
+        }
+        while (g_file_test (filename,G_FILE_TEST_EXISTS));
       }
-      while (g_file_test (filename,G_FILE_TEST_EXISTS));
     }
 
   } // end of critical block
@@ -266,6 +285,10 @@ get_params(dt_imageio_module_storage_t *self, int* size)
   const char *text = gtk_entry_get_text(GTK_ENTRY(g->entry));
   g_strlcpy(d->filename, text, 1024);
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
+  
+  const gboolean check_overwrite = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->check_overwrite));
+  d->overwrite = check_overwrite;
+  //dt_conf_set_int("plugins/imageio/storage/disk/overwrite_existing_files", d->overwrite);
   return d;
 }
 
@@ -285,6 +308,10 @@ set_params(dt_imageio_module_storage_t *self, void *params, int size)
   disk_t *g = (disk_t *)self->gui_data;
   gtk_entry_set_text(GTK_ENTRY(g->entry), d->filename);
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->check_overwrite), d->overwrite);
+  //dt_conf_set_bool("plugins/imageio/storage/disk/overwrite_existing_files", d->overwrite);
+
   return 0;
 }
 
