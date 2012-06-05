@@ -36,8 +36,12 @@ enum border_mode
 };
 
 /* Supporting them all might be overkill, let the compiler trim all
- * unecessary modes in clip */
+ * unecessary modes in clip for resampling codepath*/
 #define RESAMPLING_BORDER_MODE BORDER_REPLICATE
+
+/* Supporting them all might be overkill, let the compiler trim all
+ * unecessary modes in interpolation codepath */
+#define INTERPOLATION_BORDER_MODE BORDER_MIRROR
 
 // Defines minimum alignment requirement for critical SIMD code
 #define SSE_ALIGNMENT 16
@@ -159,6 +163,29 @@ clip(
   }
 
   return i;
+}
+
+static inline void
+prepare_tap_boundaries(
+  int* tap_first,
+  int* tap_last,
+  const enum border_mode mode,
+  const int filterwidth,
+  const int t,
+  const int max)
+{
+  /* Check lower bound pixel index and skip as many pixels as necessary to
+   * fall into range */
+  *tap_first = 0;
+  if (mode == BORDER_CLAMP && t < 0) {
+    *tap_first = -t;
+  }
+
+  // Same for upper bound pixel
+  *tap_last = filterwidth;
+  if (mode == BORDER_CLAMP && t + filterwidth >= max) {
+    *tap_last = max - t;
+  }
 }
 
 /** Make sure an aligned chunk will not misalign its following chunk
@@ -713,8 +740,8 @@ dt_interpolation_compute_sample(
   compute_upsampling_kernel_sse(itor, kernelh, &normh, NULL, x);
   compute_upsampling_kernel_sse(itor, kernelv, &normv, NULL, y);
 
-  const int ix = (int)x;
-  const int iy = (int)y;
+  int ix = (int)x;
+  int iy = (int)y;
 
   /* Now 2 cases, the pixel + filter width goes outside the image
    * in that case we have to use index clipping to keep all reads
@@ -743,7 +770,35 @@ dt_interpolation_compute_sample(
     }
     r = s/(normh*normv);
   } else {
-    r = 0.f;
+    // Point to the upper left pixel index wise
+    iy -= itor->width-1;
+    ix -= itor->width-1;
+
+    static const enum border_mode bordermode = INTERPOLATION_BORDER_MODE;
+    assert(bordermode != BORDER_CLAMP); // XXX in clamp mode, norms would be wrong
+
+    int xtap_first;
+    int xtap_last;
+    prepare_tap_boundaries(&xtap_first, &xtap_last, bordermode, 2*itor->width, ix, width);
+
+    int ytap_first;
+    int ytap_last;
+    prepare_tap_boundaries(&ytap_first, &ytap_last, bordermode, 2*itor->width, iy, height);
+
+    // Apply the kernel
+    float s = 0.f;
+    for (int i=ytap_first; i<ytap_last; i++) {
+      int y = clip(iy + i, 0, height-1, bordermode);
+      float h = 0.0f;
+      for (int j=xtap_first; j<xtap_last; j++) {
+        int x = clip(ix + j, 0, width-1, bordermode);
+        const float* ipixel = in + y*linestride + x*samplestride;
+        h += kernelh[j]*ipixel[0];
+      }
+      s += kernelv[i]*h;
+    }
+
+    r = s/(normh*normv);
   }
   return r;
 }
@@ -818,9 +873,35 @@ dt_interpolation_compute_pixel4c(
 
     *(__m128*)out = _mm_mul_ps(pixel, oonorm);
   } else {
-    // TODO: use index clipping function here
-    __m128 zero = _mm_setzero_ps();
-    _mm_stream_ps(out, zero);
+    // Point to the upper left pixel index wise
+    iy -= itor->width-1;
+    ix -= itor->width-1;
+
+    static const enum border_mode bordermode = INTERPOLATION_BORDER_MODE;
+    assert(bordermode != BORDER_CLAMP); // XXX in clamp mode, norms would be wrong
+
+    int xtap_first;
+    int xtap_last;
+    prepare_tap_boundaries(&xtap_first, &xtap_last, bordermode, 2*itor->width, ix, width);
+
+    int ytap_first;
+    int ytap_last;
+    prepare_tap_boundaries(&ytap_first, &ytap_last, bordermode, 2*itor->width, iy, height);
+
+    // Apply the kernel
+    __m128 pixel = _mm_setzero_ps();
+    for (int i=ytap_first; i<ytap_last; i++) {
+      int y = clip(iy + i, 0, height-1, bordermode);
+      __m128 h = _mm_setzero_ps();
+      for (int j=xtap_first; j<xtap_last; j++) {
+        int x = clip(ix + j, 0, width-1, bordermode);
+        const float* ipixel = in + y*linestride + x*4;
+        h = _mm_add_ps(h, _mm_mul_ps(vkernelh[j], *(__m128*)ipixel));
+      }
+      pixel = _mm_add_ps(pixel, _mm_mul_ps(vkernelv[i],h));
+    }
+
+    *(__m128*)out = _mm_mul_ps(pixel, oonorm);
   }
 }
 
@@ -997,18 +1078,11 @@ prepare_resampling_plan(
       int first;
       compute_upsampling_kernel_sse(itor, scratchpad, NULL, &first, fx);
 
-      /* Check lower bound pixel index and skip as many pixels as necessary to
-       * fall into range */
-      int tap_first = 0;
-      if (bordermode == BORDER_CLAMP && first < 0) {
-        tap_first = -first;
-      }
-
-      // Same for upper bound pixel
-      int tap_last = 2*itor->width;
-      if (bordermode == BORDER_CLAMP && first + 2*itor->width >= in) {
-        tap_last = in - first;
-      }
+      /* Check lower and higher bound pixel index and skip as many pixels as
+       * necessary to fall into range */
+      int tap_first;
+      int tap_last;
+      prepare_tap_boundaries(&tap_first, &tap_last, bordermode, 2*itor->width, first, in);
 
       // Track number of taps that will be used
       lengths[lidx++] = tap_last - tap_first;
@@ -1047,18 +1121,11 @@ prepare_resampling_plan(
       int first;
       compute_downsampling_kernel_sse(itor, &taps, &first, scratchpad, NULL, scale, out_x0 + x);
 
-      /* Check lower bound pixel index and skip as many pixels as necessary to
-       * fall into range */
-      int tap_first = 0;
-      if (bordermode == BORDER_CLAMP && first < 0) {
-        tap_first = -first;
-      }
-
-      // Same for upper bound pixel
-      int tap_last = taps;
-      if (bordermode == BORDER_CLAMP && first + taps >= in) {
-        tap_last = in - first;
-      }
+      /* Check lower and higher bound pixel index and skip as many pixels as
+       * necessary to fall into range */
+      int tap_first;
+      int tap_last;
+      prepare_tap_boundaries(&tap_first, &tap_last, bordermode, 2*itor->width, first, in);
 
       // Track number of taps that will be used
       lengths[lidx++] = tap_last - tap_first;
