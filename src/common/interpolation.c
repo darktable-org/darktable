@@ -1125,7 +1125,7 @@ prepare_resampling_plan(
        * necessary to fall into range */
       int tap_first;
       int tap_last;
-      prepare_tap_boundaries(&tap_first, &tap_last, bordermode, 2*itor->width, first, in);
+      prepare_tap_boundaries(&tap_first, &tap_last, bordermode, taps, first, in);
 
       // Track number of taps that will be used
       lengths[lidx++] = tap_last - tap_first;
