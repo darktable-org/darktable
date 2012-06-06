@@ -27,6 +27,8 @@
 #include <math.h>
 #include "common/curve_tools.h"
 #include <cairo.h>
+#include <stdint.h>
+#include <glib.h>
 
 /** wrapper around nikon curve or gegl. */
 typedef struct dt_draw_curve_t
