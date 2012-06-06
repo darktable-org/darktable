@@ -129,7 +129,7 @@ extern "C"
       const int wd = 2*rad+1;
       float *m = mat + rad*wd + rad;
       float weight = 0.0f;
-      const float isig2col[3] = {1.0/(2.0f*sigma[2]*sigma[2]), 1.0/(2.0f*sigma[3]*sigma[3]), 1.0/(2.0f*sigma[4]*sigma[4])};
+      const float isig2col[3] = {1.f/(2.0f*sigma[2]*sigma[2]), 1.f/(2.0f*sigma[3]*sigma[3]), 1.f/(2.0f*sigma[4]*sigma[4])};
       // init gaussian kernel
       for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++)
           weight += m[l*wd + k] = expf(- (l*l + k*k)/(2.f*sigma[0]*sigma[0]));
