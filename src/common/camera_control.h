@@ -79,6 +79,8 @@ typedef struct dt_camera_t
   GdkPixbuf *live_view_pixbuf;
   /** Rotation of live view, multiples of 90° */
   int32_t live_view_rotation;
+  /** Zoom level for live view */
+  gboolean live_view_zoom;
   /** The thread adding the live view jobs */
   pthread_t live_view_thread;
   /** A guard so that writing and reading the pixbuf don't interfere */
