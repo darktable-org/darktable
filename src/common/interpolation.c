@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 * ------------------------------------------------------------------------*/
 
+#include "common/darktable.h"
 #include "common/interpolation.h"
 #include "control/conf.h"
 
@@ -1036,8 +1037,8 @@ prepare_resampling_plan(
 
   void *blob = NULL;
   size_t totalreq = kernelreq + lengthreq + indexreq + scratchreq + metareq;
-  int r = posix_memalign(&blob, SSE_ALIGNMENT, totalreq);
-  if (r) {
+  blob = dt_alloc_align(SSE_ALIGNMENT, totalreq);
+  if (!blob) {
     return 1;
   }
 
