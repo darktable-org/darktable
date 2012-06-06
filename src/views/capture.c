@@ -82,9 +82,6 @@ typedef struct dt_capture_t
   /** The jobcode name used for session initialization etc..*/
   char *jobcode;
   dt_film_t *film;
-
-  /** Zoom level for live view */
-  gboolean live_view_zoom;
 }
 dt_capture_t;
 
@@ -341,7 +338,7 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
       if(pw > w) scale = w/pw;
       if(ph > h) scale = MIN(scale, h/ph);
       cairo_translate(cr, (width - scale*pw)*0.5, (height - scale*ph)*0.5);
-      if(lib->live_view_zoom == FALSE) // FIXME
+      if(cam->live_view_zoom == FALSE) // FIXME
         cairo_scale(cr, scale, scale);
       gdk_cairo_set_source_pixbuf(cr, tmp_pb, 0, 0);
       cairo_paint(cr);
@@ -493,13 +490,12 @@ void connect_key_accels(dt_view_t *self)
 
 int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
-  dt_capture_t *lib = (dt_capture_t *)self->data;
-  const dt_camera_t *cam = darktable.camctl->active_camera;
+  dt_camera_t *cam = (dt_camera_t*)darktable.camctl->active_camera;
   // zoom the live view
   if(which == 2 && cam->is_live_viewing)
   {
-    lib->live_view_zoom = !lib->live_view_zoom;
-    if(lib->live_view_zoom == TRUE)
+    cam->live_view_zoom = !cam->live_view_zoom;
+    if(cam->live_view_zoom == TRUE)
       dt_camctl_camera_set_property(darktable.camctl, NULL, "eoszoom", "5");
     else
       dt_camctl_camera_set_property(darktable.camctl, NULL, "eoszoom", "1");
