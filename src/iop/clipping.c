@@ -1243,13 +1243,6 @@ get_grab (float pzx, float pzy, dt_iop_clipping_gui_data_t *g, const float borde
   return grab;
 }
 
-static void
-drawLine(cairo_t *cr, float left, float top, float right, float bottom)
-{
-  cairo_move_to(cr, left, top);
-  cairo_line_to(cr, right,  bottom);
-}
-
 typedef struct QRect
 {
   float left, top, right, bottom, width, height;
@@ -1272,28 +1265,28 @@ drawDiagonalMethod(cairo_t *cr, const float x, const float y, const float w, con
 {
   if (w > h)
   {
-    drawLine(cr, x, y, x+h, y+h);
-    drawLine(cr, x, y+h, x+h, y);
-    drawLine(cr, x+w-h, y, x+w, y+h);
-    drawLine(cr, x+w-h, y+h, x+w, y);
+    dt_draw_line(cr, x, y, x+h, y+h);
+    dt_draw_line(cr, x, y+h, x+h, y);
+    dt_draw_line(cr, x+w-h, y, x+w, y+h);
+    dt_draw_line(cr, x+w-h, y+h, x+w, y);
   }
   else
   {
-    drawLine(cr, x, y, x+w, y+w);
-    drawLine(cr, x, y+w, x+w, y);
-    drawLine(cr, x, y+h-w, x+w, y+h);
-    drawLine(cr, x, y+h, x+w, y+h-w);
+    dt_draw_line(cr, x, y, x+w, y+w);
+    dt_draw_line(cr, x, y+w, x+w, y);
+    dt_draw_line(cr, x, y+h-w, x+w, y+h);
+    dt_draw_line(cr, x, y+h, x+w, y+h-w);
   }
 }
 
 static void
 drawRulesOfThirds(cairo_t *cr, const float left, const float top,  const float right, const float bottom, const float xThird, const float yThird)
 {
-  drawLine(cr, left + xThird, top, left + xThird, bottom);
-  drawLine(cr, left + 2*xThird, top, left + 2*xThird, bottom);
+  dt_draw_line(cr, left + xThird, top, left + xThird, bottom);
+  dt_draw_line(cr, left + 2*xThird, top, left + 2*xThird, bottom);
 
-  drawLine(cr, left, top + yThird, right, top + yThird);
-  drawLine(cr, left, top + 2*yThird, right, top + 2*yThird);
+  dt_draw_line(cr, left, top + yThird, right, top + yThird);
+  dt_draw_line(cr, left, top + 2*yThird, right, top + 2*yThird);
 }
 
 static void
@@ -1303,9 +1296,9 @@ drawHarmoniousTriangles(cairo_t *cr, const float left, const float top,  const f
   width = right - left;
   height = bottom - top;
 
-  drawLine(cr, -width/2, -height/2, width/2,  height/2);
-  drawLine(cr, -width/2+dst, -height/2, -width/2,  height/2);
-  drawLine(cr, width/2, -height/2, width/2-dst,  height/2);
+  dt_draw_line(cr, -width/2, -height/2, width/2,  height/2);
+  dt_draw_line(cr, -width/2+dst, -height/2, -width/2,  height/2);
+  dt_draw_line(cr, width/2, -height/2, width/2-dst,  height/2);
 }
 
 #define RADIANS(degrees) ((degrees) * (M_PI / 180.))
@@ -1318,32 +1311,32 @@ drawGoldenMean(struct dt_iop_module_t *self, cairo_t *cr, QRect* R1, QRect* R2, 
   if ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->goldenSectionBox)))
   {
     // horizontal lines:
-    drawLine(cr, R1->left, R2->top, R2->right, R2->top);
-    drawLine(cr, R1->left, R1->top + R2->height, R2->right, R1->top + R2->height);
+    dt_draw_line(cr, R1->left, R2->top, R2->right, R2->top);
+    dt_draw_line(cr, R1->left, R1->top + R2->height, R2->right, R1->top + R2->height);
 
     // vertical lines:
-    drawLine(cr, R1->right, R1->top, R1->right, R1->bottom);
-    drawLine(cr, R1->left+R2->width, R1->top, R1->left+R2->width, R1->bottom);
+    dt_draw_line(cr, R1->right, R1->top, R1->right, R1->bottom);
+    dt_draw_line(cr, R1->left+R2->width, R1->top, R1->left+R2->width, R1->bottom);
   }
 
   // Drawing Golden triangle guides.
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->goldenTriangleBox)))
   {
-    drawLine(cr, R1->left, R1->bottom, R2->right, R1->top);
-    drawLine(cr, R1->left, R1->top, R2->right-R1->width, R1->bottom);
-    drawLine(cr, R1->left + R1->width, R1->top, R2->right, R1->bottom);
+    dt_draw_line(cr, R1->left, R1->bottom, R2->right, R1->top);
+    dt_draw_line(cr, R1->left, R1->top, R2->right-R1->width, R1->bottom);
+    dt_draw_line(cr, R1->left + R1->width, R1->top, R2->right, R1->bottom);
   }
 
   // Drawing Golden spiral sections.
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->goldenSpiralSectionBox)))
   {
-    drawLine(cr, R1->right, R1->top,    R1->right, R1->bottom);
-    drawLine(cr, R2->left,  R2->top,    R2->right, R2->top);
-    drawLine(cr, R3->left,  R3->top,    R3->left, R3->bottom);
-    drawLine(cr, R4->left,  R4->bottom, R4->right, R4->bottom);
-    drawLine(cr, R5->right, R5->top,    R5->right, R5->bottom);
-    drawLine(cr, R6->left,  R6->top,    R6->right, R6->top);
-    drawLine(cr, R7->left,  R7->top,    R7->left, R7->bottom);
+    dt_draw_line(cr, R1->right, R1->top,    R1->right, R1->bottom);
+    dt_draw_line(cr, R2->left,  R2->top,    R2->right, R2->top);
+    dt_draw_line(cr, R3->left,  R3->top,    R3->left, R3->bottom);
+    dt_draw_line(cr, R4->left,  R4->bottom, R4->right, R4->bottom);
+    dt_draw_line(cr, R5->right, R5->top,    R5->right, R5->bottom);
+    dt_draw_line(cr, R6->left,  R6->top,    R6->right, R6->top);
+    dt_draw_line(cr, R7->left,  R7->top,    R7->left, R7->bottom);
   }
 
   // Drawing Golden Spiral.

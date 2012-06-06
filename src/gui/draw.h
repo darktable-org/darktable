@@ -51,6 +51,11 @@ static inline void dt_draw_star(cairo_t *cr, float x, float y, float r1, float r
   cairo_close_path(cr);
 }
 
+static inline void dt_draw_line(cairo_t *cr, float left, float top, float right, float bottom)
+{
+  cairo_move_to(cr, left, top);
+  cairo_line_to(cr, right,  bottom);
+}
 
 static inline void dt_draw_grid(cairo_t *cr, const int num, const int left, const int top, const int right, const int bottom)
 {
@@ -59,11 +64,9 @@ static inline void dt_draw_grid(cairo_t *cr, const int num, const int left, cons
 
   for(int k=1; k<num; k++)
   {
-    cairo_move_to(cr, left + k/(float)num*width, top);
-    cairo_line_to(cr, left +  k/(float)num*width, bottom);
+    dt_draw_line(cr, left + k/(float)num*width, top, left +  k/(float)num*width, bottom);
     cairo_stroke(cr);
-    cairo_move_to(cr, left, top + k/(float)num*height);
-    cairo_line_to(cr, right, top + k/(float)num*height);
+    dt_draw_line(cr, left, top + k/(float)num*height, right, top + k/(float)num*height);
     cairo_stroke(cr);
   }
 }
@@ -181,3 +184,4 @@ static inline void dt_draw_histogram_8(cairo_t *cr, float *hist, int32_t channel
 }
 #endif
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
