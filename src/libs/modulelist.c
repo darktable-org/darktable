@@ -43,7 +43,7 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
 
 const char* name()
 {
-  return _("more plugins");
+  return _("more modules");
 }
 
 uint32_t views()

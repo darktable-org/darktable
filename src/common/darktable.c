@@ -81,7 +81,7 @@ static int usage(const char *argv0)
 #endif
   printf(" [--library <library file>]");
   printf(" [--datadir <data directory>]");
-  printf(" [--plugindir <plugin directory>]");
+  printf(" [--moduledir <module directory>]");
   printf(" [--tmpdir <tmp directory>]");
   printf(" [--configdir <user config directory>]");
   printf(" [--cachedir <user config directory>]");
@@ -316,7 +316,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // database
   gchar *dbfilenameFromCommand = NULL;
   char *datadirFromCommand = NULL;
-  char *plugindirFromCommand = NULL;
+  char *moduledirFromCommand = NULL;
   char *tmpdirFromCommand = NULL;
   char *configdirFromCommand = NULL;
   char *cachedirFromCommand = NULL;
@@ -348,9 +348,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
       {
         datadirFromCommand = argv[++k];
       }
-      else if(!strcmp(argv[k], "--plugindir"))
+      else if(!strcmp(argv[k], "--moduledir"))
       {
-        plugindirFromCommand = argv[++k];
+        moduledirFromCommand = argv[++k];
       }
       else if(!strcmp(argv[k], "--tmpdir"))
       {
@@ -403,7 +403,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   omp_set_num_threads(darktable.num_openmp_threads);
 #endif
   dt_loc_init_datadir(datadirFromCommand);
-  dt_loc_init_plugindir(plugindirFromCommand);
+  dt_loc_init_plugindir(moduledirFromCommand);
   if(dt_loc_init_tmp_dir(tmpdirFromCommand)) {
 	  printf(_("ERROR : invalid temporary directory : %s\n"),darktable.tmpdir);
 	  return usage(argv[0]);
@@ -420,7 +420,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // dt_check_cpu(argc,argv);
 
 #ifdef HAVE_GEGL
-  (void)setenv("GEGL_PATH", DARKTABLE_DATADIR"/gegl:/usr/lib/gegl-0.0", 1);
+  (void)setenv("GEGL_PATH", DARKTABLE_DATADIR "/gegl:/usr/lib/gegl-0.0", 1);
   gegl_init(&argc, &argv);
 #endif
 

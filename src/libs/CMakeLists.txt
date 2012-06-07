@@ -73,7 +73,8 @@ endif(APRIL_FOOLS)
 if(GPHOTO2_FOUND)
 	add_library(capture MODULE "capture.c")
 	add_library(camera MODULE "camera.c")
-	set(MODULES ${MODULES} capture camera)
+	add_library(live_view MODULE "live_view.c")
+	set(MODULES ${MODULES} capture camera live_view)
 endif(GPHOTO2_FOUND)
 
 # Add libs references

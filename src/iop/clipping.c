@@ -33,6 +33,7 @@
 #include "dtgtk/togglebutton.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
+#include "gui/guides.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
@@ -224,8 +225,19 @@ transform(float *x, float *o, const float *m, const float t_h, const float t_v)
 
 // 1st pass: how large would the output be, given this input roi?
 // this is always called with the full buffer before processing.
-void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
+void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in_orig)
 {
+  const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+
+  /* Account for interpolation constraints right now, so when doing the
+   * backtransform in modify_roi_in all nicely fits */
+  dt_iop_roi_t roi_in_d = *roi_in_orig;
+  dt_iop_roi_t* roi_in = &roi_in_d;
+  roi_in->x += interpolation->width;
+  roi_in->y += interpolation->width;
+  roi_in->width -= 2*interpolation->width;
+  roi_in->height -= 2*interpolation->width;
+
   *roi_out = *roi_in;
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
 
@@ -352,12 +364,11 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   }
 
   // adjust roi_in to minimally needed region
-  // +/-1 stands for imprecision in transform
   const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  roi_in->x      = aabb_in[0] - interpolation->width - 1;
-  roi_in->y      = aabb_in[1] - interpolation->width - 1;
-  roi_in->width  = aabb_in[2]-aabb_in[0]+2*(interpolation->width+1);
-  roi_in->height = aabb_in[3]-aabb_in[1]+2*(interpolation->width+1);
+  roi_in->x      = aabb_in[0] - interpolation->width;
+  roi_in->y      = aabb_in[1] - interpolation->width;
+  roi_in->width  = aabb_in[2]-aabb_in[0]+2*interpolation->width;
+  roi_in->height = aabb_in[3]-aabb_in[1]+2*interpolation->width;
 
   if(d->angle == 0.0f && d->all_off)
   {
@@ -446,13 +457,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         po[0] -= roi_in->x;
         po[1] -= roi_in->y;
 
-        const int ii = (int)po[0], jj = (int)po[1];
-        if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
-        {
-          const float *in = ((float *)ivoid) + ch*(roi_in->width*jj+ii);
-          dt_interpolation_compute_pixel4c(interpolation, in, out, po[0], po[1], ch_width);
-        }
-        else for(int c=0; c<4; c++) out[c] = 0.0f;
+        dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, po[0], po[1], roi_in->width, roi_in->height, ch_width);
       }
     }
   }
@@ -1239,179 +1244,6 @@ get_grab (float pzx, float pzy, dt_iop_clipping_gui_data_t *g, const float borde
   return grab;
 }
 
-static void
-drawLine(cairo_t *cr, float left, float top, float right, float bottom)
-{
-  cairo_move_to(cr, left, top);
-  cairo_line_to(cr, right,  bottom);
-}
-
-typedef struct QRect
-{
-  float left, top, right, bottom, width, height;
-}
-QRect;
-
-static void
-qRect(QRect *R1, float left, float top, float width, float height)
-{
-  R1->left=left;
-  R1->top=top;
-  R1->right=left+width;
-  R1->bottom=top+height;
-  R1->width=width;
-  R1->height=height;
-}
-
-static void
-drawDiagonalMethod(cairo_t *cr, const float x, const float y, const float w, const float h)
-{
-  if (w > h)
-  {
-    drawLine(cr, x, y, x+h, y+h);
-    drawLine(cr, x, y+h, x+h, y);
-    drawLine(cr, x+w-h, y, x+w, y+h);
-    drawLine(cr, x+w-h, y+h, x+w, y);
-  }
-  else
-  {
-    drawLine(cr, x, y, x+w, y+w);
-    drawLine(cr, x, y+w, x+w, y);
-    drawLine(cr, x, y+h-w, x+w, y+h);
-    drawLine(cr, x, y+h, x+w, y+h-w);
-  }
-}
-
-static void
-drawRulesOfThirds(cairo_t *cr, const float left, const float top,  const float right, const float bottom, const float xThird, const float yThird)
-{
-  drawLine(cr, left + xThird, top, left + xThird, bottom);
-  drawLine(cr, left + 2*xThird, top, left + 2*xThird, bottom);
-
-  drawLine(cr, left, top + yThird, right, top + yThird);
-  drawLine(cr, left, top + 2*yThird, right, top + 2*yThird);
-}
-
-static void
-drawHarmoniousTriangles(cairo_t *cr, const float left, const float top,  const float right, const float bottom, const float dst)
-{
-  float width, height;
-  width = right - left;
-  height = bottom - top;
-
-  drawLine(cr, -width/2, -height/2, width/2,  height/2);
-  drawLine(cr, -width/2+dst, -height/2, -width/2,  height/2);
-  drawLine(cr, width/2, -height/2, width/2-dst,  height/2);
-}
-
-#define RADIANS(degrees) ((degrees) * (M_PI / 180.))
-static void
-drawGoldenMean(struct dt_iop_module_t *self, cairo_t *cr, QRect* R1, QRect* R2, QRect* R3, QRect* R4, QRect* R5, QRect* R6, QRect* R7)
-{
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-
-  // Drawing Golden sections.
-  if ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->goldenSectionBox)))
-  {
-    // horizontal lines:
-    drawLine(cr, R1->left, R2->top, R2->right, R2->top);
-    drawLine(cr, R1->left, R1->top + R2->height, R2->right, R1->top + R2->height);
-
-    // vertical lines:
-    drawLine(cr, R1->right, R1->top, R1->right, R1->bottom);
-    drawLine(cr, R1->left+R2->width, R1->top, R1->left+R2->width, R1->bottom);
-  }
-
-  // Drawing Golden triangle guides.
-  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->goldenTriangleBox)))
-  {
-    drawLine(cr, R1->left, R1->bottom, R2->right, R1->top);
-    drawLine(cr, R1->left, R1->top, R2->right-R1->width, R1->bottom);
-    drawLine(cr, R1->left + R1->width, R1->top, R2->right, R1->bottom);
-  }
-
-  // Drawing Golden spiral sections.
-  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->goldenSpiralSectionBox)))
-  {
-    drawLine(cr, R1->right, R1->top,    R1->right, R1->bottom);
-    drawLine(cr, R2->left,  R2->top,    R2->right, R2->top);
-    drawLine(cr, R3->left,  R3->top,    R3->left, R3->bottom);
-    drawLine(cr, R4->left,  R4->bottom, R4->right, R4->bottom);
-    drawLine(cr, R5->right, R5->top,    R5->right, R5->bottom);
-    drawLine(cr, R6->left,  R6->top,    R6->right, R6->top);
-    drawLine(cr, R7->left,  R7->top,    R7->left, R7->bottom);
-  }
-
-  // Drawing Golden Spiral.
-  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->goldenSpiralBox)))
-  {
-    cairo_save(cr);
-    cairo_new_sub_path(cr);
-    cairo_scale(cr, R1->width/R1->height, 1);
-    cairo_arc ( cr, R1->right/R1->width*R1->height, R1->top, R1->height, RADIANS(90), RADIANS(180) );
-    cairo_restore(cr);
-
-    cairo_save(cr);
-    cairo_new_sub_path(cr);
-    cairo_scale(cr, R2->width/R2->height, 1);
-    cairo_arc ( cr, R2->left/R2->width*R2->height, R2->top, R2->height, RADIANS(0), RADIANS(90));
-    cairo_restore(cr);
-
-    cairo_save(cr);
-    cairo_new_sub_path(cr);
-    cairo_scale(cr, R3->width/R3->height, 1);
-    cairo_arc ( cr, R3->left/R3->width*R3->height, R3->bottom, R3->height, RADIANS(270), RADIANS(360));
-    cairo_restore(cr);
-
-    cairo_save(cr);
-    cairo_new_sub_path(cr);
-    cairo_scale(cr, 1, R4->height/R4->width);
-    cairo_arc ( cr, R4->right, R4->bottom/R4->height*R4->width, R4->width, RADIANS(180), RADIANS(270));
-    cairo_restore(cr);
-
-    cairo_save(cr);
-    cairo_new_sub_path(cr);
-    cairo_scale(cr, 1, R5->height/R5->width);
-    cairo_arc ( cr, R5->right, R5->top/R5->height*R5->width, R5->width, RADIANS(90), RADIANS(180));
-    cairo_restore(cr);
-
-    cairo_save(cr);
-    cairo_new_sub_path(cr);
-    cairo_scale(cr, 1, R6->height/R6->width);
-    cairo_arc ( cr, R6->left, R6->top/R6->height*R6->width, R6->width, RADIANS(0), RADIANS(90));
-    cairo_restore(cr);
-
-    cairo_save(cr);
-    cairo_new_sub_path(cr);
-    cairo_scale(cr, R7->width/R7->height, 1);
-    cairo_arc ( cr, R7->left/R7->width*R7->height, R7->bottom, R7->height, RADIANS(270), RADIANS(360));
-    cairo_restore(cr);
-
-    cairo_save(cr);
-    cairo_new_sub_path(cr);
-    cairo_scale(cr, (R6->width-R7->width)/R7->height, 1);
-    cairo_arc ( cr, R7->left/(R6->width-R7->width)*R7->height, R7->bottom, R7->height, RADIANS(210), RADIANS(270));
-    cairo_restore(cr);
-  }
-}
-#undef RADIANS
-
-static void
-drawSimpleGrid(cairo_t *cr, const float left, const float top,  const float right, const float bottom, float zoom_scale)
-{
-  // cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
-  cairo_set_line_width(cr, 1.0/zoom_scale);
-  cairo_set_source_rgb(cr, .2, .2, .2);
-  dt_draw_grid(cr, 3, left, top, right, bottom);
-  cairo_translate(cr, 1.0/zoom_scale, 1.0/zoom_scale);
-  cairo_set_source_rgb(cr, .8, .8, .8);
-  dt_draw_grid(cr, 3, left, top, right, bottom);
-  cairo_set_source_rgba(cr, .8, .8, .8, 0.5);
-  double dashes = 5.0/zoom_scale;
-  cairo_set_dash(cr, &dashes, 1, 0);
-  dt_draw_grid(cr, 9, left, top, right, bottom);
-}
-
 // draw guides and handles over the image
 void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
@@ -1477,24 +1309,24 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   int which = gtk_combo_box_get_active(g->guide_lines);
   if (which == GUIDE_GRID)
   {
-    drawSimpleGrid(cr, left, top, right, bottom, zoom_scale);
+    dt_guides_draw_simple_grid(cr, left, top, right, bottom, zoom_scale);
   }
   else if (which == GUIDE_DIAGONAL)
   {
-    drawDiagonalMethod(cr, left, top, cwidth, cheight);
+    dt_guides_draw_diagonal_method(cr, left, top, cwidth, cheight);
     cairo_stroke (cr);
     cairo_set_dash (cr, &dashes, 0, 0);
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
-    drawDiagonalMethod(cr, left, top, cwidth, cheight);
+    dt_guides_draw_diagonal_method(cr, left, top, cwidth, cheight);
     cairo_stroke (cr);
   }
   else if (which == GUIDE_THIRD)
   {
-    drawRulesOfThirds(cr, left, top,  right, bottom, xThird, yThird);
+    dt_guides_draw_rules_of_thirds(cr, left, top,  right, bottom, xThird, yThird);
     cairo_stroke (cr);
     cairo_set_dash (cr, &dashes, 0, 0);
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
-    drawRulesOfThirds(cr, left, top,  right, bottom, xThird, yThird);
+    dt_guides_draw_rules_of_thirds(cr, left, top,  right, bottom, xThird, yThird);
     cairo_stroke (cr);
   }
   else if (which == GUIDE_TRIANGL)
@@ -1510,12 +1342,12 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->flipVerGoldenGuide)))
       cairo_scale(cr, 1, -1);
 
-    drawHarmoniousTriangles(cr, left, top,  right, bottom, dst);
+    dt_guides_draw_harmonious_triangles(cr, left, top,  right, bottom, dst);
     cairo_stroke (cr);
     //p.setPen(QPen(d->guideColor, d->guideSize, Qt::DotLine));
     cairo_set_dash (cr, &dashes, 0, 0);
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
-    drawHarmoniousTriangles(cr, left, top,  right, bottom, dst);
+    dt_guides_draw_harmonious_triangles(cr, left, top,  right, bottom, dst);
     cairo_stroke (cr);
   }
   else if (which == GUIDE_GOLDEN)
@@ -1539,24 +1371,34 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     float w_2 = w/2;
     float h_2 = h/2;
 
-    QRect R1, R2, R3, R4, R5, R6, R7;
-    qRect (&R1, -w_2, -h_2, w_g, h);
+    dt_QRect_t R1, R2, R3, R4, R5, R6, R7;
+    dt_guides_q_rect (&R1, -w_2, -h_2, w_g, h);
 
     // w - 2*w_2 corrects for one-pixel difference
     // so that R2.right() is really at the right end of the region
-    qRect (&R2, w_g-w_2, h_2-h_g, w-w_g+1-(w - 2*w_2), h_g);
-    qRect (&R3, w_2 - R2.width*INVPHI, -h_2, R2.width*INVPHI, h - R2.height);
-    qRect (&R4, R2.left, R1.top, R3.left - R2.left, R3.height*INVPHI);
-    qRect (&R5, R4.left, R4.bottom, R4.width*INVPHI, R3.height - R4.height);
-    qRect (&R6, R5.left + R5.width, R5.bottom - R5.height*INVPHI, R3.left - R5.right, R5.height*INVPHI);
-    qRect (&R7, R6.right - R6.width*INVPHI, R4.bottom, R6.width*INVPHI, R5.height - R6.height);
+    dt_guides_q_rect (&R2, w_g-w_2, h_2-h_g, w-w_g+1-(w - 2*w_2), h_g);
+    dt_guides_q_rect (&R3, w_2 - R2.width*INVPHI, -h_2, R2.width*INVPHI, h - R2.height);
+    dt_guides_q_rect (&R4, R2.left, R1.top, R3.left - R2.left, R3.height*INVPHI);
+    dt_guides_q_rect (&R5, R4.left, R4.bottom, R4.width*INVPHI, R3.height - R4.height);
+    dt_guides_q_rect (&R6, R5.left + R5.width, R5.bottom - R5.height*INVPHI, R3.left - R5.right, R5.height*INVPHI);
+    dt_guides_q_rect (&R7, R6.right - R6.width*INVPHI, R4.bottom, R6.width*INVPHI, R5.height - R6.height);
 
-    drawGoldenMean(self, cr, &R1, &R2, &R3, &R4, &R5, &R6, &R7);
+    dt_guides_draw_golden_mean(cr, &R1, &R2, &R3, &R4, &R5, &R6, &R7,
+                               gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->goldenSectionBox)),
+                               gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->goldenTriangleBox)),
+                               gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->goldenSpiralSectionBox)),
+                               gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->goldenSpiralBox))
+                               );
     cairo_stroke (cr);
 
     cairo_set_dash (cr, &dashes, 0, 0);
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
-    drawGoldenMean(self, cr, &R1, &R2, &R3, &R4, &R5, &R6, &R7);
+    dt_guides_draw_golden_mean(cr, &R1, &R2, &R3, &R4, &R5, &R6, &R7,
+                               gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->goldenSectionBox)),
+                               gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->goldenTriangleBox)),
+                               gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->goldenSpiralSectionBox)),
+                               gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->goldenSpiralBox))
+                               );
     cairo_stroke (cr);
   }
   cairo_restore(cr);
@@ -1640,59 +1482,59 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 
       if(grab == 15)
       {
-	/* moving the crop window */
+        /* moving the crop window */
         g->clip_x = fminf(1.0 - g->clip_w, fmaxf(0.0, g->handle_x + pzx - bzx));
         g->clip_y = fminf(1.0 - g->clip_h, fmaxf(0.0, g->handle_y + pzy - bzy));
       }
       else
       {
-	/* changing the crop window */
-	if (g->center_lock)
-	{
-	  /* the center is locked, scale crop radial with locked ratio */
-	  gboolean flag = FALSE;
-	  float length = 0.0;
-	  float xx = 0.0;
-	  float yy = 0.0;
+        /* changing the crop window */
+        if (g->center_lock)
+        {
+          /* the center is locked, scale crop radial with locked ratio */
+          gboolean flag = FALSE;
+          float length = 0.0;
+          float xx = 0.0;
+          float yy = 0.0;
 
-	  if (grab & 1 || grab & 4) 
-	    xx = (grab & 1) ? (pzx-bzx) : (bzx-pzx);
-	  if (grab & 2 || grab & 8)
-	    yy = (grab & 2) ? (pzy-bzy) : (bzy-pzy);
-	  
-	  length = (fabs(xx) > fabs(yy)) ? xx : yy;
+          if (grab & 1 || grab & 4) 
+            xx = (grab & 1) ? (pzx-bzx) : (bzx-pzx);
+          if (grab & 2 || grab & 8)
+            yy = (grab & 2) ? (pzy-bzy) : (bzy-pzy);
 
-	  if ((g->prev_clip_w - (length+length)) < 0.1 ||
-	      (g->prev_clip_h - (length+length)) < 0.1)
-	    flag = TRUE;
+          length = (fabs(xx) > fabs(yy)) ? xx : yy;
 
-	  g->clip_x = flag ? g->clip_x : g->prev_clip_x + length;
-	  g->clip_y = flag ? g->clip_y : g->prev_clip_y + length;
-	  g->clip_w = fmax(0.1, g->prev_clip_w - (length+length));
-	  g->clip_h = fmax(0.1, g->prev_clip_h - (length+length));
-	 	  
-	}
-	else
-	{
+          if ((g->prev_clip_w - (length+length)) < 0.1 ||
+              (g->prev_clip_h - (length+length)) < 0.1)
+            flag = TRUE;
 
-	  if(grab & 1)
-	  {
-	    const float old_clip_x = g->clip_x;
-	    g->clip_x = fmaxf(0.0, pzx - g->handle_x);
-	    g->clip_w = fmaxf(0.1, old_clip_x + g->clip_w - g->clip_x);
-	  }
-	  if(grab & 2)
+          g->clip_x = flag ? g->clip_x : g->prev_clip_x + length;
+          g->clip_y = flag ? g->clip_y : g->prev_clip_y + length;
+          g->clip_w = fmax(0.1, g->prev_clip_w - (length+length));
+          g->clip_h = fmax(0.1, g->prev_clip_h - (length+length));
+
+        }
+        else
+        {
+
+          if(grab & 1)
           {
-	    const float old_clip_y = g->clip_y;
-	    g->clip_y = fmaxf(0.0, pzy - g->handle_y);
-	    g->clip_h = fmaxf(0.1, old_clip_y + g->clip_h - g->clip_y);
-	  }
-	  if(grab & 4) g->clip_w = fmaxf(0.1, fminf(1.0, pzx - g->clip_x - g->handle_x));
-	  if(grab & 8) g->clip_h = fmaxf(0.1, fminf(1.0, pzy - g->clip_y - g->handle_y));
-	}
+            const float old_clip_x = g->clip_x;
+            g->clip_x = fmaxf(0.0, pzx - g->handle_x);
+            g->clip_w = fmaxf(0.1, old_clip_x + g->clip_w - g->clip_x);
+          }
+          if(grab & 2)
+          {
+            const float old_clip_y = g->clip_y;
+            g->clip_y = fmaxf(0.0, pzy - g->handle_y);
+            g->clip_h = fmaxf(0.1, old_clip_y + g->clip_h - g->clip_y);
+          }
+          if(grab & 4) g->clip_w = fmaxf(0.1, fminf(1.0, pzx - g->clip_x - g->handle_x));
+          if(grab & 8) g->clip_h = fmaxf(0.1, fminf(1.0, pzy - g->clip_y - g->handle_y));
+        }
 
-	if(g->clip_x + g->clip_w > 1.0) g->clip_w = 1.0 - g->clip_x;
-	if(g->clip_y + g->clip_h > 1.0) g->clip_h = 1.0 - g->clip_y;
+        if(g->clip_x + g->clip_w > 1.0) g->clip_w = 1.0 - g->clip_x;
+        if(g->clip_y + g->clip_h > 1.0) g->clip_h = 1.0 - g->clip_y;
       }
       apply_box_aspect(self, grab);
     }
