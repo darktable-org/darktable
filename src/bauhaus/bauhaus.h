@@ -193,5 +193,7 @@ void dt_bauhaus_combobox_set_editable(GtkWidget *w, int editable);
 const char* dt_bauhaus_combobox_get_text(GtkWidget *w);
 void dt_bauhaus_combobox_set_text(GtkWidget *w, const char *text);
 int  dt_bauhaus_combobox_get(GtkWidget *w);
+const GList* dt_bauhaus_combobox_get_labels(GtkWidget *w);
+void dt_bauhaus_combobox_clear(GtkWidget *w);
 
 #endif
