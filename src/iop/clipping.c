@@ -1482,59 +1482,59 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 
       if(grab == 15)
       {
-	/* moving the crop window */
+        /* moving the crop window */
         g->clip_x = fminf(1.0 - g->clip_w, fmaxf(0.0, g->handle_x + pzx - bzx));
         g->clip_y = fminf(1.0 - g->clip_h, fmaxf(0.0, g->handle_y + pzy - bzy));
       }
       else
       {
-	/* changing the crop window */
-	if (g->center_lock)
-	{
-	  /* the center is locked, scale crop radial with locked ratio */
-	  gboolean flag = FALSE;
-	  float length = 0.0;
-	  float xx = 0.0;
-	  float yy = 0.0;
+        /* changing the crop window */
+        if (g->center_lock)
+        {
+          /* the center is locked, scale crop radial with locked ratio */
+          gboolean flag = FALSE;
+          float length = 0.0;
+          float xx = 0.0;
+          float yy = 0.0;
 
-	  if (grab & 1 || grab & 4) 
-	    xx = (grab & 1) ? (pzx-bzx) : (bzx-pzx);
-	  if (grab & 2 || grab & 8)
-	    yy = (grab & 2) ? (pzy-bzy) : (bzy-pzy);
-	  
-	  length = (fabs(xx) > fabs(yy)) ? xx : yy;
+          if (grab & 1 || grab & 4) 
+            xx = (grab & 1) ? (pzx-bzx) : (bzx-pzx);
+          if (grab & 2 || grab & 8)
+            yy = (grab & 2) ? (pzy-bzy) : (bzy-pzy);
 
-	  if ((g->prev_clip_w - (length+length)) < 0.1 ||
-	      (g->prev_clip_h - (length+length)) < 0.1)
-	    flag = TRUE;
+          length = (fabs(xx) > fabs(yy)) ? xx : yy;
 
-	  g->clip_x = flag ? g->clip_x : g->prev_clip_x + length;
-	  g->clip_y = flag ? g->clip_y : g->prev_clip_y + length;
-	  g->clip_w = fmax(0.1, g->prev_clip_w - (length+length));
-	  g->clip_h = fmax(0.1, g->prev_clip_h - (length+length));
-	 	  
-	}
-	else
-	{
+          if ((g->prev_clip_w - (length+length)) < 0.1 ||
+              (g->prev_clip_h - (length+length)) < 0.1)
+            flag = TRUE;
 
-	  if(grab & 1)
-	  {
-	    const float old_clip_x = g->clip_x;
-	    g->clip_x = fmaxf(0.0, pzx - g->handle_x);
-	    g->clip_w = fmaxf(0.1, old_clip_x + g->clip_w - g->clip_x);
-	  }
-	  if(grab & 2)
+          g->clip_x = flag ? g->clip_x : g->prev_clip_x + length;
+          g->clip_y = flag ? g->clip_y : g->prev_clip_y + length;
+          g->clip_w = fmax(0.1, g->prev_clip_w - (length+length));
+          g->clip_h = fmax(0.1, g->prev_clip_h - (length+length));
+
+        }
+        else
+        {
+
+          if(grab & 1)
           {
-	    const float old_clip_y = g->clip_y;
-	    g->clip_y = fmaxf(0.0, pzy - g->handle_y);
-	    g->clip_h = fmaxf(0.1, old_clip_y + g->clip_h - g->clip_y);
-	  }
-	  if(grab & 4) g->clip_w = fmaxf(0.1, fminf(1.0, pzx - g->clip_x - g->handle_x));
-	  if(grab & 8) g->clip_h = fmaxf(0.1, fminf(1.0, pzy - g->clip_y - g->handle_y));
-	}
+            const float old_clip_x = g->clip_x;
+            g->clip_x = fmaxf(0.0, pzx - g->handle_x);
+            g->clip_w = fmaxf(0.1, old_clip_x + g->clip_w - g->clip_x);
+          }
+          if(grab & 2)
+          {
+            const float old_clip_y = g->clip_y;
+            g->clip_y = fmaxf(0.0, pzy - g->handle_y);
+            g->clip_h = fmaxf(0.1, old_clip_y + g->clip_h - g->clip_y);
+          }
+          if(grab & 4) g->clip_w = fmaxf(0.1, fminf(1.0, pzx - g->clip_x - g->handle_x));
+          if(grab & 8) g->clip_h = fmaxf(0.1, fminf(1.0, pzy - g->clip_y - g->handle_y));
+        }
 
-	if(g->clip_x + g->clip_w > 1.0) g->clip_w = 1.0 - g->clip_x;
-	if(g->clip_y + g->clip_h > 1.0) g->clip_h = 1.0 - g->clip_y;
+        if(g->clip_x + g->clip_w > 1.0) g->clip_w = 1.0 - g->clip_x;
+        if(g->clip_y + g->clip_h > 1.0) g->clip_h = 1.0 - g->clip_y;
       }
       apply_box_aspect(self, grab);
     }
