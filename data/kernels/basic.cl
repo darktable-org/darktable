@@ -1142,12 +1142,13 @@ zonesystem (read_only image2d_t in, write_only image2d_t out, const int width, c
 
 /* kernel to fill an image with a color (for the borders plugin). */
 kernel void
-borders_fill (write_only image2d_t out, const int width, const int height, const float4 color)
+borders_fill (write_only image2d_t out, const int left, const int top, const int width, const int height, const float4 color)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  if(x >= width || y >= height) return;
+  if(x < left || y < top) return;
+  if(x >= width + left || y >= height + top) return;
 
   write_imagef (out, (int2)(x, y), color);
 }
