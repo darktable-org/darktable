@@ -75,7 +75,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
                               "?7 between exposure_min and exposure_max and "
                               "?8 between aperture_min and aperture_max and "
                               "?9 between focal_length_min and focal_length_max and "
-                              "(isldr = 0 or isldr=?10) order by length(model) desc, length(maker) desc, length(lens) desc", -1, &stmt, NULL);
+                              "(isldr = 0 or isldr=?10) order by writeprotect, length(model) desc, length(maker) desc, length(lens) desc", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, img->exif_model, strlen(img->exif_model), SQLITE_TRANSIENT);
