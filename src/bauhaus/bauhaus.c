@@ -665,8 +665,32 @@ const char* dt_bauhaus_combobox_get_text(GtkWidget *widget)
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_COMBOBOX) return 0;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-  if(!d->editable) return 0;
+  if(!d->editable)
+  {
+    if(d->active < 0 || d->active >= d->num_labels) return 0;
+    return (const char *)g_list_nth_data(d->labels, d->active);
+  }
   return d->text;
+}
+
+void dt_bauhaus_combobox_clear(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  d->active = 0;
+  g_list_foreach(d->labels,(GFunc)g_free,NULL);
+  g_list_free(d->labels);
+  d->labels = NULL;
+  d->num_labels = 0;
+}
+
+const GList* dt_bauhaus_combobox_get_labels(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return 0;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  return d->labels;
 }
 
 void dt_bauhaus_combobox_set_text(GtkWidget *widget, const char *text)
@@ -780,7 +804,7 @@ dt_bauhaus_clear(dt_bauhaus_widget_t *w, cairo_t *cr)
 {
   // clear bg with background color
   cairo_save(cr);
-  if(darktable.develop->gui_module == w->module)
+  if(w->module && darktable.develop->gui_module == w->module)
     set_bg_focus(cr);
   else
     set_bg_normal(cr);
@@ -804,24 +828,24 @@ dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
 {
   // TODO: decide if we need this at all.
   //       there is a chance it only introduces clutter.
-#if 0
+#if 1
   GtkWidget *widget = GTK_WIDGET(w);
   int width  = widget->allocation.width;
   int height = widget->allocation.height;
   // draw active area square:
-  // TODO: combo: V  slider: <>  checkbox: X
   cairo_save(cr);
-  set_indicator_color(cr, gtk_widget_is_sensitive(GTK_WIDGET(w));
+  set_indicator_color(cr, gtk_widget_is_sensitive(GTK_WIDGET(w)));
   switch(w->type)
   {
     case DT_BAUHAUS_COMBOBOX:
       cairo_translate(cr, width -height*.5f, height*.5f);
-      cairo_set_line_width(cr, 1.0);
-      draw_equilateral_triangle(cr, height*0.38f);
-      cairo_fill(cr);
+      draw_equilateral_triangle(cr, height*get_marker_size());
+      cairo_fill_preserve(cr);
+      cairo_set_line_width(cr, 1.);
+      set_grid_color(cr, 1);
+      cairo_stroke(cr);
       break;
     case DT_BAUHAUS_SLIDER:
-      // TODO: two arrows to step with the mouse buttons?
       break;
     default:
       cairo_rectangle(cr, width - height, 0, height, height);
@@ -995,20 +1019,38 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   // draw line around popup
   cairo_set_line_width(cr, 1.0);
   cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
-  cairo_move_to(cr, 1.0, 3.0*ht);
-  cairo_line_to(cr, 1.0, height-1);
-  cairo_line_to(cr, width-1, height-1);
-  cairo_line_to(cr, width-1, 3.0*ht);
-  cairo_stroke(cr);
-  // fade in line around popup:
-  for(int k=0;k<4;k++)
+  if(w->type == DT_BAUHAUS_COMBOBOX)
   {
-    cairo_set_line_width(cr, (k+1)/4.0f);
-    cairo_move_to(cr, 1.0, ht*(2.f + k/4.0f));
-    cairo_line_to(cr, 1.0, ht*(2.f + (k+1)/4.0f));
-    cairo_move_to(cr, width-1.0, ht*(2.f + k/4.0f));
-    cairo_line_to(cr, width-1.0, ht*(2.f + (k+1)/4.0f));
+    // separate more clearly (looks terrible in a way but might help separate text
+    // from other widgets above and below)
+    cairo_move_to(cr, 1.0, 1.0);
+    cairo_line_to(cr, 1.0, height-1.0);
+    cairo_line_to(cr, width-1.0, height-1.0);
+    cairo_line_to(cr, width-1.0, 1.0);
     cairo_stroke(cr);
+    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.3);
+    cairo_move_to(cr, 1.0, 1.0);
+    cairo_line_to(cr, width-1.0, 1.0);
+    cairo_stroke(cr);
+  }
+  else
+  {
+    // blend in
+    cairo_move_to(cr, 1.0, 3.0*ht);
+    cairo_line_to(cr, 1.0, height-1);
+    cairo_line_to(cr, width-1, height-1);
+    cairo_line_to(cr, width-1, 3.0*ht);
+    cairo_stroke(cr);
+    // fade in line around popup:
+    for(int k=0;k<4;k++)
+    {
+      cairo_set_line_width(cr, (k+1)/4.0f);
+      cairo_move_to(cr, 1.0, ht*(2.f + k/4.0f));
+      cairo_line_to(cr, 1.0, ht*(2.f + (k+1)/4.0f));
+      cairo_move_to(cr, width-1.0, ht*(2.f + k/4.0f));
+      cairo_line_to(cr, width-1.0, ht*(2.f + (k+1)/4.0f));
+      cairo_stroke(cr);
+    }
   }
 
   // switch on bauhaus widget type (so we only need one static window)
