@@ -93,6 +93,8 @@ dt_bauhaus_data_t;
 typedef struct dt_bauhaus_widget_t DtBauhausWidget;
 typedef struct dt_bauhaus_widget_class_t DtBauhausWidgetClass;
 
+typedef void (* dt_bauhaus_quad_paint_f)(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+
 // our new widget and its private members, inheriting from drawing area:
 typedef struct dt_bauhaus_widget_t
 {
@@ -103,6 +105,12 @@ typedef struct dt_bauhaus_widget_t
   dt_iop_module_t *module;
   // label text, short
   char label[256];
+  // callback function to draw the quad icon
+  dt_bauhaus_quad_paint_f quad_paint;
+  // minimal modifiers for paint function.
+  int quad_paint_flags;
+  // quad is a toggle button?
+  int quad_toggle;
 
   // goes last, might extend past the end:
   dt_bauhaus_data_t data;
@@ -120,6 +128,7 @@ dt_bauhaus_widget_class_t;
 enum
 {
   DT_BAUHAUS_VALUE_CHANGED_SIGNAL,
+  DT_BAUHAUS_QUAD_PRESSED_SIGNAL,
   DT_BAUHAUS_LAST_SIGNAL
 };
 
@@ -172,7 +181,13 @@ void dt_bauhaus_init();
 void dt_bauhaus_cleanup();
 
 // common functions:
+// set the label text:
 void dt_bauhaus_widget_set_label(GtkWidget *w, const char *text);
+// attach a custom painted quad to the space at the right side (overwriting the default icon if any):
+typedef void (* dt_bauhaus_quad_paint_f)(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+void dt_bauhaus_widget_set_quad_paint(GtkWidget *w, dt_bauhaus_quad_paint_f f, int paint_flags);
+// make this quad a toggle button:
+void dt_bauhaus_widget_set_quad_toggle(GtkWidget *w, int toggle);
 
 // slider:
 GtkWidget* dt_bauhaus_slider_new(dt_iop_module_t *self);

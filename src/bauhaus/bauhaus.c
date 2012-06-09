@@ -406,6 +406,13 @@ dt_bh_class_init(DtBauhausWidgetClass *class)
         0,
         NULL, NULL,
         g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+  darktable.bauhaus->signals[DT_BAUHAUS_QUAD_PRESSED_SIGNAL] =
+    g_signal_new ("quad-pressed",
+        G_TYPE_FROM_CLASS (class),
+        G_SIGNAL_RUN_LAST,
+        0,
+        NULL, NULL,
+        g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
   // TODO: could init callbacks once per class for more efficiency:
   // GtkWidgetClass *widget_class;
@@ -547,6 +554,10 @@ dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
   // dt_gui_key_accel_block_on_focus(w->area);
   w->module = self;
 
+  // no quad icon and no toggle button:
+  w->quad_paint  = 0;
+  w->quad_toggle = 0;
+
   gtk_widget_set_size_request(GTK_WIDGET(w), 260, get_line_height());
 
   gtk_widget_add_events(GTK_WIDGET(w),
@@ -570,6 +581,20 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *text)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   strncpy(w->label, text, 256);
+}
+
+void dt_bauhaus_widget_set_quad_paint(GtkWidget *widget, dt_bauhaus_quad_paint_f f, int paint_flags)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  w->quad_paint = f;
+  w->quad_paint_flags = paint_flags;
+}
+
+// make this quad a toggle button:
+void dt_bauhaus_widget_set_quad_toggle(GtkWidget *widget, int toggle)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  w->quad_toggle = toggle;
 }
 
 GtkWidget*
@@ -826,34 +851,44 @@ dt_bauhaus_clear(dt_bauhaus_widget_t *w, cairo_t *cr)
 static void
 dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
 {
-  // TODO: decide if we need this at all.
-  //       there is a chance it only introduces clutter.
-#if 1
   GtkWidget *widget = GTK_WIDGET(w);
   int width  = widget->allocation.width;
   int height = widget->allocation.height;
-  // draw active area square:
-  cairo_save(cr);
-  set_indicator_color(cr, gtk_widget_is_sensitive(GTK_WIDGET(w)));
-  switch(w->type)
+  if(w->quad_paint)
   {
-    case DT_BAUHAUS_COMBOBOX:
-      cairo_translate(cr, width -height*.5f, height*.5f);
-      draw_equilateral_triangle(cr, height*get_marker_size());
-      cairo_fill_preserve(cr);
-      cairo_set_line_width(cr, 1.);
-      set_grid_color(cr, 1);
-      cairo_stroke(cr);
-      break;
-    case DT_BAUHAUS_SLIDER:
-      break;
-    default:
-      cairo_rectangle(cr, width - height, 0, height, height);
-      cairo_fill(cr);
-      break;
+    cairo_save(cr);
+    set_indicator_color(cr, gtk_widget_is_sensitive(GTK_WIDGET(w)));
+    w->quad_paint(cr, width-height, 0, height, height, w->quad_paint_flags);
+    cairo_restore(cr);
   }
-  cairo_restore(cr);
+  else
+  {
+    // TODO: decide if we need this at all.
+    //       there is a chance it only introduces clutter.
+#if 1
+    // draw active area square:
+    cairo_save(cr);
+    set_indicator_color(cr, gtk_widget_is_sensitive(GTK_WIDGET(w)));
+    switch(w->type)
+    {
+      case DT_BAUHAUS_COMBOBOX:
+        cairo_translate(cr, width -height*.5f, height*.5f);
+        draw_equilateral_triangle(cr, height*get_marker_size());
+        cairo_fill_preserve(cr);
+        cairo_set_line_width(cr, 1.);
+        set_grid_color(cr, 1);
+        cairo_stroke(cr);
+        break;
+      case DT_BAUHAUS_SLIDER:
+        break;
+      default:
+        cairo_rectangle(cr, width - height, 0, height, height);
+        cairo_fill(cr);
+        break;
+    }
+    cairo_restore(cr);
 #endif
+  }
 }
 
 static void
@@ -1079,7 +1114,6 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         cairo_restore(cr);
 
         dt_bauhaus_draw_label(w, cr);
-        dt_bauhaus_draw_quad(w, cr);
 
         // draw mouse over indicator line
         cairo_save(cr);
@@ -1114,7 +1148,6 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
     case DT_BAUHAUS_COMBOBOX:
       {
         dt_bauhaus_draw_label(w, cr);
-        dt_bauhaus_draw_quad(w, cr);
 
         dt_bauhaus_combobox_data_t *d = &w->data.combobox;
         cairo_save(cr);
@@ -1370,7 +1403,12 @@ dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpoin
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-  if(event->button == 3)
+  if(w->quad_paint && (event->x > widget->allocation.width - widget->allocation.height))
+  {
+    g_signal_emit_by_name(G_OBJECT(w), "quad-pressed");
+    return TRUE;
+  }
+  else if(event->button == 3)
   {
     darktable.bauhaus->mouse_x = event->x;
     darktable.bauhaus->mouse_y = event->y;
@@ -1528,7 +1566,12 @@ dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton *event, gpointe
   dt_iop_request_focus(w->module);
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
-  if(event->button == 3)
+  if(w->quad_paint && (event->x > widget->allocation.width - widget->allocation.height))
+  {
+    g_signal_emit_by_name(G_OBJECT(w), "quad-pressed");
+    return TRUE;
+  }
+  else if(event->button == 3)
   {
     darktable.bauhaus->mouse_x = event->x;
     darktable.bauhaus->mouse_y = event->y;
