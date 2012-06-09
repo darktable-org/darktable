@@ -606,6 +606,7 @@ dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer
     if(event->type == GDK_2BUTTON_PRESS)
     {
       memcpy(self->params, self->factory_params, self->params_size);
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
     else
     {
