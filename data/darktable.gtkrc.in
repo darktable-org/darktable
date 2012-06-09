@@ -39,11 +39,11 @@ style "clearlooks-default"
 
   xthickness = 2
   ythickness = 2
-  fg[NORMAL]        = "#CACAC6"
-  fg[ACTIVE]        = "#CACAC6"
+  fg[NORMAL]        = "#ffffff"
+  fg[ACTIVE]        = "#ffffff"
   fg[INSENSITIVE]   = "#000000"
-  fg[PRELIGHT]      = "#E2E2E2"
-  fg[SELECTED]      = "#E2E2E2"
+  fg[PRELIGHT]      = "#ffffff"
+  fg[SELECTED]      = "#ffffff"
 
   bg[ACTIVE]        = "#494949"
   bg[NORMAL]        = "#212121" 

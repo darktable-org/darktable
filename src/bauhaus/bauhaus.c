@@ -420,6 +420,47 @@ dt_bh_class_init(DtBauhausWidgetClass *class)
   // widget_class->expose_event = dt_bauhaus_expose;
 }
 
+static int
+guess_font_size()
+{
+  const int def = 8;
+  const char *gtkrc_filename = getenv("GTK2_RC_FILES");
+  if(!gtkrc_filename) return def;
+  FILE *f = fopen(gtkrc_filename, "rb");
+  if(!f) return def;
+  char line[256];
+  while(!feof(f))
+  {
+    int read = fscanf(f, "%[^\n]\n", line);
+    if(read > 0)
+    {
+      char *c = line;
+      while(*c == ' ' || *c == '\t') c++;
+      if(!strncmp(c, "font_name", 9))
+      {
+        // skip all to = then second " (end)
+        while(*c != '=' && *c != 0) c++;
+        while(*c != '"' && *c != 0) c++;
+        if(*c != 0) c++;
+        while(*c != '"' && *c != 0) c++;
+        // back to last space
+        while(*c != ' ' && c > line) c--;
+        if(*c == ' ' && c != line)
+        {
+          int fontsize = (int)atol(c);
+          // fprintf(stderr, "[bauhaus] guessing gtk font size of %d pt\n", fontsize);
+          fclose(f);
+          if(fontsize > 0) return fontsize;
+        }
+        fclose(f);
+        return def;
+      }
+    }
+  }
+  fclose(f);
+  return def;
+}
+
 void
 dt_bauhaus_init()
 {
@@ -436,16 +477,6 @@ dt_bauhaus_init()
   g_signal_connect (G_OBJECT (root_window), "button-press-event",
                     G_CALLBACK (dt_bauhaus_root_button_press), (gpointer)NULL);
 
-  const float scale = dt_conf_get_float("bauhaus/scale");
-  if(scale < .5 || scale > 5.0)
-  {
-    darktable.bauhaus->scale = 1.4f;
-    dt_conf_set_float("bauhaus/scale", 1.4);
-  }
-  else
-  {
-    darktable.bauhaus->scale = scale;
-  }
   darktable.bauhaus->widget_space = 7;
   darktable.bauhaus->line_space = 5;
   darktable.bauhaus->line_height = 9;
@@ -461,6 +492,10 @@ dt_bauhaus_init()
   darktable.bauhaus->indicator = .6f;
   darktable.bauhaus->insensitive = 0.2f;
 
+  // it seems impossible to get to the font size in a portable way (gtk3 deprecates GtkStyle..),
+  // so we parse it ourselves and convert it from pt to scale (.. :( )
+  int gtk_fontsize = guess_font_size();
+  darktable.bauhaus->scale = gtk_fontsize/5.0f;
 
   // this easily gets keyboard input:
   // darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
