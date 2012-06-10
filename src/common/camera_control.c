@@ -381,8 +381,7 @@ gboolean dt_camctl_camera_start_live_view(const dt_camctl_t *c)
     return FALSE;
   }
   cam->is_live_viewing = TRUE;
-  if(dt_camctl_camera_property_exists(darktable.camctl, NULL, "eosviewfinder"))
-    dt_camctl_camera_set_property(darktable.camctl, NULL, "eosviewfinder", "1");
+  dt_camctl_camera_set_property(darktable.camctl, NULL, "eosviewfinder", "1");
   pthread_create(&cam->live_view_thread, NULL, &dt_camctl_camera_get_live_view, (void*)camctl);
   return TRUE;
 }
@@ -399,17 +398,14 @@ void dt_camctl_camera_stop_live_view(const dt_camctl_t *c)
 //   dt_camctl_camera_set_property(darktable.camctl, NULL, "eosviewfinder", "0");
   // but it doesn't, passing a string isn't ok in this case. I guess that's a TODO.
   // for the time being I'll do it manually (not nice, I know).
-  if(dt_camctl_camera_property_exists(darktable.camctl, NULL, "eosviewfinder"))
+  CameraWidget *config;
+  CameraWidget *widget;
+  gp_camera_get_config( cam->gpcam, &config, camctl->gpcontext );
+  if(  gp_widget_get_child_by_name ( config, "eosviewfinder", &widget) == GP_OK)
   {
-    CameraWidget *config;
-    CameraWidget *widget;
-    gp_camera_get_config( cam->gpcam, &config, camctl->gpcontext );
-    if(  gp_widget_get_child_by_name ( config, "eosviewfinder", &widget) == GP_OK)
-    {
-      int zero=0;
-      gp_widget_set_value ( widget , &zero);
-      gp_camera_set_config( cam->gpcam, config, camctl->gpcontext );
-    }
+    int zero=0;
+    gp_widget_set_value ( widget , &zero);
+    gp_camera_set_config( cam->gpcam, config, camctl->gpcontext );
   }
 }
 
