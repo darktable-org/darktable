@@ -59,7 +59,9 @@ typedef struct dt_iop_borders_params_t
   char aspect_text[20];   // aspect ratio of the outer frame w/h (user string version)
   float size;     // border width relative to overal frame width
   float pos_h;    // picture horizontal position ratio into the final image
+  char pos_h_text[20];   // picture horizontal position ratio into the final image (user string version)
   float pos_v;    // picture vertical position ratio into the final image
+  char pos_v_text[20];   // picture vertical position ratio into the final image (user string version)
   float frame_size; // frame line width relative to border width
   float frame_offset; // frame offset from picture size relative to [border width - frame width]
   float frame_color[3]; // frame line color
@@ -226,10 +228,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int out_stride = ch*roi_out->width;
   const int cp_stride = in_stride*sizeof(float);
 
-  const int bw = (piece->buf_out.width  - piece->buf_in.width ) * roi_in->scale;
-  const int bh = (piece->buf_out.height - piece->buf_in.height) * roi_in->scale;
-  const int bx = MAX(bw*d->pos_h - roi_out->x, 0);
-  const int by = MAX(bh*d->pos_v - roi_out->y, 0);
+  const int border_tot_width  = (piece->buf_out.width  - piece->buf_in.width ) * roi_in->scale;
+  const int border_tot_height = (piece->buf_out.height - piece->buf_in.height) * roi_in->scale;
+  const int border_size_t = border_tot_height*d->pos_v;
+  const int border_size_b = border_tot_height - border_size_t;
+  const int border_size_l = border_tot_width*d->pos_h;
+  const int border_size_r = border_tot_width - border_size_l;
+  const int border_in_x = MAX(border_size_l - roi_out->x, 0);
+  const int border_in_y = MAX(border_size_t - roi_out->y, 0);
 
   // Fill the out image with border color
   // sse-friendly color copy (stupidly copy whole buffer, /me lazy ass)
@@ -238,28 +244,36 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int k=0;k<roi_out->width*roi_out->height;k++, buf+=4) memcpy(buf, col, sizeof(float)*4);
 
   // Frame line draw
-  const int border_min_size = MIN(MIN(by, bh - by), MIN(bx, bw - bx));
+  const int border_min_size = MIN(MIN(border_size_t, border_size_b), MIN(border_size_l, border_size_r));
   const int frame_size  = border_min_size * d->frame_size;
   if (frame_size != 0) {
     const float col_frame[4] = {d->frame_color[0], d->frame_color[1], d->frame_color[2], 1.0f};
+    const int image_lx = border_size_l - roi_out->x;
+    const int image_ty = border_size_t - roi_out->y;
     const int frame_space  = border_min_size - frame_size;
     const int frame_offset = frame_space * d->frame_offset;
-    const int frame_in_x   = MAX(bx - frame_offset, 0);
-    const int frame_out_x  = MAX(frame_in_x - frame_size, 0);
-    const int frame_in_y   = MAX(by - frame_offset, 0);
-    const int frame_out_y  = MAX(frame_in_y - frame_size, 0);
-    const int frame_width  = (piece->buf_in.width * roi_in->scale) + (frame_offset + frame_size)*2;
-    const int frame_height  = (piece->buf_in.height * roi_in->scale) + (frame_offset + frame_size)*2;
-    for(int r=0;r<frame_height;r++)
+    const int frame_tl_in_x   = MAX(border_in_x - frame_offset, 0);
+    const int frame_tl_out_x  = MAX(frame_tl_in_x - frame_size, 0);
+    const int frame_tl_in_y   = MAX(border_in_y - frame_offset, 0);
+    const int frame_tl_out_y  = MAX(frame_tl_in_y - frame_size, 0);
+    const int frame_in_width  = floor((piece->buf_in.width * roi_in->scale) + frame_offset*2);
+    const int frame_in_height  = floor((piece->buf_in.height * roi_in->scale) + frame_offset*2);
+    const int frame_out_width  = frame_in_width + frame_size*2;
+    const int frame_out_height  = frame_in_height + frame_size*2;
+    const int frame_br_in_x = CLAMP(image_lx - frame_offset + frame_in_width - 1, 0, roi_out->width - 1);
+    const int frame_br_in_y = CLAMP(image_ty - frame_offset + frame_in_height - 1, 0, roi_out->height - 1);
+    const int frame_br_out_x = CLAMP(image_lx - frame_offset - frame_size + frame_out_width -1, 0, roi_out->width - 1);
+    const int frame_br_out_y = CLAMP(image_ty - frame_offset - frame_size + frame_out_height - 1, 0, roi_out->height - 1);
+    for(int r=frame_tl_out_y;r<=frame_br_out_y;r++)
     {
-      buf = (float *)ovoid + (frame_out_y + r)*out_stride + frame_out_x*ch;
-      for(int c=0;c<frame_width;c++, buf+=4)
+      buf = (float *)ovoid + r*out_stride + frame_tl_out_x*ch;
+      for(int c=frame_tl_out_x;c<=frame_br_out_x;c++, buf+=4)
         memcpy(buf, col_frame, sizeof(float)*4);
     }
-    for(int r=0;r<frame_height-(frame_size<<1);r++)
+    for(int r=frame_tl_in_y;r<=frame_br_in_y;r++)
     {
-      buf = (float *)ovoid + (frame_in_y + r)*out_stride + frame_in_x*ch;
-      for(int c=0;c<frame_width-(frame_size<<1);c++, buf+=4)
+      buf = (float *)ovoid + r*out_stride + frame_tl_in_x*ch;
+      for(int c=frame_tl_in_x;c<=frame_br_in_x;c++, buf+=4)
         memcpy(buf, col, sizeof(float)*4);
     }
   }
@@ -267,7 +281,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // blit image inside border and fill the output with previous processed out
   for(int j=0;j<roi_in->height;j++)
   {
-    float *out = ((float *)ovoid) + (j + by)*out_stride + ch * bx;
+    float *out = ((float *)ovoid) + (j + border_in_y)*out_stride + ch * border_in_x;
     const float *in  = ((float *)ivoid) + j*in_stride;
     memcpy(out, in, cp_stride);
   }
@@ -288,10 +302,14 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  const int bw = (piece->buf_out.width  - piece->buf_in.width ) * roi_in->scale;
-  const int bh = (piece->buf_out.height - piece->buf_in.height) * roi_in->scale;
-  const int bx = MAX(bw*d->pos_h - roi_out->x, 0);
-  const int by = MAX(bh*d->pos_v - roi_out->y, 0);
+  const int border_tot_width  = (piece->buf_out.width  - piece->buf_in.width ) * roi_in->scale;
+  const int border_tot_height = (piece->buf_out.height - piece->buf_in.height) * roi_in->scale;
+  const int border_size_t = border_tot_height*d->pos_v;
+  const int border_size_b = border_tot_height - border_size_t;
+  const int border_size_l = border_tot_width*d->pos_h;
+  const int border_size_r = border_tot_width - border_size_l;
+  const int border_in_x = MAX(border_size_l - roi_out->x, 0);
+  const int border_in_y = MAX(border_size_t - roi_out->y, 0);
 
   // ----- Filling border
   const float col[4] = {d->color[0], d->color[1], d->color[2], 1.0f};
@@ -307,43 +325,52 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
   // ----- Frame line
-  // TODO correct the draw when not fit zoom
-  const int border_min_size = MIN(MIN(by, bh - by), MIN(bx, bw - bx));
+  const int border_min_size = MIN(MIN(border_size_t, border_size_b), MIN(border_size_l, border_size_r));
   const int frame_size  = border_min_size * d->frame_size;
   if (frame_size != 0) {
     const float col_frame[4] = {d->frame_color[0], d->frame_color[1], d->frame_color[2], 1.0f};
+    const int image_lx = border_size_l - roi_out->x;
+    const int image_ty = border_size_t - roi_out->y;
     const int frame_space  = border_min_size - frame_size;
     const int frame_offset = frame_space * d->frame_offset;
-    const int frame_in_x   = MAX(bx - frame_offset, 0);
-    const int frame_out_x  = MAX(frame_in_x - frame_size, 0);
-    const int frame_in_y   = MAX(by - frame_offset, 0);
-    const int frame_out_y  = MAX(frame_in_y - frame_size, 0);
-    const int frame_width  = (piece->buf_in.width * roi_in->scale) + (frame_offset + frame_size)*2;
-    const int frame_height  = (piece->buf_in.height * roi_in->scale) + (frame_offset + frame_size)*2;
-    const int frame_inner_width  = (piece->buf_in.width * roi_in->scale) + (frame_offset)*2;
-    const int frame_inner_height  = (piece->buf_in.height * roi_in->scale) + (frame_offset)*2;
+    const int frame_tl_in_x   = MAX(border_in_x - frame_offset, 0);
+    const int frame_tl_out_x  = MAX(frame_tl_in_x - frame_size, 0);
+    const int frame_tl_in_y   = MAX(border_in_y - frame_offset, 0);
+    const int frame_tl_out_y  = MAX(frame_tl_in_y - frame_size, 0);
+    const int frame_in_width  = floor((piece->buf_in.width * roi_in->scale) + frame_offset*2);
+    const int frame_in_height  = floor((piece->buf_in.height * roi_in->scale) + frame_offset*2);
+    const int frame_out_width  = frame_in_width + frame_size*2;
+    const int frame_out_height  = frame_in_height + frame_size*2;
+    const int frame_br_in_x = CLAMP(image_lx - frame_offset + frame_in_width - 1, 0, roi_out->width - 1);
+    const int frame_br_in_y = CLAMP(image_ty - frame_offset + frame_in_height - 1, 0, roi_out->height - 1);
+    const int frame_br_out_x = CLAMP(image_lx - frame_offset - frame_size + frame_out_width -1, 0, roi_out->width - 1);
+    const int frame_br_out_y = CLAMP(image_ty - frame_offset - frame_size + frame_out_height - 1, 0, roi_out->height - 1);
+    const int roi_frame_in_width = frame_br_in_x - frame_tl_in_x;
+    const int roi_frame_in_height = frame_br_in_y - frame_tl_in_y;
+    const int roi_frame_out_width = frame_br_out_x - frame_tl_out_x;
+    const int roi_frame_out_height = frame_br_out_y - frame_tl_out_y;
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 0, sizeof(cl_mem), &dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 1, sizeof(int), &frame_out_x);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 2, sizeof(int), &frame_out_y);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 3, sizeof(int), &frame_width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 4, sizeof(int), &frame_height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 1, sizeof(int), &frame_tl_out_x);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 2, sizeof(int), &frame_tl_out_y);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 3, sizeof(int), &roi_frame_out_width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 4, sizeof(int), &roi_frame_out_height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 5, 4*sizeof(float), &col_frame);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_borders_fill, sizes);
     if(err != CL_SUCCESS) goto error;
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 0, sizeof(cl_mem), &dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 1, sizeof(int), &frame_in_x);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 2, sizeof(int), &frame_in_y);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 3, sizeof(int), &frame_inner_width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 4, sizeof(int), &frame_inner_height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 1, sizeof(int), &frame_tl_in_x);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 2, sizeof(int), &frame_tl_in_y);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 3, sizeof(int), &roi_frame_in_width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 4, sizeof(int), &roi_frame_in_height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 5, 4*sizeof(float), &col);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_borders_fill, sizes);
     if(err != CL_SUCCESS) goto error;
   }
 
   size_t iorigin[] = { 0, 0, 0};
-  size_t oorigin[] = { bx, by, 0};
+  size_t oorigin[] = { border_in_x, border_in_y, 0};
   size_t region[] = { roi_in->width, roi_in->height, 1};
 
   // copy original input from dev_in -> dev_out as starting point
@@ -400,7 +427,7 @@ void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_borders_params_t p = (dt_iop_borders_params_t)
   {
-    {1.0f, 1.0f, 1.0f}, 3.0f/2.0f, "3:2", 0.1f, 0.5f, 0.5f, 0.0f, 0.5f, {1.0f, 1.0f, 1.0f}
+    {1.0f, 1.0f, 1.0f}, 3.0f/2.0f, "3:2", 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.0f, 0.5f, {1.0f, 1.0f, 1.0f}
   };
   dt_gui_presets_add_generic(_("15:10 postcard white"), self->op, self->version(), &p, sizeof(p), 1);
   p.color[0] = p.color[1] = p.color[2] = 0.0f;
@@ -523,10 +550,10 @@ position_h_changed (GtkWidget *combo, dt_iop_module_t *self)
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
   int which = dt_bauhaus_combobox_get(combo);
+  const char* text = dt_bauhaus_combobox_get_text(combo);
   if (which < 0)
   {
     p->pos_h = 0.5f; // center
-    const char* text = dt_bauhaus_combobox_get_text(combo);
     if(text)
     {
       const char *c = text;
@@ -539,13 +566,15 @@ position_h_changed (GtkWidget *combo, dt_iop_module_t *self)
       } else {
         p->pos_h = atof(text);
       }
+      strncpy(p->pos_h_text, text, 20);
       p->pos_h = MAX(p->pos_h, 0);
       p->pos_h = MIN(p->pos_h, 1);
     }
   }
   else if (which < DT_IOP_BORDERS_POSITION_H_COUNT)
   {
-      p->pos_h = g->pos_h_ratios[which];
+    strncpy(p->pos_h_text, text, 20);
+    p->pos_h = g->pos_h_ratios[which];
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -556,10 +585,10 @@ position_v_changed (GtkWidget *combo, dt_iop_module_t *self)
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
   int which = dt_bauhaus_combobox_get(combo);
+  const char* text = dt_bauhaus_combobox_get_text(combo);
   if (which < 0)
   {
     p->pos_v = 0.5f; // center
-    const char* text = dt_bauhaus_combobox_get_text(combo);
     if(text)
     {
       const char *c = text;
@@ -572,13 +601,15 @@ position_v_changed (GtkWidget *combo, dt_iop_module_t *self)
       } else {
         p->pos_v = atof(text);
       }
+      strncpy(p->pos_v_text, text, 20);
       p->pos_v = MAX(p->pos_v, 0);
       p->pos_v = MIN(p->pos_v, 1);
     }
   }
   else if (which < DT_IOP_BORDERS_POSITION_H_COUNT)
   {
-      p->pos_v = g->pos_h_ratios[which];
+    strncpy(p->pos_v_text, text, 20);
+    p->pos_v = g->pos_h_ratios[which];
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -720,9 +751,13 @@ void gui_update(struct dt_iop_module_t *self)
   }
   if(k == DT_IOP_BORDERS_POSITION_H_COUNT)
   {
-    char text[128];
-    snprintf(text, 128, "%.3f:1", p->pos_h);
-    dt_bauhaus_combobox_set_text(g->pos_h, text);
+    if (p->pos_h_text) {
+      dt_bauhaus_combobox_set_text(g->pos_h, p->pos_h_text);
+    } else {
+      char text[128];
+      snprintf(text, 128, "%.3f:1", p->pos_h);
+      dt_bauhaus_combobox_set_text(g->pos_h, text);
+    }
     dt_bauhaus_combobox_set(g->pos_h, -1);
   }
 
@@ -737,11 +772,19 @@ void gui_update(struct dt_iop_module_t *self)
   }
   if(k == DT_IOP_BORDERS_POSITION_V_COUNT)
   {
-    char text[128];
-    snprintf(text, 128, "%.3f:1", p->pos_v);
-    dt_bauhaus_combobox_set_text(g->pos_v, text);
+    if (p->pos_v_text) {
+      dt_bauhaus_combobox_set_text(g->pos_v, p->pos_v_text);
+    } else {
+      char text[128];
+      snprintf(text, 128, "%.3f:1", p->pos_v);
+      dt_bauhaus_combobox_set_text(g->pos_v, text);
+    }
     dt_bauhaus_combobox_set(g->pos_v, -1);
   }
+
+
+  dt_bauhaus_slider_set(g->frame_size, p->frame_size*100.0f);
+  dt_bauhaus_slider_set(g->frame_offset, p->frame_offset*100.0f);
 
   // ----- Border Color
   GdkColor c;
@@ -917,7 +960,7 @@ void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_borders_params_t tmp = (dt_iop_borders_params_t)
   {
-    {1.0f, 1.0f, 1.0f}, 3.0f/2.0f, "3:2", 0.1f, 0.5f, 0.5f, 0.0f, 0.5f, {0.0f, 0.0f, 0.0f}
+    {1.0f, 1.0f, 1.0f}, 3.0f/2.0f, "3:2", 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.0f, 0.5f, {0.0f, 0.0f, 0.0f}
   };
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   if(self->dev->gui_attached && g)
