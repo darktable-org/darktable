@@ -84,7 +84,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 {
   dt_imageio_email_t *d = (dt_imageio_email_t *)sdata;
 
-  _email_attachment_t *attachment = ( _email_attachment_t *)malloc(sizeof(_email_attachment_t));
+  _email_attachment_t *attachment = ( _email_attachment_t *)g_malloc(sizeof(_email_attachment_t));
   attachment->imgid = imgid;
 
   /* construct a temporary file name */
@@ -105,6 +105,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   {
     fprintf(stderr, "[imageio_storage_email] could not export to file: `%s'!\n", attachment->file);
     dt_control_log(_("could not export to file `%s'!"), attachment->file);
+    g_free(attachment);
     return 1;
   }
 

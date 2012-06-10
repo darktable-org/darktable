@@ -389,7 +389,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   dt_tag_attach(tagid,id);
 
   // Search for sidecar files and import them if found.
-  glob_t *globbuf = malloc(sizeof(glob_t));
+  glob_t *globbuf = g_malloc(sizeof(glob_t));
 
   // Add version wildcard
   gchar *fname = g_strdup(filename);
@@ -420,6 +420,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
 
   g_free(imgfname);
   g_free(fname);
+  g_free(globbuf);
 
   return id;
 }
@@ -493,8 +494,8 @@ void dt_image_synch_all_xmp(const gchar *pathname)
   if(dt_conf_get_bool("write_sidecar_files"))
   {
     // Delete all existing .xmp files.
-    glob_t *globbuf = malloc(sizeof(glob_t));
-    
+    glob_t *globbuf = g_malloc(sizeof(glob_t));
+
     gchar *fname = g_strdup(pathname);
     gchar pattern[1024];
     g_snprintf(pattern, 1024, "%s", pathname);
@@ -529,6 +530,7 @@ void dt_image_synch_all_xmp(const gchar *pathname)
     g_free(fname);
     g_free(imgfname);
     g_free(imgpath);
+    g_free(globbuf);
   }
 }
 
