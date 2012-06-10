@@ -487,7 +487,7 @@ dt_bauhaus_init()
   strncpy(darktable.bauhaus->value_font, "sans-serif", 256);
   darktable.bauhaus->bg_normal = 0.145098f;
   darktable.bauhaus->bg_focus = 0.207843f;
-  darktable.bauhaus->text = 1.f;
+  darktable.bauhaus->text = .792f;
   darktable.bauhaus->grid = .1f;
   darktable.bauhaus->indicator = .6f;
   darktable.bauhaus->insensitive = 0.2f;
