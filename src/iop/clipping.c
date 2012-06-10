@@ -570,25 +570,33 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
     // now fix outside boxes:
     if(clip_x < 0)
     {
+      double prev_clip_h = clip_h;
       clip_h *= (clip_w + clip_x)/clip_w;
       clip_w  =  clip_w + clip_x;
       clip_x  = 0;
+      if (grab & 2) clip_y += prev_clip_h - clip_h;
     }
     if(clip_y < 0)
     {
+      double prev_clip_w = clip_w;
       clip_w *= (clip_h + clip_y)/clip_h;
       clip_h  =  clip_h + clip_y;
       clip_y  =  0;
+      if (grab & 1) clip_x += prev_clip_w - clip_w;
     }
     if(clip_x + clip_w > 1.0)
     {
+      double prev_clip_h = clip_h;
       clip_h *= (1.0 - clip_x)/clip_w;
       clip_w  =  1.0 - clip_x;
+      if (grab & 2) clip_y += prev_clip_h - clip_h;
     }
     if(clip_y + clip_h > 1.0)
     {
+      double prev_clip_w = clip_w;
       clip_w *= (1.0 - clip_y)/clip_h;
       clip_h  =  1.0 - clip_y;
+      if (grab & 1) clip_x += prev_clip_w - clip_w;
     }
     g->clip_x = clip_x;
     g->clip_y = clip_y;
