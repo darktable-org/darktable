@@ -1061,7 +1061,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->aspect_presets, act);
   g_signal_connect (G_OBJECT (g->aspect_presets), "value-changed", G_CALLBACK (aspect_presets_changed), self);
   g_object_set(G_OBJECT(g->aspect_presets), "tooltip-text", _("set the aspect ratio (w:h)"), (char *)NULL);
-  dt_bauhaus_widget_set_quad_paint(g->aspect_presets, dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
+  dt_bauhaus_widget_set_quad_paint(g->aspect_presets, dtgtk_cairo_paint_aspectflip, 0);
   g_signal_connect (G_OBJECT (g->aspect_presets), "quad-pressed", G_CALLBACK (aspect_flip), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_presets, TRUE, TRUE, 0);
 

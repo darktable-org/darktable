@@ -477,17 +477,17 @@ dt_bauhaus_init()
   g_signal_connect (G_OBJECT (root_window), "button-press-event",
                     G_CALLBACK (dt_bauhaus_root_button_press), (gpointer)NULL);
 
-  darktable.bauhaus->widget_space = 7;
-  darktable.bauhaus->line_space = 5;
-  darktable.bauhaus->line_height = 9;
-  darktable.bauhaus->marker_size = 0.35f;
-  darktable.bauhaus->label_font_size = 0.8f;
-  darktable.bauhaus->value_font_size = 0.8f;
+  darktable.bauhaus->widget_space = 5;
+  darktable.bauhaus->line_space = 2;
+  darktable.bauhaus->line_height = 11;
+  darktable.bauhaus->marker_size = 0.3f;
+  darktable.bauhaus->label_font_size = 0.6f;
+  darktable.bauhaus->value_font_size = 0.6f;
   strncpy(darktable.bauhaus->label_font, "sans-serif", 256);
   strncpy(darktable.bauhaus->value_font, "sans-serif", 256);
   darktable.bauhaus->bg_normal = 0.145098f;
   darktable.bauhaus->bg_focus = 0.207843f;
-  darktable.bauhaus->text = 1.f;
+  darktable.bauhaus->text = .792f;
   darktable.bauhaus->grid = .1f;
   darktable.bauhaus->indicator = .6f;
   darktable.bauhaus->insensitive = 0.2f;
@@ -840,7 +840,7 @@ dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t *cr)
   const float r = 1.0f-(ht+4.0f)/wd;
   set_indicator_color(cr, 1);
 #ifndef DT_BAUHAUS_OLD
-  cairo_translate(cr, (l + pos*(r-l))*wd, get_label_font_size());
+  cairo_translate(cr, (l + pos*(r-l))*wd, get_line_height() * (darktable.bauhaus->label_font_size + 0.25f));
   cairo_scale(cr, 1.0f, -1.0f);
   draw_equilateral_triangle(cr, ht*get_marker_size());
   cairo_fill_preserve(cr);
@@ -892,8 +892,10 @@ dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
   if(w->quad_paint)
   {
     cairo_save(cr);
+    set_grid_color(cr, gtk_widget_is_sensitive(GTK_WIDGET(w)));
+    w->quad_paint(cr, width-height-1, -1, height+2, get_label_font_size()+2, w->quad_paint_flags);
     set_indicator_color(cr, gtk_widget_is_sensitive(GTK_WIDGET(w)));
-    w->quad_paint(cr, width-height, 0, height, height, w->quad_paint_flags);
+    w->quad_paint(cr, width-height, 0, height, get_label_font_size(), w->quad_paint_flags);
     cairo_restore(cr);
   }
   else
@@ -907,7 +909,7 @@ dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
     switch(w->type)
     {
       case DT_BAUHAUS_COMBOBOX:
-        cairo_translate(cr, width -height*.5f, height*.5f);
+        cairo_translate(cr, width -height*.5f, get_label_font_size()*.5f);
         draw_equilateral_triangle(cr, height*get_marker_size());
         cairo_fill_preserve(cr);
         cairo_set_line_width(cr, 1.);
@@ -940,7 +942,9 @@ dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
 #ifdef DT_BAUHAUS_OLD
   const float htm = 0.0f, htM = ht;
 #else
-  const float htm = 0.65f*ht, htM = 0.25*ht;
+  // pos of baseline
+  const float htm = ht*(darktable.bauhaus->label_font_size + 0.1f);
+  const float htM = ht*0.2f; // thickness of baseline
 #endif
 
   cairo_pattern_t *gradient = NULL;

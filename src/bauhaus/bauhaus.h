@@ -184,7 +184,6 @@ void dt_bauhaus_cleanup();
 // set the label text:
 void dt_bauhaus_widget_set_label(GtkWidget *w, const char *text);
 // attach a custom painted quad to the space at the right side (overwriting the default icon if any):
-typedef void (* dt_bauhaus_quad_paint_f)(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 void dt_bauhaus_widget_set_quad_paint(GtkWidget *w, dt_bauhaus_quad_paint_f f, int paint_flags);
 // make this quad a toggle button:
 void dt_bauhaus_widget_set_quad_toggle(GtkWidget *w, int toggle);
