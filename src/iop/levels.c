@@ -510,8 +510,22 @@ static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *ev
   if(event->button == 1)
   {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-    dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
-    c->dragging = 1;
+
+    if(event->type == GDK_2BUTTON_PRESS) {
+      // Reset
+      dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
+      memcpy(self->params, self->default_params, self->params_size);
+
+      // Needed in case the user scrolls or drags immediately after a reset,
+      // as drag_start_percentage is only updated when the mouse is moved.
+      c->drag_start_percentage = 0.5;
+
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      gtk_widget_queue_draw(self->widget);
+    } else {
+      dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
+      c->dragging = 1;
+    }
     return TRUE;
   }
   return FALSE;
