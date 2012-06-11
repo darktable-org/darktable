@@ -39,5 +39,5 @@ do
   echo "[x] $f has been updated."
 done
 
-# vim: et sw=2 ts=2 list listchars=trail\:·,eol\:tab\:→ extends\:»,precedes\:«
+# vim: et sw=2 ts=2 list listchars=trail\:·,eol\:¶,tab\:->,extends\:»,precedes\:«
 # kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
