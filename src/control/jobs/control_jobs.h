@@ -63,5 +63,6 @@ void dt_control_match_similar(struct dt_similarity_t *data);
 void dt_control_start_indexer();
 
 #endif
+// These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

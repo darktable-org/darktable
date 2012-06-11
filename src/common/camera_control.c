@@ -1399,5 +1399,6 @@ void _dispatch_camera_error(const dt_camctl_t *c,const dt_camera_t *camera,dt_ca
     while((listener=g_list_next(listener))!=NULL);
 }
 
+// These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

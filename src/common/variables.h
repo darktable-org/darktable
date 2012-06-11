@@ -57,5 +57,6 @@ const gchar *dt_variables_get_result(dt_variables_params_t *params);
 void dt_variables_reset_sequence(dt_variables_params_t *params);
 
 #endif
+// These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
