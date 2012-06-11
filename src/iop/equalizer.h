@@ -91,3 +91,5 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 // static void dt_iop_equalizer_button_toggled(GtkToggleButton *togglebutton, gpointer user_data);
 
 #endif
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

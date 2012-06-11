@@ -883,4 +883,5 @@ free_params(dt_imageio_module_storage_t *self, void *params)
   free(params);
 }
 
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

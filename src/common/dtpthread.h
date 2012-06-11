@@ -184,4 +184,5 @@ dt_pthread_cond_wait(pthread_cond_t *cond, dt_pthread_mutex_t *mutex)
 #endif
 #endif
 
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

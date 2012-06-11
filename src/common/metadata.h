@@ -33,3 +33,5 @@ GList* dt_metadata_get(int id, const char* key, uint32_t* count);
 void dt_metadata_clear(int id);
 
 #endif
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

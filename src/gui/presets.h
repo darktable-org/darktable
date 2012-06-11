@@ -41,3 +41,5 @@ void dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module);
 void dt_gui_favorite_presets_menu_show();
 
 #endif
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

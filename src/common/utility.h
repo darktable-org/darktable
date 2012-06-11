@@ -34,3 +34,5 @@ gchar* dt_util_glist_to_str(const gchar* separator, GList * items, const unsigne
 /** fixes the given path by replacing a possible tilde with the correct home directory */
 gchar* dt_util_fix_path(const gchar* path);
 #endif
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

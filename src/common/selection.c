@@ -295,3 +295,5 @@ void dt_selection_select_unaltered(dt_selection_t *selection)
 
   selection->last_single_id = -1;
 }
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

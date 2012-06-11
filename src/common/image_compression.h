@@ -23,3 +23,5 @@ void dt_image_compress(const float *in, uint8_t *out, const int32_t width, const
 void dt_image_uncompress(const uint8_t *in, float *out, const int32_t width, const int32_t height);
 
 #endif
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

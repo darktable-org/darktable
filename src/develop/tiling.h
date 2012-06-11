@@ -58,3 +58,5 @@ int dt_tiling_piece_fits_host_memory(const size_t width, const size_t height, co
 
 #endif
 
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

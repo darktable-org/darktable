@@ -33,7 +33,6 @@ do
     echo "$m" >> "$TEMPFILE"
   done
   mv "$TEMPFILE" "$f"
-  rm "$TEMPFILE"
   echo "[x] $f has been updated."
 done
 

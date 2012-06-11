@@ -126,3 +126,5 @@ void _lib_hinter_set_message(dt_lib_module_t *self, const char *message)
   g_free(str);
 #endif
 }
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -245,3 +245,5 @@ void dt_fswatch_destroy(const dt_fswatch_t *fswatch) {}
 void dt_fswatch_add(const dt_fswatch_t *fswatch, dt_fswatch_type_t type, void *data) {}
 void dt_fswatch_remove(const dt_fswatch_t * fswatch, dt_fswatch_type_t type, void *data) {}
 #endif
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
