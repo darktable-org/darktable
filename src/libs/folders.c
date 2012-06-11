@@ -191,7 +191,6 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
         sqlite3_finalize(stmt2);
       }
       g_free(query);
-      g_free(old);
 
       /* reset filter to display all images, otherwise view may remain empty */
       dt_view_filter_reset_to_show_all(darktable.view_manager);
