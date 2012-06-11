@@ -124,5 +124,3 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL *clEnqueueReleaseD3D10ObjectsKHR_fn)(
 
 #endif  // __OPENCL_CL_D3D10_H
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -413,5 +413,4 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   return 0;
 }
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

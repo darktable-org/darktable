@@ -39,5 +39,3 @@ void dt_guides_draw_harmonious_triangles(cairo_t *cr, const float left, const fl
 void dt_guides_draw_golden_mean(cairo_t *cr, dt_QRect_t* R1, dt_QRect_t* R2, dt_QRect_t* R3, dt_QRect_t* R4, dt_QRect_t* R5, dt_QRect_t* R6, dt_QRect_t* R7, gboolean goldenSection, gboolean goldenTriangle, gboolean goldenSpiralSection, gboolean goldenSpiral);
 
 #endif
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

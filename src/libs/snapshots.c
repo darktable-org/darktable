@@ -453,5 +453,3 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
   dt_control_queue_redraw_center();
 }
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -197,5 +197,3 @@ const GList* dt_bauhaus_combobox_get_labels(GtkWidget *w);
 void dt_bauhaus_combobox_clear(GtkWidget *w);
 
 #endif
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

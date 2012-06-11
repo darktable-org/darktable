@@ -782,5 +782,4 @@ void _iop_zonesystem_redraw_preview_callback(gpointer instance, gpointer user_da
   dt_control_queue_redraw_widget(g->preview);
 }
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

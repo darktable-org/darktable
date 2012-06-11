@@ -75,5 +75,3 @@ mat3mul (float *dst, const float *const m1, const float *const m2)
     }
   }
 }
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

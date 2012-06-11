@@ -2287,5 +2287,3 @@ static const guint8 dt_logo_128x128[] =
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"};
 
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

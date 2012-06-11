@@ -162,5 +162,3 @@ dt_guides_draw_golden_mean(cairo_t *cr, dt_QRect_t* R1, dt_QRect_t* R2, dt_QRect
   }
 }
 #undef RADIANS
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

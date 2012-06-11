@@ -128,5 +128,3 @@ float *interpolate_set( int n, float x[], float y[], unsigned int type);
 float interpolate_val( int n, float x[], float xval, float y[], float tangents[], unsigned int type);
 
 #endif
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

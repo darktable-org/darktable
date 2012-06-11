@@ -161,5 +161,4 @@ void dt_lib_colorpicker_set_point(dt_lib_t *lib, float x, float y);
 
 #endif
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -1579,5 +1579,3 @@ dt_bauhaus_slider_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpoin
   return TRUE;
 }
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

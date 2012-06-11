@@ -112,5 +112,4 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

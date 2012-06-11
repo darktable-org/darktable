@@ -269,5 +269,3 @@ static void _lib_backgroundjobs_progress(dt_lib_module_t *self, const guint *key
   if(i_own_lock) dt_control_gdk_unlock();
 }
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

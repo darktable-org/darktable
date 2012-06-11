@@ -585,5 +585,4 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   dt_control_hinter_message(darktable.control, message);
 }
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

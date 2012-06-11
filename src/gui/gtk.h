@@ -175,5 +175,3 @@ GtkWidget *dt_ui_center(struct dt_ui_t *ui);
 GtkWidget *dt_ui_main_window(struct dt_ui_t *ui);
 
 #endif
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

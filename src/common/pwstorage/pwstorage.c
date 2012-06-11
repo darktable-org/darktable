@@ -187,5 +187,4 @@ GHashTable* dt_pwstorage_get(const gchar* slot)
   return g_hash_table_new(g_str_hash, g_str_equal);
 }
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

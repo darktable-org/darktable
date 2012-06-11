@@ -693,5 +693,4 @@ void connect_styles_key_accels()
     while ((result=g_list_next(result))!=NULL);
   }
 }
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

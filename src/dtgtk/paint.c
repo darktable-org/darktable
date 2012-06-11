@@ -973,5 +973,4 @@ void dtgtk_cairo_paint_modulegroup_effect(cairo_t *cr, gint x, gint y, gint w, g
   cairo_stroke(cr);
 }
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

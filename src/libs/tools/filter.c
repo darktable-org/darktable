@@ -237,5 +237,3 @@ _lib_filter_reset_to_show_all(dt_lib_module_t *self)
     /* Reset to topmost item, 'all' */
     gtk_combo_box_set_active(GTK_COMBO_BOX(dropdowns->filter), 0);
 }
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

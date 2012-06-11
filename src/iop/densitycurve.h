@@ -118,5 +118,3 @@ static gboolean dt_iop_densitycurve_keypress_notify(GtkWidget *widget, GdkEventK
 static gboolean dt_iop_densitycurve_on_focus_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
 static gboolean dt_iop_zonesystem_bar_expose (GtkWidget *widget, dt_iop_zonesystem_params_t *p);
 #endif
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

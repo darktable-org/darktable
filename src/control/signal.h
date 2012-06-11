@@ -85,5 +85,3 @@ void dt_control_signal_connect(const struct dt_control_signal_t *ctlsig,const dt
 /* disconnects a callback from a sink */
 void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCallback cb,gpointer user_data);
 #endif
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

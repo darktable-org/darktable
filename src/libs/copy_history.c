@@ -275,5 +275,3 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "write sidecar files",
                               GTK_WIDGET(d->write_button));
 }
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

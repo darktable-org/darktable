@@ -302,5 +302,4 @@ static gboolean _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel
   return TRUE;
 }
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

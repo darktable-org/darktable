@@ -693,5 +693,3 @@ void gui_reset(dt_lib_module_t *self)
   gtk_toggle_button_set_active(
       GTK_TOGGLE_BUTTON(data->display_samples_check_box), FALSE);
 }
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

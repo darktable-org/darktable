@@ -91,5 +91,3 @@ dt_camera_import_backup_t;
 int32_t dt_camera_import_backup_job_run(dt_job_t *job);
 void dt_camera_import_backup_job_init(dt_job_t *job,const char *sourcefile,const char *destinationfile);
 #endif
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

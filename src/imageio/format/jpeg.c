@@ -671,5 +671,3 @@ void gui_reset (dt_imageio_module_format_t *self)
   dtgtk_slider_set_value(g->quality, dt_conf_get_int("plugins/imageio/format/jpeg/quality"));
 }
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

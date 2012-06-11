@@ -85,5 +85,3 @@ void rgb2hsl(const float rgb[3],float *h,float *s,float *l);
 void hsl2rgb(float rgb[3],float h,float s,float l);
 
 #endif
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

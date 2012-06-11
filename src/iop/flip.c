@@ -411,5 +411,4 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_iop(self, "rotate 90 degrees ccw", closure);
 }
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

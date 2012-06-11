@@ -238,5 +238,4 @@ dt_imageio_write_dng(const char *filename, const float *const pixel, const int w
 #undef SRATIONAL
 #endif
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

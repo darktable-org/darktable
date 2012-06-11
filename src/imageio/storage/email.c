@@ -200,5 +200,4 @@ int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_mod
   return 1;
 }
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

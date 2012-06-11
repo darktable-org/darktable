@@ -89,5 +89,3 @@ void _lib_preferences_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   dt_gui_preferences_show();
 }
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

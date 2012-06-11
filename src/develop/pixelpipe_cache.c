@@ -215,5 +215,3 @@ void dt_dev_pixelpipe_cache_print(dt_dev_pixelpipe_cache_t *cache)
   printf("cache hit rate so far: %.3f\n", (cache->queries - cache->misses)/(float)cache->queries);
 }
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

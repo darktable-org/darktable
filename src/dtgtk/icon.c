@@ -137,5 +137,4 @@ void dtgtk_icon_set_paint(GtkWidget *icon,
   gtk_widget_queue_draw(icon);
 }
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

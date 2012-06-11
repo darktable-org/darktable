@@ -891,5 +891,4 @@ void dt_gui_presets_update_filter(const char *name, dt_dev_operation_t op, const
   sqlite3_finalize(stmt);
 }
 
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

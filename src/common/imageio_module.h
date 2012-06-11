@@ -173,5 +173,3 @@ dt_imageio_module_format_t *dt_imageio_get_format_by_name(const char *name);
 dt_imageio_module_storage_t *dt_imageio_get_storage_by_name(const char *name);
 
 #endif
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

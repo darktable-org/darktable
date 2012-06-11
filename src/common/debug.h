@@ -60,5 +60,3 @@
 #define DT_DEBUG_SQLITE3_CLEAR_BINDINGS(a)     __DT_DEBUG_ASSERT__(sqlite3_clear_bindings(a))
 #define DT_DEBUG_SQLITE3_RESET(a)              __DT_DEBUG_ASSERT__(sqlite3_reset(a))
 #endif
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
