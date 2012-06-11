@@ -508,6 +508,10 @@ _create_treeview_display (GtkTreeModel *model)
   column1 = gtk_tree_view_column_new();
   column2 = gtk_tree_view_column_new();
 
+  gtk_tree_view_column_set_sizing(column1, GTK_TREE_VIEW_COLUMN_FIXED);
+  gtk_tree_view_column_set_fixed_width (column1, 230);
+  gtk_tree_view_column_set_max_width (column1, 230);
+
   gtk_tree_view_column_pack_start(column1, renderer, TRUE);
   gtk_tree_view_column_pack_start(column2, renderer2, TRUE);
 
