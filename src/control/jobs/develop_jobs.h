@@ -40,3 +40,5 @@ void dt_dev_process_image_job_init(dt_job_t *job, dt_develop_t *dev);
 void dt_dev_export_init(dt_job_t *job);
 
 #endif
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

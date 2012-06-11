@@ -690,3 +690,5 @@ void gui_cleanup(struct dt_iop_module_t *self)
 #undef HISTN
 #undef MAXN
 
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

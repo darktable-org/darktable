@@ -175,3 +175,5 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "duplicate", d->duplicate_button);
   dt_accel_connect_button_lib(self, "reset rotation", d->reset_button);
 }
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

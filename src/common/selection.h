@@ -43,3 +43,5 @@ void dt_selection_select_filmroll(struct dt_selection_t *selection);
 /** selects all unaltered images in the current collection */
 void dt_selection_select_unaltered(struct dt_selection_t *selection);
 #endif
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

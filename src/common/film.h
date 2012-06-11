@@ -67,3 +67,5 @@ void dt_film_image_import(dt_film_t *film,const char *filename, gboolean overrid
 void dt_film_remove_empty();
 
 #endif
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

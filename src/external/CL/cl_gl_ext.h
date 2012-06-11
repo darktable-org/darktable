@@ -67,3 +67,5 @@ clCreateEventFromGLsyncKHR(cl_context           /* context */,
 #endif
 
 #endif	/* __OPENCL_CL_GL_EXT_H  */
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
