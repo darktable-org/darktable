@@ -40,5 +40,3 @@ void squish_decompress_image(uint8_t *rgba, const int width, const int height, v
 #ifdef __cplusplus
 }
 #endif
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
