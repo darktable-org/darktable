@@ -101,7 +101,6 @@ void dt_accel_rename_preset_lib(dt_lib_module_t *module,const gchar *path,const 
 void dt_accel_rename_global(const gchar *path,const gchar *new_path);
 
 #endif
-// These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

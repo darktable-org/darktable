@@ -416,7 +416,6 @@ gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t heigh
   dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
 }
 
-// These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
