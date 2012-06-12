@@ -47,7 +47,6 @@ typedef struct dt_iop_basecurve_params_t
 }
 dt_iop_basecurve_params_t;
 
-static const char linear[] = N_("linear");
 static const char dark_contrast[] = N_("dark contrast");
 static const char canon_eos[] = N_("canon eos like");
 static const char nikon[] = N_("nikon like");
@@ -76,7 +75,6 @@ basecurve_preset_t;
 
 static const basecurve_preset_t basecurve_presets[] =
 {
-  {linear, "", "", 0, 51200, {{0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, {0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, 0}, 0},
   {dark_contrast, "", "", 0, 51200, {{0.000000, 0.072581, 0.157258, 0.491935, 0.758065, 1.000000}, {0.000000, 0.040000, 0.138710, 0.491935, 0.758065, 1.000000}, 0}, 0},
   // pascals canon eos curve (well tested):
   {canon_eos, "Canon", "", 0, 51200, {{0.000000, 0.028226, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
@@ -605,7 +603,15 @@ dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer
   {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-    c->dragging = 1;
+    if(event->type == GDK_2BUTTON_PRESS)
+    {
+      memcpy(self->params, self->factory_params, self->params_size);
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+    }
+    else
+    {
+      c->dragging = 1;
+    }
     return TRUE;
   }
   return FALSE;

@@ -1635,7 +1635,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // camera selector
   GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
-  g->camera_model = GTK_BUTTON(gtk_button_new());
+  g->camera_model = GTK_BUTTON(dtgtk_button_new(NULL, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->camera_model));
   gtk_button_set_label(g->camera_model, self->dev->image_storage.exif_model);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
@@ -1652,7 +1652,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // lens selector
   hbox = gtk_hbox_new(FALSE, 0);
-  g->lens_model = GTK_BUTTON(gtk_button_new());
+  g->lens_model = GTK_BUTTON(dtgtk_button_new(NULL, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->lens_model));
   gtk_button_set_label(g->lens_model, self->dev->image_storage.exif_lens);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
