@@ -10,7 +10,7 @@
 # For useful options in the vim modeline see also the one used in this file
 #
 
-NOTIFICATION_LINE='// These editor modelines have been set for all relevant files by tools/update_modelines.sh'
+NOTIFICATION_LINE='// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh'
 VIM_MODELINE='// vim: shiftwidth=2 expandtab tabstop=2 cindent'
 KATE_MODELINE='// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;'
 
@@ -25,7 +25,7 @@ do
 
   TEMPFILE=`tempfile`
   # Check for lines beginning with a comment and a modeline keyword
-  grep -v '^// vim:\|^// kate:' "$f" > "$TEMPFILE"
+  grep -v '^// vim:\|^// kate:\|^// modelines:' "$f" > "$TEMPFILE"
 
   #
   # echo "vim_modeline is: $VIM_MODELINE"
