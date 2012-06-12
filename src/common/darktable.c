@@ -420,7 +420,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // dt_check_cpu(argc,argv);
 
 #ifdef HAVE_GEGL
-  (void)setenv("GEGL_PATH", DARKTABLE_DATADIR"/gegl:/usr/lib/gegl-0.0", 1);
+  (void)setenv("GEGL_PATH", DARKTABLE_DATADIR "/gegl:/usr/lib/gegl-0.0", 1);
   gegl_init(&argc, &argv);
 #endif
 
