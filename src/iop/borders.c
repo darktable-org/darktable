@@ -44,9 +44,10 @@
 DT_MODULE(2)
 
 // Module constants
-#define DT_IOP_BORDERS_ASPECT_COUNT 10
+#define DT_IOP_BORDERS_ASPECT_COUNT 21
 #define DT_IOP_BORDERS_ASPECT_IMAGE_IDX 0
-#define DT_IOP_BORDERS_ASPECT_CONSTANT_IDX 9
+#define DT_IOP_BORDERS_ASPECT_CONSTANT_IDX 20
+#define DT_IOP_BORDERS_ASPECT_IMAGE_VALUE 0.0f
 #define DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE -1.0f
 #define DT_IOP_BORDERS_POSITION_H_COUNT 5
 #define DT_IOP_BORDERS_POSITION_V_COUNT 5
@@ -101,9 +102,12 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
 
     dt_iop_borders_params_v1_t *o = (dt_iop_borders_params_v1_t *)old_params;
     dt_iop_borders_params_t *n = (dt_iop_borders_params_t *)new_params;
+    dt_iop_borders_params_t *d = (dt_iop_borders_params_t *)self->default_params;
+
+    *n = *d;  // start with a fresh copy of default parameters
     memcpy(n->color, o->color, sizeof(o->color));
     n->aspect = o->aspect;
-    n->size = o->size;
+    n->size = fabsf(o->size);
     return 0;
   }
   return 1;
@@ -171,8 +175,7 @@ modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
 
   const float size = fabsf(d->size);
   if(size == 0) return;
-  // (d->size < 0.0f) = contant border
-  if(d->size < 0.0f)
+  if(d->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE)
   {
     // this means: relative to width and constant for height as well:
     roi_out->width  = (float)roi_in->width / (1.0f - size);
@@ -180,15 +183,16 @@ modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
   }
   else
   {
+    float aspect = (d->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE) ? roi_in->width / (float)(roi_in->height) : d->aspect;
     // min width: constant ratio based on size:
     roi_out->width = (float)roi_in->width / (1.0f - size);
     // corresponding height: determined by aspect ratio:
-    roi_out->height = (float)roi_out->width / d->aspect;
+    roi_out->height = (float)roi_out->width / aspect;
     // insane settings used?
     if(roi_out->height < (float)roi_in->height / (1.0f - size))
     {
       roi_out->height = (float)roi_in->height / (1.0f - size);
-      roi_out->width  = (float)roi_out->height * d->aspect;
+      roi_out->width  = (float)roi_out->height * aspect;
     }
   }
 
@@ -409,7 +413,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)p1;
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
   memcpy(d, p, sizeof(dt_iop_borders_params_t));
-  if(d->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE) d->size = - fabsf(d->size);
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -465,7 +468,7 @@ request_pick_toggled_frame(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 }
 
 static gboolean
-expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+borders_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
   if(self->picked_color_max[0] < 0) return FALSE;
@@ -518,7 +521,7 @@ aspect_changed (GtkWidget *combo, dt_iop_module_t *self)
   const char* text = dt_bauhaus_combobox_get_text(combo);
   if (which < 0)
   {
-    p->aspect = self->dev->image_storage.width/(float)self->dev->image_storage.height;
+    p->aspect = DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE;
     if(text)
     {
       const char *c = text;
@@ -535,11 +538,7 @@ aspect_changed (GtkWidget *combo, dt_iop_module_t *self)
   else if (which < DT_IOP_BORDERS_ASPECT_COUNT)
   {
     strncpy(p->aspect_text, text, 20);
-    // TODO LGU orientation
-    if(self->dev->image_storage.height > self->dev->image_storage.width)
-      p->aspect = 1.0/g->aspect_ratios[which];
-    else
-      p->aspect = g->aspect_ratios[which];
+    p->aspect = g->aspect_ratios[which];
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -820,6 +819,85 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
+void gui_init_aspect(struct dt_iop_module_t *self)
+{
+  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
+
+  dt_bauhaus_combobox_add(g->aspect, _("image"));
+  dt_bauhaus_combobox_add(g->aspect, _("1:3"));
+  dt_bauhaus_combobox_add(g->aspect, _("33:95"));
+  dt_bauhaus_combobox_add(g->aspect, _("1:2"));
+  dt_bauhaus_combobox_add(g->aspect, _("9:16"));
+  dt_bauhaus_combobox_add(g->aspect, _("golden cut (P)"));
+  dt_bauhaus_combobox_add(g->aspect, _("2:3"));
+  dt_bauhaus_combobox_add(g->aspect, _("A4 (P)"));
+  dt_bauhaus_combobox_add(g->aspect, _("DIN (P)"));
+  dt_bauhaus_combobox_add(g->aspect, _("3:4"));
+  dt_bauhaus_combobox_add(g->aspect, _("square"));
+  dt_bauhaus_combobox_add(g->aspect, _("4:3"));
+  dt_bauhaus_combobox_add(g->aspect, _("DIN (L)"));
+  dt_bauhaus_combobox_add(g->aspect, _("A4 (L)"));
+  dt_bauhaus_combobox_add(g->aspect, _("3:2"));
+  dt_bauhaus_combobox_add(g->aspect, _("golden cut (L)"));
+  dt_bauhaus_combobox_add(g->aspect, _("16:9"));
+  dt_bauhaus_combobox_add(g->aspect, _("2:1"));
+  dt_bauhaus_combobox_add(g->aspect, _("95:33"));
+  dt_bauhaus_combobox_add(g->aspect, _("3:1"));
+  dt_bauhaus_combobox_add(g->aspect, _("constant border"));
+
+  g->aspect_ratios[DT_IOP_BORDERS_ASPECT_IMAGE_IDX] = DT_IOP_BORDERS_ASPECT_IMAGE_VALUE;
+  g->aspect_ratios[DT_IOP_BORDERS_ASPECT_CONSTANT_IDX] = DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE;
+  int i = 1;
+  g->aspect_ratios[i++] = 1.0f/3.0f;
+  g->aspect_ratios[i++] = 33.0f/95.0f;
+  g->aspect_ratios[i++] = 1.0f/2.0f;
+  g->aspect_ratios[i++] = 9.0f/16.0f;
+  g->aspect_ratios[i++] = INVPHI;
+  g->aspect_ratios[i++] = 2.0f/3.0f;
+  g->aspect_ratios[i++] = 210.0f/297.0f;
+  g->aspect_ratios[i++] = 1.0f/sqrtf(2.0f);
+  g->aspect_ratios[i++] = 3.0f/4.0f;
+  g->aspect_ratios[i++] = 1.0f;
+  g->aspect_ratios[i++] = 4.0f/3.0f;
+  g->aspect_ratios[i++] = sqrtf(2.0f);
+  g->aspect_ratios[i++] = 297.0f/210.0f;
+  g->aspect_ratios[i++] = 3.0f/2.0f;
+  g->aspect_ratios[i++] = PHI;
+  g->aspect_ratios[i++] = 16.0f/9.0f;
+  g->aspect_ratios[i++] = 2.0f;
+  g->aspect_ratios[i++] = 95.0f/33.0f;
+  g->aspect_ratios[i++] = 3.0f;
+}
+
+void gui_init_positions(struct dt_iop_module_t *self)
+{
+  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
+
+  dt_bauhaus_combobox_add(g->pos_h, _("center"));
+  dt_bauhaus_combobox_add(g->pos_h, _("1/3"));
+  dt_bauhaus_combobox_add(g->pos_h, _("3/8"));
+  dt_bauhaus_combobox_add(g->pos_h, _("5/8"));
+  dt_bauhaus_combobox_add(g->pos_h, _("2/3"));
+  dt_bauhaus_combobox_add(g->pos_v, _("center"));
+  dt_bauhaus_combobox_add(g->pos_v, _("1/3"));
+  dt_bauhaus_combobox_add(g->pos_v, _("3/8"));
+  dt_bauhaus_combobox_add(g->pos_v, _("5/8"));
+  dt_bauhaus_combobox_add(g->pos_v, _("2/3"));
+
+  int i=0;
+  g->pos_h_ratios[i++] = 0.5f;
+  g->pos_h_ratios[i++] = 1.0f/3.0f;
+  g->pos_h_ratios[i++] = 3.0f/8.0f;
+  g->pos_h_ratios[i++] = 5.0f/8.0f;
+  g->pos_h_ratios[i++] = 2.0f/3.0f;
+  i=0;
+  g->pos_v_ratios[i++] = 0.5f;
+  g->pos_v_ratios[i++] = 1.0f/3.0f;
+  g->pos_v_ratios[i++] = 3.0f/8.0f;
+  g->pos_v_ratios[i++] = 5.0f/8.0f;
+  g->pos_v_ratios[i++] = 2.0f/3.0f;
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_borders_gui_data_t));
@@ -827,7 +905,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
 
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
-
 
   g->size = dt_bauhaus_slider_new_with_range(self, 0.0, 50.0, 0.5, p->size*100.0, 2);
   dt_bauhaus_widget_set_label(g->size, _("border size"));
@@ -840,17 +917,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set_editable(g->aspect, 1);
   dt_bauhaus_widget_set_label(g->aspect, _("aspect"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect, TRUE, TRUE, 0);
-
-  dt_bauhaus_combobox_add(g->aspect, _("image"));
-  dt_bauhaus_combobox_add(g->aspect, _("golden cut"));
-  dt_bauhaus_combobox_add(g->aspect, _("1:2"));
-  dt_bauhaus_combobox_add(g->aspect, _("1:3"));
-  dt_bauhaus_combobox_add(g->aspect, _("3:2"));
-  dt_bauhaus_combobox_add(g->aspect, _("4:3"));
-  dt_bauhaus_combobox_add(g->aspect, _("square"));
-  dt_bauhaus_combobox_add(g->aspect, _("DIN"));
-  dt_bauhaus_combobox_add(g->aspect, _("16:9"));
-  dt_bauhaus_combobox_add(g->aspect, _("constant border"));
+  gui_init_aspect(self);
 
   g_signal_connect (G_OBJECT (g->aspect), "value-changed", G_CALLBACK (aspect_changed), self);
   g_object_set(G_OBJECT(g->aspect), "tooltip-text", _("select the aspect ratio or right click and type your own (w:h)"), (char *)NULL);
@@ -859,25 +926,15 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set_editable(g->pos_h, 1);
   dt_bauhaus_widget_set_label(g->pos_h, _("horizontal position"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->pos_h, TRUE, TRUE, 0);
-  dt_bauhaus_combobox_add(g->pos_h, _("center"));
-  dt_bauhaus_combobox_add(g->pos_h, _("1/3"));
-  dt_bauhaus_combobox_add(g->pos_h, _("3/8"));
-  dt_bauhaus_combobox_add(g->pos_h, _("5/8"));
-  dt_bauhaus_combobox_add(g->pos_h, _("2/3"));
   g_signal_connect (G_OBJECT (g->pos_h), "value-changed", G_CALLBACK (position_h_changed), self);
   g_object_set(G_OBJECT(g->pos_h), "tooltip-text", _("select the horizontal position ratio relative to top or right click and type your own (y:h)"), (char *)NULL);
-
   g->pos_v = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->pos_v, 1);
   dt_bauhaus_widget_set_label(g->pos_v, _("vertical position"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->pos_v, TRUE, TRUE, 0);
-  dt_bauhaus_combobox_add(g->pos_v, _("center"));
-  dt_bauhaus_combobox_add(g->pos_v, _("1/3"));
-  dt_bauhaus_combobox_add(g->pos_v, _("3/8"));
-  dt_bauhaus_combobox_add(g->pos_v, _("5/8"));
-  dt_bauhaus_combobox_add(g->pos_v, _("2/3"));
   g_signal_connect (G_OBJECT (g->pos_v), "value-changed", G_CALLBACK (position_v_changed), self);
   g_object_set(G_OBJECT(g->pos_v), "tooltip-text", _("select the vertical position ratio relative to left or right click and type your own (x:w)"), (char *)NULL);
+  gui_init_positions(self);
 
   GtkWidget *box = gtk_hbox_new(FALSE, 0);
   g->colorpick = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE | CPF_STYLE_FLAT));
@@ -893,7 +950,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->colorpick), FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), tb, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
-
 
   g->frame_size = dt_bauhaus_slider_new_with_range(self, 0.0, 50.0, 0.5, p->frame_size*100.0, 2);
   dt_bauhaus_widget_set_label(g->frame_size, _("frame line size"));
@@ -924,54 +980,16 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(box), tb, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
 
-
-  // TODO LGU orientation
-  g->aspect_ratios[DT_IOP_BORDERS_ASPECT_IMAGE_IDX] = self->dev->image_storage.width/(float)self->dev->image_storage.height;
-  if(g->aspect_ratios[DT_IOP_BORDERS_ASPECT_IMAGE_IDX] < 1.0f)
-    g->aspect_ratios[DT_IOP_BORDERS_ASPECT_IMAGE_IDX] = 1.0f / g->aspect_ratios[DT_IOP_BORDERS_ASPECT_IMAGE_IDX];
-  g->aspect_ratios[DT_IOP_BORDERS_ASPECT_CONSTANT_IDX] = DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE;
-  int i = 1;
-  g->aspect_ratios[i++] = PHI;
-  g->aspect_ratios[i++] = 2.0f/1.0f;
-  g->aspect_ratios[i++] = 3.0f/1.0f;
-  g->aspect_ratios[i++] = 3.0f/2.0f;
-  g->aspect_ratios[i++] = 4.0f/3.0f;
-  g->aspect_ratios[i++] = 1.0f;
-  g->aspect_ratios[i++] = sqrtf(2.0f);
-  g->aspect_ratios[i++] = 16.0f/9.0f;
-
-  i=0;
-  g->pos_h_ratios[i++] = 0.5f;
-  g->pos_h_ratios[i++] = 1.0f/3.0f;
-  g->pos_h_ratios[i++] = 3.0f/8.0f;
-  g->pos_h_ratios[i++] = 5.0f/8.0f;
-  g->pos_h_ratios[i++] = 2.0f/3.0f;
-  i=0;
-  g->pos_v_ratios[i++] = 0.5f;
-  g->pos_v_ratios[i++] = 1.0f/3.0f;
-  g->pos_v_ratios[i++] = 3.0f/8.0f;
-  g->pos_v_ratios[i++] = 5.0f/8.0f;
-  g->pos_v_ratios[i++] = 2.0f/3.0f;
-
-  g_signal_connect (G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
+  g_signal_connect (G_OBJECT(self->widget), "expose-event", G_CALLBACK(borders_expose), self);
 }
+
 
 void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_borders_params_t tmp = (dt_iop_borders_params_t)
   {
-    {1.0f, 1.0f, 1.0f}, 3.0f/2.0f, "3:2", 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.0f, 0.5f, {0.0f, 0.0f, 0.0f}
+    {1.0f, 1.0f, 1.0f}, DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE, "constant border", 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.0f, 0.5f, {0.0f, 0.0f, 0.0f}
   };
-  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
-  if(self->dev->gui_attached && g)
-  {
-    g->aspect_ratios[DT_IOP_BORDERS_ASPECT_IMAGE_IDX] = self->dev->image_storage.width/(float)self->dev->image_storage.height;
-    if(g->aspect_ratios[DT_IOP_BORDERS_ASPECT_IMAGE_IDX] < 1.0f)
-      g->aspect_ratios[DT_IOP_BORDERS_ASPECT_IMAGE_IDX] = 1.0f / g->aspect_ratios[DT_IOP_BORDERS_ASPECT_IMAGE_IDX];
-  }
-  // TODO LGU orientation
-  if(self->dev->image_storage.height > self->dev->image_storage.width)
-    tmp.aspect = 1.0f/tmp.aspect;
   memcpy(self->params, &tmp, sizeof(dt_iop_borders_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_borders_params_t));
   self->default_enabled = 0;
