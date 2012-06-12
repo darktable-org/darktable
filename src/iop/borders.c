@@ -58,6 +58,7 @@ typedef struct dt_iop_borders_params_t
   float color[3]; // border color
   float aspect;   // aspect ratio of the outer frame w/h
   char aspect_text[20];   // aspect ratio of the outer frame w/h (user string version)
+  int aspect_auto_orient;   // aspect ratio of the outer frame w/h (user string version)
   float size;     // border width relative to overal frame width
   float pos_h;    // picture horizontal position ratio into the final image
   char pos_h_text[20];   // picture horizontal position ratio into the final image (user string version)
@@ -73,6 +74,7 @@ typedef struct dt_iop_borders_gui_data_t
 {
   GtkWidget *size;
   GtkWidget *aspect;
+  GtkWidget *aspect_auto_orient;
   GtkWidget *pos_h;
   GtkWidget *pos_v;
   GtkDarktableButton *colorpick;
@@ -107,7 +109,8 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     *n = *d;  // start with a fresh copy of default parameters
     memcpy(n->color, o->color, sizeof(o->color));
     n->aspect = o->aspect;
-    n->size = fabsf(o->size);
+    n->aspect_auto_orient = 0; // no auto orientation in legacy param due to already convert aspect ratio
+    n->size = fabsf(o->size);  // no negative size any more (was for "constant border" detect)
     return 0;
   }
   return 1;
@@ -183,7 +186,11 @@ modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
   }
   else
   {
-    float aspect = (d->aspect == DT_IOP_BORDERS_ASPECT_IMAGE_VALUE) ? roi_in->width / (float)(roi_in->height) : d->aspect;
+    float image_aspect = roi_in->width / (float)(roi_in->height);
+    float aspect = (d->aspect == DT_IOP_BORDERS_ASPECT_IMAGE_VALUE) ? image_aspect : d->aspect;
+    aspect = (d->aspect_auto_orient
+        && (   (image_aspect < 1 && aspect > 1)
+            || (image_aspect > 1 && aspect < 1))) ? 1 / aspect : aspect;
     // min width: constant ratio based on size:
     roi_out->width = (float)roi_in->width / (1.0f - size);
     // corresponding height: determined by aspect ratio:
@@ -430,10 +437,11 @@ void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_borders_params_t p = (dt_iop_borders_params_t)
   {
-    {1.0f, 1.0f, 1.0f}, 3.0f/2.0f, "3:2", 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.0f, 0.5f, {1.0f, 1.0f, 1.0f}
+    {1.0f, 1.0f, 1.0f}, 3.0f/2.0f, "3:2", 1, 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.0f, 0.5f, {0.0f, 0.0f, 0.0f}
   };
   dt_gui_presets_add_generic(_("15:10 postcard white"), self->op, self->version(), &p, sizeof(p), 1);
   p.color[0] = p.color[1] = p.color[2] = 0.0f;
+  p.frame_color[0] = p.frame_color[1] = p.frame_color[2] = 1.0f;
   dt_gui_presets_add_generic(_("15:10 postcard black"), self->op, self->version(), &p, sizeof(p), 1);
 }
 
@@ -540,6 +548,15 @@ aspect_changed (GtkWidget *combo, dt_iop_module_t *self)
     strncpy(p->aspect_text, text, 20);
     p->aspect = g->aspect_ratios[which];
   }
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void
+aspect_auto_orient_changed (GtkToggleButton *checkbox, dt_iop_module_t *self)
+{
+  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+  int checked = gtk_toggle_button_get_active(checkbox);
+  p->aspect_auto_orient = checked;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -739,6 +756,9 @@ void gui_update(struct dt_iop_module_t *self)
     dt_bauhaus_combobox_set(g->aspect, -1);
   }
 
+  // ----- auto orientation checkbox
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_auto_orient), p->aspect_auto_orient);
+
   // ----- Position H
   for(k=0;k<DT_IOP_BORDERS_POSITION_H_COUNT;k++)
   {
@@ -918,9 +938,14 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->aspect, _("aspect"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect, TRUE, TRUE, 0);
   gui_init_aspect(self);
-
   g_signal_connect (G_OBJECT (g->aspect), "value-changed", G_CALLBACK (aspect_changed), self);
   g_object_set(G_OBJECT(g->aspect), "tooltip-text", _("select the aspect ratio or right click and type your own (w:h)"), (char *)NULL);
+
+  g->aspect_auto_orient  = gtk_check_button_new_with_label(_("auto orientation"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_auto_orient), TRUE);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_auto_orient, TRUE, TRUE, 0);
+  g_object_set(G_OBJECT(g->aspect_auto_orient), "tooltip-text", _("automatically adapt aspect ratio orientation"), (char *)NULL);
+  g_signal_connect (G_OBJECT (g->aspect_auto_orient), "toggled", G_CALLBACK (aspect_auto_orient_changed), self);
 
   g->pos_h = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->pos_h, 1);
@@ -988,7 +1013,7 @@ void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_borders_params_t tmp = (dt_iop_borders_params_t)
   {
-    {1.0f, 1.0f, 1.0f}, DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE, "constant border", 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.0f, 0.5f, {0.0f, 0.0f, 0.0f}
+    {1.0f, 1.0f, 1.0f}, DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE, "constant border", 1, 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.0f, 0.5f, {0.0f, 0.0f, 0.0f}
   };
   memcpy(self->params, &tmp, sizeof(dt_iop_borders_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_borders_params_t));
