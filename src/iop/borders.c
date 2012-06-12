@@ -183,7 +183,7 @@ modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
   }
   else
   {
-    float aspect = (d->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE) ? roi_in->width / (float)(roi_in->height) : d->aspect;
+    float aspect = (d->aspect == DT_IOP_BORDERS_ASPECT_IMAGE_VALUE) ? roi_in->width / (float)(roi_in->height) : d->aspect;
     // min width: constant ratio based on size:
     roi_out->width = (float)roi_in->width / (1.0f - size);
     // corresponding height: determined by aspect ratio:
