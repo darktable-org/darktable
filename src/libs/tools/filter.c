@@ -99,14 +99,13 @@ void gui_init(dt_lib_module_t *self)
   d->filter = widget = gtk_combo_box_new_text();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("all"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("unstarred"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("1 star"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("2 star"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("3 star"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("4 star"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("5 star"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rejected"));
-  
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("unstarred only"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "★ +");
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "★ ★ +");
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "★ ★ ★ +");
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "★ ★ ★ ★ +");
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "★ ★ ★ ★ ★ ");
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rejected only"));
   /* select the last selected value */
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget),
                            dt_collection_get_rating(darktable.collection));
