@@ -123,15 +123,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     if(inp[0] >= upper || inp[1] >= upper || inp[2] >= upper)
     {
 // 			mask[y*stride+x] = 255;
-      outp[0] = 1;
+//    black:
+      outp[0] = 0;
       outp[1] = 0;
       outp[2] = 0;
     }
     else if(inp[0] <= lower && inp[1] <= lower && inp[2] <= lower)
     {
 // 			mask[(y*stride+x)+(stride*roi_out->height)] = 255;
-      outp[0] = 0;
-      outp[1] = 0;
+//    white:
+      outp[0] = 1;
+      outp[1] = 1;
       outp[2] = 1;
     }
     else
