@@ -51,7 +51,7 @@ void dt_accel_path_lib(char *s, size_t n, char *module,
                               const char* path)
 {
   snprintf(s, n, "<Darktable>/%s/%s/%s",
-           NC_("accel", "plugins"), module, path);
+           NC_("accel", "modules"), module, path);
 }
 
 void dt_accel_paths_slider_iop(char *s[], size_t n, char *module,
@@ -99,7 +99,7 @@ static void dt_accel_path_lib_translated(char *s, size_t n,
                                          const char* path)
 {
   snprintf(s, n, "<Darktable>/%s/%s/%s",
-           C_("accel", "plugins"), module->name(),
+           C_("accel", "modules"), module->name(),
            g_dpgettext2(NULL, "accel", path));
 }
 
@@ -892,4 +892,6 @@ void dt_accel_rename_global(const gchar *path,const gchar *new_path)
   }
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

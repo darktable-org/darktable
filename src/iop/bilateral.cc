@@ -118,7 +118,7 @@ extern "C"
 
     // if rad <= 6 use naive version!
     const int rad = (int)(3.0*fmaxf(sigma[0],sigma[1])+1.0);
-    if(rad <= 6 && (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW))
+    if(rad <= 6 && (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL))
     {
       // no use denoising the thumbnail. takes ages without permutohedral
       memcpy(out, in, sizeof(float)*ch*roi_out->width*roi_out->height);
@@ -129,7 +129,7 @@ extern "C"
       const int wd = 2*rad+1;
       float *m = mat + rad*wd + rad;
       float weight = 0.0f;
-      const float isig2col[3] = {1.0/(2.0f*sigma[2]*sigma[2]), 1.0/(2.0f*sigma[3]*sigma[3]), 1.0/(2.0f*sigma[4]*sigma[4])};
+      const float isig2col[3] = {1.f/(2.0f*sigma[2]*sigma[2]), 1.f/(2.0f*sigma[3]*sigma[3]), 1.f/(2.0f*sigma[4]*sigma[4])};
       // init gaussian kernel
       for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++)
           weight += m[l*wd + k] = expf(- (l*l + k*k)/(2.f*sigma[0]*sigma[0]));
@@ -372,4 +372,6 @@ extern "C"
 
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

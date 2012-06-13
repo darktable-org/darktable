@@ -368,23 +368,21 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
 
   self->widget = gtk_hbox_new(TRUE, 5);
-  GtkWidget *hbox2 = gtk_hbox_new(TRUE, 5);
 
   GtkWidget *label = dtgtk_reset_label_new (_("rotate"), self, &p->orientation, sizeof(int32_t));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
-  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0);
+  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_size_request(button, -1, 24);
   g_object_set(G_OBJECT(button), "tooltip-text", _("rotate 90 degrees ccw"), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX(hbox2), button, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_ccw), (gpointer)self);
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1);
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|1);
   gtk_widget_set_size_request(button, -1, 24);
   g_object_set(G_OBJECT(button), "tooltip-text", _("rotate 90 degrees cw"), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX(hbox2), button, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_cw), (gpointer)self);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox2, TRUE, TRUE, 0);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -411,4 +409,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_iop(self, "rotate 90 degrees ccw", closure);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -162,27 +162,17 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         {
           for(int c=0; c<3; c++,pi+=2)
           {
-            const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
-            const int ii = (int)pi0, jj = (int)pi1;
-            if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
-            {
-              const float *inp = in + ch*(roi_in->width*jj+ii) + c;
-              buf[c] = dt_interpolation_compute_sample(interpolation, inp, pi0, pi1, ch, ch_width);
-            }
-            else buf[c] = 0.0f;
+            const float pi0 = pi[0] - roi_in->x;
+            const float pi1 = pi[1] - roi_in->y;
+            buf[c] = dt_interpolation_compute_sample(interpolation, in+c, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
           }
 
           if(mask_display)
           {
             float *pi = (float *)(((char *)d->tmpbuf2) + req2*dt_get_thread_num()) + 2; // take green channel distortion also for alpha channel
-            const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
-            const int ii = (int)pi0, jj = (int)pi1;
-            if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
-            {
-              const float *inp = in + ch*(roi_in->width*jj+ii) + 3;
-              buf[3] = dt_interpolation_compute_sample(interpolation, inp, pi0, pi1, ch, ch_width);
-            }
-            else buf[3] = 0.0f;
+            const float pi0 = pi[0] - roi_in->x;
+            const float pi1 = pi[1] - roi_in->y;
+            buf[3] = dt_interpolation_compute_sample(interpolation, in+3, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
           }
         }
       }
@@ -267,27 +257,17 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         {
           for(int c=0; c<3; c++,pi+=2)
           {
-            const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
-            const int ii = (int)pi0, jj = (int)pi1;
-            if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
-            {
-              const float *inp = d->tmpbuf + ch*(roi_in->width*jj+ii)+c;
-              out[c] = dt_interpolation_compute_sample(interpolation, inp, pi0, pi1, ch, ch_width);
-            }
-            else out[c] = 0.0f;
+            const float pi0 = pi[0] - roi_in->x;
+            const float pi1 = pi[1] - roi_in->y;
+            out[c] = dt_interpolation_compute_sample(interpolation, d->tmpbuf+c, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
           }
 
           if(mask_display)
           {
             float *pi = (float *)(((char *)d->tmpbuf2) + req2*dt_get_thread_num()) + 2; // take green channel distortion also for alpha channel
-            const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
-            const int ii = (int)pi0, jj = (int)pi1;
-            if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
-            {
-              const float *inp = d->tmpbuf + ch*(roi_in->width*jj+ii) + 3;
-              out[3] = dt_interpolation_compute_sample(interpolation, inp, pi0, pi1, ch, ch_width);
-            }
-            else out[3] = 0.0f;
+            const float pi0 = pi[0] - roi_in->x;
+            const float pi1 = pi[1] - roi_in->y;
+            out[3] = dt_interpolation_compute_sample(interpolation, d->tmpbuf+3, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
           }
           out += ch;
         }
@@ -1655,7 +1635,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // camera selector
   GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
-  g->camera_model = GTK_BUTTON(gtk_button_new());
+  g->camera_model = GTK_BUTTON(dtgtk_button_new(NULL, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->camera_model));
   gtk_button_set_label(g->camera_model, self->dev->image_storage.exif_model);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
@@ -1672,7 +1652,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // lens selector
   hbox = gtk_hbox_new(FALSE, 0);
-  g->lens_model = GTK_BUTTON(gtk_button_new());
+  g->lens_model = GTK_BUTTON(dtgtk_button_new(NULL, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->lens_model));
   gtk_button_set_label(g->lens_model, self->dev->image_storage.exif_lens);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
@@ -1812,4 +1792,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

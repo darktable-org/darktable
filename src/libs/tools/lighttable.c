@@ -263,6 +263,7 @@ static gboolean _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
   gtk_range_set_value(GTK_RANGE(d->zoom), 1);
+  //FIXME: scroll to active image
   return TRUE;
 }
 
@@ -301,4 +302,6 @@ static gboolean _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel
   return TRUE;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

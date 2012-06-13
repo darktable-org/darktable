@@ -17,11 +17,14 @@
 */
 
 /* getpwnam_r availibility check */
-#if defined __APPLE__ || defined _POSIX_C_SOURCE >= 1 || defined _XOPEN_SOURCE || defined _BSD_SOURCE || defined _SVID_SOURCE || defined _POSIX_SOURCE
+#if defined __APPLE__ || defined _POSIX_C_SOURCE >= 1 || \
+    defined _XOPEN_SOURCE || defined _BSD_SOURCE || defined _SVID_SOURCE || \
+    defined _POSIX_SOURCE || defined __DragonFly__ || defined __FreeBSD__ || \
+    defined __NetBSD__ || defined __OpenBSD__
 #include <pwd.h>
 #include <sys/types.h>
-#include "darktable.h"
 #include "config.h"
+#define HAVE_GETPWNAM_R 1
 #endif
 
 #ifdef HAVE_CONFIG_H
@@ -29,6 +32,7 @@
 #endif
 
 #include "file_location.h"
+#include "darktable.h"
 
 gchar* dt_loc_get_home_dir(const gchar* user)
 {
@@ -37,7 +41,7 @@ gchar* dt_loc_get_home_dir(const gchar* user)
     return g_strdup((home_dir != NULL) ? home_dir : g_get_home_dir());
   }
 
-#if defined _POSIX_C_SOURCE >= 1 || defined _XOPEN_SOURCE || defined _BSD_SOURCE || defined _SVID_SOURCE || defined _POSIX_SOURCE
+#if defined HAVE_GETPWNAM_R
   /* if the given username is not the same as the current one, we try
    * to retreive the pw dir from the password file entry */
   struct passwd pwd;
@@ -188,4 +192,6 @@ void dt_loc_get_user_config_dir(char *configdir, size_t bufsize){snprintf(config
 void dt_loc_get_user_cache_dir(char *cachedir, size_t bufsize){snprintf(cachedir, bufsize, "%s",darktable.cachedir);};
 void dt_loc_get_tmp_dir(char *tmpdir, size_t bufsize){snprintf(tmpdir, bufsize, "%s",darktable.tmpdir);};
 void dt_loc_get_datadir(char *datadir, size_t bufsize){snprintf(datadir, bufsize, "%s",darktable.datadir);};
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

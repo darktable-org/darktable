@@ -94,6 +94,7 @@ void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const i
                                                        { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
                                                          0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f } };
 
+
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op, strlen(op), SQLITE_TRANSIENT);
@@ -196,14 +197,55 @@ menuitem_delete_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
 static void
 edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_dialog_t *g)
 {
-  if(response_id == GTK_RESPONSE_ACCEPT)
-  {
-    // now delete preset, so we can re-insert the new values:
+  gint dlg_ret;
+  gint is_new = 0;
+
+  if(response_id == GTK_RESPONSE_ACCEPT)  {
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where rowid=?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, g->old_id );
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
+
+    if ( ((g->old_id >= 0) && (strcmp(g->original_name, gtk_entry_get_text(g->name)) != 0)) || (g->old_id < 0) ) {
+     
+      // editing existing preset with different name or store new preset -> check for a preset with the same name:
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name from presets where name = ?1 and operation=?2 and op_version=?3", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, gtk_entry_get_text(g->name), strlen(gtk_entry_get_text(g->name)), SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, g->module->op, strlen(g->module->op), SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, g->module->version());
+      
+      if(sqlite3_step(stmt) == SQLITE_ROW)  {
+        sqlite3_finalize(stmt);
+        
+        //show overwrite question dialog
+        GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+        GtkWidget *dlg_overwrite = gtk_message_dialog_new (GTK_WINDOW(window),
+                                   GTK_DIALOG_DESTROY_WITH_PARENT,
+                                   GTK_MESSAGE_WARNING,
+                                   GTK_BUTTONS_YES_NO,
+                                   _("preset `%s' already exists.\ndo you want to overwrite?"), 
+                                   gtk_entry_get_text(g->name));
+        
+        gtk_window_set_title(GTK_WINDOW (dlg_overwrite), _("overwrite preset?"));
+
+        dlg_ret = gtk_dialog_run (GTK_DIALOG (dlg_overwrite));
+        gtk_widget_destroy (dlg_overwrite);
+      
+        // if result is BUTTON_NO exit without destroy dialog, to permit other name
+        if (dlg_ret == GTK_RESPONSE_NO) return;
+      }  
+      else {
+        is_new = 1;
+        sqlite3_finalize(stmt);
+      }
+    }
+
+    if (is_new == 0) {
+      // delete preset, so we can re-insert the new values:
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, gtk_entry_get_text(g->name), strlen(gtk_entry_get_text(g->name)), SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, g->module->op, strlen(g->module->op), SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, g->module->version());
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
 
     //rename accerelartors
     char path[1024];
@@ -891,4 +933,6 @@ void dt_gui_presets_update_filter(const char *name, dt_dev_operation_t op, const
   sqlite3_finalize(stmt);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

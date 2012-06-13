@@ -193,6 +193,29 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
   else return NULL;
 
   gchar *svgdata=NULL;
+  char datetime[200];
+
+  // EXIF datetime
+  struct tm tt_exif = {0};
+  if(sscanf(image->exif_datetime_taken,"%d:%d:%d %d:%d:%d",
+              &tt_exif.tm_year,
+              &tt_exif.tm_mon,
+              &tt_exif.tm_mday,
+              &tt_exif.tm_hour,
+              &tt_exif.tm_min,
+              &tt_exif.tm_sec
+             ) == 6
+     )
+  {
+    tt_exif.tm_year-=1900;
+    tt_exif.tm_mon--;
+  }
+
+  // Current datetime
+  struct tm tt_cur = {0};
+  time_t t = time(NULL);
+  (void)localtime_r(&t, &tt_cur);
+
   if( g_file_get_contents( filename, &svgdata, &length, NULL) )
   {
     // File is loaded lets substitute strings if found...
@@ -231,12 +254,184 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
     }
 
     // Image exif
+    // EXIF date
     svgdoc = _string_substitute(svgdata,"$(EXIF.DATE)",image->exif_datetime_taken);
     if( svgdoc != svgdata )
     {
       g_free(svgdata);
       svgdata = svgdoc;
     }
+    // $(EXIF.DATE.SECOND) -- 00..60
+    strftime(datetime, sizeof(datetime), "%S", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.SECOND)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(EXIF.DATE.MINUTE) -- 00..59
+    strftime(datetime, sizeof(datetime), "%M", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.MINUTE)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(EXIF.DATE.HOUR) -- 00..23
+    strftime(datetime, sizeof(datetime), "%H", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.HOUR)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(EXIF.DATE.HOUR_AMPM) -- 01..12
+    strftime(datetime, sizeof(datetime), "%I %p", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.HOUR_AMPM)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(EXIF.DATE.DAY) -- 01..31
+    strftime(datetime, sizeof(datetime), "%d", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.DAY)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(EXIF.DATE.MONTH) -- 01..12
+    strftime(datetime, sizeof(datetime), "%m", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.MONTH)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(EXIF.DATE.SHORT_MONTH) -- Jan, Feb, .., Dec, localized
+    strftime(datetime, sizeof(datetime), "%b", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.SHORT_MONTH)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(EXIF.DATE.LONG_MONTH) -- January, February, .., December, localized
+    strftime(datetime, sizeof(datetime), "%B", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.LONG_MONTH)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(EXIF.DATE.SHORT_YEAR) -- 12
+    strftime(datetime, sizeof(datetime), "%y", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.SHORT_YEAR)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(EXIF.DATE.LONG_YEAR) -- 2012
+    strftime(datetime, sizeof(datetime), "%Y", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.LONG_YEAR)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+
+    // Current date
+    // $(DATE) -- YYYY:
+    dt_gettime_t(datetime, t);
+    svgdoc = _string_substitute(svgdata,"$(DATE)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.SECOND) -- 00..60
+    strftime(datetime, sizeof(datetime), "%S", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.SECOND)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.MINUTE) -- 00..59
+    strftime(datetime, sizeof(datetime), "%M", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.MINUTE)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.HOUR) -- 00..23
+    strftime(datetime, sizeof(datetime), "%H", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.HOUR)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.HOUR_AMPM) -- 01..12
+    strftime(datetime, sizeof(datetime), "%I %p", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.HOUR_AMPM)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.DAY) -- 01..31
+    strftime(datetime, sizeof(datetime), "%d", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.DAY)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.MONTH) -- 01..12
+    strftime(datetime, sizeof(datetime), "%m", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.MONTH)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.SHORT_MONTH) -- Jan, Feb, .., Dec, localized
+    strftime(datetime, sizeof(datetime), "%b", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.SHORT_MONTH)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.LONG_MONTH) -- January, February, .., December, localized
+    strftime(datetime, sizeof(datetime), "%B", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.LONG_MONTH)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.SHORT_YEAR) -- 12
+    strftime(datetime, sizeof(datetime), "%y", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.SHORT_YEAR)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.LONG_YEAR) -- 2012
+    strftime(datetime, sizeof(datetime), "%Y", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.LONG_YEAR)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+
     svgdoc = _string_substitute(svgdata,"$(EXIF.MAKER)",image->exif_maker);
     if( svgdoc != svgdata )
     {
@@ -699,7 +894,7 @@ void gui_init(struct dt_iop_module_t *self)
   // Add the marker combobox
   GtkWidget *hbox= gtk_hbox_new(FALSE,0);
   g->combobox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  g->dtbutton1  = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, 0));
+  g->dtbutton1  = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(label1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->combobox1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->dtbutton1),FALSE,FALSE,0);
@@ -771,4 +966,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

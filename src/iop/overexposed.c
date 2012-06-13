@@ -363,7 +363,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   /* add quicktool button for enable/disable the plugin */
-  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  GtkWidget *button = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_object_set(G_OBJECT(button), "tooltip-text", _("toggle over/under exposed indication"),
                (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
@@ -382,4 +382,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

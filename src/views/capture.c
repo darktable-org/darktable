@@ -82,9 +82,6 @@ typedef struct dt_capture_t
   /** The jobcode name used for session initialization etc..*/
   char *jobcode;
   dt_film_t *film;
-
-  /** Zoom level for live view */
-  gboolean live_view_zoom;
 }
 dt_capture_t;
 
@@ -332,18 +329,20 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
     dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
     if(GDK_IS_PIXBUF(cam->live_view_pixbuf))
     {
-      gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
-      gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
+      GdkPixbuf *tmp_pb = gdk_pixbuf_rotate_simple(cam->live_view_pixbuf, cam->live_view_rotation*90);
+      gint pw = gdk_pixbuf_get_width(tmp_pb);
+      gint ph = gdk_pixbuf_get_height(tmp_pb);
       float w = width-(MARGIN*2.0f);
       float h = height-(MARGIN*2.0f);
       float scale = 1.0;
       if(pw > w) scale = w/pw;
       if(ph > h) scale = MIN(scale, h/ph);
       cairo_translate(cr, (width - scale*pw)*0.5, (height - scale*ph)*0.5);
-      if(lib->live_view_zoom == FALSE) // FIXME
+      if(cam->live_view_zoom == FALSE) // FIXME
         cairo_scale(cr, scale, scale);
-      gdk_cairo_set_source_pixbuf(cr, cam->live_view_pixbuf, 0, 0);
+      gdk_cairo_set_source_pixbuf(cr, tmp_pb, 0, 0);
       cairo_paint(cr);
+      g_object_unref(tmp_pb);
     }
     dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
   }
@@ -491,13 +490,12 @@ void connect_key_accels(dt_view_t *self)
 
 int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
-  dt_capture_t *lib = (dt_capture_t *)self->data;
-  const dt_camera_t *cam = darktable.camctl->active_camera;
+  dt_camera_t *cam = (dt_camera_t*)darktable.camctl->active_camera;
   // zoom the live view
   if(which == 2 && cam->is_live_viewing)
   {
-    lib->live_view_zoom = !lib->live_view_zoom;
-    if(lib->live_view_zoom == TRUE)
+    cam->live_view_zoom = !cam->live_view_zoom;
+    if(cam->live_view_zoom == TRUE)
       dt_camctl_camera_set_property(darktable.camctl, NULL, "eoszoom", "5");
     else
       dt_camctl_camera_set_property(darktable.camctl, NULL, "eoszoom", "1");
@@ -505,4 +503,6 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   }
   return 0;
 }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

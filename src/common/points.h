@@ -22,7 +22,9 @@
 
 // lamer version for obsolete archs:
 
-#ifndef _XOPEN_SOURCE
+#if !defined _XOPEN_SOURCE && \
+    !defined(__DragonFly__) && !defined(__FreeBSD__) && \
+    !defined(__NetBSD__) && !defined(__OpenBSD__)
 #define _XOPEN_SOURCE
 #endif
 
@@ -1133,3 +1135,6 @@ static inline float dt_points_get()
 
 #endif
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

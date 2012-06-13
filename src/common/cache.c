@@ -743,13 +743,22 @@ wait:;
   {
     if(free_max_bucket->hash == DT_CACHE_EMPTY_HASH)
     {
-      dt_cache_bucket_read_lock(free_max_bucket);
-      add_key_to_end_of_list(cache, start_bucket, free_max_bucket, hash, key, last_bucket);
-      void *data = free_max_bucket->data;
-      dt_cache_unlock(&segment->lock);
-      lru_insert_locked(cache, free_max_bucket);
-      return data;
+      dt_cache_lock(&cache->lru_lock);
+      if(free_max_bucket->hash == DT_CACHE_EMPTY_HASH)
+      { // try that again if it's still empty
+        dt_cache_bucket_read_lock(free_max_bucket);
+        add_key_to_end_of_list(cache, start_bucket, free_max_bucket, hash, key, last_bucket);
+        void *data = free_max_bucket->data;
+        dt_cache_unlock(&segment->lock);
+        lru_insert(cache, free_max_bucket);
+        dt_cache_unlock(&cache->lru_lock);
+        return data;
+      }
+      dt_cache_unlock(&cache->lru_lock);
     }
+    // this could walk outside the range where the segment lock is valid.
+    // that's why we abuse the lru lock above to shield grabbing a new bucket
+    // at this stage.
     ++free_max_bucket;
   }
 
@@ -762,12 +771,18 @@ wait:;
   {
     if(free_min_bucket->hash == DT_CACHE_EMPTY_HASH)
     {
-      dt_cache_bucket_read_lock(free_min_bucket);
-      add_key_to_end_of_list(cache, start_bucket, free_min_bucket, hash, key, last_bucket);
-      void *data = free_min_bucket->data;
-      dt_cache_unlock(&segment->lock);
-      lru_insert_locked(cache, free_min_bucket);
-      return data;
+      dt_cache_lock(&cache->lru_lock);
+      if(free_min_bucket->hash == DT_CACHE_EMPTY_HASH)
+      {
+        dt_cache_bucket_read_lock(free_min_bucket);
+        add_key_to_end_of_list(cache, start_bucket, free_min_bucket, hash, key, last_bucket);
+        void *data = free_min_bucket->data;
+        dt_cache_unlock(&segment->lock);
+        lru_insert(cache, free_min_bucket);
+        dt_cache_unlock(&cache->lru_lock);
+        return data;
+      }
+      dt_cache_unlock(&cache->lru_lock);
     }
     --free_min_bucket;
   }
@@ -1100,6 +1115,7 @@ dt_cache_realloc(dt_cache_t *cache, const uint32_t key, const int32_t cost, void
   dt_cache_unlock(&segment->lock);
   // clear user error, he should hold a write lock already, so this has to be there.
   fprintf(stderr, "[cache] realloc: bucket for key %u not found!\n", key);
+  assert(0);
   return;
 }
 
@@ -1187,3 +1203,6 @@ void dt_cache_print_locked(dt_cache_t *cache)
   dt_cache_unlock(&cache->lru_lock);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

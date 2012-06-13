@@ -77,6 +77,10 @@ typedef struct dt_camera_t
   gboolean is_live_viewing;
   /** The last preview image fromthe camera */
   GdkPixbuf *live_view_pixbuf;
+  /** Rotation of live view, multiples of 90° */
+  int32_t live_view_rotation;
+  /** Zoom level for live view */
+  gboolean live_view_zoom;
   /** The thread adding the live view jobs */
   pthread_t live_view_thread;
   /** A guard so that writing and reading the pixbuf don't interfere */
@@ -232,4 +236,6 @@ void dt_camctl_camera_build_property_menu (const dt_camctl_t *c,const dt_camera_
 
 #endif
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

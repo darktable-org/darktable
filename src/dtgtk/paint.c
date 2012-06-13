@@ -430,21 +430,27 @@ void dtgtk_cairo_paint_cancel(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags
 
 void dtgtk_cairo_paint_aspectflip(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
 {
+  cairo_save(cr);
   gint s=w<h?w:h;
   cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
   cairo_scale(cr,s,s);
+  if(flags & 1)
+  {
+    cairo_translate(cr, 0, 1);
+    cairo_scale(cr, 1, -1);
+  }
 
-  cairo_set_line_width(cr, 0.08);
-  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-  cairo_rectangle(cr, 0.07, 0.1, 0.5, 0.9);
+  cairo_set_line_width(cr,0.2);
+  cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
+  cairo_move_to(cr,0.65,0.0);
+  cairo_line_to(cr,0.5,0.05);
+  cairo_line_to(cr,0.6,0.25);
   cairo_stroke(cr);
-  cairo_set_line_width(cr, 0.15);
-  cairo_arc(cr, 0.1, 0.9, 0.8, -M_PI/2.0, 0.0);
+
+  cairo_set_line_width(cr,0.15);
+  cairo_arc (cr, 0.5, 0.5, 0.45,(-80*3.145/180),(220*3.145/180));
   cairo_stroke(cr);
-  cairo_move_to(cr, 0.98, 0.82);
-  cairo_line_to(cr, 0.90, 0.93);
-  cairo_line_to(cr, 0.82, 0.82);
-  cairo_stroke(cr);
+  cairo_restore(cr);
 }
 
 void dtgtk_cairo_paint_styles(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
@@ -973,4 +979,6 @@ void dtgtk_cairo_paint_modulegroup_effect(cairo_t *cr, gint x, gint y, gint w, g
   cairo_stroke(cr);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

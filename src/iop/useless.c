@@ -97,7 +97,7 @@ groups ()
 
 void init_key_accels()
 {
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/useless/useless");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/modules/useless/useless");
 }
 // implement this, if you have esoteric output bytes per pixel. default is 4*float
 /*
@@ -235,7 +235,7 @@ void gui_init     (dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_useless_gui_data_t));
   dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
   g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE, 1, 100, 1, 50, 0));
-  dtgtk_slider_set_accel(g->scale,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/useless/useless");
+  dtgtk_slider_set_accel(g->scale,darktable.control->accels_darkroom,"<Darktable>/darkroom/modules/useless/useless");
   self->widget = GTK_WIDGET(g->scale);
   g_signal_connect (G_OBJECT (g->scale), "value-changed",
                     G_CALLBACK (slider_callback), self);
@@ -255,4 +255,6 @@ void gui_cleanup  (dt_iop_module_t *self)
 // int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
 // int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state);
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

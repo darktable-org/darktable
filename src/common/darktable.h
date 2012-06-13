@@ -19,7 +19,10 @@
 #define DARKTABLE_H
 
 // just to be sure. the build system should set this for us already:
-#ifndef _XOPEN_SOURCE
+#if defined __DragonFly__ || defined __FreeBSD__ || \
+    defined __NetBSD__ || defined __OpenBSD__
+  #define _WITH_DPRINTF
+#elif !defined _XOPEN_SOURCE
   #define _XOPEN_SOURCE 700 // for localtime_r and dprintf
 #endif
 #ifdef HAVE_CONFIG_H
@@ -368,3 +371,7 @@ dt_get_total_memory()
 void dt_configure_defaults();
 
 #endif
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

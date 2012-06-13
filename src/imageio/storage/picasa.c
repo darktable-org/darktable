@@ -997,7 +997,7 @@ get_params(dt_imageio_module_storage_t *self, int *size)
   // TODO: if a hash to encrypted data is stored here, return only this size and store it at the beginning of the struct!
   *size = sizeof(int64_t);
   dt_storage_picasa_gui_data_t *ui =(dt_storage_picasa_gui_data_t *)self->gui_data;
-  dt_storage_picasa_params_t *d = (dt_storage_picasa_params_t *)malloc(sizeof(dt_storage_picasa_params_t));
+  dt_storage_picasa_params_t *d = (dt_storage_picasa_params_t *)g_malloc(sizeof(dt_storage_picasa_params_t));
   memset(d,0,sizeof(dt_storage_picasa_params_t));
   d->hash = 1;
 
@@ -1023,11 +1023,16 @@ get_params(dt_imageio_module_storage_t *self, int *size)
         {
           // Something went wrong...
           fprintf(stderr,"Something went wrong.. album index %d = NULL\n",index-2 );
+          g_free(d);
           return NULL;
         }
       }
     }
-    else return NULL;
+    else
+    {
+      g_free(d);
+      return NULL;
+    }
 
     d->export_tags = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ui->checkButton2));
 
@@ -1035,7 +1040,10 @@ get_params(dt_imageio_module_storage_t *self, int *size)
     ui->picasa_api = _picasa_api_authenticate(gtk_entry_get_text(ui->entry1), gtk_entry_get_text(ui->entry2));
   }
   else
+  {
+    g_free(d);
     return NULL;
+  }
 
   return d;
 }
@@ -1067,4 +1075,6 @@ free_params(dt_imageio_module_storage_t *self, void *params)
   free(params);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

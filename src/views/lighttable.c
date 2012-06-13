@@ -281,7 +281,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
     cairo_stroke(cr);
     cairo_move_to(cr, offx, offy + 6*ls);
     cairo_set_source_rgba(cr, .7, .7, .7, 1.0f);
-    cairo_show_text(cr, _("or in the collection plugin in the left panel."));
+    cairo_show_text(cr, _("or in the collection module in the left panel."));
     cairo_move_to(cr, offx - 10.0f, offy + 6*ls - ls*0.25f);
     cairo_rel_line_to(cr, - offx + 10.0f, 0.0f);
     cairo_set_source_rgba(cr, .7, .7, .7, at);
@@ -1201,4 +1201,6 @@ void connect_key_accels(dt_view_t *self)
 
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

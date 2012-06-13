@@ -676,9 +676,9 @@ void gui_init(struct dt_iop_module_t *self)
   
   /* density */
   g->scale1 = dt_bauhaus_slider_new_with_range(self,-8.0, 8.0, 0.1, p->density, 2);
-  dt_bauhaus_slider_set_format(g->scale1,"%.2fEV");
+  dt_bauhaus_slider_set_format(g->scale1,"%.2fev");
   dt_bauhaus_widget_set_label(g->scale1,_("density"));
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the density in EV for the filter"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the density in ev for the filter"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (density_callback), self);
   
@@ -749,4 +749,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
