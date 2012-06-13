@@ -263,11 +263,11 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
     cairo_set_source_rgba(cr, .7, .7, .7, 1.0f);
     cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_move_to(cr, offx, offy);
-    cairo_show_text(cr, _("this collection is empty."));
+    cairo_show_text(cr, _("there are no images in this collection"));
     cairo_move_to(cr, offx, offy + 2*ls);
-    cairo_show_text(cr, _("if you didn't import any images yet"));
+    cairo_show_text(cr, _("if you have not imported any images yet"));
     cairo_move_to(cr, offx, offy + 3*ls);
-    cairo_show_text(cr, _("do that from the top left expander."));
+    cairo_show_text(cr, _("you can do so in the import module"));
     cairo_move_to(cr, offx - 10.0f, offy + 3*ls - ls*.25f);
     cairo_line_to(cr, 0.0f, 10.0f);
     cairo_set_source_rgba(cr, .7, .7, .7, at);
@@ -281,7 +281,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
     cairo_stroke(cr);
     cairo_move_to(cr, offx, offy + 6*ls);
     cairo_set_source_rgba(cr, .7, .7, .7, 1.0f);
-    cairo_show_text(cr, _("or in the collection module in the left panel."));
+    cairo_show_text(cr, _("or add images in the collection module in the left panel"));
     cairo_move_to(cr, offx - 10.0f, offy + 6*ls - ls*0.25f);
     cairo_rel_line_to(cr, - offx + 10.0f, 0.0f);
     cairo_set_source_rgba(cr, .7, .7, .7, at);
