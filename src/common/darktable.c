@@ -335,6 +335,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
       {
         return usage(argv[0]);
       }
+      if(!strcmp(argv[k], "-h"))
+      {
+        return usage(argv[0]);
+      }
       else if(!strcmp(argv[k], "--version"))
       {
         printf("this is "PACKAGE_STRING"\ncopyright (c) 2009-2012 johannes hanika\n"PACKAGE_BUGREPORT"\n");
@@ -810,4 +814,6 @@ void dt_configure_defaults()
   }
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

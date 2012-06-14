@@ -204,7 +204,7 @@ draw_slider_line(cairo_t *cr, float pos, float off, float scale, const int width
   const float r = 1.0f-(ht+4.0f)/width;
   
   const int steps = 64;
-  cairo_move_to(cr, width*(l + (pos+off)*(r-l)), ht*.5f);
+  cairo_move_to(cr, width*(l + (pos+off)*(r-l)), ht*.7f);
   cairo_line_to(cr, width*(l + (pos+off)*(r-l)), ht);
   for(int j=1;j<steps;j++)
   {
@@ -477,7 +477,6 @@ dt_bauhaus_init()
   g_signal_connect (G_OBJECT (root_window), "button-press-event",
                     G_CALLBACK (dt_bauhaus_root_button_press), (gpointer)NULL);
 
-  darktable.bauhaus->widget_space = 5;
   darktable.bauhaus->line_space = 2;
   darktable.bauhaus->line_height = 11;
   darktable.bauhaus->marker_size = 0.3f;
@@ -496,6 +495,7 @@ dt_bauhaus_init()
   // so we parse it ourselves and convert it from pt to scale (.. :( )
   int gtk_fontsize = guess_font_size();
   darktable.bauhaus->scale = gtk_fontsize/5.0f;
+  darktable.bauhaus->widget_space = 2.5f*darktable.bauhaus->scale;
 
   // this easily gets keyboard input:
   // darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -1661,3 +1661,6 @@ dt_bauhaus_slider_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpoin
   return TRUE;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

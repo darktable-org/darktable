@@ -273,7 +273,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (dt_iop_levels_leave_notify), self);
   g_signal_connect (G_OBJECT (c->area), "scroll-event",
-		    G_CALLBACK (dt_iop_levels_scroll), self);
+        G_CALLBACK (dt_iop_levels_scroll), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -570,10 +570,14 @@ static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, g
 
   if (updated) {
     dt_iop_levels_move_handle(c->handle_move, new_position,
-		              p->levels, c->drag_start_percentage);
+                  p->levels, c->drag_start_percentage);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;
   }
 
   return FALSE;
 }
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
