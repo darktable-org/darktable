@@ -41,7 +41,7 @@ const sampler_t samplerc =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP     
 float gh(const float f, const float sharpness)
 {
   // make sharpness bigger: less smoothing
-  return native_exp(-f*f*sharpness);
+  return native_exp2(-f*f*sharpness);
 }
 
 

@@ -134,20 +134,20 @@ typedef union floatint_t
 floatint_t;
 
 static inline float
-fast_mexpf(const float x)
+fast_mexp2f(const float x)
 {
-  const float i1 = (float)0x3f800000u; // e^0
-  const float i2 = (float)0x3EBC5AB2u; // e^-1
+  const float i1 = (float)0x3f800000u; // 2^0
+  const float i2 = (float)0x3f000000u; // 2^-1
   const float k0 = i1 + x * (i2 - i1);
   floatint_t k;
-  k.i = k0 > 0 ? k0 : 0;
+  k.i = k0 > FLT_MIN ? k0 : 0;
   return k.f;
 }
 
 static float gh(const float f, const float sharpness)
 {
   const float f2 = f*f*sharpness;
-  return fast_mexpf(f2);
+  return fast_mexp2f(f2);
   // return 0.0001f + dt_fast_expf(-fabsf(f)*800.0f);
   // return 1.0f/(1.0f + f*f);
   // make spread bigger: less smoothing
@@ -172,11 +172,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   cl_int err = -999;
 
-  const int P = ceilf(floorf(d->radius) * roi_in->scale / piece->iscale); // pixel filter size
+  const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
   const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
   const float sharpness = 100000.0f/(1.0f+d->strength);
 
-  if(P <= 1)
+  if(P < 1)
   {
     size_t origin[] = { 0, 0, 0};
     size_t region[] = { width, height, 1};
@@ -322,7 +322,7 @@ error:
 void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
   dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
-  const int P = ceilf(floorf(d->radius) * roi_in->scale / piece->iscale); // pixel filter size
+  const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
   const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
 
   tiling->factor = 2.25f; // in + out + tmp
@@ -344,10 +344,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
 
   // adjust to zoom size:
-  const int P = ceilf(floorf(d->radius) * roi_in->scale / piece->iscale); // pixel filter size
+  const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
   const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
   const float sharpness = 100000.0f/(1.0f+d->strength);
-  if(P <= 1)
+  if(P < 1)
   {
     // nothing to do from this distance:
     memcpy (ovoid, ivoid, sizeof(float)*4*roi_out->width*roi_out->height);
@@ -537,7 +537,7 @@ void reload_defaults(dt_iop_module_t *module)
   // init defaults:
   dt_iop_nlmeans_params_t tmp = (dt_iop_nlmeans_params_t)
   {
-    3.0f, 5.0f, 0.5f, 1.0f
+    2.0f, 50.0f, 0.5f, 1.0f
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_nlmeans_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_nlmeans_params_t));
@@ -666,10 +666,10 @@ void gui_init     (dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_nlmeans_gui_data_t));
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
-  g->radius   = dt_bauhaus_slider_new_with_range(self, 1.0f, 4.0f, 1., 3.f, 0);
-  g->strength = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 100.f, 0);
-  g->luma     = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 10.f, 0);
-  g->chroma   = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 30.f, 0);
+  g->radius   = dt_bauhaus_slider_new_with_range(self, 1.0f, 4.0f, 1., 2.f, 0);
+  g->strength = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 50.f, 0);
+  g->luma     = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 50.f, 0);
+  g->chroma   = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 100.f, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->luma, TRUE, TRUE, 0);
