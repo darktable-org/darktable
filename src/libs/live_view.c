@@ -164,7 +164,7 @@ static void _toggle_live_view_clicked(GtkWidget *widget, gpointer user_data)
 static const gchar *focus_array[] = {"Near 3", "Near 2", "Near 1", "Far 1", "Far 2", "Far 3"};
 static void _focus_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  int focus = (int) user_data;
+  long int focus = (long int) user_data;
   if(focus >= 0 && focus <= 5)
     dt_camctl_camera_set_property(darktable.camctl, NULL, "manualfocusdrive", g_dgettext("libgphoto2-2", focus_array[focus]));
 }
