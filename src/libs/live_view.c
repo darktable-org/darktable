@@ -44,6 +44,7 @@ DT_MODULE(1)
 typedef struct dt_lib_live_view_t
 {
   GtkWidget *live_view, *rotate_ccw, *rotate_cw;
+  GtkWidget *focus_out_small, *focus_out_big, *focus_in_small, *focus_in_big;
   GtkWidget *guide_selector;
   GtkWidget *flipBox, *flipLabel, *flipHorGoldenGuide, *flipVerGoldenGuide;
   GtkWidget *goldenTable, *goldenSectionBox, *goldenSpiralBox, *goldenSpiralSectionBox, *goldenTriangleBox;
@@ -160,6 +161,14 @@ static void _toggle_live_view_clicked(GtkWidget *widget, gpointer user_data)
   }
 }
 
+static const gchar *focus_array[] = {"Near 3", "Near 2", "Near 1", "Far 1", "Far 2", "Far 3"};
+static void _focus_button_clicked(GtkWidget *widget, gpointer user_data)
+{
+  int focus = (int) user_data;
+  if(focus >= 0 && focus <= 5)
+    dt_camctl_camera_set_property(darktable.camctl, NULL, "manualfocusdrive", g_dgettext("libgphoto2-2", focus_array[focus]));
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {
@@ -191,6 +200,29 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(lib->rotate_ccw), "clicked", G_CALLBACK(_rotate_ccw), lib);
   g_signal_connect(G_OBJECT(lib->rotate_cw), "clicked", G_CALLBACK(_rotate_cw), lib);
 
+  // focus buttons
+  box = gtk_hbox_new(FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
+  lib->focus_in_big    = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|CPF_DIRECTION_LEFT);
+  lib->focus_in_small  = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|CPF_DIRECTION_LEFT);
+  lib->focus_out_small = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|CPF_DIRECTION_RIGHT);
+  lib->focus_out_big   = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|CPF_DIRECTION_RIGHT);
+
+  gtk_box_pack_start(GTK_BOX(box), lib->focus_in_big, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), lib->focus_in_small, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), lib->focus_out_small, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), lib->focus_out_big, TRUE, TRUE, 0);
+
+  g_object_set(G_OBJECT( lib->focus_in_big), "tooltip-text", _("move focus point in (big steps)"), (char *)NULL);
+  g_object_set(G_OBJECT( lib->focus_in_small), "tooltip-text", _("move focus point in (small steps)"), (char *)NULL);
+  g_object_set(G_OBJECT( lib->focus_out_small), "tooltip-text", _("move focus point out (small steps)"), (char *)NULL);
+  g_object_set(G_OBJECT( lib->focus_out_big), "tooltip-text", _("move focus point out (big steps)"), (char *)NULL);
+
+  // 0 and 5 will be big steps, not in ui right now ...
+  g_signal_connect(G_OBJECT(lib->focus_in_big), "clicked", G_CALLBACK(_focus_button_clicked), (gpointer)1);
+  g_signal_connect(G_OBJECT(lib->focus_in_small), "clicked", G_CALLBACK(_focus_button_clicked), (gpointer)2);
+  g_signal_connect(G_OBJECT(lib->focus_out_small), "clicked", G_CALLBACK(_focus_button_clicked), (gpointer)3);
+  g_signal_connect(G_OBJECT(lib->focus_out_big), "clicked", G_CALLBACK(_focus_button_clicked), (gpointer)4);
 
   // Guides
   label = GTK_WIDGET(dtgtk_label_new(_("guides"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT));
