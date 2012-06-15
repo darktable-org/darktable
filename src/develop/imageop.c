@@ -412,7 +412,7 @@ dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
     else module->enabled = 0;
     dt_dev_add_history_item(module->dev, module, FALSE);
     // close parent expander.
-    dt_iop_gui_set_expanded(module, module->enabled);
+    if (dt_conf_get_bool("darkroom/ui/expand_enabled_plugin")) dt_iop_gui_set_expanded(module, module->enabled);
   }
   char tooltip[512];
   snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
