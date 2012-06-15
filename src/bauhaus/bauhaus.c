@@ -21,6 +21,8 @@
 #include "common/darktable.h"
 #include "gui/gtk.h"
 
+#include <math.h>
+
 // define this to get boxes instead of arrow indicators, more like our previous version was:
 // #define DT_BAUHAUS_OLD
 
@@ -653,6 +655,7 @@ dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, fl
   d->pos = d->defpos;
   d->oldpos = d->defpos;
   d->scale = 5.0f*step/(max-min);
+  d->digits = digits;
   snprintf(d->format, 24, "%%.0%df", digits);
 
   d->grad_cnt = 0;
@@ -1506,7 +1509,11 @@ static void
 dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
 {
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  d->pos = CLAMP(pos, 0.0f, 1.0f);
+  float rpos = CLAMP(pos, 0.0f, 1.0f);
+  rpos = d->min + (d->max - d->min)*rpos;
+  const float base = powf(10.0f, d->digits);
+  rpos = roundf(base * rpos) / base;
+  d->pos = (rpos-d->min)/(d->max-d->min);
   gtk_widget_queue_draw(GTK_WIDGET(w));
   g_signal_emit_by_name(G_OBJECT(w), "value-changed");
 }
