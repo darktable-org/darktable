@@ -48,6 +48,15 @@ typedef struct dt_lib_folders_t
 }
 dt_lib_folders_t;
 
+typedef struct _image_t
+{
+  int id;
+  int filmid;
+  gchar *path;
+  gchar *filename;
+  int exists;
+}
+_image_t;
 
 /* callback for drag and drop */
 /*static void _lib_keywords_drag_data_received_callback(GtkWidget *w,
@@ -104,14 +113,26 @@ void connect_key_accels(dt_lib_module_t *self)
                               GTK_WIDGET(d->scan_devices)); */
 }
 
-void _check_name(gpointer *data, gpointer *user_data)
+void _sync_list(gpointer *data, gpointer *user_data)
 {
-  image_t *img = (image_t *)data;
-  gchar *name = (gchar*)user_data;
+  _image_t *img = (_image_t *)data;
   
-  if(!g_strcmp0(img->filename, name))
+  if(img->exists == 0)
   {
-    img->exists = 1
+    //remove filie
+    dt_image_remove(img->id);
+    return;
+  }
+
+  if(img->id == -1)
+  {
+    //add file
+    gchar *fullpath = NULL;
+    fullpath = dt_util_dstrcat(fullpath, "%s/%s", img->path, img->filename);
+    /* TODO: Check if JPEGs are set to be ignored */
+    dt_image_import(img->filmid, fullpath, 1);
+    g_free(fullpath);
+    return;
   }
 }
 
@@ -122,8 +143,11 @@ void view_popup_menu_onSync (GtkWidget *menuitem, gpointer userdata)
   GtkTreeIter iter;
   GtkTreeModel *model;
   gchar *tree_path = NULL;
+  gchar *query = NULL;
   sqlite3_stmt *stmt, *stmt2;
-  GList *filelist;
+  GList *filelist = NULL;
+  int count_new = 0;
+  int count_found = 0;
   
   model = gtk_tree_view_get_model(treeview);
   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
@@ -137,53 +161,96 @@ void view_popup_menu_onSync (GtkWidget *menuitem, gpointer userdata)
 
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int id;
+    int film_id;
     gchar *path;
     GDir *dir;
-    GError error;
+    GError *error;
 
-    id = sqlite3_column_int(stmt, 0);
+    film_id = sqlite3_column_int(stmt, 0);
     path = (gchar *) sqlite3_column_text(stmt, 1);
 
     /* Añadir nombre de fichero... por ahora sólo tenemos folders! 
        Tenemos que hacer un query por los ficheros, no por los filmrolls,
        el fichero tiene el id del filmroll, tomar el nombre del id (ver
        si hay ya helper function)*/
-    query = dt_util_dstrcat(query, "select filename from images where film_id=%d", id);
+    query = dt_util_dstrcat(query, "select filename,id from images where film_id=%d", film_id);
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
     g_free(query);
 
-    while (sqlite3_stmt(stmt2) == SQLITE_ROW)
+    while (sqlite3_step(stmt2) == SQLITE_ROW)
     {
-      image_t *img = malloc(sizeof(image_t));
+      _image_t *img = malloc(sizeof(_image_t));
 
-      img->id = id;
+      img->id = sqlite3_column_int(stmt, 1);
+      img->filmid = film_id;
       img->path = path;
-      img->filename = g_strdup(sqlite3_column_text(stmt2, 0));
+      img->filename = g_strdup((gchar *)sqlite3_column_text(stmt2, 0));
       img->exists = 0;
 
-      g_list_prepend (filelist, (gpointer *)img);
+      filelist = g_list_prepend (filelist, (gpointer *)img);
     }
 
     dir = g_dir_open(path, 0, &error);
     /* TODO: check here for error output */
 
-    gchar *name;
+    gboolean found = 0;
+    
+    /* TODO: what happens if there are new subdirs? */
+    const gchar *name = g_dir_read_name(dir);
     while (name != NULL)
     {
+      for (int i=0; i<g_list_length(filelist); i++)
+      {
+        _image_t *tmp;
+        tmp = g_list_nth_data(filelist, i);
+        if(!g_strcmp0(tmp->filename, name))
+        {
+          // Should we check the path as well ??
+          tmp->exists = 1;
+          found = 1;
+          count_found++;
+          break;
+        }
+      }
+
+      if (!found)
+      {
+        /* TODO: Check if file is supported.
+         * If it is JPEG check if we should import it */
+        _image_t *new = malloc(sizeof(_image_t));
+        new->id = -1;
+        new->path = g_strdup(path);
+        new->filename = g_strdup(name);
+        new->exists = 1;
+
+       filelist = g_list_append(filelist, (gpointer *)new);
+
+        count_new++;
+      }
+
       name = g_dir_read_name(dir);
-      /* Call here forearch function so the filenaem & path is compared against the list*/
-      g_list_foreach(filelist, _check_name, (gpointer *)name);
     }
+  }
+ 
+  /* Call now the foreach function that gives the total data */
+  int count_missing = g_list_length(filelist) - count_new - count_found;
 
-    /* Call now the foreach function that gives the total data */
+  /* Produce the dialog */
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(win),
+                                          GTK_DIALOG_DESTROY_WITH_PARENT,
+                                          GTK_MESSAGE_QUESTION,
+                                          GTK_BUTTONS_YES_NO,
+                                          "_(There are %d new images and %d deleted images. Do you want to sync this folder?)", count_new, 
+                                          count_missing);
 
-    /* Produce the dialog */
-
-    /* Get dialog returned options */
+  if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+  {
+    /* TODO: Get dialog returned options so we can choone only adding or deleting*/
 
     /* Proceed with sync */
+  }
 
 }
 
