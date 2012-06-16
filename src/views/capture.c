@@ -481,8 +481,27 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
   if(cam->live_view_pan && cam->live_view_zoom && cam->is_live_viewing)
   {
     gint delta_x, delta_y;
-    delta_x = lib->live_view_zoom_cursor_x - x;
-    delta_y = lib->live_view_zoom_cursor_y - y;
+    switch(cam->live_view_rotation)
+    {
+      case 0:
+        delta_x = lib->live_view_zoom_cursor_x - x;
+        delta_y = lib->live_view_zoom_cursor_y - y;
+        break;
+      case 1:
+        delta_x = y - lib->live_view_zoom_cursor_y;
+        delta_y = lib->live_view_zoom_cursor_x - x;
+        break;
+      case 2:
+        delta_x = x - lib->live_view_zoom_cursor_x;
+        delta_y = y - lib->live_view_zoom_cursor_y;
+        break;
+      case 3:
+        delta_x = lib->live_view_zoom_cursor_y - y;
+        delta_y = x - lib->live_view_zoom_cursor_x;
+        break;
+      default: // can't happen
+        delta_x = delta_y = 0;
+    }
     cam->live_view_zoom_x += delta_x;
     cam->live_view_zoom_y += delta_y;
     lib->live_view_zoom_cursor_x = x;
