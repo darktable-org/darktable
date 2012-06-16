@@ -81,6 +81,10 @@ typedef struct dt_camera_t
   int32_t live_view_rotation;
   /** Zoom level for live view */
   gboolean live_view_zoom;
+  /** Pan the zoomed live view */
+  gboolean live_view_pan;
+  /** Position of the live view zoom region */
+  gint live_view_zoom_x, live_view_zoom_y;
   /** The thread adding the live view jobs */
   pthread_t live_view_thread;
   /** A guard so that writing and reading the pixbuf don't interfere */
