@@ -1023,8 +1023,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
       //dt_dev_invalidate(darktable.develop);
     }
-
-    return 0;
+    return 1;
   }
 
   if(key == accels->lighttable_left.accel_key

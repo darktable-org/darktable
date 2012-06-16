@@ -1486,17 +1486,19 @@ int dt_control_key_pressed_override(guint key, guint state)
   /* check if key accelerators are enabled*/
   if (darktable.control->key_accelerators_on != 1) return 0;
 
-  if(key == accels->global_sideborders.accel_key
-     && state == accels->global_sideborders.accel_mods)
+  if(key == accels->global_sideborders.accel_key &&
+     state == accels->global_sideborders.accel_mods)
   {
     /* toggle panel viewstate */
     dt_ui_toggle_panels_visibility(darktable.gui->ui);
     
     /* trigger invalidation of centerview to reprocess pipe */
     dt_dev_invalidate(darktable.develop);
-
-  } else if (key == accels->global_header.accel_key &&
-	     state == accels->global_header.accel_mods)
+    gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+    return 1;
+  }
+  else if(key == accels->global_header.accel_key &&
+	        state == accels->global_header.accel_mods)
   {
     char key[512];
     const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
@@ -1514,22 +1516,21 @@ int dt_control_key_pressed_override(guint key, guint state)
     
     /* show/hide the actual header panel */
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, header); 
+    gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+    return 1;
   }
- 
-  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
   return 0;
 }
 
 int dt_control_key_pressed(guint key, guint state)
 {
-  int needRedraw;
-
-  needRedraw = dt_view_manager_key_pressed(darktable.view_manager, key,
-                                               state);
-  if( needRedraw )
+  int handled = dt_view_manager_key_pressed(
+      darktable.view_manager,
+      key,
+      state);
+  if(handled)
     gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
-  
-  return 0;
+  return handled;
 }
 
 int dt_control_key_released(guint key, guint state)
@@ -1537,16 +1538,17 @@ int dt_control_key_released(guint key, guint state)
   // this line is here to find the right key code on different platforms (mac).
   // printf("key code pressed: %d\n", which);
 
+  int handled = 0;
   switch (key)
   {
     default:
       // propagate to view modules.
-      dt_view_manager_key_released(darktable.view_manager, key, state);
+      handled = dt_view_manager_key_released(darktable.view_manager, key, state);
       break;
   }
 
-  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
-  return 0;
+  if(handled) gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+  return handled;
 }
 
 void dt_control_hinter_message(const struct dt_control_t *s, const char *message)

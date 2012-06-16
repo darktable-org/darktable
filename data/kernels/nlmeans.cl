@@ -38,11 +38,10 @@ const sampler_t samplerc =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP     
 */
 
 
-float gh(const float f)
+float gh(const float f, const float sharpness)
 {
-  // make spread bigger: less smoothing
-  const float spread = 100.f;
-  return 1.0f/(1.0f + fabs(f)*spread);
+  // make sharpness bigger: less smoothing
+  return native_exp2(-f*f*sharpness);
 }
 
 
@@ -132,7 +131,7 @@ nlmeans_horiz(read_only image2d_t U4_in, write_only image2d_t U4_out, const int 
 
 kernel void
 nlmeans_vert(read_only image2d_t U4_in, write_only image2d_t U4_out, const int width, const int height, 
-              const int2 q, const int P, local float *buffer)
+              const int2 q, const int P, const float sharpness, local float *buffer)
 {
   const int lid = get_local_id(1);
   const int lsz = get_local_size(1);
@@ -174,7 +173,7 @@ nlmeans_vert(read_only image2d_t U4_in, write_only image2d_t U4_out, const int w
     distacc += buffer[pj];
   }
 
-  distacc = gh(distacc);
+  distacc = gh(distacc, sharpness);
 
   write_imagef (U4_out, (int2)(x, y), distacc);
 }

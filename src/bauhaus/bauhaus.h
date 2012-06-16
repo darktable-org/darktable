@@ -58,6 +58,7 @@ typedef struct dt_bauhaus_slider_data_t
   float defpos;   // default value (normalized)
   float min, max; // min and max range
   float scale;    // step width for loupe mode
+  int   digits;   // how many decimals to round to
 
   float grad_col[10][3]; // colors for gradient slider
   int   grad_cnt;        // how many stops
