@@ -581,23 +581,25 @@ configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
 static gboolean
 key_pressed_override (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
-  // fprintf(stderr,"Key Press state: %d hwkey: %d\n",event->state, event->hardware_keycode);
-
-
-  return dt_control_key_pressed_override(event->keyval,
-                                         event->state & KEY_STATE_MASK);
+  return dt_control_key_pressed_override(
+      event->keyval,
+      event->state & KEY_STATE_MASK);
 }
 
 static gboolean
 key_pressed (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
-  return dt_control_key_pressed(event->keyval, event->state & KEY_STATE_MASK);
+  return dt_control_key_pressed(
+      event->keyval,
+      event->state & KEY_STATE_MASK);
 }
 
 static gboolean
 key_released (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
-  return dt_control_key_released(event->keyval, event->state & KEY_STATE_MASK);
+  return dt_control_key_released(
+      event->keyval,
+      event->state & KEY_STATE_MASK);
 }
 
 static gboolean
