@@ -46,9 +46,12 @@ DT_MODULE(2)
 // Module constants
 #define DT_IOP_BORDERS_ASPECT_COUNT 21
 #define DT_IOP_BORDERS_ASPECT_IMAGE_IDX 0
-#define DT_IOP_BORDERS_ASPECT_CONSTANT_IDX 20
+#define DT_IOP_BORDERS_ASPECT_CONSTANT_IDX 11
 #define DT_IOP_BORDERS_ASPECT_IMAGE_VALUE 0.0f
 #define DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE -1.0f
+#define DT_IOP_BORDERS_ASPECT_ORIENTATION_AUTO 0
+#define DT_IOP_BORDERS_ASPECT_ORIENTATION_LANDSCAPE 1
+#define DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT -1
 #define DT_IOP_BORDERS_POSITION_H_COUNT 5
 #define DT_IOP_BORDERS_POSITION_V_COUNT 5
 
@@ -58,7 +61,7 @@ typedef struct dt_iop_borders_params_t
   float color[3]; // border color
   float aspect;   // aspect ratio of the outer frame w/h
   char aspect_text[20];   // aspect ratio of the outer frame w/h (user string version)
-  int aspect_auto_orient;   // aspect ratio of the outer frame w/h (user string version)
+  int aspect_orient;   // aspect ratio orientation
   float size;     // border width relative to overal frame width
   float pos_h;    // picture horizontal position ratio into the final image
   char pos_h_text[20];   // picture horizontal position ratio into the final image (user string version)
@@ -74,7 +77,9 @@ typedef struct dt_iop_borders_gui_data_t
 {
   GtkWidget *size;
   GtkWidget *aspect;
-  GtkWidget *aspect_auto_orient;
+  GtkWidget *aspect_orient_auto;
+  GtkWidget *aspect_orient_landscape;
+  GtkWidget *aspect_orient_portrait;
   GtkWidget *pos_h;
   GtkWidget *pos_v;
   GtkDarktableButton *colorpick;
@@ -108,8 +113,10 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
 
     *n = *d;  // start with a fresh copy of default parameters
     memcpy(n->color, o->color, sizeof(o->color));
-    n->aspect = o->aspect;
-    n->aspect_auto_orient = 0; // no auto orientation in legacy param due to already convert aspect ratio
+    n->aspect = (o->aspect < 1) ? 1 / o->aspect : o->aspect;
+    // no auto orientation in legacy param due to already convert aspect ratio
+    n->aspect_orient = o->aspect > 1 ? DT_IOP_BORDERS_ASPECT_ORIENTATION_LANDSCAPE
+                                     : DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT;
     n->size = fabsf(o->size);  // no negative size any more (was for "constant border" detect)
     return 0;
   }
@@ -188,9 +195,14 @@ modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
   {
     float image_aspect = roi_in->width / (float)(roi_in->height);
     float aspect = (d->aspect == DT_IOP_BORDERS_ASPECT_IMAGE_VALUE) ? image_aspect : d->aspect;
-    aspect = (d->aspect_auto_orient
-        && (   (image_aspect < 1 && aspect > 1)
-            || (image_aspect > 1 && aspect < 1))) ? 1 / aspect : aspect;
+
+    if (d->aspect_orient == DT_IOP_BORDERS_ASPECT_ORIENTATION_AUTO)
+      aspect = ((image_aspect < 1 && aspect > 1) || (image_aspect > 1 && aspect < 1)) ? 1 / aspect : aspect;
+    else if (d->aspect_orient == DT_IOP_BORDERS_ASPECT_ORIENTATION_LANDSCAPE)
+      aspect = (aspect < 1) ? 1 / aspect : aspect;
+    else if (d->aspect_orient == DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT)
+      aspect = (aspect > 1) ? 1 / aspect : aspect;
+
     // min width: constant ratio based on size:
     roi_out->width = (float)roi_in->width / (1.0f - size);
     // corresponding height: determined by aspect ratio:
@@ -271,10 +283,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const int frame_in_height  = floor((piece->buf_in.height * roi_in->scale) + frame_offset*2);
     const int frame_out_width  = frame_in_width + frame_size*2;
     const int frame_out_height  = frame_in_height + frame_size*2;
-    const int frame_br_in_x = CLAMP(image_lx - frame_offset + frame_in_width - 1, 0, roi_out->width - 1);
-    const int frame_br_in_y = CLAMP(image_ty - frame_offset + frame_in_height - 1, 0, roi_out->height - 1);
-    const int frame_br_out_x = CLAMP(image_lx - frame_offset - frame_size + frame_out_width -1, 0, roi_out->width - 1);
-    const int frame_br_out_y = CLAMP(image_ty - frame_offset - frame_size + frame_out_height - 1, 0, roi_out->height - 1);
+    const int frame_br_in_x = CLAMP(image_lx - frame_offset + frame_in_width, 0, roi_out->width - 1);
+    const int frame_br_in_y = CLAMP(image_ty - frame_offset + frame_in_height, 0, roi_out->height - 1);
+    const int frame_br_out_x = CLAMP(image_lx - frame_offset - frame_size + frame_out_width, 0, roi_out->width - 1);
+    const int frame_br_out_y = CLAMP(image_ty - frame_offset - frame_size + frame_out_height, 0, roi_out->height - 1);
     for(int r=frame_tl_out_y;r<=frame_br_out_y;r++)
     {
       buf = (float *)ovoid + r*out_stride + frame_tl_out_x*ch;
@@ -352,10 +364,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     const int frame_in_height  = floor((piece->buf_in.height * roi_in->scale) + frame_offset*2);
     const int frame_out_width  = frame_in_width + frame_size*2;
     const int frame_out_height  = frame_in_height + frame_size*2;
-    const int frame_br_in_x = CLAMP(image_lx - frame_offset + frame_in_width - 1, 0, roi_out->width - 1);
-    const int frame_br_in_y = CLAMP(image_ty - frame_offset + frame_in_height - 1, 0, roi_out->height - 1);
-    const int frame_br_out_x = CLAMP(image_lx - frame_offset - frame_size + frame_out_width -1, 0, roi_out->width - 1);
-    const int frame_br_out_y = CLAMP(image_ty - frame_offset - frame_size + frame_out_height - 1, 0, roi_out->height - 1);
+    const int frame_br_in_x = CLAMP(image_lx - frame_offset + frame_in_width, 0, roi_out->width - 1);
+    const int frame_br_in_y = CLAMP(image_ty - frame_offset + frame_in_height, 0, roi_out->height - 1);
+    const int frame_br_out_x = CLAMP(image_lx - frame_offset - frame_size + frame_out_width, 0, roi_out->width - 1);
+    const int frame_br_out_y = CLAMP(image_ty - frame_offset - frame_size + frame_out_height, 0, roi_out->height - 1);
     const int roi_frame_in_width = frame_br_in_x - frame_tl_in_x;
     const int roi_frame_in_height = frame_br_in_y - frame_tl_in_y;
     const int roi_frame_out_width = frame_br_out_x - frame_tl_out_x;
@@ -437,7 +449,7 @@ void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_borders_params_t p = (dt_iop_borders_params_t)
   {
-    {1.0f, 1.0f, 1.0f}, 3.0f/2.0f, "3:2", 1, 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.0f, 0.5f, {0.0f, 0.0f, 0.0f}
+    {1.0f, 1.0f, 1.0f}, 3.0f/2.0f, "3:2", 0, 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.0f, 0.5f, {0.0f, 0.0f, 0.0f}
   };
   dt_gui_presets_add_generic(_("15:10 postcard white"), self->op, self->version(), &p, sizeof(p), 1);
   p.color[0] = p.color[1] = p.color[2] = 0.0f;
@@ -552,12 +564,24 @@ aspect_changed (GtkWidget *combo, dt_iop_module_t *self)
 }
 
 static void
-aspect_auto_orient_changed (GtkToggleButton *checkbox, dt_iop_module_t *self)
+aspect_orient_changed (GtkToggleButton *button, dt_iop_module_t *self)
 {
-  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
-  int checked = gtk_toggle_button_get_active(checkbox);
-  p->aspect_auto_orient = checked;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
+  if (gtk_toggle_button_get_active(button)
+      || (!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->aspect_orient_auto))
+          && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->aspect_orient_landscape))
+          && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->aspect_orient_portrait)))) {
+    dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+    GtkWidget *widget = GTK_WIDGET(button);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_orient_auto), widget == g->aspect_orient_auto);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_orient_landscape), widget == g->aspect_orient_landscape);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_orient_portrait), widget == g->aspect_orient_portrait);
+    p->aspect_orient
+      = (widget == g->aspect_orient_auto) ? DT_IOP_BORDERS_ASPECT_ORIENTATION_AUTO
+      : (widget == g->aspect_orient_landscape) ? DT_IOP_BORDERS_ASPECT_ORIENTATION_LANDSCAPE
+      : DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT;
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+  }
 }
 
 static void
@@ -756,8 +780,13 @@ void gui_update(struct dt_iop_module_t *self)
     dt_bauhaus_combobox_set(g->aspect, -1);
   }
 
-  // ----- auto orientation checkbox
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_auto_orient), p->aspect_auto_orient);
+  // ----- aspect orientation
+  if (p->aspect_orient == DT_IOP_BORDERS_ASPECT_ORIENTATION_LANDSCAPE)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_orient_landscape), TRUE);
+  else if (p->aspect_orient == DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_orient_portrait), TRUE);
+  else
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_orient_auto), TRUE);
 
   // ----- Position H
   for(k=0;k<DT_IOP_BORDERS_POSITION_H_COUNT;k++)
@@ -844,49 +873,31 @@ void gui_init_aspect(struct dt_iop_module_t *self)
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
 
   dt_bauhaus_combobox_add(g->aspect, _("image"));
-  dt_bauhaus_combobox_add(g->aspect, _("1:3"));
-  dt_bauhaus_combobox_add(g->aspect, _("33:95"));
-  dt_bauhaus_combobox_add(g->aspect, _("1:2"));
-  dt_bauhaus_combobox_add(g->aspect, _("9:16"));
-  dt_bauhaus_combobox_add(g->aspect, _("golden cut (P)"));
-  dt_bauhaus_combobox_add(g->aspect, _("2:3"));
-  dt_bauhaus_combobox_add(g->aspect, _("A4 (P)"));
-  dt_bauhaus_combobox_add(g->aspect, _("DIN (P)"));
-  dt_bauhaus_combobox_add(g->aspect, _("3:4"));
-  dt_bauhaus_combobox_add(g->aspect, _("square"));
-  dt_bauhaus_combobox_add(g->aspect, _("4:3"));
-  dt_bauhaus_combobox_add(g->aspect, _("DIN (L)"));
-  dt_bauhaus_combobox_add(g->aspect, _("A4 (L)"));
-  dt_bauhaus_combobox_add(g->aspect, _("3:2"));
-  dt_bauhaus_combobox_add(g->aspect, _("golden cut (L)"));
-  dt_bauhaus_combobox_add(g->aspect, _("16:9"));
-  dt_bauhaus_combobox_add(g->aspect, _("2:1"));
-  dt_bauhaus_combobox_add(g->aspect, _("95:33"));
   dt_bauhaus_combobox_add(g->aspect, _("3:1"));
+  dt_bauhaus_combobox_add(g->aspect, _("95:33"));
+  dt_bauhaus_combobox_add(g->aspect, _("2:1"));
+  dt_bauhaus_combobox_add(g->aspect, _("16:9"));
+  dt_bauhaus_combobox_add(g->aspect, _("golden cut"));
+  dt_bauhaus_combobox_add(g->aspect, _("3:2"));
+  dt_bauhaus_combobox_add(g->aspect, _("A4"));
+  dt_bauhaus_combobox_add(g->aspect, _("DIN"));
+  dt_bauhaus_combobox_add(g->aspect, _("4:3"));
+  dt_bauhaus_combobox_add(g->aspect, _("square"));
   dt_bauhaus_combobox_add(g->aspect, _("constant border"));
 
   g->aspect_ratios[DT_IOP_BORDERS_ASPECT_IMAGE_IDX] = DT_IOP_BORDERS_ASPECT_IMAGE_VALUE;
   g->aspect_ratios[DT_IOP_BORDERS_ASPECT_CONSTANT_IDX] = DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE;
   int i = 1;
-  g->aspect_ratios[i++] = 1.0f/3.0f;
-  g->aspect_ratios[i++] = 33.0f/95.0f;
-  g->aspect_ratios[i++] = 1.0f/2.0f;
-  g->aspect_ratios[i++] = 9.0f/16.0f;
-  g->aspect_ratios[i++] = INVPHI;
-  g->aspect_ratios[i++] = 2.0f/3.0f;
-  g->aspect_ratios[i++] = 210.0f/297.0f;
-  g->aspect_ratios[i++] = 1.0f/sqrtf(2.0f);
-  g->aspect_ratios[i++] = 3.0f/4.0f;
-  g->aspect_ratios[i++] = 1.0f;
-  g->aspect_ratios[i++] = 4.0f/3.0f;
-  g->aspect_ratios[i++] = sqrtf(2.0f);
-  g->aspect_ratios[i++] = 297.0f/210.0f;
-  g->aspect_ratios[i++] = 3.0f/2.0f;
-  g->aspect_ratios[i++] = PHI;
-  g->aspect_ratios[i++] = 16.0f/9.0f;
-  g->aspect_ratios[i++] = 2.0f;
-  g->aspect_ratios[i++] = 95.0f/33.0f;
   g->aspect_ratios[i++] = 3.0f;
+  g->aspect_ratios[i++] = 95.0f/33.0f;
+  g->aspect_ratios[i++] = 2.0f;
+  g->aspect_ratios[i++] = 16.0f/9.0f;
+  g->aspect_ratios[i++] = PHI;
+  g->aspect_ratios[i++] = 3.0f/2.0f;
+  g->aspect_ratios[i++] = 297.0f/210.0f;
+  g->aspect_ratios[i++] = sqrtf(2.0f);
+  g->aspect_ratios[i++] = 4.0f/3.0f;
+  g->aspect_ratios[i++] = 1.0f;
 }
 
 void gui_init_positions(struct dt_iop_module_t *self)
@@ -941,11 +952,25 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->aspect), "value-changed", G_CALLBACK (aspect_changed), self);
   g_object_set(G_OBJECT(g->aspect), "tooltip-text", _("select the aspect ratio or right click and type your own (w:h)"), (char *)NULL);
 
-  g->aspect_auto_orient  = gtk_check_button_new_with_label(_("auto orientation"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_auto_orient), TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_auto_orient, TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->aspect_auto_orient), "tooltip-text", _("automatically adapt aspect ratio orientation"), (char *)NULL);
-  g_signal_connect (G_OBJECT (g->aspect_auto_orient), "toggled", G_CALLBACK (aspect_auto_orient_changed), self);
+  GtkWidget *box = gtk_hbox_new(FALSE, 0);
+  GtkWidget *label = dtgtk_reset_label_new (_("orientation"), self, NULL, 3*sizeof(float));
+  g->aspect_orient_auto = dtgtk_togglebutton_new_with_label(_("auto"), NULL, CPF_STYLE_BOX);
+  g->aspect_orient_landscape = dtgtk_togglebutton_new(dtgtk_cairo_paint_rect_landscape, CPF_STYLE_BOX);
+  gtk_widget_set_size_request(GTK_WIDGET(g->aspect_orient_landscape), 24, 24);
+  g->aspect_orient_portrait = dtgtk_togglebutton_new(dtgtk_cairo_paint_rect_portrait, CPF_STYLE_BOX);
+  gtk_widget_set_size_request(GTK_WIDGET(g->aspect_orient_portrait), 24, 24);
+  g_object_set(G_OBJECT(g->aspect_orient_auto), "tooltip-text", _("automatically adapt aspect ratio orientation"), (char *)NULL);
+  g_object_set(G_OBJECT(g->aspect_orient_landscape), "tooltip-text", _("landscape aspect ratio orientation"), (char *)NULL);
+  g_object_set(G_OBJECT(g->aspect_orient_portrait), "tooltip-text", _("portrait aspect ratio orientation"), (char *)NULL);
+  g_signal_connect (G_OBJECT (g->aspect_orient_auto), "toggled", G_CALLBACK (aspect_orient_changed), self);
+  g_signal_connect (G_OBJECT (g->aspect_orient_landscape), "toggled", G_CALLBACK (aspect_orient_changed), self);
+  g_signal_connect (G_OBJECT (g->aspect_orient_portrait), "toggled", G_CALLBACK (aspect_orient_changed), self);
+
+  gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), g->aspect_orient_auto, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), g->aspect_orient_landscape, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), g->aspect_orient_portrait, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
 
   g->pos_h = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->pos_h, 1);
@@ -961,10 +986,10 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->pos_v), "tooltip-text", _("select the vertical position ratio relative to left or right click and type your own (x:w)"), (char *)NULL);
   gui_init_positions(self);
 
-  GtkWidget *box = gtk_hbox_new(FALSE, 0);
+  box = gtk_hbox_new(FALSE, 0);
   g->colorpick = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE | CPF_STYLE_FLAT));
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), 24, 24);
-  GtkWidget *label = dtgtk_reset_label_new (_("border color"), self, &p->color, 3*sizeof(float));
+  label = dtgtk_reset_label_new (_("border color"), self, &p->color, 3*sizeof(float));
   g_signal_connect (G_OBJECT (g->colorpick), "clicked", G_CALLBACK (colorpick_callback), self);
   GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
   g_object_set(G_OBJECT(tb), "tooltip-text", _("pick border color from image"), (char *)NULL);
@@ -976,7 +1001,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(box), tb, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
 
-  g->frame_size = dt_bauhaus_slider_new_with_range(self, 0.0, 50.0, 0.5, p->frame_size*100.0, 2);
+  g->frame_size = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->frame_size*100.0, 2);
   dt_bauhaus_widget_set_label(g->frame_size, _("frame line size"));
   dt_bauhaus_slider_set_format(g->frame_size, "%.2f%%");
   g_signal_connect (G_OBJECT (g->frame_size), "value-changed", G_CALLBACK (frame_size_callback), self);
@@ -1013,7 +1038,7 @@ void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_borders_params_t tmp = (dt_iop_borders_params_t)
   {
-    {1.0f, 1.0f, 1.0f}, DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE, "constant border", 1, 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.0f, 0.5f, {0.0f, 0.0f, 0.0f}
+    {1.0f, 1.0f, 1.0f}, DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE, "constant border", 0, 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.0f, 0.5f, {0.0f, 0.0f, 0.0f}
   };
   memcpy(self->params, &tmp, sizeof(dt_iop_borders_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_borders_params_t));
