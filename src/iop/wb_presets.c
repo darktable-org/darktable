@@ -3315,6 +3315,12 @@ const wb_data wb_preset[] = {
   { "Panasonic", "DMC-GF1", Incandescent, 0,	{ 1.365019, 1, 2.117871, 0 } },
   { "Panasonic", "DMC-GF1", Flash, 0,		{ 2.353612, 1, 1.231939, 0 } },
 
+  { "Panasonic", "DMC-GF3", Daylight, 0,	{ 1.9396, 1, 1.4377, 0 } },
+  { "Panasonic", "DMC-GF3", Cloudy, 0,		{ 2.0679, 1, 1.3396, 0 } },
+  { "Panasonic", "DMC-GF3", Shade, 0,		{ 2.2566, 1, 1.2717, 0 } },
+  { "Panasonic", "DMC-GF3", Incandescent, 0,	{ 1.3019, 1, 2.0868, 0 } },
+  { "Panasonic", "DMC-GF3", Flash, 0,		{ 2.1962, 1, 1.2717, 0 } },
+
   { "Panasonic", "DMC-GX1", Daylight, 0,	{ 2.7925, 1, 1.5472, 0 } },
   { "Panasonic", "DMC-GX1", Cloudy, 0,		{ 2.9660, 1, 1.4528, 0 } },
   { "Panasonic", "DMC-GX1", Shade, 0,		{ 3.2642, 1, 1.3698, 0 } },
@@ -4042,3 +4048,6 @@ const wb_data wb_preset[] = {
 };
 
 const int wb_preset_count = sizeof(wb_preset) / sizeof(wb_data);
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

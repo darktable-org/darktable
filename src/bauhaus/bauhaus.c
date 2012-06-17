@@ -21,6 +21,8 @@
 #include "common/darktable.h"
 #include "gui/gtk.h"
 
+#include <math.h>
+
 // define this to get boxes instead of arrow indicators, more like our previous version was:
 // #define DT_BAUHAUS_OLD
 
@@ -204,7 +206,7 @@ draw_slider_line(cairo_t *cr, float pos, float off, float scale, const int width
   const float r = 1.0f-(ht+4.0f)/width;
   
   const int steps = 64;
-  cairo_move_to(cr, width*(l + (pos+off)*(r-l)), ht*.5f);
+  cairo_move_to(cr, width*(l + (pos+off)*(r-l)), ht*.7f);
   cairo_line_to(cr, width*(l + (pos+off)*(r-l)), ht);
   for(int j=1;j<steps;j++)
   {
@@ -477,7 +479,6 @@ dt_bauhaus_init()
   g_signal_connect (G_OBJECT (root_window), "button-press-event",
                     G_CALLBACK (dt_bauhaus_root_button_press), (gpointer)NULL);
 
-  darktable.bauhaus->widget_space = 5;
   darktable.bauhaus->line_space = 2;
   darktable.bauhaus->line_height = 11;
   darktable.bauhaus->marker_size = 0.3f;
@@ -496,6 +497,7 @@ dt_bauhaus_init()
   // so we parse it ourselves and convert it from pt to scale (.. :( )
   int gtk_fontsize = guess_font_size();
   darktable.bauhaus->scale = gtk_fontsize/5.0f;
+  darktable.bauhaus->widget_space = 2.5f*darktable.bauhaus->scale;
 
   // this easily gets keyboard input:
   // darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -653,6 +655,7 @@ dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, fl
   d->pos = d->defpos;
   d->oldpos = d->defpos;
   d->scale = 5.0f*step/(max-min);
+  d->digits = digits;
   snprintf(d->format, 24, "%%.0%df", digits);
 
   d->grad_cnt = 0;
@@ -1506,7 +1509,11 @@ static void
 dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
 {
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  d->pos = CLAMP(pos, 0.0f, 1.0f);
+  float rpos = CLAMP(pos, 0.0f, 1.0f);
+  rpos = d->min + (d->max - d->min)*rpos;
+  const float base = powf(10.0f, d->digits);
+  rpos = roundf(base * rpos) / base;
+  d->pos = (rpos-d->min)/(d->max-d->min);
   gtk_widget_queue_draw(GTK_WIDGET(w));
   g_signal_emit_by_name(G_OBJECT(w), "value-changed");
 }
@@ -1661,3 +1668,6 @@ dt_bauhaus_slider_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpoin
   return TRUE;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

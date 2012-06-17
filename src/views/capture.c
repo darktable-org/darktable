@@ -82,6 +82,10 @@ typedef struct dt_capture_t
   /** The jobcode name used for session initialization etc..*/
   char *jobcode;
   dt_film_t *film;
+
+  /** Cursor position for dragging the zoomed live view */
+  double live_view_zoom_cursor_x, live_view_zoom_cursor_y;
+
 }
 dt_capture_t;
 
@@ -471,6 +475,41 @@ void reset(dt_view_t *self)
 
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
+  dt_capture_t *lib = (dt_capture_t*)self->data;
+  dt_camera_t *cam = (dt_camera_t*)darktable.camctl->active_camera;
+  // pan the zoomed live view
+  if(cam->live_view_pan && cam->live_view_zoom && cam->is_live_viewing)
+  {
+    gint delta_x, delta_y;
+    switch(cam->live_view_rotation)
+    {
+      case 0:
+        delta_x = lib->live_view_zoom_cursor_x - x;
+        delta_y = lib->live_view_zoom_cursor_y - y;
+        break;
+      case 1:
+        delta_x = y - lib->live_view_zoom_cursor_y;
+        delta_y = lib->live_view_zoom_cursor_x - x;
+        break;
+      case 2:
+        delta_x = x - lib->live_view_zoom_cursor_x;
+        delta_y = y - lib->live_view_zoom_cursor_y;
+        break;
+      case 3:
+        delta_x = lib->live_view_zoom_cursor_y - y;
+        delta_y = x - lib->live_view_zoom_cursor_x;
+        break;
+      default: // can't happen
+        delta_x = delta_y = 0;
+    }
+    cam->live_view_zoom_x += delta_x;
+    cam->live_view_zoom_y += delta_y;
+    lib->live_view_zoom_cursor_x = x;
+    lib->live_view_zoom_cursor_y = y;
+    gchar str[20];
+    sprintf(str, "%u,%u", cam->live_view_zoom_x, cam->live_view_zoom_y);
+    dt_camctl_camera_set_property(darktable.camctl, NULL, "eoszoomposition", str);
+  }
   dt_control_queue_redraw_center();
 }
 
@@ -491,8 +530,16 @@ void connect_key_accels(dt_view_t *self)
 int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
   dt_camera_t *cam = (dt_camera_t*)darktable.camctl->active_camera;
-  // zoom the live view
-  if(which == 2 && cam->is_live_viewing)
+  dt_capture_t *lib = (dt_capture_t*)self->data;
+
+  if(which == 1 && cam->is_live_viewing && cam->live_view_zoom)
+  {
+    cam->live_view_pan = TRUE;
+    lib->live_view_zoom_cursor_x = x;
+    lib->live_view_zoom_cursor_y = y;
+    return 1;
+  }
+  else if((which == 2 || which == 3) && cam->is_live_viewing) // zoom the live view
   {
     cam->live_view_zoom = !cam->live_view_zoom;
     if(cam->live_view_zoom == TRUE)
@@ -503,4 +550,17 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   }
   return 0;
 }
+
+int button_released(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
+{
+  dt_camera_t *cam = (dt_camera_t*)darktable.camctl->active_camera;
+  if(which == 1)
+  {
+    cam->live_view_pan = FALSE;
+    return 1;
+  }
+  return 0;
+}
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

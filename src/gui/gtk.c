@@ -581,23 +581,25 @@ configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
 static gboolean
 key_pressed_override (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
-  // fprintf(stderr,"Key Press state: %d hwkey: %d\n",event->state, event->hardware_keycode);
-
-
-  return dt_control_key_pressed_override(event->keyval,
-                                         event->state & KEY_STATE_MASK);
+  return dt_control_key_pressed_override(
+      event->keyval,
+      event->state & KEY_STATE_MASK);
 }
 
 static gboolean
 key_pressed (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
-  return dt_control_key_pressed(event->keyval, event->state & KEY_STATE_MASK);
+  return dt_control_key_pressed(
+      event->keyval,
+      event->state & KEY_STATE_MASK);
 }
 
 static gboolean
 key_released (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
-  return dt_control_key_released(event->keyval, event->state & KEY_STATE_MASK);
+  return dt_control_key_released(
+      event->keyval,
+      event->state & KEY_STATE_MASK);
 }
 
 static gboolean
@@ -1421,4 +1423,6 @@ static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
 
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

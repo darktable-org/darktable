@@ -14,7 +14,7 @@ style "clearlooks-default"
   GtkScrollbar::shadow-type = GTK_SHADOW_NONE
   GtkMenuItem::selected_shadow_type = out
   GtkWidget::interior_focus = 1
-  GtkWidget::focus-line-width = 0
+  GtkWidget::focus-line-width = 1
   GtkScrollbar::focus_padding = 0
   GtkScrolledWindow::focus_padding = 0
   GtkButton::default_border = { 0, 0, 0, 0 }
