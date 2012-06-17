@@ -124,6 +124,10 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "toggle live view"), GDK_v, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees ccw"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees cw"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "move focus point in (big steps)"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "move focus point in (small steps)"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "move focus point out (small steps)"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "move focus point out (big steps)"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -133,6 +137,10 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "toggle live view", GTK_WIDGET(lib->live_view));
   dt_accel_connect_button_lib(self, "rotate 90 degrees ccw", GTK_WIDGET(lib->rotate_ccw));
   dt_accel_connect_button_lib(self, "rotate 90 degrees cw", GTK_WIDGET(lib->rotate_cw));
+  dt_accel_connect_button_lib(self, "move focus point in (big steps)", GTK_WIDGET(lib->focus_in_big));
+  dt_accel_connect_button_lib(self, "move focus point in (small steps)", GTK_WIDGET(lib->focus_in_small));
+  dt_accel_connect_button_lib(self, "move focus point out (small steps)", GTK_WIDGET(lib->focus_out_small));
+  dt_accel_connect_button_lib(self, "move focus point out (big steps)", GTK_WIDGET(lib->focus_out_big));
 }
 
 static void _rotate_ccw(GtkWidget *widget, gpointer user_data)
