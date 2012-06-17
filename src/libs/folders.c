@@ -104,9 +104,87 @@ void connect_key_accels(dt_lib_module_t *self)
                               GTK_WIDGET(d->scan_devices)); */
 }
 
+void _check_name(gpointer *data, gpointer *user_data)
+{
+  image_t *img = (image_t *)data;
+  gchar *name = (gchar*)user_data;
+  
+  if(!g_strcmp0(img->filename, name))
+  {
+    img->exists = 1
+  }
+}
+
 void view_popup_menu_onSync (GtkWidget *menuitem, gpointer userdata)
 {
- 
+  GtkTreeView *treeview = GTK_TREE_VIEW(userdata);
+  GtkTreeSelection *selection;
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *tree_path = NULL;
+  sqlite3_stmt *stmt, *stmt2;
+  GList *filelist;
+  
+  model = gtk_tree_view_get_model(treeview);
+  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+  gtk_tree_selection_get_selected(selection, &model, &iter);
+  gtk_tree_model_get(model, &iter, 1, &tree_path, -1);
+
+  query = dt_util_dstrcat(query, "select id,folder from film_rolls where folder like '%s%%'", tree_path);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  g_free(query);
+  query = NULL;
+
+  while (sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int id;
+    gchar *path;
+    GDir *dir;
+    GError error;
+
+    id = sqlite3_column_int(stmt, 0);
+    path = (gchar *) sqlite3_column_text(stmt, 1);
+
+    /* Añadir nombre de fichero... por ahora sólo tenemos folders! 
+       Tenemos que hacer un query por los ficheros, no por los filmrolls,
+       el fichero tiene el id del filmroll, tomar el nombre del id (ver
+       si hay ya helper function)*/
+    query = dt_util_dstrcat(query, "select filename from images where film_id=%d", id);
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    g_free(query);
+
+    while (sqlite3_stmt(stmt2) == SQLITE_ROW)
+    {
+      image_t *img = malloc(sizeof(image_t));
+
+      img->id = id;
+      img->path = path;
+      img->filename = g_strdup(sqlite3_column_text(stmt2, 0));
+      img->exists = 0;
+
+      g_list_prepend (filelist, (gpointer *)img);
+    }
+
+    dir = g_dir_open(path, 0, &error);
+    /* TODO: check here for error output */
+
+    gchar *name;
+    while (name != NULL)
+    {
+      name = g_dir_read_name(dir);
+      /* Call here forearch function so the filenaem & path is compared against the list*/
+      g_list_foreach(filelist, _check_name, (gpointer *)name);
+    }
+
+    /* Call now the foreach function that gives the total data */
+
+    /* Produce the dialog */
+
+    /* Get dialog returned options */
+
+    /* Proceed with sync */
+
 }
 
 void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
