@@ -1137,7 +1137,7 @@ void _iop_clipping_update_ratios(dt_iop_module_t *self)
   g->aspect_ratios[10] = 244.5f/203.2f;
 
   // if adding new presets, make sure to change this as well:
-  assert(NUM_RATIOS == 10);
+  assert(NUM_RATIOS == 11);
 
   /* swap default fixed ratios for portraits */
   if (g->aspect_ratios[1] < 1.0)
