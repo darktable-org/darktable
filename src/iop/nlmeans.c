@@ -140,7 +140,7 @@ fast_mexp2f(const float x)
   const float i2 = (float)0x3f000000u; // 2^-1
   const float k0 = i1 + x * (i2 - i1);
   floatint_t k;
-  k.i = k0 > FLT_MIN ? k0 : 0;
+  k.i = k0 >= (float)0x800000u ? k0 : 0;
   return k.f;
 }
 
