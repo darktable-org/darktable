@@ -331,6 +331,10 @@ gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t heigh
   {
     gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
     gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
+    if(cam->live_view_rotation%2 == 1)
+    {
+      gint tmp = pw; pw = ph; ph = tmp;
+    }
     float w = width-(MARGIN*2.0f);
     float h = height-(MARGIN*2.0f);
     float scale = 1.0;
