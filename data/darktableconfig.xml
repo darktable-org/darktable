@@ -127,6 +127,14 @@
     <shortdescription>number of folder levels to show in lists</shortdescription>
     <longdescription>the number of folder levels to show in film roll names, starting from the right</longdescription>
   </dtconfig>
+  <dtconfig prefs="gui">
+    <name>darkroom/ui/expand_enabled_plugin</name>
+    <type>bool</type>
+    <default>TRUE</default>
+    <shortdescription>expand panel plugin when enabled/disabled</shortdescription>
+    <longdescription>If selected, automatically open and close plugin panels, when plugin is switched on/off.</longdescription>
+  </dtconfig>
+
   <dtconfig>
     <name>config_version</name>
     <type>int</type>
