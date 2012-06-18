@@ -842,6 +842,28 @@ void dtgtk_cairo_paint_rect_portrait(cairo_t *cr,gint x,gint y,gint w,gint h,gin
   cairo_identity_matrix(cr);
 }
 
+void dtgtk_cairo_paint_zoom(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags)
+{
+  gint s = (w<h?w:h);
+  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
+  cairo_scale (cr,s,s);
+
+  /* draw magnifying glass */
+
+  cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
+
+  // handle
+  cairo_set_line_width(cr, 0.2);
+  cairo_move_to(cr, 0.9, 1.0 - 0.1);
+  cairo_line_to(cr, 0.65, 1.0 - 0.35);
+  cairo_stroke(cr);
+
+  // lens
+  cairo_set_line_width(cr, 0.1);
+  cairo_arc(cr, 0.35, 1.0 - 0.65, 0.3, -M_PI, M_PI);
+  cairo_stroke(cr);
+}
+
 void dtgtk_cairo_paint_modulegroup_active(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
 {
   gint s=w<h?w:h;
