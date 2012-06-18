@@ -786,6 +786,7 @@ aspect_presets_changed (GtkWidget *combo, dt_iop_module_t *self)
       char text[128];
       snprintf(text, 128, "%.3f:1", g->current_aspect);
       dt_bauhaus_combobox_set_text(combo, text);
+      if(self->dt->gui->reset) return;
       apply_box_aspect(self, 5);
       dt_control_queue_redraw_center();
     }
@@ -804,6 +805,7 @@ aspect_presets_changed (GtkWidget *combo, dt_iop_module_t *self)
         // *c = '\0'; // not needed, atof will stop there.
         c++;
         g->current_aspect = atof(text) / atof(c);
+        if(self->dt->gui->reset) return;
         apply_box_aspect(self, 5);
         dt_control_queue_redraw_center();
       }
@@ -815,6 +817,7 @@ aspect_presets_changed (GtkWidget *combo, dt_iop_module_t *self)
 
     g->current_aspect = g->aspect_ratios[which];
 
+    if(self->dt->gui->reset) return;
     apply_box_aspect(self, 5);
     dt_control_queue_redraw_center();
   }

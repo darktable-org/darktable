@@ -194,6 +194,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_tonecurve_params_t p;
+  memset(&p, 0, sizeof(p));
   p.tonecurve_nodes[ch_L] = 6;
   p.tonecurve_nodes[ch_a] = 7;
   p.tonecurve_nodes[ch_b] = 7;
