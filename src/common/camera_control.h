@@ -50,6 +50,8 @@ typedef struct dt_camera_t
   gboolean can_tether;
   /** This camera/device can do live view. */
   gboolean can_live_view;
+  /** This camera/device can do advanced live view things like zoom. */
+  gboolean can_live_view_advanced;
   /** This camera/device can be remote controlled. */
   gboolean can_config;
 
