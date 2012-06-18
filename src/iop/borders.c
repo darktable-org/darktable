@@ -50,8 +50,8 @@ DT_MODULE(2)
 #define DT_IOP_BORDERS_ASPECT_IMAGE_VALUE 0.0f
 #define DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE -1.0f
 #define DT_IOP_BORDERS_ASPECT_ORIENTATION_AUTO 0
-#define DT_IOP_BORDERS_ASPECT_ORIENTATION_LANDSCAPE 1
-#define DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT -1
+#define DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT 1
+#define DT_IOP_BORDERS_ASPECT_ORIENTATION_LANDSCAPE 2
 #define DT_IOP_BORDERS_POSITION_H_COUNT 5
 #define DT_IOP_BORDERS_POSITION_V_COUNT 5
 
@@ -77,9 +77,7 @@ typedef struct dt_iop_borders_gui_data_t
 {
   GtkWidget *size;
   GtkWidget *aspect;
-  GtkWidget *aspect_orient_auto;
-  GtkWidget *aspect_orient_landscape;
-  GtkWidget *aspect_orient_portrait;
+  GtkWidget *aspect_orient;
   GtkWidget *pos_h;
   GtkWidget *pos_v;
   GtkDarktableButton *colorpick;
@@ -564,24 +562,12 @@ aspect_changed (GtkWidget *combo, dt_iop_module_t *self)
 }
 
 static void
-aspect_orient_changed (GtkToggleButton *button, dt_iop_module_t *self)
+aspect_orient_changed (GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
-  if (gtk_toggle_button_get_active(button)
-      || (!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->aspect_orient_auto))
-          && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->aspect_orient_landscape))
-          && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->aspect_orient_portrait)))) {
-    dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
-    GtkWidget *widget = GTK_WIDGET(button);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_orient_auto), widget == g->aspect_orient_auto);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_orient_landscape), widget == g->aspect_orient_landscape);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_orient_portrait), widget == g->aspect_orient_portrait);
-    p->aspect_orient
-      = (widget == g->aspect_orient_auto) ? DT_IOP_BORDERS_ASPECT_ORIENTATION_AUTO
-      : (widget == g->aspect_orient_landscape) ? DT_IOP_BORDERS_ASPECT_ORIENTATION_LANDSCAPE
-      : DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT;
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
+  if(darktable.gui->reset) return;
+  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+  p->aspect_orient = dt_bauhaus_combobox_get(widget);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -781,12 +767,7 @@ void gui_update(struct dt_iop_module_t *self)
   }
 
   // ----- aspect orientation
-  if (p->aspect_orient == DT_IOP_BORDERS_ASPECT_ORIENTATION_LANDSCAPE)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_orient_landscape), TRUE);
-  else if (p->aspect_orient == DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_orient_portrait), TRUE);
-  else
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_orient_auto), TRUE);
+  dt_bauhaus_combobox_set(g->aspect_orient, p->aspect_orient);
 
   // ----- Position H
   for(k=0;k<DT_IOP_BORDERS_POSITION_H_COUNT;k++)
@@ -868,7 +849,8 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-void gui_init_aspect(struct dt_iop_module_t *self)
+static void
+gui_init_aspect(struct dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
 
@@ -900,7 +882,8 @@ void gui_init_aspect(struct dt_iop_module_t *self)
   g->aspect_ratios[i++] = 1.0f;
 }
 
-void gui_init_positions(struct dt_iop_module_t *self)
+static void
+gui_init_positions(struct dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
 
@@ -952,25 +935,14 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->aspect), "value-changed", G_CALLBACK (aspect_changed), self);
   g_object_set(G_OBJECT(g->aspect), "tooltip-text", _("select the aspect ratio or right click and type your own (w:h)"), (char *)NULL);
 
-  GtkWidget *box = gtk_hbox_new(FALSE, 0);
-  GtkWidget *label = dtgtk_reset_label_new (_("orientation"), self, NULL, 3*sizeof(float));
-  g->aspect_orient_auto = dtgtk_togglebutton_new_with_label(_("auto"), NULL, CPF_STYLE_BOX);
-  g->aspect_orient_landscape = dtgtk_togglebutton_new(dtgtk_cairo_paint_rect_landscape, CPF_STYLE_BOX);
-  gtk_widget_set_size_request(GTK_WIDGET(g->aspect_orient_landscape), 24, 24);
-  g->aspect_orient_portrait = dtgtk_togglebutton_new(dtgtk_cairo_paint_rect_portrait, CPF_STYLE_BOX);
-  gtk_widget_set_size_request(GTK_WIDGET(g->aspect_orient_portrait), 24, 24);
-  g_object_set(G_OBJECT(g->aspect_orient_auto), "tooltip-text", _("automatically adapt aspect ratio orientation"), (char *)NULL);
-  g_object_set(G_OBJECT(g->aspect_orient_landscape), "tooltip-text", _("landscape aspect ratio orientation"), (char *)NULL);
-  g_object_set(G_OBJECT(g->aspect_orient_portrait), "tooltip-text", _("portrait aspect ratio orientation"), (char *)NULL);
-  g_signal_connect (G_OBJECT (g->aspect_orient_auto), "toggled", G_CALLBACK (aspect_orient_changed), self);
-  g_signal_connect (G_OBJECT (g->aspect_orient_landscape), "toggled", G_CALLBACK (aspect_orient_changed), self);
-  g_signal_connect (G_OBJECT (g->aspect_orient_portrait), "toggled", G_CALLBACK (aspect_orient_changed), self);
-
-  gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), g->aspect_orient_auto, FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), g->aspect_orient_landscape, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), g->aspect_orient_portrait, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
+  g->aspect_orient = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->aspect_orient, _("orientation"));
+  dt_bauhaus_combobox_add(g->aspect_orient, _("auto"));
+  dt_bauhaus_combobox_add(g->aspect_orient, _("portait"));
+  dt_bauhaus_combobox_add(g->aspect_orient, _("landscape"));
+  g_object_set(G_OBJECT(g->aspect_orient), "tooltip-text", _("aspect ratio orientation of the image with border"), (char *)NULL);
+  g_signal_connect (G_OBJECT (g->aspect_orient), "value-changed", G_CALLBACK (aspect_orient_changed), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_orient, TRUE, TRUE, 0);
 
   g->pos_h = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->pos_h, 1);
@@ -986,21 +958,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->pos_v), "tooltip-text", _("select the vertical position ratio relative to left or right click and type your own (x:w)"), (char *)NULL);
   gui_init_positions(self);
 
-  box = gtk_hbox_new(FALSE, 0);
-  g->colorpick = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE | CPF_STYLE_FLAT));
-  gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), 24, 24);
-  label = dtgtk_reset_label_new (_("border color"), self, &p->color, 3*sizeof(float));
-  g_signal_connect (G_OBJECT (g->colorpick), "clicked", G_CALLBACK (colorpick_callback), self);
-  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-  g_object_set(G_OBJECT(tb), "tooltip-text", _("pick border color from image"), (char *)NULL);
-  gtk_widget_set_size_request(tb, 24, 24);
-  g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled_border), self);
-
-  gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->colorpick), FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), tb, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
-
   g->frame_size = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->frame_size*100.0, 2);
   dt_bauhaus_widget_set_label(g->frame_size, _("frame line size"));
   dt_bauhaus_slider_set_format(g->frame_size, "%.2f%%");
@@ -1014,6 +971,21 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->frame_offset), "value-changed", G_CALLBACK (frame_offset_callback), self);
   g_object_set(G_OBJECT(g->frame_offset), "tooltip-text", _("offset of the frame line begining on picture side"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), g->frame_offset, TRUE, TRUE, 0);
+
+  GtkWidget *box = gtk_hbox_new(FALSE, 0);
+  g->colorpick = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE | CPF_STYLE_FLAT));
+  gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), 24, 24);
+  GtkWidget *label = dtgtk_reset_label_new (_("border color"), self, &p->color, 3*sizeof(float));
+  g_signal_connect (G_OBJECT (g->colorpick), "clicked", G_CALLBACK (colorpick_callback), self);
+  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
+  g_object_set(G_OBJECT(tb), "tooltip-text", _("pick border color from image"), (char *)NULL);
+  gtk_widget_set_size_request(tb, 24, 24);
+  g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled_border), self);
+
+  gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->colorpick), FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), tb, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
 
   box = gtk_hbox_new(FALSE, 0);
   g->frame_colorpick = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE | CPF_STYLE_FLAT));
