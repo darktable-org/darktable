@@ -61,9 +61,27 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
   {
     dt_iop_tonecurve_1_params_t *o = (dt_iop_tonecurve_1_params_t *)old_params;
     dt_iop_tonecurve_params_t *n = (dt_iop_tonecurve_params_t *)new_params;
-    dt_iop_tonecurve_params_t *d = (dt_iop_tonecurve_params_t *)self->default_params;
-
-    *n = *d;  // start with a fresh copy of default parameters
+    
+    // start with a fresh copy of default parameters
+    // unfortunately default_params aren't inited at this stage.
+    *n = (dt_iop_tonecurve_params_t)
+    {
+      {
+        {
+          {0.0, 0.0}, {1.0, 1.0}
+        },
+          {
+            {0.0, 0.0}, {0.5, 0.5}, {1.0, 1.0}
+          },
+          {
+            {0.0, 0.0}, {0.5, 0.5}, {1.0, 1.0}
+          }
+      },
+        { 2, 3, 3 },
+        { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE},
+        1,
+        0
+    };
     for (int k=0; k<6; k++) n->tonecurve[ch_L][k].x = o->tonecurve_x[k];
     for (int k=0; k<6; k++) n->tonecurve[ch_L][k].y = o->tonecurve_y[k];
     n->tonecurve_nodes[ch_L] = 6;

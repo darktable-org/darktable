@@ -87,10 +87,10 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
   {
     dt_iop_nlmeans_params_v1_t *o = (dt_iop_nlmeans_params_v1_t *)old_params;
     dt_iop_nlmeans_params_t *n = (dt_iop_nlmeans_params_t *)new_params;
-    dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)self->default_params;
-    *n = *d;  // start with a fresh copy of default parameters
     n->luma   = o->luma;
     n->chroma = o->chroma;
+    n->strength = 100.0f;
+    n->radius = 3;
     return 0;
   }
   return 1;
