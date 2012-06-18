@@ -43,7 +43,7 @@ DT_MODULE(1)
 
 typedef struct dt_lib_live_view_t
 {
-  GtkWidget *live_view, *rotate_ccw, *rotate_cw;
+  GtkWidget *live_view, *live_view_zoom, *rotate_ccw, *rotate_cw;
   GtkWidget *focus_out_small, *focus_out_big, *focus_in_small, *focus_in_big;
   GtkWidget *guide_selector;
   GtkWidget *flipBox, *flipLabel, *flipHorGoldenGuide, *flipVerGoldenGuide;
@@ -169,6 +169,21 @@ static void _toggle_live_view_clicked(GtkWidget *widget, gpointer user_data)
   }
 }
 
+// TODO: using a toggle button would be better, but this setting can also be chhanged by right clicking on the canvas (src/views/capture.c).
+//       maybe using a signal would work? i have no idea.
+static void _zoom_live_view_clicked(GtkWidget *widget, gpointer user_data)
+{
+  dt_camera_t *cam = (dt_camera_t*)darktable.camctl->active_camera;
+  if(cam->is_live_viewing)
+  {
+    cam->live_view_zoom = !cam->live_view_zoom;
+    if(cam->live_view_zoom == TRUE)
+      dt_camctl_camera_set_property(darktable.camctl, NULL, "eoszoom", "5");
+    else
+      dt_camctl_camera_set_property(darktable.camctl, NULL, "eoszoom", "1");
+  }
+}
+
 static const gchar *focus_array[] = {"Near 3", "Near 2", "Near 1", "Far 1", "Far 2", "Far 3"};
 static void _focus_button_clicked(GtkWidget *widget, gpointer user_data)
 {
@@ -192,19 +207,23 @@ gui_init (dt_lib_module_t *self)
 
   box = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
-  lib->live_view  = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
-  lib->rotate_ccw = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
-  lib->rotate_cw  = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|1);
+  lib->live_view       = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  lib->live_view_zoom  = dtgtk_button_new(dtgtk_cairo_paint_zoom, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER); // TODO: see _zoom_live_view_clicked
+  lib->rotate_ccw      = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  lib->rotate_cw       = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|1);
 
   gtk_box_pack_start(GTK_BOX(box), lib->live_view, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), lib->live_view_zoom, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), lib->rotate_ccw, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), lib->rotate_cw, TRUE, TRUE, 0);
 
   g_object_set(G_OBJECT( lib->live_view), "tooltip-text", _("toggle live view"), (char *)NULL);
+  g_object_set(G_OBJECT( lib->live_view_zoom), "tooltip-text", _("zoom live view"), (char *)NULL);
   g_object_set(G_OBJECT( lib->rotate_ccw), "tooltip-text", _("rotate 90 degrees ccw"), (char *)NULL);
   g_object_set(G_OBJECT( lib->rotate_cw), "tooltip-text", _("rotate 90 degrees cw"), (char *)NULL);
 
   g_signal_connect(G_OBJECT(lib->live_view), "clicked", G_CALLBACK(_toggle_live_view_clicked), lib);
+  g_signal_connect(G_OBJECT(lib->live_view_zoom), "clicked", G_CALLBACK(_zoom_live_view_clicked), lib);
   g_signal_connect(G_OBJECT(lib->rotate_ccw), "clicked", G_CALLBACK(_rotate_ccw), lib);
   g_signal_connect(G_OBJECT(lib->rotate_cw), "clicked", G_CALLBACK(_rotate_cw), lib);
 
@@ -212,8 +231,8 @@ gui_init (dt_lib_module_t *self)
   box = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
   lib->focus_in_big    = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|CPF_DIRECTION_LEFT);
-  lib->focus_in_small  = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|CPF_DIRECTION_LEFT);
-  lib->focus_out_small = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|CPF_DIRECTION_RIGHT);
+  lib->focus_in_small  = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|CPF_DIRECTION_LEFT); // TODO icon not centered
+  lib->focus_out_small = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|CPF_DIRECTION_RIGHT); // TODO same here
   lib->focus_out_big   = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|CPF_DIRECTION_RIGHT);
 
   gtk_box_pack_start(GTK_BOX(box), lib->focus_in_big, TRUE, TRUE, 0);
@@ -309,6 +328,19 @@ gui_init (dt_lib_module_t *self)
   gtk_widget_set_no_show_all(GTK_WIDGET(lib->goldenSpiralBox), TRUE);
   gtk_widget_set_no_show_all(GTK_WIDGET(lib->goldenTriangleBox), TRUE);
 
+  // disable buttons that won't work with this camera
+  // TODO: initialize tethering mode outside of libs/camera.s so we can use darktable.camctl->active_camera here
+  const dt_camera_t *cam = darktable.camctl->active_camera;
+  if(cam == NULL)
+    cam = darktable.camctl->wanted_camera;
+  if(cam != NULL && cam->can_live_view_advanced == FALSE)
+  {
+    gtk_widget_set_sensitive(lib->live_view_zoom, FALSE);
+    gtk_widget_set_sensitive(lib->focus_in_big, FALSE);
+    gtk_widget_set_sensitive(lib->focus_in_small, FALSE);
+    gtk_widget_set_sensitive(lib->focus_out_big, FALSE);
+    gtk_widget_set_sensitive(lib->focus_out_small, FALSE);
+  }
 }
 
 void
