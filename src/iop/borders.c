@@ -281,10 +281,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const int frame_in_height  = floor((piece->buf_in.height * roi_in->scale) + frame_offset*2);
     const int frame_out_width  = frame_in_width + frame_size*2;
     const int frame_out_height  = frame_in_height + frame_size*2;
-    const int frame_br_in_x = CLAMP(image_lx - frame_offset + frame_in_width, 0, roi_out->width - 1);
-    const int frame_br_in_y = CLAMP(image_ty - frame_offset + frame_in_height, 0, roi_out->height - 1);
-    const int frame_br_out_x = CLAMP(image_lx - frame_offset - frame_size + frame_out_width, 0, roi_out->width - 1);
-    const int frame_br_out_y = CLAMP(image_ty - frame_offset - frame_size + frame_out_height, 0, roi_out->height - 1);
+    const int frame_br_in_x = CLAMP(image_lx - frame_offset + frame_in_width - 1, 0, roi_out->width - 1);
+    const int frame_br_in_y = CLAMP(image_ty - frame_offset + frame_in_height - 1, 0, roi_out->height - 1);
+    // ... if 100% frame_offset we ensure frame_line "stick" the out border
+    const int frame_br_out_x = (d->frame_offset == 1.0f)
+        ? (roi_out->width - 1)
+        : CLAMP(image_lx - frame_offset - frame_size + frame_out_width - 1, 0, roi_out->width - 1);
+    const int frame_br_out_y = (d->frame_offset == 1.0f)
+        ? (roi_out->height - 1)
+        : CLAMP(image_ty - frame_offset - frame_size + frame_out_height - 1, 0, roi_out->height - 1);
+
     for(int r=frame_tl_out_y;r<=frame_br_out_y;r++)
     {
       buf = (float *)ovoid + r*out_stride + frame_tl_out_x*ch;
@@ -362,10 +368,16 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     const int frame_in_height  = floor((piece->buf_in.height * roi_in->scale) + frame_offset*2);
     const int frame_out_width  = frame_in_width + frame_size*2;
     const int frame_out_height  = frame_in_height + frame_size*2;
-    const int frame_br_in_x = CLAMP(image_lx - frame_offset + frame_in_width, 0, roi_out->width - 1);
-    const int frame_br_in_y = CLAMP(image_ty - frame_offset + frame_in_height, 0, roi_out->height - 1);
-    const int frame_br_out_x = CLAMP(image_lx - frame_offset - frame_size + frame_out_width, 0, roi_out->width - 1);
-    const int frame_br_out_y = CLAMP(image_ty - frame_offset - frame_size + frame_out_height, 0, roi_out->height - 1);
+    const int frame_br_in_x = CLAMP(image_lx - frame_offset + frame_in_width, 0, roi_out->width);
+    const int frame_br_in_y = CLAMP(image_ty - frame_offset + frame_in_height, 0, roi_out->height);
+    // ... if 100% frame_offset we ensure frame_line "stick" the out border
+    const int frame_br_out_x = (d->frame_offset == 1.0f)
+        ? (roi_out->width)
+        : CLAMP(image_lx - frame_offset - frame_size + frame_out_width, 0, roi_out->width);
+    const int frame_br_out_y = (d->frame_offset == 1.0f)
+        ? (roi_out->height)
+        : CLAMP(image_ty - frame_offset - frame_size + frame_out_height, 0, roi_out->height);
+
     const int roi_frame_in_width = frame_br_in_x - frame_tl_in_x;
     const int roi_frame_in_height = frame_br_in_y - frame_tl_in_y;
     const int roi_frame_out_width = frame_br_out_x - frame_tl_out_x;
