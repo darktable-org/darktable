@@ -530,6 +530,66 @@ error:
   return 0;
 }
 
+int32_t dt_control_seed_denoise_job_run(dt_job_t *job)
+{
+  int32_t imgid = -1;
+  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
+  GList *t = t1->index;
+  int total = g_list_length(t);
+  char message[512] = {0};
+  float fraction = 0;
+  snprintf(message, 512, ngettext ("collecting denoise seeds from %d image",
+        "collecting denoise seeds from %d images", total), total);
+
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 1, message); 
+
+  total ++;
+  while(t)
+  {
+    imgid = (int32_t)(long int)t->data;
+    t = g_list_delete_link(t, t);
+
+    // TODO: export seed images!
+    fprintf(stderr, "[seed_denoise] TODO: process image %d\n", imgid);
+
+    /* update backgroundjob ui plate */
+    fraction += 1.0f/total;
+    dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
+  }
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
+  return 0;
+}
+
+int32_t dt_control_denoise_job_run(dt_job_t *job)
+{
+  int32_t imgid = -1;
+  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
+  GList *t = t1->index;
+  int total = g_list_length(t);
+  char message[512] = {0};
+  float fraction = 0;
+  snprintf(message, 512, ngettext ("denoising %d image",
+        "denoising %d images", total), total);
+
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 1, message); 
+
+  total ++;
+  while(t)
+  {
+    imgid = (int32_t)(long int)t->data;
+    t = g_list_delete_link(t, t);
+
+    // TODO: denoise!
+    fprintf(stderr, "[denoise] TODO: process image %d\n", imgid);
+
+    /* update backgroundjob ui plate */
+    fraction += 1.0f/total;
+    dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
+  }
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
+  return 0;
+}
+
 int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
 {
   long int imgid = -1;
@@ -839,6 +899,22 @@ void dt_control_merge_hdr_job_init(dt_job_t *job)
   dt_control_image_enumerator_job_selected_init(t);
 }
 
+void dt_control_seed_denoise_job_init(dt_job_t *job)
+{
+  dt_control_job_init(job, "collect denoising seeds");
+  job->execute = &dt_control_seed_denoise_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
+  dt_control_image_enumerator_job_init(t);
+}
+
+void dt_control_denoise_job_init(dt_job_t *job)
+{
+  dt_control_job_init(job, "denoise image");
+  job->execute = &dt_control_denoise_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
+  dt_control_image_enumerator_job_init(t);
+}
+
 void dt_control_indexer_job_init(dt_job_t *job)
 {
   dt_control_job_init(job, "image indexer");
@@ -914,6 +990,20 @@ void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz
 {
   dt_job_t j;
   dt_control_gpx_apply_job_init(&j, filename, filmid, tz);
+  dt_control_add_job(darktable.control, &j);
+}
+
+void dt_control_seed_denoise()
+{
+  dt_job_t j;
+  dt_control_seed_denoise_job_init(&j);
+  dt_control_add_job(darktable.control, &j);
+}
+
+void dt_control_denoise()
+{
+  dt_job_t j;
+  dt_control_denoise_job_init(&j);
   dt_control_add_job(darktable.control, &j);
 }
 

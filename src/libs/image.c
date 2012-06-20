@@ -39,6 +39,7 @@ typedef struct dt_lib_image_t
   GtkWidget
   *rotate_cw_button, *rotate_ccw_button, *remove_button,
   *delete_button, *create_hdr_button, *duplicate_button, *reset_button,
+  *seed_denoise_button, *denoise_button,
   *move_button, *copy_button, *group_button, *ungroup_button;
 }
 dt_lib_image_t;
@@ -114,6 +115,8 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   else if(i == 9) dt_control_copy_images();
   else if(i == 10) _group_helper_function();
   else if(i == 11) _ungroup_helper_function();
+  else if(i == 12) dt_control_seed_denoise();
+  else if(i == 13) dt_control_denoise();
   dt_control_queue_redraw_center();
 }
 
@@ -176,6 +179,19 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)3);
 
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+
+  button = d->seed_denoise_button = gtk_button_new_with_label(_("seed denoise"));
+  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)11);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("collect statistics for denoising from selected images"), (char *)NULL);
+
+  d->duplicate_button = button = gtk_button_new_with_label(_("denoise"));
+  g_object_set(G_OBJECT(button), "tooltip-text", _("denoise selected image using the previously collected seed images"), (char *)NULL);
+  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)13);
+  
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 

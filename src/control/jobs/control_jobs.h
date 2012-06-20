@@ -76,6 +76,9 @@ void dt_control_merge_hdr();
 void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz);
 void dt_control_time_offset(const long int offset, long int imgid);
 
+void dt_control_seed_denoise();
+void dt_control_denoise();
+
 struct dt_similarity_t;
 void dt_control_match_similar(struct dt_similarity_t *data);
 
