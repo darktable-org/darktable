@@ -543,19 +543,37 @@ int32_t dt_control_seed_denoise_job_run(dt_job_t *job)
 
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 1, message); 
 
+  int32_t seq = 1;
+  char filename[256];
   total ++;
   while(t)
   {
     imgid = (int32_t)(long int)t->data;
     t = g_list_delete_link(t, t);
 
-    // TODO: export seed images!
-    fprintf(stderr, "[seed_denoise] TODO: process image %d\n", imgid);
+    // export seed images.
+    g_mkdir_with_parents("/tmp/dt_denoise_seed/", 0755);
+    snprintf(filename, 256, "/tmp/dt_denoise_seed/img_%04d.pfm", seq);
+    fprintf(stderr, "[seed_denoise] processing image %d\n", imgid);
+    int size = 0;
+    dt_imageio_module_format_t *format = dt_imageio_get_format_by_name("pfm");
+    if(!format) goto error;
+    dt_imageio_module_data_t *fdata = format->get_params(format, &size);
+    if(!fdata) goto error;
+    fdata->max_width  = 0;
+    fdata->max_height = 0;
+    int res = dt_imageio_export_with_flags(
+        imgid, filename, format, fdata,
+			  0, 0, 0, 0, "pre:nlmeans");
 
+    if(res) goto error;
+
+    seq++;
     /* update backgroundjob ui plate */
     fraction += 1.0f/total;
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
+error:
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   return 0;
 }
