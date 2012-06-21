@@ -302,9 +302,10 @@ void dtgtk_cairo_paint_eye(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
   cairo_stroke(cr);
 
   cairo_translate(cr, 0,0.20);
+  cairo_save(cr);
   cairo_scale(cr,1.0,0.60);
-  cairo_set_line_width(cr,0.2);
   cairo_arc (cr, 0.5, 0.5, 0.45, 0, 6.2832);
+  cairo_restore(cr);
   cairo_stroke(cr);
   cairo_identity_matrix(cr);
 
