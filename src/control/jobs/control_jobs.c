@@ -600,6 +600,62 @@ int32_t dt_control_denoise_job_run(dt_job_t *job)
     // TODO: denoise!
     fprintf(stderr, "[denoise] TODO: process image %d\n", imgid);
 
+    // TODO: get image buffer, processed to pre-nlmeans, along with it's dimensions
+    int width = 0, height = 0;
+    float *input  = dt_alloc_align(64, sizeof(float)*4*width*height);
+    float *output = dt_alloc_align(64, sizeof(float)*4*width*height);
+    float *input2 = dt_alloc_align(64, sizeof(float)*4*width*height);
+    float *tmp    = dt_alloc_align(64, sizeof(float)*width*dt_get_num_threads());
+    const int P = 3;
+    const int K = 8;
+    const float sharpness = 1000.f;
+    const float luma = 0.5f;
+    const float chroma = 1.0f;
+
+    memset(output, 0, sizeof(float)*4*width*height);
+    int seq = 0;
+    while(1)
+    {
+      snprintf(filename, 256, "/tmp/dt_denoise_seed/img_%04d.pfm", seq);
+      FILE *f = fopen(filename, "rb");
+      if(!f) break; // no more denoise seeds available
+      int wd = 0, ht = 0;
+      int ret = fscanf(f, "PF\n%d %d\n%*[^\n]", &wd, &ht);
+      if(ret != 2) goto error;
+      (void)fgetc(f);
+      if(width != wd || height != ht) goto error;
+
+      dt_nlm_accum(
+          input,
+          input2,
+          output,
+          width,
+          height,
+          P,
+          K,
+          sharpness,
+          tmp);
+
+      fprintf(stderr, "[denoise] ingested image %d\n", seq);
+      seq++;
+error:
+      fprintf(stderr, "[denoise] image %d failed to load\n", seq);
+      fclose(f);
+    }
+
+    // finalize denoising
+    dt_nlm_normalize(
+        input,
+        output,
+        width,
+        height,
+        luma,
+        chroma);
+
+    free(tmp);
+    free(input);
+    free(input2);
+
     /* update backgroundjob ui plate */
     fraction += 1.0f/total;
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
