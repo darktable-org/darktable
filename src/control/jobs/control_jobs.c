@@ -585,6 +585,7 @@ int32_t dt_control_denoise_job_run(dt_job_t *job)
   GList *t = t1->index;
   int total = g_list_length(t);
   char message[512] = {0};
+  char filename[512];
   float fraction = 0;
   snprintf(message, 512, ngettext ("denoising %d image",
         "denoising %d images", total), total);
@@ -606,11 +607,13 @@ int32_t dt_control_denoise_job_run(dt_job_t *job)
     float *output = dt_alloc_align(64, sizeof(float)*4*width*height);
     float *input2 = dt_alloc_align(64, sizeof(float)*4*width*height);
     float *tmp    = dt_alloc_align(64, sizeof(float)*width*dt_get_num_threads());
+#if 0
     const int P = 3;
     const int K = 8;
     const float sharpness = 1000.f;
     const float luma = 0.5f;
     const float chroma = 1.0f;
+#endif
 
     memset(output, 0, sizeof(float)*4*width*height);
     int seq = 0;
@@ -625,6 +628,7 @@ int32_t dt_control_denoise_job_run(dt_job_t *job)
       (void)fgetc(f);
       if(width != wd || height != ht) goto error;
 
+#if 0
       dt_nlm_accum(
           input,
           input2,
@@ -635,6 +639,7 @@ int32_t dt_control_denoise_job_run(dt_job_t *job)
           K,
           sharpness,
           tmp);
+#endif
 
       fprintf(stderr, "[denoise] ingested image %d\n", seq);
       seq++;
@@ -643,6 +648,7 @@ error:
       fclose(f);
     }
 
+#if 0
     // finalize denoising
     dt_nlm_normalize(
         input,
@@ -651,10 +657,12 @@ error:
         height,
         luma,
         chroma);
+#endif
 
     free(tmp);
     free(input);
     free(input2);
+    free(output);
 
     /* update backgroundjob ui plate */
     fraction += 1.0f/total;
