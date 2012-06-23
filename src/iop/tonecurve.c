@@ -759,7 +759,7 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
     raw_mean_output = self->picked_output_color;
 
     hist = dev->histogram_pre_tonecurve;
-    hist_max = dev->histogram_pre_tonecurve_max;
+    hist_max = dev->histogram_linear?dev->histogram_pre_tonecurve_max:logf(1.0 + dev->histogram_pre_tonecurve_max);
     if(hist_max > 0 && ch == ch_L)
     {
       cairo_save(cr);

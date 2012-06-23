@@ -30,6 +30,9 @@
 #include <stdint.h>
 #include <glib.h>
 
+#include "common/darktable.h"
+#include "develop/develop.h"
+
 /** wrapper around nikon curve or gegl. */
 typedef struct dt_draw_curve_t
 {
@@ -175,7 +178,7 @@ static inline int dt_draw_curve_add_point(dt_draw_curve_t *c, const            f
   return 0;
 }
 
-static inline void dt_draw_histogram_8(cairo_t *cr, float *hist, int32_t channel)
+static inline void dt_draw_histogram_8_linear(cairo_t *cr, float *hist, int32_t channel)
 {
   cairo_move_to(cr, 0, 0);
   for(int k=0; k<64; k++)
@@ -183,6 +186,24 @@ static inline void dt_draw_histogram_8(cairo_t *cr, float *hist, int32_t channel
   cairo_line_to(cr, 63, 0);
   cairo_close_path(cr);
   cairo_fill(cr);
+}
+
+static inline void dt_draw_histogram_8_log(cairo_t *cr, float *hist, int32_t channel)
+{
+  cairo_move_to(cr, 0, 0);
+  for(int k=0; k<64; k++)
+    cairo_line_to(cr, k, logf(1.0 + hist[4*k+channel]));
+  cairo_line_to(cr, 63, 0);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+}
+
+static inline void dt_draw_histogram_8(cairo_t *cr, float *hist, int32_t channel)
+{
+  if(darktable.develop->histogram_linear == TRUE)
+    dt_draw_histogram_8_linear(cr, hist, channel);
+  else
+    dt_draw_histogram_8_log(cr, hist, channel);
 }
 #endif
 
