@@ -354,6 +354,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   char datadir[1024];
   char filename[1024];
   dt_loc_get_datadir(datadir, 1024);
+  if(!strcmp(p->iccprofile, "Lab"))
+  {
+    piece->enabled = 0;
+    return;
+  }
+  piece->enabled = 1;
   if(!strcmp(p->iccprofile, "darktable"))
   {
     char makermodel[1024];
@@ -594,6 +600,13 @@ void gui_init(struct dt_iop_module_t *self)
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
 
+  // Lab built-in
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
+  g_strlcpy(prof->filename, "Lab", sizeof(prof->filename));
+  g_strlcpy(prof->name, "Lab", sizeof(prof->name));
+  g->profiles = g_list_append(g->profiles, prof);
+  prof->pos = ++pos;
+
   // infrared built-in
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "infrared", sizeof(prof->filename));
@@ -659,6 +672,8 @@ void gui_init(struct dt_iop_module_t *self)
       dt_bauhaus_combobox_add(g->cbox2, _("linear infrared BGR"));
     else if(!strcmp(prof->name, "XYZ"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear XYZ"));
+    else if(!strcmp(prof->name, "Lab"))
+      dt_bauhaus_combobox_add(g->cbox2, _("Lab"));
     else
       dt_bauhaus_combobox_add(g->cbox2, prof->name);
     l = g_list_next(l);
