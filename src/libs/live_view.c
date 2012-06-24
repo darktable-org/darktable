@@ -18,6 +18,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "views/capture.h"
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/camera_control.h"
 #include "control/jobs.h"
@@ -45,49 +46,23 @@ typedef struct dt_lib_live_view_t
 {
   GtkWidget *live_view, *live_view_zoom, *rotate_ccw, *rotate_cw;
   GtkWidget *focus_out_small, *focus_out_big, *focus_in_small, *focus_in_big;
-  GtkWidget *guide_selector;
-  GtkWidget *flipBox, *flipLabel, *flipHorGoldenGuide, *flipVerGoldenGuide;
-  GtkWidget *goldenTable, *goldenSectionBox, *goldenSpiralBox, *goldenSpiralSectionBox, *goldenTriangleBox;
+  GtkWidget *guide_selector, *flip_guides, *golden_extras;
 }
 dt_lib_live_view_t;
 
 static void
-guides_presets_changed (GtkComboBox *combo, dt_lib_live_view_t *lib)
+guides_presets_changed (GtkWidget *combo, dt_lib_live_view_t *lib)
 {
-  int which = gtk_combo_box_get_active(combo);
+  int which = dt_bauhaus_combobox_get(combo);
   if (which == GUIDE_TRIANGL || which == GUIDE_GOLDEN )
-  {
-    gtk_widget_set_visible(GTK_WIDGET(lib->flipBox), TRUE);
-    gtk_widget_set_visible(GTK_WIDGET(lib->flipLabel), TRUE);
-    gtk_widget_set_visible(GTK_WIDGET(lib->flipHorGoldenGuide), TRUE);
-    gtk_widget_set_visible(GTK_WIDGET(lib->flipVerGoldenGuide), TRUE);
-  }
+    gtk_widget_set_visible(GTK_WIDGET(lib->flip_guides), TRUE);
   else
-  {
-    gtk_widget_set_visible(GTK_WIDGET(lib->flipBox), FALSE);
-    gtk_widget_set_visible(GTK_WIDGET(lib->flipLabel), FALSE);
-    gtk_widget_set_visible(GTK_WIDGET(lib->flipHorGoldenGuide), FALSE);
-    gtk_widget_set_visible(GTK_WIDGET(lib->flipVerGoldenGuide), FALSE);
-  }
+    gtk_widget_set_visible(GTK_WIDGET(lib->flip_guides), FALSE);
 
   if (which == GUIDE_GOLDEN)
-  {
-    gtk_widget_set_visible(GTK_WIDGET(lib->goldenTable), TRUE);
-    gtk_widget_set_visible(GTK_WIDGET(lib->goldenSectionBox), TRUE);
-    gtk_widget_set_visible(GTK_WIDGET(lib->goldenSpiralSectionBox), TRUE);
-    gtk_widget_set_visible(GTK_WIDGET(lib->goldenSpiralBox), TRUE);
-    gtk_widget_set_visible(GTK_WIDGET(lib->goldenTriangleBox), TRUE);
-  }
+    gtk_widget_set_visible(GTK_WIDGET(lib->golden_extras), TRUE);
   else
-  {
-    gtk_widget_set_visible(GTK_WIDGET(lib->goldenTable), FALSE);
-    gtk_widget_set_visible(GTK_WIDGET(lib->goldenSectionBox), FALSE);
-    gtk_widget_set_visible(GTK_WIDGET(lib->goldenSpiralSectionBox), FALSE);
-    gtk_widget_set_visible(GTK_WIDGET(lib->goldenSpiralBox), FALSE);
-    gtk_widget_set_visible(GTK_WIDGET(lib->goldenTriangleBox), FALSE);
-  }
-
-//   dt_control_queue_redraw_center();
+    gtk_widget_set_visible(GTK_WIDGET(lib->golden_extras), FALSE);
 }
 
 
@@ -203,7 +178,7 @@ gui_init (dt_lib_module_t *self)
 
   // Setup gui
   self->widget = gtk_vbox_new(FALSE, 5);
-  GtkWidget *box, *label;
+  GtkWidget *box;
 
   box = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
@@ -252,81 +227,41 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(lib->focus_out_big), "clicked", G_CALLBACK(_focus_button_clicked), (gpointer)5);
 
   // Guides
-  label = GTK_WIDGET(dtgtk_label_new(_("guides"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT));
-  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
-  lib->guide_selector = gtk_combo_box_new_text();
-  gtk_combo_box_append_text(GTK_COMBO_BOX(lib->guide_selector), _("none"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(lib->guide_selector), _("grid"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(lib->guide_selector), _("rules of thirds"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(lib->guide_selector), _("diagonal method"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(lib->guide_selector), _("harmonious triangles"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(lib->guide_selector), _("golden mean"));
-  gtk_combo_box_set_active(GTK_COMBO_BOX(lib->guide_selector), GUIDE_NONE);
-  g_object_set(G_OBJECT(lib->guide_selector), "tooltip-text", _("with this option, you can display guide lines to help compose your photograph."), (char *)NULL);
-  g_signal_connect (G_OBJECT (lib->guide_selector), "changed", G_CALLBACK (guides_presets_changed), lib);
+  lib->guide_selector = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(lib->guide_selector, _("guides"));
+  dt_bauhaus_combobox_add(lib->guide_selector, _("none"));
+  dt_bauhaus_combobox_add(lib->guide_selector, _("grid"));
+  dt_bauhaus_combobox_add(lib->guide_selector, _("rules of thirds"));
+  dt_bauhaus_combobox_add(lib->guide_selector, _("diagonal method"));
+  dt_bauhaus_combobox_add(lib->guide_selector, _("harmonious triangles"));
+  dt_bauhaus_combobox_add(lib->guide_selector, _("golden mean"));
+  g_object_set(G_OBJECT(lib->guide_selector), "tooltip-text", _("display guide lines to help compose your photograph"), (char *)NULL);
+  g_signal_connect (G_OBJECT (lib->guide_selector), "value-changed", G_CALLBACK (guides_presets_changed), lib);
+  gtk_box_pack_start(GTK_BOX(self->widget), lib->guide_selector, TRUE, TRUE, 0);
 
-  label = gtk_label_new(_("type"));
-  box = gtk_hbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), lib->guide_selector, TRUE, TRUE, 0);
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  lib->flip_guides = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(lib->flip_guides, _("flip"));
+  dt_bauhaus_combobox_add(lib->flip_guides, _("none"));
+  dt_bauhaus_combobox_add(lib->flip_guides, _("horizontally"));
+  dt_bauhaus_combobox_add(lib->flip_guides, _("vertically"));
+  dt_bauhaus_combobox_add(lib->flip_guides, _("both"));
+  g_object_set(G_OBJECT(lib->flip_guides), "tooltip-text", _("flip guides"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), lib->flip_guides, TRUE, TRUE, 0);
 
-  /*-------------------------------------------*/
-  lib->flipBox = gtk_hbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), lib->flipBox, TRUE, TRUE, 0);
-  lib->flipLabel = gtk_label_new(_("flip"));
-  gtk_misc_set_alignment(GTK_MISC(lib->flipLabel), 0.0, 0.5);
-  lib->flipHorGoldenGuide = dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|CPF_DIRECTION_UP);
-  lib->flipVerGoldenGuide = dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
-  gtk_box_pack_start(GTK_BOX(lib->flipBox), lib->flipLabel, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(lib->flipBox), lib->flipHorGoldenGuide, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(lib->flipBox), lib->flipVerGoldenGuide, TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(lib->flipHorGoldenGuide), "tooltip-text", _("flip guides horizontally"), (char *)NULL);
-  g_object_set(G_OBJECT(lib->flipVerGoldenGuide), "tooltip-text", _("flip guides vertically"), (char *)NULL);
+  lib->golden_extras = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(lib->golden_extras, _("extra"));
+  dt_bauhaus_combobox_add(lib->golden_extras, _("golden sections"));
+  dt_bauhaus_combobox_add(lib->golden_extras, _("golden spiral sections"));
+  dt_bauhaus_combobox_add(lib->golden_extras, _("golden spiral"));
+  dt_bauhaus_combobox_add(lib->golden_extras, _("all"));
+  g_object_set(G_OBJECT(lib->golden_extras), "tooltip-text", _("show some extra guides"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), lib->golden_extras, TRUE, TRUE, 0);
 
-  /*-------------------------------------------*/
-  lib->goldenTable = gtk_table_new(3, 3, FALSE);
-  gtk_box_pack_start(GTK_BOX(self->widget), lib->goldenTable, TRUE, TRUE, 0);
-  gtk_table_set_row_spacings(GTK_TABLE(lib->goldenTable), DT_GUI_IOP_MODULE_CONTROL_SPACING);
-  gtk_table_set_col_spacings(GTK_TABLE(lib->goldenTable), DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  gtk_widget_set_visible(GTK_WIDGET(lib->flip_guides), FALSE);
+  gtk_widget_set_visible(GTK_WIDGET(lib->golden_extras), FALSE);
 
-  lib->goldenSectionBox = gtk_check_button_new_with_label(_("golden sections"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lib->goldenSectionBox), TRUE);
-  g_object_set(G_OBJECT(lib->goldenSectionBox), "tooltip-text", _("enable this option to show golden sections."), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(lib->goldenTable), lib->goldenSectionBox, 0, 1, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-
-  lib->goldenSpiralSectionBox = gtk_check_button_new_with_label(_("spiral sections"));
-  g_object_set(G_OBJECT(lib->goldenSpiralSectionBox), "tooltip-text", _("enable this option to show golden spiral sections."), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(lib->goldenTable), lib->goldenSpiralSectionBox, 1, 2, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-
-  lib->goldenSpiralBox = gtk_check_button_new_with_label(_("golden spiral"));
-  g_object_set(G_OBJECT(lib->goldenSpiralBox), "tooltip-text", _("enable this option to show a golden spiral guide."), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(lib->goldenTable), lib->goldenSpiralBox, 0, 1, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-
-  lib->goldenTriangleBox = gtk_check_button_new_with_label(_("golden triangles"));
-  g_object_set(G_OBJECT(lib->goldenTriangleBox), "tooltip-text", _("enable this option to show golden triangles."), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(lib->goldenTable), lib->goldenTriangleBox, 1, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-
-  gtk_widget_set_visible(GTK_WIDGET(lib->flipBox), FALSE);
-  gtk_widget_set_visible(GTK_WIDGET(lib->flipLabel), FALSE);
-  gtk_widget_set_visible(GTK_WIDGET(lib->flipHorGoldenGuide), FALSE);
-  gtk_widget_set_visible(GTK_WIDGET(lib->flipVerGoldenGuide), FALSE);
-  gtk_widget_set_visible(GTK_WIDGET(lib->goldenTable), FALSE);
-  gtk_widget_set_visible(GTK_WIDGET(lib->goldenSectionBox), FALSE);
-  gtk_widget_set_visible(GTK_WIDGET(lib->goldenSpiralSectionBox), FALSE);
-  gtk_widget_set_visible(GTK_WIDGET(lib->goldenSpiralBox), FALSE);
-  gtk_widget_set_visible(GTK_WIDGET(lib->goldenTriangleBox), FALSE);
-
-  gtk_widget_set_no_show_all(GTK_WIDGET(lib->flipBox), TRUE);
-  gtk_widget_set_no_show_all(GTK_WIDGET(lib->flipLabel), TRUE);
-  gtk_widget_set_no_show_all(GTK_WIDGET(lib->flipHorGoldenGuide), TRUE);
-  gtk_widget_set_no_show_all(GTK_WIDGET(lib->flipVerGoldenGuide), TRUE);
-  gtk_widget_set_no_show_all(GTK_WIDGET(lib->goldenTable), TRUE);
-  gtk_widget_set_no_show_all(GTK_WIDGET(lib->goldenSectionBox), TRUE);
-  gtk_widget_set_no_show_all(GTK_WIDGET(lib->goldenSpiralSectionBox), TRUE);
-  gtk_widget_set_no_show_all(GTK_WIDGET(lib->goldenSpiralBox), TRUE);
-  gtk_widget_set_no_show_all(GTK_WIDGET(lib->goldenTriangleBox), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(lib->flip_guides), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(lib->golden_extras), TRUE);
 
   // disable buttons that won't work with this camera
   // TODO: initialize tethering mode outside of libs/camera.s so we can use darktable.camctl->active_camera here
@@ -389,7 +324,8 @@ gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t heigh
     cairo_save(cr);
     cairo_set_dash(cr, &dashes, 1, 0);
 
-    int which = gtk_combo_box_get_active(GTK_COMBO_BOX(lib->guide_selector));
+    int guide_flip = dt_bauhaus_combobox_get(lib->flip_guides);
+    int which = dt_bauhaus_combobox_get(lib->guide_selector);
     switch(which)
     {
       case GUIDE_GRID:
@@ -419,10 +355,10 @@ gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t heigh
         cairo_translate(cr, ((right - left)/2+left), ((bottom - top)/2+top));
 
         // Flip horizontal.
-        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->flipHorGoldenGuide)))
+        if (guide_flip & 1)
           cairo_scale(cr, -1, 1);
         // Flip vertical.
-        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->flipVerGoldenGuide)))
+        if (guide_flip & 2)
           cairo_scale(cr, 1, -1);
 
         dt_guides_draw_harmonious_triangles(cr, left, top,  right, bottom, dst);
@@ -440,10 +376,10 @@ gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t heigh
         cairo_translate(cr, ((right - left)/2+left), ((bottom - top)/2+top));
 
         // Flip horizontal.
-        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->flipHorGoldenGuide)))
+        if (guide_flip & 1)
           cairo_scale(cr, -1, 1);
         // Flip vertical.
-        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->flipVerGoldenGuide)))
+        if (guide_flip & 2)
           cairo_scale(cr, 1, -1);
 
         float w = sw;
@@ -467,22 +403,21 @@ gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t heigh
         dt_guides_q_rect (&R6, R5.left + R5.width, R5.bottom - R5.height*INVPHI, R3.left - R5.right, R5.height*INVPHI);
         dt_guides_q_rect (&R7, R6.right - R6.width*INVPHI, R4.bottom, R6.width*INVPHI, R5.height - R6.height);
 
+        const int extras = dt_bauhaus_combobox_get(lib->golden_extras);
         dt_guides_draw_golden_mean(cr, &R1, &R2, &R3, &R4, &R5, &R6, &R7,
-                                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->goldenSectionBox)),
-                                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->goldenTriangleBox)),
-                                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->goldenSpiralSectionBox)),
-                                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->goldenSpiralBox))
-                                  );
+                                   extras == 0 || extras == 3,
+                                   0,
+                                   extras == 1 || extras == 3,
+                                   extras == 2 || extras == 3);
         cairo_stroke (cr);
 
         cairo_set_dash (cr, &dashes, 0, 0);
         cairo_set_source_rgba(cr, .3, .3, .3, .8);
         dt_guides_draw_golden_mean(cr, &R1, &R2, &R3, &R4, &R5, &R6, &R7,
-                                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->goldenSectionBox)),
-                                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->goldenTriangleBox)),
-                                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->goldenSpiralSectionBox)),
-                                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->goldenSpiralBox))
-                                   );
+                                   extras == 0 || extras == 3,
+                                   0,
+                                   extras == 1 || extras == 3,
+                                   extras == 2 || extras == 3);
         cairo_stroke (cr);
       }
       break;
