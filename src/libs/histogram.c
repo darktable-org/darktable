@@ -433,6 +433,9 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
       d->button_down_y = event->y;
     }
   }
+  // update for good measure
+  dt_control_queue_redraw_widget(self->widget);
+
   return TRUE;
 }
 
