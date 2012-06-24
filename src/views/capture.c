@@ -537,6 +537,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
     cam->live_view_pan = TRUE;
     lib->live_view_zoom_cursor_x = x;
     lib->live_view_zoom_cursor_y = y;
+    dt_control_change_cursor(GDK_HAND1);
     return 1;
   }
   else if((which == 2 || which == 3) && cam->is_live_viewing) // zoom the live view
@@ -557,6 +558,7 @@ int button_released(dt_view_t *self, double x, double y, int which, int type, ui
   if(which == 1)
   {
     cam->live_view_pan = FALSE;
+    dt_control_change_cursor(GDK_LEFT_PTR);
     return 1;
   }
   return 0;
