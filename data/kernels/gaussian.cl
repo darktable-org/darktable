@@ -166,7 +166,7 @@ lowpass_mix(global float4 *in, global float4 *out, unsigned int width, unsigned 
 
 
 float4
-overlay(const float4 in_a, const float4 in_b, const float opacity, const float transform)
+overlay(const float4 in_a, const float4 in_b, const float opacity, const float transform, const float ccorrect)
 {
   /* a contains underlying image; b contains mask */
 
@@ -181,12 +181,13 @@ overlay(const float4 in_a, const float4 in_b, const float opacity, const float t
   float4 a = in_a / scale;
   float4 b = in_b / scale;
 
-  float lb = clamp(b.x + fabs(min.x), lmin, lmax);
+  float lb = clamp((b.x - halfmax) * sign(opacity) + halfmax, lmin, lmax);
   float opacity2 = opacity*opacity;
 
   while(opacity2 > 0.0f)
   {
-    float ax = a.x;
+    float lref = a.x > 0.01f ? a.x : 0.01f;
+    float href = a.x < 0.99f ? a.x : 0.99f;
     float la = clamp(a.x + fabs(min.x), lmin, lmax);
 
     float chunk = opacity2 > 1.0f ? 1.0f : opacity2;
@@ -196,16 +197,10 @@ overlay(const float4 in_a, const float4 in_b, const float opacity, const float t
     a.x = clamp(la * (1.0f - optrans) + (la > halfmax ? 
                                             lmax - (lmax - doublemax * (la - halfmax)) * (lmax-lb) : 
                                             doublemax * la * lb) * optrans, lmin, lmax) - fabs(min.x);
-    if (ax > 0.01f)
-    {
-      a.y = clamp(a.y * (1.0f - optrans) + (a.y + b.y) * a.x/ax * optrans, min.y, max.y);
-      a.z = clamp(a.z * (1.0f - optrans) + (a.z + b.z) * a.x/ax * optrans, min.z, max.z);
-    }
-    else
-    { 
-      a.y = clamp(a.y * (1.0f - optrans) + (a.y + b.y) * a.x/0.01f * optrans, min.y, max.y);
-      a.z = clamp(a.z * (1.0f - optrans) + (a.z + b.z) * a.x/0.01f * optrans, min.z, max.z);
-    }
+
+    a.y = clamp(a.y * (1.0f - optrans) + (a.y + b.y) * (a.x/lref * ccorrect + (1.0f - a.x)/(1.0f - href) * (1.0f - ccorrect)) * optrans, min.y, max.y);
+
+    a.z = clamp(a.z * (1.0f - optrans) + (a.z + b.z) * (a.x/lref * ccorrect + (1.0f - a.x)/(1.0f - href) * (1.0f - ccorrect)) * optrans, min.z, max.z);
 
   }
   /* output scaled back pixel */
@@ -215,7 +210,8 @@ overlay(const float4 in_a, const float4 in_b, const float opacity, const float t
 
 kernel void 
 shadows_highlights_mix(global float4 *inout, global float4 *mask, unsigned int width, unsigned int height, 
-                       const float shadows, const float highlights, const float compress)
+                       const float shadows, const float highlights, const float compress,
+                       const float shadows_ccorrect, const float highlights_ccorrect)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -238,11 +234,11 @@ shadows_highlights_mix(global float4 *inout, global float4 *mask, unsigned int w
 
   /* overlay highlights */
   xform = clamp(1.0f - 0.01f * m.x/(1.0f-compress), 0.0f, 1.0f);
-  io = overlay(io, m, highlights, xform);
+  io = overlay(io, m, -highlights, xform, 1.0f - highlights_ccorrect);
 
   /* overlay shadows */
   xform = clamp(0.01f * m.x/(1.0f-compress) - compress/(1.0f-compress), 0.0f, 1.0f);
-  io = overlay(io, m, shadows, xform);
+  io = overlay(io, m, shadows, xform, shadows_ccorrect);
 
   inout[idx] = clamp(io, Labmin, Labmax);
 }
