@@ -199,8 +199,8 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
     d->button_spacing = 0.01*width;
     d->button_h = 0.06*width;
     d->button_y = d->button_spacing;
-    d->mode_x = width - 3*(d->color_w+d->button_spacing) - 1.5*d->color_w - 3*d->button_spacing;
-    d->mode_w = 1.5*d->color_w;
+    d->mode_w = d->color_w;
+    d->mode_x = width - 3*(d->color_w+d->button_spacing) - (d->mode_w+d->button_spacing);
     d->red_x = width - 3*(d->color_w+d->button_spacing);
     d->green_x = width - 2*(d->color_w+d->button_spacing);
     d->blue_x = width - (d->color_w+d->button_spacing);
