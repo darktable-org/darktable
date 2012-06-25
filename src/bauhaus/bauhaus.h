@@ -214,6 +214,12 @@ int  dt_bauhaus_combobox_get(GtkWidget *w);
 const GList* dt_bauhaus_combobox_get_labels(GtkWidget *w);
 void dt_bauhaus_combobox_clear(GtkWidget *w);
 
+// key accel parsing:
+// execute a line of input
+void dt_bauhaus_vimkey_exec(const char *input);
+// give autocomplete suggestions
+GList* dt_bauhaus_vimkey_complete(const char *input);
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -218,6 +218,9 @@ typedef struct dt_control_t
   gchar *accel_remap_str;
   GtkTreePath *accel_remap_path;
 
+  char vimkey[256];
+  int vimkey_cnt;
+
   // gui related stuff
   double tabborder;
   int32_t width, height;

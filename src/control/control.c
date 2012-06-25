@@ -27,6 +27,7 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"
+#include "bauhaus/bauhaus.h"
 #include "views/view.h"
 #include "gui/gtk.h"
 #include "gui/contrast.h"
@@ -388,6 +389,9 @@ void dt_control_create_database_schema()
 void dt_control_init(dt_control_t *s)
 {
   dt_ctl_settings_init(s);
+
+  memset(s->vimkey, 0, sizeof(s->vimkey));
+  s->vimkey_cnt = 0;
 
   // s->last_expose_time = dt_get_wtime();
   s->key_accelerators_on = 1;
@@ -1477,6 +1481,64 @@ void dt_control_queue_redraw_widget(GtkWidget *widget)
 int dt_control_key_pressed_override(guint key, guint state)
 {
   dt_control_accels_t* accels = &darktable.control->accels;
+
+  // did a : vim-style command start?
+  if(darktable.control->vimkey_cnt)
+  {
+    if(key == GDK_KEY_Return)
+    {
+      dt_bauhaus_vimkey_exec(darktable.control->vimkey);
+      darktable.control->vimkey[0] = 0;
+      darktable.control->vimkey_cnt = 0;
+      dt_pthread_mutex_lock(&darktable.control->log_mutex);
+      darktable.control->log_ack = darktable.control->log_pos;
+      dt_pthread_mutex_unlock(&darktable.control->log_mutex);
+    }
+    if(key == GDK_KEY_Escape)
+    {
+      darktable.control->vimkey[0] = 0;
+      darktable.control->vimkey_cnt = 0;
+      dt_pthread_mutex_lock(&darktable.control->log_mutex);
+      darktable.control->log_ack = darktable.control->log_pos;
+      dt_pthread_mutex_unlock(&darktable.control->log_mutex);
+    }
+    else if(key == GDK_KEY_BackSpace)
+    {
+      darktable.control->vimkey_cnt = MAX(0, darktable.control->vimkey_cnt-1);
+      darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
+      if(darktable.control->vimkey_cnt == 0)
+      {
+        dt_pthread_mutex_lock(&darktable.control->log_mutex);
+        darktable.control->log_ack = darktable.control->log_pos;
+        dt_pthread_mutex_unlock(&darktable.control->log_mutex);
+      }
+      else dt_control_log(darktable.control->vimkey);
+    }
+    else if(key == GDK_KEY_Tab)
+    {
+      // TODO: auto complete!
+      // TODO: make this static and have tab cycle through the list?
+      // GList *comp = dt_bauhaus_vimkey_complete(darktable.control->vimkey);
+      // TODO: only put autosuggest in here?
+      dt_control_log(darktable.control->vimkey);
+    }
+    else
+    {
+      darktable.control->vimkey[darktable.control->vimkey_cnt] = key;
+      darktable.control->vimkey_cnt = MIN(255, darktable.control->vimkey_cnt+1);
+      darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
+      dt_control_log(darktable.control->vimkey);
+    }
+    return 1;
+  }
+  else if(key == ':')
+  {
+    darktable.control->vimkey[0] = ':';
+    darktable.control->vimkey[1] = 0;
+    darktable.control->vimkey_cnt = 1;
+    dt_control_log(darktable.control->vimkey);
+    return 1;
+  }
 
   /* check if key accelerators are enabled*/
   if (darktable.control->key_accelerators_on != 1) return 0;

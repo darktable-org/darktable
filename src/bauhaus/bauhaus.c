@@ -551,6 +551,8 @@ dt_bauhaus_init()
                     G_CALLBACK (dt_bauhaus_popup_key_press), (gpointer)NULL);
   g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "scroll-event",
                     G_CALLBACK (dt_bauhaus_popup_scroll), (gpointer)NULL);
+
+  dt_bauhaus_vimkey_exec(":set sharpen.amount=1.0");
 }
 
 void
@@ -624,6 +626,7 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *text)
 
   // construct control path name and insert into keymap:
   gchar *path = g_strdup_printf("%s.%s", w->module->name(), w->label);
+  fprintf(stderr, "[dreggn] inserting control `%s'\n", path);
   g_hash_table_replace(darktable.bauhaus->keymap, path, w);
 }
 
@@ -1674,6 +1677,21 @@ dt_bauhaus_slider_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpoin
   // TODO: highlight?
   return TRUE;
 }
+
+void dt_bauhaus_vimkey_exec(const char *input)
+{
+  char module[64], label[64];
+  float num;
+  sscanf(input, ":set %[^.].%[^=]=%f", module, label, &num);
+  fprintf(stderr, "[dreggn] setting module `%s', slider `%s' to %f\n", module, label, num);
+  sscanf(input, ":set %[^=]=%f", label, &num);
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)g_hash_table_lookup(darktable.bauhaus->keymap, label);
+  fprintf(stderr, "found widget: %X\n", (unsigned int)(long int)w);
+  // TODO: what about comboboxes and such!
+}
+
+// give autocomplete suggestions
+GList* dt_bauhaus_vimkey_complete(const char *input);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
