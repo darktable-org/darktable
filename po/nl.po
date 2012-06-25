@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-06-02 20:09+0200\n"
-"PO-Revision-Date: 2012-06-02 21:00+0100\n"
+"POT-Creation-Date: 2012-06-24 20:26+0200\n"
+"PO-Revision-Date: 2012-06-25 11:41+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: \n"
@@ -20,7 +20,7 @@ msgstr "gui opties"
 
 #: ../build/src/preferences_gen.h:535
 msgid "width of the side panels in pixels"
-msgstr "breedte van de zijpanelen in pixels"
+msgstr "breedte van de zijpanelen uitgedrukt in pixels"
 
 #: ../build/src/preferences_gen.h:546
 #: ../build/src/preferences_gen.h:564
@@ -62,7 +62,7 @@ msgstr "(opnieuw opstarten vereist)"
 
 #: ../build/src/preferences_gen.h:556
 msgid "don't use embedded preview jpeg but half-size raw"
-msgstr "gebruik niet de ingebedde jpeg maar een gedeelte van de raw"
+msgstr "gebruik niet een ingesloten jpeg miniatuur maar een gedeelte van de raw"
 
 #: ../build/src/preferences_gen.h:567
 msgid "check this option to not use the embedded jpeg from the raw file but process the raw data. this is slower but gives you color managed thumbnails."
@@ -86,7 +86,7 @@ msgstr "vraag altijd eerst de gebruiker voordat een afbeelding wordt verwijderd"
 
 #: ../build/src/preferences_gen.h:610
 msgid "number of folder levels to show in lists"
-msgstr "aantal te vertonen map niveaus in de lijst"
+msgstr "aantal zichtbare map niveaus in de lijst"
 
 #: ../build/src/preferences_gen.h:624
 msgid "the number of folder levels to show in film roll names, starting from the right"
@@ -101,25 +101,24 @@ msgid "when having raw+jpeg images together in one directory it makes no sense t
 msgstr "wanneer raw en jpeg beelden in dezelfde map staan heeft het geen zin om ze beide te importeren. negeer hier alle gevonden jpegs"
 
 #: ../build/src/preferences_gen.h:649
-#, fuzzy
 msgid "recursive directory traversal when importing filmrolls"
-msgstr "negeer jpeg afbeeldingen tijdens het importeren van een map"
+msgstr "herhaal het doorkruisen van mappen tijdens het importeren van een map"
 
 #: ../build/src/preferences_gen.h:666
 msgid "creator to be applied when importing"
-msgstr "bij het importeren de maker toevoegen"
+msgstr "bij het importeren naam fotograaf toevoegen"
 
 #: ../build/src/preferences_gen.h:683
 msgid "publisher to be applied when importing"
-msgstr "bij het importeren de uitgever toevoegen"
+msgstr "bij het importeren naam uitgever toevoegen "
 
 #: ../build/src/preferences_gen.h:700
 msgid "rights to be applied when importing"
-msgstr "bij het importeren de rechten toevoegen"
+msgstr "bij het importeren rechten toevoegen"
 
 #: ../build/src/preferences_gen.h:717
 msgid "comma separated tags to be applied when importing"
-msgstr "toepassen door komma's gescheiden labels bij het importeren "
+msgstr "bij het importeren door komma's gescheiden labels toevoegen"
 
 #: ../build/src/preferences_gen.h:734
 msgid "initial import rating"
@@ -167,7 +166,7 @@ msgstr "compressie van miniaturen"
 
 #: ../build/src/preferences_gen.h:841
 msgid "off - no compression in memory, jpg on disk. low quality - dxt1 (fast). high quality - dxt1, same memory as low quality variant but slower."
-msgstr ""
+msgstr "uit - geen compressie in geheugen, jpg op schijf. lage kwaliteit -dxt1(snel) hoge kwaliteit -dxt1, hetzelfde geheugen als lage kwaliteits variantie maar dan langzamer"
 
 #: ../build/src/preferences_gen.h:848
 msgid "ask before deleting a tag"
@@ -251,7 +250,7 @@ msgstr "dit is ongeveer 28x langzamer dan de standaard"
 
 #: ../build/src/preferences_gen.h:1062
 msgid "do high quality resampling during export"
-msgstr "herschaal tijdens het exporteren voor hoge kwaliteits afbeeldingen "
+msgstr "herschaal niet eerder dan bij het exporteren (geeft kwalitatief betere afbeeldingen)"
 
 #: ../build/src/preferences_gen.h:1073
 msgid "the image will first be processed in full resolution, and downscaled at the very end. this can result in better quality sometimes, but will always be slower."
@@ -270,9 +269,8 @@ msgid "password storage backend to use"
 msgstr "te gebruiken wachtwoord voor backend opslag"
 
 #: ../build/src/preferences_gen.h:1138
-#, fuzzy
 msgid "the storage backend for password storage: none, kwallet, gnome keyring"
-msgstr "de opslag voor wachtwoordopslag: 0 - geen, 2 - kwallet, 3 - gnome keyring "
+msgstr "de opslag voor wachtwoordopslag: geen, kwallet, gnome keyring "
 
 #: ../build/src/preferences_gen.h:1145
 msgid "run indexer"
@@ -361,27 +359,27 @@ msgstr ""
 "\n"
 "%s"
 
-#: ../src/common/darktable.c:408
+#: ../src/common/darktable.c:412
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "ERRO: ongeldige tijdelijk map: %s\n"
 
-#: ../src/common/darktable.c:593
+#: ../src/common/darktable.c:597
 #, c-format
 msgid "found strange path `%s'"
 msgstr "onlogisch pad `%s'  gevonden "
 
-#: ../src/common/darktable.c:621
+#: ../src/common/darktable.c:625
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "fout bij het inladen van map `%s'"
 
-#: ../src/common/darktable.c:641
+#: ../src/common/darktable.c:645
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "bestand `%s' heeft een onbekend formaat!"
 
-#: ../src/common/darktable.c:652
+#: ../src/common/darktable.c:656
 #: ../src/libs/import.c:707
 #, c-format
 msgid "error loading file `%s'"
@@ -405,7 +403,7 @@ msgstr "kopieer eerst de afbeeldingsgeschiedens voordat je het op een andere toe
 #: ../src/common/history.c:163
 #: ../src/common/history.c:174
 #: ../src/common/styles.c:276
-#: ../src/develop/develop.c:795
+#: ../src/develop/develop.c:799
 #: ../src/libs/history.c:151
 msgid "on"
 msgstr "aan"
@@ -414,7 +412,7 @@ msgstr "aan"
 #: ../src/common/history.c:163
 #: ../src/common/history.c:174
 #: ../src/common/styles.c:276
-#: ../src/develop/develop.c:795
+#: ../src/develop/develop.c:799
 #: ../src/develop/blend_gui.c:618
 #: ../src/iop/demosaic.c:1286
 #: ../src/libs/history.c:151
@@ -461,17 +459,21 @@ msgid "style %s was sucessfully imported"
 msgstr "profiel '%s' is geïmporteerd"
 
 #: ../src/common/variables.c:214
-#: ../src/iop/clipping.c:1123
+#: ../src/iop/clipping.c:1028
+#: ../src/iop/clipping.c:1081
+#: ../src/iop/clipping.c:1093
+#: ../src/libs/live_view.c:232
+#: ../src/libs/live_view.c:244
 #, c-format
 msgid "none"
 msgstr "geen"
 
-#: ../src/control/control.c:1173
-#: ../src/control/control.c:1176
+#: ../src/control/control.c:1175
+#: ../src/control/control.c:1178
 msgid "working.."
 msgstr "bezig..."
 
-#: ../src/control/control.c:1257
+#: ../src/control/control.c:1259
 #, c-format
 msgid "switch to %s mode"
 msgstr "schakel over op %s mode"
@@ -628,75 +630,75 @@ msgstr[1] "exporteren %d afbeeldingen naar %s"
 msgid "image `%s' is currently unavailable"
 msgstr "afbeelding `%s' is op dit moment niet beschikbaar"
 
-#: ../src/develop/develop.c:679
+#: ../src/develop/develop.c:683
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module `%s' versie komt niet overeen: %d != %d"
 
-#: ../src/develop/imageop.c:424
-#: ../src/develop/imageop.c:1152
+#: ../src/develop/imageop.c:416
+#: ../src/develop/imageop.c:1144
 #, c-format
 msgid "%s is switched on"
 msgstr "%s is ingeschakeld"
 
-#: ../src/develop/imageop.c:424
-#: ../src/develop/imageop.c:1152
+#: ../src/develop/imageop.c:416
+#: ../src/develop/imageop.c:1144
 #, c-format
 msgid "%s is switched off"
 msgstr "%s is uitgeschakeld"
 
-#: ../src/develop/imageop.c:591
+#: ../src/develop/imageop.c:583
 #: ../src/gui/accelerators.c:622
 #: ../src/gui/accelerators.c:700
 #: ../src/gui/accelerators.c:838
 #: ../src/gui/accelerators.c:861
-#: ../src/gui/presets.c:183
-#: ../src/gui/presets.c:210
-#: ../src/gui/presets.c:492
+#: ../src/gui/presets.c:184
+#: ../src/gui/presets.c:252
+#: ../src/gui/presets.c:534
 #: ../src/iop/temperature.c:744
 #: ../src/libs/import.c:483
-#: ../src/libs/lib.c:209
-#: ../src/libs/lib.c:229
-#: ../src/libs/lib.c:850
+#: ../src/libs/lib.c:261
+#: ../src/libs/lib.c:290
+#: ../src/libs/lib.c:913
 msgid "preset"
 msgstr "voorkeur"
 
-#: ../src/develop/imageop.c:632
+#: ../src/develop/imageop.c:624
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusie"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:637
+#: ../src/develop/imageop.c:629
 msgctxt "accel"
-msgid "show plugin"
-msgstr "toon plugin"
+msgid "show module"
+msgstr "toon module"
 
-#: ../src/develop/imageop.c:638
+#: ../src/develop/imageop.c:630
 msgctxt "accel"
-msgid "enable plugin"
-msgstr "maak plugin mogelijk"
+msgid "enable module"
+msgstr "inschakelen module"
 
-#: ../src/develop/imageop.c:641
-#: ../src/libs/lib.c:423
+#: ../src/develop/imageop.c:633
+#: ../src/libs/lib.c:486
 msgctxt "accel"
-msgid "reset plugin parameters"
-msgstr "plugin parameters herstellen"
+msgid "reset module parameters"
+msgstr "reset module parameters"
 
-#: ../src/develop/imageop.c:643
-#: ../src/libs/lib.c:428
+#: ../src/develop/imageop.c:635
+#: ../src/libs/lib.c:491
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "toon vooraf ingesteld menu"
 
-#: ../src/develop/imageop.c:1131
-#: ../src/libs/lib.c:710
+#: ../src/develop/imageop.c:1123
+#: ../src/libs/lib.c:773
 msgid "reset parameters"
 msgstr "reset parameters"
 
-#: ../src/develop/imageop.c:1140
+#: ../src/develop/imageop.c:1132
 #: ../src/gui/preferences.c:393
-#: ../src/libs/lib.c:723
+#: ../src/libs/lib.c:786
 msgid "presets"
 msgstr "voorkeuren"
 
@@ -757,6 +759,10 @@ msgid ""
 "* range outside of outer markers (lower open triangles): do not blend at all\n"
 "* range between adjacent inner/outer markers: blend gradually"
 msgstr ""
+"aanpassingen gebaseerd op ingang afkomstig van deze module:\n"
+"* gebied tussen de binnenste markeringen (bovenste gekleurde driehoekjes): volledig mengen\n"
+"* gebied buiten de buitenste markeringen (onderste niet gekleurde driehoekjes): niet mengen\n"
+"* gebied tussen de aangrenzende gebieden van binnenste en buitenste markeringen: gedeeltelijk mengen"
 
 #: ../src/develop/blend_gui.c:445
 msgid ""
@@ -765,6 +771,10 @@ msgid ""
 "* range outside of outer markers (lower open triangles): do not blend at all\n"
 "* range between adjacent inner/outer markers: blend gradually"
 msgstr ""
+"aanpassingen gebaseerd op niet gemengde uitgang van deze module:\n"
+"* gebied tussen de binnenste markeringen (bovenste gekleurde driehoekjes): volledig mengen\n"
+"* gebied buiten de buitenste markeringen (onderste niet gekleurde driehoekjes): niet mengen\n"
+"* gebied tussen de aangrenzende gebieden van binnenste en buitenste markeringen: gedeeltelijk mengen"
 
 #: ../src/develop/blend_gui.c:495
 msgid "blend"
@@ -779,9 +789,8 @@ msgid "only, if.."
 msgstr "gedeeltelijk"
 
 #: ../src/develop/blend_gui.c:512
-#: ../src/iop/borders.c:495
 #: ../src/iop/colorzones.c:942
-#: ../src/iop/tonecurve.c:480
+#: ../src/iop/tonecurve.c:499
 msgid "pick gui color from image"
 msgstr "kies een kleursectie in de afbeelding"
 
@@ -881,7 +890,7 @@ msgstr "helderheid"
 #: ../src/develop/blend_gui.c:636
 #: ../src/iop/atrous.c:1410
 #: ../src/iop/equalizer.c:343
-#: ../src/iop/nlmeans.c:604
+#: ../src/iop/nlmeans.c:683
 msgid "chroma"
 msgstr "kleurwaarde"
 
@@ -903,10 +912,10 @@ msgstr "kleur "
 
 #: ../src/develop/blend_gui.c:650
 msgid "blend mode"
-msgstr "meng mode"
+msgstr "meng methode"
 
 #: ../src/develop/blend_gui.c:652
-#: ../src/iop/watermark.c:713
+#: ../src/iop/watermark.c:908
 msgid "opacity"
 msgstr "dekking"
 
@@ -916,7 +925,7 @@ msgstr "bepaal dekking voor menging"
 
 #: ../src/develop/blend_gui.c:663
 msgid "choose blending mode"
-msgstr "kies meng modus"
+msgstr "kies meng methode"
 
 #: ../src/dtgtk/resetlabel.c:61
 msgid "double-click to reset"
@@ -987,8 +996,8 @@ msgstr "afbeeldings bewerkingen"
 #: ../src/gui/accelerators.c:54
 #: ../src/gui/accelerators.c:102
 msgctxt "accel"
-msgid "plugins"
-msgstr "plugins"
+msgid "modules"
+msgstr "modules"
 
 #: ../src/gui/accelerators.c:62
 #: ../src/gui/accelerators.c:114
@@ -1015,7 +1024,7 @@ msgid "edit"
 msgstr "bewerk"
 
 #: ../src/gui/accelerators.c:684
-#: ../src/libs/lib.c:274
+#: ../src/libs/lib.c:337
 msgid "deleting preset for obsolete module"
 msgstr "verwijder voorkeur voor achterhaalde module"
 
@@ -1196,73 +1205,73 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "gebruik YYYY-MM-DD voor datum overschrijving"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:777
+#: ../src/gui/gtk.c:779
 msgctxt "accel"
 msgid "capture view"
 msgstr "bekijk opname"
 
-#: ../src/gui/gtk.c:778
+#: ../src/gui/gtk.c:780
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "lighttable"
 
-#: ../src/gui/gtk.c:779
+#: ../src/gui/gtk.c:781
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "darkroom"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:798
+#: ../src/gui/gtk.c:800
 msgctxt "accel"
 msgid "quit"
 msgstr "verlaat"
 
 #. Contrast and brightness accelerators
-#: ../src/gui/gtk.c:805
+#: ../src/gui/gtk.c:807
 msgctxt "accel"
 msgid "increase brightness"
 msgstr "versterk helderheid"
 
-#: ../src/gui/gtk.c:807
+#: ../src/gui/gtk.c:809
 msgctxt "accel"
 msgid "decrease brightness"
 msgstr "verminder helderheid"
 
-#: ../src/gui/gtk.c:809
+#: ../src/gui/gtk.c:811
 msgctxt "accel"
 msgid "increase contrast"
 msgstr "versterk contrast"
 
-#: ../src/gui/gtk.c:811
+#: ../src/gui/gtk.c:813
 msgctxt "accel"
 msgid "decrease contrast"
 msgstr "verminder contrast"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:832
+#: ../src/gui/gtk.c:834
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "volledig scherm aan/uit"
 
-#: ../src/gui/gtk.c:833
+#: ../src/gui/gtk.c:835
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "verlaat volledig scherm"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:845
+#: ../src/gui/gtk.c:847
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "zijpanelen aan/uit"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:848
+#: ../src/gui/gtk.c:850
 msgctxt "accel"
 msgid "toggle header"
 msgstr "header aan/uit"
 
 #. View-switch
-#: ../src/gui/gtk.c:852
+#: ../src/gui/gtk.c:854
 msgctxt "accel"
 msgid "switch view"
 msgstr "wissel weergave"
@@ -1286,21 +1295,21 @@ msgstr "bestandsnaam"
 #. exif
 #: ../src/gui/preferences.c:427
 #: ../src/gui/preferences.c:1260
-#: ../src/gui/presets.c:329
+#: ../src/gui/presets.c:371
 #: ../src/libs/metadata_view.c:69
 msgid "model"
 msgstr "model"
 
 #: ../src/gui/preferences.c:434
 #: ../src/gui/preferences.c:1267
-#: ../src/gui/presets.c:336
+#: ../src/gui/presets.c:378
 #: ../src/libs/metadata_view.c:70
 msgid "maker"
 msgstr "merk"
 
 #: ../src/gui/preferences.c:441
 #: ../src/gui/preferences.c:1274
-#: ../src/gui/presets.c:343
+#: ../src/gui/presets.c:385
 #: ../src/libs/collect.h:41
 #: ../src/libs/metadata_view.c:71
 msgid "lens"
@@ -1309,8 +1318,8 @@ msgstr "lens"
 #. iso
 #: ../src/gui/preferences.c:448
 #: ../src/gui/preferences.c:1281
-#: ../src/gui/presets.c:350
-#: ../src/libs/camera.c:608
+#: ../src/gui/presets.c:392
+#: ../src/libs/camera.c:587
 #: ../src/libs/collect.h:42
 #: ../src/libs/metadata_view.c:76
 msgid "iso"
@@ -1319,7 +1328,7 @@ msgstr "ISO"
 #. exposure
 #: ../src/gui/preferences.c:455
 #: ../src/gui/preferences.c:1294
-#: ../src/gui/presets.c:363
+#: ../src/gui/presets.c:405
 #: ../src/iop/exposure.c:41
 #: ../src/iop/exposure.c:393
 #: ../src/iop/relight.c:383
@@ -1330,9 +1339,9 @@ msgstr "belichting"
 #. aperture
 #: ../src/gui/preferences.c:462
 #: ../src/gui/preferences.c:1309
-#: ../src/gui/presets.c:378
-#: ../src/libs/camera.c:560
-#: ../src/libs/camera.c:569
+#: ../src/gui/presets.c:420
+#: ../src/libs/camera.c:539
+#: ../src/libs/camera.c:548
 #: ../src/libs/collect.h:43
 #: ../src/libs/metadata_view.c:72
 msgid "aperture"
@@ -1341,15 +1350,16 @@ msgstr "diafragma"
 #. focal length
 #: ../src/gui/preferences.c:469
 #: ../src/gui/preferences.c:1324
-#: ../src/gui/presets.c:393
-#: ../src/libs/camera.c:579
+#: ../src/gui/presets.c:435
+#: ../src/libs/camera.c:558
 #: ../src/libs/metadata_view.c:74
 msgid "focal length"
 msgstr "brandpuntsafstand (mm)"
 
 #: ../src/gui/preferences.c:476
+#: ../src/iop/borders.c:952
 #: ../src/iop/exposure.c:399
-#: ../src/iop/tonecurve.c:521
+#: ../src/iop/tonecurve.c:540
 msgid "auto"
 msgstr "auto"
 
@@ -1400,146 +1410,163 @@ msgid "Are you sure you want to restore the default keybindings?  This will eras
 msgstr "Weet u zeker dat u terug wilt naar de standaard snelkoppelingen? Hiermee vervallen alle gemaakte aanpassingen."
 
 #: ../src/gui/preferences.c:1210
-#: ../src/gui/presets.c:277
+#: ../src/gui/presets.c:319
 #, c-format
 msgid "edit `%s' for module `%s'"
 msgstr "bewerk `%s' voor module `%s'"
 
 #: ../src/gui/preferences.c:1239
-#: ../src/gui/presets.c:308
-#: ../src/libs/lib.c:162
+#: ../src/gui/presets.c:350
+#: ../src/libs/lib.c:213
 msgid "description or further information"
 msgstr "beschrijving dan wel extra informatie"
 
 #: ../src/gui/preferences.c:1241
-#: ../src/gui/presets.c:310
+#: ../src/gui/presets.c:352
 msgid "auto apply this preset to matching images"
 msgstr "pas deze voorkeur automatisch toe op gekoppelde afbeeldingen "
 
 #: ../src/gui/preferences.c:1243
-#: ../src/gui/presets.c:312
+#: ../src/gui/presets.c:354
 msgid "only show this preset for matching images"
 msgstr "vertoon deze voorkeur alleen bij overeenkomstige foto's"
 
 #: ../src/gui/preferences.c:1244
-#: ../src/gui/presets.c:313
+#: ../src/gui/presets.c:355
 msgid "be very careful with this option. this might be the last time you see your preset."
 msgstr "Wees voorzichtig met deze optie, het kan de laatste mogelijkheid zijn om uw voorkeuren te zien."
 
 #: ../src/gui/preferences.c:1259
-#: ../src/gui/presets.c:328
+#: ../src/gui/presets.c:370
 #, c-format
 msgid "string to match model (use % as wildcard)"
 msgstr "string om model aan te passen (gebruik % als vervanging)"
 
 #: ../src/gui/preferences.c:1266
-#: ../src/gui/presets.c:335
+#: ../src/gui/presets.c:377
 #, c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr "string om fabrikant aan te passen (gebruik % als vervanging)"
 
 #: ../src/gui/preferences.c:1273
-#: ../src/gui/presets.c:342
+#: ../src/gui/presets.c:384
 #, c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr "string om lens aan te passen (gebruik % als vervanging)"
 
 #: ../src/gui/preferences.c:1285
-#: ../src/gui/presets.c:354
+#: ../src/gui/presets.c:396
 msgid "minimum iso value"
 msgstr "minimale iso waarde"
 
 #: ../src/gui/preferences.c:1289
-#: ../src/gui/presets.c:358
+#: ../src/gui/presets.c:400
 msgid "maximum iso value"
 msgstr "maximale ISO waarde"
 
 #: ../src/gui/preferences.c:1299
-#: ../src/gui/presets.c:368
+#: ../src/gui/presets.c:410
 msgid "minimum exposure time"
 msgstr "minimale belichtingstijd"
 
 #: ../src/gui/preferences.c:1300
-#: ../src/gui/presets.c:369
+#: ../src/gui/presets.c:411
 msgid "maximum exposure time"
 msgstr "maximale belichtingstijd"
 
 #: ../src/gui/preferences.c:1314
-#: ../src/gui/presets.c:383
+#: ../src/gui/presets.c:425
 msgid "minimum aperture value"
 msgstr "minimale diafragma waarde"
 
 #: ../src/gui/preferences.c:1315
-#: ../src/gui/presets.c:384
+#: ../src/gui/presets.c:426
 msgid "maximum aperture value"
 msgstr "maximale diafragma waarde"
 
 #: ../src/gui/preferences.c:1331
-#: ../src/gui/presets.c:400
+#: ../src/gui/presets.c:442
 msgid "minimum focal length"
 msgstr "minimale brandpuntsafstand (mm)"
 
 #: ../src/gui/preferences.c:1332
-#: ../src/gui/presets.c:401
+#: ../src/gui/presets.c:443
 msgid "maximum focal length"
 msgstr "maximale brandpuntsafstand (mm)"
 
-#: ../src/gui/presets.c:135
-#: ../src/gui/presets.c:697
-#: ../src/gui/presets.c:710
-#: ../src/libs/lib.c:67
+#: ../src/gui/presets.c:136
+#: ../src/gui/presets.c:739
+#: ../src/gui/presets.c:752
+#: ../src/libs/lib.c:68
 msgid "(default)"
 msgstr "(standaard)"
 
-#: ../src/gui/presets.c:178
+#: ../src/gui/presets.c:179
+#: ../src/libs/lib.c:285
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "wilt u echt deze voorkeur verwijderen `%s'?"
 
-#: ../src/gui/presets.c:179
+#: ../src/gui/presets.c:180
+#: ../src/libs/lib.c:286
 msgid "delete preset?"
 msgstr "verwijder voorkeur"
 
-#: ../src/gui/presets.c:304
-#: ../src/libs/lib.c:158
+#: ../src/gui/presets.c:223
+#: ../src/libs/lib.c:121
+#, c-format
+msgid ""
+"preset `%s' already exists.\n"
+"do you want to overwrite?"
+msgstr ""
+"voorkeur `%s' bestaat al\n"
+"moet die worden overschreven?"
+
+#: ../src/gui/presets.c:226
+#: ../src/libs/lib.c:124
+msgid "overwrite preset?"
+msgstr "voorkeur overschrijven?"
+
+#: ../src/gui/presets.c:346
+#: ../src/libs/lib.c:209
 msgid "name of the preset"
 msgstr "naam van deze voorkeur"
 
 #. then show edit dialog
-#: ../src/gui/presets.c:485
-#: ../src/gui/presets.c:492
-#: ../src/gui/presets.c:494
-#: ../src/gui/presets.c:496
-#: ../src/libs/lib.c:193
-#: ../src/libs/lib.c:201
-#: ../src/libs/lib.c:209
-#: ../src/libs/lib.c:211
-#: ../src/libs/lib.c:213
+#: ../src/gui/presets.c:527
+#: ../src/gui/presets.c:534
+#: ../src/gui/presets.c:536
+#: ../src/gui/presets.c:538
+#: ../src/libs/lib.c:245
+#: ../src/libs/lib.c:253
+#: ../src/libs/lib.c:261
+#: ../src/libs/lib.c:263
+#: ../src/libs/lib.c:265
 msgid "new preset"
 msgstr "nieuwe voorkeur"
 
-#: ../src/gui/presets.c:740
-#: ../src/libs/lib.c:340
+#: ../src/gui/presets.c:782
+#: ../src/libs/lib.c:403
 msgid "edit this preset.."
 msgstr "bewerk deze voorkeur"
 
-#: ../src/gui/presets.c:744
-#: ../src/libs/lib.c:344
+#: ../src/gui/presets.c:786
+#: ../src/libs/lib.c:407
 msgid "delete this preset"
 msgstr "verwijder voorkeur"
 
 #. only show if it is not the default already
-#: ../src/gui/presets.c:752
+#: ../src/gui/presets.c:794
 msgid "use preset as default"
 msgstr "sla voorkeuren op als standaard waarde"
 
-#: ../src/gui/presets.c:759
-#: ../src/libs/lib.c:351
+#: ../src/gui/presets.c:801
+#: ../src/libs/lib.c:414
 msgid "store new preset.."
 msgstr "bewaar nieuwe voorkeur"
 
 #. only show this if presets already contains a default
-#: ../src/gui/presets.c:770
+#: ../src/gui/presets.c:812
 msgid "remove default"
 msgstr "verwijder standaard waarde"
 
@@ -1596,7 +1623,7 @@ msgid "8-bit jpg"
 msgstr "8-bit jpg"
 
 #: ../src/imageio/format/jpeg.c:654
-#: ../src/libs/camera.c:628
+#: ../src/libs/camera.c:607
 msgid "quality"
 msgstr "kwaliteit"
 
@@ -1609,12 +1636,12 @@ msgid "8/16-bit png"
 msgstr "8/16-bit png"
 
 #: ../src/imageio/format/png.c:398
-#: ../src/imageio/format/tiff.c:242
+#: ../src/imageio/format/tiff.c:249
 msgid "8-bit"
 msgstr "8-bit"
 
 #: ../src/imageio/format/png.c:403
-#: ../src/imageio/format/tiff.c:247
+#: ../src/imageio/format/tiff.c:254
 msgid "16-bit"
 msgstr "16-bit "
 
@@ -1626,7 +1653,7 @@ msgstr "16-bit ppm"
 msgid "float hdr"
 msgstr "zwevend hdr"
 
-#: ../src/imageio/format/tiff.c:221
+#: ../src/imageio/format/tiff.c:228
 msgid "8/16-bit tiff"
 msgstr "8/16-bit tiff"
 
@@ -1719,7 +1746,7 @@ msgid "could not attach xmp data to file `%s'!"
 msgstr "aanhechten xmp data aan bestand `%s' mislukt!"
 
 #: ../src/imageio/storage/disk.c:252
-#: ../src/imageio/storage/email.c:112
+#: ../src/imageio/storage/email.c:113
 #: ../src/imageio/storage/gallery.c:391
 #, c-format
 msgid "%d/%d exported to `%s%s'"
@@ -2060,7 +2087,7 @@ msgstr "mat"
 
 #: ../src/iop/atrous.c:1408
 #: ../src/iop/equalizer.c:342
-#: ../src/iop/nlmeans.c:602
+#: ../src/iop/nlmeans.c:681
 msgid "luma"
 msgstr "luma"
 
@@ -2091,72 +2118,66 @@ msgid "make effect stronger or weaker"
 msgstr "effect versterken/afzwakken"
 
 #: ../src/iop/basecurve.c:50
-#: ../src/iop/profile_gamma.c:199
-#: ../src/iop/tonecurve.c:217
-msgid "linear"
-msgstr "lineair"
-
-#: ../src/iop/basecurve.c:51
 msgid "dark contrast"
 msgstr "donker contrast"
 
-#: ../src/iop/basecurve.c:52
+#: ../src/iop/basecurve.c:51
 msgid "canon eos like"
 msgstr "gelijk aan canon eos"
 
-#: ../src/iop/basecurve.c:53
+#: ../src/iop/basecurve.c:52
 msgid "nikon like"
 msgstr "gelijk aan nikon"
 
-#: ../src/iop/basecurve.c:54
+#: ../src/iop/basecurve.c:53
 msgid "sony alpha like"
 msgstr "gelijk aan sony alpha"
 
-#: ../src/iop/basecurve.c:55
+#: ../src/iop/basecurve.c:54
 msgid "pentax like"
 msgstr "gelijk aan pentax"
 
-#: ../src/iop/basecurve.c:56
+#: ../src/iop/basecurve.c:55
 msgid "olympus like"
 msgstr "gelijk aan olympus"
 
-#: ../src/iop/basecurve.c:57
+#: ../src/iop/basecurve.c:56
 msgid "panasonic like"
 msgstr "gelijk aan panasonic"
 
-#: ../src/iop/basecurve.c:58
+#: ../src/iop/basecurve.c:57
 msgid "leica like"
 msgstr "gelijk aan leica"
 
-#: ../src/iop/basecurve.c:59
+#: ../src/iop/basecurve.c:58
 msgid "kodak easyshare like"
 msgstr "gelijk aan kodak easyshare"
 
-#: ../src/iop/basecurve.c:60
+#: ../src/iop/basecurve.c:59
 msgid "konica minolta like"
 msgstr "gelijk aan konica minolta"
 
-#: ../src/iop/basecurve.c:61
+#: ../src/iop/basecurve.c:60
 msgid "samsung like"
 msgstr "gelijk aan samsung"
 
-#: ../src/iop/basecurve.c:62
+#: ../src/iop/basecurve.c:61
 msgid "fujifilm like"
 msgstr "gelijk aan fujifilm"
 
-#: ../src/iop/basecurve.c:63
+#: ../src/iop/basecurve.c:62
 msgid "fotogenetic (point & shoot)"
 msgstr "fotogenetic - point and shoot v4.1"
 
-#: ../src/iop/basecurve.c:64
+#: ../src/iop/basecurve.c:63
 msgid "fotogenetic (EV3)"
 msgstr "fotogenetic (EV3)"
 
-#: ../src/iop/basecurve.c:140
+#: ../src/iop/basecurve.c:138
 msgid "base curve"
 msgstr "basis curve"
 
-#: ../src/iop/basecurve.c:642
+#: ../src/iop/basecurve.c:648
 msgid ""
 "abscissa: input, ordinate: output \n"
 "works on RGB channels"
@@ -2171,7 +2192,7 @@ msgstr "ontruis (bilateral filter)"
 #: ../src/iop/bilateral.cc:85
 #: ../src/iop/lowpass.c:108
 #: ../src/iop/sharpen.c:90
-#: ../src/iop/shadhi.c:113
+#: ../src/iop/shadhi.c:154
 msgctxt "accel"
 msgid "radius"
 msgstr "straal"
@@ -2217,7 +2238,7 @@ msgstr "vervaging voor blauw"
 #: ../src/iop/clahe.c:342
 #: ../src/iop/lowpass.c:779
 #: ../src/iop/sharpen.c:553
-#: ../src/iop/shadhi.c:832
+#: ../src/iop/shadhi.c:906
 msgid "radius"
 msgstr "straal"
 
@@ -2243,7 +2264,7 @@ msgstr "kracht"
 
 #: ../src/iop/bloom.c:335
 #: ../src/iop/soften.c:570
-#: ../src/libs/camera.c:638
+#: ../src/libs/camera.c:617
 msgid "size"
 msgstr "afmeting"
 
@@ -2264,6 +2285,7 @@ msgstr "drempel voor glans"
 #: ../src/iop/bloom.c:347
 #: ../src/iop/grain.c:526
 #: ../src/iop/hotpixels.c:293
+#: ../src/iop/nlmeans.c:679
 #: ../src/iop/velvia.c:346
 msgid "strength"
 msgstr "kracht"
@@ -2272,100 +2294,211 @@ msgstr "kracht"
 msgid "the strength of bloom"
 msgstr "glanssterkte"
 
-#: ../src/iop/borders.c:74
+#: ../src/iop/borders.c:135
 msgid "framing"
 msgstr "omlijsten"
 
-#: ../src/iop/borders.c:96
+#: ../src/iop/borders.c:157
 msgctxt "accel"
 msgid "border size"
 msgstr "randdikte"
 
-#: ../src/iop/borders.c:97
+#: ../src/iop/borders.c:158
 msgctxt "accel"
-msgid "pick gui color from image"
-msgstr "neem interface kleur van afbeelding"
+msgid "pick border color from image"
+msgstr "kies randkleur uit de afbeelding"
 
-#: ../src/iop/borders.c:279
+#: ../src/iop/borders.c:160
+msgctxt "accel"
+msgid "frame line size"
+msgstr "afmeting frame "
+
+#: ../src/iop/borders.c:161
+msgctxt "accel"
+msgid "pick frame line color from image"
+msgstr "kies framekleur uit de afbeelding"
+
+#: ../src/iop/borders.c:464
 msgid "15:10 postcard white"
 msgstr "15:10 briefkaart wit"
 
-#: ../src/iop/borders.c:281
+#: ../src/iop/borders.c:467
 msgid "15:10 postcard black"
 msgstr "15:10 briefkaart zwart"
 
-#: ../src/iop/borders.c:382
-msgid "select frame color"
-msgstr "kies kleur voor de lijst"
+#: ../src/iop/borders.c:695
+msgid "select border color"
+msgstr "kies kleur van de rand"
 
-#: ../src/iop/borders.c:465
+#: ../src/iop/borders.c:728
+msgid "select frame line color"
+msgstr "kies frame kleur"
+
+#. add import singel image buttons
+#: ../src/iop/borders.c:869
+#: ../src/iop/clipping.c:1060
+#: ../src/libs/import.c:806
+msgid "image"
+msgstr "afbeelding"
+
+#: ../src/iop/borders.c:870
+msgid "3:1"
+msgstr "3:1"
+
+#: ../src/iop/borders.c:871
+msgid "95:33"
+msgstr "95:33"
+
+#: ../src/iop/borders.c:872
+msgid "2:1"
+msgstr "2:1"
+
+#: ../src/iop/borders.c:873
+#: ../src/iop/clipping.c:1068
+msgid "16:9"
+msgstr "16:9"
+
+#: ../src/iop/borders.c:874
+#: ../src/iop/clipping.c:1061
+msgid "golden cut"
+msgstr "gulden snede"
+
+#: ../src/iop/borders.c:875
+#: ../src/iop/clipping.c:1063
+msgid "3:2"
+msgstr "3:2"
+
+#: ../src/iop/borders.c:876
+msgid "A4"
+msgstr "A4"
+
+#: ../src/iop/borders.c:877
+#: ../src/iop/clipping.c:1067
+msgid "DIN"
+msgstr "DIN"
+
+#: ../src/iop/borders.c:878
+#: ../src/iop/clipping.c:1064
+msgid "4:3"
+msgstr "4:3"
+
+#: ../src/iop/borders.c:879
+#: ../src/iop/clipping.c:1066
+msgid "square"
+msgstr "vierkant"
+
+#: ../src/iop/borders.c:880
+msgid "constant border"
+msgstr "vaste randdikte"
+
+#: ../src/iop/borders.c:902
+#: ../src/iop/borders.c:907
+msgid "center"
+msgstr "centreer"
+
+#: ../src/iop/borders.c:903
+#: ../src/iop/borders.c:908
+msgid "1/3"
+msgstr "1/3"
+
+#: ../src/iop/borders.c:904
+#: ../src/iop/borders.c:909
+msgid "3/8"
+msgstr "3/8"
+
+#: ../src/iop/borders.c:905
+#: ../src/iop/borders.c:910
+msgid "5/8"
+msgstr "5/8"
+
+#: ../src/iop/borders.c:906
+#: ../src/iop/borders.c:911
+msgid "2/3"
+msgstr "2/3"
+
+#: ../src/iop/borders.c:936
 msgid "border size"
 msgstr "randdikte"
 
-#: ../src/iop/borders.c:468
+#: ../src/iop/borders.c:939
 msgid "size of the border in percent of the full image"
 msgstr ""
 "de afmeting van de rand\n"
 "als percentage van de volledige afbeelding"
 
-#: ../src/iop/borders.c:473
-#: ../src/iop/clipping.c:1081
+#: ../src/iop/borders.c:944
+#: ../src/iop/clipping.c:1058
 msgid "aspect"
 msgstr "verhouding"
 
-#. add import singel image buttons
-#: ../src/iop/borders.c:476
-#: ../src/iop/clipping.c:1087
-#: ../src/libs/import.c:806
-msgid "image"
-msgstr "afbeelding"
-
-#: ../src/iop/borders.c:477
-#: ../src/iop/clipping.c:1088
-msgid "golden cut"
-msgstr "gulden snede"
-
-#: ../src/iop/borders.c:478
-#: ../src/iop/clipping.c:1089
-msgid "1:2"
-msgstr "1:2"
-
-#: ../src/iop/borders.c:479
-#: ../src/iop/clipping.c:1090
-msgid "3:2"
-msgstr "3:2"
-
-#: ../src/iop/borders.c:480
-#: ../src/iop/clipping.c:1091
-msgid "4:3"
-msgstr "4:3"
-
-#: ../src/iop/borders.c:481
-#: ../src/iop/clipping.c:1093
-msgid "square"
-msgstr "vierkant"
-
-#: ../src/iop/borders.c:482
-#: ../src/iop/clipping.c:1094
-msgid "DIN"
-msgstr "DIN"
-
-#: ../src/iop/borders.c:483
-#: ../src/iop/clipping.c:1095
-msgid "16:9"
-msgstr "16:9"
-
-#: ../src/iop/borders.c:484
-msgid "constant border"
-msgstr "vaste randdikte"
-
-#: ../src/iop/borders.c:487
+#: ../src/iop/borders.c:948
 msgid "select the aspect ratio or right click and type your own (w:h)"
 msgstr "kies de aspect verhouding of klik met de rechtermuisknop en typ uw eigen b:h"
 
-#: ../src/iop/borders.c:492
-msgid "frame color"
-msgstr "kleur  "
+#: ../src/iop/borders.c:951
+#: ../src/iop/flip.c:81
+msgid "orientation"
+msgstr "oriëntatie"
+
+#: ../src/iop/borders.c:953
+msgid "portait"
+msgstr "portrait"
+
+#: ../src/iop/borders.c:954
+msgid "landscape"
+msgstr "landschap"
+
+#: ../src/iop/borders.c:955
+msgid "aspect ratio orientation of the image with border"
+msgstr "oriëntatie beeldverhouding van de afbeelding met rand"
+
+#: ../src/iop/borders.c:961
+msgid "horizontal position"
+msgstr "horizontale positie"
+
+#: ../src/iop/borders.c:964
+msgid "select the horizontal position ratio relative to top or right click and type your own (y:h)"
+msgstr "kies de horizontale verhouding relatief aan de top of klik met de rechtermuisknop en typ uw eigen y:h"
+
+#: ../src/iop/borders.c:967
+msgid "vertical position"
+msgstr "verticale positie"
+
+#: ../src/iop/borders.c:970
+msgid "select the vertical position ratio relative to left or right click and type your own (x:w)"
+msgstr "kies de horizontale verhouding relatief aan de top of klik met de rechtermuisknop en typ uw eigen x:w"
+
+#: ../src/iop/borders.c:974
+msgid "frame line size"
+msgstr "frame afmeting"
+
+#: ../src/iop/borders.c:977
+msgid "size of the frame line in percent of min border width"
+msgstr "frame afmeting als percentage van de minimale randbreedte"
+
+#: ../src/iop/borders.c:981
+msgid "frame line offset"
+msgstr "afstand van het frame"
+
+#: ../src/iop/borders.c:984
+msgid "offset of the frame line begining on picture side"
+msgstr "afstand frame vanaf de afbeeldingszijde"
+
+#: ../src/iop/borders.c:990
+msgid "border color"
+msgstr "randkleur"
+
+#: ../src/iop/borders.c:993
+msgid "pick border color from image"
+msgstr "kies een randkleur uit de afbeelding"
+
+#: ../src/iop/borders.c:1005
+msgid "frame line color"
+msgstr "kleur frame"
+
+#: ../src/iop/borders.c:1008
+msgid "pick frame line color from image"
+msgstr "neem framekleur uit de afbeelding"
 
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/cacorrect.c:57
@@ -2399,7 +2532,7 @@ msgstr "kanalen mixer"
 #: ../src/iop/soften.c:578
 #: ../src/iop/splittoning.c:549
 #: ../src/iop/splittoning.c:608
-#: ../src/iop/vignette.c:1000
+#: ../src/iop/vignette.c:1001
 msgid "saturation"
 msgstr "verzadiging"
 
@@ -2469,168 +2602,177 @@ msgid "size of features to preserve"
 msgstr "te bewaren resultaat"
 
 #: ../src/iop/clahe.c:354
+#: ../src/iop/nlmeans.c:686
 msgid "strength of the effect"
 msgstr "sterkte van het effect"
 
-#: ../src/iop/clipping.c:174
+#: ../src/iop/clipping.c:169
 msgid "crop and rotate"
 msgstr "uitsnijden/roteren"
 
-#. -------------------------------------------
-#: ../src/iop/clipping.c:1048
-#: ../src/iop/clipping.c:1140
+#: ../src/iop/clipping.c:1027
+#: ../src/iop/clipping.c:1092
+#: ../src/libs/live_view.c:243
 msgid "flip"
 msgstr "spiegelen"
 
-#: ../src/iop/clipping.c:1055
-msgid "flip image horizontally"
-msgstr "horizontaal spiegelen"
+#: ../src/iop/clipping.c:1029
+msgid "horizontal"
+msgstr "horizontaal "
 
-#: ../src/iop/clipping.c:1056
-msgid "flip image vertically"
-msgstr "verticaal spiegelen"
+#: ../src/iop/clipping.c:1030
+msgid "vertical"
+msgstr "verticaal"
 
-#: ../src/iop/clipping.c:1059
+#: ../src/iop/clipping.c:1031
+#: ../src/iop/clipping.c:1096
+#: ../src/libs/live_view.c:247
+msgid "both"
+msgstr "beide"
+
+#: ../src/iop/clipping.c:1033
+msgid "mirror image horizontally and/or vertically"
+msgstr "spiegel afbeelding horizontaal en/of verticaal"
+
+#: ../src/iop/clipping.c:1038
 msgid "angle"
 msgstr "hoek"
 
-#: ../src/iop/clipping.c:1063
+#: ../src/iop/clipping.c:1041
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 "nota bene: ook kan men door de rechter muistoetste activeren en een lijn over de afbeelding te trekken\n"
 "een afbeelding recht zetten"
 
-#: ../src/iop/clipping.c:1068
+#: ../src/iop/clipping.c:1045
 msgid "keystone h"
 msgstr "roteren h"
 
-#: ../src/iop/clipping.c:1069
+#: ../src/iop/clipping.c:1046
 msgid "adjust perspective for horizontal keystone distortion"
-msgstr "instelling horizontaal perspectief wijzigen"
+msgstr "instelling horizontaal perspectief bijstellen"
 
-#: ../src/iop/clipping.c:1075
+#: ../src/iop/clipping.c:1051
 msgid "keystone v"
 msgstr "roteren v"
 
-#: ../src/iop/clipping.c:1076
+#: ../src/iop/clipping.c:1052
 msgid "adjust perspective for vertical keystone distortion"
-msgstr "instelling verticaal perspectief wijzigen"
+msgstr "instelling verticaal perspectief bijstellen"
 
-#: ../src/iop/clipping.c:1086
+#: ../src/iop/clipping.c:1059
 msgid "free"
 msgstr "vrij"
 
-#: ../src/iop/clipping.c:1092
+#: ../src/iop/clipping.c:1062
+msgid "1:2"
+msgstr "1:2"
+
+#: ../src/iop/clipping.c:1065
 msgid "5:4"
 msgstr "5:4"
 
-#: ../src/iop/clipping.c:1106
-msgid ""
-"set the aspect ratio (w:h)\n"
-"press ctrl-x to swap sides"
-msgstr ""
-"kies een verhouding voor\n"
-"breedte t.o.v. hoogte\n"
-"ctrl-x draait de verhouding om"
+#: ../src/iop/clipping.c:1074
+msgid "set the aspect ratio (w:h)"
+msgstr "bepaal de verhoudingen (w:h)"
 
-#: ../src/iop/clipping.c:1113
-msgid "swap the aspect ratio (ctrl-x)"
-msgstr "verwissel verhouding (ctrl-x)"
-
-#: ../src/iop/clipping.c:1120
+#: ../src/iop/clipping.c:1080
+#: ../src/libs/live_view.c:231
 msgid "guides"
 msgstr "hulplijnen"
 
-#: ../src/iop/clipping.c:1124
+#: ../src/iop/clipping.c:1082
+#: ../src/libs/live_view.c:233
 msgid "grid"
 msgstr "raster"
 
-#: ../src/iop/clipping.c:1125
+#: ../src/iop/clipping.c:1083
+#: ../src/libs/live_view.c:234
 msgid "rules of thirds"
 msgstr "regel van derden"
 
-#: ../src/iop/clipping.c:1126
+#: ../src/iop/clipping.c:1084
+#: ../src/libs/live_view.c:235
 msgid "diagonal method"
 msgstr "diagonaal methode"
 
-#: ../src/iop/clipping.c:1127
+#: ../src/iop/clipping.c:1085
+#: ../src/libs/live_view.c:236
 msgid "harmonious triangles"
 msgstr "harmonieuze driehoeken"
 
-#: ../src/iop/clipping.c:1128
+#: ../src/iop/clipping.c:1086
+#: ../src/libs/live_view.c:237
 msgid "golden mean"
 msgstr "gulden snede"
 
-#: ../src/iop/clipping.c:1130
-msgid "with this option, you can display guide lines to help compose your photograph."
-msgstr "schakel hulplijnen in om composities te verbeteren. "
+#: ../src/iop/clipping.c:1087
+#: ../src/libs/live_view.c:238
+msgid "display guide lines to help compose your photograph"
+msgstr "schakel hulplijnen in om de compositie te verbeteren. "
 
-#: ../src/iop/clipping.c:1134
-msgid "type"
-msgstr "type"
+#: ../src/iop/clipping.c:1094
+#: ../src/libs/live_view.c:245
+msgid "horizontally"
+msgstr "horizontaal"
 
-#: ../src/iop/clipping.c:1147
-msgid "flip guides horizontally"
-msgstr "wissel de hulplijnen horizontaal"
+#: ../src/iop/clipping.c:1095
+#: ../src/libs/live_view.c:246
+msgid "vertically"
+msgstr "verticaal"
 
-#: ../src/iop/clipping.c:1148
-msgid "flip guides vertically"
-msgstr "wissel de hulplijnen verticaal "
+#: ../src/iop/clipping.c:1097
+#: ../src/libs/live_view.c:248
+msgid "flip guides"
+msgstr "verwissel hulplijnen"
 
-#. -------------------------------------------
-#: ../src/iop/clipping.c:1150
+#: ../src/iop/clipping.c:1102
+#: ../src/libs/live_view.c:252
+msgid "extra"
+msgstr "meer"
+
+#: ../src/iop/clipping.c:1103
+#: ../src/libs/live_view.c:253
 msgid "golden sections"
 msgstr "gulden snede"
 
-#: ../src/iop/clipping.c:1152
-msgid "enable this option to show golden sections."
-msgstr "activeer deze optie voor vertoning van de gulden secties."
+#: ../src/iop/clipping.c:1104
+#: ../src/libs/live_view.c:254
+msgid "golden spiral sections"
+msgstr "gulden snede secties"
 
-#: ../src/iop/clipping.c:1155
-msgid "spiral sections"
-msgstr "spiraal secties"
-
-#: ../src/iop/clipping.c:1156
-msgid "enable this option to show golden spiral sections."
-msgstr "activeer deze optie voor vertoning van de gulden snede"
-
-#: ../src/iop/clipping.c:1159
+#: ../src/iop/clipping.c:1105
+#: ../src/libs/live_view.c:255
 msgid "golden spiral"
 msgstr "gulden spiraal"
 
-#: ../src/iop/clipping.c:1160
-msgid "enable this option to show a golden spiral guide."
-msgstr "activeer deze optie voor vertoning van de gulden snede hulplijnen"
+#: ../src/iop/clipping.c:1106
+#: ../src/libs/live_view.c:256
+#: ../src/libs/tools/filter.c:101
+msgid "all"
+msgstr "alles"
 
-#: ../src/iop/clipping.c:1163
-msgid "golden triangles"
-msgstr "gulden driehoeken"
+#: ../src/iop/clipping.c:1107
+#: ../src/libs/live_view.c:257
+msgid "show some extra guides"
+msgstr "toon meer hulplijnen"
 
-#: ../src/iop/clipping.c:1164
-msgid "enable this option to show golden triangles."
-msgstr "activeer deze optie voor vertoning van de gulden driehoeken"
-
-#: ../src/iop/clipping.c:1821
+#: ../src/iop/clipping.c:1582
 msgctxt "accel"
 msgid "commit"
 msgstr "goedkeuren"
 
-#: ../src/iop/clipping.c:1823
-msgctxt "accel"
-msgid "swap the aspect ratio"
-msgstr "wissel de verhouding "
-
-#: ../src/iop/clipping.c:1825
+#: ../src/iop/clipping.c:1584
 msgctxt "accel"
 msgid "angle"
 msgstr "hoek"
 
-#: ../src/iop/clipping.c:1826
+#: ../src/iop/clipping.c:1585
 msgctxt "accel"
 msgid "keystone h"
 msgstr "roteren h"
 
-#: ../src/iop/clipping.c:1827
+#: ../src/iop/clipping.c:1586
 msgctxt "accel"
 msgid "keystone v"
 msgstr "roteren v"
@@ -2681,7 +2823,7 @@ msgstr "koud filter"
 #: ../src/iop/colorcorrection.c:107
 #: ../src/iop/lowpass.c:110
 #: ../src/iop/soften.c:103
-#: ../src/iop/vignette.c:136
+#: ../src/iop/vignette.c:137
 msgctxt "accel"
 msgid "saturation"
 msgstr "verzadiging"
@@ -2698,28 +2840,28 @@ msgstr "kies globale verzadiging"
 msgid "input color profile"
 msgstr "ingaand kleur profiel"
 
-#: ../src/iop/colorin.c:427
+#: ../src/iop/colorin.c:433
 msgid "unsupported input profile has been replaced by linear rgb!"
 msgstr "een niet ondersteund kleurprofiel is vervangen door een lineair RGB!"
 
-#: ../src/iop/colorin.c:642
+#: ../src/iop/colorin.c:655
 #: ../src/libs/export.c:520
 msgid "profile"
 msgstr "profiel"
 
-#: ../src/iop/colorin.c:649
+#: ../src/iop/colorin.c:662
 msgid "standard color matrix"
 msgstr "standaard kleuren matrix"
 
-#: ../src/iop/colorin.c:651
+#: ../src/iop/colorin.c:664
 msgid "enhanced color matrix"
 msgstr "verbeterde kleuren matrix"
 
-#: ../src/iop/colorin.c:653
+#: ../src/iop/colorin.c:666
 msgid "sRGB (e.g. jpg)"
 msgstr "sRGB (b.v. jpg)"
 
-#: ../src/iop/colorin.c:655
+#: ../src/iop/colorin.c:668
 #: ../src/iop/colorout.c:810
 #: ../src/iop/colorout.c:811
 #: ../src/iop/colorout.c:812
@@ -2727,7 +2869,7 @@ msgstr "sRGB (b.v. jpg)"
 msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
-#: ../src/iop/colorin.c:657
+#: ../src/iop/colorin.c:670
 #: ../src/iop/colorout.c:798
 #: ../src/iop/colorout.c:799
 #: ../src/iop/colorout.c:800
@@ -2735,15 +2877,21 @@ msgstr "Adobe RGB"
 msgid "linear RGB"
 msgstr "lineair RGB"
 
-#: ../src/iop/colorin.c:659
+#: ../src/iop/colorin.c:672
 msgid "linear infrared BGR"
 msgstr "lineair infrarood BGR"
 
-#: ../src/iop/colorin.c:661
+#: ../src/iop/colorin.c:674
 msgid "linear XYZ"
 msgstr "lineair XYZ"
 
-#: ../src/iop/colorin.c:669
+#: ../src/iop/colorin.c:676
+#: ../src/libs/colorpicker.c:541
+#: ../src/libs/colorpicker.c:592
+msgid "Lab"
+msgstr "Lab"
+
+#: ../src/iop/colorin.c:684
 #, c-format
 msgid "icc profiles in %s/color/in or %s/color/in"
 msgstr "icc profielen in %s/color/in of %s/color/in"
@@ -3092,7 +3240,7 @@ msgstr "automatische belichting"
 
 #: ../src/iop/exposure.c:388
 msgid "adjust the black level"
-msgstr "corrigeer zwartpunt"
+msgstr "bijstellen zwartpunt"
 
 #: ../src/iop/exposure.c:389
 msgid "black"
@@ -3100,15 +3248,11 @@ msgstr "zwartpunt"
 
 #: ../src/iop/exposure.c:392
 msgid "adjust the exposure correction"
-msgstr "corrigeer belichtingscorrectie (EV)"
+msgstr "bijstellen belichtingscorrectie (EV)"
 
 #: ../src/iop/exposure.c:402
 msgid "percentage of bright values clipped out"
 msgstr "percentage uitgeclipte hooglichten  "
-
-#: ../src/iop/flip.c:81
-msgid "orientation"
-msgstr "oriëntatie"
 
 #: ../src/iop/flip.c:264
 msgid "flip horizontally"
@@ -3130,27 +3274,31 @@ msgstr "roteer 90 graden"
 msgid "rotate by 180"
 msgstr "roteer 180 graden"
 
-#: ../src/iop/flip.c:373
+#: ../src/iop/flip.c:372
 msgid "rotate"
 msgstr "draai"
 
-#: ../src/iop/flip.c:378
+#: ../src/iop/flip.c:377
+#: ../src/libs/live_view.c:197
 msgid "rotate 90 degrees ccw"
-msgstr "verdraai 90 graden tegen de klok richting in"
+msgstr "draai 90 graden tegen de klok richting in"
 
-#: ../src/iop/flip.c:384
+#: ../src/iop/flip.c:383
+#: ../src/libs/live_view.c:198
 msgid "rotate 90 degrees cw"
-msgstr "verdraai 90 graden met de klok richting mee"
+msgstr "draai 90 graden met de klok richting mee"
+
+#: ../src/iop/flip.c:395
+#: ../src/libs/live_view.c:100
+msgctxt "accel"
+msgid "rotate 90 degrees ccw"
+msgstr "draai 90 graden tegen de klok richting in"
 
 #: ../src/iop/flip.c:397
-msgctxt "accel"
-msgid "rotate 90 degrees ccw"
-msgstr "verdraai 90 graden tegen de klok richting in"
-
-#: ../src/iop/flip.c:399
+#: ../src/libs/live_view.c:101
 msgctxt "accel"
 msgid "rotate 90 degrees cw"
-msgstr "verdraai 90 graden met de klok richting mee"
+msgstr "draai 90 graden met de klok richting mee"
 
 #: ../src/iop/gamma.c:38
 msgctxt "modulename"
@@ -3238,7 +3386,7 @@ msgid "density"
 msgstr "dichtheid"
 
 #: ../src/iop/graduatednd.c:681
-msgid "the density in EV for the filter"
+msgid "the density in ev for the filter"
 msgstr "dichtheid voor het filter in EV "
 
 #: ../src/iop/graduatednd.c:688
@@ -3258,7 +3406,7 @@ msgstr "draaiing"
 
 #: ../src/iop/graduatednd.c:698
 msgid "rotation of filter -180 to 180 degrees"
-msgstr "verdraaiing van het filter -180 tot 180 graden"
+msgstr "draaiing van het filter -180 tot 180 graden"
 
 #: ../src/iop/graduatednd.c:704
 msgid "split"
@@ -3419,7 +3567,7 @@ msgstr "selecteer kleur van het filmmateriaal"
 
 #: ../src/iop/invert.c:306
 msgid "this doesn't work for raw/hdr images."
-msgstr "dit werket niet bij raw/hdr afbeeldingen"
+msgstr "dit werkt niet bij raw/hdr afbeeldingen"
 
 #: ../src/iop/invert.c:311
 msgid "color of film material"
@@ -3434,7 +3582,7 @@ msgid "lens correction"
 msgstr "lens correctie"
 
 #: ../src/iop/lens.c:73
-#: ../src/iop/vignette.c:133
+#: ../src/iop/vignette.c:134
 #: ../src/iop/watermark.c:111
 msgctxt "accel"
 msgid "scale"
@@ -3475,7 +3623,7 @@ msgctxt "accel"
 msgid "lens model"
 msgstr "lens model"
 
-#: ../src/iop/lens.c:1075
+#: ../src/iop/lens.c:1055
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -3488,7 +3636,7 @@ msgstr ""
 "koppel:\t\t%s\n"
 "factor bijgesneden:\t%.1f"
 
-#: ../src/iop/lens.c:1373
+#: ../src/iop/lens.c:1353
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -3507,97 +3655,97 @@ msgstr ""
 "type:\t\t%s\n"
 "koppel:\t\t%s"
 
-#: ../src/iop/lens.c:1403
+#: ../src/iop/lens.c:1383
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:1403
+#: ../src/iop/lens.c:1383
 msgid "focal length (mm)"
 msgstr "brandpuntsafstand (mm)"
 
-#: ../src/iop/lens.c:1409
-#: ../src/iop/lens.c:1424
-#: ../src/iop/lens.c:1435
+#: ../src/iop/lens.c:1389
+#: ../src/iop/lens.c:1404
+#: ../src/iop/lens.c:1415
 msgid "reset from exif data"
 msgstr "herstel naar EXIF data"
 
-#: ../src/iop/lens.c:1418
+#: ../src/iop/lens.c:1398
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1418
+#: ../src/iop/lens.c:1398
 msgid "f-number (aperture)"
 msgstr "f-nummer (diafragma)"
 
-#: ../src/iop/lens.c:1429
+#: ../src/iop/lens.c:1409
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1429
+#: ../src/iop/lens.c:1409
 msgid "distance to subject"
 msgstr "afstand tot het onderwerp"
 
-#: ../src/iop/lens.c:1668
+#: ../src/iop/lens.c:1648
 msgid "find camera"
 msgstr "zoek camera"
 
-#: ../src/iop/lens.c:1685
+#: ../src/iop/lens.c:1665
 msgid "find lens"
 msgstr "zoek lens"
 
 #. target geometry
-#: ../src/iop/lens.c:1713
+#: ../src/iop/lens.c:1693
 msgid "geometry"
 msgstr "geometrie"
 
-#: ../src/iop/lens.c:1718
+#: ../src/iop/lens.c:1698
 msgid "target geometry"
 msgstr "doel geometrie"
 
-#: ../src/iop/lens.c:1719
+#: ../src/iop/lens.c:1699
 msgid "rectilinear"
 msgstr "rechtlijnig"
 
-#: ../src/iop/lens.c:1720
+#: ../src/iop/lens.c:1700
 msgid "fish-eye"
 msgstr "fish-eye"
 
-#: ../src/iop/lens.c:1721
+#: ../src/iop/lens.c:1701
 msgid "panoramic"
 msgstr "panorama"
 
-#: ../src/iop/lens.c:1722
+#: ../src/iop/lens.c:1702
 msgid "equirectangular"
 msgstr "equidistante cilinderprojectie"
 
-#: ../src/iop/lens.c:1733
-#: ../src/iop/vignette.c:997
-#: ../src/iop/watermark.c:715
+#: ../src/iop/lens.c:1713
+#: ../src/iop/vignette.c:998
+#: ../src/iop/watermark.c:910
 msgid "scale"
 msgstr "schaal"
 
-#: ../src/iop/lens.c:1740
+#: ../src/iop/lens.c:1720
 msgid "auto scale"
 msgstr "automatisch schalen"
 
 #. reverse direction
-#: ../src/iop/lens.c:1747
+#: ../src/iop/lens.c:1727
 msgid "reverse"
 msgstr "keer om"
 
-#: ../src/iop/lens.c:1748
+#: ../src/iop/lens.c:1728
 msgid "apply distortions instead of correcting them"
 msgstr "pas vervorming toe in plaats van het te corrigeren"
 
-#: ../src/iop/lens.c:1757
+#: ../src/iop/lens.c:1737
 msgid "tca R"
 msgstr "tca R"
 
-#: ../src/iop/lens.c:1758
+#: ../src/iop/lens.c:1738
 msgid "tca B"
 msgstr "tca B"
 
-#: ../src/iop/lens.c:1763
+#: ../src/iop/lens.c:1743
 msgid ""
 "override transversal chromatic aberration correction for red channel\n"
 "leave at 1.0 for defaults"
@@ -3606,7 +3754,7 @@ msgstr ""
 "voor het rode kanaal\n"
 "laat het staan op 1.0 voor een standaard waarde"
 
-#: ../src/iop/lens.c:1764
+#: ../src/iop/lens.c:1744
 msgid ""
 "override transversal chromatic aberration correction for blue channel\n"
 "leave at 1.0 for defaults"
@@ -3754,27 +3902,35 @@ msgstr "rood filter"
 
 #: ../src/iop/monochrome.c:376
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
-msgstr "sleep en scrol met het muiswiel om het virtuele kleurenfilter in te regelen"
+msgstr "sleep en scrol met het muiswiel om het virtuele kleurenfilter aan te passen"
 
-#: ../src/iop/nlmeans.c:69
+#: ../src/iop/nlmeans.c:80
 msgid "denoise (non-local means)"
 msgstr "ontruis (non-local means)"
 
-#: ../src/iop/nlmeans.c:86
+#: ../src/iop/nlmeans.c:113
 msgctxt "accel"
 msgid "luma"
 msgstr "luma"
 
-#: ../src/iop/nlmeans.c:87
+#: ../src/iop/nlmeans.c:114
 msgctxt "accel"
 msgid "chroma"
 msgstr "kleurwaarde"
 
-#: ../src/iop/nlmeans.c:606
+#: ../src/iop/nlmeans.c:677
+msgid "patch size"
+msgstr "patch grootte "
+
+#: ../src/iop/nlmeans.c:685
+msgid "radius of the patches to match"
+msgstr " te evenaren straal van de patches"
+
+#: ../src/iop/nlmeans.c:687
 msgid "how much to smooth brightness"
 msgstr "de mate van afvlakking voor helderheid"
 
-#: ../src/iop/nlmeans.c:607
+#: ../src/iop/nlmeans.c:688
 msgid "how much to smooth colors"
 msgstr "de mate van afvlakking voor kleuren"
 
@@ -3792,23 +3948,23 @@ msgctxt "accel"
 msgid "upper threshold"
 msgstr "drempel bovenkant"
 
-#: ../src/iop/overexposed.c:347
+#: ../src/iop/overexposed.c:349
 msgid "lower threshold"
 msgstr "drempel onderkant"
 
-#: ../src/iop/overexposed.c:348
+#: ../src/iop/overexposed.c:350
 msgid "threshold of what shall be considered underexposed"
 msgstr "drempel voor wat moet worden beschouwd als onderbelicht"
 
-#: ../src/iop/overexposed.c:356
+#: ../src/iop/overexposed.c:358
 msgid "upper threshold"
 msgstr "drempel bovenkant"
 
-#: ../src/iop/overexposed.c:357
+#: ../src/iop/overexposed.c:359
 msgid "threshold of what shall be considered overexposed"
 msgstr "drempel voor wat moet worden beschouwt als overbelicht"
 
-#: ../src/iop/overexposed.c:365
+#: ../src/iop/overexposed.c:367
 msgid "toggle over/under exposed indication"
 msgstr "over- en onderbelichtingsindicator aan/uit schakelen"
 
@@ -3829,6 +3985,11 @@ msgstr "gamma exponentiële factor"
 #: ../src/iop/profile_gamma.c:198
 msgid "linear part"
 msgstr "lineair deel"
+
+#: ../src/iop/profile_gamma.c:199
+#: ../src/iop/tonecurve.c:236
+msgid "linear"
+msgstr "lineair"
 
 #: ../src/iop/profile_gamma.c:201
 msgid "gamma exponential factor"
@@ -3917,7 +4078,7 @@ msgid "soften"
 msgstr "soften"
 
 #: ../src/iop/soften.c:104
-#: ../src/iop/vignette.c:135
+#: ../src/iop/vignette.c:136
 msgctxt "accel"
 msgid "brightness"
 msgstr "helderheid"
@@ -3931,7 +4092,7 @@ msgid "the saturation of blur"
 msgstr "de verzadiging m.b.t vervaging"
 
 #: ../src/iop/soften.c:586
-#: ../src/iop/vignette.c:999
+#: ../src/iop/vignette.c:1000
 msgid "brightness"
 msgstr "helderheid"
 
@@ -3963,7 +4124,7 @@ msgid "balance"
 msgstr "witbalans"
 
 #: ../src/iop/splittoning.c:108
-#: ../src/iop/shadhi.c:114
+#: ../src/iop/shadhi.c:155
 msgctxt "accel"
 msgid "compress"
 msgstr "comprimeer"
@@ -4002,7 +4163,7 @@ msgstr "chocolade bruin"
 
 #. Shadows
 #: ../src/iop/splittoning.c:535
-#: ../src/iop/shadhi.c:830
+#: ../src/iop/shadhi.c:904
 msgid "shadows"
 msgstr "schaduwen"
 
@@ -4012,7 +4173,7 @@ msgstr "bepaal de schaduwkleuren tint"
 
 #. Highlights
 #: ../src/iop/splittoning.c:594
-#: ../src/iop/shadhi.c:831
+#: ../src/iop/shadhi.c:905
 msgid "highlights"
 msgstr "hooglichten"
 
@@ -4029,7 +4190,7 @@ msgid "balance"
 msgstr "witbalans"
 
 #: ../src/iop/splittoning.c:667
-#: ../src/iop/shadhi.c:833
+#: ../src/iop/shadhi.c:907
 msgid "compress"
 msgstr "comprimeer"
 
@@ -4123,7 +4284,7 @@ msgstr "fijnafstelling"
 #: ../src/iop/temperature.c:772
 #, c-format
 msgid "%.0f mired"
-msgstr ""
+msgstr "%.0f mired"
 
 #: ../src/iop/temperature.c:776
 msgid "fine tune white balance preset"
@@ -4133,55 +4294,55 @@ msgstr "fijnafstelling witbalans voorkeur"
 msgid "tone curve"
 msgstr "toon curve"
 
-#: ../src/iop/tonecurve.c:211
+#: ../src/iop/tonecurve.c:230
 msgid "low contrast"
 msgstr "weinig contrast"
 
-#: ../src/iop/tonecurve.c:227
+#: ../src/iop/tonecurve.c:246
 msgid "med contrast"
 msgstr "gemiddeld contrast"
 
-#: ../src/iop/tonecurve.c:237
+#: ../src/iop/tonecurve.c:256
 msgid "high contrast"
 msgstr "hoog contrast"
 
-#: ../src/iop/tonecurve.c:467
+#: ../src/iop/tonecurve.c:486
 msgid "  L  "
 msgstr "  L  "
 
-#: ../src/iop/tonecurve.c:468
+#: ../src/iop/tonecurve.c:487
 msgid "tonecurve for L channel"
 msgstr "tooncurve L kanaal"
 
-#: ../src/iop/tonecurve.c:469
+#: ../src/iop/tonecurve.c:488
 msgid "  a  "
 msgstr "  a  "
 
-#: ../src/iop/tonecurve.c:470
+#: ../src/iop/tonecurve.c:489
 msgid "tonecurve for a channel"
 msgstr "tooncurve a kanaal"
 
-#: ../src/iop/tonecurve.c:471
+#: ../src/iop/tonecurve.c:490
 msgid "  b  "
 msgstr "  b  "
 
-#: ../src/iop/tonecurve.c:472
+#: ../src/iop/tonecurve.c:491
 msgid "tonecurve for b channel"
 msgstr "tooncurve b kanaal"
 
-#: ../src/iop/tonecurve.c:499
+#: ../src/iop/tonecurve.c:518
 msgid "double click to reset curve"
 msgstr "reset curve door dubbelklikken"
 
-#: ../src/iop/tonecurve.c:520
+#: ../src/iop/tonecurve.c:539
 msgid "scale chroma"
 msgstr "schaal kleurwaarde"
 
-#: ../src/iop/tonecurve.c:522
+#: ../src/iop/tonecurve.c:541
 msgid "manual"
 msgstr "handmatig"
 
-#: ../src/iop/tonecurve.c:524
+#: ../src/iop/tonecurve.c:543
 msgid ""
 "if set to auto, a and b curves have no effect and are\n"
 "not displayed. chroma values (a and b) of each pixel\n"
@@ -4189,7 +4350,7 @@ msgid ""
 msgstr ""
 "in stand auto hebben de a en b curven geen effect\n"
 "en worden dan niet getoond, kleurwaarden (a en b) worden\n"
-"dan voor elke pixel bijgesteld op basis van de L waarde"
+"dan voor elke pixel aangepast op basis van de L waarde"
 
 #: ../src/iop/tonemap.cc:77
 msgid "tone mapping"
@@ -4210,7 +4371,7 @@ msgid "contrast compression"
 msgstr "contrast compressie"
 
 #: ../src/iop/tonemap.cc:318
-#: ../src/iop/shadhi.c:846
+#: ../src/iop/shadhi.c:926
 msgid "spatial extent"
 msgstr "omvang "
 
@@ -4250,88 +4411,88 @@ msgstr "levendigheid"
 msgid "the amount of vibrance"
 msgstr "mate van levendigheid"
 
-#: ../src/iop/vignette.c:117
+#: ../src/iop/vignette.c:118
 msgid "vignetting"
 msgstr "vignettering"
 
-#: ../src/iop/vignette.c:134
+#: ../src/iop/vignette.c:135
 msgctxt "accel"
 msgid "fall-off strength"
 msgstr "afname sterkte"
 
-#: ../src/iop/vignette.c:137
+#: ../src/iop/vignette.c:138
 msgctxt "accel"
 msgid "horizontal center"
 msgstr "horizontaal middelpunt"
 
-#: ../src/iop/vignette.c:138
+#: ../src/iop/vignette.c:139
 msgctxt "accel"
 msgid "vertical center"
 msgstr "verticaal middelpunt"
 
-#: ../src/iop/vignette.c:139
+#: ../src/iop/vignette.c:140
 msgctxt "accel"
 msgid "shape"
 msgstr "vorm"
 
-#: ../src/iop/vignette.c:140
+#: ../src/iop/vignette.c:141
 msgctxt "accel"
 msgid "width-height ratio"
 msgstr "verhouding breedte/hoogte"
 
-#: ../src/iop/vignette.c:983
+#: ../src/iop/vignette.c:984
 msgid "automatic ratio"
 msgstr "automatische verhouding"
 
-#: ../src/iop/vignette.c:993
+#: ../src/iop/vignette.c:994
 msgid "automatic"
 msgstr "automatisch"
 
-#: ../src/iop/vignette.c:998
+#: ../src/iop/vignette.c:999
 msgid "fall-off strength"
 msgstr "afname sterkte"
 
-#: ../src/iop/vignette.c:1001
+#: ../src/iop/vignette.c:1002
 msgid "horizontal center"
 msgstr "horizontaal middelpunt"
 
-#: ../src/iop/vignette.c:1002
+#: ../src/iop/vignette.c:1003
 msgid "vertical center"
 msgstr "verticaal middelpunt"
 
-#: ../src/iop/vignette.c:1003
+#: ../src/iop/vignette.c:1004
 msgid "shape"
 msgstr "vorm"
 
-#: ../src/iop/vignette.c:1004
+#: ../src/iop/vignette.c:1005
 msgid "width/height ratio"
 msgstr "verhouding breedte/hoogte"
 
-#: ../src/iop/vignette.c:1022
+#: ../src/iop/vignette.c:1023
 msgid "the radii scale of vignette for start of fall-off"
 msgstr "radiaal schaal van vignettering voor het begin van afname "
 
-#: ../src/iop/vignette.c:1023
+#: ../src/iop/vignette.c:1024
 msgid "the radii scale of vignette for end of fall-off"
 msgstr "radiaal schaal van vignettering voor het einde van afname "
 
-#: ../src/iop/vignette.c:1024
+#: ../src/iop/vignette.c:1025
 msgid "strength of effect on brightness"
 msgstr "mate van het effect t.a.v. helderheid"
 
-#: ../src/iop/vignette.c:1025
+#: ../src/iop/vignette.c:1026
 msgid "strength of effect on saturation"
 msgstr "mate van het effect t.a.v. verzadiging"
 
-#: ../src/iop/vignette.c:1026
+#: ../src/iop/vignette.c:1027
 msgid "horizontal offset of center of the effect"
 msgstr "verschuif het horizontale middelpunt"
 
-#: ../src/iop/vignette.c:1027
+#: ../src/iop/vignette.c:1028
 msgid "vertical offset of center of the effect"
 msgstr "verschuif het verticale middelpunt"
 
-#: ../src/iop/vignette.c:1028
+#: ../src/iop/vignette.c:1029
 msgid ""
 "shape factor\n"
 "0 produces a rectangle\n"
@@ -4343,11 +4504,11 @@ msgstr ""
 "1 creëert een circel of elips\n"
 "2 creëert een ruit"
 
-#: ../src/iop/vignette.c:1029
+#: ../src/iop/vignette.c:1030
 msgid "enable to have the ratio automatically follow the image size"
 msgstr "geeft een verhouding gelijk aan die van de afbeelding"
 
-#: ../src/iop/vignette.c:1030
+#: ../src/iop/vignette.c:1031
 msgid "width-to-height ratio"
 msgstr "verhouding breedte : hoogte"
 
@@ -4368,35 +4529,35 @@ msgstr "dekking"
 #: ../src/iop/watermark.c:112
 msgctxt "accel"
 msgid "x offset"
-msgstr "verschuiven x"
+msgstr "compenseer x"
 
 #: ../src/iop/watermark.c:113
 msgctxt "accel"
 msgid "y offset"
-msgstr "verschuiven y"
+msgstr "compenseer y"
 
-#: ../src/iop/watermark.c:696
+#: ../src/iop/watermark.c:891
 msgid "marker"
 msgstr "bestand"
 
-#: ../src/iop/watermark.c:697
+#: ../src/iop/watermark.c:892
 msgid "alignment"
 msgstr "uitlijning"
 
-#: ../src/iop/watermark.c:737
+#: ../src/iop/watermark.c:932
 msgid "x offset"
-msgstr "verschuiven x"
+msgstr "compenseer x"
 
-#: ../src/iop/watermark.c:738
+#: ../src/iop/watermark.c:933
 msgid "y offset"
-msgstr "verschuiven y"
+msgstr "compenseer y"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:744
+#: ../src/iop/watermark.c:939
 msgid "the opacity of the watermark"
 msgstr "de dekking van het watermerk"
 
-#: ../src/iop/watermark.c:745
+#: ../src/iop/watermark.c:940
 msgid "the scale of the watermark"
 msgstr "de schaal van het watermerk"
 
@@ -4547,77 +4708,68 @@ msgctxt "accel"
 msgid "capture image(s)"
 msgstr " afbeelding(en )opnemen"
 
-#: ../src/libs/camera.c:108
-msgctxt "accel"
-msgid "toggle live view"
-msgstr "live view aan/uit"
-
-#: ../src/libs/camera.c:146
+#: ../src/libs/camera.c:143
 msgid "toggle view property in center view"
 msgstr "schakel beeldeigenschappen naar gecentreerd beeld "
 
-#: ../src/libs/camera.c:218
+#: ../src/libs/camera.c:215
 msgid "connection with camera lost, exiting tethering mode"
 msgstr "verbinding met camera verbroken, tethering mode wordt gestopt"
 
-#: ../src/libs/camera.c:385
+#: ../src/libs/camera.c:368
 msgid "battery"
 msgstr "accu"
 
-#: ../src/libs/camera.c:385
+#: ../src/libs/camera.c:368
 msgid "n/a"
 msgstr "n/a"
 
 #. Camera control
-#: ../src/libs/camera.c:456
+#: ../src/libs/camera.c:439
 msgid "camera control"
 msgstr "camera bediening"
 
-#: ../src/libs/camera.c:460
+#: ../src/libs/camera.c:443
 msgid "modes"
 msgstr "modus"
 
-#: ../src/libs/camera.c:461
+#: ../src/libs/camera.c:444
 msgid "timer (s)"
 msgstr "teller (s)"
 
-#: ../src/libs/camera.c:462
+#: ../src/libs/camera.c:445
 msgid "count"
 msgstr "tel"
 
-#: ../src/libs/camera.c:463
+#: ../src/libs/camera.c:446
 msgid "brackets"
 msgstr "brackets"
 
-#: ../src/libs/camera.c:464
+#: ../src/libs/camera.c:447
 msgid "bkt. steps"
 msgstr "bkt. stappen"
 
-#: ../src/libs/camera.c:502
+#: ../src/libs/camera.c:483
 msgid "capture image(s)"
 msgstr "opnemen afbeelding(en)"
 
-#: ../src/libs/camera.c:505
+#: ../src/libs/camera.c:486
 msgid "toggle delayed capture mode"
-msgstr "omschakelen naar vertraagde opname modus"
+msgstr "schakel naar vertraagde opname modus"
 
-#: ../src/libs/camera.c:506
+#: ../src/libs/camera.c:487
 msgid "toggle sequenced capture mode"
-msgstr "omschakelen naar een reeks opname modus"
+msgstr "schakel naar een reeks opname modus"
 
-#: ../src/libs/camera.c:507
+#: ../src/libs/camera.c:488
 msgid "toggle bracketed capture mode"
-msgstr "omschakelen bracketing opname modus"
+msgstr "schakel naar bracketing opname modus"
 
-#: ../src/libs/camera.c:508
-msgid "toggle live view"
-msgstr "live view aan/uit"
-
-#: ../src/libs/camera.c:509
+#: ../src/libs/camera.c:489
 msgid "the count of seconds before actually doing a capture"
 msgstr "aantal seconden voordat werkelijk een opname wordt uitgevoerd"
 
-#: ../src/libs/camera.c:510
+#: ../src/libs/camera.c:490
 msgid ""
 "the amount of images to capture in a sequence,\n"
 "you can use this in conjuction with delayed mode to create stop-motion sequences."
@@ -4625,11 +4777,11 @@ msgstr ""
 "het aantal afbeelding voor opname in een rij,\n"
 "U kunt die gebruiken met een vertraagde modus om zo bewegende beelden  te maken "
 
-#: ../src/libs/camera.c:511
+#: ../src/libs/camera.c:491
 msgid "the amount of brackets on each side of centered shoot, amount of images = (brackets*2)+1."
 msgstr "het aantal brackets aan beide zijden van de hoofdafbeelding, aantal afbeeldingen =( (brackets*2)+1"
 
-#: ../src/libs/camera.c:512
+#: ../src/libs/camera.c:492
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usally 3 steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets."
@@ -4637,45 +4789,45 @@ msgstr ""
 "Het aantal stappen per 'bracket'  is in de camera instelbaar en bedraagt meestal 3 stappen per stop\n"
 "M.a.w. 3 stappen is gelijk aan 1EV belichtingsstap tussen de 'brackets'.  "
 
-#: ../src/libs/camera.c:527
+#: ../src/libs/camera.c:506
 msgid "properties"
 msgstr "eigenschappen"
 
-#: ../src/libs/camera.c:531
+#: ../src/libs/camera.c:510
 msgid "program"
 msgstr "programma"
 
-#: ../src/libs/camera.c:541
-#: ../src/libs/camera.c:550
+#: ../src/libs/camera.c:520
+#: ../src/libs/camera.c:529
 msgid "focus mode"
 msgstr "focus modus"
 
-#: ../src/libs/camera.c:589
+#: ../src/libs/camera.c:568
 msgid "shutterspeed2"
 msgstr "sluitersnelheid"
 
-#: ../src/libs/camera.c:598
+#: ../src/libs/camera.c:577
 msgid "shutterspeed"
 msgstr "sluitersnelheid"
 
-#: ../src/libs/camera.c:618
+#: ../src/libs/camera.c:597
 msgid "wb"
 msgstr "witbalans"
 
 #. user specified properties
-#: ../src/libs/camera.c:687
+#: ../src/libs/camera.c:666
 msgid "additional properties"
 msgstr "extra eigenschappen"
 
-#: ../src/libs/camera.c:691
+#: ../src/libs/camera.c:670
 msgid "label"
 msgstr "label"
 
-#: ../src/libs/camera.c:697
+#: ../src/libs/camera.c:676
 msgid "property"
 msgstr "eigenschap"
 
-#: ../src/libs/camera.c:709
+#: ../src/libs/camera.c:688
 msgid "add user property"
 msgstr "voeg gebruikers eigenschappen toe"
 
@@ -4757,7 +4909,7 @@ msgid "history"
 msgstr "geschiedenis"
 
 #: ../src/libs/collect.h:35
-#: ../src/libs/tools/filter.c:129
+#: ../src/libs/tools/filter.c:128
 msgid "color label"
 msgstr "kleur label"
 
@@ -4781,7 +4933,7 @@ msgstr "uitgever"
 
 #: ../src/libs/collect.h:44
 #: ../src/libs/metadata_view.c:66
-#: ../src/libs/tools/filter.c:125
+#: ../src/libs/tools/filter.c:124
 msgid "filename"
 msgstr "bestandsnaam"
 
@@ -4829,11 +4981,6 @@ msgstr "max"
 #: ../src/libs/colorpicker.c:590
 msgid "rgb"
 msgstr "rgb"
-
-#: ../src/libs/colorpicker.c:541
-#: ../src/libs/colorpicker.c:592
-msgid "Lab"
-msgstr "Lab"
 
 #: ../src/libs/colorpicker.c:557
 msgid "restrict histogram to selection"
@@ -5059,12 +5206,12 @@ msgstr ""
 "rm <file>\t\t\tverwijder <file>\n"
 "rmdir <dir>\t\t\tverwijder lege map"
 
-#: ../src/libs/histogram.c:52
+#: ../src/libs/histogram.c:55
 msgid "histogram"
 msgstr "histogram"
 
-#: ../src/libs/histogram.c:102
-#: ../src/libs/histogram.c:280
+#: ../src/libs/histogram.c:109
+#: ../src/libs/histogram.c:376
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets"
@@ -5072,7 +5219,39 @@ msgstr ""
 "Door met uw muis te slepen verandert u de belichting\n"
 "Met een dubbele muisklik worden de oorspronkelijke waarden weer ingesteld."
 
-#: ../src/libs/histogram.c:275
+#: ../src/libs/histogram.c:351
+msgid "set histogram mode to logarithmic"
+msgstr "toon logaritmisch histogram "
+
+#: ../src/libs/histogram.c:351
+msgid "set histogram mode to linear"
+msgstr "toon lineair histogram "
+
+#: ../src/libs/histogram.c:356
+msgid "click to hide red channel"
+msgstr "verberg rood "
+
+#: ../src/libs/histogram.c:356
+msgid "click to show red channel"
+msgstr "toon rood "
+
+#: ../src/libs/histogram.c:361
+msgid "click to hide green channel"
+msgstr "verberg groen"
+
+#: ../src/libs/histogram.c:361
+msgid "click to show green channel"
+msgstr "toon groen"
+
+#: ../src/libs/histogram.c:366
+msgid "click to hide blue channel"
+msgstr "verberg blauw"
+
+#: ../src/libs/histogram.c:366
+msgid "click to show blue channel"
+msgstr "toon blauw"
+
+#: ../src/libs/histogram.c:371
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets"
@@ -5328,10 +5507,63 @@ msgstr "importeer nieuwe map(pen)"
 msgid "keywords"
 msgstr "sleutelwoorden"
 
-#: ../src/libs/lib.c:134
+#: ../src/libs/lib.c:184
 #, c-format
 msgid "edit `%s'"
 msgstr "bewerk `%s'"
+
+#: ../src/libs/live_view.c:72
+msgid "live view"
+msgstr "live view "
+
+#: ../src/libs/live_view.c:99
+msgctxt "accel"
+msgid "toggle live view"
+msgstr "live view aan/uit"
+
+#: ../src/libs/live_view.c:102
+msgctxt "accel"
+msgid "move focus point in (big steps)"
+msgstr "verplaats focus punt naar binnen (snel)"
+
+#: ../src/libs/live_view.c:103
+msgctxt "accel"
+msgid "move focus point in (small steps)"
+msgstr "verplaats focus punt naar binnen (langzaam)"
+
+#: ../src/libs/live_view.c:104
+msgctxt "accel"
+msgid "move focus point out (small steps)"
+msgstr "verplaats focus punt naar buiten (langzaam)"
+
+#: ../src/libs/live_view.c:105
+msgctxt "accel"
+msgid "move focus point out (big steps)"
+msgstr "verplaats focus punt naar buiten (snel)"
+
+#: ../src/libs/live_view.c:195
+msgid "toggle live view"
+msgstr "live view aan/uit"
+
+#: ../src/libs/live_view.c:196
+msgid "zoom live view"
+msgstr "zoom live view"
+
+#: ../src/libs/live_view.c:218
+msgid "move focus point in (big steps)"
+msgstr "verplaats focus punt naar binnen (snel)"
+
+#: ../src/libs/live_view.c:219
+msgid "move focus point in (small steps)"
+msgstr "verplaats focus punt naar binnen (langzaam)"
+
+#: ../src/libs/live_view.c:220
+msgid "move focus point out (small steps)"
+msgstr "verplaats focus punt naar buiten (langzaam)"
+
+#: ../src/libs/live_view.c:221
+msgid "move focus point out (big steps)"
+msgstr "verplaats focus punt naar buiten (snel)"
 
 #: ../src/libs/metadata.c:52
 msgid "metadata editor"
@@ -5477,8 +5709,8 @@ msgid "effect group"
 msgstr "modules voor speciale effecten"
 
 #: ../src/libs/modulelist.c:46
-msgid "more plugins"
-msgstr "overige plugins"
+msgid "more modules"
+msgstr "overige modules"
 
 #. construct tooltip text into option
 #: ../src/libs/modulelist.c:101
@@ -5798,7 +6030,7 @@ msgid ""
 "toggle red label\n"
 "of selected images (f1)"
 msgstr ""
-"omschakelen rood label\n"
+"schakel rood label\n"
 "van de geselecteerde afbeeldingen\n"
 "(ctrl-1)"
 
@@ -5807,7 +6039,7 @@ msgid ""
 "toggle yellow label\n"
 "of selected images (f2)"
 msgstr ""
-"omschakelen geel label\n"
+"schakel geel label\n"
 "van de geselecteerde afbeeldingen\n"
 "(ctrl-2)"
 
@@ -5816,7 +6048,7 @@ msgid ""
 "toggle green label\n"
 "of selected images (f3)"
 msgstr ""
-"omschakelen groen label\n"
+"schakel groen label\n"
 "van de geselecteerde afbeeldingen\n"
 "(ctrl-3)"
 
@@ -5825,7 +6057,7 @@ msgid ""
 "toggle blue label\n"
 "of selected images (f4)"
 msgstr ""
-"omschakelen blauw label\n"
+"schakel blauw label\n"
 "van de geselecteerde afbeeldingen (f4)"
 
 #: ../src/libs/tools/colorlabels.c:73
@@ -5833,7 +6065,7 @@ msgid ""
 "toggle purple label\n"
 "of selected images (f5)"
 msgstr ""
-"omschakelen paars label\n"
+"schakel paars label\n"
 "van de geselecteerde afbeeldingen (f5)"
 
 #: ../src/libs/tools/colorlabels.c:74
@@ -5885,43 +6117,43 @@ msgstr "fotoreeks"
 #. Initializing accelerators
 #. Rating keys
 #: ../src/libs/tools/filmstrip.c:126
-#: ../src/views/lighttable.c:1091
+#: ../src/views/lighttable.c:1090
 msgctxt "accel"
 msgid "rate desert"
 msgstr "verlaat waardering "
 
 #: ../src/libs/tools/filmstrip.c:127
-#: ../src/views/lighttable.c:1092
+#: ../src/views/lighttable.c:1091
 msgctxt "accel"
 msgid "rate 1"
 msgstr "waardering 1"
 
 #: ../src/libs/tools/filmstrip.c:128
-#: ../src/views/lighttable.c:1093
+#: ../src/views/lighttable.c:1092
 msgctxt "accel"
 msgid "rate 2"
 msgstr "waardering 2"
 
 #: ../src/libs/tools/filmstrip.c:129
-#: ../src/views/lighttable.c:1094
+#: ../src/views/lighttable.c:1093
 msgctxt "accel"
 msgid "rate 3"
 msgstr "waardering 3"
 
 #: ../src/libs/tools/filmstrip.c:130
-#: ../src/views/lighttable.c:1095
+#: ../src/views/lighttable.c:1094
 msgctxt "accel"
 msgid "rate 4"
 msgstr "waardering 4"
 
 #: ../src/libs/tools/filmstrip.c:131
-#: ../src/views/lighttable.c:1096
+#: ../src/views/lighttable.c:1095
 msgctxt "accel"
 msgid "rate 5"
 msgstr "waardering 5"
 
 #: ../src/libs/tools/filmstrip.c:132
-#: ../src/views/lighttable.c:1097
+#: ../src/views/lighttable.c:1096
 msgctxt "accel"
 msgid "rate reject"
 msgstr "waardering verwijderen"
@@ -5945,31 +6177,31 @@ msgstr "verwerp geschiedenis"
 #. setup color label accelerators
 #. Color keys
 #: ../src/libs/tools/filmstrip.c:146
-#: ../src/views/lighttable.c:1110
+#: ../src/views/lighttable.c:1109
 msgctxt "accel"
 msgid "color red"
 msgstr "kleur rood"
 
 #: ../src/libs/tools/filmstrip.c:147
-#: ../src/views/lighttable.c:1111
+#: ../src/views/lighttable.c:1110
 msgctxt "accel"
 msgid "color yellow"
 msgstr "kleur geel"
 
 #: ../src/libs/tools/filmstrip.c:148
-#: ../src/views/lighttable.c:1112
+#: ../src/views/lighttable.c:1111
 msgctxt "accel"
 msgid "color green"
 msgstr "kleur groen"
 
 #: ../src/libs/tools/filmstrip.c:149
-#: ../src/views/lighttable.c:1113
+#: ../src/views/lighttable.c:1112
 msgctxt "accel"
 msgid "color blue"
 msgstr "kleur blauw"
 
 #: ../src/libs/tools/filmstrip.c:150
-#: ../src/views/lighttable.c:1114
+#: ../src/views/lighttable.c:1113
 msgctxt "accel"
 msgid "color purple"
 msgstr "kleur paars"
@@ -5983,52 +6215,28 @@ msgstr "filter"
 msgid "view"
 msgstr "weergave"
 
-#: ../src/libs/tools/filter.c:101
-msgid "all"
-msgstr "alles"
-
 #: ../src/libs/tools/filter.c:102
-msgid "unstarred"
-msgstr "zonder ster"
-
-#: ../src/libs/tools/filter.c:103
-msgid "1 star"
-msgstr "1 ster"
-
-#: ../src/libs/tools/filter.c:104
-msgid "2 star"
-msgstr "2 sterren"
-
-#: ../src/libs/tools/filter.c:105
-msgid "3 star"
-msgstr "3 sterren"
-
-#: ../src/libs/tools/filter.c:106
-msgid "4 star"
-msgstr "4 sterren"
-
-#: ../src/libs/tools/filter.c:107
-msgid "5 star"
-msgstr "5 sterren"
+msgid "unstarred only"
+msgstr "alleen zonder ster"
 
 #: ../src/libs/tools/filter.c:108
-msgid "rejected"
-msgstr "afgewezen"
+msgid "rejected only"
+msgstr "alleen afgewezen"
 
 #. sort by label
-#: ../src/libs/tools/filter.c:119
+#: ../src/libs/tools/filter.c:118
 msgid "sort by"
 msgstr "sorteer op"
 
-#: ../src/libs/tools/filter.c:126
+#: ../src/libs/tools/filter.c:125
 msgid "time"
 msgstr "tijd"
 
-#: ../src/libs/tools/filter.c:127
+#: ../src/libs/tools/filter.c:126
 msgid "rating"
 msgstr "waardering"
 
-#: ../src/libs/tools/filter.c:128
+#: ../src/libs/tools/filter.c:127
 msgid "id"
 msgstr "id"
 
@@ -6077,27 +6285,27 @@ msgstr "bekijk toolbox"
 msgid "viewswitcher"
 msgstr "scherm wisselaar"
 
-#: ../src/views/capture.c:102
+#: ../src/views/capture.c:103
 msgid "tethering"
 msgstr "tethering"
 
-#: ../src/views/capture.c:289
+#: ../src/views/capture.c:290
 #, c-format
 msgid "failed to create session path %s."
 msgstr "aanmaak sessie pad mislukt %s"
 
-#: ../src/views/capture.c:303
+#: ../src/views/capture.c:304
 #, c-format
 msgid "new session initiated '%s'"
 msgstr "nieuwe sessie gestart-'%s'"
 
-#: ../src/views/capture.c:410
+#: ../src/views/capture.c:413
 msgid "no camera with tethering support available for use..."
-msgstr "geen camera met thethering ondersteuning beschikbaar..."
+msgstr "geen camera met tethering ondersteuning beschikbaar..."
 
 #. Setup key accelerators in capture view...
 #. Film strip shortcuts
-#: ../src/views/capture.c:481
+#: ../src/views/capture.c:519
 #: ../src/views/darkroom.c:1268
 msgctxt "accel"
 msgid "toggle film strip"
@@ -6161,74 +6369,74 @@ msgid "image back"
 msgstr "vorige afbeelding"
 
 #: ../src/views/lighttable.c:266
-msgid "this collection is empty."
-msgstr "deze verzameling is leeg"
+msgid "there are no images in this collection"
+msgstr "er bevinden zich geen afbeeldingen in deze verzameling"
 
 #: ../src/views/lighttable.c:268
-msgid "if you didn't import any images yet"
+msgid "if you have not imported any images yet"
 msgstr "als nog geen afbeeldingen zijn geïmporteerd"
 
 #: ../src/views/lighttable.c:270
-msgid "do that from the top left expander."
-msgstr "doe dit van bovenuit het linkeruitklapmenu"
+msgid "you can do so in the import module"
+msgstr "dit kan worden vanuit de import module"
 
 #: ../src/views/lighttable.c:277
 msgid "try to relax the filter settings in the top panel"
 msgstr "Probeer in het bovenste paneel het filter wat te verzachten ."
 
 #: ../src/views/lighttable.c:284
-msgid "or in the collection plugin in the left panel."
-msgstr "of in de plugin verzamelingen, linker paneel."
+msgid "or add images in the collection module in the left panel"
+msgstr "of voeg afbeeldingen toe aan de collectie in het linkerpaneel"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:1100
+#: ../src/views/lighttable.c:1099
 msgctxt "accel"
 msgid "navigate up"
 msgstr "navigeer omhoog"
 
-#: ../src/views/lighttable.c:1102
+#: ../src/views/lighttable.c:1101
 msgctxt "accel"
 msgid "navigate down"
 msgstr "navigeer omlaag"
 
-#: ../src/views/lighttable.c:1104
+#: ../src/views/lighttable.c:1103
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "volgende pagina"
 
-#: ../src/views/lighttable.c:1106
+#: ../src/views/lighttable.c:1105
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "vorige pagina"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1117
+#: ../src/views/lighttable.c:1116
 msgctxt "accel"
 msgid "scroll up"
 msgstr "blader omhoog"
 
-#: ../src/views/lighttable.c:1119
+#: ../src/views/lighttable.c:1118
 msgctxt "accel"
 msgid "scroll down"
 msgstr "blader omlaag"
 
-#: ../src/views/lighttable.c:1121
+#: ../src/views/lighttable.c:1120
 msgctxt "accel"
 msgid "scroll left"
 msgstr "blader naar links"
 
-#: ../src/views/lighttable.c:1123
+#: ../src/views/lighttable.c:1122
 msgctxt "accel"
 msgid "scroll right"
 msgstr "blader naar rechts"
 
-#: ../src/views/lighttable.c:1125
+#: ../src/views/lighttable.c:1124
 msgctxt "accel"
 msgid "scroll center"
 msgstr "scroll naar middelpunt"
 
 #. Preview key
-#: ../src/views/lighttable.c:1129
+#: ../src/views/lighttable.c:1128
 msgctxt "accel"
 msgid "preview"
 msgstr "voorvertoning"
@@ -6256,35 +6464,158 @@ msgstr "voorkeuren"
 msgid "show global preferences"
 msgstr "persoonlijke voorkeuren"
 
-#: ../src/iop/shadhi.c:95
+#: ../src/iop/shadhi.c:113
 msgid "shadows and highlights"
 msgstr "schaduwen en hooglichten"
 
-#: ../src/iop/shadhi.c:111
+#: ../src/iop/shadhi.c:152
 msgctxt "accel"
 msgid "shadows"
 msgstr "schaduwen"
 
-#: ../src/iop/shadhi.c:112
+#: ../src/iop/shadhi.c:153
 msgctxt "accel"
 msgid "highlights"
 msgstr "hooglichten"
 
-#: ../src/iop/shadhi.c:844
-msgid "lighten shadows"
-msgstr "schaduwen oplichten"
+#: ../src/iop/shadhi.c:156
+msgctxt "accel"
+msgid "shadows color correction"
+msgstr "schaduw kleur correctie"
 
-#: ../src/iop/shadhi.c:845
-msgid "darken highlights"
-msgstr "hooglichten verdonkeren"
+#: ../src/iop/shadhi.c:157
+msgctxt "accel"
+msgid "highlights color correction"
+msgstr "hooglichten kleur correctie"
 
-#: ../src/iop/shadhi.c:847
+#: ../src/iop/shadhi.c:908
+msgid "shadows color adjustment"
+msgstr "bijstellen schaduwkleuren"
+
+#: ../src/iop/shadhi.c:909
+msgid "highlights color adjustment"
+msgstr "bijstellen hooglichten "
+
+#: ../src/iop/shadhi.c:924
+msgid "correct shadows"
+msgstr "verbeter schaduwen"
+
+#: ../src/iop/shadhi.c:925
+msgid "correct highlights"
+msgstr "verbeter hooglichten "
+
+#: ../src/iop/shadhi.c:927
 msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve midtones"
 msgstr ""
 "comprimeer effect op hooglichten/schaduwkleuren\n"
 "en behoud middenkleuren"
+
+#: ../src/iop/shadhi.c:928
+msgid "adjust saturation of shadows"
+msgstr "bijstellen verzadiging schaduwkleuren"
+
+#: ../src/iop/shadhi.c:929
+msgid "adjust saturation of highlights"
+msgstr "bijstellen verzadiging hooglichten "
+
+#~ msgid ""
+#~ "with this option, you can display guide lines to help compose your "
+#~ "photograph."
+#~ msgstr "schakel hulplijnen in om composities te verbeteren. "
+
+#~ msgid "type"
+#~ msgstr "type"
+
+#~ msgid "flip guides horizontally"
+#~ msgstr "wissel de hulplijnen horizontaal"
+
+#~ msgid "flip guides vertically"
+#~ msgstr "wissel de hulplijnen verticaal "
+
+#~ msgid "enable this option to show golden sections."
+#~ msgstr "activeer deze optie voor vertoning van de gulden secties."
+
+#~ msgid "spiral sections"
+#~ msgstr "spiraal secties"
+
+#~ msgid "enable this option to show golden spiral sections."
+#~ msgstr "activeer deze optie voor vertoning van de gulden snede"
+
+#~ msgid "enable this option to show a golden spiral guide."
+#~ msgstr "activeer deze optie voor vertoning van de gulden snede hulplijnen"
+
+#~ msgid "golden triangles"
+#~ msgstr "gulden driehoeken"
+
+#~ msgid "enable this option to show golden triangles."
+#~ msgstr "activeer deze optie voor vertoning van de gulden driehoeken"
+
+#~ msgid "lighten shadows"
+#~ msgstr "schaduwen oplichten"
+#~ msgctxt "accel"
+
+#~ msgid "show plugin"
+#~ msgstr "toon plugin"
+#~ msgctxt "accel"
+
+#~ msgid "enable plugin"
+#~ msgstr "maak plugin mogelijk"
+#~ msgctxt "accel"
+
+#~ msgid "reset plugin parameters"
+#~ msgstr "plugin parameters herstellen"
+#~ msgctxt "accel"
+
+#~ msgid "plugins"
+#~ msgstr "plugins"
+#~ msgctxt "accel"
+
+#~ msgid "pick gui color from image"
+#~ msgstr "neem interface kleur van afbeelding"
+
+#~ msgid "flip image vertically"
+#~ msgstr "verticaal spiegelen"
+
+#~ msgid ""
+#~ "set the aspect ratio (w:h)\n"
+#~ "press ctrl-x to swap sides"
+#~ msgstr ""
+#~ "kies een verhouding voor\n"
+#~ "breedte t.o.v. hoogte\n"
+#~ "ctrl-x draait de verhouding om"
+
+#~ msgid "swap the aspect ratio (ctrl-x)"
+#~ msgstr "verwissel verhouding (ctrl-x)"
+#~ msgctxt "accel"
+
+#~ msgid "swap the aspect ratio"
+#~ msgstr "wissel de verhouding "
+
+#~ msgid "more plugins"
+#~ msgstr "overige plugins"
+
+#~ msgid "1 star"
+#~ msgstr "1 ster"
+
+#~ msgid "2 star"
+#~ msgstr "2 sterren"
+
+#~ msgid "3 star"
+#~ msgstr "3 sterren"
+
+#~ msgid "4 star"
+#~ msgstr "4 sterren"
+
+#~ msgid "5 star"
+#~ msgstr "5 sterren"
+
+#~ msgid "this collection is empty."
+#~ msgstr "deze verzameling is leeg"
+
+#~ msgid "do that from the top left expander."
+#~ msgstr "doe dit van bovenuit het linkeruitklapmenu"
 
 #~ msgid "jpeg quality of on-disk thumbnails"
 #~ msgstr "jpeg kwaliteit van de miniaturen op de schijf"
@@ -6335,9 +6666,6 @@ msgstr ""
 
 #~ msgid "strength of the local contrast"
 #~ msgstr "kracht van het lokaal contrast"
-
-#~ msgid "swap the aspect ratio"
-#~ msgstr "wissel de verhouding "
 
 #~ msgid "shadow recovery (experimental)"
 #~ msgstr "herstellen schaduwen (experimenteel)"
@@ -6580,9 +6908,6 @@ msgstr ""
 #~ msgstr ""
 #~ "schakel over op groen egalisering voordat het mozaïek wordt weggewerkt\n"
 #~ "dit is nodig voor sommige camera instapmodellen zoals de EOS 400D"
-
-#~ msgid "center"
-#~ msgstr "centreer"
 
 #~ msgid "down"
 #~ msgstr " neer"
