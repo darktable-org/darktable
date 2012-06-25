@@ -148,6 +148,9 @@ typedef struct dt_bauhaus_t
   // our custom signals
   guint signals[DT_BAUHAUS_LAST_SIGNAL];
 
+  // vim-style keyboard interfacing/scripting stuff:
+  GHashTable *keymap;   // hashtable translating control name -> bauhaus widget ptr
+
   // appearance relevant stuff:
   // sizes and fonts:
   float scale;          // gui scale multiplier

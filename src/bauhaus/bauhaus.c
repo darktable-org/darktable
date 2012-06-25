@@ -499,6 +499,9 @@ dt_bauhaus_init()
   darktable.bauhaus->scale = gtk_fontsize/5.0f;
   darktable.bauhaus->widget_space = 2.5f*darktable.bauhaus->scale;
 
+  // keys are freed with g_free, values are ptrs to the widgets, these don't need to be cleaned up.
+  darktable.bauhaus->keymap = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
   // this easily gets keyboard input:
   // darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   // but this doesn't flicker, and the above hack with key input seems to work well.
@@ -554,6 +557,7 @@ void
 dt_bauhaus_cleanup()
 {
   // TODO: destroy popup window and resources
+  // TODO: destroy keymap hash table
 }
 
 // fwd declare a few callbacks
@@ -588,7 +592,6 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 static void
 dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
 {
-  // dt_gui_key_accel_block_on_focus(w->area);
   w->module = self;
 
   // no quad icon and no toggle button:
@@ -618,6 +621,10 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *text)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   strncpy(w->label, text, 256);
+
+  // construct control path name and insert into keymap:
+  gchar *path = g_strdup_printf("%s.%s", w->module->name(), w->label);
+  g_hash_table_replace(darktable.bauhaus->keymap, path, w);
 }
 
 void dt_bauhaus_widget_set_quad_paint(GtkWidget *widget, dt_bauhaus_quad_paint_f f, int paint_flags)
