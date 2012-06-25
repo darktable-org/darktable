@@ -18,6 +18,7 @@
 */
 #include "common/darktable.h"
 #include "common/collection.h"
+#include "common/denoise.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
@@ -541,7 +542,7 @@ int32_t dt_control_seed_denoise_job_run(dt_job_t *job)
   snprintf(message, 512, ngettext ("collecting denoise seeds from %d image",
         "collecting denoise seeds from %d images", total), total);
 
-  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 1, message); 
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message); 
 
   int32_t seq = 1;
   char filename[256];
@@ -578,6 +579,34 @@ error:
   return 0;
 }
 
+typedef struct _dummy_data_t
+{
+  dt_imageio_module_data_t head;
+  float *buf;
+}
+_dummy_data_t;
+
+static int
+_bpp(dt_imageio_module_data_t *data)
+{
+  return 32;
+}
+
+static int
+_write_image(
+    dt_imageio_module_data_t *data,
+    const char               *filename,
+    const void               *in,
+    void                     *exif,
+    int                       exif_len,
+    int                       imgid)
+{
+  _dummy_data_t *d = (_dummy_data_t *)data;
+  d->buf = dt_alloc_align(64, sizeof(float)*4*data->width*data->height);
+  memcpy(d->buf, in, data->width*data->height*4*sizeof(float));
+  return 0;
+}
+
 int32_t dt_control_denoise_job_run(dt_job_t *job)
 {
   int32_t imgid = -1;
@@ -590,7 +619,7 @@ int32_t dt_control_denoise_job_run(dt_job_t *job)
   snprintf(message, 512, ngettext ("denoising %d image",
         "denoising %d images", total), total);
 
-  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 1, message); 
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message); 
 
   total ++;
   while(t)
@@ -598,25 +627,35 @@ int32_t dt_control_denoise_job_run(dt_job_t *job)
     imgid = (int32_t)(long int)t->data;
     t = g_list_delete_link(t, t);
 
-    // TODO: denoise!
-    fprintf(stderr, "[denoise] TODO: process image %d\n", imgid);
+    // denoise!
+    fprintf(stderr, "[denoise] processing image %d\n", imgid);
+    dt_imageio_module_format_t format;
+    _dummy_data_t dat;
+    format.bpp = _bpp;
+    format.write_image = _write_image;
+    dat.head.max_width  = 0;
+    dat.head.max_height = 0;
+    dat.buf = NULL;
+    // get image buffer, processed to pre-nlmeans, along with it's dimensions
+    int res = dt_imageio_export_with_flags(
+        imgid, "unused", &format,
+        (dt_imageio_module_data_t *)&dat,
+        1, 1, 0, 1, "pre:nlmeans");
+    if(res) return 1;
 
-    // TODO: get image buffer, processed to pre-nlmeans, along with it's dimensions
-    int width = 0, height = 0;
-    float *input  = dt_alloc_align(64, sizeof(float)*4*width*height);
+    int width = dat.head.width, height = dat.head.height;
+    float *input  = dat.buf;
     float *output = dt_alloc_align(64, sizeof(float)*4*width*height);
     float *input2 = dt_alloc_align(64, sizeof(float)*4*width*height);
     float *tmp    = dt_alloc_align(64, sizeof(float)*width*dt_get_num_threads());
-#if 0
-    const int P = 3;
-    const int K = 8;
-    const float sharpness = 1000.f;
-    const float luma = 0.5f;
-    const float chroma = 1.0f;
-#endif
-
     memset(output, 0, sizeof(float)*4*width*height);
-    int seq = 0;
+    const int P = 1;
+    const int K = 8;
+    const float sharpness = 500.f;
+    const float luma = 1.0f;
+    const float chroma = 1.0f;
+
+    int seq = 1;
     while(1)
     {
       snprintf(filename, 256, "/tmp/dt_denoise_seed/img_%04d.pfm", seq);
@@ -627,8 +666,14 @@ int32_t dt_control_denoise_job_run(dt_job_t *job)
       if(ret != 2) goto error;
       (void)fgetc(f);
       if(width != wd || height != ht) goto error;
+      for(int j=height-1;j>=0;j--)
+        for(int i=0;i<width;i++)
+        {
+          ret = fread(input2 + 4*(j*width+i), 3*sizeof(float), 1, f);
+          if(ret != 1) goto error;
+        }
+      fclose(f);
 
-#if 0
       dt_nlm_accum(
           input,
           input2,
@@ -639,16 +684,15 @@ int32_t dt_control_denoise_job_run(dt_job_t *job)
           K,
           sharpness,
           tmp);
-#endif
 
       fprintf(stderr, "[denoise] ingested image %d\n", seq);
       seq++;
+      continue;
 error:
       fprintf(stderr, "[denoise] image %d failed to load\n", seq);
       fclose(f);
     }
 
-#if 0
     // finalize denoising
     dt_nlm_normalize(
         input,
@@ -657,11 +701,23 @@ error:
         height,
         luma,
         chroma);
-#endif
 
     free(tmp);
     free(input);
     free(input2);
+
+    // export to pfm
+    snprintf(filename, 256, "/tmp/dt_denoise_seed/out.pfm");
+    FILE *f = fopen(filename, "wb");
+    if(f)
+    {
+      fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
+      for(int j=height-1;j>=0;j--)
+        for(int i=0;i<width;i++)
+          fwrite(output + 4*(j*width+i), 3*sizeof(float), 1, f);
+      fclose(f);
+    }
+
     free(output);
 
     /* update backgroundjob ui plate */

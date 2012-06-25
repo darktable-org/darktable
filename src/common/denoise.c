@@ -16,6 +16,19 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/darktable.h"
+#include "common/denoise.h"
+#include <string.h>
+#include <xmmintrin.h>
+#include <stdint.h>
+
+typedef union floatint_t
+{
+  float f;
+  uint32_t i;
+}
+floatint_t;
+
 static inline float
 fast_mexp2f(const float x, const float sharpness)
 {
@@ -39,13 +52,7 @@ void dt_nlm_accum(
     const float  sharpness,
     float       *tmp)
 {
-  if(P < 1)
-  {
-    // TODO: what now? clear user error?
-    // nothing to do from this distance:
-    memcpy (ovoid, ivoid, sizeof(float)*4*width*height);
-    return;
-  }
+  if(P < 1) return;
 
   // adjust to Lab, make L more important
   // TODO: move that to loading time, so it's not done in the innermost loop!
@@ -216,7 +223,7 @@ void dt_nlm_normalize(
   for(int j=0; j<height; j++)
   {
     float *out = output + 4*width*j;
-    float *in  = input  + 4*width*j;
+    const float *in  = input  + 4*width*j;
     for(int i=0; i<width; i++)
     {
       _mm_store_ps(out, _mm_add_ps(
