@@ -1168,14 +1168,14 @@ overexposed (read_only image2d_t in, write_only image2d_t out, const int width, 
 
   if(pixel.x >= upper || pixel.y >= upper || pixel.z >= upper)
   {
-    pixel.x = 1.0f;
+    pixel.x = 0.0f;
     pixel.y = 0.0f;
     pixel.z = 0.0f;
   }
   else if(pixel.x <= lower || pixel.y <= lower || pixel.z <= lower)
   {
-    pixel.x = 0.0f;
-    pixel.y = 0.0f;
+    pixel.x = 1.0f;
+    pixel.y = 1.0f;
     pixel.z = 1.0f;
   }
 
