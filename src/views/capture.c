@@ -321,6 +321,7 @@ void configure(dt_view_t *self, int wd, int ht)
 }
 
 #define MARGIN	20
+#define BAR_HEIGHT 18 /* see libs/camera.c */
 void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_capture_t *lib=(dt_capture_t*)self->data;
@@ -333,20 +334,29 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
     dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
     if(GDK_IS_PIXBUF(cam->live_view_pixbuf))
     {
-      GdkPixbuf *tmp_pb = gdk_pixbuf_rotate_simple(cam->live_view_pixbuf, cam->live_view_rotation*90);
-      gint pw = gdk_pixbuf_get_width(tmp_pb);
-      gint ph = gdk_pixbuf_get_height(tmp_pb);
+      gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
+      gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
+
       float w = width-(MARGIN*2.0f);
-      float h = height-(MARGIN*2.0f);
-      float scale = 1.0;
-      if(pw > w) scale = w/pw;
-      if(ph > h) scale = MIN(scale, h/ph);
-      cairo_translate(cr, (width - scale*pw)*0.5, (height - scale*ph)*0.5);
-      if(cam->live_view_zoom == FALSE) // FIXME
-        cairo_scale(cr, scale, scale);
-      gdk_cairo_set_source_pixbuf(cr, tmp_pb, 0, 0);
+      float h = height-(MARGIN*2.0f)-BAR_HEIGHT;
+
+      float scale;
+      if(cam->live_view_rotation%2 == 0)
+        scale = MIN(w/pw, h/ph);
+      else
+        scale = MIN(w/ph, h/pw);
+      scale = MIN(1.0, scale);
+
+      cairo_translate(cr, width*0.5, (height+BAR_HEIGHT)*0.5); // origin to middle of canvas
+      if(cam->live_view_flip == TRUE)
+        cairo_scale(cr, -1.0, 1.0); // mirror image
+      cairo_rotate(cr, -M_PI_2*cam->live_view_rotation); // rotate around middle
+      if(cam->live_view_zoom == FALSE)
+        cairo_scale(cr, scale, scale); // scale to fit canvas
+      cairo_translate (cr, -0.5*pw, -0.5*ph); // origin back to corner
+
+      gdk_cairo_set_source_pixbuf(cr, cam->live_view_pixbuf, 0, 0);
       cairo_paint(cr);
-      g_object_unref(tmp_pb);
     }
     dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
   }
@@ -502,8 +512,8 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
       default: // can't happen
         delta_x = delta_y = 0;
     }
-    cam->live_view_zoom_x += delta_x;
-    cam->live_view_zoom_y += delta_y;
+    cam->live_view_zoom_x = MAX(0, cam->live_view_zoom_x + delta_x);
+    cam->live_view_zoom_y = MAX(0, cam->live_view_zoom_y + delta_y);
     lib->live_view_zoom_cursor_x = x;
     lib->live_view_zoom_cursor_y = y;
     gchar str[20];

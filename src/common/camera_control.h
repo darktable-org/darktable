@@ -87,6 +87,8 @@ typedef struct dt_camera_t
   gboolean live_view_pan;
   /** Position of the live view zoom region */
   gint live_view_zoom_x, live_view_zoom_y;
+  /** Mirror the live view for easier self portraits */
+  gboolean live_view_flip;
   /** The thread adding the live view jobs */
   pthread_t live_view_thread;
   /** A guard so that writing and reading the pixbuf don't interfere */

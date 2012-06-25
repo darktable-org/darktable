@@ -44,7 +44,7 @@ DT_MODULE(1)
 
 typedef struct dt_lib_live_view_t
 {
-  GtkWidget *live_view, *live_view_zoom, *rotate_ccw, *rotate_cw;
+  GtkWidget *live_view, *live_view_zoom, *rotate_ccw, *rotate_cw, *flip;
   GtkWidget *focus_out_small, *focus_out_big, *focus_in_small, *focus_in_big;
   GtkWidget *guide_selector, *flip_guides, *golden_extras;
 }
@@ -99,6 +99,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "toggle live view"), GDK_v, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees ccw"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees cw"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "mirror vertically"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "move focus point in (big steps)"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "move focus point in (small steps)"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "move focus point out (small steps)"), 0, 0);
@@ -112,6 +113,7 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "toggle live view", GTK_WIDGET(lib->live_view));
   dt_accel_connect_button_lib(self, "rotate 90 degrees ccw", GTK_WIDGET(lib->rotate_ccw));
   dt_accel_connect_button_lib(self, "rotate 90 degrees cw", GTK_WIDGET(lib->rotate_cw));
+  dt_accel_connect_button_lib(self, "mirror vertically", GTK_WIDGET(lib->flip));
   dt_accel_connect_button_lib(self, "move focus point in (big steps)", GTK_WIDGET(lib->focus_in_big));
   dt_accel_connect_button_lib(self, "move focus point in (small steps)", GTK_WIDGET(lib->focus_in_small));
   dt_accel_connect_button_lib(self, "move focus point out (small steps)", GTK_WIDGET(lib->focus_out_small));
@@ -167,6 +169,12 @@ static void _focus_button_clicked(GtkWidget *widget, gpointer user_data)
     dt_camctl_camera_set_property(darktable.camctl, NULL, "manualfocusdrive", g_dgettext("libgphoto2-2", focus_array[focus]));
 }
 
+static void _toggle_flip_clicked(GtkWidget *widget, gpointer user_data)
+{
+  dt_camera_t *cam = (dt_camera_t*)darktable.camctl->active_camera;
+  cam->live_view_flip = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(widget) );
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {
@@ -185,22 +193,26 @@ gui_init (dt_lib_module_t *self)
   lib->live_view       = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   lib->live_view_zoom  = dtgtk_button_new(dtgtk_cairo_paint_zoom, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER); // TODO: see _zoom_live_view_clicked
   lib->rotate_ccw      = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
-  lib->rotate_cw       = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|1);
+  lib->rotate_cw       = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|CPF_DIRECTION_UP);
+  lib->flip            = dtgtk_togglebutton_new(dtgtk_cairo_paint_flip, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|CPF_DIRECTION_UP);
 
   gtk_box_pack_start(GTK_BOX(box), lib->live_view, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), lib->live_view_zoom, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), lib->rotate_ccw, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), lib->rotate_cw, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), lib->flip, TRUE, TRUE, 0);
 
   g_object_set(G_OBJECT( lib->live_view), "tooltip-text", _("toggle live view"), (char *)NULL);
   g_object_set(G_OBJECT( lib->live_view_zoom), "tooltip-text", _("zoom live view"), (char *)NULL);
   g_object_set(G_OBJECT( lib->rotate_ccw), "tooltip-text", _("rotate 90 degrees ccw"), (char *)NULL);
   g_object_set(G_OBJECT( lib->rotate_cw), "tooltip-text", _("rotate 90 degrees cw"), (char *)NULL);
+  g_object_set(G_OBJECT( lib->flip), "tooltip-text", _("mirror live view vertically"), (char *)NULL);
 
   g_signal_connect(G_OBJECT(lib->live_view), "clicked", G_CALLBACK(_toggle_live_view_clicked), lib);
   g_signal_connect(G_OBJECT(lib->live_view_zoom), "clicked", G_CALLBACK(_zoom_live_view_clicked), lib);
   g_signal_connect(G_OBJECT(lib->rotate_ccw), "clicked", G_CALLBACK(_rotate_ccw), lib);
   g_signal_connect(G_OBJECT(lib->rotate_cw), "clicked", G_CALLBACK(_rotate_cw), lib);
+  g_signal_connect(G_OBJECT(lib->flip), "clicked", G_CALLBACK(_toggle_flip_clicked), lib);
 
   // focus buttons
   box = gtk_hbox_new(FALSE, 5);
