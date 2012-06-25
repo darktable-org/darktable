@@ -99,7 +99,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "toggle live view"), GDK_v, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees ccw"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees cw"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "mirror vertically"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "flip horizontally"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "move focus point in (big steps)"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "move focus point in (small steps)"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "move focus point out (small steps)"), 0, 0);
@@ -113,7 +113,7 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "toggle live view", GTK_WIDGET(lib->live_view));
   dt_accel_connect_button_lib(self, "rotate 90 degrees ccw", GTK_WIDGET(lib->rotate_ccw));
   dt_accel_connect_button_lib(self, "rotate 90 degrees cw", GTK_WIDGET(lib->rotate_cw));
-  dt_accel_connect_button_lib(self, "mirror vertically", GTK_WIDGET(lib->flip));
+  dt_accel_connect_button_lib(self, "flip horizontally", GTK_WIDGET(lib->flip));
   dt_accel_connect_button_lib(self, "move focus point in (big steps)", GTK_WIDGET(lib->focus_in_big));
   dt_accel_connect_button_lib(self, "move focus point in (small steps)", GTK_WIDGET(lib->focus_in_small));
   dt_accel_connect_button_lib(self, "move focus point out (small steps)", GTK_WIDGET(lib->focus_out_small));
@@ -206,7 +206,7 @@ gui_init (dt_lib_module_t *self)
   g_object_set(G_OBJECT( lib->live_view_zoom), "tooltip-text", _("zoom live view"), (char *)NULL);
   g_object_set(G_OBJECT( lib->rotate_ccw), "tooltip-text", _("rotate 90 degrees ccw"), (char *)NULL);
   g_object_set(G_OBJECT( lib->rotate_cw), "tooltip-text", _("rotate 90 degrees cw"), (char *)NULL);
-  g_object_set(G_OBJECT( lib->flip), "tooltip-text", _("mirror live view vertically"), (char *)NULL);
+  g_object_set(G_OBJECT( lib->flip), "tooltip-text", _("flip live view horizontally"), (char *)NULL);
 
   g_signal_connect(G_OBJECT(lib->live_view), "clicked", G_CALLBACK(_toggle_live_view_clicked), lib);
   g_signal_connect(G_OBJECT(lib->live_view_zoom), "clicked", G_CALLBACK(_zoom_live_view_clicked), lib);
