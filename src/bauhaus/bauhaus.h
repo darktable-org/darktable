@@ -152,6 +152,7 @@ typedef struct dt_bauhaus_t
   GHashTable *keymap;   // hashtable translating control name -> bauhaus widget ptr
   GList      *key_mod;  // for autocomplete, before the point: module.
   GList      *key_val;  // for autocomplete, after the point: .value
+  char key_history[64][256];
 
   // appearance relevant stuff:
   // sizes and fonts:

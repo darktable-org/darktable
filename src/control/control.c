@@ -1526,6 +1526,7 @@ int dt_control_key_pressed_override(guint key, guint state)
     }
     else if(key == GDK_KEY_Tab)
     {
+      // TODO: also support :preset and :get?
       // auto complete:
       if(darktable.control->vimkey_cnt < 5)
       {
@@ -1551,7 +1552,7 @@ int dt_control_key_pressed_override(guint key, guint state)
       }
       dt_control_log(darktable.control->vimkey);
     }
-    else
+    else if(key >= ' ' && key <= '~') // printable ascii character
     {
       darktable.control->vimkey[darktable.control->vimkey_cnt] = key;
       darktable.control->vimkey_cnt = MIN(255, darktable.control->vimkey_cnt+1);
@@ -1559,6 +1560,14 @@ int dt_control_key_pressed_override(guint key, guint state)
       dt_control_log(darktable.control->vimkey);
       g_list_free(autocomplete);
       autocomplete = NULL;
+    }
+    else if(key == GDK_KEY_Up)
+    {
+      // TODO: step history up and copy to vimkey
+    }
+    else if(key == GDK_KEY_Down)
+    {
+      // TODO: step history down and copy to vimkey
     }
     return 1;
   }

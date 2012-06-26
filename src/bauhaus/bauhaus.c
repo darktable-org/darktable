@@ -503,6 +503,7 @@ dt_bauhaus_init()
   darktable.bauhaus->keymap = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
   darktable.bauhaus->key_mod = NULL;
   darktable.bauhaus->key_val = NULL;
+  memset(darktable.bauhaus->key_history, 0, sizeof(darktable.bauhaus->key_history));
 
   // this easily gets keyboard input:
   // darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -561,7 +562,7 @@ void
 dt_bauhaus_cleanup()
 {
   // TODO: destroy popup window and resources
-  // TODO: destroy keymap hash table
+  // TODO: destroy keymap hash table and auto complete lists!
 }
 
 // fwd declare a few callbacks
