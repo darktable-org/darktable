@@ -501,6 +501,7 @@ dt_bauhaus_init()
 
   // keys are freed with g_free, values are ptrs to the widgets, these don't need to be cleaned up.
   darktable.bauhaus->keymap = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+  darktable.bauhaus->keylist = NULL;
 
   // this easily gets keyboard input:
   // darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -624,10 +625,19 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *text)
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   strncpy(w->label, text, 256);
 
-  // construct control path name and insert into keymap:
-  gchar *path = g_strdup_printf("%s.%s", w->module->name(), w->label);
-  fprintf(stderr, "[dreggn] inserting control `%s'\n", path);
-  g_hash_table_replace(darktable.bauhaus->keymap, path, w);
+  if(w->module)
+  {
+    // construct control path name and insert into keymap:
+    gchar *path = g_strdup_printf("%s.%s", w->module->name(), w->label);
+    if(!g_hash_table_lookup(darktable.bauhaus->keymap, path))
+    {
+      // also insert into sorted tab-complete list.
+      // (but only if this is the first time we insert this path)
+      darktable.bauhaus->keylist = g_list_insert_sorted(darktable.bauhaus->keylist, path, (GCompareFunc)strcmp);
+      fprintf(stderr, "[dreggn] inserting control `%s'\n", path);
+    }
+    g_hash_table_replace(darktable.bauhaus->keymap, path, w);
+  }
 }
 
 void dt_bauhaus_widget_set_quad_paint(GtkWidget *widget, dt_bauhaus_quad_paint_f f, int paint_flags)
@@ -1691,7 +1701,32 @@ void dt_bauhaus_vimkey_exec(const char *input)
 }
 
 // give autocomplete suggestions
-GList* dt_bauhaus_vimkey_complete(const char *input);
+GList* dt_bauhaus_vimkey_complete(const char *input)
+{
+  int prefix = strlen(input);
+  GList *cmp = darktable.bauhaus->keylist;
+  GList *res = NULL;
+  int after = 0;
+  while(cmp)
+  {
+    char *path = (char *)cmp->data;
+      fprintf(stderr, "suggestion: `%s' vs `%s'[%d]\n", path, input, prefix);
+    if(strncmp(path, input, prefix))
+    {
+      if(after) break; // sorted, so we're done
+      // else loop till we find the start of it
+    }
+    else
+    {
+      // append:
+      fprintf(stderr, "accepted suggestion: `%s'\n", path);
+      res = g_list_insert_sorted(res, path, (GCompareFunc)strcmp);
+      after = 1;
+    }
+    cmp = g_list_next(cmp);
+  }
+  return res;
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

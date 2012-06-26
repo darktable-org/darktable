@@ -1344,6 +1344,14 @@ void dt_control_log(const char* msg, ...)
   dt_control_queue_redraw_center();
 }
 
+static void dt_control_log_ack_all()
+{
+  dt_pthread_mutex_lock(&darktable.control->log_mutex);
+  darktable.control->log_pos = darktable.control->log_ack;
+  dt_pthread_mutex_unlock(&darktable.control->log_mutex);
+  dt_control_queue_redraw_center();
+}
+
 void dt_control_log_busy_enter()
 {
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
@@ -1482,7 +1490,10 @@ int dt_control_key_pressed_override(guint key, guint state)
 {
   dt_control_accels_t* accels = &darktable.control->accels;
 
+  // TODO: if darkroom mode
   // did a : vim-style command start?
+  static GList *autocomplete = NULL;
+  static char   vimkey_input[256];
   if(darktable.control->vimkey_cnt)
   {
     if(key == GDK_KEY_Return)
@@ -1490,36 +1501,54 @@ int dt_control_key_pressed_override(guint key, guint state)
       dt_bauhaus_vimkey_exec(darktable.control->vimkey);
       darktable.control->vimkey[0] = 0;
       darktable.control->vimkey_cnt = 0;
-      dt_pthread_mutex_lock(&darktable.control->log_mutex);
-      darktable.control->log_ack = darktable.control->log_pos;
-      dt_pthread_mutex_unlock(&darktable.control->log_mutex);
+      dt_control_log_ack_all();
+      g_list_free(autocomplete);
+      autocomplete = NULL;
     }
-    if(key == GDK_KEY_Escape)
+    else if(key == GDK_KEY_Escape)
     {
       darktable.control->vimkey[0] = 0;
       darktable.control->vimkey_cnt = 0;
-      dt_pthread_mutex_lock(&darktable.control->log_mutex);
-      darktable.control->log_ack = darktable.control->log_pos;
-      dt_pthread_mutex_unlock(&darktable.control->log_mutex);
+      dt_control_log_ack_all();
+      g_list_free(autocomplete);
+      autocomplete = NULL;
     }
     else if(key == GDK_KEY_BackSpace)
     {
       darktable.control->vimkey_cnt = MAX(0, darktable.control->vimkey_cnt-1);
       darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
       if(darktable.control->vimkey_cnt == 0)
-      {
-        dt_pthread_mutex_lock(&darktable.control->log_mutex);
-        darktable.control->log_ack = darktable.control->log_pos;
-        dt_pthread_mutex_unlock(&darktable.control->log_mutex);
-      }
-      else dt_control_log(darktable.control->vimkey);
+        dt_control_log_ack_all();
+      else
+        dt_control_log(darktable.control->vimkey);
+      g_list_free(autocomplete);
+      autocomplete = NULL;
     }
     else if(key == GDK_KEY_Tab)
     {
-      // TODO: auto complete!
-      // TODO: make this static and have tab cycle through the list?
-      // GList *comp = dt_bauhaus_vimkey_complete(darktable.control->vimkey);
-      // TODO: only put autosuggest in here?
+      // auto complete:
+      if(darktable.control->vimkey_cnt < 5)
+      {
+        sprintf(darktable.control->vimkey, ":set ");
+        darktable.control->vimkey_cnt = 5;
+      }
+      else if(!autocomplete)
+      {
+        // TODO: handle '.'-separated things separately
+        // this is a static list, and tab cycles through the list
+        strncpy(vimkey_input, darktable.control->vimkey + 5, 256);
+        autocomplete = dt_bauhaus_vimkey_complete(darktable.control->vimkey + 5);
+        autocomplete = g_list_append(autocomplete, vimkey_input); // remember input to cycle back
+      }
+      if(autocomplete)
+      {
+        // pop first.
+        // the paths themselves are owned by bauhaus,
+        // no free required.
+        snprintf(darktable.control->vimkey, 256, ":set %s", (char *)autocomplete->data);
+        autocomplete = g_list_remove(autocomplete, autocomplete->data);
+        darktable.control->vimkey_cnt = strlen(darktable.control->vimkey);
+      }
       dt_control_log(darktable.control->vimkey);
     }
     else
@@ -1528,6 +1557,8 @@ int dt_control_key_pressed_override(guint key, guint state)
       darktable.control->vimkey_cnt = MIN(255, darktable.control->vimkey_cnt+1);
       darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
       dt_control_log(darktable.control->vimkey);
+      g_list_free(autocomplete);
+      autocomplete = NULL;
     }
     return 1;
   }
