@@ -5,6 +5,7 @@ $ICONWIDTH = 50;
 $ICONHEIGHT = 30;
 $BORDER = 4;
 $FONTSIZE = 12;
+$ALIGNMENT_CROSS = false;
 
 my $srcdir = $ARGV[0];
 my $argc = @ARGV;
@@ -107,6 +108,20 @@ EOF
 		cairo_rectangle(cr, textwidth+2*$BORDER+$column*($ICONWIDTH+$BORDER), $BORDER+$row*($ICONHEIGHT+$BORDER), $ICONWIDTH, $ICONHEIGHT);
 		cairo_set_source_rgb(cr, .17, .17, .17);
 		cairo_fill(cr);
+EOF
+		if($ALIGNMENT_CROSS eq true){
+			print TESTC <<EOF;
+			cairo_set_source_rgb(cr, .7, 0, 0);
+			cairo_set_line_width(cr, 1);
+			cairo_move_to(cr, textwidth+2*$BORDER+$column*($ICONWIDTH+$BORDER)+0.5*$ICONWIDTH, $BORDER+$row*($ICONHEIGHT+$BORDER));
+			cairo_line_to(cr, textwidth+2*$BORDER+$column*($ICONWIDTH+$BORDER)+0.5*$ICONWIDTH, $BORDER+$row*($ICONHEIGHT+$BORDER)+$ICONHEIGHT);
+			cairo_stroke(cr);
+EOF
+		}
+		print TESTC <<EOF;
+		cairo_move_to(cr, textwidth+2*$BORDER+$column*($ICONWIDTH+$BORDER), $BORDER+$row*($ICONHEIGHT+$BORDER)+0.5*$ICONHEIGHT);
+		cairo_line_to(cr, textwidth+2*$BORDER+$column*($ICONWIDTH+$BORDER)+$ICONWIDTH, $BORDER+$row*($ICONHEIGHT+$BORDER)+0.5*$ICONHEIGHT);
+		cairo_stroke(cr);
 		cairo_set_source_rgb(cr, .79, .79, .79);
 		$code(cr, textwidth+3*$BORDER+$column*($ICONWIDTH+$BORDER), 2*$BORDER+$row*($ICONHEIGHT+$BORDER), $ICONWIDTH-2*$BORDER, $ICONHEIGHT-2*$BORDER, $direction);
 		cairo_restore(cr);
