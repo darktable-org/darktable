@@ -501,7 +501,8 @@ dt_bauhaus_init()
 
   // keys are freed with g_free, values are ptrs to the widgets, these don't need to be cleaned up.
   darktable.bauhaus->keymap = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
-  darktable.bauhaus->keylist = NULL;
+  darktable.bauhaus->key_mod = NULL;
+  darktable.bauhaus->key_val = NULL;
 
   // this easily gets keyboard input:
   // darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -633,8 +634,15 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *text)
     {
       // also insert into sorted tab-complete list.
       // (but only if this is the first time we insert this path)
-      darktable.bauhaus->keylist = g_list_insert_sorted(darktable.bauhaus->keylist, path, (GCompareFunc)strcmp);
-      fprintf(stderr, "[dreggn] inserting control `%s'\n", path);
+      gchar *mod = g_strdup(path);
+      gchar *val = g_strstr_len(mod, strlen(mod), ".");
+      if(val)
+      {
+        *val = 0;
+        if(!g_list_find_custom(darktable.bauhaus->key_mod, mod, (GCompareFunc)strcmp))
+          darktable.bauhaus->key_mod = g_list_insert_sorted(darktable.bauhaus->key_mod, mod, (GCompareFunc)strcmp);
+        darktable.bauhaus->key_val = g_list_insert_sorted(darktable.bauhaus->key_val, path, (GCompareFunc)strcmp);
+      }
     }
     g_hash_table_replace(darktable.bauhaus->keymap, path, w);
   }
@@ -1703,14 +1711,16 @@ void dt_bauhaus_vimkey_exec(const char *input)
 // give autocomplete suggestions
 GList* dt_bauhaus_vimkey_complete(const char *input)
 {
+  GList *cmp = darktable.bauhaus->key_mod;
+  char *point = strstr(input, ".");
+  if(point)
+    cmp = darktable.bauhaus->key_val;
   int prefix = strlen(input);
-  GList *cmp = darktable.bauhaus->keylist;
   GList *res = NULL;
   int after = 0;
   while(cmp)
   {
     char *path = (char *)cmp->data;
-      fprintf(stderr, "suggestion: `%s' vs `%s'[%d]\n", path, input, prefix);
     if(strncmp(path, input, prefix))
     {
       if(after) break; // sorted, so we're done
@@ -1719,7 +1729,6 @@ GList* dt_bauhaus_vimkey_complete(const char *input)
     else
     {
       // append:
-      fprintf(stderr, "accepted suggestion: `%s'\n", path);
       res = g_list_insert_sorted(res, path, (GCompareFunc)strcmp);
       after = 1;
     }

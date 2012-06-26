@@ -150,7 +150,8 @@ typedef struct dt_bauhaus_t
 
   // vim-style keyboard interfacing/scripting stuff:
   GHashTable *keymap;   // hashtable translating control name -> bauhaus widget ptr
-  GList      *keylist;  // for autocomplete
+  GList      *key_mod;  // for autocomplete, before the point: module.
+  GList      *key_val;  // for autocomplete, after the point: .value
 
   // appearance relevant stuff:
   // sizes and fonts:
