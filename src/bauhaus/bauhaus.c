@@ -1701,11 +1701,22 @@ void dt_bauhaus_vimkey_exec(const char *input)
   char module[64], label[64];
   float num;
   sscanf(input, ":set %[^.].%[^=]=%f", module, label, &num);
-  fprintf(stderr, "[dreggn] setting module `%s', slider `%s' to %f\n", module, label, num);
+  fprintf(stderr, "[vimkey] setting module `%s', slider `%s' to %f\n", module, label, num);
   sscanf(input, ":set %[^=]=%f", label, &num);
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)g_hash_table_lookup(darktable.bauhaus->keymap, label);
-  fprintf(stderr, "found widget: %X\n", (unsigned int)(long int)w);
-  // TODO: what about comboboxes and such!
+  if(!w) return;
+  switch(w->type)
+  {
+    case DT_BAUHAUS_SLIDER:
+      dt_bauhaus_slider_set(GTK_WIDGET(w), num);
+      break;
+    case DT_BAUHAUS_COMBOBOX:
+      // TODO: what about text as entry?
+      dt_bauhaus_combobox_set(GTK_WIDGET(w), num);
+      break;
+    default:
+      break;
+  }
 }
 
 // give autocomplete suggestions
