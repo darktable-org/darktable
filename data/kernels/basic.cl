@@ -1157,7 +1157,7 @@ borders_fill (write_only image2d_t out, const int left, const int top, const int
 /* kernel for the overexposed plugin. */
 kernel void
 overexposed (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-             const float lower, const float upper)
+             const float lower, const float upper, const float4 lower_color, const float4 upper_color)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1168,15 +1168,11 @@ overexposed (read_only image2d_t in, write_only image2d_t out, const int width, 
 
   if(pixel.x >= upper || pixel.y >= upper || pixel.z >= upper)
   {
-    pixel.x = 0.0f;
-    pixel.y = 0.0f;
-    pixel.z = 0.0f;
+    pixel.xyz = upper_color.xyz;
   }
   else if(pixel.x <= lower || pixel.y <= lower || pixel.z <= lower)
   {
-    pixel.x = 1.0f;
-    pixel.y = 1.0f;
-    pixel.z = 1.0f;
+    pixel.xyz = lower_color.xyz;
   }
 
   write_imagef (out, (int2)(x, y), pixel);

@@ -30,17 +30,46 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 
-DT_MODULE(1)
+DT_MODULE(2)
+
+typedef enum dt_iop_overexposed_colorscheme_t
+{
+  DT_IOP_OVEREXPOSED_REDBLUE = 0,
+  DT_IOP_OVEREXPOSED_BLACKWHITE = 1
+}
+dt_iop_overexposed_colorscheme_t;
 
 typedef struct dt_iop_overexposed_params_t
 {
+  dt_iop_overexposed_colorscheme_t colorscheme;
   float lower;
   float upper;
 } dt_iop_overexposed_params_t;
 
+
+typedef struct dt_iop_overexposed_params1_t
+{
+  float lower;
+  float upper;
+} dt_iop_overexposed_params1_t;
+
+
+static const float dt_iop_overexposed_colors[][2][4] =
+{
+  {
+    { 1.0f, 0.0f, 0.0f, 1.0f },    // red
+    { 0.0f, 0.0f, 1.0f, 1.0f }     // blue
+  },
+  {
+    { 0.0f, 0.0f, 0.0f, 1.0f },    // black
+    { 1.0f, 1.0f, 1.0f, 1.0f }     // white
+  }
+};
+
+
 typedef struct dt_iop_overexposed_gui_data_t
 {
-  GtkWidget           *lower, *upper;
+  GtkWidget           *lower, *upper, *colorscheme;
 // 	int                  width;
 // 	int                  height;
 // 	unsigned char       *mask;
@@ -48,6 +77,7 @@ typedef struct dt_iop_overexposed_gui_data_t
 
 typedef struct dt_iop_overexposed_data_t
 {
+  dt_iop_overexposed_colorscheme_t colorscheme;
   float lower;
   float upper;
 } dt_iop_overexposed_data_t;
@@ -74,10 +104,28 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING;
 }
 
+int
+legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
+{
+  if (old_version == 1 && new_version == 2)
+  {
+    const dt_iop_overexposed_params1_t *old = old_params;
+    dt_iop_overexposed_params_t *new = new_params;
+    new->lower = old->lower;
+    new->upper = old->upper;
+    new->colorscheme = DT_IOP_OVEREXPOSED_REDBLUE;
+
+    return 0;
+  }
+  return 1;
+}
+
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lower threshold"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "upper threshold"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "color scheme"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -87,6 +135,7 @@ void connect_key_accels(dt_iop_module_t *self)
 
   dt_accel_connect_slider_iop(self, "lower threshold", GTK_WIDGET(g->lower));
   dt_accel_connect_slider_iop(self, "upper threshold", GTK_WIDGET(g->upper));
+  dt_accel_connect_slider_iop(self, "color scheme", GTK_WIDGET(g->colorscheme));
 }
 
 // FIXME: I'm not sure if this is the best test (all >= / <= threshold), but it seems to work.
@@ -95,6 +144,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_overexposed_data_t *data = (dt_iop_overexposed_data_t *)piece->data;
   float lower  = data->lower / 100.0;
   float upper  = data->upper / 100.0;
+  int colorscheme = data->colorscheme;
+
+  const float *upper_color  = dt_iop_overexposed_colors[colorscheme][0];
+  const float *lower_color = dt_iop_overexposed_colors[colorscheme][1];
 
   float *in    = (float *)i;
   float *out   = (float *)o;
@@ -111,7 +164,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 // 	char *mask = (char*)((dt_iop_overexposed_gui_data_t*)self->gui_data)->mask;
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out, upper, lower) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, in, out, upper, lower, upper_color, lower_color) schedule(static)
 // 	#pragma omp parallel for default(none) shared(roi_out, in, out, upper, lower, mask, stride) schedule(static)
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
@@ -123,18 +176,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     if(inp[0] >= upper || inp[1] >= upper || inp[2] >= upper)
     {
 // 			mask[y*stride+x] = 255;
-//    black:
-      outp[0] = 0;
-      outp[1] = 0;
-      outp[2] = 0;
+      outp[0] = upper_color[0];
+      outp[1] = upper_color[1];
+      outp[2] = upper_color[2];
     }
     else if(inp[0] <= lower && inp[1] <= lower && inp[2] <= lower)
     {
 // 			mask[(y*stride+x)+(stride*roi_out->height)] = 255;
-//    white:
-      outp[0] = 1;
-      outp[1] = 1;
-      outp[2] = 1;
+      outp[0] = lower_color[0];
+      outp[1] = lower_color[1];
+      outp[2] = lower_color[2];
     }
     else
     {
@@ -163,6 +214,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const float lower  = d->lower / 100.0f;
   const float upper  = d->upper / 100.0f;
+  const int colorscheme = d->colorscheme;
+
+  const float *upper_color  = dt_iop_overexposed_colors[colorscheme][0];
+  const float *lower_color = dt_iop_overexposed_colors[colorscheme][1];
 
   size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 0, sizeof(cl_mem), &dev_in);
@@ -171,6 +226,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 3, sizeof(int), &height);
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 4, sizeof(float), &lower);
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 5, sizeof(float), &upper);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 6, 4*sizeof(float), lower_color);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 7, 4*sizeof(float), upper_color);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_overexposed, sizes);
   if(err != CL_SUCCESS) goto error;
   return TRUE;
@@ -263,6 +320,14 @@ static void upper_callback (GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void colorscheme_callback (GtkWidget *combo, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_overexposed_params_t *p = (dt_iop_overexposed_params_t *)self->params;
+  p->colorscheme = dt_bauhaus_combobox_get(combo);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -270,6 +335,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_overexposed_data_t *d   = (dt_iop_overexposed_data_t *)piece->data;
   d->lower = p->lower;
   d->upper = p->upper;
+  d->colorscheme = p->colorscheme;
   if(pipe->type != DT_DEV_PIXELPIPE_FULL) piece->enabled = 0;
 }
 
@@ -295,6 +361,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_overexposed_params_t *p   = (dt_iop_overexposed_params_t *)module->params;
   dt_bauhaus_slider_set(g->lower, p->lower);
   dt_bauhaus_slider_set(g->upper, p->upper);
+  dt_bauhaus_combobox_set(g->colorscheme, p->colorscheme);
 }
 
 void init(dt_iop_module_t *module)
@@ -307,7 +374,7 @@ void init(dt_iop_module_t *module)
   module->gui_data                = NULL;
   dt_iop_overexposed_params_t tmp = (dt_iop_overexposed_params_t)
   {
-    2,98
+    DT_IOP_OVEREXPOSED_REDBLUE,2,98
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_overexposed_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_overexposed_params_t));
@@ -342,6 +409,16 @@ void gui_init(struct dt_iop_module_t *self)
 // 	g->mask = NULL;
 
   self->widget =gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+
+  /* color scheme */
+  g->colorscheme = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->colorscheme, _("color scheme"));
+  dt_bauhaus_combobox_add(g->colorscheme, _("red / blue"));
+  dt_bauhaus_combobox_add(g->colorscheme, _("black / white"));
+  g_object_set(G_OBJECT(g->colorscheme), "tooltip-text", _("select colors to indicate over/under exposure"), (char *)NULL);
+  g_signal_connect (G_OBJECT (g->colorscheme), "value-changed", 
+		    G_CALLBACK (colorscheme_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->colorscheme), TRUE, TRUE, 0);
 
   /* lower */
   g->lower = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 0.1, p->lower, 2);
