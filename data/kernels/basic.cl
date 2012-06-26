@@ -1170,7 +1170,7 @@ overexposed (read_only image2d_t in, write_only image2d_t out, const int width, 
   {
     pixel.xyz = upper_color.xyz;
   }
-  else if(pixel.x <= lower || pixel.y <= lower || pixel.z <= lower)
+  else if(pixel.x <= lower && pixel.y <= lower && pixel.z <= lower)
   {
     pixel.xyz = lower_color.xyz;
   }
