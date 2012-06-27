@@ -80,6 +80,7 @@ typedef struct dt_develop_t
   // histogram for display.
   float *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
   float histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
+  gboolean histogram_linear;
 
   /* proxy for communication between plugins and develop/darkroom */
   struct

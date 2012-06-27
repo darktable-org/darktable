@@ -864,9 +864,11 @@ int32_t dt_control_run_job(dt_control_t *s)
     dt_print(DT_DEBUG_CONTROL, "\n");
     
     /* free job */
+    dt_pthread_mutex_unlock (&j->wait_mutex);
     g_free(j);
+    j = NULL;
   }
-  dt_pthread_mutex_unlock (&j->wait_mutex);
+  if(j) dt_pthread_mutex_unlock (&j->wait_mutex);
 
   return 0;
 }

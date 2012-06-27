@@ -411,8 +411,6 @@ dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
     if(gtk_toggle_button_get_active(togglebutton)) module->enabled = 1;
     else module->enabled = 0;
     dt_dev_add_history_item(module->dev, module, FALSE);
-    // close parent expander.
-    dt_iop_gui_set_expanded(module, module->enabled);
   }
   char tooltip[512];
   snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());

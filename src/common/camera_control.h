@@ -50,6 +50,8 @@ typedef struct dt_camera_t
   gboolean can_tether;
   /** This camera/device can do live view. */
   gboolean can_live_view;
+  /** This camera/device can do advanced live view things like zoom. */
+  gboolean can_live_view_advanced;
   /** This camera/device can be remote controlled. */
   gboolean can_config;
 
@@ -85,6 +87,8 @@ typedef struct dt_camera_t
   gboolean live_view_pan;
   /** Position of the live view zoom region */
   gint live_view_zoom_x, live_view_zoom_y;
+  /** Mirror the live view for easier self portraits */
+  gboolean live_view_flip;
   /** The thread adding the live view jobs */
   pthread_t live_view_thread;
   /** A guard so that writing and reading the pixbuf don't interfere */

@@ -1524,6 +1524,14 @@ const wb_data wb_preset[] = {
   { "MINOLTA", "DYNAX 7D", "5500K", 0,		{ 1.710938, 1, 1.601562, 0 } },
   { "MINOLTA", "DYNAX 7D", "6500K", 0,		{ 1.875000, 1, 1.421875, 0 } },
 
+  { "NIKON", "COOLPIX P7100", DirectSunlight, 0,	{ 1.6500, 1, 2.1349, 0 } },
+  { "NIKON", "COOLPIX P7100", Incandescent, 0,		{ 1.1730, 1, 3.3705, 0 } },
+  { "NIKON", "COOLPIX P7100", WhiteFluorescent, 0,	{ 1.8456, 1, 2.9326, 0 } },
+  { "NIKON", "COOLPIX P7100", DayWhiteFluorescent, 0,	{ 1.8182, 1, 2.1310, 0 } },
+  { "NIKON", "COOLPIX P7100", DaylightFluorescent, 0,	{ 2.1271, 1, 1.7517, 0 } },
+  { "NIKON", "COOLPIX P7100", Cloudy, 0,		{ 1.8182, 1, 1.8534, 0 } },
+  { "NIKON", "COOLPIX P7100", Flash, 0,			{ 2.1349, 1, 1.6579, 0 } },
+
   { "NIKON", "D1", Incandescent, -3,		{ 1, 1.439891, 2.125769, 0 } },
   { "NIKON", "D1", Incandescent, 0,		{ 1, 1.582583, 2.556096, 0 } },
   { "NIKON", "D1", Incandescent, 3,		{ 1, 1.745033, 3.044175, 0 } },

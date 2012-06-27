@@ -190,6 +190,7 @@ typedef struct dt_view_manager_t
       const char *(*get_session_path)(const dt_view_t *view);
       const char *(*get_job_code)(const dt_view_t *view);
       void (*set_job_code)(const dt_view_t *view, const char *name);
+      uint32_t (*get_selected_imgid)(const dt_view_t *view);
     } tethering;
 
   } proxy;
@@ -243,6 +244,8 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwins
  */
 /** get the current filmroll id for tethering session */
 int32_t dt_view_tethering_get_film_id(const dt_view_manager_t *vm);
+/** get the current selected image id for tethering session */
+int32_t dt_view_tethering_get_selected_imgid(const dt_view_manager_t *vm);
 /** get the current session path for tethering session */
 const char *dt_view_tethering_get_session_path(const dt_view_manager_t *vm);
 /** get the current session filename for tethering session */

@@ -87,10 +87,10 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
   {
     dt_iop_nlmeans_params_v1_t *o = (dt_iop_nlmeans_params_v1_t *)old_params;
     dt_iop_nlmeans_params_t *n = (dt_iop_nlmeans_params_t *)new_params;
-    dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)self->default_params;
-    *n = *d;  // start with a fresh copy of default parameters
     n->luma   = o->luma;
     n->chroma = o->chroma;
+    n->strength = 100.0f;
+    n->radius = 3;
     return 0;
   }
   return 1;
@@ -140,7 +140,7 @@ fast_mexp2f(const float x)
   const float i2 = (float)0x3f000000u; // 2^-1
   const float k0 = i1 + x * (i2 - i1);
   floatint_t k;
-  k.i = k0 > FLT_MIN ? k0 : 0;
+  k.i = k0 >= (float)0x800000u ? k0 : 0;
   return k.f;
 }
 

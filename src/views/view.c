@@ -1162,6 +1162,14 @@ int32_t dt_view_tethering_get_film_id(const dt_view_manager_t *vm)
   return -1;
 }
 
+int32_t dt_view_tethering_get_selected_imgid(const dt_view_manager_t *vm)
+{
+  if (vm->proxy.tethering.view)
+    return vm->proxy.tethering.get_selected_imgid(vm->proxy.tethering.view);
+
+  return -1;
+}
+
 
 const char *dt_view_tethering_get_session_path(const dt_view_manager_t *vm)
 {

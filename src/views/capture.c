@@ -97,6 +97,7 @@ static const gchar *_capture_view_get_session_path(const dt_view_t *view);
 static uint32_t _capture_view_get_film_id(const dt_view_t *view);
 static void _capture_view_set_jobcode(const dt_view_t *view, const char *name);
 static const char *_capture_view_get_jobcode(const dt_view_t *view);
+static uint32_t _capture_view_get_selected_imgid(const dt_view_t *view);
 
 const char *name(dt_view_t *self)
 {
@@ -165,6 +166,7 @@ void init(dt_view_t *self)
   darktable.view_manager->proxy.tethering.get_session_path = _capture_view_get_session_path;
   darktable.view_manager->proxy.tethering.get_job_code = _capture_view_get_jobcode;
   darktable.view_manager->proxy.tethering.set_job_code = _capture_view_set_jobcode;
+  darktable.view_manager->proxy.tethering.get_selected_imgid = _capture_view_get_selected_imgid;
 
 }
 
@@ -183,6 +185,13 @@ uint32_t _capture_view_get_film_id(const dt_view_t *view)
   // else return first film roll.
   /// @todo maybe return 0 and check error in caller...
   return 1;
+}
+
+uint32_t _capture_view_get_selected_imgid(const dt_view_t *view)
+{
+  g_assert( view != NULL );
+  dt_capture_t *cv=(dt_capture_t *)view->data;
+  return cv->image_id;
 }
 
 
@@ -321,6 +330,7 @@ void configure(dt_view_t *self, int wd, int ht)
 }
 
 #define MARGIN	20
+#define BAR_HEIGHT 18 /* see libs/camera.c */
 void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_capture_t *lib=(dt_capture_t*)self->data;
@@ -333,20 +343,29 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
     dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
     if(GDK_IS_PIXBUF(cam->live_view_pixbuf))
     {
-      GdkPixbuf *tmp_pb = gdk_pixbuf_rotate_simple(cam->live_view_pixbuf, cam->live_view_rotation*90);
-      gint pw = gdk_pixbuf_get_width(tmp_pb);
-      gint ph = gdk_pixbuf_get_height(tmp_pb);
+      gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
+      gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
+
       float w = width-(MARGIN*2.0f);
-      float h = height-(MARGIN*2.0f);
-      float scale = 1.0;
-      if(pw > w) scale = w/pw;
-      if(ph > h) scale = MIN(scale, h/ph);
-      cairo_translate(cr, (width - scale*pw)*0.5, (height - scale*ph)*0.5);
-      if(cam->live_view_zoom == FALSE) // FIXME
-        cairo_scale(cr, scale, scale);
-      gdk_cairo_set_source_pixbuf(cr, tmp_pb, 0, 0);
+      float h = height-(MARGIN*2.0f)-BAR_HEIGHT;
+
+      float scale;
+      if(cam->live_view_rotation%2 == 0)
+        scale = fminf(w/pw, h/ph);
+      else
+        scale = fminf(w/ph, h/pw);
+      scale = fminf(1.0, scale);
+
+      cairo_translate(cr, width*0.5, (height+BAR_HEIGHT)*0.5); // origin to middle of canvas
+      if(cam->live_view_flip == TRUE)
+        cairo_scale(cr, -1.0, 1.0); // mirror image
+      cairo_rotate(cr, -M_PI_2*cam->live_view_rotation); // rotate around middle
+      if(cam->live_view_zoom == FALSE)
+        cairo_scale(cr, scale, scale); // scale to fit canvas
+      cairo_translate (cr, -0.5*pw, -0.5*ph); // origin back to corner
+
+      gdk_cairo_set_source_pixbuf(cr, cam->live_view_pixbuf, 0, 0);
       cairo_paint(cr);
-      g_object_unref(tmp_pb);
     }
     dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
   }
@@ -502,8 +521,8 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
       default: // can't happen
         delta_x = delta_y = 0;
     }
-    cam->live_view_zoom_x += delta_x;
-    cam->live_view_zoom_y += delta_y;
+    cam->live_view_zoom_x = MAX(0, cam->live_view_zoom_x + delta_x);
+    cam->live_view_zoom_y = MAX(0, cam->live_view_zoom_y + delta_y);
     lib->live_view_zoom_cursor_x = x;
     lib->live_view_zoom_cursor_y = y;
     gchar str[20];
@@ -537,6 +556,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
     cam->live_view_pan = TRUE;
     lib->live_view_zoom_cursor_x = x;
     lib->live_view_zoom_cursor_y = y;
+    dt_control_change_cursor(GDK_HAND1);
     return 1;
   }
   else if((which == 2 || which == 3) && cam->is_live_viewing) // zoom the live view
@@ -557,6 +577,7 @@ int button_released(dt_view_t *self, double x, double y, int which, int type, ui
   if(which == 1)
   {
     cam->live_view_pan = FALSE;
+    dt_control_change_cursor(GDK_LEFT_PTR);
     return 1;
   }
   return 0;

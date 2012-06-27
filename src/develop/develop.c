@@ -65,6 +65,10 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->histogram = NULL;
   dev->histogram_pre_tonecurve = NULL;
   dev->histogram_pre_levels = NULL;
+  if(g_strcmp0(dt_conf_get_string("plugins/darkroom/histogram/mode"), "linear") == 0)
+    dev->histogram_linear = TRUE;
+  else
+    dev->histogram_linear = FALSE;
 
   if(dev->gui_attached)
   {

@@ -657,6 +657,10 @@ gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
     // read a full copy of config to configuration cache
     gp_camera_get_config( cam->gpcam, &cam->configuration, c->gpcontext );
 
+    // TODO: find a more robust way for this, once we find out how to do it with non-EOS cameras
+    if(cam->can_live_view && dt_camctl_camera_property_exists(camctl, cam, "eoszoomposition"))
+      cam->can_live_view_advanced = TRUE;
+
     // initialize timeout callbacks eg. keep alive, some cameras needs it.
     cam->gpcontext = camctl->gpcontext;
     gp_camera_set_timeout_funcs(cam->gpcam, 

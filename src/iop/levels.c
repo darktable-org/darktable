@@ -378,7 +378,7 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
     dt_develop_t *dev = darktable.develop;
     float *hist, hist_max;
     hist = dev->histogram_pre_levels;
-    hist_max = dev->histogram_pre_levels_max;
+    hist_max = dev->histogram_linear?dev->histogram_pre_levels_max:logf(1.0 + dev->histogram_pre_levels_max);
     if(hist_max > 0)
     {
       cairo_save(cr);
