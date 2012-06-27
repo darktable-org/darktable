@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010-2011 johannes hanika
-    copyright (c) 2010-2012 henrik andersson
+    copyright (c) 2010-2012 henrik andersson, johannes hanika
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -531,6 +530,109 @@ error:
   return 0;
 }
 
+typedef struct _dummy_data_t
+{
+  dt_imageio_module_data_t head;
+  float *buf;
+}
+_dummy_data_t;
+
+static int
+_bpp(dt_imageio_module_data_t *data)
+{
+  return 32;
+}
+
+static void
+_convert_to_edges(
+    float     *input,
+    const int  width,
+    const int  height)
+{
+  // now blur horiz/vert, mul with channel importance, and write to edge buffer!
+  // TODO: while doing that, estimate variance and get denoising params from that?
+  float *output = dt_alloc_align(64, sizeof(float)*4*width*height);
+
+  const float filter[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
+  // blur lines in parallel
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) shared(input,output)
+#endif
+  for(int j=0;j<height;j++)
+  {
+    for(int i=2;i<width-3;i++)
+    {
+      for(int c=0;c<3;c++)
+      {
+        float sum = 0.0f;
+        for(int k=-2;k<=2;k++)
+          sum += filter[2+k] * input[4*(j*width + i + k) + c];
+        output[4*(j*width + i) + c] = sum;
+      }
+    }
+  }
+  // blur columns in parallel
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) shared(input,output)
+#endif
+  for(int i=0;i<width;i++)
+  {
+    for(int j=2;j<height-2;j++)
+    {
+      for(int c=0;c<3;c++)
+      {
+        float sum = 0.0f;
+        for(int k=-2;k<=2;k++)
+          sum += filter[2+k] * output[4*((j+k)*width + i) + c];
+        input[4*(j*width + i) + c] = sum;
+      }
+    }
+  }
+  free(output);
+
+  float max_L = 120.0f, max_C = 512.0f;
+  float nL = 1.0f/max_L, nC = 1.0f/max_C;
+  for(int k=0;k<width*height;k++)
+  {
+    // adjust to Lab, make L more important
+    // we do that to loading time, so it's not done in the innermost loop.
+    input[4*k + 0] *= nL;
+    input[4*k + 1] *= nC;
+    input[4*k + 2] *= nC;
+  }
+}
+
+static int
+_write_seed_images(
+    dt_imageio_module_data_t *data,
+    const char               *filename,
+    const void               *ivoid,
+    void                     *exif,
+    int                       exif_len,
+    int                       imgid)
+{
+  float *input = (float *)ivoid;
+  // re-stride to 3x and write out
+  char filename2[256];
+  snprintf(filename2, 256, "%s.pfm", filename);
+  FILE *f = fopen(filename2, "wb");
+  fprintf(f, "PF\n%d %d\n-1.0\n", data->width, data->height);
+  for(int j=data->height-1;j>=0;j--)
+    for(int i=0;i<data->width;i++)
+      fwrite(input + 4*(j*data->width + i), 3*sizeof(float), 1, f);
+  fclose(f);
+  _convert_to_edges(input, data->width, data->height);
+
+  snprintf(filename2, 256, "%s_edges.pfm", filename);
+  f = fopen(filename2, "wb");
+  fprintf(f, "PF\n%d %d\n-1.0\n", data->width, data->height);
+  for(int j=data->height-1;j>=0;j--)
+    for(int i=0;i<data->width;i++)
+      fwrite(input + 4*(j*data->width + i), 3*sizeof(float), 1, f);
+  fclose(f);
+  return 0;
+}
+
 int32_t dt_control_seed_denoise_job_run(dt_job_t *job)
 {
   int32_t imgid = -1;
@@ -554,8 +656,23 @@ int32_t dt_control_seed_denoise_job_run(dt_job_t *job)
 
     // export seed images.
     g_mkdir_with_parents("/tmp/dt_denoise_seed/", 0755);
-    snprintf(filename, 256, "/tmp/dt_denoise_seed/img_%04d.pfm", seq);
+    snprintf(filename, 256, "/tmp/dt_denoise_seed/img_%04d", seq);
     fprintf(stderr, "[seed_denoise] processing image %d\n", imgid);
+
+#if 1
+    dt_imageio_module_format_t format;
+    _dummy_data_t dat;
+    format.bpp = _bpp;
+    format.write_image = _write_seed_images;
+    dat.head.max_width  = 0;
+    dat.head.max_height = 0;
+    dat.buf = NULL;
+    // get image buffer, processed to pre-nlmeans, along with it's dimensions
+    int res = dt_imageio_export_with_flags(
+        imgid, filename, &format,
+        (dt_imageio_module_data_t *)&dat,
+        1, 1, 0, 1, "pre:nlmeans");
+#else
     int size = 0;
     dt_imageio_module_format_t *format = dt_imageio_get_format_by_name("pfm");
     if(!format) goto error;
@@ -566,6 +683,7 @@ int32_t dt_control_seed_denoise_job_run(dt_job_t *job)
     int res = dt_imageio_export_with_flags(
         imgid, filename, format, fdata,
 			  0, 0, 0, 0, "pre:nlmeans");
+#endif
 
     if(res) goto error;
 
@@ -577,19 +695,6 @@ int32_t dt_control_seed_denoise_job_run(dt_job_t *job)
 error:
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   return 0;
-}
-
-typedef struct _dummy_data_t
-{
-  dt_imageio_module_data_t head;
-  float *buf;
-}
-_dummy_data_t;
-
-static int
-_bpp(dt_imageio_module_data_t *data)
-{
-  return 32;
 }
 
 static int
@@ -647,8 +752,14 @@ int32_t dt_control_denoise_job_run(dt_job_t *job)
     float *input  = dat.buf;
     float *output = dt_alloc_align(64, sizeof(float)*4*width*height);
     float *input2 = dt_alloc_align(64, sizeof(float)*4*width*height);
+    float *edges  = dt_alloc_align(64, sizeof(float)*4*width*height);
+    float *edges2 = dt_alloc_align(64, sizeof(float)*4*width*height);
     float *tmp    = dt_alloc_align(64, sizeof(float)*width*dt_get_num_threads());
     memset(output, 0, sizeof(float)*4*width*height);
+    // process input buffer down to dege data.
+    memcpy(edges, input, sizeof(float)*4*width*height);
+    _convert_to_edges(edges, width, height);
+
     const int P = 1;
     const int K = 8;
     const float sharpness = 500.f;
@@ -667,16 +778,19 @@ int32_t dt_control_denoise_job_run(dt_job_t *job)
       (void)fgetc(f);
       if(width != wd || height != ht) goto error;
       for(int j=height-1;j>=0;j--)
+      {
         for(int i=0;i<width;i++)
         {
           ret = fread(input2 + 4*(j*width+i), 3*sizeof(float), 1, f);
           if(ret != 1) goto error;
         }
+      }
       fclose(f);
 
       dt_nlm_accum(
-          input,
+          edges,
           input2,
+          edges2,
           output,
           width,
           height,
@@ -705,6 +819,8 @@ error:
     free(tmp);
     free(input);
     free(input2);
+    free(edges);
+    free(edges2);
 
     // export to pfm
     snprintf(filename, 256, "/tmp/dt_denoise_seed/out.pfm");

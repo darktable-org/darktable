@@ -42,8 +42,9 @@ fast_mexp2f(const float x, const float sharpness)
 }
 
 void dt_nlm_accum(
-    const float *input,
+    const float *edges,
     const float *input2,
+    const float *edges2,
     float       *output,
     const int    width,
     const int    height,
@@ -54,19 +55,6 @@ void dt_nlm_accum(
 {
   if(P < 1) return;
 
-  // adjust to Lab, make L more important
-  // TODO: move that to loading time, so it's not done in the innermost loop!
-  float max_L = 120.0f, max_C = 512.0f;
-  float nL = 1.0f/max_L, nC = 1.0f/max_C;
-  const float norm2[4] = { nL*nL, nC*nC, nC*nC, 1.0f };
-
-  // TODO: need that passed in!
-  // float *tmp = dt_alloc_align(64, sizeof(float)*width*dt_get_num_threads());
-
-  // TODO: require caller to do that!
-  // we want to sum up weights in col[3], so need to init to 0:
-  // memset(ovoid, 0x0, sizeof(float)*width*height*4);
-
   // for each shift vector
   for(int kj=-K;kj<=K;kj++)
   {
@@ -76,7 +64,7 @@ void dt_nlm_accum(
       // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else we will add up errors)
       // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more memory
 #ifdef _OPENMP
-#  pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, input, input2, output, tmp)
+#  pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, edges, edges2, input2, output, tmp)
 #endif
       for(int j=0; j<height; j++)
       {
@@ -97,13 +85,13 @@ void dt_nlm_accum(
           {
             int i = MAX(0, -ki);
             float *s = S + i;
-            const float *inp  = input  + 4*i + 4* width *(j+jj);
-            const float *inps = input2 + 4*i + 4*(width *(j+jj+kj) + ki);
+            const float *inp  = edges  + 4*i + 4* width *(j+jj);
+            const float *inps = edges2 + 4*i + 4*(width *(j+jj+kj) + ki);
             const int last = width + MIN(0, -ki);
             for(; i<last; i++, inp+=4, inps+=4, s++)
             {
               for(int k=0;k<3;k++)
-                s[0] += (inp[k] - inps[k])*(inp[k] - inps[k]) * norm2[k];
+                s[0] += (inp[k] - inps[k])*(inp[k] - inps[k]);
             }
           }
           // only reuse this if we had a full stripe
@@ -134,17 +122,17 @@ void dt_nlm_accum(
           // sliding window in j direction:
           int i = MAX(0, -ki);
           float *s = S + i;
-          const float *inp  = input  + 4*i + 4* width *(j+P+1);
-          const float *inps = input2 + 4*i + 4*(width *(j+P+1+kj) + ki);
-          const float *inm  = input  + 4*i + 4* width *(j-P);
-          const float *inms = input2 + 4*i + 4*(width *(j-P+kj) + ki);
+          const float *inp  = edges  + 4*i + 4* width *(j+P+1);
+          const float *inps = edges2 + 4*i + 4*(width *(j+P+1+kj) + ki);
+          const float *inm  = edges  + 4*i + 4* width *(j-P);
+          const float *inms = edges2 + 4*i + 4*(width *(j-P+kj) + ki);
           const int last = width + MIN(0, -ki);
           for(; ((unsigned long)s & 0xf) != 0 && i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
           {
             float stmp = s[0];
             for(int k=0;k<3;k++)
               stmp += ((inp[k] - inps[k])*(inp[k] - inps[k])
-                    -  (inm[k] - inms[k])*(inm[k] - inms[k])) * norm2[k];
+                    -  (inm[k] - inms[k])*(inm[k] - inms[k]));
             s[0] = stmp;
           }
           /* Process most of the line 4 pixels at a time */
@@ -162,13 +150,13 @@ void dt_nlm_accum(
             const __m128 inp34hi = _mm_unpackhi_ps(inp3,inp4);
 
             const __m128 inpv0 = _mm_movelh_ps(inp12lo,inp34lo);
-            sv += inpv0*inpv0 * _mm_set1_ps(norm2[0]);
+            sv += inpv0*inpv0;
 
             const __m128 inpv1 = _mm_movehl_ps(inp34lo,inp12lo);
-            sv += inpv1*inpv1 * _mm_set1_ps(norm2[1]);
+            sv += inpv1*inpv1;
 
             const __m128 inpv2 = _mm_movelh_ps(inp12hi,inp34hi);
-            sv += inpv2*inpv2 * _mm_set1_ps(norm2[2]);
+            sv += inpv2*inpv2;
 
             const __m128 inm1 = _mm_load_ps(inm)    - _mm_load_ps(inms);
             const __m128 inm2 = _mm_load_ps(inm+4)  - _mm_load_ps(inms+4);
@@ -181,13 +169,13 @@ void dt_nlm_accum(
             const __m128 inm34hi = _mm_unpackhi_ps(inm3,inm4);
 
             const __m128 inmv0 = _mm_movelh_ps(inm12lo,inm34lo);
-            sv -= inmv0*inmv0 * _mm_set1_ps(norm2[0]);
+            sv -= inmv0*inmv0;
 
             const __m128 inmv1 = _mm_movehl_ps(inm34lo,inm12lo);
-            sv -= inmv1*inmv1 * _mm_set1_ps(norm2[1]);
+            sv -= inmv1*inmv1;
 
             const __m128 inmv2 = _mm_movelh_ps(inm12hi,inm34hi);
-            sv -= inmv2*inmv2 * _mm_set1_ps(norm2[2]);
+            sv -= inmv2*inmv2;
 
             _mm_store_ps(s, sv);
           }
@@ -196,7 +184,7 @@ void dt_nlm_accum(
             float stmp = s[0];
             for(int k=0;k<3;k++)
               stmp += ((inp[k] - inps[k])*(inp[k] - inps[k])
-                    -  (inm[k] - inms[k])*(inm[k] - inms[k])) * norm2[k];
+                    -  (inm[k] - inms[k])*(inm[k] - inms[k]));
             s[0] = stmp;
           }
         }

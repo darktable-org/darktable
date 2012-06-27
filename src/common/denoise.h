@@ -21,8 +21,9 @@
  * the weights will be accumulated into the fourth channel in the output image.
  */
 void dt_nlm_accum(
-    const float *input,         // input buffer
+    const float *edges,         // edge channel of the input buffer
     const float *input2,        // reference image to use this iteration
+    const float *edges2,        // edge channel of the reference image
     float       *output,        // accumulate output here
     const int    width,         // image size (all have to match)
     const int    height,
