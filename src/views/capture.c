@@ -97,6 +97,7 @@ static const gchar *_capture_view_get_session_path(const dt_view_t *view);
 static uint32_t _capture_view_get_film_id(const dt_view_t *view);
 static void _capture_view_set_jobcode(const dt_view_t *view, const char *name);
 static const char *_capture_view_get_jobcode(const dt_view_t *view);
+static uint32_t _capture_view_get_selected_imgid(const dt_view_t *view);
 
 const char *name(dt_view_t *self)
 {
@@ -165,6 +166,7 @@ void init(dt_view_t *self)
   darktable.view_manager->proxy.tethering.get_session_path = _capture_view_get_session_path;
   darktable.view_manager->proxy.tethering.get_job_code = _capture_view_get_jobcode;
   darktable.view_manager->proxy.tethering.set_job_code = _capture_view_set_jobcode;
+  darktable.view_manager->proxy.tethering.get_selected_imgid = _capture_view_get_selected_imgid;
 
 }
 
@@ -183,6 +185,13 @@ uint32_t _capture_view_get_film_id(const dt_view_t *view)
   // else return first film roll.
   /// @todo maybe return 0 and check error in caller...
   return 1;
+}
+
+uint32_t _capture_view_get_selected_imgid(const dt_view_t *view)
+{
+  g_assert( view != NULL );
+  dt_capture_t *cv=(dt_capture_t *)view->data;
+  return cv->image_id;
 }
 
 
@@ -342,10 +351,10 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
 
       float scale;
       if(cam->live_view_rotation%2 == 0)
-        scale = MIN(w/pw, h/ph);
+        scale = fminf(w/pw, h/ph);
       else
-        scale = MIN(w/ph, h/pw);
-      scale = MIN(1.0, scale);
+        scale = fminf(w/ph, h/pw);
+      scale = fminf(1.0, scale);
 
       cairo_translate(cr, width*0.5, (height+BAR_HEIGHT)*0.5); // origin to middle of canvas
       if(cam->live_view_flip == TRUE)

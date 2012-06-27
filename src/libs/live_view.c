@@ -21,6 +21,8 @@
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/camera_control.h"
+#include "common/image_cache.h"
+#include "common/mipmap_cache.h"
 #include "control/jobs.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -33,20 +35,48 @@
 #include <gdk/gdkkeysyms.h>
 #include "dtgtk/button.h"
 
-#define GUIDE_NONE 0
-#define GUIDE_GRID 1
-#define GUIDE_THIRD 2
+#define GUIDE_NONE     0
+#define GUIDE_GRID     1
+#define GUIDE_THIRD    2
 #define GUIDE_DIAGONAL 3
-#define GUIDE_TRIANGL 4
-#define GUIDE_GOLDEN 5
+#define GUIDE_TRIANGL  4
+#define GUIDE_GOLDEN   5
+
+#define OVERLAY_NONE     0
+#define OVERLAY_SELECTED 1
+#define OVERLAY_ID       2
+
+static const cairo_operator_t _overlay_modes[] = {
+  CAIRO_OPERATOR_XOR,
+  CAIRO_OPERATOR_ADD,
+  CAIRO_OPERATOR_SATURATE,
+  CAIRO_OPERATOR_MULTIPLY,
+  CAIRO_OPERATOR_SCREEN,
+  CAIRO_OPERATOR_OVERLAY,
+  CAIRO_OPERATOR_DARKEN,
+  CAIRO_OPERATOR_LIGHTEN,
+  CAIRO_OPERATOR_COLOR_DODGE,
+  CAIRO_OPERATOR_COLOR_BURN,
+  CAIRO_OPERATOR_HARD_LIGHT,
+  CAIRO_OPERATOR_SOFT_LIGHT,
+  CAIRO_OPERATOR_DIFFERENCE,
+  CAIRO_OPERATOR_EXCLUSION,
+  CAIRO_OPERATOR_HSL_HUE,
+  CAIRO_OPERATOR_HSL_SATURATION,
+  CAIRO_OPERATOR_HSL_COLOR,
+  CAIRO_OPERATOR_HSL_LUMINOSITY
+};
 
 DT_MODULE(1)
 
 typedef struct dt_lib_live_view_t
 {
+  int imgid;
+
   GtkWidget *live_view, *live_view_zoom, *rotate_ccw, *rotate_cw, *flip;
   GtkWidget *focus_out_small, *focus_out_big, *focus_in_small, *focus_in_big;
   GtkWidget *guide_selector, *flip_guides, *golden_extras;
+  GtkWidget *overlay, *overlay_id_box, *overlay_id, *overlay_mode;
 }
 dt_lib_live_view_t;
 
@@ -63,6 +93,21 @@ guides_presets_changed (GtkWidget *combo, dt_lib_live_view_t *lib)
     gtk_widget_set_visible(GTK_WIDGET(lib->golden_extras), TRUE);
   else
     gtk_widget_set_visible(GTK_WIDGET(lib->golden_extras), FALSE);
+}
+
+static void
+overlay_changed (GtkWidget *combo, dt_lib_live_view_t *lib)
+{
+  int which = dt_bauhaus_combobox_get(combo);
+  if (which == OVERLAY_NONE)
+    gtk_widget_set_visible(GTK_WIDGET(lib->overlay_mode), FALSE);
+  else
+    gtk_widget_set_visible(GTK_WIDGET(lib->overlay_mode), TRUE);
+
+  if (which == OVERLAY_ID)
+    gtk_widget_set_visible(GTK_WIDGET(lib->overlay_id_box), TRUE);
+  else
+    gtk_widget_set_visible(GTK_WIDGET(lib->overlay_id_box), FALSE);
 }
 
 
@@ -175,6 +220,18 @@ static void _toggle_flip_clicked(GtkWidget *widget, gpointer user_data)
   cam->live_view_flip = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(widget) );
 }
 
+static void _overlay_id_changed(GtkWidget *widget, gpointer user_data)
+{
+  dt_lib_live_view_t *lib = (dt_lib_live_view_t*)user_data;
+  lib->imgid = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
+  dt_conf_set_int("plugins/lighttable/live_view/overlay_imgid", lib->imgid);
+}
+
+static void _overlay_mode_changed(GtkWidget *combo, gpointer user_data)
+{
+  dt_conf_set_int("plugins/lighttable/live_view/overlay_mode", dt_bauhaus_combobox_get(combo));
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {
@@ -269,11 +326,63 @@ gui_init (dt_lib_module_t *self)
   g_object_set(G_OBJECT(lib->golden_extras), "tooltip-text", _("show some extra guides"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), lib->golden_extras, TRUE, TRUE, 0);
 
+  lib->overlay = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(lib->overlay, _("overlay"));
+  dt_bauhaus_combobox_add(lib->overlay, _("none"));
+  dt_bauhaus_combobox_add(lib->overlay, _("selected image"));
+  dt_bauhaus_combobox_add(lib->overlay, _("id"));
+  g_object_set(G_OBJECT(lib->overlay), "tooltip-text", _("overlay another image over the live view"), (char *)NULL);
+  g_signal_connect (G_OBJECT (lib->overlay), "value-changed", G_CALLBACK (overlay_changed), lib);
+  gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay, TRUE, TRUE, 0);
+
+  lib->overlay_id_box = gtk_hbox_new(FALSE, 5);
+  GtkWidget *label = gtk_label_new(_("image id"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  lib->overlay_id = gtk_spin_button_new_with_range(0, 1000000000, 1);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(lib->overlay_id), 0);
+  g_object_set(G_OBJECT(lib->overlay_id), "tooltip-text", _("enter image id of the overlay manually"), (char *)NULL);
+  g_signal_connect(G_OBJECT(lib->overlay_id), "value-changed", G_CALLBACK(_overlay_id_changed), lib);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(lib->overlay_id), dt_conf_get_int("plugins/lighttable/live_view/overlay_imgid"));
+  gtk_box_pack_start(GTK_BOX(lib->overlay_id_box), label, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(lib->overlay_id_box), lib->overlay_id, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay_id_box, TRUE, TRUE, 0);
+  gtk_widget_show(lib->overlay_id);
+  gtk_widget_show(label);
+
+  lib->overlay_mode = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(lib->overlay_mode, _("overlay mode"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("xor"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("add"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("saturate"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("multiply"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("screen"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("overlay"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("darken"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("lighten"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("color dodge"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("color burn"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("hard light"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("soft light"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("difference"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("exclusion"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("hsl hue"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("hsl saturation"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("hsl color"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("hsl luminosity"));
+  g_object_set(G_OBJECT(lib->overlay_mode), "tooltip-text", _("mode of the overlay"), (char *)NULL);
+  dt_bauhaus_combobox_set(lib->overlay_mode, dt_conf_get_int("plugins/lighttable/live_view/overlay_mode"));
+  g_signal_connect (G_OBJECT (lib->overlay_mode), "value-changed", G_CALLBACK (_overlay_mode_changed), lib);
+  gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay_mode, TRUE, TRUE, 0);
+
   gtk_widget_set_visible(GTK_WIDGET(lib->flip_guides), FALSE);
   gtk_widget_set_visible(GTK_WIDGET(lib->golden_extras), FALSE);
+  gtk_widget_set_visible(GTK_WIDGET(lib->overlay_mode), FALSE);
+  gtk_widget_set_visible(GTK_WIDGET(lib->overlay_id_box), FALSE);
 
   gtk_widget_set_no_show_all(GTK_WIDGET(lib->flip_guides), TRUE);
   gtk_widget_set_no_show_all(GTK_WIDGET(lib->golden_extras), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(lib->overlay_mode), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(lib->overlay_id_box), TRUE);
 
   // disable buttons that won't work with this camera
   // TODO: initialize tethering mode outside of libs/camera.s so we can use darktable.camctl->active_camera here
@@ -295,7 +404,9 @@ gui_cleanup (dt_lib_module_t *self)
 {
 }
 
+// TODO: find out where the zoom window is and draw overlay + grid accordingly
 #define MARGIN  20
+#define BAR_HEIGHT 18 /* see libs/camera.c */
 void
 gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
@@ -308,19 +419,106 @@ gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t heigh
   dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
   if(GDK_IS_PIXBUF(cam->live_view_pixbuf))
   {
+    float w = width-(MARGIN*2.0f);
+    float h = height-(MARGIN*2.0f)-BAR_HEIGHT;
+
+    // OVERLAY
+    int imgid = 0;
+    switch(dt_bauhaus_combobox_get(lib->overlay))
+    {
+      case OVERLAY_SELECTED:
+        imgid = dt_view_tethering_get_selected_imgid(darktable.view_manager);
+        break;
+      case OVERLAY_ID:
+        imgid = lib->imgid;
+        break;
+    }
+    if(imgid > 0)
+    {
+      cairo_save(cr);
+      // this is blatantly stolen from dt_view_image_expose() -- this are just the relevant parts
+      static int first_time = 1;
+      static uint8_t *scratchmem = NULL;
+      if(first_time)
+      {
+        // scratchmem might still be NULL after this, if compression is off.
+        scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
+        first_time = 0;
+      }
+      const dt_image_t *img = dt_image_cache_read_testget(darktable.image_cache, imgid);
+      // if the user points at this image, we really want it:
+      if(!img)
+        img = dt_image_cache_read_get(darktable.image_cache, imgid);
+
+      int zoom = 1;
+      float imgwd = 0.90f;
+      if(zoom == 1)
+      {
+        imgwd = .97f;
+      }
+
+      float scale = 1.0;
+      dt_mipmap_buffer_t buf;
+      dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size( darktable.mipmap_cache, imgwd*w, imgwd*h);
+      dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, 0);
+      // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
+      // so get the real pointer back:
+      uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
+
+      cairo_surface_t *surface = NULL;
+      if(buf.buf)
+      {
+        const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
+        surface = cairo_image_surface_create_for_data (buf_decompressed, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
+        if(zoom == 1)
+        {
+          scale = fminf(
+                fminf(darktable.thumbnail_width, w) / (float)buf.width,
+                fminf(darktable.thumbnail_height, h) / (float)buf.height
+                );
+        }
+        else scale = fminf(w*imgwd/(float)buf.width, h*imgwd/(float)buf.height);
+      }
+
+      // draw centered and fitted:
+      cairo_translate(cr, width/2.0, (height+BAR_HEIGHT)/2.0f);
+      cairo_scale(cr, scale, scale);
+
+      if(buf.buf)
+      {
+        cairo_translate(cr, -.5f*buf.width, -.5f*buf.height);
+        cairo_set_source_surface (cr, surface, 0, 0);
+        // set filter no nearest:
+        // in skull mode, we want to see big pixels.
+        // in 1 iir mode for the right mip, we want to see exactly what the pipe gave us, 1:1 pixel for pixel.
+        // in between, filtering just makes stuff go unsharp.
+        if((buf.width <= 8 && buf.height <= 8) || fabsf(scale - 1.0f) < 0.01f)
+          cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+        cairo_rectangle(cr, 0, 0, buf.width, buf.height);
+        cairo_operator_t mode = _overlay_modes[dt_bauhaus_combobox_get(lib->overlay_mode)];
+        cairo_set_operator(cr, mode);
+        cairo_fill(cr);
+        cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+        cairo_surface_destroy (surface);
+      }
+      cairo_restore(cr);
+      if(buf.buf)
+        dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      if(img) dt_image_cache_read_release(darktable.image_cache, img);
+    }
+
+    // GUIDES
     gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
     gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
     if(cam->live_view_rotation%2 == 1)
     {
       gint tmp = pw; pw = ph; ph = tmp;
     }
-    float w = width-(MARGIN*2.0f);
-    float h = height-(MARGIN*2.0f);
     float scale = 1.0;
 //     if(cam->live_view_zoom == FALSE)
 //     {
       if(pw > w) scale = w/pw;
-      if(ph > h) scale = MIN(scale, h/ph);
+      if(ph > h) scale = fminf(scale, h/ph);
 //     }
     float sw = scale*pw;
     float sh = scale*ph;
@@ -328,7 +526,7 @@ gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t heigh
     // draw guides
     float left = (width - scale*pw)*0.5;
     float right = left + scale*pw;
-    float top = (height - scale*ph)*0.5;
+    float top = (height + BAR_HEIGHT - scale*ph)*0.5;
     float bottom = top + scale*ph;
 
     double dashes = 5.0;
