@@ -554,8 +554,6 @@ dt_bauhaus_init()
                     G_CALLBACK (dt_bauhaus_popup_key_press), (gpointer)NULL);
   g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "scroll-event",
                     G_CALLBACK (dt_bauhaus_popup_scroll), (gpointer)NULL);
-
-  dt_bauhaus_vimkey_exec(":set sharpen.amount=1.0");
 }
 
 void
