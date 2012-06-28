@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-05-28 15:20+0200\n"
-"PO-Revision-Date: 2012-05-28 15:20+0100\n"
+"POT-Creation-Date: 2012-06-28 23:31+0200\n"
+"PO-Revision-Date: 2012-06-28 23:29+0100\n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: German\n"
 "Language: \n"
@@ -468,7 +468,7 @@ msgstr "Stil ‚%s‘ erfolgreich gespeichert"
 msgid "style %s was sucessfully imported"
 msgstr "Stil ‚%s‘ erfolgreich importiert"
 
-#: ../src/common/variables.c:213 ../src/iop/clipping.c:968
+#: ../src/common/variables.c:213 ../src/iop/clipping.c:976
 #, c-format
 msgid "none"
 msgstr "keine"
@@ -691,7 +691,7 @@ msgstr "Überblenden"
 msgid "mode"
 msgstr "Modus"
 
-#: ../src/develop/imageop.c:1093 ../src/iop/watermark.c:714
+#: ../src/develop/imageop.c:1093 ../src/iop/watermark.c:909
 msgid "opacity"
 msgstr "Deckkraft"
 
@@ -1174,7 +1174,7 @@ msgstr "Objektiv"
 
 #. iso
 #: ../src/gui/preferences.c:448 ../src/gui/preferences.c:1281
-#: ../src/gui/presets.c:340 ../src/libs/camera.c:560 ../src/libs/collect.h:42
+#: ../src/gui/presets.c:340 ../src/libs/camera.c:587 ../src/libs/collect.h:42
 #: ../src/libs/metadata_view.c:76
 msgid "iso"
 msgstr "ISO"
@@ -1188,14 +1188,14 @@ msgstr "Belichtung"
 
 #. aperture
 #: ../src/gui/preferences.c:462 ../src/gui/preferences.c:1309
-#: ../src/gui/presets.c:368 ../src/libs/camera.c:530 ../src/libs/collect.h:43
-#: ../src/libs/metadata_view.c:72
+#: ../src/gui/presets.c:368 ../src/libs/camera.c:539 ../src/libs/camera.c:548
+#: ../src/libs/collect.h:43 ../src/libs/metadata_view.c:72
 msgid "aperture"
 msgstr "Blende"
 
 #. focal length
 #: ../src/gui/preferences.c:469 ../src/gui/preferences.c:1324
-#: ../src/gui/presets.c:383 ../src/libs/camera.c:540
+#: ../src/gui/presets.c:383 ../src/libs/camera.c:558
 #: ../src/libs/metadata_view.c:74
 msgid "focal length"
 msgstr "Brennweite"
@@ -1434,7 +1434,7 @@ msgstr "OpenEXR"
 msgid "8-bit jpg"
 msgstr "8-Bit JPG"
 
-#: ../src/imageio/format/jpeg.c:654 ../src/libs/camera.c:580
+#: ../src/imageio/format/jpeg.c:654 ../src/libs/camera.c:607
 msgid "quality"
 msgstr "Qualität"
 
@@ -1446,11 +1446,11 @@ msgstr "Fließkomma PFM"
 msgid "8/16-bit png"
 msgstr "8/16-Bit PNG"
 
-#: ../src/imageio/format/png.c:398 ../src/imageio/format/tiff.c:242
+#: ../src/imageio/format/png.c:398 ../src/imageio/format/tiff.c:249
 msgid "8-bit"
 msgstr "8-Bit"
 
-#: ../src/imageio/format/png.c:403 ../src/imageio/format/tiff.c:247
+#: ../src/imageio/format/png.c:403 ../src/imageio/format/tiff.c:254
 msgid "16-bit"
 msgstr "16-Bit"
 
@@ -1462,7 +1462,7 @@ msgstr "16-Bit PPM"
 msgid "float hdr"
 msgstr "Fließkomma HDR"
 
-#: ../src/imageio/format/tiff.c:221
+#: ../src/imageio/format/tiff.c:228
 msgid "8/16-bit tiff"
 msgstr "8/16-Bit TIFF"
 
@@ -1549,7 +1549,7 @@ msgstr "Konnte nicht in Datei ‚%s‘ exportieren!"
 msgid "could not attach xmp data to file `%s'!"
 msgstr "Konnte die XMP-Daten nicht an Datei ‚%s‘ anhängen!"
 
-#: ../src/imageio/storage/disk.c:252 ../src/imageio/storage/email.c:114
+#: ../src/imageio/storage/disk.c:252 ../src/imageio/storage/email.c:115
 #: ../src/imageio/storage/gallery.c:389
 #, c-format
 msgid "%d/%d exported to `%s%s'"
@@ -1906,72 +1906,67 @@ msgstr "einblenden"
 msgid "make effect stronger or weaker"
 msgstr "mache den Effekt stärker oder schwächer"
 
-#: ../src/iop/basecurve.c:51 ../src/iop/profile_gamma.c:199
-#: ../src/iop/tonecurve.c:214
-msgid "linear"
-msgstr "linear"
-
-#: ../src/iop/basecurve.c:52
+#: ../src/iop/basecurve.c:51
 msgid "dark contrast"
 msgstr "dunkler Kontrast"
 
-#: ../src/iop/basecurve.c:53
+#: ../src/iop/basecurve.c:52
 msgid "canon eos like"
 msgstr "Canon EOS-artig"
 
-#: ../src/iop/basecurve.c:54
+#: ../src/iop/basecurve.c:53
 msgid "nikon like"
 msgstr "Nikon-artig"
 
-#: ../src/iop/basecurve.c:55
+#: ../src/iop/basecurve.c:54
 msgid "sony alpha like"
 msgstr "Sony Alpha-artig"
 
-#: ../src/iop/basecurve.c:56
+#: ../src/iop/basecurve.c:55
 msgid "pentax like"
 msgstr "Pentax-artig"
 
-#: ../src/iop/basecurve.c:57
+#: ../src/iop/basecurve.c:56
 msgid "olympus like"
 msgstr "Olympus-artig"
 
-#: ../src/iop/basecurve.c:58
+#: ../src/iop/basecurve.c:57
 msgid "panasonic like"
 msgstr "Panasonic-artig"
 
-#: ../src/iop/basecurve.c:59
+#: ../src/iop/basecurve.c:58
 msgid "leica like"
 msgstr "Leica-artig"
 
-#: ../src/iop/basecurve.c:60
+#: ../src/iop/basecurve.c:59
 msgid "kodak easyshare like"
 msgstr "Kodak EasyShare-artig"
 
-#: ../src/iop/basecurve.c:61
+#: ../src/iop/basecurve.c:60
 msgid "konica minolta like"
 msgstr "Konica Minolta-artig"
 
-#: ../src/iop/basecurve.c:62
+#: ../src/iop/basecurve.c:61
 msgid "samsung like"
 msgstr "Samsung-artig"
 
-#: ../src/iop/basecurve.c:63
+#: ../src/iop/basecurve.c:62
 msgid "fujifilm like"
 msgstr "Fujifilm-artig"
 
-#: ../src/iop/basecurve.c:64
+#: ../src/iop/basecurve.c:63
 msgid "fotogenetic (point & shoot)"
 msgstr "Fotogenic (Point & Shoot)"
 
-#: ../src/iop/basecurve.c:65
+#: ../src/iop/basecurve.c:64
 msgid "fotogenetic (EV3)"
 msgstr "Fotogenetic (EV3)"
 
-#: ../src/iop/basecurve.c:141
+#: ../src/iop/basecurve.c:139
 msgid "base curve"
 msgstr "Basiskurve"
 
-#: ../src/iop/basecurve.c:643
+#: ../src/iop/basecurve.c:649
 msgid ""
 "abscissa: input, ordinate: output \n"
 "works on RGB channels"
@@ -2043,7 +2038,7 @@ msgctxt "accel"
 msgid "strength"
 msgstr "Stärke"
 
-#: ../src/iop/bloom.c:340 ../src/iop/soften.c:363 ../src/libs/camera.c:590
+#: ../src/iop/bloom.c:340 ../src/iop/soften.c:363 ../src/libs/camera.c:617
 msgid "size"
 msgstr "Größe"
 
@@ -2107,40 +2102,40 @@ msgstr "Randgröße"
 msgid "size of the border in percent of the full image"
 msgstr "Größe des Randes in Prozent des ganzen Bildes"
 
-#: ../src/iop/borders.c:404 ../src/iop/clipping.c:926
+#: ../src/iop/borders.c:404 ../src/iop/clipping.c:934
 msgid "aspect"
 msgstr "Format"
 
 #. add import singel image buttons
-#: ../src/iop/borders.c:408 ../src/iop/clipping.c:932 ../src/libs/import.c:470
+#: ../src/iop/borders.c:408 ../src/iop/clipping.c:940 ../src/libs/import.c:470
 msgid "image"
 msgstr "Bild"
 
-#: ../src/iop/borders.c:409 ../src/iop/clipping.c:933
+#: ../src/iop/borders.c:409 ../src/iop/clipping.c:941
 msgid "golden cut"
 msgstr "Goldener Schnitt"
 
-#: ../src/iop/borders.c:410 ../src/iop/clipping.c:934
+#: ../src/iop/borders.c:410 ../src/iop/clipping.c:942
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/borders.c:411 ../src/iop/clipping.c:935
+#: ../src/iop/borders.c:411 ../src/iop/clipping.c:943
 msgid "3:2"
 msgstr "3:2"
 
-#: ../src/iop/borders.c:412 ../src/iop/clipping.c:936
+#: ../src/iop/borders.c:412 ../src/iop/clipping.c:944
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:413 ../src/iop/clipping.c:938
+#: ../src/iop/borders.c:413 ../src/iop/clipping.c:946
 msgid "square"
 msgstr "quadratisch"
 
-#: ../src/iop/borders.c:414 ../src/iop/clipping.c:939
+#: ../src/iop/borders.c:414 ../src/iop/clipping.c:947
 msgid "DIN"
 msgstr "DIN"
 
-#: ../src/iop/borders.c:415 ../src/iop/clipping.c:940
+#: ../src/iop/borders.c:415 ../src/iop/clipping.c:948
 msgid "16:9"
 msgstr "16:9"
 
@@ -2148,7 +2143,7 @@ msgstr "16:9"
 msgid "constant border"
 msgstr "konstanter Rahmen"
 
-#: ../src/iop/borders.c:420 ../src/iop/clipping.c:951
+#: ../src/iop/borders.c:420 ../src/iop/clipping.c:959
 msgid ""
 "set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
@@ -2280,156 +2275,156 @@ msgid "crop and rotate"
 msgstr "Zuschneiden und drehen"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:893 ../src/iop/clipping.c:985
+#: ../src/iop/clipping.c:901 ../src/iop/clipping.c:993
 msgid "flip"
 msgstr "spiegeln"
 
-#: ../src/iop/clipping.c:900
+#: ../src/iop/clipping.c:908
 msgid "flip image horizontally"
 msgstr "Bild horizontal spiegeln"
 
-#: ../src/iop/clipping.c:901
+#: ../src/iop/clipping.c:909
 msgid "flip image vertically"
 msgstr "Bild vertikal spiegeln"
 
-#: ../src/iop/clipping.c:904
+#: ../src/iop/clipping.c:912
 msgid "angle"
 msgstr "Winkel"
 
 # sehr unschön :-(
-#: ../src/iop/clipping.c:908
+#: ../src/iop/clipping.c:916
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 "Mit rechter Maustaste ins Bild klicken und eine Linie ziehen, um eine gerade "
 "Kante zu markieren"
 
-#: ../src/iop/clipping.c:913
+#: ../src/iop/clipping.c:921
 msgid "keystone h"
 msgstr "Trapezkorrektur h"
 
-#: ../src/iop/clipping.c:914
+#: ../src/iop/clipping.c:922
 msgid "adjust perspective for horizontal keystone distortion"
 msgstr "Perspektive für horizontale Trapezverzerrung anpassen"
 
-#: ../src/iop/clipping.c:920
+#: ../src/iop/clipping.c:928
 msgid "keystone v"
 msgstr "Trapezkorrektur v"
 
-#: ../src/iop/clipping.c:921
+#: ../src/iop/clipping.c:929
 msgid "adjust perspective for vertical keystone distortion"
 msgstr "Perspektive für vertikale Trapezverzerrung anpassen"
 
-#: ../src/iop/clipping.c:931
+#: ../src/iop/clipping.c:939
 msgid "free"
 msgstr "frei"
 
-#: ../src/iop/clipping.c:937
+#: ../src/iop/clipping.c:945
 msgid "5:4"
 msgstr "5:4"
 
-#: ../src/iop/clipping.c:958
+#: ../src/iop/clipping.c:966
 msgid "swap the aspect ratio (ctrl-x)"
 msgstr "Seitenverhältnis tauschen (Strg-x)"
 
-#: ../src/iop/clipping.c:965
+#: ../src/iop/clipping.c:973
 msgid "guides"
 msgstr "Hilfslinien"
 
-#: ../src/iop/clipping.c:969
+#: ../src/iop/clipping.c:977
 msgid "grid"
 msgstr "Gitter"
 
-#: ../src/iop/clipping.c:970
+#: ../src/iop/clipping.c:978
 msgid "rules of thirds"
 msgstr "Drittelregel"
 
-#: ../src/iop/clipping.c:971
+#: ../src/iop/clipping.c:979
 msgid "diagonal method"
 msgstr "Diagonalen"
 
-#: ../src/iop/clipping.c:972
+#: ../src/iop/clipping.c:980
 msgid "harmonious triangles"
 msgstr "harmonische Dreiecke"
 
-#: ../src/iop/clipping.c:973
+#: ../src/iop/clipping.c:981
 msgid "golden mean"
 msgstr "goldener Schnitt"
 
-#: ../src/iop/clipping.c:975
+#: ../src/iop/clipping.c:983
 msgid ""
 "with this option, you can display guide lines to help compose your "
 "photograph."
 msgstr "Hilfslinien anzeigen, die beim Komponieren der Fotographie helfen."
 
-#: ../src/iop/clipping.c:979
+#: ../src/iop/clipping.c:987
 msgid "type"
 msgstr "Typ"
 
-#: ../src/iop/clipping.c:992
+#: ../src/iop/clipping.c:1000
 msgid "flip guides horizontally"
 msgstr "Hilfslinien horizontal spiegeln"
 
-#: ../src/iop/clipping.c:993
+#: ../src/iop/clipping.c:1001
 msgid "flip guides vertically"
 msgstr "Hilfslinien vertikal spiegeln"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:995
+#: ../src/iop/clipping.c:1003
 msgid "golden sections"
 msgstr "Goldener Schnitt"
 
-#: ../src/iop/clipping.c:997
+#: ../src/iop/clipping.c:1005
 msgid "enable this option to show golden sections."
 msgstr "Diese Option auswählen, um den Goldenen Schnitt anzuzeigen"
 
-#: ../src/iop/clipping.c:1000
+#: ../src/iop/clipping.c:1008
 msgid "spiral sections"
 msgstr "Rechtecke d. Spirale"
 
-#: ../src/iop/clipping.c:1001
+#: ../src/iop/clipping.c:1009
 msgid "enable this option to show golden spiral sections."
 msgstr ""
 "Diese Option auswählen, um die Bereiche der goldenen Spirale anzuzeigen"
 
-#: ../src/iop/clipping.c:1004
+#: ../src/iop/clipping.c:1012
 msgid "golden spiral"
 msgstr "Goldene Spirale"
 
-#: ../src/iop/clipping.c:1005
+#: ../src/iop/clipping.c:1013
 msgid "enable this option to show a golden spiral guide."
 msgstr "Diese Option auswählen, um eine Goldene Spirale anzuzeigen"
 
-#: ../src/iop/clipping.c:1008
+#: ../src/iop/clipping.c:1016
 msgid "golden triangles"
 msgstr "Goldene Dreiecke"
 
-#: ../src/iop/clipping.c:1009
+#: ../src/iop/clipping.c:1017
 msgid "enable this option to show golden triangles."
 msgstr "Diese Option auswählen, um Goldene Dreiecke anzuzeigen"
 
-#: ../src/iop/clipping.c:1666
+#: ../src/iop/clipping.c:1674
 msgctxt "accel"
 msgid "commit"
 msgstr "Änderungen übernehmen"
 
-#: ../src/iop/clipping.c:1668
+#: ../src/iop/clipping.c:1676
 msgctxt "accel"
 msgid "swap the aspect ratio"
 msgstr "Seitenverhältnis tauschen"
 
-#: ../src/iop/clipping.c:1670
+#: ../src/iop/clipping.c:1678
 msgctxt "accel"
 msgid "angle"
 msgstr "Winkel"
 
 # war "Trapezkorrektur h", aber zu lang für GUI (Bug?)
-#: ../src/iop/clipping.c:1671
+#: ../src/iop/clipping.c:1679
 msgctxt "accel"
 msgid "keystone h"
 msgstr "Trapezkorrektur h"
 
 # siehe "keystone h"
-#: ../src/iop/clipping.c:1672
+#: ../src/iop/clipping.c:1680
 msgctxt "accel"
 msgid "keystone v"
 msgstr "Trapezkorrektur v"
@@ -3334,7 +3329,7 @@ msgstr "Panorama"
 msgid "equirectangular"
 msgstr "Equirectangular"
 
-#: ../src/iop/lens.c:1413 ../src/iop/vignette.c:883 ../src/iop/watermark.c:716
+#: ../src/iop/lens.c:1413 ../src/iop/vignette.c:883 ../src/iop/watermark.c:911
 msgid "scale"
 msgstr "Skalierung"
 
@@ -3555,23 +3550,23 @@ msgctxt "accel"
 msgid "upper threshold"
 msgstr "oberer Schwellwert"
 
-#: ../src/iop/overexposed.c:286
+#: ../src/iop/overexposed.c:288
 msgid "lower threshold"
 msgstr "unterer Schwellwert"
 
-#: ../src/iop/overexposed.c:290
+#: ../src/iop/overexposed.c:292
 msgid "upper threshold"
 msgstr "oberer Schwellwert"
 
-#: ../src/iop/overexposed.c:295
+#: ../src/iop/overexposed.c:297
 msgid "threshold of what shall be considered underexposed"
 msgstr "Schwellwert dafür, was als unterbelichtet markiert wird"
 
-#: ../src/iop/overexposed.c:296
+#: ../src/iop/overexposed.c:298
 msgid "threshold of what shall be considered overexposed"
 msgstr "Schwellwert dafür, was als überbelichtet markiert wird"
 
-#: ../src/iop/overexposed.c:303
+#: ../src/iop/overexposed.c:305
 msgid "toggle over/under exposed indication"
 msgstr "Anzeige von Über-/Unterbelichtung umschalten"
 
@@ -3592,6 +3587,10 @@ msgstr "exponentieller Gamma-Teil"
 #: ../src/iop/profile_gamma.c:198
 msgid "linear part"
 msgstr "linearer Teil"
+
+#: ../src/iop/profile_gamma.c:199 ../src/iop/tonecurve.c:214
+msgid "linear"
+msgstr "linear"
 
 #: ../src/iop/profile_gamma.c:201
 msgid "gamma exponential factor"
@@ -4115,28 +4114,28 @@ msgid "y offset"
 msgstr "Y-Versatz"
 
 # nicht so wirklich schön
-#: ../src/iop/watermark.c:697
+#: ../src/iop/watermark.c:892
 msgid "marker"
 msgstr "Zeichen"
 
-#: ../src/iop/watermark.c:698
+#: ../src/iop/watermark.c:893
 msgid "alignment"
 msgstr "Position"
 
-#: ../src/iop/watermark.c:738
+#: ../src/iop/watermark.c:933
 msgid "x offset"
 msgstr "X-Versatz"
 
-#: ../src/iop/watermark.c:739
+#: ../src/iop/watermark.c:934
 msgid "y offset"
 msgstr "Y-Versatz"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:745
+#: ../src/iop/watermark.c:940
 msgid "the opacity of the watermark"
 msgstr "Die Deckkraft des Wasserzeichens"
 
-#: ../src/iop/watermark.c:746
+#: ../src/iop/watermark.c:941
 msgid "the scale of the watermark"
 msgstr "Größe des Wasserzeichens"
 
@@ -4390,32 +4389,36 @@ msgid "program"
 msgstr "Programm"
 
 # keine Ahnung, ob das passt, konnte den String in der GUI nicht finden.
-#: ../src/libs/camera.c:520
+#: ../src/libs/camera.c:520 ../src/libs/camera.c:529
 msgid "focus mode"
 msgstr "Fokussierung"
 
-#: ../src/libs/camera.c:550
+#: ../src/libs/camera.c:568
 msgid "shutterspeed2"
 msgstr "Verschlusszeit2"
 
-#: ../src/libs/camera.c:570
+#: ../src/libs/camera.c:577
+msgid "shutterspeed"
+msgstr "Verschlusszeit"
+
+#: ../src/libs/camera.c:597
 msgid "wb"
 msgstr "Weißabgleich"
 
 #. user specified properties
-#: ../src/libs/camera.c:639
+#: ../src/libs/camera.c:666
 msgid "additional properties"
 msgstr "zusätzliche Eigenschaften"
 
-#: ../src/libs/camera.c:643
+#: ../src/libs/camera.c:670
 msgid "label"
 msgstr "Bezeichnung"
 
-#: ../src/libs/camera.c:649
+#: ../src/libs/camera.c:676
 msgid "property"
 msgstr "Eigenschaft"
 
-#: ../src/libs/camera.c:661
+#: ../src/libs/camera.c:688
 msgid "add user property"
 msgstr "Benutzereinstellung hinzufügen"
 
@@ -4493,7 +4496,7 @@ msgstr "Datum"
 msgid "history"
 msgstr "Verlauf"
 
-#: ../src/libs/collect.h:35 ../src/libs/tools/filter.c:129
+#: ../src/libs/collect.h:35 ../src/libs/tools/filter.c:128
 msgid "color label"
 msgstr "Farbmarkierung"
 
@@ -4512,7 +4515,7 @@ msgid "publisher"
 msgstr "Herausgeber"
 
 #: ../src/libs/collect.h:44 ../src/libs/metadata_view.c:66
-#: ../src/libs/tools/filter.c:125
+#: ../src/libs/tools/filter.c:124
 msgid "filename"
 msgstr "Dateiname"
 
@@ -4764,7 +4767,7 @@ msgstr "exportieren"
 #. char* n = _("zoomable light table\nfile manager");
 #. while(*n != '\n') n++; n++;
 #. return n;
-#: ../src/libs/file_manager.c:43 ../src/libs/tools/lighttable.c:92
+#: ../src/libs/file_manager.c:43 ../src/libs/tools/lighttable.c:95
 msgid "file manager"
 msgstr "Dateiverwaltung"
 
@@ -5669,74 +5672,54 @@ msgid "all"
 msgstr "Alles"
 
 #: ../src/libs/tools/filter.c:102
-msgid "unstarred"
+msgid "unstarred only"
 msgstr "Kein Stern"
 
-#: ../src/libs/tools/filter.c:103
-msgid "1 star"
-msgstr "1 Stern"
-
-#: ../src/libs/tools/filter.c:104
-msgid "2 star"
-msgstr "2 Sterne"
-
-#: ../src/libs/tools/filter.c:105
-msgid "3 star"
-msgstr "3 Sterne"
-
-#: ../src/libs/tools/filter.c:106
-msgid "4 star"
-msgstr "4 Sterne"
-
-#: ../src/libs/tools/filter.c:107
-msgid "5 star"
-msgstr "5 Sterne"
-
 #: ../src/libs/tools/filter.c:108
-msgid "rejected"
-msgstr "abgelehnt"
+msgid "rejected only"
+msgstr "nur abgelehnte"
 
 #. sort by label
-#: ../src/libs/tools/filter.c:119
+#: ../src/libs/tools/filter.c:118
 msgid "sort by"
 msgstr "sortieren nach"
 
-#: ../src/libs/tools/filter.c:126
+#: ../src/libs/tools/filter.c:125
 msgid "time"
 msgstr "Datum/Uhrzeit"
 
-#: ../src/libs/tools/filter.c:127
+#: ../src/libs/tools/filter.c:126
 msgid "rating"
 msgstr "Bewertung"
 
-#: ../src/libs/tools/filter.c:128
+#: ../src/libs/tools/filter.c:127
 msgid "id"
 msgstr "ID"
 
-#: ../src/libs/tools/lighttable.c:55 ../src/views/lighttable.c:106
+#: ../src/libs/tools/lighttable.c:58 ../src/views/lighttable.c:106
 msgid "lighttable"
 msgstr "Leuchttisch"
 
-#: ../src/libs/tools/lighttable.c:91
+#: ../src/libs/tools/lighttable.c:94
 msgid "zoomable light table"
 msgstr "zoombarer Leuchttisch"
 
-#: ../src/libs/tools/lighttable.c:121
+#: ../src/libs/tools/lighttable.c:133
 msgctxt "accel"
 msgid "zoom max"
 msgstr "maximaler Zoom"
 
-#: ../src/libs/tools/lighttable.c:123
+#: ../src/libs/tools/lighttable.c:135
 msgctxt "accel"
 msgid "zoom in"
 msgstr "heranzoomen"
 
-#: ../src/libs/tools/lighttable.c:125
+#: ../src/libs/tools/lighttable.c:137
 msgctxt "accel"
 msgid "zoom out"
 msgstr "herauszoomen"
 
-#: ../src/libs/tools/lighttable.c:127
+#: ../src/libs/tools/lighttable.c:139
 msgctxt "accel"
 msgid "zoom min"
 msgstr "minimaler Zoom"
@@ -5842,24 +5825,24 @@ msgid "image back"
 msgstr "vorheriges Bild"
 
 #: ../src/views/lighttable.c:266
-msgid "this collection is empty."
-msgstr "Diese Kollektion ist leer."
+msgid "there are no images in this collection"
+msgstr "Es gibt keine Bilder in dieser Kollektion."
 
 #: ../src/views/lighttable.c:268
-msgid "if you didn't import any images yet"
-msgstr "Falls noch keine Bilder importiert wurden"
+msgid "if you have not imported any images yet"
+msgstr "Falls noch keine Bilder importiert wurden,"
 
 #: ../src/views/lighttable.c:270
-msgid "do that from the top left expander."
-msgstr "kann dies links oben gemacht werden."
+msgid "you can do so in the import module"
+msgstr "kann das im Import-Modul erfolgen"
 
 #: ../src/views/lighttable.c:277
 msgid "try to relax the filter settings in the top panel"
 msgstr "Filterregeln in der oberen Leiste anpassen"
 
 #: ../src/views/lighttable.c:284
-msgid "or in the collection plugin in the left panel."
-msgstr "oder links im Sammlungs-Plugin."
+msgid "or add images in the collection module in the left panel"
+msgstr "oder Bilder links im Sammlungs-Plugin hinzufügen."
 
 #. Navigation keys
 #: ../src/views/lighttable.c:1100
@@ -5966,6 +5949,27 @@ msgid ""
 msgstr ""
 "komprimiere den Effekt in den\n"
 "Schatten/Spitzlichtern und erhalte die Mitten"
+
+#~ msgid "1 star"
+#~ msgstr "1 Stern"
+
+#~ msgid "2 star"
+#~ msgstr "2 Sterne"
+
+#~ msgid "3 star"
+#~ msgstr "3 Sterne"
+
+#~ msgid "4 star"
+#~ msgstr "4 Sterne"
+
+#~ msgid "5 star"
+#~ msgstr "5 Sterne"
+
+#~ msgid "this collection is empty."
+#~ msgstr "Diese Kollektion ist leer."
+
+#~ msgid "do that from the top left expander."
+#~ msgstr "kann dies links oben gemacht werden."
 
 #~ msgid "filename of your custom theme in share/darktable/"
 #~ msgstr "Dateiname des eigenen Themes in share/darktable/"
