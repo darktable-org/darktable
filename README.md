@@ -15,7 +15,7 @@ Contributing
 * Share your ideas on the [developer mailing list](http://sourceforge.net/mailarchive/forum.php?forum_name=darktable-devel)
 * Test [releases](http://www.darktable.org/install/)
 * Review [pull requests](http://github.com/darktable-org/darktable/pulls)
-* Start [hacking on darktable](http://www.darktable.org/redmine/projects/darktable/wiki/Hacking_on_darktable)
+* Start [hacking on darktable](http://www.darktable.org/redmine/projects/darktable/wiki/Contributing_code)
 
 Building
 --------
