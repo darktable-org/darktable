@@ -121,7 +121,7 @@ gui_init (dt_imageio_module_storage_t *self)
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry));
   g_object_set(G_OBJECT(widget), "tooltip-text", _("enter the path where to create the website gallery:\n"
                "$(ROLL_NAME) - roll of the input image\n"
-               "$(FILE_DIRECTORY) - directory of the input image\n"
+               "$(FILE_FOLDER) - directory of the input image\n"
                "$(FILE_NAME) - basename of the input image\n"
                "$(FILE_EXTENSION) - extension of the input image\n"
                "$(SEQUENCE) - sequence number\n"
@@ -140,8 +140,8 @@ gui_init (dt_imageio_module_storage_t *self)
                "$(STARS) - star rating\n"
                "$(LABELS) - colorlabels\n"
                "$(PICTURES_FOLDER) - pictures folder\n"
-               "$(HOME_FOLDER) - home folder\n"
-               "$(DESKTOP_FOLDER) - desktop folder"
+               "$(HOME) - home folder\n"
+               "$(DESKTOP) - desktop folder"
                                                   ), (char *)NULL);
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, 18, 18);

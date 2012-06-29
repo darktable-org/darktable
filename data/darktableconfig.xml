@@ -899,14 +899,14 @@
   <dtconfig>
     <name>plugins/imageio/storage/disk/file_directory</name>
     <type>string</type>
-    <default>$(FILE_DIRECTORY)/darktable_exported/img_$(SEQUENCE)</default>
+    <default>$(FILE_FOLDER)/darktable_exported/img_$(SEQUENCE)</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/storage/gallery/file_directory</name>
     <type>string</type>
-    <default>$(HOME_FOLDER)/darktable_gallery/img_$(SEQUENCE)</default>
+    <default>$(HOME)/darktable_gallery/img_$(SEQUENCE)</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>

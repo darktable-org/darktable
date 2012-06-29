@@ -155,6 +155,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   else if( g_strcmp0(variable,"$(ID)") == 0 && (got_value=TRUE) ) sprintf(value,"%d", params->imgid); 
   else if( g_strcmp0(variable,"$(JOBCODE)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",params->jobcode);
   else if( g_strcmp0(variable,"$(ROLL_NAME)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_basename(g_path_get_dirname(params->filename)));
+  else if( g_strcmp0(variable,"$(FILE_DIRECTORY)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_dirname(params->filename)); // undocumented : backward compatibility
   else if( g_strcmp0(variable,"$(FILE_FOLDER)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_dirname(params->filename));
   else if( g_strcmp0(variable,"$(FILE_NAME)") == 0 && params->filename && (got_value=TRUE) )
   {
@@ -164,8 +165,10 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   else if( g_strcmp0(variable,"$(FILE_EXTENSION)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",file_ext);
   else if( g_strcmp0(variable,"$(SEQUENCE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.4d",params->sequence>=0?params->sequence:params->data->sequence);
   else if( g_strcmp0(variable,"$(USERNAME)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_name());
+  else if( g_strcmp0(variable,"$(HOME_FOLDER)") == 0 && (got_value=TRUE)  )    sprintf(value,"%s",homedir); // undocumented : backward compatibility
   else if( g_strcmp0(variable,"$(HOME)") == 0 && (got_value=TRUE)  )    sprintf(value,"%s",homedir);
   else if( g_strcmp0(variable,"$(PICTURES_FOLDER)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",pictures_folder);
+  else if( g_strcmp0(variable,"$(DESKTOP_FOLDER)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP)); // undocumented : backward compatibility
   else if( g_strcmp0(variable,"$(DESKTOP)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
 #if 0
   else if( g_strcmp0(variable,"$(VC)") == 0 && (got_value=TRUE) )
