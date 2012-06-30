@@ -49,7 +49,9 @@
 static const cairo_operator_t _overlay_modes[] = {
   CAIRO_OPERATOR_XOR,
   CAIRO_OPERATOR_ADD,
-  CAIRO_OPERATOR_SATURATE,
+  CAIRO_OPERATOR_SATURATE
+#if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0))
+  ,
   CAIRO_OPERATOR_MULTIPLY,
   CAIRO_OPERATOR_SCREEN,
   CAIRO_OPERATOR_OVERLAY,
@@ -65,6 +67,7 @@ static const cairo_operator_t _overlay_modes[] = {
   CAIRO_OPERATOR_HSL_SATURATION,
   CAIRO_OPERATOR_HSL_COLOR,
   CAIRO_OPERATOR_HSL_LUMINOSITY
+#endif
 };
 
 DT_MODULE(1)
@@ -354,6 +357,7 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_add(lib->overlay_mode, _("xor"));
   dt_bauhaus_combobox_add(lib->overlay_mode, _("add"));
   dt_bauhaus_combobox_add(lib->overlay_mode, _("saturate"));
+#if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0))
   dt_bauhaus_combobox_add(lib->overlay_mode, _("multiply"));
   dt_bauhaus_combobox_add(lib->overlay_mode, _("screen"));
   dt_bauhaus_combobox_add(lib->overlay_mode, _("overlay"));
@@ -369,6 +373,7 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_add(lib->overlay_mode, _("hsl saturation"));
   dt_bauhaus_combobox_add(lib->overlay_mode, _("hsl color"));
   dt_bauhaus_combobox_add(lib->overlay_mode, _("hsl luminosity"));
+#endif
   g_object_set(G_OBJECT(lib->overlay_mode), "tooltip-text", _("mode of the overlay"), (char *)NULL);
   dt_bauhaus_combobox_set(lib->overlay_mode, dt_conf_get_int("plugins/lighttable/live_view/overlay_mode"));
   g_signal_connect (G_OBJECT (lib->overlay_mode), "value-changed", G_CALLBACK (_overlay_mode_changed), lib);
