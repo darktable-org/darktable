@@ -27,6 +27,7 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"
+#include "bauhaus/bauhaus.h"
 #include "views/view.h"
 #include "gui/gtk.h"
 #include "gui/contrast.h"
@@ -388,7 +389,45 @@ void dt_control_create_database_schema()
     NULL, NULL, NULL);
 }
 
-  void dt_control_init(dt_control_t *s)
+void dt_control_init(dt_control_t *s)
+{
+  dt_ctl_settings_init(s);
+
+  memset(s->vimkey, 0, sizeof(s->vimkey));
+  s->vimkey_cnt = 0;
+
+  // s->last_expose_time = dt_get_wtime();
+  s->key_accelerators_on = 1;
+  s->log_pos = s->log_ack = 0;
+  s->log_busy = 0;
+  s->log_message_timeout_id = 0;
+  dt_pthread_mutex_init(&(s->log_mutex), NULL);
+  s->progress = 200.0f;
+
+  dt_conf_set_int("ui_last/view", DT_MODE_NONE);
+
+  // if config is old, replace with new defaults.
+  if(DT_CONFIG_VERSION > dt_conf_get_int("config_version"))
+    dt_ctl_settings_default(s);
+
+  pthread_cond_init(&s->cond, NULL);
+  dt_pthread_mutex_init(&s->cond_mutex, NULL);
+  dt_pthread_mutex_init(&s->queue_mutex, NULL);
+  dt_pthread_mutex_init(&s->run_mutex, NULL);
+
+  // start threads
+  s->num_threads = CLAMP(dt_conf_get_int ("worker_threads"), 1, 8);
+  s->thread = (pthread_t *)malloc(sizeof(pthread_t)*s->num_threads);
+  dt_pthread_mutex_lock(&s->run_mutex);
+  s->running = 1;
+  dt_pthread_mutex_unlock(&s->run_mutex);
+  for(int k=0; k<s->num_threads; k++)
+    pthread_create(&s->thread[k], NULL, dt_control_work, s);
+  
+  /* create queue kicker thread */
+  pthread_create(&s->kick_on_workers_thread, NULL, _control_worker_kicker, s);
+  
+  for(int k=0; k<DT_CTL_WORKER_RESERVED; k++)
   {
     dt_ctl_settings_init(s);
 
@@ -1347,6 +1386,14 @@ void dt_control_log(const char* msg, ...)
   dt_control_queue_redraw_center();
 }
 
+static void dt_control_log_ack_all()
+{
+  dt_pthread_mutex_lock(&darktable.control->log_mutex);
+  darktable.control->log_pos = darktable.control->log_ack;
+  dt_pthread_mutex_unlock(&darktable.control->log_mutex);
+  dt_control_queue_redraw_center();
+}
+
 void dt_control_log_busy_enter()
 {
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
@@ -1484,6 +1531,96 @@ void dt_control_queue_redraw_widget(GtkWidget *widget)
 int dt_control_key_pressed_override(guint key, guint state)
 {
   dt_control_accels_t* accels = &darktable.control->accels;
+
+  // TODO: if darkroom mode
+  // did a : vim-style command start?
+  static GList *autocomplete = NULL;
+  static char   vimkey_input[256];
+  if(darktable.control->vimkey_cnt)
+  {
+    if(key == GDK_KEY_Return)
+    {
+      dt_bauhaus_vimkey_exec(darktable.control->vimkey);
+      darktable.control->vimkey[0] = 0;
+      darktable.control->vimkey_cnt = 0;
+      dt_control_log_ack_all();
+      g_list_free(autocomplete);
+      autocomplete = NULL;
+    }
+    else if(key == GDK_KEY_Escape)
+    {
+      darktable.control->vimkey[0] = 0;
+      darktable.control->vimkey_cnt = 0;
+      dt_control_log_ack_all();
+      g_list_free(autocomplete);
+      autocomplete = NULL;
+    }
+    else if(key == GDK_KEY_BackSpace)
+    {
+      darktable.control->vimkey_cnt = MAX(0, darktable.control->vimkey_cnt-1);
+      darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
+      if(darktable.control->vimkey_cnt == 0)
+        dt_control_log_ack_all();
+      else
+        dt_control_log(darktable.control->vimkey);
+      g_list_free(autocomplete);
+      autocomplete = NULL;
+    }
+    else if(key == GDK_KEY_Tab)
+    {
+      // TODO: also support :preset and :get?
+      // auto complete:
+      if(darktable.control->vimkey_cnt < 5)
+      {
+        sprintf(darktable.control->vimkey, ":set ");
+        darktable.control->vimkey_cnt = 5;
+      }
+      else if(!autocomplete)
+      {
+        // TODO: handle '.'-separated things separately
+        // this is a static list, and tab cycles through the list
+        strncpy(vimkey_input, darktable.control->vimkey + 5, 256);
+        autocomplete = dt_bauhaus_vimkey_complete(darktable.control->vimkey + 5);
+        autocomplete = g_list_append(autocomplete, vimkey_input); // remember input to cycle back
+      }
+      if(autocomplete)
+      {
+        // pop first.
+        // the paths themselves are owned by bauhaus,
+        // no free required.
+        snprintf(darktable.control->vimkey, 256, ":set %s", (char *)autocomplete->data);
+        autocomplete = g_list_remove(autocomplete, autocomplete->data);
+        darktable.control->vimkey_cnt = strlen(darktable.control->vimkey);
+      }
+      dt_control_log(darktable.control->vimkey);
+    }
+    else if(key >= ' ' && key <= '~') // printable ascii character
+    {
+      darktable.control->vimkey[darktable.control->vimkey_cnt] = key;
+      darktable.control->vimkey_cnt = MIN(255, darktable.control->vimkey_cnt+1);
+      darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
+      dt_control_log(darktable.control->vimkey);
+      g_list_free(autocomplete);
+      autocomplete = NULL;
+    }
+    else if(key == GDK_KEY_Up)
+    {
+      // TODO: step history up and copy to vimkey
+    }
+    else if(key == GDK_KEY_Down)
+    {
+      // TODO: step history down and copy to vimkey
+    }
+    return 1;
+  }
+  else if(key == ':')
+  {
+    darktable.control->vimkey[0] = ':';
+    darktable.control->vimkey[1] = 0;
+    darktable.control->vimkey_cnt = 1;
+    dt_control_log(darktable.control->vimkey);
+    return 1;
+  }
 
   /* check if key accelerators are enabled*/
   if (darktable.control->key_accelerators_on != 1) return 0;

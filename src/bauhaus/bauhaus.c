@@ -499,6 +499,12 @@ dt_bauhaus_init()
   darktable.bauhaus->scale = gtk_fontsize/5.0f;
   darktable.bauhaus->widget_space = 2.5f*darktable.bauhaus->scale;
 
+  // keys are freed with g_free, values are ptrs to the widgets, these don't need to be cleaned up.
+  darktable.bauhaus->keymap = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+  darktable.bauhaus->key_mod = NULL;
+  darktable.bauhaus->key_val = NULL;
+  memset(darktable.bauhaus->key_history, 0, sizeof(darktable.bauhaus->key_history));
+
   // this easily gets keyboard input:
   // darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   // but this doesn't flicker, and the above hack with key input seems to work well.
@@ -548,12 +554,15 @@ dt_bauhaus_init()
                     G_CALLBACK (dt_bauhaus_popup_key_press), (gpointer)NULL);
   g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "scroll-event",
                     G_CALLBACK (dt_bauhaus_popup_scroll), (gpointer)NULL);
+
+  dt_bauhaus_vimkey_exec(":set sharpen.amount=1.0");
 }
 
 void
 dt_bauhaus_cleanup()
 {
   // TODO: destroy popup window and resources
+  // TODO: destroy keymap hash table and auto complete lists!
 }
 
 // fwd declare a few callbacks
@@ -588,7 +597,6 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 static void
 dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
 {
-  // dt_gui_key_accel_block_on_focus(w->area);
   w->module = self;
 
   // no quad icon and no toggle button:
@@ -618,6 +626,27 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *text)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   strncpy(w->label, text, 256);
+
+  if(w->module)
+  {
+    // construct control path name and insert into keymap:
+    gchar *path = g_strdup_printf("%s.%s", w->module->name(), w->label);
+    if(!g_hash_table_lookup(darktable.bauhaus->keymap, path))
+    {
+      // also insert into sorted tab-complete list.
+      // (but only if this is the first time we insert this path)
+      gchar *mod = g_strdup(path);
+      gchar *val = g_strstr_len(mod, strlen(mod), ".");
+      if(val)
+      {
+        *val = 0;
+        if(!g_list_find_custom(darktable.bauhaus->key_mod, mod, (GCompareFunc)strcmp))
+          darktable.bauhaus->key_mod = g_list_insert_sorted(darktable.bauhaus->key_mod, mod, (GCompareFunc)strcmp);
+        darktable.bauhaus->key_val = g_list_insert_sorted(darktable.bauhaus->key_val, path, (GCompareFunc)strcmp);
+      }
+    }
+    g_hash_table_replace(darktable.bauhaus->keymap, path, w);
+  }
 }
 
 void dt_bauhaus_widget_set_quad_paint(GtkWidget *widget, dt_bauhaus_quad_paint_f f, int paint_flags)
@@ -1666,6 +1695,58 @@ dt_bauhaus_slider_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpoin
 {
   // TODO: highlight?
   return TRUE;
+}
+
+void dt_bauhaus_vimkey_exec(const char *input)
+{
+  char module[64], label[64];
+  float num;
+  sscanf(input, ":set %[^.].%[^=]=%f", module, label, &num);
+  fprintf(stderr, "[vimkey] setting module `%s', slider `%s' to %f\n", module, label, num);
+  sscanf(input, ":set %[^=]=%f", label, &num);
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)g_hash_table_lookup(darktable.bauhaus->keymap, label);
+  if(!w) return;
+  switch(w->type)
+  {
+    case DT_BAUHAUS_SLIDER:
+      dt_bauhaus_slider_set(GTK_WIDGET(w), num);
+      break;
+    case DT_BAUHAUS_COMBOBOX:
+      // TODO: what about text as entry?
+      dt_bauhaus_combobox_set(GTK_WIDGET(w), num);
+      break;
+    default:
+      break;
+  }
+}
+
+// give autocomplete suggestions
+GList* dt_bauhaus_vimkey_complete(const char *input)
+{
+  GList *cmp = darktable.bauhaus->key_mod;
+  char *point = strstr(input, ".");
+  if(point)
+    cmp = darktable.bauhaus->key_val;
+  int prefix = strlen(input);
+  GList *res = NULL;
+  int after = 0;
+  while(cmp)
+  {
+    char *path = (char *)cmp->data;
+    if(strncmp(path, input, prefix))
+    {
+      if(after) break; // sorted, so we're done
+      // else loop till we find the start of it
+    }
+    else
+    {
+      // append:
+      res = g_list_insert_sorted(res, path, (GCompareFunc)strcmp);
+      after = 1;
+    }
+    cmp = g_list_next(cmp);
+  }
+  return res;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

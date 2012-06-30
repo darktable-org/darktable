@@ -148,6 +148,12 @@ typedef struct dt_bauhaus_t
   // our custom signals
   guint signals[DT_BAUHAUS_LAST_SIGNAL];
 
+  // vim-style keyboard interfacing/scripting stuff:
+  GHashTable *keymap;   // hashtable translating control name -> bauhaus widget ptr
+  GList      *key_mod;  // for autocomplete, before the point: module.
+  GList      *key_val;  // for autocomplete, after the point: .value
+  char key_history[64][256];
+
   // appearance relevant stuff:
   // sizes and fonts:
   float scale;          // gui scale multiplier
@@ -210,6 +216,12 @@ void dt_bauhaus_combobox_set_text(GtkWidget *w, const char *text);
 int  dt_bauhaus_combobox_get(GtkWidget *w);
 const GList* dt_bauhaus_combobox_get_labels(GtkWidget *w);
 void dt_bauhaus_combobox_clear(GtkWidget *w);
+
+// key accel parsing:
+// execute a line of input
+void dt_bauhaus_vimkey_exec(const char *input);
+// give autocomplete suggestions
+GList* dt_bauhaus_vimkey_complete(const char *input);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

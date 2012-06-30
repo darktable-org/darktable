@@ -5,6 +5,18 @@ darktable is an open source photography workflow application and RAW developer. 
 
 [http://www.darktable.org/](http://www.darktable.org/ "darktable homepage")
 
+Contributing
+------------
+
+* Write a blog about darktable
+* Create a tutorial for darktable
+* Help expand the [user wiki](http://www.darktable.org/redmine/projects/users/wiki)
+* Answer questions on the [user mailing list](http://sourceforge.net/mailarchive/forum.php?forum_name=darktable-users)
+* Share your ideas on the [developer mailing list](http://sourceforge.net/mailarchive/forum.php?forum_name=darktable-devel)
+* Test [releases](http://www.darktable.org/install/)
+* Review [pull requests](http://github.com/darktable-org/darktable/pulls)
+* Start [hacking on darktable](http://www.darktable.org/redmine/projects/darktable/wiki/Contributing_code)
+
 Building
 --------
 
