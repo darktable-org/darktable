@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 johannes hanika.
+    copyright (c) 2012 johannes hanika, tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,10 +16,21 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/**
+ * TODO:
+ *  - make --bpp work
+ *  - add options for HQ export, interpolator
+ *  - make these settings work
+ *  - get rid of setting the storage using the config
+ *  - ???
+ *  - profit
+ */
+
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/collection.h"
 #include "common/points.h"
+#include "common/film.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
@@ -31,90 +42,132 @@
 int usleep(useconds_t usec);
 #include <inttypes.h>
 
-static int
-bpp (dt_imageio_module_data_t *data)
+static void
+usage(const char* progname)
 {
-  return 32;
-}
-
-static int
-write_image (dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif, int exif_len, int imgid)
-{
-#if 0
-  const int offx = 0;//(width  - data->width )/2;
-  const int offy = 0;//(height - data->height)/2;
-  float *out = pixels + (offy * width  + offx )* 4;
-  const float *rd = in;
-  memset(pixels, 0, 4*sizeof(float)*width*height);
-  const float alpha = 0.2f;
-  for(int i=3;i<4*width*height;i+=4) pixels[i] = 0.2f;
-  for(int j=0; j<MIN(data->height, height); j++)
-  {
-    for(int i=0; i<MIN(data->width, width); i++)
-    {
-      for(int c=0; c<3; c++) out[4*i+c] = rd[4*i+c];
-      out[4*i+3] = alpha;
-    }
-    out += 4*width;
-    rd  += 4*data->width;
-  }
-#endif
-}
-
-static int
-process_next_image()
-{
-  // static int counter = 0;
-  dt_imageio_module_format_t buf;
-  dt_imageio_module_data_t dat;
-  buf.bpp = bpp;
-  buf.write_image = write_image;
-  dat.max_width  = 1920;//width;
-  dat.max_height = 1080;//height;
-#if 0
-
-  // get random image id from sql
-  int32_t id = 0;
-  const uint32_t cnt = dt_collection_get_count (darktable.collection);
-  // enumerated all images?
-  if(++counter >= cnt) return 1;
-  uint32_t ran = counter - 1;
-  if(use_random)
-  {
-    // get random number up to next power of two greater than cnt:
-    const uint32_t zeros = __builtin_clz(cnt);
-    // pull radical inverses only in our desired range:
-    do ran = next_random() >> zeros;
-    while(ran >= cnt);
-  }
-  const int32_t rand = ran % cnt;
-  const gchar *query = dt_collection_get_query (darktable.collection);
-  if(!query) return 1;
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rand);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, rand+1);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-    id = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
-
-  if(id)
-  {
-    // get image from cache
-    dt_imageio_export(id, "unused", &buf, &dat);
-  }
-#endif
-  return 0;
+  fprintf(stderr, "usage: %s <input file> <xmp file> <output file> [--width <max width>,--height <max height>,--bpp <bpp>] [darktable options]\n", progname);
 }
 
 int main(int argc, char *arg[])
 {
   gtk_init (&argc, &arg);
+
+  // parse command line arguments
+
+  char *image_filename = NULL;
+  char *xmp_filename = NULL;
+  char *output_filename = NULL;
+  int file_counter = 0;
+  int width = 0, height = 0, bpp = 0;
+
+  for(int k=1; k<argc; k++)
+  {
+    if(arg[k][0] == '-')
+    {
+      if(!strcmp(arg[k], "--help"))
+      {
+        usage(arg[0]);
+        exit(1);
+      }
+      else if(!strcmp(arg[k], "--version"))
+      {
+        printf("this is darktable-cli\ncopyright (c) 2012 johannes hanika, tobias ellinghaus\n");
+        exit(1);
+      }
+      else if(!strcmp(arg[k], "--width"))
+      {
+        k++;
+        width = MAX(atoi(arg[k]), 0);
+      }
+      else if(!strcmp(arg[k], "--height"))
+      {
+        k++;
+        height = MAX(atoi(arg[k]), 0);
+      }
+      else if(!strcmp(arg[k], "--bpp"))
+      {
+        k++;
+        bpp = MAX(atoi(arg[k]), 0);
+        fprintf(stderr, "WARNING: sorry, due to api restrictions we currently cannot set the bpp\n");
+      }
+
+    }
+    else
+    {
+      if(file_counter == 0)
+        image_filename = arg[k];
+      else if(file_counter == 1)
+        xmp_filename = arg[k];
+      else if(file_counter == 2)
+        output_filename = arg[k];
+      file_counter++;
+    }
+  }
+
+  if(file_counter < 3){
+    usage(arg[0]);
+    exit(0);
+  }
+
   char *m_arg[] = {"darktable-cli", "--library", ":memory:", NULL};
   // init dt without gui:
   if(dt_init(3, m_arg, 0)) exit(1);
 
-  process_next_image();
+  dt_film_t film;
+  int id = 0;
+  int filmid = 0;
+
+  gchar *directory = g_path_get_dirname(image_filename);
+  filmid = dt_film_new(&film, directory);
+  id = dt_image_import(filmid, image_filename, TRUE);
+  if(!id)
+  {
+    fprintf(stderr, "error: can't open file %s\n", image_filename);
+    exit(1);
+  }
+  g_free(directory);
+
+  // try to find out the export format from the output_filename
+  const char *ext = output_filename + strlen(output_filename);
+  while(ext > output_filename && *ext != '.') ext--;
+  ext++;
+
+  if(!strcmp(ext, "jpg"))
+    ext = "jpeg";
+
+  // init the export data structures
+  dt_imageio_module_format_t *format;
+  dt_imageio_module_storage_t *storage;
+
+  //exporting to disk is the only thing that makes sense here
+  int k=0;
+  int old_k = dt_conf_get_int("plugins/lighttable/export/storage"); //FIXME
+  GList *it = g_list_first(darktable.imageio->plugins_storage);
+  if( it != NULL )
+    do
+    {
+      k++;
+      if(!strcmp(((dt_imageio_module_storage_t *)it->data)->plugin_name, "disk"))
+      {
+        storage = it->data;
+        break;
+      }
+    }
+    while( ( it = g_list_next(it) ) );
+  if(it) // ah, we found the disk storage facility
+  {
+    format = dt_imageio_get_format_by_name(ext);
+    int dat_size = 0;
+    dt_imageio_module_data_t *dat = format->get_params(format, &dat_size);
+    dat->max_width  = width;
+    dat->max_height = height;
+    //TODO: add a callback to set the bpp without going through the config
+
+
+    dt_conf_set_int ("plugins/lighttable/export/storage", k); //FIXME this has to change!
+    dt_imageio_export(id, output_filename, format, dat);
+    dt_conf_set_int ("plugins/lighttable/export/storage", old_k); //FIXME
+  }
 
   dt_cleanup();
 }

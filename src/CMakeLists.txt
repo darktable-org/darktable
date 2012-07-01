@@ -179,7 +179,7 @@ endif(USE_GNOME_KEYRING)
 add_subdirectory(cltest)
 
 # have a command line interface
-# add_subdirectory(cli)
+add_subdirectory(cli)
 
 if(USE_UNITY)
   find_package(Unity)
