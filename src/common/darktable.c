@@ -409,8 +409,8 @@ int dt_init(int argc, char *argv[], const int init_gui)
   dt_loc_init_datadir(datadirFromCommand);
   dt_loc_init_plugindir(moduledirFromCommand);
   if(dt_loc_init_tmp_dir(tmpdirFromCommand)) {
-	  printf(_("ERROR : invalid temporary directory : %s\n"),darktable.tmpdir);
-	  return usage(argv[0]);
+    printf(_("ERROR : invalid temporary directory : %s\n"),darktable.tmpdir);
+    return usage(argv[0]);
   }
   dt_loc_init_user_config_dir(configdirFromCommand);
   dt_loc_init_user_cache_dir(cachedirFromCommand);
@@ -553,11 +553,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
     dt_control_load_config(darktable.control);
     g_strlcpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
-
-    darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
-    memset(darktable.imageio, 0, sizeof(dt_imageio_t));
-    dt_imageio_init(darktable.imageio);
   }
+  darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
+  memset(darktable.imageio, 0, sizeof(dt_imageio_t));
+  dt_imageio_init(darktable.imageio);
 
   if(init_gui)
   {
