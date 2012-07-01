@@ -178,6 +178,9 @@ endif(USE_GNOME_KEYRING)
 # have a small test program, to be run as root on some systems to enable the driver to run cl stuff
 add_subdirectory(cltest)
 
+# have a command line interface
+# add_subdirectory(cli)
+
 if(USE_UNITY)
   find_package(Unity)
   if(UNITY_FOUND)
