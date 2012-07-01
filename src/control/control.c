@@ -1509,7 +1509,7 @@ int dt_control_key_pressed_override(guint key, guint state)
   static char   vimkey_input[256];
   if(darktable.control->vimkey_cnt)
   {
-    if(key == GDK_KEY_Return)
+    if(key == GDK_Return)
     {
       if(!strcmp(darktable.control->vimkey, ":q"))
       {
@@ -1525,7 +1525,7 @@ int dt_control_key_pressed_override(guint key, guint state)
       g_list_free(autocomplete);
       autocomplete = NULL;
     }
-    else if(key == GDK_KEY_Escape)
+    else if(key == GDK_Escape)
     {
       darktable.control->vimkey[0] = 0;
       darktable.control->vimkey_cnt = 0;
@@ -1533,7 +1533,7 @@ int dt_control_key_pressed_override(guint key, guint state)
       g_list_free(autocomplete);
       autocomplete = NULL;
     }
-    else if(key == GDK_KEY_BackSpace)
+    else if(key == GDK_BackSpace)
     {
       darktable.control->vimkey_cnt = MAX(0, darktable.control->vimkey_cnt-1);
       darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
@@ -1544,7 +1544,7 @@ int dt_control_key_pressed_override(guint key, guint state)
       g_list_free(autocomplete);
       autocomplete = NULL;
     }
-    else if(key == GDK_KEY_Tab)
+    else if(key == GDK_Tab)
     {
       // TODO: also support :preset and :get?
       // auto complete:
@@ -1581,11 +1581,11 @@ int dt_control_key_pressed_override(guint key, guint state)
       g_list_free(autocomplete);
       autocomplete = NULL;
     }
-    else if(key == GDK_KEY_Up)
+    else if(key == GDK_Up)
     {
       // TODO: step history up and copy to vimkey
     }
-    else if(key == GDK_KEY_Down)
+    else if(key == GDK_Down)
     {
       // TODO: step history down and copy to vimkey
     }
