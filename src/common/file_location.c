@@ -75,39 +75,40 @@ gchar* dt_loc_get_home_dir(const gchar* user)
 #endif
 }
 
-
-void dt_loc_init_user_config_dir (const char *configdir)
-{
-  darktable.configdir = malloc(4096);
-  if(configdir) {
-	  snprintf(darktable.configdir, 4096, "%s", configdir);
-  } else {
-	  gchar *homedir = dt_loc_get_home_dir(NULL);
-
-	  if(homedir)
-	  {
-		  g_snprintf (darktable.configdir,4096,"%s/.config/darktable",homedir);
-		  if (g_file_test (darktable.configdir,G_FILE_TEST_EXISTS)==FALSE)
-			  g_mkdir_with_parents (darktable.configdir,0700);
-
-		  g_free(homedir);
-	  }
-  }
-}
-
-
 static gchar * dt_loc_init_generic (const char *value,const char*default_value)
 {
   if(value) {
-	  if (g_file_test (value,G_FILE_TEST_EXISTS)==FALSE)
-		  return NULL;
-	  return dt_util_fix_path(value);
+      if (g_file_test (value,G_FILE_TEST_EXISTS)==FALSE)
+          return NULL;
+      return dt_util_fix_path(value);
   } else {
-	  gchar* result = dt_util_fix_path(default_value);
-	  if (g_file_test (result,G_FILE_TEST_EXISTS)==FALSE)
-		  g_mkdir_with_parents (result,0700);
-	  return result;
+      gchar* result = dt_util_fix_path(default_value);
+      if (g_file_test (result,G_FILE_TEST_EXISTS)==FALSE)
+          g_mkdir_with_parents (result,0700);
+      return result;
   }
+}
+
+void dt_loc_init_user_config_dir (const char *configdir)
+{
+  gchar *xdg_config_dir = NULL;
+  gchar *default_config_dir = NULL;
+
+  const char* xdg_config_home = g_getenv("XDG_CONFIG_HOME");
+  gchar *homedir = dt_loc_get_home_dir(NULL);
+
+  if(xdg_config_home)
+    xdg_config_dir = g_strconcat(xdg_config_home, "/darktable", NULL);
+
+  if(homedir)
+  {
+    default_config_dir = g_strconcat(homedir, "/.config/darktable", NULL);
+    g_free(homedir);
+  }
+
+  darktable.configdir = dt_loc_init_generic(configdir, xdg_config_dir?xdg_config_dir:default_config_dir);
+  g_free(xdg_config_dir);
+  g_free(default_config_dir);
 }
 
 #if defined(__MACH__) || defined(__APPLE__)
@@ -154,7 +155,12 @@ int dt_loc_init_tmp_dir (const char *tmpdir)
 }
 void dt_loc_init_user_cache_dir (const char *cachedir)
 {
-	darktable.cachedir = dt_loc_init_generic(cachedir,DARKTABLE_CACHEDIR);
+  gchar *xdg_cache_dir = NULL;
+  const char* xdg_cache_home = g_getenv("XDG_CACHE_HOME");
+  if(xdg_cache_home)
+    xdg_cache_dir = g_strconcat(xdg_cache_home, "/darktable", NULL);
+  darktable.cachedir = dt_loc_init_generic(cachedir,xdg_cache_dir?xdg_cache_dir:DARKTABLE_CACHEDIR);
+  g_free(xdg_cache_dir);
 }
 
 void dt_loc_init_plugindir(const char *plugindir)
