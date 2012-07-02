@@ -228,7 +228,7 @@ dt_mipmap_cache_serialize(dt_mipmap_cache_t *cache)
   }
   if (!strcmp(dbfilename, ":memory:"))
   {
-    fprintf(stderr, "[mipmap_cache] library is in memory; not serializing\n");
+    // fprintf(stderr, "[mipmap_cache] library is in memory; not serializing\n");
     return 0;
   }
 
@@ -291,7 +291,7 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
   }
   if (!strcmp(dbfilename, ":memory:"))
   {
-    fprintf(stderr, "[mipmap_cache] library is in memory; not deserializing\n");
+    // fprintf(stderr, "[mipmap_cache] library is in memory; not deserializing\n");
     return 0;
   }
 
