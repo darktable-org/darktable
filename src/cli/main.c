@@ -46,7 +46,7 @@ int usleep(useconds_t usec);
 static void
 usage(const char* progname)
 {
-  fprintf(stderr, "usage: %s <input file> <xmp file> <output file> [--width <max width>,--height <max height>,--bpp <bpp>] [darktable options]\n", progname);
+  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max height>,--bpp <bpp>] [darktable options]\n", progname);
 }
 
 int main(int argc, char *arg[])
@@ -89,7 +89,7 @@ int main(int argc, char *arg[])
       {
         k++;
         bpp = MAX(atoi(arg[k]), 0);
-        fprintf(stderr, "WARNING: sorry, due to api restrictions we currently cannot set the bpp\n");
+        fprintf(stderr, "TODO: sorry, due to api restrictions we currently cannot set the bpp\n");
       }
 
     }
@@ -105,9 +105,23 @@ int main(int argc, char *arg[])
     }
   }
 
-  if(file_counter < 3){
+  if(file_counter < 2 || file_counter > 3)
+  {
     usage(arg[0]);
     exit(0);
+  }
+  else if(file_counter == 2)
+  {
+    // no xmp file given
+    output_filename = xmp_filename;
+    xmp_filename = NULL;
+  }
+
+  // don't overwrite files -- shall we be more relaxed about this?
+  if(g_file_test(output_filename, G_FILE_TEST_EXISTS))
+  {
+    fprintf(stderr, "output file already exists, aborting\n");
+    exit(1);
   }
 
   char *m_arg[] = {"darktable-cli", "--library", ":memory:", NULL};
