@@ -35,6 +35,7 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/exif.h"
 #include "control/conf.h"
 
 #include <sys/time.h>
@@ -126,6 +127,17 @@ int main(int argc, char *arg[])
     exit(1);
   }
   g_free(directory);
+
+  // attach xmp, if requested:
+  if(xmp_filename)
+  {
+    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, id);
+    dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
+    dt_exif_xmp_read(image, xmp_filename, 1);
+    // don't write new xmp:
+    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_read_release(darktable.image_cache, image);
+  }
 
   // try to find out the export format from the output_filename
   const char *ext = output_filename + strlen(output_filename);
