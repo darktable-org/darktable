@@ -18,6 +18,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
 #include "develop/develop.h"
@@ -53,7 +54,7 @@ typedef struct dt_iop_colorize_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
   GtkWidget  *label1,*label2,*label3,*label4;	 			 // hue, sat, lightnessm source, lightness mix
-  GtkDarktableSlider *scale1,*scale2;       					//  lightness, source_lightnessmix
+  GtkWidget *scale1,*scale2;       					//  lightness, source_lightnessmix
   GtkDarktableButton *colorpick1;	   					// colorpick
   GtkDarktableGradientSlider *gslider1,*gslider2;		//hue, saturation
 }
@@ -219,22 +220,22 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 
 static void
-lightness_callback (GtkDarktableSlider *slider, gpointer user_data)
+lightness_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
-  p->lightness = dtgtk_slider_get_value(slider);
+  p->lightness = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-source_lightness_mix_callback (GtkDarktableSlider *slider, gpointer user_data)
+source_lightness_mix_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
-  p->source_lightness_mix = dtgtk_slider_get_value(slider);
+  p->source_lightness_mix = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -408,8 +409,8 @@ void gui_update(struct dt_iop_module_t *self)
 
   dtgtk_gradient_slider_set_value(g->gslider1,p->hue);
   dtgtk_gradient_slider_set_value(g->gslider2,p->saturation);
-  dtgtk_slider_set_value(g->scale1, p->lightness);
-  dtgtk_slider_set_value(g->scale2, p->source_lightness_mix);
+  dt_bauhaus_slider_set(g->scale1, p->lightness);
+  dt_bauhaus_slider_set(g->scale2, p->source_lightness_mix);
 
   float color[3];
   hsl2rgb(color,p->hue,p->saturation,0.5);
@@ -517,16 +518,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->lightness*100.0, 2));
-  dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_label(g->scale1,_("lightness"));
-  dtgtk_slider_set_unit(g->scale1,"%");
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->lightness*100.0, 2);
+  dt_bauhaus_slider_set_format(g->scale1, "%.2f%%");
+  dt_bauhaus_widget_set_label(g->scale1, _("lightness"));
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->source_lightness_mix, 2));
-  dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_label(g->scale2,_("source mix"));
-  dtgtk_slider_set_unit(g->scale2,"%");
+  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->source_lightness_mix, 2);
+  dt_bauhaus_slider_set_format(g->scale2, "%.2f%%");
+  dt_bauhaus_widget_set_label(g->scale2, _("source mix"));
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
 
