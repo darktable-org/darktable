@@ -31,6 +31,8 @@
 #include "common/dtpthread.h"
 #include "common/database.h"
 #include "common/utility.h"
+#include <lua.h>
+#include <lauxlib.h>
 #include <time.h>
 #include <sys/resource.h>
 #include <sys/time.h>
@@ -185,6 +187,7 @@ typedef struct darktable_t
   char *tmpdir;
   char *configdir;
   char *cachedir;
+  lua_State *lua_state;
 }
 darktable_t;
 

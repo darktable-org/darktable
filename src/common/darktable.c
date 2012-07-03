@@ -35,6 +35,7 @@
 #include "common/mipmap_cache.h"
 #include "common/opencl.h"
 #include "common/points.h"
+#include "common/dt_lua.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
 #include "libs/lib.h"
@@ -435,6 +436,8 @@ int dt_init(int argc, char *argv[], const int init_gui)
   char filename[1024];
   snprintf(filename, 1024, "%s/darktablerc", datadir);
 
+  // Lua init
+  dt_lua_init();
   // intialize the config backend. this needs to be done first...
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
   memset(darktable.conf, 0, sizeof(dt_conf_t));
