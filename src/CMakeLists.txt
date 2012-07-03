@@ -132,12 +132,17 @@ if(INOTIFY_FOUND)
 endif(INOTIFY_FOUND)
 
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2)
+foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2 Lua51)
   find_package(${lib} REQUIRED)
   include_directories(${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
   add_definitions(${${lib}_DEFINITIONS})
 endforeach(lib)
+
+find_package(Lua51 REQUIRED)
+include_directories(${LUA_INCLUDE_DIR})
+list(APPEND LIBS ${LUA_LIBRARIES})
+add_definitions(${LUA_DEFINITIONS})
 
 if(USE_NLS)
   find_package(Gettext)
