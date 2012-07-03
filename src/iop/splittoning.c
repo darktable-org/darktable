@@ -22,6 +22,7 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
 #include "common/opencl.h"
@@ -57,7 +58,7 @@ typedef struct dt_iop_splittoning_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
   GtkWidget  *label1,*label2,*label3,*label4,*label5,*label6;	 			 // highlight hue, h sat, shadow hue, s sat, balance, compress
-  GtkDarktableSlider *scale1,*scale2;       							//  balance, compress
+  GtkWidget *scale1,*scale2;       							//  balance, compress
   GtkDarktableButton *colorpick1,*colorpick2;	   					// shadow, highlight
   GtkDarktableGradientSlider *gslider1,*gslider2,*gslider3,*gslider4;		//highligh hue, highlight saturation, shadow hue, shadow saturation
 }
@@ -273,22 +274,22 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 
 static void
-balance_callback (GtkDarktableSlider *slider, gpointer user_data)
+balance_callback (GtkWidget* slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
-  p->balance = dtgtk_slider_get_value(slider)/100.0f;
+  p->balance = dt_bauhaus_slider_get(slider)/100.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-compress_callback (GtkDarktableSlider *slider, gpointer user_data)
+compress_callback (GtkWidget* slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
-  p->compress= dtgtk_slider_get_value(slider);
+  p->compress= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -478,8 +479,8 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_gradient_slider_set_value(g->gslider3,p->highlight_hue);
   dtgtk_gradient_slider_set_value(g->gslider4,p->highlight_saturation);
   dtgtk_gradient_slider_set_value(g->gslider2,p->shadow_saturation);
-  dtgtk_slider_set_value(g->scale1, p->balance*100.0);
-  dtgtk_slider_set_value(g->scale2, p->compress);
+  dt_bauhaus_slider_set(g->scale1, p->balance*100.0);
+  dt_bauhaus_slider_set(g->scale2, p->compress);
 
   float color[3];
   hsl2rgb(color,p->shadow_hue,p->shadow_saturation,0.5);
@@ -656,16 +657,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->balance*100.0, 2));
-  dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_RATIO);
-  dtgtk_slider_set_label(g->scale1,_("balance"));
-  dtgtk_slider_set_unit(g->scale1,"");
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->balance*100.0, 2);
+  dt_bauhaus_slider_set_format(g->scale1, "%.2f");
+  dt_bauhaus_widget_set_label(g->scale1, _("balance"));
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->compress, 2));
-  dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_label(g->scale2,_("compress"));
-  dtgtk_slider_set_unit(g->scale2,"%");
+  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->compress, 2);
+  dt_bauhaus_slider_set_format(g->scale2, "%.2f%%");
+  dt_bauhaus_widget_set_label(g->scale2,_("compress"));
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
 
