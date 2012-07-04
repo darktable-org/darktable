@@ -23,119 +23,6 @@
 
 typedef void (_blend_row_func)(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag);
 
-
-
-static inline float _blendif_factor(dt_iop_colorspace_type_t cst,const float *lower, const float *upper,const unsigned int blendif,const float *parameters)
-{
-  float result = 1.0f;
-  float scaled[DEVELOP_BLENDIF_MAX];
-
-  if((blendif & (1<<31)) == 0) return 1.0f;
-
-  switch(cst)
-  {
-    case iop_cs_Lab:
-      scaled[DEVELOP_BLENDIF_L_low] = CLAMP_RANGE(lower[0] / 100.0f, 0.0f, 1.0f);			// L scaled to 0..1
-      scaled[DEVELOP_BLENDIF_A_low] = CLAMP_RANGE((lower[1] + 128.0f)/256.0f, 0.0f, 1.0f);		// a scaled to 0..1
-      scaled[DEVELOP_BLENDIF_B_low] = CLAMP_RANGE((lower[2] + 128.0f)/256.0f, 0.0f, 1.0f);		// b scaled to 0..1
-      scaled[3] = 0.5f;									                // dummy
-      scaled[DEVELOP_BLENDIF_L_up] = CLAMP_RANGE(upper[0] / 100.0f, 0.0f, 1.0f);			// L scaled to 0..1
-      scaled[DEVELOP_BLENDIF_A_up] = CLAMP_RANGE((upper[1] + 128.0f)/256.0f, 0.0f, 1.0f);		// a scaled to 0..1
-      scaled[DEVELOP_BLENDIF_B_up] = CLAMP_RANGE((upper[2] + 128.0f)/256.0f, 0.0f, 1.0f);		// b scaled to 0..1
-      scaled[7] = 0.5f;								                    	// dummy
-    break;
-    case iop_cs_rgb:
-      scaled[DEVELOP_BLENDIF_GRAY_low]   = CLAMP_RANGE(0.3f*lower[0] + 0.59f*lower[1] + 0.11f*lower[2], 0.0f, 1.0f);	// Gray scaled to 0..1
-      scaled[DEVELOP_BLENDIF_RED_low]    = CLAMP_RANGE(lower[0], 0.0f, 1.0f);						// Red
-      scaled[DEVELOP_BLENDIF_GREEN_low]  = CLAMP_RANGE(lower[1], 0.0f, 1.0f);						// Green
-      scaled[DEVELOP_BLENDIF_BLUE_low]   = CLAMP_RANGE(lower[2], 0.0f, 1.0f);						// Blue
-      scaled[DEVELOP_BLENDIF_GRAY_up]    = CLAMP_RANGE(0.3f*upper[0] + 0.59f*upper[1] + 0.11f*upper[2], 0.0f, 1.0f);	// Gray scaled to 0..1
-      scaled[DEVELOP_BLENDIF_RED_up]     = CLAMP_RANGE(upper[0], 0.0f, 1.0f);						// Red
-      scaled[DEVELOP_BLENDIF_GREEN_up]   = CLAMP_RANGE(upper[1], 0.0f, 1.0f);						// Green
-      scaled[DEVELOP_BLENDIF_BLUE_up]    = CLAMP_RANGE(upper[2], 0.0f, 1.0f);						// Blue
-    break;
-    default:
-      return 1.0f;					// not implemented for other color spaces
-  }
-
-
-  for(int ch=0; ch<DEVELOP_BLENDIF_MAX; ch++)
-  {
-    if((blendif & (1<<ch)) == 0) continue;
-    if(result == 0.0f) break;				// no need to continue if we are already at zero
-
-    float factor;
-    if      (scaled[ch] >= parameters[4*ch+1] && scaled[ch] <= parameters[4*ch+2])
-    {
-      factor = 1.0f;
-    }
-    else if (scaled[ch] >  parameters[4*ch+0] && scaled[ch] <  parameters[4*ch+1])
-    {
-      factor = (scaled[ch] - parameters[4*ch+0])/fmax(0.01f, parameters[4*ch+1]-parameters[4*ch+0]);
-    }
-    else if (scaled[ch] >  parameters[4*ch+2] && scaled[ch] <  parameters[4*ch+3])
-    {
-      factor = 1.0f - (scaled[ch] - parameters[4*ch+2])/fmax(0.01f, parameters[4*ch+3]-parameters[4*ch+2]);
-    }
-    else factor = 0.0f;
-
-    result *= factor;
-  }
-
-  return result;
-}
-
-
-
-static inline void _blend_colorspace_channel_range(dt_iop_colorspace_type_t cst,float *min,float *max)
-{
-  switch(cst)
-  {
-    case iop_cs_Lab:		// after scaling !!!
-      min[0] = 0.0f; max[0] = 1.0f;
-      min[1] = -1.0f; max[1] = 1.0f;
-      min[2] = -1.0f; max[2] = 1.0f;
-      min[3] = 0.0f; max[3] = 1.0f;
-    break;
-    default:
-      min[0] = 0.0f; max[0] = 1.0f;
-      min[1] = 0.0f; max[1] = 1.0f;
-      min[2] = 0.0f; max[2] = 1.0f;
-      min[3] = 0.0f; max[3] = 1.0f;
-    break;
-  }
-}
-
-static inline int _blend_colorspace_channels(dt_iop_colorspace_type_t cst)
-{
-  switch(cst)
-  {
-    case iop_cs_RAW:
-      return 4;
-    
-    case iop_cs_Lab:
-    default:
-      return 3;
-  }
-}
-
-
-static inline void _blend_Lab_scale(const float *i, float *o)
-{
-  o[0] = i[0]/100.0f;
-  o[1] = i[1]/128.0f;
-  o[2] = i[2]/128.0f;
-}
-
-
-static inline void _blend_Lab_rescale(const float *i, float *o)
-{
-  o[0] = i[0]*100.0f;
-  o[1] = i[1]*128.0f;
-  o[2] = i[2]*128.0f;
-}
-
-
 static inline void _RGB_2_HSL(const float *RGB, float *HSL)
 {
   float H, S, L;
@@ -242,6 +129,151 @@ static inline void _CLAMP_XYZ(float *XYZ, const float *min, const float *max)
   XYZ[0] = CLAMP_RANGE(XYZ[0], min[0], max[0]);
   XYZ[1] = CLAMP_RANGE(XYZ[1], min[1], max[1]);
   XYZ[2] = CLAMP_RANGE(XYZ[2], min[2], max[2]);
+}
+
+
+
+
+static inline float _blendif_factor(dt_iop_colorspace_type_t cst,const float *input, const float *output, const unsigned int blendif, const float *parameters)
+{
+  float result = 1.0f;
+  float scaled[DEVELOP_BLENDIF_SIZE] = { 0.5f };
+
+  if(!(blendif & (1<<DEVELOP_BLENDIF_active))) return 1.0f;
+
+  switch(cst)
+  {
+    case iop_cs_Lab:
+      scaled[DEVELOP_BLENDIF_L_in] = CLAMP_RANGE(input[0] / 100.0f, 0.0f, 1.0f);			      // L scaled to 0..1
+      scaled[DEVELOP_BLENDIF_A_in] = CLAMP_RANGE((input[1] + 128.0f)/256.0f, 0.0f, 1.0f);		// a scaled to 0..1
+      scaled[DEVELOP_BLENDIF_B_in] = CLAMP_RANGE((input[2] + 128.0f)/256.0f, 0.0f, 1.0f);		// b scaled to 0..1
+      scaled[DEVELOP_BLENDIF_L_out] = CLAMP_RANGE(output[0] / 100.0f, 0.0f, 1.0f);			    // L scaled to 0..1
+      scaled[DEVELOP_BLENDIF_A_out] = CLAMP_RANGE((output[1] + 128.0f)/256.0f, 0.0f, 1.0f);	// a scaled to 0..1
+      scaled[DEVELOP_BLENDIF_B_out] = CLAMP_RANGE((output[2] + 128.0f)/256.0f, 0.0f, 1.0f);	// b scaled to 0..1
+
+      if(blendif & 0xff00)  // do we need to consider LCh ?
+      {
+        float LCH_input[3];
+        float LCH_output[3];
+        _Lab_2_LCH(input, LCH_input);
+        _Lab_2_LCH(output, LCH_output);
+
+        scaled[DEVELOP_BLENDIF_C_in] = CLAMP_RANGE(LCH_input[1], 0.0f, 1.0f);			        // C scaled to 0..1
+        scaled[DEVELOP_BLENDIF_h_in] = CLAMP_RANGE(LCH_input[2], 0.0f, 1.0f);		          // h scaled to 0..1
+
+        scaled[DEVELOP_BLENDIF_C_out] = CLAMP_RANGE(LCH_output[1], 0.0f, 1.0f);			      // C scaled to 0..1
+        scaled[DEVELOP_BLENDIF_h_out] = CLAMP_RANGE(LCH_output[2], 0.0f, 1.0f);		        // h scaled to 0..1
+      }
+
+    break;
+    case iop_cs_rgb:
+      scaled[DEVELOP_BLENDIF_GRAY_in]   = CLAMP_RANGE(0.3f*input[0] + 0.59f*input[1] + 0.11f*input[2], 0.0f, 1.0f);	// Gray scaled to 0..1
+      scaled[DEVELOP_BLENDIF_RED_in]    = CLAMP_RANGE(input[0], 0.0f, 1.0f);						// Red
+      scaled[DEVELOP_BLENDIF_GREEN_in]  = CLAMP_RANGE(input[1], 0.0f, 1.0f);						// Green
+      scaled[DEVELOP_BLENDIF_BLUE_in]   = CLAMP_RANGE(input[2], 0.0f, 1.0f);						// Blue
+      scaled[DEVELOP_BLENDIF_GRAY_out]    = CLAMP_RANGE(0.3f*output[0] + 0.59f*output[1] + 0.11f*output[2], 0.0f, 1.0f);	// Gray scaled to 0..1
+      scaled[DEVELOP_BLENDIF_RED_out]     = CLAMP_RANGE(output[0], 0.0f, 1.0f);					// Red
+      scaled[DEVELOP_BLENDIF_GREEN_out]   = CLAMP_RANGE(output[1], 0.0f, 1.0f);					// Green
+      scaled[DEVELOP_BLENDIF_BLUE_out]    = CLAMP_RANGE(output[2], 0.0f, 1.0f);					// Blue
+
+      if(blendif & 0xff00)  // do we need to consider HSL ?
+      {
+        float HSL_input[3];
+        float HSL_output[3];
+        _RGB_2_HSL(input, HSL_input);
+        _RGB_2_HSL(output, HSL_output);
+
+        scaled[DEVELOP_BLENDIF_H_in] = CLAMP_RANGE(HSL_input[0], 0.0f, 1.0f);			        // H scaled to 0..1
+        scaled[DEVELOP_BLENDIF_S_in] = CLAMP_RANGE(HSL_input[1], 0.0f, 1.0f);		          // S scaled to 0..1
+        scaled[DEVELOP_BLENDIF_l_in] = CLAMP_RANGE(HSL_input[2], 0.0f, 1.0f);		          // L scaled to 0..1
+
+        scaled[DEVELOP_BLENDIF_H_out] = CLAMP_RANGE(HSL_output[0], 0.0f, 1.0f);			      // H scaled to 0..1
+        scaled[DEVELOP_BLENDIF_S_out] = CLAMP_RANGE(HSL_output[1], 0.0f, 1.0f);		        // S scaled to 0..1
+        scaled[DEVELOP_BLENDIF_l_out] = CLAMP_RANGE(HSL_output[2], 0.0f, 1.0f);		        // L scaled to 0..1
+      }
+
+    break;
+    default:
+      return 1.0f;					// not implemented for other color spaces
+  }
+
+
+  for(int ch=0; ch<=DEVELOP_BLENDIF_MAX; ch++)
+  {
+    if(!(blendif & (1<<DEVELOP_BLENDIF_active))) continue;
+    if(result <= 0.000001f) break;			// no need to continue if we are already at or close to zero
+
+    float factor;
+    if      (scaled[ch] >= parameters[4*ch+1] && scaled[ch] <= parameters[4*ch+2])
+    {
+      factor = 1.0f;
+    }
+    else if (scaled[ch] >  parameters[4*ch+0] && scaled[ch] <  parameters[4*ch+1])
+    {
+      factor = (scaled[ch] - parameters[4*ch+0])/fmax(0.01f, parameters[4*ch+1]-parameters[4*ch+0]);
+    }
+    else if (scaled[ch] >  parameters[4*ch+2] && scaled[ch] <  parameters[4*ch+3])
+    {
+      factor = 1.0f - (scaled[ch] - parameters[4*ch+2])/fmax(0.01f, parameters[4*ch+3]-parameters[4*ch+2]);
+    }
+    else factor = 0.0f;
+
+    if((blendif & (1<<(ch+16))) != 0) factor = 1.0f - factor;  // inverted channel?
+
+    result *= factor;
+  }
+
+  return result;
+}
+
+
+
+static inline void _blend_colorspace_channel_range(dt_iop_colorspace_type_t cst,float *min,float *max)
+{
+  switch(cst)
+  {
+    case iop_cs_Lab:		// after scaling !!!
+      min[0] = 0.0f; max[0] = 1.0f;
+      min[1] = -1.0f; max[1] = 1.0f;
+      min[2] = -1.0f; max[2] = 1.0f;
+      min[3] = 0.0f; max[3] = 1.0f;
+    break;
+    default:
+      min[0] = 0.0f; max[0] = 1.0f;
+      min[1] = 0.0f; max[1] = 1.0f;
+      min[2] = 0.0f; max[2] = 1.0f;
+      min[3] = 0.0f; max[3] = 1.0f;
+    break;
+  }
+}
+
+static inline int _blend_colorspace_channels(dt_iop_colorspace_type_t cst)
+{
+  switch(cst)
+  {
+    case iop_cs_RAW:
+      return 4;
+    
+    case iop_cs_Lab:
+    default:
+      return 3;
+  }
+}
+
+
+static inline void _blend_Lab_scale(const float *i, float *o)
+{
+  o[0] = i[0]/100.0f;
+  o[1] = i[1]/128.0f;
+  o[2] = i[2]/128.0f;
+}
+
+
+static inline void _blend_Lab_rescale(const float *i, float *o)
+{
+  o[0] = i[0]*100.0f;
+  o[1] = i[1]*128.0f;
+  o[2] = i[2]*128.0f;
 }
 
 
@@ -1543,7 +1575,7 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
-  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*4*DEVELOP_BLENDIF_MAX, d->blendif_parameters);
+  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*4*DEVELOP_BLENDIF_SIZE, d->blendif_parameters);
   if (dev_m == NULL) goto error;
 
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -1614,11 +1646,12 @@ int
 dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_params, const int old_version, void *new_params, const int new_version, const int length)
 {
 
-  if(old_version == 1 && new_version == 2)
-  {
-    if(length != sizeof(dt_develop_blend_1_params_t)) return 1;
 
-    dt_develop_blend_1_params_t *o = (dt_develop_blend_1_params_t *)old_params;
+  if(old_version == 1 && new_version == 3)
+  {
+    if(length != sizeof(dt_develop_blend_params1_t)) return 1;
+
+    dt_develop_blend_params1_t *o = (dt_develop_blend_params1_t *)old_params;
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
     dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)module->default_blendop_params;
 
@@ -1626,6 +1659,25 @@ dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_p
     n->mode = o->mode;
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
+    return 0;
+  }
+
+  if(old_version == 2 && new_version == 3)
+  {
+    if(length != sizeof(dt_develop_blend_params2_t)) return 1;
+
+    dt_develop_blend_params2_t *o = (dt_develop_blend_params2_t *)old_params;
+    dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
+    dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)module->default_blendop_params;
+
+    *n = *d;  // start with a fresh copy of default parameters
+    n->mode = o->mode;
+    n->opacity = o->opacity;
+    n->mask_id = o->mask_id;
+    n->blendif = o->blendif & ((1<<31) | 0xff);  // only just in case: knock out all bits which were undefined in version 2
+    for(int i=0; i<(4*8); i++)
+      n->blendif_parameters[i] = o->blendif_parameters[i];
+    
     return 0;
   }
 

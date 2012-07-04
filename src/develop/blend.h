@@ -28,57 +28,91 @@
 #include "develop/pixelpipe.h"
 #include "common/opencl.h"
 
-#define DEVELOP_BLEND_VERSION				(2)
+#define DEVELOP_BLEND_VERSION				(3)
 
 
-#define DEVELOP_BLEND_MASK_FLAG				0x80
-#define DEVELOP_BLEND_DISABLED				0x00
+#define DEVELOP_BLEND_MASK_FLAG		  0x80
+#define DEVELOP_BLEND_DISABLED			0x00
 #define DEVELOP_BLEND_NORMAL				0x01
 #define DEVELOP_BLEND_LIGHTEN				0x02
 #define DEVELOP_BLEND_DARKEN				0x03
-#define DEVELOP_BLEND_MULTIPLY				0x04
+#define DEVELOP_BLEND_MULTIPLY			0x04
 #define DEVELOP_BLEND_AVERAGE				0x05
-#define DEVELOP_BLEND_ADD					0x06
-#define DEVELOP_BLEND_SUBSTRACT				0x07
-#define DEVELOP_BLEND_DIFFERENCE				0x08
+#define DEVELOP_BLEND_ADD					  0x06
+#define DEVELOP_BLEND_SUBSTRACT			0x07
+#define DEVELOP_BLEND_DIFFERENCE		0x08
 #define DEVELOP_BLEND_SCREEN				0x09
 #define DEVELOP_BLEND_OVERLAY				0x0A
 #define DEVELOP_BLEND_SOFTLIGHT			0x0B
 #define DEVELOP_BLEND_HARDLIGHT			0x0C
-#define DEVELOP_BLEND_VIVIDLIGHT			0x0D
-#define DEVELOP_BLEND_LINEARLIGHT			0x0E
-#define DEVELOP_BLEND_PINLIGHT				0x0F
-#define DEVELOP_BLEND_LIGHTNESS				0x10
+#define DEVELOP_BLEND_VIVIDLIGHT		0x0D
+#define DEVELOP_BLEND_LINEARLIGHT		0x0E
+#define DEVELOP_BLEND_PINLIGHT			0x0F
+#define DEVELOP_BLEND_LIGHTNESS			0x10
 #define DEVELOP_BLEND_CHROMA				0x11
-#define DEVELOP_BLEND_HUE				0x12
-#define DEVELOP_BLEND_COLOR				0x13
+#define DEVELOP_BLEND_HUE				    0x12
+#define DEVELOP_BLEND_COLOR				  0x13
 #define DEVELOP_BLEND_INVERSE				0x14
 
 
 typedef enum dt_develop_blendif_channels_t
 {
-  DEVELOP_BLENDIF_L_low     = 0,
-  DEVELOP_BLENDIF_A_low     = 1,
-  DEVELOP_BLENDIF_B_low     = 2,
+  DEVELOP_BLENDIF_L_in      = 0,
+  DEVELOP_BLENDIF_A_in      = 1,
+  DEVELOP_BLENDIF_B_in      = 2,
 
-  DEVELOP_BLENDIF_L_up      = 4,
-  DEVELOP_BLENDIF_A_up      = 5,
-  DEVELOP_BLENDIF_B_up      = 6,
+  DEVELOP_BLENDIF_L_out     = 4,
+  DEVELOP_BLENDIF_A_out     = 5,
+  DEVELOP_BLENDIF_B_out     = 6,
 
-  DEVELOP_BLENDIF_GRAY_low  = 0,
-  DEVELOP_BLENDIF_RED_low   = 1,
-  DEVELOP_BLENDIF_GREEN_low = 2,
-  DEVELOP_BLENDIF_BLUE_low  = 3,
+  DEVELOP_BLENDIF_GRAY_in   = 0,
+  DEVELOP_BLENDIF_RED_in    = 1,
+  DEVELOP_BLENDIF_GREEN_in  = 2,
+  DEVELOP_BLENDIF_BLUE_in   = 3,
 
-  DEVELOP_BLENDIF_GRAY_up   = 4,
-  DEVELOP_BLENDIF_RED_up    = 5,
-  DEVELOP_BLENDIF_GREEN_up  = 6,
-  DEVELOP_BLENDIF_BLUE_up   = 7,
+  DEVELOP_BLENDIF_GRAY_out  = 4,
+  DEVELOP_BLENDIF_RED_out   = 5,
+  DEVELOP_BLENDIF_GREEN_out = 6,
+  DEVELOP_BLENDIF_BLUE_out  = 7,
 
+  DEVELOP_BLENDIF_C_in      = 8,
+  DEVELOP_BLENDIF_h_in      = 9,
 
-  DEVELOP_BLENDIF_MAX   = 8
+  DEVELOP_BLENDIF_C_out     = 12,
+  DEVELOP_BLENDIF_h_out     = 13,
+
+  DEVELOP_BLENDIF_H_in      = 8,
+  DEVELOP_BLENDIF_S_in      = 9,
+  DEVELOP_BLENDIF_l_in      = 10,
+
+  DEVELOP_BLENDIF_H_out     = 12,
+  DEVELOP_BLENDIF_S_out     = 13,
+  DEVELOP_BLENDIF_l_out     = 14,
+
+  DEVELOP_BLENDIF_MAX       = 14,
+  DEVELOP_BLENDIF_unused    = 15,
+
+  DEVELOP_BLENDIF_active    = 31,
+
+  DEVELOP_BLENDIF_SIZE      = 16
 }
 dt_develop_blendif_channels_t;
+
+
+typedef struct dt_develop_blend_params2_t
+{
+  /** blending mode */
+  uint32_t mode;
+  /** mixing opacity */
+  float opacity;
+  /** id of mask in current pipeline */
+  uint32_t mask_id;
+  /** blendif mask */
+  uint32_t blendif;
+  /** blendif parameters */
+  float blendif_parameters[4*8];
+}
+dt_develop_blend_params2_t;
 
 
 typedef struct dt_develop_blend_params_t
@@ -92,7 +126,7 @@ typedef struct dt_develop_blend_params_t
   /** blendif mask */
   uint32_t blendif;
   /** blendif parameters */
-  float blendif_parameters[4*DEVELOP_BLENDIF_MAX];
+  float blendif_parameters[4*DEVELOP_BLENDIF_SIZE];
 }
 dt_develop_blend_params_t;
 
@@ -109,13 +143,13 @@ dt_blendop_t;
 
 
 /** blend legacy parameters version 1 */
-typedef struct dt_develop_blend_1_params_t
+typedef struct dt_develop_blend_params1_t
 {
   uint32_t mode;
   float opacity;
   uint32_t mask_id;
 }
-dt_develop_blend_1_params_t;
+dt_develop_blend_params1_t;
 
 
 typedef struct dt_iop_gui_blendop_modes_t
