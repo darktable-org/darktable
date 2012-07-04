@@ -175,17 +175,18 @@ typedef struct dt_iop_gui_blend_data_t
   GtkVBox *blendif_box;
   GtkDarktableGradientSlider *upper_slider;
   GtkDarktableGradientSlider *lower_slider;
-  GtkLabel *upper_label[4];
-  GtkLabel *lower_label[4];
+  GtkLabel *upper_label[8];
+  GtkLabel *lower_label[8];
   GtkLabel *upper_picker_label;
   GtkLabel *lower_picker_label;
-  void (*scale_print[4])(float value, char *string, int n);
+  void (*scale_print[8])(float value, char *string, int n);
   GtkWidget *blend_modes_combo;
   GtkWidget *opacity_slider;
-  int channel;
+  int tab;
+  int channels[8][2];
   GtkNotebook* channel_tabs;
-  GdkColor colors[4][3];
-  float increments[4];
+  GdkColor colors[8][3];
+  float increments[8];
 }
 dt_iop_gui_blend_data_t;
 
