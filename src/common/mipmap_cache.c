@@ -513,7 +513,8 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_al
   // so only check size and re-alloc if necessary:
   if(!(*dsc) || ((*dsc)->size < buffer_size) || ((void *)*dsc == (void *)dt_mipmap_cache_static_dead_image))
   {
-    free(*dsc);
+    if((void *)*dsc != (void *)dt_mipmap_cache_static_dead_image)
+      free(*dsc);
     *dsc = dt_alloc_align(64, buffer_size);
     // fprintf(stderr, "[mipmap cache] alloc for key %u %lX\n", get_key(img->id, size), (uint64_t)*buf);
     if(!(*dsc))
