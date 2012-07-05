@@ -666,6 +666,7 @@ zoom_key_accel(GtkAccelGroup *accel_group,
     default:
       break;
   }
+  dt_control_queue_redraw_center();
   return TRUE;
 }
 
