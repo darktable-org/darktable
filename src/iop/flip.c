@@ -393,9 +393,9 @@ void gui_cleanup(struct dt_iop_module_t *self)
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_iop(self, TRUE, NC_("accel", "rotate 90 degrees ccw"),
-                        0, 0);
+                        GDK_bracketleft, 0);
   dt_accel_register_iop(self, TRUE, NC_("accel", "rotate 90 degrees cw"),
-                        0, 0);
+                        GDK_bracketright, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
