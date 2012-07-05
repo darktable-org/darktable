@@ -350,13 +350,13 @@ rotate_ccw(GtkWidget *widget, dt_iop_module_t *self)
   do_rotate(self, 0);
 }
 static gboolean
-rotate_cw_key(dt_iop_module_t *self)
+rotate_cw_key(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval, GdkModifierType modifier, dt_iop_module_t *self)
 {
   do_rotate(self, 1);
   return TRUE;
 }
 static gboolean
-rotate_ccw_key(dt_iop_module_t *self)
+rotate_ccw_key(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval, GdkModifierType modifier, dt_iop_module_t *self)
 {
   do_rotate(self, 0);
   return TRUE;
