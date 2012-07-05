@@ -237,8 +237,9 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   const float wd = width/(float)iir;
   const float ht = width/(float)iir;
 
-  const int pi = pointerx / (float)wd;
-  const int pj = pointery / (float)ht;
+  int pi = pointerx / (float)wd;
+  int pj = pointery / (float)ht;
+  if(pointerx < 0 || pointery < 0) pi = pj = -1;
   //const int pidx = grid_to_index(pj, pi, iir, offset);
 
   const int img_pointerx = iir == 1 ? pointerx : fmodf(pointerx, wd);
