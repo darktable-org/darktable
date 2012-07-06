@@ -771,7 +771,11 @@ static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
       filename = (char *)it->data;
       dt_film_import(filename);
       if (!first_filename)
-      first_filename = dt_util_dstrcat(g_strdup(filename), "%%");
+      {
+        first_filename = g_strdup(filename);
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (metadata.recursive)))
+          first_filename = dt_util_dstrcat(first_filename, "%%");
+      }
       g_free (filename);
       it = g_slist_next(it);
     }

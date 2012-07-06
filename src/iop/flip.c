@@ -350,13 +350,13 @@ rotate_ccw(GtkWidget *widget, dt_iop_module_t *self)
   do_rotate(self, 0);
 }
 static gboolean
-rotate_cw_key(dt_iop_module_t *self)
+rotate_cw_key(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval, GdkModifierType modifier, dt_iop_module_t *self)
 {
   do_rotate(self, 1);
   return TRUE;
 }
 static gboolean
-rotate_ccw_key(dt_iop_module_t *self)
+rotate_ccw_key(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval, GdkModifierType modifier, dt_iop_module_t *self)
 {
   do_rotate(self, 0);
   return TRUE;
@@ -393,9 +393,9 @@ void gui_cleanup(struct dt_iop_module_t *self)
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_iop(self, TRUE, NC_("accel", "rotate 90 degrees ccw"),
-                        0, 0);
+                        GDK_bracketleft, 0);
   dt_accel_register_iop(self, TRUE, NC_("accel", "rotate 90 degrees cw"),
-                        0, 0);
+                        GDK_bracketright, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
