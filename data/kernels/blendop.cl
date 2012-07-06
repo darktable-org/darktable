@@ -228,7 +228,7 @@ blendif_factor_Lab(const float4 input, const float4 output, const unsigned int b
   scaled[DEVELOP_BLENDIF_B_out] = clamp((output.z + 128.0f)/256.0f, 0.0f, 1.0f);		// b scaled to 0..1
 
 
-  if((blendif & 0xff00) != 0)  // do we need to consider LCh ?
+  if((blendif & 0x7f00) != 0)  // do we need to consider LCh ?
   {
     float4 LCH_input = Lab_2_LCH(input);
     float4 LCH_output = Lab_2_LCH(output);
@@ -288,7 +288,7 @@ blendif_factor_rgb(const float4 input, const float4 output, const unsigned int b
   scaled[DEVELOP_BLENDIF_GREEN_out] = clamp(output.y, 0.0f, 1.0f);						// Green
   scaled[DEVELOP_BLENDIF_BLUE_out]  = clamp(output.z, 0.0f, 1.0f);						// Blue
 
-  if((blendif & 0xff00) != 0)  // do we need to consider HSL ?
+  if((blendif & 0x7f00) != 0)  // do we need to consider HSL ?
   {
     float4 HSL_input = RGB_2_HSL(input);
     float4 HSL_output = RGB_2_HSL(output);

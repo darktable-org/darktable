@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 henrik andersson.
+    copyright (c) 2011--2012 henrik andersson.
+    copyright (c) 2012 ulrich pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -160,6 +161,13 @@ typedef struct dt_iop_gui_blendop_modes_t
 dt_iop_gui_blendop_modes_t;
 
 
+typedef struct dt_iop_gui_blendif_colorstop_t
+{
+  float stoppoint;
+  GdkColor color;
+}
+dt_iop_gui_blendif_colorstop_t;
+
 
 /** blend gui data */
 typedef struct dt_iop_gui_blend_data_t
@@ -185,7 +193,8 @@ typedef struct dt_iop_gui_blend_data_t
   int tab;
   int channels[8][2];
   GtkNotebook* channel_tabs;
-  GdkColor colors[8][3];
+  int numberstops[8];
+  const dt_iop_gui_blendif_colorstop_t *colorstops[8];
   float increments[8];
 }
 dt_iop_gui_blend_data_t;

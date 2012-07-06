@@ -17,6 +17,7 @@
 */
 
 #include <string.h>
+#include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 
@@ -591,6 +592,12 @@ void dtgtk_gradient_slider_multivalue_set_stop(GtkDarktableGradientSlider *gslid
     memcpy(&gc->color,&color,sizeof(GdkColor));
     gslider->colors = g_list_append(gslider->colors , gc);
   }
+}
+
+void dtgtk_gradient_slider_multivalue_clear_stops(GtkDarktableGradientSlider *gslider)
+{
+  g_list_free_full(gslider->colors, g_free);
+  gslider->colors = NULL;
 }
 
 GtkType dtgtk_gradient_slider_multivalue_get_type()

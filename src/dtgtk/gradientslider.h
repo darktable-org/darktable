@@ -102,6 +102,9 @@ GtkWidget* dtgtk_gradient_slider_new_with_color(GdkColor start,GdkColor end);
 /** Set a color at specified stop */
 void dtgtk_gradient_slider_set_stop(GtkDarktableGradientSlider *gslider,gfloat position,GdkColor color);
 
+/** Clear all stops */
+void dtgtk_gradient_slider_multivalue_clear_stops(GtkDarktableGradientSlider *gslider);
+
 /** Get the slider value 0 - 1.0*/
 gdouble dtgtk_gradient_slider_get_value(GtkDarktableGradientSlider *gslider);
 void dtgtk_gradient_slider_set_value(GtkDarktableGradientSlider *gslider,gdouble value);

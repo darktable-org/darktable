@@ -151,7 +151,7 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst,const float *in
       scaled[DEVELOP_BLENDIF_A_out] = CLAMP_RANGE((output[1] + 128.0f)/256.0f, 0.0f, 1.0f);	// a scaled to 0..1
       scaled[DEVELOP_BLENDIF_B_out] = CLAMP_RANGE((output[2] + 128.0f)/256.0f, 0.0f, 1.0f);	// b scaled to 0..1
 
-      if(blendif & 0xff00)  // do we need to consider LCh ?
+      if(blendif & 0x7f00)  // do we need to consider LCh ?
       {
         float LCH_input[3];
         float LCH_output[3];
@@ -176,7 +176,7 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst,const float *in
       scaled[DEVELOP_BLENDIF_GREEN_out]   = CLAMP_RANGE(output[1], 0.0f, 1.0f);					// Green
       scaled[DEVELOP_BLENDIF_BLUE_out]    = CLAMP_RANGE(output[2], 0.0f, 1.0f);					// Blue
 
-      if(blendif & 0xff00)  // do we need to consider HSL ?
+      if(blendif & 0x7f00)  // do we need to consider HSL ?
       {
         float HSL_input[3];
         float HSL_output[3];
