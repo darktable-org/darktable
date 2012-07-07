@@ -202,7 +202,7 @@ _blendif_scale(dt_iop_colorspace_type_t cst, const float *in, float *out)
       out[0] = CLAMP_RANGE(in[0] / 100.0f, 0.0f, 1.0f);
       out[1] = CLAMP_RANGE((in[1] + 128.0f)/256.0f, 0.0f, 1.0f);
       out[2] = CLAMP_RANGE((in[2] + 128.0f)/256.0f, 0.0f, 1.0f);
-      out[3] = CLAMP_RANGE(temp[1], 0.0f, 1.0f);
+      out[3] = CLAMP_RANGE(temp[1] / (128.0f * sqrtf(2.0f)), 0.0f, 1.0f);
       out[4] = CLAMP_RANGE(temp[2], 0.0f, 1.0f);
       out[5] = out[6] = out[7] = -1;
     break;
@@ -234,7 +234,7 @@ _blendif_cook(dt_iop_colorspace_type_t cst, const float *in, float *out)
       out[0] = in[0];
       out[1] = in[1];
       out[2] = in[2];
-      out[3] = temp[1]*100.0f;
+      out[3] = temp[1] / (128.0f * sqrtf(2.0f)) * 100.0f;
       out[4] = temp[2]*100.0f;
       out[5] = out[6] = out[7] = -1;
     break;
@@ -393,6 +393,32 @@ _blendop_blendif_lower_callback (GtkDarktableGradientSlider *slider, dt_iop_gui_
 }
 
 
+static void
+_blendop_blendif_polarity_callback(GtkToggleButton *togglebutton, dt_iop_gui_blend_data_t *data)
+{
+  int active = gtk_toggle_button_get_active(togglebutton);
+  if(darktable.gui->reset) return;
+  dt_develop_blend_params_t *bp = data->module->blend_params;
+
+  int tab = data->tab;
+  int ch = GTK_WIDGET(togglebutton) == data->lower_polarity ? data->channels[tab][0] : data->channels[tab][1];
+  GtkDarktableGradientSlider *slider = GTK_WIDGET(togglebutton) == data->lower_polarity ? data->lower_slider : data->upper_slider;
+
+  if(!active)
+    bp->blendif |= (1<<(ch+16));
+  else
+    bp->blendif &= ~(1<<(ch+16));
+
+
+  dtgtk_gradient_slider_multivalue_set_marker(slider, active ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 0);
+  dtgtk_gradient_slider_multivalue_set_marker(slider, active ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 1);
+  dtgtk_gradient_slider_multivalue_set_marker(slider, active ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 2);
+  dtgtk_gradient_slider_multivalue_set_marker(slider, active ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 3);
+
+
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+}
+
 
 static void
 _blendop_blendif_tab_switch(GtkNotebook *notebook, GtkNotebookPage *notebook_page, guint page_num,dt_iop_gui_blend_data_t *data)
@@ -504,10 +530,29 @@ dt_iop_gui_update_blendif(dt_iop_module_t *module)
   float *oparameters = &(bp->blendif_parameters[4*out_ch]);
   float *idefaults = &(dp->blendif_parameters[4*in_ch]);
   float *odefaults = &(dp->blendif_parameters[4*out_ch]);
+
+  int ipolarity = !(bp->blendif & (1<<(in_ch+16)));
+  int opolarity = !(bp->blendif & (1<<(out_ch+16)));
   char text[256];
 
   int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->lower_polarity), ipolarity);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->upper_polarity), opolarity);
+
+
+  dtgtk_gradient_slider_multivalue_set_marker(data->lower_slider, ipolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG, 0);
+  dtgtk_gradient_slider_multivalue_set_marker(data->lower_slider, ipolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 1);
+  dtgtk_gradient_slider_multivalue_set_marker(data->lower_slider, ipolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 2);
+  dtgtk_gradient_slider_multivalue_set_marker(data->lower_slider, ipolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG, 3);
+
+  dtgtk_gradient_slider_multivalue_set_marker(data->upper_slider, opolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG, 0);
+  dtgtk_gradient_slider_multivalue_set_marker(data->upper_slider, opolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 1);
+  dtgtk_gradient_slider_multivalue_set_marker(data->upper_slider, opolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 2);
+  dtgtk_gradient_slider_multivalue_set_marker(data->upper_slider, opolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG, 3);
+
+
 
   for(int k=0; k < 4; k++)
   {
@@ -571,9 +616,9 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     char *rgb_tooltips[] = { _("sliders for gray value"), _("sliders for red channel"), _("sliders for green channel"), _("sliders for blue channel"),
                              _("sliders for hue channel (of HSL)"), _("sliders for chroma channel (of HSL)"), _("sliders for value channel (of HSL)") };
 
-    char *ttinput = _("adjustment based on input received by this module:\n* range between inner markers (upper filled triangles): blend fully\n* range outside of outer markers (lower open triangles): do not blend at all\n* range between adjacent inner/outer markers: blend gradually");
+    char *ttinput = _("adjustment based on input received by this module:\n* range defined by upper markers: blend fully\n* range defined by lower markers: do not blend at all\n* range between adjacent upper/lower markers: blend gradually");
 
-    char *ttoutput = _("adjustment based on unblended output of this module:\n* range between inner markers (upper filled triangles): blend fully\n* range outside of outer markers (lower open triangles): do not blend at all\n* range between adjacent inner/outer markers: blend gradually");
+    char *ttoutput = _("adjustment based on unblended output of this module:\n* range defined by upper markers: blend fully\n* range defined by lower markers: do not blend at all\n* range between adjacent upper/lower markers: blend gradually");
 
     bd->tab = 0;
 
@@ -673,6 +718,8 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     bd->blendif_box = GTK_VBOX(gtk_vbox_new(FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING));
     GtkWidget *uplabel = gtk_hbox_new(FALSE,0);
     GtkWidget *lowlabel = gtk_hbox_new(FALSE,0);
+    GtkWidget *upslider = gtk_hbox_new(FALSE,0);
+    GtkWidget *lowslider = gtk_hbox_new(FALSE,0);
     GtkWidget *notebook = gtk_vbox_new(FALSE,0);
     GtkWidget *header = gtk_hbox_new(FALSE, 0);
 
@@ -709,16 +756,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     bd->lower_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
     bd->upper_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
 
-    dtgtk_gradient_slider_multivalue_set_marker(bd->lower_slider, GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 0);
-    dtgtk_gradient_slider_multivalue_set_marker(bd->lower_slider, GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG, 1);
-    dtgtk_gradient_slider_multivalue_set_marker(bd->lower_slider, GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG, 2);
-    dtgtk_gradient_slider_multivalue_set_marker(bd->lower_slider, GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 3);
-
-    dtgtk_gradient_slider_multivalue_set_marker(bd->upper_slider, GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 0);
-    dtgtk_gradient_slider_multivalue_set_marker(bd->upper_slider, GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG, 1);
-    dtgtk_gradient_slider_multivalue_set_marker(bd->upper_slider, GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG, 2);
-    dtgtk_gradient_slider_multivalue_set_marker(bd->upper_slider, GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 3);
-
+#if 0
     for(int k=0; k < bd->numberstops[bd->tab]; k++)
     {
       dtgtk_gradient_slider_multivalue_set_stop(bd->lower_slider, (bd->colorstops[bd->tab])[k].stoppoint,
@@ -726,6 +764,20 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
       dtgtk_gradient_slider_multivalue_set_stop(bd->upper_slider, (bd->colorstops[bd->tab])[k].stoppoint,
                                                                   (bd->colorstops[bd->tab])[k].color);
     }
+#endif
+
+    bd->lower_polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+    g_object_set(G_OBJECT(bd->lower_polarity), "tooltip-text", _("toggle polarity"), (char *)NULL);
+
+    bd->upper_polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+    g_object_set(G_OBJECT(bd->upper_polarity), "tooltip-text", _("toggle polarity"), (char *)NULL);
+
+    gtk_box_pack_start(GTK_BOX(upslider), GTK_WIDGET(bd->upper_slider), TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(upslider), GTK_WIDGET(bd->upper_polarity), FALSE, FALSE, 0);
+
+    gtk_box_pack_start(GTK_BOX(lowslider), GTK_WIDGET(bd->lower_slider), TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(lowslider), GTK_WIDGET(bd->lower_polarity), FALSE, FALSE, 0);
+
 
     GtkWidget *output = gtk_label_new(_("output"));
     bd->upper_picker_label = GTK_LABEL(gtk_label_new(""));
@@ -780,12 +832,18 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     g_signal_connect (G_OBJECT(sm), "toggled", 
                       G_CALLBACK (_blendop_blendif_showmask_toggled), module);
 
+    g_signal_connect (G_OBJECT(bd->lower_polarity), "toggled",
+	              	    G_CALLBACK (_blendop_blendif_polarity_callback), bd);  
+
+    g_signal_connect (G_OBJECT(bd->upper_polarity), "toggled",
+	              	    G_CALLBACK (_blendop_blendif_polarity_callback), bd);  
+
 
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(header), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(uplabel), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(bd->upper_slider), TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(upslider), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(lowlabel), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(bd->lower_slider), TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(lowslider), TRUE, FALSE, 0);
 
     gtk_box_pack_end(GTK_BOX(blendw), GTK_WIDGET(bd->blendif_box),TRUE,TRUE,0);
     gtk_box_pack_end(GTK_BOX(blendw), GTK_WIDGET(bd->blendif_enable),TRUE,TRUE,0);

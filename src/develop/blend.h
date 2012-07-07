@@ -187,6 +187,8 @@ typedef struct dt_iop_gui_blend_data_t
   GtkLabel *lower_label[8];
   GtkLabel *upper_picker_label;
   GtkLabel *lower_picker_label;
+  GtkWidget *upper_polarity;
+  GtkWidget *lower_polarity;
   void (*scale_print[8])(float value, char *string, int n);
   GtkWidget *blend_modes_combo;
   GtkWidget *opacity_slider;
