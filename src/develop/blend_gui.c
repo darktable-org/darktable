@@ -508,6 +508,10 @@ _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
     _blendif_scale(data->csp, raw_max, picker_max);
     _blendif_cook(data->csp, raw_mean, cooked);
 
+
+    if(data->channels[data->tab][0] >= 8) // min and max make no sense for HSL and LCh
+      picker_min[data->tab] = picker_max[data->tab] = picker_mean[data->tab];
+
     snprintf(text, 256, "(%.1f)", cooked[data->tab]);
 
     dtgtk_gradient_slider_multivalue_set_picker_meanminmax(DTGTK_GRADIENT_SLIDER(widget), picker_mean[data->tab], picker_min[data->tab], picker_max[data->tab]);
