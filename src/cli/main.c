@@ -183,6 +183,11 @@ int main(int argc, char *arg[])
   if(it) // ah, we found the disk storage facility
   {
     format = dt_imageio_get_format_by_name(ext);
+    if(format == NULL)
+    {
+      fprintf(stderr, "unknown extension '.%s'\n", ext);
+      exit(1);
+    }
     int dat_size = 0;
     dt_imageio_module_data_t *dat = format->get_params(format, &dat_size);
     dat->max_width  = width;
@@ -193,6 +198,11 @@ int main(int argc, char *arg[])
     dt_conf_set_int ("plugins/lighttable/export/storage", k); //FIXME this has to change!
     dt_imageio_export(id, output_filename, format, dat);
     dt_conf_set_int ("plugins/lighttable/export/storage", old_k); //FIXME
+  }
+  else
+  {
+    fprintf(stderr, "cannot find disk storage module. please check your installation, something seems to be broken.\n");
+    exit(1);
   }
 
   dt_cleanup();
