@@ -236,14 +236,18 @@ blendif_factor_Lab(const float4 input, const float4 output, const unsigned int b
     scaled[DEVELOP_BLENDIF_C_in] = clamp(LCH_input.y / (128.0f*sqrt(2.0f)), 0.0f, 1.0f);        // C scaled to 0..1
     scaled[DEVELOP_BLENDIF_h_in] = clamp(LCH_input.z, 0.0f, 1.0f);		                // h scaled to 0..1
 
-    scaled[DEVELOP_BLENDIF_C_out] = clamp(LCH_output.y / (128.0f*sqrt(2.0f), 0.0f, 1.0f);       // C scaled to 0..1
+    scaled[DEVELOP_BLENDIF_C_out] = clamp(LCH_output.y / (128.0f*sqrt(2.0f)), 0.0f, 1.0f);       // C scaled to 0..1
     scaled[DEVELOP_BLENDIF_h_out] = clamp(LCH_output.z, 0.0f, 1.0f);		                // h scaled to 0..1
   }
 
 
   for(int ch=0; ch<=DEVELOP_BLENDIF_MAX; ch++)
   {
-    if((blendif & (1<<ch)) == 0) continue;
+    if((blendif & (1<<ch)) == 0)
+    {
+      result = (blendif & (1<<(ch+16))) ? 0.0f : result;    
+      continue;
+    }
     if(result <= 0.000001f) break;				// no need to continue if we are already close to or at zero
 
     float factor;
@@ -305,7 +309,12 @@ blendif_factor_rgb(const float4 input, const float4 output, const unsigned int b
 
   for(int ch=0; ch<=DEVELOP_BLENDIF_MAX; ch++)
   {
-    if((blendif & (1<<ch)) == 0) continue;
+    if((blendif & (1<<ch)) == 0)
+    {
+      result = (blendif & (1<<(ch+16))) ? 0.0f : result;    
+      continue;
+    }
+
     if(result <= 0.000001f) break;				// no need to continue if we are already close to or at zero
 
     float factor;

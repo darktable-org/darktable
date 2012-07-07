@@ -200,7 +200,12 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst,const float *in
 
   for(int ch=0; ch<=DEVELOP_BLENDIF_MAX; ch++)
   {
-    if(!(blendif & (1<<DEVELOP_BLENDIF_active))) continue;
+    if((blendif & (1<<ch)) == 0)
+    {
+      result = (blendif & (1<<(ch+16))) ? 0.0f : result;    
+      continue;
+    }
+
     if(result <= 0.000001f) break;			// no need to continue if we are already at or close to zero
 
     float factor;
