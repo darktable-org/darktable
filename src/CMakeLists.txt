@@ -171,6 +171,15 @@ if(USE_FLICKR)
   endif(FLICKCURL_FOUND)
 endif(USE_FLICKR)
 
+if(USE_GLIBJSON)
+  find_package(JsonGlib)
+  if(JsonGlib_FOUND)
+	include_directories(${JsonGlib_INCLUDE_DIRS})
+	list(APPEND LIBS ${JsonGlib_LIBRARIES})
+	add_definitions(${JsonGlib_DEFINITIONS})
+  endif(JsonGlib_FOUND)
+endif(USE_GLIBJSON)
+
 #
 # Detect compile of optional pwstorage backends
 #
