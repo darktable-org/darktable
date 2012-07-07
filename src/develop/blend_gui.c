@@ -47,7 +47,7 @@
 
 
 #define CLAMP_RANGE(x,y,z)      (CLAMP(x,y,z))
-#define LIGHTNESS               32768
+#define LIGHTNESS               32767.0f
 
 typedef enum _iop_gui_blendif_channel_t
 {
@@ -121,6 +121,17 @@ static const dt_iop_gui_blendif_colorstop_t _gradient_chroma[] =
 };
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_hue[] = 
+{
+  { 0.0f,   { 0, 1.00f*1.5f*LIGHTNESS, 0.68f*1.5f*LIGHTNESS, 0.78f*1.5f*LIGHTNESS } },
+  { 0.166f, { 0, 0.95f*1.5f*LIGHTNESS, 0.73f*1.5f*LIGHTNESS, 0.56f*1.5f*LIGHTNESS } },
+  { 0.333f, { 0, 0.71f*1.5f*LIGHTNESS, 0.81f*1.5f*LIGHTNESS, 0.55f*1.5f*LIGHTNESS } },
+  { 0.500f, { 0, 0.45f*1.5f*LIGHTNESS, 0.85f*1.5f*LIGHTNESS, 0.77f*1.5f*LIGHTNESS } },
+  { 0.666f, { 0, 0.49f*1.5f*LIGHTNESS, 0.82f*1.5f*LIGHTNESS, 1.00f*1.5f*LIGHTNESS } },
+  { 0.833f, { 0, 0.82f*1.5f*LIGHTNESS, 0.74f*1.5f*LIGHTNESS, 1.00f*1.5f*LIGHTNESS } },
+  { 1.0f,   { 0, 1.00f*1.5f*LIGHTNESS, 0.68f*1.5f*LIGHTNESS, 0.78f*1.5f*LIGHTNESS } }
+};
+
+static const dt_iop_gui_blendif_colorstop_t _gradient_HUE[] = 
 {
   { 0.0f,   { 0, LIGHTNESS, 0, 0 } },
   { 0.166f, { 0, LIGHTNESS, LIGHTNESS, 0 } },
@@ -703,8 +714,8 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
         bd->numberstops[2] = sizeof(_gradient_green)/sizeof(dt_iop_gui_blendif_colorstop_t);
         bd->colorstops[3] = _gradient_blue;
         bd->numberstops[3] = sizeof(_gradient_blue)/sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[4] = _gradient_hue;
-        bd->numberstops[4] = sizeof(_gradient_hue)/sizeof(dt_iop_gui_blendif_colorstop_t);
+        bd->colorstops[4] = _gradient_HUE;
+        bd->numberstops[4] = sizeof(_gradient_HUE)/sizeof(dt_iop_gui_blendif_colorstop_t);
         bd->colorstops[5] = _gradient_chroma;
         bd->numberstops[5] = sizeof(_gradient_chroma)/sizeof(dt_iop_gui_blendif_colorstop_t);
         bd->colorstops[6] = _gradient_gray;
