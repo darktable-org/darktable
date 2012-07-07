@@ -108,7 +108,7 @@ int main(int argc, char *arg[])
   if(file_counter < 2 || file_counter > 3)
   {
     usage(arg[0]);
-    exit(0);
+    exit(1);
   }
   else if(file_counter == 2)
   {
@@ -121,7 +121,7 @@ int main(int argc, char *arg[])
   if(g_file_test(output_filename, G_FILE_TEST_EXISTS))
   {
     fprintf(stderr, "output file already exists, aborting\n");
-    exit(1);
+    exit(2);
   }
 
   char *m_arg[] = {"darktable-cli", "--library", ":memory:", NULL};
