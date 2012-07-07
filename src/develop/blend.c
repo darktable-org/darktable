@@ -158,10 +158,10 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst,const float *in
         _Lab_2_LCH(input, LCH_input);
         _Lab_2_LCH(output, LCH_output);
 
-        scaled[DEVELOP_BLENDIF_C_in] = CLAMP_RANGE(LCH_input[1], 0.0f, 1.0f);			        // C scaled to 0..1
+        scaled[DEVELOP_BLENDIF_C_in] = CLAMP_RANGE(LCH_input[1] / (128.0f*sqrtf(2.0f)), 0.0f, 1.0f);			        // C scaled to 0..1
         scaled[DEVELOP_BLENDIF_h_in] = CLAMP_RANGE(LCH_input[2], 0.0f, 1.0f);		          // h scaled to 0..1
 
-        scaled[DEVELOP_BLENDIF_C_out] = CLAMP_RANGE(LCH_output[1], 0.0f, 1.0f);			      // C scaled to 0..1
+        scaled[DEVELOP_BLENDIF_C_out] = CLAMP_RANGE(LCH_output[1] / (128.0f*sqrtf(2.0f)), 0.0f, 1.0f);			      // C scaled to 0..1
         scaled[DEVELOP_BLENDIF_h_out] = CLAMP_RANGE(LCH_output[2], 0.0f, 1.0f);		        // h scaled to 0..1
       }
 

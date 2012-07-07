@@ -233,10 +233,10 @@ blendif_factor_Lab(const float4 input, const float4 output, const unsigned int b
     float4 LCH_input = Lab_2_LCH(input);
     float4 LCH_output = Lab_2_LCH(output);
 
-    scaled[DEVELOP_BLENDIF_C_in] = clamp(LCH_input.y, 0.0f, 1.0f);			        // C scaled to 0..1
+    scaled[DEVELOP_BLENDIF_C_in] = clamp(LCH_input.y / (128.0f*sqrt(2.0f)), 0.0f, 1.0f);        // C scaled to 0..1
     scaled[DEVELOP_BLENDIF_h_in] = clamp(LCH_input.z, 0.0f, 1.0f);		                // h scaled to 0..1
 
-    scaled[DEVELOP_BLENDIF_C_out] = clamp(LCH_output.y, 0.0f, 1.0f);			        // C scaled to 0..1
+    scaled[DEVELOP_BLENDIF_C_out] = clamp(LCH_output.y / (128.0f*sqrt(2.0f), 0.0f, 1.0f);       // C scaled to 0..1
     scaled[DEVELOP_BLENDIF_h_out] = clamp(LCH_output.z, 0.0f, 1.0f);		                // h scaled to 0..1
   }
 
