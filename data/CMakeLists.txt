@@ -34,7 +34,7 @@ install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/js)
 # latex book template support files:
 #
 FILE(GLOB WEB_FILES "latex/*")
-install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/latex)
+install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/latex)
 
 #
 # Install other system shares
