@@ -122,7 +122,7 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
     gint lselected = -1;
     gdouble lmin = 0.0;
     gdouble lmax = 1.0;
-    gdouble newposition = _screen_to_scale(widget, event->x);
+    gdouble newposition = roundf(_screen_to_scale(widget, event->x)/gslider->increment)*gslider->increment;
     gslider->prev_x_root=event->x_root;
 
     assert(gslider->positions > 0);
@@ -169,6 +169,7 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
       gslider->do_reset=FALSE;
 
       newposition = newposition > 1.0 ? 1.0 : newposition < 0.0 ? 0.0 : newposition;
+
       gslider->position[gslider->selected] = newposition > gslider->max ? gslider->max : (newposition < gslider->min ? gslider->min : newposition);
       g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
 
@@ -198,7 +199,8 @@ static gboolean _gradient_slider_motion_notify(GtkWidget *widget, GdkEventMotion
   GtkDarktableGradientSlider *gslider=DTGTK_GRADIENT_SLIDER(widget);
   if( gslider->is_dragging==TRUE && gslider->selected != -1 && gslider->do_reset==FALSE )
   {
-    gdouble newposition = _screen_to_scale(widget, event->x);
+    gdouble newposition = roundf(_screen_to_scale(widget, event->x)/gslider->increment)*gslider->increment;
+
     gslider->position[gslider->selected] = newposition > gslider->max ? gslider->max : (newposition < gslider->min ? gslider->min : newposition);
     //gslider->is_changed=TRUE;
     g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
@@ -215,7 +217,8 @@ static gboolean _gradient_slider_button_release(GtkWidget *widget, GdkEventButto
   {
     // First get some dimention info
     gslider->is_changed=TRUE;
-    gdouble newposition = _screen_to_scale(widget, event->x);
+    gdouble newposition = roundf(_screen_to_scale(widget, event->x)/gslider->increment)*gslider->increment;
+
     gslider->position[gslider->selected] = newposition > gslider->max ? gslider->max : (newposition < gslider->min ? gslider->min : newposition);
     gtk_widget_draw(widget,NULL);
     gslider->prev_x_root = event->x_root;
