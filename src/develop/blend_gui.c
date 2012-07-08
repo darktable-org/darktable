@@ -782,10 +782,10 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
 #endif
 
     bd->lower_polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
-    g_object_set(G_OBJECT(bd->lower_polarity), "tooltip-text", _("toggle polarity"), (char *)NULL);
+    g_object_set(G_OBJECT(bd->lower_polarity), "tooltip-text", _("toggle polarity. best seen by enabling 'display mask'"), (char *)NULL);
 
     bd->upper_polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
-    g_object_set(G_OBJECT(bd->upper_polarity), "tooltip-text", _("toggle polarity"), (char *)NULL);
+    g_object_set(G_OBJECT(bd->upper_polarity), "tooltip-text", _("toggle polarity. best seen by enabling 'display mask'"), (char *)NULL);
 
     gtk_box_pack_start(GTK_BOX(upslider), GTK_WIDGET(bd->upper_slider), TRUE, TRUE, 0);
     gtk_box_pack_end(GTK_BOX(upslider), GTK_WIDGET(bd->upper_polarity), FALSE, FALSE, 0);
