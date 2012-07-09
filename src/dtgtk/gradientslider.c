@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
-    copyright (c)2010 Henrik Andersson.
+    copyright (c)2010--2012 Henrik Andersson.
+    copyright (c)2012 Ulrich Pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,12 +29,6 @@
 //#define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY 250
 #define DTGTK_GRADIENT_SLIDER_DEFAULT_INCREMENT 0.01
 
-typedef struct _gradient_slider_stop_t
-{
-  gdouble position;
-  GdkColor color;
-}
-_gradient_slider_stop_t;
 
 static void _gradient_slider_class_init(GtkDarktableGradientSliderClass *klass);
 static void _gradient_slider_init(GtkDarktableGradientSlider *slider);
@@ -84,6 +79,36 @@ static inline gint _scale_to_screen(GtkWidget *widget, gdouble scale)
 }
 
 
+static gdouble _slider_move(GtkWidget *widget, gint k, gdouble value, gint direction)
+{
+  GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
+
+  gdouble newvalue = value;
+  gdouble leftnext = (k == 0) ? 0.0f : gslider->position[k-1];
+  gdouble rightnext = (k == gslider->positions-1) ? 1.0f : gslider->position[k+1];
+
+  switch(direction)
+  {
+    case MOVE_LEFT:
+      if(value < leftnext)
+      {
+        newvalue = (k == 0) ? fmax(value, 0.0f) : _slider_move(widget, k-1, value, direction);
+      }
+      break;
+    case MOVE_RIGHT:
+      if(value > rightnext)
+      {
+        newvalue = (k == gslider->positions-1) ? fmin(value, 1.0f) : _slider_move(widget, k+1, value, direction);
+      }
+      break;
+  }
+
+  gslider->position[k] = newvalue;
+
+  return newvalue;
+}
+
+
 static gboolean _gradient_slider_enter_notify_event(GtkWidget *widget, GdkEventCrossing *event)
 {
   GtkDarktableGradientSlider *gslider=DTGTK_GRADIENT_SLIDER(widget);
@@ -120,8 +145,6 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
   else if((event->button==1 || event->button==3) && event->type == GDK_BUTTON_PRESS)
   {
     gint lselected = -1;
-    gdouble lmin = 0.0;
-    gdouble lmax = 1.0;
     gdouble newposition = roundf(_screen_to_scale(widget, event->x)/gslider->increment)*gslider->increment;
     gslider->prev_x_root=event->x_root;
 
@@ -130,28 +153,20 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
     if(gslider->positions == 1)
     {
       lselected = 0;
-      lmin = 0.0;
-      lmax = 1.0;
     }
     else if (newposition <= gslider->position[0])
     {
       lselected = 0;
-      lmin = 0.0;
-      lmax = gslider->position[1];
     }
     else if (newposition >= gslider->position[gslider->positions-1])
     {
       lselected = gslider->positions-1;
-      lmin = gslider->position[gslider->positions-2];
-      lmax = 1.0;
     }
     else for(int k=0; k<=gslider->positions-2; k++)
     {
       if(newposition >= gslider->position[k] && newposition <= gslider->position[k+1])
       {
         lselected = newposition - gslider->position[k] < gslider->position[k+1] - newposition ? k : k+1;
-        lmin = lselected == 0 ? 0.0 : gslider->position[lselected-1];
-        lmax = lselected == gslider->positions-1 ? 1.0 : gslider->position[lselected+1];
         break;
       }
     }
@@ -163,14 +178,16 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
     if(event->button==1) // left mouse button : select and start dragging
     {
       gslider->selected = lselected;
-      gslider->min = lmin;
-      gslider->max = lmax;
       gslider->is_dragging=TRUE;
       gslider->do_reset=FALSE;
 
-      newposition = newposition > 1.0 ? 1.0 : newposition < 0.0 ? 0.0 : newposition;
+      newposition = CLAMP_RANGE(newposition, 0.0, 1.0);
 
-      gslider->position[gslider->selected] = newposition > gslider->max ? gslider->max : (newposition < gslider->min ? gslider->min : newposition);
+      gint direction = gslider->position[gslider->selected] <= newposition ? MOVE_RIGHT : MOVE_LEFT;
+
+      _slider_move(widget, gslider->selected, newposition, direction);
+      gslider->min = gslider->selected == 0 ? 0.0f : gslider->position[gslider->selected-1];
+      gslider->max = gslider->selected == gslider->positions-1 ? 1.0f : gslider->position[gslider->selected+1];
       g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
 
     }
@@ -182,8 +199,8 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
       if(gslider->selected != lselected)
       {
         gslider->selected = lselected;
-        gslider->min = lmin;
-        gslider->max = lmax;
+        gslider->min = gslider->selected == 0 ? 0.0f : gslider->position[gslider->selected-1];
+        gslider->max = gslider->selected == gslider->positions-1 ? 1.0f : gslider->position[gslider->selected+1];
       }
       else
         gslider->selected = -1;
@@ -201,8 +218,14 @@ static gboolean _gradient_slider_motion_notify(GtkWidget *widget, GdkEventMotion
   {
     gdouble newposition = roundf(_screen_to_scale(widget, event->x)/gslider->increment)*gslider->increment;
 
-    gslider->position[gslider->selected] = newposition > gslider->max ? gslider->max : (newposition < gslider->min ? gslider->min : newposition);
-    //gslider->is_changed=TRUE;
+    newposition = CLAMP_RANGE(newposition, 0.0, 1.0);
+
+    gint direction = gslider->position[gslider->selected] <= newposition ? MOVE_RIGHT : MOVE_LEFT;
+
+    _slider_move(widget, gslider->selected, newposition, direction);
+    gslider->min = gslider->selected == 0 ? 0.0f : gslider->position[gslider->selected-1];
+    gslider->max = gslider->selected == gslider->positions-1 ? 1.0f : gslider->position[gslider->selected+1];
+
     g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
 
     gtk_widget_draw(widget,NULL);
@@ -219,7 +242,14 @@ static gboolean _gradient_slider_button_release(GtkWidget *widget, GdkEventButto
     gslider->is_changed=TRUE;
     gdouble newposition = roundf(_screen_to_scale(widget, event->x)/gslider->increment)*gslider->increment;
 
-    gslider->position[gslider->selected] = newposition > gslider->max ? gslider->max : (newposition < gslider->min ? gslider->min : newposition);
+    newposition = CLAMP_RANGE(newposition, 0.0, 1.0);
+
+    gint direction = gslider->position[gslider->selected] <= newposition ? MOVE_RIGHT : MOVE_LEFT;
+
+    _slider_move(widget, gslider->selected, newposition, direction);
+    gslider->min = gslider->selected == 0 ? 0.0f : gslider->position[gslider->selected-1];
+    gslider->max = gslider->selected == gslider->positions-1 ? 1.0f : gslider->position[gslider->selected+1];
+
     gtk_widget_draw(widget,NULL);
     gslider->prev_x_root = event->x_root;
     gslider->is_dragging=FALSE;
