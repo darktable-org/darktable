@@ -246,7 +246,7 @@ _blendif_cook(dt_iop_colorspace_type_t cst, const float *in, float *out)
       out[1] = in[1];
       out[2] = in[2];
       out[3] = temp[1] / (128.0f * sqrtf(2.0f)) * 100.0f;
-      out[4] = temp[2]*100.0f;
+      out[4] = temp[2]*360.0f;
       out[5] = out[6] = out[7] = -1;
     break;
     case iop_cs_rgb:
@@ -255,7 +255,7 @@ _blendif_cook(dt_iop_colorspace_type_t cst, const float *in, float *out)
       out[1] = in[0]*255.0f;
       out[2] = in[1]*255.0f;
       out[3] = in[2]*255.0f;
-      out[4] = temp[0]*100.0f;
+      out[4] = temp[0]*360.0f;
       out[5] = temp[1]*100.0f;
       out[6] = temp[2]*100.0f;
       out[7] = -1;
@@ -286,11 +286,16 @@ _blendif_scale_print_rgb(float value, char *string, int n)
 }
 
 static void
+_blendif_scale_print_hue(float value, char *string, int n)
+{
+  snprintf(string, n, "%-4.0f", value*360.0f);
+}
+
+static void
 _blendif_scale_print_default(float value, char *string, int n)
 {
   snprintf(string, n, "%-4.0f", value*100.0f);
 }
-
 
 static void
 _blendop_mode_callback (GtkWidget *combo, dt_iop_gui_blend_data_t *data)
@@ -651,12 +656,12 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
         bd->scale_print[1] = _blendif_scale_print_ab;
         bd->scale_print[2] = _blendif_scale_print_ab;
         bd->scale_print[3] = _blendif_scale_print_default;
-        bd->scale_print[4] = _blendif_scale_print_default;
+        bd->scale_print[4] = _blendif_scale_print_hue;
         bd->increments[0] = 1.0f/100.0f;
         bd->increments[1] = 1.0f/256.0f;
         bd->increments[2] = 1.0f/256.0f;
         bd->increments[3] = 1.0f/100.0f;
-        bd->increments[4] = 1.0f/100.0f;
+        bd->increments[4] = 1.0f/360.0f;
         bd->channels[0][0] = DEVELOP_BLENDIF_L_in;
         bd->channels[0][1] = DEVELOP_BLENDIF_L_out;
         bd->channels[1][0] = DEVELOP_BLENDIF_A_in;
@@ -686,14 +691,14 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
         bd->scale_print[1] = _blendif_scale_print_rgb;
         bd->scale_print[2] = _blendif_scale_print_rgb;
         bd->scale_print[3] = _blendif_scale_print_rgb;
-        bd->scale_print[4] = _blendif_scale_print_rgb;
-        bd->scale_print[5] = _blendif_scale_print_rgb;
-        bd->scale_print[6] = _blendif_scale_print_rgb;
+        bd->scale_print[4] = _blendif_scale_print_hue;
+        bd->scale_print[5] = _blendif_scale_print_default;
+        bd->scale_print[6] = _blendif_scale_print_L;
         bd->increments[0] = 1.0f/255.0f;
         bd->increments[1] = 1.0f/255.0f;
         bd->increments[2] = 1.0f/255.0f;
         bd->increments[3] = 1.0f/255.0f;
-        bd->increments[4] = 1.0f/100.0f;
+        bd->increments[4] = 1.0f/360.0f;
         bd->increments[5] = 1.0f/100.0f;
         bd->increments[6] = 1.0f/100.0f;
         bd->channels[0][0] = DEVELOP_BLENDIF_GRAY_in;
