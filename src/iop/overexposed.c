@@ -101,7 +101,7 @@ const char* name()
 
 int groups()
 {
-  return IOP_GROUP_COLOR;
+  return IOP_GROUP_BASIC;
 }
 
 int flags()
