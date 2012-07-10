@@ -12,6 +12,8 @@
 # Copyright 2010 henrik andersson
 #=============================================================================
 
+SET(LENSFUN_FIND_REQUIRED ${LensFun_FIND_REQUIRED})
+
 find_path(LENSFUN_INCLUDE_DIR lensfun.h)
 mark_as_advanced(LENSFUN_INCLUDE_DIR)
 

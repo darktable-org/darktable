@@ -1,3 +1,5 @@
+SET(UNITY_FIND_REQUIRED ${Unity_FIND_REQUIRED})
+
 include(Prebuilt)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
