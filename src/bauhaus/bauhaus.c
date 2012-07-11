@@ -1225,6 +1225,7 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         cairo_text_extents_t ext;
         GList *it = d->labels;
         int k = 0, i = 0;
+        int hovered = darktable.bauhaus->mouse_y / (ht + get_line_space());
         while(it)
         {
           gchar *text = (gchar *)it->data;
@@ -1233,6 +1234,14 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
             if(i == d->active)
             {
               // highlight currently active item:
+              set_indicator_color(cr, 1);
+              cairo_text_extents (cr, text, &ext);
+              cairo_move_to (cr, wd-4-ht-ext.width, get_value_font_size() + (get_line_space()+ht)*k);
+              cairo_show_text(cr, text);
+              set_text_color(cr, 1);
+            }
+            else if(i == hovered)
+            {
               set_indicator_color(cr, 1);
               cairo_text_extents (cr, text, &ext);
               cairo_move_to (cr, wd-4-ht-ext.width, get_value_font_size() + (get_line_space()+ht)*k);
