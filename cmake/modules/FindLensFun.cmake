@@ -14,17 +14,29 @@
 
 SET(LENSFUN_FIND_REQUIRED ${LensFun_FIND_REQUIRED})
 
-find_path(LENSFUN_INCLUDE_DIR lensfun.h)
+include(Prebuilt)
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+
+  include(FindPkgConfig)
+  pkg_check_modules(LENSFUN lensfun)
+
+else (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+
+  find_path(LENSFUN_INCLUDE_DIR lensfun.h)
+
+  set(LENSFUN_NAMES ${LENSFUN_NAMES} lensfun liblensfun)
+  find_library(LENSFUN_LIBRARY NAMES ${LENSFUN_NAMES} )
+
+  # handle the QUIETLY and REQUIRED arguments and set LENSFUN_FOUND to TRUE if
+  # all listed variables are TRUE
+  include(FindPackageHandleStandardArgs)
+  find_package_handle_standard_args(LENSFUN DEFAULT_MSG LENSFUN_LIBRARY LENSFUN_INCLUDE_DIR)
+
+endif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+
 mark_as_advanced(LENSFUN_INCLUDE_DIR)
-
-set(LENSFUN_NAMES ${LENSFUN_NAMES} lensfun liblensfun)
-find_library(LENSFUN_LIBRARY NAMES ${LENSFUN_NAMES} )
 mark_as_advanced(LENSFUN_LIBRARY)
-
-# handle the QUIETLY and REQUIRED arguments and set LENSFUN_FOUND to TRUE if
-# all listed variables are TRUE
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(LENSFUN DEFAULT_MSG LENSFUN_LIBRARY LENSFUN_INCLUDE_DIR)
 
 IF(LENSFUN_FOUND)
   SET(LensFun_LIBRARIES ${LENSFUN_LIBRARY})
