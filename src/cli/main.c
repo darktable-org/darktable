@@ -36,17 +36,19 @@
 #include "common/imageio.h"
 #include "common/imageio_module.h"
 #include "common/exif.h"
+#include "common/history.h"
 #include "control/conf.h"
 
 #include <sys/time.h>
 #include <unistd.h>
 int usleep(useconds_t usec);
 #include <inttypes.h>
+#include <libintl.h>
 
 static void
 usage(const char* progname)
 {
-  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max height>,--bpp <bpp>] [darktable options]\n", progname);
+  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max height>,--bpp <bpp> --verbose] [darktable options]\n", progname);
 }
 
 int main(int argc, char *arg[])
@@ -60,6 +62,7 @@ int main(int argc, char *arg[])
   char *output_filename = NULL;
   int file_counter = 0;
   int width = 0, height = 0, bpp = 0;
+  gboolean verbose = FALSE;
 
   for(int k=1; k<argc; k++)
   {
@@ -91,6 +94,10 @@ int main(int argc, char *arg[])
         bpp = MAX(atoi(arg[k]), 0);
         fprintf(stderr, "TODO: sorry, due to api restrictions we currently cannot set the bpp\n");
       }
+      else if(!strcmp(arg[k], "-v") || !strcmp(arg[k], "--verbose"))
+      {
+        verbose = TRUE;
+      }
 
     }
     else
@@ -120,7 +127,7 @@ int main(int argc, char *arg[])
   // don't overwrite files -- shall we be more relaxed about this?
   if(g_file_test(output_filename, G_FILE_TEST_EXISTS))
   {
-    fprintf(stderr, "output file already exists, aborting\n");
+    fprintf(stderr, "%s\n", _("output file already exists, aborting"));
     exit(2);
   }
 
@@ -151,6 +158,16 @@ int main(int argc, char *arg[])
     // don't write new xmp:
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
     dt_image_cache_read_release(darktable.image_cache, image);
+  }
+
+  // print the history stack
+  if(verbose)
+  {
+    gchar *history = dt_history_get_items_as_string(id);
+    if(history)
+      printf("%s\n", history);
+    else
+      printf("[%s]\n", _("empty history stack"));
   }
 
   // try to find out the export format from the output_filename
@@ -201,7 +218,7 @@ int main(int argc, char *arg[])
   }
   else
   {
-    fprintf(stderr, "cannot find disk storage module. please check your installation, something seems to be broken.\n");
+    fprintf(stderr, "%s\n", _("cannot find disk storage module. please check your installation, something seems to be broken."));
     exit(1);
   }
 
