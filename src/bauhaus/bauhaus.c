@@ -973,7 +973,7 @@ dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
   const float htm = 0.0f, htM = ht;
 #else
   // pos of baseline
-  const float htm = ht*(darktable.bauhaus->label_font_size + 0.2f);
+  const float htm = ht*(darktable.bauhaus->label_font_size + 0.1f);
   const float htM = ht*0.2f; // thickness of baseline
 #endif
 
