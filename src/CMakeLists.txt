@@ -123,8 +123,16 @@ if(USE_CAMERA_SUPPORT)
   add_definitions(${Gphoto2_DEFINITIONS})
 endif(USE_CAMERA_SUPPORT)
 
+# INotify isn't used anymore as it seems
+find_package(INotify)
+if(INOTIFY_FOUND)
+  include_directories(${INOTIFY_INCLUDE_DIRS})
+  list(APPEND LIBS ${INOTIFY_LIBRARIES})
+  add_definitions(${INOTIFY_DEFINITIONS})
+endif(INOTIFY_FOUND)
+
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2)
+foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2)
   find_package(${lib} REQUIRED)
   include_directories(${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})

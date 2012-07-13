@@ -36,17 +36,19 @@
 #include "common/imageio.h"
 #include "common/imageio_module.h"
 #include "common/exif.h"
+#include "common/history.h"
 #include "control/conf.h"
 
 #include <sys/time.h>
 #include <unistd.h>
 int usleep(useconds_t usec);
 #include <inttypes.h>
+#include <libintl.h>
 
 static void
 usage(const char* progname)
 {
-  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max height>,--bpp <bpp>] [darktable options]\n", progname);
+  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max height>,--bpp <bpp> --verbose] [darktable options]\n", progname);
 }
 
 int main(int argc, char *arg[])
@@ -60,6 +62,7 @@ int main(int argc, char *arg[])
   char *output_filename = NULL;
   int file_counter = 0;
   int width = 0, height = 0, bpp = 0;
+  gboolean verbose = FALSE;
 
   for(int k=1; k<argc; k++)
   {
@@ -91,6 +94,10 @@ int main(int argc, char *arg[])
         bpp = MAX(atoi(arg[k]), 0);
         fprintf(stderr, "TODO: sorry, due to api restrictions we currently cannot set the bpp\n");
       }
+      else if(!strcmp(arg[k], "-v") || !strcmp(arg[k], "--verbose"))
+      {
+        verbose = TRUE;
+      }
 
     }
     else
@@ -120,7 +127,7 @@ int main(int argc, char *arg[])
   // don't overwrite files -- shall we be more relaxed about this?
   if(g_file_test(output_filename, G_FILE_TEST_EXISTS))
   {
-    fprintf(stderr, "output file already exists, aborting\n");
+    fprintf(stderr, "%s\n", _("output file already exists, aborting"));
     exit(2);
   }
 
@@ -153,6 +160,16 @@ int main(int argc, char *arg[])
     dt_image_cache_read_release(darktable.image_cache, image);
   }
 
+  // print the history stack
+  if(verbose)
+  {
+    gchar *history = dt_history_get_items_as_string(id);
+    if(history)
+      printf("%s\n", history);
+    else
+      printf("[%s]\n", _("empty history stack"));
+  }
+
   // try to find out the export format from the output_filename
   const char *ext = output_filename + strlen(output_filename);
   while(ext > output_filename && *ext != '.') ext--;
@@ -183,6 +200,11 @@ int main(int argc, char *arg[])
   if(it) // ah, we found the disk storage facility
   {
     format = dt_imageio_get_format_by_name(ext);
+    if(format == NULL)
+    {
+      fprintf(stderr, "unknown extension '.%s'\n", ext);
+      exit(1);
+    }
     int dat_size = 0;
     dt_imageio_module_data_t *dat = format->get_params(format, &dat_size);
     dat->max_width  = width;
@@ -193,6 +215,11 @@ int main(int argc, char *arg[])
     dt_conf_set_int ("plugins/lighttable/export/storage", k); //FIXME this has to change!
     dt_imageio_export(id, output_filename, format, dat);
     dt_conf_set_int ("plugins/lighttable/export/storage", old_k); //FIXME
+  }
+  else
+  {
+    fprintf(stderr, "%s\n", _("cannot find disk storage module. please check your installation, something seems to be broken."));
+    exit(1);
   }
 
   dt_cleanup();

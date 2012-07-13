@@ -12,6 +12,8 @@
 # Copyright 2010 henrik andersson
 #=============================================================================
 
+SET(GMODULE_FIND_REQUIRED ${GModule_FIND_REQUIRED})
+
 find_path(GMODULE_INCLUDE_DIR glib-2.0/gmodule.h)
 mark_as_advanced(GMODULE_INCLUDE_DIR)
 

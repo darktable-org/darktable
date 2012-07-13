@@ -12,6 +12,8 @@
 # Copyright 2010 henrik andersson
 #=============================================================================
 
+SET(GPHOTO2_FIND_REQUIRED ${Gphoto2_FIND_REQUIRED})
+
 find_path(GPHOTO2_INCLUDE_DIR gphoto2/gphoto2.h)
 mark_as_advanced(GPHOTO2_INCLUDE_DIR)
 

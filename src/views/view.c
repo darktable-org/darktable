@@ -713,8 +713,9 @@ dt_view_image_expose(
       cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
       cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
       cairo_set_font_size (cr, .25*width);
-
-      cairo_move_to (cr, .01*width, .24*height);
+      cairo_text_extents_t text_extends;
+      cairo_text_extents (cr, ext, &text_extends);
+      cairo_move_to (cr, .025*width - text_extends.x_bearing, .24*height);
       cairo_show_text (cr, ext);
     }
   }

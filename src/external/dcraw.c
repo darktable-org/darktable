@@ -19,11 +19,11 @@
    *If you have not modified dcraw.c in any way, a link to my
    homepage qualifies as "full source code".
 
-   $Revision: 1.448 $
-   $Date: 2012/06/18 19:44:18 $
+   $Revision: 1.451 $
+   $Date: 2012/07/05 04:33:11 $
  */
 
-#define DCRAW_VERSION "9.15"
+#define DCRAW_VERSION "9.16"
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -2777,7 +2777,7 @@ void CLASS foveon_huff (ushort *huff)
 void CLASS foveon_dp_load_raw()
 {
   unsigned c, roff[4], row, col, diff;
-  ushort huff[258], vpred, hpred;
+  ushort huff[258], vpred[2][2], hpred[2];
 
   fseek (ifp, 8, SEEK_CUR);
   foveon_huff (huff);
@@ -2786,13 +2786,13 @@ void CLASS foveon_dp_load_raw()
   FORC3 {
     fseek (ifp, data_offset+roff[c], SEEK_SET);
     getbits(-1);
-    vpred = 1024;
+    vpred[0][0] = vpred[0][1] = vpred[1][0] = vpred[1][1] = 512;
     for (row=0; row < height; row++) {
       for (col=0; col < width; col++) {
 	diff = ljpeg_diff(huff);
-	if (col) hpred += diff;
-	else hpred = vpred += diff;
-	image[row*width+col][c] = hpred;
+	if (col < 2) hpred[col] = vpred[row & 1][col] += diff;
+	else hpred[col & 1] += diff;
+	image[row*width+col][c] = hpred[col & 1];
       }
     }
   }
@@ -4625,10 +4625,11 @@ nf: order = 0x4949;
       cam_mul[2] = getreal(type);
     }
     if (tag == 0xd && type == 7 && get2() == 0xaaaa) {
-      fread (buf97, 1, sizeof buf97, ifp);
-      i = (uchar *) memmem (buf97, sizeof buf97,"\xbb\xbb",2) - buf97 + 10;
-      if (i < 70 && buf97[i] < 3)
-	flip = "065"[buf97[i]]-'0';
+      for (c=i=2; (ushort) c != 0xbbbb && i < len; i++)
+	c = c << 8 | fgetc(ifp);
+      while ((i+=4) < len-5)
+	if (get4() == 257 && (i=len) && (c = (get4(),fgetc(ifp))) < 3)
+	  flip = "065"[c]-'0';
     }
     if (tag == 0x10 && type == 4)
       unique_id = get4();
@@ -6334,6 +6335,8 @@ void CLASS adobe_coeff (const char *make, const char *model)
 	{ 6941,-1164,-857,-3825,11597,2534,-416,1540,6039 } },
     { "Canon EOS 600D", 0, 0x3510,
 	{ 6461,-907,-882,-4300,12184,2378,-819,1944,5931 } },
+    { "Canon EOS 650D", 0, 0x354d,
+	{ 6602,-841,-939,-4472,12458,2247,-975,2039,6148 } },
     { "Canon EOS 1000D", 0, 0xe43,
 	{ 6771,-1139,-977,-7818,15123,2928,-1244,1437,7533 } },
     { "Canon EOS 1100D", 0, 0x3510,
@@ -6894,6 +6897,8 @@ void CLASS adobe_coeff (const char *make, const char *model)
 	{ 8898,-2498,-994,-3144,11328,2066,-760,1381,4576 } },
     { "SAMSUNG NX2", 0, 0xfff,	/* NX20, NX200, NX210 */
 	{ 6933,-2268,-753,-4921,13387,1647,-803,1641,6096 } },
+    { "SAMSUNG NX1000", 0, 0,
+	{ 6933,-2268,-753,-4921,13387,1647,-803,1641,6096 } },
     { "SAMSUNG NX", 0, 0,	/* NX5, NX10, NX11, NX100 */
 	{ 10332,-3234,-1168,-6111,14639,1520,-1352,2647,8331 } },
     { "SAMSUNG WB2000", 0, 0xfff,
@@ -6910,6 +6915,8 @@ void CLASS adobe_coeff (const char *make, const char *model)
 	{ 8512,-2641,-694,-8042,15670,2526,-1821,2117,7414 } },
     { "SONY DSC-V3", 0, 0,
 	{ 7511,-2571,-692,-7894,15088,3060,-948,1111,8128 } },
+    { "SONY DSC-RX100", 192, 0,		/* DJC */
+	{ 7329,-2746,-405,-2691,9338,3354,-136,1259,5051 } },
     { "SONY DSLR-A100", 0, 0xfeb,
 	{ 9437,-2811,-774,-8405,16215,2290,-710,596,7181 } },
     { "SONY DSLR-A290", 0, 0,
@@ -6965,7 +6972,7 @@ void CLASS adobe_coeff (const char *make, const char *model)
     { "SONY SLT-A65", 128, 0,
 	{ 5491,-1192,-363,-4951,12342,2948,-911,1722,7192 } },
     { "SONY SLT-A77", 128, 0,
-	{ 5491,-1192,-363,-4951,12342,2948,-911,1722,7192 } }
+	{ 5491,-1192,-363,-4951,12342,2948,-911,1722,7192 } },
   };
   double cam_xyz[4][3];
   char name[130];
@@ -7727,6 +7734,12 @@ canon_a5:
     height -= top_margin = 45;
     left_margin = 142;
     width = 4916;
+  } else if (is_canon && raw_width == 5280) {
+    top_margin  = 52;
+    left_margin = 72;
+    if (unique_id == 0x80000301)
+      adobe_coeff ("Canon","EOS 650D");
+    goto canon_cr2;
   } else if (is_canon && raw_width == 5344) {
     top_margin = 51;
     left_margin = 142;
@@ -8031,11 +8044,11 @@ konica_400z:
     raw_width = fsize/height/2;
     order = 0x4d4d;
     load_raw = &CLASS unpacked_load_raw;
-  } else if (!strncmp(model,"NX1",3)) {
+  } else if (!strcmp(make,"SAMSUNG") && raw_width == 4704) {
     height -= top_margin = 8;
     width -= 2 * (left_margin = 8);
     load_flags = 32;
-  } else if (!strcmp(model,"NX200")) {
+  } else if (!strcmp(make,"SAMSUNG") && raw_width == 5632) {
     order = 0x4949;
     height = 3694;
     top_margin = 2;
@@ -8303,6 +8316,8 @@ wb550:
     adobe_coeff ("SONY","DSC-R1");
     width = 3925;
     order = 0x4d4d;
+  } else if (!strcmp(make,"SONY") && raw_width == 5504) {
+    width -= 8;
   } else if (!strcmp(make,"SONY") && raw_width == 6048) {
     width -= 24;
   } else if (!strcmp(model,"DSLR-A100")) {
@@ -9389,7 +9404,7 @@ next:
     colorcheck();
 #endif
     if (is_foveon) {
-      if (document_mode || model[0] == 'D') {
+      if (document_mode || load_raw == &CLASS foveon_dp_load_raw) {
 	for (i=0; i < height*width*4; i++)
 	  if ((short) image[0][i] < 0) image[0][i] = 0;
       } else foveon_interpolate();
