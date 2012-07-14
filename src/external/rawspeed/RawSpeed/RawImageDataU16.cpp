@@ -116,7 +116,7 @@ void RawImageDataU16::calculateBlackAreas() {
 }
 
 void RawImageDataU16::scaleBlackWhite() {
-  const int skipBorder = 150;
+  const int skipBorder = 250;
   int gw = (dim.x - skipBorder) * cpp;
   if ((blackAreas.empty() && blackLevelSeparate[0] < 0 && blackLevel < 0) || whitePoint == 65536) {  // Estimate
     int b = 65536;
@@ -133,8 +133,12 @@ void RawImageDataU16::scaleBlackWhite() {
       blackLevel = b;
     if (whitePoint == 65536)
       whitePoint = m;
-    printf("Estimated black:%d, Estimated white: %d\n", blackLevel, whitePoint);
+    printf("ISO:%d, Estimated black:%d, Estimated white: %d\n", isoSpeed, blackLevel, whitePoint);
   }
+
+  /* Skip, if not needed */
+  if (blackAreas.size() == 0 && blackLevel == 0 && whitePoint == 65535 && blackLevelSeparate[0] < 0)
+    return;
 
   /* If filter has not set separate blacklevel, compute or fetch it */
   if (blackLevelSeparate[0] < 0)

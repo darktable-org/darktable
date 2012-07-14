@@ -108,7 +108,7 @@
 		<Alias>Canon EOS 350D</Alias>
 	</Aliases>
   </Camera>
-  <Camera make="Canon" model="Canon EOS 40D">
+  <Camera make="Canon" model="Canon EOS 40D" decoder_version="1">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
       <Color x="1" y="0">GREEN</Color>
@@ -117,14 +117,17 @@
     </CFA>
     <Crop x="30" y="18" width="3908" height="2602"/>
     <Sensor black="1021" white="13600"/>
-	<BlackAreas>
-		<Vertical x="0" width="28"/>
-		<Horizontal y="4" height="12"/>
-	</BlackAreas>
+		<BlackAreas>
+			<Vertical x="0" width="28"/>
+			<Horizontal y="4" height="12"/>
+		</BlackAreas>
+		<Hints>
+			<Hint name="sraw_40d" value=""/>
+		</Hints>
   </Camera>
   <Camera make="Canon" model="Canon EOS 40D" mode="sRaw2">
     <Crop x="0" y="0" width="1944" height="1296"/>
-    <Sensor black="0" white="16383"/>
+    <Sensor black="0" white="65535"/>
   </Camera>
   <Camera make="Canon" model="Canon EOS 450D">
     <CFA width="2" height="2">
@@ -140,7 +143,7 @@
 		<Alias>Canon EOS Kiss Digital X2</Alias>
 	</Aliases>
   </Camera>
-  <Camera make="Canon" model="Canon EOS 50D">
+  <Camera make="Canon" model="Canon EOS 50D" decoder_version="1">
     <CFA width="2" height="2">
       <Color x="0" y="0">GREEN</Color>
       <Color x="1" y="0">BLUE</Color>
@@ -156,13 +159,13 @@
   </Camera>
   <Camera make="Canon" model="Canon EOS 50D" mode="sRaw1">
     <Crop x="0" y="0" width="3272" height="2178"/>
-    <Sensor black="0" white="16383"/>
+    <Sensor black="0" white="65535"/>
   </Camera>
   <Camera make="Canon" model="Canon EOS 50D" mode="sRaw2">
     <Crop x="0" y="0" width="2376" height="1584"/>
-    <Sensor black="0" white="16383"/>
+    <Sensor black="0" white="65535"/>
   </Camera>
-  <Camera make="Canon" model="Canon EOS 60D">
+  <Camera make="Canon" model="Canon EOS 60D" decoder_version="1">
     <CFA width="2" height="2">
       <Color x="0" y="0">GREEN</Color>
       <Color x="1" y="0">BLUE</Color>
@@ -171,18 +174,19 @@
     </CFA>
     <Crop x="146" y="54" width="0" height="0"/>
     <Sensor black="2026" white="14200"/>
-	<BlackAreas>
-		<Vertical x="0" width="140"/>
-		<Horizontal y="4" height="46"/>
-	</BlackAreas>
+		<BlackAreas>
+			<Vertical x="0" width="140"/>
+			<Horizontal y="4" height="46"/>
+		</BlackAreas>
+	
   </Camera>
   <Camera make="Canon" model="Canon EOS 60D" mode="sRaw1">
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="0" white="16383"/>
+    <Sensor black="0" white="65535"/>
   </Camera>  
   <Camera make="Canon" model="Canon EOS 60D" mode="sRaw2">
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="0" white="16383"/>
+    <Sensor black="0" white="65535"/>
   </Camera>  
   <Camera make="Canon" model="Canon EOS 500D">
     <CFA width="2" height="2">
@@ -239,6 +243,25 @@
 		<Alias>Canon EOS Kiss X5</Alias>
 	</Aliases>
   </Camera>
+  <Camera make="Canon" model="Canon EOS 650D">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="76" y="56" width="0" height="0"/>
+    <Sensor black="2026" white="13584" iso_min="0" iso_max = "199"/>
+    <Sensor black="2026" white="15304"/>
+	<BlackAreas>
+		<Vertical x="0" width="70"/>
+		<Horizontal y="4" height="44"/>
+	</BlackAreas>
+    <Aliases>
+		<Alias>Canon EOS REBEL T4i</Alias>
+		<Alias>Canon EOS Kiss X6i</Alias>
+	</Aliases>
+  </Camera>
   <Camera make="Canon" model="Canon EOS 5D">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
@@ -253,7 +276,7 @@
 		<Horizontal y="2" height="30"/>
 	</BlackAreas>
   </Camera>
-  <Camera make="Canon" model="Canon EOS 5D Mark II">
+  <Camera make="Canon" model="Canon EOS 5D Mark II" decoder_version="1">
     <CFA width="2" height="2">
       <Color x="0" y="0">GREEN</Color>
       <Color x="1" y="0">BLUE</Color>
@@ -269,13 +292,13 @@
   </Camera>
   <Camera make="Canon" model="Canon EOS 5D Mark II" mode="sRaw1">
     <Crop x="0" y="0" width="3872" height="2574"/>
-    <Sensor black="0" white="15600"/>
+    <Sensor black="0" white="65535"/>
   </Camera>
   <Camera make="Canon" model="Canon EOS 5D Mark II" mode="sRaw2">
     <Crop x="0" y="0" width="2808" height="1872"/>
-    <Sensor black="0" white="15600"/>
+    <Sensor black="0" white="65535"/>
   </Camera>
-  <Camera make="Canon" model="Canon EOS 5D Mark III">
+  <Camera make="Canon" model="Canon EOS 5D Mark III" decoder_version="1">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
       <Color x="1" y="0">GREEN</Color>
@@ -288,18 +311,19 @@
     <Vertical x="0" width="120"/>
     <Horizontal y="2" height="78"/>
   </BlackAreas>
+		<Hints>
+			<Hint name="sraw_new" value=""/>
+		</Hints>
   </Camera>
-  <!-- Unconfirmed: -->
   <Camera make="Canon" model="Canon EOS 5D Mark III" mode="sRaw1">
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="0" white="16383"/>
+    <Sensor black="0" white="65535"/>
   </Camera>
-  <!-- Unconfirmed: -->
   <Camera make="Canon" model="Canon EOS 5D Mark III" mode="sRaw2">
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="0" white="16383"/>
+    <Sensor black="0" white="65535"/>
   </Camera>
-  <Camera make="Canon" model="Canon EOS 7D">
+  <Camera make="Canon" model="Canon EOS 7D" decoder_version="1">
     <CFA width="2" height="2">
       <Color x="0" y="0">GREEN</Color>
       <Color x="1" y="0">BLUE</Color>
@@ -316,11 +340,11 @@
   </Camera>
   <Camera make="Canon" model="Canon EOS 7D" mode="sRaw1">
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="0" white="16383"/>
+    <Sensor black="0" white="65535"/>
   </Camera>  
   <Camera make="Canon" model="Canon EOS 7D" mode="sRaw2">
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="0" white="16383"/>
+    <Sensor black="0" white="65535"/>
   </Camera>  
   <Camera make="Canon" model="Canon EOS 1000D">
     <CFA width="2" height="2">
@@ -404,7 +428,7 @@
 		<Horizontal y="2" height="8"/>
 	</BlackAreas>
   </Camera>
-  <Camera make="Canon" model="Canon EOS-1D Mark III">
+  <Camera make="Canon" model="Canon EOS-1D Mark III" decoder_version="1">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
       <Color x="1" y="0">GREEN</Color>
@@ -413,20 +437,20 @@
     </CFA>
     <Crop x="78" y="20" width="3906" height="2600"/>
     <Sensor black="1023" white="15100"/>
-	<BlackAreas>
-		<Vertical x="2" width="74"/>
-		<Horizontal y="4" height="14"/>
-	</BlackAreas>
+		<BlackAreas>
+			<Vertical x="2" width="74"/>
+			<Horizontal y="4" height="14"/>
+		</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon EOS-1D Mark III" mode="sRaw1">
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="0" white="16383"/>
+    <Sensor black="0" white="65535"/>
   </Camera>
   <Camera make="Canon" model="Canon EOS-1D Mark III" mode="sRaw2">
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="0" white="16383"/>
+    <Sensor black="0" white="65535"/>
   </Camera>
-  <Camera make="Canon" model="Canon EOS-1D Mark IV">
+  <Camera make="Canon" model="Canon EOS-1D Mark IV" decoder_version="1">
     <CFA width="2" height="2">
       <Color x="0" y="0">GREEN</Color>
       <Color x="1" y="0">BLUE</Color>
@@ -442,11 +466,11 @@
   </Camera>
   <Camera make="Canon" model="Canon EOS-1D Mark IV" mode="sRaw1">
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="0" white="16383"/>
+    <Sensor black="0" white="65535"/>
   </Camera>
   <Camera make="Canon" model="Canon EOS-1D Mark IV" mode="sRaw2">
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="0" white="16383"/>
+    <Sensor black="0" white="65535"/>
   </Camera>
   <Camera make="Canon" model="Canon EOS-1Ds Mark II">
     <CFA width="2" height="2">
@@ -462,7 +486,7 @@
 		<Horizontal y="2" height="10"/>
 	</BlackAreas>
   </Camera>
-  <Camera make="Canon" model="Canon EOS-1Ds Mark III">
+  <Camera make="Canon" model="Canon EOS-1Ds Mark III" decoder_version="1">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
       <Color x="1" y="0">GREEN</Color>
@@ -478,11 +502,33 @@
   </Camera>
   <Camera make="Canon" model="Canon EOS-1Ds Mark III" mode="sRaw1">
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="0" white="16383"/>
+    <Sensor black="0" white="65535"/>
   </Camera>
   <Camera make="Canon" model="Canon EOS-1Ds Mark III" mode="sRaw2">
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="0" white="16383"/>
+    <Sensor black="0" white="65535"/>
+  </Camera>
+  <Camera make="Canon" model="Canon EOS-1D X" decoder_version="1">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="128" y="102" width="0" height="-2"/>
+    <Sensor black="2050" white="15100"/>
+	<BlackAreas>
+		<Vertical x="0" width="120"/>
+		<Horizontal y="0" height="98"/>
+	</BlackAreas>
+</Camera>
+  <Camera make="Canon" model="Canon EOS-1D X" mode="sRaw1">
+    <Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="0" white="65535"/>
+  </Camera>
+  <Camera make="Canon" model="Canon EOS-1D X" mode="sRaw2">
+    <Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="0" white="65535"/>
   </Camera>
   <Camera make="Canon" model="Canon PowerShot G1 X">
     <CFA width="2" height="2">
@@ -1562,6 +1608,22 @@
     <Crop x="0" y="0" width="-72" height="0"/>
     <Sensor black="150" white="4096"/>
   </Camera>
+  <Camera make="Panasonic" model = "DMC-GF5">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
+      <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-128" height="0"/>
+    <Sensor black="150" white="4097"/>
+  </Camera>
+  <Camera make="Panasonic" model = "DMC-GF5" mode= "4:3">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
+      <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-128" height="0"/>
+    <Sensor black="150" white="4097"/>
+  </Camera>
   <Camera make="Panasonic" model = "DMC-GH2">
     <CFA width="2" height="2">
       <Color x="1" y="0">GREEN</Color><Color x="0" y="0">BLUE</Color>
@@ -1955,6 +2017,16 @@
     <Crop x="0" y="2" width="-10" height="-2"/>
     <Sensor black="0" white="4095"/>
   </Camera>  
+  <Camera make="SONY" model="DSC-RX100">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-12" height="0"/>
+    <Sensor black="800" white="16620"/>
+  </Camera>	
   <Camera make="SONY" model="DSLR-A100" supported="no">
 	<!-- Files doesn't have a valid TIFF structure -->
     <CFA width="2" height="2">
@@ -2166,6 +2238,16 @@
     <Crop x="0" y="0" width="0" height="0"/>
     <Sensor black="545" white="16596"/>
   </Camera>   
+  <Camera make="SONY" model="NEX-F3" supported="yes">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="520" white="16360"/>
+  </Camera>  
   <Camera make="SONY" model="SLT-A33">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
@@ -2185,6 +2267,16 @@
     </CFA>
     <Crop x="0" y="0" width="0" height="0"/>
     <Sensor black="545" white="16596"/>
+  </Camera>
+  <Camera make="SONY" model="SLT-A37">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="520" white="16500"/>
   </Camera>
   <Camera make="SONY" model="SLT-A55V">
     <CFA width="2" height="2">
