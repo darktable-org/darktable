@@ -214,6 +214,7 @@ bool RawDecoder::checkCameraSupported(CameraMetaData *meta, string make, string 
 }
 
 void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, string mode, int iso_speed) {
+  mRaw->isoSpeed = iso_speed;
   TrimSpaces(make);
   TrimSpaces(model);
   Camera *cam = meta->getCamera(make, model, mode);
@@ -312,6 +313,32 @@ RawSpeed::RawImage RawDecoder::decodeRaw()
     ThrowRDE("%s", e.what());
   }
   return NULL;
+}
+
+void RawDecoder::decodeMetaData(CameraMetaData *meta)
+{
+  try {
+    return decodeMetaDataInternal(meta);
+  } catch (TiffParserException &e) {
+    ThrowRDE("%s", e.what());
+  } catch (FileIOException &e) {
+    ThrowRDE("%s", e.what());
+  } catch (IOException &e) {
+    ThrowRDE("%s", e.what());
+  }
+}
+
+void RawDecoder::checkSupport(CameraMetaData *meta)
+{
+  try {
+    return checkSupportInternal(meta);
+  } catch (TiffParserException &e) {
+    ThrowRDE("%s", e.what());
+  } catch (FileIOException &e) {
+    ThrowRDE("%s", e.what());
+  } catch (IOException &e) {
+    ThrowRDE("%s", e.what());
+  }
 }
 
 } // namespace RawSpeed

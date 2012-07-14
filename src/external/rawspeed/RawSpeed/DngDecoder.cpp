@@ -394,10 +394,10 @@ RawImage DngDecoder::decodeRawInternal() {
   return mRaw;
 }
 
-void DngDecoder::decodeMetaData(CameraMetaData *meta) {
+void DngDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
 }
 
-void DngDecoder::checkSupport(CameraMetaData *meta) {
+void DngDecoder::checkSupportInternal(CameraMetaData *meta) {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
   if (data.empty())
     ThrowRDE("DNG Support check: Model name found");

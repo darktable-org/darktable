@@ -177,7 +177,7 @@ int NikonDecompressor::HuffDecodeNikon() {
     }
 
     if (l > 16) {
-      ThrowIOE("Corrupt JPEG data: bad Huffman code:%u\n", l);
+      ThrowRDE("Corrupt JPEG data: bad Huffman code:%u\n", l);
     } else {
       rv = dctbl1->huffval[dctbl1->valptr[l] +
                            ((int)(code - dctbl1->mincode[l]))];
