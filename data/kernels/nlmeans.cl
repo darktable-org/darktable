@@ -26,12 +26,12 @@ const sampler_t samplerc =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP     
 
 
 /* 
-    To speed up processing we use an algorithm proposed from B. Goossens, H.Q. Luong, J. Aelterman, A. Pizurica,  and W. Philips, 
+    To speed up processing we use an algorithm proposed by B. Goossens, H.Q. Luong, J. Aelterman, A. Pizurica,  and W. Philips, 
     "A GPU-Accelerated Real-Time NLMeans Algorithm for Denoising Color Video Sequences", in Proc. ACIVS (2), 2010, pp.46-57. 
 
     Benchmarking figures (export of a 20MPx image on a i7-2600 with an NVIDIA GTS450):
 
-    This GPU-code: 18s
+    This GPU-code: 13s
     Brute force GPU-code: 136s
     Optimized CPU-code: 27s
 

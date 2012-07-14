@@ -188,7 +188,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   float max_L = 120.0f, max_C = 512.0f;
   float nL = 1.0f/max_L, nC = 1.0f/max_C;
   float nL2 = nL*nL, nC2 = nC*nC;
-  float weight[4] = { powf(d->luma, 0.6), powf(d->chroma, 0.6), powf(d->chroma, 0.6), 1.0f };
+  //float weight[4] = { powf(d->luma, 0.6), powf(d->chroma, 0.6), powf(d->chroma, 0.6), 1.0f };
+  float weight[4] = { d->luma, d->chroma, d->chroma, 1.0f };
 
   dev_U4 = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, sizeof(float));
   if (dev_U4 == NULL) goto error;
