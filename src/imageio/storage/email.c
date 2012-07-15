@@ -152,7 +152,7 @@ finalize_store(dt_imageio_module_storage_t *self, void *params)
   gchar body[4096]= {0};
   gchar attachments[4096]= {0};
   gchar *uriFormat=NULL;
-  gchar *subject="images exported from darktable";
+  gchar *subject=_("images exported from darktable");
   gchar *imageBodyFormat="%s %s"; // filename, exif oneliner
   gchar *attachmentFormat=NULL;
   gchar *attachmentSeparator="";
