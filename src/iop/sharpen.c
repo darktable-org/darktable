@@ -273,8 +273,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // init gaussian kernel
   for(int l=-rad; l<=rad; l++)
     weight += mat[l+rad] = expf(- l*l/(2.f*sigma2));
-  for(int l=0; l<wd; l++)
-    mat[l] /= weight;
+  for(int l=-rad; l<=rad; l++)
+    mat[l+rad] /= weight;
 
   // gauss blur the image horizontally
 #ifdef _OPENMP
