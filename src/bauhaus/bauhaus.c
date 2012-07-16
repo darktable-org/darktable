@@ -156,23 +156,20 @@ set_indicator_color(cairo_t *cr, int sensitive)
 }
 
 static void
-show_pango_text(GtkWidget *widget, cairo_t *cr, char *text, float x_pos, float y_pos, gboolean right_aligned, gboolean sensitive, gboolean indicator)
+show_pango_text(cairo_t *cr, char *text, float x_pos, float y_pos, gboolean right_aligned, gboolean sensitive, gboolean indicator)
 {
   PangoLayout *layout;
-  PangoFontDescription *desc;
-  GtkStyle *style = gtk_rc_get_style(widget);
-  int pango_width, pango_height;
 
   layout = pango_cairo_create_layout(cr);
   pango_layout_set_text(layout, text, -1);
-  desc = pango_font_description_copy_static(style->font_desc);
-  pango_layout_set_font_description(layout, desc);
-  pango_font_description_free(desc);
-
-  pango_layout_get_size (layout, &pango_width, &pango_height);
+  pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
 
   if(right_aligned)
+  {
+    int pango_width, pango_height;
+    pango_layout_get_size (layout, &pango_width, &pango_height);
     x_pos -= ((double)pango_width/PANGO_SCALE);
+  }
 
   if(sensitive)
     set_text_color(cr, sensitive);
@@ -521,6 +518,11 @@ dt_bauhaus_init()
   int gtk_fontsize = guess_font_size();
   darktable.bauhaus->scale = gtk_fontsize/5.0f;
   darktable.bauhaus->widget_space = 2.5f*darktable.bauhaus->scale;
+
+  // now create the pango description for the strings using the font and size found above
+  gchar *font = g_strdup_printf("%s %d", darktable.bauhaus->label_font, gtk_fontsize);
+  darktable.bauhaus->pango_font_desc = pango_font_description_from_string(font);
+  g_free(font);
 
   // keys are freed with g_free, values are ptrs to the widgets, these don't need to be cleaned up.
   darktable.bauhaus->keymap = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
@@ -1191,7 +1193,7 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         }
         cairo_restore(cr);
 
-        show_pango_text(GTK_WIDGET(w), cr, w->label, 2, 0, FALSE, TRUE, FALSE);
+        show_pango_text(cr, w->label, 2, 0, FALSE, TRUE, FALSE);
 
         // draw mouse over indicator line
         cairo_save(cr);
@@ -1212,14 +1214,14 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         char text[256];
         const float f = d->min + (d->oldpos+mouse_off)*(d->max-d->min);
         snprintf(text, 256, d->format, f);
-        show_pango_text(widget, cr, text, wd-4-ht, 0, TRUE, TRUE, FALSE);
+        show_pango_text(cr, text, wd-4-ht, 0, TRUE, TRUE, FALSE);
 
         cairo_restore(cr);
       }
       break;
     case DT_BAUHAUS_COMBOBOX:
       {
-        show_pango_text(widget, cr, w->label, 2, 0, FALSE, TRUE, FALSE);
+        show_pango_text(cr, w->label, 2, 0, FALSE, TRUE, FALSE);
 
         dt_bauhaus_combobox_data_t *d = &w->data.combobox;
         cairo_save(cr);
@@ -1243,7 +1245,7 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
             {
               highlight = TRUE;
             }
-            show_pango_text(widget, cr, text, wd-4-ht, (get_line_space()+ht)*k, TRUE, !highlight, highlight);
+            show_pango_text(cr, text, wd-4-ht, (get_line_space()+ht)*k, TRUE, !highlight, highlight);
             k++;
           }
           i++;
@@ -1300,7 +1302,7 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   {
     case DT_BAUHAUS_COMBOBOX:
       // draw label and quad area at right end
-      show_pango_text(widget, cr, w->label, 2, 0, FALSE, TRUE, FALSE);
+      show_pango_text(cr, w->label, 2, 0, FALSE, TRUE, FALSE);
       dt_bauhaus_draw_quad(w, cr);
 
       if(gtk_widget_is_sensitive(widget))
@@ -1309,7 +1311,7 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
         gchar *text = d->text;
         if(d->active >= 0)
           text = (gchar *)g_list_nth_data(d->labels, d->active);
-        show_pango_text(widget, cr, text, width-4-height, 0, TRUE, TRUE, FALSE);
+        show_pango_text(cr, text, width-4-height, 0, TRUE, TRUE, FALSE);
       }
       break;
     case DT_BAUHAUS_SLIDER:
@@ -1328,10 +1330,10 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
           char text[256];
           const float f = d->min + d->pos*(d->max-d->min);
           snprintf(text, 256, d->format, f);
-          show_pango_text(widget, cr, text, width-4-height, 0, TRUE, TRUE, FALSE);
+          show_pango_text(cr, text, width-4-height, 0, TRUE, TRUE, FALSE);
         }
         // label on top of marker:
-        show_pango_text(widget, cr, w->label, 2, 0, FALSE, TRUE, FALSE);
+        show_pango_text(cr, w->label, 2, 0, FALSE, TRUE, FALSE);
       }
       break;
     default:
