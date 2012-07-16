@@ -254,7 +254,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_soften_global_data_t *gd = (dt_iop_soften_global_data_t *)self->data;
 
   cl_int err = -999;
+  cl_mem dev_tmp = NULL;
   cl_mem dev_m = NULL;
+
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -309,12 +311,14 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     blocksize = 1;   // slow but safe
   }
 
-  // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
   const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1)*blocksize;
   const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1)*blocksize;
 
   size_t sizes[3];
   size_t local[3];
+
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4*sizeof(float));
+  if (dev_tmp == NULL) goto error;
 
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*wd, mat);
   if (dev_m == NULL) goto error;
@@ -342,7 +346,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     local[1] = 1;
     local[2] = 1;
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 0, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 1, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 2, sizeof(cl_mem), (void *)&dev_m);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 3, sizeof(int), (void *)&wdh);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 4, sizeof(int), (void *)&width);
@@ -360,7 +364,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     local[0] = 1;
     local[1] = blocksize;
     local[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 0, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 0, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 2, sizeof(cl_mem), (void *)&dev_m);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 3, sizeof(int), (void *)&wdh);
@@ -386,10 +390,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
   if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
 
 error:
   if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   dt_print(DT_DEBUG_OPENCL, "[opencl_soften] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -410,7 +416,7 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
   const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2)/3.0f);
   const int wdh = ceilf(3.0f * sigma);
 
-  tiling->factor = 2.0f;
+  tiling->factor = 3.0f;   // in + out + tmp
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = wdh;
