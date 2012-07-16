@@ -125,8 +125,8 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const int width
     med[ii] = tmp;
   }
   float4 color = (float4)(0.0f);
-  // const float cc = (cnt > 1 || variation > 0.06) ? med[(cnt-1)/2]) : med[4] - 64.0f;
-  const float cc = (c1 || cnt > 1 || variation > 0.06) ? med[(cnt-1)/2] : med[4] - 64.0f;
+  // const float cc = (cnt > 1 || variation > 0.06f) ? med[(cnt-1)/2]) : med[4] - 64.0f;
+  const float cc = (c1 || cnt > 1 || variation > 0.06f) ? med[(cnt-1)/2] : med[4] - 64.0f;
   if(f4) ((float *)&color)[c] = cc;
   else   color.x              = cc;
   write_imagef (out, (int2)(x, y), color);
@@ -318,7 +318,7 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
   // for(int k=0;k<2*samples+1;k++) filter[k] /= sum;
 
   // upper left corner:
-  const int2 p = backtransformi((float2)(x+.5f, y+.5f), r_x, r_y, r_wd, r_ht, r_scale);
+  int2 p = backtransformi((float2)(x+.5f, y+.5f), r_x, r_y, r_wd, r_ht, r_scale);
 
   // round down to next even number:
   p.x &= ~0x1; p.y &= ~0x1;
@@ -425,7 +425,7 @@ ppg_demosaic_green_median (__read_only image2d_t in, __write_only image2d_t out,
   const int col = x;
   const int c = FC(row, col, filters);
 
-  const float4 pc = read_imagef(in, sampleri, (int2)(col, row));
+  float4 pc = read_imagef(in, sampleri, (int2)(col, row));
 
   // fill green layer for red and blue pixels:
   if(c == 0 || c == 2)

@@ -1,3 +1,5 @@
+SET(COLORDGTK_FIND_REQUIRED ${ColordGtk_FIND_REQUIRED})
+
 include(Prebuilt)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")

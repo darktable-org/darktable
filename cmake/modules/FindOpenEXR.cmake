@@ -11,6 +11,8 @@
 # Copyright 2010 henrik andersson
 #=============================================================================
 
+SET(OPENEXR_FIND_REQUIRED ${OpenEXR_FIND_REQUIRED})
+
 find_path(_OPENEXR_INCLUDE_DIR  OpenEXR )
 set(OPENEXR_INCLUDE_DIR  ${_OPENEXR_INCLUDE_DIR} ${_OPENEXR_INCLUDE_DIR}/OpenEXR)
 mark_as_advanced(OPENEXR_INCLUDE_DIR)

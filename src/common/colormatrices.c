@@ -228,7 +228,7 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   { "KODAK EASYSHARE Z1015 IS",     { 716446, 157928, -39536}, { 288498, 1234573, -412460}, { 43045, -337677, 1385773}, {774048, 823563, 644012}},
 
   // Rolf Steinort, Wolf Faust IT8, direct sunlight, well lit
-  { "FUJIFILM FinePix X100",        { 734619, 274628,  -6302}, { 325272, 1076035, -198608}, {-15366, -280670, 1061050}, {637207, 668228, 578690}},
+  { "FUJIFILM X100",                { 734619, 274628,  -6302}, { 325272, 1076035, -198608}, {-15366, -280670, 1061050}, {637207, 668228, 578690}},
 
   // Oleg Dzhimiev, ColorChecker Classic, office lighting, well lit
   { "Elphel 353E",                  {782623, 147903, -272369}, { 110016, 1115250, -729172}, {175949, -157227, 1930222}, {821899, 860794, 671768}}

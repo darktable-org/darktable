@@ -81,17 +81,19 @@ RawImage PefDecoder::decodeRawInternal() {
   return mRaw;
 }
 
-void PefDecoder::checkSupport(CameraMetaData *meta) {
+void PefDecoder::checkSupportInternal(CameraMetaData *meta) {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
   if (data.empty())
     ThrowRDE("PEF Support check: Model name found");
+  if (!data[0]->hasEntry(MAKE))
+    ThrowRDE("PEF Support: Make name not found");
 
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
   this->checkCameraSupported(meta, make, model, "");
 }
 
-void PefDecoder::decodeMetaData(CameraMetaData *meta) {
+void PefDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   int iso = 0;
   mRaw->cfa.setCFA(CFA_RED, CFA_GREEN, CFA_GREEN2, CFA_BLUE);
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);

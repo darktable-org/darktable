@@ -285,6 +285,9 @@ void dt_control_create_database_schema();
 void dt_control_shutdown(dt_control_t *s);
 void dt_control_cleanup(dt_control_t *s);
 
+// call this to quit dt
+void dt_control_quit();
+
 int dt_control_load_config(dt_control_t *c);
 int dt_control_write_config(dt_control_t *c);
 

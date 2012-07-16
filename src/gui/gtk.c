@@ -481,9 +481,8 @@ borders_scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
   return TRUE;
 }
 
-void quit()
+void dt_gui_gtk_quit()
 {
-  // thread safe quit, 1st pass:
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
   gtk_window_iconify(win);
 
@@ -497,13 +496,11 @@ void quit()
   widget = darktable.gui->widgets.bottom_border;
   g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)3);
 
-  dt_pthread_mutex_lock(&darktable.control->cond_mutex);
-  dt_pthread_mutex_lock(&darktable.control->run_mutex);
-  darktable.control->running = 0;
-  dt_pthread_mutex_unlock(&darktable.control->run_mutex);
-  dt_pthread_mutex_unlock(&darktable.control->cond_mutex);
+}
 
-  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+void quit()
+{
+  dt_control_quit();
 }
 
 static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
@@ -548,7 +545,7 @@ static gboolean quit_callback(GtkAccelGroup *accel_group,
                           GObject *acceleratable, guint keyval,
                           GdkModifierType modifier)
 {
-  quit();
+  dt_control_quit();
   return TRUE; // for the sake of completeness ...
 }
 
@@ -896,7 +893,7 @@ void init_widgets()
   gtk_window_set_title(GTK_WINDOW(widget), "Darktable");
 
   g_signal_connect (G_OBJECT (widget), "delete_event",
-                    G_CALLBACK (quit), NULL);
+                    G_CALLBACK (dt_control_quit), NULL);
   g_signal_connect (G_OBJECT (widget), "key-press-event",
                     G_CALLBACK (key_pressed_override), NULL);
   g_signal_connect (G_OBJECT (widget), "key-release-event",

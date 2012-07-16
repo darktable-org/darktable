@@ -123,8 +123,16 @@ if(USE_CAMERA_SUPPORT)
   add_definitions(${Gphoto2_DEFINITIONS})
 endif(USE_CAMERA_SUPPORT)
 
+# INotify isn't used anymore as it seems
+find_package(INotify)
+if(INOTIFY_FOUND)
+  include_directories(${INOTIFY_INCLUDE_DIRS})
+  list(APPEND LIBS ${INOTIFY_LIBRARIES})
+  add_definitions(${INOTIFY_DEFINITIONS})
+endif(INOTIFY_FOUND)
+
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2)
+foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2)
   find_package(${lib} REQUIRED)
   include_directories(${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -177,6 +185,9 @@ endif(USE_GNOME_KEYRING)
 
 # have a small test program, to be run as root on some systems to enable the driver to run cl stuff
 add_subdirectory(cltest)
+
+# have a command line interface
+add_subdirectory(cli)
 
 if(USE_UNITY)
   find_package(Unity)
@@ -370,9 +381,9 @@ add_subdirectory(external/squish)
 find_package(ColordGtk)
 if(COLORDGTK_FOUND)
   message(STATUS "Using colord to fetch color profiles")
-  include_directories(${COLORDGTK_INCLUDE_DIRS})
-  list(APPEND LIBS ${COLORDGTK_LIBRARIES})
-  add_definitions("-DUSE_COLORDGTK")
+  #  include_directories(${COLORDGTK_INCLUDE_DIRS})
+  #  list(APPEND LIBS ${COLORDGTK_LIBRARIES})
+  #  add_definitions("-DUSE_COLORDGTK")
 #   add_dependencies(lib_darktable colord-gtk)
 else(COLORDGTK_FOUND)
   message(STATUS "Either colord is missing or too old (<0.1.20)")

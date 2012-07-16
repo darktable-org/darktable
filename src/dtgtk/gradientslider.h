@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010--2012 Henrik Andersson.
+    copyright (c) 2012 Ulrich Pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,6 +38,13 @@ enum
   GRADIENT_SLIDER_VALUE_CHANGED,
   GRADIENT_SLIDER_LAST_SIGNAL
 };
+
+enum _gradient_slider_direction
+{
+  MOVE_LEFT = 0,
+  MOVE_RIGHT = 1
+} 
+_gradient_slider_direction;
 
 
 /** bitfields for marker: bit-0 open/filled, bit-1 lower off/on, bit-2 upper off/on, bit-3 size small/big */
@@ -92,6 +100,14 @@ typedef struct _GtkDarktableGradientSliderClass
   GtkWidgetClass parent_class;
 } GtkDarktableGradientSliderClass;
 
+typedef struct _gradient_slider_stop_t
+{
+  gdouble position;
+  GdkColor color;
+}
+_gradient_slider_stop_t;
+
+
 GType dtgtk_gradient_slider_get_type (void);
 GType dtgtk_gradient_slider_multivalue_get_type (void);
 
@@ -101,6 +117,9 @@ GtkWidget* dtgtk_gradient_slider_new_with_color(GdkColor start,GdkColor end);
 
 /** Set a color at specified stop */
 void dtgtk_gradient_slider_set_stop(GtkDarktableGradientSlider *gslider,gfloat position,GdkColor color);
+
+/** Clear all stops */
+void dtgtk_gradient_slider_multivalue_clear_stops(GtkDarktableGradientSlider *gslider);
 
 /** Get the slider value 0 - 1.0*/
 gdouble dtgtk_gradient_slider_get_value(GtkDarktableGradientSlider *gslider);

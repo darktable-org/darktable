@@ -34,8 +34,9 @@ DT_MODULE(2)
 
 typedef enum dt_iop_overexposed_colorscheme_t
 {
-  DT_IOP_OVEREXPOSED_REDBLUE = 0,
-  DT_IOP_OVEREXPOSED_BLACKWHITE = 1
+  DT_IOP_OVEREXPOSED_BLACKWHITE = 0,
+  DT_IOP_OVEREXPOSED_REDBLUE = 1,
+  DT_IOP_OVEREXPOSED_PURPLEGREEN = 2
 }
 dt_iop_overexposed_colorscheme_t;
 
@@ -57,12 +58,16 @@ typedef struct dt_iop_overexposed_params1_t
 static const float dt_iop_overexposed_colors[][2][4] =
 {
   {
+    { 0.0f, 0.0f, 0.0f, 1.0f },    // black
+    { 1.0f, 1.0f, 1.0f, 1.0f }     // white
+  },
+  {
     { 1.0f, 0.0f, 0.0f, 1.0f },    // red
     { 0.0f, 0.0f, 1.0f, 1.0f }     // blue
   },
   {
-    { 0.0f, 0.0f, 0.0f, 1.0f },    // black
-    { 1.0f, 1.0f, 1.0f, 1.0f }     // white
+    { 0.371f, 0.434f, 0.934f, 1.0f }, // purple (#5f6fef)
+    { 0.512f, 0.934f, 0.371f, 1.0f }  // green  (#83ef5f)
   }
 };
 
@@ -96,7 +101,7 @@ const char* name()
 
 int groups()
 {
-  return IOP_GROUP_COLOR;
+  return IOP_GROUP_BASIC;
 }
 
 int flags()
@@ -413,8 +418,9 @@ void gui_init(struct dt_iop_module_t *self)
   /* color scheme */
   g->colorscheme = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->colorscheme, _("color scheme"));
-  dt_bauhaus_combobox_add(g->colorscheme, _("red / blue"));
-  dt_bauhaus_combobox_add(g->colorscheme, _("black / white"));
+  dt_bauhaus_combobox_add(g->colorscheme, _("black & white"));
+  dt_bauhaus_combobox_add(g->colorscheme, _("red & blue"));
+  dt_bauhaus_combobox_add(g->colorscheme, _("purple & green"));
   g_object_set(G_OBJECT(g->colorscheme), "tooltip-text", _("select colors to indicate over/under exposure"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->colorscheme), "value-changed", 
 		    G_CALLBACK (colorscheme_callback), self);

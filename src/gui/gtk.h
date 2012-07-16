@@ -64,6 +64,8 @@ dt_gui_gtk_t;
 int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[]);
 void dt_gui_gtk_run(dt_gui_gtk_t *gui);
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui);
+void dt_gui_gtk_quit();
+
 
 /** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
 void dt_gui_key_accel_block_on_focus (GtkWidget *w);

@@ -132,7 +132,7 @@ lookup_unbounded(read_only image2d_t lut, const float x, global float *a)
       const int2 p = (int2)((xi & 0xff), (xi >> 8));
       return read_imagef(lut, sampleri, p).x;
     }
-    else return a[0] * native_powr(x, a[1]);
+    else return a[1] * native_powr(x*a[0], a[2]);
   }
   else return x;
 }
@@ -156,11 +156,11 @@ lowpass_mix(global float4 *in, global float4 *out, unsigned int width, unsigned 
   const float4 Labmax = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
 
   o.x = lookup_unbounded(table, i.x/100.0f, a);
-  o.y = i.y*saturation;
-  o.z = i.z*saturation;
+  o.y = clamp(i.y*saturation, Labmin.y, Labmax.y);
+  o.z = clamp(i.z*saturation, Labmin.z, Labmax.z);
   o.w = i.w;
 
-  out[idx] = clamp(o, Labmin, Labmax);
+  out[idx] = o;
 }
 
 

@@ -48,7 +48,9 @@
 #include <sys/select.h>
 
 static dt_develop_blend_params_t _default_blendop_params= {DEVELOP_BLEND_DISABLED, 100.0, 0, 0,
-                                                          { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+                                                           {0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+                                                            0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+                                                            0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
                                                             0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f } };
 
 
@@ -757,7 +759,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
       dt_bauhaus_slider_set(bd->opacity_slider, module->blend_params->opacity);
       if(bd->blendif_support)
       {
-        dt_bauhaus_combobox_set(bd->blendif_enable, (module->blend_params->blendif & (1<<31)) != 0);
+        dt_bauhaus_combobox_set(bd->blendif_enable, (module->blend_params->blendif & (1<<DEVELOP_BLENDIF_active)) != 0);
         dt_iop_gui_update_blendif(module);
       }
     }

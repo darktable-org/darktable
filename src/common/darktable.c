@@ -314,7 +314,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   darktable.progname = argv[0];
    
   // database
-  gchar *dbfilenameFromCommand = NULL;
+  gchar *dbfilename_from_command = NULL;
   char *datadirFromCommand = NULL;
   char *moduledirFromCommand = NULL;
   char *tmpdirFromCommand = NULL;
@@ -346,7 +346,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
       }
       else if(!strcmp(argv[k], "--library"))
       {
-        dbfilenameFromCommand = argv[++k];
+        dbfilename_from_command = argv[++k];
       }
       else if(!strcmp(argv[k], "--datadir"))
       {
@@ -409,8 +409,8 @@ int dt_init(int argc, char *argv[], const int init_gui)
   dt_loc_init_datadir(datadirFromCommand);
   dt_loc_init_plugindir(moduledirFromCommand);
   if(dt_loc_init_tmp_dir(tmpdirFromCommand)) {
-	  printf(_("ERROR : invalid temporary directory : %s\n"),darktable.tmpdir);
-	  return usage(argv[0]);
+    printf(_("ERROR : invalid temporary directory : %s\n"),darktable.tmpdir);
+    return usage(argv[0]);
   }
   dt_loc_init_user_config_dir(configdirFromCommand);
   dt_loc_init_user_cache_dir(cachedirFromCommand);
@@ -449,7 +449,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   }
 
   // initialize the database
-  darktable.db = dt_database_init(dbfilenameFromCommand);
+  darktable.db = dt_database_init(dbfilename_from_command);
 
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
@@ -485,14 +485,12 @@ int dt_init(int argc, char *argv[], const int init_gui)
   }
   else
   {
-#if 0 // TODO: move int dt_database_t 
     // this is in memory, so schema can't exist yet.
-    if(!strcmp(dbfilename, ":memory:"))
+    if(!strcmp(dbfilename_from_command, ":memory:"))
     {
       dt_control_create_database_schema();
       dt_gui_presets_init(); // also init preset db schema.
     }
-#endif
     darktable.control->running = 0;
     darktable.control->accelerators = NULL;
     dt_pthread_mutex_init(&darktable.control->run_mutex, NULL);
@@ -555,11 +553,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
     dt_control_load_config(darktable.control);
     g_strlcpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
-
-    darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
-    memset(darktable.imageio, 0, sizeof(dt_imageio_t));
-    dt_imageio_init(darktable.imageio);
   }
+  darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
+  memset(darktable.imageio, 0, sizeof(dt_imageio_t));
+  dt_imageio_init(darktable.imageio);
 
   if(init_gui)
   {

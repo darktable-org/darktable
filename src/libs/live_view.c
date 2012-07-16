@@ -426,6 +426,8 @@ gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t heigh
   {
     float w = width-(MARGIN*2.0f);
     float h = height-(MARGIN*2.0f)-BAR_HEIGHT;
+    gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
+    gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
 
     // OVERLAY
     int imgid = 0;
@@ -478,8 +480,8 @@ gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t heigh
         if(zoom == 1)
         {
           scale = fminf(
-                fminf(darktable.thumbnail_width, w) / (float)buf.width,
-                fminf(darktable.thumbnail_height, h) / (float)buf.height
+                fminf(darktable.thumbnail_width, fminf(w, pw)) / (float)buf.width,
+                fminf(darktable.thumbnail_height, fminf(h, ph)) / (float)buf.height
                 );
         }
         else scale = fminf(w*imgwd/(float)buf.width, h*imgwd/(float)buf.height);
@@ -513,8 +515,6 @@ gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t heigh
     }
 
     // GUIDES
-    gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
-    gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
     if(cam->live_view_rotation%2 == 1)
     {
       gint tmp = pw; pw = ph; ph = tmp;

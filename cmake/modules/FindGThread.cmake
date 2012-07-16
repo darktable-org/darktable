@@ -12,6 +12,8 @@
 # Copyright 2010 henrik andersson
 #=============================================================================
 
+SET(GTHREAD_FIND_REQUIRED ${GThread_FIND_REQUIRED})
+
 find_path(GTHREAD_INCLUDE_DIR glib/gthread.h PATH_SUFFIXES glib-2.0/)
 mark_as_advanced(GTHREAD_INCLUDE_DIR)
 
