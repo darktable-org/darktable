@@ -37,13 +37,21 @@ const sampler_t samplerc =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP     
 
 */
 
+float fast_mexp2f(const float x)
+{
+  const float i1 = (float)0x3f800000u; // 2^0
+  const float i2 = (float)0x3f000000u; // 2^-1
+  const float k0 = i1 + x * (i2 - i1);
+  union { float f; unsigned int i } k;
+  k.i = (k0 >= (float)0x800000u) ? k0 : 0;
+  return k.f;
+}
 
 float gh(const float f, const float sharpness)
 {
   // make sharpness bigger: less smoothing
-  return native_exp2(-f*f*sharpness);
+  return fast_mexp2f(f*f*sharpness);
 }
-
 
 float ddirac(const int2 q)
 {
