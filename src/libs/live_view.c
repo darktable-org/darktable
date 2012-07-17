@@ -46,7 +46,10 @@
 #define OVERLAY_SELECTED 1
 #define OVERLAY_ID       2
 
+#define HANDLE_SIZE 0.02
+
 static const cairo_operator_t _overlay_modes[] = {
+  CAIRO_OPERATOR_OVER,
   CAIRO_OPERATOR_XOR,
   CAIRO_OPERATOR_ADD,
   CAIRO_OPERATOR_SATURATE
@@ -75,11 +78,15 @@ DT_MODULE(1)
 typedef struct dt_lib_live_view_t
 {
   int imgid;
+  int splitline_rotation;
+  double overlay_x0, overlay_x1, overlay_y0, overlay_y1;
+  double splitline_x, splitline_y; // 0..1
+  gboolean splitline_dragging;
 
   GtkWidget *live_view, *live_view_zoom, *rotate_ccw, *rotate_cw, *flip;
   GtkWidget *focus_out_small, *focus_out_big, *focus_in_small, *focus_in_big;
   GtkWidget *guide_selector, *flip_guides, *golden_extras;
-  GtkWidget *overlay, *overlay_id_box, *overlay_id, *overlay_mode;
+  GtkWidget *overlay, *overlay_id_box, *overlay_id, *overlay_mode, *overlay_splitline;
 }
 dt_lib_live_view_t;
 
@@ -103,9 +110,15 @@ overlay_changed (GtkWidget *combo, dt_lib_live_view_t *lib)
 {
   int which = dt_bauhaus_combobox_get(combo);
   if (which == OVERLAY_NONE)
+  {
     gtk_widget_set_visible(GTK_WIDGET(lib->overlay_mode), FALSE);
+    gtk_widget_set_visible(GTK_WIDGET(lib->overlay_splitline), FALSE);
+  }
   else
+  {
     gtk_widget_set_visible(GTK_WIDGET(lib->overlay_mode), TRUE);
+    gtk_widget_set_visible(GTK_WIDGET(lib->overlay_splitline), TRUE);
+  }
 
   if (which == OVERLAY_ID)
     gtk_widget_set_visible(GTK_WIDGET(lib->overlay_id_box), TRUE);
@@ -235,6 +248,11 @@ static void _overlay_mode_changed(GtkWidget *combo, gpointer user_data)
   dt_conf_set_int("plugins/lighttable/live_view/overlay_mode", dt_bauhaus_combobox_get(combo));
 }
 
+static void _overlay_splitline_changed(GtkWidget *combo, gpointer user_data)
+{
+  dt_conf_set_int("plugins/lighttable/live_view/splitline", dt_bauhaus_combobox_get(combo));
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {
@@ -243,6 +261,7 @@ gui_init (dt_lib_module_t *self)
 
   // Setup lib data
   dt_lib_live_view_t *lib=self->data;
+  lib->splitline_x = lib->splitline_y = 0.5;
 
   // Setup gui
   self->widget = gtk_vbox_new(FALSE, 5);
@@ -354,6 +373,7 @@ gui_init (dt_lib_module_t *self)
 
   lib->overlay_mode = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(lib->overlay_mode, _("overlay mode"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("normal"));
   dt_bauhaus_combobox_add(lib->overlay_mode, _("xor"));
   dt_bauhaus_combobox_add(lib->overlay_mode, _("add"));
   dt_bauhaus_combobox_add(lib->overlay_mode, _("saturate"));
@@ -379,15 +399,26 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (G_OBJECT (lib->overlay_mode), "value-changed", G_CALLBACK (_overlay_mode_changed), lib);
   gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay_mode, TRUE, TRUE, 0);
 
+  lib->overlay_splitline = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(lib->overlay_splitline, _("split line"));
+  dt_bauhaus_combobox_add(lib->overlay_splitline, _("off"));
+  dt_bauhaus_combobox_add(lib->overlay_splitline, _("on"));
+  g_object_set(G_OBJECT(lib->overlay_splitline), "tooltip-text", _("only draw part of the overlay"), (char *)NULL);
+  dt_bauhaus_combobox_set(lib->overlay_splitline, dt_conf_get_int("plugins/lighttable/live_view/splitline"));
+  g_signal_connect (G_OBJECT (lib->overlay_splitline), "value-changed", G_CALLBACK (_overlay_splitline_changed), lib);
+  gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay_splitline, TRUE, TRUE, 0);
+
   gtk_widget_set_visible(GTK_WIDGET(lib->flip_guides), FALSE);
   gtk_widget_set_visible(GTK_WIDGET(lib->golden_extras), FALSE);
   gtk_widget_set_visible(GTK_WIDGET(lib->overlay_mode), FALSE);
   gtk_widget_set_visible(GTK_WIDGET(lib->overlay_id_box), FALSE);
+  gtk_widget_set_visible(GTK_WIDGET(lib->overlay_splitline), FALSE);
 
   gtk_widget_set_no_show_all(GTK_WIDGET(lib->flip_guides), TRUE);
   gtk_widget_set_no_show_all(GTK_WIDGET(lib->golden_extras), TRUE);
   gtk_widget_set_no_show_all(GTK_WIDGET(lib->overlay_mode), TRUE);
   gtk_widget_set_no_show_all(GTK_WIDGET(lib->overlay_id_box), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(lib->overlay_splitline), TRUE);
 
   // disable buttons that won't work with this camera
   // TODO: initialize tethering mode outside of libs/camera.s so we can use darktable.camctl->active_camera here
@@ -422,226 +453,355 @@ gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t heigh
     return;
 
   dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
-  if(GDK_IS_PIXBUF(cam->live_view_pixbuf))
+  if(GDK_IS_PIXBUF(cam->live_view_pixbuf) == FALSE)
   {
-    float w = width-(MARGIN*2.0f);
-    float h = height-(MARGIN*2.0f)-BAR_HEIGHT;
-    gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
-    gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
+    dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
+    return;
+  }
+  double w = width-(MARGIN*2.0f);
+  double h = height-(MARGIN*2.0f)-BAR_HEIGHT;
+  gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
+  gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
+  lib->overlay_x0 =  lib->overlay_x1 = lib->overlay_y0 = lib->overlay_y1 = 0.0;
 
-    // OVERLAY
-    int imgid = 0;
-    switch(dt_bauhaus_combobox_get(lib->overlay))
+  gboolean use_splitline = (dt_bauhaus_combobox_get(lib->overlay_splitline) == 1);
+
+  // OVERLAY
+  int imgid = 0;
+  switch(dt_bauhaus_combobox_get(lib->overlay))
+  {
+    case OVERLAY_SELECTED:
+      imgid = dt_view_tethering_get_selected_imgid(darktable.view_manager);
+      break;
+    case OVERLAY_ID:
+      imgid = lib->imgid;
+      break;
+  }
+  if(imgid > 0)
+  {
+    cairo_save(cr);
+    // this is blatantly stolen from dt_view_image_expose() -- this are just the relevant parts
+    static int first_time = 1;
+    static uint8_t *scratchmem = NULL;
+    if(first_time)
     {
-      case OVERLAY_SELECTED:
-        imgid = dt_view_tethering_get_selected_imgid(darktable.view_manager);
-        break;
-      case OVERLAY_ID:
-        imgid = lib->imgid;
-        break;
+      // scratchmem might still be NULL after this, if compression is off.
+      scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
+      first_time = 0;
     }
-    if(imgid > 0)
-    {
-      cairo_save(cr);
-      // this is blatantly stolen from dt_view_image_expose() -- this are just the relevant parts
-      static int first_time = 1;
-      static uint8_t *scratchmem = NULL;
-      if(first_time)
-      {
-        // scratchmem might still be NULL after this, if compression is off.
-        scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
-        first_time = 0;
-      }
-      const dt_image_t *img = dt_image_cache_read_testget(darktable.image_cache, imgid);
-      // if the user points at this image, we really want it:
-      if(!img)
-        img = dt_image_cache_read_get(darktable.image_cache, imgid);
+    const dt_image_t *img = dt_image_cache_read_testget(darktable.image_cache, imgid);
+    // if the user points at this image, we really want it:
+    if(!img)
+      img = dt_image_cache_read_get(darktable.image_cache, imgid);
 
-      int zoom = 1;
-      float imgwd = 0.90f;
+    int zoom = 1;
+    float imgwd = 0.90f;
+    if(zoom == 1)
+    {
+      imgwd = .97f;
+    }
+
+    dt_mipmap_buffer_t buf;
+    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size( darktable.mipmap_cache, imgwd*w, imgwd*h);
+    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, 0);
+    // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
+    // so get the real pointer back:
+    uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
+
+    float scale = 1.0;
+    cairo_surface_t *surface = NULL;
+    if(buf.buf)
+    {
+      const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
+      surface = cairo_image_surface_create_for_data (buf_decompressed, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
       if(zoom == 1)
       {
-        imgwd = .97f;
+        scale = fminf(
+              fminf(w, pw) / (float)buf.width,
+              fminf(h, ph) / (float)buf.height
+              );
+
       }
+      else scale = fminf(w*imgwd/(float)buf.width, h*imgwd/(float)buf.height);
+    }
 
-      float scale = 1.0;
-      dt_mipmap_buffer_t buf;
-      dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size( darktable.mipmap_cache, imgwd*w, imgwd*h);
-      dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, 0);
-      // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
-      // so get the real pointer back:
-      uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
+    // draw centered and fitted:
+    cairo_translate(cr, width/2.0, (height+BAR_HEIGHT)/2.0f);
+    cairo_scale(cr, scale, scale);
 
-      cairo_surface_t *surface = NULL;
-      if(buf.buf)
+    if(buf.buf)
+    {
+      cairo_translate(cr, -.5f*buf.width, -.5f*buf.height);
+
+      if(use_splitline)
       {
-        const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
-        surface = cairo_image_surface_create_for_data (buf_decompressed, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
-        if(zoom == 1)
+        double x0, y0, x1, y1;
+        switch(lib->splitline_rotation)
         {
-          scale = fminf(
-                fminf(darktable.thumbnail_width, fminf(w, pw)) / (float)buf.width,
-                fminf(darktable.thumbnail_height, fminf(h, ph)) / (float)buf.height
-                );
+          case 0: x0=0.0; y0=0.0; x1=buf.width*lib->splitline_x; y1=buf.height; break;
+          case 1: x0=0.0; y0=0.0; x1=buf.width; y1=buf.height*lib->splitline_y; break;
+          case 2: x0=buf.width*lib->splitline_x; y0=0.0; x1=buf.width; y1=buf.height; break;
+          case 3: x0=0.0; y0=buf.height*lib->splitline_y; x1=buf.width; y1=buf.height; break;
+          default: fprintf(stderr, "OMFG, the world will collapse, this shouldn't be reachable!\n"); return;
         }
-        else scale = fminf(w*imgwd/(float)buf.width, h*imgwd/(float)buf.height);
+
+        cairo_rectangle(cr, x0, y0, x1, y1);
+        cairo_clip(cr);
       }
 
-      // draw centered and fitted:
-      cairo_translate(cr, width/2.0, (height+BAR_HEIGHT)/2.0f);
-      cairo_scale(cr, scale, scale);
-
-      if(buf.buf)
-      {
-        cairo_translate(cr, -.5f*buf.width, -.5f*buf.height);
-        cairo_set_source_surface (cr, surface, 0, 0);
-        // set filter no nearest:
-        // in skull mode, we want to see big pixels.
-        // in 1 iir mode for the right mip, we want to see exactly what the pipe gave us, 1:1 pixel for pixel.
-        // in between, filtering just makes stuff go unsharp.
-        if((buf.width <= 8 && buf.height <= 8) || fabsf(scale - 1.0f) < 0.01f)
-          cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
-        cairo_rectangle(cr, 0, 0, buf.width, buf.height);
-        cairo_operator_t mode = _overlay_modes[dt_bauhaus_combobox_get(lib->overlay_mode)];
-        cairo_set_operator(cr, mode);
-        cairo_fill(cr);
-        cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-        cairo_surface_destroy (surface);
-      }
-      cairo_restore(cr);
-      if(buf.buf)
-        dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-      if(img) dt_image_cache_read_release(darktable.image_cache, img);
-    }
-
-    // GUIDES
-    if(cam->live_view_rotation%2 == 1)
-    {
-      gint tmp = pw; pw = ph; ph = tmp;
-    }
-    float scale = 1.0;
-//     if(cam->live_view_zoom == FALSE)
-//     {
-      if(pw > w) scale = w/pw;
-      if(ph > h) scale = fminf(scale, h/ph);
-//     }
-    float sw = scale*pw;
-    float sh = scale*ph;
-
-    // draw guides
-    float left = (width - scale*pw)*0.5;
-    float right = left + scale*pw;
-    float top = (height + BAR_HEIGHT - scale*ph)*0.5;
-    float bottom = top + scale*ph;
-
-    double dashes = 5.0;
-
-    cairo_save(cr);
-    cairo_set_dash(cr, &dashes, 1, 0);
-
-    int guide_flip = dt_bauhaus_combobox_get(lib->flip_guides);
-    int which = dt_bauhaus_combobox_get(lib->guide_selector);
-    switch(which)
-    {
-      case GUIDE_GRID:
-        dt_guides_draw_simple_grid(cr, left, top, right, bottom, 1.0);
-        break;
-
-      case GUIDE_DIAGONAL:
-        dt_guides_draw_diagonal_method(cr, left, top, sw, sh);
-        cairo_stroke (cr);
-        cairo_set_dash (cr, &dashes, 0, 0);
-        cairo_set_source_rgba(cr, .3, .3, .3, .8);
-        dt_guides_draw_diagonal_method(cr, left, top, sw, sh);
-        cairo_stroke (cr);
-        break;
-      case GUIDE_THIRD:
-        dt_guides_draw_rules_of_thirds(cr, left, top,  right, bottom, sw/3.0, sh/3.0);
-        cairo_stroke (cr);
-        cairo_set_dash (cr, &dashes, 0, 0);
-        cairo_set_source_rgba(cr, .3, .3, .3, .8);
-        dt_guides_draw_rules_of_thirds(cr, left, top,  right, bottom, sw/3.0, sh/3.0);
-        cairo_stroke (cr);
-        break;
-      case GUIDE_TRIANGL:
-      {
-        int dst = (int)((sh*cos(atan(sw/sh)) / (cos(atan(sh/sw)))));
-        // Move coordinates to local center selection.
-        cairo_translate(cr, ((right - left)/2+left), ((bottom - top)/2+top));
-
-        // Flip horizontal.
-        if (guide_flip & 1)
-          cairo_scale(cr, -1, 1);
-        // Flip vertical.
-        if (guide_flip & 2)
-          cairo_scale(cr, 1, -1);
-
-        dt_guides_draw_harmonious_triangles(cr, left, top,  right, bottom, dst);
-        cairo_stroke (cr);
-        //p.setPen(QPen(d->guideColor, d->guideSize, Qt::DotLine));
-        cairo_set_dash (cr, &dashes, 0, 0);
-        cairo_set_source_rgba(cr, .3, .3, .3, .8);
-        dt_guides_draw_harmonious_triangles(cr, left, top,  right, bottom, dst);
-        cairo_stroke (cr);
-      }
-      break;
-      case GUIDE_GOLDEN:
-      {
-        // Move coordinates to local center selection.
-        cairo_translate(cr, ((right - left)/2+left), ((bottom - top)/2+top));
-
-        // Flip horizontal.
-        if (guide_flip & 1)
-          cairo_scale(cr, -1, 1);
-        // Flip vertical.
-        if (guide_flip & 2)
-          cairo_scale(cr, 1, -1);
-
-        float w = sw;
-        float h = sh;
-
-        // lengths for the golden mean and half the sizes of the region:
-        float w_g = w*INVPHI;
-        float h_g = h*INVPHI;
-        float w_2 = w/2;
-        float h_2 = h/2;
-
-        dt_QRect_t R1, R2, R3, R4, R5, R6, R7;
-        dt_guides_q_rect (&R1, -w_2, -h_2, w_g, h);
-
-        // w - 2*w_2 corrects for one-pixel difference
-        // so that R2.right() is really at the right end of the region
-        dt_guides_q_rect (&R2, w_g-w_2, h_2-h_g, w-w_g+1-(w - 2*w_2), h_g);
-        dt_guides_q_rect (&R3, w_2 - R2.width*INVPHI, -h_2, R2.width*INVPHI, h - R2.height);
-        dt_guides_q_rect (&R4, R2.left, R1.top, R3.left - R2.left, R3.height*INVPHI);
-        dt_guides_q_rect (&R5, R4.left, R4.bottom, R4.width*INVPHI, R3.height - R4.height);
-        dt_guides_q_rect (&R6, R5.left + R5.width, R5.bottom - R5.height*INVPHI, R3.left - R5.right, R5.height*INVPHI);
-        dt_guides_q_rect (&R7, R6.right - R6.width*INVPHI, R4.bottom, R6.width*INVPHI, R5.height - R6.height);
-
-        const int extras = dt_bauhaus_combobox_get(lib->golden_extras);
-        dt_guides_draw_golden_mean(cr, &R1, &R2, &R3, &R4, &R5, &R6, &R7,
-                                   extras == 0 || extras == 3,
-                                   0,
-                                   extras == 1 || extras == 3,
-                                   extras == 2 || extras == 3);
-        cairo_stroke (cr);
-
-        cairo_set_dash (cr, &dashes, 0, 0);
-        cairo_set_source_rgba(cr, .3, .3, .3, .8);
-        dt_guides_draw_golden_mean(cr, &R1, &R2, &R3, &R4, &R5, &R6, &R7,
-                                   extras == 0 || extras == 3,
-                                   0,
-                                   extras == 1 || extras == 3,
-                                   extras == 2 || extras == 3);
-        cairo_stroke (cr);
-      }
-      break;
+      cairo_set_source_surface (cr, surface, 0, 0);
+      // set filter no nearest:
+      // in skull mode, we want to see big pixels.
+      // in 1 iir mode for the right mip, we want to see exactly what the pipe gave us, 1:1 pixel for pixel.
+      // in between, filtering just makes stuff go unsharp.
+      if((buf.width <= 8 && buf.height <= 8) || fabsf(scale - 1.0f) < 0.01f)
+        cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+      cairo_rectangle(cr, 0, 0, buf.width, buf.height);
+      cairo_operator_t mode = _overlay_modes[dt_bauhaus_combobox_get(lib->overlay_mode)];
+      cairo_set_operator(cr, mode);
+      cairo_fill(cr);
+      cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+      cairo_surface_destroy (surface);
     }
     cairo_restore(cr);
+    if(buf.buf)
+      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+    if(img) dt_image_cache_read_release(darktable.image_cache, img);
+
+    // ON CANVAS CONTROLS
+    if(use_splitline)
+    {
+      float scale = fminf(1.0, fminf(w/pw, h/ph));
+
+      // image coordinates
+      lib->overlay_x0 = 0.5*(width-pw*scale);
+      lib->overlay_y0 = 0.5*(height-ph*scale+BAR_HEIGHT);
+      lib->overlay_x1 = lib->overlay_x0 + pw*scale;
+      lib->overlay_y1 = lib->overlay_y0 + ph*scale;
+
+      // splitline position to absolute coords:
+      double sl_x = lib->overlay_x0 + lib->splitline_x*pw*scale;
+      double sl_y = lib->overlay_y0 + lib->splitline_y*ph*scale;
+
+      int x0=sl_x, y0=0.0, x1=x0, y1=height;
+      if(lib->splitline_rotation % 2 != 0)
+      {
+        x0=0.0; y0=sl_y; x1=width; y1=y0;
+      }
+      gboolean mouse_over_control = (lib->splitline_rotation%2==0)?(fabsf(sl_x-pointerx)<5):(fabsf(sl_y-pointery)<5);
+      cairo_save(cr);
+      cairo_set_source_rgb(cr, .7, .7, .7);
+      cairo_set_line_width(cr, (mouse_over_control ? 2.0 : 0.5) );
+
+      cairo_move_to(cr, x0, y0);
+      cairo_line_to(cr, x1, y1);
+      cairo_stroke(cr);
+
+      /* if mouse over control lets draw center rotate control, hide if split is dragged */
+      if(!lib->splitline_dragging && mouse_over_control)
+      {
+        cairo_set_line_width(cr,0.5);
+        double s = width*HANDLE_SIZE;
+        dtgtk_cairo_paint_refresh(cr, sl_x-(s*0.5), sl_y-(s*0.5), s, s, 1);
+      }
+
+      cairo_restore(cr);
+    }
   }
+
+  // GUIDES
+  if(cam->live_view_rotation%2 == 1)
+  {
+    gint tmp = pw; pw = ph; ph = tmp;
+  }
+  float scale = 1.0;
+//   if(cam->live_view_zoom == FALSE)
+//   {
+    if(pw > w) scale = w/pw;
+    if(ph > h) scale = fminf(scale, h/ph);
+//   }
+  double sw = scale*pw;
+  double sh = scale*ph;
+
+  // draw guides
+  double left = (width - scale*pw)*0.5;
+  double right = left + scale*pw;
+  double top = (height + BAR_HEIGHT - scale*ph)*0.5;
+  double bottom = top + scale*ph;
+
+  double dashes = 5.0;
+
+  cairo_save(cr);
+  cairo_set_dash(cr, &dashes, 1, 0);
+
+  int guide_flip = dt_bauhaus_combobox_get(lib->flip_guides);
+  int which = dt_bauhaus_combobox_get(lib->guide_selector);
+  switch(which)
+  {
+    case GUIDE_GRID:
+      dt_guides_draw_simple_grid(cr, left, top, right, bottom, 1.0);
+      break;
+
+    case GUIDE_DIAGONAL:
+      dt_guides_draw_diagonal_method(cr, left, top, sw, sh);
+      cairo_stroke (cr);
+      cairo_set_dash (cr, &dashes, 0, 0);
+      cairo_set_source_rgba(cr, .3, .3, .3, .8);
+      dt_guides_draw_diagonal_method(cr, left, top, sw, sh);
+      cairo_stroke (cr);
+      break;
+    case GUIDE_THIRD:
+      dt_guides_draw_rules_of_thirds(cr, left, top,  right, bottom, sw/3.0, sh/3.0);
+      cairo_stroke (cr);
+      cairo_set_dash (cr, &dashes, 0, 0);
+      cairo_set_source_rgba(cr, .3, .3, .3, .8);
+      dt_guides_draw_rules_of_thirds(cr, left, top,  right, bottom, sw/3.0, sh/3.0);
+      cairo_stroke (cr);
+      break;
+    case GUIDE_TRIANGL:
+    {
+      int dst = (int)((sh*cos(atan(sw/sh)) / (cos(atan(sh/sw)))));
+      // Move coordinates to local center selection.
+      cairo_translate(cr, ((right - left)/2+left), ((bottom - top)/2+top));
+
+      // Flip horizontal.
+      if (guide_flip & 1)
+        cairo_scale(cr, -1, 1);
+      // Flip vertical.
+      if (guide_flip & 2)
+        cairo_scale(cr, 1, -1);
+
+      dt_guides_draw_harmonious_triangles(cr, left, top,  right, bottom, dst);
+      cairo_stroke (cr);
+      //p.setPen(QPen(d->guideColor, d->guideSize, Qt::DotLine));
+      cairo_set_dash (cr, &dashes, 0, 0);
+      cairo_set_source_rgba(cr, .3, .3, .3, .8);
+      dt_guides_draw_harmonious_triangles(cr, left, top,  right, bottom, dst);
+      cairo_stroke (cr);
+    }
+    break;
+    case GUIDE_GOLDEN:
+    {
+      // Move coordinates to local center selection.
+      cairo_translate(cr, ((right - left)/2+left), ((bottom - top)/2+top));
+
+      // Flip horizontal.
+      if (guide_flip & 1)
+        cairo_scale(cr, -1, 1);
+      // Flip vertical.
+      if (guide_flip & 2)
+        cairo_scale(cr, 1, -1);
+
+      float w = sw;
+      float h = sh;
+
+      // lengths for the golden mean and half the sizes of the region:
+      float w_g = w*INVPHI;
+      float h_g = h*INVPHI;
+      float w_2 = w/2;
+      float h_2 = h/2;
+
+      dt_QRect_t R1, R2, R3, R4, R5, R6, R7;
+      dt_guides_q_rect (&R1, -w_2, -h_2, w_g, h);
+
+      // w - 2*w_2 corrects for one-pixel difference
+      // so that R2.right() is really at the right end of the region
+      dt_guides_q_rect (&R2, w_g-w_2, h_2-h_g, w-w_g+1-(w - 2*w_2), h_g);
+      dt_guides_q_rect (&R3, w_2 - R2.width*INVPHI, -h_2, R2.width*INVPHI, h - R2.height);
+      dt_guides_q_rect (&R4, R2.left, R1.top, R3.left - R2.left, R3.height*INVPHI);
+      dt_guides_q_rect (&R5, R4.left, R4.bottom, R4.width*INVPHI, R3.height - R4.height);
+      dt_guides_q_rect (&R6, R5.left + R5.width, R5.bottom - R5.height*INVPHI, R3.left - R5.right, R5.height*INVPHI);
+      dt_guides_q_rect (&R7, R6.right - R6.width*INVPHI, R4.bottom, R6.width*INVPHI, R5.height - R6.height);
+
+      const int extras = dt_bauhaus_combobox_get(lib->golden_extras);
+      dt_guides_draw_golden_mean(cr, &R1, &R2, &R3, &R4, &R5, &R6, &R7,
+                                 extras == 0 || extras == 3,
+                                 0,
+                                 extras == 1 || extras == 3,
+                                 extras == 2 || extras == 3);
+      cairo_stroke (cr);
+
+      cairo_set_dash (cr, &dashes, 0, 0);
+      cairo_set_source_rgba(cr, .3, .3, .3, .8);
+      dt_guides_draw_golden_mean(cr, &R1, &R2, &R3, &R4, &R5, &R6, &R7,
+                                 extras == 0 || extras == 3,
+                                 0,
+                                 extras == 1 || extras == 3,
+                                 extras == 2 || extras == 3);
+      cairo_stroke (cr);
+    }
+    break;
+  }
+  cairo_restore(cr);
   dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
 }
 
+int button_released(struct dt_lib_module_t *self, double x, double y, int which, uint32_t state)
+{
+  dt_lib_live_view_t *d = (dt_lib_live_view_t *)self->data;
+  if(d->splitline_dragging == TRUE)
+  {
+    d->splitline_dragging = FALSE;
+    return 1;
+  }
+  return 0;
+}
+
+int button_pressed (struct dt_lib_module_t *self, double x, double y, int which, int type, uint32_t state)
+{
+  dt_lib_live_view_t *lib = (dt_lib_live_view_t *)self->data;
+  int result = 0;
+
+  if(lib->imgid > 0 && dt_bauhaus_combobox_get(lib->overlay_splitline))
+  {
+    const double width = lib->overlay_x1 - lib->overlay_x0;
+    const double height = lib->overlay_y1 - lib->overlay_y0;
+
+    // splitline position to absolute coords:
+    double sl_x = lib->overlay_x0 + lib->splitline_x * width;
+    double sl_y = lib->overlay_y0 + lib->splitline_y * height;
+
+    gboolean mouse_over_control = (lib->splitline_rotation%2==0)?(fabsf(sl_x-x)<5):(fabsf(sl_y-y)<5);
+
+    /* do the split rotating */
+    if(which==1 && fabsf(sl_x-x)<7 && fabsf(sl_y-y)<7)
+    {
+      /* let's rotate */
+      lib->splitline_rotation = (lib->splitline_rotation+1)%4;
+
+      dt_control_queue_redraw_center();
+      result = 1;
+    }
+    /* do the dragging !? */
+    else if (which==1 && mouse_over_control)
+    {
+      lib->splitline_dragging = TRUE;
+      dt_control_queue_redraw_center();
+      result = 1;
+    }
+  }
+  return result;
+}
+
+int mouse_moved(dt_lib_module_t *self, double x, double y, int which)
+{
+  dt_lib_live_view_t *lib = (dt_lib_live_view_t *)self->data;
+  int result = 0;
+
+  if(lib->splitline_dragging)
+  {
+    const double width = lib->overlay_x1 - lib->overlay_x0;
+    const double height = lib->overlay_y1 - lib->overlay_y0;
+
+    // absolute coords to splitline position:
+    lib->splitline_x = CLAMPS((x - lib->overlay_x0)/width, 0.0, 1.0);
+    lib->splitline_y = CLAMPS((y - lib->overlay_y0)/height, 0.0, 1.0);
+
+    result = 1;
+  }
+
+  return result;
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

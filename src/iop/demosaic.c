@@ -764,10 +764,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     return FALSE;
   }
 
-  // If in tiling context we can not green-equalize over full image. Fall back to cpu path then.
-  if(piece->pipe->tiling && (data->green_eq == DT_IOP_GREEN_EQ_FULL || data->green_eq == DT_IOP_GREEN_EQ_BOTH))
+  // We can not (yet) green-equilibrate over full image. Fall back to cpu path then.
+  if(data->green_eq == DT_IOP_GREEN_EQ_FULL || data->green_eq == DT_IOP_GREEN_EQ_BOTH)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] cannot green-equalize over full image in tiling context\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] cannot green-equilibrate over full image in OpenCL\n");
     return FALSE;
   }
 
