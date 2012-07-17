@@ -44,6 +44,7 @@
 <!ELEMENT Sensor EMPTY >
 <!ATTLIST Sensor white NMTOKEN #REQUIRED >
 <!ATTLIST Sensor black NMTOKEN #REQUIRED >
+<!ATTLIST Sensor iso_list NMTOKENS #IMPLIED >
 <!ATTLIST Sensor iso_min NMTOKEN #IMPLIED >
 <!ATTLIST Sensor iso_max NMTOKEN #IMPLIED >
 
@@ -284,19 +285,22 @@
       <Color x="1" y="1">GREEN</Color>
     </CFA>
     <Crop x="158" y="51" width="5634" height="3753"/>
-    <Sensor black="1024" white="15600"/>
-	<BlackAreas>
-		<Vertical x="0" width="156"/>
-		<Horizontal y="2" height="48"/>
-	</BlackAreas>
+    <Sensor black="1024" white="12995" iso_list="160 320 640 1250"/>
+    <Sensor black="1024" white="15950"/>
+		<BlackAreas>
+			<Vertical x="0" width="156"/>
+			<Horizontal y="2" height="48"/>
+		</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon EOS 5D Mark II" mode="sRaw1">
     <Crop x="0" y="0" width="3872" height="2574"/>
-    <Sensor black="0" white="65535"/>
+    <Sensor black="0" white="57200" iso_list="160 320 640 1250"/>
+    <Sensor black="0" white="64948"/>
   </Camera>
   <Camera make="Canon" model="Canon EOS 5D Mark II" mode="sRaw2">
     <Crop x="0" y="0" width="2808" height="1872"/>
-    <Sensor black="0" white="65535"/>
+    <Sensor black="0" white="57200" iso_list="160 320 640 1250"/>
+    <Sensor black="0" white="64948"/>
   </Camera>
   <Camera make="Canon" model="Canon EOS 5D Mark III" decoder_version="1">
     <CFA width="2" height="2">
