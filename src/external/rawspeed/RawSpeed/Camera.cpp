@@ -232,6 +232,23 @@ int Camera::StringToInt(const xmlChar *in, const xmlChar *tag, const char* attri
   return i;
 }
 
+vector<int> Camera::MultipleStringToInt(const xmlChar *in, const xmlChar *tag, const char* attribute) {
+  int i;
+  vector<int> ret;
+  vector<string> v = split_string(string((const char*)in), ' ');
+
+  for (uint32 j = 0; j < v.size(); j++) {
+#if defined(__unix__) || defined(__APPLE__) || defined(__MINGW32__)
+    if (EOF == sscanf((v[j].c_str(), "%d", &i))
+#else
+    if (EOF == sscanf_s(v[j].c_str(), "%d", &i))
+#endif
+      ThrowCME("Error parsing attribute %s in tag %s, in camera %s %s.", attribute, tag, make.c_str(), model.c_str());
+    ret.push_back(i);
+  }
+  return ret;
+}
+
 
 int Camera::getAttributeAsInt(xmlNodePtr cur , const xmlChar *tag, const char* attribute) {
   xmlChar *key = xmlGetProp(cur, (const xmlChar *)attribute);
@@ -307,7 +324,19 @@ void Camera::parseSensorInfo( xmlDocPtr doc, xmlNodePtr cur )
     max_iso = StringToInt(key, cur->name, "iso_max");
     xmlFree(key);
   }
-  sensorInfo.push_back(CameraSensorInfo(black, white, min_iso, max_iso));
+  key = xmlGetProp(cur, (const xmlChar *)"iso_list");
+  if (key) {
+    vector<int> values = MultipleStringToInt(key, cur->name, "iso_list");
+    xmlFree(key);
+    if (!values.empty()) {
+      for (uint32 i = 0; i < values.size(); i++) {
+        sensorInfo.push_back(CameraSensorInfo(black, white, values[i], values[i]));
+      }      
+    }
+  } else {
+    sensorInfo.push_back(CameraSensorInfo(black, white, min_iso, max_iso));
+  }
+
 }
 
 const CameraSensorInfo* Camera::getSensorInfo( int iso )
