@@ -239,7 +239,7 @@ vector<int> Camera::MultipleStringToInt(const xmlChar *in, const xmlChar *tag, c
 
   for (uint32 j = 0; j < v.size(); j++) {
 #if defined(__unix__) || defined(__APPLE__) || defined(__MINGW32__)
-    if (EOF == sscanf((v[j].c_str(), "%d", &i))
+    if (EOF == sscanf(v[j].c_str(), "%d", &i))
 #else
     if (EOF == sscanf_s(v[j].c_str(), "%d", &i))
 #endif
