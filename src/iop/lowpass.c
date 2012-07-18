@@ -36,6 +36,7 @@
 #include <inttypes.h>
 
 #define CLAMPF(a, mn, mx)       ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
+#define MMCLAMPPS(a, mn, mx)    (_mm_min_ps((mx), _mm_max_ps((a), (mn))))
 
 #define BLOCKSIZE 64		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
@@ -398,8 +399,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
 
-  const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
-  const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
 
   const float radius = fmax(0.1f, data->radius);
   const float sigma = radius * roi_in->scale / piece ->iscale;
@@ -409,6 +408,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   float *temp = dt_alloc_align(64, roi_out->width*roi_out->height*ch*sizeof(float));
   if(temp==NULL) return;
+
+#if 0
+  const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
+  const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
 
   // vertical blur column by column
 #ifdef _OPENMP
@@ -549,7 +552,152 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
     }
   }
+#else
+  const __m128 Labmax = _mm_set_ps(1.0f, 128.0f, 128.0f, 100.0f);
+  const __m128 Labmin = _mm_set_ps(0.0f, -128.0f, -128.0f, 0.0f);
 
+  // vertical blur column by column
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(in,out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
+#endif
+  for(int i=0; i<roi_out->width; i++)
+  {
+    __m128 xp = _mm_setzero_ps();
+    __m128 yb = _mm_setzero_ps();
+    __m128 yp = _mm_setzero_ps();
+    __m128 xc = _mm_setzero_ps();
+    __m128 yc = _mm_setzero_ps();
+    __m128 xn = _mm_setzero_ps();
+    __m128 xa = _mm_setzero_ps();
+    __m128 yn = _mm_setzero_ps();
+    __m128 ya = _mm_setzero_ps();
+
+    // forward filter
+    xp = MMCLAMPPS(_mm_load_ps(in+i*ch), Labmin, Labmax);
+    yb = _mm_mul_ps(_mm_set_ps1(coefp), xp);
+    yp = yb;
+
+ 
+    for(int j=0; j<roi_out->height; j++)
+    {
+      int offset = (i + j * roi_out->width)*ch;
+
+      xc = MMCLAMPPS(_mm_load_ps(in+offset), Labmin, Labmax);
+
+      //yc = (a0 * xc[k]) + (a1 * xp) - (b1 * yp) - (b2 * yb);
+      //yc = (a0 * xc[k]) + ((a1 * xp) - ((b1 * yp) + (b2 * yb)));
+
+      yc = _mm_add_ps(_mm_mul_ps(xc, _mm_set_ps1(a0)),
+           _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
+           _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
+
+      _mm_store_ps(temp+offset, yc);
+
+      xp = xc;
+      yb = yp;
+      yp = yc;
+
+    }
+
+    // backward filter
+    xn = MMCLAMPPS(_mm_load_ps(in+((roi_out->height - 1) * roi_out->width + i)*ch), Labmin, Labmax);
+    xa = xn;
+    yn = _mm_mul_ps(_mm_set_ps1(coefn), xn);
+    ya = yn;
+
+    for(int j=roi_out->height - 1; j > -1; j--)
+    {
+      int offset = (i + j * roi_out->width)*ch;
+
+      xc = MMCLAMPPS(_mm_load_ps(in+offset), Labmin, Labmax);
+
+      //yc = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
+      //yc = (a2 * xn) + ((a3 * xa) - ((b1 * yn) + (b2 * ya)));
+
+      yc = _mm_add_ps(_mm_mul_ps(xn, _mm_set_ps1(a2)),
+           _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
+           _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
+
+
+      xa = xn; 
+      xn = xc; 
+      ya = yn; 
+      yn = yc;
+
+      _mm_store_ps(temp+offset, _mm_add_ps(_mm_load_ps(temp+offset), yc));
+    }
+  }
+
+  // horizontal blur line by line
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
+#endif
+  for(int j=0; j<roi_out->height; j++)
+  {
+    __m128 xp = _mm_setzero_ps();
+    __m128 yb = _mm_setzero_ps();
+    __m128 yp = _mm_setzero_ps();
+    __m128 xc = _mm_setzero_ps();
+    __m128 yc = _mm_setzero_ps();
+    __m128 xn = _mm_setzero_ps();
+    __m128 xa = _mm_setzero_ps();
+    __m128 yn = _mm_setzero_ps();
+    __m128 ya = _mm_setzero_ps();
+
+    // forward filter
+    xp = MMCLAMPPS(_mm_load_ps(temp+j*roi_out->width*ch), Labmin, Labmax);
+    yb = _mm_mul_ps(_mm_set_ps1(coefp), xp);
+    yp = yb;
+
+ 
+    for(int i=0; i<roi_out->width; i++)
+    {
+      int offset = (i + j * roi_out->width)*ch;
+
+      xc = MMCLAMPPS(_mm_load_ps(temp+offset), Labmin, Labmax);
+
+      // yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
+
+      yc = _mm_add_ps(_mm_mul_ps(xc, _mm_set_ps1(a0)),
+           _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
+           _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
+
+      _mm_store_ps(out+offset, yc);
+
+      xp = xc;
+      yb = yp;
+      yp = yc;
+    }
+
+    // backward filter
+    xn = MMCLAMPPS(_mm_load_ps(temp+((j + 1)*roi_out->width - 1)*ch), Labmin, Labmax);
+    xa = xn;
+    yn = _mm_mul_ps(_mm_set_ps1(coefn), xn);
+    ya = yn;
+
+
+    for(int i=roi_out->width - 1; i > -1; i--)
+    {
+      int offset = (i + j * roi_out->width)*ch;
+
+      xc = MMCLAMPPS(_mm_load_ps(temp+offset), Labmin, Labmax);
+
+      //yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
+
+      yc = _mm_add_ps(_mm_mul_ps(xn, _mm_set_ps1(a2)),
+           _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
+           _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
+
+
+      xa = xn; 
+      xn = xc; 
+      ya = yn; 
+      yn = yc;
+
+      _mm_store_ps(out+offset, _mm_add_ps(_mm_load_ps(out+offset), yc));
+    }
+  }
+#endif
 
   free(temp);
 
