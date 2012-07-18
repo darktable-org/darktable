@@ -189,6 +189,8 @@ void view_popup_menu_onSync (GtkWidget *menuitem, gpointer userdata)
       img->exists = 0;
 
       filelist = g_list_prepend (filelist, (gpointer *)img);
+      g_free(img->filename);
+      g_free(img);
     }
 
     dir = g_dir_open(path, 0, &error);
@@ -224,7 +226,7 @@ void view_popup_menu_onSync (GtkWidget *menuitem, gpointer userdata)
         new->filename = g_strdup(name);
         new->exists = 1;
 
-       filelist = g_list_append(filelist, (gpointer *)new);
+        filelist = g_list_append(filelist, (gpointer *)new);
 
         count_new++;
       }
@@ -247,10 +249,31 @@ void view_popup_menu_onSync (GtkWidget *menuitem, gpointer userdata)
 
   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
   {
-    /* TODO: Get dialog returned options so we can choone only adding or deleting*/
+    /* TODO: Get dialog returned options so we can choose only adding or deleting*/
 
     /* Proceed with sync */
+    for (int j=0; j < g_list_length(filelist); j++)
+    {
+      _image_t *img;
+      img = (_image_t *)g_list_nth_data(filelist, j);
+      if (img->id == -1)
+      {
+        /* This is a new image */
+        gchar *filename = NULL;
+        filename = dt_util_dstrcat(filename, "%s/%s", img->path, img->filename);
+
+        if(dt_image_import(img->filmid, filename, 0))
+          dt_control_queue_redraw_center();           //TODO: Set ignore JPEGs according to prefs.
+      }
+      else if (img->id != -1 && img->exists == 0)
+      {
+        dt_image_remove(img->id);
+      }
+
+    }
+
   }
+  gtk_widget_destroy (dialog);
 
 }
 
