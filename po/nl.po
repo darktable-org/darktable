@@ -1,18 +1,21 @@
+#
+# Ger Siemerink <g.siemerink@gmail.com>, 2012.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-07-08 15:00+0200\n"
-"PO-Revision-Date: 2012-07-08 15:05+0100\n"
+"POT-Creation-Date: 2012-07-18 19:18+0200\n"
+"PO-Revision-Date: 2012-07-18 19:28+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
-"Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
+"Language-Team: Nederlands <g.siemerink@gmail.com>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-Language: Dutch\n"
 "X-Poedit-Country: NETHERLANDS\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
 #: ../build/src/preferences_gen.h:342
 msgid "gui options"
@@ -198,11 +201,11 @@ msgstr "deze overbodige bestanden kunnen later opnieuw worden geïmporteerd in a
 
 #: ../build/src/preferences_gen.h:661
 msgid "activate opencl support (experimental)"
-msgstr "activeer opencl ondersteuning "
+msgstr "activeer opcl ondersteuning (experimenteel)"
 
 #: ../build/src/preferences_gen.h:672
 msgid "if found, use opencl runtime on your system for improved processing speed. this code is still experimental and not complete. please report crashes to the mailinglist darktable-devel at lists.sourceforge.net"
-msgstr "indien aanwezig, gebruik dan opencl runtime voor een verbeterde verwerkingssnelheid, het kan op elk moment worden in- en uitgeschakeld"
+msgstr "indien aanwezig, gebruik dan opencl runtime voor een verbeterde verwerkingssnelheid, het op elk moment worden in- en uitgeschakeld"
 
 #: ../build/src/preferences_gen.h:677
 msgid "always use littlecms2 during export"
@@ -330,7 +333,7 @@ msgstr "fout bij het inladen van bestand `%s'"
 
 #: ../src/common/film.c:330
 msgid "no supported images was found to be imported"
-msgstr "te ondersteunde afbeeldings formaten om te importeren gevonden"
+msgstr "te importeren afbeeldingen zijn niet gevonden"
 
 #: ../src/common/film.c:341
 #, c-format
@@ -508,48 +511,48 @@ msgid_plural "deleting %d images"
 msgstr[0] "verwijder %d afbeelding"
 msgstr[1] "verwijderen %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:450
+#: ../src/control/jobs/control_jobs.c:453
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural "do you really want to remove %d selected images from the collection?"
 msgstr[0] "Weet u zeker dat u %d geselecteerde afbeeldingen wilt uitschrijven?"
 msgstr[1] "Weet u zeker dat u %d geselecteerde afbeeldingen wilt uitschrijven?"
 
-#: ../src/control/jobs/control_jobs.c:453
+#: ../src/control/jobs/control_jobs.c:456
 msgid "remove images?"
 msgstr "afbeeldingen verplaatsen?"
 
-#: ../src/control/jobs/control_jobs.c:476
+#: ../src/control/jobs/control_jobs.c:482
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural "do you really want to physically delete %d selected images from disk?"
 msgstr[0] "wilt u echt  %d geselecteerde afbeelding fysiek van de schijf verwijderen?"
 msgstr[1] "wilt u echt  %d geselecteerde afbeeldingen fysiek van de schijf verwijderen?"
 
-#: ../src/control/jobs/control_jobs.c:479
+#: ../src/control/jobs/control_jobs.c:485
 msgid "delete images?"
 msgstr "afbeeldingen verwijderen"
 
-#: ../src/control/jobs/control_jobs.c:517
+#: ../src/control/jobs/control_jobs.c:523
 msgid "failed to get parameters from storage module, aborting export.."
 msgstr "het ophalen van de instellingen van de opslag module is mislukt, het exporteren wordt afgebroken"
 
-#: ../src/control/jobs/control_jobs.c:520
+#: ../src/control/jobs/control_jobs.c:526
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exporteer %d afbeelding"
 msgstr[1] "exporteren %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:522
+#: ../src/control/jobs/control_jobs.c:528
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "exporteer %d afbeelding naar %s"
 msgstr[1] "exporteren %d afbeeldingen naar %s"
 
-#: ../src/control/jobs/control_jobs.c:580
-#: ../src/control/jobs/control_jobs.c:581
+#: ../src/control/jobs/control_jobs.c:586
+#: ../src/control/jobs/control_jobs.c:587
 #: ../src/views/darkroom.c:446
 #, c-format
 msgid "image `%s' is currently unavailable"
@@ -1783,7 +1786,7 @@ msgstr "verscherpen"
 
 #: ../src/iop/atrous.c:830
 msgid "chroma denoise"
-msgstr "verwijder kleur-ruis"
+msgstr "verwijder kleurruis"
 
 #: ../src/iop/atrous.c:844
 msgid "denoise (subtle)"
@@ -2177,7 +2180,7 @@ msgid ""
 "only works for raw images."
 msgstr ""
 "automatisch chromatische aberratie correctie\n"
-"werkt alleen voor raw afbeeldingen"
+"werkt alleen bij RAW afbeeldingen"
 
 #: ../src/iop/channelmixer.c:109
 msgid "channel mixer"
@@ -2286,7 +2289,7 @@ msgstr "spiegelen"
 
 #: ../src/iop/clipping.c:908
 msgid "flip image horizontally"
-msgstr "afbeelding horizontaal spiegelen"
+msgstr "horizontaal spiegelen"
 
 #: ../src/iop/clipping.c:909
 msgid "flip image vertically"
@@ -2364,7 +2367,7 @@ msgstr "type"
 
 #: ../src/iop/clipping.c:1000
 msgid "flip guides horizontally"
-msgstr "hulplijnen horizontaal spiegelen"
+msgstr "horizontaal spiegelen"
 
 #: ../src/iop/clipping.c:1001
 msgid "flip guides vertically"
@@ -2514,7 +2517,7 @@ msgstr "standaard kleuren matrix"
 
 #: ../src/iop/colorin.c:707
 msgid "alternate color matrix"
-msgstr "alternatieve  kleuren matrix"
+msgstr "verbeterde kleuren matrix"
 
 #: ../src/iop/colorin.c:709
 msgid "sRGB (e.g. jpg)"
@@ -3945,7 +3948,7 @@ msgstr "reset curve door dubbelklikken"
 
 #: ../src/iop/tonecurve.c:456
 msgid "auto scale chroma"
-msgstr "schaal kleurwaarde "
+msgstr "schaal kleurwaarde automatisch"
 
 #: ../src/iop/tonecurve.c:461
 msgid ""
@@ -5184,31 +5187,31 @@ msgstr "moduul groepen"
 
 #: ../src/libs/modulegroups.c:108
 msgid "show modules explicit specified by user"
-msgstr "favoriete modulen"
+msgstr "favoriete modules"
 
 #: ../src/libs/modulegroups.c:113
 msgid "the modules used in active pipe"
-msgstr "actieve modulen"
+msgstr "actieve modules"
 
 #: ../src/libs/modulegroups.c:118
 msgid "basic group"
-msgstr "basis modulen"
+msgstr "basis modules"
 
 #: ../src/libs/modulegroups.c:123
 msgid "correction group"
-msgstr "modulen voor o.a. ontruisen en verscherpen"
+msgstr "modules voor o.a. ontruisen en verscherpen"
 
 #: ../src/libs/modulegroups.c:128
 msgid "color group"
-msgstr "kleur modulen"
+msgstr "kleur modules"
 
 #: ../src/libs/modulegroups.c:133
 msgid "tone group"
-msgstr "toning modulen"
+msgstr "toning modules"
 
 #: ../src/libs/modulegroups.c:138
 msgid "effect group"
-msgstr "speciale effecten modulen"
+msgstr "speciale effecten modules"
 
 #: ../src/libs/modulelist.c:46
 msgid "more plugins"
@@ -5526,48 +5529,35 @@ msgstr "kleurlabels"
 msgid ""
 "toggle red label\n"
 "of selected images (f1)"
-msgstr ""
-"schakel rood label\n"
-"van de geselecteerde afbeeldingen\n"
-"(ctrl-1)"
+msgstr "bewerk rode kleurlabeling voor geselecteerde afbeeldingen (F1)"
 
 #: ../src/libs/tools/colorlabels.c:70
 msgid ""
 "toggle yellow label\n"
 "of selected images (f2)"
-msgstr ""
-"schakel geel label\n"
-"van de geselecteerde afbeeldingen\n"
-"(ctrl-2)"
+msgstr "bewerk gele kleurlabeling voor geselecteerde afbeeldingen (F2)"
 
 #: ../src/libs/tools/colorlabels.c:71
 msgid ""
 "toggle green label\n"
 "of selected images (f3)"
-msgstr ""
-"schakel groen label\n"
-"van de geselecteerde afbeeldingen\n"
-"(ctrl-3)"
+msgstr "bewerk groene kleurlabeling voor geselecteerde afbeeldingen (F3)"
 
 #: ../src/libs/tools/colorlabels.c:72
 msgid ""
 "toggle blue label\n"
 "of selected images (f4)"
-msgstr ""
-"schakel blauw label\n"
-"van de geselecteerde afbeeldingen (f4)"
+msgstr "bewerk blauwe kleurlabeling voor geselecteerde afbeeldingen (F4)"
 
 #: ../src/libs/tools/colorlabels.c:73
 msgid ""
 "toggle purple label\n"
 "of selected images (f5)"
-msgstr ""
-"schakel paars label\n"
-"van de geselecteerde afbeeldingen (f5)"
+msgstr "bewerk paarse kleurlabeling voor geselecteerde afbeeldingen (F5)"
 
 #: ../src/libs/tools/colorlabels.c:74
 msgid "clear all labels of selected images"
-msgstr "verwijder van alle geselecteerde afbeeldingen de kleurlabels"
+msgstr "verwijder kleurlabels van alle geselecteerde afbeeldingen "
 
 #: ../src/libs/tools/darktable.c:47
 msgid "darktable"
@@ -5823,7 +5813,7 @@ msgstr "geen afbeelding geselecteerd!"
 
 #: ../src/views/darkroom.c:730
 msgid "no userdefined presets for favorite modules were found"
-msgstr "door gebruiker gedefinieerd voorkeur voor favoriete modulen ontbreken"
+msgstr "door gebruiker gedefinieerd voorkeur voor favoriete modules ontbreken"
 
 #: ../src/views/darkroom.c:735
 #, c-format
@@ -5985,7 +5975,7 @@ msgstr "schaduwen oplichten"
 
 #: ../src/iop/shadhi.c:831
 msgid "darken highlights"
-msgstr "verdonker hooglichten "
+msgstr "verbeter hooglichten "
 
 #: ../src/iop/shadhi.c:833
 msgid ""
@@ -6050,6 +6040,12 @@ msgstr ""
 #~ "indexeer afbeeldingen op de achtergrond, zodat op overeenkomsten kan "
 #~ "worden gezocht"
 
+#~ msgid "output file already exists, aborting"
+#~ msgstr "bestand bestaat reeds, bewerking afgebroken"
+
+#~ msgid "empty history stack"
+#~ msgstr "geen historie"
+
 #~ msgid "ERROR : invalid temporary directory : %s\n"
 #~ msgstr "ERRO: ongeldige tijdelijk map: %s\n"
 
@@ -6087,6 +6083,12 @@ msgstr ""
 #~ msgid "sliders for b channel"
 #~ msgstr "schuifregelaars voor b kanaal"
 
+#~ msgid "sliders for chroma channel (of LCh)"
+#~ msgstr "schuifregelaars voor kleurwaarde (LCh)"
+
+#~ msgid "sliders for hue channel (of LCh)"
+#~ msgstr "schuifregelaars voor tint (LCh)"
+
 #~ msgid " gray "
 #~ msgstr "grijs"
 
@@ -6098,6 +6100,15 @@ msgstr ""
 
 #~ msgid " blue "
 #~ msgstr "blauw"
+
+#~ msgid " hue "
+#~ msgstr "tint"
+
+#~ msgid " chroma "
+#~ msgstr "kleurwaarde"
+
+#~ msgid " value "
+#~ msgstr "waarde"
 
 #~ msgid "sliders for gray value"
 #~ msgstr "schuifregelaars voor grijs kanaal"
@@ -6111,12 +6122,22 @@ msgstr ""
 #~ msgid "sliders for blue channel"
 #~ msgstr "schuifregelaars voor blauw kanaal"
 
+#~ msgid "sliders for hue channel (of HSL)"
+#~ msgstr "schuifregelaars voor tint (HSL)"
+
+#~ msgid "sliders for chroma channel (of HSL)"
+#~ msgstr "schuifregelaars voor kleurwaarde (HSL)"
+
+#, fuzzy
+#~ msgid "sliders for value channel (of HSL)"
+#~ msgstr "schuifregelaars voor blauw kanaal"
+
+#, fuzzy
 #~ msgid ""
 #~ "adjustment based on input received by this module:\n"
-#~ "* range between inner markers (upper filled triangles): blend fully\n"
-#~ "* range outside of outer markers (lower open triangles): do not blend at "
-#~ "all\n"
-#~ "* range between adjacent inner/outer markers: blend gradually"
+#~ "* range defined by upper markers: blend fully\n"
+#~ "* range defined by lower markers: do not blend at all\n"
+#~ "* range between adjacent upper/lower markers: blend gradually"
 #~ msgstr ""
 #~ "aanpassingen gebaseerd op ingang afkomstig van deze module:\n"
 #~ "* gebied tussen de binnenste markeringen (bovenste gekleurde "
@@ -6126,12 +6147,12 @@ msgstr ""
 #~ "* gebied tussen de aangrenzende gebieden van binnenste en buitenste "
 #~ "markeringen: gedeeltelijk mengen"
 
+#, fuzzy
 #~ msgid ""
 #~ "adjustment based on unblended output of this module:\n"
-#~ "* range between inner markers (upper filled triangles): blend fully\n"
-#~ "* range outside of outer markers (lower open triangles): do not blend at "
-#~ "all\n"
-#~ "* range between adjacent inner/outer markers: blend gradually"
+#~ "* range defined by upper markers: blend fully\n"
+#~ "* range defined by lower markers: do not blend at all\n"
+#~ "* range between adjacent upper/lower markers: blend gradually"
 #~ msgstr ""
 #~ "aanpassingen gebaseerd op niet gemengde uitgang van deze module:\n"
 #~ "* gebied tussen de binnenste markeringen (bovenste gekleurde "
@@ -6205,6 +6226,9 @@ msgstr ""
 
 #~ msgid "overwrite preset?"
 #~ msgstr "voorkeur overschrijven?"
+
+#~ msgid "images exported from darktable"
+#~ msgstr "afbeeldingen geëxporteerd door darktable"
 #~ msgctxt "accel"
 
 #~ msgid "pick border color from image"
@@ -6389,11 +6413,14 @@ msgstr ""
 #~ msgid "color scheme"
 #~ msgstr "kleur schema"
 
-#~ msgid "red / blue"
-#~ msgstr "rood / blauw"
+#~ msgid "black & white"
+#~ msgstr "zwart en wit"
 
-#~ msgid "black / white"
-#~ msgstr "zwart / wit"
+#~ msgid "red & blue"
+#~ msgstr "rood en blauw"
+
+#~ msgid "purple & green"
+#~ msgstr "paars en groen"
 
 #~ msgid "select colors to indicate over/under exposure"
 #~ msgstr "kies kleuren voor weergave over/onderbelichting "
@@ -6548,8 +6575,16 @@ msgstr ""
 #~ msgid "mode of the overlay"
 #~ msgstr "bedek modus"
 
+#, fuzzy
+#~ msgid "split line"
+#~ msgstr "split toning"
+
+#, fuzzy
+#~ msgid "only draw part of the overlay"
+#~ msgstr "bedek modus"
+
 #~ msgid "more modules"
-#~ msgstr "overige modulen"
+#~ msgstr "overige modules"
 #~ msgctxt "accel"
 
 #~ msgid "tag"
@@ -6577,6 +6612,9 @@ msgstr ""
 
 #~ msgid "adjust saturation of highlights"
 #~ msgstr "bijstellen verzadiging hooglichten "
+
+#~ msgid "black / white"
+#~ msgstr "zwart / wit"
 
 #~ msgid "1 star"
 #~ msgstr "1 ster"
