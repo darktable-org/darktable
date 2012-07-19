@@ -21,9 +21,15 @@
 #include <lua.h>
 
 /*
-   adds an "image" field in the table at the top of the stack which is a table to all dt_image in the database
+	a type matchin dt_image_t define in common/image.h
    */
-void dt_lua_image_init(lua_State * L);
+void dt_lua_push_image(lua_State * L,int imgid);
+int dt_lua_checkimage(lua_State * L,int index);
+void dt_lua_init_image(lua_State * L);
+
+
+/* TBSL doc for function below */
+void dt_lua_images_init(lua_State * L);
 
 
 #endif

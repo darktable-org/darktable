@@ -18,58 +18,41 @@
 #include "lua/stmt.h"
 #include <lauxlib.h>
 #include <stdio.h>
-static int stmt_tostring(lua_State *L) {
-	printf("%s\n",__FUNCTION__);
-	lua_pushfstring(L,"%s",__FUNCTION__);
-	return 1;
-}
-static int stmt_next(lua_State *L) {
-	// 2 args, table, index, returns the next index,value or nil,nil return the first index,value if index is nil 
-	printf("%s\n",__FUNCTION__);
-	sqlite3_stmt *stmt = lua_touserdata(L,-2);
-	int result = sqlite3_step(stmt);
-	if(result != SQLITE_ROW){
-		lua_pushnil(L);
-		lua_pushnil(L);
-		return 2;
-	}
-	//TBSL : column 1 is imgid
-	printf("imgid %d\n",sqlite3_column_int(stmt,0));
-	lua_pushinteger(L,sqlite3_column_int(stmt,0));
-	lua_pushnil(L);
-	return 2;
-}
+
+#define LUA_STMT "dt_lua_stmt"
+typedef struct {
+	sqlite3_stmt *stmt;
+} lua_stmt;
 
 static int stmt_gc(lua_State *L) {
-	printf("%s\n",__FUNCTION__);
-	sqlite3_stmt *stmt = lua_touserdata(L,lua_upvalueindex(1));
+	//printf("%s\n",__FUNCTION__);
+	sqlite3_stmt *stmt = dt_lua_checkstmt(L,-1);
 	sqlite3_finalize(stmt);
 	return 0;
 }
 
-static int stmt_pairs(lua_State *L) {
-	printf("%s\n",__FUNCTION__);
-	sqlite3_stmt *stmt = lua_touserdata(L,lua_upvalueindex(1));
-	sqlite3_reset(stmt);
-	lua_pushcfunction(L,stmt_next);
-	lua_pushvalue(L,lua_upvalueindex(1));
-	lua_pushnil(L);
-	return 3;
-}
 static const luaL_Reg stmt_meta[] = {
-	{"__tostring", stmt_tostring },
-	{"__pairs", stmt_pairs },
 	{"__gc", stmt_gc },
 	{0,0}
 };
-void dt_lua_stmt_pseudo_array(lua_State * L,sqlite3_stmt *stmt) {
-	lua_newuserdata(L,1); // placeholder, we are interested in 
-	luaL_newlibtable(L,stmt_meta);
-	lua_pushlightuserdata(L,stmt);
-	luaL_setfuncs(L,stmt_meta,1);
-	lua_setmetatable(L,-2);
+
+void dt_lua_push_stmt(lua_State * L,sqlite3_stmt *stmt) {
+	//printf("%s\n",__FUNCTION__);
+	lua_stmt * my_stmt = (lua_stmt*)lua_newuserdata(L,sizeof(lua_stmt));
+	luaL_setmetatable(L,LUA_STMT);
+	my_stmt->stmt=stmt;
 }
 
+sqlite3_stmt* dt_lua_checkstmt(lua_State * L,int index){
+	lua_stmt* my_stmt= luaL_checkudata(L,index,LUA_STMT);
+	return my_stmt->stmt;
+}
+
+void dt_lua_init_stmt(lua_State * L) {
+	luaL_newmetatable(L,LUA_STMT);
+	luaL_setfuncs(L,stmt_meta,0);
+	lua_pop(L,1);
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -74,6 +74,8 @@ FILE(GLOB SOURCE_FILES
   "gui/presets.c"
   "gui/styles_dialog.c"
   "libs/lib.c"
+  "lua/image.c"
+  "lua/stmt.c"
   "views/view.c"
   )
 FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")

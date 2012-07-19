@@ -437,7 +437,6 @@ int dt_init(int argc, char *argv[], const int init_gui)
   snprintf(filename, 1024, "%s/darktablerc", datadir);
 
   // Lua init
-  dt_lua_init();
   // intialize the config backend. this needs to be done first...
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
   memset(darktable.conf, 0, sizeof(dt_conf_t));
@@ -672,6 +671,8 @@ int dt_init(int argc, char *argv[], const int init_gui)
     dt_print_mem_usage();
   }
 
+  /* init lua last, since it's user made stuff it must be in the real environment */
+  dt_lua_init();
   return 0;
 }
 

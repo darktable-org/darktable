@@ -17,25 +17,30 @@
  */
 #include "common/darktable.h"
 #include "control/control.h"
+#include "lua/image.h"
+#include "lua/stmt.h"
 #include <lualib.h>
 
 static int lua_quit(lua_State *state) {
-        dt_control_quit();
-				return 0;
+	dt_control_quit();
+	return 0;
 }
 
 void dt_lua_init() {
-				// init the global lua context
-				darktable.lua_state= luaL_newstate();
-				luaopen_base(darktable.lua_state);
-				luaopen_table(darktable.lua_state);
-				luaopen_string(darktable.lua_state);
-				luaopen_math(darktable.lua_state);
-				lua_rawgeti(darktable.lua_state, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
-				lua_pushstring(darktable.lua_state,"quit");
-				lua_pushcfunction(darktable.lua_state,&lua_quit);
-				lua_settable(darktable.lua_state,-3);
-				lua_pop(darktable.lua_state,1);
+	// init the global lua context
+	darktable.lua_state= luaL_newstate();
+	luaopen_base(darktable.lua_state);
+	luaopen_table(darktable.lua_state);
+	luaopen_string(darktable.lua_state);
+	luaopen_math(darktable.lua_state);
+	lua_rawgeti(darktable.lua_state, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
+	lua_pushstring(darktable.lua_state,"quit");
+	lua_pushcfunction(darktable.lua_state,&lua_quit);
+	lua_settable(darktable.lua_state,-3);
+	dt_lua_init_stmt(darktable.lua_state);
+	dt_lua_init_image(darktable.lua_state);
+	dt_lua_images_init(darktable.lua_state);
+	lua_pop(darktable.lua_state,1);
 }
 
 

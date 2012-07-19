@@ -21,13 +21,13 @@
 #include <sqlite3.h>
 
 /*
-	takes a prepared statement
-	pushes on the stack lua userdata which has a __pair entry that will iterate using the statement.
-	the statement will be properly finalized once the lua userdata is garbage collected
+lua type for a sqlite3_stmt that will be auto-finalized on __gc
 	
    */
-void dt_lua_stmt_pseudo_array(lua_State * L,sqlite3_stmt *stmt);
 
+void dt_lua_push_stmt(lua_State * L,sqlite3_stmt *stmt);
+sqlite3_stmt* dt_lua_checkstmt(lua_State * L,int index);
+void dt_lua_init_stmt(lua_State * L);
 
 #endif
 
