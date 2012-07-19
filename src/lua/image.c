@@ -1,41 +1,52 @@
 /*
-    This file is part of darktable,
-    copyright (c) 2012 Jeremy Rosen
+   This file is part of darktable,
+   copyright (c) 2012 Jeremy Rosen
 
-    darktable is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+   darktable is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-    darktable is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+   darktable is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
-*/
+   You should have received a copy of the GNU General Public License
+   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "lua/image.h"
 #include "lua/stmt.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/image.h"
+#include "common/image_cache.h"
 
 /***********************************************************************
   handling of dt_image_t
-  **********************************************************************/
+ **********************************************************************/
 #define LUA_IMAGE "dt_lua_image"
 typedef struct {
 	int imgid;
 } lua_image;
 
-static int dt_lua_image_tostring(lua_State *L) {
+static int image_tostring(lua_State *L) {
 	//printf("%s %d\n",__FUNCTION__,dt_lua_checkimage(L,-1));
 	lua_pushinteger(L,dt_lua_checkimage(L,-1));
 	return 1;
 }
 
 void dt_lua_push_image(lua_State * L,int imgid) {
+	// check that id is valid
+	sqlite3_stmt *stmt;
+	DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where id = ?1", -1, &stmt, NULL);
+	DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+	if(sqlite3_step(stmt) != SQLITE_ROW) {
+		sqlite3_finalize(stmt);
+		luaL_error(L,"invalid id for image : %d",imgid);
+	}
+	sqlite3_finalize(stmt);
 	lua_image * my_image = (lua_image*)lua_newuserdata(L,sizeof(lua_image));
 	luaL_setmetatable(L,LUA_IMAGE);
 	my_image->imgid=imgid;
@@ -46,8 +57,36 @@ int dt_lua_checkimage(lua_State * L,int index){
 	return my_image->imgid;
 }
 
+typedef enum {
+	EXIF_EXPOSURE,
+	LAST_IMAGE_FIELD
+} image_fields;
+const char *const image_fields_name[] = {
+	"exif_exposure",
+	NULL
+};
+
+static int image_index(lua_State *L){
+	int retval=0;
+	const dt_image_t * my_image = dt_image_cache_read_get(darktable.image_cache,dt_lua_checkimage(L,-2));
+	switch(luaL_checkoption(L,-1,NULL,image_fields_name)) {
+		case EXIF_EXPOSURE:
+			lua_pushnumber(L,my_image->exif_exposure);
+			retval=1;
+			break;
+		default:
+			dt_image_cache_read_release(darktable.image_cache,my_image);
+			luaL_error(L,"should never happen");
+			break;
+
+	}
+	dt_image_cache_read_release(darktable.image_cache,my_image);
+	return retval;
+}
+
 static const luaL_Reg dt_lua_image_meta[] = {
-	{"__tostring", dt_lua_image_tostring },
+	{"__tostring", image_tostring },
+	{"__index", image_index },
 	{0,0}
 };
 void dt_lua_init_image(lua_State * L) {
@@ -57,16 +96,18 @@ void dt_lua_init_image(lua_State * L) {
 }
 /***********************************************************************
   Creating the images global variable
-  **********************************************************************/
+ **********************************************************************/
 static int images_next(lua_State *L) {
 	//printf("%s\n",__FUNCTION__);
 	//TBSL : check index and find the correct position in stmt if index was changed manually
 	// 2 args, table, index, returns the next index,value or nil,nil return the first index,value if index is nil 
-	
+
 	sqlite3_stmt *stmt = dt_lua_checkstmt(L,-2);
 	if(lua_isnil(L,-1)) {
 		sqlite3_reset(stmt);
-	} 
+	} else if(luaL_checkinteger(L,-1) != sqlite3_column_int(stmt,0)) {
+		luaL_error(L,"TBSL : changing index of a loop on variable images is not supported yet");
+	}
 	int result = sqlite3_step(stmt);
 	if(result != SQLITE_ROW){
 		lua_pushnil(L);
@@ -79,17 +120,23 @@ static int images_next(lua_State *L) {
 	return 2;
 }
 
+static int images_index(lua_State *L) {
+	int imgid = luaL_checkinteger(L,-1);
+	dt_lua_push_image(L,imgid);
+	return 1;
+}
 
 static int images_pairs(lua_State *L) {
 	lua_pushcfunction(L,images_next);
 	sqlite3_stmt *stmt;
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images", -1, &stmt, NULL);
+	DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images", -1, &stmt, NULL);
 	dt_lua_push_stmt(L,stmt);
 	lua_pushnil(L); // index set to null for reset
 	return 3;
 }
 static const luaL_Reg stmt_meta[] = {
 	{"__pairs", images_pairs },
+	{"__index", images_index },
 	{0,0}
 };
 void dt_lua_images_init(lua_State * L) {
