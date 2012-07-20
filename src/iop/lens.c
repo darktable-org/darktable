@@ -158,20 +158,20 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
           modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
         // reverse transform the global coords from lf to our buffer
         float *buf = ((float *)ovoid) + y*roi_out->width*ch;
-        for (int x = 0; x < roi_out->width; x++,buf+=ch)
+        for (int x = 0; x < roi_out->width; x++,buf+=ch,pi+=6)
         {
-          for(int c=0; c<3; c++,pi+=2)
+          for(int c=0; c<3; c++)
           {
-            const float pi0 = pi[0] - roi_in->x;
-            const float pi1 = pi[1] - roi_in->y;
+            const float pi0 = pi[c*2] - roi_in->x;
+            const float pi1 = pi[c*2+1] - roi_in->y;
             buf[c] = dt_interpolation_compute_sample(interpolation, in+c, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
           }
 
           if(mask_display)
           {
-            float *pi = (float *)(((char *)d->tmpbuf2) + req2*dt_get_thread_num()) + 2; // take green channel distortion also for alpha channel
-            const float pi0 = pi[0] - roi_in->x;
-            const float pi1 = pi[1] - roi_in->y;
+            // take green channel distortion also for alpha channel
+            const float pi0 = pi[2] - roi_in->x;
+            const float pi1 = pi[3] - roi_in->y;
             buf[3] = dt_interpolation_compute_sample(interpolation, in+3, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
           }
         }
@@ -253,20 +253,20 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
           modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
         // reverse transform the global coords from lf to our buffer
         float *out = ((float *)ovoid) + y*roi_out->width*ch;
-        for (int x = 0; x < roi_out->width; x++)
+        for (int x = 0; x < roi_out->width; x++,pi+=6)
         {
-          for(int c=0; c<3; c++,pi+=2)
+          for(int c=0; c<3; c++)
           {
-            const float pi0 = pi[0] - roi_in->x;
-            const float pi1 = pi[1] - roi_in->y;
+            const float pi0 = pi[c*2] - roi_in->x;
+            const float pi1 = pi[c*2+1] - roi_in->y;
             out[c] = dt_interpolation_compute_sample(interpolation, d->tmpbuf+c, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
           }
 
           if(mask_display)
           {
-            float *pi = (float *)(((char *)d->tmpbuf2) + req2*dt_get_thread_num()) + 2; // take green channel distortion also for alpha channel
-            const float pi0 = pi[0] - roi_in->x;
-            const float pi1 = pi[1] - roi_in->y;
+            // take green channel distortion also for alpha channel
+            const float pi0 = pi[2] - roi_in->x;
+            const float pi1 = pi[3] - roi_in->y;
             out[3] = dt_interpolation_compute_sample(interpolation, d->tmpbuf+3, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
           }
           out += ch;
