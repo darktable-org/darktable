@@ -770,7 +770,13 @@ dt_interpolation_compute_sample(
       in += linestride;
     }
     r = s/(normh*normv);
-  } else {
+  } else if ( ix >= 0
+           && iy >= 0
+           && ix < width
+           && iy < height ) {
+    // At least a valid coordinate
+
+
     // Point to the upper left pixel index wise
     iy -= itor->width-1;
     ix -= itor->width-1;
@@ -800,6 +806,9 @@ dt_interpolation_compute_sample(
     }
 
     r = s/(normh*normv);
+  } else {
+    // invalide coordinate
+    r = 0.0f;
   }
   return r;
 }
