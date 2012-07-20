@@ -22,9 +22,10 @@
 
 /*
 	a type matchin dt_image_t define in common/image.h
+	need some thought before it's made public
    */
-void dt_lua_push_image(lua_State * L,int imgid);
-int dt_lua_checkimage(lua_State * L,int index);
+//void dt_lua_push_image(lua_State * L,int imgid);
+//int dt_lua_checkimage(lua_State * L,int index);
 void dt_lua_init_image(lua_State * L);
 
 

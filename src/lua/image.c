@@ -29,32 +29,60 @@
 #define LUA_IMAGE "dt_lua_image"
 typedef struct {
 	int imgid;
+	const dt_image_t * const_image; 
 } lua_image;
+
+lua_image *dt_lua_checkimage(lua_State * L,int index){
+	lua_image* my_image= luaL_checkudata(L,index,LUA_IMAGE);
+	return my_image;
+}
 
 static int image_tostring(lua_State *L) {
 	//printf("%s %d\n",__FUNCTION__,dt_lua_checkimage(L,-1));
-	lua_pushinteger(L,dt_lua_checkimage(L,-1));
+	lua_pushinteger(L,dt_lua_checkimage(L,-1)->imgid);
 	return 1;
 }
 
-void dt_lua_push_image(lua_State * L,int imgid) {
-	// check that id is valid
-	sqlite3_stmt *stmt;
-	DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where id = ?1", -1, &stmt, NULL);
-	DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-	if(sqlite3_step(stmt) != SQLITE_ROW) {
-		sqlite3_finalize(stmt);
-		luaL_error(L,"invalid id for image : %d",imgid);
-	}
-	sqlite3_finalize(stmt);
-	lua_image * my_image = (lua_image*)lua_newuserdata(L,sizeof(lua_image));
-	luaL_setmetatable(L,LUA_IMAGE);
-	my_image->imgid=imgid;
+static int image_gc(lua_State *L) {
+	lua_image * my_image=dt_lua_checkimage(L,-1);
+	//printf("%s %d\n",__FUNCTION__,my_image->imgid);
+	dt_image_cache_read_release(darktable.image_cache,my_image->const_image);
+	return 0;
 }
 
-int dt_lua_checkimage(lua_State * L,int index){
-	lua_image* my_image= luaL_checkudata(L,index,LUA_IMAGE);
-	return my_image->imgid;
+void dt_lua_push_image(lua_State * L,int imgid) {
+	// ckeck if image already is in the env
+	// get the metatable and put it on top (side effect of newtable)
+	luaL_newmetatable(L,LUA_IMAGE);
+	lua_pushinteger(L,imgid);
+	lua_gettable(L,-2);
+	if(!lua_isnil(L,-1)) {
+		dt_lua_checkimage(L,-1);
+		lua_remove(L,-2); // remove the table, but leave the image on top of the stac
+		return;
+	} else {
+		lua_pop(L,1); // remove nil at top
+		// check that id is valid
+		sqlite3_stmt *stmt;
+		DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where id = ?1", -1, &stmt, NULL);
+		DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+		if(sqlite3_step(stmt) != SQLITE_ROW) {
+			sqlite3_finalize(stmt);
+			luaL_error(L,"invalid id for image : %d",imgid);
+		}
+		sqlite3_finalize(stmt);
+		lua_pushinteger(L,imgid);
+		lua_image * my_image = (lua_image*)lua_newuserdata(L,sizeof(lua_image));
+		luaL_setmetatable(L,LUA_IMAGE);
+		my_image->imgid=imgid;
+		my_image->const_image= dt_image_cache_read_get(darktable.image_cache,imgid);
+		// add the value to the metatable, so it can be reused
+		lua_settable(L,-3);
+		// put the value back on top
+		lua_pushinteger(L,imgid);
+		lua_gettable(L,-2);
+		lua_remove(L,-2); // remove the table, but leave the image on top of the stac
+	}
 }
 
 typedef enum {
@@ -67,31 +95,34 @@ const char *const image_fields_name[] = {
 };
 
 static int image_index(lua_State *L){
-	int retval=0;
-	const dt_image_t * my_image = dt_image_cache_read_get(darktable.image_cache,dt_lua_checkimage(L,-2));
+	const dt_image_t * my_image=dt_lua_checkimage(L,-2)->const_image;
 	switch(luaL_checkoption(L,-1,NULL,image_fields_name)) {
 		case EXIF_EXPOSURE:
 			lua_pushnumber(L,my_image->exif_exposure);
-			retval=1;
-			break;
+			return 1;
 		default:
 			dt_image_cache_read_release(darktable.image_cache,my_image);
 			luaL_error(L,"should never happen");
-			break;
+			return 0;
 
 	}
-	dt_image_cache_read_release(darktable.image_cache,my_image);
-	return retval;
 }
 
 static const luaL_Reg dt_lua_image_meta[] = {
 	{"__tostring", image_tostring },
 	{"__index", image_index },
+	{"__gc", image_gc },
 	{0,0}
 };
 void dt_lua_init_image(lua_State * L) {
 	luaL_newmetatable(L,LUA_IMAGE);
 	luaL_setfuncs(L,dt_lua_image_meta,0);
+	// add a metatable to the metatable, just for the __mode field
+	lua_newtable(L);
+	lua_pushstring(L,"v");
+	lua_setfield(L,-2,"__mode");
+	lua_setmetatable(L,-2);
+	//pop the metatable itself to be clean
 	lua_pop(L,1);
 }
 /***********************************************************************
@@ -140,7 +171,7 @@ static const luaL_Reg stmt_meta[] = {
 	{0,0}
 };
 void dt_lua_images_init(lua_State * L) {
-	lua_newuserdata(L,1); // placeholder
+	lua_newuserdata(L,1); // placeholder we can't use a table because we can't prevent assignment
 	luaL_newlib(L,stmt_meta);
 	lua_setmetatable(L,-2);
 	lua_setfield(L,-2,"images");
