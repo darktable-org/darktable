@@ -232,6 +232,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       if(inp[i] < 1.0f) outp[i] = d->table[CLAMP((int)(inp[i]*0x10000ul), 0, 0xffff)];
       else              outp[i] = dt_iop_eval_exp(d->unbounded_coeffs, inp[i]);
     }
+
+    outp[3] = inp[3];
   }
 }
 
