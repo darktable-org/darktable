@@ -418,7 +418,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(roi_out, roi_in, tmpbuf, modifier, d) schedule(static)
 #endif
-      for (int y = 0; y < roi_in->height; y++)
+      for (int y = 0; y < roi_out->height; y++)
       {
         /* Colour correction: vignetting and CCI */
         // actually this way row stride does not matter.
