@@ -882,7 +882,13 @@ dt_interpolation_compute_pixel4c(
     }
 
     *(__m128*)out = _mm_mul_ps(pixel, oonorm);
-  } else {
+
+  } else if ( ix >= 0
+           && iy >= 0
+           && ix < width
+           && iy < height ) {
+    // At least a valid coordinate
+
     // Point to the upper left pixel index wise
     iy -= itor->width-1;
     ix -= itor->width-1;
@@ -912,6 +918,8 @@ dt_interpolation_compute_pixel4c(
     }
 
     *(__m128*)out = _mm_mul_ps(pixel, oonorm);
+  } else {
+    *(__m128*)out = _mm_set_ps1(0.0f);
   }
 }
 
