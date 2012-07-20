@@ -33,7 +33,9 @@ typedef struct dt_iop_exposure_gui_data_t
 {
   GtkVBox *vbox1, *vbox2;
   GtkCheckButton *autoexp;
-  GtkDarktableSlider *black, *exposure, *autoexpp;
+  GtkWidget* black;
+  GtkWidget* exposure;
+  GtkWidget* autoexpp;
 }
 dt_iop_exposure_gui_data_t;
 
@@ -64,3 +66,6 @@ void gui_cleanup  (struct dt_iop_module_t *self);
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

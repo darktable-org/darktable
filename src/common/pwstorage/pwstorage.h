@@ -22,7 +22,6 @@
 typedef enum pw_storage_backend_t
 {
   PW_STORAGE_BACKEND_NONE = 0,
-  PW_STORAGE_BACKEND_GCONF,
   PW_STORAGE_BACKEND_KWALLET,
   PW_STORAGE_BACKEND_GNOME_KEYRING
 } pw_storage_backend_t;
@@ -45,3 +44,7 @@ gboolean dt_pwstorage_set(const gchar* slot, GHashTable* table);
 GHashTable* dt_pwstorage_get(const gchar* slot);
 
 #endif
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

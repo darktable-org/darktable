@@ -258,6 +258,9 @@ void LJpegDecompressor::parseSOS() {
     if (!huff[td].initialized)
       ThrowRDE("LJpegDecompressor::parseSOS: Invalid Huffman table selection, not defined.");
 
+    if (count > 3)
+      ThrowRDE("LJpegDecompressor::parseSOS: Component count out of range");
+
     frame.compInfo[count].dcTblNo = td;
   }
 
@@ -579,7 +582,7 @@ int LJpegDecompressor::HuffDecode(HuffmanTable *htbl) {
     */
 
     if (l > frame.prec || htbl->valptr[l] == 0xff) {
-      ThrowIOE("Corrupt JPEG data: bad Huffman code:%u", l);
+      ThrowRDE("Corrupt JPEG data: bad Huffman code:%u", l);
     } else {
       rv = htbl->huffval[htbl->valptr[l] +
                          ((int)(code - htbl->mincode[l]))];
@@ -595,7 +598,7 @@ int LJpegDecompressor::HuffDecode(HuffmanTable *htbl) {
   // Ensure we have enough bits
   if ((rv + l) > 24) {
     if (rv > 16) // There is no values above 16 bits.
-      ThrowIOE("Corrupt JPEG data: Too many bits requested.");
+      ThrowRDE("Corrupt JPEG data: Too many bits requested.");
     else
       bits->fill();
   }

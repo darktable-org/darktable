@@ -17,11 +17,11 @@
 */
 #include "develop/imageop.h"
 #include "common/opencl.h"
-#include "dtgtk/slider.h"
-#include "dtgtk/resetlabel.h"
+#include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "common/darktable.h"
+#include "common/interpolation.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/tiling.h"
@@ -32,8 +32,7 @@
 // we assume people have -msee support.
 #include <xmmintrin.h>
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
-
+#define BLOCKSIZE  2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
 DT_MODULE(3)
 
@@ -49,10 +48,10 @@ dt_iop_demosaic_params_t;
 
 typedef struct dt_iop_demosaic_gui_data_t
 {
-  GtkDarktableSlider *scale1;
-  GtkComboBox *greeneq;
+  GtkWidget *scale1;
+  GtkWidget *greeneq;
   GtkWidget *color_smoothing;
-  GtkComboBox *demosaic_method;
+  GtkWidget *demosaic_method;
 }
 dt_iop_demosaic_gui_data_t;
 
@@ -67,6 +66,7 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_zoom_half_size;
   int kernel_downsample;
   int kernel_border_interpolate;
+  int kernel_color_smoothing;
 }
 dt_iop_demosaic_global_data_t;
 
@@ -97,6 +97,7 @@ typedef enum dt_iop_demosaic_greeneq_t
   DT_IOP_GREEN_EQ_BOTH = 3
 }
 dt_iop_demosaic_greeneq_t;
+
 static void
 amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in, float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out, const int filters);
 
@@ -626,11 +627,11 @@ modify_roi_in (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
   roi_in->y = MAX(0, roi_in->y & ~1);
 
   // clamp numeric inaccuracies to full buffer, to avoid scaling/copying in pixelpipe:
-  if(piece->pipe->image.width - roi_in->width < 10 && piece->pipe->image.height - roi_in->height < 10)
-  {
+  if(abs(piece->pipe->image.width - roi_in->width) < MAX(ceilf(1.0f/roi_out->scale), 10))
     roi_in->width  = piece->pipe->image.width;
+
+  if(abs(piece->pipe->image.height - roi_in->height) < MAX(ceilf(1.0f/roi_out->scale), 10))
     roi_in->height = piece->pipe->image.height;
-  }
 }
 
 void
@@ -756,6 +757,27 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
 
+  // Demosaic mode AMAZE not implemented in OpenCL yet. Fall back to cpu path then.
+  if(data->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaicing method AMAZE not implemented yet in OpenCL\n");
+    return FALSE;
+  }
+
+  // We can not (yet) green-equilibrate over full image. Fall back to cpu path then.
+  if(data->green_eq == DT_IOP_GREEN_EQ_FULL || data->green_eq == DT_IOP_GREEN_EQ_BOTH)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] cannot green-equilibrate over full image in OpenCL\n");
+    return FALSE;
+  }
+
+  const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  if(interpolation->id != DT_INTERPOLATION_BILINEAR && roi_out->scale <= .99999f && roi_out->scale > 0.5f)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] only bilinear interpolation mode supported here\n");
+    return FALSE;
+  }
+
   const int devid = piece->pipe->devid;
 
   cl_mem dev_tmp = NULL;
@@ -766,7 +788,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     const int width = roi_out->width;
     const int height = roi_out->height;
-    size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
+    size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
      // 1:1 demosaic
     dev_green_eq = NULL;
     if(data->green_eq != DT_IOP_GREEN_EQ_NO)
@@ -841,7 +863,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if (dev_tmp == NULL) goto error;
     const int width = roi_in->width;
     const int height = roi_in->height;
-    size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
+    size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
     if(data->green_eq != DT_IOP_GREEN_EQ_NO)
     {
       // green equilibration
@@ -906,8 +928,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     // scale temp buffer to output buffer
     int zero = 0;
-    sizes[0] = ROUNDUP(roi_out->width, 4);
-    sizes[1] = ROUNDUP(roi_out->height, 4);
+    sizes[0] = ROUNDUPWD(roi_out->width);
+    sizes[1] = ROUNDUPHT(roi_out->height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 0, sizeof(cl_mem), &dev_tmp);
     dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 1, sizeof(cl_mem), &dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 2, sizeof(int), &roi_out->width);
@@ -931,7 +953,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       if (dev_tmp == NULL) goto error;
       const int width = roi_in->width;
       const int height = roi_in->height;
-      size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
+      size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
 
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 0, sizeof(cl_mem), &dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 1, sizeof(cl_mem), &dev_tmp);
@@ -947,7 +969,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     const int width = roi_out->width;
     const int height = roi_out->height;
-    size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
+    size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 0, sizeof(cl_mem), &dev_pix);
     dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 1, sizeof(cl_mem), &dev_out);
@@ -965,6 +987,90 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
+  dev_tmp = dev_green_eq = NULL;
+
+  // color smoothing
+  if(data->color_smoothing)
+  {
+    dev_tmp = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, 4*sizeof(float));
+    if (dev_tmp == NULL) goto error;
+
+    const int width = roi_out->width;
+    const int height = roi_out->height;
+
+    // prepare local work group
+    size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
+    size_t workgroupsize = 0;          // the maximum number of items in a work group
+    unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
+    size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
+  
+    // Make sure blocksize is not too large. As our kernel is very register hungry we
+    // need to take maximum work group size into account
+    int blocksize = BLOCKSIZE;
+    int blockwd;
+    int blockht;
+    if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
+       dt_opencl_get_kernel_work_group_size(devid, gd->kernel_color_smoothing, &kernelworkgroupsize) == CL_SUCCESS)
+    {
+
+      while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize*blocksize > workgroupsize ||
+            (blocksize+2)*(blocksize+2)*4*sizeof(float) > localmemsize)
+      {
+        if(blocksize == 1) break;
+        blocksize >>= 1;    
+      }
+
+      blockwd = blockht = blocksize;
+
+      if(blockwd * blockht > kernelworkgroupsize)
+        blockht = kernelworkgroupsize / blockwd;
+
+      // speed optimized limits for my NVIDIA GTS450
+      // TODO: find out if this is good for other systems as well
+      blockwd = blockwd > 16 ? 16 : blockwd;
+      blockht = blockht > 8 ? 8 : blockht;
+    }
+    else
+    {
+      blockwd = blockht = 1;   // slow but safe
+    }
+
+    size_t sizes[] = { ROUNDUP(width, blockwd), ROUNDUP(height, blockht), 1 };
+    size_t local[] = { blockwd, blockht, 1 };
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { width, height, 1 };
+    // two buffer references for our ping-pong
+    cl_mem dev_t1 = dev_out;
+    cl_mem dev_t2 = dev_tmp;
+
+    for(int pass = 0; pass < data->color_smoothing; pass++)
+    {
+
+      dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 0, sizeof(cl_mem), &dev_t1);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 1, sizeof(cl_mem), &dev_t2);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 2, sizeof(int), &width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 3, sizeof(int), &height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 4, (blockwd+2)*(blockht+2)*4*sizeof(float), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_color_smoothing, sizes, local);
+      if(err != CL_SUCCESS) goto error;
+
+      // swap dev_t1 and dev_t2
+      cl_mem t = dev_t1;
+      dev_t1 = dev_t2;
+      dev_t2 = t;
+    }
+
+    // after last step we find final output in dev_t1.
+    // let's see if this is in dev_tmp and needs to be copied to dev_out
+    if(dev_t1 == dev_tmp)
+    {
+      // copy data from dev_tmp -> dev_out
+      err = dt_opencl_enqueue_copy_image(devid, dev_tmp, dev_out, origin, origin, region);
+      if(err != CL_SUCCESS) goto error;
+    }
+  }
+
+  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
 
 error:
@@ -977,7 +1083,21 @@ error:
 
 void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
-  tiling->factor = 3.25f; // in + out + tmp + green_eq (1/4 full)
+  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
+
+  float ioratio = (float)roi_out->width*roi_out->height/((float)roi_in->width*roi_in->height);
+  float smooth = data->color_smoothing ? ioratio : 0.0f;
+
+  tiling->factor = 1.0f + ioratio;
+
+  if(roi_out->scale > 0.999f)
+    tiling->factor += fmax(0.25f, smooth);
+  else if(roi_out->scale > 0.5f)
+    tiling->factor += fmax(1.25f, smooth);
+  else
+    tiling->factor += fmax(0.25f, smooth);
+
+  tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 5; // take care of border handling
   tiling->xalign = 2; // Bayer pattern
@@ -991,7 +1111,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_enabled = 1;
-  module->priority = 122; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 117; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;
@@ -1016,6 +1136,7 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_ppg_redblue        = dt_opencl_create_kernel(program, "ppg_demosaic_redblue");
   gd->kernel_downsample         = dt_opencl_create_kernel(program, "clip_and_zoom");
   gd->kernel_border_interpolate = dt_opencl_create_kernel(program, "border_interpolate");
+  gd->kernel_color_smoothing    = dt_opencl_create_kernel(program, "color_smoothing");
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -1037,6 +1158,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_ppg_redblue);
   dt_opencl_free_kernel(gd->kernel_downsample);
   dt_opencl_free_kernel(gd->kernel_border_interpolate);
+  dt_opencl_free_kernel(gd->kernel_color_smoothing);
   free(module->data);
   module->data = NULL;
 }
@@ -1068,38 +1190,38 @@ void gui_update   (struct dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  dtgtk_slider_set_value(g->scale1, p->median_thrs);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->color_smoothing), p->color_smoothing);
-  gtk_combo_box_set_active(g->greeneq, p->green_eq);
-  gtk_combo_box_set_active(g->demosaic_method, p->demosaicing_method);
+  dt_bauhaus_slider_set(g->scale1, p->median_thrs);
+  dt_bauhaus_combobox_set(g->color_smoothing, p->color_smoothing);
+  dt_bauhaus_combobox_set(g->greeneq, p->green_eq);
+  dt_bauhaus_combobox_set(g->demosaic_method, p->demosaicing_method);
 }
 
 static void
-median_thrs_callback (GtkDarktableSlider *slider, gpointer user_data)
+median_thrs_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  p->median_thrs = dtgtk_slider_get_value(slider);
+  p->median_thrs = dt_bauhaus_slider_get(slider);
   if(p->median_thrs < 0.001f) p->median_thrs = 0.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-color_smoothing_callback (GtkSpinButton *button, gpointer user_data)
+color_smoothing_callback (GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  p->color_smoothing = gtk_spin_button_get_value(GTK_SPIN_BUTTON(button));
+  p->color_smoothing = dt_bauhaus_combobox_get(button);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-greeneq_callback (GtkComboBox *combo, dt_iop_module_t *self)
+greeneq_callback (GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  int active = gtk_combo_box_get_active(combo);
+  int active = dt_bauhaus_combobox_get(combo);
   switch(active)
   {
     case DT_IOP_GREEN_EQ_FULL:
@@ -1120,10 +1242,10 @@ greeneq_callback (GtkComboBox *combo, dt_iop_module_t *self)
 }
 
 static void
-demosaic_method_callback(GtkComboBox *combo, dt_iop_module_t *self)
+demosaic_method_callback(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  int active = gtk_combo_box_get_active(combo);
+  int active = dt_bauhaus_combobox_get(combo);
 
   switch(active)
   {
@@ -1144,54 +1266,47 @@ void gui_init     (struct dt_iop_module_t *self)
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
 
-  self->widget = gtk_table_new(4, 2, FALSE);
-  gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
-  gtk_table_set_col_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
 
-  ////////////////////////////
-  GtkWidget *label_dm = dtgtk_reset_label_new(_("method"), self, &p->demosaicing_method, sizeof(uint32_t));
-  gtk_table_attach(GTK_TABLE(self->widget), label_dm, 0, 1, 0, 1, GTK_FILL, 0, 0, 0);
-  g->demosaic_method = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(g->demosaic_method, _("ppg"));
-  gtk_combo_box_append_text(g->demosaic_method, _("AMaZE"));
+  g->demosaic_method = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_combobox_add(g->demosaic_method, _("ppg"));
+  dt_bauhaus_combobox_add(g->demosaic_method, _("AMaZE"));
+  dt_bauhaus_widget_set_label(g->demosaic_method, _("method"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method, TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->demosaic_method), "tooltip-text", _("demosaicing raw data method"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->demosaic_method), 1, 2, 0, 1, GTK_FILL|GTK_EXPAND, 0, 0, 0);
-  ////////////////////////////
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.000, 0.001, p->median_thrs, 3));
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.001, p->median_thrs, 3);
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("threshold for edge-aware median.\nset to 0.0 to switch off.\nset to 1.0 to ignore edges."), (char *)NULL);
-  dtgtk_slider_set_label(g->scale1,_("edge threshold"));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->scale1), 0, 2, 1, 2, GTK_FILL|GTK_EXPAND, 0, 0, 0);
+  dt_bauhaus_widget_set_label(g->scale1, _("edge threshold"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->scale1, TRUE, TRUE, 0);
 
-  GtkWidget *widget;
-  widget = dtgtk_reset_label_new(_("color smoothing"), self, &p->color_smoothing, sizeof(uint32_t));
-  gtk_table_attach(GTK_TABLE(self->widget), widget, 0, 1, 2, 3, GTK_FILL, 0, 0, 0);
-  g->color_smoothing = gtk_spin_button_new_with_range(0, 5, 1);
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->color_smoothing), 0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->color_smoothing), p->color_smoothing);
-  dt_gui_key_accel_block_on_focus(g->color_smoothing);
+  g->color_smoothing = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->color_smoothing, _("color smoothing"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->color_smoothing, TRUE, TRUE, 0);
+  dt_bauhaus_combobox_add(g->color_smoothing, _("off"));
+  dt_bauhaus_combobox_add(g->color_smoothing, _("one time"));
+  dt_bauhaus_combobox_add(g->color_smoothing, _("two times"));
+  dt_bauhaus_combobox_add(g->color_smoothing, _("three times"));
+  dt_bauhaus_combobox_add(g->color_smoothing, _("four times"));
+  dt_bauhaus_combobox_add(g->color_smoothing, _("five times"));
   g_object_set(G_OBJECT(g->color_smoothing), "tooltip-text", _("how many color smoothing median steps after demosaicing"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), g->color_smoothing, 1, 2, 2, 3, GTK_FILL|GTK_EXPAND, 0, 0, 0);
 
-  ////////////////////////////
-  GtkWidget *label_ge = dtgtk_reset_label_new(_("match greens"), self, &p->green_eq, sizeof(uint32_t));
-  gtk_table_attach(GTK_TABLE(self->widget), label_ge, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
-  g->greeneq = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(g->greeneq, _("disabled"));
-  gtk_combo_box_append_text(g->greeneq, _("local average"));
-  gtk_combo_box_append_text(g->greeneq, _("full average"));
-  gtk_combo_box_append_text(g->greeneq, _("full and local average"));
-  g_object_set(G_OBJECT(g->demosaic_method), "tooltip-text", _("green channels mathing method"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->greeneq), 1, 2, 3, 4, GTK_FILL|GTK_EXPAND, 0, 0, 0);
-  ////////////////////////////
+  g->greeneq = dt_bauhaus_combobox_new(self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->greeneq, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(g->greeneq, _("match greens"));
+  dt_bauhaus_combobox_add(g->greeneq, _("disabled"));
+  dt_bauhaus_combobox_add(g->greeneq, _("local average"));
+  dt_bauhaus_combobox_add(g->greeneq, _("full average"));
+  dt_bauhaus_combobox_add(g->greeneq, _("full and local average"));
+  g_object_set(G_OBJECT(g->greeneq), "tooltip-text", _("green channels matching method"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (median_thrs_callback), self);
   g_signal_connect (G_OBJECT (g->color_smoothing), "value-changed",
                     G_CALLBACK (color_smoothing_callback), self);
-  g_signal_connect (G_OBJECT (g->greeneq), "changed",
+  g_signal_connect (G_OBJECT (g->greeneq), "value-changed",
                     G_CALLBACK (greeneq_callback), self);
-  g_signal_connect (G_OBJECT (g->demosaic_method), "changed",
+  g_signal_connect (G_OBJECT (g->demosaic_method), "value-changed",
                     G_CALLBACK (demosaic_method_callback), self);
 }
 
@@ -1202,4 +1317,6 @@ void gui_cleanup  (struct dt_iop_module_t *self)
 }
 
 #include "iop/amaze_demosaic_RT.cc"
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

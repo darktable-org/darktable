@@ -19,22 +19,21 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
 #include "iop/colorin.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/colormatrices.c"
 #include "common/opencl.h"
-#include "dtgtk/resetlabel.h"
 #include "external/adobe_coeff.c"
 #include <xmmintrin.h>
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
+#include <string.h>
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 DT_MODULE(1)
 
@@ -83,25 +82,25 @@ cleanup_global(dt_iop_module_so_t *module)
 }
 
 #if 0
-static void intent_changed (GtkComboBox *widget, gpointer user_data)
+static void intent_changed (GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
-  p->intent = (dt_iop_color_intent_t)gtk_combo_box_get_active(widget);
+  p->intent = (dt_iop_color_intent_t)dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 #endif
 
 static void
-profile_changed (GtkComboBox *widget, gpointer user_data)
+profile_changed (GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_request_focus(self);
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
-  int pos = gtk_combo_box_get_active(widget);
+  int pos = dt_bauhaus_combobox_get(widget);
   GList *prof = g->profiles;
   while(prof)
   {
@@ -145,7 +144,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*9, d->cmatrix);
   if (dev_m == NULL) goto error;
   dev_r = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
@@ -154,7 +153,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if (dev_g == NULL) goto error;
   dev_b = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
   if (dev_b == NULL) goto error;
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*2*3, (float *)d->unbounded_coeffs);
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3*3, (float *)d->unbounded_coeffs);
   if (dev_coeffs == NULL) goto error;
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -330,6 +329,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
     }
   }
+
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -351,7 +353,13 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   piece->process_cl_ready = 1;
   char datadir[1024];
   char filename[1024];
-  dt_util_get_datadir(datadir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
+  if(!strcmp(p->iccprofile, "Lab"))
+  {
+    piece->enabled = 0;
+    return;
+  }
+  piece->enabled = 1;
   if(!strcmp(p->iccprofile, "darktable"))
   {
     char makermodel[1024];
@@ -466,19 +474,12 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // clean up everything again.
-  // (void)gegl_node_remove_child(pipe->gegl, piece->input);
-#else
-  // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   if(d->input) dt_colorspaces_cleanup_profile(d->input);
   dt_colorspaces_cleanup_profile(d->Lab);
   for(int t=0; t<dt_get_num_threads(); t++) if(d->xform[t]) cmsDeleteTransform(d->xform[t]);
   free(d->xform);
   free(piece->data);
-  // pthread_mutex_unlock(&darktable.plugin_threadsafe);
-#endif
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -486,19 +487,19 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)module->params;
-  // gtk_combo_box_set_active(g->cbox1, (int)p->intent);
+  // dt_bauhaus_combobox_set(g->cbox1, (int)p->intent);
   GList *prof = g->profiles;
   while(prof)
   {
     dt_iop_color_profile_t *pp = (dt_iop_color_profile_t *)prof->data;
     if(!strcmp(pp->filename, p->iccprofile))
     {
-      gtk_combo_box_set_active(g->cbox2, pp->pos);
+      dt_bauhaus_combobox_set(g->cbox2, pp->pos);
       return;
     }
     prof = g_list_next(prof);
   }
-  gtk_combo_box_set_active(g->cbox2, 0);
+  dt_bauhaus_combobox_set(g->cbox2, 0);
   if(strcmp(p->iccprofile, "darktable")) fprintf(stderr, "[colorin] could not find requested profile `%s'!\n", p->iccprofile);
 }
 
@@ -520,7 +521,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorin_params_t));
   module->params_size = sizeof(dt_iop_colorin_params_t);
   module->gui_data = NULL;
-  module->priority = 346; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 352; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
 }
 
@@ -537,7 +538,6 @@ void gui_init(struct dt_iop_module_t *self)
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
   self->gui_data = malloc(sizeof(dt_iop_colorin_gui_data_t));
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
-  dt_iop_colorin_params_t *p   = (dt_iop_colorin_params_t *)self->params;
 
   g->profiles = NULL;
   dt_iop_color_profile_t *prof;
@@ -561,7 +561,7 @@ void gui_init(struct dt_iop_module_t *self)
   // darktable built-in, if applicable
   for(int k=0; k<dt_profiled_colormatrix_cnt; k++)
   {
-    if(!strcmp(makermodel, dt_profiled_colormatrices[k].makermodel))
+    if(!strcasecmp(makermodel, dt_profiled_colormatrices[k].makermodel))
     {
       prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
       g_strlcpy(prof->filename, "darktable", sizeof(prof->filename));
@@ -600,6 +600,13 @@ void gui_init(struct dt_iop_module_t *self)
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
 
+  // Lab built-in
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
+  g_strlcpy(prof->filename, "Lab", sizeof(prof->filename));
+  g_strlcpy(prof->name, "Lab", sizeof(prof->name));
+  g->profiles = g_list_append(g->profiles, prof);
+  prof->pos = ++pos;
+
   // infrared built-in
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "infrared", sizeof(prof->filename));
@@ -609,8 +616,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   // read {userconfig,datadir}/color/in/*.icc, in this order.
   char datadir[1024], confdir[1024], dirname[1024], filename[1024];
-  dt_util_get_user_config_dir(confdir, 1024);
-  dt_util_get_datadir(datadir, 1024);
+  dt_loc_get_user_config_dir(confdir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
   snprintf(dirname, 1024, "%s/color/in", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
     snprintf(dirname, 1024, "%s/color/in", datadir);
@@ -626,8 +633,8 @@ void gui_init(struct dt_iop_module_t *self)
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
-	char *lang = getenv("LANG");
-	if (!lang) lang = "en_US";
+        char *lang = getenv("LANG");
+        if (!lang) lang = "en_US";
 
         dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
         char name[1024];
@@ -643,47 +650,43 @@ void gui_init(struct dt_iop_module_t *self)
     g_dir_close(dir);
   }
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  GtkWidget *label = dtgtk_reset_label_new(_("profile"), self, &p->iccprofile, sizeof(char)*DT_IOP_COLOR_ICC_LEN);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(label), TRUE, TRUE, 0);
-  g->cbox2 = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
+  g->cbox2 = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->cbox2, _("profile"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->cbox2, TRUE, TRUE, 0);
   GList *l = g->profiles;
   while(l)
   {
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
     if(!strcmp(prof->name, "cmatrix"))
-      gtk_combo_box_append_text(g->cbox2, _("standard color matrix"));
+      dt_bauhaus_combobox_add(g->cbox2, _("standard color matrix"));
     else if(!strcmp(prof->name, "darktable"))
-      gtk_combo_box_append_text(g->cbox2, _("enhanced color matrix"));
+      dt_bauhaus_combobox_add(g->cbox2, _("enhanced color matrix"));
     else if(!strcmp(prof->name, "sRGB"))
-      gtk_combo_box_append_text(g->cbox2, _("sRGB (e.g. jpg)"));
+      dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. jpg)"));
     else if(!strcmp(prof->name, "adobergb"))
-      gtk_combo_box_append_text(g->cbox2, _("Adobe RGB"));
+      dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB"));
     else if(!strcmp(prof->name, "linear_rgb"))
-      gtk_combo_box_append_text(g->cbox2, _("linear RGB"));
+      dt_bauhaus_combobox_add(g->cbox2, _("linear RGB"));
     else if(!strcmp(prof->name, "infrared"))
-      gtk_combo_box_append_text(g->cbox2, _("linear infrared BGR"));
+      dt_bauhaus_combobox_add(g->cbox2, _("linear infrared BGR"));
     else if(!strcmp(prof->name, "XYZ"))
-      gtk_combo_box_append_text(g->cbox2, _("linear XYZ"));
+      dt_bauhaus_combobox_add(g->cbox2, _("linear XYZ"));
+    else if(!strcmp(prof->name, "Lab"))
+      dt_bauhaus_combobox_add(g->cbox2, _("Lab"));
     else
-      gtk_combo_box_append_text(g->cbox2, prof->name);
+      dt_bauhaus_combobox_add(g->cbox2, prof->name);
     l = g_list_next(l);
   }
-  gtk_combo_box_set_active(g->cbox2, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox2), TRUE, TRUE, 0);
+  dt_bauhaus_combobox_set(g->cbox2, 0);
 
   char tooltip[1024];
   snprintf(tooltip, 1024, _("icc profiles in %s/color/in or %s/color/in"), confdir, datadir);
   g_object_set(G_OBJECT(g->cbox2), "tooltip-text", tooltip, (char *)NULL);
 
-  g_signal_connect (G_OBJECT (g->cbox2), "changed",
+  g_signal_connect (G_OBJECT (g->cbox2), "value-changed",
                     G_CALLBACK (profile_changed),
                     (gpointer)self);
-  // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -698,4 +701,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011 henrik andersson
+    copyright (c) 2011-2012 henrik andersson
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,8 +17,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/collection.h"
 #include "common/darktable.h"
+#include "common/collection.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "common/debug.h"
@@ -30,6 +30,7 @@
 #include "views/view.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <glib.h>
@@ -100,7 +101,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   view->height = view->width = 100; // set to non-insane defaults before first expose/configure.
   g_strlcpy(view->module_name, module, 64);
   char plugindir[1024];
-  dt_util_get_plugindir(plugindir, 1024);
+  dt_loc_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/views", 1024);
   gchar *libname = g_module_build_path(plugindir, (const gchar *)module);
   view->module = g_module_open(libname, G_MODULE_BIND_LAZY);
@@ -516,7 +517,7 @@ int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, i
 
   /* if not handled by any plugin let pass to view handler*/
   if(!handled && v->button_pressed) 
-    v->button_pressed(v, x, y, which,type,state);
+    return v->button_pressed(v, x, y, which,type,state);
 
   return 0;
 }
@@ -630,8 +631,18 @@ dt_view_image_expose(
     int32_t px,
     int32_t py)
 {
+  // this function is not thread-safe (gui-thread only), so we
+  // can safely allocate this leaking bit of memory to decompress thumbnails:
+  static int first_time = 1;
+  static uint8_t *scratchmem = NULL;
+  if(first_time)
+  {
+    // scratchmem might still be NULL after this, if compression is off.
+    scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
+    first_time = 0;
+  }
   cairo_save (cr);
-  float bgcol = 0.4, fontcol = 0.5, bordercol = 0.1, outlinecol = 0.2;
+  float bgcol = 0.4, fontcol = 0.425, bordercol = 0.1, outlinecol = 0.2;
   int selected = 0, altered = 0, imgsel;
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
   // if(img->flags & DT_IMAGE_SELECTED) selected = 1;
@@ -708,8 +719,9 @@ dt_view_image_expose(
       cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
       cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
       cairo_set_font_size (cr, .25*width);
-
-      cairo_move_to (cr, .01*width, .24*height);
+      cairo_text_extents_t text_extends;
+      cairo_text_extents (cr, ext, &text_extends);
+      cairo_move_to (cr, .025*width - text_extends.x_bearing, .24*height);
       cairo_show_text (cr, ext);
     }
   }
@@ -726,11 +738,15 @@ dt_view_image_expose(
       imgid,
       mip,
       0);
+  // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
+  // so get the real pointer back:
+  uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
+
   cairo_surface_t *surface = NULL;
   if(buf.buf)
   {
     const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
-    surface = cairo_image_surface_create_for_data (buf.buf, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
+    surface = cairo_image_surface_create_for_data (buf_decompressed, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
     if(zoom == 1)
     {
       scale = fminf(
@@ -750,13 +766,16 @@ dt_view_image_expose(
   {
     cairo_translate(cr, -.5f*buf.width, -.5f*buf.height);
     cairo_set_source_surface (cr, surface, 0, 0);
-    if(buf.width <= 8 && buf.height <= 8)
+    // set filter no nearest:
+    // in skull mode, we want to see big pixels.
+    // in 1 iir mode for the right mip, we want to see exactly what the pipe gave us, 1:1 pixel for pixel.
+    // in between, filtering just makes stuff go unsharp.
+    if((buf.width <= 8 && buf.height <= 8) || fabsf(scale - 1.0f) < 0.01f)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
     cairo_rectangle(cr, 0, 0, buf.width, buf.height);
     cairo_fill(cr);
     cairo_surface_destroy (surface);
 
-    if(zoom == 1) cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
     cairo_rectangle(cr, 0, 0, buf.width, buf.height);
   }
 
@@ -896,15 +915,6 @@ dt_view_image_expose(
       //g_print("px = %d, x = %.4f, py = %d, y = %.4f\n", px, x, py, y);
       if(img && abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
       {
-        if(darktable.gui->center_tooltip == 0) // no tooltip yet, so add one
-        {
-          char* tooltip = dt_history_get_items_as_string(img->id);
-          if(tooltip != NULL)
-          {
-            g_object_set(G_OBJECT(dt_ui_center(darktable.gui->ui)), "tooltip-text", tooltip, (char *)NULL);
-            g_free(tooltip);
-          }
-        }
         darktable.gui->center_tooltip = 1;
       }
     }
@@ -1042,6 +1052,15 @@ void dt_view_toggle_selection(int imgid)
   }
 }
 
+/**
+ * \brief Reset filter back to "all images"
+ */
+void dt_view_filter_reset_to_show_all(const dt_view_manager_t *vm)
+{
+    if (vm->proxy.filter.module && vm->proxy.filter.reset_filter)
+        vm->proxy.filter.reset_filter(vm->proxy.filter.module);
+}
+
 void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate )
 {
   //g_return_if_fail(vm->proxy.filmstrip.module!=NULL); // This can happend here for debugging
@@ -1136,11 +1155,24 @@ void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom)
     vm->proxy.lighttable.set_zoom(vm->proxy.lighttable.module, zoom);
 }
 
+void dt_view_collection_update(const dt_view_manager_t *vm)
+{
+  if (vm->proxy.module_collect.module)
+    vm->proxy.module_collect.update(vm->proxy.module_collect.module);
+}
 
 int32_t dt_view_tethering_get_film_id(const dt_view_manager_t *vm)
 {
   if (vm->proxy.tethering.view)
     return vm->proxy.tethering.get_film_id(vm->proxy.tethering.view);
+
+  return -1;
+}
+
+int32_t dt_view_tethering_get_selected_imgid(const dt_view_manager_t *vm)
+{
+  if (vm->proxy.tethering.view)
+    return vm->proxy.tethering.get_selected_imgid(vm->proxy.tethering.view);
 
   return -1;
 }
@@ -1173,11 +1205,13 @@ const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm)
   return NULL;
 }
 
-
 void dt_view_map_center_on_location(const dt_view_manager_t *vm, gdouble lon, gdouble lat, gdouble zoom)
 {
   if (vm->proxy.map.view)
     vm->proxy.map.center_on_location(vm->proxy.map.view, lon, lat, zoom);
 }
 
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

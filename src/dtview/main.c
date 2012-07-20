@@ -16,13 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define _XOPEN_SOURCE 500
-#include <stdlib.h>
-double drand48(void);
-void srand48(long int);
-#include <sys/time.h>
-#include <unistd.h>
-#include <inttypes.h>
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/collection.h"
@@ -32,9 +25,17 @@ void srand48(long int);
 #include "common/imageio.h"
 #include "common/imageio_module.h"
 #include "control/conf.h"
+
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <SDL/SDL.h>
+#include <stdlib.h>
+double drand48(void);
+void srand48(long int);
+#include <sys/time.h>
+#include <unistd.h>
+int usleep(useconds_t usec);
+#include <inttypes.h>
 
 int running;
 int width, height;
@@ -126,7 +127,7 @@ int init(int argc, char *arg[])
 }
 
 static void
-shutdown()
+dtv_shutdown()
 {
   // close all dt related stuff.
   dt_cleanup();
@@ -314,6 +315,9 @@ int main(int argc, char *arg[])
     dt_conf_set_string("plugins/lighttable/export/iccprofile", oldprofile);
     g_free(oldprofile);
   }
-  shutdown();
+  dtv_shutdown();
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

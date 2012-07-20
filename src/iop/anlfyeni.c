@@ -95,9 +95,9 @@ int flags()
 void init_key_accels(dt_iop_module_so_t *self)
 {
 #if 0 // we are deprecated.
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/anlfyeni/sensitivity");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/anlfyeni/scale");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/anlfyeni/strength");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/modules/anlfyeni/sensitivity");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/modules/anlfyeni/scale");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/modules/anlfyeni/strength");
 #endif
 }
 
@@ -185,7 +185,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_anlfyeni_params_t));
   module->default_params = malloc(sizeof(dt_iop_anlfyeni_params_t));
   module->default_enabled = 0;
-  module->priority = 693; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 705; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_anlfyeni_params_t);
   module->gui_data = NULL;
   // TODO: check the defaults if there's better ones
@@ -289,15 +289,15 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.001, 0.07, 0.001, p->alpha, 3));
   g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("sensitivity of edge detection"), (char *)NULL);
   dtgtk_slider_set_label(g->scale1,_("sensitivity"));
-  // dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/local_contrast_2/sensitivity");
+  // dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/modules/local_contrast_2/sensitivity");
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 6.0000, 0.010, p->scale, 3));
   g_object_set (GTK_OBJECT(g->scale2), "tooltip-text", _("spatial extent of the effect around edges"), (char *)NULL);
   dtgtk_slider_set_label(g->scale2,_("scale"));
-  // dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/local_contrast_2/scale");
+  // dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/modules/local_contrast_2/scale");
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 10.0000, 0.001, p->strength, 3));
   g_object_set (GTK_OBJECT(g->scale3), "tooltip-text", _("strength of the local contrast"), (char *)NULL);
   dtgtk_slider_set_label(g->scale3,_("strength"));
-  // dtgtk_slider_set_accel(g->scale3,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/local_contrast_2/strength");
+  // dtgtk_slider_set_accel(g->scale3,darktable.control->accels_darkroom,"<Darktable>/darkroom/modules/local_contrast_2/strength");
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
@@ -317,4 +317,6 @@ void gui_cleanup  (dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2010 Tobias Ellinghaus.
-    copyright (c) 2011 henrik andersson.
+    copyright (c) 2011-2012 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -128,7 +128,7 @@ int bpp(dt_imageio_module_data_t *p)
 const char*
 mime(dt_imageio_module_data_t *data)
 {
-  return "";
+  return "x-copy";
 }
 
 const char*
@@ -159,4 +159,6 @@ void gui_init    (dt_imageio_module_format_t *self)
 void gui_cleanup (dt_imageio_module_format_t *self) {}
 void gui_reset   (dt_imageio_module_format_t *self) {}
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

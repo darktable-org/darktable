@@ -18,9 +18,11 @@
 #ifndef DT_FILM_H
 #define DT_FILM_H
 
+#include "common/darktable.h"
+#include "common/dtpthread.h"
+
 #include <inttypes.h>
 #include <glib.h>
-#include "common/dtpthread.h"
 
 /**
  * film roll.
@@ -65,3 +67,6 @@ void dt_film_image_import(dt_film_t *film,const char *filename, gboolean overrid
 void dt_film_remove_empty();
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  copyright (c) 2010 Henrik Andersson.
+  copyright (c) 2010-2012 Henrik Andersson.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,22 +18,24 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
+#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
+#include "common/opencl.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "common/debug.h"
-#include "dtgtk/slider.h"
 #include "dtgtk/label.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
+#include <string.h>
 
 /** Crazy presets b&w ...
   Film Type			R		G		B						R	G	B
@@ -48,7 +50,8 @@
   Ilford HP5		23		37		40		Generic B/W		24	68	8
 */
 
-#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
+#define CLIP(x)                 ((x<0)?0.0:(x>1.0)?1.0:x)
+
 DT_MODULE(1)
 
 typedef  enum _channelmixer_output_t
@@ -86,10 +89,10 @@ dt_iop_channelmixer_params_t;
 typedef struct dt_iop_channelmixer_gui_data_t
 {
   GtkVBox   *vbox;
-  GtkComboBox *combo1;                                           // Output channel
+  GtkWidget *combo1;                                           // Output channel
   GtkDarktableLabel *dtlabel1,*dtlabel2;                      // output channel, source channels
   GtkLabel  *label1,*label2,*label3;	 	                          // red, green, blue
-  GtkDarktableSlider *scale1,*scale2,*scale3;      	      // red, green, blue
+  GtkWidget *scale1,*scale2,*scale3;      	      // red, green, blue
 }
 dt_iop_channelmixer_gui_data_t;
 
@@ -102,6 +105,12 @@ typedef struct dt_iop_channelmixer_data_t
 }
 dt_iop_channelmixer_data_t;
 
+typedef struct dt_iop_channelmixer_global_data_t
+{
+  int kernel_channelmixer;
+}
+dt_iop_channelmixer_global_data_t;
+
 
 const char *name()
 {
@@ -110,7 +119,7 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 int
@@ -118,6 +127,8 @@ groups ()
 {
   return IOP_GROUP_COLOR;
 }
+
+#if 0 // BAUHAUS doesnt support keyaccels yet...
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
@@ -134,6 +145,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale2));
   dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale3));
 }
+#endif
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -208,39 +220,113 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       in += ch;
     }
   }
+
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+}
+
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_channelmixer_data_t *data = (dt_iop_channelmixer_data_t *)piece->data;
+  dt_iop_channelmixer_global_data_t *gd = (dt_iop_channelmixer_global_data_t *)self->data;
+
+  cl_mem dev_red = NULL;
+  cl_mem dev_green = NULL;
+  cl_mem dev_blue = NULL;
+
+  cl_int err = -999;
+
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  const int gray_mix_mode = (data->red[CHANNEL_GRAY] != 0.0f && data->green[CHANNEL_GRAY] != 0.0f &&  data->blue[CHANNEL_GRAY] != 0.0f) ? TRUE : FALSE;
+
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
+
+  dev_red = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*CHANNEL_SIZE, data->red);
+  if (dev_red == NULL) goto error;
+  dev_green = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*CHANNEL_SIZE, data->green);
+  if (dev_green == NULL) goto error;
+  dev_blue = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*CHANNEL_SIZE, data->blue);
+  if (dev_blue == NULL) goto error;
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 4, sizeof(int), (void *)&gray_mix_mode);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 5, sizeof(cl_mem), (void *)&dev_red);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 6, sizeof(cl_mem), (void *)&dev_green);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 7, sizeof(cl_mem), (void *)&dev_blue);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_channelmixer, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  dt_opencl_release_mem_object(dev_red);
+  dt_opencl_release_mem_object(dev_green);
+  dt_opencl_release_mem_object(dev_blue);
+
+  return TRUE;
+
+error:
+  if(dev_red != NULL) dt_opencl_release_mem_object(dev_red);
+  if(dev_green != NULL) dt_opencl_release_mem_object(dev_green);
+  if(dev_blue != NULL) dt_opencl_release_mem_object(dev_blue);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_channelmixer] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 8; // extended.cl, from programs.conf
+  dt_iop_channelmixer_global_data_t *gd = (dt_iop_channelmixer_global_data_t *)malloc(sizeof(dt_iop_channelmixer_global_data_t));
+  module->data = gd;
+  gd->kernel_channelmixer = dt_opencl_create_kernel(program, "channelmixer");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_channelmixer_global_data_t *gd = (dt_iop_channelmixer_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_channelmixer);
+  free(module->data);
+  module->data = NULL;
 }
 
 static void
-red_callback(GtkDarktableSlider *slider, gpointer user_data)
+red_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
-  p->red[ gtk_combo_box_get_active( g->combo1 ) ]= dtgtk_slider_get_value(slider);
+  p->red[ dt_bauhaus_combobox_get( g->combo1 ) ]= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-green_callback(GtkDarktableSlider *slider, gpointer user_data)
+green_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
-  p->green[ gtk_combo_box_get_active( g->combo1 ) ]= dtgtk_slider_get_value(slider);
+  p->green[ dt_bauhaus_combobox_get( g->combo1 ) ]= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 
 static void
-blue_callback(GtkDarktableSlider *slider, gpointer user_data)
+blue_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
-  p->blue[ gtk_combo_box_get_active( g->combo1 ) ]= dtgtk_slider_get_value(slider);
+  p->blue[ dt_bauhaus_combobox_get( g->combo1 ) ]= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -253,9 +339,9 @@ output_callback(GtkComboBox *combo, gpointer user_data)
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
 
   // p->output_channel= gtk_combo_box_get_active(combo);
-  dtgtk_slider_set_value( g->scale1, p->red[ gtk_combo_box_get_active( g->combo1 ) ] );
-  dtgtk_slider_set_value( g->scale2, p->green[ gtk_combo_box_get_active( g->combo1 ) ] );
-  dtgtk_slider_set_value( g->scale3, p->blue[ gtk_combo_box_get_active( g->combo1 ) ] );
+  dt_bauhaus_slider_set( g->scale1, p->red[ dt_bauhaus_combobox_get( g->combo1 ) ] );
+  dt_bauhaus_slider_set( g->scale2, p->green[ dt_bauhaus_combobox_get( g->combo1 ) ] );
+  dt_bauhaus_slider_set( g->scale3, p->blue[ dt_bauhaus_combobox_get( g->combo1 ) ] );
   //dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -306,9 +392,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)module->params;
 // gtk_combo_box_set_active(g->combo1, p->output_channel);
-  dtgtk_slider_set_value(g->scale1, p->red[ gtk_combo_box_get_active( g->combo1 ) ] );
-  dtgtk_slider_set_value(g->scale2, p->green[ gtk_combo_box_get_active( g->combo1 ) ] );
-  dtgtk_slider_set_value(g->scale3, p->blue[ gtk_combo_box_get_active( g->combo1 ) ] );
+  dt_bauhaus_slider_set(g->scale1, p->red[ dt_bauhaus_combobox_get( g->combo1 ) ] );
+  dt_bauhaus_slider_set(g->scale2, p->green[ dt_bauhaus_combobox_get( g->combo1 ) ] );
+  dt_bauhaus_slider_set(g->scale3, p->blue[ dt_bauhaus_combobox_get( g->combo1 ) ] );
 }
 
 void init(dt_iop_module_t *module)
@@ -316,7 +402,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_channelmixer_params_t));
   module->default_params = malloc(sizeof(dt_iop_channelmixer_params_t));
   module->default_enabled = 0;
-  module->priority = 816; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 823; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_channelmixer_params_t);
   module->gui_data = NULL;
   dt_iop_channelmixer_params_t tmp = (dt_iop_channelmixer_params_t)
@@ -343,51 +429,51 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
-  g->dtlabel1 = DTGTK_LABEL( dtgtk_label_new(_("output channel"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT) );
-  g->combo1 = GTK_COMBO_BOX( gtk_combo_box_new_text() );
-  gtk_combo_box_append_text(g->combo1,_("hue"));
-  gtk_combo_box_append_text(g->combo1,_("saturation"));
-  gtk_combo_box_append_text(g->combo1,_("lightness"));
-  gtk_combo_box_append_text(g->combo1,_("red"));
-  gtk_combo_box_append_text(g->combo1,_("green"));
-  gtk_combo_box_append_text(g->combo1,_("blue"));
-  gtk_combo_box_append_text(g->combo1,_("gray"));
-  gtk_combo_box_set_active(g->combo1, CHANNEL_RED );
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->dtlabel1), TRUE, TRUE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->combo1), TRUE, TRUE, 5);
+  /* output */
+  g->combo1 = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->combo1, "destination");
+  dt_bauhaus_combobox_add(g->combo1,_("hue"));
+  dt_bauhaus_combobox_add(g->combo1,_("saturation"));
+  dt_bauhaus_combobox_add(g->combo1,_("lightness"));
+  dt_bauhaus_combobox_add(g->combo1,_("red"));
+  dt_bauhaus_combobox_add(g->combo1,_("green"));
+  dt_bauhaus_combobox_add(g->combo1,_("blue"));
+  dt_bauhaus_combobox_add(g->combo1,_("gray"));
+  dt_bauhaus_combobox_set(g->combo1, CHANNEL_RED );
 
-  g->dtlabel2 = DTGTK_LABEL( dtgtk_label_new(_("source channels"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT) );
-  GtkBox *hbox = GTK_BOX( gtk_hbox_new(FALSE, 0));
-  g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
+  g_signal_connect (G_OBJECT (g->combo1), "value-changed",
+                    G_CALLBACK (output_callback), self);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->dtlabel2), TRUE, TRUE, 5);
-
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-2.0, 2.0, 0.005, p->red[CHANNEL_RED] , 3));
+  /* red */
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->red[CHANNEL_RED] , 3);
   g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("amount of red channel in the output channel"), (char *)NULL);
-  dtgtk_slider_set_label(g->scale1,_("red"));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-2.0, 2.0, 0.005, p->green[CHANNEL_RED] , 3));
-  g_object_set (GTK_OBJECT(g->scale2), "tooltip-text", _("amount of green channel in the output channel"), (char *)NULL);
-  dtgtk_slider_set_label(g->scale2,_("green"));
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-2.0, 2.0, 0.005, p->blue[CHANNEL_RED] , 3));
-  g_object_set (GTK_OBJECT(g->scale3), "tooltip-text", _("amount of blue channel in the output channel"), (char *)NULL);
-  dtgtk_slider_set_label(g->scale3,_("blue"));
-
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
-
+  dt_bauhaus_widget_set_label(g->scale1,_("red"));
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (red_callback), self);
+
+  /* green */
+  g->scale2 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->green[CHANNEL_RED] , 3);
+  g_object_set (GTK_OBJECT(g->scale2), "tooltip-text", _("amount of green channel in the output channel"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->scale2,_("green"));
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
                     G_CALLBACK (green_callback), self);
+
+  /* blue */
+  g->scale3 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->blue[CHANNEL_RED] , 3);
+  g_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("amount of blue channel in the output channel"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->scale3,_("blue"));
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
                     G_CALLBACK (blue_callback), self);
-  g_signal_connect (G_OBJECT (g->combo1), "changed",
-                    G_CALLBACK (output_callback), self);
+
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->combo1), TRUE, TRUE, 0);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+
 }
 
 void init_presets (dt_iop_module_so_t *self)
@@ -457,4 +543,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

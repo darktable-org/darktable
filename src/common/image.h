@@ -21,9 +21,10 @@
 #include "config.h"
 #endif
 
+#include "common/darktable.h"
+#include "common/dtpthread.h"
 #include <glib.h>
 #include <inttypes.h>
-#include "common/dtpthread.h"
 
 /** define for max path/filename length */
 #define DT_MAX_FILENAME_LEN 256
@@ -63,7 +64,7 @@ dt_image_flags_t;
 typedef struct dt_image_raw_parameters_t
 {
   unsigned legacy    : 24;
-  signed   user_flip : 8; // +8 = 32 bits.
+  unsigned user_flip : 8; // +8 = 32 bits.
 }
 dt_image_raw_parameters_t;
 
@@ -308,3 +309,6 @@ void dt_image_synch_xmp(const int selected);
 void dt_image_synch_all_xmp(const gchar *pathname);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

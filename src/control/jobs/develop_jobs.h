@@ -18,9 +18,10 @@
 #ifndef DT_CONTROL_JOBS_DEVELOP_H
 #define DT_CONTROL_JOBS_DEVELOP_H
 
-#include <inttypes.h>
 #include "control/control.h"
 #include "develop/develop.h"
+
+#include <inttypes.h>
 
 typedef struct dt_dev_process_t
 {
@@ -39,3 +40,6 @@ void dt_dev_process_image_job_init(dt_job_t *job, dt_develop_t *dev);
 void dt_dev_export_init(dt_job_t *job);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

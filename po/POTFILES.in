@@ -1,5 +1,6 @@
 build/src/preferences_gen.h
-data/darktable.schemas
+data/darktableconfig.xml
+src/cli/main.c
 src/common/collection.c
 src/common/darktable.h
 src/common/darktable.c
@@ -17,8 +18,11 @@ src/control/jobs/film_jobs.c
 src/control/jobs/image_jobs.c
 src/develop/develop.c
 src/develop/imageop.c
+src/develop/tiling.c
+src/develop/blend_gui.c
 src/dtgtk/resetlabel.c
 src/dtgtk/slider.c
+src/libs/similarity.c
 src/gui/accelerators.c
 src/gui/camera_import_dialog.c
 src/gui/gtk.c
@@ -39,7 +43,6 @@ src/imageio/storage/email.c
 src/imageio/storage/flickr.c
 src/imageio/storage/gallery.c
 src/imageio/storage/picasa.c
-src/iop/anlfyeni.c
 src/iop/atrous.c
 src/iop/basecurve.c
 src/iop/bilateral.cc
@@ -105,6 +108,7 @@ src/libs/image.c
 src/libs/import.c
 src/libs/keywords.c
 src/libs/lib.c
+src/libs/live_view.c
 src/libs/metadata.c
 src/libs/metadata_view.c
 src/libs/modulegroups.c
@@ -128,4 +132,13 @@ src/views/capture.c
 src/views/darkroom.c
 src/views/lighttable.c
 src/views/view.c
+src/common/ratings.c
+src/common/colorspaces.c
+src/common/mipmap_cache.c
+src/common/debug.h
+src/common/points.h
+src/libs/tools/hinter.c
+src/libs/tools/global_toolbox.c
+src/iop/shadhi.c
+src/iop/amaze_demosaic_RT.cc
 

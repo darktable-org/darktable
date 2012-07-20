@@ -19,7 +19,7 @@
 #ifndef DT_DEVELOP_TILING_H
 #define DT_DEVELOP_TILING_H
 
-#define DT_TILING_MAXTILES 100
+#define DT_TILING_MAXTILES 500
 
 #include "develop/imageop.h"
 #include "develop/develop.h"
@@ -29,6 +29,8 @@ typedef struct dt_develop_tiling_t
 {
   /** memory requirement as a multiple of image buffer size */
   float factor;
+  /** maximum requirement for temporary buffers as a multiple of image buffer size */
+  float maxbuf;
   /** on-top memory requirement, with a size independent of input buffer */
   unsigned overhead;
   /** overlap needed between tiles (in pixels) */
@@ -56,3 +58,6 @@ int dt_tiling_piece_fits_host_memory(const size_t width, const size_t height, co
 
 #endif
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

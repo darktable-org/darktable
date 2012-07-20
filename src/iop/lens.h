@@ -61,6 +61,17 @@ typedef struct dt_iop_lensfun_gui_data_t
 }
 dt_iop_lensfun_gui_data_t;
 
+typedef struct dt_iop_lensfun_global_data_t
+{
+  lfDatabase *db;
+  int kernel_lens_distort_bilinear;
+  int kernel_lens_distort_bicubic;
+  int kernel_lens_distort_lanczos2;
+  int kernel_lens_distort_lanczos3;
+  int kernel_lens_vignette;
+}
+dt_iop_lensfun_global_data_t;
+
 typedef struct dt_iop_lensfun_data_t
 {
   lfLens *lens;
@@ -78,6 +89,7 @@ typedef struct dt_iop_lensfun_data_t
   lfLensType target_geom;
 }
 dt_iop_lensfun_data_t;
+
 
 void init(dt_iop_module_t *module);
 void cleanup(dt_iop_module_t *module);
@@ -98,3 +110,6 @@ void gui_cleanup  (struct dt_iop_module_t *self);
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

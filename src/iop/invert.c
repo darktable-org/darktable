@@ -253,6 +253,7 @@ void reload_defaults(dt_iop_module_t *self)
   // can't be switched on for raw and hdr images:
   if(dt_image_is_raw(&self->dev->image_storage)) self->hide_enable_button = 1;
   else self->hide_enable_button = 0;
+  self->default_enabled = 0;
 }
 
 void init(dt_iop_module_t *module)
@@ -263,7 +264,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_invert_params_t);
   module->gui_data = NULL;
-  module->priority = 20; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 19; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -333,7 +334,7 @@ void gui_init(dt_iop_module_t *self)
   g->pickerbuttons = GTK_HBOX(gtk_hbox_new(FALSE, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->pickerbuttons), TRUE, TRUE, 0);
 
-  g->colorpicker = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE));
+  g->colorpicker = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE|CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpicker), 75, 24);
   g_signal_connect (G_OBJECT (g->colorpicker), "clicked", G_CALLBACK (colorpicker_callback), self);
   gtk_box_pack_start(GTK_BOX(g->pickerbuttons), GTK_WIDGET(g->colorpicker), TRUE, TRUE, 0);
@@ -353,4 +354,6 @@ void gui_cleanup  (dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

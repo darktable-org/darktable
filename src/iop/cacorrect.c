@@ -1148,6 +1148,7 @@ void reload_defaults(dt_iop_module_t *module)
   // can't be switched on for non-raw images:
   if(dt_image_is_raw(&module->dev->image_storage)) module->hide_enable_button = 0;
   else module->hide_enable_button = 1;
+  module->default_enabled = 0;
 }
 
 /** init, cleanup, commit to pipeline */
@@ -1162,7 +1163,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
 
   // we come just before demosaicing.
-  module->priority = 102; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 98; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_cacorrect_params_t);
   module->gui_data = NULL;
 }
@@ -1222,4 +1223,6 @@ void gui_cleanup   (dt_iop_module_t *self)
 // int mouse_moved(dt_iop_module_t *self, double x, double y, int which);
 // int button_pressed(dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

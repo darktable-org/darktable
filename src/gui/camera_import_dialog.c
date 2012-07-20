@@ -16,9 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define _XOPEN_SOURCE // for strptime
-
-#include <time.h>
+#include "common/darktable.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -30,6 +28,8 @@
 #include "dtgtk/button.h"
 #include "dtgtk/label.h"
 #include "gui/camera_import_dialog.h"
+
+#include <time.h>
 
 /*
 
@@ -679,4 +679,6 @@ void dt_camera_import_dialog_new(dt_camera_import_dialog_param_t *params)
   _camera_import_dialog_free(&data);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

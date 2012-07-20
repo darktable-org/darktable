@@ -16,12 +16,11 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "iop/colorout.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "common/colorlabels.h"
 #include "common/darktable.h"
+#include "common/colorlabels.h"
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/image_cache.h"
@@ -39,6 +38,7 @@
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "iop/colorout.h"
 #include "libraw/libraw.h"
 
 #include <inttypes.h>
@@ -163,7 +163,7 @@ dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float 
 #ifdef _OPENMP
     #pragma omp parallel for schedule(static) default(none) shared(in, out)
 #endif
-    for(int j=0; j<ht; j++) for(int i=0; i<wd; i++) for(int k=0; k<ch; k++) out[4*(j*wd + i)+k] = (in[ch*(j*stride + i)+k]-black)*scale;
+    for(int j=0; j<ht; j++) for(int i=0; i<wd; i++) for(int k=0; k<ch; k++) out[4*(j*wd + i)+k] = (in[j*stride + ch*i +k]-black)*scale;
     return;
   }
   int ii = 0, jj = 0;
@@ -263,7 +263,7 @@ dt_imageio_open_raw(
   raw->params.document_mode = 2; // color scaling (clip,wb,max) and black point, but no demosaic
   raw->params.output_color = 0;
   raw->params.output_bps = 16;
-  raw->params.user_flip = -1;
+  raw->params.user_flip = -1; // -1 means: use orientation from raw
   raw->params.gamm[0] = 1.0;
   raw->params.gamm[1] = 1.0;
   // raw->params.user_qual = img->raw_params.demosaic_method; // 3: AHD, 2: PPG, 1: VNG
@@ -296,6 +296,9 @@ dt_imageio_open_raw(
   image = libraw_dcraw_make_mem_image(raw, &ret);
   HANDLE_ERRORS(ret, 1);
 
+  // fallback for broken exif read in case of phase one H25
+  if(!strncmp(img->exif_maker, "Phase One", 9))
+    img->orientation = raw->sizes.flip;
   // filters seem only ever to take a useful value after unpack/process
   img->filters = raw->idata.filters;
   img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
@@ -405,16 +408,9 @@ dt_imageio_open_ldr(
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
-  if(orientation & 4)
-  {
-    img->width  = jpg.height;
-    img->height = jpg.width;
-  }
-  else
-  {
-    img->width  = jpg.width;
-    img->height = jpg.height;
-  }
+  img->width  = (orientation & 4) ? jpg.height : jpg.width;
+  img->height = (orientation & 4) ? jpg.width  : jpg.height;
+
   uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
   if(dt_imageio_jpeg_read(&jpg, tmp))
   {
@@ -430,10 +426,7 @@ dt_imageio_open_ldr(
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  const int ht2 = orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
-  const int wd2 = orientation & 4 ? img->height : img->width;
-
-  dt_imageio_flip_buffers_ui8_to_float((float *)buf, tmp, 0.0f, 255.0f, 4, wd2, ht2, wd2, ht2, wd2, orientation);
+  dt_imageio_flip_buffers_ui8_to_float((float *)buf, tmp, 0.0f, 255.0f, 4, jpg.width, jpg.height, jpg.width, jpg.height, 4*jpg.width, orientation);
 
   free(tmp);
 
@@ -466,8 +459,12 @@ int dt_imageio_export(
     dt_imageio_module_format_t *format,
     dt_imageio_module_data_t   *format_params)
 {
-  return dt_imageio_export_with_flags(imgid, filename, format, format_params,
-      0, 0, dt_conf_get_bool("plugins/lighttable/export/high_quality_processing"));
+  if (strcmp(format->mime(format_params),"x-copy")==0)
+    /* This is a just a copy, skip process and just export */
+    return format->write_image(format_params, filename, NULL, NULL, 0, imgid);    
+  else
+    return dt_imageio_export_with_flags(imgid, filename, format, format_params,
+					0, 0, dt_conf_get_bool("plugins/lighttable/export/high_quality_processing"), 0);
 }
 
 // internal function: to avoid exif blob reading + 8-bit byteorder flag + high-quality override
@@ -478,7 +475,8 @@ int dt_imageio_export_with_flags(
     dt_imageio_module_data_t   *format_params,
     const int32_t               ignore_exif,
     const int32_t               display_byteorder,
-    const int32_t               high_quality)
+    const int32_t               high_quality,
+    const int32_t               thumbnail_export)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
@@ -489,10 +487,13 @@ int dt_imageio_export_with_flags(
   const int wd = img->width;
   const int ht = img->height;
 
+  int res = 0;
+
   dt_times_t start;
   dt_get_times(&start);
   dt_dev_pixelpipe_t pipe;
-  if(!dt_dev_pixelpipe_init_export(&pipe, wd, ht))
+  res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht) : dt_dev_pixelpipe_init_export(&pipe, wd, ht);
+  if(!res)
   {
     dt_control_log(_("failed to allocate memory for export, please lower the threads used for export or buy more memory."));
     dt_dev_cleanup(&dev);
@@ -639,7 +640,7 @@ int dt_imageio_export_with_flags(
 
   format_params->width  = processed_width;
   format_params->height = processed_height;
-  int res = 0;
+
   if(!ignore_exif)
   {
     int length;
@@ -688,6 +689,10 @@ dt_imageio_open(
     const char  *filename,          // full path
     dt_mipmap_cache_allocator_t a)  // allocate via dt_mipmap_cache_alloc
 {
+  /* first of all, check if file exists, dont bother to test loading if not exists */
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
+    return !DT_IMAGEIO_OK;
+  
   dt_imageio_retval_t ret = DT_IMAGEIO_FILE_CORRUPTED;
   
   /* check if file is ldr using magic's */
@@ -702,11 +707,14 @@ dt_imageio_open(
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_hdr(img, filename, a);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)      // failsafing, if ldr magic test fails..
-      ret = dt_imageio_open_ldr(img, filename, a);
+    ret = dt_imageio_open_ldr(img, filename, a);
 
   img->flags &= ~DT_IMAGE_THUMBNAIL;
+
   img->dirty = 1;
   return ret;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

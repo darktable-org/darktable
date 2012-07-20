@@ -17,9 +17,15 @@
 */
 
 #include "common/darktable.h"
+#include "common/debug.h"
 #include "common/film.h"
+#include "common/collection.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
+#include "common/imageio.h"
+#include "common/imageio_jpeg.h"
+#include "common/dt_logo_128x128.h"
+#include "libraw/libraw.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs/camera_jobs.h"
@@ -27,12 +33,12 @@
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#ifdef HAVE_GPHOTO2
 #include "gui/camera_import_dialog.h"
+#endif
 #include "libs/lib.h"
 
 DT_MODULE(1)
-
-// #ifdef HAVE_GPHOTO2
 
 
 #ifdef HAVE_GPHOTO2
@@ -43,7 +49,9 @@ static void _lib_import_ui_devices_update(dt_lib_module_t *self);
 
 typedef struct dt_lib_import_t
 {
+#ifdef HAVE_GPHOTO2
   dt_camctl_listener_t camctl_listener;
+#endif
   GtkButton *import_file;
   GtkButton *import_directory;
   GtkButton *import_camera;
@@ -53,6 +61,23 @@ typedef struct dt_lib_import_t
   GtkBox *devices;
 }
 dt_lib_import_t;
+
+typedef struct dt_lib_import_metadata_t
+{
+  GtkWidget *frame;
+  GtkWidget *recursive;
+  GtkWidget *ignore_jpeg;
+  GtkWidget *expander;
+  GtkWidget *apply_metadata;
+  GtkWidget *presets;
+  GtkWidget *creator;
+  GtkWidget *publisher;
+  GtkWidget *rights;
+  GtkWidget *tags;
+}
+dt_lib_import_metadata_t;
+
+enum {NAME_COLUMN, CREATOR_COLUMN, PUBLISHER_COLUMN, RIGHTS_COLUMN, N_COLUMNS};
 
 const char* name()
 {
@@ -289,7 +314,333 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
 
 #endif // HAVE_GPHOTO2
 
-static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_data) 
+static void _lib_import_metadata_changed(GtkWidget *widget, GtkComboBox *box)
+{
+  gtk_combo_box_set_active(box, -1);
+}
+
+static void _lib_import_apply_metadata_toggled(GtkWidget *widget, gpointer user_data)
+{
+  GtkWidget *table = GTK_WIDGET(user_data);
+  gtk_widget_set_sensitive(table, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+}
+
+static void _lib_import_presets_changed(GtkWidget *widget, dt_lib_import_metadata_t *data)
+{
+  GtkTreeIter iter;
+
+  if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget), &iter) == TRUE)
+  {
+    GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(widget));
+    GValue value = {0,};
+    gchar *sv;
+
+    gtk_tree_model_get_value(model, &iter, CREATOR_COLUMN, &value);
+    if((sv=(gchar*)g_value_get_string(&value))!=NULL && sv[0] != '\0')
+    {
+      g_signal_handlers_block_by_func(data->creator, _lib_import_metadata_changed, data->presets);
+      gtk_entry_set_text(GTK_ENTRY(data->creator), sv);
+      g_signal_handlers_unblock_by_func(data->creator, _lib_import_metadata_changed, data->presets);
+    }
+    g_value_unset(&value);
+
+    gtk_tree_model_get_value(model, &iter, PUBLISHER_COLUMN, &value);
+    if((sv=(gchar*)g_value_get_string(&value))!=NULL && sv[0] != '\0')
+    {
+      g_signal_handlers_block_by_func(data->publisher, _lib_import_metadata_changed, data->presets);
+      gtk_entry_set_text(GTK_ENTRY(data->publisher), sv);
+      g_signal_handlers_unblock_by_func(data->publisher, _lib_import_metadata_changed, data->presets);
+    }
+    g_value_unset(&value);
+
+    gtk_tree_model_get_value(model, &iter, RIGHTS_COLUMN, &value);
+    if((sv=(gchar*)g_value_get_string(&value))!=NULL && sv[0] != '\0')
+    {
+      g_signal_handlers_block_by_func(data->rights, _lib_import_metadata_changed, data->presets);
+      gtk_entry_set_text(GTK_ENTRY(data->rights), sv);
+      g_signal_handlers_unblock_by_func(data->rights, _lib_import_metadata_changed, data->presets);
+    }
+    g_value_unset(&value);
+  }
+}
+
+static GtkWidget* _lib_import_get_extra_widget(dt_lib_import_metadata_t *data, gboolean import_folder)
+{
+  // add extra lines to 'extra'. don't forget to destroy the widgets later.
+  GtkWidget *expander = gtk_expander_new(_("import options"));
+  gtk_expander_set_expanded(GTK_EXPANDER(expander), dt_conf_get_bool("ui_last/import_options_expanded"));
+
+  GtkWidget *frame = gtk_frame_new(NULL);
+  gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_IN);
+  GtkWidget *alignment = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 8, 8, 8, 8);
+  GtkWidget *event_box = gtk_event_box_new();
+  gtk_container_add(GTK_CONTAINER(frame), event_box);
+  gtk_container_add(GTK_CONTAINER(event_box), alignment);
+  gtk_container_add(GTK_CONTAINER(alignment), expander);
+
+  GtkWidget *extra;
+  extra = gtk_vbox_new(FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(expander), extra);
+
+  GtkWidget *recursive = NULL, *ignore_jpeg = NULL;
+  if(import_folder == TRUE)
+  {
+    // recursive opening.
+    recursive = gtk_check_button_new_with_label (_("import directories recursively"));
+    g_object_set(recursive, "tooltip-text", _("recursively import subdirectories. each directory goes into a new film roll."), NULL);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (recursive), dt_conf_get_bool("ui_last/import_recursive"));
+    gtk_box_pack_start(GTK_BOX (extra), recursive, FALSE, FALSE, 0);
+
+    // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
+    ignore_jpeg = gtk_check_button_new_with_label (_("ignore jpeg files"));
+    g_object_set(ignore_jpeg, "tooltip-text", _("do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."), NULL);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (ignore_jpeg), dt_conf_get_bool("ui_last/import_ignore_jpegs"));
+    gtk_box_pack_start(GTK_BOX (extra), ignore_jpeg, FALSE, FALSE, 0);
+  }
+
+  // default metadata
+  GtkWidget *apply_metadata;
+  GtkWidget *table, *label, *creator, *publisher, *rights, *tags;
+  apply_metadata = gtk_check_button_new_with_label (_("apply metadata on import"));
+  g_object_set(apply_metadata, "tooltip-text", _("apply some metadata to all newly imported images."), NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (apply_metadata), dt_conf_get_bool("ui_last/import_apply_metadata"));
+  gtk_box_pack_start(GTK_BOX (extra), apply_metadata, FALSE, FALSE, 0);
+
+  GValue value = {0, };
+  g_value_init(&value, G_TYPE_INT);
+  gtk_widget_style_get_property(apply_metadata, "indicator-size", &value);
+  gint indicator_size = g_value_get_int(&value);
+//   gtk_widget_style_get_property(apply_metadata, "indicator-spacing", &value);
+//   gint indicator_spacing = g_value_get_int(&value);
+
+  table = gtk_table_new(6, 3, FALSE);
+  gtk_table_set_row_spacings(GTK_TABLE(table), 5);
+  gtk_table_set_col_spacings(GTK_TABLE(table), 5);
+  alignment = gtk_alignment_new(0, 0, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 2*indicator_size, 0);
+  gtk_container_add(GTK_CONTAINER(alignment), table);
+  gtk_box_pack_start(GTK_BOX (extra), alignment, FALSE, FALSE, 0);
+
+  creator = gtk_entry_new();
+  gtk_widget_set_size_request(creator, 300, -1);
+  gtk_entry_set_text(GTK_ENTRY(creator), dt_conf_get_string("ui_last/import_last_creator"));
+  publisher = gtk_entry_new();
+  gtk_entry_set_text(GTK_ENTRY(publisher), dt_conf_get_string("ui_last/import_last_publisher"));
+  rights = gtk_entry_new();
+  gtk_entry_set_text(GTK_ENTRY(rights), dt_conf_get_string("ui_last/import_last_rights"));
+  tags = gtk_entry_new();
+  g_object_set(tags, "tooltip-text", _("comma separated list of tags"), NULL);
+  gtk_entry_set_text(GTK_ENTRY(tags), dt_conf_get_string("ui_last/import_last_tags"));
+
+  // presets from the metadata plugin
+  GtkCellRenderer *renderer;
+  GtkTreeIter iter;
+  GtkListStore *model = gtk_list_store_new(N_COLUMNS,
+                                           G_TYPE_STRING /*name*/,
+                                           G_TYPE_STRING /*creator*/,
+                                           G_TYPE_STRING /*publisher*/,
+                                           G_TYPE_STRING /*rights*/);
+
+  GtkWidget *presets = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
+  renderer = gtk_cell_renderer_text_new();
+  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(presets), renderer, FALSE);
+  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(presets), renderer, "text", NAME_COLUMN, NULL);
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, op_params from presets where operation = \"metadata\"", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    void *op_params = (void *)sqlite3_column_blob(stmt, 1);
+    int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
+
+    char *buf         = (char* )op_params;
+    char *title       = buf;
+    buf += strlen(title) + 1;
+    char *description = buf;
+    buf += strlen(description) + 1;
+    char *rights     = buf;
+    buf += strlen(rights) + 1;
+    char *creator     = buf;
+    buf += strlen(creator) + 1;
+    char *publisher   = buf;
+
+    if(op_params_size == strlen(title) + strlen(description) + strlen(rights) + strlen(creator) + strlen(publisher) + 5)
+    {
+      gtk_list_store_append(model, &iter);
+      gtk_list_store_set (model, &iter,
+                          NAME_COLUMN, (char *)sqlite3_column_text(stmt, 0),
+                          CREATOR_COLUMN, creator,
+                          PUBLISHER_COLUMN, publisher,
+                          RIGHTS_COLUMN, rights,
+                          -1);
+    }
+  }
+  sqlite3_finalize(stmt);
+
+  int line = 0;
+
+  label = gtk_label_new(_("preset"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line+1, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), presets, 1, 2, line, line+1, GTK_FILL, 0, 0, 0);
+  line++;
+
+  label = gtk_label_new(_("creator"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line+1, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), creator, 1, 2, line, line+1, GTK_FILL, 0, 0, 0);
+  line++;
+
+  label = gtk_label_new(_("publisher"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line+1, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), publisher, 1, 2, line, line+1, GTK_FILL, 0, 0, 0);
+  line++;
+
+  label = gtk_label_new(_("rights"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line+1, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), rights, 1, 2, line, line+1, GTK_FILL, 0, 0, 0);
+  line++;
+
+  label = gtk_label_new(_("tags"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line+1, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(table), tags, 1, 2, line, line+1, GTK_FILL, 0, 0, 0);
+
+  gtk_widget_show_all(frame);
+
+  if(data != NULL)
+  {
+    data->frame = frame;
+    data->recursive = recursive;
+    data->ignore_jpeg = ignore_jpeg;
+    data->expander = expander;
+    data->apply_metadata = apply_metadata;
+    data->presets = presets;
+    data->creator = creator;
+    data->publisher = publisher;
+    data->rights = rights;
+    data->tags = tags;
+  }
+
+  g_signal_connect(apply_metadata, "toggled", G_CALLBACK (_lib_import_apply_metadata_toggled), table);
+  _lib_import_apply_metadata_toggled(apply_metadata, table); // needed since the apply_metadata starts being turned off,
+                                                             // and setting it to off doesn't emit the 'toggled' signal ...
+
+  g_signal_connect(presets, "changed", G_CALLBACK(_lib_import_presets_changed), data);
+  g_signal_connect(GTK_ENTRY(creator), "changed", G_CALLBACK (_lib_import_metadata_changed), presets);
+  g_signal_connect(GTK_ENTRY(publisher), "changed", G_CALLBACK (_lib_import_metadata_changed), presets);
+  g_signal_connect(GTK_ENTRY(rights), "changed", G_CALLBACK (_lib_import_metadata_changed), presets);
+
+  return frame;
+}
+
+static void _lib_import_evaluate_extra_widget(dt_lib_import_metadata_t *data, gboolean import_folder)
+{
+  if(import_folder == TRUE)
+  {
+    dt_conf_set_bool("ui_last/import_recursive", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (data->recursive)));
+    dt_conf_set_bool("ui_last/import_ignore_jpegs", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (data->ignore_jpeg)));
+  }
+  dt_conf_set_bool("ui_last/import_options_expanded", gtk_expander_get_expanded(GTK_EXPANDER (data->expander)));
+  dt_conf_set_bool("ui_last/import_apply_metadata", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (data->apply_metadata)));
+  dt_conf_set_string("ui_last/import_last_creator", gtk_entry_get_text(GTK_ENTRY(data->creator)));
+  dt_conf_set_string("ui_last/import_last_publisher", gtk_entry_get_text(GTK_ENTRY(data->publisher)));
+  dt_conf_set_string("ui_last/import_last_rights", gtk_entry_get_text(GTK_ENTRY(data->rights)));
+  dt_conf_set_string("ui_last/import_last_tags", gtk_entry_get_text(GTK_ENTRY(data->tags)));
+}
+
+// TODO: use orientation to correctly rotate the image.
+// maybe this should be (partly) in common/imageio.[c|h]?
+static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer data)
+{
+  GtkWidget *preview;
+  char *filename;
+  GdkPixbuf *pixbuf = NULL;
+  gboolean have_preview = FALSE;
+
+  preview = GTK_WIDGET(data);
+  filename = gtk_file_chooser_get_preview_filename(file_chooser);
+
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) goto no_preview_fallback;
+  // don't create dng thumbnails to avoid crashes in libtiff when these are hdr:
+  char *c = filename + strlen(filename);
+  while(c > filename && *c != '.') c--;
+  if(!strcasecmp(c, ".dng")) goto no_preview_fallback;
+
+  pixbuf = gdk_pixbuf_new_from_file_at_size(filename, 128, 128, NULL);
+  have_preview = (pixbuf != NULL);
+  if(!have_preview)
+  {
+    // raw image thumbnail
+    int ret;
+    libraw_data_t *raw = libraw_init(0);
+    libraw_processed_image_t *image = NULL;
+    ret = libraw_open_file(raw, filename);
+    if(ret) goto libraw_fail;
+    ret = libraw_unpack_thumb(raw);
+    if(ret) goto libraw_fail;
+    ret = libraw_adjust_sizes_info_only(raw);
+    if(ret) goto libraw_fail;
+
+    image = libraw_dcraw_make_mem_thumb(raw, &ret);
+    if(!image || ret) goto libraw_fail;
+//     const int orientation = raw->sizes.flip;
+
+    GdkPixbuf *tmp;
+    GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
+    have_preview = gdk_pixbuf_loader_write(loader, image->data, image->data_size, NULL);
+    tmp = gdk_pixbuf_loader_get_pixbuf(loader);
+    gdk_pixbuf_loader_close(loader, NULL);
+    float ratio;
+    if(image->type == LIBRAW_IMAGE_JPEG)
+    {
+      // jpeg
+      dt_imageio_jpeg_t jpg;
+      if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto libraw_fail;
+      ratio = 1.0*jpg.height/jpg.width;
+    }
+    else
+    {
+      // bmp -- totally untested
+      ratio = 1.0*image->height/image->width;
+    }
+    int width = 128, height = 128*ratio;
+    pixbuf = gdk_pixbuf_scale_simple(tmp, width, height, GDK_INTERP_BILINEAR);
+
+    if(loader)
+      g_object_unref(loader);
+
+    // clean up raw stuff.
+    libraw_recycle(raw);
+    libraw_close(raw);
+    free(image);
+    if(0)
+    {
+libraw_fail:
+      // fprintf(stderr,"[imageio] %s: %s\n", filename, libraw_strerror(ret));
+      libraw_close(raw);
+      have_preview = FALSE;
+    }
+  }
+  if(!have_preview)
+  {
+no_preview_fallback:
+    pixbuf = gdk_pixbuf_new_from_inline(-1, dt_logo_128x128, FALSE, NULL);
+    have_preview = TRUE;
+  }
+  if(have_preview)
+    gtk_image_set_from_pixbuf(GTK_IMAGE(preview), pixbuf);
+  if(pixbuf)
+    g_object_unref(pixbuf);
+  g_free(filename);
+
+  gtk_file_chooser_set_preview_widget_active(file_chooser, have_preview);
+}
+
+static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_data)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import image"),
@@ -325,9 +676,17 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
   gtk_file_filter_set_name(filter, _("all files"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
+  GtkWidget *preview = gtk_image_new();
+  gtk_file_chooser_set_preview_widget(GTK_FILE_CHOOSER(filechooser), preview);
+  g_signal_connect(filechooser, "update-preview", G_CALLBACK (_lib_import_update_preview), preview);
+
+  dt_lib_import_metadata_t metadata;
+  gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (filechooser), _lib_import_get_extra_widget(&metadata, FALSE));
+
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dt_conf_set_string("ui_last/import_last_directory", gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser)));
+    _lib_import_evaluate_extra_widget(&metadata, FALSE);
 
     char *filename = NULL;
     dt_film_t film;
@@ -335,6 +694,10 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
     GSList *it = list;
     int id = 0;
     int filmid = 0;
+
+    /* reset filter to display all images, otherwise view may remain empty */
+    dt_view_filter_reset_to_show_all(darktable.view_manager);
+
     while(it)
     {
       filename = (char *)it->data;
@@ -365,6 +728,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
       }
     }
   }
+  gtk_widget_destroy(metadata.frame);
   gtk_widget_destroy (filechooser);
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
@@ -385,55 +749,51 @@ static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
   if(last_directory != NULL)
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER (filechooser), last_directory);
 
-  // add extra lines to 'extra'. don't forget to destroy the widgets later.
-  GtkWidget *extra;
-  extra = gtk_vbox_new(FALSE, 0);
+  dt_lib_import_metadata_t metadata;
+  gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (filechooser), _lib_import_get_extra_widget(&metadata, TRUE));
 
-  // recursive opening.
-  GtkWidget *recursive;
-  recursive = gtk_check_button_new_with_label (_("import directories recursively"));
-  g_object_set(recursive, "tooltip-text", _("recursively import subdirectories. each directory goes into a new film roll."), NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (recursive), dt_conf_get_bool("ui_last/import_recursive"));
-  gtk_widget_show (recursive);
-  gtk_box_pack_start(GTK_BOX (extra), recursive, FALSE, FALSE, 0);
-
-  // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-  GtkWidget *ignore_jpeg;
-  ignore_jpeg = gtk_check_button_new_with_label (_("ignore jpeg files"));
-  g_object_set(ignore_jpeg, "tooltip-text", _("do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."), NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (ignore_jpeg), dt_conf_get_bool("ui_last/import_ignore_jpegs"));
-  gtk_widget_show (ignore_jpeg);
-  gtk_box_pack_start(GTK_BOX (extra), ignore_jpeg, FALSE, FALSE, 0);
-
-  gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (filechooser), extra);
-
+  // run the dialog
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
-    dt_conf_set_bool("ui_last/import_recursive", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (recursive)));
-    dt_conf_set_bool("ui_last/import_ignore_jpegs", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ignore_jpeg)));
     dt_conf_set_string("ui_last/import_last_directory", gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser)));
+    _lib_import_evaluate_extra_widget(&metadata, TRUE);
 
-    char *filename;
+    char *filename = NULL, *first_filename = NULL;
     GSList *list = gtk_file_chooser_get_filenames (GTK_FILE_CHOOSER (filechooser));
     GSList *it = list;
-    int id = 0;
+
+    /* reset filter to display all images, otherwise view may remain empty */
+    dt_view_filter_reset_to_show_all(darktable.view_manager);
+
+    /* for each selected folder add import job */
     while(it)
     {
       filename = (char *)it->data;
-      id = dt_film_import(filename);
+      dt_film_import(filename);
+      if (!first_filename)
+      {
+        first_filename = g_strdup(filename);
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (metadata.recursive)))
+          first_filename = dt_util_dstrcat(first_filename, "%%");
+      }
       g_free (filename);
       it = g_slist_next(it);
     }
-    if(id)
+
+    /* update collection to view import */
+    if (first_filename)
     {
-      dt_film_open(id);
-      dt_ctl_switch_mode_to(DT_LIBRARY);
+      dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
+      dt_conf_set_int("plugins/lighttable/collect/item0", 0);
+      dt_conf_set_string("plugins/lighttable/collect/string0",first_filename);
+      dt_collection_update_query(darktable.collection);
+      g_free(first_filename);
     }
+
+
     g_slist_free (list);
   }
-  gtk_widget_destroy(recursive);
-  gtk_widget_destroy(ignore_jpeg);
-  gtk_widget_destroy(extra);
+  gtk_widget_destroy(metadata.frame);
   gtk_widget_destroy (filechooser);
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
@@ -499,3 +859,7 @@ void gui_cleanup(dt_lib_module_t *self)
   g_free(self->data);
   self->data = NULL;
 }
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

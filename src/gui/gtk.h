@@ -64,6 +64,8 @@ dt_gui_gtk_t;
 int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[]);
 void dt_gui_gtk_run(dt_gui_gtk_t *gui);
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui);
+void dt_gui_gtk_quit();
+
 
 /** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
 void dt_gui_key_accel_block_on_focus (GtkWidget *w);
@@ -175,3 +177,6 @@ GtkWidget *dt_ui_center(struct dt_ui_t *ui);
 GtkWidget *dt_ui_main_window(struct dt_ui_t *ui);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

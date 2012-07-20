@@ -1,6 +1,6 @@
 /*
 		This file is part of darktable,
-		copyright (c) 2011 ulrich pegelow.
+		copyright (c) 2011--2012 ulrich pegelow.
 
 		darktable is free software: you can redistribute it and/or modify
 		it under the terms of the GNU General Public License as published by
@@ -22,18 +22,13 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
 #include "control/control.h"
 #include "common/debug.h"
 #include "common/opencl.h"
-#include "dtgtk/togglebutton.h"
-#include "dtgtk/slider.h"
-#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -41,7 +36,7 @@
 #include <inttypes.h>
 
 #define CLAMPF(a, mn, mx)       ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+#define MMCLAMPPS(a, mn, mx)    (_mm_min_ps((mx), _mm_max_ps((a), (mn))))
 
 #define BLOCKSIZE 64		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
@@ -66,10 +61,8 @@ dt_iop_lowpass_params_t;
 
 typedef struct dt_iop_lowpass_gui_data_t
 {
-  GtkVBox   *vbox1,  *vbox2, vbox3;
-  GtkWidget  *label1,*label2, label3;		     // radius, contrast, saturation
-  GtkDarktableSlider *scale1,*scale2,*scale3;       // radius, contrast, saturation
-  GtkComboBox        *order;			    // order of gaussian
+  GtkWidget *scale1,*scale2,*scale3;       // radius, contrast, saturation
+  GtkWidget *order;			    // order of gaussian
 }
 dt_iop_lowpass_gui_data_t;
 
@@ -79,6 +72,8 @@ typedef struct dt_iop_lowpass_data_t
   float radius;
   float contrast;
   float saturation;
+  float table[0x10000];        // precomputed look-up table for contrast curve
+  float unbounded_coeffs[3];   // approximation for extrapolation
 }
 dt_iop_lowpass_data_t;
 
@@ -88,6 +83,7 @@ typedef struct dt_iop_lowpass_global_data_t
   // int kernel_gaussian_row;
   int kernel_gaussian_transpose;
   int kernel_lowpass_mix;
+  int kernel_gaussian_copy_alpha;
 }
 dt_iop_lowpass_global_data_t;
 
@@ -107,7 +103,6 @@ groups ()
 {
   return IOP_GROUP_EFFECT;
 }
-
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
@@ -198,42 +193,52 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
   size_t workgroupsize = 0;          // the maximum number of items in a work group
   unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
+  size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
   
   // make sure blocksize is not too large
   int blocksize = BLOCKSIZE;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS)
+  int blockwd;
+  int blockht;
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
+     dt_opencl_get_kernel_work_group_size(devid, gd->kernel_gaussian_transpose, &kernelworkgroupsize) == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] 
+    while(blocksize > maxsizes[0] || blocksize > maxsizes[1]
           || blocksize*blocksize > workgroupsize || blocksize*(blocksize+1)*bpp > localmemsize)
     {
       if(blocksize == 1) break;
       blocksize >>= 1;    
     }
+
+    blockwd = blockht = blocksize;
+
+    if(blockwd * blockht > kernelworkgroupsize)
+      blockht = kernelworkgroupsize / blockwd;
   }
   else
   {
-    blocksize = 1;   // slow but safe
+    blockwd = blockht = 1;   // slow but safe
   }
 
   // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
-  const int bwidth = width % blocksize == 0 ? width : (width / blocksize + 1)*blocksize;
-  const int bheight = height % blocksize == 0 ? height : (height / blocksize + 1)*blocksize;
+  const int bwidth = width % blockwd == 0 ? width : (width / blockwd + 1)*blockwd;
+  const int bheight = height % blockht == 0 ? height : (height / blockht + 1)*blockht;
 
   const float radius = fmax(0.1f, d->radius);
   const float sigma = radius * roi_in->scale / piece ->iscale;
-  const float contrast = d->contrast;
   const float saturation = d->saturation;
 
   size_t origin[] = {0, 0, 0};
   size_t region[] = {width, height, 1};
 
-  size_t local[] = {blocksize, blocksize, 1};
+  size_t local[] = {blockwd, blockht, 1};
 
   size_t sizes[3];
 
   cl_mem dev_temp1 = NULL;
   cl_mem dev_temp2 = NULL;
+  cl_mem dev_m = NULL;
+  cl_mem dev_coeffs = NULL;
 
   // get intermediate vector buffers with read-write access
   dev_temp1 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*bpp);
@@ -241,6 +246,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dev_temp2 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*bpp);
   if(dev_temp2 == NULL) goto error;
 
+  dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
+  if(dev_m == NULL) goto error;
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3, d->unbounded_coeffs);
+  if(dev_coeffs == NULL) goto error;
 
   // compute gaussian parameters
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
@@ -251,7 +260,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
   // first blur step: column by column with dev_temp1 -> dev_temp2
-  sizes[0] = ROUNDUP(width, 4);
+  sizes[0] = ROUNDUPWD(width);
   sizes[1] = 1;
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
@@ -284,7 +293,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
 
   // second blur step: column by column of transposed image with dev_temp1 -> dev_temp2 (!! height <-> width !!)
-  sizes[0] = ROUNDUP(height, 4);
+  sizes[0] = ROUNDUPWD(height);
   sizes[1] = 1;
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
@@ -318,15 +327,16 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
 
   // final mixing step dev_temp1 -> dev_temp2
-  sizes[0] = ROUNDUP(width, 4);
-  sizes[1] = ROUNDUP(height, 4);
+  sizes[0] = ROUNDUPWD(width);
+  sizes[1] = ROUNDUPWD(height);
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 0, sizeof(cl_mem), (void *)&dev_temp1);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 1, sizeof(cl_mem), (void *)&dev_temp2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 4, sizeof(float), (void *)&contrast);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 5, sizeof(float), (void *)&saturation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 4, sizeof(float), (void *)&saturation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 5, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 6, sizeof(cl_mem), (void *)&dev_coeffs);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lowpass_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -334,11 +344,30 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   err = dt_opencl_enqueue_copy_buffer_to_image(devid, dev_temp2, dev_out, 0, origin, region);
   if(err != CL_SUCCESS) goto error;
 
-  if (dev_temp1 != NULL) clReleaseMemObject(dev_temp1);
-  if (dev_temp2 != NULL) clReleaseMemObject(dev_temp2);
+  if(piece->pipe->mask_display)
+  {
+    sizes[0] = ROUNDUPWD(width);
+    sizes[1] = ROUNDUPWD(height);
+    sizes[2] = 1;
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 0, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 1, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 2, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 4, sizeof(int), (void *)&height);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_gaussian_copy_alpha, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+
+  if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
+  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  if (dev_temp1 != NULL) dt_opencl_release_mem_object(dev_temp1);
+  if (dev_temp2 != NULL) dt_opencl_release_mem_object(dev_temp2);
+
   return TRUE;
 
 error:
+  if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
+  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   if (dev_temp1 != NULL) dt_opencl_release_mem_object(dev_temp1);
   if (dev_temp2 != NULL) dt_opencl_release_mem_object(dev_temp2);
   dt_print(DT_DEBUG_OPENCL, "[opencl_lowpass] couldn't enqueue kernel! %d\n", err);
@@ -353,7 +382,8 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   const float radius = fmax(0.1f, d->radius);
   const float sigma = radius * roi_in->scale / piece ->iscale;
 
-  tiling->factor = 4; // in + out + 2*temp
+  tiling->factor = 4.0f; // in + out + 2*temp
+  tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 4*sigma;
   tiling->xalign = 1;
@@ -369,8 +399,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
 
-  const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
-  const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
 
   const float radius = fmax(0.1f, data->radius);
   const float sigma = radius * roi_in->scale / piece ->iscale;
@@ -380,6 +408,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   float *temp = dt_alloc_align(64, roi_out->width*roi_out->height*ch*sizeof(float));
   if(temp==NULL) return;
+
+#if 0
+  const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
+  const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
 
   // vertical blur column by column
 #ifdef _OPENMP
@@ -398,7 +430,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
     // forward filter
-    for(int k=0; k<4; k++)
+    for(int k=0; k<3; k++)
     {
       xp[k] = CLAMPF(in[i*ch+k], Labmin[k], Labmax[k]);
       yb[k] = xp[k] * coefp;
@@ -409,7 +441,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k<4; k++)
+      for(int k=0; k<3; k++)
       {
         xc[k] = CLAMPF(in[offset+k], Labmin[k], Labmax[k]);
         yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
@@ -423,7 +455,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
 
     // backward filter
-    for(int k=0; k<4; k++)
+    for(int k=0; k<3; k++)
     {
       xn[k] = CLAMPF(in[((roi_out->height - 1) * roi_out->width + i)*ch+k], Labmin[k], Labmax[k]);
       xa[k] = xn[k];
@@ -435,7 +467,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k<4; k++)
+      for(int k=0; k<3; k++)
       {      
         xc[k] = CLAMPF(in[offset+k], Labmin[k], Labmax[k]);
 
@@ -468,7 +500,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
     // forward filter
-    for(int k=0; k<4; k++)
+    for(int k=0; k<3; k++)
     {
       xp[k] = CLAMPF(temp[j*roi_out->width*ch+k], Labmin[k], Labmax[k]);
       yb[k] = xp[k] * coefp;
@@ -479,7 +511,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k<4; k++)
+      for(int k=0; k<3; k++)
       {
         xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
         yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
@@ -493,7 +525,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
 
     // backward filter
-    for(int k=0; k<4; k++)
+    for(int k=0; k<3; k++)
     {
       xn[k] = CLAMPF(temp[((j + 1)*roi_out->width - 1)*ch + k], Labmin[k], Labmax[k]);
       xa[k] = xn[k];
@@ -505,7 +537,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k<4; k++)
+      for(int k=0; k<3; k++)
       {      
         xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
 
@@ -520,50 +552,196 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
     }
   }
+#else
+  const __m128 Labmax = _mm_set_ps(1.0f, 128.0f, 128.0f, 100.0f);
+  const __m128 Labmin = _mm_set_ps(0.0f, -128.0f, -128.0f, 0.0f);
 
+  // vertical blur column by column
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(in,out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
+#endif
+  for(int i=0; i<roi_out->width; i++)
+  {
+    __m128 xp = _mm_setzero_ps();
+    __m128 yb = _mm_setzero_ps();
+    __m128 yp = _mm_setzero_ps();
+    __m128 xc = _mm_setzero_ps();
+    __m128 yc = _mm_setzero_ps();
+    __m128 xn = _mm_setzero_ps();
+    __m128 xa = _mm_setzero_ps();
+    __m128 yn = _mm_setzero_ps();
+    __m128 ya = _mm_setzero_ps();
+
+    // forward filter
+    xp = MMCLAMPPS(_mm_load_ps(in+i*ch), Labmin, Labmax);
+    yb = _mm_mul_ps(_mm_set_ps1(coefp), xp);
+    yp = yb;
+
+ 
+    for(int j=0; j<roi_out->height; j++)
+    {
+      int offset = (i + j * roi_out->width)*ch;
+
+      xc = MMCLAMPPS(_mm_load_ps(in+offset), Labmin, Labmax);
+
+      //yc = (a0 * xc[k]) + (a1 * xp) - (b1 * yp) - (b2 * yb);
+      //yc = (a0 * xc[k]) + ((a1 * xp) - ((b1 * yp) + (b2 * yb)));
+
+      yc = _mm_add_ps(_mm_mul_ps(xc, _mm_set_ps1(a0)),
+           _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
+           _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
+
+      _mm_store_ps(temp+offset, yc);
+
+      xp = xc;
+      yb = yp;
+      yp = yc;
+
+    }
+
+    // backward filter
+    xn = MMCLAMPPS(_mm_load_ps(in+((roi_out->height - 1) * roi_out->width + i)*ch), Labmin, Labmax);
+    xa = xn;
+    yn = _mm_mul_ps(_mm_set_ps1(coefn), xn);
+    ya = yn;
+
+    for(int j=roi_out->height - 1; j > -1; j--)
+    {
+      int offset = (i + j * roi_out->width)*ch;
+
+      xc = MMCLAMPPS(_mm_load_ps(in+offset), Labmin, Labmax);
+
+      //yc = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
+      //yc = (a2 * xn) + ((a3 * xa) - ((b1 * yn) + (b2 * ya)));
+
+      yc = _mm_add_ps(_mm_mul_ps(xn, _mm_set_ps1(a2)),
+           _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
+           _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
+
+
+      xa = xn; 
+      xn = xc; 
+      ya = yn; 
+      yn = yc;
+
+      _mm_store_ps(temp+offset, _mm_add_ps(_mm_load_ps(temp+offset), yc));
+    }
+  }
+
+  // horizontal blur line by line
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
+#endif
+  for(int j=0; j<roi_out->height; j++)
+  {
+    __m128 xp = _mm_setzero_ps();
+    __m128 yb = _mm_setzero_ps();
+    __m128 yp = _mm_setzero_ps();
+    __m128 xc = _mm_setzero_ps();
+    __m128 yc = _mm_setzero_ps();
+    __m128 xn = _mm_setzero_ps();
+    __m128 xa = _mm_setzero_ps();
+    __m128 yn = _mm_setzero_ps();
+    __m128 ya = _mm_setzero_ps();
+
+    // forward filter
+    xp = MMCLAMPPS(_mm_load_ps(temp+j*roi_out->width*ch), Labmin, Labmax);
+    yb = _mm_mul_ps(_mm_set_ps1(coefp), xp);
+    yp = yb;
+
+ 
+    for(int i=0; i<roi_out->width; i++)
+    {
+      int offset = (i + j * roi_out->width)*ch;
+
+      xc = MMCLAMPPS(_mm_load_ps(temp+offset), Labmin, Labmax);
+
+      // yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
+
+      yc = _mm_add_ps(_mm_mul_ps(xc, _mm_set_ps1(a0)),
+           _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
+           _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
+
+      _mm_store_ps(out+offset, yc);
+
+      xp = xc;
+      yb = yp;
+      yp = yc;
+    }
+
+    // backward filter
+    xn = MMCLAMPPS(_mm_load_ps(temp+((j + 1)*roi_out->width - 1)*ch), Labmin, Labmax);
+    xa = xn;
+    yn = _mm_mul_ps(_mm_set_ps1(coefn), xn);
+    ya = yn;
+
+
+    for(int i=roi_out->width - 1; i > -1; i--)
+    {
+      int offset = (i + j * roi_out->width)*ch;
+
+      xc = MMCLAMPPS(_mm_load_ps(temp+offset), Labmin, Labmax);
+
+      //yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
+
+      yc = _mm_add_ps(_mm_mul_ps(xn, _mm_set_ps1(a2)),
+           _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
+           _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
+
+
+      xa = xn; 
+      xn = xc; 
+      ya = yn; 
+      yn = yc;
+
+      _mm_store_ps(out+offset, _mm_add_ps(_mm_load_ps(out+offset), yc));
+    }
+  }
+#endif
 
   free(temp);
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(out,data,roi_out) schedule(static)
+  #pragma omp parallel for default(none) shared(in,out,data,roi_out) schedule(static)
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
-    out[k*ch+0] = CLAMPF(out[k*ch+0]*data->contrast + 50.0f * (1.0f - data->contrast), Labmin[0], Labmax[0]);
+    out[k*ch+0] = (out[k*ch+0] < 100.0f) ? data->table[CLAMP((int)(out[k*ch+0]/100.0f*0x10000ul), 0, 0xffff)] : 
+      dt_iop_eval_exp(data->unbounded_coeffs, out[k*ch+0]/100.0f);
     out[k*ch+1] = CLAMPF(out[k*ch+1]*data->saturation, Labmin[1], Labmax[1]);
     out[k*ch+2] = CLAMPF(out[k*ch+2]*data->saturation, Labmin[2], Labmax[2]);
-    out[k*ch+3] = CLAMPF(out[k*ch+3], Labmin[3], Labmax[3]);
+    out[k*ch+3] = in[k*ch+3];
   }
 }
 
 
 static void
-radius_callback (GtkDarktableSlider *slider, gpointer user_data)
+radius_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
-  p->radius= dtgtk_slider_get_value(slider);
+  p->radius= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-contrast_callback (GtkDarktableSlider *slider, gpointer user_data)
+contrast_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
-  p->contrast = dtgtk_slider_get_value(slider);
+  p->contrast = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-saturation_callback (GtkDarktableSlider *slider, gpointer user_data)
+saturation_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
-  p->saturation = dtgtk_slider_get_value(slider);
+  p->saturation = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -592,6 +770,36 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
   d->radius = p->radius;
   d->contrast = p->contrast;
   d->saturation = p->saturation;
+
+  if(fabs(d->contrast) <= 1.0f)
+  {
+    // linear curve for contrast up to +/- 1
+    for(int k=0; k<0x10000; k++) d->table[k] = d->contrast*(100.0f*k/0x10000 - 50.0f) + 50.0f;
+  }
+  else
+  {
+    // sigmoidal curve for contrast above +/-1 1
+    // going from (0,0) to (1,100) or (0,100) to (1,0), respectively
+    const float boost = 5.0f;
+    const float contrastm1sq = boost*(fabs(d->contrast) - 1.0f)*(fabs(d->contrast) - 1.0f);
+    const float contrastscale = copysign(sqrt(1.0f + contrastm1sq), d->contrast);
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(d) schedule(static)
+#endif
+    for(int k=0; k<0x10000; k++)
+    {
+      float kx2m1 = 2.0f*(float)k/0x10000 - 1.0f;
+      d->table[k] = 50.0f * (contrastscale * kx2m1 / sqrtf(1.0f + contrastm1sq * kx2m1 * kx2m1) + 1.0f);
+    }
+  }
+
+  // now the extrapolation stuff:
+  const float x[4] = {0.7f, 0.8f, 0.9f, 1.0f};
+  const float y[4] = {d->table[CLAMP((int)(x[0]*0x10000ul), 0, 0xffff)],
+                      d->table[CLAMP((int)(x[1]*0x10000ul), 0, 0xffff)],
+                      d->table[CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
+                      d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]};
+  dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
 #endif
 }
 
@@ -601,9 +809,11 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   // create part of the gegl pipeline
   piece->data = NULL;
 #else
-  piece->data = malloc(sizeof(dt_iop_lowpass_data_t));
+  dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)malloc(sizeof(dt_iop_lowpass_data_t));
+  piece->data =  (void *)d;
   memset(piece->data,0,sizeof(dt_iop_lowpass_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
+  for(int k=0; k<0x10000; k++) d->table[k] = 100.0f*k/0x10000; // identity
 #endif
 }
 
@@ -623,9 +833,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale1, p->radius);
-  dtgtk_slider_set_value(g->scale2, p->contrast);
-  dtgtk_slider_set_value(g->scale3, p->saturation);
+  dt_bauhaus_slider_set(g->scale1, p->radius);
+  dt_bauhaus_slider_set(g->scale2, p->contrast);
+  dt_bauhaus_slider_set(g->scale3, p->saturation);
   //gtk_combo_box_set_active(g->order, p->order);
 }
 
@@ -634,7 +844,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_lowpass_params_t));
   module->default_params = malloc(sizeof(dt_iop_lowpass_params_t));
   module->default_enabled = 0;
-  module->priority = 714; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 725; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_lowpass_params_t);
   module->gui_data = NULL;
   dt_iop_lowpass_params_t tmp = (dt_iop_lowpass_params_t)
@@ -654,6 +864,7 @@ void init_global(dt_iop_module_so_t *module)
   //gd->kernel_gaussian_row = dt_opencl_create_kernel(program, "gaussian_row");
   gd->kernel_gaussian_transpose = dt_opencl_create_kernel(program, "gaussian_transpose");
   gd->kernel_lowpass_mix = dt_opencl_create_kernel(program, "lowpass_mix");
+  gd->kernel_gaussian_copy_alpha = dt_opencl_create_kernel(program, "gaussian_copy_alpha");
 }
 
 void init_presets (dt_iop_module_so_t *self)
@@ -683,6 +894,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   //dt_opencl_free_kernel(gd->kernel_gaussian_row);
   dt_opencl_free_kernel(gd->kernel_gaussian_transpose);
   dt_opencl_free_kernel(gd->kernel_lowpass_mix);
+  dt_opencl_free_kernel(gd->kernel_gaussian_copy_alpha);
   free(module->data);
   module->data = NULL;
 }
@@ -694,7 +906,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
 
 #if 0 // gaussian is order not user selectable here, as it does not make much sense for a lowpass filter
   GtkBox *hbox  = GTK_BOX(gtk_hbox_new(FALSE, 5));
@@ -709,16 +921,16 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(hbox, GTK_WIDGET(g->order), TRUE, TRUE, 0);
 #endif
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 200.0, 0.1, p->radius, 2));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-1.0, 1.0, 0.01, p->contrast, 2));
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-3.0, 3.0, 0.01, p->saturation, 2));
-  dtgtk_slider_set_label(g->scale1,_("radius"));
-  dtgtk_slider_set_label(g->scale2,_("contrast"));
-  dtgtk_slider_set_label(g->scale3,_("saturation"));
+  g->scale1 = dt_bauhaus_slider_new_with_range(self,0.1, 200.0, 0.1, p->radius, 2);
+  g->scale2 = dt_bauhaus_slider_new_with_range(self,-3.0, 3.0, 0.01, p->contrast, 2);
+  g->scale3 = dt_bauhaus_slider_new_with_range(self,-3.0, 3.0, 0.01, p->saturation, 2);
+  dt_bauhaus_widget_set_label(g->scale1,_("radius"));
+  dt_bauhaus_widget_set_label(g->scale2,_("contrast"));
+  dt_bauhaus_widget_set_label(g->scale3,_("saturation"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->scale1, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->scale2, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->scale3, TRUE, TRUE, 0);
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the radius of gaussian blur"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the contrast of lowpass filter"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("the color saturation of lowpass filter"), (char *)NULL);
@@ -740,3 +952,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

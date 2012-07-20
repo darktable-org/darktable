@@ -113,6 +113,21 @@ int position()
   return 299;
 }
 
+/* helper which eliminates non-ascii and non-printable characters from a string */
+static void _filter_non_printable(char *string, int length)
+{
+  unsigned char *str = (unsigned char *)string;
+  int n = 0;
+
+  while(*str != '\000' && n < length)
+  {
+    if((*str < 0x20) || (*str >= 0x7f)) *str = '.';
+
+    str++;
+    n++;
+  }
+}
+
 /* helper function for updating a metadata value */
 static void _metadata_update_value(GtkLabel *label, const char *value)
 {
@@ -191,6 +206,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     GList *res;
     if((res = dt_metadata_get(img->id, "Xmp.dc.title", NULL))!=NULL) {
       snprintf(value, vl, "%s", (char*)res->data);
+      _filter_non_printable(value, vl);
       g_free(res->data);
       g_list_free(res);
     } else
@@ -199,6 +215,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
    
     if((res = dt_metadata_get(img->id, "Xmp.dc.creator", NULL))!=NULL) {
       snprintf(value, vl, "%s", (char*)res->data);
+      _filter_non_printable(value, vl);
       g_free(res->data);
       g_list_free(res);
     } else
@@ -207,6 +224,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
    
     if((res = dt_metadata_get(img->id, "Xmp.dc.rights", NULL))!=NULL) {
       snprintf(value, vl, "%s", (char*)res->data);
+      _filter_non_printable(value, vl);
       g_free(res->data);
       g_list_free(res);
     } else
@@ -277,3 +295,6 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

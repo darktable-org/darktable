@@ -12,6 +12,8 @@
 # Copyright 2010 henrik andersson
 #=============================================================================
 
+SET(SQLITE3_FIND_REQUIRED ${Sqlite3_FIND_REQUIRED})
+
 find_path(SQLITE3_INCLUDE_DIR sqlite3.h)
 mark_as_advanced(SQLITE3_INCLUDE_DIR)
 

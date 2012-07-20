@@ -29,4 +29,9 @@ void dt_database_destroy(const struct dt_database_t *);
 struct sqlite3 *dt_database_get(const struct dt_database_t *);
 /** test if database is new */
 gboolean dt_database_is_new(const struct dt_database_t *db);
+/** Returns database path */
+const gchar *dt_database_get_path(const struct dt_database_t *db);
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

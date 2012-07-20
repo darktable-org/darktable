@@ -47,7 +47,7 @@ void OpenFile(FileReader f, CameraMetaData *meta) {
 //    wprintf(L"Opening:%s\n",f.Filename());
     try {
       m = f.readFile();    	
-    } catch (FileIOException e) {
+    } catch (FileIOException &e) {
       printf("Could not open image:%s\n", e.what());
       return;
     }
@@ -116,7 +116,7 @@ void OpenFile(FileReader f, CameraMetaData *meta) {
     gflSaveBitmap((char*)savename.c_str(),b,&s);
     gflFreeBitmap(b);
 #endif
-  } catch (RawDecoderException e) {
+  } catch (RawDecoderException &e) {
     wchar_t uni[1024];
     MultiByteToWideChar(CP_ACP, 0, e.what(), -1, uni, 1024);
     //    MessageBox(0,uni, L"RawDecoder Exception",0);
@@ -138,7 +138,7 @@ void OpenFile(FileReader f, CameraMetaData *meta) {
   wprintf(L"Opening:%s\n",f.Filename());
   try {
     m = f.readFile();
-  } catch (FileIOException e) {
+  } catch (FileIOException &e) {
     printf("Could not open image:%s\n", e.what());
     return;
   }
@@ -168,7 +168,7 @@ void OpenFile(FileReader f, CameraMetaData *meta) {
 /*      for (uint32 i = 0; i < d->errors.size(); i++) {
         printf("Error Encountered:%s\n", d->errors[i]);
       }*/
-    } catch (RawDecoderException e) {
+    } catch (RawDecoderException &e) {
       wchar_t uni[1024];
       MultiByteToWideChar(CP_ACP, 0, e.what(), -1, uni, 1024);
       wprintf(L"Raw Decoder Exception:%s\n",uni);
@@ -200,7 +200,7 @@ void OpenFile(FileReader f, CameraMetaData *meta) {
 /*      for (uint32 i = 0; i < d->errors.size(); i++) {
         printf("Error Encountered:%s\n", d->errors[i]);
       }*/
-    } catch (RawDecoderException e) {
+    } catch (RawDecoderException &e) {
       wchar_t uni[1024];
       MultiByteToWideChar(CP_ACP, 0, e.what(), -1, uni, 1024);
       wprintf(L"Raw Decoder Exception:%s\n",uni);
@@ -1062,7 +1062,7 @@ OpenFile(FileReader(L"..\\testimg\\sony_a390_ISO200.ARW"),&meta);
 
   OpenFile(FileReader(L"..\\testimg\\Nikon-D3XFARI0100.NEF"),&meta);
 
-  } catch (CameraMetadataException e) {
+  } catch (CameraMetadataException &e) {
 
   }
   MessageBox(0,L"Finished", L"Finished",0);

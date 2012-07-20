@@ -261,4 +261,14 @@ GtkType dtgtk_togglebutton_get_type()
   return dtgtk_togglebutton_type;
 }
 
+
+void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button,
+                            DTGTKCairoPaintIconFunc paint,
+                            gint paintflags)
+{
+  button->icon = paint;
+  button->icon_flags = paintflags;
+}
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

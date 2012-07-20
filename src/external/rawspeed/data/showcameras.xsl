@@ -71,11 +71,14 @@
 							<xsl:when test ="@iso_max != ''">
 								ISO 0 - <xsl:value-of select="@iso_max"/> 
 							</xsl:when>
+							<xsl:when test ="@iso_list != ''">
+								at ISO <xsl:value-of select="@iso_list"/> 
+							</xsl:when>
 							<xsl:otherwise>
-								Default 
+								default values
 							</xsl:otherwise>
 						</xsl:choose>
-						Black: <span class="param"><xsl:value-of select="@black"/></span>, White:
+						- Black: <span class="param"><xsl:value-of select="@black"/></span>, White:
 						<span class="param"><xsl:value-of select="@white"/>.</span>
 						<br/>
 					</xsl:for-each>

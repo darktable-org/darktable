@@ -110,6 +110,8 @@ dt_cache_capacity(dt_cache_t *cache)
 
 // very verbose dump of the cache contents
 void dt_cache_print(dt_cache_t *cache);
+// only print currently locked buckets:
+void dt_cache_print_locked(dt_cache_t *cache);
 
 // replace data pointer, cleanup has to be done by the user.
 void dt_cache_realloc(dt_cache_t *cache, const uint32_t key, const int32_t cost, void *data);
@@ -124,3 +126,6 @@ dt_cache_for_all(
     void *user_data);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

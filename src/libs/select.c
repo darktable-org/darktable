@@ -16,9 +16,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/darktable.h"
 #include "common/collection.h"
 #include "common/selection.h"
-#include "common/darktable.h"
 #include "common/debug.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -164,3 +164,6 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "select untouched",
                               d->select_untouched_button);
 }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -239,7 +239,7 @@ set_storage_by_name (dt_lib_export_t *d, const char *name)
     }
 
     // Check if plugin recommends a max dimension and set
-    // if not implemnted the stored gconf values are used..
+    // if not implemnted the stored conf values are used..
     uint32_t w=0,h=0;
     w = dt_conf_get_int("plugins/lighttable/export/width");
     h = dt_conf_get_int("plugins/lighttable/export/height");
@@ -485,8 +485,8 @@ gui_init (dt_lib_module_t *self)
 
   // read datadir/color/out/*.icc
   char datadir[1024], confdir[1024], dirname[1024], filename[1024];
-  dt_util_get_user_config_dir(confdir, 1024);
-  dt_util_get_datadir(datadir, 1024);
+  dt_loc_get_user_config_dir(confdir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   snprintf(dirname, 1024, "%s/color/out", confdir);
@@ -767,4 +767,6 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "export", GTK_WIDGET(d->export_button));
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

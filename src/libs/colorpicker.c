@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Robert Bieber, Johannes Hanika.
+    copyright (c) 2011-2012 Robert Bieber, Johannes Hanika, Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -357,13 +357,13 @@ static void _add_sample(GtkButton *widget, gpointer self)
 
   for(i = 0; i < 3; i++)
     sample->picked_color_lab_max[i] =
-        darktable.lib->proxy.colorpicker.picked_color_lab_mean[i];
+        darktable.lib->proxy.colorpicker.picked_color_lab_max[i];
   for(i = 0; i < 3; i++)
     sample->picked_color_lab_mean[i] =
-        darktable.lib->proxy.colorpicker.picked_color_lab_min[i];
+        darktable.lib->proxy.colorpicker.picked_color_lab_mean[i];
   for(i = 0; i < 3; i++)
     sample->picked_color_lab_min[i] =
-        darktable.lib->proxy.colorpicker.picked_color_lab_max[i];
+        darktable.lib->proxy.colorpicker.picked_color_lab_min[i];
   for(i = 0; i < 3; i++)
     sample->picked_color_rgb_max[i] =
         darktable.lib->proxy.colorpicker.picked_color_rgb_max[i];
@@ -396,6 +396,35 @@ static void _restrict_histogram_changed(GtkToggleButton *button, gpointer data)
   darktable.lib->proxy.colorpicker.restrict_histogram =
       gtk_toggle_button_get_active(button);
   dt_dev_invalidate_from_gui(darktable.develop);
+}
+
+/* set sample area proxy impl */
+static void _set_sample_area(dt_lib_module_t *self, float size)
+{
+  dt_lib_colorpicker_t *d = (dt_lib_colorpicker_t *)self->data;
+  
+  if (darktable.develop->gui_module)
+  {
+    darktable.develop->gui_module->color_picker_box[0] = 
+      darktable.develop->gui_module->color_picker_box[1] = 1.0 - size;
+    darktable.develop->gui_module->color_picker_box[2] =
+      darktable.develop->gui_module->color_picker_box[3] = size;
+  }
+
+  gtk_combo_box_set_active(GTK_COMBO_BOX(d->size_selector), 1);
+}
+
+static void _set_sample_point(dt_lib_module_t *self, float x, float y)
+{
+  dt_lib_colorpicker_t *d = (dt_lib_colorpicker_t *)self->data;
+    
+  if (darktable.develop->gui_module)
+  {
+    darktable.develop->gui_module->color_picker_point[0] = x;
+    darktable.develop->gui_module->color_picker_point[1] = y;
+  }
+
+  gtk_combo_box_set_active(GTK_COMBO_BOX(d->size_selector), 0);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -447,6 +476,8 @@ void gui_init(dt_lib_module_t *self)
           = darktable.lib->proxy.colorpicker.picked_color_lab_max[i] = 0;
   darktable.lib->proxy.colorpicker.update_panel =  _update_picker_output;
   darktable.lib->proxy.colorpicker.update_samples = _update_samples_output;
+  darktable.lib->proxy.colorpicker.set_sample_area = _set_sample_area;
+  darktable.lib->proxy.colorpicker.set_sample_point = _set_sample_point;
 
   // Setting up the GUI
   self->widget = container;
@@ -599,6 +630,8 @@ void gui_cleanup(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.update_panel = NULL;
   darktable.lib->proxy.colorpicker.update_samples = NULL;
 
+  darktable.lib->proxy.colorpicker.set_sample_area = NULL;
+
   free(darktable.lib->proxy.colorpicker.picked_color_rgb_mean);
   free(darktable.lib->proxy.colorpicker.picked_color_rgb_min);
   free(darktable.lib->proxy.colorpicker.picked_color_rgb_max);
@@ -660,3 +693,6 @@ void gui_reset(dt_lib_module_t *self)
   gtk_toggle_button_set_active(
       GTK_TOGGLE_BUTTON(data->display_samples_check_box), FALSE);
 }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

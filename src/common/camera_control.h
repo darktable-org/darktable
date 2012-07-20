@@ -19,11 +19,11 @@
 #ifndef DT_CAMERA_CONTROL_H
 #define DT_CAMERA_CONTROL_H
 
-#include <glib.h>
-#include <gtk/gtk.h>
+#include "common/darktable.h"
 
 #include <gphoto2/gphoto2.h>
-#include "common/darktable.h"
+#include <glib.h>
+#include <gtk/gtk.h>
 
 
 /** A camera object used for camera actions and callbacks */
@@ -48,6 +48,10 @@ typedef struct dt_camera_t
   gboolean can_import;
   /** This camera/device can do tethered shoots. */
   gboolean can_tether;
+  /** This camera/device can do live view. */
+  gboolean can_live_view;
+  /** This camera/device can do advanced live view things like zoom. */
+  gboolean can_live_view_advanced;
   /** This camera/device can be remote controlled. */
   gboolean can_config;
 
@@ -70,6 +74,27 @@ typedef struct dt_camera_t
 
   /** gphoto2 context */
   GPContext *gpcontext;
+
+  /** Live view */
+  gboolean is_live_viewing;
+  /** The last preview image fromthe camera */
+  GdkPixbuf *live_view_pixbuf;
+  /** Rotation of live view, multiples of 90° */
+  int32_t live_view_rotation;
+  /** Zoom level for live view */
+  gboolean live_view_zoom;
+  /** Pan the zoomed live view */
+  gboolean live_view_pan;
+  /** Position of the live view zoom region */
+  gint live_view_zoom_x, live_view_zoom_y;
+  /** Mirror the live view for easier self portraits */
+  gboolean live_view_flip;
+  /** The thread adding the live view jobs */
+  pthread_t live_view_thread;
+  /** A guard so that writing and reading the pixbuf don't interfere */
+  dt_pthread_mutex_t live_view_pixbuf_mutex;
+  /** A flag to tell the live view thread that the last job was completed */
+  dt_pthread_mutex_t live_view_synch;
 }
 dt_camera_t;
 
@@ -196,6 +221,10 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images,
 
 /** Execute remote capture of camera.*/
 void dt_camctl_camera_capture(const dt_camctl_t *c,const dt_camera_t *cam);
+/** Start live view of camera.*/
+gboolean dt_camctl_camera_start_live_view(const dt_camctl_t *c);
+/** Stop live view of camera.*/
+void dt_camctl_camera_stop_live_view(const dt_camctl_t *c);
 /** Returns a model string of camera.*/
 const char *dt_camctl_camera_get_model(const dt_camctl_t *c,const dt_camera_t *cam);
 
@@ -214,3 +243,7 @@ const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c,const
 void dt_camctl_camera_build_property_menu (const dt_camctl_t *c,const dt_camera_t *cam,GtkMenu **menu, GCallback item_activate, gpointer user_data);
 
 #endif
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

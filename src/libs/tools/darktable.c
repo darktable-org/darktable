@@ -109,6 +109,7 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
 
   /* get the current style */
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
+  if(!style) style = gtk_rc_get_style(widget);
   
   cairo_t *cr = gdk_cairo_create(widget->window);
 
@@ -117,7 +118,7 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   cairo_paint(cr);
 
   /* paint icon image */
-  cairo_set_source_surface(cr, d->image, 0, 10);
+  cairo_set_source_surface(cr, d->image, 0, 7);
   cairo_rectangle(cr,0,0,48,48);
   cairo_fill(cr);
 
@@ -126,7 +127,7 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   PangoLayout *layout;
   layout = gtk_widget_create_pango_layout (widget,NULL); 
   pango_font_description_set_weight (style->font_desc, PANGO_WEIGHT_BOLD);
-  pango_font_description_set_absolute_size (style->font_desc, 32 * PANGO_SCALE);
+  pango_font_description_set_absolute_size (style->font_desc, 25 * PANGO_SCALE);
   pango_layout_set_font_description (layout,style->font_desc); 
   
   pango_layout_set_text (layout,PACKAGE_NAME,-1);
@@ -138,7 +139,7 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   pango_font_description_set_absolute_size (style->font_desc, 10 * PANGO_SCALE);
   pango_layout_set_font_description (layout,style->font_desc);
   pango_layout_set_text (layout,PACKAGE_VERSION,-1);
-  cairo_move_to (cr, 44.0, 36.0);
+  cairo_move_to (cr, 44.0, 30.0);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.3);
   pango_cairo_show_layout (cr, layout);
 
@@ -161,7 +162,7 @@ static void _lib_darktable_show_about_dialog()
   GtkWidget *dialog = gtk_about_dialog_new();
   gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(dialog), PACKAGE_NAME);
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
-  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) johannes hanika, henrik andersson, tobias ellinghaus et al. 2009-2011");
+  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) johannes hanika, henrik andersson, tobias ellinghaus et al. 2009-2012");
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), _("organize and develop images from digital cameras"));
   gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://www.darktable.org/");
   gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), "darktable");
@@ -175,45 +176,46 @@ static void _lib_darktable_show_about_dialog()
       _("* ubuntu packaging, color management, video tutorials *"),
       "Pascal de Bruijn",
       "",
+      _("* opencl pipeline: *"),
+      "Ulrich Pegelow",
+      "",
       _("* networking, battle testing, translation expert *"),
       "Alexandre Prokoudine",
       "",
       _("* contributors *"),
       "Alexandre Prokoudine",
-      "Alexander Rabtchevich",
-      "Andrea Purracchio",
-      "Andrey Kaminsky",
-      "Anton Blanchard",
-      "Bernhard Schneider",
+      "Alexey Dokuchaev",
+      "Ammon Riley",
+      "Antony Dovgal",
       "Boucman",
       "Brian Teague",
       "Bruce Guenter",
-      "Christian Fuchs",
-      "Christian Himpel",
-      "Daniele Giorgis",
-      "David Bremner",
+      "Cherrot Luo",
+      "Denis Cheremisov",
+      "Edouard Gomez",
+      "Edward Herr",
+      "František Šidák",
       "Ger Siemerink",
       "Gianluigi Calcaterra",
-      "Gregor Quade",
-      "Jan Rinze",
-      "Jochen Schroeder",
+      "James C. McPherson",
+      "Joao Trindade",
       "Jose Carlos Garcia Sogo",
-      "Karl Mikaelsson",
-      "Klaus Staedtler",
-      "Mikko Ruohola",
-      "Nao Nakashima",
+      "Michał Prędotka",
+      "Moritz Lipp",
       "Olivier Tribout",
       "Pascal de Bruijn",
-      "Pascal Obry",
-      "Robert Park",
-      "Richard Hughes",
+      "Petr Styblo",
+      "Robert Bieber",
+      "Rostyslav Pidgornyi",
+      "Sergey Pavlov",
       "Simon Spannagel",
-      "Stephen van den Berg",
-      "Stuart Henderson",
-      "Thierry Leconte",
-      "Wyatt Olson",
-      "Xavier Besse",
-      "Zeus Panchenko",
+      "Terry Jeffress",
+      "Tim Harder",
+      "Tom Vanderpoel",
+      "Ulrich Pegelow",
+      "jan",
+      "maigl",
+      "And all those of you that made previous releases possible",
     NULL
     };
   gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
@@ -224,3 +226,6 @@ static void _lib_darktable_show_about_dialog()
   gtk_widget_destroy(dialog);
 
 }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

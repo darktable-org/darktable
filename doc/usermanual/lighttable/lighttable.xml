@@ -57,7 +57,7 @@
 							<entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack on the image</entry>
 						</row>
 						<row>
-							<entry><emphasis>e</emphasis></entry><entry>open the image in darkroom view for developing</entry>
+							<entry><emphasis>d</emphasis></entry><entry>open the image in darkroom view for developing</entry>
 						</row>
 						<row>
 							<entry><emphasis>z</emphasis></entry><entry>show a fullscreen view of the image</entry>

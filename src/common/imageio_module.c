@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/darktable.h"
 #include "common/imageio_module.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -99,7 +100,7 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
   dt_imageio_module_format_t *module;
   char plugindir[1024], plugin_name[256];
   const gchar *d_name;
-  dt_util_get_plugindir(plugindir, 1024);
+  dt_loc_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/plugins/imageio/format", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
@@ -185,7 +186,7 @@ dt_imageio_load_modules_storage (dt_imageio_t *iio)
   dt_imageio_module_storage_t *module;
   char plugindir[1024], plugin_name[256];
   const gchar *d_name;
-  dt_util_get_plugindir(plugindir, 1024);
+  dt_loc_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/plugins/imageio/storage", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
@@ -290,4 +291,6 @@ dt_imageio_module_storage_t *dt_imageio_get_storage_by_name(const char *name)
   return NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

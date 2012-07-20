@@ -22,8 +22,10 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
+#include "common/opencl.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -56,7 +58,7 @@ typedef struct dt_iop_splittoning_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
   GtkWidget  *label1,*label2,*label3,*label4,*label5,*label6;	 			 // highlight hue, h sat, shadow hue, s sat, balance, compress
-  GtkDarktableSlider *scale1,*scale2;       							//  balance, compress
+  GtkWidget *scale1,*scale2;       							//  balance, compress
   GtkDarktableButton *colorpick1,*colorpick2;	   					// shadow, highlight
   GtkDarktableGradientSlider *gslider1,*gslider2,*gslider3,*gslider4;		//highligh hue, highlight saturation, shadow hue, shadow saturation
 }
@@ -73,6 +75,13 @@ typedef struct dt_iop_splittoning_data_t
 }
 dt_iop_splittoning_data_t;
 
+typedef struct dt_iop_splittoning_global_data_t
+{
+  int kernel_splittoning;
+}
+dt_iop_splittoning_global_data_t;
+
+
 const char *name()
 {
   return _("split toning");
@@ -80,7 +89,7 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 int
@@ -165,23 +174,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *out;
   const int ch = piece->colors;
 
-  // Get lowest/highest l in image
-  float lhigh=0.0;
-  float llow=1.0;
-
-  in  = (float *)ivoid;
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(in,roi_out,lhigh,llow) schedule(static)
-#endif
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
-  {
-    int index = k*ch;
-    float h,s,l;
-    rgb2hsl(&in[index],&h,&s,&l);
-    lhigh=fmax(lhigh,l);
-    llow=fmin(llow,l);
-  }
-
   const float compress=(data->compress/110.0)/2.0;  // Dont allow 100% compression..
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(ivoid,ovoid,roi_out,data) private(in,out) schedule(static)
@@ -215,27 +207,89 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         out[1]=in[1];
         out[2]=in[2];
       }
+
+      out[3]=in[3];
     }
   }
 }
 
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_splittoning_data_t *d = (dt_iop_splittoning_data_t *)piece->data;
+  dt_iop_splittoning_global_data_t *gd = (dt_iop_splittoning_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  const float compress = (d->compress/110.0)/2.0;  // Dont allow 100% compression..
+  const float balance = d->balance;
+  const float shadow_hue = d->shadow_hue;
+  const float shadow_saturation = d->shadow_saturation;
+  const float highlight_hue = d->highlight_hue;
+  const float highlight_saturation = d->highlight_saturation;
+
+  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 0, sizeof(cl_mem), &dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 1, sizeof(cl_mem), &dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 2, sizeof(int), &width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 3, sizeof(int), &height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 4, sizeof(float), &compress);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 5, sizeof(float), &balance);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 6, sizeof(float), &shadow_hue);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 7, sizeof(float), &shadow_saturation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 8, sizeof(float), &highlight_hue);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 9, sizeof(float), &highlight_saturation);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_splittoning, sizes);
+  if(err != CL_SUCCESS) goto error;
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_splittoning] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 8; // extended.cl from programs.conf
+  dt_iop_splittoning_global_data_t *gd = (dt_iop_splittoning_global_data_t *)malloc(sizeof(dt_iop_splittoning_global_data_t));
+  module->data = gd;
+  gd->kernel_splittoning = dt_opencl_create_kernel(program, "splittoning");
+}
+
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_splittoning_global_data_t *gd = (dt_iop_splittoning_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_splittoning);
+  free(module->data);
+  module->data = NULL;
+}
+
+
 static void
-balance_callback (GtkDarktableSlider *slider, gpointer user_data)
+balance_callback (GtkWidget* slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
-  p->balance = dtgtk_slider_get_value(slider)/100.0f;
+  p->balance = dt_bauhaus_slider_get(slider)/100.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-compress_callback (GtkDarktableSlider *slider, gpointer user_data)
+compress_callback (GtkWidget* slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
-  p->compress= dtgtk_slider_get_value(slider);
+  p->compress= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -425,8 +479,8 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_gradient_slider_set_value(g->gslider3,p->highlight_hue);
   dtgtk_gradient_slider_set_value(g->gslider4,p->highlight_saturation);
   dtgtk_gradient_slider_set_value(g->gslider2,p->shadow_saturation);
-  dtgtk_slider_set_value(g->scale1, p->balance*100.0);
-  dtgtk_slider_set_value(g->scale2, p->compress);
+  dt_bauhaus_slider_set(g->scale1, p->balance*100.0);
+  dt_bauhaus_slider_set(g->scale2, p->compress);
 
   float color[3];
   hsl2rgb(color,p->shadow_hue,p->shadow_saturation,0.5);
@@ -452,7 +506,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_splittoning_params_t));
   module->default_params = malloc(sizeof(dt_iop_splittoning_params_t));
   module->default_enabled = 0;
-  module->priority = 897; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 901; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_splittoning_params_t);
   module->gui_data = NULL;
   dt_iop_splittoning_params_t tmp = (dt_iop_splittoning_params_t)
@@ -481,7 +535,7 @@ void gui_init(struct dt_iop_module_t *self)
   // Shadows
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(dtgtk_label_new(_("shadows"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT)), FALSE, FALSE, 5);
 
-  g->colorpick1 = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE));
+  g->colorpick1 = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE|CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick1),32,32);
 
   GtkWidget *hbox=GTK_WIDGET(gtk_hbox_new(FALSE, 0));
@@ -540,7 +594,7 @@ void gui_init(struct dt_iop_module_t *self)
   // Highlights
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(dtgtk_label_new(_("highlights"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT)), FALSE, FALSE, 5);
 
-  g->colorpick2 = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE));
+  g->colorpick2 = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE|CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick2),32,32);
 
   hbox=GTK_WIDGET(gtk_hbox_new(FALSE, 0));
@@ -603,16 +657,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->balance*100.0, 2));
-  dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_RATIO);
-  dtgtk_slider_set_label(g->scale1,_("balance"));
-  dtgtk_slider_set_unit(g->scale1,"");
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->balance*100.0, 2);
+  dt_bauhaus_slider_set_format(g->scale1, "%.2f");
+  dt_bauhaus_widget_set_label(g->scale1, _("balance"));
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->compress, 2));
-  dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_label(g->scale2,_("compress"));
-  dtgtk_slider_set_unit(g->scale2,"%");
+  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->compress, 2);
+  dt_bauhaus_slider_set_format(g->scale2, "%.2f%%");
+  dt_bauhaus_widget_set_label(g->scale2,_("compress"));
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
 
@@ -648,4 +700,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

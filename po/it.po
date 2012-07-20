@@ -1280,7 +1280,7 @@ msgstr "Titolo"
 #: ../src/libs/collect.h:37
 #: ../src/libs/metadata.c:311
 msgid "creator"
-msgstr "Costruttore"
+msgstr "Autore"
 
 #: ../src/gui/gtk.c:1947
 #: ../src/imageio/storage/picasa.c:769
@@ -4691,7 +4691,7 @@ msgstr "Descrizione"
 #: ../src/libs/collect.h:38
 #: ../src/libs/metadata.c:324
 msgid "publisher"
-msgstr "Autore"
+msgstr "Editore"
 
 #: ../src/libs/copy_history.c:46
 msgid "history stack"

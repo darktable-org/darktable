@@ -98,6 +98,10 @@ typedef struct dt_mipmap_cache_t
 {
   // one cache per mipmap level
   dt_mipmap_cache_one_t mip[DT_MIPMAP_NONE];
+  // global setting: which compression type are we using?
+  int compression_type; // 0 - none, 1 - low quality, 2 - slow
+  // per-thread cache of uncompressed buffers, in case compression is requested.
+  dt_mipmap_cache_one_t scratchmem;
 }
 dt_mipmap_cache_t;
 
@@ -164,4 +168,31 @@ dt_mipmap_cache_get_matching_size(
     const int32_t width,
     const int32_t height);
 
+
+// allocate enough memory for an uncompressed thumbnail image.
+// returns NULL if the cache is set to not use compression.
+uint8_t*
+dt_mipmap_cache_alloc_scratchmem(
+    const dt_mipmap_cache_t *cache);
+
+// decompress the raw mipmapm buffer into the scratchmemory.
+// returns a pointer to the decompressed memory block. that's because
+// for uncompressed settings, it will point directly to the mipmap
+// buffer and scratchmem can be NULL.
+uint8_t*
+dt_mipmap_cache_decompress(
+    const dt_mipmap_buffer_t *buf,
+    uint8_t *scratchmem);
+
+// writes the scratchmem buffer to compressed
+// format into the mipmap cache. does nothing
+// if compression is disabled.
+void
+dt_mipmap_cache_compress(
+    dt_mipmap_buffer_t *buf,
+    uint8_t *const scratchmem);
+
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

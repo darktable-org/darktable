@@ -22,6 +22,7 @@
 #include "config.h"
 #endif
 
+#define DT_OPENCL_MAX_PLATFORMS 5
 #define DT_OPENCL_MAX_PROGRAMS 256
 #define DT_OPENCL_MAX_KERNELS 512
 #define DT_OPENCL_EVENTLISTSIZE 256
@@ -30,13 +31,19 @@
 
 #ifdef HAVE_OPENCL
 
+#include "common/darktable.h"
+#include "common/dtpthread.h"
+#include "common/dlopencl.h"
+#include "control/conf.h"
+
 // #pragma GCC diagnostic push
 // #pragma GCC diagnostic ignored "-Wcomment"
 #include <CL/cl.h>
 // #pragma GCC diagnostic
-#include "common/dtpthread.h"
-#include "common/dlopencl.h"
-#include "control/conf.h"
+
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+#define ROUNDUPWD(a)            dt_opencl_roundup(a)
+#define ROUNDUPHT(a)            dt_opencl_roundup(a)
 
 
 /**
@@ -132,6 +139,9 @@ int dt_opencl_get_max_work_item_sizes(const int dev, size_t *sizes);
 /** return max size per dimension in sizes[3] and max total size in workgroupsize */
 int dt_opencl_get_work_group_limits(const int dev, size_t *sizes, size_t *workgroupsize, unsigned long *localmemsize);
 
+/** return max workgroup size for a specifc kernel */
+int dt_opencl_get_kernel_work_group_size(const int dev, const int kernel, size_t *kernelworkgroupsize);
+
 /** attach arg. */
 int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, const size_t size, const void *arg);
 
@@ -184,12 +194,19 @@ int dt_opencl_enqueue_copy_image_to_buffer(const int devid, cl_mem src_image, cl
 
 int dt_opencl_enqueue_copy_buffer_to_image(const int devid, cl_mem src_buffer, cl_mem dst_image, size_t offset, size_t *origin, size_t *region);
 
+int dt_opencl_read_buffer_from_device(const int devid, void *host, void *device, const size_t offset, const size_t size, const int blocking);
+
+int dt_opencl_write_buffer_to_device(const int devid, void *host, void *device, const size_t offset, const size_t size, const int blocking);
+
 void* dt_opencl_alloc_device_buffer(const int devid, const int size);
 
 void dt_opencl_release_mem_object(void *mem);
 
 /** check if image size fit into limits given by OpenCL runtime */
 int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp, const float factor, const size_t overhead);
+
+/** round size to a multiple of the value given in config parameter opencl_size_roundup */
+int dt_opencl_roundup(int size);
 
 /** get global memory of device */
 cl_ulong dt_opencl_get_max_global_mem(const int devid);
@@ -260,6 +277,10 @@ static inline int dt_opencl_get_work_group_limits(const int dev, size_t *sizes, 
 {
   return -1;
 }
+static inline int dt_opencl_get_kernel_work_group_size(const int dev, const int kernel, size_t *kernelworkgroupsize)
+{
+  return -1;
+}
 static inline int dt_opencl_set_kernel_arg(const int dev, const int kernel, const size_t size, const void *arg)
 {
   return -1;
@@ -309,3 +330,6 @@ static inline void dt_opencl_events_profiling(const int devid, const int aggrega
 
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

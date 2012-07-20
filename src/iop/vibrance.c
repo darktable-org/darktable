@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2011-2012 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,11 +25,11 @@
 #ifdef HAVE_GEGL
 #include <gegl.h>
 #endif
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
-#include "dtgtk/slider.h"
-#include "dtgtk/resetlabel.h"
+#include "common/opencl.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
@@ -48,7 +48,7 @@ dt_iop_vibrance_params_t;
 
 typedef struct dt_iop_vibrance_gui_data_t
 {
-  GtkDarktableSlider *amount_scale;
+  GtkWidget *amount_scale;
 }
 dt_iop_vibrance_gui_data_t;
 
@@ -58,6 +58,12 @@ typedef struct dt_iop_vibrance_data_t
 }
 dt_iop_vibrance_data_t;
 
+typedef struct dt_iop_vibrance_global_data_t
+{
+  int kernel_vibrance;
+}
+dt_iop_vibrance_global_data_t;
+
 const char *name()
 {
   return _("vibrance");
@@ -65,7 +71,7 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 int
@@ -74,7 +80,7 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
-
+#if 0 // BAUHAUS doesnt support keyaccels yet...
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "vibrance"));
@@ -87,6 +93,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "vibrance",
                               GTK_WIDGET(g->amount_scale));
 }
+#endif
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -120,13 +127,67 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
 }
 
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_vibrance_data_t *data = (dt_iop_vibrance_data_t *)piece->data;
+  dt_iop_vibrance_global_data_t *gd = (dt_iop_vibrance_global_data_t *)self->data;
+  cl_int err = -999;
+
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  const float amount = data->amount*0.01f;
+
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vibrance, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vibrance, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vibrance, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vibrance, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vibrance, 4, sizeof(float), (void *)&amount); 
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vibrance, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_vibrance] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 8; // extended.cl, from programs.conf
+  dt_iop_vibrance_global_data_t *gd = (dt_iop_vibrance_global_data_t *)malloc(sizeof(dt_iop_vibrance_global_data_t));
+  module->data = gd;
+  gd->kernel_vibrance = dt_opencl_create_kernel(program, "vibrance");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_vibrance_global_data_t *gd = (dt_iop_vibrance_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_vibrance);
+  free(module->data);
+  module->data = NULL;
+}
+
+
+
+
 static void
-amount_callback (GtkDarktableSlider *slider, gpointer user_data)
+amount_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_vibrance_params_t *p = (dt_iop_vibrance_params_t *)self->params;
-  p->amount = dtgtk_slider_get_value(slider);
+  p->amount = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -154,7 +215,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_vibrance_gui_data_t *g = (dt_iop_vibrance_gui_data_t *)self->gui_data;
   dt_iop_vibrance_params_t *p = (dt_iop_vibrance_params_t *)module->params;
-  dtgtk_slider_set_value(g->amount_scale, p->amount);
+  dt_bauhaus_slider_set(g->amount_scale, p->amount);
 }
 
 void init(dt_iop_module_t *module)
@@ -187,19 +248,14 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_vibrance_gui_data_t *g = (dt_iop_vibrance_gui_data_t *)self->gui_data;
   dt_iop_vibrance_params_t *p = (dt_iop_vibrance_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  GtkVBox *vbox =  GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);;
 
-  g->amount_scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1, p->amount, 0));
-  dtgtk_slider_set_format_type(g->amount_scale,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_label(g->amount_scale,_("vibrance"));
-  dtgtk_slider_set_unit(g->amount_scale,"%");
- 
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->amount_scale), TRUE, TRUE, 0);
- 
+  /* vibrance */
+  g->amount_scale = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 1, p->amount, 0);
+  dt_bauhaus_slider_set_format(g->amount_scale,"%.0f%%");
+  dt_bauhaus_widget_set_label(g->amount_scale,_("vibrance"));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->amount_scale), TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->amount_scale), "tooltip-text", _("the amount of vibrance"), (char *)NULL);
-
   g_signal_connect (G_OBJECT (g->amount_scale), "value-changed",
                     G_CALLBACK (amount_callback), self);
 }
@@ -209,3 +265,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

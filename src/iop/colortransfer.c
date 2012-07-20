@@ -18,15 +18,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-#include <strings.h>
-#include <gtk/gtk.h>
-#include <inttypes.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
 #include "common/colorspaces.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -36,6 +27,12 @@
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
 
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include <strings.h>
+#include <gtk/gtk.h>
+#include <inttypes.h>
 
 /**
  * color transfer somewhat based on the glorious paper `color transfer between images'
@@ -392,6 +389,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           out[j+2] += weight[c] * ((Lab[2] - mean[c][1])*data->var[mapio[c]][1]/var[c][1] + data->mean[mapio[c]][1]);
         }
 #endif
+        out[j+3] = in[j+3];
         j+=ch;
       }
     }
@@ -551,7 +549,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colortransfer_params_t));
   module->default_params = malloc(sizeof(dt_iop_colortransfer_params_t));
   module->default_enabled = 0;
-  module->priority = 428; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 431; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colortransfer_params_t);
   module->gui_data = NULL;
   dt_iop_colortransfer_params_t tmp;
@@ -660,13 +658,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(box, GTK_WIDGET(g->spinbutton), FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->spinbutton), "value-changed", G_CALLBACK(spinbutton_changed), (gpointer)self);
 
-  button = gtk_button_new_with_label(_("acquire"));
+  button = dtgtk_button_new_with_label(_("acquire"), NULL, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g->acquire_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("analyze this image"), (char *)NULL);
   gtk_box_pack_start(box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_button_pressed), (gpointer)self);
 
-  g->apply_button = gtk_button_new_with_label(_("apply"));
+  g->apply_button = dtgtk_button_new_with_label(_("apply"), NULL, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_object_set(G_OBJECT(g->apply_button), "tooltip-text", _("apply previously analyzed image look to this image"), (char *)NULL);
   gtk_box_pack_start(box, g->apply_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->apply_button), "clicked", G_CALLBACK(apply_button_pressed), (gpointer)self);
@@ -692,3 +690,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 #undef HISTN
 #undef MAXN
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

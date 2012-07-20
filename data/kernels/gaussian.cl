@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 ulrich pegelow.
+    copyright (c) 2011-2012 ulrich pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,19 +34,19 @@ gaussian_transpose(global float4 *in, global float4 *out, unsigned int width, un
 
   if((x < width) && (y < height))
   {
-    unsigned int iindex = y * width + x;
-    buffer[get_local_id(1)*(blocksize+1)+get_local_id(0)] = in[iindex];
+    const unsigned int iindex = mad24(y, width, x);
+    buffer[mad24(get_local_id(1), blocksize + 1, get_local_id(0))] = in[iindex];
   }
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  x = get_group_id(1) * blocksize + get_local_id(0);
-  y = get_group_id(0) * blocksize + get_local_id(1);
+  x = mad24(get_group_id(1), blocksize, get_local_id(0));
+  y = mad24(get_group_id(0), blocksize, get_local_id(1));
 
   if((x < height) && (y < width))
   {
-    unsigned int oindex = y * height + x;
-    out[oindex] = buffer[get_local_id(0)*(blocksize+1)+get_local_id(1)];
+    const unsigned int oindex = mad24(y, height, x);
+    out[oindex] = buffer[mad24(get_local_id(0), blocksize + 1, get_local_id(1))];
   }
 }
 
@@ -56,7 +56,7 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
                   const float a0, const float a1, const float a2, const float a3, const float b1, const float b2,
                   const float coefp, const float coefn)
 {
-  const int x = get_global_id(0);
+  const unsigned int x = get_global_id(0);
 
   if(x >= width) return;
 
@@ -81,19 +81,21 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
  
   for(int y=0; y<height; y++)
   {
-    xc = clamp(in[x + y * width], Labmin, Labmax);
+    const int idx = mad24((unsigned int)y, width, x);
+
+    xc = clamp(in[idx], Labmin, Labmax);
     yc = (a0 * xc) + (a1 * xp) - (b1 * yp) - (b2 * yb);
 
     xp = xc;
     yb = yp;
     yp = yc;
 
-    out[x + y*width] = yc;
+    out[idx] = yc;
 
   }
 
   // backward filter
-  xn = clamp(in[x + (height-1)*width], Labmin, Labmax);
+  xn = clamp(in[mad24(height - 1, width, x)], Labmin, Labmax);
   xa = xn;
   yn = xn * coefn;
   ya = yn;
@@ -101,7 +103,9 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
 
   for(int y=height-1; y>-1; y--)
   {
-    xc = clamp(in[x + y * width], Labmin, Labmax);
+    const int idx = mad24((unsigned int)y, width, x);
+
+    xc = clamp(in[idx], Labmin, Labmax);
     yc = (a2 * xn) + (a3 * xa) - (b1 * yn) - (b2 * ya);
 
     xa = xn; 
@@ -109,32 +113,148 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
     ya = yn; 
     yn = yc;
 
-    out[x + y*width] += yc;
+    out[idx] += yc;
 
   }
 }
 
 
+float
+lookup_unbounded(read_only image2d_t lut, const float x, global float *a)
+{
+  // in case the curve is marked as linear, return the fast
+  // path to linear unbounded (does not clip x at 1)
+  if(a[0] >= 0.0f)
+  {
+    if(x < 1.0f)
+    {
+      const int xi = clamp(x*65535.0f, 0.0f, 65535.0f);
+      const int2 p = (int2)((xi & 0xff), (xi >> 8));
+      return read_imagef(lut, sampleri, p).x;
+    }
+    else return a[1] * native_powr(x*a[0], a[2]);
+  }
+  else return x;
+}
+
+
 kernel void 
-lowpass_mix(global float4 *in, global float4 *out, unsigned int width, unsigned int height, const float contrast, const float saturation)
+lowpass_mix(global float4 *in, global float4 *out, unsigned int width, unsigned int height, const float saturation, 
+            read_only image2d_t table, global float *a)
+{
+  const unsigned int x = get_global_id(0);
+  const unsigned int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const int idx = mad24(y, width, x);
+
+  float4 i = in[idx];
+  float4 o;
+
+  const float4 Labmin = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
+  const float4 Labmax = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
+
+  o.x = lookup_unbounded(table, i.x/100.0f, a);
+  o.y = clamp(i.y*saturation, Labmin.y, Labmax.y);
+  o.z = clamp(i.z*saturation, Labmin.z, Labmax.z);
+  o.w = i.w;
+
+  out[idx] = o;
+}
+
+
+
+float4
+overlay(const float4 in_a, const float4 in_b, const float opacity, const float transform, const float ccorrect)
+{
+  /* a contains underlying image; b contains mask */
+
+  const float4 scale = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
+  const float4 min = (float4)(0.0f, -1.0f, -1.0f, 0.0f);
+  const float4 max = (float4)(1.0f, 1.0f, 1.0f, 1.0f);
+  const float lmin = 0.0f;
+  const float lmax = 1.0f;       /* max + fabs(min) */
+  const float halfmax = 0.5f;    /* lmax / 2.0f */
+  const float doublemax = 2.0f;  /* lmax * 2.0f */
+
+  float4 a = in_a / scale;
+  float4 b = in_b / scale;
+
+  float lb = clamp((b.x - halfmax) * sign(opacity) + halfmax, lmin, lmax);
+  float opacity2 = opacity*opacity;
+
+  while(opacity2 > 0.0f)
+  {
+    float lref = a.x > 0.01f ? a.x : 0.01f;
+    float href = a.x < 0.99f ? a.x : 0.99f;
+    float la = clamp(a.x + fabs(min.x), lmin, lmax);
+
+    float chunk = opacity2 > 1.0f ? 1.0f : opacity2;
+    float optrans = chunk * transform;
+    opacity2 -= 1.0f;
+
+    a.x = clamp(la * (1.0f - optrans) + (la > halfmax ? 
+                                            lmax - (lmax - doublemax * (la - halfmax)) * (lmax-lb) : 
+                                            doublemax * la * lb) * optrans, lmin, lmax) - fabs(min.x);
+
+    a.y = clamp(a.y * (1.0f - optrans) + (a.y + b.y) * (a.x/lref * ccorrect + (1.0f - a.x)/(1.0f - href) * (1.0f - ccorrect)) * optrans, min.y, max.y);
+
+    a.z = clamp(a.z * (1.0f - optrans) + (a.z + b.z) * (a.x/lref * ccorrect + (1.0f - a.x)/(1.0f - href) * (1.0f - ccorrect)) * optrans, min.z, max.z);
+
+  }
+  /* output scaled back pixel */
+  return a * scale;
+}
+
+
+kernel void 
+shadows_highlights_mix(global float4 *inout, global float4 *mask, unsigned int width, unsigned int height, 
+                       const float shadows, const float highlights, const float compress,
+                       const float shadows_ccorrect, const float highlights_ccorrect)
+{
+  const unsigned int x = get_global_id(0);
+  const unsigned int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const int idx = mad24(y, width, x);
+
+  float4 io = inout[idx];
+  float4 m;
+  float xform;
+
+  const float4 Labmin = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
+  const float4 Labmax = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
+
+  /* blurred, inverted and desaturaed mask in m */
+  m.x = 100.0f - mask[idx].x;
+  m.y = 0.0f;
+  m.z = 0.0f;
+
+  /* overlay highlights */
+  xform = clamp(1.0f - 0.01f * m.x/(1.0f-compress), 0.0f, 1.0f);
+  io = overlay(io, m, -highlights, xform, 1.0f - highlights_ccorrect);
+
+  /* overlay shadows */
+  xform = clamp(0.01f * m.x/(1.0f-compress) - compress/(1.0f-compress), 0.0f, 1.0f);
+  io = overlay(io, m, shadows, xform, shadows_ccorrect);
+
+  inout[idx] = clamp(io, Labmin, Labmax);
+}
+
+
+__kernel void
+gaussian_copy_alpha (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int width, const int height)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 i = in[x + y*width];
-  float4 o;
+  float4 pixel = read_imagef(in_a, sampleri, (int2)(x, y));
+  pixel.w = read_imagef(in_b, sampleri, (int2)(x, y)).w;
 
-  const float4 Labmin = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
-  const float4 Labmax = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
-
-  o.x = i.x*contrast + 50.0f * (1.0f - contrast);
-  o.y = i.y*saturation;
-  o.z = i.z*saturation;
-  o.w = i.w;
-
-  out[x + y*width] = clamp(o, Labmin, Labmax);
+  write_imagef(out, (int2)(x, y), pixel);
 }
-
 

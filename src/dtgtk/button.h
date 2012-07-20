@@ -53,6 +53,8 @@ GtkWidget* dtgtk_button_new_with_label(const gchar *label, DTGTKCairoPaintIconFu
 void dtgtk_button_set_paint(GtkDarktableButton *button,
                             DTGTKCairoPaintIconFunc paint,
                             gint paintflags);
-
 G_END_DECLS
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

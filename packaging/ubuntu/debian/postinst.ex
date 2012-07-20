@@ -20,11 +20,9 @@ set -e
 
 case "$1" in
     configure)
-        /usr/bin/gconftool-2 --makefile-install-rule darktable.schemas 1>/dev/null
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
-        /usr/bin/gconftool-2 --makefile-uninstall-rule darktable.schemas 1>/dev/null
     ;;
 
     *)

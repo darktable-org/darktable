@@ -1,30 +1,30 @@
 /*
-		This file is part of darktable,
-		copyright (c) 2010-2011 henrik andersson.
+    This file is part of darktable,
+    copyright (c) 2010-2011 henrik andersson.
 
-		darktable is free software: you can redistribute it and/or modify
-		it under the terms of the GNU General Public License as published by
-		the Free Software Foundation, either version 3 of the License, or
-		(at your option) any later version.
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-		darktable is distributed in the hope that it will be useful,
-		but WITHOUT ANY WARRANTY; without even the implied warranty of
-		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-		GNU General Public License for more details.
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-		You should have received a copy of the GNU General Public License
-		along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /** this is the view for the capture module.
-	The capture module purpose is to allow a workflow for capturing images
-	which is module extendable but main purpos is to support tethered capture
-	using gphoto library.
+    The capture module purpose is to allow a workflow for capturing images
+    which is module extendable but main purpos is to support tethered capture
+    using gphoto library.
 
-	When entered a session is constructed = one empty filmroll might be same filmroll
-	as earlier created dependent on capture filesystem structure...
+    When entered a session is constructed = one empty filmroll might be same filmroll
+    as earlier created dependent on capture filesystem structure...
 
-	TODO: How to pass initialized data such as dt_camera_t ?
+    TODO: How to pass initialized data such as dt_camera_t ?
 
 */
 
@@ -64,7 +64,7 @@ DT_MODULE(1)
 typedef struct dt_capture_t
 {
   /** The current image activated in capture view, either latest tethered shoot
-  	or manually picked from filmstrip view...
+    or manually picked from filmstrip view...
   */
   int32_t image_id;
 
@@ -83,6 +83,9 @@ typedef struct dt_capture_t
   char *jobcode;
   dt_film_t *film;
 
+  /** Cursor position for dragging the zoomed live view */
+  double live_view_zoom_cursor_x, live_view_zoom_cursor_y;
+
 }
 dt_capture_t;
 
@@ -94,6 +97,7 @@ static const gchar *_capture_view_get_session_path(const dt_view_t *view);
 static uint32_t _capture_view_get_film_id(const dt_view_t *view);
 static void _capture_view_set_jobcode(const dt_view_t *view, const char *name);
 static const char *_capture_view_get_jobcode(const dt_view_t *view);
+static uint32_t _capture_view_get_selected_imgid(const dt_view_t *view);
 
 const char *name(dt_view_t *self)
 {
@@ -123,7 +127,7 @@ void capture_view_switch_key_accel(void *p)
     dt_ctl_switch_mode_to( DT_CAPTURE );
 }
 
-void film_strip_key_accel(GtkAccelGroup *accel_group,
+gboolean film_strip_key_accel(GtkAccelGroup *accel_group,
                           GObject *acceleratable,
                           guint keyval, GdkModifierType modifier,
                           gpointer data)
@@ -131,6 +135,7 @@ void film_strip_key_accel(GtkAccelGroup *accel_group,
   dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module; 
   gboolean vs = dt_lib_is_visible(m);
   dt_lib_set_visible(m,!vs);
+  return TRUE;
 }
 
 
@@ -161,6 +166,7 @@ void init(dt_view_t *self)
   darktable.view_manager->proxy.tethering.get_session_path = _capture_view_get_session_path;
   darktable.view_manager->proxy.tethering.get_job_code = _capture_view_get_jobcode;
   darktable.view_manager->proxy.tethering.set_job_code = _capture_view_set_jobcode;
+  darktable.view_manager->proxy.tethering.get_selected_imgid = _capture_view_get_selected_imgid;
 
 }
 
@@ -179,6 +185,13 @@ uint32_t _capture_view_get_film_id(const dt_view_t *view)
   // else return first film roll.
   /// @todo maybe return 0 and check error in caller...
   return 1;
+}
+
+uint32_t _capture_view_get_selected_imgid(const dt_view_t *view)
+{
+  g_assert( view != NULL );
+  dt_capture_t *cv=(dt_capture_t *)view->data;
+  return cv->image_id;
 }
 
 
@@ -317,19 +330,51 @@ void configure(dt_view_t *self, int wd, int ht)
 }
 
 #define MARGIN	20
+#define BAR_HEIGHT 18 /* see libs/camera.c */
 void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_capture_t *lib=(dt_capture_t*)self->data;
+  dt_camera_t *cam = (dt_camera_t*)darktable.camctl->active_camera;
   lib->image_over = DT_VIEW_DESERT;
   lib->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
 
-  // First of all draw image if availble
-  if( lib->image_id >= 0 )
+  if( cam->is_live_viewing == TRUE) // display the preview
+  {
+    dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
+    if(GDK_IS_PIXBUF(cam->live_view_pixbuf))
+    {
+      gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
+      gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
+
+      float w = width-(MARGIN*2.0f);
+      float h = height-(MARGIN*2.0f)-BAR_HEIGHT;
+
+      float scale;
+      if(cam->live_view_rotation%2 == 0)
+        scale = fminf(w/pw, h/ph);
+      else
+        scale = fminf(w/ph, h/pw);
+      scale = fminf(1.0, scale);
+
+      cairo_translate(cr, width*0.5, (height+BAR_HEIGHT)*0.5); // origin to middle of canvas
+      if(cam->live_view_flip == TRUE)
+        cairo_scale(cr, -1.0, 1.0); // mirror image
+      cairo_rotate(cr, -M_PI_2*cam->live_view_rotation); // rotate around middle
+      if(cam->live_view_zoom == FALSE)
+        cairo_scale(cr, scale, scale); // scale to fit canvas
+      cairo_translate (cr, -0.5*pw, -0.5*ph); // origin back to corner
+
+      gdk_cairo_set_source_pixbuf(cr, cam->live_view_pixbuf, 0, 0);
+      cairo_paint(cr);
+    }
+    dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
+  }
+  else if( lib->image_id >= 0 )  // First of all draw image if availble
   {
     cairo_translate(cr,MARGIN, MARGIN);
     dt_view_image_expose(&(lib->image_over), lib->image_id, 
-			 cr, width-(MARGIN*2.0f), height-(MARGIN*2.0f), 1, 
-			 pointerx, pointery);
+              cr, width-(MARGIN*2.0f), height-(MARGIN*2.0f), 1, 
+              pointerx, pointery);
   }
 }
 
@@ -449,6 +494,41 @@ void reset(dt_view_t *self)
 
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
+  dt_capture_t *lib = (dt_capture_t*)self->data;
+  dt_camera_t *cam = (dt_camera_t*)darktable.camctl->active_camera;
+  // pan the zoomed live view
+  if(cam->live_view_pan && cam->live_view_zoom && cam->is_live_viewing)
+  {
+    gint delta_x, delta_y;
+    switch(cam->live_view_rotation)
+    {
+      case 0:
+        delta_x = lib->live_view_zoom_cursor_x - x;
+        delta_y = lib->live_view_zoom_cursor_y - y;
+        break;
+      case 1:
+        delta_x = y - lib->live_view_zoom_cursor_y;
+        delta_y = lib->live_view_zoom_cursor_x - x;
+        break;
+      case 2:
+        delta_x = x - lib->live_view_zoom_cursor_x;
+        delta_y = y - lib->live_view_zoom_cursor_y;
+        break;
+      case 3:
+        delta_x = lib->live_view_zoom_cursor_y - y;
+        delta_y = x - lib->live_view_zoom_cursor_x;
+        break;
+      default: // can't happen
+        delta_x = delta_y = 0;
+    }
+    cam->live_view_zoom_x = MAX(0, cam->live_view_zoom_x + delta_x);
+    cam->live_view_zoom_y = MAX(0, cam->live_view_zoom_y + delta_y);
+    lib->live_view_zoom_cursor_x = x;
+    lib->live_view_zoom_cursor_y = y;
+    gchar str[20];
+    sprintf(str, "%u,%u", cam->live_view_zoom_x, cam->live_view_zoom_y);
+    dt_camctl_camera_set_property(darktable.camctl, NULL, "eoszoomposition", str);
+  }
   dt_control_queue_redraw_center();
 }
 
@@ -465,3 +545,43 @@ void connect_key_accels(dt_view_t *self)
                                      (gpointer)self, NULL);
   dt_accel_connect_view(self, "toggle film strip", closure);
 }
+
+int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
+{
+  dt_camera_t *cam = (dt_camera_t*)darktable.camctl->active_camera;
+  dt_capture_t *lib = (dt_capture_t*)self->data;
+
+  if(which == 1 && cam->is_live_viewing && cam->live_view_zoom)
+  {
+    cam->live_view_pan = TRUE;
+    lib->live_view_zoom_cursor_x = x;
+    lib->live_view_zoom_cursor_y = y;
+    dt_control_change_cursor(GDK_HAND1);
+    return 1;
+  }
+  else if((which == 2 || which == 3) && cam->is_live_viewing) // zoom the live view
+  {
+    cam->live_view_zoom = !cam->live_view_zoom;
+    if(cam->live_view_zoom == TRUE)
+      dt_camctl_camera_set_property(darktable.camctl, NULL, "eoszoom", "5");
+    else
+      dt_camctl_camera_set_property(darktable.camctl, NULL, "eoszoom", "1");
+    return 1;
+  }
+  return 0;
+}
+
+int button_released(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
+{
+  dt_camera_t *cam = (dt_camera_t*)darktable.camctl->active_camera;
+  if(which == 1)
+  {
+    cam->live_view_pan = FALSE;
+    dt_control_change_cursor(GDK_LEFT_PTR);
+    return 1;
+  }
+  return 0;
+}
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

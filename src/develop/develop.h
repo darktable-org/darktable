@@ -18,14 +18,15 @@
 #ifndef DARKTABLE_DEVELOP_H
 #define DARKTABLE_DEVELOP_H
 
-#include <inttypes.h>
-#include <cairo.h>
-#include <glib.h>
-
+#include "common/darktable.h"
 #include "common/dtpthread.h"
 #include "control/settings.h"
 #include "develop/imageop.h"
 #include "common/image.h"
+
+#include <inttypes.h>
+#include <cairo.h>
+#include <glib.h>
 
 struct dt_iop_module_t;
 struct dt_iop_params_t;
@@ -79,6 +80,7 @@ typedef struct dt_develop_t
   // histogram for display.
   float *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
   float histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
+  gboolean histogram_linear;
 
   /* proxy for communication between plugins and develop/darkroom */
   struct
@@ -195,3 +197,6 @@ gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t io
 void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

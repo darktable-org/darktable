@@ -48,11 +48,8 @@ eaw_decompose (__read_only image2d_t in, __write_only image2d_t coarse, __write_
   float4 wgt = (float4)(0.0f);
   for(int j=0;j<5;j++) for(int i=0;i<5;i++)
   {
-    int xx = x + mult*(i - 2);
-    int yy = y + mult*(j - 2);
-    /* clamp to region */
-    xx = ICLAMP(xx, 0, width - 1);
-    yy = ICLAMP(yy, 0, height - 1);
+    int xx = mad24(mult, i - 2, x);
+    int yy = mad24(mult, j - 2, y);
 
     float4 px = read_imagef(in, sampleri, (int2)(xx, yy));
     float4 w = filter[i]*filter[j]*weight(pixel, px, sharpen);
@@ -61,6 +58,7 @@ eaw_decompose (__read_only image2d_t in, __write_only image2d_t coarse, __write_
     wgt += w;
   }
   sum /= wgt;
+  sum.w = pixel.w;
 
   write_imagef (detail, (int2)(x, y), pixel - sum);
   write_imagef (coarse, (int2)(x, y), sum);
@@ -84,6 +82,7 @@ eaw_synthesize (__write_only image2d_t out, __read_only image2d_t coarse, __read
   float4 d = read_imagef(detail, sampleri, (int2)(x, y));
   float4 amount = copysign(max((float4)(0.0f), fabs(d) - threshold), d);
   float4 sum = c + boost*amount;
+  sum.w = c.w;
   write_imagef (out, (int2)(x, y), sum);
 }
 

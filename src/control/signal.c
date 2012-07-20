@@ -17,6 +17,7 @@
 */
 #include <string.h>
 #include <glib.h>
+#include "control/control.h"
 #include "control/signal.h"
 
 typedef struct dt_control_signal_t
@@ -79,7 +80,11 @@ dt_control_signal_t *dt_control_signal_init()
 
 void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t signal) 
 {
+  // ignore all signals on shutdown, especially don't lock anything..
+  if(!dt_control_running()) return;
+  gboolean i_own_lock = dt_control_gdk_lock();
   g_signal_emit_by_name(G_OBJECT(ctlsig->sink), _signal_name[signal]);
+  if (i_own_lock) dt_control_gdk_unlock();
 }
 
 void dt_control_signal_connect(const dt_control_signal_t *ctlsig,dt_signal_t signal, GCallback cb, gpointer user_data)
@@ -96,3 +101,6 @@ void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCal
 				       cb, user_data);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

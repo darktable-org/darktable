@@ -317,11 +317,7 @@ void gui_init(dt_lib_module_t *self)
    */
   char wdname[32]={0};
   char localtmpdir[4096]={0};
-  dt_util_get_user_local_dir (localtmpdir,4096);
-  strcat(localtmpdir,"/tmp");
-
-  /* make ensure that tmp directory exists */
-  g_mkdir_with_parents(localtmpdir,0700);
+  dt_loc_get_tmp_dir (localtmpdir,4096);
 
   for (long k=0;k<d->size;k++)
   {
@@ -457,3 +453,6 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
   dt_control_queue_redraw_center();
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

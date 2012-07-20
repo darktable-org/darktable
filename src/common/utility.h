@@ -31,20 +31,9 @@ gchar* dt_util_str_replace(const gchar* string, const gchar* pattern, const gcha
 guint dt_util_str_occurence(const gchar *haystack,const gchar *needle);
 /** generate a string from the elements of the list, separated by separator. the list is freed, the result has to be freed. */
 gchar* dt_util_glist_to_str(const gchar* separator, GList * items, const unsigned int count);
-/** returns the users home directory */
-gchar* dt_util_get_home_dir(const gchar* user);
 /** fixes the given path by replacing a possible tilde with the correct home directory */
 gchar* dt_util_fix_path(const gchar* path);
-
-/** get systemwide data dir */
-void dt_util_get_datadir(char *datadir, size_t bufsize);
-/** get the plugin dir */
-void dt_util_get_plugindir(char *plugindir, size_t bufsize);
-/** get user local dir */
-void dt_util_get_user_local_dir(char *localdir, size_t bufsize);
-/** get user config dir */
-void dt_util_get_user_config_dir(char *configdir, size_t bufsize);
-/** get user cache dir */
-void dt_util_get_user_cache_dir(char *cachedir, size_t bufsize);
-
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

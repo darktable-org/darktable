@@ -18,7 +18,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <gtk/gtk.h>
 #include "common/darktable.h"
 #include "common/styles.h"
 #include "common/history.h"
@@ -354,3 +353,6 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
   gtk_widget_show_all (GTK_WIDGET (dialog));
 
 }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

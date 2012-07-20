@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010-2012 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,19 +25,20 @@
 #ifdef HAVE_GEGL
 #include <gegl.h>
 #endif
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "common/debug.h"
+#include "common/opencl.h"
 #include "dtgtk/togglebutton.h"
-#include "dtgtk/resetlabel.h"
-#include "dtgtk/slider.h"
 #include "dtgtk/gradientslider.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 
-#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
+#define CLIP(x)                 ((x<0)?0.0:(x>1.0)?1.0:x)
+
 DT_MODULE(1)
 
 typedef struct dt_iop_relight_params_t
@@ -68,7 +69,7 @@ typedef struct dt_iop_relight_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;                                            // left and right controlboxes
   GtkLabel  *label1,*label2,*label3;            		       	// ev, center, width
-  GtkDarktableSlider *scale1,*scale2;        			// ev,width
+  GtkWidget *scale1,*scale2;        			// ev,width
   GtkDarktableGradientSlider *gslider1;				// center
   GtkDarktableToggleButton *tbutton1;                     // Pick median lightess
 }
@@ -82,6 +83,12 @@ typedef struct dt_iop_relight_data_t
 }
 dt_iop_relight_data_t;
 
+typedef struct dt_iop_relight_global_data_t
+{
+  int kernel_relight;
+}
+dt_iop_relight_global_data_t;
+
 const char *name()
 {
   return _("fill light");
@@ -89,13 +96,13 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES|IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 int
 groups ()
 {
-  return IOP_GROUP_EFFECT;
+  return IOP_GROUP_TONE;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -111,6 +118,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "exposure", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "width", GTK_WIDGET(g->scale2));
 }
+
 
 #define GAUSS(a,b,c,x) (a*pow(2.718281828,(-pow((x-b),2)/(pow(c,2)))))
 
@@ -148,8 +156,61 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[0] = 100.0*CLIP (lightness*relight);
       out[1] = in[1];
       out[2] = in[2];
+      out[3] = in[3];
     }
   }
+}
+
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_relight_data_t *data = (dt_iop_relight_data_t *)piece->data;
+  dt_iop_relight_global_data_t *gd = (dt_iop_relight_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  const float center = data->center;
+  const float wings = data->width;
+  const float ev = data->ev;
+
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 4, sizeof(float), (void *)&center);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 5, sizeof(float), (void *)&wings);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 6, sizeof(float), (void *)&ev);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_relight, sizes);
+  if(err != CL_SUCCESS) goto error;
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_relight] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 8; // extended.cl, from programs.conf
+  dt_iop_relight_global_data_t *gd = (dt_iop_relight_global_data_t *)malloc(sizeof(dt_iop_relight_global_data_t));
+  module->data = gd;
+  gd->kernel_relight = dt_opencl_create_kernel(program, "relight");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_relight_global_data_t *gd = (dt_iop_relight_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_relight);
+  free(module->data);
+  module->data = NULL;
 }
 
 static void
@@ -160,28 +221,32 @@ picker_callback (GtkDarktableToggleButton *button, gpointer user_data)
   {
     dt_iop_request_focus (self);
     self->request_color_pick = 1;
+    
+    /* set the area sample size*/
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+    
   }
   else
     self->request_color_pick = 0;
 }
 
 static void
-ev_callback (GtkDarktableSlider *slider, gpointer user_data)
+ev_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
-  p->ev = dtgtk_slider_get_value(slider);
+  p->ev = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-width_callback (GtkDarktableSlider *slider, gpointer user_data)
+width_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
-  p->width = dtgtk_slider_get_value(slider);
+  p->width = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -245,11 +310,10 @@ void gui_update(struct dt_iop_module_t *self)
   self->color_picker_box[2] = self->color_picker_box[3] = .75f;
   self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
 
-
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)module->params;
-  dtgtk_slider_set_value (g->scale1, p->ev);
-  dtgtk_slider_set_value (g->scale2, p->width);
+  dt_bauhaus_slider_set(g->scale1, p->ev);
+  dt_bauhaus_slider_set(g->scale2, p->width);
   dtgtk_gradient_slider_set_value(g->gslider1,p->center);
 }
 
@@ -258,7 +322,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_relight_params_t));
   module->default_params = malloc(sizeof(dt_iop_relight_params_t));
   module->default_enabled = 0;
-  module->priority = 632; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 647; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_relight_params_t);
   module->gui_data = NULL;
   dt_iop_relight_params_t tmp = (dt_iop_relight_params_t)
@@ -309,16 +373,25 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+
   g_signal_connect (G_OBJECT (self->widget), "expose-event", G_CALLBACK (expose), self);
 
-  /* adding the labels */
-  g->scale1 = DTGTK_SLIDER (dtgtk_slider_new_with_range (DARKTABLE_SLIDER_BAR,-2.0, 2.0,0.05, p->ev, 2));
-  g->scale2 = DTGTK_SLIDER (dtgtk_slider_new_with_range (DARKTABLE_SLIDER_BAR,2, 10, 0.5, p->width, 1));
-  dtgtk_slider_set_label(g->scale1, _("exposure"));
-  dtgtk_slider_set_unit(g->scale1, "EV");
-  dtgtk_slider_set_force_sign(g->scale1, TRUE);
-  dtgtk_slider_set_label(g->scale2, _("width"));
+  /* exposure */
+  g->scale1 = dt_bauhaus_slider_new_with_range(self,-2.0, 2.0,0.05, p->ev, 2);
+  dt_bauhaus_slider_set_format(g->scale1,"%.2fEV");
+  dt_bauhaus_widget_set_label(g->scale1,_("exposure"));
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the fill-light in EV"), (char *)NULL);
+  g_signal_connect (G_OBJECT (g->scale1), "value-changed",
+                    G_CALLBACK (ev_callback), self);
+  /* width*/
+  g->scale2 = dt_bauhaus_slider_new_with_range(self,2, 10, 0.5, p->width, 1);
+  dt_bauhaus_slider_set_format(g->scale2,"%.1f");
+  dt_bauhaus_widget_set_label(g->scale2,_("width"));
+  /* xgettext:no-c-format */
+  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("width of fill-light area defined in zones"), (char *)NULL);
+  g_signal_connect (G_OBJECT (g->scale2), "value-changed",
+                    G_CALLBACK (width_callback), self);
 
   /* lightnessslider */
   GtkBox *hbox=GTK_BOX (gtk_hbox_new (FALSE,2));
@@ -349,14 +422,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   g_object_set(G_OBJECT(g->tbutton1), "tooltip-text", _("toggle tool for picking median lightness in image"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the fill-light in EV"), (char *)NULL);
-  /* xgettext:no-c-format */
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("width of fill-light area defined in zones"), (char *)NULL);
 
-  g_signal_connect (G_OBJECT (g->scale1), "value-changed",
-                    G_CALLBACK (ev_callback), self);
-  g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-                    G_CALLBACK (width_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -366,4 +432,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

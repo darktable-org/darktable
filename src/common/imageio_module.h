@@ -71,7 +71,7 @@ typedef struct dt_imageio_module_format_t
   /* construct widget above */
   void (*cleanup)    (struct dt_imageio_module_format_t *self);
 
-  /* gets the current export parameters from gui/gconf and stores in this struct for later use. */
+  /* gets the current export parameters from gui/conf and stores in this struct for later use. */
   void* (*get_params)   (struct dt_imageio_module_format_t *self, int *size);
   void  (*free_params)  (struct dt_imageio_module_format_t *self, dt_imageio_module_data_t *data);
   /* resets the gui to the paramters as given here. return != 0 on fail. */
@@ -173,3 +173,6 @@ dt_imageio_module_format_t *dt_imageio_get_format_by_name(const char *name);
 dt_imageio_module_storage_t *dt_imageio_get_storage_by_name(const char *name);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

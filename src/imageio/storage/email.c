@@ -84,14 +84,12 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 {
   dt_imageio_email_t *d = (dt_imageio_email_t *)sdata;
 
-  _email_attachment_t *attachment = ( _email_attachment_t *)malloc(sizeof(_email_attachment_t));
+  _email_attachment_t *attachment = ( _email_attachment_t *)g_malloc(sizeof(_email_attachment_t));
   attachment->imgid = imgid;
 
   /* construct a temporary file name */
   char tmpdir[4096]= {0};
-  dt_util_get_user_local_dir (tmpdir,4096);
-  g_strlcat (tmpdir,"/tmp",4096);
-  g_mkdir_with_parents(tmpdir,0700);
+  dt_loc_get_tmp_dir (tmpdir,4096);
 
   char dirname[4096];
   dt_image_full_path(imgid, dirname, 1024);
@@ -101,7 +99,14 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   attachment->file = g_build_filename( tmpdir, filename, (char *)NULL );
 
-  dt_imageio_export(imgid, attachment->file, format, fdata);
+  if(dt_imageio_export(imgid, attachment->file, format, fdata) != 0)
+  {
+    fprintf(stderr, "[imageio_storage_email] could not export to file: `%s'!\n", attachment->file);
+    dt_control_log(_("could not export to file `%s'!"), attachment->file);
+    g_free(attachment);
+    return 1;
+  }
+
 
   char *trunc = attachment->file + strlen(attachment->file) - 32;
   if(trunc < attachment->file) trunc = attachment->file;
@@ -146,52 +151,16 @@ finalize_store(dt_imageio_module_storage_t *self, void *params)
   gchar uri[4096]= {0};
   gchar body[4096]= {0};
   gchar attachments[4096]= {0};
-  gchar *defaultHandler=NULL;
   gchar *uriFormat=NULL;
-  gchar *subject="images exported from darktable";
-  gchar *imageBodyFormat="%s %s\n"; // filename, exif oneliner
+  gchar *subject=_("images exported from darktable");
+  gchar *imageBodyFormat="%s %s"; // filename, exif oneliner
   gchar *attachmentFormat=NULL;
   gchar *attachmentSeparator="";
 
-  if(  strlen( defaultHandler = dt_conf_get_string("plugins/imageio/storage/email/client") ) <= 0 )
-  {
-#ifdef HAVE_GCONF
-    defaultHandler = gconf_client_get_string (darktable.conf->gconf, "/desktop/gnome/url-handlers/mailto/command", NULL);
-#endif
-  }
-
-  if( defaultHandler )
-  {
-    // Detected a default handler let's do special case handling for each email client..
-    if( g_strrstr(defaultHandler,"thunderbird") )
-    {
-      uriFormat="thunderbird -compose \"to='',subject='%s',body='%s',attachment='%s'\"";   // subject, body, and list of attachments with format "<filename>,"
-      attachmentFormat="%s";
-      attachmentSeparator=",";
-      goto proceed;
-    }
-    else if( g_strrstr(defaultHandler,"kmail") )
-    {
-      // When I enter the mailto:... in konqueror everything is ok, yet from dt we have no attachements. WTF?
-      // So we launch it directly.
-      uriFormat="kmail --composer --subject \"%s\" --body \"%s\" --attach \"%s\"";   // subject, body, and list of attachments with format "--attach <filename> "
-      attachmentFormat="%s";
-      attachmentSeparator="\" --attach \"";
-      goto proceed;
-    }
-    else if( g_strrstr(defaultHandler,"evolution") )
-    {
-      uriFormat="evolution \"mailto:?subject=%s&body=%s%s\"";   // subject, body, and list of attachments with format "--attach <filename> "
-      attachmentFormat="&attachment=file://%s";
-      goto proceed;
-    }
-  }
-
   // If no default handler detected above, we use gtk_show_uri with mailto:// and hopes things goes right..
-  uriFormat="mailto:?subject=%s&body=%s%s";   // subject, body, and list of attachments with format &attachment=<filename>
-  attachmentFormat="&attachment=file://%s";
+  uriFormat="xdg-email --subject \"%s\" --body \"%s\" %s &";   // subject, body, and list of attachments with format:
+  attachmentFormat=" --attach \"%s\"";
 
-proceed: ; // Let's build up uri / command
   while( d->images )
   {
     gchar exif[256]= {0};
@@ -214,11 +183,13 @@ proceed: ; // Let's build up uri / command
   // build uri and launch before we quit...
   g_snprintf( uri, 4096,  uriFormat, subject, body, attachments );
 
-  // So what should we do...
-  if( strncmp( uri, "mailto:", 7) == 0 )
-    gtk_show_uri(NULL,uri,GDK_CURRENT_TIME,NULL);
-  else // Launch subprocess
-    if(system( uri ) < 0) fprintf(stderr, "[email] could not launch subprocess!\n");
+  fprintf(stderr, "[email] launching `%s'\n", uri);
+  if(system( uri ) < 0)
+  {
+    // TODO: after string freeze is broken again, report to ui:
+    // dt_control_log(_("could not launch email client!"));
+    fprintf(stderr, "[email] could not launch subprocess!\n");
+  }
 }
 
 int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_module_format_t *format)
@@ -230,4 +201,6 @@ int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_mod
   return 1;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2011-2012 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/tags.h"
+#include "common/collection.h"
+#include "control/conf.h"
 #include "libs/lib.h"
 
 DT_MODULE(1)
@@ -48,6 +50,10 @@ static void _lib_keywords_drag_data_get_callback(GtkWidget *w,
 						 guint info,
 						 guint time,
 						 gpointer user_data);
+
+/* add keyword to collection rules */
+static void _lib_keywords_add_collection_rule(GtkTreeView *view, GtkTreePath *tp,
+					      GtkTreeViewColumn *tvc, gpointer user_data);
 
 const char* name()
 {
@@ -102,7 +108,7 @@ void gui_init(dt_lib_module_t *self)
   memset(&uncategorized,0,sizeof(GtkTreeIter));
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), 
-			      "select name,icon,description from tags", -1, &stmt, NULL);
+			      "SELECT name,icon,description FROM tags ORDER BY UPPER(name) DESC", -1, &stmt, NULL);
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
     if(strchr((const char *)sqlite3_column_text(stmt, 0),'|')==0)
@@ -117,47 +123,54 @@ void gui_init(dt_lib_module_t *self)
       /* adding a uncategorized tag */
       gtk_tree_store_insert(store, &temp, &uncategorized,0);
       gtk_tree_store_set(store, &temp, 0, sqlite3_column_text(stmt, 0), -1); 
+
     }
     else
     {
       int level = 0;
       char *value;
       GtkTreeIter current,iter;
-      char *pch = strtok((char *)sqlite3_column_text(stmt, 0),"|");
-      while (pch != NULL) 
+      char **pch = g_strsplit((char *)sqlite3_column_text(stmt, 0),"|", -1);
+
+      if (pch != NULL)
       {
-	gboolean found=FALSE;
-	int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),level>0?&current:NULL);
-	/* find child with name, if not found create and continue */
-	for (int k=0;k<children;k++)
-	{
-	  if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &iter, level>0?&current:NULL, k))
+        int j = 0;
+        while (pch[j] != NULL) 
+        {
+	  gboolean found=FALSE;
+	  int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),level>0?&current:NULL);
+	  /* find child with name, if not found create and continue */
+	  for (int k=0;k<children;k++)
 	  {
-	    gtk_tree_model_get (GTK_TREE_MODEL(store), &iter, 0, &value, -1);
-	    
-	    if (strcmp(value, pch)==0)
+	    if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &iter, level>0?&current:NULL, k))
 	    {
-	      current = iter;
-	      found = TRUE;
-	      break;
+	      gtk_tree_model_get (GTK_TREE_MODEL(store), &iter, 0, &value, -1);
+	      
+	      if (strcmp(value, pch[j])==0)
+	      {
+		current = iter;
+		found = TRUE;
+		break;
+	      }
 	    }
 	  }
-	}
-
-	/* lets add new keyword and assign current */
-	if (!found)
-	{
-	  gtk_tree_store_insert(store, &iter, level>0?&current:NULL,0);
-	  gtk_tree_store_set(store, &iter, 0, pch, -1);
-	  current = iter;
-	}
-
-	level++;
-	pch = strtok(NULL, "|");
+	  
+	  /* lets add new keyword and assign current */
+	  if (!found)
+	  {
+	    gtk_tree_store_insert(store, &iter, level>0?&current:NULL,0);
+	    gtk_tree_store_set(store, &iter, 0, pch[j], -1);
+	    current = iter;
+	  }
+	  
+	  level++;
+	  j++;
+        }
+	
+        g_strfreev(pch);
+	
       }
-      
     }
-    
   }
 
   /* add the treeview to show hirarchy tags*/
@@ -180,21 +193,26 @@ void gui_init(dt_lib_module_t *self)
   /* setup dnd source and destination within treeview */
   static const GtkTargetEntry dnd_target = { "keywords-reorganize",
 					     GTK_TARGET_SAME_WIDGET, 0};
-
+  
   gtk_tree_view_enable_model_drag_source(d->view, 
 					 GDK_BUTTON1_MASK, 
 					 &dnd_target, 1, GDK_ACTION_MOVE);
   
   gtk_tree_view_enable_model_drag_dest(d->view, &dnd_target, 1, GDK_ACTION_MOVE);
-
+  
   /* setup drag and drop signals */
   g_signal_connect(G_OBJECT(d->view),"drag-data-received",
-			  G_CALLBACK(_lib_keywords_drag_data_received_callback),
-			  self);
+		   G_CALLBACK(_lib_keywords_drag_data_received_callback),
+		   self);
+  
+  g_signal_connect(G_OBJECT(d->view),"drag-data-get",
+		   G_CALLBACK(_lib_keywords_drag_data_get_callback),
+		   self);
 
-    g_signal_connect(G_OBJECT(d->view),"drag-data-get",
-			  G_CALLBACK(_lib_keywords_drag_data_get_callback),
-			  self);
+  /* add callback when keyword is activated */
+  g_signal_connect(G_OBJECT(d->view), "row-activated", 
+		   G_CALLBACK(_lib_keywords_add_collection_rule), self); 
+
 
 
   /* free store, treeview has its own storage now */
@@ -357,6 +375,10 @@ static void _lib_keywords_drag_data_received_callback(GtkWidget *w,
       _lib_keywords_string_from_path(dtag, 1024, model, dpath);
       _lib_keywords_string_from_path(stag, 1024, model, spath);
 
+      /* reject drop onto ourself */
+      if (strcmp(dtag,stag) == 0)
+	goto reject_drop;
+
        /* updated tags in database */
       dt_tag_reorganize(stag,dtag);
 
@@ -376,5 +398,43 @@ static void _lib_keywords_drag_data_received_callback(GtkWidget *w,
   }   
  
   /* reject drop */
+reject_drop:
   gtk_drag_finish (dctx, FALSE, FALSE, time);
 }
+
+
+static void _lib_keywords_add_collection_rule(GtkTreeView *view, GtkTreePath *tp,
+					      GtkTreeViewColumn *tvc, gpointer user_data)
+{
+  char kw[1024]={0};
+  _lib_keywords_string_from_path(kw, 1024, gtk_tree_view_get_model(view), tp);
+  
+  /*
+   * add a collection rule
+   * TODO: move this into a dt_collection_xxx API to be used
+   *       from other places
+   */
+
+  int rule = dt_conf_get_int("plugins/lighttable/collect/num_rules");
+  char confname[200] = {0};
+
+  /* set mode to AND */
+  snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", rule);
+  dt_conf_set_int(confname, 0);
+
+  /* set tag string */
+  snprintf(confname, 200, "plugins/lighttable/collect/string%1d", rule);
+  dt_conf_set_string(confname, kw);
+
+  /* set tag rule type */
+  snprintf(confname, 200, "plugins/lighttable/collect/item%1d", rule);
+  dt_conf_set_int(confname, 2);
+  
+  dt_conf_set_int("plugins/lighttable/collect/num_rules", rule+1);
+
+  dt_view_collection_update(darktable.view_manager);
+  dt_collection_update_query(darktable.collection);
+}
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

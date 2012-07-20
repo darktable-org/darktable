@@ -24,7 +24,7 @@
 #include "gui/draw.h"
 #include "gui/presets.h"
 #include "gui/gtk.h"
-#include "dtgtk/slider.h"
+#include "bauhaus/bauhaus.h"
 #include "control/control.h"
 #include <memory.h>
 #include <stdlib.h>
@@ -35,7 +35,6 @@
 #define INSET 5
 #define INFL .3f
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 DT_MODULE(1)
 
@@ -76,7 +75,6 @@ typedef struct dt_iop_atrous_gui_data_t
 {
   GtkWidget *mix;
   GtkDrawingArea *area;
-  GtkComboBox *presets;
   GtkNotebook* channel_tabs;
   double mouse_x, mouse_y, mouse_pick;
   float mouse_radius;
@@ -136,8 +134,9 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_accel_connect_slider_iop(self ,"mix",
-                              ((dt_iop_atrous_gui_data_t*)self->gui_data)->mix);
+      ((dt_iop_atrous_gui_data_t*)self->gui_data)->mix);
 }
+
 
 #define ALIGNED(a) __attribute__((aligned(a)))
 #define VEC4(a) {(a), (a), (a), (a)}
@@ -502,6 +501,10 @@ process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, voi
  
   for(int k=0; k<max_scale; k++) free(detail[k]);
   free(tmp);
+
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(i, o, width, height);
+
   return;
 
 error:
@@ -552,7 +555,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const int width = roi_out->width;
   const int height = roi_out->height;
-  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
   size_t origin[] = { 0, 0, 0};
   size_t region[] = { width, height, 1};
 
@@ -638,7 +641,8 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
   const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
 
-  tiling->factor = 2 + 1 + max_scale;
+  tiling->factor = 3.0f + max_scale;  // in + out + tmp + scale buffers
+  tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = max_filter_radius;
   tiling->xalign = 1;
@@ -651,7 +655,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_enabled = 0;
-  module->priority = 489; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 509; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_atrous_params_t);
   module->gui_data = NULL;
   dt_iop_atrous_params_t tmp;
@@ -833,6 +837,20 @@ void init_presets (dt_iop_module_so_t *self)
     p.x[atrous_L][k] = k/(BANDS-1.0);
     p.x[atrous_c][k] = k/(BANDS-1.0);
     p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.y[atrous_L][k] = .5f;
+    p.y[atrous_c][k] = .5f;
+    p.y[atrous_s][k] = .0f;
+    p.x[atrous_Lt][k] = k/(BANDS-1.0);
+    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.y[atrous_Lt][k] = fmaxf(0.0f, (.30f*k/(float)BANDS) - 0.15f);
+    p.y[atrous_ct][k] = .30f*k/(float)BANDS;
+  }
+  dt_gui_presets_add_generic(_("denoise (subtle)"), self->op, self->version(), &p, sizeof(p), 1);
+  for(int k=0; k<BANDS; k++)
+  {
+    p.x[atrous_L][k] = k/(BANDS-1.0);
+    p.x[atrous_c][k] = k/(BANDS-1.0);
+    p.x[atrous_s][k] = k/(BANDS-1.0);
     p.y[atrous_L][k] = .5f;//-.2f*k/(float)BANDS;
     p.y[atrous_c][k] = .5f;//fmaxf(0.0f, .5f-.3f*k/(float)BANDS);
     p.y[atrous_s][k] = .5f;
@@ -911,7 +929,7 @@ reset_mix (dt_iop_module_t *self)
   c->drag_params = *(dt_iop_atrous_params_t *)self->params;
   const int old = self->dt->gui->reset;
   self->dt->gui->reset = 1;
-  dtgtk_slider_set_value(DTGTK_SLIDER(c->mix), 1.0f);
+  dt_bauhaus_slider_set(c->mix, 1.0f);
   self->dt->gui->reset = old;
 }
 
@@ -925,11 +943,21 @@ void gui_update   (struct dt_iop_module_t *self)
 // gui stuff:
 
 static gboolean
+area_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  if(!c->dragging) c->mouse_y = fabsf(c->mouse_y);
+  gtk_widget_queue_draw(widget);
+  return TRUE;
+}
+
+static gboolean
 area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  if(!c->dragging) c->mouse_x = c->mouse_y = -1.0;
+  if(!c->dragging) c->mouse_y = -fabsf(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -1092,18 +1120,21 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     cairo_fill(cr);
   }
 
-  // draw dots on knots
-  cairo_save(cr);
-  if(ch != ch2) cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
-  else          cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
-  cairo_set_line_width(cr, 1.);
-  for(int k=0; k<BANDS; k++)
+  if(c->mouse_y > 0 || c->dragging)
   {
-    cairo_arc(cr, width*p.x[ch2][k], - height*p.y[ch2][k], 3.0, 0.0, 2.0*M_PI);
-    if(c->x_move == k) cairo_fill(cr);
-    else               cairo_stroke(cr);
+    // draw dots on knots
+    cairo_save(cr);
+    if(ch != ch2) cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+    else          cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+    cairo_set_line_width(cr, 1.);
+    for(int k=0; k<BANDS; k++)
+    {
+      cairo_arc(cr, width*p.x[ch2][k], - height*p.y[ch2][k], 3.0, 0.0, 2.0*M_PI);
+      if(c->x_move == k) cairo_fill(cr);
+      else               cairo_stroke(cr);
+    }
+    cairo_restore(cr);
   }
-  cairo_restore(cr);
 
   if(c->mouse_y > 0 || c->dragging)
   {
@@ -1143,40 +1174,44 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   }
 
   cairo_restore(cr);
-  // draw labels:
-  cairo_text_extents_t ext;
-  cairo_set_source_rgb(cr, .1, .1, .1);
-  cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-  cairo_set_font_size (cr, .06*height);
-  cairo_text_extents (cr, _("coarse"), &ext);
-  cairo_move_to (cr, .02*width+ext.height, .14*height+ext.width);
-  cairo_save (cr);
-  cairo_rotate (cr, -M_PI*.5f);
-  cairo_show_text(cr, _("coarse"));
-  cairo_restore (cr);
-  cairo_text_extents (cr, _("fine"), &ext);
-  cairo_move_to (cr, .98*width, .14*height+ext.width);
-  cairo_save (cr);
-  cairo_rotate (cr, -M_PI*.5f);
-  cairo_show_text(cr, _("fine"));
-  cairo_restore (cr);
 
-  switch(c->channel2)
+  if(c->mouse_y > 0 || c->dragging)
   {
-    case atrous_L:
-    case atrous_c:
-      dt_atrous_show_upper_label(cr, _("contrasty"), ext);
-      dt_atrous_show_lower_label(cr, _("smooth"), ext);
-      break;
-    case atrous_Lt:
-    case atrous_ct:
-      dt_atrous_show_upper_label(cr, _("smooth"), ext);
-      dt_atrous_show_lower_label(cr, _("noisy"), ext);
-      break;
-    default: //case atrous_s:
-      dt_atrous_show_upper_label(cr, _("bold"), ext);
-      dt_atrous_show_lower_label(cr, _("dull"), ext);
-      break;
+    // draw labels:
+    cairo_text_extents_t ext;
+    cairo_set_source_rgb(cr, .1, .1, .1);
+    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size (cr, .06*height);
+    cairo_text_extents (cr, _("coarse"), &ext);
+    cairo_move_to (cr, .02*width+ext.height, .14*height+ext.width);
+    cairo_save (cr);
+    cairo_rotate (cr, -M_PI*.5f);
+    cairo_show_text(cr, _("coarse"));
+    cairo_restore (cr);
+    cairo_text_extents (cr, _("fine"), &ext);
+    cairo_move_to (cr, .98*width, .14*height+ext.width);
+    cairo_save (cr);
+    cairo_rotate (cr, -M_PI*.5f);
+    cairo_show_text(cr, _("fine"));
+    cairo_restore (cr);
+
+    switch(c->channel2)
+    {
+      case atrous_L:
+      case atrous_c:
+        dt_atrous_show_upper_label(cr, _("contrasty"), ext);
+        dt_atrous_show_lower_label(cr, _("smooth"), ext);
+        break;
+      case atrous_Lt:
+      case atrous_ct:
+        dt_atrous_show_upper_label(cr, _("smooth"), ext);
+        dt_atrous_show_lower_label(cr, _("noisy"), ext);
+        break;
+      default: //case atrous_s:
+        dt_atrous_show_upper_label(cr, _("bold"), ext);
+        dt_atrous_show_lower_label(cr, _("dull"), ext);
+        break;
+    }
   }
 
 
@@ -1331,14 +1366,14 @@ tab_switch(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, gpointe
 }
 
 static void
-mix_callback (GtkDarktableSlider *slider, gpointer user_data)
+mix_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
   dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->factory_params;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  const float mix = dtgtk_slider_get_value(slider);
+  const float mix = dt_bauhaus_slider_get(slider);
   for(int ch=0; ch<atrous_none; ch++) for(int k=0; k<BANDS; k++)
     {
       p->x[ch][k] = fminf(1.0f, fmaxf(0.0f, d->x[ch][k] + mix * (c->drag_params.x[ch][k] - d->x[ch][k])));
@@ -1364,10 +1399,9 @@ void gui_init (struct dt_iop_module_t *self)
   c->dragging = 0;
   c->x_move = -1;
   c->mouse_radius = 1.0/BANDS;
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
-
-  // tabs
-  GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), vbox, FALSE, FALSE, 0);
 
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
@@ -1391,7 +1425,6 @@ void gui_init (struct dt_iop_module_t *self)
   // graph
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
   gtk_drawing_area_size(c->area, 195, 195);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -1405,16 +1438,16 @@ void gui_init (struct dt_iop_module_t *self)
                     G_CALLBACK (area_motion_notify), self);
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (area_leave_notify), self);
+  g_signal_connect (G_OBJECT (c->area), "enter-notify-event",
+                    G_CALLBACK (area_enter_notify), self);
   g_signal_connect (G_OBJECT (c->area), "scroll-event",
                     G_CALLBACK (area_scrolled), self);
 
   // mix slider
-  c->mix = dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -2.0f, 2.0f, 0.1f, 1.0f, 3);
-  GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
-  dtgtk_slider_set_label(DTGTK_SLIDER(c->mix), _("mix"));
+  c->mix = dt_bauhaus_slider_new_with_range(self, -2.0f, 2.0f, 0.1f, 1.0f, 3);
+  dt_bauhaus_widget_set_label(c->mix, _("mix"));
   g_object_set(G_OBJECT(c->mix), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX(hbox), c->mix, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), c->mix, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (c->mix), "value-changed", G_CALLBACK (mix_callback), self);
 }
 
@@ -1427,4 +1460,6 @@ void gui_cleanup  (struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

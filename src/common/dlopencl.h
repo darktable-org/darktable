@@ -25,8 +25,9 @@
 #include "config.h"
 #endif
 
-#include <CL/cl.h>
 #include "common/dynload.h"
+
+#include <CL/cl.h>
 
 #ifdef WIN32
 #define DT_OPENCL_LIBRARY "OpenCL"
@@ -205,3 +206,6 @@ int dt_dlopencl_init(const char *, dt_dlopencl_t **);
 #endif
 #endif
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

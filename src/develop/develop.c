@@ -27,6 +27,7 @@
 #include "common/imageio.h"
 #include "common/tags.h"
 #include "common/debug.h"
+#include "common/similarity.h"
 #include "gui/gtk.h"
 
 #include <glib/gprintf.h>
@@ -64,6 +65,10 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->histogram = NULL;
   dev->histogram_pre_tonecurve = NULL;
   dev->histogram_pre_levels = NULL;
+  if(g_strcmp0(dt_conf_get_string("plugins/darkroom/histogram/mode"), "linear") == 0)
+    dev->histogram_linear = TRUE;
+  else
+    dev->histogram_linear = FALSE;
 
   if(dev->gui_attached)
   {
@@ -71,7 +76,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->preview_pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
     dt_dev_pixelpipe_init(dev->pipe);
     dt_dev_pixelpipe_init(dev->preview_pipe);
-
+    
     dev->histogram = (float *)malloc(sizeof(float)*4*256);
     dev->histogram_pre_tonecurve = (float *)malloc(sizeof(float)*4*256);
     dev->histogram_pre_levels = (float*)malloc(sizeof(float) * 4 * 256);
@@ -249,7 +254,6 @@ void dt_dev_process_image_job(dt_develop_t *dev)
     dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
     dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
     if(dev->image_force_reload) dt_dev_pixelpipe_flush_caches(dev->pipe);
-    dev->image_loading = 0;
     dev->image_dirty = 1;
     dev->image_force_reload = 0;
     if(dev->gui_attached)
@@ -309,6 +313,7 @@ restart:
 
   // cool, we got a new image!
   dev->image_dirty = 0;
+  dev->image_loading = 0;
 
   dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
   dt_control_queue_redraw_center();
@@ -403,7 +408,7 @@ int dt_dev_write_history_item(const dt_image_t *image, dt_dev_history_item_t *h,
   }
   // printf("[dev write history item] writing %d - %s params %f %f\n", h->module->instance, h->module->op, *(float *)h->params, *(((float *)h->params)+1));
   sqlite3_finalize (stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4, blendop_params = ?7 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4, blendop_params = ?7, blendop_version = ?8 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, h->module->op, strlen(h->module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, h->params, h->module->params_size, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, h->module->version());
@@ -411,6 +416,7 @@ int dt_dev_write_history_item(const dt_image_t *image, dt_dev_history_item_t *h,
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, image->id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, num);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 7, h->blend_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, dt_develop_blend_version());
 
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
@@ -511,6 +517,9 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   }
 #endif
 
+  /* invalidate image data*/
+  dt_similarity_image_dirty(dev->image_storage.id);
+  
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
@@ -619,13 +628,13 @@ void dt_dev_read_history(dt_develop_t *dev)
 {
   if(!dev->image_storage.id) return;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid, num, module, operation, op_params, enabled, blendop_params, blendop_version from history where imgid = ?1 order by num", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
   dev->history_end = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     // db record:
-    // 0-img, 1-num, 2-module_instance, 3-operation char, 4-params blob, 5-enabled, 6-blend_params
+    // 0-img, 1-num, 2-module_instance, 3-operation char, 4-params blob, 5-enabled, 6-blend_params, 7-blendop_version
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
     hist->enabled = sqlite3_column_int(stmt, 5);
 
@@ -639,7 +648,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     }
    
     hist->module = NULL;
-    while(modules)
+    while(opname && modules)
     {
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
       if(!strcmp(module->op, opname))
@@ -681,10 +690,22 @@ void dt_dev_read_history(dt_develop_t *dev)
       memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->params_size);
     }
 
-    if(sqlite3_column_bytes(stmt, 6) == sizeof(dt_develop_blend_params_t))
-      memcpy(hist->blend_params, sqlite3_column_blob(stmt, 6), sizeof(dt_develop_blend_params_t));
+    const void *blendop_params = sqlite3_column_blob(stmt, 6);
+    int bl_length = sqlite3_column_bytes(stmt, 6);
+    int blendop_version = sqlite3_column_int(stmt, 7);
+
+    if (blendop_params && (blendop_version == dt_develop_blend_version()) && (bl_length == sizeof(dt_develop_blend_params_t)))
+    {
+      memcpy(hist->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
+    }
+    else if (blendop_params && dt_develop_blend_legacy_params(hist->module, blendop_params, blendop_version, hist->blend_params, dt_develop_blend_version(), bl_length) == 0)
+    {
+      // do nothing
+    }
     else
-      memset(hist->blend_params, 0, sizeof(dt_develop_blend_params_t));
+    {
+      memcpy(hist->blend_params, hist->module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+    }
 
     // memcpy(hist->module->params, hist->params, hist->module->params_size);
     // hist->module->enabled = hist->enabled;
@@ -881,4 +902,6 @@ void dt_dev_invalidate_from_gui (dt_develop_t *dev)
   dt_dev_pop_history_items(darktable.develop, darktable.develop->history_end);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

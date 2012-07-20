@@ -24,15 +24,11 @@ extern "C"
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
 #include "control/control.h"
-#include "dtgtk/resetlabel.h"
-#include "dtgtk/slider.h"
+#include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 }
@@ -58,9 +54,7 @@ extern "C"
 
   typedef struct dt_iop_bilateral_gui_data_t
   {
-    GtkVBox   *vbox;
-    GtkLabel  *label1, *label2, *label3, *label4, *label5;
-    GtkDarktableSlider *scale1, *scale2, *scale3, *scale4, *scale5;
+    GtkWidget *scale1, *scale2, *scale3, *scale4, *scale5;
   }
   dt_iop_bilateral_gui_data_t;
 
@@ -85,7 +79,7 @@ extern "C"
   {
     return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_SUPPORTS_BLENDING;
   }
- 
+
   void init_key_accels(dt_iop_module_so_t *self)
   {
     dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
@@ -93,7 +87,7 @@ extern "C"
     dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
     dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
   }
-  
+
   void connect_key_accels(dt_iop_module_t *self)
   {
     dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t*)self->gui_data;
@@ -102,7 +96,7 @@ extern "C"
     dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale4));
     dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale5));
   }
-  
+ 
   void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
   {
     dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;
@@ -124,7 +118,7 @@ extern "C"
 
     // if rad <= 6 use naive version!
     const int rad = (int)(3.0*fmaxf(sigma[0],sigma[1])+1.0);
-    if(rad <= 6 && (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW))
+    if(rad <= 6 && (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL))
     {
       // no use denoising the thumbnail. takes ages without permutohedral
       memcpy(out, in, sizeof(float)*ch*roi_out->width*roi_out->height);
@@ -135,7 +129,7 @@ extern "C"
       const int wd = 2*rad+1;
       float *m = mat + rad*wd + rad;
       float weight = 0.0f;
-      const float isig2col[3] = {1.0/(2.0f*sigma[2]*sigma[2]), 1.0/(2.0f*sigma[3]*sigma[3]), 1.0/(2.0f*sigma[4]*sigma[4])};
+      const float isig2col[3] = {1.f/(2.0f*sigma[2]*sigma[2]), 1.f/(2.0f*sigma[3]*sigma[3]), 1.f/(2.0f*sigma[4]*sigma[4])};
       // init gaussian kernel
       for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++)
           weight += m[l*wd + k] = expf(- (l*l + k*k)/(2.f*sigma[0]*sigma[0]));
@@ -155,21 +149,21 @@ extern "C"
         {
           sumw = 0.0f;
           for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++)
-            {
-              float *inp = in + ch*(l*roi_in->width+k);
-              sumw += w[l*wd+k] = m[l*wd+k]*expf(-
-                                                 ((in[0]-inp[0])*(in[0]-inp[0])*isig2col[0] +
-                                                  (in[1]-inp[1])*(in[1]-inp[1])*isig2col[1] +
-                                                  (in[2]-inp[2])*(in[2]-inp[2])*isig2col[2]));
-            }
+          {
+            float *inp = in + ch*(l*roi_in->width+k);
+            sumw += w[l*wd+k] = m[l*wd+k]*expf(-
+                ((in[0]-inp[0])*(in[0]-inp[0])*isig2col[0] +
+                 (in[1]-inp[1])*(in[1]-inp[1])*isig2col[1] +
+                 (in[2]-inp[2])*(in[2]-inp[2])*isig2col[2]));
+          }
           for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++) w[l*wd+k] /= sumw;
           for(int c=0; c<3; c++) out[c] = 0.0f;
           for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++)
-            {
-              float *inp = in + ch*(l*roi_in->width+k);
-              float weight = w[l*wd+k];
-              for(int c=0; c<3; c++) out[c] += inp[c]*weight;
-            }
+          {
+            float *inp = in + ch*(l*roi_in->width+k);
+            float weight = w[l*wd+k];
+            for(int c=0; c<3; c++) out[c] += inp[c]*weight;
+          }
           out += ch;
           in += ch;
         }
@@ -202,10 +196,10 @@ extern "C"
 #endif
       for(int j=0; j<roi_in->height; j++)
       {
-	const float *in = (const float*)ivoid + j*roi_in->width*ch;
-	const int thread = omp_get_thread_num();
-	int index = j * roi_in->width;
-	for(int i=0; i<roi_in->width; i++, index++)
+        const float *in = (const float*)ivoid + j*roi_in->width*ch;
+        const int thread = omp_get_thread_num();
+        int index = j * roi_in->width;
+        for(int i=0; i<roi_in->width; i++, index++)
         {
           float pos[5] = {i*sigma[0], j*sigma[1], in[0]*sigma[2], in[1]*sigma[3], in[2]*sigma[4]};
           float val[4] = {in[0], in[1], in[2], 1.0};
@@ -225,9 +219,9 @@ extern "C"
 #endif
       for(int j=0; j<roi_in->height; j++)
       {
-	float *out = (float*)ovoid + j*roi_in->width*ch;
-	int index = j * roi_in->width;
-	for(int i=0; i<roi_in->width; i++, index++)
+        float *out = (float*)ovoid + j*roi_in->width*ch;
+        int index = j * roi_in->width;
+        for(int i=0; i<roi_in->width; i++, index++)
         {
           float val[4];
           lattice.slice(val, index);
@@ -236,10 +230,14 @@ extern "C"
         }
       }
     }
+
+    if(piece->pipe->mask_display)
+      dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+
   }
 
   static void
-  sigma_callback (GtkDarktableSlider *slider, dt_iop_module_t *self)
+  sigma_callback (GtkWidget *slider, dt_iop_module_t *self)
   {
     if(self->dt->gui->reset) return;
     dt_iop_bilateral_params_t   *p = (dt_iop_bilateral_params_t *)self->params;
@@ -250,7 +248,7 @@ extern "C"
     else if(slider == g->scale3) i = 2;
     else if(slider == g->scale4) i = 3;
     else if(slider == g->scale5) i = 4;
-    p->sigma[i] = dtgtk_slider_get_value(slider);
+    p->sigma[i] = dt_bauhaus_slider_get(slider);
     if(i == 0) p->sigma[1] = p->sigma[0];
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
@@ -258,35 +256,19 @@ extern "C"
   void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
   {
     dt_iop_bilateral_params_t *p = (dt_iop_bilateral_params_t *)p1;
-#ifdef HAVE_GEGL
-    fprintf(stderr, "[bilateral] TODO: implement gegl version!\n");
-    // pull in new params to gegl
-#else
     dt_iop_bilateral_data_t *d = (dt_iop_bilateral_data_t *)piece->data;
     for(int k=0; k<5; k++) d->sigma[k] = p->sigma[k];
-#endif
   }
 
   void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
   {
-#ifdef HAVE_GEGL
-    // create part of the gegl pipeline
-    piece->data = NULL;
-#else
     piece->data = malloc(sizeof(dt_iop_bilateral_data_t));
     self->commit_params(self, self->default_params, pipe, piece);
-#endif
   }
 
   void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
   {
-#ifdef HAVE_GEGL
-    // clean up everything again.
-    (void)gegl_node_remove_child(pipe->gegl, piece->input);
-    // no free necessary, no data is alloc'ed
-#else
     free(piece->data);
-#endif
   }
 
   void gui_update(struct dt_iop_module_t *self)
@@ -294,11 +276,11 @@ extern "C"
     dt_iop_module_t *module = (dt_iop_module_t *)self;
     dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t *)self->gui_data;
     dt_iop_bilateral_params_t *p = (dt_iop_bilateral_params_t *)module->params;
-    dtgtk_slider_set_value(g->scale1, p->sigma[0]);
-    // dtgtk_slider_set_value(g->scale2, p->sigma[1]);
-    dtgtk_slider_set_value(g->scale3, p->sigma[2]);
-    dtgtk_slider_set_value(g->scale4, p->sigma[3]);
-    dtgtk_slider_set_value(g->scale5, p->sigma[4]);
+    dt_bauhaus_slider_set(g->scale1, p->sigma[0]);
+    // dt_bauhaus_slider_set(g->scale2, p->sigma[1]);
+    dt_bauhaus_slider_set(g->scale3, p->sigma[2]);
+    dt_bauhaus_slider_set(g->scale4, p->sigma[3]);
+    dt_bauhaus_slider_set(g->scale5, p->sigma[4]);
   }
 
   void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
@@ -322,7 +304,7 @@ extern "C"
     module->params = (dt_iop_params_t *)malloc(sizeof(dt_iop_bilateral_params_t));
     module->default_params = (dt_iop_params_t *)malloc(sizeof(dt_iop_bilateral_params_t));
     module->default_enabled = 0;
-  module->priority = 326; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 313; // module order created by iop_dependencies.py, do not edit!
     module->params_size = sizeof(dt_iop_bilateral_params_t);
     module->gui_data = NULL;
     dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t)
@@ -349,28 +331,26 @@ extern "C"
     dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t *)self->gui_data;
     dt_iop_bilateral_params_t *p = (dt_iop_bilateral_params_t *)self->params;
 
-    self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-    g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-    gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
+    self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
 
-    g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 1.0, 30.0, 1.0, p->sigma[0], 1));
-    g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0001, .1, 0.001, p->sigma[2], 4));
-    g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0001, .1, 0.001, p->sigma[3], 4));
-    g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0001, .1, 0.001, p->sigma[4], 4));
+    g->scale1 = dt_bauhaus_slider_new_with_range(self, 1.0, 30.0, 1.0, p->sigma[0], 1);
+    g->scale3 = dt_bauhaus_slider_new_with_range(self, 0.0001, .1, 0.001, p->sigma[2], 4);
+    g->scale4 = dt_bauhaus_slider_new_with_range(self, 0.0001, .1, 0.001, p->sigma[3], 4);
+    g->scale5 = dt_bauhaus_slider_new_with_range(self, 0.0001, .1, 0.001, p->sigma[4], 4);
     g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("spatial extent of the gaussian"), (char *)NULL);
     g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("how much to blur red"), (char *)NULL);
     g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("how much to blur green"), (char *)NULL);
     g_object_set(G_OBJECT(g->scale5), "tooltip-text", _("how much to blur blue"), (char *)NULL);
 
-    dtgtk_slider_set_label(g->scale1,_("radius"));
-    dtgtk_slider_set_label(g->scale3,_("red"));
-    dtgtk_slider_set_label(g->scale4,_("green"));
-    dtgtk_slider_set_label(g->scale5,_("blue"));
+    dt_bauhaus_widget_set_label(g->scale1,_("radius"));
+    dt_bauhaus_widget_set_label(g->scale3,_("red"));
+    dt_bauhaus_widget_set_label(g->scale4,_("green"));
+    dt_bauhaus_widget_set_label(g->scale5,_("blue"));
 
-    gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(self->widget), g->scale1, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(self->widget), g->scale3, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(self->widget), g->scale4, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(self->widget), g->scale5, TRUE, TRUE, 0);
 
     g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                       G_CALLBACK (sigma_callback), self);
@@ -392,4 +372,6 @@ extern "C"
 
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

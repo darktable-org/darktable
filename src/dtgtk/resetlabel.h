@@ -18,8 +18,8 @@
 #ifndef DTGTK_RESET_LABEL_H
 #define DTGTK_RESET_LABEL_H
 
-#include <gtk/gtk.h>
 #include "develop/imageop.h"
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 #define DTGTK_RESET_LABEL(obj) GTK_CHECK_CAST(obj, dtgtk_reset_label_get_type(), GtkDarktableResetLabel)
@@ -54,4 +54,6 @@ G_END_DECLS
 
 #endif
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

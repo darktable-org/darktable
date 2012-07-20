@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2011 henrik andersson.
+    copyright (c) 2011--2012 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the view for the darkroom module.  */
+#include "common/darktable.h"
 #include "common/collection.h"
 #include "views/view.h"
 #include "develop/develop.h"
@@ -43,24 +44,24 @@
 
 DT_MODULE(1)
 
-static void film_strip_key_accel(GtkAccelGroup *accel_group,
+static gboolean film_strip_key_accel(GtkAccelGroup *accel_group,
                                  GObject *acceleratable,
                                  guint keyval, GdkModifierType modifier,
                                  gpointer data);
 
-static void zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable,
+static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable,
                            guint keyval, GdkModifierType modifier,
                            gpointer data);
 
-static void export_key_accel_callback(GtkAccelGroup *accel_group,
+static gboolean export_key_accel_callback(GtkAccelGroup *accel_group,
                                       GObject *acceleratable, guint keyval,
                                       GdkModifierType modifier,gpointer data);
 
-static void skip_f_key_accel_callback(GtkAccelGroup *accel_group,
+static gboolean skip_f_key_accel_callback(GtkAccelGroup *accel_group,
                                       GObject *acceleratable,
                                       guint keyval, GdkModifierType modifier,
                                       gpointer data);
-static void skip_b_key_accel_callback(GtkAccelGroup *accel_group,
+static gboolean skip_b_key_accel_callback(GtkAccelGroup *accel_group,
                                       GObject *acceleratable,
                                       guint keyval, GdkModifierType modifier,
                                       gpointer data);
@@ -419,6 +420,13 @@ int try_enter(dt_view_t *self)
     if(sqlite3_step(stmt) == SQLITE_ROW)
       selected = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
+    
+    // Leave as selected only the image being edited
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into selected_images values (?1)", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, selected);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
   }
 
   if(selected < 0)
@@ -561,6 +569,7 @@ film_strip_activated(const int imgid, void *data)
   dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dt_dev_change_image(dev, imgid);
+  dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
   // force redraw
   dt_control_queue_redraw();
 }
@@ -611,15 +620,17 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
         return;
       }
 
+      if (!dev->image_loading) {
+        dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
+      }
       dt_dev_change_image(dev, imgid);
-      dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
 
     }
     sqlite3_finalize(stmt);
   }
 }
 
-static void
+static gboolean
 zoom_key_accel(GtkAccelGroup *accel_group,
                GObject *acceleratable, guint keyval,
                GdkModifierType modifier, gpointer data)
@@ -655,9 +666,11 @@ zoom_key_accel(GtkAccelGroup *accel_group,
     default:
       break;
   }
+  dt_control_queue_redraw_center();
+  return TRUE;
 }
 
-static void
+static gboolean
 film_strip_key_accel(GtkAccelGroup *accel_group,
                      GObject *acceleratable, guint keyval,
                      GdkModifierType modifier, gpointer data)
@@ -665,10 +678,11 @@ film_strip_key_accel(GtkAccelGroup *accel_group,
   dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module; 
   gboolean vs = dt_lib_is_visible(m);
   dt_lib_set_visible(m,!vs);
+  return TRUE;
 }
 
 
-static void
+static gboolean
 export_key_accel_callback(GtkAccelGroup *accel_group,
                           GObject *acceleratable, guint keyval,
                           GdkModifierType modifier, gpointer data)
@@ -678,21 +692,24 @@ export_key_accel_callback(GtkAccelGroup *accel_group,
 
   /* export current image */
   dt_control_export();
+  return TRUE;
 }
 
-static void skip_f_key_accel_callback(GtkAccelGroup *accel_group,
+static gboolean skip_f_key_accel_callback(GtkAccelGroup *accel_group,
                                       GObject *acceleratable, guint keyval,
                                       GdkModifierType modifier, gpointer data)
 {
   dt_dev_jump_image((dt_develop_t*)data, 1);
+  return TRUE;
 }
 
-static void skip_b_key_accel_callback(GtkAccelGroup *accel_group,
+static gboolean skip_b_key_accel_callback(GtkAccelGroup *accel_group,
                                       GObject *acceleratable,
                                       guint keyval, GdkModifierType modifier,
                                       gpointer data)
 {
   dt_dev_jump_image((dt_develop_t*)data, -1);
+  return TRUE;
 }
 
 static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance, gpointer data)
@@ -704,13 +721,24 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
 {
   /* create favorites menu and popup */
   dt_gui_favorite_presets_menu_show();
-  gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, 0, 0);
-  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+  
+  /* if we got any styles, lets popup menu for selection */
+  if (darktable.gui->presets_popup_menu)
+  {
+    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, 0, 0);
+    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+  }
+  else dt_control_log(_("no userdefined presets for favorite modules were found"));
 }
 
 static void _darkroom_ui_apply_style_activate_callback(gchar *name)
 {
   dt_control_log(_("applied style `%s' on current image"),name);
+ 
+  /* write current history changes so nothing gets lost */
+  dt_dev_write_history(darktable.develop);
+  
+  /* apply style on image and reload*/
   dt_styles_apply_to_image (name, FALSE, darktable.develop->image_storage.id);
   dt_dev_reload_image(darktable.develop, darktable.develop->image_storage.id);
 }
@@ -1296,4 +1324,6 @@ void connect_key_accels(dt_view_t *self)
 
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

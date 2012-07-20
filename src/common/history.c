@@ -17,9 +17,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/darktable.h"
 #include "develop/develop.h"
 #include "control/control.h"
-#include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/history.h"
@@ -129,7 +129,7 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   sqlite3_finalize (stmt);
 
   /* add the history items to stack offest */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid, num, module, operation, op_params, enabled, blendop_params) select ?1, num+?2, module, operation, op_params, enabled, blendop_params from history where imgid = ?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid, num, module, operation, op_params, enabled, blendop_params, blendop_version) select ?1, num+?2, module, operation, op_params, enabled, blendop_params, blendop_version from history where imgid = ?3", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, offs);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
@@ -216,4 +216,6 @@ dt_history_copy_and_paste_on_selection (int32_t imgid, gboolean merge)
   return res;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

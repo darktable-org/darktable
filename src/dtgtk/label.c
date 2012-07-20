@@ -87,6 +87,7 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
   g_return_val_if_fail(DTGTK_IS_LABEL(widget), FALSE);
   g_return_val_if_fail(event != NULL, FALSE);
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
+  if(!style) style = gtk_rc_get_style(widget);
   // uninitialized?
   if(style->depth == -1) return FALSE;
   int state = gtk_widget_get_state(widget);
@@ -211,3 +212,6 @@ GtkType dtgtk_label_get_type()
   }
   return dtgtk_label_type;
 }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

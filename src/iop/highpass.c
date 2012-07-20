@@ -1,6 +1,6 @@
 /*
 		This file is part of darktable,
-		copyright (c) 2011 Henrik Andersson, ulrich pegelow.
+		copyright (c) 2011-2012 Henrik Andersson, ulrich pegelow.
 
 		darktable is free software: you can redistribute it and/or modify
 		it under the terms of the GNU General Public License as published by
@@ -25,13 +25,12 @@
 #ifdef HAVE_GEGL
 #include <gegl.h>
 #endif
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
 #include "control/control.h"
 #include "common/opencl.h"
-#include "dtgtk/slider.h"
-#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
@@ -43,7 +42,6 @@
 
 #define CLIP(x)                 ((x<0)?0.0:(x>1.0)?1.0:x)
 #define LCLIP(x)                ((x<0)?0.0:(x>100.0)?100.0:x)
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 DT_MODULE(1)
 
@@ -58,7 +56,7 @@ typedef struct dt_iop_highpass_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
   GtkWidget  *label1,*label2;			// sharpness,contrast
-  GtkDarktableSlider *scale1,*scale2;       // sharpness,contrast
+  GtkWidget *scale1,*scale2;       // sharpness,contrast
 }
 dt_iop_highpass_gui_data_t;
 
@@ -95,6 +93,7 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
+#if 0 //BAUHAUS doenst support keyaccels yet...
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "sharpness"));
@@ -109,6 +108,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "sharpness", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "contrast boost", GTK_WIDGET(g->scale2));
 }
+#endif
 
 void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
@@ -120,7 +120,8 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
   const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2)/3.0f);
   const int wdh = ceilf(3.0f * sigma);
 
-  tiling->factor = 2;
+  tiling->factor = 3.0f;  // in + out + tmp
+  tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = wdh;
   tiling->xalign = 1;
@@ -137,7 +138,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)self->data;
 
   cl_int err = -999;
+  cl_mem dev_tmp = NULL;
   cl_mem dev_m = NULL;
+
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -166,13 +169,15 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
   size_t workgroupsize = 0;          // the maximum number of items in a work group
   unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
+  size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
   
   // make sure blocksize is not too large
-  size_t blocksize = BLOCKSIZE;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS)
+  int blocksize = BLOCKSIZE;
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
+     dt_opencl_get_kernel_work_group_size(devid, gd->kernel_highpass_hblur, &kernelworkgroupsize) == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] 
+    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize > kernelworkgroupsize
           || blocksize > workgroupsize || (blocksize+2*wdh)*sizeof(float) > localmemsize)
     {
       if(blocksize == 1) break;
@@ -184,19 +189,21 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     blocksize = 1;   // slow but safe
   }
 
-  // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
   const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1)*blocksize;
   const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1)*blocksize;
 
   size_t sizes[3];
   size_t local[3];
 
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4*sizeof(float));
+  if (dev_tmp == NULL) goto error;
+
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*wd, mat);
   if (dev_m == NULL) goto error;
 
   /* invert image */
-  sizes[0] = ROUNDUP(width, 4);
-  sizes[1] = ROUNDUP(height, 4);
+  sizes[0] = ROUNDUPWD(width);
+  sizes[1] = ROUNDUPHT(height);
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_invert, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_invert, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -209,13 +216,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     /* horizontal blur */
     sizes[0] = bwidth;
-    sizes[1] = ROUNDUP(height, 4);
+    sizes[1] = ROUNDUPHT(height);
     sizes[2] = 1;
     local[0] = blocksize;
     local[1] = 1;
     local[2] = 1;
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 0, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 1, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 2, sizeof(cl_mem), (void *)&dev_m);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 3, sizeof(int), (void *)&wdh);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 4, sizeof(int), (void *)&width);
@@ -227,13 +234,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
 
     /* vertical blur */
-    sizes[0] = ROUNDUP(width, 4);
+    sizes[0] = ROUNDUPWD(width);
     sizes[1] = bheight;
     sizes[2] = 1;
     local[0] = 1;
     local[1] = blocksize;
     local[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 0, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 0, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 2, sizeof(cl_mem), (void *)&dev_m);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 3, sizeof(int), (void *)&wdh);
@@ -246,8 +253,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   }
 
   /* mixing out and in -> out */
-  sizes[0] = ROUNDUP(width, 4);
-  sizes[1] = ROUNDUP(height, 4);
+  sizes[0] = ROUNDUPWD(width);
+  sizes[1] = ROUNDUPHT(height);
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_mix, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_mix, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -258,11 +265,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highpass_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 
-  clReleaseMemObject(dev_m);
+  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
 
 error:
   if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   dt_print(DT_DEBUG_OPENCL, "[opencl_highpass] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -369,26 +378,27 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     out[index] = out[index]*0.5 + in[index]*0.5;
     out[index] = LCLIP(50.0f+((out[index]-50.0f)*contrast_scale));
     out[index+1] = out[index+2] = 0.0f;		// desaturate a and b in Lab space
+    out[index+3] = in[index+3];
   }
 }
 
 static void
-sharpness_callback (GtkDarktableSlider *slider, gpointer user_data)
+sharpness_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)self->params;
-  p->sharpness= dtgtk_slider_get_value(slider);
+  p->sharpness= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-contrast_callback (GtkDarktableSlider *slider, gpointer user_data)
+contrast_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)self->params;
-  p->contrast = dtgtk_slider_get_value(slider);
+  p->contrast = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -434,8 +444,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_highpass_gui_data_t *g = (dt_iop_highpass_gui_data_t *)self->gui_data;
   dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale1, p->sharpness);
-  dtgtk_slider_set_value(g->scale2, p->contrast);
+  dt_bauhaus_slider_set(g->scale1, p->sharpness);
+  dt_bauhaus_slider_set(g->scale2, p->contrast);
 }
 
 void init(dt_iop_module_t *module)
@@ -443,7 +453,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_highpass_params_t));
   module->default_params = malloc(sizeof(dt_iop_highpass_params_t));
   module->default_enabled = 0;
-  module->priority = 734; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 745; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_highpass_params_t);
   module->gui_data = NULL;
   dt_iop_highpass_params_t tmp = (dt_iop_highpass_params_t)
@@ -492,21 +502,23 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_highpass_gui_data_t *g = (dt_iop_highpass_gui_data_t *)self->gui_data;
   dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->sharpness, 2));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->contrast, 2));
-  dtgtk_slider_set_label(g->scale1,_("sharpness"));
-  dtgtk_slider_set_unit(g->scale1,"%");
-  dtgtk_slider_set_label(g->scale2,_("contrast boost"));
-  dtgtk_slider_set_unit(g->scale2,"%");
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
+  /* sharpness */
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->sharpness, 2);
+  dt_bauhaus_widget_set_label(g->scale1,_("sharpness"));
+  dt_bauhaus_slider_set_format(g->scale1,"%.0f%%");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the sharpness of highpass filter"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the contrast of highpass filter"), (char *)NULL);
-
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (sharpness_callback), self);
+
+  /* contrast boost */
+  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->contrast, 2);
+  dt_bauhaus_widget_set_label(g->scale2,_("contrast boost"));
+  dt_bauhaus_slider_set_format(g->scale2,"%.0f%%");
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the contrast of highpass filter"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
                     G_CALLBACK (contrast_callback), self);
 
@@ -517,3 +529,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

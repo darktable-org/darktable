@@ -114,6 +114,8 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
                    x, y, width, height);
   }
 
+  if (flags & CPF_IGNORE_FG_STATE)
+    state = GTK_STATE_NORMAL;
 
   cairo_set_source_rgb (cr,
                         style->fg[state].red/65535.0,
@@ -123,10 +125,6 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
   /* draw icon */
   if (DTGTK_BUTTON (widget)->icon)
   {
-//     if (flags & CPF_IGNORE_FG_STATE)
-//       state = GTK_STATE_NORMAL;
-
-
     if (text)
       DTGTK_BUTTON (widget)->icon (cr,x+border,y+border,height-(border*2),height-(border*2),flags);
     else
@@ -197,4 +195,6 @@ void dtgtk_button_set_paint(GtkDarktableButton *button,
   button->icon_flags = paintflags;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

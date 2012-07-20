@@ -160,6 +160,18 @@ typedef struct dt_view_manager_t
       void (*add)(struct dt_lib_module_t *,GtkWidget *);
     } module_toolbox;
 
+    /* filter toolbox proxy object */
+    struct {
+        struct dt_lib_module_t *module;
+        void (*reset_filter)(struct dt_lib_module_t *);
+    } filter;
+
+    /* module collection proxy object */
+    struct {
+      struct dt_lib_module_t *module;
+      void (*update)(struct dt_lib_module_t *);
+    } module_collect;
+
     /* filmstrip proxy object */
     struct {
       struct dt_lib_module_t *module;
@@ -181,6 +193,7 @@ typedef struct dt_view_manager_t
       const char *(*get_session_path)(const dt_view_t *view);
       const char *(*get_job_code)(const dt_view_t *view);
       void (*set_job_code)(const dt_view_t *view, const char *name);
+      uint32_t (*get_selected_imgid)(const dt_view_t *view);
     } tethering;
 
     /* map view proxy object */
@@ -240,6 +253,8 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwins
  */
 /** get the current filmroll id for tethering session */
 int32_t dt_view_tethering_get_film_id(const dt_view_manager_t *vm);
+/** get the current selected image id for tethering session */
+int32_t dt_view_tethering_get_selected_imgid(const dt_view_manager_t *vm);
 /** get the current session path for tethering session */
 const char *dt_view_tethering_get_session_path(const dt_view_manager_t *vm);
 /** get the current session filename for tethering session */
@@ -248,6 +263,14 @@ const char *dt_view_tethering_get_session_filename(const dt_view_manager_t *vm, 
 void dt_view_tethering_set_job_code(const dt_view_manager_t *vm, const char *name);
 /** get the current jobcode for tethering session */
 const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm);
+
+/** update the collection module */
+void dt_view_collection_update(const dt_view_manager_t *vm);
+
+/*
+ * Filter dropdown proxy
+ */
+void dt_view_filter_reset_to_show_all(const dt_view_manager_t *vm);
 
 /*
  * NEW filmstrip api
@@ -274,3 +297,6 @@ void dt_view_filmstrip_prefetch();
 void dt_view_map_center_on_location(const dt_view_manager_t *vm, gdouble lon, gdouble lat, gdouble zoom);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

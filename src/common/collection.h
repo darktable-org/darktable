@@ -139,10 +139,13 @@ GList *dt_collection_get_selected (const dt_collection_t *collection);
 /** get the count of selected images */
 uint32_t dt_collection_get_selected_count (const dt_collection_t *collection);
 
-/** update query by gconf vars */
+/** update query by conf vars */
 void dt_collection_update_query(const dt_collection_t *collection);
 
 /** updates the hint message for collection */
 void dt_collection_hint_message(const dt_collection_t *collection);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
