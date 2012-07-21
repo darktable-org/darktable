@@ -176,6 +176,9 @@ void dt_image_set_location(const int32_t imgid, double lon, double lat)
   /* store */
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
   dt_image_cache_read_release(darktable.image_cache, image);
+
+  /* update sidecar */
+  dt_image_write_sidecar_file(imgid);
 }
 
 void dt_image_set_flip(const int32_t imgid, const int32_t orientation)
