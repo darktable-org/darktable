@@ -113,7 +113,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
 
   const unsigned int pixelformat = ch == 3 ? LF_CR_3 (RED, GREEN, BLUE) : LF_CR_4 (RED, GREEN, BLUE, UNKNOWN);
 
-  if(!d->lens->Maker)
+  if(!d->lens->Maker || d->crop <= 0.0f)
   {
     memcpy(out, in, ch*sizeof(float)*roi_out->width*roi_out->height);
     return;
@@ -324,7 +324,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t isizes[] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1};
   size_t osizes[] = { ROUNDUPWD(owidth), ROUNDUPHT(oheight), 1};
 
-  if(!d->lens->Maker)
+  if(!d->lens->Maker || d->crop <= 0.0f)
   {
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, oregion);
     if(err != CL_SUCCESS) goto error;
@@ -562,7 +562,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   *roi_in = *roi_out;
   // inverse transform with given params
 
-  if(!d->lens->Maker) return;
+  if(!d->lens->Maker || d->crop <= 0.0f) return;
 
   const float orig_w = roi_in->scale*piece->iwidth,
               orig_h = roi_in->scale*piece->iheight;
