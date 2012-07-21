@@ -86,19 +86,69 @@ void dt_lua_push_image(lua_State * L,int imgid) {
 }
 
 typedef enum {
+	FILENAME,
 	EXIF_EXPOSURE,
+	EXIF_APERTURE,
+	EXIF_ISO,
+	EXIF_FOCAL_LENGTH,
+	EXIF_FOCUS_DISTANCE,
+	EXIF_CROP,
+	EXIF_MAKER,
+	EXIF_MODEL,
+	EXIF_LENS,
+	EXIF_DATETIME_TAKEN,
 	LAST_IMAGE_FIELD
 } image_fields;
 const char *const image_fields_name[] = {
+	"filename",
 	"exif_exposure",
+	"exif_aperture",
+	"exif_iso",
+	"exif_focal_length",
+	"exif_focus_distance",
+	"exif_crop",
+	"exif_maker",
+	"exif_model",
+	"exif_lens",
+	"exif_datetime_taken",
 	NULL
 };
 
 static int image_index(lua_State *L){
 	const dt_image_t * my_image=dt_lua_checkimage(L,-2)->const_image;
 	switch(luaL_checkoption(L,-1,NULL,image_fields_name)) {
+		case FILENAME:
+			lua_pushstring(L,my_image->filename);
+			return 1;
 		case EXIF_EXPOSURE:
 			lua_pushnumber(L,my_image->exif_exposure);
+			return 1;
+		case EXIF_APERTURE:
+			lua_pushnumber(L,my_image->exif_aperture);
+			return 1;
+		case EXIF_ISO:
+			lua_pushnumber(L,my_image->exif_iso);
+			return 1;
+		case EXIF_FOCAL_LENGTH:
+			lua_pushnumber(L,my_image->exif_focal_length);
+			return 1;
+		case EXIF_FOCUS_DISTANCE:
+			lua_pushnumber(L,my_image->exif_focus_distance);
+			return 1;
+		case EXIF_CROP:
+			lua_pushnumber(L,my_image->exif_crop);
+			return 1;
+		case EXIF_MAKER:
+			lua_pushstring(L,my_image->exif_maker);
+			return 1;
+		case EXIF_MODEL:
+			lua_pushstring(L,my_image->exif_model);
+			return 1;
+		case EXIF_LENS:
+			lua_pushstring(L,my_image->exif_lens);
+			return 1;
+		case EXIF_DATETIME_TAKEN:
+			lua_pushstring(L,my_image->exif_datetime_taken);
 			return 1;
 		default:
 			dt_image_cache_read_release(darktable.image_cache,my_image);

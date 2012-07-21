@@ -26,13 +26,48 @@ static int lua_quit(lua_State *state) {
 	return 0;
 }
 
+static const luaL_Reg loadedlibs[] = {
+  {"_G", luaopen_base},
+  {LUA_LOADLIBNAME, luaopen_package},
+  //{LUA_COLIBNAME, luaopen_coroutine},
+  {LUA_TABLIBNAME, luaopen_table},
+  //{LUA_IOLIBNAME, luaopen_io},
+  //{LUA_OSLIBNAME, luaopen_os},
+  {LUA_STRLIBNAME, luaopen_string},
+  {LUA_BITLIBNAME, luaopen_bit32},
+  {LUA_MATHLIBNAME, luaopen_math},
+  //{LUA_DBLIBNAME, luaopen_debug},
+  {NULL, NULL}
+};
+
+
+/*
+** these libs are preloaded and must be required before used
+*/
+static const luaL_Reg preloadedlibs[] = {
+  {NULL, NULL}
+};
+
+
+
+
 void dt_lua_init() {
 	// init the global lua context
 	darktable.lua_state= luaL_newstate();
-	luaopen_base(darktable.lua_state);
-	luaopen_table(darktable.lua_state);
-	luaopen_string(darktable.lua_state);
-	luaopen_math(darktable.lua_state);
+	const luaL_Reg *lib;
+	/* call open functions from 'loadedlibs' and set results to global table */
+	for (lib = loadedlibs; lib->func; lib++) {
+		luaL_requiref(darktable.lua_state, lib->name, lib->func, 1);
+		lua_pop(darktable.lua_state, 1);  /* remove lib */
+	}
+	/* add open functions from 'preloadedlibs' into 'package.preload' table */
+	luaL_getsubtable(darktable.lua_state, LUA_REGISTRYINDEX, "_PRELOAD");
+	for (lib = preloadedlibs; lib->func; lib++) {
+		lua_pushcfunction(darktable.lua_state, lib->func);
+		lua_setfield(darktable.lua_state, -2, lib->name);
+	}
+	lua_pop(darktable.lua_state, 1);  /* remove _PRELOAD table */
+
 	lua_rawgeti(darktable.lua_state, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
 	lua_pushstring(darktable.lua_state,"quit");
 	lua_pushcfunction(darktable.lua_state,&lua_quit);
