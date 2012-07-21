@@ -315,7 +315,6 @@ int dt_exif_read(dt_image_t *img, const char* path)
     if(!strcmp(img->exif_model, "DMC-GH2")) sprintf(img->exif_lens, "(unknown)");
 
     img->exif_inited = 1;
-    img->dirty = 1;
     return 0;
   }
   catch (Exiv2::AnyError& e)
