@@ -235,10 +235,36 @@ static int image_newindex(lua_State *L){
 		  }
 }
 
+static int image_next(lua_State *L){
+		  //printf("%s\n",__FUNCTION__);
+		  int index;
+		  if(lua_isnil(L,-1)) {
+					 index = 0;
+		  } else {
+					 index = luaL_checkoption(L,-1,NULL,image_fields_name);
+		  }
+		  index++;
+		  if(!image_fields_name[index]) {
+					 lua_pushnil(L);
+					 lua_pushnil(L);
+		  } else {
+					 lua_pop(L,1);// remove the key, table is at top
+					 lua_pushstring(L,image_fields_name[index]); // push the index string
+					 image_index(L);
+		  }
+		  return 2;
+}
+static int image_pairs(lua_State *L){
+		  lua_pushcfunction(L,image_next);
+		  lua_pushvalue(L,-2);
+		  lua_pushnil(L); // index set to null for reset
+		  return 3;
+}
 static const luaL_Reg dt_lua_image_meta[] = {
 		  {"__tostring", image_tostring },
 		  {"__index", image_index },
 		  {"__newindex", image_newindex },
+		  {"__pairs", image_pairs },
 		  {"__gc", image_gc },
 		  {0,0}
 };
