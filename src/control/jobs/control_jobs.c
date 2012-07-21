@@ -641,6 +641,7 @@ int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
   struct dt_gpx_t *gpx = NULL;
+  uint32_t cntr = 0;
   const gchar *filename = (const gchar *)t1->data;
 
   /* do we have any selected images */
@@ -699,11 +700,14 @@ int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
 
     /* only update image location if time is within gpx tack range */
     if (dt_gpx_get_location(gpx, &timestamp, &lon, &lat))
+    {
       dt_image_set_location(imgid, lon, lat);
-      
+      cntr++;
+    }
+   
   } while ((t = g_list_next(t)) != NULL);
 
-  dt_control_log(_("applied matched gpx location onto %d image(s)"), g_list_length(t1->index));
+  dt_control_log(_("applied matched gpx location onto %d image(s)"), cntr);
 
   dt_gpx_destroy(gpx);
   g_free(t1->data);
