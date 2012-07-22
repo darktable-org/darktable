@@ -102,6 +102,12 @@ typedef enum {
 		  EXIF_LENS,
 		  EXIF_DATETIME_TAKEN,
 		  FILENAME,
+		  WIDTH,
+		  HEIGHT,
+		  IS_LDR,
+		  IS_HDR,
+		  IS_RAW,
+		  RATING,
 		  LAST_IMAGE_FIELD
 } image_fields;
 const char *const image_fields_name[] = {
@@ -116,6 +122,12 @@ const char *const image_fields_name[] = {
 		  "exif_lens",
 		  "exif_datetime_taken",
 		  "filename",
+		  "width",
+		  "height",
+		  "is_ldr",
+		  "is_hdr",
+		  "is_raw",
+		  "rating",
 		  NULL
 };
 
@@ -154,6 +166,24 @@ static int image_index(lua_State *L){
 								return 1;
 					 case FILENAME:
 								lua_pushstring(L,my_image->filename);
+								return 1;
+					 case WIDTH:
+								lua_pushinteger(L,my_image->width);
+								return 1;
+					 case HEIGHT:
+								lua_pushinteger(L,my_image->height);
+								return 1;
+					 case IS_LDR:
+								lua_pushboolean(L,dt_image_is_ldr(my_image));
+								return 1;
+					 case IS_HDR:
+								lua_pushboolean(L,dt_image_is_hdr(my_image));
+								return 1;
+					 case IS_RAW:
+								lua_pushboolean(L,dt_image_is_raw(my_image));
+								return 1;
+					 case RATING:
+								lua_pushinteger(L,my_image->flags & 0x7);
 								return 1;
 					 default:
 								luaL_error(L,"should never happen");
@@ -227,7 +257,21 @@ static int image_newindex(lua_State *L){
 										  strncpy(my_image->image->exif_lens,value,52);
 										  return 0;
 								}
+					 case RATING:
+								{
+												int my_score = luaL_checkinteger(L,-1);
+												if(my_score > 0x7) my_score = 0x7;
+												my_image->image->flags &= ~0x7;
+												my_image->image->flags |= my_score;
+												return 0;
+								}
+
 					 case FILENAME:
+					 case WIDTH:
+					 case HEIGHT:
+					 case IS_LDR:
+					 case IS_HDR:
+					 case IS_RAW:
 					 default:
 								luaL_error(L,"unknown index for image : ",lua_tostring(L,-2));
 								return 0;

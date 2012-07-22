@@ -79,6 +79,19 @@ void dt_lua_init() {
 }
 
 
+void dt_lua_dostring(const char* command) {
+      if(luaL_loadstring(darktable.lua_state, command)){
+	      printf("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
+	      lua_pop(darktable.lua_state,1);
+	      return;
+      }
+      // change the env variable here to a copy of _G
+      if(lua_pcall(darktable.lua_state, 0, 0, 0)) {
+	      printf("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
+	      lua_pop(darktable.lua_state,1);
+      }
+      lua_gc(darktable.lua_state,LUA_GCCOLLECT,0);
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

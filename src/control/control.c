@@ -27,6 +27,7 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"
+#include "common/dt_lua.h"
 #include "bauhaus/bauhaus.h"
 #include "views/view.h"
 #include "gui/gtk.h"
@@ -1511,11 +1512,7 @@ int dt_control_key_pressed_override(guint key, guint state)
   {
     if(key == GDK_Return)
     {
-      if(luaL_loadstring(darktable.lua_state, &darktable.control->vimkey[1]) || lua_pcall(darktable.lua_state, 0, 0, 0)){
-	      printf("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
-      }
-      lua_gc(darktable.lua_state,LUA_GCCOLLECT,0);
-
+      dt_lua_dostring(&darktable.control->vimkey[1]);
       darktable.control->vimkey[0] = 0;
       darktable.control->vimkey_cnt = 0;
       dt_control_log_ack_all();
