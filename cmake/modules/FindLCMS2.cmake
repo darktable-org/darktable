@@ -19,7 +19,7 @@
 # SET(LCMS2_LIBS ${_lcmsCflags})
 
 FIND_PATH(LCMS2_INCLUDE_DIR lcms2.h
-  /usr/include
+  PATHS /usr/include
   /usr/local/include
   HINTS ENV LCMS2_INCLUDE_DIR
   PATH_SUFFIXES lcms2
