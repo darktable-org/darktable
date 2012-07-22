@@ -183,8 +183,14 @@ static int image_index(lua_State *L){
 								lua_pushboolean(L,dt_image_is_raw(my_image));
 								return 1;
 					 case RATING:
-								lua_pushinteger(L,my_image->flags & 0x7);
-								return 1;
+								{
+												int score = my_image->flags & 0x7;
+												if(score >6) score=5;
+												if(score ==6) score=-1;
+
+												lua_pushinteger(L,score);
+												return 1;
+								}
 					 default:
 								luaL_error(L,"should never happen");
 								return 0;
@@ -260,7 +266,9 @@ static int image_newindex(lua_State *L){
 					 case RATING:
 								{
 												int my_score = luaL_checkinteger(L,-1);
-												if(my_score > 0x7) my_score = 0x7;
+												if(my_score > 5) luaL_error(L,"rating too high : %d",my_score);
+												if(my_score == -1) my_score = 6;
+												if(my_score < -1) luaL_error(L,"rating too low : %d",my_score);
 												my_image->image->flags &= ~0x7;
 												my_image->image->flags |= my_score;
 												return 0;
