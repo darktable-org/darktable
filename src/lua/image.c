@@ -73,6 +73,7 @@ void dt_lua_push_image(lua_State * L,int imgid) {
 					 if(sqlite3_step(stmt) != SQLITE_ROW) {
 								sqlite3_finalize(stmt);
 								luaL_error(L,"invalid id for image : %d",imgid);
+								return; // luaL_error never returns, this is to help the reader
 					 }
 					 sqlite3_finalize(stmt);
 					 lua_pushinteger(L,imgid);
@@ -102,12 +103,15 @@ typedef enum {
 		  EXIF_LENS,
 		  EXIF_DATETIME_TAKEN,
 		  FILENAME,
+		  PATH,
+			DUP_INDEX,
 		  WIDTH,
 		  HEIGHT,
 		  IS_LDR,
 		  IS_HDR,
 		  IS_RAW,
 		  RATING,
+		  ID,
 		  LAST_IMAGE_FIELD
 } image_fields;
 const char *const image_fields_name[] = {
@@ -122,12 +126,15 @@ const char *const image_fields_name[] = {
 		  "exif_lens",
 		  "exif_datetime_taken",
 		  "filename",
+		  "path",
+			"duplicate_index",
 		  "width",
 		  "height",
 		  "is_ldr",
 		  "is_hdr",
 		  "is_raw",
 		  "rating",
+		  "id",
 		  NULL
 };
 
@@ -167,6 +174,40 @@ static int image_index(lua_State *L){
 					 case FILENAME:
 								lua_pushstring(L,my_image->filename);
 								return 1;
+					 case PATH:
+								{
+												sqlite3_stmt *stmt;
+												DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+																				"select folder from images, film_rolls where "
+																				"images.film_id = film_rolls.id and images.id = ?1", -1, &stmt, NULL);
+												DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+												if(sqlite3_step(stmt) == SQLITE_ROW)
+												{
+																lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+												} else {
+																sqlite3_finalize(stmt);
+																return luaL_error(L,"should never happen");
+												}
+												sqlite3_finalize(stmt);
+												return 1;
+								}
+					 case DUP_INDEX:
+								{
+												// get duplicate suffix
+												int version = 0;
+												sqlite3_stmt *stmt;
+												DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+																				"select count(id) from images where filename in "
+																				"(select filename from images where id = ?1) and film_id in "
+																				"(select film_id from images where id = ?1) and id < ?1",
+																				-1, &stmt, NULL);
+												DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+												if(sqlite3_step(stmt) == SQLITE_ROW)
+																version = sqlite3_column_int(stmt, 0);
+												sqlite3_finalize(stmt);
+												lua_pushinteger(L,version);
+												return 1;
+								}
 					 case WIDTH:
 								lua_pushinteger(L,my_image->width);
 								return 1;
@@ -191,8 +232,11 @@ static int image_index(lua_State *L){
 												lua_pushinteger(L,score);
 												return 1;
 								}
+					 case ID:
+								lua_pushinteger(L,my_image->height);
+								return 1;
 					 default:
-								luaL_error(L,"should never happen");
+								return luaL_error(L,"should never happen");
 								return 0;
 
 		  }
@@ -228,7 +272,7 @@ static int image_newindex(lua_State *L){
 										  size_t tgt_size;
 										  const char * value = luaL_checklstring(L,-1,&tgt_size);
 										  if(tgt_size > 32) {
-													 luaL_error(L,"string value too long");
+													 return luaL_error(L,"string value too long");
 										  }
 										  strncpy(my_image->image->exif_maker,value,32);
 										  return 0;
@@ -238,7 +282,7 @@ static int image_newindex(lua_State *L){
 										  size_t tgt_size;
 										  const char * value = luaL_checklstring(L,-1,&tgt_size);
 										  if(tgt_size > 32) {
-													 luaL_error(L,"string value too long");
+													 return luaL_error(L,"string value too long");
 										  }
 										  strncpy(my_image->image->exif_maker,value,32);
 										  return 0;
@@ -248,7 +292,7 @@ static int image_newindex(lua_State *L){
 										  size_t tgt_size;
 										  const char * value = luaL_checklstring(L,-1,&tgt_size);
 										  if(tgt_size > 32) {
-													 luaL_error(L,"string value too long");
+													 return luaL_error(L,"string value too long");
 										  }
 										  strncpy(my_image->image->exif_model,value,32);
 										  return 0;
@@ -258,7 +302,7 @@ static int image_newindex(lua_State *L){
 										  size_t tgt_size;
 										  const char * value = luaL_checklstring(L,-1,&tgt_size);
 										  if(tgt_size > 52) {
-													 luaL_error(L,"string value too long");
+													 return luaL_error(L,"string value too long");
 										  }
 										  strncpy(my_image->image->exif_lens,value,52);
 										  return 0;
@@ -266,22 +310,25 @@ static int image_newindex(lua_State *L){
 					 case RATING:
 								{
 												int my_score = luaL_checkinteger(L,-1);
-												if(my_score > 5) luaL_error(L,"rating too high : %d",my_score);
+												if(my_score > 5) return luaL_error(L,"rating too high : %d",my_score);
 												if(my_score == -1) my_score = 6;
-												if(my_score < -1) luaL_error(L,"rating too low : %d",my_score);
+												if(my_score < -1) return luaL_error(L,"rating too low : %d",my_score);
 												my_image->image->flags &= ~0x7;
 												my_image->image->flags |= my_score;
 												return 0;
 								}
 
 					 case FILENAME:
+					 case PATH:
+					 case DUP_INDEX:
 					 case WIDTH:
 					 case HEIGHT:
 					 case IS_LDR:
 					 case IS_HDR:
 					 case IS_RAW:
+					 case ID:
 					 default:
-								luaL_error(L,"unknown index for image : ",lua_tostring(L,-2));
+								return luaL_error(L,"unknown index for image : ",lua_tostring(L,-2));
 								return 0;
 
 		  }
@@ -343,7 +390,7 @@ static int images_next(lua_State *L) {
 		  if(lua_isnil(L,-1)) {
 					 sqlite3_reset(stmt);
 		  } else if(luaL_checkinteger(L,-1) != sqlite3_column_int(stmt,0)) {
-					 luaL_error(L,"TBSL : changing index of a loop on variable images is not supported yet");
+					 return luaL_error(L,"TBSL : changing index of a loop on variable images is not supported yet");
 		  }
 		  int result = sqlite3_step(stmt);
 		  if(result != SQLITE_ROW){
