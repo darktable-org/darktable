@@ -19,7 +19,6 @@
 #define DT_LUA_H
 
 void dt_lua_init();
-void dt_lua_register_object(const char* name); // register a new object name,
 void dt_lua_dostring(const char* command);
 
 #endif

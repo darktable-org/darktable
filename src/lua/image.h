@@ -26,7 +26,11 @@
    */
 //void dt_lua_push_image(lua_State * L,int imgid);
 //int dt_lua_checkimage(lua_State * L,int index);
-void dt_lua_init_image(lua_State * L);
+
+// must be call to create the meta-tables
+void dt_lua_image_init(lua_State * L);
+// must be called to release all image lock, so after every lua run
+void dt_lua_image_gc(lua_State * L);
 
 
 /* TBSL doc for function below */

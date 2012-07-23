@@ -73,7 +73,7 @@ void dt_lua_init() {
 	lua_pushcfunction(darktable.lua_state,&lua_quit);
 	lua_settable(darktable.lua_state,-3);
 	dt_lua_init_stmt(darktable.lua_state);
-	dt_lua_init_image(darktable.lua_state);
+	dt_lua_image_init(darktable.lua_state);
 	dt_lua_images_init(darktable.lua_state);
 	lua_pop(darktable.lua_state,1);
 }
@@ -90,6 +90,7 @@ void dt_lua_dostring(const char* command) {
 	      printf("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
 	      lua_pop(darktable.lua_state,1);
       }
+      dt_lua_image_gc(darktable.lua_state);
       lua_gc(darktable.lua_state,LUA_GCCOLLECT,0);
 }
 
