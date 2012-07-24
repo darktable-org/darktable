@@ -242,10 +242,11 @@ colorin (read_only image2d_t in, write_only image2d_t out, const int width, cons
   cam[1] = lookup_unbounded(lutg, pixel.y, a+3);
   cam[2] = lookup_unbounded(lutb, pixel.z, a+6);
 
-  if(map_blues)
+
+  const float YY = cam[0]+cam[1]+cam[2];
+  if(map_blues && YY > 0.0f)
   {
     // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-    const float YY = cam[0]+cam[1]+cam[2];
     const float zz = cam[2]/YY;
     // lower amount and higher bound_z make the effect smaller.
     // the effect is weakened the darker input values are, saturating at bound_Y

@@ -250,14 +250,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           ((buf_in[i] < 1.0f) ? lerp_lut(d->lut[i], buf_in[i])
           : dt_iop_eval_exp(d->unbounded_coeffs[i], buf_in[i]))
           : buf_in[i];
-  
-        if(map_blues)
+
+        const float YY = cam[0]+cam[1]+cam[2];  
+        if(map_blues && YY > 0.0f)
         {
           // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB.
           // deeply saturated blues turn into purple fringes, so dampen them before conversion.
           // this is off for non-raw images, which don't seem to have this problem.
           // might be caused by too loose clipping bounds during highlight clipping?
-          const float YY = cam[0]+cam[1]+cam[2];
           const float zz = cam[2]/YY;
           // lower amount and higher bound_z make the effect smaller.
           // the effect is weakened the darker input values are, saturating at bound_Y
