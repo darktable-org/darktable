@@ -74,6 +74,7 @@ FILE(GLOB SOURCE_FILES
   "gui/presets.c"
   "gui/styles_dialog.c"
   "libs/lib.c"
+  "lua/colorlabel.c"
   "lua/image.c"
   "lua/stmt.c"
   "views/view.c"

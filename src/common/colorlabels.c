@@ -60,7 +60,7 @@ void dt_colorlabels_set_label (const int imgid, const int color)
 void dt_colorlabels_remove_label (const int imgid, const int color)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from color_label where imgid=?1 and color=?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from color_labels where imgid=?1 and color=?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, color);
   sqlite3_step(stmt);

@@ -13,6 +13,9 @@ typedef enum dt_colorlables_enum {
 	DT_COLORLABELS_LAST,
 } dt_colorlabels_enum;
 
+
+extern const char *const dt_colorlabels_name[];
+
 /** remove assigned colorlabels of selected images*/
 void dt_colorlabels_remove_labels_selection ();
 /** remove labels associated to imgid */

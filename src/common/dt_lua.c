@@ -19,6 +19,7 @@
 #include "common/file_location.h"
 #include "control/control.h"
 #include "lua/image.h"
+#include "lua/colorlabel.h"
 #include "lua/stmt.h"
 #include <lualib.h>
 
@@ -50,6 +51,22 @@ static const luaL_Reg preloadedlibs[] = {
 };
 
 
+static void do_chunck(int loadresult) {
+      if(loadresult){
+	      dt_control_log("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
+	      printf("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
+	      lua_pop(darktable.lua_state,1);
+	      return;
+      }
+      // change the env variable here to a copy of _G
+      if(lua_pcall(darktable.lua_state, 0, 0, 0)) {
+	      dt_control_log("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
+	      printf("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
+	      lua_pop(darktable.lua_state,1);
+      }
+      dt_lua_image_gc(darktable.lua_state);
+      lua_gc(darktable.lua_state,LUA_GCCOLLECT,0);
+}
 
 
 void dt_lua_init() {
@@ -74,6 +91,7 @@ void dt_lua_init() {
 	lua_pushcfunction(darktable.lua_state,&lua_quit);
 	lua_settable(darktable.lua_state,-3);
 	dt_lua_init_stmt(darktable.lua_state);
+	dt_lua_colorlabel_init(darktable.lua_state);
 	dt_lua_image_init(darktable.lua_state);
 	dt_lua_images_init(darktable.lua_state);
 	lua_pop(darktable.lua_state,1);
@@ -93,9 +111,7 @@ void dt_lua_init() {
 			while(filename) {
 				tmp = g_strconcat(lua_path,"/",filename,NULL);
 				if (g_file_test(tmp, G_FILE_TEST_IS_REGULAR) && filename[0] != '.') {
-					if(luaL_dofile(darktable.lua_state,tmp)) {
-						dt_control_log("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
-					}
+					do_chunck(luaL_loadfile(darktable.lua_state,tmp));
 				}
 				g_free(tmp);
 				filename = g_dir_read_name(lua_dir);
@@ -108,18 +124,7 @@ void dt_lua_init() {
 
 
 void dt_lua_dostring(const char* command) {
-      if(luaL_loadstring(darktable.lua_state, command)){
-	      printf("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
-	      lua_pop(darktable.lua_state,1);
-	      return;
-      }
-      // change the env variable here to a copy of _G
-      if(lua_pcall(darktable.lua_state, 0, 0, 0)) {
-	      dt_control_log("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
-	      lua_pop(darktable.lua_state,1);
-      }
-      dt_lua_image_gc(darktable.lua_state);
-      lua_gc(darktable.lua_state,LUA_GCCOLLECT,0);
+      do_chunck(luaL_loadstring(darktable.lua_state, command));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

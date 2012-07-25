@@ -22,8 +22,7 @@
 #include "common/debug.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "common/colorlabels.h"
-#include "common/colorlabels.h"
+#include "lua/colorlabel.h"
 #include "common/metadata.h"
 #include "metadata_gen.h"
 
@@ -134,11 +133,7 @@ typedef enum {
 	IS_RAW,
 	RATING,
 	ID,
-	RED,
-	YELLOW,
-	GREEN,
-	BLUE,
-	PURPLE,
+	COLORLABEL,
 	CREATOR,
 	PUBLISHER,
 	TITLE,
@@ -167,11 +162,7 @@ const char *const image_fields_name[] = {
 	"is_raw",
 	"rating",
 	"id",
-	"red",
-	"yellow",
-	"green",
-	"blue",
-	"purple",
+	"colorlabels",
 	"creator",
 	"publisher",
 	"title",
@@ -277,20 +268,8 @@ static int image_index(lua_State *L){
 		case ID:
 			lua_pushinteger(L,my_image->height);
 			return 1;
-		case RED:
-			lua_pushboolean(L,dt_colorlabels_check_label(my_image->id,DT_COLORLABELS_RED));
-			return 1;
-		case YELLOW:
-			lua_pushboolean(L,dt_colorlabels_check_label(my_image->id,DT_COLORLABELS_YELLOW));
-			return 1;
-		case GREEN:
-			lua_pushboolean(L,dt_colorlabels_check_label(my_image->id,DT_COLORLABELS_GREEN));
-			return 1;
-		case BLUE:
-			lua_pushboolean(L,dt_colorlabels_check_label(my_image->id,DT_COLORLABELS_BLUE));
-			return 1;
-		case PURPLE:
-			lua_pushboolean(L,dt_colorlabels_check_label(my_image->id,DT_COLORLABELS_PURPLE));
+		case COLORLABEL:
+			dt_lua_push_colorlabel(L,my_image->id);
 			return 1;
 		case CREATOR:
 			{
@@ -446,41 +425,6 @@ static int image_newindex(lua_State *L){
 				return 0;
 			}
 
-		case RED:
-			if(lua_toboolean(L,-1)) { // no testing of type so we can benefit from all types of values
-				dt_colorlabels_set_label(my_image->id,DT_COLORLABELS_RED);
-			} else {
-				dt_colorlabels_remove_label(my_image->id,DT_COLORLABELS_RED);
-			}
-			return 0;
-		case YELLOW:
-			if(lua_toboolean(L,-1)) { // no testing of type so we can benefit from all types of values
-				dt_colorlabels_set_label(my_image->id,DT_COLORLABELS_YELLOW);
-			} else {
-				dt_colorlabels_remove_label(my_image->id,DT_COLORLABELS_YELLOW);
-			}
-			return 0;
-		case GREEN:
-			if(lua_toboolean(L,-1)) { // no testing of type so we can benefit from all types of values
-				dt_colorlabels_set_label(my_image->id,DT_COLORLABELS_GREEN);
-			} else {
-				dt_colorlabels_remove_label(my_image->id,DT_COLORLABELS_GREEN);
-			}
-			return 0;
-		case BLUE:
-			if(lua_toboolean(L,-1)) { // no testing of type so we can benefit from all types of values
-				dt_colorlabels_set_label(my_image->id,DT_COLORLABELS_BLUE);
-			} else {
-				dt_colorlabels_remove_label(my_image->id,DT_COLORLABELS_BLUE);
-			}
-			return 0;
-		case PURPLE:
-			if(lua_toboolean(L,-1)) { // no testing of type so we can benefit from all types of values
-				dt_colorlabels_set_label(my_image->id,DT_COLORLABELS_PURPLE);
-			} else {
-				dt_colorlabels_remove_label(my_image->id,DT_COLORLABELS_PURPLE);
-			}
-			return 0;
 		case CREATOR:
 			dt_metadata_set(my_image->id,"Xmp.dc.creator",luaL_checkstring(L,-1));
 			dt_image_synch_xmp(my_image->id);
@@ -510,6 +454,7 @@ static int image_newindex(lua_State *L){
 		case IS_HDR:
 		case IS_RAW:
 		case ID:
+		case COLORLABEL:
 			return luaL_error(L,"read only field : ",lua_tostring(L,-2));
 		default:
 			return luaL_error(L,"unknown index for image : ",lua_tostring(L,-2));
