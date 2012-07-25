@@ -16,6 +16,7 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "common/darktable.h"
+#include "common/file_location.h"
 #include "control/control.h"
 #include "lua/image.h"
 #include "lua/stmt.h"
@@ -76,6 +77,33 @@ void dt_lua_init() {
 	dt_lua_image_init(darktable.lua_state);
 	dt_lua_images_init(darktable.lua_state);
 	lua_pop(darktable.lua_state,1);
+
+	
+	char configdir[PATH_MAX],lua_path[PATH_MAX];
+	dt_loc_get_user_config_dir(configdir, PATH_MAX);
+	g_snprintf(lua_path, PATH_MAX, "%s/lua_init", configdir);
+	if (g_file_test(lua_path, G_FILE_TEST_IS_DIR)) {
+		GError * error;
+		GDir * lua_dir = g_dir_open(lua_path,0,&error);
+		if(error) {
+			printf("error opening %s : %s\n",lua_path,error->message);
+		} else {
+			gchar *tmp;
+			const gchar * filename = g_dir_read_name(lua_dir);
+			while(filename) {
+				tmp = g_strconcat(lua_path,"/",filename,NULL);
+				if (g_file_test(tmp, G_FILE_TEST_IS_REGULAR) && filename[0] != '.') {
+					if(luaL_dofile(darktable.lua_state,tmp)) {
+						dt_control_log("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
+					}
+				}
+				g_free(tmp);
+				filename = g_dir_read_name(lua_dir);
+			}
+		}
+		g_dir_close(lua_dir);
+	}
+
 }
 
 
@@ -87,7 +115,7 @@ void dt_lua_dostring(const char* command) {
       }
       // change the env variable here to a copy of _G
       if(lua_pcall(darktable.lua_state, 0, 0, 0)) {
-	      printf("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
+	      dt_control_log("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
 	      lua_pop(darktable.lua_state,1);
       }
       dt_lua_image_gc(darktable.lua_state);
