@@ -3,6 +3,15 @@
 
 #include "common/darktable.h"
 #include <gtk/gtk.h>
+/** array of names and constant to ease lable manipulation */
+typedef enum dt_colorlables_enum {
+	DT_COLORLABELS_RED,
+	DT_COLORLABELS_YELLOW,
+	DT_COLORLABELS_GREEN,
+	DT_COLORLABELS_BLUE,
+	DT_COLORLABELS_PURPLE,
+	DT_COLORLABELS_LAST,
+} dt_colorlabels_enum;
 
 /** remove assigned colorlabels of selected images*/
 void dt_colorlabels_remove_labels_selection ();
@@ -18,6 +27,8 @@ void dt_colorlabels_set_label (const int imgid, const int color);
 void dt_colorlabels_remove_label (const int imgid, const int color);
 /** get the name of the color for a given number (could be replaced by an array) */
 const char* dt_colorlabels_to_string(int label);
+/** check if an image has a color label */
+int dt_colorlabels_check_label (const int imgid, const int color);
 
 gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
                                        GObject *acceleratable, guint keyval,

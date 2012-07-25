@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/darktable.h"
+#include "common/colorlabels.h"
 #include "common/image_cache.h"
 #include "common/debug.h"
 #include "control/control.h"
@@ -23,6 +24,14 @@
 #include "gui/gtk.h"
 #include <gdk/gdkkeysyms.h>
 
+const char *const dt_colorlabels_name[] = {
+    "red",
+    "yellow",
+    "green",
+    "blue",
+    "purple",
+    NULL // termination
+};
 
 void dt_colorlabels_remove_labels_selection ()
 {
@@ -110,6 +119,25 @@ void dt_colorlabels_toggle_label (const int imgid, const int color)
   sqlite3_finalize(stmt);
 }
 
+int dt_colorlabels_check_label (const int imgid, const int color)
+{
+	if(imgid <= 0) return 0;
+	sqlite3_stmt *stmt;
+	DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from color_labels where imgid=?1 and color=?2", -1, &stmt, NULL);
+	DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+	DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, color);
+	if(sqlite3_step(stmt) == SQLITE_ROW)
+	{
+		sqlite3_finalize(stmt);
+		return 1;
+	}
+	else
+	{
+		sqlite3_finalize(stmt);
+		return 0;
+	}
+}
+
 gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
                                        GObject *acceleratable, guint keyval,
                                        GdkModifierType modifier, gpointer data)
@@ -161,15 +189,8 @@ gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
 //FIXME: XMP uses Red, Green, ... while we use red, green, ... What should this function return?
 const char* dt_colorlabels_to_string(int label)
 {
-  switch(label)
-  {
-    case 0: return "red";
-    case 1: return "yellow";
-    case 2: return "green";
-    case 3: return "blue";
-    case 4: return "purple";
-    default: return ""; // shouldn't happen ...
-  }
+	if(label < 0 || label >= DT_COLORLABELS_LAST ) return ""; // shouldn't happen
+	return dt_colorlabels_name[label];
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

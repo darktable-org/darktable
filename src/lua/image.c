@@ -22,6 +22,7 @@
 #include "common/debug.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/colorlabels.h"
 
 /***********************************************************************
   handling of dt_image_t
@@ -130,6 +131,11 @@ typedef enum {
 	IS_RAW,
 	RATING,
 	ID,
+	RED,
+	YELLOW,
+	GREEN,
+	BLUE,
+	PURPLE,
 	LAST_IMAGE_FIELD
 } image_fields;
 const char *const image_fields_name[] = {
@@ -153,6 +159,11 @@ const char *const image_fields_name[] = {
 	"is_raw",
 	"rating",
 	"id",
+	"red",
+	"yellow",
+	"green",
+	"blue",
+	"purple",
 	NULL
 };
 
@@ -253,9 +264,24 @@ static int image_index(lua_State *L){
 		case ID:
 			lua_pushinteger(L,my_image->height);
 			return 1;
+		case RED:
+			lua_pushboolean(L,dt_colorlabels_check_label(my_image->id,DT_COLORLABELS_RED));
+			return 1;
+		case YELLOW:
+			lua_pushboolean(L,dt_colorlabels_check_label(my_image->id,DT_COLORLABELS_YELLOW));
+			return 1;
+		case GREEN:
+			lua_pushboolean(L,dt_colorlabels_check_label(my_image->id,DT_COLORLABELS_GREEN));
+			return 1;
+		case BLUE:
+			lua_pushboolean(L,dt_colorlabels_check_label(my_image->id,DT_COLORLABELS_BLUE));
+			return 1;
+		case PURPLE:
+			lua_pushboolean(L,dt_colorlabels_check_label(my_image->id,DT_COLORLABELS_PURPLE));
+			return 1;
+
 		default:
-			return luaL_error(L,"should never happen");
-			return 0;
+			return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
 
 	}
 }
@@ -332,6 +358,41 @@ static int image_newindex(lua_State *L){
 				return 0;
 			}
 
+		case RED:
+			if(lua_toboolean(L,-1)) { // no testing of type so we can benefit from all types of values
+				dt_colorlabels_set_label(my_image->id,DT_COLORLABELS_RED);
+			} else {
+				dt_colorlabels_remove_label(my_image->id,DT_COLORLABELS_RED);
+			}
+			return 0;
+		case YELLOW:
+			if(lua_toboolean(L,-1)) { // no testing of type so we can benefit from all types of values
+				dt_colorlabels_set_label(my_image->id,DT_COLORLABELS_YELLOW);
+			} else {
+				dt_colorlabels_remove_label(my_image->id,DT_COLORLABELS_YELLOW);
+			}
+			return 0;
+		case GREEN:
+			if(lua_toboolean(L,-1)) { // no testing of type so we can benefit from all types of values
+				dt_colorlabels_set_label(my_image->id,DT_COLORLABELS_GREEN);
+			} else {
+				dt_colorlabels_remove_label(my_image->id,DT_COLORLABELS_GREEN);
+			}
+			return 0;
+		case BLUE:
+			if(lua_toboolean(L,-1)) { // no testing of type so we can benefit from all types of values
+				dt_colorlabels_set_label(my_image->id,DT_COLORLABELS_BLUE);
+			} else {
+				dt_colorlabels_remove_label(my_image->id,DT_COLORLABELS_BLUE);
+			}
+			return 0;
+		case PURPLE:
+			if(lua_toboolean(L,-1)) { // no testing of type so we can benefit from all types of values
+				dt_colorlabels_set_label(my_image->id,DT_COLORLABELS_PURPLE);
+			} else {
+				dt_colorlabels_remove_label(my_image->id,DT_COLORLABELS_PURPLE);
+			}
+			return 0;
 		case FILENAME:
 		case PATH:
 		case DUP_INDEX:
