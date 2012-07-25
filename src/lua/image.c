@@ -23,6 +23,9 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/colorlabels.h"
+#include "common/colorlabels.h"
+#include "common/metadata.h"
+#include "metadata_gen.h"
 
 /***********************************************************************
   handling of dt_image_t
@@ -136,6 +139,11 @@ typedef enum {
 	GREEN,
 	BLUE,
 	PURPLE,
+	CREATOR,
+	PUBLISHER,
+	TITLE,
+	DESCRIPTION,
+	RIGHTS,
 	LAST_IMAGE_FIELD
 } image_fields;
 const char *const image_fields_name[] = {
@@ -164,6 +172,11 @@ const char *const image_fields_name[] = {
 	"green",
 	"blue",
 	"purple",
+	"creator",
+	"publisher",
+	"title",
+	"description",
+	"rights",
 	NULL
 };
 
@@ -279,6 +292,81 @@ static int image_index(lua_State *L){
 		case PURPLE:
 			lua_pushboolean(L,dt_colorlabels_check_label(my_image->id,DT_COLORLABELS_PURPLE));
 			return 1;
+		case CREATOR:
+			{
+				sqlite3_stmt *stmt;
+				DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
+				DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+				DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_CREATOR);
+				if(sqlite3_step(stmt) != SQLITE_ROW) {
+					lua_pushstring(L,"");
+				} else {
+					lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+				}
+				sqlite3_finalize(stmt);
+				return 1;
+
+			}
+		case PUBLISHER:
+			{
+				sqlite3_stmt *stmt;
+				DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
+				DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+				DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_PUBLISHER);
+				if(sqlite3_step(stmt) != SQLITE_ROW) {
+					lua_pushstring(L,"");
+				} else {
+					lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+				}
+				sqlite3_finalize(stmt);
+				return 1;
+
+			}
+		case TITLE:
+			{
+				sqlite3_stmt *stmt;
+				DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
+				DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+				DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_TITLE);
+				if(sqlite3_step(stmt) != SQLITE_ROW) {
+					lua_pushstring(L,"");
+				} else {
+					lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+				}
+				sqlite3_finalize(stmt);
+				return 1;
+
+			}
+		case DESCRIPTION:
+			{
+				sqlite3_stmt *stmt;
+				DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
+				DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+				DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_DESCRIPTION);
+				if(sqlite3_step(stmt) != SQLITE_ROW) {
+					lua_pushstring(L,"");
+				} else {
+					lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+				}
+				sqlite3_finalize(stmt);
+				return 1;
+
+			}
+		case RIGHTS:
+			{
+				sqlite3_stmt *stmt;
+				DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
+				DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+				DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_RIGHTS);
+				if(sqlite3_step(stmt) != SQLITE_ROW) {
+					lua_pushstring(L,"");
+				} else {
+					lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+				}
+				sqlite3_finalize(stmt);
+				return 1;
+
+			}
 
 		default:
 			return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
@@ -393,6 +481,26 @@ static int image_newindex(lua_State *L){
 				dt_colorlabels_remove_label(my_image->id,DT_COLORLABELS_PURPLE);
 			}
 			return 0;
+		case CREATOR:
+			dt_metadata_set(my_image->id,"Xmp.dc.creator",luaL_checkstring(L,-1));
+			dt_image_synch_xmp(my_image->id);
+			return 0;
+		case PUBLISHER:
+			dt_metadata_set(my_image->id,"Xmp.dc.publisher",luaL_checkstring(L,-1));
+			dt_image_synch_xmp(my_image->id);
+			return 0;
+		case TITLE:
+			dt_metadata_set(my_image->id,"Xmp.dc.title",luaL_checkstring(L,-1));
+			dt_image_synch_xmp(my_image->id);
+			return 0;
+		case DESCRIPTION:
+			dt_metadata_set(my_image->id,"Xmp.dc.description",luaL_checkstring(L,-1));
+			dt_image_synch_xmp(my_image->id);
+			return 0;
+		case RIGHTS:
+			dt_metadata_set(my_image->id,"Xmp.dc.title",luaL_checkstring(L,-1));
+			dt_image_synch_xmp(my_image->id);
+			return 0;
 		case FILENAME:
 		case PATH:
 		case DUP_INDEX:
@@ -402,9 +510,9 @@ static int image_newindex(lua_State *L){
 		case IS_HDR:
 		case IS_RAW:
 		case ID:
+			return luaL_error(L,"read only field : ",lua_tostring(L,-2));
 		default:
 			return luaL_error(L,"unknown index for image : ",lua_tostring(L,-2));
-			return 0;
 
 	}
 }
