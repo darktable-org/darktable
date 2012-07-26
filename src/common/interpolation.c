@@ -1090,7 +1090,7 @@ prepare_resampling_plan(
       }
 
       // Projected position in input samples
-      float fx = (float)(out_x0 + x)*scale;
+      float fx = (float)(out_x0 + x)/scale;
 
       // Compute the filter kernel at that position
       int first;
