@@ -122,7 +122,7 @@ extern "C"
     free(red);
     free(green);
     free(blue);
-    return 1;
+    return 0;
   }
 
   void*
