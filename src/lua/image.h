@@ -19,24 +19,15 @@
 #define DT_LUA_IMAGE_H
 #include <lualib.h>
 #include <lua.h>
-
-/*
-	a type matchin dt_image_t define in common/image.h
-	need some thought before it's made public
-   */
-//void dt_lua_push_image(lua_State * L,int imgid);
-//int dt_lua_checkimage(lua_State * L,int index);
-
-// must be call to create the meta-tables
-void dt_lua_image_init(lua_State * L);
-// must be called to release all image lock, so after every lua run
-void dt_lua_image_gc(lua_State * L);
+#include "common/dt_lua.h"
 
 
-/* TBSL doc for function below */
-void dt_lua_images_init(lua_State * L);
 
+extern dt_lua_type dt_lua_images;
 
+//void dt_lua_image_push(lua_State * L,int imgid);
+//int dt_lua_image_check(lua_State * L,int index);
+extern dt_lua_type dt_lua_image;
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

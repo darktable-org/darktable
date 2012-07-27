@@ -17,18 +17,13 @@
 */
 #ifndef DT_LUA_COLORLABEL_H
 #define DT_LUA_COLORLABEL_H
-#include <lualib.h>
-#include <lua.h>
+#include "common/dt_lua.h"
 
-/*
-	a type matchin colorlabels
-	need some thought before it's made public
-   */
-void dt_lua_push_colorlabel(lua_State * L,int imgid);
-//int dt_lua_colorlabel_check(lua_State * L,int index);
 
-// must be call to create the meta-tables
-void dt_lua_colorlabel_init(lua_State * L);
+int dt_lua_colorlabel_check(lua_State * L,int index);
+void dt_lua_colorlabel_push(lua_State * L,int imgid);
+
+extern dt_lua_type dt_lua_colorlabel;
 
 #endif
 

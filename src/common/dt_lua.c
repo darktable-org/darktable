@@ -21,39 +21,57 @@
 #include "lua/image.h"
 #include "lua/colorlabel.h"
 #include "lua/stmt.h"
-#include <lualib.h>
 
 static int lua_quit(lua_State *state) {
 	dt_control_quit();
 	return 0;
 }
 
+static dt_lua_type* types[] = {
+	&dt_lua_stmt,
+	&dt_lua_colorlabel,
+	&dt_lua_image,
+	&dt_lua_images,
+	NULL
+};
+
 static int load_darktable_lib(lua_State *L) {
 	lua_newtable(L);
-	lua_pushstring(darktable.lua_state,"quit");
-	lua_pushcfunction(darktable.lua_state,&lua_quit);
-	lua_settable(darktable.lua_state,-3);
-	dt_lua_init_stmt(darktable.lua_state);
-	dt_lua_colorlabel_init(darktable.lua_state);
-	dt_lua_image_init(darktable.lua_state);
-	dt_lua_images_init(darktable.lua_state);
+	lua_pushstring(L,"quit");
+	lua_pushcfunction(L,&lua_quit);
+	lua_settable(L,-3);
+	
+	dt_lua_type** cur_type = types;
+	while(*cur_type) {
+		lua_pushstring(L,(*cur_type)->name);
+		(*cur_type)->load(L);
+		lua_settable(L,-3);
+		cur_type++;
+	}
+
 	return 1;
 }
 static void do_chunck(int loadresult) {
-      if(loadresult){
-	      dt_control_log("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
-	      printf("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
-	      lua_pop(darktable.lua_state,1);
-	      return;
-      }
-      // change the env variable here to a copy of _G
-      if(lua_pcall(darktable.lua_state, 0, 0, 0)) {
-	      dt_control_log("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
-	      printf("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
-	      lua_pop(darktable.lua_state,1);
-      }
-      dt_lua_image_gc(darktable.lua_state);
-      lua_gc(darktable.lua_state,LUA_GCCOLLECT,0);
+	if(loadresult){
+		dt_control_log("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
+		printf("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
+		lua_pop(darktable.lua_state,1);
+		return;
+	}
+	// change the env variable here to a copy of _G
+	if(lua_pcall(darktable.lua_state, 0, 0, 0)) {
+		dt_control_log("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
+		printf("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
+		lua_pop(darktable.lua_state,1);
+	}
+
+	dt_lua_type** cur_type = types;
+	while(*cur_type) {
+		if((*cur_type)->clean)
+			(*cur_type)->clean(darktable.lua_state);
+		cur_type++;
+	}
+	lua_gc(darktable.lua_state,LUA_GCCOLLECT,0);
 }
 
 static const luaL_Reg loadedlibs[] = {

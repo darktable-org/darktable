@@ -36,13 +36,13 @@ typedef struct {
 	dt_image_t * image; 
 } lua_image;
 
-lua_image *dt_lua_checkimage(lua_State * L,int index){
+lua_image *dt_lua_image_check(lua_State * L,int index){
 	lua_image* my_image= luaL_checkudata(L,index,LUA_IMAGE);
 	return my_image;
 }
 
 const dt_image_t*dt_lua_checkreadimage(lua_State*L,int index) {
-	lua_image* my_image=dt_lua_checkimage(L,index);
+	lua_image* my_image=dt_lua_image_check(L,index);
 	if(my_image->const_image ==NULL) {
 		// check that id is valid
 		sqlite3_stmt *stmt;
@@ -60,7 +60,7 @@ const dt_image_t*dt_lua_checkreadimage(lua_State*L,int index) {
 }
 
 dt_image_t*dt_lua_checkwriteimage(lua_State*L,int index) {
-	lua_image* my_image=dt_lua_checkimage(L,index);
+	lua_image* my_image=dt_lua_image_check(L,index);
 	if(my_image->image ==NULL) {
 		const dt_image_t* my_readimage=dt_lua_checkreadimage(L,index);
 		// id is valid or checkreadimage would have raised an error
@@ -70,7 +70,7 @@ dt_image_t*dt_lua_checkwriteimage(lua_State*L,int index) {
 }
 
 static int image_gc(lua_State *L) {
-	lua_image * my_image=dt_lua_checkimage(L,-1);
+	lua_image * my_image=dt_lua_image_check(L,-1);
 	//printf("%s %d\n",__FUNCTION__,my_image->imgid);
 	if(my_image->image) {
 		dt_image_cache_write_release(darktable.image_cache,my_image->image,DT_IMAGE_CACHE_SAFE);
@@ -83,7 +83,7 @@ static int image_gc(lua_State *L) {
 	return 0;
 }
 
-void dt_lua_push_image(lua_State * L,int imgid) {
+void dt_lua_image_push(lua_State * L,int imgid) {
 	// ckeck if image already is in the env
 	// get the metatable and put it on top (side effect of newtable)
 	luaL_newmetatable(L,LUA_IMAGE);
@@ -91,7 +91,7 @@ void dt_lua_push_image(lua_State * L,int imgid) {
 	lua_gettable(L,-2);
 	if(!lua_isnil(L,-1)) {
 		//printf("%s %d (reuse)\n",__FUNCTION__,imgid);
-		dt_lua_checkimage(L,-1);
+		dt_lua_image_check(L,-1);
 		lua_remove(L,-2); // remove the table, but leave the image on top of the stac
 		return;
 	} else {
@@ -269,8 +269,10 @@ static int image_index(lua_State *L){
 			lua_pushinteger(L,my_image->height);
 			return 1;
 		case COLORLABEL:
-			dt_lua_push_colorlabel(L,my_image->id);
-			return 1;
+			{
+				dt_lua_colorlabel_push(L,my_image->id);
+				return 1;
+			}
 		case CREATOR:
 			{
 				sqlite3_stmt *stmt;
@@ -494,7 +496,7 @@ static const luaL_Reg dt_lua_image_meta[] = {
 	{"__gc", image_gc },
 	{0,0}
 };
-void dt_lua_image_init(lua_State * L) {
+static int image_init(lua_State * L) {
 	luaL_newmetatable(L,LUA_IMAGE);
 	luaL_setfuncs(L,dt_lua_image_meta,0);
 	// add a metatable to the metatable, just for the __mode field
@@ -504,10 +506,13 @@ void dt_lua_image_init(lua_State * L) {
 	lua_setmetatable(L,-2);
 	//pop the metatable itself to be clean
 	lua_pop(L,1);
+	//loader convention, we declare a type but we don't create any function
+	lua_pushnil(L);
+	return 1;
 }
 
 
-void dt_lua_image_gc(lua_State *L) {
+static int image_global_gc(lua_State *L) {
 	luaL_newmetatable(L,LUA_IMAGE);
 	lua_pushnil(L);  /* first key */
 	while (lua_next(L, -2) != 0) {
@@ -517,7 +522,15 @@ void dt_lua_image_gc(lua_State *L) {
 		/* remove the image, for the call to lua_next */
 		lua_pop(L, 1);
 	}
+	return 0;
 }
+
+dt_lua_type dt_lua_image = {
+	"image",
+	image_init,
+	image_global_gc
+};
+
 /***********************************************************************
   Creating the images global variable
  **********************************************************************/
@@ -526,7 +539,7 @@ static int images_next(lua_State *L) {
 	//TBSL : check index and find the correct position in stmt if index was changed manually
 	// 2 args, table, index, returns the next index,value or nil,nil return the first index,value if index is nil 
 
-	sqlite3_stmt *stmt = dt_lua_checkstmt(L,-2);
+	sqlite3_stmt *stmt = dt_lua_stmt_check(L,-2);
 	if(lua_isnil(L,-1)) {
 		sqlite3_reset(stmt);
 	} else if(luaL_checkinteger(L,-1) != sqlite3_column_int(stmt,0)) {
@@ -540,13 +553,13 @@ static int images_next(lua_State *L) {
 	}
 	int imgid = sqlite3_column_int(stmt,0);
 	lua_pushinteger(L,imgid);
-	dt_lua_push_image(L,imgid);
+	dt_lua_image_push(L,imgid);
 	return 2;
 }
 
 static int images_index(lua_State *L) {
 	int imgid = luaL_checkinteger(L,-1);
-	dt_lua_push_image(L,imgid);
+	dt_lua_image_push(L,imgid);
 	return 1;
 }
 
@@ -554,7 +567,7 @@ static int images_pairs(lua_State *L) {
 	lua_pushcfunction(L,images_next);
 	sqlite3_stmt *stmt;
 	DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images", -1, &stmt, NULL);
-	dt_lua_push_stmt(L,stmt);
+	dt_lua_stmt_push(L,stmt);
 	lua_pushnil(L); // index set to null for reset
 	return 3;
 }
@@ -563,12 +576,19 @@ static const luaL_Reg stmt_meta[] = {
 	{"__index", images_index },
 	{0,0}
 };
-void dt_lua_images_init(lua_State * L) {
+static int images_init(lua_State * L) {
 	lua_newuserdata(L,1); // placeholder we can't use a table because we can't prevent assignment
 	luaL_newlib(L,stmt_meta);
 	lua_setmetatable(L,-2);
-	lua_setfield(L,-2,"images");
+	// loader convention, our user data is returned
+	return 1;
 }
+
+dt_lua_type dt_lua_images = {
+	"images",
+	images_init,
+	NULL
+};
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
