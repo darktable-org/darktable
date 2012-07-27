@@ -1236,12 +1236,7 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
           if(!strncmp(text, darktable.bauhaus->keys, darktable.bauhaus->keys_cnt))
           {
             gboolean highlight = FALSE;
-            if(i == d->active)
-            {
-              // highlight currently active item:
-              highlight = TRUE;
-            }
-            else if(i == hovered)
+            if(i == hovered)
             {
               highlight = TRUE;
             }
