@@ -28,29 +28,17 @@ static int lua_quit(lua_State *state) {
 	return 0;
 }
 
-static const luaL_Reg loadedlibs[] = {
-  {"_G", luaopen_base},
-  {LUA_LOADLIBNAME, luaopen_package},
-  //{LUA_COLIBNAME, luaopen_coroutine},
-  {LUA_TABLIBNAME, luaopen_table},
-  //{LUA_IOLIBNAME, luaopen_io},
-  //{LUA_OSLIBNAME, luaopen_os},
-  {LUA_STRLIBNAME, luaopen_string},
-  {LUA_BITLIBNAME, luaopen_bit32},
-  {LUA_MATHLIBNAME, luaopen_math},
-  //{LUA_DBLIBNAME, luaopen_debug},
-  {NULL, NULL}
-};
-
-
-/*
-** these libs are preloaded and must be required before used
-*/
-static const luaL_Reg preloadedlibs[] = {
-  {NULL, NULL}
-};
-
-
+static int load_darktable_lib(lua_State *L) {
+	lua_newtable(L);
+	lua_pushstring(darktable.lua_state,"quit");
+	lua_pushcfunction(darktable.lua_state,&lua_quit);
+	lua_settable(darktable.lua_state,-3);
+	dt_lua_init_stmt(darktable.lua_state);
+	dt_lua_colorlabel_init(darktable.lua_state);
+	dt_lua_image_init(darktable.lua_state);
+	dt_lua_images_init(darktable.lua_state);
+	return 1;
+}
 static void do_chunck(int loadresult) {
       if(loadresult){
 	      dt_control_log("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
@@ -67,6 +55,29 @@ static void do_chunck(int loadresult) {
       dt_lua_image_gc(darktable.lua_state);
       lua_gc(darktable.lua_state,LUA_GCCOLLECT,0);
 }
+
+static const luaL_Reg loadedlibs[] = {
+  {"_G", luaopen_base},
+  {LUA_LOADLIBNAME, luaopen_package},
+  {"darktable", load_darktable_lib},
+  {NULL, NULL}
+};
+
+
+/*
+** these libs are preloaded and must be required before used
+*/
+static const luaL_Reg preloadedlibs[] = {
+  {LUA_COLIBNAME, luaopen_coroutine},
+  {LUA_TABLIBNAME, luaopen_table},
+  {LUA_IOLIBNAME, luaopen_io},
+  {LUA_OSLIBNAME, luaopen_os},
+  {LUA_STRLIBNAME, luaopen_string},
+  {LUA_BITLIBNAME, luaopen_bit32},
+  {LUA_MATHLIBNAME, luaopen_math},
+  //{LUA_DBLIBNAME, luaopen_debug},
+  {NULL, NULL}
+};
 
 
 void dt_lua_init() {
@@ -85,17 +96,6 @@ void dt_lua_init() {
 		lua_setfield(darktable.lua_state, -2, lib->name);
 	}
 	lua_pop(darktable.lua_state, 1);  /* remove _PRELOAD table */
-
-	lua_rawgeti(darktable.lua_state, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
-	lua_pushstring(darktable.lua_state,"quit");
-	lua_pushcfunction(darktable.lua_state,&lua_quit);
-	lua_settable(darktable.lua_state,-3);
-	dt_lua_init_stmt(darktable.lua_state);
-	dt_lua_colorlabel_init(darktable.lua_state);
-	dt_lua_image_init(darktable.lua_state);
-	dt_lua_images_init(darktable.lua_state);
-	lua_pop(darktable.lua_state,1);
-
 	
 	char configdir[PATH_MAX],lua_path[PATH_MAX];
 	dt_loc_get_user_config_dir(configdir, PATH_MAX);
