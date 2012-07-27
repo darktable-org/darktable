@@ -22,7 +22,8 @@
 #include "common/debug.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "lua/colorlabel.h"
+#include "common/colorlabels.h"
+#include "common/history.h"
 #include "common/metadata.h"
 #include "metadata_gen.h"
 
@@ -87,8 +88,14 @@ void dt_lua_image_push(lua_State * L,int imgid) {
 	// ckeck if image already is in the env
 	// get the metatable and put it on top (side effect of newtable)
 	luaL_newmetatable(L,LUA_IMAGE);
+	lua_getfield(L,-1,"allocated");
 	lua_pushinteger(L,imgid);
 	lua_gettable(L,-2);
+	// at this point our stack is :
+	// -1 : the object or nil if it is not allocated
+	// -2 : the allocation table
+	// -3 : the metatable
+	lua_remove(L,-3); // remove the metatable, we don't need it anymore
 	if(!lua_isnil(L,-1)) {
 		//printf("%s %d (reuse)\n",__FUNCTION__,imgid);
 		dt_lua_image_check(L,-1);
@@ -139,9 +146,10 @@ typedef enum {
 	TITLE,
 	DESCRIPTION,
 	RIGHTS,
+	HISTORY,
 	LAST_IMAGE_FIELD
 } image_fields;
-const char *const image_fields_name[] = {
+const char *image_fields_name[] = {
 	"exif_exposure",
 	"exif_aperture",
 	"exif_iso",
@@ -168,6 +176,7 @@ const char *const image_fields_name[] = {
 	"title",
 	"description",
 	"rights",
+	"history",
 	NULL
 };
 
@@ -270,7 +279,7 @@ static int image_index(lua_State *L){
 			return 1;
 		case COLORLABEL:
 			{
-				dt_lua_colorlabel_push(L,my_image->id);
+				dt_colorlabels_lua_push(L,my_image->id);
 				return 1;
 			}
 		case CREATOR:
@@ -347,6 +356,11 @@ static int image_index(lua_State *L){
 				sqlite3_finalize(stmt);
 				return 1;
 
+			}
+		case HISTORY:
+			{
+				dt_history_lua_push(L,my_image->id);
+				return 1;
 			}
 
 		default:
@@ -447,6 +461,12 @@ static int image_newindex(lua_State *L){
 			dt_metadata_set(my_image->id,"Xmp.dc.title",luaL_checkstring(L,-1));
 			dt_image_synch_xmp(my_image->id);
 			return 0;
+		case HISTORY:
+			{
+				int source_id = dt_history_lua_check(L,-1);
+				dt_history_copy_and_paste_on_image(source_id, my_image->id, 0);
+				return 0;
+			}
 		case FILENAME:
 		case PATH:
 		case DUP_INDEX:
@@ -464,46 +484,27 @@ static int image_newindex(lua_State *L){
 	}
 }
 
-static int image_next(lua_State *L){
-	//printf("%s\n",__FUNCTION__);
-	int index;
-	if(lua_isnil(L,-1)) {
-		index = 0;
-	} else {
-		index = luaL_checkoption(L,-1,NULL,image_fields_name);
-	}
-	index++;
-	if(!image_fields_name[index]) {
-		lua_pushnil(L);
-		lua_pushnil(L);
-	} else {
-		lua_pop(L,1);// remove the key, table is at top
-		lua_pushstring(L,image_fields_name[index]); // push the index string
-		image_index(L);
-	}
-	return 2;
-}
-static int image_pairs(lua_State *L){
-	lua_pushcfunction(L,image_next);
-	lua_pushvalue(L,-2);
-	lua_pushnil(L); // index set to null for reset
-	return 3;
-}
 static const luaL_Reg dt_lua_image_meta[] = {
 	{"__index", image_index },
 	{"__newindex", image_newindex },
-	{"__pairs", image_pairs },
 	{"__gc", image_gc },
+	{"bla", image_gc },
 	{0,0}
 };
 static int image_init(lua_State * L) {
 	luaL_newmetatable(L,LUA_IMAGE);
+	dt_lua_push_generic_pair(L, image_fields_name);
+	lua_setfield(L,-2,"__pairs");
 	luaL_setfuncs(L,dt_lua_image_meta,0);
-	// add a metatable to the metatable, just for the __mode field
+	// add a new table to keep ref to allocated objects
+	lua_newtable(L);
+	// add a metatable to that metatable, just for the __mode field
 	lua_newtable(L);
 	lua_pushstring(L,"v");
 	lua_setfield(L,-2,"__mode");
 	lua_setmetatable(L,-2);
+	// attach the ref table
+	lua_setfield(L,-2,"allocated");
 	//pop the metatable itself to be clean
 	lua_pop(L,1);
 	//loader convention, we declare a type but we don't create any function

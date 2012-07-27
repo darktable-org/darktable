@@ -21,6 +21,7 @@
 #include <sqlite3.h>
 #include <glib.h>
 #include <inttypes.h>
+#include "common/dt_lua.h"
 
 /** copy history from imgid and pasts on dest_imgid, merge or overwrite... */
 int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge);
@@ -47,6 +48,15 @@ GList *dt_history_get_items(int32_t imgid);
 
 /** get list of history items for image as a nice string */
 char *dt_history_get_items_as_string(int32_t imgid);
+
+/********************************************
+  LUA STUFF
+  *******************************************/
+
+int dt_history_lua_check(lua_State * L,int index);
+void dt_history_lua_push(lua_State * L,int imgid);
+
+extern dt_lua_type dt_history_lua_type;
 
 
 #endif

@@ -36,7 +36,10 @@ typedef struct {
 	lua_CFunction clean; /// to be called when a DT lua run is finished to release locks etc... WARNING : this is not a GC, only for locks
 } dt_lua_type;
 
-
+/** helper to build types
+  push on the stach a CFunction that can be used as __pair in metadata base on the list
+  */
+void dt_lua_push_generic_pair(lua_State* L, const char ** list);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

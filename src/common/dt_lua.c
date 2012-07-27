@@ -19,7 +19,8 @@
 #include "common/file_location.h"
 #include "control/control.h"
 #include "lua/image.h"
-#include "lua/colorlabel.h"
+#include "common/colorlabels.h"
+#include "common/history.h"
 #include "lua/stmt.h"
 
 static int lua_quit(lua_State *state) {
@@ -29,7 +30,8 @@ static int lua_quit(lua_State *state) {
 
 static dt_lua_type* types[] = {
 	&dt_lua_stmt,
-	&dt_lua_colorlabel,
+	&dt_colorlabels_lua_type,
+	&dt_history_lua_type,
 	&dt_lua_image,
 	&dt_lua_images,
 	NULL
@@ -143,6 +145,42 @@ void dt_lua_init() {
 
 void dt_lua_dostring(const char* command) {
       do_chunck(luaL_loadstring(darktable.lua_state, command));
+}
+
+static int char_list_next(lua_State *L){
+	//printf("%s\n",__FUNCTION__);
+	int index;
+	const char **list = lua_touserdata(L,lua_upvalueindex(1));
+	if(lua_isnil(L,-1)) {
+		index = 0;
+	} else {
+		index = luaL_checkoption(L,-1,NULL,list);
+	}
+	index++;
+	if(!list[index]) { // no need to test < 0 or > max, luaL_checkoption catches it for us
+		lua_pushnil(L);
+		lua_pushnil(L);
+	} else {
+		lua_pop(L,1);// remove the key, table is at top
+		lua_pushstring(L,list[index]); // push the index string
+		luaL_callmeta(L,-2,"__index");
+	}
+	return 2;
+}
+static int char_list_pairs(lua_State *L){
+	// one upvalue, the lightuserdata 
+	printf("%s\n",__FUNCTION__);
+	const char **list = lua_touserdata(L,lua_upvalueindex(1));
+	lua_pushlightuserdata(L,list);
+	lua_pushcclosure(L,char_list_next,1);
+	lua_pushvalue(L,-2);
+	lua_pushnil(L); // index set to null for reset
+	return 3;
+}
+
+void dt_lua_push_generic_pair(lua_State* L, const char **list){
+	lua_pushlightuserdata(L,list);
+	lua_pushcclosure(L,char_list_pairs,1);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
