@@ -15,8 +15,6 @@ typedef enum dt_colorlables_enum {
 } dt_colorlabels_enum;
 
 
-extern const char *const dt_colorlabels_name[];
-
 /** remove assigned colorlabels of selected images*/
 void dt_colorlabels_remove_labels_selection ();
 /** remove labels associated to imgid */
@@ -45,9 +43,7 @@ gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
   LUA STUFF
   *******************************************/
 
-int dt_colorlabels_lua_check(lua_State * L,int index);
 void dt_colorlabels_lua_push(lua_State * L,int imgid);
-
 extern dt_lua_type dt_colorlabels_lua_type;
 
 #endif

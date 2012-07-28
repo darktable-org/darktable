@@ -36,7 +36,6 @@ typedef struct {
 	const dt_image_t * const_image; 
 	dt_image_t * image; 
 } lua_image;
-
 lua_image *dt_lua_image_check(lua_State * L,int index){
 	lua_image* my_image= luaL_checkudata(L,index,LUA_IMAGE);
 	return my_image;
@@ -484,29 +483,16 @@ static int image_newindex(lua_State *L){
 	}
 }
 
-static const luaL_Reg dt_lua_image_meta[] = {
+static const luaL_Reg image_meta[] = {
 	{"__index", image_index },
 	{"__newindex", image_newindex },
 	{"__gc", image_gc },
-	{"bla", image_gc },
 	{0,0}
 };
 static int image_init(lua_State * L) {
-	luaL_newmetatable(L,LUA_IMAGE);
-	dt_lua_push_generic_pair(L, image_fields_name);
-	lua_setfield(L,-2,"__pairs");
-	luaL_setfuncs(L,dt_lua_image_meta,0);
-	// add a new table to keep ref to allocated objects
-	lua_newtable(L);
-	// add a metatable to that metatable, just for the __mode field
-	lua_newtable(L);
-	lua_pushstring(L,"v");
-	lua_setfield(L,-2,"__mode");
-	lua_setmetatable(L,-2);
-	// attach the ref table
-	lua_setfield(L,-2,"allocated");
-	//pop the metatable itself to be clean
-	lua_pop(L,1);
+	luaL_setfuncs(L,image_meta,0);
+	dt_lua_init_name_list_pair(L, image_fields_name);
+	dt_lua_init_singleton(L);
 	//loader convention, we declare a type but we don't create any function
 	lua_pushnil(L);
 	return 1;
@@ -548,9 +534,7 @@ static int images_next(lua_State *L) {
 	}
 	int result = sqlite3_step(stmt);
 	if(result != SQLITE_ROW){
-		lua_pushnil(L);
-		lua_pushnil(L);
-		return 2;
+		return 0;
 	}
 	int imgid = sqlite3_column_int(stmt,0);
 	lua_pushinteger(L,imgid);
@@ -572,14 +556,15 @@ static int images_pairs(lua_State *L) {
 	lua_pushnil(L); // index set to null for reset
 	return 3;
 }
-static const luaL_Reg stmt_meta[] = {
+static const luaL_Reg images_meta[] = {
 	{"__pairs", images_pairs },
 	{"__index", images_index },
 	{0,0}
 };
 static int images_init(lua_State * L) {
+	luaL_setfuncs(L,images_meta,0);
 	lua_newuserdata(L,1); // placeholder we can't use a table because we can't prevent assignment
-	luaL_newlib(L,stmt_meta);
+	lua_pushvalue(L,-2);
 	lua_setmetatable(L,-2);
 	// loader convention, our user data is returned
 	return 1;

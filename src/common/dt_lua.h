@@ -37,9 +37,36 @@ typedef struct {
 } dt_lua_type;
 
 /** helper to build types
-  push on the stach a CFunction that can be used as __pair in metadata base on the list
+  sets a metadata with an __pair methamethod that will go throught the list of names
+  -1 : the metatdata to use
   */
-void dt_lua_push_generic_pair(lua_State* L, const char ** list);
+void dt_lua_init_name_list_pair(lua_State* L, const char ** list);
+/** helper to build types
+  sets a metadata with an "allocate" subtable for imgid based singleton
+  -1 : the metatdata to use
+  */
+void dt_lua_init_singleton(lua_State* L);
+/** helper to build types
+  checks if data of type type_name already has an element with id, if yes push it at top.
+  returns 1 if the the value was pushed
+  */
+int dt_lua_singleton_find(lua_State* L,int id,const dt_lua_type*type);
+/** helper to build types
+  takes the object at top of the stack
+  - set the metatable
+  - register it with the correct ID (lua_error if already exist)
+
+  -1 the object to register
+  */
+void dt_lua_singleton_register(lua_State* L,int id,const dt_lua_type*type);
+
+/** helper to build types
+  returns the object of type "type" at the index indicated
+  */
+void *dt_lua_check(lua_State* L,int index,const dt_lua_type*type);
+/** helper to build types
+  a function that can be used as is for the push field of singletons based on imgid
+  */
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

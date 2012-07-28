@@ -49,9 +49,7 @@ sqlite3_stmt* dt_lua_stmt_check(lua_State * L,int index){
 }
 
 static int init_stmt(lua_State * L) {
-	luaL_newmetatable(L,LUA_STMT);
 	luaL_setfuncs(L,stmt_meta,0);
-	lua_pop(L,1);
 	//loader convention, we declare a type but we don't create any function
 	lua_pushnil(L);
 	return 1;

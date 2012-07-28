@@ -233,8 +233,14 @@ void dt_history_lua_push(lua_State * L,int imgid) {
 	// ckeck if history already is in the env
 	// get the metatable and put it on top (side effect of newtable)
 	luaL_newmetatable(L,LUA_HISTORY);
+	lua_getfield(L,-1,"allocated");
 	lua_pushinteger(L,imgid);
 	lua_gettable(L,-2);
+	// at this point our stack is :
+	// -1 : the object or nil if it is not allocated
+	// -2 : the allocation table
+	// -3 : the metatable
+	lua_remove(L,-3); // remove the metatable, we don't need it anymore
 	if(!lua_isnil(L,-1)) {
 		//printf("%s %d (reuse)\n",__FUNCTION__,imgid);
 		dt_history_lua_check(L,-1);
@@ -286,9 +292,7 @@ static int history_next(lua_State *L) {
 	}
 	int result = sqlite3_step(stmt);
 	if(result != SQLITE_ROW){
-		lua_pushnil(L);
-		lua_pushnil(L);
-		return 2;
+		return 0;
 	}
 	int historyidx = sqlite3_column_int(stmt,0);
 	lua_pushinteger(L,historyidx);
@@ -319,15 +323,8 @@ static const luaL_Reg dt_lua_history_meta[] = {
 	{0,0}
 };
 static int history_init(lua_State * L) {
-	luaL_newmetatable(L,LUA_HISTORY);
 	luaL_setfuncs(L,dt_lua_history_meta,0);
-	// add a metatable to the metatable, just for the __mode field
-	lua_newtable(L);
-	lua_pushstring(L,"v");
-	lua_setfield(L,-2,"__mode");
-	lua_setmetatable(L,-2);
-	//pop the metatable itself to be clean
-	lua_pop(L,1);
+	dt_lua_init_singleton(L);
 	//loader convention, we declare a type but we don't create any function
 	lua_pushnil(L);
 	return 1;
@@ -337,7 +334,7 @@ static int history_init(lua_State * L) {
 dt_lua_type dt_history_lua_type ={
 	"history",
 	history_init,
-	NULL
+	NULL,
 };
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -44,10 +44,14 @@ static int load_darktable_lib(lua_State *L) {
 	lua_settable(L,-3);
 	
 	dt_lua_type** cur_type = types;
+	char tmp[1024];
 	while(*cur_type) {
+		snprintf(tmp,1024,"dt_lua_%s",(*cur_type)->name);
 		lua_pushstring(L,(*cur_type)->name);
+		luaL_newmetatable(L,tmp);
 		(*cur_type)->load(L);
-		lua_settable(L,-3);
+		lua_remove(L,-2); // remove the metatable
+		lua_settable(L,-3); // attach the object (if any) to the name
 		cur_type++;
 	}
 
@@ -55,7 +59,7 @@ static int load_darktable_lib(lua_State *L) {
 }
 static void do_chunck(int loadresult) {
 	if(loadresult){
-		dt_control_log("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
+		dt_control_log("LUA ERROR %s",lua_tostring(darktable.lua_state,-1));
 		printf("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
 		lua_pop(darktable.lua_state,1);
 		return;
@@ -148,28 +152,30 @@ void dt_lua_dostring(const char* command) {
 }
 
 static int char_list_next(lua_State *L){
-	//printf("%s\n",__FUNCTION__);
 	int index;
 	const char **list = lua_touserdata(L,lua_upvalueindex(1));
 	if(lua_isnil(L,-1)) {
 		index = 0;
 	} else {
 		index = luaL_checkoption(L,-1,NULL,list);
+		index++;
 	}
-	index++;
+	lua_pop(L,1); // pop the key
 	if(!list[index]) { // no need to test < 0 or > max, luaL_checkoption catches it for us
-		lua_pushnil(L);
-		lua_pushnil(L);
+		return 0;
 	} else {
-		lua_pop(L,1);// remove the key, table is at top
+		if (!luaL_getmetafield(L, -1, "__index"))  /* no metafield? */
+			luaL_error(L,"object doesn't have an __index method"); // should never happen
+		lua_pushvalue(L,-2);// the object called
 		lua_pushstring(L,list[index]); // push the index string
-		luaL_callmeta(L,-2,"__index");
+		lua_call(L, 2, 1);
+		lua_pushstring(L,list[index]); // push the index string
+		lua_insert(L,-2); // move the index string below the value object
+		return 2;
 	}
-	return 2;
 }
 static int char_list_pairs(lua_State *L){
 	// one upvalue, the lightuserdata 
-	printf("%s\n",__FUNCTION__);
 	const char **list = lua_touserdata(L,lua_upvalueindex(1));
 	lua_pushlightuserdata(L,list);
 	lua_pushcclosure(L,char_list_next,1);
@@ -178,11 +184,77 @@ static int char_list_pairs(lua_State *L){
 	return 3;
 }
 
-void dt_lua_push_generic_pair(lua_State* L, const char **list){
+void dt_lua_init_name_list_pair(lua_State* L, const char **list){
 	lua_pushlightuserdata(L,list);
 	lua_pushcclosure(L,char_list_pairs,1);
+	lua_setfield(L,-2,"__pairs");
 }
 
+void dt_lua_init_singleton(lua_State* L){
+	// add a new table to keep ref to allocated objects
+	lua_newtable(L);
+	// add a metatable to that table, just for the __mode field
+	lua_newtable(L);
+	lua_pushstring(L,"v");
+	lua_setfield(L,-2,"__mode");
+	lua_setmetatable(L,-2);
+	// attach the ref table
+	lua_setfield(L,-2,"allocated");
+}
+
+
+
+int dt_lua_singleton_find(lua_State* L,int id,const dt_lua_type*type) {
+	char tmp[1024];
+	snprintf(tmp,1024,"dt_lua_%s",type->name);
+	// ckeck if colorlabel already is in the env
+	// get the metatable and put it on top (side effect of newtable)
+	luaL_newmetatable(L,tmp);
+	lua_getfield(L,-1,"allocated");
+	lua_pushinteger(L,id);
+	lua_gettable(L,-2);
+	// at this point our stack is :
+	// -1 : the object or nil if it is not allocated
+	// -2 : the allocation table
+	// -3 : the metatable
+	if(!lua_isnil(L,-1)) {
+		lua_remove(L,-3);
+		lua_remove(L,-2);
+		return 1;
+	} else {
+		lua_pop(L,3);
+		return 0;
+	}
+}
+
+void dt_lua_singleton_register(lua_State* L,int id,const dt_lua_type*type ){
+	char tmp[1024];
+	snprintf(tmp,1024,"dt_lua_%s",type->name);
+	// ckeck if colorlabel already is in the env
+	// get the metatable and put it on top (side effect of newtable)
+	luaL_newmetatable(L,tmp);
+	lua_getfield(L,-1,"allocated");
+	lua_pushinteger(L,id);
+	lua_gettable(L,-2);
+	// at this point our stack is :
+	// -1 : the object or nil if it is not allocated
+	// -2 : the allocation table
+	// -3 : the metatable
+	// -4 : the object to register
+	if(!lua_isnil(L,-1)) {
+		luaL_error(L,"double registration for type %s with id %d",tmp,id);
+	}
+	lua_pushinteger(L,id);
+	lua_pushvalue(L,-5);
+	luaL_setmetatable(L,tmp);
+	lua_settable(L,-4);
+	lua_pop(L,3);
+}
+void *dt_lua_check(lua_State* L,int index,const dt_lua_type*type) {
+	char tmp[1024];
+	snprintf(tmp,1024,"dt_lua_%s",type->name);
+	return luaL_checkudata(L,index,tmp);
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
