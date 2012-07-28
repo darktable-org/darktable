@@ -250,14 +250,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           ((buf_in[i] < 1.0f) ? lerp_lut(d->lut[i], buf_in[i])
           : dt_iop_eval_exp(d->unbounded_coeffs[i], buf_in[i]))
           : buf_in[i];
-  
-        if(map_blues)
+
+        const float YY = cam[0]+cam[1]+cam[2];  
+        if(map_blues && YY > 0.0f)
         {
           // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB.
           // deeply saturated blues turn into purple fringes, so dampen them before conversion.
           // this is off for non-raw images, which don't seem to have this problem.
           // might be caused by too loose clipping bounds during highlight clipping?
-          const float YY = cam[0]+cam[1]+cam[2];
           const float zz = cam[2]/YY;
           // lower amount and higher bound_z make the effect smaller.
           // the effect is weakened the darker input values are, saturating at bound_Y
@@ -365,6 +365,20 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_darktable_profile(makermodel);
+    if(!d->input) sprintf(p->iccprofile, "cmatrix");
+  }
+  if(!strcmp(p->iccprofile, "vendor"))
+  {
+    char makermodel[1024];
+    dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
+    d->input = dt_colorspaces_create_vendor_profile(makermodel);
+    if(!d->input) sprintf(p->iccprofile, "cmatrix");
+  }
+  if(!strcmp(p->iccprofile, "alternate"))
+  {
+    char makermodel[1024];
+    dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
+    d->input = dt_colorspaces_create_alternate_profile(makermodel);
     if(!d->input) sprintf(p->iccprofile, "cmatrix");
   }
   if(!strcmp(p->iccprofile, "cmatrix"))
@@ -572,6 +586,34 @@ void gui_init(struct dt_iop_module_t *self)
     }
   }
 
+  // darktable vendor matrix, if applicable
+  for(int k=0; k<dt_vendor_colormatrix_cnt; k++)
+  {
+    if(!strcmp(makermodel, dt_vendor_colormatrices[k].makermodel))
+    {
+      prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+      g_strlcpy(prof->filename, "vendor", sizeof(prof->filename));
+      g_strlcpy(prof->name, "vendor", sizeof(prof->name));
+      g->profiles = g_list_append(g->profiles, prof);
+      prof->pos = ++pos;
+      break;
+    }
+  }
+
+  // darktable alternate matrix, if applicable
+  for(int k=0; k<dt_alternate_colormatrix_cnt; k++)
+  {
+    if(!strcmp(makermodel, dt_alternate_colormatrices[k].makermodel))
+    {
+      prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+      g_strlcpy(prof->filename, "alternate", sizeof(prof->filename));
+      g_strlcpy(prof->name, "alternate", sizeof(prof->name));
+      g->profiles = g_list_append(g->profiles, prof);
+      prof->pos = ++pos;
+      break;
+    }
+  }
+
   // sRGB for ldr image input
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "sRGB", sizeof(prof->filename));
@@ -662,6 +704,10 @@ void gui_init(struct dt_iop_module_t *self)
       dt_bauhaus_combobox_add(g->cbox2, _("standard color matrix"));
     else if(!strcmp(prof->name, "darktable"))
       dt_bauhaus_combobox_add(g->cbox2, _("enhanced color matrix"));
+    else if(!strcmp(prof->name, "vendor"))
+      dt_bauhaus_combobox_add(g->cbox2, _("vendor color matrix"));
+    else if(!strcmp(prof->name, "alternate"))
+      dt_bauhaus_combobox_add(g->cbox2, _("alternate color matrix"));
     else if(!strcmp(prof->name, "sRGB"))
       dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. jpg)"));
     else if(!strcmp(prof->name, "adobergb"))

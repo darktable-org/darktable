@@ -49,10 +49,13 @@ dt_iop_basecurve_params_t;
 
 static const char dark_contrast[] = N_("dark contrast");
 static const char canon_eos[] = N_("canon eos like");
+static const char canon_eos_alt[] = N_("canon eos like alternate");
 static const char nikon[] = N_("nikon like");
+static const char nikon_alt[] = N_("nikon like alternate");
 static const char sony_alpha[] = N_("sony alpha like");
 static const char pentax[] = N_("pentax like");
 static const char olympus[] = N_("olympus like");
+static const char olympus_alt[] = N_("olympus like alternate");
 static const char panasonic[] = N_("panasonic like");
 static const char leica[] = N_("leica like");
 static const char kodak_easyshare[] = N_("kodak easyshare like");
@@ -78,14 +81,20 @@ static const basecurve_preset_t basecurve_presets[] =
   {dark_contrast, "", "", 0, 51200, {{0.000000, 0.072581, 0.157258, 0.491935, 0.758065, 1.000000}, {0.000000, 0.040000, 0.138710, 0.491935, 0.758065, 1.000000}, 0}, 0},
   // pascals canon eos curve (well tested):
   {canon_eos, "Canon", "", 0, 51200, {{0.000000, 0.028226, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
+  // pascals alternate canon eos curve for 5D Mark II and III and potentially a future IV
+  {canon_eos_alt, "Canon", "5D Mark ", 0, 51200, {{0.000000, 0.032258, 0.108871, 0.350806, 0.669355, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
   // pascals nikon curve (new curve, needs testing):
   {nikon, "NIKON", "", 0, 51200, {{0.000000, 0.036290, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.036532, 0.228226, 0.759678, 0.983468, 1.000000}, 0}, 1},
+  // pascals alternate nikon curve for (four digit) Nikon Dxxxx models
+  {nikon_alt, "NIKON", "D____", 0, 51200, {{0.000000, 0.001000, 0.056452, 0.358871, 0.717742, 1.000000}, {0.000000, 0.000010, 0.074871, 0.646775, 0.955242, 1.000000}, 0}, 1},
   // pascals sony alpha curve (needs testing):
   {sony_alpha, "SONY", "", 0, 51200, {{0.000000, 0.031949, 0.105431, 0.434505, 0.855738, 1.000000}, {0.000000, 0.036532, 0.228226, 0.759678, 0.983468, 1.000000}, 0}, 1},
   // pascals pentax curve (needs testing):
   {pentax, "PENTAX", "", 0, 51200, {{0.000000, 0.032258, 0.120968, 0.205645, 0.604839, 1.000000}, {0.000000, 0.024596, 0.166419, 0.328527, 0.790171, 1.000000}, 0}, 1},
   // pascals olympus curve (needs testing):
   {olympus, "OLYMPUS", "", 0, 51200, {{0.000000, 0.012097, 0.116935, 0.556452, 0.899194, 1.000000}, {0.000000, 0.010322, 0.167742, 0.711291, 0.956855, 1.000000}, 0}, 1},
+  // pascals alternate olympus curve for E-M5
+  {olympus_alt, "OLYMPUS", "E-M5", 0, 51200, {{0.000000, 0.012097, 0.088710, 0.254032, 0.487903, 1.000000}, {0.000000, 0.010322, 0.167742, 0.711291, 0.956855, 1.000000}, 0}, 1},
   // pascals panasonic/leica curves (needs testing):
   {panasonic, "Panasonic", "", 0, 51200, {{0.000000, 0.036290, 0.120968, 0.205645, 0.604839, 1.000000}, {0.000000, 0.024596, 0.166419, 0.328527, 0.790171, 1.000000}, 0}, 1},
   {leica, "Leica Camera AG", "", 0, 51200, {{0.000000, 0.0362901, 0.120968, 0.205645, 0.604839, 1.000000}, {0.000000, 0.024596, 0.166419, 0.328527, 0.790171, 1.000000}, 0}, 1},
@@ -232,6 +241,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       if(inp[i] < 1.0f) outp[i] = d->table[CLAMP((int)(inp[i]*0x10000ul), 0, 0xffff)];
       else              outp[i] = dt_iop_eval_exp(d->unbounded_coeffs, inp[i]);
     }
+
+    outp[3] = inp[3];
   }
 }
 

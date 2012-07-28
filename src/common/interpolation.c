@@ -770,7 +770,13 @@ dt_interpolation_compute_sample(
       in += linestride;
     }
     r = s/(normh*normv);
-  } else {
+  } else if ( ix >= 0
+           && iy >= 0
+           && ix < width
+           && iy < height ) {
+    // At least a valid coordinate
+
+
     // Point to the upper left pixel index wise
     iy -= itor->width-1;
     ix -= itor->width-1;
@@ -800,6 +806,9 @@ dt_interpolation_compute_sample(
     }
 
     r = s/(normh*normv);
+  } else {
+    // invalide coordinate
+    r = 0.0f;
   }
   return r;
 }
@@ -873,7 +882,13 @@ dt_interpolation_compute_pixel4c(
     }
 
     *(__m128*)out = _mm_mul_ps(pixel, oonorm);
-  } else {
+
+  } else if ( ix >= 0
+           && iy >= 0
+           && ix < width
+           && iy < height ) {
+    // At least a valid coordinate
+
     // Point to the upper left pixel index wise
     iy -= itor->width-1;
     ix -= itor->width-1;
@@ -903,6 +918,8 @@ dt_interpolation_compute_pixel4c(
     }
 
     *(__m128*)out = _mm_mul_ps(pixel, oonorm);
+  } else {
+    *(__m128*)out = _mm_set_ps1(0.0f);
   }
 }
 
@@ -1073,7 +1090,7 @@ prepare_resampling_plan(
       }
 
       // Projected position in input samples
-      float fx = (float)(out_x0 + x)*scale;
+      float fx = (float)(out_x0 + x)/scale;
 
       // Compute the filter kernel at that position
       int first;

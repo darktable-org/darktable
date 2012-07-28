@@ -461,7 +461,6 @@ static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButto
     {
       const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
       dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
-      image->dirty = 1;
       if(strip->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
       else if(strip->image_over == DT_VIEW_REJECT && ((image->flags & 0x7) == 6)) image->flags &= ~0x7;
       else

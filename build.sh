@@ -239,4 +239,6 @@ if [ $? = 0 ]; then
 Darktable finished building, to actually install darktable you need to type:
 # cd "$BUILD_DIR"; sudo make install
 EOF
+else
+   exit 1
 fi

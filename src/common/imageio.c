@@ -711,7 +711,6 @@ dt_imageio_open(
 
   img->flags &= ~DT_IMAGE_THUMBNAIL;
 
-  img->dirty = 1;
   return ret;
 }
 

@@ -92,9 +92,6 @@ typedef struct dt_image_t
   // used by library
   int32_t num, flags, film_id, id;
 
-  // FIXME: find out what this should do, and how
-  int32_t dirty;
-
   uint32_t filters;  // demosaic pattern
   int32_t bpp;       // bytes per pixel
  

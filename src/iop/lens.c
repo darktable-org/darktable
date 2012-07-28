@@ -113,7 +113,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
 
   const unsigned int pixelformat = ch == 3 ? LF_CR_3 (RED, GREEN, BLUE) : LF_CR_4 (RED, GREEN, BLUE, UNKNOWN);
 
-  if(!d->lens->Maker)
+  if(!d->lens->Maker || d->crop <= 0.0f)
   {
     memcpy(out, in, ch*sizeof(float)*roi_out->width*roi_out->height);
     return;
@@ -158,20 +158,20 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
           modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
         // reverse transform the global coords from lf to our buffer
         float *buf = ((float *)ovoid) + y*roi_out->width*ch;
-        for (int x = 0; x < roi_out->width; x++,buf+=ch)
+        for (int x = 0; x < roi_out->width; x++,buf+=ch,pi+=6)
         {
-          for(int c=0; c<3; c++,pi+=2)
+          for(int c=0; c<3; c++)
           {
-            const float pi0 = pi[0] - roi_in->x;
-            const float pi1 = pi[1] - roi_in->y;
+            const float pi0 = pi[c*2] - roi_in->x;
+            const float pi1 = pi[c*2+1] - roi_in->y;
             buf[c] = dt_interpolation_compute_sample(interpolation, in+c, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
           }
 
           if(mask_display)
           {
-            float *pi = (float *)(((char *)d->tmpbuf2) + req2*dt_get_thread_num()) + 2; // take green channel distortion also for alpha channel
-            const float pi0 = pi[0] - roi_in->x;
-            const float pi1 = pi[1] - roi_in->y;
+            // take green channel distortion also for alpha channel
+            const float pi0 = pi[2] - roi_in->x;
+            const float pi1 = pi[3] - roi_in->y;
             buf[3] = dt_interpolation_compute_sample(interpolation, in+3, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
           }
         }
@@ -253,20 +253,20 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
           modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
         // reverse transform the global coords from lf to our buffer
         float *out = ((float *)ovoid) + y*roi_out->width*ch;
-        for (int x = 0; x < roi_out->width; x++)
+        for (int x = 0; x < roi_out->width; x++,pi+=6)
         {
-          for(int c=0; c<3; c++,pi+=2)
+          for(int c=0; c<3; c++)
           {
-            const float pi0 = pi[0] - roi_in->x;
-            const float pi1 = pi[1] - roi_in->y;
+            const float pi0 = pi[c*2] - roi_in->x;
+            const float pi1 = pi[c*2+1] - roi_in->y;
             out[c] = dt_interpolation_compute_sample(interpolation, d->tmpbuf+c, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
           }
 
           if(mask_display)
           {
-            float *pi = (float *)(((char *)d->tmpbuf2) + req2*dt_get_thread_num()) + 2; // take green channel distortion also for alpha channel
-            const float pi0 = pi[0] - roi_in->x;
-            const float pi1 = pi[1] - roi_in->y;
+            // take green channel distortion also for alpha channel
+            const float pi0 = pi[2] - roi_in->x;
+            const float pi1 = pi[3] - roi_in->y;
             out[3] = dt_interpolation_compute_sample(interpolation, d->tmpbuf+3, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
           }
           out += ch;
@@ -324,7 +324,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t isizes[] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1};
   size_t osizes[] = { ROUNDUPWD(owidth), ROUNDUPHT(oheight), 1};
 
-  if(!d->lens->Maker)
+  if(!d->lens->Maker || d->crop <= 0.0f)
   {
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, oregion);
     if(err != CL_SUCCESS) goto error;
@@ -390,8 +390,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
           modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
       }
 
-      /* non-blocking memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, owidth*oheight*2*3*sizeof(float), CL_FALSE);
+      /* _blocking_ memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
+      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, owidth*oheight*2*3*sizeof(float), CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
       dt_opencl_set_kernel_arg(devid, ldkernel, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -418,7 +418,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(roi_out, roi_in, tmpbuf, modifier, d) schedule(static)
 #endif
-      for (int y = 0; y < roi_in->height; y++)
+      for (int y = 0; y < roi_out->height; y++)
       {
         /* Colour correction: vignetting and CCI */
         // actually this way row stride does not matter.
@@ -428,8 +428,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
                                               roi_out->width, 1, pixelformat, ch*roi_out->width);
       }
 
-      /* non-blocking memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, ch*roi_out->width*roi_out->height*sizeof(float), CL_FALSE);
+      /* _blocking_ memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
+      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, ch*roi_out->width*roi_out->height*sizeof(float), CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 0, sizeof(cl_mem), (void *)&dev_tmp);
@@ -467,8 +467,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
                                               roi_in->width, 1, pixelformat, ch*roi_in->width);
       }
 
-      /* non-blocking memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, ch*roi_in->width*roi_in->height*sizeof(float), CL_FALSE);
+      /* _blocking_ memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
+      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, ch*roi_in->width*roi_in->height*sizeof(float), CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -499,8 +499,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
           modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
       }
 
-      /* non-blocking memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, owidth*oheight*2*3*sizeof(float), CL_FALSE);
+      /* _blocking_ memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
+      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, owidth*oheight*2*3*sizeof(float), CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
       dt_opencl_set_kernel_arg(devid, ldkernel, 0, sizeof(cl_mem), (void *)&dev_tmp);
@@ -562,7 +562,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   *roi_in = *roi_out;
   // inverse transform with given params
 
-  if(!d->lens->Maker) return;
+  if(!d->lens->Maker || d->crop <= 0.0f) return;
 
   const float orig_w = roi_in->scale*piece->iwidth,
               orig_h = roi_in->scale*piece->iheight;
