@@ -52,6 +52,7 @@ static const char dark_contrast[] = N_("dark contrast");
 static const char canon_eos[] = N_("canon eos like");
 static const char canon_eos_alt[] = N_("canon eos like alternate");
 static const char nikon[] = N_("nikon like");
+static const char nikon_alt[] = N_("nikon like alternate");
 static const char sony_alpha[] = N_("sony alpha like");
 static const char pentax[] = N_("pentax like");
 static const char olympus[] = N_("olympus like");
@@ -85,6 +86,8 @@ static const basecurve_preset_t basecurve_presets[] =
   {canon_eos_alt, "Canon", "5D Mark ", 0, 51200, {{0.000000, 0.032258, 0.108871, 0.350806, 0.669355, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
   // pascals nikon curve (new curve, needs testing):
   {nikon, "NIKON", "", 0, 51200, {{0.000000, 0.036290, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.036532, 0.228226, 0.759678, 0.983468, 1.000000}, 0}, 1},
+  // pascals alternate nikon curve for (four digit) Nikon Dxxxx models
+  {nikon_alt, "NIKON", "D____", 0, 51200, {{0.000000, 0.001000, 0.056452, 0.358871, 0.717742, 1.000000}, {0.000000, 0.000010, 0.074871, 0.646775, 0.955242, 1.000000}, 0}, 1},
   // pascals sony alpha curve (needs testing):
   {sony_alpha, "SONY", "", 0, 51200, {{0.000000, 0.031949, 0.105431, 0.434505, 0.855738, 1.000000}, {0.000000, 0.036532, 0.228226, 0.759678, 0.983468, 1.000000}, 0}, 1},
   // pascals pentax curve (needs testing):
