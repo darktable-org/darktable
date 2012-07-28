@@ -60,6 +60,12 @@ int dt_lua_singleton_find(lua_State* L,int id,const dt_lua_type*type);
   */
 void dt_lua_singleton_register(lua_State* L,int id,const dt_lua_type*type);
 
+/**
+  iterates through all object of singelton type "type" and call "function" on each
+  the call has one parameter
+  -1 : the object of the type
+  */
+void dt_lua_singleton_foreach(lua_State*L,const dt_lua_type* type,lua_CFunction function);
 /** helper to build types
   returns the object of type "type" at the index indicated
   */

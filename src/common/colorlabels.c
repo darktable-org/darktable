@@ -196,14 +196,9 @@ const char* dt_colorlabels_to_string(int label)
 /********************************************
   LUA STUFF
   *******************************************/
-#define LUA_COLORLABEL "dt_lua_colorlabel"
 typedef struct {
 	int imgid;
 } colorlabel_type;
-
-static int colorlabels_check(lua_State * L,int index){
-	return ((colorlabel_type*)luaL_checkudata(L,index,LUA_COLORLABEL))->imgid;
-}
 
 void dt_colorlabels_lua_push(lua_State * L,int imgid) {
 	if(dt_lua_singleton_find(L,imgid,&dt_colorlabels_lua_type)) {
@@ -216,7 +211,7 @@ void dt_colorlabels_lua_push(lua_State * L,int imgid) {
 
 
 static int colorlabel_index(lua_State *L){
-	int imgid=colorlabels_check(L,-2);
+	int imgid=((colorlabel_type*)dt_lua_check(L,-2,&dt_colorlabels_lua_type))->imgid;
 	const int value =luaL_checkoption(L,-1,NULL,dt_colorlabels_name);
 	if(value < 0 || value >= DT_COLORLABELS_LAST) {
 			return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
@@ -227,7 +222,7 @@ static int colorlabel_index(lua_State *L){
 }
 
 static int colorlabel_newindex(lua_State *L){
-	int imgid=colorlabels_check(L,-3);
+	int imgid=((colorlabel_type*)dt_lua_check(L,-3,&dt_colorlabels_lua_type))->imgid;
 	const int value =luaL_checkoption(L,-2,NULL,dt_colorlabels_name);
 	if(value < 0 || value >= DT_COLORLABELS_LAST) {
 			return luaL_error(L,"should never happen %s",lua_tostring(L,-1));

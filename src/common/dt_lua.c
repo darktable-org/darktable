@@ -255,6 +255,21 @@ void *dt_lua_check(lua_State* L,int index,const dt_lua_type*type) {
 	snprintf(tmp,1024,"dt_lua_%s",type->name);
 	return luaL_checkudata(L,index,tmp);
 }
+void dt_lua_singleton_foreach(lua_State*L,const dt_lua_type* type,lua_CFunction function){
+	char tmp[1024];
+	snprintf(tmp,1024,"dt_lua_%s",type->name);
+	luaL_newmetatable(L,tmp);
+	lua_getfield(L,-1,"allocated");
+	lua_pushnil(L);
+	while (lua_next(L, -2) != 0) {
+		/* image is at top, imgid is just under */
+		lua_pushcfunction(L,function);
+		lua_pushvalue(L,-2);
+		lua_call(L,1,0); 
+		/* remove the image, for the call to lua_next */
+		lua_pop(L, 1);
+	}
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

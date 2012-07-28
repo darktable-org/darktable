@@ -30,19 +30,15 @@
 /***********************************************************************
   handling of dt_image_t
  **********************************************************************/
-#define LUA_IMAGE "dt_lua_image"
 typedef struct {
 	int imgid;
 	const dt_image_t * const_image; 
 	dt_image_t * image; 
 } lua_image;
-lua_image *dt_lua_image_check(lua_State * L,int index){
-	lua_image* my_image= luaL_checkudata(L,index,LUA_IMAGE);
-	return my_image;
-}
+
 
 const dt_image_t*dt_lua_checkreadimage(lua_State*L,int index) {
-	lua_image* my_image=dt_lua_image_check(L,index);
+	lua_image* my_image=dt_lua_check(L,index,&dt_lua_image);
 	if(my_image->const_image ==NULL) {
 		// check that id is valid
 		sqlite3_stmt *stmt;
@@ -60,7 +56,7 @@ const dt_image_t*dt_lua_checkreadimage(lua_State*L,int index) {
 }
 
 dt_image_t*dt_lua_checkwriteimage(lua_State*L,int index) {
-	lua_image* my_image=dt_lua_image_check(L,index);
+	lua_image* my_image=dt_lua_check(L,index,&dt_lua_image);
 	if(my_image->image ==NULL) {
 		const dt_image_t* my_readimage=dt_lua_checkreadimage(L,index);
 		// id is valid or checkreadimage would have raised an error
@@ -70,7 +66,7 @@ dt_image_t*dt_lua_checkwriteimage(lua_State*L,int index) {
 }
 
 static int image_gc(lua_State *L) {
-	lua_image * my_image=dt_lua_image_check(L,-1);
+	lua_image* my_image=dt_lua_check(L,-1,&dt_lua_image);
 	//printf("%s %d\n",__FUNCTION__,my_image->imgid);
 	if(my_image->image) {
 		dt_image_cache_write_release(darktable.image_cache,my_image->image,DT_IMAGE_CACHE_SAFE);
@@ -84,38 +80,14 @@ static int image_gc(lua_State *L) {
 }
 
 void dt_lua_image_push(lua_State * L,int imgid) {
-	// ckeck if image already is in the env
-	// get the metatable and put it on top (side effect of newtable)
-	luaL_newmetatable(L,LUA_IMAGE);
-	lua_getfield(L,-1,"allocated");
-	lua_pushinteger(L,imgid);
-	lua_gettable(L,-2);
-	// at this point our stack is :
-	// -1 : the object or nil if it is not allocated
-	// -2 : the allocation table
-	// -3 : the metatable
-	lua_remove(L,-3); // remove the metatable, we don't need it anymore
-	if(!lua_isnil(L,-1)) {
-		//printf("%s %d (reuse)\n",__FUNCTION__,imgid);
-		dt_lua_image_check(L,-1);
-		lua_remove(L,-2); // remove the table, but leave the image on top of the stac
+	if(dt_lua_singleton_find(L,imgid,&dt_colorlabels_lua_type)) {
 		return;
-	} else {
-		//printf("%s %d (create)\n",__FUNCTION__,imgid);
-		lua_pop(L,1); // remove nil at top
-		lua_pushinteger(L,imgid);
-		lua_image * my_image = (lua_image*)lua_newuserdata(L,sizeof(lua_image));
-		luaL_setmetatable(L,LUA_IMAGE);
-		my_image->imgid=imgid;
-		my_image->const_image= NULL;
-		my_image->image= NULL;
-		// add the value to the metatable, so it can be reused
-		lua_settable(L,-3);
-		// put the value back on top
-		lua_pushinteger(L,imgid);
-		lua_gettable(L,-2);
-		lua_remove(L,-2); // remove the table, but leave the image on top of the stac
 	}
+	lua_image * my_image = (lua_image*)lua_newuserdata(L,sizeof(lua_image));
+	my_image->imgid=imgid;
+	my_image->const_image= NULL;
+	my_image->image= NULL;
+	dt_lua_singleton_register(L,imgid,&dt_lua_image);
 }
 
 typedef enum {
@@ -500,15 +472,7 @@ static int image_init(lua_State * L) {
 
 
 static int image_global_gc(lua_State *L) {
-	luaL_newmetatable(L,LUA_IMAGE);
-	lua_pushnil(L);  /* first key */
-	while (lua_next(L, -2) != 0) {
-		/* image is at top, imgid is just under */
-		if(lua_type(L,-2) == LUA_TNUMBER)
-			image_gc(L); // release the locks
-		/* remove the image, for the call to lua_next */
-		lua_pop(L, 1);
-	}
+	dt_lua_singleton_foreach(L,&dt_lua_image,image_gc);
 	return 0;
 }
 

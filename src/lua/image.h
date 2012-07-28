@@ -25,8 +25,6 @@
 
 extern dt_lua_type dt_lua_images;
 
-//void dt_lua_image_push(lua_State * L,int imgid);
-//int dt_lua_image_check(lua_State * L,int index);
 extern dt_lua_type dt_lua_image;
 #endif
 
