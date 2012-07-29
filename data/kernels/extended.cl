@@ -311,7 +311,7 @@ colorcontrast (read_only image2d_t in, write_only image2d_t out, const int width
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  pixel.xyz = pixel.xyz * scale + offset;
+  pixel.xyz = (pixel * scale + offset).xyz;
   pixel.y = clamp(pixel.y, -128.0f, 128.0f);
   pixel.z = clamp(pixel.z, -128.0f, 128.0f);
 
