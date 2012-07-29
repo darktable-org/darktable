@@ -48,9 +48,13 @@ static int load_darktable_lib(lua_State *L) {
 	while(*cur_type) {
 		snprintf(tmp,1024,"dt_lua_%s",(*cur_type)->name);
 		lua_pushstring(L,(*cur_type)->name);
+		lua_pushcfunction(L,(*cur_type)->load);
 		luaL_newmetatable(L,tmp);
-		(*cur_type)->load(L);
-		lua_remove(L,-2); // remove the metatable
+		if(lua_pcall(L, 1, 1, 0)) {
+			dt_control_log("LUA ERROR while loading type %s : %s\n",(*cur_type)->name,lua_tostring(L,-1));
+			printf("LUA ERROR while loading type %s : %s\n",(*cur_type)->name,lua_tostring(L,-1));
+			lua_pop(L,1);
+		}
 		lua_settable(L,-3); // attach the object (if any) to the name
 		cur_type++;
 	}
@@ -73,8 +77,14 @@ static void do_chunck(int loadresult) {
 
 	dt_lua_type** cur_type = types;
 	while(*cur_type) {
-		if((*cur_type)->clean)
-			(*cur_type)->clean(darktable.lua_state);
+		if((*cur_type)->clean) {
+			lua_pushcfunction(darktable.lua_state,(*cur_type)->clean);
+			if(lua_pcall(darktable.lua_state, 0, 0, 0)) {
+				dt_control_log("LUA ERROR while cleaning %s : %s\n",(*cur_type)->name,lua_tostring(darktable.lua_state,-1));
+				printf("LUA ERROR while cleaning %s : %s\n",(*cur_type)->name,lua_tostring(darktable.lua_state,-1));
+				lua_pop(darktable.lua_state,1);
+			}
+		}
 		cur_type++;
 	}
 	lua_gc(darktable.lua_state,LUA_GCCOLLECT,0);
