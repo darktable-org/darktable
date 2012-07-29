@@ -629,7 +629,8 @@ void dtgtk_gradient_slider_multivalue_set_stop(GtkDarktableGradientSlider *gslid
 
 void dtgtk_gradient_slider_multivalue_clear_stops(GtkDarktableGradientSlider *gslider)
 {
-  g_list_free_full(gslider->colors, g_free);
+  g_list_foreach(gslider->colors, (GFunc)g_free, NULL);
+  g_list_free(gslider->colors);
   gslider->colors = NULL;
 }
 
