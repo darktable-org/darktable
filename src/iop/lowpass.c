@@ -702,6 +702,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   free(temp);
 
+  // some aliased pointers for compilers that don't yet understand operators on __m128
+  const float *const Labminf = (float *)&Labmin;
+  const float *const Labmaxf = (float *)&Labmax;
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(in,out,data,roi_out) schedule(static)
 #endif
@@ -709,8 +712,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     out[k*ch+0] = (out[k*ch+0] < 100.0f) ? data->table[CLAMP((int)(out[k*ch+0]/100.0f*0x10000ul), 0, 0xffff)] : 
       dt_iop_eval_exp(data->unbounded_coeffs, out[k*ch+0]/100.0f);
-    out[k*ch+1] = CLAMPF(out[k*ch+1]*data->saturation, Labmin[1], Labmax[1]);
-    out[k*ch+2] = CLAMPF(out[k*ch+2]*data->saturation, Labmin[2], Labmax[2]);
+    out[k*ch+1] = CLAMPF(out[k*ch+1]*data->saturation, Labminf[1], Labmaxf[1]);
+    out[k*ch+2] = CLAMPF(out[k*ch+2]*data->saturation, Labminf[2], Labmaxf[2]);
     out[k*ch+3] = in[k*ch+3];
   }
 }

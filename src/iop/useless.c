@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2012 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #endif
 // our includes go first:
 #include "develop/imageop.h"
-#include "dtgtk/slider.h"
+#include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"
 
 #include <gtk/gtk.h>
@@ -50,19 +50,9 @@ typedef struct dt_iop_useless_gui_data_t
 {
   // whatever you need to make your gui happy.
   // stored in self->gui_data
-  GtkDarktableSlider *scale; // this is needed by gui_update
+  GtkWidget *scale; // this is needed by gui_update
 }
 dt_iop_useless_gui_data_t;
-
-typedef struct dt_iop_useless_data_t
-{
-  // this is stored in the pixelpipeline after a commit (not the db),
-  // you can do some precomputation and get this data in process().
-  // stored in piece->data
-  int checker_scale; // in our case, no precomputation or
-  // anything is possible, so this is just a copy.
-}
-dt_iop_useless_data_t;
 
 typedef struct dt_iop_useless_global_data_t
 {
@@ -90,15 +80,11 @@ flags()
 
 // where does it appear in the gui?
 int
-groups ()
+groups()
 {
   return IOP_GROUP_BASIC;
 }
 
-void init_key_accels()
-{
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/modules/useless/useless");
-}
 // implement this, if you have esoteric output bytes per pixel. default is 4*float
 /*
 int
@@ -115,7 +101,7 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
 // void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in);
 
 /** process, all real work is done here. */
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
@@ -188,60 +174,38 @@ void cleanup(dt_iop_module_t *module)
   module->data = NULL;
 }
 
-/** commit is the synch point between core and gui, so it copies params to pipe data. */
-void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)params;
-  dt_iop_useless_data_t *d = (dt_iop_useless_data_t *)piece->data;
-  d->checker_scale = p->checker_scale;
-}
-
-void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  piece->data = malloc(sizeof(dt_iop_useless_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
-}
-
-void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  free(piece->data);
-}
-
 /** put your local callbacks here, be sure to make them static so they won't be visible outside this file! */
 static void
-slider_callback(GtkRange *range, dt_iop_module_t *self)
+slider_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   // this is important to avoid cycles!
   if(darktable.gui->reset) return;
-  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
   dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
-  p->checker_scale = dtgtk_slider_get_value(g->scale);
+  p->checker_scale = dt_bauhaus_slider_get(w);
   // let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 /** gui callbacks, these are needed. */
-void gui_update    (dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   // let gui slider match current parameters:
   dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
   dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
-  dtgtk_slider_set_value(g->scale, p->checker_scale);
+  dt_bauhaus_slider_set(g->scale, p->checker_scale);
 }
 
-void gui_init     (dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
   self->gui_data = malloc(sizeof(dt_iop_useless_gui_data_t));
   dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
-  g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE, 1, 100, 1, 50, 0));
-  dtgtk_slider_set_accel(g->scale,darktable.control->accels_darkroom,"<Darktable>/darkroom/modules/useless/useless");
-  self->widget = GTK_WIDGET(g->scale);
-  g_signal_connect (G_OBJECT (g->scale), "value-changed",
-                    G_CALLBACK (slider_callback), self);
+  g->scale = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 50, 0);
+  self->widget = g->scale;
+  g_signal_connect (G_OBJECT (g->scale), "value-changed", G_CALLBACK (slider_callback), self);
 }
 
-void gui_cleanup  (dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   // nothing else necessary, gtk will clean up the slider.
   free(self->gui_data);
