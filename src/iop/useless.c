@@ -20,7 +20,7 @@
 #endif
 // our includes go first:
 #include "develop/imageop.h"
-#include "dtgtk/slider.h"
+#include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"
 
 #include <gtk/gtk.h>
@@ -50,7 +50,7 @@ typedef struct dt_iop_useless_gui_data_t
 {
   // whatever you need to make your gui happy.
   // stored in self->gui_data
-  GtkDarktableSlider *scale; // this is needed by gui_update
+  GtkWidget *scale; // this is needed by gui_update
 }
 dt_iop_useless_gui_data_t;
 
@@ -95,10 +95,6 @@ groups ()
   return IOP_GROUP_BASIC;
 }
 
-void init_key_accels()
-{
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/modules/useless/useless");
-}
 // implement this, if you have esoteric output bytes per pixel. default is 4*float
 /*
 int
@@ -209,13 +205,12 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 
 /** put your local callbacks here, be sure to make them static so they won't be visible outside this file! */
 static void
-slider_callback(GtkRange *range, dt_iop_module_t *self)
+slider_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   // this is important to avoid cycles!
   if(darktable.gui->reset) return;
-  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
   dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
-  p->checker_scale = dtgtk_slider_get_value(g->scale);
+  p->checker_scale = dt_bauhaus_slider_get(w);
   // let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -226,7 +221,7 @@ void gui_update    (dt_iop_module_t *self)
   // let gui slider match current parameters:
   dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
   dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
-  dtgtk_slider_set_value(g->scale, p->checker_scale);
+  dt_bauhaus_slider_set(g->scale, p->checker_scale);
 }
 
 void gui_init     (dt_iop_module_t *self)
@@ -234,11 +229,9 @@ void gui_init     (dt_iop_module_t *self)
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
   self->gui_data = malloc(sizeof(dt_iop_useless_gui_data_t));
   dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
-  g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE, 1, 100, 1, 50, 0));
-  dtgtk_slider_set_accel(g->scale,darktable.control->accels_darkroom,"<Darktable>/darkroom/modules/useless/useless");
-  self->widget = GTK_WIDGET(g->scale);
-  g_signal_connect (G_OBJECT (g->scale), "value-changed",
-                    G_CALLBACK (slider_callback), self);
+  g->scale = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 50, 0);
+  self->widget = g->scale;
+  g_signal_connect (G_OBJECT (g->scale), "value-changed", G_CALLBACK (slider_callback), self);
 }
 
 void gui_cleanup  (dt_iop_module_t *self)
