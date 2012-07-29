@@ -824,7 +824,8 @@ void dt_bauhaus_combobox_set(GtkWidget *widget, int pos)
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->active = CLAMP(pos, -1, d->num_labels-1);
   gtk_widget_queue_draw(GTK_WIDGET(w));
-  g_signal_emit_by_name(G_OBJECT(w), "value-changed");
+  if(!darktable.gui->reset)
+    g_signal_emit_by_name(G_OBJECT(w), "value-changed");
 }
 
 int dt_bauhaus_combobox_get(GtkWidget *widget)
@@ -1527,7 +1528,8 @@ dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
   rpos = roundf(base * rpos) / base;
   d->pos = (rpos-d->min)/(d->max-d->min);
   gtk_widget_queue_draw(GTK_WIDGET(w));
-  g_signal_emit_by_name(G_OBJECT(w), "value-changed");
+  if(!darktable.gui->reset)
+    g_signal_emit_by_name(G_OBJECT(w), "value-changed");
 }
 
 static gboolean
