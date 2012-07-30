@@ -634,6 +634,8 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   return 0;
 }
 
+
+
 void dt_control_image_enumerator_job_init(dt_control_image_enumerator_t *t)
 {
   /* get sorted list of selected images */
@@ -786,6 +788,128 @@ void dt_control_delete_images()
   dt_job_t j;
   dt_control_delete_images_job_init(&j);
   dt_control_add_job(darktable.control, &j);
+}
+
+void dt_control_move_images()
+{
+  // Open file chooser dialog
+  gchar *dir = NULL;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  int number = dt_collection_get_selected_count(darktable.collection);
+
+  // Do not show the dialog if no image is selected:
+  if(number == 0) return;
+
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
+        GTK_WINDOW (win),
+        GTK_FILE_CHOOSER_ACTION_CREATE_FOLDER,
+        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+        GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+        (char *)NULL);
+
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+  }
+  gtk_widget_destroy (filechooser);
+
+  if(!g_file_test(dir, G_FILE_TEST_IS_DIR)) 
+  {
+    g_free(dir);
+    return;
+  }
+
+  GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win),
+      GTK_DIALOG_DESTROY_WITH_PARENT,
+      GTK_MESSAGE_QUESTION,
+      GTK_BUTTONS_YES_NO,
+      ngettext("do you really want to physically move the %d selected image to %s?",
+	       "do you really want to physically move %d selected images to %s?", number), number, dir);
+  gtk_window_set_title(GTK_WINDOW(dialog), ngettext("move image?", "move images?", number));
+
+  gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
+
+  if(res != GTK_RESPONSE_YES)
+  {
+    g_free(dir);
+    return;
+  }
+
+  dt_job_t j;
+  dt_control_move_images_job_init(&j);
+  j.user_data = dir;
+//  dt_control_job_set_state_callback(&j, NULL, dir);
+  dt_control_add_job(darktable.control, &j);
+}
+
+void dt_control_move_images_job_init(dt_job_t *job)
+{
+  dt_control_job_init(job, "move images");
+  job->execute = &dt_control_move_images_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
+  dt_control_image_enumerator_job_init(t);
+}
+
+int32_t dt_control_move_images_job_run(dt_job_t *job)
+{
+  long int imgid = -1;
+  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
+  GList *t = t1->index;
+  int total = g_list_length(t);
+  char message[512]= {0};
+  double fraction=0;
+  gchar *newdir = (gchar *)job->user_data;
+
+  /* create a cancellable bgjob ui template */
+  snprintf(message, 512, ngettext ("moving %d image", "moving %d images", total), total);
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
+
+  //  char query[1024];
+  //  sprintf(query, "update images set flags = (flags | %d) where id in (select imgid from selected_images)", DT_IMAGE_REMOVE);
+  //DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
+
+  dt_collection_update(darktable.collection);
+
+  while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
+  {
+    imgid = (long int)t->data;
+    gchar oldimgfname[512];
+    dt_image_full_path(imgid, oldimgfname, 512);
+    gchar *imgbname = g_path_get_basename(oldimgfname);
+
+    // Synchronize .xmp files before move
+    dt_image_synch_all_xmp(oldimgfname);
+
+    // Move image and .xmp file
+    // TODO: Handle duplicates
+    gchar *newimgfname = g_build_filename(newdir,imgbname,(gchar *)NULL);
+    
+    if (g_rename(oldimgfname, newimgfname) == 0)
+    {
+      gchar *oldxmpfname = g_strconcat(oldimgfname, ".xmp",(gchar *)NULL);
+      gchar *newxmpfname = g_strconcat(newimgfname, ".xmp",(gchar *)NULL);
+      (void)g_rename(oldxmpfname,newxmpfname);
+      
+      dt_image_remove(imgid);
+      g_free(oldxmpfname);
+      g_free(newxmpfname);
+    }
+    
+    g_free(imgbname);
+    g_free(newimgfname);
+
+    t = g_list_delete_link(t, t);
+    fraction=1.0/total;
+    dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
+  }
+
+  g_free(newdir);
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
+  dt_film_remove_empty();
+  return 0;
 }
 
 int32_t dt_control_export_job_run(dt_job_t *job)
