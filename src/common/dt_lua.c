@@ -39,13 +39,16 @@ static dt_lua_type* types[] = {
 };
 
 static int load_darktable_lib(lua_State *L) {
+	const int init_gui = (darktable.gui != NULL);
 	lua_newtable(L);
 
-	lua_pushstring(L,"quit");
-	lua_pushcfunction(L,&lua_quit);
-	lua_settable(L,-3);
-
-	lua_pushstring(L,"import_film");
+	if(init_gui) {
+		lua_pushstring(L,"quit");
+		lua_pushcfunction(L,&lua_quit);
+		lua_settable(L,-3);
+	}
+	
+	lua_pushstring(L,"import");
 	lua_pushcfunction(L,&dt_film_import_lua);
 	lua_settable(L,-3);
 	
@@ -289,6 +292,7 @@ void dt_lua_singleton_foreach(lua_State*L,const dt_lua_type* type,lua_CFunction 
 
 // closed on GC of the dt lib, usually when the lua interpreter closes
 static int dt_luacleanup(lua_State*L) {
+	dt_film_remove_empty();
 	dt_cleanup();
 	return 0;
 }

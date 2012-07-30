@@ -70,7 +70,7 @@ static int image_gc(lua_State *L) {
 }
 
 void dt_lua_image_push(lua_State * L,int imgid) {
-	if(dt_lua_singleton_find(L,imgid,&dt_colorlabels_lua_type)) {
+	if(dt_lua_singleton_find(L,imgid,&dt_lua_image)) {
 		return;
 	}
 	// check that id is valid

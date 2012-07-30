@@ -228,11 +228,13 @@ int dt_film_new(dt_film_t *film, const char *directory)
   return film->id;
 }
 
-void dt_film_image_import(dt_film_t *film,const char *filename, gboolean override_ignore_jpegs)
+int dt_film_image_import(dt_film_t *film,const char *filename, gboolean override_ignore_jpegs)
 {
   // import an image into filmroll
-  if(dt_image_import(film->id, filename, override_ignore_jpegs))
+  const int result =  dt_image_import(film->id, filename, override_ignore_jpegs);
+  if(result)
     dt_control_queue_redraw_center();
+  return result;
 }
 
 static int
@@ -515,13 +517,37 @@ void dt_film_remove(const int id)
   LUA stuff
   ****************************************/
 int dt_film_import_lua(lua_State *L){
-  char* full_name= realpath(luaL_checkstring(L,-1), NULL);
-  int result =dt_film_import(full_name);
-  free(full_name);
-  if(result == 0) {
-	  luaL_error(L,"error while importing");
-  }
-  return 0;
+	char* full_name= realpath(luaL_checkstring(L,-1), NULL);
+	int result;
+
+	if (g_file_test(full_name, G_FILE_TEST_IS_DIR)) {
+		result =dt_film_import(full_name);
+		if(result == 0) {
+			free(full_name);
+			return luaL_error(L,"error while importing");
+		}
+	} else {
+		dt_film_t new_film;
+		dt_film_init(&new_film);
+		char* dirname =g_path_get_dirname(full_name);
+		result = dt_film_new(&new_film,dirname);
+		if(result == 0) {
+			free(full_name);
+			dt_film_cleanup(&new_film);
+			free(dirname);
+			return luaL_error(L,"error while importing");
+		}
+
+		result =dt_film_image_import(&new_film,full_name,TRUE);
+		free(dirname);
+		dt_film_cleanup(&new_film);
+		if(result == 0) {
+			free(full_name);
+			return luaL_error(L,"error while importing");
+		}
+	}
+	free(full_name);
+	return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
