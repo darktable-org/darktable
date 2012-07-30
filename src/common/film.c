@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <unistd.h>
 #include <math.h>
 #include <sys/stat.h>
@@ -510,7 +511,18 @@ void dt_film_remove(const int id)
   sqlite3_finalize(stmt);
   // dt_control_update_recent_films();
 }
-
+/*****************************************
+  LUA stuff
+  ****************************************/
+int dt_film_import_lua(lua_State *L){
+  char* full_name= realpath(luaL_checkstring(L,-1), NULL);
+  int result =dt_film_import(full_name);
+  free(full_name);
+  if(result == 0) {
+	  luaL_error(L,"error while importing");
+  }
+  return 0;
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

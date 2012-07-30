@@ -76,9 +76,6 @@ void dt_lua_singleton_foreach(lua_State*L,const dt_lua_type* type,lua_CFunction 
   returns the object of type "type" at the index indicated
   */
 void *dt_lua_check(lua_State* L,int index,const dt_lua_type*type);
-/** helper to build types
-  a function that can be used as is for the push field of singletons based on imgid
-  */
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -21,6 +21,7 @@
 #include "lua/image.h"
 #include "common/colorlabels.h"
 #include "common/history.h"
+#include "common/film.h"
 #include "lua/stmt.h"
 
 static int lua_quit(lua_State *state) {
@@ -39,8 +40,13 @@ static dt_lua_type* types[] = {
 
 static int load_darktable_lib(lua_State *L) {
 	lua_newtable(L);
+
 	lua_pushstring(L,"quit");
 	lua_pushcfunction(L,&lua_quit);
+	lua_settable(L,-3);
+
+	lua_pushstring(L,"import_film");
+	lua_pushcfunction(L,&dt_film_import_lua);
 	lua_settable(L,-3);
 	
 	dt_lua_type** cur_type = types;

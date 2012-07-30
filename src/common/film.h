@@ -20,6 +20,7 @@
 
 #include "common/darktable.h"
 #include "common/dtpthread.h"
+#include "common/dt_lua.h"
 
 #include <inttypes.h>
 #include <glib.h>
@@ -51,6 +52,8 @@ int dt_film_open2(dt_film_t *film);
 int dt_film_open_recent(const int32_t num);
 /** import new film and all images in this directory (non-recursive, existing films/images are respected). */
 int dt_film_import(const char *dirname);
+/** (+0|+0) import a file in drectory with name at -1 (lua backend to dt_film_import*/
+int dt_film_import_lua(lua_State * state);
 /** helper for import threads. */
 void dt_film_import1(dt_film_t *film);
 /** constructs the lighttable/query setting for this film, respecting stars and filters. */
