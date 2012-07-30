@@ -1236,12 +1236,7 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
           if(!strncmp(text, darktable.bauhaus->keys, darktable.bauhaus->keys_cnt))
           {
             gboolean highlight = FALSE;
-            if(i == d->active)
-            {
-              // highlight currently active item:
-              highlight = TRUE;
-            }
-            else if(i == hovered)
+            if(i == hovered)
             {
               highlight = TRUE;
             }
@@ -1457,7 +1452,8 @@ dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpoin
 {
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->type != DT_BAUHAUS_COMBOBOX) return FALSE;
-  dt_iop_request_focus(w->module);
+  if(w->module) // tethering uses these with module == NULL
+    dt_iop_request_focus(w->module);
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;

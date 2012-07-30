@@ -189,17 +189,20 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   }
 }
 
-void dt_iop_modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
+static void
+dt_iop_modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
 {
   *roi_in = *roi_out;
 }
 
-void dt_iop_modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
+static void
+dt_iop_modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
 {
   *roi_out = *roi_in;
 }
 
-gint sort_plugins(gconstpointer a, gconstpointer b)
+static gint
+sort_plugins(gconstpointer a, gconstpointer b)
 {
   const dt_iop_module_t *am = (const dt_iop_module_t *)a;
   const dt_iop_module_t *bm = (const dt_iop_module_t *)b;
@@ -207,33 +210,57 @@ gint sort_plugins(gconstpointer a, gconstpointer b)
 }
 
 /* default groups for modules which does not implement the groups() function */
-int _default_groups()
+static int
+default_groups()
 {
   return IOP_GROUP_ALL;
 }
 
 /* default flags for modules which does not implement the flags() function */
-int _default_flags()
+static int
+default_flags()
 {
   return 0;
 }
 
 /* default operation tags for modules which does not implement the flags() function */
-int _default_operation_tags()
+static int
+default_operation_tags()
 {
   return 0;
 }
 
 /* default operation tags filter for modules which does not implement the flags() function */
-int _default_operation_tags_filter()
+static int
+default_operation_tags_filter()
 {
   return 0;
 }
 
 /* default bytes per pixel: 4*sizeof(float). */
-int _default_output_bpp(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece)
+static int
+default_output_bpp(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece)
 {
   return 4*sizeof(float);
+}
+
+static void
+default_commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  memcpy(piece->data, params, self->params_size);
+}
+
+static void
+default_init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  piece->data = malloc(self->params_size);
+  default_commit_params(self, self->default_params, pipe, piece);
+}
+
+static void
+default_cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  free(piece->data);
 }
 
 int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const char *op)
@@ -251,11 +278,11 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   }
   if(!g_module_symbol(module->module, "dt_module_mod_version",  (gpointer)&(module->version)))                goto error;
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
-  if(!g_module_symbol(module->module, "groups",                 (gpointer)&(module->groups)))                 module->groups = _default_groups;
-  if(!g_module_symbol(module->module, "flags",                  (gpointer)&(module->flags)))                  module->flags = _default_flags;
-  if(!g_module_symbol(module->module, "operation_tags",         (gpointer)&(module->operation_tags)))         module->operation_tags = _default_operation_tags;
-  if(!g_module_symbol(module->module, "operation_tags_filter",  (gpointer)&(module->operation_tags_filter)))  module->operation_tags_filter = _default_operation_tags_filter;
-  if(!g_module_symbol(module->module, "output_bpp",             (gpointer)&(module->output_bpp)))             module->output_bpp = _default_output_bpp;
+  if(!g_module_symbol(module->module, "groups",                 (gpointer)&(module->groups)))                 module->groups = default_groups;
+  if(!g_module_symbol(module->module, "flags",                  (gpointer)&(module->flags)))                  module->flags = default_flags;
+  if(!g_module_symbol(module->module, "operation_tags",         (gpointer)&(module->operation_tags)))         module->operation_tags = default_operation_tags;
+  if(!g_module_symbol(module->module, "operation_tags_filter",  (gpointer)&(module->operation_tags_filter)))  module->operation_tags_filter = default_operation_tags_filter;
+  if(!g_module_symbol(module->module, "output_bpp",             (gpointer)&(module->output_bpp)))             module->output_bpp = default_output_bpp;
   if(!g_module_symbol(module->module, "tiling_callback",        (gpointer)&(module->tiling_callback)))        module->tiling_callback = default_tiling_callback;
   if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             module->gui_update = NULL;
   if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              module->gui_reset = NULL;
@@ -264,9 +291,9 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
 
   if(!g_module_symbol(module->module, "gui_post_expose",        (gpointer)&(module->gui_post_expose)))        module->gui_post_expose = NULL;
   if(!g_module_symbol(module->module, "gui_focus",              (gpointer)&(module->gui_focus)))              module->gui_focus = NULL;
-  if(!g_module_symbol(module->module, "init_key_accels", (gpointer)&(module->init_key_accels)))        module->init_key_accels = NULL;
-  if(!g_module_symbol(module->module, "connect_key_accels", (gpointer)&(module->connect_key_accels)))        module->connect_key_accels = NULL;
-  if(!g_module_symbol(module->module, "disconnect_key_accels", (gpointer)&(module->disconnect_key_accels)))        module->disconnect_key_accels = NULL;
+  if(!g_module_symbol(module->module, "init_key_accels",        (gpointer)&(module->init_key_accels)))        module->init_key_accels = NULL;
+  if(!g_module_symbol(module->module, "connect_key_accels",     (gpointer)&(module->connect_key_accels)))     module->connect_key_accels = NULL;
+  if(!g_module_symbol(module->module, "disconnect_key_accels",  (gpointer)&(module->disconnect_key_accels)))  module->disconnect_key_accels = NULL;
   if(!g_module_symbol(module->module, "mouse_leave",            (gpointer)&(module->mouse_leave)))            module->mouse_leave = NULL;
   if(!g_module_symbol(module->module, "mouse_moved",            (gpointer)&(module->mouse_moved)))            module->mouse_moved = NULL;
   if(!g_module_symbol(module->module, "button_released",        (gpointer)&(module->button_released)))        module->button_released = NULL;
@@ -279,14 +306,14 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "init_global",            (gpointer)&(module->init_global)))            module->init_global = NULL;
   if(!g_module_symbol(module->module, "cleanup_global",         (gpointer)&(module->cleanup_global)))         module->cleanup_global = NULL;
   if(!g_module_symbol(module->module, "init_presets",           (gpointer)&(module->init_presets)))           module->init_presets = NULL;
-  if(!g_module_symbol(module->module, "commit_params",          (gpointer)&(module->commit_params)))          goto error;
+  if(!g_module_symbol(module->module, "commit_params",          (gpointer)&(module->commit_params)))          module->commit_params = default_commit_params;
   if(!g_module_symbol(module->module, "reload_defaults",        (gpointer)&(module->reload_defaults)))        module->reload_defaults = NULL;
-  if(!g_module_symbol(module->module, "init_pipe",              (gpointer)&(module->init_pipe)))              goto error;
-  if(!g_module_symbol(module->module, "cleanup_pipe",           (gpointer)&(module->cleanup_pipe)))           goto error;
+  if(!g_module_symbol(module->module, "init_pipe",              (gpointer)&(module->init_pipe)))              module->init_pipe = default_init_pipe;
+  if(!g_module_symbol(module->module, "cleanup_pipe",           (gpointer)&(module->cleanup_pipe)))           module->cleanup_pipe = default_cleanup_pipe;
   if(!g_module_symbol(module->module, "process",                (gpointer)&(module->process)))                goto error;
   if(!g_module_symbol(module->module, "process_tiling",         (gpointer)&(module->process_tiling)))         module->process_tiling = default_process_tiling;
   if(!darktable.opencl->inited ||
-      !g_module_symbol(module->module, "process_cl",             (gpointer)&(module->process_cl)))             module->process_cl = NULL;
+      !g_module_symbol(module->module, "process_cl",            (gpointer)&(module->process_cl)))             module->process_cl = NULL;
   if(!g_module_symbol(module->module, "process_tiling_cl",      (gpointer)&(module->process_tiling_cl)))      module->process_tiling_cl = darktable.opencl->inited ? default_process_tiling_cl : NULL;
   if(!g_module_symbol(module->module, "modify_roi_in",          (gpointer)&(module->modify_roi_in)))          module->modify_roi_in = dt_iop_modify_roi_in;
   if(!g_module_symbol(module->module, "modify_roi_out",         (gpointer)&(module->modify_roi_out)))         module->modify_roi_out = dt_iop_modify_roi_out;

@@ -76,6 +76,13 @@ int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int
   return res;
 }
 
+int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
+{
+  int res = dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*darktable.thumbnail_width*darktable.thumbnail_height, 5);
+  pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
+  return res;
+}
+
 int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
   int res = dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*darktable.thumbnail_width*darktable.thumbnail_height, 5);
@@ -113,7 +120,6 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
   pipe->iscale = iscale;
   pipe->input = input;
   pipe->image = dev->image_storage;
-  if(width < pipe->image.width && height < pipe->image.height) pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
 }
 
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
