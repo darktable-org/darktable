@@ -40,16 +40,6 @@ typedef struct {
 const dt_image_t*dt_lua_checkreadimage(lua_State*L,int index) {
 	lua_image* my_image=dt_lua_check(L,index,&dt_lua_image);
 	if(my_image->const_image ==NULL) {
-		// check that id is valid
-		sqlite3_stmt *stmt;
-		DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where id = ?1", -1, &stmt, NULL);
-		DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->imgid);
-		if(sqlite3_step(stmt) != SQLITE_ROW) {
-			sqlite3_finalize(stmt);
-			luaL_error(L,"invalid id for image : %d",my_image->imgid);
-			return NULL; // lua_error never returns, this is here to remind us of the fact
-		}
-		sqlite3_finalize(stmt);
 		my_image->const_image= dt_image_cache_read_get(darktable.image_cache,my_image->imgid);
 	}
 	return my_image->const_image;
@@ -83,6 +73,16 @@ void dt_lua_image_push(lua_State * L,int imgid) {
 	if(dt_lua_singleton_find(L,imgid,&dt_colorlabels_lua_type)) {
 		return;
 	}
+	// check that id is valid
+	sqlite3_stmt *stmt;
+	DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where id = ?1", -1, &stmt, NULL);
+	DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+	if(sqlite3_step(stmt) != SQLITE_ROW) {
+		sqlite3_finalize(stmt);
+		luaL_error(L,"invalid id for image : %d",imgid);
+		return; // lua_error never returns, this is here to remind us of the fact
+	}
+	sqlite3_finalize(stmt);
 	lua_image * my_image = (lua_image*)lua_newuserdata(L,sizeof(lua_image));
 	my_image->imgid=imgid;
 	my_image->const_image= NULL;

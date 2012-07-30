@@ -286,6 +286,30 @@ void dt_lua_singleton_foreach(lua_State*L,const dt_lua_type* type,lua_CFunction 
 		lua_pop(L, 1);
 	}
 }
+
+// closed on GC of the dt lib, usually when the lua interpreter closes
+static int dt_luacleanup(lua_State*L) {
+	dt_cleanup();
+	return 0;
+}
+
+// function used by the lua interpreter to load darktable
+int luaopen_darktable(lua_State *L) {
+	int tmp_argc = 0;
+	char *tmp_argv[]={"lua",NULL};
+	char **tmp_argv2 = &tmp_argv[0];
+	gtk_init (&tmp_argc, &tmp_argv2);
+	char *m_arg[] = {"darktable-cli", "--library", ":memory:", NULL};
+	// init dt without gui:
+	if(dt_init(3, m_arg, 0)) exit(1);
+	load_darktable_lib(L);
+	lua_newtable(L);
+	lua_pushcfunction(L,dt_luacleanup);
+	lua_setfield(L,-2,"__gc");
+	lua_setmetatable(L,-2);
+	return 1;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
