@@ -122,7 +122,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
       // printf("got default for image %d and operation %s\n", img->id, sqlite3_column_text(stmt, 2));
       memcpy(module->default_params, op_params, op_length);
       module->default_enabled = enabled;
-      if(bl_params &&  (bl_version = dt_develop_blend_version()) && (bl_length == sizeof(dt_develop_blend_params_t)))
+      if(bl_params &&  (bl_version == dt_develop_blend_version()) && (bl_length == sizeof(dt_develop_blend_params_t)))
       {
         memcpy(module->default_blendop_params, bl_params, sizeof(dt_develop_blend_params_t));
       }
