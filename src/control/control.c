@@ -661,6 +661,7 @@ void dt_control_quit()
   dt_pthread_mutex_unlock(&darktable.control->cond_mutex);
   // let gui pick up the running = 0 state and die
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+  if(darktable.lua_state) lua_close(darktable.lua_state);
 }
 
 void dt_control_shutdown(dt_control_t *s)
@@ -1512,12 +1513,12 @@ int dt_control_key_pressed_override(guint key, guint state)
   {
     if(key == GDK_Return)
     {
-      dt_lua_dostring(&darktable.control->vimkey[1]);
-      darktable.control->vimkey[0] = 0;
-      darktable.control->vimkey_cnt = 0;
       dt_control_log_ack_all();
       g_list_free(autocomplete);
       autocomplete = NULL;
+      dt_lua_dostring(&darktable.control->vimkey[1]);
+      darktable.control->vimkey[0] = 0;
+      darktable.control->vimkey_cnt = 0;
     }
     else if(key == GDK_Escape)
     {

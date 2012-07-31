@@ -24,11 +24,20 @@
 #include "common/film.h"
 #include "lua/stmt.h"
 
-static int lua_quit(lua_State *state) {
+static int lua_quit(lua_State *L) {
 	dt_control_quit();
 	return 0;
 }
 
+static int lua_print(lua_State *L) {
+	const int init_gui = (darktable.gui != NULL);
+	if(init_gui)
+		dt_control_log("%s",luaL_checkstring(L,-1));
+	else
+		printf("%s\n",luaL_checkstring(L,-1));
+
+	return 0;
+}
 static dt_lua_type* types[] = {
 	&dt_lua_stmt,
 	&dt_colorlabels_lua_type,
@@ -52,6 +61,10 @@ static int load_darktable_lib(lua_State *L) {
 	lua_pushcfunction(L,&dt_film_import_lua);
 	lua_settable(L,-3);
 	
+	lua_pushstring(L,"print");
+	lua_pushcfunction(L,&lua_print);
+	lua_settable(L,-3);
+	
 	dt_lua_type** cur_type = types;
 	char tmp[1024];
 	while(*cur_type) {
@@ -60,8 +73,7 @@ static int load_darktable_lib(lua_State *L) {
 		lua_pushcfunction(L,(*cur_type)->load);
 		luaL_newmetatable(L,tmp);
 		if(lua_pcall(L, 1, 1, 0)) {
-			dt_control_log("LUA ERROR while loading type %s : %s\n",(*cur_type)->name,lua_tostring(L,-1));
-			printf("LUA ERROR while loading type %s : %s\n",(*cur_type)->name,lua_tostring(L,-1));
+			dt_print(DT_DEBUG_LUA,"LUA ERROR while loading type %s : %s\n",(*cur_type)->name,lua_tostring(L,-1));
 			lua_pop(L,1);
 		}
 		lua_settable(L,-3); // attach the object (if any) to the name
@@ -73,14 +85,14 @@ static int load_darktable_lib(lua_State *L) {
 static void do_chunck(int loadresult) {
 	if(loadresult){
 		dt_control_log("LUA ERROR %s",lua_tostring(darktable.lua_state,-1));
-		printf("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
+		dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
 		lua_pop(darktable.lua_state,1);
 		return;
 	}
 	// change the env variable here to a copy of _G
 	if(lua_pcall(darktable.lua_state, 0, 0, 0)) {
 		dt_control_log("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
-		printf("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
+		dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
 		lua_pop(darktable.lua_state,1);
 	}
 
@@ -89,8 +101,7 @@ static void do_chunck(int loadresult) {
 		if((*cur_type)->clean) {
 			lua_pushcfunction(darktable.lua_state,(*cur_type)->clean);
 			if(lua_pcall(darktable.lua_state, 0, 0, 0)) {
-				dt_control_log("LUA ERROR while cleaning %s : %s\n",(*cur_type)->name,lua_tostring(darktable.lua_state,-1));
-				printf("LUA ERROR while cleaning %s : %s\n",(*cur_type)->name,lua_tostring(darktable.lua_state,-1));
+				dt_print(DT_DEBUG_LUA,"LUA ERROR while cleaning %s : %s\n",(*cur_type)->name,lua_tostring(darktable.lua_state,-1));
 				lua_pop(darktable.lua_state,1);
 			}
 		}
@@ -147,7 +158,7 @@ void dt_lua_init() {
 		GError * error;
 		GDir * lua_dir = g_dir_open(lua_path,0,&error);
 		if(error) {
-			printf("error opening %s : %s\n",lua_path,error->message);
+			dt_print(DT_DEBUG_LUA,"error opening %s : %s\n",lua_path,error->message);
 		} else {
 			gchar *tmp;
 			const gchar * filename = g_dir_read_name(lua_dir);
