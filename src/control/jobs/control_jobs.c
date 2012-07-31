@@ -859,7 +859,7 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
   GList *t = t1->index;
   int total = g_list_length(t);
   char message[512]= {0};
-  double fraction=0;
+  double fraction = 0;
   gchar *newdir = (gchar *)job->user_data;
 
   /* create a cancellable bgjob ui template */
@@ -878,7 +878,7 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
     return 1;
   }
 
-  gchar stmt_query[1024];
+  gchar stmt_query[1024] = {0};
   sqlite3_stmt *stmt;
   snprintf(stmt_query, 1024, "update images set film_id = %d where id = ?1", film_id);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_query, 1024, &stmt, NULL);
@@ -886,7 +886,7 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
     imgid = (long int)t->data;
-    gchar oldimgfname[512];
+    gchar oldimgfname[512] = {0};
     dt_image_full_path(imgid, oldimgfname, 512);
     gchar *imgbname = g_path_get_basename(oldimgfname);
     gchar *newimgfname = g_build_filename(newdir, imgbname, (gchar *)NULL);
