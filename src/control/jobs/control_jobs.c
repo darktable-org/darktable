@@ -802,7 +802,7 @@ void dt_control_move_images()
 
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
         GTK_WINDOW (win),
-        GTK_FILE_CHOOSER_ACTION_CREATE_FOLDER,
+        GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
         GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
         (char *)NULL);
@@ -867,11 +867,21 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
 
-  //  char query[1024];
-  //  sprintf(query, "update images set flags = (flags | %d) where id in (select imgid from selected_images)", DT_IMAGE_REMOVE);
-  //DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
+  // create new film roll for the destination directory
+  dt_film_t new_film;
+  const int film_id = dt_film_new(&new_film, newdir);
 
-  dt_collection_update(darktable.collection);
+  if (film_id == 0) {
+    dt_control_log(_("failed to create film roll for destination directory, aborting move.."));
+    g_free(newdir);
+    dt_control_backgroundjobs_destroy(darktable.control, jid);
+    return 1;
+  }
+
+  gchar stmt_query[1024];
+  sqlite3_stmt *stmt;
+  snprintf(stmt_query, 1024, "update images set film_id = %d where id = ?1", film_id);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_query, 1024, &stmt, NULL);
 
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
@@ -879,25 +889,27 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
     gchar oldimgfname[512];
     dt_image_full_path(imgid, oldimgfname, 512);
     gchar *imgbname = g_path_get_basename(oldimgfname);
+    gchar *newimgfname = g_build_filename(newdir, imgbname, (gchar *)NULL);
 
-    // Synchronize .xmp files before move
-    dt_image_synch_all_xmp(oldimgfname);
-
-    // Move image and .xmp file
     // TODO: Handle duplicates
-    gchar *newimgfname = g_build_filename(newdir,imgbname,(gchar *)NULL);
-    
+
+    // move image and .xmp file    
     if (g_rename(oldimgfname, newimgfname) == 0)
     {
-      gchar *oldxmpfname = g_strconcat(oldimgfname, ".xmp",(gchar *)NULL);
-      gchar *newxmpfname = g_strconcat(newimgfname, ".xmp",(gchar *)NULL);
+      // move xmp file
+      gchar *oldxmpfname = g_strconcat(oldimgfname, ".xmp", (gchar *)NULL);
+      gchar *newxmpfname = g_strconcat(newimgfname, ".xmp", (gchar *)NULL);
       (void)g_rename(oldxmpfname,newxmpfname);
+
+      // update database
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+      sqlite3_step(stmt); // return code is SQLITE_DONE if ok
+      sqlite3_reset(stmt);
+      sqlite3_clear_bindings(stmt);
       
-      dt_image_remove(imgid);
       g_free(oldxmpfname);
       g_free(newxmpfname);
     }
-    
     g_free(imgbname);
     g_free(newimgfname);
 
@@ -905,6 +917,8 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
     fraction=1.0/total;
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
+  sqlite3_finalize(stmt);
+  dt_collection_update(darktable.collection);
 
   g_free(newdir);
   dt_control_backgroundjobs_destroy(darktable.control, jid);
