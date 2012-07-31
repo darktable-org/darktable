@@ -878,28 +878,34 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
     return 1;
   }
 
-  gchar stmt_query[1024] = {0};
+  // statement for updating film_id to new film_id of the moved image
+  gchar stmt_query[512] = {0};
   sqlite3_stmt *stmt;
-  snprintf(stmt_query, 1024, "update images set film_id = %d where id = ?1", film_id);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_query, 1024, &stmt, NULL);
+  snprintf(stmt_query, 512, "update images set film_id = %d where id = ?1", film_id);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_query, 512, &stmt, NULL);
 
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
     imgid = (long int)t->data;
     gchar oldimgfname[512] = {0};
+    gchar newimgfname[512] = {0};
     dt_image_full_path(imgid, oldimgfname, 512);
     gchar *imgbname = g_path_get_basename(oldimgfname);
-    gchar *newimgfname = g_build_filename(newdir, imgbname, (gchar *)NULL);
+    snprintf(newimgfname, 512, "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
 
     // TODO: Handle duplicates
+    // TODO: Handle files with same name in destination dir, rename second, ...?
+    // TODO: Use gio's' g_file_move instead of g_rename?
 
     // move image and .xmp file    
     if (g_rename(oldimgfname, newimgfname) == 0)
     {
       // move xmp file
+      dt_image_path_append_version(imgid, oldimgfname, 512);
+      dt_image_path_append_version(imgid, newimgfname, 512);
       gchar *oldxmpfname = g_strconcat(oldimgfname, ".xmp", (gchar *)NULL);
       gchar *newxmpfname = g_strconcat(newimgfname, ".xmp", (gchar *)NULL);
-      (void)g_rename(oldxmpfname,newxmpfname);
+      (void)g_rename(oldxmpfname, newxmpfname);
 
       // update database
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -911,7 +917,6 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
       g_free(newxmpfname);
     }
     g_free(imgbname);
-    g_free(newimgfname);
 
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
