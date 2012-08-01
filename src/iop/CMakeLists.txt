@@ -8,10 +8,12 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 	profile_gamma colorcontrast lowpass vibrance 
 	channelmixer graduatednd relight zonesystem demosaic atrous tonemap 
   colortransfer colorize invert shadhi
-  cacorrect overexposed bloom soften clahe equalizer highpass hotpixels lowlight spots rawdenoise borders nlmeans levels flip globaltonemap)
+  cacorrect overexposed bloom soften clahe equalizer highpass hotpixels
+  lowlight spots rawdenoise borders nlmeans levels flip globaltonemap bilat)
 
 add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")
+add_library(bilat MODULE "bilat.c")
 add_library(highpass MODULE "highpass.c")
 add_library(lowpass MODULE "lowpass.c")
 add_library(shadhi MODULE "shadhi.c")

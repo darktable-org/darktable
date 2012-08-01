@@ -175,6 +175,7 @@ dt_bilateral_blur(
 void
 dt_bilateral_slice(
     const dt_bilateral_t *const b,
+    const float          *const in,
     const float          *out)
 {
   const int ox = 1;
@@ -189,7 +190,7 @@ dt_bilateral_slice(
     for(int i=0;i<b->width;i++)
     {
       float x, y, z, xf, yf, zf;
-      const float L = out[index];
+      const float L = in[index];
       image_to_grid(b, i, j, L, &x, &y, &z);
       // trilinear lookup:
       xf = x - (int)x;
