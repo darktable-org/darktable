@@ -43,15 +43,15 @@ typedef struct dt_iop_useless_params_t
   // to a minimum. if you have to change this struct, it will break
   // users data bases, and you should increment the version
   // of DT_MODULE(VERSION) above!
-  int checker_scale;
+  float sigma_r;
+  float sigma_s;
 }
 dt_iop_useless_params_t;
 
 typedef struct dt_iop_useless_gui_data_t
 {
-  // whatever you need to make your gui happy.
-  // stored in self->gui_data
-  GtkWidget *scale; // this is needed by gui_update
+  GtkWidget *spatial;
+  GtkWidget *range;
 }
 dt_iop_useless_gui_data_t;
 
@@ -149,7 +149,7 @@ spatial_callback(GtkWidget *w, dt_iop_module_t *self)
 }
 
 static void
-spatial_callback(GtkWidget *w, dt_iop_module_t *self)
+range_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
   p->sigma_r = dt_bauhaus_slider_get(w);
