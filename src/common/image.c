@@ -27,6 +27,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs.h"
+#include "lua/image.h"
 #include <math.h>
 #include <sqlite3.h>
 #include <string.h>
@@ -482,6 +483,10 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   g_free(imgfname);
   g_free(fname);
   g_free(globbuf);
+
+  dt_lua_image_push(darktable.lua_state,id);
+  dt_lua_trigger_event("post-import-image");
+  lua_pop(darktable.lua_state,1);
 
   return id;
 }

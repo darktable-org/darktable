@@ -382,6 +382,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
         else if(!strcmp(argv[k+1], "opencl"))    darktable.unmuted |= DT_DEBUG_OPENCL;    // gpu accel via opencl
         else if(!strcmp(argv[k+1], "sql"))       darktable.unmuted |= DT_DEBUG_SQL; // SQLite3 queries
         else if(!strcmp(argv[k+1], "memory"))    darktable.unmuted |= DT_DEBUG_MEMORY; // some stats on mem usage now and then.
+        else if(!strcmp(argv[k+1], "lua"))       darktable.unmuted |= DT_DEBUG_LUA; // lua errors are reported on console
         else return usage(argv[0]);
         k ++;
       }

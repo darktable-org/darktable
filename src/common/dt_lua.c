@@ -61,6 +61,7 @@ static int do_chunk(lua_State *L,int loadresult,int nargs,int nresult) {
 		if((*cur_type)->clean) {
 			lua_pushcfunction(darktable.lua_state,(*cur_type)->clean);
 			if(lua_pcall(darktable.lua_state, 0, 0, 0)) {
+				dt_control_log("LUA ERROR while cleaning %s : %s\n",(*cur_type)->name,lua_tostring(darktable.lua_state,-1));
 				dt_print(DT_DEBUG_LUA,"LUA ERROR while cleaning %s : %s\n",(*cur_type)->name,lua_tostring(darktable.lua_state,-1));
 				lua_pop(darktable.lua_state,1);
 			}
@@ -134,7 +135,6 @@ static int register_multiinstance_event(lua_State* L) {
 static int trigger_multiinstance_event(lua_State* L) {
 	// -1 is our handler;
 	event_handler * handler =  lua_touserdata(L,-1);
-	lua_pop(L,1);
 	// -1..-n are our args
 	const int top_marker=lua_gettop(L);
 	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
@@ -154,11 +154,12 @@ static int trigger_multiinstance_event(lua_State* L) {
 		lua_getfield(L,-3,"data");// callback data
 		lua_remove(L,-4);
 		for(int i = 1 ; i<=handler->nargs ;i++) { // event dependant parameters
-			lua_pushvalue(L, top_marker -handler->nargs +i); 
+			lua_pushvalue(L, top_marker -1-handler->nargs +i); 
 		}
 		result += do_chunk(L,0,handler->nargs+2,handler->nresults);
 		lua_pushinteger(L,loop_index);
 	}
+	lua_remove(L,top_marker+1); //our data
 	return result;
 }
 
@@ -206,8 +207,8 @@ static int trigger_singleton_event(lua_State* L) {
 
 
 static event_handler event_list[] = {
-	{"test",register_multiinstance_event,trigger_multiinstance_event,3,LUA_MULTRET},
-	{"test2",register_singleton_event,trigger_singleton_event,3,0},
+	{"post-import-image",register_multiinstance_event,trigger_multiinstance_event,1,0},
+	{"test",register_singleton_event,trigger_singleton_event,0,0},
 	{NULL,NULL,NULL,0,0}
 };
 
@@ -241,18 +242,12 @@ int dt_lua_trigger_event(const char*event) {
 	luaL_checktype(darktable.lua_state,-1,LUA_TLIGHTUSERDATA);
 	event_handler * handler =  lua_touserdata(darktable.lua_state,-1);
 	lua_remove(darktable.lua_state,-2); // leave the handler on the top for callee
-	return handler->on_event(darktable.lua_state);
+	const int result = handler->on_event(darktable.lua_state);
+	lua_remove(darktable.lua_state,-(result +1));
+	return result;
 	
 }
 
-static int lua_test(lua_State*L) {
-	lua_pushstring(L,"s1");
-	lua_pushstring(L,"s2");
-	lua_pushstring(L,"s3");
-	printf("event returned %d\n",dt_lua_trigger_event("test"));
-	return 0;
-
-}
 
 static int load_darktable_lib(lua_State *L) {
 	const int init_gui = (darktable.gui != NULL);
@@ -266,10 +261,6 @@ static int load_darktable_lib(lua_State *L) {
 	if(init_gui) {
 		lua_pushstring(L,"quit");
 		lua_pushcfunction(L,&lua_quit);
-		lua_settable(L,-3);
-
-		lua_pushstring(L,"test");
-		lua_pushcfunction(L,&lua_test);
 		lua_settable(L,-3);
 
 		lua_newtable(L);
