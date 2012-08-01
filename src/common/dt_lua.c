@@ -93,6 +93,74 @@ static int lua_print(lua_State *L) {
 
 	return 0;
 }
+#if 0
+static void debug_table(lua_State * L,int t) {
+   /* table is in the stack at index 't' */
+     lua_pushnil(L);  /* first key */
+     while (lua_next(L, t-1) != 0) {
+       /* uses 'key' (at index -2) and 'value' (at index -1) */
+       printf("%s - %s\n",
+		       luaL_checkstring(L,-2),
+              lua_typename(L, lua_type(L, -1)));
+       /* removes 'value'; keeps 'key' for next iteration */
+       lua_pop(L, 1);
+     }
+}
+#endif
+static int register_multiinstance_event(lua_State* L) {
+	// 1 is the event name (checked)
+	// 2 is the action to perform (checked)
+	// 3 is the extra param (exist at this point)
+	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
+	lua_getfield(L,-1,lua_tostring(L,1));
+	if(lua_isnil(L,-1)) {
+		lua_pop(L,1);
+		lua_newtable(L);
+		lua_pushvalue(L,-1);
+		lua_setfield(L,-3,lua_tostring(L,1));
+	}
+
+	lua_newtable(L);
+	lua_pushvalue(L,2);
+	lua_setfield(L,-2,"action");
+	lua_pushvalue(L,3);
+	lua_setfield(L,-2,"data");
+
+	luaL_ref(L,-2);
+	lua_pop(L,2);
+	return 0;
+}
+
+static int trigger_multiinstance_event(lua_State* L) {
+	// -1 is our handler;
+	event_handler * handler =  lua_touserdata(L,-1);
+	lua_pop(L,1);
+	// -1..-n are our args
+	const int top_marker=lua_gettop(L);
+	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
+	lua_getfield(L,-1,handler->evt_name);
+	lua_remove(L,-2);
+
+
+	lua_pushnil(L);  /* first key */
+	int result = 0;
+	while (lua_next(L, top_marker +1) != 0) {
+		const int loop_index=luaL_checkint(L,-2);
+		lua_remove(L,-2);
+		/* uses 'key' (at index -2) and 'value' (at index -1) */
+		// prepare the call
+		lua_getfield(L,-1,"action"); // function to call
+		lua_pushstring(L,handler->evt_name);// param 1 is the event
+		lua_getfield(L,-3,"data");// callback data
+		lua_remove(L,-4);
+		for(int i = 1 ; i<=handler->nargs ;i++) { // event dependant parameters
+			lua_pushvalue(L, top_marker -handler->nargs +i); 
+		}
+		result += do_chunk(L,0,handler->nargs+2,handler->nresults);
+		lua_pushinteger(L,loop_index);
+	}
+	return result;
+}
 
 
 static int register_singleton_event(lua_State* L) {
@@ -138,7 +206,8 @@ static int trigger_singleton_event(lua_State* L) {
 
 
 static event_handler event_list[] = {
-	{"test",register_singleton_event,trigger_singleton_event,3,0},
+	{"test",register_multiinstance_event,trigger_multiinstance_event,3,LUA_MULTRET},
+	{"test2",register_singleton_event,trigger_singleton_event,3,0},
 	{NULL,NULL,NULL,0,0}
 };
 
@@ -203,7 +272,6 @@ static int load_darktable_lib(lua_State *L) {
 		lua_pushcfunction(L,&lua_test);
 		lua_settable(L,-3);
 
-		lua_pushstring(L,"register_event");
 		lua_newtable(L);
 		lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
 		lua_newtable(L);
@@ -214,6 +282,7 @@ static int load_darktable_lib(lua_State *L) {
 			handler++;
 		}
 		lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_event_list");
+		lua_pushstring(L,"register_event");
 		lua_pushcfunction(L,&lua_register_event);
 		lua_settable(L,-3);
 	}
