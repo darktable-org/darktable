@@ -863,7 +863,7 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
   gchar *newdir = (gchar *)job->user_data;
 
   /* create a cancellable bgjob ui template */
-  snprintf(message, 512, ngettext ("moving %d image", "moving %d images", total), total);
+  g_snprintf(message, 512, ngettext ("moving %d image", "moving %d images", total), total);
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
 
@@ -881,7 +881,7 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
   // statement for updating film_id of image and it's duplicates to new film_id
   gchar stmt_query[512] = {0};
   sqlite3_stmt *stmt;
-  snprintf(stmt_query, 512, "update images set film_id = %d where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", film_id);
+  g_snprintf(stmt_query, 512, "update images set film_id = %d where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", film_id);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_query, 512, &stmt, NULL);
 
   // statement for getting ids of the image to be moved and it's duplicates
@@ -895,7 +895,7 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
     gchar newimgfname[512] = {0};
     dt_image_full_path(imgid, oldimgfname, 512);
     gchar *imgbname = g_path_get_basename(oldimgfname);
-    snprintf(newimgfname, 512, "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
+    g_snprintf(newimgfname, 512, "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
 
     // TODO: Handle files with same name in destination dir, rename second, ...?
     // TODO: Use gio's' g_file_move instead of g_rename?
@@ -914,7 +914,7 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
 	g_strlcpy(newxmp, newimgfname, 512);
 	dt_image_path_append_version(id, oldxmp, 512);
 	dt_image_path_append_version(id, newxmp, 512);
-	g_strlcat(oldxmp, ".xmp", 512);
+	g_strlcat(oldxmp, ".xmp", 512); //TODO: check for truncation
 	g_strlcat(newxmp, ".xmp", 512);
 	(void)g_rename(oldxmp, newxmp);
       }
