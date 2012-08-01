@@ -824,8 +824,8 @@ void dt_control_move_images()
       GTK_DIALOG_DESTROY_WITH_PARENT,
       GTK_MESSAGE_QUESTION,
       GTK_BUTTONS_YES_NO,
-      ngettext("do you really want to physically move the %d selected image to %s?",
-	       "do you really want to physically move %d selected images to %s?", number), number, dir);
+      ngettext("do you really want to physically move the %d selected image to %s?\n(all duplicates will be moved along)",
+	       "do you really want to physically move %d selected images to %s?\n(all duplicates will be moved along)", number), number, dir);
   gtk_window_set_title(GTK_WINDOW(dialog), ngettext("move image?", "move images?", number));
 
   gint res = gtk_dialog_run(GTK_DIALOG(dialog));
