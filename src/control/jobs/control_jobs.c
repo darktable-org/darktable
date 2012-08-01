@@ -884,6 +884,10 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
   snprintf(stmt_query, 512, "update images set film_id = %d where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", film_id);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_query, 512, &stmt, NULL);
 
+  // statement for getting ids of the image to be moved and it's duplicates
+  sqlite3_stmt *duplicates_stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", -1, &duplicates_stmt, NULL);
+
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
     imgid = (long int)t->data;
@@ -893,28 +897,35 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
     gchar *imgbname = g_path_get_basename(oldimgfname);
     snprintf(newimgfname, 512, "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
 
-    // TODO: Handle duplicates
     // TODO: Handle files with same name in destination dir, rename second, ...?
     // TODO: Use gio's' g_file_move instead of g_rename?
 
-    // move image and .xmp file    
+    // move image    
     if (g_rename(oldimgfname, newimgfname) == 0)
     {
-      // move xmp file
-      dt_image_path_append_version(imgid, oldimgfname, 512);
-      dt_image_path_append_version(imgid, newimgfname, 512);
-      gchar *oldxmpfname = g_strconcat(oldimgfname, ".xmp", (gchar *)NULL);
-      gchar *newxmpfname = g_strconcat(newimgfname, ".xmp", (gchar *)NULL);
-      (void)g_rename(oldxmpfname, newxmpfname);
+
+      // move xmp files of image and duplicates
+      DT_DEBUG_SQLITE3_BIND_INT(duplicates_stmt, 1, imgid);
+      while (sqlite3_step(duplicates_stmt) == SQLITE_ROW)
+      {
+        long int id = sqlite3_column_int(duplicates_stmt, 0);
+	gchar oldxmp[512], newxmp[512];
+	g_strlcpy(oldxmp, oldimgfname, 512);
+	g_strlcpy(newxmp, newimgfname, 512);
+	dt_image_path_append_version(id, oldxmp, 512);
+	dt_image_path_append_version(id, newxmp, 512);
+	g_strlcat(oldxmp, ".xmp", 512);
+	g_strlcat(newxmp, ".xmp", 512);
+	(void)g_rename(oldxmp, newxmp);
+      }
+      sqlite3_reset(duplicates_stmt);
+      sqlite3_clear_bindings(duplicates_stmt);
 
       // update database
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
       sqlite3_step(stmt); // return code is SQLITE_DONE if ok
       sqlite3_reset(stmt);
       sqlite3_clear_bindings(stmt);
-      
-      g_free(oldxmpfname);
-      g_free(newxmpfname);
     }
     g_free(imgbname);
 
@@ -923,6 +934,7 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
   sqlite3_finalize(stmt);
+  sqlite3_finalize(duplicates_stmt);
   dt_collection_update(darktable.collection);
 
   g_free(newdir);
