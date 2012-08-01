@@ -28,6 +28,13 @@ void dt_lua_dostring(const char* command);
 
 
 /**
+  (-0|+nresult)
+  triggers an event, expects nargs on the stack, will push nresult on the stack
+  where nargs and nresult depend of the type of event.
+
+  */
+int dt_lua_trigger_event(const char*event);
+/**
   define an OO type to create, will be used as a submodule of the darktable module
   */
 typedef struct {

@@ -24,6 +24,61 @@
 #include "common/film.h"
 #include "lua/stmt.h"
 
+typedef struct {
+	const char* evt_name;
+	lua_CFunction on_register;
+	lua_CFunction on_event;
+	int nargs;
+	int nresults;
+} event_handler;
+
+static dt_lua_type* types[] = {
+	&dt_lua_stmt,
+	&dt_colorlabels_lua_type,
+	&dt_history_lua_type,
+	&dt_lua_image,
+	&dt_lua_images,
+	NULL
+};
+static int do_chunk(lua_State *L,int loadresult,int nargs,int nresult) {
+	int result;
+	if(loadresult){
+		dt_control_log("LUA ERROR %s",lua_tostring(L,-1));
+		dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(L,-1));
+		lua_pop(L,1);
+		return 0;
+	}
+	result = lua_gettop(L)-(nargs+1); // remember the stack size to findout the number of results in case of multiret
+	if(lua_pcall(L, nargs, nresult,0)) {
+		dt_control_log("LUA ERROR %s\n",lua_tostring(L,-1));
+		dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(L,-1));
+		lua_pop(L,1);
+	}
+	result= lua_gettop(L) -result;
+
+	dt_lua_type** cur_type = types;
+	while(*cur_type) {
+		if((*cur_type)->clean) {
+			lua_pushcfunction(darktable.lua_state,(*cur_type)->clean);
+			if(lua_pcall(darktable.lua_state, 0, 0, 0)) {
+				dt_print(DT_DEBUG_LUA,"LUA ERROR while cleaning %s : %s\n",(*cur_type)->name,lua_tostring(darktable.lua_state,-1));
+				lua_pop(darktable.lua_state,1);
+			}
+		}
+		cur_type++;
+	}
+	lua_gc(darktable.lua_state,LUA_GCCOLLECT,0);
+	return result;
+}
+// closed on GC of the dt lib, usually when the lua interpreter closes
+static int dt_luacleanup(lua_State*L) {
+	const int init_gui = (darktable.gui != NULL);
+	dt_film_remove_empty();
+	if(!init_gui)
+		dt_cleanup();
+	return 0;
+}
+
 static int lua_quit(lua_State *L) {
 	dt_control_quit();
 	return 0;
@@ -38,22 +93,128 @@ static int lua_print(lua_State *L) {
 
 	return 0;
 }
-static dt_lua_type* types[] = {
-	&dt_lua_stmt,
-	&dt_colorlabels_lua_type,
-	&dt_history_lua_type,
-	&dt_lua_image,
-	&dt_lua_images,
-	NULL
+
+
+static int register_singleton_event(lua_State* L) {
+	// 1 is the event name (checked)
+	// 2 is the action to perform (checked)
+	// 3 is the extra param (exist at this point)
+	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
+	lua_getfield(L,-1,lua_tostring(L,1));
+	if(!lua_isnil(L,-1)) {
+		lua_pop(L,2);
+		return luaL_error(L,"an action has already been registered for event %s",lua_tostring(L,1));
+	}
+	lua_pop(L,1);
+	lua_newtable(L);
+	lua_pushvalue(L,2);
+	lua_setfield(L,-2,"action");
+	lua_pushvalue(L,3);
+	lua_setfield(L,-2,"data");
+	lua_setfield(L,-2,lua_tostring(L,1));
+	lua_pop(L,1);
+	return 0;
+}
+
+static int trigger_singleton_event(lua_State* L) {
+	// -1 is our handler;
+	event_handler * handler =  lua_touserdata(L,-1);
+	lua_pop(L,1);
+	// -1..-n are our args
+	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
+	lua_getfield(L,-1,handler->evt_name);
+	// prepare the call
+	lua_getfield(L,-1,"action"); // function to call
+	lua_pushstring(L,handler->evt_name);// param 1 is the event
+	lua_getfield(L,-3,"data");// callback data
+	lua_remove(L,-5);
+	lua_remove(L,-4);
+	for(int i = 0 ; i<handler->nargs ;i++) { // event dependant parameters
+		lua_pushvalue(L, - (3+handler->nargs)); // i is unused, this is normal
+	}
+	return do_chunk(L,0,handler->nargs+2,handler->nresults);
+}
+
+
+
+static event_handler event_list[] = {
+	{"test",register_singleton_event,trigger_singleton_event,3,0},
+	{NULL,NULL,NULL,0,0}
 };
+
+static int lua_register_event(lua_State *L) {
+	// 1 is event name
+	const char*evt_name = luaL_checkstring(L,1);
+	// 2 is event handler
+	luaL_checktype(L,2,LUA_TFUNCTION);
+	// 3 is an optional arg of any type
+	if(lua_gettop(L) == 2) {
+		lua_pushnil(L);
+	}
+	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_list");
+	lua_getfield(L,-1,evt_name);
+	if(lua_isnil(L,-1)) {
+		lua_pop(L,3);
+		return luaL_error(L,"incorrect event type : %s\n",evt_name);
+	}
+	luaL_checktype(L,-1,LUA_TLIGHTUSERDATA);
+	event_handler * handler =  lua_touserdata(L,-1);
+	lua_pop(L,2); // restore the stack to only have the 3 parameters
+	handler->on_register(L);
+	return 0;
+
+
+}
+
+int dt_lua_trigger_event(const char*event) {
+	lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_event_list");
+	lua_getfield(darktable.lua_state,-1,event);
+	luaL_checktype(darktable.lua_state,-1,LUA_TLIGHTUSERDATA);
+	event_handler * handler =  lua_touserdata(darktable.lua_state,-1);
+	lua_remove(darktable.lua_state,-2); // leave the handler on the top for callee
+	return handler->on_event(darktable.lua_state);
+	
+}
+
+static int lua_test(lua_State*L) {
+	lua_pushstring(L,"s1");
+	lua_pushstring(L,"s2");
+	lua_pushstring(L,"s3");
+	printf("event returned %d\n",dt_lua_trigger_event("test"));
+	return 0;
+
+}
 
 static int load_darktable_lib(lua_State *L) {
 	const int init_gui = (darktable.gui != NULL);
 	lua_newtable(L);
+	// set the metatable
+	lua_newtable(L);
+	lua_pushcfunction(L,dt_luacleanup);
+	lua_setfield(L,-2,"__gc");
+	lua_setmetatable(L,-2);
 
 	if(init_gui) {
 		lua_pushstring(L,"quit");
 		lua_pushcfunction(L,&lua_quit);
+		lua_settable(L,-3);
+
+		lua_pushstring(L,"test");
+		lua_pushcfunction(L,&lua_test);
+		lua_settable(L,-3);
+
+		lua_pushstring(L,"register_event");
+		lua_newtable(L);
+		lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
+		lua_newtable(L);
+		event_handler * handler = event_list;
+		while(handler->evt_name) {
+			lua_pushlightuserdata(L,handler);
+			lua_setfield(L,-2,handler->evt_name);
+			handler++;
+		}
+		lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_event_list");
+		lua_pushcfunction(L,&lua_register_event);
 		lua_settable(L,-3);
 	}
 	
@@ -81,33 +242,6 @@ static int load_darktable_lib(lua_State *L) {
 	}
 
 	return 1;
-}
-static void do_chunck(int loadresult) {
-	if(loadresult){
-		dt_control_log("LUA ERROR %s",lua_tostring(darktable.lua_state,-1));
-		dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
-		lua_pop(darktable.lua_state,1);
-		return;
-	}
-	// change the env variable here to a copy of _G
-	if(lua_pcall(darktable.lua_state, 0, 0, 0)) {
-		dt_control_log("LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
-		dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(darktable.lua_state,-1));
-		lua_pop(darktable.lua_state,1);
-	}
-
-	dt_lua_type** cur_type = types;
-	while(*cur_type) {
-		if((*cur_type)->clean) {
-			lua_pushcfunction(darktable.lua_state,(*cur_type)->clean);
-			if(lua_pcall(darktable.lua_state, 0, 0, 0)) {
-				dt_print(DT_DEBUG_LUA,"LUA ERROR while cleaning %s : %s\n",(*cur_type)->name,lua_tostring(darktable.lua_state,-1));
-				lua_pop(darktable.lua_state,1);
-			}
-		}
-		cur_type++;
-	}
-	lua_gc(darktable.lua_state,LUA_GCCOLLECT,0);
 }
 
 static const luaL_Reg loadedlibs[] = {
@@ -165,7 +299,7 @@ void dt_lua_init() {
 			while(filename) {
 				tmp = g_strconcat(lua_path,"/",filename,NULL);
 				if (g_file_test(tmp, G_FILE_TEST_IS_REGULAR) && filename[0] != '.') {
-					do_chunck(luaL_loadfile(darktable.lua_state,tmp));
+					do_chunk(darktable.lua_state,luaL_loadfile(darktable.lua_state,tmp),0,0);
 				}
 				g_free(tmp);
 				filename = g_dir_read_name(lua_dir);
@@ -178,7 +312,7 @@ void dt_lua_init() {
 
 
 void dt_lua_dostring(const char* command) {
-      do_chunck(luaL_loadstring(darktable.lua_state, command));
+      do_chunk(darktable.lua_state,luaL_loadstring(darktable.lua_state, command),0,0);
 }
 
 static int char_list_next(lua_State *L){
@@ -301,12 +435,6 @@ void dt_lua_singleton_foreach(lua_State*L,const dt_lua_type* type,lua_CFunction 
 	}
 }
 
-// closed on GC of the dt lib, usually when the lua interpreter closes
-static int dt_luacleanup(lua_State*L) {
-	dt_film_remove_empty();
-	dt_cleanup();
-	return 0;
-}
 
 // function used by the lua interpreter to load darktable
 int luaopen_darktable(lua_State *L) {
@@ -318,10 +446,6 @@ int luaopen_darktable(lua_State *L) {
 	// init dt without gui:
 	if(dt_init(3, m_arg, 0)) exit(1);
 	load_darktable_lib(L);
-	lua_newtable(L);
-	lua_pushcfunction(L,dt_luacleanup);
-	lua_setfield(L,-2,"__gc");
-	lua_setmetatable(L,-2);
 	return 1;
 }
 
