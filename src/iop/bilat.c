@@ -117,7 +117,7 @@ void init(dt_iop_module_t *module)
   // by default:
   module->default_enabled = 0;
   // order has to be changed by editing the dependencies in tools/iop_dependencies.py
-  module->priority = 901; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 788; // chosen manually to avoid conflicts during merge.
   module->params_size = sizeof(dt_iop_useless_params_t);
   module->gui_data = NULL;
   // init defaults:
