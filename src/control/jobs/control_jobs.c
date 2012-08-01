@@ -814,7 +814,7 @@ void dt_control_move_images()
   }
   gtk_widget_destroy (filechooser);
 
-  if(!g_file_test(dir, G_FILE_TEST_IS_DIR)) 
+  if(!dir || !g_file_test(dir, G_FILE_TEST_IS_DIR)) 
   {
     g_free(dir);
     return;
@@ -863,7 +863,7 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
   gchar *newdir = (gchar *)job->user_data;
 
   /* create a cancellable bgjob ui template */
-  g_snprintf(message, 512, ngettext ("moving %d image", "moving %d images", total), total);
+  g_snprintf(message, 512, ngettext("moving %d image", "moving %d images", total), total);
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
 
@@ -890,6 +890,7 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
 
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
+    //TODO: several places where string truncation could occur unnoticed
     imgid = (long int)t->data;
     gchar oldimgfname[512] = {0};
     gchar newimgfname[512] = {0};
@@ -909,14 +910,14 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
       while (sqlite3_step(duplicates_stmt) == SQLITE_ROW)
       {
         long int id = sqlite3_column_int(duplicates_stmt, 0);
-	gchar oldxmp[512], newxmp[512];
-	g_strlcpy(oldxmp, oldimgfname, 512);
-	g_strlcpy(newxmp, newimgfname, 512);
-	dt_image_path_append_version(id, oldxmp, 512);
-	dt_image_path_append_version(id, newxmp, 512);
-	g_strlcat(oldxmp, ".xmp", 512); //TODO: check for truncation
-	g_strlcat(newxmp, ".xmp", 512);
-	(void)g_rename(oldxmp, newxmp);
+        gchar oldxmp[512], newxmp[512];
+        g_strlcpy(oldxmp, oldimgfname, 512);
+        g_strlcpy(newxmp, newimgfname, 512);
+        dt_image_path_append_version(id, oldxmp, 512);
+        dt_image_path_append_version(id, newxmp, 512);
+        g_strlcat(oldxmp, ".xmp", 512);
+        g_strlcat(newxmp, ".xmp", 512);
+        (void)g_rename(oldxmp, newxmp);
       }
       sqlite3_reset(duplicates_stmt);
       sqlite3_clear_bindings(duplicates_stmt);
