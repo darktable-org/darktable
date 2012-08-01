@@ -159,7 +159,6 @@ static void dt_control_sanitize_database()
   sqlite3_finalize(stmt);
   sqlite3_finalize(innerstmt);
 
-  // TODO: Create in attached memory database
   // temporary stuff for some ops, need this for some reason with newer sqlite3:
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
     "CREATE TABLE memory.color_labels_temp (imgid INTEGER PRIMARY KEY)",

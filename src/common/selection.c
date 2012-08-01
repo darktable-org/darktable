@@ -244,6 +244,9 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
 
 void dt_selection_select_filmroll(dt_selection_t *selection)
 {
+  // clear at start, too, just to be sure:
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), 
+	"delete from memory.tmp_selection", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), 
 	"insert into memory.tmp_selection select imgid from selected_images", 
 	NULL, NULL, NULL);
