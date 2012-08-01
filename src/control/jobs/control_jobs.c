@@ -898,11 +898,10 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
     gchar *imgbname = g_path_get_basename(oldimgfname);
     g_snprintf(newimgfname, 512, "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
 
-    // TODO: Handle files with same name in destination dir, rename second, ...?
-    // TODO: Use gio's' g_file_move instead of g_rename?
-
     // move image    
-    if (g_rename(oldimgfname, newimgfname) == 0)
+    // TODO: Use gio's' g_file_move instead of g_rename?
+    if (!g_file_test(newimgfname, G_FILE_TEST_EXISTS)
+	&& (g_rename(oldimgfname, newimgfname) == 0))
     {
 
       // move xmp files of image and duplicates
