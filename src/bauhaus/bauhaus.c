@@ -1350,6 +1350,7 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 static void
 dt_bauhaus_hide_popup()
 {
+  gdk_keyboard_ungrab(GDK_CURRENT_TIME);
   gtk_widget_hide(darktable.bauhaus->popup_window);
   darktable.bauhaus->current = NULL;
   // TODO: give focus to center view? do in accept() as well?
