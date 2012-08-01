@@ -878,10 +878,10 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
     return 1;
   }
 
-  // statement for updating film_id to new film_id of the moved image
+  // statement for updating film_id of image and it's duplicates to new film_id
   gchar stmt_query[512] = {0};
   sqlite3_stmt *stmt;
-  snprintf(stmt_query, 512, "update images set film_id = %d where id = ?1", film_id);
+  snprintf(stmt_query, 512, "update images set film_id = %d where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", film_id);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_query, 512, &stmt, NULL);
 
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
