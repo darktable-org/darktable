@@ -18,9 +18,68 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "control/control.h"
+#include "lua/image.h"
+#include "common/colorlabels.h"
+#include "common/history.h"
+#include "common/film.h"
 #include "lua/stmt.h"
 
+/**
+  hardcoded list of types to register
+  other types can be added dynamically
+  */
+static dt_lua_type* types[] = {
+	&dt_lua_stmt,
+	&dt_colorlabels_lua_type,
+	&dt_history_lua_type,
+	&dt_lua_image,
+	&dt_lua_images,
+	NULL
+};
+int dt_lua_push_type_table(lua_State*L){
+	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_type");
+	if(lua_isnil(L,-1)) {
+		lua_pop(L,1);
+		lua_newtable(L);
+		lua_pushvalue(L,-1);
+		lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_type");
+	}
+	return 1;
+}
 
+
+void register_type_sub(lua_State*L,dt_lua_type* type){
+	char tmp[1024];
+	snprintf(tmp,1024,"dt_lua_%s",type->name);
+	lua_pushstring(L,type->name);
+	lua_pushcfunction(L,type->load);
+	luaL_newmetatable(L,tmp);
+	if(lua_pcall(L, 1, 1, 0)) {
+		dt_print(DT_DEBUG_LUA,"LUA ERROR while loading type %s : %s\n",type->name,lua_tostring(L,-1));
+		lua_pop(L,1);
+	} else {
+		lua_settable(L,-3); // attach the object (if any) to the name
+		dt_lua_push_type_table(L);
+		lua_pushlightuserdata(L,type);
+		lua_setfield(L,-2,type->name);
+		lua_pop(L,1);
+	}
+}
+
+void dt_lua_register_type(lua_State*L,dt_lua_type* type){
+	// find the darktable library
+	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_dtlib");
+	register_type_sub(L,type);
+}
+
+
+void dt_lua_init_types(lua_State*L) {
+	dt_lua_type** cur_type = types;
+	while(*cur_type) {
+		register_type_sub(L,*cur_type);
+		cur_type++;
+	}
+};
 static int char_list_next(lua_State *L){
 	int index;
 	const char **list = lua_touserdata(L,lua_upvalueindex(1));

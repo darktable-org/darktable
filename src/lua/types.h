@@ -31,6 +31,9 @@ typedef struct {
 	lua_CFunction clean; /// to be called when a DT lua run is finished to release locks etc... WARNING : this is not a GC, only for locks
 } dt_lua_type;
 
+void dt_lua_register_type(lua_State*L,dt_lua_type* type);
+void dt_lua_init_types(lua_State*L); // assumes -1 is the table of the darktable library
+int dt_lua_push_type_table(lua_State*L);
 /** helper to build types
   (0,0)
   sets a metadata with an __pair methamethod that will go throught the list of names
