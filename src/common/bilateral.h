@@ -36,8 +36,8 @@ image_to_grid(
     float *z)
 {
   *x = CLAMPS(i/b->sigma_s, 0, b->size_x-1);
-  *y = CLAMPS(i/b->sigma_s, 0, b->size_y-1);
-  *z = CLAMPS(i/b->sigma_r, 0, b->size_z-1);
+  *y = CLAMPS(j/b->sigma_s, 0, b->size_y-1);
+  *z = CLAMPS(L/b->sigma_r, 0, b->size_z-1);
 }
 
 static void
@@ -67,19 +67,22 @@ dt_bilateral_init(
   b->size_x = CLAMPS((int)roundf(width/sigma_s), 4, 1000);
   b->size_y = CLAMPS((int)roundf(height/sigma_s), 4, 1000);
   b->size_z = CLAMPS((int)roundf(120.0f/sigma_r), 4, 1000);
+  b->width = width;
+  b->height = height;
   b->sigma_s = sigma_s;
   b->sigma_r = sigma_r;
   b->buf = dt_alloc_align(16, b->size_x*b->size_y*b->size_z*sizeof(float));
   b->scratch = dt_alloc_align(16, MAX(MAX(b->size_x, b->size_y), b->size_z)*dt_get_num_threads()*sizeof(float));
 
-#if 0
   fprintf(stderr, "[bilateral] created grid [%d %d %d] with sigma %f %f\n", b->size_x, b->size_y, b->size_z, b->sigma_s, b->sigma_r);
-  blur_line(b->buf, b->scratch, 4*4, 4, 1,
-      4, 4, 4, 0, 0, 0, 0, 0);
-  blur_line(b->buf, b->scratch, 1, 4*4, 4,
-      4, 4, 4, 0, 0, 0, 0, 0);
-  blur_line(b->buf, b->scratch, 1, 4, 4*4,
-      4, 4, 4, 0, 0, 0, 0, 0);
+#if 0
+  blur_line(b->buf, b->scratch, 5*5, 5, 1,
+      5, 5, 5, 0, 0, 0, 0, 0);
+  blur_line(b->buf, b->scratch, 1, 5*5, 4,
+      5, 5, 5, 0, 0, 0, 0, 0);
+  blur_line(b->buf, b->scratch, 1, 5, 5*5,
+      5, 5, 5, 0, 0, 0, 0, 0);
+  exit(0);
 #endif
   return b;
 }
@@ -102,7 +105,7 @@ dt_bilateral_splat(
       const float L = in[index];
       image_to_grid(b, i, j, L, &x, &y, &z);
       // nearest neighbour splatting:
-      const int grid_index = (int)x + b->size_y*((int)y + b->size_z*(int)z);
+      const int grid_index = (int)x + b->size_x*((int)y + b->size_y*(int)z);
       // sum up payload here, doesn't have to be same as edge stopping data
       // for cross bilateral applications.
       // also note that this is not clipped (as L->z is), so potentially hdr/out of gamut
@@ -140,6 +143,11 @@ blur_line(
     int index = k*offset1;
     for(int j=0;j<size2;j++)
     {
+      if(index != j*offset2 + k*offset1)
+      {
+        printf("index %d [%d %d %d]\n", index, k, j, 0);
+        printf("** wrong index!\n");
+      }
       // need to cache our neighbours because we want to do
       // the convolution in place:
       float *cache = scratch + dt_get_thread_num() * size3;
@@ -194,15 +202,18 @@ void
 dt_bilateral_blur(
     dt_bilateral_t *b)
 {
-  blur_line(b->buf, b->scratch, b->size_x*b->size_y, b->size_y, 1,
+  // gaussian up to 3 sigma
+  blur_line(b->buf, b->scratch, b->size_x*b->size_y, b->size_x, 1,
       b->size_z, b->size_y, b->size_x,
-      0.01f, 0.5f, 1.0f, 0.5f, 0.01f); // FIXME: gaussian kernel
-  blur_line(b->buf, b->scratch, b->size_x*b->size_y, 1, b->size_y,
+      1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f);
+  // gaussian up to 3 sigma
+  blur_line(b->buf, b->scratch, b->size_x*b->size_y, 1, b->size_x,
       b->size_z, b->size_x, b->size_y,
-      0.01f, 0.5f, 1.0f, 0.5f, 0.01f); // FIXME: gaussian
-  blur_line(b->buf, b->scratch, 1, b->size_y, b->size_x*b->size_y,
+      1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f);
+  // -2 derivative of the gaussian up to 3 sigma: x*exp(-x*x)
+  blur_line(b->buf, b->scratch, 1, b->size_x, b->size_x*b->size_y,
       b->size_x, b->size_y, b->size_z,
-      -0.01f, -0.5f, 0.0f, 0.5f, 0.01f); // FIXME: derivative of gaussian x*exp(-x^2)
+      -0.03663127777746836f, -0.36787944117144233f, 0.0f, 0.36787944117144233f, 0.03663127777746836f);
 }
 
 
@@ -212,9 +223,11 @@ dt_bilateral_slice(
     const float          *const in,
     float                *out)
 {
-#if 0
+  // FIXME: this is wrong:
+  const float norm = 1.0f/(b->sigma_r);
+#if 1
   const int ox = 1;
-  const int oy = b->size_y;
+  const int oy = b->size_x;
   const int oz = b->size_y*b->size_x;
 #endif
 #ifdef _OPENMP
@@ -225,22 +238,21 @@ dt_bilateral_slice(
     int index = 4*j*b->width;
     for(int i=0;i<b->width;i++)
     {
-      float x, y, z;//, xf, yf, zf;
+      float x, y, z, xf, yf, zf;
       const float L = in[index];
       image_to_grid(b, i, j, L, &x, &y, &z);
-#if 0
       // trilinear lookup:
-      xf = x - (int)x;
-      x  = (int)x;
-      yf = y - (int)y;
-      y  = (int)y;
-      zf = z - (int)z;
-      z  = (int)z;
+      const int xi = MIN((int)x, b->size_x-2);
+      const int yi = MIN((int)y, b->size_y-2);
+      const int zi = MIN((int)z, b->size_z-2);
+#if 1
+      xf = x - xi;
+      yf = y - yi;
+      zf = z - zi;
 #endif
-      const int gi = (int)x + b->size_y*((int)y + b->size_z*(int)z);
-      const float Lout = L + b->buf[gi];
-#if 0
-      // TODO: clamp to boundaries!
+      const int gi = xi + b->size_x*(yi + b->size_y*zi);
+      const float Lout = L + norm * (//*b->buf[gi];
+#if 1
         b->buf[gi]          * (1.0f - xf) * (1.0f - yf) * (1.0f - zf) +
         b->buf[gi+ox]       * (       xf) * (1.0f - yf) * (1.0f - zf) +
         b->buf[gi+oy]       * (1.0f - xf) * (       yf) * (1.0f - zf) +
@@ -248,9 +260,13 @@ dt_bilateral_slice(
         b->buf[gi+oz]       * (1.0f - xf) * (1.0f - yf) * (       zf) +
         b->buf[gi+ox+oz]    * (       xf) * (1.0f - yf) * (       zf) +
         b->buf[gi+oy+oz]    * (1.0f - xf) * (       yf) * (       zf) +
-        b->buf[gi+ox+oy+oz] * (       xf) * (       yf) * (       zf);
+        b->buf[gi+ox+oy+oz] * (       xf) * (       yf) * (       zf));
 #endif
-      out[index] = Lout;
+      out[index] = MAX(0.0f, Lout);
+      // and copy color and mask
+      out[index+1] = in[index+1];
+      out[index+2] = in[index+2];
+      out[index+3] = in[index+3];
       index += 4;
     }
   }

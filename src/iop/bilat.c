@@ -57,10 +57,6 @@ dt_iop_useless_gui_data_t;
 
 typedef struct dt_iop_useless_global_data_t
 {
-  // this is optionally stored in self->global_data
-  // and can be used to alloc globally needed stuff
-  // which is needed in gui mode and during processing.
-
   // we don't need it for this example (as for most dt plugins)
 }
 dt_iop_useless_global_data_t;
