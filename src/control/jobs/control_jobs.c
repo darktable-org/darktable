@@ -878,12 +878,6 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
     return 1;
   }
 
-  // statement for updating film_id of image and it's duplicates to new film_id
-  gchar stmt_query[512] = {0};
-  sqlite3_stmt *stmt;
-  g_snprintf(stmt_query, 512, "update images set film_id = %d where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", film_id);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_query, 512, &stmt, NULL);
-
   // statement for getting ids of the image to be moved and it's duplicates
   sqlite3_stmt *duplicates_stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", -1, &duplicates_stmt, NULL);
@@ -901,13 +895,12 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
     // move image    
     // TODO: Use gio's' g_file_move instead of g_rename?
     if (!g_file_test(newimgfname, G_FILE_TEST_EXISTS)
-	&& (g_rename(oldimgfname, newimgfname) == 0))
+        && (g_rename(oldimgfname, newimgfname) == 0))
     {
-
-      // move xmp files of image and duplicates
       DT_DEBUG_SQLITE3_BIND_INT(duplicates_stmt, 1, imgid);
       while (sqlite3_step(duplicates_stmt) == SQLITE_ROW)
       {
+        // move xmp files of image and duplicates
         long int id = sqlite3_column_int(duplicates_stmt, 0);
         gchar oldxmp[512], newxmp[512];
         g_strlcpy(oldxmp, oldimgfname, 512);
@@ -917,15 +910,19 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
         g_strlcat(oldxmp, ".xmp", 512);
         g_strlcat(newxmp, ".xmp", 512);
         (void)g_rename(oldxmp, newxmp);
+
+        // update film_id
+        const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, id  );
+        dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+
+        img->film_id = film_id;
+
+        // write through to db, but not to xmp.
+        dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+        dt_image_cache_read_release(darktable.image_cache, img);
       }
       sqlite3_reset(duplicates_stmt);
       sqlite3_clear_bindings(duplicates_stmt);
-
-      // update database
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-      sqlite3_step(stmt); // return code is SQLITE_DONE if ok
-      sqlite3_reset(stmt);
-      sqlite3_clear_bindings(stmt);
     }
     g_free(imgbname);
 
@@ -933,7 +930,6 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
     fraction=1.0/total;
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
-  sqlite3_finalize(stmt);
   sqlite3_finalize(duplicates_stmt);
   dt_collection_update(darktable.collection);
 
