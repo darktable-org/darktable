@@ -300,7 +300,11 @@ dt_film_import_blocking(const char *dirname, const int blocking)
   g_strlcpy(film->dirname, dirname, 512);
   film->dir = g_dir_open(film->dirname, 0, NULL);
   dt_film_import1_init(&j, film);
-  dt_control_add_job(darktable.control, &j);
+  if(!blocking) {
+	  dt_control_add_job(darktable.control, &j);
+  } else {
+	  dt_film_import1_run(&j);
+  }
 
   return film->id;
 }
@@ -521,7 +525,7 @@ int dt_film_import_lua(lua_State *L){
 	int result;
 
 	if (g_file_test(full_name, G_FILE_TEST_IS_DIR)) {
-		result =dt_film_import(full_name);
+		result =dt_film_import_blocking(full_name,1);
 		if(result == 0) {
 			free(full_name);
 			return luaL_error(L,"error while importing");
