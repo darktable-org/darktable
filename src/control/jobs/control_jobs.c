@@ -897,11 +897,13 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
     if (!g_file_test(newimg, G_FILE_TEST_EXISTS)
         && (g_rename(oldimg, newimg) == 0))
     {
+      // first move xmp files of image and duplicates
+      GList *dup_list = NULL;
       DT_DEBUG_SQLITE3_BIND_INT(duplicates_stmt, 1, imgid);
       while (sqlite3_step(duplicates_stmt) == SQLITE_ROW)
       {
-        // move xmp files of image and duplicates
         long int id = sqlite3_column_int(duplicates_stmt, 0);
+        dup_list = g_list_append(dup_list, GINT_TO_POINTER(id));
         gchar oldxmp[512], newxmp[512];
         g_strlcpy(oldxmp, oldimg, 512);
         g_strlcpy(newxmp, newimg, 512);
@@ -909,20 +911,27 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
         dt_image_path_append_version(id, newxmp, 512);
         g_strlcat(oldxmp, ".xmp", 512);
         g_strlcat(newxmp, ".xmp", 512);
-        (void)g_rename(oldxmp, newxmp);
-
-        // update film_id
-        const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, id  );
-        dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
-
-        img->film_id = film_id;
-
-        // write through to db, but not to xmp.
-        dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-        dt_image_cache_read_release(darktable.image_cache, img);
+        if (g_file_test(oldxmp, G_FILE_TEST_EXISTS))
+            (void)g_rename(oldxmp, newxmp);
       }
       sqlite3_reset(duplicates_stmt);
       sqlite3_clear_bindings(duplicates_stmt);
+
+      // then update database and cache
+      // if update was performed in above loop, dt_image_path_append_version()
+      // would return wrong version!
+      while (dup_list)
+      {
+        long int id = GPOINTER_TO_INT(dup_list->data);
+        const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, id);
+        dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+        img->film_id = film_id;
+        // write through to db, but not to xmp
+        dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+        dt_image_cache_read_release(darktable.image_cache, img);
+        dup_list = g_list_delete_link(dup_list, dup_list);
+      }
+      g_list_free(dup_list);
     }
     g_free(imgbname);
 
