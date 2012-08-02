@@ -23,11 +23,10 @@
 #include "common/history.h"
 #include "common/film.h"
 #include "lua/stmt.h"
-
-typedef struct {
+typedef struct event_handler{
 	const char* evt_name;
 	lua_CFunction on_register;
-	lua_CFunction on_event;
+	int (*on_event)(lua_State * L,const char* evt_name, int nargs,int nresults);
 } event_handler;
 
 static dt_lua_type* types[] = {
@@ -38,7 +37,7 @@ static dt_lua_type* types[] = {
 	&dt_lua_images,
 	NULL
 };
-static int do_chunk(lua_State *L,int loadresult,int nargs,int nresult) {
+static int do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
 	int result;
 	if(loadresult){
 		dt_control_log("LUA ERROR %s",lua_tostring(L,-1));
@@ -47,8 +46,8 @@ static int do_chunk(lua_State *L,int loadresult,int nargs,int nresult) {
 		return 0;
 	}
 	result = lua_gettop(L)-(nargs+1); // remember the stack size to findout the number of results in case of multiret
-	if(lua_pcall(L, nargs, nresult,0)) {
-		dt_control_log("LUA ERROR %s\n",lua_tostring(L,-1));
+	if(lua_pcall(L, nargs, nresults,0)) {
+		dt_control_log("LUA ERROR %s",lua_tostring(L,-1));
 		dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(L,-1));
 		lua_pop(L,1);
 	}
@@ -59,7 +58,7 @@ static int do_chunk(lua_State *L,int loadresult,int nargs,int nresult) {
 		if((*cur_type)->clean) {
 			lua_pushcfunction(darktable.lua_state,(*cur_type)->clean);
 			if(lua_pcall(darktable.lua_state, 0, 0, 0)) {
-				dt_control_log("LUA ERROR while cleaning %s : %s\n",(*cur_type)->name,lua_tostring(darktable.lua_state,-1));
+				dt_control_log("LUA ERROR while cleaning %s : %s",(*cur_type)->name,lua_tostring(darktable.lua_state,-1));
 				dt_print(DT_DEBUG_LUA,"LUA ERROR while cleaning %s : %s\n",(*cur_type)->name,lua_tostring(darktable.lua_state,-1));
 				lua_pop(darktable.lua_state,1);
 			}
@@ -93,6 +92,8 @@ static int lua_print(lua_State *L) {
 	return 0;
 }
 #if 0
+	printf("%d\n",__LINE__);
+	for(int i=1 ;i<=lua_gettop(L);i++) printf("\t%s\n",lua_typename(L,lua_type(L,i)));
 static void debug_table(lua_State * L,int t) {
    /* table is in the stack at index 't' */
      lua_pushnil(L);  /* first key */
@@ -106,6 +107,49 @@ static void debug_table(lua_State * L,int t) {
      }
 }
 #endif
+static int register_singleton_event(lua_State* L) {
+	// 1 is the event name (checked)
+	// 2 is the action to perform (checked)
+	// 3 is the extra param (exist at this point)
+	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
+	lua_getfield(L,-1,lua_tostring(L,1));
+	if(!lua_isnil(L,-1)) {
+		lua_pop(L,2);
+		return luaL_error(L,"an action has already been registered for event %s",lua_tostring(L,1));
+	}
+	lua_pop(L,1);
+	lua_newtable(L);
+	lua_pushvalue(L,2);
+	lua_setfield(L,-2,"action");
+	lua_pushvalue(L,3);
+	lua_setfield(L,-2,"data");
+	lua_setfield(L,-2,lua_tostring(L,1));
+	lua_pop(L,1);
+	return 0;
+}
+
+static int trigger_singleton_event(lua_State * L,const char* evt_name, int nargs,int nresults) {
+	// -1..-n are our args
+	const int top_marker=lua_gettop(L);
+	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
+	lua_getfield(L,-1,evt_name);
+	if(lua_isnil(L,-1)) {
+		lua_pop(L,2+nargs);
+		if(nresults == LUA_MULTRET) return 0;
+		for(int i = 0 ; i < nresults ; i++) lua_pushnil(L);
+		return nresults;
+	}
+	// prepare the call
+	lua_getfield(L,-1,"action"); // function to call
+	lua_insert(L,top_marker-nargs+1);
+	lua_pushstring(L,evt_name);// param 1 is the event
+	lua_insert(L,top_marker-nargs+2);
+	lua_getfield(L,-1,"data");// callback data
+	lua_insert(L,top_marker-nargs+3);
+	lua_pop(L,2);
+	return do_chunk(L,0,nargs+2,nresults);
+}
+
 static int register_multiinstance_event(lua_State* L) {
 	// 1 is the event name (checked)
 	// 2 is the action to perform (checked)
@@ -130,17 +174,17 @@ static int register_multiinstance_event(lua_State* L) {
 	return 0;
 }
 
-static int trigger_multiinstance_event(lua_State* L) {
-	// -1 is the event name;
-	const char * evt_name =  lua_tostring(L,-1);
-	// -2 is nargs
-	const int nargs = lua_tointeger(L,-2);
-	// -3 is nresults
-	const int nresults = lua_tointeger(L,-3);
-	// -4..-n are our args
+static int trigger_multiinstance_event(lua_State * L,const char* evt_name, int nargs,int nresults) {
+	// -1..-n are our args
 	const int top_marker=lua_gettop(L);
 	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
 	lua_getfield(L,-1,evt_name);
+	if(lua_isnil(L,-1)) {
+		lua_pop(L,2+nargs);
+		if(nresults == LUA_MULTRET) return 0;
+		for(int i = 0 ; i < nresults ; i++) lua_pushnil(L);
+		return nresults;
+	}
 	lua_remove(L,-2);
 
 
@@ -155,66 +199,86 @@ static int trigger_multiinstance_event(lua_State* L) {
 		lua_pushstring(L,evt_name);// param 1 is the event
 		lua_getfield(L,-3,"data");// callback data
 		lua_remove(L,-4);
-		for(int i = 1 ; i<=nargs ;i++) { // event dependant parameters
-			lua_pushvalue(L, top_marker -3-nargs +i); 
+		for(int i = 0 ; i<nargs ;i++) { // event dependant parameters
+			lua_pushvalue(L, top_marker -nargs +1 +i); 
 		}
 		result += do_chunk(L,0,nargs+2,nresults);
 		lua_pushinteger(L,loop_index);
 	}
-	lua_remove(L,top_marker+1); //our data
+	for(int i=0; i < nargs+1;i++)
+		lua_remove(L,top_marker-nargs+1); //the table of events + our params
 	return result;
 }
 
 
-static int register_singleton_event(lua_State* L) {
+static int register_chained_event(lua_State* L) {
 	// 1 is the event name (checked)
 	// 2 is the action to perform (checked)
 	// 3 is the extra param (exist at this point)
 	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
 	lua_getfield(L,-1,lua_tostring(L,1));
-	if(!lua_isnil(L,-1)) {
-		lua_pop(L,2);
-		return luaL_error(L,"an action has already been registered for event %s",lua_tostring(L,1));
+	if(lua_isnil(L,-1)) {
+		lua_pop(L,1);
+		lua_newtable(L);
+		lua_pushvalue(L,-1);
+		lua_setfield(L,-3,lua_tostring(L,1));
 	}
-	lua_pop(L,1);
+
 	lua_newtable(L);
 	lua_pushvalue(L,2);
 	lua_setfield(L,-2,"action");
 	lua_pushvalue(L,3);
 	lua_setfield(L,-2,"data");
-	lua_setfield(L,-2,lua_tostring(L,1));
-	lua_pop(L,1);
+
+	luaL_ref(L,-2);
+	lua_pop(L,2);
 	return 0;
 }
 
-static int trigger_singleton_event(lua_State* L) {
-	// -1 is the event name;
-	const char * evt_name =  lua_tostring(L,-1);
-	// -2 is nargs
-	const int nargs = lua_tointeger(L,-2);
-	// -3 is nresults
-	const int nresults = lua_tointeger(L,-3);
-	// -4..-n are our args
-	const int top_marker=lua_gettop(L);
+static int trigger_chained_event(lua_State * L,const char* evt_name, int nargs,int nresults) {
+	// -1..-n are our args
 	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
 	lua_getfield(L,-1,evt_name);
-	// prepare the call
-	lua_getfield(L,-1,"action"); // function to call
-	lua_pushstring(L,evt_name);// param 1 is the event
-	lua_getfield(L,-3,"data");// callback data
-	lua_remove(L,-5);
-	lua_remove(L,-4);
-	for(int i = 0 ; i<nargs ;i++) { // event dependant parameters
-		lua_pushvalue(L, top_marker -3-nargs +i); 
+	if(lua_isnil(L,-1)) {
+		lua_pop(L,1);
+		lua_newtable(L);
+		lua_pushvalue(L,-1);
+		lua_setfield(L,-3,lua_tostring(L,1));
 	}
-	return do_chunk(L,0,nargs+2,nresults);
+	lua_remove(L,-2);
+	lua_insert(L,-nargs -1); // push the table below the args
+
+
+	lua_pushnil(L);  /* first key */
+	int lastnargs = nargs;
+	while (lua_next(L, -(lastnargs+2)) != 0) {
+		const int loop_index=luaL_checkint(L,-2);
+		lua_remove(L,-2);
+		/* uses 'key' (at index -2) and 'value' (at index -1) */
+		// prepare the call
+		lua_getfield(L,-1,"action"); // function to call
+		lua_insert(L,-(nargs+2));
+		lua_pushstring(L,evt_name);// param 1 is the event
+		lua_insert(L,-(nargs+2));
+		lua_getfield(L,-1,"data");// callback data
+		lua_insert(L,-(nargs+2));
+		lua_pop(L,1);
+		lastnargs = do_chunk(L,0,nargs+2,nargs);
+		lua_pushinteger(L,loop_index);
+	}
+	lua_remove(L,-lastnargs -1); //our data
+	if(nresults == LUA_MULTRET) return lastnargs;
+	else if(lastnargs < nresults) for(int i = lastnargs; i< nresults; i++) lua_pushnil(L);
+	else if(lastnargs > nresults) for(int i = nresults; i< lastnargs; i++) lua_pop(L,1);
+
+	return nresults;
 }
 
 
-
 static event_handler event_list[] = {
-	{"post-import-image",register_multiinstance_event,trigger_multiinstance_event},
-	{"post-export-image",register_multiinstance_event,trigger_multiinstance_event},
+	//{"post-import-image",register_multiinstance_event,trigger_multiinstance_event},
+	{"pre-export",register_chained_event,trigger_chained_event},
+	{"post-import-image",register_multiinstance_event,trigger_multiinstance_event}, // avoid error because of unused function
 	{"test",register_singleton_event,trigger_singleton_event}, // avoid error because of unused function
 	{NULL,NULL,NULL}
 };
@@ -243,17 +307,13 @@ static int lua_register_event(lua_State *L) {
 
 }
 
-int dt_lua_trigger_event(const char*event,int nargs,int nresult) {
+int dt_lua_trigger_event(const char*event,int nargs,int nresults) {
 	lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_event_list");
 	lua_getfield(darktable.lua_state,-1,event);
 	luaL_checktype(darktable.lua_state,-1,LUA_TLIGHTUSERDATA);
 	event_handler * handler =  lua_touserdata(darktable.lua_state,-1);
 	lua_pop(darktable.lua_state,2);
-	lua_pushinteger(darktable.lua_state,nresult);
-	lua_pushinteger(darktable.lua_state,nargs);
-	lua_pushstring(darktable.lua_state,event);
-	const int result = handler->on_event(darktable.lua_state);
-	lua_remove(darktable.lua_state,-(result +1));
+	const int result = handler->on_event(darktable.lua_state,event,nargs,nresults);
 	return result;
 	
 }
@@ -354,20 +414,19 @@ void dt_lua_init() {
 		lua_setfield(darktable.lua_state, -2, lib->name);
 	}
 	lua_pop(darktable.lua_state, 1);  /* remove _PRELOAD table */
-	
-	char configdir[PATH_MAX],lua_path[PATH_MAX];
+	char configdir[PATH_MAX];
 	dt_loc_get_user_config_dir(configdir, PATH_MAX);
-	g_snprintf(lua_path, PATH_MAX, "%s/lua_init", configdir);
-	if (g_file_test(lua_path, G_FILE_TEST_IS_DIR)) {
+	g_strlcat(configdir,"/lua_init",PATH_MAX);
+	if (g_file_test(configdir, G_FILE_TEST_IS_DIR)) {
 		GError * error;
-		GDir * lua_dir = g_dir_open(lua_path,0,&error);
-		if(error) {
-			dt_print(DT_DEBUG_LUA,"error opening %s : %s\n",lua_path,error->message);
+		GDir * lua_dir = g_dir_open(configdir,0,&error);
+		if(!lua_dir) {
+			dt_print(DT_DEBUG_LUA,"error opening %s : %s\n",configdir,error->message);
 		} else {
 			gchar *tmp;
 			const gchar * filename = g_dir_read_name(lua_dir);
 			while(filename) {
-				tmp = g_strconcat(lua_path,"/",filename,NULL);
+				tmp = g_strconcat(configdir,"/",filename,NULL);
 				if (g_file_test(tmp, G_FILE_TEST_IS_REGULAR) && filename[0] != '.') {
 					do_chunk(darktable.lua_state,luaL_loadfile(darktable.lua_state,tmp),0,0);
 				}
