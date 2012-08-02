@@ -293,6 +293,10 @@ dt_image_orientation_to_flip_bits(const int orient)
   }
 }
 
+/** physically move image with imgid and its duplicates to the film roll
+ *  given by filmid. returns -1 on error, 0 on success. */
+int32_t dt_image_move(const int32_t imgid, const int32_t filmid);
+
 // xmp functions:
 void dt_image_write_sidecar_file(int imgid);
 void dt_image_synch_xmp(const int selected);

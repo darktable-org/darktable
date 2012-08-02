@@ -854,7 +854,6 @@ void dt_control_move_images_job_init(dt_job_t *job)
 
 int32_t dt_control_move_images_job_run(dt_job_t *job)
 {
-  long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
   int total = g_list_length(t);
@@ -869,80 +868,24 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
 
   // create new film roll for the destination directory
   dt_film_t new_film;
-  const int film_id = dt_film_new(&new_film, newdir);
+  const int32_t film_id = dt_film_new(&new_film, newdir);
+  g_free(newdir);
 
   if (film_id == 0) {
     dt_control_log(_("failed to create film roll for destination directory, aborting move.."));
-    g_free(newdir);
     dt_control_backgroundjobs_destroy(darktable.control, jid);
     return 1;
   }
 
-  // statement for getting ids of the image to be moved and it's duplicates
-  sqlite3_stmt *duplicates_stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", -1, &duplicates_stmt, NULL);
-
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
-    //TODO: several places where string truncation could occur unnoticed
-    imgid = (long int)t->data;
-    gchar oldimg[512] = {0};
-    gchar newimg[512] = {0};
-    dt_image_full_path(imgid, oldimg, 512);
-    gchar *imgbname = g_path_get_basename(oldimg);
-    g_snprintf(newimg, 512, "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
-
-    // move image    
-    // TODO: Use gio's' g_file_move instead of g_rename?
-    if (!g_file_test(newimg, G_FILE_TEST_EXISTS)
-        && (g_rename(oldimg, newimg) == 0))
-    {
-      // first move xmp files of image and duplicates
-      GList *dup_list = NULL;
-      DT_DEBUG_SQLITE3_BIND_INT(duplicates_stmt, 1, imgid);
-      while (sqlite3_step(duplicates_stmt) == SQLITE_ROW)
-      {
-        long int id = sqlite3_column_int(duplicates_stmt, 0);
-        dup_list = g_list_append(dup_list, GINT_TO_POINTER(id));
-        gchar oldxmp[512], newxmp[512];
-        g_strlcpy(oldxmp, oldimg, 512);
-        g_strlcpy(newxmp, newimg, 512);
-        dt_image_path_append_version(id, oldxmp, 512);
-        dt_image_path_append_version(id, newxmp, 512);
-        g_strlcat(oldxmp, ".xmp", 512);
-        g_strlcat(newxmp, ".xmp", 512);
-        if (g_file_test(oldxmp, G_FILE_TEST_EXISTS))
-            (void)g_rename(oldxmp, newxmp);
-      }
-      sqlite3_reset(duplicates_stmt);
-      sqlite3_clear_bindings(duplicates_stmt);
-
-      // then update database and cache
-      // if update was performed in above loop, dt_image_path_append_version()
-      // would return wrong version!
-      while (dup_list)
-      {
-        long int id = GPOINTER_TO_INT(dup_list->data);
-        const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, id);
-        dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
-        img->film_id = film_id;
-        // write through to db, but not to xmp
-        dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-        dt_image_cache_read_release(darktable.image_cache, img);
-        dup_list = g_list_delete_link(dup_list, dup_list);
-      }
-      g_list_free(dup_list);
-    }
-    g_free(imgbname);
-
+    dt_image_move(GPOINTER_TO_INT(t->data), film_id);
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
-  sqlite3_finalize(duplicates_stmt);
-  dt_collection_update(darktable.collection);
 
-  g_free(newdir);
+  dt_collection_update(darktable.collection);
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
   return 0;
