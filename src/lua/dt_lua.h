@@ -15,21 +15,24 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_LUA_IMAGE_H
-#define DT_LUA_IMAGE_H
+#ifndef DT_LUA_H
+#define DT_LUA_H
 #include <lualib.h>
 #include <lua.h>
-#include "lua/dt_lua.h"
-#include "lua/types.h"
+#include <lauxlib.h>
+
+/** initialize lua stuff at DT start time */
+void dt_lua_init();
+/** runs a command in the DT lua environement, command in any valid lua string */
+void dt_lua_dostring(const char* command);
+/** executes the chunk on the top of the stack with nargs and nresult
+  calling convention is similar to lua_pcall
+  loadresult is to ease loading, if it's not 0 we assume the top message is an error message, we print it and return 0
+  */
+int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults);
 
 
-
-extern dt_lua_type dt_lua_images;
-
-void dt_lua_image_push(lua_State * L,int imgid);
-extern dt_lua_type dt_lua_image;
 #endif
-
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

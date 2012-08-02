@@ -27,6 +27,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs.h"
+#include "lua/events.h"
 #include "lua/image.h"
 #include <math.h>
 #include <sqlite3.h>

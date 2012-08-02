@@ -21,7 +21,8 @@
 #include <sqlite3.h>
 #include <glib.h>
 #include <inttypes.h>
-#include "common/dt_lua.h"
+#include "lua/dt_lua.h"
+#include "lua/types.h"
 
 /** copy history from imgid and pasts on dest_imgid, merge or overwrite... */
 int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge);

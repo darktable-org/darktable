@@ -27,7 +27,7 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"
-#include "common/dt_lua.h"
+#include "lua/dt_lua.h"
 #include "bauhaus/bauhaus.h"
 #include "views/view.h"
 #include "gui/gtk.h"

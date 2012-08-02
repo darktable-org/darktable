@@ -35,7 +35,7 @@
 #include "common/mipmap_cache.h"
 #include "common/opencl.h"
 #include "common/points.h"
-#include "common/dt_lua.h"
+#include "lua/dt_lua.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
 #include "libs/lib.h"

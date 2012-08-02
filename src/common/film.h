@@ -20,7 +20,7 @@
 
 #include "common/darktable.h"
 #include "common/dtpthread.h"
-#include "common/dt_lua.h"
+#include "lua/dt_lua.h"
 
 #include <inttypes.h>
 #include <glib.h>

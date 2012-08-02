@@ -18,7 +18,8 @@
 #ifndef DT_LUA_STMT_H
 #define DT_LUA_STMT_H
 #include <sqlite3.h>
-#include "common/dt_lua.h"
+#include "lua/dt_lua.h"
+#include "lua/types.h"
 
 /*
 lua type for a sqlite3_stmt that will be auto-finalized on __gc

@@ -1,3 +1,4 @@
+
 /*
     This file is part of darktable,
     copyright (c) 2012 Jeremy Rosen
@@ -15,25 +16,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_LUA_H
-#define DT_LUA_H
+#ifndef DT_LUA_TYPES_H
+#define DT_LUA_TYPES_H
 #include <lualib.h>
 #include <lua.h>
 #include <lauxlib.h>
 
-/** initialize lua stuff at DT start time */
-void dt_lua_init();
-/** runs a command in the DT lua environement, command in any valid lua string */
-void dt_lua_dostring(const char* command);
-
-
-/**
-  (-0|+nresult)
-  triggers an event, expects nargs on the stack, will push nresult on the stack
-  where nargs and nresult depend of the type of event.
-
-  */
-int dt_lua_trigger_event(const char*event,int nargs, int nresult);
 /**
   define an OO type to create, will be used as a submodule of the darktable module
   */

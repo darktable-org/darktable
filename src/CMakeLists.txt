@@ -14,7 +14,6 @@ FILE(GLOB SOURCE_FILES
   "common/curve_tools.c"
   "common/darktable.c"
   "common/database.c"
-  "common/dt_lua.c"
   "common/exif.cc"
   "common/film.c"
   "common/file_location.c"
@@ -74,9 +73,11 @@ FILE(GLOB SOURCE_FILES
   "gui/presets.c"
   "gui/styles_dialog.c"
   "libs/lib.c"
-  "lua/colorlabel.c"
+  "lua/dt_lua.c"
+  "lua/events.c"
   "lua/image.c"
   "lua/stmt.c"
+  "lua/types.c"
   "views/view.c"
   )
 FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
