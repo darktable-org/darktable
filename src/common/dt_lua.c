@@ -28,8 +28,6 @@ typedef struct {
 	const char* evt_name;
 	lua_CFunction on_register;
 	lua_CFunction on_event;
-	int nargs;
-	int nresults;
 } event_handler;
 
 static dt_lua_type* types[] = {
@@ -133,12 +131,16 @@ static int register_multiinstance_event(lua_State* L) {
 }
 
 static int trigger_multiinstance_event(lua_State* L) {
-	// -1 is our handler;
-	event_handler * handler =  lua_touserdata(L,-1);
-	// -1..-n are our args
+	// -1 is the event name;
+	const char * evt_name =  lua_tostring(L,-1);
+	// -2 is nargs
+	const int nargs = lua_tointeger(L,-2);
+	// -3 is nresults
+	const int nresults = lua_tointeger(L,-3);
+	// -4..-n are our args
 	const int top_marker=lua_gettop(L);
 	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
-	lua_getfield(L,-1,handler->evt_name);
+	lua_getfield(L,-1,evt_name);
 	lua_remove(L,-2);
 
 
@@ -150,13 +152,13 @@ static int trigger_multiinstance_event(lua_State* L) {
 		/* uses 'key' (at index -2) and 'value' (at index -1) */
 		// prepare the call
 		lua_getfield(L,-1,"action"); // function to call
-		lua_pushstring(L,handler->evt_name);// param 1 is the event
+		lua_pushstring(L,evt_name);// param 1 is the event
 		lua_getfield(L,-3,"data");// callback data
 		lua_remove(L,-4);
-		for(int i = 1 ; i<=handler->nargs ;i++) { // event dependant parameters
-			lua_pushvalue(L, top_marker -1-handler->nargs +i); 
+		for(int i = 1 ; i<=nargs ;i++) { // event dependant parameters
+			lua_pushvalue(L, top_marker -3-nargs +i); 
 		}
-		result += do_chunk(L,0,handler->nargs+2,handler->nresults);
+		result += do_chunk(L,0,nargs+2,nresults);
 		lua_pushinteger(L,loop_index);
 	}
 	lua_remove(L,top_marker+1); //our data
@@ -186,30 +188,35 @@ static int register_singleton_event(lua_State* L) {
 }
 
 static int trigger_singleton_event(lua_State* L) {
-	// -1 is our handler;
-	event_handler * handler =  lua_touserdata(L,-1);
-	lua_pop(L,1);
-	// -1..-n are our args
+	// -1 is the event name;
+	const char * evt_name =  lua_tostring(L,-1);
+	// -2 is nargs
+	const int nargs = lua_tointeger(L,-2);
+	// -3 is nresults
+	const int nresults = lua_tointeger(L,-3);
+	// -4..-n are our args
+	const int top_marker=lua_gettop(L);
 	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
-	lua_getfield(L,-1,handler->evt_name);
+	lua_getfield(L,-1,evt_name);
 	// prepare the call
 	lua_getfield(L,-1,"action"); // function to call
-	lua_pushstring(L,handler->evt_name);// param 1 is the event
+	lua_pushstring(L,evt_name);// param 1 is the event
 	lua_getfield(L,-3,"data");// callback data
 	lua_remove(L,-5);
 	lua_remove(L,-4);
-	for(int i = 0 ; i<handler->nargs ;i++) { // event dependant parameters
-		lua_pushvalue(L, - (3+handler->nargs)); // i is unused, this is normal
+	for(int i = 0 ; i<nargs ;i++) { // event dependant parameters
+		lua_pushvalue(L, top_marker -3-nargs +i); 
 	}
-	return do_chunk(L,0,handler->nargs+2,handler->nresults);
+	return do_chunk(L,0,nargs+2,nresults);
 }
 
 
 
 static event_handler event_list[] = {
-	{"post-import-image",register_multiinstance_event,trigger_multiinstance_event,1,0},
-	{"test",register_singleton_event,trigger_singleton_event,0,0},
-	{NULL,NULL,NULL,0,0}
+	{"post-import-image",register_multiinstance_event,trigger_multiinstance_event},
+	{"post-export-image",register_multiinstance_event,trigger_multiinstance_event},
+	{"test",register_singleton_event,trigger_singleton_event}, // avoid error because of unused function
+	{NULL,NULL,NULL}
 };
 
 static int lua_register_event(lua_State *L) {
@@ -236,12 +243,15 @@ static int lua_register_event(lua_State *L) {
 
 }
 
-int dt_lua_trigger_event(const char*event) {
+int dt_lua_trigger_event(const char*event,int nargs,int nresult) {
 	lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_event_list");
 	lua_getfield(darktable.lua_state,-1,event);
 	luaL_checktype(darktable.lua_state,-1,LUA_TLIGHTUSERDATA);
 	event_handler * handler =  lua_touserdata(darktable.lua_state,-1);
-	lua_remove(darktable.lua_state,-2); // leave the handler on the top for callee
+	lua_pop(darktable.lua_state,2);
+	lua_pushinteger(darktable.lua_state,nresult);
+	lua_pushinteger(darktable.lua_state,nargs);
+	lua_pushstring(darktable.lua_state,event);
 	const int result = handler->on_event(darktable.lua_state);
 	lua_remove(darktable.lua_state,-(result +1));
 	return result;

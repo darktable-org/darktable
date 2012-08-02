@@ -33,7 +33,7 @@ void dt_lua_dostring(const char* command);
   where nargs and nresult depend of the type of event.
 
   */
-int dt_lua_trigger_event(const char*event);
+int dt_lua_trigger_event(const char*event,int nargs, int nresult);
 /**
   define an OO type to create, will be used as a submodule of the darktable module
   */
