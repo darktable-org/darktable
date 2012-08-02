@@ -886,16 +886,16 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
   {
     //TODO: several places where string truncation could occur unnoticed
     imgid = (long int)t->data;
-    gchar oldimgfname[512] = {0};
-    gchar newimgfname[512] = {0};
-    dt_image_full_path(imgid, oldimgfname, 512);
-    gchar *imgbname = g_path_get_basename(oldimgfname);
-    g_snprintf(newimgfname, 512, "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
+    gchar oldimg[512] = {0};
+    gchar newimg[512] = {0};
+    dt_image_full_path(imgid, oldimg, 512);
+    gchar *imgbname = g_path_get_basename(oldimg);
+    g_snprintf(newimg, 512, "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
 
     // move image    
     // TODO: Use gio's' g_file_move instead of g_rename?
-    if (!g_file_test(newimgfname, G_FILE_TEST_EXISTS)
-        && (g_rename(oldimgfname, newimgfname) == 0))
+    if (!g_file_test(newimg, G_FILE_TEST_EXISTS)
+        && (g_rename(oldimg, newimg) == 0))
     {
       DT_DEBUG_SQLITE3_BIND_INT(duplicates_stmt, 1, imgid);
       while (sqlite3_step(duplicates_stmt) == SQLITE_ROW)
@@ -903,8 +903,8 @@ int32_t dt_control_move_images_job_run(dt_job_t *job)
         // move xmp files of image and duplicates
         long int id = sqlite3_column_int(duplicates_stmt, 0);
         gchar oldxmp[512], newxmp[512];
-        g_strlcpy(oldxmp, oldimgfname, 512);
-        g_strlcpy(newxmp, newimgfname, 512);
+        g_strlcpy(oldxmp, oldimg, 512);
+        g_strlcpy(newxmp, newimg, 512);
         dt_image_path_append_version(id, oldxmp, 512);
         dt_image_path_append_version(id, newxmp, 512);
         g_strlcat(oldxmp, ".xmp", 512);
