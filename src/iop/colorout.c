@@ -39,6 +39,8 @@
 DT_MODULE(3)
 
 static gchar *_get_profile_from_pos(GList *profiles, int pos);
+static gchar *_get_display_profile_from_pos(GList *profiles, int pos);
+
 
 const char
 *name()
@@ -158,6 +160,19 @@ static gchar *_get_profile_from_pos(GList *profiles, int pos)
   return NULL;
 }
 
+static gchar *_get_display_profile_from_pos(GList *profiles, int pos)
+{
+  while(profiles)
+  {
+    dt_iop_color_profile_t *pp = (dt_iop_color_profile_t *)profiles->data;
+    if(pp->display_pos == pos)
+      return pp->filename;
+    profiles = g_list_next(profiles);
+  }
+  return NULL;
+}
+
+
 static void
 profile_changed (GtkWidget *widget, gpointer user_data)
 {
@@ -205,7 +220,7 @@ display_profile_changed (GtkWidget *widget, gpointer user_data)
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
   int pos = dt_bauhaus_combobox_get(widget);
-  gchar *filename = _get_profile_from_pos(g->profiles, pos);
+  gchar *filename = _get_display_profile_from_pos(g->profiles, pos);
   if (filename)
   {
     g_strlcpy(p->displayprofile, filename, sizeof(p->displayprofile));
@@ -577,7 +592,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     else d->unbounded_coeffs[k][0] = -1.0f;
   }
 
-  //fprintf(stderr, " Output profile %s, softproof %s%s%s\n", outprofile, d->softproofing?"enabled ":"disabled",d->softproofing?"using profile ":"",d->softproofing?g->softproofprofile:"");
+  //fprintf(stderr, " Output profile %s, softproof %s%s%s\n", outprofile, d->softproof_enabled?"enabled ":"disabled",d->softproof_enabled?"using profile ":"",d->softproof_enabled?p->softproofprofile:"");
 
   g_free(overprofile);
 }
@@ -703,25 +718,30 @@ void gui_init(struct dt_iop_module_t *self)
   g_strlcpy(prof->filename, "sRGB", sizeof(prof->filename));
   g_strlcpy(prof->name, "sRGB", sizeof(prof->name));
   int pos;
+  int display_pos;
   prof->pos = 0;
+  prof->display_pos = 0;
   g->profiles = g_list_append(g->profiles, prof);
 
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "adobergb", sizeof(prof->filename));
   g_strlcpy(prof->name, "adobergb", sizeof(prof->name));
   prof->pos = 1;
+  prof->display_pos = 1;
   g->profiles = g_list_append(g->profiles, prof);
 
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "X profile", sizeof(prof->filename));
   g_strlcpy(prof->name, "X profile", sizeof(prof->name));
-  prof->pos = 2;
+  prof->pos = -1;
+  prof->display_pos = 2;
   g->profiles = g_list_append(g->profiles, prof);
 
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
   g_strlcpy(prof->name, "linear_rgb", sizeof(prof->name));
-  pos = prof->pos = 3;
+  pos = prof->pos = 2;
+  display_pos = prof->display_pos = 3;
   g->profiles = g_list_append(g->profiles, prof);
 
   // read {conf,data}dir/color/out/*.icc
@@ -751,6 +771,7 @@ void gui_init(struct dt_iop_module_t *self)
         g_strlcpy(prof->name, name, sizeof(prof->name));
         g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
         prof->pos = ++pos;
+        prof->display_pos = ++display_pos;
         cmsCloseProfile(tmpprof);
         g->profiles = g_list_append(g->profiles, prof);
       }
