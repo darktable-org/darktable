@@ -113,7 +113,8 @@ dt_bilateral_splat(
 #ifdef _OPENMP
 #pragma omp atomic
 #endif
-      b->buf[grid_index] += 1.0f;
+      // TODO: this causes slight grid aliasing. maybe splat bilinear, too?
+      b->buf[grid_index] += 120.0f/(b->sigma_s*b->sigma_s);
       index += 4;
     }
   }
@@ -205,15 +206,21 @@ dt_bilateral_blur(
   // gaussian up to 3 sigma
   blur_line(b->buf, b->scratch, b->size_x*b->size_y, b->size_x, 1,
       b->size_z, b->size_y, b->size_x,
+      // 1.0f/(b->sigma_s*16.0f), 4.0f/(b->sigma_s*16.0f), 6.0f/(b->sigma_s*16.0f), 4.0f/(b->sigma_s*16.0f), 1.0f/(b->sigma_s*16.0f));
+      // 1.0f*b->sigma_s/16.0f, 4.0f*b->sigma_s/16.0f, 6.0f*b->sigma_s/16.0f, 4.0f*b->sigma_s/16.0f, 1.0f*b->sigma_s/16.0f);
       1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f);
   // gaussian up to 3 sigma
   blur_line(b->buf, b->scratch, b->size_x*b->size_y, 1, b->size_x,
       b->size_z, b->size_x, b->size_y,
+      // 1.0f/(b->sigma_s*16.0f), 4.0f/(b->sigma_s*16.0f), 6.0f/(b->sigma_s*16.0f), 4.0f/(b->sigma_s*16.0f), 1.0f/(b->sigma_s*16.0f));
+      // 1.0f*b->sigma_s/16.0f, 4.0f*b->sigma_s/16.0f, 6.0f*b->sigma_s/16.0f, 4.0f*b->sigma_s/16.0f, 1.0f*b->sigma_s/16.0f);
       1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f);
   // -2 derivative of the gaussian up to 3 sigma: x*exp(-x*x)
   blur_line(b->buf, b->scratch, 1, b->size_x, b->size_x*b->size_y,
       b->size_x, b->size_y, b->size_z,
-      -0.03663127777746836f, -0.36787944117144233f, 0.0f, 0.36787944117144233f, 0.03663127777746836f);
+      // 1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f);
+      -2.0f*b->sigma_r*1.0f/16.0f, -1.0f*b->sigma_r*4.0f/16.0f, 0.0f, 1.0f*b->sigma_r*4.0f/16.0f, 2.0f*b->sigma_r*1.0f/16.0f);
+      // -0.03663127777746836f, -0.36787944117144233f, 0.0f, 0.36787944117144233f, 0.03663127777746836f);
 }
 
 
@@ -224,7 +231,7 @@ dt_bilateral_slice(
     float                *out)
 {
   // FIXME: this is wrong:
-  const float norm = 1.0f/(b->sigma_r);
+  const float norm = 1.0f/(b->sigma_r);//*b->sigma_s);//1.0f;
 #if 1
   const int ox = 1;
   const int oy = b->size_x;
@@ -264,8 +271,8 @@ dt_bilateral_slice(
 #endif
       out[index] = MAX(0.0f, Lout);
       // and copy color and mask
-      out[index+1] = in[index+1];
-      out[index+2] = in[index+2];
+      out[index+1] = 0.0f;//in[index+1];
+      out[index+2] = 0.0f;//in[index+2];
       out[index+3] = in[index+3];
       index += 4;
     }

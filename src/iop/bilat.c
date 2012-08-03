@@ -1,4 +1,4 @@
-/*
+/*f
     This file is part of darktable,
     copyright (c) 2009--2012 johannes hanika.
 
@@ -91,7 +91,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   const float scale = piece->iscale/roi_in->scale;
-  const float sigma_r = d->sigma_r / scale;
+  const float sigma_r = d->sigma_r; // does not depend on scale
   const float sigma_s = d->sigma_s / scale;
 
   // TODO: better memory management.
