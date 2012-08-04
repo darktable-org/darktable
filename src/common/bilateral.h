@@ -260,8 +260,8 @@ dt_bilateral_slice(
         b->buf[gi+ox+oy+oz] * (       xf) * (       yf) * (       zf));
       out[index] = MAX(0.0f, Lout);
       // and copy color and mask
-      out[index+1] = 0.0f;//in[index+1];
-      out[index+2] = 0.0f;//in[index+2];
+      out[index+1] = in[index+1];
+      out[index+2] = in[index+2];
       out[index+3] = in[index+3];
       index += 4;
     }

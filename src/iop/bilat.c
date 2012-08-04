@@ -113,7 +113,7 @@ void init(dt_iop_module_t *module)
   // init defaults:
   dt_iop_useless_params_t tmp = (dt_iop_useless_params_t)
   {
-    50
+    8, 50, 0.2
   };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_useless_params_t));
@@ -180,7 +180,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->range, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->range, _("range sigma"));
 
-  g->detail = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, 0.0, 3);
+  g->detail = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, 0.2, 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->detail, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->detail, _("detail"));
 
