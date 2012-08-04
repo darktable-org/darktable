@@ -504,8 +504,8 @@ dt_bauhaus_init()
   darktable.bauhaus->marker_size = 0.3f;
   darktable.bauhaus->label_font_size = 0.6f;
   darktable.bauhaus->value_font_size = 0.6f;
-  strncpy(darktable.bauhaus->label_font, "sans-serif", 256);
-  strncpy(darktable.bauhaus->value_font, "sans-serif", 256);
+  strncpy(darktable.bauhaus->label_font, "sans", 256);
+  strncpy(darktable.bauhaus->value_font, "sans", 256);
   darktable.bauhaus->bg_normal = 0.145098f;
   darktable.bauhaus->bg_focus = 0.207843f;
   darktable.bauhaus->text = .792f;
