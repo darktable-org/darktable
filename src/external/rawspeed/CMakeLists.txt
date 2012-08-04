@@ -19,6 +19,7 @@ set(RAWSPEED_SOURCES
   "RawSpeed/ColorFilterArray.cpp"
   "RawSpeed/Common.cpp"
   "RawSpeed/Cr2Decoder.cpp"
+  "RawSpeed/DngOpcodes.cpp"
   "RawSpeed/DngDecoder.cpp"
   "RawSpeed/DngDecoderSlices.cpp"
   "RawSpeed/FileIOException.cpp"

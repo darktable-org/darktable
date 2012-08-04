@@ -344,11 +344,13 @@
   </Camera>
   <Camera make="Canon" model="Canon EOS 7D" mode="sRaw1">
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="0" white="65535"/>
+    <Sensor black="0" white="44200" iso_list="100 125 160 320 640 1250"/>
+    <Sensor black="0" white="54000"/>
   </Camera>  
   <Camera make="Canon" model="Canon EOS 7D" mode="sRaw2">
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="0" white="65535"/>
+    <Sensor black="0" white="44200" iso_list="100 125 160 320 640 1250"/>
+    <Sensor black="0" white="54000"/>
   </Camera>  
   <Camera make="Canon" model="Canon EOS 1000D">
     <CFA width="2" height="2">
@@ -1907,7 +1909,7 @@
 	    <Vertical x="4310" width="40"/>
 	</BlackAreas>
   </Camera>
-  <Camera make="PENTAX" model="PENTAX K-r">
+  <Camera make="PENTAX" model="PENTAX K-r" decoder_version="3">
     <CFA width="2" height="2">
       <Color x="0" y="0">BLUE</Color>
       <Color x="1" y="0">GREEN</Color>
@@ -1915,7 +1917,7 @@
       <Color x="1" y="1">RED</Color>
     </CFA>
     <Crop x="2" y="2" width="-44" height="0"/>
-    <Sensor black="120" white="4095"/>
+    <Sensor black="64" white="4000"/>
   </Camera>
   <Camera make="PENTAX" model="PENTAX K200D">
     <CFA width="2" height="2">
