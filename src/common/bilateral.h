@@ -269,6 +269,56 @@ dt_bilateral_slice(
 }
 
 void
+dt_bilateral_slice2(
+    const dt_bilateral_t *const b,
+    const float          *const in,
+    float                *out,
+    const float           detail)
+{
+  // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
+  const float norm = -detail;
+  const int ox = 1;
+  const int oy = b->size_x;
+  const int oz = b->size_y*b->size_x;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(out)
+#endif
+  for(int j=0;j<b->height;j++)
+  {
+    int index = 4*j*b->width;
+    for(int i=0;i<b->width;i++)
+    {
+      float x, y, z;
+      const float L = in[index];
+      image_to_grid(b, i, j, L, &x, &y, &z);
+      // trilinear lookup:
+      const int xi = MIN((int)x, b->size_x-2);
+      const int yi = MIN((int)y, b->size_y-2);
+      const int zi = MIN((int)z, b->size_z-2);
+      const float xf = x - xi;
+      const float yf = y - yi;
+      const float zf = z - zi;
+      const int gi = xi + b->size_x*(yi + b->size_y*zi);
+      const float Lout = norm * (
+        b->buf[gi]          * (1.0f - xf) * (1.0f - yf) * (1.0f - zf) +
+        b->buf[gi+ox]       * (       xf) * (1.0f - yf) * (1.0f - zf) +
+        b->buf[gi+oy]       * (1.0f - xf) * (       yf) * (1.0f - zf) +
+        b->buf[gi+ox+oy]    * (       xf) * (       yf) * (1.0f - zf) +
+        b->buf[gi+oz]       * (1.0f - xf) * (1.0f - yf) * (       zf) +
+        b->buf[gi+ox+oz]    * (       xf) * (1.0f - yf) * (       zf) +
+        b->buf[gi+oy+oz]    * (1.0f - xf) * (       yf) * (       zf) +
+        b->buf[gi+ox+oy+oz] * (       xf) * (       yf) * (       zf));
+      out[index] = MAX(0.0f, out[index] + Lout);
+      // and copy color and mask
+      // out[index+1] = in[index+1];
+      // out[index+2] = in[index+2];
+      // out[index+3] = in[index+3];
+      index += 4;
+    }
+  }
+}
+
+void
 dt_bilateral_free(
     dt_bilateral_t *b)
 {
