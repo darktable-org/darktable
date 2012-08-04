@@ -642,7 +642,7 @@ void gui_update(struct dt_iop_module_t *self)
     }
     if(!strcmp(pp->filename, p->displayprofile))
     {
-      dt_bauhaus_combobox_set(g->cbox3, pp->pos);
+      dt_bauhaus_combobox_set(g->cbox3, pp->display_pos);
       displayfound = 1;
     }
     if(!strcmp(pp->filename, p->softproofprofile))
