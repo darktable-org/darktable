@@ -64,18 +64,19 @@ dt_bilateral_init(
     const float sigma_r)   // range sigma (blur luma values)
 {
   dt_bilateral_t *b = (dt_bilateral_t *)malloc(sizeof(dt_bilateral_t));
-  b->size_x = CLAMPS((int)roundf(width/sigma_s), 4, 1000);
-  b->size_y = CLAMPS((int)roundf(height/sigma_s), 4, 1000);
-  b->size_z = CLAMPS((int)roundf(120.0f/sigma_r), 4, 1000);
+  b->size_x = CLAMPS((int)roundf(width/sigma_s), 4, 1000) + 1;
+  b->size_y = CLAMPS((int)roundf(height/sigma_s), 4, 1000) + 1;
+  b->size_z = CLAMPS((int)roundf(120.0f/sigma_r), 4, 1000) + 1;
   b->width = width;
   b->height = height;
-  b->sigma_s = sigma_s;
-  b->sigma_r = sigma_r;
+  // TODO: use whatever width or height constrain it to!
+  b->sigma_s = width/(b->size_x-1.0f);// sigma_s;
+  b->sigma_r = 120.0/(b->size_z-1.0f); // sigma_r;
   b->buf = dt_alloc_align(16, b->size_x*b->size_y*b->size_z*sizeof(float));
   b->scratch = dt_alloc_align(16, MAX(MAX(b->size_x, b->size_y), b->size_z)*dt_get_num_threads()*sizeof(float));
 
-  fprintf(stderr, "[bilateral] created grid [%d %d %d] with sigma %f %f\n", b->size_x, b->size_y, b->size_z, b->sigma_s, b->sigma_r);
 #if 0
+  fprintf(stderr, "[bilateral] created grid [%d %d %d] with sigma %f %f\n", b->size_x, b->size_y, b->size_z, b->sigma_s, b->sigma_r);
   blur_line(b->buf, b->scratch, 5*5, 5, 1,
       5, 5, 5, 0, 0, 0, 0, 0);
   blur_line(b->buf, b->scratch, 1, 5*5, 4,
@@ -92,6 +93,9 @@ dt_bilateral_splat(
     dt_bilateral_t *b,
     const float    *const in)
 {
+  const int ox = 1;
+  const int oy = b->size_x;
+  const int oz = b->size_y*b->size_x;
   // splat into downsampled grid
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(b)
@@ -104,17 +108,30 @@ dt_bilateral_splat(
       float x, y, z;
       const float L = in[index];
       image_to_grid(b, i, j, L, &x, &y, &z);
+      const int xi = MIN((int)x, b->size_x-2);
+      const int yi = MIN((int)y, b->size_y-2);
+      const int zi = MIN((int)z, b->size_z-2);
+      const float xf = x - xi;
+      const float yf = y - yi;
+      const float zf = z - zi;
       // nearest neighbour splatting:
-      const int grid_index = (int)x + b->size_x*((int)y + b->size_y*(int)z);
+      const int grid_index = xi + b->size_x*(yi + b->size_y*zi);
       // sum up payload here, doesn't have to be same as edge stopping data
       // for cross bilateral applications.
       // also note that this is not clipped (as L->z is), so potentially hdr/out of gamut
       // should not cause clipping here.
+      for(int k=0;k<8;k++)
+      {
+        const int ii = grid_index + ((k&1)?ox:0) + ((k&2)?oy:0) + ((k&4)?oz:0);
+        const float contrib = ((k&1)?xf:(1.0f-xf)) * ((k&2)?yf:(1.0f-yf)) * ((k&4)?zf:(1.0f-zf))
+          *120.0f/(b->sigma_s*b->sigma_s);
 #ifdef _OPENMP
 #pragma omp atomic
 #endif
+        b->buf[ii] += contrib;
+      }
       // TODO: this causes slight grid aliasing. maybe splat bilinear, too?
-      b->buf[grid_index] += 120.0f/(b->sigma_s*b->sigma_s);
+      // b->buf[grid_index] += 120.0f/(b->sigma_s*b->sigma_s);
       index += 4;
     }
   }
@@ -219,7 +236,8 @@ dt_bilateral_blur(
   blur_line(b->buf, b->scratch, 1, b->size_x, b->size_x*b->size_y,
       b->size_x, b->size_y, b->size_z,
       // 1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f);
-      -2.0f*b->sigma_r*1.0f/16.0f, -1.0f*b->sigma_r*4.0f/16.0f, 0.0f, 1.0f*b->sigma_r*4.0f/16.0f, 2.0f*b->sigma_r*1.0f/16.0f);
+      // -2.0f*b->sigma_r*1.0f/16.0f, -1.0f*b->sigma_r*4.0f/16.0f, 0.0f, 1.0f*b->sigma_r*4.0f/16.0f, 2.0f*b->sigma_r*1.0f/16.0f);
+      -2.0f*1.0f/16.0f, -1.0f*4.0f/16.0f, 0.0f, 1.0f*4.0f/16.0f, 2.0f*1.0f/16.0f);
       // -0.03663127777746836f, -0.36787944117144233f, 0.0f, 0.36787944117144233f, 0.03663127777746836f);
 }
 
@@ -228,10 +246,12 @@ void
 dt_bilateral_slice(
     const dt_bilateral_t *const b,
     const float          *const in,
-    float                *out)
+    float                *out,
+    const float           detail)
 {
   // FIXME: this is wrong:
-  const float norm = 1.0f/(b->sigma_r);//*b->sigma_s);//1.0f;
+  // TODO: use this as `detail': 0 is leave as is, +1 is bilateral filtered, -1 is contrast boost
+  const float norm = -detail;// /(b->sigma_r);//*b->sigma_s);//1.0f;
 #if 1
   const int ox = 1;
   const int oy = b->size_x;

@@ -35,16 +35,9 @@ DT_MODULE(1)
 
 typedef struct dt_iop_useless_params_t
 {
-  // these are stored in db.
-  // make sure everything is in here does not
-  // depend on temporary memory (pointers etc)
-  // stored in self->params and self->default_params
-  // also, since this is stored in db, you should keep changes to this struct
-  // to a minimum. if you have to change this struct, it will break
-  // users data bases, and you should increment the version
-  // of DT_MODULE(VERSION) above!
   float sigma_r;
   float sigma_s;
+  float detail;
 }
 dt_iop_useless_params_t;
 
@@ -52,6 +45,7 @@ typedef struct dt_iop_useless_gui_data_t
 {
   GtkWidget *spatial;
   GtkWidget *range;
+  GtkWidget *detail;
 }
 dt_iop_useless_gui_data_t;
 
@@ -98,7 +92,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   dt_bilateral_t *b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
   dt_bilateral_splat(b, (float *)i);
   dt_bilateral_blur(b);
-  dt_bilateral_slice(b, (float *)i, (float *)o);
+  dt_bilateral_slice(b, (float *)i, (float *)o, d->detail);
   dt_bilateral_free(b);
 }
 
@@ -152,6 +146,14 @@ range_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void
+detail_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
+  p->detail = dt_bauhaus_slider_get(w);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 /** gui callbacks, these are needed. */
 void gui_update(dt_iop_module_t *self)
 {
@@ -160,6 +162,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
   dt_bauhaus_slider_set(g->spatial, p->sigma_s);
   dt_bauhaus_slider_set(g->range,   p->sigma_r);
+  dt_bauhaus_slider_set(g->detail,  p->detail);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -173,12 +176,17 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->spatial, _("spatial sigma"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->spatial, TRUE, TRUE, 0);
 
-  g->range = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 50, 0);
+  g->range = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 8, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->range, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->range, _("range sigma"));
 
+  g->detail = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, 0.0, 3);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->detail, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(g->detail, _("detail"));
+
   g_signal_connect (G_OBJECT (g->spatial), "value-changed", G_CALLBACK (spatial_callback), self);
-  g_signal_connect (G_OBJECT (g->range), "value-changed", G_CALLBACK (range_callback), self);
+  g_signal_connect (G_OBJECT (g->range),   "value-changed", G_CALLBACK (range_callback), self);
+  g_signal_connect (G_OBJECT (g->detail),  "value-changed", G_CALLBACK (detail_callback), self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
