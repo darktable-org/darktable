@@ -77,6 +77,7 @@ void LJpegPlain::decodeScan() {
           decodeScanLeft4_2_2();
           return;
         } else {
+          ThrowRDE("LJpegDecompressor::decodeScan: Unsupported subsampling");
           decodeScanLeftGeneric();
           return;
         }

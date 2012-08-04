@@ -58,6 +58,8 @@
 #endif // __unix__
 #include <math.h>
 #include "pthread.h"
+#include "jpeglib.h"
+
 // STL
 #include <iostream>
 #include <string>
