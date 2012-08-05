@@ -83,7 +83,7 @@ static const basecurve_preset_t basecurve_presets[] =
   // pascals canon eos curve (well tested):
   {canon_eos, "Canon", "", 0, 51200, {{0.000000, 0.028226, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
   // pascals alternate canon eos curve for 5D Mark II and III and potentially a future IV
-  {canon_eos_alt, "Canon", "DISABLED", 0, 51200, {{0.000000, 0.032258, 0.108871, 0.350806, 0.669355, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
+  {canon_eos_alt, "Canon", "DISABLED", 0, 51200, {{0.000000, 0.026210, 0.108871, 0.350806, 0.669355, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
   // pascals nikon curve (new curve, needs testing):
   {nikon, "NIKON", "", 0, 51200, {{0.000000, 0.036290, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.036532, 0.228226, 0.759678, 0.983468, 1.000000}, 0}, 1},
   // pascals alternate nikon curve for (four digit) Nikon Dxxxx models
