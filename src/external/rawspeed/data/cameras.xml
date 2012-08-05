@@ -1952,7 +1952,7 @@
       <Color x="0" y="0">BLUE</Color><Color x="1" y="0">GREEN</Color>
       <Color x="0" y="1">GREEN</Color><Color x="1" y="1">RED</Color>
     </CFA>
-    <Crop x="10" y="8" width="-10" height="0"/>
+    <Crop x="17" y="8" width="4602" height="3068"/>
     <Sensor black="0" white="4095"/>
 	<BlackAreas>
 		<Vertical x="0" width="8"/>
@@ -1964,7 +1964,7 @@
       <Color x="0" y="0">BLUE</Color><Color x="1" y="0">GREEN</Color>
       <Color x="0" y="1">GREEN</Color><Color x="1" y="1">RED</Color>
     </CFA>
-    <Crop x="10" y="8" width="-10" height="0"/>
+    <Crop x="17" y="8" width="4602" height="3068"/>
     <Sensor black="0" white="4095"/>
 	<BlackAreas>
 		<Vertical x="0" width="8"/>
@@ -1975,7 +1975,7 @@
       <Color x="0" y="0">BLUE</Color><Color x="1" y="0">GREEN</Color>
       <Color x="0" y="1">GREEN</Color><Color x="1" y="1">RED</Color>
     </CFA>
-    <Crop x="10" y="6" width="-80" height="-40"/>
+    <Crop x="17" y="8" width="4602" height="3068"/>
     <Sensor black="0" white="4095"/>
 	<BlackAreas>
 		<Vertical x="0" width="8"/>
@@ -2020,7 +2020,7 @@
       <Color x="0" y="0">BLUE</Color><Color x="1" y="0">GREEN</Color>
       <Color x="0" y="1">GREEN</Color><Color x="1" y="1">RED</Color>
     </CFA>
-    <Crop x="10" y="8" width="-10" height="0"/>
+    <Crop x="17" y="8" width="4602" height="3068"/>
     <Sensor black="0" white="4095"/>
 	<BlackAreas>
 		<Vertical x="0" width="8"/>
