@@ -46,10 +46,10 @@ if(APPLE)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_DARWIN_C_SOURCE")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_DARWIN_C_SOURCE")
 
-	set(LIBS "${LIBS} -Wl,-framework -Wl,Carbon")
+	list(APPEND LIBS "-Wl,-framework -Wl,Carbon")
 
 	if(USE_OPENCL)
-	  set(LIBS "${LIBS} -Wl,-framework -Wl,OpenCL")
+	  list(APPEND LIBS "-Wl,OpenCL")
 	endif(USE_OPENCL)
 
         # Detect the OS X version: Use '/usr/bin/sw_vers -productVersion' to extract V from '10.V.x'.
