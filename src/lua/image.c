@@ -455,9 +455,18 @@ static int image_newindex(lua_State *L){
 	}
 }
 
+static int image_tostring(lua_State *L) {
+	const dt_image_t * my_image=dt_lua_checkreadimage(L,-1);
+	char image_name[PATH_MAX];
+	dt_image_full_path(my_image->id,image_name,PATH_MAX);
+	dt_image_path_append_version(my_image->id,image_name,PATH_MAX);
+	lua_pushstring(L,image_name);
+	return 1;
+}
 static const luaL_Reg image_meta[] = {
 	{"__index", image_index },
 	{"__newindex", image_newindex },
+	{"__tostring", image_tostring },
 	{"__gc", image_gc },
 	{0,0}
 };
@@ -530,6 +539,7 @@ static int images_len(lua_State *L) {
 	lua_pushinteger(L, sqlite3_column_int(stmt,0));
 	return 1;
 }
+
 static const luaL_Reg images_meta[] = {
 	{"__pairs", images_pairs },
 	{"__index", images_index },
