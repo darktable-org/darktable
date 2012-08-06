@@ -90,6 +90,13 @@ void dt_lua_image_push(lua_State * L,int imgid) {
 	dt_lua_singleton_register(L,imgid,&dt_lua_image);
 }
 
+
+static int image_clone(lua_State *L) {
+	const dt_image_t * my_image=dt_lua_checkreadimage(L,-1);
+	dt_lua_image_push(L,dt_image_duplicate(my_image->id));
+	return 1;
+}
+
 typedef enum {
 	EXIF_EXPOSURE,
 	EXIF_APERTURE,
@@ -118,6 +125,7 @@ typedef enum {
 	DESCRIPTION,
 	RIGHTS,
 	HISTORY,
+	DUPLICATE,
 	LAST_IMAGE_FIELD
 } image_fields;
 const char *image_fields_name[] = {
@@ -148,6 +156,7 @@ const char *image_fields_name[] = {
 	"description",
 	"rights",
 	"history",
+	"duplicate",
 	NULL
 };
 
@@ -333,6 +342,9 @@ static int image_index(lua_State *L){
 				dt_history_lua_push(L,my_image->id);
 				return 1;
 			}
+		case DUPLICATE:
+			lua_pushcfunction(L,image_clone); // works as a lua member, i.e meant to be invoked with :
+			return 1;
 
 		default:
 			return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
@@ -448,6 +460,7 @@ static int image_newindex(lua_State *L){
 		case IS_RAW:
 		case ID:
 		case COLORLABEL:
+		case DUPLICATE:
 			return luaL_error(L,"read only field : ",lua_tostring(L,-2));
 		default:
 			return luaL_error(L,"unknown index for image : ",lua_tostring(L,-2));

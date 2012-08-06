@@ -98,6 +98,8 @@ static void debug_table(lua_State * L,int t) {
 
 static int load_darktable_lib(lua_State *L) {
 	lua_newtable(L);
+	lua_pushvalue(L,-1);
+	lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_dtlib");
 	// set the metatable
 	lua_newtable(L);
 	lua_pushcfunction(L,dt_luacleanup);
@@ -115,8 +117,6 @@ static int load_darktable_lib(lua_State *L) {
 	
 	dt_lua_init_types(L);
 
-	lua_pushvalue(L,-1);
-	lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_dtlib");
 	return 1;
 }
 
