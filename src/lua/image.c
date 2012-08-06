@@ -520,9 +520,20 @@ static int images_pairs(lua_State *L) {
 	lua_pushnil(L); // index set to null for reset
 	return 3;
 }
+static int images_len(lua_State *L) {
+	sqlite3_stmt *stmt;
+	DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(id) from images", -1, &stmt, NULL);
+	if(sqlite3_step(stmt) != SQLITE_ROW) {
+		sqlite3_finalize(stmt);
+		return luaL_error(L,"unknown error while searching the number of images");
+	}
+	lua_pushinteger(L, sqlite3_column_int(stmt,0));
+	return 1;
+}
 static const luaL_Reg images_meta[] = {
 	{"__pairs", images_pairs },
 	{"__index", images_index },
+	{"__len", images_len },
 	{0,0}
 };
 static int images_init(lua_State * L) {
