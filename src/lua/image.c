@@ -446,6 +446,10 @@ static int image_newindex(lua_State *L){
 			return 0;
 		case HISTORY:
 			{
+				if(lua_isnil(L,-1)) {
+					dt_history_delete_on_image(my_image->id);
+					return 0;
+				}
 				int source_id = dt_history_lua_check(L,-1);
 				dt_history_copy_and_paste_on_image(source_id, my_image->id, 0);
 				return 0;
