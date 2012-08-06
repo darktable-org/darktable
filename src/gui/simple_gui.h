@@ -30,8 +30,17 @@ typedef enum dt_gui_simple_type_t {
   DT_SIMPLE_GUI_TOGGLE_BUTTON
 } dt_gui_simple_type_t;
 
+// easy access to common fields of widgets
+typedef struct dt_gui_simple_common_t {
+  dt_gui_simple_type_t type;
+  char *id;
+  char *label;
+  char *tooltip;
+} dt_gui_simple_common_t;
+
 typedef struct dt_gui_simple_slider_t {
   dt_gui_simple_type_t type;             // DT_SIMPLE_GUI_SLIDER
+  char *id;
   char *label;
   char *tooltip;
   char *format;
@@ -43,6 +52,7 @@ typedef struct dt_gui_simple_slider_t {
 
 typedef struct dt_gui_simple_combobox_t {
   dt_gui_simple_type_t type;             // DT_SIMPLE_GUI_COMBOBOX
+  char *id;
   char *label;
   char *tooltip;
   char **entries;                        // always terminate with NULL
@@ -54,6 +64,7 @@ typedef struct dt_gui_simple_combobox_t {
 // used both for buttons and toggle buttons
 typedef struct dt_gui_simple_button_t {
   dt_gui_simple_type_t type;             // DT_SIMPLE_GUI_BUTTON or DT_SIMPLE_GUI_TOGGLE_BUTTON
+  char *id;
   char *label;
   char *tooltip;
   DTGTKCairoPaintIconFunc paint;
@@ -65,7 +76,7 @@ typedef struct dt_gui_simple_button_t {
 
 /** a single element of the gui, access union according to type */
 typedef union dt_gui_simple_element_t {
-  dt_gui_simple_type_t type;
+  dt_gui_simple_common_t common;
   dt_gui_simple_slider_t slider;
   dt_gui_simple_combobox_t combobox;
   dt_gui_simple_button_t button;
