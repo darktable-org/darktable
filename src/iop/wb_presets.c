@@ -3580,6 +3580,12 @@ const wb_data wb_preset[] = {
   { "RICOH", "Caplio GX100", Incandescent, 0,	{ 1.520002, 1, 2.520003, 0 } },
   { "RICOH", "Caplio GX100", Fluorescent, 0,	{ 1.840001, 1, 1.970001, 0 } },
 
+  { "SAMSUNG", "EX1", Daylight, 0,		{ 1.8711, 1, 2.0039, 0 } },
+  { "SAMSUNG", "EX1", Cloudy, 0,		{ 2.3672, 1, 1.6797, 0 } },
+  { "SAMSUNG", "EX1", DaylightFluorescent, 0,	{ 1.9492, 1, 2.0586, 0 } },
+  { "SAMSUNG", "EX1", WhiteFluorescent, 0,	{ 1.4844, 1, 2.7852, 0 } },
+  { "SAMSUNG", "EX1", Tungsten, 0,		{ 1.2500, 1, 3.6834, 0 } },
+
   { "SAMSUNG", "GX-1S", Daylight, 0,		{ 1.574219, 1, 1.109375, 0 } },
   { "SAMSUNG", "GX-1S", Shade, 0,		{ 1.855469, 1, 1.000000, 0 } },
   { "SAMSUNG", "GX-1S", Cloudy, 0,		{ 1.664062, 1, 1.000000, 0 } },

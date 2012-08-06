@@ -1,20 +1,21 @@
 /*
-		This file is part of darktable,
-		copyright (c) 2009--2012 johannes hanika.
-		copyright (c) 2011 henrik andersson.
+    This file is part of darktable,
+    copyright (c) 2009--2012 johannes hanika.
+    copyright (c) 2011 henrik andersson.
+    copyright (c) 2012 tobias ellinghaus.
 
-		darktable is free software: you can redistribute it and/or modify
-		it under the terms of the GNU General Public License as published by
-		the Free Software Foundation, either version 3 of the License, or
-		(at your option) any later version.
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-		darktable is distributed in the hope that it will be useful,
-		but WITHOUT ANY WARRANTY; without even the implied warranty of
-		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-		GNU General Public License for more details.
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-		You should have received a copy of the GNU General Public License
-		along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef DT_DEVELOP_IMAGEOP_H
 #define DT_DEVELOP_IMAGEOP_H
@@ -23,6 +24,7 @@
 #include "control/settings.h"
 #include "develop/pixelpipe.h"
 #include "dtgtk/togglebutton.h"
+#include "gui/simple_gui.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #include <sched.h>
@@ -97,8 +99,8 @@ typedef struct dt_iop_module_so_t
   int (*groups)           ();
   int (*flags)            ();
 
-  int (*operation_tags)         (); 
-  int (*operation_tags_filter)  (); 
+  int (*operation_tags)         ();
+  int (*operation_tags_filter)  ();
 
   int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   void (*tiling_callback) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling);
@@ -106,6 +108,7 @@ typedef struct dt_iop_module_so_t
   void (*gui_reset)       (struct dt_iop_module_t *self);
   void (*gui_update)      (struct dt_iop_module_t *self);
   void (*gui_init)        (struct dt_iop_module_t *self);
+  dt_gui_simple_t* (*gui_init_simple) (struct dt_iop_module_t *self);
   void (*gui_cleanup)     (struct dt_iop_module_t *self);
   void (*gui_post_expose) (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
   void (*gui_focus)       (struct dt_iop_module_t *self, gboolean in);
@@ -122,6 +125,7 @@ typedef struct dt_iop_module_so_t
   void (*configure)       (struct dt_iop_module_t *self, int width, int height);
 
   void (*init)            (struct dt_iop_module_t *self); // this MUST set params_size!
+  void (*original_init)   (struct dt_iop_module_t *self);
   void (*cleanup)         (struct dt_iop_module_t *self);
   void (*init_pipe)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   void (*commit_params)   (struct dt_iop_module_t *self, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
@@ -214,9 +218,9 @@ typedef struct dt_iop_module_t
   /** get the iop module flags. */
   int (*flags)            ();
 
-  int (*operation_tags)         (); 
+  int (*operation_tags)         ();
 
-  int (*operation_tags_filter)  (); 
+  int (*operation_tags_filter)  ();
   /** how many bytes per pixel in the output. */
   int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** report back info for tiling: memory usage and overlap. Memory usage: factor * intput_size + overhead */
@@ -229,6 +233,8 @@ typedef struct dt_iop_module_t
   void (*gui_reset)       (struct dt_iop_module_t *self);
   /** construct widget. */
   void (*gui_init)        (struct dt_iop_module_t *self);
+  /** construct widget using the simple api. */
+  dt_gui_simple_t* (*gui_init_simple) (struct dt_iop_module_t *self);
   /** destroy widget. */
   void (*gui_cleanup)     (struct dt_iop_module_t *self);
   /** optional method called after darkroom expose. */
@@ -246,6 +252,7 @@ typedef struct dt_iop_module_t
   void (*configure)       (struct dt_iop_module_t *self, int width, int height);
 
   void (*init)            (struct dt_iop_module_t *self); // this MUST set params_size!
+  void (*original_init)   (struct dt_iop_module_t *self);
   void (*cleanup)         (struct dt_iop_module_t *self);
   /** this inits the piece of the pipe, allocing piece->data as necessary. */
   void (*init_pipe)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
@@ -391,12 +398,12 @@ static inline void dt_iop_estimate_exp(const float *const x, const float *const 
   // and fix (x0,y0) as the last point.
   // assume (x,y) pairs are ordered by ascending x, so this is the last point:
   float x0 = x[num-1], y0 = y[num-1];
-  
+
   float g = 0.0f;
   int cnt = 0;
   // solving for g yields
   // g = log(y/y0)/log(x/x0)
-  // 
+  //
   // average that over the course of the other samples:
   for(int k=0;k<num-1;k++)
   {

@@ -2,6 +2,7 @@
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
     copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2012 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,6 +47,11 @@
 #include <xmmintrin.h>
 #include <time.h>
 #include <sys/select.h>
+
+typedef struct dt_iop_gui_simple_callback_t {
+  dt_iop_module_t *self;
+  int index;
+} dt_iop_gui_simple_callback_t;
 
 static dt_develop_blend_params_t _default_blendop_params= {DEVELOP_BLEND_DISABLED, 100.0, 0, 0,
                                                            {0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
@@ -263,8 +269,249 @@ default_cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_
   free(piece->data);
 }
 
+static void
+default_gui_cleanup(dt_iop_module_t *self)
+{
+  g_free(self->gui_data);
+  self->gui_data = NULL;
+}
+
+static void
+default_cleanup(dt_iop_module_t *module)
+{
+  g_free(module->gui_data);
+  module->gui_data = NULL; // just to be sure
+  g_free(module->params);
+  module->params = NULL;
+  g_free(module->data); // just to be sure
+  module->data = NULL;
+}
+
+
+static void
+default_simple_slider_callback(GtkWidget *w, dt_iop_gui_simple_callback_t *data)
+{
+ if(darktable.gui->reset) return;
+  int *p = (int*)data->self->params;
+  float *f = (float*)(&p[data->index]);
+  *f = dt_bauhaus_slider_get(w);
+  dt_dev_add_history_item(darktable.develop, data->self, TRUE);
+}
+
+static void
+default_simple_combobox_callback(GtkWidget *w, dt_iop_gui_simple_callback_t *data)
+{
+ if(darktable.gui->reset) return;
+  int *p = (int*)data->self->params;
+  p[data->index] = dt_bauhaus_combobox_get(w);
+  dt_dev_add_history_item(darktable.develop, data->self, TRUE);
+}
+
+static void
+gui_init_simple_wrapper(dt_iop_module_t *self)
+{
+  if(!self->gui_init_simple)
+  {
+    self->widget = gtk_label_new(_("error creating gui, see stderr"));
+    gtk_label_set_justify(GTK_LABEL(self->widget), GTK_JUSTIFY_LEFT);
+    fprintf(stderr, "[iop_simple_gui] something went wrong while initializing the gui of `%s' using the simple api: cannot find gui_init_simple()\n", self->name());
+    return;
+  }
+  dt_gui_simple_t *gui = self->gui_init_simple(self);
+  if(!gui)
+  {
+    self->widget = gtk_label_new(_("error creating gui, see stderr"));
+    gtk_label_set_justify(GTK_LABEL(self->widget), GTK_JUSTIFY_LEFT);
+    fprintf(stderr, "[iop_simple_gui] something went wrong while initializing the gui of `%s' using the simple api: gui_init_simple() returned NULL\n", self->name());
+    return;
+  }
+
+  size_t size = (self->params_size/sizeof(float))*sizeof(void*);
+  // allocate the storage structures
+  self->gui_data = g_malloc(size);
+  GtkWidget **g = (GtkWidget**)self->gui_data;
+
+  // build the gui
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  dt_gui_simple_element_t *it = gui->elements;
+  int i=0;
+  while(it->type != DT_SIMPLE_GUI_NONE)
+  {
+    switch(it->type){
+      case DT_SIMPLE_GUI_SLIDER:
+        g[i] = dt_bauhaus_slider_new_with_range(self, it->slider.min, it->slider.max, it->slider.step, it->slider.defval, it->slider.digits);
+        if(it->slider.format)
+          dt_bauhaus_slider_set_format(g[i], it->slider.format);
+        dt_bauhaus_widget_set_label(g[i], it->slider.label);
+        if(it->slider.tooltip)
+          g_object_set(G_OBJECT(g[i]), "tooltip-text", it->slider.tooltip, (char *)NULL);
+        if(it->slider.value_changed)
+          g_signal_connect(G_OBJECT(g[i]), "value-changed", G_CALLBACK(it->slider.value_changed), it->slider.parameter?it->slider.parameter:self);
+        else
+        {
+          dt_iop_gui_simple_callback_t *param = malloc(sizeof(dt_iop_gui_simple_callback_t));
+          param->self = self; param->index = i;
+          g_signal_connect(G_OBJECT(g[i]), "value-changed", G_CALLBACK(default_simple_slider_callback), param);
+        }
+        break;
+      case DT_SIMPLE_GUI_COMBOBOX:
+        g[i] = dt_bauhaus_combobox_new(self);
+        for(char** combo_iter = it->combobox.entries; *combo_iter != NULL; combo_iter++)
+          dt_bauhaus_combobox_add(g[i], *combo_iter);
+        dt_bauhaus_widget_set_label(g[i], it->combobox.label);
+        dt_bauhaus_combobox_set(g[i], it->combobox.defval);
+        if(it->combobox.tooltip)
+          g_object_set(G_OBJECT(g[i]), "tooltip-text", it->combobox.tooltip, (char *)NULL);
+        if(it->combobox.value_changed)
+          g_signal_connect(G_OBJECT(g[i]), "value-changed", G_CALLBACK(it->combobox.value_changed), it->combobox.parameter?it->combobox.parameter:self);
+        else
+        {
+          dt_iop_gui_simple_callback_t *param = malloc(sizeof(dt_iop_gui_simple_callback_t));
+          param->self = self; param->index = i;
+          g_signal_connect(G_OBJECT(g[i]), "value-changed", G_CALLBACK(default_simple_combobox_callback), param);
+        }
+        break;
+      case DT_SIMPLE_GUI_BUTTON:
+        if(it->button.label != NULL)
+          g[i] = dtgtk_button_new_with_label(it->button.label, it->button.paint, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+        else
+          g[i] = dtgtk_button_new(it->button.paint, it->button.paintflags);
+        if(it->button.tooltip != NULL)
+          g_object_set(G_OBJECT(g[i]), "tooltip-text", it->button.tooltip, (char *)NULL);
+        if(it->button.clicked != NULL)
+          g_signal_connect(G_OBJECT(g[i]), "clicked", G_CALLBACK(it->button.clicked), it->button.parameter?it->button.parameter:self);
+        break;
+      case DT_SIMPLE_GUI_TOGGLE_BUTTON:
+        if(it->button.label != NULL)
+          g[i] = dtgtk_togglebutton_new_with_label(it->button.label, it->button.paint, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+        else
+          g[i] = dtgtk_togglebutton_new(it->button.paint, it->button.paintflags);
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g[i]), it->button.defval);
+        if(it->button.tooltip != NULL)
+          g_object_set(G_OBJECT(g[i]), "tooltip-text", it->button.tooltip, (char *)NULL);
+        if(it->button.clicked != NULL)
+          g_signal_connect(G_OBJECT(g[i]), "clicked", G_CALLBACK(it->button.clicked), it->button.parameter?it->button.parameter:self);
+        break;
+      case DT_SIMPLE_GUI_NONE: // should never happen
+        g[i] = gtk_label_new(_("error creating gui, DT_SIMPLE_GUI_NONE should not be found"));
+        gtk_label_set_justify(GTK_LABEL(g[i]), GTK_JUSTIFY_LEFT);
+        break;
+    }
+    gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g[i]), TRUE, TRUE, 0);
+
+    i++;
+    it++;
+  }
+}
+
+// general gui_update for use with the simple gui api.
+static void simple_gui_update(dt_iop_module_t *self)
+{
+  if(!self->gui_init_simple)
+  {
+    fprintf(stderr, "[iop_simple_gui_update] something went wrong while updating the gui of `%s' using the simple api: cannot find gui_init_simple()\n", self->name());
+    return;
+  }
+  dt_gui_simple_t *gui = self->gui_init_simple(self);
+  if(!gui)
+  {
+    fprintf(stderr, "[iop_simple_gui] something went wrong while updating the gui of `%s' using the simple api: gui_init_simple() returned NULL\n", self->name());
+    return;
+  }
+
+  GtkWidget **g = (GtkWidget**)self->gui_data;
+  int *p = (int*)self->params;
+
+  dt_gui_simple_element_t *it = gui->elements;
+  int i=0;
+  while(it->type != DT_SIMPLE_GUI_NONE)
+  {
+    switch(it->type){
+      case DT_SIMPLE_GUI_SLIDER:
+      {
+        float *f = (float*)(&p[i]);
+        dt_bauhaus_slider_set(g[i], *f);
+        break;
+      }
+      case DT_SIMPLE_GUI_COMBOBOX:
+        dt_bauhaus_combobox_set(g[i], p[i]);
+        break;
+      case DT_SIMPLE_GUI_TOGGLE_BUTTON:
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g[i]), p[i]);
+        break;
+      case DT_SIMPLE_GUI_BUTTON:
+      case DT_SIMPLE_GUI_NONE: // should never happen
+        // nothing to do.
+        break;
+    }
+    i++;
+    it++;
+  }
+}
+
+static void
+simple_init(dt_iop_module_t *self)
+{
+  self->params = NULL;
+  self->default_params = NULL;
+  self->params_size = 0;
+
+  if(!self->gui_init_simple) return;
+  dt_gui_simple_t *gui = self->gui_init_simple(self);
+  if(!gui) return;
+
+  int elements = 0;
+  dt_gui_simple_element_t *it = gui->elements;
+  while(it->type != DT_SIMPLE_GUI_NONE)
+  {
+    elements++;
+    it++;
+  }
+  size_t size = elements*sizeof(int);
+
+  self->data = NULL;
+  self->params = malloc(size);
+  self->default_params = malloc(size);
+  self->default_enabled = 0;
+  self->params_size = size;
+  self->gui_data = NULL;
+
+  // init defaults:
+  int *p = (int*)self->default_params;
+  it = gui->elements;
+  int i=0;
+  while(it->type != DT_SIMPLE_GUI_NONE)
+  {
+    switch(it->type){
+      case DT_SIMPLE_GUI_SLIDER:
+      {
+        float *f = (float*)(&p[i]);
+        *f = it->slider.defval;
+        break;
+      }
+      case DT_SIMPLE_GUI_COMBOBOX:
+        p[i] = it->combobox.defval;
+        break;
+      case DT_SIMPLE_GUI_BUTTON:
+      case DT_SIMPLE_GUI_TOGGLE_BUTTON:
+        p[i] = it->button.defval;
+        break;
+      case DT_SIMPLE_GUI_NONE: // should never happen
+        fprintf(stderr, "[iop_init_simple] DT_SIMPLE_GUI_NONE found. that should be impossible\n");
+        break;
+    }
+    i++;
+    it++;
+  }
+  memcpy(self->params, self->default_params, size);
+
+  if(self->original_init)
+    self->original_init(self);
+}
+
 int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const char *op)
 {
+  gboolean use_simple_api = FALSE;
   g_strlcpy(module->op, op, 20);
   module->data = NULL;
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
@@ -284,10 +531,27 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "operation_tags_filter",  (gpointer)&(module->operation_tags_filter)))  module->operation_tags_filter = default_operation_tags_filter;
   if(!g_module_symbol(module->module, "output_bpp",             (gpointer)&(module->output_bpp)))             module->output_bpp = default_output_bpp;
   if(!g_module_symbol(module->module, "tiling_callback",        (gpointer)&(module->tiling_callback)))        module->tiling_callback = default_tiling_callback;
-  if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             module->gui_update = NULL;
   if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              module->gui_reset = NULL;
-  if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               module->gui_init = NULL;
-  if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            module->gui_cleanup = NULL;
+  if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))
+  {
+    if(!g_module_symbol(module->module, "gui_init_simple",        (gpointer)&(module->gui_init_simple)))
+    {
+      module->gui_init = NULL;
+      module->gui_init_simple = NULL;
+    }
+    else
+    {
+      module->gui_init = &gui_init_simple_wrapper;
+      use_simple_api = TRUE;
+    }
+  }
+  if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update))){
+    if(use_simple_api)
+      module->gui_update = simple_gui_update;
+    else
+      module->gui_update = NULL;
+  }
+  if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            module->gui_cleanup = default_gui_cleanup;
 
   if(!g_module_symbol(module->module, "gui_post_expose",        (gpointer)&(module->gui_post_expose)))        module->gui_post_expose = NULL;
   if(!g_module_symbol(module->module, "gui_focus",              (gpointer)&(module->gui_focus)))              module->gui_focus = NULL;
@@ -301,8 +565,16 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "configure",              (gpointer)&(module->configure)))              module->configure = NULL;
   if(!g_module_symbol(module->module, "scrolled",               (gpointer)&(module->scrolled)))               module->scrolled = NULL;
 
-  if(!g_module_symbol(module->module, "init",                   (gpointer)&(module->init)))                   goto error;
-  if(!g_module_symbol(module->module, "cleanup",                (gpointer)&(module->cleanup)))                goto error;
+  if(use_simple_api)
+  {
+    module->init = &simple_init;
+    if(!g_module_symbol(module->module, "init",                 (gpointer)&(module->original_init)))          module->original_init = NULL;
+  }
+  else
+  {
+    if(!g_module_symbol(module->module, "init",                 (gpointer)&(module->init)))                   goto error;
+  }
+  if(!g_module_symbol(module->module, "cleanup",                (gpointer)&(module->cleanup)))                module->cleanup = &default_cleanup;
   if(!g_module_symbol(module->module, "init_global",            (gpointer)&(module->init_global)))            module->init_global = NULL;
   if(!g_module_symbol(module->module, "cleanup_global",         (gpointer)&(module->cleanup_global)))         module->cleanup_global = NULL;
   if(!g_module_symbol(module->module, "init_presets",           (gpointer)&(module->init_presets)))           module->init_presets = NULL;
@@ -365,6 +637,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->gui_update  = so->gui_update;
   module->gui_reset  = so->gui_reset;
   module->gui_init    = so->gui_init;
+  module->gui_init_simple = so->gui_init_simple;
   module->gui_cleanup = so->gui_cleanup;
 
   module->gui_post_expose = so->gui_post_expose;
@@ -377,6 +650,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->scrolled        = so->scrolled;
 
   module->init            = so->init;
+  module->original_init   = so->original_init;
   module->cleanup         = so->cleanup;
   module->commit_params   = so->commit_params;
   module->reload_defaults = so->reload_defaults;
@@ -451,8 +725,8 @@ gboolean dt_iop_is_hidden(dt_iop_module_t *module)
   gboolean is_hidden = TRUE;
   if ( !(module->flags() & IOP_FLAGS_HIDDEN) )
   {
-    if(!module->gui_init)
-      g_debug("Module '%s' is not hidden and lacks implementation of gui_init()...", module->op);
+    if(!module->gui_init && !module->gui_init_simple)
+      g_debug("Module '%s' is not hidden and lacks implementation of gui_init() and gui_init_simple()...", module->op);
     else if (!module->gui_cleanup)
       g_debug("Module '%s' is not hidden and lacks implementation of gui_cleanup()...", module->op);
     else
@@ -466,7 +740,7 @@ static void _iop_gui_update_header(dt_iop_module_t *module)
     /* get the enable button spacer and button */
     GtkWidget *eb = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)),0);
     GtkWidget *ebs = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)),1);
-    
+
     if (module->hide_enable_button)
     {
       gtk_widget_hide(eb);
@@ -491,7 +765,7 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
   }
   dt_iop_load_default_params(module);
 
-  if(module->header) 
+  if(module->header)
     _iop_gui_update_header(module);
 }
 
@@ -527,7 +801,7 @@ init_presets(dt_iop_module_so_t *module_so)
         DT_DEBUG_SQLITE3_BIND_TEXT( stmt2, 1, module_so->op, strlen(module_so->op), SQLITE_TRANSIENT );
         DT_DEBUG_SQLITE3_BIND_BLOB( stmt2, 2, old_params, old_params_size, SQLITE_TRANSIENT );
 
-        if( sqlite3_step(stmt2) == SQLITE_ROW) 
+        if( sqlite3_step(stmt2) == SQLITE_ROW)
         {
           old_params_version = sqlite3_column_int(stmt2, 0);
         }
@@ -541,7 +815,7 @@ init_presets(dt_iop_module_so_t *module_so)
         sqlite3_finalize(stmt2);
 
         // we found an old params version.  Update the database with it.
-        
+
         fprintf(stderr, "[imageop_init_presets] Found version %d for '%s' preset '%s'\n", old_params_version, module_so->op, name );
 
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set op_version=?1 where operation=?2 and name=?3", -1, &stmt2, NULL);
@@ -566,7 +840,7 @@ init_presets(dt_iop_module_so_t *module_so)
         free(module);
         continue;
       }
-      
+
       module->init(module);
       int32_t new_params_size = module->params_size;
       void *new_params = malloc(new_params_size);
@@ -710,24 +984,24 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
 
 void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
-  free(module->factory_params); module->factory_params = NULL ;  
+  free(module->factory_params); module->factory_params = NULL ;
   module->cleanup(module);
 
-  free(module->default_params); module->default_params = NULL ; 
-  if (module->blend_params != NULL) 
+  free(module->default_params); module->default_params = NULL ;
+  if (module->blend_params != NULL)
   {
-    free(module->blend_params) ; 
-    module->blend_params = NULL ; 
+    free(module->blend_params) ;
+    module->blend_params = NULL ;
   }
-  if (module->default_blendop_params != NULL) 
+  if (module->default_blendop_params != NULL)
   {
-    free(module->default_blendop_params) ; 
-    module->default_blendop_params = NULL ; 
+    free(module->default_blendop_params) ;
+    module->default_blendop_params = NULL ;
   }
 }
 
 void dt_iop_unload_modules_so()
-{  
+{
   while(darktable.iop)
   {
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)darktable.iop->data;
@@ -781,7 +1055,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
     if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
       dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
-      
+
       dt_bauhaus_combobox_set(bd->blend_modes_combo, dt_iop_gui_blending_mode_seq(bd, module->blend_params->mode));
       dt_bauhaus_slider_set(bd->opacity_slider, module->blend_params->opacity);
       if(bd->blendif_support)
@@ -871,7 +1145,7 @@ _preset_popup_position(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointe
   gdk_window_get_size(GTK_WIDGET(data)->window,&w,&h);
   gdk_window_get_origin (GTK_WIDGET(data)->window, x, y);
   gtk_widget_size_request (GTK_WIDGET (menu), &requisition);
-  
+
   (*y)+=GTK_WIDGET(data)->allocation.height;
 }
 
@@ -891,7 +1165,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   /* lets lose the focus of previous focus module*/
   if (darktable.develop->gui_module)
   {
-    if (darktable.develop->gui_module->gui_focus) 
+    if (darktable.develop->gui_module->gui_focus)
       darktable.develop->gui_module->gui_focus(darktable.develop->gui_module, FALSE);
 
     gtk_widget_set_state(dt_iop_gui_get_pluginui(darktable.develop->gui_module), GTK_STATE_NORMAL);
@@ -901,9 +1175,9 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     /*
     GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
 
-    if (off) 
-      gtk_widget_set_state(off, 
-			   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? 
+    if (off)
+      gtk_widget_set_state(off,
+			   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ?
 			   GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
     */
 
@@ -919,14 +1193,14 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   if(module)
   {
     gtk_widget_set_state(dt_iop_gui_get_pluginui(module), GTK_STATE_SELECTED);
-      
+
     //gtk_widget_set_state(module->widget,    GTK_STATE_NORMAL);
 
     /*
     GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
-    if (off) 
-      gtk_widget_set_state(off, 
-			   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? 
+    if (off)
+      gtk_widget_set_state(off,
+			   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ?
 			   GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
     */
     if (module->operation_tags_filter())
@@ -934,7 +1208,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
     dt_accel_connect_locals_iop(module);
 
-    if(module->gui_focus) 
+    if(module->gui_focus)
       module->gui_focus(module, TRUE);
   }
   dt_control_change_cursor(GDK_LEFT_PTR);
@@ -959,11 +1233,11 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
   icon = g_list_last(gtk_container_get_children(GTK_CONTAINER(header)))->data;
   if(!expanded)
     flags=CPF_DIRECTION_LEFT;
- 
+
   dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);
 
   /* show / hide plugin widget */
-  if (expanded) 
+  if (expanded)
   {
     /* show plugin ui */
     gtk_widget_show(pluginui);
@@ -993,7 +1267,7 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
     /* focus the current module */
     for(int k=0;k<DT_UI_CONTAINER_SIZE;k++)
       dt_ui_container_focus_widget(darktable.gui->ui, k, module->expander);
-    
+
     /* redraw center, iop might have post expose */
     dt_control_queue_redraw_center();
 
@@ -1048,7 +1322,7 @@ _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_d
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   GtkWidget *pluginui = dt_iop_gui_get_widget(module);
 
-  if (e->button == 1) 
+  if (e->button == 1)
   {
     /* handle shiftclick on expander, hide all except this */
     if ((e->state & GDK_SHIFT_MASK))
@@ -1139,7 +1413,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   /* add the expand indicator icon */
   hw[idx] = dtgtk_icon_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
-  
+
   /* add module label */
   char label[128];
   g_snprintf(label,128,"<span size=\"larger\">%s</span>",module->name());
@@ -1151,9 +1425,9 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   module->reset_button = GTK_WIDGET(hw[idx]);
   g_object_set(G_OBJECT(hw[idx]), "tooltip-text", _("reset parameters"), (char *)NULL);
   g_signal_connect (G_OBJECT (hw[idx]), "clicked",
-		    G_CALLBACK (dt_iop_gui_reset_callback), module);  
+		    G_CALLBACK (dt_iop_gui_reset_callback), module);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
-  
+
 
   /* add preset button if module has implementation */
   hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_presets,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
@@ -1174,23 +1448,23 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   g_object_set(G_OBJECT(hw[idx]), "tooltip-text", tooltip, (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[idx]), module->enabled);
   g_signal_connect (G_OBJECT (hw[idx]), "toggled",
-		    G_CALLBACK (dt_iop_gui_off_callback), module);  
+		    G_CALLBACK (dt_iop_gui_off_callback), module);
   module->off = DTGTK_TOGGLEBUTTON(hw[idx]);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
 
- 
+
   /* reorder header, for now, iop are always int right panel */
   for(int i=5;i>=0;i--)
     if (hw[i])
       gtk_box_pack_start(GTK_BOX(header), hw[i],i==1?TRUE:FALSE,i==1?TRUE:FALSE,2);
   gtk_misc_set_alignment(GTK_MISC(hw[1]),1.0,0.5);
-  dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);    
+  dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);
 
   /* add the blending ui if supported */
   GtkWidget * iopw = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
   dt_iop_gui_init_blending(iopw, module);
-  
+
 
   /* add module widget into an alignment */
   GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
@@ -1199,7 +1473,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_container_add(GTK_CONTAINER(al), iopw);
 
   gtk_widget_hide_all(pluginui);
-  
+
   module->expander = expander;
 
   /* update header */
@@ -1232,7 +1506,7 @@ void dt_iop_nap(uint32_t usec)
   // relinquish processor
   sched_yield();
 
-  // additionally wait the given amount of time 
+  // additionally wait the given amount of time
   struct timeval s;
   s.tv_sec = 0;
   s.tv_usec = usec;
@@ -1411,7 +1685,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(
     int maxj = MIN(((roi_in->height-3)&~1u)+rggby, py+2*samples);
 
     float fx = roi_out->x*px_footprint;
-      
+
     for(int x=0; x<roi_out->width; x++)
     {
       __m128 col = _mm_setzero_ps();
@@ -1501,7 +1775,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(
     int maxj = MIN(((roi_in->height-3)&~1u)+rggby, py+2*samples);
 
     float fx = roi_out->x*px_footprint;
-      
+
     for(int x=0; x<roi_out->width; x++)
     {
       __m128 col = _mm_setzero_ps();
@@ -1584,7 +1858,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(
     py = MIN(((roi_in->height-6) & ~1u), py) + rggby;
 
     int maxj = MIN(((roi_in->height-5)&~1u)+rggby, py+2*samples);
-  
+
     for(int x=0; x<roi_out->width; x++)
     {
       __m128 col = _mm_setzero_ps();
@@ -1756,30 +2030,30 @@ dt_iop_module_t *get_colorout_module()
 static inline void
 mat4inv(const float X[][4], float R[][4])
 {
-  const float det = 
+  const float det =
           X[0][3] * X[1][2] * X[2][1] * X[3][0]
-        - X[0][2] * X[1][3] * X[2][1] * X[3][0] 
-        - X[0][3] * X[1][1] * X[2][2] * X[3][0] 
-        + X[0][1] * X[1][3] * X[2][2] * X[3][0] 
-        + X[0][2] * X[1][1] * X[2][3] * X[3][0] 
-        - X[0][1] * X[1][2] * X[2][3] * X[3][0] 
-        - X[0][3] * X[1][2] * X[2][0] * X[3][1] 
-        + X[0][2] * X[1][3] * X[2][0] * X[3][1] 
-        + X[0][3] * X[1][0] * X[2][2] * X[3][1] 
-        - X[0][0] * X[1][3] * X[2][2] * X[3][1] 
-        - X[0][2] * X[1][0] * X[2][3] * X[3][1] 
-        + X[0][0] * X[1][2] * X[2][3] * X[3][1] 
-        + X[0][3] * X[1][1] * X[2][0] * X[3][2] 
-        - X[0][1] * X[1][3] * X[2][0] * X[3][2] 
-        - X[0][3] * X[1][0] * X[2][1] * X[3][2] 
-        + X[0][0] * X[1][3] * X[2][1] * X[3][2] 
-        + X[0][1] * X[1][0] * X[2][3] * X[3][2] 
-        - X[0][0] * X[1][1] * X[2][3] * X[3][2] 
-        - X[0][2] * X[1][1] * X[2][0] * X[3][3] 
-        + X[0][1] * X[1][2] * X[2][0] * X[3][3] 
-        + X[0][2] * X[1][0] * X[2][1] * X[3][3] 
-        - X[0][0] * X[1][2] * X[2][1] * X[3][3] 
-        - X[0][1] * X[1][0] * X[2][2] * X[3][3] 
+        - X[0][2] * X[1][3] * X[2][1] * X[3][0]
+        - X[0][3] * X[1][1] * X[2][2] * X[3][0]
+        + X[0][1] * X[1][3] * X[2][2] * X[3][0]
+        + X[0][2] * X[1][1] * X[2][3] * X[3][0]
+        - X[0][1] * X[1][2] * X[2][3] * X[3][0]
+        - X[0][3] * X[1][2] * X[2][0] * X[3][1]
+        + X[0][2] * X[1][3] * X[2][0] * X[3][1]
+        + X[0][3] * X[1][0] * X[2][2] * X[3][1]
+        - X[0][0] * X[1][3] * X[2][2] * X[3][1]
+        - X[0][2] * X[1][0] * X[2][3] * X[3][1]
+        + X[0][0] * X[1][2] * X[2][3] * X[3][1]
+        + X[0][3] * X[1][1] * X[2][0] * X[3][2]
+        - X[0][1] * X[1][3] * X[2][0] * X[3][2]
+        - X[0][3] * X[1][0] * X[2][1] * X[3][2]
+        + X[0][0] * X[1][3] * X[2][1] * X[3][2]
+        + X[0][1] * X[1][0] * X[2][3] * X[3][2]
+        - X[0][0] * X[1][1] * X[2][3] * X[3][2]
+        - X[0][2] * X[1][1] * X[2][0] * X[3][3]
+        + X[0][1] * X[1][2] * X[2][0] * X[3][3]
+        + X[0][2] * X[1][0] * X[2][1] * X[3][3]
+        - X[0][0] * X[1][2] * X[2][1] * X[3][3]
+        - X[0][1] * X[1][0] * X[2][2] * X[3][3]
         + X[0][0] * X[1][1] * X[2][2] * X[3][3];
   R[0][0] = ( X[1][2]*X[2][3]*X[3][1] - X[1][3]*X[2][2]*X[3][1] + X[1][3]*X[2][1]*X[3][2] - X[1][1]*X[2][3]*X[3][2] - X[1][2]*X[2][1]*X[3][3] + X[1][1]*X[2][2]*X[3][3] ) / det;
   R[1][0] = ( X[1][3]*X[2][2]*X[3][0] - X[1][2]*X[2][3]*X[3][0] - X[1][3]*X[2][0]*X[3][2] + X[1][0]*X[2][3]*X[3][2] + X[1][2]*X[2][0]*X[3][3] - X[1][0]*X[2][2]*X[3][3] ) / det;
