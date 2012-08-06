@@ -28,6 +28,7 @@
 #include "control/control.h"
 #include "common/debug.h"
 #include "common/opencl.h"
+#include "common/bilateral.h"
 #include "dtgtk/togglebutton.h"
 #include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
@@ -415,6 +416,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
   }
 #else
+#if 0
 
   const __m128 Labmax = _mm_set_ps(1.0f, 128.0f, 128.0f, 100.0f);
   const __m128 Labmin = _mm_set_ps(0.0f, -128.0f, -128.0f, 0.0f);
@@ -560,6 +562,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       _mm_store_ps(out+offset, _mm_add_ps(_mm_load_ps(out+offset), yc));
     }
   }
+#endif
+#endif
+
+#if 1
+  // TODO: something doesn't quite look right, maybe clamping is essential?
+  const float sigma_r = 8.0f;// d->sigma_r; // does not depend on scale
+  const float sigma_s = sigma;
+  const float detail = -1.0f; // we want the bilateral base layer
+
+  dt_bilateral_t *b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
+  dt_bilateral_splat(b, in);
+  dt_bilateral_blur(b);
+  dt_bilateral_slice(b, in, out, detail);
+  dt_bilateral_free(b);
 #endif
 
   // invert and desaturate
