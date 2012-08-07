@@ -518,9 +518,9 @@ void dt_image_init(dt_image_t *img)
 int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
 {
   //TODO: several places where string truncation could occur unnoticed
-  gchar oldimg[512] = {0};
-  gchar newimg[512] = {0};
-  dt_image_full_path(imgid, oldimg, 512);
+  gchar oldimg[DT_MAX_PATH_LEN] = {0};
+  gchar newimg[DT_MAX_PATH_LEN] = {0};
+  dt_image_full_path(imgid, oldimg, DT_MAX_PATH_LEN);
   gchar *imgbname = g_path_get_basename(oldimg);
   gchar *newdir = NULL;
 
@@ -533,9 +533,12 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
   sqlite3_finalize(film_stmt);
 
   if (!newdir && !g_file_test(newdir, G_FILE_TEST_IS_DIR))
+  {
+    g_free(newdir);
     return -1;
+  }
 
-  g_snprintf(newimg, 512, "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
+  g_snprintf(newimg, DT_MAX_PATH_LEN, "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
   g_free(imgbname);
   g_free(newdir);
 
