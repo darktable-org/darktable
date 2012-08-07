@@ -599,10 +599,8 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
   int32_t newid = -1;
   sqlite3_stmt *stmt;
   gchar srcpath[DT_MAX_PATH_LEN] = {0};
-  gchar destpath[DT_MAX_PATH_LEN] = {0};
   gchar *newdir = NULL;
 
-  dt_image_full_path(imgid, srcpath, DT_MAX_PATH_LEN);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
       "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
@@ -610,12 +608,14 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
     newdir = g_strdup((gchar *) sqlite3_column_text(stmt, 0));
   sqlite3_finalize(stmt);
 
+  dt_image_full_path(imgid, srcpath, DT_MAX_PATH_LEN);
+  gchar *imgbname = g_path_get_basename(srcpath);
+  gchar *destpath = g_build_filename(newdir, imgbname, NULL);
   GFile *src = g_file_new_for_path(srcpath);
-  gchar *imgbname = g_file_get_basename(src);
-  g_snprintf(destpath, DT_MAX_PATH_LEN, "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
   GFile *dest = g_file_new_for_path(destpath);
   g_free(imgbname); imgbname = NULL;
   g_free(newdir); newdir = NULL;
+  g_free(destpath); destpath = NULL;
 
   // copy image to new folder
   // if image file already exists, continue
