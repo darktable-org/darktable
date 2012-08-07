@@ -92,7 +92,7 @@ set_value_font(cairo_t *cr)
 static void
 set_bg_normal(cairo_t *cr)
 {
-  cairo_set_source_rgb(cr, 
+  cairo_set_source_rgb(cr,
       darktable.bauhaus->bg_normal,
       darktable.bauhaus->bg_normal,
       darktable.bauhaus->bg_normal);
@@ -101,7 +101,7 @@ set_bg_normal(cairo_t *cr)
 static void
 set_bg_focus(cairo_t *cr)
 {
-  cairo_set_source_rgb(cr, 
+  cairo_set_source_rgb(cr,
       darktable.bauhaus->bg_focus,
       darktable.bauhaus->bg_focus,
       darktable.bauhaus->bg_focus);
@@ -111,12 +111,12 @@ static void
 set_text_color(cairo_t *cr, int sensitive)
 {
   if(sensitive)
-    cairo_set_source_rgb(cr, 
+    cairo_set_source_rgb(cr,
         darktable.bauhaus->text,
         darktable.bauhaus->text,
         darktable.bauhaus->text);
   else
-    cairo_set_source_rgba(cr, 
+    cairo_set_source_rgba(cr,
         darktable.bauhaus->text,
         darktable.bauhaus->text,
         darktable.bauhaus->text,
@@ -127,12 +127,12 @@ static void
 set_grid_color(cairo_t *cr, int sensitive)
 {
   if(sensitive)
-    cairo_set_source_rgb(cr, 
+    cairo_set_source_rgb(cr,
         darktable.bauhaus->grid,
         darktable.bauhaus->grid,
         darktable.bauhaus->grid);
   else
-    cairo_set_source_rgba(cr, 
+    cairo_set_source_rgba(cr,
         darktable.bauhaus->grid,
         darktable.bauhaus->grid,
         darktable.bauhaus->grid,
@@ -143,12 +143,12 @@ static void
 set_indicator_color(cairo_t *cr, int sensitive)
 {
   if(sensitive)
-    cairo_set_source_rgb(cr, 
+    cairo_set_source_rgb(cr,
         darktable.bauhaus->indicator,
         darktable.bauhaus->indicator,
         darktable.bauhaus->indicator);
   else
-    cairo_set_source_rgba(cr, 
+    cairo_set_source_rgba(cr,
         darktable.bauhaus->indicator,
         darktable.bauhaus->indicator,
         darktable.bauhaus->indicator,
@@ -224,7 +224,7 @@ draw_slider_line(cairo_t *cr, float pos, float off, float scale, const int width
   // ht is in pixels here
   const float l = 4.0f/width;
   const float r = 1.0f-(ht+4.0f)/width;
-  
+
   const int steps = 64;
   cairo_move_to(cr, width*(l + (pos+off)*(r-l)), ht*.7f);
   cairo_line_to(cr, width*(l + (pos+off)*(r-l)), ht);
@@ -398,7 +398,7 @@ static void
 window_show(GtkWidget *w, gpointer user_data)
 {
   /* grabbing might not succeed immediately... */
-  if (gdk_keyboard_grab(w->window, FALSE, GDK_CURRENT_TIME) != GDK_GRAB_SUCCESS) 
+  if (gdk_keyboard_grab(w->window, FALSE, GDK_CURRENT_TIME) != GDK_GRAB_SUCCESS)
   {
     // never happened so far:
     /* ...wait a while and try again */
@@ -891,7 +891,7 @@ dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t *cr)
   const int ht = widget->allocation.height;
   cairo_save(cr);
   // dt_bauhaus_slider_data_t *d = &w->data.slider;
-  
+
   const float l = 4.0f/wd;
   const float r = 1.0f-(ht+4.0f)/wd;
   set_indicator_color(cr, 1);
@@ -994,7 +994,7 @@ dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
   const int ht = widget->allocation.height;
   cairo_save(cr);
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  
+
 #ifdef DT_BAUHAUS_OLD
   const float htm = 0.0f, htM = ht;
 #else
@@ -1719,7 +1719,7 @@ GList* dt_bauhaus_vimkey_complete(const char *input)
   while(cmp)
   {
     char *path = (char *)cmp->data;
-    if(strncmp(path, input, prefix))
+    if(strncasecmp(path, input, prefix))
     {
       if(after) break; // sorted, so we're done
       // else loop till we find the start of it
