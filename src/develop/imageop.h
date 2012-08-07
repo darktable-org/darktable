@@ -108,13 +108,15 @@ typedef struct dt_iop_module_so_t
   void (*gui_reset)       (struct dt_iop_module_t *self);
   void (*gui_update)      (struct dt_iop_module_t *self);
   void (*gui_init)        (struct dt_iop_module_t *self);
-  dt_gui_simple_t* (*gui_init_simple) (struct dt_iop_module_t *self);
+  dt_gui_simple_t* (*gui_init_simple) (struct dt_iop_module_so_t *self);
   void (*gui_cleanup)     (struct dt_iop_module_t *self);
   void (*gui_post_expose) (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
   void (*gui_focus)       (struct dt_iop_module_t *self, gboolean in);
   /** Optional callback for keyboard accelerators */
   void (*init_key_accels)(struct dt_iop_module_so_t *so);
+  void (*original_init_key_accels)(struct dt_iop_module_so_t *so);
   void (*connect_key_accels)(struct dt_iop_module_t *self);
+  void (*original_connect_key_accels)(struct dt_iop_module_t *self);
   void (*disconnect_key_accels)(struct dt_iop_module_t *self);
 
   int  (*mouse_leave)     (struct dt_iop_module_t *self);
@@ -234,7 +236,7 @@ typedef struct dt_iop_module_t
   /** construct widget. */
   void (*gui_init)        (struct dt_iop_module_t *self);
   /** construct widget using the simple api. */
-  dt_gui_simple_t* (*gui_init_simple) (struct dt_iop_module_t *self);
+  dt_gui_simple_t* (*gui_init_simple) (struct dt_iop_module_so_t *self);
   /** destroy widget. */
   void (*gui_cleanup)     (struct dt_iop_module_t *self);
   /** optional method called after darkroom expose. */
@@ -281,6 +283,7 @@ typedef struct dt_iop_module_t
 
   /** Key accelerator registration callbacks */
   void (*connect_key_accels)(struct dt_iop_module_t *self);
+  void (*original_connect_key_accels)(struct dt_iop_module_t *self);
   void (*disconnect_key_accels)(struct dt_iop_module_t *self);
 }
 dt_iop_module_t;

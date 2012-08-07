@@ -23,6 +23,7 @@
 #include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"
+// don't forget to include gui/simple_gui.h if you want to use it :)
 #include "gui/simple_gui.h"
 
 #include <gtk/gtk.h>
@@ -138,7 +139,7 @@ button_callback(GtkWidget *w, gpointer i)
 }
 
 /** gui callbacks, these are needed. */
-dt_gui_simple_t* gui_init_simple(dt_iop_module_t *self)
+dt_gui_simple_t* gui_init_simple(dt_iop_module_so_t *self) // sorry, only dt_iop_module_so_t* in here :(
 {
   static char *combobox_entries[] = {"red", "green", "blue", NULL}; // has to be NULL terminated!
   static dt_gui_simple_t gui = {
