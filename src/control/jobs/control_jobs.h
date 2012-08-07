@@ -46,6 +46,9 @@ void dt_control_remove_images_job_init(dt_job_t *job);
 int32_t dt_control_move_images_job_run(dt_job_t *job);
 void dt_control_move_images_job_init(dt_job_t *job);
 
+int32_t dt_control_copy_images_job_run(dt_job_t *job);
+void dt_control_copy_images_job_init(dt_job_t *job);
+
 void dt_control_delete_images_job_init(dt_job_t *job);
 int32_t dt_control_delete_images_job_run(dt_job_t *job);
 
@@ -59,6 +62,7 @@ void dt_control_duplicate_images();
 void dt_control_flip_images(const int32_t cw);
 void dt_control_remove_images();
 void dt_control_move_images();
+void dt_control_copy_images();
 void dt_control_export();
 void dt_control_merge_hdr();
 struct dt_similarity_t;

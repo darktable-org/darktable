@@ -594,6 +594,110 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
   return 0;
 }
 
+int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
+{
+  int32_t newid = -1;
+  sqlite3_stmt *stmt;
+  gchar srcpath[DT_MAX_PATH_LEN] = {0};
+  gchar destpath[DT_MAX_PATH_LEN] = {0};
+  gchar *newdir = NULL;
+
+  dt_image_full_path(imgid, srcpath, DT_MAX_PATH_LEN);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+      "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    newdir = g_strdup((gchar *) sqlite3_column_text(stmt, 0));
+  sqlite3_finalize(stmt);
+
+  GFile *src = g_file_new_for_path(srcpath);
+  gchar *imgbname = g_file_get_basename(src);
+  g_snprintf(destpath, DT_MAX_PATH_LEN, "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
+  GFile *dest = g_file_new_for_path(destpath);
+  g_free(imgbname); imgbname = NULL;
+  g_free(newdir); newdir = NULL;
+
+  // copy image to new folder
+  // if image file already exists, continue
+  GError *gerror = NULL;
+  g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+
+  if((gerror == NULL) || (gerror != NULL && gerror->code == G_IO_ERROR_EXISTS))
+  {
+    // update database
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+        "insert into images "
+        "(id, film_id, width, height, filename, maker, model, lens, exposure, "
+        "aperture, iso, focal_length, focus_distance, datetime_taken, flags, "
+        "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
+        "raw_auto_bright_threshold, raw_black, raw_maximum, orientation) "
+        "select null, ?1 as film_id, width, height, filename, maker, model, lens, "
+        "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
+        "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
+        "raw_auto_bright_threshold, raw_black, raw_maximum, orientation "
+        "from images where id = ?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+        "select a.id from images as a join images as b where "
+        "a.film_id = ?1 and a.filename = b.filename and "
+        "b.id = ?2 order by a.id desc", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      newid = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+
+    if(newid != -1)
+    {
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+          "insert into color_labels (imgid, color) select ?1, color from "
+          "color_labels where imgid = ?2", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+          "insert into meta_data (id, key, value) select ?1, key, value "
+          "from meta_data where id = ?2", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+          "insert into tagged_images (imgid, tagid) select ?1, tagid from "
+          "tagged_images where imgid = ?2", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+          "update tagxtag set count = count + 1 where "
+          "(id1 in (select tagid from tagged_images where imgid = ?1)) or "
+          "(id2 in (select tagid from tagged_images where imgid = ?1))",
+          -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+
+      // write xmp file
+      dt_image_write_sidecar_file(newid);
+    }
+  }
+  else
+  {
+    fprintf(stderr, "Failed to copy image %s: %s\n", srcpath, gerror->message);
+  }
+
+  g_object_unref(dest);
+  g_object_unref(src);
+  g_clear_error(&gerror);
+  return newid;
+}
+
 // *******************************************************
 // xmp stuff
 // *******************************************************
