@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2012 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/opencl.h"
+#include "common/bilateral.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -129,6 +130,86 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 {
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   const int ch = piece->colors;
+
+#if 0
+  const float sigma_r = 8.0f; // range does not depend on scale
+  const float sigma_s = 40.0f * roi_in->scale / piece->iscale;
+  const float detail = -1.0f; // we want the bilateral base layer
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) schedule(static) shared(roi_in, roi_out, d, i, o)
+#endif
+  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  {
+    float *in = (float *)i + 4*k;
+    float *out = (float *)o + 4*k;
+    const float a = in[1], b = in[2];
+    const float h = fmodf(atan2f(b, a) + 2.0*M_PI, 2.0*M_PI)/(2.0*M_PI);
+    const float C = sqrtf(b*b + a*a);
+    switch(d->channel)
+    {
+      case DT_IOP_COLORZONES_L:
+        out[0] = in[0];
+        break;
+      case DT_IOP_COLORZONES_C:
+        out[0] = C;
+        break;
+      default:
+      case DT_IOP_COLORZONES_h:
+        out[0] = 120.0f*h;
+        break;
+    }
+  }
+
+  dt_bilateral_t *b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
+  dt_bilateral_splat(b, (float *)o);
+  dt_bilateral_blur(b);
+  dt_bilateral_slice(b, (float *)o, (float *)o, detail);
+  dt_bilateral_free(b);
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) schedule(static) shared(roi_in, roi_out, d, i, o)
+#endif
+  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  {
+    float *in = (float *)i + ch*k;
+    float *out = (float *)o + ch*k;
+    const float a = in[1], b = in[2];
+    const float h = fmodf(atan2f(b, a) + 2.0*M_PI, 2.0*M_PI)/(2.0*M_PI);
+    const float C = sqrtf(b*b + a*a);
+    float select = 0.0f;
+    float blend = 0.0f;
+    switch(d->channel)
+    {
+      case DT_IOP_COLORZONES_L:
+        select = fminf(1.0f, out[0]/100.0);
+        break;
+      case DT_IOP_COLORZONES_C:
+        select = fminf(1.0f, out[0]/128.0);
+        break;
+      default:
+      case DT_IOP_COLORZONES_h:
+        select = fminf(1.0f, out[0]/120.f);
+        blend = powf(1.0f - C/128.0f, 2.0f);
+        break;
+    }
+    // new luminance is exposure correction, not absolute values:
+    const float Lm =       (blend*.5f + (1.0f-blend)*lookup(d->lut[0], select)) - .5f;
+    // new hue is a shift
+    const float hm =       (blend*.5f + (1.0f-blend)*lookup(d->lut[2], select)) - .5f;
+    blend *= blend; // saturation isn't as prone to artifacts:
+    // const float Cm = 2.0 * (blend*.5f + (1.0f-blend)*lookup(d->lut[1], select));
+    // new saturation is a multiplier
+    const float Cm = 2.0 * lookup(d->lut[1], select);
+    // 2^exposure correction:
+    const float L = in[0] * powf(2.0f, 4.0f*Lm);
+    out[0] = L;
+    out[1] = cosf(2.0*M_PI*(h + hm)) * Cm * C;
+    out[2] = sinf(2.0*M_PI*(h + hm)) * Cm * C;
+    out[3] = in[3];
+  }
+
+#else
 #ifdef _OPENMP
   #pragma omp parallel for default(none) schedule(static) shared(roi_in, roi_out, d, i, o)
 #endif
@@ -166,6 +247,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     out[2] = sinf(2.0*M_PI*(h + hm)) * Cm * C;
     out[3] = in[3];
   }
+#endif
 }
 
 #ifdef HAVE_OPENCL
