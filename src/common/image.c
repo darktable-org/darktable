@@ -531,13 +531,6 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
   if(sqlite3_step(film_stmt) == SQLITE_ROW)
     newdir = g_strdup((gchar *) sqlite3_column_text(film_stmt, 0));
   sqlite3_finalize(film_stmt);
-
-  if (!newdir && !g_file_test(newdir, G_FILE_TEST_IS_DIR))
-  {
-    g_free(newdir);
-    return -1;
-  }
-
   g_snprintf(newimg, DT_MAX_PATH_LEN, "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
   g_free(imgbname);
   g_free(newdir);
