@@ -400,7 +400,7 @@ gui_init_simple_wrapper(dt_iop_module_t *self)
         }
         break;
       case DT_SIMPLE_GUI_NONE: // should never happen
-        g[i] = gtk_label_new(_("error creating gui, DT_SIMPLE_GUI_NONE should not be found"));
+        g[i] = gtk_label_new(_("error creating gui, DT_SIMPLE_GUI_NONE could not be found"));
         gtk_label_set_justify(GTK_LABEL(g[i]), GTK_JUSTIFY_LEFT);
         break;
     }
