@@ -24,6 +24,7 @@
 #include <string.h>
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "common/bilateral.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "dtgtk/slider.h"
@@ -105,30 +106,112 @@ void init_presets (dt_iop_module_so_t *self)
 }
 
 static float
-color_filter(const float L, const float ai, const float bi, const float a, const float b, const float size)
+color_filter(const float ai, const float bi, const float a, const float b, const float size)
 {
-  return L * dt_fast_expf(-CLAMPS(((ai-a)*(ai-a) + (bi-b)*(bi-b))/(2.0*size), 0.0f, 1.0f));
+  return dt_fast_expf(-CLAMPS(((ai-a)*(ai-a) + (bi-b)*(bi-b))/(2.0*size), 0.0f, 1.0f));
 }
+
+#define BILAT
+#define ENVELOPE
+
+#ifdef ENVELOPE
+static float
+envelope(const float L)
+{
+  const float x = CLAMPS(L/100.0f, 0.0f, 1.0f);
+  // const float alpha = 2.0f;
+  const float beta = 0.6f;
+  if(x < beta)
+  {
+    // return 1.0f-fabsf(x/beta-1.0f)^2
+    const float tmp = fabsf(x/beta-1.0f);
+    return 1.0f-tmp*tmp;
+  }
+  else
+  {
+    const float tmp1 = (1.0f-x)/(1.0f-beta);
+    const float tmp2 = tmp1*tmp1;
+    const float tmp3 = tmp2*tmp1;
+    return 3.0f*tmp2 - 2.0f*tmp3;
+  }
+}
+#endif
 
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
-  const int ch = piece->colors;
+#ifndef BILAT // old version:
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
 #endif
   for(int k=0; k<roi_out->height; k++)
   {
-    const float *in = ((float *)i) + ch*k*roi_out->width;
-    float *out = ((float *)o) + ch*k*roi_out->width;
-    for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
+    const float *in = ((float *)i) + 4*k*roi_out->width;
+    float *out = ((float *)o) + 4*k*roi_out->width;
+    for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
     {
-      out[0] = color_filter(in[0], in[1], in[2], d->a, d->b, d->size);
+#ifdef ENVELOPE
+      const float t = envelope(in[0]);
+      out[0] = (1.0f-t)*in[0] + t*in[0]*color_filter(in[1], in[2], d->a, d->b, d->size);
+#else
+      out[0] = in[0]*color_filter(in[1], in[2], d->a, d->b, d->size);
+#endif
       out[1] = out[2] = 0.0f;
       out[3] = in[3];
     }
   }
+#else
+  // first pass: evaluate color filter:
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
+#endif
+  for(int k=0; k<roi_out->height; k++)
+  {
+    const float *in = ((float *)i) + 4*k*roi_out->width;
+    float *out = ((float *)o) + 4*k*roi_out->width;
+    for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
+    {
+      out[0] = 100.0f*color_filter(in[1], in[2], d->a, d->b, d->size);
+      out[1] = out[2] = 0.0f;
+      out[3] = in[3];
+    }
+  }
+
+#if 1
+  // second step: blur filter contribution:
+  const float scale = piece->iscale/roi_in->scale;
+  const float sigma_r = 250.0f; // does not depend on scale
+  const float sigma_s = 20.0f / scale;
+  const float detail = -1.0f; // bilateral base layer
+
+  dt_bilateral_t *b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
+  dt_bilateral_splat(b, (float *)o);
+  dt_bilateral_blur(b);
+  dt_bilateral_slice(b, (float *)o, (float *)o, detail);
+  dt_bilateral_free(b);
+#endif
+
+#if 1 // debug, skip this to see just the base layer
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
+#endif
+  for(int k=0; k<roi_out->height; k++)
+  {
+    const float *in = ((float *)i) + 4*k*roi_out->width;
+    float *out = ((float *)o) + 4*k*roi_out->width;
+    for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
+    {
+#ifdef ENVELOPE
+      const float t = envelope(in[0]);
+      out[0] = (1.0f-t)*in[0] + t*out[0]*(1.0f/100.0f)*in[0]; // normalized filter * input brightness
+#else
+      out[0] = out[0]*(1.0f/100.0f)*in[0]; // normalized filter * input brightness
+#endif
+    }
+  }
+#endif
+#endif
 }
 
 #ifdef HAVE_OPENCL
