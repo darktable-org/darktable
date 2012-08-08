@@ -40,16 +40,13 @@ void dt_dlopencl_noop(void)
 /* dynamically load OpenCL library and bind needed symbols */
 int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
 {
-#ifndef __APPLE__
   dt_gmodule_t *module = NULL;
-  const char *library;
-#endif
   dt_dlopencl_t *d;
+  const char *library;
   int success;
   int k;
   
   
-#ifndef __APPLE__
   /* check if our platform supports gmodules */
   success = dt_gmodule_supported();
   if (!success)
@@ -71,7 +68,6 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
   {
     /* now bind symbols */
     success = TRUE;
-#endif
     d = (dt_dlopencl_t *)malloc(sizeof(dt_dlopencl_t));
 
     if (d == NULL) {
@@ -88,11 +84,7 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
     }
 
     memset(d->symbols, 0, sizeof(dt_dlopencl_symbols_t));
-#ifndef __APPLE__
     d->library = module->library;
-#else
-    d->library = DT_OPENCL_LIBRARY;
-#endif
     
     /* assign noop function as a default to each function pointer */
     void (** slist)(void) = (void (**)(void))d->symbols;
@@ -101,7 +93,6 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
       for (k=0; k < sizeof(dt_dlopencl_symbols_t)/sizeof(void (*)(void)); k++) slist[k] = dt_dlopencl_noop;
 
     /* only bind needed symbols */
-#ifndef __APPLE__
     success = success && dt_gmodule_symbol(module, "clGetPlatformIDs", (void (**)(void))&d->symbols->dt_clGetPlatformIDs);
     success = success && dt_gmodule_symbol(module, "clGetDeviceIDs", (void (**)(void))&d->symbols->dt_clGetDeviceIDs);
     success = success && dt_gmodule_symbol(module, "clGetDeviceInfo", (void (**)(void))&d->symbols->dt_clGetDeviceInfo);
@@ -138,53 +129,11 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
     success = success && dt_gmodule_symbol(module, "clGetKernelWorkGroupInfo", (void (**)(void))&d->symbols->dt_clGetKernelWorkGroupInfo);
     success = success && dt_gmodule_symbol(module, "clEnqueueReadBuffer", (void (**)(void))&d->symbols->dt_clEnqueueReadBuffer);
     success = success && dt_gmodule_symbol(module, "clEnqueueWriteBuffer", (void (**)(void))&d->symbols->dt_clEnqueueWriteBuffer);
-#else
-    d->symbols->dt_clGetPlatformIDs = &clGetPlatformIDs;
-    d->symbols->dt_clGetDeviceIDs = &clGetDeviceIDs;
-    d->symbols->dt_clGetDeviceInfo = &clGetDeviceInfo;
-    d->symbols->dt_clCreateContext = &clCreateContext;
-    d->symbols->dt_clCreateCommandQueue = &clCreateCommandQueue;
-    d->symbols->dt_clCreateProgramWithSource = &clCreateProgramWithSource;
-    d->symbols->dt_clBuildProgram = &clBuildProgram;
-    d->symbols->dt_clGetProgramBuildInfo = &clGetProgramBuildInfo;
-    d->symbols->dt_clCreateKernel = &clCreateKernel;
-    d->symbols->dt_clCreateBuffer = &clCreateBuffer;
-    d->symbols->dt_clCreateImage2D = &clCreateImage2D;
-    d->symbols->dt_clEnqueueWriteBuffer = &clEnqueueWriteBuffer;
-    d->symbols->dt_clSetKernelArg = &clSetKernelArg;
-    d->symbols->dt_clGetKernelWorkGroupInfo = &clGetKernelWorkGroupInfo;
-    d->symbols->dt_clEnqueueNDRangeKernel = &clEnqueueNDRangeKernel;
-    d->symbols->dt_clEnqueueReadImage = &clEnqueueReadImage;
-    d->symbols->dt_clEnqueueWriteImage = &clEnqueueWriteImage;
-    d->symbols->dt_clEnqueueCopyImage = &clEnqueueCopyImage;
-    d->symbols->dt_clEnqueueCopyImageToBuffer = &clEnqueueCopyImageToBuffer;
-    d->symbols->dt_clEnqueueCopyBufferToImage = &clEnqueueCopyBufferToImage;
-    d->symbols->dt_clFinish = &clFinish;
-    d->symbols->dt_clEnqueueReadBuffer = &clEnqueueReadBuffer;
-    d->symbols->dt_clReleaseMemObject = &clReleaseMemObject;
-    d->symbols->dt_clReleaseProgram = &clReleaseProgram;
-    d->symbols->dt_clReleaseKernel = &clReleaseKernel;
-    d->symbols->dt_clReleaseCommandQueue = &clReleaseCommandQueue;
-    d->symbols->dt_clReleaseContext = &clReleaseContext;
-    d->symbols->dt_clReleaseEvent = &clReleaseEvent;
-    d->symbols->dt_clWaitForEvents = &clWaitForEvents;
-    d->symbols->dt_clGetEventInfo = &clGetEventInfo;
-    d->symbols->dt_clGetEventProfilingInfo = &clGetEventProfilingInfo;
-    d->symbols->dt_clGetKernelInfo = &clGetKernelInfo;
-    d->symbols->dt_clEnqueueBarrier = &clEnqueueBarrier;
-    d->symbols->dt_clGetKernelWorkGroupInfo = &clGetKernelWorkGroupInfo;
-    d->symbols->dt_clEnqueueReadBuffer = &clEnqueueReadBuffer;
-    d->symbols->dt_clEnqueueWriteBuffer = &clEnqueueWriteBuffer;
-
-    success = TRUE;
-#endif
 
     if (!success) dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not load all required symbols from library\n");
     d->have_opencl = success;
     *ocl = success ? d : NULL;
-#ifndef __APPLE__
   }
-#endif
 
   if (success == FALSE) {
     free(d->symbols);
