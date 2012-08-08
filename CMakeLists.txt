@@ -34,7 +34,6 @@ endif()
 #
 if(APPLE)
 	message("-- Mac OSX build detected, setting default features")
-	set(USE_OPENCL OFF)
 	set(USE_OPENMP OFF)
 	set(USE_CAMERA_SUPPORT ON)
 	set(BUILD_SLIDESHOW OFF)
@@ -45,12 +44,6 @@ if(APPLE)
 
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_DARWIN_C_SOURCE")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_DARWIN_C_SOURCE")
-
-	list(APPEND LIBS "-Wl,-framework -Wl,Carbon")
-
-	if(USE_OPENCL)
-	  list(APPEND LIBS "-Wl,OpenCL")
-	endif(USE_OPENCL)
 
         # Detect the OS X version: Use '/usr/bin/sw_vers -productVersion' to extract V from '10.V.x'.
         EXEC_PROGRAM(/usr/bin/sw_vers ARGS -productVersion OUTPUT_VARIABLE MACOSX_VERSION_RAW)
