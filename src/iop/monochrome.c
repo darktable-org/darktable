@@ -36,6 +36,7 @@ DT_MODULE(1)
 
 #define DT_COLORCORRECTION_INSET 5
 #define DT_COLORCORRECTION_MAX 40.
+#define PANEL_WIDTH 256.0f
 
 typedef struct dt_iop_monochrome_params_t
 {
@@ -316,7 +317,8 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-static gboolean dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean
+dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
@@ -347,16 +349,17 @@ static gboolean dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *even
       Lab.L = 53.390011;
       Lab.a = Lab.b = 0; // grey
       // dt_iop_sRGB_to_Lab(rgb, Lab, 0, 0, 1.0, 1, 1); // get grey in Lab
-      Lab.a = (Lab.a + Lab.L * .05*DT_COLORCORRECTION_MAX*(i/(cells-1.0) - .5));
-      Lab.b = (Lab.b + Lab.L * .05*DT_COLORCORRECTION_MAX*(j/(cells-1.0) - .5));
-      Lab.L = color_filter(Lab.L, Lab.a, Lab.b, p->a, p->b, 40*40*p->size*p->size);
+      Lab.a = PANEL_WIDTH*(i/(cells-1.0) - .5);
+      Lab.b = PANEL_WIDTH*(j/(cells-1.0) - .5);
+      const float f = color_filter(Lab.a, Lab.b, p->a, p->b, 40*40*p->size*p->size);
+      Lab.L *= f*f; // exaggerate filter a little
       cmsDoTransform(g->xform, &Lab, rgb, 1);
       cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
       cairo_rectangle(cr, width*i/(float)cells, height*j/(float)cells, width/(float)cells-1, height/(float)cells-1);
       cairo_fill(cr);
     }
   cairo_set_source_rgb(cr, .7, .7, .7);
-  const float x = p->a * width/128.0 + width * .5f, y = p->b * width/128.0 + width * .5f;
+  const float x = p->a * width/PANEL_WIDTH + width * .5f, y = p->b * width/PANEL_WIDTH + width * .5f;
   cairo_arc(cr, x, y, width*.22f*p->size, 0, 2.0*M_PI);
   cairo_stroke(cr);
 
@@ -382,8 +385,8 @@ static gboolean dt_iop_monochrome_motion_notify(GtkWidget *widget, GdkEventMotio
     int width = widget->allocation.width - 2*inset, height = widget->allocation.height - 2*inset;
     const float mouse_x = CLAMP(event->x - inset, 0, width);
     const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
-    p->a = 128.0f*(mouse_x - width  * 0.5f)/(float)width;
-    p->b = 128.0f*(mouse_y - height * 0.5f)/(float)height;
+    p->a = PANEL_WIDTH*(mouse_x - width  * 0.5f)/(float)width;
+    p->b = PANEL_WIDTH*(mouse_y - height * 0.5f)/(float)height;
     gtk_widget_queue_draw(self->widget);
   }
   gint x, y;
@@ -402,8 +405,8 @@ static gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton
     int width = widget->allocation.width - 2*inset, height = widget->allocation.height - 2*inset;
     const float mouse_x = CLAMP(event->x - inset, 0, width);
     const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
-    p->a = 128.0f*(mouse_x - width  * 0.5f)/(float)width;
-    p->b = 128.0f*(mouse_y - height * 0.5f)/(float)height;
+    p->a = PANEL_WIDTH*(mouse_x - width  * 0.5f)/(float)width;
+    p->b = PANEL_WIDTH*(mouse_y - height * 0.5f)/(float)height;
     g->dragging = 1;
     gtk_widget_queue_draw(self->widget);
     return TRUE;
