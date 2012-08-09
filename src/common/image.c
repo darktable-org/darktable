@@ -552,7 +552,7 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
     DT_DEBUG_SQLITE3_BIND_INT(duplicates_stmt, 1, imgid);
     while (sqlite3_step(duplicates_stmt) == SQLITE_ROW)
     {
-      long int id = sqlite3_column_int(duplicates_stmt, 0);
+      int32_t id = sqlite3_column_int(duplicates_stmt, 0);
       dup_list = g_list_append(dup_list, GINT_TO_POINTER(id));
       gchar oldxmp[512], newxmp[512];
       g_strlcpy(oldxmp, oldimg, 512);
