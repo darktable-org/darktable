@@ -339,6 +339,17 @@ int dt_exif_read(dt_image_t *img, const char* path)
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
     }
 
+    Exiv2::XmpData &xmpData = image->xmpData();
+    Exiv2::XmpData::iterator xmpPos;
+
+    int stars = 1;
+    if ( (xmpPos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating")))
+          != xmpData.end() )
+    {
+      stars = (xmpPos->toLong() == -1) ? 6 : xmpPos->toLong();
+      img->flags = (img->flags & ~0x7) | (0x7 & stars);
+    }
+
     return dt_exif_read_data(img, exifData);
   }
   catch (Exiv2::AnyError& e)
