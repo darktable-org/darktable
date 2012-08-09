@@ -163,6 +163,7 @@ show_pango_text(cairo_t *cr, char *text, float x_pos, float y_pos, gboolean righ
   layout = pango_cairo_create_layout(cr);
   pango_layout_set_text(layout, text, -1);
   pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
+  pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
 
   if(right_aligned)
   {

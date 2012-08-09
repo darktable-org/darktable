@@ -38,7 +38,7 @@ typedef struct dt_gui_widgets_t
 
   /* left panel */
   GtkTable *panel_left;                 // panel table 3 rows, top,center,bottom and fille on center
-  GtkTable *panel_right;               
+  GtkTable *panel_right;
 
 }
 dt_gui_widgets_t;
@@ -52,12 +52,13 @@ typedef struct dt_gui_gtk_t
 
   GdkPixmap *pixmap;
   GtkMenu *presets_popup_menu;
-  
+
   int32_t reset;
   float bgcolor[3];
 
   int32_t center_tooltip; // 0 = no tooltip, 1 = new tooltip, 2 = old tooltip
 
+  double dpi;
 }
 dt_gui_gtk_t;
 
@@ -71,27 +72,27 @@ void dt_gui_gtk_quit();
 void dt_gui_key_accel_block_on_focus (GtkWidget *w);
 
 /*
- * new ui api 
+ * new ui api
  */
 
 
 typedef enum dt_ui_container_t
 {
   /* the top container of left panel, the top container
-     disables the module expander and does not scroll with other modules 
+     disables the module expander and does not scroll with other modules
   */
   DT_UI_CONTAINER_PANEL_LEFT_TOP = 0,
 
   /* the center container of left panel, the center container
      contains the scrollable area that all plugins are placed within and last
-     widget is the end marker. 
+     widget is the end marker.
      This container will always expand|fill empty veritcal space
   */
   DT_UI_CONTAINER_PANEL_LEFT_CENTER = 1,
 
   /* the bottom container of left panel, this container works just like
      the top container but will be attached to bottom in the panel, such as
-     plugins like background jobs module in lighttable and the plugin selection 
+     plugins like background jobs module in lighttable and the plugin selection
      module in darkroom,
   */
   DT_UI_CONTAINER_PANEL_LEFT_BOTTOM = 2,
@@ -116,7 +117,7 @@ typedef enum dt_ui_container_t
   DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER = 13,
   DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT = 14,
 
-  /* this panel is placed at bottom of ui 
+  /* this panel is placed at bottom of ui
      only used by the filmstrip if shown */
   DT_UI_CONTAINER_PANEL_BOTTOM = 15,
 
