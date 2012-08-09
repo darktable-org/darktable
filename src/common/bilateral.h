@@ -219,11 +219,12 @@ dt_bilateral_blur(
 
 
 void
-dt_bilateral_slice(
+dt_bilateral_slice_with_threshold(
     const dt_bilateral_t *const b,
     const float          *const in,
     float                *out,
-    const float           detail)
+    const float           detail,
+    const float           threshold)
 {
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
   const float norm = -detail;
@@ -249,7 +250,7 @@ dt_bilateral_slice(
       const float yf = y - yi;
       const float zf = z - zi;
       const int gi = xi + b->size_x*(yi + b->size_y*zi);
-      const float Lout = L + norm * (
+      const float Ldiff =
         b->buf[gi]          * (1.0f - xf) * (1.0f - yf) * (1.0f - zf) +
         b->buf[gi+ox]       * (       xf) * (1.0f - yf) * (1.0f - zf) +
         b->buf[gi+oy]       * (1.0f - xf) * (       yf) * (1.0f - zf) +
@@ -257,8 +258,8 @@ dt_bilateral_slice(
         b->buf[gi+oz]       * (1.0f - xf) * (1.0f - yf) * (       zf) +
         b->buf[gi+ox+oz]    * (       xf) * (1.0f - yf) * (       zf) +
         b->buf[gi+oy+oz]    * (1.0f - xf) * (       yf) * (       zf) +
-        b->buf[gi+ox+oy+oz] * (       xf) * (       yf) * (       zf));
-      out[index] = MAX(0.0f, Lout);
+        b->buf[gi+ox+oy+oz] * (       xf) * (       yf) * (       zf);
+      out[index] = L + norm * copysignf(MAX(fabsf(Ldiff) - threshold, 0.0), Ldiff);
       // and copy color and mask
       out[index+1] = in[index+1];
       out[index+2] = in[index+2];
@@ -266,6 +267,16 @@ dt_bilateral_slice(
       index += 4;
     }
   }
+}
+
+void
+dt_bilateral_slice(
+    const dt_bilateral_t *const b,
+    const float          *const in,
+    float                *out,
+    const float           detail)
+{
+  dt_bilateral_slice_with_threshold(b, in, out, detail, 0.0f);
 }
 
 void
