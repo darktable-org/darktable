@@ -342,11 +342,18 @@ int dt_exif_read(dt_image_t *img, const char* path)
     Exiv2::XmpData &xmpData = image->xmpData();
     Exiv2::XmpData::iterator xmpPos;
 
-    int stars = 1;
     if ( (xmpPos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating")))
           != xmpData.end() )
     {
-      stars = (xmpPos->toLong() == -1) ? 6 : xmpPos->toLong();
+      int stars = xmpPos->toLong();
+      if ( stars == 0 )
+      {
+        stars = 1;
+      }
+      else 
+      {
+        stars = (stars == -1) ? 6 : stars;
+      }
       img->flags = (img->flags & ~0x7) | (0x7 & stars);
     }
 
