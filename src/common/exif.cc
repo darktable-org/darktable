@@ -348,7 +348,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
       int stars = xmpPos->toLong();
       if ( stars == 0 )
       {
-        stars = 1;
+        stars = dt_conf_get_int("ui_last/import_initial_rating");
       }
       else 
       {
