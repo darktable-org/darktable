@@ -517,13 +517,27 @@ dt_bauhaus_init()
   // it seems impossible to get to the font size in a portable way (gtk3 deprecates GtkStyle..),
   // so we parse it ourselves and convert it from pt to scale (.. :( )
   int gtk_fontsize = guess_font_size();
-  darktable.bauhaus->scale = gtk_fontsize/5.0f;
-  darktable.bauhaus->widget_space = 2.5f*darktable.bauhaus->scale;
 
   // now create the pango description for the strings using the font and size found above
   gchar *font = g_strdup_printf("%s %d", darktable.bauhaus->label_font, gtk_fontsize);
   darktable.bauhaus->pango_font_desc = pango_font_description_from_string(font);
   g_free(font);
+
+  PangoLayout *layout;
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 128, 128);
+  cairo_t *cr = cairo_create(cst);
+  layout = pango_cairo_create_layout(cr);
+  pango_layout_set_text(layout, "X", -1);
+  pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
+  pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
+  int pango_width, pango_height;
+  pango_layout_get_size (layout, &pango_width, &pango_height);
+  g_object_unref(layout);
+  cairo_destroy(cr);
+  cairo_surface_destroy(cst);
+
+  darktable.bauhaus->scale = (pango_height+0.0f)/PANGO_SCALE/8.5f;
+  darktable.bauhaus->widget_space = 2.5f*darktable.bauhaus->scale;
 
   // keys are freed with g_free, values are ptrs to the widgets, these don't need to be cleaned up.
   darktable.bauhaus->keymap = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
