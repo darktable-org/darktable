@@ -308,6 +308,15 @@ default_simple_combobox_callback(GtkWidget *w, dt_iop_gui_simple_callback_t *dat
 }
 
 static void
+default_simple_togglebutton_callback(GtkWidget *w, dt_iop_gui_simple_callback_t *data)
+{
+ if(darktable.gui->reset) return;
+  int *p = (int*)data->self->params;
+  p[data->index] = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
+  dt_dev_add_history_item(darktable.develop, data->self, TRUE);
+}
+
+static void
 gui_init_simple_wrapper(dt_iop_module_t *self)
 {
   if(!self->gui_init_simple)
@@ -317,7 +326,7 @@ gui_init_simple_wrapper(dt_iop_module_t *self)
     fprintf(stderr, "[iop_simple_gui] something went wrong while initializing the gui of `%s' using the simple api: cannot find gui_init_simple()\n", self->name());
     return;
   }
-  dt_gui_simple_t *gui = self->gui_init_simple(self);
+  dt_gui_simple_t *gui = self->gui_init_simple(self->so);
   if(!gui)
   {
     self->widget = gtk_label_new(_("error creating gui, see stderr"));
@@ -335,16 +344,14 @@ gui_init_simple_wrapper(dt_iop_module_t *self)
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
   dt_gui_simple_element_t *it = gui->elements;
   int i=0;
-  while(it->type != DT_SIMPLE_GUI_NONE)
+  while(it->common.type != DT_SIMPLE_GUI_NONE)
   {
-    switch(it->type){
+    switch(it->common.type){
       case DT_SIMPLE_GUI_SLIDER:
         g[i] = dt_bauhaus_slider_new_with_range(self, it->slider.min, it->slider.max, it->slider.step, it->slider.defval, it->slider.digits);
         if(it->slider.format)
           dt_bauhaus_slider_set_format(g[i], it->slider.format);
-        dt_bauhaus_widget_set_label(g[i], it->slider.label);
-        if(it->slider.tooltip)
-          g_object_set(G_OBJECT(g[i]), "tooltip-text", it->slider.tooltip, (char *)NULL);
+        dt_bauhaus_widget_set_label(g[i], _(it->slider.label));
         if(it->slider.value_changed)
           g_signal_connect(G_OBJECT(g[i]), "value-changed", G_CALLBACK(it->slider.value_changed), it->slider.parameter?it->slider.parameter:self);
         else
@@ -358,10 +365,8 @@ gui_init_simple_wrapper(dt_iop_module_t *self)
         g[i] = dt_bauhaus_combobox_new(self);
         for(char** combo_iter = it->combobox.entries; *combo_iter != NULL; combo_iter++)
           dt_bauhaus_combobox_add(g[i], *combo_iter);
-        dt_bauhaus_widget_set_label(g[i], it->combobox.label);
+        dt_bauhaus_widget_set_label(g[i], _(it->combobox.label));
         dt_bauhaus_combobox_set(g[i], it->combobox.defval);
-        if(it->combobox.tooltip)
-          g_object_set(G_OBJECT(g[i]), "tooltip-text", it->combobox.tooltip, (char *)NULL);
         if(it->combobox.value_changed)
           g_signal_connect(G_OBJECT(g[i]), "value-changed", G_CALLBACK(it->combobox.value_changed), it->combobox.parameter?it->combobox.parameter:self);
         else
@@ -373,31 +378,42 @@ gui_init_simple_wrapper(dt_iop_module_t *self)
         break;
       case DT_SIMPLE_GUI_BUTTON:
         if(it->button.label != NULL)
-          g[i] = dtgtk_button_new_with_label(it->button.label, it->button.paint, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+          g[i] = dtgtk_button_new_with_label(_(it->button.label), it->button.paint, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
         else
           g[i] = dtgtk_button_new(it->button.paint, it->button.paintflags);
-        if(it->button.tooltip != NULL)
-          g_object_set(G_OBJECT(g[i]), "tooltip-text", it->button.tooltip, (char *)NULL);
         if(it->button.clicked != NULL)
           g_signal_connect(G_OBJECT(g[i]), "clicked", G_CALLBACK(it->button.clicked), it->button.parameter?it->button.parameter:self);
         break;
       case DT_SIMPLE_GUI_TOGGLE_BUTTON:
         if(it->button.label != NULL)
-          g[i] = dtgtk_togglebutton_new_with_label(it->button.label, it->button.paint, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+          g[i] = dtgtk_togglebutton_new_with_label(_(it->button.label), it->button.paint, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
         else
           g[i] = dtgtk_togglebutton_new(it->button.paint, it->button.paintflags);
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g[i]), it->button.defval);
-        if(it->button.tooltip != NULL)
-          g_object_set(G_OBJECT(g[i]), "tooltip-text", it->button.tooltip, (char *)NULL);
         if(it->button.clicked != NULL)
           g_signal_connect(G_OBJECT(g[i]), "clicked", G_CALLBACK(it->button.clicked), it->button.parameter?it->button.parameter:self);
+        else
+        {
+          dt_iop_gui_simple_callback_t *param = malloc(sizeof(dt_iop_gui_simple_callback_t));
+          param->self = self; param->index = i;
+          g_signal_connect(G_OBJECT(g[i]), "clicked", G_CALLBACK(default_simple_togglebutton_callback), param);
+        }
         break;
       case DT_SIMPLE_GUI_NONE: // should never happen
-        g[i] = gtk_label_new(_("error creating gui, DT_SIMPLE_GUI_NONE should not be found"));
+        g[i] = gtk_label_new(_("error creating gui, DT_SIMPLE_GUI_NONE could not be found"));
         gtk_label_set_justify(GTK_LABEL(g[i]), GTK_JUSTIFY_LEFT);
         break;
     }
+    if(it->common.tooltip)
+      g_object_set(G_OBJECT(g[i]), "tooltip-text", _(it->common.tooltip), (char *)NULL);
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g[i]), TRUE, TRUE, 0);
+
+    // every control needs to have an ID. if it's missing we have to generate it :(
+    if(it->common.id == NULL)
+    {
+      it->common.id = g_strdup_printf("%s_control_%d", self->op, i);
+      fprintf(stderr, "[iop_simple_gui] control %d in `%s' doesn't have an id, using `%s' for now\n", i, self->name(), it->common.id);
+    }
 
     i++;
     it++;
@@ -412,7 +428,7 @@ static void simple_gui_update(dt_iop_module_t *self)
     fprintf(stderr, "[iop_simple_gui_update] something went wrong while updating the gui of `%s' using the simple api: cannot find gui_init_simple()\n", self->name());
     return;
   }
-  dt_gui_simple_t *gui = self->gui_init_simple(self);
+  dt_gui_simple_t *gui = self->gui_init_simple(self->so);
   if(!gui)
   {
     fprintf(stderr, "[iop_simple_gui] something went wrong while updating the gui of `%s' using the simple api: gui_init_simple() returned NULL\n", self->name());
@@ -424,9 +440,9 @@ static void simple_gui_update(dt_iop_module_t *self)
 
   dt_gui_simple_element_t *it = gui->elements;
   int i=0;
-  while(it->type != DT_SIMPLE_GUI_NONE)
+  while(it->common.type != DT_SIMPLE_GUI_NONE)
   {
-    switch(it->type){
+    switch(it->common.type){
       case DT_SIMPLE_GUI_SLIDER:
       {
         float *f = (float*)(&p[i]);
@@ -457,12 +473,12 @@ simple_init(dt_iop_module_t *self)
   self->params_size = 0;
 
   if(!self->gui_init_simple) return;
-  dt_gui_simple_t *gui = self->gui_init_simple(self);
+  dt_gui_simple_t *gui = self->gui_init_simple(self->so);
   if(!gui) return;
 
   int elements = 0;
   dt_gui_simple_element_t *it = gui->elements;
-  while(it->type != DT_SIMPLE_GUI_NONE)
+  while(it->common.type != DT_SIMPLE_GUI_NONE)
   {
     elements++;
     it++;
@@ -480,9 +496,9 @@ simple_init(dt_iop_module_t *self)
   int *p = (int*)self->default_params;
   it = gui->elements;
   int i=0;
-  while(it->type != DT_SIMPLE_GUI_NONE)
+  while(it->common.type != DT_SIMPLE_GUI_NONE)
   {
-    switch(it->type){
+    switch(it->common.type){
       case DT_SIMPLE_GUI_SLIDER:
       {
         float *f = (float*)(&p[i]);
@@ -507,6 +523,75 @@ simple_init(dt_iop_module_t *self)
 
   if(self->original_init)
     self->original_init(self);
+}
+
+
+static void
+simple_init_key_accels(dt_iop_module_so_t *self)
+{
+  if(!self->gui_init_simple) return;
+  dt_gui_simple_t *gui = self->gui_init_simple(self);
+  if(!gui) return;
+
+  dt_gui_simple_element_t *it = gui->elements;
+  int i=0;
+  while(it->common.type != DT_SIMPLE_GUI_NONE)
+  {
+    char *l = it->common.label?it->common.label:it->common.id;
+    switch(it->common.type){
+      case DT_SIMPLE_GUI_SLIDER:
+        dt_accel_register_slider_iop(self, FALSE, NC_("accel", l));
+        break;
+      case DT_SIMPLE_GUI_COMBOBOX:
+        // TODO: can we connect a combobox to an key accel?
+        break;
+      case DT_SIMPLE_GUI_BUTTON:
+      case DT_SIMPLE_GUI_TOGGLE_BUTTON:
+        dt_accel_register_iop(self, FALSE, NC_("accel", l), 0, 0);
+        break;
+      case DT_SIMPLE_GUI_NONE: // should never happen
+        break;
+    }
+    i++;
+    it++;
+  }
+  if(self->original_init_key_accels)
+    self->original_init_key_accels(self);
+}
+
+static void
+simple_connect_key_accels(dt_iop_module_t *self)
+{
+  GtkWidget **g = (GtkWidget**)self->gui_data;
+
+  if(!self->gui_init_simple) return;
+  dt_gui_simple_t *gui = self->gui_init_simple(self->so);
+  if(!gui) return;
+
+  dt_gui_simple_element_t *it = gui->elements;
+  int i=0;
+  while(it->common.type != DT_SIMPLE_GUI_NONE)
+  {
+    char *l = it->common.label?it->common.label:it->common.id;
+    switch(it->common.type){
+      case DT_SIMPLE_GUI_SLIDER:
+        dt_accel_connect_slider_iop(self, l, g[i]);
+        break;
+      case DT_SIMPLE_GUI_COMBOBOX:
+        // TODO: can we connect a combobox to an key accel?
+        break;
+      case DT_SIMPLE_GUI_BUTTON:
+      case DT_SIMPLE_GUI_TOGGLE_BUTTON:
+        dt_accel_connect_button_iop(self, l, g[i]);
+        break;
+      case DT_SIMPLE_GUI_NONE: // should never happen
+        break;
+    }
+    i++;
+    it++;
+  }
+  if(self->original_connect_key_accels)
+    self->original_connect_key_accels(self);
 }
 
 int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const char *op)
@@ -555,8 +640,18 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
 
   if(!g_module_symbol(module->module, "gui_post_expose",        (gpointer)&(module->gui_post_expose)))        module->gui_post_expose = NULL;
   if(!g_module_symbol(module->module, "gui_focus",              (gpointer)&(module->gui_focus)))              module->gui_focus = NULL;
-  if(!g_module_symbol(module->module, "init_key_accels",        (gpointer)&(module->init_key_accels)))        module->init_key_accels = NULL;
-  if(!g_module_symbol(module->module, "connect_key_accels",     (gpointer)&(module->connect_key_accels)))     module->connect_key_accels = NULL;
+  if(use_simple_api)
+  {
+    module->init_key_accels = &simple_init_key_accels;
+    module->connect_key_accels = &simple_connect_key_accels;
+    if(!g_module_symbol(module->module, "init_key_accels",      (gpointer)&(module->original_init_key_accels))) module->original_init_key_accels = NULL;
+    if(!g_module_symbol(module->module, "connect_key_accels",   (gpointer)&(module->original_connect_key_accels))) module->original_connect_key_accels= NULL;
+  }
+  else
+  {
+    if(!g_module_symbol(module->module, "init_key_accels",      (gpointer)&(module->init_key_accels)))        module->init_key_accels = NULL;
+    if(!g_module_symbol(module->module, "connect_key_accels",   (gpointer)&(module->connect_key_accels)))     module->connect_key_accels = NULL;
+  }
   if(!g_module_symbol(module->module, "disconnect_key_accels",  (gpointer)&(module->disconnect_key_accels)))  module->disconnect_key_accels = NULL;
   if(!g_module_symbol(module->module, "mouse_leave",            (gpointer)&(module->mouse_leave)))            module->mouse_leave = NULL;
   if(!g_module_symbol(module->module, "mouse_moved",            (gpointer)&(module->mouse_moved)))            module->mouse_moved = NULL;
