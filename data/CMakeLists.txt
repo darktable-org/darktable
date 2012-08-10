@@ -10,7 +10,7 @@ add_subdirectory(kernels)
 set(GTKRC_FONT_SIZE 8)
 if(APPLE)
   # 8 is very tiny on mac
-  set(GTKRC_FONT_SIZE 11)
+  set(GTKRC_FONT_SIZE 13)
 endif(APPLE)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.gtkrc.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.gtkrc )
 
