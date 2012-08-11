@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2012 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,14 +25,14 @@
 #include "common/colorspaces.h"
 #include "common/opencl.h"
 #include "common/bilateral.h"
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "control/control.h"
-#include "dtgtk/slider.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "develop/imageop.h"
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 #define DT_COLORCORRECTION_INSET 5
 #define DT_COLORCORRECTION_MAX 40.
@@ -40,25 +40,20 @@ DT_MODULE(1)
 
 typedef struct dt_iop_monochrome_params_t
 {
-  float a, b, size;
+  float a, b, size, highlights;
 }
 dt_iop_monochrome_params_t;
 
 typedef struct dt_iop_monochrome_gui_data_t
 {
   GtkDrawingArea *area;
+  GtkWidget *highlights;
   int dragging;
   cmsHPROFILE hsRGB;
   cmsHPROFILE hLab;
   cmsHTRANSFORM xform;
 }
 dt_iop_monochrome_gui_data_t;
-
-typedef struct dt_iop_monochrome_data_t
-{
-  float a, b, size;
-}
-dt_iop_monochrome_data_t;
 
 typedef struct dt_iop_monochrome_global_data_t
 {
@@ -81,6 +76,20 @@ groups ()
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
+}
+
+int
+legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    dt_iop_monochrome_params_t *p1 = (dt_iop_monochrome_params_t *)old_params;
+    dt_iop_monochrome_params_t *p2 = (dt_iop_monochrome_params_t *)new_params;
+    memcpy(p2, p1, sizeof(dt_iop_monochrome_params_t)-sizeof(float));
+    p2->highlights = 0.0f;
+    return 0;
+  }
+  return 1;
 }
 
 void init_presets (dt_iop_module_so_t *self)
@@ -143,7 +152,8 @@ envelope(const float L)
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
+  dt_iop_monochrome_params_t *d = (dt_iop_monochrome_params_t *)piece->data;
+  const float sigma2 = (d->size*128.0)*(d->size*128.0f);
 #ifndef BILAT // old version:
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
@@ -155,10 +165,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
     {
 #ifdef ENVELOPE
-      const float t = envelope(in[0]);
-      out[0] = (1.0f-t)*in[0] + t*in[0]*color_filter(in[1], in[2], d->a, d->b, d->size);
+      const float tt = envelope(in[0]);
+      const float t  = tt + (1.0f-tt)*(1.0f-d->highlights);
+      out[0] = (1.0f-t)*in[0] + t*in[0]*color_filter(in[1], in[2], d->a, d->b, sigma2);
 #else
-      out[0] = in[0]*color_filter(in[1], in[2], d->a, d->b, d->size);
+      out[0] = in[0]*color_filter(in[1], in[2], d->a, d->b, sigma2);
 #endif
       out[1] = out[2] = 0.0f;
       out[3] = in[3];
@@ -175,7 +186,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *out = ((float *)o) + 4*k*roi_out->width;
     for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
     {
-      out[0] = 100.0f*color_filter(in[1], in[2], d->a, d->b, d->size);
+      out[0] = 100.0f*color_filter(in[1], in[2], d->a, d->b, sigma2);
       out[1] = out[2] = 0.0f;
       out[3] = in[3];
     }
@@ -206,7 +217,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
     {
 #ifdef ENVELOPE
-      const float t = envelope(in[0]);
+      const float tt = envelope(in[0]);
+      const float t  = tt + (1.0f-tt)*(1.0f-d->highlights);
       out[0] = (1.0f-t)*in[0] + t*out[0]*(1.0f/100.0f)*in[0]; // normalized filter * input brightness
 #else
       out[0] = out[0]*(1.0f/100.0f)*in[0]; // normalized filter * input brightness
@@ -221,7 +233,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
+  dt_iop_monochrome_params_t *d = (dt_iop_monochrome_params_t *)piece->data;
   dt_iop_monochrome_global_data_t *gd = (dt_iop_monochrome_global_data_t *)self->data;
 
   cl_int err = -999;
@@ -229,6 +241,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const int width = roi_out->width;
   const int height = roi_out->height;
+  const float sigma2 = (d->size*128.0)*(d->size*128.0f);
 
   size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 0, sizeof(cl_mem), &dev_in);
@@ -237,7 +250,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 3, sizeof(int), &height);
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 4, sizeof(float), &d->a);
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 5, sizeof(float), &d->b);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 6, sizeof(float), &d->size);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 6, sizeof(float), &sigma2);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 7, sizeof(float), &d->highlights);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_monochrome, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -258,7 +272,6 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_monochrome = dt_opencl_create_kernel(program, "monochrome");
 }
 
-
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_monochrome_global_data_t *gd = (dt_iop_monochrome_global_data_t *)module->data;
@@ -267,36 +280,16 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-
-void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)p1;
-  dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
-  d->a = p->a;
-  d->b = p->b;
-  const float sigma = 128.0 * p->size;
-  d->size = sigma*sigma;
-}
-
-void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  piece->data = malloc(sizeof(dt_iop_monochrome_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
-}
-
-void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  free(piece->data);
-}
-
 void gui_update(struct dt_iop_module_t *self)
 {
+  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+  dt_iop_monochrome_params_t *p  = (dt_iop_monochrome_params_t *)self->params;
+  dt_bauhaus_slider_set(g->highlights, p->highlights);
   gtk_widget_queue_draw(self->widget);
 }
 
 void init(dt_iop_module_t *module)
 {
-  // module->data = malloc(sizeof(dt_iop_monochrome_data_t));
   module->params = malloc(sizeof(dt_iop_monochrome_params_t));
   module->default_params = malloc(sizeof(dt_iop_monochrome_params_t));
   module->default_enabled = 0;
@@ -305,7 +298,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_monochrome_params_t tmp = (dt_iop_monochrome_params_t)
   {
-    0., 0., 1.
+    0., 0., 1., 0.
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_monochrome_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_monochrome_params_t));
@@ -361,7 +354,7 @@ dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user
       cairo_fill(cr);
     }
   cairo_set_source_rgb(cr, .7, .7, .7);
-  const float x = p->a * width/PANEL_WIDTH + width * .5f, y = p->b * width/PANEL_WIDTH + width * .5f;
+  const float x = p->a * width/PANEL_WIDTH + width * .5f, y = p->b * height/PANEL_WIDTH + height* .5f;
   cairo_arc(cr, x, y, width*.22f*p->size, 0, 2.0*M_PI);
   cairo_stroke(cr);
 
@@ -448,6 +441,15 @@ static gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *ev
   return TRUE;
 }
 
+static void
+highlights_callback(GtkWidget *w, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
+  p->highlights = dt_bauhaus_slider_get(w);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_monochrome_gui_data_t));
@@ -455,12 +457,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->dragging = 0;
 
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
   g->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
-  gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(g->area));
-  gtk_drawing_area_size(g->area, 258, 258);
+  // GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
+  // gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
+  // gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(g->area));
+  gtk_drawing_area_size(g->area, 0, 258);
   g_object_set(G_OBJECT(g->area), "tooltip-text", _("drag and scroll mouse wheel to adjust the virtual color filter"), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -476,6 +479,13 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_monochrome_leave_notify), self);
   g_signal_connect (G_OBJECT (g->area), "scroll-event",
                     G_CALLBACK (dt_iop_monochrome_scrolled), self);
+
+  g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.1, 0.0, 2);
+  g_object_set (GTK_OBJECT(g->highlights), "tooltip-text", _("how much to keep highlights"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->highlights, _("highlights"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
+  g_signal_connect (G_OBJECT (g->highlights), "value-changed",
+                    G_CALLBACK (highlights_callback), self);
 
   g->hsRGB = dt_colorspaces_create_srgb_profile();
   g->hLab  = dt_colorspaces_create_lab_profile();
