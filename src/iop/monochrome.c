@@ -113,6 +113,8 @@ color_filter(const float ai, const float bi, const float a, const float b, const
 }
 
 #define BILAT
+// TODO: this one changes the look signifacantly at times.
+// so maybe it'll have to become an option with default off :(
 #define ENVELOPE
 
 #ifdef ENVELOPE
