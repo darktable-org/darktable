@@ -131,10 +131,14 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   const int ch = piece->colors;
 
-#if 0
-  const float sigma_r = 8.0f; // range does not depend on scale
-  const float sigma_s = 40.0f * roi_in->scale / piece->iscale;
-  const float detail = -1.0f; // we want the bilateral base layer
+#if 1
+  // TODO: switch over selection type!
+  // TODO: maybe adjust sigma to that?
+  // lightness and saturation are continuous in images normally,
+  // the problem is selecting by hue (discontinuous, noisy, unstable for dark pixels)
+  const float sigma_r = 80.0f; // range does not depend on scale
+  const float sigma_s = 30.0f * roi_in->scale / piece->iscale;
+  const float detail = -1.f; // we want the bilateral base layer
 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) schedule(static) shared(roi_in, roi_out, d, i, o)
@@ -161,12 +165,19 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     }
   }
 
+  // :( for abovementioned reasons selecting by hue isn't as easy to filter in just that one
+  // dimension, even though it would require stabilization the most.
+  if(d->channel != DT_IOP_COLORZONES_h)
+  {
   dt_bilateral_t *b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
   dt_bilateral_splat(b, (float *)o);
   dt_bilateral_blur(b);
   dt_bilateral_slice(b, (float *)o, (float *)o, detail);
   dt_bilateral_free(b);
+  }
 
+  // lookup(d->lut[1], ch*0.0);
+#if 1 // debug: switch off to see base layer
 #ifdef _OPENMP
   #pragma omp parallel for default(none) schedule(static) shared(roi_in, roi_out, d, i, o)
 #endif
@@ -208,6 +219,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     out[2] = sinf(2.0*M_PI*(h + hm)) * Cm * C;
     out[3] = in[3];
   }
+#endif
 
 #else
 #ifdef _OPENMP
