@@ -790,7 +790,7 @@ void dt_control_delete_images()
   dt_control_add_job(darktable.control, &j);
 }
 
-int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
+static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
     int32_t (*fileop_callback)(const int32_t, const int32_t))
 {
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
