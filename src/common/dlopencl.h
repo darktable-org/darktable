@@ -29,8 +29,10 @@
 
 #include <CL/cl.h>
 
-#ifdef WIN32
+#if defined(WIN32)
 #define DT_OPENCL_LIBRARY "OpenCL"
+#elif defined(__APPLE__)
+#define DT_OPENCL_LIBRARY "/System/Library/Frameworks/OpenCL.framework/Versions/Current/OpenCL"
 #else
 #define DT_OPENCL_LIBRARY "libOpenCL"
 #endif
