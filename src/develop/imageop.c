@@ -1146,6 +1146,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   darktable.gui->reset = 1;
   if (!dt_iop_is_hidden(module))
   {
+    dt_iop_gui_update_expanded(module);
     module->gui_update(module);
     if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
@@ -1337,11 +1338,12 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
     /* show plugin ui */
     gtk_widget_show(pluginui);
 
-    /* ensure that blending widgets are show as the should */
+    /* ensure that blending widgets are shown as they should */
     dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
+
     if (bd != NULL)
     {
-      if(dt_bauhaus_combobox_get(bd->blend_modes_combo) == DEVELOP_BLEND_DISABLED)
+      if(bd->modes[dt_bauhaus_combobox_get(bd->blend_modes_combo)].mode == DEVELOP_BLEND_DISABLED)
       {
         gtk_widget_hide(GTK_WIDGET(bd->opacity_slider));
         if(bd->blendif_support)
@@ -1350,9 +1352,15 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
           gtk_widget_hide(GTK_WIDGET(bd->blendif_enable));
         }
       }
-      else if(bd->blendif_support && (dt_bauhaus_combobox_get(bd->blendif_enable) == 0))
+      else
       {
-        gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
+        gtk_widget_show(GTK_WIDGET(bd->opacity_slider));
+        if(bd->blendif_support)
+        {
+          gtk_widget_show(GTK_WIDGET(bd->blendif_enable));         
+          if(dt_bauhaus_combobox_get(bd->blendif_enable) != 0)
+            gtk_widget_show(GTK_WIDGET(bd->blendif_box));      
+        }
       }
     }
 
@@ -1379,11 +1387,70 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
   }
 
   /* store expanded state of module */
+  module->expanded = expanded;
   char var[1024];
   snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
   dt_conf_set_bool(var, gtk_widget_get_visible(pluginui));
 
 }
+
+
+void dt_iop_gui_update_expanded(dt_iop_module_t *module)
+{
+  if(!module->expander) return;
+
+  gboolean expanded = module->expanded;
+
+  /* update expander arrow state */
+  GtkWidget *icon;
+  GtkWidget *header = gtk_bin_get_child(GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)),0)));
+  GtkWidget *pluginui = dt_iop_gui_get_widget(module);
+  gint flags = CPF_DIRECTION_DOWN;
+
+  /* get arrow icon widget */
+  icon = g_list_last(gtk_container_get_children(GTK_CONTAINER(header)))->data;
+  if(!expanded)
+    flags=CPF_DIRECTION_LEFT;
+
+  dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);
+
+  if (expanded)
+  {
+    /* show plugin ui */
+    gtk_widget_show(pluginui);
+
+    /* ensure that blending widgets are show as the should */
+    dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
+
+    if (bd != NULL)
+    {
+      if(bd->modes[dt_bauhaus_combobox_get(bd->blend_modes_combo)].mode == DEVELOP_BLEND_DISABLED)
+      {
+        gtk_widget_hide(GTK_WIDGET(bd->opacity_slider));
+        if(bd->blendif_support)
+        {
+          gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
+          gtk_widget_hide(GTK_WIDGET(bd->blendif_enable));
+        }
+      }
+      else
+      {
+        gtk_widget_show(GTK_WIDGET(bd->opacity_slider));
+        if(bd->blendif_support)
+        {
+          gtk_widget_show(GTK_WIDGET(bd->blendif_enable));         
+          if(dt_bauhaus_combobox_get(bd->blendif_enable) != 0)
+            gtk_widget_show(GTK_WIDGET(bd->blendif_box));      
+        }
+      }
+    }
+  }
+  else
+  {
+    gtk_widget_hide(pluginui);
+  }
+}
+
 
 static gboolean
 _iop_plugin_body_scrolled(GtkWidget *w, GdkEvent *e, gpointer user_data)

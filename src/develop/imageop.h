@@ -195,8 +195,9 @@ typedef struct dt_iop_module_t
 
   /** button used to show/hide this module in the plugin list. */
   GtkWidget *showhide;
-  /** expander containing the widget. */
+  /** expander containing the widget and flag to store expanded state */
   GtkWidget *expander;
+  gboolean expanded;
   /** reset parameters button */
   GtkWidget *reset_button;
   /** show preset menu button */
@@ -306,6 +307,8 @@ void dt_iop_gui_update(dt_iop_module_t *module);
 void dt_iop_gui_reset(dt_iop_module_t *module);
 /** set expanded state of iop */
 void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded);
+/** refresh iop according to set expanded state */
+void dt_iop_gui_update_expanded(dt_iop_module_t *module);
 
 /** commits params and updates piece hash. */
 void dt_iop_commit_params(dt_iop_module_t *module, struct dt_iop_params_t *params, struct dt_develop_blend_params_t * blendop_params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
