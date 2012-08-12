@@ -757,20 +757,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
 
-  // Demosaic mode AMAZE not implemented in OpenCL yet. Fall back to cpu path then.
-  if(data->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaicing method AMAZE not implemented yet in OpenCL\n");
-    return FALSE;
-  }
-
-  // We can not (yet) green-equilibrate over full image. Fall back to cpu path then.
-  if(data->green_eq == DT_IOP_GREEN_EQ_FULL || data->green_eq == DT_IOP_GREEN_EQ_BOTH)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] cannot green-equilibrate over full image in OpenCL\n");
-    return FALSE;
-  }
-
   const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   if(interpolation->id != DT_INTERPOLATION_BILINEAR && roi_out->scale <= .99999f && roi_out->scale > 0.5f)
   {
@@ -1173,6 +1159,16 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   d->color_smoothing = p->color_smoothing;
   d->median_thrs = p->median_thrs;
   d->demosaicing_method = p->demosaicing_method;
+
+  piece->process_cl_ready = 1;
+
+  // Demosaic mode AMAZE not implemented in OpenCL yet.
+  if(d->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
+    piece->process_cl_ready = 0;
+
+  // OpenCL can not (yet) green-equilibrate over full image.
+  if(d->green_eq == DT_IOP_GREEN_EQ_FULL || d->green_eq == DT_IOP_GREEN_EQ_BOTH)
+    piece->process_cl_ready = 0;
 }
 
 void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

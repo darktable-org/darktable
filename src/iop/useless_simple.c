@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2012 johannes hanika.
+    copyright (c) 2012 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +23,8 @@
 #include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"
+// don't forget to include gui/simple_gui.h if you want to use it :)
+#include "gui/simple_gui.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -31,28 +34,6 @@
 DT_MODULE(1)
 
 // TODO: some build system to support dt-less compilation and translation!
-
-typedef struct dt_iop_useless_params_t
-{
-  // these are stored in db.
-  // make sure everything is in here does not
-  // depend on temporary memory (pointers etc)
-  // stored in self->params and self->default_params
-  // also, since this is stored in db, you should keep changes to this struct
-  // to a minimum. if you have to change this struct, it will break
-  // users data bases, and you should increment the version
-  // of DT_MODULE(VERSION) above!
-  int checker_scale;
-}
-dt_iop_useless_params_t;
-
-typedef struct dt_iop_useless_gui_data_t
-{
-  // whatever you need to make your gui happy.
-  // stored in self->gui_data
-  GtkWidget *scale; // this is needed by gui_update
-}
-dt_iop_useless_gui_data_t;
 
 typedef struct dt_iop_useless_global_data_t
 {
@@ -68,14 +49,14 @@ dt_iop_useless_global_data_t;
 const char *name()
 {
   // make sure you put all your translatable strings into _() !
-  return _("silly example");
+  return _("simple gui api test");
 }
 
 // some additional flags (self explanatory i think):
 int
 flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES;
 }
 
 // where does it appear in the gui?
@@ -105,7 +86,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
-  dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)piece->data;
+  int *d = (int*)piece->data; // the default param format is an array of int or float, depending on the type of widget
+  float *foo = (float*)(&d[0]);
+  int checker_scale = *foo;
+  int color = d[1];
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   const float scale = piece->iscale/roi_in->scale;
@@ -114,7 +98,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   // iterate over all output pixels (same coordinates as input)
 #ifdef _OPENMP
   // optional: parallelize it!
-  #pragma omp parallel for default(none) schedule(static) shared(i,o,roi_in,roi_out,d)
+  #pragma omp parallel for default(none) schedule(static) shared(i,o,roi_in,roi_out,d,checker_scale,color)
 #endif
   for(int j=0; j<roi_out->height; j++)
   {
@@ -124,7 +108,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     {
       // calculate world space coordinates:
       int wi = (roi_in->x + i) * scale, wj = (roi_in->y + j) * scale;
-      if((wi/d->checker_scale+wj/d->checker_scale)&1) for(int c=0; c<3; c++) out[c] = 0;
+      if((wi/checker_scale+wj/checker_scale)&1) for(int c=0; c<3; c++) out[c] = (color == c)?1:0;
       else                                            for(int c=0; c<3; c++) out[c] = in[c];
       in += ch;
       out += ch;
@@ -133,84 +117,98 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 }
 
 /** optional: if this exists, it will be called to init new defaults if a new image is loaded from film strip mode. */
-void reload_defaults(dt_iop_module_t *module)
-{
+// void reload_defaults(dt_iop_module_t *module)
+// {
   // change default_enabled depending on type of image, or set new default_params even.
 
   // if this callback exists, it has to write default_params and default_enabled.
-}
+// }
 
-/** init, cleanup, commit to pipeline */
+/** init, cleanup, commit to pipeline. when using the simple api you don't need to care about params, ... */
 void init(dt_iop_module_t *module)
 {
-  // we don't need global data:
-  module->data = NULL; //malloc(sizeof(dt_iop_useless_global_data_t));
-  module->params = malloc(sizeof(dt_iop_useless_params_t));
-  module->default_params = malloc(sizeof(dt_iop_useless_params_t));
-  // our module is disabled by default
-  // by default:
-  module->default_enabled = 0;
   // order has to be changed by editing the dependencies in tools/iop_dependencies.py
   module->priority = 901; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_useless_params_t);
-  module->gui_data = NULL;
-  // init defaults:
-  dt_iop_useless_params_t tmp = (dt_iop_useless_params_t)
-  {
-    50
-  };
-
-  memcpy(module->params, &tmp, sizeof(dt_iop_useless_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_useless_params_t));
 }
 
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->gui_data);
-  module->gui_data = NULL; // just to be sure
-  free(module->params);
-  module->params = NULL;
-  free(module->data); // just to be sure
-  module->data = NULL;
-}
-
-/** put your local callbacks here, be sure to make them static so they won't be visible outside this file! */
+/** some sample callbacks. buttons don't have default callbacks, but others can just be overwritten. */
 static void
-slider_callback(GtkWidget *w, dt_iop_module_t *self)
+button_callback(GtkWidget *w, gpointer i)
 {
-  // this is important to avoid cycles!
-  if(darktable.gui->reset) return;
-  dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
-  p->checker_scale = dt_bauhaus_slider_get(w);
-  // let core know of the changes
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  printf("button was clicked! parameter is %d.\n", GPOINTER_TO_INT(i));
 }
 
 /** gui callbacks, these are needed. */
-void gui_update(dt_iop_module_t *self)
+dt_gui_simple_t* gui_init_simple(dt_iop_module_so_t *self) // sorry, only dt_iop_module_so_t* in here :(
 {
-  // let gui slider match current parameters:
-  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
-  dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
-  dt_bauhaus_slider_set(g->scale, p->checker_scale);
+  static char *combobox_entries[] = {"red", "green", "blue", NULL}; // has to be NULL terminated!
+  static dt_gui_simple_t gui = {
+    0, // not used currently
+    {
+      /** a slider */
+      {.slider = {
+        DT_SIMPLE_GUI_SLIDER,
+        "scale",                                     // always make sure to add an id
+        N_("scale"),                                 // just mark the strings for translation using N_()
+        N_("the scale of the checker board"),        // same here
+        NULL,                                        // the rest are specific settings for sliders
+        1, 100, 1, 50,
+        0,
+        NULL,                                        // when no callback is specified a default one is used
+        NULL                                         // no parameter means self. keep that in mind when you want to pass the number 0!
+      }},
+
+      /** a combobox */
+      {.combobox = {
+        DT_SIMPLE_GUI_COMBOBOX,
+        NULL,                                        // this one has no id to show what happens (message on stderr + stupid auto generated id)
+        N_("color"),
+        N_("select color of the checker board"),
+        combobox_entries,                            // the entries have to be in a char* array which is NULL terminated. see above
+        0,                                           // default to 1st element (counting starts at 0. where else?)
+        NULL,                                        // default callback, again
+        NULL
+      }},
+
+      /** a button */
+      {.button = {
+        DT_SIMPLE_GUI_BUTTON,
+        "nothing",
+        N_("do nothing"),
+        N_("this button does nothing, it's just looking nice"),
+        NULL,                                        // no icon
+        0,
+        0xdeadbeef,                                  // default is not used for regular buttons
+        &button_callback,                            // you have to provide a callback for regular buttons. there is no sane default behaviour
+        GINT_TO_POINTER(23)                          // this is how you pass an integer to the callback. don't pass 0
+      }},
+
+      /** a toggle button */
+      {.button = {
+        DT_SIMPLE_GUI_TOGGLE_BUTTON,
+        "triangle",
+        NULL,                                        // more or less like the last button, but with an icon instead of a label
+        N_("another button which does nothing"),
+        dtgtk_cairo_paint_triangle,                  // see?
+        CPF_DIRECTION_RIGHT|CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER,
+        0,                                           // start in the disabled state. 1 would be enabled
+        NULL,                                        // this one uses the default callback
+        NULL                                         // this is how you pass self to the callback. notice that this parameter will
+                                                     // not be used because we are using the default callback!
+      }},
+
+      /** the last element has to be of type DT_SIMPLE_GUI_NONE */
+      {.common = {DT_SIMPLE_GUI_NONE, NULL, NULL, NULL}}
+    }
+  };
+
+  return &gui;
 }
 
-void gui_init(dt_iop_module_t *self)
-{
-  // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
-  self->gui_data = malloc(sizeof(dt_iop_useless_gui_data_t));
-  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
-  g->scale = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 50, 0);
-  self->widget = g->scale;
-  g_signal_connect (G_OBJECT (g->scale), "value-changed", G_CALLBACK (slider_callback), self);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  // nothing else necessary, gtk will clean up the slider.
-  free(self->gui_data);
-  self->gui_data = NULL;
-}
+/** not needed when using the simple gui api. */
+// void gui_init(dt_iop_module_t* self);
+// void gui_cleanup(dt_iop_module_t *self);
+// void gui_update(dt_iop_module_t *self);
 
 /** additional, optional callbacks to capture darkroom center events. */
 // void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);

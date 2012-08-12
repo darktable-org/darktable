@@ -30,11 +30,14 @@ extern "C"
   /** read exif data from file with full path name, store to image struct. returns 0 on success. */
   int dt_exif_read(dt_image_t *img, const char* path);
 
+  /** read exif data to image struct from given data blob, wherever you got it from. */
+  int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size);
+
   /** write exif to blob, return length in bytes. blob needs to be as large at 65535 bytes. sRGB should be true if sRGB colorspace is used as output. */
   int dt_exif_read_blob(uint8_t *blob, const char* path, const int sRGB, const int imgid);
 
   /** write blob to file exif. merges with existing exif information.*/
-  int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path);
+  int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char* path);
 
   /** write xmp sidecar file. */
   int dt_exif_xmp_write (const int imgid, const char* filename);

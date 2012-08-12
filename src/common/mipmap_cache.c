@@ -594,9 +594,9 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   gchar *compression = dt_conf_get_string("cache_compression");
   if(compression)
   {
-    if(!strcmp(compression, "low quality"))
+    if(!strcmp(compression, "low quality (fast)"))
       cache->compression_type = 1;
-    else if(!strcmp(compression, "slow"))
+    else if(!strcmp(compression, "high quality (slow)"))
       cache->compression_type = 2;
     g_free(compression);
   }

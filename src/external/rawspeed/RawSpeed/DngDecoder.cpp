@@ -60,7 +60,7 @@ RawImage DngDecoder::decodeRawInternal() {
     try {
       isSubsampled = (*i)->getEntry(NEWSUBFILETYPE)->getInt() & 1; // bit 0 is on if image is subsampled
     } catch (TiffParserException) {}
-    if ((compression != 7 && compression != 1) || isSubsampled) {  // Erase if subsampled, or not JPEG or uncompressed
+    if ((compression != 7 && compression != 1 && compression != 0x884c) || isSubsampled) {  // Erase if subsampled, or not JPEG or uncompressed
       i = data.erase(i);
     } else {
       ++i;
@@ -108,9 +108,10 @@ RawImage DngDecoder::decodeRawInternal() {
     ThrowRDE("DNG Decoder: Could not read basic image information.");
   }
 
-  try {
+  int compression = -1;
 
-    int compression = raw->getEntry(COMPRESSION)->getShort();
+  try {
+    compression = raw->getEntry(COMPRESSION)->getShort();
     if (mRaw->isCFA) {
 
       // Check if layout is OK, if present
@@ -218,7 +219,7 @@ RawImage DngDecoder::decodeRawInternal() {
             readUncompressedRaw(in, size, pos, width*bps / 8, bps, big_endian);
           } catch(IOException &ex) {
             if (i > 0)
-              errors.push_back(_strdup(ex.what()));
+              mRaw->setError(ex.what());
             else
               ThrowRDE("DNG decoder: IO error occurred in first slice, unable to decode more. Error is: %s", ex.what());
           }
@@ -227,7 +228,7 @@ RawImage DngDecoder::decodeRawInternal() {
       } catch (TiffParserException) {
         ThrowRDE("DNG Decoder: Unsupported format, uncompressed with no strips.");
       }
-    } else if (compression == 7) {
+    } else if (compression == 7 || compression == 0x884c) {
       try {
         // Let's try loading it as tiles instead
 
@@ -239,7 +240,7 @@ RawImage DngDecoder::decodeRawInternal() {
         if (sample_format != 1)
            ThrowRDE("DNG Decoder: Only 16 bit unsigned data supported for compressed data.");
 
-        DngDecoderSlices slices(mFile, mRaw);
+        DngDecoderSlices slices(mFile, mRaw, compression);
         if (raw->hasEntry(TILEOFFSETS)) {
           uint32 tilew = raw->getEntry(TILEWIDTH)->getInt();
           uint32 tileh = raw->getEntry(TILELENGTH)->getInt();
@@ -299,11 +300,8 @@ RawImage DngDecoder::decodeRawInternal() {
 
         slices.startDecoding();
 
-        if (!slices.errors.empty())
-          errors = slices.errors;
-
-        if (errors.size() >= nSlices)
-          ThrowRDE("DNG Decoding: Too many errors encountered. Giving up.\nFirst Error:%s", errors[0]);
+        if (mRaw->errors.size() >= nSlices)
+          ThrowRDE("DNG Decoding: Too many errors encountered. Giving up.\nFirst Error:%s", mRaw->errors[0]);
       } catch (TiffParserException e) {
         ThrowRDE("DNG Decoder: Unsupported format, tried strips and tiles:\n%s", e.what());
       }
@@ -320,45 +318,44 @@ RawImage DngDecoder::decodeRawInternal() {
     const uint32 *corners = raw->getEntry(ACTIVEAREA)->getIntArray();
     if (iPoint2D(corners[1], corners[0]).isThisInside(mRaw->dim)) {
       if (iPoint2D(corners[3], corners[2]).isThisInside(mRaw->dim)) {
-        iPoint2D top_left(corners[1], corners[0]);
-        new_size = iPoint2D(corners[3] - corners[1], corners[2] - corners[0]);
-        mRaw->subFrame(top_left, new_size);
+        iRectangle2D crop(corners[1], corners[0], corners[3] - corners[1], corners[2] - corners[0]);
+        mRaw->subFrame(crop);
       }
     }
   }
 
   if (raw->hasEntry(DEFAULTCROPORIGIN)) {
-    iPoint2D top_left(0, 0);
-    iPoint2D new_size(mRaw->dim.x, mRaw->dim.y);
+    iRectangle2D cropped(0, 0, mRaw->dim.x, mRaw->dim.y);
     if (raw->getEntry(DEFAULTCROPORIGIN)->type == TIFF_LONG) {
       const uint32* tl = raw->getEntry(DEFAULTCROPORIGIN)->getIntArray();
       const uint32* sz = raw->getEntry(DEFAULTCROPSIZE)->getIntArray();
       if (iPoint2D(tl[0], tl[1]).isThisInside(mRaw->dim) && iPoint2D(sz[0], sz[1]).isThisInside(mRaw->dim)) {
-        top_left = iPoint2D(tl[0], tl[1]);
-        new_size = iPoint2D(sz[0], sz[1]);
+        cropped = iRectangle2D(tl[0], tl[1], sz[0], sz[1]);
       }
     } else if (raw->getEntry(DEFAULTCROPORIGIN)->type == TIFF_SHORT) {
       const ushort16* tl = raw->getEntry(DEFAULTCROPORIGIN)->getShortArray();
       const ushort16* sz = raw->getEntry(DEFAULTCROPSIZE)->getShortArray();
       if (iPoint2D(tl[0], tl[1]).isThisInside(mRaw->dim) && iPoint2D(sz[0], sz[1]).isThisInside(mRaw->dim)) {
-        top_left = iPoint2D(tl[0], tl[1]);
-        new_size = iPoint2D(sz[0], sz[1]);
+        cropped = iRectangle2D(tl[0], tl[1], sz[0], sz[1]);
       }
     } else if (raw->getEntry(DEFAULTCROPORIGIN)->type == TIFF_RATIONAL) {
       // Crop as rational numbers, really?
       const uint32* tl = raw->getEntry(DEFAULTCROPORIGIN)->getIntArray();
       const uint32* sz = raw->getEntry(DEFAULTCROPSIZE)->getIntArray();
-      if (iPoint2D(tl[0]/tl[1],tl[2]/tl[3]).isThisInside(mRaw->dim) && iPoint2D(sz[0]/sz[1],sz[2]/sz[3]).isThisInside(mRaw->dim)) {
-        top_left = iPoint2D(tl[0]/tl[1],tl[2]/tl[3]);
-        new_size = iPoint2D(iPoint2D(sz[0]/sz[1],sz[2]/sz[3]));
+      if (tl[1] && tl[3] && sz[1] && sz[3]) {
+        if (iPoint2D(tl[0]/tl[1],tl[2]/tl[3]).isThisInside(mRaw->dim) && iPoint2D(sz[0]/sz[1],sz[2]/sz[3]).isThisInside(mRaw->dim)) {
+          cropped = iRectangle2D(tl[0]/tl[1], tl[2]/tl[3], sz[0]/sz[1], sz[2]/sz[3]);
+        }
       }
     }
-    mRaw->subFrame(top_left, new_size);
-    if (top_left.x %2 == 1)
+    mRaw->subFrame(cropped);
+    if (cropped.pos.x %2 == 1)
       mRaw->cfa.shiftLeft();
-    if (top_left.y %2 == 1)
+    if (cropped.pos.y %2 == 1)
       mRaw->cfa.shiftDown();
   }
+  if (mRaw->dim.area() <= 0)
+    ThrowRDE("DNG Decoder: No image left after crop");
 
   // Linearization
   if (raw->hasEntry(LINEARIZATIONTABLE)) {
@@ -391,10 +388,33 @@ RawImage DngDecoder::decodeRawInternal() {
   // Set black
   setBlack(raw);
 
+  // Apply opcodes to lossy DNG 
+  if (compression == 0x884c) {
+    if (raw->hasEntry(OPCODELIST2))
+    {
+      // We must apply black/white scaling
+      mRaw->scaleBlackWhite();
+      // Apply stage 2 codes
+      try{
+        DngOpcodes codes(raw->getEntry(OPCODELIST2));
+        mRaw = codes.applyOpCodes(mRaw);
+      } catch (RawDecoderException &e) {
+        // We push back errors from the opcode parser, since the image may still be usable
+        mRaw->setError(e.what());
+      }
+      mRaw->blackAreas.clear();
+      mRaw->blackLevel = 0;
+      mRaw->blackLevelSeparate[0] = mRaw->blackLevelSeparate[1] = mRaw->blackLevelSeparate[2] = mRaw->blackLevelSeparate[3] = 0;
+      mRaw->whitePoint = 65535;
+    }
+  }
   return mRaw;
 }
 
 void DngDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
+  if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
+    mRaw->isoSpeed = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
+
 }
 
 void DngDecoder::checkSupportInternal(CameraMetaData *meta) {

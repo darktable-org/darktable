@@ -123,7 +123,7 @@ int flags()
 int
 groups ()
 {
-  return IOP_GROUP_TONE;
+  return IOP_GROUP_BASIC;
 }
 
 int

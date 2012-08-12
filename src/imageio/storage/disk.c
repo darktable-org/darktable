@@ -242,7 +242,8 @@ failed:
   if(dt_exif_xmp_attach(imgid, filename) != 0)
   {
     fprintf(stderr, "[imageio_storage_disk] could not attach xmp data to file: `%s'!\n", filename);
-    dt_control_log(_("could not attach xmp data to file `%s'!"), filename);
+    // don't report that one to gui, as some formats (pfm, ppm, exr) just don't support
+    // writing xmp via exiv2, so it might not be to worry.
     return 1;
   }
 
