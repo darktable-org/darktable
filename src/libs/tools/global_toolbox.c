@@ -17,9 +17,12 @@
 */
 
 #include "common/darktable.h"
+#include "common/collection.h"
 #include "libs/lib.h"
 #include "gui/preferences.h"
 #include "dtgtk/button.h"
+#include "dtgtk/togglebutton.h"
+#include "control/conf.h"
 
 DT_MODULE(1)
 
