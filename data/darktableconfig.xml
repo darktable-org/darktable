@@ -128,6 +128,13 @@
     <longdescription>always ask the user before any image file is moved.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
+    <name>ask_before_copy</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>ask before copying images to new film roll folder</shortdescription>
+    <longdescription>always ask the user before any image file is copied.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
     <name>show_folder_levels</name>
     <type>int</type>
     <default>1</default>
