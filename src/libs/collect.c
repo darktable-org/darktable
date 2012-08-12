@@ -39,7 +39,58 @@ DT_MODULE(1)
 
 static void _lib_folders_update_collection(const gchar *filmroll);
 
+
 //DT_MODULE(1)
+
+typedef struct dt_lib_collect_rule_t
+{
+  long int num;
+  GtkWidget *hbox;
+  GtkComboBox *combo;
+  GtkWidget *text;
+  GtkWidget *button;
+}
+dt_lib_collect_rule_t;
+
+typedef struct dt_lib_collect_t
+{
+  dt_lib_collect_rule_t rule[MAX_RULES];
+  int active_rule;
+  GtkTreeView *view;
+  GtkTreeModel *treemodel;
+  GtkTreeModel *listmodel;
+  GtkScrolledWindow *scrolledwindow;
+  
+  GPtrArray *buttons;
+  GPtrArray *trees;
+
+  GtkBox *box;
+
+  struct dt_lib_collect_params_t *params;
+}
+dt_lib_collect_t;
+
+#define PARAM_STRING_SIZE 256  // FIXME: is this enough !?
+typedef struct dt_lib_collect_params_t
+{
+  uint32_t rules;
+  struct {
+    uint32_t item:16;
+    uint32_t mode:16;
+    char string[PARAM_STRING_SIZE];
+  } rule[MAX_RULES];
+} dt_lib_collect_params_t;
+
+typedef enum dt_lib_collect_cols_t
+{
+  DT_LIB_COLLECT_COL_TEXT=0,
+  DT_LIB_COLLECT_COL_ID,
+  DT_LIB_COLLECT_COL_TOOLTIP,
+  DT_LIB_COLLECT_COL_PATH,
+  DT_LIB_COLLECT_COL_COUNT,
+  DT_LIB_COLLECT_NUM_COLS
+}
+dt_lib_collect_cols_t;
 
 typedef struct dt_lib_folders_t
 {
@@ -65,6 +116,9 @@ typedef struct _image_t
   int exists;
 }
 _image_t;
+
+static void
+row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_lib_collect_t *d);
 
 /* callback for drag and drop */
 /*static void _lib_keywords_drag_data_received_callback(GtkWidget *w,
@@ -525,8 +579,8 @@ _show_filmroll_present(GtkTreeViewColumn *column,
                   gpointer          user_data)
 {
   gchar *path, *pch;
-  gtk_tree_model_get(model, iter, 1, &path, -1);
-  gtk_tree_model_get(model, iter, 0, &pch, -1);
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &path, -1);
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_TEXT, &pch, -1);
 
   g_object_set(renderer, "text", pch, NULL);
   g_object_set(renderer, "strikethrough", TRUE, NULL);
@@ -546,7 +600,7 @@ _folder_tree ()
   sqlite3_stmt *stmt;
   snprintf(query, 1024, "select * from film_rolls");
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  GtkTreeStore *store = gtk_tree_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
+  GtkTreeStore *store = gtk_tree_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INT);
 
   // initialize the model with the paths
 
@@ -626,7 +680,7 @@ _folder_tree ()
 
           int count = _count_images(pth2);
           gtk_tree_store_insert(store, &iter, level>0?&current:NULL,0);
-          gtk_tree_store_set(store, &iter, 0, pch, 1, pth2, 2, count, -1);
+          gtk_tree_store_set(store, &iter, DT_LIB_COLLECT_COL_TEXT, pch, DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_COUNT, count, -1);
           current = iter;
         }
 
@@ -674,41 +728,41 @@ _create_filtered_model (GtkTreeModel *model, GtkTreeIter iter)
 static GtkTreeView *
 _create_treeview_display (GtkTreeModel *model)
 {
-  GtkTreeView *treeview;
+  GtkTreeView *tree;
   GtkCellRenderer *renderer, *renderer2;
-  GtkTreeViewColumn *column1, *column2;
+  GtkTreeViewColumn *col1, *col2;
 
-  treeview = GTK_TREE_VIEW(gtk_tree_view_new ());
+  tree = GTK_TREE_VIEW(gtk_tree_view_new ());
 
-  renderer = gtk_cell_renderer_text_new ();
-  renderer2 = gtk_cell_renderer_text_new ();
+  /* Create columns */
+  col1 = gtk_tree_view_column_new();
+  gtk_tree_view_append_column(tree, col1);
+  //gtk_widget_set_size_request(GTK_WIDGET(tree), -1, 300);
+  gtk_tree_view_column_set_sizing(col1, GTK_TREE_VIEW_COLUMN_FIXED);
+  gtk_tree_view_column_set_fixed_width (col1, 230);
+  gtk_tree_view_column_set_max_width (col1, 230);
+  
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_column_pack_start(col1, renderer, TRUE);
+  gtk_tree_view_column_add_attribute(col1, renderer, "text", DT_LIB_COLLECT_COL_TEXT);
+  
+  gtk_tree_view_column_set_cell_data_func(col1, renderer, _show_filmroll_present, NULL, NULL);
 
-  column1 = gtk_tree_view_column_new();
-  column2 = gtk_tree_view_column_new();
-
-  gtk_tree_view_column_set_sizing(column1, GTK_TREE_VIEW_COLUMN_FIXED);
-  gtk_tree_view_column_set_fixed_width (column1, 230);
-  gtk_tree_view_column_set_max_width (column1, 230);
-
-  gtk_tree_view_column_pack_start(column1, renderer, TRUE);
-  gtk_tree_view_column_pack_start(column2, renderer2, TRUE);
-
-  gtk_tree_view_insert_column(treeview, column1, 0);
-  gtk_tree_view_insert_column(treeview, column2, 1);
-
-  gtk_tree_view_column_add_attribute(column2, renderer2, "text", 2);
-  gtk_tree_view_column_set_cell_data_func(column1, renderer, _show_filmroll_present, NULL, NULL);
-
-  gtk_tree_view_set_level_indentation (treeview, 1);
-
-  gtk_tree_view_set_headers_visible(treeview, FALSE);
-
-  gtk_tree_view_set_model(treeview, GTK_TREE_MODEL(model));
+  col2 = gtk_tree_view_column_new();
+  gtk_tree_view_append_column(tree,col2);
+  
+  renderer2 = gtk_cell_renderer_text_new();
+  gtk_tree_view_column_pack_start(col2, renderer2, TRUE);
+  gtk_tree_view_column_add_attribute(col2, renderer2, "text", DT_LIB_COLLECT_COL_COUNT);
+  
+  gtk_tree_view_set_model(tree, GTK_TREE_MODEL(model));
+  
+  gtk_tree_view_set_headers_visible(tree, FALSE);
 
   /* free store, treeview has its own storage now */
   g_object_unref(model);
 
-  return treeview;
+  return tree;
 }
 
 static void _lib_folders_update_collection(const gchar *filmroll)
@@ -747,6 +801,7 @@ static void _lib_folders_update_collection(const gchar *filmroll)
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 }
 
+#if 0
 static void
 tree_row_activated (GtkTreeView *view, GtkTreePath *path, gpointer user_data)
 {
@@ -757,10 +812,11 @@ tree_row_activated (GtkTreeView *view, GtkTreePath *path, gpointer user_data)
 
   /* Only one row at a time can be selected */
   gchar *filmroll;
-  gtk_tree_model_get (model, &iter, 1, &filmroll, -1);
+  gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_PATH, &filmroll, -1);
 
   _lib_folders_update_collection(filmroll);
 }
+#endif
 
 
 #if 0
@@ -781,7 +837,7 @@ void destroy_widget (gpointer data)
   gtk_widget_destroy(widget);
 }
 
-
+#if 0
 void
  _lib_folders_gui_update(dt_lib_module_t *self)
 {
@@ -855,7 +911,7 @@ void
     g_ptr_array_add(d->trees, (gpointer) tree);
     gtk_container_add(GTK_CONTAINER(d->box_tree), GTK_WIDGET(tree));
 
-    g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (tree_row_activated), d);
+    g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (row_activated), d);
     g_signal_connect(G_OBJECT (tree), "button-press-event", G_CALLBACK (view_onButtonPressed), NULL);
     g_signal_connect(G_OBJECT (tree), "popup-menu", G_CALLBACK (view_onPopupMenu), NULL);
     
@@ -869,7 +925,7 @@ void
 
 }
 
-#if 0
+
 static void
 collection_updated(gpointer instance,gpointer self)
 {
@@ -926,50 +982,6 @@ void gui_cleanup(dt_lib_module_t *self)
 */
 
 
-typedef struct dt_lib_collect_rule_t
-{
-  long int num;
-  GtkWidget *hbox;
-  GtkComboBox *combo;
-  GtkWidget *text;
-  GtkWidget *button;
-}
-dt_lib_collect_rule_t;
-
-typedef struct dt_lib_collect_t
-{
-  dt_lib_collect_rule_t rule[MAX_RULES];
-  int active_rule;
-  GtkTreeView *view;
-  GtkTreeModel *treemodel;
-  GtkTreeModel *listmodel;
-  GtkScrolledWindow *scrolledwindow;
-  
-  struct dt_lib_collect_params_t *params;
-}
-dt_lib_collect_t;
-
-#define PARAM_STRING_SIZE 256  // FIXME: is this enough !?
-typedef struct dt_lib_collect_params_t
-{
-  uint32_t rules;
-  struct {
-    uint32_t item:16;
-    uint32_t mode:16;
-    char string[PARAM_STRING_SIZE];
-  } rule[MAX_RULES];
-} dt_lib_collect_params_t;
-
-typedef enum dt_lib_collect_cols_t
-{
-  DT_LIB_COLLECT_COL_TEXT=0,
-  DT_LIB_COLLECT_COL_ID,
-  DT_LIB_COLLECT_COL_TOOLTIP,
-  DT_LIB_COLLECT_COL_PATH,
-  DT_LIB_COLLECT_COL_COUNT,
-  DT_LIB_COLLECT_NUM_COLS
-}
-dt_lib_collect_cols_t;
 
 
 static void _lib_collect_gui_update (dt_lib_module_t *d);
@@ -1089,18 +1101,67 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
   dt_lib_collect_t *d = get_collect(dr);
   sqlite3_stmt *stmt;
   GtkTreeIter iter;
-  GtkTreeView *view = d->view;
-
-  GtkTreeModel *listmodel = d->listmodel;
-  GtkTreeModel *treemodel = d->treemodel;
   
+
+  GtkWidget *button, *draw_area;
+  GtkTreeView *tree;
+  GtkTreeView *view;
+
+  gtk_widget_hide_all(GTK_WIDGET(d->box));
+  gtk_widget_hide_all(GTK_WIDGET(d->scrolledwindow));
+
+  draw_area = gtk_bin_get_child(GTK_BIN(d->scrolledwindow));
+  if (draw_area != NULL)
+  {
+    //gtk_container_remove(GTK_CONTAINER(d->scrolledwindow), GTK_WIDGET(draw_area));
+    //gtk_widget_destroy(draw_area);
+    view = GTK_TREE_VIEW(draw_area);
+  }
+  else
+    view = GTK_TREE_VIEW(gtk_tree_view_new());
+  
+  /* We have already inited the GUI once, clean around */
+  if (d->buttons != NULL)
+  {
+    for (int i=0; i<d->buttons->len; i++)
+    {
+      button = GTK_WIDGET(g_ptr_array_index (d->buttons, i));
+      g_ptr_array_free(d->buttons, TRUE);
+    }
+    d->buttons = NULL;
+  }
+   
+  if (d->trees != NULL)
+  {
+    for (int i=0; i<d->trees->len; i++)
+    {
+      tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
+      g_ptr_array_free(d->trees, TRUE);
+    }
+    d->trees = NULL;
+  }
+
+  //GtkTreeView *view = d->view;
+
+  //GtkTreeModel *listmodel = d->listmodel;
+  //GtkTreeModel *treemodel = d->treemodel;
+  
+
+  GtkTreeModel *listmodel;
+  GtkTreeModel *treemodel;
+
+  //view = GTK_TREE_VIEW(gtk_tree_view_new());
+  listmodel = GTK_TREE_MODEL(gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT));
   /* This model have to switch depending on what we are going to show */
   /* TODO: store both in dt_lib_collect_t */
-  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view)); 
-  g_object_ref(listmodel);
-  g_object_ref(treemodel);
+  //GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view)); 
+  //g_object_ref(listmodel);
+  //g_object_ref(treemodel);
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), NULL);
   
+ 
+
+
   char query[1024];
   int property = gtk_combo_box_get_active(dr->combo);
   const gchar *text = gtk_entry_get_text(GTK_ENTRY(dr->text));
@@ -1124,14 +1185,14 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
       snprintf(query, 1024, "SELECT distinct name, id FROM tags WHERE name LIKE '%%%s%%' ORDER BY UPPER(name)", escaped_text);
       break;
     case 4: // History, 2 hardcoded alternatives
-      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-      gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
                           DT_LIB_COLLECT_COL_TEXT,_("altered"),
                           DT_LIB_COLLECT_COL_ID, 0,
                           DT_LIB_COLLECT_COL_TOOLTIP,_("altered"),
                           -1);
-      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-      gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
                           DT_LIB_COLLECT_COL_TEXT,_("not altered"),
                           DT_LIB_COLLECT_COL_ID, 1,
                           DT_LIB_COLLECT_COL_TOOLTIP,_("not altered"),
@@ -1140,32 +1201,32 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
       break;
 
     case 5: // colorlabels
-      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-      gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
                           DT_LIB_COLLECT_COL_TEXT,_("red"),
                           DT_LIB_COLLECT_COL_ID, 0,
                           DT_LIB_COLLECT_COL_TOOLTIP, _("red"),
                           -1);
-      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-      gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
                           DT_LIB_COLLECT_COL_TEXT,_("yellow"),
                           DT_LIB_COLLECT_COL_ID, 1,
                           DT_LIB_COLLECT_COL_TOOLTIP, _("yellow"),
                           -1);
-      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-      gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
                           DT_LIB_COLLECT_COL_TEXT,_("green"),
                           DT_LIB_COLLECT_COL_ID, 2,
                           DT_LIB_COLLECT_COL_TOOLTIP, _("green"),
                           -1);
-      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-      gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
                           DT_LIB_COLLECT_COL_TEXT,_("blue"),
                           DT_LIB_COLLECT_COL_ID, 3,
                           DT_LIB_COLLECT_COL_TOOLTIP, _("blue"),
                           -1);
-      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-      gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
                           DT_LIB_COLLECT_COL_TEXT,_("purple"),
                           DT_LIB_COLLECT_COL_ID, 4,
                           DT_LIB_COLLECT_COL_TOOLTIP, _("purple"),
@@ -1214,12 +1275,13 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
   }
   g_free(escaped_text);
   
-  gtk_list_store_clear(GTK_LIST_STORE(listmodel));
+  //gtk_list_store_clear(GTK_LIST_STORE(listmodel));
+
   
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+    gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
     const char *folder = (const char*)sqlite3_column_text(stmt, 0);
     if(property == 0) // film roll
     {
@@ -1236,7 +1298,7 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
   }
   sqlite3_finalize(stmt);
 
-  model = listmodel;
+
   goto entry_key_press_exit;
 
 filmroll:
@@ -1244,14 +1306,82 @@ filmroll:
   //if (treemodel)
   //  g_unref(treemodel);
 
-  treemodel = GTK_TREE_MODEL(_folder_tree());
-  model = treemodel;
+  d->treemodel = GTK_TREE_MODEL(_folder_tree());
+  treemodel = d->treemodel;
+
+  /* set the UI */
+  //GtkTreeView *tree;
+  GtkTreeModel *model2;
+  //GtkWidget *button;
+  
+  GtkTreePath *root = gtk_tree_path_new_first();
+  gtk_tree_model_get_iter (GTK_TREE_MODEL(treemodel), &iter, root);
+
+  int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(treemodel), NULL);
+  d->buttons = g_ptr_array_sized_new(children);
+  g_ptr_array_set_free_func (d->buttons, destroy_widget);
+
+  d->trees = g_ptr_array_sized_new(children);
+  g_ptr_array_set_free_func (d->trees, destroy_widget);
+
+  //d->box = GTK_BOX(gtk_vbox_new(FALSE, 5));
+  
+  for (int i=0; i<children; i++)
+  {
+    GValue value;
+    memset(&value,0,sizeof(GValue));
+    gtk_tree_model_iter_nth_child (GTK_TREE_MODEL(treemodel), &iter, NULL, i);
+
+  	gtk_tree_model_get_value (GTK_TREE_MODEL(treemodel), &iter, 0, &value);
+    
+    gchar *mount_name = g_value_dup_string(&value);
+
+    if (g_strcmp0(mount_name, "Local")==0)
+    {
+      /* Add a button for local filesystem, to keep UI consistency */
+      button = gtk_button_new_with_label (_("Local HDD"));
+    }
+    else
+    {
+      button = gtk_button_new_with_label (mount_name);
+    }
+    g_ptr_array_add(d->buttons, (gpointer) button);
+    gtk_container_add(GTK_CONTAINER(d->box), GTK_WIDGET(button));
+    
+    model2 = _create_filtered_model(GTK_TREE_MODEL(treemodel), iter);
+    tree = _create_treeview_display(GTK_TREE_MODEL(model2));
+    g_ptr_array_add(d->trees, (gpointer) tree);
+    gtk_container_add(GTK_CONTAINER(d->box), GTK_WIDGET(tree));
+
+    gtk_tree_view_set_headers_visible(tree, FALSE);
+
+    gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
+    
+    g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (row_activated), d);
+    g_signal_connect(G_OBJECT (tree), "button-press-event", G_CALLBACK (view_onButtonPressed), NULL);
+    g_signal_connect(G_OBJECT (tree), "popup-menu", G_CALLBACK (view_onPopupMenu), NULL);
+    
+    g_value_unset(&value);
+    //g_free(mount_name);
+  }
+  
+
+  //gtk_scrolled_window_add_with_viewport(d->scrolledwindow, GTK_WIDGET(d->box));
+
+  gtk_widget_show_all(GTK_WIDGET(d->box));
+  //gtk_widget_show(GTK_WIDGET(d->scrolledwindow));
+
+  return FALSE;
 
 entry_key_press_exit:
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(view), DT_LIB_COLLECT_COL_TOOLTIP);
-  gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
-  g_object_unref(treemodel);
-  g_object_unref(listmodel);
+  gtk_tree_view_set_model(GTK_TREE_VIEW(view), listmodel);
+  gtk_container_add(GTK_CONTAINER(d->scrolledwindow), GTK_WIDGET(view));
+//  gtk_container_add(GTK_CONTAINER(d->box), GTK_WIDGET(d->scrolledwindow));
+  g_signal_connect(G_OBJECT (view), "row-activated", G_CALLBACK (row_activated), d);
+  gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
+  //g_object_unref(treemodel);
+  //g_object_unref(listmodel);
   return FALSE;
 }
 
@@ -1306,6 +1436,7 @@ _lib_collect_gui_update (dt_lib_module_t *self)
       g_object_set(G_OBJECT(button), "tooltip-text", _("clear this rule"), (char *)NULL);
     }
   }
+
   // update list of proposals
   changed_callback(NULL, d->rule + d->active_rule);
   darktable.gui->reset = old;
@@ -1626,6 +1757,8 @@ gui_init (dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)malloc(sizeof(dt_lib_collect_t));
 
+  memset(d, 0, sizeof(dt_lib_collect_t));
+
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 5);
   gtk_widget_set_size_request(self->widget, 100, -1);
@@ -1639,13 +1772,6 @@ gui_init (dt_lib_module_t *self)
   
   GtkBox *box;
   GtkWidget *w;
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-  GtkTreeView *view = GTK_TREE_VIEW(gtk_tree_view_new());
-  d->view = view;
-
-  GtkListStore *liststore;
-  liststore = gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
-  d->listmodel = GTK_TREE_MODEL(liststore);
 
   for(int i=0; i<MAX_RULES; i++)
   {
@@ -1679,38 +1805,34 @@ gui_init (dt_lib_module_t *self)
     gtk_widget_set_size_request(w, 13, 13);
   }
 
+  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
   d->scrolledwindow = GTK_SCROLLED_WINDOW(sw);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->scrolledwindow), TRUE, TRUE, 0);
+  gtk_widget_hide_all(sw);
+
+  GtkWidget *vbox = gtk_vbox_new(FALSE, 5);
+  d->box = GTK_BOX(vbox);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->box), TRUE, TRUE, 0);
+  gtk_widget_hide_all(vbox);
+
+#if 0
+  d->box = GTK_BOX(gtk_vbox_new(FALSE, 5));
+  GtkWidget *button = gtk_button_new_with_label("label");
+  gtk_box_pack_start(GTK_BOX(d->box), GTK_WIDGET(button), TRUE, TRUE, 0);
+  GtkWidget *label = gtk_label_new("Prueba");
+  gtk_box_pack_start(GTK_BOX(d->box), GTK_WIDGET(label), TRUE, TRUE, 0);
+  gtk_scrolled_window_add_with_viewport(d->scrolledwindow, GTK_WIDGET(d->box));
+
+  gtk_widget_show_all(GTK_WIDGET(d->box));
+  gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
+
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
-  gtk_tree_view_set_headers_visible(view, FALSE);
-  //liststore = gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+  //gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->box), TRUE, TRUE, 0);
+#endif
 
-  /* Create columns */
-  GtkTreeViewColumn *col1 = gtk_tree_view_column_new();
-  gtk_tree_view_append_column(view, col1);
-  gtk_widget_set_size_request(GTK_WIDGET(view), -1, 300);
-  gtk_tree_view_column_set_sizing(col1, GTK_TREE_VIEW_COLUMN_FIXED);
-  gtk_tree_view_column_set_fixed_width (col1, 230);
-  gtk_tree_view_column_set_max_width (col1, 230);
-  GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-  gtk_tree_view_column_pack_start(col1, renderer, TRUE);
-  gtk_tree_view_column_add_attribute(col1, renderer, "text", DT_LIB_COLLECT_COL_TEXT);
-  
-  gtk_tree_view_column_set_cell_data_func(col1, renderer, _show_filmroll_present, NULL, NULL);
-
-  GtkTreeViewColumn *col2 = gtk_tree_view_column_new();
-  gtk_tree_view_append_column(view,col2);
-  GtkCellRenderer *renderer2 = gtk_cell_renderer_text_new();
-  gtk_tree_view_column_pack_start(col2, renderer2, TRUE);
-  gtk_tree_view_column_add_attribute(col2, renderer2, "text", DT_LIB_COLLECT_COL_COUNT);
-
-  gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
-  
-  /* TODO: this will depend on what are we showing */
-  //gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
-
-  g_signal_connect(G_OBJECT (view), "row-activated", G_CALLBACK (row_activated), d);
+  d->buttons = NULL;
+  d->trees = NULL;
 
   /* setup proxy */
   darktable.view_manager->proxy.module_collect.module = self;
