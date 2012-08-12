@@ -139,6 +139,25 @@ inline void TrimSpaces(string& str) {
 }
 
 
+inline vector<string> split_string(string input, char c = ' ') {
+  vector<string> result;
+  const char *str = input.c_str();
+
+  while(1) {
+    const char *begin = str;
+
+    while(*str != c && *str)
+      str++;
+
+    result.push_back(string(begin, str));
+
+    if(0 == *str++)
+      break;
+  }
+
+  return result;
+}
+
 } // namespace RawSpeed
 
 #endif

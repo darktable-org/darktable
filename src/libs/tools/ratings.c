@@ -51,12 +51,12 @@ const char* name()
 
 uint32_t views()
 {
-  return DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
 }
 
 uint32_t container()
 {
-  return DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT;
+  return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT;
 }
 
 int expandable() 
@@ -130,6 +130,7 @@ static gboolean _lib_ratings_expose_callback(GtkWidget *widget, GdkEventExpose *
 
   /* get current style */
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET); 
+  if(!style) style = gtk_rc_get_style(widget);
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
@@ -205,3 +206,6 @@ static gboolean _lib_ratings_leave_notify_callback(GtkWidget *widget, GdkEventCr
 
 
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -19,6 +19,9 @@
     Copyright 2004-2008 by Shawn Freeman, Udi Fuchs
 */
 
+#ifndef DT_COMMON_CURVE_TOOLS_H
+#define DT_COMMON_CURVE_TOOLS_H
+
 //Curve Types
 #define CUBIC_SPLINE      0
 #define CATMULL_ROM     1
@@ -123,3 +126,8 @@ float *interpolate_set( int n, float x[], float y[], unsigned int type);
  *      yval  - interpolated value at xval
  *******************************************************************/
 float interpolate_val( int n, float x[], float xval, float y[], float tangents[], unsigned int type);
+
+#endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

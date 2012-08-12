@@ -62,13 +62,14 @@ typedef struct _flickr_api_context_t
 typedef struct dt_storage_flickr_gui_data_t
 {
 
-  GtkLabel *label1,*label2,*label3, *label4,*label5,*label6,*label7; // username, password, albums, status, albumtitle, albumsummary, albumrights
-  GtkEntry *entry1,*entry2,*entry3,*entry4;        // username, password, albumtitle,albumsummary
-  GtkComboBox *comboBox1;                          // album box
-  GtkCheckButton *checkButton1,*checkButton2;      // public album, export tags
-  GtkDarktableButton *dtbutton1;                   // refresh albums
-  GtkButton *button;				   // login button. These buttons call the same functions
-  GtkBox *hbox1;                                   // Create album options...
+  GtkLabel *label1,*label2,*label3, *label4,*label5,*label6,*label7,*labelPerms;    // username, password, albums, status, albumtitle, albumsummary, albumrights
+  GtkEntry *entry1,*entry2,*entry3,*entry4;                             // username, password, albumtitle,albumsummary
+  GtkComboBox *comboBox1;                                               // album box
+  GtkCheckButton *checkButton2;                                         // export tags
+  GtkDarktableButton *dtbutton1;                                        // refresh albums
+  GtkButton *button;                                                    // login button. These buttons call the same functions
+  GtkBox *hbox1;                                                        // Create album options...
+  GtkComboBox *permsComboBox;                                           // Permissions for flickr
 
   char *user_token;
 
@@ -86,14 +87,16 @@ typedef struct dt_storage_flickr_params_t
   int64_t hash;
   _flickr_api_context_t *flickr_api;
   gboolean export_tags;
-  gboolean public_image;
+  gboolean public_perm;
+  gboolean friend_perm;
+  gboolean family_perm;
 } dt_storage_flickr_params_t;
 
 
 /** Authenticates and retreives an initialized flickr api object */
 _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_data_t *ui);
 
-flickcurl_upload_status static *_flickr_api_upload_photo(dt_storage_flickr_params_t *params, char *data, char *caption, char *description,GList * tags );
+flickcurl_upload_status static *_flickr_api_upload_photo(dt_storage_flickr_params_t *params, char *data, char *caption, char *description, gint imgid);
 
 void static _flickr_api_free( _flickr_api_context_t *ctx )
 {
@@ -258,7 +261,7 @@ _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_dat
 }
 
 
-flickcurl_upload_status static *_flickr_api_upload_photo( dt_storage_flickr_params_t *p, char *fname, char *caption, char *description, GList * tags )
+flickcurl_upload_status static *_flickr_api_upload_photo( dt_storage_flickr_params_t *p, char *fname, char *caption, char *description, gint imgid )
 {
 
   flickcurl_upload_params *params = g_malloc(sizeof(flickcurl_upload_params));
@@ -271,39 +274,13 @@ flickcurl_upload_status static *_flickr_api_upload_photo( dt_storage_flickr_para
   params->title = caption;
   params->description = description;
 
-  if (tags)
-  {
-
-    gchar **array;
-    int i, length;
-
-    length = g_list_length(tags);
-    if (length > 0)
-    {
-      array = g_malloc(sizeof(gchar*)*(length+1));
-
-      for (i=0; i<length; i++)
-      {
-        dt_tag_t *t = g_list_nth_data(tags,i);
-
-        if (t)
-	{
-          if (!g_ascii_strncasecmp(t->tag, "darktable|", 10))
-          {
-            array[i] = g_strdup("darktable");
-          } else
-            array[i] = g_strconcat ("\"", t->tag, "\"", NULL);
-        }
-
-      }
-      array[length] = NULL;
-      params->tags = g_strjoinv(" ",array);
-      g_strfreev(array);
-    }
-  }
+  if (imgid)
+    params->tags = dt_tag_get_list(imgid, ",");
   params->photo_file = fname; //fname should be the URI of temp file
 
-  params->is_public = (int) p->public_image;
+  params->is_public = (int) p->public_perm;
+  params->is_friend = (int) p->friend_perm;
+  params->is_family = (int) p->family_perm;
 
   status = flickcurl_photos_upload_params(p->flickr_api->fc, params);
   if (!status)
@@ -493,22 +470,24 @@ gui_init (dt_imageio_module_storage_t *self)
   self->widget = gtk_vbox_new(FALSE, 0);
 
   GtkWidget *hbox1=gtk_hbox_new(FALSE,5);
-  GtkWidget *hbox0=gtk_hbox_new(FALSE,0);
+  GtkWidget *hbox0=gtk_hbox_new(FALSE,5);
   GtkWidget *vbox1=gtk_vbox_new(FALSE,0);
-  GtkWidget *vbox2=gtk_vbox_new(FALSE,0);
+  GtkWidget *vbox2=gtk_vbox_new(FALSE,5);
 
   ui->label1 = GTK_LABEL(  gtk_label_new( _("flickr user") ) );
   ui->label3 = GTK_LABEL(  gtk_label_new( _("photosets") ) );
+  ui->labelPerms = GTK_LABEL(  gtk_label_new( _("visible to") ) );
   ui->label4 = GTK_LABEL(  gtk_label_new( NULL ) );
 
   set_status(ui,_("click login button to start"), "#ffffff");
   
   ui->label5 = GTK_LABEL(  gtk_label_new( _("title") ) );
   ui->label6 = GTK_LABEL(  gtk_label_new( _("summary") ) );
-  gtk_misc_set_alignment(GTK_MISC(ui->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->label3), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->label5), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->label6), 0.0, 0.5);
+  gtk_misc_set_alignment(GTK_MISC(ui->label1),      0.0, 0.5);
+  gtk_misc_set_alignment(GTK_MISC(ui->labelPerms),  0.0, 0.9);
+  gtk_misc_set_alignment(GTK_MISC(ui->label3),      0.0, 0.7);
+  gtk_misc_set_alignment(GTK_MISC(ui->label5),      0.0, 0.5);
+  gtk_misc_set_alignment(GTK_MISC(ui->label6),      0.0, 0.5);
 
   ui->entry1 = GTK_ENTRY( gtk_entry_new() );
   ui->entry3 = GTK_ENTRY( gtk_entry_new() );  // Album title
@@ -564,10 +543,17 @@ gui_init (dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->comboBox1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->dtbutton1), FALSE, FALSE, 0);
 
-  ui->checkButton1 = GTK_CHECK_BUTTON( gtk_check_button_new_with_label(_("make images public")) );
   ui->checkButton2 = GTK_CHECK_BUTTON( gtk_check_button_new_with_label(_("export tags")) );
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON( ui->checkButton2 ),TRUE);
-  
+
+  ui->permsComboBox = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  gtk_combo_box_append_text(ui->permsComboBox, _("you"));
+  gtk_combo_box_append_text(ui->permsComboBox, _("friends"));
+  gtk_combo_box_append_text(ui->permsComboBox, _("family"));
+  gtk_combo_box_append_text(ui->permsComboBox, _("friends + family"));
+  gtk_combo_box_append_text(ui->permsComboBox, _("everyone"));
+  gtk_combo_box_set_active(GTK_COMBO_BOX(ui->permsComboBox), 0); // Set default permission to private
+
   gtk_box_pack_start(GTK_BOX(self->widget), hbox0, TRUE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox1, TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX( hbox0 ), GTK_WIDGET( ui->label1 ), TRUE, TRUE, 0);
@@ -576,12 +562,13 @@ gui_init (dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX( hbox1 ), vbox1, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX( hbox1 ), vbox2, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( gtk_label_new("")), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( gtk_label_new("")), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->labelPerms ), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->label3 ), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->label4 ), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->checkButton1 ), TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->checkButton2 ), TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->permsComboBox ), TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( albumlist ), TRUE, FALSE, 0);
+
 
   // Create Album
   ui->hbox1=GTK_BOX(gtk_hbox_new(FALSE,5));
@@ -635,10 +622,10 @@ gui_reset (dt_imageio_module_storage_t *self)
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
-  int result=1;
+  gint result=1;
   dt_storage_flickr_params_t *p=(dt_storage_flickr_params_t *)sdata;
   flickcurl_upload_status *photo_status;
-
+  gint tags=0;
 
   const char *ext = format->extension(fdata);
 
@@ -646,19 +633,13 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   /* construct a temporary file name */
   char fname[4096]= {0};
-  dt_util_get_user_local_dir (fname,4096);
-  g_strlcat (fname,"/tmp",4096);
-  g_mkdir_with_parents(fname,0700);
+  dt_loc_get_tmp_dir (fname,4096);
   g_strlcat (fname,"/darktable.XXXXXX.",4096);
   g_strlcat(fname,ext,4096);
 
   char *caption = NULL;
   char *description = NULL;
-  GList *tags = NULL;
 
-  // Fetch the attached tags of image id if exported..
-  if( p->export_tags == TRUE )
-    dt_tag_get_attached(imgid,&tags);
 
   gint fd=g_mkstemp(fname);
   fprintf(stderr,"tempfile: %s\n",fname);
@@ -668,19 +649,34 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     return 1;
   }
   close(fd);
-  dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
   caption = g_path_get_basename( img->filename );
 
-  (g_strrstr(caption,"."))[0]='\0'; // Shop extension...
+  // If title is not existing, then use the filename without extension. If not, then use title instead
+  GList *title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
+  if(title != NULL)
+  {
+    caption = title->data;
+  }
+  else
+  {
+    (g_strrstr(caption,"."))[0]='\0'; // Shop extension...
+  }
 
   GList *desc = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
   if(desc != NULL)
   {
     description = desc->data;
   }
+  dt_image_cache_read_release(darktable.image_cache, img);
 
-  dt_imageio_export(img, fname, format, fdata);
-  dt_image_cache_release(img, 'r');
+  if(dt_imageio_export(imgid, fname, format, fdata) != 0)
+  {
+    fprintf(stderr, "[imageio_storage_flickr] could not export to file: `%s'!\n", fname);
+    dt_control_log(_("could not export to file `%s'!"), fname);
+    result = 0;
+    goto cleanup;
+  }
 
 #ifdef _OPENMP
   #pragma omp critical
@@ -688,6 +684,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 //TODO: Check if this could be done in threads, so we enhace export time by using
 //      upload time for one image to export another image to disk.
   // Upload image
+  // Do we export tags?
+  if( p->export_tags == TRUE )
+    tags = imgid;
   photo_status = _flickr_api_upload_photo( p, fname, caption, description, tags );
   if( !photo_status )
   {
@@ -801,8 +800,38 @@ get_params(dt_imageio_module_storage_t *self, int *size)
       return NULL;
     }
 
-    d->public_image = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ui->checkButton1));
     d->export_tags = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ui->checkButton2));
+
+    /* Handle the permissions */
+    int perm_index = (int) gtk_combo_box_get_active(GTK_COMBO_BOX(ui->permsComboBox));
+    switch(perm_index)
+    {
+      case 0: // Private
+        d->public_perm = 0;
+        d->friend_perm = 0;
+        d->family_perm = 0;
+        break;
+      case 1: // Friends
+        d->public_perm = 0;
+        d->friend_perm = 1;
+        d->family_perm = 0;
+        break;
+      case 2: // Family
+        d->public_perm = 0;
+        d->friend_perm = 0;
+        d->family_perm = 1;
+        break;
+      case 3: // Friend + Family
+        d->public_perm = 0;
+        d->friend_perm = 1;
+        d->family_perm = 1;
+        break;
+      case 4: //Public
+        d->public_perm = 1;
+        d->friend_perm = 0;
+        d->family_perm = 0;
+        break;
+    }
 
     // Let UI forget about this api context and recreate a new one for further usage...
     ui->flickr_api = _flickr_api_authenticate(ui);
@@ -854,4 +883,6 @@ free_params(dt_imageio_module_storage_t *self, void *params)
   free(params);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

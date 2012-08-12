@@ -18,8 +18,11 @@
 #ifndef DT_CTL_SETTINGS_H
 #define DT_CTL_SETTINGS_H
 
+#include "common/darktable.h"
 #include "control/signal.h"
 #include "common/dtpthread.h"
+
+#include <inttypes.h>
 
 // thread-safe interface between core and gui.
 // also serves to store user settings.
@@ -116,16 +119,6 @@ typedef enum dt_lib_filter_t
 }
 dt_lib_filter_t;
 
-typedef enum dt_lib_sort_t
-{
-  DT_LIB_SORT_FILENAME = 0,
-  DT_LIB_SORT_DATETIME = 1,
-  DT_LIB_SORT_RATING = 2,
-  DT_LIB_SORT_ID = 3,
-  DT_LIB_SORT_COLOR = 4
-}
-dt_lib_sort_t;
-
 typedef struct dt_ctl_settings_t
 {
   // TODO: remove most of these options, maybe the whole struct?
@@ -146,4 +139,6 @@ enum dt_dev_zoom_t;
 
 #endif
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

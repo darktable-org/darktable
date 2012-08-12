@@ -121,7 +121,7 @@ gui_init (dt_imageio_module_storage_t *self)
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry));
   g_object_set(G_OBJECT(widget), "tooltip-text", _("enter the path where to create the website gallery:\n"
                "$(ROLL_NAME) - roll of the input image\n"
-               "$(FILE_DIRECTORY) - directory of the input image\n"
+               "$(FILE_FOLDER) - directory of the input image\n"
                "$(FILE_NAME) - basename of the input image\n"
                "$(FILE_EXTENSION) - extension of the input image\n"
                "$(SEQUENCE) - sequence number\n"
@@ -140,8 +140,8 @@ gui_init (dt_imageio_module_storage_t *self)
                "$(STARS) - star rating\n"
                "$(LABELS) - colorlabels\n"
                "$(PICTURES_FOLDER) - pictures folder\n"
-               "$(HOME_FOLDER) - home folder\n"
-               "$(DESKTOP_FOLDER) - desktop folder"
+               "$(HOME) - home folder\n"
+               "$(DESKTOP) - desktop folder"
                                                   ), (char *)NULL);
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, 18, 18);
@@ -189,20 +189,22 @@ sort_pos(pair_t *a, pair_t *b)
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
-  dt_image_t *img = dt_image_cache_get(imgid, 'r');
-  if(!img) return 1;
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)sdata;
 
   char filename[1024]= {0};
   char dirname[1024]= {0};
-  dt_image_full_path(img->id, dirname, 1024);
+  dt_image_full_path(imgid, dirname, 1024);
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
 
+    char tmp_dir[1024];
+    dt_variables_expand(d->vp, d->filename, TRUE);
+    g_strlcpy(tmp_dir, dt_variables_get_result(d->vp), 1024);
+
     // if filenamepattern is a directory just let att ${FILE_NAME} as default..
-    if ( g_file_test(d->filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename))[0]=='/' || (d->filename+strlen(d->filename))[0]=='\\') )
-      snprintf (d->filename+strlen(d->filename), 1024-strlen(d->filename), "$(FILE_NAME)");
+    if ( g_file_test(tmp_dir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename)-1)[0]=='/' || (d->filename+strlen(d->filename)-1)[0]=='\\') )
+      snprintf (d->filename+strlen(d->filename), 1024-strlen(d->filename), "/$(FILE_NAME)");
 
     // avoid braindead export which is bound to overwrite at random:
     if(total > 1 && !g_strrstr(d->filename, "$"))
@@ -216,7 +218,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
     d->vp->filename = dirname;
     d->vp->jobcode = "export";
-    d->vp->img = img;
+    d->vp->imgid = imgid;
     d->vp->sequence = num;
     dt_variables_expand(d->vp, d->filename, TRUE);
     g_strlcpy(filename, dt_variables_get_result(d->vp), 1024);
@@ -230,7 +232,6 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     {
       fprintf(stderr, "[imageio_storage_gallery] could not create directory: `%s'!\n", dirname);
       dt_control_log(_("could not create directory `%s'!"), dirname);
-      dt_image_cache_release(img, 'r');
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
       return 1;
     }
@@ -250,14 +251,14 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     char *title = NULL, *description = NULL, *tags = NULL;
     GList *res;
 
-    res = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
+    res = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
     if(res)
     {
       title = res->data;
       g_list_free(res);
     }
 
-    res = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
+    res = dt_metadata_get(imgid, "Xmp.dc.description", NULL);
     if(res)
     {
       description = res->data;
@@ -265,7 +266,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     }
 
     unsigned int count = 0;
-    res = dt_metadata_get(img->id, "Xmp.dc.subject", &count);
+    res = dt_metadata_get(imgid, "Xmp.dc.subject", &count);
     if(res)
     {
       // don't show the internal tags (darktable|...)
@@ -297,11 +298,55 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     if(c <= relthumbfilename) c = relthumbfilename + strlen(relthumbfilename);
     sprintf(c, "-thumb.%s", ext);
 
+    char subfilename[1024], relsubfilename[256];
+    snprintf(subfilename, 1024, "%s", d->cached_dirname);
+    char* sc = subfilename + strlen(subfilename);
+    sprintf(sc, "/img_%d.html", num);
+    sprintf(relsubfilename, "img_%d.html", num);
+
     snprintf(pair->line, 4096,
              "\n"
-             "      <div><a href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
+             "      <div><a class=\"dia\" rel=\"lightbox[viewer]\" title=\"%s - %s\" href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
              "      <h1>%s</h1>\n"
-             "      %s<br/><span class=\"tags\">%s</span></div>\n", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
+             "      %s<br/><span class=\"tags\">%s</span></div>\n", title?title:relfilename, description?description:"&nbsp;", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
+
+    char next[256];
+    sprintf(next, "img_%d.html", (num)%total+1);
+
+    char prev[256];
+    sprintf(prev, "img_%d.html", (num==1)?total:num-1);
+
+/* Becomes unecessary with the Lightbox image viewer overlay
+
+    FILE* subfile = fopen(subfilename, "wb");
+    fprintf(subfile,
+          "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
+          "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
+          "  <head>\n"
+          "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n"
+          "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\" />\n"
+          "    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\" />\n"
+          "    <title>%s</title>\n"
+          "  </head>\n"
+          "  <body>\n"
+          "    <div class=\"title\"><a href=\"index.html\">%s</a></div>\n"
+          "    <div class=\"page\">\n"
+          "      <div style=\"width: 692px; max-width: 692px; height: 10px;\">\n"
+          "        <a style=\"float: left;\" href=\"%s\"><h1>prev</h1></a>\n" 
+          "        <a style=\"float: right;\"href=\"%s\"><h1>next</h1></a>\n"
+          "      </div>\n"
+          "      <a href=\"%s\"><img src=\"%s\" width=\"692\" class=\"img\"/></a>\n"
+          "      %s<br/><span class=\"tags\">%s</span></div>\n"
+          "      <p style=\"clear:both;\"></p>\n"
+          "    </div>\n"
+          "    <div class=\"footer\">\n"
+          "      created with darktable "PACKAGE_VERSION"\n"
+          "    </div>\n"
+          "  </body>\n"
+          "</html>\n",
+          relfilename, title?title:relfilename, prev, next, relfilename, relfilename, description?description:"&nbsp;", tags?tags:"&nbsp;");
+    fclose(subfile);
+*/
     pair->pos = num;
     g_free(title);
     g_free(description);
@@ -311,7 +356,13 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   /* export image to file */
-  dt_imageio_export(img, filename, format, fdata);
+  if(dt_imageio_export(imgid, filename, format, fdata) != 0)
+  {
+    fprintf(stderr, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
+    dt_control_log(_("could not export to file `%s'!"), filename);
+    return 1;
+  }
+
   /* also export thumbnail: */
   // write with reduced resolution:
   const int max_width  = fdata->max_width;
@@ -324,11 +375,15 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   if(c <= filename || *c=='/') c = filename + strlen(filename);
   const char *ext = format->extension(fdata);
   sprintf(c,"-thumb.%s",ext);
-  dt_imageio_export(img, filename, format, fdata);
+  if(dt_imageio_export(imgid, filename, format, fdata) != 0)
+  {
+    fprintf(stderr, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
+    dt_control_log(_("could not export to file `%s'!"), filename);
+    return 1;
+  }
   // restore for next image:
   fdata->max_width = max_width;
   fdata->max_height = max_height;
-  dt_image_cache_release(img, 'r');
 
   printf("[export_job] exported to `%s'\n", filename);
   char *trunc = filename + strlen(filename) - 32;
@@ -341,7 +396,7 @@ static void
 copy_res(const char *src, const char *dst)
 {
   char share[1024];
-  dt_util_get_datadir(share, 1024);
+  dt_loc_get_datadir(share, 1024);
   gchar *sourcefile = g_build_filename(share, src, NULL);
   char* content = NULL;
   FILE *fin = fopen(sourcefile, "rb");
@@ -386,7 +441,45 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   copy_res("/style/style.css", filename);
   sprintf(c, "/style/favicon.ico");
   copy_res("/style/favicon.ico", filename);
-
+  sprintf(c, "/style/bullet.gif");
+  copy_res("/style/bullet.gif", filename);
+  sprintf(c, "/style/close.gif");
+  copy_res("/style/close.gif", filename);
+  sprintf(c, "/style/closelabel.gif");
+  copy_res("/style/closelabel.gif", filename);
+  sprintf(c, "/style/donate-button.gif");
+  copy_res("/style/donate-button.gif", filename);
+  sprintf(c, "/style/download-icon.gif");
+  copy_res("/style/download-icon.gif", filename);
+  sprintf(c, "/style/image-1.jpg");
+  copy_res("/style/image-1.jpg", filename);
+  sprintf(c, "/style/lightbox.css");
+  copy_res("/style/lightbox.css", filename);
+  sprintf(c, "/style/loading.gif");
+  copy_res("/style/loading.gif", filename);
+  sprintf(c, "/style/nextlabel.gif");
+  copy_res("/style/nextlabel.gif", filename);
+  sprintf(c, "/style/prevlabel.gif");
+  copy_res("/style/prevlabel.gif", filename);
+  sprintf(c, "/style/thumb-1.jpg");
+  copy_res("/style/thumb-1.jpg", filename);
+  
+  // create subdir   js for lightbox2 viewer scripts
+  sprintf(c, "/js");
+  g_mkdir_with_parents(filename, 0755);
+  sprintf(c, "/js/builder.js");
+  copy_res("/js/builder.js", filename);
+  sprintf(c, "/js/effects.js");
+  copy_res("/js/effects.js", filename);
+  sprintf(c, "/js/lightbox.js");
+  copy_res("/js/lightbox.js", filename);
+  sprintf(c, "/js/lightbox-web.js");
+  copy_res("/js/lightbox-web.js", filename);
+  sprintf(c, "/js/prototype.js");
+  copy_res("/js/prototype.js", filename);
+  sprintf(c, "/js/scriptaculous.js");
+  copy_res("/js/scriptaculous.js", filename);
+  
   sprintf(c, "/index.html");
 
   const char *title = d->title;
@@ -400,6 +493,10 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
           "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n"
           "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\" />\n"
           "    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\" />\n"
+          "    <link rel=\"stylesheet\" href=\"style/lightbox.css\" type=\"text/css\" media=\"screen\" />"
+          "    <script type=\"text/javascript\" src=\"js/prototype.js\"></script>\n"
+          "    <script type=\"text/javascript\" src=\"js/scriptaculous.js?load=effects,builder\"></script>\n"
+          "    <script type=\"text/javascript\" src=\"js/lightbox.js\"></script>\n"
           "    <title>%s</title>\n"
           "  </head>\n"
           "  <body>\n"
@@ -471,4 +568,6 @@ set_params(dt_imageio_module_storage_t *self, void *params, int size)
   return 0;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

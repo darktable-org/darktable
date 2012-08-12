@@ -18,19 +18,22 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-#include <inttypes.h>
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/opencl.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
+#include "bauhaus/bauhaus.h"
+
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include <inttypes.h>
 
 DT_MODULE(1)
 
@@ -39,6 +42,7 @@ DT_MODULE(1)
 #define DT_IOP_COLORZONES_RES 64
 #define DT_IOP_COLORZONES_BANDS 6
 #define DT_IOP_COLORZONES_LUT_RES 0x10000
+
 
 typedef enum dt_iop_colorzones_channel_t
 {
@@ -87,6 +91,12 @@ typedef struct dt_iop_colorzones_data_t
 }
 dt_iop_colorzones_data_t;
 
+typedef struct dt_iop_colorzones_global_data_t
+{
+  int kernel_colorzones;
+}
+dt_iop_colorzones_global_data_t;
+
 const char
 *name()
 {
@@ -95,7 +105,7 @@ const char
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 int
@@ -154,7 +164,68 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     out[0] = L;
     out[1] = cosf(2.0*M_PI*(h + hm)) * Cm * C;
     out[2] = sinf(2.0*M_PI*(h + hm)) * Cm * C;
+    out[3] = in[3];
   }
+}
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)piece->data;
+  dt_iop_colorzones_global_data_t *gd = (dt_iop_colorzones_global_data_t *)self->data;
+  cl_mem dev_L, dev_a, dev_b = NULL;
+  cl_int err = -999;
+
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
+  dev_L = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
+  dev_a = dt_opencl_copy_host_to_device(devid, d->lut[1], 256, 256, sizeof(float));
+  dev_b = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
+  if (dev_L == NULL || dev_a == NULL || dev_b == NULL) goto error;
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 4, sizeof(int), (void *)&d->channel); 
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 5, sizeof(cl_mem), (void *)&dev_L);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 6, sizeof(cl_mem), (void *)&dev_a);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 7, sizeof(cl_mem), (void *)&dev_b);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorzones, sizes);
+
+  if(err != CL_SUCCESS) goto error;
+  dt_opencl_release_mem_object(dev_L);
+  dt_opencl_release_mem_object(dev_a);
+  dt_opencl_release_mem_object(dev_b); 
+  return TRUE;
+
+error:
+  if (dev_L != NULL) dt_opencl_release_mem_object(dev_L);
+  if (dev_a != NULL) dt_opencl_release_mem_object(dev_a);
+  if (dev_b != NULL) dt_opencl_release_mem_object(dev_b);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorzones] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 2; // basic.cl, from programs.conf
+  dt_iop_colorzones_global_data_t *gd = (dt_iop_colorzones_global_data_t *)malloc(sizeof(dt_iop_colorzones_global_data_t));
+  module->data = gd;
+  gd->kernel_colorzones = dt_opencl_create_kernel(program, "colorzones");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_colorzones_global_data_t *gd = (dt_iop_colorzones_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_colorzones);
+  free(module->data);
+  module->data = NULL;
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -225,7 +296,7 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
-  gtk_combo_box_set_active(GTK_COMBO_BOX(g->select_by), 2-p->channel);
+  dt_bauhaus_combobox_set(g->select_by, 2-p->channel);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -234,7 +305,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colorzones_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorzones_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 499; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 529; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorzones_params_t);
   module->gui_data = NULL;
   dt_iop_colorzones_params_t tmp;
@@ -714,8 +785,6 @@ colorzones_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user
     c->x_move = -1;
   }
   gtk_widget_queue_draw(widget);
-  gint x, y;
-  gdk_window_get_pointer(event->window, &x, &y, NULL);
   return TRUE;
 }
 
@@ -765,11 +834,22 @@ colorzones_button_release(GtkWidget *widget, GdkEventButton *event, gpointer use
 }
 
 static gboolean
+colorzones_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+  c->mouse_y = fabsf(c->mouse_y);
+  gtk_widget_queue_draw(widget);
+  return TRUE;
+}
+
+static gboolean
 colorzones_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
-  if(!c->dragging) c->mouse_x = c->mouse_y = -1.0;
+  // for fluxbox
+  c->mouse_y = -fabsf(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -796,13 +876,13 @@ colorzones_tab_switch(GtkNotebook *notebook, GtkNotebookPage *page, guint page_n
 }
 
 static void
-select_by_changed(GtkComboBox *widget, gpointer user_data)
+select_by_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
   memcpy(p, self->default_params, sizeof(dt_iop_colorzones_params_t));
-  p->channel = 2 - (dt_iop_colorzones_channel_t)gtk_combo_box_get_active(widget);
+  p->channel = 2 - (dt_iop_colorzones_channel_t)dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
@@ -812,6 +892,11 @@ request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   self->request_color_pick = gtk_toggle_button_get_active(togglebutton);
   if(darktable.gui->reset) return;
+  
+  /* set the area sample size*/
+  if (self->request_color_pick)
+    dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+  
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
 }
@@ -833,29 +918,13 @@ void gui_init(struct dt_iop_module_t *self)
   c->dragging = 0;
   c->x_move = -1;
   c->mouse_radius = 1.0/DT_IOP_COLORZONES_BANDS;
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
 
-  // select by which dimension
-  GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 5));
-  GtkWidget *label = gtk_label_new(_("select by"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0f, 0.5f);
-  c->select_by = gtk_combo_box_new_text();
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("hue"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("saturation"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("lightness"));
-  gtk_box_pack_start(GTK_BOX(hbox), c->select_by, TRUE, TRUE, 0);
-  g_signal_connect (G_OBJECT (c->select_by), "changed", G_CALLBACK (select_by_changed), (gpointer)self);
-
-  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-  g_object_set(G_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
-  g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
-  gtk_box_pack_start(GTK_BOX(hbox), tb, FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
   // tabs
-  GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));//DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+  GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
@@ -868,7 +937,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_object_set(G_OBJECT(c->channel_tabs), "homogeneous", TRUE, (char *)NULL);
 
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
+  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
+  g_object_set(G_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
+  g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
+  gtk_box_pack_end(GTK_BOX(hbox), tb, FALSE, FALSE, 0);
+
 
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page",
                    G_CALLBACK (colorzones_tab_switch), self);
@@ -878,6 +952,17 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
   gtk_drawing_area_size(c->area, 195, 195);
+
+  // select by which dimension
+  c->select_by = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(c->select_by, _("select by"));
+  g_object_set(G_OBJECT(c->select_by), "tooltip-text", _("choose selection criterion, will be the abscissa in the graph"), (char *)NULL);
+  dt_bauhaus_combobox_add(c->select_by, _("hue"));
+  dt_bauhaus_combobox_add(c->select_by, _("saturation"));
+  dt_bauhaus_combobox_add(c->select_by, _("lightness"));
+  gtk_box_pack_start(GTK_BOX(self->widget), c->select_by, TRUE, TRUE, 0);
+  g_signal_connect (G_OBJECT (c->select_by), "value-changed", G_CALLBACK (select_by_changed), (gpointer)self);
+
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
@@ -890,6 +975,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (colorzones_motion_notify), self);
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (colorzones_leave_notify), self);
+  g_signal_connect (G_OBJECT (c->area), "enter-notify-event",
+                    G_CALLBACK (colorzones_enter_notify), self);
   g_signal_connect (G_OBJECT (c->area), "scroll-event",
                     G_CALLBACK (colorzones_scrolled), self);
 
@@ -912,3 +999,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

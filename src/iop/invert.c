@@ -85,7 +85,7 @@ static void
 request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   self->request_color_pick = gtk_toggle_button_get_active(togglebutton);
-  if(darktable.gui->reset || self->dev->image->filters) return;
+  if(darktable.gui->reset || self->dev->image_storage.filters) return;
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
 }
@@ -96,7 +96,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   if(darktable.gui->reset) return FALSE;
   if(self->picked_color_max[0] < 0) return FALSE;
   if(!self->request_color_pick) return FALSE;
-  if(self->dev->image->filters) return FALSE;
+  if(self->dev->image_storage.filters) return FALSE;
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
@@ -130,7 +130,7 @@ colorpick_button_callback(GtkButton *button, GtkColorSelectionDialog *csd)
 static void
 colorpicker_callback (GtkDarktableButton *button, dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset || self->dev->image->filters) return;
+  if(self->dt->gui->reset || self->dev->image_storage.filters) return;
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
@@ -175,9 +175,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // do nothing
 //   }
 
-  const int filters = dt_image_flipped_filter(self->dev->image);
+  const int filters = dt_image_flipped_filter(&piece->pipe->image);
 
-  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && self->dev->image->bpp != 4)
+  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && piece->pipe->image.bpp != 4)
   {
     // doesn't work and isn't used.
 //     uint16_t min = -1, max = 0, res[3] = {0,0,0};
@@ -203,7 +203,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 //     for(int k=0; k<3; k++)
 //       piece->pipe->processed_maximum[k] = res[k];
   }
-  else if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && self->dev->image->bpp == 4)
+  else if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && piece->pipe->image.bpp == 4)
   {
     // doesn't work and isn't used.
 //     float min, max;
@@ -251,8 +251,9 @@ void reload_defaults(dt_iop_module_t *self)
   memcpy(self->default_params, &tmp, sizeof(dt_iop_invert_params_t));
 
   // can't be switched on for raw and hdr images:
-  if(self->dev->image->flags & DT_IMAGE_RAW) self->hide_enable_button = 1;
-  else                                       self->hide_enable_button = 0;
+  if(dt_image_is_raw(&self->dev->image_storage)) self->hide_enable_button = 1;
+  else self->hide_enable_button = 0;
+  self->default_enabled = 0;
 }
 
 void init(dt_iop_module_t *module)
@@ -263,7 +264,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_invert_params_t);
   module->gui_data = NULL;
-  module->priority = 20; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 19; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -299,7 +300,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
   // FIXME: double clicking the reset label twice allows this to be enabled for raw files ...
-  if(self->dev->image->filters)
+  if(self->dev->image_storage.filters)
   {
     gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), FALSE);
     dtgtk_reset_label_set_text(g->label, _("this doesn't work for raw/hdr images."));
@@ -333,7 +334,7 @@ void gui_init(dt_iop_module_t *self)
   g->pickerbuttons = GTK_HBOX(gtk_hbox_new(FALSE, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->pickerbuttons), TRUE, TRUE, 0);
 
-  g->colorpicker = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE));
+  g->colorpicker = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE|CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpicker), 75, 24);
   g_signal_connect (G_OBJECT (g->colorpicker), "clicked", G_CALLBACK (colorpicker_callback), self);
   gtk_box_pack_start(GTK_BOX(g->pickerbuttons), GTK_WIDGET(g->colorpicker), TRUE, TRUE, 0);
@@ -353,4 +354,6 @@ void gui_cleanup  (dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -18,6 +18,9 @@
 
 #ifndef DT_STYLES_H
 #define DT_STYLES_H
+
+#include "common/darktable.h"
+
 #include <sqlite3.h>
 #include <glib.h>
 #include <inttypes.h>
@@ -68,4 +71,12 @@ void dt_styles_save_to_file(const char *style_name,const char *filedir);
 
 /** load style from file */
 void dt_styles_import_from_file(const char *style_path);
+
+/** register global style accelerators at start time */
+void init_styles_key_accels();
+/** connect global style accelerators at start time */
+void connect_styles_key_accels();
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

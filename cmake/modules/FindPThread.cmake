@@ -12,6 +12,8 @@
 # Copyright 2010 henrik andersson
 #=============================================================================
 
+SET(PTHREAD_FIND_REQUIRED ${PThread_FIND_REQUIRED})
+
 find_path(PTHREAD_INCLUDE_DIR pthread.h)
 mark_as_advanced(PTHREAD_INCLUDE_DIR)
 

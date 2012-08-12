@@ -18,14 +18,9 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
+#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
+#include "common/opencl.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -36,9 +31,13 @@
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+
 #include <gtk/gtk.h>
 #include <inttypes.h>
-
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
+#include <string.h>
 
 DT_MODULE(1)
 
@@ -55,7 +54,7 @@ typedef struct dt_iop_colorize_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
   GtkWidget  *label1,*label2,*label3,*label4;	 			 // hue, sat, lightnessm source, lightness mix
-  GtkDarktableSlider *scale1,*scale2;       					//  lightness, source_lightnessmix
+  GtkWidget *scale1,*scale2;       					//  lightness, source_lightnessmix
   GtkDarktableButton *colorpick1;	   					// colorpick
   GtkDarktableGradientSlider *gslider1,*gslider2;		//hue, saturation
 }
@@ -70,6 +69,13 @@ typedef struct dt_iop_colorize_data_t
 }
 dt_iop_colorize_data_t;
 
+typedef struct dt_iop_colorize_global_data_t
+{
+  int kernel_colorize;
+}
+dt_iop_colorize_global_data_t;
+
+
 const char *name()
 {
   return _("colorize");
@@ -77,7 +83,7 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 int
@@ -98,8 +104,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t*)self->gui_data;
 
   dt_accel_connect_button_iop(self, "pick color", GTK_WIDGET(g->colorpick1));
-  dt_accel_connect_button_iop(self, "lightness", GTK_WIDGET(g->scale1));
-  dt_accel_connect_button_iop(self, "source mix", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "lightness", GTK_WIDGET(g->scale1));
+  dt_accel_connect_slider_iop(self, "source mix", GTK_WIDGET(g->scale2));
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -142,27 +148,94 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[l+0] = L-lmix + in[l+0]*mix;
       out[l+1] = a;
       out[l+2] = b;
+      out[l+3] = in[l+3];
     }
   }
 }
 
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_colorize_data_t *data = (dt_iop_colorize_data_t *)piece->data;
+  dt_iop_colorize_global_data_t *gd = (dt_iop_colorize_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  /* create Lab */
+  float rgb[3]={0}, XYZ[3]={0}, Lab[3]={0};
+  hsl2rgb(rgb,data->hue, data->saturation, data->lightness/100.0);
+
+  XYZ[0] = (rgb[0] * 0.5767309) + (rgb[1] * 0.1855540) + (rgb[2] * 0.1881852);
+  XYZ[1] = (rgb[0] * 0.2973769) + (rgb[1] * 0.6273491) + (rgb[2] * 0.0752741);
+  XYZ[2] = (rgb[0] * 0.0270343) + (rgb[1] * 0.0706872) + (rgb[2] * 0.9911085);
+  
+  dt_XYZ_to_Lab(XYZ,Lab);
+
+
+  /* a/b components */
+  const float L = Lab[0];
+  const float a = Lab[1];
+  const float b = Lab[2];
+  const float mix = data->source_lightness_mix/100.0f;
+
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 4, sizeof(float), (void *)&mix);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 5, sizeof(float), (void *)&L);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 6, sizeof(float), (void *)&a);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 7, sizeof(float), (void *)&b);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorize, sizes);
+  if(err != CL_SUCCESS) goto error;
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorize] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 8; // extended.cl, from programs.conf
+  dt_iop_colorize_global_data_t *gd = (dt_iop_colorize_global_data_t *)malloc(sizeof(dt_iop_colorize_global_data_t));
+  module->data = gd;
+  gd->kernel_colorize = dt_opencl_create_kernel(program, "colorize");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_colorize_global_data_t *gd = (dt_iop_colorize_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_colorize);
+  free(module->data);
+  module->data = NULL;
+}
+
+
 static void
-lightness_callback (GtkDarktableSlider *slider, gpointer user_data)
+lightness_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
-  p->lightness = dtgtk_slider_get_value(slider);
+  p->lightness = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-source_lightness_mix_callback (GtkDarktableSlider *slider, gpointer user_data)
+source_lightness_mix_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
-  p->source_lightness_mix = dtgtk_slider_get_value(slider);
+  p->source_lightness_mix = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -336,8 +409,8 @@ void gui_update(struct dt_iop_module_t *self)
 
   dtgtk_gradient_slider_set_value(g->gslider1,p->hue);
   dtgtk_gradient_slider_set_value(g->gslider2,p->saturation);
-  dtgtk_slider_set_value(g->scale1, p->lightness);
-  dtgtk_slider_set_value(g->scale2, p->source_lightness_mix);
+  dt_bauhaus_slider_set(g->scale1, p->lightness);
+  dt_bauhaus_slider_set(g->scale2, p->source_lightness_mix);
 
   float color[3];
   hsl2rgb(color,p->hue,p->saturation,0.5);
@@ -355,7 +428,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colorize_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorize_params_t));
   module->default_enabled = 0;
-  module->priority = 395; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 411; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorize_params_t);
   module->gui_data = NULL;
   dt_iop_colorize_params_t tmp = (dt_iop_colorize_params_t)
@@ -382,7 +455,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
 
-  g->colorpick1 = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE));
+  g->colorpick1 = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE|CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick1),32,32);
 
   GtkWidget *hbox = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
@@ -445,16 +518,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->lightness*100.0, 2));
-  dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_label(g->scale1,_("lightness"));
-  dtgtk_slider_set_unit(g->scale1,"%");
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->lightness*100.0, 2);
+  dt_bauhaus_slider_set_format(g->scale1, "%.2f%%");
+  dt_bauhaus_widget_set_label(g->scale1, _("lightness"));
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->source_lightness_mix, 2));
-  dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_label(g->scale2,_("source mix"));
-  dtgtk_slider_set_unit(g->scale2,"%");
+  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->source_lightness_mix, 2);
+  dt_bauhaus_slider_set_format(g->scale2, "%.2f%%");
+  dt_bauhaus_widget_set_label(g->scale2, _("source mix"));
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
 
@@ -481,4 +552,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

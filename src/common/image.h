@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,16 +21,15 @@
 #include "config.h"
 #endif
 
+#include "common/darktable.h"
+#include "common/dtpthread.h"
 #include <glib.h>
 #include <inttypes.h>
-#include "common/dtpthread.h"
-
-// how large would the average screen be (largest mip map size) ?
-// this is able to develop images on a 1920 monitor (-2*300 - 20 for the panels).
-#define DT_IMAGE_WINDOW_SIZE 1300
 
 /** define for max path/filename length */
-#define DT_MAX_PATH 1024
+#define DT_MAX_FILENAME_LEN 256
+// TODO: separate into path/filename and store 256 for filename
+#define DT_MAX_PATH_LEN 1024
 
 /** return value of image io functions. */
 typedef enum dt_imageio_retval_t
@@ -62,37 +61,14 @@ typedef enum
 }
 dt_image_flags_t;
 
-typedef enum
-{
-  DT_IMAGE_MIP0 = 0,
-  DT_IMAGE_MIP1 = 1,
-  DT_IMAGE_MIP2 = 2,
-  DT_IMAGE_MIP3 = 3,
-  DT_IMAGE_MIP4 = 4,
-  DT_IMAGE_MIPF = 5,
-  DT_IMAGE_FULL = 6,
-  DT_IMAGE_NONE = 7
-}
-dt_image_buffer_t;
-
-typedef struct dt_image_lock_t
-{
-  unsigned write : 1;
-  unsigned users : 7;
-}
-dt_image_lock_t;
-
 typedef struct dt_image_raw_parameters_t
 {
-  unsigned pre_median : 1, wb_cam : 1, greeneq : 1,
-           no_auto_bright : 1, demosaic_method : 2,
-           med_passes : 4, four_color_rgb : 1,
-           highlight : 4,
-           fill0 : 9; // 24 bits
-  int8_t user_flip; // +8 = 32 bits.
+  unsigned legacy    : 24;
+  unsigned user_flip : 8; // +8 = 32 bits.
 }
 dt_image_raw_parameters_t;
 
+// TODO: add color labels and such as cachable
 // __attribute__ ((aligned (128)))
 typedef struct dt_image_t
 {
@@ -109,35 +85,17 @@ typedef struct dt_image_t
   char exif_model[32];
   char exif_lens[52];
   char exif_datetime_taken[20];
-  char filename[DT_MAX_PATH];
+  char filename[DT_MAX_FILENAME_LEN];
 
   // common stuff
-  int32_t width, height, output_width, output_height;
+  int32_t width, height;
   // used by library
   int32_t num, flags, film_id, id, group_id;
-  // cache
-  int32_t cacheline; // for image_cache
-  uint8_t *mip[DT_IMAGE_MIPF]; // for mipmap_cache
-  float *mipf;
-  int32_t mip_width [DT_IMAGE_FULL]; // mipmap buffer extents of the buffers in mip[.] and mipf
-  int32_t mip_height[DT_IMAGE_FULL];
-  float mip_width_f [DT_IMAGE_FULL]; // precise mipmap widths inside the buffers in mip[.] and mipf
-  uint8_t mip_invalid; // bit map to invalidate buffers.
-  float mip_height_f[DT_IMAGE_FULL];
-  dt_image_lock_t lock[DT_IMAGE_NONE];
-  char lock_last[DT_IMAGE_NONE][100];
-  int32_t import_lock;
-  int32_t force_reimport;
-  int32_t dirty;
 
-  // raw image parameters
-  float black, maximum;
-  float raw_denoise_threshold, raw_auto_bright_threshold;
-  dt_image_raw_parameters_t raw_params;
   uint32_t filters;  // demosaic pattern
-  float *pixels;
-  int32_t mip_buf_size[DT_IMAGE_NONE];
   int32_t bpp;       // bytes per pixel
+ 
+  dt_image_raw_parameters_t legacy_flip; // unfortunately needed to convert old bits to new flip module.
 }
 dt_image_t;
 
@@ -146,35 +104,35 @@ dt_image_t;
 void dt_image_init(dt_image_t *img);
 /** returns non-zero if the image contains low-dynamic range data. */
 int dt_image_is_ldr(const dt_image_t *img);
+/** returns non-zero if the image contains mosaic data. */
+int dt_image_is_raw(const dt_image_t *img);
+/** returns non-zero if the image contains float data. */
+int dt_image_is_hdr(const dt_image_t *img);
 /** returns the full path name where the image was imported from. */
 void dt_image_full_path(const int imgid, char *pathname, int len);
 /** returns the portion of the path used for the film roll name. */
 const char *dt_image_film_roll_name(const char *path);
 /** returns the film roll name, i.e. without the path. */
-void dt_image_film_roll(dt_image_t *img, char *pathname, int len);
+void dt_image_film_roll(const dt_image_t *img, char *pathname, int len);
 /** appends version numbering for duplicated images. */
 void dt_image_path_append_version(int imgid, char *pathname, const int len);
 /** prints a one-line exif information string. */
-void dt_image_print_exif(dt_image_t *img, char *line, int len);
-/** opens an image with minimal storage from the data base and stores it in image cache. */
-int dt_image_open(const int32_t id);
-int dt_image_open2(dt_image_t *img, const int32_t id);
+void dt_image_print_exif(const dt_image_t *img, char *line, int len);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. */
-int dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
-/** image is in db, mipmaps aren't? call this: */
-int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t mip);
+uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
 /** removes the given image from the database. */
 void dt_image_remove(const int32_t imgid);
 /** duplicates the given image in the database. */
 int32_t dt_image_duplicate(const int32_t imgid);
 /** flips the image, clock wise, if given flag. */
 void dt_image_flip(const int32_t imgid, const int32_t cw);
+void dt_image_set_flip(const int32_t imgid, const int32_t user_flip);
 /** returns 1 if there is history data found for this image, 0 else. */
-int dt_image_altered(const dt_image_t *img);
+int dt_image_altered(const uint32_t imgid);
 /** returns the orientation bits of the image, exif or user override, if set. */
 static inline int dt_image_orientation(const dt_image_t *img)
 {
-  return img->raw_params.user_flip > 0 ? img->raw_params.user_flip : (img->orientation > 0 ?img->orientation : 0);
+  return img->orientation > 0 ? img->orientation : 0;
 }
 /** returns the (flipped) filter string for the demosaic pattern. */
 static inline uint32_t
@@ -334,89 +292,13 @@ dt_image_orientation_to_flip_bits(const int orient)
       return 0;
   }
 }
-/** cleanup. */
-void dt_image_cleanup(dt_image_t *img);
-/** loads the requested buffer to cache, with read lock set. */
-int dt_image_load(dt_image_t *img, dt_image_buffer_t mip);
-/** returns appropriate mip map size for given area to paint on (width, height). */
-dt_image_buffer_t dt_image_get_matching_mip_size(const dt_image_t *img, const int32_t width, const int32_t height, int32_t *w, int32_t *h);
-/** returns appropriate mip map size for given mip level. */
-void dt_image_get_mip_size(const dt_image_t *img, dt_image_buffer_t mip, int32_t *w, int32_t *h);
-/** returns real image extends within mip map buffer size, in floating point. */
-void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, float *w, float *h);
-/** writes mip4 through to all smaller levels. */
-dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img);
-/** this writes an xmp file for this image. */
+
+// xmp functions:
 void dt_image_write_sidecar_file(int imgid);
-/** this writes xmp files for this image or all selected if selected == -1. Convenience wrapper around dt_image_write_sidecar_file(). */
 void dt_image_synch_xmp(const int selected);
-/** synchonizes .xmp sidecars file when duplicates to the actual number of duplicates present in database */
 void dt_image_synch_all_xmp(const gchar *pathname);
 
-// memory management interface
-typedef struct dt_mipmap_cache_t
-{
-  dt_pthread_mutex_t mutex;
-  int32_t num_entries[DT_IMAGE_NONE];
-  dt_image_t **mip_lru[DT_IMAGE_NONE];
-  size_t total_size[DT_IMAGE_NONE];
-}
-dt_mipmap_cache_t;
-
-void dt_mipmap_cache_init(dt_mipmap_cache_t *cache, int32_t entries);
-void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache);
-/** print some cache statistics. */
-void dt_mipmap_cache_print(dt_mipmap_cache_t *cache);
-
-/** if in debug mode, asserts image buffer size for mip is alloc'ed this large. */
-void dt_image_check_buffer(dt_image_t *image, dt_image_buffer_t mip, int32_t size);
-/** destroy buffer. */
-void dt_image_free(dt_image_t *img, dt_image_buffer_t mip);
-
-// locking-related functions:
-void dt_image_invalidate(dt_image_t *image, dt_image_buffer_t mip);
-void dt_image_validate(dt_image_t *image, dt_image_buffer_t mip);
-
-#ifdef _DEBUG
-// macros wrapping the stack trace information:
-#define dt_image_get(A, B, C)    dt_image_get_with_caller  (A, B, C,  __FILE__, __LINE__, __FUNCTION__)
-#define dt_image_alloc(img, mip) dt_image_alloc_with_caller(img, mip, __FILE__, __LINE__, __FUNCTION__)
-#define dt_image_get_blocking(img, mip, mode)  dt_image_get_blocking_with_caller(img, mip, mode, __FILE__, __LINE__, __FUNCTION__)
-#define dt_image_lock_if_available(img, mip_in, mode) dt_image_lock_if_available_with_caller(img, mip_in, mode, __FILE__, __LINE__, __FUNCTION__)
-#define dt_image_prefetch(img, mip) dt_image_prefetch_with_caller(img, mip, __FILE__, __LINE__, __FUNCTION__)
-
-// same as the non-debug versions, but with stack trace information:
-dt_image_buffer_t dt_image_get_with_caller(dt_image_t *img, const dt_image_buffer_t mip, const char mode,
-    const char *file, const int line, const char *function);
-int dt_image_alloc_with_caller(dt_image_t *img, dt_image_buffer_t mip,
-                               const char *file, const int line, const char *function);
-dt_image_buffer_t dt_image_get_blocking_with_caller(dt_image_t *img, const dt_image_buffer_t mip, const char mode,
-    const char *file, const int line, const char *function);
-int dt_image_lock_if_available_with_caller(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode,
-    const char *file, const int line, const char *function);
-void dt_image_prefetch_with_caller(dt_image_t *img, dt_image_buffer_t mip,
-                                   const char *file, const int line, const char *function);
-#else
-
-/** gets the requested image buffer or a smaller preview if it is not available (w lock || =NULL), marking this with the read lock. returns found mip level. */
-dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip, const char mode);
-/** alloc new buffer for this mip map and image. also lock for writing. */
-int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip);
-/** returns the requested image buffer. loads while blocking, if necessary. */
-dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t mip, const char mode);
-/** locks the given mode if the buffer is available. returns non-zero and does nothing else on failure (no async loading is scheduled). */
-int dt_image_lock_if_available(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode);
-/** prefetches given image buffer (mip map level/float preview/full raw), without marking it as used. */
-void dt_image_prefetch(dt_image_t *img, dt_image_buffer_t mip);
-
 #endif
-/** unflags the used flag of given mip map level. these remove r and w locks, respectively. dropping the w lock will leave the r lock in place. */
-void dt_image_release(dt_image_t *img, dt_image_buffer_t mip, const char mode);
-
-/** converts img->pixels to img->mipf to img->mip[4--0]. needs full image buffer r locked. */
-dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw);
-/** up-converts mip4 to mipf using guessed gamma values. needs mip4 r locked. */
-dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img);
-#endif
-
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

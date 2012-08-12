@@ -1,102 +1,99 @@
 #
-# spec file for package darktable (Version 0.8)
+# spec file for package darktable
 #
-# Copyright (c) 2011 Ulrich Pegelow
-# This file and all modifications and additions to the pristine
-# package are under the same license as the package itself.
+# Copyright (c) 2012 SUSE LINUX Products GmbH, Nuernberg, Germany.
+#
+# All modifications and additions to the file contributed by third parties
+# remain the property of their copyright owners, unless otherwise agreed
+# upon. The license for this file, and modifications and additions to the
+# file, is the same license as for the pristine package itself (unless the
+# license for the pristine package is not an Open Source License, in which
+# case the license is the MIT License). An "Open Source License" is a
+# license that conforms to the Open Source Definition (Version 1.9)
+# published by the Open Source Initiative.
+
+# Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
-# norootforbuild
 
-Name:		darktable
-Version:	0.8
-Release:	1.1
-License:	GPLv3+
-Summary:	Raw Photo Viewer and Organiser
-URL:		http://darktable.sourceforge.net/
-Group:		Productivity/Graphics/Viewers
-Source0:	%{name}-%{version}.tar.gz
-BuildRequires:	gcc-c++ libglade2-devel libtiff-devel cairo-devel libexiv2-devel
-BuildRequires:	gconf2-devel >= 2.26 sqlite3-devel lensfun-devel liblcms-devel
-BuildRequires:	intltool update-desktop-files fdupes
-BuildRoot:	%{_tmppath}/%{name}-%{version}-build
-%gconf_schemas_prereq
+Name:           darktable
+Version:        1.0.3
+Release:        0
+Url:            http://darktable.sourceforge.net
+Source0:        %{name}-%{version}.tar.gz
+BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+BuildRequires:  Mesa-devel
+BuildRequires:  OpenEXR-devel
+BuildRequires:  cmake
+BuildRequires:  dbus-1-glib-devel
+BuildRequires:  fdupes
+BuildRequires:  gcc-c++
+BuildRequires:  gnome-keyring-devel
+BuildRequires:  gtk2-devel
+BuildRequires:  intltool
+BuildRequires:  lensfun-devel
+BuildRequires:  libcurl-devel
+BuildRequires:  libexiv2-devel
+BuildRequires:  libflickcurl-devel
+BuildRequires:  libglade2-devel
+BuildRequires:  libgphoto2-devel
+BuildRequires:  libjpeg-devel
+BuildRequires:  liblcms2-devel
+BuildRequires:  librsvg-devel
+BuildRequires:  libtiff-devel
+BuildRequires:  pkg-config
+BuildRequires:  sqlite3-devel
+BuildRequires:  update-desktop-files
+
+Summary:        A virtual Lighttable and Darkroom
+License:        GPL-3.0+
+Group:          Productivity/Graphics/Viewers
 
 %description
-darktable is a virtual lighttable and darkroom for photographers: it manages
-your digital negatives in a database and lets you view them through a zoomable
+darktable is a virtual lighttable and darkroom for photographers: it manages 
+your digital negatives in a database and lets you view them through a zoomable 
 lighttable. it also enables you to develop raw images and enhance them.
 
-Authors:
---------
-    Alexander Rabtchevich
-    Alexandre Prokoudine
-    Christian Himpel
-    Gregor Quade
-    Henrik Andersson
-    Johannes Hanika
-    Pascal de Bruijn
-    Richard Hughes
-    Sébastien Delcoigne
-    Thomas Costis
-
-
-%define prefix   /usr
 
 %prep
-
 %setup -q
 
 %build
-
-export CXXFLAGS="$RPM_OPT_FLAGS"  
-export CFLAGS="$CXXFLAGS" 
-
-mkdir -p build
+[ ! -d "build" ] && mkdir  build
 cd build
 
-cmake -DCMAKE_INSTALL_PREFIX=%prefix -DCMAKE_BUILD_TYPE=Release -DDONT_INSTALL_GCONF_SCHEMAS=ON \
-	-DINSTALL_IOP_EXPERIMENTAL=OFF -DINSTALL_IOP_LEGACY=ON ..
+export CXXFLAGS="%{optflags} -fno-strict-aliasing "  
+export CFLAGS="$CXXFLAGS"
 
-make %{?jobs:-j %jobs} 
+cmake \
+        -DCMAKE_INSTALL_PREFIX=%{_prefix} -DLIB_INSTALL=%{_lib} \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBINARY_PACKAGE_BUILD=1 \
+        -DINSTALL_IOP_EXPERIMENTAL=Off -DINSTALL_IOP_LEGACY=Off .. 
+%__make %{_smp_mflags} VERBOSE=1
 
 %install
-
 cd build
-make install DESTDIR="$RPM_BUILD_ROOT"
+%make_install
+cd ..
+%suse_update_desktop_file darktable
+find %{buildroot}%{_libdir} -name "*.la" -delete
+%find_lang darktable
 
-mkdir -p %{buildroot}/usr/share/doc/packages
-%{__mv} %{buildroot}%{_datadir}/doc/%{name} %{buildroot}/usr/share/doc/packages
-%find_gconf_schemas
-%find_lang %{name}
-%suse_update_desktop_file -i %{name}
-%fdupes -s %{buildroot}%{_datadir}
+%__mkdir_p %{buildroot}%{_defaultdocdir}
+%__mv %{buildroot}%{_datadir}/doc/darktable %{buildroot}%{_defaultdocdir}
 
+%fdupes %{buildroot}
 
-
-%clean
-[ "%{buildroot}" != "/" ] && %{__rm} -rf %{buildroot}
-
-%pre -f build/%{name}.schemas_pre
-
-%preun -f build/%{name}.schemas_preun
-
-%posttrans -f build/%{name}.schemas_posttrans
-
-%post -p /sbin/ldconfig
-
-%postun -p /sbin/ldconfig
-
-%files -f build/%{name}.lang -f build/%{name}.schemas_list
+%files -f darktable.lang
 %defattr(-,root,root)
-%doc %{_defaultdocdir}/%{name}
-%{_bindir}/*
-%{_datadir}/%{name}
-%{_libdir}/%{name}
-%{_mandir}/man1/*
-%{_datadir}/applications/%{name}.desktop
-/usr/share/icons/*/*/apps/darktable.*
+%doc doc/AUTHORS doc/TODO doc/LICENSE
+%{_bindir}/darktable
+%{_bindir}/darktable-cltest
+%{_libdir}/darktable
+%{_datadir}/applications/darktable.desktop
+%{_datadir}/darktable
+%{_datadir}/icons/hicolor/*/apps/darktable.*
+%{_mandir}/man1/darktable.1.*
 
 %changelog
-* Sat May 14 2011 - ulrich.pegelow@tongareva.de
-- Initial release

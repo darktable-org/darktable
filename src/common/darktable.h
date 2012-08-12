@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2009--2012 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,11 +18,15 @@
 #ifndef DARKTABLE_H
 #define DARKTABLE_H
 
-#ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE 700 // for localtime_r and dprintf
+// just to be sure. the build system should set this for us already:
+#if defined __DragonFly__ || defined __FreeBSD__ || \
+    defined __NetBSD__ || defined __OpenBSD__
+  #define _WITH_DPRINTF
+#elif !defined _XOPEN_SOURCE
+  #define _XOPEN_SOURCE 700 // for localtime_r and dprintf
 #endif
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 #include "common/dtpthread.h"
 #include "common/database.h"
@@ -30,11 +34,28 @@
 #include <time.h>
 #include <sys/resource.h>
 #include <sys/time.h>
+#include <stdio.h>
 #include <inttypes.h>
 #include <sqlite3.h>
 #include <glib/gi18n.h>
 #include <glib.h>
 #include <math.h>
+#include <sys/types.h>
+#include <unistd.h>
+#ifdef __APPLE__
+#include <mach/mach.h>
+#include <sys/sysctl.h>
+#endif
+#if defined(__DragonFly__) || defined(__FreeBSD__)
+typedef	unsigned int	u_int;
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#endif
+#if defined(__NetBSD__) || defined(__OpenBSD__)
+#include <sys/param.h>
+#include <sys/sysctl.h>
+#endif
+
 #ifdef _OPENMP
 #include <omp.h>
 #else
@@ -42,9 +63,9 @@
 #define omp_get_thread_num() 0
 #endif
 
-#define DT_MODULE_VERSION 4   // version of dt's module interface
+#define DT_MODULE_VERSION 6   // version of dt's module interface
 #define DT_VERSION 36         // version of dt's database tables
-#define DT_CONFIG_VERSION 34  // dt gconf var version
+#define DT_CONFIG_VERSION 34  // dt conf var version
 
 // every module has to define this:
 #ifdef _DEBUG
@@ -83,6 +104,16 @@ static inline int dt_version()
 #define M_PI 3.14159265358979323846
 #endif
 
+// Golden number (1+sqrt(5))/2
+#ifndef PHI
+#define PHI 1.61803398874989479F
+#endif
+
+// 1/PHI
+#ifndef INVPHI
+#define INVPHI 0.61803398874989479F
+#endif
+
 // NaN-safe clamping (NaN compares false, and will thus result in H)
 #define CLAMPS(A, L, H) ((A) > (L) ? ((A) < (H) ? (A) : (H)) : (L))
 
@@ -95,6 +126,7 @@ struct dt_lib_t;
 struct dt_conf_t;
 struct dt_points_t;
 struct dt_imageio_t;
+struct dt_bauhaus_t;
 
 typedef enum dt_debug_thread_t
 {
@@ -108,6 +140,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_PWSTORAGE = 64,
   DT_DEBUG_OPENCL = 128,
   DT_DEBUG_SQL = 256,
+  DT_DEBUG_MEMORY = 512,
 }
 dt_debug_thread_t;
 
@@ -120,7 +153,7 @@ typedef struct darktable_t
   uint32_t cpu_flags;
   int32_t num_openmp_threads;
 	
-  int32_t thumbnail_size;
+  int32_t thumbnail_width, thumbnail_height;
   int32_t unmuted;
   GList                          *iop;
   GList                          *collection_listeners;
@@ -133,11 +166,13 @@ typedef struct darktable_t
   struct dt_gui_gtk_t            *gui;
   struct dt_mipmap_cache_t       *mipmap_cache;
   struct dt_image_cache_t        *image_cache;
+  struct dt_bauhaus_t            *bauhaus;
   const struct dt_database_t     *db;
   const struct dt_fswatch_t	     *fswatch;
   const struct dt_pwstorage_t    *pwstorage;
   const struct dt_camctl_t       *camctl;
   const struct dt_collection_t   *collection;
+  struct dt_selection_t          *selection;
   struct dt_points_t             *points;
   struct dt_imageio_t            *imageio;
   struct dt_opencl_t             *opencl;
@@ -145,6 +180,11 @@ typedef struct darktable_t
   dt_pthread_mutex_t db_insert;
   dt_pthread_mutex_t plugin_threadsafe;
   char *progname;
+  char *datadir;
+  char *plugindir;
+  char *tmpdir;
+  char *configdir;
+  char *cachedir;
 }
 darktable_t;
 
@@ -230,4 +270,108 @@ static inline float dt_fast_expf(const float x)
   return f;
 }
 
+static inline void dt_print_mem_usage()
+{
+#if defined(__linux__)
+  char *line = NULL;
+  size_t len = 128;
+  char vmsize[64];
+  char vmpeak[64];
+  char vmrss[64];
+  char vmhwm[64];
+  FILE *f;
+
+  char pidstatus[128];
+  snprintf(pidstatus, 128, "/proc/%u/status", (uint32_t)getpid());
+
+  f = fopen(pidstatus, "r");
+  if (!f) return;
+
+  /* read memory size data from /proc/pid/status */
+  while (getline(&line, &len, f) != -1)
+  {
+    if (!strncmp(line, "VmPeak:", 7))
+      strncpy(vmpeak, line + 8, 64);
+    else if (!strncmp(line, "VmSize:", 7))
+      strncpy(vmsize, line + 8, 64);
+    else if (!strncmp(line, "VmRSS:", 6))
+      strncpy(vmrss, line + 8, 64);
+    else if (!strncmp(line, "VmHWM:", 6))
+      strncpy(vmhwm, line + 8, 64);
+  }
+  free(line);
+  fclose(f);
+
+  fprintf(stderr, "[memory] max address space (vmpeak): %15s"
+                  "[memory] cur address space (vmsize): %15s"
+                  "[memory] max used memory   (vmhwm ): %15s"
+                  "[memory] cur used memory   (vmrss ): %15s",
+                  vmpeak, vmsize, vmhwm, vmrss);
+
+#elif defined(__APPLE__)
+  struct task_basic_info t_info;
+  mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
+
+  if (KERN_SUCCESS != task_info(mach_task_self(),
+                                TASK_BASIC_INFO, (task_info_t)&t_info,
+                                &t_info_count))
+  {
+    fprintf(stderr, "[memory] task memory info unknown.\n");
+    return;
+  }
+
+  // Report in kB, to match output of /proc on Linux.
+  fprintf(stderr, "[memory] max address space (vmpeak): %15s\n"
+                  "[memory] cur address space (vmsize): %12llu kB\n"
+                  "[memory] max used memory   (vmhwm ): %15s\n"
+                  "[memory] cur used memory   (vmrss ): %12llu kB\n",
+                  "unknown", (uint64_t)t_info.virtual_size / 1024,
+                  "unknown", (uint64_t)t_info.resident_size / 1024);
+#else
+  fprintf(stderr, "dt_print_mem_usage() currently unsupported on this platform\n");
 #endif
+}
+
+static inline size_t
+dt_get_total_memory()
+{
+#if defined(__linux__) 
+  FILE *f = fopen("/proc/meminfo", "rb");
+  if(!f) return 0;
+  size_t mem = 0;
+  char *line = NULL;
+  size_t len = 0;
+  if(getline(&line, &len, f) != -1)
+    mem = atol(line + 10);
+  fclose(f);
+  if(len > 0)
+    free(line);
+  return mem;
+#elif defined(__APPLE__) || \
+ defined(__DragonFly__) || \
+ defined(__FreeBSD__) || \
+ defined(__NetBSD__) || \
+ defined(__OpenBSD__)
+#if defined(__APPLE__)
+  int mib[2] = { CTL_HW, HW_MEMSIZE };
+#else
+  int mib[2] = { CTL_HW, HW_PHYSMEM };
+#endif
+  uint64_t physical_memory;
+  size_t length = sizeof(uint64_t);
+  sysctl(mib, 2, (void *)&physical_memory, &length, (void *)NULL, 0);
+  return physical_memory / 1024;
+#else 
+  // assume 2GB until we have a better solution.
+  fprintf(stderr, "Unknown memory size. Assuming 2GB\n");
+  return 2097152;
+#endif
+}
+
+void dt_configure_defaults();
+
+#endif
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

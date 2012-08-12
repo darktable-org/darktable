@@ -1,7 +1,7 @@
 set(CPACK_PACKAGE_NAME "${CMAKE_PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The digital darkroom")
-set(CPACK_PACKAGE_CONTACT "http://darktable.sourceforge.net/")
+set(CPACK_PACKAGE_CONTACT "http://www.darktable.org/")
 set(CPACK_SOURCE_IGNORE_FILES
    "/.gitignore"
    "${CMAKE_BINARY_DIR}/"
@@ -80,24 +80,24 @@ if(UNIX)
 
 		# Ubuntu
 		if("${LSB_DISTRIB}" MATCHES "Ubuntu9.10")
-			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-5, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data, libgconf2-4")
+			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-5, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data")
 		endif("${LSB_DISTRIB}" MATCHES "Ubuntu9.10")
 
 		if("${LSB_DISTRIB}" MATCHES "Ubuntu10.04")
-			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-5, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data, libgconf2-4")
+			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-5, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data")
 		endif("${LSB_DISTRIB}" MATCHES "Ubuntu10.04")
 
 		if("${LSB_DISTRIB}" MATCHES "Ubuntu10.10")
-			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-6, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data, libgconf2-4")
+			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-6, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data")
 		endif("${LSB_DISTRIB}" MATCHES "Ubuntu10.10")
 
 		# Debian
 		if("${LSB_DISTRIB}" MATCHES "Debian5.*")
-			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-5, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data, libgconf2-4")
+			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-5, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data")
 		endif("${LSB_DISTRIB}" MATCHES "Debian5.*")
 
 		if("${LSB_DISTRIB}" MATCHES "Debiantesting")
-                	set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-5, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data, libgconf2-4")
+                	set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-5, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data")
 		endif("${LSB_DISTRIB}" MATCHES "Debiantesting")
 
 		if(NOT CPACK_DEBIAN_PACKAGE_DEPENDS)

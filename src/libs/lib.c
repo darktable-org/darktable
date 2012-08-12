@@ -32,6 +32,7 @@ typedef struct dt_lib_module_info_t
   int32_t version;
   char params[8192];
   int params_size;
+  dt_lib_module_t* module;
 }
 dt_lib_module_info_t;
 
@@ -42,6 +43,9 @@ typedef struct dt_lib_presets_edit_dialog_t
   int32_t version;
   void *params;
   int32_t params_size;
+  gchar *original_name;
+  dt_lib_module_t* module;
+  gint old_id;
 }
 dt_lib_presets_edit_dialog_t;
 
@@ -92,20 +96,73 @@ get_active_preset_name(dt_lib_module_info_t *minfo)
 static void
 edit_preset_response(GtkDialog *dialog, gint response_id, dt_lib_presets_edit_dialog_t *g)
 {
-  // commit all the user input fields
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into presets (name, description, operation, op_version, op_params, blendop_params, enabled, model, maker, lens, "
-             "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, writeprotect, "
-             "autoapply, filter, def, isldr) values (?1, ?2, ?3, ?4, ?5, null, 1, '%', '%', '%', 0, 51200, 0, 100000000, 0, 100000000, 0, 1000, 0, 0, 0, 0, 0)", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, gtk_entry_get_text(g->name), strlen(gtk_entry_get_text(g->name)), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, gtk_entry_get_text(g->description), strlen(gtk_entry_get_text(g->description)), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, g->plugin_name, strlen(g->plugin_name), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, g->version);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, g->params, g->params_size, SQLITE_TRANSIENT);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  gint dlg_ret;
+  gint is_new = 0;
 
+  if(response_id == GTK_RESPONSE_ACCEPT)  {
+    sqlite3_stmt *stmt;
+    if ( ((g->old_id >= 0) && (strcmp(g->original_name, gtk_entry_get_text(g->name)) != 0)) || (g->old_id < 0) ) {
+     
+      // editing existing preset with different name or store new preset -> check for a preset with the same name:
+  
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name from presets where name = ?1 and operation=?2 and op_version=?3", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, gtk_entry_get_text(g->name), strlen(gtk_entry_get_text(g->name)), SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, g->plugin_name, strlen(g->plugin_name), SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, g->version);
+  
+      if(sqlite3_step(stmt) == SQLITE_ROW) {
+        sqlite3_finalize(stmt);
+
+        GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+        GtkWidget *dlg_overwrite = gtk_message_dialog_new (GTK_WINDOW(window),
+                                 GTK_DIALOG_DESTROY_WITH_PARENT,
+                                 GTK_MESSAGE_WARNING,
+                                 GTK_BUTTONS_YES_NO,
+                                 _("preset `%s' already exists.\ndo you want to overwrite?"), 
+                                 gtk_entry_get_text(g->name)
+                                 );
+        gtk_window_set_title(GTK_WINDOW (dlg_overwrite), _("overwrite preset?"));
+        dlg_ret = gtk_dialog_run (GTK_DIALOG (dlg_overwrite));
+        gtk_widget_destroy (dlg_overwrite);
+
+        // if result is BUTTON_NO exit without destroy dialog, to permit other name
+        if (dlg_ret == GTK_RESPONSE_NO) return;
+      }  
+      else {
+        is_new = 1;
+        sqlite3_finalize(stmt);
+      }
+	
+    }
+    
+    if (is_new == 0) {
+      // delete preset, so we can re-insert the new values:
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, gtk_entry_get_text(g->name), strlen(gtk_entry_get_text(g->name)), SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, g->plugin_name, strlen(g->plugin_name), SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, g->version);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+
+
+    // commit all the user input fields
+    char path[1024];
+    snprintf(path,1024,"preset/%s",g->original_name);
+    dt_accel_rename_preset_lib(g->module,path,gtk_entry_get_text(g->name));
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into presets (name, description, operation, op_version, op_params, blendop_params, blendop_version, enabled, model, maker, lens, "
+               "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, writeprotect, "
+               "autoapply, filter, def, isldr) values (?1, ?2, ?3, ?4, ?5, null, 0, 1, '%', '%', '%', 0, 51200, 0, 100000000, 0, 100000000, 0, 1000, 0, 0, 0, 0, 0)", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, gtk_entry_get_text(g->name), strlen(gtk_entry_get_text(g->name)), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, gtk_entry_get_text(g->description), strlen(gtk_entry_get_text(g->description)), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, g->plugin_name, strlen(g->plugin_name), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, g->version);
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, g->params, g->params_size, SQLITE_TRANSIENT);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
   gtk_widget_destroy(GTK_WIDGET(dialog));
+  g_free(g->original_name);
   free(g);
 }
 
@@ -128,8 +185,8 @@ edit_preset (const char *name_in, dt_lib_module_info_t *minfo)
   dialog = gtk_dialog_new_with_buttons (title,
                                         GTK_WINDOW(window),
                                         GTK_DIALOG_DESTROY_WITH_PARENT,
-                                        GTK_STOCK_OK,
-                                        GTK_RESPONSE_NONE,
+                                        GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
                                         NULL);
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area (GTK_DIALOG (dialog)));
   GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);
@@ -139,11 +196,14 @@ edit_preset (const char *name_in, dt_lib_module_info_t *minfo)
   gtk_container_add (GTK_CONTAINER(alignment), GTK_WIDGET(box));
 
   dt_lib_presets_edit_dialog_t *g = (dt_lib_presets_edit_dialog_t *)g_malloc0(sizeof(dt_lib_presets_edit_dialog_t));
+  g->old_id = -1;
   g_strlcpy(g->plugin_name, minfo->plugin_name, 128);
   g->version = minfo->version;
   g->params_size = minfo->params_size;
   g->params = minfo->params;
   g->name = GTK_ENTRY(gtk_entry_new());
+  g->module = minfo->module;
+  g->original_name = name;
   gtk_entry_set_text(g->name, name);
   gtk_box_pack_start(box, GTK_WIDGET(g->name), FALSE, FALSE, 0);
   g_object_set(G_OBJECT(g->name), "tooltip-text", _("name of the preset"), (char *)NULL);
@@ -153,13 +213,14 @@ edit_preset (const char *name_in, dt_lib_module_info_t *minfo)
   g_object_set(G_OBJECT(g->description), "tooltip-text", _("description or further information"), (char *)NULL);
 
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select description from presets where name = ?1 and operation = ?2 and op_version = ?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select rowid, description from presets where name = ?1 and operation = ?2 and op_version = ?3", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, minfo->plugin_name, strlen(minfo->plugin_name), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo->version);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    gtk_entry_set_text(g->description, (const char *)sqlite3_column_text(stmt, 0));
+    g->old_id = sqlite3_column_int(stmt, 0);
+    gtk_entry_set_text(g->description, (const char *)sqlite3_column_text(stmt, 1));
   }
   sqlite3_finalize(stmt);
 
@@ -173,7 +234,6 @@ edit_preset (const char *name_in, dt_lib_module_info_t *minfo)
 
   g_signal_connect (dialog, "response", G_CALLBACK (edit_preset_response), g);
   gtk_widget_show_all (dialog);
-  g_free(name);
 }
 
 static void
@@ -187,15 +247,20 @@ menuitem_new_preset (GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo->version);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into presets (name, description, operation, op_version, op_params, blendop_params, enabled, model, maker, lens, "
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into presets (name, description, operation, op_version, op_params, blendop_params, blendop_version, enabled, model, maker, lens, "
              "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, writeprotect, "
-             "autoapply, filter, def, isldr) values (?1, '', ?2, ?3, ?4, null, 1, '%', '%', '%', 0, 51200, 0, 100000000, 0, 100000000, 0, 1000, 0, 0, 0, 0, 0)", -1, &stmt, NULL);
+             "autoapply, filter, def, isldr) values (?1, '', ?2, ?3, ?4, null, 0, 1, '%', '%', '%', 0, 51200, 0, 100000000, 0, 100000000, 0, 1000, 0, 0, 0, 0, 0)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, _("new preset"), strlen(_("new preset")), SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, minfo->plugin_name, strlen(minfo->plugin_name), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo->version);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, minfo->params, minfo->params_size, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+  // create a shortcut for the new entry
+    char path[1024];
+    snprintf(path,1024,"%s/%s",_("preset"), _("new preset"));
+  dt_accel_register_lib(minfo->module,path,0,0);
+  dt_accel_connect_preset_lib(minfo->module,_("new preset"));
   // then show edit dialog
   edit_preset (_("new preset"), minfo);
 }
@@ -212,13 +277,27 @@ menuitem_delete_preset (GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
   sqlite3_stmt *stmt;
   gchar *name = get_active_preset_name(minfo);
   if(name == NULL) return;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3 and writeprotect=0", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, minfo->plugin_name, strlen(minfo->plugin_name), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo->version);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+  GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+                                            GTK_DIALOG_DESTROY_WITH_PARENT,
+                                            GTK_MESSAGE_QUESTION,
+                                            GTK_BUTTONS_YES_NO,
+                                            _("do you really want to delete the preset `%s'?"), name);
+  gtk_window_set_title(GTK_WINDOW (dialog), _("delete preset?"));
+  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
+  {
+    char tmp_path[1024];
+    snprintf(tmp_path,1024,"%s/%s",_("preset"), name);
+    dt_accel_deregister_lib(minfo->module,tmp_path);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3 and writeprotect=0", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, minfo->plugin_name, strlen(minfo->plugin_name), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo->version);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
   g_free(name);
+  gtk_widget_destroy (dialog);
 }
 
 static void
@@ -404,7 +483,7 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
   if (module->gui_reset)
   {
     dt_accel_register_lib(module,
-                          NC_("accel", "reset plugin parameters"), 0, 0);
+                          NC_("accel", "reset module parameters"), 0, 0);
   }
   if(module->get_params)
   {
@@ -424,13 +503,16 @@ init_presets(dt_lib_module_t *module)
 {
   if(module->init_presets)
   {
-    // only if method exists and no writeprotected (static) preset has been inserted yet.
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from presets where operation=?1 and op_version=?2 and writeprotect=1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->name(), -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-    if(sqlite3_step(stmt) != SQLITE_ROW) module->init_presets(module);
-    sqlite3_finalize(stmt);
+	  // only if method exists and no writeprotected (static) preset has been inserted yet.
+	  sqlite3_stmt *stmt;
+	  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name from presets where operation=?1 and op_version=?2 and writeprotect=1", -1, &stmt, NULL);
+	  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->name(), -1, SQLITE_TRANSIENT);
+	  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
+	  if(sqlite3_step(stmt) != SQLITE_ROW) {
+		  module->init_presets(module);
+	  }
+	  sqlite3_finalize(stmt);
+
   }
 }
 
@@ -442,7 +524,7 @@ dt_lib_load_modules ()
   dt_lib_module_t *module;
   char plugindir[1024], plugin_name[256];
   const gchar *d_name;
-  dt_util_get_plugindir(plugindir, 1024);
+  dt_loc_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/plugins/lighttable", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
@@ -498,11 +580,18 @@ static void
 _preset_popup_posistion(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointer data)
 {
   gint w,h;
+  gint ww,wh;
   GtkRequisition requisition;
   gdk_window_get_size(GTK_WIDGET(data)->window,&w,&h);
+  gdk_window_get_size(dt_ui_main_window(darktable.gui->ui)->window,&ww,&wh);
   gdk_window_get_origin (GTK_WIDGET(data)->window, x, y);
+  
   gtk_widget_size_request (GTK_WIDGET (menu), &requisition);
-  (*x)+=w-requisition.width;
+
+  /* align left panel popupmenu to right edge */
+  if (*x < ww/2) 
+    (*x)+=w-requisition.width;
+
   (*y)+=GTK_WIDGET(data)->allocation.height;
 }
 
@@ -513,6 +602,7 @@ popup_callback(GtkButton *button, dt_lib_module_t *module)
   int32_t size = 0;
   g_strlcpy(mi.plugin_name, module->plugin_name, 128);
   mi.version = module->version();
+  mi.module = module;
   void *params = module->get_params(module, &size);
   if(params)
   {
@@ -538,11 +628,10 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   gint flags = CPF_DIRECTION_DOWN;
   int c = module->container();
   
-  if ( (c & DT_UI_CONTAINER_PANEL_LEFT_TOP || 
-		     c & DT_UI_CONTAINER_PANEL_LEFT_CENTER ||
-		     c & DT_UI_CONTAINER_PANEL_LEFT_BOTTOM) )
+  if ( (c == DT_UI_CONTAINER_PANEL_LEFT_TOP) || 
+		   (c == DT_UI_CONTAINER_PANEL_LEFT_CENTER) ||
+		   (c == DT_UI_CONTAINER_PANEL_LEFT_BOTTOM) )
   {
-
     icon = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(header)),0);
     if(!expanded)
       flags=CPF_DIRECTION_RIGHT;
@@ -594,8 +683,30 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
     /* bail out if module is static */
     if(!module->expandable()) return FALSE;
 
-    /* toggle view of header */
-    dt_lib_gui_set_expanded(module, !gtk_widget_get_visible(module->widget));
+    /* handle shiftclick on expander, hide all except this */
+    if ((e->state & GDK_SHIFT_MASK))
+    {
+      GList *it = g_list_first(darktable.lib->plugins);
+      uint32_t container = module->container();
+      dt_view_t *v = darktable.view_manager->view + darktable.view_manager->current_view;
+      while (it)
+      {
+        dt_lib_module_t *m = (dt_lib_module_t *)it->data;
+
+        /* if module is the current, always expand it */
+        if (m == module)
+          dt_lib_gui_set_expanded(m, TRUE);
+        else if(container == m->container() && m->expandable() && (m->views() & v->view(v)))
+          dt_lib_gui_set_expanded(m, FALSE);
+
+        it = g_list_next(it);
+      }
+    }
+    else
+    {
+      /* else just toggle */
+      dt_lib_gui_set_expanded(module, !gtk_widget_get_visible(module->widget));
+    }
 
     return TRUE;
   }
@@ -679,28 +790,32 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
     hw[idx] = gtk_fixed_new();
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
 
+  /* add a spacer to align buttons with iop buttons (enabled button) */
+  hw[idx] = gtk_fixed_new();
+  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
+
   /* lets order header elements depending on left/right side panel placement */  
   int c = module->container();
-  if ( c & DT_UI_CONTAINER_PANEL_LEFT_TOP || 
-       c & DT_UI_CONTAINER_PANEL_LEFT_CENTER ||
-       c & DT_UI_CONTAINER_PANEL_LEFT_BOTTOM )
+  if ( (c == DT_UI_CONTAINER_PANEL_LEFT_TOP) || 
+       (c == DT_UI_CONTAINER_PANEL_LEFT_CENTER) ||
+       (c == DT_UI_CONTAINER_PANEL_LEFT_BOTTOM) )
   {
-    for(int i=0;i<=3;i++)
+    for(int i=0;i<=4;i++)
       if (hw[i])
-	gtk_box_pack_start(GTK_BOX(header), hw[i],i==1?TRUE:FALSE,i==1?TRUE:FALSE,2);
+        gtk_box_pack_start(GTK_BOX(header), hw[i],i==1?TRUE:FALSE,i==1?TRUE:FALSE,2);
     gtk_misc_set_alignment(GTK_MISC(hw[1]),0.0,0.5);
     dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_RIGHT);    
   }
   else
   {
-    for(int i=3;i>=0;i--)
-       if (hw[i])
-	 gtk_box_pack_start(GTK_BOX(header), hw[i],i==1?TRUE:FALSE,i==1?TRUE:FALSE,2);
+    for(int i=4;i>=0;i--)
+      if (hw[i])
+        gtk_box_pack_start(GTK_BOX(header), hw[i],i==1?TRUE:FALSE,i==1?TRUE:FALSE,2);
     gtk_misc_set_alignment(GTK_MISC(hw[1]),1.0,0.5);
     dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);    
   }
 
-  /* add module widtget into an alignment */
+  /* add module widget into an alignment */
   GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(al), 8, 8, 8, 8);
   gtk_container_add(GTK_CONTAINER(pluginui), al);
@@ -741,9 +856,9 @@ dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t vers
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into presets (name, description, operation, op_version, op_params, blendop_params, enabled, model, maker, lens, "
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into presets (name, description, operation, op_version, op_params, blendop_params, blendop_version, enabled, model, maker, lens, "
              "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, writeprotect, "
-             "autoapply, filter, def, isldr) values (?1, '', ?2, ?3, ?4, null, 1, '%', '%', '%', 0, 51200, 0, 10000000, 0, 100000000, 0, 1000, 1, 0, 0, 0, 0)", -1, &stmt, NULL);
+             "autoapply, filter, def, isldr) values (?1, '', ?2, ?3, ?4, null, 0, 1, '%', '%', '%', 0, 51200, 0, 10000000, 0, 100000000, 0, 1000, 1, 0, 0, 0, 0)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, plugin_name, strlen(plugin_name), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
@@ -755,7 +870,7 @@ dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t vers
 gboolean dt_lib_is_visible(dt_lib_module_t *module)
 {
   char key[512];
-  g_snprintf(key,512,"plugins/%s/visible", module->plugin_name);
+  g_snprintf(key,512,"plugins/lighttable/%s/visible", module->plugin_name);
   if (dt_conf_key_exists(key))
     return dt_conf_get_bool(key);
 
@@ -766,22 +881,41 @@ gboolean dt_lib_is_visible(dt_lib_module_t *module)
 void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
 {
   char key[512];
-  g_snprintf(key,512,"plugins/%s/visible", module->plugin_name);
+  g_snprintf(key,512,"plugins/lighttable/%s/visible", module->plugin_name);
   dt_conf_set_bool(key, visible);  
   if (module->expander)
     gtk_widget_set_visible(GTK_WIDGET(module->expander), visible);  
   else if (module->widget)
-    gtk_widget_set_visible(GTK_WIDGET(module->widget), visible);
+    {
+      if (visible)
+        gtk_widget_show_all(GTK_WIDGET(module->widget));
+      else
+        gtk_widget_hide(GTK_WIDGET(module->widget));
+    }
 }
 
 void dt_lib_connect_common_accels(dt_lib_module_t *module)
 {
-  if(module->reset_button)
-    dt_accel_connect_button_lib(module, "reset plugin parameters",
-                                module->reset_button);
-  if(module->presets_button)
-    dt_accel_connect_button_lib(module, "show preset menu",
-                                module->presets_button);
+	if(module->reset_button)
+		dt_accel_connect_button_lib(module, "reset module parameters",
+				module->reset_button);
+	if(module->presets_button)
+		dt_accel_connect_button_lib(module, "show preset menu",
+				module->presets_button);
+	if(module->init_presets) {
+		sqlite3_stmt *stmt;
+		DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name from presets where operation=?1 and op_version=?2 order by writeprotect desc, rowid", -1, &stmt, NULL);
+		DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->plugin_name, -1, SQLITE_TRANSIENT);
+		DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
+		while(sqlite3_step(stmt) == SQLITE_ROW)
+		{
+			char path[1024];
+			snprintf(path,1024,"%s/%s", _("preset"), (char *)sqlite3_column_text(stmt, 0));
+			dt_accel_register_lib(module,path,0,0);
+			dt_accel_connect_preset_lib(module,(char *)sqlite3_column_text(stmt, 0));
+		}
+		sqlite3_finalize(stmt);
+	}
 }
 
 gchar *
@@ -807,4 +941,20 @@ dt_lib_get_localized_name(const gchar * plugin_name)
   return (gchar*)g_hash_table_lookup(module_names, plugin_name);
 }
 
+void dt_lib_colorpicker_set_area(dt_lib_t *lib, float size)
+{
+  if (!lib->proxy.colorpicker.module || ! lib->proxy.colorpicker.set_sample_area)
+    return;
+  lib->proxy.colorpicker.set_sample_area(lib->proxy.colorpicker.module, size);
+}
+
+void dt_lib_colorpicker_set_point(dt_lib_t *lib, float x, float y)
+{
+  if (!lib->proxy.colorpicker.module || ! lib->proxy.colorpicker.set_sample_point)
+    return;
+  lib->proxy.colorpicker.set_sample_point(lib->proxy.colorpicker.module, x, y);
+}
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

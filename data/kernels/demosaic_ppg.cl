@@ -125,47 +125,138 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const int width
     med[ii] = tmp;
   }
   float4 color = (float4)(0.0f);
-  // const float cc = (cnt > 1 || variation > 0.06) ? med[(cnt-1)/2]) : med[4] - 64.0f;
-  const float cc = (c1 || cnt > 1 || variation > 0.06) ? med[(cnt-1)/2] : med[4] - 64.0f;
+  // const float cc = (cnt > 1 || variation > 0.06f) ? med[(cnt-1)/2]) : med[4] - 64.0f;
+  const float cc = (c1 || cnt > 1 || variation > 0.06f) ? med[(cnt-1)/2] : med[4] - 64.0f;
   if(f4) ((float *)&color)[c] = cc;
   else   color.x              = cc;
   write_imagef (out, (int2)(x, y), color);
 }
 
-#if 0
+
+// This median filter is inspired by GPL code from socles, an OpenCL image processing library.
+
+#define cas(a, b)				\
+	do {					\
+		float x = a;			\
+		int c = a > b;			\
+		a = c ? b : a;			\
+		b = c ? x : b;			\
+	} while (0)
+
+
+// 3x3 median filter
+// uses a sorting network to sort entirely in registers with no branches
 __kernel void
-color_smoothing(__read_only image2d_t in, __write_only image2d_t out)
+color_smoothing(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, local float4 *buffer)
 {
-  // TODO: load image block into shared memory
-  // TODO: median filter this - 1 px border
-  // TODO: output whole block..?
+  const int lxid = get_local_id(0);
+  const int lyid = get_local_id(1);
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
 
+  const int lxsz = get_local_size(0);
+  const int buffwd = lxsz + 2;
+  const int buffsz = (get_local_size(0) + 2) * (get_local_size(1) + 2);
+  const int gsz = get_local_size(0) * get_local_size(1);
+  const int lidx = lyid * lxsz + lxid;
 
-  float med[9];
-  // TODO: put to constant memory:
-  const uint8_t opt[] = /* Optimal 9-element median search */
-  { 1,2, 4,5, 7,8, 0,1, 3,4, 6,7, 1,2, 4,5, 7,8,
-    0,3, 5,8, 4,7, 3,6, 1,4, 2,5, 4,7, 4,2, 6,4, 4,2 };
+  const int nchunks = buffsz % gsz == 0 ? buffsz/gsz - 1 : buffsz/gsz;
 
-  // TODO: get 9 nb pixels and store c-g
-  // TODO: sort
-  // TODO: synchthreads (block boundaries: bad luck)
-  // TODO: push median
-      for (int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
-        out[4*(j*roi_out->width + i) + 3] = out[4*(j*roi_out->width + i) + c];
-      for (int j=1;j<roi_out->height-1;j++) for(int i=1;i<roi_out->width-1;i++)
-      {
-        int k = 0;
-        for (int jj=-1;jj<=1;jj++) for(int ii=-1;ii<=1;ii++) med[k++] = out[4*((j+jj)*roi_out->width + i + ii) + 3] - out[4*((j+jj)*roi_out->width + i + ii) + 1];
-        for (int ii=0; ii < sizeof opt; ii+=2)
-          if     (med[opt[ii]] > med[opt[ii+1]])
-            SWAP (med[opt[ii]] , med[opt[ii+1]]);
-        out[4*(j*roi_out->width + i) + c] = CLAMPS(med[4] + out[4*(j*roi_out->width + i) + 1], 0.0f, 1.0f);
-      }
-    }
+  for(int n=0; n <= nchunks; n++)
+  {
+    const int bufidx = (n * gsz) + lidx;
+    if(bufidx >= buffsz) break;
+
+    // get position in buffer coordinates and from there translate to position in global coordinates
+    const int gx = (bufidx % buffwd) - 1 + x - lxid;
+    const int gy = (bufidx / buffwd) - 1 + y - lyid;
+
+    // don't read more than needed
+    if(gx >= width + 1 || gy >= height + 1) continue;
+
+    buffer[bufidx] = read_imagef(in, sampleri, (int2)(gx, gy));
   }
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  if(x >= width || y >= height) return;
+
+  // re-position buffer
+  buffer += (lyid + 1) * buffwd + lxid + 1;
+
+  float4 o = buffer[0];
+
+  // 3x3 median for R
+  float s0 = buffer[-buffwd - 1].x - buffer[-buffwd - 1].y;
+  float s1 = buffer[-buffwd].x - buffer[-buffwd].y;
+  float s2 = buffer[-buffwd + 1].x - buffer[-buffwd + 1].y;
+  float s3 = buffer[-1].x - buffer[-1].y;
+  float s4 = buffer[0].x - buffer[0].y;
+  float s5 = buffer[1].x - buffer[1].y;
+  float s6 = buffer[buffwd - 1].x - buffer[buffwd - 1].y;
+  float s7 = buffer[buffwd].x - buffer[buffwd].y;
+  float s8 = buffer[buffwd + 1].x - buffer[buffwd + 1].y;
+
+  cas(s1, s2);
+  cas(s4, s5);
+  cas(s7, s8);
+  cas(s0, s1);
+  cas(s3, s4);
+  cas(s6, s7);
+  cas(s1, s2);
+  cas(s4, s5);
+  cas(s7, s8);
+  cas(s0, s3);
+  cas(s5, s8);
+  cas(s4, s7);
+  cas(s3, s6);
+  cas(s1, s4);
+  cas(s2, s5);
+  cas(s4, s7);
+  cas(s4, s2);
+  cas(s6, s4);
+  cas(s4, s2);
+
+  o.x = clamp(s4 + o.y, 0.0f, 1.0f);
+
+
+  // 3x3 median for B
+  s0 = buffer[-buffwd - 1].z - buffer[-buffwd - 1].y;
+  s1 = buffer[-buffwd].z - buffer[-buffwd].y;
+  s2 = buffer[-buffwd + 1].z - buffer[-buffwd + 1].y;
+  s3 = buffer[-1].z - buffer[-1].y;
+  s4 = buffer[0].z - buffer[0].y;
+  s5 = buffer[1].z - buffer[1].y;
+  s6 = buffer[buffwd - 1].z - buffer[buffwd - 1].y;
+  s7 = buffer[buffwd].z - buffer[buffwd].y;
+  s8 = buffer[buffwd + 1].z - buffer[buffwd + 1].y;
+
+  cas(s1, s2);
+  cas(s4, s5);
+  cas(s7, s8);
+  cas(s0, s1);
+  cas(s3, s4);
+  cas(s6, s7);
+  cas(s1, s2);
+  cas(s4, s5);
+  cas(s7, s8);
+  cas(s0, s3);
+  cas(s5, s8);
+  cas(s4, s7);
+  cas(s3, s6);
+  cas(s1, s4);
+  cas(s2, s5);
+  cas(s4, s7);
+  cas(s4, s2);
+  cas(s6, s4);
+  cas(s4, s2);
+
+  o.z = clamp(s4 + o.y, 0.0f, 1.0f);
+
+  write_imagef(out, (int2) (x, y), o);
 }
-#endif
+
+
 
 
 /**
@@ -197,6 +288,10 @@ clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out, const int wi
   write_imagef (out, (int2)(x, y), color);
 }
 
+
+#define MIN(a,b)      ((a) < (b) ? (a) : (b))
+#define MAX_SAMPLES   512
+
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
  * and writes it to out in float4 format.
@@ -205,7 +300,7 @@ clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out, const int wi
  */
 __kernel void
 clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height,
-    const int r_x, const int r_y, const int r_wd, const int r_ht, const float r_scale, const unsigned int filters)
+    const int r_x, const int r_y, const int rin_wd, const int rin_ht, const float r_scale, const unsigned int filters)
 {
   // global id is pixel in output image (float4)
   const int x = get_global_id(0);
@@ -214,39 +309,56 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
   if(x >= width || y >= height) return;
 
   float4 color = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
+  float weight = 0.0f;
+
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
-  const float px_footprint = .5f/r_scale;
+  const float px_footprint = 1.0f/r_scale;
   // how many 2x2 blocks can be sampled inside that area
-  const int samples = ((int)px_footprint)/2;
+  const int samples = MIN(round(px_footprint/2.0f), MAX_SAMPLES-2);
 
-  // init gauss with sigma = samples (half footprint)
-  // float filter[2*samples + 1];
-  // float sum = 0.0f;
-  // for(int i=-samples;i<=samples;i++) sum += (filter[i+samples] = expf(-i*i/(samples*samples)));
-  // for(int k=0;k<2*samples+1;k++) filter[k] /= sum;
+  int trggbx = 0, trggby = 0;
+  if(FC(trggby, trggbx+1, filters) != 1) trggbx++;
+  if(FC(trggby, trggbx,   filters) != 0)
+  {
+    trggbx = (trggbx + 1)&1;
+    trggby++;
+  }
+  const int2 rggb = (int2)(trggbx, trggby);
+
 
   // upper left corner:
-  const int2 p = backtransformi((float2)(x+.5f, y+.5f), r_x, r_y, r_wd, r_ht, r_scale);
+  const float2 f = (float2)((x + r_x) * px_footprint, (y + r_y) * px_footprint);
+  int2 p = (int2)((int)f.x & ~1, (int)f.y & ~1);
+  const float2 d = (float2)((f.x - p.x)/2.0f, (f.y - p.y)/2.0f);
 
-  // round down to next even number:
-  p.x &= ~0x1; p.y &= ~0x1;
+  float xfilter[MAX_SAMPLES];
+  float yfilter[MAX_SAMPLES];
+  for(int i=1;i<=samples;i++) xfilter[i] = yfilter[i] = 1.0f;
+  xfilter[0] = 1.0f - d.x;
+  yfilter[0] = 1.0f - d.y;
+  xfilter[samples+1] = d.x;
+  yfilter[samples+1] = d.y;
 
   // now move p to point to an rggb block:
-  if(FC(p.y, p.x+1, filters) != 1) p.x ++;
-  if(FC(p.y, p.x,   filters) != 0) { p.x ++; p.y ++; }
+  p += rggb;
 
-  for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
+  for(int j=0;j<=samples+1;j++) for(int i=0;i<=samples+1;i++)
   {
+    const int xx = p.x + 2*i;
+    const int yy = p.y + 2*j;
+
+    if(xx + 1 >= rin_wd || yy + 1 >= rin_ht) continue;
+
     // get four mosaic pattern uint16:
-    float4 p1 = read_imagef(in, sampleri, (int2)(p.x+2*i,   p.y+2*j  ));
-    float4 p2 = read_imagef(in, sampleri, (int2)(p.x+2*i+1, p.y+2*j  ));
-    float4 p3 = read_imagef(in, sampleri, (int2)(p.x+2*i,   p.y+2*j+1));
-    float4 p4 = read_imagef(in, sampleri, (int2)(p.x+2*i+1, p.y+2*j+1));
-    // color += filter[j+samples]*filter[i+samples]*(float4)(p1.x, (p2.x+p3.x)*.5f, p4.x, 0.0f);
-    color += (float4)(p1.x, (p2.x+p3.x)*0.5f, p4.x, 0.0f);
+    float p1 = read_imagef(in, sampleri, (int2)(xx,   yy  )).x;
+    float p2 = read_imagef(in, sampleri, (int2)(xx+1, yy  )).x;
+    float p3 = read_imagef(in, sampleri, (int2)(xx,   yy+1)).x;
+    float p4 = read_imagef(in, sampleri, (int2)(xx+1, yy+1)).x;
+    color += yfilter[j]*xfilter[i]*(float4)(p1, (p2+p3)*0.5f, p4, 0.0f);
+    weight += yfilter[j]*xfilter[i];
   }
-  color /= (2*samples+1)*(2*samples+1);
+  color /= weight;
   write_imagef (out, (int2)(x, y), color);
 }
 
@@ -334,7 +446,7 @@ ppg_demosaic_green_median (__read_only image2d_t in, __write_only image2d_t out,
   const int col = x;
   const int c = FC(row, col, filters);
 
-  const float4 pc = read_imagef(in, sampleri, (int2)(col, row));
+  float4 pc = read_imagef(in, sampleri, (int2)(col, row));
 
   // fill green layer for red and blue pixels:
   if(c == 0 || c == 2)

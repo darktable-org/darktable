@@ -1,6 +1,7 @@
 /*
 		This file is part of darktable,
-		copyright (c) 2009--2011 johannes hanika.
+		copyright (c) 2009--2012 johannes hanika.
+		copyright (c) 2011 henrik andersson.
 
 		darktable is free software: you can redistribute it and/or modify
 		it under the terms of the GNU General Public License as published by
@@ -36,8 +37,9 @@ struct dt_develop_tiling_t;
 #define	IOP_GROUP_COLOR    2
 #define	IOP_GROUP_CORRECT  4
 #define	IOP_GROUP_EFFECT   8
-#define	IOP_SPECIAL_GROUP_ACTIVE_PIPE 16
-#define	IOP_SPECIAL_GROUP_USER_DEFINED 32
+#define	IOP_GROUP_TONE    16
+#define	IOP_SPECIAL_GROUP_ACTIVE_PIPE  32
+#define	IOP_SPECIAL_GROUP_USER_DEFINED 64
 
 #define IOP_TAG_DISTORT       1
 #define IOP_TAG_DECORATION    2
@@ -51,9 +53,11 @@ struct dt_develop_tiling_t;
 /** Flag for the iop module to be enabled/included by default when creating a style */
 #define	IOP_FLAGS_INCLUDE_IN_STYLES	1
 #define	IOP_FLAGS_SUPPORTS_BLENDING	2			// Does provide blending modes
-#define	IOP_FLAGS_DEPRECATED	4
+#define	IOP_FLAGS_DEPRECATED	        4
 #define IOP_FLAGS_BLEND_ONLY_LIGHTNESS	8			// Does only blend with L-channel in Lab space. Keeps a, b of original image.
-#define IOP_FLAGS_ALLOW_TILING         16                       // Does allow tile-wise processing (currently only via opencl)
+#define IOP_FLAGS_ALLOW_TILING         16                       // Does allow tile-wise processing (valid for CPU and GPU processing)
+#define IOP_FLAGS_HIDDEN               32                       // Hide the iop from userinterface
+#define IOP_FLAGS_TILING_FULL_ROI      64                       // Tiling code has to expect arbitrary roi's for this module (incl. flipping, mirroring etc.)
 
 typedef struct dt_iop_params_t
 {
@@ -75,6 +79,10 @@ typedef struct dt_iop_module_so_t
   dt_dev_operation_t op;
   /** other stuff that may be needed by the module, not only in gui mode. inited only once, has to be read-only then. */
   dt_iop_global_data_t *data;
+  /** gui is also only inited once at startup. */
+  dt_iop_gui_data_t *gui_data;
+  /** which results in this widget here, too. */
+  GtkWidget *widget;
 
   /** this initializes static, hardcoded presets for this module and is called only once per run of dt. */
   void (*init_presets)    (struct dt_iop_module_so_t *self);
@@ -95,6 +103,7 @@ typedef struct dt_iop_module_so_t
   int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   void (*tiling_callback) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling);
 
+  void (*gui_reset)       (struct dt_iop_module_t *self);
   void (*gui_update)      (struct dt_iop_module_t *self);
   void (*gui_init)        (struct dt_iop_module_t *self);
   void (*gui_cleanup)     (struct dt_iop_module_t *self);
@@ -143,12 +152,16 @@ typedef struct dt_iop_module_t
   int32_t hide_enable_button;
   /** set to 1 if you want an input color picked during next eval. gui mode only. */
   int32_t request_color_pick;
+  /** set to 1 if you want the mask to be transfered into alpha channel during next eval. gui mode only. */
+  int32_t request_mask_display;
   /** bounding box in which the mean color is requested. */
   float color_picker_box[4];
   /** single point to pick if in point mode */
   float color_picker_point[2];
-  /** place to store the picked color. */
+  /** place to store the picked color of module input. */
   float picked_color[3], picked_color_min[3], picked_color_max[3];
+  /** place to store the picked color of module output (before blending). */
+  float picked_output_color[3], picked_output_color_min[3], picked_output_color_max[3];
   /** reference for dlopened libs. */
   darktable_t *dt;
   /** the module is used in this develop module. */
@@ -157,8 +170,6 @@ typedef struct dt_iop_module_t
   int32_t enabled, default_enabled, factory_enabled;
   /** parameters for the operation. will be replaced by history revert. */
   dt_iop_params_t *params, *default_params, *factory_params;
-  /** exclusive access to params is needed, as gui and gegl processing is async. */
-  dt_pthread_mutex_t params_mutex;
   /** size of individual params struct. */
   int32_t params_size;
   /** parameters needed if a gui is attached. will be NULL if in export/batch mode. */
@@ -169,16 +180,17 @@ typedef struct dt_iop_module_t
   struct dt_develop_blend_params_t *blend_params, *default_blendop_params;
   /** holder for blending ui control */
   gpointer blend_data;
-  /** child widget which is added to the GtkExpander. */
+  /** child widget which is added to the GtkExpander. copied from module_so_t. */
   GtkWidget *widget;
   /** off button, somewhere in header, common to all plug-ins. */
   GtkDarktableToggleButton *off;
-  /** this widget contains all of the module: expander and label decoration. */
-  GtkWidget *topwidget;
+  /** this is the module header, contains labe and buttons */
+  GtkWidget *header;
+
   /** button used to show/hide this module in the plugin list. */
   GtkWidget *showhide;
   /** expander containing the widget. */
-  GtkExpander *expander;
+  GtkWidget *expander;
   /** reset parameters button */
   GtkWidget *reset_button;
   /** show preset menu button */
@@ -189,6 +201,8 @@ typedef struct dt_iop_module_t
   GSList *accel_closures;
   GSList *accel_closures_local;
   gboolean local_closures_connected;
+  /** the correspoinding SO object */
+  dt_iop_module_so_t *so;
 
 
   /** version of the parameters in the database. */
@@ -211,6 +225,8 @@ typedef struct dt_iop_module_t
   /** callback methods for gui. */
   /** synch gtk interface with gui params, if necessary. */
   void (*gui_update)      (struct dt_iop_module_t *self);
+  /** reset ui to defaults */
+  void (*gui_reset)       (struct dt_iop_module_t *self);
   /** construct widget. */
   void (*gui_init)        (struct dt_iop_module_t *self);
   /** destroy widget. */
@@ -272,12 +288,24 @@ GList *dt_iop_load_modules(struct dt_develop_t *dev);
 void dt_iop_cleanup_module(dt_iop_module_t *module);
 /** initialize pipe. */
 void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+/** checks if iop do have an ui */
+gboolean dt_iop_is_hidden(dt_iop_module_t *module);
 /** updates the gui params and the enabled switch. */
 void dt_iop_gui_update(dt_iop_module_t *module);
+/** reset the ui to its defaults */
+void dt_iop_gui_reset(dt_iop_module_t *module);
+/** set expanded state of iop */
+void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded);
+
 /** commits params and updates piece hash. */
 void dt_iop_commit_params(dt_iop_module_t *module, struct dt_iop_params_t *params, struct dt_develop_blend_params_t * blendop_params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
+/** get the widget of plugin ui in expander */
+GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module);
+/** get the eventbox of plugin ui in expander */
+GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module);
+
 /** requests the focus for this plugin (to draw overlays over the center image) */
 void dt_iop_request_focus(dt_iop_module_t *module);
 /** loads default settings from database. */
@@ -287,6 +315,9 @@ void dt_iop_reload_defaults(dt_iop_module_t *module);
 
 /** let plugins have breakpoints: */
 int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe);
+
+/** allow plugins to relinquish CPU and go to sleep for some time */
+void dt_iop_nap(uint32_t usec);
 
 /** colorspace enums */
 typedef enum dt_iop_colorspace_type_t
@@ -300,12 +331,33 @@ dt_iop_colorspace_type_t;
 /** find which colorspace the module works within */
 dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module);
 
+/** flip according to orientation bits, also zoom to given size. */
+void dt_iop_flip_and_zoom_8( const uint8_t *in, int32_t iw, int32_t ih, uint8_t *out, int32_t ow, int32_t oh, const int32_t orientation, uint32_t *width, uint32_t *height);
+
 /** for homebrew pixel pipe: zoom pixel array. */
 void dt_iop_clip_and_zoom(float *out, const float *const in, const struct dt_iop_roi_t *const roi_out, const struct dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride);
 
 /** clip and zoom mosaiced image without demosaicing it uint16_t -> float4 */
-void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in, const struct dt_iop_roi_t *const roi_out, const struct dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters);
-void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in, const struct dt_iop_roi_t *const roi_out, const struct dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters);
+void
+dt_iop_clip_and_zoom_demosaic_half_size(
+    float *out,
+    const uint16_t *const in,
+    const struct dt_iop_roi_t *const roi_out,
+    const struct dt_iop_roi_t *const roi_in,
+    const int32_t out_stride,
+    const int32_t in_stride,
+    const uint32_t filters);
+
+void
+dt_iop_clip_and_zoom_demosaic_half_size_f(
+    float *out,
+    const float *const in,
+    const struct dt_iop_roi_t *const roi_out,
+    const struct dt_iop_roi_t *const roi_in,
+    const int32_t out_stride,
+    const int32_t in_stride,
+    const uint32_t filters,
+    const float clip);
 
 /** as dt_iop_clip_and_zoom, but for rgba 8-bit channels. */
 void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
@@ -335,43 +387,66 @@ static inline float dt_iop_eval_cubic(const float *const a, const float x)
  *  the largest point should be (1.0, y) to really get good data. */
 static inline void dt_iop_estimate_exp(const float *const x, const float *const y, const int num, float *coeff)
 {
-  // first find normalization constant a:
-  float xm = 0.0f, ym = 1.0f;
-  for(int k=0;k<num;k++)
-  {
-    if(x[k] > xm)
-    {
-      xm = x[k];
-      ym = y[k];
-    }
-  }
-  const float a = ym;
-
-  // y = a*x^g => g = log(y/a)/log(x);
+  // map every thing to y = y0*(x/x0)^g
+  // and fix (x0,y0) as the last point.
+  // assume (x,y) pairs are ordered by ascending x, so this is the last point:
+  float x0 = x[num-1], y0 = y[num-1];
+  
   float g = 0.0f;
   int cnt = 0;
-  for(int k=0;k<num;k++)
+  // solving for g yields
+  // g = log(y/y0)/log(x/x0)
+  // 
+  // average that over the course of the other samples:
+  for(int k=0;k<num-1;k++)
   {
-    if(x[k] < 0.999f)
+    const float yy = y[k]/y0, xx = x[k]/x0;
+    if(yy > 0.0f && xx > 0.0f)
     {
-      g += logf(y[k]/a)/logf(x[k]);
+      const float gg = logf(y[k]/y0)/log(x[k]/x0);
+      g += gg;
       cnt ++;
     }
   }
-  g *= 1.0f/cnt;
-  coeff[0] = a;
-  coeff[1] = g;
+  if(cnt)
+    g *= 1.0f/cnt;
+  else
+    g = 1.0f;
+  coeff[0] = 1.0f/x0;
+  coeff[1] = y0;
+  coeff[2] = g;
 }
 
 /** evaluates the exp fit. */
 static inline float dt_iop_eval_exp(const float *const coeff, const float x)
 {
-  return coeff[0] * powf(x, coeff[1]);
+  return coeff[1] * powf(x*coeff[0], coeff[2]);
 }
 
 /** Connects common accelerators to an iop module */
 void dt_iop_connect_common_accels(dt_iop_module_t *module);
 
+/** Copy alpha channel 1:1 from input to output */
+static inline void dt_iop_alpha_copy(const void *ivoid, void *ovoid, const int width, const int height)
+{
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(ovoid,ivoid)
+#endif
+  for(int j=0; j<height; j++)
+  {
+    const float *in  = ((const float *)ivoid)+4*width*j+3;
+    float *out = ((float *)ovoid)+4*width*j+3;
+    for(int i=0; i<width; i++)
+    {
+      *out = *in;
+      out += 4;
+      in += 4;
+    }
+  }
+}
+
 #endif
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

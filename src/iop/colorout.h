@@ -18,7 +18,6 @@
 #ifndef DARKTABLE_IOP_COLOROUT_H
 #define DARKTABLE_IOP_COLOROUT_H
 
-#include "dtgtk/togglebutton.h"
 #include "common/colorspaces.h"
 #include "develop/imageop.h"
 #include "iop/colorin.h" // common structs
@@ -48,8 +47,7 @@ dt_iop_colorout_params_t;
 typedef struct dt_iop_colorout_gui_data_t
 {
   gboolean softproof_enabled;
-  GtkVBox *vbox1, *vbox2;
-  GtkComboBox *cbox1, *cbox2, *cbox3, *cbox4,*cbox5;
+  GtkWidget *cbox1, *cbox2, *cbox3, *cbox4,*cbox5;
   GList *profiles;
 
 }
@@ -64,8 +62,11 @@ typedef struct dt_iop_colorout_data_t
   cmsHPROFILE output;
   cmsHPROFILE Lab;
   cmsHTRANSFORM *xform;
-  float unbounded_coeffs[3][2];       // for extrapolation of shaper curves
+  float unbounded_coeffs[3][3];       // for extrapolation of shaper curves
 }
 dt_iop_colorout_data_t;
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

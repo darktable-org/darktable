@@ -18,7 +18,7 @@
 
 /**
  * this is a collection of custom measured color matrices, profiled
- * for darktable (darktable.sf.net), so far all calculated by Pascal de Bruijn.
+ * for darktable (http://www.darktable.org), so far all calculated by Pascal de Bruijn.
  */
 typedef struct dt_profiled_colormatrix_t
 {
@@ -48,6 +48,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
 
   // Xavier Besse, CMP Digital Target 3, direct sunlight, well lit
   { "Canon EOS 5D Mark II",         { 967590, 399139,  36026}, { -52094,  819046, -232071}, {144455, -143158, 1069305}, {864227, 899139, 741547}},
+
+  // Russell Harrison, Wolf Faust IT8, direct sunlight, well lit
+  { "Canon EOS 5D Mark III",        { 947891, 312958,  -7126}, { 163071, 1301834, -276596}, { 75928, -363388, 1272232}, {741272, 757050, 662430}},
 
   // Deacon MacMillan, Kodak Q60 (IT8), strobe, well lit
   { "Canon EOS 5D",                 { 971420, 386429,   5753}, { 176849, 1141586, -137955}, { 81909, -284790, 1198090}, {753662, 783997, 645142}},
@@ -98,6 +101,16 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   { "Canon EOS 550D",               { 864960, 319305,  36880}, { 160904, 1113586, -251587}, { 68832, -334290, 1143463}, {848404, 883118, 718628}},
   { "Canon EOS Kiss Digital X4",    { 864960, 319305,  36880}, { 160904, 1113586, -251587}, { 68832, -334290, 1143463}, {848404, 883118, 718628}},
 
+  // M. Emre Meydan, Wolf Faust IT8, direct sunlight, well lit
+  { "Canon EOS REBEL T3i",          { 998352, 349960,  -2716}, {  48340, 1270676, -315140}, {114716, -360596, 1265518}, {671249, 670547, 606339}},
+  { "Canon EOS 600D",               { 998352, 349960,  -2716}, {  48340, 1270676, -315140}, {114716, -360596, 1265518}, {671249, 670547, 606339}},
+  { "Canon EOS Kiss Digital X5",    { 998352, 349960,  -2716}, {  48340, 1270676, -315140}, {114716, -360596, 1265518}, {671249, 670547, 606339}},
+
+  // M. Emre Meydan, Wolf Faust IT8, direct sunlight, well lit
+  { "Canon EOS DIGITAL REBEL XS",   { 875580, 325546,   -912}, { 298859, 1301361, -153580}, { 26108, -378876, 1150177}, {675369, 697647, 606659}},
+  { "Canon EOS 1000D",              { 875580, 325546,   -912}, { 298859, 1301361, -153580}, { 26108, -378876, 1150177}, {675369, 697647, 606659}},
+  { "Canon EOS Kiss F",             { 875580, 325546,   -912}, { 298859, 1301361, -153580}, { 26108, -378876, 1150177}, {675369, 697647, 606659}},
+
   // Artis Rozentals, Wolf Faust IT8, direct sunlight, well lit
   { "Canon PowerShot S60",          { 879990, 321808,  23041}, { 272324, 1104752, -410950}, { 75500, -184097, 1373230}, {702026, 740524, 622131}},
 
@@ -122,6 +135,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "NIKON D5000",                  { 852386, 356232,  42389}, { 205353, 1026688, -220184}, {  6348, -292526, 1083313}, {822647, 849106, 688538}},
 
+  // Isaac Chanin, Wolf Faust IT8, direct sunlight, well lit
+  { "NIKON D5100",                  { 994339, 388123,  37186}, { 226578, 1268478, -310028}, {  1404, -393173, 1285812}, {705582, 733917, 623779}},
+
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "NIKON D7000",                  { 744919, 228027, -46982}, { 454605, 1326797,  -33585}, {-132294, -467194, 985611}, {609375, 629852, 515625}},
 
@@ -136,6 +152,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
 
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "NIKON D700",                   { 789261, 332016,  34149}, { 270386,  985748, -129135}, {  4074, -230209,  999008}, {798172, 826721, 673126}},
+
+  // Mauro Fuentes, ColorChecker Passport, direct sunlight, well lit
+  { "NIKON D800",                   { 792038, 268860,  33951}, { 289093, 1169876, -251740}, {-32654, -340393, 1127960}, {782806, 804443, 659058}},
 
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "NIKON COOLPIX P7000",          { 804947, 229630,  97717}, { 178146, 1138763, -395233}, { 88699, -282013, 1234650}, {809998, 842819, 682144}},
@@ -152,8 +171,23 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Karl Mikaelsson, Homebrew ColorChecker, strobe, well lit
   { "SONY DSLR-A700",               { 895737, 374771, -10330}, { 251389, 1076294, -176910}, {-33203, -356445, 1182465}, {742783, 773407, 637604}},
 
+  // Alexander Rabtchevich, Wolf Faust IT8, direct sunlight, well lit
+  { "SONY DSLR-A850",               { 968216, 463638,  -4883}, { 279083, 1156906, -230194}, {-21851, -379623, 1297455}, {749298, 799271, 638580}},
+
+  // Copied from A850
+  { "SONY DSLR-A900",               { 968216, 463638,  -4883}, { 279083, 1156906, -230194}, {-21851, -379623, 1297455}, {749298, 799271, 638580}},
+
+  // David Meier, Wolf Faust IT8, direct sunlight, well lit
+  { "SONY SLT-A55V",                { 969696, 407043,  40268}, { 218201, 1182556, -285400}, { 21042, -342819, 1260223}, {762085, 793961, 670151}},
+
+  // Denis Cheremisov, CMP Digital Target 4, strobe, well lit
+  { "SONY NEX-5N",                  { 913406, 394043,   3237}, { 206253, 1085022,  -19917}, {-69138, -377472, 1038483}, {800079, 824112, 674850}},
+
   // Mark Haun, Wolf Faust IT8, direct sunlight, well lit
   { "OLYMPUS E-PL1",                { 824387, 288086,  -7355}, { 299500, 1148865, -308929}, { 91858, -198425, 1346603}, {720139, 750717, 619751}},
+
+  // Eugene Kraf, Wolf Faust IT8, direct sunlight, well lit
+  { "OLYMPUS E-PL2",                { 785522, 280624,  28503}, { 322266, 1211975, -305984}, { 82550, -246841, 1278198}, {731506, 752808, 645309}},
 
   // Karl Mikaelsson, Homebrew ColorChecker, strobe, well lit
   { "OLYMPUS E-500",                { 925171, 247681,  26367}, { 257187, 1270187, -455826}, {-87784, -426529, 1383041}, {790421, 812775, 708054}},
@@ -185,12 +219,23 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Pascal de Bruijn, CMP Digital Target 3, strobe (PSEF15A), well lit
   { "SAMSUNG NX100",                { 859955, 369919,  17136}, { 127045,  869888, -258362}, { 69351, -149155, 1121475}, {854538, 897888, 691147}},
 
+  // Copied from NX100
+  { "SAMSUNG NX5",                  { 859955, 369919,  17136}, { 127045,  869888, -258362}, { 69351, -149155, 1121475}, {854538, 897888, 691147}},
+  { "SAMSUNG NX10",                 { 859955, 369919,  17136}, { 127045,  869888, -258362}, { 69351, -149155, 1121475}, {854538, 897888, 691147}},
+  { "SAMSUNG NX11",                 { 859955, 369919,  17136}, { 127045,  869888, -258362}, { 69351, -149155, 1121475}, {854538, 897888, 691147}},
+
   // Pieter de Boer, CMP Digital Target 3, camera strobe, well lit
   { "KODAK EASYSHARE Z1015 IS",     { 716446, 157928, -39536}, { 288498, 1234573, -412460}, { 43045, -337677, 1385773}, {774048, 823563, 644012}},
 
+  // Rolf Steinort, Wolf Faust IT8, direct sunlight, well lit
+  { "FUJIFILM X100",                { 734619, 274628,  -6302}, { 325272, 1076035, -198608}, {-15366, -280670, 1061050}, {637207, 668228, 578690}},
+
   // Oleg Dzhimiev, ColorChecker Classic, office lighting, well lit
-  { "Elphel 353E",                 { 782623, 147903, -272369}, { 110016, 1115250, -729172}, {175949, -157227, 1930222}, {821899, 860794, 671768}}
+  { "Elphel 353E",                  {782623, 147903, -272369}, { 110016, 1115250, -729172}, {175949, -157227, 1930222}, {821899, 860794, 671768}}
 };
 
 static const int dt_profiled_colormatrix_cnt = sizeof(dt_profiled_colormatrices)/sizeof(dt_profiled_colormatrix_t);
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

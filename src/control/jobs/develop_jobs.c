@@ -19,22 +19,6 @@
 #include "control/jobs/develop_jobs.h"
 #include "control/jobs/control_jobs.h"
 
-int32_t dt_dev_raw_load_job_run(dt_job_t *job)
-{
-  dt_dev_raw_load_t *t = (dt_dev_raw_load_t *)job->param;
-  dt_dev_raw_load(t->dev, t->image);
-  return 0;
-}
-
-void dt_dev_raw_load_job_init(dt_job_t *job, dt_develop_t *dev, dt_image_t *image)
-{
-  dt_control_job_init(job, "develop load raw image %s", image->filename);
-  job->execute =&dt_dev_raw_load_job_run;
-  dt_dev_raw_load_t *t = (dt_dev_raw_load_t *)job->param;
-  t->dev = dev;
-  t->image = image;
-}
-
 int32_t dt_dev_process_preview_job_run(dt_job_t *job)
 {
   dt_dev_process_t *t = (dt_dev_process_t *)job->param;
@@ -65,3 +49,6 @@ void dt_dev_process_image_job_init(dt_job_t *job, dt_develop_t *dev)
   t->dev = dev;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

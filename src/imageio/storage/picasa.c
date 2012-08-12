@@ -105,7 +105,7 @@ static _picasa_api_context_t *_picasa_api_authenticate(const char *username,cons
 
 static int _picasa_api_get_feed(_picasa_api_context_t *ctx);
 static int _picasa_api_create_album(_picasa_api_context_t *ctx);
-static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *data, int size , char *caption, char *description,GList * tags );
+static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *data, int size , char *caption, char *description, gint imgid );
 
 /** Grow and fill _buffer_t with recieved data... */
 static size_t _picasa_api_buffer_write_func(void *ptr, size_t size, size_t nmemb, void *stream)
@@ -202,7 +202,7 @@ static _picasa_api_context_t *_picasa_api_authenticate(const char *username,cons
 }
 
 
-static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *data, int size , char *caption, char *description,GList * tags )
+static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *data, int size , char *caption, char *description, gint imgid )
 {
   _buffer_t buffer;
   memset(&buffer,0,sizeof(_buffer_t));
@@ -260,20 +260,15 @@ static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , ch
   curl_easy_getinfo(ctx->curl_handle,CURLINFO_RESPONSE_CODE,&result );
 
   // If we want to add tags let's do...
-  if( result == 201 && g_list_length(tags) > 0 )
+  if( result == 201 && imgid > 0 )
   {
     // Image was created , fine.. and result have the fully created photo xml entry..
     // Let's perform an update of the photos keywords with tags passed along to this function..
     // and use picasa photo update api to add keywords to the photo...
 
     // Build the keywords content string
-    gchar keywords[4096]= {0};
-    for( int i=0; i<g_list_length( tags ); i++)
-    {
-      g_strlcat(keywords,((dt_tag_t *)g_list_nth_data(tags,i))->tag,4096);
-      if( i < g_list_length( tags )-1)
-        g_strlcat(keywords,", ",4096);
-    }
+    gchar *keywords = NULL;
+    keywords = dt_tag_get_list(imgid, ",");
 
     xmlDocPtr doc;
     xmlNodePtr entryNode;
@@ -899,6 +894,7 @@ gui_reset (dt_imageio_module_storage_t *self)
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
+  gint tags = 0;
   int result=1;
   dt_storage_picasa_params_t *p=(dt_storage_picasa_params_t *)sdata;
 
@@ -921,20 +917,13 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   /* construct a temporary file name */
   char fname[4096]= {0};
-  dt_util_get_user_local_dir (fname,4096);
-  g_strlcat (fname,"/tmp",4096);
-  g_mkdir_with_parents(fname,0700);
+  dt_loc_get_tmp_dir (fname,4096);
   g_strlcat (fname,"/darktable.XXXXXX.",4096);
   g_strlcat(fname,ext,4096);
 
   char *caption="a image";
   char *description="";
   char *mime="image/jpeg";
-  GList *tags=NULL;
-
-  // Fetch the attached tags of image id if exported..
-  if( p->export_tags == TRUE )
-    dt_tag_get_attached(imgid,&tags);
 
   // Ok, maybe a dt_imageio_export_to_buffer would suit here !?
   gint fd=g_mkstemp(fname);
@@ -945,7 +934,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     return 1;
   }
   close(fd);
-  dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
   caption = g_path_get_basename( img->filename );
 
   (g_strrstr(caption,"."))[0]='\0'; // Shop extension...
@@ -955,9 +944,15 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   {
     description = desc->data;
   }
+  dt_image_cache_read_release(darktable.image_cache, img);
 
-  dt_imageio_export(img, fname, format, fdata);
-  dt_image_cache_release(img, 'r');
+  if(dt_imageio_export(imgid, fname, format, fdata) != 0)
+  {
+    fprintf(stderr, "[imageio_storage_picasa] could not export to file: `%s'!\n", fname);
+    dt_control_log(_("could not export to file `%s'!"), fname);
+    result = 1;
+    goto cleanup;
+  }
 
   // Open the temp file and read image to memory
   GMappedFile *imgfile = g_mapped_file_new(fname,FALSE,NULL);
@@ -967,6 +962,10 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 #ifdef _OPENMP
   #pragma omp critical
 #endif
+  // Fetch the attached tags of image id if exported..
+  if( p->export_tags == TRUE )
+    tags = imgid;
+
   // Upload image to picasa
   if( _picasa_api_upload_photo( p->picasa_api, mime , data, size , caption, description, tags ) == 201 )
     result=0;
@@ -976,6 +975,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   // And remove from filesystem..
   unlink( fname );
+
+cleanup:
+
   g_free( caption );
   if(desc)
   {
@@ -983,7 +985,8 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     g_list_free(desc);
   }
 
-  dt_control_log(_("%d/%d exported to picasa webalbum"), num, total );
+  if(!result)
+    dt_control_log(_("%d/%d exported to picasa webalbum"), num, total );
   return result;
 }
 
@@ -994,7 +997,7 @@ get_params(dt_imageio_module_storage_t *self, int *size)
   // TODO: if a hash to encrypted data is stored here, return only this size and store it at the beginning of the struct!
   *size = sizeof(int64_t);
   dt_storage_picasa_gui_data_t *ui =(dt_storage_picasa_gui_data_t *)self->gui_data;
-  dt_storage_picasa_params_t *d = (dt_storage_picasa_params_t *)malloc(sizeof(dt_storage_picasa_params_t));
+  dt_storage_picasa_params_t *d = (dt_storage_picasa_params_t *)g_malloc(sizeof(dt_storage_picasa_params_t));
   memset(d,0,sizeof(dt_storage_picasa_params_t));
   d->hash = 1;
 
@@ -1020,11 +1023,16 @@ get_params(dt_imageio_module_storage_t *self, int *size)
         {
           // Something went wrong...
           fprintf(stderr,"Something went wrong.. album index %d = NULL\n",index-2 );
+          g_free(d);
           return NULL;
         }
       }
     }
-    else return NULL;
+    else
+    {
+      g_free(d);
+      return NULL;
+    }
 
     d->export_tags = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ui->checkButton2));
 
@@ -1032,7 +1040,10 @@ get_params(dt_imageio_module_storage_t *self, int *size)
     ui->picasa_api = _picasa_api_authenticate(gtk_entry_get_text(ui->entry1), gtk_entry_get_text(ui->entry2));
   }
   else
+  {
+    g_free(d);
     return NULL;
+  }
 
   return d;
 }
@@ -1064,4 +1075,6 @@ free_params(dt_imageio_module_storage_t *self, void *params)
   free(params);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

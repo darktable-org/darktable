@@ -17,7 +17,7 @@ Installing:
 
 3) run:
    sudo port -d sync
-   sudo port install gtk2 sqlite3 libglade2 lcms exiv2 gtk2-clearlooks hicolor-icon-theme
+   sudo port install gtk2 libxml2 gphoto2 lensfun cairo pango librsvg gdk-pixbuf2 sqlite3 exiv2 curl libpng openjpeg tiff openexr lcms2 flickcurl libgnome-keyring gtk-engines2
 
 	take a walk ! !
 
@@ -25,9 +25,9 @@ Installing:
 
 	git clone git://darktable.git.sf.net/gitroot/darktable/darktable
 	cd darktable
-	./autogen.sh
-	LDFLAGS="-L/opt/local/lib -llcms" CC=gcc-4.2 CXX=g++-4.2 ./configure --prefix=`pwd`/release --disable-lensfun --enable-debug
-	(Optional -- you don't need to enable debug, and if youhave compiled the lensfun package manually you don't need to disable it either)
+	build.sh `pwd`/release Debug
+	(Optional -- you don't need to enable debug)
+	cd build
 	make install
 
 5) to make a disk image, run ./packaging/macosx/make-app-bundle -- this will create DarkTable.dmg in the release directory, which contains a standalone application.

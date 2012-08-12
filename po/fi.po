@@ -2,21 +2,21 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# Mikko Ruohola <mikko@ruohola.org>, 2011.
+# Mikko Ruohola <mikko@ruohola.org>, 2011, 2012.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Darktable 0.5\n"
+"Project-Id-Version: Darktable 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-02-15 03:13+0200\n"
-"PO-Revision-Date: 2011-02-15 03:43+0200\n"
+"PO-Revision-Date: 2012-03-29 13:43+0300\n"
 "Last-Translator: Mikko Ruohola <mikko@ruohola.org>\n"
 "Language-Team: Finnish Translators <mikko@ruohola.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"Content-Transfer-Encoding: 8bits\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
 "X-Poedit-Language: Finnish\n"
 "X-Poedit-Country: FINLAND\n"
 "X-Poedit-SourceCharset: utf-8\n"
@@ -118,6 +118,9 @@ msgid ""
 "keep this value low for fast thumbnail creation (allowed: 160-1300)\n"
 "(needs a restart and will invalidate current thumbnail caches)."
 msgstr ""
+"Pidä arvo pienenä nopeaa esikatselukuvien luontia varten (sallitut: "
+"160-1300)\n"
+"(tarvitsee uudelleenkäynnistyksen ja aloittaa välimuistin luonnin alusta)"
 
 #: ../build/src/preferences_gen.h:464
 msgid "jpeg quality of on-disk thumbnails"
@@ -435,7 +438,7 @@ msgstr "orpo kuva"
 #: ../src/common/image.c:531
 #, c-format
 msgid "image `%s' is not available"
-msgstr ""
+msgstr "kuva `%s' ei ole saatavilla"
 
 #: ../src/common/styles.c:72
 #, c-format
@@ -490,7 +493,7 @@ msgstr[1] "kaapataan %d kuvaa"
 
 #: ../src/control/jobs/camera_jobs.c:91
 msgid "please set your camera to manual mode first!"
-msgstr ""
+msgstr "ole hyvä ja aseta kamera ensin manuaalitilaan!"
 
 #: ../src/control/jobs/camera_jobs.c:275
 #, c-format
@@ -1182,7 +1185,7 @@ msgstr "sisällytä"
 
 #: ../src/gui/styles_dialog.c:260
 msgid "item"
-msgstr ""
+msgstr "kuva"
 
 #: ../src/gui/styles_dialog.c:341
 msgid "can't create style out of unaltered image"
@@ -2173,7 +2176,6 @@ msgid "pick gui color from image"
 msgstr "valitse käyttöliittymän väri kuvasta"
 
 #: ../src/iop/demosaic.c:81
-#, fuzzy
 msgid "demosaic"
 msgstr "kehitysmetodi"
 
@@ -2213,7 +2215,7 @@ msgstr ""
 
 #: ../src/iop/equalizer.c:43
 msgid "legacy equalizer (deprecated)"
-msgstr ""
+msgstr "vanha korjain (poistumassa)"
 
 #: ../src/iop/equalizer.c:272
 msgid "null"
@@ -2582,11 +2584,11 @@ msgstr "ylempi raja-arvo"
 
 #: ../src/iop/overexposed.c:274
 msgid "threshold of what shall be considered underexposed"
-msgstr ""
+msgstr "alivaloittuneiden alueiden raja-arvo"
 
 #: ../src/iop/overexposed.c:275
 msgid "threshold of what shall be considered overexposed"
-msgstr ""
+msgstr "ylivalottuneiden alueiden raja-arvo"
 
 #: ../src/iop/profile_gamma.c:37
 msgid "unbreak input profile"
@@ -2735,7 +2737,7 @@ msgstr "kontrastin jyrkkyys"
 
 #: ../src/iop/tonemap.cc:268
 msgid "spatial extent"
-msgstr ""
+msgstr "säde"
 
 #: ../src/iop/velvia.c:68
 msgid "velvia"
@@ -3065,6 +3067,9 @@ msgid ""
 "steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets."
 msgstr ""
+"askelten määrä haarukointia kohden. askelen koko on yleensä määriteltävissä "
+"kamerasta ja on normaalisti 3 askelta per aukko\n"
+"toisin sanoen, 3 askelta on 1EV valotusta haarukointia kohden."
 
 #: ../src/libs/camera.c:477
 msgid "properties"
@@ -3431,14 +3436,12 @@ msgid "clear"
 msgstr "tyhjennä"
 
 #: ../src/libs/metadata.c:335
-#, fuzzy
 msgid "remove metadata from selected images"
-msgstr "irrota merkintä valituista kuvista"
+msgstr "poista metatiedot valituista kuvista"
 
 #: ../src/libs/metadata.c:341
-#, fuzzy
 msgid "write metadata for selected images"
-msgstr "irrota merkintä valituista kuvista"
+msgstr "kirjoita metatietotiedosto valituista kuvista"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
 #: ../src/libs/metadata.c:373
@@ -3447,7 +3450,7 @@ msgstr "CC-by"
 
 #: ../src/libs/metadata.c:373
 msgid "Creative Commons Attribution (CC-BY)"
-msgstr ""
+msgstr "Creative Commons Nimeä (CC-BY)"
 
 #: ../src/libs/metadata.c:374
 msgid "CC-by-sa"
@@ -3455,7 +3458,7 @@ msgstr "CC-by-sa"
 
 #: ../src/libs/metadata.c:374
 msgid "Creative Commons Attribution-ShareAlike (CC-BY-SA)"
-msgstr ""
+msgstr "Creative Commons Nimeä-Tarttuva (CC-BY-SA)"
 
 #: ../src/libs/metadata.c:375
 msgid "CC-by-nd"
@@ -3463,7 +3466,7 @@ msgstr "CC-by-nd"
 
 #: ../src/libs/metadata.c:375
 msgid "Creative Commons Attribution-NoDerivs (CC-BY-ND)"
-msgstr ""
+msgstr "Creative Commons Nimeä-Ei muutoksia (CC-BY-ND)"
 
 #: ../src/libs/metadata.c:376
 msgid "CC-by-nc"
@@ -3471,7 +3474,7 @@ msgstr "CC-by-nc"
 
 #: ../src/libs/metadata.c:376
 msgid "Creative Commons Attribution-NonCommercial (CC-BY-NC)"
-msgstr ""
+msgstr "Creative Commons Nimeä-Epäkaupallinen (CC-BY)"
 
 #: ../src/libs/metadata.c:377
 msgid "CC-by-nc-sa"
@@ -3479,7 +3482,7 @@ msgstr "CC-by-nc-sa"
 
 #: ../src/libs/metadata.c:377
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
-msgstr ""
+msgstr " Creative Commons Nimeä-Epäkaupallinen-Tarttuva (CC-BY-NC-SA)"
 
 #: ../src/libs/metadata.c:378
 msgid "CC-by-nc-nd"
@@ -3487,7 +3490,7 @@ msgstr "CC-by-nc-nd"
 
 #: ../src/libs/metadata.c:378
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"
-msgstr ""
+msgstr "Creative Commons Nimeä-Ei muutoksia-Epäkaupallinen (CC-BY-NC-ND)"
 
 #: ../src/libs/metadata.c:379
 msgid "all rights reserved"
@@ -3578,28 +3581,24 @@ msgid "styles"
 msgstr "tyylit"
 
 #: ../src/libs/styles.c:223
-#, fuzzy
 msgid "select style"
-msgstr "valitse kaikki"
+msgstr "valitse tyyli"
 
 #: ../src/libs/styles.c:236
-#, fuzzy
 msgid "darktable style files"
-msgstr "tietokantatiedosto"
+msgstr "darktablen tyylitiedostot"
 
 #: ../src/libs/styles.c:310
-#, fuzzy
 msgid ""
 "available styles,\n"
 "doubleclick to apply"
 msgstr ""
-"liittyvät merkinnät,\n"
-"tuplaklikkaa irroittaaksesi"
+"käytettävissä olevat tyylit,\n"
+"tuplaklikkaa käyttääksesi"
 
 #: ../src/libs/styles.c:316
-#, fuzzy
 msgid "enter style name"
-msgstr "syötä merkin nimi"
+msgstr "syötä tyylin nimi"
 
 #: ../src/libs/styles.c:329
 msgid "create duplicate"

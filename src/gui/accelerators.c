@@ -16,13 +16,16 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-#include <gtk/gtk.h>
-
-#include "gui/accelerators.h"
 #include "common/darktable.h"
+#include "gui/accelerators.h"
 #include "control/control.h"
 #include "dtgtk/slider.h"
+#include "common/debug.h"
+#include "develop/blend.h"
+
+#include <gtk/gtk.h>
+#include <assert.h>
+
 
 void dt_accel_path_global(char *s, size_t n, const char* path)
 {
@@ -48,7 +51,7 @@ void dt_accel_path_lib(char *s, size_t n, char *module,
                               const char* path)
 {
   snprintf(s, n, "<Darktable>/%s/%s/%s",
-           NC_("accel", "plugins"), module, path);
+           NC_("accel", "modules"), module, path);
 }
 
 void dt_accel_paths_slider_iop(char *s[], size_t n, char *module,
@@ -96,7 +99,7 @@ static void dt_accel_path_lib_translated(char *s, size_t n,
                                          const char* path)
 {
   snprintf(s, n, "<Darktable>/%s/%s/%s",
-           C_("accel", "plugins"), module->name(),
+           C_("accel", "modules"), module->name(),
            g_dpgettext2(NULL, "accel", path));
 }
 
@@ -247,36 +250,6 @@ void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local,
 }
 
 
-void dt_accel_connect_global(const gchar *path, GClosure *closure)
-{
-  gchar accel_path[256];
-  dt_accel_path_global(accel_path, 256, path);
-  gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path,
-                                  closure);
-}
-
-void dt_accel_connect_view(dt_view_t *self, const gchar *path,
-                           GClosure *closure)
-{
-  gchar accel_path[256];
-  dt_accel_path_view(accel_path, 256, self->module_name, path);
-  gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path,
-                                  closure);
-  self->accel_closures = g_slist_prepend(self->accel_closures, closure);
-}
-
-static void _connect_local_accel(dt_iop_module_t *module, dt_accel_t *accel,
-                                 GClosure *closure)
-{
-  dt_accel_local_t *laccel =
-      (dt_accel_local_t*)malloc(sizeof(dt_accel_local_t));
-  laccel->accel = accel;
-  laccel->closure = closure;
-  g_closure_ref(closure);
-  module->accel_closures_local =
-      g_slist_prepend(module->accel_closures_local, laccel);
-}
-
 static dt_accel_t* _lookup_accel(gchar *path)
 {
   GSList *l = darktable.control->accelerator_list;
@@ -290,27 +263,57 @@ static dt_accel_t* _lookup_accel(gchar *path)
   return NULL;
 }
 
+void dt_accel_connect_global(const gchar *path, GClosure *closure)
+{
+  gchar accel_path[256];
+  dt_accel_path_global(accel_path, 256, path);
+  dt_accel_t *laccel = _lookup_accel(accel_path);
+  laccel->closure = closure;
+  gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path,
+                                  closure);
+}
+
+void dt_accel_connect_view(dt_view_t *self, const gchar *path,
+                           GClosure *closure)
+{
+  gchar accel_path[256];
+  dt_accel_path_view(accel_path, 256, self->module_name, path);
+  gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path,
+                                  closure);
+  dt_accel_t *laccel = _lookup_accel(accel_path);
+  laccel->closure = closure;
+
+  self->accel_closures = g_slist_prepend(self->accel_closures, laccel);
+}
+
+static void _connect_local_accel(dt_iop_module_t *module, dt_accel_t *accel)
+{
+  module->accel_closures_local =
+      g_slist_prepend(module->accel_closures_local, accel);
+}
+
 void dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path,
                           GClosure *closure)
 {
   dt_accel_t *accel = NULL;
   gchar accel_path[256];
   dt_accel_path_iop(accel_path, 256, module->op, path);
-
   // Looking up the entry in the global accelerators list
   accel = _lookup_accel(accel_path);
+
+  accel->closure = closure;
 
   if(accel && accel->local)
   {
     // Local accelerators don't actually get connected, just added to the list
     // They will be connected if/when the module gains focus
-    _connect_local_accel(module, accel, closure);
+    _connect_local_accel(module, accel);
   }
   else
   {
     gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path,
                                     closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, closure);
+    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
   }
 }
 
@@ -322,18 +325,23 @@ void dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path,
   gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path,
                                   closure);
 
-  module->accel_closures = g_slist_prepend(module->accel_closures, closure);
+  dt_accel_t *accel =_lookup_accel(accel_path);
+
+  accel->closure = closure;
+
+  module->accel_closures = g_slist_prepend(module->accel_closures, accel);
 }
 
-static void _press_button_callback(GtkAccelGroup *accel_group,
+static gboolean _press_button_callback(GtkAccelGroup *accel_group,
                                    GObject *acceleratable,
                                    guint keyval, GdkModifierType modifier,
                                    gpointer data)
 {
   if(!(GTK_IS_BUTTON(data)))
-    return;
+    return FALSE;
 
   g_signal_emit_by_name(G_OBJECT(data),"activate");
+  return TRUE;
 }
 
 void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path,
@@ -353,59 +361,67 @@ void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path,
 }
 
 
-static void slider_edit_callback(GtkAccelGroup *accel_group,
+static gboolean slider_edit_callback(GtkAccelGroup *accel_group,
                                     GObject *acceleratable, guint keyval,
                                     GdkModifierType modifier, gpointer data)
 {
-	GtkDarktableSlider *slider=DTGTK_SLIDER(data);
-	char sv[32]= {0};
-	slider->is_entry_active=TRUE;
-	gdouble value = gtk_adjustment_get_value(slider->adjustment);
-	sprintf(sv,"%.*f",slider->digits,value);
-	gtk_entry_set_text (GTK_ENTRY(slider->entry),sv);
-	gtk_widget_show (GTK_WIDGET(slider->entry));
-	gtk_widget_grab_focus (GTK_WIDGET(slider->entry));
-	gtk_widget_queue_draw (GTK_WIDGET(slider));
+  GtkDarktableSlider *slider=DTGTK_SLIDER(data);
+  char sv[32]= {0};
+  slider->is_entry_active=TRUE;
+  gdouble value = gtk_adjustment_get_value(slider->adjustment);
+  sprintf(sv,"%.*f",slider->digits,value);
+  gtk_entry_set_text (GTK_ENTRY(slider->entry),sv);
+  gtk_widget_show (GTK_WIDGET(slider->entry));
+  gtk_widget_grab_focus (GTK_WIDGET(slider->entry));
+  gtk_widget_queue_draw (GTK_WIDGET(slider));
+  return TRUE;
 }
-static void slider_increase_callback(GtkAccelGroup *accel_group,
+static gboolean slider_increase_callback(GtkAccelGroup *accel_group,
                                     GObject *acceleratable, guint keyval,
                                     GdkModifierType modifier, gpointer data)
 {
-	GtkDarktableSlider *slider=DTGTK_SLIDER(data);
-	float value = gtk_adjustment_get_value(slider->adjustment);
-	value += gtk_adjustment_get_step_increment(slider->adjustment);
-	if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
+  GtkDarktableSlider *slider=DTGTK_SLIDER(data);
+  float value = gtk_adjustment_get_value(slider->adjustment);
+  value += gtk_adjustment_get_step_increment(slider->adjustment);
+  if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
 
-	gtk_adjustment_set_value(slider->adjustment, value);
-	gtk_widget_draw(GTK_WIDGET(slider),NULL);
-	g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
+  gtk_adjustment_set_value(slider->adjustment, value);
+  gtk_widget_draw(GTK_WIDGET(slider),NULL);
+  g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
+  return TRUE;
 }
-static void slider_decrease_callback(GtkAccelGroup *accel_group,
+static gboolean slider_decrease_callback(GtkAccelGroup *accel_group,
                                     GObject *acceleratable, guint keyval,
                                     GdkModifierType modifier, gpointer data)
 {
-	GtkDarktableSlider *slider=DTGTK_SLIDER(data);
-	float value = gtk_adjustment_get_value(slider->adjustment);
-	value -= gtk_adjustment_get_step_increment(slider->adjustment);
-	if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
+  GtkDarktableSlider *slider=DTGTK_SLIDER(data);
+  float value = gtk_adjustment_get_value(slider->adjustment);
+  value -= gtk_adjustment_get_step_increment(slider->adjustment);
+  if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
 
-	gtk_adjustment_set_value(slider->adjustment, value);
-	gtk_widget_draw(GTK_WIDGET(slider),NULL);
-	g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
+  gtk_adjustment_set_value(slider->adjustment, value);
+  gtk_widget_draw(GTK_WIDGET(slider),NULL);
+  g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
+  return TRUE;
 }
 
-static void slider_reset_callback(GtkAccelGroup *accel_group,
+static gboolean slider_reset_callback(GtkAccelGroup *accel_group,
                                     GObject *acceleratable, guint keyval,
                                     GdkModifierType modifier, gpointer data)
 {
-	GtkDarktableSlider *slider=DTGTK_SLIDER(data);
-	gtk_adjustment_set_value(slider->adjustment, slider->default_value);
-	gtk_widget_draw(GTK_WIDGET(slider),NULL);
-	g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
+  GtkDarktableSlider *slider=DTGTK_SLIDER(data);
+  gtk_adjustment_set_value(slider->adjustment, slider->default_value);
+  gtk_widget_draw(GTK_WIDGET(slider),NULL);
+  g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
+  return TRUE;
 }
 void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
                                  GtkWidget *slider)
 {
+  // just make this callback safe for bauhaus sliders for now:
+  // TODO: implement it for these widgets, too!
+  // (we check for their inheritance from gtk drawing area, that's simpler)
+  if(GTK_IS_DRAWING_AREA(slider)) return;
   gchar increase_path[256];
   gchar decrease_path[256];
   gchar reset_path[256];
@@ -418,70 +434,76 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
   closure =  g_cclosure_new(G_CALLBACK(slider_increase_callback),
                             (gpointer)slider, NULL);
   accel = _lookup_accel(increase_path);
+
+  accel->closure = closure;
+
   if(accel && accel->local)
   {
-    _connect_local_accel(module, accel, closure);
+    _connect_local_accel(module, accel);
   }
   else
   {
     gtk_accel_group_connect_by_path(darktable.control->accelerators,
                                     increase_path, closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, closure);
+    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
   }
 
   closure = g_cclosure_new(G_CALLBACK(slider_decrease_callback),
                            (gpointer)slider, NULL);
   accel = _lookup_accel(decrease_path);
+  accel->closure = closure;
   if(accel && accel->local)
   {
-    _connect_local_accel(module, accel, closure);
+    _connect_local_accel(module, accel);
   }
   else
   {
     gtk_accel_group_connect_by_path(darktable.control->accelerators,
                                     decrease_path, closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, closure);
+    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
   }
 
   closure = g_cclosure_new(G_CALLBACK(slider_reset_callback),
                            (gpointer)slider, NULL);
   accel = _lookup_accel(reset_path);
+  accel->closure = closure;
   if(accel && accel->local)
   {
-    _connect_local_accel(module, accel, closure);
+    _connect_local_accel(module, accel);
   }
   else
   {
     gtk_accel_group_connect_by_path(darktable.control->accelerators,
                                     reset_path, closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, closure);
+    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
   }
 
   closure = g_cclosure_new(G_CALLBACK(slider_edit_callback),
                            (gpointer)slider, NULL);
   accel = _lookup_accel(edit_path);
+  accel->closure = closure;
   if(accel && accel->local)
   {
-    _connect_local_accel(module, accel, closure);
+    _connect_local_accel(module, accel);
   }
   else
   {
     gtk_accel_group_connect_by_path(darktable.control->accelerators,
                                     edit_path, closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, closure);
+    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
   }
 }
 
 void dt_accel_connect_locals_iop(dt_iop_module_t *module)
 {
-  dt_accel_local_t *accel;
+  dt_accel_t *accel;
   GSList *l = module->accel_closures_local;
 
   while(l)
   {
-    accel = (dt_accel_local_t*)l->data;
+    accel = (dt_accel_t*)l->data;
     gtk_accel_group_connect_by_path(darktable.control->accelerators,
-                                    accel->accel->path, accel->closure);
+                                    accel->path, accel->closure);
     l = g_slist_next(l);
   }
 
@@ -490,18 +512,18 @@ void dt_accel_connect_locals_iop(dt_iop_module_t *module)
 
 void dt_accel_disconnect_list(GSList *list)
 {
-  GClosure *closure;
+  dt_accel_t *accel;
   while(list)
   {
-    closure = (GClosure*)(list->data);
-    gtk_accel_group_disconnect(darktable.control->accelerators, closure);
+    accel = (dt_accel_t*)list->data;
+    gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
     list = g_slist_delete_link(list, list);
   }
 }
 
 void dt_accel_disconnect_locals_iop(dt_iop_module_t *module)
 {
-  dt_accel_local_t *accel;
+  dt_accel_t *accel;
   GSList *l = module->accel_closures_local;
 
   if(!module->local_closures_connected)
@@ -509,27 +531,367 @@ void dt_accel_disconnect_locals_iop(dt_iop_module_t *module)
 
   while(l)
   {
-    accel = (dt_accel_local_t*)l->data;
+    accel = (dt_accel_t*)l->data;
     gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
     l = g_slist_next(l);
   }
 
+  module->accel_closures_local = NULL;
   module->local_closures_connected = FALSE;
 }
 
 void dt_accel_cleanup_locals_iop(dt_iop_module_t *module)
 {
-  dt_accel_local_t *accel;
+  dt_accel_t *accel;
   GSList *l = module->accel_closures_local;
   while(l)
   {
-    accel = (dt_accel_local_t*)l->data;
+    accel = (dt_accel_t*)l->data;
     if(module->local_closures_connected)
       gtk_accel_group_disconnect(darktable.control->accelerators,
                                  accel->closure);
-    g_closure_unref(accel->closure);
-    free(accel);
     l = g_slist_delete_link(l, l);
   }
   module->accel_closures_local = NULL;
 }
+
+
+
+typedef struct {
+  dt_iop_module_t* module;
+  char *name;
+}preset_iop_module_callback_description;
+
+static void preset_iop_module_callback_destroyer(gpointer data, GClosure *closure) {
+  preset_iop_module_callback_description *callback_description = (preset_iop_module_callback_description*)data;
+  g_free(callback_description->name);
+}
+static gboolean preset_iop_module_callback(GtkAccelGroup *accel_group,
+                                   GObject *acceleratable,
+                                   guint keyval, GdkModifierType modifier,
+                                   gpointer data)
+
+{
+  preset_iop_module_callback_description *callback_description = (preset_iop_module_callback_description*)data;
+  dt_iop_module_t *module = callback_description->module;
+  const char* name = callback_description->name;
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, blendop_params, blendop_version from presets where operation = ?1 and name = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, name, strlen(name), SQLITE_TRANSIENT);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const void *op_params = sqlite3_column_blob(stmt, 0);
+    int op_length  = sqlite3_column_bytes(stmt, 0);
+    int enabled = sqlite3_column_int(stmt, 1);
+    const void *blendop_params = sqlite3_column_blob(stmt, 2);
+    int bl_length = sqlite3_column_bytes(stmt, 2);
+    int blendop_version = sqlite3_column_int(stmt, 3);
+    if(op_params && (op_length == module->params_size))
+    {
+      memcpy(module->params, op_params, op_length);
+      module->enabled = enabled;
+    }
+    if (blendop_params && (blendop_version == dt_develop_blend_version()) && (bl_length == sizeof(dt_develop_blend_params_t)))
+    {
+      memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
+    }
+    else if (blendop_params && dt_develop_blend_legacy_params(module, blendop_params, blendop_version, module->blend_params, dt_develop_blend_version(), bl_length) == 0)
+    {
+      // do nothing
+    }
+    else
+    {
+      memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+    }
+  }
+  sqlite3_finalize(stmt);
+  dt_iop_gui_update(module);
+  dt_dev_add_history_item(darktable.develop, module, FALSE);
+  gtk_widget_queue_draw(module->widget);
+  return TRUE;
+}
+
+void dt_accel_connect_preset_iop(dt_iop_module_t *module,  const gchar *path)
+{
+  GClosure* closure = NULL;
+  char build_path[1024];
+  gchar* name =g_strdup(path);
+  snprintf(build_path,1024,"%s/%s",_("preset"),name);
+  preset_iop_module_callback_description *callback_description = malloc(sizeof(preset_iop_module_callback_description));
+  callback_description->module = module;
+  callback_description->name = name;
+
+  closure = g_cclosure_new(G_CALLBACK(preset_iop_module_callback),
+                         callback_description, preset_iop_module_callback_destroyer);
+  dt_accel_connect_iop(module, build_path, closure);
+
+}
+
+
+
+
+typedef struct {
+  dt_lib_module_t* module;
+  char *name;
+}preset_lib_module_callback_description;
+
+static void preset_lib_module_callback_destroyer(gpointer data, GClosure *closure) {
+  preset_lib_module_callback_description *callback_description = (preset_lib_module_callback_description*)data;
+  g_free(callback_description->name);
+}
+static gboolean preset_lib_module_callback(GtkAccelGroup *accel_group,
+                                   GObject *acceleratable,
+                                   guint keyval, GdkModifierType modifier,
+                                   gpointer data)
+
+{
+  preset_lib_module_callback_description *callback_description = (preset_lib_module_callback_description*)data;
+  dt_lib_module_t *module = callback_description->module;
+  const char* pn = callback_description->name;
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params from presets where operation = ?1 and op_version = ?2 and name = ?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->plugin_name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, pn, strlen(pn), SQLITE_TRANSIENT);
+
+  int res = 0;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const void *blob = sqlite3_column_blob(stmt, 0);
+    int length  = sqlite3_column_bytes(stmt, 0);
+    if(blob)
+    {
+      GList *it = darktable.lib->plugins;
+      while(it)
+      {
+        dt_lib_module_t *search_module = (dt_lib_module_t *)it->data;
+        if(!strncmp(search_module->plugin_name, module->plugin_name, 128))
+        {
+          res = module->set_params(module, blob, length);
+          break;
+        }
+        it = g_list_next(it);
+      }
+    }
+  }
+  sqlite3_finalize(stmt);
+  if(res)
+  {
+    dt_control_log(_("deleting preset for obsolete module"));
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where operation = ?1 and op_version = ?2 and name = ?3", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->plugin_name, strlen(module->plugin_name), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, pn, strlen(pn), SQLITE_TRANSIENT);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
+  return TRUE;
+}
+
+void dt_accel_connect_preset_lib(dt_lib_module_t *module,  const gchar *path)
+{
+  GClosure* closure = NULL;
+  char build_path[1024];
+  gchar* name =g_strdup(path);
+  snprintf(build_path,1024,"%s/%s",_("preset"),name);
+  preset_lib_module_callback_description *callback_description = malloc(sizeof(preset_lib_module_callback_description));
+  callback_description->module = module;
+  callback_description->name = name;
+
+  closure = g_cclosure_new(G_CALLBACK(preset_lib_module_callback),
+                         callback_description, preset_lib_module_callback_destroyer);
+  dt_accel_connect_lib(module, build_path, closure);
+
+}
+
+void dt_accel_deregister_iop(dt_iop_module_t *module,const gchar *path)
+{
+  GSList *l = module->accel_closures_local;
+  char build_path[1024];
+  dt_accel_path_iop(build_path, 1024, module->op, path);
+  while(l)
+  {
+    dt_accel_t *accel = (dt_accel_t*)l->data;
+    if(!strncmp(accel->path, build_path, 1024))
+    {
+      module->accel_closures_local = g_slist_delete_link(module->accel_closures_local, l);
+      l = NULL;
+      free(accel);
+    }
+    else
+    {
+      l = g_slist_next(l);
+    }
+  }
+  l = darktable.control->accelerator_list;
+  while(l)
+  {
+    dt_accel_t *accel = (dt_accel_t*)l->data;
+    if(!strncmp(accel->path, build_path, 1024))
+    {
+      darktable.control->accelerator_list = g_slist_delete_link(darktable.control->accelerator_list, l);
+      l = NULL;
+      free(accel);
+    }
+    else
+    {
+      l = g_slist_next(l);
+    }
+  }
+  l = module->accel_closures;
+  while(l)
+  {
+    dt_accel_t *accel = (dt_accel_t*)l->data;
+    if(!strncmp(accel->path, build_path, 1024))
+    {
+      if(!accel->local || !module->local_closures_connected)
+        gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
+      module->accel_closures = g_slist_delete_link(module->accel_closures, l);
+      l = NULL;
+      free(accel);
+    }
+    else
+    {
+      l = g_slist_next(l);
+    }
+  }
+}
+
+void dt_accel_deregister_lib(dt_lib_module_t *module,const gchar *path)
+{
+  dt_accel_t *accel;
+  GSList *l;
+  char build_path[1024];
+  dt_accel_path_lib(build_path, 1024, module->plugin_name, path);
+  l = darktable.control->accelerator_list;
+  while(l)
+  {
+    dt_accel_t *accel = (dt_accel_t*)l->data;
+    if(!strncmp(accel->path, build_path, 1024))
+    {
+      darktable.control->accelerator_list = g_slist_delete_link(darktable.control->accelerator_list, l);
+      l = NULL;
+    } else {
+      l = g_slist_next(l);
+    }
+  }
+  l = module->accel_closures;
+  while(l)
+  {
+    accel = (dt_accel_t*)l->data;
+    if(!strncmp(accel->path, build_path, 1024))
+    {
+      module->accel_closures = g_slist_delete_link(module->accel_closures, l);
+      gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
+      l = NULL;
+      free(accel);
+    } else {
+      l = g_slist_next(l);
+    }
+  }
+}
+
+void dt_accel_deregister_global(const gchar *path)
+{
+  GSList *l;
+  char build_path[1024];
+  dt_accel_path_global(build_path, 1024,  path);
+  l = darktable.control->accelerator_list;
+  while(l)
+  {
+    dt_accel_t *accel = (dt_accel_t*)l->data;
+    if(!strncmp(accel->path, build_path, 1024))
+    {
+      darktable.control->accelerator_list = g_slist_delete_link(darktable.control->accelerator_list, l);
+      gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
+      l = NULL;
+      free(accel);
+    } else {
+      l = g_slist_next(l);
+    }
+  }
+}
+
+gboolean find_accel_internal  (GtkAccelKey *key, GClosure *closure, gpointer data) 
+{
+  return (closure == data);
+}
+
+void dt_accel_rename_preset_iop(dt_iop_module_t *module,const gchar *path,const gchar *new_path)
+{
+  dt_accel_t *accel;
+  GSList * l = module->accel_closures;
+  char build_path[1024];
+  dt_accel_path_iop(build_path, 1024, module->op, path);
+  while(l)
+  {
+    accel = (dt_accel_t*)l->data;
+    if(!strncmp(accel->path, build_path, 1024))
+    {
+      GtkAccelKey tmp_key = *(gtk_accel_group_find(darktable.control->accelerators,find_accel_internal,accel->closure));
+      gboolean local = accel->local;
+      dt_accel_deregister_iop(module,path);
+      snprintf(build_path,1024,"%s/%s",_("preset"),new_path);
+      dt_accel_register_iop(module->so,local,build_path,tmp_key.accel_key,tmp_key.accel_mods);
+      dt_accel_connect_preset_iop(module,new_path);
+      l = NULL;
+    } else {
+      l = g_slist_next(l);
+    }
+  }
+}
+
+void dt_accel_rename_preset_lib(dt_lib_module_t *module,const gchar *path,const gchar *new_path)
+{
+  dt_accel_t *accel;
+  GSList * l = module->accel_closures;
+  char build_path[1024];
+  dt_accel_path_lib(build_path, 1024, module->plugin_name, path);
+  while(l)
+  {
+    accel = (dt_accel_t*)l->data;
+    if(!strncmp(accel->path, build_path, 1024))
+    {
+      GtkAccelKey tmp_key = *(gtk_accel_group_find(darktable.control->accelerators,find_accel_internal,accel->closure));
+      dt_accel_deregister_lib(module,path);
+      snprintf(build_path,1024,"%s/%s",_("preset"),new_path);
+      dt_accel_register_lib(module,build_path,tmp_key.accel_key,tmp_key.accel_mods);
+      dt_accel_connect_preset_lib(module,new_path);
+      l = NULL;
+    } else {
+      l = g_slist_next(l);
+    }
+  }
+}
+
+void dt_accel_rename_global(const gchar *path,const gchar *new_path)
+{
+  dt_accel_t *accel;
+  GSList * l = darktable.control->accelerator_list;
+  char build_path[1024];
+  dt_accel_path_global(build_path, 1024,path);
+  while(l)
+  {
+    accel = (dt_accel_t*)l->data;
+    if(!strncmp(accel->path, build_path, 1024))
+    {
+      GtkAccelKey tmp_key = *(gtk_accel_group_find(darktable.control->accelerators,find_accel_internal,accel->closure));
+      dt_accel_deregister_global(path);
+      g_closure_ref(accel->closure);
+      dt_accel_register_global(new_path,tmp_key.accel_key,tmp_key.accel_mods);
+      dt_accel_connect_global(new_path,accel->closure);
+      g_closure_unref(accel->closure);
+      l = NULL;
+    } else {
+      l = g_slist_next(l);
+    }
+  }
+}
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

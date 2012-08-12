@@ -60,6 +60,8 @@ public:
   int whitePoint;
   vector<BlackArea> blackAreas;
   iPoint2D subsampling;
+  string mode;
+  int isoSpeed;
 protected:
   RawImageType dataType;
   RawImageData(void);

@@ -20,17 +20,21 @@
 
 #include <inttypes.h>
 #include "common/image.h"
+#include "common/mipmap_cache.h"
 #include "control/control.h"
 
 typedef struct dt_image_load_t
 {
   int32_t imgid;
-  dt_image_buffer_t mip;
+  dt_mipmap_size_t mip;
 }
 dt_image_load_t;
 
 int32_t dt_image_load_job_run(dt_job_t *job);
-void dt_image_load_job_init(dt_job_t *job, int32_t imgid, dt_image_buffer_t mip);
+void dt_image_load_job_init(dt_job_t *job, int32_t imgid, dt_mipmap_size_t mip);
 
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

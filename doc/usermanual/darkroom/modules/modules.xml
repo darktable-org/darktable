@@ -198,6 +198,7 @@
 	&darkroom_module_rawdenoise;
 	&darkroom_module_chromatic; 
 	&darkroom_module_demosaic;
+	&darkroom_module_invert;
 	&darkroom_module_tonemapping;
 	&darkroom_module_exposure;
 	&darkroom_module_highlightreconstruction;
@@ -220,9 +221,11 @@
 	&darkroom_module_colorcorrection;
 	&darkroom_module_sharpen;
 	&darkroom_module_grain;
+	&darkroom_module_colorcontrast;
 	&darkroom_module_localcontrast2;	
 	&darkroom_module_clipping;
 	&darkroom_module_highpass;
+	&darkroom_module_lowpass;
 	&darkroom_module_outputcolorprofile;
 	&darkroom_module_channelmixer;
 	<!--&darkroom_module_localcontrast;-->

@@ -2,23 +2,24 @@ project(darktable CXX C)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
 
-option(USE_GCONF_BACKEND "Detect and use gconf backend if available." ON)
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
 option(USE_NLS "Build Native Language Support (using gettext)" ON)
 option(USE_FLICKR "Enable Flickr support" ON)
 option(USE_KWALLET "Build kwallet password storage backend" ON)
 option(USE_GNOME_KEYRING "Build gnome-keyring password storage backend" ON)
+option(USE_UNITY "Use libunity to report progress in the launcher" OFF)
 option(BUILD_SLIDESHOW "Build the opengl slideshow viewer" ON)
 option(USE_OPENMP "Use openmp threading support." ON)
 option(USE_OPENCL "Use OpenCL support." ON)
 option(USE_DARKTABLE_PROFILING OFF)
 option(DONT_USE_RAWSPEED "Dont compile rawspeed backend." OFF)
-option(DONT_INSTALL_GCONF_SCHEMAS "Dont install gconf schemas, usefull for package creation." OFF)
 option(BUILD_USERMANUAL "Build all the versions of the usermanual." OFF)
 option(INSTALL_IOP_EXPERIMENTAL "Also install unstable, unfinished, broken, and likely-to-change-soon plugins." OFF)
 option(INSTALL_IOP_LEGACY "Also install old plugins we want to get rid of." OFF)
 option(BINARY_PACKAGE_BUILD "Sets march optimization to generic" OFF)
 option(APRIL_FOOLS "Add the \"file manager\" (a shell) to lighttable mode" OFF)
+option(GTK3_MIGRATION_CHECKS "Help getting darktable ready for GTK3" OFF)
+option(USE_XMLLINT "Run xmllint to test if darktableconfig.xml is valid" ON)
 
 # Generate multi arch triplet
 EXECUTE_PROCESS(COMMAND dpkg-architecture -qDEB_HOST_MULTIARCH OUTPUT_VARIABLE CMAKE_ARCH_TRIPLET OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -33,19 +34,43 @@ endif()
 #
 if(APPLE)
 	message("-- Mac OSX build detected, setting default features")
-	set(USE_GCONF_BACKEND OFF) 
-	set(USE_CAMERA_SUPPORT OFF)
-	
+	set(USE_OPENCL OFF)
+	set(USE_OPENMP OFF)
+	set(USE_CAMERA_SUPPORT ON)
+	set(BUILD_SLIDESHOW OFF)
+
 	# setup mac ports path...
-	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /opt/local/lib)
-	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} /opt/local/include)
-	
-	set(LIBS ${LIBS} -Wl,-framework -Wl,Carbon)
+	set(CMAKE_LIBRARY_PATH "${CMAKE_LIBRARY_PATH} /opt/local/lib")
+	set(CMAKE_INCLUDE_PATH "${CMAKE_INCLUDE_PATH} /opt/local/include")
+
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_DARWIN_C_SOURCE")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_DARWIN_C_SOURCE")
+
+	set(LIBS "${LIBS} -Wl,-framework -Wl,Carbon")
+
+	if(USE_OPENCL)
+	  set(LIBS "${LIBS} -Wl,-framework -Wl,OpenCL")
+	endif(USE_OPENCL)
+
+        # Detect the OS X version: Use '/usr/bin/sw_vers -productVersion' to extract V from '10.V.x'.
+        EXEC_PROGRAM(/usr/bin/sw_vers ARGS -productVersion OUTPUT_VARIABLE MACOSX_VERSION_RAW)
+        STRING(REGEX REPLACE "10\\.([0-9]).*" "\\1" MACOSX_VERSION "${MACOSX_VERSION_RAW}")
+        if(${MACOSX_VERSION} LESS 7)
+          add_definitions("-DAPPLE_NEED_DPRINTF")
+        endif()
 endif(APPLE)
+
+if(CMAKE_COMPILER_IS_GNUCC)
+  execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
+      OUTPUT_VARIABLE GCC_VERSION)
+  if (GCC_VERSION VERSION_LESS 4.3)
+		message("-- Disabling OpenMP because GCC is 4.2 or older!")
+		set(USE_OPENMP OFF)
+  endif()
+endif()
 
 if(WIN32)
  message("-- Win32 build detected, setting default features")
-  set(USE_GCONF_BACKEND OFF) 
   set(USE_CAMERA_SUPPORT OFF)
 endif(WIN32)
 
@@ -89,7 +114,7 @@ if(WIN32)
 	set(SHARE_INSTALL "." CACHE STRING "Data file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
 else(WIN32)
 	if(NOT SHARE_INSTALL)
-		set(SHARE_INSTALL "share/darktable" CACHE STRING "Data file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
+		set(SHARE_INSTALL "share" CACHE STRING "Data file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
 	endif(NOT SHARE_INSTALL)
 endif(WIN32)
 
@@ -133,12 +158,29 @@ if(Gettext_FOUND)
 endif(Gettext_FOUND)
 endif(USE_NLS)
 
-# needed to generate file "create_preferences.sh" accordingly
+#find a temporary directory
+if(NOT TMP_DIR)
+	SET(TMP_DIR "~/.local/tmp")
+endif(NOT TMP_DIR)
+	
+#find a cache directory
+if(NOT CACHE_DIR)
+	SET(CACHE_DIR "~/.cache/darktable")
+endif(NOT CACHE_DIR)
+	
+# needed to generate file "preferences_gen.h" accordingly
 if(USE_OPENCL)
 	SET(HAVE_OPENCL 1)
 else()
 	SET(HAVE_OPENCL 0)
 endif(USE_OPENCL)
+
+# See http://developer.gnome.org/gtk3/3.0/gtk-migrating-2-to-3.html
+if(GTK3_MIGRATION_CHECKS)
+	message("-- Add defines to help GTK3 migration")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DGTK_DISABLE_SINGLE_INCLUDES -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGSEAL_ENABLE")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGTK_DISABLE_SINGLE_INCLUDES -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGSEAL_ENABLE")
+endif(GTK3_MIGRATION_CHECKS)
 
 #
 # Test SSE level
@@ -172,16 +214,41 @@ endif(USE_OPENCL)
 # 	set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-m${USE_SSE_SET}")
 # endif(USE_SSE_SET)
 
-# Path to install gconf schemas into.
-if(NOT DT_GCONF_SCHEMA_DIR)
-  # a home install would use: "xml:readwrite:${HOME}/.gconf"
-  # default gconftool-2 path (gconftool-2 --get-default-source), mostly "xml:merged:/etc/gconf/gconf.xml.defaults"
-  execute_process (COMMAND gconftool-2 --get-default-source OUTPUT_VARIABLE DT_GCONF_SCHEMA_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif(NOT DT_GCONF_SCHEMA_DIR)
-
 # setup some theme specific variables
 set(THEME hicolor)
 set(THEME_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/icons/${THEME})
+
+# we need some specific functions:
+IF(CMAKE_SYSTEM MATCHES "SunOS.*")
+add_definitions("-D_XOPEN_SOURCE=600")
+elseif(CMAKE_SYSTEM_NAME MATCHES "^(DragonFly|FreeBSD|NetBSD|OpenBSD)$")
+else(CMAKE_SYSTEM MATCHES "SunOS.*")
+add_definitions("-D_XOPEN_SOURCE=700")
+endif(CMAKE_SYSTEM MATCHES "SunOS.*")
+
+# we need an xslt interpreter to generate preferences_gen.h and darktablerc
+find_program(Xsltproc_BIN xsltproc)
+if(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+	message(STATUS "Missing xsltproc")
+	find_program(Saxon_BIN saxon-xslt)
+	if(${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+		message(STATUS "Missing saxon-xslt")
+		message(FATAL_ERROR "No xslt interpreter found")
+	else(${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+		message(STATUS "Found saxon-xslt")
+	endif(${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+else(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+	message(STATUS "Found xsltproc")
+endif(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+
+# do we have xmllint?
+if(USE_XMLLINT)
+	find_program(Xmllint_BIN xmllint)
+	if(${Xmllint_BIN} STREQUAL "Xmllint_BIN-NOTFOUND")
+		message(STATUS "Could NOT find xmllint")
+		set(USE_XMLLINT OFF)
+	endif(${Xmllint_BIN} STREQUAL "Xmllint_BIN-NOTFOUND")
+endif(USE_XMLLINT)
 
 # lets continue into build directories
 add_subdirectory(src)
@@ -189,12 +256,6 @@ add_subdirectory(data)
 add_subdirectory(doc)
 
 include(cmake/darktable-packaging.cmake)
-
-# create_preferences.sh depending on opencl
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/tools/create_preferences.sh.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/create_preferences.sh"
-    IMMEDIATE @ONLY)
 
 # uninstall target
 configure_file(

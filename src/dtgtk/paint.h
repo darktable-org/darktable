@@ -25,6 +25,7 @@
 
 typedef enum dtgtk_cairo_paint_flags_t
 {
+  CPF_NONE=0,
   CPF_DIRECTION_UP=1,
   CPF_DIRECTION_DOWN=2,
   CPF_DIRECTION_LEFT=4,
@@ -43,6 +44,10 @@ dtgtk_cairo_paint_flags_t;
 
 typedef void (*DTGTKCairoPaintIconFunc)(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 
+/** Paint a triangle left/right/up/down */
+void dtgtk_cairo_paint_triangle(cairo_t *cr, gint x,int y,gint w,gint h, gint flags);
+/** Paint a solid triangle left/right/up/down */
+void dtgtk_cairo_paint_solid_triangle(cairo_t *cr, gint x,int y,gint w,gint h, gint flags);
 /** Paint a arrow left or right */
 void dtgtk_cairo_paint_arrow(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a solid arrow left/right/up/down */
@@ -57,6 +62,8 @@ void dtgtk_cairo_paint_presets(cairo_t *cr,gint x,gint y,gint w,gint h,gint flag
 void dtgtk_cairo_paint_flip(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a switch icon */
 void dtgtk_cairo_paint_switch(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a plusminus icon */
+void dtgtk_cairo_paint_plusminus(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a color rect icon */
 void dtgtk_cairo_paint_color(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a eye icon */
@@ -77,6 +84,8 @@ void dtgtk_cairo_paint_aspectflip(cairo_t *cr,gint x,gint y,gint w,gint h,gint f
 void dtgtk_cairo_paint_label(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint a color picker icon - a pipette for bigger buttons */
 void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a display mask icon */
+void dtgtk_cairo_paint_showmask(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint alignment icon */
 void dtgtk_cairo_paint_alignment(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint styles icon */
@@ -96,8 +105,35 @@ void dtgtk_cairo_paint_dropdown(cairo_t *cr,gint x,gint y,gint w,gint h,gint fla
 /** paint bracket capture */
 void dtgtk_cairo_paint_bracket(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint lock icon */
-void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h,
-                            gint flags);
+void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+/** paint check mark icon */
+void dtgtk_cairo_paint_check_mark(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+/** paint a over/under exposure icon */
+void dtgtk_cairo_paint_overexposed(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+/** paint a landscape rectangle */
+void dtgtk_cairo_paint_rect_landscape(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** paint a portrait rectangle */
+void dtgtk_cairo_paint_rect_portrait(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** paint a zoom icon */
+void dtgtk_cairo_paint_zoom(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+
+/** paint active modulgroup icon */
+void dtgtk_cairo_paint_modulegroup_active(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+/** paint favorites modulgroup icon */
+void dtgtk_cairo_paint_modulegroup_favorites(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+/** paint basic modulgroup icon */
+void dtgtk_cairo_paint_modulegroup_basic(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+/** paint tone modulgroup icon */
+void dtgtk_cairo_paint_modulegroup_tone(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+/** paint color modulgroup icon */
+void dtgtk_cairo_paint_modulegroup_color(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+/** paint correct modulgroup icon */
+void dtgtk_cairo_paint_modulegroup_correct(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+/** paint effect modulgroup icon */
+void dtgtk_cairo_paint_modulegroup_effect(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+
 #endif
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

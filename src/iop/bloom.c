@@ -1,6 +1,6 @@
 /*
 		This file is part of darktable,
-		copyright (c) 2010 Henrik Andersson.
+		copyright (c) 2010-2012 Henrik Andersson.
 
 		darktable is free software: you can redistribute it and/or modify
 		it under the terms of the GNU General Public License as published by
@@ -18,22 +18,18 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
-#include "dtgtk/slider.h"
-#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
+#include <string.h>
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 #define LCLIP(x) ((x<0)?0.0:(x>100.0)?100.0:x)
@@ -51,7 +47,7 @@ typedef struct dt_iop_bloom_gui_data_t
 {
   GtkVBox   *vbox;
   GtkWidget  *label1,*label2,*label3;			// size,threshold,strength
-  GtkDarktableSlider *scale1,*scale2,*scale3;       // size,threshold,strength
+  GtkWidget *scale1,*scale2,*scale3;       // size,threshold,strength
 }
 dt_iop_bloom_gui_data_t;
 
@@ -78,7 +74,6 @@ groups ()
 {
   return IOP_GROUP_EFFECT;
 }
-
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
@@ -117,16 +112,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   /* get the thresholded lights into buffer */
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) private(in, out) shared(ivoid, ovoid, roi_out, roi_in, data,blurlightness) schedule(static)
+  #pragma omp parallel for default(none) shared(ivoid, ovoid, roi_out, roi_in, data,blurlightness) schedule(static)
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
-    out = ((float *)ovoid) + ch*k;
-    float L = out[0]*scale;
+    float *inp = ((float *)ivoid) + ch*k;
+    float L = inp[0]*scale;
     if (L>data->threshold)
       blurlightness[k] = L;
 
-    out +=ch;
+    inp +=ch;
   }
 
 
@@ -216,6 +211,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     outp[2] = inp[2];
   }
 
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+
   if(scanline)
     free(scanline);
   if(blurlightness)
@@ -223,32 +221,32 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 }
 
 static void
-strength_callback (GtkDarktableSlider *slider, gpointer user_data)
+strength_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
-  p->strength = dtgtk_slider_get_value(slider);
+  p->strength = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-threshold_callback (GtkDarktableSlider *slider, gpointer user_data)
+threshold_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
-  p->threshold = dtgtk_slider_get_value(slider);
+  p->threshold = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-size_callback (GtkDarktableSlider *slider, gpointer user_data)
+size_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
-  p->size= dtgtk_slider_get_value(slider);
+  p->size = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -294,9 +292,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_bloom_gui_data_t *g = (dt_iop_bloom_gui_data_t *)self->gui_data;
   dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale1, p->size);
-  dtgtk_slider_set_value(g->scale2, p->threshold);
-  dtgtk_slider_set_value(g->scale3, p->strength);
+  dt_bauhaus_slider_set(g->scale1, p->size);
+  dt_bauhaus_slider_set(g->scale2, p->threshold);
+  dt_bauhaus_slider_set(g->scale3, p->strength);
 }
 
 void init(dt_iop_module_t *module)
@@ -304,7 +302,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_bloom_params_t));
   module->default_params = malloc(sizeof(dt_iop_bloom_params_t));
   module->default_enabled = 0;
-  module->priority = 437; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 450; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_bloom_params_t);
   module->gui_data = NULL;
   dt_iop_bloom_params_t tmp = (dt_iop_bloom_params_t)
@@ -329,29 +327,29 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_bloom_gui_data_t *g = (dt_iop_bloom_gui_data_t *)self->gui_data;
   dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->size, 2));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->threshold, 2));
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->strength, 2));
-  dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_format_type(g->scale3,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_label(g->scale1,_("size"));
-  dtgtk_slider_set_unit(g->scale1,"%");
-  dtgtk_slider_set_label(g->scale2,_("threshold"));
-  dtgtk_slider_set_unit(g->scale2,"%");
-  dtgtk_slider_set_label(g->scale3,_("strength"));
-  dtgtk_slider_set_unit(g->scale3,"%");
-
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  /* size */
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->size, 0);
+  dt_bauhaus_slider_set_format(g->scale1,"%.0f%%");
+  dt_bauhaus_widget_set_label(g->scale1,_("size"));
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the size of bloom"), (char *)NULL);
+
+  /* threshold */
+  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->threshold, 0);
+  dt_bauhaus_slider_set_format(g->scale2,"%.0f%%");
+  dt_bauhaus_widget_set_label(g->scale2,_("threshold"));
   g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the threshold of light"), (char *)NULL);
+
+  /* strength */
+  g->scale3 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->strength, 0);
+  dt_bauhaus_slider_set_format(g->scale3,"%.0f%%");
+  dt_bauhaus_widget_set_label(g->scale3,_("strength"));
   g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("the strength of bloom"), (char *)NULL);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (size_callback), self);
@@ -367,4 +365,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

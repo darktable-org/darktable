@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2009--2012 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -53,8 +53,7 @@ dt_iop_colorin_params_t;
 
 typedef struct dt_iop_colorin_gui_data_t
 {
-  GtkVBox *vbox1, *vbox2;
-  GtkComboBox *cbox1, *cbox2;
+  GtkWidget *cbox1, *cbox2;
   GList *profiles;
 }
 dt_iop_colorin_gui_data_t;
@@ -68,7 +67,7 @@ typedef struct dt_iop_colorin_data_t
   cmsHTRANSFORM *xform;
   float lut[3][LUT_SAMPLES];
   float cmatrix[9];
-  float unbounded_coeffs[3][2];       // approximation for extrapolation of shaper curves
+  float unbounded_coeffs[3][3];       // approximation for extrapolation of shaper curves
 }
 dt_iop_colorin_data_t;
 
@@ -87,3 +86,6 @@ void gui_cleanup  (struct dt_iop_module_t *self);
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

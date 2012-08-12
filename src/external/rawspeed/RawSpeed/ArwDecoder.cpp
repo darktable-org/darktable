@@ -30,9 +30,12 @@ ArwDecoder::ArwDecoder(TiffIFD *rootIFD, FileMap* file) :
 }
 
 ArwDecoder::~ArwDecoder(void) {
+  if (mRootIFD)
+    delete mRootIFD;
+  mRootIFD = NULL;
 }
 
-RawImage ArwDecoder::decodeRaw() {
+RawImage ArwDecoder::decodeRawInternal() {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);
 
   if (data.empty())
@@ -102,7 +105,7 @@ RawImage ArwDecoder::decodeRaw() {
       DecodeARW(input, width, height);
     else
       DecodeARW2(input, width, height, bitPerPixel);
-  } catch (IOException e) {
+  } catch (IOException &e) {
     errors.push_back(_strdup(e.what()));
     // Let's ignore it, it may have delivered somewhat useful data.
   }
@@ -169,7 +172,7 @@ void ArwDecoder::DecodeARW2(ByteStream &input, uint32 w, uint32 h, uint32 bpp) {
   ThrowRDE("Unsupported bit depth");
 }
 
-void ArwDecoder::checkSupport(CameraMetaData *meta) {
+void ArwDecoder::checkSupportInternal(CameraMetaData *meta) {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
   if (data.empty())
     ThrowRDE("ARW Support check: Model name found");
@@ -178,18 +181,25 @@ void ArwDecoder::checkSupport(CameraMetaData *meta) {
   this->checkCameraSupported(meta, make, model, "");
 }
 
-void ArwDecoder::decodeMetaData(CameraMetaData *meta) {
+void ArwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   //Default
+  int iso = 0;
+
   mRaw->cfa.setCFA(CFA_RED, CFA_GREEN, CFA_GREEN2, CFA_BLUE);
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
 
   if (data.empty())
     ThrowRDE("ARW Meta Decoder: Model name found");
+  if (!data[0]->hasEntry(MAKE))
+    ThrowRDE("ARW Decoder: Make name not found");
 
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
 
-  setMetaData(meta, make, model, "");
+  if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
+    iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
+
+  setMetaData(meta, make, model, "", iso);
 }
 
 /* Since ARW2 compressed images have predictable offsets, we decode them threaded */

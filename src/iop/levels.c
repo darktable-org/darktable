@@ -44,7 +44,7 @@ const char *name()
 int
 groups ()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_TONE;
 }
 
 int
@@ -98,21 +98,64 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         out[2] = in[2] * out[0]/0.01f;
       }
 
+      out[3] = in[3];
+
     }
   }
 
 }
 
-void init_presets (dt_iop_module_so_t *self)
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_levels_params_t p;
-  p.levels_preset = 0;
+  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
+  dt_iop_levels_global_data_t *gd = (dt_iop_levels_global_data_t *)self->data;
 
-  p.levels[0] = 0;
-  p.levels[1] = 0.5;
-  p.levels[2] = 1;
-  dt_gui_presets_add_generic(_("unmodified"), self->op, self->version(), &p, sizeof(p), 1);
+  cl_mem dev_lut = NULL;
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  dev_lut = dt_opencl_copy_host_to_device(devid, d->lut, 256, 256, sizeof(float));
+  if(dev_lut == NULL) goto error;
+
+  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 0, sizeof(cl_mem), &dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 1, sizeof(cl_mem), &dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 2, sizeof(int), &width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 3, sizeof(int), &height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 4, sizeof(cl_mem), &dev_lut);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 5, sizeof(float), &d->in_low);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 6, sizeof(float), &d->in_high);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 7, sizeof(float), &d->in_inv_gamma);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_levels, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  dt_opencl_release_mem_object(dev_lut);
+  return TRUE;
+
+error:
+  if (dev_lut != NULL) dt_opencl_release_mem_object(dev_lut);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_levels] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
 }
+#endif
+
+
+
+//void init_presets (dt_iop_module_so_t *self)
+//{
+//  dt_iop_levels_params_t p;
+//  p.levels_preset = 0;
+//
+//  p.levels[0] = 0;
+//  p.levels[1] = 0.5;
+//  p.levels[2] = 1;
+//  dt_gui_presets_add_generic(_("unmodified"), self->op, self->version(), &p, sizeof(p), 1);
+//}
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1,
                     dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -156,12 +199,18 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
+void reload_defaults(dt_iop_module_t *self)
+{
+  memcpy(self->params, self->default_params, sizeof(dt_iop_levels_params_t));
+  self->default_enabled = 0;
+}
+
 void init(dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_levels_params_t));
   module->default_params = malloc(sizeof(dt_iop_levels_params_t));
   module->default_enabled = 0;
-  module->priority = 604; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 627; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_levels_params_t);
   module->gui_data = NULL;
   dt_iop_levels_params_t tmp = (dt_iop_levels_params_t)
@@ -223,6 +272,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_levels_motion_notify), self);
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (dt_iop_levels_leave_notify), self);
+  g_signal_connect (G_OBJECT (c->area), "scroll-event",
+        G_CALLBACK (dt_iop_levels_scroll), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -237,8 +288,6 @@ static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   c->mouse_x = c->mouse_y = -1.0;
-  if(!c->dragging)
-    c->handle_move = -1;
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -279,7 +328,7 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
 
   for(int k = 0; k < 3; k++)
   {
-    if(k == c->handle_move)
+    if(k == c->handle_move && c->mouse_x > 0)
       cairo_set_source_rgb(cr, 1, 1, 1);
     else
       cairo_set_source_rgb(cr, .7, .7, .7);
@@ -314,7 +363,7 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
     cairo_rel_line_to(cr, arrw*.5f, -arrw);
     cairo_rel_line_to(cr, arrw*.5f, arrw);
     cairo_close_path(cr);
-    if(c->handle_move == k)
+    if(c->handle_move == k && c->mouse_x > 0)
       cairo_fill(cr);
     else
       cairo_stroke(cr);
@@ -323,17 +372,21 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   cairo_translate(cr, 0, height);
 
   // draw lum histogram in background
-  dt_develop_t *dev = darktable.develop;
-  float *hist, hist_max;
-  hist = dev->histogram_pre_levels;
-  hist_max = dev->histogram_pre_levels_max;
-  if(hist_max > 0)
+  // only if the module is enabled
+  if (self->enabled)
   {
-    cairo_save(cr);
-    cairo_scale(cr, width/63.0, -(height-5)/(float)hist_max);
-    cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-    dt_draw_histogram_8(cr, hist, 3);
-    cairo_restore(cr);
+    dt_develop_t *dev = darktable.develop;
+    float *hist, hist_max;
+    hist = dev->histogram_pre_levels;
+    hist_max = dev->histogram_linear?dev->histogram_pre_levels_max:logf(1.0 + dev->histogram_pre_levels_max);
+    if(hist_max > 0)
+    {
+      cairo_save(cr);
+      cairo_scale(cr, width/63.0, -(height-5)/(float)hist_max);
+      cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
+      dt_draw_histogram_8(cr, hist, 3);
+      cairo_restore(cr);
+    }
   }
 
   // Cleaning up
@@ -345,6 +398,64 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   cairo_surface_destroy(cst);
   return TRUE;
 }
+
+/**
+ * Move handler_move to new_pos, storing the value in handles,
+ * while keeping new_pos within a valid range
+ * and preserving the ratio between the three handles.
+ *
+ * @param handle_move Handle to move
+ * @param new_pow New position (0..1)
+ * @param levels Pointer to dt_iop_levels_params->levels.
+ * @param drag_start_percentage Ratio between handle 1, 2 and 3.
+ *
+ * @return TRUE if the marker were given a new position. FALSE otherwise.
+ */
+static void dt_iop_levels_move_handle(int handle_move, float new_pos, float *levels, float drag_start_percentage)
+{
+  float min_x = 0;
+  float max_x = 1;
+
+  if ((handle_move < 0) || handle_move > 2)
+    return;
+
+  if (levels == NULL)
+    return;
+
+  // Determining the minimum and maximum bounds for the drag handles
+  switch(handle_move)
+  {
+  case 0:
+    max_x = fminf(levels[2] - (0.05 / drag_start_percentage),
+                  1);
+    max_x = fminf((levels[2] * (1 - drag_start_percentage) - 0.05)
+                  / (1 - drag_start_percentage),
+                  max_x);
+    break;
+
+  case 1:
+    min_x = levels[0] + 0.05;
+    max_x = levels[2] - 0.05;
+    break;
+
+  case 2:
+    min_x = fmaxf((0.05 / drag_start_percentage) + levels[0],
+                  0);
+    min_x = fmaxf((levels[0] * (1 - drag_start_percentage) + 0.05)
+                  / (1 - drag_start_percentage),
+                  min_x);
+    break;
+  }
+
+  levels[handle_move] =
+      fminf(max_x, fmaxf(min_x, new_pos));
+
+  if(handle_move != 1)
+    levels[1] = levels[0] + (drag_start_percentage
+                             * (levels[2] - levels[0]));
+
+}
+
 
 static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
@@ -367,40 +478,7 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
     {
       const float mx = (CLAMP(event->x - inset, 0, width)) / (float)width;
 
-      float min_x = 0;
-      float max_x = 1;
-
-      // Determining the minimum and maximum bounds for the drag handles
-      switch(c->handle_move)
-      {
-      case 0:
-        max_x = fminf(p->levels[2] - (0.05 / c->drag_start_percentage),
-                      1);
-        max_x = fminf((p->levels[2] * (1 - c->drag_start_percentage) - 0.05)
-                      / (1 - c->drag_start_percentage),
-                      max_x);
-        break;
-
-      case 1:
-        min_x = p->levels[0] + 0.05;
-        max_x = p->levels[2] - 0.05;
-        break;
-
-      case 2:
-        min_x = fmaxf((0.05 / c->drag_start_percentage) + p->levels[0],
-                      0);
-        min_x = fmaxf((p->levels[0] * (1 - c->drag_start_percentage) + 0.05)
-                      / (1 - c->drag_start_percentage),
-                      min_x);
-        break;
-      }
-
-      p->levels[c->handle_move] =
-          fminf(max_x, fmaxf(min_x, mx));
-
-      if(c->handle_move != 1)
-        p->levels[1] = p->levels[0] + (c->drag_start_percentage
-                                       * (p->levels[2] - p->levels[0]));
+      dt_iop_levels_move_handle(c->handle_move, mx, p->levels, c->drag_start_percentage);
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
@@ -432,8 +510,22 @@ static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *ev
   if(event->button == 1)
   {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-    dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
-    c->dragging = 1;
+
+    if(event->type == GDK_2BUTTON_PRESS) {
+      // Reset
+      dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
+      memcpy(self->params, self->default_params, self->params_size);
+
+      // Needed in case the user scrolls or drags immediately after a reset,
+      // as drag_start_percentage is only updated when the mouse is moved.
+      c->drag_start_percentage = 0.5;
+
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      gtk_widget_queue_draw(self->widget);
+    } else {
+      dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
+      c->dragging = 1;
+    }
     return TRUE;
   }
   return FALSE;
@@ -451,3 +543,41 @@ static gboolean dt_iop_levels_button_release(GtkWidget *widget, GdkEventButton *
   return FALSE;
 }
 
+static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
+  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
+
+  const float interval = 0.002; // Distance moved for each scroll event
+  gboolean updated = FALSE;
+  float new_position = 0;
+
+  if (c->dragging) {
+    return FALSE;
+  }
+
+  if(event->direction == GDK_SCROLL_UP)
+  {
+    new_position = p->levels[c->handle_move] + interval;
+    updated = TRUE;
+  }
+  else if(event->direction == GDK_SCROLL_DOWN)
+  {
+    new_position = p->levels[c->handle_move] - interval;
+    updated = TRUE;
+  }
+
+  if (updated) {
+    dt_iop_levels_move_handle(c->handle_move, new_position,
+                  p->levels, c->drag_start_percentage);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

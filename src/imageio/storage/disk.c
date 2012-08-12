@@ -17,6 +17,7 @@
 */
 
 #include "common/darktable.h"
+#include "common/exif.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
@@ -30,6 +31,8 @@
 #include "dtgtk/paint.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <glib.h>
+#include <glib/gstdio.h>
 
 DT_MODULE(1)
 
@@ -105,7 +108,7 @@ gui_init (dt_imageio_module_storage_t *self)
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry));
   g_object_set(G_OBJECT(widget), "tooltip-text", _("enter the path where to put exported images:\n"
                "$(ROLL_NAME) - roll of the input image\n"
-               "$(FILE_DIRECTORY) - directory of the input image\n"
+               "$(FILE_FOLDER) - folder containing the input image\n"
                "$(FILE_NAME) - basename of the input image\n"
                "$(FILE_EXTENSION) - extension of the input image\n"
                "$(SEQUENCE) - sequence number\n"
@@ -124,8 +127,8 @@ gui_init (dt_imageio_module_storage_t *self)
                "$(STARS) - star rating\n"
                "$(LABELS) - colorlabels\n"
                "$(PICTURES_FOLDER) - pictures folder\n"
-               "$(HOME_FOLDER) - home folder\n"
-               "$(DESKTOP_FOLDER) - desktop folder"
+               "$(HOME) - home folder\n"
+               "$(DESKTOP) - desktop folder"
                                                   ), (char *)NULL);
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, 18, 18);
@@ -145,20 +148,18 @@ gui_reset (dt_imageio_module_storage_t *self)
 {
   disk_t *d = (disk_t *)self->gui_data;
   // global default can be annoying:
-  // gtk_entry_set_text(GTK_ENTRY(d->entry), "$(FILE_DIRECTORY)/darktable_exported/$(FILE_NAME)");
+  // gtk_entry_set_text(GTK_ENTRY(d->entry), "$(FILE_FOLDER)/darktable_exported/$(FILE_NAME)");
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", gtk_entry_get_text(d->entry));
 }
 
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
-  dt_image_t *img = dt_image_cache_get(imgid, 'r');
-  if(!img) return 1;
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
 
   char filename[1024]= {0};
   char dirname[1024]= {0};
-  dt_image_full_path(img->id, dirname, 1024);
+  dt_image_full_path(imgid, dirname, 1024);
   int fail = 0;
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -180,7 +181,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
     d->vp->filename = dirname;
     d->vp->jobcode = "export";
-    d->vp->img = img;
+    d->vp->imgid = imgid;
     d->vp->sequence = num;
     dt_variables_expand(d->vp, d->filename, TRUE);
     g_strlcpy(filename, dt_variables_get_result(d->vp), 1024);
@@ -194,14 +195,21 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     {
       fprintf(stderr, "[imageio_storage_disk] could not create directory: `%s'!\n", dirname);
       dt_control_log(_("could not create directory `%s'!"), dirname);
-      dt_image_cache_release(img, 'r');
+      fail = 1;
+      goto failed;
+    }
+    if(g_access(dirname, W_OK) != 0)
+    {
+      fprintf(stderr, "[imageio_storage_disk] could not write to directory: `%s'!\n", dirname);
+      dt_control_log(_("could not write to directory `%s'!"), dirname);
       fail = 1;
       goto failed;
     }
 
     c = filename + strlen(filename);
-    for(; c>filename && *c != '.' && *c != '/' ; c--);
-    if(c <= filename || *c=='/') c = filename + strlen(filename);
+    // remove everything after the last '.'. this destroys any file name with dots in it since $(FILE_NAME) already comes without the original extension.
+//     for(; c>filename && *c != '.' && *c != '/' ; c--);
+//     if(c <= filename || *c=='/') c = filename + strlen(filename);
 
     sprintf(c,".%s",ext);
 
@@ -223,8 +231,20 @@ failed:
   if(fail) return 1;
 
   /* export image to file */
-  dt_imageio_export(img, filename, format, fdata);
-  dt_image_cache_release(img, 'r');
+  if(dt_imageio_export(imgid, filename, format, fdata) != 0)
+  {
+    fprintf(stderr, "[imageio_storage_disk] could not export to file: `%s'!\n", filename);
+    dt_control_log(_("could not export to file `%s'!"), filename);
+    return 1;
+  }
+
+  /* now write xmp into that container, if possible */
+  if(dt_exif_xmp_attach(imgid, filename) != 0)
+  {
+    fprintf(stderr, "[imageio_storage_disk] could not attach xmp data to file: `%s'!\n", filename);
+    dt_control_log(_("could not attach xmp data to file `%s'!"), filename);
+    return 1;
+  }
 
   printf("[export_job] exported to `%s'\n", filename);
   char *trunc = filename + strlen(filename) - 32;
@@ -268,4 +288,6 @@ set_params(dt_imageio_module_storage_t *self, void *params, int size)
   return 0;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

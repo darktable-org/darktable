@@ -79,12 +79,12 @@ void RawDecoder::decodeUncompressed(TiffIFD *rawIFD, bool MSBOrder) {
     bitPerPixel = (int)((uint64)(slice.count * 8) / (slice.h * width));
     try {
       readUncompressedRaw(in, size, pos, width*bitPerPixel / 8, bitPerPixel, MSBOrder);
-    } catch (RawDecoderException e) {
+    } catch (RawDecoderException &e) {
       if (i>0)
         errors.push_back(_strdup(e.what()));
       else
         throw;
-    } catch (IOException e) {
+    } catch (IOException &e) {
       if (i>0)
         errors.push_back(_strdup(e.what()));
       else
@@ -213,11 +213,13 @@ bool RawDecoder::checkCameraSupported(CameraMetaData *meta, string make, string 
   return true;
 }
 
-void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, string mode) {
+void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, string mode, int iso_speed) {
+  mRaw->isoSpeed = iso_speed;
   TrimSpaces(make);
   TrimSpaces(model);
   Camera *cam = meta->getCamera(make, model, mode);
   if (!cam) {
+    printf("ISO:%d\n", iso_speed);
     printf("Unable to find camera in database: %s %s %s\nPlease upload file to ftp.rawstudio.org, thanks!\n", make.c_str(), model.c_str(), mode.c_str());
     return;
   }
@@ -240,10 +242,10 @@ void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, st
   if (cam->cropPos.y & 1)
     mRaw->cfa.shiftDown();
 
-  mRaw->blackLevel = cam->black;
-  mRaw->whitePoint = cam->white;
+  const CameraSensorInfo *sensor = cam->getSensorInfo(iso_speed);
+  mRaw->blackLevel = sensor->mBlackLevel;
+  mRaw->whitePoint = sensor->mWhiteLevel;
   mRaw->blackAreas = cam->blackAreas;
-
 }
 
 
@@ -251,9 +253,9 @@ void *RawDecoderDecodeThread(void *_this) {
   RawDecoderThread* me = (RawDecoderThread*)_this;
   try {
     me->parent->decodeThreaded(me);
-  } catch (RawDecoderException ex) {
+  } catch (RawDecoderException &ex) {
     me->error = _strdup(ex.what());
-  } catch (IOException ex) {
+  } catch (IOException &ex) {
     me->error = _strdup(ex.what());
   }
 
@@ -297,6 +299,46 @@ void RawDecoder::startThreads() {
 
 void RawDecoder::decodeThreaded(RawDecoderThread * t) {
   ThrowRDE("Internal Error: This class does not support threaded decoding");
+}
+
+RawSpeed::RawImage RawDecoder::decodeRaw()
+{
+  try {
+    return decodeRawInternal();
+  } catch (TiffParserException &e) {
+    ThrowRDE("%s", e.what());
+  } catch (FileIOException &e) {
+    ThrowRDE("%s", e.what());
+  } catch (IOException &e) {
+    ThrowRDE("%s", e.what());
+  }
+  return NULL;
+}
+
+void RawDecoder::decodeMetaData(CameraMetaData *meta)
+{
+  try {
+    return decodeMetaDataInternal(meta);
+  } catch (TiffParserException &e) {
+    ThrowRDE("%s", e.what());
+  } catch (FileIOException &e) {
+    ThrowRDE("%s", e.what());
+  } catch (IOException &e) {
+    ThrowRDE("%s", e.what());
+  }
+}
+
+void RawDecoder::checkSupport(CameraMetaData *meta)
+{
+  try {
+    return checkSupportInternal(meta);
+  } catch (TiffParserException &e) {
+    ThrowRDE("%s", e.what());
+  } catch (FileIOException &e) {
+    ThrowRDE("%s", e.what());
+  } catch (IOException &e) {
+    ThrowRDE("%s", e.what());
+  }
 }
 
 } // namespace RawSpeed

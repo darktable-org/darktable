@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2011-01-20 14:17+0100\n"
+"POT-Creation-Date: 2011-11-13 23:31+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -9,515 +9,2895 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:5(para)
-msgid "The owner of the Darktable project is Johannes Hanika. Main developers are Johannes Hanika and Henrik Andersson. Darktable is a free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:5(para)
+msgid "The owner of the darktable project is Johannes Hanika. Main developers are Johannes Hanika and Henrik Andersson. darktable is a free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:14(para)
-msgid "Darktable is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:14(para)
+msgid "darktable is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:20(para)
-msgid "You should have received a copy of the GNU General Public License along with Darktable. If not, see <emphasis> http://www.gnu.org/licenses/</emphasis>."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:20(para)
+msgid "You should have received a copy of the GNU General Public License along with darktable. If not, see <emphasis> http://www.gnu.org/licenses/</emphasis>."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:26(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:26(para)
 msgid "The present user manual is under license <emphasis>cc by-nc-sa </emphasis>, meaning <emphasis>Attribution Non-Commercial Share Alike </emphasis>. You can visit <emphasis>http://creativecommons.org/about/licenses/</emphasis> to get more information."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:33(firstname)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:33(firstname)
 msgid "Henrik"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:34(surname)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:34(surname)
 msgid "Andersson"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:37(year)
-msgid "2010"
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:37(year) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:41(year)
+msgid "2010-2011"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:38(holder)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:38(holder)
 msgid "P.H. Andersson"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:41(title)
-msgid "Darktable"
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:42(holder)
+msgid "Olivier Tribout"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:42(title)
-msgid "Preface to darktable"
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:43(para)
-msgid "<indexterm significance=\"normal\"><primary>Darktable</primary></indexterm><indexterm significance=\"normal\"><primary>Preface</primary></indexterm> The current user manual is a draft issue. It is at an early stage of writing. User manual version and applicable Darktable version are listed below: <informaltable frame=\"none\"><tgroup cols=\"3\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry/><entry>version</entry><entry>date</entry></row><row><entry>user manual</entry><entry/><entry>27/10/10</entry></row><row><entry>Darktable</entry><entry>darktable 0.6+429~g6de9bfb</entry><entry>27/10/10</entry></row></tbody></tgroup></informaltable>"
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:67(para)
-msgid "Please note that every key accelerators given in this manual is only applicable on english keyboards layout. The key accelerators are not linked to the actual letter printed on it, but only to its position on the keyboard. For example, the <emphasis>z</emphasis> allowing a full-screen view on english keyboards, becomes <emphasis>w</emphasis> on french keyboard."
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:75(keyword)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:45(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:79(keyword)
 msgid "darktable"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:76(keyword)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:46(title)
+msgid "Preface to darktable"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:47(para)
+msgid "<indexterm significance=\"normal\"><primary>darktable</primary></indexterm><indexterm significance=\"normal\"><primary>Preface</primary></indexterm> The current user manual is a draft issue. It is at an early stage of writing. User manual version and applicable darktable version are listed below: <informaltable frame=\"none\"><tgroup cols=\"3\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry/><entry>version</entry><entry>date</entry></row><row><entry>user manual</entry><entry/><entry>02/06/11</entry></row><row><entry>darktable</entry><entry>darktable 0.8+550~gd1cdadd</entry><entry>02/06/11</entry></row></tbody></tgroup></informaltable>"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:71(para)
+msgid "Please note that every key accelerators given in this manual is only applicable on english keyboards layout. The key accelerators are not linked to the actual letter printed on it, but only to its position on the keyboard. For example, the <emphasis>z</emphasis> allowing a full-screen view on english keyboards, becomes <emphasis>w</emphasis> on french keyboard."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:80(keyword)
 msgid "overview"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:77(keyword)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:81(keyword)
 msgid "application"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:80(title) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:196(title) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:282(title) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:413(title) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:441(title) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:479(title) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:538(title) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:606(title)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:84(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:270(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:646(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:964(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:998(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1023(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1046(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1083(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1109(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1139(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1172(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1204(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1327(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1352(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1374(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1402(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1456(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1520(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1583(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1615(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1736(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1762(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1840(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1865(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1924(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1951(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1983(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2007(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2029(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2058(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2087(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2120(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2194(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2222(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2257(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2281(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2374(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2410(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2487(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2531(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2584(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2635(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2664(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2701(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2769(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2835(title)
 msgid "Overview"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:81(para)
-msgid "Darktable is an application to manage and develop your digital images."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:85(para)
+msgid "darktable is an application to manage and develop your digital images."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:82(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:86(para)
 msgid "It is fully non-destructive and works on a 32 bit floating point format per channel. Most of the actions on the pixelpipe are done in CIELab."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:85(title)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:89(title)
 msgid "Preferences"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:86(para)
-msgid "A recently introduced button located at the upper panel allows you to define various parameters."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:90(para)
+msgid "A button located at the upper panel (displaying a wheel) allows you to define various parameters."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:90(title)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:92(para)
+msgid "The options are quite self-explaining. In case you need more information, just let your mouse hover text and/or entry box to display more information."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:97(title)
 msgid "User interface"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:96(emphasis)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:103(emphasis)
 msgid "f7"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:96(emphasis)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:103(emphasis)
 msgid "f8"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:96(entry)
-msgid "This section describes the layout of the user interface. You can change Darktable contrast by using <placeholder-1/> and <placeholder-2/>."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:103(entry)
+msgid "This section describes the layout of the user interface. You can change darktable contrast by using <placeholder-1/> and <placeholder-2/>."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:106(title)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:113(title)
 msgid "Views"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:107(para)
-msgid "Darktable consists of several views also mentioned as modes. For the time being, there are three available views as described in this section. The current view is identified by the label at the top of the right panel. Some key accelerators, allowing to access the different views, are described in the table below: <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>l</emphasis></entry><entry>switches to lighttable view</entry></row><row><entry><emphasis>d</emphasis></entry><entry>switches to darkroom view</entry></row><row><entry><emphasis>t</emphasis></entry><entry>switches to camera tethering view</entry></row></tbody></tgroup></informaltable>"
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:114(para)
+msgid "darktable consists of several views also mentioned as modes. For the time being, there are three available views as described in this section. The current view is identified by the label at the top of the right panel. Some key accelerators, allowing to access the different views, are described in the table below: <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>l</emphasis></entry><entry>switches to lighttable view</entry></row><row><entry><emphasis>d</emphasis></entry><entry>switches to darkroom view</entry></row><row><entry><emphasis>t</emphasis></entry><entry>switches to camera tethering view</entry></row></tbody></tgroup></informaltable>"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:126(title) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:189(title) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:198(title)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:133(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:263(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:272(title)
 msgid "Lighttable"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:127(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:134(para)
 msgid "The lighttable view is where you manage your images and filmrolls; it's in that view that you rate, add tags, add colorlabels, export images among other actions."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:131(title) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:275(title)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:138(para)
+msgid "You can perform, on image under the mouse pointer, some actions using key accelerators; see \"Lighttable\" chapter."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:142(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:639(title)
 msgid "Darkroom"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:132(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:143(para)
 msgid "In the darkroom view you develop a specific image using the available modules."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:135(title)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:146(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:359(title)
 msgid "Tethering"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:136(para)
-msgid "This view is where you do camera tethering."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:147(para)
+msgid "This view is where you do camera tethering eg. connecting your camera to the computer and and remotly captures image that will be downloaded and view on your computerscreen."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:141(title)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:151(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:670(title)
 msgid "Filmstrip"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:142(para)
-msgid "The filmstrip shows the same images as lighttable with respect to filter and sort orders and are turned on/off with key accelerator <emphasis>ctrl-f</emphasis>. You can navigate along the filmstrip by wheel scrolling. The filmstrip allows you to interact with images when you are not in lighttable mode. For example you can, while being in darkroom mode and developing an image, switch to another image to develop by double clicking the thumb in the filmstrip."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:152(para)
+msgid "The filmstrip shows the same images as lighttable with respect to filter and sort orders; it is turned on/off with key accelerator <emphasis>ctrl-f</emphasis>. You can navigate along the filmstrip by wheel scrolling. The filmstrip allows you to interact with images when you are not in lighttable mode. For example you can, while being in darkroom mode and developing an image, switch to another image to develop by double clicking the thumb in the filmstrip. You can also rate the images as you do in lighttable, copy/paste historystack, etc."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:148(para)
-msgid "The filmstrip also provides some actions to be performed on image under the mouse pointer and here follows a table of available key accelerators for specific actions. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 - 4</emphasis></entry><entry>set the rating of the image; if an image has 1 star and you hit the <emphasis>1</emphasis> key the image will be unrated </entry></row><row><entry><emphasis>F1 - F3</emphasis></entry><entry>set a color label for the image</entry></row><row><entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry></row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack onto the image</entry></row></tbody></tgroup></informaltable>"
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:165(title)
+msgid "darktable basic workflow"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:173(title)
-msgid "Darktable workflow"
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:166(title)
+msgid "Importing images"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:185(keyword)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:167(para)
+msgid "To begin with darktable, you first need to import images. You can either import from your filesystem or from your camera if supported."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:169(para)
+msgid "In the left panel you will find the import module, here you have the choice to import either a single image or a folder, darktable will analyse its content, detect images that is already imported and only import new images."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:174(title)
+msgid "Importing from camera"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:175(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:188(title)
+msgid "Introduction"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:176(para)
+msgid "Connect your camera to your system and if you distribution tries to automount it, select the option to abort the mount operation otherwise the camera will be locked and not accessible from within darktable."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:179(para)
+msgid "In the left panel of lighttable view you have the import pane and if your don't see your camera there you need to hit the scan for devices button. Your camera will then appear in same pane with additional actions: import and tethering."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:183(title)
+msgid "Settings"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:187(title)
+msgid "Basic correction"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:189(para)
+msgid "This section will guide you thru the basics about developing your image which includes most common changes to an image like noise reduction, temparature, exposure etc."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:193(para)
+msgid "To begin you need to open an image in Darkroom mode which you will do by double clicking an image thumbnail on the lighttable, it's in the darkroom mode you do the actual adjustments for an image and you have an arsenal of modules at your hand to help you reach your goal."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:198(para)
+msgid "Each change you make on a module when developing your image is turned into a history stackitem, the history is stored in database and in an XMP sidecar file for the specific image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:202(para)
+msgid "On the left panel in darkroom mode you have the history stack showing changes starting from bottom and building up with each change you have made to the image, you can select a point in this history to show how the image looked in that point for comparisation of changes. The stack can be compressed and will discard changes during the development but will make it optimized, when you think you are done and have a good feeling of what you have done, just compress the history stack."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:209(para)
+msgid "darktables ships with a bunch of modules and each of them is arranged into groups named modules groups, these module groups are accessed as toggle buttons in the right panel just under the histogram. There are also to special module groups named active and favorites, were active will show only modules enabled in history for the current image and favorites will only show modules selected as favorite by you, this is done in the \"more plugins\" at bottom of left panel, just click your favorite module until it gets an red tinted background and you have choosed your favorite."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:218(title)
+msgid "Whitebalance"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:219(para)
+msgid "This module controls the whitebalance of the image, its always enabled and reads its default values from metadata embedded in the image which will be set by your camera. The most common change here will be finetuning the whitebalance and this is done using the temperature in slider. Taking it down would make the color balance cooder and steering it up will make it warmer."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:227(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1138(title)
+msgid "Exposure"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:228(para)
+msgid "This might be the simplest plugin of them all, fine tune your exposure and use the histogram to guide you if you dont know what you are doing, you can also boost black level by increasing the black but be careful, use small amount like 0.005 steps. If you feel lucky use the auto correction feature, this might fail of several technical reasons..."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:232(para)
+msgid "You can also click-and-drag in the histogram to change exposure / blackpoint."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:236(title)
+msgid "Noise reduction"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:243(title)
+msgid "Exporting images"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:244(para)
+msgid "Your changes to an image is not saved as in a regular image editor darktable is a non destructive editor which means all your changes are stored in a database and the orginal image is untouched and therefor you need to export your images to get an \"image\" file to distribute with your special processing."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:245(para)
+msgid "Images are exported from lighttable and is done using the export module in right panel, export means in general, save my developed RAW image as an jpeg."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:246(para)
+msgid "The export is also modularized into storage and format. darktable is shipping several storage modules such as save on disk, picasa and flickr webalbum and more, format modules is the actual image formats such as jpeg,png,tiff,openexr and more."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:249(para)
+msgid "Select images on your lighttable that you want to export, then choose your target storage and format to use and set the maximum width and height image restraint, this means that none of the images will be bigger than any of the width/height restraint. Leave the width and height restraint as zero value if you want orginal resolution and hit the export button."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:259(keyword)
 msgid "lighttable"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:186(keyword) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:272(keyword)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:260(keyword) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:636(keyword)
 msgid "view"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:190(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:264(para)
 msgid "The lighttable is where you manage all your images, ratings, exporting and much more..."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:192(screeninfo)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:266(screeninfo)
 msgid "The lighttable view"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:204(entry)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:278(entry)
 msgid "In this centerview, your images are shown as thumbs; each thumb has a frame and while mouse is over an image, the information of rating, colorlabels and if image is altered in darkroom <inlinegraphic fileref=\"images/lighttable_thumb_icon_altered.png\" scalefit=\"1\" width=\"3mm\"/> is shown. Also when mouse hovers over an image frame the specific image metadata is shown in the metadata panel."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:217(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:291(para)
 msgid "In order to locate where you are in your collection, you have read-only sliders at the extreme border of the window : left/right for your vertical position in the collection, top/bottom (when in zoomable lighttable mode, see below) for your zoom level."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:220(para)
-msgid "While mouse is over an image frame, you have additional actions accessed from keyboard to apply on image; here follows a table of key accelerators and assigned actions. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 - 4</emphasis></entry><entry>set the rating of the image; if an image has 1 star and you hit the <emphasis>1</emphasis> key, the image will be unrated </entry></row><row><entry><emphasis>F1 - F3</emphasis></entry><entry>set a color label for the image</entry></row><row><entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry></row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack on the image</entry></row><row><entry><emphasis>e</emphasis></entry><entry>open the image in darkroom view for developing</entry></row><row><entry><emphasis>z</emphasis></entry><entry>show a fullscreen view of the image</entry></row></tbody></tgroup></informaltable>"
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:294(para)
+msgid "While mouse is over an image frame, you have additional actions accessed from keyboard to apply on image; here follows a table of key accelerators and assigned actions. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>0 - 5</emphasis></entry><entry>set the rating of the image; if an image has 1 star and you hit the <emphasis>1</emphasis> key, the image will be unrated. Pressing <emphasis>del</emphasis> rejects the image. </entry></row><row><entry><emphasis>F1 - F5</emphasis></entry><entry>set a color label for the image</entry></row><row><entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry></row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack on the image</entry></row><row><entry><emphasis>e</emphasis></entry><entry>open the image in darkroom view for developing</entry></row><row><entry><emphasis>z</emphasis></entry><entry>show a fullscreen view of the image</entry></row></tbody></tgroup></informaltable>"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:248(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:323(para)
 msgid "At the bottom you have an option to choose between zoomable lighttable view or filemanger view of the thumbnails."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:250(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:325(para)
 msgid "Using the zoomable lighttable view, scroll with your mouse wheel to zoom in and out. The <emphasis>hold left-click</emphasis> allows you to navigate through your collection."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:253(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:328(para)
 msgid "While in filemanager you can use <emphasis>ctrl-(mouse wheel)</emphasis> to change the number of thumbs displayed in a row. That action is a key accelerator of the counter that can be found beside the filemanager option. Use your mouse wheel to navigate through your collection."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:257(para)
-msgid "While in filemanager, by pressing <emphasis>w/s</emphasis> you can scroll (not select) up and down through your collection. In zoomable lighttable <emphasis>a/d/w/s</emphasis> allow you to move left/right/up/down through your collection."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:332(para)
+msgid "While in filemanager, by pressing <emphasis>w/s</emphasis> you can scroll (not select) up and down through your collection. In zoomable lighttable <emphasis>a/d/w/s</emphasis> allow you to move left/right/up/down through your collection. Pressing <emphasis>ctrl-g</emphasis> goes top, <emphasis>ctrl-shift-g</emphasis> bottom."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:271(keyword)
-msgid "darkroom"
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:337(title)
+msgid "Filtering and sort order"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:276(para)
-msgid "The darkroom view is where you develop your image..."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:338(para)
+msgid "The filtering and sort order of images on lighttable are accessed and changed in the top bar where you can select among a few predefined filters and ordering like date, color labels, rating among others."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:278(screeninfo)
-msgid "The darkroom view"
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:283(para)
-msgid "In darkroom you are in develop mode for the specific image; here you have a lot of tools (named module) to develop you image."
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:286(para)
-msgid "On the left side you have the navigation, snapshots and history panels, each of them being described below; in the right panel you can see the histogram and then a list of available modules to use when working with your image. At the bottom of the right panel you can enable/disable view of individual modules."
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:290(para)
-msgid "Since darktable 0.6.1, modules are grouped into four groups: basic, color, correct, effect. However, you can view all modules by selecting no group."
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:293(para)
-msgid "For those interested in how it works, modules are applied on images following a bottom-to-top order. That means, that if you activated the view of all modules (by selecting no groups), the first module to be applied will be \"import a RAW\" at the bottom of the right panel, whereas the last one will be \"splittoning\" at the top of the right panel. That order can not be changed by user, so modules are always applied following the same order."
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:300(para)
-msgid "You can use middle-click to zoom 1:1. A double middle-click takes you to 2:1."
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:304(title)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:345(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:678(title)
 msgid "Panels"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:306(title)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:346(title)
+msgid "Devices"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:347(para)
+msgid "This module shows connected devices; for now only cameras are shown up there, but in future scanners too will."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:348(title)
+msgid "Cameras"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:349(para)
+msgid "When a camera is detected, it will show up in the device panel; if you hover your mouse over the camera tab label a tooltip will pop up with some information about the camera such as model, firmware version and a lot more..."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:352(para)
+msgid "Depending of the support of your camera, buttons with actions will be available such as import images and tethering."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:354(title)
+msgid "Import images"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:355(para)
+msgid "This will bring up an import dialog, showing the images on camera that can be selected for import into a filmroll in darktable."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:360(para)
+msgid "Tethering is used to integrate darktable with your camera. While you take images with your camera, they will automatically be imported into darktable so you can review the result of the shoot. You can also setup remote capture jobs, controlling number of images and time between captures along with camera settings such as exposition time, f-length and more."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:364(para)
+msgid "If supported by your camera, tethering will take you into capture view for tethered shoot. Read more about tethering in chapter 3."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:369(title)
+msgid "Library"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:370(para)
+msgid "In library, you import and remove your filmrolls. You can either import a complete folder by pressing 'import filmroll' or a single image 'import single image'."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:373(para)
+msgid "A filmroll is the same as a folder in the filesystem, except for 'single images' filmroll that contains images spread among your filesystem. You can import a single image or a folder; if a folder is imported, darktable will not recurse down in several folder levels but it will just import the images that resides inside the chosen folder into a filmroll whose name becomes the name of the imported folder."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:377(para)
+msgid "Importing a folder does not mean that darktable copies your images in another folder. It just means that the images are visible in lighttable and thus can be developed. It means that if you delete an image/a folder after having imported them, darktable will not be able to access them anymore. Importing an image/folder in darktable is not a backup of your filesystem! Moreover darktable does not currently watch changes in filesystem. Thus if on your filesystem you add an image after having imported that folder in darktable, the new image will not be shown until you explicitely import it."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:384(para)
+msgid "All your filmrolls are available in a list which can be filtered using the editbox to fast find the filmroll of interest. Double click on a filmroll in the list and it will open. You can also click the recent filmroll items to open the latest ones you have worked with."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:390(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:715(title)
+msgid "Metadata"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:396(entry)
+msgid "This panel shows embedded metadata of an image, read from EXIF data stored in your pictures files."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:407(title)
+msgid "Select"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:413(entry)
+msgid "This panel allows to quickly select images, according to various criterion."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:422(title)
+msgid "select all"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:423(para)
+msgid "Select all images in the current view (collection), with respect to filters."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:426(title)
+msgid "select none"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:427(para)
+msgid "Select no image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:430(title)
+msgid "invert selection"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:431(para)
+msgid "Select all images that are not currently selected."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:434(title)
+msgid "select film roll"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:435(para)
+msgid "Select all images that are in the same filmroll as the currently selected images."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:438(title)
+msgid "select untouched"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:439(para)
+msgid "Select all images that has not been developed yet."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:444(title)
+msgid "Selected image(s)"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:450(entry)
+msgid "This panel allows to perform some actions on selected images."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:459(title)
+msgid "remove"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:460(para)
+msgid "Remove the selected images from the darktable database. Those images will not be shown in lighttable anymore, but remain on filesystem."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:464(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:583(title)
+msgid "delete"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:465(para)
+msgid "Physically delete selected images from filesystem."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:468(title)
+msgid "write sidecar files"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:469(para)
+msgid "Write .xmp sidecar files."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:472(title)
+msgid "duplicate"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:473(para)
+msgid "Create a virtual copy of selected images within darktable but not physically on your filesystem. It allows to test and try different developments for the same image for example."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:477(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1272(title)
+msgid "rotation"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:478(para)
+msgid "Perform a counter-clock wise/clockwise rotation on selected images. The third button allows to reset rotation to EXIF value."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:484(title)
+msgid "History stack"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:490(entry)
+msgid "This panel allows to manipulate development. For each image, development is written in a sidecar file (.xmp) and is fully non-destructive."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:501(title)
+msgid "copy"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:502(para)
+msgid "Copy the history stack (development) of the first selected image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:505(title)
+msgid "discard"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:506(para)
+msgid "Physically delete the history stack (development) of the selected images. Beware, this action can not be undone!"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:510(title)
+msgid "overwrite/append"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:511(para)
+msgid "Describes how a new history stack must behave if pasted on an image having already an history stack. 'Overwrite' will delete previous history stack whereas 'append' will add the two history stacks."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:516(title)
+msgid "paste"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:517(para)
+msgid "Paste a previously copied history stack on another image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:520(title)
+msgid "load sidecar file"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:521(para)
+msgid "Prompt a dialog box to allow you to select a .xmp file, thus loading an history stack that you will past (thanks to 'past' button) on images."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:527(title)
+msgid "Styles"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:533(entry)
+msgid "This panel lets you use a powerful functionality of darktable: to store and apply a history stack. Styles are created in darkroom mode thanks to a button placed below the history stack. Then they are managed thanks to this panel, that allows you to apply and delete a style."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:544(title)
+msgid "create duplicate"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:545(para)
+msgid "When applying a style on selected images, activate this box lets you create a duplicate before applying the styles and thus avoiding you to create multiple duplicates before trying various styles on it."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:551(title)
+msgid "Tagging"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:557(entry)
+msgid "This panel allows to manage tags for your images. Those tags are currently stored in sidecar files (.xmp) and within the darktable database for a faster access. The panel is divided into two parts: the upper part contains the tag(s) currently set for the image either under mouse (if mouse is over an image) or selected (if mouse is outside the lighttable). The lower part contains all tags available; those can be filter thanks to the upper text box."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:571(title)
+msgid "attach"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:572(para)
+msgid "Attach the selected tag(s) from the list below to all selected images."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:575(title)
+msgid "detach"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:576(para)
+msgid "Detach selected tag(s) from the list above from all selected images."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:579(title)
+msgid "new"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:580(para)
+msgid "Create a new tag for the list."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:584(para)
+msgid "Delete a tag from the list."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:589(title)
+msgid "Collect images"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:595(entry)
+msgid "Thanks to this panel, you can manage your collection (current view) by filtering image thanks to various criterion. The left combo box lets you choose from different filters, such a 'filmroll', 'historystack', 'date', 'camera' and much more. The table belows lists all available data for the selected filter. You can then select the data of your choice by double-clicking."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:610(title)
+msgid "Export selected"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:618(emphasis)
+msgid "TIP"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:618(emphasis)
+msgid "ctrl-alt-e"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:616(entry)
+msgid "Each workflow has to end by this panel: the exportation of your developed images. Currently, you can export either to a file on your disk, or to various on-line storages. <placeholder-1/>: you can use <placeholder-2/> to export."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:635(keyword)
+msgid "darkroom"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:640(para)
+msgid "The darkroom view is where you develop your image..."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:642(screeninfo)
+msgid "The darkroom view"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:647(para)
+msgid "In darkroom you are in develop mode for the specific image; here you have a lot of tools (named module) to develop you image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:650(para)
+msgid "On the left side you have the navigation, snapshots and history panels, each of them being described below; in the right panel you can see the histogram and then a list of available modules to use when working with your image. At the bottom of the right panel you can enable/disable view of individual modules."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:654(para)
+msgid "Since darktable 0.6.1, modules are grouped into four groups: basic, color, correct, effect. However, you can view all modules by selecting no group."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:657(para)
+msgid "For those interested in how it works, modules are applied on images following a bottom-to-top order. That means, that if you activated the view of all modules (by selecting no groups), the first module to be applied will be \"import a RAW\" at the bottom of the right panel, whereas the last one will be \"splittoning\" at the top of the right panel. That order can not be changed by user, so modules are always applied following the same order."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:664(para)
+msgid "You can use <emphasis>middle-click</emphasis> to zoom 1:1. A double <emphasis>middle-click</emphasis> takes you to 2:1."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:667(para)
+msgid "You can export directly from the darkroom by using <emphasis>ctrl-e</emphasis> shortcut. Parameters are those currently selected in lighttable."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:671(para)
+msgid "The filmstrip is used to quickly switch between image to develop in darkroom view, the images viewed are the same as the ones in the lighttable view."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:674(para)
+msgid "The filmstrip can be switch on and off using <emphasis>ctrl-f</emphasis> shortcut."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:679(title)
+msgid "Navigation"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:685(entry)
+msgid "This panels shows the whole image and a rectangle is showing the current zoom view that you see, you can move this rectangle to pan around in same zoomlevel."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:696(title)
 msgid "Snapshots"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:312(entry)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:702(entry)
 msgid "You can take a snapshot of what is displayed in the center view; this snapshot can then be selected and is overlayed in the current center view to help you with a side by side comparasion (left: snapshot, right: active) when you are tuning parameters of a module. In the active view, history remains usable in order to compare with the snapshot."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:331(title)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:716(para)
+msgid "Shows the metadata for an image, same as in lighttable mode."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:719(title)
+msgid "History"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:726(para)
+msgid "The historystack lists every change of state (activate/de-activated) for all modules. Here you can select a point in stack to return to that point of development history. If you then activate a new module, all modules above the current point will be discarded."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:730(para)
+msgid "Hitting 'compress historystack' generates the shortest historystack that produces the current image, i.e. suppressing all de-activated modules."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:734(para)
+msgid "The button to the right lets you create a new styles by poping-up a new window. Use the first line to name your style, the second to add a searchable description. The \"advanced presets\" allows you chose which modules are to be taken into account for the styles."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:747(title)
+msgid "Histogram"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:753(entry)
+msgid "Show a logarithmic histogram of the developed image; you can change exposure by left mouse click in the right side of histogram and drag right for increase or left to decrease the exposure. The same goes for the black level but you left click in the left part of histogram."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:767(title)
 msgid "Modules"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:332(para)
-msgid "Each correction, enhancement or effect is implemented as modules, and this section includes documentation of each module and its specific parameters. A module consists of an expander bar <inlinegraphic fileref=\"images/darkroom_module_expander.png\"/> where the <inlinegraphic fileref=\"images/darkroom_module_icon_enable.png\"/> icon is used to turn then module on or off, then there are a title of the module press this to expand the module to see the parameters user interface. <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\"/> icon is the preset icon to access the available presets stored for the module or to create new ones. The <inlinegraphic fileref=\"images/darkroom_module_icon_reset.png\"/> icon is used to reset the module parameters to their default values."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:768(para)
+msgid "Each correction, enhancement or effect is implemented as modules, and this section includes documentation of each module and its specific parameters. A module consists of an expander bar <inlinegraphic fileref=\"images/darkroom_module_expander.png\" scalefit=\"1\" width=\"30%\" align=\"center\"/> where the <inlinegraphic fileref=\"images/darkroom_module_icon_enable.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> icon is used to turn then module on or off, then there are a title of the module press this to expand the module to see the parameters user interface. <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> icon is the preset icon to access the available presets stored for the module or to create new ones. The <inlinegraphic fileref=\"images/darkroom_module_icon_reset.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> icon is used to reset the module parameters to their default values."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:339(title)
-msgid "Presets"
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:776(title)
+msgid "Interacting with modules"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:340(para)
-msgid "Presets are stored configurations for the module parameters both internal and user-defined is available through clicking the <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\"/> icon and a list of available presets are shown for your choice, the activated preset is in bold text."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:777(para)
+msgid "For each slider, you can interact in three different ways, depending on the level of control you need."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:344(para)
-msgid "The preset system does also support automatic preset selection based on image data such as focal length, iso, camera model and much more fields."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:781(para)
+msgid "Arrows"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:348(title)
-msgid "Creating a new preset"
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:782(para)
+msgid "You can use the arrows around the slider to control precisely the increase/decrease of the value."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:349(para)
-msgid "Configure the specific module of choice as you like then you click the <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\"/> icon and select store new preset menu choice. Following dialog will be shown to configure the preset:"
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:786(para)
+msgid "Mouse wheel"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:355(para)
-msgid "The first two fields are used for setting a name and a description of the preset."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:787(para)
+msgid "Hover a slider with your mouse, then use your mouse wheel to adjust by step the value."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:358(para)
-msgid "In the example i have also checked the auto apply option which brings up the image selection fields where you can define a filter that is used to decide if the preset should be applied the image or not. The example dialog above does set up following rules, if lens name matches and aperture is &gt;= 8 and focal length is in range 24 - 35mm the preset will be automatically applied, it will also only show in the preset list if the image does match this rule."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:791(para)
+msgid "Right-click"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:364(para)
-msgid "The data used is the EXIF information so if you want a preset to be applied to all images from a specific camera, then leave all fields at default values, lookup model string in metadata panel and enter it into the model field."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:792(para)
+msgid "Your mouse being over a slider, right-click gives you numerical access the slider values. Note that the numerical value needed to be entered is sometimes different from the one displayed. For example, the percentage repartition is displayed as X/Y (eg 70/30) but numerical value to be entered is -1 for 0/100, 0 for 50/50 and 1 for 0/100."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:412(title)
-msgid "Crop and rotate"
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:799(para)
+msgid "Double-click on parameter label"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:419(entry)
-msgid "This module is used to crop, rotate and correct perspective of your image. It also includes many helpful guidelines that assist you using the tools."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:800(para)
+msgid "In some modules, you can double-click on a parameter label to reset its value to default."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:440(title)
-msgid "Velvia"
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:805(title)
+msgid "Blending operators"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:447(entry)
-msgid "The velvia module enhances the saturation in the image; it increases saturation on lower saturated pixels more than on high saturated pixels."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:806(para)
+msgid "Blending operators are a blend functionality that works on the incoming image information and the output of the current module. Not all modules support blending because it would not work and break the use of the module."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:459(title) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:509(title)
-msgid "Usage"
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:810(para)
+msgid "Modules that do support blending, inherit additional controls at the bottom of module userinterface to control parameters of the blending."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:460(title)
-msgid "Saturation"
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:461(para)
-msgid "This slider controls the strength of saturation for the effect."
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:463(title)
-msgid "Vibrance"
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:464(para)
-msgid "Vibrance controls how much of the saturation is applied to weighted pixels."
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:467(title)
-msgid "Mid-tones bias"
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:468(para)
-msgid "This slider controls saturation preservation in mid-tones. It is expressed as the lightness repartition between mid-tones and shadows/highlights. The greater the first number, the stronger the effect."
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:478(title) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:589(para) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:654(para)
-msgid "Splittoning"
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:485(entry)
-msgid "Original splittoning method creates a two color linear toning effect where the shadows and highlights are represented by two different colors. In the example image below you can see an original black and white image and one where a splittoning effect are applied with blue in shadows and yellow-ish color in highlights."
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:498(para)
-msgid "Darktable splittoning module has more parameters that impacts on the default above behavior, we have balance which offsets the 50% gray level in image and compression that does compress toning in the shadows and highlights which leaves a gap which are untouched by the effect. Read more and see examples of these additional parameters to splittoning module in \"usage\" section."
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:503(para)
-msgid "The splittoning module does not convert image to black and white and works extensible nice on color images, soo if you want to do traditional splittoning, use the monochrome module to make the image black and white before playing around with splittoning effect."
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:510(para)
-msgid "..."
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:511(title)
-msgid "Shadows and Highlights color"
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:512(para)
-msgid "These controls are used to set the color of the splittoning effect, you select the desire color and saturation for both shadows and highlights, you can also click the color preview box too bring up a common color picker dialog."
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:516(title)
-msgid "Balance"
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:517(para)
-msgid "The balance is presented as an ratio bar and default value is 50/50 which means that 50% of lightness range in image are used for shadows toning and the other 50% for highlights toning."
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:521(title)
-msgid "Compression"
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:522(para)
-msgid "Compression is a percentage of total lightness range that not is affected by color toning, default value is set to 33% which not is the default behaviour of a original splittoning which would be 0% compression. The choice of 33% as default is to invite you exprimenting with these parameters and how it extends the original splittoning method..."
-msgstr ""
-
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:536(title)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:868(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1289(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1490(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1543(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1793(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1893(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2303(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2447(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2699(title)
 msgid "Examples"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:537(title)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:869(title)
+msgid "Texturing an image"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:870(para)
+msgid "The watermark module supports svg files with embedded images and thanks to it we can easily texture an image using the watermark module in conjunction with a blending operator."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:875(title)
+msgid "Gritty details"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:881(entry)
+msgid "When blending operators were introduced into darktable, a new module named highpass was added. It produces a highpass filter of the image to be implicitly used with blending. It allows to produce a gritty detailed image and is a widely used workflow with other imaging softwares."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:903(para)
+msgid "This is the original image, pretty heavy processed: first black and white, then some blue splittoning but as you see it lacks pop in details and is a bit out of focus..."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:913(para)
+msgid "Here we applied the highpass filter with the values shown in the images above of the module userinterface; you can now see that the details are very boosted and we got a really gritty detailed image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:926(title)
+msgid "Presets"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:927(para)
+msgid "Presets are stored configurations for the module parameters both internal and user-defined is available through clicking the <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> icon and a list of available presets are shown for your choice, the activated preset is in bold text."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:932(para)
+msgid "The preset system does also support automatic preset selection based on image data such as focal length, iso, camera model and much more fields."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:936(title)
+msgid "Creating a new preset"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:937(para)
+msgid "Configure the specific module of choice as you like then you click the <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> icon and select store new preset menu choice. Following dialog will be shown to configure the preset:"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:943(para)
+msgid "The first two fields are used for setting a name and a description of the preset."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:946(para)
+msgid "In the example i have also checked the auto apply option which brings up the image selection fields where you can define a filter that is used to decide if the preset should be applied the image or not. The example dialog above does set up following rules, if lens name matches and aperture is &gt;= 8 and focal length is in range 24 - 35mm the preset will be automatically applied, it will also only show in the preset list if the image does match this rule."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:952(para)
+msgid "The data used is the EXIF information so if you want a preset to be applied to all images from a specific camera, then leave all fields at default values, lookup model string in metadata panel and enter it into the model field."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:963(title)
+msgid "White balance"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:970(entry)
+msgid "This module is used to set the white balance. You have 3 ways to interact with it. Either you set up tint, temperature in and temperature out. Or you define the value of each channel. Or you can choose predefined white balances."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:984(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1015(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1040(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1063(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1101(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1126(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1158(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1192(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1221(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1345(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1369(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1391(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1419(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1474(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1537(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1600(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1635(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1754(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1784(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1858(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1884(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1943(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1968(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2000(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2024(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2046(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2076(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2104(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2138(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2211(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2243(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2274(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2299(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2392(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2429(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2504(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2561(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2609(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2652(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2681(title)
+msgid "Usage"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:985(title)
+msgid "temperatures"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:986(para)
+msgid "Set the tint, temperature in and temperature out (in Kelvin)."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:988(title)
+msgid "channels"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:989(para)
+msgid "Set the channel values on a scale from 0 to 5."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:991(title)
+msgid "predefined values"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:992(para)
+msgid "You can choose between various predefined white balance. You can choose your camera white balance. A spot white balance is also available, using a zone you can draw with your mouse."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:997(title)
+msgid "Raw denoise"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1004(entry)
+msgid "Raw denoise allows you to perfom denoising on pre-demosaic data. It is ported from dcraw."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1016(title)
+msgid "noise threshold"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1017(para)
+msgid "Set the threshold for noise detection."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1022(title)
+msgid "Chromatic aberrations"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1029(entry)
+msgid "This module allows you to correct chromatic aberrations."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1041(para)
+msgid "This module has no option."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1045(title)
+msgid "Demosaic"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1052(entry)
+msgid "This module allows you to control how the demosaic is processed."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1064(para) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1127(para)
+msgid "Demosaic is done on display only when zoom is greater than 50%."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1065(title)
+msgid "method"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1066(para)
+msgid "Set the method to demosaic."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1069(title)
+msgid "edge threshold"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1070(para)
+msgid "Set the threshold for the median pass."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1072(title)
+msgid "color smoothing"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1073(para)
+msgid "Number of passes for color smoothing."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1075(title)
+msgid "match greens"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1076(para)
+msgid "Greens correction, useful for some camera."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1082(title)
+msgid "Invert"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1089(entry)
+msgid "Inverts your image, this will only work on non RAW images and is used with scanned negatives."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1108(title)
+msgid "Tonemapping"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1115(entry)
+msgid "This module allows to recreate some contrast for HDR images."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1128(title)
+msgid "contrast"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1129(para)
+msgid "Set the compression of the contrast to fit the dynamic range."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1131(title)
+msgid "spatial extent"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1132(para)
+msgid "Set the spatial extent of the module."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1145(entry)
+msgid "This module is used to tweak the exposure. It is directly linked to the histogram panel. Indeed, if you correct exposure graphically, using the histogram, you automatically activate the exposure module. The histogram simply acts as a view for the exposure module."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1159(title)
+msgid "black"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1160(para)
+msgid "Adjust the black level."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1162(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1970(title)
+msgid "exposure"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1163(para)
+msgid "Adjust the exposure correction [ev]."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1165(title)
+msgid "auto"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1166(para)
+msgid "Calculate a correct exposition for the rectangular view appeared in the centre of the image. You can draw your own zone using your mouse."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1171(title)
+msgid "Highlight reconstruction"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1178(entry)
+msgid "This module tries to reconstruct color information that is usually clipped because of the information being not complete in all channels. If you do nothing, your clipped areas are often toned to the not clipped channel. For example, if your green and blue channels are clipped, then your image will appear red in the clipped areas."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1193(para)
+msgid "You can choose between two methods: clipping highlight or blending LCh."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1194(title)
+msgid "Clipping highlight"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1195(para)
+msgid "Clipping highlight analyses each pixel having at least one channel clipped. Then it sets all channels to the minium value found among the channels."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1197(title)
+msgid "Blending LCh"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1198(para)
+msgid "Blending LCh analyses each pixel having at least one channel clipped and transforms the information in LCh color space to linearly mix the channels."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1203(title)
+msgid "Graduated Neutral Density"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1210(entry)
+msgid "This module aims at simulating a neutral density filter, in order to correct exposure and color in a progressive manner."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1222(para)
+msgid "The module uses a gradient to modify the exposure and the color cast of the image in a non-homogeneously manner."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1223(title)
+msgid "density"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1224(para)
+msgid "Set the density of the filter in [ev]. A low value underexposes slightly whereas a high value creates a strong filter."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1225(para)
+msgid "It is expressed as [ev] that is equivalent to <emphasis>f-stops</emphasis>. Lens filters are often referred as ND2, ND4, ND8 and so on. Each time you add an [ev] you double the ND. So ND2 is 1 ev, ND4 is 2 ev, and so on. You can also express it in optical density or transmittance. The table below sums up the different approach for the most common filters: <informaltable frame=\"none\"><tgroup cols=\"4\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>ND</emphasis></entry><entry>[ev] or f-stop</entry><entry>absorbance</entry><entry>transmittance</entry></row><row><entry><emphasis>ND2</emphasis></entry><entry>-1 </entry><entry>0.3</entry><entry>50%</entry></row><row><entry><emphasis>ND4</emphasis></entry><entry>-2 </entry><entry>0.6</entry><entry>25%</entry></row><row><entry><emphasis>ND8</emphasis></entry><entry>-3 </entry><entry>0.9</entry><entry>12.5%</entry></row><row><entry><emphasis>ND400</emphasis></entry><entry>-9 </entry><entry>2.7</entry><entry>0.195%</entry></row></tbody></tgroup></informaltable>"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1266(title)
+msgid "compression"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1267(para)
+msgid "Set progressiveness of the gradient. A low value creates a smooth transition, whereas a high value makes the transition abrupt."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1269(title)
+msgid "split"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1270(para)
+msgid "Set split to offset the filter, i.e. to move the transition zone above or below the centerline. Expressed as a percentage, values above 50% set the transition zone above the centerline."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1273(para)
+msgid "Set the rotation so the gradient acts along an axis different from the vertical one. Expressed in degrees, negative values turn clockwise."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1275(title)
+msgid "hue"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1276(para)
+msgid "Set the hue to add a colorcast to the gradient."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1278(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2436(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2521(title)
+msgid "saturation"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1279(para)
+msgid "Set the saturation to add a colorcast to the gradient."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1281(para)
+msgid "TIP: If you know you intend to use the GND filter before actually making a shot with your camera you might want to underexpose by one or two thirds of an f-stop to make sure detail remains in the highlights. When all detail has truly been blown out the GND filter cannot produce a pleasing results, this is a limitation that is inherent to digital postprocessing. For instructions on how to intentionally underexpose, please consult your camera's manual, look for 'exposure compensation'."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1299(para)
+msgid "This is the original image with a pretty overexposed sky, use it as reference for the changes below..."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1306(para)
+msgid "And now we have added a neutral ND8 filter which does a pretty good job on the image.."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1315(para)
+msgid "And at last, i added an orange colored filter rotating it -180 degrees for applying it on water/trees for a more artistic use of the filter."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1326(title)
+msgid "Basecurve"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1333(entry)
+msgid "darktable comes with general enhanced basecurve presets for several models that is per automatic applied to raw images for better colors and contrast."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1346(para)
+msgid "The basecurve works in camera linear RGB. You can click on any point on the curve and drag to adjust; you can also use the 4 controlpoints (triangles which have a constant vertical value) at bottom to adjust the curve."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1351(title)
+msgid "Lens correction"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1358(entry)
+msgid "Lens correction...."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1370(para) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2562(para)
+msgid "..."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1373(title)
+msgid "Unbreak input profile"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1380(entry)
+msgid "This module allows to correct an input profile."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1392(title)
+msgid "linear"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1393(para)
+msgid "Set the linear value."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1395(title)
+msgid "gamma"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1396(para)
+msgid "Set the gamma value to correct your input profile."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1401(title)
+msgid "Input color profile"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1408(entry)
+msgid "This module sets up the input color profile."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1420(title)
+msgid "intent"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1421(para)
+msgid "Set intent to use for input profile. As a reminder, the intent is the way darktable will deal with out-of-gamut colors. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>perceptual</emphasis></entry><entry>Suited to pictures. It scales one gamut to fit into the other while maintaining the relative position of colors. </entry></row><row><entry><emphasis>relative colorimetric</emphasis></entry><entry>Out-of-gamut colors are converted to colors having the same lightness, but different saturation. Other colors remain unmodified. </entry></row><row><entry><emphasis>saturation</emphasis></entry><entry> Saturation is kept but lightness is slightly changed.</entry></row><row><entry><emphasis>absolute colorimetric</emphasis></entry><entry>Keep the white point.</entry></row></tbody></tgroup></informaltable>"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1448(title)
+msgid "profile"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1449(para)
+msgid "Choose the color matrix to apply. darktable offers many widespread profile along with an enhanced matrix processed by darktable team in order to provide a look close to the manufacturer one."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1455(title)
+msgid "Bloom"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1462(entry)
+msgid "This module boost highlights and softly blooms them over the image hence the name of the effect, there are numeros ways to use this module dependent on the image actual scenary lightning."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1475(para)
+msgid "Keep the default values, and start off by changing the strength value for a pleasent value for your image, then change the size to control the spread of light."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1478(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2433(title)
+msgid "size"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1479(para)
+msgid "Reprensents the spatial extent of the bloom effect."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1481(title)
+msgid "threshold"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1482(para)
+msgid "Set the threshold turning on the increase in brightness."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1484(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2051(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2112(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2512(title)
+msgid "strength"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1485(para)
+msgid "Set the strength of overlightning for the effect."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1500(para) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2457(para)
+msgid "This is the original image, use it as reference for the changes below..."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1507(para)
+msgid "Here I have choosen to use the size 10% which is a rather small radie for the soft light spread, and I also boosted up the strength to 50% for a more exaggerated effect."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1519(title)
+msgid "Spot removal"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1526(entry)
+msgid "Spot removal allows you to correct a zone in your image by using another zone as model."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1538(para)
+msgid "click on the area to be healed then drag to a clean area. The circle with line inside is the clean one."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1539(para)
+msgid "use mouse scroll-wheel over the stroke to change size."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1540(para)
+msgid "right-click on a stroke to delete."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1553(para)
+msgid "Let's use this portrait as example; we want to remove some dirt and unwanted catchlight from camera popup strobe."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1560(para)
+msgid "I have marked all the spots that I want to remove from the image. I first start by pressing the spot and drag to an area that should be used as reference to remove the spot. The handle (circle) which has a line that ends in the center of the circle indicates reference source."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1571(para)
+msgid "And here is the result image of the spotremoval."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1582(title)
+msgid "Color transfer"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1589(entry)
+msgid "This module allows to transfer on an image the colors found on another."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1601(title)
+msgid "number of clusters"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1602(para)
+msgid "Set the number of color clusters to use."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1604(title)
+msgid "acquire"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1605(para)
+msgid "Acquire the colors of the current image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1607(title)
+msgid "apply"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1608(para)
+msgid "Apply the colors (shown above) previously acquire on another image, on the current image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1614(title)
+msgid "Equalizer"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1621(entry)
+msgid "This versatile module can be used to achieve a variety of effects, such as: bloom, denoising, and local contrast enhancement. It works in the wavelet domain, and parameters can be tuned for each frequency band separately."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1636(para)
+msgid "The parameters can be tweaked for each frequency band. In particular, you can adjust contrast boost and denoise threshold splines for both lightness and chromaticity, as well as the sharpness of the wavelet basis on each frequency scale."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1645(entry)
+msgid "Each spline can be dragged with a proportional edit approach, use the mouse wheel to adjust the radius in which your changes will have an effect. The transparent area indicates where you would drag the spline with the current mouse position and radius. Also the little triangles at the bottom can be moved to alter the x-position of the spline nodes."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1663(entry)
+msgid "Drag the upper line (bright circles, here for the lightness channel) to affect local contrast. Pulling it up, as shown here, will result in a contrast boost for that frequency band. Higher frequencies, i.e. smaller details, are to the right of the grid. Pulling it down works, too."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1680(entry)
+msgid "The bottom spline (black circles) is used to perform denoising. It adjusts the wavelet shrinkage threshold for each frequency band. Pull it up to see the effect. In this example, the noise which has been amplified by local contrast enhancement is removed."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1697(entry)
+msgid "This screen shows the effect of the sharpen parameter. It is here pulled down to zero for all bands. This is effectively a regular à trous wavelet, without edge detection, and results in the characteristic halos around sharp edges in the image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1714(entry)
+msgid "This image is the other extreme. The wavelet basis now oversharpens, which results in ugly gradient reversals near the ridge of the rock."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1725(para)
+msgid "Note that the sharpness parameter only affects the wavelet basis, not the image directly. So you have to change some denoise/contrast boost parameters to see an effect if fiddling with the sharpness parameter."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1729(para)
+msgid "Also have a look at the presets. All parameters are changed in there, so these might be a good starting point to gain an intuitive understanding about them. Note that the sharpness of the wavelet basis has been set to zero to achieve the bloom effect."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1735(title)
+msgid "Color zones"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1742(entry)
+msgid "This module allows to selectively modify the colors in your image. It is highly versatile and allow every transformation possible in the LCh colorspace."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1755(para)
+msgid "The horizontal axis represent the different values you can modify. The vertical axis shows the changes you can achieve."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1756(para)
+msgid "For both horizontal and vertical axises you can work on Luminance (L), Colorness (C) or hue (h). As a reminder, colorness is a notion close to saturation but changing colorness does not change the perceived lightness as saturation can do."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1761(title)
+msgid "Low light"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1770(para)
+msgid "The idea is to calculate scotopic vision image (http://en.wikipedia.org/wiki/Scotopic_vision) which is perceived by rods rather than than cones in the eye under low light. Scotopic lightness then is mixed with photopic value (regular color image pixel) using some blending function. Also plugin is simulating Purkinje effect by adding some blueness to the dark parts of the image (http://en.wikipedia.org/wiki/Purkinje_effect)."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1768(entry)
+msgid "Low light module allows to simulate human lowlight vision, thus providing ability to make lowlight pictures look closer to reality. It can also be used to perform a day to night conversion. <placeholder-1/>"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1785(title)
+msgid "curve"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1786(para)
+msgid "The horizontal axis is about pixel lightness from dark (left) to bright (right). The vertical axis represents the kind of vision from night vision (bottom) to day vision (top)"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1788(title)
+msgid "blue"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1789(para)
+msgid "Set the blue hint in shadows (Purkinje effect)."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1803(para) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1819(para)
+msgid "This is the original image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1810(para) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1828(para)
+msgid "With low light module on."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1839(title)
+msgid "Monochrome"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1846(entry)
+msgid "This module is a quick way to convert image in black and white. You can simulate a color filter in order to modify you conversion. That filter can be changed in size and color center."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1859(para)
+msgid "You can change the filter size by using the slider below the diagram or directly with mouse scrolling above it."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1864(title)
+msgid "Zone system"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1871(entry)
+msgid "This module is another way to change the lightness of your image. It is based on the Ansel Adams system. It allows to modify the lightness of a zone taking into account the effect on the adjacent zones. It divides the lightness in an user-defined number of zones."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1885(para)
+msgid "The lightness is processed on the L* channel from CIELAB."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1886(para)
+msgid "The center view shows the image broken down in zones."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1887(para)
+msgid "When hovering above a zone on the lightness scale, the current zone is highligthed on the preview. The number of zones can be changed by mouse-scrolling on the lightness scale."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1889(para)
+msgid "Left click and drag a handle in the zonebar to modify the zonemapping, use right click to remove controlpoint."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1903(para) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2313(para)
+msgid "This is the original image use it as reference for the changes below..."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1910(para)
+msgid "Here i have compressed some darker zones and lighter zones to increase contrast, then expanded the upper parts of darker zones..."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1923(title)
+msgid "Tonecurve"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1930(entry)
+msgid "This module is a classical tool in digital photography. On the horizontal line is represented the lightness of the image pixels. The vertical line represents the lightness of the result image pixels. Thus, a straight line does not change anything. A point above the default diagonal increases the lightness whereas a point under decreases it."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1944(para)
+msgid "The tonecurve works on Lightness channel only."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1945(para)
+msgid "The horizontal axis is split in 5 zones thanks to 4 triangles. Those triangles have a constant vertical value, thus moving them modifies the curve so their output value is kept."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1946(para)
+msgid "When your mouse hovers the curve, brighter zone are shown to visualize the degree of liberty you have without damaging too much your image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1950(title)
+msgid "Fill-light"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1957(entry)
+msgid "This module allows the local modification of the exposition based on pixel lightness."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1969(para)
+msgid "The module applies a Gaussian curve to the lightness, centred on a given lightness, with a given width in lightness."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1971(para)
+msgid "Set the fill-light exposure in [ev]."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1973(title)
+msgid "center"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1974(para)
+msgid "Set the median lightness being impacted by the fill-light directly on the gray scale or by using the button on the right and then selecting an area in the image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1976(title)
+msgid "width"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1977(para)
+msgid "Set the width of the Gaussian curve. It is expressed in zone, the whole dynamic being 10 zones. The Gaussian being symmetric, only even numbers can be entered."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1982(title)
+msgid "Color correction"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1989(entry)
+msgid "This module can be used to modify the global saturation or to give a tint."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2001(para)
+msgid "Use the saturation slider to correct the global saturation."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2002(para)
+msgid "You can also draw an area on the color diagram to give a global tint to the image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2006(title)
+msgid "Sharpen"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2013(entry)
+msgid "This is an standard UnSharp Mask tool for sharpen the details of an image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2028(title)
+msgid "Grain"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2035(entry)
+msgid "This module is an artistic feature which simulates the grain of a film."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2047(para)
+msgid "The grain is processed on the L* channel from CIELAB."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2048(title)
+msgid "coarseness"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2049(para)
+msgid "Set the grain size, which has been scaled to simulate an ISO number."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2052(para) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2113(para) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2513(para)
+msgid "Set the strength of the effect."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2057(title)
+msgid "Color contrast"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2064(entry)
+msgid "Color contrast filter changes the contrast between green versus magent and blue versus yellow."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2077(title)
+msgid "green vs. magenta"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2078(para)
+msgid "Changes color contrast for green versus magenta."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2080(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2215(title)
+msgid "contrast boost"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2081(para)
+msgid "Changes color contrast for blue versus yellow."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2086(title)
+msgid "Local contrast 2"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2093(entry)
+msgid "This module allows you to change the local contrast of your image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2105(para)
+msgid "Local contrast is used to enhance your image by giving it more energy."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2106(title)
+msgid "alpha"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2107(para)
+msgid "Alpha is the inverse of a radius. It reprensents the sensitivity of edge detection."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2109(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2506(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2619(title)
+msgid "scale"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2110(para)
+msgid "Set the desired scale. Spatial extent of the effect around edges."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2119(title)
+msgid "Crop and rotate"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2126(entry)
+msgid "This module is used to crop, rotate and correct perspective of your image. It also includes many helpful guidelines that assist you using the tools."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2140(para)
+msgid "First off, select what aspect ratio you want and size the crop bounds by dragging border and corner handles. Use <emphasis>ctrl-x</emphasis> or the button right to the aspect box, to swap between portrait and landscape of the cropping rectangle. You can move around the crop rectangle by holding down left mouse button and move around. When you are done and want to execute the crop, hit enter key or double click in the crop rectangle. <emphasis>TIP:hit \"backspace\" to reset the crop rectangle.</emphasis>"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2147(title)
+msgid "Flip image"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2148(para)
+msgid "Use these toggle buttons to flip image horizontally and vertically."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2150(title)
+msgid "Angle"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2151(para)
+msgid "This is the rotation angle to correct, for example, a non-horizontal horizon. You can either type a numerical value or use your mouse directly on the image. To use your mouse, right-click, hold it down and draw a line along the horizon ; the image is then rotated so the line you drew matches the horizontal axis."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2156(title)
+msgid "Keystone h and v"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2157(para)
+msgid "This tool is used to correct any perspective distortions in your image. Useful when you shoot an high building from ground, aiming upwards with camera with short focal length for example."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2162(title)
+msgid "Aspect"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2163(para)
+msgid "Here you can change what aspect ratio you want to have on the result, thus constraining the ability to drag and crop rectangle out of the aspect ratio of your choice.."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2171(emphasis)
+msgid "free"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2171(entry)
+msgid "free forming the rectangle without any ratio restrictions"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2174(emphasis)
+msgid "image"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2174(entry)
+msgid "this option constrains the ratio to be equal to image ratio"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2177(emphasis)
+msgid "golden cut"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2177(entry)
+msgid "this option constrains the ratio to be equal the golden number"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2180(emphasis)
+msgid "square"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2180(entry)
+msgid "this option constrains the ratio to be 1"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2186(title)
+msgid "Guides"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2187(para)
+msgid "Many self-explaining guides are available to help you compose your image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2193(title)
+msgid "High pass"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2200(entry)
+msgid "Highpass acts as high pass filter."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2212(title)
+msgid "sharpen"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2213(para)
+msgid "Set the sharpen. The higher, the more details."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2216(para)
+msgid "Set the contrast boost."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2221(title)
+msgid "Low pass"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2228(entry)
+msgid "A lowpass filter eg. gaussian blur with additional control of outcome as contrast and saturation. The primary usage for lowpass filter is in combination with a blending operator, try out the preset named 'local contrast mask' with a overlay blending operation."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2244(title)
+msgid "Radius"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2245(para)
+msgid "Set the radius of the blur."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2247(title)
+msgid "Contrast"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2248(para)
+msgid "Changes the contrast of the mask, negative value is inverted contrast."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2250(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2393(title)
+msgid "Saturation"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2251(para)
+msgid "Changes the saturation level od the mask."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2256(title)
+msgid "Output profile"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2263(entry)
+msgid "This module manages the output profile both for display and for output."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2275(para)
+msgid "You can set intent and profile for both display and output. You can go to \"Input profile\" to have details on the different available options."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2276(para)
+msgid "The softproof profile, available thanks to \"space\", allows you to define a printer profile and see on screen how the picture will be rendered after printing."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2280(title)
+msgid "Channel mixer"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2287(entry)
+msgid "This module is a powerful tool to manage channels. As entry, it manipulates red, green and blue channels. As output, it uses red, green, blue or gray or hue, saturation, lightness."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2300(para)
+msgid "Select your output channel and then set the amount of each channel to feed the output channel."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2320(para)
+msgid "Here we use gray as output and the following rgb mix: 0.9, 0.3, -0.3, what this does is to reduce blue colors in the mix which usally represents some details, and we use some more red than green due the skin does contain a very even red tone and the results out of this is a pretty smooth skin of the portrait."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2323(para)
+msgid "Due to the images nature, i needed to lighten it up with 0.1 EV"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2331(para)
+msgid "In this example we use a rgb mix of 0.4, 0.75, -0.15, the difference with the previous example here is that we use more green than red which brings some features back but we will still reduce the blue channel in the mix to dampen artefacts.."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2340(title)
+msgid "Table of mixing values for some b/w films"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2341(para)
+msgid "Select gray as output mixing channel, and try out the values descibed below for your like..."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2346(entry)
+msgid "Film Type"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2346(entry)
+msgid "Red"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2346(entry)
+msgid "Green"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2346(entry)
+msgid "Blue"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2347(entry)
+msgid "AGFA 200X"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2347(entry)
+msgid "0.18"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2347(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2347(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2350(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2354(entry)
+msgid "0.41"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2348(entry)
+msgid "Agfapan 25"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2348(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2361(entry)
+msgid "0.25"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2348(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2349(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2350(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2359(entry)
+msgid "0.39"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2348(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2352(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2353(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2356(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2357(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2360(entry)
+msgid "0.36"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2349(entry)
+msgid "Agfapan 100"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2349(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2351(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2358(entry)
+msgid "0.21"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2349(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2355(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2361(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2363(entry)
+msgid "0.40"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2350(entry)
+msgid "Agfapan 400"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2350(entry)
+msgid "0.20"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2351(entry)
+msgid "Ilford Delta 100"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2351(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2352(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2358(entry)
+msgid "0.42"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2351(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2355(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2358(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2359(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2360(entry)
+msgid "0.37"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2352(entry)
+msgid "Ilford Delta 400"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2352(entry)
+msgid "0.22"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2353(entry)
+msgid "Ilford Delta 3200"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2353(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2354(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2356(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2357(entry)
+msgid "0.31"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2353(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2356(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2357(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2362(entry)
+msgid "0.33"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2354(entry)
+msgid "Ilford FP4"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2354(entry)
+msgid "0.28"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2355(entry)
+msgid "Ilford HP5"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2355(entry)
+msgid "0.23"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2356(entry)
+msgid "Ilford Pan F"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2357(entry)
+msgid "Ilford SFX"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2358(entry)
+msgid "Ilford XP2 Super"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2359(entry)
+msgid "Kodak T-Max 100"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2359(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2364(entry)
+msgid "0.24"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2360(entry)
+msgid "Kodak T-Max 400"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2360(entry)
+msgid "0.27"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2361(entry)
+msgid "Kodak Tri-X 400"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2361(entry)
+msgid "0.35"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2362(entry)
+msgid "Normal Contrast"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2362(entry)
+msgid "0.43"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2362(entry)
+msgid "0.30"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2363(entry)
+msgid "High Contrast"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2363(entry)
+msgid "0.34"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2363(entry)
+msgid "0.60"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2364(entry)
+msgid "Generic B/W"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2364(entry)
+msgid "0.68"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2364(entry)
+msgid "0.08"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2373(title)
+msgid "Velvia"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2380(entry)
+msgid "The velvia module enhances the saturation in the image; it increases saturation on lower saturated pixels more than on high saturated pixels."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2394(para)
+msgid "This slider controls the strength of saturation for the effect."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2396(title)
+msgid "Vibrance"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2397(para)
+msgid "Vibrance controls how much of the saturation is applied to weighted pixels."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2400(title)
+msgid "Mid-tones bias"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2401(para)
+msgid "This slider controls saturation preservation in mid-tones. It is expressed as the lightness repartition between mid-tones and shadows/highlights. The greater the first number, the stronger the effect."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2409(title)
+msgid "Soften"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2416(entry)
+msgid "This module is an artistic feature that creates the Orton effect also commonly known as softening the image. Michael Orton achieved such result on slide film by using 2 exposures of the same scene: one well exposed and one overexposed; then he used a technique to blend those into a final image where the overexposed image was blurred."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2430(para)
+msgid "This module is almost a copy of Orton's analogue process into the digital domain and you can control brightnesss and blur with the provided parameters; we also add a control for saturation of the overexposured image for more play."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2434(para)
+msgid "Set the size of blur of the overexposed image in the process, the bigger the softer."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2437(para)
+msgid "Set the saturation of the overexposed image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2439(title)
+msgid "brightness"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2440(para)
+msgid "Expressed in [EV], the brightness slider selects the increase in brightness."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2442(title)
+msgid "mix"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2443(para)
+msgid "Controls the mix of the overexposed image and the overall effect."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2464(para)
+msgid "In this image I used the default values, and added 0.33EV to brightness for a little more light in the soft layer."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2474(para)
+msgid "This version is the same as above but with 25% saturation."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2486(title)
+msgid "Vignetting"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2493(entry)
+msgid "This module is an artistic feature which creates vignetting (modification of the brightness/saturation at the borders)."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2505(para)
+msgid "The vignetting module has extensive parameters to precisely tune your effect."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2507(para)
+msgid "Set radii of the vignetting beginning."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2509(title)
+msgid "fall-off strength"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2510(para)
+msgid "Set the progressiveness of the fall-off."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2515(title)
+msgid "uniformity"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2516(para)
+msgid "Set the uniformity of the effect."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2518(title)
+msgid "b/s ratio"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2519(para)
+msgid "Set the ratio of brightness and saturation the vignetting should apply on."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2522(para)
+msgid "Invert the effect of saturation. By default the vignetting desaturates at the border. Using this button you can saturate it."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2524(title)
+msgid "fall-off"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2525(para)
+msgid "Invert the effect of brightness. By default the vignetting darkens at the border. Using this button you can brighter it."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2530(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2752(para) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2817(para)
+msgid "Splittoning"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2537(entry)
+msgid "Original splittoning method creates a two color linear toning effect where the shadows and highlights are represented by two different colors. In the example image below you can see an original black and white image and one where a splittoning effect are applied with blue in shadows and yellow-ish color in highlights."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2550(para)
+msgid "darktable splittoning module has more parameters that impacts on the default above behavior, we have balance which offsets the 50% gray level in image and compression that does compress toning in the shadows and highlights which leaves a gap which are untouched by the effect. Read more and see examples of these additional parameters to splittoning module in \"usage\" section."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2555(para)
+msgid "The splittoning module does not convert image to black and white and works extensible nice on color images, soo if you want to do traditional splittoning, use the monochrome module to make the image black and white before playing around with splittoning effect."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2563(title)
+msgid "Shadows and Highlights color"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2564(para)
+msgid "These controls are used to set the color of the splittoning effect, you select the desire color and saturation for both shadows and highlights, you can also click the color preview box too bring up a common color picker dialog."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2568(title)
+msgid "Balance"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2569(para)
+msgid "The balance is presented as an ratio bar and default value is 50/50 which means that 50% of lightness range in image are used for shadows toning and the other 50% for highlights toning."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2573(title)
+msgid "Compression"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2574(para)
+msgid "Compression is a percentage of total lightness range that not is affected by color toning, default value is set to 33% which not is the default behaviour of a original splittoning which would be 0% compression. The choice of 33% as default is to invite you exprimenting with these parameters and how it extends the original splittoning method..."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2583(title)
+msgid "Watermark"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2590(para)
+msgid "The watermark module provides a way to render an vector-based overlay onto your image. Watermarks are standard SVG documents and can be designed using Inkscape. The SVG processor of darktable also substitutes strings within the SVG document which gives the oppurtunity to include image dependent information in the watermark such as aperture, exposure time and other metadata."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2595(para)
+msgid "User-designed watermarks are placed into the directory ~/.config/darktable/watermarks; once in place, use the reload button at the right of the watermark file name to update the list of available watermarks to use."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2610(para)
+msgid "Watermark module does"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2611(title)
+msgid "marker"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2612(para)
+msgid "Choose the watermark of interest, use the reload button next to the combobox to update list with newly added watermarks."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2616(title)
+msgid "opacity"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2617(para)
+msgid "Set the opacity of the render of watermark."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2620(para)
+msgid "Scale the watermark pixelindependent."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2622(title)
+msgid "alignment"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2623(para)
+msgid "Use these controls to align the watermark to any edge or center of the image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2625(title)
+msgid "x offset"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2626(para)
+msgid "Pixel-independent offset realtive to the choice of alignment on x-axis."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2628(title)
+msgid "y offset"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2629(para)
+msgid "Pixel-independent offset relative to the choice of alignment on y-axis."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2634(title)
+msgid "Overexposed"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2641(entry)
+msgid "This module is a useful feature that displays pixel outside dynamic range."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2653(para)
+msgid "Overexposed is used to visualize pixels that are above and/or below a user-defined threshold."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2654(title)
+msgid "lower threshold"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2655(para)
+msgid "Set lower threshold, expressed as a percentage of the maximal brightness."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2657(title)
+msgid "upper threshold"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2658(para)
+msgid "Set upper threshold, expressed as a percentage of the maximal brightness."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2663(title)
+msgid "Framing"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2670(entry)
+msgid "This module allows you to add an artistic frame around an image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2682(para)
+msgid "A simple tool to simulate a postcard."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2683(title)
+msgid "border size"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2684(para)
+msgid "Set size of the border, expressed in percentage of the image."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2687(title)
+msgid "aspect"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2688(para)
+msgid "Set the ratio height/width."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2690(title)
+msgid "frame color"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2691(para)
+msgid "Set the color of the frame."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2700(title)
 msgid "Cross-processing"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:544(entry)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2707(entry)
 msgid "Cross-processing is a analog processing technique where slide film (normally developped thanks to an E6 solution) is processed in chemicals used for processing print film (C41). The resulting images get skewed colors usually a cyan hue and increased contrast and saturation."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:556(para)
-msgid "The standard way for doing digital cross-processing is to use a channel curve tool but Darktable lacks this tool for the moment and another way to accomodiate the effect is used."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2719(para)
+msgid "The standard way for doing digital cross-processing is to use a channel curve tool but darktable lacks this tool for the moment and another way to accomodiate the effect is used."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:560(title) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:624(title)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2723(title) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2787(title)
 msgid "Procedure"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:561(para) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:625(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2724(para) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2788(para)
 msgid "This procedure uses tonecurve, channelmixer and splittoning modules."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:565(para) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:629(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2728(para) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2792(para)
 msgid "Image preparation"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:566(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2729(para)
 msgid "Prepare the image for the cross process steps by adjusting the base settings such as exposure,whitebalance etc. for a correctly looking image."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:570(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2733(para)
 msgid "Boost contrast"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:571(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2734(para)
 msgid "Select the medium contrast curve preset for tonecurve module to boost the overall contrast in the image. You later might get back here to tune the curve for better result."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:577(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2740(para)
 msgid "Color cast"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:578(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2741(para)
 msgid "This step does change the colorcast as the base for the effect using the channel mixer. You might later get back to this and finetune the colorcast of the final result."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:582(para) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:644(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2745(para) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2807(para)
 msgid "Enable the channel mixer module"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:583(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2746(para)
 msgid "Select blue channel and set blue color value to 0.8"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:584(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2747(para)
 msgid "Select red channel and change blue color value to 0.1"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:585(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2748(para)
 msgid "Select green channel and change blue color value to 0.1"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:590(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2753(para)
 msgid "We use splittoning to add some more coloring to the result for cyan/blue shadows and yellow highlight."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:594(para) /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:660(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2757(para) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2823(para)
 msgid "Enable the splittoning module"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:595(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2758(para)
 msgid "Select a cyan/blue tone for shadows and set saturation around 50%"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:596(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2759(para)
 msgid "Select a yellow/orange tone for highlights and set saturation around 70%"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:597(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2760(para)
 msgid "Set compression to 10%"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:598(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2761(para)
 msgid "Use the balance slider to tune the splittoning effect due this differs on every image due to it's exposure, motive etc."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:605(title)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2768(title)
 msgid "Cyan toned image"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:612(entry)
-msgid "Cyan is a nice color touchup for black and white images, this example guides you through how to make this with Darktable and how to control the tone. You can choose any tone of your like for this tutorial..."
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2775(entry)
+msgid "Cyan is a nice color touchup for black and white images, this example guides you through how to make this with darktable and how to control the tone. You can choose any tone of your like for this tutorial..."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:630(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2793(para)
 msgid "Prepare the image for the cyan toned steps by adjusting the base settings such as exposure,black level, contrast etc. for a correctly looking image."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:634(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2797(para)
 msgid "Black and white"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:635(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2798(para)
 msgid "Enable the monochrome module to make the image black and white."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:639(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2802(para)
 msgid "Add color tone"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:640(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2803(para)
 msgid "This step selects the basetone of the image using channel mixer, we are going for cyan tone but you can choose the tone of your like here."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:645(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2808(para)
 msgid "Select red channel and set red color value to 0.7"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:646(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2809(para)
 msgid "Select green channel and red color value to 0.150"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:647(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2810(para)
 msgid "Select blue channel and red color value to 0.150"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:649(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2812(para)
 msgid "As you notice we mix blue and green color to get a cyan tone, we substract 0.3 from red channel and add them to blue and green."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:655(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2818(para)
 msgid "The result of previous step does also add a colorcast on highlight that we actually want to have white for a prettier result. We also wants to add some blue color cast to the shadows to emphasis them."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:661(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2824(para)
 msgid "Select a blue/cyan tone for shadows and set saturation around 50%"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:662(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2825(para)
 msgid "Set highlights saturation to zero, to remove saturation on highlights."
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:663(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2826(para)
 msgid "Set compression to zero"
 msgstr ""
 
-#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:664(para)
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2827(para)
 msgid "Use the balance slider to tune the effect, our example uses a balance of 70/30"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2834(title)
+msgid "Converting to Black and White"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2841(entry)
+msgid "Black and white conversion can be achieved in several ways with darktable. Indeed, darktable comes with a lot of modules, especially for color manipulation. In this manual, I will show you 4 ways to perform a black and white conversion."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2853(title)
+msgid "The obvious way: monochrome module"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2854(para)
+msgid "To perform such conversion, just activate the monochrome module. You can then simulate a color filter, by dragging the circle above the colours you want to filter. Filter size can be modified thanks to wheel scrolling."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2859(title)
+msgid "The simple way: color correction module"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2860(para)
+msgid "To perform such conversion we use the color correction module."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2864(para)
+msgid "Activate the color correction module"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2867(para)
+msgid "Use the bottom slider to set saturation to zero"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2871(title)
+msgid "The artistic way: color zones module"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2872(para)
+msgid "To perform such conversion we use the color zone module."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2876(para)
+msgid "Activate the colour zones module"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2879(para)
+msgid "By default, the first radio-buttons row is set to \"colorness\" whereas the second is set to \"hue\" wich means that color are selected according to their hue (horizontal scale) and you can change for each hue its \"colorness\" (vertical scale). You simply need to set all points to the minimum of the vertical scale to de-saturate every hue."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2886(para)
+msgid "But now if you want, you can keep some hues a little bit saturated, so your image will be all black and white but some hue. A classical use for portrait is to keep red hue saturated in order to make the lips standing out."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2890(para)
+msgid "You can also use presets that perform black and white conversion, keeping some hues saturated."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2896(title)
+msgid "The sophisticated way: channel mixer module"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2897(para)
+msgid "To perform such conversion we use the channel mixer module."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2901(para)
+msgid "Activate the channel mixer module"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2904(para)
+msgid "Select the gray output channel"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2907(para)
+msgid "Set the proportion of each color, the sum having to equal 1 if you want to keep your global lightness."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2919(title)
+msgid "Keyaccelerators"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2920(para)
+msgid "darktable have a big set of keyaccelerators that with the work of Robert Beiber now is userconfigurable thru the preference pane. Here follows a table with the default keybindings of actions available in darktable."
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2931(entry)
+msgid "&lt;darktable&gt;/capture/toggle film strip"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2934(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2990(entry)
+msgid "&lt;Control&gt;f"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2939(entry)
+msgid "&lt;darktable&gt;/darkroom/export"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2942(entry)
+msgid "&lt;Control&gt;e"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2947(entry)
+msgid "&lt;darktable&gt;/darkroom/image back"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2950(entry)
+msgid "BackSpace"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2955(entry)
+msgid "&lt;darktable&gt;/darkroom/image forward"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2958(entry)
+msgid "space"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2963(entry)
+msgid "&lt;darktable&gt;/darkroom/plugins/clipping/commit"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2966(entry)
+msgid "Return"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2971(entry)
+msgid "&lt;darktable&gt;/darkroom/plugins/clipping/undo"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2974(entry)
+msgid "&lt;Control&gt;z"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2979(entry)
+msgid "&lt;darktable&gt;/darkroom/plugins/colorout/toggle softproofing"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2982(entry)
+msgid "s"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2987(entry)
+msgid "&lt;darktable&gt;/darkroom/toggle film strip"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2995(entry)
+msgid "&lt;darktable&gt;/darkroom/zoom/close-up"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2998(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3454(entry)
+msgid "&lt;Alt&gt;1"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3003(entry)
+msgid "&lt;darktable&gt;/darkroom/zoom/fill"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3006(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3446(entry)
+msgid "&lt;Alt&gt;2"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3011(entry)
+msgid "&lt;darktable&gt;/darkroom/zoom/fit"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3014(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3470(entry)
+msgid "&lt;Alt&gt;3"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3019(entry)
+msgid "&lt;darktable&gt;/film strip/color/blue"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3022(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3254(entry)
+msgid "F4"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3027(entry)
+msgid "&lt;darktable&gt;/film strip/color/green"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3030(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3262(entry)
+msgid "F3"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3035(entry)
+msgid "&lt;darktable&gt;/film strip/color/purple"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3038(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3270(entry)
+msgid "F5"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3043(entry)
+msgid "&lt;darktable&gt;/film strip/color/red"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3046(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3278(entry)
+msgid "F1"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3051(entry)
+msgid "&lt;darktable&gt;/film strip/color/yellow"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3054(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3286(entry)
+msgid "F2"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3059(entry)
+msgid "&lt;darktable&gt;/film strip/history/copy"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3062(entry)
+msgid "&lt;Control&gt;c"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3067(entry)
+msgid "&lt;darktable&gt;/film strip/history/discard"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3070(entry)
+msgid "&lt;Control&gt;d"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3075(entry)
+msgid "&lt;darktable&gt;/film strip/history/paste"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3078(entry)
+msgid "&lt;Control&gt;v"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3083(entry)
+msgid "&lt;darktable&gt;/film strip/rating/1"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3086(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3350(entry)
+msgid "1"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3091(entry)
+msgid "&lt;darktable&gt;/film strip/rating/2"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3094(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3358(entry)
+msgid "2"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3099(entry)
+msgid "&lt;darktable&gt;/film strip/rating/3"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3102(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3366(entry)
+msgid "3"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3107(entry)
+msgid "&lt;darktable&gt;/film strip/rating/4"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3110(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3374(entry)
+msgid "4"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3115(entry)
+msgid "&lt;darktable&gt;/film strip/rating/5"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3118(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3382(entry)
+msgid "5"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3123(entry)
+msgid "&lt;darktable&gt;/film strip/rating/desert"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3126(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3390(entry)
+msgid "0"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3131(entry)
+msgid "&lt;darktable&gt;/film strip/rating/reject"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3134(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3398(entry)
+msgid "r"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3139(entry)
+msgid "&lt;darktable&gt;/film strip/scroll back"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3142(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3422(entry)
+msgid "Left"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3147(entry)
+msgid "&lt;darktable&gt;/film strip/scroll forward"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3150(entry) /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3430(entry)
+msgid "Right"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3155(entry)
+msgid "&lt;darktable&gt;/global/capture view"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3158(entry)
+msgid "t"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3163(entry)
+msgid "&lt;darktable&gt;/global/darkroom view"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3166(entry)
+msgid "d"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3171(entry)
+msgid "&lt;darktable&gt;/global/decrease brightness"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3174(entry)
+msgid "F9"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3179(entry)
+msgid "&lt;darktable&gt;/global/decrease contrast"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3182(entry)
+msgid "F7"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3187(entry)
+msgid "&lt;darktable&gt;/global/increase brightness"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3190(entry)
+msgid "F10"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3195(entry)
+msgid "&lt;darktable&gt;/global/increase contrast"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3198(entry)
+msgid "F8"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3203(entry)
+msgid "&lt;darktable&gt;/global/leave fullscreen"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3206(entry)
+msgid "Escape"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3211(entry)
+msgid "&lt;darktable&gt;/global/lighttable view"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3214(entry)
+msgid "l"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3219(entry)
+msgid "&lt;darktable&gt;/global/quit"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3222(entry)
+msgid "&lt;Control&gt;q"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3227(entry)
+msgid "&lt;darktable&gt;/global/switch view"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3230(entry)
+msgid "period"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3235(entry)
+msgid "&lt;darktable&gt;/global/toggle fullscreen"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3238(entry)
+msgid "F11"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3243(entry)
+msgid "&lt;darktable&gt;/global/toggle side borders"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3246(entry)
+msgid "Tab"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3251(entry)
+msgid "&lt;darktable&gt;/lighttable/color/blue"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3259(entry)
+msgid "&lt;darktable&gt;/lighttable/color/green"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3267(entry)
+msgid "&lt;darktable&gt;/lighttable/color/purple"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3275(entry)
+msgid "&lt;darktable&gt;/lighttable/color/red"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3283(entry)
+msgid "&lt;darktable&gt;/lighttable/color/yellow"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3291(entry)
+msgid "&lt;darktable&gt;/lighttable/navigate/down"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3294(entry)
+msgid "&lt;Shift&gt;g"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3299(entry)
+msgid "&lt;darktable&gt;/lighttable/navigate/page down"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3302(entry)
+msgid "Page_Down"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3307(entry)
+msgid "&lt;darktable&gt;/lighttable/navigate/page up"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3310(entry)
+msgid "Page_Up"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3315(entry)
+msgid "&lt;darktable&gt;/lighttable/navigate/up"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3318(entry)
+msgid "g"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3323(entry)
+msgid "&lt;darktable&gt;/lighttable/plugins/image/delete from disk"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3331(entry)
+msgid "&lt;darktable&gt;/lighttable/plugins/image/remove from collection"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3334(entry)
+msgid "Delete"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3339(entry)
+msgid "&lt;darktable&gt;/lighttable/preview"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3342(entry)
+msgid "z"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3347(entry)
+msgid "&lt;darktable&gt;/lighttable/rating/1"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3355(entry)
+msgid "&lt;darktable&gt;/lighttable/rating/2"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3363(entry)
+msgid "&lt;darktable&gt;/lighttable/rating/3"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3371(entry)
+msgid "&lt;darktable&gt;/lighttable/rating/4"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3379(entry)
+msgid "&lt;darktable&gt;/lighttable/rating/5"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3387(entry)
+msgid "&lt;darktable&gt;/lighttable/rating/desert"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3395(entry)
+msgid "&lt;darktable&gt;/lighttable/rating/reject"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3403(entry)
+msgid "&lt;darktable&gt;/lighttable/scroll/center"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3406(entry)
+msgid "apostrophe"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3411(entry)
+msgid "&lt;darktable&gt;/lighttable/scroll/down"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3414(entry)
+msgid "Down"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3419(entry)
+msgid "&lt;darktable&gt;/lighttable/scroll/left"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3427(entry)
+msgid "&lt;darktable&gt;/lighttable/scroll/right"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3435(entry)
+msgid "&lt;darktable&gt;/lighttable/scroll/up"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3438(entry)
+msgid "Up"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3443(entry)
+msgid "&lt;darktable&gt;/lighttable/zoom/in"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3451(entry)
+msgid "&lt;darktable&gt;/lighttable/zoom/max"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3459(entry)
+msgid "&lt;darktable&gt;/lighttable/zoom/min"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3462(entry)
+msgid "&lt;Alt&gt;4"
+msgstr ""
+
+#: /usr/src/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:3467(entry)
+msgid "&lt;darktable&gt;/lighttable/zoom/out"
 msgstr ""
 

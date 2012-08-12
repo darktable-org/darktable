@@ -22,9 +22,7 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
+#include <xmmintrin.h>
 #include "iop/exposure.h"
 #include "common/opencl.h"
 #include "develop/develop.h"
@@ -32,11 +30,10 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/resetlabel.h"
+#include "bauhaus/bauhaus.h"
 
 #define exposure2white(x)	exp2f(-(x))
 #define white2exposure(x)	-dt_log2f(fmaxf(0.001, x))
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
-
 
 DT_MODULE(2)
 
@@ -94,7 +91,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 2, sizeof(int), (void *)&width);
@@ -119,6 +116,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float white = exposure2white(d->exposure);
   const int ch = piece->colors;
   const float scale = 1.0/(white - black);
+  const __m128 blackv = _mm_set1_ps(black);
+  const __m128 scalev = _mm_set1_ps(scale);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out,i,o) schedule(static)
 #endif
@@ -126,10 +125,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     const float *in = ((float *)i) + ch*k*roi_out->width;
     float *out = ((float *)o) + ch*k*roi_out->width;
-    for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
-      for(int i=0; i<3; i++)
-        out[i] = (in[i]-black)*scale;
+    for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
+      _mm_store_ps(out, (_mm_load_ps(in)-blackv)*scalev);
   }
+
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
+
   for(int k=0; k<3; k++) piece->pipe->processed_maximum[k] *= scale;
 }
 
@@ -159,9 +161,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)module->params;
-  dtgtk_slider_set_value(g->black, p->black);
-  dtgtk_slider_set_value(g->exposure, p->exposure);
-  // dtgtk_slider_set_value(g->scale3, p->gain);
+  dt_bauhaus_slider_set(g->black, p->black);
+  dt_bauhaus_slider_set(g->exposure, p->exposure);
 }
 
 void init(dt_iop_module_t *module)
@@ -169,7 +170,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_enabled = 0;
-  module->priority = 187; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 176; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
   dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t)
@@ -224,7 +225,7 @@ static void exposure_set_white(struct dt_iop_module_t *self, const float white)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   darktable.gui->reset = 1;
-  dtgtk_slider_set_value(DTGTK_SLIDER(g->exposure), p->exposure);
+  dt_bauhaus_slider_set(g->exposure, p->exposure);
   darktable.gui->reset = 0;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -256,7 +257,7 @@ static void exposure_set_black(struct dt_iop_module_t *self, const float black)
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   darktable.gui->reset = 1;
-  dtgtk_slider_set_value(DTGTK_SLIDER(g->black), p->black);
+  dt_bauhaus_slider_set(g->black, p->black);
   darktable.gui->reset = 0;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -287,14 +288,20 @@ static void
 autoexp_callback (GtkToggleButton *button, dt_iop_module_t *self)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  if(darktable.gui->reset) return;
+  if(darktable.gui->reset) 
+    return;
+  
   self->request_color_pick = gtk_toggle_button_get_active(button);
+
+  if (self->request_color_pick)
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+
   dt_iop_request_focus(self);
   gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), gtk_toggle_button_get_active(button));
 }
 
 static void
-autoexpp_callback (GtkDarktableSlider *slider, gpointer user_data)
+autoexpp_callback (GtkWidget* slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -302,42 +309,30 @@ autoexpp_callback (GtkDarktableSlider *slider, gpointer user_data)
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2])
-                      * (1.0-dtgtk_slider_get_value(DTGTK_SLIDER(g->autoexpp)));
+                      * (1.0-dt_bauhaus_slider_get(g->autoexpp));
   exposure_set_white(self, white);
 }
 
 static void
-exposure_callback (GtkDarktableSlider *slider, gpointer user_data)
+exposure_callback (GtkWidget* slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
 
   autoexp_disable(self);
-  const float exposure = dtgtk_slider_get_value(slider);
+  const float exposure = dt_bauhaus_slider_get(slider);
   dt_iop_exposure_set_white(self, exposure2white(exposure));
 }
 
 static void
-black_callback (GtkDarktableSlider *slider, gpointer user_data)
+black_callback (GtkWidget* slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
 
-  const float black = dtgtk_slider_get_value(slider);
+  const float black = dt_bauhaus_slider_get(slider);
   dt_iop_exposure_set_black(self, black);
 }
-
-#if 0
-static void
-gain_callback (GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  p->gain = dtgtk_slider_get_value(DTGTK_SLIDER(slider));
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-#endif
 
 static gboolean
 expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
@@ -348,7 +343,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2])
-                      * (1.0-dtgtk_slider_get_value(DTGTK_SLIDER(g->autoexpp)));
+                      * (1.0-dt_bauhaus_slider_get(g->autoexpp));
   const float black = fminf(fminf(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
 
   exposure_set_white(self, white);
@@ -374,29 +369,30 @@ void gui_init(struct dt_iop_module_t *self)
   self->request_color_pick = 0;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
 
-  g->black = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -0.1, 0.1, .001, p->black, 3));
+  g->black = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1, .001, p->black, 3);
   g_object_set(G_OBJECT(g->black), "tooltip-text", _("adjust the black level"), (char *)NULL);
-  dtgtk_slider_set_label(g->black,_("black"));
+  dt_bauhaus_slider_set_format(g->black,"%.3f");
+  dt_bauhaus_widget_set_label(g->black,_("black"));
 
-  g->exposure = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -9.0, 9.0, .02, p->exposure, 3));
+  g->exposure = dt_bauhaus_slider_new_with_range(self, -9.0, 9.0, .02, p->exposure, 3);
   g_object_set(G_OBJECT(g->exposure), "tooltip-text", _("adjust the exposure correction"), (char *)NULL);
-  dtgtk_slider_set_label(g->exposure,_("exposure"));
-  dtgtk_slider_set_unit(g->exposure,"EV");
+  dt_bauhaus_slider_set_format(g->exposure,"%.2fEV");
+  dt_bauhaus_widget_set_label(g->exposure,_("exposure"));
 
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->black), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->exposure), TRUE, TRUE, 0);
 
   g->autoexp  = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto")));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
-  g->autoexpp = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 0.2, .001, 0.01,3));
+  g->autoexpp = dt_bauhaus_slider_new_with_range(self, 0.0, 0.2, .001, 0.01,3);
   g_object_set(G_OBJECT(g->autoexpp), "tooltip-text", _("percentage of bright values clipped out"), (char *)NULL);
   gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
 
   GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->autoexp), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->autoexp), FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->autoexpp), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(hbox), TRUE, TRUE, 0);
@@ -409,8 +405,6 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (black_callback), self);
   g_signal_connect (G_OBJECT (g->exposure), "value-changed",
                     G_CALLBACK (exposure_callback), self);
-  // g_signal_connect (G_OBJECT (g->scale3), "value-changed",
-  // G_CALLBACK (gain_callback), self);
   g_signal_connect (G_OBJECT (g->autoexpp), "value-changed",
                     G_CALLBACK (autoexpp_callback), self);
   g_signal_connect (G_OBJECT (g->autoexp), "toggled",
@@ -425,4 +419,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

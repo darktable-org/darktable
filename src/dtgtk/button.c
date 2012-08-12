@@ -63,6 +63,13 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
   /* set inner border */
   int border = (flags&CPF_DO_NOT_USE_BORDER)?2:4;
 
+  /* prelight */
+  if (state == GTK_STATE_PRELIGHT)
+    flags |= CPF_PRELIGHT;
+  else
+    flags &=~CPF_PRELIGHT;
+
+
   /* create pango text settings if label exists */
   PangoLayout *layout=NULL;
   int pw=0,ph=0;
@@ -107,6 +114,8 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
                    x, y, width, height);
   }
 
+  if (flags & CPF_IGNORE_FG_STATE)
+    state = GTK_STATE_NORMAL;
 
   cairo_set_source_rgb (cr,
                         style->fg[state].red/65535.0,
@@ -116,10 +125,6 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
   /* draw icon */
   if (DTGTK_BUTTON (widget)->icon)
   {
-//     if (flags & CPF_IGNORE_FG_STATE)
-//       state = GTK_STATE_NORMAL;
-
-
     if (text)
       DTGTK_BUTTON (widget)->icon (cr,x+border,y+border,height-(border*2),height-(border*2),flags);
     else
@@ -190,4 +195,6 @@ void dtgtk_button_set_paint(GtkDarktableButton *button,
   button->icon_flags = paintflags;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

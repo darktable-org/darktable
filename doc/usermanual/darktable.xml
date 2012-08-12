@@ -13,23 +13,23 @@
 	<bookinfo>
 		<legalnotice>
 			<para>
-			The owner of the Darktable project is Johannes Hanika.
+			The owner of the darktable project is Johannes Hanika.
 			Main developers are Johannes Hanika and Henrik Andersson.
 
-  			Darktable is a free software: you can redistribute it and/or modify
+  			darktable is a free software: you can redistribute it and/or modify
    			it under the terms of the GNU General Public License as published by
    			the Free Software Foundation, either version 3 of the License, or
    			(at your option) any later version.
 			</para>
 			<para>
-   			Darktable is distributed in the hope that it will be useful,
+   			darktable is distributed in the hope that it will be useful,
    			but WITHOUT ANY WARRANTY; without even the implied warranty of
    			MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    			GNU General Public License for more details.
 			</para>
 			<para>
    			You should have received a copy of the GNU General Public License
-   			along with Darktable.  If not, see <emphasis> http://www.gnu.org/licenses/</emphasis>.
+   			along with darktable.  If not, see <emphasis> http://www.gnu.org/licenses/</emphasis>.
 			</para>
 			<para>
 			</para>
@@ -52,11 +52,11 @@
 			<holder>Olivier Tribout</holder>
 		</copyright>
 	</bookinfo>
-	<title>Darktable</title>
+	<title>darktable</title>
 	<preface id="overview"><title>Preface to darktable</title>
-		<para><indexterm><primary>Darktable</primary></indexterm>
+		<para><indexterm><primary>darktable</primary></indexterm>
 			<indexterm><primary>Preface</primary></indexterm>
-		The current user manual is a draft issue. It is at an early stage of writing. User manual version and applicable Darktable version are listed below:
+		The current user manual is a draft issue. It is at an early stage of writing. User manual version and applicable darktable version are listed below:
 				<informaltable frame="none"><tgroup cols="3" colsep="0" rowsep="0">
 					<colspec colwidth='3cm'/>
 					<tbody>
@@ -71,7 +71,7 @@
 							<entry>02/06/11</entry>
 						</row>
 						<row>
-							<entry>Darktable</entry>
+							<entry>darktable</entry>
 							<entry>darktable 0.8+550~gd1cdadd</entry>
 							<entry>02/06/11</entry>
 						</row>

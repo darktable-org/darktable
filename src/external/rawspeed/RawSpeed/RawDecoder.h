@@ -61,13 +61,12 @@ public:
   /* A RawDecoderException will be thrown if the camera isn't supported */
   /* Unknown cameras does NOT generate any specific feedback */
   /* This function must be overridden by actual decoders */
-  virtual void checkSupport(CameraMetaData *meta) = 0;
+  void checkSupport(CameraMetaData *meta);
 
   /* Attempt to decode the image */
   /* A RawDecoderException will be thrown if the image cannot be decoded, */
   /* and there will not be any data in the mRaw image. */
-  /* This function must be overridden by actual decoders. */
-  virtual RawImage decodeRaw() = 0;
+  RawImage decodeRaw();
 
   /* This will apply metadata information from the camera database, */
   /* such as crop, black+white level, etc. */
@@ -76,7 +75,7 @@ public:
   /* If meta-data is set during load, this function can be empty. */
   /* The image is expected to be cropped after this, but black/whitelevel */
   /* compensation is not expected to be applied to the image */
-  virtual void decodeMetaData(CameraMetaData *meta) = 0;
+  void decodeMetaData(CameraMetaData *meta);
 
   /* Called function for filters that are capable of doing simple multi-threaded decode */
   /* The delivered class gives information on what part of the image should be decoded. */
@@ -99,6 +98,14 @@ public:
 
 
 protected:
+  /* Attempt to decode the image */
+  /* A RawDecoderException will be thrown if the image cannot be decoded, */
+  /* and there will not be any data in the mRaw image. */
+  /* This function must be overridden by actual decoders. */
+  virtual RawImage decodeRawInternal() = 0;
+  virtual void decodeMetaDataInternal(CameraMetaData *meta) = 0;
+  virtual void checkSupportInternal(CameraMetaData *meta) = 0;
+
   /* Helper function for decoders - splits the image vertically and starts of decoder threads */
   /* The function returns when all threads are done */
   /* All errors are silently pushed into the "errors" array.*/
@@ -112,7 +119,7 @@ protected:
 
   /* Helper function for decodeMetaData(), that find the camera in the CameraMetaData DB */
   /* and sets common settings such as crop, black- white level, and sets CFA information */
-  virtual void setMetaData(CameraMetaData *meta, string make, string model, string mode);
+  virtual void setMetaData(CameraMetaData *meta, string make, string model, string mode, int iso_speed = 0);
 
   /* Helper function for decoders, that will unpack uncompressed image data */
   /* input: Input image, positioned at first pixel */

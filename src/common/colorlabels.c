@@ -110,7 +110,7 @@ void dt_colorlabels_toggle_label (const int imgid, const int color)
   sqlite3_finalize(stmt);
 }
 
-void dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
+gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
                                        GObject *acceleratable, guint keyval,
                                        GdkModifierType modifier, gpointer data)
 {
@@ -151,9 +151,11 @@ void dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
         break;
     }
   }
-  // synch to dttags:
+  // synch to file:
+  // TODO: move color labels to image_t cache and sync via write_get!
   dt_image_synch_xmp(selected);
   dt_control_queue_redraw_center();
+  return TRUE;
 }
 
 //FIXME: XMP uses Red, Green, ... while we use red, green, ... What should this function return?
@@ -170,4 +172,6 @@ const char* dt_colorlabels_to_string(int label)
   }
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

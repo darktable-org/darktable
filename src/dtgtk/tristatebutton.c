@@ -213,12 +213,15 @@ static gboolean _tristatebutton_expose(GtkWidget *widget, GdkEventExpose *event)
   {
     GdkPixbuf *pixbuf = gtk_image_get_pixbuf(GTK_IMAGE(image));
 
-    /* Draw the pixbuf */
-    gint pbw = gdk_pixbuf_get_width (pixbuf);
-    gint pbh = gdk_pixbuf_get_height (pixbuf);
-    gdk_cairo_set_source_pixbuf (cr, pixbuf, widget->allocation.x+((widget->allocation.width/2)-(pbw/2)),
-                                 widget->allocation.y+((widget->allocation.height/2)-(pbh/2)));
-    cairo_paint (cr);
+    if(pixbuf)
+    {
+      /* Draw the pixbuf */
+      gint pbw = gdk_pixbuf_get_width (pixbuf);
+      gint pbh = gdk_pixbuf_get_height (pixbuf);
+      gdk_cairo_set_source_pixbuf (cr, pixbuf, widget->allocation.x+((widget->allocation.width/2)-(pbw/2)),
+                                  widget->allocation.y+((widget->allocation.height/2)-(pbh/2)));
+      cairo_paint (cr);
+    }
   }
 
 
@@ -321,3 +324,6 @@ GtkType dtgtk_tristatebutton_get_type()
   return dtgtk_tristatebutton_type;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

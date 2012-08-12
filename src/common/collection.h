@@ -36,6 +36,29 @@
 #define COLLECTION_FILTER_ALTERED               8             // show only altered images
 #define COLLECTION_FILTER_UNALTERED            16             // show only unaltered images
 
+typedef enum dt_collection_filter_t
+{
+  DT_COLLECTION_FILTER_ALL = 0,
+  DT_COLLECTION_FILTER_STAR_NO = 1,
+  DT_COLLECTION_FILTER_STAR_1 = 2,
+  DT_COLLECTION_FILTER_STAR_2 = 3,
+  DT_COLLECTION_FILTER_STAR_3 = 4,
+  DT_COLLECTION_FILTER_STAR_4 = 5,
+  DT_COLLECTION_FILTER_STAR_5 = 6,
+  DT_COLLECTION_FILTER_REJECT = 7
+}
+dt_collection_filter_t;
+
+typedef enum dt_collection_sort_t
+{
+  DT_COLLECTION_SORT_FILENAME = 0,
+  DT_COLLECTION_SORT_DATETIME,
+  DT_COLLECTION_SORT_RATING,
+  DT_COLLECTION_SORT_ID,
+  DT_COLLECTION_SORT_COLOR
+}
+dt_collection_sort_t;
+
 typedef struct dt_collection_params_t
 {
   /** flags for which query parts to use, see COLLECTION_QUERY_x defines... */
@@ -49,6 +72,10 @@ typedef struct dt_collection_params_t
 
   /** current  filter */
   uint32_t rating;
+
+  /** sorting **/
+  dt_collection_sort_t sort;  // Has to be changed to a dt_collection_sort struct
+  gint descending;
 
 } dt_collection_params_t;
 
@@ -92,6 +119,18 @@ void dt_collection_set_query_flags (const dt_collection_t *collection, uint32_t 
 void dt_collection_set_film_id (const dt_collection_t *collection, uint32_t film_id);
 /** set the star level for filter */
 void dt_collection_set_rating (const dt_collection_t *collection, uint32_t rating);
+/** get the star level for filter. The value returned starts on 0 **/
+uint32_t dt_collection_get_rating (const dt_collection_t *collection);
+
+/** set the sort fields and flags used to show the collection **/
+void dt_collection_set_sort(const dt_collection_t *collection, dt_collection_sort_t sort, gint reverse);
+/** get the sort field used **/
+dt_collection_sort_t dt_collection_get_sort_field(const dt_collection_t *collection);
+/** get if the collection must be shown in descending order **/
+gboolean dt_collection_get_sort_descending(const dt_collection_t *collection);
+/** get the part of the query for sorting the collection **/
+gchar *dt_collection_get_sort_query(const dt_collection_t *collection);
+
 /** get the count of query */
 uint32_t dt_collection_get_count (const dt_collection_t *collection);
 
@@ -100,7 +139,13 @@ GList *dt_collection_get_selected (const dt_collection_t *collection);
 /** get the count of selected images */
 uint32_t dt_collection_get_selected_count (const dt_collection_t *collection);
 
-/** update query by gconf vars */
+/** update query by conf vars */
 void dt_collection_update_query(const dt_collection_t *collection);
 
+/** updates the hint message for collection */
+void dt_collection_hint_message(const dt_collection_t *collection);
+
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -18,15 +18,15 @@
 
 #ifdef HAVE_OPENCL
 
+#include "common/darktable.h"
+#include "common/dynload.h"
+#include "common/dlopencl.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 
-
-#include "common/dynload.h"
-#include "common/dlopencl.h"
-#include "common/darktable.h"
 
 /* only for debugging: default noop function for all unassigned function pointers */
 void dt_dlopencl_noop(void)
@@ -126,6 +126,9 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
     success = success && dt_gmodule_symbol(module, "clGetEventProfilingInfo", (void (**)(void))&d->symbols->dt_clGetEventProfilingInfo); 
     success = success && dt_gmodule_symbol(module, "clGetKernelInfo", (void (**)(void))&d->symbols->dt_clGetKernelInfo); 
     success = success && dt_gmodule_symbol(module, "clEnqueueBarrier", (void (**)(void))&d->symbols->dt_clEnqueueBarrier); 
+    success = success && dt_gmodule_symbol(module, "clGetKernelWorkGroupInfo", (void (**)(void))&d->symbols->dt_clGetKernelWorkGroupInfo);
+    success = success && dt_gmodule_symbol(module, "clEnqueueReadBuffer", (void (**)(void))&d->symbols->dt_clEnqueueReadBuffer);
+    success = success && dt_gmodule_symbol(module, "clEnqueueWriteBuffer", (void (**)(void))&d->symbols->dt_clEnqueueWriteBuffer);
 
     if (!success) dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not load all required symbols from library\n");
     d->have_opencl = success;
@@ -142,3 +145,6 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
 
 #endif
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

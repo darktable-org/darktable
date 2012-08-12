@@ -1,5 +1,5 @@
 # Copyright 1999-2010 Gentoo Foundation
-# Distributed under the terms of the GNU General Public License v2
+# Distributed under the terms of the GNU General Public License v3
 
 EAPI="2"
 GCONF_DEBUG="no"
@@ -7,7 +7,7 @@ inherit gnome2 cmake-utils
 
 SRC_URI="http://downloads.sourceforge.net/project/darktable/darktable/0.8/darktable-0.8.tar.gz"
 DESCRIPTION="Darktable is a virtual lighttable and darkroom for photographers"
-HOMEPAGE="http://darktable.sf.net/"
+HOMEPAGE="http://www.darktable.org/"
 
 LICENSE="GPL-3"
 SLOT="0"
@@ -40,7 +40,6 @@ src_configure() {
 		"$(cmake-utils_use_use openmp OPENMP)"
 		"$(cmake-utils_use_use gconf GCONF_BACKEND)"
 		"$(cmake-utils_use_use gphoto CAMERA_SUPPORT)"
-		"-DDONT_INSTALL_GCONF_SCHEMAS=ON"
 		"-DINSTALL_IOP_EXPERIMENTAL=ON"
 		"-DINSTALL_IOP_LEGACY=ON" )
 	cmake-utils_src_configure

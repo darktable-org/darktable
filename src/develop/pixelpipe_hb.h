@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 #ifndef DT_DEV_PIXELPIPE
 #define DT_DEV_PIXELPIPE
 
+#include "common/image.h"
 #include "develop/imageop.h"
 #include "develop/develop.h"
 #include "develop/pixelpipe_cache.h"
@@ -29,7 +30,6 @@
  * will be freed at the end.
  */
 struct dt_iop_module_t;
-struct dt_dev_pixelpipe_t;
 
 /** region of interest */
 typedef struct dt_iop_roi_t
@@ -71,7 +71,8 @@ typedef enum dt_dev_pixelpipe_type_t
 {
   DT_DEV_PIXELPIPE_EXPORT,
   DT_DEV_PIXELPIPE_FULL,
-  DT_DEV_PIXELPIPE_PREVIEW
+  DT_DEV_PIXELPIPE_PREVIEW,
+  DT_DEV_PIXELPIPE_THUMBNAIL
 }
 dt_dev_pixelpipe_type_t;
 
@@ -89,6 +90,8 @@ typedef struct dt_dev_pixelpipe_t
   float *input;
   // width and height of input buffer
   int iwidth, iheight;
+  // is image flipped?
+  int iflipped;
   // input actually just downscaled buffer? iscale*iwidth = actual width
   float iscale;
   // dimensions of processed buffer
@@ -113,11 +116,17 @@ typedef struct dt_dev_pixelpipe_t
   int opencl_enabled;
   // opencl error detected?
   int opencl_error;
+  // running in a tiling context?
+  int tiling;
+  // should this pixelpipe display a mask in the end?
+  int mask_display;
   // input data based on this timestamp:
   int input_timestamp;
   dt_dev_pixelpipe_type_t type;
   // opencl device that has been locked for this pipe.
   int devid;
+  // image struct as it was when the pixelpipe was initialized. copied to avoid race conditions.
+  dt_image_t image;
 }
 dt_dev_pixelpipe_t;
 
@@ -127,6 +136,8 @@ struct dt_develop_t;
 int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
 // inits the pixelpipe with settings optimized for full-image export (no history stack cache)
 int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
+// inits the pixelpipe with settings optimized for thumbnail export (no history stack cache)
+int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
 // inits the pixelpipe with given cacheline size and number of entries.
 int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t entries);
 // constructs a new input gegl_buffer from given RGB float array.
@@ -165,3 +176,6 @@ void dt_dev_pixelpipe_add_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *de
 void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int n);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

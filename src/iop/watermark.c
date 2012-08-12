@@ -22,9 +22,7 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -42,6 +40,7 @@
 
 #include "common/metadata.h"
 #include "common/utility.h"
+#include "common/file_location.h"
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE(1)
@@ -80,7 +79,7 @@ typedef struct dt_iop_watermark_gui_data_t
   GtkComboBox *combobox1;		                                             // watermark
   GtkDarktableButton *dtbutton1;	                                         // refresh watermarks...
   GtkDarktableToggleButton *dtba[9];	                                   // Alignment buttons
-  GtkDarktableSlider *scale1,*scale2,*scale3,*scale4;      	     // opacity, scale, xoffs, yoffs
+  GtkWidget *scale1,*scale2,*scale3,*scale4;      	     // opacity, scale, xoffs, yoffs
 }
 dt_iop_watermark_gui_data_t;
 
@@ -175,14 +174,14 @@ static gchar *_string_substitute(gchar *string,const gchar *search,const gchar *
   return result;
 }
 
-static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_data_t *data)
+static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_data_t *data, const dt_image_t *image)
 {
   gsize length;
 
   gchar *svgdoc=NULL;
   gchar configdir[1024],datadir[1024], *filename;
-  dt_util_get_datadir(datadir, 1024);
-  dt_util_get_user_config_dir(configdir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
+  dt_loc_get_user_config_dir(configdir, 1024);
   g_strlcat(datadir,"/watermarks/",1024);
   g_strlcat(configdir,"/watermarks/",1024);
   g_strlcat(datadir,data->filename,1024);
@@ -195,6 +194,29 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
   else return NULL;
 
   gchar *svgdata=NULL;
+  char datetime[200];
+
+  // EXIF datetime
+  struct tm tt_exif = {0};
+  if(sscanf(image->exif_datetime_taken,"%d:%d:%d %d:%d:%d",
+              &tt_exif.tm_year,
+              &tt_exif.tm_mon,
+              &tt_exif.tm_mday,
+              &tt_exif.tm_hour,
+              &tt_exif.tm_min,
+              &tt_exif.tm_sec
+             ) == 6
+     )
+  {
+    tt_exif.tm_year-=1900;
+    tt_exif.tm_mon--;
+  }
+
+  // Current datetime
+  struct tm tt_cur = {0};
+  time_t t = time(NULL);
+  (void)localtime_r(&t, &tt_cur);
+
   if( g_file_get_contents( filename, &svgdata, &length, NULL) )
   {
     // File is loaded lets substitute strings if found...
@@ -213,9 +235,18 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
       svgdata = svgdoc;
     }
 
-    // Current image
+    // Current image ID
     gchar buffer[1024];
-    dt_image_print_exif(self->dev->image,buffer,1024);
+    g_snprintf(buffer,1024,"%d",image->id);
+    svgdoc = _string_substitute(svgdata,"$(IMAGE.ID)",buffer);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+
+    // Current image
+    dt_image_print_exif(image,buffer,1024);
     svgdoc = _string_substitute(svgdata,"$(IMAGE.EXIF)",buffer);
     if( svgdoc != svgdata )
     {
@@ -224,32 +255,204 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
     }
 
     // Image exif
-    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE)",self->dev->image->exif_datetime_taken);
+    // EXIF date
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE)",image->exif_datetime_taken);
     if( svgdoc != svgdata )
     {
       g_free(svgdata);
       svgdata = svgdoc;
     }
-    svgdoc = _string_substitute(svgdata,"$(EXIF.MAKER)",self->dev->image->exif_maker);
+    // $(EXIF.DATE.SECOND) -- 00..60
+    strftime(datetime, sizeof(datetime), "%S", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.SECOND)",datetime);
     if( svgdoc != svgdata )
     {
       g_free(svgdata);
       svgdata = svgdoc;
     }
-    svgdoc = _string_substitute(svgdata,"$(EXIF.MODEL)",self->dev->image->exif_model);
+    // $(EXIF.DATE.MINUTE) -- 00..59
+    strftime(datetime, sizeof(datetime), "%M", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.MINUTE)",datetime);
     if( svgdoc != svgdata )
     {
       g_free(svgdata);
       svgdata = svgdoc;
     }
-    svgdoc = _string_substitute(svgdata,"$(EXIF.LENS)",self->dev->image->exif_lens);
+    // $(EXIF.DATE.HOUR) -- 00..23
+    strftime(datetime, sizeof(datetime), "%H", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.HOUR)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(EXIF.DATE.HOUR_AMPM) -- 01..12
+    strftime(datetime, sizeof(datetime), "%I %p", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.HOUR_AMPM)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(EXIF.DATE.DAY) -- 01..31
+    strftime(datetime, sizeof(datetime), "%d", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.DAY)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(EXIF.DATE.MONTH) -- 01..12
+    strftime(datetime, sizeof(datetime), "%m", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.MONTH)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(EXIF.DATE.SHORT_MONTH) -- Jan, Feb, .., Dec, localized
+    strftime(datetime, sizeof(datetime), "%b", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.SHORT_MONTH)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(EXIF.DATE.LONG_MONTH) -- January, February, .., December, localized
+    strftime(datetime, sizeof(datetime), "%B", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.LONG_MONTH)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(EXIF.DATE.SHORT_YEAR) -- 12
+    strftime(datetime, sizeof(datetime), "%y", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.SHORT_YEAR)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(EXIF.DATE.LONG_YEAR) -- 2012
+    strftime(datetime, sizeof(datetime), "%Y", &tt_exif);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE.LONG_YEAR)",datetime);
     if( svgdoc != svgdata )
     {
       g_free(svgdata);
       svgdata = svgdoc;
     }
 
-    svgdoc = _string_substitute(svgdata,"$(IMAGE.FILENAME)",PACKAGE_VERSION);
+    // Current date
+    // $(DATE) -- YYYY:
+    dt_gettime_t(datetime, t);
+    svgdoc = _string_substitute(svgdata,"$(DATE)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.SECOND) -- 00..60
+    strftime(datetime, sizeof(datetime), "%S", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.SECOND)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.MINUTE) -- 00..59
+    strftime(datetime, sizeof(datetime), "%M", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.MINUTE)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.HOUR) -- 00..23
+    strftime(datetime, sizeof(datetime), "%H", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.HOUR)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.HOUR_AMPM) -- 01..12
+    strftime(datetime, sizeof(datetime), "%I %p", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.HOUR_AMPM)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.DAY) -- 01..31
+    strftime(datetime, sizeof(datetime), "%d", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.DAY)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.MONTH) -- 01..12
+    strftime(datetime, sizeof(datetime), "%m", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.MONTH)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.SHORT_MONTH) -- Jan, Feb, .., Dec, localized
+    strftime(datetime, sizeof(datetime), "%b", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.SHORT_MONTH)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.LONG_MONTH) -- January, February, .., December, localized
+    strftime(datetime, sizeof(datetime), "%B", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.LONG_MONTH)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.SHORT_YEAR) -- 12
+    strftime(datetime, sizeof(datetime), "%y", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.SHORT_YEAR)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    // $(DATE.LONG_YEAR) -- 2012
+    strftime(datetime, sizeof(datetime), "%Y", &tt_cur);
+    svgdoc = _string_substitute(svgdata,"$(DATE.LONG_YEAR)",datetime);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+
+    svgdoc = _string_substitute(svgdata,"$(EXIF.MAKER)",image->exif_maker);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    svgdoc = _string_substitute(svgdata,"$(EXIF.MODEL)",image->exif_model);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    svgdoc = _string_substitute(svgdata,"$(EXIF.LENS)",image->exif_lens);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+
+    svgdoc = _string_substitute(svgdata,"$(IMAGE.FILENAME)",image->filename);
     if( svgdoc != svgdata )
     {
       g_free(svgdata);
@@ -258,7 +461,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
 
     // TODO: auto generate that code?
     GList * res;
-    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.creator", NULL);
+    res = dt_metadata_get(image->id, "Xmp.dc.creator", NULL);
     svgdoc = _string_substitute(svgdata,"$(Xmp.dc.creator)",(res?res->data:""));
     if( svgdoc != svgdata )
     {
@@ -271,7 +474,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
       g_list_free(res);
     }
 
-    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.publisher", NULL);
+    res = dt_metadata_get(image->id, "Xmp.dc.publisher", NULL);
     svgdoc = _string_substitute(svgdata,"$(Xmp.dc.publisher)",(res?res->data:""));
     if( svgdoc != svgdata )
     {
@@ -284,7 +487,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
       g_list_free(res);
     }
 
-    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.title", NULL);
+    res = dt_metadata_get(image->id, "Xmp.dc.title", NULL);
     svgdoc = _string_substitute(svgdata,"$(Xmp.dc.title)",(res?res->data:""));
     if( svgdoc != svgdata )
     {
@@ -297,7 +500,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
       g_list_free(res);
     }
 
-    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.description", NULL);
+    res = dt_metadata_get(image->id, "Xmp.dc.description", NULL);
     svgdoc = _string_substitute(svgdata,"$(Xmp.dc.description)",(res?res->data:""));
     if( svgdoc != svgdata )
     {
@@ -310,7 +513,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
       g_list_free(res);
     }
 
-    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.rights", NULL);
+    res = dt_metadata_get(image->id, "Xmp.dc.rights", NULL);
     svgdoc = _string_substitute(svgdata,"$(Xmp.dc.rights)",(res?res->data:""));
     if( svgdoc != svgdata )
     {
@@ -336,7 +539,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
 
   /* Load svg if not loaded */
-  gchar *svgdoc = _watermark_get_svgdoc (self, data);
+  gchar *svgdoc = _watermark_get_svgdoc (self, data, &piece->pipe->image);
   if (!svgdoc)
   {
     memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
@@ -380,7 +583,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
 //   fprintf(stderr,"Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
     g_free (image);
-    memcpy(ovoid, ivoid, sizeof(float)*3*roi_out->width*roi_out->height);
+    memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
   }
 
@@ -434,6 +637,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[0] = ((1.0-alpha)*in[0]) + (alpha*(sd[2]/255.0));
       out[1] = ((1.0-alpha)*in[1]) + (alpha*(sd[1]/255.0));
       out[2] = ((1.0-alpha)*in[2]) + (alpha*(sd[0]/255.0));
+      out[3] = in[3];
 
       out+=ch;
       in+=ch;
@@ -477,8 +681,8 @@ static void refresh_watermarks( dt_iop_module_t *self )
   int count=0;
   const gchar *d_name = NULL;
   gchar configdir[1024],datadir[1024],filename[2048];
-  dt_util_get_datadir(datadir, 1024);
-  dt_util_get_user_config_dir(configdir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
+  dt_loc_get_user_config_dir(configdir, 1024);
   g_strlcat(datadir,"/watermarks",1024);
   g_strlcat(configdir,"/watermarks",1024);
 
@@ -555,42 +759,42 @@ alignment_callback(GtkWidget *tb, gpointer user_data)
 }
 
 static void
-opacity_callback(GtkDarktableSlider *slider, gpointer user_data)
+opacity_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  p->opacity= dtgtk_slider_get_value(slider);
+  p->opacity= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-xoffset_callback(GtkDarktableSlider *slider, gpointer user_data)
+xoffset_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  p->xoffset= dtgtk_slider_get_value(slider);
+  p->xoffset= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-yoffset_callback(GtkDarktableSlider *slider, gpointer user_data)
+yoffset_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  p->yoffset= dtgtk_slider_get_value(slider);
+  p->yoffset= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-scale_callback(GtkDarktableSlider *slider, gpointer user_data)
+scale_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  p->scale= dtgtk_slider_get_value(slider);
+  p->scale= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -642,10 +846,10 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale1, p->opacity);
-  dtgtk_slider_set_value(g->scale2, p->scale);
-  dtgtk_slider_set_value(g->scale3, p->xoffset);
-  dtgtk_slider_set_value(g->scale4, p->yoffset);
+  dt_bauhaus_slider_set(g->scale1, p->opacity);
+  dt_bauhaus_slider_set(g->scale2, p->scale);
+  dt_bauhaus_slider_set(g->scale3, p->xoffset);
+  dt_bauhaus_slider_set(g->scale4, p->yoffset);
   gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(g->dtba[ p->alignment ]), TRUE);
   _combo_box_set_active_text( g->combobox1, p->filename );
 }
@@ -656,7 +860,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_watermark_params_t);
   module->default_params = malloc(sizeof(dt_iop_watermark_params_t));
   module->default_enabled = 0;
-  module->priority = 979; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 980; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_watermark_params_t);
   module->gui_data = NULL;
   dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t)
@@ -691,21 +895,19 @@ void gui_init(struct dt_iop_module_t *self)
   // Add the marker combobox
   GtkWidget *hbox= gtk_hbox_new(FALSE,0);
   g->combobox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  g->dtbutton1  = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, 0));
+  g->dtbutton1  = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(label1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->combobox1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->dtbutton1),FALSE,FALSE,0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   // Add opacity/scale sliders to table
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->opacity, 0.5));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 100.0, 1.0, p->scale, 0.5));
-  dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_label(g->scale1,_("opacity"));
-  dtgtk_slider_set_unit(g->scale1,"%");
-  dtgtk_slider_set_label(g->scale2,_("scale"));
-  dtgtk_slider_set_unit(g->scale2,"%");
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->opacity, 0.5);
+  dt_bauhaus_slider_set_format(g->scale1, "%.f%%");
+  dt_bauhaus_widget_set_label(g->scale1,_("opacity"));
+  g->scale2 = dt_bauhaus_slider_new_with_range(self, 1.0, 100.0, 1.0, p->scale, 0.5);
+  dt_bauhaus_slider_set_format(g->scale2, "%.f%%");
+  dt_bauhaus_widget_set_label(g->scale2,_("scale"));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
@@ -724,10 +926,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
 
   // x/y offset
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->xoffset,3));
-  g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->yoffset, 3));
-  dtgtk_slider_set_label(g->scale3,_("x offset"));
-  dtgtk_slider_set_label(g->scale4,_("y offset"));
+  g->scale3 = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0,0.001, p->xoffset, 3);
+  dt_bauhaus_slider_set_format(g->scale3, "%.3f");
+  dt_bauhaus_widget_set_label(g->scale3,_("x offset"));
+  g->scale4 = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0,0.001, p->yoffset, 3);
+  dt_bauhaus_slider_set_format(g->scale4, "%.3f");
+  dt_bauhaus_widget_set_label(g->scale4,_("y offset"));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
 
@@ -763,4 +967,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

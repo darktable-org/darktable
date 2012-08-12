@@ -19,8 +19,8 @@
 #ifndef DT_LIB_H
 #define DT_LIB_H
 
-#include "views/view.h"
 #include "common/darktable.h"
+#include "views/view.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
 
@@ -53,6 +53,8 @@ typedef struct dt_lib_t
       int restrict_histogram;
       void (*update_panel)(struct dt_lib_module_t *self);
       void (*update_samples)(struct dt_lib_module_t *self);
+      void (*set_sample_area)(struct dt_lib_module_t *self, float size);
+      void (*set_sample_point)(struct dt_lib_module_t *self, float x, float y);
     } colorpicker;
 
   } proxy;
@@ -147,6 +149,18 @@ gchar *dt_lib_get_localized_name(const gchar * plugin_name);
 /** add or replace a preset for this operation. */
 void dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t version, const void *params, const int32_t params_size);
 
+/*
+ * Proxy functions
+ */
+
+/** set the colorpicker area selection tool and size, size 0.0 - 1.0 */
+void dt_lib_colorpicker_set_area(dt_lib_t *lib, float size);
+
+/** set the colorpicker point selection tool and position */
+void dt_lib_colorpicker_set_point(dt_lib_t *lib, float x, float y);
+
 #endif
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

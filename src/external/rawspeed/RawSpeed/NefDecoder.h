@@ -37,9 +37,9 @@ class NefDecoder :
 public:
   NefDecoder(TiffIFD *rootIFD, FileMap* file);
   virtual ~NefDecoder(void);
-  virtual RawImage decodeRaw();
-  virtual void decodeMetaData(CameraMetaData *meta);
-  virtual void checkSupport(CameraMetaData *meta);
+  virtual RawImage decodeRawInternal();
+  virtual void decodeMetaDataInternal(CameraMetaData *meta);
+  virtual void checkSupportInternal(CameraMetaData *meta);
   TiffIFD *mRootIFD;
 private:
   bool D100IsCompressed(uint32 offset);

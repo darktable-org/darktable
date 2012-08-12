@@ -19,16 +19,19 @@
 #define DT_IMAGEIO_EXR_H
 
 #include "common/image.h"
+#include "common/mipmap_cache.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-  dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename);
-  dt_imageio_retval_t dt_imageio_open_exr_preview (dt_image_t *img, const char *filename);
+  dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
 
 #ifdef __cplusplus
 }
 #endif
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

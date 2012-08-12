@@ -19,23 +19,22 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
-#include <gdk/gdkkeysyms.h>
-#include "iop/colorout.h"
 #include "develop/develop.h"
+#include "iop/colorout.h"
+#include "bauhaus/bauhaus.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
-#include "dtgtk/resetlabel.h"
-#include <xmmintrin.h>
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+#include <xmmintrin.h>
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
+#include <string.h>
+#include <gdk/gdkkeysyms.h>
 
 DT_MODULE(3)
 
@@ -60,7 +59,7 @@ flags ()
 }
 
 
-static void key_softproof_callback(GtkAccelGroup *accel_group,
+static gboolean key_softproof_callback(GtkAccelGroup *accel_group,
                                    GObject *acceleratable,
                                    guint keyval, GdkModifierType modifier,
                                    gpointer data)
@@ -73,7 +72,7 @@ static void key_softproof_callback(GtkAccelGroup *accel_group,
   g->softproof_enabled = p->softproof_enabled = !p->softproof_enabled;
   if(p->softproof_enabled)
   {
-    int pos = gtk_combo_box_get_active(g->cbox5);
+    int pos = dt_bauhaus_combobox_get(g->cbox5);
     gchar *filename = _get_profile_from_pos(g->profiles, pos);
     if (filename)
       g_strlcpy(p->softproofprofile, filename, sizeof(p->softproofprofile));
@@ -81,6 +80,7 @@ static void key_softproof_callback(GtkAccelGroup *accel_group,
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   dt_control_queue_redraw_center();
+  return TRUE;
 }
 
 int
@@ -127,22 +127,22 @@ cleanup_global(dt_iop_module_so_t *module)
 }
 
 static void
-intent_changed (GtkComboBox *widget, gpointer user_data)
+intent_changed (GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
-  p->intent = (dt_iop_color_intent_t)gtk_combo_box_get_active(widget);
+  p->intent = (dt_iop_color_intent_t)dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-display_intent_changed (GtkComboBox *widget, gpointer user_data)
+display_intent_changed (GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
-  p->displayintent = (dt_iop_color_intent_t)gtk_combo_box_get_active(widget);
+  p->displayintent = (dt_iop_color_intent_t)dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -159,13 +159,13 @@ static gchar *_get_profile_from_pos(GList *profiles, int pos)
 }
 
 static void
-profile_changed (GtkComboBox *widget, gpointer user_data)
+profile_changed (GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
-  int pos = gtk_combo_box_get_active(widget);
+  int pos = dt_bauhaus_combobox_get(widget);
 
   gchar *filename = _get_profile_from_pos(g->profiles, pos);
   if (filename)
@@ -179,13 +179,13 @@ profile_changed (GtkComboBox *widget, gpointer user_data)
 }
 
 static void
-softproof_profile_changed (GtkComboBox *widget, gpointer user_data)
+softproof_profile_changed (GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
-  int pos = gtk_combo_box_get_active(widget);
+  int pos = dt_bauhaus_combobox_get(widget);
   gchar *filename = _get_profile_from_pos(g->profiles, pos);
   if (filename)
   {
@@ -198,13 +198,13 @@ softproof_profile_changed (GtkComboBox *widget, gpointer user_data)
 }
 
 static void
-display_profile_changed (GtkComboBox *widget, gpointer user_data)
+display_profile_changed (GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
-  int pos = gtk_combo_box_get_active(widget);
+  int pos = dt_bauhaus_combobox_get(widget);
   gchar *filename = _get_profile_from_pos(g->profiles, pos);
   if (filename)
   {
@@ -244,7 +244,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
 
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*9, d->cmatrix);
   if (dev_m == NULL) goto error;
@@ -254,7 +254,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if (dev_g == NULL) goto error;
   dev_b = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
   if (dev_g == NULL) goto error;
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*2*3, (float *)d->unbounded_coeffs);
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3*3, (float *)d->unbounded_coeffs);
   if (dev_coeffs == NULL) goto error;
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -321,7 +321,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
   const int ch = piece->colors;
 
-  if(d->cmatrix[0] != -0.666f)
+  if(!isnan(d->cmatrix[0]))
   {
     //fprintf(stderr,"Using cmatrix codepath\n");
     // convert to rgb using matrix
@@ -370,14 +370,11 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
   {
     float *in  = (float*)ivoid;
     float *out = (float*)ovoid;
+    const int rowsize=roi_out->width * 3;
     //fprintf(stderr,"Using xform codepath\n");
 
-    // lcms2 fallback, slow:
-    int rowsize=roi_out->width*3;
-
-    // FIXME: breaks :(
-#if 0//def _OPENMP
-    #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d, rowsize)
+#ifdef _OPENMP
+    #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in)
 #endif
     for (int k=0; k<roi_out->height; k++)
     {
@@ -393,8 +390,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         Lab[li+2] = in[m+ii+2];
       }
 
-      // lcms is not thread safe, so use local copy
-      cmsDoTransform (d->xform[dt_get_thread_num()], Lab, rgb, roi_out->width);
+      cmsDoTransform (d->xform, Lab, rgb, roi_out->width);
 
       for (int l=0; l<roi_out->width; l++)
       {
@@ -405,6 +401,9 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
       }
     }
   }
+
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 static cmsHPROFILE _create_profile(gchar *iccprofile)
@@ -466,19 +465,18 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->softproof = NULL;
 
   d->softproof_enabled = p->softproof_enabled;
-  if(self->dev->gui_attached)
+  if(self->dev->gui_attached && self->gui_data != NULL)
   {
     dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
     g->softproof_enabled = p->softproof_enabled;
   }
   const int num_threads = dt_get_num_threads();
-  for (int t=0; t<num_threads; t++)
-    if (d->xform[t])
-    {
-      cmsDeleteTransform(d->xform[t]);
-      d->xform[t] = NULL;
-    }
-  d->cmatrix[0] = -0.666f;
+  if (d->xform)
+  {
+      cmsDeleteTransform(d->xform);
+      d->xform = 0;
+  }
+  d->cmatrix[0] = NAN;
   d->lut[0][0] = -1.0f;
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
@@ -516,7 +514,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 
   /* TODO: the use of bpc should be userconfigurable either from module or preference pane */
   /* softproof flag and black point compensation */
-  transformFlags |= (d->softproof_enabled ? cmsFLAGS_SOFTPROOFING|cmsFLAGS_BLACKPOINTCOMPENSATION : 0);
+  transformFlags |= (d->softproof_enabled ? cmsFLAGS_SOFTPROOFING|cmsFLAGS_NOCACHE|cmsFLAGS_BLACKPOINTCOMPENSATION : 0);
       
 
 
@@ -524,18 +522,20 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if (d->softproof_enabled || (pipe->type == DT_DEV_PIXELPIPE_EXPORT && high_quality_processing) || 
           dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
   {
-    d->cmatrix[0] = -0.666f;
+    d->cmatrix[0] = NAN;
     piece->process_cl_ready = 0;
-    for(int t=0; t<num_threads; t++)
-      d->xform[t] = cmsCreateProofingTransform(
-                      d->Lab,TYPE_Lab_FLT, d->output, TYPE_RGB_FLT,
-                      d->softproof, outintent,
-                      INTENT_RELATIVE_COLORIMETRIC,
-                      transformFlags);
+    d->xform = cmsCreateProofingTransform(d->Lab,
+                                          TYPE_Lab_FLT,
+                                          d->output,
+                                          TYPE_RGB_FLT,
+                                          d->softproof,
+                                          outintent,
+                                          INTENT_RELATIVE_COLORIMETRIC,
+                                          transformFlags);
   }
 
   // user selected a non-supported output profile, check that:
-  if (!d->xform[0] && d->cmatrix[0] == -0.666f)
+  if (!d->xform && isnan(d->cmatrix[0]))
   {
     dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
     if (d->output)
@@ -543,15 +543,18 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->output = dt_colorspaces_create_srgb_profile();
     if (d->softproof_enabled || dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
-      d->cmatrix[0] = -0.666f;
+      d->cmatrix[0] = NAN;
       piece->process_cl_ready = 0;
       for (int t=0; t<num_threads; t++)
 	
-        d->xform[t] = cmsCreateProofingTransform(
-                        d->Lab,TYPE_Lab_FLT, d->output, TYPE_RGB_FLT,
-                        d->softproof, outintent,
-                        INTENT_RELATIVE_COLORIMETRIC,
-			transformFlags);
+        d->xform = cmsCreateProofingTransform(d->Lab,
+                                              TYPE_Lab_FLT,
+                                              d->output,
+                                              TYPE_RGB_FLT,
+                                              d->softproof,
+                                              outintent,
+                                              INTENT_RELATIVE_COLORIMETRIC,
+                                              transformFlags);
     }
   }
 
@@ -585,9 +588,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   d->softproof_enabled = 0;
   d->softproof = d->output = NULL;
-  d->xform = (cmsHTRANSFORM *)malloc(sizeof(cmsHTRANSFORM)*dt_get_num_threads());
-  for(int t=0; t<dt_get_num_threads(); t++)
-    d->xform[t] = NULL;
+  d->xform = 0;
   d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
 }
@@ -597,11 +598,12 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   if(d->output) dt_colorspaces_cleanup_profile(d->output);
   dt_colorspaces_cleanup_profile(d->Lab);
-  for(int t=0; t<dt_get_num_threads(); t++)
-    if(d->xform[t])
-      cmsDeleteTransform(d->xform[t]);
+  if (d->xform)
+  {
+      cmsDeleteTransform(d->xform);
+      d->xform = 0;
+  }
 
-  free(d->xform);
   free(piece->data);
 }
 
@@ -610,8 +612,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)module->params;
-  gtk_combo_box_set_active(g->cbox1, (int)p->intent);
-  gtk_combo_box_set_active(g->cbox4, (int)p->displayintent);
+  dt_bauhaus_combobox_set(g->cbox1, (int)p->intent);
+  dt_bauhaus_combobox_set(g->cbox4, (int)p->displayintent);
 
   int iccfound = 0, displayfound = 0, softprooffound = 0;
   GList *prof = g->profiles;
@@ -620,28 +622,28 @@ void gui_update(struct dt_iop_module_t *self)
     dt_iop_color_profile_t *pp = (dt_iop_color_profile_t *)prof->data;
     if(!strcmp(pp->filename, p->iccprofile))
     {
-      gtk_combo_box_set_active(g->cbox2, pp->pos);
+      dt_bauhaus_combobox_set(g->cbox2, pp->pos);
       iccfound = 1;
     }
     if(!strcmp(pp->filename, p->displayprofile))
     {
-      gtk_combo_box_set_active(g->cbox3, pp->pos);
+      dt_bauhaus_combobox_set(g->cbox3, pp->pos);
       displayfound = 1;
     }
     if(!strcmp(pp->filename, p->softproofprofile))
     {
-      gtk_combo_box_set_active(g->cbox5, pp->pos);
+      dt_bauhaus_combobox_set(g->cbox5, pp->pos);
       softprooffound = 1;
     }
 
     if(iccfound && displayfound && softprooffound) break;
     prof = g_list_next(prof);
   }
-  if(!iccfound)     gtk_combo_box_set_active(g->cbox2, 0);
-  if(!displayfound) gtk_combo_box_set_active(g->cbox3, 0);
-  if(!softprooffound) gtk_combo_box_set_active(g->cbox5, 0);
-  if(!iccfound)     fprintf(stderr, "[colorout] could not find requested profile `%s'!\n", p->iccprofile);
-  if(!displayfound) fprintf(stderr, "[colorout] could not find requested display profile `%s'!\n", p->displayprofile);
+  if(!iccfound)       dt_bauhaus_combobox_set(g->cbox2, 0);
+  if(!displayfound)   dt_bauhaus_combobox_set(g->cbox3, 0);
+  if(!softprooffound) dt_bauhaus_combobox_set(g->cbox5, 0);
+  if(!iccfound)       fprintf(stderr, "[colorout] could not find requested profile `%s'!\n", p->iccprofile);
+  if(!displayfound)   fprintf(stderr, "[colorout] could not find requested display profile `%s'!\n", p->displayprofile);
   if(!softprooffound) fprintf(stderr, "[colorout] could not find requested softproof profile `%s'!\n", p->softproofprofile);
 }
 
@@ -651,7 +653,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorout_params_t));
   module->params_size = sizeof(dt_iop_colorout_params_t);
   module->gui_data = NULL;
-  module->priority = 791; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 803; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t)
     {"sRGB", "X profile", DT_INTENT_PERCEPTUAL, DT_INTENT_PERCEPTUAL,
@@ -695,7 +697,6 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_colorout_gui_data_t));
   memset(self->gui_data,0,sizeof(dt_iop_colorout_gui_data_t));
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
-  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
 
   g->profiles = NULL;
   dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
@@ -725,8 +726,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   // read {conf,data}dir/color/out/*.icc
   char datadir[1024], confdir[1024], dirname[1024], filename[1024];
-  dt_util_get_user_config_dir(confdir, 1024);
-  dt_util_get_datadir(datadir, 1024);
+  dt_loc_get_user_config_dir(confdir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
   snprintf(dirname, 1024, "%s/color/out", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
     snprintf(dirname, 1024, "%s/color/out", datadir);
@@ -741,8 +742,8 @@ void gui_init(struct dt_iop_module_t *self)
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
-	char *lang = getenv("LANG");
-	if (!lang) lang = "en_US";
+        char *lang = getenv("LANG");
+        if (!lang) lang = "en_US";
 
         dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
         char name[1024];
@@ -757,84 +758,67 @@ void gui_init(struct dt_iop_module_t *self)
     g_dir_close(dir);
   }
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
+  self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
 
-  GtkWidget *label1, *label2, *label3, *label4, *label5;
-  label1 = dtgtk_reset_label_new(_("output intent"), self, &p->intent, sizeof(dt_iop_color_intent_t));
-  label2 = dtgtk_reset_label_new(_("output profile"), self, &p->iccprofile, sizeof(char)*DT_IOP_COLOR_ICC_LEN);
-  label5 = gtk_label_new(_("softproof profile"));
-  gtk_misc_set_alignment(GTK_MISC(label5), 0.0, 0.5);
-  label4 = dtgtk_reset_label_new(_("display intent"), self, &p->displayintent, sizeof(dt_iop_color_intent_t));
-  label3 = dtgtk_reset_label_new(_("display profile"), self, &p->displayprofile, sizeof(char)*DT_IOP_COLOR_ICC_LEN);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), label1, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), label2, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), label5, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), label4, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), label3, TRUE, TRUE, 0);
-  g->cbox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(g->cbox1, _("perceptual"));
-  gtk_combo_box_append_text(g->cbox1, _("relative colorimetric"));
-  gtk_combo_box_append_text(g->cbox1, C_("rendering intent", "saturation"));
-  gtk_combo_box_append_text(g->cbox1, _("absolute colorimetric"));
-  g->cbox4 = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(g->cbox4, _("perceptual"));
-  gtk_combo_box_append_text(g->cbox4, _("relative colorimetric"));
-  gtk_combo_box_append_text(g->cbox4, C_("rendering intent", "saturation"));
-  gtk_combo_box_append_text(g->cbox4, _("absolute colorimetric"));
-  g->cbox2 = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  g->cbox3 = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  g->cbox5 = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  // TODO:
+  g->cbox1 = dt_bauhaus_combobox_new(self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->cbox1, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(g->cbox1, _("output intent"));
+  dt_bauhaus_combobox_add(g->cbox1, _("perceptual"));
+  dt_bauhaus_combobox_add(g->cbox1, _("relative colorimetric"));
+  dt_bauhaus_combobox_add(g->cbox1, C_("rendering intent", "saturation"));
+  dt_bauhaus_combobox_add(g->cbox1, _("absolute colorimetric"));
+  g->cbox4 = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->cbox4, _("display intent"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->cbox4, TRUE, TRUE, 0);
+  dt_bauhaus_combobox_add(g->cbox4, _("perceptual"));
+  dt_bauhaus_combobox_add(g->cbox4, _("relative colorimetric"));
+  dt_bauhaus_combobox_add(g->cbox4, C_("rendering intent", "saturation"));
+  dt_bauhaus_combobox_add(g->cbox4, _("absolute colorimetric"));
+  g->cbox2 = dt_bauhaus_combobox_new(self);
+  g->cbox3 = dt_bauhaus_combobox_new(self);
+  g->cbox5 = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->cbox2, _("output profile"));
+  dt_bauhaus_widget_set_label(g->cbox5, _("softproof profile"));
+  dt_bauhaus_widget_set_label(g->cbox3, _("display profile"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->cbox2, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->cbox5, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->cbox3, TRUE, TRUE, 0);
   GList *l = g->profiles;
   while(l)
   {
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
     if(!strcmp(prof->name, "X profile"))
     {
-      gtk_combo_box_append_text(g->cbox2, _("system display profile"));
-      gtk_combo_box_append_text(g->cbox3, _("system display profile"));
-      gtk_combo_box_append_text(g->cbox5, _("system display profile"));	/// TODO: this is useless, but here for test
+      // the system display profile is only suitable for display purposes
+      dt_bauhaus_combobox_add(g->cbox3, _("system display profile"));
     }
     else if(!strcmp(prof->name, "linear_rgb"))
     {
-      gtk_combo_box_append_text(g->cbox2, _("linear RGB"));
-      gtk_combo_box_append_text(g->cbox3, _("linear RGB"));
-      gtk_combo_box_append_text(g->cbox5, _("linear RGB"));
+      dt_bauhaus_combobox_add(g->cbox2, _("linear RGB"));
+      dt_bauhaus_combobox_add(g->cbox3, _("linear RGB"));
+      dt_bauhaus_combobox_add(g->cbox5, _("linear RGB"));
     }
     else if(!strcmp(prof->name, "sRGB"))
     {
-      gtk_combo_box_append_text(g->cbox2, _("sRGB (web-safe)"));
-      gtk_combo_box_append_text(g->cbox3, _("sRGB (web-safe)"));
-      gtk_combo_box_append_text(g->cbox5, _("sRGB (web-safe)"));
+      dt_bauhaus_combobox_add(g->cbox2, _("sRGB (web-safe)"));
+      dt_bauhaus_combobox_add(g->cbox3, _("sRGB (web-safe)"));
+      dt_bauhaus_combobox_add(g->cbox5, _("sRGB (web-safe)"));
     }
     else if(!strcmp(prof->name, "adobergb"))
     {
-      gtk_combo_box_append_text(g->cbox2, _("Adobe RGB"));
-      gtk_combo_box_append_text(g->cbox3, _("Adobe RGB"));
-      gtk_combo_box_append_text(g->cbox5, _("Adobe RGB"));
+      dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB"));
+      dt_bauhaus_combobox_add(g->cbox3, _("Adobe RGB"));
+      dt_bauhaus_combobox_add(g->cbox5, _("Adobe RGB"));
     }
     else
     {
-      gtk_combo_box_append_text(g->cbox2, prof->name);
-      gtk_combo_box_append_text(g->cbox3, prof->name);
-      gtk_combo_box_append_text(g->cbox5, prof->name);
+      dt_bauhaus_combobox_add(g->cbox2, prof->name);
+      dt_bauhaus_combobox_add(g->cbox3, prof->name);
+      dt_bauhaus_combobox_add(g->cbox5, prof->name);
     }
     l = g_list_next(l);
   }
-
-  gtk_combo_box_set_active(g->cbox1, 0);
-  gtk_combo_box_set_active(g->cbox2, 0);
-  gtk_combo_box_set_active(g->cbox3, 0);
-  gtk_combo_box_set_active(g->cbox4, 0);
-  gtk_combo_box_set_active(g->cbox5, 0);	// Defaults softproofing against srgb profile
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox5), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox4), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox3), TRUE, TRUE, 0);
 
   char tooltip[1024];
   g_object_set(G_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), (char *)NULL);
@@ -845,19 +829,19 @@ void gui_init(struct dt_iop_module_t *self)
   snprintf(tooltip, 1024, _("softproof icc profiles in %s/color/out or %s/color/out"), confdir, datadir);
   g_object_set(G_OBJECT(g->cbox5), "tooltip-text", tooltip, (char *)NULL);
 
-  g_signal_connect (G_OBJECT (g->cbox1), "changed",
+  g_signal_connect (G_OBJECT (g->cbox1), "value-changed",
                     G_CALLBACK (intent_changed),
                     (gpointer)self);
-  g_signal_connect (G_OBJECT (g->cbox4), "changed",
+  g_signal_connect (G_OBJECT (g->cbox4), "value-changed",
                     G_CALLBACK (display_intent_changed),
                     (gpointer)self);
-  g_signal_connect (G_OBJECT (g->cbox2), "changed",
+  g_signal_connect (G_OBJECT (g->cbox2), "value-changed",
                     G_CALLBACK (profile_changed),
                     (gpointer)self);
-  g_signal_connect (G_OBJECT (g->cbox3), "changed",
+  g_signal_connect (G_OBJECT (g->cbox3), "value-changed",
                     G_CALLBACK (display_profile_changed),
                     (gpointer)self);
-  g_signal_connect (G_OBJECT (g->cbox5), "changed",
+  g_signal_connect (G_OBJECT (g->cbox5), "value-changed",
                     G_CALLBACK (softproof_profile_changed),
                     (gpointer)self);
 }
@@ -888,4 +872,6 @@ void connect_key_accels(dt_iop_module_t *self)
 
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

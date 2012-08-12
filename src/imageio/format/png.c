@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,6 +29,7 @@
 #include <stdio.h>
 #include <png.h>
 #include <inttypes.h>
+#include <zlib.h>
 
 DT_MODULE(1)
 
@@ -383,6 +385,9 @@ radiobutton_changed (GtkRadioButton *radiobutton, gpointer user_data)
     dt_conf_set_int("plugins/imageio/format/png/bpp", bpp);
 }
 
+void init(dt_imageio_module_format_t *self) {}
+void cleanup(dt_imageio_module_format_t *self) {}
+
 // TODO: some quality/compression stuff?
 void gui_init (dt_imageio_module_format_t *self)
 {
@@ -410,3 +415,6 @@ void gui_cleanup (dt_imageio_module_format_t *self)
 void gui_reset (dt_imageio_module_format_t *self) {}
 
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

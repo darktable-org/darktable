@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,12 +24,15 @@ extern "C"
 #endif
 
 #include "common/image.h"
+#include "common/mipmap_cache.h"
 
-  dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename);
-  dt_imageio_retval_t dt_imageio_open_rawspeed_preview(dt_image_t *img, const char *filename);
+  dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
 
 #ifdef __cplusplus
 }
 #endif
 #endif
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

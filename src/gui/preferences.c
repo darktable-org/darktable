@@ -28,11 +28,14 @@
 #include "libs/lib.h"
 #include "preferences_gen.h"
 
+#define ICON_SIZE 13
+
 typedef struct dt_gui_presets_edit_dialog_t
 {
   GtkTreeView *tree; // CHANGED!
   gint rowid; // CHANGED!
-  GtkEntry *name, *description;
+  GtkLabel *name;
+  GtkEntry *description;
   GtkCheckButton *autoapply, *filter;
   GtkBox *details;
   GtkEntry *model, *maker, *lens;
@@ -66,7 +69,7 @@ static const char* dt_gui_presets_aperture_value_str[] = {"f/0", "f/0.5", "f/0.7
 // Values for the accelerators/presets treeview
 
 enum {A_ACCEL_COLUMN, A_BINDING_COLUMN, A_TRANS_COLUMN, A_N_COLUMNS};
-enum {P_ROWID_COLUMN, P_OPERATION_COLUMN, P_MODULE_COLUMN, P_NAME_COLUMN, P_DESCRIPTION_COLUMN, P_MODEL_COLUMN, P_MAKER_COLUMN, P_LENS_COLUMN, P_ISO_COLUMN, P_EXPOSURE_COLUMN, P_APERTURE_COLUMN, P_FOCAL_LENGTH_COLUMN, P_AUTOAPPLY_COLUMN, P_ENABLED_COLUMN, P_EDITABLE_COLUMN, P_N_COLUMNS};
+enum {P_ROWID_COLUMN, P_OPERATION_COLUMN, P_MODULE_COLUMN, P_EDITABLE_COLUMN, P_NAME_COLUMN, P_MODEL_COLUMN, P_MAKER_COLUMN, P_LENS_COLUMN, P_ISO_COLUMN, P_EXPOSURE_COLUMN, P_APERTURE_COLUMN, P_FOCAL_LENGTH_COLUMN, P_AUTOAPPLY_COLUMN, P_N_COLUMNS};
 
 static void init_tab_presets(GtkWidget *book);
 static void init_tab_accels(GtkWidget *book);
@@ -103,6 +106,110 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
 
 static GtkWidget *_preferences_dialog;
 
+/*
+static GList *language_codes = NULL;
+static gint sys_default = -1;
+
+static void language_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_conf_set_string("ui_last/gui_language", (gchar*)g_list_nth(language_codes, gtk_combo_box_get_active(GTK_COMBO_BOX(widget)))->data);
+}
+
+static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
+{
+  if(event->type == GDK_2BUTTON_PRESS)
+  {
+    gtk_combo_box_set_active(GTK_COMBO_BOX(widget), sys_default+1);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+// TODO: sort the list of languages
+static void hardcoded_gui(GtkWidget *vbox1, GtkWidget *vbox2)
+{
+  GtkWidget *label, *widget, *labelev;
+  GDir *dir;
+  const gchar *filename;
+  GList *languages = NULL, *iter;
+  const gchar * const * names = g_get_language_names();
+  gint selected = -1;
+  sys_default = -1;
+  gboolean store_codes = (language_codes == NULL);
+  gchar *ui_lang = dt_conf_get_string("ui_last/gui_language");
+  dir = g_dir_open(DARKTABLE_LOCALEDIR, 0, NULL);
+
+  if(store_codes)
+    language_codes = g_list_append(language_codes, g_strdup("C"));
+
+  if(dir)
+  {
+    int i = -1;
+    while((filename = g_dir_read_name(dir)))
+    {
+      gchar *testname =g_build_filename(DARKTABLE_LOCALEDIR, filename, NULL);
+      if(g_file_test(testname, G_FILE_TEST_IS_DIR))
+      {
+        gchar *entry = NULL;
+        i++;
+        if(sys_default == -1)
+        {
+          // check if this is the system default
+          const gchar * const * n = names;
+          while(*n)
+          {
+            if(g_strcmp0(*n, filename) == 0)
+            {
+              sys_default = i;
+              entry = g_strconcat(filename, " (", _("system default"), ")", NULL);
+              break;
+            }
+            n++;
+          }
+        }
+        if(g_strcmp0(ui_lang, filename) == 0)
+          selected = i;
+        languages = g_list_append(languages, entry?entry:g_strdup(filename));
+        if(store_codes)
+          language_codes = g_list_append(language_codes, g_strdup(filename));
+      }
+      g_free(testname);
+    }
+    g_dir_close(dir) ;
+  }
+  if(selected == -1 && g_strcmp0(ui_lang, "C") != 0)
+    selected = sys_default;
+
+  label = gtk_label_new(_("interface language"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  labelev = gtk_event_box_new();
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), label);
+  widget = gtk_combo_box_new_text();
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("english"));
+
+  if((iter = g_list_first(languages)) != NULL)
+  {
+    do
+    {
+      gtk_combo_box_append_text(GTK_COMBO_BOX(widget), iter->data);
+      g_free(iter->data);
+    }
+    while((iter=g_list_next(iter)) != NULL);
+    g_list_free(languages);
+  }
+
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), selected + 1);
+  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(language_callback), 0);
+  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", _("double click to reset to the system language"), (char *)NULL);
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
+  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("set the language of the user interface (needs a restart)"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_language_widget), (gpointer)widget);
+}
+*/
+
 void dt_gui_preferences_show()
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
@@ -122,8 +229,9 @@ void dt_gui_preferences_show()
   darktable.control->accel_remap_str = NULL;
   darktable.control->accel_remap_path = NULL;
 
-  init_tab_gui(notebook);
-  init_tab_core(notebook);
+//   init_tab_gui(notebook, &hardcoded_gui);
+  init_tab_gui(notebook, NULL);
+  init_tab_core(notebook, NULL);
   init_tab_accels(notebook);
   init_tab_presets(notebook);
   gtk_widget_show_all(_preferences_dialog);
@@ -144,33 +252,51 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
   sqlite3_stmt *stmt;
   gchar *last_module = NULL;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select rowid, name, description, operation, enabled, autoapply, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, writeprotect from presets order by operation,name", -1, &stmt, NULL);
+  // Create a GdkPixbuf with a cairo drawing.
+  // WARNING: In general, this doesn't work as the pixel format of GDK and cairo differs. But in our case with a monochrome icon that doesn't matter. :-)
+  // lock
+  cairo_surface_t *lock_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
+  cairo_t *lock_cr = cairo_create(lock_cst);
+  cairo_set_source_rgb(lock_cr, 0.7,0.7,0.7);
+  dtgtk_cairo_paint_lock(lock_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);
+  guchar* data = cairo_image_surface_get_data(lock_cst);
+  GdkPixbuf* lock_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE,
+                                                    ICON_SIZE, cairo_image_surface_get_stride(lock_cst), NULL, NULL);
+  // check mark
+  cairo_surface_t *check_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
+  cairo_t *check_cr = cairo_create(check_cst);
+  cairo_set_source_rgb(check_cr, 0.7,0.7,0.7);
+  dtgtk_cairo_paint_check_mark(check_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);
+  data = cairo_image_surface_get_data(check_cst);
+  GdkPixbuf* check_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE,
+                                                    ICON_SIZE, cairo_image_surface_get_stride(check_cst), NULL, NULL);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select rowid, name, operation, autoapply, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, writeprotect from presets order by operation,name", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     gint rowid                  = sqlite3_column_int(stmt, 0);
     gchar* name                 = (gchar*) sqlite3_column_text(stmt, 1);
-    gchar* description          = (gchar*) sqlite3_column_text(stmt, 2);
-    gchar* operation            = (gchar*) sqlite3_column_text(stmt, 3);
-    const gboolean enabled      = (sqlite3_column_int(stmt, 4)==0 ? FALSE : TRUE);
-    const gboolean autoapply    = (sqlite3_column_int(stmt, 5)==0 ? FALSE : TRUE);
-    gchar* model                = (gchar*) sqlite3_column_text(stmt, 6);
-    gchar* maker                = (gchar*) sqlite3_column_text(stmt, 7);
-    gchar* lens                 = (gchar*) sqlite3_column_text(stmt, 8);
-    int iso_min                 = sqlite3_column_double(stmt, 9);
-    int iso_max                 = sqlite3_column_double(stmt, 10);
-    float exposure_min          = sqlite3_column_double(stmt, 11);
-    float exposure_max          = sqlite3_column_double(stmt, 12);
-    float aperture_min          = sqlite3_column_double(stmt, 13);
-    float aperture_max          = sqlite3_column_double(stmt, 14);
-    int focal_length_min        = sqlite3_column_double(stmt, 15);
-    int focal_length_max        = sqlite3_column_double(stmt, 16);
-    const gboolean writeprotect = (sqlite3_column_int(stmt, 17)==0 ? FALSE : TRUE);
+    gchar* operation            = (gchar*) sqlite3_column_text(stmt, 2);
+    const gboolean autoapply    = (sqlite3_column_int(stmt, 3)==0 ? FALSE : TRUE);
+    gchar* model                = (gchar*) sqlite3_column_text(stmt, 4);
+    gchar* maker                = (gchar*) sqlite3_column_text(stmt, 5);
+    gchar* lens                 = (gchar*) sqlite3_column_text(stmt, 6);
+    int iso_min                 = sqlite3_column_double(stmt, 7);
+    int iso_max                 = sqlite3_column_double(stmt, 8);
+    float exposure_min          = sqlite3_column_double(stmt, 9);
+    float exposure_max          = sqlite3_column_double(stmt, 10);
+    float aperture_min          = sqlite3_column_double(stmt, 11);
+    float aperture_max          = sqlite3_column_double(stmt, 12);
+    int focal_length_min        = sqlite3_column_double(stmt, 13);
+    int focal_length_max        = sqlite3_column_double(stmt, 14);
+    const gboolean writeprotect = (sqlite3_column_int(stmt, 15)==0 ? FALSE : TRUE);
 
     gchar *iso, *exposure, *aperture, *focal_length;
     int min, max;
 
     gchar *module             = dt_iop_get_localized_name(operation);
     if(module == NULL) module = dt_lib_get_localized_name(operation);
+    if(module == NULL) module = g_strdup(operation);
 
     if(iso_min == 0.0 && iso_max == 51200.0)
       iso = g_strdup("%");
@@ -205,8 +331,8 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
                          P_ROWID_COLUMN, 0,
                          P_OPERATION_COLUMN, "",
                          P_MODULE_COLUMN, _(module),
+                         P_EDITABLE_COLUMN, NULL,
                          P_NAME_COLUMN, "",
-                         P_DESCRIPTION_COLUMN, "",
                          P_MODEL_COLUMN, "",
                          P_MAKER_COLUMN, "",
                          P_LENS_COLUMN, "",
@@ -214,9 +340,7 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
                          P_EXPOSURE_COLUMN, "",
                          P_APERTURE_COLUMN, "",
                          P_FOCAL_LENGTH_COLUMN, "",
-                         P_AUTOAPPLY_COLUMN, "",
-                         P_ENABLED_COLUMN, "",
-                         P_EDITABLE_COLUMN, "",
+                         P_AUTOAPPLY_COLUMN, NULL,
                          -1);
       g_free(last_module);
       last_module = g_strdup(operation);
@@ -228,8 +352,8 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
                          P_ROWID_COLUMN, rowid,
                          P_OPERATION_COLUMN, operation,
                          P_MODULE_COLUMN, "",
+                         P_EDITABLE_COLUMN, writeprotect?lock_pixbuf:NULL,
                          P_NAME_COLUMN, name,
-                         P_DESCRIPTION_COLUMN, description,
                          P_MODEL_COLUMN, model,
                          P_MAKER_COLUMN, maker,
                          P_LENS_COLUMN, lens,
@@ -237,28 +361,28 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
                          P_EXPOSURE_COLUMN, exposure,
                          P_APERTURE_COLUMN, aperture,
                          P_FOCAL_LENGTH_COLUMN, focal_length,
-                         P_AUTOAPPLY_COLUMN, autoapply?"x":"",
-                         P_ENABLED_COLUMN, enabled?"x":"",
-                         P_EDITABLE_COLUMN, writeprotect?"":"x",
+                         P_AUTOAPPLY_COLUMN, autoapply?check_pixbuf:NULL,
                       -1);
 
   }
   sqlite3_finalize(stmt);
+
+  g_object_unref(lock_pixbuf);
+  cairo_surface_destroy(lock_cst);
+  g_object_unref(check_pixbuf);
+  cairo_surface_destroy(check_cst);
 }
 
-//TODO: - add nice icons instead of the x's.
 static void init_tab_presets(GtkWidget *book)
 {
   GtkWidget *alignment = gtk_alignment_new(0.5, 0.0, 0.9, 1.0);
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   GtkWidget *tree = gtk_tree_view_new();
   GtkTreeStore *model = gtk_tree_store_new(P_N_COLUMNS, G_TYPE_INT /*rowid*/, G_TYPE_STRING /*operation*/,
-                                           G_TYPE_STRING /*module*/, G_TYPE_STRING /*name*/, G_TYPE_STRING /*description*/,
+                                           G_TYPE_STRING /*module*/, GDK_TYPE_PIXBUF /*editable*/, G_TYPE_STRING /*name*/,
                                            G_TYPE_STRING /*model*/, G_TYPE_STRING /*maker*/, G_TYPE_STRING /*lens*/,
                                            G_TYPE_STRING /*iso*/, G_TYPE_STRING /*exposure*/, G_TYPE_STRING /*aperture*/, G_TYPE_STRING /*focal length*/,
-                                           G_TYPE_STRING /*auto*/,
-                                           G_TYPE_STRING /*enabled*/,
-                                           G_TYPE_STRING /*editable*//* TODO: use a pixmap for these three. */);
+                                           GDK_TYPE_PIXBUF /*auto*/);
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
 
@@ -284,19 +408,19 @@ static void init_tab_presets(GtkWidget *book)
       NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
+  renderer = gtk_cell_renderer_pixbuf_new();
+  column = gtk_tree_view_column_new_with_attributes(
+      "", renderer,
+      "pixbuf", P_EDITABLE_COLUMN,
+      NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
       _("name"), renderer,
       "text", P_NAME_COLUMN,
       NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
-
-//   renderer = gtk_cell_renderer_text_new();
-//   column = gtk_tree_view_column_new_with_attributes(
-//       _("description"), renderer,
-//       "text", P_DESCRIPTION_COLUMN,
-//       NULL);
-//   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
@@ -347,24 +471,10 @@ static void init_tab_presets(GtkWidget *book)
       NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
-  renderer = gtk_cell_renderer_text_new();
+  renderer = gtk_cell_renderer_pixbuf_new();
   column = gtk_tree_view_column_new_with_attributes(
       _("auto"), renderer,
-      "text", P_AUTOAPPLY_COLUMN,
-      NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
-
-//   renderer = gtk_cell_renderer_text_new();
-//   column = gtk_tree_view_column_new_with_attributes(
-//       _("enabled"), renderer,
-//       "text", P_ENABLED_COLUMN,
-//       NULL);
-//   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      _("editable"), renderer,
-      "text", P_EDITABLE_COLUMN,
+      "pixbuf", P_AUTOAPPLY_COLUMN,
       NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
@@ -720,6 +830,8 @@ static gint _accelcmp(gconstpointer a, gconstpointer b)
                        ((dt_accel_t*)b)->path));
 }
 
+//TODO: remember which sections were collapsed/expanded and where the view was scrolled to and restore that after editing is done
+//      Alternative: change edit_preset_response to not clear+refill the tree, but to update the single row which changed.
 static void tree_row_activated_presets(GtkTreeView *tree, GtkTreePath *path,
                                GtkTreeViewColumn *column, gpointer data)
 {
@@ -740,18 +852,20 @@ static void tree_row_activated_presets(GtkTreeView *tree, GtkTreePath *path,
   {
     // For leaf nodes, open editing window if the preset is not writeprotected
     gint rowid;
-    gchar *name, *operation, *editable;
+    gchar *name, *operation;
+    GdkPixbuf *editable;
     gtk_tree_model_get(model, &iter,
                        P_ROWID_COLUMN, &rowid,
                        P_NAME_COLUMN, &name,
                        P_OPERATION_COLUMN, &operation,
                        P_EDITABLE_COLUMN, &editable,
                        -1);
-    if(*editable != '\0')
+    if(editable == NULL)
       edit_preset (tree, rowid, name, operation);
+    else
+      g_object_unref(editable);
     g_free(name);
     g_free(operation);
-    g_free(editable);
   }
 }
 
@@ -837,7 +951,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
   if(event->is_modifier)
     return FALSE;
 
-  dt_util_get_user_config_dir(datadir, 1024);
+  dt_loc_get_user_config_dir(datadir, 1024);
   snprintf(accelpath, 1024, "%s/keyboardrc", datadir);
 
   // Otherwise, determine whether we're in remap mode or not
@@ -963,7 +1077,7 @@ static void import_export(GtkButton *button, gpointer data)
             gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)));
 
         // Saving to the permanent keyboardrc
-        dt_util_get_user_config_dir(confdir, 1024);
+        dt_loc_get_user_config_dir(confdir, 1024);
         snprintf(accelpath, 1024, "%s/keyboardrc", confdir);
         gtk_accel_map_save(accelpath);
 
@@ -993,7 +1107,7 @@ static void restore_defaults(GtkButton *button, gpointer data)
   if(gtk_dialog_run(GTK_DIALOG(message)) == GTK_RESPONSE_OK)
   {
     // First load the default keybindings for immediate effect
-    dt_util_get_user_config_dir(dir, 1024);
+    dt_loc_get_user_config_dir(dir, 1024);
     snprintf(path, 1024, "%s/keyboardrc_default", dir);
     gtk_accel_map_load(path);
 
@@ -1002,14 +1116,14 @@ static void restore_defaults(GtkButton *button, gpointer data)
     while(ops)
     {
       op = (dt_iop_module_so_t*)ops->data;
-      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show", op->op);
+      snprintf(accelpath, 256, "<Darktable>/darkroom/modules/%s/show", op->op);
       gtk_accel_map_change_entry(accelpath, 0, 0, TRUE);
       ops = g_list_next(ops);
     }
 
     // Then delete any changes to the user's keyboardrc so it gets reset
     // on next startup
-    dt_util_get_user_config_dir(dir, 1024);
+    dt_loc_get_user_config_dir(dir, 1024);
     snprintf(path, 1024, "%s/keyboardrc", dir);
     g_file_delete(g_file_new_for_path(path), NULL, NULL);
   }
@@ -1117,10 +1231,8 @@ edit_preset (GtkTreeView * tree, const gint rowid, const gchar * name, const gch
 //   g->module = module;
   g->rowid = rowid;
   g->tree = tree;
-  g->name = GTK_ENTRY(gtk_entry_new());
-  gtk_entry_set_text(g->name, name);
+  g->name = GTK_LABEL(gtk_label_new(name));
   gtk_box_pack_start(box, GTK_WIDGET(g->name), FALSE, FALSE, 0);
-  g_object_set(G_OBJECT(g->name), "tooltip-text", _("name of the preset"), (char *)NULL);
 
   g->description = GTK_ENTRY(gtk_entry_new());
   gtk_box_pack_start(box, GTK_WIDGET(g->description), FALSE, FALSE, 0);
@@ -1264,26 +1376,25 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
 {
   // commit all the user input fields
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set name = ?1, description = ?2, "
-          "model = ?3, maker = ?4, lens = ?5, iso_min = ?6, iso_max = ?7, exposure_min = ?8, exposure_max = ?9, aperture_min = ?10, "
-          "aperture_max = ?11, focal_length_min = ?12, focal_length_max = ?13, autoapply = ?14, filter = ?15, def = 0 "
-          "where rowid = ?16", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, gtk_entry_get_text(g->name), -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, gtk_entry_get_text(g->description), -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, gtk_entry_get_text(g->model), -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, gtk_entry_get_text(g->maker), -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, gtk_entry_get_text(g->lens), -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt,  6, gtk_spin_button_get_value(g->iso_min));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, gtk_spin_button_get_value(g->iso_max));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, dt_gui_presets_exposure_value[gtk_combo_box_get_active(g->exposure_min)]);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, dt_gui_presets_exposure_value[gtk_combo_box_get_active(g->exposure_max)]);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, dt_gui_presets_aperture_value[gtk_combo_box_get_active(g->aperture_min)]);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11, dt_gui_presets_aperture_value[gtk_combo_box_get_active(g->aperture_max)]);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 12, gtk_spin_button_get_value(g->focal_length_min));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 13, gtk_spin_button_get_value(g->focal_length_max));
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->autoapply)));
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->filter)));
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, g->rowid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set description = ?1, "
+          "model = ?2, maker = ?3, lens = ?4, iso_min = ?5, iso_max = ?6, exposure_min = ?7, exposure_max = ?8, aperture_min = ?9, "
+          "aperture_max = ?10, focal_length_min = ?11, focal_length_max = ?12, autoapply = ?13, filter = ?14, def = 0 "
+          "where rowid = ?15", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, gtk_entry_get_text(g->description), -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, gtk_entry_get_text(g->model), -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, gtk_entry_get_text(g->maker), -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, gtk_entry_get_text(g->lens), -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt,  5, gtk_spin_button_get_value(g->iso_min));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, gtk_spin_button_get_value(g->iso_max));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, dt_gui_presets_exposure_value[gtk_combo_box_get_active(g->exposure_min)]);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, dt_gui_presets_exposure_value[gtk_combo_box_get_active(g->exposure_max)]);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, dt_gui_presets_aperture_value[gtk_combo_box_get_active(g->aperture_min)]);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, dt_gui_presets_aperture_value[gtk_combo_box_get_active(g->aperture_max)]);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11, gtk_spin_button_get_value(g->focal_length_min));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 12, gtk_spin_button_get_value(g->focal_length_max));
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 13, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->autoapply)));
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->filter)));
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, g->rowid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
@@ -1295,4 +1406,6 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
   free(g);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -1,12 +1,12 @@
 # Copyright 1999-2009 Gentoo Foundation
-# Distributed under the terms of the GNU General Public License v2
+# Distributed under the terms of the GNU General Public License v3
 # $Header: $
 
 # ebuild for darktable by jo hanika (hanatos@gmail.com)
 inherit eutils
 
 DESCRIPTION="Utility to organize and develop raw images"
-HOMEPAGE="http://darktable.sf.net/"
+HOMEPAGE="http://www.darktable.org/"
 SRC_URI="http://switch.dl.sourceforge.net/sourceforge/darktable/${P}.tar.bz2"
 LICENSE="GPL-3"
 SLOT="0"

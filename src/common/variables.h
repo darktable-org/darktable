@@ -25,14 +25,14 @@ typedef struct dt_variables_params_t
   /** only validates string */
   gboolean validate_only;
 
-  /** used for expanding variables that uses filename $(FILE_DIRECTORY) $(FILE_NAME) and $(FILE_EXTENSION). */
+  /** used for expanding variables that uses filename $(FILE_FOLDER) $(FILE_NAME) and $(FILE_EXTENSION). */
   const gchar *filename;
 
   /** used for expanding variable $(JOBCODE) */
   const gchar *jobcode;
 
   /** used for expanding variables such as $(IMAGE_WIDTH) $(IMAGE_HEIGT). */
-  struct dt_image_t *img;
+  uint32_t imgid;
 
   /** used as thread-safe sequence number. only used if >= 0. */
   int sequence;
@@ -57,3 +57,6 @@ const gchar *dt_variables_get_result(dt_variables_params_t *params);
 void dt_variables_reset_sequence(dt_variables_params_t *params);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

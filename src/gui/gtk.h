@@ -67,6 +67,8 @@ dt_gui_gtk_t;
 int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[]);
 void dt_gui_gtk_run(dt_gui_gtk_t *gui);
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui);
+void dt_gui_gtk_quit();
+
 
 /** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
 void dt_gui_key_accel_block_on_focus (GtkWidget *w);
@@ -81,49 +83,50 @@ typedef enum dt_ui_container_t
   /* the top container of left panel, the top container
      disables the module expander and does not scroll with other modules 
   */
-  DT_UI_CONTAINER_PANEL_LEFT_TOP,
+  DT_UI_CONTAINER_PANEL_LEFT_TOP = 0,
 
   /* the center container of left panel, the center container
      contains the scrollable area that all plugins are placed within and last
      widget is the end marker. 
      This container will always expand|fill empty veritcal space
   */
-  DT_UI_CONTAINER_PANEL_LEFT_CENTER,
+  DT_UI_CONTAINER_PANEL_LEFT_CENTER = 1,
 
   /* the bottom container of left panel, this container works just like
      the top container but will be attached to bottom in the panel, such as
      plugins like background jobs module in lighttable and the plugin selection 
      module in darkroom,
   */
-  DT_UI_CONTAINER_PANEL_LEFT_BOTTOM,
+  DT_UI_CONTAINER_PANEL_LEFT_BOTTOM = 2,
 
-  DT_UI_CONTAINER_PANEL_RIGHT_TOP,
-  DT_UI_CONTAINER_PANEL_RIGHT_CENTER,
-  DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM,
+  DT_UI_CONTAINER_PANEL_RIGHT_TOP = 3,
+  DT_UI_CONTAINER_PANEL_RIGHT_CENTER = 4,
+  DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM = 5,
 
 
   /* the top header bar, left slot where darktable name is placed */
-  DT_UI_CONTAINER_PANEL_TOP_LEFT,
+  DT_UI_CONTAINER_PANEL_TOP_LEFT = 6,
   /* center which is expanded as wide it can */
-  DT_UI_CONTAINER_PANEL_TOP_CENTER,
+  DT_UI_CONTAINER_PANEL_TOP_CENTER = 7,
   /* right side were the different views are accessed */
-  DT_UI_CONTAINER_PANEL_TOP_RIGHT,
+  DT_UI_CONTAINER_PANEL_TOP_RIGHT = 8,
 
-  DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT,
-  DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER,
-  DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT,
+  DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT = 9,
+  DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER = 10,
+  DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT = 11,
 
-  DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT,
-  DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER,
-  DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT,
+  DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT = 12,
+  DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER = 13,
+  DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT = 14,
 
   /* this panel is placed at bottom of ui 
      only used by the filmstrip if shown */
-  DT_UI_CONTAINER_PANEL_BOTTOM,
+  DT_UI_CONTAINER_PANEL_BOTTOM = 15,
 
   /* Count of containers */
   DT_UI_CONTAINER_SIZE
-} dt_ui_container_t;
+}
+dt_ui_container_t;
 
 typedef enum dt_ui_panel_t
 {
@@ -177,5 +180,6 @@ GtkWidget *dt_ui_center(struct dt_ui_t *ui);
 GtkWidget *dt_ui_main_window(struct dt_ui_t *ui);
 
 #endif
-
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

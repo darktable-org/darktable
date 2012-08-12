@@ -93,9 +93,9 @@ void DngDecoderSlices::decodeSlice(DngDecoderThread* t) {
     t->slices.pop();
     try {
       l.startDecoder(e.byteOffset, e.byteCount, e.offX, e.offY);
-    } catch (RawDecoderException err) {
+    } catch (RawDecoderException &err) {
       setError(err.what());
-    } catch (IOException err) {
+    } catch (IOException) {
       setError("DngDecoderSlices::decodeSlice: IO error occurred.");
     }
   }

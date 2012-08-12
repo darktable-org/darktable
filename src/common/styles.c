@@ -16,11 +16,12 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/darktable.h"
 #include "develop/develop.h"
 #include "control/control.h"
-#include "common/darktable.h"
 #include "common/imageio.h"
 #include "common/image_cache.h"
+#include "common/file_location.h"
 #include "common/styles.h"
 #include "common/tags.h"
 #include "common/debug.h"
@@ -28,6 +29,7 @@
 
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
+#include "gui/accelerators.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -46,6 +48,7 @@ typedef struct
   GString   *operation;
   GString   *op_params;
   GString   *blendop_params;
+  int   blendop_version;
   int   enabled;
 } StylePluginData;
 
@@ -55,6 +58,20 @@ typedef struct
   GList           *plugins;
   gboolean        in_plugin;
 } StyleData;
+
+static gboolean _apply_style_shortcut_callback(GtkAccelGroup *accel_group,
+                                   GObject *acceleratable,
+                                   guint keyval, GdkModifierType modifier,
+                                   gpointer data)
+{
+    dt_styles_apply_to_selection (data,0);
+    return TRUE;
+}
+
+static void _destroy_style_shortcut_callback(gpointer data,GClosure *closure)
+{
+	g_free(data);
+}
 
 static int32_t dt_styles_get_id_by_name (const char *name);
 
@@ -110,16 +127,33 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
       while ((list=g_list_next(list)));
       g_strlcat(include,")", 2048);
       char query[4096]= {0};
-      sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params) select ?1, num,module,operation,op_params,enabled,blendop_params from history where imgid=?2 and %s",include);
+      sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version from history where imgid=?2 and %s",include);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     }
     else
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params) select ?1, num,module,operation,op_params,enabled,blendop_params from history where imgid=?2", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version from history where imgid=?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step (stmt);
     sqlite3_finalize (stmt);
 
+    /* backup style to disk */
+    char stylesdir[1024];
+    dt_loc_get_user_config_dir(stylesdir, 1024);
+    g_strlcat(stylesdir,"/styles",1024);
+    g_mkdir_with_parents(stylesdir,00755);
+
+    dt_styles_save_to_file(name,stylesdir);
+
+      char tmp_accel[1024];
+      gchar* tmp_name = g_strdup(name); // freed by _destro_style_shortcut_callback
+      snprintf(tmp_accel,1024,"styles/Apply %s",name);
+      dt_accel_register_global( tmp_accel, 0, 0);
+      GClosure *closure;
+      closure = g_cclosure_new(
+          G_CALLBACK(_apply_style_shortcut_callback),
+          tmp_name, _destroy_style_shortcut_callback);
+      dt_accel_connect_global(tmp_accel, closure);
     dt_control_log(_("style named '%s' successfully created"),name);
   }
 }
@@ -170,7 +204,7 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
     sqlite3_finalize (stmt);
 
     /* copy history items from styles onto image */
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid,num,module,operation,op_params,enabled,blendop_params) select ?1, num+?2,module,operation,op_params,enabled,blendop_params from style_items where styleid=?3", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid,num,module,operation,op_params,enabled,blendop_params,blendop_version) select ?1, num+?2,module,operation,op_params,enabled,blendop_params,blendop_version from style_items where styleid=?3", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, offs);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, id);
@@ -188,13 +222,14 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
     if (dt_dev_is_current_image(darktable.develop, imgid))
       dt_dev_reload_history_items (darktable.develop);
 
-    /* reimport image */
-    dt_image_t *img = dt_image_cache_get (imgid, 'r');
-    if(img != NULL)
-    {
-      img->force_reimport = 1;
-      dt_image_cache_flush(img);
-    }
+    /* update xmp file */
+    dt_image_synch_xmp(imgid);
+
+    /* remove old obsolete thumbnails */
+    dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+
+    /* redraw center view to update visible mipmaps */
+    dt_control_queue_redraw_center();
   }
 }
 
@@ -217,6 +252,9 @@ dt_styles_delete_by_name(const char *name)
     sqlite3_step (stmt);
     sqlite3_finalize (stmt);
 
+    char tmp_accel[1024];
+    snprintf(tmp_accel,1024,"styles/Apply %s",name);
+    dt_accel_deregister_global(tmp_accel);
   }
 }
 
@@ -314,7 +352,7 @@ dt_styles_save_to_file(const char *style_name,const char *filedir)
   xmlTextWriterEndElement(writer);
 
   xmlTextWriterStartElement(writer, BAD_CAST "style");
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num,module,operation,op_params,enabled,blendop_params from style_items where styleid =?1",-1, &stmt,NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num,module,operation,op_params,enabled,blendop_params,blendop_version from style_items where styleid =?1",-1, &stmt,NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt,1,dt_styles_get_id_by_name(style_name));
   while (sqlite3_step (stmt) == SQLITE_ROW)
   {
@@ -325,6 +363,7 @@ dt_styles_save_to_file(const char *style_name,const char *filedir)
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s", dt_style_encode(stmt,3));
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "enabled", "%d", sqlite3_column_int(stmt,4));
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_params", "%s", dt_style_encode(stmt,5));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_version", "%d", sqlite3_column_int(stmt,6));
     xmlTextWriterEndElement(writer);
   }
   sqlite3_finalize(stmt);
@@ -438,6 +477,10 @@ dt_styles_style_text_handler (GMarkupParseContext *context,
     {
       g_string_append_len (plug->blendop_params, text, text_len);
     }
+    else if (g_ascii_strcasecmp (elt, "blendop_version") == 0 )
+    {
+      plug->blendop_version =  atoi(text);
+    }
     else if (g_ascii_strcasecmp (elt, "num") == 0 )
     {
       plug->num = atoi(text);
@@ -468,7 +511,7 @@ dt_style_plugin_save(StylePluginData *plugin,gpointer styleId)
 {
   int id = GPOINTER_TO_INT(styleId);
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params) values(?1,?2,?3,?4,?5,?6,?7)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version) values(?1,?2,?3,?4,?5,?6,?7,?8)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, plugin->num);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, plugin->module);
@@ -487,7 +530,9 @@ dt_style_plugin_save(StylePluginData *plugin,gpointer styleId)
   unsigned char *blendop_params = (unsigned char *)g_malloc(strlen(plugin->blendop_params->str));
   dt_exif_xmp_decode(plugin->blendop_params->str, blendop_params, strlen(plugin->blendop_params->str));
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 7, blendop_params, strlen(plugin->blendop_params->str)/2, SQLITE_TRANSIENT);
- 
+
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, plugin->blendop_version); 
+
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   g_free(params);
@@ -605,4 +650,49 @@ dt_styles_get_id_by_name (const char *name)
   return id;
 }
 
+void init_styles_key_accels()
+{
+  GList *result = dt_styles_get_list("");
+  if (result)
+  {
+    do
+    {
+      dt_style_t *style = (dt_style_t *)result->data;
+      char tmp_accel[1024];
+      snprintf(tmp_accel,1024,"styles/Apply %s",style->name);
+      dt_accel_register_global( tmp_accel, 0, 0);
+
+      g_free(style->name);
+      g_free(style->description);
+      g_free(style);
+    }
+    while ((result=g_list_next(result))!=NULL);
+  }
+}
+
+void connect_styles_key_accels()
+{
+  GList *result = dt_styles_get_list("");
+  if (result)
+  {
+    do
+    {
+      GClosure *closure;
+      dt_style_t *style = (dt_style_t *)result->data;
+      closure = g_cclosure_new(
+          G_CALLBACK(_apply_style_shortcut_callback),
+          style->name, _destroy_style_shortcut_callback);
+      char tmp_accel[1024];
+      snprintf(tmp_accel,1024,"styles/Apply %s",style->name);
+      dt_accel_connect_global(tmp_accel, closure);
+
+      //g_free(style->name); freed at closure destruction
+      g_free(style->description);
+      g_free(style);
+    }
+    while ((result=g_list_next(result))!=NULL);
+  }
+}
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

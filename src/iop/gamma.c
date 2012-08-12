@@ -44,36 +44,52 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
-
-void init_key_accels(dt_iop_module_so_t *self)
+int flags()
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "linear"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "gamma"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_gamma_gui_data_t* g = (dt_iop_gamma_gui_data_t*)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "linear", GTK_WIDGET(g->scale1));
-  dt_accel_connect_slider_iop(self, "gamma", GTK_WIDGET(g->scale2));
+  return IOP_FLAGS_HIDDEN;
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_gamma_data_t *d = (dt_iop_gamma_data_t *)piece->data;
   const int ch = piece->colors;
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, o, i, d) schedule(static)
-#endif
-  for(int k=0; k<roi_out->height; k++)
+
+  if(piece->pipe->mask_display)
   {
-    const float *in = ((float *)i) + ch*k*roi_out->width;
-    uint8_t *out = ((uint8_t *)o) + ch*k*roi_out->width;
-    for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
+    const float yellow[3] = { 1.0f, 1.0f, 0.0f };
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(roi_out, o, i, d) schedule(static)
+#endif
+    for(int k=0; k<roi_out->height; k++)
     {
-      for(int c=0; c<3; c++)
-        out[2-c] = d->table[(uint16_t)CLAMP((int)(0xfffful*in[c]), 0, 0xffff)];
+      const float *in = ((float *)i) + ch*k*roi_out->width;
+      uint8_t *out = ((uint8_t *)o) + ch*k*roi_out->width;
+      for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
+      {
+        float gray = 0.3f*in[0] + 0.59f*in[1] + 0.11f*in[2];
+        float alpha = in[3];
+        for(int c=0; c<3; c++)
+        {
+          float value = gray * (1.0f - alpha) + yellow[c] * alpha;
+          out[2-c] = d->table[(uint16_t)CLAMP((int)(0xfffful*value), 0, 0xffff)];
+        }
+      }
+    }
+  }
+  else
+  {
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(roi_out, o, i, d) schedule(static)
+#endif
+    for(int k=0; k<roi_out->height; k++)
+    {
+      const float *in = ((float *)i) + ch*k*roi_out->width;
+      uint8_t *out = ((uint8_t *)o) + ch*k*roi_out->width;
+      for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
+      {
+        for(int c=0; c<3; c++)
+          out[2-c] = d->table[(uint16_t)CLAMP((int)(0xfffful*in[c]), 0, 0xffff)];
+      }
     }
   }
 }
@@ -136,15 +152,6 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 #endif
 }
 
-void gui_update(struct dt_iop_module_t *self)
-{
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
-  dt_iop_gamma_gui_data_t *g = (dt_iop_gamma_gui_data_t *)self->gui_data;
-  dt_iop_gamma_params_t *p = (dt_iop_gamma_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale1, p->linear);
-  dtgtk_slider_set_value(g->scale2, p->gamma);
-}
-
 void init(dt_iop_module_t *module)
 {
   // module->data = malloc(sizeof(dt_iop_gamma_data_t));
@@ -170,54 +177,7 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-void gui_init(struct dt_iop_module_t *self)
-{
-  self->gui_data = malloc(sizeof(dt_iop_gamma_gui_data_t));
-  dt_iop_gamma_gui_data_t *g = (dt_iop_gamma_gui_data_t *)self->gui_data;
-  dt_iop_gamma_params_t *p = (dt_iop_gamma_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new(C_("gammaslider", "linear")));
-  g->label2 = GTK_LABEL(gtk_label_new(C_("gammaslider", "gamma")));
-  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01,p->linear,2));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01,p->gamma,2));
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-
-  g_signal_connect (G_OBJECT (g->scale1), "value-changed",
-                    G_CALLBACK (linear_callback), self);
-  g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-                    G_CALLBACK (gamma_callback), self);
-}
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
-}
-
-static void gamma_callback (GtkDarktableSlider *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_gamma_params_t *p = (dt_iop_gamma_params_t *)self->params;
-  p->gamma = dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void linear_callback (GtkDarktableSlider *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_gamma_params_t *p = (dt_iop_gamma_params_t *)self->params;
-  p->linear = dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

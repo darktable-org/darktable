@@ -141,6 +141,7 @@ static void _slider_init (GtkDarktableSlider *slider)
   dt_gui_key_accel_block_on_focus (slider->entry);
 }
 
+#if 0 // Deprecated the delayed value thingy
 static gboolean _slider_postponed_value_change(gpointer data)
 {
   gboolean i_own_lock = dt_control_gdk_lock();
@@ -156,6 +157,8 @@ static gboolean _slider_postponed_value_change(gpointer data)
 
   return DTGTK_SLIDER(data)->is_dragging;	// This is called by the gtk mainloop and is threadsafe
 }
+
+#endif
 
 static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
 {
@@ -195,7 +198,9 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
       slider->is_dragging=TRUE;
       slider->prev_x_root=event->x_root;
       if( slider->type==DARKTABLE_SLIDER_BAR) slider->is_changed=TRUE;
-      g_timeout_add(DTGTK_SLIDER_VALUE_CHANGED_DELAY, _slider_postponed_value_change,widget);
+#if 0 // Deprecate
+      g_timeout_add(DTGTK_SLIDER_VALUE_CHANGED_DELAY, _slider_postponed_value_change, widget);
+#endif
     }
   }
   else if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
@@ -242,6 +247,7 @@ static gboolean _slider_button_release(GtkWidget *widget, GdkEventButton *event)
       }
     }
     slider->is_dragging=FALSE;
+    g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
   }
   return TRUE;
 }
@@ -348,6 +354,7 @@ static gboolean _slider_motion_notify(GtkWidget *widget, GdkEventMotion *event)
       }
     }
 
+    g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
 
     gtk_widget_draw(widget,NULL);
     slider->prev_x_root = event->x_root;
@@ -459,6 +466,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   if (widget->allocation.width<=1) return FALSE;
 
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
+  if(!style) style = gtk_rc_get_style(widget);
   GtkDarktableSlider *slider=DTGTK_SLIDER(widget);
   int state = gtk_widget_get_state(widget);
   int width = widget->allocation.width;
@@ -669,4 +677,6 @@ GtkType dtgtk_slider_get_type()
   return dtgtk_slider_type;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

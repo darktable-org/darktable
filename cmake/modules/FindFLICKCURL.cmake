@@ -15,14 +15,17 @@
 # SET(FLICKCURL_LIBS ${_flickcurlCflags})
 
 FIND_PATH(FLICKCURL_INCLUDE_DIR flickcurl.h
-  /usr/include
+  PATHS /usr/include
   /usr/local/include
+  /opt/local/include
+  HINTS ENV FLICKCURL_INCLUDE_DIR
   PATH_SUFFIXES flickcurl
 )
 
 FIND_LIBRARY(FLICKCURL_LIBRARY
-  NAMES ${FLICKCURL_NAMES} libflickcurl.so
-  PATHS /usr/lib /usr/local/lib
+  NAMES ${FLICKCURL_NAMES} libflickcurl.so libflickcurl.dylib
+  PATHS /usr/lib /usr/local/lib /opt/local/lib
+  HINTS ENV FLICKCURL_LIBRARY
 )
 
 include(FindPackageHandleStandardArgs)

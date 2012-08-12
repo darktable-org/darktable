@@ -23,9 +23,24 @@ void dt_gui_presets_update_autoapply(const char *name, dt_dev_operation_t op, co
 void dt_gui_presets_update_autoapply(const char *name, dt_dev_operation_t op, const int32_t version, const int filter);
 
 /** show a popup menu without initialized module. */
-void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, int32_t version, void *params, int32_t params_size, void *blendop_params, dt_image_t *image, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data);
+void
+dt_gui_presets_popup_menu_show_for_params(
+    dt_dev_operation_t op,
+    int32_t version,
+    void *params,
+    int32_t params_size,
+    void *blendop_params,
+    const dt_image_t *image,
+    void (*pick_callback)(GtkMenuItem*,void*),
+    void *callback_data);
 
 /** show the popup menu for the given module, with default behavior. */
 void dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module);
 
+/** show popupmenu for favorite modules */
+void dt_gui_favorite_presets_menu_show();
+
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

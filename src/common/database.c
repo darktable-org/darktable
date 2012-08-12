@@ -16,14 +16,15 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <sqlite3.h>
-#include <glib.h>
-#include <gio/gio.h>
-
+#include "common/darktable.h"
 #include "common/debug.h"
 #include "common/database.h"
 #include "control/control.h"
 #include "control/conf.h"
+
+#include <sqlite3.h>
+#include <glib.h>
+#include <gio/gio.h>
 
 typedef struct dt_database_t
 {
@@ -32,19 +33,16 @@ typedef struct dt_database_t
   /* database filename */
   gchar *dbfilename;
 
-  /* main handle used as fallback */
-  sqlite3 *main_handle;
-
-  /* the size of pool handles */
-  uint32_t size;
-  /* array of database handles one for each thread */
-  sqlite3 **handles;
+  /* ondisk DB */
+  sqlite3 *handle;
 } dt_database_t;
 
 
 /* migrates database from old place to new */
 static void _database_migrate_to_xdg_structure();
 
+/* delete old mipmaps files */
+static void _database_delete_mipmaps_files();
 
 gboolean dt_database_is_new(const dt_database_t *db)
 {
@@ -56,12 +54,15 @@ dt_database_t *dt_database_init(char *alternative)
   /* migrate default database location to new default */
   _database_migrate_to_xdg_structure();
 
+  /* delete old mipmaps files */
+  _database_delete_mipmaps_files();
+
   /* lets construct the db filename  */
   gchar * dbname = NULL;
   gchar dbfilename[1024] = {0};
   gchar datadir[1024] = {0};
 
-  dt_util_get_user_config_dir(datadir, 1024);
+  dt_loc_get_user_config_dir(datadir, 1024);
 
   if ( alternative == NULL )
   {
@@ -87,77 +88,47 @@ dt_database_t *dt_database_init(char *alternative)
     db->is_new_database = TRUE;
 
   /* opening / creating database */
-  if(sqlite3_open(db->dbfilename, &db->main_handle))
+  if(sqlite3_open(db->dbfilename, &db->handle))
   {
     fprintf(stderr, "[init] could not find database ");
     if(dbname) fprintf(stderr, "`%s'!\n", dbname);
     else       fprintf(stderr, "\n");
-#ifndef HAVE_GCONF
     fprintf(stderr, "[init] maybe your %s/darktablerc is corrupt?\n",datadir);
-    dt_util_get_datadir(dbfilename, 512);
+    dt_loc_get_datadir(dbfilename, 512);
     fprintf(stderr, "[init] try `cp %s/darktablerc %s/darktablerc'\n", dbfilename,datadir);
-#else
-    fprintf(stderr, "[init] check your /apps/darktable/database gconf entry!\n");
-#endif
-    if (dbname != NULL) g_free(dbname);
+    g_free(dbname);
+    g_free(db);
     return NULL;
   }
 
   /* attach a memory database to db connection for use with temporary tables
      used during instance life time, which is discarded on exit.
   */
-  sqlite3_exec(db->main_handle, "attach database ':memory:' as memory",NULL,NULL,NULL);
+  sqlite3_exec(db->handle, "attach database ':memory:' as memory",NULL,NULL,NULL);
   
+  sqlite3_exec(db->handle, "PRAGMA synchronous = OFF", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "PRAGMA journal_mode = MEMORY", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "PRAGMA page_size = 32768", NULL, NULL, NULL);
+
+  g_free(dbname);
   return db;
 }
 
 void dt_database_destroy(const dt_database_t *db)
 {
-  for(int k=0;k<db->size;k++)
-    sqlite3_close(db->handles[k]);
-  
+  sqlite3_close(db->handle);
   g_free((dt_database_t *)db);
-}
-
-void dt_database_init_pool(const dt_database_t *db)
-{
-  dt_database_t *idb = (dt_database_t *)db;
-  idb->size = darktable.control->num_threads+DT_CTL_WORKER_RESERVED;
-  idb->handles = (sqlite3 **)g_malloc(sizeof(sqlite3 *)*idb->size);
-  for (int k = 0;k < idb->size;k++)
-    __DT_DEBUG_ASSERT__(sqlite3_open(idb->dbfilename, &idb->handles[k]));
 }
 
 sqlite3 *dt_database_get(const dt_database_t *db)
 {
-  int threadid = 0;
-
-  return db->main_handle;
-  
-  /* if no control is running lets return mainhandler */
-  if(!darktable.control->running || !db->handles)
-    return db->main_handle;
-
-  /* compare to threads */
-  while (!pthread_equal(darktable.control->thread[threadid], pthread_self()) &&
-	 threadid < darktable.control->num_threads-1)
-    threadid++;
-
-  /* res threadsd */
-  if (!pthread_equal(darktable.control->thread[threadid],pthread_self()))
-  {
-    while(!pthread_equal(darktable.control->thread_res[threadid],pthread_self()) && threadid < DT_CTL_WORKER_RESERVED-1)
-      threadid++;
-  }
-
-  /* if its ou of range use default pool handle at 0 */
-  if(threadid > db->size-1)
-    threadid = 0;
-
-  //fprintf(stderr,"Getting database handle for thread %d\n",threadid);
-  return db->handles[threadid];
+  return db->handle;
 }
 
+const gchar *dt_database_get_path(const struct dt_database_t *db)
+{
+  return db->dbfilename;
+}
 
 static void _database_migrate_to_xdg_structure()
 {
@@ -165,7 +136,7 @@ static void _database_migrate_to_xdg_structure()
   gchar *conf_db = dt_conf_get_string("database");
   
   gchar datadir[1024] = {0};
-  dt_util_get_datadir(datadir, 1024);
+  dt_loc_get_datadir(datadir, 1024);
   
   if (conf_db && conf_db[0] != '/')
   {
@@ -182,6 +153,34 @@ static void _database_migrate_to_xdg_structure()
 	dt_conf_set_string("database","library.db");
       }
     }
-    g_free(conf_db);
+  }
+
+  g_free(conf_db);
+}
+
+/* delete old mipmaps files */
+static void _database_delete_mipmaps_files()
+{
+  /* This migration is intended to be run only from 0.9.x to new cache in 1.0 */
+
+  // Directory
+  char cachedir[1024], mipmapfilename[1024];
+  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+
+  snprintf(mipmapfilename, 1024, "%s/mipmaps", cachedir);
+
+  if(access(mipmapfilename, F_OK) != -1)
+  {
+    fprintf(stderr, "[mipmap_cache] dropping old version file: %s\n", mipmapfilename);
+    unlink(mipmapfilename);
+
+    snprintf(mipmapfilename, 1024, "%s/mipmaps.fallback", cachedir);
+    
+    if(access(mipmapfilename, F_OK) != -1)
+      unlink(mipmapfilename);
   }
 }
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -36,9 +36,9 @@ class SrwDecoder :
 public:
   SrwDecoder(TiffIFD *rootIFD, FileMap* file);
   virtual ~SrwDecoder(void);
-  virtual RawImage decodeRaw();
-  virtual void decodeMetaData(CameraMetaData *meta);
-  virtual void checkSupport(CameraMetaData *meta);
+  virtual RawImage decodeRawInternal();
+  virtual void decodeMetaDataInternal(CameraMetaData *meta);
+  virtual void checkSupportInternal(CameraMetaData *meta);
 private:
   TiffIFD *mRootIFD;
 };

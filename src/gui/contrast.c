@@ -15,12 +15,13 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <math.h>
+#include "common/darktable.h"
+#include "control/conf.h"
+
 #include "gui/gtk.h"
 #include "gui/contrast.h"
 
-#include "common/darktable.h"
-#include "control/conf.h"
+#include <math.h>
 
 #define CONTRAST_STEP 0.1
 #define CONTRAST_AMOUNT 0.4
@@ -196,3 +197,6 @@ void dt_gui_brightness_decrease()
     _gui_contrast_apply ();
   }
 }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

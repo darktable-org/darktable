@@ -32,8 +32,8 @@ DngDecoder::DngDecoder(TiffIFD *rootIFD, FileMap* file) : RawDecoder(file), mRoo
 
   if (v[0] != 1)
     ThrowRDE("Not a supported DNG image format: v%u.%u.%u.%u", (int)v[0], (int)v[1], (int)v[2], (int)v[3]);
-  if (v[1] > 3)
-    ThrowRDE("Not a supported DNG image format: v%u.%u.%u.%u", (int)v[0], (int)v[1], (int)v[2], (int)v[3]);
+//  if (v[1] > 4)
+//    ThrowRDE("Not a supported DNG image format: v%u.%u.%u.%u", (int)v[0], (int)v[1], (int)v[2], (int)v[3]);
 
   if ((v[0] <= 1) && (v[1] < 1))  // Prior to v1.1.xxx  fix LJPEG encoding bug
     mFixLjpeg = true;
@@ -42,9 +42,12 @@ DngDecoder::DngDecoder(TiffIFD *rootIFD, FileMap* file) : RawDecoder(file), mRoo
 }
 
 DngDecoder::~DngDecoder(void) {
+  if (mRootIFD)
+    delete mRootIFD;
+  mRootIFD = NULL;
 }
 
-RawImage DngDecoder::decodeRaw() {
+RawImage DngDecoder::decodeRawInternal() {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(COMPRESSION);
 
   if (data.empty())
@@ -60,7 +63,7 @@ RawImage DngDecoder::decodeRaw() {
     if ((compression != 7 && compression != 1) || isSubsampled) {  // Erase if subsampled, or not JPEG or uncompressed
       i = data.erase(i);
     } else {
-      i++;
+      ++i;
     }
   }
 
@@ -164,7 +167,8 @@ RawImage DngDecoder::decodeRaw() {
         if (!mRaw->isCFA)
         {
           uint32 cpp = raw->getEntry(SAMPLESPERPIXEL)->getInt();
-          ThrowRDE("DNG Decoder: More than 4 samples per pixel is not supported.");
+          if (cpp > 4)
+            ThrowRDE("DNG Decoder: More than 4 samples per pixel is not supported.");
           mRaw->setCpp(cpp);
         }
         uint32 nslices = raw->getEntry(STRIPOFFSETS)->count;
@@ -212,7 +216,7 @@ RawImage DngDecoder::decodeRaw() {
             big_endian = true;
           try {
             readUncompressedRaw(in, size, pos, width*bps / 8, bps, big_endian);
-          } catch(IOException ex) {
+          } catch(IOException &ex) {
             if (i > 0)
               errors.push_back(_strdup(ex.what()));
             else
@@ -309,10 +313,10 @@ RawImage DngDecoder::decodeRaw() {
   } catch (TiffParserException e) {
     ThrowRDE("DNG Decoder: Image could not be read:\n%s", e.what());
   }
-  iPoint2D new_size(mRaw->dim.x, mRaw->dim.y);
 
   // Crop
   if (raw->hasEntry(ACTIVEAREA)) {
+    iPoint2D new_size(mRaw->dim.x, mRaw->dim.y);
     const uint32 *corners = raw->getEntry(ACTIVEAREA)->getIntArray();
     if (iPoint2D(corners[1], corners[0]).isThisInside(mRaw->dim)) {
       if (iPoint2D(corners[3], corners[2]).isThisInside(mRaw->dim)) {
@@ -321,11 +325,11 @@ RawImage DngDecoder::decodeRaw() {
         mRaw->subFrame(top_left, new_size);
       }
     }
+  }
 
-  } else if (raw->hasEntry(DEFAULTCROPORIGIN)) {
-
+  if (raw->hasEntry(DEFAULTCROPORIGIN)) {
     iPoint2D top_left(0, 0);
-
+    iPoint2D new_size(mRaw->dim.x, mRaw->dim.y);
     if (raw->getEntry(DEFAULTCROPORIGIN)->type == TIFF_LONG) {
       const uint32* tl = raw->getEntry(DEFAULTCROPORIGIN)->getIntArray();
       const uint32* sz = raw->getEntry(DEFAULTCROPSIZE)->getIntArray();
@@ -340,6 +344,14 @@ RawImage DngDecoder::decodeRaw() {
         top_left = iPoint2D(tl[0], tl[1]);
         new_size = iPoint2D(sz[0], sz[1]);
       }
+    } else if (raw->getEntry(DEFAULTCROPORIGIN)->type == TIFF_RATIONAL) {
+      // Crop as rational numbers, really?
+      const uint32* tl = raw->getEntry(DEFAULTCROPORIGIN)->getIntArray();
+      const uint32* sz = raw->getEntry(DEFAULTCROPSIZE)->getIntArray();
+      if (iPoint2D(tl[0]/tl[1],tl[2]/tl[3]).isThisInside(mRaw->dim) && iPoint2D(sz[0]/sz[1],sz[2]/sz[3]).isThisInside(mRaw->dim)) {
+        top_left = iPoint2D(tl[0]/tl[1],tl[2]/tl[3]);
+        new_size = iPoint2D(iPoint2D(sz[0]/sz[1],sz[2]/sz[3]));
+      }
     }
     mRaw->subFrame(top_left, new_size);
     if (top_left.x %2 == 1)
@@ -347,8 +359,8 @@ RawImage DngDecoder::decodeRaw() {
     if (top_left.y %2 == 1)
       mRaw->cfa.shiftDown();
   }
-  // Linearization
 
+  // Linearization
   if (raw->hasEntry(LINEARIZATIONTABLE)) {
     const ushort16* intable = raw->getEntry(LINEARIZATIONTABLE)->getShortArray();
     uint32 len =  raw->getEntry(LINEARIZATIONTABLE)->count;
@@ -382,10 +394,10 @@ RawImage DngDecoder::decodeRaw() {
   return mRaw;
 }
 
-void DngDecoder::decodeMetaData(CameraMetaData *meta) {
+void DngDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
 }
 
-void DngDecoder::checkSupport(CameraMetaData *meta) {
+void DngDecoder::checkSupportInternal(CameraMetaData *meta) {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
   if (data.empty())
     ThrowRDE("DNG Support check: Model name found");

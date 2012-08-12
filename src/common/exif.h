@@ -39,6 +39,9 @@ extern "C"
   /** write xmp sidecar file. */
   int dt_exif_xmp_write (const int imgid, const char* filename);
 
+  /** write xmp packet inside an image. */
+  int dt_exif_xmp_attach (const int imgid, const char* filename);
+
   /** read xmp sidecar file. */
   int dt_exif_xmp_read (dt_image_t * img, const char* filename, const int history_only);
 
@@ -55,3 +58,6 @@ extern "C"
 #endif
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

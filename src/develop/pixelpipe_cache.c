@@ -22,6 +22,15 @@
 #include <stdlib.h>
 
 
+// TODO: make cache global (needs to be thread safe then)
+// plan:
+// - look at mipmap_cache.c, for the full buffer allocs
+// - do that, but for `large' and `regular' buffers (full + export/dr mode), so 2 caches
+//   (in fact, maybe 3, one for preview pipes?)
+// - have at most 3 read locks all the time per pipe, get them at create time
+//   ping, pong, and priority buffer (focused plugin)
+// - drop read by the time another is requested (with priority, drop that, or alternating ping and pong?)
+
 int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, int size)
 {
   cache->entries = entries;
@@ -206,3 +215,6 @@ void dt_dev_pixelpipe_cache_print(dt_dev_pixelpipe_cache_t *cache)
   printf("cache hit rate so far: %.3f\n", (cache->queries - cache->misses)/(float)cache->queries);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

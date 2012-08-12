@@ -15,19 +15,17 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-
-
-#include <stdio.h>
-#include <glib.h>
-
-#include "common/camera_control.h"
 #include "common/darktable.h"
+#include "common/camera_control.h"
 #include "common/utility.h"
 #include "views/view.h"
 #include "control/conf.h"
 #include "control/jobs/camera_jobs.h"
 #include "gui/gtk.h"
+
+#include <stdio.h>
+#include <glib.h>
+
 
 int32_t dt_captured_image_import_job_run(dt_job_t *job)
 {
@@ -35,7 +33,7 @@ int32_t dt_captured_image_import_job_run(dt_job_t *job)
 
   char message[512]= {0};
   snprintf(message, 512, _("importing image %s"), t->filename);
-  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
 
   int id = dt_image_import(t->film_id, t->filename, TRUE);
   if(id)
@@ -63,12 +61,11 @@ void dt_captured_image_import_job_init(dt_job_t *job,uint32_t filmid, const char
 int32_t dt_camera_capture_job_run(dt_job_t *job)
 {
   dt_camera_capture_t *t=(dt_camera_capture_t*)job->param;
-  int total = t->count * t->brackets;
+  int total = t->brackets ? t->count * t->brackets : t->count;
   char message[512]= {0};
-  snprintf(message, 512, ngettext ("capturing %d image", "capturing %d images", total), total );
   double fraction=0;
-  const guint jid  = dt_control_backgroundjobs_create(darktable.control, 0, message);
-
+  snprintf(message, 512, ngettext ("capturing %d image", "capturing %d images", total), total );
+  
   /* try to get exp program mode for nikon */
   char *expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl, NULL, "expprogram");
   
@@ -101,15 +98,20 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
     if(t->brackets)
     {
       dt_control_log(_("please set your camera to manual mode first!"));
-      dt_control_backgroundjobs_progress(darktable.control, jid, 1.0f);
-      dt_control_backgroundjobs_destroy(darktable.control, jid);
       return 1;
     }
   }
 
+  /* create the bgjob plate */
+  const guint *jid  = dt_control_backgroundjobs_create(darktable.control, 0, message);
+
   GList *current_value = g_list_find(values,orginal_value);
   for(int i=0; i<t->count; i++)
   {
+    // Delay if active
+    if(t->delay)
+      g_usleep(t->delay*G_USEC_PER_SEC);
+
     for(int b=0; b<(t->brackets*2)+1; b++)
     {
       // If bracket capture, lets set change shutterspeed
@@ -137,7 +139,8 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
 
       // Capture image
       dt_camctl_camera_capture(darktable.camctl,NULL);
-      fraction+=1.0/total;
+
+      fraction += 1.0/total;
       dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
     }
 
@@ -147,11 +150,6 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
       current_value = g_list_find(values,orginal_value);
       dt_camctl_camera_set_property(darktable.camctl, NULL, "shutterspeed", current_value->data);
     }
-
-    // Delay if active
-    if(t->delay)
-      g_usleep(t->delay*G_USEC_PER_SEC);
-
   }
 
   dt_control_backgroundjobs_destroy(darktable.control, jid);
@@ -415,4 +413,6 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
   return 0;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

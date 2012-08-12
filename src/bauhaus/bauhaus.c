@@ -1,0 +1,1741 @@
+/*
+    This file is part of darktable,
+    copyright (c) 2012 johannes hanika.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#include "bauhaus/bauhaus.h"
+#include "control/conf.h"
+#include "common/darktable.h"
+#include "gui/gtk.h"
+
+#include <math.h>
+#include <pango/pangocairo.h>
+
+// define this to get boxes instead of arrow indicators, more like our previous version was:
+// #define DT_BAUHAUS_OLD
+
+// new type dt_bauhaus_widget_t, gtk functions start with dt_bh (so they don't collide with ours), we inherit from drawing area
+G_DEFINE_TYPE (DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA);
+
+// fwd declare
+static void dt_bauhaus_hide_popup();
+static void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w);
+static gboolean
+dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean
+dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
+static void
+dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w);
+static void
+dt_bauhaus_widget_reject(dt_bauhaus_widget_t *w);
+static gboolean
+dt_bauhaus_root_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
+static gboolean
+dt_bauhaus_root_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
+
+
+static int
+get_line_space()
+{
+  return darktable.bauhaus->scale * darktable.bauhaus->line_space;
+}
+
+static int
+get_line_height()
+{
+  return darktable.bauhaus->scale * darktable.bauhaus->line_height;
+}
+
+#ifndef DT_BAUHAUS_OLD
+static float
+get_marker_size()
+{
+  // will be fraction of the height, so doesn't depend on scale itself.
+  return darktable.bauhaus->marker_size;
+}
+#endif
+
+// TODO: remove / make use of the pango font size / X height
+static float
+get_label_font_size()
+{
+  return get_line_height() * darktable.bauhaus->label_font_size;
+}
+
+// TODO: remove / make use of the pango font size / X height
+static float
+get_value_font_size()
+{
+  return get_line_height() * darktable.bauhaus->value_font_size;
+}
+
+static void
+set_value_font(cairo_t *cr)
+{
+  cairo_select_font_face (cr, darktable.bauhaus->value_font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, get_value_font_size());
+}
+
+static void
+set_bg_normal(cairo_t *cr)
+{
+  cairo_set_source_rgb(cr, 
+      darktable.bauhaus->bg_normal,
+      darktable.bauhaus->bg_normal,
+      darktable.bauhaus->bg_normal);
+}
+
+static void
+set_bg_focus(cairo_t *cr)
+{
+  cairo_set_source_rgb(cr, 
+      darktable.bauhaus->bg_focus,
+      darktable.bauhaus->bg_focus,
+      darktable.bauhaus->bg_focus);
+}
+
+static void
+set_text_color(cairo_t *cr, int sensitive)
+{
+  if(sensitive)
+    cairo_set_source_rgb(cr, 
+        darktable.bauhaus->text,
+        darktable.bauhaus->text,
+        darktable.bauhaus->text);
+  else
+    cairo_set_source_rgba(cr, 
+        darktable.bauhaus->text,
+        darktable.bauhaus->text,
+        darktable.bauhaus->text,
+        darktable.bauhaus->insensitive);
+}
+
+static void
+set_grid_color(cairo_t *cr, int sensitive)
+{
+  if(sensitive)
+    cairo_set_source_rgb(cr, 
+        darktable.bauhaus->grid,
+        darktable.bauhaus->grid,
+        darktable.bauhaus->grid);
+  else
+    cairo_set_source_rgba(cr, 
+        darktable.bauhaus->grid,
+        darktable.bauhaus->grid,
+        darktable.bauhaus->grid,
+        darktable.bauhaus->insensitive);
+}
+
+static void
+set_indicator_color(cairo_t *cr, int sensitive)
+{
+  if(sensitive)
+    cairo_set_source_rgb(cr, 
+        darktable.bauhaus->indicator,
+        darktable.bauhaus->indicator,
+        darktable.bauhaus->indicator);
+  else
+    cairo_set_source_rgba(cr, 
+        darktable.bauhaus->indicator,
+        darktable.bauhaus->indicator,
+        darktable.bauhaus->indicator,
+        darktable.bauhaus->insensitive);
+}
+
+static void
+show_pango_text(cairo_t *cr, char *text, float x_pos, float y_pos, gboolean right_aligned, gboolean sensitive, gboolean indicator)
+{
+  PangoLayout *layout;
+
+  layout = pango_cairo_create_layout(cr);
+  pango_layout_set_text(layout, text, -1);
+  pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
+
+  if(right_aligned)
+  {
+    int pango_width, pango_height;
+    pango_layout_get_size (layout, &pango_width, &pango_height);
+    x_pos -= ((double)pango_width/PANGO_SCALE);
+  }
+
+  if(sensitive)
+    set_text_color(cr, sensitive);
+  if(indicator)
+    set_indicator_color(cr, 1);
+  cairo_move_to(cr, x_pos, y_pos);
+  pango_cairo_show_layout(cr, layout);
+  g_object_unref(layout);
+}
+
+// -------------------------------
+static void
+dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos);
+
+static float
+get_slider_line_offset(float pos, float scale, float x, float y, float ht, const int width)
+{
+  // ht is in [0,1] scale here
+  const float l = 4.0f/width;
+  const float r = 1.0f-4.0f/width - ht;
+
+  float offset = 0.0f;
+  // handle linear startup and rescale y to fit the whole range again
+  if(y < ht)
+  {
+    offset = (x-l)/(r-l) - pos;
+  }
+  else
+  {
+    y -= ht;
+    y /= (1.0f-ht);
+
+    // x = y^2 * .5(1+off/scale) + (1-y^2)*(l + (pos+off)*(r-l))
+    // now find off given pos, y, and x:
+    // x - y^2*.5 - (1-y^2)*pos = y^2*.5f*off/scale + (1-y^2)off
+    //                          = off ((.5f/scale-1)*y^2 + 1)
+    // return (x - y*y*.5f - (1.0f-y*y)*pos)/((.5f/scale-1.f)*y*y + 1.0f);
+
+    offset = (x - y*y*.5f - (1.0f-y*y)*(l + pos*(r-l)))/(.5f*y*y/scale + (1.0f-y*y)*(r-l));
+  }
+  // clamp to result in a [0,1] range:
+  if(pos + offset > 1.0f) offset = 1.0f-pos;
+  if(pos + offset < 0.0f) offset = -pos;
+  return offset;
+}
+
+// draw a loupe guideline for the quadratic zoom in in the slider interface:
+static void
+draw_slider_line(cairo_t *cr, float pos, float off, float scale, const int width, const int height, const int ht)
+{
+  // pos is normalized position [0,1], offset is on that scale.
+  // ht is in pixels here
+  const float l = 4.0f/width;
+  const float r = 1.0f-(ht+4.0f)/width;
+  
+  const int steps = 64;
+  cairo_move_to(cr, width*(l + (pos+off)*(r-l)), ht*.7f);
+  cairo_line_to(cr, width*(l + (pos+off)*(r-l)), ht);
+  for(int j=1;j<steps;j++)
+  {
+    const float y = j/(steps-1.0f);
+    const float x = y*y*.5f*(1.f+off/scale) + (1.0f-y*y)*(l + (pos+off)*(r-l));
+    cairo_line_to(cr, x*width, ht + y*(height-ht));
+  }
+}
+// -------------------------------
+
+// handlers on the root window, to close popup:
+static gboolean
+dt_bauhaus_root_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+{
+  if(darktable.bauhaus->current)
+  {
+    const float tol = 100;
+    gint wx, wy;
+    GtkWidget *widget = darktable.bauhaus->popup_window;
+    gdk_window_get_origin (gtk_widget_get_window (widget), &wx, &wy);
+    if(event->x_root > wx + widget->allocation.width + tol || event->y_root > wy + widget->allocation.height + tol ||
+       event->x_root < (int)wx - tol || event->y_root < (int)wy - tol)
+    {
+      dt_bauhaus_widget_reject(darktable.bauhaus->current);
+      dt_bauhaus_hide_popup();
+    }
+    return TRUE;
+  }
+  // make sure to propagate the event further
+  return FALSE;
+}
+
+static gboolean
+dt_bauhaus_root_button_press(GtkWidget *wd, GdkEventButton *event, gpointer user_data)
+{
+  if(darktable.bauhaus->current)
+  {
+    const float tol = 100;
+    gint wx, wy;
+    GtkWidget *widget = darktable.bauhaus->popup_window;
+    gdk_window_get_origin (gtk_widget_get_window (widget), &wx, &wy);
+    if((event->x_root > wx + widget->allocation.width + tol || event->y_root > wy + widget->allocation.height + tol ||
+        event->x_root < (int)wx - tol || event->y_root < (int)wy - tol))
+    {
+      dt_bauhaus_widget_reject(darktable.bauhaus->current);
+      dt_bauhaus_hide_popup();
+      return TRUE;
+    }
+  }
+  // make sure to propagate the event further
+  return FALSE;
+}
+
+
+static gboolean
+dt_bauhaus_popup_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  gtk_widget_queue_draw(darktable.bauhaus->popup_area);
+  dt_bauhaus_widget_t *w = darktable.bauhaus->current;
+  switch(w->type)
+  {
+    case DT_BAUHAUS_COMBOBOX:
+      {
+        gint wx, wy;
+        GtkWidget *w = GTK_WIDGET(darktable.bauhaus->current);
+        const int ht = w->allocation.height;
+        const int skip = ht + get_line_space();
+        gdk_window_get_origin (gtk_widget_get_window (w), &wx, &wy);
+        dt_bauhaus_combobox_data_t *d = &darktable.bauhaus->current->data.combobox;
+        if(event->direction == GDK_SCROLL_UP)
+          dt_bauhaus_combobox_set(w, CLAMP(d->active-1, 0, d->num_labels-1));
+        else
+          dt_bauhaus_combobox_set(w, CLAMP(d->active+1, 0, d->num_labels-1));
+        gdk_window_move(gtk_widget_get_window(darktable.bauhaus->popup_window), wx, wy - d->active * skip);
+      }
+      break;
+    case DT_BAUHAUS_SLIDER:
+      break;
+    default:
+      break;
+  }
+  return TRUE;
+}
+
+static gboolean
+dt_bauhaus_popup_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+{
+  // remember mouse position for motion effects in draw
+  darktable.bauhaus->mouse_x = event->x;
+  darktable.bauhaus->mouse_y = event->y;
+  gtk_widget_queue_draw(darktable.bauhaus->popup_area);
+  dt_bauhaus_widget_t *w = darktable.bauhaus->current;
+  int width = darktable.bauhaus->popup_window->allocation.width, height = darktable.bauhaus->popup_window->allocation.height;
+  switch(w->type)
+  {
+    case DT_BAUHAUS_COMBOBOX:
+      break;
+    case DT_BAUHAUS_SLIDER:
+      {
+        dt_bauhaus_slider_data_t *d = &w->data.slider;
+        const float mouse_off = get_slider_line_offset(
+            d->oldpos, d->scale, darktable.bauhaus->mouse_x/width,
+            darktable.bauhaus->mouse_y/height, GTK_WIDGET(w)->allocation.height/(float)height,
+            widget->allocation.width);
+        dt_bauhaus_slider_set_normalized(w, d->oldpos + mouse_off);
+      }
+      break;
+    default:
+      break;
+  }
+  // throttling using motion hint:
+  // gdk_event_request_motions(event);
+  return TRUE;
+}
+
+static gboolean
+dt_bauhaus_popup_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  // all that doesn't seem to work (more events are created than necessary, exits at random
+  // during popup already etc.
+#if 0
+  // if(event->x > widget->allocation.width + 20 || event->y > widget->allocation.height + 20 ||
+     // event->x < -20 || event->y < -20)
+  if(!event->state)
+  {
+    dt_bauhaus_widget_reject(darktable.bauhaus->current);
+    dt_bauhaus_hide_popup();
+  }
+#endif
+  return TRUE;
+}
+
+static gboolean
+dt_bauhaus_popup_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  if(darktable.bauhaus->current &&
+    (darktable.bauhaus->current->type == DT_BAUHAUS_COMBOBOX) &&
+    (event->button == 1) &&
+    (event->y > GTK_WIDGET(darktable.bauhaus->current)->allocation.height))
+  {
+    // only accept left mouse click
+    darktable.bauhaus->end_mouse_x = event->x;
+    darktable.bauhaus->end_mouse_y = event->y;
+    dt_bauhaus_widget_accept(darktable.bauhaus->current);
+    dt_bauhaus_hide_popup();
+  }
+  return TRUE;
+}
+
+static gboolean
+dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  if(event->button == 1)
+  {
+    // only accept left mouse click
+    darktable.bauhaus->end_mouse_x = event->x;
+    darktable.bauhaus->end_mouse_y = event->y;
+    dt_bauhaus_widget_accept(darktable.bauhaus->current);
+  }
+  else
+  {
+    dt_bauhaus_widget_reject(darktable.bauhaus->current);
+  }
+  dt_bauhaus_hide_popup();
+  return TRUE;
+}
+
+static void
+window_show(GtkWidget *w, gpointer user_data)
+{
+  /* grabbing might not succeed immediately... */
+  if (gdk_keyboard_grab(w->window, FALSE, GDK_CURRENT_TIME) != GDK_GRAB_SUCCESS) 
+  {
+    // never happened so far:
+    /* ...wait a while and try again */
+    fprintf(stderr, "[bauhaus] failed to get keyboard focus for popup window!\n");
+    // struct timeval s;
+    // s.tv_sec = 0;
+    // s.tv_usec = 5000;
+    // select(0, NULL, NULL, NULL, &s);
+    // sched_yield();
+  }
+}
+
+static void
+dt_bh_init(DtBauhausWidget *class)
+{
+  // not sure if we want to use this instead of our code in *_new()
+  // TODO: the common code from bauhaus_widget_init() could go here.
+}
+
+static void
+dt_bh_class_init(DtBauhausWidgetClass *class)
+{
+  darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL] =
+    g_signal_new ("value-changed",
+        G_TYPE_FROM_CLASS (class),
+        G_SIGNAL_RUN_LAST,
+        0,
+        NULL, NULL,
+        g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+  darktable.bauhaus->signals[DT_BAUHAUS_QUAD_PRESSED_SIGNAL] =
+    g_signal_new ("quad-pressed",
+        G_TYPE_FROM_CLASS (class),
+        G_SIGNAL_RUN_LAST,
+        0,
+        NULL, NULL,
+        g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
+  // TODO: could init callbacks once per class for more efficiency:
+  // GtkWidgetClass *widget_class;
+  // widget_class = GTK_WIDGET_CLASS (class);
+  // widget_class->expose_event = dt_bauhaus_expose;
+}
+
+static int
+guess_font_size()
+{
+  const int def = 8;
+  const char *gtkrc_filename = getenv("GTK2_RC_FILES");
+  if(!gtkrc_filename) return def;
+  FILE *f = fopen(gtkrc_filename, "rb");
+  if(!f) return def;
+  char line[256];
+  while(!feof(f))
+  {
+    int read = fscanf(f, "%[^\n]\n", line);
+    if(read > 0)
+    {
+      char *c = line;
+      while(*c == ' ' || *c == '\t') c++;
+      if(!strncmp(c, "font_name", 9))
+      {
+        // skip all to = then second " (end)
+        while(*c != '=' && *c != 0) c++;
+        while(*c != '"' && *c != 0) c++;
+        if(*c != 0) c++;
+        while(*c != '"' && *c != 0) c++;
+        // back to last space
+        while(*c != ' ' && c > line) c--;
+        if(*c == ' ' && c != line)
+        {
+          int fontsize = (int)atol(c);
+          // fprintf(stderr, "[bauhaus] guessing gtk font size of %d pt\n", fontsize);
+          fclose(f);
+          if(fontsize > 0) return fontsize;
+        }
+        fclose(f);
+        return def;
+      }
+    }
+  }
+  fclose(f);
+  return def;
+}
+
+void
+dt_bauhaus_init()
+{
+  darktable.bauhaus = (dt_bauhaus_t *)malloc(sizeof(dt_bauhaus_t));
+  memset(darktable.bauhaus, 0, sizeof(dt_bauhaus_t));
+  darktable.bauhaus->keys_cnt = 0;
+  darktable.bauhaus->current = NULL;
+  darktable.bauhaus->popup_area = gtk_drawing_area_new();
+
+  // connect signal to eventually clean up our popup if we go too far away and such:
+  GtkWidget *root_window = dt_ui_main_window(darktable.gui->ui);
+  g_signal_connect (G_OBJECT (root_window), "motion-notify-event",
+                    G_CALLBACK (dt_bauhaus_root_motion_notify), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (root_window), "button-press-event",
+                    G_CALLBACK (dt_bauhaus_root_button_press), (gpointer)NULL);
+
+  darktable.bauhaus->line_space = 2;
+  darktable.bauhaus->line_height = 11;
+  darktable.bauhaus->marker_size = 0.3f;
+  darktable.bauhaus->label_font_size = 0.6f;
+  darktable.bauhaus->value_font_size = 0.6f;
+  strncpy(darktable.bauhaus->label_font, "sans-serif", 256);
+  strncpy(darktable.bauhaus->value_font, "sans-serif", 256);
+  darktable.bauhaus->bg_normal = 0.145098f;
+  darktable.bauhaus->bg_focus = 0.207843f;
+  darktable.bauhaus->text = .792f;
+  darktable.bauhaus->grid = .1f;
+  darktable.bauhaus->indicator = .6f;
+  darktable.bauhaus->insensitive = 0.2f;
+
+  // it seems impossible to get to the font size in a portable way (gtk3 deprecates GtkStyle..),
+  // so we parse it ourselves and convert it from pt to scale (.. :( )
+  int gtk_fontsize = guess_font_size();
+  darktable.bauhaus->scale = gtk_fontsize/5.0f;
+  darktable.bauhaus->widget_space = 2.5f*darktable.bauhaus->scale;
+
+  // now create the pango description for the strings using the font and size found above
+  gchar *font = g_strdup_printf("%s %d", darktable.bauhaus->label_font, gtk_fontsize);
+  darktable.bauhaus->pango_font_desc = pango_font_description_from_string(font);
+  g_free(font);
+
+  // keys are freed with g_free, values are ptrs to the widgets, these don't need to be cleaned up.
+  darktable.bauhaus->keymap = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+  darktable.bauhaus->key_mod = NULL;
+  darktable.bauhaus->key_val = NULL;
+  memset(darktable.bauhaus->key_history, 0, sizeof(darktable.bauhaus->key_history));
+
+  // this easily gets keyboard input:
+  // darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  // but this doesn't flicker, and the above hack with key input seems to work well.
+  darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_POPUP);
+  // this is needed for popup, not for toplevel.
+  // since popup_area gets the focus if we show the window, this is all
+  // we need.
+  dt_gui_key_accel_block_on_focus(darktable.bauhaus->popup_area);
+
+  gtk_widget_set_size_request(darktable.bauhaus->popup_area, 300, 300);
+  gtk_window_set_resizable(GTK_WINDOW(darktable.bauhaus->popup_window), FALSE);
+  gtk_window_set_default_size(GTK_WINDOW(darktable.bauhaus->popup_window), 260, 260);
+  // gtk_window_set_modal(GTK_WINDOW(c->popup_window), TRUE);
+  // gtk_window_set_decorated(GTK_WINDOW(c->popup_window), FALSE);
+
+  // for pie menue:
+  // gtk_window_set_position(GTK_WINDOW(c->popup_window), GTK_WIN_POS_MOUSE);// | GTK_WIN_POS_CENTER);
+  // gtk_window_set_transient_for(GTK_WINDOW(c->popup_window), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+  gtk_container_add(GTK_CONTAINER(darktable.bauhaus->popup_window), darktable.bauhaus->popup_area);
+  // gtk_window_set_title(GTK_WINDOW(c->popup_window), _("dtgtk control popup"));
+  gtk_window_set_keep_above(GTK_WINDOW(darktable.bauhaus->popup_window), TRUE);
+  gtk_window_set_gravity(GTK_WINDOW(darktable.bauhaus->popup_window), GDK_GRAVITY_STATIC);
+
+  gtk_widget_set_can_focus(darktable.bauhaus->popup_area, TRUE);
+  gtk_widget_add_events(darktable.bauhaus->popup_area,
+      GDK_POINTER_MOTION_MASK |
+      GDK_POINTER_MOTION_HINT_MASK |
+      GDK_BUTTON_PRESS_MASK |
+      GDK_BUTTON_RELEASE_MASK |
+      GDK_KEY_PRESS_MASK |
+      GDK_LEAVE_NOTIFY_MASK);
+
+  g_signal_connect (G_OBJECT (darktable.bauhaus->popup_window), "show", G_CALLBACK(window_show), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "expose-event",
+                    G_CALLBACK (dt_bauhaus_popup_expose), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "motion-notify-event",
+                    G_CALLBACK (dt_bauhaus_popup_motion_notify), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "leave-notify-event",
+                    G_CALLBACK (dt_bauhaus_popup_leave_notify), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "button-press-event",
+                    G_CALLBACK (dt_bauhaus_popup_button_press), (gpointer)NULL);
+  // this is connected to the widget itself, not the popup. we're only interested
+  // in mouse release events that are initiated by a press on the original widget.
+  // g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "button-release-event",
+  //                   G_CALLBACK (dt_bauhaus_popup_button_release), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "key-press-event",
+                    G_CALLBACK (dt_bauhaus_popup_key_press), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "scroll-event",
+                    G_CALLBACK (dt_bauhaus_popup_scroll), (gpointer)NULL);
+}
+
+void
+dt_bauhaus_cleanup()
+{
+  // TODO: destroy popup window and resources
+  // TODO: destroy keymap hash table and auto complete lists!
+}
+
+// fwd declare a few callbacks
+static gboolean
+dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
+static gboolean
+dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
+static gboolean
+dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
+static gboolean
+dt_bauhaus_slider_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
+
+
+static gboolean
+dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
+static gboolean
+dt_bauhaus_combobox_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
+// static gboolean
+// dt_bauhaus_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
+static gboolean
+dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+
+
+// end static init/cleanup
+// =================================================
+
+
+
+
+
+// common initialization
+static void
+dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
+{
+  w->module = self;
+
+  // no quad icon and no toggle button:
+  w->quad_paint  = 0;
+  w->quad_toggle = 0;
+
+  gtk_widget_set_size_request(GTK_WIDGET(w), 260, get_line_height());
+
+  gtk_widget_add_events(GTK_WIDGET(w),
+      GDK_POINTER_MOTION_MASK |
+      GDK_POINTER_MOTION_HINT_MASK |
+      GDK_BUTTON_PRESS_MASK |
+      GDK_BUTTON_RELEASE_MASK |
+      GDK_LEAVE_NOTIFY_MASK);
+
+  g_signal_connect (G_OBJECT (w), "expose-event",
+                    G_CALLBACK (dt_bauhaus_expose), NULL);
+
+  // for combobox, where mouse-release triggers a selection, we need to catch this
+  // event where the mouse-press occurred, which will be this widget. we just pass
+  // it on though:
+  g_signal_connect (G_OBJECT (w), "button-release-event",
+                    G_CALLBACK (dt_bauhaus_popup_button_release), (gpointer)NULL);
+}
+
+void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *text)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  strncpy(w->label, text, 256);
+
+  if(w->module)
+  {
+    // construct control path name and insert into keymap:
+    gchar *path = g_strdup_printf("%s.%s", w->module->name(), w->label);
+    if(!g_hash_table_lookup(darktable.bauhaus->keymap, path))
+    {
+      // also insert into sorted tab-complete list.
+      // (but only if this is the first time we insert this path)
+      gchar *mod = g_strdup(path);
+      gchar *val = g_strstr_len(mod, strlen(mod), ".");
+      if(val)
+      {
+        *val = 0;
+        if(!g_list_find_custom(darktable.bauhaus->key_mod, mod, (GCompareFunc)strcmp))
+          darktable.bauhaus->key_mod = g_list_insert_sorted(darktable.bauhaus->key_mod, mod, (GCompareFunc)strcmp);
+        darktable.bauhaus->key_val = g_list_insert_sorted(darktable.bauhaus->key_val, path, (GCompareFunc)strcmp);
+      }
+    }
+    g_hash_table_replace(darktable.bauhaus->keymap, path, w);
+  }
+}
+
+void dt_bauhaus_widget_set_quad_paint(GtkWidget *widget, dt_bauhaus_quad_paint_f f, int paint_flags)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  w->quad_paint = f;
+  w->quad_paint_flags = paint_flags;
+}
+
+// make this quad a toggle button:
+void dt_bauhaus_widget_set_quad_toggle(GtkWidget *widget, int toggle)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  w->quad_toggle = toggle;
+}
+
+GtkWidget*
+dt_bauhaus_slider_new(dt_iop_module_t *self)
+{
+  return dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.1, 0.5, 3);
+}
+
+GtkWidget*
+dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, float step, float defval, int digits)
+{
+  dt_bauhaus_widget_t* w = DT_BAUHAUS_WIDGET(g_object_new(DT_BAUHAUS_WIDGET_TYPE, NULL));
+  dt_bauhaus_widget_init(w, self);
+  w->type = DT_BAUHAUS_SLIDER;
+  dt_bauhaus_widget_init(w, self);
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  d->min = min;
+  d->max = max;
+  // normalize default:
+  d->defpos = (defval-min)/(max-min);
+  d->pos = d->defpos;
+  d->oldpos = d->defpos;
+  d->scale = 5.0f*step/(max-min);
+  d->digits = digits;
+  snprintf(d->format, 24, "%%.0%df", digits);
+
+  d->grad_cnt = 0;
+
+  g_signal_connect (G_OBJECT (w), "button-press-event",
+                    G_CALLBACK (dt_bauhaus_slider_button_press), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (w), "scroll-event",
+                    G_CALLBACK (dt_bauhaus_slider_scroll), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (w), "motion-notify-event",
+                    G_CALLBACK (dt_bauhaus_slider_motion_notify), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (w), "leave-notify-event",
+                    G_CALLBACK (dt_bauhaus_slider_leave_notify), (gpointer)NULL);
+  return GTK_WIDGET(w);
+}
+
+
+static void
+dt_bauhaus_combobox_destroy(dt_bauhaus_widget_t *widget, gpointer user_data)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  g_list_foreach(d->labels,(GFunc)g_free,NULL);
+  g_list_free(d->labels);
+  d->labels = NULL;
+  d->num_labels = 0;
+}
+
+GtkWidget*
+dt_bauhaus_combobox_new(dt_iop_module_t *self)
+{
+  dt_bauhaus_widget_t* w = DT_BAUHAUS_WIDGET(g_object_new(DT_BAUHAUS_WIDGET_TYPE, NULL));
+  w->type = DT_BAUHAUS_COMBOBOX;
+  dt_bauhaus_widget_init(w, self);
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  d->labels = NULL;
+  d->num_labels = 0;
+  d->defpos = 0;
+  d->active = d->defpos;
+  d->editable = 0;
+  memset(d->text, 0, sizeof(d->text));
+  g_signal_connect (G_OBJECT (w), "button-press-event",
+                    G_CALLBACK (dt_bauhaus_combobox_button_press), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (w), "scroll-event",
+                    G_CALLBACK (dt_bauhaus_combobox_scroll), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (w), "destroy",
+                    G_CALLBACK (dt_bauhaus_combobox_destroy), (gpointer)NULL);
+  return GTK_WIDGET(w);
+}
+
+void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  d->num_labels++;
+  d->labels = g_list_append(d->labels, g_strdup(text));
+}
+
+void dt_bauhaus_combobox_set_editable(GtkWidget *widget, int editable)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  d->editable = editable ? 1 : 0;
+}
+
+const char* dt_bauhaus_combobox_get_text(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return 0;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  if(!d->editable)
+  {
+    if(d->active < 0 || d->active >= d->num_labels) return 0;
+    return (const char *)g_list_nth_data(d->labels, d->active);
+  }
+  return d->text;
+}
+
+void dt_bauhaus_combobox_clear(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  d->active = 0;
+  g_list_foreach(d->labels,(GFunc)g_free,NULL);
+  g_list_free(d->labels);
+  d->labels = NULL;
+  d->num_labels = 0;
+}
+
+const GList* dt_bauhaus_combobox_get_labels(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return 0;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  return d->labels;
+}
+
+void dt_bauhaus_combobox_set_text(GtkWidget *widget, const char *text)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  if(!d->editable) return;
+  strncpy(d->text, text, sizeof(d->text));
+}
+
+void dt_bauhaus_combobox_set(GtkWidget *widget, int pos)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  d->active = CLAMP(pos, -1, d->num_labels-1);
+  gtk_widget_queue_draw(GTK_WIDGET(w));
+  g_signal_emit_by_name(G_OBJECT(w), "value-changed");
+}
+
+int dt_bauhaus_combobox_get(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return -1;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  return d->active;
+}
+
+void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g, float b)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  // need to replace stop?
+  for(int k=0;k<d->grad_cnt;k++)
+  {
+    if(d->grad_pos[k] == stop)
+    {
+      d->grad_col[k][0] = r;
+      d->grad_col[k][1] = g;
+      d->grad_col[k][2] = b;
+      return;
+    }
+  }
+  // new stop:
+  if(d->grad_cnt < 10)
+  {
+    int k = d->grad_cnt ++;
+    d->grad_pos[k] = stop;
+    d->grad_col[k][0] = r;
+    d->grad_col[k][1] = g;
+    d->grad_col[k][2] = b;
+  }
+  else
+  {
+    fprintf(stderr, "[bauhaus_slider_set_stop] only 10 stops allowed.\n");
+  }
+}
+
+
+#ifndef DT_BAUHAUS_OLD
+static void
+draw_equilateral_triangle(cairo_t *cr, float radius)
+{
+  const float sin = 0.866025404 * radius;
+  const float cos = 0.5f * radius;
+  cairo_move_to(cr, 0.0, radius);
+  cairo_line_to(cr, -sin, -cos);
+  cairo_line_to(cr,  sin, -cos);
+  cairo_line_to(cr, 0.0, radius);
+}
+#endif
+
+static void
+dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t *cr)
+{
+  // draw scale indicator
+  GtkWidget *widget = GTK_WIDGET(w);
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+  const int wd = widget->allocation.width;
+  const int ht = widget->allocation.height;
+  cairo_save(cr);
+  // dt_bauhaus_slider_data_t *d = &w->data.slider;
+  
+  const float l = 4.0f/wd;
+  const float r = 1.0f-(ht+4.0f)/wd;
+  set_indicator_color(cr, 1);
+#ifndef DT_BAUHAUS_OLD
+  cairo_translate(cr, (l + pos*(r-l))*wd, get_line_height() * (darktable.bauhaus->label_font_size + 0.25f));
+  cairo_scale(cr, 1.0f, -1.0f);
+  draw_equilateral_triangle(cr, ht*get_marker_size());
+  cairo_fill_preserve(cr);
+  cairo_set_line_width(cr, 1.);
+  set_grid_color(cr, 1);
+  cairo_stroke(cr);
+#else
+  cairo_translate(cr, (l + pos*(r-l))*wd, 0);
+  cairo_set_line_width(cr, 1.);
+  cairo_move_to(cr, 0.0f, 0.0f);
+  cairo_line_to(cr, 0.0f, ht);
+  set_grid_color(cr, 1);
+  cairo_stroke(cr);
+#endif
+  cairo_restore(cr);
+}
+
+
+static void
+dt_bauhaus_clear(dt_bauhaus_widget_t *w, cairo_t *cr)
+{
+  // clear bg with background color
+  cairo_save(cr);
+  if(w->module && darktable.develop->gui_module == w->module)
+    set_bg_focus(cr);
+  else
+    set_bg_normal(cr);
+#if 0
+  GtkWidget *topwidget = dt_iop_gui_get_pluginui(w->module);
+  GtkStyle *style = gtk_widget_get_style(topwidget);
+  if(style)
+  {
+    cairo_set_source_rgb (cr,
+        style->bg[gtk_widget_get_state(topwidget)].red/65535.0f,
+        style->bg[gtk_widget_get_state(topwidget)].green/65535.0f,
+        style->bg[gtk_widget_get_state(topwidget)].blue/65535.0f);
+  }
+#endif
+  cairo_paint(cr);
+  cairo_restore(cr);
+}
+
+static void
+dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
+{
+  GtkWidget *widget = GTK_WIDGET(w);
+  int width  = widget->allocation.width;
+  int height = widget->allocation.height;
+  if(w->quad_paint)
+  {
+    cairo_save(cr);
+    set_grid_color(cr, gtk_widget_is_sensitive(GTK_WIDGET(w)));
+    w->quad_paint(cr, width-height-1, -1, height+2, get_label_font_size()+2, w->quad_paint_flags);
+    set_indicator_color(cr, gtk_widget_is_sensitive(GTK_WIDGET(w)));
+    w->quad_paint(cr, width-height, 0, height, get_label_font_size(), w->quad_paint_flags);
+    cairo_restore(cr);
+  }
+  else
+  {
+    // TODO: decide if we need this at all.
+    //       there is a chance it only introduces clutter.
+#if 1
+    // draw active area square:
+    cairo_save(cr);
+    set_indicator_color(cr, gtk_widget_is_sensitive(GTK_WIDGET(w)));
+    switch(w->type)
+    {
+      case DT_BAUHAUS_COMBOBOX:
+        cairo_translate(cr, width -height*.5f, get_label_font_size()*.5f);
+        draw_equilateral_triangle(cr, height*get_marker_size());
+        cairo_fill_preserve(cr);
+        cairo_set_line_width(cr, 1.);
+        set_grid_color(cr, 1);
+        cairo_stroke(cr);
+        break;
+      case DT_BAUHAUS_SLIDER:
+        break;
+      default:
+        cairo_rectangle(cr, width - height, 0, height, height);
+        cairo_fill(cr);
+        break;
+    }
+    cairo_restore(cr);
+#endif
+  }
+}
+
+static void
+dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
+{
+  // draw line for orientation in slider
+  GtkWidget *widget = GTK_WIDGET(w);
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+  const int wd = widget->allocation.width;
+  const int ht = widget->allocation.height;
+  cairo_save(cr);
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  
+#ifdef DT_BAUHAUS_OLD
+  const float htm = 0.0f, htM = ht;
+#else
+  // pos of baseline
+  const float htm = ht*(darktable.bauhaus->label_font_size + 0.1f);
+  const float htM = ht*0.2f; // thickness of baseline
+#endif
+
+  cairo_pattern_t *gradient = NULL;
+  if(d->grad_cnt > 0)
+  {
+    gradient = cairo_pattern_create_linear(0, 0, wd-4-ht-2, ht);
+    cairo_pattern_reference(gradient);
+    for(int k=0;k<d->grad_cnt;k++)
+      cairo_pattern_add_color_stop_rgba(gradient, d->grad_pos[k],
+          d->grad_col[k][0],
+          d->grad_col[k][1],
+          d->grad_col[k][2],
+          .2f);
+    cairo_set_source(cr, gradient);
+  }
+  else
+  {
+    // regular baseline
+    set_grid_color(cr, .9f);
+  }
+
+  cairo_rectangle(cr, 2, htm, wd-4-ht-2, htM);
+  cairo_fill(cr);
+
+  // have a `fill ratio feel'
+  set_indicator_color(cr, .95f);
+  cairo_rectangle(cr, 2, htm, d->pos*(wd-4-ht-2), htM);
+  cairo_fill(cr);
+
+  cairo_rectangle(cr, 2, htm, wd-4-ht-2, htM);
+  cairo_set_line_width(cr, 1.);
+  set_grid_color(cr, 1.);
+  cairo_stroke(cr);
+
+  cairo_restore(cr);
+
+  if(d->grad_cnt > 0)
+    cairo_pattern_destroy(gradient);
+}
+
+static void
+dt_bauhaus_widget_reject(dt_bauhaus_widget_t *w)
+{
+  switch(w->type)
+  {
+    case DT_BAUHAUS_COMBOBOX:
+      break;
+    case DT_BAUHAUS_SLIDER:
+      {
+        dt_bauhaus_slider_data_t *d = &w->data.slider;
+        dt_bauhaus_slider_set_normalized(w, d->oldpos);
+      }
+      break;
+    default:
+      break;
+  }
+}
+static void
+dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
+{
+  GtkWidget *widget = GTK_WIDGET(w);
+  int width = darktable.bauhaus->popup_window->allocation.width, height = darktable.bauhaus->popup_window->allocation.height;
+  switch(w->type)
+  {
+    case DT_BAUHAUS_COMBOBOX:
+    {
+      // only set to what's in the filtered list.
+      dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+      int active = darktable.bauhaus->end_mouse_y / (widget->allocation.height + get_line_space());
+      GList *it = d->labels;
+      int k = 0, i = 0, kk = 0;
+      while(it)
+      {
+        gchar *text = (gchar *)it->data;
+        if(!strncmp(text, darktable.bauhaus->keys, darktable.bauhaus->keys_cnt))
+        {
+          if(active == k)
+          {
+            dt_bauhaus_combobox_set(widget, i);
+            return;
+          }
+          kk = i; // remember for down there
+          k++;
+        }
+        i++;
+        it = g_list_next(it);
+      }
+      // didn't find it, but had only one choice?
+      if(k == 1) dt_bauhaus_combobox_set(widget, kk);
+      if(d->editable && k == 0)
+      {
+        // alternatively: if editable always only use text?
+        // didn't find any match anymore?
+        memset(d->text, 0, sizeof(d->text));
+        strncpy(d->text, darktable.bauhaus->keys, MIN(darktable.bauhaus->keys_cnt, sizeof(d->text)));
+        // select custom entry
+        dt_bauhaus_combobox_set(widget, -1);
+      }
+      break;
+    }
+    case DT_BAUHAUS_SLIDER:
+    {
+      dt_bauhaus_slider_data_t *d = &w->data.slider;
+      const float mouse_off = get_slider_line_offset(
+          d->oldpos, d->scale, darktable.bauhaus->end_mouse_x/width,
+          darktable.bauhaus->end_mouse_y/height, widget->allocation.height/(float)height,
+          widget->allocation.width);
+      dt_bauhaus_slider_set_normalized(w, d->oldpos + mouse_off);
+      d->oldpos = d->pos;
+      break;
+    }
+    default:
+      break;
+  }
+}
+
+static gboolean
+dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+{
+  dt_bauhaus_widget_t *w = darktable.bauhaus->current;
+  // dimensions of the popup
+  int width = widget->allocation.width, height = widget->allocation.height;
+  // dimensions of the original line
+  GtkWidget *current = GTK_WIDGET(w);
+  int wd = current->allocation.width, ht = current->allocation.height;
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
+
+  // draw same things as original widget, for visual consistency:
+  dt_bauhaus_clear(w, cr);
+
+  // draw line around popup
+  cairo_set_line_width(cr, 1.0);
+  cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
+  if(w->type == DT_BAUHAUS_COMBOBOX)
+  {
+    // separate more clearly (looks terrible in a way but might help separate text
+    // from other widgets above and below)
+    cairo_move_to(cr, 1.0, 1.0);
+    cairo_line_to(cr, 1.0, height-1.0);
+    cairo_line_to(cr, width-1.0, height-1.0);
+    cairo_line_to(cr, width-1.0, 1.0);
+    cairo_stroke(cr);
+    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.3);
+    cairo_move_to(cr, 1.0, 1.0);
+    cairo_line_to(cr, width-1.0, 1.0);
+    cairo_stroke(cr);
+  }
+  else
+  {
+    // blend in
+    cairo_move_to(cr, 1.0, 3.0*ht);
+    cairo_line_to(cr, 1.0, height-1);
+    cairo_line_to(cr, width-1, height-1);
+    cairo_line_to(cr, width-1, 3.0*ht);
+    cairo_stroke(cr);
+    // fade in line around popup:
+    for(int k=0;k<4;k++)
+    {
+      cairo_set_line_width(cr, (k+1)/4.0f);
+      cairo_move_to(cr, 1.0, ht*(2.f + k/4.0f));
+      cairo_line_to(cr, 1.0, ht*(2.f + (k+1)/4.0f));
+      cairo_move_to(cr, width-1.0, ht*(2.f + k/4.0f));
+      cairo_line_to(cr, width-1.0, ht*(2.f + (k+1)/4.0f));
+      cairo_stroke(cr);
+    }
+  }
+
+  // switch on bauhaus widget type (so we only need one static window)
+  switch(w->type)
+  {
+    case DT_BAUHAUS_SLIDER:
+      {
+        dt_bauhaus_slider_data_t *d = &w->data.slider;
+
+        dt_bauhaus_draw_baseline(w, cr);
+
+        cairo_save(cr);
+        cairo_set_line_width(cr, 1.);
+        set_grid_color(cr, 1);
+        const int num_scales = 1.f/d->scale;
+        // don't draw over orientation line
+        cairo_rectangle(cr, 0.0f, 0.9*ht, width, height);
+        cairo_clip(cr);
+        for(int k=0;k<num_scales;k++)
+        {
+          const float off = k*d->scale - d->oldpos;
+          cairo_set_source_rgba(cr, darktable.bauhaus->grid, darktable.bauhaus->grid, darktable.bauhaus->grid, d->scale/fabsf(off));
+          draw_slider_line(cr, d->oldpos, off, d->scale, width, height, ht);
+          cairo_stroke(cr);
+        }
+        cairo_restore(cr);
+
+        show_pango_text(cr, w->label, 2, 0, FALSE, TRUE, FALSE);
+
+        // draw mouse over indicator line
+        cairo_save(cr);
+        set_indicator_color(cr, 1);
+        cairo_set_line_width(cr, 2.);
+        const float mouse_off = get_slider_line_offset(d->oldpos, d->scale,
+            darktable.bauhaus->mouse_x/width, darktable.bauhaus->mouse_y/height, ht/(float)height,
+            width);
+        draw_slider_line(cr, d->oldpos, mouse_off, d->scale, width, height, ht);
+        cairo_stroke(cr);
+        cairo_restore(cr);
+
+        // draw indicator
+        dt_bauhaus_draw_indicator(w, d->oldpos+mouse_off, cr);
+
+        // draw numerical value:
+        cairo_save(cr);
+        char text[256];
+        const float f = d->min + (d->oldpos+mouse_off)*(d->max-d->min);
+        snprintf(text, 256, d->format, f);
+        show_pango_text(cr, text, wd-4-ht, 0, TRUE, TRUE, FALSE);
+
+        cairo_restore(cr);
+      }
+      break;
+    case DT_BAUHAUS_COMBOBOX:
+      {
+        show_pango_text(cr, w->label, 2, 0, FALSE, TRUE, FALSE);
+
+        dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+        cairo_save(cr);
+        set_text_color(cr, 1);
+        set_value_font(cr);
+        GList *it = d->labels;
+        int k = 0, i = 0;
+        int hovered = darktable.bauhaus->mouse_y / (ht + get_line_space());
+        while(it)
+        {
+          gchar *text = (gchar *)it->data;
+          if(!strncmp(text, darktable.bauhaus->keys, darktable.bauhaus->keys_cnt))
+          {
+            gboolean highlight = FALSE;
+            if(i == d->active)
+            {
+              // highlight currently active item:
+              highlight = TRUE;
+            }
+            else if(i == hovered)
+            {
+              highlight = TRUE;
+            }
+            show_pango_text(cr, text, wd-4-ht, (get_line_space()+ht)*k, TRUE, !highlight, highlight);
+            k++;
+          }
+          i++;
+          it = g_list_next(it);
+        }
+        cairo_restore(cr);
+      }
+      break;
+    default:
+      // yell
+      break;
+  }
+
+  // draw currently typed text. if a type doesn't want this, it should not
+  // allow stuff to be written here in the key callback.
+  if(darktable.bauhaus->keys_cnt)
+  {
+    cairo_save(cr);
+    cairo_text_extents_t ext;
+    set_text_color(cr, 1);
+    set_value_font(cr);
+    // make extra large
+    cairo_set_font_size (cr, .2*height);
+    cairo_text_extents (cr, darktable.bauhaus->keys, &ext);
+    cairo_move_to (cr, wd-4-ht-ext.width, height*0.5);
+    cairo_show_text(cr, darktable.bauhaus->keys); // FIXME: pango
+    cairo_restore(cr);
+  }
+
+  cairo_destroy(cr);
+  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
+  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+  cairo_paint(cr_pixmap);
+  cairo_destroy(cr_pixmap);
+  cairo_surface_destroy(cst);
+
+  return TRUE;
+}
+
+static gboolean
+dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  const int width = widget->allocation.width, height = widget->allocation.height;
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
+
+  dt_bauhaus_clear(w, cr);
+
+  // draw type specific content:
+  cairo_save(cr);
+  cairo_set_line_width(cr, 1.0);
+  switch(w->type)
+  {
+    case DT_BAUHAUS_COMBOBOX:
+      // draw label and quad area at right end
+      show_pango_text(cr, w->label, 2, 0, FALSE, TRUE, FALSE);
+      dt_bauhaus_draw_quad(w, cr);
+
+      if(gtk_widget_is_sensitive(widget))
+      {
+        dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+        gchar *text = d->text;
+        if(d->active >= 0)
+          text = (gchar *)g_list_nth_data(d->labels, d->active);
+        show_pango_text(cr, text, width-4-height, 0, TRUE, TRUE, FALSE);
+      }
+      break;
+    case DT_BAUHAUS_SLIDER:
+      {
+        dt_bauhaus_slider_data_t *d = &w->data.slider;
+
+        // line for orientation
+        dt_bauhaus_draw_baseline(w, cr);
+        dt_bauhaus_draw_quad(w, cr);
+
+        if(gtk_widget_is_sensitive(widget))
+        {
+          dt_bauhaus_draw_indicator(w, d->pos, cr);
+
+          // TODO: merge that text with combo
+          char text[256];
+          const float f = d->min + d->pos*(d->max-d->min);
+          snprintf(text, 256, d->format, f);
+          show_pango_text(cr, text, width-4-height, 0, TRUE, TRUE, FALSE);
+        }
+        // label on top of marker:
+        show_pango_text(cr, w->label, 2, 0, FALSE, TRUE, FALSE);
+      }
+      break;
+    default:
+      break;
+  }
+  cairo_restore(cr);
+
+  cairo_destroy(cr);
+  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
+  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+  cairo_paint(cr_pixmap);
+  cairo_destroy(cr_pixmap);
+  cairo_surface_destroy(cst);
+
+  return TRUE;
+}
+
+static void
+dt_bauhaus_hide_popup()
+{
+  gtk_widget_hide(darktable.bauhaus->popup_window);
+  darktable.bauhaus->current = NULL;
+  // TODO: give focus to center view? do in accept() as well?
+}
+
+static void
+dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
+{
+  if(darktable.bauhaus->current)
+    dt_bauhaus_hide_popup();
+  darktable.bauhaus->current = w;
+  darktable.bauhaus->keys_cnt = 0;
+  memset(darktable.bauhaus->keys, 0, 64);
+
+  dt_iop_request_focus(w->module);
+
+  switch(darktable.bauhaus->current->type)
+  {
+    case DT_BAUHAUS_SLIDER:
+    {
+      dt_bauhaus_slider_data_t *d = &w->data.slider;
+      d->oldpos = d->pos;
+
+      GtkAllocation tmp;
+      gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
+      gtk_widget_set_size_request(darktable.bauhaus->popup_area, tmp.width, tmp.width);
+      break;
+    }
+    case DT_BAUHAUS_COMBOBOX:
+    {
+      GtkAllocation tmp;
+      gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
+      dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+      gtk_widget_set_size_request(darktable.bauhaus->popup_area, tmp.width, (tmp.height+get_line_space()) * d->num_labels);
+      break;
+    }
+    default:
+      break;
+  }
+
+  gint wx, wy;
+  gdk_window_get_origin (gtk_widget_get_window (GTK_WIDGET(w)), &wx, &wy);
+  // dt_control_key_accelerators_off (darktable.control);
+
+  // gtk_widget_get_window will return null if not shown yet.
+  // it is needed for gdk_window_move, and gtk_window move will
+  // sometimes be ignored. this is why we always call both...
+  // we also don't want to show befor move, as this results in noticable flickering.
+  GdkWindow *window = gtk_widget_get_window(darktable.bauhaus->popup_window);
+  if(window) gdk_window_move(window, wx, wy);
+  gtk_window_move(GTK_WINDOW(darktable.bauhaus->popup_window), wx, wy);
+  gtk_widget_show_all(darktable.bauhaus->popup_window);
+  gtk_widget_grab_focus(darktable.bauhaus->popup_area);
+}
+
+static gboolean
+dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+  if(w->type != DT_BAUHAUS_SLIDER) return FALSE;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  if(event->direction == GDK_SCROLL_UP)
+  {
+    dt_iop_request_focus(w->module);
+    dt_bauhaus_slider_set_normalized(w, d->pos+d->scale/5.0f);
+    return TRUE;
+  }
+  else if(event->direction == GDK_SCROLL_DOWN)
+  {
+    dt_iop_request_focus(w->module);
+    dt_bauhaus_slider_set_normalized(w, d->pos-d->scale/5.0f);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+
+static gboolean
+dt_bauhaus_combobox_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+  if(w->type != DT_BAUHAUS_COMBOBOX) return FALSE;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  if(event->direction == GDK_SCROLL_UP)
+  {
+    dt_iop_request_focus(w->module);
+    dt_bauhaus_combobox_set(widget, CLAMP(d->active-1, 0, d->num_labels-1));
+    return TRUE;
+  }
+  else if(event->direction == GDK_SCROLL_DOWN)
+  {
+    dt_iop_request_focus(w->module);
+    dt_bauhaus_combobox_set(widget, CLAMP(d->active+1, 0, d->num_labels-1));
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static gboolean
+dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+  if(w->type != DT_BAUHAUS_COMBOBOX) return FALSE;
+  dt_iop_request_focus(w->module);
+  GtkAllocation tmp;
+  gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  if(w->quad_paint && (event->x > widget->allocation.width - widget->allocation.height))
+  {
+    g_signal_emit_by_name(G_OBJECT(w), "quad-pressed");
+    return TRUE;
+  }
+  else if(event->button == 3)
+  {
+    darktable.bauhaus->mouse_x = event->x;
+    darktable.bauhaus->mouse_y = event->y;
+    dt_bauhaus_show_popup(w);
+    return TRUE;
+  }
+  else if(event->button == 1)
+  {
+    // reset to default.
+    if(event->type == GDK_2BUTTON_PRESS)
+    {
+      dt_bauhaus_combobox_set(widget, d->defpos);
+    }
+    else
+    {
+      // single click, show options
+      darktable.bauhaus->mouse_x = event->x;
+      darktable.bauhaus->mouse_y = event->y;
+      dt_bauhaus_show_popup(w);
+    }
+    return TRUE;
+  }
+  return FALSE;
+}
+
+float
+dt_bauhaus_slider_get(GtkWidget *widget)
+{
+  // first cast to bh widget, to check that type:
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  if(!w->type == DT_BAUHAUS_SLIDER) return -1.0f;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  return d->min + d->pos*(d->max-d->min);
+}
+
+void
+dt_bauhaus_slider_set(GtkWidget *widget, float pos)
+{
+  // this is the public interface function, translate by bounds and call set_normalized
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  dt_bauhaus_slider_set_normalized(w, (pos-d->min)/(d->max-d->min));
+}
+
+void
+dt_bauhaus_slider_set_format(GtkWidget *widget, const char *format)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  strncpy(d->format, format, 24);
+}
+
+static void
+dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
+{
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  float rpos = CLAMP(pos, 0.0f, 1.0f);
+  rpos = d->min + (d->max - d->min)*rpos;
+  const float base = powf(10.0f, d->digits);
+  rpos = roundf(base * rpos) / base;
+  d->pos = (rpos-d->min)/(d->max-d->min);
+  gtk_widget_queue_draw(GTK_WIDGET(w));
+  g_signal_emit_by_name(G_OBJECT(w), "value-changed");
+}
+
+static gboolean
+dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+  switch(darktable.bauhaus->current->type)
+  {
+    case DT_BAUHAUS_SLIDER:
+    {
+      // hack to do screenshots from popup:
+      // if(event->string[0] == 'p') return system("scrot");
+      // else
+      if(darktable.bauhaus->keys_cnt + 2 < 64 &&
+       ((event->string[0] >= 43 && event->string[0] <= 46) ||  // .,-+
+        (event->string[0] >= 48 && event->string[0] <= 57)))   // 0-9
+      {
+        darktable.bauhaus->keys[darktable.bauhaus->keys_cnt++] = event->string[0];
+        gtk_widget_queue_draw(darktable.bauhaus->popup_area);
+      }
+      else if(darktable.bauhaus->keys_cnt > 0 &&
+             (event->keyval == GDK_BackSpace || event->keyval == GDK_Delete))
+      {
+        darktable.bauhaus->keys[--darktable.bauhaus->keys_cnt] = 0;
+        gtk_widget_queue_draw(darktable.bauhaus->popup_area);
+      }
+      else if(darktable.bauhaus->keys_cnt > 0 && darktable.bauhaus->keys_cnt + 1 < 64 &&
+             (event->keyval == GDK_Return || event->keyval == GDK_KP_Enter))
+      {
+        // accept input
+        darktable.bauhaus->keys[darktable.bauhaus->keys_cnt] = 0;
+        // unnormalized input, user was typing this:
+        dt_bauhaus_slider_set(GTK_WIDGET(darktable.bauhaus->current), atof(darktable.bauhaus->keys));
+        darktable.bauhaus->keys_cnt = 0;
+        memset(darktable.bauhaus->keys, 0, 64);
+        dt_bauhaus_hide_popup();
+      }
+      else if(event->keyval == GDK_Escape)
+      {
+        // discard input and close popup
+        darktable.bauhaus->keys_cnt = 0;
+        memset(darktable.bauhaus->keys, 0, 64);
+        dt_bauhaus_hide_popup();
+      }
+      else return FALSE;
+      return TRUE;
+    }
+    case DT_BAUHAUS_COMBOBOX:
+    {
+      // if(event->string[0] == 'p') return system("scrot");
+      // else
+      if(darktable.bauhaus->keys_cnt + 2 < 64 &&
+        (event->string[0] >= 32 && event->string[0] <= 126))
+      {
+        // only accept key input if still valid or editable?
+        darktable.bauhaus->keys[darktable.bauhaus->keys_cnt++] = event->string[0];
+        gtk_widget_queue_draw(darktable.bauhaus->popup_area);
+      }
+      else if(darktable.bauhaus->keys_cnt > 0 &&
+             (event->keyval == GDK_BackSpace || event->keyval == GDK_Delete))
+      {
+        darktable.bauhaus->keys[--darktable.bauhaus->keys_cnt] = 0;
+        gtk_widget_queue_draw(darktable.bauhaus->popup_area);
+      }
+      else if(darktable.bauhaus->keys_cnt > 0 && darktable.bauhaus->keys_cnt + 1 < 64 &&
+             (event->keyval == GDK_Return || event->keyval == GDK_KP_Enter))
+      {
+        // accept first line:
+        darktable.bauhaus->end_mouse_y = 0;
+        darktable.bauhaus->keys[darktable.bauhaus->keys_cnt] = 0;
+        dt_bauhaus_widget_accept(darktable.bauhaus->current);
+        darktable.bauhaus->keys_cnt = 0;
+        memset(darktable.bauhaus->keys, 0, 64);
+        dt_bauhaus_hide_popup();
+      }
+      else if(event->keyval == GDK_Escape)
+      {
+        // discard input and close popup
+        darktable.bauhaus->keys_cnt = 0;
+        memset(darktable.bauhaus->keys, 0, 64);
+        dt_bauhaus_hide_popup();
+      }
+      else return FALSE;
+      return TRUE;
+    }
+    default:
+      return FALSE;
+  }
+}
+
+static gboolean
+dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+  dt_iop_request_focus(w->module);
+  GtkAllocation tmp;
+  gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
+  if(w->quad_paint && (event->x > widget->allocation.width - widget->allocation.height))
+  {
+    g_signal_emit_by_name(G_OBJECT(w), "quad-pressed");
+    return TRUE;
+  }
+  else if(event->button == 3)
+  {
+    darktable.bauhaus->mouse_x = event->x;
+    darktable.bauhaus->mouse_y = event->y;
+    dt_bauhaus_show_popup(w);
+    return TRUE;
+  }
+  else if(event->button == 1)
+  {
+      // reset to default.
+    if(event->type == GDK_2BUTTON_PRESS)
+    {
+      dt_bauhaus_slider_data_t *d = &w->data.slider;
+      dt_bauhaus_slider_set_normalized(w, d->defpos);
+    }
+    else
+    {
+      const float l = 4.0f/tmp.width;
+      const float r = 1.0f-(tmp.height+4.0f)/tmp.width;
+      dt_bauhaus_slider_set_normalized(w, (event->x/tmp.width - l)/(r-l));
+    }
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static gboolean
+dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+{
+  // remember mouse position for motion effects in draw
+  if(event->state & GDK_BUTTON1_MASK && event->type != GDK_2BUTTON_PRESS)
+  {
+    dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+    GtkAllocation tmp;
+    gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
+    const float l = 4.0f/tmp.width;
+    const float r = 1.0f-(tmp.height+4.0f)/tmp.width;
+    dt_bauhaus_slider_set_normalized(w, (event->x/tmp.width - l)/(r-l));
+  }
+  // not sure if needed:
+  // gdk_event_request_motions(event);
+  return TRUE;
+}
+
+static gboolean
+dt_bauhaus_slider_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  // TODO: highlight?
+  return TRUE;
+}
+
+void dt_bauhaus_vimkey_exec(const char *input)
+{
+  char module[64], label[64];
+  float num;
+  sscanf(input, ":set %[^.].%[^=]=%f", module, label, &num);
+  fprintf(stderr, "[vimkey] setting module `%s', slider `%s' to %f\n", module, label, num);
+  sscanf(input, ":set %[^=]=%f", label, &num);
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)g_hash_table_lookup(darktable.bauhaus->keymap, label);
+  if(!w) return;
+  switch(w->type)
+  {
+    case DT_BAUHAUS_SLIDER:
+      dt_bauhaus_slider_set(GTK_WIDGET(w), num);
+      break;
+    case DT_BAUHAUS_COMBOBOX:
+      // TODO: what about text as entry?
+      dt_bauhaus_combobox_set(GTK_WIDGET(w), num);
+      break;
+    default:
+      break;
+  }
+}
+
+// give autocomplete suggestions
+GList* dt_bauhaus_vimkey_complete(const char *input)
+{
+  GList *cmp = darktable.bauhaus->key_mod;
+  char *point = strstr(input, ".");
+  if(point)
+    cmp = darktable.bauhaus->key_val;
+  int prefix = strlen(input);
+  GList *res = NULL;
+  int after = 0;
+  while(cmp)
+  {
+    char *path = (char *)cmp->data;
+    if(strncmp(path, input, prefix))
+    {
+      if(after) break; // sorted, so we're done
+      // else loop till we find the start of it
+    }
+    else
+    {
+      // append:
+      res = g_list_insert_sorted(res, path, (GCompareFunc)strcmp);
+      after = 1;
+    }
+    cmp = g_list_next(cmp);
+  }
+  return res;
+}
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

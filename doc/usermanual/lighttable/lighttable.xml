@@ -57,7 +57,7 @@
 							<entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack on the image</entry>
 						</row>
 						<row>
-							<entry><emphasis>e</emphasis></entry><entry>open the image in darkroom view for developing</entry>
+							<entry><emphasis>d</emphasis></entry><entry>open the image in darkroom view for developing</entry>
 						</row>
 						<row>
 							<entry><emphasis>z</emphasis></entry><entry>show a fullscreen view of the image</entry>
@@ -98,12 +98,12 @@
 				</para>
 				<sect4><title>Import images</title>
 					<para>This will bring up an import dialog, showing the images on camera that can be selected for import into a filmroll in
-						Darktable.
+						darktable.
 					</para>
 				</sect4>
 				<sect4><title>Tethering</title>
-					<para>Tethering is used to integrate Darktable with your camera. While you take images with your camera, they will
-						automatically be imported into Darktable so you can review the result of the shoot. You can also
+					<para>Tethering is used to integrate darktable with your camera. While you take images with your camera, they will
+						automatically be imported into darktable so you can review the result of the shoot. You can also
 						setup remote capture jobs, controlling number of images and time between captures along with camera settings such as exposition time, f-length and more.
 					</para>
 					<para>If supported by your camera, tethering will take you into capture view for tethered shoot. Read more about tethering in chapter 3.</para>
@@ -116,15 +116,15 @@
       				by pressing 'import filmroll' or a single image 'import single image'. 
 		  	</para>
 			<para>A filmroll is the same as a folder in the filesystem, except for 'single images' filmroll that contains images spread among your filesystem.
-				You can import a single image or a folder; if a folder is imported, Darktable will not recurse down in several folder levels but it will just import the images that resides inside
+				You can import a single image or a folder; if a folder is imported, darktable will not recurse down in several folder levels but it will just import the images that resides inside
 				the chosen folder into a filmroll whose name becomes the name of the imported folder.
 			</para>
-			<para status="draft">Importing a folder does not mean that Darktable copies your images in another folder.
+			<para status="draft">Importing a folder does not mean that darktable copies your images in another folder.
 			It just means that the images are visible in lighttable and thus can be developed. It means that
-     			if you delete an image/a folder after having imported them, Darktable will not be able to access them anymore.
-      			Importing an image/folder in Darktable is not a backup of your filesystem!
-      			Moreover Darktable does not currently watch changes in filesystem. Thus if on your filesystem you add an image
-			after having imported that folder in Darktable, the new image will not be shown until you explicitely import it.
+     			if you delete an image/a folder after having imported them, darktable will not be able to access them anymore.
+      			Importing an image/folder in darktable is not a backup of your filesystem!
+      			Moreover darktable does not currently watch changes in filesystem. Thus if on your filesystem you add an image
+			after having imported that folder in darktable, the new image will not be shown until you explicitely import it.
 			</para>
 			<para>All your filmrolls are available in a list which can be filtered using the editbox to fast find the filmroll of interest.
 					Double click on a filmroll in the list and it will open.
@@ -202,7 +202,7 @@
 				</tgroup>
 			</informaltable>
 				<sect4><title>remove</title>
-					<para>Remove the selected images from the Darktable database. Those images will not be shown
+					<para>Remove the selected images from the darktable database. Those images will not be shown
 					in lighttable anymore, but remain on filesystem.
 					</para>
 				</sect4>

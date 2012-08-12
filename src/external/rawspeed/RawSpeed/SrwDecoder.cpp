@@ -29,13 +29,17 @@
 namespace RawSpeed {
 
 SrwDecoder::SrwDecoder(TiffIFD *rootIFD, FileMap* file):
-    RawDecoder(file), mRootIFD(rootIFD) {
+RawDecoder(file), mRootIFD(rootIFD) {
+  decoderVersion = 2;
 }
 
 SrwDecoder::~SrwDecoder(void) {
+  if (mRootIFD)
+    delete mRootIFD;
+  mRootIFD = NULL;
 }
 
-RawImage SrwDecoder::decodeRaw() {
+RawImage SrwDecoder::decodeRawInternal() {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);
 
   if (data.empty())
@@ -44,34 +48,46 @@ RawImage SrwDecoder::decodeRaw() {
   TiffIFD* raw = data[0];
 
   int compression = raw->getEntry(COMPRESSION)->getInt();
+  int bits = raw->getEntry(BITSPERSAMPLE)->getInt();
+
   if (32769 != compression && 32770 != compression )
     ThrowRDE("Srw Decoder: Unsupported compression");
 
   if (32769 == compression)
   {
-    this->decodeUncompressed(raw, false);
+    bool bit_order = false;  // Default guess
+    map<string,string>::iterator msb_hint = hints.find("msb_override");
+    if (msb_hint != hints.end())
+      bit_order = (0 == (msb_hint->second).compare("true"));
+    this->decodeUncompressed(raw, bit_order);
     return mRaw;
   }
 
   if (32770 == compression)
   {
-    this->decodeUncompressed(raw, true);
+    bool bit_order = (bits == 12);  // Default guess
+    map<string,string>::iterator msb_hint = hints.find("msb_override");
+    if (msb_hint != hints.end())
+      bit_order = (0 == (msb_hint->second).compare("true"));
+    this->decodeUncompressed(raw, bit_order);
     return mRaw;
   }
   ThrowRDE("Srw Decoder: Unsupported compression");
   return mRaw;
 }
 
-void SrwDecoder::checkSupport(CameraMetaData *meta) {
+void SrwDecoder::checkSupportInternal(CameraMetaData *meta) {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
   if (data.empty())
     ThrowRDE("Srw Support check: Model name found");
+  if (!data[0]->hasEntry(MAKE))
+    ThrowRDE("SRW Support: Make name not found");
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
   this->checkCameraSupported(meta, make, model, "");
 }
 
-void SrwDecoder::decodeMetaData(CameraMetaData *meta) {
+void SrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   mRaw->cfa.setCFA(CFA_RED, CFA_GREEN, CFA_GREEN2, CFA_BLUE);
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
 
@@ -112,7 +128,12 @@ void SrwDecoder::decodeMetaData(CameraMetaData *meta) {
     }
     printf("Camera CFA: %s\n", mRaw->cfa.asString().c_str());
   }
-  setMetaData(meta, make, model, "");
+
+  int iso = 0;
+  if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
+    iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
+
+  setMetaData(meta, make, model, "", iso);
 }
 
 } // namespace RawSpeed

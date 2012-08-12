@@ -18,10 +18,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -32,12 +28,15 @@
 #include "gui/presets.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
+#include <string.h>
 
 #define DT_GUI_CURVE_EDITOR_INSET 5
 #define DT_GUI_CURVE_INFL .3f
 #define DT_IOP_TONECURVE_RES 64
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 DT_MODULE(1)
 
@@ -48,7 +47,6 @@ typedef struct dt_iop_basecurve_params_t
 }
 dt_iop_basecurve_params_t;
 
-static const char linear[] = N_("linear");
 static const char dark_contrast[] = N_("dark contrast");
 static const char canon_eos[] = N_("canon eos like");
 static const char nikon[] = N_("nikon like");
@@ -60,6 +58,7 @@ static const char leica[] = N_("leica like");
 static const char kodak_easyshare[] = N_("kodak easyshare like");
 static const char konica_minolta[] = N_("konica minolta like");
 static const char samsung[] = N_("samsung like");
+static const char fujifilm[] = N_("fujifilm like");
 static const char fotogenetic_v41[] = N_("fotogenetic (point & shoot)");
 static const char fotogenetic_v42[] = N_("fotogenetic (EV3)");
 
@@ -76,7 +75,6 @@ basecurve_preset_t;
 
 static const basecurve_preset_t basecurve_presets[] =
 {
-  {linear, "", "", 0, 51200, {{0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, {0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, 0}, 0},
   {dark_contrast, "", "", 0, 51200, {{0.000000, 0.072581, 0.157258, 0.491935, 0.758065, 1.000000}, {0.000000, 0.040000, 0.138710, 0.491935, 0.758065, 1.000000}, 0}, 0},
   // pascals canon eos curve (well tested):
   {canon_eos, "Canon", "", 0, 51200, {{0.000000, 0.028226, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
@@ -96,7 +94,9 @@ static const basecurve_preset_t basecurve_presets[] =
   // pascals minolta curve
   {konica_minolta, "MINOLTA", "", 0, 51200, {{0.000000, 0.020161, 0.112903, 0.500000, 0.899194, 1.000000}, {0.000000, 0.010322, 0.167742, 0.711291, 0.956855, 1.000000}, 0}, 1},
   // pascals samsung curve (needs testing):
-  {samsung, "SAMSUNG", "", 0, 51200, {{0.000000, 0.044355, 0.149194, 0.487903, 0.891129, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
+  {samsung, "SAMSUNG", "", 0, 51200, {{0.000000, 0.040323, 0.133065, 0.447581, 0.842742, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
+  // pascals fujifilm curve
+  {fujifilm, "FUJIFILM", "", 0, 51200, {{0.000000, 0.028226, 0.104839, 0.387097, 0.754032, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
   // Fotogenetic - Point and shoot v4.1
   {fotogenetic_v41, "", "", 0, 51200, {{0.000000, 0.087879, 0.175758, 0.353535, 0.612658, 1.000000}, {0.000000, 0.125252, 0.250505, 0.501010, 0.749495, 0.876573}, 0}, 0},
   // Fotogenetic - EV3 v4.2
@@ -122,7 +122,7 @@ typedef struct dt_iop_basecurve_data_t
 {
   dt_draw_curve_t *curve;      // curve for gegl nodes and pixel processing
   float table[0x10000];        // precomputed look-up table for tone curve
-  float unbounded_coeffs[2];   // approximation for extrapolation
+  float unbounded_coeffs[3];   // approximation for extrapolation
 }
 dt_iop_basecurve_data_t;
 
@@ -186,11 +186,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
   dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
   if (dev_m == NULL) goto error;
 
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*2, d->unbounded_coeffs);
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3, d->unbounded_coeffs);
   if (dev_coeffs == NULL) goto error;
   dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -232,6 +232,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       if(inp[i] < 1.0f) outp[i] = d->table[CLAMP((int)(inp[i]*0x10000ul), 0, 0xffff)];
       else              outp[i] = dt_iop_eval_exp(d->unbounded_coeffs, inp[i]);
     }
+
+    outp[3] = inp[3];
   }
 }
 
@@ -297,7 +299,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_basecurve_params_t));
   module->default_params = malloc(sizeof(dt_iop_basecurve_params_t));
   module->default_enabled = 0;
-  module->priority = 229; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 274; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_basecurve_params_t);
   module->gui_data = NULL;
   dt_iop_basecurve_params_t tmp = (dt_iop_basecurve_params_t)
@@ -337,11 +339,24 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 static gboolean
+dt_iop_basecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  c->mouse_x = fabsf(c->mouse_x);
+  c->mouse_y = fabsf(c->mouse_y);
+  gtk_widget_queue_draw(widget);
+  return TRUE;
+}
+
+static gboolean
 dt_iop_basecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-  c->mouse_x = c->mouse_y = -1.0;
+  // sign swapping for fluxbox
+  c->mouse_x = -fabsf(c->mouse_x);
+  c->mouse_y = -fabsf(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -579,9 +594,6 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
     if(c->selected == 4) c->selected_min = 1.0 - 0.7*(1.0 - c->selected_min);
   }
   gtk_widget_queue_draw(widget);
-
-  gint x, y;
-  gdk_window_get_pointer(event->window, &x, &y, NULL);
   return TRUE;
 }
 
@@ -593,7 +605,15 @@ dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer
   {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-    c->dragging = 1;
+    if(event->type == GDK_2BUTTON_PRESS)
+    {
+      memcpy(self->params, self->factory_params, self->params_size);
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+    }
+    else
+    {
+      c->dragging = 1;
+    }
     return TRUE;
   }
   return FALSE;
@@ -645,6 +665,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_basecurve_motion_notify), self);
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (dt_iop_basecurve_leave_notify), self);
+  g_signal_connect (G_OBJECT (c->area), "enter-notify-event",
+                    G_CALLBACK (dt_iop_basecurve_enter_notify), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -655,3 +677,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

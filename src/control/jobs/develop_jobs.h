@@ -18,27 +18,16 @@
 #ifndef DT_CONTROL_JOBS_DEVELOP_H
 #define DT_CONTROL_JOBS_DEVELOP_H
 
-#include <inttypes.h>
 #include "control/control.h"
 #include "develop/develop.h"
 
-typedef struct dt_dev_raw_load_t
-{
-  dt_develop_t *dev;
-  dt_image_t *image;
-}
-dt_dev_raw_load_t;
+#include <inttypes.h>
 
 typedef struct dt_dev_process_t
 {
   dt_develop_t *dev;
 }
 dt_dev_process_t;
-
-/** load a raw image */
-int32_t dt_dev_raw_load_job_run(dt_job_t *job);
-void dt_dev_raw_load_job_init(dt_job_t *job, dt_develop_t *dev, dt_image_t *image);
-
 
 /** process preview */
 int32_t dt_dev_process_preview_job_run(dt_job_t *job);
@@ -51,3 +40,6 @@ void dt_dev_process_image_job_init(dt_job_t *job, dt_develop_t *dev);
 void dt_dev_export_init(dt_job_t *job);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

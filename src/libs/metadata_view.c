@@ -30,6 +30,7 @@ DT_MODULE(1)
 enum {
   /* internal */
   md_internal_filmroll=0,
+  md_internal_imgid,
   md_internal_filename,
 
   /* exif */
@@ -61,6 +62,7 @@ static void _lib_metatdata_view_init_labels()
 {
   /* internal */
   _md_labels[md_internal_filmroll] = _("filmroll");
+  _md_labels[md_internal_imgid] = _("image id");
   _md_labels[md_internal_filename] = _("filename");
 
   /* exif */
@@ -98,7 +100,7 @@ const char* name()
 /* show module in left panel in all views */
 uint32_t views()
 {
-  return DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_DARKROOM;
 }
 
 uint32_t container()
@@ -111,11 +113,33 @@ int position()
   return 299;
 }
 
+/* helper which eliminates non-ascii and non-printable characters from a string */
+static void _filter_non_printable(char *string, int length)
+{
+  unsigned char *str = (unsigned char *)string;
+  int n = 0;
+
+  while(*str != '\000' && n < length)
+  {
+    if((*str < 0x20) || (*str >= 0x7f)) *str = '.';
+
+    str++;
+    n++;
+  }
+}
+
 /* helper function for updating a metadata value */
-static void _metadata_update_value(GtkLabel *label, char *value)
+static void _metadata_update_value(GtkLabel *label, const char *value)
 {
     gtk_label_set_text(GTK_LABEL(label), value);
     gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
+    g_object_set(G_OBJECT(label), "tooltip-text", value, (char *)NULL);
+}
+
+static void _metadata_update_value_end(GtkLabel *label, const char *value)
+{
+    gtk_label_set_text(GTK_LABEL(label), value);
+    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
     g_object_set(G_OBJECT(label), "tooltip-text", value, (char *)NULL);
 }
 
@@ -132,10 +156,11 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   {
     const int vl = 512;
     char value[vl];
-    dt_image_t *img = dt_image_cache_get(mouse_over_id, 'r');
-    if(!img || img->film_id == -1)
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
+    if(!img) goto fill_minuses;
+    if(img->film_id == -1)
     {
-      dt_image_cache_release(img, 'r');
+      dt_image_cache_read_release(darktable.image_cache, img);
       goto fill_minuses;
     }
 
@@ -144,12 +169,15 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     dt_image_film_roll(img, value, vl);
     _metadata_update_value(d->metadata[md_internal_filmroll], value);
 
+    snprintf(value,vl,"%d", img->id);
+    _metadata_update_value(d->metadata[md_internal_imgid], value);
+
     _metadata_update_value(d->metadata[md_internal_filename], img->filename);
 
     /* EXIF */
-    _metadata_update_value(d->metadata[md_exif_model], img->exif_model);
-    _metadata_update_value(d->metadata[md_exif_lens], img->exif_lens);
-    _metadata_update_value(d->metadata[md_exif_maker], img->exif_maker);
+    _metadata_update_value_end(d->metadata[md_exif_model], img->exif_model);
+    _metadata_update_value_end(d->metadata[md_exif_lens], img->exif_lens);
+    _metadata_update_value_end(d->metadata[md_exif_maker], img->exif_maker);
 
     snprintf(value, vl, "F/%.1f", img->exif_aperture);
     _metadata_update_value(d->metadata[md_exif_aperture], value);
@@ -178,6 +206,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     GList *res;
     if((res = dt_metadata_get(img->id, "Xmp.dc.title", NULL))!=NULL) {
       snprintf(value, vl, "%s", (char*)res->data);
+      _filter_non_printable(value, vl);
       g_free(res->data);
       g_list_free(res);
     } else
@@ -186,6 +215,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
    
     if((res = dt_metadata_get(img->id, "Xmp.dc.creator", NULL))!=NULL) {
       snprintf(value, vl, "%s", (char*)res->data);
+      _filter_non_printable(value, vl);
       g_free(res->data);
       g_list_free(res);
     } else
@@ -194,6 +224,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
    
     if((res = dt_metadata_get(img->id, "Xmp.dc.rights", NULL))!=NULL) {
       snprintf(value, vl, "%s", (char*)res->data);
+      _filter_non_printable(value, vl);
       g_free(res->data);
       g_list_free(res);
     } else
@@ -202,7 +233,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
    
    
     /* release img */
-    dt_image_cache_release(img, 'r');
+    dt_image_cache_read_release(darktable.image_cache, img);
     
   }
 
@@ -264,3 +295,6 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

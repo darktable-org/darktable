@@ -47,16 +47,15 @@ class Rw2Decoder :
 public:
   Rw2Decoder(TiffIFD *rootIFD, FileMap* file);
   virtual ~Rw2Decoder(void);
-  RawImage decodeRaw();
-  virtual void decodeMetaData(CameraMetaData *meta);
-  virtual void checkSupport(CameraMetaData *meta);
+  RawImage decodeRawInternal();
+  virtual void decodeMetaDataInternal(CameraMetaData *meta);
+  virtual void checkSupportInternal(CameraMetaData *meta);
   TiffIFD *mRootIFD;
 protected:
   virtual void decodeThreaded(RawDecoderThread* t);
 private:
-  string getMode(const string model);
   void DecodeRw2();
-  bool almostEqualRelative(float A, float B, float maxRelativeError);
+  std::string guessMode();
   ByteStream* input_start;
   uint32 load_flags;
 };

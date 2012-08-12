@@ -1,52 +1,61 @@
 cmake_minimum_required(VERSION 2.6)
 
+include(CheckCCompilerFlag)
+
 #
 # Add files for libdarktable
 #
 FILE(GLOB SOURCE_FILES
-  "common/collection.c" 
-  "common/colorlabels.c" 
-  "common/colormatrices.c" 
-  "common/colorspaces.c" 
-  "common/darktable.c" 
+  "bauhaus/bauhaus.c"
+  "common/cache.c"
+  "common/collection.c"
+  "common/colorlabels.c"
+  "common/colorspaces.c"
+  "common/curve_tools.c"
+  "common/darktable.c"
   "common/database.c"
-  "common/exif.cc" 
-  "common/film.c" 
+  "common/exif.cc"
+  "common/film.c"
+  "common/file_location.c"
   "common/fswatch.c"
   "common/grouping.c"
-  "common/history.c" 
-  "common/image.c" 
-  "common/image_cache.c" 
-  "common/image_compression.c" 
-  "common/imageio.c" 
-  "common/imageio_exr.cc" 
-  "common/imageio_jpeg.c" 
-  "common/imageio_module.c" 
-  "common/imageio_pfm.c" 
-  "common/imageio_rgbe.c" 
-  "common/imageio_tiff.c" 
-  "common/imageio_rawspeed.cc" 
-  "common/metadata.c" 
-  "common/styles.c" 
-  "common/tags.c" 
-  "common/utility.c" 
-  "common/variables.c" 
-  "common/pwstorage/pwstorage.c" 
-  "common/pwstorage/backend_gconf.c"
+  "common/history.c"
+  "common/image.c"
+  "common/image_cache.c"
+  "common/image_compression.c"
+  "common/imageio.c"
+  "common/imageio_exr.cc"
+  "common/imageio_jpeg.c"
+  "common/imageio_module.c"
+  "common/imageio_pfm.c"
+  "common/imageio_rgbe.c"
+  "common/imageio_tiff.c"
+  "common/imageio_rawspeed.cc"
+  "common/interpolation.c"
+  "common/metadata.c"
+  "common/mipmap_cache.c"
+  "common/styles.c"
+  "common/similarity.c"
+  "common/selection.c"
+  "common/tags.c"
+  "common/utility.c"
+  "common/variables.c"
+  "common/pwstorage/pwstorage.c"
   "common/opencl.c"
   "common/dynload.c"
   "common/dlopencl.c"
   "common/ratings.c"
-  "control/control.c"  
-  "control/jobs/control_jobs.c"  
-  "control/jobs/develop_jobs.c"  
-  "control/jobs/film_jobs.c"  
+  "control/control.c"
+  "control/jobs/control_jobs.c"
+  "control/jobs/develop_jobs.c"
+  "control/jobs/film_jobs.c"
   "control/jobs/image_jobs.c"
   "control/signal.c"
   "develop/develop.c"
   "develop/imageop.c"
   "develop/pixelpipe.c"
   "develop/blend.c"
+  "develop/blend_gui.c"
   "develop/tiling.c"
   "dtgtk/button.c"
   "dtgtk/icon.c"
@@ -58,11 +67,12 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/paint.c"
   "dtgtk/resetlabel.c"
   "gui/accelerators.c"
-  "gui/contrast.c"  
-  "gui/gtk.c"  
-  "gui/preferences.c"  
-  "gui/presets.c"  
-  "gui/styles_dialog.c"  
+  "gui/contrast.c"
+  "gui/guides.c"
+  "gui/gtk.c"
+  "gui/preferences.c"
+  "gui/presets.c"
+  "gui/styles_dialog.c"
   "libs/lib.c"
   "views/view.c"
   )
@@ -107,16 +117,6 @@ list(APPEND LIBS ${LIBXML2_LIBRARIES})
 add_definitions(${LIBXML2_DEFINITIONS})
 
 
-# Check for gconf2 / broken cmake module can't be included in the foreach() below
-if(USE_GCONF_BACKEND)
-  find_package(GConf2)
-  include_directories(${GConf2_INCLUDE_DIRS})
-  list(APPEND LIBS ${GConf2_LIBRARIES})
-  add_definitions(${GConf2_DEFINITIONS})
-endif(USE_GCONF_BACKEND)
-
-
-
 if(USE_CAMERA_SUPPORT)
   find_package(Gphoto2)
   include_directories(${Gphoto2_INCLUDE_DIRS})
@@ -124,8 +124,16 @@ if(USE_CAMERA_SUPPORT)
   add_definitions(${Gphoto2_DEFINITIONS})
 endif(USE_CAMERA_SUPPORT)
 
+# INotify isn't used anymore as it seems
+find_package(INotify)
+if(INOTIFY_FOUND)
+  include_directories(${INOTIFY_INCLUDE_DIRS})
+  list(APPEND LIBS ${INOTIFY_LIBRARIES})
+  add_definitions(${INOTIFY_DEFINITIONS})
+endif(INOTIFY_FOUND)
+
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2)
+foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2)
   find_package(${lib} REQUIRED)
   include_directories(${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -179,6 +187,18 @@ endif(USE_GNOME_KEYRING)
 # have a small test program, to be run as root on some systems to enable the driver to run cl stuff
 add_subdirectory(cltest)
 
+# have a command line interface
+add_subdirectory(cli)
+
+if(USE_UNITY)
+  find_package(Unity)
+  if(UNITY_FOUND)
+    add_definitions(-DHAVE_UNITY)
+    include_directories(${UNITY_INCLUDE_DIRS})
+    list(APPEND LIBS ${UNITY_LIBRARIES})
+  endif(UNITY_FOUND)
+endif(USE_UNITY)
+
 # build opengl slideshow viewer?
 if(BUILD_SLIDESHOW) 
   find_package(SDL)
@@ -208,10 +228,6 @@ if(LENSFUN_FOUND)
   add_definitions("-DHAVE_LENSFUN")
 endif(LENSFUN_FOUND)
 
-if(GCONF2_FOUND)
-  add_definitions("-DHAVE_GCONF")
-endif(GCONF2_FOUND)
-
 if(OPENEXR_FOUND)
   add_definitions("-DHAVE_OPENEXR")
 endif(OPENEXR_FOUND)
@@ -234,28 +250,46 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -fno-strict-aliasing")
 # c++ code doesn't like -Werror (libraw)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fno-strict-aliasing")
 
-if(NOT APPLE)
+if(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
   # apple build fails on deprecated warnings..
+  # and too many warnings reported by Clang for now
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
-endif(NOT APPLE)
+endif(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
 
 if(NOT WIN32)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 endif(NOT WIN32)
 
 if(NOT BINARY_PACKAGE_BUILD)
-	set(MARCH "-march=native")	
+	MESSAGE("-- Checking for -march=native support")
+	CHECK_C_COMPILER_FLAG("-march=native" MARCHNATIVE)
+	if (MARCHNATIVE)
+		set(MARCH "-march=native")	
+	else()
+		MESSAGE("-- Checking for -mtune=native support")
+		CHECK_C_COMPILER_FLAG("-mtune=native" MTUNENATIVE)
+		if (MTUNENATIVE)
+			set(MARCH "-mtune=native")
+		else()
+			set(MARCH "-mtune=generic")
+		endif()
+	endif()
 else()
-	set(MARCH "-mtune=generic")
+ 	set(MARCH "-mtune=generic")
 endif()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -mfpmath=sse ${MARCH} -g")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -g")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations ${MARCH}")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g -D_DEBUG")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -mfpmath=sse ${MARCH} -g")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -g")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations ${MARCH}")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -D_DEBUG")
-  
+if(CMAKE_COMPILER_IS_GNUCC)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
+endif()
+if(CMAKE_COMPILER_IS_GNUCXX)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
+endif()
 
 #
 # Generate config.h
@@ -267,21 +301,33 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 #
 # Setup generation of preference dialog files..
 #
-add_custom_command(
-   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
-   COMMAND ${CMAKE_CURRENT_BINARY_DIR}/../create_preferences.sh ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktable.schemas > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
-)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h PROPERTIES GENERATED 1)
+if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+	add_custom_command(
+		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+		COMMAND ${Xsltproc_BIN} --stringparam HAVE_OPENCL ${HAVE_OPENCL} ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+	)
+else(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+	if(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+		add_custom_command(
+			DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml
+			OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+			COMMAND ${Saxon_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl HAVE_OPENCL=${HAVE_OPENCL} > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+		)
+	else(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+		message(FATAL_ERROR "Don't know how to generate preferences")
+	endif(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+endif(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
 
 #
 # Generate mapping of key strings to internal metadata id
 #
 add_custom_command(
-   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c
-   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt ${CMAKE_CURRENT_BINARY_DIR}
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt ${CMAKE_CURRENT_BINARY_DIR}
 )
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h PROPERTIES GENERATED 1)
+
 # this is a dummy library whose sole purpose is to serve as a dependency for subdirs, such as imageio/storage/gallery.
 # cmake can't depend on custom targets in other directories than the current one.
 add_library(metadata_dummy ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h)
@@ -306,7 +352,13 @@ set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE C)
 add_dependencies(lib_darktable libraw_r)
 add_library(libraw_static STATIC IMPORTED)
 set_target_properties(libraw_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LibRaw/liblibraw_r.a)
-target_link_libraries(lib_darktable ${LIBS} libraw_static)
+if(APPLE)
+  set(LIBRAW_STATIC_LIBS libraw_static stdc++)
+else(APPLE)
+  set(LIBRAW_STATIC_LIBS libraw_static)
+endif(APPLE)
+
+target_link_libraries(lib_darktable ${LIBS} ${LIBRAW_STATIC_LIBS})
 
 # same for librawspeed (can switch it off with -DDONT_USE_RAWSPEED, for macs):
 if(NOT DONT_USE_RAWSPEED)
@@ -318,6 +370,26 @@ if(NOT DONT_USE_RAWSPEED)
   # compile rawspeed
   add_subdirectory(external/rawspeed)
 endif(NOT DONT_USE_RAWSPEED)
+
+# libsquish for compressed thumbnails:
+add_dependencies(lib_darktable squish)
+add_library(squish_static STATIC IMPORTED)
+set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/squish/libsquish.a)
+target_link_libraries(lib_darktable ${LIBS} squish_static)
+add_subdirectory(external/squish)
+
+# libcolord-gtk:
+find_package(ColordGtk)
+if(COLORDGTK_FOUND)
+  message(STATUS "Using colord to fetch color profiles")
+  #  include_directories(${COLORDGTK_INCLUDE_DIRS})
+  #  list(APPEND LIBS ${COLORDGTK_LIBRARIES})
+  #  add_definitions("-DUSE_COLORDGTK")
+#   add_dependencies(lib_darktable colord-gtk)
+else(COLORDGTK_FOUND)
+  message(STATUS "Either colord is missing or too old (<0.1.20)")
+endif(COLORDGTK_FOUND)
+
 
 install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 list(APPEND LIBS lib_darktable)
@@ -348,6 +420,9 @@ set_target_properties(darktable PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set_target_properties(darktable PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set_target_properties(darktable PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
 set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
+if(APPLE AND USE_OPENCL)
+set_target_properties(darktable PROPERTIES LINK_FLAGS -Wl,-syslibroot,/Developer-old/SDKs/MacOSX10.6.sdk)
+endif(APPLE AND USE_OPENCL)
 target_link_libraries(darktable ${LIBS})
 install(TARGETS darktable DESTINATION bin)
 

@@ -1,6 +1,8 @@
 /*
     This file is part of darktable,
     copyright (c) 2011 bruce guenter
+    copyright (c) 2012 henrik andersson
+    
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,10 +20,10 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "control/control.h"
 #include "develop/imageop.h"
-#include "dtgtk/slider.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
@@ -38,7 +40,7 @@ dt_iop_rawdenoise_params_t;
 
 typedef struct dt_iop_rawdenoise_gui_data_t
 {
-  GtkDarktableSlider *threshold;
+  GtkWidget *threshold;
 }
 dt_iop_rawdenoise_gui_data_t;
 
@@ -265,7 +267,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 {
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)piece->data;
   if (d->threshold > 0.0)
-    wavelet_denoise(ivoid, ovoid, roi_in, d->threshold, dt_image_flipped_filter(self->dev->image));
+    wavelet_denoise(ivoid, ovoid, roi_in, d->threshold, dt_image_flipped_filter(&piece->pipe->image));
   else
     memcpy(ovoid, ivoid, roi_out->width * roi_out->height * sizeof(float));
 }
@@ -281,8 +283,9 @@ void reload_defaults(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
 
   // can't be switched on for non-raw images:
-  if(module->dev->image->flags & DT_IMAGE_RAW) module->hide_enable_button = 0;
-  else                                         module->hide_enable_button = 1;
+  if(dt_image_is_raw(&module->dev->image_storage)) module->hide_enable_button = 0;
+  else module->hide_enable_button = 1;
+  module->default_enabled = 0;
 }
 
 void init(dt_iop_module_t *module)
@@ -293,7 +296,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
 
   // raw denoise must come just before demosaicing.
-  module->priority = 83; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 78; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_rawdenoise_params_t);
   module->gui_data = NULL;
 }
@@ -312,7 +315,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 {
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)params;
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)piece->data;
-  if (!self->dev->image->filters || pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if (!(pipe->image.flags & DT_IMAGE_RAW) || pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
     piece->enabled = 0;
   d->threshold = p->threshold;
 }
@@ -331,21 +334,18 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
-  if (self->dev->image->filters)
-  {
-    dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-    dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)module->params;
-    dtgtk_slider_set_value(g->threshold, p->threshold);
-  }
+  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)module->params;
+  dt_bauhaus_slider_set(g->threshold, p->threshold);
 }
 
 static void
-threshold_callback (GtkDarktableSlider *slider, gpointer user_data)
+threshold_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
-  p->threshold = dtgtk_slider_get_value(slider);
+  p->threshold = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -356,10 +356,11 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
-
-  g->threshold = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 0.1, 0.001, p->threshold, 3));
+  
+  /* threshold */
+  g->threshold = dt_bauhaus_slider_new_with_range(self, 0.0, 0.1, 0.001, p->threshold, 3);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->threshold), TRUE, TRUE, 0);
-  dtgtk_slider_set_label(g->threshold, _("noise threshold"));
+  dt_bauhaus_widget_set_label(g->threshold, _("noise threshold"));
   g_signal_connect(G_OBJECT(g->threshold), "value-changed", G_CALLBACK(threshold_callback), self);
 }
 
@@ -368,3 +369,6 @@ void gui_cleanup(dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

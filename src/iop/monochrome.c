@@ -22,14 +22,13 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
 #include "common/colorspaces.h"
+#include "common/opencl.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "dtgtk/slider.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include "develop/imageop.h"
 
 DT_MODULE(1)
@@ -59,6 +58,12 @@ typedef struct dt_iop_monochrome_data_t
 }
 dt_iop_monochrome_data_t;
 
+typedef struct dt_iop_monochrome_global_data_t
+{
+  int kernel_monochrome;
+}
+dt_iop_monochrome_global_data_t;
+
 
 const char *name()
 {
@@ -73,15 +78,36 @@ groups ()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
+void init_presets (dt_iop_module_so_t *self)
+{
+  dt_iop_monochrome_params_t p;
 
+  p.size = 2.3f;
+
+  p.a = 32.0f;
+  p.b = 64.0f;
+  dt_gui_presets_add_generic(_("red filter"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // p.a = 64.0f;
+  // p.b = -32.0f;
+  // dt_gui_presets_add_generic(_("purple filter"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // p.a = -32.0f;
+  // p.b = -64.0f;
+  // dt_gui_presets_add_generic(_("blue filter"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // p.a = -64.0f;
+  // p.b = 32.0f;
+  // dt_gui_presets_add_generic(_("green filter"), self->op, self->version(), &p, sizeof(p), 1);
+}
 
 static float
 color_filter(const float L, const float ai, const float bi, const float a, const float b, const float size)
 {
-  return L * dt_fast_expf(-((ai-a)*(ai-a) + (bi-b)*(bi-b))/(2.0*size));
+  return L * dt_fast_expf(-CLAMPS(((ai-a)*(ai-a) + (bi-b)*(bi-b))/(2.0*size), 0.0f, 1.0f));
 }
 
 
@@ -100,39 +126,81 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       out[0] = color_filter(in[0], in[1], in[2], d->a, d->b, d->size);
       out[1] = out[2] = 0.0f;
+      out[3] = in[3];
     }
   }
 }
 
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
+  dt_iop_monochrome_global_data_t *gd = (dt_iop_monochrome_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 0, sizeof(cl_mem), &dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 1, sizeof(cl_mem), &dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 2, sizeof(int), &width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 3, sizeof(int), &height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 4, sizeof(float), &d->a);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 5, sizeof(float), &d->b);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 6, sizeof(float), &d->size);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_monochrome, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_monochrome] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 2; // basic.cl from programs.conf
+  dt_iop_monochrome_global_data_t *gd = (dt_iop_monochrome_global_data_t *)malloc(sizeof(dt_iop_monochrome_global_data_t));
+  module->data = gd;
+  gd->kernel_monochrome = dt_opencl_create_kernel(program, "monochrome");
+}
+
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_monochrome_global_data_t *gd = (dt_iop_monochrome_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_monochrome);
+  free(module->data);
+  module->data = NULL;
+}
+
+
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)p1;
-#ifdef HAVE_GEGL
-#error "FIXME: port monochrome to gegl."
-#else
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
   d->a = p->a;
   d->b = p->b;
   const float sigma = 128.0 * p->size;
   d->size = sigma*sigma;
-#endif
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-#else
   piece->data = malloc(sizeof(dt_iop_monochrome_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
-#endif
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-#else
   free(piece->data);
-#endif
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -146,7 +214,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_monochrome_params_t));
   module->default_params = malloc(sizeof(dt_iop_monochrome_params_t));
   module->default_enabled = 0;
-  module->priority = 541; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 568; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_monochrome_params_t);
   module->gui_data = NULL;
   dt_iop_monochrome_params_t tmp = (dt_iop_monochrome_params_t)
@@ -254,6 +322,7 @@ static gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton
     p->a = 128.0f*(mouse_x - width  * 0.5f)/(float)width;
     p->b = 128.0f*(mouse_y - height * 0.5f)/(float)height;
     g->dragging = 1;
+    gtk_widget_queue_draw(self->widget);
     return TRUE;
   }
   return FALSE;
@@ -336,3 +405,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -36,15 +36,17 @@ RawImageData::RawImageData(void):
   blackLevelSeparate[0] = blackLevelSeparate[1] = blackLevelSeparate[2] = blackLevelSeparate[3] = -1;
   pthread_mutex_init(&mymutex, NULL);
   subsampling.x = subsampling.y = 1;
+  isoSpeed = 0;
 }
 
 RawImageData::RawImageData(iPoint2D _dim, uint32 _bpc, uint32 _cpp) :
     dim(_dim),
     blackLevel(-1), whitePoint(65536),
-    dataRefCount(0), data(0), cpp(cpp), bpp(_bpc),
+    dataRefCount(0), data(0), cpp(_cpp), bpp(_bpc),
     uncropped_dim(0, 0) {
   blackLevelSeparate[0] = blackLevelSeparate[1] = blackLevelSeparate[2] = blackLevelSeparate[3] = -1;
   subsampling.x = subsampling.y = 1;
+  isoSpeed = 0;
   createData();
   pthread_mutex_init(&mymutex, NULL);
 }

@@ -19,19 +19,21 @@
 #include "config.h"
 #endif
 
+#include "common/darktable.h"
+#include "common/dtpthread.h"
+#include "common/image.h"
+#include "common/fswatch.h"
+#include "develop/develop.h"
+
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
 #include <glib.h>
 #include <strings.h>
-#ifdef  HAVE_INOTIFY
+#if 0//def  HAVE_INOTIFY
 #include <sys/inotify.h>
 #endif
 
-#include "common/dtpthread.h"
-#include "common/image.h"
-#include "common/fswatch.h"
-#include "develop/develop.h"
 
 typedef struct _watch_t
 {
@@ -42,7 +44,7 @@ typedef struct _watch_t
 } _watch_t;
 
 
-#ifdef  HAVE_INOTIFY
+#if 0// def  HAVE_INOTIFY
 
 typedef struct inotify_event_t
 {
@@ -243,3 +245,6 @@ void dt_fswatch_destroy(const dt_fswatch_t *fswatch) {}
 void dt_fswatch_add(const dt_fswatch_t *fswatch, dt_fswatch_type_t type, void *data) {}
 void dt_fswatch_remove(const dt_fswatch_t * fswatch, dt_fswatch_type_t type, void *data) {}
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

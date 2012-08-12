@@ -69,7 +69,7 @@ typedef struct dt_camera_import_t
 {
   GList *images;
   struct dt_camera_t *camera;
-  guint bgj;
+  const guint *bgj;
   double fraction;
   dt_variables_params_t *vp;
   dt_film_t *film;
@@ -91,3 +91,6 @@ dt_camera_import_backup_t;
 int32_t dt_camera_import_backup_job_run(dt_job_t *job);
 void dt_camera_import_backup_job_init(dt_job_t *job,const char *sourcefile,const char *destinationfile);
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

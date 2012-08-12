@@ -18,13 +18,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
+#include "common/darktable.h"
 #include "common/colorspaces.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -34,6 +28,10 @@
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
+#include <string.h>
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 
@@ -310,7 +308,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_rlce_params_t));
   module->default_params = malloc(sizeof(dt_iop_rlce_params_t));
   module->default_enabled = 0;
-  module->priority = 916; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 921; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_rlce_params_t);
   module->gui_data = NULL;
   dt_iop_rlce_params_t tmp = (dt_iop_rlce_params_t)
@@ -367,3 +365,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

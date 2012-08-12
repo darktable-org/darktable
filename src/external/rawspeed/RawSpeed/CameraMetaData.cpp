@@ -78,7 +78,7 @@ CameraMetaData::CameraMetaData(char *docname) {
 
 CameraMetaData::~CameraMetaData(void) {
   map<string, Camera*>::iterator i = cameras.begin();
-  for (; i != cameras.end(); i++) {
+  for (; i != cameras.end(); ++i) {
     delete((*i).second);
   }
   if (doc)

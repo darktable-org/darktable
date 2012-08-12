@@ -118,7 +118,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_size_request(self->widget, -1, panel_width*.5);
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
-  dt_control_signal_connect(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL, G_CALLBACK(_lib_navigation_control_redraw_callback), self);
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, G_CALLBACK(_lib_navigation_control_redraw_callback), self);
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, G_CALLBACK(_lib_navigation_control_redraw_callback), self);
 }
 
@@ -141,13 +141,11 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
 
   dt_develop_t *dev = darktable.develop;
 
-  /* bail out if dirty */
-  if(dev->preview_dirty) return FALSE;
+  if (dev->preview_dirty) return FALSE;
 
-  /* generate image into cairo surface*/
-  
   /* get the current style */
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
+  if(!style) style = gtk_rc_get_style(widget);
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   
@@ -160,7 +158,7 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
   cairo_translate(cr, inset, inset);
 
   /* draw navigation image if available */
-  if(dev->image && dev->preview_pipe->backbuf && !dev->preview_dirty)
+  if(dev->preview_pipe->backbuf && !dev->preview_dirty)
   {
     dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
@@ -297,3 +295,6 @@ static gboolean _lib_navigation_leave_notify_callback(GtkWidget *widget, GdkEven
 {
   return TRUE;
 }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

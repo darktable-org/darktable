@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2012 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,7 +32,7 @@ const char *dt_lib_collect_string[] =
   N_("tag"),
   N_("date"),
   N_("history"),
-  N_("colorlabel"),
+  N_("color label"),
   N_("title"),
   N_("description"),
   N_("creator"),
@@ -39,8 +40,11 @@ const char *dt_lib_collect_string[] =
   N_("rights"),
   N_("lens"),
   N_("iso"),
-  N_("aperature") 
+  N_("aperture"),
+  N_("filename")
 };
-const int dt_lib_collect_string_cnt = 14;
+const int dt_lib_collect_string_cnt = 15;
 
-
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
