@@ -33,7 +33,8 @@ typedef struct dt_lib_image_t
 {
   GtkWidget
       *rotate_cw_button, *rotate_ccw_button, *remove_button,
-      *delete_button, *create_hdr_button, *duplicate_button, *reset_button;
+      *delete_button, *create_hdr_button, *duplicate_button, *reset_button,
+      *move_button, *copy_button;
 }
 dt_lib_image_t;
 
@@ -65,6 +66,8 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   else if(i == 5) dt_control_flip_images(1);
   else if(i == 6) dt_control_flip_images(2);
   else if(i == 7) dt_control_merge_hdr();
+  else if(i == 8) dt_control_move_images();
+  else if(i == 9) dt_control_copy_images();
   dt_control_queue_redraw_center();
 }
 
@@ -77,8 +80,8 @@ position ()
 void
 gui_init (dt_lib_module_t *self)
 {
-   dt_lib_image_t *d = (dt_lib_image_t *)malloc(sizeof(dt_lib_image_t));
-   self->data = (void *)d;
+  dt_lib_image_t *d = (dt_lib_image_t *)malloc(sizeof(dt_lib_image_t));
+  self->data = (void *)d;
   self->widget = gtk_vbox_new(TRUE, 5);
   GtkBox *hbox;
   GtkWidget *button;
@@ -95,6 +98,22 @@ gui_init (dt_lib_module_t *self)
   g_object_set(G_OBJECT(button), "tooltip-text", _("physically delete from disk"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)1);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+
+  button = gtk_button_new_with_label(_("move"));
+  d->move_button = button;
+  g_object_set(G_OBJECT(button), "tooltip-text", _("move to other folder"), (char *)NULL);
+  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)8);
+
+  button = gtk_button_new_with_label(_("copy"));
+  d->copy_button = button;
+  g_object_set(G_OBJECT(button), "tooltip-text", _("copy to other folder"), (char *)NULL);
+  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)9);
+
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));

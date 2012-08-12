@@ -180,7 +180,7 @@ dt_bauhaus_t;
 static inline int
 dt_bauhaus_get_widget_space()
 {
-  return darktable.bauhaus->scale * darktable.bauhaus->widget_space;
+  return darktable.bauhaus->widget_space;
 }
 #define DT_BAUHAUS_SPACE dt_bauhaus_get_widget_space()
 

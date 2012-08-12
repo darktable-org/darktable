@@ -1,6 +1,5 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 henrik andersson
     copyright (c) 2012 johannes hanika
 
     darktable is free software: you can redistribute it and/or modify
@@ -16,22 +15,58 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_IMAGEIO_EXR_H
-#define DT_IMAGEIO_EXR_H
+#ifndef DT_IMAGEIO_EXR_HH
+#define DT_IMAGEIO_EXR_HH
 
 #include "common/image.h"
 #include "common/mipmap_cache.h"
 
-#ifdef __cplusplus
-extern "C"
+#include <OpenEXR/ImfFrameBuffer.h>
+#include <OpenEXR/ImfTestFile.h>
+#include <OpenEXR/ImfInputFile.h>
+#include <OpenEXR/ImfTiledInputFile.h>
+#include <OpenEXR/ImfChannelList.h>
+#include <OpenEXR/ImfStandardAttributes.h>
+
+// this stores our exif data as a blob.
+namespace Imf
 {
-#endif
+class Blob
+{
+public:
+  Blob()
+  : size(0)
+  , data(0)
+  {}
 
-  dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
+  ~Blob()
+  {
+    if(data) free(data);
+  }
+  uint32_t size;
+  uint8_t *data;
+};
 
-#ifdef __cplusplus
+
+typedef Imf::TypedAttribute<Imf::Blob> BlobAttribute;
+template <> const char *BlobAttribute::staticTypeName()
+{
+  return "blob";
 }
-#endif
+template <> void BlobAttribute::writeValueTo (OStream &os, int version) const
+{
+  Xdr::write <StreamIO> (os, _value.size);
+  Xdr::write <StreamIO> (os, (char *)_value.data,_value.size);
+}
+
+template <> void BlobAttribute::readValueFrom (IStream &is, int size, int version)
+{
+  Xdr::read <StreamIO> (is, _value.size);
+  _value.data = (uint8_t *)malloc(_value.size);
+  Xdr::read <StreamIO> (is, (char *)_value.data, _value.size);
+}
+}
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

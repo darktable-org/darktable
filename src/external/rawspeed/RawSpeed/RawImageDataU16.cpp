@@ -137,12 +137,14 @@ void RawImageDataU16::scaleBlackWhite() {
   }
 
   /* Skip, if not needed */
-  if (blackAreas.size() == 0 && blackLevel == 0 && whitePoint == 65535 && blackLevelSeparate[0] < 0)
+  if ((blackAreas.size() == 0 && blackLevel == 0 && whitePoint == 65535 && blackLevelSeparate[0] < 0) || dim.area() <= 0)
     return;
 
   /* If filter has not set separate blacklevel, compute or fetch it */
   if (blackLevelSeparate[0] < 0)
     calculateBlackAreas();
+
+  //printf("ISO:%d, black:%d, white: %d\n", isoSpeed, blackLevelSeparate[0], whitePoint);
 
   int threads = getThreadCount(); 
   if (threads <= 1)

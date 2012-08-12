@@ -92,10 +92,6 @@ public:
   /* DNGs are always attempted to be decoded, so this variable has no effect on DNGs */
   bool failOnUnknown;
 
-  /* Vector containing silent errors that occurred doing decoding, that may have lead to */
-  /* an incomplete image. */
-  vector<const char*> errors;
-
 
 protected:
   /* Attempt to decode the image */

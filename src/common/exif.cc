@@ -33,7 +33,6 @@ extern "C"
 #include "common/debug.h"
 #include "control/conf.h"
 }
-// #include <libexif/exif-data.h>
 #include <exiv2/easyaccess.hpp>
 #include <exiv2/xmp.hpp>
 #include <exiv2/error.hpp>
@@ -89,22 +88,10 @@ static void dt_remove_known_keys(Exiv2::XmpData &xmp)
   }
 }
 
-int dt_exif_read(dt_image_t *img, const char* path)
+int dt_exif_read_data(dt_image_t *img, Exiv2::ExifData &exifData)
 {
   try
   {
-    Exiv2::Image::AutoPtr image;
-    image = Exiv2::ImageFactory::open(path);
-    assert(image.get() != 0);
-    image->readMetadata();
-    Exiv2::ExifData &exifData = image->exifData();
-    if (exifData.empty())
-    {
-      std::string error(path);
-      error += ": no exif data found in the file";
-      throw Exiv2::Error(1, error);
-    }
-
     /* List of tag names taken from exiv2's printSummary() in actions.cpp */
     Exiv2::ExifData::const_iterator pos;
     /* Read shutter time */
@@ -196,24 +183,6 @@ int dt_exif_read(dt_image_t *img, const char* path)
     }
 #endif
 
-    // Also read IPTC metadata. I'm not sure if dt_exif_read() is the right place for it ...
-    // FIXME: We should pick a few more from http://www.exiv2.org/iptc.html
-    Exiv2::IptcData &iptcData = image->iptcData();
-    Exiv2::IptcData::iterator iptcPos;
-
-    if( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Keywords")))
-        != iptcData.end() )
-    {
-      while(iptcPos != iptcData.end())
-      {
-        std::string str = iptcPos->print(&exifData);
-        guint tagid = 0;
-        dt_tag_new(str.c_str(),&tagid);
-        dt_tag_attach(tagid, img->id);
-        ++iptcPos;
-      }
-    }
-
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Make")))
          != exifData.end() )
     {
@@ -249,12 +218,6 @@ int dt_exif_read(dt_image_t *img, const char* path)
          != exifData.end() )
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
-    }
-    else if ( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Writer")))
-              != iptcData.end() )
-    {
-      std::string str = iptcPos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
     }
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Canon.OwnerName")))
@@ -325,70 +288,84 @@ int dt_exif_read(dt_image_t *img, const char* path)
   }
 }
 
-#if 0
-void *dt_exif_data_new(uint8_t *data,uint32_t size)
+int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
 {
-  Exiv2::ExifData *exifData= new Exiv2::ExifData ;
-  Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open( (Exiv2::byte *) data, size );
-  image->readMetadata();
-  //_mimeType = image->mimeType();
-  (*exifData) = image->exifData();
-
-  return exifData;
-}
-
-const char *dt_exif_data_get_value(void *exif_data, const char *key,char *value,uint32_t vsize)
-{
-  Exiv2::ExifData *exifData=(Exiv2::ExifData *)exif_data;
-  Exiv2::ExifData::iterator pos;
-  if( (pos=exifData->findKey(Exiv2::ExifKey(key))) != exifData->end() )
+  try
   {
-    std::stringstream vv;
-    vv << (*exifData)[key];
-    sprintf(value,"%s",vv.str().c_str());
-    return value;
+    Exiv2::ExifData exifData;
+    Exiv2::ExifParser::decode(exifData, blob, size);
+    return dt_exif_read_data(img, exifData);
   }
-  return NULL;
-}
-#endif
-
-#if 0
-#include <stdio.h>
-void *dt_exif_data_new(uint8_t *data,uint32_t size)
-{
-  // use libexif to parse the binary exif ifd into a exiv2 metadata
-  Exiv2::ExifData *exifData=new Exiv2::ExifData;
-  ::ExifData *ed;
-
-  if( (ed = exif_data_new_from_data((unsigned char *)data, size)) != NULL)
+  catch (Exiv2::AnyError& e)
   {
-    char value[1024]= {0};
-    int ifd_index=EXIF_IFD_EXIF;
-    for(uint32_t i = 0; i < ed->ifd[ifd_index]->count; i++)
+    std::string s(e.what());
+    std::cerr << "[exiv2] " << s << std::endl;
+    return 1;
+  }
+}
+
+int dt_exif_read(dt_image_t *img, const char* path)
+{
+  try
+  {
+    Exiv2::Image::AutoPtr image;
+    image = Exiv2::ImageFactory::open(path);
+    assert(image.get() != 0);
+    image->readMetadata();
+    Exiv2::ExifData &exifData = image->exifData();
+
+    // Also read IPTC metadata. I'm not sure if dt_exif_read() is the right place for it ...
+    // FIXME: We should pick a few more from http://www.exiv2.org/iptc.html
+    Exiv2::IptcData &iptcData = image->iptcData();
+    Exiv2::IptcData::iterator iptcPos;
+
+    if( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Keywords")))
+        != iptcData.end() )
     {
-      char key[1024]="Exif.Photo.";
-      exif_entry_get_value(ed->ifd[ifd_index]->entries[i],value,1024);
-      g_strlcat(key,exif_tag_get_name(ed->ifd[ifd_index]->entries[i]->tag), 1024);
-      fprintf(stderr,"Adding key '%s' value '%s'\n",key,value);
-      (*exifData)[key] = value;
+      while(iptcPos != iptcData.end())
+      {
+        std::string str = iptcPos->print(&exifData);
+        guint tagid = 0;
+        dt_tag_new(str.c_str(),&tagid);
+        dt_tag_attach(tagid, img->id);
+        ++iptcPos;
+      }
     }
+
+    if ( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Writer")))
+              != iptcData.end() )
+    {
+      std::string str = iptcPos->print(&exifData);
+      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
+    }
+
+    Exiv2::XmpData &xmpData = image->xmpData();
+    Exiv2::XmpData::iterator xmpPos;
+
+    if ( (xmpPos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating")))
+          != xmpData.end() )
+    {
+      int stars = xmpPos->toLong();
+      if ( stars == 0 )
+      {
+        stars = dt_conf_get_int("ui_last/import_initial_rating");
+      }
+      else 
+      {
+        stars = (stars == -1) ? 6 : stars;
+      }
+      img->flags = (img->flags & ~0x7) | (0x7 & stars);
+    }
+
+    return dt_exif_read_data(img, exifData);
   }
-
-  return exifData;
-}
-
-const char *dt_exif_data_get_value(void *exif_data, const char *key,char *value,uint32_t vsize)
-{
-  Exiv2::ExifData *exifData=(Exiv2::ExifData *)exif_data;
-  Exiv2::ExifData::iterator pos;
-  if( (pos=exifData->findKey(Exiv2::ExifKey(key))) != exifData->end() )
+  catch (Exiv2::AnyError& e)
   {
-    dt_strlcpy_to_utf8(value, vsize, pos,*exifData);
+    std::string s(e.what());
+    std::cerr << "[exiv2] " << path << ": " << s << std::endl;
+    return 1;
   }
-  return NULL;
 }
-#endif
-
 
 int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path)
 {
