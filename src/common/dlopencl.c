@@ -129,6 +129,8 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
     success = success && dt_gmodule_symbol(module, "clGetKernelWorkGroupInfo", (void (**)(void))&d->symbols->dt_clGetKernelWorkGroupInfo);
     success = success && dt_gmodule_symbol(module, "clEnqueueReadBuffer", (void (**)(void))&d->symbols->dt_clEnqueueReadBuffer);
     success = success && dt_gmodule_symbol(module, "clEnqueueWriteBuffer", (void (**)(void))&d->symbols->dt_clEnqueueWriteBuffer);
+    success = success && dt_gmodule_symbol(module, "clGetProgramInfo", (void (**)(void))&d->symbols->dt_clGetProgramInfo);
+    success = success && dt_gmodule_symbol(module, "clCreateProgramWithBinary", (void (**)(void))&d->symbols->dt_clCreateProgramWithBinary);
 
     if (!success) dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not load all required symbols from library\n");
     d->have_opencl = success;
