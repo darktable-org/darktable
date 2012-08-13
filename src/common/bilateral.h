@@ -21,7 +21,7 @@ typedef struct dt_bilateral_t
   int size_x, size_y, size_z;
   int width, height;
   float sigma_s, sigma_r;
-  float *buf, *scratch;
+  float *buf;
 }
 dt_bilateral_t;
 
@@ -39,22 +39,6 @@ image_to_grid(
   *y = CLAMPS(j/b->sigma_s, 0, b->size_y-1);
   *z = CLAMPS(L/b->sigma_r, 0, b->size_z-1);
 }
-
-static void
-blur_line(
-    float    *buf,
-    float    *scratch,
-    const int offset1,
-    const int offset2,
-    const int offset3,
-    const int size1,
-    const int size2,
-    const int size3,
-    const float wm2,
-    const float wm1,
-    const float w0,
-    const float w1,
-    const float w2);
 
 dt_bilateral_t *
 dt_bilateral_init(
@@ -75,10 +59,8 @@ dt_bilateral_init(
   b->sigma_s = MAX(height/(b->size_y-1.0f), width/(b->size_x-1.0f));
   b->sigma_r = 120.0f/(b->size_z-1.0f);
   b->buf = dt_alloc_align(16, b->size_x*b->size_y*b->size_z*sizeof(float));
-  b->scratch = dt_alloc_align(16, MAX(MAX(b->size_x, b->size_y), b->size_z)*dt_get_num_threads()*sizeof(float));
 
   memset(b->buf, 0, b->size_x*b->size_y*b->size_z*sizeof(float));
-  memset(b->scratch, 0, MAX(MAX(b->size_x, b->size_y), b->size_z)*dt_get_num_threads()*sizeof(float));
   // fprintf(stderr, "[bilateral] created grid [%d %d %d]"
       // " with sigma (%f %f) (%f %f)\n", b->size_x, b->size_y, b->size_z, b->sigma_s, sigma_s, b->sigma_r, sigma_r);
   return b;
@@ -132,66 +114,92 @@ dt_bilateral_splat(
 }
 
 static void
-blur_line(
+blur_line_z(
     float    *buf,
-    float    *scratch,
     const int offset1,
     const int offset2,
     const int offset3,
     const int size1,
     const int size2,
-    const int size3,
-    const float wm2,
-    const float wm1,
-    const float w0,
-    const float w1,
-    const float w2)
+    const int size3)
 {
+  const float w1 = 4.f/16.f;
+  const float w2 = 2.f/16.f;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf, scratch)
+#pragma omp parallel for default(none) shared(buf)
 #endif
   for(int k=0;k<size1;k++)
   {
     int index = k*offset1;
     for(int j=0;j<size2;j++)
     {
-      // need to cache our neighbours because we want to do
-      // the convolution in place:
-      float *cache = scratch + dt_get_thread_num() * size3;
-      for(int i=0;i<size3;i++)
-      {
-        cache[i] = buf[index];
-        index += offset3;
-      }
-      index -= offset3*size3;
-      buf[index]  = w0 * cache[0];
-      buf[index] += w1 * cache[1];
-      buf[index] += w2 * cache[2];
+      float tmp1 = buf[index];
+      buf[index] = w1*buf[index + offset3] + w2*buf[index + 2*offset3];
       index += offset3;
-      buf[index]  = wm1* cache[0];
-      buf[index] += w0 * cache[1];
-      buf[index] += w1 * cache[2];
-      buf[index] += w2 * cache[3];
+      float tmp2 = buf[index];
+      buf[index] = w1*(buf[index + offset3] - tmp1) + w2*buf[index + 2*offset3];
       index += offset3;
       for(int i=2;i<size3-2;i++)
       {
-        float sum;
-        sum  = wm2* cache[i-2];
-        sum += wm1* cache[i-1];
-        sum += w0 * cache[i];
-        sum += w1 * cache[i+1];
-        sum += w2 * cache[i+2];
-        buf[index] = sum;
+        const float tmp3 = buf[index];
+        buf[index] =
+          + w1*(buf[index + offset3]   - tmp2)
+          + w2*(buf[index + 2*offset3] - tmp1);
         index += offset3;
+        tmp1 = tmp2;
+        tmp2 = tmp3;
       }
-      buf[index]  = wm2* cache[size3-4];
-      buf[index] += wm1* cache[size3-3];
-      buf[index] += w0 * cache[size3-2];
-      buf[index] += w1 * cache[size3-1];
+      const float tmp3 = buf[index];
+      buf[index] = w1*(buf[index + offset3] - tmp2) - w2*tmp1;
       index += offset3;
-      buf[index]  = wm2* cache[size3-3];
-      buf[index] += wm1* cache[size3-2];
-      buf[index] += w0 * cache[size3-1];
+      buf[index] = - w1*tmp3 - w2*tmp2;
+      index += offset3;
+      index += offset2 - offset3*size3;
+    }
+  }
+}
+
+static void
+blur_line(
+    float    *buf,
+    const int offset1,
+    const int offset2,
+    const int offset3,
+    const int size1,
+    const int size2,
+    const int size3)
+{
+  const float w0 = 6.f/16.f;
+  const float w1 = 4.f/16.f;
+  const float w2 = 1.f/16.f;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(buf)
+#endif
+  for(int k=0;k<size1;k++)
+  {
+    int index = k*offset1;
+    for(int j=0;j<size2;j++)
+    {
+      float tmp1 = buf[index];
+      buf[index] = buf[index]*w0 + w1*buf[index + offset3] + w2*buf[index + 2*offset3];
+      index += offset3;
+      float tmp2 = buf[index];
+      buf[index] = buf[index]*w0 + w1*(buf[index + offset3] + tmp1) + w2*buf[index + 2*offset3];
+      index += offset3;
+      for(int i=2;i<size3-2;i++)
+      {
+        const float tmp3 = buf[index];
+        buf[index] = buf[index]*w0
+          + w1*(buf[index + offset3]   + tmp2)
+          + w2*(buf[index + 2*offset3] + tmp1);
+        index += offset3;
+        tmp1 = tmp2;
+        tmp2 = tmp3;
+      }
+      const float tmp3 = buf[index];
+      buf[index] = buf[index]*w0 + w1*(buf[index + offset3] + tmp2) + w2*tmp1;
+      index += offset3;
+      buf[index] = buf[index]*w0 + w1*tmp3 + w2*tmp2;
       index += offset3;
       index += offset2 - offset3*size3;
     }
@@ -204,17 +212,14 @@ dt_bilateral_blur(
     dt_bilateral_t *b)
 {
   // gaussian up to 3 sigma
-  blur_line(b->buf, b->scratch, b->size_x*b->size_y, b->size_x, 1,
-      b->size_z, b->size_y, b->size_x,
-      1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f);
+  blur_line(b->buf, b->size_x*b->size_y, b->size_x, 1,
+      b->size_z, b->size_y, b->size_x);
   // gaussian up to 3 sigma
-  blur_line(b->buf, b->scratch, b->size_x*b->size_y, 1, b->size_x,
-      b->size_z, b->size_x, b->size_y,
-      1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f);
+  blur_line(b->buf, b->size_x*b->size_y, 1, b->size_x,
+      b->size_z, b->size_x, b->size_y);
   // -2 derivative of the gaussian up to 3 sigma: x*exp(-x*x)
-  blur_line(b->buf, b->scratch, 1, b->size_x, b->size_x*b->size_y,
-      b->size_x, b->size_y, b->size_z,
-      -2.0f*1.0f/16.0f, -1.0f*4.0f/16.0f, 0.0f, 1.0f*4.0f/16.0f, 2.0f*1.0f/16.0f);
+  blur_line_z(b->buf, 1, b->size_x, b->size_x*b->size_y,
+      b->size_x, b->size_y, b->size_z);
 }
 
 
@@ -259,7 +264,7 @@ dt_bilateral_slice_with_threshold(
         b->buf[gi+ox+oz]    * (       xf) * (1.0f - yf) * (       zf) +
         b->buf[gi+oy+oz]    * (1.0f - xf) * (       yf) * (       zf) +
         b->buf[gi+ox+oy+oz] * (       xf) * (       yf) * (       zf);
-      out[index] = L + norm * copysignf(MAX(fabsf(Ldiff) - threshold, 0.0), Ldiff);
+      out[index] = MAX(0.0f, L + norm * copysignf(MAX(fabsf(Ldiff) - threshold, 0.0), Ldiff));
       // and copy color and mask
       out[index+1] = in[index+1];
       out[index+2] = in[index+2];
@@ -334,7 +339,6 @@ dt_bilateral_free(
     dt_bilateral_t *b)
 {
   free(b->buf);
-  free(b->scratch);
   free(b);
 }
 
