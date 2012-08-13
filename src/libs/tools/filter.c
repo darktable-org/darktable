@@ -106,6 +106,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "★ ★ ★ ★ +");
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "★ ★ ★ ★ ★ ");
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rejected only"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("unrejected only"));
+
   /* select the last selected value */
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget),
                            dt_collection_get_rating(darktable.collection));
@@ -176,11 +178,16 @@ static void _lib_filter_combobox_changed (GtkComboBox *widget, gpointer user_dat
     dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) & ~(COLLECTION_FILTER_ATLEAST_RATING|COLLECTION_FILTER_EQUAL_RATING));
   else if (i == 1 || i == 7)
     dt_collection_set_filter_flags (darktable.collection, (dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_EQUAL_RATING) & ~COLLECTION_FILTER_ATLEAST_RATING);
+  else if (i == 8)
+    dt_collection_set_filter_flags (darktable.collection, (dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_EQUAL_RATING) | COLLECTION_FILTER_ATLEAST_RATING);
   else
     dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_ATLEAST_RATING );
 
   /* set the star filter in collection */
-  dt_collection_set_rating(darktable.collection, i-1);
+  if (i == 8)
+    dt_collection_set_rating(darktable.collection, 0);
+  else
+    dt_collection_set_rating(darktable.collection, i-1);
 
   /* update the query and view */
   _lib_filter_update_query(user_data);
