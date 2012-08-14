@@ -37,7 +37,7 @@ image_to_grid(
 {
   *x = CLAMPS(i/b->sigma_s, 0, b->size_x-1);
   *y = CLAMPS(j/b->sigma_s, 0, b->size_y-1);
-  *z = CLAMPS(L/b->sigma_r, 0, b->size_z-1);
+  *z = CLAMPS(2.*L/b->sigma_r, 0, b->size_z-1);
 }
 
 dt_bilateral_t *
@@ -53,11 +53,11 @@ dt_bilateral_init(
   // if(100.0/sigma_r < 4 || 100.0/sigma_r > 1000) fprintf(stderr, "[bilateral] need to clamp sigma_r!\n");
   b->size_x = CLAMPS((int)roundf(width/sigma_s), 4, 1000) + 1;
   b->size_y = CLAMPS((int)roundf(height/sigma_s), 4, 1000) + 1;
-  b->size_z = CLAMPS((int)roundf(100.0f/sigma_r), 4, 1000) + 1;
+  b->size_z = CLAMPS((int)roundf(200.0f/sigma_r), 4, 1000) + 1;
   b->width = width;
   b->height = height;
   b->sigma_s = MAX(height/(b->size_y-1.0f), width/(b->size_x-1.0f));
-  b->sigma_r = 100.0f/(b->size_z-1.0f);
+  b->sigma_r = 200.0f/(b->size_z-1.0f);
   b->buf = dt_alloc_align(16, b->size_x*b->size_y*b->size_z*sizeof(float));
 
   memset(b->buf, 0, b->size_x*b->size_y*b->size_z*sizeof(float));
@@ -117,6 +117,46 @@ dt_bilateral_splat(
 }
 
 static void
+write_pfm(
+    const char *filename,
+    float      *buf,
+    const int   offset1,
+    const int   offset2,
+    const int   size1,
+    const int   size2,
+    const int   offset3)
+{
+#if 0
+  FILE *f = fopen(filename, "wb");
+  if(!f) return;
+  fprintf(f, "PF\n%d %d\n-1.0\n", size2, size1);
+  for(int k=0;k<size1;k++)
+  {
+    int index = k*offset1 + offset3;
+    for(int j=0;j<size2;j++)
+    {
+      const float zero = 0.0f;
+      float val = buf[index];
+      if(val > 0)
+      {
+        fwrite(&val, sizeof(float), 1, f);
+        fwrite(&zero, sizeof(float), 1, f);
+      }
+      else 
+      {
+        val = - val;
+        fwrite(&zero, sizeof(float), 1, f);
+        fwrite(&val, sizeof(float), 1, f);
+      }
+      fwrite(&zero, sizeof(float), 1, f);
+      index += offset2;
+    }
+  }
+  fclose(f);
+#endif
+}
+
+static void
 blur_line_z(
     float    *buf,
     const int offset1,
@@ -126,6 +166,39 @@ blur_line_z(
     const int size2,
     const int size3)
 {
+  // const float mask[7] = {1./26.,  2./26., 5./26., 10./26., 5./26., 2./26., 1./26.};
+  const float mask[7] = {-1.5/26.,  -2./26., -2.5/26., 0.0, 2.5/26., 2./26., 1.5/26.};
+  float *scratch = (float *)malloc(sizeof(float)*size3*dt_get_num_threads());
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(buf, scratch)
+#endif
+  for(int k=0;k<size1;k++)
+  {
+    float *tmp = scratch + size3*dt_get_thread_num();
+    int index = k*offset1;
+    for(int j=0;j<size2;j++)
+    {
+      for(int i=0;i<size3;i++)
+      {
+        tmp[i] = buf[index];
+        index += offset3;
+      }
+      index -= offset3*size3;
+      for(int i=0;i<size3;i++)
+      {
+        float sum = 0.0f;
+        for(int m=-3;m<=3;m++)
+        {
+          if(i+m >= 0 && i+m < size3)
+            sum += mask[m+3]*tmp[i+m];
+        }
+        buf[index] = sum;
+        index += offset3;
+      }
+      index += offset2 - offset3*size3;
+    }
+  }
+#if 0
   const float w1 = 4.f/16.f;
   const float w2 = 2.f/16.f;
 #ifdef _OPENMP
@@ -160,6 +233,7 @@ blur_line_z(
       index += offset2 - offset3*size3;
     }
   }
+#endif
 }
 
 static void
@@ -223,6 +297,12 @@ dt_bilateral_blur(
   // -2 derivative of the gaussian up to 3 sigma: x*exp(-x*x)
   blur_line_z(b->buf, 1, b->size_x, b->size_x*b->size_y,
       b->size_x, b->size_y, b->size_z);
+  for(int k=0;k<b->size_z;k++)
+  {
+    char filename[256];
+    snprintf(filename, 256, "/tmp/slice_%04d.pfm", k);
+    write_pfm(filename, b->buf, b->size_x, 1, b->size_y, b->size_x, k*b->size_x*b->size_y);
+  }
 }
 
 
@@ -235,7 +315,7 @@ dt_bilateral_slice_with_threshold(
     const float           threshold)
 {
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
-  const float norm = -detail * b->sigma_r;
+  const float norm = -detail * b->sigma_r * 0.05f;
   const int ox = 1;
   const int oy = b->size_x;
   const int oz = b->size_y*b->size_x;
