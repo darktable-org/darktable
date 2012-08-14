@@ -61,7 +61,7 @@ dt_bilateral_init(
   b->buf = dt_alloc_align(16, b->size_x*b->size_y*b->size_z*sizeof(float));
 
   memset(b->buf, 0, b->size_x*b->size_y*b->size_z*sizeof(float));
-#if 1
+#if 0
   fprintf(stderr, "[bilateral] created grid [%d %d %d]"
       " with sigma (%f %f) (%f %f)\n", b->size_x, b->size_y, b->size_z,
       b->sigma_s, sigma_s, b->sigma_r, sigma_r);
@@ -235,7 +235,7 @@ dt_bilateral_slice_with_threshold(
     const float           threshold)
 {
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
-  const float norm = -detail * b->sigma_r;
+  const float norm = -detail * b->sigma_r * 0.04f;
   const int ox = 1;
   const int oy = b->size_x;
   const int oz = b->size_y*b->size_x;
