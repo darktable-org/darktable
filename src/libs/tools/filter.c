@@ -106,7 +106,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "★ ★ ★ ★ +");
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "★ ★ ★ ★ ★ ");
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rejected only"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("unrejected only"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("all but rejected"));
 
   /* select the last selected value */
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget),
