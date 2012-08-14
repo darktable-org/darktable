@@ -50,19 +50,22 @@ dt_bilateral_init(
   dt_bilateral_t *b = (dt_bilateral_t *)malloc(sizeof(dt_bilateral_t));
   // if(width/sigma_s < 4 || width/sigma_s > 1000) fprintf(stderr, "[bilateral] need to clamp sigma_s!\n");
   // if(height/sigma_s < 4 || height/sigma_s > 1000) fprintf(stderr, "[bilateral] need to clamp sigma_s!\n");
-  // if(120.0/sigma_r < 4 || 120.0/sigma_r > 1000) fprintf(stderr, "[bilateral] need to clamp sigma_r!\n");
+  // if(100.0/sigma_r < 4 || 100.0/sigma_r > 1000) fprintf(stderr, "[bilateral] need to clamp sigma_r!\n");
   b->size_x = CLAMPS((int)roundf(width/sigma_s), 4, 1000) + 1;
   b->size_y = CLAMPS((int)roundf(height/sigma_s), 4, 1000) + 1;
-  b->size_z = CLAMPS((int)roundf(120.0f/sigma_r), 4, 1000) + 1;
+  b->size_z = CLAMPS((int)roundf(100.0f/sigma_r), 4, 1000) + 1;
   b->width = width;
   b->height = height;
   b->sigma_s = MAX(height/(b->size_y-1.0f), width/(b->size_x-1.0f));
-  b->sigma_r = 120.0f/(b->size_z-1.0f);
+  b->sigma_r = 100.0f/(b->size_z-1.0f);
   b->buf = dt_alloc_align(16, b->size_x*b->size_y*b->size_z*sizeof(float));
 
   memset(b->buf, 0, b->size_x*b->size_y*b->size_z*sizeof(float));
-  // fprintf(stderr, "[bilateral] created grid [%d %d %d]"
-      // " with sigma (%f %f) (%f %f)\n", b->size_x, b->size_y, b->size_z, b->sigma_s, sigma_s, b->sigma_r, sigma_r);
+#if 1
+  fprintf(stderr, "[bilateral] created grid [%d %d %d]"
+      " with sigma (%f %f) (%f %f)\n", b->size_x, b->size_y, b->size_z,
+      b->sigma_s, sigma_s, b->sigma_r, sigma_r);
+#endif
   return b;
 }
 
@@ -102,7 +105,7 @@ dt_bilateral_splat(
       {
         const int ii = grid_index + ((k&1)?ox:0) + ((k&2)?oy:0) + ((k&4)?oz:0);
         const float contrib = ((k&1)?xf:(1.0f-xf)) * ((k&2)?yf:(1.0f-yf)) * ((k&4)?zf:(1.0f-zf))
-          *120.0f/(b->sigma_s*b->sigma_s);
+          *100.0f/(b->sigma_s*b->sigma_s);
 #ifdef _OPENMP
 #pragma omp atomic
 #endif
@@ -232,7 +235,7 @@ dt_bilateral_slice_with_threshold(
     const float           threshold)
 {
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
-  const float norm = -detail;
+  const float norm = -detail * b->sigma_r;
   const int ox = 1;
   const int oy = b->size_x;
   const int oz = b->size_y*b->size_x;
