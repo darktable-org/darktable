@@ -103,7 +103,91 @@ bilateral_splat(
 }
 
 kernel void
+blur_line_z(
+    global float *buf,
+    const int offset1,
+    const int offset2,
+    const int offset3,
+    const int size1,
+    const int size2,
+    const int size3)
+{
+  const int k = get_global_id(0);
+  const int j = get_global_id(1);
+  if(k >= size1 || j >= size2) return;
+
+  const float w1 = 4.f/16.f;
+  const float w2 = 2.f/16.f;
+
+  int index = k*offset1;
+
+  float tmp1 = buf[index];
+  buf[index] = w1*buf[index + offset3] + w2*buf[index + 2*offset3];
+  index += offset3;
+  float tmp2 = buf[index];
+  buf[index] = w1*(buf[index + offset3] - tmp1) + w2*buf[index + 2*offset3];
+  index += offset3;
+  for(int i=2;i<size3-2;i++)
+  {
+    const float tmp3 = buf[index];
+    buf[index] =
+      + w1*(buf[index + offset3]   - tmp2)
+      + w2*(buf[index + 2*offset3] - tmp1);
+    index += offset3;
+    tmp1 = tmp2;
+    tmp2 = tmp3;
+  }
+  const float tmp3 = buf[index];
+  buf[index] = w1*(buf[index + offset3] - tmp2) - w2*tmp1;
+  index += offset3;
+  buf[index] = - w1*tmp3 - w2*tmp2;
+}
+
+static void
 blur_line(
+    global float *buf,
+    const int offset1,
+    const int offset2,
+    const int offset3,
+    const int size1,
+    const int size2,
+    const int size3)
+{
+  const int k = get_global_id(0);
+  const int j = get_global_id(1);
+  if(k >= size1 || j >= size2) return;
+
+  const float w0 = 6.f/16.f;
+  const float w1 = 4.f/16.f;
+  const float w2 = 1.f/16.f;
+  int index = k*offset1;
+
+  float tmp1 = buf[index];
+  buf[index] = buf[index]*w0 + w1*buf[index + offset3] + w2*buf[index + 2*offset3];
+  index += offset3;
+  float tmp2 = buf[index];
+  buf[index] = buf[index]*w0 + w1*(buf[index + offset3] + tmp1) + w2*buf[index + 2*offset3];
+  index += offset3;
+  for(int i=2;i<size3-2;i++)
+  {
+    const float tmp3 = buf[index];
+    buf[index] = buf[index]*w0
+      + w1*(buf[index + offset3]   + tmp2)
+      + w2*(buf[index + 2*offset3] + tmp1);
+    index += offset3;
+    tmp1 = tmp2;
+    tmp2 = tmp3;
+  }
+  const float tmp3 = buf[index];
+  buf[index] = buf[index]*w0 + w1*(buf[index + offset3] + tmp2) + w2*tmp1;
+  index += offset3;
+  buf[index] = buf[index]*w0 + w1*tmp3 + w2*tmp2;
+}
+
+kernel void
+dt_bilateral_slice(
+    read_only  image2d_t in,
+    write_only image2d_t out,
     global float        *grid,
     const int            width,
     const int            height,
@@ -111,132 +195,41 @@ blur_line(
     const int            sizey,
     const int            sizez,
     const float          sigma_s,
-    const float          sigma_r)
-    float    *buf,
-    float    *scratch,
-    const int offset1,
-    const int offset2,
-    const int offset3,
-    const int size1,
-    const int size2,
-    const int size3,
-    const float wm2,
-    const float wm1,
-    const float w0,
-    const float w1,
-    const float w2)
+    const float          sigma_r,
+    const float          detail)
 {
-  for(int k=0;k<size1;k++)
-  {
-    int index = k*offset1;
-    for(int j=0;j<size2;j++)
-    {
-      // need to cache our neighbours because we want to do
-      // the convolution in place:
-      float *cache = scratch + dt_get_thread_num() * size3;
-      for(int i=0;i<size3;i++)
-      {
-        cache[i] = buf[index];
-        index += offset3;
-      }
-      index -= offset3*size3;
-      buf[index]  = w0 * cache[0];
-      buf[index] += w1 * cache[1];
-      buf[index] += w2 * cache[2];
-      index += offset3;
-      buf[index]  = wm1* cache[0];
-      buf[index] += w0 * cache[1];
-      buf[index] += w1 * cache[2];
-      buf[index] += w2 * cache[3];
-      index += offset3;
-      for(int i=2;i<size3-2;i++)
-      {
-        float sum;
-        sum  = wm2* cache[i-2];
-        sum += wm1* cache[i-1];
-        sum += w0 * cache[i];
-        sum += w1 * cache[i+1];
-        sum += w2 * cache[i+2];
-        buf[index] = sum;
-        index += offset3;
-      }
-      buf[index]  = wm2* cache[size3-4];
-      buf[index] += wm1* cache[size3-3];
-      buf[index] += w0 * cache[size3-2];
-      buf[index] += w1 * cache[size3-1];
-      index += offset3;
-      buf[index]  = wm2* cache[size3-3];
-      buf[index] += wm1* cache[size3-2];
-      buf[index] += w0 * cache[size3-1];
-      index += offset3;
-      index += offset2 - offset3*size3;
-    }
-  }
-}
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
 
-
-kernel void
-dt_bilateral_blur(
-    dt_bilateral_t *b)
-{
-  // gaussian up to 3 sigma
-  blur_line(b->buf, b->scratch, b->size_x*b->size_y, b->size_x, 1,
-      b->size_z, b->size_y, b->size_x,
-      1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f);
-  // gaussian up to 3 sigma
-  blur_line(b->buf, b->scratch, b->size_x*b->size_y, 1, b->size_x,
-      b->size_z, b->size_x, b->size_y,
-      1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f);
-  // -2 derivative of the gaussian up to 3 sigma: x*exp(-x*x)
-  blur_line(b->buf, b->scratch, 1, b->size_x, b->size_x*b->size_y,
-      b->size_x, b->size_y, b->size_z,
-      -2.0f*1.0f/16.0f, -1.0f*4.0f/16.0f, 0.0f, 1.0f*4.0f/16.0f, 2.0f*1.0f/16.0f);
-}
-
-
-kernel void
-dt_bilateral_slice(
-    const dt_bilateral_t *const b,
-    const float          *const in,
-    float                *out,
-    const float           detail)
-{
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
-  const float norm = -detail;
+  const float norm = -detail * sigma_r * 0.04;
   const int ox = 1;
-  const int oy = b->size_x;
-  const int oz = b->size_y*b->size_x;
-  for(int j=0;j<b->height;j++)
-  {
-    int index = 4*j*b->width;
-    for(int i=0;i<b->width;i++)
-    {
-      float x, y, z;
-      const float L = in[index];
-      image_to_grid(b, i, j, L, &x, &y, &z);
-      // trilinear lookup:
-      const int xi = MIN((int)x, b->size_x-2);
-      const int yi = MIN((int)y, b->size_y-2);
-      const int zi = MIN((int)z, b->size_z-2);
-      const float xf = x - xi;
-      const float yf = y - yi;
-      const float zf = z - zi;
-      const int gi = xi + b->size_x*(yi + b->size_y*zi);
-      const float Ldiff =
-        b->buf[gi]          * (1.0f - xf) * (1.0f - yf) * (1.0f - zf) +
-        b->buf[gi+ox]       * (       xf) * (1.0f - yf) * (1.0f - zf) +
-        b->buf[gi+oy]       * (1.0f - xf) * (       yf) * (1.0f - zf) +
-        b->buf[gi+ox+oy]    * (       xf) * (       yf) * (1.0f - zf) +
-        b->buf[gi+oz]       * (1.0f - xf) * (1.0f - yf) * (       zf) +
-        b->buf[gi+ox+oz]    * (       xf) * (1.0f - yf) * (       zf) +
-        b->buf[gi+oy+oz]    * (1.0f - xf) * (       yf) * (       zf) +
-        b->buf[gi+ox+oy+oz] * (       xf) * (       yf) * (       zf);
-      out[index] = L + norm * Ldiff;
-      // and copy color and mask
-      out[index+1] = in[index+1];
-      out[index+2] = in[index+2];
-      out[index+3] = in[index+3];
-      index += 4;
-    }
-  }
+  const int oy = sizex;
+  const int oz = sizey*sizex;
+
+  float4 size  = (float4)(sizex, sizey, sizez, 0);
+  float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float L = pixel.x;
+  float4 p = (float4)(x, y, L, 0);
+  float4 gridp = image_to_grid(&p, &size, &sigma);
+  int4 gridi = min((int4)gridp, size);
+  float4 f = gridp - gridi;
+
+  // trilinear lookup (wouldn't read/write access to 3d textures be cool)
+  const int gi = gridi.x + sizex*(gridi.y + sizey*gridi.z);
+  const float Ldiff =
+        grid[gi]          * (1.0f - f.x) * (1.0f - f.y) * (1.0f - f.z) +
+        grid[gi+ox]       * (       f.x) * (1.0f - f.y) * (1.0f - f.z) +
+        grid[gi+oy]       * (1.0f - f.x) * (       f.y) * (1.0f - f.z) +
+        grid[gi+ox+oy]    * (       f.x) * (       f.y) * (1.0f - f.z) +
+        grid[gi+oz]       * (1.0f - f.x) * (1.0f - f.y) * (       f.z) +
+        grid[gi+ox+oz]    * (       f.x) * (1.0f - f.y) * (       f.z) +
+        grid[gi+oy+oz]    * (1.0f - f.x) * (       f.y) * (       f.z) +
+        grid[gi+ox+oy+oz] * (       f.x) * (       f.y) * (       f.z);
+  pixel.x = L + norm * Ldiff;
+  write_imagef (out, (int2)(x, y), pixel);
 }
+
