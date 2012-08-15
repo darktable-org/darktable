@@ -186,6 +186,7 @@ dt_bilateral_free_cl(
 {
   // free device mem
   dt_opencl_release_mem_object(b->dev_grid);
+  free(b);
 }
 
 void
