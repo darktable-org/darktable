@@ -20,6 +20,7 @@
 
 #include "common/darktable.h"
 #include "common/opencl.h"
+#include "common/bilateralcl.h"
 #include "common/dlopencl.h"
 #include "control/conf.h"
 
@@ -258,6 +259,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   }
 
 finally:
+  if(cl->inited)
+    cl->bilateral = dt_bilateral_init_cl_global();
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] FINALLY: opencl is %sAVAILABLE on this system.\n", cl->inited ? "" : "NOT ");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] initial status of opencl enabled flag is %s.\n", cl->enabled ? "ON" : "OFF");
   return;
@@ -265,7 +268,10 @@ finally:
 
 void dt_opencl_cleanup(dt_opencl_t *cl)
 {
-  if(cl->inited) for(int i=0; i<cl->num_devs; i++)
+  if(cl->inited)
+  {
+    dt_bilateral_free_cl_global(cl->bilateral);
+    for(int i=0; i<cl->num_devs; i++)
     {
       dt_pthread_mutex_destroy(&cl->dev[i].lock);
       for(int k=0; k<DT_OPENCL_MAX_KERNELS; k++) if(cl->dev[i].kernel_used [k]) (cl->dlocl->symbols->dt_clReleaseKernel) (cl->dev[i].kernel [k]);
@@ -276,6 +282,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
       if(cl->dev[i].eventlist) free(cl->dev[i].eventlist);
       if(cl->dev[i].eventtags) free(cl->dev[i].eventtags);
     }
+  }
 
   if(cl->dlocl) {
     free(cl->dlocl->symbols);

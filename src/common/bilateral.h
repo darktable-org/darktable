@@ -16,6 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef DT_COMMON_BILATERAL_H
+#define DT_COMMON_BILATERAL_H
+
 typedef struct dt_bilateral_t
 {
   int size_x, size_y, size_z;
@@ -68,49 +71,6 @@ dt_bilateral_init(
 #endif
   return b;
 }
-
-#if 0//def HAVE_OPENCL
-dt_bilateral_t *
-dt_bilateral_init_cl(
-    const int width,       // width of input image
-    const int height,      // height of input image
-    const float sigma_s,   // spatial sigma (blur pixel coords)
-    const float sigma_r)   // range sigma (blur luma values)
-{
-  // TODO:
-  // b->cl_buf = dt_opencl_copy_host_to_device(devid, d->table[ch_L], 256, 256, sizeof(float));
-}
-
-void
-dt_bilateral_splat_cl(
-    dt_bilateral_t *b,
-    cl_mem in)
-{
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
-}
-
-void
-dt_bilateral_blur_cl(
-    dt_bilateral_t *b)
-{
-}
-
-void
-dt_bilateral_slice_cl(
-    const dt_bilateral_t *const b,
-    cl_mem in,
-    cl_mem out,
-    const float detail)
-{
-}
-
-void
-dt_bilateral_free_cl(
-    dt_bilateral_t *b)
-{
-  free(b);
-}
-#endif
 
 void
 dt_bilateral_splat(
@@ -389,3 +349,4 @@ dt_bilateral_free(
 }
 
 
+#endif

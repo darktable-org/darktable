@@ -59,7 +59,18 @@ atomic_add(
 }
 
 kernel void
-bilateral_splat(
+zero(
+    global float *grid,
+    const  int    width,
+    const  int    height)
+{
+  const int x = get_global_id(0);
+  if(x >= width || y >= height) return;
+  grid[x + width*y] = 0.0f;
+}
+
+kernel void
+splat(
     read_only image2d_t  in,
     global float        *grid,
     const int            width,
@@ -185,7 +196,7 @@ blur_line(
 }
 
 kernel void
-dt_bilateral_slice(
+slice(
     read_only  image2d_t in,
     write_only image2d_t out,
     global float        *grid,
@@ -219,6 +230,7 @@ dt_bilateral_slice(
   float4 f = gridp - gridi;
 
   // trilinear lookup (wouldn't read/write access to 3d textures be cool)
+  // could actually use an array of 2d textures, these only require opencl 1.2
   const int gi = gridi.x + sizex*(gridi.y + sizey*gridi.z);
   const float Ldiff =
         grid[gi]          * (1.0f - f.x) * (1.0f - f.y) * (1.0f - f.z) +
