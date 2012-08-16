@@ -348,11 +348,10 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
     sqlite3_stmt *stmt;
     gchar *query = NULL;
 
-    /* If we want to allow the user to just select the folder, we have to use 
-     * gtk_file_chooser_get_uri() instead. THe code should be adjusted then,
-     * as it returns a file:/// URI and with utf8 characters escaped.
-     */
-    new_path = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser));
+    gchar *uri = NULL;
+    uri = gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(filechooser));
+    new_path = g_filename_from_uri(uri, NULL, NULL);
+    g_free(uri);
     if (new_path)
     {
       gchar *old = NULL;
@@ -1627,7 +1626,6 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_view_set_headers_visible(view, FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(view), -1, 300);
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
-  gtk_widget_hide(GTK_WIDGET(view));
   
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
