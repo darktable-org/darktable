@@ -960,7 +960,7 @@ envelope(const float L)
   if(x < beta)
   {
     // return 1.0f-fabsf(x/beta-1.0f)^2
-    const float tmp = abs(x/beta-1.0f);
+    const float tmp = fabs(x/beta-1.0f);
     return 1.0f-tmp*tmp;
   }
   else

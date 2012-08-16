@@ -27,13 +27,13 @@ image_to_grid(
     const float4 *sigma)
 {
   return (float4)(
-    clamp(p->x/sigma->x, 0, size->x-1),
-    clamp(p->y/sigma->y, 0, size->y-1),
-    clamp(p->z/sigma->z, 0, size->z-1), 0);
+    clamp(p->x/sigma->x, 0.0f, size->x-1.0f),
+    clamp(p->y/sigma->y, 0.0f, size->y-1.0f),
+    clamp(p->z/sigma->z, 0.0f, size->z-1.0f), 0.0f);
 }
 
 void
-atomic_add(
+atomic_add_f(
     global float *val,
     const  float  delta)
 {
@@ -65,6 +65,7 @@ zero(
     const  int    height)
 {
   const int x = get_global_id(0);
+  const int y = get_global_id(1);
   if(x >= width || y >= height) return;
   grid[x + width*y] = 0.0f;
 }
@@ -87,15 +88,15 @@ splat(
 
   // splat into downsampled grid
 
-  float4 size  = (float4)(sizex, sizey, sizez, 0);
+  int4   size  = (int4)(sizex, sizey, sizez, 0);
   float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
 
   const float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   float L = pixel.x;
   float4 p = (float4)(x, y, L, 0);
   float4 gridp = image_to_grid(&p, &size, &sigma);
-  int4 gridi = min((int4)gridp, size);
-  float4 gridf = gridp - gridi;
+  int4 xi = min((int4)(gridp.x, gridp.y, gridp.z, 0), size);
+  float4 xf = gridp - xi;
 
   int ox = 1;
   int oy = size.x;
@@ -103,14 +104,14 @@ splat(
 
   int gi = xi.x + oy*xi.y + oz*xi.z;
   float contrib = 120.0f/(sigma_s*sigma_s);
-  atomic_add(grid + gi,          contrib * (1.0f-xf.x) * (1.0f-xf.y) * (1.0f-xf.z));
-  atomic_add(grid + gi+ox,       contrib * (     xf.x) * (1.0f-xf.y) * (1.0f-xf.z));
-  atomic_add(grid + gi+oy,       contrib * (1.0f-xf.x) * (     xf.y) * (1.0f-xf.z));
-  atomic_add(grid + gi+oy+ox,    contrib * (     xf.x) * (     xf.y) * (1.0f-xf.z));
-  atomic_add(grid + gi+oz,       contrib * (1.0f-xf.x) * (1.0f-xf.y) * (     xf.z));
-  atomic_add(grid + gi+oz+ox,    contrib * (     xf.x) * (1.0f-xf.y) * (     xf.z));
-  atomic_add(grid + gi+oz+oy,    contrib * (1.0f-xf.x) * (     xf.y) * (     xf.z));
-  atomic_add(grid + gi+oz+oy+ox, contrib * (     xf.x) * (     xf.y) * (     xf.z));
+  atomic_add_f(grid + gi,          contrib * (1.0f-xf.x) * (1.0f-xf.y) * (1.0f-xf.z));
+  atomic_add_f(grid + gi+ox,       contrib * (     xf.x) * (1.0f-xf.y) * (1.0f-xf.z));
+  atomic_add_f(grid + gi+oy,       contrib * (1.0f-xf.x) * (     xf.y) * (1.0f-xf.z));
+  atomic_add_f(grid + gi+oy+ox,    contrib * (     xf.x) * (     xf.y) * (1.0f-xf.z));
+  atomic_add_f(grid + gi+oz,       contrib * (1.0f-xf.x) * (1.0f-xf.y) * (     xf.z));
+  atomic_add_f(grid + gi+oz+ox,    contrib * (     xf.x) * (1.0f-xf.y) * (     xf.z));
+  atomic_add_f(grid + gi+oz+oy,    contrib * (1.0f-xf.x) * (     xf.y) * (     xf.z));
+  atomic_add_f(grid + gi+oz+oy+ox, contrib * (     xf.x) * (     xf.y) * (     xf.z));
 }
 
 kernel void
@@ -219,14 +220,14 @@ slice(
   const int oy = sizex;
   const int oz = sizey*sizex;
 
-  float4 size  = (float4)(sizex, sizey, sizez, 0);
+  int4   size  = (int4)(sizex, sizey, sizez, 0);
   float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   float L = pixel.x;
   float4 p = (float4)(x, y, L, 0);
   float4 gridp = image_to_grid(&p, &size, &sigma);
-  int4 gridi = min((int4)gridp, size);
+  int4 gridi = min((int4)(gridp.x, gridp.y, gridp.z, 0), size);
   float4 f = gridp - gridi;
 
   // trilinear lookup (wouldn't read/write access to 3d textures be cool)
