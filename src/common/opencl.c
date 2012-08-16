@@ -85,6 +85,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] no opencl platform available\n");
     goto finally;
   }
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d platform%s\n", num_platforms, num_platforms > 1 ? "s" : "");
 
   for(int n=0; n < num_platforms; n++)
   {
@@ -95,7 +96,6 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get device id size: %d\n", err);
-      goto finally;
     }
   }
 
@@ -114,12 +114,12 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get devices list: %d\n", err);
-      goto finally;
     }
     devs += all_num_devices[n];
   }
  
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d device%s\n", num_devices, num_devices > 1 ? "s" : "");
+  if(num_devices == 0) goto finally;
 
   int dev = 0;
   for(int k=0; k<num_devices; k++)
