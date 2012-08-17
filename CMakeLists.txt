@@ -34,7 +34,6 @@ endif()
 #
 if(APPLE)
 	message("-- Mac OSX build detected, setting default features")
-	set(USE_OPENMP OFF)
 	set(BUILD_SLIDESHOW OFF)
 
 	# setup mac ports path...
