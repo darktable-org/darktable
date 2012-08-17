@@ -1,4 +1,4 @@
-/*f
+/*
     This file is part of darktable,
     copyright (c) 2009--2012 johannes hanika.
 
@@ -22,6 +22,7 @@
 #include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
+#include "common/bilateralcl.h"
 #include "gui/gtk.h"
 
 #include <gtk/gtk.h>
@@ -77,6 +78,35 @@ groups()
 {
   return IOP_GROUP_BASIC;
 }
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)piece->data;
+  // the total scale is composed of scale before input to the pipeline (iscale),
+  // and the scale of the roi.
+  const float scale = piece->iscale/roi_in->scale;
+  const float sigma_r = d->sigma_r; // does not depend on scale
+  const float sigma_s = d->sigma_s / scale;
+  cl_int err = -666;
+
+  dt_bilateral_cl_t *b = dt_bilateral_init_cl(piece->pipe->devid, roi_in->width, roi_in->height, sigma_s, sigma_r);
+  if(!b) goto error;
+  err = dt_bilateral_splat_cl(b, dev_in);
+  if (err != CL_SUCCESS) goto error;
+  err = dt_bilateral_blur_cl(b);
+  if (err != CL_SUCCESS) goto error;
+  err = dt_bilateral_slice_cl(b, dev_in, dev_out, d->detail);
+  if (err != CL_SUCCESS) goto error;
+  dt_bilateral_free_cl(b);
+  return TRUE;
+error:
+  dt_bilateral_free_cl(b);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_bilateral] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
 
 /** process, all real work is done here. */
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)

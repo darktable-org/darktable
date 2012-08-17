@@ -55,7 +55,7 @@ atomic_add_f(
     old_val.f = *val;
     new_val.f = old_val.f + delta;
   }
-  while (atom_cmpxchg((global unsigned int *)val, old_val.i, new_val.i) != old_val.i);
+  while (atom_cmpxchg ((global unsigned int *)val, old_val.i, new_val.i) != old_val.i);
 }
 
 kernel void
@@ -91,27 +91,34 @@ splat(
   int4   size  = (int4)(sizex, sizey, sizez, 0);
   float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
 
-  const float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 pixel = read_imagef (in, sampleri, (int2)(x, y));
   float L = pixel.x;
   float4 p = (float4)(x, y, L, 0);
   float4 gridp = image_to_grid(&p, &size, &sigma);
-  int4 xi = min((int4)(gridp.x, gridp.y, gridp.z, 0), size);
-  float4 xf = gridp - xi;
+  int4 xi = (int4)(gridp.x, gridp.y, gridp.z, 0);
+  float fx = gridp.x - xi.x;
+  float fy = gridp.y - xi.y;
+  float fz = gridp.z - xi.z;
 
   int ox = 1;
   int oy = size.x;
   int oz = size.y*size.x;
 
   int gi = xi.x + oy*xi.y + oz*xi.z;
-  float contrib = 120.0f/(sigma_s*sigma_s);
-  atomic_add_f(grid + gi,          contrib * (1.0f-xf.x) * (1.0f-xf.y) * (1.0f-xf.z));
-  atomic_add_f(grid + gi+ox,       contrib * (     xf.x) * (1.0f-xf.y) * (1.0f-xf.z));
-  atomic_add_f(grid + gi+oy,       contrib * (1.0f-xf.x) * (     xf.y) * (1.0f-xf.z));
-  atomic_add_f(grid + gi+oy+ox,    contrib * (     xf.x) * (     xf.y) * (1.0f-xf.z));
-  atomic_add_f(grid + gi+oz,       contrib * (1.0f-xf.x) * (1.0f-xf.y) * (     xf.z));
-  atomic_add_f(grid + gi+oz+ox,    contrib * (     xf.x) * (1.0f-xf.y) * (     xf.z));
-  atomic_add_f(grid + gi+oz+oy,    contrib * (1.0f-xf.x) * (     xf.y) * (     xf.z));
-  atomic_add_f(grid + gi+oz+oy+ox, contrib * (     xf.x) * (     xf.y) * (     xf.z));
+  float contrib = 100.0f/(sigma_s*sigma_s);
+  // FIXME: this is _terribly_ inefficient.
+  // this kernel alone takes half a second for just under a megapixel on a GT 540M
+  // (as compared to 0.028 seconds for slicing below, which should be about the same)
+  // the problem is probably that atomic_add_f always writes to the same address
+  // within the same warp, so we have a very bad race condition, resulting in long loops..
+  atomic_add_f(grid + gi,          contrib * (1.0f-fx) * (1.0f-fy) * (1.0f-fz));
+  atomic_add_f(grid + gi+ox,       contrib * (     fx) * (1.0f-fy) * (1.0f-fz));
+  atomic_add_f(grid + gi+oy,       contrib * (1.0f-fx) * (     fy) * (1.0f-fz));
+  atomic_add_f(grid + gi+oy+ox,    contrib * (     fx) * (     fy) * (1.0f-fz));
+  atomic_add_f(grid + gi+oz,       contrib * (1.0f-fx) * (1.0f-fy) * (     fz));
+  atomic_add_f(grid + gi+oz+ox,    contrib * (     fx) * (1.0f-fy) * (     fz));
+  atomic_add_f(grid + gi+oz+oy,    contrib * (1.0f-fx) * (     fy) * (     fz));
+  atomic_add_f(grid + gi+oz+oy+ox, contrib * (     fx) * (     fy) * (     fz));
 }
 
 kernel void
@@ -131,7 +138,7 @@ blur_line_z(
   const float w1 = 4.f/16.f;
   const float w2 = 2.f/16.f;
 
-  int index = k*offset1;
+  int index = k*offset1 + j*offset2;
 
   float tmp1 = buf[index];
   buf[index] = w1*buf[index + offset3] + w2*buf[index + 2*offset3];
@@ -155,7 +162,7 @@ blur_line_z(
   buf[index] = - w1*tmp3 - w2*tmp2;
 }
 
-static void
+kernel void
 blur_line(
     global float *buf,
     const int offset1,
@@ -172,7 +179,7 @@ blur_line(
   const float w0 = 6.f/16.f;
   const float w1 = 4.f/16.f;
   const float w2 = 1.f/16.f;
-  int index = k*offset1;
+  int index = k*offset1 + j*offset2;
 
   float tmp1 = buf[index];
   buf[index] = buf[index]*w0 + w1*buf[index + offset3] + w2*buf[index + 2*offset3];
@@ -223,25 +230,27 @@ slice(
   int4   size  = (int4)(sizex, sizey, sizez, 0);
   float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = read_imagef (in, sampleri, (int2)(x, y));
   float L = pixel.x;
   float4 p = (float4)(x, y, L, 0);
   float4 gridp = image_to_grid(&p, &size, &sigma);
-  int4 gridi = min((int4)(gridp.x, gridp.y, gridp.z, 0), size);
-  float4 f = gridp - gridi;
+  int4 gridi = (int4)(gridp.x, gridp.y, gridp.z, 0);
+  float fx = gridp.x - gridi.x;
+  float fy = gridp.y - gridi.y;
+  float fz = gridp.z - gridi.z;
 
   // trilinear lookup (wouldn't read/write access to 3d textures be cool)
   // could actually use an array of 2d textures, these only require opencl 1.2
   const int gi = gridi.x + sizex*(gridi.y + sizey*gridi.z);
   const float Ldiff =
-        grid[gi]          * (1.0f - f.x) * (1.0f - f.y) * (1.0f - f.z) +
-        grid[gi+ox]       * (       f.x) * (1.0f - f.y) * (1.0f - f.z) +
-        grid[gi+oy]       * (1.0f - f.x) * (       f.y) * (1.0f - f.z) +
-        grid[gi+ox+oy]    * (       f.x) * (       f.y) * (1.0f - f.z) +
-        grid[gi+oz]       * (1.0f - f.x) * (1.0f - f.y) * (       f.z) +
-        grid[gi+ox+oz]    * (       f.x) * (1.0f - f.y) * (       f.z) +
-        grid[gi+oy+oz]    * (1.0f - f.x) * (       f.y) * (       f.z) +
-        grid[gi+ox+oy+oz] * (       f.x) * (       f.y) * (       f.z);
+        grid[gi]          * (1.0f - fx) * (1.0f - fy) * (1.0f - fz) +
+        grid[gi+ox]       * (       fx) * (1.0f - fy) * (1.0f - fz) +
+        grid[gi+oy]       * (1.0f - fx) * (       fy) * (1.0f - fz) +
+        grid[gi+ox+oy]    * (       fx) * (       fy) * (1.0f - fz) +
+        grid[gi+oz]       * (1.0f - fx) * (1.0f - fy) * (       fz) +
+        grid[gi+ox+oz]    * (       fx) * (1.0f - fy) * (       fz) +
+        grid[gi+oy+oz]    * (1.0f - fx) * (       fy) * (       fz) +
+        grid[gi+ox+oy+oz] * (       fx) * (       fy) * (       fz);
   pixel.x = L + norm * Ldiff;
   write_imagef (out, (int2)(x, y), pixel);
 }

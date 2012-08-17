@@ -53,10 +53,10 @@ dt_bilateral_init(
   dt_bilateral_t *b = (dt_bilateral_t *)malloc(sizeof(dt_bilateral_t));
   // if(width/sigma_s < 4 || width/sigma_s > 1000) fprintf(stderr, "[bilateral] need to clamp sigma_s!\n");
   // if(height/sigma_s < 4 || height/sigma_s > 1000) fprintf(stderr, "[bilateral] need to clamp sigma_s!\n");
-  // if(100.0/sigma_r < 4 || 100.0/sigma_r > 1000) fprintf(stderr, "[bilateral] need to clamp sigma_r!\n");
+  // if(100.0/sigma_r < 4 || 100.0/sigma_r > 100) fprintf(stderr, "[bilateral] need to clamp sigma_r!\n");
   b->size_x = CLAMPS((int)roundf(width/sigma_s), 4, 1000) + 1;
   b->size_y = CLAMPS((int)roundf(height/sigma_s), 4, 1000) + 1;
-  b->size_z = CLAMPS((int)roundf(100.0f/sigma_r), 4, 1000) + 1;
+  b->size_z = CLAMPS((int)roundf(100.0f/sigma_r), 4, 100) + 1;
   b->width = width;
   b->height = height;
   b->sigma_s = MAX(height/(b->size_y-1.0f), width/(b->size_x-1.0f));
