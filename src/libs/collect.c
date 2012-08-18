@@ -199,10 +199,6 @@ void view_popup_menu_onSync (GtkWidget *menuitem, gpointer userdata)
     film_id = sqlite3_column_int(stmt, 0);
     path = (gchar *) sqlite3_column_text(stmt, 1);
 
-    /* Añadir nombre de fichero... por ahora sólo tenemos folders! 
-       Tenemos que hacer un query por los ficheros, no por los filmrolls,
-       el fichero tiene el id del filmroll, tomar el nombre del id (ver
-       si hay ya helper function)*/
     query = dt_util_dstrcat(query, "select filename,id from images where film_id=%d", film_id);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
@@ -452,7 +448,6 @@ view_popup_menu (GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
                    (GCallback) view_popup_menu_onSearchFilmroll, treeview);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
-  /* FIXME: give some functionality */
   menuitem = gtk_menu_item_new_with_label(_("sync..."));
   g_signal_connect(menuitem, "activate",
                    (GCallback) view_popup_menu_onSync, treeview);
@@ -734,6 +729,7 @@ static void _lib_folders_update_collection(const gchar *filmroll)
 
   gchar *complete_query = NULL;
 
+  /* TODO: Give back this functionality 
   complete_query = dt_util_dstrcat(complete_query, "film_id in (select id from film_rolls where folder like '%s%%')", filmroll);
 
   dt_conf_set_string("plugins/lighttable/where_ext_query", complete_query);
@@ -742,11 +738,12 @@ static void _lib_folders_update_collection(const gchar *filmroll)
   dt_collection_update_query(darktable.collection);
 
   g_free(complete_query);
+  */
 
   // remove from selected images where not in this query.
   sqlite3_stmt *stmt = NULL;
   const gchar *cquery = dt_collection_get_query(darktable.collection);
-  complete_query = NULL;
+  //complete_query = NULL;
   if(cquery && cquery[0] != '\0')
   {
     complete_query = dt_util_dstrcat(complete_query, "delete from selected_images where imgid not in (%s)", cquery);
@@ -922,7 +919,6 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   _lib_collect_gui_update(self);
 
   /* update view */
-  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 
   return 0;
@@ -1157,13 +1153,10 @@ filmroll:
 
     if (g_strcmp0(mount_name, "Local")==0)
     {
-      /* Add a button for local filesystem, to keep UI consistency */
-      //button = gtk_button_new_with_label (_("Local HDD"));
       label = gtk_label_new (_("local hdd"));
     }
     else
     {
-      //button = gtk_button_new_with_label (mount_name));
       label = gtk_label_new (g_ascii_strdown(mount_name, strlen(mount_name)));
     }
     g_ptr_array_add(d->labels, (gpointer) label);
@@ -1264,7 +1257,6 @@ gui_reset (dt_lib_module_t *self)
   dt_conf_set_int("plugins/lighttable/collect/item0", 0);
   dt_conf_set_string("plugins/lighttable/collect/string0", "%");
   dt_collection_set_query_flags(darktable.collection,COLLECTION_QUERY_FULL);
-  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -1276,7 +1268,6 @@ combo_changed (GtkComboBox *combo, dt_lib_collect_rule_t *d)
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;
   changed_callback(NULL, d);
-  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -1297,7 +1288,6 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
   gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
   g_free(text);
   changed_callback(NULL, d->rule + active);
-  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
 }
@@ -1326,7 +1316,6 @@ entry_activated (GtkWidget *entry, dt_lib_collect_rule_t *d)
       changed_callback(NULL, d);
     }
   }
-  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -1385,7 +1374,6 @@ menuitem_and (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     dt_lib_collect_t *c = get_collect(d);
     c->active_rule = active;
   }
-  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -1403,7 +1391,6 @@ menuitem_or (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     dt_conf_set_string(confname, "");
     dt_conf_set_int("plugins/lighttable/collect/num_rules", active+1);
   }
-  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -1421,7 +1408,6 @@ menuitem_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     dt_conf_set_string(confname, "");
     dt_conf_set_int("plugins/lighttable/collect/num_rules", active+1);
   }
-  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -1436,7 +1422,6 @@ menuitem_change_and (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", num);
     dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND);
   }
-  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -1451,7 +1436,6 @@ menuitem_change_or (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", num);
     dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_OR);
   }
-  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -1466,7 +1450,6 @@ menuitem_change_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", num);
     dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND_NOT);
   }
-  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -1515,7 +1498,6 @@ menuitem_clear (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
       g_free(string);
     }
   }
-  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
