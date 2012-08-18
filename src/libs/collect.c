@@ -822,7 +822,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self);
 
   /* cleanup mem */
-  g_ptr_array_free(d->buttons, TRUE);
+  g_ptr_array_free(d->labels, TRUE);
   g_ptr_array_free(d->trees, TRUE);
 
   /* TODO: Cleanup gtktreestore and gtktreemodel all arounf the code */
@@ -955,7 +955,7 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
   GtkTreeIter iter;
   
 
-  GtkWidget *button;
+  GtkWidget *label;
   GtkTreeView *tree;
   GtkTreeView *view;
   GtkTreeModel *listmodel;
@@ -971,14 +971,14 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
   gtk_list_store_clear(GTK_LIST_STORE(listmodel));
   
   /* We have already inited the GUI once, clean around */
-  if (d->buttons != NULL)
+  if (d->labels != NULL)
   {
-    for (int i=0; i<d->buttons->len; i++)
+    for (int i=0; i<d->labels->len; i++)
     {
-      button = GTK_WIDGET(g_ptr_array_index (d->buttons, i));
-      g_ptr_array_free(d->buttons, TRUE);
+      button = GTK_WIDGET(g_ptr_array_index (d->labels, i));
+      g_ptr_array_free(d->labels, TRUE);
     }
-    d->buttons = NULL;
+    d->labels = NULL;
   }
    
   if (d->trees != NULL)
@@ -1139,8 +1139,8 @@ filmroll:
   gtk_tree_model_get_iter (GTK_TREE_MODEL(treemodel), &iter, root);
 
   int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(treemodel), NULL);
-  d->buttons = g_ptr_array_sized_new(children);
-  g_ptr_array_set_free_func (d->buttons, destroy_widget);
+  d->labels = g_ptr_array_sized_new(children);
+  g_ptr_array_set_free_func (d->labels, destroy_widget);
 
   d->trees = g_ptr_array_sized_new(children);
   g_ptr_array_set_free_func (d->trees, destroy_widget);
@@ -1158,14 +1158,16 @@ filmroll:
     if (g_strcmp0(mount_name, "Local")==0)
     {
       /* Add a button for local filesystem, to keep UI consistency */
-      button = gtk_button_new_with_label (_("Local HDD"));
+      //button = gtk_button_new_with_label (_("Local HDD"));
+      label = gtk_label_new (_("local hdd"));
     }
     else
     {
-      button = gtk_button_new_with_label (mount_name);
+      //button = gtk_button_new_with_label (mount_name));
+      label = gtk_label_new (g_ascii_strdown(mount_name, strlen(mount_name)));
     }
-    g_ptr_array_add(d->buttons, (gpointer) button);
-    gtk_container_add(GTK_CONTAINER(d->box), GTK_WIDGET(button));
+    g_ptr_array_add(d->labels, (gpointer) label);
+    gtk_container_add(GTK_CONTAINER(d->box), GTK_WIDGET(label));
     
     model2 = _create_filtered_model(GTK_TREE_MODEL(treemodel), iter);
     tree = _create_treeview_display(GTK_TREE_MODEL(model2));
@@ -1645,7 +1647,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->box), TRUE, TRUE, 0);
   gtk_widget_hide(vbox);
 
-  d->buttons = NULL;
+  d->labels = NULL;
   d->trees = NULL;
 
   /* setup proxy */
