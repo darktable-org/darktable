@@ -128,8 +128,6 @@ if(Gettext_FOUND)
 	if(NOT LOCALE_DIR)
 		if(WIN32)
 			SET(LOCALE_DIR "bin/locale")
-		elseif(APPLE)
-			SET(LOCALE_DIR "share/locale")
 		else()#other os
 			SET(LOCALE_DIR "${CMAKE_INSTALL_PREFIX}/share/locale")
 		endif(WIN32)
