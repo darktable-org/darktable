@@ -562,7 +562,9 @@ dt_bauhaus_init()
 
   // for pie menue:
   // gtk_window_set_position(GTK_WINDOW(c->popup_window), GTK_WIN_POS_MOUSE);// | GTK_WIN_POS_CENTER);
-  // gtk_window_set_transient_for(GTK_WINDOW(c->popup_window), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+
+  // gtk_window_set_keep_above isn't enough on OS X
+  gtk_window_set_transient_for(GTK_WINDOW(darktable.bauhaus->popup_window), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   gtk_container_add(GTK_CONTAINER(darktable.bauhaus->popup_window), darktable.bauhaus->popup_area);
   // gtk_window_set_title(GTK_WINDOW(c->popup_window), _("dtgtk control popup"));
   gtk_window_set_keep_above(GTK_WINDOW(darktable.bauhaus->popup_window), TRUE);

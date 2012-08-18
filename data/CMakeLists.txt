@@ -33,6 +33,12 @@ FILE(GLOB WEB_FILES "js/*")
 install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/js)
 
 #
+# latex book template support files:
+#
+FILE(GLOB WEB_FILES "latex/*")
+install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/latex)
+
+#
 # Install other system shares
 #
 install(FILES darktable.desktop DESTINATION ./share/applications)
