@@ -85,6 +85,7 @@ static int usage(const char *argv0)
   printf(" [--tmpdir <tmp directory>]");
   printf(" [--configdir <user config directory>]");
   printf(" [--cachedir <user config directory>]");
+  printf(" [--localedir <locale directory>]");
   printf("\n");
   return 1;
 }
@@ -367,6 +368,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
       else if(!strcmp(argv[k], "--cachedir"))
       {
         cachedirFromCommand = argv[++k];
+      }
+      else if(!strcmp(argv[k], "--localedir"))
+      {
+        bindtextdomain (GETTEXT_PACKAGE, argv[++k]);
       }
       else if(argv[k][1] == 'd' && argc > k+1)
       {
