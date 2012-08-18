@@ -36,9 +36,8 @@ if(APPLE)
 	message("-- Mac OSX build detected, setting default features")
 	set(BUILD_SLIDESHOW OFF)
 
-	# setup mac ports path...
-	set(CMAKE_LIBRARY_PATH "${CMAKE_LIBRARY_PATH} /opt/local/lib")
-	set(CMAKE_INCLUDE_PATH "${CMAKE_INCLUDE_PATH} /opt/local/include")
+	# prefer macports and/or user-installed libraries over system ones
+	LIST(APPEND CMAKE_PREFIX_PATH /opt/local /usr/local)
 
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_DARWIN_C_SOURCE")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_DARWIN_C_SOURCE")
