@@ -39,7 +39,6 @@ typedef struct dt_iop_useless_params_t
   float sigma_r;
   float sigma_s;
   float detail;
-  float threshold;
 }
 dt_iop_useless_params_t;
 
@@ -48,7 +47,6 @@ typedef struct dt_iop_useless_gui_data_t
   GtkWidget *spatial;
   GtkWidget *range;
   GtkWidget *detail;
-  GtkWidget *threshold;
 }
 dt_iop_useless_gui_data_t;
 
@@ -124,7 +122,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   dt_bilateral_t *b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
   dt_bilateral_splat(b, (float *)i);
   dt_bilateral_blur(b);
-  dt_bilateral_slice_with_threshold(b, (float *)i, (float *)o, d->detail, d->threshold);
+  dt_bilateral_slice(b, (float *)i, (float *)o, d->detail);
   dt_bilateral_free(b);
 }
 
@@ -145,7 +143,7 @@ void init(dt_iop_module_t *module)
   // init defaults:
   dt_iop_useless_params_t tmp = (dt_iop_useless_params_t)
   {
-    8, 50, 0.2, 0.0
+    8, 50, 0.2
   };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_useless_params_t));
@@ -186,24 +184,15 @@ detail_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void
-threshold_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
-  p->threshold = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 /** gui callbacks, these are needed. */
 void gui_update(dt_iop_module_t *self)
 {
   // let gui slider match current parameters:
   dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
   dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
-  dt_bauhaus_slider_set(g->spatial,   p->sigma_s);
-  dt_bauhaus_slider_set(g->range,     p->sigma_r);
-  dt_bauhaus_slider_set(g->detail,    p->detail);
-  dt_bauhaus_slider_set(g->threshold, p->threshold);
+  dt_bauhaus_slider_set(g->spatial, p->sigma_s);
+  dt_bauhaus_slider_set(g->range,   p->sigma_r);
+  dt_bauhaus_slider_set(g->detail,  p->detail);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -225,14 +214,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->detail, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->detail, _("detail"));
 
-  g->threshold = dt_bauhaus_slider_new_with_range(self, 0.0, 20.0, 1.0, 0.0, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->threshold, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->threshold, _("threshold"));
-
-  g_signal_connect (G_OBJECT (g->spatial),   "value-changed", G_CALLBACK (spatial_callback), self);
-  g_signal_connect (G_OBJECT (g->range),     "value-changed", G_CALLBACK (range_callback), self);
-  g_signal_connect (G_OBJECT (g->detail),    "value-changed", G_CALLBACK (detail_callback), self);
-  g_signal_connect (G_OBJECT (g->threshold), "value-changed", G_CALLBACK (threshold_callback), self);
+  g_signal_connect (G_OBJECT (g->spatial), "value-changed", G_CALLBACK (spatial_callback), self);
+  g_signal_connect (G_OBJECT (g->range),   "value-changed", G_CALLBACK (range_callback), self);
+  g_signal_connect (G_OBJECT (g->detail),  "value-changed", G_CALLBACK (detail_callback), self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
