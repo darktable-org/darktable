@@ -60,7 +60,7 @@ boolean dt_imageio_jpeg_fill_input_buffer(j_decompress_ptr cinfo)
 }
 void dt_imageio_jpeg_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
 {
-  int i = cinfo->src->bytes_in_buffer - num_bytes;
+  size_t i = cinfo->src->bytes_in_buffer - num_bytes;
   if (i < 0) i = 0;
   cinfo->src->bytes_in_buffer = i;
   cinfo->src->next_input_byte += num_bytes;
@@ -116,7 +116,7 @@ int dt_imageio_jpeg_decompress(dt_imageio_jpeg_t *jpg, uint8_t *out)
       free(row_pointer[0]);
       return 1;
     }
-    for(int i=0; i<jpg->dinfo.image_width; i++) for(int k=0; k<3; k++)
+    for(unsigned int i=0; i<jpg->dinfo.image_width; i++) for(int k=0; k<3; k++)
         tmp[4*i+k] = row_pointer[0][3*i+k];
     tmp += 4*jpg->width;
   }
@@ -525,10 +525,10 @@ int dt_imageio_jpeg_read(dt_imageio_jpeg_t *jpg, uint8_t *out)
       return 1;
     }
     if(jpg->dinfo.num_components < 3)
-      for(int i=0; i<jpg->dinfo.image_width; i++) for(int k=0; k<3; k++)
+      for(unsigned int i=0; i<jpg->dinfo.image_width; i++) for(int k=0; k<3; k++)
           tmp[4*i+k] = row_pointer[0][jpg->dinfo.num_components*i+0];
     else
-      for(int i=0; i<jpg->dinfo.image_width; i++) for(int k=0; k<3; k++)
+      for(unsigned int i=0; i<jpg->dinfo.image_width; i++) for(int k=0; k<3; k++)
           tmp[4*i+k] = row_pointer[0][3*i+k];
     tmp += 4*jpg->width;
   }
