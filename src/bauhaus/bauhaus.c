@@ -665,6 +665,7 @@ dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
 void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *text)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  memset(w->label, 0, 256); // keep valgrind happy
   strncpy(w->label, text, 256);
 
   if(w->module)
@@ -682,9 +683,11 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *text)
         *val = 0;
         if(!g_list_find_custom(darktable.bauhaus->key_mod, mod, (GCompareFunc)strcmp))
           darktable.bauhaus->key_mod = g_list_insert_sorted(darktable.bauhaus->key_mod, mod, (GCompareFunc)strcmp);
-        darktable.bauhaus->key_val = g_list_insert_sorted(darktable.bauhaus->key_val, path, (GCompareFunc)strcmp);
+        // unfortunately need our own string, as replace in the hashtable below might destroy this pointer.
+        darktable.bauhaus->key_val = g_list_insert_sorted(darktable.bauhaus->key_val, g_strdup(path), (GCompareFunc)strcmp);
       }
     }
+    // might free an old path
     g_hash_table_replace(darktable.bauhaus->keymap, path, w);
   }
 }
