@@ -395,7 +395,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   sqlite3_finalize(stmt);
 
   uint32_t flags = dt_conf_get_int("ui_last/import_initial_rating");
-  if(flags < 0 || flags > 5)
+  if(flags > 5)
   {
     flags = 1;
     dt_conf_set_int("ui_last/import_initial_rating", 1);
