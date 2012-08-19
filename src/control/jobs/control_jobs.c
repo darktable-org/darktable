@@ -832,7 +832,7 @@ void dt_control_delete_images()
   dt_control_add_job(darktable.control, &j);
 }
 
-int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
+static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
     int32_t (*fileop_callback)(const int32_t, const int32_t))
 {
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
@@ -954,33 +954,35 @@ void dt_control_copy_images()
   gtk_widget_destroy (filechooser);
 
   if(!dir || !g_file_test(dir, G_FILE_TEST_IS_DIR))
+    goto abort;
+
+  if(dt_conf_get_bool("ask_before_copy"))
   {
-    g_free(dir);
-    return;
-  }
+    GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win),
+        GTK_DIALOG_DESTROY_WITH_PARENT,
+        GTK_MESSAGE_QUESTION,
+        GTK_BUTTONS_YES_NO,
+        ngettext("do you really want to physically copy the %d selected image to %s?",
+            "do you really want to physically copy %d selected images to %s?", number),
+            number, dir);
+    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("copy image?", "copy images?", number));
 
-  GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win),
-      GTK_DIALOG_DESTROY_WITH_PARENT,
-      GTK_MESSAGE_QUESTION,
-      GTK_BUTTONS_YES_NO,
-      ngettext("do you really want to physically copy the %d selected image to %s?",
-          "do you really want to physically copy %d selected images to %s?", number),
-          number, dir);
-  gtk_window_set_title(GTK_WINDOW(dialog), ngettext("copy image?", "copy images?", number));
+    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
 
-  gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-  gtk_widget_destroy(dialog);
-
-  if(res != GTK_RESPONSE_YES)
-  {
-    g_free(dir);
-    return;
+    if(res != GTK_RESPONSE_YES)
+      goto abort;
   }
 
   dt_job_t j;
   dt_control_copy_images_job_init(&j);
   j.user_data = dir;
   dt_control_add_job(darktable.control, &j);
+  return;
+
+  abort:
+  g_free(dir);
+  return;
 }
 
 void dt_control_move_images_job_init(dt_job_t *job)

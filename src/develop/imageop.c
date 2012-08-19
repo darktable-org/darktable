@@ -1332,6 +1332,14 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
 
   dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);
 
+  /* store expanded state of module.
+   * we do that first, so update_expanded won't think it should be visible
+   * and undo our changes right away. */
+  module->expanded = expanded;
+  char var[1024];
+  snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
+  dt_conf_set_bool(var, expanded);
+
   /* show / hide plugin widget */
   if (expanded)
   {
@@ -1385,12 +1393,6 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
       dt_control_queue_redraw_center();
     }
   }
-
-  /* store expanded state of module */
-  module->expanded = expanded;
-  char var[1024];
-  snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
-  dt_conf_set_bool(var, gtk_widget_get_visible(pluginui));
 
 }
 
@@ -1482,7 +1484,6 @@ static gboolean
 _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  GtkWidget *pluginui = dt_iop_gui_get_widget(module);
 
   if (e->button == 1)
   {
@@ -1516,7 +1517,7 @@ _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_d
     else
     {
       /* else just toggle */
-      dt_iop_gui_set_expanded(module, !gtk_widget_get_visible(pluginui));
+      dt_iop_gui_set_expanded(module, !module->expanded);
     }
 
     return TRUE;
