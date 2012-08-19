@@ -131,7 +131,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   const int ch = piece->colors;
 
-#if 1
+#if 0
   // TODO: switch over selection type!
   // TODO: maybe adjust sigma to that?
   // lightness and saturation are continuous in images normally,
@@ -167,7 +167,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 
   // :( for abovementioned reasons selecting by hue isn't as easy to filter in just that one
   // dimension, even though it would require stabilization the most.
-  if(d->channel != DT_IOP_COLORZONES_h)
+  // if(d->channel != DT_IOP_COLORZONES_h)
   {
   dt_bilateral_t *b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
   dt_bilateral_splat(b, (float *)o);
