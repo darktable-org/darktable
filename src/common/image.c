@@ -147,6 +147,7 @@ void dt_image_path_append_version(int imgid, char *pathname, const int len)
     char *c2 = filename + strlen(filename);
     while(*c2 != '.' && c2 > filename) c2--;
     snprintf(c+3, pathname + len - c - 3, "%s", c2);
+    g_free(filename);
   }
 }
 
