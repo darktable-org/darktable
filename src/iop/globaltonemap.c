@@ -194,8 +194,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   dt_iop_global_tonemap_params_t *data = (dt_iop_global_tonemap_params_t *)piece->data;
   const float scale = piece->iscale/roi_in->scale;
-  const float sigma_r = 7.0f;// d->sigma_r; // does not depend on scale
-  const float sigma_s = 40.0f/scale;//d->sigma_s / scale;
+  const float sigma_r = 8.0f; // does not depend on scale
+  const float sigma_s = 40.0f/scale;
   dt_bilateral_t *b = NULL;
   if(data->detail != 0.0f)
   {
