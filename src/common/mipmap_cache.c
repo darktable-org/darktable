@@ -606,7 +606,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 
   // adjust numbers to be large enough to hold what mem limit suggests.
   // we want at least 100MB, and consider 2G just still reasonable.
-  const uint32_t max_mem = CLAMPS(dt_conf_get_int("cache_memory"), 100u<<20, 2u<<30)/5;
+  uint32_t max_mem = CLAMPS(dt_conf_get_int("cache_memory"), 100u<<20, 2u<<30);
   const uint32_t parallel = CLAMP(dt_conf_get_int ("worker_threads"), 1, 8);
   const int32_t max_size = 2048, min_size = 32;
   int32_t wd = darktable.thumbnail_width;
@@ -634,6 +634,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     cache->scratchmem.max_height = ht;
     cache->scratchmem.buffer_size = wd*ht*sizeof(uint32_t);
     cache->scratchmem.size = DT_MIPMAP_3; // at max.
+    // TODO: use thread local storage instead (zero performance penalty on linux)
     dt_cache_init(&cache->scratchmem.cache, parallel, parallel, 64, 0.9f*parallel*wd*ht*sizeof(uint32_t));
     // might have been rounded to power of two:
     const int cnt = dt_cache_capacity(&cache->scratchmem.cache);
@@ -646,7 +647,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
         cnt, cnt* wd*ht*sizeof(uint32_t)/(1024.0*1024.0));
   }
 
-  for(int k=0;k<=DT_MIPMAP_F;k++)
+  for(int k=DT_MIPMAP_F;k>=0;k--)
   {
     // buffer stores width and height + actual data
     const int width  = cache->mip[k].max_width;
@@ -663,15 +664,20 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     cache->mip[k].size = k;
     // level of parallelism also gives minimum size (which is twice that)
     // is rounded to a power of two by the cache anyways, we might as well.
-    uint32_t thumbnails = MAX(2, nearest_power_of_two((uint32_t)((float)max_mem/cache->mip[k].buffer_size)));
-    while(thumbnails > parallel && thumbnails * cache->mip[k].buffer_size > max_mem) thumbnails /= 2;
+    const uint32_t max_mem2 = MAX(0, (k == 0) ? (max_mem) : (max_mem/(k+4)));
+    uint32_t thumbnails = (k == DT_MIPMAP_F) ? 1 : MAX(2, nearest_power_of_two((uint32_t)((float)max_mem2/cache->mip[k].buffer_size)));
+    while(thumbnails > parallel && thumbnails * cache->mip[k].buffer_size > max_mem2) thumbnails /= 2;
 
     // try to utilize that memory well (use 90% quota), the hopscotch paper claims good scalability up to
     // even more than that.
-    dt_cache_init(&cache->mip[k].cache, thumbnails, parallel, 64, 0.9f*thumbnails*cache->mip[k].buffer_size);
+    dt_cache_init(&cache->mip[k].cache, thumbnails,
+        (k == DT_MIPMAP_F) ? 1 : parallel,
+        64, 0.9f*thumbnails*cache->mip[k].buffer_size);
 
     // might have been rounded to power of two:
     thumbnails = dt_cache_capacity(&cache->mip[k].cache);
+    max_mem -= thumbnails * cache->mip[k].buffer_size;
+    fprintf(stderr, "[mipmap mem] %4.02f left\n", max_mem/(1024.0*1024.0));
     cache->mip[k].buf = dt_alloc_align(64, thumbnails * cache->mip[k].buffer_size);
     dt_cache_static_allocation(&cache->mip[k].cache, (uint8_t *)cache->mip[k].buf, cache->mip[k].buffer_size);
     dt_cache_set_allocate_callback(&cache->mip[k].cache,
@@ -683,6 +689,28 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
         "[mipmap_cache_init] cache has % 5d entries for mip %d (% 4.02f MB).\n",
         thumbnails, k, thumbnails * cache->mip[k].buffer_size/(1024.0*1024.0));
   }
+  // we really only need one mipf buffer (for dr mode preview)
+#if 0
+  // full buffer needs dynamic alloc:
+  const int32_t mipf_entries = nearest_power_of_two(1);
+
+  // for this buffer, because it can be very busy during import, we want the minimum
+  // number of entries in the hashtable to be 16, but leave the quota as is. the dynamic
+  // alloc/free properties of this cache take care that no more memory is required.
+  dt_cache_init(&cache->mip[DT_MIPMAP_F].cache, mipf_entries, 1, 64, mipf_entries);
+  dt_cache_set_allocate_callback(&cache->mip[DT_MIPMAP_F].cache,
+      dt_mipmap_cache_allocate_dynamic, &cache->mip[DT_MIPMAP_F]);
+  // dt_cache_set_cleanup_callback(&cache->mip[DT_MIPMAP_FULL].cache,
+      // &dt_mipmap_cache_deallocate_dynamic, &cache->mip[DT_MIPMAP_FULL]);
+  cache->mip[DT_MIPMAP_F].buffer_size = 0;
+  cache->mip[DT_MIPMAP_F].size = DT_MIPMAP_FULL;
+  cache->mip[DT_MIPMAP_F].buf = NULL;
+
+    dt_print(DT_DEBUG_CACHE,
+        "[mipmap_cache_init] cache has % 5d entries for mip %d (% 4.02f MB).\n",
+        thumbnails, k, thumbnails * cache->mip[k].buffer_size/(1024.0*1024.0));
+#endif
+
   // full buffer needs dynamic alloc:
   const int full_entries = MAX(2, parallel); // even with one thread you want two buffers. one for dr one for thumbs.
   int32_t max_mem_bufs = nearest_power_of_two(full_entries);
