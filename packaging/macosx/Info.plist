@@ -5,9 +5,9 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>start</string>
+	<string>darktable</string>
 	<key>CFBundleIconFile</key>
-	<string>darktable.icns</string>
+	<string>Icons.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>net.sourceforge.darktable</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -17,12 +17,10 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>VERSION</string>
+	<string>1.1.0</string>
 	<key>CFBundleSignature</key>
-	<string>APPL</string>
+	<string>drkt</string>
 	<key>CFBundleVersion</key>
-	<string>VERSION</string>
-	<key>NSAppleScriptEnabled</key>
-	<string>NO</string>
+	<string>1.1.0.0</string>
 </dict>
 </plist>
