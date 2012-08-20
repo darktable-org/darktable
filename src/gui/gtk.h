@@ -58,6 +58,9 @@ typedef struct dt_gui_gtk_t
 
   int32_t center_tooltip; // 0 = no tooltip, 1 = new tooltip, 2 = old tooltip
 
+  gboolean grouping;
+  int32_t expanded_group_id;
+
   double dpi;
 }
 dt_gui_gtk_t;
