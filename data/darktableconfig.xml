@@ -1003,7 +1003,7 @@
   <dtconfig>
     <name>plugins/darkroom/groups</name>
     <type>int</type>
-    <default>1</default>
+    <default>2</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
