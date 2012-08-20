@@ -370,6 +370,12 @@ dt_get_total_memory()
 
 void dt_configure_defaults();
 
+
+/** define for max path/filename length */
+#define DT_MAX_FILENAME_LEN 256
+// TODO: separate into path/filename and store 256 for filename
+#define DT_MAX_PATH_LEN 1024
+
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

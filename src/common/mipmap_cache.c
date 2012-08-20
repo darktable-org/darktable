@@ -209,7 +209,7 @@ dt_mipmap_cache_get_filename(
   char* abspath = NULL;
 
   // Directory
-  char cachedir[1024];
+  char cachedir[DT_MAX_PATH_LEN];
   dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
   // Build the mipmap filename
@@ -249,7 +249,7 @@ exit:
 static int
 dt_mipmap_cache_serialize(dt_mipmap_cache_t *cache)
 {
-  gchar dbfilename[1024];
+  gchar dbfilename[DT_MAX_PATH_LEN];
   if (dt_mipmap_cache_get_filename(dbfilename, sizeof(dbfilename)))
   {
     fprintf(stderr, "[mipmap_cache] could not retrieve cache filename; not serializing\n");
@@ -317,7 +317,7 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
   uint8_t *blob = NULL;
   int file_width[mip+1], file_height[mip+1];
 
-  gchar dbfilename[1024];
+  gchar dbfilename[DT_MAX_PATH_LEN];
   if (dt_mipmap_cache_get_filename(dbfilename, sizeof(dbfilename)))
   {
     fprintf(stderr, "[mipmap_cache] could not retrieve cache filename; not deserializing\n");

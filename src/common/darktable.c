@@ -252,13 +252,13 @@ gboolean dt_supported_image(const gchar *filename)
 
 static void strip_semicolons_from_keymap(const char* path)
 {
-  char pathtmp[1024];
+  char pathtmp[DT_MAX_PATH_LEN];
   FILE *fin = fopen(path, "r");
   FILE *fout;
   int i;
   int c = '\0';
 
-  snprintf(pathtmp, 1024, "%s_tmp", path);
+  snprintf(pathtmp, DT_MAX_PATH_LEN, "%s_tmp", path);
   fout = fopen(pathtmp, "w");
 
   // First ignoring the first three lines
@@ -435,10 +435,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
   // thread-safe init:
   dt_exif_init();
-  char datadir[1024];
-  dt_loc_get_user_config_dir (datadir,1024);
-  char filename[1024];
-  snprintf(filename, 1024, "%s/darktablerc", datadir);
+  char datadir[DT_MAX_PATH_LEN];
+  dt_loc_get_user_config_dir (datadir,DT_MAX_PATH_LEN);
+  char filename[DT_MAX_PATH_LEN];
+  snprintf(filename, DT_MAX_PATH_LEN, "%s/darktablerc", datadir);
 
   // intialize the config backend. this needs to be done first...
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
@@ -566,17 +566,17 @@ int dt_init(int argc, char *argv[], const int init_gui)
   if(init_gui)
   {
     // Loading the keybindings
-    char keyfile[1024];
+    char keyfile[DT_MAX_PATH_LEN];
 
     // First dump the default keymapping
-    snprintf(keyfile, 1024, "%s/keyboardrc_default", datadir);
+    snprintf(keyfile, DT_MAX_PATH_LEN, "%s/keyboardrc_default", datadir);
     gtk_accel_map_save(keyfile);
 
     // Removing extraneous semi-colons from the default keymap
     strip_semicolons_from_keymap(keyfile);
 
     // Then load any modified keys if available
-    snprintf(keyfile, 1024, "%s/keyboardrc", datadir);
+    snprintf(keyfile, DT_MAX_PATH_LEN, "%s/keyboardrc", datadir);
     if(g_file_test(keyfile, G_FILE_TEST_EXISTS))
       gtk_accel_map_load(keyfile);
     else
