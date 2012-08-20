@@ -562,7 +562,9 @@ dt_bauhaus_init()
 
   // for pie menue:
   // gtk_window_set_position(GTK_WINDOW(c->popup_window), GTK_WIN_POS_MOUSE);// | GTK_WIN_POS_CENTER);
-  // gtk_window_set_transient_for(GTK_WINDOW(c->popup_window), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+
+  // gtk_window_set_keep_above isn't enough on OS X
+  gtk_window_set_transient_for(GTK_WINDOW(darktable.bauhaus->popup_window), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   gtk_container_add(GTK_CONTAINER(darktable.bauhaus->popup_window), darktable.bauhaus->popup_area);
   // gtk_window_set_title(GTK_WINDOW(c->popup_window), _("dtgtk control popup"));
   gtk_window_set_keep_above(GTK_WINDOW(darktable.bauhaus->popup_window), TRUE);
@@ -663,6 +665,7 @@ dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
 void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *text)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  memset(w->label, 0, 256); // keep valgrind happy
   strncpy(w->label, text, 256);
 
   if(w->module)
@@ -680,9 +683,11 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *text)
         *val = 0;
         if(!g_list_find_custom(darktable.bauhaus->key_mod, mod, (GCompareFunc)strcmp))
           darktable.bauhaus->key_mod = g_list_insert_sorted(darktable.bauhaus->key_mod, mod, (GCompareFunc)strcmp);
-        darktable.bauhaus->key_val = g_list_insert_sorted(darktable.bauhaus->key_val, path, (GCompareFunc)strcmp);
+        // unfortunately need our own string, as replace in the hashtable below might destroy this pointer.
+        darktable.bauhaus->key_val = g_list_insert_sorted(darktable.bauhaus->key_val, g_strdup(path), (GCompareFunc)strcmp);
       }
     }
+    // might free an old path
     g_hash_table_replace(darktable.bauhaus->keymap, path, w);
   }
 }

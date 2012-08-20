@@ -34,15 +34,14 @@ endif()
 #
 if(APPLE)
 	message("-- Mac OSX build detected, setting default features")
-	set(USE_OPENMP OFF)
 	set(BUILD_SLIDESHOW OFF)
 
-	# setup mac ports path...
-	set(CMAKE_LIBRARY_PATH "${CMAKE_LIBRARY_PATH} /opt/local/lib")
-	set(CMAKE_INCLUDE_PATH "${CMAKE_INCLUDE_PATH} /opt/local/include")
+	# prefer macports and/or user-installed libraries over system ones
+	LIST(APPEND CMAKE_PREFIX_PATH /opt/local /usr/local)
 
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_DARWIN_C_SOURCE")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_DARWIN_C_SOURCE")
+	add_definitions("-DOS_OBJECT_USE_OBJC=0")
 
         # Detect the OS X version: Use '/usr/bin/sw_vers -productVersion' to extract V from '10.V.x'.
         EXEC_PROGRAM(/usr/bin/sw_vers ARGS -productVersion OUTPUT_VARIABLE MACOSX_VERSION_RAW)
@@ -129,8 +128,6 @@ if(Gettext_FOUND)
 	if(NOT LOCALE_DIR)
 		if(WIN32)
 			SET(LOCALE_DIR "bin/locale")
-		elseif(APPLE)
-			SET(LOCALE_DIR "share/locale")
 		else()#other os
 			SET(LOCALE_DIR "${CMAKE_INSTALL_PREFIX}/share/locale")
 		endif(WIN32)

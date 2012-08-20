@@ -146,6 +146,22 @@ int dt_exif_read_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
+    /* sony has its own rotation */
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.MinoltaCs7D.Rotation")))
+          != exifData.end() )
+    {
+      switch(pos->toLong())
+      {
+        case 76: // 90 cw
+          img->orientation = 6;
+          break;
+        case 82: // 270 cw
+          img->orientation = 7;
+          break;
+        default: // 72, horizontal
+          img->orientation = 0;
+      }
+    }
 
     /* Read lens name */
     if ( (pos=Exiv2::lensName(exifData)) != exifData.end() )
