@@ -71,14 +71,13 @@ typedef struct dt_lib_collect_t
 }
 dt_lib_collect_t;
 
-#define PARAM_STRING_SIZE 256  // FIXME: is this enough !?
 typedef struct dt_lib_collect_params_t
 {
   uint32_t rules;
   struct {
     uint32_t item:16;
     uint32_t mode:16;
-    char string[PARAM_STRING_SIZE];
+    char string[DT_MAX_PATH_LEN];
   } rule[MAX_RULES];
 } dt_lib_collect_params_t;
 
@@ -870,7 +869,7 @@ static void _lib_collect_update_params(dt_lib_collect_t *d) {
     snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
     gchar* string = dt_conf_get_string(confname);
     if (string != NULL) {
-      snprintf(p->rule[i].string,PARAM_STRING_SIZE,"%s", string);
+      snprintf(p->rule[i].string,DT_MAX_PATH_LEN,"%s", string);
       g_free(string);
     }
 
