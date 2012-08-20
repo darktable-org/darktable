@@ -58,10 +58,11 @@ typedef struct dt_lib_collect_t
   int active_rule;
   GtkTreeView *view;
   GtkTreeModel *treemodel;
+  gboolean tree_new;
   GtkTreeModel *listmodel;
   GtkScrolledWindow *scrolledwindow;
   
-  GPtrArray *buttons;
+  GPtrArray *labels;
   GPtrArray *trees;
 
   GtkBox *box;
@@ -966,26 +967,6 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), NULL);
   gtk_list_store_clear(GTK_LIST_STORE(listmodel));
   
-  /* We have already inited the GUI once, clean around */
-  if (d->labels != NULL)
-  {
-    for (int i=0; i<d->labels->len; i++)
-    {
-      button = GTK_WIDGET(g_ptr_array_index (d->labels, i));
-      g_ptr_array_free(d->labels, TRUE);
-    }
-    d->labels = NULL;
-  }
-   
-  if (d->trees != NULL)
-  {
-    for (int i=0; i<d->trees->len; i++)
-    {
-      tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
-      g_ptr_array_free(d->trees, TRUE);
-    }
-    d->trees = NULL;
-  }
 
   
   char query[1024];
@@ -1125,60 +1106,83 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
 filmroll:
   /* TODO: Only create a new tree if something has changed
    * This will allow to cache the node, and not collapse the tree */
-  d->treemodel = GTK_TREE_MODEL(_folder_tree());
   treemodel = d->treemodel;
 
-  /* set the UI */
-  GtkTreeModel *model2;
-  
-  GtkTreePath *root = gtk_tree_path_new_first();
-  gtk_tree_model_get_iter (GTK_TREE_MODEL(treemodel), &iter, root);
-
-  int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(treemodel), NULL);
-  d->labels = g_ptr_array_sized_new(children);
-  g_ptr_array_set_free_func (d->labels, destroy_widget);
-
-  d->trees = g_ptr_array_sized_new(children);
-  g_ptr_array_set_free_func (d->trees, destroy_widget);
-
-  for (int i=0; i<children; i++)
+  if (d->tree_new)
   {
-    GValue value;
-    memset(&value,0,sizeof(GValue));
-    gtk_tree_model_iter_nth_child (GTK_TREE_MODEL(treemodel), &iter, NULL, i);
-
-  	gtk_tree_model_get_value (GTK_TREE_MODEL(treemodel), &iter, 0, &value);
-    
-    gchar *mount_name = g_value_dup_string(&value);
-
-    if (g_strcmp0(mount_name, "Local")==0)
+    /* We have already inited the GUI once, clean around */
+    if (d->labels != NULL)
     {
-      label = gtk_label_new (_("local hdd"));
+      for (int i=0; i<d->labels->len; i++)
+      {
+        label = GTK_WIDGET(g_ptr_array_index (d->labels, i));
+        g_ptr_array_free(d->labels, TRUE);
+      }
+      d->labels = NULL;
     }
-    else
+     
+    if (d->trees != NULL)
     {
-      label = gtk_label_new (g_ascii_strdown(mount_name, strlen(mount_name)));
+      for (int i=0; i<d->trees->len; i++)
+      {
+        tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
+        g_ptr_array_free(d->trees, TRUE);
+      }
+      d->trees = NULL;
     }
-    g_ptr_array_add(d->labels, (gpointer) label);
-    gtk_container_add(GTK_CONTAINER(d->box), GTK_WIDGET(label));
+    /* set the UI */
+    GtkTreeModel *model2;
     
-    model2 = _create_filtered_model(GTK_TREE_MODEL(treemodel), iter);
-    tree = _create_treeview_display(GTK_TREE_MODEL(model2));
-    g_ptr_array_add(d->trees, (gpointer) tree);
-    gtk_container_add(GTK_CONTAINER(d->box), GTK_WIDGET(tree));
+    GtkTreePath *root = gtk_tree_path_new_first();
+    gtk_tree_model_get_iter (GTK_TREE_MODEL(treemodel), &iter, root);
 
-    gtk_tree_view_set_headers_visible(tree, FALSE);
+    int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(treemodel), NULL);
+    d->labels = g_ptr_array_sized_new(children);
+    g_ptr_array_set_free_func (d->labels, destroy_widget);
 
-    gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
-    
-    g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (row_activated), d);
-    g_signal_connect(G_OBJECT (tree), "button-press-event", G_CALLBACK (view_onButtonPressed), NULL);
-    g_signal_connect(G_OBJECT (tree), "popup-menu", G_CALLBACK (view_onPopupMenu), NULL);
-    
-    g_value_unset(&value);
-    //g_free(mount_name);
+    d->trees = g_ptr_array_sized_new(children);
+    g_ptr_array_set_free_func (d->trees, destroy_widget);
+
+    for (int i=0; i<children; i++)
+    {
+      GValue value;
+      memset(&value,0,sizeof(GValue));
+      gtk_tree_model_iter_nth_child (GTK_TREE_MODEL(treemodel), &iter, NULL, i);
+
+      gtk_tree_model_get_value (GTK_TREE_MODEL(treemodel), &iter, 0, &value);
+      
+      gchar *mount_name = g_value_dup_string(&value);
+
+      if (g_strcmp0(mount_name, "Local")==0)
+      {
+        label = gtk_label_new (_("local hdd"));
+      }
+      else
+      {
+        label = gtk_label_new (g_ascii_strdown(mount_name, strlen(mount_name)));
+      }
+      g_ptr_array_add(d->labels, (gpointer) label);
+      gtk_container_add(GTK_CONTAINER(d->box), GTK_WIDGET(label));
+      
+      model2 = _create_filtered_model(GTK_TREE_MODEL(treemodel), iter);
+      tree = _create_treeview_display(GTK_TREE_MODEL(model2));
+      g_ptr_array_add(d->trees, (gpointer) tree);
+      gtk_container_add(GTK_CONTAINER(d->box), GTK_WIDGET(tree));
+
+      gtk_tree_view_set_headers_visible(tree, FALSE);
+
+      gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
+      
+      g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (row_activated), d);
+      g_signal_connect(G_OBJECT (tree), "button-press-event", G_CALLBACK (view_onButtonPressed), NULL);
+      g_signal_connect(G_OBJECT (tree), "popup-menu", G_CALLBACK (view_onPopupMenu), NULL);
+      
+      g_value_unset(&value);
+      //g_free(mount_name);
+      d->tree_new = FALSE;
+    }
   }
-  
+
   gtk_widget_show_all(GTK_WIDGET(d->box));
   g_object_unref(listmodel);
 
@@ -1244,6 +1248,7 @@ _lib_collect_gui_update (dt_lib_module_t *self)
       g_object_set(G_OBJECT(button), "tooltip-text", _("clear this rule"), (char *)NULL);
     }
   }
+
 
   // update list of proposals
   changed_callback(NULL, d->rule + d->active_rule);
@@ -1459,6 +1464,20 @@ collection_updated(gpointer instance,gpointer self)
   _lib_collect_gui_update((dt_lib_module_t *)self);
 }
 
+static void
+filmrolls_updated(gpointer instance, gpointer self)
+{
+  dt_lib_module_t *dm = (dt_lib_module_t *)self;
+
+  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+
+
+  // update tree
+  d->treemodel = GTK_TREE_MODEL(_folder_tree());
+  d->tree_new = TRUE;
+  _lib_collect_gui_update((dt_lib_module_t *)self);
+}
+
 
 static void
 menuitem_clear (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
@@ -1567,6 +1586,11 @@ gui_init (dt_lib_module_t *self)
 			    G_CALLBACK(collection_updated),
 			    self);
   
+  dt_control_signal_connect(darktable.signals, 
+			    DT_SIGNAL_FILMROLLS_CHANGED,
+			    G_CALLBACK(filmrolls_updated),
+			    self);
+  
   GtkBox *box;
   GtkWidget *w;
 
@@ -1636,6 +1660,9 @@ gui_init (dt_lib_module_t *self)
   darktable.view_manager->proxy.module_collect.module = self;
   darktable.view_manager->proxy.module_collect.update = _lib_collect_gui_update;
 
+  // TODO: This should be done in a more generic place, not gui_init
+  d->treemodel = GTK_TREE_MODEL(_folder_tree());
+  d->tree_new = TRUE;
   _lib_collect_gui_update(self);
 }
 
