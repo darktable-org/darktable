@@ -18,6 +18,7 @@ FILE(GLOB SOURCE_FILES
   "common/film.c"
   "common/file_location.c"
   "common/fswatch.c"
+  "common/grouping.c"
   "common/history.c"
   "common/image.c"
   "common/image_cache.c"

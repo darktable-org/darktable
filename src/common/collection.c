@@ -93,9 +93,8 @@ dt_collection_update (const dt_collection_t *collection)
       wq = dt_util_dstrcat(wq, "(film_id = %d)", collection->params.film_id);
       need_operator = 1;
     }
-    // DON'T SELECT IMAGES MAKED TO BE DELETED.
+    // DON'T SELECT IMAGES MARKED TO BE DELETED.
     wq = dt_util_dstrcat(wq, " %s (flags & %d) != %d", (need_operator)?"and":((need_operator=1)?"":""), DT_IMAGE_REMOVE, DT_IMAGE_REMOVE);
-    
 
     if (collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
       wq = dt_util_dstrcat(wq, " %s (flags & 7) >= %d and (flags & 7) != 6", (need_operator)?"and":((need_operator=1)?"":""), collection->params.rating);
@@ -114,7 +113,11 @@ dt_collection_update (const dt_collection_t *collection)
   else
     wq = dt_util_dstrcat(wq, "%s", collection->where_ext);
 
-  
+  /* grouping */
+  if(darktable.gui && darktable.gui->grouping)
+  {
+    wq = dt_util_dstrcat(wq, " and group_id = id or group_id = %d", darktable.gui->expanded_group_id);
+  }
 
   /* build select part includes where */
   if (collection->params.sort == DT_COLLECTION_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))

@@ -1,108 +1,21 @@
 #!/bin/bash
-# Function checkLink:
-# args: $1 - file
-#
-# Will loop through all dynamic links for $file, and update each to be relative.
-function checkLink {
-	#echo "checkLink called with $1 $2"
-	local FILE=$1
+rm -f darktable.dmg
+~/.local/bin/gtk-mac-bundler darktable.bundle
+sed -i '' 's|/opt/local/share/locale||' package/darktable.app/Contents/Resources/etc/gtk-2.0/gtk.immodules
+sed -i '' 's|@executable_path|../..|' package/darktable.app/Contents/Resources/etc/pango/pango.modules
+rm package/darktable.app/Contents/Resources/etc/pango/pangorc
+rm package/darktable.app/Contents/Resources/lib/libgphoto2/print-camera-list
+touch package/darktable.app/Contents/Resources/etc/pango/pangorc
+find package/darktable.app/Contents/MacOS/darktable-bin package/darktable.app/Contents/Resources/lib/darktable -type f -exec \
+  install_name_tool -change @executable_path/../lib/darktable/libdarktable.dylib @executable_path/../Resources/lib/darktable/libdarktable.dylib \{} \;
+ln -s /Applications package/
 
-	otool -L $FILE | grep -v "${APP}" | grep -v '/usr/lib' | grep -v '/System/' | grep -v "@executable_path" | cut -f 1 -d ' ' | while read X
-	do 
-		local NAME=${LIB}/`basename "$X"`
-		if [ ! -f "${NAME}" ]
-		then
-			cp $X "${NAME}"
-		
-			#Recursively update the linkage of libraries
-			checkLink "${NAME}"
-		fi
-	done
-}
-
-PROGN=Darktable
-APP=${PROGN}.app
-CONTENTS=${APP}/Contents
-RESOURCES=${CONTENTS}/Resources
-MACOS=${CONTENTS}/MacOS
-BIN=${MACOS}/bin
-ETC=${MACOS}/etc
-LIB=${MACOS}/lib
-SHARE=${MACOS}/share
-RELEASE=build/release
-DMG=${RELEASE}/${PROGN}.dmg
-EXECUTABLE=bin/darktable
-BUILD_FOLDER=./packaging/macosx
-DTVER=`git describe --tags $branch | sed 's,^release-,,;s,-,+,;s,-,~,;'`
-
-#Find where MacPorts is installed.  We take a known binary (port), which is in <MacPorts>/bin, and 
-# go up a level to get the main install folder.
-MACPORTS_PREFIX=`which port`
-MACPORTS_PREFIX=`dirname $MACPORTS_PREFIX`
-MACPORTS_PREFIX=`dirname $MACPORTS_PREFIX`
-
-if [ ! -d ${RELEASE} ]; then
-	echo "Please run this from the root of the project; i.e. ${BUILD_FOLDER}/`basename $0`."
-	exit
-fi
-
-if [ -d "${APP}" ]; then
-	echo "Removing old application..."
-	rm -rf "${APP}"
-fi
-if [ -f ${DMG} ]; then
-	echo "Removing old disk image..."
-	rm "${DMG}"
-fi
-
-echo "Making application directory structure..."
-mkdir -p "${RESOURCES}"
-mkdir -p "${ETC}"
-mkdir -p "${LIB}"
-mkdir -p "${SHARE}/mime"
-
-#Copy over non-explicitly linked libraries
-echo "Copying libraries from ${MACPORTS_PREFIX}..."
-cp -R ${MACPORTS_PREFIX}/lib/pango ${LIB}
-cp -R ${MACPORTS_PREFIX}/lib/gtk-2.0 ${LIB}
-cp -R ${MACPORTS_PREFIX}/lib/gdk-pixbuf-2.0 ${LIB}
-
-#Copy over mimes (if a mime is copied, and nobody hears, is it really copied?)
-echo "Copying shared files from ${MACPORTS_PREFIX}..."
-cp -R ${MACPORTS_PREFIX}/share/mime/* ${SHARE}/mime
-
-#Copy over etc files, and modify as needed
-echo "Copying configuration files from ${MACPORTS_PREFIX} and modifying for standalone app bundle..."
-cp -R $MACPORTS_PREFIX/etc/gtk-2.0 ${ETC}
-cp -R $MACPORTS_PREFIX/etc/pango ${ETC}
-ESCAPED_MACPORTS_PREFIX=`echo ${MACPORTS_PREFIX} | sed -e 's/\\//\\\\\\//g'`
-sed -i .bak -e "s/${ESCAPED_MACPORTS_PREFIX}/@executable_path\/../g" ${ETC}/gtk-2.0/gdk-pixbuf.loaders ${ETC}/pango/pango.modules
-echo -e "[Pango]\nModuleFiles = /tmp/`basename ${EXECUTABLE}`_pango.modules" > ${ETC}/pango/pangorc
-
-
-#Copy over the release files
-echo "Copying release files..."
-cp -R ${RELEASE}/* ${MACOS}
-
-#Copy application-specific stuff like icons and startup script
-echo "Creating required application bundle files..."
-cp ${BUILD_FOLDER}/Info.plist ${CONTENTS}
-sed -i -e 's/VERSION/'${DTVER}'/g' ${CONTENTS}/Info.plist
-cp cmake/macosx/darktable.icns ${RESOURCES}
-cp ${BUILD_FOLDER}/start ${MACOS}
-
-#Copy and relink the explicitly defined libraries
-echo "Recursively copying libraries referenced by executable..."
-checkLink "${MACOS}/${EXECUTABLE}"
-
-
-#Make a .dmg for distribution and delete the .app
-echo "Creating distribution .dmg ..."
+PROGN=darktable
+APP=package/${PROGN}.app
 
 # Creating temporary rw image
-SIZE=$(( $(du -sm "${APP}"| awk '{print $1}') + 3 ))
-hdiutil create -srcfolder "${APP}" -volname "${PROGN}" -fs HFS+ \
-      -fsargs "-c c=64,a=16,e=16" -format UDRW -size ${SIZE}M pack.temp.dmg
+hdiutil create -srcfolder package -volname "${PROGN}" -fs HFS+ \
+      -fsargs "-c c=64,a=16,e=16" -format UDRW pack.temp.dmg
 
 # mounting image without autoopen to create window style params
 device=$(hdiutil attach -readwrite -noverify -noautoopen "pack.temp.dmg" | \
@@ -118,8 +31,6 @@ echo '
 		set theViewOptions to the icon view options of container window
 		set arrangement of theViewOptions to not arranged
 		set icon size of theViewOptions to 72
-		#   set background picture of theViewOptions to file ".backgroundimage:darktable.svg"
-		make new alias file at container window to POSIX file "/Applications" with properties {name:"Applications"}
 		set position of item "'${PROGN}'" of container window to {100, 100}
 		set position of item "Applications" of container window to {375, 100}
 		update without registering applications
@@ -135,13 +46,6 @@ chmod -Rf go-w /Volumes/"${PROGN}"
 sync
 sync
 hdiutil detach ${device}
-if [ -f build/"${PROGN}".dmg ]
-   then echo "removing old .dmg file" && rm -if build/"${PROGN}".dmg
-fi
-
-hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o build/"${PROGN}"
+hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o "${PROGN}"
 rm -f pack.temp.dmg 
-echo "Cleaning up..."
-rm -rf ${APP}
-du -sh build/"${PROGN}".dmg
-echo "All done!"
+rm -Rf package

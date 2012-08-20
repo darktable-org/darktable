@@ -117,12 +117,14 @@ void _dt_sigsegv_handler(int param)
   gchar *name_used;
   int fout;
   gboolean delete_file = FALSE;
+  char datadir[1024];
 
   if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
     fout = STDOUT_FILENO; // just print everything to stdout
 
   dprintf(fout, "this is %s reporting a segfault:\n\n", PACKAGE_STRING);
-  gchar *command = g_strdup_printf("gdb %s %d -batch -x %s/gdb_commands", darktable.progname, (int)getpid(), DARKTABLE_DATADIR);
+  dt_loc_get_datadir(datadir, 1024);
+  gchar *command = g_strdup_printf("gdb %s %d -batch -x %s/gdb_commands", darktable.progname, (int)getpid(), datadir);
 
   if((fd = popen(command, "r")) != NULL)
   {
@@ -429,7 +431,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // dt_check_cpu(argc,argv);
 
 #ifdef HAVE_GEGL
-  (void)setenv("GEGL_PATH", DARKTABLE_DATADIR "/gegl:/usr/lib/gegl-0.0", 1);
+  char geglpath[1024], datadir[1024];
+  dt_loc_get_datadir(datadir, 1024);
+  snprintf(geglpath, 1024, "%s/gegl:/usr/lib/gegl-0.0", datadir);
+  (void)setenv("GEGL_PATH", geglpath, 1);
   gegl_init(&argc, &argv);
 #endif
 
