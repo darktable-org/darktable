@@ -2,28 +2,40 @@ How to make disk image with darktable application bundle (64 bit Intel only):
 
 1). Build darktable (and make sure it works) using instructions found in this blog post:
     http://www.darktable.org/2012/08/bringing-current-darktable-to-os-x/
+    Macports will need some tuning though, so before you build anything add this line to /opt/local/etc/macports/macports.conf:
+     macosx_deployment_target 10.5
+    (10.4 had very limited 64 bit support, so I chose 10.5 as first supported version)
+    And edit /opt/local/share/macports/Tcl/port1.0/portconfigure.tcl - change
+     default configure.ldflags   {-L${prefix}/lib}
+    to
+     default configure.ldflags   {"-L${prefix}/lib -Wl,-headerpad_max_install_names"}
+    Be aware that this change will probably be lost after "port selfupdate".
+    To have working OpenMP you will also need gcc46:
+     sudo port install gcc46
+    Configure darktable with this command instead of just "cmake ..":
+     CC=gcc-mp-4.6 CXX=g++-mp-4.6 cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.6
+    (if CMAKE_OSX_DEPLOYMENT_TARGET is set to 10.5 DT crashes on exit from darkroom mode, need to investigate)
 
 2). Download, patch and install gtk-mac-bundler (assuming darktable was cloned into ~/src directory):
-    $ cd ~/src
-    $ wget http://ftp.gnome.org/pub/gnome/sources/gtk-mac-bundler/0.6/gtk-mac-bundler-0.6.1.tar.bz2
-    $ tar -xf gtk-mac-bundler-0.6.1.tar.bz2
-    $ cd gtk-mac-bundler-0.6.1
-    $ patch -p1 < ../darktable/packaging/macosx/gtk-mac-bundler-0.6.1.patch
-    $ make install
+     $ cd ~/src
+     $ wget http://ftp.gnome.org/pub/gnome/sources/gtk-mac-bundler/0.6/gtk-mac-bundler-0.6.1.tar.bz2
+     $ tar -xf gtk-mac-bundler-0.6.1.tar.bz2
+     $ cd gtk-mac-bundler-0.6.1
+     $ patch -p1 < ../darktable/packaging/macosx/gtk-mac-bundler-0.6.1.patch
+     $ make install
 
-3). Try running bundle creating script:
-    $ cd ~/src/darktable/packaging/macosx
-    $ ./make-app-bundle
-    Most likely there will be error messages about install_name_tool being unable to update some libraries due to lack of space in header.
-    You will need to rebuild these libraries with custom LDFLAGS. To do that copy Portfiles (and files directory if present) to your local macports repository.
-    Then add this line to Portfile:
-    configure.ldflags-append -Wl,-headerpad_max_install_names
-    Update index file with portindex command and reinstall (sudo port -f uninstall + sudo port install) these packages.
-    (This step probably can be simplified by changing some macports config file, need to investigate.)
-
-4). You will need to rebuild gtk2 with custom configure flag too. Copy gtk2 Portfile to local repository (if you haven't already done that) and add this line:
-    configure.args-append --enable-quartz-relocation
+3). You will need to rebuild gtk2 with custom configure flag. Add these lines to gtk2 Portfile in your local macports repository:
+     variant bundle {
+         configure.args-append --enable-quartz-relocation
+     }
+    Update index file and reinstall gtk2 (assuming local repository is in ~/ports directory):
+     $ cd ~/ports
+     $ portindex
+     $ sudo port install gtk2 +bundle
     The problem is that with this flag gtk2 works reliably only when included in bundle, so if you need working system gtk2 you will need to revert this change
-    after you're done with bundle creation. This can be simplified if you place above line in new variant, so you can just run "port activate" when necessary. 
+    after you're done with bundle creation. To do that you can just run this command:
+     $ sudo port install gtk2 -bundle
 
-5). Now preparation is done, run image creating script as described in step 3, it should create darktable.dmg in current (packaging/macosx) directory.
+4). Now preparation is done, run image creating script, it should create darktable.dmg in current (packaging/macosx) directory:
+     $ cd ~/src/darktable/packaging/macosx
+     $ ./make-app-bundle
