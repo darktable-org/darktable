@@ -90,7 +90,8 @@ typedef enum dt_view_image_over_t
   DT_VIEW_STAR_3 = 3,
   DT_VIEW_STAR_4 = 4,
   DT_VIEW_STAR_5 = 5,
-  DT_VIEW_REJECT = 6
+  DT_VIEW_REJECT = 6,
+  DT_VIEW_GROUP  = 7
 }
 dt_view_image_over_t;
 
@@ -136,7 +137,8 @@ typedef struct dt_view_manager_t
     sqlite3_stmt *make_selected;
     /* select color from color_labels where imgid=?1 */
     sqlite3_stmt *get_color;
-
+    /* select images in group from images where imgid=?1 (also bind to ?2) */
+    sqlite3_stmt *get_grouped;
   } statements;
 
 
@@ -280,8 +282,6 @@ void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm,int iid);
     TODO: move to control ?
 */
 void dt_view_filmstrip_prefetch();
-
-
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

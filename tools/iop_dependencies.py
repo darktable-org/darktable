@@ -45,9 +45,9 @@ def add_edges(gr):
   gr.add_edge(('demosaic', 'rawdenoise'))
   gr.add_edge(('demosaic', 'cacorrect'))
   
-  # cacorrect works better on denoised data:
-  gr.add_edge(('cacorrect', 'hotpixels'))
-  gr.add_edge(('cacorrect', 'rawdenoise'))
+  # cacorrect works better on undenoised data:
+  gr.add_edge(('hotpixels', 'cacorrect'))
+  gr.add_edge(('rawdenoise', 'cacorrect'))
   
   # all these need white balanced input:
   gr.add_edge(('rawdenoise', 'temperature'))

@@ -254,6 +254,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>ui_last/grouping</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription>grouping of images</shortdescription>
+    <longdescription>only show a single image for each set of grouped images in lighttable and filmstrip</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>ui_last/view</name>
     <type>int</type>
     <default>1</default>
@@ -434,6 +441,13 @@
     <shortdescription>jpeg quality of on-disk thumbnails</shortdescription>
     <longdescription>affects only the thumbnail cache used for quick startup.</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/draw_group_borders</name>
+    <type>bool</type>
+    <default>TRUE</default>
+    <shortdescription>draw borders around grouped images</shortdescription>
+    <longdescription>draw borders around grouped images when grouping is turned off and the mouse hovers over one of the images of the group</longdescription>
+</dtconfig>
   <dtconfig>
     <name>plugins/lighttable/layout</name>
     <type>int</type>
@@ -989,7 +1003,7 @@
   <dtconfig>
     <name>plugins/darkroom/groups</name>
     <type>int</type>
-    <default>1</default>
+    <default>2</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
