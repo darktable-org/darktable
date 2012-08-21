@@ -9,7 +9,7 @@
 	<key>CFBundleIconFile</key>
 	<string>Icons.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>net.sourceforge.darktable</string>
+	<string>org.darktable</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -21,6 +21,6 @@
 	<key>CFBundleSignature</key>
 	<string>drkt</string>
 	<key>CFBundleVersion</key>
-	<string>1.1.0.0</string>
+	<string>1.1.0.1</string>
 </dict>
 </plist>
