@@ -1177,7 +1177,7 @@ filmroll:
       g_signal_connect(G_OBJECT (tree), "popup-menu", G_CALLBACK (view_onPopupMenu), NULL);
       
       g_value_unset(&value);
-      //g_free(mount_name);
+      g_free(mount_name);
       d->tree_new = FALSE;
     }
   }
