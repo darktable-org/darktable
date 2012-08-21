@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2012 Jose Carlos Garcia Sogo
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,9 +38,6 @@ DT_MODULE(1)
 /* Folders code starts here
  TODO: Clean it */
 
-static void _lib_folders_update_collection(const gchar *filmroll);
-
-
 //DT_MODULE(1)
 
 typedef struct dt_lib_collect_rule_t
@@ -56,11 +54,14 @@ typedef struct dt_lib_collect_t
 {
   dt_lib_collect_rule_t rule[MAX_RULES];
   int active_rule;
+  
   GtkTreeView *view;
   GtkTreeModel *treemodel;
   gboolean tree_new;
   GtkTreeModel *listmodel;
   GtkScrolledWindow *scrolledwindow;
+  
+  GVolumeMonitor *gv_monitor;
   
   GPtrArray *labels;
   GPtrArray *trees;
@@ -92,21 +93,6 @@ typedef enum dt_lib_collect_cols_t
 }
 dt_lib_collect_cols_t;
 
-typedef struct dt_lib_folders_t
-{
-  /* data */
-  GtkTreeStore *store;
-  GList *mounts;
-
-  /* gui */
-  GVolumeMonitor *gv_monitor;
-  GtkBox *box_tree;
-
-  GPtrArray *buttons;
-  GPtrArray *trees;
-}
-dt_lib_folders_t;
-
 typedef struct _image_t
 {
   int id;
@@ -117,9 +103,109 @@ typedef struct _image_t
 }
 _image_t;
 
+static void _lib_collect_gui_update (dt_lib_module_t *d);
+static void _lib_folders_update_collection(const gchar *filmroll);
+
+const char*
+name ()
+{
+  return _("collect images");
+}
+
+void init_presets(dt_lib_module_t *self)
+{
+}
+
 static void
 row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_lib_collect_t *d);
 
+/* Update the params struct with active ruleset */
+static void _lib_collect_update_params(dt_lib_collect_t *d) {
+  /* reset params */
+  dt_lib_collect_params_t *p = d->params;
+  memset(p,0,sizeof(dt_lib_collect_params_t));
+
+  /* for each active rule set update params */
+  const int active = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules") - 1, 0, (MAX_RULES-1));
+  char confname[200];
+  for (int i=0; i<=active; i++) {
+    /* get item */
+    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
+    p->rule[i].item = dt_conf_get_int(confname);
+    
+    /* get mode */
+    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i);
+    p->rule[i].mode = dt_conf_get_int(confname);
+
+    /* get string */
+    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
+    gchar* string = dt_conf_get_string(confname);
+    if (string != NULL) {
+      snprintf(p->rule[i].string,DT_MAX_PATH_LEN,"%s", string);
+      g_free(string);
+    }
+
+    fprintf(stderr,"[%i] %d,%d,%s\n",i, p->rule[i].item, p->rule[i].mode,  p->rule[i].string);
+  }
+  
+  p->rules = active+1;
+
+}
+
+void *get_params(dt_lib_module_t *self, int *size)
+{
+  _lib_collect_update_params(self->data);
+
+  /* allocate a copy of params to return, freed by caller */
+  *size = sizeof(dt_lib_collect_params_t);
+  void *p = malloc(*size);
+  memcpy(p,((dt_lib_collect_t *)self->data)->params,*size);
+  return p;
+}
+
+int set_params(dt_lib_module_t *self, const void *params, int size)
+{
+  /* update conf settings from params */
+  dt_lib_collect_params_t *p = (dt_lib_collect_params_t *)params;
+  char confname[200];
+  
+  for (int i=0; i<p->rules; i++) {
+    /* set item */
+    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
+    dt_conf_set_int(confname, p->rule[i].item);
+    
+    /* set mode */
+    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i);
+    dt_conf_set_int(confname, p->rule[i].mode);
+    
+    /* set string */
+    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
+    dt_conf_set_string(confname, p->rule[i].string);
+  }
+
+  /* set number of rules */
+  snprintf(confname, 200, "plugins/lighttable/collect/num_rules");
+  dt_conf_set_int(confname, p->rules);
+
+  /* update ui */
+  _lib_collect_gui_update(self);
+
+  /* update view */
+  dt_collection_update_query(darktable.collection);
+
+  return 0;
+}
+
+
+uint32_t views()
+{
+  return DT_VIEW_LIGHTTABLE;
+}
+
+uint32_t container()
+{
+  return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
+}
 /* callback for drag and drop */
 /*static void _lib_keywords_drag_data_received_callback(GtkWidget *w,
 					  GdkDragContext *dctx,
@@ -729,17 +815,6 @@ static void _lib_folders_update_collection(const gchar *filmroll)
 
   gchar *complete_query = NULL;
 
-  /* TODO: Give back this functionality 
-  complete_query = dt_util_dstrcat(complete_query, "film_id in (select id from film_rolls where folder like '%s%%')", filmroll);
-
-  dt_conf_set_string("plugins/lighttable/where_ext_query", complete_query);
-  dt_conf_set_bool("plugins/lighttable/alt_query", 1);
-
-  dt_collection_update_query(darktable.collection);
-
-  g_free(complete_query);
-  */
-
   // remove from selected images where not in this query.
   sqlite3_stmt *stmt = NULL;
   const gchar *cquery = dt_collection_get_query(darktable.collection);
@@ -779,160 +854,6 @@ void destroy_widget (gpointer data)
   GtkWidget *widget = (GtkWidget *)data;
 
   gtk_widget_destroy(widget);
-}
-
-#if 0
-
-void gui_init(dt_lib_module_t *self)
-{
-  /* initialize ui widgets */
-  dt_lib_folders_t *d = (dt_lib_folders_t *)g_malloc(sizeof(dt_lib_folders_t));
-  memset(d,0,sizeof(dt_lib_folders_t));
-  self->data = (void *)d;
-  self->widget = gtk_vbox_new(FALSE, 5);
-
-  dt_control_signal_connect(darktable.signals, 
-			    DT_SIGNAL_FILMROLLS_CHANGED,
-			    G_CALLBACK(collection_updated),
-			    self);
-
-  d->box_tree = GTK_BOX(gtk_vbox_new(FALSE,5));
-
-  /* set the monitor */
-  d->gv_monitor = g_volume_monitor_get ();
-
-//  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-added", G_CALLBACK(mount_changed), self);
-//  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-removed", G_CALLBACK(mount_changed), self);
-//  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-changed", G_CALLBACK(mount_changed), self);
-
-  d->mounts = g_volume_monitor_get_mounts(d->gv_monitor);
-  
-  _lib_folders_gui_update(self);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->box_tree), TRUE, TRUE, 0);
-}
-
-void gui_cleanup(dt_lib_module_t *self)
-{
-  dt_lib_folders_t *d = (dt_lib_folders_t*)self->data;
-
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self);
-
-  /* cleanup mem */
-  g_ptr_array_free(d->labels, TRUE);
-  g_ptr_array_free(d->trees, TRUE);
-
-  /* TODO: Cleanup gtktreestore and gtktreemodel all arounf the code */
-  g_free(self->data);
-  self->data = NULL;
-}
-#endif
-
-/* Folders module code ends here
- * *********************************************************************************
-*/
-
-
-static void _lib_collect_gui_update (dt_lib_module_t *d);
-
-
-const char*
-name ()
-{
-  return _("collect images");
-}
-
-
-void init_presets(dt_lib_module_t *self)
-{
-}
-
-/* Update the params struct with active ruleset */
-static void _lib_collect_update_params(dt_lib_collect_t *d) {
-  /* reset params */
-  dt_lib_collect_params_t *p = d->params;
-  memset(p,0,sizeof(dt_lib_collect_params_t));
-
-  /* for each active rule set update params */
-  const int active = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules") - 1, 0, (MAX_RULES-1));
-  char confname[200];
-  for (int i=0; i<=active; i++) {
-    /* get item */
-    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
-    p->rule[i].item = dt_conf_get_int(confname);
-    
-    /* get mode */
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i);
-    p->rule[i].mode = dt_conf_get_int(confname);
-
-    /* get string */
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
-    gchar* string = dt_conf_get_string(confname);
-    if (string != NULL) {
-      snprintf(p->rule[i].string,DT_MAX_PATH_LEN,"%s", string);
-      g_free(string);
-    }
-
-    fprintf(stderr,"[%i] %d,%d,%s\n",i, p->rule[i].item, p->rule[i].mode,  p->rule[i].string);
-  }
-  
-  p->rules = active+1;
-
-}
-
-void *get_params(dt_lib_module_t *self, int *size)
-{
-  _lib_collect_update_params(self->data);
-
-  /* allocate a copy of params to return, freed by caller */
-  *size = sizeof(dt_lib_collect_params_t);
-  void *p = malloc(*size);
-  memcpy(p,((dt_lib_collect_t *)self->data)->params,*size);
-  return p;
-}
-
-int set_params(dt_lib_module_t *self, const void *params, int size)
-{
-  /* update conf settings from params */
-  dt_lib_collect_params_t *p = (dt_lib_collect_params_t *)params;
-  char confname[200];
-  
-  for (int i=0; i<p->rules; i++) {
-    /* set item */
-    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
-    dt_conf_set_int(confname, p->rule[i].item);
-    
-    /* set mode */
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i);
-    dt_conf_set_int(confname, p->rule[i].mode);
-    
-    /* set string */
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
-    dt_conf_set_string(confname, p->rule[i].string);
-  }
-
-  /* set number of rules */
-  snprintf(confname, 200, "plugins/lighttable/collect/num_rules");
-  dt_conf_set_int(confname, p->rules);
-
-  /* update ui */
-  _lib_collect_gui_update(self);
-
-  /* update view */
-  dt_collection_update_query(darktable.collection);
-
-  return 0;
-}
-
-
-uint32_t views()
-{
-  return DT_VIEW_LIGHTTABLE;
-}
-
-uint32_t container()
-{
-  return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }
 
 static dt_lib_collect_t*
@@ -1659,6 +1580,13 @@ gui_init (dt_lib_module_t *self)
   darktable.view_manager->proxy.module_collect.module = self;
   darktable.view_manager->proxy.module_collect.update = _lib_collect_gui_update;
 
+  /* set the monitor */
+  /* TODO: probably we should be using the same for the import code */
+  d->gv_monitor = g_volume_monitor_get ();
+//  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-added", G_CALLBACK(mount_changed), self);
+//  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-removed", G_CALLBACK(mount_changed), self);
+//  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-changed", G_CALLBACK(mount_changed), self);
+
   // TODO: This should be done in a more generic place, not gui_init
   d->treemodel = GTK_TREE_MODEL(_folder_tree());
   d->tree_new = TRUE;
@@ -1668,10 +1596,21 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
+  dt_lib_module_t *dm = (dt_lib_module_t *)self;
+  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+  
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_updated), self);
   darktable.view_manager->proxy.module_collect.module = NULL;
-  free(((dt_lib_collect_t*)self->data)->params);
-  free(self->data);
+  g_free(((dt_lib_collect_t*)self->data)->params);
+  
+  /* cleanup mem */
+  g_ptr_array_free(d->labels, TRUE);
+  g_ptr_array_free(d->trees, TRUE);
+
+  /* TODO: Make sure we are cleaning up all allocations */
+  
+  g_free(self->data);
   self->data = NULL;
 }
 
