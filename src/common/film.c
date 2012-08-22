@@ -78,7 +78,6 @@ void dt_film_set_query(const int32_t id)
       (gchar *)sqlite3_column_text (stmt, 1));
   }
   sqlite3_finalize (stmt);
-  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 

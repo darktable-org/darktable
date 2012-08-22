@@ -104,8 +104,6 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("plugins/collection/sort",              0);
   dt_conf_set_bool ("plugins/collection/descending",        0);
 
-  dt_conf_set_bool ("plugins/lighttable/alt_query",         0); 
-
   // reasonable thumbnail res:
   dt_conf_set_int  ("plugins/lighttable/thumbnail_width", 1300);
   dt_conf_set_int  ("plugins/lighttable/thumbnail_height", 1000);

@@ -786,7 +786,6 @@ static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
       dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
       dt_conf_set_int("plugins/lighttable/collect/item0", 0);
       dt_conf_set_string("plugins/lighttable/collect/string0",first_filename);
-      dt_conf_set_bool("plugins/lighttable/alt_query", 0);
       dt_collection_update_query(darktable.collection);
       g_free(first_filename);
     }
