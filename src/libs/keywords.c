@@ -433,7 +433,6 @@ static void _lib_keywords_add_collection_rule(GtkTreeView *view, GtkTreePath *tp
   dt_conf_set_int("plugins/lighttable/collect/num_rules", rule+1);
 
   dt_view_collection_update(darktable.view_manager);
-  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

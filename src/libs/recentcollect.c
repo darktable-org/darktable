@@ -125,7 +125,6 @@ deserialize(char *buf)
     while(buf[0] != '$' && buf[0] != '\0') buf++;
     buf++;
   }
-  dt_conf_set_bool("plugins/lighttable/alt_query", 0);
   dt_collection_update_query(darktable.collection);
 }
 
