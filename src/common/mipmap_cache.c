@@ -504,10 +504,11 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_al
 
   struct dt_mipmap_buffer_dsc** dsc = (struct dt_mipmap_buffer_dsc**)a;
 
+  int32_t wd = img->width;
+  int32_t ht = img->height;
+  int32_t bpp = img->bpp;
   const uint32_t buffer_size = 
-      (img->width * img->height * img->bpp) +
-      sizeof(**dsc);
-
+      ((wd*ht*bpp) + sizeof(**dsc));
 
   // buf might have been alloc'ed before,
   // so only check size and re-alloc if necessary:
@@ -527,8 +528,8 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_al
     // set buffer size only if we're making it larger.
     (*dsc)->size = buffer_size;
   }
-  (*dsc)->width = img->width;
-  (*dsc)->height = img->height;
+  (*dsc)->width = wd;
+  (*dsc)->height = ht;
   (*dsc)->flags = DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
 
   // fprintf(stderr, "full buffer allocating img %u %d x %d = %u bytes (%lX)\n", img->id, img->width, img->height, buffer_size, (uint64_t)*buf);
@@ -541,12 +542,21 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_al
 int32_t
 dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, void **buf)
 {
+  dt_mipmap_cache_one_t *cache = (dt_mipmap_cache_one_t *)data;
   // for full image buffers
   struct dt_mipmap_buffer_dsc* dsc = *buf;
   // alloc mere minimum for the header + broken image buffer:
   if(!dsc)
   {
-    *buf = dt_alloc_align(16, sizeof(*dsc)+sizeof(float)*4*64);
+    if(cache->size == DT_MIPMAP_F)
+    {
+      // these are fixed-size:
+      *buf = dt_alloc_align(16, cache->buffer_size);
+    }
+    else
+    {
+      *buf = dt_alloc_align(16, sizeof(*dsc)+sizeof(float)*4*64);
+    }
     // fprintf(stderr, "[mipmap cache] alloc dynamic for key %u %lX\n", key, (uint64_t)*buf);
     if(!(*buf))
     {
@@ -554,9 +564,18 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, 
       exit(1);
     }
     dsc = *buf;
-    dsc->width = 0;
-    dsc->height = 0;
-    dsc->size = sizeof(*dsc)+sizeof(float)*4*64;
+    if(cache->size == DT_MIPMAP_F)
+    {
+      dsc->width = cache->max_width;
+      dsc->height = cache->max_height;
+      dsc->size = cache->buffer_size;
+    }
+    else
+    {
+      dsc->width = 0;
+      dsc->height = 0;
+      dsc->size = sizeof(*dsc)+sizeof(float)*4*64;
+    }
   }
   assert(dsc->size >= sizeof(*dsc));
   dsc->flags = DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
@@ -568,13 +587,17 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, 
   return 1; // request write lock
 }
 
-#if 0
 void
 dt_mipmap_cache_deallocate_dynamic(void *data, const uint32_t key, void *payload)
 {
+  dt_mipmap_cache_one_t *cache = (dt_mipmap_cache_one_t *)data;
+  if(cache->size == DT_MIPMAP_F)
+  {
+    free(payload);
+  }
+  // else:
   // don't clean up anything, as we are re-allocating. 
 }
-#endif
 
 static uint32_t
 nearest_power_of_two(const uint32_t value)
@@ -606,7 +629,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 
   // adjust numbers to be large enough to hold what mem limit suggests.
   // we want at least 100MB, and consider 2G just still reasonable.
-  const uint32_t max_mem = CLAMPS(dt_conf_get_int("cache_memory"), 100u<<20, 2u<<30)/5;
+  uint32_t max_mem = CLAMPS(dt_conf_get_int("cache_memory"), 100u<<20, 2u<<30);
   const uint32_t parallel = CLAMP(dt_conf_get_int ("worker_threads"), 1, 8);
   const int32_t max_size = 2048, min_size = 32;
   int32_t wd = darktable.thumbnail_width;
@@ -634,6 +657,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     cache->scratchmem.max_height = ht;
     cache->scratchmem.buffer_size = wd*ht*sizeof(uint32_t);
     cache->scratchmem.size = DT_MIPMAP_3; // at max.
+    // TODO: use thread local storage instead (zero performance penalty on linux)
     dt_cache_init(&cache->scratchmem.cache, parallel, parallel, 64, 0.9f*parallel*wd*ht*sizeof(uint32_t));
     // might have been rounded to power of two:
     const int cnt = dt_cache_capacity(&cache->scratchmem.cache);
@@ -646,32 +670,30 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
         cnt, cnt* wd*ht*sizeof(uint32_t)/(1024.0*1024.0));
   }
 
-  for(int k=0;k<=DT_MIPMAP_F;k++)
+  for(int k=DT_MIPMAP_3;k>=0;k--)
   {
     // buffer stores width and height + actual data
     const int width  = cache->mip[k].max_width;
     const int height = cache->mip[k].max_height;
-    if(k == DT_MIPMAP_F)
-    {
-      cache->mip[k].buffer_size = (4 + 4 * width * height)*sizeof(float);
-    }
-    else
-    {
-      // header + adjusted for dxt compression:
-      cache->mip[k].buffer_size = 4*sizeof(uint32_t) + compressed_buffer_size(cache->compression_type, width, height);
-    }
+    // header + adjusted for dxt compression:
+    cache->mip[k].buffer_size = 4*sizeof(uint32_t) + compressed_buffer_size(cache->compression_type, width, height);
     cache->mip[k].size = k;
     // level of parallelism also gives minimum size (which is twice that)
     // is rounded to a power of two by the cache anyways, we might as well.
-    uint32_t thumbnails = MAX(2, nearest_power_of_two((uint32_t)((float)max_mem/cache->mip[k].buffer_size)));
-    while(thumbnails > parallel && thumbnails * cache->mip[k].buffer_size > max_mem) thumbnails /= 2;
+    const uint32_t max_mem2 = MAX(0, (k == 0) ? (max_mem) : (max_mem/(k+4)));
+    uint32_t thumbnails = MAX(2, nearest_power_of_two((uint32_t)((float)max_mem2/cache->mip[k].buffer_size)));
+    while(thumbnails > parallel && thumbnails * cache->mip[k].buffer_size > max_mem2) thumbnails /= 2;
 
     // try to utilize that memory well (use 90% quota), the hopscotch paper claims good scalability up to
     // even more than that.
-    dt_cache_init(&cache->mip[k].cache, thumbnails, parallel, 64, 0.9f*thumbnails*cache->mip[k].buffer_size);
+    dt_cache_init(&cache->mip[k].cache, thumbnails,
+        parallel,
+        64, 0.9f*thumbnails*cache->mip[k].buffer_size);
 
     // might have been rounded to power of two:
     thumbnails = dt_cache_capacity(&cache->mip[k].cache);
+    max_mem -= thumbnails * cache->mip[k].buffer_size;
+    // dt_print(DT_DEBUG_CACHE, "[mipmap mem] %4.02f left\n", max_mem/(1024.0*1024.0));
     cache->mip[k].buf = dt_alloc_align(64, thumbnails * cache->mip[k].buffer_size);
     dt_cache_static_allocation(&cache->mip[k].cache, (uint8_t *)cache->mip[k].buf, cache->mip[k].buffer_size);
     dt_cache_set_allocate_callback(&cache->mip[k].cache,
@@ -683,6 +705,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
         "[mipmap_cache_init] cache has % 5d entries for mip %d (% 4.02f MB).\n",
         thumbnails, k, thumbnails * cache->mip[k].buffer_size/(1024.0*1024.0));
   }
+
   // full buffer needs dynamic alloc:
   const int full_entries = MAX(2, parallel); // even with one thread you want two buffers. one for dr one for thumbs.
   int32_t max_mem_bufs = nearest_power_of_two(full_entries);
@@ -699,19 +722,31 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   cache->mip[DT_MIPMAP_FULL].size = DT_MIPMAP_FULL;
   cache->mip[DT_MIPMAP_FULL].buf = NULL;
 
+  // same for mipf:
+  dt_cache_init(&cache->mip[DT_MIPMAP_F].cache, max_mem_bufs, parallel, 64, max_mem_bufs);
+  dt_cache_set_allocate_callback(&cache->mip[DT_MIPMAP_F].cache,
+      dt_mipmap_cache_allocate_dynamic, &cache->mip[DT_MIPMAP_F]);
+  dt_cache_set_cleanup_callback(&cache->mip[DT_MIPMAP_F].cache,
+      dt_mipmap_cache_deallocate_dynamic, &cache->mip[DT_MIPMAP_F]);
+  cache->mip[DT_MIPMAP_F].buffer_size = 4*sizeof(uint32_t) +
+    4*sizeof(float) * cache->mip[DT_MIPMAP_F].max_width * cache->mip[DT_MIPMAP_F].max_height;
+  cache->mip[DT_MIPMAP_F].size = DT_MIPMAP_F;
+  cache->mip[DT_MIPMAP_F].buf = NULL;
+
   dt_mipmap_cache_deserialize(cache);
 }
 
 void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
 {
   dt_mipmap_cache_serialize(cache);
-  for(int k=0;k<=DT_MIPMAP_F;k++)
+  for(int k=0;k<DT_MIPMAP_F;k++)
   {
     dt_cache_cleanup(&cache->mip[k].cache);
     // now mem is actually freed, not during cache cleanup
     free(cache->mip[k].buf);
   }
   dt_cache_cleanup(&cache->mip[DT_MIPMAP_FULL].cache);
+  dt_cache_cleanup(&cache->mip[DT_MIPMAP_F].cache);
 
   // clean up temporary buffers for decompressed images, if any:
   if(cache->compression_type)
@@ -723,7 +758,7 @@ void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
 
 void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
 {
-  for(int k=0; k<(int)DT_MIPMAP_FULL; k++)
+  for(int k=0; k<(int)DT_MIPMAP_F; k++)
   {
     printf("[mipmap_cache] level %d fill %.2f/%.2f MB (%.2f%% in %u/%u buffers)\n", k, cache->mip[k].cache.cost/(1024.0*1024.0),
       cache->mip[k].cache.cost_quota/(1024.0*1024.0),
@@ -731,12 +766,14 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
       dt_cache_size(&cache->mip[k].cache),
       dt_cache_capacity(&cache->mip[k].cache));
   }
-  const int k = DT_MIPMAP_FULL;
-  printf("[mipmap_cache] level [full] fill %d/%d slots (%.2f%% in %u/%u buffers)\n", cache->mip[k].cache.cost,
-    cache->mip[k].cache.cost_quota,
-    100.0f*(float)cache->mip[k].cache.cost/(float)cache->mip[k].cache.cost_quota,
-    dt_cache_size(&cache->mip[k].cache),
-    dt_cache_capacity(&cache->mip[k].cache));
+  for(int k=(int)DT_MIPMAP_F; k<=(int)DT_MIPMAP_FULL; k++)
+  {
+    printf("[mipmap_cache] level [f%d] fill %d/%d slots (%.2f%% in %u/%u buffers)\n", k, cache->mip[k].cache.cost,
+      cache->mip[k].cache.cost_quota,
+      100.0f*(float)cache->mip[k].cache.cost/(float)cache->mip[k].cache.cost_quota,
+      dt_cache_size(&cache->mip[k].cache),
+      dt_cache_capacity(&cache->mip[k].cache));
+  }
   if(cache->compression_type)
   {
     printf("[mipmap_cache] scratch fill %.2f/%.2f MB (%.2f%% in %u/%u buffers)\n", cache->scratchmem.cache.cost/(1024.0*1024.0),
@@ -798,7 +835,7 @@ dt_mipmap_cache_read_get(
     if(!dsc)
     {
       // should never happen for anything but full images which have been moved.
-      assert(mip == DT_MIPMAP_FULL);
+      assert(mip == DT_MIPMAP_FULL || mip == DT_MIPMAP_F);
       // fprintf(stderr, "[mipmap cache get] no data in cache for imgid %u size %d!\n", imgid, mip);
       // sorry guys, no image for you :(
       buf->width = buf->height = 0;

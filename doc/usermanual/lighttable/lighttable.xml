@@ -155,7 +155,7 @@
 					<colspec colwidth='30%'/>
 					<tbody>
 						<row>						
-							<entry>This panel allows to quickly select images, according to various criterion.
+							<entry>This panel allows to quickly select images, according to various criteria.
 							</entry>
 							<entry>
 								<graphic fileref="lighttable/images/panel_select.png" scalefit="1" width="80%" align="center" />
@@ -338,7 +338,7 @@
 					<tbody>
 						<row>						
 							<entry>Thanks to this panel, you can manage your collection (current view)
-							by filtering image thanks to various criterion.
+							by filtering image thanks to various criteria.
 							The left combo box lets you choose from different filters, such a 'filmroll', 'historystack',
 							'date', 'camera' and much more. The table belows lists all available data for the selected filter.
 							You can then select the data of your choice by double-clicking.						

@@ -350,7 +350,7 @@ void dt_control_create_database_schema()
     "folder varchar(1024), external_drive varchar(1024))",
     NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "create table images (id integer primary key, film_id integer, "
+    "create table images (id integer primary key, group_id integer, film_id integer, "
     "width int, height int, filename varchar, maker varchar, model varchar, "
     "lens varchar, exposure real, aperture real, iso real, focal_length real, "
     "focus_distance real, datetime_taken char(20), flags integer, "
@@ -543,26 +543,32 @@ void dt_control_init(dt_control_t *s)
 
       // add columns where needed. will just fail otherwise:
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table images add column orientation integer",
-	  NULL, NULL, NULL);
+      "alter table images add column orientation integer",
+      NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "update images set orientation = -1 where orientation is NULL",
-	  NULL, NULL, NULL);
+      "update images set orientation = -1 where orientation is NULL",
+      NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table images add column focus_distance real",
-	  NULL, NULL, NULL);
+      "alter table images add column focus_distance real",
+      NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "update images set focus_distance = -1 where focus_distance is NULL",
-	  NULL, NULL, NULL);
+      "update images set focus_distance = -1 where focus_distance is NULL",
+      NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table images add column histogram blob",
-	  NULL, NULL, NULL);
+      "alter table images add column group_id integer",
+      NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table images add column lightmap blob",
-	  NULL, NULL, NULL);
+      "update images set group_id = id where group_id is NULL",
+      NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-    "alter table film_rolls add column external_drive varchar(1024)",
-    NULL, NULL, NULL);
+      "alter table images add column histogram blob",
+      NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+      "alter table images add column lightmap blob",
+      NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+      "alter table film_rolls add column external_drive varchar(1024)",
+      NULL, NULL, NULL);
 
       // add column for blendops
       sqlite3_exec(dt_database_get(darktable.db),

@@ -16,12 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "common/grouping.h"
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
 #include "control/control.h"
@@ -147,6 +149,7 @@ void dt_image_path_append_version(int imgid, char *pathname, const int len)
     char *c2 = filename + strlen(filename);
     while(*c2 != '.' && c2 > filename) c2--;
     snprintf(c+3, pathname + len - c - 3, "%s", c2);
+    g_free(filename);
   }
 }
 
@@ -228,11 +231,11 @@ int32_t dt_image_duplicate(const int32_t imgid)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
     "insert into images "
-    "(id, film_id, width, height, filename, maker, model, lens, exposure, "
+    "(id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
     "aperture, iso, focal_length, focus_distance, datetime_taken, flags, "
     "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
     "raw_auto_bright_threshold, raw_black, raw_maximum, orientation) "
-    "select null, film_id, width, height, filename, maker, model, lens, "
+    "select null, group_id, film_id, width, height, filename, maker, model, lens, "
     "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
     "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
     "raw_auto_bright_threshold, raw_black, raw_maximum, orientation "
@@ -280,6 +283,13 @@ int32_t dt_image_duplicate(const int32_t imgid)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+    if(darktable.gui && darktable.gui->grouping)
+    {
+      const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, newid);
+      darktable.gui->expanded_group_id = img->group_id;
+      dt_image_cache_read_release(darktable.image_cache, img);
+      dt_collection_update_query(darktable.collection);
+    }
   }
   return newid;
 }
@@ -287,6 +297,14 @@ int32_t dt_image_duplicate(const int32_t imgid)
 void dt_image_remove(const int32_t imgid)
 {
   sqlite3_stmt *stmt;
+
+  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+  int old_group_id = img->group_id;
+  dt_image_cache_read_release(darktable.image_cache, img);
+  int new_group_id = dt_grouping_remove_from_group(imgid);
+  if(darktable.gui && darktable.gui->expanded_group_id == old_group_id)
+    darktable.gui->expanded_group_id = new_group_id;
+
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
     "delete from images where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -395,7 +413,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   sqlite3_finalize(stmt);
 
   uint32_t flags = dt_conf_get_int("ui_last/import_initial_rating");
-  if(flags < 0 || flags > 5)
+  if(flags > 5)
   {
     flags = 1;
     dt_conf_set_int("ui_last/import_initial_rating", 1);
@@ -422,11 +440,32 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   if(sqlite3_step(stmt) == SQLITE_ROW) id = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
+  // Try to find out if this should be grouped already.
+  gchar *basename = g_strdup(imgfname);
+  gchar *cc2 = basename + strlen(basename);
+  for(; *cc2!='.'&&cc2>basename; cc2--);
+  *cc2='\0';
+  gchar *sql_pattern = g_strconcat(basename, ".%", NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select group_id from images where film_id = ?1 and filename like ?2 and id != ?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, sql_pattern, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, id);
+  int group_id;
+  if(sqlite3_step(stmt) == SQLITE_ROW) group_id = sqlite3_column_int(stmt, 0);
+  else                                 group_id = id;
+  sqlite3_finalize(stmt);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set group_id = ?1 where id = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, id);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
   // printf("[image_import] importing `%s' to img id %d\n", imgfname, id);
 
   // lock as shortly as possible:
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, id);
   dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+  img->group_id = group_id;
 
   // read dttags and exif for database queries!
   (void) dt_exif_read(img, filename);
@@ -481,6 +520,8 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
 
   g_free(imgfname);
   g_free(fname);
+  g_free(basename);
+  g_free(sql_pattern);
   g_free(globbuf);
 
   return id;
@@ -496,6 +537,7 @@ void dt_image_init(dt_image_t *img)
   img->filters = 0;
   img->bpp = 0;
   img->film_id = -1;
+  img->group_id = -1;
   img->flags = 0;
   img->id = -1;
   img->exif_inited = 0;
@@ -755,7 +797,7 @@ void dt_image_synch_all_xmp(const gchar *pathname)
       }
       globfree(globbuf);
     }
-     
+
     sqlite3_stmt *stmt;
     gchar *imgfname = g_path_get_basename(pathname);
     gchar *imgpath = g_path_get_dirname(pathname);

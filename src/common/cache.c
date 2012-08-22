@@ -123,17 +123,35 @@ get_start_cacheline_bucket(const dt_cache_t *const cache, dt_cache_bucket_t *con
   return bucket - ((bucket - cache->table) & cache->cache_mask);
 }
 
+static void 
+add_cost(dt_cache_t    *cache,
+         const int32_t  cost)
+{
+  __sync_fetch_and_add(&cache->cost, cost);
+}
+
 static void
-remove_key(dt_cache_segment_t *segment,
+remove_key(dt_cache_t *cache,
+           dt_cache_segment_t *segment,
            dt_cache_bucket_t *const from_bucket,
            dt_cache_bucket_t *const key_bucket,
            dt_cache_bucket_t *const prev_key_bucket,
            const uint32_t hash)
 {
+  // clean up the user data
+  if(cache->cleanup)
+  {
+    // in case cleanup is requested, assume we should set to NULL again.
+    cache->cleanup(cache->cleanup_data, key_bucket->key, key_bucket->data);
+    key_bucket->data = DT_CACHE_EMPTY_DATA;
+  }
+  // else: crucially don't release the data pointer (not for dynamic nor static allocation a good idea)
+  // key_bucket->data = DT_CACHE_EMPTY_DATA;
   key_bucket->hash = DT_CACHE_EMPTY_HASH;
   key_bucket->key  = DT_CACHE_EMPTY_KEY;
-  // crucially don't release the data pointer (not for dynamic nor static allocation a good idea)
-  // key_bucket->data = DT_CACHE_EMPTY_DATA;
+
+  // keep track of cost
+  add_cost(cache, -key_bucket->cost);
 
   if(prev_key_bucket == NULL)
   {
@@ -151,13 +169,6 @@ remove_key(dt_cache_segment_t *segment,
   }
   segment->timestamp ++;
   key_bucket->next_delta = DT_CACHE_NULL_DELTA;
-}
-
-static void 
-add_cost(dt_cache_t    *cache,
-         const int32_t  cost)
-{
-  __sync_fetch_and_add(&cache->cost, cost);
 }
 
 // unexposed helpers to increase the read lock count.
@@ -839,19 +850,12 @@ dt_cache_remove(dt_cache_t *cache, const uint32_t key)
         dt_cache_unlock(&segment->lock);
         return 1;
       }
-      void *rc = curr_bucket->data;
-      const int32_t cost = curr_bucket->cost;
-      remove_key(segment, start_bucket, curr_bucket, last_bucket, hash);
+      remove_key(cache, segment, start_bucket, curr_bucket, last_bucket, hash);
       if(cache->optimize_cacheline)
         optimize_cacheline_use(cache, segment, curr_bucket);
       // put back into unused part of the cache: remove from lru list.
       dt_cache_unlock(&segment->lock);
       lru_remove_locked(cache, curr_bucket);
-      // clean up the user data
-      if(cache->cleanup)
-        cache->cleanup(cache->cleanup_data, key, rc);
-      // keep track of cost
-      add_cost(cache, -cost);
       // fprintf(stderr, "[cache remove] freeing %d for %u\n", cost, key);
       return 0;
     }
@@ -895,7 +899,7 @@ dt_cache_remove_no_lru_lock(dt_cache_t *cache, const uint32_t key)
       }
       void *rc = curr_bucket->data;
       const int32_t cost = curr_bucket->cost;
-      remove_key(segment, start_bucket, curr_bucket, last_bucket, hash);
+      remove_key(cache, segment, start_bucket, curr_bucket, last_bucket, hash);
       if(cache->optimize_cacheline)
         optimize_cacheline_use(cache, segment, curr_bucket);
       // put back into unused part of the cache: remove from lru list.
