@@ -10,11 +10,8 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     to
      default configure.ldflags   {"-L${prefix}/lib -Wl,-headerpad_max_install_names"}
     Be aware that this change will probably be lost after "port selfupdate".
-    To have working OpenMP you will also need gcc46:
-     sudo port install gcc46
     Configure darktable with this command instead of just "cmake ..":
-     CC=gcc-mp-4.6 CXX=g++-mp-4.6 cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.6
-    (if CMAKE_OSX_DEPLOYMENT_TARGET is set to 10.5 DT crashes on exit from darkroom mode, need to investigate)
+     cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.5
 
 2). Download, patch and install gtk-mac-bundler (assuming darktable was cloned into ~/src directory):
      $ cd ~/src
