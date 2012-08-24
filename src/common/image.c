@@ -168,7 +168,7 @@ void dt_image_set_location(const int32_t imgid, double lon, double lat)
   if (!cimg)
     return;
   dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
-  
+
   /* set image location */
   image->longitude = lon;
   image->latitude = lat;
@@ -176,9 +176,6 @@ void dt_image_set_location(const int32_t imgid, double lon, double lat)
   /* store */
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
   dt_image_cache_read_release(darktable.image_cache, image);
-
-  /* update sidecar */
-  dt_image_write_sidecar_file(imgid);
 }
 
 void dt_image_set_flip(const int32_t imgid, const int32_t orientation)
@@ -602,7 +599,7 @@ void dt_image_synch_all_xmp(const gchar *pathname)
       }
       globfree(globbuf);
     }
-     
+
     sqlite3_stmt *stmt;
     gchar *imgfname = g_path_get_basename(pathname);
     gchar *imgpath = g_path_get_dirname(pathname);
