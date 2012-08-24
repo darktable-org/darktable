@@ -45,14 +45,14 @@ typedef struct dt_gpx_t {
 
 
 static void _gpx_parser_start_element(GMarkupParseContext *ctx,
-				      const gchar *element_name, const gchar **attribute_names,
-				      const gchar **attribute_values, gpointer ueer_data,
-				      GError **error);
+                                      const gchar *element_name, const gchar **attribute_names,
+                                      const gchar **attribute_values, gpointer ueer_data,
+                                      GError **error);
 static void _gpx_parser_end_element(GMarkupParseContext *context, const gchar *element_name,
-				    gpointer user_data, GError **error);
+                                    gpointer user_data, GError **error);
 static void _gpx_parser_text(GMarkupParseContext *context,
-			     const gchar *text, gsize text_len,
-			     gpointer user_data,GError **error);
+                             const gchar *text, gsize text_len,
+                             gpointer user_data,GError **error);
 
 static GMarkupParser _gpx_parser = {
   _gpx_parser_start_element,
@@ -82,7 +82,7 @@ dt_gpx_t *dt_gpx_new(const gchar *filename)
   gpxmf_size = g_mapped_file_get_length(gpxmf);
   if (!gpxmf_content || gpxmf_size < 10)
     goto error;
-  
+
   /* allocate new dt_gpx_t context */
   gpx = g_malloc(sizeof(dt_gpx_t));
   memset(gpx, 0, sizeof(dt_gpx_t));
@@ -109,7 +109,7 @@ error:
   if (ctx)
       g_markup_parse_context_free(ctx);
 
-  if (gpx) 
+  if (gpx)
     g_free(gpx);
 
   return NULL;
@@ -128,9 +128,9 @@ void dt_gpx_destroy(struct dt_gpx_t *gpx)
 gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, gdouble *lon, gdouble *lat)
 {
   g_assert(gpx != NULL);
-  
+
   GList *item = g_list_first(gpx->track);
-  
+
   /* verify that we got at least 2 trackpoints */
   if (!item || !item->next)
     return FALSE;
@@ -142,7 +142,7 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, gdouble 
     /* if timestamp is out of time range return false but fill
        closest location value start or end point */
     if ((!item->next && timestamp->tv_sec >= tp->time.tv_sec)
-	|| (timestamp->tv_sec <= tp->time.tv_sec))
+        || (timestamp->tv_sec <= tp->time.tv_sec))
     {
       *lon = tp->longitude;
       *lat = tp->latitude;
@@ -151,7 +151,7 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, gdouble 
 
     /* check if timestamp is within current and next trackpoint */
     if (timestamp->tv_sec >= tp->time.tv_sec &&
-	timestamp->tv_sec <= ((_gpx_track_point_t*)item->next->data)->time.tv_sec)
+        timestamp->tv_sec <= ((_gpx_track_point_t*)item->next->data)->time.tv_sec)
     {
       *lon = tp->longitude;
       *lat = tp->latitude;
@@ -159,22 +159,22 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, gdouble 
     }
 
   } while ((item = g_list_next(item)) != NULL);
-  
+
   /* should not reach this point */
   return FALSE;
 }
 
-/* 
- * GPX XML parser code 
+/*
+ * GPX XML parser code
  */
 void _gpx_parser_start_element(GMarkupParseContext *ctx,
-				      const gchar *element_name, const gchar **attribute_names,
-				      const gchar **attribute_values, gpointer user_data,
-				      GError **error)
+                               const gchar *element_name, const gchar **attribute_names,
+                               const gchar **attribute_values, gpointer user_data,
+                               GError **error)
 {
   dt_gpx_t *gpx = (dt_gpx_t *)user_data;
 
-  if (strcmp(element_name, "trkpt") == 0) 
+  if (strcmp(element_name, "trkpt") == 0)
   {
     if (gpx->current_track_point)
     {
@@ -186,7 +186,7 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx,
     const gchar **attribute_value = attribute_values;
 
     gpx->invalid_track_point = FALSE;
-    
+
     if (*attribute_name)
     {
       gpx->current_track_point = g_malloc(sizeof(_gpx_track_point_t));
@@ -199,21 +199,21 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx,
       /* go thru the attributes to find and get values of lon / lat*/
       while (*attribute_name)
       {
-	if (strcmp(*attribute_name, "lon") == 0)
-	  gpx->current_track_point->longitude =  g_ascii_strtod(*attribute_value, NULL);
-	else if(strcmp(*attribute_name, "lat") == 0)
-	  gpx->current_track_point->latitude = g_ascii_strtod(*attribute_value, NULL);
-	
-	attribute_name++;
-	attribute_value++;
+        if (strcmp(*attribute_name, "lon") == 0)
+          gpx->current_track_point->longitude =  g_ascii_strtod(*attribute_value, NULL);
+        else if(strcmp(*attribute_name, "lat") == 0)
+          gpx->current_track_point->latitude = g_ascii_strtod(*attribute_value, NULL);
+
+        attribute_name++;
+        attribute_value++;
       }
 
       /* validate that we actually got lon / lat attribute values */
-      if (gpx->current_track_point->longitude == NAN || 
-	  gpx->current_track_point->latitude == NAN)
+      if (gpx->current_track_point->longitude == NAN ||
+          gpx->current_track_point->latitude == NAN)
       {
-	fprintf(stderr,"broken gpx file, failed to get lon/lat attribute values for trkpt\n");
-	gpx->invalid_track_point = TRUE;
+        fprintf(stderr,"broken gpx file, failed to get lon/lat attribute values for trkpt\n");
+        gpx->invalid_track_point = TRUE;
       }
 
     }
@@ -233,7 +233,7 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx,
   {
     if (!gpx->current_track_point)
       goto element_error;
-    
+
     gpx->current_parser_element = GPX_PARSER_ELEMENT_ELE;
   }
 
@@ -241,12 +241,12 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx,
 
 element_error:
   fprintf(stderr, "broken gpx file, element '%s' found outside of trkpt.\n",
-	  element_name);
- 
+          element_name);
+
 }
 
 void _gpx_parser_end_element (GMarkupParseContext *context, const gchar *element_name,
-				     gpointer user_data, GError **error)
+                              gpointer user_data, GError **error)
 {
   dt_gpx_t *gpx = (dt_gpx_t *)user_data;
 
@@ -267,8 +267,8 @@ void _gpx_parser_end_element (GMarkupParseContext *context, const gchar *element
 }
 
 void _gpx_parser_text(GMarkupParseContext *context,
-			     const gchar *text, gsize text_len,
-			     gpointer user_data,GError **error)
+                      const gchar *text, gsize text_len,
+                      gpointer user_data,GError **error)
 {
   dt_gpx_t *gpx = (dt_gpx_t *)user_data;
 
@@ -277,8 +277,8 @@ void _gpx_parser_text(GMarkupParseContext *context,
 
   if (gpx->current_parser_element == GPX_PARSER_ELEMENT_TIME)
   {
-    
-    if (!g_time_val_from_iso8601(text, &gpx->current_track_point->time)) 
+
+    if (!g_time_val_from_iso8601(text, &gpx->current_track_point->time))
     {
       gpx->invalid_track_point = TRUE;
       fprintf(stderr,"broken gpx file, failed to pars is8601 time '%s' for trackpoint\n",text);
@@ -288,3 +288,7 @@ void _gpx_parser_text(GMarkupParseContext *context,
     gpx->current_track_point->elevation = g_ascii_strtod(text, NULL);
 
 }
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
