@@ -948,7 +948,7 @@ dt_view_image_expose(
         _y = y - (.17*.04)*fscale;
       }
       cairo_save(cr);
-      if(imgid != img->group_id)
+      if(img && (imgid != img->group_id))
         cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
       dtgtk_cairo_paint_grouping(cr, _x, _y, s, s, 23);
       cairo_restore(cr);
