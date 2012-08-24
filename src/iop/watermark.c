@@ -179,13 +179,15 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
   gsize length;
 
   gchar *svgdoc=NULL;
-  gchar configdir[1024],datadir[1024], *filename;
-  dt_loc_get_datadir(datadir, 1024);
-  dt_loc_get_user_config_dir(configdir, 1024);
-  g_strlcat(datadir,"/watermarks/",1024);
-  g_strlcat(configdir,"/watermarks/",1024);
-  g_strlcat(datadir,data->filename,1024);
-  g_strlcat(configdir,data->filename,1024);
+  gchar configdir[DT_MAX_PATH_LEN];
+  gchar datadir[DT_MAX_PATH_LEN];
+  gchar *filename;
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  dt_loc_get_user_config_dir(configdir, DT_MAX_PATH_LEN);
+  g_strlcat(datadir,"/watermarks/", DT_MAX_PATH_LEN);
+  g_strlcat(configdir,"/watermarks/", DT_MAX_PATH_LEN);
+  g_strlcat(datadir,data->filename, DT_MAX_PATH_LEN);
+  g_strlcat(configdir,data->filename, DT_MAX_PATH_LEN);
 
   if (g_file_test(configdir,G_FILE_TEST_EXISTS))
     filename=configdir;
@@ -680,11 +682,13 @@ static void refresh_watermarks( dt_iop_module_t *self )
   // check watermarkdir and update combo with entries...
   int count=0;
   const gchar *d_name = NULL;
-  gchar configdir[1024],datadir[1024],filename[2048];
-  dt_loc_get_datadir(datadir, 1024);
-  dt_loc_get_user_config_dir(configdir, 1024);
-  g_strlcat(datadir,"/watermarks",1024);
-  g_strlcat(configdir,"/watermarks",1024);
+  gchar configdir[DT_MAX_PATH_LEN];
+  gchar datadir[DT_MAX_PATH_LEN];
+  gchar filename[DT_MAX_PATH_LEN];
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  dt_loc_get_user_config_dir(configdir, DT_MAX_PATH_LEN);
+  g_strlcat(datadir,"/watermarks", DT_MAX_PATH_LEN);
+  g_strlcat(configdir,"/watermarks", DT_MAX_PATH_LEN);
 
   /* read watermarks from datadir */
   GDir *dir = g_dir_open(datadir, 0, NULL);
@@ -692,7 +696,7 @@ static void refresh_watermarks( dt_iop_module_t *self )
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      snprintf(filename, 1024, "%s/%s", datadir, d_name);
+      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", datadir, d_name);
       gtk_combo_box_append_text( g->combobox1, d_name );
       count++;
     }

@@ -209,7 +209,7 @@ dt_mipmap_cache_get_filename(
   char* abspath = NULL;
 
   // Directory
-  char cachedir[1024];
+  char cachedir[DT_MAX_PATH_LEN];
   dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
   // Build the mipmap filename
@@ -249,7 +249,7 @@ exit:
 static int
 dt_mipmap_cache_serialize(dt_mipmap_cache_t *cache)
 {
-  gchar dbfilename[1024];
+  gchar dbfilename[DT_MAX_PATH_LEN];
   if (dt_mipmap_cache_get_filename(dbfilename, sizeof(dbfilename)))
   {
     fprintf(stderr, "[mipmap_cache] could not retrieve cache filename; not serializing\n");
@@ -317,7 +317,7 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
   uint8_t *blob = NULL;
   int file_width[mip+1], file_height[mip+1];
 
-  gchar dbfilename[1024];
+  gchar dbfilename[DT_MAX_PATH_LEN];
   if (dt_mipmap_cache_get_filename(dbfilename, sizeof(dbfilename)))
   {
     fprintf(stderr, "[mipmap_cache] could not retrieve cache filename; not deserializing\n");
@@ -1165,10 +1165,10 @@ _init_8(
     const dt_mipmap_size_t  size)
 {
   const uint32_t wd = *width, ht = *height;  
+  char filename[DT_MAX_PATH_LEN] = {0};
 
   /* do not even try to process file if it isnt available */
-  char filename[2048] = {0};
-  dt_image_full_path(imgid, filename, 2048);
+  dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN);
   if (strlen(filename) == 0 || !g_file_test(filename, G_FILE_TEST_EXISTS))
   {
     *width = *height = 0;
@@ -1189,7 +1189,7 @@ _init_8(
   if(!altered && !dt_conf_get_bool("never_use_embedded_thumb") && !incompatible)
   {
     int ret;
-    char filename[DT_MAX_PATH_LEN];
+    memset(filename, 0, DT_MAX_PATH_LEN);
     dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN);
     const char *c = filename + strlen(filename);
     while(*c != '.' && c > filename) c--;

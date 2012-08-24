@@ -46,7 +46,7 @@ disk_t;
 // saved params
 typedef struct dt_imageio_disk_t
 {
-  char filename[1024];
+  char filename[DT_MAX_PATH_LEN];
   dt_variables_params_t *vp;
 }
 dt_imageio_disk_t;
@@ -79,8 +79,8 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-    char composed[1024];
-    snprintf(composed, 1024, "%s/$(FILE_NAME)", dir);
+    char composed[DT_MAX_PATH_LEN];
+    snprintf(composed, DT_MAX_PATH_LEN, "%s/$(FILE_NAME)", dir);
     gtk_entry_set_text(GTK_ENTRY(d->entry), composed);
     dt_conf_set_string("plugins/imageio/storage/disk/file_directory", composed);
     g_free(dir);
@@ -157,9 +157,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 {
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
 
-  char filename[1024]= {0};
-  char dirname[1024]= {0};
-  dt_image_full_path(imgid, dirname, 1024);
+  char filename[DT_MAX_PATH_LEN]= {0};
+  char dirname[DT_MAX_PATH_LEN]= {0};
+  dt_image_full_path(imgid, dirname, DT_MAX_PATH_LEN);
   int fail = 0;
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -167,16 +167,16 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
     // if filenamepattern is a directory just let att ${FILE_NAME} as default..
     if ( g_file_test(d->filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename))[0]=='/' || (d->filename+strlen(d->filename))[0]=='\\') )
-      snprintf (d->filename+strlen(d->filename), 1024-strlen(d->filename), "$(FILE_NAME)");
+      snprintf (d->filename+strlen(d->filename), DT_MAX_PATH_LEN-strlen(d->filename), "$(FILE_NAME)");
 
     // avoid braindead export which is bound to overwrite at random:
     if(total > 1 && !g_strrstr(d->filename, "$"))
     {
-      snprintf(d->filename+strlen(d->filename), 1024-strlen(d->filename), "_$(SEQUENCE)");
+      snprintf(d->filename+strlen(d->filename), DT_MAX_PATH_LEN-strlen(d->filename), "_$(SEQUENCE)");
     }
 
     gchar* fixed_path = dt_util_fix_path(d->filename);
-    g_strlcpy(d->filename, fixed_path, 1024);
+    g_strlcpy(d->filename, fixed_path, DT_MAX_PATH_LEN);
     g_free(fixed_path);
 
     d->vp->filename = dirname;
@@ -184,8 +184,8 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     d->vp->imgid = imgid;
     d->vp->sequence = num;
     dt_variables_expand(d->vp, d->filename, TRUE);
-    g_strlcpy(filename, dt_variables_get_result(d->vp), 1024);
-    g_strlcpy(dirname, filename, 1024);
+    g_strlcpy(filename, dt_variables_get_result(d->vp), DT_MAX_PATH_LEN);
+    g_strlcpy(dirname, filename, DT_MAX_PATH_LEN);
 
     const char *ext = format->extension(fdata);
     char *c = dirname + strlen(dirname);
@@ -265,7 +265,7 @@ get_params(dt_imageio_module_storage_t *self, int* size)
   d->vp = NULL;
   dt_variables_params_init(&d->vp);
   const char *text = gtk_entry_get_text(GTK_ENTRY(g->entry));
-  g_strlcpy(d->filename, text, 1024);
+  g_strlcpy(d->filename, text, DT_MAX_PATH_LEN);
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
   return d;
 }

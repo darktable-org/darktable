@@ -41,7 +41,7 @@ _email_attachment_t;
 // saved params
 typedef struct dt_imageio_email_t
 {
-  char filename[1024];
+  char filename[DT_MAX_PATH_LEN];
   GList *images;
 }
 dt_imageio_email_t;
