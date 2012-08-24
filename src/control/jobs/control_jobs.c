@@ -90,7 +90,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
   // if no indexing was requested, bail out:
   if(!dt_conf_get_bool("run_similarity_indexer")) return 0;
 
-  /* 
+  /*
    * First pass run thru ALL images and collect the ones who needs to update
    *  \TODO in the future lets have a indexer table with ids filed with images
    *  thats need some kind of reindexing.. all mark dirty functions adds image
@@ -171,11 +171,11 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
 
         // \TODO dont delete move to an temp table and let user to revalidate
 
-        /*sprintf(query,"delete from history where imgid=%d",idximg->id); 
+        /*sprintf(query,"delete from history where imgid=%d",idximg->id);
           DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
-          sprintf(query,"delete from tagged_images where imgid=%d",idximg->id); 
+          sprintf(query,"delete from tagged_images where imgid=%d",idximg->id);
           DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
-          sprintf(query,"delete from images where id=%d",idximg->id); 
+          sprintf(query,"delete from images where id=%d",idximg->id);
           DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);*/
 
         /* no need to additional work */
@@ -222,14 +222,14 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
             histogram.rgbl[lum][3]++;
           }
 
-          for(int k=0; k<DT_SIMILARITY_HISTOGRAM_BUCKETS; k++) 
-            for (int j=0;j<4;j++) 
+          for(int k=0; k<DT_SIMILARITY_HISTOGRAM_BUCKETS; k++)
+            for (int j=0;j<4;j++)
               histogram.rgbl[k][j] /= (buf.width*buf.height);
 
           /* store the histogram data */
           dt_similarity_histogram_store(idximg->id, &histogram);
 
-        }                  
+        }
 
         /*
          * Generate scaledowned similarity lightness map if requested
@@ -239,8 +239,8 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
           dt_similarity_lightmap_t lightmap;
           memset(&lightmap,0,sizeof(dt_similarity_lightmap_t));
 
-          /* 
-           * create a pixbuf out of the image for downscaling 
+          /*
+           * create a pixbuf out of the image for downscaling
            */
 
           /* first of setup a standard rgb buffer, swap bgr in same routine */
@@ -270,14 +270,14 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
             max = MIN(0xff,MAX(max, lightmap.pixels[4*j+3]));
           }
 
-          /* contrast stretch each channel in lightmap 
+          /* contrast stretch each channel in lightmap
            *  TODO: do we want this...
            */
           float scale=0;
           int range = max-min;
-          if(range==0) 
+          if(range==0)
             scale = 1.0;
-          else 
+          else
             scale = 0xff/range;
           for(int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++)
           {
@@ -299,7 +299,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
         /* no use for buffer anymore release the mipmap */
         dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 
-      }        
+      }
 
       /* update background progress */
       if (jid)
@@ -318,8 +318,8 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
 
   free(scratchmem);
 
-  /* 
-   * Indexing opertions finished, lets reschedule the indexer 
+  /*
+   * Indexing opertions finished, lets reschedule the indexer
    * unless control is shutting down...
    */
   if(dt_control_running())
@@ -351,7 +351,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   double fraction=0;
   snprintf(message, 512, ngettext ("merging %d image", "merging %d images", total), total );
 
-  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 1, message); 
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 1, message);
 
   float *pixels = NULL;
   float *weight = NULL;
@@ -555,8 +555,8 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
     imgname = (char *)list->data;
     dt_image_synch_all_xmp(imgname);
     list = g_list_delete_link(list, list);
-  } 
-  g_list_free(list);  
+  }
+  g_list_free(list);
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
   return 0;
@@ -629,7 +629,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     imgname = (char *)list->data;
     dt_image_synch_all_xmp(imgname);
     list = g_list_delete_link(list, list);
-  } 
+  }
   g_list_free(list);
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
@@ -669,7 +669,7 @@ int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
       continue;
 
     /* convert exif datetime
-       TODO: exiv2 dates should be iso8601 and we are probably doing some ugly 
+       TODO: exiv2 dates should be iso8601 and we are probably doing some ugly
        convertion before inserting into database.
      */
     gint year;
@@ -679,9 +679,9 @@ int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     gint minute;
     gint  seconds;
     gchar datetime[32];
-    
-    if (sscanf(cimg->exif_datetime_taken, "%i:%i:%i %i:%i:%i", 
-	       (int*)&year, (int*)&month, (int*)&day, 
+
+    if (sscanf(cimg->exif_datetime_taken, "%d:%d:%d %d:%d:%d",
+	       (int*)&year, (int*)&month, (int*)&day,
 	       (int*)&hour,(int*)&minute,(int*)&seconds) != 6)
     {
       fprintf(stderr,"broken exif time in db, '%s'\n", cimg->exif_datetime_taken);
@@ -704,7 +704,7 @@ int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
       dt_image_set_location(imgid, lon, lat);
       cntr++;
     }
-   
+
   } while ((t = g_list_next(t)) != NULL);
 
   dt_control_log(_("applied matched gpx location onto %d image(s)"), cntr);
@@ -726,9 +726,9 @@ void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t,
 {
   sqlite3_stmt *stmt;
   /* get a list of images in filmroll */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), 
-			      "select * from images where film_id = ?1", 
-			      -1, &stmt, NULL); 
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+			      "select * from images where film_id = ?1",
+			      -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
 
   while (sqlite3_step(stmt) == SQLITE_ROW)
@@ -762,7 +762,7 @@ void dt_control_indexer_job_init(dt_job_t *job)
 
 void dt_control_match_similar_job_init(dt_job_t *job, uint32_t imgid,dt_similarity_t *data)
 {
-  dt_control_job_init(job, "match similar images");  
+  dt_control_job_init(job, "match similar images");
   job->execute = &dt_control_match_similar_job_run;
   _control_match_similar_job_param_t *t = (_control_match_similar_job_param_t *)job->param;
   t->imgid = imgid;
@@ -871,7 +871,7 @@ void dt_control_remove_images()
         GTK_DIALOG_DESTROY_WITH_PARENT,
         GTK_MESSAGE_QUESTION,
         GTK_BUTTONS_YES_NO,
-        ngettext("do you really want to remove %d selected image from the collection?", 
+        ngettext("do you really want to remove %d selected image from the collection?",
           "do you really want to remove %d selected images from the collection?", number), number);
 
     gtk_window_set_title(GTK_WINDOW(dialog), _("remove images?"));
@@ -892,7 +892,7 @@ void dt_control_delete_images()
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
     int number = dt_collection_get_selected_count(darktable.collection);
-    
+
     // Do not show the dialog if no image is selected:
     if(number == 0) return;
 
@@ -985,8 +985,8 @@ int32_t dt_control_export_job_run(dt_job_t *job)
 #pragma omp critical
 #endif
       {
-        if(!t) 
-          imgid = 0; 
+        if(!t)
+          imgid = 0;
         else
         {
           imgid = (long int)t->data;
