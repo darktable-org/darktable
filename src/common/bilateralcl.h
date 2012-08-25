@@ -111,7 +111,8 @@ dt_bilateral_splat_cl(
     cl_mem in)
 {
   cl_int err = -666;
-  size_t sizes[] = { ROUNDUPWD(b->width), ROUNDUPHT(b->height), 1};
+  size_t sizes[] = { ROUNDUP(b->width, 32), ROUNDUP(b->height, 32), 1};
+  size_t local[] = { 32, 32, 1 };
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 0, sizeof(cl_mem), (void *)&in);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 1, sizeof(cl_mem), (void *)&b->dev_grid);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 2, sizeof(int), (void *)&b->width);
@@ -121,7 +122,8 @@ dt_bilateral_splat_cl(
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 6, sizeof(int), (void *)&b->size_z);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 7, sizeof(float), (void *)&b->sigma_s);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 8, sizeof(float), (void *)&b->sigma_r);
-  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_splat, sizes);
+  // this kernel only runs in 32x32 local size.
+  err = dt_opencl_enqueue_kernel_2d_with_local(b->devid, b->global->kernel_splat, sizes, local);
   return err;
 }
 

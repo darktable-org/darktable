@@ -17,7 +17,6 @@
 */
 
 const sampler_t sampleri = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;
-const sampler_t samplerf = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_LINEAR;
 
 
 float4
@@ -37,6 +36,11 @@ atomic_add_f(
     global float *val,
     const  float  delta)
 {
+#if 0
+  // this brings down time for the splat kernel a lot,
+  // but of course produces the wrong result.
+  val[0] += delta;
+#else
   union
   {
     float f;
@@ -56,6 +60,7 @@ atomic_add_f(
     new_val.f = old_val.f + delta;
   }
   while (atom_cmpxchg ((global unsigned int *)val, old_val.i, new_val.i) != old_val.i);
+#endif
 }
 
 kernel void
@@ -81,20 +86,94 @@ splat(
     const int            sizez,
     const float          sigma_s,
     const float          sigma_r)
-#if 0
+#if 1 // this version is roughly 10x faster.
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
-  local accum[32*32]; // should be more than local sizes
+  // assert(get_local_size(0) == 32)
+  // assert(get_local_size(1) == 32)
+  local int gi[32*32];
+  local float accum[32*32*8];
   const int i = get_local_id(0);
   const int j = get_local_id(1);
-  accum[32*j + i] = 0;
-  const int startx = get_group_id(0)*get_local_size(0);
-  const int starty = get_group_id(1)*get_local_size(1);
+  int li = 32*j + i;
+
+  // splat into downsampled grid
+  int4   size  = (int4)(sizex, sizey, sizez, 0);
+  float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
+
+  const float4 pixel = read_imagef (in, sampleri, (int2)(x, y));
+  float L = pixel.x;
+  float4 p = (float4)(x, y, L, 0);
+  float4 gridp = image_to_grid(&p, &size, &sigma);
+  int4 xi = min(size - 2, (int4)(gridp.x, gridp.y, gridp.z, 0));
+  float fx = gridp.x - xi.x;
+  float fy = gridp.y - xi.y;
+  float fz = gridp.z - xi.z;
+
+  int ox = 1;
+  int oy = size.x;
+  int oz = size.y*size.x;
+
+  // first accumulate into local memory
+  gi[li] = xi.x + oy*xi.y + oz*xi.z;
+  float contrib = 100.0f/(sigma_s*sigma_s);
+  li *= 8;
+  accum[li++] = contrib * (1.0f-fx) * (1.0f-fy) * (1.0f-fz);
+  accum[li++] = contrib * (     fx) * (1.0f-fy) * (1.0f-fz);
+  accum[li++] = contrib * (1.0f-fx) * (     fy) * (1.0f-fz);
+  accum[li++] = contrib * (     fx) * (     fy) * (1.0f-fz);
+  accum[li++] = contrib * (1.0f-fx) * (1.0f-fy) * (     fz);
+  accum[li++] = contrib * (     fx) * (1.0f-fy) * (     fz);
+  accum[li++] = contrib * (1.0f-fx) * (     fy) * (     fz);
+  accum[li++] = contrib * (     fx) * (     fy) * (     fz);
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  // non-logarithmic reduction..
+  // but we also need to take care of where to accumulate (only merge where gi[.] == gi[.])
+  if(i == 0)
+  {
+    li = 32*j;
+    int lii = 8*li;
+    int oldgi = -1;
+    float tmp[8];
+    {
+      for(int ii=0;ii<32;ii++)
+      {
+        if(gi[li] != oldgi)
+        {
+          atomic_add_f(grid + oldgi,          tmp[0]);
+          atomic_add_f(grid + oldgi+ox,       tmp[1]);
+          atomic_add_f(grid + oldgi+oy,       tmp[2]);
+          atomic_add_f(grid + oldgi+oy+ox,    tmp[3]);
+          atomic_add_f(grid + oldgi+oz,       tmp[4]);
+          atomic_add_f(grid + oldgi+oz+ox,    tmp[5]);
+          atomic_add_f(grid + oldgi+oz+oy,    tmp[6]);
+          atomic_add_f(grid + oldgi+oz+oy+ox, tmp[7]);
+          oldgi = gi[li];
+          for(int k=0;k<8;k++)
+            tmp[k] = accum[lii++];
+        }
+        else
+          for(int k=0;k<8;k++)
+            tmp[k] += accum[lii++];
+        li++;
+      }
+      atomic_add_f(grid + oldgi,          tmp[0]);
+      atomic_add_f(grid + oldgi+ox,       tmp[1]);
+      atomic_add_f(grid + oldgi+oy,       tmp[2]);
+      atomic_add_f(grid + oldgi+oy+ox,    tmp[3]);
+      atomic_add_f(grid + oldgi+oz,       tmp[4]);
+      atomic_add_f(grid + oldgi+oz+ox,    tmp[5]);
+      atomic_add_f(grid + oldgi+oz+oy,    tmp[6]);
+      atomic_add_f(grid + oldgi+oz+oy+ox, tmp[7]);
+    }
+  }
 }
 #endif
-#if 1
+#if 0
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -109,7 +188,7 @@ splat(
   float L = pixel.x;
   float4 p = (float4)(x, y, L, 0);
   float4 gridp = image_to_grid(&p, &size, &sigma);
-  int4 xi = (int4)(gridp.x, gridp.y, gridp.z, 0);
+  int4 xi = min(size - 2, (int4)(gridp.x, gridp.y, gridp.z, 0));
   float fx = gridp.x - xi.x;
   float fy = gridp.y - xi.y;
   float fz = gridp.z - xi.z;
@@ -252,7 +331,7 @@ slice(
   float L = pixel.x;
   float4 p = (float4)(x, y, L, 0);
   float4 gridp = image_to_grid(&p, &size, &sigma);
-  int4 gridi = (int4)(gridp.x, gridp.y, gridp.z, 0);
+  int4 gridi = min(size - 2, (int4)(gridp.x, gridp.y, gridp.z, 0));
   float fx = gridp.x - gridi.x;
   float fy = gridp.y - gridi.y;
   float fz = gridp.z - gridi.z;
