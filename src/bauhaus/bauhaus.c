@@ -315,24 +315,36 @@ dt_bauhaus_popup_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_
 static gboolean
 dt_bauhaus_popup_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
-  // remember mouse position for motion effects in draw
-  darktable.bauhaus->mouse_x = event->x;
-  darktable.bauhaus->mouse_y = event->y;
   gtk_widget_queue_draw(darktable.bauhaus->popup_area);
   dt_bauhaus_widget_t *w = darktable.bauhaus->current;
   int width = darktable.bauhaus->popup_window->allocation.width, height = darktable.bauhaus->popup_window->allocation.height;
   switch(w->type)
   {
     case DT_BAUHAUS_COMBOBOX:
+      darktable.bauhaus->mouse_x = event->x;
+      darktable.bauhaus->mouse_y = event->y;
       break;
     case DT_BAUHAUS_SLIDER:
       {
         dt_bauhaus_slider_data_t *d = &w->data.slider;
         const float mouse_off = get_slider_line_offset(
-            d->oldpos, d->scale, darktable.bauhaus->mouse_x/width,
-            darktable.bauhaus->mouse_y/height, GTK_WIDGET(w)->allocation.height/(float)height,
+            d->oldpos, d->scale, event->x/width,
+            event->y/height, GTK_WIDGET(w)->allocation.height/(float)height,
             widget->allocation.width);
-        dt_bauhaus_slider_set_normalized(w, d->oldpos + mouse_off);
+        if(!darktable.bauhaus->change_active)
+        {
+          if((darktable.bauhaus->mouse_line_distance < 0 && mouse_off > 0) ||
+             (darktable.bauhaus->mouse_line_distance > 0 && mouse_off < 0))
+            darktable.bauhaus->change_active = 1;
+          darktable.bauhaus->mouse_line_distance = mouse_off;
+        }
+        if(darktable.bauhaus->change_active)
+        {
+          // remember mouse position for motion effects in draw
+          darktable.bauhaus->mouse_x = event->x;
+          darktable.bauhaus->mouse_y = event->y;
+          dt_bauhaus_slider_set_normalized(w, d->oldpos + mouse_off);
+        }
       }
       break;
     default:
@@ -1220,9 +1232,9 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         cairo_save(cr);
         set_indicator_color(cr, 1);
         cairo_set_line_width(cr, 2.);
-        const float mouse_off = get_slider_line_offset(d->oldpos, d->scale,
+        const float mouse_off = darktable.bauhaus->change_active ? get_slider_line_offset(d->oldpos, d->scale,
             darktable.bauhaus->mouse_x/width, darktable.bauhaus->mouse_y/height, ht/(float)height,
-            width);
+            width) : 0.0f;
         draw_slider_line(cr, d->oldpos, mouse_off, d->scale, width, height, ht);
         cairo_stroke(cr);
         cairo_restore(cr);
@@ -1384,6 +1396,8 @@ dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
   darktable.bauhaus->current = w;
   darktable.bauhaus->keys_cnt = 0;
   memset(darktable.bauhaus->keys, 0, 64);
+  darktable.bauhaus->change_active = 0;
+  darktable.bauhaus->mouse_line_distance = 0.0f;
 
   dt_iop_request_focus(w->module);
 
@@ -1401,6 +1415,8 @@ dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
     }
     case DT_BAUHAUS_COMBOBOX:
     {
+      // comboboxes change immediately
+      darktable.bauhaus->change_active = 1;
       GtkAllocation tmp;
       gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
@@ -1654,8 +1670,6 @@ dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton *event, gpointe
   }
   else if(event->button == 3)
   {
-    darktable.bauhaus->mouse_x = event->x;
-    darktable.bauhaus->mouse_y = event->y;
     dt_bauhaus_show_popup(w);
     return TRUE;
   }
