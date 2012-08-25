@@ -142,6 +142,9 @@ typedef struct dt_bauhaus_t
   float mouse_x, mouse_y;
   // pointer position when popup window is closed
   float end_mouse_x, end_mouse_y;
+  // used to determine whether the user crossed the line already.
+  int change_active;
+  float mouse_line_distance;
   // key input buffer
   char keys[64];
   int keys_cnt;
