@@ -215,14 +215,31 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create command queue for device %d: %d\n", k, err);
       goto finally;
     }
+
+    char dtcache[DT_MAX_PATH_LEN];
+    char cachedir[DT_MAX_PATH_LEN];
+    char devname[1024];
+    struct timespec tstart, tend;
+    dt_loc_get_user_cache_dir(dtcache, DT_MAX_PATH_LEN);
+
+    int len = strlen(infostr);
+    int j=0;
+    // remove non-alphanumeric chars from device name
+    for (int i=0; i < len; i++) if (isalnum(infostr[i])) devname[j++]=infostr[i];
+    devname[j] = 0;
+    snprintf(cachedir, DT_MAX_PATH_LEN, "%s/cached_kernels_for_%s", dtcache, devname);
+    if (mkdir(cachedir, 0700) && (errno != EEXIST)) {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to create directory `%s'!\n", cachedir);
+      goto finally;
+    }
+
     char dtpath[DT_MAX_PATH_LEN];
     char filename[DT_MAX_PATH_LEN];
     char programname[DT_MAX_PATH_LEN];
+    char binname[DT_MAX_PATH_LEN];
     dt_loc_get_datadir(dtpath, DT_MAX_PATH_LEN);
     snprintf(filename, DT_MAX_PATH_LEN, "%s/kernels/programs.conf", dtpath);
-    char binname[DT_MAX_PATH_LEN], dtcache[DT_MAX_PATH_LEN], devname[512];
-    struct timespec tstart, tend;
-    dt_loc_get_user_cache_dir(dtcache, 1024);
+
     // now load all darktable cl kernels.
     // TODO: compile as a job?
     clock_gettime(CLOCK_MONOTONIC, &tstart);
@@ -249,18 +266,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
           }
         if(programname[0] == '\0') continue;
         snprintf(filename, DT_MAX_PATH_LEN, "%s/kernels/%s", dtpath, programname);
-        int len = strlen(infostr);
-        int j=0;
-        // remove non-alphanumeric chars from device name
-        for (int i=0; i < len; i++) if (isalnum(infostr[i])) devname[j++]=infostr[i];
-        devname[j] = 0;
-        snprintf(binname, DT_MAX_PATH_LEN, "%s/cached_kernels_for_%s/%s.bin", dtcache, devname, programname);
-        char d[1024];
-        strncpy(d, binname, DT_MAX_PATH_LEN);
-        if (mkdir(dirname(d), 0700) && (errno != EEXIST)) {
-          dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to create directory `%s'!\n", d);
-          goto finally;
-        }
+        snprintf(binname, DT_MAX_PATH_LEN, "%s/%s.bin", cachedir, programname);
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
         int loaded_cached;
         const int prog = dt_opencl_load_program(dev, filename, binname, &loaded_cached);
