@@ -54,6 +54,7 @@ static const char nikon[] = N_("nikon like");
 static const char nikon_alt[] = N_("nikon like alternate");
 static const char sony_alpha[] = N_("sony alpha like");
 static const char pentax[] = N_("pentax like");
+static const char ricoh[] = N_("ricoh like");
 static const char olympus[] = N_("olympus like");
 static const char olympus_alt[] = N_("olympus like alternate");
 static const char panasonic[] = N_("panasonic like");
