@@ -803,6 +803,8 @@ failure:
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   const int i = dt_conf_get_int("plugins/lighttable/layout");
+  
+  const double start = dt_get_wtime();
 
   // Let's show full preview if in that state...
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -827,6 +829,8 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
         break;
     }
   }
+  const double end = dt_get_wtime();
+  dt_print(DT_DEBUG_PERF, "[lighttable] expose took %0.04f sec\n", end-start);
 }
 
 static gboolean
