@@ -269,13 +269,16 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
         snprintf(binname, DT_MAX_PATH_LEN, "%s/%s.bin", cachedir, programname);
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
         int loaded_cached;
-        const int prog = dt_opencl_load_program(dev, filename, binname, &loaded_cached);
-        if(dt_opencl_build_program(dev, prog, binname, loaded_cached) != CL_SUCCESS)
+        char md5sum[33];
+        const int prog = dt_opencl_load_program(dev, filename, binname, cachedir, md5sum, &loaded_cached);
+        if(dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached) != CL_SUCCESS)
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
           goto finally;
         }
+
       }
+
       fclose(f);
       clock_gettime(CLOCK_MONOTONIC, &tend);
       long nsecs = tend.tv_nsec - tstart.tv_nsec;
@@ -384,72 +387,24 @@ void dt_opencl_unlock_device(const int dev)
   dt_pthread_mutex_unlock(&cl->dev[dev].lock);
 }
 
-static int open_stat(const char* filename, struct stat* st, FILE* f) {
+static FILE* fopen_stat(const char* filename, struct stat* st) {
+  FILE *f = fopen(filename, "rb");
   if(!f)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_open_stat] could not open file `%s'!\n", filename);
-    return -1;
+    dt_print(DT_DEBUG_OPENCL, "[opencl_fopen_stat] could not open file `%s'!\n", filename);
+    return NULL;
   }
   int fd = fileno(f);
   if(fstat(fd, st)<0)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_open_stat] could not stat file `%s'!\n", filename);
-    return -1;
+    dt_print(DT_DEBUG_OPENCL, "[opencl_fopen_stat] could not stat file `%s'!\n", filename);
+    return NULL;
   }
-  return 0;
-}
-
-static int load_opencl_source(const int dev, const char *filename, FILE* f, size_t filesize, dt_opencl_t *cl) {
-
-  cl_int err;
-  char file[filesize+1];
-  int rd = fread(file, sizeof(char), filesize, f);
-  fclose(f);
-  if(rd != filesize)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] could not read all of file `%s'!\n", filename);
-    return -1;
-  }
-  if(file[filesize-1] != '\n')
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] no newline at end of file `%s'!\n", filename);
-    file[filesize] = '\n';
-  }
-  int lines = 0;
-  for(int k=0; k<filesize; k++) if(file[k] == '\n') lines++;
-  const char *sptr[lines+1];
-  size_t lengths[lines];
-  int curr = 0;
-  sptr[curr++] = file;
-  for(int k=0; k<filesize; k++)
-    if(file[k] == '\n')
-    {
-      sptr[curr] = file + k + 1;
-      lengths[curr-1] = sptr[curr] - sptr[curr-1];
-      curr++;
-    }
-  lengths[lines-1] = file + filesize - sptr[lines-1];
-  sptr[lines] = NULL;
-
-
-  for(int k=0; k<DT_OPENCL_MAX_PROGRAMS; k++) if(!cl->dev[dev].program_used[k])
-    {
-      cl->dev[dev].program[k] = (cl->dlocl->symbols->dt_clCreateProgramWithSource)(cl->dev[dev].context, lines, sptr, lengths, &err);
-      if(err != CL_SUCCESS)
-      {
-        dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] could not create program from file `%s'! (%d)\n", filename, err);
-        return -1;
-      } else {
-        cl->dev[dev].program_used[k] = 1;
-        return k;
-      }
-    }
-
-  return DT_OPENCL_MAX_PROGRAMS;
+  return f;
 }
 
 
-int dt_opencl_load_program(const int dev, const char *filename, const char* binname, int* loaded_cached)
+int dt_opencl_load_program(const int dev, const char *filename, const char* binname, const char* cachedir, char* md5sum, int* loaded_cached)
 {
   cl_int err;
   dt_opencl_t *cl = darktable.opencl;
@@ -458,21 +413,43 @@ int dt_opencl_load_program(const int dev, const char *filename, const char* binn
   *loaded_cached = 0;
   int k = 0;
 
-  FILE *f = fopen(filename, "rb");
-  if (open_stat(filename, &filestat, f)<0) return -1;
+  FILE* f = fopen_stat(filename, &filestat);
+  if (!f) return -1;
 
-  FILE *cached = fopen(binname, "rb");
-  if (cached) {
+  size_t filesize = filestat.st_size;
+  char* file = (char*)malloc(filesize+1);
+  size_t rd = fread(file, sizeof(char), filesize, f);
+  fclose(f);
+  if(rd != filesize)
+  {
+    free(file);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] could not read all of file `%s'!\n", filename);
+    return -1;
+  }
 
-    if (open_stat(binname, &cachedstat, cached)==0) {
+  char *source_md5 = g_compute_checksum_for_string(G_CHECKSUM_MD5, file, filesize);
+  strncpy(md5sum, source_md5, 33);
+  g_free(source_md5);
 
-      if (filestat.st_mtime < cachedstat.st_mtime) {
-        size_t filesize = cachedstat.st_size;
+  char linkedfile[1024];
+  ssize_t linkedfile_len = 0;
 
-        unsigned char *cached_content = (unsigned char *)malloc(filesize+1);
-        int rd = fread(cached_content, sizeof(char), filesize, cached);
-        fclose(cached);
-        if (rd != filesize)
+  FILE *cached = fopen_stat(binname, &cachedstat);
+  if (cached)
+{
+
+    if ((linkedfile_len=readlink(binname, linkedfile, 1023)) > 0)
+    {
+      linkedfile[linkedfile_len] = '\0';
+
+      if (strncmp(linkedfile, md5sum, 33)==0)
+      {
+        // md5sum matches, load cached binary
+        size_t cached_filesize = cachedstat.st_size;
+
+        unsigned char *cached_content = (unsigned char *)malloc(cached_filesize+1);
+        int rd = fread(cached_content, sizeof(char), cached_filesize, cached);
+        if (rd != cached_filesize)
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not read all of file `%s'!\n", binname);
         }
@@ -480,11 +457,10 @@ int dt_opencl_load_program(const int dev, const char *filename, const char* binn
         {
           for(k = 0; k<DT_OPENCL_MAX_PROGRAMS; k++) if(!cl->dev[dev].program_used[k])
             {
-              cl->dev[dev].program[k] = (cl->dlocl->symbols->dt_clCreateProgramWithBinary)(cl->dev[dev].context, 1, &(cl->dev[dev].devid), &filesize, (const unsigned char **)&cached_content, NULL, &err);
+              cl->dev[dev].program[k] = (cl->dlocl->symbols->dt_clCreateProgramWithBinary)(cl->dev[dev].context, 1, &(cl->dev[dev].devid), &cached_filesize, (const unsigned char **)&cached_content, NULL, &err);
               if(err != CL_SUCCESS)
               {
                 dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not load cached binary program from file `%s'! (%d)\n", binname, err);
-                unlink(binname);
                 break;
               }
               else
@@ -497,22 +473,49 @@ int dt_opencl_load_program(const int dev, const char *filename, const char* binn
       }
       free(cached_content);
     }
-      else
-      { // remove stale cached binary
-        fclose(cached);
-        unlink(binname);
+
       }
+
+    fclose(cached);
+
     }
 
+
+  if (*loaded_cached == 0)
+  {
+    // if loading cached was unsuccessful for whatever reason,
+    // try to remove cached binary & link
+    if (linkedfile_len>0)
+    {
+      char link_dest[1024];
+      snprintf(link_dest, 1024, "%s/%s", cachedir, linkedfile);
+      unlink(link_dest);
   }
+    unlink(binname);
 
-  if (*loaded_cached == 0) {
-    if (k != DT_OPENCL_MAX_PROGRAMS) {
+    if (k != DT_OPENCL_MAX_PROGRAMS)
+    {
       dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not load cached binary program, trying to compile source\n");
-      k = load_opencl_source(dev, filename, f, filestat.st_size, cl);
-      if (k<0) return -1;
-    }
+
+      for(k=0; k<DT_OPENCL_MAX_PROGRAMS; k++) if(!cl->dev[dev].program_used[k])
+        {
+          cl->dev[dev].program[k] = (cl->dlocl->symbols->dt_clCreateProgramWithSource)(cl->dev[dev].context, 1, (const char**)&file, &filesize, &err);
+          free(file);
+          if(err != CL_SUCCESS)
+          {
+            dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] could not create program from file `%s'! (%d)\n", filename, err);
+            return -1;
   } else {
+            cl->dev[dev].program_used[k] = 1;
+            break;
+          }
+        }
+
+    }
+  }
+  else
+  {
+    free(file);
     dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] loaded cached binary program from file `%s'\n", binname);
   }
 
@@ -529,7 +532,7 @@ int dt_opencl_load_program(const int dev, const char *filename, const char* binn
   }
 }
 
-int dt_opencl_build_program(const int dev, const int prog, const char* binname, int loaded_cached)
+int dt_opencl_build_program(const int dev, const int prog, const char* binname, const char* cachedir, char* md5sum, int loaded_cached)
 {
   if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return -1;
   dt_opencl_t *cl = darktable.opencl;
@@ -563,7 +566,8 @@ int dt_opencl_build_program(const int dev, const int prog, const char* binname, 
   else
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] successfully built program\n");
-    if (!loaded_cached) {
+    if (!loaded_cached)
+    {
       dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] saving binary\n");
 
       cl_uint numdev = 0;
@@ -596,16 +600,31 @@ int dt_opencl_build_program(const int dev, const int prog, const char* binname, 
       if (err != CL_SUCCESS)
       {
         dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_BINARIES failed: %d\n", err);
-        return CL_SUCCESS;
+        goto ret;
       }
 
       for (int i=0; i<numdev; i++)
-        if (cl->dev[dev].devid == devices[i]) {
-          FILE* f = fopen(binname, "w+");
+        if (cl->dev[dev].devid == devices[i])
+        {
+          // save opencl compiled binary as md5sum-named file
+          char link_dest[1024];
+          snprintf(link_dest, 1024, "%s/%s", cachedir, md5sum);
+          FILE* f = fopen(link_dest, "w+");
           fwrite(binaries[i], sizeof(char), binary_sizes[i], f);
           fclose(f);
+
+          // create link (e.g. basic.cl.bin -> f1430102c53867c162bb60af6c163328)
+          char cwd[1024];
+          if (!getcwd(cwd, 1024)) goto ret;
+          if (chdir(cachedir)!=0) goto ret;
+          char dup[1024];
+          strncpy(dup, binname, 1024);
+          char* bname = basename(dup);
+          if (symlink(md5sum, bname)!=0) goto ret;
+          if (chdir(cwd)!=0) goto ret;
         }
 
+ret:
       for (int i=0; i<numdev; i++) free(binaries[i]);
     }
     return CL_SUCCESS;
