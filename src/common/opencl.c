@@ -29,12 +29,9 @@
 #include <assert.h>
 
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <errno.h>
 #include <libgen.h>
 #include <ctype.h>
-#include <time.h>
-
 
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
