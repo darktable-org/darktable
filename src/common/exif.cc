@@ -52,7 +52,7 @@ const char *dt_xmp_keys[DT_XMP_KEYS_NUM] =
 {
   "Xmp.dc.subject", "Xmp.darktable.colorlabels",
   "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled",
-  "Xmp.darktable.history_operation", "Xmp.darktable.history_params", 
+  "Xmp.darktable.history_operation", "Xmp.darktable.history_params",
   "Xmp.darktable.blendop_params", "Xmp.darktable.blendop_version",
   "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights"
 };
@@ -288,6 +288,34 @@ int dt_exif_read_data(dt_image_t *img, Exiv2::ExifData &exifData)
       g_strfreev(tokens);
     }
 
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Rating")))
+          != exifData.end() )
+    {
+      int stars = pos->toLong();
+      if ( stars == 0 )
+      {
+        stars = dt_conf_get_int("ui_last/import_initial_rating");
+      }
+      else
+      {
+        stars = (stars == -1) ? 6 : stars;
+      }
+      img->flags = (img->flags & ~0x7) | (0x7 & stars);
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.RatingPercent")))
+          != exifData.end() )
+    {
+      int stars = pos->toLong()*5./100;
+      if ( stars == 0 )
+      {
+        stars = dt_conf_get_int("ui_last/import_initial_rating");
+      }
+      else
+      {
+        stars = (stars == -1) ? 6 : stars;
+      }
+      img->flags = (img->flags & ~0x7) | (0x7 & stars);
+    }
 
     // workaround for an exiv2 bug writing random garbage into exif_lens for this camera:
     // http://dev.exiv2.org/issues/779
@@ -366,7 +394,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
       {
         stars = dt_conf_get_int("ui_last/import_initial_rating");
       }
-      else 
+      else
       {
         stars = (stars == -1) ? 6 : stars;
       }
@@ -647,9 +675,9 @@ void dt_exif_xmp_decode (const char *input, unsigned char *output, const int len
 
 static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
 {
-  // tags in array 
+  // tags in array
   const int cnt = pos->count();
-  
+
   sqlite3_stmt *stmt_sel_id, *stmt_ins_tags, *stmt_ins_tagxtag, *stmt_upd_tagxtag, *stmt_ins_tagged, *stmt_upd_tagxtag2;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
     "select id from tags where name = ?1",
@@ -691,7 +719,7 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
         tagid = sqlite3_column_int(stmt_sel_id, 0);
         sqlite3_reset(stmt_sel_id);
         sqlite3_clear_bindings(stmt_sel_id);
-        
+
         if (tagid > 0)
         {
           if (k == 1)
@@ -768,7 +796,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    
+
     // remove from tagged_images
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
       "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
@@ -882,7 +910,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       else if(label == "Purple")               // Is it really called like that in XMP files?
         dt_colorlabels_set_label(img->id, 4);
     }
-    
+
     if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"))) != xmpData.end() )
       _exif_import_tags(img,pos);
     else if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.subject"))) != xmpData.end() )
@@ -917,7 +945,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     Exiv2::XmpData::iterator param;
     Exiv2::XmpData::iterator blendop = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.blendop_params"));
     Exiv2::XmpData::iterator blendop_version = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.blendop_version"));
-         
+
     if ( (ver=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_modversion"))) != xmpData.end() &&
          (en=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_enabled")))     != xmpData.end() &&
          (op=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_operation")))   != xmpData.end() &&
@@ -964,14 +992,14 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
             sqlite3_reset(stmt_ins_hist);
             sqlite3_clear_bindings(stmt_ins_hist);
           }
-        
+
           DT_DEBUG_SQLITE3_BIND_TEXT(stmt_upd_hist, 1, operation, strlen(operation), SQLITE_TRANSIENT);
           DT_DEBUG_SQLITE3_BIND_BLOB(stmt_upd_hist, 2, params, params_len, SQLITE_TRANSIENT);
           DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 3, modversion);
           DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 4, enabled);
           DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 5, img->id);
           DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 6, i);
-          
+
           /* check if we got blendop from xmp */
           unsigned char *blendop_params = NULL;
           unsigned int blendop_size = 0;
@@ -990,7 +1018,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
             blversion = blendop_version->toLong(i);
           }
           DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 8, blversion);
-          
+
           sqlite3_step (stmt_upd_hist);
           free(params);
           free(blendop_params);
