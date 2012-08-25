@@ -36,10 +36,12 @@ atomic_add_f(
     global float *val,
     const  float  delta)
 {
-#if 0
-  // this brings down time for the splat kernel a lot,
-  // but of course produces the wrong result.
-  val[0] += delta;
+#ifdef NVIDIA_SM_20
+  // buys me another 3x--10x over the `algorithmic' improvements in the splat kernel below,
+  // depending on configuration (sigma_s and sigma_r)
+  float res = 0;
+  asm volatile ("atom.global.add.f32 %0, [%1], %2;" : "=f"(res) : "l"(val), "f"(delta));
+
 #else
   union
   {

@@ -83,6 +83,7 @@ typedef struct dt_opencl_device_t
   int eventsconsolidated;
   int maxevents;
   int lostevents;
+  int nvidia_sm_20;
   cl_int summary;
 }
 dt_opencl_device_t;
