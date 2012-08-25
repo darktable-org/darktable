@@ -195,8 +195,8 @@ the console and post the backtrace log to mailing list with information about yo
 #endif
 
 
-static 
-void dt_check_cpu(int argc,char **argv) 
+static
+void dt_check_cpu(int argc,char **argv)
 {
   /* hook up SIGILL handler */
   _dt_sigill_old_handler = signal(SIGILL,&_dt_sigill_handler);
@@ -204,7 +204,7 @@ void dt_check_cpu(int argc,char **argv)
   /* call cpuid for  SSE level */
   int ax,bx,cx,dx;
   cpuid(0x1,ax,bx,cx,dx);
-  
+
   ax = bx = 0;
   char message[512]={0};
   strcat(message,_("SIMD extensions found: "));
@@ -216,20 +216,20 @@ void dt_check_cpu(int argc,char **argv)
    strcat(message,"SSE ");
   if (!darktable.cpu_flags)
     strcat(message,"none");
- 
+
   /* for now, bail out if SSE2 is not availble */
   if(!(darktable.cpu_flags & DT_CPU_FLAG_SSE2))
   {
     gtk_init (&argc, &argv);
-    
+
     GtkWidget *dlg = gtk_message_dialog_new(NULL,GTK_DIALOG_MODAL,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_(
 "darktable is very cpu intensive and uses SSE2 SIMD instructions \
 for heavy calculations. This gives a better user experience but also defines a minimum \
 processor requirement.\n\nThe processor in YOUR system does NOT support SSE2. \
 darktable will now close down.\n\n%s"),message);
-    
+
     gtk_dialog_run(GTK_DIALOG(dlg));
-    
+
     exit(11);
   }
 }
@@ -290,6 +290,91 @@ static void strip_semicolons_from_keymap(const char* path)
               NULL, NULL, NULL, NULL);
 }
 
+int dt_load_from_string(const gchar* image_to_load, gboolean open_image_in_dr)
+{
+  int id = 0;
+  if(image_to_load == NULL || image_to_load[0] == '\0')
+    return 0;
+
+  char* filename;
+  if(g_str_has_prefix(image_to_load, "file://"))
+    image_to_load += strlen("file://");
+  if(g_path_is_absolute(image_to_load) == FALSE)
+  {
+    char* current_dir = g_get_current_dir();
+    char* tmp_filename = g_build_filename(current_dir, image_to_load, NULL);
+    filename = (char*)g_malloc(sizeof(char)*MAXPATHLEN);
+    if(realpath(tmp_filename, filename) == NULL)
+    {
+      dt_control_log(_("found strange path `%s'"), tmp_filename);
+      g_free(current_dir);
+      g_free(tmp_filename);
+      g_free(filename);
+      return 0;
+    }
+    g_free(current_dir);
+    g_free(tmp_filename);
+  }
+  else
+  {
+    filename = g_strdup(image_to_load);
+  }
+
+  if(g_file_test(filename, G_FILE_TEST_IS_DIR))
+  {
+    // import a directory into a film roll
+    unsigned int last_char = strlen(filename)-1;
+    if(filename[last_char] == '/')
+      filename[last_char] = '\0';
+    id = dt_film_import(filename);
+    if(id)
+    {
+      dt_film_open(id);
+      dt_ctl_switch_mode_to(DT_LIBRARY);
+    }
+    else
+    {
+      dt_control_log(_("error loading directory `%s'"), filename);
+    }
+  }
+  else
+  {
+    // import a single image
+    gchar *directory = g_path_get_dirname((const gchar *)filename);
+    dt_film_t film;
+    const int filmid = dt_film_new(&film, directory);
+    id = dt_image_import(filmid, filename, TRUE);
+    g_free (directory);
+    if(id)
+    {
+      dt_film_open(filmid);
+      // make sure buffers are loaded (load full for testing)
+      dt_mipmap_buffer_t buf;
+      dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
+      if(!buf.buf)
+      {
+        id = 0;
+        dt_control_log(_("file `%s' has unknown format!"), filename);
+      }
+      else
+      {
+        dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+        if(open_image_in_dr)
+        {
+          DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
+          dt_ctl_switch_mode_to(DT_DEVELOP);
+        }
+      }
+    }
+    else
+    {
+      dt_control_log(_("error loading file `%s'"), filename);
+    }
+  }
+  g_free(filename);
+  return id;
+}
+
 int dt_init(int argc, char *argv[], const int init_gui)
 {
 #ifndef __APPLE__
@@ -303,19 +388,19 @@ int dt_init(int argc, char *argv[], const int init_gui)
 #endif
 
 #ifdef M_MMAP_THRESHOLD
-  mallopt(M_MMAP_THRESHOLD,128*1024) ; /* use mmap() for large allocations */   
+  mallopt(M_MMAP_THRESHOLD,128*1024) ; /* use mmap() for large allocations */
 #endif
 
   bindtextdomain (GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
 
-  
+
   // init all pointers to 0:
   memset(&darktable, 0, sizeof(darktable_t));
 
   darktable.progname = argv[0];
-   
+
   // database
   gchar *dbfilename_from_command = NULL;
   char *datadirFromCommand = NULL;
@@ -588,84 +673,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
       gtk_accel_map_save(keyfile); // Save the default keymap if none is present
   }
 
-  int id = 0;
-  if(init_gui && image_to_load)
-  {
-    char* filename;
-    if(g_str_has_prefix(image_to_load, "file://"))
-      image_to_load += strlen("file://");
-    if(g_path_is_absolute(image_to_load) == FALSE)
-    {
-      char* current_dir = g_get_current_dir();
-      char* tmp_filename = g_build_filename(current_dir, image_to_load, NULL);
-      filename = (char*)g_malloc(sizeof(char)*MAXPATHLEN);
-      if(realpath(tmp_filename, filename) == NULL)
-      {
-        dt_control_log(_("found strange path `%s'"), tmp_filename);
-        g_free(current_dir);
-        g_free(tmp_filename);
-        g_free(filename);
-        return 0;
-      }
-      g_free(current_dir);
-      g_free(tmp_filename);
-    }
-    else
-    {
-      filename = g_strdup(image_to_load);
-    }
-
-    if(g_file_test(filename, G_FILE_TEST_IS_DIR))
-    {
-      // import a directory into a film roll
-      unsigned int last_char = strlen(filename)-1;
-      if(filename[last_char] == '/')
-        filename[last_char] = '\0';
-      id = dt_film_import(filename);
-      if(id)
-      {
-        dt_film_open(id);
-        dt_ctl_switch_mode_to(DT_LIBRARY);
-      }
-      else
-      {
-        dt_control_log(_("error loading directory `%s'"), filename);
-      }
-    }
-    else
-    {
-      // import a single image
-      gchar *directory = g_path_get_dirname((const gchar *)filename);
-      dt_film_t film;
-      const int filmid = dt_film_new(&film, directory);
-      id = dt_image_import(filmid, filename, TRUE);
-      g_free (directory);
-      if(id)
-      {
-        dt_film_open(filmid);
-        // make sure buffers are loaded (load full for testing)
-        dt_mipmap_buffer_t buf;
-        dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
-        if(!buf.buf)
-        {
-          id = 0;
-          dt_control_log(_("file `%s' has unknown format!"), filename);
-        }
-        else
-        {
-          dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-          DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
-          dt_ctl_switch_mode_to(DT_DEVELOP);
-        }
-      }
-      else
-      {
-        dt_control_log(_("error loading file `%s'"), filename);
-      }
-    }
-    g_free(filename);
-  }
-  if(init_gui && !id)
+  if(init_gui && dt_load_from_string(image_to_load, TRUE) == 0)
   {
     dt_ctl_switch_mode_to(DT_LIBRARY);
   }
@@ -729,7 +737,7 @@ void dt_cleanup()
   dt_database_destroy(darktable.db);
 
   dt_bauhaus_cleanup();
- 
+
   dt_pthread_mutex_destroy(&(darktable.db_insert));
   dt_pthread_mutex_destroy(&(darktable.plugin_threadsafe));
 
