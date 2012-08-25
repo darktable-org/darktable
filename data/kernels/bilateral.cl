@@ -81,6 +81,20 @@ splat(
     const int            sizez,
     const float          sigma_s,
     const float          sigma_r)
+#if 0
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+  local accum[32*32]; // should be more than local sizes
+  const int i = get_local_id(0);
+  const int j = get_local_id(1);
+  accum[32*j + i] = 0;
+  const int startx = get_group_id(0)*get_local_size(0);
+  const int starty = get_group_id(1)*get_local_size(1);
+}
+#endif
+#if 1
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -111,6 +125,8 @@ splat(
   // (as compared to 0.028 seconds for slicing below, which should be about the same)
   // the problem is probably that atomic_add_f always writes to the same address
   // within the same warp, so we have a very bad race condition, resulting in long loops..
+  atomic_add_f(grid + gi,          contrib);
+#if 0
   atomic_add_f(grid + gi,          contrib * (1.0f-fx) * (1.0f-fy) * (1.0f-fz));
   atomic_add_f(grid + gi+ox,       contrib * (     fx) * (1.0f-fy) * (1.0f-fz));
   atomic_add_f(grid + gi+oy,       contrib * (1.0f-fx) * (     fy) * (1.0f-fz));
@@ -119,7 +135,9 @@ splat(
   atomic_add_f(grid + gi+oz+ox,    contrib * (     fx) * (1.0f-fy) * (     fz));
   atomic_add_f(grid + gi+oz+oy,    contrib * (1.0f-fx) * (     fy) * (     fz));
   atomic_add_f(grid + gi+oz+oy+ox, contrib * (     fx) * (     fy) * (     fz));
+#endif
 }
+#endif
 
 kernel void
 blur_line_z(

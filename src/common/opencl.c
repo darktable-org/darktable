@@ -259,10 +259,10 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   }
 
 finally:
-  if(cl->inited)
-    cl->bilateral = dt_bilateral_init_cl_global();
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] FINALLY: opencl is %sAVAILABLE on this system.\n", cl->inited ? "" : "NOT ");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] initial status of opencl enabled flag is %s.\n", cl->enabled ? "ON" : "OFF");
+  if(cl->inited)
+    cl->bilateral = dt_bilateral_init_cl_global();
   return;
 }
 

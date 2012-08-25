@@ -73,9 +73,9 @@ dt_bilateral_init_cl(
   dt_bilateral_cl_t *b = (dt_bilateral_cl_t *)malloc(sizeof(dt_bilateral_cl_t));
 
   b->global = darktable.opencl->bilateral;
-  b->size_x = CLAMPS((int)roundf(width/sigma_s), 4, 1000) + 1;
-  b->size_y = CLAMPS((int)roundf(height/sigma_s), 4, 1000) + 1;
-  b->size_z = CLAMPS((int)roundf(100.0f/sigma_r), 4, 100) + 1;
+  b->size_x = CLAMPS((int)roundf(width/sigma_s), 4, 900) + 1;
+  b->size_y = CLAMPS((int)roundf(height/sigma_s), 4, 900) + 1;
+  b->size_z = CLAMPS((int)roundf(100.0f/sigma_r), 4, 50) + 1;
   b->width = width;
   b->height = height;
   b->sigma_s = MAX(height/(b->size_y-1.0f), width/(b->size_x-1.0f));
