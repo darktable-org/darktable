@@ -13,7 +13,7 @@
 #prevLink, #nextLink{ width: 49%; height: 100%; background-image: url(data:image/gif;base64,AAAA); /* Trick IE into showing hover */ display: block; }
 #prevLink { left: 0; float: left;}
 #nextLink { right: 0; float: right;}
-#prevLink:hover, #prevLink:visited:hover { background: url(../styles/prevlabel.gif) left 15% no-repeat; }
+#prevLink:hover, #prevLink:visited:hover { background: url(../style/prevlabel.gif) left 15% no-repeat; }
 #nextLink:hover, #nextLink:visited:hover { background: url(../style/nextlabel.gif) right 15% no-repeat; }
 
 #imageDataContainer{ font: 10px Verdana, Helvetica, sans-serif; color :#D0D0D0; background-color: #222222; margin: 0 auto; line-height: 1.4em; overflow: auto; width: 100%	; }
