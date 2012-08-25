@@ -102,7 +102,7 @@ const char* name()
 
 uint32_t views()
 {
-  return DT_VIEW_DARKROOM | DT_VIEW_TETHERING;
+  return DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP;
 }
 
 uint32_t container()
@@ -110,7 +110,7 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_BOTTOM;
 }
 
-int expandable() 
+int expandable()
 {
   return 0;
 }
@@ -131,7 +131,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "rate 5"), GDK_5, 0);
   dt_accel_register_lib(self, NC_("accel", "rate reject"), GDK_r, 0);
 
-  
+
   /* setup history key accelerators */
   dt_accel_register_lib(self, NC_("accel", "copy history"),
                         GDK_c, GDK_CONTROL_MASK);
@@ -140,8 +140,8 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "discard history"),
                         GDK_d, GDK_CONTROL_MASK);
 
-  
-  
+
+
   /* setup color label accelerators */
   dt_accel_register_lib(self, NC_("accel", "color red"), GDK_F1, 0);
   dt_accel_register_lib(self, NC_("accel", "color yellow"), GDK_F2, 0);
@@ -249,15 +249,15 @@ void gui_init(dt_lib_module_t *self)
 
   /* create drawingarea */
   self->widget = gtk_vbox_new(FALSE,0);
-  
-  
+
+
   /* createing filmstrip box*/
   d->filmstrip = gtk_event_box_new();
 
-  gtk_widget_add_events(d->filmstrip, 
-              GDK_POINTER_MOTION_MASK | 
-              GDK_POINTER_MOTION_HINT_MASK | 
-              GDK_BUTTON_PRESS_MASK | 
+  gtk_widget_add_events(d->filmstrip,
+              GDK_POINTER_MOTION_MASK |
+              GDK_POINTER_MOTION_HINT_MASK |
+              GDK_BUTTON_PRESS_MASK |
               GDK_BUTTON_RELEASE_MASK |
               GDK_SCROLL_MASK |
               GDK_LEAVE_NOTIFY_MASK);
@@ -274,7 +274,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect (G_OBJECT (d->filmstrip), "leave-notify-event",
                     G_CALLBACK(_lib_filmstrip_mouse_leave_callback), self);
 
-  
+
   /* set size of filmstrip */
   int32_t height = dt_conf_get_int("plugins/lighttable/filmstrip/height");
   gtk_widget_set_size_request(d->filmstrip, -1, CLAMP(height,64,400));
@@ -282,10 +282,10 @@ void gui_init(dt_lib_module_t *self)
   /* create the resize handle */
   GtkWidget *size_handle = gtk_event_box_new();
   gtk_widget_set_size_request(size_handle,-1,10);
-  gtk_widget_add_events(size_handle, 
-              GDK_POINTER_MOTION_MASK | 
-              GDK_POINTER_MOTION_HINT_MASK | 
-              GDK_BUTTON_PRESS_MASK | 
+  gtk_widget_add_events(size_handle,
+              GDK_POINTER_MOTION_MASK |
+              GDK_POINTER_MOTION_HINT_MASK |
+              GDK_BUTTON_PRESS_MASK |
               GDK_BUTTON_RELEASE_MASK |
               GDK_ENTER_NOTIFY_MASK |
               GDK_LEAVE_NOTIFY_MASK
@@ -313,11 +313,11 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.filmstrip.activated_image = _lib_filmstrip_get_activated_imgid;
 
   /* connect signal handler */
-  dt_control_signal_connect(darktable.signals, 
+  dt_control_signal_connect(darktable.signals,
                   DT_SIGNAL_COLLECTION_CHANGED,
                   G_CALLBACK(_lib_filmstrip_collection_changed_callback),
                   (gpointer)self);
-  dt_control_signal_connect(darktable.signals, 
+  dt_control_signal_connect(darktable.signals,
                   DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
                   G_CALLBACK(_lib_filmstrip_collection_changed_callback),
                   (gpointer)self);
@@ -373,7 +373,7 @@ static gboolean _lib_filmstrip_size_handle_button_callback(GtkWidget *w, GdkEven
       gtk_widget_get_size_request(d->filmstrip, NULL, &d->size_handle_height);
       d->size_handle_is_dragging = TRUE;
     }
-    else if (e->type == GDK_BUTTON_RELEASE) 
+    else if (e->type == GDK_BUTTON_RELEASE)
       d->size_handle_is_dragging = FALSE;
   }
   return TRUE;
@@ -419,9 +419,9 @@ static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w,GdkEventScroll *e, g
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
   /* change the offset */
-  if (strip->offset > 0 && (e->direction == GDK_SCROLL_UP || e->direction == GDK_SCROLL_LEFT)) 
+  if (strip->offset > 0 && (e->direction == GDK_SCROLL_UP || e->direction == GDK_SCROLL_LEFT))
     strip->offset--;
-  else if(strip->offset < strip->collection_count-1 && (e->direction == GDK_SCROLL_DOWN || e->direction == GDK_SCROLL_RIGHT)) 
+  else if(strip->offset < strip->collection_count-1 && (e->direction == GDK_SCROLL_DOWN || e->direction == GDK_SCROLL_RIGHT))
     strip->offset++;
   else
     return TRUE;
@@ -499,7 +499,7 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
   DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
 
   /* create cairo surface */
-  cairo_t *cr = gdk_cairo_create(widget->window); 
+  cairo_t *cr = gdk_cairo_create(widget->window);
 
   /* fill background */
   cairo_set_source_rgb (cr, .2, .2, .2);
@@ -535,9 +535,9 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
   if(!query)
     return FALSE;
 
-  if(offset < 0)                
+  if(offset < 0)
     strip->offset = offset = 0;
-  if(offset > strip->collection_count-1) 
+  if(offset > strip->collection_count-1)
     strip->offset = offset = strip->collection_count-1;
 
   // dt_view_set_scrollbar(self, offset, count, max_cols, 0, 1, 1);
@@ -545,7 +545,7 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset - max_cols/2);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_cols);
-  
+
 
   cairo_save(cr);
   cairo_translate(cr, empty_edge, 0.0f);
@@ -606,8 +606,8 @@ failure:
 #endif
 
   /* cleanup */
-  cairo_destroy(cr); 
-    
+  cairo_destroy(cr);
+
   return TRUE;
 }
 
@@ -620,7 +620,7 @@ static void _lib_filmstrip_collection_changed_callback(gpointer instance, gpoint
 static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gboolean activate)
 {
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
- 
+
   /* if no imgid just bail out */
   if(imgid <= 0) return;
 
@@ -734,9 +734,9 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
       /* get image from cache */
       const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
       dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
-      if (num == 666) 
+      if (num == 666)
         image->flags &= ~0xf;
-      else if (num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) 
+      else if (num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1))
         image->flags &= ~0x7;
       else
       {

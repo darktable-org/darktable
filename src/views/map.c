@@ -1,20 +1,19 @@
-
 /*
-		This file is part of darktable,
-		copyright (c) 2011 henrik andersson.
+    This file is part of darktable,
+    copyright (c) 2011 henrik andersson.
 
-		darktable is free software: you can redistribute it and/or modify
-		it under the terms of the GNU General Public License as published by
-		the Free Software Foundation, either version 3 of the License, or
-		(at your option) any later version.
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-		darktable is distributed in the hope that it will be useful,
-		but WITHOUT ANY WARRANTY; without even the implied warranty of
-		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-		GNU General Public License for more details.
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-		You should have received a copy of the GNU General Public License
-		along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "control/control.h"
@@ -46,6 +45,8 @@ dt_map_t;
 static void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdouble lat, gdouble zoom);
 /* callback when collection has change, needs to update map */
 static void _view_map_collection_changed(gpointer instance, gpointer user_data);
+/* callback when an image is selected in filmstrip, centers map */
+static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data);
 
 const char *name(dt_view_t *self)
 {
@@ -66,18 +67,17 @@ void init(dt_view_t *self)
   dt_map_t *lib = (dt_map_t *)self->data;
 
   lib->map = g_object_new (OSM_TYPE_GPS_MAP,
-		      "map-source", OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
-		      "tile-cache", "dt.map.cache",
-		      "tile-cache-base", "/tmp",
-		      "proxy-uri",g_getenv("http_proxy"),
-		      NULL);
+                           "map-source", OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
+                           "tile-cache", "dt.map.cache",
+                           "tile-cache-base", "/tmp",
+                           "proxy-uri",g_getenv("http_proxy"),
+                           NULL);
 
   OsmGpsMapLayer *osd = g_object_new (OSM_TYPE_GPS_MAP_OSD,
-				 "show-scale",TRUE, NULL);
+                                      "show-scale",TRUE, NULL);
 
   osm_gps_map_layer_add(OSM_GPS_MAP(lib->map), osd);
   g_object_unref(G_OBJECT(osd));
-
 }
 
 void cleanup(dt_view_t *self)
@@ -91,8 +91,8 @@ void configure(dt_view_t *self, int wd, int ht)
   //dt_capture_t *lib=(dt_capture_t*)self->data;
 }
 
-static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_i, 
-				  int32_t pointerx, int32_t pointery, gpointer user_data)
+static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_i,
+                                  int32_t pointerx, int32_t pointery, gpointer user_data)
 {
   const int ts = 64;
   OsmGpsMapPoint bb[2], *l=NULL, *center=NULL;
@@ -141,49 +141,48 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
     /* dependent on scale draw different overlays */
     if (zoom >= 14)
     {
-	dt_mipmap_buffer_t buf;
-	dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache,
-								 ts, ts);
-	dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, 0);
+      dt_mipmap_buffer_t buf;
+      dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, ts, ts);
+      dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, 0);
 
-	cairo_surface_t *surface = NULL;
-	if(buf.buf)
-	{
-	  float ms = fminf(
-			   ts/(float)buf.width,
-			   ts/(float)buf.height);
-	  const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
-	  surface = cairo_image_surface_create_for_data (buf.buf, CAIRO_FORMAT_RGB24, 
-							 buf.width, buf.height, stride);
-	  
-	  cairo_pattern_set_filter(cairo_get_source(cri), CAIRO_FILTER_NEAREST);
-	  cairo_save(cri);
-	  
-	  /* first of lets draw a pin */
-	  cairo_move_to(cri, px, py);
-	  cairo_line_to(cri, px+8, py-8);
-	  cairo_line_to(cri, px+4, py-8);
-	  cairo_fill(cri);
+      cairo_surface_t *surface = NULL;
+      if(buf.buf)
+      {
+        float ms = fminf(
+                          ts/(float)buf.width,
+                          ts/(float)buf.height);
+        const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
+        surface = cairo_image_surface_create_for_data (buf.buf, CAIRO_FORMAT_RGB24,
+                                                       buf.width, buf.height, stride);
 
-	  /* and the frame around image */
-	  cairo_move_to(cri, px+2, py-8);
-	  cairo_line_to(cri, px+2 + (buf.width*ms) + 4, py-8);
-	  cairo_line_to(cri, px+2 + (buf.width*ms) + 4 , py-8-(buf.height*ms) - 4);
-	  cairo_line_to(cri, px+2 , py-8-(buf.height*ms) - 4);
-	  cairo_fill(cri);
-	   
+        cairo_pattern_set_filter(cairo_get_source(cri), CAIRO_FILTER_NEAREST);
+        cairo_save(cri);
 
-	  /* draw image*/
-	  cairo_translate(cri, px+4, py - 8 - (buf.height*ms) - 2);
-	  cairo_scale(cri, ms, ms);
-	  cairo_set_source_surface (cri, surface, 0, 0);
-	  cairo_paint(cri);
-	  
-	  cairo_restore(cri);
-	  
-	  cairo_surface_destroy(surface);
-	  
-	}
+        /* first of lets draw a pin */
+        cairo_move_to(cri, px, py);
+        cairo_line_to(cri, px+8, py-8);
+        cairo_line_to(cri, px+4, py-8);
+        cairo_fill(cri);
+
+        /* and the frame around image */
+        cairo_move_to(cri, px+2, py-8);
+        cairo_line_to(cri, px+2 + (buf.width*ms) + 4, py-8);
+        cairo_line_to(cri, px+2 + (buf.width*ms) + 4 , py-8-(buf.height*ms) - 4);
+        cairo_line_to(cri, px+2 , py-8-(buf.height*ms) - 4);
+        cairo_fill(cri);
+
+
+        /* draw image*/
+        cairo_translate(cri, px+4, py - 8 - (buf.height*ms) - 2);
+        cairo_scale(cri, ms, ms);
+        cairo_set_source_surface (cri, surface, 0, 0);
+        cairo_paint(cri);
+
+        cairo_restore(cri);
+
+        cairo_surface_destroy(surface);
+
+      }
     }
     else
     {
@@ -209,7 +208,7 @@ void enter(dt_view_t *self)
 
   /* replace center widget */
   GtkWidget *parent = gtk_widget_get_parent(dt_ui_center(darktable.gui->ui));
-  gtk_widget_hide(dt_ui_center(darktable.gui->ui));  
+  gtk_widget_hide(dt_ui_center(darktable.gui->ui));
   gtk_box_pack_start(GTK_BOX(parent), GTK_WIDGET(lib->map) ,TRUE, TRUE, 0);
 
   gtk_box_reorder_child(GTK_BOX(parent), GTK_WIDGET(lib->map), 2);
@@ -221,10 +220,10 @@ void enter(dt_view_t *self)
   darktable.view_manager->proxy.map.center_on_location = _view_map_center_on_location;
 
   /* setup collection listener and initialize main_query statement */
-  dt_control_signal_connect(darktable.signals, 
-			    DT_SIGNAL_COLLECTION_CHANGED, 
-			    G_CALLBACK(_view_map_collection_changed),
-			    (gpointer) self);
+  dt_control_signal_connect(darktable.signals,
+                            DT_SIGNAL_COLLECTION_CHANGED,
+                            G_CALLBACK(_view_map_collection_changed),
+                            (gpointer) self);
 
 
   osm_gps_map_set_post_expose_callback(lib->map, _view_map_post_expose, lib);
@@ -234,7 +233,7 @@ void enter(dt_view_t *self)
   float lon, lat;
   const float rlon = dt_conf_get_float("plugins/map/longitude");
   const float rlat = dt_conf_get_float("plugins/map/latitude");
-  const int zoom = dt_conf_get_int("plugins/map/zoom");  
+  const int zoom = dt_conf_get_int("plugins/map/zoom");
 
   pt = osm_gps_map_point_new_radians(rlat,rlon);
   osm_gps_map_point_get_degrees (pt, &lat, &lon);
@@ -242,10 +241,21 @@ void enter(dt_view_t *self)
   osm_gps_map_point_free(pt);
 
   _view_map_collection_changed(NULL, self);
+
+  /* connect signal for filmstrip image activate */
+  dt_control_signal_connect(darktable.signals,
+                            DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+                            G_CALLBACK(_view_map_filmstrip_activate_callback),
+                            self);
 }
 
 void leave(dt_view_t *self)
 {
+  /* disconnect from filmstrip image activate */
+  dt_control_signal_disconnect(darktable.signals,
+                               G_CALLBACK(_view_map_filmstrip_activate_callback),
+                               (gpointer)self);
+
   dt_map_t *lib = (dt_map_t *)self->data;
   gtk_widget_destroy(GTK_WIDGET(lib->map));
   gtk_widget_show_all(dt_ui_center(darktable.gui->ui));
@@ -254,8 +264,8 @@ void leave(dt_view_t *self)
   darktable.view_manager->proxy.map.view = NULL;
 
   /* disconnect from signals */
-  dt_control_signal_disconnect(darktable.signals, 
-			       G_CALLBACK(_view_map_collection_changed), (gpointer)self);
+  dt_control_signal_disconnect(darktable.signals,
+                               G_CALLBACK(_view_map_collection_changed), (gpointer)self);
 
 }
 
@@ -295,7 +305,7 @@ void _view_map_collection_changed(gpointer instance, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
   dt_map_t *lib = (dt_map_t *)self->data;
-  
+
   /* check if we can get a query from collection */
   const gchar *query = dt_collection_get_query (darktable.collection);
   if(!query)
@@ -311,3 +321,21 @@ void _view_map_collection_changed(gpointer instance, gpointer user_data)
   dt_control_queue_redraw_widget(GTK_WIDGET(lib->map));
 
 }
+
+static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data)
+{
+  double longitude, latitude;
+  int32_t imgid = 0;
+  if ((imgid=dt_view_filmstrip_get_activated_imgid(darktable.view_manager))>0)
+  {
+    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+    longitude = cimg->longitude;
+    latitude = cimg->latitude;
+    dt_image_cache_read_release(darktable.image_cache, cimg);
+    _view_map_center_on_location((dt_view_t*)user_data, longitude, latitude, 15); // TODO: is it better to keep the zoom level?
+  }
+}
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
