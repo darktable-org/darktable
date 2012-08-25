@@ -566,8 +566,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
 
 #if 1
-  // TODO: something doesn't quite look right, maybe clamping is essential?
-  const float sigma_r = 10.0f;// d->sigma_r; // does not depend on scale
+  const float sigma_r = 100.0f;// d->sigma_r; // does not depend on scale
   const float sigma_s = sigma;
   const float detail = -1.0f; // we want the bilateral base layer
 
