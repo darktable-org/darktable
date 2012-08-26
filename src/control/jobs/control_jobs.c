@@ -833,7 +833,8 @@ void dt_control_delete_images()
 }
 
 static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
-    int32_t (*fileop_callback)(const int32_t, const int32_t))
+    int32_t (*fileop_callback)(const int32_t, const int32_t),
+    const char *desc, const char *desc_pl)
 {
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
@@ -843,7 +844,7 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
   gchar *newdir = (gchar *)job->user_data;
 
   /* create a cancellable bgjob ui template */
-  g_snprintf(message, 512, ngettext("moving %d image", "moving %d images", total), total);
+  g_snprintf(message, 512, ngettext(desc, desc_pl, total), total);
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
 
@@ -1003,12 +1004,14 @@ void dt_control_copy_images_job_init(dt_job_t *job)
 
 int32_t dt_control_move_images_job_run(dt_job_t *job)
 {
-  return _generic_dt_control_fileop_images_job_run(job, &dt_image_move);
+  return _generic_dt_control_fileop_images_job_run(job, &dt_image_move,
+      "moving %d image", "moving %d images");
 }
 
 int32_t dt_control_copy_images_job_run(dt_job_t *job)
 {
-  return _generic_dt_control_fileop_images_job_run(job, &dt_image_copy);
+  return _generic_dt_control_fileop_images_job_run(job, &dt_image_copy,
+      "copying %d image", "copying %d images");
 }
 
 int32_t dt_control_export_job_run(dt_job_t *job)
