@@ -152,7 +152,7 @@ typedef struct darktable_t
 {
   uint32_t cpu_flags;
   int32_t num_openmp_threads;
-	
+
   int32_t thumbnail_width, thumbnail_height;
   int32_t unmuted;
   GList                          *iop;
@@ -335,7 +335,7 @@ static inline void dt_print_mem_usage()
 static inline size_t
 dt_get_total_memory()
 {
-#if defined(__linux__) 
+#if defined(__linux__)
   FILE *f = fopen("/proc/meminfo", "rb");
   if(!f) return 0;
   size_t mem = 0;
@@ -361,7 +361,7 @@ dt_get_total_memory()
   size_t length = sizeof(uint64_t);
   sysctl(mib, 2, (void *)&physical_memory, &length, (void *)NULL, 0);
   return physical_memory / 1024;
-#else 
+#else
   // assume 2GB until we have a better solution.
   fprintf(stderr, "Unknown memory size. Assuming 2GB\n");
   return 2097152;
@@ -369,6 +369,9 @@ dt_get_total_memory()
 }
 
 void dt_configure_defaults();
+
+// helper function which loads whatever image_to_load points to: single image files or whole directories
+int dt_load_from_string(const gchar* image_to_load, gboolean open_image_in_dr);
 
 #endif
 

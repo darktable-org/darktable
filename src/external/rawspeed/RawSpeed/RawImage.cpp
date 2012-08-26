@@ -37,6 +37,7 @@ RawImageData::RawImageData(void):
   pthread_mutex_init(&mymutex, NULL);
   subsampling.x = subsampling.y = 1;
   isoSpeed = 0;
+  pthread_mutex_init(&errMutex, NULL);
 }
 
 RawImageData::RawImageData(iPoint2D _dim, uint32 _bpc, uint32 _cpp) :
@@ -49,6 +50,7 @@ RawImageData::RawImageData(iPoint2D _dim, uint32 _bpc, uint32 _cpp) :
   isoSpeed = 0;
   createData();
   pthread_mutex_init(&mymutex, NULL);
+  pthread_mutex_init(&errMutex, NULL);
 }
 
 RawImageData::~RawImageData(void) {
@@ -58,6 +60,11 @@ RawImageData::~RawImageData(void) {
   data = 0;
   mOffset = iPoint2D(0, 0);
   pthread_mutex_destroy(&mymutex);
+  pthread_mutex_destroy(&errMutex);
+  for (uint32 i = 0 ; i < errors.size(); i++) {
+    free((void*)errors[i]);
+  }
+  errors.clear();
 }
 
 
@@ -136,20 +143,26 @@ iPoint2D RawImageData::getCropOffset()
   return mOffset;
 }
 
-void RawImageData::subFrame(iPoint2D offset, iPoint2D new_size) {
-  if (!new_size.isThisInside(dim - offset)) {
+void RawImageData::subFrame(iRectangle2D crop) {
+  if (!crop.dim.isThisInside(dim - crop.pos)) {
     printf("WARNING: RawImageData::subFrame - Attempted to create new subframe larger than original size. Crop skipped.\n");
     return;
   }
-  if (offset.x < 0 || offset.y < 0) {
+  if (crop.pos.x < 0 || crop.pos.y < 0 || !crop.hasPositiveArea()) {
     printf("WARNING: RawImageData::subFrame - Negative crop offset. Crop skipped.\n");
     return;
   }
 
-  mOffset += offset;
-  dim = new_size;
+  mOffset += crop.pos;
+  dim = crop.dim;
 }
 
+void RawImageData::setError( const char* err )
+{
+  pthread_mutex_lock(&errMutex);
+  errors.push_back(_strdup(err));
+  pthread_mutex_unlock(&errMutex);
+}
 
 RawImage::RawImage(RawImageData* p) : p_(p) {
   pthread_mutex_lock(&p_->mymutex);
@@ -222,13 +235,21 @@ void RawImageWorker::waitForThread()
 
 void RawImageWorker::_performTask()
 {
-  switch(task)
-  {
+  try {
+    switch(task)
+    {
     case TASK_SCALE_VALUES:
       data->scaleValues(start_y, end_y);
       break;
     default:
       _ASSERTE(false);
+    }
+  } catch (RawDecoderException &e) {
+    data->setError(e.what());
+  } catch (TiffParserException &e) {
+    data->setError(e.what());
+  } catch (IOException &e) {
+    data->setError(e.what());
   }
 }
 

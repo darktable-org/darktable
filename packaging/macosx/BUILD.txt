@@ -1,35 +1,43 @@
-Author: Gregor Quade <u3dreal@yahoo.de>
+How to make disk image with darktable application bundle (64 bit Intel only):
 
-How To build darktable.app from source in 6 easy steps ;): INTEL ONLY will try universal build later ;)
+1). Build darktable (and make sure it works) using instructions found in this blog post:
+    http://www.darktable.org/2012/08/bringing-current-darktable-to-os-x/
+    Macports will need some tuning though, so before you build anything add this line to /opt/local/etc/macports/macports.conf:
+     macosx_deployment_target 10.5
+    (10.4 had very limited 64 bit support, so I chose 10.5 as first supported version)
+    And edit /opt/local/share/macports/Tcl/port1.0/portconfigure.tcl - change
+     default configure.ldflags   {-L${prefix}/lib}
+    to
+     default configure.ldflags   {"-L${prefix}/lib -Wl,-headerpad_max_install_names"}
+    Be aware that this change will probably be lost after "port selfupdate".
+    Also some versions of OS X have a bug making PTHREAD_RECURSIVE_MUTEX_INITIALIZER invalid, so gettext needs to be patched:
+     $ mkdir ~/ports/devel
+     $ cp -R /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/devel/gettext ~/ports/devel/
+     $ curl -o ~/ports/devel/gettext/files/gettext-mutex-fix.patch https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gettext-mutex-fix.patch
+    then add gettext-mutex-fix.patch to patchfiles line in ~/ports/devel/gettext/Portfile and run
+     $ portindex ~/ports
+    Configure darktable with this command instead of just "cmake ..":
+     cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.5
 
-Installing:
+2). Download, patch and install gtk-mac-bundler (assuming darktable was cloned into ~/src directory):
+     $ cd ~/src
+     $ curl -O http://ftp.gnome.org/pub/gnome/sources/gtk-mac-bundler/0.6/gtk-mac-bundler-0.6.1.tar.bz2
+     $ tar -xf gtk-mac-bundler-0.6.1.tar.bz2
+     $ cd gtk-mac-bundler-0.6.1
+     $ patch -p1 < ../darktable/packaging/macosx/gtk-mac-bundler-0.6.1.patch
+     $ make install
 
+3). You will need to rebuild gtk2 with custom configure flag. Add these lines to ~/ports/gnome/gtk2/Portfile:
+     variant bundle {
+         configure.args-append --enable-quartz-relocation
+     }
+    Update index file and reinstall gtk2:
+     $ portindex ~/ports
+     $ sudo port install gtk2 +bundle
+    The problem is that with this flag gtk2 works reliably only when included in bundle, so if you need working system gtk2 you will need to revert this change
+    after you're done with bundle creation. To do that you can just run this command:
+     $ sudo port install gtk2 -bundle
 
-1) install XCode DeveloperPackage from Apple
-   install macports from macports.org make shure you have the latest version ( sudo port -v selfupdate )
-	
-	!!! default install is /opt/local/ change this below if you have different macport dir !!!
-
-
-2) (Optional) add +quartz +atsui +no_x11 -x11 to /opt/local/etc/macports/variants.conf
-   (There have been some problems with DT when using GTK Quartz; X11 seems to work better, at least on my machine)
-   set "buildmakejobs" to more than 1 in /opt/local/etc/macports/macports.conf to use multiple threads 
-
-3) run:
-   sudo port -d sync
-   sudo port install gtk2 libxml2 gphoto2 lensfun cairo pango librsvg gdk-pixbuf2 sqlite3 exiv2 curl libpng openjpeg tiff openexr lcms2 flickcurl libgnome-keyring gtk-engines2
-
-	take a walk ! !
-
-4) compile dt from git:
-
-	git clone git://darktable.git.sf.net/gitroot/darktable/darktable
-	cd darktable
-	build.sh `pwd`/release Debug
-	(Optional -- you don't need to enable debug)
-	cd build
-	make install
-
-5) to make a disk image, run ./packaging/macosx/make-app-bundle -- this will create DarkTable.dmg in the release directory, which contains a standalone application.
-
-"Let's rock" u3dreal '09 (build instructions modified by Wyatt Olson <wyatt@digitalcave.ca> to no longer require a XCode application stub project)
+4). Now preparation is done, run image creating script, it should create darktable.dmg in current (packaging/macosx) directory:
+     $ cd ~/src/darktable/packaging/macosx
+     $ ./make-app-bundle

@@ -339,6 +339,27 @@ int32_t dt_control_match_similar_job_run(dt_job_t *job)
   return 0;
 }
 
+static float
+envelope(const float xx)
+{
+  const float x = CLAMPS(xx, 0.0f, 1.0f);
+  // const float alpha = 2.0f;
+  const float beta = 0.5f;
+  if(x < beta)
+  {
+    // return 1.0f-fabsf(x/beta-1.0f)^2
+    const float tmp = fabsf(x/beta-1.0f);
+    return 1.0f-tmp*tmp;
+  }
+  else
+  {
+    const float tmp1 = (1.0f-x)/(1.0f-beta);
+    const float tmp2 = tmp1*tmp1;
+    const float tmp3 = tmp2*tmp1;
+    return 3.0f*tmp2 - 2.0f*tmp3;
+  }
+}
+
 int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 {
   long int imgid = -1;
@@ -410,14 +431,28 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     const float iso = image.exif_iso > 0.0f ? image.exif_iso : 100.0f;
     const float exp = image.exif_exposure > 0.0f ? image.exif_exposure : 1.0f;
     const float cal = 100.0f/(aperture*exp*iso);
-    whitelevel = fmaxf(whitelevel, cal);
+    // about proportional to how many photons we can expect from this shot:
+    const float photoncnt = 100.0f*aperture*exp/iso;
+    // stupid, but we don't know the real sensor saturation level:
+    uint16_t saturation = 0;
+    for(int k=0; k<wd*ht; k++)
+      saturation = MAX(saturation, ((uint16_t *)buf.buf)[k]);
+    // seems to be around 64500--64700 for 5dm2
+    // fprintf(stderr, "saturation: %u\n", saturation);
+    whitelevel = fmaxf(whitelevel, saturation*cal);
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(buf, pixels, weight, wd, ht)
+#pragma omp parallel for schedule(static) default(none) shared(buf, pixels, weight, wd, ht, saturation)
 #endif
     for(int k=0; k<wd*ht; k++)
     {
       const uint16_t in = ((uint16_t *)buf.buf)[k];
-      const float w = .001f + (in >= 1000 ? (in < 65000 ? in/65000.0f : 0.0f) : exp * 0.01f);
+      // weights based on siggraph 12 poster
+      // zijian zhu, zhengguo li, susanto rahardja, pasi fraenti
+      // 2d denoising factor for high dynamic range imaging
+      float w = envelope(in/(float)saturation) * photoncnt;
+      // in case we are black and drop to zero weight, give it something
+      // just so numerics don't collapse. blown out whites are handled below.
+      if(w < 1e-3f && in < saturation/3) w = 1e-3f;
       pixels[k] += w * in * cal;
       weight[k] += w;
     }
@@ -434,7 +469,14 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(pixels, wd, ht, weight, whitelevel)
 #endif
-  for(int k=0; k<wd*ht; k++) pixels[k] = fmaxf(0.0f, fminf(2.0f, pixels[k]/((.5f*whitelevel*65535.0f)*weight[k])));
+  for(int k=0; k<wd*ht; k++)
+  {
+      // in case w == 0, all pixels were overexposed (too dark would have been clamped to w >= eps above)
+      if(weight[k] < 1e-3f)
+          pixels[k] = 1.f; // mark as blown out.
+      else // normalize:
+          pixels[k] = fmaxf(0.0f, pixels[k]/(whitelevel*weight[k]));
+  }
 
   // output hdr as digital negative with exif data.
   uint8_t exif[65535];
@@ -444,7 +486,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname)-(c-pathname));
-  dt_imageio_write_dng(pathname, pixels, wd, ht, exif, exif_len, filter, whitelevel);
+  dt_imageio_write_dng(pathname, pixels, wd, ht, exif, exif_len, filter, 1.0f);
 
   dt_control_backgroundjobs_progress(darktable.control, jid, 1.0f);
 
