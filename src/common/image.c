@@ -670,11 +670,11 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
       // update database
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
           "insert into images "
-          "(id, film_id, width, height, filename, maker, model, lens, exposure, "
+          "(id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
           "aperture, iso, focal_length, focus_distance, datetime_taken, flags, "
           "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
           "raw_auto_bright_threshold, raw_black, raw_maximum, orientation) "
-          "select null, ?1 as film_id, width, height, filename, maker, model, lens, "
+          "select null, group_id, ?1 as film_id, width, height, filename, maker, model, lens, "
           "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
           "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
           "raw_auto_bright_threshold, raw_black, raw_maximum, orientation "
