@@ -440,7 +440,7 @@ int dt_opencl_load_program(const int dev, const char *filename, const char* binn
   if (!f) return -1;
 
   size_t filesize = filestat.st_size;
-  char* file = (char*)malloc(filesize+1);
+  char* file = (char*)malloc(filesize+1024);
   size_t rd = fread(file, sizeof(char), filesize, f);
   fclose(f);
   if(rd != filesize)
@@ -450,9 +450,25 @@ int dt_opencl_load_program(const int dev, const char *filename, const char* binn
     return -1;
   }
 
-  char *source_md5 = g_compute_checksum_for_string(G_CHECKSUM_MD5, file, filesize);
+  char *start = file + filesize;
+  char *end = start + 1024;
+  size_t len;
+
+  cl_device_id devid = cl->dev[dev].devid;
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DRIVER_VERSION, end-start, start, &len);
+  start += len;
+
+  cl_platform_id platform;
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platform, NULL);
+
+  (cl->dlocl->symbols->dt_clGetPlatformInfo)(platform, CL_PLATFORM_VERSION, end-start, start, &len);
+  start += len;
+
+  char *source_md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)file, start-file);
   strncpy(md5sum, source_md5, 33);
   g_free(source_md5);
+
+  file[filesize] = '\0';
 
   char linkedfile[1024];
   ssize_t linkedfile_len = 0;
