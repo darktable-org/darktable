@@ -30,6 +30,7 @@
 #include "libs/lib.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/drag_and_drop.h"
 
 #include <gdk/gdkkeysyms.h>
 
@@ -55,6 +56,13 @@ typedef struct dt_lib_filmstrip_t
   int32_t activated_image;
 }
 dt_lib_filmstrip_t;
+
+/* drag'n'drop stuff */
+static GtkTargetEntry target_list[] = {
+        { "image-id",    0, DND_TARGET_IMGID },
+        { "text/uri-list", 0, DND_TARGET_URI }
+};
+static guint n_targets = G_N_ELEMENTS (target_list);
 
 /* proxy function to center filmstrip on imgid */
 static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gboolean activate);
@@ -94,6 +102,11 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
 static gboolean _lib_filmstrip_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
                                 GObject *aceeleratable, guint keyval,
                                 GdkModifierType modifier, gpointer data);
+
+/* drag'n'drop callbacks */
+static void _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *context, GtkSelectionData *selection_data,
+                                guint target_type, guint time, gpointer user_data);
+static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext *context, gpointer user_data);
 
 const char* name()
 {
@@ -253,6 +266,16 @@ void gui_init(dt_lib_module_t *self)
 
   /* createing filmstrip box*/
   d->filmstrip = gtk_event_box_new();
+
+  /* allow drag&drop of images from the filmstrip. this has to come before the other callbacks are registered! */
+  gtk_drag_source_set(d->filmstrip,
+                      GDK_BUTTON1_MASK,
+                      target_list,
+                      n_targets,
+                      GDK_ACTION_COPY);
+
+  g_signal_connect_after(d->filmstrip, "drag-begin", G_CALLBACK(_lib_filmstrip_dnd_begin_callback), self);
+  g_signal_connect(d->filmstrip, "drag-data-get", G_CALLBACK(_lib_filmstrip_dnd_get_callback), self);
 
   gtk_widget_add_events(d->filmstrip,
               GDK_POINTER_MOTION_MASK |
@@ -765,6 +788,79 @@ static gboolean _lib_filmstrip_colorlabels_key_accel_callback(GtkAccelGroup *acc
   if(darktable.view_manager->proxy.filmstrip.module)
     gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
   return TRUE;
+}
+
+static void
+_lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *context, GtkSelectionData *selection_data,
+                                guint target_type, guint time, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
+
+  g_assert (selection_data != NULL);
+
+  int mouse_over_id = strip->mouse_over_id;
+
+  switch (target_type)
+  {
+    case DND_TARGET_IMGID:
+      gtk_selection_data_set(selection_data, selection_data-> target, _DWORD, (guchar*) &mouse_over_id, sizeof(mouse_over_id));
+      break;
+    default: // return the location of the file as a last resort
+    case DND_TARGET_URI:
+    {
+      gchar pathname[DT_MAX_PATH_LEN] = {0};
+      dt_image_full_path(mouse_over_id, pathname, DT_MAX_PATH_LEN);
+      gchar *uri = g_strdup_printf("file://%s", pathname); // TODO: should we add the host?
+      gtk_selection_data_set(selection_data, selection_data-> target, _BYTE, (guchar*) uri, strlen(uri));
+      g_free(uri);
+      break;
+    }
+  }
+}
+
+static void
+_lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext *context, gpointer user_data)
+{
+  const int ts = 64;
+
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
+
+  int imgid = strip->mouse_over_id;
+
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, ts, ts);
+  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BLOCKING);
+
+  if(buf.buf)
+  {
+    uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
+    uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
+
+    uint8_t *rgbbuf = g_malloc((buf.width+2)*(buf.height+2)*3);
+    memset(rgbbuf, 64, (buf.width+2)*(buf.height+2)*3);
+    for(int i=1; i<=buf.height; i++)
+      for(int j=1; j<=buf.width; j++)
+        for(int k=0; k<3; k++)
+          rgbbuf[(i*(buf.width+2)+j)*3+k] = buf_decompressed[((i-1)*buf.width+j-1)*4+2-k];
+
+    int w=ts, h=ts;
+    if(buf.width < buf.height) w = (buf.width*ts)/buf.height; // portrait
+    else                       h = (buf.height*ts)/buf.width; // landscape
+
+    GdkPixbuf *source = gdk_pixbuf_new_from_data(rgbbuf, GDK_COLORSPACE_RGB, FALSE, 8, (buf.width+2), (buf.height+2), (buf.width+2)*3, NULL, NULL);
+    GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
+    gtk_drag_source_set_icon_pixbuf(widget, scaled);
+
+    if(source)
+      g_object_unref(source);
+    if(scaled)
+      g_object_unref(scaled);
+    g_free(rgbbuf);
+  }
+
+  dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

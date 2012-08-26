@@ -25,6 +25,7 @@
 #include "common/mipmap_cache.h"
 #include "views/view.h"
 #include "libs/lib.h"
+#include "gui/drag_and_drop.h"
 
 #include "osm-gps-map.h"
 
@@ -41,12 +42,19 @@ typedef struct dt_map_t
 }
 dt_map_t;
 
+// needed for drag&drop
+static GtkTargetEntry target_list[] = { { "image-id", GTK_TARGET_SAME_APP, DND_TARGET_IMGID } };
+static guint n_targets = G_N_ELEMENTS (target_list);
+
 /* proxy function to center map view on location at a zoom level */
 static void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdouble lat, gdouble zoom);
 /* callback when collection has change, needs to update map */
 static void _view_map_collection_changed(gpointer instance, gpointer user_data);
 /* callback when an image is selected in filmstrip, centers map */
 static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data);
+/* callback when an image is dropped from filmstrip */
+static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data,
+                       guint target_type, guint time, gpointer data);
 
 const char *name(dt_view_t *self)
 {
@@ -247,6 +255,11 @@ void enter(dt_view_t *self)
                             DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
                             G_CALLBACK(_view_map_filmstrip_activate_callback),
                             self);
+
+  /* allow drag&drop of images from filmstrip */
+  gtk_drag_dest_set(GTK_WIDGET(lib->map), GTK_DEST_DEFAULT_ALL, target_list, n_targets, GDK_ACTION_COPY);
+  g_signal_connect(GTK_WIDGET(lib->map), "drag-data-received", G_CALLBACK(drag_and_drop_received), self);
+
 }
 
 void leave(dt_view_t *self)
@@ -332,8 +345,41 @@ static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer us
     longitude = cimg->longitude;
     latitude = cimg->latitude;
     dt_image_cache_read_release(darktable.image_cache, cimg);
-    _view_map_center_on_location((dt_view_t*)user_data, longitude, latitude, 15); // TODO: is it better to keep the zoom level?
+    _view_map_center_on_location((dt_view_t*)user_data, longitude, latitude, 16); // TODO: is it better to keep the zoom level?
   }
+}
+
+static void
+drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data,
+                       guint target_type, guint time, gpointer data)
+{
+  dt_view_t *self = (dt_view_t*)data;
+  dt_map_t *lib = (dt_map_t*)self->data;
+
+  gboolean success = FALSE;
+
+  if((selection_data != NULL) && (selection_data->length >= 0) && target_type == DND_TARGET_IMGID)
+  {
+    float longitude, latitude;
+    int *imgid = (int*)selection_data->data;
+    if(imgid > 0)
+    {
+      OsmGpsMapPoint *pt = osm_gps_map_point_new_degrees(0.0, 0.0);
+      osm_gps_map_convert_screen_to_geographic(lib->map, x, y, pt);
+      osm_gps_map_point_get_degrees(pt, &latitude, &longitude);
+      osm_gps_map_point_free(pt);
+
+      const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, *imgid);
+      dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+      img->longitude = longitude;
+      img->latitude = latitude;
+      dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+      dt_image_cache_read_release(darktable.image_cache, cimg);
+
+      success = TRUE;
+    }
+  }
+  gtk_drag_finish(context, success, FALSE, time);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
