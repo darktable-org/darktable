@@ -35,6 +35,8 @@ DT_MODULE(1)
 
 #define MAX_RULES 10
 
+#define PARAM_STRING_SIZE 256 // FIXME: is this enough !?
+
 /* Folders code starts here
  TODO: Clean it */
 
@@ -78,7 +80,7 @@ typedef struct dt_lib_collect_params_t
   struct {
     uint32_t item:16;
     uint32_t mode:16;
-    char string[DT_MAX_PATH_LEN];
+    char string[PARAM_STRING_SIZE];
   } rule[MAX_RULES];
 } dt_lib_collect_params_t;
 
@@ -141,7 +143,7 @@ static void _lib_collect_update_params(dt_lib_collect_t *d) {
     snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
     gchar* string = dt_conf_get_string(confname);
     if (string != NULL) {
-      snprintf(p->rule[i].string,DT_MAX_PATH_LEN,"%s", string);
+      snprintf(p->rule[i].string,PARAM_STRING_SIZE,"%s", string);
       g_free(string);
     }
 
