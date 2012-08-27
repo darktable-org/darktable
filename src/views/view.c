@@ -46,7 +46,8 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into selected_images values (?1)", -1, &vm->statements.make_selected, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num from history where imgid = ?1", -1, &vm->statements.have_history, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select color from color_labels where imgid=?1", -1, &vm->statements.get_color, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where group_id = (select group_id from images where id=?1) and id != ?2", -1, &vm->statements.get_grouped, NULL);
+//   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where group_id = (select group_id from images where id=?1) and id != ?2", -1, &vm->statements.get_grouped, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where group_id = ?1 and id != ?2", -1, &vm->statements.get_grouped, NULL);
 
   int res=0, midx=0;
   char *modules[] = {"lighttable","darkroom","capture",NULL};
@@ -209,13 +210,13 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
   if (k < vm->num_views) newv = k;
   dt_view_t *nv = vm->view + newv;
 
-  if (nv->try_enter) 
+  if (nv->try_enter)
     error = nv->try_enter(nv);
 
   if (!error)
   {
     GList *plugins;
-    
+
     /* cleanup current view before initialization of new  */
     if (vm->current_view >=0)
     {
@@ -302,7 +303,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
         {
           snprintf(var, 1024, "plugins/lighttable/%s/expanded", plugin->plugin_name);
           expanded = dt_conf_get_bool(var);
-	  
+
           /* show expander if visible  */
           if(visible)
           {
@@ -329,7 +330,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       }
 
       /* lets get next plugin */
-      plugins = g_list_previous(plugins); 
+      plugins = g_list_previous(plugins);
     }
 
     /* enter view. crucially, do this before initing the plugins below,
@@ -393,23 +394,23 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
       py = -1.0;
     }
     v->expose(v, cr, v->width, v->height, px, py);
-  
+
     /* expose plugins */
     GList *plugins = g_list_last(darktable.lib->plugins);
     while (plugins)
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
-      
+
       if (!plugin->views)
         fprintf(stderr,"module %s doesnt have views flags\n",plugin->name());
-	  
+
       /* does this module belong to current view ?*/
       if (plugin->gui_post_expose && plugin->views() & v->view(v) )
 	plugin->gui_post_expose(plugin,cr,v->width,v->height,px,py );
 
       /* get next plugin */
       plugins = g_list_previous(plugins);
-    } 
+    }
   }
 }
 
@@ -445,18 +446,18 @@ void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int
   while (plugins)
   {
     dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
-    
+
     /* does this module belong to current view ?*/
     if (plugin->mouse_moved && plugin->views() & v->view(v) )
       if(plugin->mouse_moved(plugin, x, y, which))
 	handled = TRUE;
-    
+
     /* get next plugin */
     plugins = g_list_previous(plugins);
-  } 
-  
+  }
+
   /* if not handled by any plugin let pass to view handler*/
-  if(!handled && v->mouse_moved) 
+  if(!handled && v->mouse_moved)
     v->mouse_moved(v, x, y, which);
 
 }
@@ -480,10 +481,10 @@ int dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y, 
 
     /* get next plugin */
     plugins = g_list_previous(plugins);
-  } 
-  
+  }
+
   /* if not handled by any plugin let pass to view handler*/
-  if(!handled && v->button_released) 
+  if(!handled && v->button_released)
     v->button_released(v, x, y, which,state);
 
   return 0;
@@ -511,7 +512,7 @@ int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, i
   }
 
   /* if not handled by any plugin let pass to view handler*/
-  if(!handled && v->button_pressed) 
+  if(!handled && v->button_pressed)
     return v->button_pressed(v, x, y, which,type,state);
 
   return 0;
@@ -555,7 +556,7 @@ void dt_view_manager_scrolled (dt_view_manager_t *vm, double x, double y, int up
 {
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
-  if(v->scrolled) 
+  if(v->scrolled)
     v->scrolled(v, x, y, up, state);
 }
 
@@ -627,6 +628,17 @@ dt_view_image_expose(
     int32_t px,
     int32_t py)
 {
+  const double start = dt_get_wtime();
+  // some performance tuning stuff, for your pleasure.
+  // on my machine with 7 image per row it seems grouping has the largest
+  // impact from around 400ms -> 55ms per redraw.
+#define DRAW_THUMB 1
+#define DRAW_COLORLABELS 1
+#define DRAW_GROUPING 1
+#define DRAW_SELECTED 1
+#define DRAW_HISTORY 1
+
+#if DRAW_THUMB == 1
   // this function is not thread-safe (gui-thread only), so we
   // can safely allocate this leaking bit of memory to decompress thumbnails:
   static int first_time = 1;
@@ -637,41 +649,49 @@ dt_view_image_expose(
     scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
     first_time = 0;
   }
+#endif
+
   cairo_save (cr);
   float bgcol = 0.4, fontcol = 0.425, bordercol = 0.1, outlinecol = 0.2;
-  int selected = 0, altered = 0, imgsel, is_grouped = 0;
-  DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
-  // if(img->flags & DT_IMAGE_SELECTED) selected = 1;
+  int selected = 0, altered = 0, imgsel = -1, is_grouped = 0;
+  // this is a gui thread only thing. no mutex required:
+  imgsel = darktable.control->global_settings.lib_image_mouse_over_id;
 
+#if DRAW_SELECTED == 1
   /* clear and reset statements */
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
-  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.have_history);
-  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_grouped);
   DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
-  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.have_history);
-  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_grouped);
-
   /* bind imgid to prepared statments */
   DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.have_history, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 2, imgid);
-
   /* lets check if imgid is selected */
-  if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) 
+  if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW)
     selected = 1;
+#endif
+
+#if DRAW_HISTORY == 1
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.have_history);
+  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.have_history);
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.have_history, 1, imgid);
 
   /* lets check if imgid has history */
-  if(sqlite3_step(darktable.view_manager->statements.have_history) == SQLITE_ROW) 
+  if(sqlite3_step(darktable.view_manager->statements.have_history) == SQLITE_ROW)
     altered = 1;
+#endif
 
   const dt_image_t *img = dt_image_cache_read_testget(darktable.image_cache, imgid);
+
+#if DRAW_GROUPING == 1
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_grouped);
+  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_grouped);
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 1, img->group_id);
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 2, imgid);
 
   /* lets check if imgid is in a group */
   if(sqlite3_step(darktable.view_manager->statements.get_grouped) == SQLITE_ROW)
     is_grouped = 1;
   else if(img && darktable.gui->expanded_group_id == img->group_id)
     darktable.gui->expanded_group_id = -1;
+#endif
 
   if(selected == 1)
   {
@@ -733,9 +753,8 @@ dt_view_image_expose(
     }
   }
 
-  float scale = 1.0;
   dt_mipmap_buffer_t buf;
-  dt_mipmap_size_t mip = 
+  dt_mipmap_size_t mip =
     dt_mipmap_cache_get_matching_size(
       darktable.mipmap_cache,
       imgwd*width, imgwd*height);
@@ -745,6 +764,8 @@ dt_view_image_expose(
       imgid,
       mip,
       0);
+#if DRAW_THUMB == 1
+  float scale = 1.0;
   // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
   // so get the real pointer back:
   uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
@@ -757,7 +778,7 @@ dt_view_image_expose(
     if(zoom == 1)
     {
       scale = fminf(
-			 fminf(darktable.thumbnail_width, width) / (float)buf.width, 
+			 fminf(darktable.thumbnail_width, width) / (float)buf.width,
 			 fminf(darktable.thumbnail_height, height) / (float)buf.height
 			 );
     }
@@ -826,6 +847,7 @@ dt_view_image_expose(
     cairo_stroke(cr);
   }
   cairo_restore(cr);
+#endif
   if(buf.buf)
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 
@@ -907,6 +929,7 @@ dt_view_image_expose(
     cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
     cairo_set_line_width(cr, 1.5);
 
+
     // image part of a group?
     if(is_grouped && darktable.gui && darktable.gui->grouping)
     {
@@ -957,6 +980,7 @@ dt_view_image_expose(
   // kill all paths, in case img was not loaded yet, or is blocked:
   cairo_new_path(cr);
 
+#if DRAW_COLORLABELS == 1
   // TODO: make mouse sensitive, just as stars!
   // TODO: cache in image struct!
   {
@@ -967,7 +991,7 @@ dt_view_image_expose(
 
     /* clear and reset prepared statement */
     DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_color);
-    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_color); 
+    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_color);
 
     /* setup statement and iterate rows */
     DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_color, 1, imgid);
@@ -980,6 +1004,7 @@ dt_view_image_expose(
       cairo_restore(cr);
     }
   }
+#endif
 
   if(img && (zoom == 1))
   {
@@ -1004,6 +1029,9 @@ dt_view_image_expose(
   if(img) dt_image_cache_read_release(darktable.image_cache, img);
   cairo_restore(cr);
   // if(zoom == 1) cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
+
+  const double end = dt_get_wtime();
+  dt_print(DT_DEBUG_PERF, "[lighttable] image expose took %0.04f sec\n", end-start);
 }
 
 
@@ -1039,16 +1067,16 @@ void dt_view_set_selection(int imgid, int value)
   else if(value)
   {
     /* Select bit is unset and should be set; add it */
-    
-    /* clear and reset statement */ 
+
+    /* clear and reset statement */
     DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.make_selected);
     DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.make_selected);
-    
-    /* setup statement and execute */  
+
+    /* setup statement and execute */
     DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.make_selected, 1, imgid);
     sqlite3_step(darktable.view_manager->statements.make_selected);
   }
- 
+
 }
 
 /**

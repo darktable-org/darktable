@@ -112,6 +112,10 @@ typedef struct dt_library_t
 }
 dt_library_t;
 
+// needed for drag&drop
+static GtkTargetEntry target_list[] = { { "text/uri-list", GTK_TARGET_OTHER_APP, 0 } };
+static guint n_targets = G_N_ELEMENTS (target_list);
+
 const char *name(dt_view_t *self)
 {
   return _("lighttable");
@@ -162,8 +166,8 @@ void init(dt_view_t *self)
   lib->full_preview_id=-1;
 
   /* setup collection listener and initialize main_query statement */
-  dt_control_signal_connect(darktable.signals, 
-			    DT_SIGNAL_COLLECTION_CHANGED, 
+  dt_control_signal_connect(darktable.signals,
+			    DT_SIGNAL_COLLECTION_CHANGED,
 			    G_CALLBACK(_view_lighttable_collection_listener_callback),
 			    (gpointer) self);
 
@@ -236,7 +240,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   if(lib->center) lib->offset = 0;
   lib->center = 0;
   int offset = lib->offset;
-  
+
   /* if offset differs then flag as changed */
   if (offset != lib->first_visible_filemanager)
     offset_changed = TRUE;
@@ -263,7 +267,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   int clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
 
   /* get the count of current collection */
-  
+
   if(lib->collection_count == 0)
   {
     const float fs = 15.0f;
@@ -306,10 +310,10 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   if(!lib->statements.main_query)
     return;
 
-  if(offset < 0) 
+  if(offset < 0)
     lib->offset = offset = 0;
 
-  while(offset >= lib->collection_count) 
+  while(offset >= lib->collection_count)
     lib->offset = (offset -= iir);
 
   /* update scroll borders */
@@ -318,7 +322,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   /* let's reset and reuse the main_query statement */
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
   DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
- 
+
   /* setup offset and row for the main query */
   DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, offset);
   DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, max_rows*iir);
@@ -375,7 +379,7 @@ end_query_cache:
           DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
         }
 
-        /* handle mouse click on current row / col 
+        /* handle mouse click on current row / col
            this could easily and preferable be moved to button_pressed()
          */
         if (clicked1 && (pi == col && pj == row))
@@ -486,7 +490,7 @@ end_query_cache:
 
         cairo_restore(cr);
       }
-      else 
+      else
         goto failure;
 
       cairo_translate(cr, wd, 0.0f);
@@ -503,7 +507,7 @@ end_query_cache:
     /* clear and reset main query */
     DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
     DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
-    
+
     /* setup offest and row for prefetch */
     DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, offset + max_rows*iir);
     DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, prefetchrows*iir);
@@ -514,7 +518,7 @@ end_query_cache:
 
     float imgwd = iir == 1 ? 0.97 : 0.8;
     dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(
-							     darktable.mipmap_cache, 
+							     darktable.mipmap_cache,
 							     imgwd*wd, imgwd*(iir==1?height:ht));
     while(imgids_num > 0)
     {
@@ -593,7 +597,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
     zoom_y = lib->select_offset_y - /* (zoom == 1 ? 2. : 1.)*/pointery;
   }
 
-  if(!lib->statements.main_query) 
+  if(!lib->statements.main_query)
     return;
 
   if     (track == 0);
@@ -711,7 +715,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   int id, clicked1, last_seli = 1<<30, last_selj = 1<<30;
   clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
 
-  dt_view_set_scrollbar(self, MAX(0, offset_i), DT_LIBRARY_MAX_ZOOM, zoom, DT_LIBRARY_MAX_ZOOM*offset_j, 
+  dt_view_set_scrollbar(self, MAX(0, offset_i), DT_LIBRARY_MAX_ZOOM, zoom, DT_LIBRARY_MAX_ZOOM*offset_j,
 			lib->collection_count, DT_LIBRARY_MAX_ZOOM*max_cols);
 
   cairo_translate(cr, -offset_x*wd, -offset_y*ht);
@@ -729,7 +733,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
     /* clear and reset main query */
     DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
     DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
-    
+
     DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, offset);
     DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, max_cols);
     for(int col = 0; col < max_cols; col++)
@@ -753,7 +757,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
 
             /* clear and resest statement */
             DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.delete_except_arg);
-            DT_DEBUG_SQLITE3_RESET(lib->statements.delete_except_arg); 
+            DT_DEBUG_SQLITE3_RESET(lib->statements.delete_except_arg);
 
             /* reuse statment */
             DT_DEBUG_SQLITE3_BIND_INT(lib->statements.delete_except_arg, 1, id);
@@ -804,6 +808,8 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 {
   const int i = dt_conf_get_int("plugins/lighttable/layout");
 
+  const double start = dt_get_wtime();
+
   // Let's show full preview if in that state...
   dt_library_t *lib = (dt_library_t *)self->data;
   int32_t mouse_over_id;
@@ -827,6 +833,8 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
         break;
     }
   }
+  const double end = dt_get_wtime();
+  dt_print(DT_DEBUG_PERF, "[lighttable] expose took %0.04f sec\n", end-start);
 }
 
 static gboolean
@@ -993,11 +1001,39 @@ static void _lighttable_mipamps_updated_signal_callback(gpointer instance, gpoin
   dt_control_queue_redraw_center();
 }
 
+static void
+drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data,
+                       guint target_type, guint time, gpointer data)
+{
+  gboolean success = FALSE;
+
+  if((selection_data != NULL) && (selection_data->length >= 0))
+  {
+    gchar **uri_list = g_strsplit_set((gchar*)selection_data->data, "\r\n", 0);
+    if(uri_list)
+    {
+      gchar **image_to_load = uri_list;
+      while(*image_to_load)
+      {
+        dt_load_from_string(*image_to_load, FALSE); // TODO: do we want to open the image in darkroom mode? If yes -> set to TRUE.
+        image_to_load++;
+      }
+    }
+    g_strfreev(uri_list);
+    success = TRUE;
+  }
+  gtk_drag_finish(context, success, FALSE, time);
+}
+
 void enter(dt_view_t *self)
 {
+  // init drag&drop of files/folders
+  gtk_drag_dest_set(dt_ui_center(darktable.gui->ui), GTK_DEST_DEFAULT_ALL, target_list, n_targets, GDK_ACTION_COPY);
+  g_signal_connect(dt_ui_center(darktable.gui->ui), "drag-data-received", G_CALLBACK(drag_and_drop_received), self);
+
   /* connect to signals */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-			    G_CALLBACK(_lighttable_mipamps_updated_signal_callback), 
+			    G_CALLBACK(_lighttable_mipamps_updated_signal_callback),
           (gpointer)self);
 
   // clear some state variables
@@ -1013,6 +1049,8 @@ void dt_lib_remove_child(GtkWidget *widget, gpointer data)
 
 void leave(dt_view_t *self)
 {
+  gtk_drag_dest_unset(dt_ui_center(darktable.gui->ui));
+
   /* disconnect from signals */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lighttable_mipamps_updated_signal_callback), (gpointer)self);
 

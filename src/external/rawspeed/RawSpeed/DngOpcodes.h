@@ -66,6 +66,15 @@ protected:
      tmp[i] = ptr[7-i];
     return ret;
   }
+  float getFloat(const uchar8 *ptr) {
+    if (host == big)
+      return *(float*)ptr;
+    float ret;
+    uchar8 *tmp = (uchar8*)&ret;
+    for (int i = 0; i < 4; i++)
+      tmp[i] = ptr[3-i];
+    return ret;
+  }
   ushort16 getUshort(const uchar8 *ptr) {
     if (host == big)
       return *(ushort16*)ptr;
@@ -128,6 +137,55 @@ private:
   ushort16 mLookup[65535];
 };
 
+class OpcodeDeltaPerRow: public DngOpcode
+{
+public:
+  OpcodeDeltaPerRow(const uchar8* parameters, int param_max_bytes, uint32 *bytes_used);
+  virtual ~OpcodeDeltaPerRow(void) {};
+  virtual RawImage& createOutput(RawImage &in);
+  virtual void apply(RawImage &in, RawImage &out, int startY, int endY);
+private:
+  int mFirstPlane, mPlanes, mRowPitch, mColPitch, mCount;
+  float* mDelta;
+};
+
+class OpcodeDeltaPerCol: public DngOpcode
+{
+public:
+  OpcodeDeltaPerCol(const uchar8* parameters, int param_max_bytes, uint32 *bytes_used);
+  virtual ~OpcodeDeltaPerCol(void);
+  virtual RawImage& createOutput(RawImage &in);
+  virtual void apply(RawImage &in, RawImage &out, int startY, int endY);
+private:
+  int mFirstPlane, mPlanes, mRowPitch, mColPitch, mCount;
+  float* mDelta;
+  int* mDeltaX;
+};
+
+class OpcodeScalePerRow: public DngOpcode
+{
+public:
+  OpcodeScalePerRow(const uchar8* parameters, int param_max_bytes, uint32 *bytes_used);
+  virtual ~OpcodeScalePerRow(void) {};
+  virtual RawImage& createOutput(RawImage &in);
+  virtual void apply(RawImage &in, RawImage &out, int startY, int endY);
+private:
+  int mFirstPlane, mPlanes, mRowPitch, mColPitch, mCount;
+  float* mDelta;
+};
+
+class OpcodeScalePerCol: public DngOpcode
+{
+public:
+  OpcodeScalePerCol(const uchar8* parameters, int param_max_bytes, uint32 *bytes_used);
+  virtual ~OpcodeScalePerCol(void);
+  virtual RawImage& createOutput(RawImage &in);
+  virtual void apply(RawImage &in, RawImage &out, int startY, int endY);
+private:
+  int mFirstPlane, mPlanes, mRowPitch, mColPitch, mCount;
+  float* mDelta;
+  int* mDeltaX;
+};
 
 } // namespace RawSpeed 
 

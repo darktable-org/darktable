@@ -324,30 +324,52 @@ RawImage DngDecoder::decodeRawInternal() {
     }
   }
 
-  if (raw->hasEntry(DEFAULTCROPORIGIN)) {
+  if (raw->hasEntry(DEFAULTCROPORIGIN) && raw->hasEntry(DEFAULTCROPSIZE)) {
     iRectangle2D cropped(0, 0, mRaw->dim.x, mRaw->dim.y);
-    if (raw->getEntry(DEFAULTCROPORIGIN)->type == TIFF_LONG) {
-      const uint32* tl = raw->getEntry(DEFAULTCROPORIGIN)->getIntArray();
-      const uint32* sz = raw->getEntry(DEFAULTCROPSIZE)->getIntArray();
-      if (iPoint2D(tl[0], tl[1]).isThisInside(mRaw->dim) && iPoint2D(sz[0], sz[1]).isThisInside(mRaw->dim)) {
-        cropped = iRectangle2D(tl[0], tl[1], sz[0], sz[1]);
-      }
-    } else if (raw->getEntry(DEFAULTCROPORIGIN)->type == TIFF_SHORT) {
-      const ushort16* tl = raw->getEntry(DEFAULTCROPORIGIN)->getShortArray();
-      const ushort16* sz = raw->getEntry(DEFAULTCROPSIZE)->getShortArray();
-      if (iPoint2D(tl[0], tl[1]).isThisInside(mRaw->dim) && iPoint2D(sz[0], sz[1]).isThisInside(mRaw->dim)) {
-        cropped = iRectangle2D(tl[0], tl[1], sz[0], sz[1]);
-      }
-    } else if (raw->getEntry(DEFAULTCROPORIGIN)->type == TIFF_RATIONAL) {
+    TiffEntry *origin_entry = raw->getEntry(DEFAULTCROPORIGIN);
+    TiffEntry *size_entry = raw->getEntry(DEFAULTCROPSIZE);
+
+    /* Read crop position */
+    if (origin_entry->type == TIFF_LONG) {
+      const uint32* tl = origin_entry->getIntArray();
+      if (iPoint2D(tl[0], tl[1]).isThisInside(mRaw->dim))
+        cropped = iRectangle2D(tl[0], tl[1], 0, 0);
+    } else if (origin_entry->type == TIFF_SHORT) {
+      const ushort16* tl = origin_entry->getShortArray();
+      if (iPoint2D(tl[0], tl[1]).isThisInside(mRaw->dim))
+        cropped = iRectangle2D(tl[0], tl[1], 0, 0);
+    } else if (origin_entry->type == TIFF_RATIONAL) {
       // Crop as rational numbers, really?
-      const uint32* tl = raw->getEntry(DEFAULTCROPORIGIN)->getIntArray();
-      const uint32* sz = raw->getEntry(DEFAULTCROPSIZE)->getIntArray();
-      if (tl[1] && tl[3] && sz[1] && sz[3]) {
-        if (iPoint2D(tl[0]/tl[1],tl[2]/tl[3]).isThisInside(mRaw->dim) && iPoint2D(sz[0]/sz[1],sz[2]/sz[3]).isThisInside(mRaw->dim)) {
-          cropped = iRectangle2D(tl[0]/tl[1], tl[2]/tl[3], sz[0]/sz[1], sz[2]/sz[3]);
-        }
+      const uint32* tl = origin_entry->getIntArray();
+      if (tl[1] && tl[3]) {
+        if (iPoint2D(tl[0]/tl[1],tl[2]/tl[3]).isThisInside(mRaw->dim))
+          cropped = iRectangle2D(tl[0]/tl[1], tl[2]/tl[3], 0, 0);
       }
     }
+    cropped.dim = mRaw->dim - cropped.pos;
+    // Read size
+    if (size_entry->type == TIFF_LONG) {
+      const uint32* sz = size_entry->getIntArray();
+      iPoint2D size(sz[0], sz[1]);
+      if ((size + cropped.pos).isThisInside(mRaw->dim))
+        cropped.dim = size;      
+    } else if (size_entry->type == TIFF_SHORT) {
+      const ushort16* sz = size_entry->getShortArray();
+      iPoint2D size(sz[0], sz[1]);
+      if ((size + cropped.pos).isThisInside(mRaw->dim))
+        cropped.dim = size;      
+    } else if (size_entry->type == TIFF_RATIONAL) {
+      // Crop as rational numbers, really?
+      const uint32* sz = size_entry->getIntArray();
+      if (sz[1] && sz[3]) {
+        iPoint2D size(sz[0]/sz[1], sz[2]/sz[3]);
+        if ((size + cropped.pos).isThisInside(mRaw->dim))
+          cropped.dim = size;      
+      }
+    }
+    if (!cropped.hasPositiveArea())
+      ThrowRDE("DNG Decoder: No positive crop area");
+
     mRaw->subFrame(cropped);
     if (cropped.pos.x %2 == 1)
       mRaw->cfa.shiftLeft();
