@@ -290,19 +290,26 @@ static void strip_semicolons_from_keymap(const char* path)
               NULL, NULL, NULL, NULL);
 }
 
-int dt_load_from_string(const gchar* image_to_load, gboolean open_image_in_dr)
+int dt_load_from_string(const gchar* input, gboolean open_image_in_dr)
 {
   int id = 0;
-  if(image_to_load == NULL || image_to_load[0] == '\0')
+  if(input == NULL || input[0] == '\0')
     return 0;
 
   char* filename;
-  if(g_str_has_prefix(image_to_load, "file://"))
-    image_to_load += strlen("file://");
-  if(g_path_is_absolute(image_to_load) == FALSE)
+  if(g_str_has_prefix(input, "file://")) // in this case we should take care of %XX encodings in the string (for example %20 = ' ')
+  {
+    input += strlen("file://");
+    filename = g_uri_unescape_string(input, NULL);
+  }
+  else
+    filename = g_strdup(input);
+
+  if(g_path_is_absolute(filename) == FALSE)
   {
     char* current_dir = g_get_current_dir();
-    char* tmp_filename = g_build_filename(current_dir, image_to_load, NULL);
+    char* tmp_filename = g_build_filename(current_dir, filename, NULL);
+    g_free(filename);
     filename = (char*)g_malloc(sizeof(char)*MAXPATHLEN);
     if(realpath(tmp_filename, filename) == NULL)
     {
@@ -314,10 +321,6 @@ int dt_load_from_string(const gchar* image_to_load, gboolean open_image_in_dr)
     }
     g_free(current_dir);
     g_free(tmp_filename);
-  }
-  else
-  {
-    filename = g_strdup(image_to_load);
   }
 
   if(g_file_test(filename, G_FILE_TEST_IS_DIR))
