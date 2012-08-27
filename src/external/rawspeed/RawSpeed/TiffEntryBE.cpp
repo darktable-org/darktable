@@ -64,12 +64,16 @@ unsigned int TiffEntryBE::getInt() {
     ThrowTPE("TIFF, getInt: Wrong type 0x%x encountered. Expected Int", type);
   if (type == TIFF_SHORT)
     return getShort();
+  if (mDataSwapped)
+    return *(unsigned int*)&data[0];
   return (unsigned int)data[0] << 24 | (unsigned int)data[1] << 16 | (unsigned int)data[2] << 8 | (unsigned int)data[3];
 }
 
 unsigned short TiffEntryBE::getShort() {
   if (!(type == TIFF_SHORT || type == TIFF_UNDEFINED))
     ThrowTPE("TIFF, getShort: Wrong type 0x%x encountered. Expected Short", type);
+  if (mDataSwapped)
+    return *(unsigned short*)&data[0];
   return (unsigned short)data[0] << 8 | (unsigned short)data[1];
 }
 
@@ -81,7 +85,8 @@ const unsigned int* TiffEntryBE::getIntArray() {
     return (unsigned int*)&data[0];
 
   unsigned int* d = (unsigned int*) & data[0];
-  for (uint32 i = 0; i < count; i++) {
+  uint32 ncount = count * ((type == TIFF_RATIONAL ||  type == TIFF_SRATIONAL) ? 2 : 1);
+  for (uint32 i = 0; i < ncount; i++) {
     d[i] = (unsigned int)data[i*4+0] << 24 | (unsigned int)data[i*4+1] << 16 | (unsigned int)data[i*4+2] << 8 | (unsigned int)data[i*4+3];
   }
   mDataSwapped = true;

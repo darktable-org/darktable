@@ -683,7 +683,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
         amaze_demosaic_RT(self, piece, pixels, (float *)o, &roi, &roo, data->filters);
     }
   }
-  else if(roi_out->scale > .5f)
+  else if(roi_out->scale > .5f || piece->pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL)
   {
     // demosaic and then clip and zoom
     // roo.x = roi_out->x / global_scale;
@@ -842,7 +842,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if(err != CL_SUCCESS) goto error;
 
   }
-  else if(roi_out->scale > .5f)
+  else if(roi_out->scale > .5f || piece->pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL)
   {
     // need to scale to right res
     dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4*sizeof(float));

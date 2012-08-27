@@ -54,6 +54,7 @@ static const char nikon[] = N_("nikon like");
 static const char nikon_alt[] = N_("nikon like alternate");
 static const char sony_alpha[] = N_("sony alpha like");
 static const char pentax[] = N_("pentax like");
+static const char ricoh[] = N_("ricoh like");
 static const char olympus[] = N_("olympus like");
 static const char olympus_alt[] = N_("olympus like alternate");
 static const char panasonic[] = N_("panasonic like");
@@ -91,6 +92,7 @@ static const basecurve_preset_t basecurve_presets[] =
   {sony_alpha, "SONY", "", 0, 51200, {{0.000000, 0.031949, 0.105431, 0.434505, 0.855738, 1.000000}, {0.000000, 0.036532, 0.228226, 0.759678, 0.983468, 1.000000}, 0}, 1},
   // pascals pentax curve (needs testing):
   {pentax, "PENTAX", "", 0, 51200, {{0.000000, 0.032258, 0.120968, 0.205645, 0.604839, 1.000000}, {0.000000, 0.024596, 0.166419, 0.328527, 0.790171, 1.000000}, 0}, 1},
+  {ricoh, "RICOH", "", 0, 51200, {{0.000000, 0.0322581, 0.120968, 0.205645, 0.604839, 1.000000}, {0.000000, 0.024596, 0.166419, 0.328527, 0.790171, 1.000000}, 0}, 1},
   // pascals olympus curve (needs testing):
   {olympus, "OLYMPUS", "", 0, 51200, {{0.000000, 0.012097, 0.116935, 0.556452, 0.899194, 1.000000}, {0.000000, 0.010322, 0.167742, 0.711291, 0.956855, 1.000000}, 0}, 1},
   // pascals alternate olympus curve for E-M5
