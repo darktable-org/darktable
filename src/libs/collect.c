@@ -210,25 +210,25 @@ uint32_t container()
 }
 /* callback for drag and drop */
 /*static void _lib_keywords_drag_data_received_callback(GtkWidget *w,
-					  GdkDragContext *dctx,
-					  guint x,
-					  guint y,
-					  GtkSelectionData *data,
-					  guint info,
-					  guint time,
-					  gpointer user_data);
+            GdkDragContext *dctx,
+            guint x,
+            guint y,
+            GtkSelectionData *data,
+            guint info,
+            guint time,
+            gpointer user_data);
 */
 /* set the data for drag and drop, eg the treeview path of drag source */
 /*static void _lib_keywords_drag_data_get_callback(GtkWidget *w,
-						 GdkDragContext *dctx,
-						 GtkSelectionData *data,
-						 guint info,
-						 guint time,
-						 gpointer user_data);
+             GdkDragContext *dctx,
+             GtkSelectionData *data,
+             guint info,
+             guint time,
+             gpointer user_data);
 */
 /* add keyword to collection rules */
 /*static void _lib_keywords_add_collection_rule(GtkTreeView *view, GtkTreePath *tp,
-					      GtkTreeViewColumn *tvc, gpointer user_data);
+                GtkTreeViewColumn *tvc, gpointer user_data);
 */
 
 void _sync_list(gpointer *data, gpointer *user_data)
@@ -689,7 +689,7 @@ _folder_tree ()
             current = iter;
             break;
           }
-	      }
+        }
       }
 
       if (!found)
@@ -762,7 +762,7 @@ _create_filtered_model (GtkTreeModel *model, GtkTreeIter iter)
     }
     else
       break;
-	}
+  }
 
   path = gtk_tree_model_get_path (model, &iter);
 
@@ -1508,14 +1508,14 @@ gui_init (dt_lib_module_t *self)
   d->params = (dt_lib_collect_params_t*)malloc(sizeof(dt_lib_collect_params_t));
 
   dt_control_signal_connect(darktable.signals, 
-			    DT_SIGNAL_COLLECTION_CHANGED,
-			    G_CALLBACK(collection_updated),
-			    self);
+                           DT_SIGNAL_COLLECTION_CHANGED,
+                           G_CALLBACK(collection_updated),
+                           self);
   
   dt_control_signal_connect(darktable.signals, 
-			    DT_SIGNAL_FILMROLLS_CHANGED,
-			    G_CALLBACK(filmrolls_updated),
-			    self);
+                           DT_SIGNAL_FILMROLLS_CHANGED,
+                           G_CALLBACK(filmrolls_updated),
+                           self);
   
   GtkBox *box;
   GtkWidget *w;
