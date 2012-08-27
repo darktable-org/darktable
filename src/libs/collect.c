@@ -1315,6 +1315,8 @@ menuitem_or (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     snprintf(confname, 200, "plugins/lighttable/collect/string%1d", active);
     dt_conf_set_string(confname, "");
     dt_conf_set_int("plugins/lighttable/collect/num_rules", active+1);
+    dt_lib_collect_t *c = get_collect(d);
+    c->active_rule = active;
   }
   dt_collection_update_query(darktable.collection);
 }
@@ -1332,6 +1334,8 @@ menuitem_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     snprintf(confname, 200, "plugins/lighttable/collect/string%1d", active);
     dt_conf_set_string(confname, "");
     dt_conf_set_int("plugins/lighttable/collect/num_rules", active+1);
+    dt_lib_collect_t *c = get_collect(d);
+    c->active_rule = active;
   }
   dt_collection_update_query(darktable.collection);
 }
