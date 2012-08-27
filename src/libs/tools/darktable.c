@@ -70,7 +70,8 @@ int position()
 
 void gui_init(dt_lib_module_t *self)
 {
-  char filename[1024], datadir[1024];
+  char filename[DT_MAX_PATH_LEN];
+  char datadir[DT_MAX_PATH_LEN];
   /* initialize ui widgets */
   dt_lib_darktable_t *d = (dt_lib_darktable_t *)g_malloc(sizeof(dt_lib_darktable_t));
   self->data = (void *)d;
@@ -89,8 +90,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_size_request(self->widget, 220, 48);
 
   /* create a cairo surface of dt icon */
-  dt_loc_get_datadir(datadir, 1024);
-  snprintf(filename, 1024, "%s/pixmaps/idbutton.png", datadir);
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  snprintf(filename, DT_MAX_PATH_LEN, "%s/pixmaps/idbutton.png", datadir);
   d->image = cairo_image_surface_create_from_png(filename);
 
 }

@@ -150,11 +150,11 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
     if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       module->showhide = dtgtk_tristatebutton_new(NULL,0);
-      char filename[1024], datadir[1024];
-      dt_loc_get_datadir(datadir, 1024);
-      snprintf(filename, 1024, "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
+      char filename[DT_MAX_PATH_LEN], datadir[DT_MAX_PATH_LEN];
+      dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+      snprintf(filename, DT_MAX_PATH_LEN, "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
       if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-	snprintf(filename, 1024, "%s/pixmaps/plugins/darkroom/template.png", datadir);
+	snprintf(filename, DT_MAX_PATH_LEN, "%s/pixmaps/plugins/darkroom/template.png", datadir);
       GtkWidget *image = gtk_image_new_from_file(filename);
       gtk_button_set_image(GTK_BUTTON(module->showhide), image);
 

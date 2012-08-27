@@ -26,11 +26,6 @@
 #include <glib.h>
 #include <inttypes.h>
 
-/** define for max path/filename length */
-#define DT_MAX_FILENAME_LEN 256
-// TODO: separate into path/filename and store 256 for filename
-#define DT_MAX_PATH_LEN 1024
-
 /** return value of image io functions. */
 typedef enum dt_imageio_retval_t
 {

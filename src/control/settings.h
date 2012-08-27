@@ -135,8 +135,6 @@ typedef struct dt_ctl_settings_t
 }
 dt_ctl_settings_t;
 
-enum dt_dev_zoom_t;
-
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -439,8 +439,8 @@ int try_enter(dt_view_t *self)
   // this loads the image from db if needed:
   const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, selected);
   // get image and check if it has been deleted from disk first!
-  char imgfilename[1024];
-  dt_image_full_path(img->id, imgfilename, 1024);
+  char imgfilename[DT_MAX_PATH_LEN];
+  dt_image_full_path(img->id, imgfilename, DT_MAX_PATH_LEN);
   if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
   {
     dt_control_log(_("image `%s' is currently unavailable"), img->filename);

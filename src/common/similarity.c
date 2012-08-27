@@ -22,8 +22,6 @@
 #include "common/darktable.h"
 #include "common/similarity.h"
 
-#define CLIP(x) (fmax(0,fmin(1.0,x)))
-
 #ifdef _DEBUG
 static void _similarity_dump_histogram(uint32_t imgid, const dt_similarity_histogram_t *histogram)
 {
