@@ -709,7 +709,7 @@ static void refresh_watermarks( dt_iop_module_t *self )
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      snprintf(filename, 2048, "%s/%s", configdir, d_name);
+      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", configdir, d_name);
       gtk_combo_box_append_text( g->combobox1, d_name );
       count++;
     } 
