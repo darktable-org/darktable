@@ -25,6 +25,7 @@
 #include "common/colorspaces.h"
 #include "common/opencl.h"
 #include "common/bilateral.h"
+#include "common/bilateralcl.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "control/control.h"
@@ -57,7 +58,7 @@ dt_iop_monochrome_gui_data_t;
 
 typedef struct dt_iop_monochrome_global_data_t
 {
-  int kernel_monochrome;
+  int kernel_monochrome_filter, kernel_monochrome;
 }
 dt_iop_monochrome_global_data_t;
 
@@ -121,12 +122,6 @@ color_filter(const float ai, const float bi, const float a, const float b, const
   return dt_fast_expf(-CLAMPS(((ai-a)*(ai-a) + (bi-b)*(bi-b))/(2.0*size), 0.0f, 1.0f));
 }
 
-#define BILAT
-// TODO: this one changes the look signifacantly at times.
-// so maybe it'll have to become an option with default off :(
-#define ENVELOPE
-
-#ifdef ENVELOPE
 static float
 envelope(const float L)
 {
@@ -147,35 +142,11 @@ envelope(const float L)
     return 3.0f*tmp2 - 2.0f*tmp3;
   }
 }
-#endif
-
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_monochrome_params_t *d = (dt_iop_monochrome_params_t *)piece->data;
   const float sigma2 = (d->size*128.0)*(d->size*128.0f);
-#ifndef BILAT // old version:
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
-#endif
-  for(int k=0; k<roi_out->height; k++)
-  {
-    const float *in = ((float *)i) + 4*k*roi_out->width;
-    float *out = ((float *)o) + 4*k*roi_out->width;
-    for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
-    {
-#ifdef ENVELOPE
-      const float tt = envelope(in[0]);
-      const float t  = tt + (1.0f-tt)*(1.0f-d->highlights);
-      out[0] = (1.0f-t)*in[0] + t*in[0]*color_filter(in[1], in[2], d->a, d->b, sigma2);
-#else
-      out[0] = in[0]*color_filter(in[1], in[2], d->a, d->b, sigma2);
-#endif
-      out[1] = out[2] = 0.0f;
-      out[3] = in[3];
-    }
-  }
-#else
   // first pass: evaluate color filter:
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
@@ -192,7 +163,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
   }
 
-#if 1
   // second step: blur filter contribution:
   const float scale = piece->iscale/roi_in->scale;
   const float sigma_r = 250.0f; // does not depend on scale
@@ -204,9 +174,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_bilateral_blur(b);
   dt_bilateral_slice(b, (float *)o, (float *)o, detail);
   dt_bilateral_free(b);
-#endif
 
-#if 1 // debug, skip this to see just the base layer
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
 #endif
@@ -216,17 +184,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *out = ((float *)o) + 4*k*roi_out->width;
     for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
     {
-#ifdef ENVELOPE
       const float tt = envelope(in[0]);
       const float t  = tt + (1.0f-tt)*(1.0f-d->highlights);
       out[0] = (1.0f-t)*in[0] + t*out[0]*(1.0f/100.0f)*in[0]; // normalized filter * input brightness
-#else
-      out[0] = out[0]*(1.0f/100.0f)*in[0]; // normalized filter * input brightness
-#endif
     }
   }
-#endif
-#endif
 }
 
 #ifdef HAVE_OPENCL
@@ -243,21 +205,53 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int height = roi_out->height;
   const float sigma2 = (d->size*128.0)*(d->size*128.0f);
 
+  // TODO: alloc new buffer, bilat filter, and go on with that
+  const float scale = piece->iscale/roi_in->scale;
+  const float sigma_r = 250.0f; // does not depend on scale
+  const float sigma_s = 20.0f / scale;
+  const float detail = -1.0f; // bilateral base layer
+
+  cl_mem dev_tmp = NULL;
+  dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4*sizeof(float));
+
+  dt_bilateral_cl_t *b = dt_bilateral_init_cl(devid, roi_in->width, roi_in->height, sigma_s, sigma_r);
+  if(!b) goto error;
+
   size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 0, sizeof(cl_mem), &dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 1, sizeof(cl_mem), &dev_tmp);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 2, sizeof(int), &width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 3, sizeof(int), &height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 4, sizeof(float), &d->a);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 5, sizeof(float), &d->b);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 6, sizeof(float), &sigma2);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_monochrome_filter, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  err = dt_bilateral_splat_cl(b, dev_tmp);
+  if (err != CL_SUCCESS) goto error;
+  err = dt_bilateral_blur_cl(b);
+  if (err != CL_SUCCESS) goto error;
+  err = dt_bilateral_slice_cl(b, dev_tmp, dev_tmp, detail);
+  if (err != CL_SUCCESS) goto error;
+  dt_bilateral_free_cl(b);
+
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 0, sizeof(cl_mem), &dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 1, sizeof(cl_mem), &dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 2, sizeof(int), &width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 3, sizeof(int), &height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 4, sizeof(float), &d->a);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 5, sizeof(float), &d->b);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 6, sizeof(float), &sigma2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 7, sizeof(float), &d->highlights);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 1, sizeof(cl_mem), &dev_tmp);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 2, sizeof(cl_mem), &dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 3, sizeof(int), &width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 4, sizeof(int), &height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 5, sizeof(float), &d->a);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 6, sizeof(float), &d->b);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 7, sizeof(float), &sigma2);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 8, sizeof(float), &d->highlights);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_monochrome, sizes);
   if(err != CL_SUCCESS) goto error;
 
   return TRUE;
 
 error:
+  dt_bilateral_free_cl(b);
   dt_print(DT_DEBUG_OPENCL, "[opencl_monochrome] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -269,12 +263,14 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 2; // basic.cl from programs.conf
   dt_iop_monochrome_global_data_t *gd = (dt_iop_monochrome_global_data_t *)malloc(sizeof(dt_iop_monochrome_global_data_t));
   module->data = gd;
+  gd->kernel_monochrome_filter = dt_opencl_create_kernel(program, "monochrome_filter");
   gd->kernel_monochrome = dt_opencl_create_kernel(program, "monochrome");
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_monochrome_global_data_t *gd = (dt_iop_monochrome_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_monochrome_filter);
   dt_opencl_free_kernel(gd->kernel_monochrome);
   free(module->data);
   module->data = NULL;
