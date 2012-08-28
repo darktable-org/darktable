@@ -210,9 +210,11 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create command queue for device %d: %d\n", k, err);
       goto finally;
     }
-    char dtpath[1024], filename[1024], programname[1024];
-    dt_loc_get_datadir(dtpath, 1024);
-    snprintf(filename, 1024, "%s/kernels/programs.conf", dtpath);
+    char dtpath[DT_MAX_PATH_LEN];
+    char filename[DT_MAX_PATH_LEN];
+    char programname[DT_MAX_PATH_LEN];
+    dt_loc_get_datadir(dtpath, DT_MAX_PATH_LEN);
+    snprintf(filename, DT_MAX_PATH_LEN, "%s/kernels/programs.conf", dtpath);
     // now load all darktable cl kernels.
     // TODO: compile as a job?
     FILE *f = fopen(filename, "rb");
@@ -223,21 +225,21 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
         int rd = fscanf(f, "%[^\n]\n", programname);
         if(rd != 1) continue;
         // remove comments:
-        for(int k=0; k<strlen(programname); k++)
-          if(programname[k] == '#')
+        for(int pos=0; pos<strlen(programname); pos++)
+          if(programname[pos] == '#')
           {
-            programname[k] = '\0';
-            for(int l=k-1; l>=0; l--)
+            programname[pos] = '\0';
+            for(int l=pos-1; l>=0; l--)
             {   
               if (programname[l] == ' ')
-	        programname[l] = '\0';
+                programname[l] = '\0';
               else
-	        break;
+	              break;
             }
             break;
           }
         if(programname[0] == '\0') continue;
-        snprintf(filename, 1024, "%s/kernels/%s", dtpath, programname);
+        snprintf(filename, DT_MAX_PATH_LEN, "%s/kernels/%s", dtpath, programname);
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
         const int prog = dt_opencl_load_program(dev, filename);
         if(dt_opencl_build_program(dev, prog))

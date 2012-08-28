@@ -140,7 +140,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_PWSTORAGE = 64,
   DT_DEBUG_OPENCL = 128,
   DT_DEBUG_SQL = 256,
-  DT_DEBUG_MEMORY = 512,
+  DT_DEBUG_MEMORY = 512
 }
 dt_debug_thread_t;
 
@@ -372,6 +372,11 @@ void dt_configure_defaults();
 
 // helper function which loads whatever image_to_load points to: single image files or whole directories
 int dt_load_from_string(const gchar* image_to_load, gboolean open_image_in_dr);
+
+/** define for max path/filename length */
+#define DT_MAX_FILENAME_LEN 256
+// TODO: separate into path/filename and store 256 for filename
+#define DT_MAX_PATH_LEN 1024
 
 #endif
 

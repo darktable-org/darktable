@@ -480,8 +480,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 
   // output hdr as digital negative with exif data.
   uint8_t exif[65535];
-  char pathname[1024];
-  dt_image_full_path(first_imgid, pathname, 1024);
+  char pathname[DT_MAX_PATH_LEN];
+  dt_image_full_path(first_imgid, pathname, DT_MAX_PATH_LEN);
   const int exif_len = dt_exif_read_blob(exif, pathname, 0, first_imgid);
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
@@ -637,8 +637,8 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   while(t)
   {
     imgid = (long int)t->data;
-    char filename[512];
-    dt_image_full_path(imgid, filename, 512);
+    char filename[DT_MAX_PATH_LEN];
+    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN);
 
     int duplicates = 0;
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -650,7 +650,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     // remove from disk:
     if(duplicates == 1) // don't remove the actual data if there are (other) duplicates using it
       (void)g_unlink(filename);
-    dt_image_path_append_version(imgid, filename, 512);
+    dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
     char *c = filename + strlen(filename);
     sprintf(c, ".xmp");
     (void)g_unlink(filename);
@@ -833,7 +833,8 @@ void dt_control_delete_images()
 }
 
 static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
-    int32_t (*fileop_callback)(const int32_t, const int32_t))
+    int32_t (*fileop_callback)(const int32_t, const int32_t),
+    const char *desc, const char *desc_pl)
 {
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
@@ -843,7 +844,7 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
   gchar *newdir = (gchar *)job->user_data;
 
   /* create a cancellable bgjob ui template */
-  g_snprintf(message, 512, ngettext("moving %d image", "moving %d images", total), total);
+  g_snprintf(message, 512, ngettext(desc, desc_pl, total), total);
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
 
@@ -1003,12 +1004,14 @@ void dt_control_copy_images_job_init(dt_job_t *job)
 
 int32_t dt_control_move_images_job_run(dt_job_t *job)
 {
-  return _generic_dt_control_fileop_images_job_run(job, &dt_image_move);
+  return _generic_dt_control_fileop_images_job_run(job, &dt_image_move,
+      "moving %d image", "moving %d images");
 }
 
 int32_t dt_control_copy_images_job_run(dt_job_t *job)
 {
-  return _generic_dt_control_fileop_images_job_run(job, &dt_image_copy);
+  return _generic_dt_control_fileop_images_job_run(job, &dt_image_copy,
+      "copying %d image", "copying %d images");
 }
 
 int32_t dt_control_export_job_run(dt_job_t *job)
@@ -1095,11 +1098,11 @@ int32_t dt_control_export_job_run(dt_job_t *job)
       // remove 'changed' tag from image
       dt_tag_detach(tagid, imgid);
       // check if image still exists:
-      char imgfilename[1024];
+      char imgfilename[DT_MAX_PATH_LEN];
       const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
       if(image)
       {
-        dt_image_full_path(image->id, imgfilename, 1024);
+        dt_image_full_path(image->id, imgfilename, DT_MAX_PATH_LEN);
         if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
         {
           dt_control_log(_("image `%s' is currently unavailable"), image->filename);

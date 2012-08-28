@@ -351,9 +351,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
   piece->process_cl_ready = 1;
-  char datadir[1024];
-  char filename[1024];
-  dt_loc_get_datadir(datadir, 1024);
+  char datadir[DT_MAX_PATH_LEN];
+  char filename[DT_MAX_PATH_LEN];
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
   if(!strcmp(p->iccprofile, "Lab"))
   {
     piece->enabled = 0;
@@ -414,7 +414,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   }
   else if(!d->input)
   {
-    dt_colorspaces_find_profile(filename, 1024, p->iccprofile, "in");
+    dt_colorspaces_find_profile(filename, DT_MAX_PATH_LEN, p->iccprofile, "in");
     d->input = cmsOpenProfileFromFile(filename, "r");
   }
   if(d->input)
@@ -657,12 +657,15 @@ void gui_init(struct dt_iop_module_t *self)
   prof->pos = ++pos;
 
   // read {userconfig,datadir}/color/in/*.icc, in this order.
-  char datadir[1024], confdir[1024], dirname[1024], filename[1024];
-  dt_loc_get_user_config_dir(confdir, 1024);
-  dt_loc_get_datadir(datadir, 1024);
-  snprintf(dirname, 1024, "%s/color/in", confdir);
+  char datadir[DT_MAX_PATH_LEN];
+  char confdir[DT_MAX_PATH_LEN];
+  char dirname[DT_MAX_PATH_LEN];
+  char filename[DT_MAX_PATH_LEN];
+  dt_loc_get_user_config_dir(confdir, DT_MAX_PATH_LEN);
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/in", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
-    snprintf(dirname, 1024, "%s/color/in", datadir);
+    snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/in", datadir);
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   GDir *dir = g_dir_open(dirname, 0, NULL);
@@ -671,7 +674,7 @@ void gui_init(struct dt_iop_module_t *self)
     while((d_name = g_dir_read_name(dir)))
     {
       if(!strcmp(d_name, "linear_rgb")) continue;
-      snprintf(filename, 1024, "%s/%s", dirname, d_name);
+      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", dirname, d_name);
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {

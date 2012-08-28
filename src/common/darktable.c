@@ -117,13 +117,13 @@ void _dt_sigsegv_handler(int param)
   gchar *name_used;
   int fout;
   gboolean delete_file = FALSE;
-  char datadir[1024];
+  char datadir[DT_MAX_PATH_LEN];
 
   if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
     fout = STDOUT_FILENO; // just print everything to stdout
 
   dprintf(fout, "this is %s reporting a segfault:\n\n", PACKAGE_STRING);
-  dt_loc_get_datadir(datadir, 1024);
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
   gchar *command = g_strdup_printf("gdb %s %d -batch -x %s/gdb_commands", darktable.progname, (int)getpid(), datadir);
 
   if((fd = popen(command, "r")) != NULL)
@@ -254,13 +254,13 @@ gboolean dt_supported_image(const gchar *filename)
 
 static void strip_semicolons_from_keymap(const char* path)
 {
-  char pathtmp[1024];
+  char pathtmp[DT_MAX_PATH_LEN];
   FILE *fin = fopen(path, "r");
   FILE *fout;
   int i;
   int c = '\0';
 
-  snprintf(pathtmp, 1024, "%s_tmp", path);
+  snprintf(pathtmp, DT_MAX_PATH_LEN, "%s_tmp", path);
   fout = fopen(pathtmp, "w");
 
   // First ignoring the first three lines
@@ -290,19 +290,26 @@ static void strip_semicolons_from_keymap(const char* path)
               NULL, NULL, NULL, NULL);
 }
 
-int dt_load_from_string(const gchar* image_to_load, gboolean open_image_in_dr)
+int dt_load_from_string(const gchar* input, gboolean open_image_in_dr)
 {
   int id = 0;
-  if(image_to_load == NULL || image_to_load[0] == '\0')
+  if(input == NULL || input[0] == '\0')
     return 0;
 
   char* filename;
-  if(g_str_has_prefix(image_to_load, "file://"))
-    image_to_load += strlen("file://");
-  if(g_path_is_absolute(image_to_load) == FALSE)
+  if(g_str_has_prefix(input, "file://")) // in this case we should take care of %XX encodings in the string (for example %20 = ' ')
+  {
+    input += strlen("file://");
+    filename = g_uri_unescape_string(input, NULL);
+  }
+  else
+    filename = g_strdup(input);
+
+  if(g_path_is_absolute(filename) == FALSE)
   {
     char* current_dir = g_get_current_dir();
-    char* tmp_filename = g_build_filename(current_dir, image_to_load, NULL);
+    char* tmp_filename = g_build_filename(current_dir, filename, NULL);
+    g_free(filename);
     filename = (char*)g_malloc(sizeof(char)*MAXPATHLEN);
     if(realpath(tmp_filename, filename) == NULL)
     {
@@ -314,10 +321,6 @@ int dt_load_from_string(const gchar* image_to_load, gboolean open_image_in_dr)
     }
     g_free(current_dir);
     g_free(tmp_filename);
-  }
-  else
-  {
-    filename = g_strdup(image_to_load);
   }
 
   if(g_file_test(filename, G_FILE_TEST_IS_DIR))
@@ -516,19 +519,20 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // dt_check_cpu(argc,argv);
 
 #ifdef HAVE_GEGL
-  char geglpath[1024], datadir[1024];
-  dt_loc_get_datadir(datadir, 1024);
-  snprintf(geglpath, 1024, "%s/gegl:/usr/lib/gegl-0.0", datadir);
+  char geglpath[DT_MAX_PATH_LEN];
+  char datadir[DT_MAX_PATH_LEN];
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  snprintf(geglpath, DT_MAX_PATH_LEN, "%s/gegl:/usr/lib/gegl-0.0", datadir);
   (void)setenv("GEGL_PATH", geglpath, 1);
   gegl_init(&argc, &argv);
 #endif
 
   // thread-safe init:
   dt_exif_init();
-  char datadir[1024];
-  dt_loc_get_user_config_dir (datadir,1024);
-  char filename[1024];
-  snprintf(filename, 1024, "%s/darktablerc", datadir);
+  char datadir[DT_MAX_PATH_LEN];
+  dt_loc_get_user_config_dir (datadir,DT_MAX_PATH_LEN);
+  char filename[DT_MAX_PATH_LEN];
+  snprintf(filename, DT_MAX_PATH_LEN, "%s/darktablerc", datadir);
 
   // intialize the config backend. this needs to be done first...
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
@@ -656,17 +660,17 @@ int dt_init(int argc, char *argv[], const int init_gui)
   if(init_gui)
   {
     // Loading the keybindings
-    char keyfile[1024];
+    char keyfile[DT_MAX_PATH_LEN];
 
     // First dump the default keymapping
-    snprintf(keyfile, 1024, "%s/keyboardrc_default", datadir);
+    snprintf(keyfile, DT_MAX_PATH_LEN, "%s/keyboardrc_default", datadir);
     gtk_accel_map_save(keyfile);
 
     // Removing extraneous semi-colons from the default keymap
     strip_semicolons_from_keymap(keyfile);
 
     // Then load any modified keys if available
-    snprintf(keyfile, 1024, "%s/keyboardrc", datadir);
+    snprintf(keyfile, DT_MAX_PATH_LEN, "%s/keyboardrc", datadir);
     if(g_file_test(keyfile, G_FILE_TEST_EXISTS))
       gtk_accel_map_load(keyfile);
     else

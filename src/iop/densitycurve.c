@@ -442,7 +442,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_densitycurve_params_t *p = (dt_iop_densitycurve_params_t *)p1;
   float draw_xs[DT_IOP_DENSITYCURVE_RES], draw_ys[DT_IOP_DENSITYCURVE_RES];
   //const char *filename = "/opt/darktable/share/darktable/color/out/CIELab_to_UPLab2.icc";
-  char filename[1024];
+  char filename[DT_MAX_PATH_LEN];
 
 
   //int sampler[20]={0,2,4,6,8,10,12,14,20,27,34,41,46,50,53,55,57,59,61,63};
@@ -491,7 +491,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #endif
   if(d->input == NULL ) {
 
-    if ( ! dt_colorspaces_find_profile(filename, 1024, "CIELab_to_UPLab2.icc", "out") ) {
+    if ( ! dt_colorspaces_find_profile(filename, DT_MAX_PATH_LEN, "CIELab_to_UPLab2.icc", "out") ) {
       d->input = cmsOpenProfileFromFile(filename, "r");
     }
     if(!d->input) {
