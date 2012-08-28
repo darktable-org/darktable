@@ -28,6 +28,7 @@
 #include "control/control.h"
 #include "common/opencl.h"
 #include "common/bilateral.h"
+#include "common/bilateralcl.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
@@ -195,7 +196,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_global_tonemap_params_t *data = (dt_iop_global_tonemap_params_t *)piece->data;
   const float scale = piece->iscale/roi_in->scale;
   const float sigma_r = 8.0f; // does not depend on scale
-  const float sigma_s = 40.0f/scale;
+  const float iw = piece->buf_in.width /scale;
+  const float ih = piece->buf_in.height/scale;
+  const float sigma_s = fminf(iw, ih)*0.03f;
   dt_bilateral_t *b = NULL;
   if(data->detail != 0.0f)
   {
@@ -221,7 +224,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     dt_bilateral_blur(b);
     // and apply it to output buffer after logscale
-    dt_bilateral_slice2(b, (float *)ivoid, (float *)ovoid, data->detail);
+    dt_bilateral_slice_to_output(b, (float *)ivoid, (float *)ovoid, data->detail);
     dt_bilateral_free(b);
   }
 
@@ -235,6 +238,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 {
   dt_iop_global_tonemap_params_t *d = (dt_iop_global_tonemap_params_t *)piece->data;
   dt_iop_global_tonemap_global_data_t *gd = (dt_iop_global_tonemap_global_data_t *)self->data;
+  dt_bilateral_cl_t *b = NULL;
 
   // check if we are in a tiling context and want OPERATOR_DRAGO. This does not work as drago
   // needs the maximum L-value of the whole image. Let's return FALSE, which will then fall back
@@ -353,6 +357,21 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     parameters[3] = lwmax;
   }
 
+  const float scale = piece->iscale/roi_in->scale;
+  const float sigma_r = 8.0f; // does not depend on scale
+  const float iw = piece->buf_in.width /scale;
+  const float ih = piece->buf_in.height/scale;
+  const float sigma_s = fminf(iw, ih)*0.03f;
+
+  if(d->detail != 0.0f)
+  {
+    b = dt_bilateral_init_cl(devid, roi_in->width, roi_in->height, sigma_s, sigma_r);
+    if(!b) goto error;
+    // get detail from unchanged input buffer
+    err = dt_bilateral_splat_cl(b, dev_in);
+    if(err != CL_SUCCESS) goto error;
+  }
+
   size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
   dt_opencl_set_kernel_arg(devid, gtkernel, 0, sizeof(cl_mem), &dev_in);
   dt_opencl_set_kernel_arg(devid, gtkernel, 1, sizeof(cl_mem), &dev_out);
@@ -361,9 +380,21 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gtkernel, 4, 4*sizeof(float), &parameters);
   err = dt_opencl_enqueue_kernel_2d(devid, gtkernel, sizes);
   if(err != CL_SUCCESS) goto error;
+
+  if(d->detail != 0.0f)
+  {
+    err = dt_bilateral_blur_cl(b);
+    if (err != CL_SUCCESS) goto error;
+    // and apply it to output buffer after logscale
+    err = dt_bilateral_slice_to_output_cl(b, dev_in, dev_out, d->detail);
+    if (err != CL_SUCCESS) goto error;
+    dt_bilateral_free_cl(b);
+  }
+
   return TRUE;
 
 error:
+  if(b) dt_bilateral_free_cl(b);
   if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   if(dev_r != NULL) dt_opencl_release_mem_object(dev_r);
   dt_print(DT_DEBUG_OPENCL, "[opencl_global_tonemap] couldn't enqueue kernel! %d\n", err);

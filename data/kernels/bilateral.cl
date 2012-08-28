@@ -88,7 +88,6 @@ splat(
     const int            sizez,
     const float          sigma_s,
     const float          sigma_r)
-#if 1 // this version is roughly 10x faster.
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -174,51 +173,6 @@ splat(
     }
   }
 }
-#endif
-#if 0
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if(x >= width || y >= height) return;
-
-  // splat into downsampled grid
-
-  int4   size  = (int4)(sizex, sizey, sizez, 0);
-  float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
-
-  const float4 pixel = read_imagef (in, sampleri, (int2)(x, y));
-  float L = pixel.x;
-  float4 p = (float4)(x, y, L, 0);
-  float4 gridp = image_to_grid(&p, &size, &sigma);
-  int4 xi = min(size - 2, (int4)(gridp.x, gridp.y, gridp.z, 0));
-  float fx = gridp.x - xi.x;
-  float fy = gridp.y - xi.y;
-  float fz = gridp.z - xi.z;
-
-  int ox = 1;
-  int oy = size.x;
-  int oz = size.y*size.x;
-
-  int gi = xi.x + oy*xi.y + oz*xi.z;
-  float contrib = 100.0f/(sigma_s*sigma_s);
-  // FIXME: this is _terribly_ inefficient.
-  // this kernel alone takes half a second for just under a megapixel on a GT 540M
-  // (as compared to 0.028 seconds for slicing below, which should be about the same)
-  // the problem is probably that atomic_add_f always writes to the same address
-  // within the same warp, so we have a very bad race condition, resulting in long loops..
-  atomic_add_f(grid + gi,          contrib);
-#if 0
-  atomic_add_f(grid + gi,          contrib * (1.0f-fx) * (1.0f-fy) * (1.0f-fz));
-  atomic_add_f(grid + gi+ox,       contrib * (     fx) * (1.0f-fy) * (1.0f-fz));
-  atomic_add_f(grid + gi+oy,       contrib * (1.0f-fx) * (     fy) * (1.0f-fz));
-  atomic_add_f(grid + gi+oy+ox,    contrib * (     fx) * (     fy) * (1.0f-fz));
-  atomic_add_f(grid + gi+oz,       contrib * (1.0f-fx) * (1.0f-fy) * (     fz));
-  atomic_add_f(grid + gi+oz+ox,    contrib * (     fx) * (1.0f-fy) * (     fz));
-  atomic_add_f(grid + gi+oz+oy,    contrib * (1.0f-fx) * (     fy) * (     fz));
-  atomic_add_f(grid + gi+oz+oy+ox, contrib * (     fx) * (     fy) * (     fz));
-#endif
-}
-#endif
 
 kernel void
 blur_line_z(
@@ -300,6 +254,60 @@ blur_line(
   buf[index] = buf[index]*w0 + w1*(buf[index + offset3] + tmp2) + w2*tmp1;
   index += offset3;
   buf[index] = buf[index]*w0 + w1*tmp3 + w2*tmp2;
+}
+
+kernel void
+slice_to_output(
+    read_only  image2d_t in,
+    write_only image2d_t out,
+    read_only  image2d_t out2,  // alias.
+    global float        *grid,
+    const int            width,
+    const int            height,
+    const int            sizex,
+    const int            sizey,
+    const int            sizez,
+    const float          sigma_s,
+    const float          sigma_r,
+    const float          detail)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
+  const float norm = -detail * sigma_r * 0.04;
+  const int ox = 1;
+  const int oy = sizex;
+  const int oz = sizey*sizex;
+
+  int4   size  = (int4)(sizex, sizey, sizez, 0);
+  float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
+
+  float4 pixel  = read_imagef (in,   sampleri, (int2)(x, y));
+  float4 pixel2 = read_imagef (out2, sampleri, (int2)(x, y));
+  float L = pixel.x;
+  float4 p = (float4)(x, y, L, 0);
+  float4 gridp = image_to_grid(&p, &size, &sigma);
+  int4 gridi = min(size - 2, (int4)(gridp.x, gridp.y, gridp.z, 0));
+  float fx = gridp.x - gridi.x;
+  float fy = gridp.y - gridi.y;
+  float fz = gridp.z - gridi.z;
+
+  // trilinear lookup (wouldn't read/write access to 3d textures be cool)
+  // could actually use an array of 2d textures, these only require opencl 1.2
+  const int gi = gridi.x + sizex*(gridi.y + sizey*gridi.z);
+  const float Ldiff =
+        grid[gi]          * (1.0f - fx) * (1.0f - fy) * (1.0f - fz) +
+        grid[gi+ox]       * (       fx) * (1.0f - fy) * (1.0f - fz) +
+        grid[gi+oy]       * (1.0f - fx) * (       fy) * (1.0f - fz) +
+        grid[gi+ox+oy]    * (       fx) * (       fy) * (1.0f - fz) +
+        grid[gi+oz]       * (1.0f - fx) * (1.0f - fy) * (       fz) +
+        grid[gi+ox+oz]    * (       fx) * (1.0f - fy) * (       fz) +
+        grid[gi+oy+oz]    * (1.0f - fx) * (       fy) * (       fz) +
+        grid[gi+ox+oy+oz] * (       fx) * (       fy) * (       fz);
+  pixel2.x = max(0.0f, pixel2.x + norm * Ldiff);
+  write_imagef (out, (int2)(x, y), pixel2);
 }
 
 kernel void

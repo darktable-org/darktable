@@ -24,7 +24,7 @@
 
 typedef struct dt_bilateral_cl_global_t
 {
-  int kernel_zero, kernel_splat, kernel_blur_line, kernel_blur_line_z, kernel_slice;
+  int kernel_zero, kernel_splat, kernel_blur_line, kernel_blur_line_z, kernel_slice, kernel_slice2;
 }
 dt_bilateral_cl_global_t;
 
@@ -50,6 +50,7 @@ dt_bilateral_init_cl_global()
   b->kernel_blur_line   = dt_opencl_create_kernel(program, "blur_line");
   b->kernel_blur_line_z = dt_opencl_create_kernel(program, "blur_line_z");
   b->kernel_slice       = dt_opencl_create_kernel(program, "slice");
+  b->kernel_slice2      = dt_opencl_create_kernel(program, "slice_to_output");
   return b;
 }
 
@@ -181,6 +182,31 @@ dt_bilateral_blur_cl(
 }
 
 cl_int
+dt_bilateral_slice_to_output_cl(
+    dt_bilateral_cl_t *b,
+    cl_mem in,
+    cl_mem out,
+    const float detail)
+{
+  cl_int err = -666;
+  size_t sizes[] = { ROUNDUPWD(b->width), ROUNDUPHT(b->height), 1};
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 0, sizeof(cl_mem), (void *)&in);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 1, sizeof(cl_mem), (void *)&out);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 2, sizeof(cl_mem), (void *)&out);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 3, sizeof(cl_mem), (void *)&b->dev_grid);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 4, sizeof(int), (void *)&b->width);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 5, sizeof(int), (void *)&b->height);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 6, sizeof(int), (void *)&b->size_x);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 7, sizeof(int), (void *)&b->size_y);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 8, sizeof(int), (void *)&b->size_z);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 9, sizeof(float), (void *)&b->sigma_s);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 10, sizeof(float), (void *)&b->sigma_r);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 11, sizeof(float), (void *)&detail);
+  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_slice2, sizes);
+  return err;
+}
+
+cl_int
 dt_bilateral_slice_cl(
     dt_bilateral_cl_t *b,
     cl_mem in,
@@ -209,10 +235,12 @@ dt_bilateral_free_cl_global(
     dt_bilateral_cl_global_t *b)
 {
   // destroy kernels
+  dt_opencl_free_kernel(b->kernel_zero);
   dt_opencl_free_kernel(b->kernel_splat);
   dt_opencl_free_kernel(b->kernel_blur_line);
   dt_opencl_free_kernel(b->kernel_blur_line_z);
   dt_opencl_free_kernel(b->kernel_slice);
+  dt_opencl_free_kernel(b->kernel_slice2);
   free(b);
 }
 

@@ -280,14 +280,14 @@ dt_bilateral_slice(
 }
 
 void
-dt_bilateral_slice2(
+dt_bilateral_slice_to_output(
     const dt_bilateral_t *const b,
     const float          *const in,
     float                *out,
     const float           detail)
 {
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
-  const float norm = -detail;
+  const float norm = -detail * b->sigma_r * 0.04f;
   const int ox = 1;
   const int oy = b->size_x;
   const int oz = b->size_y*b->size_x;
@@ -320,10 +320,6 @@ dt_bilateral_slice2(
         b->buf[gi+oy+oz]    * (1.0f - xf) * (       yf) * (       zf) +
         b->buf[gi+ox+oy+oz] * (       xf) * (       yf) * (       zf));
       out[index] = MAX(0.0f, out[index] + Lout);
-      // and copy color and mask
-      // out[index+1] = in[index+1];
-      // out[index+2] = in[index+2];
-      // out[index+3] = in[index+3];
       index += 4;
     }
   }
