@@ -29,6 +29,7 @@
 #include "common/debug.h"
 #include "common/opencl.h"
 #include "common/bilateral.h"
+#include "common/bilateralcl.h"
 #include "dtgtk/togglebutton.h"
 #include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
@@ -742,12 +743,19 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t origin[] = {0, 0, 0};
   size_t region[] = {width, height, 1};
 
-  size_t local[] = {blockwd, blockht, 1};
+  // size_t local[] = {blockwd, blockht, 1};
 
   size_t sizes[3];
 
   cl_mem dev_temp1 = NULL;
   cl_mem dev_temp2 = NULL;
+
+  const float sigma_r = 100.0f; // does not depend on scale
+  const float sigma_s = sigma;
+  const float detail = -1.0f; // we want the bilateral base layer
+
+  dt_bilateral_cl_t *b = dt_bilateral_init_cl(devid, roi_in->width, roi_in->height, sigma_s, sigma_r);
+  if(!b) goto error;
 
   // get intermediate vector buffers with read-write access
   dev_temp1 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*bpp);
@@ -755,7 +763,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dev_temp2 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*bpp);
   if(dev_temp2 == NULL) goto error;
 
-
+#if 0
   // compute gaussian parameters
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
   compute_gauss_params(sigma, d->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
@@ -829,10 +837,21 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 5, bpp*blocksize*(blocksize+1), NULL);
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_gaussian_transpose, sizes, local);
   if(err != CL_SUCCESS) goto error;
+#endif
 
+
+  err = dt_bilateral_splat_cl(b, dev_in);
+  if (err != CL_SUCCESS) goto error;
+  err = dt_bilateral_blur_cl(b);
+  if (err != CL_SUCCESS) goto error;
+  err = dt_bilateral_slice_cl(b, dev_in, dev_out, detail);
+  if (err != CL_SUCCESS) goto error;
+  dt_bilateral_free_cl(b);
 
   // once again produce copy of dev_in, as it is needed for final mixing step: dev_in -> dev_temp2
   err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_in, dev_temp2, origin, region, 0);
+  if(err != CL_SUCCESS) goto error;
+  err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_out, dev_temp1, origin, region, 0);
   if(err != CL_SUCCESS) goto error;
 
   // final mixing step with dev_temp1 as mask: dev_temp2 -> dev_temp2
@@ -874,6 +893,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   return TRUE;
 
 error:
+  if (b) dt_bilateral_free_cl(b);
   if (dev_temp1 != NULL) dt_opencl_release_mem_object(dev_temp1);
   if (dev_temp2 != NULL) dt_opencl_release_mem_object(dev_temp2);
   dt_print(DT_DEBUG_OPENCL, "[opencl_shadows&highlights] couldn't enqueue kernel! %d\n", err);
