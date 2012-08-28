@@ -264,8 +264,8 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
 
             /* average intensity into 4th channel */
             lightmap.pixels[4*j+3] =  (lightmap.pixels[4*j+0]+ lightmap.pixels[4*j+1]+ lightmap.pixels[4*j+2])/3.0;
-            min = MAX(0,MIN(min, lightmap.pixels[4*j+3]));
-            max = MIN(0xff,MAX(max, lightmap.pixels[4*j+3]));
+            min = MIN(min, lightmap.pixels[4*j+3]);
+            max = MAX(max, lightmap.pixels[4*j+3]);
           }
 
           /* contrast stretch each channel in lightmap 
