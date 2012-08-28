@@ -264,8 +264,8 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
 
             /* average intensity into 4th channel */
             lightmap.pixels[4*j+3] =  (lightmap.pixels[4*j+0]+ lightmap.pixels[4*j+1]+ lightmap.pixels[4*j+2])/3.0;
-            min = MAX(0,MIN(min, lightmap.pixels[4*j+3]));
-            max = MIN(0xff,MAX(max, lightmap.pixels[4*j+3]));
+            min = MIN(min, lightmap.pixels[4*j+3]);
+            max = MAX(max, lightmap.pixels[4*j+3]);
           }
 
           /* contrast stretch each channel in lightmap 
@@ -1086,14 +1086,9 @@ int32_t dt_control_export_job_run(dt_job_t *job)
 #pragma omp critical
 #endif
       {
-        if(!t) 
-          imgid = 0; 
-        else
-        {
           imgid = (long int)t->data;
           t = g_list_delete_link(t, t);
           num = total - g_list_length(t);
-        }
       }
       // remove 'changed' tag from image
       dt_tag_detach(tagid, imgid);
