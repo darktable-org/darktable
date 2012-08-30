@@ -32,42 +32,28 @@
  **********************************************************************/
 typedef struct {
 	int imgid;
-	const dt_image_t * const_image; 
-	dt_image_t * image; 
 } lua_image;
 
 
-const dt_image_t*dt_lua_checkreadimage(lua_State*L,int index) {
-	lua_image* my_image=dt_lua_check(L,index,&dt_lua_image);
-	if(my_image->const_image ==NULL) {
-		my_image->const_image= dt_image_cache_read_get(darktable.image_cache,my_image->imgid);
-	}
-	return my_image->const_image;
+static const dt_image_t*dt_lua_checkreadimage(lua_State*L,int index) {
+	lua_image* tmp_image=dt_lua_check(L,index,&dt_lua_image);
+	return dt_image_cache_read_get(darktable.image_cache,tmp_image->imgid);
 }
 
-dt_image_t*dt_lua_checkwriteimage(lua_State*L,int index) {
-	lua_image* my_image=dt_lua_check(L,index,&dt_lua_image);
-	if(my_image->image ==NULL) {
-		const dt_image_t* my_readimage=dt_lua_checkreadimage(L,index);
-		// id is valid or checkreadimage would have raised an error
-		my_image->image= dt_image_cache_write_get(darktable.image_cache,my_readimage);
-	}
-	return my_image->image;
+static void dt_lua_releasereadimage(lua_State*L,const dt_image_t* image) {
+	dt_image_cache_read_release(darktable.image_cache,image);
 }
 
-static int image_gc(lua_State *L) {
-	lua_image* my_image=dt_lua_check(L,-1,&dt_lua_image);
-	//printf("%s %d\n",__FUNCTION__,my_image->imgid);
-	if(my_image->image) {
-		dt_image_cache_write_release(darktable.image_cache,my_image->image,DT_IMAGE_CACHE_SAFE);
-		my_image->image=NULL;
-	}
-	if(my_image->const_image) {
-		dt_image_cache_read_release(darktable.image_cache,my_image->const_image);
-		my_image->const_image=NULL;
-	}
-	return 0;
+static dt_image_t*dt_lua_checkwriteimage(lua_State*L,int index) {
+	const dt_image_t* my_readimage=dt_lua_checkreadimage(L,index);
+	return dt_image_cache_write_get(darktable.image_cache,my_readimage);
 }
+
+static void dt_lua_releasewriteimage(lua_State*L,dt_image_t* image) {
+	dt_image_cache_write_release(darktable.image_cache,image,DT_IMAGE_CACHE_SAFE);
+	dt_lua_releasereadimage(L,image);
+}
+
 
 void dt_lua_image_push(lua_State * L,int imgid) {
 	if(dt_lua_singleton_find(L,imgid,&dt_lua_image)) {
@@ -85,14 +71,13 @@ void dt_lua_image_push(lua_State * L,int imgid) {
 	sqlite3_finalize(stmt);
 	lua_image * my_image = (lua_image*)lua_newuserdata(L,sizeof(lua_image));
 	my_image->imgid=imgid;
-	my_image->const_image= NULL;
-	my_image->image= NULL;
 	dt_lua_singleton_register(L,imgid,&dt_lua_image);
 }
 
 
 static int image_clone(lua_State *L) {
-	const dt_image_t * my_image=dt_lua_checkreadimage(L,-1);
+	lua_image* tmp_image=dt_lua_check(L,-1,&dt_lua_image);
+	const dt_image_t *my_image= dt_image_cache_read_get(darktable.image_cache,tmp_image->imgid);
 	dt_lua_image_push(L,dt_image_duplicate(my_image->id));
 	return 1;
 }
@@ -165,37 +150,37 @@ static int image_index(lua_State *L){
 	switch(luaL_checkoption(L,-1,NULL,image_fields_name)) {
 		case EXIF_EXPOSURE:
 			lua_pushnumber(L,my_image->exif_exposure);
-			return 1;
+			break;
 		case EXIF_APERTURE:
 			lua_pushnumber(L,my_image->exif_aperture);
-			return 1;
+			break;
 		case EXIF_ISO:
 			lua_pushnumber(L,my_image->exif_iso);
-			return 1;
+			break;
 		case EXIF_FOCAL_LENGTH:
 			lua_pushnumber(L,my_image->exif_focal_length);
-			return 1;
+			break;
 		case EXIF_FOCUS_DISTANCE:
 			lua_pushnumber(L,my_image->exif_focus_distance);
-			return 1;
+			break;
 		case EXIF_CROP:
 			lua_pushnumber(L,my_image->exif_crop);
-			return 1;
+			break;
 		case EXIF_MAKER:
 			lua_pushstring(L,my_image->exif_maker);
-			return 1;
+			break;
 		case EXIF_MODEL:
 			lua_pushstring(L,my_image->exif_model);
-			return 1;
+			break;
 		case EXIF_LENS:
 			lua_pushstring(L,my_image->exif_lens);
-			return 1;
+			break;
 		case EXIF_DATETIME_TAKEN:
 			lua_pushstring(L,my_image->exif_datetime_taken);
-			return 1;
+			break;
 		case FILENAME:
 			lua_pushstring(L,my_image->filename);
-			return 1;
+			break;
 		case PATH:
 			{
 				sqlite3_stmt *stmt;
@@ -208,10 +193,11 @@ static int image_index(lua_State *L){
 					lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
 				} else {
 					sqlite3_finalize(stmt);
+					dt_lua_releasereadimage(L,my_image);
 					return luaL_error(L,"should never happen");
 				}
 				sqlite3_finalize(stmt);
-				return 1;
+				break;
 			}
 		case DUP_INDEX:
 			{
@@ -228,23 +214,23 @@ static int image_index(lua_State *L){
 					version = sqlite3_column_int(stmt, 0);
 				sqlite3_finalize(stmt);
 				lua_pushinteger(L,version);
-				return 1;
+				break;
 			}
 		case WIDTH:
 			lua_pushinteger(L,my_image->width);
-			return 1;
+			break;
 		case HEIGHT:
 			lua_pushinteger(L,my_image->height);
-			return 1;
+			break;
 		case IS_LDR:
 			lua_pushboolean(L,dt_image_is_ldr(my_image));
-			return 1;
+			break;
 		case IS_HDR:
 			lua_pushboolean(L,dt_image_is_hdr(my_image));
-			return 1;
+			break;
 		case IS_RAW:
 			lua_pushboolean(L,dt_image_is_raw(my_image));
-			return 1;
+			break;
 		case RATING:
 			{
 				int score = my_image->flags & 0x7;
@@ -252,15 +238,15 @@ static int image_index(lua_State *L){
 				if(score ==6) score=-1;
 
 				lua_pushinteger(L,score);
-				return 1;
+				break;
 			}
 		case ID:
 			lua_pushinteger(L,my_image->height);
-			return 1;
+			break;
 		case COLORLABEL:
 			{
 				dt_colorlabels_lua_push(L,my_image->id);
-				return 1;
+				break;
 			}
 		case CREATOR:
 			{
@@ -274,7 +260,7 @@ static int image_index(lua_State *L){
 					lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
 				}
 				sqlite3_finalize(stmt);
-				return 1;
+				break;
 
 			}
 		case PUBLISHER:
@@ -289,7 +275,7 @@ static int image_index(lua_State *L){
 					lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
 				}
 				sqlite3_finalize(stmt);
-				return 1;
+				break;
 
 			}
 		case TITLE:
@@ -304,7 +290,7 @@ static int image_index(lua_State *L){
 					lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
 				}
 				sqlite3_finalize(stmt);
-				return 1;
+				break;
 
 			}
 		case DESCRIPTION:
@@ -319,7 +305,7 @@ static int image_index(lua_State *L){
 					lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
 				}
 				sqlite3_finalize(stmt);
-				return 1;
+				break;
 
 			}
 		case RIGHTS:
@@ -334,22 +320,25 @@ static int image_index(lua_State *L){
 					lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
 				}
 				sqlite3_finalize(stmt);
-				return 1;
+				break;
 
 			}
 		case HISTORY:
 			{
 				dt_history_lua_push(L,my_image->id);
-				return 1;
+				break;
 			}
 		case DUPLICATE:
 			lua_pushcfunction(L,image_clone); // works as a lua member, i.e meant to be invoked with :
-			return 1;
+			break;
 
 		default:
+			dt_lua_releasereadimage(L,my_image);
 			return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
 
 	}
+	dt_lua_releasereadimage(L,my_image);
+	return 1;
 }
 
 static int image_newindex(lua_State *L){
@@ -357,102 +346,112 @@ static int image_newindex(lua_State *L){
 	switch(luaL_checkoption(L,-2,NULL,image_fields_name)) {
 		case EXIF_EXPOSURE:
 			my_image->exif_exposure = luaL_checknumber(L,-1);
-			return 0;
+			break;
 		case EXIF_APERTURE:
 			my_image->exif_aperture = luaL_checknumber(L,-1);
-			return 0;
+			break;
 		case EXIF_ISO:
 			my_image->exif_iso = luaL_checknumber(L,-1);
-			return 0;
+			break;
 		case EXIF_FOCAL_LENGTH:
 			my_image->exif_focal_length = luaL_checknumber(L,-1);
-			return 0;
+			break;
 		case EXIF_FOCUS_DISTANCE:
 			my_image->exif_focus_distance = luaL_checknumber(L,-1);
-			return 0;
+			break;
 		case EXIF_CROP:
 			my_image->exif_crop = luaL_checknumber(L,-1);
-			return 0;
+			break;
 		case EXIF_MAKER:
 			{
 				size_t tgt_size;
 				const char * value = luaL_checklstring(L,-1,&tgt_size);
 				if(tgt_size > 32) {
+					dt_lua_releasewriteimage(L,my_image);
 					return luaL_error(L,"string value too long");
 				}
 				strncpy(my_image->exif_maker,value,32);
-				return 0;
+				break;
 			}
 		case EXIF_MODEL:
 			{
 				size_t tgt_size;
 				const char * value = luaL_checklstring(L,-1,&tgt_size);
 				if(tgt_size > 32) {
+					dt_lua_releasewriteimage(L,my_image);
 					return luaL_error(L,"string value too long");
 				}
 				strncpy(my_image->exif_maker,value,32);
-				return 0;
+				break;
 			}
 		case EXIF_LENS:
 			{
 				size_t tgt_size;
 				const char * value = luaL_checklstring(L,-1,&tgt_size);
 				if(tgt_size > 32) {
+					dt_lua_releasewriteimage(L,my_image);
 					return luaL_error(L,"string value too long");
 				}
 				strncpy(my_image->exif_model,value,32);
-				return 0;
+				break;
 			}
 		case EXIF_DATETIME_TAKEN:
 			{
 				size_t tgt_size;
 				const char * value = luaL_checklstring(L,-1,&tgt_size);
 				if(tgt_size > 52) {
+					dt_lua_releasewriteimage(L,my_image);
 					return luaL_error(L,"string value too long");
 				}
 				strncpy(my_image->exif_lens,value,52);
-				return 0;
+				break;
 			}
 		case RATING:
 			{
 				int my_score = luaL_checkinteger(L,-1);
-				if(my_score > 5) return luaL_error(L,"rating too high : %d",my_score);
+				if(my_score > 5) {
+					dt_lua_releasewriteimage(L,my_image);
+					return luaL_error(L,"rating too high : %d",my_score);
+				}
 				if(my_score == -1) my_score = 6;
-				if(my_score < -1) return luaL_error(L,"rating too low : %d",my_score);
+				if(my_score < -1) {
+					dt_lua_releasewriteimage(L,my_image);
+					return luaL_error(L,"rating too low : %d",my_score);
+				}
 				my_image->flags &= ~0x7;
 				my_image->flags |= my_score;
-				return 0;
+				break;
 			}
 
 		case CREATOR:
 			dt_metadata_set(my_image->id,"Xmp.dc.creator",luaL_checkstring(L,-1));
 			dt_image_synch_xmp(my_image->id);
-			return 0;
+			break;
 		case PUBLISHER:
 			dt_metadata_set(my_image->id,"Xmp.dc.publisher",luaL_checkstring(L,-1));
 			dt_image_synch_xmp(my_image->id);
-			return 0;
+			break;
 		case TITLE:
 			dt_metadata_set(my_image->id,"Xmp.dc.title",luaL_checkstring(L,-1));
 			dt_image_synch_xmp(my_image->id);
-			return 0;
+			break;
 		case DESCRIPTION:
 			dt_metadata_set(my_image->id,"Xmp.dc.description",luaL_checkstring(L,-1));
 			dt_image_synch_xmp(my_image->id);
-			return 0;
+			break;
 		case RIGHTS:
 			dt_metadata_set(my_image->id,"Xmp.dc.title",luaL_checkstring(L,-1));
 			dt_image_synch_xmp(my_image->id);
-			return 0;
+			break;
 		case HISTORY:
 			{
 				if(lua_isnil(L,-1)) {
 					dt_history_delete_on_image(my_image->id);
-					return 0;
+					break;
 				}
 				int source_id = dt_history_lua_check(L,-1);
 				dt_history_copy_and_paste_on_image(source_id, my_image->id, 0);
-				return 0;
+				break;
 			}
 		case FILENAME:
 		case PATH:
@@ -465,11 +464,15 @@ static int image_newindex(lua_State *L){
 		case ID:
 		case COLORLABEL:
 		case DUPLICATE:
+			dt_lua_releasewriteimage(L,my_image);
 			return luaL_error(L,"read only field : ",lua_tostring(L,-2));
 		default:
+			dt_lua_releasewriteimage(L,my_image);
 			return luaL_error(L,"unknown index for image : ",lua_tostring(L,-2));
 
 	}
+	dt_lua_releasewriteimage(L,my_image);
+	return 0;
 }
 
 static int image_tostring(lua_State *L) {
@@ -478,13 +481,13 @@ static int image_tostring(lua_State *L) {
 	dt_image_full_path(my_image->id,image_name,PATH_MAX);
 	dt_image_path_append_version(my_image->id,image_name,PATH_MAX);
 	lua_pushstring(L,image_name);
+	dt_lua_releasereadimage(L,my_image);
 	return 1;
 }
 static const luaL_Reg image_meta[] = {
 	{"__index", image_index },
 	{"__newindex", image_newindex },
 	{"__tostring", image_tostring },
-	{"__gc", image_gc },
 	{0,0}
 };
 static int image_init(lua_State * L) {
@@ -495,15 +498,11 @@ static int image_init(lua_State * L) {
 }
 
 
-static int image_global_gc(lua_State *L) {
-	dt_lua_singleton_foreach(L,&dt_lua_image,image_gc);
-	return 0;
-}
 
 dt_lua_type dt_lua_image = {
 	"image",
 	image_init,
-	image_global_gc
+	NULL
 };
 
 /***********************************************************************
