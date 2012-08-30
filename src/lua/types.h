@@ -26,16 +26,16 @@
 void dt_lua_init_name_list_pair(lua_State* L, const char ** list);
 /** helper to build types
   (0,0)
-  sets a metadata with an "allocate" subtable for imgid based singleton
+  sets a metadata with an "allocate" subtable for objects that are unique for a given numerical id
   -1 : the metatdata to use
   */
-void dt_lua_init_singleton(lua_State* L);
+void dt_lua_init_numid(lua_State* L);
 /** helper to build types
   (0,+(0|1))
   checks if data of type type_name already has an element with id, if yes push it at top.
   returns 1 if the the value was pushed
   */
-int dt_lua_singleton_find(lua_State* L,int id,const char * type_name);
+int dt_lua_numid_find(lua_State* L,int id,const char * type_name);
 /** helper to build types
   (0,0)
   takes the object at top of the stack
@@ -44,7 +44,7 @@ int dt_lua_singleton_find(lua_State* L,int id,const char * type_name);
 
   -1 the object to register
   */
-void dt_lua_singleton_register(lua_State* L,int id,const char * type_name);
+void dt_lua_numid_register(lua_State* L,int id,const char * type_name);
 
 /**
   (0,0)
@@ -52,7 +52,7 @@ void dt_lua_singleton_register(lua_State* L,int id,const char * type_name);
   the call has one parameter
   -1 : the object of the type
   */
-void dt_lua_singleton_foreach(lua_State*L,const char * type_name,lua_CFunction function);
+void dt_lua_numid_foreach(lua_State*L,const char * type_name,lua_CFunction function);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

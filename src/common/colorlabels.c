@@ -202,12 +202,12 @@ typedef struct {
 } colorlabel_type;
 
 void dt_colorlabels_lua_push(lua_State * L,int imgid) {
-	if(dt_lua_singleton_find(L,imgid,colorlabel_typename)) {
+	if(dt_lua_numid_find(L,imgid,colorlabel_typename)) {
 		return;
 	}
 	colorlabel_type * my_colorlabel = (colorlabel_type*)lua_newuserdata(L,sizeof(colorlabel_type));
 	my_colorlabel->imgid =imgid;
-	dt_lua_singleton_register(L,imgid,colorlabel_typename);
+	dt_lua_numid_register(L,imgid,colorlabel_typename);
 }
 
 
@@ -247,7 +247,7 @@ int dt_lua_init_colorlabel(lua_State * L) {
 	luaL_newmetatable(L,colorlabel_typename);
 	luaL_setfuncs(L,dt_lua_colorlabel_meta,0);
 	dt_lua_init_name_list_pair(L, dt_colorlabels_name);
-	dt_lua_init_singleton(L);
+	dt_lua_init_numid(L);
 	return 0;
 }
 

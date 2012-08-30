@@ -325,7 +325,7 @@ static const luaL_Reg dt_lua_history_meta[] = {
 int dt_lua_init_history(lua_State * L) {
 	luaL_newmetatable(L,history_typename);
 	luaL_setfuncs(L,dt_lua_history_meta,0);
-	dt_lua_init_singleton(L);
+	dt_lua_init_numid(L);
 	return 0;
 }
 

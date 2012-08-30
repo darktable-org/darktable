@@ -58,7 +58,7 @@ void dt_lua_init_name_list_pair(lua_State* L, const char **list){
 	lua_setfield(L,-2,"__pairs");
 }
 
-void dt_lua_init_singleton(lua_State* L){
+void dt_lua_init_numid(lua_State* L){
 	// add a new table to keep ref to allocated objects
 	lua_newtable(L);
 	// add a metatable to that table, just for the __mode field
@@ -72,7 +72,7 @@ void dt_lua_init_singleton(lua_State* L){
 
 
 
-int dt_lua_singleton_find(lua_State* L,int id,const char*type_name) {
+int dt_lua_numid_find(lua_State* L,int id,const char*type_name) {
 	// get the metatable and put it on top (side effect of newtable)
 	luaL_newmetatable(L,type_name);
 	lua_getfield(L,-1,"allocated");
@@ -92,7 +92,7 @@ int dt_lua_singleton_find(lua_State* L,int id,const char*type_name) {
 	}
 }
 
-void dt_lua_singleton_register(lua_State* L,int id,const char *type_name ){
+void dt_lua_numid_register(lua_State* L,int id,const char *type_name ){
 	// get the metatable and put it on top (side effect of newtable)
 	luaL_newmetatable(L,type_name);
 	lua_getfield(L,-1,"allocated");
@@ -112,7 +112,7 @@ void dt_lua_singleton_register(lua_State* L,int id,const char *type_name ){
 	lua_settable(L,-4);
 	lua_pop(L,3);
 }
-void dt_lua_singleton_foreach(lua_State*L,const char* type_name,lua_CFunction function){
+void dt_lua_numid_foreach(lua_State*L,const char* type_name,lua_CFunction function){
 	luaL_newmetatable(L,type_name);
 	lua_getfield(L,-1,"allocated");
 	lua_pushnil(L);

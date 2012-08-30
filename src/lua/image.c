@@ -57,7 +57,7 @@ static void dt_lua_releasewriteimage(lua_State*L,dt_image_t* image) {
 
 
 void dt_lua_image_push(lua_State * L,int imgid) {
-	if(dt_lua_singleton_find(L,imgid,image_typename)) {
+	if(dt_lua_numid_find(L,imgid,image_typename)) {
 		return;
 	}
 	// check that id is valid
@@ -72,7 +72,7 @@ void dt_lua_image_push(lua_State * L,int imgid) {
 	sqlite3_finalize(stmt);
 	lua_image * my_image = (lua_image*)lua_newuserdata(L,sizeof(lua_image));
 	my_image->imgid=imgid;
-	dt_lua_singleton_register(L,imgid,image_typename);
+	dt_lua_numid_register(L,imgid,image_typename);
 }
 
 
@@ -495,7 +495,7 @@ int dt_lua_init_image(lua_State * L) {
 	luaL_newmetatable(L,image_typename);
 	luaL_setfuncs(L,image_meta,0);
 	dt_lua_init_name_list_pair(L, image_fields_name);
-	dt_lua_init_singleton(L);
+	dt_lua_init_numid(L);
 	return 0;
 }
 
