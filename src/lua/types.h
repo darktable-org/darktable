@@ -54,6 +54,14 @@ void dt_lua_numid_register(lua_State* L,int id,const char * type_name);
   */
 void dt_lua_numid_foreach(lua_State*L,const char * type_name,lua_CFunction function);
 
+/**
+  (-1,+1)
+  check that the top of the stack is a table, creates or find a subtable named "name", 
+  adds it on top of the stack, and remove the previous table
+
+  used to easily do a tree organisation of objects
+*/
+void dt_lua_goto_subtable(lua_State *L,const char* sub_name);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

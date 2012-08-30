@@ -126,10 +126,18 @@ void dt_lua_numid_foreach(lua_State*L,const char* type_name,lua_CFunction functi
 	}
 }
 
-void *dt_lua_check(lua_State* L,int index,const char* type_name) {
-	return luaL_checkudata(L,index,type_name);
-}
 
+void dt_lua_goto_subtable(lua_State *L,const char* sub_name) {
+	luaL_checktype(L,-1,LUA_TTABLE);
+	lua_getfield(L,-1,sub_name);
+	if(lua_isnil(L,-1)) {
+		lua_pop(L,1);
+		lua_newtable(L);
+		lua_setfield(L,-2,sub_name);
+		lua_getfield(L,-1,sub_name);
+	}
+	lua_remove(L,-2);
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -293,7 +293,7 @@ set_params(dt_imageio_module_storage_t *self, void *params, int size)
 LUA STUFF
 *********************************************************************/
 static int dt_lua_tostring(lua_State *L) {
-	lua_pushstring(L,__FUNCTION__);
+	lua_pushstring(L,"storage/disk");
 	return 1;
 }
 
@@ -310,6 +310,7 @@ int lua_init(lua_State * L) {
 	lua_pushvalue(L,-2);
 	lua_setmetatable(L,-2);
 	dt_lua_push_darktable_lib(L);
+	dt_lua_goto_subtable(L,"storage");
 	lua_pushvalue(L,-2);
 	lua_setfield(L,-2,"disk");
 	return 0;
