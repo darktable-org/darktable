@@ -28,7 +28,7 @@ lua type for a sqlite3_stmt that will be auto-finalized on __gc
 
 void dt_lua_stmt_push(lua_State * L,sqlite3_stmt *stmt);
 sqlite3_stmt* dt_lua_stmt_check(lua_State * L,int index);
-extern dt_lua_type dt_lua_stmt;
+int dt_lua_init_stmt(lua_State * L);
 
 #endif
 

@@ -45,7 +45,7 @@ gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
   *******************************************/
 
 void dt_colorlabels_lua_push(lua_State * L,int imgid);
-extern dt_lua_type dt_colorlabels_lua_type;
+int dt_lua_init_colorlabel(lua_State * L);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

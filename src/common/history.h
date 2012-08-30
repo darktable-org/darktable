@@ -56,8 +56,7 @@ char *dt_history_get_items_as_string(int32_t imgid);
 
 int dt_history_lua_check(lua_State * L,int index);
 void dt_history_lua_push(lua_State * L,int imgid);
-
-extern dt_lua_type dt_history_lua_type;
+int dt_lua_init_history(lua_State * L) ;
 
 
 #endif

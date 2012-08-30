@@ -18,32 +18,7 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "control/control.h"
-#include "lua/image.h"
-#include "common/colorlabels.h"
-#include "common/history.h"
-#include "common/film.h"
-#include "lua/stmt.h"
 
-/**
-  hardcoded list of types to register
-  other types can be added dynamically
-  */
-static dt_lua_type* types[] = {
-	&dt_lua_stmt,
-	&dt_colorlabels_lua_type,
-	&dt_history_lua_type,
-	&dt_lua_image,
-	&dt_lua_images,
-	NULL
-};
-
-void dt_lua_init_types(lua_State*L) {
-	dt_lua_type** cur_type = types;
-	while(*cur_type) {
-		dt_lua_protect_call(L,(*cur_type)->load);
-		cur_type++;
-	}
-};
 static int char_list_next(lua_State *L){
 	int index;
 	const char **list = lua_touserdata(L,lua_upvalueindex(1));

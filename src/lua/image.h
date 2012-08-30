@@ -24,10 +24,10 @@
 
 
 
-extern dt_lua_type dt_lua_images;
+int dt_lua_init_images(lua_State * L);
 
 void dt_lua_image_push(lua_State * L,int imgid);
-extern dt_lua_type dt_lua_image;
+int dt_lua_init_image(lua_State * L);
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

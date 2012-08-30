@@ -49,15 +49,11 @@ sqlite3_stmt* dt_lua_stmt_check(lua_State * L,int index){
 }
 
 static const char * stmt_typename ="dt_lua_stmt";
-static int init_stmt(lua_State * L) {
+int dt_lua_init_stmt(lua_State * L) {
 	luaL_newmetatable(L,stmt_typename);
 	luaL_setfuncs(L,stmt_meta,0);
 	return 0;
 }
-
-dt_lua_type dt_lua_stmt = {
-	init_stmt,
-};
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -322,17 +322,13 @@ static const luaL_Reg dt_lua_history_meta[] = {
 	{"__pairs", history_pairs },
 	{0,0}
 };
-static int history_init(lua_State * L) {
+int dt_lua_init_history(lua_State * L) {
 	luaL_newmetatable(L,history_typename);
 	luaL_setfuncs(L,dt_lua_history_meta,0);
 	dt_lua_init_singleton(L);
 	return 0;
 }
 
-
-dt_lua_type dt_history_lua_type ={
-	history_init,
-};
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

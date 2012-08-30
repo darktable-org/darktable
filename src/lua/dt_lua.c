@@ -21,6 +21,10 @@
 #include "control/control.h"
 #include "lua/stmt.h"
 #include "lua/events.h"
+#include "lua/image.h"
+#include "common/colorlabels.h"
+#include "common/history.h"
+#include "common/film.h"
 
 int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
 	int result;
@@ -45,6 +49,10 @@ void dt_lua_protect_call(lua_State *L,lua_CFunction func) {
 	lua_pushcfunction(L,func);
 	dt_lua_do_chunk(L,0,0,0);
 }
+void dt_lua_dostring(const char* command) {
+      dt_lua_do_chunk(darktable.lua_state,luaL_loadstring(darktable.lua_state, command),0,0);
+}
+
 // closed on GC of the dt lib, usually when the lua interpreter closes
 static int dt_luacleanup(lua_State*L) {
 	const int init_gui = (darktable.gui != NULL);
@@ -85,6 +93,18 @@ static void debug_table(lua_State * L,int t) {
 }
 #endif
 
+/**
+  hardcoded list of types to register
+  other types can be added dynamically
+  */
+static lua_CFunction init_funcs[] = {
+	dt_lua_init_stmt,
+	dt_lua_init_colorlabel,
+	dt_lua_init_history,
+	dt_lua_init_image,
+	dt_lua_init_images,
+	NULL
+};
 static int load_darktable_lib(lua_State *L) {
 	dt_lua_push_darktable_lib(L);
 	// set the metatable
@@ -102,7 +122,11 @@ static int load_darktable_lib(lua_State *L) {
 	lua_pushcfunction(L,&lua_print);
 	lua_settable(L,-3);
 	
-	dt_lua_init_types(L);
+	lua_CFunction* cur_type = init_funcs;
+	while(*cur_type) {
+		dt_lua_protect_call(L,*cur_type);
+		cur_type++;
+	}
 
 	return 1;
 }
@@ -185,10 +209,6 @@ void dt_lua_run_init() {
 
 }
 
-
-void dt_lua_dostring(const char* command) {
-      dt_lua_do_chunk(darktable.lua_state,luaL_loadstring(darktable.lua_state, command),0,0);
-}
 
 int dt_lua_push_darktable_lib(lua_State* L) {
 	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_dtlib");

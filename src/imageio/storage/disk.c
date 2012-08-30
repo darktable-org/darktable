@@ -303,7 +303,7 @@ static const luaL_Reg lua_meta[] = {
 	{0,0}
 
 };
-static int lua_init(lua_State * L) {
+int lua_init(lua_State * L) {
 	lua_newtable(L);
 	luaL_setfuncs(L,lua_meta,0);
 	lua_newuserdata(L,1); // placeholder we can't use a table because we can't prevent assignment
@@ -316,9 +316,6 @@ static int lua_init(lua_State * L) {
 }
 
 
-dt_lua_type lua_param ={
-	lua_init,
-};
 
 
 

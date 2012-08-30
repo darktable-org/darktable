@@ -491,7 +491,7 @@ static const luaL_Reg image_meta[] = {
 	{"__tostring", image_tostring },
 	{0,0}
 };
-static int image_init(lua_State * L) {
+int dt_lua_init_image(lua_State * L) {
 	luaL_newmetatable(L,image_typename);
 	luaL_setfuncs(L,image_meta,0);
 	dt_lua_init_name_list_pair(L, image_fields_name);
@@ -501,9 +501,6 @@ static int image_init(lua_State * L) {
 
 
 
-dt_lua_type dt_lua_image = {
-	image_init
-};
 
 /***********************************************************************
   Creating the images global variable
@@ -561,7 +558,7 @@ static const luaL_Reg images_meta[] = {
 	{0,0}
 };
 
-static int images_init(lua_State * L) {
+int dt_lua_init_images(lua_State * L) {
 	lua_newtable(L);
 	luaL_setfuncs(L,images_meta,0);
 	lua_newuserdata(L,1); // placeholder we can't use a table because we can't prevent assignment
@@ -573,9 +570,6 @@ static int images_init(lua_State * L) {
 	return 0;
 }
 
-dt_lua_type dt_lua_images = {
-	images_init,
-};
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -172,8 +172,8 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   if(!g_module_symbol(module->module, "dimension",              (gpointer)&(module->dimension)))            	module->dimension = _default_storage_dimension;
   if(!g_module_symbol(module->module, "recommended_dimension",  (gpointer)&(module->recommended_dimension)))  module->recommended_dimension = _default_storage_dimension;
 
-  if(!g_module_symbol(module->module, "lua_param",                   (gpointer)&(module->lua_param)))                   module->lua_param = NULL;
-  if(module->lua_param) dt_lua_protect_call(darktable.lua_state,module->lua_param->load);
+  if(!g_module_symbol(module->module, "lua_init",                   (gpointer)&(module->lua_init)))                   module->lua_init = NULL;
+  if(module->lua_init) dt_lua_protect_call(darktable.lua_state,module->lua_init);
 
   return 0;
 error:

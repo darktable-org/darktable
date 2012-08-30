@@ -243,7 +243,7 @@ static const luaL_Reg dt_lua_colorlabel_meta[] = {
 	{"__newindex", colorlabel_newindex },
 	{0,0}
 };
-static int colorlabel_init(lua_State * L) {
+int dt_lua_init_colorlabel(lua_State * L) {
 	luaL_newmetatable(L,colorlabel_typename);
 	luaL_setfuncs(L,dt_lua_colorlabel_meta,0);
 	dt_lua_init_name_list_pair(L, dt_colorlabels_name);
@@ -251,10 +251,6 @@ static int colorlabel_init(lua_State * L) {
 	return 0;
 }
 
-
-dt_lua_type dt_colorlabels_lua_type ={
-	colorlabel_init
-};
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

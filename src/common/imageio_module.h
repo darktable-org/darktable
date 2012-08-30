@@ -146,9 +146,8 @@ typedef struct dt_imageio_module_storage_t
   void* (*get_params)   (struct dt_imageio_module_storage_t *self, int *size);
   void  (*free_params)  (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
   int   (*set_params)   (struct dt_imageio_module_storage_t *self, const void *params, const int size);
-  // lua functions
-  /* the lua type attached to this particular object's params */
-  dt_lua_type *lua_param;
+  /* a lua function called at .so load time to allow lua access to the structure */
+  lua_CFunction lua_init;
 }
 dt_imageio_module_storage_t;
 

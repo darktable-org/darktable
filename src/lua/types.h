@@ -22,19 +22,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-/**
-  define an OO type to create, will be used as a submodule of the darktable module
-  */
-typedef struct {
-	lua_CFunction load; /// called to load the type, the metatable to fill is at -1, return nil or an object to associate to name in the darktable global
-} dt_lua_type;
 
-void dt_lua_init_types(lua_State*L); // assumes -1 is the table of the darktable library
-/** helper to build types
-  (0,0)
-  sets a metadata with an __pair methamethod that will go throught the list of names
-  -1 : the metatdata to use
-  */
 void dt_lua_init_name_list_pair(lua_State* L, const char ** list);
 /** helper to build types
   (0,0)
