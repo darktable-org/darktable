@@ -1600,7 +1600,7 @@ int dt_control_key_pressed_override(guint key, guint state)
     }
     return 1;
   }
-  else if(key == ':')
+  else if(key == ':' && darktable.control->key_accelerators_on)
   {
     darktable.control->vimkey[0] = ':';
     darktable.control->vimkey[1] = 0;
