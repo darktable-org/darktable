@@ -252,8 +252,7 @@ static int colorlabel_init(lua_State * L) {
 
 dt_lua_type dt_colorlabels_lua_type ={
 	"colorlabel",
-	colorlabel_init,
-	NULL
+	colorlabel_init
 };
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -318,7 +318,6 @@ static int lua_init(lua_State * L) {
 dt_lua_type lua_param ={
 	"storage/disk",
 	lua_init,
-	NULL
 };
 
 

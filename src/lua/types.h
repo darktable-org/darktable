@@ -28,7 +28,6 @@
 typedef struct {
 	const char *name; /// the recommanded name for the module (modname)
 	lua_CFunction load; /// called to load the type, the metatable to fill is at -1, return nil or an object to associate to name in the darktable global
-	lua_CFunction clean; /// to be called when a DT lua run is finished to release locks etc... WARNING : this is not a GC, only for locks
 } dt_lua_type;
 
 void dt_lua_register_type(lua_State*L,dt_lua_type* type);

@@ -38,21 +38,6 @@ int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
 	}
 	result= lua_gettop(L) -result;
 
-	dt_lua_push_type_table(L);
-	lua_pushnil(L);  /* first key */
-	while (lua_next(L, -2) != 0) {
-		dt_lua_type * type = lua_touserdata(L,-1);
-		lua_pop(L, 1);
-		if(type->clean) {
-			lua_pushcfunction(darktable.lua_state,type->clean);
-			if(lua_pcall(darktable.lua_state, 0, 0, 0)) {
-				dt_control_log("LUA ERROR while cleaning %s : %s",type->name,lua_tostring(darktable.lua_state,-1));
-				dt_print(DT_DEBUG_LUA,"LUA ERROR while cleaning %s : %s\n",type->name,lua_tostring(darktable.lua_state,-1));
-				lua_pop(darktable.lua_state,1);
-			}
-		}
-	}
-	lua_pop(L,1);
 	lua_gc(darktable.lua_state,LUA_GCCOLLECT,0);
 	return result;
 }

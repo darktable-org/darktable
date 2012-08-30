@@ -332,7 +332,6 @@ static int history_init(lua_State * L) {
 dt_lua_type dt_history_lua_type ={
 	"history",
 	history_init,
-	NULL,
 };
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

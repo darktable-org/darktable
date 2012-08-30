@@ -501,8 +501,7 @@ static int image_init(lua_State * L) {
 
 dt_lua_type dt_lua_image = {
 	"image",
-	image_init,
-	NULL
+	image_init
 };
 
 /***********************************************************************
@@ -574,7 +573,6 @@ static int images_init(lua_State * L) {
 dt_lua_type dt_lua_images = {
 	"images",
 	images_init,
-	NULL
 };
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

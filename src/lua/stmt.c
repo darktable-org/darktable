@@ -56,7 +56,6 @@ static int init_stmt(lua_State * L) {
 dt_lua_type dt_lua_stmt = {
 	"stmt",
 	init_stmt,
-	NULL	
 };
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
