@@ -22,7 +22,7 @@
 #include <lauxlib.h>
 
 /** initialize lua stuff at DT start time */
-void dt_lua_init();
+void dt_lua_init(const int init_gui);
 void dt_lua_run_init();
 /** runs a command in the DT lua environement, command in any valid lua string */
 void dt_lua_dostring(const char* command);
@@ -32,6 +32,8 @@ void dt_lua_dostring(const char* command);
   */
 int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults);
 
+// can be called within init functions
+int dt_lua_push_darktable_lib(lua_State* L);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

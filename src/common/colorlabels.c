@@ -246,10 +246,7 @@ static int colorlabel_init(lua_State * L) {
 	luaL_setfuncs(L,dt_lua_colorlabel_meta,0);
 	dt_lua_init_name_list_pair(L, dt_colorlabels_name);
 	dt_lua_init_singleton(L);
-	//pop the metatable itself to be clean
-	//loader convention, we declare a type but we don't create any function
-	lua_pushnil(L);
-	return 1;
+	return 0;
 }
 
 

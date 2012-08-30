@@ -48,17 +48,15 @@ int dt_lua_push_type_table(lua_State*L){
 }
 
 
-void register_type_sub(lua_State*L,dt_lua_type* type){
+void dt_lua_register_type(lua_State*L,dt_lua_type* type){
 	char tmp[1024];
 	snprintf(tmp,1024,"dt_lua_%s",type->name);
-	lua_pushstring(L,type->name);
 	lua_pushcfunction(L,type->load);
 	luaL_newmetatable(L,tmp);
-	if(lua_pcall(L, 1, 1, 0)) {
+	if(lua_pcall(L, 1, 0, 0)) {
 		dt_print(DT_DEBUG_LUA,"LUA ERROR while loading type %s : %s\n",type->name,lua_tostring(L,-1));
 		lua_pop(L,1);
 	} else {
-		lua_settable(L,-3); // attach the object (if any) to the name
 		dt_lua_push_type_table(L);
 		lua_pushlightuserdata(L,type);
 		lua_setfield(L,-2,type->name);
@@ -66,17 +64,10 @@ void register_type_sub(lua_State*L,dt_lua_type* type){
 	}
 }
 
-void dt_lua_register_type(lua_State*L,dt_lua_type* type){
-	// find the darktable library
-	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_dtlib");
-	register_type_sub(L,type);
-}
-
-
 void dt_lua_init_types(lua_State*L) {
 	dt_lua_type** cur_type = types;
 	while(*cur_type) {
-		register_type_sub(L,*cur_type);
+		dt_lua_register_type(L,*cur_type);
 		cur_type++;
 	}
 };
@@ -179,11 +170,6 @@ void dt_lua_singleton_register(lua_State* L,int id,const dt_lua_type*type ){
 	lua_settable(L,-4);
 	lua_pop(L,3);
 }
-void *dt_lua_check(lua_State* L,int index,const dt_lua_type*type) {
-	char tmp[1024];
-	snprintf(tmp,1024,"dt_lua_%s",type->name);
-	return luaL_checkudata(L,index,tmp);
-}
 void dt_lua_singleton_foreach(lua_State*L,const dt_lua_type* type,lua_CFunction function){
 	char tmp[1024];
 	snprintf(tmp,1024,"dt_lua_%s",type->name);
@@ -200,6 +186,11 @@ void dt_lua_singleton_foreach(lua_State*L,const dt_lua_type* type,lua_CFunction 
 	}
 }
 
+void *dt_lua_check(lua_State* L,int index,const dt_lua_type*type) {
+	char tmp[1024];
+	snprintf(tmp,1024,"dt_lua_%s",type->name);
+	return luaL_checkudata(L,index,tmp);
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

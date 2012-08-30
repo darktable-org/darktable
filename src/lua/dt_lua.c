@@ -80,7 +80,7 @@ static int lua_print(lua_State *L) {
 	return 0;
 }
 #if 0
-	printf("%d\n",__LINE__);
+	printf("%s %d\n",__FUNCTION__,__LINE__);
 	for(int i=1 ;i<=lua_gettop(L);i++) printf("\t%s\n",lua_typename(L,lua_type(L,i)));
 static void debug_table(lua_State * L,int t) {
    /* table is in the stack at index 't' */
@@ -97,9 +97,7 @@ static void debug_table(lua_State * L,int t) {
 #endif
 
 static int load_darktable_lib(lua_State *L) {
-	lua_newtable(L);
-	lua_pushvalue(L,-1);
-	lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_dtlib");
+	dt_lua_push_darktable_lib(L);
 	// set the metatable
 	lua_newtable(L);
 	lua_pushcfunction(L,dt_luacleanup);
@@ -144,32 +142,33 @@ static const luaL_Reg preloadedlibs[] = {
 };
 
 
-void dt_lua_init() {
+void dt_lua_init(const int init_gui) {
 	// init the global lua context
 	darktable.lua_state= luaL_newstate();
 	const luaL_Reg *lib;
-	/* call open functions from 'loadedlibs' and set results to global table */
-	for (lib = loadedlibs; lib->func; lib++) {
-		luaL_requiref(darktable.lua_state, lib->name, lib->func, 1);
-		lua_pop(darktable.lua_state, 1);  /* remove lib */
+	if(init_gui) {
+		/* call open functions from 'loadedlibs' and set results to global table */
+		for (lib = loadedlibs; lib->func; lib++) {
+			luaL_requiref(darktable.lua_state, lib->name, lib->func, 1);
+			lua_pop(darktable.lua_state, 1);  /* remove lib */
+		}
+		/* add open functions from 'preloadedlibs' into 'package.preload' table */
+		luaL_getsubtable(darktable.lua_state, LUA_REGISTRYINDEX, "_PRELOAD");
+		for (lib = preloadedlibs; lib->func; lib++) {
+			lua_pushcfunction(darktable.lua_state, lib->func);
+			lua_setfield(darktable.lua_state, -2, lib->name);
+		}
+		lua_pop(darktable.lua_state, 1);  /* remove _PRELOAD table */
+
+		// add stuff that is here only for gui
+		dt_lua_push_darktable_lib(darktable.lua_state);
+		lua_pushstring(darktable.lua_state,"quit");
+		lua_pushcfunction(darktable.lua_state,&lua_quit);
+		lua_settable(darktable.lua_state,-3);
+
+		dt_lua_init_events(darktable.lua_state);
 	}
-	/* add open functions from 'preloadedlibs' into 'package.preload' table */
-	luaL_getsubtable(darktable.lua_state, LUA_REGISTRYINDEX, "_PRELOAD");
-	for (lib = preloadedlibs; lib->func; lib++) {
-		lua_pushcfunction(darktable.lua_state, lib->func);
-		lua_setfield(darktable.lua_state, -2, lib->name);
-	}
-	lua_pop(darktable.lua_state, 1);  /* remove _PRELOAD table */
 
-	// add stuff that is here only for gui
-	lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_dtlib");
-	lua_pushstring(darktable.lua_state,"quit");
-	lua_pushcfunction(darktable.lua_state,&lua_quit);
-	lua_settable(darktable.lua_state,-3);
-
-	dt_lua_init_events(darktable.lua_state);
-
-	// find the darktable library we have loaded previously
 }
 void dt_lua_run_init() {
 	char configdir[PATH_MAX];
@@ -202,6 +201,16 @@ void dt_lua_dostring(const char* command) {
       dt_lua_do_chunk(darktable.lua_state,luaL_loadstring(darktable.lua_state, command),0,0);
 }
 
+int dt_lua_push_darktable_lib(lua_State* L) {
+	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_dtlib");
+	if(lua_isnil(L,-1)) {
+		lua_pop(L,1);
+		lua_newtable(L);
+		lua_pushvalue(L,-1);
+		lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_dtlib");
+	}
+	return 1;
+}
 
 // function used by the lua interpreter to load darktable
 int luaopen_darktable(lua_State *L) {

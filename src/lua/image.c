@@ -491,9 +491,7 @@ static int image_init(lua_State * L) {
 	luaL_setfuncs(L,image_meta,0);
 	dt_lua_init_name_list_pair(L, image_fields_name);
 	dt_lua_init_singleton(L);
-	//loader convention, we declare a type but we don't create any function
-	lua_pushnil(L);
-	return 1;
+	return 0;
 }
 
 
@@ -568,8 +566,10 @@ static int images_init(lua_State * L) {
 	lua_newuserdata(L,1); // placeholder we can't use a table because we can't prevent assignment
 	lua_pushvalue(L,-2);
 	lua_setmetatable(L,-2);
-	// loader convention, our user data is returned
-	return 1;
+	dt_lua_push_darktable_lib(L);
+	lua_pushvalue(L,-2);
+	lua_setfield(L,-2,"images");
+	return 0;
 }
 
 dt_lua_type dt_lua_images = {

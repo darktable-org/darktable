@@ -325,9 +325,7 @@ static const luaL_Reg dt_lua_history_meta[] = {
 static int history_init(lua_State * L) {
 	luaL_setfuncs(L,dt_lua_history_meta,0);
 	dt_lua_init_singleton(L);
-	//loader convention, we declare a type but we don't create any function
-	lua_pushnil(L);
-	return 1;
+	return 0;
 }
 
 

@@ -431,7 +431,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
 #endif
 
   // early lua init, doesn't depend on DT stuff yet
-  dt_lua_init();
+  dt_lua_init(init_gui);
   // thread-safe init:
   dt_exif_init();
   char datadir[1024];
