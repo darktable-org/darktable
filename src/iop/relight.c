@@ -217,17 +217,15 @@ static void
 picker_callback (GtkDarktableToggleButton *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button)))
-  {
-    dt_iop_request_focus (self);
-    self->request_color_pick = 1;
-    
-    /* set the area sample size*/
-    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
-    
-  }
-  else
-    self->request_color_pick = 0;
+  self->request_color_pick = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button));
+  if(darktable.gui->reset) return;
+
+  /* set the area sample size*/
+  if (self->request_color_pick)
+    dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+      
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  dt_iop_request_focus(self);
 }
 
 static void
@@ -305,11 +303,6 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
 
-  self->request_color_pick = 0;
-  self->color_picker_box[0] = self->color_picker_box[1] = .25f;
-  self->color_picker_box[2] = self->color_picker_box[3] = .75f;
-  self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
-
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)module->params;
   dt_bauhaus_slider_set(g->scale1, p->ev);
@@ -341,28 +334,28 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
-{
-  self->request_color_pick=0;
-  return 1;
-}
 
 static gboolean
 expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
   // capture gui color picked event.
   if(darktable.gui->reset) return FALSE;
-  if(self->picked_color_max[0] < self->picked_color_min[0]) return FALSE;
-  if(!self->request_color_pick) return FALSE;
-  const float *Lab = self->picked_color;
 
-  dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
-  p->center = Lab[0];
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  darktable.gui->reset = 1;
+  float mean, min, max;
+
+  if(self->request_color_pick)
+  {
+    mean = fmin(fmax(self->picked_color[0] / 100.0f, 0.0f), 1.0f);
+    min = fmin(fmax(self->picked_color_min[0] / 100.0f, 0.0f), 1.0f);
+    max = fmin(fmax(self->picked_color_max[0] / 100.0f, 0.0f), 1.0f);
+  }
+  else
+  {
+    mean = min = max = -1.0f;
+  }
+
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
-  dtgtk_gradient_slider_set_value(DTGTK_GRADIENT_SLIDER(g->gslider1),p->center);
-  darktable.gui->reset = 0;
+  dtgtk_gradient_slider_set_picker_meanminmax(DTGTK_GRADIENT_SLIDER(g->gslider1), mean, min, max);
 
   return FALSE;
 }
