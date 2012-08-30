@@ -1039,7 +1039,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)module->params;
   dt_bauhaus_slider_set(g->scale1, p->shadows);
   dt_bauhaus_slider_set(g->scale2, p->highlights);
-  dt_bauhaus_slider_set(g->scale3, p->radius);
+  dt_bauhaus_slider_set(g->scale3, fabsf(p->radius));
+  dt_bauhaus_combobox_set(g->bilat, p->radius < 0 ? 1 : 0);
   dt_bauhaus_slider_set(g->scale4, p->compress);
   dt_bauhaus_slider_set(g->scale5, p->shadows_ccorrect);
   dt_bauhaus_slider_set(g->scale6, p->highlights_ccorrect);
