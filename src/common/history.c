@@ -220,19 +220,19 @@ dt_history_copy_and_paste_on_selection (int32_t imgid, gboolean merge)
 /********************************************
   LUA STUFF
   *******************************************/
-#define LUA_HISTORY "dt_lua_history"
+static const char* history_typename = "dt_lua_history";
 typedef struct {
 	int imgid;
 } history_type;
 
 int dt_history_lua_check(lua_State * L,int index){
-	return ((history_type*)luaL_checkudata(L,index,LUA_HISTORY))->imgid;
+	return ((history_type*)luaL_checkudata(L,index,history_typename))->imgid;
 }
 
 void dt_history_lua_push(lua_State * L,int imgid) {
 	// ckeck if history already is in the env
 	// get the metatable and put it on top (side effect of newtable)
-	luaL_newmetatable(L,LUA_HISTORY);
+	luaL_newmetatable(L,history_typename);
 	lua_getfield(L,-1,"allocated");
 	lua_pushinteger(L,imgid);
 	lua_gettable(L,-2);
@@ -251,7 +251,7 @@ void dt_history_lua_push(lua_State * L,int imgid) {
 		lua_pop(L,1); // remove nil at top
 		lua_pushinteger(L,imgid);
 		history_type * my_history = (history_type*)lua_newuserdata(L,sizeof(history_type));
-		luaL_setmetatable(L,LUA_HISTORY);
+		luaL_setmetatable(L,history_typename);
 		my_history->imgid =imgid;
 		// add the value to the metatable, so it can be reused
 		lua_settable(L,-3);
@@ -323,6 +323,7 @@ static const luaL_Reg dt_lua_history_meta[] = {
 	{0,0}
 };
 static int history_init(lua_State * L) {
+	luaL_newmetatable(L,history_typename);
 	luaL_setfuncs(L,dt_lua_history_meta,0);
 	dt_lua_init_singleton(L);
 	return 0;
@@ -330,7 +331,6 @@ static int history_init(lua_State * L) {
 
 
 dt_lua_type dt_history_lua_type ={
-	"history",
 	history_init,
 };
 

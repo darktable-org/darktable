@@ -196,22 +196,23 @@ const char* dt_colorlabels_to_string(int label)
 /********************************************
   LUA STUFF
   *******************************************/
+static const char* colorlabel_typename="dt_lua_colorlabel";
 typedef struct {
 	int imgid;
 } colorlabel_type;
 
 void dt_colorlabels_lua_push(lua_State * L,int imgid) {
-	if(dt_lua_singleton_find(L,imgid,&dt_colorlabels_lua_type)) {
+	if(dt_lua_singleton_find(L,imgid,colorlabel_typename)) {
 		return;
 	}
 	colorlabel_type * my_colorlabel = (colorlabel_type*)lua_newuserdata(L,sizeof(colorlabel_type));
 	my_colorlabel->imgid =imgid;
-	dt_lua_singleton_register(L,imgid,&dt_colorlabels_lua_type);
+	dt_lua_singleton_register(L,imgid,colorlabel_typename);
 }
 
 
 static int colorlabel_index(lua_State *L){
-	int imgid=((colorlabel_type*)dt_lua_check(L,-2,&dt_colorlabels_lua_type))->imgid;
+	int imgid=((colorlabel_type*)luaL_checkudata(L,-2,colorlabel_typename))->imgid;
 	const int value =luaL_checkoption(L,-1,NULL,dt_colorlabels_name);
 	if(value < 0 || value >= DT_COLORLABELS_LAST) {
 			return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
@@ -222,7 +223,7 @@ static int colorlabel_index(lua_State *L){
 }
 
 static int colorlabel_newindex(lua_State *L){
-	int imgid=((colorlabel_type*)dt_lua_check(L,-3,&dt_colorlabels_lua_type))->imgid;
+	int imgid=((colorlabel_type*)luaL_checkudata(L,-3,colorlabel_typename))->imgid;
 	const int value =luaL_checkoption(L,-2,NULL,dt_colorlabels_name);
 	if(value < 0 || value >= DT_COLORLABELS_LAST) {
 			return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
@@ -243,6 +244,7 @@ static const luaL_Reg dt_lua_colorlabel_meta[] = {
 	{0,0}
 };
 static int colorlabel_init(lua_State * L) {
+	luaL_newmetatable(L,colorlabel_typename);
 	luaL_setfuncs(L,dt_lua_colorlabel_meta,0);
 	dt_lua_init_name_list_pair(L, dt_colorlabels_name);
 	dt_lua_init_singleton(L);
@@ -251,7 +253,6 @@ static int colorlabel_init(lua_State * L) {
 
 
 dt_lua_type dt_colorlabels_lua_type ={
-	"colorlabel",
 	colorlabel_init
 };
 

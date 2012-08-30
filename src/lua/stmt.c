@@ -48,13 +48,14 @@ sqlite3_stmt* dt_lua_stmt_check(lua_State * L,int index){
 	return my_stmt->stmt;
 }
 
+static const char * stmt_typename ="dt_lua_stmt";
 static int init_stmt(lua_State * L) {
+	luaL_newmetatable(L,stmt_typename);
 	luaL_setfuncs(L,stmt_meta,0);
 	return 0;
 }
 
 dt_lua_type dt_lua_stmt = {
-	"stmt",
 	init_stmt,
 };
 

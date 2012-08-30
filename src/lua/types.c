@@ -36,38 +36,11 @@ static dt_lua_type* types[] = {
 	&dt_lua_images,
 	NULL
 };
-int dt_lua_push_type_table(lua_State*L){
-	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_type");
-	if(lua_isnil(L,-1)) {
-		lua_pop(L,1);
-		lua_newtable(L);
-		lua_pushvalue(L,-1);
-		lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_type");
-	}
-	return 1;
-}
-
-
-void dt_lua_register_type(lua_State*L,dt_lua_type* type){
-	char tmp[1024];
-	snprintf(tmp,1024,"dt_lua_%s",type->name);
-	lua_pushcfunction(L,type->load);
-	luaL_newmetatable(L,tmp);
-	if(lua_pcall(L, 1, 0, 0)) {
-		dt_print(DT_DEBUG_LUA,"LUA ERROR while loading type %s : %s\n",type->name,lua_tostring(L,-1));
-		lua_pop(L,1);
-	} else {
-		dt_lua_push_type_table(L);
-		lua_pushlightuserdata(L,type);
-		lua_setfield(L,-2,type->name);
-		lua_pop(L,1);
-	}
-}
 
 void dt_lua_init_types(lua_State*L) {
 	dt_lua_type** cur_type = types;
 	while(*cur_type) {
-		dt_lua_register_type(L,*cur_type);
+		dt_lua_protect_call(L,(*cur_type)->load);
 		cur_type++;
 	}
 };
@@ -124,12 +97,9 @@ void dt_lua_init_singleton(lua_State* L){
 
 
 
-int dt_lua_singleton_find(lua_State* L,int id,const dt_lua_type*type) {
-	char tmp[1024];
-	snprintf(tmp,1024,"dt_lua_%s",type->name);
-	// ckeck if colorlabel already is in the env
+int dt_lua_singleton_find(lua_State* L,int id,const char*type_name) {
 	// get the metatable and put it on top (side effect of newtable)
-	luaL_newmetatable(L,tmp);
+	luaL_newmetatable(L,type_name);
 	lua_getfield(L,-1,"allocated");
 	lua_pushinteger(L,id);
 	lua_gettable(L,-2);
@@ -147,12 +117,9 @@ int dt_lua_singleton_find(lua_State* L,int id,const dt_lua_type*type) {
 	}
 }
 
-void dt_lua_singleton_register(lua_State* L,int id,const dt_lua_type*type ){
-	char tmp[1024];
-	snprintf(tmp,1024,"dt_lua_%s",type->name);
-	// ckeck if colorlabel already is in the env
+void dt_lua_singleton_register(lua_State* L,int id,const char *type_name ){
 	// get the metatable and put it on top (side effect of newtable)
-	luaL_newmetatable(L,tmp);
+	luaL_newmetatable(L,type_name);
 	lua_getfield(L,-1,"allocated");
 	lua_pushinteger(L,id);
 	lua_gettable(L,-2);
@@ -162,18 +129,16 @@ void dt_lua_singleton_register(lua_State* L,int id,const dt_lua_type*type ){
 	// -3 : the metatable
 	// -4 : the object to register
 	if(!lua_isnil(L,-1)) {
-		luaL_error(L,"double registration for type %s with id %d",tmp,id);
+		luaL_error(L,"double registration for type %s with id %d",type_name,id);
 	}
 	lua_pushinteger(L,id);
 	lua_pushvalue(L,-5);
-	luaL_setmetatable(L,tmp);
+	luaL_setmetatable(L,type_name);
 	lua_settable(L,-4);
 	lua_pop(L,3);
 }
-void dt_lua_singleton_foreach(lua_State*L,const dt_lua_type* type,lua_CFunction function){
-	char tmp[1024];
-	snprintf(tmp,1024,"dt_lua_%s",type->name);
-	luaL_newmetatable(L,tmp);
+void dt_lua_singleton_foreach(lua_State*L,const char* type_name,lua_CFunction function){
+	luaL_newmetatable(L,type_name);
 	lua_getfield(L,-1,"allocated");
 	lua_pushnil(L);
 	while (lua_next(L, -2) != 0) {
@@ -186,10 +151,8 @@ void dt_lua_singleton_foreach(lua_State*L,const dt_lua_type* type,lua_CFunction 
 	}
 }
 
-void *dt_lua_check(lua_State* L,int index,const dt_lua_type*type) {
-	char tmp[1024];
-	snprintf(tmp,1024,"dt_lua_%s",type->name);
-	return luaL_checkudata(L,index,tmp);
+void *dt_lua_check(lua_State* L,int index,const char* type_name) {
+	return luaL_checkudata(L,index,type_name);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

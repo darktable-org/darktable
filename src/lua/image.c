@@ -30,13 +30,14 @@
 /***********************************************************************
   handling of dt_image_t
  **********************************************************************/
+static const char * image_typename = "dt_lua_image";
 typedef struct {
 	int imgid;
 } lua_image;
 
 
 static const dt_image_t*dt_lua_checkreadimage(lua_State*L,int index) {
-	lua_image* tmp_image=dt_lua_check(L,index,&dt_lua_image);
+	lua_image* tmp_image=luaL_checkudata(L,index,image_typename);
 	return dt_image_cache_read_get(darktable.image_cache,tmp_image->imgid);
 }
 
@@ -56,7 +57,7 @@ static void dt_lua_releasewriteimage(lua_State*L,dt_image_t* image) {
 
 
 void dt_lua_image_push(lua_State * L,int imgid) {
-	if(dt_lua_singleton_find(L,imgid,&dt_lua_image)) {
+	if(dt_lua_singleton_find(L,imgid,image_typename)) {
 		return;
 	}
 	// check that id is valid
@@ -71,12 +72,12 @@ void dt_lua_image_push(lua_State * L,int imgid) {
 	sqlite3_finalize(stmt);
 	lua_image * my_image = (lua_image*)lua_newuserdata(L,sizeof(lua_image));
 	my_image->imgid=imgid;
-	dt_lua_singleton_register(L,imgid,&dt_lua_image);
+	dt_lua_singleton_register(L,imgid,image_typename);
 }
 
 
 static int image_clone(lua_State *L) {
-	lua_image* tmp_image=dt_lua_check(L,-1,&dt_lua_image);
+	lua_image* tmp_image=luaL_checkudata(L,-1,image_typename);
 	const dt_image_t *my_image= dt_image_cache_read_get(darktable.image_cache,tmp_image->imgid);
 	dt_lua_image_push(L,dt_image_duplicate(my_image->id));
 	return 1;
@@ -491,6 +492,7 @@ static const luaL_Reg image_meta[] = {
 	{0,0}
 };
 static int image_init(lua_State * L) {
+	luaL_newmetatable(L,image_typename);
 	luaL_setfuncs(L,image_meta,0);
 	dt_lua_init_name_list_pair(L, image_fields_name);
 	dt_lua_init_singleton(L);
@@ -500,7 +502,6 @@ static int image_init(lua_State * L) {
 
 
 dt_lua_type dt_lua_image = {
-	"image",
 	image_init
 };
 
@@ -559,7 +560,9 @@ static const luaL_Reg images_meta[] = {
 	{"__len", images_len },
 	{0,0}
 };
+
 static int images_init(lua_State * L) {
+	lua_newtable(L);
 	luaL_setfuncs(L,images_meta,0);
 	lua_newuserdata(L,1); // placeholder we can't use a table because we can't prevent assignment
 	lua_pushvalue(L,-2);
@@ -571,7 +574,6 @@ static int images_init(lua_State * L) {
 }
 
 dt_lua_type dt_lua_images = {
-	"images",
 	images_init,
 };
 

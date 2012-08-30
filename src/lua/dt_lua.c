@@ -41,6 +41,10 @@ int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
 	lua_gc(darktable.lua_state,LUA_GCCOLLECT,0);
 	return result;
 }
+void dt_lua_protect_call(lua_State *L,lua_CFunction func) {
+	lua_pushcfunction(L,func);
+	dt_lua_do_chunk(L,0,0,0);
+}
 // closed on GC of the dt lib, usually when the lua interpreter closes
 static int dt_luacleanup(lua_State*L) {
 	const int init_gui = (darktable.gui != NULL);

@@ -32,6 +32,8 @@ void dt_lua_dostring(const char* command);
   */
 int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults);
 
+/** executes a CFunction through dt_lua_do_chunk, no parameter, no result */
+void dt_lua_protect_call(lua_State *L,lua_CFunction func);
 // can be called within init functions
 int dt_lua_push_darktable_lib(lua_State* L);
 

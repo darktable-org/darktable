@@ -26,13 +26,10 @@
   define an OO type to create, will be used as a submodule of the darktable module
   */
 typedef struct {
-	const char *name; /// the recommanded name for the module (modname)
 	lua_CFunction load; /// called to load the type, the metatable to fill is at -1, return nil or an object to associate to name in the darktable global
 } dt_lua_type;
 
-void dt_lua_register_type(lua_State*L,dt_lua_type* type);
 void dt_lua_init_types(lua_State*L); // assumes -1 is the table of the darktable library
-int dt_lua_push_type_table(lua_State*L);
 /** helper to build types
   (0,0)
   sets a metadata with an __pair methamethod that will go throught the list of names
@@ -50,7 +47,7 @@ void dt_lua_init_singleton(lua_State* L);
   checks if data of type type_name already has an element with id, if yes push it at top.
   returns 1 if the the value was pushed
   */
-int dt_lua_singleton_find(lua_State* L,int id,const dt_lua_type*type);
+int dt_lua_singleton_find(lua_State* L,int id,const char * type_name);
 /** helper to build types
   (0,0)
   takes the object at top of the stack
@@ -59,7 +56,7 @@ int dt_lua_singleton_find(lua_State* L,int id,const dt_lua_type*type);
 
   -1 the object to register
   */
-void dt_lua_singleton_register(lua_State* L,int id,const dt_lua_type*type);
+void dt_lua_singleton_register(lua_State* L,int id,const char * type_name);
 
 /**
   (0,0)
@@ -67,12 +64,7 @@ void dt_lua_singleton_register(lua_State* L,int id,const dt_lua_type*type);
   the call has one parameter
   -1 : the object of the type
   */
-void dt_lua_singleton_foreach(lua_State*L,const dt_lua_type* type,lua_CFunction function);
-/** helper to build types
-  (0,0)
-  returns the object of type "type" at the index indicated
-  */
-void *dt_lua_check(lua_State* L,int index,const dt_lua_type*type);
+void dt_lua_singleton_foreach(lua_State*L,const char * type_name,lua_CFunction function);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
