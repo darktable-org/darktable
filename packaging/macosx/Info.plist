@@ -21,7 +21,7 @@
 	<key>CFBundleSignature</key>
 	<string>drkt</string>
 	<key>CFBundleVersion</key>
-	<string>1.1.0.1</string>
+	<string>1.1.0.3</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>

@@ -111,7 +111,7 @@ if test -n $LANG; then
 	export LC_MESSAGES=$LANG
 #Next try if the Applelocale is longer than 2 chars and the language
 #bit matches $LANG
-    elif test $LANG == ${APPLELOCALE:0:2} -a $APPLELOCALE > ${APPLELOCALE:0:2}; then
+    elif test $LANG == ${APPLELOCALE:0:2} -a $APPLELOCALE \> ${APPLELOCALE:0:2}; then
 	export LC_MESSAGES=${APPLELOCALE:0:5}
 #Fail. Get a list of the locales in $PREFIX/share/locale that match
 #our two letter language code and pick the first one, special casing

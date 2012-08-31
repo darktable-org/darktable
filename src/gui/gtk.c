@@ -878,6 +878,10 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
 {
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   darktable.gui->pixmap = gdk_pixmap_new(widget->window, widget->allocation.width, widget->allocation.height, -1);
+  //need to pre-configure views to avoid crash caused by expose-event coming before configure-event
+  darktable.control->tabborder = 8;
+  int tb = darktable.control->tabborder;
+  dt_view_manager_configure(darktable.view_manager, widget->allocation.width - 2*tb, widget->allocation.height - 2*tb);
   /* start the event loop */
   gtk_main ();
   gdk_threads_leave();
