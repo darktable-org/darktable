@@ -633,9 +633,9 @@ dt_view_image_expose(
   // impact from around 400ms -> 55ms per redraw.
 #define DRAW_THUMB 1
 #define DRAW_COLORLABELS 1
-#define DRAW_GROUPING 0
+#define DRAW_GROUPING 1
 #define DRAW_SELECTED 1
-#define DRAW_HISTORY 0
+#define DRAW_HISTORY 1
 
 #if DRAW_THUMB == 1
   // this function is not thread-safe (gui-thread only), so we
