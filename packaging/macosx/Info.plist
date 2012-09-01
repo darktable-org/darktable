@@ -24,5 +24,17 @@
 	<string>1.1.0.3</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.image</string>
+				<string>public.directory</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

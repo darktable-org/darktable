@@ -559,6 +559,11 @@ static gboolean osx_quit_callback(GtkOSXApplication* OSXapp, gpointer user_data)
   dt_control_quit();
   return TRUE;
 }
+
+static gboolean osx_openfile_callback(GtkOSXApplication* OSXapp, gchar* path, gpointer user_data)
+{
+  return dt_load_from_string(path, FALSE) == 0 ? FALSE : TRUE;
+}
 #endif
 
 static gboolean
@@ -688,6 +693,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_osxapplication_set_menu_bar(OSXApp, GTK_MENU_SHELL(gtk_menu_bar_new())); //needed for default entries to show up
   gtk_osxapplication_ready(OSXApp);
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationBlockTermination", G_CALLBACK(osx_quit_callback), NULL);
+  g_signal_connect(G_OBJECT(OSXApp), "NSApplicationOpenFile", G_CALLBACK(osx_openfile_callback), NULL);
 #endif
 
   GtkWidget *widget;
