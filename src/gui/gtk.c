@@ -46,6 +46,9 @@
 #include <math.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#ifdef MAC_INTEGRATION
+#   include <gtkosxapplication.h>
+#endif
 #include <pthread.h>
 
 
@@ -503,6 +506,7 @@ void quit()
   dt_control_quit();
 }
 
+
 static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
                                                 GObject *acceleratable,
                                                 guint keyval,
@@ -548,6 +552,14 @@ static gboolean quit_callback(GtkAccelGroup *accel_group,
   dt_control_quit();
   return TRUE; // for the sake of completeness ...
 }
+
+#ifdef MAC_INTEGRATION
+static gboolean osx_quit_callback(GtkOSXApplication* OSXapp, gpointer user_data)
+{
+  dt_control_quit();
+  return TRUE;
+}
+#endif
 
 static gboolean
 configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
@@ -670,6 +682,13 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gdk_threads_enter();
 
   gtk_init (&argc, &argv);
+
+#ifdef MAC_INTEGRATION
+  GtkOSXApplication *OSXApp = g_object_new(GTK_TYPE_OSX_APPLICATION, NULL);
+  gtk_osxapplication_set_menu_bar(OSXApp, GTK_MENU_SHELL(gtk_menu_bar_new())); //needed for default entries to show up
+  gtk_osxapplication_ready(OSXApp);
+  g_signal_connect(G_OBJECT(OSXApp), "NSApplicationBlockTermination", G_CALLBACK(osx_quit_callback), NULL);
+#endif
 
   GtkWidget *widget;
   gui->ui = dt_ui_initialize(argc,argv);
