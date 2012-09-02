@@ -929,7 +929,8 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
   
   char query[1024];
   int property = gtk_combo_box_get_active(dr->combo);
-  const gchar *text = gtk_entry_get_text(GTK_ENTRY(dr->text));
+  const gchar *text = NULL;
+  text = gtk_entry_get_text(GTK_ENTRY(dr->text));
   gchar *escaped_text = dt_util_str_replace(text, "'", "''");
   char confname[200];
   snprintf(confname, 200, "plugins/lighttable/collect/string%1ld", dr->num);
@@ -1049,6 +1050,10 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
       snprintf(query, 1024, "select distinct filename, 1 from images where filename like '%%%s%%' order by filename", escaped_text);
       break;
 
+    case 15: // folders
+      goto folders;
+      break;
+
     default: // case 3: // day
       snprintf(query, 1024, "SELECT DISTINCT datetime_taken, 1 FROM images WHERE datetime_taken LIKE '%%%s%%' ORDER BY datetime_taken DESC", escaped_text);
       break;
@@ -1077,7 +1082,7 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
 
   goto entry_key_press_exit;
 
-filmroll:
+folders:
   /* TODO: Only create a new tree if something has changed
    * This will allow to cache the node, and not collapse the tree */
   treemodel = d->treemodel;
