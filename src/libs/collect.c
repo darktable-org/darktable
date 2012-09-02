@@ -31,6 +31,8 @@
 #include "libs/collect.h"
 #include "views/view.h"
 
+//#include <regex.h>
+
 DT_MODULE(1)
 
 #define MAX_RULES 10
@@ -741,8 +743,40 @@ _folder_tree ()
   return store;
 }
 
+#if 0
+static gboolean
+match_string (GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
+{
+  GtkWidget *entry = (GtkWidget *)data;
+  gchar *str;
+  const gchar *string;
+  gboolean visible = FALSE;
+
+  regex_t re;
+  gchar *pattern;
+  int status;
+
+  gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_PATH, &str, -1);
+
+  string = gtk_entry_get_text(GTK_ENTRY(entry));
+  pattern = dt_util_str_replace (string, "%", ".*");
+
+  regcomp(&re, pattern, REG_NOSUB);
+
+  status = regexec (&re, str, (size_t) 0, NULL, 0);
+  regfree (&re);
+
+  if (!status)
+    visible = TRUE;
+
+  g_free(str);
+
+  return visible;
+}
+#endif
+
 static GtkTreeModel *
-_create_filtered_model (GtkTreeModel *model, GtkTreeIter iter)
+_create_filtered_model (GtkTreeModel *model, GtkTreeIter iter, GtkWidget *entry)
 {
   GtkTreeModel *filter = NULL;
   GtkTreePath *path;
@@ -769,6 +803,8 @@ _create_filtered_model (GtkTreeModel *model, GtkTreeIter iter)
   /* Create filter and set virtual root */
   filter = gtk_tree_model_filter_new (model, path);
   gtk_tree_path_free (path);
+  
+//  gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER(filter), match_string, entry, NULL); 
 
   return filter;
 }
@@ -904,7 +940,23 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
   switch(property)
   {
     case 0: // film roll
+/*      if (!strlen(text))
       goto filmroll;
+      else
+      {
+        if (d->trees != NULL)
+        {
+          for (int i=0; i<d->trees->len; i++)
+          {
+            tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
+            GtkTreeModelFilter *modelfilter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model (tree));
+            gtk_tree_model_filter_refilter (modelfilter);
+          }
+        }
+        goto entry_key_press_exit;
+      }
+*/
+      snprintf(query, 1024, "select distinct folder, id from film_rolls where folder like '%%%s%%'  order by folder desc", escaped_text);
       break;
     case 1: // camera
       snprintf(query, 1024, "select distinct maker || ' ' || model as model, 1 from images where maker || ' ' || model like '%%%s%%' order by model", escaped_text);
@@ -1086,7 +1138,7 @@ filmroll:
       g_ptr_array_add(d->labels, (gpointer) label);
       gtk_container_add(GTK_CONTAINER(d->box), GTK_WIDGET(label));
       
-      model2 = _create_filtered_model(GTK_TREE_MODEL(treemodel), iter);
+      model2 = _create_filtered_model(GTK_TREE_MODEL(treemodel), iter, dr->text);
       tree = _create_treeview_display(GTK_TREE_MODEL(model2));
       g_ptr_array_add(d->trees, (gpointer) tree);
       gtk_container_add(GTK_CONTAINER(d->box), GTK_WIDGET(tree));
@@ -1094,6 +1146,9 @@ filmroll:
       gtk_tree_view_set_headers_visible(tree, FALSE);
 
       gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
+
+      gtk_tree_view_set_enable_search(tree, TRUE);
+      gtk_tree_view_set_search_column (tree, DT_LIB_COLLECT_COL_PATH);
       
       g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (row_activated), d);
       g_signal_connect(G_OBJECT (tree), "button-press-event", G_CALLBACK (view_onButtonPressed), NULL);
