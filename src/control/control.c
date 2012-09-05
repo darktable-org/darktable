@@ -355,7 +355,9 @@ void dt_control_create_database_schema()
     "raw_parameters integer, raw_denoise_threshold real, "
     "raw_auto_bright_threshold real, raw_black real, raw_maximum real, "
     "caption varchar, description varchar, license varchar, sha1sum char(40), "
-    "orientation integer ,histogram blob, lightmap blob)", NULL, NULL, NULL);
+    "orientation integer, histogram blob, lightmap blob)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+    "create index if not exists group_id_index on images (group_id)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
     "create table selected_images (imgid integer)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
@@ -521,22 +523,22 @@ void dt_control_init(dt_control_t *s)
 
       // insert new tables, if not there (statement will just fail if so):
       sqlite3_exec(dt_database_get(darktable.db),
-	  "create table color_labels (imgid integer, color integer)",
-	  NULL, NULL, NULL);
+          "create table color_labels (imgid integer, color integer)",
+          NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "drop table mipmaps", NULL, NULL, NULL);
+          "drop table mipmaps", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "drop table mipmap_timestamps", NULL, NULL, NULL);
+          "drop table mipmap_timestamps", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "create table styles (name varchar, description varchar)",
-	  NULL, NULL, NULL);
+          "create table styles (name varchar, description varchar)",
+          NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "create table style_items (styleid integer, num integer, "
-	  "module integer, operation varchar(256), op_params blob, "
-	  "enabled integer)", NULL, NULL, NULL);
+          "create table style_items (styleid integer, num integer, "
+          "module integer, operation varchar(256), op_params blob, "
+          "enabled integer)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "create table meta_data (id integer, key integer,value varchar)",
-	  NULL, NULL, NULL);
+          "create table meta_data (id integer, key integer,value varchar)",
+          NULL, NULL, NULL);
 
       // add columns where needed. will just fail otherwise:
       sqlite3_exec(dt_database_get(darktable.db),
@@ -563,36 +565,39 @@ void dt_control_init(dt_control_t *s)
       sqlite3_exec(dt_database_get(darktable.db),
       "alter table images add column lightmap blob",
       NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+      "create index if not exists group_id_index on images (group_id)",
+      NULL, NULL, NULL);
 
       // add column for blendops
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table history add column blendop_params blob",
-	  NULL, NULL, NULL);
+          "alter table history add column blendop_params blob",
+          NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table history add column blendop_version integer",
-	  NULL, NULL, NULL);
+          "alter table history add column blendop_version integer",
+          NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "update history set blendop_version = 1 where blendop_version is NULL",
-	  NULL, NULL, NULL);
+          "update history set blendop_version = 1 where blendop_version is NULL",
+          NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table style_items add column blendop_params blob",
-	  NULL, NULL, NULL);
+          "alter table style_items add column blendop_params blob",
+          NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table style_items add column blendop_version integer",
-	  NULL, NULL, NULL);
+          "alter table style_items add column blendop_version integer",
+          NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "update style_items set blendop_version = 1 where "
-	  "blendop_version is NULL",
-	  NULL, NULL, NULL);
+          "update style_items set blendop_version = 1 where "
+          "blendop_version is NULL",
+          NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table presets add column blendop_params blob",
-	  NULL, NULL, NULL);
+          "alter table presets add column blendop_params blob",
+          NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table presets add column blendop_version integer",
-	  NULL, NULL, NULL);
+          "alter table presets add column blendop_version integer",
+          NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "update presets set blendop_version = 1 where blendop_version is NULL",
-	  NULL, NULL, NULL);
+          "update presets set blendop_version = 1 where blendop_version is NULL",
+          NULL, NULL, NULL);
 
       dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
