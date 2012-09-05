@@ -173,7 +173,6 @@ on_match_func (GtkEntryCompletion *completion, const gchar *key,
 
   for (p = cur_pos; p >= 0; p--) {
     gchar *ss = gtk_editable_get_chars(e, p, cur_pos);
-    printf("ss=%s p=%d cur_pos=%d\n", ss, p, cur_pos);
     if (strncmp(ss, "$(", 2) == 0) {
       var_start = p+2;
       var_present = TRUE;
