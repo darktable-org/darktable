@@ -365,6 +365,8 @@ void dt_control_create_database_schema()
     "operation varchar(256), op_params blob, enabled integer, "
     "blendop_params blob, blendop_version integer)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+    "create index if not exists imgid_index on history (imgid)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
     "create table tags (id integer primary key, name varchar, icon blob, "
     "description varchar, flags integer)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
@@ -567,6 +569,9 @@ void dt_control_init(dt_control_t *s)
       NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
       "create index if not exists group_id_index on images (group_id)",
+      NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+      "create index if not exists imgid_index on history (imgid)",
       NULL, NULL, NULL);
 
       // add column for blendops
