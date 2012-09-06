@@ -1265,8 +1265,8 @@ void gui_init     (struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
 
   g->demosaic_method = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_combobox_add(g->demosaic_method, _("ppg"));
-  dt_bauhaus_combobox_add(g->demosaic_method, _("AMaZE"));
+  dt_bauhaus_combobox_add(g->demosaic_method, _("ppg (fast)"));
+  dt_bauhaus_combobox_add(g->demosaic_method, _("amaze (slow)"));
   dt_bauhaus_widget_set_label(g->demosaic_method, _("method"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method, TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->demosaic_method), "tooltip-text", _("demosaicing raw data method"), (char *)NULL);
