@@ -45,7 +45,8 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from selected_images where imgid = ?1", -1, &vm->statements.delete_from_selected, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into selected_images values (?1)", -1, &vm->statements.make_selected, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num from history where imgid = ?1", -1, &vm->statements.have_history, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select color from color_labels where imgid=?1", -1, &vm->statements.get_color, NULL); 
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select color from color_labels where imgid=?1", -1, &vm->statements.get_color, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where group_id = (select group_id from images where id=?1) and id != ?2", -1, &vm->statements.get_grouped, NULL);
 
   int res=0, midx=0;
   char *modules[] = {"lighttable","darkroom","capture",NULL};
@@ -587,6 +588,7 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwins
 static inline void
 dt_view_draw_altered(cairo_t *cr, const float x, const float y, const float r)
 {
+  cairo_new_sub_path(cr);
   cairo_arc(cr, x, y, r, 0, 2.0f*M_PI);
   const float dx = r*cosf(M_PI/8.0f), dy = r*sinf(M_PI/8.0f);
   cairo_move_to(cr, x-dx, y-dy);
@@ -625,6 +627,17 @@ dt_view_image_expose(
     int32_t px,
     int32_t py)
 {
+  const double start = dt_get_wtime();
+  // some performance tuning stuff, for your pleasure.
+  // on my machine with 7 image per row it seems grouping has the largest
+  // impact from around 400ms -> 55ms per redraw.
+#define DRAW_THUMB 1
+#define DRAW_COLORLABELS 1
+#define DRAW_GROUPING 1
+#define DRAW_SELECTED 1
+#define DRAW_HISTORY 1
+
+#if DRAW_THUMB == 1
   // this function is not thread-safe (gui-thread only), so we
   // can safely allocate this leaking bit of memory to decompress thumbnails:
   static int first_time = 1;
@@ -635,31 +648,50 @@ dt_view_image_expose(
     scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
     first_time = 0;
   }
+#endif
+
   cairo_save (cr);
   float bgcol = 0.4, fontcol = 0.425, bordercol = 0.1, outlinecol = 0.2;
-  int selected = 0, altered = 0, imgsel;
-  DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
-  // if(img->flags & DT_IMAGE_SELECTED) selected = 1;
+  int selected = 0, altered = 0, imgsel = -1, is_grouped = 0;
+  // this is a gui thread only thing. no mutex required:
+  imgsel = darktable.control->global_settings.lib_image_mouse_over_id;
 
+#if DRAW_SELECTED == 1
   /* clear and reset statements */
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
-  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.have_history);
   DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
-  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.have_history);
-
   /* bind imgid to prepared statments */
   DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.have_history, 1, imgid); 
-
   /* lets check if imgid is selected */
   if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) 
     selected = 1;
+#endif
+
+#if DRAW_HISTORY == 1
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.have_history);
+  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.have_history);
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.have_history, 1, imgid);
 
   /* lets check if imgid has history */
   if(sqlite3_step(darktable.view_manager->statements.have_history) == SQLITE_ROW) 
     altered = 1;
-  
+#endif
+
   const dt_image_t *img = dt_image_cache_read_testget(darktable.image_cache, imgid);
+
+#if DRAW_GROUPING == 1
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_grouped);
+  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_grouped);
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 2, imgid);
+
+  /* lets check if imgid is in a group */
+  if(sqlite3_step(darktable.view_manager->statements.get_grouped) == SQLITE_ROW)
+    is_grouped = 1;
+  else if(img && darktable.gui->expanded_group_id == img->group_id)
+    darktable.gui->expanded_group_id = -1;
+#endif
+
   if(selected == 1)
   {
     outlinecol = 0.4;
@@ -720,7 +752,6 @@ dt_view_image_expose(
     }
   }
 
-  float scale = 1.0;
   dt_mipmap_buffer_t buf;
   dt_mipmap_size_t mip = 
     dt_mipmap_cache_get_matching_size(
@@ -732,6 +763,8 @@ dt_view_image_expose(
       imgid,
       mip,
       0);
+#if DRAW_THUMB == 1
+  float scale = 1.0;
   // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
   // so get the real pointer back:
   uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
@@ -813,6 +846,7 @@ dt_view_image_expose(
     cairo_stroke(cr);
   }
   cairo_restore(cr);
+#endif
   if(buf.buf)
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 
@@ -894,6 +928,34 @@ dt_view_image_expose(
     cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
     cairo_set_line_width(cr, 1.5);
 
+
+    // image part of a group?
+    if(is_grouped && darktable.gui && darktable.gui->grouping)
+    {
+      // draw grouping icon and border if the current group is expanded
+      // align to the right, left of altered
+      float s = (r1+r2)*.75;
+      float _x, _y;
+      if(zoom != 1)
+      {
+        _x = width*0.9 - s*2.5;
+        _y = height*0.1 - s*.4;
+      }
+      else
+      {
+        _x = (.04+7*0.04-1.1*.04)*fscale;
+        _y = y - (.17*.04)*fscale;
+      }
+      cairo_save(cr);
+      if(img && (imgid != img->group_id))
+        cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
+      dtgtk_cairo_paint_grouping(cr, _x, _y, s, s, 23);
+      cairo_restore(cr);
+      // mouse is over the grouping icon
+      if(img && abs(px-_x-.5*s) <= .8*s && abs(py-_y-.5*s) <= .8*s)
+        *image_over = DT_VIEW_GROUP;
+    }
+
     // image altered?
     if(altered)
     {
@@ -917,6 +979,7 @@ dt_view_image_expose(
   // kill all paths, in case img was not loaded yet, or is blocked:
   cairo_new_path(cr);
 
+#if DRAW_COLORLABELS == 1
   // TODO: make mouse sensitive, just as stars!
   // TODO: cache in image struct!
   {
@@ -940,6 +1003,7 @@ dt_view_image_expose(
       cairo_restore(cr);
     }
   }
+#endif
 
   if(img && (zoom == 1))
   {
@@ -964,6 +1028,9 @@ dt_view_image_expose(
   if(img) dt_image_cache_read_release(darktable.image_cache, img);
   cairo_restore(cr);
   // if(zoom == 1) cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
+
+  const double end = dt_get_wtime();
+  dt_print(DT_DEBUG_PERF, "[lighttable] image expose took %0.04f sec\n", end-start);
 }
 
 

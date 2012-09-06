@@ -38,7 +38,7 @@
 typedef struct dt_conf_t
 {
   dt_pthread_mutex_t mutex;
-  char filename[1024];
+  char filename[DT_MAX_PATH_LEN];
   int  num;
   char varname[DT_CONF_MAX_VARS][DT_CONF_MAX_VAR_BUF];
   char varval [DT_CONF_MAX_VARS][DT_CONF_MAX_VAR_BUF];
@@ -58,9 +58,9 @@ static inline int dt_conf_get_var_pos(const char *name)
   memset(darktable.conf->varval[num], 0, DT_CONF_MAX_VAR_BUF);
 
   // and get the default value from default darktablerc:
-  char buf[1024], defaultrc[1024];
-  dt_loc_get_datadir(buf, 1024);
-  snprintf(defaultrc, 1024, "%s/darktablerc", buf);
+  char buf[DT_MAX_PATH_LEN], defaultrc[DT_MAX_PATH_LEN];
+  dt_loc_get_datadir(buf, DT_MAX_PATH_LEN);
+  snprintf(defaultrc, DT_MAX_PATH_LEN, "%s/darktablerc", buf);
   FILE *f = fopen(defaultrc, "rb");
   char line[1024];
   int read = 0;
@@ -194,7 +194,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename)
   dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
   memset(cf->varname,0, DT_CONF_MAX_VARS*DT_CONF_MAX_VAR_BUF);
   memset(cf->varval, 0, DT_CONF_MAX_VARS*DT_CONF_MAX_VAR_BUF);
-  snprintf(darktable.conf->filename, 1024, "%s", filename);
+  snprintf(darktable.conf->filename, DT_MAX_PATH_LEN, "%s", filename);
   darktable.conf->num = 0;
   FILE *f = fopen(filename, "rb");
   char line[1024];
@@ -202,9 +202,9 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename)
   int defaults = 0;
   if(!f)
   {
-    char buf[1024], defaultrc[1024];
-    dt_loc_get_datadir(buf, 1024);
-    snprintf(defaultrc, 1024, "%s/darktablerc", buf);
+    char buf[DT_MAX_PATH_LEN], defaultrc[DT_MAX_PATH_LEN];
+    dt_loc_get_datadir(buf, DT_MAX_PATH_LEN);
+    snprintf(defaultrc, DT_MAX_PATH_LEN, "%s/darktablerc", buf);
     f = fopen(defaultrc, "rb");
     defaults = 1;
   }

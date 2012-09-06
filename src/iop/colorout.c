@@ -39,6 +39,8 @@
 DT_MODULE(3)
 
 static gchar *_get_profile_from_pos(GList *profiles, int pos);
+static gchar *_get_display_profile_from_pos(GList *profiles, int pos);
+
 
 const char
 *name()
@@ -68,8 +70,13 @@ static gboolean key_softproof_callback(GtkAccelGroup *accel_group,
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
 
-  /* toggle softproofing on/off */
-  g->softproof_enabled = p->softproof_enabled = !p->softproof_enabled;
+  if(p->softproof_enabled == DT_SOFTPROOF_ENABLED)
+    p->softproof_enabled = DT_SOFTPROOF_DISABLED;
+  else
+    p->softproof_enabled = DT_SOFTPROOF_ENABLED;
+
+  g->softproof_enabled = p->softproof_enabled;
+
   if(p->softproof_enabled)
   {
     int pos = dt_bauhaus_combobox_get(g->cbox5);
@@ -82,6 +89,39 @@ static gboolean key_softproof_callback(GtkAccelGroup *accel_group,
   dt_control_queue_redraw_center();
   return TRUE;
 }
+
+
+static gboolean key_gamutcheck_callback(GtkAccelGroup *accel_group,
+                                   GObject *acceleratable,
+                                   guint keyval, GdkModifierType modifier,
+                                   gpointer data)
+{
+  dt_iop_module_t* self = (dt_iop_module_t*)data;
+  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
+  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+
+
+  if(p->softproof_enabled == DT_SOFTPROOF_GAMUTCHECK)
+    p->softproof_enabled = DT_SOFTPROOF_DISABLED;
+  else
+    p->softproof_enabled = DT_SOFTPROOF_GAMUTCHECK;
+
+  g->softproof_enabled = p->softproof_enabled;
+
+  if(p->softproof_enabled)
+  {
+    int pos = dt_bauhaus_combobox_get(g->cbox5);
+    gchar *filename = _get_profile_from_pos(g->profiles, pos);
+    if (filename)
+      g_strlcpy(p->softproofprofile, filename, sizeof(p->softproofprofile));
+  }
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_control_queue_redraw_center();
+  return TRUE;
+}
+
+
 
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
@@ -99,7 +139,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     dt_iop_colorout_params_t *o = (dt_iop_colorout_params_t *)old_params;
     dt_iop_colorout_params_t *n = (dt_iop_colorout_params_t *)new_params;
     memcpy(n,o,sizeof(dt_iop_colorout_params_t));
-    n->softproof_enabled = 0;
+    n->softproof_enabled = DT_SOFTPROOF_DISABLED;
     n->softproofintent = 0;
     g_strlcpy(n->softproofprofile,"sRGB",sizeof(n->softproofprofile));
     return 0;
@@ -158,6 +198,19 @@ static gchar *_get_profile_from_pos(GList *profiles, int pos)
   return NULL;
 }
 
+static gchar *_get_display_profile_from_pos(GList *profiles, int pos)
+{
+  while(profiles)
+  {
+    dt_iop_color_profile_t *pp = (dt_iop_color_profile_t *)profiles->data;
+    if(pp->display_pos == pos)
+      return pp->filename;
+    profiles = g_list_next(profiles);
+  }
+  return NULL;
+}
+
+
 static void
 profile_changed (GtkWidget *widget, gpointer user_data)
 {
@@ -205,7 +258,7 @@ display_profile_changed (GtkWidget *widget, gpointer user_data)
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
   int pos = dt_bauhaus_combobox_get(widget);
-  gchar *filename = _get_profile_from_pos(g->profiles, pos);
+  gchar *filename = _get_display_profile_from_pos(g->profiles, pos);
   if (filename)
   {
     g_strlcpy(p->displayprofile, filename, sizeof(p->displayprofile));
@@ -320,6 +373,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
 {
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
   const int ch = piece->colors;
+  const int gamutcheck = (d->softproof_enabled == DT_SOFTPROOF_GAMUTCHECK);
 
   if(!isnan(d->cmatrix[0]))
   {
@@ -395,9 +449,18 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
       for (int l=0; l<roi_out->width; l++)
       {
         int oi=ch*l, ri=3*l;
-        out[m+oi+0] = rgb[ri+0];
-        out[m+oi+1] = rgb[ri+1];
-        out[m+oi+2] = rgb[ri+2];
+        if(gamutcheck && (rgb[ri+0] < 0.0f || rgb[ri+1] < 0.0f || rgb[ri+2] < 0.0f))
+        {
+          out[m+oi+0] = 0.0f;
+          out[m+oi+1] = 1.0f;
+          out[m+oi+2] = 1.0f;
+        }
+        else
+        {
+          out[m+oi+0] = rgb[ri+0];
+          out[m+oi+1] = rgb[ri+1];
+          out[m+oi+2] = rgb[ri+2];
+        }
       }
     }
   }
@@ -433,8 +496,8 @@ static cmsHPROFILE _create_profile(gchar *iccprofile)
   else
   {
     // else: load file name
-    char filename[1024];
-    dt_colorspaces_find_profile(filename, 1024, iccprofile, "out");
+    char filename[DT_MAX_PATH_LEN];
+    dt_colorspaces_find_profile(filename, DT_MAX_PATH_LEN, iccprofile, "out");
     profile = cmsOpenProfileFromFile(filename, "r");
   }
 
@@ -500,22 +563,26 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     outintent = p->displayintent;
   }
 
-  /* creating output profile */
-  d->output = _create_profile(outprofile);
-
-  /* creating softproof profile if softproof is enabled */
-  if (d->softproof_enabled)
-    d->softproof =  _create_profile(p->softproofprofile);
-
   /*
    * Setup transform flags
    */
   uint32_t transformFlags = 0;
 
-  /* TODO: the use of bpc should be userconfigurable either from module or preference pane */
-  /* softproof flag and black point compensation */
-  transformFlags |= (d->softproof_enabled ? cmsFLAGS_SOFTPROOFING|cmsFLAGS_NOCACHE|cmsFLAGS_BLACKPOINTCOMPENSATION : 0);
-      
+  /* creating output profile */
+  d->output = _create_profile(outprofile);
+
+  /* creating softproof profile if softproof is enabled */
+  if (d->softproof_enabled)
+  {
+    d->softproof =  _create_profile(p->softproofprofile);
+
+    /* TODO: the use of bpc should be userconfigurable either from module or preference pane */
+    /* softproof flag and black point compensation */
+    transformFlags |= cmsFLAGS_SOFTPROOFING|cmsFLAGS_NOCACHE|cmsFLAGS_BLACKPOINTCOMPENSATION;
+
+    if(d->softproof_enabled == DT_SOFTPROOF_GAMUTCHECK)
+      transformFlags |= cmsFLAGS_GAMUTCHECK;
+  }
 
 
   /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
@@ -577,7 +644,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     else d->unbounded_coeffs[k][0] = -1.0f;
   }
 
-  //fprintf(stderr, " Output profile %s, softproof %s%s%s\n", outprofile, d->softproofing?"enabled ":"disabled",d->softproofing?"using profile ":"",d->softproofing?g->softproofprofile:"");
+  //fprintf(stderr, " Output profile %s, softproof %s%s%s\n", outprofile, d->softproof_enabled?"enabled ":"disabled",d->softproof_enabled?"using profile ":"",d->softproof_enabled?p->softproofprofile:"");
 
   g_free(overprofile);
 }
@@ -627,7 +694,7 @@ void gui_update(struct dt_iop_module_t *self)
     }
     if(!strcmp(pp->filename, p->displayprofile))
     {
-      dt_bauhaus_combobox_set(g->cbox3, pp->pos);
+      dt_bauhaus_combobox_set(g->cbox3, pp->display_pos);
       displayfound = 1;
     }
     if(!strcmp(pp->filename, p->softproofprofile))
@@ -676,14 +743,14 @@ void gui_post_expose (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, 
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
   if(g->softproof_enabled)
   {
-    gchar *label=_("soft proof");
+    gchar *label= g->softproof_enabled == DT_SOFTPROOF_GAMUTCHECK ? _("gamut check") : _("soft proof");
     cairo_set_source_rgba(cr,0.5,0.5,0.5,0.5);
     cairo_text_extents_t te;
     cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size (cr, 20);
     cairo_text_extents (cr, label, &te);
     cairo_move_to (cr, te.height*2, height-(te.height*2));
-    cairo_text_path (cr, _("soft proof"));
+    cairo_text_path (cr, label);
     cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
     cairo_fill_preserve(cr);
     cairo_set_line_width(cr, 0.7);
@@ -703,34 +770,42 @@ void gui_init(struct dt_iop_module_t *self)
   g_strlcpy(prof->filename, "sRGB", sizeof(prof->filename));
   g_strlcpy(prof->name, "sRGB", sizeof(prof->name));
   int pos;
+  int display_pos;
   prof->pos = 0;
+  prof->display_pos = 0;
   g->profiles = g_list_append(g->profiles, prof);
 
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "adobergb", sizeof(prof->filename));
   g_strlcpy(prof->name, "adobergb", sizeof(prof->name));
   prof->pos = 1;
+  prof->display_pos = 1;
   g->profiles = g_list_append(g->profiles, prof);
 
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "X profile", sizeof(prof->filename));
   g_strlcpy(prof->name, "X profile", sizeof(prof->name));
-  prof->pos = 2;
+  prof->pos = -1;
+  prof->display_pos = 2;
   g->profiles = g_list_append(g->profiles, prof);
 
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
   g_strlcpy(prof->name, "linear_rgb", sizeof(prof->name));
-  pos = prof->pos = 3;
+  pos = prof->pos = 2;
+  display_pos = prof->display_pos = 3;
   g->profiles = g_list_append(g->profiles, prof);
 
   // read {conf,data}dir/color/out/*.icc
-  char datadir[1024], confdir[1024], dirname[1024], filename[1024];
-  dt_loc_get_user_config_dir(confdir, 1024);
-  dt_loc_get_datadir(datadir, 1024);
-  snprintf(dirname, 1024, "%s/color/out", confdir);
+  char datadir[DT_MAX_PATH_LEN];
+  char confdir[DT_MAX_PATH_LEN];
+  char dirname[DT_MAX_PATH_LEN];
+  char filename[DT_MAX_PATH_LEN];
+  dt_loc_get_user_config_dir(confdir, DT_MAX_PATH_LEN);
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/out", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
-    snprintf(dirname, 1024, "%s/color/out", datadir);
+    snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/out", datadir);
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   GDir *dir = g_dir_open(dirname, 0, NULL);
@@ -738,7 +813,7 @@ void gui_init(struct dt_iop_module_t *self)
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      snprintf(filename, 1024, "%s/%s", dirname, d_name);
+      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", dirname, d_name);
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
@@ -751,6 +826,7 @@ void gui_init(struct dt_iop_module_t *self)
         g_strlcpy(prof->name, name, sizeof(prof->name));
         g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
         prof->pos = ++pos;
+        prof->display_pos = ++display_pos;
         cmsCloseProfile(tmpprof);
         g->profiles = g_list_append(g->profiles, prof);
       }
@@ -862,13 +938,22 @@ void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_iop(self, FALSE, NC_("accel", "toggle softproofing"),
                         GDK_s, 0);
+
+  dt_accel_register_iop(self, FALSE, NC_("accel", "toggle gamutcheck"),
+                        GDK_g, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
 {
-  GClosure *closure = g_cclosure_new(G_CALLBACK(key_softproof_callback),
+  GClosure *closure;
+
+  closure = g_cclosure_new(G_CALLBACK(key_softproof_callback),
                                      (gpointer)self, NULL);
   dt_accel_connect_iop(self, "toggle softproofing", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(key_gamutcheck_callback),
+                                     (gpointer)self, NULL);
+  dt_accel_connect_iop(self, "toggle gamutcheck", closure);
 
 }
 

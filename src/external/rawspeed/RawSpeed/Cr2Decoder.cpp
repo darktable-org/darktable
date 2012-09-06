@@ -120,10 +120,10 @@ RawImage Cr2Decoder::decodeRawInternal() {
       if (i == 0)
         throw;
       // These may just be single slice error - store the error and move on
-      errors.push_back(_strdup(e.what()));
+      mRaw->setError(e.what());
     } catch (IOException &e) {
       // Let's try to ignore this - it might be truncated data, so something might be useful.
-      errors.push_back(_strdup(e.what()));
+      mRaw->setError(e.what());
     }
     offY += slice.w;
   }
@@ -208,12 +208,13 @@ void Cr2Decoder::sRawInterpolate() {
       interpolate_422_new(mRaw->dim.x / 2, mRaw->dim.y , 0, mRaw->dim.y);
     else
       interpolate_422(mRaw->dim.x / 2, mRaw->dim.y , 0, mRaw->dim.y);
-  } else {
+  } else if (mRaw->subsampling.y == 2 && mRaw->subsampling.x == 2) {
     if (isNewSraw)
       interpolate_420_new(mRaw->dim.x / 2, mRaw->dim.y / 2 , 0 , mRaw->dim.y / 2);
     else
       interpolate_420(mRaw->dim.x / 2, mRaw->dim.y / 2 , 0 , mRaw->dim.y / 2);
-  }
+  } else
+    ThrowRDE("CR2 Decoder: Unknown subsampling");
 }
 
 #define YUV_TO_RGB(Y, Cb, Cr) r = sraw_coeffs[0] * ((int)Y + (( 50*(int)Cb + 22929*(int)Cr) >> 12));\

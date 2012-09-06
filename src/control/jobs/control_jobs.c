@@ -339,6 +339,27 @@ int32_t dt_control_match_similar_job_run(dt_job_t *job)
   return 0;
 }
 
+static float
+envelope(const float xx)
+{
+  const float x = CLAMPS(xx, 0.0f, 1.0f);
+  // const float alpha = 2.0f;
+  const float beta = 0.5f;
+  if(x < beta)
+  {
+    // return 1.0f-fabsf(x/beta-1.0f)^2
+    const float tmp = fabsf(x/beta-1.0f);
+    return 1.0f-tmp*tmp;
+  }
+  else
+  {
+    const float tmp1 = (1.0f-x)/(1.0f-beta);
+    const float tmp2 = tmp1*tmp1;
+    const float tmp3 = tmp2*tmp1;
+    return 3.0f*tmp2 - 2.0f*tmp3;
+  }
+}
+
 int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 {
   long int imgid = -1;
@@ -410,14 +431,28 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     const float iso = image.exif_iso > 0.0f ? image.exif_iso : 100.0f;
     const float exp = image.exif_exposure > 0.0f ? image.exif_exposure : 1.0f;
     const float cal = 100.0f/(aperture*exp*iso);
-    whitelevel = fmaxf(whitelevel, cal);
+    // about proportional to how many photons we can expect from this shot:
+    const float photoncnt = 100.0f*aperture*exp/iso;
+    // stupid, but we don't know the real sensor saturation level:
+    uint16_t saturation = 0;
+    for(int k=0; k<wd*ht; k++)
+      saturation = MAX(saturation, ((uint16_t *)buf.buf)[k]);
+    // seems to be around 64500--64700 for 5dm2
+    // fprintf(stderr, "saturation: %u\n", saturation);
+    whitelevel = fmaxf(whitelevel, saturation*cal);
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(buf, pixels, weight, wd, ht)
+#pragma omp parallel for schedule(static) default(none) shared(buf, pixels, weight, wd, ht, saturation)
 #endif
     for(int k=0; k<wd*ht; k++)
     {
       const uint16_t in = ((uint16_t *)buf.buf)[k];
-      const float w = .001f + (in >= 1000 ? (in < 65000 ? in/65000.0f : 0.0f) : exp * 0.01f);
+      // weights based on siggraph 12 poster
+      // zijian zhu, zhengguo li, susanto rahardja, pasi fraenti
+      // 2d denoising factor for high dynamic range imaging
+      float w = envelope(in/(float)saturation) * photoncnt;
+      // in case we are black and drop to zero weight, give it something
+      // just so numerics don't collapse. blown out whites are handled below.
+      if(w < 1e-3f && in < saturation/3) w = 1e-3f;
       pixels[k] += w * in * cal;
       weight[k] += w;
     }
@@ -434,17 +469,24 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(pixels, wd, ht, weight, whitelevel)
 #endif
-  for(int k=0; k<wd*ht; k++) pixels[k] = fmaxf(0.0f, fminf(2.0f, pixels[k]/((.5f*whitelevel*65535.0f)*weight[k])));
+  for(int k=0; k<wd*ht; k++)
+  {
+      // in case w == 0, all pixels were overexposed (too dark would have been clamped to w >= eps above)
+      if(weight[k] < 1e-3f)
+          pixels[k] = 1.f; // mark as blown out.
+      else // normalize:
+          pixels[k] = fmaxf(0.0f, pixels[k]/(whitelevel*weight[k]));
+  }
 
   // output hdr as digital negative with exif data.
   uint8_t exif[65535];
-  char pathname[1024];
-  dt_image_full_path(first_imgid, pathname, 1024);
+  char pathname[DT_MAX_PATH_LEN];
+  dt_image_full_path(first_imgid, pathname, DT_MAX_PATH_LEN);
   const int exif_len = dt_exif_read_blob(exif, pathname, 0, first_imgid);
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname)-(c-pathname));
-  dt_imageio_write_dng(pathname, pixels, wd, ht, exif, exif_len, filter, whitelevel);
+  dt_imageio_write_dng(pathname, pixels, wd, ht, exif, exif_len, filter, 1.0f);
 
   dt_control_backgroundjobs_progress(darktable.control, jid, 1.0f);
 
@@ -595,8 +637,8 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   while(t)
   {
     imgid = (long int)t->data;
-    char filename[512];
-    dt_image_full_path(imgid, filename, 512);
+    char filename[DT_MAX_PATH_LEN];
+    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN);
 
     int duplicates = 0;
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -608,7 +650,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     // remove from disk:
     if(duplicates == 1) // don't remove the actual data if there are (other) duplicates using it
       (void)g_unlink(filename);
-    dt_image_path_append_version(imgid, filename, 512);
+    dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
     char *c = filename + strlen(filename);
     sprintf(c, ".xmp");
     (void)g_unlink(filename);
@@ -633,6 +675,8 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   dt_film_remove_empty();
   return 0;
 }
+
+
 
 void dt_control_image_enumerator_job_init(dt_control_image_enumerator_t *t)
 {
@@ -788,6 +832,188 @@ void dt_control_delete_images()
   dt_control_add_job(darktable.control, &j);
 }
 
+static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
+    int32_t (*fileop_callback)(const int32_t, const int32_t),
+    const char *desc, const char *desc_pl)
+{
+  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
+  GList *t = t1->index;
+  int total = g_list_length(t);
+  char message[512]= {0};
+  double fraction = 0;
+  gchar *newdir = (gchar *)job->user_data;
+
+  /* create a cancellable bgjob ui template */
+  g_snprintf(message, 512, ngettext(desc, desc_pl, total), total);
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
+
+  // create new film roll for the destination directory
+  dt_film_t new_film;
+  const int32_t film_id = dt_film_new(&new_film, newdir);
+  g_free(newdir);
+
+  if (film_id <= 0) {
+    dt_control_log(_("failed to create film roll for destination directory, aborting move.."));
+    dt_control_backgroundjobs_destroy(darktable.control, jid);
+    return -1;
+  }
+
+  while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
+  {
+    fileop_callback(GPOINTER_TO_INT(t->data), film_id);
+    t = g_list_delete_link(t, t);
+    fraction=1.0/total;
+    dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
+  }
+
+  dt_collection_update(darktable.collection);
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
+  dt_film_remove_empty();
+  return 0;
+}
+
+void dt_control_move_images()
+{
+  // Open file chooser dialog
+  gchar *dir = NULL;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  int number = dt_collection_get_selected_count(darktable.collection);
+
+  // Do not show the dialog if no image is selected:
+  if(number == 0) return;
+
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
+        GTK_WINDOW (win),
+        GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+        GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+        (char *)NULL);
+
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+  }
+  gtk_widget_destroy (filechooser);
+
+  if(!dir || !g_file_test(dir, G_FILE_TEST_IS_DIR))
+    goto abort;
+
+  if(dt_conf_get_bool("ask_before_move"))
+  {
+    GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win),
+        GTK_DIALOG_DESTROY_WITH_PARENT,
+        GTK_MESSAGE_QUESTION,
+        GTK_BUTTONS_YES_NO,
+        ngettext("do you really want to physically move the %d selected image to %s?\n"
+            "(all unselected duplicates will be moved along)",
+            "do you really want to physically move %d selected images to %s?\n"
+            "(all unselected duplicates will be moved along)", number), number, dir);
+    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("move image?", "move images?", number));
+
+    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+
+    if(res != GTK_RESPONSE_YES)
+      goto abort;
+  }
+
+  dt_job_t j;
+  dt_control_move_images_job_init(&j);
+  j.user_data = dir;
+  dt_control_add_job(darktable.control, &j);
+  return;
+
+  abort:
+  g_free(dir);
+  return;
+}
+
+void dt_control_copy_images()
+{
+  // Open file chooser dialog
+  gchar *dir = NULL;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  int number = dt_collection_get_selected_count(darktable.collection);
+
+  // Do not show the dialog if no image is selected:
+  if(number == 0) return;
+
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
+        GTK_WINDOW (win),
+        GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+        GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+        (char *)NULL);
+
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+  }
+  gtk_widget_destroy (filechooser);
+
+  if(!dir || !g_file_test(dir, G_FILE_TEST_IS_DIR))
+    goto abort;
+
+  if(dt_conf_get_bool("ask_before_copy"))
+  {
+    GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win),
+        GTK_DIALOG_DESTROY_WITH_PARENT,
+        GTK_MESSAGE_QUESTION,
+        GTK_BUTTONS_YES_NO,
+        ngettext("do you really want to physically copy the %d selected image to %s?",
+            "do you really want to physically copy %d selected images to %s?", number),
+            number, dir);
+    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("copy image?", "copy images?", number));
+
+    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+
+    if(res != GTK_RESPONSE_YES)
+      goto abort;
+  }
+
+  dt_job_t j;
+  dt_control_copy_images_job_init(&j);
+  j.user_data = dir;
+  dt_control_add_job(darktable.control, &j);
+  return;
+
+  abort:
+  g_free(dir);
+  return;
+}
+
+void dt_control_move_images_job_init(dt_job_t *job)
+{
+  dt_control_job_init(job, "move images");
+  job->execute = &dt_control_move_images_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
+  dt_control_image_enumerator_job_init(t);
+}
+
+void dt_control_copy_images_job_init(dt_job_t *job)
+{
+  dt_control_job_init(job, "copy images");
+  job->execute = &dt_control_copy_images_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
+  dt_control_image_enumerator_job_init(t);
+}
+
+int32_t dt_control_move_images_job_run(dt_job_t *job)
+{
+  return _generic_dt_control_fileop_images_job_run(job, &dt_image_move,
+      "moving %d image", "moving %d images");
+}
+
+int32_t dt_control_copy_images_job_run(dt_job_t *job)
+{
+  return _generic_dt_control_fileop_images_job_run(job, &dt_image_copy,
+      "copying %d image", "copying %d images");
+}
+
 int32_t dt_control_export_job_run(dt_job_t *job)
 {
   long int imgid = -1;
@@ -872,11 +1098,11 @@ int32_t dt_control_export_job_run(dt_job_t *job)
       // remove 'changed' tag from image
       dt_tag_detach(tagid, imgid);
       // check if image still exists:
-      char imgfilename[1024];
+      char imgfilename[DT_MAX_PATH_LEN];
       const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
       if(image)
       {
-        dt_image_full_path(image->id, imgfilename, 1024);
+        dt_image_full_path(image->id, imgfilename, DT_MAX_PATH_LEN);
         if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
         {
           dt_control_log(_("image `%s' is currently unavailable"), image->filename);

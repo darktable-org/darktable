@@ -41,6 +41,7 @@ typedef struct dt_iop_color_profile_t
   char filename[512]; // icc file name
   char name[512];     // product name
   int  pos;           // position in combo box
+  int  display_pos;   // position in display combo box
 }
 dt_iop_color_profile_t;
 

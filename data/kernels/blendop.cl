@@ -39,6 +39,7 @@
 #define DEVELOP_BLEND_HUE				0x12
 #define DEVELOP_BLEND_COLOR				0x13
 #define DEVELOP_BLEND_INVERSE				0x14
+#define DEVELOP_BLEND_UNBOUNDED                         0x15
 
 #define BLEND_ONLY_LIGHTNESS				8
 
@@ -558,6 +559,10 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
       o =  clamp((a * opacity) + (b * (1.0f - opacity)), min, max);
       break;
 
+    case DEVELOP_BLEND_UNBOUNDED:
+      o =  (a * (1.0f - opacity)) + (b * opacity);
+      break;
+
     /* fallback to normal blend */
     case DEVELOP_BLEND_NORMAL:
     default:
@@ -686,6 +691,10 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
     case DEVELOP_BLEND_INVERSE:
       o =  clamp((a * opacity) + (b * (1.0f - opacity)), min, max);
+      break;
+
+    case DEVELOP_BLEND_UNBOUNDED:
+      o =  (a * (1.0f - opacity)) + (b * opacity);
       break;
 
     /* fallback to normal blend */
@@ -830,6 +839,10 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
     case DEVELOP_BLEND_INVERSE:
       o =  clamp((a * opacity) + (b * (1.0f - opacity)), min, max);
+      break;
+
+    case DEVELOP_BLEND_UNBOUNDED:
+      o =  (a * (1.0f - opacity)) + (b * opacity);
       break;
 
     /* fallback to normal blend */

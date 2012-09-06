@@ -8,9 +8,11 @@ add_subdirectory(kernels)
 # Generate and instal gtkrc
 #
 set(GTKRC_FONT_SIZE 8)
+set(GTKRC_HEADER_FONT_SIZE 9)
 if(APPLE)
   # 8 is very tiny on mac
-  set(GTKRC_FONT_SIZE 11)
+  set(GTKRC_FONT_SIZE 13)
+  set(GTKRC_HEADER_FONT_SIZE 15)
 endif(APPLE)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.gtkrc.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.gtkrc )
 
@@ -29,6 +31,12 @@ install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/style)
 
 FILE(GLOB WEB_FILES "js/*")
 install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/js)
+
+#
+# latex book template support files:
+#
+FILE(GLOB WEB_FILES "latex/*")
+install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/latex)
 
 #
 # Install other system shares

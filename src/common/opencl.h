@@ -83,10 +83,12 @@ typedef struct dt_opencl_device_t
   int eventsconsolidated;
   int maxevents;
   int lostevents;
+  int nvidia_sm_20;
   cl_int summary;
 }
 dt_opencl_device_t;
 
+struct dt_bilateral_cl_global_t;
 /**
  * main struct, stored in darktable.opencl.
  * holds pointers to all
@@ -99,6 +101,9 @@ typedef struct dt_opencl_t
   int num_devs;
   dt_opencl_device_t *dev;
   dt_dlopencl_t *dlocl;
+
+  // global kernels for bilateral filtering, to be reused by a few plugins.
+  struct dt_bilateral_cl_global_t *bilateral;
 }
 dt_opencl_t;
 

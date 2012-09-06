@@ -18,6 +18,7 @@ FILE(GLOB SOURCE_FILES
   "common/film.c"
   "common/file_location.c"
   "common/fswatch.c"
+  "common/grouping.c"
   "common/history.c"
   "common/image.c"
   "common/image_cache.c"
@@ -192,6 +193,15 @@ if(USE_GNOME_KEYRING)
     add_definitions("-DHAVE_GKEYRING")
   endif(GNOMEKEYRING_FOUND)
 endif(USE_GNOME_KEYRING)
+
+if(USE_MAC_INTEGRATION)
+  find_package(MacIntegration)
+  if(MACINTEGRATION_FOUND)
+    include_directories(${MacIntegration_INCLUDE_DIRS})
+    list(APPEND LIBS ${MacIntegration_LIBRARIES})
+    add_definitions("-DMAC_INTEGRATION")
+  endif(MACINTEGRATION_FOUND)
+endif(USE_MAC_INTEGRATION)
 
 # have a small test program, to be run as root on some systems to enable the driver to run cl stuff
 add_subdirectory(cltest)
@@ -429,9 +439,9 @@ set_target_properties(darktable PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set_target_properties(darktable PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set_target_properties(darktable PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
 set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
-if(APPLE AND USE_OPENCL)
-set_target_properties(darktable PROPERTIES LINK_FLAGS -Wl,-syslibroot,/Developer-old/SDKs/MacOSX10.6.sdk)
-endif(APPLE AND USE_OPENCL)
+if(APPLE)
+  set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon")
+endif(APPLE)
 target_link_libraries(darktable ${LIBS})
 install(TARGETS darktable DESTINATION bin)
 

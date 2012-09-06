@@ -795,11 +795,11 @@ dt_interpolation_compute_sample(
     // Apply the kernel
     float s = 0.f;
     for (int i=ytap_first; i<ytap_last; i++) {
-      int y = clip(iy + i, 0, height-1, bordermode);
+      int clip_y = clip(iy + i, 0, height-1, bordermode);
       float h = 0.0f;
       for (int j=xtap_first; j<xtap_last; j++) {
-        int x = clip(ix + j, 0, width-1, bordermode);
-        const float* ipixel = in + y*linestride + x*samplestride;
+        int clip_x = clip(ix + j, 0, width-1, bordermode);
+        const float* ipixel = in + clip_y*linestride + clip_x*samplestride;
         h += kernelh[j]*ipixel[0];
       }
       s += kernelv[i]*h;
@@ -907,11 +907,11 @@ dt_interpolation_compute_pixel4c(
     // Apply the kernel
     __m128 pixel = _mm_setzero_ps();
     for (int i=ytap_first; i<ytap_last; i++) {
-      int y = clip(iy + i, 0, height-1, bordermode);
+      int clip_y = clip(iy + i, 0, height-1, bordermode);
       __m128 h = _mm_setzero_ps();
       for (int j=xtap_first; j<xtap_last; j++) {
-        int x = clip(ix + j, 0, width-1, bordermode);
-        const float* ipixel = in + y*linestride + x*4;
+        int clip_x = clip(ix + j, 0, width-1, bordermode);
+        const float* ipixel = in + clip_y*linestride + clip_x*4;
         h = _mm_add_ps(h, _mm_mul_ps(vkernelh[j], *(__m128*)ipixel));
       }
       pixel = _mm_add_ps(pixel, _mm_mul_ps(vkernelv[i],h));

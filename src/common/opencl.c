@@ -20,6 +20,7 @@
 
 #include "common/darktable.h"
 #include "common/opencl.h"
+#include "common/bilateralcl.h"
 #include "common/dlopencl.h"
 #include "control/conf.h"
 
@@ -84,6 +85,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] no opencl platform available\n");
     goto finally;
   }
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d platform%s\n", num_platforms, num_platforms > 1 ? "s" : "");
 
   for(int n=0; n < num_platforms; n++)
   {
@@ -94,7 +96,6 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get device id size: %d\n", err);
-      goto finally;
     }
   }
 
@@ -113,12 +114,12 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get devices list: %d\n", err);
-      goto finally;
     }
     devs += all_num_devices[n];
   }
  
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d device%s\n", num_devices, num_devices > 1 ? "s" : "");
+  if(num_devices == 0) goto finally;
 
   int dev = 0;
   for(int k=0; k<num_devices; k++)
@@ -133,21 +134,31 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     cl->dev[dev].lostevents = 0;
     cl->dev[dev].summary=CL_COMPLETE;
     cl->dev[dev].used_global_mem = 0;
+    cl->dev[dev].nvidia_sm_20 = 0;
     cl_device_id devid = cl->dev[dev].devid = devices[k];
 
     char infostr[1024];
+    char vendor[256];
     size_t infoint;
     size_t infointtab[1024];
     cl_device_type type;
     cl_bool image_support = 0;
 
     // test GPU memory and image support:
+    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VENDOR, sizeof(vendor), &vendor, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_NAME, sizeof(infostr), &infostr, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_TYPE, sizeof(cl_device_type), &type,  NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE_SUPPORT, sizeof(cl_bool), &image_support, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(size_t), &(cl->dev[dev].max_image_height), NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_WIDTH,  sizeof(size_t), &(cl->dev[dev].max_image_width),  NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_MEM_ALLOC_SIZE,  sizeof(cl_ulong), &(cl->dev[dev].max_mem_alloc),  NULL);
+
+    if(!strncasecmp(vendor, "NVIDIA", 6))
+    {
+      // very lame attemt to detect support for atomic float add in global memory.
+      // we need compute model sm_20, but let's try for all nvidia devices :(
+      cl->dev[dev].nvidia_sm_20 = 1;
+    }
 
     if(type == CL_DEVICE_TYPE_CPU)
     {
@@ -199,9 +210,11 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create command queue for device %d: %d\n", k, err);
       goto finally;
     }
-    char dtpath[1024], filename[1024], programname[1024];
-    dt_loc_get_datadir(dtpath, 1024);
-    snprintf(filename, 1024, "%s/kernels/programs.conf", dtpath);
+    char dtpath[DT_MAX_PATH_LEN];
+    char filename[DT_MAX_PATH_LEN];
+    char programname[DT_MAX_PATH_LEN];
+    dt_loc_get_datadir(dtpath, DT_MAX_PATH_LEN);
+    snprintf(filename, DT_MAX_PATH_LEN, "%s/kernels/programs.conf", dtpath);
     // now load all darktable cl kernels.
     // TODO: compile as a job?
     FILE *f = fopen(filename, "rb");
@@ -212,21 +225,21 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
         int rd = fscanf(f, "%[^\n]\n", programname);
         if(rd != 1) continue;
         // remove comments:
-        for(int k=0; k<strlen(programname); k++)
-          if(programname[k] == '#')
+        for(int pos=0; pos<strlen(programname); pos++)
+          if(programname[pos] == '#')
           {
-            programname[k] = '\0';
-            for(int l=k-1; l>=0; l--)
+            programname[pos] = '\0';
+            for(int l=pos-1; l>=0; l--)
             {   
               if (programname[l] == ' ')
-	        programname[l] = '\0';
+                programname[l] = '\0';
               else
-	        break;
+	              break;
             }
             break;
           }
         if(programname[0] == '\0') continue;
-        snprintf(filename, 1024, "%s/kernels/%s", dtpath, programname);
+        snprintf(filename, DT_MAX_PATH_LEN, "%s/kernels/%s", dtpath, programname);
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
         const int prog = dt_opencl_load_program(dev, filename);
         if(dt_opencl_build_program(dev, prog))
@@ -260,12 +273,17 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 finally:
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] FINALLY: opencl is %sAVAILABLE on this system.\n", cl->inited ? "" : "NOT ");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] initial status of opencl enabled flag is %s.\n", cl->enabled ? "ON" : "OFF");
+  if(cl->inited)
+    cl->bilateral = dt_bilateral_init_cl_global();
   return;
 }
 
 void dt_opencl_cleanup(dt_opencl_t *cl)
 {
-  if(cl->inited) for(int i=0; i<cl->num_devs; i++)
+  if(cl->inited)
+  {
+    dt_bilateral_free_cl_global(cl->bilateral);
+    for(int i=0; i<cl->num_devs; i++)
     {
       dt_pthread_mutex_destroy(&cl->dev[i].lock);
       for(int k=0; k<DT_OPENCL_MAX_KERNELS; k++) if(cl->dev[i].kernel_used [k]) (cl->dlocl->symbols->dt_clReleaseKernel) (cl->dev[i].kernel [k]);
@@ -276,6 +294,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
       if(cl->dev[i].eventlist) free(cl->dev[i].eventlist);
       if(cl->dev[i].eventtags) free(cl->dev[i].eventtags);
     }
+  }
 
   if(cl->dlocl) {
     free(cl->dlocl->symbols);
@@ -404,7 +423,9 @@ int dt_opencl_build_program(const int dev, const int prog)
   dt_opencl_t *cl = darktable.opencl;
   cl_program program = cl->dev[dev].program[prog];
   cl_int err;
-  err = (cl->dlocl->symbols->dt_clBuildProgram)(program, 1, &cl->dev[dev].devid, "-cl-fast-relaxed-math -cl-strict-aliasing", 0, 0);
+  char options[256];
+  snprintf(options, 256, "-cl-fast-relaxed-math -cl-strict-aliasing%s", cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : "");
+  err = (cl->dlocl->symbols->dt_clBuildProgram)(program, 1, &cl->dev[dev].devid, options, 0, 0);
   if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] could not build program: %d\n", err);

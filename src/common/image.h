@@ -26,11 +26,6 @@
 #include <glib.h>
 #include <inttypes.h>
 
-/** define for max path/filename length */
-#define DT_MAX_FILENAME_LEN 256
-// TODO: separate into path/filename and store 256 for filename
-#define DT_MAX_PATH_LEN 1024
-
 /** return value of image io functions. */
 typedef enum dt_imageio_retval_t
 {
@@ -90,7 +85,7 @@ typedef struct dt_image_t
   // common stuff
   int32_t width, height;
   // used by library
-  int32_t num, flags, film_id, id;
+  int32_t num, flags, film_id, id, group_id;
 
   uint32_t filters;  // demosaic pattern
   int32_t bpp;       // bytes per pixel
@@ -293,6 +288,12 @@ dt_image_orientation_to_flip_bits(const int orient)
   }
 }
 
+/** physically move image with imgid and its duplicates to the film roll
+ *  given by filmid. returns -1 on error, 0 on success. */
+int32_t dt_image_move(const int32_t imgid, const int32_t filmid);
+/** physically cope image to the folder of the film roll with filmid and
+ *  duplicate update database entries. */
+int32_t dt_image_copy(const int32_t imgid, const int32_t filmid);
 // xmp functions:
 void dt_image_write_sidecar_file(int imgid);
 void dt_image_synch_xmp(const int selected);

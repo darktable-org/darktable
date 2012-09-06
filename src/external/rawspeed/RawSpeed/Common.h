@@ -107,6 +107,11 @@ inline uint32 getThreadCount()
 }
 
 inline Endianness getHostEndianness() {
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+  return little;
+#elif defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  return big;
+#else
   ushort16 testvar = 0xfeff; 
   uint32 firstbyte = ((uchar8 *)&testvar)[0];
   if (firstbyte == 0xff)
@@ -118,8 +123,28 @@ inline Endianness getHostEndianness() {
 
   // Return something to make compilers happy
   return unknown;
+#endif
 }
-inline uint32 clampbits(int x, uint32 n) { uint32 _y_temp; if( (_y_temp=x>>n) ) x = ~_y_temp >> (32-n); return x;}
+
+#if defined(__GNUC__) && (PIPE_CC_GCC_VERSION >= 403) && defined(__BYTE_ORDER__) 
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ && __alignof__ (int) == 1
+#define LE_PLATFORM_HAS_BSWAP
+#define PLATFORM_BSWAP32(A) __builtin_bswap32(A)
+#endif
+#endif
+
+#ifdef _MSC_VER
+#include <intrin.h>
+#define LE_PLATFORM_HAS_BSWAP
+#define PLATFORM_BSWAP32(A) _byteswap_ulong(A)
+#endif
+
+inline uint32 clampbits(int x, uint32 n) { 
+  uint32 _y_temp; 
+  if( (_y_temp=x>>n) ) 
+    x = ~_y_temp >> (32-n); 
+  return x;
+}
 
 /* This is faster - at least when compiled on visual studio 32 bits */
 inline int other_abs(int x) { int const mask = x >> 31; return (x + mask) ^ mask;}

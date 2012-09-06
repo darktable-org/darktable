@@ -4,6 +4,7 @@
 #include "LJpegPlain.h"
 #include "TiffIFD.h"
 #include "DngDecoderSlices.h"
+#include "DngOpcodes.h"
 /* 
     RawSpeed - RAW file decoder.
 

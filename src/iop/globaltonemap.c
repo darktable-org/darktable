@@ -22,14 +22,13 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
 #include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "common/opencl.h"
+#include "common/bilateral.h"
+#include "common/bilateralcl.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
@@ -41,7 +40,7 @@
 
 // NaN-safe clip: NaN compares false and will result in 0.0
 #define CLIP(x) (((x)>=0.0)?((x)<=1.0?(x):1.0):0.0)
-DT_MODULE(2)
+DT_MODULE(3)
 
 typedef enum _iop_operator_t
 {
@@ -57,6 +56,7 @@ typedef struct dt_iop_global_tonemap_params_t
     float bias;
     float max_light; // cd/m2
   } drago;
+  float detail;
 }
 dt_iop_global_tonemap_params_t;
 
@@ -64,23 +64,12 @@ typedef struct dt_iop_global_tonemap_gui_data_t
 {
   GtkWidget *operator;
   struct {
-    GtkWidget *ui;
     GtkWidget *bias;
     GtkWidget *max_light;
   } drago;
+  GtkWidget *detail;
 }
 dt_iop_global_tonemap_gui_data_t;
-
-typedef struct dt_iop_global_tonemap_data_t
-{
-  _iop_operator_t operator;
-  struct {
-    float bias;
-    float max_light; // cd/m2
-  } drago;
-
-}
-dt_iop_global_tonemap_data_t;
 
 typedef struct dt_iop_global_tonemap_global_data_t
 {
@@ -108,41 +97,47 @@ groups ()
   return IOP_GROUP_TONE;
 }
 
-#if 0
-void init_key_accels(dt_iop_module_so_t *self)
+int
+legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
+  if(old_version < 3 && new_version == 3)
+  {
+    dt_iop_global_tonemap_params_t *o = (dt_iop_global_tonemap_params_t *)old_params;
+    dt_iop_global_tonemap_params_t *n = (dt_iop_global_tonemap_params_t *)new_params;
+    
+    // only appended detail, 0 is no-op
+    memcpy(n, o, sizeof(dt_iop_global_tonemap_params_t) - sizeof(float));
+    n->detail = 0.0f;
+    return 0;
+  }
+  return 1;
 }
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-}
-#endif
 
 static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 				    void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-				    dt_iop_global_tonemap_data_t *data)
+				    dt_iop_global_tonemap_params_t *data)
 {
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
 
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
-    for(int k=0; k<roi_out->width*roi_out->height; k++)
-    {
-      float *inp = in + ch*k;
-      float *outp = out + ch*k;
-      float l = inp[0]/100.0;
-      outp[0] = 100.0 * (l/(1.0f+l));
-      outp[1] = inp[1];
-      outp[2] = inp[2];
-    }
+  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  {
+    float *inp = in + ch*k;
+    float *outp = out + ch*k;
+    float l = inp[0]/100.0;
+    outp[0] = 100.0 * (l/(1.0f+l));
+    outp[1] = inp[1];
+    outp[2] = inp[2];
+  }
 }
 
 static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 				    void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-				    dt_iop_global_tonemap_data_t *data)
+				    dt_iop_global_tonemap_params_t *data)
 {
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
@@ -160,47 +155,60 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   const float bl = logf(MAX(eps, data->drago.bias)) / logf(0.5);
 
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(roi_out, in, out, lwmax) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, in, out, lwmax) schedule(static)
 #endif
-    for(int k=0; k<roi_out->width*roi_out->height; k++)
-    {
-      float *inp = in + ch*k;
-      float *outp = out + ch*k;
-      float lw = inp[0]*0.01f;
-      outp[0] = 100.0f * (ldc * logf(MAX(eps, lw + 1.0f)) / logf(MAX(eps, 2.0f + (powf(lw/lwmax,bl)) * 8.0f)));
-      outp[1] = inp[1];
-      outp[2] = inp[2];
-    }
+  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  {
+    float *inp = in + ch*k;
+    float *outp = out + ch*k;
+    float lw = inp[0]*0.01f;
+    outp[0] = 100.0f * (ldc * logf(MAX(eps, lw + 1.0f)) / logf(MAX(eps, 2.0f + (powf(lw/lwmax,bl)) * 8.0f)));
+    outp[1] = inp[1];
+    outp[2] = inp[2];
+  }
 }
 
 static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 				    void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-				    dt_iop_global_tonemap_data_t *data)
+				    dt_iop_global_tonemap_params_t *data)
 {
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
 
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
-    for(int k=0; k<roi_out->width*roi_out->height; k++)
-    {
-      float *inp = in + ch*k;
-      float *outp = out + ch*k;
-      float l = inp[0]/100.0;
-      float x = MAX(0.0f, l-0.004f);
-      outp[0] = 100.0 * ((x*(6.2*x+.5))/(x*(6.2*x+1.7)+0.06));
-      outp[1] = inp[1];
-      outp[2] = inp[2];
-    }
+  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  {
+    float *inp = in + ch*k;
+    float *outp = out + ch*k;
+    float l = inp[0]/100.0;
+    float x = MAX(0.0f, l-0.004f);
+    outp[0] = 100.0 * ((x*(6.2*x+.5))/(x*(6.2*x+1.7)+0.06));
+    outp[1] = inp[1];
+    outp[2] = inp[2];
+  }
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_global_tonemap_data_t *data = (dt_iop_global_tonemap_data_t *)piece->data;
+  dt_iop_global_tonemap_params_t *data = (dt_iop_global_tonemap_params_t *)piece->data;
+  const float scale = piece->iscale/roi_in->scale;
+  const float sigma_r = 8.0f; // does not depend on scale
+  const float iw = piece->buf_in.width /scale;
+  const float ih = piece->buf_in.height/scale;
+  const float sigma_s = fminf(iw, ih)*0.03f;
+  dt_bilateral_t *b = NULL;
+  if(data->detail != 0.0f)
+  {
+    b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
+    // get detail from unchanged input buffer
+    dt_bilateral_splat(b, (float *)ivoid);
+  }
 
-  switch(data->operator) {
+  switch(data->operator)
+  {
   case OPERATOR_REINHARD:
     process_reinhard(self, piece, ivoid, ovoid, roi_in, roi_out, data);
     break;
@@ -212,6 +220,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     break;
   }
 
+  if(data->detail != 0.0f)
+  {
+    dt_bilateral_blur(b);
+    // and apply it to output buffer after logscale
+    dt_bilateral_slice_to_output(b, (float *)ivoid, (float *)ovoid, data->detail);
+    dt_bilateral_free(b);
+  }
+
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
@@ -220,8 +236,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_global_tonemap_data_t *d = (dt_iop_global_tonemap_data_t *)piece->data;
+  dt_iop_global_tonemap_params_t *d = (dt_iop_global_tonemap_params_t *)piece->data;
   dt_iop_global_tonemap_global_data_t *gd = (dt_iop_global_tonemap_global_data_t *)self->data;
+  dt_bilateral_cl_t *b = NULL;
 
   // check if we are in a tiling context and want OPERATOR_DRAGO. This does not work as drago
   // needs the maximum L-value of the whole image. Let's return FALSE, which will then fall back
@@ -340,6 +357,21 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     parameters[3] = lwmax;
   }
 
+  const float scale = piece->iscale/roi_in->scale;
+  const float sigma_r = 8.0f; // does not depend on scale
+  const float iw = piece->buf_in.width /scale;
+  const float ih = piece->buf_in.height/scale;
+  const float sigma_s = fminf(iw, ih)*0.03f;
+
+  if(d->detail != 0.0f)
+  {
+    b = dt_bilateral_init_cl(devid, roi_in->width, roi_in->height, sigma_s, sigma_r);
+    if(!b) goto error;
+    // get detail from unchanged input buffer
+    err = dt_bilateral_splat_cl(b, dev_in);
+    if(err != CL_SUCCESS) goto error;
+  }
+
   size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
   dt_opencl_set_kernel_arg(devid, gtkernel, 0, sizeof(cl_mem), &dev_in);
   dt_opencl_set_kernel_arg(devid, gtkernel, 1, sizeof(cl_mem), &dev_out);
@@ -348,9 +380,21 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gtkernel, 4, 4*sizeof(float), &parameters);
   err = dt_opencl_enqueue_kernel_2d(devid, gtkernel, sizes);
   if(err != CL_SUCCESS) goto error;
+
+  if(d->detail != 0.0f)
+  {
+    err = dt_bilateral_blur_cl(b);
+    if (err != CL_SUCCESS) goto error;
+    // and apply it to output buffer after logscale
+    err = dt_bilateral_slice_to_output_cl(b, dev_in, dev_out, d->detail);
+    if (err != CL_SUCCESS) goto error;
+    dt_bilateral_free_cl(b);
+  }
+
   return TRUE;
 
 error:
+  if(b) dt_bilateral_free_cl(b);
   if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   if(dev_r != NULL) dt_opencl_release_mem_object(dev_r);
   dt_print(DT_DEBUG_OPENCL, "[opencl_global_tonemap] couldn't enqueue kernel! %d\n", err);
@@ -395,10 +439,14 @@ operator_callback (GtkWidget *combobox, gpointer user_data)
   dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)self->params;
   p->operator = dt_bauhaus_combobox_get(combobox);
   
-  gtk_widget_set_visible(g->drago.ui, FALSE);
+  gtk_widget_set_visible(g->drago.bias, FALSE);
+  gtk_widget_set_visible(g->drago.max_light, FALSE);
   /* show ui for selected operator */
   if (p->operator == OPERATOR_DRAGO)
-    gtk_widget_set_visible(g->drago.ui, TRUE);
+  {
+    gtk_widget_set_visible(g->drago.bias, TRUE);
+    gtk_widget_set_visible(g->drago.max_light, TRUE);
+  }
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -423,26 +471,13 @@ _drago_max_light_callback (GtkWidget *w, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-
-void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+static void
+detail_callback (GtkWidget *w, gpointer user_data)
 {
-  dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)p1;
-  dt_iop_global_tonemap_data_t *d = (dt_iop_global_tonemap_data_t *)piece->data;
-  d->operator = p->operator;
-  d->drago.bias = p->drago.bias;
-  d->drago.max_light = p->drago.max_light;
-}
-
-void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  piece->data = malloc(sizeof(dt_iop_global_tonemap_data_t));
-  memset(piece->data,0,sizeof(dt_iop_global_tonemap_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
-}
-
-void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  free(piece->data);
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)self->params;
+  p->detail = dt_bauhaus_slider_get(w);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -451,10 +486,19 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
   dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)module->params;
   dt_bauhaus_combobox_set(g->operator, p->operator);
+  gtk_widget_set_visible(g->drago.bias, FALSE);
+  gtk_widget_set_visible(g->drago.max_light, FALSE);
+  /* show ui for selected operator */
+  if (p->operator == OPERATOR_DRAGO)
+  {
+    gtk_widget_set_visible(g->drago.bias, TRUE);
+    gtk_widget_set_visible(g->drago.max_light, TRUE);
+  }
+
   /* drago */
   dt_bauhaus_slider_set(g->drago.bias, p->drago.bias);
   dt_bauhaus_slider_set(g->drago.max_light, p->drago.max_light);
-
+  dt_bauhaus_slider_set(g->detail, p->detail);
 }
 
 void init(dt_iop_module_t *module)
@@ -468,7 +512,8 @@ void init(dt_iop_module_t *module)
   dt_iop_global_tonemap_params_t tmp = (dt_iop_global_tonemap_params_t)
   {
     OPERATOR_DRAGO,
-    {0.85f, 100.0f}
+    {0.85f, 100.0f},
+    0.0f
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_global_tonemap_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_global_tonemap_params_t));
@@ -488,7 +533,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
   dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
 
   /* operator */
   g->operator = dt_bauhaus_combobox_new(self);
@@ -504,13 +549,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->operator), TRUE, TRUE, 0);
 
   /* drago bias */
-  g->drago.ui = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
   g->drago.bias = dt_bauhaus_slider_new_with_range(self,0.5, 1.0, 0.05, p->drago.bias, 2);
   dt_bauhaus_widget_set_label(g->drago.bias,_("bias"));
   g_object_set(G_OBJECT(g->drago.bias), "tooltip-text", _("the bias for tonemapper controls the linearity, the higher the more details in blacks"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->drago.bias), "value-changed",
                     G_CALLBACK (_drago_bias_callback), self);
-  gtk_box_pack_start(GTK_BOX(g->drago.ui), GTK_WIDGET(g->drago.bias), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->drago.bias, TRUE, TRUE, 0);
   
 
   /* drago bias */
@@ -519,12 +563,14 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->drago.max_light), "tooltip-text", _("the target light for tonemapper specified as cd/m2"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->drago.max_light), "value-changed",
                     G_CALLBACK (_drago_max_light_callback), self);
-  gtk_box_pack_start(GTK_BOX(g->drago.ui), GTK_WIDGET(g->drago.max_light), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->drago.ui), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->drago.max_light, TRUE, TRUE, 0);
 
-  /* set operator */
-  dt_bauhaus_combobox_set(g->operator,p->operator);
+  /* detail */
+  g->detail = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, 0.0, 3);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->detail, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(g->detail, _("detail"));
 
+  g_signal_connect (G_OBJECT (g->detail), "value-changed", G_CALLBACK (detail_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

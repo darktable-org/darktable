@@ -397,7 +397,6 @@ float *spline_cubic_set( int n, float t[], float y[])
 float *monotone_hermite_set ( int n, float x[], float y[])
 {
   float *delta;
-  float alpha, beta, tau;
   float *m;
   int i;
   if ( n <= 1 )
@@ -442,18 +441,16 @@ float *monotone_hermite_set ( int n, float x[], float y[])
     {
       m[i] = 0.0f;
       m[i+1] = 0.0f;
-      i++;
     }
     else
     {
-      alpha = m[i]/delta[i];
-      beta = m[i+1]/delta[i];
-      tau = alpha*alpha+beta*beta;
+      const float alpha = m[i]/delta[i];
+      const float beta = m[i+1]/delta[i];
+      const float tau = alpha*alpha+beta*beta;
       if (tau > 9.0f)
       {
         m[i] = 3.0f*alpha*delta[i]/sqrtf(tau);
         m[i+1] = 3.0f*beta*delta[i]/sqrtf(tau);
-        i++;
       }
     }
   }

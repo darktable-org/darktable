@@ -25,6 +25,8 @@
 #include "libs/lib.h"
 #include "gui/gtk.h"
 
+#include <sys/param.h>
+
 DT_MODULE(1)
 
 enum {
@@ -32,6 +34,7 @@ enum {
   md_internal_filmroll=0,
   md_internal_imgid,
   md_internal_filename,
+  md_internal_fullpath,
 
   /* exif */
   md_exif_model,
@@ -64,6 +67,7 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_internal_filmroll] = _("filmroll");
   _md_labels[md_internal_imgid] = _("image id");
   _md_labels[md_internal_filename] = _("filename");
+  _md_labels[md_internal_fullpath] = _("full path");
 
   /* exif */
   _md_labels[md_exif_model] = _("model");
@@ -173,6 +177,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     _metadata_update_value(d->metadata[md_internal_imgid], value);
 
     _metadata_update_value(d->metadata[md_internal_filename], img->filename);
+
+    dt_image_full_path(img->id, value, MAXPATHLEN);
+    _metadata_update_value(d->metadata[md_internal_fullpath], value);
 
     /* EXIF */
     _metadata_update_value_end(d->metadata[md_exif_model], img->exif_model);
