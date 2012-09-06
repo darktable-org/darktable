@@ -288,7 +288,7 @@ static void strip_semicolons_from_keymap(const char* path)
               NULL, NULL, NULL, NULL);
 }
 
-int dt_init(int argc, char *argv[], const int init_gui)
+int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
 {
 #ifndef __APPLE__
   _dt_sigsegv_old_handler = signal(SIGSEGV,&_dt_sigsegv_handler);
@@ -431,7 +431,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
 #endif
 
   // early lua init, doesn't depend on DT stuff yet
-  dt_lua_init(init_gui);
+  dt_lua_init(init_gui,L);
   // thread-safe init:
   dt_exif_init();
   char datadir[1024];

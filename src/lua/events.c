@@ -228,8 +228,8 @@ static int lua_register_event(lua_State *L) {
 
 int dt_lua_trigger_event(const char*event,int nargs,int nresults) {
 	lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_event_list");
-	if(lua_isnil(darktable.lua_state,-1)) {
-		lua_pop(darktable.lua_state,2+nargs);
+	if(lua_isnil(darktable.lua_state,-1)) {// events have been disabled
+		lua_pop(darktable.lua_state,1+nargs);
 		if(nresults== LUA_MULTRET) return 0;
 		for(int i=0; i<nresults;i++) 
 			lua_pushnil(darktable.lua_state);

@@ -133,7 +133,7 @@ int main(int argc, char *arg[])
 
   char *m_arg[] = {"darktable-cli", "--library", ":memory:", NULL};
   // init dt without gui:
-  if(dt_init(3, m_arg, 0)) exit(1);
+  if(dt_init(3, m_arg, 0,NULL)) exit(1);
 
   dt_film_t film;
   int id = 0;

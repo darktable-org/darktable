@@ -21,7 +21,7 @@
 
 int main (int argc, char *argv[])
 {
-  if(dt_init(argc, argv, 1)) exit(1);
+  if(dt_init(argc, argv, 1,NULL)) exit(1);
   dt_gui_gtk_run(darktable.gui);
   exit(0);
 }

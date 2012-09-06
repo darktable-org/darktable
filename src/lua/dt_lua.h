@@ -22,7 +22,7 @@
 #include <lauxlib.h>
 
 /** initialize lua stuff at DT start time */
-void dt_lua_init(const int init_gui);
+void dt_lua_init(const int init_gui,lua_State* L);
 void dt_lua_run_init();
 /** runs a command in the DT lua environement, command in any valid lua string */
 void dt_lua_dostring(const char* command);

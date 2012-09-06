@@ -42,7 +42,7 @@ int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
 	}
 	result= lua_gettop(L) -result;
 
-	lua_gc(darktable.lua_state,LUA_GCCOLLECT,0);
+	lua_gc(L,LUA_GCCOLLECT,0);
 	return result;
 }
 void dt_lua_protect_call(lua_State *L,lua_CFunction func) {
@@ -155,10 +155,13 @@ static const luaL_Reg preloadedlibs[] = {
 };
 
 
-void dt_lua_init(const int init_gui) {
+void dt_lua_init(const int init_gui,lua_State* L) {
 	// init the global lua context
-	darktable.lua_state= luaL_newstate();
 	const luaL_Reg *lib;
+	if(L)
+		darktable.lua_state= L;
+	else
+		darktable.lua_state= luaL_newstate();
 	if(init_gui) {
 		/* call open functions from 'loadedlibs' and set results to global table */
 		for (lib = loadedlibs; lib->func; lib++) {
@@ -227,9 +230,9 @@ int luaopen_darktable(lua_State *L) {
 	char *tmp_argv[]={"lua",NULL};
 	char **tmp_argv2 = &tmp_argv[0];
 	gtk_init (&tmp_argc, &tmp_argv2);
-	char *m_arg[] = {"darktable-cli", "--library", ":memory:", NULL};
+	char *m_arg[] = {"lua", "--library", ":memory:", NULL};
 	// init dt without gui:
-	if(dt_init(3, m_arg, 0)) exit(1);
+	if(dt_init(3, m_arg, 0,L)) exit(1);
 	load_darktable_lib(L);
 	return 1;
 }
