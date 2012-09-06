@@ -177,6 +177,11 @@ static void dt_control_sanitize_database()
                         "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT REPLACE, "
                         "count INTEGER)",
                         NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "CREATE TABLE memory.history (imgid integer, num integer, module integer, "
+                        "operation varchar(256), op_params blob, enabled integer, "
+                        "blendop_params blob, blendop_version integer)",
+                        NULL, NULL, NULL);
 }
 
 int dt_control_load_config(dt_control_t *c)
