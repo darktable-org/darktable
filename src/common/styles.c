@@ -220,7 +220,10 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
 
     /* if current image in develop reload history */
     if (dt_dev_is_current_image(darktable.develop, imgid))
+    {
       dt_dev_reload_history_items (darktable.develop);
+      dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
+    }
 
     /* update xmp file */
     dt_image_synch_xmp(imgid);
