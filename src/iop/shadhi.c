@@ -855,6 +855,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     err = dt_bilateral_slice_cl(b, dev_in, dev_out, detail);
     if (err != CL_SUCCESS) goto error;
     dt_bilateral_free_cl(b);
+    b = NULL; // make sure we don't clean it up twice
 
     // once again produce copy of dev_in, as it is needed for final mixing step: dev_in -> dev_temp2
     err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_in, dev_temp2, origin, region, 0);

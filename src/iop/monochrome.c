@@ -235,6 +235,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   err = dt_bilateral_slice_cl(b, dev_tmp, dev_tmp, detail);
   if (err != CL_SUCCESS) goto error;
   dt_bilateral_free_cl(b);
+  b = NULL; // make sure we don't do double cleanup in case the next few lines err out
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 0, sizeof(cl_mem), &dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 1, sizeof(cl_mem), &dev_tmp);
