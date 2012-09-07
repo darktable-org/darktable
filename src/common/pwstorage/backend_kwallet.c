@@ -333,7 +333,8 @@ gboolean dt_pwstorage_kwallet_set(const gchar* slot, GHashTable* table)
 
   g_array_free(byte_array, TRUE);
 
-  CheckError(error);
+  if (CheckError(error))
+    return FALSE;
 
   if (ret != 0)
     dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_kwallet_set] Warning: bad return code %d from kwallet\n", ret);

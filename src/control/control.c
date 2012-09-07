@@ -1432,9 +1432,8 @@ lock_and_return:
 void dt_control_gdk_unlock()
 {
   /* check if current thread has a lock and remove if exists */
-  GList *item=NULL;
   g_static_mutex_lock(&_control_gdk_lock_threads_mutex);
-  if((item=g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self())))
+  if(g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self())) 
   {
     /* remove lock */
     _control_gdk_lock_threads = g_list_remove(_control_gdk_lock_threads,
