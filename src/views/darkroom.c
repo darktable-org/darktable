@@ -755,6 +755,25 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
     {
       dt_style_t *style=(dt_style_t *)styles->data;
       GtkWidget *mi=gtk_menu_item_new_with_label(style->name);
+      
+      char* desc = dt_styles_get_description(style->name);  
+      char* items_string = dt_styles_get_item_list_as_string(style->name);
+      gchar* tooltip = NULL;
+
+      if(desc && strlen(desc))
+      {
+        tooltip = g_strconcat("<b><i>", desc, "</i></b>\n", items_string, NULL);
+      }
+      else
+      {
+        tooltip = g_strdup(items_string);
+      }
+          
+      gtk_widget_set_tooltip_markup(mi, tooltip);
+      g_free(tooltip);
+      g_free(items_string);
+      g_free(desc);
+      
       gtk_menu_append (GTK_MENU (menu), mi);
       gtk_signal_connect_object (GTK_OBJECT (mi), "activate",
                                  GTK_SIGNAL_FUNC (_darkroom_ui_apply_style_activate_callback),
