@@ -194,6 +194,12 @@ bpp (dt_imageio_module_data_t *data)
   return 32;
 }
 
+static const char*
+mime(dt_imageio_module_data_t *data)
+{
+  return "memory";
+}
+
 static int
 write_image (dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif, int exif_len, int imgid)
 {
@@ -234,6 +240,7 @@ process_next_image()
   static int counter = 0;
   dt_imageio_module_format_t buf;
   dt_imageio_module_data_t dat;
+  buf.mime = mime;
   buf.bpp = bpp;
   buf.write_image = write_image;
   dat.max_width  = width;
