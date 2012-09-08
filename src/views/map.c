@@ -339,7 +339,7 @@ void _view_map_collection_changed(gpointer instance, gpointer user_data)
   /* build the new query string */
   char *geo_query = g_strdup_printf("select id from images where id in (%s)\
                                     and longitude >= ?3 and longitude <= ?4 and latitude <= ?5 and latitude >= ?6\
-                                    and (longitude != 0.0 or latitude != 0.0)", query);
+                                    and (longitude != 0.0 or latitude != 0.0) limit 0, 100", query);
 
   /* prepare a new main query statement for collection */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);
