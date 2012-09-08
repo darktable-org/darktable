@@ -109,6 +109,9 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
 
   /* get bounding box coords */
   osm_gps_map_get_bbox(lib->map, &bb[0], &bb[1]);
+  float bb_0_lat = 0, bb_0_lon = 0, bb_1_lat = 0, bb_1_lon = 0;
+  osm_gps_map_point_get_degrees(&bb[0], &bb_0_lat, &bb_0_lon);
+  osm_gps_map_point_get_degrees(&bb[1], &bb_1_lat, &bb_1_lon);
 
   /* get map view state and store  */
   int zoom = osm_gps_map_get_zoom(lib->map);
@@ -124,7 +127,12 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
 
   /* setup offset and row for the main query */
   DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, 0);
-  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, 100);
+  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, -1);
+  // bind bounding box coords
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 3, bb_0_lon);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 4, bb_1_lon);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 5, bb_0_lat);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 6, bb_1_lat);
 
   /* query collection ids */
   while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
@@ -328,11 +336,17 @@ void _view_map_collection_changed(gpointer instance, gpointer user_data)
   if(lib->statements.main_query)
     sqlite3_finalize(lib->statements.main_query);
 
+  /* build the new query string */
+  char *geo_query = g_strdup_printf("select id from images where id in (%s)\
+                                    and longitude >= ?3 and longitude <= ?4 and latitude <= ?5 and latitude >= ?6\
+                                    and (longitude != 0.0 or latitude != 0.0)", query);
+
   /* prepare a new main query statement for collection */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &lib->statements.main_query, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);
 
   dt_control_queue_redraw_widget(GTK_WIDGET(lib->map));
 
+  g_free(geo_query);
 }
 
 static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data)
