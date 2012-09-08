@@ -303,7 +303,7 @@ gui_init (dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
-//  g_free(tooltip_text);
+  g_free(tooltip_text);
 }
 
 void
