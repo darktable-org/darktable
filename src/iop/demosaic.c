@@ -658,9 +658,13 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   roo.x = roo.y = 0;
   // roi_out->scale = global scale: (iscale == 1.0, always when demosaic is on)
 
-  const int qual = get_quality();
-
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
+
+  const int qual = get_quality();
+  int demosaicing_method = data->demosaicing_method;
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2) // only overwrite setting if quality << requested and in dr mode
+    demosaicing_method = DT_IOP_DEMOSAIC_PPG;
+
   const float *const pixels = (float *)i;
   if(roi_out->scale > .999f)
   {
@@ -686,7 +690,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
                         data->filters, roi_in->x, roi_in->y, 1);
           break;
       } 
-      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg((float *)o, in, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, in, (float *)o, &roi, &roo, data->filters);
@@ -694,7 +698,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     }
     else
     {
-      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg((float *)o, pixels, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, pixels, (float *)o, &roi, &roo, data->filters);
@@ -733,8 +737,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
           break;
       }
       // wanted ppg or zoomed out a lot and quality is limited to 1
-      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE ||
-         (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2)) // only overwrite setting if quality << requested and in dr mode
+      if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, in, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, data->filters);
@@ -742,7 +745,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     }
     else
     {
-      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, pixels, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, pixels, tmp, &roi, &roo, data->filters);
