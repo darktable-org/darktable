@@ -163,8 +163,9 @@ dt_history_get_items(int32_t imgid)
     char name[512]= {0};
     dt_history_item_t *item=g_malloc (sizeof (dt_history_item_t));
     item->num = sqlite3_column_int (stmt, 0);
-    g_snprintf(name,512,"%s (%s)",sqlite3_column_text (stmt, 1),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+    g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)), (sqlite3_column_int(stmt, 2)!=0)?_("on"):_("off"));
     item->name = g_strdup (name);
+    item->op = g_strdup((gchar *)sqlite3_column_text(stmt, 1));
     result = g_list_append (result,item);
   }
   return result;
