@@ -70,8 +70,8 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 #define HCLIP(x) x //is this still necessary???
 	//MIN(clip_pt,x)
 
-	int winx = roi_in->x;
-	int winy = roi_in->y;
+	int winx = roi_out->x;
+	int winy = roi_out->y;
 	int winw = roi_in->width;
 	int winh = roi_in->height;
 	int width=winw, height=winh;
