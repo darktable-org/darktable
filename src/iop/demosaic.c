@@ -700,7 +700,9 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
         amaze_demosaic_RT(self, piece, pixels, (float *)o, &roi, &roo, data->filters);
     }
   }
-  else if(roi_out->scale > .5f || (piece->pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL && qual > 0))
+  else if(roi_out->scale > .5f ||  // full needed because zoomed in enough
+      (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||  // or in darkroom mode and quality requested by user settings
+      (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))              // we assume you always want that for exports.
   {
     // demosaic and then clip and zoom
     // roo.x = roi_out->x / global_scale;
@@ -731,7 +733,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
           break;
       }
       // wanted ppg or zoomed out a lot and quality is limited to 1
-      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE || (roi_out->scale <= .5f && qual < 2))
+      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE ||
+         (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2)) // only overwrite setting if quality << requested and in dr mode
         demosaic_ppg(tmp, in, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, data->filters);
@@ -861,7 +864,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if(err != CL_SUCCESS) goto error;
 
   }
-  else if(roi_out->scale > .5f || (piece->pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL && qual > 0))
+  else if(roi_out->scale > .5f ||  // full needed because zoomed in enough
+      (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||  // or in darkroom mode and quality requested by user settings
+      (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))              // we assume you always want that for exports.
   {
     // need to scale to right res
     dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4*sizeof(float));
