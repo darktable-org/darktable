@@ -634,6 +634,21 @@ modify_roi_in (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
     roi_in->height = piece->pipe->image.height;
 }
 
+static int get_quality()
+{
+  int qual = 1;
+  gchar *quality = dt_conf_get_string("plugins/darkroom/demosaic/quality");
+  if(quality)
+  {
+    if(!strcmp(quality, "always bilinear (fast)"))
+      qual = 0;
+    else if(!strcmp(quality, "full (possibly slow)"))
+      qual = 2;
+    g_free(quality);
+  }
+  return qual;
+}
+
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -642,6 +657,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   roo = *roi_out;
   roo.x = roo.y = 0;
   // roi_out->scale = global scale: (iscale == 1.0, always when demosaic is on)
+
+  const int qual = get_quality();
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   const float *const pixels = (float *)i;
@@ -683,7 +700,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
         amaze_demosaic_RT(self, piece, pixels, (float *)o, &roi, &roo, data->filters);
     }
   }
-  else if(roi_out->scale > .5f || piece->pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL)
+  else if(roi_out->scale > .5f || (piece->pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL && qual > 0))
   {
     // demosaic and then clip and zoom
     // roo.x = roi_out->x / global_scale;
@@ -713,7 +730,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
                         data->filters, roi_in->x, roi_in->y, 1);
           break;
       }
-      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      // wanted ppg or zoomed out a lot and quality is limited to 1
+      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE || (roi_out->scale <= .5f && qual < 2))
         demosaic_ppg(tmp, in, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, data->filters);
@@ -757,6 +775,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
 
+  const int qual = get_quality();
   const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   if(interpolation->id != DT_INTERPOLATION_BILINEAR && roi_out->scale <= .99999f && roi_out->scale > 0.5f)
   {
@@ -842,7 +861,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if(err != CL_SUCCESS) goto error;
 
   }
-  else if(roi_out->scale > .5f || piece->pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL)
+  else if(roi_out->scale > .5f || (piece->pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL && qual > 0))
   {
     // need to scale to right res
     dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4*sizeof(float));
