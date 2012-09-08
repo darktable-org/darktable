@@ -276,13 +276,36 @@ dt_styles_get_item_list (const char *name)
       char name[512]= {0};
       dt_style_item_t *item=g_malloc (sizeof (dt_style_item_t));
       item->num = sqlite3_column_int (stmt, 0);
-      g_snprintf(name,512,"%s (%s)",sqlite3_column_text (stmt, 1),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+      g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
       item->name = g_strdup (name);
       result = g_list_append (result,item);
     }
     sqlite3_finalize(stmt);
   }
   return result;
+}
+
+char *
+dt_styles_get_item_list_as_string(const char *name)
+{
+  GList *items = dt_styles_get_item_list(name);
+  if (items)
+    {
+      GList* names = NULL;
+      unsigned int count = 0;
+      do
+      {
+        dt_style_item_t *item=(dt_style_item_t *)items->data;
+        names = g_list_append(names, g_strdup(item->name));
+        g_free(item->name);
+        g_free(item);
+        count++;
+      }
+      while ((items=g_list_next(items)));
+      
+      return dt_util_glist_to_str("\n", names, count);
+    }
+  return NULL;
 }
 
 GList *
