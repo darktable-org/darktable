@@ -169,6 +169,13 @@ paste_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_control_queue_redraw_center();
 }
 
+static void
+pastemode_combobox_changed(GtkWidget *widget, gpointer user_data)
+{
+  int mode = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
+}
+
 void
 gui_reset (dt_lib_module_t *self)
 {
@@ -244,6 +251,9 @@ gui_init (dt_lib_module_t *self)
                     (gpointer)self);
   g_signal_connect (G_OBJECT (loadbutton), "clicked",
                     G_CALLBACK (load_button_clicked),
+                    (gpointer)self);
+  g_signal_connect (G_OBJECT (d->pastemode), "changed",
+                    G_CALLBACK (pastemode_combobox_changed),
                     (gpointer)self);
 }
 
