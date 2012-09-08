@@ -219,7 +219,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     char dtcache[DT_MAX_PATH_LEN];
     char cachedir[DT_MAX_PATH_LEN];
     char devname[1024];
-    struct timespec tstart, tend;
+    double tstart, tend, tdiff;
     dt_loc_get_user_cache_dir(dtcache, DT_MAX_PATH_LEN);
 
     int len = strlen(infostr);
@@ -242,7 +242,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
     // now load all darktable cl kernels.
     // TODO: compile as a job?
-    clock_gettime(CLOCK_MONOTONIC, &tstart);
+    tstart = dt_get_wtime();
     FILE *f = fopen(filename, "rb");
     if(f)
     {
@@ -280,13 +280,9 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
           goto finally;
         }
 
-        clock_gettime(CLOCK_MONOTONIC, &tend);
-        long nsecs = tend.tv_nsec - tstart.tv_nsec;
-        time_t secs = tend.tv_sec - tstart.tv_sec;
-        if (nsecs<0) { nsecs+=1000000000; secs--; }
-        long msecs = (secs*1000) + (nsecs/1000000);
-
-        if ((msecs > 700) && (dialog == NULL))
+        tend = dt_get_wtime();
+        tdiff = tend - tstart;
+        if ((tdiff > 0.700) && (dialog == NULL))
         {
           gtk_init(0, NULL);
           dialog = gtk_message_dialog_new (NULL,
@@ -302,11 +298,9 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       }
 
       fclose(f);
-      clock_gettime(CLOCK_MONOTONIC, &tend);
-      long nsecs = tend.tv_nsec - tstart.tv_nsec;
-      time_t secs = tend.tv_sec - tstart.tv_sec;
-      if (nsecs<0) { nsecs+=1000000000; secs--; }
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] kernel loading time: %li.%li \n", secs, nsecs);
+      tend = dt_get_wtime();
+      tdiff = tend - tstart;
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] kernel loading time: %2.4lf \n", tdiff);
       if (dialog) gtk_widget_destroy(dialog);
     }
     else
