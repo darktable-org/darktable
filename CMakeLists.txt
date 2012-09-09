@@ -20,6 +20,11 @@ option(BINARY_PACKAGE_BUILD "Sets march optimization to generic" OFF)
 option(APRIL_FOOLS "Add the \"file manager\" (a shell) to lighttable mode" OFF)
 option(GTK3_MIGRATION_CHECKS "Help getting darktable ready for GTK3" OFF)
 option(USE_XMLLINT "Run xmllint to test if darktableconfig.xml is valid" ON)
+if(APPLE)
+	option(USE_MAC_INTEGRATION "Enable OS X integration" ON)
+else(APPLE)
+	set(USE_MAC_INTEGRATION OFF)
+endif(APPLE)
 
 # Generate multi arch triplet
 EXECUTE_PROCESS(COMMAND dpkg-architecture -qDEB_HOST_MULTIARCH OUTPUT_VARIABLE CMAKE_ARCH_TRIPLET OUTPUT_STRIP_TRAILING_WHITESPACE)

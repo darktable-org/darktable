@@ -28,6 +28,8 @@
 #include "control/control.h"
 #include "common/debug.h"
 #include "common/opencl.h"
+#include "common/bilateral.h"
+#include "common/bilateralcl.h"
 #include "dtgtk/togglebutton.h"
 #include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
@@ -84,6 +86,7 @@ dt_iop_shadhi_params_t;
 typedef struct dt_iop_shadhi_gui_data_t
 {
   GtkWidget *scale1,*scale2,*scale3,*scale4,*scale5,*scale6;       // shadows, highlights, radius, compress, shadows_ccorrect, highlights_ccorrect
+  GtkWidget *bilat;
 }
 dt_iop_shadhi_gui_data_t;
 
@@ -257,7 +260,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
 
 
-  const float radius = fmax(0.1f, data->radius);
+  const int   use_bilateral = data->radius < 0 ? 1 : 0;
+  const float radius = fmaxf(0.1f, fabsf(data->radius));
   const float sigma = radius * roi_in->scale / piece ->iscale;
   const float shadows = 2.0*fmin(fmax(-1.0,(data->shadows/100.0)), 1.0f);
   const float highlights = 2.0*fmin(fmax(-1.0,(data->highlights/100.0)), 1.0f);
@@ -265,11 +269,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float shadows_ccorrect = (fmin(fmax(0,(data->shadows_ccorrect/100.0)), 1.0f) - 0.5f) * sign(shadows) + 0.5f;
   const float highlights_ccorrect = (fmin(fmax(0,(data->highlights_ccorrect/100.0)), 1.0f) - 0.5f) * sign(-highlights) + 0.5f;
 
-  // as the function name implies
-  compute_gauss_params(sigma, data->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
-
   float *temp = dt_alloc_align(64, roi_out->width*roi_out->height*ch*sizeof(float));
   if(temp==NULL) return;
+
+  if(!use_bilateral)
+  {
+    // as the function name implies
+    compute_gauss_params(sigma, data->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
 
 #if 0
   const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
@@ -561,6 +567,19 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
   }
 #endif
+  }
+  else
+  {
+    const float sigma_r = 100.0f;// d->sigma_r; // does not depend on scale
+    const float sigma_s = sigma;
+    const float detail = -1.0f; // we want the bilateral base layer
+
+    dt_bilateral_t *b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
+    dt_bilateral_splat(b, in);
+    dt_bilateral_blur(b);
+    dt_bilateral_slice(b, in, out, detail);
+    dt_bilateral_free(b);
+  }
 
   // invert and desaturate
 #ifdef _OPENMP
@@ -716,7 +735,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const size_t bwidth = width % blockwd == 0 ? width : (width / blockwd + 1)*blockwd;
   const size_t bheight = height % blockht == 0 ? height : (height / blockht + 1)*blockht;
 
-  const float radius = fmax(0.1f, d->radius);
+  const int   use_bilateral = d->radius < 0 ? 1 : 0;
+  const float radius = fmaxf(0.1f, fabsf(d->radius));
   const float sigma = radius * roi_in->scale / piece ->iscale;
   const float shadows = 2.0*fmin(fmax(-1.0,(d->shadows/100.0f)), 1.0f);
   const float highlights = 2.0*fmin(fmax(-1.0,(d->highlights/100.0f)), 1.0f);
@@ -726,7 +746,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   size_t origin[] = {0, 0, 0};
   size_t region[] = {width, height, 1};
-
   size_t local[] = {blockwd, blockht, 1};
 
   size_t sizes[3];
@@ -734,91 +753,116 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   cl_mem dev_temp1 = NULL;
   cl_mem dev_temp2 = NULL;
 
+  const float sigma_r = 100.0f; // does not depend on scale
+  const float sigma_s = sigma;
+  const float detail = -1.0f; // we want the bilateral base layer
+
+  dt_bilateral_cl_t *b = dt_bilateral_init_cl(devid, roi_in->width, roi_in->height, sigma_s, sigma_r);
+  if(!b) goto error;
+
   // get intermediate vector buffers with read-write access
   dev_temp1 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*bpp);
   if(dev_temp1 == NULL) goto error;
   dev_temp2 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*bpp);
   if(dev_temp2 == NULL) goto error;
 
+  if(!use_bilateral)
+  {
+    // compute gaussian parameters
+    float a0, a1, a2, a3, b1, b2, coefp, coefn;
+    compute_gauss_params(sigma, d->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
 
-  // compute gaussian parameters
-  float a0, a1, a2, a3, b1, b2, coefp, coefn;
-  compute_gauss_params(sigma, d->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
+    // copy dev_in to intermediate buffer dev_temp1
+    err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_in, dev_temp1, origin, region, 0);
+    if(err != CL_SUCCESS) goto error;
 
-  // copy dev_in to intermediate buffer dev_temp1
-  err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_in, dev_temp1, origin, region, 0);
-  if(err != CL_SUCCESS) goto error;
+    // first blur step: column by column with dev_temp1 -> dev_temp2
+    sizes[0] = ROUNDUPWD(width);
+    sizes[1] = 1;
+    sizes[2] = 1;
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 4, sizeof(float), (void *)&a0);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 5, sizeof(float), (void *)&a1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 6, sizeof(float), (void *)&a2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 7, sizeof(float), (void *)&a3);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 8, sizeof(float), (void *)&b1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_gaussian_column, sizes);
+    if(err != CL_SUCCESS) goto error;
 
-  // first blur step: column by column with dev_temp1 -> dev_temp2
-  sizes[0] = ROUNDUPWD(width);
-  sizes[1] = 1;
-  sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 4, sizeof(float), (void *)&a0);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 5, sizeof(float), (void *)&a1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 6, sizeof(float), (void *)&a2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 7, sizeof(float), (void *)&a3);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 8, sizeof(float), (void *)&b1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_gaussian_column, sizes);
-  if(err != CL_SUCCESS) goto error;
-
-  // intermediate step: transpose dev_temp2 -> dev_temp1
-  sizes[0] = bwidth;
-  sizes[1] = bheight;
-  sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 4, sizeof(int), (void *)&blocksize);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 5, bpp*blocksize*(blocksize+1), NULL);
-  err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_gaussian_transpose, sizes, local);
-  if(err != CL_SUCCESS) goto error;
-
-
-  // second blur step: column by column of transposed image with dev_temp1 -> dev_temp2 (!! height <-> width !!)
-  sizes[0] = ROUNDUPWD(height);
-  sizes[1] = 1;
-  sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 2, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 3, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 4, sizeof(float), (void *)&a0);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 5, sizeof(float), (void *)&a1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 6, sizeof(float), (void *)&a2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 7, sizeof(float), (void *)&a3);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 8, sizeof(float), (void *)&b1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_gaussian_column, sizes);
-  if(err != CL_SUCCESS) goto error;
+    // intermediate step: transpose dev_temp2 -> dev_temp1
+    sizes[0] = bwidth;
+    sizes[1] = bheight;
+    sizes[2] = 1;
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 4, sizeof(int), (void *)&blocksize);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 5, bpp*blocksize*(blocksize+1), NULL);
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_gaussian_transpose, sizes, local);
+    if(err != CL_SUCCESS) goto error;
 
 
-  // transpose back dev_temp2 -> dev_temp1
-  sizes[0] = bheight;
-  sizes[1] = bwidth;
-  sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 2, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 3, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 4, sizeof(int), (void *)&blocksize);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 5, bpp*blocksize*(blocksize+1), NULL);
-  err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_gaussian_transpose, sizes, local);
-  if(err != CL_SUCCESS) goto error;
+    // second blur step: column by column of transposed image with dev_temp1 -> dev_temp2 (!! height <-> width !!)
+    sizes[0] = ROUNDUPWD(height);
+    sizes[1] = 1;
+    sizes[2] = 1;
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 2, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 4, sizeof(float), (void *)&a0);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 5, sizeof(float), (void *)&a1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 6, sizeof(float), (void *)&a2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 7, sizeof(float), (void *)&a3);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 8, sizeof(float), (void *)&b1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_gaussian_column, sizes);
+    if(err != CL_SUCCESS) goto error;
 
 
-  // once again produce copy of dev_in, as it is needed for final mixing step: dev_in -> dev_temp2
-  err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_in, dev_temp2, origin, region, 0);
-  if(err != CL_SUCCESS) goto error;
+    // transpose back dev_temp2 -> dev_temp1
+    sizes[0] = bheight;
+    sizes[1] = bwidth;
+    sizes[2] = 1;
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 2, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 4, sizeof(int), (void *)&blocksize);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 5, bpp*blocksize*(blocksize+1), NULL);
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_gaussian_transpose, sizes, local);
+    if(err != CL_SUCCESS) goto error;
+
+    // once again produce copy of dev_in, as it is needed for final mixing step: dev_in -> dev_temp2
+    err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_in, dev_temp2, origin, region, 0);
+    if(err != CL_SUCCESS) goto error;
+  }
+  else
+  {
+    err = dt_bilateral_splat_cl(b, dev_in);
+    if (err != CL_SUCCESS) goto error;
+    err = dt_bilateral_blur_cl(b);
+    if (err != CL_SUCCESS) goto error;
+    err = dt_bilateral_slice_cl(b, dev_in, dev_out, detail);
+    if (err != CL_SUCCESS) goto error;
+    dt_bilateral_free_cl(b);
+    b = NULL; // make sure we don't clean it up twice
+
+    // once again produce copy of dev_in, as it is needed for final mixing step: dev_in -> dev_temp2
+    err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_in, dev_temp2, origin, region, 0);
+    if(err != CL_SUCCESS) goto error;
+    err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_out, dev_temp1, origin, region, 0);
+    if(err != CL_SUCCESS) goto error;
+  }
 
   // final mixing step with dev_temp1 as mask: dev_temp2 -> dev_temp2
   sizes[0] = ROUNDUPWD(width);
@@ -859,6 +903,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   return TRUE;
 
 error:
+  if (b) dt_bilateral_free_cl(b);
   if (dev_temp1 != NULL) dt_opencl_release_mem_object(dev_temp1);
   if (dev_temp2 != NULL) dt_opencl_release_mem_object(dev_temp2);
   dt_print(DT_DEBUG_OPENCL, "[opencl_shadows&highlights] couldn't enqueue kernel! %d\n", err);
@@ -890,7 +935,19 @@ radius_callback (GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
-  p->radius= dt_bauhaus_slider_get(slider);
+  p->radius = copysignf(dt_bauhaus_slider_get(slider), p->radius);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void
+bilat_callback (GtkWidget *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
+  if(dt_bauhaus_combobox_get(widget))
+    p->radius = -fabsf(p->radius);
+  else
+    p->radius = fabsf(p->radius);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -983,7 +1040,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)module->params;
   dt_bauhaus_slider_set(g->scale1, p->shadows);
   dt_bauhaus_slider_set(g->scale2, p->highlights);
-  dt_bauhaus_slider_set(g->scale3, p->radius);
+  dt_bauhaus_slider_set(g->scale3, fabsf(p->radius));
+  dt_bauhaus_combobox_set(g->bilat, p->radius < 0 ? 1 : 0);
   dt_bauhaus_slider_set(g->scale4, p->compress);
   dt_bauhaus_slider_set(g->scale5, p->shadows_ccorrect);
   dt_bauhaus_slider_set(g->scale6, p->highlights_ccorrect);
@@ -1047,6 +1105,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->scale1 = dt_bauhaus_slider_new_with_range(self,-100.0, 100.0, 2., p->shadows, 2);
   g->scale2 = dt_bauhaus_slider_new_with_range(self,-100.0, 100.0, 2., p->highlights, 2);
+  g->bilat  = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->bilat, _("soften with"));
+  dt_bauhaus_combobox_add(g->bilat, _("gaussian"));
+  dt_bauhaus_combobox_add(g->bilat, _("bilateral filter"));
   g->scale3 = dt_bauhaus_slider_new_with_range(self,0.1, 200.0, 2., p->radius, 2);
   g->scale4 = dt_bauhaus_slider_new_with_range(self,0, 100.0, 2., p->compress, 2);
   g->scale5 = dt_bauhaus_slider_new_with_range(self,0, 100.0, 2., p->shadows_ccorrect, 2);
@@ -1066,6 +1128,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale1, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale2, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->bilat,  TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale3, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale4, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale5, TRUE, TRUE, 0);
@@ -1074,6 +1137,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("correct shadows"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("correct highlights"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("spatial extent"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->bilat),  "tooltip-text", _("filter to use for softening. bilateral avoids halos"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("compress the effect on shadows/highlights and\npreserve midtones"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale5), "tooltip-text", _("adjust saturation of shadows"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale6), "tooltip-text", _("adjust saturation of highlights"), (char *)NULL);
@@ -1084,6 +1148,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (highlights_callback), self);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
                     G_CALLBACK (radius_callback), self);
+  g_signal_connect (G_OBJECT (g->bilat), "value-changed",
+                    G_CALLBACK (bilat_callback), self);
   g_signal_connect (G_OBJECT (g->scale4), "value-changed",
                     G_CALLBACK (compress_callback), self);
   g_signal_connect (G_OBJECT (g->scale5), "value-changed",

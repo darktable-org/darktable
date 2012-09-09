@@ -61,7 +61,6 @@
 static void
 amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in, float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out, const int filters)
 {  
-
 #define SQR(x) ((x)*(x))
 	//#define MIN(a,b) ((a) < (b) ? (a) : (b))
 	//#define MAX(a,b) ((a) > (b) ? (a) : (b))
@@ -73,8 +72,8 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
 	int winx = roi_out->x;
 	int winy = roi_out->y;
-	int winw =  roi_out->width;
-	int winh = roi_out->height;
+	int winw = roi_in->width;
+	int winh = roi_in->height;
 	int width=winw, height=winh;
 	
 	//const uint32_t filters = dt_image_flipped_filter(self->dev->image);
@@ -263,12 +262,12 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-	//determine GRBG coset; (ey,ex) is the offset of the R subarray
-	if (FC(0,0,filters)==1) {//first pixel is G
-		if (FC(0,1,filters)==0) {ey=0; ex=1;} else {ey=1; ex=0;}
-	} else {//first pixel is R or B
-		if (FC(0,0,filters)==0) {ey=0; ex=0;} else {ey=1; ex=1;}
-	}
+  //determine GRBG coset; (ey,ex) is the offset of the R subarray
+  if (FC(0,0,filters)==1) {//first pixel is G
+    if (FC(0,1,filters)==0) {ey=0; ex=1;} else {ey=1; ex=0;}
+  } else {//first pixel is R or B
+    if (FC(0,0,filters)==0) {ey=0; ex=0;} else {ey=1; ex=1;}
+  }
 
 	// Main algorithm: Tile loop
 	//#pragma omp parallel for shared(rawData,height,width,red,green,blue) private(top,left) schedule(dynamic)
@@ -1038,16 +1037,17 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 					//red[row][col] = ((65535.0f*rgb[indx][0] ));
 					//green[row][col] = ((65535.0f*rgb[indx][1]));
 					//blue[row][col] = ((65535.0f*rgb[indx][2]));
-					out[(row*width+col)*4]   = rgb[indx][0];
-					out[(row*width+col)*4+1] = rgb[indx][1];
-					out[(row*width+col)*4+2] = rgb[indx][2];
+          if(col < roi_out->width && row < roi_out->height)
+          {
+            out[(row*roi_out->width+col)*4]   = rgb[indx][0];
+            out[(row*roi_out->width+col)*4+1] = rgb[indx][1];
+            out[(row*roi_out->width+col)*4+2] = rgb[indx][2];
+          }
 
 					//for dcraw implementation
 					//for (c=0; c<3; c++){
 					//	image[indx][c] = CLIP((int)(65535.0f*rgb[rr*TS+cc][c] + 0.5f)); 
 					//} 
-
-
 				}
 			//end of main loop
 

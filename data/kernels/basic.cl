@@ -951,18 +951,72 @@ fast_expf(const float x)
 }
 
 
+float
+envelope(const float L)
+{
+  const float x = clamp(L/100.0f, 0.0f, 1.0f);
+  // const float alpha = 2.0f;
+  const float beta = 0.6f;
+  if(x < beta)
+  {
+    // return 1.0f-fabsf(x/beta-1.0f)^2
+    const float tmp = fabs(x/beta-1.0f);
+    return 1.0f-tmp*tmp;
+  }
+  else
+  {
+    const float tmp1 = (1.0f-x)/(1.0f-beta);
+    const float tmp2 = tmp1*tmp1;
+    const float tmp3 = tmp2*tmp1;
+    return 3.0f*tmp2 - 2.0f*tmp3;
+  }
+}
+
 /* kernel for monochrome */
-__kernel void
-monochrome(read_only image2d_t in, write_only image2d_t out, const int width, const int height, 
-           const float a, const float b, const float size)
+kernel void
+monochrome_filter(
+    read_only image2d_t in,
+    write_only image2d_t out,
+    const int width,
+    const int height, 
+    const float a,
+    const float b,
+    const float size)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  pixel.x *= fast_expf(-clamp(((pixel.y - a)*(pixel.y - a) + (pixel.z - b)*(pixel.z - b))/(2.0f * size), 0.0f, 1.0f));
+  float4 pixel = read_imagef (in,   sampleri, (int2)(x, y));
+  // TODO: this could be a native_expf, or exp2f, need to evaluate comparisons with cpu though:
+  pixel.x = 100.0f*fast_expf(-clamp(((pixel.y - a)*(pixel.y - a) + (pixel.z - b)*(pixel.z - b))/(2.0f * size), 0.0f, 1.0f));
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+kernel void
+monochrome(
+    read_only image2d_t in,
+    read_only image2d_t base,
+    write_only image2d_t out,
+    const int width,
+    const int height, 
+    const float a,
+    const float b,
+    const float size,
+    float highlights)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef (in,   sampleri, (int2)(x, y));
+  float4 basep = read_imagef (base, sampleri, (int2)(x, y));
+  float filter  = fast_expf(-clamp(((pixel.y - a)*(pixel.y - a) + (pixel.z - b)*(pixel.z - b))/(2.0f * size), 0.0f, 1.0f));
+  float tt = envelope(pixel.x);
+  float t  = tt + (1.0f-tt)*(1.0f-highlights);
+  pixel.x = mix(pixel.x, pixel.x*basep.x/100.0f, t);
   pixel.y = pixel.z = 0.0f;
   write_imagef (out, (int2)(x, y), pixel);
 }

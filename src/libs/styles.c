@@ -121,16 +121,30 @@ static void _gui_styles_update_view( dt_lib_styles_t *d)
     do
     {
       dt_style_t *style = (dt_style_t *)result->data;
+      
+      char* items_string = dt_styles_get_item_list_as_string (style->name);
+      gchar* tooltip = NULL;
+
+      if((style->description) && strlen (style->description))
+      {
+        tooltip = g_strconcat("<b><i>", style->description, "</i></b>\n", items_string, NULL);
+      }
+      else
+      {
+        tooltip = g_strdup(items_string);
+      }
 
       gtk_list_store_append (GTK_LIST_STORE(model), &iter);
       gtk_list_store_set (GTK_LIST_STORE(model), &iter,
                           DT_STYLES_COL_NAME, style->name,
-                          DT_STYLES_COL_TOOLTIP, (strlen (style->description)?style->description:NULL),
+                          DT_STYLES_COL_TOOLTIP, tooltip,
                           -1);
 
       g_free(style->name);
       g_free(style->description);
       g_free(style);
+      g_free(items_string);
+      g_free(tooltip);
     }
     while ((result=g_list_next(result))!=NULL);
   }

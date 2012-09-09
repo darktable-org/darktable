@@ -63,6 +63,9 @@ GList *dt_styles_get_list (const char *filter);
 /** get a list of items for a named style */
 GList *dt_styles_get_item_list (const char *name);
 
+/** get list of items for a named style as a nice string */
+char *dt_styles_get_item_list_as_string(const char *name);
+
 /** get a description of a named style */
 gchar *dt_styles_get_description (const char *name);
 

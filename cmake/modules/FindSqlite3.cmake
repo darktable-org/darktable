@@ -14,8 +14,6 @@
 
 SET(SQLITE3_FIND_REQUIRED ${Sqlite3_FIND_REQUIRED})
 
-# prefer macports' sqlite3 over system's, using libsqlite3 supplied with OS X causes frequent crashes
-# it's assumed that macports were installed to default location (/opt/local)
 find_path(SQLITE3_INCLUDE_DIR sqlite3.h)
 mark_as_advanced(SQLITE3_INCLUDE_DIR)
 

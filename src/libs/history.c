@@ -217,6 +217,7 @@ static void _lib_history_compress_clicked_callback (GtkWidget *widget, gpointer 
   sqlite3_finalize(stmt);
 
   dt_dev_reload_history_items(darktable.develop);
+  dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 }
 
 static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer user_data)
@@ -244,6 +245,7 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   /* revert to given history item. */
   long int num = (long int)g_object_get_data(G_OBJECT(widget),"history-number");
   dt_dev_pop_history_items (darktable.develop, num);
+  dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 
 }
 

@@ -46,6 +46,9 @@
 #include <math.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#ifdef MAC_INTEGRATION
+#   include <gtkosxapplication.h>
+#endif
 #include <pthread.h>
 
 
@@ -213,6 +216,10 @@ static gboolean fullscreen_key_accel_callback(GtkAccelGroup *accel_group,
 
   /* redraw center view */
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+#ifdef __APPLE__
+  // workaround for GTK Quartz backend bug
+  gtk_window_set_title(GTK_WINDOW(widget), "Darktable");
+#endif
   return TRUE;
 }
 
@@ -503,6 +510,7 @@ void quit()
   dt_control_quit();
 }
 
+
 static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
                                                 GObject *acceleratable,
                                                 guint keyval,
@@ -548,6 +556,19 @@ static gboolean quit_callback(GtkAccelGroup *accel_group,
   dt_control_quit();
   return TRUE; // for the sake of completeness ...
 }
+
+#ifdef MAC_INTEGRATION
+static gboolean osx_quit_callback(GtkOSXApplication* OSXapp, gpointer user_data)
+{
+  dt_control_quit();
+  return TRUE;
+}
+
+static gboolean osx_openfile_callback(GtkOSXApplication* OSXapp, gchar* path, gpointer user_data)
+{
+  return dt_load_from_string(path, FALSE) == 0 ? FALSE : TRUE;
+}
+#endif
 
 static gboolean
 configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
@@ -670,6 +691,14 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gdk_threads_enter();
 
   gtk_init (&argc, &argv);
+
+#ifdef MAC_INTEGRATION
+  GtkOSXApplication *OSXApp = g_object_new(GTK_TYPE_OSX_APPLICATION, NULL);
+  gtk_osxapplication_set_menu_bar(OSXApp, GTK_MENU_SHELL(gtk_menu_bar_new())); //needed for default entries to show up
+  gtk_osxapplication_ready(OSXApp);
+  g_signal_connect(G_OBJECT(OSXApp), "NSApplicationBlockTermination", G_CALLBACK(osx_quit_callback), NULL);
+  g_signal_connect(G_OBJECT(OSXApp), "NSApplicationOpenFile", G_CALLBACK(osx_openfile_callback), NULL);
+#endif
 
   GtkWidget *widget;
   gui->ui = dt_ui_initialize(argc,argv);
@@ -878,6 +907,10 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
 {
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   darktable.gui->pixmap = gdk_pixmap_new(widget->window, widget->allocation.width, widget->allocation.height, -1);
+  //need to pre-configure views to avoid crash caused by expose-event coming before configure-event
+  darktable.control->tabborder = 8;
+  int tb = darktable.control->tabborder;
+  dt_view_manager_configure(darktable.view_manager, widget->allocation.width - 2*tb, widget->allocation.height - 2*tb);
   /* start the event loop */
   gtk_main ();
   gdk_threads_leave();

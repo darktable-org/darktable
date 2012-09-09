@@ -184,6 +184,15 @@ if(USE_GNOME_KEYRING)
   endif(GNOMEKEYRING_FOUND)
 endif(USE_GNOME_KEYRING)
 
+if(USE_MAC_INTEGRATION)
+  find_package(MacIntegration)
+  if(MACINTEGRATION_FOUND)
+    include_directories(${MacIntegration_INCLUDE_DIRS})
+    list(APPEND LIBS ${MacIntegration_LIBRARIES})
+    add_definitions("-DMAC_INTEGRATION")
+  endif(MACINTEGRATION_FOUND)
+endif(USE_MAC_INTEGRATION)
+
 # have a small test program, to be run as root on some systems to enable the driver to run cl stuff
 add_subdirectory(cltest)
 

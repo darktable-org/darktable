@@ -83,10 +83,12 @@ typedef struct dt_opencl_device_t
   int eventsconsolidated;
   int maxevents;
   int lostevents;
+  int nvidia_sm_20;
   cl_int summary;
 }
 dt_opencl_device_t;
 
+struct dt_bilateral_cl_global_t;
 /**
  * main struct, stored in darktable.opencl.
  * holds pointers to all
@@ -99,6 +101,9 @@ typedef struct dt_opencl_t
   int num_devs;
   dt_opencl_device_t *dev;
   dt_dlopencl_t *dlocl;
+
+  // global kernels for bilateral filtering, to be reused by a few plugins.
+  struct dt_bilateral_cl_global_t *bilateral;
 }
 dt_opencl_t;
 
@@ -122,10 +127,10 @@ int dt_opencl_lock_device(const int dev);
 void dt_opencl_unlock_device(const int dev);
 
 /** loads the given .cl file and returns a reference to an internal program. */
-int dt_opencl_load_program(const int dev, const char *filename);
+int dt_opencl_load_program(const int dev, const char *filename, const char* binname, const char* cachedir, char* md5sum, int* loaded_cached);
 
 /** builds the given program. */
-int dt_opencl_build_program(const int dev, const int program);
+int dt_opencl_build_program(const int dev, const int prog, const char* binname, const char* cachedir, char* md5sum, int loaded_cached);
 
 /** inits a kernel. returns the index or -1 if fail. */
 int dt_opencl_create_kernel(const int program, const char *name);
