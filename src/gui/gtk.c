@@ -216,6 +216,10 @@ static gboolean fullscreen_key_accel_callback(GtkAccelGroup *accel_group,
 
   /* redraw center view */
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+#ifdef __APPLE__
+  // workaround for GTK Quartz backend bug
+  gtk_window_set_title(GTK_WINDOW(widget), "Darktable");
+#endif
   return TRUE;
 }
 
