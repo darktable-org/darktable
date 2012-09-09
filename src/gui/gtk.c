@@ -695,7 +695,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 #ifdef MAC_INTEGRATION
   GtkOSXApplication *OSXApp = g_object_new(GTK_TYPE_OSX_APPLICATION, NULL);
   gtk_osxapplication_set_menu_bar(OSXApp, GTK_MENU_SHELL(gtk_menu_bar_new())); //needed for default entries to show up
-  gtk_osxapplication_ready(OSXApp);
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationBlockTermination", G_CALLBACK(osx_quit_callback), NULL);
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationOpenFile", G_CALLBACK(osx_openfile_callback), NULL);
 #endif
@@ -911,6 +910,9 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   darktable.control->tabborder = 8;
   int tb = darktable.control->tabborder;
   dt_view_manager_configure(darktable.view_manager, widget->allocation.width - 2*tb, widget->allocation.height - 2*tb);
+#ifdef MAC_INTEGRATION
+  gtk_osxapplication_ready(g_object_new(GTK_TYPE_OSX_APPLICATION, NULL));
+#endif
   /* start the event loop */
   gtk_main ();
   gdk_threads_leave();
