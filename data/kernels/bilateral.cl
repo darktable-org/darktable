@@ -16,6 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#pragma cl_khr_global_int32_base_atomics : enable
+
 const sampler_t sampleri = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;
 
 
@@ -276,7 +278,7 @@ slice_to_output(
   if(x >= width || y >= height) return;
 
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
-  const float norm = -detail * sigma_r * 0.04;
+  const float norm = -detail * sigma_r * 0.04f;
   const int ox = 1;
   const int oy = sizex;
   const int oz = sizey*sizex;
@@ -329,7 +331,7 @@ slice(
   if(x >= width || y >= height) return;
 
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
-  const float norm = -detail * sigma_r * 0.04;
+  const float norm = -detail * sigma_r * 0.04f;
   const int ox = 1;
   const int oy = sizex;
   const int oz = sizey*sizex;
