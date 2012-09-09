@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2009--2012 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -469,7 +469,7 @@ int dt_opencl_load_program(const int dev, const char *filename, const char* binn
 
   FILE *cached = fopen_stat(binname, &cachedstat);
   if (cached)
-{
+  {
 
     if ((linkedfile_len=readlink(binname, linkedfile, 1023)) > 0)
     {
@@ -489,29 +489,28 @@ int dt_opencl_load_program(const int dev, const char *filename, const char* binn
         else
         {
           for(k = 0; k<DT_OPENCL_MAX_PROGRAMS; k++) if(!cl->dev[dev].program_used[k])
+          {
+            cl->dev[dev].program[k] = (cl->dlocl->symbols->dt_clCreateProgramWithBinary)(cl->dev[dev].context, 1, &(cl->dev[dev].devid), &cached_filesize, (const unsigned char **)&cached_content, NULL, &err);
+            if(err != CL_SUCCESS)
             {
-              cl->dev[dev].program[k] = (cl->dlocl->symbols->dt_clCreateProgramWithBinary)(cl->dev[dev].context, 1, &(cl->dev[dev].devid), &cached_filesize, (const unsigned char **)&cached_content, NULL, &err);
-              if(err != CL_SUCCESS)
-              {
-                dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not load cached binary program from file `%s'! (%d)\n", binname, err);
-                break;
-              }
-              else
-              {
-                cl->dev[dev].program_used[k] = 1;
-                *loaded_cached = 1;
-                break;
-              }
+              dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not load cached binary program from file `%s'! (%d)\n", binname, err);
+              break;
             }
+            else
+            {
+              cl->dev[dev].program_used[k] = 1;
+              *loaded_cached = 1;
+              break;
+            }
+          }
+        }
+        free(cached_content);
       }
-      free(cached_content);
-    }
 
-      }
+    }
 
     fclose(cached);
-
-    }
+  }
 
 
   if (*loaded_cached == 0)
@@ -523,7 +522,7 @@ int dt_opencl_load_program(const int dev, const char *filename, const char* binn
       char link_dest[1024];
       snprintf(link_dest, 1024, "%s/%s", cachedir, linkedfile);
       unlink(link_dest);
-  }
+    }
     unlink(binname);
 
     if (k != DT_OPENCL_MAX_PROGRAMS)
@@ -531,19 +530,20 @@ int dt_opencl_load_program(const int dev, const char *filename, const char* binn
       dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not load cached binary program, trying to compile source\n");
 
       for(k=0; k<DT_OPENCL_MAX_PROGRAMS; k++) if(!cl->dev[dev].program_used[k])
+      {
+        cl->dev[dev].program[k] = (cl->dlocl->symbols->dt_clCreateProgramWithSource)(cl->dev[dev].context, 1, (const char**)&file, &filesize, &err);
+        free(file);
+        if(err != CL_SUCCESS)
         {
-          cl->dev[dev].program[k] = (cl->dlocl->symbols->dt_clCreateProgramWithSource)(cl->dev[dev].context, 1, (const char**)&file, &filesize, &err);
-          free(file);
-          if(err != CL_SUCCESS)
-          {
-            dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] could not create program from file `%s'! (%d)\n", filename, err);
-            return -1;
-  } else {
-            cl->dev[dev].program_used[k] = 1;
-            break;
-          }
+          dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] could not create program from file `%s'! (%d)\n", filename, err);
+          return -1;
+        } 
+        else 
+        {
+          cl->dev[dev].program_used[k] = 1;
+          break;
         }
-
+      }
     }
   }
   else
