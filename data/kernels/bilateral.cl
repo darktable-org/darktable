@@ -21,14 +21,14 @@ const sampler_t sampleri = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK
 
 float4
 image_to_grid(
-    const float4 *p,
-    const int4   *size,
-    const float4 *sigma)
+    const float4 p,
+    const int4   size,
+    const float4 sigma)
 {
   return (float4)(
-    clamp(p->x/sigma->x, 0.0f, size->x-1.0f),
-    clamp(p->y/sigma->y, 0.0f, size->y-1.0f),
-    clamp(p->z/sigma->z, 0.0f, size->z-1.0f), 0.0f);
+    clamp(p.x/sigma.x, 0.0f, size.x-1.0f),
+    clamp(p.y/sigma.y, 0.0f, size.y-1.0f),
+    clamp(p.z/sigma.z, 0.0f, size.z-1.0f), 0.0f);
 }
 
 void
@@ -107,7 +107,7 @@ splat(
   const float4 pixel = read_imagef (in, sampleri, (int2)(x, y));
   float L = pixel.x;
   float4 p = (float4)(x, y, L, 0);
-  float4 gridp = image_to_grid(&p, &size, &sigma);
+  float4 gridp = image_to_grid(p, size, sigma);
   int4 xi = min(size - 2, (int4)(gridp.x, gridp.y, gridp.z, 0));
   float fx = gridp.x - xi.x;
   float fy = gridp.y - xi.y;
@@ -288,7 +288,7 @@ slice_to_output(
   float4 pixel2 = read_imagef (out2, sampleri, (int2)(x, y));
   float L = pixel.x;
   float4 p = (float4)(x, y, L, 0);
-  float4 gridp = image_to_grid(&p, &size, &sigma);
+  float4 gridp = image_to_grid(p, size, sigma);
   int4 gridi = min(size - 2, (int4)(gridp.x, gridp.y, gridp.z, 0));
   float fx = gridp.x - gridi.x;
   float fy = gridp.y - gridi.y;
@@ -340,7 +340,7 @@ slice(
   float4 pixel = read_imagef (in, sampleri, (int2)(x, y));
   float L = pixel.x;
   float4 p = (float4)(x, y, L, 0);
-  float4 gridp = image_to_grid(&p, &size, &sigma);
+  float4 gridp = image_to_grid(p, size, sigma);
   int4 gridi = min(size - 2, (int4)(gridp.x, gridp.y, gridp.z, 0));
   float fx = gridp.x - gridi.x;
   float fy = gridp.y - gridi.y;
