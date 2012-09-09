@@ -262,8 +262,12 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-  // the roi we pass in is always aligned to the rggb block.
-  ey = ex = 0;
+  //determine GRBG coset; (ey,ex) is the offset of the R subarray
+  if (FC(0,0,filters)==1) {//first pixel is G
+    if (FC(0,1,filters)==0) {ey=0; ex=1;} else {ey=1; ex=0;}
+  } else {//first pixel is R or B
+    if (FC(0,0,filters)==0) {ey=0; ex=0;} else {ey=1; ex=1;}
+  }
 
 	// Main algorithm: Tile loop
 	//#pragma omp parallel for shared(rawData,height,width,red,green,blue) private(top,left) schedule(dynamic)
