@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma cl_khr_global_int32_base_atomics : enable
+#pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
 
 const sampler_t sampleri = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;
 
