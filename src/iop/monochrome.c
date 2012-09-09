@@ -249,9 +249,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_monochrome, sizes);
   if(err != CL_SUCCESS) goto error;
 
+  if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
 
 error:
+  if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   dt_bilateral_free_cl(b);
   dt_print(DT_DEBUG_OPENCL, "[opencl_monochrome] couldn't enqueue kernel! %d\n", err);
   return FALSE;

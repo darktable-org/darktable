@@ -329,6 +329,7 @@ void
 dt_bilateral_free(
     dt_bilateral_t *b)
 {
+  if(!b) return;
   free(b->buf);
   free(b);
 }
