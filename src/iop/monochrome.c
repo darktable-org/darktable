@@ -393,13 +393,24 @@ static gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
     dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
-    const int inset = DT_COLORCORRECTION_INSET;
-    int width = widget->allocation.width - 2*inset, height = widget->allocation.height - 2*inset;
-    const float mouse_x = CLAMP(event->x - inset, 0, width);
-    const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
-    p->a = PANEL_WIDTH*(mouse_x - width  * 0.5f)/(float)width;
-    p->b = PANEL_WIDTH*(mouse_y - height * 0.5f)/(float)height;
-    g->dragging = 1;
+    if(event->type == GDK_2BUTTON_PRESS)
+    {
+      // reset
+      dt_iop_monochrome_params_t *p0 = (dt_iop_monochrome_params_t *)self->default_params;
+      p->a = p0->a;
+      p->b = p0->b;
+      p->size = p0->size;
+    }
+    else
+    {
+      const int inset = DT_COLORCORRECTION_INSET;
+      int width = widget->allocation.width - 2*inset, height = widget->allocation.height - 2*inset;
+      const float mouse_x = CLAMP(event->x - inset, 0, width);
+      const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
+      p->a = PANEL_WIDTH*(mouse_x - width  * 0.5f)/(float)width;
+      p->b = PANEL_WIDTH*(mouse_y - height * 0.5f)/(float)height;
+      g->dragging = 1;
+    }
     gtk_widget_queue_draw(self->widget);
     return TRUE;
   }
@@ -477,7 +488,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->area), "scroll-event",
                     G_CALLBACK (dt_iop_monochrome_scrolled), self);
 
-  g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.1, 0.0, 2);
+  g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.01, 0.0, 2);
   g_object_set (GTK_OBJECT(g->highlights), "tooltip-text", _("how much to keep highlights"), (char *)NULL);
   dt_bauhaus_widget_set_label(g->highlights, _("highlights"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
