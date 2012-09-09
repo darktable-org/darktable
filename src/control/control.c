@@ -225,51 +225,6 @@ int dt_control_write_config(dt_control_t *c)
 // For X display, uses the ICC profile specifications version 0.2 from
 // http://burtonini.com/blog/computers/xicc
 // Based on code from Gimp's modules/cdisplay_lcms.c
-#ifdef GDK_WINDOWING_QUARTZ
-typedef struct
-{
-  guchar *data;
-  gsize   len;
-}
-ProfileTransfer;
-
-enum
-{
-  openReadSpool  = 1, /* start read data process         */
-  openWriteSpool = 2, /* start write data process        */
-  readSpool      = 3, /* read specified number of bytes  */
-  writeSpool     = 4, /* write specified number of bytes */
-  closeSpool     = 5  /* complete data transfer process  */
-};
-
-#ifndef __LP64__
-static OSErr dt_ctl_lcms_flatten_profile(SInt32  command,
-    SInt32 *size, void *data, void *refCon)
-{
-  // ProfileTransfer *transfer = static_cast<ProfileTransfer*>(refCon);
-  ProfileTransfer *transfer = (ProfileTransfer *)refCon;
-
-  switch (command)
-  {
-    case openWriteSpool:
-      g_return_val_if_fail(transfer->data==NULL && transfer->len==0, -1);
-      break;
-
-    case writeSpool:
-      transfer->data = (guchar *)
-                       g_realloc(transfer->data, transfer->len + *size);
-      memcpy(transfer->data + transfer->len, data, *size);
-      transfer->len += *size;
-      break;
-
-    default:
-      break;
-  }
-  return 0;
-}
-#endif /* __LP64__ */
-#endif /* GDK_WINDOWING_QUARTZ */
-
 void dt_ctl_get_display_profile(GtkWidget *widget,
                                 guint8 **buffer, gint *buffer_size)
 {
@@ -306,17 +261,17 @@ void dt_ctl_get_display_profile(GtkWidget *widget,
   if ( prof==NULL )
     return;
 
-  ProfileTransfer transfer = { NULL, 0 };
-  //The following code does not work on 64bit OSX.
-  //Disable if we are compiling there.
-#ifndef __LP64__
-  Boolean foo;
-  CMFlattenProfile(prof, 0, dt_ctl_lcms_flatten_profile, &transfer, &foo);
+  CFDataRef data;
+  data = CMProfileCopyICCData(NULL, prof);
   CMCloseProfile(prof);
-#endif
-  *buffer = transfer.data;
-  *buffer_size = transfer.len;
 
+  UInt8 *tmp_buffer = (UInt8 *) g_malloc(CFDataGetLength(data));
+  CFDataGetBytes(data, CFRangeMake(0, CFDataGetLength(data)), tmp_buffer);
+
+  *buffer = (guint8 *) tmp_buffer; 
+  *buffer_size = CFDataGetLength(data);
+
+  CFRelease(data);
 #elif defined G_OS_WIN32
   (void)widget;
   HDC hdc = GetDC (NULL);
