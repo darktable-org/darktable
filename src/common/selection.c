@@ -224,7 +224,7 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
 
   dt_collection_update(selection->collection);
 
-  fullq = dt_util_dstrcat(fullq, "%s", "insert into selected_images ");
+  fullq = dt_util_dstrcat(fullq, "%s", "insert into memory.tmp_selection ");
   fullq = dt_util_dstrcat(fullq, "%s", dt_collection_get_query(selection->collection));
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -234,6 +234,16 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, (MAX(sr,er)-MIN(sr,er))+1);
   
   sqlite3_step(stmt);
+  
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), 
+			"delete from memory.tmp_selection where imgid in (select imgid from selected_images)", 
+			NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), 
+			"insert into selected_images select imgid from memory.tmp_selection", 
+			NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), 
+			"delete from memory.tmp_selection", 
+			NULL, NULL, NULL);
 
   /* reset filter */
   dt_collection_set_query_flags(selection->collection,
