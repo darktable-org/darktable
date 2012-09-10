@@ -19,6 +19,8 @@
 #include "common/file_location.h"
 #include "control/control.h"
 #include "lua/dt_lua.h"
+#include "lua/events.h"
+#include "gui/accelerators.h"
 typedef struct event_handler{
 	const char* evt_name;
 	lua_CFunction on_register;
@@ -69,6 +71,95 @@ static int trigger_singleton_event(lua_State * L,const char* evt_name, int nargs
 	return dt_lua_do_chunk(L,0,nargs+2,nresults);
 }
 
+static int register_keyed_event(lua_State* L) {
+	// 1 is the event name (checked)
+	// 2 is the action to perform (checked)
+	// 3 is the extra param (exists at this point)
+	// 4 is the key (unchecked at this point)
+	if(lua_isnoneornil(L,4)) 
+		return luaL_error(L,"no key provided when registering event");
+	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
+	lua_getfield(L,-1,lua_tostring(L,1));
+	if(lua_isnil(L,-1)) {
+		lua_pop(L,1);
+		lua_newtable(L);
+		lua_pushvalue(L,-1);
+		lua_setfield(L,-3,lua_tostring(L,1));
+	}
+	lua_getfield(L,-1,luaL_checkstring(L,4));
+	if(!lua_isnil(L,-1)) 
+		return luaL_error(L,"key already registerd for event : %s",luaL_checkstring(L,4));
+	lua_pop(L,1);
+
+	lua_newtable(L);
+	lua_pushvalue(L,2);
+	lua_setfield(L,-2,"action");
+	lua_pushvalue(L,3);
+	lua_setfield(L,-2,"data");
+
+	lua_setfield(L,-2,luaL_checkstring(L,4));
+	lua_pop(L,2);
+	return 0;
+}
+
+
+static int trigger_keyed_event(lua_State * L,const char* evt_name, int nargs,int nresults) {
+	// -1..-n are our args
+	const int top_marker=lua_gettop(L);
+	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
+	lua_getfield(L,-1,evt_name);
+	if(lua_isnil(L,-1)) {
+		lua_pop(L,2+nargs);
+		if(nresults == LUA_MULTRET) return 0;
+		for(int i = 0 ; i < nresults ; i++) lua_pushnil(L);
+		return nresults;
+	}
+	const char*key=luaL_checkstring(L,-nargs-2); // first arg is the key itself
+	lua_getfield(L,-1,key);
+	if(lua_isnil(L,-1)) {
+		lua_pop(L,2+nargs);
+		if(nresults == LUA_MULTRET) return 0;
+		for(int i = 0 ; i < nresults ; i++) lua_pushnil(L);
+		return nresults;
+	}
+	// prepare the call
+	lua_getfield(L,-1,"action"); // function to call
+	lua_insert(L,top_marker-nargs+1);
+	lua_pushstring(L,evt_name);// param 1 is the event
+	lua_insert(L,top_marker-nargs+2);
+	lua_getfield(L,-1,"data");// callback data
+	lua_insert(L,top_marker-nargs+3);
+	lua_pop(L,3);
+	return dt_lua_do_chunk(L,0,nargs+2,nresults);
+}
+
+
+static gboolean shortcut_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable,
+                                                guint keyval,
+                                                GdkModifierType modifier,
+                                                gpointer p)
+{
+	lua_pushstring(darktable.lua_state,(char*)p);
+	dt_lua_trigger_event("shortcut",1,0);
+	return TRUE;
+}
+
+static void closure_destroy(gpointer data,GClosure *closure) {
+	free(data);
+}
+static int register_shortcut_event(lua_State* L) {
+	// 1 is the event name (checked)
+	// 2 is the action to perform (checked)
+	// 3 is the extra param (exist at this point)
+	// 4 is the key itself
+	int result = register_keyed_event(L); // will raise an error in case of duplicate key
+	char tmp[1024];
+	snprintf(tmp,1024,"lua/%s\n",luaL_checkstring(L,4));
+	dt_accel_register_global(tmp,0,0);
+	dt_accel_connect_global(tmp, g_cclosure_new(G_CALLBACK(shortcut_callback),strdup(luaL_checkstring(L,4)),closure_destroy));
+	return result;
+}
 static int register_multiinstance_event(lua_State* L) {
 	// 1 is the event name (checked)
 	// 2 is the action to perform (checked)
@@ -197,8 +288,9 @@ static int trigger_chained_event(lua_State * L,const char* evt_name, int nargs,i
 static event_handler event_list[] = {
 	//{"post-import-image",register_multiinstance_event,trigger_multiinstance_event},
 	{"pre-export",register_chained_event,trigger_chained_event},
+	{"shortcut",register_shortcut_event,trigger_keyed_event}, 
+	{"test",register_singleton_event,trigger_singleton_event},  // avoid error because of unused function
 	{"post-import-image",register_multiinstance_event,trigger_multiinstance_event}, // avoid error because of unused function
-	{"test",register_singleton_event,trigger_singleton_event}, // avoid error because of unused function
 	{NULL,NULL,NULL}
 };
 

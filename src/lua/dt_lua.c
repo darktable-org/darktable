@@ -78,7 +78,7 @@ static int lua_print(lua_State *L) {
 }
 #if 0
 	printf("%s %d\n",__FUNCTION__,__LINE__);
-	for(int i=1 ;i<=lua_gettop(L);i++) printf("\t%s\n",lua_typename(L,lua_type(L,i)));
+	for(int i=1 ;i<=lua_gettop(L);i++) {printf("\t%d:%s %s\n",i,lua_typename(L,lua_type(L,i)),luaL_tolstring(L,i,NULL));lua_pop(L,1);}
 static void debug_table(lua_State * L,int t) {
    /* table is in the stack at index 't' */
      lua_pushnil(L);  /* first key */
