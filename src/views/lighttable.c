@@ -1189,7 +1189,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
         if(state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) // just add the whole group to the selection. TODO: make this also work for collapsed groups.
         {
           sqlite3_stmt *stmt;
-          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into selected_images select id from images where group_id = ?1", -1, &stmt, NULL);
+          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert or ignore into selected_images select id from images where group_id = ?1", -1, &stmt, NULL);
           DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
           sqlite3_step(stmt);
           sqlite3_finalize(stmt);

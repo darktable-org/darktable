@@ -268,7 +268,7 @@ void dt_ctl_get_display_profile(GtkWidget *widget,
   UInt8 *tmp_buffer = (UInt8 *) g_malloc(CFDataGetLength(data));
   CFDataGetBytes(data, CFRangeMake(0, CFDataGetLength(data)), tmp_buffer);
 
-  *buffer = (guint8 *) tmp_buffer; 
+  *buffer = (guint8 *) tmp_buffer;
   *buffer_size = CFDataGetLength(data);
 
   CFRelease(data);
@@ -314,7 +314,7 @@ void dt_control_create_database_schema()
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
     "create index if not exists group_id_index on images (group_id)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "create table selected_images (imgid integer)", NULL, NULL, NULL);
+    "create table selected_images (imgid integer primary key)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
     "create table history (imgid integer, num integer, module integer, "
     "operation varchar(256), op_params blob, enabled integer, "
@@ -457,6 +457,10 @@ void dt_control_init(dt_control_t *s)
         "drop table style_items", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
         "drop table meta_data", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+        "drop index imgid_index", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+        "drop index group_id_index", NULL, NULL, NULL);
       goto create_tables;
     }
     else
@@ -496,6 +500,38 @@ void dt_control_init(dt_control_t *s)
       sqlite3_exec(dt_database_get(darktable.db),
           "create table meta_data (id integer, key integer,value varchar)",
           NULL, NULL, NULL);
+
+      // selected_images should have a primary key. add it if it's missing:
+      int is_in_primary_key = 0;
+      sqlite3_table_column_metadata(dt_database_get(darktable.db), NULL, "selected_images", "imgid", NULL, NULL, NULL, &is_in_primary_key, NULL);
+      if(is_in_primary_key == 0)
+      {
+        sqlite3_exec(dt_database_get(darktable.db),
+            "begin transaction",
+            NULL, NULL, NULL);
+
+        sqlite3_exec(dt_database_get(darktable.db),
+            "create temporary table selected_images_backup(imgid integer)",
+            NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+            "insert into selected_images_backup select imgid from selected_images",
+            NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+            "drop table selected_images",
+            NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+            "create table selected_images (imgid integer primary key)",
+            NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+            "insert or ignore into selected_images select imgid from selected_images_backup",
+            NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+            "drop table selected_images_backup",
+            NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+            "commit",
+            NULL, NULL, NULL);
+      }
 
       // add columns where needed. will just fail otherwise:
       sqlite3_exec(dt_database_get(darktable.db),
@@ -1388,7 +1424,7 @@ void dt_control_gdk_unlock()
 {
   /* check if current thread has a lock and remove if exists */
   g_static_mutex_lock(&_control_gdk_lock_threads_mutex);
-  if(g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self())) 
+  if(g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self()))
   {
     /* remove lock */
     _control_gdk_lock_threads = g_list_remove(_control_gdk_lock_threads,
