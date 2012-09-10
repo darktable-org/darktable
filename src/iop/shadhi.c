@@ -915,13 +915,13 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
 {
   dt_iop_shadhi_data_t *d = (dt_iop_shadhi_data_t *)piece->data;
 
-  const float radius = fmax(0.1f, d->radius);
+  const float radius = fmax(0.1f, fabs(d->radius));
   const float sigma = radius * roi_in->scale / piece ->iscale;
 
-  tiling->factor = 4.0f; // in + out + 2*temp
+  tiling->factor = 4.25f; // in + out + 2*temp + bilateral
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
-  tiling->overlap = 4*sigma;
+  tiling->overlap = ceilf(4*sigma);
   tiling->xalign = 1;
   tiling->yalign = 1;
   return;

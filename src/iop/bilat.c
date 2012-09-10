@@ -20,6 +20,7 @@
 #endif
 // our includes go first:
 #include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
@@ -34,27 +35,27 @@ DT_MODULE(1)
 
 // TODO: some build system to support dt-less compilation and translation!
 
-typedef struct dt_iop_useless_params_t
+typedef struct dt_iop_bilat_params_t
 {
   float sigma_r;
   float sigma_s;
   float detail;
 }
-dt_iop_useless_params_t;
+dt_iop_bilat_params_t;
 
-typedef struct dt_iop_useless_gui_data_t
+typedef struct dt_iop_bilat_gui_data_t
 {
   GtkWidget *spatial;
   GtkWidget *range;
   GtkWidget *detail;
 }
-dt_iop_useless_gui_data_t;
+dt_iop_bilat_gui_data_t;
 
-typedef struct dt_iop_useless_global_data_t
+typedef struct dt_iop_bilat_global_data_t
 {
   // we don't need it for this example (as for most dt plugins)
 }
-dt_iop_useless_global_data_t;
+dt_iop_bilat_global_data_t;
 
 // this returns a translatable name
 const char *name()
@@ -67,7 +68,7 @@ const char *name()
 int
 flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 // where does it appear in the gui?
@@ -81,7 +82,7 @@ groups()
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)piece->data;
+  dt_iop_bilat_params_t *d = (dt_iop_bilat_params_t *)piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   const float scale = piece->iscale/roi_in->scale;
@@ -106,12 +107,31 @@ error:
 }
 #endif
 
+
+void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
+{
+  dt_iop_bilat_params_t *d = (dt_iop_bilat_params_t *)piece->data;
+  // the total scale is composed of scale before input to the pipeline (iscale),
+  // and the scale of the roi.
+  const float scale = piece->iscale/roi_in->scale;
+  const float sigma_s = d->sigma_s / scale;
+ 
+  tiling->factor = 2.25f; // in + out + bilateral
+  tiling->maxbuf = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = ceilf(4*sigma_s);
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+  return;
+}
+
+
 /** process, all real work is done here. */
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
-  dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)piece->data;
+  dt_iop_bilat_params_t *d = (dt_iop_bilat_params_t *)piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   const float scale = piece->iscale/roi_in->scale;
@@ -130,24 +150,24 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 void init(dt_iop_module_t *module)
 {
   // we don't need global data:
-  module->data = NULL; //malloc(sizeof(dt_iop_useless_global_data_t));
-  module->params = malloc(sizeof(dt_iop_useless_params_t));
-  module->default_params = malloc(sizeof(dt_iop_useless_params_t));
+  module->data = NULL; //malloc(sizeof(dt_iop_bilat_global_data_t));
+  module->params = malloc(sizeof(dt_iop_bilat_params_t));
+  module->default_params = malloc(sizeof(dt_iop_bilat_params_t));
   // our module is disabled by default
   // by default:
   module->default_enabled = 0;
   // order has to be changed by editing the dependencies in tools/iop_dependencies.py
   module->priority = 788; // chosen manually to avoid conflicts during merge.
-  module->params_size = sizeof(dt_iop_useless_params_t);
+  module->params_size = sizeof(dt_iop_bilat_params_t);
   module->gui_data = NULL;
   // init defaults:
-  dt_iop_useless_params_t tmp = (dt_iop_useless_params_t)
+  dt_iop_bilat_params_t tmp = (dt_iop_bilat_params_t)
   {
     8, 50, 0.2
   };
 
-  memcpy(module->params, &tmp, sizeof(dt_iop_useless_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_useless_params_t));
+  memcpy(module->params, &tmp, sizeof(dt_iop_bilat_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_bilat_params_t));
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -163,7 +183,7 @@ void cleanup(dt_iop_module_t *module)
 static void
 spatial_callback(GtkWidget *w, dt_iop_module_t *self)
 {
-  dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
+  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
   p->sigma_s = dt_bauhaus_slider_get(w);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -171,7 +191,7 @@ spatial_callback(GtkWidget *w, dt_iop_module_t *self)
 static void
 range_callback(GtkWidget *w, dt_iop_module_t *self)
 {
-  dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
+  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
   p->sigma_r = dt_bauhaus_slider_get(w);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -179,7 +199,7 @@ range_callback(GtkWidget *w, dt_iop_module_t *self)
 static void
 detail_callback(GtkWidget *w, dt_iop_module_t *self)
 {
-  dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
+  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
   p->detail = dt_bauhaus_slider_get(w);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -188,8 +208,8 @@ detail_callback(GtkWidget *w, dt_iop_module_t *self)
 void gui_update(dt_iop_module_t *self)
 {
   // let gui slider match current parameters:
-  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
-  dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
+  dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
+  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
   dt_bauhaus_slider_set(g->spatial, p->sigma_s);
   dt_bauhaus_slider_set(g->range,   p->sigma_r);
   dt_bauhaus_slider_set(g->detail,  p->detail);
@@ -198,8 +218,8 @@ void gui_update(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
-  self->gui_data = malloc(sizeof(dt_iop_useless_gui_data_t));
-  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
+  self->gui_data = malloc(sizeof(dt_iop_bilat_gui_data_t));
+  dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
   g->spatial = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 50, 0);
