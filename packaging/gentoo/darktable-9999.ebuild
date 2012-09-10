@@ -48,7 +48,3 @@ src_configure() {
 		"-DINSTALL_IOP_LEGACY=ON" )
 	cmake-utils_src_configure
 }
-
-src_prepare() {
-	epatch_user
-}
