@@ -1443,6 +1443,8 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module)
           gtk_widget_show(GTK_WIDGET(bd->blendif_enable));
           if(dt_bauhaus_combobox_get(bd->blendif_enable) != 0)
             gtk_widget_show(GTK_WIDGET(bd->blendif_box));
+          else
+            gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
         }
       }
     }
