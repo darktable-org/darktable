@@ -590,7 +590,7 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
   else
   {
     // this is in memory, so schema can't exist yet.
-    if(!strcmp(dbfilename_from_command, ":memory:"))
+    if(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"))
     {
       dt_control_create_database_schema();
       dt_gui_presets_init(); // also init preset db schema.

@@ -58,6 +58,9 @@ void
 dt_bilateral_free_cl(
     dt_bilateral_cl_t *b)
 {
+  if(!b) return;
+  // be sure we're done with the memory:
+  dt_opencl_finish(b->devid);
   // free device mem
   if(b) dt_opencl_release_mem_object(b->dev_grid);
   free(b);
@@ -234,6 +237,7 @@ void
 dt_bilateral_free_cl_global(
     dt_bilateral_cl_global_t *b)
 {
+  if(!b) return;
   // destroy kernels
   dt_opencl_free_kernel(b->kernel_zero);
   dt_opencl_free_kernel(b->kernel_splat);

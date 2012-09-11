@@ -41,6 +41,7 @@ void dt_history_delete_on_selection();
 typedef struct dt_history_item_t
 {
   guint num;
+  gchar *op;
   gchar *name;
 } dt_history_item_t;
 

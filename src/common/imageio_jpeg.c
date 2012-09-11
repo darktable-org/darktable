@@ -60,7 +60,7 @@ boolean dt_imageio_jpeg_fill_input_buffer(j_decompress_ptr cinfo)
 }
 void dt_imageio_jpeg_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
 {
-  size_t i = cinfo->src->bytes_in_buffer - num_bytes;
+  ssize_t i = cinfo->src->bytes_in_buffer - num_bytes;
   if (i < 0) i = 0;
   cinfo->src->bytes_in_buffer = i;
   cinfo->src->next_input_byte += num_bytes;

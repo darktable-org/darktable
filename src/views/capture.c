@@ -111,8 +111,7 @@ uint32_t view(dt_view_t *self)
 
 static void _view_capture_filmstrip_activate_callback(gpointer instance,gpointer user_data)
 {
-  int32_t imgid = -1;
-  if ((imgid=dt_view_filmstrip_get_activated_imgid(darktable.view_manager)) >= 0)
+  if (dt_view_filmstrip_get_activated_imgid(darktable.view_manager) >= 0)
     dt_control_queue_redraw_center();
 }
 

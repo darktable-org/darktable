@@ -28,6 +28,7 @@
 #include "common/bilateralcl.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
+#include "develop/tiling.h"
 #include "control/control.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -235,6 +236,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   err = dt_bilateral_slice_cl(b, dev_tmp, dev_tmp, detail);
   if (err != CL_SUCCESS) goto error;
   dt_bilateral_free_cl(b);
+  b = NULL; // make sure we don't do double cleanup in case the next few lines err out
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 0, sizeof(cl_mem), &dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 1, sizeof(cl_mem), &dev_tmp);
@@ -248,14 +250,30 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_monochrome, sizes);
   if(err != CL_SUCCESS) goto error;
 
+  if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
 
 error:
+  if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   dt_bilateral_free_cl(b);
   dt_print(DT_DEBUG_OPENCL, "[opencl_monochrome] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
 #endif
+
+void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
+{
+  const float scale = piece->iscale/roi_in->scale;
+  const float sigma_s = 20.0f / scale;
+
+  tiling->factor = 3.25f; // in + out + temp + bilateral
+  tiling->maxbuf = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = ceilf(4*sigma_s);
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+  return;
+}
 
 
 void init_global(dt_iop_module_so_t *module)
@@ -392,13 +410,24 @@ static gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
     dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
-    const int inset = DT_COLORCORRECTION_INSET;
-    int width = widget->allocation.width - 2*inset, height = widget->allocation.height - 2*inset;
-    const float mouse_x = CLAMP(event->x - inset, 0, width);
-    const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
-    p->a = PANEL_WIDTH*(mouse_x - width  * 0.5f)/(float)width;
-    p->b = PANEL_WIDTH*(mouse_y - height * 0.5f)/(float)height;
-    g->dragging = 1;
+    if(event->type == GDK_2BUTTON_PRESS)
+    {
+      // reset
+      dt_iop_monochrome_params_t *p0 = (dt_iop_monochrome_params_t *)self->default_params;
+      p->a = p0->a;
+      p->b = p0->b;
+      p->size = p0->size;
+    }
+    else
+    {
+      const int inset = DT_COLORCORRECTION_INSET;
+      int width = widget->allocation.width - 2*inset, height = widget->allocation.height - 2*inset;
+      const float mouse_x = CLAMP(event->x - inset, 0, width);
+      const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
+      p->a = PANEL_WIDTH*(mouse_x - width  * 0.5f)/(float)width;
+      p->b = PANEL_WIDTH*(mouse_y - height * 0.5f)/(float)height;
+      g->dragging = 1;
+    }
     gtk_widget_queue_draw(self->widget);
     return TRUE;
   }
@@ -476,7 +505,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->area), "scroll-event",
                     G_CALLBACK (dt_iop_monochrome_scrolled), self);
 
-  g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.1, 0.0, 2);
+  g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.01, 0.0, 2);
   g_object_set (GTK_OBJECT(g->highlights), "tooltip-text", _("how much to keep highlights"), (char *)NULL);
   dt_bauhaus_widget_set_label(g->highlights, _("highlights"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);

@@ -634,6 +634,21 @@ modify_roi_in (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
     roi_in->height = piece->pipe->image.height;
 }
 
+static int get_quality()
+{
+  int qual = 1;
+  gchar *quality = dt_conf_get_string("plugins/darkroom/demosaic/quality");
+  if(quality)
+  {
+    if(!strcmp(quality, "always bilinear (fast)"))
+      qual = 0;
+    else if(!strcmp(quality, "full (possibly slow)"))
+      qual = 2;
+    g_free(quality);
+  }
+  return qual;
+}
+
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -644,6 +659,12 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   // roi_out->scale = global scale: (iscale == 1.0, always when demosaic is on)
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
+
+  const int qual = get_quality();
+  int demosaicing_method = data->demosaicing_method;
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2) // only overwrite setting if quality << requested and in dr mode
+    demosaicing_method = DT_IOP_DEMOSAIC_PPG;
+
   const float *const pixels = (float *)i;
   if(roi_out->scale > .999f)
   {
@@ -669,7 +690,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
                         data->filters, roi_in->x, roi_in->y, 1);
           break;
       } 
-      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg((float *)o, in, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, in, (float *)o, &roi, &roo, data->filters);
@@ -677,13 +698,15 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     }
     else
     {
-      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg((float *)o, pixels, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, pixels, (float *)o, &roi, &roo, data->filters);
     }
   }
-  else if(roi_out->scale > .5f || piece->pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL)
+  else if(roi_out->scale > .5f ||  // full needed because zoomed in enough
+      (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||  // or in darkroom mode and quality requested by user settings
+      (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))              // we assume you always want that for exports.
   {
     // demosaic and then clip and zoom
     // roo.x = roi_out->x / global_scale;
@@ -713,7 +736,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
                         data->filters, roi_in->x, roi_in->y, 1);
           break;
       }
-      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      // wanted ppg or zoomed out a lot and quality is limited to 1
+      if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, in, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, data->filters);
@@ -721,7 +745,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     }
     else
     {
-      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, pixels, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, pixels, tmp, &roi, &roo, data->filters);
@@ -757,6 +781,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
 
+  const int qual = get_quality();
   const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   if(interpolation->id != DT_INTERPOLATION_BILINEAR && roi_out->scale <= .99999f && roi_out->scale > 0.5f)
   {
@@ -842,7 +867,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if(err != CL_SUCCESS) goto error;
 
   }
-  else if(roi_out->scale > .5f || piece->pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL)
+  else if(roi_out->scale > .5f ||  // full needed because zoomed in enough
+      (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||  // or in darkroom mode and quality requested by user settings
+      (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))              // we assume you always want that for exports.
   {
     // need to scale to right res
     dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4*sizeof(float));
@@ -1265,8 +1292,8 @@ void gui_init     (struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
 
   g->demosaic_method = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_combobox_add(g->demosaic_method, _("ppg"));
-  dt_bauhaus_combobox_add(g->demosaic_method, _("AMaZE"));
+  dt_bauhaus_combobox_add(g->demosaic_method, _("ppg (fast)"));
+  dt_bauhaus_combobox_add(g->demosaic_method, _("amaze (slow)"));
   dt_bauhaus_widget_set_label(g->demosaic_method, _("method"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method, TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->demosaic_method), "tooltip-text", _("demosaicing raw data method"), (char *)NULL);

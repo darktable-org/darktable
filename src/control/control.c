@@ -226,51 +226,6 @@ int dt_control_write_config(dt_control_t *c)
 // For X display, uses the ICC profile specifications version 0.2 from
 // http://burtonini.com/blog/computers/xicc
 // Based on code from Gimp's modules/cdisplay_lcms.c
-#ifdef GDK_WINDOWING_QUARTZ
-typedef struct
-{
-  guchar *data;
-  gsize   len;
-}
-ProfileTransfer;
-
-enum
-{
-  openReadSpool  = 1, /* start read data process         */
-  openWriteSpool = 2, /* start write data process        */
-  readSpool      = 3, /* read specified number of bytes  */
-  writeSpool     = 4, /* write specified number of bytes */
-  closeSpool     = 5  /* complete data transfer process  */
-};
-
-#ifndef __LP64__
-static OSErr dt_ctl_lcms_flatten_profile(SInt32  command,
-    SInt32 *size, void *data, void *refCon)
-{
-  // ProfileTransfer *transfer = static_cast<ProfileTransfer*>(refCon);
-  ProfileTransfer *transfer = (ProfileTransfer *)refCon;
-
-  switch (command)
-  {
-    case openWriteSpool:
-      g_return_val_if_fail(transfer->data==NULL && transfer->len==0, -1);
-      break;
-
-    case writeSpool:
-      transfer->data = (guchar *)
-                       g_realloc(transfer->data, transfer->len + *size);
-      memcpy(transfer->data + transfer->len, data, *size);
-      transfer->len += *size;
-      break;
-
-    default:
-      break;
-  }
-  return 0;
-}
-#endif /* __LP64__ */
-#endif /* GDK_WINDOWING_QUARTZ */
-
 void dt_ctl_get_display_profile(GtkWidget *widget,
                                 guint8 **buffer, gint *buffer_size)
 {
@@ -307,17 +262,17 @@ void dt_ctl_get_display_profile(GtkWidget *widget,
   if ( prof==NULL )
     return;
 
-  ProfileTransfer transfer = { NULL, 0 };
-  //The following code does not work on 64bit OSX.
-  //Disable if we are compiling there.
-#ifndef __LP64__
-  Boolean foo;
-  CMFlattenProfile(prof, 0, dt_ctl_lcms_flatten_profile, &transfer, &foo);
+  CFDataRef data;
+  data = CMProfileCopyICCData(NULL, prof);
   CMCloseProfile(prof);
-#endif
-  *buffer = transfer.data;
-  *buffer_size = transfer.len;
 
+  UInt8 *tmp_buffer = (UInt8 *) g_malloc(CFDataGetLength(data));
+  CFDataGetBytes(data, CFRangeMake(0, CFDataGetLength(data)), tmp_buffer);
+
+  *buffer = (guint8 *) tmp_buffer;
+  *buffer_size = CFDataGetLength(data);
+
+  CFRelease(data);
 #elif defined G_OS_WIN32
   (void)widget;
   HDC hdc = GetDC (NULL);
@@ -360,7 +315,7 @@ void dt_control_create_database_schema()
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
     "create index if not exists group_id_index on images (group_id)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "create table selected_images (imgid integer)", NULL, NULL, NULL);
+    "create table selected_images (imgid integer primary key)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
     "create table history (imgid integer, num integer, module integer, "
     "operation varchar(256), op_params blob, enabled integer, "
@@ -503,6 +458,10 @@ void dt_control_init(dt_control_t *s)
         "drop table style_items", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
         "drop table meta_data", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+        "drop index imgid_index", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+        "drop index group_id_index", NULL, NULL, NULL);
       goto create_tables;
     }
     else
@@ -542,6 +501,38 @@ void dt_control_init(dt_control_t *s)
       sqlite3_exec(dt_database_get(darktable.db),
           "create table meta_data (id integer, key integer,value varchar)",
           NULL, NULL, NULL);
+
+      // selected_images should have a primary key. add it if it's missing:
+      int is_in_primary_key = 0;
+      sqlite3_table_column_metadata(dt_database_get(darktable.db), NULL, "selected_images", "imgid", NULL, NULL, NULL, &is_in_primary_key, NULL);
+      if(is_in_primary_key == 0)
+      {
+        sqlite3_exec(dt_database_get(darktable.db),
+            "begin transaction",
+            NULL, NULL, NULL);
+
+        sqlite3_exec(dt_database_get(darktable.db),
+            "create temporary table selected_images_backup(imgid integer)",
+            NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+            "insert into selected_images_backup select imgid from selected_images",
+            NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+            "drop table selected_images",
+            NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+            "create table selected_images (imgid integer primary key)",
+            NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+            "insert or ignore into selected_images select imgid from selected_images_backup",
+            NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+            "drop table selected_images_backup",
+            NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+            "commit",
+            NULL, NULL, NULL);
+      }
 
       // add columns where needed. will just fail otherwise:
       sqlite3_exec(dt_database_get(darktable.db),
@@ -1434,9 +1425,8 @@ lock_and_return:
 void dt_control_gdk_unlock()
 {
   /* check if current thread has a lock and remove if exists */
-  GList *item=NULL;
   g_static_mutex_lock(&_control_gdk_lock_threads_mutex);
-  if((item=g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self())))
+  if(g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self()))
   {
     /* remove lock */
     _control_gdk_lock_threads = g_list_remove(_control_gdk_lock_threads,

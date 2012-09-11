@@ -310,7 +310,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
         GList *modules = g_list_first(darktable.develop->iop);
         if (modules)
         {
-          GList *result = g_list_find_custom (modules, item->name, _g_list_find_module_by_name); // (dt_iop_module_t *)(modules->data);
+          GList *result = g_list_find_custom (modules, item->op, _g_list_find_module_by_name); // (dt_iop_module_t *)(modules->data);
           if( result )
           {
             module = (dt_iop_module_t *)(result->data);
@@ -328,6 +328,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
                             DT_STYLE_ITEMS_COL_NUM, (guint)item->num,
                             -1);
 
+        g_free(item->op);
         g_free(item->name);
         g_free(item);
       }
