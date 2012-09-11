@@ -62,11 +62,6 @@ static int dt_luacleanup(lua_State*L) {
 	return 0;
 }
 
-static int lua_quit(lua_State *L) {
-	dt_control_quit();
-	return 0;
-}
-
 static int lua_print(lua_State *L) {
 	const int init_gui = (darktable.gui != NULL);
 	if(init_gui)
@@ -176,11 +171,6 @@ void dt_lua_init(const int init_gui,lua_State* L) {
 		}
 		lua_pop(darktable.lua_state, 1);  /* remove _PRELOAD table */
 
-		// add stuff that is here only for gui
-		dt_lua_push_darktable_lib(darktable.lua_state);
-		lua_pushstring(darktable.lua_state,"quit");
-		lua_pushcfunction(darktable.lua_state,&lua_quit);
-		lua_settable(darktable.lua_state,-3);
 
 		dt_lua_init_events(darktable.lua_state);
 	}
