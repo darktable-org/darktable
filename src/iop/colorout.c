@@ -572,7 +572,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->output = _create_profile(outprofile);
 
   /* creating softproof profile if softproof is enabled */
-  if (d->softproof_enabled)
+  if (d->softproof_enabled && pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
     d->softproof =  _create_profile(p->softproofprofile);
 
