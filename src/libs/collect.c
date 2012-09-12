@@ -67,10 +67,10 @@ typedef struct dt_lib_collect_t
   
   GVolumeMonitor *gv_monitor;
   
+  GtkBox *box;
+  GtkScrolledWindow *sw2;
   GPtrArray *labels;
   GPtrArray *trees;
-
-  GtkBox *box;
 
   struct dt_lib_collect_params_t *params;
 }
@@ -916,16 +916,14 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
   GtkTreeModel *listmodel;
   GtkTreeModel *treemodel;
 
-  gtk_widget_hide(GTK_WIDGET(d->box));
-  gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
+  gtk_widget_hide(GTK_WIDGET(d->sw2));
 
   view = d->view;
   listmodel = d->listmodel;
   g_object_ref(listmodel);
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), NULL);
   gtk_list_store_clear(GTK_LIST_STORE(listmodel));
-  
-
+  gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
   
   char query[1024];
   int property = gtk_combo_box_get_active(dr->combo);
@@ -1141,12 +1139,14 @@ folders:
         label = gtk_label_new (g_ascii_strdown(mount_name, strlen(mount_name)));
       }
       g_ptr_array_add(d->labels, (gpointer) label);
-      gtk_container_add(GTK_CONTAINER(d->box), GTK_WIDGET(label));
+      gtk_box_pack_start(d->box, GTK_WIDGET(label), FALSE, FALSE, 0);
+      gtk_widget_show (label);
       
       model2 = _create_filtered_model(GTK_TREE_MODEL(treemodel), iter, dr->text);
       tree = _create_treeview_display(GTK_TREE_MODEL(model2));
       g_ptr_array_add(d->trees, (gpointer) tree);
-      gtk_container_add(GTK_CONTAINER(d->box), GTK_WIDGET(tree));
+      gtk_box_pack_start(d->box, GTK_WIDGET(tree), FALSE, FALSE, 0);
+      gtk_widget_show (GTK_WIDGET(tree));
 
       gtk_tree_view_set_headers_visible(tree, FALSE);
 
@@ -1164,8 +1164,9 @@ folders:
       d->tree_new = FALSE;
     }
   }
-
-  gtk_widget_show_all(GTK_WIDGET(d->box));
+  
+  gtk_widget_show(GTK_WIDGET(d->box));
+  gtk_widget_show(GTK_WIDGET(d->sw2));
   g_object_unref(listmodel);
 
   return FALSE;
@@ -1268,7 +1269,7 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
   gchar *text;
   const int active = d->active_rule;
   const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[active].combo));
-  if(item == 0) // get full path for film rolls:
+  if(item == 0 || item == 15) // get full path for film rolls:
     gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
   else
     gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
@@ -1631,14 +1632,22 @@ gui_init (dt_lib_module_t *self)
   d->listmodel = listmodel;
   
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
+  gtk_widget_hide(GTK_WIDGET(view));
   gtk_widget_hide(sw);
 
 
   GtkWidget *vbox = gtk_vbox_new(FALSE, 5);
   d->box = GTK_BOX(vbox);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->box), TRUE, TRUE, 0);
-  gtk_widget_hide(vbox);
-
+  
+  GtkWidget *sw2 = gtk_scrolled_window_new(NULL, NULL);
+  d->sw2 = GTK_SCROLLED_WINDOW (sw2);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw2), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw2), GTK_WIDGET(d->box));
+  gtk_widget_set_size_request(GTK_WIDGET(sw2), -1, 300);
+ 
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw2), TRUE, TRUE, 0);
+  gtk_widget_hide(sw2);
+  
   d->labels = NULL;
   d->trees = NULL;
 
