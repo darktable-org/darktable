@@ -106,7 +106,7 @@ set(OpenMP_CXX_FLAGS "${OpenMP_CXX_FLAGS_INTERNAL}"
   CACHE STRING "C++ compiler flags for OpenMP parallization")
 # handle the standard arguments for find_package
 find_package_handle_standard_args(OpenMP DEFAULT_MSG 
-  OpenMP_C_FLAGS OpenMP_CXX_FLAGS )
+  OpenMP_C_FLAGS )
 
 mark_as_advanced(
   OpenMP_C_FLAGS
