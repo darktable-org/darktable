@@ -244,13 +244,13 @@ dt_film_import_blocking(const char *dirname, const int blocking)
   dt_film_t *film = (dt_film_t *)malloc(sizeof(dt_film_t));
   dt_film_init(film);
   film->id = -1;
- 
+
   /* lookup if film exists and reuse id */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
     "select id from film_rolls where folder = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, dirname, strlen(dirname),
     SQLITE_STATIC);
-  if(sqlite3_step(stmt) == SQLITE_ROW) 
+  if(sqlite3_step(stmt) == SQLITE_ROW)
     film->id = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
@@ -268,17 +268,17 @@ dt_film_import_blocking(const char *dirname, const int blocking)
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, dirname, strlen(dirname),
       SQLITE_STATIC);
     rc = sqlite3_step(stmt);
-    if(rc != SQLITE_DONE) 
-      fprintf(stderr, "[film_import] failed to insert film roll! %s\n", 
+    if(rc != SQLITE_DONE)
+      fprintf(stderr, "[film_import] failed to insert film roll! %s\n",
 	      sqlite3_errmsg(dt_database_get(darktable.db)));
     sqlite3_finalize(stmt);
-    
+
     /* requery for filmroll and fetch new id */
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
       "select id from film_rolls where folder=?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, dirname, strlen(dirname),
       SQLITE_STATIC);
-    if(sqlite3_step(stmt) == SQLITE_ROW) 
+    if(sqlite3_step(stmt) == SQLITE_ROW)
       film->id = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
   }
@@ -318,10 +318,10 @@ static GList *_film_recursive_get_files(const gchar *path, gboolean recursive,GL
   {
     /* get the current filename */
     const gchar *filename = g_dir_read_name(cdir);
-        
+
     /* return if no more files are in current dir */
     if (!filename) break;
-  
+
     /* build full path for filename */
     fullname = g_build_filename(G_DIR_SEPARATOR_S, path, filename, NULL);
 
@@ -337,7 +337,7 @@ static GList *_film_recursive_get_files(const gchar *path, gboolean recursive,GL
       *result = g_list_append(*result, fullname);
     else
       g_free(fullname);
-    
+
   } while (TRUE);
 
   /* cleanup and return results */
@@ -361,7 +361,7 @@ void dt_film_import1(dt_film_t *film)
   /* first of all gather all images to import */
   GList *images = NULL;
   images = _film_recursive_get_files(film->dirname, recursive, &images);
-  if(g_list_length(images) == 0) 
+  if(g_list_length(images) == 0)
   {
     dt_control_log(_("no supported images were found to be imported"));
     return;
@@ -373,7 +373,7 @@ void dt_film_import1(dt_film_t *film)
   /* let's start import of images */
   gchar message[512] = {0};
   double fraction = 0;
-  uint32_t total = g_list_length(images); 
+  uint32_t total = g_list_length(images);
   g_snprintf(message, sizeof(message) - 1,
     ngettext("importing %d image","importing %d images", total), total);
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
@@ -383,12 +383,12 @@ void dt_film_import1(dt_film_t *film)
   GList *image = g_list_first(images);
   do {
     gchar *cdn = g_path_get_dirname((const gchar *)image->data);
-   
+
     /* check if we need to initialize a new filmroll */
     if(!cfr || g_strcmp0(cfr->dirname, cdn) != 0)
     {
 
-      /* check if we can find a gpx data file to be auto applied 
+      /* check if we can find a gpx data file to be auto applied
          to images in the jsut imported filmroll */
       g_dir_rewind(cfr->dir);
       const gchar *dfn = NULL;
@@ -399,13 +399,13 @@ void dt_film_import1(dt_film_t *film)
 	   strcmp(dfn+strlen(dfn)-4,".GPX") == 0)
 	{
 	  gchar *gpx_file = g_build_path (G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);
-	  dt_control_gpx_apply(gpx_file, cfr->id);
+	  dt_control_gpx_apply(gpx_file, cfr->id, NULL);
 	  g_free(gpx_file);
 	}
       }
-      
+
       /* cleanup previously imported filmroll*/
-      if(cfr && cfr!=film) 
+      if(cfr && cfr!=film)
       {
 	dt_film_cleanup(cfr);
 	g_free(cfr);
@@ -426,11 +426,11 @@ void dt_film_import1(dt_film_t *film)
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
 
   } while( (image = g_list_next(image)) != NULL);
-  
+
   dt_control_backgroundjobs_destroy(darktable.control, jid);
 
-  /* check if we can find a gpx data file to be auto applied 
-     to images in the jsut imported filmroll */
+  /* check if we can find a gpx data file to be auto applied
+     to images in the just imported filmroll */
   g_dir_rewind(cfr->dir);
   const gchar *dfn = NULL;
   while ((dfn = g_dir_read_name(cfr->dir)) != NULL)
@@ -440,7 +440,7 @@ void dt_film_import1(dt_film_t *film)
        strcmp(dfn+strlen(dfn)-4,".GPX") == 0)
     {
       gchar *gpx_file = g_build_path (G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);
-      dt_control_gpx_apply(gpx_file, cfr->id);
+      dt_control_gpx_apply(gpx_file, cfr->id, NULL);
       g_free(gpx_file);
     }
   }

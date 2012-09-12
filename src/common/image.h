@@ -86,7 +86,7 @@ typedef struct dt_image_t
   char exif_lens[52];
   char exif_datetime_taken[20];
   char filename[DT_MAX_FILENAME_LEN];
-  
+
   // common stuff
   int32_t width, height;
   // used by library
@@ -97,7 +97,7 @@ typedef struct dt_image_t
 
   uint32_t filters;  // demosaic pattern
   int32_t bpp;       // bytes per pixel
- 
+
   dt_image_raw_parameters_t legacy_flip; // unfortunately needed to convert old bits to new flip module.
 
   /* gps coords */
@@ -307,6 +307,9 @@ dt_image_orientation_to_flip_bits(const int orient)
 void dt_image_write_sidecar_file(int imgid);
 void dt_image_synch_xmp(const int selected);
 void dt_image_synch_all_xmp(const gchar *pathname);
+
+// add an offset to the exif_datetime_taken field
+void dt_image_add_time_offset(const int imgid, const long int offset);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

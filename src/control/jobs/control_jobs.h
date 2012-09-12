@@ -48,12 +48,14 @@ void dt_control_remove_images_job_init(dt_job_t *job);
 void dt_control_delete_images_job_init(dt_job_t *job);
 int32_t dt_control_delete_images_job_run(dt_job_t *job);
 
-void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename, int32_t filmid);
+void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename, int32_t filmid, const gchar *tz);
 int32_t dt_control_gpx_apply_job_run(dt_job_t *job);
 
 void dt_control_export_job_init(dt_job_t *job);
 int32_t dt_control_export_job_run(dt_job_t *job);
 
+void dt_control_time_offset_job_init(dt_job_t *job, const long int offset, long int imgid);
+int32_t dt_control_time_offset_job_run(dt_job_t *job);
 
 void dt_control_write_sidecar_files();
 void dt_control_delete_images();
@@ -63,7 +65,8 @@ void dt_control_remove_images();
 void dt_control_export();
 void dt_control_merge_hdr();
 
-void dt_control_gpx_apply(const gchar *filename, int32_t filmid);
+void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz);
+void dt_control_time_offset(const long int offset, long int imgid);
 
 struct dt_similarity_t;
 void dt_control_match_similar(struct dt_similarity_t *data);

@@ -38,6 +38,14 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
+typedef struct dt_control_time_offset_t {
+  long int offset;
+} dt_control_time_offset_t;
+
+typedef struct dt_control_gpx_apply_t {
+  gchar *filename;
+  gchar *tz;
+} dt_control_gpx_apply_t;
 
 void dt_control_write_sidecar_files()
 {
@@ -642,7 +650,9 @@ int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   GList *t = t1->index;
   struct dt_gpx_t *gpx = NULL;
   uint32_t cntr = 0;
-  const gchar *filename = (const gchar *)t1->data;
+  const dt_control_gpx_apply_t *d = t1->data;
+  const gchar *filename = d->filename;
+  const gchar *tz = d->tz;
 
   /* do we have any selected images */
   if (!t)
@@ -656,10 +666,16 @@ int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     goto bail_out;
   }
 
+  GTimeZone *tz_camera = (tz == NULL)?g_time_zone_new_utc():g_time_zone_new(tz);
+  if(!tz_camera)
+    goto bail_out;
+  GTimeZone *tz_utc = g_time_zone_new_utc();
+
   /* go thru each selected image and lookup location in gpx */
   do
   {
     GTimeVal timestamp;
+    GDateTime *exif_time, *utc_time;
     gdouble lon,lat;
     uint32_t imgid = (long int)t->data;
 
@@ -678,11 +694,10 @@ int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     gint hour;
     gint minute;
     gint  seconds;
-    gchar datetime[32];
 
     if (sscanf(cimg->exif_datetime_taken, "%d:%d:%d %d:%d:%d",
-	       (int*)&year, (int*)&month, (int*)&day,
-	       (int*)&hour,(int*)&minute,(int*)&seconds) != 6)
+               (int*)&year, (int*)&month, (int*)&day,
+               (int*)&hour,(int*)&minute,(int*)&seconds) != 6)
     {
       fprintf(stderr,"broken exif time in db, '%s'\n", cimg->exif_datetime_taken);
       dt_image_cache_read_release(darktable.image_cache, cimg);
@@ -692,24 +707,34 @@ int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     /* release the lock */
     dt_image_cache_read_release(darktable.image_cache, cimg);
 
-    snprintf(datetime, 32, "%4d%.2d%.2dT%.2d%.2d%.2dZ",year, month, day, hour, minute, seconds);
-
-    /* get image datetime taken and release */
-    if (!g_time_val_from_iso8601(datetime, &timestamp))
+    exif_time = g_date_time_new(tz_camera, year, month, day, hour, minute, seconds);
+    if(!exif_time)
+      continue;
+    utc_time = g_date_time_to_timezone(exif_time, tz_utc);
+    g_date_time_unref(exif_time);
+    if(!utc_time)
+      continue;
+    gboolean res = g_date_time_to_timeval(utc_time, &timestamp);
+    g_date_time_unref(utc_time);
+    if(!res)
       continue;
 
     /* only update image location if time is within gpx tack range */
-    if (dt_gpx_get_location(gpx, &timestamp, &lon, &lat))
+    if(dt_gpx_get_location(gpx, &timestamp, &lon, &lat))
     {
       dt_image_set_location(imgid, lon, lat);
       cntr++;
     }
 
-  } while ((t = g_list_next(t)) != NULL);
+  } while((t = g_list_next(t)) != NULL);
 
   dt_control_log(_("applied matched gpx location onto %d image(s)"), cntr);
 
+  g_time_zone_unref(tz_camera);
+  g_time_zone_unref(tz_utc);
   dt_gpx_destroy(gpx);
+  g_free(d->filename);
+  g_free(d->tz);
   g_free(t1->data);
   return 0;
 
@@ -717,6 +742,8 @@ bail_out:
   if (gpx)
     dt_gpx_destroy(gpx);
 
+  g_free(d->filename);
+  g_free(d->tz);
   g_free(t1->data);
   return 1;
 }
@@ -802,7 +829,7 @@ void dt_control_delete_images_job_init(dt_job_t *job)
   dt_control_image_enumerator_job_selected_init(t);
 }
 
-void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename, int32_t filmid)
+void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename, int32_t filmid, const gchar *tz)
 {
   dt_control_job_init(job, "gpx apply");
   job->execute = &dt_control_gpx_apply_job_run;
@@ -812,7 +839,10 @@ void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename, int32_t
   else
     dt_control_image_enumerator_job_selected_init(t);
 
-  t->data = g_strdup(filename);
+  dt_control_gpx_apply_t *data = (dt_control_gpx_apply_t*)malloc(sizeof(dt_control_gpx_apply_t));
+  data->filename = g_strdup(filename);
+  data->tz = g_strdup(tz);
+  t->data = data;
 }
 
 void dt_control_merge_hdr()
@@ -822,10 +852,10 @@ void dt_control_merge_hdr()
   dt_control_add_job(darktable.control, &j);
 }
 
-void dt_control_gpx_apply(const gchar *filename, int32_t filmid)
+void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz)
 {
   dt_job_t j;
-  dt_control_gpx_apply_job_init(&j, filename, filmid);
+  dt_control_gpx_apply_job_init(&j, filename, filmid, tz);
   dt_control_add_job(darktable.control, &j);
 }
 
@@ -1061,6 +1091,76 @@ void dt_control_start_indexer() {
   dt_control_add_background_job(darktable.control, &j, 10);
 }
 
+int32_t dt_control_time_offset_job_run(dt_job_t *job)
+{
+  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
+  uint32_t cntr = 0;
+  double fraction = 0.0;
+  GList *t = t1->index;
+  const long int offset = ((dt_control_time_offset_t*)t1->data)->offset;
+  guint *jid = NULL;
+  char message[512]= {0};
+
+  /* do we have any selected images and is offset != 0 */
+  if(!t || offset == 0)
+  {
+    g_free(t1->data);
+    return 1;
+  }
+
+  int total = g_list_length(t);
+
+  if(total > 1)
+  {
+    snprintf(message, 512, ngettext ("adding time offset to %d image", "adding time offset to %d images", total), total );
+    jid = (guint *)dt_control_backgroundjobs_create(darktable.control, 0, message);
+  }
+
+  /* go thru each selected image and update datetime_taken */
+  do
+  {
+    uint32_t imgid = (long int)t->data;
+
+    dt_image_add_time_offset(imgid, offset);
+    cntr++;
+
+    if (jid)
+    {
+      fraction = MAX(fraction, (1.0*cntr)/total);
+      dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
+    }
+  } while ((t = g_list_next(t)) != NULL);
+
+  dt_control_log(_("added time offset to %d image(s)"), cntr);
+
+  if (jid)
+    dt_control_backgroundjobs_destroy(darktable.control, jid);
+
+  g_free(t1->data);
+  return 0;
+}
+
+void dt_control_time_offset_job_init(dt_job_t *job, const long int offset, long int imgid)
+{
+  dt_control_job_init(job, "time offset");
+    job->execute = &dt_control_time_offset_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
+  if (imgid != -1)
+      t->index = g_list_append(t->index, (gpointer)imgid);
+  else
+    dt_control_image_enumerator_job_selected_init(t);
+
+  dt_control_time_offset_t *data = (dt_control_time_offset_t*)malloc(sizeof(dt_control_time_offset_t));
+  data->offset = offset;
+  t->data = data;
+}
+
+void dt_control_time_offset(const long int offset, long int imgid)
+{
+  dt_job_t j;
+  dt_control_time_offset_job_init(&j, offset, imgid);
+  dt_control_add_job(darktable.control, &j);
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

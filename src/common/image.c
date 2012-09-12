@@ -623,6 +623,63 @@ void dt_image_synch_all_xmp(const gchar *pathname)
   }
 }
 
+void dt_image_add_time_offset(const int imgid, const long int offset)
+{
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+  if (!cimg)
+    return;
+
+  // get the datetime_taken and calculate the new time
+  gint  year;
+  gint  month;
+  gint  day;
+  gint  hour;
+  gint  minute;
+  gint  seconds;
+
+  if (sscanf(cimg->exif_datetime_taken, "%d:%d:%d %d:%d:%d",
+             (int*)&year, (int*)&month, (int*)&day,
+             (int*)&hour,(int*)&minute,(int*)&seconds) != 6)
+  {
+    fprintf(stderr,"broken exif time in db, '%s', imgid %d\n", cimg->exif_datetime_taken, imgid);
+    dt_image_cache_read_release(darktable.image_cache, cimg);
+    return;
+  }
+
+  GTimeZone *tz = g_time_zone_new_utc();
+  GDateTime *datetime_original = g_date_time_new(tz, year, month, day, hour, minute, seconds);
+  g_time_zone_unref(tz);
+  if(!datetime_original)
+  {
+    dt_image_cache_read_release(darktable.image_cache, cimg);
+    return;
+  }
+
+  // let's add our offset
+  GDateTime *datetime_new = g_date_time_add_seconds(datetime_original, offset);
+  g_date_time_unref(datetime_original);
+
+  if(!datetime_new)
+  {
+    dt_image_cache_read_release(darktable.image_cache, cimg);
+    return;
+  }
+
+  gchar *datetime = g_date_time_format(datetime_new, "%Y:%m:%d %H:%M:%S");
+  g_date_time_unref(datetime_new);
+
+  // update exif_datetime_taken in img
+  if(datetime)
+  {
+    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+    g_strlcpy(img->exif_datetime_taken, datetime, 20);
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+  }
+
+  dt_image_cache_read_release(darktable.image_cache, cimg);
+  g_free(datetime);
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
