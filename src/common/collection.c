@@ -438,6 +438,10 @@ get_query_string(const int property, const gchar *escaped_text, char *query)
       snprintf(query, 1024, "(film_id in (select id from film_rolls where folder like '%s'))", escaped_text);
       break;
 
+    case 15: // folders
+      snprintf(query, 1024, "(film_id in (select id from film_rolls where folder like '%s%%'))", escaped_text);
+      break;
+
     case 5: // colorlabel
     {
       int color = 0;
