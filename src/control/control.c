@@ -1518,12 +1518,19 @@ int dt_control_key_pressed_override(guint key, guint state)
   {
     if(key == GDK_Return)
     {
+      if(!strcmp(darktable.control->vimkey, ":q"))
+      {
+        dt_control_quit();
+      }
+      else
+      {
+        dt_bauhaus_vimkey_exec(darktable.control->vimkey);
+      }
+      darktable.control->vimkey[0] = 0;
+      darktable.control->vimkey_cnt = 0;
       dt_control_log_ack_all();
       g_list_free(autocomplete);
       autocomplete = NULL;
-      dt_lua_dostring(&darktable.control->vimkey[1]);
-      darktable.control->vimkey[0] = 0;
-      darktable.control->vimkey_cnt = 0;
     }
     else if(key == GDK_Escape)
     {
@@ -1547,7 +1554,13 @@ int dt_control_key_pressed_override(guint key, guint state)
     else if(key == GDK_Tab)
     {
       // TODO: also support :preset and :get?
-      if(!autocomplete)
+      // auto complete:
+      if(darktable.control->vimkey_cnt < 5)
+      {
+        sprintf(darktable.control->vimkey, ":set ");
+        darktable.control->vimkey_cnt = 5;
+      }
+      else if(!autocomplete)
       {
         // TODO: handle '.'-separated things separately
         // this is a static list, and tab cycles through the list

@@ -348,9 +348,11 @@ void dt_lua_init_events(lua_State *L) {
 			handler++;
 		}
 		lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_event_list");
+    dt_lua_push_darktable_lib(L);
 		lua_pushstring(L,"register_event");
 		lua_pushcfunction(L,&lua_register_event);
 		lua_settable(L,-3);
+    lua_pop(L,1);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
