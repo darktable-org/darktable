@@ -61,20 +61,25 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **bu
     img->exif_iso = sqlite3_column_double(stmt, 10);
     img->exif_focal_length = sqlite3_column_double(stmt, 11);
     str = (char *)sqlite3_column_text(stmt, 12);
-    if(str) 
+    if(str)
       g_strlcpy(img->exif_datetime_taken, str, 20);
     img->flags = sqlite3_column_int(stmt, 13);
     img->exif_crop = sqlite3_column_double(stmt, 14);
     img->orientation = sqlite3_column_int(stmt, 15);
     img->exif_focus_distance = sqlite3_column_double(stmt,16);
-    if(img->exif_focus_distance >= 0 && img->orientation >= 0) 
+    if(img->exif_focus_distance >= 0 && img->orientation >= 0)
       img->exif_inited = 1;
     uint32_t tmp = sqlite3_column_int(stmt, 17);
     memcpy(&img->legacy_flip, &tmp, sizeof(dt_image_raw_parameters_t));
 
-    img->longitude = sqlite3_column_double(stmt, 18);
-    img->latitude = sqlite3_column_double(stmt, 19);
-
+    if(sqlite3_column_type(stmt, 18) == SQLITE_FLOAT)
+      img->longitude = sqlite3_column_double(stmt, 18);
+    else
+      img->longitude = NAN;
+    if(sqlite3_column_type(stmt, 19) == SQLITE_FLOAT)
+      img->latitude = sqlite3_column_double(stmt, 19);
+    else
+      img->latitude = NAN;
 
 
     // buffer size?
@@ -88,7 +93,7 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **bu
         img->bpp = 4*sizeof(float);
     }
     else // raw
-      img->bpp = sizeof(uint16_t);    
+      img->bpp = sizeof(uint16_t);
   }
   else fprintf(stderr, "[image_cache_allocate] failed to open image from database: %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
   sqlite3_finalize(stmt);
@@ -235,7 +240,7 @@ dt_image_cache_write_release(
   int rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "[image_cache_write_release] sqlite3 error %d\n", rc);
   sqlite3_finalize(stmt);
-  
+
   // TODO: make this work in relaxed mode, too.
   if(mode == DT_IMAGE_CACHE_SAFE)
   {

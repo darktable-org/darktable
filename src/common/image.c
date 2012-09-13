@@ -531,8 +531,8 @@ void dt_image_init(dt_image_t *img)
   img->exif_iso = 0;
   img->exif_focal_length = 0;
   img->exif_focus_distance = 0;
-  img->latitude = 0;
-  img->longitude = 0;
+  img->latitude = NAN;
+  img->longitude = NAN;
 }
 
 // *******************************************************

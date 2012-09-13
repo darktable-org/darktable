@@ -109,7 +109,7 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
 
   /* get bounding box coords */
   osm_gps_map_get_bbox(lib->map, &bb[0], &bb[1]);
-  float bb_0_lat = 0, bb_0_lon = 0, bb_1_lat = 0, bb_1_lon = 0;
+  float bb_0_lat = 0.0, bb_0_lon = 0.0, bb_1_lat = 0.0, bb_1_lon = 0.0;
   osm_gps_map_point_get_degrees(&bb[0], &bb_0_lat, &bb_0_lon);
   osm_gps_map_point_get_degrees(&bb[1], &bb_1_lat, &bb_1_lon);
 
@@ -147,12 +147,15 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
 
     /* for each image check if within bbox */
     const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-    l = osm_gps_map_point_new_degrees(cimg->latitude, cimg->longitude);
+    double longitude = cimg->longitude;
+    double latitude  = cimg->latitude;
     dt_image_cache_read_release(darktable.image_cache, cimg);
+    if(isnan(latitude) || isnan(longitude))
+      continue;
+    l = osm_gps_map_point_new_degrees(latitude, longitude);
 
     /* translate l into screen coords */
     osm_gps_map_convert_geographic_to_screen(lib->map, l, &px, &py);
-
 
     /* dependent on scale draw different overlays */
     if (zoom >= 14)
@@ -167,6 +170,18 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
         float ms = fminf(
                           ts/(float)buf.width,
                           ts/(float)buf.height);
+
+#if 0
+        // this doesn't work since osm-gps-map always gives 0/0 as mouse coords :(
+        /* find out if the cursor is over the image */
+        if(pointerx >= px && pointerx <= (px + buf.width*ms + 4) && pointery <= (py - 8) && pointery >= (py - buf.height*ms - 8 - 4))
+        {
+          printf("over\n");
+          cairo_set_source_rgba(cri, 1, 0, 0, 0.7);
+        }
+//         else
+//           printf("%d/%d, %d/%d\n", px, py, pointerx, pointery);
+#endif
         const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
         surface = cairo_image_surface_create_for_data (buf.buf, CAIRO_FORMAT_RGB24,
                                                        buf.width, buf.height, stride);
@@ -339,7 +354,7 @@ void _view_map_collection_changed(gpointer instance, gpointer user_data)
   /* build the new query string */
   char *geo_query = g_strdup_printf("select id from images where id in (%s)\
                                     and longitude >= ?3 and longitude <= ?4 and latitude <= ?5 and latitude >= ?6\
-                                    and (longitude != 0.0 or latitude != 0.0) limit 0, 100", query);
+                                    and longitude not NULL and latitude not NULL limit 0, 100", query);
 
   /* prepare a new main query statement for collection */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);
@@ -359,7 +374,8 @@ static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer us
     longitude = cimg->longitude;
     latitude = cimg->latitude;
     dt_image_cache_read_release(darktable.image_cache, cimg);
-    _view_map_center_on_location((dt_view_t*)user_data, longitude, latitude, 16); // TODO: is it better to keep the zoom level?
+    if(!isnan(longitude) && !isnan(latitude))
+      _view_map_center_on_location((dt_view_t*)user_data, longitude, latitude, 16); // TODO: is it better to keep the zoom level?
   }
 }
 

@@ -707,20 +707,23 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int 
 
       //GPS data
       const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-      exifData["Exif.GPSInfo.GPSLongitudeRef"] = (cimg->longitude < 0 ) ? "W" : "E";
-      exifData["Exif.GPSInfo.GPSLatitudeRef"]  = (cimg->latitude < 0 ) ? "S" : "N";
+      if(!isnan(cimg->longitude) && !isnan(cimg->latitude))
+      {
+        exifData["Exif.GPSInfo.GPSLongitudeRef"] = (cimg->longitude < 0 ) ? "W" : "E";
+        exifData["Exif.GPSInfo.GPSLatitudeRef"]  = (cimg->latitude < 0 ) ? "S" : "N";
 
-      long long_deg = (int)floor(fabs(cimg->longitude));
-      long lat_deg = (int)floor(fabs(cimg->latitude));
-      long long_min = (int)floor((fabs(cimg->longitude) - floor(fabs(cimg->longitude))) * 60000000);
-      long lat_min = (int)floor((fabs(cimg->latitude) - floor(fabs(cimg->latitude))) * 60000000);
+        long long_deg = (int)floor(fabs(cimg->longitude));
+        long lat_deg = (int)floor(fabs(cimg->latitude));
+        long long_min = (int)floor((fabs(cimg->longitude) - floor(fabs(cimg->longitude))) * 60000000);
+        long lat_min = (int)floor((fabs(cimg->latitude) - floor(fabs(cimg->latitude))) * 60000000);
+        gchar *long_str = g_strdup_printf("%ld/1 %ld/1000000 0/1", long_deg, long_min);
+        gchar *lat_str = g_strdup_printf("%ld/1 %ld/1000000 0/1", lat_deg, lat_min);
+        exifData["Exif.GPSInfo.GPSLongitude"] = long_str;
+        exifData["Exif.GPSInfo.GPSLatitude"] = lat_str;
+        g_free(long_str);
+        g_free(lat_str);
+      }
       dt_image_cache_read_release(darktable.image_cache, cimg);
-      gchar *long_str = g_strdup_printf("%ld/1 %ld/1000000 0/1", long_deg, long_min);
-      gchar *lat_str = g_strdup_printf("%ld/1 %ld/1000000 0/1", lat_deg, lat_min);
-      exifData["Exif.GPSInfo.GPSLongitude"] = long_str;
-      exifData["Exif.GPSInfo.GPSLatitude"] = lat_str;
-      g_free(long_str);
-      g_free(lat_str);
     }
 
     Exiv2::Blob blob;
@@ -1161,7 +1164,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 {
   const int xmp_version = 1;
   int stars = 1, raw_params = 0;
-  double longitude = 0, latitude = 0;
+  double longitude = NAN, latitude = NAN;
   // get stars and raw params from db
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1172,30 +1175,37 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   {
     stars      = sqlite3_column_int(stmt, 0);
     raw_params = sqlite3_column_int(stmt, 1);
-    longitude  = sqlite3_column_double(stmt, 2);
-    latitude   = sqlite3_column_double(stmt, 3);
+    if(sqlite3_column_type(stmt, 2) == SQLITE_FLOAT)
+      longitude  = sqlite3_column_double(stmt, 2);
+    if(sqlite3_column_type(stmt, 3) == SQLITE_FLOAT)
+      latitude   = sqlite3_column_double(stmt, 3);
   }
   sqlite3_finalize(stmt);
   xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); //rejected image = -1, others = 0..5
 
   // GPS data
-  char long_dir = 'E', lat_dir = 'N';
-  if(longitude < 0) long_dir = 'W';
-  if(latitude < 0) lat_dir = 'S';
+  if(!isnan(longitude) && !isnan(latitude))
+  {
+    char long_dir = 'E', lat_dir = 'N';
+    if(longitude < 0) long_dir = 'W';
+    if(latitude < 0) lat_dir = 'S';
 
-  longitude = fabs(longitude);
-  latitude  = fabs(latitude);
+    longitude = fabs(longitude);
+    latitude  = fabs(latitude);
 
-  int long_deg = (int)floor(longitude);
-  int lat_deg  = (int)floor(latitude);
-  double long_min = (longitude - (double)long_deg) * 60.0;
-  double lat_min  = (latitude - (double)lat_deg) * 60.0;
+    int long_deg = (int)floor(longitude);
+    int lat_deg  = (int)floor(latitude);
+    double long_min = (longitude - (double)long_deg) * 60.0;
+    double lat_min  = (latitude - (double)lat_deg) * 60.0;
 
-  gchar *long_str = g_strdup_printf("%d,%08f%c", long_deg, long_min, long_dir);
-  gchar *lat_str = g_strdup_printf("%d,%08f%c", lat_deg, lat_min, lat_dir);
+    gchar *long_str = g_strdup_printf("%d,%08f%c", long_deg, long_min, long_dir);
+    gchar *lat_str = g_strdup_printf("%d,%08f%c", lat_deg, lat_min, lat_dir);
 
-  xmpData["Xmp.exif.GPSLongitude"] = long_str;
-  xmpData["Xmp.exif.GPSLatitude"]  = lat_str;
+    xmpData["Xmp.exif.GPSLongitude"] = long_str;
+    xmpData["Xmp.exif.GPSLatitude"]  = lat_str;
+    g_free(long_str);
+    g_free(lat_str);
+  }
 
   // the meta data
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1346,8 +1356,6 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   sqlite3_finalize (stmt);
   g_free(tags);
   g_free(hierarchical);
-  g_free(long_str);
-  g_free(lat_str);
 }
 
 int dt_exif_xmp_attach (const int imgid, const char* filename)
