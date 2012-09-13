@@ -399,7 +399,7 @@ void dt_film_import1(dt_film_t *film)
 	   strcmp(dfn+strlen(dfn)-4,".GPX") == 0)
 	{
 	  gchar *gpx_file = g_build_path (G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);
-	  dt_control_gpx_apply(gpx_file, cfr->id, NULL);
+	  dt_control_gpx_apply(gpx_file, cfr->id, dt_conf_get_string("plugins/lighttable/geolocation/tz"));
 	  g_free(gpx_file);
 	}
       }
@@ -440,7 +440,7 @@ void dt_film_import1(dt_film_t *film)
        strcmp(dfn+strlen(dfn)-4,".GPX") == 0)
     {
       gchar *gpx_file = g_build_path (G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);
-      dt_control_gpx_apply(gpx_file, cfr->id, NULL);
+      dt_control_gpx_apply(gpx_file, cfr->id, dt_conf_get_string("plugins/lighttable/geolocation/tz"));
       g_free(gpx_file);
     }
   }
