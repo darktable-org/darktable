@@ -17,6 +17,8 @@
 */
 // #include "common/darktable.h"
 // #include "control/control.h"
+#include "common/image_cache.h"
+#include "common/debug.h"
 #include "control/conf.h"
 // #include "gui/accelerators.h"
 // #include "gui/gtk.h"
@@ -33,6 +35,7 @@ typedef struct dt_lib_geolocation_t
 {
   GtkWidget *offset_entry;
   GList *timezones;
+  GtkWidget *floating_window, *floating_window_ok, *floating_window_cancel, *floating_window_entry;
 }
 dt_lib_geolocation_t;
 
@@ -235,13 +238,154 @@ _lib_geolocation_offset_focus_out(GtkWidget *widget, GdkEvent *event, dt_lib_mod
   return FALSE;
 }
 
-// TODO:
-// - show a popup or something like the quick tag line
-// - selection is done the same as with copying of history stacks
-// - entry boxes for offset, will be set when the button from 1. is clicked. should be stored in config
 static void
-_lib_geolocation_calculate_offset_callback(GtkWidget *widget, gpointer user_data)
+_lib_geolocation_calculate_offset_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
+  dt_lib_geolocation_t *d = (dt_lib_geolocation_t*)self->data;
+  const gchar *gps_time = gtk_entry_get_text(GTK_ENTRY(d->floating_window_entry));
+  if(gps_time)
+  {
+    gchar **tokens = g_strsplit(gps_time, ":", 0);
+    if(tokens[0] != '\0' && tokens[1] != '\0' && tokens[2] != '\0')
+    {
+      if(g_ascii_isdigit(tokens[0][0]) && g_ascii_isdigit(tokens[0][1]) && tokens[0][2] == '\0'
+         && g_ascii_isdigit(tokens[1][0]) && g_ascii_isdigit(tokens[1][1]) && tokens[1][2] == '\0'
+         && g_ascii_isdigit(tokens[2][0]) && g_ascii_isdigit(tokens[2][1]) && tokens[2][2] == '\0')
+      {
+        int h, m, s;
+        h = (tokens[0][0] - '0')*10 + tokens[0][1] - '0';
+        m = (tokens[1][0] - '0')*10 + tokens[1][1] - '0';
+        s = (tokens[2][0] - '0')*10 + tokens[2][1] - '0';
+        if(h < 24 && m < 60 && s < 60)
+        {
+          // finally a valid time
+          // get imgid
+          int32_t imgid = -1;
+          sqlite3_stmt *stmt;
+          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images order by imgid asc limit 1", -1, &stmt, NULL);
+          if(sqlite3_step(stmt) == SQLITE_ROW)
+            imgid = sqlite3_column_int(stmt, 0);
+          else // no selection is used, use mouse over id
+            DT_CTL_GET_GLOBAL(imgid, lib_image_mouse_over_id);
+          sqlite3_finalize(stmt);
+
+          if(imgid > 0)
+          {
+            const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+            // get the exif_datetime_taken and parse it
+            gint  year;
+            gint  month;
+            gint  day;
+            gint  hour;
+            gint  minute;
+            gint  second;
+
+            if (sscanf(cimg->exif_datetime_taken, "%d:%d:%d %d:%d:%d",
+                      (int*)&year, (int*)&month, (int*)&day,
+                      (int*)&hour,(int*)&minute,(int*)&second) == 6)
+            {
+              // calculate the offset
+              long int exif_seconds = hour*60*60 + minute*60 + second;
+              long int gps_seconds = h*60*60 + m*60 + s;
+              long int offset = gps_seconds - exif_seconds;
+              // transform the offset back into a string
+              gchar sign = (offset < 0)?'-':'+';
+              offset = labs(offset);
+              gint offset_h = offset / (60*60);
+              offset -= offset_h*60*60;
+              gint offset_m = offset / 60;
+              offset -= offset_m*60;
+              gchar *offset_str = g_strdup_printf("%c%02d:%02d:%02ld", sign, offset_h, offset_m, offset);
+              // write the offset into d->offset_entry
+              gtk_entry_set_text(GTK_ENTRY(d->offset_entry), offset_str);
+              g_free(offset_str);
+            }
+
+            dt_image_cache_read_release(darktable.image_cache, cimg);
+          }
+        }
+      }
+    }
+    g_strfreev(tokens);
+  }
+  gtk_widget_destroy(d->floating_window);
+}
+
+static gboolean
+_lib_geolocation_floating_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
+{
+  dt_lib_geolocation_t *d = (dt_lib_geolocation_t*)self->data;
+  switch(event->keyval) {
+    case GDK_Escape:
+      gtk_widget_destroy(d->floating_window);
+      return TRUE;
+
+    case GDK_Return:
+    case GDK_KP_Enter:
+      _lib_geolocation_calculate_offset_callback(NULL, self);
+      return TRUE;
+
+    default:
+      return FALSE;
+  }
+}
+
+static void
+_lib_geolocation_show_offset_window(GtkWidget *widget, dt_lib_module_t *self)
+{
+  dt_lib_geolocation_t *d = self->data;
+  gint x, y;
+  gint px, py, center_w, center_h, window_w, window_h;
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+  GtkWidget *center = dt_ui_center(darktable.gui->ui);
+  gdk_window_get_origin(gtk_widget_get_window(center), &px, &py);
+  gdk_window_get_size(gtk_widget_get_window(center),&center_w,&center_h);
+
+  d->floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  GTK_WIDGET_SET_FLAGS(d->floating_window, GTK_CAN_FOCUS);
+  gtk_window_set_decorated(GTK_WINDOW(d->floating_window), FALSE);
+  gtk_window_set_has_frame(GTK_WINDOW(d->floating_window), FALSE);
+  gtk_window_set_type_hint(GTK_WINDOW(d->floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
+  gtk_window_set_transient_for(GTK_WINDOW(d->floating_window), GTK_WINDOW(window));
+  gtk_window_set_opacity(GTK_WINDOW(d->floating_window), 0.8);
+  gtk_window_set_modal(GTK_WINDOW(d->floating_window), TRUE);
+
+  GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 5, 5, 5);
+  GtkWidget *vbox = gtk_vbox_new(TRUE, 5);
+  gtk_container_add(GTK_CONTAINER(alignment), vbox);
+
+  d->floating_window_entry = gtk_entry_new();
+  gtk_widget_add_events(d->floating_window_entry, GDK_FOCUS_CHANGE_MASK);
+  g_signal_connect_swapped(d->floating_window, "focus-out-event", G_CALLBACK(gtk_widget_destroy), d->floating_window);
+  g_object_set(G_OBJECT(d->floating_window_entry), "tooltip-text", _("enter the time shown on the selected picture\nformat: hh:mm:ss"), (char *)NULL);
+
+  gtk_editable_select_region(GTK_EDITABLE(d->floating_window_entry), 0, -1);
+  gtk_box_pack_start(GTK_BOX(vbox), d->floating_window_entry, TRUE, TRUE, 0);
+  g_signal_connect(d->floating_window_entry, "key-press-event", G_CALLBACK(_lib_geolocation_floating_key_press), self);
+
+  GtkWidget *hbox = gtk_hbox_new(TRUE, 5);
+  GtkWidget *cancel_button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+  GtkWidget *ok_button = gtk_button_new_from_stock(GTK_STOCK_OK);
+
+  gtk_box_pack_start(GTK_BOX(hbox), cancel_button, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), ok_button, TRUE, TRUE, 0);
+  g_signal_connect_swapped(G_OBJECT(cancel_button), "clicked", G_CALLBACK(gtk_widget_destroy), d->floating_window);
+  g_signal_connect(G_OBJECT(ok_button), "clicked", G_CALLBACK(_lib_geolocation_calculate_offset_callback), self);
+
+  gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+
+  gtk_container_add(GTK_CONTAINER(d->floating_window), alignment);
+
+  gtk_widget_show_all(d->floating_window);
+  gtk_widget_grab_focus(d->floating_window_entry);
+
+  gdk_window_get_size(gtk_widget_get_window(d->floating_window), &window_w, &window_h);
+  x = px + 0.5*(center_w-window_w);
+  y = py + center_h - 20 - window_h;
+  gtk_window_move(GTK_WINDOW(d->floating_window), x, y);
+
+  gtk_window_present(GTK_WINDOW(d->floating_window));
 }
 
 // modify the datetime_taken field in the db/cache
@@ -422,7 +566,7 @@ gui_init (dt_lib_module_t *self)
   button = dtgtk_button_new(dtgtk_cairo_paint_zoom, 0);
   g_object_set(G_OBJECT(button), "tooltip-text", _("calculate the time offset from an image"), (char *)NULL);
   gtk_box_pack_start(button_box, button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_geolocation_calculate_offset_callback), self);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_geolocation_show_offset_window), self);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_check_mark, 0);
   g_object_set(G_OBJECT(button), "tooltip-text", _("apply time offset to selected images"), (char *)NULL);
