@@ -113,6 +113,17 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
   osm_gps_map_point_get_degrees(&bb[0], &bb_0_lat, &bb_0_lon);
   osm_gps_map_point_get_degrees(&bb[1], &bb_1_lat, &bb_1_lon);
 
+  /* make the bounding box a little bigger to the west and south */
+  float lat0 = 0.0, lon0 = 0.0, lat1 = 0.0, lon1 = 0.0;
+  OsmGpsMapPoint *pt0 = osm_gps_map_point_new_degrees(0.0, 0.0), *pt1 = osm_gps_map_point_new_degrees(0.0, 0.0);
+  osm_gps_map_convert_screen_to_geographic(lib->map, 0, 0, pt0);
+  osm_gps_map_convert_screen_to_geographic(lib->map, 1.5*ts, 1.5*ts, pt1);
+  osm_gps_map_point_get_degrees(pt0, &lat0, &lon0);
+  osm_gps_map_point_get_degrees(pt1, &lat1, &lon1);
+  osm_gps_map_point_free(pt0);
+  osm_gps_map_point_free(pt1);
+  double south_border = lat0 - lat1, west_border = lon1 - lon0;
+
   /* get map view state and store  */
   int zoom = osm_gps_map_get_zoom(lib->map);
   center = osm_gps_map_get_center(lib->map);
@@ -129,10 +140,10 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
   DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, 0);
   DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, -1);
   // bind bounding box coords
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 3, bb_0_lon);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 3, bb_0_lon - west_border);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 4, bb_1_lon);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 5, bb_0_lat);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 6, bb_1_lat);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 6, bb_1_lat - south_border);
 
   /* query collection ids */
   while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
