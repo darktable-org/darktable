@@ -1,0 +1,22 @@
+cmake_minimum_required(VERSION 2.6)
+
+
+set(LUAAUTOC_SOURCES
+	"src/lautoc.c"
+	"src/lautoc_call.c"
+	"src/lautoc_hashtable.c"
+	"src/lautoc_stack.c"
+	"src/lautoc_struct.c"
+	"src/lautoc_type.c"
+	)
+
+#
+# build liblautoc
+#
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -std=gnu99 -Wall -Werror -Wno-unused -O3 -g
+")
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_library(lautoc STATIC ${LUAAUTOC_SOURCES})
+target_link_libraries(lautoc)
+

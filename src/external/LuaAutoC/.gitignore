@@ -1,0 +1,16 @@
+*~
+
+/config.mk
+/obj
+
+/lib*.a
+/lib*.so
+/demos/demo_convert
+/demos/demo_embed
+/demos/demo_func
+/demos/demo_struct
+/demos/demo_mod
+
+/*.lib
+/*.dll
+/demos/*.exe
