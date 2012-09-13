@@ -209,8 +209,8 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx,
       }
 
       /* validate that we actually got lon / lat attribute values */
-      if (gpx->current_track_point->longitude == NAN ||
-          gpx->current_track_point->latitude == NAN)
+      if (isnan(gpx->current_track_point->longitude) ||
+          isnan(gpx->current_track_point->latitude))
       {
         fprintf(stderr,"broken gpx file, failed to get lon/lat attribute values for trkpt\n");
         gpx->invalid_track_point = TRUE;
