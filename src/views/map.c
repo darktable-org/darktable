@@ -136,14 +136,11 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
   DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
 
-  /* setup offset and row for the main query */
-  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, 0);
-  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, -1);
-  // bind bounding box coords
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 3, bb_0_lon - west_border);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 4, bb_1_lon);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 5, bb_0_lat);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 6, bb_1_lat - south_border);
+  /* bind bounding box coords for the main query */
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 1, bb_0_lon - west_border);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 2, bb_1_lon);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 3, bb_0_lat);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 4, bb_1_lat - south_border);
 
   /* query collection ids */
   while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
@@ -363,9 +360,9 @@ void _view_map_collection_changed(gpointer instance, gpointer user_data)
     sqlite3_finalize(lib->statements.main_query);
 
   /* build the new query string */
-  char *geo_query = g_strdup_printf("select id from images where id in (%s)\
-                                    and longitude >= ?3 and longitude <= ?4 and latitude <= ?5 and latitude >= ?6\
-                                    and longitude not NULL and latitude not NULL limit 0, 100", query);
+  char *geo_query = g_strdup("select id from images where \
+                              longitude >= ?1 and longitude <= ?2 and latitude <= ?3 and latitude >= ?4\
+                              and longitude not NULL and latitude not NULL limit 0, 100");
 
   /* prepare a new main query statement for collection */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);
