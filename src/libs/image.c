@@ -126,7 +126,7 @@ gui_init (dt_lib_module_t *self)
 
   button = gtk_button_new_with_label(_("duplicate"));
   d->duplicate_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("add a duplicate to the collection"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("add a duplicate to the collection, including its history stack"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)3);
   

@@ -25,6 +25,7 @@
 #include "common/similarity.h"
 #include "common/exif.h"
 #include "common/film.h"
+#include "common/history.h"
 #include "common/imageio_module.h"
 #include "common/debug.h"
 #include "common/tags.h"
@@ -510,6 +511,7 @@ error:
 int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
 {
   long int imgid = -1;
+  long int newimgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
   int total = g_list_length(t);
@@ -520,7 +522,8 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   while(t)
   {
     imgid = (long int)t->data;
-    dt_image_duplicate(imgid);
+    newimgid = dt_image_duplicate(imgid);
+    if(newimgid != -1) dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE);
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
