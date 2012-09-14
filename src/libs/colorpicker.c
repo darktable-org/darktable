@@ -547,7 +547,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(data->color_mode_selector), "changed",
                    G_CALLBACK(_color_mode_changed), self);
 
-  data->output_label = gtk_label_new(_(""));
+  data->output_label = gtk_label_new("");
   gtk_label_set_justify(GTK_LABEL(data->output_label), GTK_JUSTIFY_CENTER);
   gtk_widget_set_size_request(data->output_label, 80, -1);
   gtk_box_pack_start(GTK_BOX(output_options), data->output_label,

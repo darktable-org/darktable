@@ -57,6 +57,71 @@ const char *dt_xmp_keys[DT_XMP_KEYS_NUM] =
   "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights"
 };
 
+/* a few helper functions inspired by
+   https://projects.kde.org/projects/kde/kdegraphics/libs/libkexiv2/repository/revisions/master/entry/libkexiv2/kexiv2gps.cpp */
+
+static double
+_gps_string_to_number(const gchar *input)
+{
+  double res = 0;
+  gchar *s = g_strdup(input);
+  gchar dir = toupper(s[strlen(s)-1]);
+  gchar **list = g_strsplit(s, ",", 0);
+  if(list)
+  {
+    if(list[2] == NULL) // format DDD,MM.mm{N|S}
+      res = g_ascii_strtoll(list[0], NULL, 10) + (g_ascii_strtod(list[1], NULL) / 60.0);
+    else if(list[3] == NULL) // format DDD,MM,SS{N|S}
+      res = g_ascii_strtoll(list[0], NULL, 10) + (g_ascii_strtoll(list[1], NULL, 10) / 60.0) + (g_ascii_strtoll(list[2], NULL, 10) / 3600.0);
+    if(dir == 'S' || dir == 'W' )
+      res *= -1.0;
+  }
+  g_strfreev(list);
+  g_free(s);
+  return res;
+}
+
+// TODO: return a gboolean
+static double
+_gps_rationale_to_number(const double r0_1, const double r0_2, const double r1_1, const double r1_2, const double r2_1, const double r2_2, char sign)
+{
+  double res = 0.0;
+  // Latitude decoding from Exif.
+  double num, den, min, sec;
+  num = r0_1;
+  den = r0_2;
+  if (den == 0)
+    return 0.0;
+  res = num/den;
+
+  num = r1_1;
+  den = r1_2;
+  if (den == 0)
+    return 0.0;
+  min = num/den;
+  if (min != -1.0)
+    res += min/60.0;
+
+  num = r2_1;
+  den = r2_2;
+  if (den == 0)
+  {
+    // be relaxed and accept 0/0 seconds. See #246077.
+    if (num == 0)
+      den = 1;
+    else
+      return 0.0;
+  }
+  sec = num/den;
+  if (sec != -1.0)
+    res += sec/3600.0;
+
+  if (sign == 'S')
+    res *= -1.0;
+
+  return res;
+}
+
 // inspired by ufraw_exiv2.cc:
 
 static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
@@ -161,6 +226,30 @@ int dt_exif_read_data(dt_image_t *img, Exiv2::ExifData &exifData)
         default: // 72, horizontal
           img->orientation = 0;
       }
+    }
+
+    /* read gps location */
+    if ( (pos = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitude")))
+          != exifData.end() )
+    {
+      Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitudeRef"));
+      const char *sign = ref->toString().c_str();
+
+      img->latitude = _gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
+                                               pos->toRational(1).first, pos->toRational(1).second,
+                                               pos->toRational(2).first, pos->toRational(2).second, sign[0]);
+    }
+
+    if ( (pos = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitude")))
+          != exifData.end() )
+    {
+      Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitudeRef"));
+      const char *sign = ref->toString().c_str();
+
+      img->longitude = _gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
+                                               pos->toRational(1).first, pos->toRational(1).second,
+                                               pos->toRational(2).first, pos->toRational(2).second, sign[0]);
+
     }
 
     /* Read lens name */
@@ -401,6 +490,19 @@ int dt_exif_read(dt_image_t *img, const char* path)
       img->flags = (img->flags & ~0x7) | (0x7 & stars);
     }
 
+    /* read gps location */
+    if ( (xmpPos = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLatitude")))
+          != xmpData.end() )
+    {
+      img->latitude = _gps_string_to_number(xmpPos->toString().c_str());
+    }
+
+    if ( (xmpPos = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLongitude")))
+          != xmpData.end() )
+    {
+      img->longitude = _gps_string_to_number(xmpPos->toString().c_str());
+    }
+
     return dt_exif_read_data(img, exifData);
   }
   catch (Exiv2::AnyError& e)
@@ -621,6 +723,26 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int 
         //         xmpData["Xmp.xmp.Rating"] = rating;
         g_list_free(res);
       }
+
+      //GPS data
+      const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+      if(!isnan(cimg->longitude) && !isnan(cimg->latitude))
+      {
+        exifData["Exif.GPSInfo.GPSLongitudeRef"] = (cimg->longitude < 0 ) ? "W" : "E";
+        exifData["Exif.GPSInfo.GPSLatitudeRef"]  = (cimg->latitude < 0 ) ? "S" : "N";
+
+        long long_deg = (int)floor(fabs(cimg->longitude));
+        long lat_deg = (int)floor(fabs(cimg->latitude));
+        long long_min = (int)floor((fabs(cimg->longitude) - floor(fabs(cimg->longitude))) * 60000000);
+        long lat_min = (int)floor((fabs(cimg->latitude) - floor(fabs(cimg->latitude))) * 60000000);
+        gchar *long_str = g_strdup_printf("%ld/1 %ld/1000000 0/1", long_deg, long_min);
+        gchar *lat_str = g_strdup_printf("%ld/1 %ld/1000000 0/1", lat_deg, lat_min);
+        exifData["Exif.GPSInfo.GPSLongitude"] = long_str;
+        exifData["Exif.GPSInfo.GPSLatitude"] = lat_str;
+        g_free(long_str);
+        g_free(lat_str);
+      }
+      dt_image_cache_read_release(darktable.image_cache, cimg);
     }
 
     Exiv2::Blob blob;
@@ -814,7 +936,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
 
     // older darktable version did not write this data correctly:
     // the reasoning behind strdup'ing all the strings before passing it to sqlite3 is, that
-    // they are somehow corrupt after the call to sqlite3_prepare_v2() -- don't ask my
+    // they are somehow corrupt after the call to sqlite3_prepare_v2() -- don't ask me
     // why for they don't get passed to that function.
     if(version > 0)
     {
@@ -938,6 +1060,17 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       img->legacy_flip.legacy = 0;
     }
 
+    // GPS data
+    if ((pos=xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLatitude"))) != xmpData.end() )
+    {
+      img->latitude = _gps_string_to_number(pos->toString().c_str());
+    }
+
+    if ((pos=xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLongitude"))) != xmpData.end() )
+    {
+      img->longitude = _gps_string_to_number(pos->toString().c_str());
+    }
+
     // history
     Exiv2::XmpData::iterator ver;
     Exiv2::XmpData::iterator en;
@@ -1050,19 +1183,48 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 {
   const int xmp_version = 1;
   int stars = 1, raw_params = 0;
+  double longitude = NAN, latitude = NAN;
   // get stars and raw params from db
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "select flags, raw_parameters from images where id = ?1",
+    "select flags, raw_parameters, longitude, latitude from images where id = ?1",
     -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     stars      = sqlite3_column_int(stmt, 0);
     raw_params = sqlite3_column_int(stmt, 1);
+    if(sqlite3_column_type(stmt, 2) == SQLITE_FLOAT)
+      longitude  = sqlite3_column_double(stmt, 2);
+    if(sqlite3_column_type(stmt, 3) == SQLITE_FLOAT)
+      latitude   = sqlite3_column_double(stmt, 3);
   }
   sqlite3_finalize(stmt);
   xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); //rejected image = -1, others = 0..5
+
+  // GPS data
+  if(!isnan(longitude) && !isnan(latitude))
+  {
+    char long_dir = 'E', lat_dir = 'N';
+    if(longitude < 0) long_dir = 'W';
+    if(latitude < 0) lat_dir = 'S';
+
+    longitude = fabs(longitude);
+    latitude  = fabs(latitude);
+
+    int long_deg = (int)floor(longitude);
+    int lat_deg  = (int)floor(latitude);
+    double long_min = (longitude - (double)long_deg) * 60.0;
+    double lat_min  = (latitude - (double)lat_deg) * 60.0;
+
+    gchar *long_str = g_strdup_printf("%d,%08f%c", long_deg, long_min, long_dir);
+    gchar *lat_str = g_strdup_printf("%d,%08f%c", lat_deg, lat_min, lat_dir);
+
+    xmpData["Xmp.exif.GPSLongitude"] = long_str;
+    xmpData["Xmp.exif.GPSLatitude"]  = lat_str;
+    g_free(long_str);
+    g_free(lat_str);
+  }
 
   // the meta data
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),

@@ -65,7 +65,7 @@ name ()
 
 uint32_t views()
 {
-  return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_MAP | DT_VIEW_TETHERING;
 }
 
 uint32_t container()

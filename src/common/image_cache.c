@@ -38,7 +38,7 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **bu
   // load stuff from db and store in cache:
   char *str;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id, group_id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, crop, orientation, focus_distance, raw_parameters from images where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id, group_id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, crop, orientation, focus_distance, raw_parameters, longitude, latitude from images where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -70,6 +70,15 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **bu
     if(img->exif_focus_distance >= 0 && img->orientation >= 0) img->exif_inited = 1;
     uint32_t tmp = sqlite3_column_int(stmt, 18);
     memcpy(&img->legacy_flip, &tmp, sizeof(dt_image_raw_parameters_t));
+    if(sqlite3_column_type(stmt, 19) == SQLITE_FLOAT)
+      img->longitude = sqlite3_column_double(stmt, 19);
+    else
+      img->longitude = NAN;
+    if(sqlite3_column_type(stmt, 20) == SQLITE_FLOAT)
+      img->latitude = sqlite3_column_double(stmt, 20);
+    else
+      img->latitude = NAN;
+
 
     // buffer size?
     if(img->flags & DT_IMAGE_LDR)
@@ -205,7 +214,8 @@ dt_image_cache_write_release(
       "update images set width = ?1, height = ?2, maker = ?3, model = ?4, "
       "lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, "
       "focus_distance = ?10, film_id = ?11, datetime_taken = ?12, flags = ?13, "
-      "crop = ?14, orientation = ?15, raw_parameters = ?16, group_id = ?17 where id = ?18", -1, &stmt, NULL);
+      "crop = ?14, orientation = ?15, raw_parameters = ?16, group_id = ?17, longitude = ?18, "
+      "latitude = ?19 where id = ?20", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, img->exif_maker, strlen(img->exif_maker), SQLITE_STATIC);
@@ -223,7 +233,9 @@ dt_image_cache_write_release(
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, img->orientation);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, *(uint32_t*)(&img->legacy_flip));
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 17, img->group_id);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 18, img->id);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 18, img->longitude);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 19, img->latitude);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, img->id);
   int rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "[image_cache_write_release] sqlite3 error %d\n", rc);
   sqlite3_finalize(stmt);
