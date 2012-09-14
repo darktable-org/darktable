@@ -1241,12 +1241,6 @@ _init_8(
         free(tmp);
         res = 0;
       }
-      else
-      {
-        // bmp
-        dt_iop_flip_and_zoom_8(image->data, image->width, image->height, buf, wd, ht, orientation, width, height);
-        res = 0;
-      }
 
       // clean up raw stuff.
       libraw_recycle(raw);
