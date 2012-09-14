@@ -513,7 +513,6 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   long int imgid = -1;
   long int newimgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  const int copy_history = t1->flag;
   GList *t = t1->index;
   int total = g_list_length(t);
   char message[512]= {0};
@@ -524,7 +523,7 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   {
     imgid = (long int)t->data;
     newimgid = dt_image_duplicate(imgid);
-    if(copy_history==1) dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE);
+    dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE);
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
@@ -712,13 +711,12 @@ void dt_control_match_similar_job_init(dt_job_t *job, uint32_t imgid,dt_similari
   t->data = *data;
 }
 
-void dt_control_duplicate_images_job_init(dt_job_t *job, const int32_t copy_history)
+void dt_control_duplicate_images_job_init(dt_job_t *job)
 {
   dt_control_job_init(job, "duplicate images");
   job->execute = &dt_control_duplicate_images_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
   dt_control_image_enumerator_job_init(t);
-  t->flag = copy_history;
 }
 
 void dt_control_flip_images_job_init(dt_job_t *job, const int32_t cw)
@@ -765,10 +763,10 @@ void dt_control_match_similar(dt_similarity_t *data)
     dt_control_log(_("select an image as target for search of similar images"));
 }
 
-void dt_control_duplicate_images(const int32_t copy_history)
+void dt_control_duplicate_images()
 {
   dt_job_t j;
-  dt_control_duplicate_images_job_init(&j, copy_history);
+  dt_control_duplicate_images_job_init(&j);
   dt_control_add_job(darktable.control, &j);
 }
 
