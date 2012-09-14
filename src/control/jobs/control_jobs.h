@@ -32,7 +32,7 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job);
 void dt_control_write_sidecar_files_job_init(dt_job_t *job);
 
 
-void dt_control_duplicate_images_job_init(dt_job_t *job);
+void dt_control_duplicate_images_job_init(dt_job_t *job, const int32_t copy_history);
 int32_t dt_control_duplicate_images_job_run(dt_job_t *job);
 
 void dt_control_flip_images_job_init(dt_job_t *job, const int32_t cw);
