@@ -164,6 +164,23 @@ void dt_image_print_exif(const dt_image_t *img, char *line, int len)
     img->exif_aperture, (int)img->exif_focal_length, (int)img->exif_iso);
 }
 
+void dt_image_set_location(const int32_t imgid, double lon, double lat)
+{
+  /* fetch image from cache */
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+  if (!cimg)
+    return;
+  dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
+
+  /* set image location */
+  image->longitude = lon;
+  image->latitude = lat;
+
+  /* store */
+  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_read_release(darktable.image_cache, image);
+}
+
 void dt_image_set_flip(const int32_t imgid, const int32_t orientation)
 {
   sqlite3_stmt *stmt;
@@ -555,6 +572,8 @@ void dt_image_init(dt_image_t *img)
   img->exif_iso = 0;
   img->exif_focal_length = 0;
   img->exif_focus_distance = 0;
+  img->latitude = NAN;
+  img->longitude = NAN;
 }
 
 int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
@@ -828,6 +847,63 @@ void dt_image_synch_all_xmp(const gchar *pathname)
     g_free(imgpath);
     g_free(globbuf);
   }
+}
+
+void dt_image_add_time_offset(const int imgid, const long int offset)
+{
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+  if (!cimg)
+    return;
+
+  // get the datetime_taken and calculate the new time
+  gint  year;
+  gint  month;
+  gint  day;
+  gint  hour;
+  gint  minute;
+  gint  seconds;
+
+  if (sscanf(cimg->exif_datetime_taken, "%d:%d:%d %d:%d:%d",
+             (int*)&year, (int*)&month, (int*)&day,
+             (int*)&hour,(int*)&minute,(int*)&seconds) != 6)
+  {
+    fprintf(stderr,"broken exif time in db, '%s', imgid %d\n", cimg->exif_datetime_taken, imgid);
+    dt_image_cache_read_release(darktable.image_cache, cimg);
+    return;
+  }
+
+  GTimeZone *tz = g_time_zone_new_utc();
+  GDateTime *datetime_original = g_date_time_new(tz, year, month, day, hour, minute, seconds);
+  g_time_zone_unref(tz);
+  if(!datetime_original)
+  {
+    dt_image_cache_read_release(darktable.image_cache, cimg);
+    return;
+  }
+
+  // let's add our offset
+  GDateTime *datetime_new = g_date_time_add_seconds(datetime_original, offset);
+  g_date_time_unref(datetime_original);
+
+  if(!datetime_new)
+  {
+    dt_image_cache_read_release(darktable.image_cache, cimg);
+    return;
+  }
+
+  gchar *datetime = g_date_time_format(datetime_new, "%Y:%m:%d %H:%M:%S");
+  g_date_time_unref(datetime_new);
+
+  // update exif_datetime_taken in img
+  if(datetime)
+  {
+    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+    g_strlcpy(img->exif_datetime_taken, datetime, 20);
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+  }
+
+  dt_image_cache_read_release(darktable.image_cache, cimg);
+  g_free(datetime);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

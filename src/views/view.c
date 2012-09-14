@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011 henrik andersson
+    copyright (c) 2011-2012 henrik andersson
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,7 +49,13 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where group_id = (select group_id from images where id=?1) and id != ?2", -1, &vm->statements.get_grouped, NULL);
 
   int res=0, midx=0;
-  char *modules[] = {"lighttable","darkroom","capture",NULL};
+  char *modules[] = {
+    "lighttable",
+    "darkroom",
+    "capture",
+    "map",
+    NULL
+  };
   char *module = modules[midx];
   while(module != NULL)
   {
@@ -1265,6 +1271,13 @@ const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm)
     return vm->proxy.tethering.get_job_code(vm->proxy.tethering.view);
   return NULL;
 }
+
+void dt_view_map_center_on_location(const dt_view_manager_t *vm, gdouble lon, gdouble lat, gdouble zoom)
+{
+  if (vm->proxy.map.view)
+    vm->proxy.map.center_on_location(vm->proxy.map.view, lon, lat, zoom);
+}
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
