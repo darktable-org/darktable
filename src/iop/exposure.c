@@ -338,13 +338,7 @@ static gboolean
 expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
-  if(self->picked_color_max[0] < 0.0f)
-  {
-    // force reprocessing if picked_color values still contain invalid data
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-    return FALSE;
-  }
-
+  if(self->picked_color_max[0] < 0) return FALSE;
   if(!self->request_color_pick) return FALSE;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
