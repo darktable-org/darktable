@@ -36,7 +36,10 @@
 #include <inttypes.h>
 
 #include <librsvg/rsvg.h>
+// ugh, ugly hack. why do people break stuff all the time?
+#ifndef RSVG_CAIRO_H
 #include <librsvg/rsvg-cairo.h>
+#endif
 
 #include "common/metadata.h"
 #include "common/utility.h"
@@ -712,7 +715,7 @@ static void refresh_watermarks( dt_iop_module_t *self )
       snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", configdir, d_name);
       gtk_combo_box_append_text( g->combobox1, d_name );
       count++;
-    } 
+    }
     g_dir_close(dir) ;
   }
 
