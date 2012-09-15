@@ -65,14 +65,14 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
   // dynamically load opencl runtime
   if(!dt_dlopencl_init(library, &cl->dlocl))
-    {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] no working opencl library found. Continue with opencl disabled\n");
-      goto finally;
-    }
-    else
-    {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl library '%s' found on your system and loaded\n", cl->dlocl->library);
-    }
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] no working opencl library found. Continue with opencl disabled\n");
+    goto finally;
+  }
+  else
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl library '%s' found on your system and loaded\n", cl->dlocl->library);
+  }
 
   cl_int err;
   cl_platform_id all_platforms[DT_OPENCL_MAX_PLATFORMS];
@@ -122,7 +122,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     }
     devs += all_num_devices[n];
   }
- 
+
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d device%s\n", num_devices, num_devices > 1 ? "s" : "");
   if(num_devices == 0) goto finally;
 
@@ -228,7 +228,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     for (int i=0; i < len; i++) if (isalnum(infostr[i])) devname[j++]=infostr[i];
     devname[j] = 0;
     snprintf(cachedir, DT_MAX_PATH_LEN, "%s/cached_kernels_for_%s", dtcache, devname);
-    if (mkdir(cachedir, 0700) && (errno != EEXIST)) {
+    if (mkdir(cachedir, 0700) && (errno != EEXIST))
+    {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to create directory `%s'!\n", cachedir);
       goto finally;
     }
@@ -258,11 +259,11 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
           {
             programname[pos] = '\0';
             for(int l=pos-1; l>=0; l--)
-            {   
+            {
               if (programname[l] == ' ')
                 programname[l] = '\0';
               else
-	              break;
+                break;
             }
             break;
           }
@@ -286,10 +287,10 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
         {
           gtk_init(0, NULL);
           dialog = gtk_message_dialog_new (NULL,
-                                 GTK_DIALOG_MODAL,
-                                 GTK_MESSAGE_INFO,
-                                 GTK_BUTTONS_NONE,
-                                 "Loading OpenCL kernels.." );
+                                           GTK_DIALOG_MODAL,
+                                           GTK_MESSAGE_INFO,
+                                           GTK_BUTTONS_NONE,
+                                           "Loading OpenCL kernels.." );
           gtk_window_set_title(GTK_WINDOW(dialog), "Please wait ...");
           gtk_widget_show_all(GTK_WIDGET(dialog));
           while (gtk_events_pending ()) gtk_main_iteration ();
@@ -349,7 +350,8 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
     }
   }
 
-  if(cl->dlocl) {
+  if(cl->dlocl)
+  {
     free(cl->dlocl->symbols);
     free(cl->dlocl);
   }
@@ -404,7 +406,8 @@ void dt_opencl_unlock_device(const int dev)
   dt_pthread_mutex_unlock(&cl->dev[dev].lock);
 }
 
-static FILE* fopen_stat(const char* filename, struct stat* st) {
+static FILE* fopen_stat(const char* filename, struct stat* st)
+{
   FILE *f = fopen(filename, "rb");
   if(!f)
   {
@@ -489,20 +492,20 @@ int dt_opencl_load_program(const int dev, const char *filename, const char* binn
         else
         {
           for(k = 0; k<DT_OPENCL_MAX_PROGRAMS; k++) if(!cl->dev[dev].program_used[k])
-          {
-            cl->dev[dev].program[k] = (cl->dlocl->symbols->dt_clCreateProgramWithBinary)(cl->dev[dev].context, 1, &(cl->dev[dev].devid), &cached_filesize, (const unsigned char **)&cached_content, NULL, &err);
-            if(err != CL_SUCCESS)
             {
-              dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not load cached binary program from file `%s'! (%d)\n", binname, err);
-              break;
+              cl->dev[dev].program[k] = (cl->dlocl->symbols->dt_clCreateProgramWithBinary)(cl->dev[dev].context, 1, &(cl->dev[dev].devid), &cached_filesize, (const unsigned char **)&cached_content, NULL, &err);
+              if(err != CL_SUCCESS)
+              {
+                dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not load cached binary program from file `%s'! (%d)\n", binname, err);
+                break;
+              }
+              else
+              {
+                cl->dev[dev].program_used[k] = 1;
+                *loaded_cached = 1;
+                break;
+              }
             }
-            else
-            {
-              cl->dev[dev].program_used[k] = 1;
-              *loaded_cached = 1;
-              break;
-            }
-          }
         }
         free(cached_content);
       }
@@ -530,20 +533,20 @@ int dt_opencl_load_program(const int dev, const char *filename, const char* binn
       dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not load cached binary program, trying to compile source\n");
 
       for(k=0; k<DT_OPENCL_MAX_PROGRAMS; k++) if(!cl->dev[dev].program_used[k])
-      {
-        cl->dev[dev].program[k] = (cl->dlocl->symbols->dt_clCreateProgramWithSource)(cl->dev[dev].context, 1, (const char**)&file, &filesize, &err);
-        free(file);
-        if(err != CL_SUCCESS)
         {
-          dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] could not create program from file `%s'! (%d)\n", filename, err);
-          return -1;
-        } 
-        else 
-        {
-          cl->dev[dev].program_used[k] = 1;
-          break;
+          cl->dev[dev].program[k] = (cl->dlocl->symbols->dt_clCreateProgramWithSource)(cl->dev[dev].context, 1, (const char**)&file, &filesize, &err);
+          free(file);
+          if(err != CL_SUCCESS)
+          {
+            dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] could not create program from file `%s'! (%d)\n", filename, err);
+            return -1;
+          }
+          else
+          {
+            cl->dev[dev].program_used[k] = 1;
+            break;
+          }
         }
-      }
     }
   }
   else
@@ -646,7 +649,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char* binname, 
           if(!f) goto ret;
           size_t bytes_written = fwrite(binaries[i], sizeof(char), binary_sizes[i], f);
           if(bytes_written != binary_sizes[i]) goto ret;
-          fclose(f);        
+          fclose(f);
 
           // create link (e.g. basic.cl.bin -> f1430102c53867c162bb60af6c163328)
           char cwd[1024];
@@ -889,9 +892,9 @@ void* dt_opencl_copy_host_to_device_constant(const int devid, const int size, vo
   if(!darktable.opencl->inited || devid < 0) return NULL;
   cl_int err;
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer) (darktable.opencl->dev[devid].context,
-                               CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
-                               size,
-                               host, &err);
+               CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
+               size,
+               host, &err);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_host_to_device_constant] could not alloc buffer on device %d: %d\n", devid, err);
   return dev;
 }
@@ -926,10 +929,10 @@ void* dt_opencl_copy_host_to_device_rowpitch(const int devid, void *host, const 
 
   // TODO: if fmt = uint16_t, blow up to 4xuint16_t and copy manually!
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage2D) (darktable.opencl->dev[devid].context,
-                                CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-                                &fmt,
-                                width, height, rowpitch,
-                                host, &err);
+               CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+               &fmt,
+               width, height, rowpitch,
+               host, &err);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_host_to_device] could not alloc/copy img buffer on device %d: %d\n", devid, err);
   return dev;
 }
@@ -966,10 +969,10 @@ void* dt_opencl_alloc_device(const int devid, const int width, const int height,
   else return NULL;
 
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage2D) (darktable.opencl->dev[devid].context,
-                                CL_MEM_READ_WRITE,
-                                &fmt,
-                                width, height, 0,
-                                NULL, &err);
+               CL_MEM_READ_WRITE,
+               &fmt,
+               width, height, 0,
+               NULL, &err);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device] could not alloc img buffer on device %d: %d\n", devid, err);
   return dev;
 }
@@ -999,10 +1002,10 @@ void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, 
   else return NULL;
 
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage2D) (darktable.opencl->dev[devid].context,
-                                CL_MEM_READ_WRITE | ((host == NULL) ? CL_MEM_ALLOC_HOST_PTR : CL_MEM_USE_HOST_PTR),
-                                &fmt,
-                                width, height, rowpitch,
-                                host, &err);
+               CL_MEM_READ_WRITE | ((host == NULL) ? CL_MEM_ALLOC_HOST_PTR : CL_MEM_USE_HOST_PTR),
+               &fmt,
+               width, height, rowpitch,
+               host, &err);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_use_host_pointer] could not alloc img buffer on device %d: %d\n", devid, err);
   return dev;
 }
@@ -1014,9 +1017,9 @@ void* dt_opencl_alloc_device_buffer(const int devid, const int size)
   cl_int err;
 
   cl_mem buf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer) (darktable.opencl->dev[devid].context,
-                               CL_MEM_READ_WRITE,
-                               size,
-                               NULL, &err);
+               CL_MEM_READ_WRITE,
+               size,
+               NULL, &err);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_buffer] could not alloc buffer on device %d: %d\n", devid, err);
   return buf;
 }
@@ -1109,7 +1112,7 @@ int dt_opencl_update_enabled(void)
   if (darktable.opencl->enabled != prefs)
   {
     darktable.opencl->enabled = prefs;
-    dt_print(DT_DEBUG_OPENCL, "[opencl_update_enabled] enabled flag set to %s\n", prefs ? "ON" : "OFF");    
+    dt_print(DT_DEBUG_OPENCL, "[opencl_update_enabled] enabled flag set to %s\n", prefs ? "ON" : "OFF");
   }
   return darktable.opencl->enabled;
 }
@@ -1170,7 +1173,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
     return (*eventlist)+*numevents-1;
   }
 
-  // if no more space left in eventlist: grow buffer		
+  // if no more space left in eventlist: grow buffer
   if (*numevents == *maxevents)
   {
     int newevents = *maxevents + DT_OPENCL_EVENTLISTSIZE;
@@ -1184,7 +1187,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
     }
     memset(neweventtags, 0, newevents*sizeof(dt_opencl_eventtag_t));
     memcpy(neweventlist, *eventlist, *maxevents*sizeof(cl_event));
-    memcpy(neweventtags, *eventtags, *maxevents*sizeof(dt_opencl_eventtag_t));	
+    memcpy(neweventtags, *eventtags, *maxevents*sizeof(dt_opencl_eventtag_t));
     free(*eventlist);
     free(*eventtags);
     *eventlist = neweventlist;
@@ -1253,7 +1256,7 @@ void dt_opencl_events_wait_for(const int devid)
 
   if (*eventlist==NULL || *numevents==0) return; // nothing to do
 
-  // check if last event slot was acutally used and correct numevents if needed	
+  // check if last event slot was acutally used and correct numevents if needed
   if (!memcmp((*eventlist)+*numevents-1, zeroevent, sizeof(cl_event)))
   {
     (*numevents)--;
@@ -1296,7 +1299,7 @@ cl_int dt_opencl_events_flush(const int devid, const int reset)
   // Wait for command queue to terminate (side effect: might adjust *numevents)
   dt_opencl_events_wait_for(devid);
 
-  // now check return status and profiling data of all newly terminated events	
+  // now check return status and profiling data of all newly terminated events
   for (int k = *eventsconsolidated; k < *numevents; k++)
   {
     cl_int err;
@@ -1342,7 +1345,7 @@ cl_int dt_opencl_events_flush(const int devid, const int reset)
   {
     // output profiling info if wanted
     if (darktable.unmuted & DT_DEBUG_PERF)
-        dt_opencl_events_profiling(devid, 1);
+      dt_opencl_events_profiling(devid, 1);
 
     // reset eventlist structures to empty state
     dt_opencl_events_reset(devid);
@@ -1399,7 +1402,7 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
       else // tag is new
       {
         // make new entry
-	items++;
+        items++;
         tags[items-1] = (*eventtags)[k].tag;
         timings[items-1] = (*eventtags)[k].timelapsed * 1e-9;
       }
@@ -1422,13 +1425,13 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
   }
   // aggregated timing info for items without tag (if any)
   if (timings[0] != 0.0f)
-  {		
+  {
     dt_print(DT_DEBUG_OPENCL, "[opencl_profiling] spent %7.4f seconds (unallocated)\n", (double)timings[0]);
     total += timings[0];
   }
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_profiling] spent %7.4f seconds totally in command queue (with %d event%s missing)\n",
-        (double)total, *lostevents, *lostevents == 1 ? "" : "s");
+           (double)total, *lostevents, *lostevents == 1 ? "" : "s");
 
   return;
 }

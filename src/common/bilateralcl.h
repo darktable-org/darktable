@@ -56,7 +56,7 @@ dt_bilateral_init_cl_global()
 
 void
 dt_bilateral_free_cl(
-    dt_bilateral_cl_t *b)
+  dt_bilateral_cl_t *b)
 {
   if(!b) return;
   // be sure we're done with the memory:
@@ -68,20 +68,20 @@ dt_bilateral_free_cl(
 
 dt_bilateral_cl_t *
 dt_bilateral_init_cl(
-    const int devid,
-    const int width,       // width of input image
-    const int height,      // height of input image
-    const float sigma_s,   // spatial sigma (blur pixel coords)
-    const float sigma_r)   // range sigma (blur luma values)
+  const int devid,
+  const int width,       // width of input image
+  const int height,      // height of input image
+  const float sigma_s,   // spatial sigma (blur pixel coords)
+  const float sigma_r)   // range sigma (blur luma values)
 {
   // check if our device offers enough room for local buffers
   size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
   size_t workgroupsize = 0;          // the maximum number of items in a work group
   unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
   size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
-   
+
   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-     dt_opencl_get_kernel_work_group_size(devid, darktable.opencl->bilateral->kernel_splat, &kernelworkgroupsize) == CL_SUCCESS)
+      dt_opencl_get_kernel_work_group_size(devid, darktable.opencl->bilateral->kernel_splat, &kernelworkgroupsize) == CL_SUCCESS)
   {
     if (maxsizes[0] < 32 || maxsizes[1] < 32 || localmemsize < (32*32*8*sizeof(float)+32*32*sizeof(int))
         || workgroupsize < 32*32 || kernelworkgroupsize < 32*32)
@@ -131,16 +131,16 @@ dt_bilateral_init_cl(
 
 #if 0
   fprintf(stderr, "[bilateral] created grid [%d %d %d]"
-      " with sigma (%f %f) (%f %f)\n", b->size_x, b->size_y, b->size_z,
-      b->sigma_s, sigma_s, b->sigma_r, sigma_r);
+          " with sigma (%f %f) (%f %f)\n", b->size_x, b->size_y, b->size_z,
+          b->sigma_s, sigma_s, b->sigma_r, sigma_r);
 #endif
   return b;
 }
 
 cl_int
 dt_bilateral_splat_cl(
-    dt_bilateral_cl_t *b,
-    cl_mem in)
+  dt_bilateral_cl_t *b,
+  cl_mem in)
 {
   cl_int err = -666;
   size_t sizes[] = { ROUNDUP(b->width, 32), ROUNDUP(b->height, 32), 1};
@@ -163,7 +163,7 @@ dt_bilateral_splat_cl(
 
 cl_int
 dt_bilateral_blur_cl(
-    dt_bilateral_cl_t *b)
+  dt_bilateral_cl_t *b)
 {
   cl_int err = -666;
   size_t sizes[3] = { 0, 0, 1};
@@ -216,10 +216,10 @@ dt_bilateral_blur_cl(
 
 cl_int
 dt_bilateral_slice_to_output_cl(
-    dt_bilateral_cl_t *b,
-    cl_mem in,
-    cl_mem out,
-    const float detail)
+  dt_bilateral_cl_t *b,
+  cl_mem in,
+  cl_mem out,
+  const float detail)
 {
   cl_int err = -666;
   size_t sizes[] = { ROUNDUPWD(b->width), ROUNDUPHT(b->height), 1};
@@ -241,10 +241,10 @@ dt_bilateral_slice_to_output_cl(
 
 cl_int
 dt_bilateral_slice_cl(
-    dt_bilateral_cl_t *b,
-    cl_mem in,
-    cl_mem out,
-    const float detail)
+  dt_bilateral_cl_t *b,
+  cl_mem in,
+  cl_mem out,
+  const float detail)
 {
   cl_int err = -666;
   size_t sizes[] = { ROUNDUPWD(b->width), ROUNDUPHT(b->height), 1};
@@ -265,7 +265,7 @@ dt_bilateral_slice_cl(
 
 void
 dt_bilateral_free_cl_global(
-    dt_bilateral_cl_global_t *b)
+  dt_bilateral_cl_global_t *b)
 {
   if(!b) return;
   // destroy kernels

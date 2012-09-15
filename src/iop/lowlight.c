@@ -107,7 +107,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *g =
-      (dt_iop_lowlight_gui_data_t*)self->gui_data;
+    (dt_iop_lowlight_gui_data_t*)self->gui_data;
   dt_accel_connect_slider_iop(self, "blue shift", g->scale_blueness);
 }
 
@@ -702,7 +702,7 @@ static gboolean
 lowlight_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     // reset current curve
     dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;

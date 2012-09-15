@@ -248,18 +248,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   #pragma omp parallel for default(none) shared(roi_out, in, out, zonemap_scale,zonemap_offset) schedule(static)
 #endif
   for (int j=0; j<roi_out->height; j++)
-  for (int i=0; i<roi_out->width; i++)
-  {
-    /* remap lightness into zonemap and apply lightness */
-    const float *inp = in + ch*(j*roi_out->width+i);
-    float *outp = out + ch*(j*roi_out->width+i);
+    for (int i=0; i<roi_out->width; i++)
+    {
+      /* remap lightness into zonemap and apply lightness */
+      const float *inp = in + ch*(j*roi_out->width+i);
+      float *outp = out + ch*(j*roi_out->width+i);
 
-    const int rz = CLAMPS(inp[0]*rzscale, 0, size-2);  // zone index
+      const int rz = CLAMPS(inp[0]*rzscale, 0, size-2);  // zone index
 
-    const float zs = ((rz > 0) ? (zonemap_offset[rz]/inp[0]) : 0) + zonemap_scale[rz];
+      const float zs = ((rz > 0) ? (zonemap_offset[rz]/inp[0]) : 0) + zonemap_scale[rz];
 
-    _mm_stream_ps(outp,_mm_mul_ps(_mm_load_ps(inp),_mm_set1_ps(zs)));
-  }
+      _mm_stream_ps(outp,_mm_mul_ps(_mm_load_ps(inp),_mm_set1_ps(zs)));
+    }
 
   _mm_sfence();
 
@@ -304,7 +304,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_zonesystem, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_zonesystem, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_zonesystem, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_zonesystem, 4, sizeof(int), (void *)&size); 
+  dt_opencl_set_kernel_arg(devid, gd->kernel_zonesystem, 4, sizeof(int), (void *)&size);
   dt_opencl_set_kernel_arg(devid, gd->kernel_zonesystem, 5, sizeof(cl_mem), (void *)&dev_zmo);
   dt_opencl_set_kernel_arg(devid, gd->kernel_zonesystem, 6, sizeof(cl_mem), (void *)&dev_zms);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_zonesystem, sizes);
@@ -470,18 +470,18 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* add signal handler for preview pipe finish to redraw the preview */
   dt_control_signal_connect(darktable.signals,
-			    DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, 
-			    G_CALLBACK(_iop_zonesystem_redraw_preview_callback), 
-			    self);
+                            DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                            G_CALLBACK(_iop_zonesystem_redraw_preview_callback),
+                            self);
 
 
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals, 
-			       G_CALLBACK(_iop_zonesystem_redraw_preview_callback), 
-			       self);
+  dt_control_signal_disconnect(darktable.signals,
+                               G_CALLBACK(_iop_zonesystem_redraw_preview_callback),
+                               self);
 
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
   dt_pthread_mutex_destroy(&g->lock);
@@ -777,7 +777,7 @@ dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_i
 void _iop_zonesystem_redraw_preview_callback(gpointer instance, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;  
+  dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
 
   dt_control_queue_redraw_widget(g->preview);
 }

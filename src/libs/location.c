@@ -72,9 +72,9 @@ static void _lib_location_entry_activated (GtkButton *button, gpointer user_data
 static gboolean _lib_location_result_item_activated (GtkButton *button, GdkEventButton *ev, gpointer user_data);
 
 static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
-					       const char *element_name, const char **attribute_names,
-					       const gchar **attribute_values, gpointer user_data,
-					       GError **error);
+    const char *element_name, const char **attribute_names,
+    const gchar **attribute_values, gpointer user_data,
+    GError **error);
 
 const char*
 name ()
@@ -191,7 +191,8 @@ static size_t _lib_location_curl_write_data(void *buffer, size_t size, size_t nm
 }
 
 
-static GMarkupParser _lib_location_parser = {
+static GMarkupParser _lib_location_parser =
+{
   _lib_location_parser_start_element,
   NULL,
   NULL,
@@ -237,11 +238,13 @@ static void _lib_location_search_finish(gpointer user_data)
 
   /* for each location found populate the result list */
   GList *item = lib->places;
-  do {
+  do
+  {
     _lib_location_result_t *place = (_lib_location_result_t *)item->data;
     gtk_box_pack_start(GTK_BOX(lib->result), _lib_location_place_widget_new(place), TRUE, TRUE, 2);
     gtk_widget_show(lib->result);
-  } while ((item = g_list_next(item)) != NULL);
+  }
+  while ((item = g_list_next(item)) != NULL);
 
   /* if we only got one search result back lets
      set center location and zoom based on place type  */
@@ -251,7 +254,7 @@ static void _lib_location_search_finish(gpointer user_data)
     _lib_location_result_t *item = (_lib_location_result_t*)lib->places->data;
     zoom = _lib_location_place_get_zoom(item);
     dt_view_map_center_on_location(darktable.view_manager,
-				   item->lon, item->lat, zoom);
+                                   item->lon, item->lat, zoom);
   }
 
 }
@@ -295,7 +298,7 @@ static gboolean _lib_location_search(gpointer user_data)
 
   /* build the query url */
   query = dt_util_dstrcat(query, "http://nominatim.openstreetmap.org/search/%s?format=xml&limit=%d",
-			  text, LIMIT_RESULT);
+                          text, LIMIT_RESULT);
   /* load url */
   curl = curl_easy_init();
   if (!curl)
@@ -365,7 +368,7 @@ gboolean _lib_location_result_item_activated(GtkButton *button, GdkEventButton *
   int32_t zoom = _lib_location_place_get_zoom(p);
   fprintf(stderr,"zoom to: %d\n",zoom);
   dt_view_map_center_on_location(darktable.view_manager,
-				   p->lon, p->lat, zoom);
+                                 p->lon, p->lat, zoom);
   return TRUE;
 }
 
@@ -387,9 +390,9 @@ void _lib_location_entry_activated (GtkButton *button, gpointer user_data)
 
 
 static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
-					       const char *element_name, const char **attribute_names,
-					       const gchar **attribute_values, gpointer user_data,
-					       GError **error)
+    const char *element_name, const char **attribute_names,
+    const gchar **attribute_values, gpointer user_data,
+    GError **error)
 {
   dt_lib_location_t *lib   = (dt_lib_location_t *)user_data;
 
@@ -411,24 +414,24 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
     while (*aname)
     {
       if (strcmp(*aname, "display_name") == 0)
-	place->name = g_strdup(*avalue);
+        place->name = g_strdup(*avalue);
       else if (strcmp(*aname, "lon") == 0)
-	place->lon = g_strtod(*avalue, NULL);
+        place->lon = g_strtod(*avalue, NULL);
       else if (strcmp(*aname, "lat") == 0)
-	place->lat = g_strtod(*avalue, NULL);
+        place->lat = g_strtod(*avalue, NULL);
       else if (strcmp(*aname, "type") == 0)
       {
 
-	if (strcmp(*avalue, "village") == 0)
-	  place->type = LOCATION_TYPE_RESIDENTAL;
-	else if (strcmp(*avalue, "hamlet") == 0)
-	  place->type = LOCATION_TYPE_HAMLET;
-	else if (strcmp(*avalue, "city") == 0)
-	  place->type = LOCATION_TYPE_CITY;
-	else if (strcmp(*avalue, "administrative") == 0)
-	  place->type = LOCATION_TYPE_ADMINISTRATIVE;
-	else if (strcmp(*avalue, "residental") == 0)
-	  place->type = LOCATION_TYPE_RESIDENTAL;
+        if (strcmp(*avalue, "village") == 0)
+          place->type = LOCATION_TYPE_RESIDENTAL;
+        else if (strcmp(*avalue, "hamlet") == 0)
+          place->type = LOCATION_TYPE_HAMLET;
+        else if (strcmp(*avalue, "city") == 0)
+          place->type = LOCATION_TYPE_CITY;
+        else if (strcmp(*avalue, "administrative") == 0)
+          place->type = LOCATION_TYPE_ADMINISTRATIVE;
+        else if (strcmp(*avalue, "residental") == 0)
+          place->type = LOCATION_TYPE_RESIDENTAL;
 
       }
 

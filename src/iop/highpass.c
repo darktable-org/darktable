@@ -103,7 +103,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_highpass_gui_data_t *g =
-      (dt_iop_highpass_gui_data_t*)self->gui_data;
+    (dt_iop_highpass_gui_data_t*)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "sharpness", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "contrast boost", GTK_WIDGET(g->scale2));
@@ -116,7 +116,7 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
 
   int rad = MAX_RADIUS*(fmin(100.0f,d->sharpness+1)/100.0f);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
-  
+
   const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2)/3.0f);
   const int wdh = ceilf(3.0f * sigma);
 
@@ -148,7 +148,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   int rad = MAX_RADIUS*(fmin(100.0f,d->sharpness+1)/100.0f);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
-  
+
   /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but unproven. ask me if you need details. ulrich */
   const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2)/3.0f);
   const int wdh = ceilf(3.0f * sigma);
@@ -170,18 +170,18 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t workgroupsize = 0;          // the maximum number of items in a work group
   unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
   size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
-  
+
   // make sure blocksize is not too large
   int blocksize = BLOCKSIZE;
   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-     dt_opencl_get_kernel_work_group_size(devid, gd->kernel_highpass_hblur, &kernelworkgroupsize) == CL_SUCCESS)
+      dt_opencl_get_kernel_work_group_size(devid, gd->kernel_highpass_hblur, &kernelworkgroupsize) == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
     while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize > kernelworkgroupsize
           || blocksize > workgroupsize || (blocksize+2*wdh)*sizeof(float) > localmemsize)
     {
       if(blocksize == 1) break;
-      blocksize >>= 1;    
+      blocksize >>= 1;
     }
   }
   else

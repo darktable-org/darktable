@@ -45,8 +45,8 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
   const char *library;
   int success;
   int k;
-  
-  
+
+
   /* check if our platform supports gmodules */
   success = dt_gmodule_supported();
   if (!success)
@@ -61,23 +61,26 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
 
   if (module == NULL)
   {
-     dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not find opencl runtime library '%s'\n", library);
-     *ocl = NULL;
-     return FALSE;
-  } else
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not find opencl runtime library '%s'\n", library);
+    *ocl = NULL;
+    return FALSE;
+  }
+  else
   {
     /* now bind symbols */
     success = TRUE;
     d = (dt_dlopencl_t *)malloc(sizeof(dt_dlopencl_t));
 
-    if (d == NULL) {
+    if (d == NULL)
+    {
       *ocl = NULL;
       return FALSE;
     }
 
     d->symbols = (dt_dlopencl_symbols_t *)malloc(sizeof(dt_dlopencl_symbols_t));
 
-    if (d->symbols == NULL) {
+    if (d->symbols == NULL)
+    {
       free(d);
       *ocl = NULL;
       return FALSE;
@@ -85,7 +88,7 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
 
     memset(d->symbols, 0, sizeof(dt_dlopencl_symbols_t));
     d->library = module->library;
-    
+
     /* assign noop function as a default to each function pointer */
     void (** slist)(void) = (void (**)(void))d->symbols;
     /* sanity check against padding */
@@ -121,12 +124,12 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
     success = success && dt_gmodule_symbol(module, "clReleaseKernel", (void (**)(void))&d->symbols->dt_clReleaseKernel);
     success = success && dt_gmodule_symbol(module, "clReleaseCommandQueue", (void (**)(void))&d->symbols->dt_clReleaseCommandQueue);
     success = success && dt_gmodule_symbol(module, "clReleaseContext", (void (**)(void))&d->symbols->dt_clReleaseContext);
-    success = success && dt_gmodule_symbol(module, "clReleaseEvent", (void (**)(void))&d->symbols->dt_clReleaseEvent); 
-    success = success && dt_gmodule_symbol(module, "clWaitForEvents", (void (**)(void))&d->symbols->dt_clWaitForEvents); 
-    success = success && dt_gmodule_symbol(module, "clGetEventInfo", (void (**)(void))&d->symbols->dt_clGetEventInfo); 
-    success = success && dt_gmodule_symbol(module, "clGetEventProfilingInfo", (void (**)(void))&d->symbols->dt_clGetEventProfilingInfo); 
-    success = success && dt_gmodule_symbol(module, "clGetKernelInfo", (void (**)(void))&d->symbols->dt_clGetKernelInfo); 
-    success = success && dt_gmodule_symbol(module, "clEnqueueBarrier", (void (**)(void))&d->symbols->dt_clEnqueueBarrier); 
+    success = success && dt_gmodule_symbol(module, "clReleaseEvent", (void (**)(void))&d->symbols->dt_clReleaseEvent);
+    success = success && dt_gmodule_symbol(module, "clWaitForEvents", (void (**)(void))&d->symbols->dt_clWaitForEvents);
+    success = success && dt_gmodule_symbol(module, "clGetEventInfo", (void (**)(void))&d->symbols->dt_clGetEventInfo);
+    success = success && dt_gmodule_symbol(module, "clGetEventProfilingInfo", (void (**)(void))&d->symbols->dt_clGetEventProfilingInfo);
+    success = success && dt_gmodule_symbol(module, "clGetKernelInfo", (void (**)(void))&d->symbols->dt_clGetKernelInfo);
+    success = success && dt_gmodule_symbol(module, "clEnqueueBarrier", (void (**)(void))&d->symbols->dt_clEnqueueBarrier);
     success = success && dt_gmodule_symbol(module, "clGetKernelWorkGroupInfo", (void (**)(void))&d->symbols->dt_clGetKernelWorkGroupInfo);
     success = success && dt_gmodule_symbol(module, "clEnqueueReadBuffer", (void (**)(void))&d->symbols->dt_clEnqueueReadBuffer);
     success = success && dt_gmodule_symbol(module, "clEnqueueWriteBuffer", (void (**)(void))&d->symbols->dt_clEnqueueWriteBuffer);
@@ -138,7 +141,8 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
     *ocl = success ? d : NULL;
   }
 
-  if (success == FALSE) {
+  if (success == FALSE)
+  {
     free(d->symbols);
     free(d);
   }

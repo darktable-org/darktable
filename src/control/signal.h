@@ -22,7 +22,7 @@
 #include <glib-object.h>
 
 /** \brief enum of signals to listen for in darktable.
-    \note To add a new signal, first off add a enum and 
+    \note To add a new signal, first off add a enum and
     document what it's used for, then add a matching signal string
     name to _strings in signal.c
 */
@@ -37,7 +37,7 @@ typedef enum dt_signal_t
   */
   DT_SIGNAL_CONTROL_REDRAW_ALL,
 
-  /** \brief This signal is raid when dt_control_queue_redraw_center() is called. 
+  /** \brief This signal is raid when dt_control_queue_redraw_center() is called.
    */
   DT_SIGNAL_CONTROL_REDRAW_CENTER,
 
@@ -81,7 +81,7 @@ struct dt_control_signal_t *dt_control_signal_init();
 /* raises a signal */
 void dt_control_signal_raise(const struct dt_control_signal_t *ctlsig, const dt_signal_t signal);
 /* connects a callback to a signal */
-void dt_control_signal_connect(const struct dt_control_signal_t *ctlsig,const dt_signal_t signal, GCallback cb, gpointer user_data); 
+void dt_control_signal_connect(const struct dt_control_signal_t *ctlsig,const dt_signal_t signal, GCallback cb, gpointer user_data);
 /* disconnects a callback from a sink */
 void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCallback cb,gpointer user_data);
 #endif

@@ -121,7 +121,7 @@ static void _gui_styles_update_view( dt_lib_styles_t *d)
     do
     {
       dt_style_t *style = (dt_style_t *)result->data;
-      
+
       char* items_string = dt_styles_get_item_list_as_string (style->name);
       gchar* tooltip = NULL;
 

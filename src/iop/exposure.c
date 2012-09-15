@@ -288,9 +288,9 @@ static void
 autoexp_callback (GtkToggleButton *button, dt_iop_module_t *self)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  if(darktable.gui->reset) 
+  if(darktable.gui->reset)
     return;
-  
+
   self->request_color_pick = gtk_toggle_button_get_active(button);
 
   if (self->request_color_pick)
@@ -357,7 +357,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
-  /* register hooks with current dev so that  histogram 
+  /* register hooks with current dev so that  histogram
      can interact with this module.
    */
   darktable.develop->proxy.exposure.module = self;

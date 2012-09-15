@@ -49,7 +49,7 @@ typedef struct dt_lib_collect_t
   int active_rule;
   GtkTreeView *view;
   GtkScrolledWindow *scrolledwindow;
-  
+
   struct dt_lib_collect_params_t *params;
 }
 dt_lib_collect_t;
@@ -58,7 +58,8 @@ dt_lib_collect_t;
 typedef struct dt_lib_collect_params_t
 {
   uint32_t rules;
-  struct {
+  struct
+  {
     uint32_t item:16;
     uint32_t mode:16;
     char string[PARAM_STRING_SIZE];
@@ -91,7 +92,8 @@ void init_presets(dt_lib_module_t *self)
 }
 
 /* Update the params struct with active ruleset */
-static void _lib_collect_update_params(dt_lib_collect_t *d) {
+static void _lib_collect_update_params(dt_lib_collect_t *d)
+{
   /* reset params */
   dt_lib_collect_params_t *p = d->params;
   memset(p,0,sizeof(dt_lib_collect_params_t));
@@ -99,11 +101,12 @@ static void _lib_collect_update_params(dt_lib_collect_t *d) {
   /* for each active rule set update params */
   const int active = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules") - 1, 0, (MAX_RULES-1));
   char confname[200];
-  for (int i=0; i<=active; i++) {
+  for (int i=0; i<=active; i++)
+  {
     /* get item */
     snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
     p->rule[i].item = dt_conf_get_int(confname);
-    
+
     /* get mode */
     snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i);
     p->rule[i].mode = dt_conf_get_int(confname);
@@ -111,14 +114,15 @@ static void _lib_collect_update_params(dt_lib_collect_t *d) {
     /* get string */
     snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
     gchar* string = dt_conf_get_string(confname);
-    if (string != NULL) {
+    if (string != NULL)
+    {
       snprintf(p->rule[i].string,PARAM_STRING_SIZE,"%s", string);
       g_free(string);
     }
 
     fprintf(stderr,"[%i] %d,%d,%s\n",i, p->rule[i].item, p->rule[i].mode,  p->rule[i].string);
   }
-  
+
   p->rules = active+1;
 
 }
@@ -139,16 +143,17 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   /* update conf settings from params */
   dt_lib_collect_params_t *p = (dt_lib_collect_params_t *)params;
   char confname[200];
-  
-  for (int i=0; i<p->rules; i++) {
+
+  for (int i=0; i<p->rules; i++)
+  {
     /* set item */
     snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
     dt_conf_set_int(confname, p->rule[i].item);
-    
+
     /* set mode */
     snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i);
     dt_conf_set_int(confname, p->rule[i].mode);
-    
+
     /* set string */
     snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
     dt_conf_set_string(confname, p->rule[i].string);
@@ -157,7 +162,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   /* set number of rules */
   snprintf(confname, 200, "plugins/lighttable/collect/num_rules");
   dt_conf_set_int(confname, p->rules);
-  
+
   /* update ui */
   _lib_collect_gui_update(self);
 
@@ -700,11 +705,11 @@ gui_init (dt_lib_module_t *self)
   d->active_rule = 0;
   d->params = (dt_lib_collect_params_t*)malloc(sizeof(dt_lib_collect_params_t));
 
-  dt_control_signal_connect(darktable.signals, 
-			    DT_SIGNAL_COLLECTION_CHANGED,
-			    G_CALLBACK(collection_updated),
-			    self);
-  
+  dt_control_signal_connect(darktable.signals,
+                            DT_SIGNAL_COLLECTION_CHANGED,
+                            G_CALLBACK(collection_updated),
+                            self);
+
   GtkBox *box;
   GtkWidget *w;
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);

@@ -20,12 +20,14 @@
 #include "common/gpx.h"
 #include "common/darktable.h"
 
-typedef struct _gpx_track_point_t {
+typedef struct _gpx_track_point_t
+{
   gdouble longitude, latitude, elevation;
   GTimeVal time;
 } _gpx_track_point_t;
 
-typedef struct dt_gpx_t {
+typedef struct dt_gpx_t
+{
   /* the list of track records parsed */
   GList *track;
 
@@ -54,7 +56,8 @@ static void _gpx_parser_text(GMarkupParseContext *context,
                              const gchar *text, gsize text_len,
                              gpointer user_data,GError **error);
 
-static GMarkupParser _gpx_parser = {
+static GMarkupParser _gpx_parser =
+{
   _gpx_parser_start_element,
   _gpx_parser_end_element,
   _gpx_parser_text,
@@ -107,7 +110,7 @@ error:
   }
 
   if (ctx)
-      g_markup_parse_context_free(ctx);
+    g_markup_parse_context_free(ctx);
 
   if (gpx)
     g_free(gpx);
@@ -135,7 +138,8 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, gdouble 
   if (!item || !item->next)
     return FALSE;
 
-  do {
+  do
+  {
 
     _gpx_track_point_t *tp = (_gpx_track_point_t *)item->data;
 
@@ -158,7 +162,8 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, gdouble 
       return TRUE;
     }
 
-  } while ((item = g_list_next(item)) != NULL);
+  }
+  while ((item = g_list_next(item)) != NULL);
 
   /* should not reach this point */
   return FALSE;

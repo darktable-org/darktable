@@ -261,7 +261,7 @@ entry_activated (GtkButton *button, gpointer user_data)
   const gchar *tag = gtk_entry_get_text(d->entry);
   if(!tag || tag[0] == '\0') return;
 
- /* create new tag */
+  /* create new tag */
   guint tid=0;
   dt_tag_new(tag, &tid);
 
@@ -509,14 +509,16 @@ static gboolean
 _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t*)self->data;
-  switch(event->keyval) {
+  switch(event->keyval)
+  {
     case GDK_Escape:
       gtk_widget_destroy(d->floating_tag_window);
       return TRUE;
     case GDK_Tab:
       return TRUE;
     case GDK_Return:
-    case GDK_KP_Enter: {
+    case GDK_KP_Enter:
+    {
       const gchar *tag = gtk_entry_get_text(GTK_ENTRY(entry));
       /* create new tag */
       guint tid=0;

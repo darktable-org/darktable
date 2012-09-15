@@ -261,8 +261,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(g->area));
   gtk_drawing_area_size(g->area, 258, 258);
   g_object_set (GTK_OBJECT(g->area), "tooltip-text", _("drag the line for split toning. "
-        "bright means highlights, dark means shadows. "
-        "use mouse wheel to change saturation."), (char *)NULL);
+                "bright means highlights, dark means shadows. "
+                "use mouse wheel to change saturation."), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (g->area), "expose-event",

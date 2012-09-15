@@ -42,7 +42,10 @@
 DT_MODULE(3)
 
 
-inline float sqr(float x) { return x*x; }
+inline float sqr(float x)
+{
+  return x*x;
+}
 
 
 typedef struct dt_iop_shrecovery_params_t
@@ -112,20 +115,25 @@ const float _w_[5] = {0.05, 0.25, 0.4, 0.25, 0.05};
 
 
 static void
-create_image_weight(int height, int width, int ch, float *in, float *W, float scale, float mu, float sigma) 
+create_image_weight(int height, int width, int ch, float *in, float *W, float scale, float mu, float sigma)
 {
   float e1, e2, r, g, b, factor = -0.5/sqr(sigma), t1, t2;
-  for(int i = 0; i < height; i++) {
-    for(int j = 0; j < width; j++) {
+  for(int i = 0; i < height; i++)
+  {
+    for(int j = 0; j < width; j++)
+    {
       r = in[(i*width+j)*ch];
       g = in[(i*width+j)*ch+1];
       b = in[(i*width+j)*ch+2];
       t1 = factor*(sqr(r-mu) + sqr(g-mu) + sqr(b-mu));
       t2 = factor*(sqr(r*scale-mu) + sqr(g*scale-mu) + sqr(b*scale-mu));
-      if(t2 < t1) {
+      if(t2 < t1)
+      {
         e1 = 1.0;
         e2 = exp(t2 - t1);
-      } else {
+      }
+      else
+      {
         e1 = exp(t1 - t2);
         e2 = 1.0;
       }
@@ -141,24 +149,26 @@ gauss_image_weight(const int size_limit, int width, int height, float *W)
   int w = width/2, h = height/2;
   float *l1, *l2, *l3, *l4, *l5;
   int st1, st2, st3, st4, st5;
-  for(int i = 0; i < h; i++) {
+  for(int i = 0; i < h; i++)
+  {
     l1 = W + max(2*i-2,0)*width;
     l2 = W + max(2*i-1,0)*width;
     l3 = W + 2*i*width;
     l4 = W + min(2*i+1,height-1)*width;
     l5 = W + min(2*i+2,height-1)*width;
-    for(int j = 0; j < w; j++) {
+    for(int j = 0; j < w; j++)
+    {
       st1 = max(2*j-2,0);
       st2 = max(2*j-1,0);
       st3 = 2*j;
       st4 = min(2*j+1,width-1);
       st5 = min(2*j+2,width-1);
       wn[i*w+j] = 0.0625*(l2[st2]+l2[st4]+l4[st2]+l4[st4])+
-        0.0125*(l1[st2]+l1[st4]+l2[st1]+l2[st5]+l4[st1]+l4[st5]+l5[st2]+l5[st4])+
-        0.1*(l2[st3]+l3[st2]+l3[st4]+l4[st3])+
-        0.16*(l3[st3])+
-        0.0025*(l1[st1]+l1[st5]+l5[st1]+l5[st5])+
-        0.02*(l1[st3]+l3[st1]+l3[st5]+l5[st3]);
+                  0.0125*(l1[st2]+l1[st4]+l2[st1]+l2[st5]+l4[st1]+l4[st5]+l5[st2]+l5[st4])+
+                  0.1*(l2[st3]+l3[st2]+l3[st4]+l4[st3])+
+                  0.16*(l3[st3])+
+                  0.0025*(l1[st1]+l1[st5]+l5[st1]+l5[st5])+
+                  0.02*(l1[st3]+l3[st1]+l3[st5]+l5[st3]);
     }
   }
   if((w/2>=size_limit) && (h/2>=size_limit))
@@ -172,42 +182,48 @@ laplace_image(const int size_limit, int width, int height, float *im)
   int w = width/2, h = height/2, i1, j1;
   float *l1, *l2, *l3, *l4, *l5;
   int st1, st2, st3, st4, st5;
-  for(int i = 0; i < h; i++) {
+  for(int i = 0; i < h; i++)
+  {
     l1 = im + max(2*i-2,0)*width*3;
     l2 = im + max(2*i-1,0)*width*3;
     l3 = im + 2*i*width*3;
     l4 = im + min(2*i+1,height-1)*width*3;
     l5 = im + min(2*i+2,height-1)*width*3;
-    for(int j = 0; j < w; j++) {
+    for(int j = 0; j < w; j++)
+    {
       st1 = max(2*j-2,0)*3;
       st2 = max(2*j-1,0)*3;
       st3 = 6*j;
       st4 = min(2*j+1,width-1)*3;
       st5 = min(2*j+2,width-1)*3;
       imn[3*(i*w+j)] = 0.0625*(l2[st2]+l2[st4]+l4[st2]+l4[st4])+
-        0.0125*(l1[st2]+l1[st4]+l2[st1]+l2[st5]+l4[st1]+l4[st5]+l5[st2]+l5[st4])+
-        0.1*(l2[st3]+l3[st2]+l3[st4]+l4[st3])+
-        0.16*(l3[st3])+
-        0.0025*(l1[st1]+l1[st5]+l5[st1]+l5[st5])+
-        0.02*(l1[st3]+l3[st1]+l3[st5]+l5[st3]);
+                       0.0125*(l1[st2]+l1[st4]+l2[st1]+l2[st5]+l4[st1]+l4[st5]+l5[st2]+l5[st4])+
+                       0.1*(l2[st3]+l3[st2]+l3[st4]+l4[st3])+
+                       0.16*(l3[st3])+
+                       0.0025*(l1[st1]+l1[st5]+l5[st1]+l5[st5])+
+                       0.02*(l1[st3]+l3[st1]+l3[st5]+l5[st3]);
       imn[3*(i*w+j)+1] = 0.0625*(l2[st2+1]+l2[st4+1]+l4[st2+1]+l4[st4+1])+
-        0.0125*(l1[st2+1]+l1[st4+1]+l2[st1+1]+l2[st5+1]+l4[st1+1]+l4[st5+1]+l5[st2+1]+l5[st4+1])+
-        0.1*(l2[st3+1]+l3[st2+1]+l3[st4+1]+l4[st3+1])+
-        0.16*(l3[st3+1])+
-        0.0025*(l1[st1+1]+l1[st5+1]+l5[st1+1]+l5[st5+1])+
-        0.02*(l1[st3+1]+l3[st1+1]+l3[st5+1]+l5[st3+1]);
+                         0.0125*(l1[st2+1]+l1[st4+1]+l2[st1+1]+l2[st5+1]+l4[st1+1]+l4[st5+1]+l5[st2+1]+l5[st4+1])+
+                         0.1*(l2[st3+1]+l3[st2+1]+l3[st4+1]+l4[st3+1])+
+                         0.16*(l3[st3+1])+
+                         0.0025*(l1[st1+1]+l1[st5+1]+l5[st1+1]+l5[st5+1])+
+                         0.02*(l1[st3+1]+l3[st1+1]+l3[st5+1]+l5[st3+1]);
       imn[3*(i*w+j)+2] = 0.0625*(l2[st2+2]+l2[st4+2]+l4[st2+2]+l4[st4+2])+
-        0.0125*(l1[st2+2]+l1[st4+2]+l2[st1+2]+l2[st5+2]+l4[st1+2]+l4[st5+2]+l5[st2+2]+l5[st4+2])+
-        0.1*(l2[st3+2]+l3[st2+2]+l3[st4+2]+l4[st3+2])+
-        0.16*(l3[st3+2])+
-        0.0025*(l1[st1+2]+l1[st5+2]+l5[st1+2]+l5[st5+2])+
-        0.02*(l1[st3+2]+l3[st1+2]+l3[st5+2]+l5[st3+2]);
+                         0.0125*(l1[st2+2]+l1[st4+2]+l2[st1+2]+l2[st5+2]+l4[st1+2]+l4[st5+2]+l5[st2+2]+l5[st4+2])+
+                         0.1*(l2[st3+2]+l3[st2+2]+l3[st4+2]+l4[st3+2])+
+                         0.16*(l3[st3+2])+
+                         0.0025*(l1[st1+2]+l1[st5+2]+l5[st1+2]+l5[st5+2])+
+                         0.02*(l1[st3+2]+l3[st1+2]+l3[st5+2]+l5[st3+2]);
     }
   }
-  for(int i = 0; i < height; i++) {
-    for(int j = 0; j < width; j++) {
-      for(int m = -2; m < 3; m++) {
-        for(int n = -2; n < 3; n++) {
+  for(int i = 0; i < height; i++)
+  {
+    for(int j = 0; j < width; j++)
+    {
+      for(int m = -2; m < 3; m++)
+      {
+        for(int n = -2; n < 3; n++)
+        {
           if((i-m)%2)
             continue;
           if((j-n)%2)
@@ -221,7 +237,8 @@ laplace_image(const int size_limit, int width, int height, float *im)
       }
     }
   }
-  if((w/2>=size_limit)&&(h/2>=size_limit)) {
+  if((w/2>=size_limit)&&(h/2>=size_limit))
+  {
     laplace_image(size_limit, w,h,imn);
   }
 }
@@ -233,7 +250,8 @@ weighted_image(const int size_limit, int width, int height, float *im1, float *i
   float *imn1 = im1 + width*height*3, *imn2 = im2 + width*height*3, *wn = W + width*height;
 
   const int LENGTH = width*height;
-  for(int i = 0; i < LENGTH; i++) {
+  for(int i = 0; i < LENGTH; i++)
+  {
     im1[3*i]   = im1[3*i]*W[i] + im2[3*i]*(1.0-W[i]);
     im1[3*i+1] = im1[3*i+1]*W[i] + im2[3*i+1]*(1.0-W[i]);
     im1[3*i+2] = im1[3*i+2]*W[i] + im2[3*i+2]*(1.0-W[i]);
@@ -241,10 +259,14 @@ weighted_image(const int size_limit, int width, int height, float *im1, float *i
   if((w < size_limit) || (h < size_limit))
     return;
   weighted_image(size_limit, w, h, imn1, imn2, wn);
-  for(int i = 0; i < height; i++) {
-    for(int j = 0; j < width; j++) {
-      for(int m = -2; m < 3; m++) {
-        for(int n = -2; n < 3; n++) {
+  for(int i = 0; i < height; i++)
+  {
+    for(int j = 0; j < width; j++)
+    {
+      for(int m = -2; m < 3; m++)
+      {
+        for(int n = -2; n < 3; n++)
+        {
           if((i-m)%2)
             continue;
           if((j-n)%2)
@@ -268,9 +290,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const float scale = 1.0 + d->strength;
   const int ch = piece->colors;
   /*
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out,i,o) schedule(static)
-#endif
+  #ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out,i,o) schedule(static)
+  #endif
    */
   float *in = (float*)i, *out = (float*)o;
   float *W = (float*)malloc(2*sizeof(float)*roi_out->height*roi_out->width);
@@ -447,13 +469,13 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("minimal pyramid limit size"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
-      G_CALLBACK (strength_callback), self);
+                    G_CALLBACK (strength_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-      G_CALLBACK (mu_callback), self);
+                    G_CALLBACK (mu_callback), self);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
-      G_CALLBACK (sigma_callback), self);
+                    G_CALLBACK (sigma_callback), self);
   g_signal_connect (G_OBJECT (g->scale4), "value-changed",
-      G_CALLBACK (size_limit_callback), self);
+                    G_CALLBACK (size_limit_callback), self);
 
 }
 

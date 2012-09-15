@@ -162,7 +162,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 {
   dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
   dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)self->data;
-  
+
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -204,19 +204,19 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t workgroupsize = 0;          // the maximum number of items in a work group
   unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
   size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group of the kernel
-                                     // assuming this is the same for nlmeans_horiz and nlmeans_vert 
-  
+  // assuming this is the same for nlmeans_horiz and nlmeans_vert
+
   // make sure blocksize is not too large
   int blocksize = BLOCKSIZE;
   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-     dt_opencl_get_kernel_work_group_size(devid, gd->kernel_nlmeans_horiz, &kernelworkgroupsize) == CL_SUCCESS)
+      dt_opencl_get_kernel_work_group_size(devid, gd->kernel_nlmeans_horiz, &kernelworkgroupsize) == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
     while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize > kernelworkgroupsize
           || blocksize > workgroupsize || (blocksize+2*P)*sizeof(float) > localmemsize)
     {
       if(blocksize == 1) break;
-      blocksize >>= 1;    
+      blocksize >>= 1;
     }
   }
   else
@@ -241,69 +241,69 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   for(int j = -K; j <= 0; j++)
     for(int i = -K; i <= K; i++)
-  {
-    int q[2] = { i, j};
+    {
+      int q[2] = { i, j};
 
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 1, sizeof(cl_mem), (void *)&dev_U4);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 4, 2*sizeof(int), (void *)&q);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 5, sizeof(float), (void *)&nL2);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 6, sizeof(float), (void *)&nC2);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_dist, sizes);
-    if(err != CL_SUCCESS) goto error;
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 0, sizeof(cl_mem), (void *)&dev_in);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 1, sizeof(cl_mem), (void *)&dev_U4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 4, 2*sizeof(int), (void *)&q);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 5, sizeof(float), (void *)&nL2);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 6, sizeof(float), (void *)&nC2);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_dist, sizes);
+      if(err != CL_SUCCESS) goto error;
 
-    sizesl[0] = bwidth;
-    sizesl[1] = ROUNDUPHT(height);
-    sizesl[2] = 1;
-    local[0] = blocksize;
-    local[1] = 1;
-    local[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 0, sizeof(cl_mem), (void *)&dev_U4);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 1, sizeof(cl_mem), (void *)&dev_U4_t);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 4, 2*sizeof(int), (void *)&q);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 5, sizeof(int), (void *)&P);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 6, (blocksize+2*P)*sizeof(float), NULL);
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_nlmeans_horiz, sizesl, local);
-    if(err != CL_SUCCESS) goto error;
-
-
-    sizesl[0] = ROUNDUPWD(width);
-    sizesl[1] = bheight;
-    sizesl[2] = 1;
-    local[0] = 1;
-    local[1] = blocksize;
-    local[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 0, sizeof(cl_mem), (void *)&dev_U4_t);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 1, sizeof(cl_mem), (void *)&dev_U4);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 4, 2*sizeof(int), (void *)&q);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 5, sizeof(int), (void *)&P);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 6, sizeof(float), (void *)&sharpness);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 7, (blocksize+2*P)*sizeof(float), NULL);
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_nlmeans_vert, sizesl, local);
-    if(err != CL_SUCCESS) goto error;
+      sizesl[0] = bwidth;
+      sizesl[1] = ROUNDUPHT(height);
+      sizesl[2] = 1;
+      local[0] = blocksize;
+      local[1] = 1;
+      local[2] = 1;
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 0, sizeof(cl_mem), (void *)&dev_U4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 1, sizeof(cl_mem), (void *)&dev_U4_t);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 4, 2*sizeof(int), (void *)&q);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 5, sizeof(int), (void *)&P);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 6, (blocksize+2*P)*sizeof(float), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_nlmeans_horiz, sizesl, local);
+      if(err != CL_SUCCESS) goto error;
 
 
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 1, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 2, sizeof(cl_mem), (void *)&dev_U4);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 3, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 4, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 5, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 6, 2*sizeof(int), (void *)&q);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_accu, sizes);
-    if(err != CL_SUCCESS) goto error;
+      sizesl[0] = ROUNDUPWD(width);
+      sizesl[1] = bheight;
+      sizesl[2] = 1;
+      local[0] = 1;
+      local[1] = blocksize;
+      local[2] = 1;
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 0, sizeof(cl_mem), (void *)&dev_U4_t);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 1, sizeof(cl_mem), (void *)&dev_U4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 4, 2*sizeof(int), (void *)&q);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 5, sizeof(int), (void *)&P);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 6, sizeof(float), (void *)&sharpness);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 7, (blocksize+2*P)*sizeof(float), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_nlmeans_vert, sizesl, local);
+      if(err != CL_SUCCESS) goto error;
 
-    dt_opencl_finish(devid);
 
-    // indirectly give gpu some air to breathe (and to do display related stuff)
-    if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW) dt_iop_nap(1000);
-  }
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 0, sizeof(cl_mem), (void *)&dev_in);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 1, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 2, sizeof(cl_mem), (void *)&dev_U4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 3, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 4, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 5, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 6, 2*sizeof(int), (void *)&q);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_accu, sizes);
+      if(err != CL_SUCCESS) goto error;
+
+      dt_opencl_finish(devid);
+
+      // indirectly give gpu some air to breathe (and to do display related stuff)
+      if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW) dt_iop_nap(1000);
+    }
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -374,15 +374,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   memset(ovoid, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
 
   // for each shift vector
-  for(int kj=-K;kj<=K;kj++)
+  for(int kj=-K; kj<=K; kj++)
   {
-    for(int ki=-K;ki<=K;ki++)
+    for(int ki=-K; ki<=K; ki++)
     {
       int inited_slide = 0;
       // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else we will add up errors)
       // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more memory
 #ifdef _OPENMP
-#  pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, roi_out, roi_in, ivoid, ovoid, Sa)
+      #  pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, roi_out, roi_in, ivoid, ovoid, Sa)
 #endif
       for(int j=0; j<roi_out->height; j++)
       {
@@ -397,9 +397,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         // TODO: also every once in a while to assert numerical precision!
         if(!inited_slide)
         {
-          // sum up a line 
+          // sum up a line
           memset(S, 0x0, sizeof(float)*roi_out->width);
-          for(int jj=-Pm;jj<=PM;jj++)
+          for(int jj=-Pm; jj<=PM; jj++)
           {
             int i = MAX(0, -ki);
             float *s = S + i;
@@ -408,7 +408,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             const int last = roi_out->width + MIN(0, -ki);
             for(; i<last; i++, inp+=4, inps+=4, s++)
             {
-              for(int k=0;k<3;k++)
+              for(int k=0; k<3; k++)
                 s[0] += (inp[k] - inps[k])*(inp[k] - inps[k]) * norm2[k];
             }
           }
@@ -420,7 +420,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         float *s = S;
         float slide = 0.0f;
         // sum up the first -P..P
-        for(int i=0;i<2*P+1;i++) slide += s[i];
+        for(int i=0; i<2*P+1; i++) slide += s[i];
         for(int i=0; i<roi_out->width; i++)
         {
           if(i-P > 0 && i+P<roi_out->width)
@@ -447,9 +447,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           for(; ((unsigned long)s & 0xf) != 0 && i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
           {
             float stmp = s[0];
-            for(int k=0;k<3;k++)
+            for(int k=0; k<3; k++)
               stmp += ((inp[k] - inps[k])*(inp[k] - inps[k])
-                    -  (inm[k] - inms[k])*(inm[k] - inms[k])) * norm2[k];
+                       -  (inm[k] - inms[k])*(inm[k] - inms[k])) * norm2[k];
             s[0] = stmp;
           }
           /* Process most of the line 4 pixels at a time */
@@ -499,9 +499,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           for(; i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
           {
             float stmp = s[0];
-            for(int k=0;k<3;k++)
+            for(int k=0; k<3; k++)
               stmp += ((inp[k] - inps[k])*(inp[k] - inps[k])
-                    -  (inm[k] - inms[k])*(inm[k] - inms[k])) * norm2[k];
+                       -  (inm[k] - inms[k])*(inm[k] - inms[k])) * norm2[k];
             s[0] = stmp;
           }
         }
@@ -524,8 +524,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int i=0; i<roi_out->width; i++)
     {
       _mm_store_ps(out, _mm_add_ps(
-          _mm_mul_ps(_mm_load_ps(in),  invert),
-          _mm_mul_ps(_mm_load_ps(out), _mm_div_ps(weight, _mm_set1_ps(out[3])))));
+                     _mm_mul_ps(_mm_load_ps(in),  invert),
+                     _mm_mul_ps(_mm_load_ps(out), _mm_div_ps(weight, _mm_set1_ps(out[3])))));
       out += 4;
       in  += 4;
     }

@@ -103,14 +103,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
 
   const float amount = (d->amount*0.01);
-  
+
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out) schedule(static)
 #endif
-  for (int k=0;k<roi_out->height;k++)
+  for (int k=0; k<roi_out->height; k++)
   {
     int offs = k*roi_out->width*ch;
-    for(int l=0;l<(roi_out->width*ch);l+=ch)
+    for(int l=0; l<(roi_out->width*ch); l+=ch)
     {
       /* saturation weight 0 - 1 */
       float sw = sqrt( (in[offs + l + 1]*in[offs + l + 1]) + (in[offs + l + 2]*in[offs + l + 2]) )/256.0;
@@ -148,7 +148,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_vibrance, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_vibrance, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_vibrance, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vibrance, 4, sizeof(float), (void *)&amount); 
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vibrance, 4, sizeof(float), (void *)&amount);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vibrance, sizes);
   if(err != CL_SUCCESS) goto error;
 

@@ -146,26 +146,26 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out)
     {
       switch(sqlite3_column_int(stmt, 0))
       {
-	case DT_METADATA_XMP_DC_CREATOR:
-	  creator_count++;
-	  creator = g_list_append(creator, value);
-	  break;
+        case DT_METADATA_XMP_DC_CREATOR:
+          creator_count++;
+          creator = g_list_append(creator, value);
+          break;
         case DT_METADATA_XMP_DC_PUBLISHER:
-	  publisher_count++;
-	  publisher = g_list_append(publisher, value);
-	  break;
+          publisher_count++;
+          publisher = g_list_append(publisher, value);
+          break;
         case DT_METADATA_XMP_DC_TITLE:
-	  title_count++;
-	  title = g_list_append(title, value);
-	  break;
+          title_count++;
+          title = g_list_append(title, value);
+          break;
         case DT_METADATA_XMP_DC_DESCRIPTION:
-	  description_count++;
-	  description = g_list_append(description, value);
-	  break;
+          description_count++;
+          description = g_list_append(description, value);
+          break;
         case DT_METADATA_XMP_DC_RIGHTS:
-	  rights_count++;
-	  rights = g_list_append(rights, value);
-	  break;
+          rights_count++;
+          rights = g_list_append(rights, value);
+          break;
       }
     }
   }
@@ -257,12 +257,12 @@ int position()
   return 510;
 }
 
-static void _mouse_over_image_callback(gpointer instace,gpointer user_data) 
+static void _mouse_over_image_callback(gpointer instace,gpointer user_data)
 {
   dt_lib_module_t *self=(dt_lib_module_t *)user_data;
   /* lets trigger an expose for a redraw of widget */
   gtk_widget_queue_draw(GTK_WIDGET(self->widget));
-} 
+}
 
 void init_key_accels(dt_lib_module_t *self)
 {
@@ -294,7 +294,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_table_set_row_spacings(GTK_TABLE(self->widget), 5);
 
   g_signal_connect(self->widget, "expose-event", G_CALLBACK(expose), self);
- 
+
   label = gtk_label_new(_("title"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
@@ -382,8 +382,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(hbox), 0, 2, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   /* lets signup for mouse over image change signals */
-  dt_control_signal_connect(darktable.signals,DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, 
-			    G_CALLBACK(_mouse_over_image_callback), self);
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+                            G_CALLBACK(_mouse_over_image_callback), self);
 
 }
 

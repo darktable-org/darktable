@@ -524,7 +524,7 @@ void gui_init(struct dt_iop_module_t *self)
   /* strength */
   g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->strength, 2);
   dt_bauhaus_widget_set_label(g->scale2, _("strength"));
-  dt_bauhaus_slider_set_format(g->scale2,"%.0f%%");  
+  dt_bauhaus_slider_set_format(g->scale2,"%.0f%%");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the strength of applied grain"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",

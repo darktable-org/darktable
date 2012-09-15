@@ -347,7 +347,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->strength_scale), "tooltip-text", _("the strength of saturation boost"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->strength_scale), "value-changed",
                     G_CALLBACK (strength_callback), self);
-  
+
   /* bias */
   g->bias_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.01, p->bias, 2);
   dt_bauhaus_widget_set_label(g->bias_scale,_("mid-tones bias"));

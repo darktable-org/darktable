@@ -79,7 +79,12 @@ _lib_geolocation_parse_offset(const char* str, long int *seconds)
   size_t len = strlen(str);
 
   // optional sign
-  if(*str == '+' || *str == '-') { sign = *str; str++; len--; }
+  if(*str == '+' || *str == '-')
+  {
+    sign = *str;
+    str++;
+    len--;
+  }
 
   // hh, mm or ss
   if(len < 2) return FALSE;
@@ -87,12 +92,17 @@ _lib_geolocation_parse_offset(const char* str, long int *seconds)
   else
   {
     numbers[fields++] = 10*(str[0]-'0')+(str[1]-'0');
-    str += 2; len -= 2;
+    str += 2;
+    len -= 2;
   }
 
   // : or end
   if(*str == '\0') goto parse_success;
-  if(*str == ':') { str++; len--; }
+  if(*str == ':')
+  {
+    str++;
+    len--;
+  }
 
   // mm or ss
   if(len < 2) return FALSE;
@@ -100,12 +110,17 @@ _lib_geolocation_parse_offset(const char* str, long int *seconds)
   else
   {
     numbers[fields++] = 10*(str[0]-'0')+(str[1]-'0');
-    str += 2; len -= 2;
+    str += 2;
+    len -= 2;
   }
 
   // : or end
   if(*str == '\0') goto parse_success;
-  if(*str == ':') { str++; len--; }
+  if(*str == ':')
+  {
+    str++;
+    len--;
+  }
 
   // ss
   if(len < 2) return FALSE;
@@ -113,7 +128,8 @@ _lib_geolocation_parse_offset(const char* str, long int *seconds)
   else
   {
     numbers[fields++] = 10*(str[0]-'0')+(str[1]-'0');
-    str += 2; len -= 2;
+    str += 2;
+    len -= 2;
   }
 
   // end
@@ -151,9 +167,11 @@ static gboolean
 _lib_geolocation_offset_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
 {
   dt_lib_geolocation_t *d = (dt_lib_geolocation_t*)self->data;
-  switch(event->keyval) {
+  switch(event->keyval)
+  {
     case GDK_Escape:
-    case GDK_Tab:{
+    case GDK_Tab:
+    {
       // reset
       gchar *str = dt_conf_get_string("plugins/lighttable/geolocation/offset");
       if(_lib_geolocation_parse_offset(str, NULL))
@@ -171,7 +189,8 @@ _lib_geolocation_offset_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_m
     }
 
     case GDK_Return:
-    case GDK_KP_Enter:{
+    case GDK_KP_Enter:
+    {
       const gchar* value = gtk_entry_get_text(GTK_ENTRY(d->offset_entry));
       if(_lib_geolocation_parse_offset(value, NULL))
       {
@@ -249,8 +268,8 @@ _lib_geolocation_calculate_offset_callback(GtkWidget *widget, dt_lib_module_t *s
     if(tokens[0] != '\0' && tokens[1] != '\0' && tokens[2] != '\0')
     {
       if(g_ascii_isdigit(tokens[0][0]) && g_ascii_isdigit(tokens[0][1]) && tokens[0][2] == '\0'
-         && g_ascii_isdigit(tokens[1][0]) && g_ascii_isdigit(tokens[1][1]) && tokens[1][2] == '\0'
-         && g_ascii_isdigit(tokens[2][0]) && g_ascii_isdigit(tokens[2][1]) && tokens[2][2] == '\0')
+          && g_ascii_isdigit(tokens[1][0]) && g_ascii_isdigit(tokens[1][1]) && tokens[1][2] == '\0'
+          && g_ascii_isdigit(tokens[2][0]) && g_ascii_isdigit(tokens[2][1]) && tokens[2][2] == '\0')
       {
         int h, m, s;
         h = (tokens[0][0] - '0')*10 + tokens[0][1] - '0';
@@ -281,8 +300,8 @@ _lib_geolocation_calculate_offset_callback(GtkWidget *widget, dt_lib_module_t *s
             gint  second;
 
             if (sscanf(cimg->exif_datetime_taken, "%d:%d:%d %d:%d:%d",
-                      (int*)&year, (int*)&month, (int*)&day,
-                      (int*)&hour,(int*)&minute,(int*)&second) == 6)
+                       (int*)&year, (int*)&month, (int*)&day,
+                       (int*)&hour,(int*)&minute,(int*)&second) == 6)
             {
               // calculate the offset
               long int exif_seconds = hour*60*60 + minute*60 + second;
@@ -315,7 +334,8 @@ static gboolean
 _lib_geolocation_floating_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
 {
   dt_lib_geolocation_t *d = (dt_lib_geolocation_t*)self->data;
-  switch(event->keyval) {
+  switch(event->keyval)
+  {
     case GDK_Escape:
       gtk_widget_destroy(d->floating_window);
       return TRUE;
@@ -405,11 +425,11 @@ _lib_geolocation_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   /* bring a filechooser to select the gpx file to apply to selection */
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(_("open gpx file"),
-                                                       GTK_WINDOW (win),
-                                                       GTK_FILE_CHOOSER_ACTION_OPEN,
-                                                       GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                                       GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                                                       (char *)NULL);
+                           GTK_WINDOW (win),
+                           GTK_FILE_CHOOSER_ACTION_OPEN,
+                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                           GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                           (char *)NULL);
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*.gpx");
@@ -440,7 +460,8 @@ _lib_geolocation_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
       gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(tz_selection), (gchar*)iter->data);
       if(!strcmp((gchar*)iter->data, old_tz))
         gtk_combo_box_set_active(GTK_COMBO_BOX(tz_selection), i);
-    } while( (iter = g_list_next(iter)) != NULL);
+    }
+    while( (iter = g_list_next(iter)) != NULL);
   }
 
   gtk_box_pack_start(GTK_BOX(extra_box), label, FALSE, FALSE, 0);

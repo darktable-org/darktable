@@ -45,26 +45,26 @@
 DT_MODULE(1)
 
 static gboolean film_strip_key_accel(GtkAccelGroup *accel_group,
-                                 GObject *acceleratable,
-                                 guint keyval, GdkModifierType modifier,
-                                 gpointer data);
+                                     GObject *acceleratable,
+                                     guint keyval, GdkModifierType modifier,
+                                     gpointer data);
 
 static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable,
-                           guint keyval, GdkModifierType modifier,
-                           gpointer data);
+                               guint keyval, GdkModifierType modifier,
+                               gpointer data);
 
 static gboolean export_key_accel_callback(GtkAccelGroup *accel_group,
-                                      GObject *acceleratable, guint keyval,
-                                      GdkModifierType modifier,gpointer data);
+    GObject *acceleratable, guint keyval,
+    GdkModifierType modifier,gpointer data);
 
 static gboolean skip_f_key_accel_callback(GtkAccelGroup *accel_group,
-                                      GObject *acceleratable,
-                                      guint keyval, GdkModifierType modifier,
-                                      gpointer data);
+    GObject *acceleratable,
+    guint keyval, GdkModifierType modifier,
+    gpointer data);
 static gboolean skip_b_key_accel_callback(GtkAccelGroup *accel_group,
-                                      GObject *acceleratable,
-                                      guint keyval, GdkModifierType modifier,
-                                      gpointer data);
+    GObject *acceleratable,
+    guint keyval, GdkModifierType modifier,
+    gpointer data);
 
 /* signal handler for filmstrip image switching */
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance,gpointer user_data);
@@ -110,9 +110,9 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   cairo_set_fill_rule(cri, CAIRO_FILL_RULE_EVEN_ODD);
   cairo_rectangle(cri, 0, 0, width_i, height_i);
   cairo_rectangle(cri,
-      MAX(1.0, width_i -capwd) *.5f,
-      MAX(1.0, height_i-capht) *.5f,
-      MIN(width, width_i-1), MIN(height, height_i-1));
+                  MAX(1.0, width_i -capwd) *.5f,
+                  MAX(1.0, height_i-capht) *.5f,
+                  MIN(width, width_i-1), MIN(height, height_i-1));
   cairo_fill (cri);
   cairo_restore(cri);
 
@@ -257,7 +257,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
 
   // Displaying sample areas if enabled
   if(darktable.lib->proxy.colorpicker.live_samples &&
-     darktable.lib->proxy.colorpicker.display_samples)
+      darktable.lib->proxy.colorpicker.display_samples)
   {
     GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
     dt_colorpicker_sample_t *sample = NULL;
@@ -620,7 +620,8 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
         return;
       }
 
-      if (!dev->image_loading) {
+      if (!dev->image_loading)
+      {
         dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
       }
       dt_dev_change_image(dev, imgid);
@@ -696,17 +697,17 @@ export_key_accel_callback(GtkAccelGroup *accel_group,
 }
 
 static gboolean skip_f_key_accel_callback(GtkAccelGroup *accel_group,
-                                      GObject *acceleratable, guint keyval,
-                                      GdkModifierType modifier, gpointer data)
+    GObject *acceleratable, guint keyval,
+    GdkModifierType modifier, gpointer data)
 {
   dt_dev_jump_image((dt_develop_t*)data, 1);
   return TRUE;
 }
 
 static gboolean skip_b_key_accel_callback(GtkAccelGroup *accel_group,
-                                      GObject *acceleratable,
-                                      guint keyval, GdkModifierType modifier,
-                                      gpointer data)
+    GObject *acceleratable,
+    guint keyval, GdkModifierType modifier,
+    gpointer data)
 {
   dt_dev_jump_image((dt_develop_t*)data, -1);
   return TRUE;
@@ -798,8 +799,8 @@ void enter(dt_view_t *self)
 {
   /* connect to ui pipe finished signal for redraw */
   dt_control_signal_connect(darktable.signals,
-			    DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback),
-			    (gpointer)self);
+                            DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback),
+                            (gpointer)self);
 
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode\n", dt_get_wtime());
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -835,10 +836,10 @@ void enter(dt_view_t *self)
   /* create quick styles popup menu tool */
   GtkWidget *styles = dtgtk_button_new (dtgtk_cairo_paint_styles,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_signal_connect (G_OBJECT (styles), "clicked",
-		    G_CALLBACK (_darkroom_ui_apply_style_popupmenu),
-		    NULL);
+                    G_CALLBACK (_darkroom_ui_apply_style_popupmenu),
+                    NULL);
   g_object_set (G_OBJECT (styles), "tooltip-text", _("quick access for applying any of your styles"),
-		(char *)NULL);
+                (char *)NULL);
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles);
 
   /*
@@ -860,7 +861,7 @@ void enter(dt_view_t *self)
       /* add module to right panel */
       GtkWidget *expander = dt_iop_gui_get_expander(module);
       dt_ui_container_add_widget(darktable.gui->ui,
-                               DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
+                                 DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
 
       snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
       dt_iop_gui_set_expanded(module, dt_conf_get_bool(option));
@@ -915,9 +916,9 @@ void enter(dt_view_t *self)
 
   /* connect signal for filmstrip image activate */
   dt_control_signal_connect(darktable.signals,
-			    DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
-			    G_CALLBACK(_view_darkroom_filmstrip_activate_callback),
-			    self);
+                            DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+                            G_CALLBACK(_view_darkroom_filmstrip_activate_callback),
+                            self);
 
   // prefetch next few from first selected image on.
   dt_view_filmstrip_prefetch();
@@ -927,13 +928,13 @@ void leave(dt_view_t *self)
 {
   /* disconnect from filmstrip image activate */
   dt_control_signal_disconnect(darktable.signals,
-			       G_CALLBACK(_view_darkroom_filmstrip_activate_callback),
-			       (gpointer)self);
+                               G_CALLBACK(_view_darkroom_filmstrip_activate_callback),
+                               (gpointer)self);
 
   /* disconnect from pipe finish signal */
   dt_control_signal_disconnect(darktable.signals,
-			       G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback),
-			       (gpointer)self);
+                               G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback),
+                               (gpointer)self);
 
   // store groups for next time:
   dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(darktable.develop));
@@ -1331,7 +1332,7 @@ void connect_key_accels(dt_view_t *self)
 
   // enable shortcut to export with current export settings:
   closure = g_cclosure_new(G_CALLBACK(export_key_accel_callback),
-         (gpointer)self->data, NULL);
+                           (gpointer)self->data, NULL);
   dt_accel_connect_view(self, "export", closure);
 
   // Shortcut to skip images

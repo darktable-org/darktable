@@ -114,7 +114,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     n->aspect = (o->aspect < 1) ? 1 / o->aspect : o->aspect;
     // no auto orientation in legacy param due to already convert aspect ratio
     n->aspect_orient = o->aspect > 1 ? DT_IOP_BORDERS_ASPECT_ORIENTATION_LANDSCAPE
-                                     : DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT;
+                       : DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT;
     n->size = fabsf(o->size);  // no negative size any more (was for "constant border" detect)
     return 0;
   }
@@ -262,12 +262,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // sse-friendly color copy (stupidly copy whole buffer, /me lazy ass)
   const float col[4] = {d->color[0], d->color[1], d->color[2], 1.0f};
   float *buf = (float *)ovoid;
-  for(int k=0;k<roi_out->width*roi_out->height;k++, buf+=4) memcpy(buf, col, sizeof(float)*4);
+  for(int k=0; k<roi_out->width*roi_out->height; k++, buf+=4) memcpy(buf, col, sizeof(float)*4);
 
   // Frame line draw
   const int border_min_size = MIN(MIN(border_size_t, border_size_b), MIN(border_size_l, border_size_r));
   const int frame_size  = border_min_size * d->frame_size;
-  if (frame_size != 0) {
+  if (frame_size != 0)
+  {
     const float col_frame[4] = {d->frame_color[0], d->frame_color[1], d->frame_color[2], 1.0f};
     const int image_lx = border_size_l - roi_out->x;
     const int image_ty = border_size_t - roi_out->y;
@@ -285,28 +286,28 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const int frame_br_in_y = CLAMP(image_ty - frame_offset + frame_in_height - 1, 0, roi_out->height - 1);
     // ... if 100% frame_offset we ensure frame_line "stick" the out border
     const int frame_br_out_x = (d->frame_offset == 1.0f)
-        ? (roi_out->width - 1)
-        : CLAMP(image_lx - frame_offset - frame_size + frame_out_width - 1, 0, roi_out->width - 1);
+                               ? (roi_out->width - 1)
+                               : CLAMP(image_lx - frame_offset - frame_size + frame_out_width - 1, 0, roi_out->width - 1);
     const int frame_br_out_y = (d->frame_offset == 1.0f)
-        ? (roi_out->height - 1)
-        : CLAMP(image_ty - frame_offset - frame_size + frame_out_height - 1, 0, roi_out->height - 1);
+                               ? (roi_out->height - 1)
+                               : CLAMP(image_ty - frame_offset - frame_size + frame_out_height - 1, 0, roi_out->height - 1);
 
-    for(int r=frame_tl_out_y;r<=frame_br_out_y;r++)
+    for(int r=frame_tl_out_y; r<=frame_br_out_y; r++)
     {
       buf = (float *)ovoid + r*out_stride + frame_tl_out_x*ch;
-      for(int c=frame_tl_out_x;c<=frame_br_out_x;c++, buf+=4)
+      for(int c=frame_tl_out_x; c<=frame_br_out_x; c++, buf+=4)
         memcpy(buf, col_frame, sizeof(float)*4);
     }
-    for(int r=frame_tl_in_y;r<=frame_br_in_y;r++)
+    for(int r=frame_tl_in_y; r<=frame_br_in_y; r++)
     {
       buf = (float *)ovoid + r*out_stride + frame_tl_in_x*ch;
-      for(int c=frame_tl_in_x;c<=frame_br_in_x;c++, buf+=4)
+      for(int c=frame_tl_in_x; c<=frame_br_in_x; c++, buf+=4)
         memcpy(buf, col, sizeof(float)*4);
     }
   }
 
   // blit image inside border and fill the output with previous processed out
-  for(int j=0;j<roi_in->height;j++)
+  for(int j=0; j<roi_in->height; j++)
   {
     float *out = ((float *)ovoid) + (j + border_in_y)*out_stride + ch * border_in_x;
     const float *in  = ((float *)ivoid) + j*in_stride;
@@ -354,7 +355,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   // ----- Frame line
   const int border_min_size = MIN(MIN(border_size_t, border_size_b), MIN(border_size_l, border_size_r));
   const int frame_size  = border_min_size * d->frame_size;
-  if (frame_size != 0) {
+  if (frame_size != 0)
+  {
     const float col_frame[4] = {d->frame_color[0], d->frame_color[1], d->frame_color[2], 1.0f};
     const int image_lx = border_size_l - roi_out->x;
     const int image_ty = border_size_t - roi_out->y;
@@ -372,11 +374,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     const int frame_br_in_y = CLAMP(image_ty - frame_offset + frame_in_height, 0, roi_out->height);
     // ... if 100% frame_offset we ensure frame_line "stick" the out border
     const int frame_br_out_x = (d->frame_offset == 1.0f)
-        ? (roi_out->width)
-        : CLAMP(image_lx - frame_offset - frame_size + frame_out_width, 0, roi_out->width);
+                               ? (roi_out->width)
+                               : CLAMP(image_lx - frame_offset - frame_size + frame_out_width, 0, roi_out->width);
     const int frame_br_out_y = (d->frame_offset == 1.0f)
-        ? (roi_out->height)
-        : CLAMP(image_ty - frame_offset - frame_size + frame_out_height, 0, roi_out->height);
+                               ? (roi_out->height)
+                               : CLAMP(image_ty - frame_offset - frame_size + frame_out_height, 0, roi_out->height);
 
     const int roi_frame_in_width = frame_br_in_x - frame_tl_in_x;
     const int roi_frame_in_height = frame_br_in_y - frame_tl_in_y;
@@ -506,17 +508,17 @@ borders_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
 
-  if(fabsf(p->color[0] - self->picked_color[0]) < 0.0001f && 
-     fabsf(p->color[1] - self->picked_color[1]) < 0.0001f && 
-     fabsf(p->color[2] - self->picked_color[2]) < 0.0001f)
+  if(fabsf(p->color[0] - self->picked_color[0]) < 0.0001f &&
+      fabsf(p->color[1] - self->picked_color[1]) < 0.0001f &&
+      fabsf(p->color[2] - self->picked_color[2]) < 0.0001f)
   {
     // interrupt infinite loops
     return FALSE;
   }
 
   if(fabsf(p->frame_color[0] - self->picked_color[0]) < 0.0001f &&
-     fabsf(p->frame_color[1] - self->picked_color[1]) < 0.0001f &&
-     fabsf(p->frame_color[2] - self->picked_color[2]) < 0.0001f)
+      fabsf(p->frame_color[1] - self->picked_color[1]) < 0.0001f &&
+      fabsf(p->frame_color[2] - self->picked_color[2]) < 0.0001f)
   {
     // interrupt infinite loops
     return FALSE;
@@ -526,12 +528,15 @@ borders_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   c.red   = self->picked_color[0]*65535.0;
   c.green = self->picked_color[1]*65535.0;
   c.blue  = self->picked_color[2]*65535.0;
-  if (g->active_colorpick == g->frame_colorpick) {
+  if (g->active_colorpick == g->frame_colorpick)
+  {
     p->frame_color[0] = self->picked_color[0];
     p->frame_color[1] = self->picked_color[1];
     p->frame_color[2] = self->picked_color[2];
     gtk_widget_modify_fg(GTK_WIDGET(g->frame_colorpick), GTK_STATE_NORMAL, &c);
-  } else {
+  }
+  else
+  {
     p->color[0] = self->picked_color[0];
     p->color[1] = self->picked_color[1];
     p->color[2] = self->picked_color[2];
@@ -601,7 +606,9 @@ position_h_changed (GtkWidget *combo, dt_iop_module_t *self)
         // *c = '\0'; // not needed, atof will stop there.
         c++;
         p->pos_h = atof(text) / atof(c);
-      } else {
+      }
+      else
+      {
         p->pos_h = atof(text);
       }
       strncpy(p->pos_h_text, text, 20);
@@ -636,7 +643,9 @@ position_v_changed (GtkWidget *combo, dt_iop_module_t *self)
         // *c = '\0'; // not needed, atof will stop there.
         c++;
         p->pos_v = atof(text) / atof(c);
-      } else {
+      }
+      else
+      {
         p->pos_v = atof(text);
       }
       strncpy(p->pos_v_text, text, 20);
@@ -758,7 +767,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   // ----- Aspect
   int k = 0;
-  for(;k<DT_IOP_BORDERS_ASPECT_COUNT;k++)
+  for(; k<DT_IOP_BORDERS_ASPECT_COUNT; k++)
   {
     if(fabsf(p->aspect - g->aspect_ratios[k]) < 0.0001f)
     {
@@ -768,9 +777,12 @@ void gui_update(struct dt_iop_module_t *self)
   }
   if(k == DT_IOP_BORDERS_ASPECT_COUNT)
   {
-    if (p->aspect_text) {
+    if (p->aspect_text)
+    {
       dt_bauhaus_combobox_set_text(g->aspect, p->aspect_text);
-    } else {
+    }
+    else
+    {
       char text[128];
       snprintf(text, 128, "%.3f:1", p->aspect);
       dt_bauhaus_combobox_set_text(g->aspect, text);
@@ -782,7 +794,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->aspect_orient, p->aspect_orient);
 
   // ----- Position H
-  for(k=0;k<DT_IOP_BORDERS_POSITION_H_COUNT;k++)
+  for(k=0; k<DT_IOP_BORDERS_POSITION_H_COUNT; k++)
   {
     if(fabsf(p->pos_h - g->pos_h_ratios[k]) < 0.0001f)
     {
@@ -792,9 +804,12 @@ void gui_update(struct dt_iop_module_t *self)
   }
   if(k == DT_IOP_BORDERS_POSITION_H_COUNT)
   {
-    if (p->pos_h_text) {
+    if (p->pos_h_text)
+    {
       dt_bauhaus_combobox_set_text(g->pos_h, p->pos_h_text);
-    } else {
+    }
+    else
+    {
       char text[128];
       snprintf(text, 128, "%.3f:1", p->pos_h);
       dt_bauhaus_combobox_set_text(g->pos_h, text);
@@ -803,7 +818,7 @@ void gui_update(struct dt_iop_module_t *self)
   }
 
   // ----- Position V
-  for(k=0;k<DT_IOP_BORDERS_POSITION_V_COUNT;k++)
+  for(k=0; k<DT_IOP_BORDERS_POSITION_V_COUNT; k++)
   {
     if(fabsf(p->pos_v - g->pos_v_ratios[k]) < 0.0001f)
     {
@@ -813,9 +828,12 @@ void gui_update(struct dt_iop_module_t *self)
   }
   if(k == DT_IOP_BORDERS_POSITION_V_COUNT)
   {
-    if (p->pos_v_text) {
+    if (p->pos_v_text)
+    {
       dt_bauhaus_combobox_set_text(g->pos_v, p->pos_v_text);
-    } else {
+    }
+    else
+    {
       char text[128];
       snprintf(text, 128, "%.3f:1", p->pos_v);
       dt_bauhaus_combobox_set_text(g->pos_v, text);

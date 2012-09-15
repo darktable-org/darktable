@@ -504,8 +504,8 @@ gui_init (dt_lib_module_t *self)
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
-	char *lang = getenv("LANG");
-	if (!lang) lang = "en_US";
+        char *lang = getenv("LANG");
+        if (!lang) lang = "en_US";
 
         dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
         char name[1024];

@@ -104,10 +104,17 @@ const dt_pwstorage_t* dt_pwstorage_new()
       break;
   }
 
-  switch(pwstorage->pw_storage_backend){
-    case PW_STORAGE_BACKEND_NONE: dt_conf_set_string( "plugins/pwstorage/pwstorage_backend", "none" ); break;
-    case PW_STORAGE_BACKEND_KWALLET: dt_conf_set_string( "plugins/pwstorage/pwstorage_backend", "kwallet" ); break;
-    case PW_STORAGE_BACKEND_GNOME_KEYRING: dt_conf_set_string( "plugins/pwstorage/pwstorage_backend", "gnome keyring" ); break;
+  switch(pwstorage->pw_storage_backend)
+  {
+    case PW_STORAGE_BACKEND_NONE:
+      dt_conf_set_string( "plugins/pwstorage/pwstorage_backend", "none" );
+      break;
+    case PW_STORAGE_BACKEND_KWALLET:
+      dt_conf_set_string( "plugins/pwstorage/pwstorage_backend", "kwallet" );
+      break;
+    case PW_STORAGE_BACKEND_GNOME_KEYRING:
+      dt_conf_set_string( "plugins/pwstorage/pwstorage_backend", "gnome keyring" );
+      break;
   }
 
   return pwstorage;

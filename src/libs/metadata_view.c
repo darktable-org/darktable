@@ -29,7 +29,8 @@
 
 DT_MODULE(1)
 
-enum {
+enum
+{
   /* internal */
   md_internal_filmroll=0,
   md_internal_imgid,
@@ -140,16 +141,16 @@ static void _filter_non_printable(char *string, int length)
 /* helper function for updating a metadata value */
 static void _metadata_update_value(GtkLabel *label, const char *value)
 {
-    gtk_label_set_text(GTK_LABEL(label), value);
-    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
-    g_object_set(G_OBJECT(label), "tooltip-text", value, (char *)NULL);
+  gtk_label_set_text(GTK_LABEL(label), value);
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
+  g_object_set(G_OBJECT(label), "tooltip-text", value, (char *)NULL);
 }
 
 static void _metadata_update_value_end(GtkLabel *label, const char *value)
 {
-    gtk_label_set_text(GTK_LABEL(label), value);
-    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-    g_object_set(G_OBJECT(label), "tooltip-text", value, (char *)NULL);
+  gtk_label_set_text(GTK_LABEL(label), value);
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  g_object_set(G_OBJECT(label), "tooltip-text", value, (char *)NULL);
 }
 
 #define NODATA_STRING "-"
@@ -216,31 +217,37 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     /* XMP */
     GList *res;
-    if((res = dt_metadata_get(img->id, "Xmp.dc.title", NULL))!=NULL) {
+    if((res = dt_metadata_get(img->id, "Xmp.dc.title", NULL))!=NULL)
+    {
       snprintf(value, vl, "%s", (char*)res->data);
       _filter_non_printable(value, vl);
       g_free(res->data);
       g_list_free(res);
-    } else
-    snprintf(value, vl, NODATA_STRING);
+    }
+    else
+      snprintf(value, vl, NODATA_STRING);
     _metadata_update_value(d->metadata[md_xmp_title], value);
 
-    if((res = dt_metadata_get(img->id, "Xmp.dc.creator", NULL))!=NULL) {
+    if((res = dt_metadata_get(img->id, "Xmp.dc.creator", NULL))!=NULL)
+    {
       snprintf(value, vl, "%s", (char*)res->data);
       _filter_non_printable(value, vl);
       g_free(res->data);
       g_list_free(res);
-    } else
+    }
+    else
       snprintf(value, vl, NODATA_STRING);
     _metadata_update_value(d->metadata[md_xmp_creator], value);
 
-    if((res = dt_metadata_get(img->id, "Xmp.dc.rights", NULL))!=NULL) {
+    if((res = dt_metadata_get(img->id, "Xmp.dc.rights", NULL))!=NULL)
+    {
       snprintf(value, vl, "%s", (char*)res->data);
       _filter_non_printable(value, vl);
       g_free(res->data);
       g_list_free(res);
-    } else
-    snprintf(value, vl, NODATA_STRING);
+    }
+    else
+      snprintf(value, vl, NODATA_STRING);
     _metadata_update_value(d->metadata[md_xmp_rights], value);
 
     /* geolocation */
@@ -262,9 +269,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
   return;
 
-/* reset */
+  /* reset */
 fill_minuses:
-  for(int k=0;k<md_size;k++)
+  for(int k=0; k<md_size; k++)
     _metadata_update_value(d->metadata[k],NODATA_STRING);
 
 
@@ -289,7 +296,7 @@ void gui_init(dt_lib_module_t *self)
 
 
   /* intialize the metadata name/value labels */
-  for (int k = 0;k < md_size;k++)
+  for (int k = 0; k < md_size; k++)
   {
     GtkLabel *name = GTK_LABEL(gtk_label_new(_md_labels[k]));
     d->metadata[k] = GTK_LABEL(gtk_label_new("-"));
@@ -301,19 +308,19 @@ void gui_init(dt_lib_module_t *self)
 
   /* lets signup for mouse over image change signals */
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
-			    G_CALLBACK(_mouse_over_image_callback), self);
+                            G_CALLBACK(_mouse_over_image_callback), self);
 
   /* signup for develop initialize to update info of current
      image in darkroom when enter */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE,
-			    G_CALLBACK(_mouse_over_image_callback), self);
+                            G_CALLBACK(_mouse_over_image_callback), self);
 
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_control_signal_disconnect(darktable.signals,
-			    G_CALLBACK(_mouse_over_image_callback), self);
+                               G_CALLBACK(_mouse_over_image_callback), self);
   g_free(self->data);
   self->data = NULL;
 }

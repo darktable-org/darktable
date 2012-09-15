@@ -341,7 +341,8 @@ static void *dt_camctl_camera_get_live_view(void* data)
 
     // calculate FPS
     double current_time = dt_get_wtime();
-    if(current_time - capture_time >= 1.0){
+    if(current_time - capture_time >= 1.0)
+    {
       // a second has passed
       dt_print(DT_DEBUG_CAMCTL, "%d fps\n", frames+1);
       frames = 0;
@@ -663,10 +664,10 @@ gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
 
     // initialize timeout callbacks eg. keep alive, some cameras needs it.
     cam->gpcontext = camctl->gpcontext;
-    gp_camera_set_timeout_funcs(cam->gpcam, 
-				(CameraTimeoutStartFunc)_camera_start_timeout_func,
-				(CameraTimeoutStopFunc)_camera_stop_timeout_func,
-				cam);
+    gp_camera_set_timeout_funcs(cam->gpcam,
+                                (CameraTimeoutStartFunc)_camera_start_timeout_func,
+                                (CameraTimeoutStopFunc)_camera_stop_timeout_func,
+                                cam);
 
 
     dt_pthread_mutex_init(&cam->jobqueue_lock, NULL);
@@ -1130,8 +1131,8 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
       /* this is really some undefined behavior, seems like its
       camera driver dependent... very ugly! */
       if( strstr( (char *)data, "4006" ) || // Nikon PTP driver
-        (strstr((char *)data, "PTP Property") && strstr((char *)data, "changed"))  // Some Canon driver maybe all ??
-      )
+          (strstr((char *)data, "PTP Property") && strstr((char *)data, "changed"))  // Some Canon driver maybe all ??
+        )
       {
         // Property change event occured on camera
         // let's update cache and signalling

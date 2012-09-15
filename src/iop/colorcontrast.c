@@ -111,7 +111,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_colorcontrast_gui_data_t *g =
-      (dt_iop_colorcontrast_gui_data_t*)self->gui_data;
+    (dt_iop_colorcontrast_gui_data_t*)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "green vs magenta",
                               GTK_WIDGET(g->a_scale));
@@ -186,7 +186,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 4, 4*sizeof(float), (void *)&scale); 
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 4, 4*sizeof(float), (void *)&scale);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 5, 4*sizeof(float), (void *)&offset);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorcontrast, sizes);
 
@@ -332,19 +332,19 @@ void gui_init     (dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->a_scale, _("green vs magenta"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->a_scale), TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->a_scale), "tooltip-text",
-	       _("steepness of the a* curve in Lab"), (char *)NULL);
+               _("steepness of the a* curve in Lab"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->a_scale), "value-changed",
-		   G_CALLBACK(a_slider_callback), self);
+                   G_CALLBACK(a_slider_callback), self);
 
 
   /* b scale */
   g->b_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 5.0, 0.01, p->b_steepness, 2);
   dt_bauhaus_widget_set_label(g->b_scale, _("blue vs yellow"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->b_scale), TRUE, TRUE, 0);  
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->b_scale), TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->b_scale), "tooltip-text",
-	       _("steepness of the b* curve in Lab"), (char *)NULL);
+               _("steepness of the b* curve in Lab"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->b_scale), "value-changed",
-		   G_CALLBACK(b_slider_callback), self);
+                   G_CALLBACK(b_slider_callback), self);
 }
 
 void gui_cleanup  (dt_iop_module_t *self)

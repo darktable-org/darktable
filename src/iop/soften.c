@@ -292,18 +292,18 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t workgroupsize = 0;          // the maximum number of items in a work group
   unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
   size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
-  
+
   // make sure blocksize is not too large
   int blocksize = BLOCKSIZE;
   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-     dt_opencl_get_kernel_work_group_size(devid, gd->kernel_soften_hblur, &kernelworkgroupsize) == CL_SUCCESS)
+      dt_opencl_get_kernel_work_group_size(devid, gd->kernel_soften_hblur, &kernelworkgroupsize) == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
     while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize > kernelworkgroupsize
           || blocksize > workgroupsize || (blocksize+2*wdh)*4*sizeof(float) > localmemsize)
     {
       if(blocksize == 1) break;
-      blocksize >>= 1;    
+      blocksize >>= 1;
     }
   }
   else
@@ -569,7 +569,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)self->params;
 
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
-  
+
   /* size */
   g->scale1 = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 2, p->size, 2);
   dt_bauhaus_slider_set_format(g->scale1,"%.0f%%");
@@ -585,7 +585,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the saturation of blur"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
                     G_CALLBACK (saturation_callback), self);
-  
+
   /* brightness */
   g->scale3 = dt_bauhaus_slider_new_with_range(self,-2.0, 2.0, 0.01, p->brightness, 2);
   dt_bauhaus_slider_set_format(g->scale3,"%.2fEV");
@@ -593,7 +593,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("the brightness of blur"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
                     G_CALLBACK (brightness_callback), self);
- 
+
   /* amount */
   // TODO: deprecate this function in favor for blending
   g->scale4 = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 2, p->amount, 2);

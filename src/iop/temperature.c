@@ -429,7 +429,7 @@ void reload_defaults(dt_iop_module_t *module)
   {
     dt_image_full_path(module->dev->image_storage.id, filename, DT_MAX_PATH_LEN);
     libraw_data_t *raw = libraw_init(0);
-  
+
     ret = libraw_open_file(raw, filename);
     if(!ret)
     {
@@ -445,12 +445,12 @@ void reload_defaults(dt_iop_module_t *module)
         char makermodel[1024];
         char *model = makermodel;
         dt_colorspaces_get_makermodel_split(makermodel, 1024, &model,
-            module->dev->image_storage.exif_maker,
-            module->dev->image_storage.exif_model);
+                                            module->dev->image_storage.exif_maker,
+                                            module->dev->image_storage.exif_model);
         for(int i=0; i<wb_preset_count; i++)
         {
           if(!strcmp(wb_preset[i].make,  makermodel) &&
-             !strcmp(wb_preset[i].model, model))
+              !strcmp(wb_preset[i].model, model))
           {
             // just take the first preset we find for this camera
             for(int k=0; k<3; k++) tmp.coeffs[k] = wb_preset[i].channel[k];

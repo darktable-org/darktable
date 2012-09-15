@@ -39,11 +39,13 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
-typedef struct dt_control_time_offset_t {
+typedef struct dt_control_time_offset_t
+{
   long int offset;
 } dt_control_time_offset_t;
 
-typedef struct dt_control_gpx_apply_t {
+typedef struct dt_control_gpx_apply_t
+{
   gchar *filename;
   gchar *tz;
 } dt_control_gpx_apply_t;
@@ -161,7 +163,8 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
       jid = (guint *)dt_control_backgroundjobs_create(darktable.control, 0, message);
     }
 
-    do {
+    do
+    {
       // bail out if we're shutting down:
       if(!dt_control_running()) break;
       // if indexer was switched off during runtime, respect that as soon as we can:
@@ -214,7 +217,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
         {
           dt_similarity_histogram_t histogram;
           float bucketscale = (float)DT_SIMILARITY_HISTOGRAM_BUCKETS/(float)0xff;
-          for(int j=0;j<(4*buf.width*buf.height);j+=4)
+          for(int j=0; j<(4*buf.width*buf.height); j+=4)
           {
             /* swap rgb and scale to bucket index */
             uint8_t rgb[3];
@@ -232,7 +235,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
           }
 
           for(int k=0; k<DT_SIMILARITY_HISTOGRAM_BUCKETS; k++)
-            for (int j=0;j<4;j++)
+            for (int j=0; j<4; j++)
               histogram.rgbl[k][j] /= (buf.width*buf.height);
 
           /* store the histogram data */
@@ -254,8 +257,8 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
 
           /* first of setup a standard rgb buffer, swap bgr in same routine */
           uint8_t *rgbbuf = g_malloc(buf.width*buf.height*3);
-          for(int j=0;j<(buf.width*buf.height);j++)
-            for(int k=0;k<3;k++)
+          for(int j=0; j<(buf.width*buf.height); j++)
+            for(int k=0; k<3; k++)
               rgbbuf[3*j+k] = buf_decompressed[4*j+2-k];
 
 
@@ -267,10 +270,10 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
           uint8_t min=0xff,max=0;
           uint8_t *spixels = gdk_pixbuf_get_pixels(scaled);
 
-          for(int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++)
+          for(int j=0; j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE); j++)
           {
             /* copy rgb */
-            for(int k=0;k<3;k++)
+            for(int k=0; k<3; k++)
               lightmap.pixels[4*j+k] = spixels[3*j+k];
 
             /* average intensity into 4th channel */
@@ -288,9 +291,9 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
             scale = 1.0;
           else
             scale = 0xff/range;
-          for(int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++)
+          for(int j=0; j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE); j++)
           {
-            for(int k=0;k<4;k++)
+            for(int k=0; k<4; k++)
               lightmap.pixels[4*j+k] = (lightmap.pixels[4*j+k]-min)*scale;
           }
 
@@ -317,7 +320,8 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
         dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
       }
 
-    } while ((imgitem=g_list_next(imgitem)) && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED);
+    }
+    while ((imgitem=g_list_next(imgitem)) && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED);
 
 
     /* cleanup */
@@ -338,7 +342,8 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
 }
 
 
-typedef struct _control_match_similar_job_param_t {
+typedef struct _control_match_similar_job_param_t
+{
   uint32_t imgid;
   dt_similarity_t data;
 } _control_match_similar_job_param_t;
@@ -452,7 +457,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     // fprintf(stderr, "saturation: %u\n", saturation);
     whitelevel = fmaxf(whitelevel, saturation*cal);
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(buf, pixels, weight, wd, ht, saturation)
+    #pragma omp parallel for schedule(static) default(none) shared(buf, pixels, weight, wd, ht, saturation)
 #endif
     for(int k=0; k<wd*ht; k++)
     {
@@ -478,15 +483,15 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   }
   // normalize by white level to make clipping at 1.0 work as expected (to be sure, scale down one more stop, thus the 0.5):
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(pixels, wd, ht, weight, whitelevel)
+  #pragma omp parallel for schedule(static) default(none) shared(pixels, wd, ht, weight, whitelevel)
 #endif
   for(int k=0; k<wd*ht; k++)
   {
-      // in case w == 0, all pixels were overexposed (too dark would have been clamped to w >= eps above)
-      if(weight[k] < 1e-3f)
-          pixels[k] = 1.f; // mark as blown out.
-      else // normalize:
-          pixels[k] = fmaxf(0.0f, pixels[k]/(whitelevel*weight[k]));
+    // in case w == 0, all pixels were overexposed (too dark would have been clamped to w >= eps above)
+    if(weight[k] < 1e-3f)
+      pixels[k] = 1.f; // mark as blown out.
+    else // normalize:
+      pixels[k] = fmaxf(0.0f, pixels[k]/(whitelevel*weight[k]));
   }
 
   // output hdr as digital negative with exif data.
@@ -771,7 +776,8 @@ int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
       cntr++;
     }
 
-  } while((t = g_list_next(t)) != NULL);
+  }
+  while((t = g_list_next(t)) != NULL);
 
   dt_control_log(_("applied matched gpx location onto %d image(s)"), cntr);
 
@@ -799,8 +805,8 @@ void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t,
   sqlite3_stmt *stmt;
   /* get a list of images in filmroll */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-			      "select * from images where film_id = ?1",
-			      -1, &stmt, NULL);
+                              "select * from images where film_id = ?1",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
 
   while (sqlite3_step(stmt) == SQLITE_ROW)
@@ -912,7 +918,8 @@ void dt_control_match_similar(dt_similarity_t *data)
   {
     dt_control_match_similar_job_init(&j, (long int)selected->data, data);
     dt_control_add_job(darktable.control, &j);
-  } else
+  }
+  else
     dt_control_log(_("select an image as target for search of similar images"));
 }
 
@@ -943,11 +950,11 @@ void dt_control_remove_images()
     if(number == 0) return;
 
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
-        GTK_DIALOG_DESTROY_WITH_PARENT,
-        GTK_MESSAGE_QUESTION,
-        GTK_BUTTONS_YES_NO,
-        ngettext("do you really want to remove %d selected image from the collection?",
-          "do you really want to remove %d selected images from the collection?", number), number);
+                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    GTK_MESSAGE_QUESTION,
+                                    GTK_BUTTONS_YES_NO,
+                                    ngettext("do you really want to remove %d selected image from the collection?",
+                                        "do you really want to remove %d selected images from the collection?", number), number);
 
     gtk_window_set_title(GTK_WINDOW(dialog), _("remove images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -972,11 +979,11 @@ void dt_control_delete_images()
     if(number == 0) return;
 
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
-        GTK_DIALOG_DESTROY_WITH_PARENT,
-        GTK_MESSAGE_QUESTION,
-        GTK_BUTTONS_YES_NO,
-        ngettext("do you really want to physically delete %d selected image from disk?",
-          "do you really want to physically delete %d selected images from disk?", number), number);
+                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    GTK_MESSAGE_QUESTION,
+                                    GTK_BUTTONS_YES_NO,
+                                    ngettext("do you really want to physically delete %d selected image from disk?",
+                                        "do you really want to physically delete %d selected images from disk?", number), number);
 
     gtk_window_set_title(GTK_WINDOW(dialog), _("delete images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -1009,7 +1016,8 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
   const int32_t film_id = dt_film_new(&new_film, newdir);
   g_free(newdir);
 
-  if (film_id <= 0) {
+  if (film_id <= 0)
+  {
     dt_control_log(_("failed to create film roll for destination directory, aborting move.."));
     dt_control_backgroundjobs_destroy(darktable.control, jid);
     return -1;
@@ -1040,11 +1048,11 @@ void dt_control_move_images()
   if(number == 0) return;
 
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
-        GTK_WINDOW (win),
-        GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-        GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-        (char *)NULL);
+                           GTK_WINDOW (win),
+                           GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                           GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                           (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -1059,13 +1067,13 @@ void dt_control_move_images()
   if(dt_conf_get_bool("ask_before_move"))
   {
     GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win),
-        GTK_DIALOG_DESTROY_WITH_PARENT,
-        GTK_MESSAGE_QUESTION,
-        GTK_BUTTONS_YES_NO,
-        ngettext("do you really want to physically move the %d selected image to %s?\n"
-            "(all unselected duplicates will be moved along)",
-            "do you really want to physically move %d selected images to %s?\n"
-            "(all unselected duplicates will be moved along)", number), number, dir);
+                        GTK_DIALOG_DESTROY_WITH_PARENT,
+                        GTK_MESSAGE_QUESTION,
+                        GTK_BUTTONS_YES_NO,
+                        ngettext("do you really want to physically move the %d selected image to %s?\n"
+                                 "(all unselected duplicates will be moved along)",
+                                 "do you really want to physically move %d selected images to %s?\n"
+                                 "(all unselected duplicates will be moved along)", number), number, dir);
     gtk_window_set_title(GTK_WINDOW(dialog), ngettext("move image?", "move images?", number));
 
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -1081,7 +1089,7 @@ void dt_control_move_images()
   dt_control_add_job(darktable.control, &j);
   return;
 
-  abort:
+abort:
   g_free(dir);
   return;
 }
@@ -1097,11 +1105,11 @@ void dt_control_copy_images()
   if(number == 0) return;
 
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
-        GTK_WINDOW (win),
-        GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-        GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-        (char *)NULL);
+                           GTK_WINDOW (win),
+                           GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                           GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                           (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -1116,12 +1124,12 @@ void dt_control_copy_images()
   if(dt_conf_get_bool("ask_before_copy"))
   {
     GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win),
-        GTK_DIALOG_DESTROY_WITH_PARENT,
-        GTK_MESSAGE_QUESTION,
-        GTK_BUTTONS_YES_NO,
-        ngettext("do you really want to physically copy the %d selected image to %s?",
-            "do you really want to physically copy %d selected images to %s?", number),
-            number, dir);
+                        GTK_DIALOG_DESTROY_WITH_PARENT,
+                        GTK_MESSAGE_QUESTION,
+                        GTK_BUTTONS_YES_NO,
+                        ngettext("do you really want to physically copy the %d selected image to %s?",
+                                 "do you really want to physically copy %d selected images to %s?", number),
+                        number, dir);
     gtk_window_set_title(GTK_WINDOW(dialog), ngettext("copy image?", "copy images?", number));
 
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -1137,7 +1145,7 @@ void dt_control_copy_images()
   dt_control_add_job(darktable.control, &j);
   return;
 
-  abort:
+abort:
   g_free(dir);
   return;
 }
@@ -1161,13 +1169,13 @@ void dt_control_copy_images_job_init(dt_job_t *job)
 int32_t dt_control_move_images_job_run(dt_job_t *job)
 {
   return _generic_dt_control_fileop_images_job_run(job, &dt_image_move,
-      "moving %d image", "moving %d images");
+         "moving %d image", "moving %d images");
 }
 
 int32_t dt_control_copy_images_job_run(dt_job_t *job)
 {
   return _generic_dt_control_fileop_images_job_run(job, &dt_image_copy,
-      "copying %d image", "copying %d images");
+         "copying %d image", "copying %d images");
 }
 
 int32_t dt_control_export_job_run(dt_job_t *job)
@@ -1219,9 +1227,9 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   // it set but not used, which makes for instance Fedora break.
   const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, 8));
 #if !defined(__SUNOS__)
-#pragma omp parallel default(none) private(imgid, size) shared(control, fraction, w, h, stderr, mformat, mstorage, t, sdata, job, jid, darktable) num_threads(num_threads) if(num_threads > 1)
+  #pragma omp parallel default(none) private(imgid, size) shared(control, fraction, w, h, stderr, mformat, mstorage, t, sdata, job, jid, darktable) num_threads(num_threads) if(num_threads > 1)
 #else
-#pragma omp parallel private(imgid, size) shared(control, fraction, w, h, mformat, mstorage, t, sdata, job, jid, darktable) num_threads(num_threads) if(num_threads > 1)
+  #pragma omp parallel private(imgid, size) shared(control, fraction, w, h, mformat, mstorage, t, sdata, job, jid, darktable) num_threads(num_threads) if(num_threads > 1)
 #endif
   {
 #endif
@@ -1239,7 +1247,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
     while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
     {
 #ifdef _OPENMP
-#pragma omp critical
+      #pragma omp critical
 #endif
       {
         if(!t)
@@ -1273,7 +1281,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
         }
       }
 #ifdef _OPENMP
-#pragma omp critical
+      #pragma omp critical
 #endif
       {
         fraction+=1.0/total;
@@ -1281,8 +1289,8 @@ int32_t dt_control_export_job_run(dt_job_t *job)
       }
     }
 #ifdef _OPENMP
-#pragma omp barrier
-#pragma omp master
+    #pragma omp barrier
+    #pragma omp master
 #endif
     {
       dt_control_backgroundjobs_destroy(control, jid);
@@ -1312,7 +1320,8 @@ void dt_control_export()
   dt_control_add_job(darktable.control, &j);
 }
 
-void dt_control_start_indexer() {
+void dt_control_start_indexer()
+{
   dt_job_t j;
   dt_control_indexer_job_init(&j);
   dt_control_add_background_job(darktable.control, &j, 10);
@@ -1356,7 +1365,8 @@ int32_t dt_control_time_offset_job_run(dt_job_t *job)
       fraction = MAX(fraction, (1.0*cntr)/total);
       dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
     }
-  } while ((t = g_list_next(t)) != NULL);
+  }
+  while ((t = g_list_next(t)) != NULL);
 
   dt_control_log(_("added time offset to %d image(s)"), cntr);
 
@@ -1370,10 +1380,10 @@ int32_t dt_control_time_offset_job_run(dt_job_t *job)
 void dt_control_time_offset_job_init(dt_job_t *job, const long int offset, long int imgid)
 {
   dt_control_job_init(job, "time offset");
-    job->execute = &dt_control_time_offset_job_run;
+  job->execute = &dt_control_time_offset_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
   if (imgid != -1)
-      t->index = g_list_append(t->index, (gpointer)imgid);
+    t->index = g_list_append(t->index, (gpointer)imgid);
   else
     dt_control_image_enumerator_job_selected_init(t);
 

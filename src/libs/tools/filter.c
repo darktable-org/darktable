@@ -56,7 +56,7 @@ const char* name()
 uint32_t views()
 {
   /* for now, show in all view due this affects filmroll too
- 
+
      TODO: Consider to add flag for all views, which prevents
            unloading/loading a module while switching views.
 
@@ -69,7 +69,7 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER;
 }
 
-int expandable() 
+int expandable()
 {
   return 0;
 }
@@ -94,7 +94,7 @@ void gui_init(dt_lib_module_t *self)
   /* list label */
   widget = gtk_label_new(_("view"));
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
-  
+
   /* create the filter combobox */
   d->filter = widget = gtk_combo_box_new_text();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
@@ -119,7 +119,7 @@ void gui_init(dt_lib_module_t *self)
   /* sort by label */
   widget = gtk_label_new(_("sort by"));
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
-  
+
   /* sort combobox */
   d->sort = widget = gtk_combo_box_new_text();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
@@ -128,27 +128,27 @@ void gui_init(dt_lib_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rating"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("id"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("color label"));
-  
+
   /* select the last selected value */
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget),
-                          dt_collection_get_sort_field(darktable.collection));
+                           dt_collection_get_sort_field(darktable.collection));
 
   g_signal_connect (G_OBJECT (widget), "changed",
                     G_CALLBACK (_lib_filter_sort_combobox_changed),
                     (gpointer)self);
 
   /* reverse order checkbutton */
-  d->reverse = widget = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX|CPF_DIRECTION_UP); 
+  d->reverse = widget = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX|CPF_DIRECTION_UP);
   if (darktable.collection->params.descending)
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(widget),
-                           dtgtk_cairo_paint_solid_arrow,
-                           CPF_STYLE_BOX|CPF_DIRECTION_DOWN);
-  
+                                 dtgtk_cairo_paint_solid_arrow,
+                                 CPF_STYLE_BOX|CPF_DIRECTION_DOWN);
+
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
 
   /* select the last value and connect callback */
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),
-                              dt_collection_get_sort_descending(darktable.collection));
+                               dt_collection_get_sort_descending(darktable.collection));
 
   g_signal_connect (G_OBJECT (widget), "toggled",
                     G_CALLBACK (_lib_filter_reverse_button_changed),
@@ -172,7 +172,7 @@ static void _lib_filter_combobox_changed (GtkComboBox *widget, gpointer user_dat
 {
   /* update last settings */
   int i = gtk_combo_box_get_active(widget);
-  
+
   /* update collection star filter flags */
   if (i == 0)
     dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) & ~(COLLECTION_FILTER_ATLEAST_RATING|COLLECTION_FILTER_EQUAL_RATING));
@@ -193,20 +193,20 @@ static void _lib_filter_combobox_changed (GtkComboBox *widget, gpointer user_dat
   _lib_filter_update_query(user_data);
 }
 
-static void 
+static void
 _lib_filter_reverse_button_changed (GtkDarktableToggleButton *widget, gpointer user_data)
 {
   gboolean reverse = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
   if(reverse)
     dtgtk_togglebutton_set_paint(widget,
-                           dtgtk_cairo_paint_solid_arrow,
-                           CPF_STYLE_BOX|CPF_DIRECTION_DOWN);
+                                 dtgtk_cairo_paint_solid_arrow,
+                                 CPF_STYLE_BOX|CPF_DIRECTION_DOWN);
   else
     dtgtk_togglebutton_set_paint(widget,
-                           dtgtk_cairo_paint_solid_arrow,
-                           CPF_STYLE_BOX|CPF_DIRECTION_UP);
-  
+                                 dtgtk_cairo_paint_solid_arrow,
+                                 CPF_STYLE_BOX|CPF_DIRECTION_UP);
+
   /* update last settings */
   dt_collection_set_sort(darktable.collection, -1, reverse);
 
@@ -218,7 +218,7 @@ static void _lib_filter_sort_combobox_changed(GtkComboBox *widget, gpointer user
 {
   /* update the ui last settings */
   dt_collection_set_sort(darktable.collection, gtk_combo_box_get_active(widget), -1);
-  
+
   /* update the query and view */
   _lib_filter_update_query(user_data);
 }
@@ -238,10 +238,10 @@ static void _lib_filter_update_query(dt_lib_module_t *self)
 static void
 _lib_filter_reset_to_show_all(dt_lib_module_t *self)
 {
-    dt_lib_tool_filter_t *dropdowns = (dt_lib_tool_filter_t *)self->data;
+  dt_lib_tool_filter_t *dropdowns = (dt_lib_tool_filter_t *)self->data;
 
-    /* Reset to topmost item, 'all' */
-    gtk_combo_box_set_active(GTK_COMBO_BOX(dropdowns->filter), 0);
+  /* Reset to topmost item, 'all' */
+  gtk_combo_box_set_active(GTK_COMBO_BOX(dropdowns->filter), 0);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

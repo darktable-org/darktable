@@ -60,17 +60,17 @@ typedef struct
 } StyleData;
 
 static gboolean _apply_style_shortcut_callback(GtkAccelGroup *accel_group,
-                                   GObject *acceleratable,
-                                   guint keyval, GdkModifierType modifier,
-                                   gpointer data)
+    GObject *acceleratable,
+    guint keyval, GdkModifierType modifier,
+    gpointer data)
 {
-    dt_styles_apply_to_selection (data,0);
-    return TRUE;
+  dt_styles_apply_to_selection (data,0);
+  return TRUE;
 }
 
 static void _destroy_style_shortcut_callback(gpointer data,GClosure *closure)
 {
-	g_free(data);
+  g_free(data);
 }
 
 static int32_t dt_styles_get_id_by_name (const char *name);
@@ -145,15 +145,15 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
 
     dt_styles_save_to_file(name,stylesdir);
 
-      char tmp_accel[1024];
-      gchar* tmp_name = g_strdup(name); // freed by _destro_style_shortcut_callback
-      snprintf(tmp_accel,1024,"styles/Apply %s",name);
-      dt_accel_register_global( tmp_accel, 0, 0);
-      GClosure *closure;
-      closure = g_cclosure_new(
-          G_CALLBACK(_apply_style_shortcut_callback),
-          tmp_name, _destroy_style_shortcut_callback);
-      dt_accel_connect_global(tmp_accel, closure);
+    char tmp_accel[1024];
+    gchar* tmp_name = g_strdup(name); // freed by _destro_style_shortcut_callback
+    snprintf(tmp_accel,1024,"styles/Apply %s",name);
+    dt_accel_register_global( tmp_accel, 0, 0);
+    GClosure *closure;
+    closure = g_cclosure_new(
+                G_CALLBACK(_apply_style_shortcut_callback),
+                tmp_name, _destroy_style_shortcut_callback);
+    dt_accel_connect_global(tmp_accel, closure);
     dt_control_log(_("style named '%s' successfully created"),name);
   }
 }
@@ -213,7 +213,7 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
 
     /* add tag */
     guint tagid=0;
-    gchar ntag[512]={0};
+    gchar ntag[512]= {0};
     g_snprintf(ntag,512,"darktable|style|%s",name);
     if (dt_tag_new(ntag,&tagid))
       dt_tag_attach(tagid,imgid);
@@ -290,21 +290,21 @@ dt_styles_get_item_list_as_string(const char *name)
 {
   GList *items = dt_styles_get_item_list(name);
   if (items)
+  {
+    GList* names = NULL;
+    unsigned int count = 0;
+    do
     {
-      GList* names = NULL;
-      unsigned int count = 0;
-      do
-      {
-        dt_style_item_t *item=(dt_style_item_t *)items->data;
-        names = g_list_append(names, g_strdup(item->name));
-        g_free(item->name);
-        g_free(item);
-        count++;
-      }
-      while ((items=g_list_next(items)));
-      
-      return dt_util_glist_to_str("\n", names, count);
+      dt_style_item_t *item=(dt_style_item_t *)items->data;
+      names = g_list_append(names, g_strdup(item->name));
+      g_free(item->name);
+      g_free(item);
+      count++;
     }
+    while ((items=g_list_next(items)));
+
+    return dt_util_glist_to_str("\n", names, count);
+  }
   return NULL;
 }
 
@@ -551,13 +551,13 @@ dt_style_plugin_save(StylePluginData *plugin,gpointer styleId)
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, params, params_len, SQLITE_TRANSIENT);
   //
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, plugin->enabled);
-  
+
   /* decode and store blendop params */
   unsigned char *blendop_params = (unsigned char *)g_malloc(strlen(plugin->blendop_params->str));
   dt_exif_xmp_decode(plugin->blendop_params->str, blendop_params, strlen(plugin->blendop_params->str));
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 7, blendop_params, strlen(plugin->blendop_params->str)/2, SQLITE_TRANSIENT);
 
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, plugin->blendop_version); 
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, plugin->blendop_version);
 
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -706,8 +706,8 @@ void connect_styles_key_accels()
       GClosure *closure;
       dt_style_t *style = (dt_style_t *)result->data;
       closure = g_cclosure_new(
-          G_CALLBACK(_apply_style_shortcut_callback),
-          style->name, _destroy_style_shortcut_callback);
+                  G_CALLBACK(_apply_style_shortcut_callback),
+                  style->name, _destroy_style_shortcut_callback);
       char tmp_accel[1024];
       snprintf(tmp_accel,1024,"styles/Apply %s",style->name);
       dt_accel_connect_global(tmp_accel, closure);

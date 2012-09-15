@@ -61,7 +61,7 @@ typedef struct dt_iop_highlights_gui_data_t
 }
 dt_iop_highlights_gui_data_t;
 
-typedef dt_iop_highlights_params_t dt_iop_highlights_data_t; 
+typedef dt_iop_highlights_params_t dt_iop_highlights_data_t;
 
 typedef struct dt_iop_highlights_global_data_t
 {
@@ -109,7 +109,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_highlights_gui_data_t *g =
-      (dt_iop_highlights_gui_data_t*)self->gui_data;
+    (dt_iop_highlights_gui_data_t*)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "blend L", GTK_WIDGET(g->blendL));
   dt_accel_connect_slider_iop(self, "blend C", GTK_WIDGET(g->blendC));

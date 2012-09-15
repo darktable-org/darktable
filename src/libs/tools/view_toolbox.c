@@ -46,7 +46,7 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT;
 }
 
-int expandable() 
+int expandable()
 {
   return 0;
 }
@@ -65,7 +65,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* the toolbar container */
   d->container = self->widget = gtk_hbox_new(FALSE,10);
-  
+
   /* setup proxy */
   darktable.view_manager->proxy.view_toolbox.module = self;
   darktable.view_manager->proxy.view_toolbox.add = _lib_view_toolbox_add;

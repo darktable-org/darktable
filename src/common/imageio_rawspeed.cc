@@ -77,9 +77,9 @@ scale_black_white(uint16_t *const buf, const uint16_t black, const uint16_t whit
 
 dt_imageio_retval_t
 dt_imageio_open_rawspeed(
-    dt_image_t  *img,
-    const char  *filename,
-    dt_mipmap_cache_allocator_t a)
+  dt_image_t  *img,
+  const char  *filename,
+  dt_mipmap_cache_allocator_t a)
 {
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
@@ -113,7 +113,7 @@ dt_imageio_open_rawspeed(
     RawParser t(m.get());
     d = auto_ptr<RawDecoder>(t.getDecoder());
 
-    if(!d.get()) 
+    if(!d.get())
       return DT_IMAGEIO_FILE_CORRUPTED;
 
     d->failOnUnknown = true;
@@ -125,17 +125,17 @@ dt_imageio_open_rawspeed(
     /* free auto pointers on spot */
     d.reset();
     m.reset();
-    
+
     img->filters = 0;
     if( r->subsampling.x > 1 || r->subsampling.y > 1 )
     {
       img->flags &= ~DT_IMAGE_LDR;
       img->flags |= DT_IMAGE_RAW;
-      
+
       dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, a);
       return ret;
     }
-    
+
     // only scale colors for sizeof(uint16_t) per pixel, not sizeof(float)
     // if(r->getDataType() != TYPE_FLOAT32) scale_black_white((uint16_t *)r->getData(), r->blackLevel, r->whitePoint, r->dim.x, r->dim.y, r->pitch/r->getBpp());
     if(r->getDataType() != TYPE_FLOAT32) r->scaleBlackWhite();
@@ -147,20 +147,20 @@ dt_imageio_open_rawspeed(
       img->flags |= DT_IMAGE_RAW;
       if(r->getDataType() == TYPE_FLOAT32) img->flags |= DT_IMAGE_HDR;
     }
-    
+
     // also include used override in orient:
     const int orientation = dt_image_orientation(img);
     img->width  = (orientation & 4) ? r->dim.y : r->dim.x;
     img->height = (orientation & 4) ? r->dim.x : r->dim.y;
-    
+
     void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
     if(!buf)
       return DT_IMAGEIO_CACHE_FULL;
-    
+
     dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, orientation);
   }
   catch (...)
-  {    
+  {
     /* if an exception is rasied lets not retry or handle the
      specific ones, consider the file as corrupted */
     return DT_IMAGEIO_FILE_CORRUPTED;

@@ -106,7 +106,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *hbutton = gtk_button_new_with_label (_("compress history stack"));
   d->compress_button = hbutton;
   g_object_set (G_OBJECT (hbutton), "tooltip-text", _("create a minimal history stack which produces the same image"), (char *)NULL);
-  
+
   g_signal_connect (G_OBJECT (hbutton), "clicked", G_CALLBACK (_lib_history_compress_clicked_callback),(gpointer)0);
 
   /* add toolbar button for creating style */
@@ -157,8 +157,8 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,long int num,
 
   /* set callback when clicked */
   g_signal_connect (G_OBJECT (widget), "clicked",
-		    G_CALLBACK (_lib_history_button_clicked_callback),
-		    self);
+                    G_CALLBACK (_lib_history_button_clicked_callback),
+                    self);
 
   /* associate the history number */
   g_object_set_data(G_OBJECT(widget),"history-number",(gpointer)num+1);
@@ -181,13 +181,13 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 
   /* lock history mutex */
   dt_pthread_mutex_lock(&darktable.develop->history_mutex);
-  
+
   /* iterate over history items and add them to list*/
   GList *history = g_list_first(darktable.develop->history);
   while (history)
   {
     dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
-    
+
     /* create a history button and add to box */
     GtkWidget *widget =_lib_history_create_button(self,num,hitem->module->name(),hitem->enabled);
     gtk_box_pack_start(GTK_BOX(d->history_box),widget,TRUE,TRUE,0);

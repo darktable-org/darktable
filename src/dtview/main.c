@@ -63,7 +63,8 @@ int init(int argc, char *arg[])
 
   info = SDL_GetVideoInfo( );
 
-  if (info == NULL) {
+  if (info == NULL)
+  {
     fprintf( stderr, "[%s] video info failed: %s\n", arg[0], SDL_GetError());
     exit(1);
   }
@@ -210,7 +211,7 @@ write_image (dt_imageio_module_data_t *data, const char *filename, const void *i
   const float *rd = in;
   memset(pixels, 0, 4*sizeof(float)*width*height);
   const float alpha = 0.2f;
-  for(int i=3;i<4*width*height;i+=4) pixels[i] = 0.2f;
+  for(int i=3; i<4*width*height; i+=4) pixels[i] = 0.2f;
   for(int j=0; j<MIN(data->height, height); j++)
   {
     for(int i=0; i<MIN(data->width, width); i++)
@@ -323,14 +324,15 @@ int main(int argc, char *arg[])
       update(k);
       usleep(10000);
     }
-    for(int k=0;k<100;k++)
+    for(int k=0; k<100; k++)
     {
       pump_events();
       if(!running) break;
       usleep(35000);
     }
   }
-  if(oldprofile) {
+  if(oldprofile)
+  {
     dt_conf_set_string("plugins/lighttable/export/iccprofile", oldprofile);
     g_free(oldprofile);
   }

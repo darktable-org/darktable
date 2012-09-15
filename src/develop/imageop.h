@@ -353,24 +353,24 @@ void dt_iop_clip_and_zoom(float *out, const float *const in, const struct dt_iop
 /** clip and zoom mosaiced image without demosaicing it uint16_t -> float4 */
 void
 dt_iop_clip_and_zoom_demosaic_half_size(
-    float *out,
-    const uint16_t *const in,
-    const struct dt_iop_roi_t *const roi_out,
-    const struct dt_iop_roi_t *const roi_in,
-    const int32_t out_stride,
-    const int32_t in_stride,
-    const uint32_t filters);
+  float *out,
+  const uint16_t *const in,
+  const struct dt_iop_roi_t *const roi_out,
+  const struct dt_iop_roi_t *const roi_in,
+  const int32_t out_stride,
+  const int32_t in_stride,
+  const uint32_t filters);
 
 void
 dt_iop_clip_and_zoom_demosaic_half_size_f(
-    float *out,
-    const float *const in,
-    const struct dt_iop_roi_t *const roi_out,
-    const struct dt_iop_roi_t *const roi_in,
-    const int32_t out_stride,
-    const int32_t in_stride,
-    const uint32_t filters,
-    const float clip);
+  float *out,
+  const float *const in,
+  const struct dt_iop_roi_t *const roi_out,
+  const struct dt_iop_roi_t *const roi_in,
+  const int32_t out_stride,
+  const int32_t in_stride,
+  const uint32_t filters,
+  const float clip);
 
 /** as dt_iop_clip_and_zoom, but for rgba 8-bit channels. */
 void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
@@ -411,7 +411,7 @@ static inline void dt_iop_estimate_exp(const float *const x, const float *const 
   // g = log(y/y0)/log(x/x0)
   //
   // average that over the course of the other samples:
-  for(int k=0;k<num-1;k++)
+  for(int k=0; k<num-1; k++)
   {
     const float yy = y[k]/y0, xx = x[k]/x0;
     if(yy > 0.0f && xx > 0.0f)

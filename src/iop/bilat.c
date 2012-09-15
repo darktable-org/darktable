@@ -115,7 +115,7 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   // and the scale of the roi.
   const float scale = piece->iscale/roi_in->scale;
   const float sigma_s = d->sigma_s / scale;
- 
+
   tiling->factor = 2.25f; // in + out + bilateral
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;

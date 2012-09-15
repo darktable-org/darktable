@@ -59,16 +59,16 @@ flags ()
 // *********************************************************/
 static gboolean point_exists (Gcurve *curve, int selectedPoint, float x)
 {
-    int i;
-    for(i = 0; i < *curve->n_points; i++)
+  int i;
+  for(i = 0; i < *curve->n_points; i++)
+  {
+    if ( i!=selectedPoint &&
+         fabs(x-curve->points[i].x)< 1.0/256.0)
     {
-	if ( i!=selectedPoint &&
-		fabs(x-curve->points[i].x)< 1.0/256.0)
-	{
-	    return TRUE;
-	}
+      return TRUE;
     }
-    return FALSE;
+  }
+  return FALSE;
 }
 
 /********************************************************
@@ -76,17 +76,17 @@ static gboolean point_exists (Gcurve *curve, int selectedPoint, float x)
 *********************************************************/
 static int points_qsort_compare( const void *point1, const void *point2 )
 {
-    /* Compare points. Must define all three return values! */
-    if (((Point*)point1)->x > ((Point*)point2)->x)
-    {
-	return 1;
-    }
-    else if (((Point*)point1)->x < ((Point*)point2)->x)
-    {
-	return -1;
-    }
-    //this should not happen. x-coords must be different for spline to work.
-   return 0;
+  /* Compare points. Must define all three return values! */
+  if (((Point*)point1)->x > ((Point*)point2)->x)
+  {
+    return 1;
+  }
+  else if (((Point*)point1)->x < ((Point*)point2)->x)
+  {
+    return -1;
+  }
+  //this should not happen. x-coords must be different for spline to work.
+  return 0;
 }
 
 // ev_from gray =LOG(M45/GRAY18)/LOG(2)
@@ -97,9 +97,12 @@ float ev_from_lab_l(float L)
   float tmp;
 
   tmp=(L+16.0)/116.0;
-  if(tmp > (6.0/29.0) ) {
+  if(tmp > (6.0/29.0) )
+  {
     tmp = tmp * tmp * tmp;
-  } else {
+  }
+  else
+  {
     tmp = 3.0*powf(6.0/29.0,2) * ( tmp - 4.0/29.0);
   }
 
@@ -116,10 +119,13 @@ float lab_l_from_ev(float Ev)
   float gray;
 
   gray = GRAY18 * powf(2, Ev);
-  if(gray > powf((6.0/29.0), 3) ) {
+  if(gray > powf((6.0/29.0), 3) )
+  {
     //L = C45^(1/3);
     L = cbrtf(gray);
-  }else {
+  }
+  else
+  {
     L = (1.0/3.0)* powf((29.0/6.0), 2) * gray + (4.0/29.0);
   }
 
@@ -162,50 +168,59 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // UPLab and curve
     cmsDoTransform (d->xformi[dt_get_thread_num()], Lab, rgb, roi_out->width);
 
-    if(d->lut_type == LUT_COEFFS) {
+    if(d->lut_type == LUT_COEFFS)
+    {
       for (int l=0; l<roi_out->width; l++)
       {
-	int li=3*l;
-	const int t = CLAMP((int)(rgb[li+0]/100.0*0xfffful), 0, 0xffff);
-	float Labl = rgb[li+0];
-	rgb[li+0] = Evs + d->table[t]*rgb[li+0];
-	// in Lab: correct compressed Luminance for saturation:
-	//if(d->scale_saturation!=0 && Labl > 0.01f)
-	//if(d->scale_saturation!=0) {
-	if(d->scale_saturation!=0)
-	{
-	  //if(Labl > 1.0f && rgb[li+0] > 1.0f ) {
-	  if(Labl > 0.01f && rgb[li+0] > 0.01f ) {
-	    rgb[li+1] = rgb[li+1] * rgb[li+0] / Labl;
-	    rgb[li+2] = rgb[li+2] * rgb[li+0] / Labl;
-	  } else {
-	    //rgb[li+1] = rgb[li+1] * ((rgb[li+0] / Labl) * 0.01f);
-	    //rgb[li+2] = rgb[li+2] * ((rgb[li+0] / Labl) * 0.01f);
-	    rgb[li+1] = 0.0f;
-	    rgb[li+2] = 0.0f;
-	  }
-	}
-	//}
+        int li=3*l;
+        const int t = CLAMP((int)(rgb[li+0]/100.0*0xfffful), 0, 0xffff);
+        float Labl = rgb[li+0];
+        rgb[li+0] = Evs + d->table[t]*rgb[li+0];
+        // in Lab: correct compressed Luminance for saturation:
+        //if(d->scale_saturation!=0 && Labl > 0.01f)
+        //if(d->scale_saturation!=0) {
+        if(d->scale_saturation!=0)
+        {
+          //if(Labl > 1.0f && rgb[li+0] > 1.0f ) {
+          if(Labl > 0.01f && rgb[li+0] > 0.01f )
+          {
+            rgb[li+1] = rgb[li+1] * rgb[li+0] / Labl;
+            rgb[li+2] = rgb[li+2] * rgb[li+0] / Labl;
+          }
+          else
+          {
+            //rgb[li+1] = rgb[li+1] * ((rgb[li+0] / Labl) * 0.01f);
+            //rgb[li+2] = rgb[li+2] * ((rgb[li+0] / Labl) * 0.01f);
+            rgb[li+1] = 0.0f;
+            rgb[li+2] = 0.0f;
+          }
+        }
+        //}
       }
-    } else {
+    }
+    else
+    {
       for (int l=0; l<roi_out->width; l++)
       {
-	int li=3*l;
-	const int t = CLAMP((int)(rgb[li+0]/100.0*0xfffful), 0, 0xffff);
-	float Labl = rgb[li+0];
-	rgb[li+0] = d->table[t];
-	// in Lab: correct compressed Luminance for saturation:
-	//if(d->scale_saturation!=0 && Lab[li+0] > 0.01f)
-	if(d->scale_saturation!=0) {
-	  if( Labl > 0.01f )
-	  {
-	    rgb[li+1] = rgb[li+1] * rgb[li+0] / Labl;
-	    rgb[li+2] = rgb[li+2] * rgb[li+0] / Labl;
-	  } else {
-	    rgb[li+1] = 0.0f;
-	    rgb[li+2] = 0.0f;
-	  }
-	}
+        int li=3*l;
+        const int t = CLAMP((int)(rgb[li+0]/100.0*0xfffful), 0, 0xffff);
+        float Labl = rgb[li+0];
+        rgb[li+0] = d->table[t];
+        // in Lab: correct compressed Luminance for saturation:
+        //if(d->scale_saturation!=0 && Lab[li+0] > 0.01f)
+        if(d->scale_saturation!=0)
+        {
+          if( Labl > 0.01f )
+          {
+            rgb[li+1] = rgb[li+1] * rgb[li+0] / Labl;
+            rgb[li+2] = rgb[li+2] * rgb[li+0] / Labl;
+          }
+          else
+          {
+            rgb[li+1] = 0.0f;
+            rgb[li+2] = 0.0f;
+          }
+        }
       }
     }
 
@@ -231,34 +246,41 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     float *in = ((float *)i) + k*ch*roi_out->width;
     float *out = ((float *)o) + k*ch*roi_out->width;
-    if(d->lut_type == LUT_COEFFS) {
+    if(d->lut_type == LUT_COEFFS)
+    {
       for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
       {
-	const int t = CLAMP((int)(in[0]/100.0*0xfffful), 0, 0xffff);
-	out[0] = Evs + d->table[t]*in[0];
-	//out[0] = d->table[t];
-	if(d->scale_saturation!=0 && in[0] > 0.01f)
-	{
-	  out[1] = in[1] * out[0]/in[0];
-	  out[2] = in[2] * out[0]/in[0];
-	} else {
-	  out[1] = in[1];
-	  out[2] = in[2];
-	}
+        const int t = CLAMP((int)(in[0]/100.0*0xfffful), 0, 0xffff);
+        out[0] = Evs + d->table[t]*in[0];
+        //out[0] = d->table[t];
+        if(d->scale_saturation!=0 && in[0] > 0.01f)
+        {
+          out[1] = in[1] * out[0]/in[0];
+          out[2] = in[2] * out[0]/in[0];
+        }
+        else
+        {
+          out[1] = in[1];
+          out[2] = in[2];
+        }
       }
-    } else {
+    }
+    else
+    {
       for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
       {
-	const int t = CLAMP((int)(in[0]/100.0*0xfffful), 0, 0xffff);
-	out[0] = d->table[t];
-	if(d->scale_saturation!=0 && in[0] > 0.01f)
-	{
-	  out[1] = in[1] * out[0]/in[0];
-	  out[2] = in[2] * out[0]/in[0];
-	} else {
-	  out[1] = in[1];
-	  out[2] = in[2];
-	}
+        const int t = CLAMP((int)(in[0]/100.0*0xfffful), 0, 0xffff);
+        out[0] = d->table[t];
+        if(d->scale_saturation!=0 && in[0] > 0.01f)
+        {
+          out[1] = in[1] * out[0]/in[0];
+          out[2] = in[2] * out[0]/in[0];
+        }
+        else
+        {
+          out[1] = in[1];
+          out[2] = in[2];
+        }
       }
     }
   }
@@ -270,9 +292,12 @@ float density_from_lab_L(float L)
 {
   float D=0;
 
-  if (L > 7.9996248) {
+  if (L > 7.9996248)
+  {
     D = powf( (L+16.0)/116.0, 3);
-  } else {
+  }
+  else
+  {
     D = (L*27.0)/24389.0;
   }
   D=-log10f(D);
@@ -287,9 +312,12 @@ float lab_L_from_density(float D)
   float tmp1;
 
   tmp1 = powf(10, 0.0 - D);
-  if (tmp1 > 216.0/24389.0 ) {
+  if (tmp1 > 216.0/24389.0 )
+  {
     L = 116.0 * cbrtf(tmp1) - 16.0;
-  } else {
+  }
+  else
+  {
     L = (24389.0/27.0) * tmp1;
   }
 
@@ -313,7 +341,8 @@ void init_presets (dt_iop_module_so_t *self)
   float ev_scale = 1.0/(Eve-Evs);
   float ev_off = (0.0 - Evs)*ev_scale;
 
-  for(int k=0; k<p.size; k++) {
+  for(int k=0; k<p.size; k++)
+  {
     p.points[k].x = Evs + step_x*k;
     p.points[k].y = density_from_lab_L(lab_l_from_ev(p.points[k].x))/DsMAX;
     p.points[k].x = ev_off + (Evs + step_x*k) * ev_scale;
@@ -333,7 +362,8 @@ void init_presets (dt_iop_module_so_t *self)
   ev_off = (0.0 - Evs)*ev_scale;
   step_x =(Eve-Evs)/(p.size-1);
 
-  for(int k=0; k<p.size; k++) {
+  for(int k=0; k<p.size; k++)
+  {
     p.points[k].y =( Ds + step_y*k)/DsMAX;
     p.points[k].x = ev_off + (Evs + step_x*k) * ev_scale;
   }
@@ -375,7 +405,8 @@ void init(dt_iop_module_t *module)
   float ev_scale = 1.0/(Eve-Evs);
   float ev_off = (0.0 - Evs)*ev_scale;
 
-  for(int k=0; k<tmp.size; k++) {
+  for(int k=0; k<tmp.size; k++)
+  {
     tmp.points[k].x = ev_off +(Evs + step_x*k) * ev_scale;
     tmp.points[k].y = density_from_lab_L(lab_l_from_ev(Evs + step_x*k))/DsMAX;
   }
@@ -394,7 +425,8 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
   d->curve = dt_draw_curve_new(0.0, 1.0, CUBIC_SPLINE/*MONOTONE_HERMITE*//*HERMITE_SPLINE*/ /*CATMULL_ROM*/);
 
-  for(int k=0; k< default_params->size; k++) {
+  for(int k=0; k< default_params->size; k++)
+  {
     (void)dt_draw_curve_add_point(d->curve, default_params->points[k].x, default_params->points[k].y);
   }
 
@@ -408,7 +440,11 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   d->input = NULL;
   d->xformi = (cmsHTRANSFORM *)malloc(sizeof(cmsHTRANSFORM)*dt_get_num_threads());
   d->xformo = (cmsHTRANSFORM *)malloc(sizeof(cmsHTRANSFORM)*dt_get_num_threads());
-  for(int t=0; t<dt_get_num_threads(); t++) { d->xformi[t] = NULL; d->xformo[t] = NULL; }
+  for(int t=0; t<dt_get_num_threads(); t++)
+  {
+    d->xformi[t] = NULL;
+    d->xformo[t] = NULL;
+  }
   d->Lab = dt_colorspaces_create_lab_profile();
 }
 
@@ -426,7 +462,8 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 
   if(d->input) dt_colorspaces_cleanup_profile(d->input);
   dt_colorspaces_cleanup_profile(d->Lab);
-  for(int t=0; t<dt_get_num_threads(); t++) {
+  for(int t=0; t<dt_get_num_threads(); t++)
+  {
     if(d->xformi[t]) cmsDeleteTransform(d->xformi[t]);
     if(d->xformo[t]) cmsDeleteTransform(d->xformo[t]);
   }
@@ -448,7 +485,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   //int sampler[20]={0,2,4,6,8,10,12,14,20,27,34,41,46,50,53,55,57,59,61,63};
   //int sampler[20]={0,4,7,10,13,16,19,14,23,27,34,41,46,50,53,55,57,59,61,63};
   //int sampler[12]={0,4,9,20,27,34,46,53,57,59,61,63};
-  int sampler[20]={0,4,9,13,17,20,23,25,27,30,34,41,46,50,53,55,57,59,61,63};
+  int sampler[20]= {0,4,9,13,17,20,23,25,27,30,34,41,46,50,53,55,57,59,61,63};
   int np=20;
   dt_draw_curve_t *tmp_curve;
   tmp_curve = dt_draw_curve_new(0.0, 1.0, p->spline_type/*0*/);
@@ -461,7 +498,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // calculate users curve
   dt_draw_curve_destroy(d->curve);
   d->curve = dt_draw_curve_new(0.0, 1.0, p->spline_type);
-  for(int k=0; k<p->size; k++) {
+  for(int k=0; k<p->size; k++)
+  {
     (void)dt_draw_curve_add_point(d->curve, p->points[k].x, p->points[k].y);
   }
   dt_draw_curve_calc_values(d->curve, 0.0, density_from_lab_L(LabMIN)/DsMAX, DT_IOP_DENSITYCURVE_RES, draw_xs, draw_ys);
@@ -471,48 +509,60 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   float step_x =(Eve-Evs)/(DT_IOP_DENSITYCURVE_RES-1);
 
   // calculate Lab *L curve
-  for(int k = 0; k < np; k++) {
+  for(int k = 0; k < np; k++)
+  {
     (void)dt_draw_curve_add_point(tmp_curve, lab_l_from_ev( Evs + step_x*sampler[k] )/100.0, lab_L_from_density(draw_ys[sampler[k]] * DsMAX)/100.0);
   }
   dt_draw_curve_calc_values(tmp_curve, 0.0f, 100.0f, 0x10000, NULL, d->table);
 
   d->lut_type = p->lut_type;
   d->scale_saturation = p->scale_saturation;
-  if(d->lut_type == LUT_COEFFS) {
-    for(int k=0; k<  (int) (lab_l_from_ev( Evs )*0xfffful/100.0); k++) {
+  if(d->lut_type == LUT_COEFFS)
+  {
+    for(int k=0; k<  (int) (lab_l_from_ev( Evs )*0xfffful/100.0); k++)
+    {
       d->table[k] = 0.0f;
     }
     //const int t = CLAMP((int)(rgb[li+0]/100.0*0xfffful), 0, 0xffff);
-    for(int k=(int) (lab_l_from_ev( Evs )/100.0*0xfffful); k<0x10000; k++) {
+    for(int k=(int) (lab_l_from_ev( Evs )/100.0*0xfffful); k<0x10000; k++)
+    {
       d->table[k] = (d->table[k]- LabMIN)/(100.0 * k/0xfffful) ;
     }
   }
 
 #endif
-  if(d->input == NULL ) {
+  if(d->input == NULL )
+  {
 
-    if ( ! dt_colorspaces_find_profile(filename, DT_MAX_PATH_LEN, "CIELab_to_UPLab2.icc", "out") ) {
+    if ( ! dt_colorspaces_find_profile(filename, DT_MAX_PATH_LEN, "CIELab_to_UPLab2.icc", "out") )
+    {
       d->input = cmsOpenProfileFromFile(filename, "r");
     }
-    if(!d->input) {
+    if(!d->input)
+    {
       dt_control_log(_("not found UPLab profile fallback to Lab!"));
       d->input = dt_colorspaces_create_lab_profile();
     }
     const int num_threads = dt_get_num_threads();
-    for(int t=0; t<num_threads; t++) {
-      if(d->xformi[t]) {
-	cmsDeleteTransform(d->xformi[t]);
+    for(int t=0; t<num_threads; t++)
+    {
+      if(d->xformi[t])
+      {
+        cmsDeleteTransform(d->xformi[t]);
       }
-      if(d->xformo[t]) {
-	cmsDeleteTransform(d->xformo[t]);
+      if(d->xformo[t])
+      {
+        cmsDeleteTransform(d->xformo[t]);
       }
       d->xformi[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->input, TYPE_Lab_FLT, INTENT_ABSOLUTE_COLORIMETRIC, 0);
-      if(!d->xformi[t]) {
-	dt_control_log(_("Error create transform in!"));
+      if(!d->xformi[t])
+      {
+        dt_control_log(_("Error create transform in!"));
       }
       d->xformo[t] = cmsCreateTransform(d->input, TYPE_Lab_FLT, d->Lab, TYPE_Lab_FLT, INTENT_ABSOLUTE_COLORIMETRIC, 0);
-      if(!d->xformo[t]) {
-	dt_control_log(_("Error create transform out!"));
+      if(!d->xformo[t])
+      {
+        dt_control_log(_("Error create transform out!"));
       }
     }
   }
@@ -541,7 +591,8 @@ spline_type_callback (GtkComboBox *combo, dt_iop_module_t *self)
   dt_draw_curve_destroy(c->minmax_curve);
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0, p->spline_type);
 
-  for(int k = 0; k < *c->Curve.n_points; k++) {
+  for(int k = 0; k < *c->Curve.n_points; k++)
+  {
     (void)dt_draw_curve_add_point(c->minmax_curve, c->Curve.points[k].x, c->Curve.points[k].y);
   }
 
@@ -589,7 +640,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_draw_curve_destroy(g->minmax_curve);
   g->minmax_curve = dt_draw_curve_new(0.0, 1.0, p->spline_type);
 
-  for(int k=0; k < p->size; k++) {
+  for(int k=0; k < p->size; k++)
+  {
     (void)dt_draw_curve_add_point(g->minmax_curve, p->points[k].x, p->points[k].y);
   }
 
@@ -630,7 +682,8 @@ void gui_init(struct dt_iop_module_t *self)
   c->minmax_curve->c.m_max_y = density_from_lab_L(LabMIN)/DsMAX;
   c->minmax_curve->c.m_min_y = 0.0; // density_from_lab_L(100.0);
 
-  for(int k=0; k < p->size; k++) {
+  for(int k=0; k < p->size; k++)
+  {
     (void)dt_draw_curve_add_point(c->minmax_curve, p->points[k].x, p->points[k].y);
   }
 
@@ -700,7 +753,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(table), TRUE, TRUE, 0);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
-	  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK | GTK_CAN_FOCUS);
+                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK | GTK_CAN_FOCUS);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
                     G_CALLBACK (dt_iop_densitycurve_expose), self);
   g_signal_connect (G_OBJECT (c->area), "button-press-event",
@@ -712,17 +765,17 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (dt_iop_densitycurve_leave_notify), self);
   g_signal_connect (G_OBJECT (c->area), "key-press-event",
-		    G_CALLBACK(dt_iop_densitycurve_keypress_notify), self);
+                    G_CALLBACK(dt_iop_densitycurve_keypress_notify), self);
   g_signal_connect (G_OBJECT (c->area), "focus-in-event",
-		    G_CALLBACK(dt_iop_densitycurve_on_focus_event), self);
+                    G_CALLBACK(dt_iop_densitycurve_on_focus_event), self);
   g_signal_connect (G_OBJECT (c->area), "focus-out-event",
-		    G_CALLBACK(dt_iop_densitycurve_on_focus_event), self);
+                    G_CALLBACK(dt_iop_densitycurve_on_focus_event), self);
   g_signal_connect (G_OBJECT (c->spline_type), "changed",
                     G_CALLBACK (spline_type_callback), self);
   g_signal_connect (G_OBJECT (c->calc_type), "changed",
                     G_CALLBACK (lut_type_callback), self);
   g_signal_connect (G_OBJECT (c->scale_sat), "toggled",
-		    G_CALLBACK (scale_sat_changed), self);
+                    G_CALLBACK (scale_sat_changed), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -739,11 +792,14 @@ static gboolean dt_iop_densitycurve_on_focus_event(GtkWidget *widget, GdkEventFo
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_densitycurve_gui_data_t *c = (dt_iop_densitycurve_gui_data_t *)self->gui_data;
 
-  if (event->in) {
+  if (event->in)
+  {
     //c->selected = 0;
-  } else {
+  }
+  else
+  {
     c->dragging = 0;
- }
+  }
 
   gtk_widget_queue_draw(widget);
 
@@ -785,23 +841,27 @@ static void dt_iop_densitycurve_sort(gpointer user_data)
 
   //remember current selected point x value
   if (c->selected>=0)
-      selectedPoint_x = c->Curve.points[c->selected].x;
+    selectedPoint_x = c->Curve.points[c->selected].x;
 
   //make sure the points are in sorted order by x coord
   qsort(c->Curve.points,*c->Curve.n_points,sizeof(Point),
-	  points_qsort_compare);
+        points_qsort_compare);
 
   //update the selection to match the sorted list
-  if (c->selected>=0) {
-    for(int i = 0; i < *c->Curve.n_points; i++) {
-      if (c->Curve.points[i].x == selectedPoint_x) {
-	  c->selected = i;
-	  break;
+  if (c->selected>=0)
+  {
+    for(int i = 0; i < *c->Curve.n_points; i++)
+    {
+      if (c->Curve.points[i].x == selectedPoint_x)
+      {
+        c->selected = i;
+        break;
       }
     }
   }
   // update interpolation points
-  for(int k=0; k < p->size; k++) {
+  for(int k=0; k < p->size; k++)
+  {
     (void)dt_draw_curve_set_point(c->minmax_curve, k, c->Curve.points[k].x, c->Curve.points[k].y);
   }
 }
@@ -811,7 +871,8 @@ static gboolean dt_iop_densitycurve_button_press(GtkWidget *widget, GdkEventButt
   gtk_grab_add(widget);
   gtk_widget_grab_focus(widget);
   // set active point
-  if(event->button == 1) {
+  if(event->button == 1)
+  {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_densitycurve_gui_data_t *c = (dt_iop_densitycurve_gui_data_t *)self->gui_data;
     dt_iop_densitycurve_params_t *p = (dt_iop_densitycurve_params_t *)self->params;
@@ -831,37 +892,40 @@ static gboolean dt_iop_densitycurve_button_press(GtkWidget *widget, GdkEventButt
     c->mouse_x=event->x;
     c->mouse_y=event->y;
 
-    if(event->y > height) {
+    if(event->y > height)
+    {
       // move only x points. Dont touch y
       c->x_move = closest_point; //1;
-    } else {
+    }
+    else
+    {
       // add new point or move existing
       if ( fabs(mx - c->Curve.points[closest_point].x)*width < 7 &&
-	    fabsf(my - c->Curve.points[closest_point].y )*height < 7 )
+           fabsf(my - c->Curve.points[closest_point].y )*height < 7 )
       {
-	c->selected = closest_point;
+        c->selected = closest_point;
       }
       if (*c->Curve.n_points < MAX_DENSITY_SYSTEM_SIZE+2)
       {
-	// Add point only if no other point exists with the same x coordinate
-	// and the added point is between the first and the last points.
-	if (c->selected == -1 && !point_exists(&c->Curve, -1, mx) &&
-		mx > c->Curve.points[0].x && mx < c->Curve.points[(*c->Curve.n_points)-1].x)
-	{
-	    //add point
-	    int num = *c->Curve.n_points;
+        // Add point only if no other point exists with the same x coordinate
+        // and the added point is between the first and the last points.
+        if (c->selected == -1 && !point_exists(&c->Curve, -1, mx) &&
+            mx > c->Curve.points[0].x && mx < c->Curve.points[(*c->Curve.n_points)-1].x)
+        {
+          //add point
+          int num = *c->Curve.n_points;
 
-	    //add it to the end
-	    c->Curve.points[num].x = mx;
-	    c->Curve.points[num].y = my;
-	    c->selected = num;
+          //add it to the end
+          c->Curve.points[num].x = mx;
+          c->Curve.points[num].y = my;
+          c->selected = num;
 
-	    *c->Curve.n_points = num + 1;
-	    p->size = *c->Curve.n_points;
-	    (void)dt_draw_curve_add_point(c->minmax_curve, c->Curve.points[num].x, c->Curve.points[num].y);
-	    dt_iop_densitycurve_sort(user_data);
-	    dt_dev_add_history_item(darktable.develop, self, TRUE);
-	}
+          *c->Curve.n_points = num + 1;
+          p->size = *c->Curve.n_points;
+          (void)dt_draw_curve_add_point(c->minmax_curve, c->Curve.points[num].x, c->Curve.points[num].y);
+          dt_iop_densitycurve_sort(user_data);
+          dt_dev_add_history_item(darktable.develop, self, TRUE);
+        }
       }
       c->dragging = 1;
     }
@@ -970,7 +1034,8 @@ static gboolean dt_iop_densitycurve_expose(GtkWidget *widget, GdkEventExpose *ev
   //cairo_close_path(cr);
 
   // draw points
-  for(int k=0; k< *c->Curve.n_points; k++) {
+  for(int k=0; k< *c->Curve.n_points; k++)
+  {
     cairo_new_sub_path(cr);
     cairo_arc(cr, width * c->Curve.points[k].x, -height * c->Curve.points[k].y, 3, 0, 2.*M_PI);
   }
@@ -1011,18 +1076,19 @@ static gboolean dt_iop_densitycurve_motion_notify(GtkWidget *widget, GdkEventMot
 
 //   if ((event->state&GDK_BUTTON1_MASK)==0) return TRUE;
 
-  if (c->selected >=0 && c->dragging ) {
+  if (c->selected >=0 && c->dragging )
+  {
     // Don't allow a draging point to exceed or preceed neighbors or
     // else the spline algorithm will explode.
     // Also prevent moving central points beyond the two end points.
     if ( !point_exists(&c->Curve, c->selected, mx) &&
-	    ( c->selected==0 || mx > c->Curve.points[0].x ) &&
-	    ( c->selected==((*c->Curve.n_points) - 1) ||
-	      mx < c->Curve.points[(*c->Curve.n_points) - 1].x ) )
+         ( c->selected==0 || mx > c->Curve.points[0].x ) &&
+         ( c->selected==((*c->Curve.n_points) - 1) ||
+           mx < c->Curve.points[(*c->Curve.n_points) - 1].x ) )
     {
-	dt_draw_curve_set_point(c->minmax_curve, c->selected, mx, my);
-	c->Curve.points[c->selected].x = mx;
-	c->Curve.points[c->selected].y = my;
+      dt_draw_curve_set_point(c->minmax_curve, c->selected, mx, my);
+      c->Curve.points[c->selected].x = mx;
+      c->Curve.points[c->selected].y = my;
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
@@ -1041,14 +1107,14 @@ int curve_get_closest_point (Gcurve *curve, float x)
   int    i;
 
   for (i = 0; i < *curve->n_points; i++)
+  {
+    if (curve->points[i].x >= 0.0 &&
+        fabs (x - curve->points[i].x) < distance)
     {
-      if (curve->points[i].x >= 0.0 &&
-          fabs (x - curve->points[i].x) < distance)
-        {
-          distance = fabs (x - curve->points[i].x);
-          closest_point = i;
-        }
+      distance = fabs (x - curve->points[i].x);
+      closest_point = i;
     }
+  }
 
   if (distance > (1.0 / ((*curve->n_points) * 2.0)))
     closest_point = roundf(x * (float) ((*curve->n_points) - 1));
@@ -1070,22 +1136,23 @@ static gboolean dt_iop_densitycurve_keypress_notify(GtkWidget *widget, GdkEventK
   //if (c->selected<0) return FALSE;
 
   //insert adds a point between the current one an the next one
-  if(event->keyval == GDK_Insert) {
+  if(event->keyval == GDK_Insert)
+  {
     if(c->selected >= *c->Curve.n_points - 1) return TRUE;
     if(*c->Curve.n_points >= MAX_DENSITY_SYSTEM_SIZE+2) return TRUE;
     if( (c->Curve.points[c->selected+1].x -
-	  c->Curve.points[c->selected].x ) < 2.0/(MAX_DENSITY_SYSTEM_SIZE+2-1) )
-	      return TRUE;
+         c->Curve.points[c->selected].x ) < 2.0/(MAX_DENSITY_SYSTEM_SIZE+2-1) )
+      return TRUE;
 
     dt_draw_curve_calc_values(c->minmax_curve, 0.0, density_from_lab_L(LabMIN)/DsMAX, DT_IOP_DENSITYCURVE_RES, c->draw_xs, c->draw_ys);
 
     //Add the point at the end - it will be sorted later anyway
     c->Curve.points[*c->Curve.n_points].x =
-	(c->Curve.points[c->selected].x + c->Curve.points[c->selected+1].x )/2;
+      (c->Curve.points[c->selected].x + c->Curve.points[c->selected+1].x )/2;
 
 
     c->Curve.points[*c->Curve.n_points].y = c->draw_ys[
-	(int)( c->Curve.points[*c->Curve.n_points].x*(DT_IOP_DENSITYCURVE_RES) )];
+        (int)( c->Curve.points[*c->Curve.n_points].x*(DT_IOP_DENSITYCURVE_RES) )];
 
     (void)dt_draw_curve_add_point(c->minmax_curve, c->Curve.points[*c->Curve.n_points].x, c->Curve.points[*c->Curve.n_points].y);
 
@@ -1101,12 +1168,14 @@ static gboolean dt_iop_densitycurve_keypress_notify(GtkWidget *widget, GdkEventK
   }
 
   //delete removes points
-  if (event->keyval == GDK_Delete) {
+  if (event->keyval == GDK_Delete)
+  {
     //a minimum of two points must be available at all times!
     if (*c->Curve.n_points == 2) return TRUE;
     if(c->selected >= *c->Curve.n_points - 1 || c->selected <= 0) return TRUE;
 
-    for (int i=c->selected; i < *c->Curve.n_points - 1; i++) {
+    for (int i=c->selected; i < *c->Curve.n_points - 1; i++)
+    {
       c->Curve.points[i].x = c->Curve.points[i + 1].x;
       c->Curve.points[i].y = c->Curve.points[i + 1].y;
     }
@@ -1118,7 +1187,8 @@ static gboolean dt_iop_densitycurve_keypress_notify(GtkWidget *widget, GdkEventK
 
     dt_draw_curve_destroy(c->minmax_curve);
     c->minmax_curve = dt_draw_curve_new(0.0, 1.0, p->spline_type);
-    for(int k=0; k < p->size; k++) {
+    for(int k=0; k < p->size; k++)
+    {
       (void)dt_draw_curve_add_point(c->minmax_curve, p->points[k].x, p->points[k].y);
     }
 
@@ -1130,7 +1200,8 @@ static gboolean dt_iop_densitycurve_keypress_notify(GtkWidget *widget, GdkEventK
   }
 
   //Home jumps to first point
-  if (event->keyval == GDK_Home) {
+  if (event->keyval == GDK_Home)
+  {
     c->selected = 0;
     gtk_widget_queue_draw(widget);
 
@@ -1138,7 +1209,8 @@ static gboolean dt_iop_densitycurve_keypress_notify(GtkWidget *widget, GdkEventK
   }
 
   //End jumps to last point
-  if (event->keyval == GDK_End) {
+  if (event->keyval == GDK_End)
+  {
     c->selected = *c->Curve.n_points - 1;
     gtk_widget_queue_draw(widget);
 
@@ -1146,17 +1218,19 @@ static gboolean dt_iop_densitycurve_keypress_notify(GtkWidget *widget, GdkEventK
   }
 
   //Page Up jumps to previous point
-  if (event->keyval == GDK_Page_Up) {
+  if (event->keyval == GDK_Page_Up)
+  {
     c->selected--;
     if (c->selected < 0)
-	c->selected = 0;
+      c->selected = 0;
     gtk_widget_queue_draw(widget);
 
     return TRUE;
   }
 
   //Page Down jumps to next point
-  if (event->keyval == GDK_Page_Down) {
+  if (event->keyval == GDK_Page_Down)
+  {
     c->selected++;
     if (c->selected >= *c->Curve.n_points)
       c->selected = *c->Curve.n_points - 1;
@@ -1167,42 +1241,48 @@ static gboolean dt_iop_densitycurve_keypress_notify(GtkWidget *widget, GdkEventK
 
   //Up/Down/Left/Right moves the point around
   if (event->keyval == GDK_Up || event->keyval == GDK_Down ||
-	  event->keyval == GDK_Left || event->keyval == GDK_Right)
+      event->keyval == GDK_Left || event->keyval == GDK_Right)
   {
-      if (event->keyval==GDK_Up) {
-	  c->Curve.points[c->selected].y += 1.0/(height-1);
-	  if (c->Curve.points[c->selected].y > 1.0)
-	      c->Curve.points[c->selected].y = 1.0;
+    if (event->keyval==GDK_Up)
+    {
+      c->Curve.points[c->selected].y += 1.0/(height-1);
+      if (c->Curve.points[c->selected].y > 1.0)
+        c->Curve.points[c->selected].y = 1.0;
+    }
+    if (event->keyval == GDK_Down)
+    {
+      c->Curve.points[c->selected].y -= 1.0/(height-1);
+      if (c->Curve.points[c->selected].y < 0.0)
+        c->Curve.points[c->selected].y = 0.0;
+    }
+    if (event->keyval==GDK_Right)
+    {
+      float x = c->Curve.points[c->selected].x + 1.0/(width-1);
+      //float y = c->Curve.points[c->selected].y;
+      if (x > 1.0) x = 1.0;
+      // Update point only if it does not override the next one
+      if (c->selected == *c->Curve.n_points -1 ||
+          x < c->Curve.points[c->selected +1].x-0.5/(width-1))
+      {
+        c->Curve.points[c->selected].x = x;
       }
-      if (event->keyval == GDK_Down) {
-	  c->Curve.points[c->selected].y -= 1.0/(height-1);
-	  if (c->Curve.points[c->selected].y < 0.0)
-	      c->Curve.points[c->selected].y = 0.0;
+    }
+    if (event->keyval==GDK_Left)
+    {
+      float x = c->Curve.points[c->selected].x - 1.0/(width-1);
+      //double y = curve->m_anchors[data->selectedPoint].y;
+      if (x<0.0) x = 0.0;
+      // Update point only if it does not override the previous one
+      if (c->selected == 0 ||
+          x > c->Curve.points[c->selected-1].x + 0.5/(width-1))
+      {
+        c->Curve.points[c->selected].x = x;
       }
-      if (event->keyval==GDK_Right) {
-	  float x = c->Curve.points[c->selected].x + 1.0/(width-1);
-	  //float y = c->Curve.points[c->selected].y;
-	  if (x > 1.0) x = 1.0;
-	  // Update point only if it does not override the next one
-	  if (c->selected == *c->Curve.n_points -1 ||
-		  x < c->Curve.points[c->selected +1].x-0.5/(width-1)) {
-	      c->Curve.points[c->selected].x = x;
-	  }
-      }
-      if (event->keyval==GDK_Left) {
-	  float x = c->Curve.points[c->selected].x - 1.0/(width-1);
-	  //double y = curve->m_anchors[data->selectedPoint].y;
-	  if (x<0.0) x = 0.0;
-	  // Update point only if it does not override the previous one
-	  if (c->selected == 0 ||
-		  x > c->Curve.points[c->selected-1].x + 0.5/(width-1)) {
-	      c->Curve.points[c->selected].x = x;
-	  }
-      }
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
-      gtk_widget_queue_draw(widget);
+    }
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(widget);
 
-      return TRUE;
+    return TRUE;
   }
   return FALSE;
 }

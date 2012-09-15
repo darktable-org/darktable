@@ -2,7 +2,7 @@
     This file is part of darktable,
     copyright (c) 2011 Rostyslav Pidgornyi
     copyright (c) 2012 Henrik Andersson
-    
+
     and the initial plugin `stuck pixels' was
     copyright (c) 2011 bruce guenter
 
@@ -82,7 +82,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_hotpixels_gui_data_t *g =
-      (dt_iop_hotpixels_gui_data_t*)self->gui_data;
+    (dt_iop_hotpixels_gui_data_t*)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "threshold", GTK_WIDGET(g->threshold));
   dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->strength));
@@ -95,7 +95,7 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
 }
 
 /* Detect hot sensor pixels based on the 4 surrounding sites. Pixels
- * having 3 or 4 (depending on permissive setting) surrounding pixels that 
+ * having 3 or 4 (depending on permissive setting) surrounding pixels that
  * than value*multiplier are considered "hot", and are replaced by the maximum of
  * the neighbour pixels. The permissive variant allows for
  * correcting pairs of hot pixels in adjacent sites. Replacement using
@@ -301,7 +301,7 @@ void gui_init     (dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->permissive), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->permissive), "toggled", G_CALLBACK(permissive_callback), self);
 
-  
+
   GtkHBox *hbox1 = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   g->markfixed  = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("mark fixed pixels")));
   gtk_toggle_button_set_active(g->markfixed, p->markfixed);

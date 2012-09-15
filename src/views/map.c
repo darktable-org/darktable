@@ -36,9 +36,10 @@ typedef struct dt_map_t
 {
   GtkWidget *center;
   OsmGpsMap *map;
-  struct {
+  struct
+  {
     sqlite3_stmt *main_query;
-  }statements;
+  } statements;
 }
 dt_map_t;
 
@@ -54,7 +55,7 @@ static void _view_map_collection_changed(gpointer instance, gpointer user_data);
 static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data);
 /* callback when an image is dropped from filmstrip */
 static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data,
-                       guint target_type, guint time, gpointer data);
+                                   guint target_type, guint time, gpointer data);
 
 const char *name(dt_view_t *self)
 {
@@ -176,8 +177,8 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
       if(buf.buf)
       {
         float ms = fminf(
-                          ts/(float)buf.width,
-                          ts/(float)buf.height);
+                     ts/(float)buf.width,
+                     ts/(float)buf.height);
 
 #if 0
         // this doesn't work since osm-gps-map always gives 0/0 as mouse coords :(
@@ -192,7 +193,7 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
 #endif
         const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
         surface = cairo_image_surface_create_for_data (buf.buf, CAIRO_FORMAT_RGB24,
-                                                       buf.width, buf.height, stride);
+                  buf.width, buf.height, stride);
 
         cairo_pattern_set_filter(cairo_get_source(cri), CAIRO_FILTER_NEAREST);
         cairo_save(cri);

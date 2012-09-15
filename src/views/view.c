@@ -49,7 +49,8 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where group_id = (select group_id from images where id=?1) and id != ?2", -1, &vm->statements.get_grouped, NULL);
 
   int res=0, midx=0;
-  char *modules[] = {
+  char *modules[] =
+  {
     "lighttable",
     "darkroom",
     "capture",
@@ -204,7 +205,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     if(vm->current_view >= 0 && v->leave) v->leave(v);
 
     /* remove all widets in all containers */
-    for(int l=0;l<DT_UI_CONTAINER_SIZE;l++)
+    for(int l=0; l<DT_UI_CONTAINER_SIZE; l++)
       dt_ui_container_clear(darktable.gui->ui, l);
 
     vm->current_view = -1 ;
@@ -252,7 +253,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       }
 
       /* remove all widets in all containers */
-      for(int l=0;l<DT_UI_CONTAINER_SIZE;l++)
+      for(int l=0; l<DT_UI_CONTAINER_SIZE; l++)
         dt_ui_container_clear(darktable.gui->ui, l);
     }
 
@@ -411,7 +412,7 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
 
       /* does this module belong to current view ?*/
       if (plugin->gui_post_expose && plugin->views() & v->view(v) )
-	plugin->gui_post_expose(plugin,cr,v->width,v->height,px,py );
+        plugin->gui_post_expose(plugin,cr,v->width,v->height,px,py );
 
       /* get next plugin */
       plugins = g_list_previous(plugins);
@@ -455,7 +456,7 @@ void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int
     /* does this module belong to current view ?*/
     if (plugin->mouse_moved && plugin->views() & v->view(v) )
       if(plugin->mouse_moved(plugin, x, y, which))
-	handled = TRUE;
+        handled = TRUE;
 
     /* get next plugin */
     plugins = g_list_previous(plugins);
@@ -624,14 +625,14 @@ dt_view_star(cairo_t *cr, float x, float y, float r1, float r2)
 
 void
 dt_view_image_expose(
-    dt_view_image_over_t *image_over,
-    uint32_t imgid,
-    cairo_t *cr,
-    int32_t width,
-    int32_t height,
-    int32_t zoom,
-    int32_t px,
-    int32_t py)
+  dt_view_image_over_t *image_over,
+  uint32_t imgid,
+  cairo_t *cr,
+  int32_t width,
+  int32_t height,
+  int32_t zoom,
+  int32_t px,
+  int32_t py)
 {
   const double start = dt_get_wtime();
   // some performance tuning stuff, for your pleasure.
@@ -764,11 +765,11 @@ dt_view_image_expose(
       darktable.mipmap_cache,
       imgwd*width, imgwd*height);
   dt_mipmap_cache_read_get(
-      darktable.mipmap_cache,
-      &buf,
-      imgid,
-      mip,
-      0);
+    darktable.mipmap_cache,
+    &buf,
+    imgid,
+    mip,
+    0);
 #if DRAW_THUMB == 1
   float scale = 1.0;
   // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
@@ -783,9 +784,9 @@ dt_view_image_expose(
     if(zoom == 1)
     {
       scale = fminf(
-			 fminf(darktable.thumbnail_width, width) / (float)buf.width,
-			 fminf(darktable.thumbnail_height, height) / (float)buf.height
-			 );
+                fminf(darktable.thumbnail_width, width) / (float)buf.width,
+                fminf(darktable.thumbnail_height, height) / (float)buf.height
+              );
     }
     else scale = fminf(width*imgwd/(float)buf.width, height*imgwd/(float)buf.height);
   }
@@ -1124,8 +1125,8 @@ void dt_view_toggle_selection(int imgid)
  */
 void dt_view_filter_reset_to_show_all(const dt_view_manager_t *vm)
 {
-    if (vm->proxy.filter.module && vm->proxy.filter.reset_filter)
-        vm->proxy.filter.reset_filter(vm->proxy.filter.module);
+  if (vm->proxy.filter.module && vm->proxy.filter.reset_filter)
+    vm->proxy.filter.reset_filter(vm->proxy.filter.module);
 }
 
 void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate )

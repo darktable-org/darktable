@@ -20,8 +20,8 @@ void dt_colorlabels_remove_label (const int imgid, const int color);
 const char* dt_colorlabels_to_string(int label);
 
 gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
-                                       GObject *acceleratable, guint keyval,
-                                       GdkModifierType modifier, gpointer data);
+    GObject *acceleratable, guint keyval,
+    GdkModifierType modifier, gpointer data);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

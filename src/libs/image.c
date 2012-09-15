@@ -34,9 +34,9 @@ DT_MODULE(1)
 typedef struct dt_lib_image_t
 {
   GtkWidget
-      *rotate_cw_button, *rotate_ccw_button, *remove_button,
-      *delete_button, *create_hdr_button, *duplicate_button, *reset_button,
-      *move_button, *copy_button;
+  *rotate_cw_button, *rotate_ccw_button, *remove_button,
+  *delete_button, *create_hdr_button, *duplicate_button, *reset_button,
+  *move_button, *copy_button;
 }
 dt_lib_image_t;
 

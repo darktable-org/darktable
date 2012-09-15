@@ -213,7 +213,7 @@ int dt_exif_read_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
     /* sony has its own rotation */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.MinoltaCs7D.Rotation")))
-          != exifData.end() )
+         != exifData.end() )
     {
       switch(pos->toLong())
       {
@@ -230,35 +230,35 @@ int dt_exif_read_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
     /* read gps location */
     if ( (pos = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitude")))
-          != exifData.end() )
+         != exifData.end() )
     {
       Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitudeRef"));
       const char *sign = ref->toString().c_str();
 
       img->latitude = _gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
-                                               pos->toRational(1).first, pos->toRational(1).second,
-                                               pos->toRational(2).first, pos->toRational(2).second, sign[0]);
+                      pos->toRational(1).first, pos->toRational(1).second,
+                      pos->toRational(2).first, pos->toRational(2).second, sign[0]);
     }
 
     if ( (pos = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitude")))
-          != exifData.end() )
+         != exifData.end() )
     {
       Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitudeRef"));
       const char *sign = ref->toString().c_str();
 
       img->longitude = _gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
-                                               pos->toRational(1).first, pos->toRational(1).second,
-                                               pos->toRational(2).first, pos->toRational(2).second, sign[0]);
+                       pos->toRational(1).first, pos->toRational(1).second,
+                       pos->toRational(2).first, pos->toRational(2).second, sign[0]);
 
     }
 
     /* Read lens name */
     if ( (pos=Exiv2::lensName(exifData)) != exifData.end() )
     {
-         dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
+      dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
     else if (((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
-        ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end()))
+             ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end()))
     {
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
@@ -320,7 +320,7 @@ int dt_exif_read_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_metadata_set(img->id, "Xmp.dc.creator", str);
     }
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Artist")))
-         != exifData.end() )
+              != exifData.end() )
     {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
@@ -346,7 +346,7 @@ int dt_exif_read_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_metadata_set(img->id, "Xmp.dc.rights", str);
     }
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Copyright")))
-         != exifData.end() )
+              != exifData.end() )
     {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
@@ -378,7 +378,7 @@ int dt_exif_read_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Rating")))
-          != exifData.end() )
+         != exifData.end() )
     {
       int stars = pos->toLong();
       if ( stars == 0 )
@@ -392,7 +392,7 @@ int dt_exif_read_data(dt_image_t *img, Exiv2::ExifData &exifData)
       img->flags = (img->flags & ~0x7) | (0x7 & stars);
     }
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.RatingPercent")))
-          != exifData.end() )
+              != exifData.end() )
     {
       int stars = pos->toLong()*5./100;
       if ( stars == 0 )
@@ -466,7 +466,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
     }
 
     if ( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Writer")))
-              != iptcData.end() )
+         != iptcData.end() )
     {
       std::string str = iptcPos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
@@ -476,7 +476,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
     Exiv2::XmpData::iterator xmpPos;
 
     if ( (xmpPos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating")))
-          != xmpData.end() )
+         != xmpData.end() )
     {
       int stars = xmpPos->toLong();
       if ( stars == 0 )
@@ -492,13 +492,13 @@ int dt_exif_read(dt_image_t *img, const char* path)
 
     /* read gps location */
     if ( (xmpPos = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLatitude")))
-          != xmpData.end() )
+         != xmpData.end() )
     {
       img->latitude = _gps_string_to_number(xmpPos->toString().c_str());
     }
 
     if ( (xmpPos = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLongitude")))
-          != xmpData.end() )
+         != xmpData.end() )
     {
       img->longitude = _gps_string_to_number(xmpPos->toString().c_str());
     }
@@ -765,7 +765,8 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int 
 // encode binary blob into text:
 void dt_exif_xmp_encode (const unsigned char *input, char *output, const int len)
 {
-  const char hex[16] = {
+  const char hex[16] =
+  {
     '0', '1', '2', '3', '4', '5', '6', '7', '8',
     '9', 'a', 'b', 'c', 'd', 'e', 'f'
   };
@@ -802,26 +803,26 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
 
   sqlite3_stmt *stmt_sel_id, *stmt_ins_tags, *stmt_ins_tagxtag, *stmt_upd_tagxtag, *stmt_ins_tagged, *stmt_upd_tagxtag2;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "select id from tags where name = ?1",
-    -1, &stmt_sel_id, NULL);
+                              "select id from tags where name = ?1",
+                              -1, &stmt_sel_id, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "insert into tags (id, name) values (null, ?1)",
-    -1, &stmt_ins_tags, NULL);
+                              "insert into tags (id, name) values (null, ?1)",
+                              -1, &stmt_ins_tags, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "insert into tagxtag select id, ?1, 0 from tags",
-    -1, &stmt_ins_tagxtag, NULL);
+                              "insert into tagxtag select id, ?1, 0 from tags",
+                              -1, &stmt_ins_tagxtag, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1",
-    -1, &stmt_upd_tagxtag, NULL);
+                              "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1",
+                              -1, &stmt_upd_tagxtag, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "insert into tagged_images (tagid, imgid) values (?1, ?2)",
-    -1, &stmt_ins_tagged, NULL);
+                              "insert into tagged_images (tagid, imgid) values (?1, ?2)",
+                              -1, &stmt_ins_tagged, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "update tagxtag set count = count + 1 where "
-    "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2))"
-    " or "
-    "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))",
-    -1, &stmt_upd_tagxtag2, NULL);
+                              "update tagxtag set count = count + 1 where "
+                              "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2))"
+                              " or "
+                              "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))",
+                              -1, &stmt_upd_tagxtag2, NULL);
   for (int i=0; i<cnt; i++)
   {
     char tagbuf[1024];
@@ -838,7 +839,7 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
       {
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt_sel_id, 1, tag, strlen(tag), SQLITE_TRANSIENT);
         if(sqlite3_step(stmt_sel_id) == SQLITE_ROW)
-        tagid = sqlite3_column_int(stmt_sel_id, 0);
+          tagid = sqlite3_column_int(stmt_sel_id, 0);
         sqlite3_reset(stmt_sel_id);
         sqlite3_clear_bindings(stmt_sel_id);
 
@@ -904,24 +905,24 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
 
     // get rid of old meta data
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-      "delete from meta_data where id = ?1", -1, &stmt, NULL);
+                                "delete from meta_data where id = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
     // consistency: strip all tags from image (tagged_image, tagxtag)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-      "update tagxtag set count = count - 1 where "
-      "(id2 in (select tagid from tagged_images where imgid = ?2)) or "
-      "(id1 in (select tagid from tagged_images where imgid = ?2))",
-      -1, &stmt, NULL);
+                                "update tagxtag set count = count - 1 where "
+                                "(id2 in (select tagid from tagged_images where imgid = ?2)) or "
+                                "(id1 in (select tagid from tagged_images where imgid = ?2))",
+                                -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
     // remove from tagged_images
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-      "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
+                                "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -1089,21 +1090,21 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       {
         // clear history
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-          "delete from history where imgid = ?1", -1, &stmt, NULL);
+                                    "delete from history where imgid = ?1", -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
         sqlite3_step(stmt);
         sqlite3_finalize (stmt);
         sqlite3_stmt *stmt_sel_num, *stmt_ins_hist, *stmt_upd_hist;
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-          "select num from history where imgid = ?1 and num = ?2",
-          -1, &stmt_sel_num, NULL);
+                                    "select num from history where imgid = ?1 and num = ?2",
+                                    -1, &stmt_sel_num, NULL);
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-          "insert into history (imgid, num) values (?1, ?2)",
-          -1, &stmt_ins_hist, NULL);
+                                    "insert into history (imgid, num) values (?1, ?2)",
+                                    -1, &stmt_ins_hist, NULL);
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-          "update history set operation = ?1, op_params = ?2, "
-          "blendop_params = ?7, blendop_version = ?8, module = ?3, enabled = ?4 "
-          "where imgid = ?5 and num = ?6", -1, &stmt_upd_hist, NULL);
+                                    "update history set operation = ?1, op_params = ?2, "
+                                    "blendop_params = ?7, blendop_version = ?8, module = ?3, enabled = ?4 "
+                                    "where imgid = ?5 and num = ?6", -1, &stmt_upd_hist, NULL);
         for(int i=0; i<cnt; i++)
         {
           const int modversion = ver->toLong(i);
@@ -1136,12 +1137,14 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           /* check if we got blendop from xmp */
           unsigned char *blendop_params = NULL;
           unsigned int blendop_size = 0;
-          if(blendop != xmpData.end() && blendop->size() > 0 && blendop->toString(i).c_str() != NULL) {
+          if(blendop != xmpData.end() && blendop->size() > 0 && blendop->toString(i).c_str() != NULL)
+          {
             blendop_size = strlen(blendop->toString(i).c_str())/2;
             blendop_params = (unsigned char *)malloc(blendop_size);
             dt_exif_xmp_decode(blendop->toString(i).c_str(),blendop_params,strlen(blendop->toString(i).c_str()));
             DT_DEBUG_SQLITE3_BIND_BLOB(stmt_upd_hist, 7, blendop_params, blendop_size, SQLITE_TRANSIENT);
-          } else
+          }
+          else
             sqlite3_bind_null(stmt_upd_hist, 7);
 
           /* check if we got blendop_version from xmp; if not assume 1 as default */
@@ -1187,8 +1190,8 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   // get stars and raw params from db
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "select flags, raw_parameters, longitude, latitude from images where id = ?1",
-    -1, &stmt, NULL);
+                              "select flags, raw_parameters, longitude, latitude from images where id = ?1",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1228,7 +1231,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 
   // the meta data
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "select key, value from meta_data where id = ?1", -1, &stmt, NULL);
+                              "select key, value from meta_data where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1294,7 +1297,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   Exiv2::Value::AutoPtr v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
   /* Already initialized v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.*/
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "select color from color_labels where imgid=?1", -1, &stmt, NULL);
+                              "select color from color_labels where imgid=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1322,9 +1325,9 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   tv.setXmpArrayType(Exiv2::XmpValue::xaNone);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "select imgid, num, module, operation, op_params, enabled, blendop_params, "
-    "blendop_version from history where imgid = ?1 order by num",
-    -1, &stmt, NULL);
+                              "select imgid, num, module, operation, op_params, enabled, blendop_params, "
+                              "blendop_version from history where imgid = ?1 order by num",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {

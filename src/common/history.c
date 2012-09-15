@@ -109,7 +109,7 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
     dt_control_log(_("you need to copy history from an image before you paste it onto another"));
     return 1;
   }
-    
+
   /* if merge onto history stack, lets find history offest in destination image */
   int32_t offs = 0;
   if (merge)

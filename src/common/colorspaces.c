@@ -936,7 +936,8 @@ static inline float hue2rgb(float m1,float m2,float hue)
 void hsl2rgb(float rgb[3],float h,float s,float l)
 {
   float m1,m2;
-  if( s==0) {
+  if( s==0)
+  {
     rgb[0]=rgb[1]=rgb[2]=l;
     return;
   }

@@ -48,7 +48,7 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT;
 }
 
-int expandable() 
+int expandable()
 {
   return 0;
 }
@@ -84,7 +84,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_colorlabels_button_clicked_callback), (gpointer)k);
   }
-  
+
 }
 
 void gui_cleanup(dt_lib_module_t *self)

@@ -24,9 +24,10 @@
 #define _DWORD  32
 
 /* common for all the drag&drop sources/destinations */
-enum {
-        DND_TARGET_IMGID,
-        DND_TARGET_URI
+enum
+{
+  DND_TARGET_IMGID,
+  DND_TARGET_URI
 };
 
 #endif

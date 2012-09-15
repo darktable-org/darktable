@@ -39,7 +39,7 @@ typedef struct dt_camera_t
   /** Camera configuration cache */
   CameraWidget *configuration;
 
-  /** Registered timeout func */  
+  /** Registered timeout func */
   CameraTimeoutFunc timeout;
 
   gboolean config_changed;
