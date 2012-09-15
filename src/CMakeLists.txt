@@ -86,6 +86,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LibRaw)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/osm-gps-map/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/colord-gtk/src)
 
 # initial compiler flags
 add_definitions("-DHAVE_CONFIG_H")
@@ -173,7 +174,7 @@ endif(USE_GEO)
 #
 # Detect compile of optional pwstorage backends
 #
-if(USE_KWALLET) 
+if(USE_KWALLET)
 find_package(DBUSGLIB)
   if(DBUSGLIB_FOUND)
     list(APPEND SOURCES "common/pwstorage/backend_kwallet.c")
@@ -218,7 +219,7 @@ if(USE_UNITY)
 endif(USE_UNITY)
 
 # build opengl slideshow viewer?
-if(BUILD_SLIDESHOW) 
+if(BUILD_SLIDESHOW)
   find_package(SDL)
   find_package(OpenGL)
   if(SDL_FOUND AND OPENGL_FOUND)
@@ -282,7 +283,7 @@ if(NOT BINARY_PACKAGE_BUILD)
 	MESSAGE("-- Checking for -march=native support")
 	CHECK_C_COMPILER_FLAG("-march=native" MARCHNATIVE)
 	if (MARCHNATIVE)
-		set(MARCH "-march=native")	
+		set(MARCH "-march=native")
 	else()
 		MESSAGE("-- Checking for -mtune=native support")
 		CHECK_C_COMPILER_FLAG("-mtune=native" MTUNENATIVE)
@@ -401,8 +402,23 @@ if(LIBSOUP2_FOUND)
     list(APPEND STATIC_LIBS osmgpsmap_static)
 endif(LIBSOUP2_FOUND)
 
-
 target_link_libraries(lib_darktable ${LIBS})
+
+# libcolord-gtk:
+find_package(Colord)
+if(COLORD_FOUND)
+  include_directories(${COLORD_INCLUDE_DIRS})
+  list(APPEND LIBS ${COLORD_LIBRARIES})
+  add_dependencies(lib_darktable colord)
+# we ship our own copy of libcolord-gtk - the one packaged in distros is linked against gtk3 :(
+  add_dependencies(lib_darktable colord-gtk)
+  add_library(colord-gtk_static STATIC IMPORTED)
+  set_target_properties(colord-gtk_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/colord-gtk/libcolord-gtk.a)
+  target_link_libraries(lib_darktable colord-gtk_static)
+  add_subdirectory(external/colord-gtk)
+  list(APPEND STATIC_LIBS colord-gtk_static)
+  add_definitions("-DUSE_COLORDGTK")
+endif(COLORD_FOUND)
 
 # libsquish for compressed thumbnails:
 add_dependencies(lib_darktable squish)
@@ -410,18 +426,6 @@ add_library(squish_static STATIC IMPORTED)
 set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/squish/libsquish.a)
 target_link_libraries(lib_darktable ${LIBS} squish_static)
 add_subdirectory(external/squish)
-
-# libcolord-gtk:
-find_package(ColordGtk)
-if(COLORDGTK_FOUND)
-  message(STATUS "Using colord to fetch color profiles")
-  #  include_directories(${COLORDGTK_INCLUDE_DIRS})
-  #  list(APPEND LIBS ${COLORDGTK_LIBRARIES})
-  #  add_definitions("-DUSE_COLORDGTK")
-#   add_dependencies(lib_darktable colord-gtk)
-else(COLORDGTK_FOUND)
-  message(STATUS "Either colord is missing or too old (<0.1.20)")
-endif(COLORDGTK_FOUND)
 
 install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 # make sure static libs is first
