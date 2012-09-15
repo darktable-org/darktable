@@ -338,8 +338,14 @@ static gboolean
 expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
-  if(self->picked_color_max[0] < 0) return FALSE;
   if(!self->request_color_pick) return FALSE;
+  if(self->picked_color_max[0] < 0.0f)
+  {
+    // provoke reprocessing of image to get valid color picker data
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    return FALSE;
+  }
+
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2])
