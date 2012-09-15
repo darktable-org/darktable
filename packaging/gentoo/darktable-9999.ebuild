@@ -31,6 +31,7 @@ RDEPEND="dev-db/sqlite:3
 	media-libs/openexr
 	media-libs/tiff
 	net-misc/curl
+	net-libs/libsoup
 	x11-libs/cairo
 	x11-libs/gdk-pixbuf:2
 	x11-libs/gtk+:2"
