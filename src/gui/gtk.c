@@ -595,11 +595,26 @@ configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
     //we're done with our old pixmap, so we can get rid of it and replace it with our properly-sized one.
     g_object_unref(darktable.gui->pixmap);
     darktable.gui->pixmap = tmppixmap;
+    dt_ctl_set_display_profile(); // maybe we are on another screen now with > 50% of the area
   }
   oldw = event->width;
   oldh = event->height;
 
   return dt_control_configure(da, event, user_data);
+}
+
+static gboolean
+window_configure (GtkWidget *da, GdkEvent *event, gpointer user_data)
+{
+  static int oldx = 0;
+  static int oldy = 0;
+  if (oldx != event->configure.x || oldy != event->configure.y)
+  {
+    dt_ctl_set_display_profile(); // maybe we are on another screen now with > 50% of the area
+    oldx = event->configure.x;
+    oldy = event->configure.y;
+  }
+  return FALSE;
 }
 
 static gboolean
@@ -809,7 +824,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                                                 widgets.right_scrolled_window);
   gtk_container_set_focus_vadjustment (box, gtk_scrolled_window_get_vadjustment (swin));
   */
-  dt_ctl_get_display_profile(widget, &darktable.control->xprofile_data, &darktable.control->xprofile_size);
+  dt_ctl_set_display_profile();
+  // update the profile when the window is moved. resize is already handled in configure()
+  widget = dt_ui_main_window(darktable.gui->ui);
+  g_signal_connect (G_OBJECT (widget), "configure-event", G_CALLBACK (window_configure), NULL);
 
   // register keys for view switching
   dt_accel_register_global(NC_("accel", "capture view"), GDK_t, 0);
@@ -905,6 +923,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui)
 {
   g_free(darktable.control->xprofile_data);
+  g_free(darktable.control->colord_profile_file);
+  darktable.control->colord_profile_file = NULL;
   darktable.control->xprofile_size = 0;
 }
 

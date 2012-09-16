@@ -212,7 +212,7 @@ static gchar *_get_display_profile_from_pos(GList *profiles, int pos)
 
 
 static void
-profile_changed (GtkWidget *widget, gpointer user_data)
+output_profile_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -268,6 +268,14 @@ display_profile_changed (GtkWidget *widget, gpointer user_data)
 
   // should really never happen.
   fprintf(stderr, "[colorout] display color profile %s seems to have disappeared!\n", p->displayprofile);
+}
+
+static void
+_signal_profile_changed(gpointer instance, gpointer user_data)
+{
+//   dt_iop_module_t *self = (dt_iop_module_t*)user_data;
+//   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
+  printf("TODO: update the display profile! if this message annoys you you should annoy the developers so they fix this. ;)\n");
 }
 
 #if 1
@@ -488,10 +496,10 @@ static cmsHPROFILE _create_profile(gchar *iccprofile)
   else if(!strcmp(iccprofile, "X profile"))
   {
     // x default
+    pthread_rwlock_rdlock(&darktable.control->xprofile_lock);
     if(darktable.control->xprofile_data)
       profile = cmsOpenProfileFromMem(darktable.control->xprofile_data, darktable.control->xprofile_size);
-    else
-      profile = NULL;
+    pthread_rwlock_unlock(&darktable.control->xprofile_lock);
   }
   else
   {
@@ -913,7 +921,7 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (display_intent_changed),
                     (gpointer)self);
   g_signal_connect (G_OBJECT (g->cbox2), "value-changed",
-                    G_CALLBACK (profile_changed),
+                    G_CALLBACK (output_profile_changed),
                     (gpointer)self);
   g_signal_connect (G_OBJECT (g->cbox3), "value-changed",
                     G_CALLBACK (display_profile_changed),
@@ -921,6 +929,10 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->cbox5), "value-changed",
                     G_CALLBACK (softproof_profile_changed),
                     (gpointer)self);
+
+  // reload the profiles when the display profile changed!
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED,
+                            G_CALLBACK(_signal_profile_changed), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

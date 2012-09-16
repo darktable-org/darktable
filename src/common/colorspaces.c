@@ -755,8 +755,13 @@ dt_colorspaces_create_output_profile(const int imgid)
     output = dt_colorspaces_create_xyz_profile();
   else if(!strcmp(profile, "adobergb"))
     output = dt_colorspaces_create_adobergb_profile();
-  else if(!strcmp(profile, "X profile") && darktable.control->xprofile_data)
-    output = cmsOpenProfileFromMem(darktable.control->xprofile_data, darktable.control->xprofile_size);
+  else if(!strcmp(profile, "X profile"))
+  {
+    pthread_rwlock_rdlock(&darktable.control->xprofile_lock);
+    if(darktable.control->xprofile_data)
+      output = cmsOpenProfileFromMem(darktable.control->xprofile_data, darktable.control->xprofile_size);
+    pthread_rwlock_unlock(&darktable.control->xprofile_lock);
+  }
   else
   {
     // else: load file name

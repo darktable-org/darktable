@@ -32,8 +32,8 @@ static char *_signal_name[DT_SIGNAL_COUNT] =
   /* Global signals */
   "dt-global-mouse-over-image-change",            // DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE
 
-  "dt-control-draw-all",                          // DT_SIGNAL_CONTROL_DRAW_ALL
-  "dt-control-draw-center",                       // DT_SIGNAL_CONTROL_DRAW_CENTER
+  "dt-control-redraw-all",                          // DT_SIGNAL_CONTROL_REDRAW_ALL
+  "dt-control-redraw-center",                       // DT_SIGNAL_CONTROL_REDRAW_CENTER
 
   "dt-viewmanager-view-changed",                  // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
   "dt-viewmanager-filmstrip-activate",            // DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE
@@ -45,7 +45,8 @@ static char *_signal_name[DT_SIGNAL_COUNT] =
   "dt-develop-mipmap-updated",                    // DT_SIGNAL_DEVELOP_MIPMAP_UPDATED
   "dt-develop-preview-pipe-finished",             // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED
   "dt-develop-ui-pipe-finished",                  // DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED
-  "dt-develop-history-change"                     // DT_SIGNAL_HISTORY_CHANGE
+  "dt-develop-history-change",                    // DT_SIGNAL_HISTORY_CHANGE
+  "dt-control-profile-changed"                    // DT_SIGNAL_CONTROL_PROFILE_CHANGED
 };
 
 
