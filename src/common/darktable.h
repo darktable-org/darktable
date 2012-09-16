@@ -22,6 +22,7 @@
 #if defined __DragonFly__ || defined __FreeBSD__ || \
     defined __NetBSD__ || defined __OpenBSD__
 #define _WITH_DPRINTF
+#define _WITH_GETLINE
 #elif !defined _XOPEN_SOURCE
 #define _XOPEN_SOURCE 700 // for localtime_r and dprintf
 #endif
