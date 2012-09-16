@@ -69,7 +69,7 @@ void dt_control_log_busy_leave();
 void dt_control_change_cursor(dt_cursor_t cursor);
 void dt_control_write_sidecar_files();
 void dt_control_delete_images();
-void dt_ctl_get_display_profile(GtkWidget *widget, guint8 **buffer, gint *buffer_size);
+void dt_ctl_set_display_profile();
 
 /** \brief request redraw of the workspace.
     This redraws the whole workspace within a gdk critical
@@ -244,6 +244,8 @@ typedef struct dt_control_t
   int key_accelerators_on;
 
   // xatom color profile:
+  pthread_rwlock_t xprofile_lock;
+  gchar *colord_profile_file;
   uint8_t *xprofile_data;
   int xprofile_size;
 

@@ -50,11 +50,17 @@ typedef enum dt_signal_t
    */
   DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
 
+  /** \brief This signal is raised when collection query is changed */
+  DT_SIGNAL_COLLECTION_CHANGED,
+
   /** \brief This signal is raised when darktable.develop is initialized.
       \note any modules that wants to acces darktable->develop should connect
       to this signal to be sure darktable.develop is initialized.
    */
   DT_SIGNAL_DEVELOP_INITIALIZE,
+
+  /** \brief This signal is raised when a mipmap has been generated and flushed to cache */
+  DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
 
   /** \brief This signal is raised when develop preview pipe process is finished */
   DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
@@ -65,11 +71,8 @@ typedef enum dt_signal_t
   /** \brief This signal is raised when develop history is changed */
   DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
 
-  /** \brief This signal is raised when a mipmap has been generated and flushed to cache */
-  DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-
-  /** \brief This signal is raised when collection query is changed */
-  DT_SIGNAL_COLLECTION_CHANGED,
+  /** \brief This signal is raised when the screen profile has changed */
+  DT_SIGNAL_CONTROL_PROFILE_CHANGED,
 
   /* do not touch !*/
   DT_SIGNAL_COUNT

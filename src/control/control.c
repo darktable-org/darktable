@@ -33,6 +33,10 @@
 #include "gui/contrast.h"
 #include "gui/draw.h"
 
+#ifdef USE_COLORDGTK
+#include "colord-gtk.h"
+#endif
+
 #ifdef GDK_WINDOWING_QUARTZ
 #  include <Carbon/Carbon.h>
 #  include <ApplicationServices/ApplicationServices.h>
@@ -221,17 +225,73 @@ int dt_control_write_config(dt_control_t *c)
   return 0;
 }
 
+static void
+dt_ctl_get_display_profile_colord_callback(GObject *source, GAsyncResult *res, gpointer user_data)
+{
+  pthread_rwlock_wrlock(&darktable.control->xprofile_lock);
+
+  CdWindow *window = CD_WINDOW(source);
+  GError *error = NULL;
+  CdProfile *profile = cd_window_get_profile_finish(window, res, &error);
+  if(error == NULL && profile != NULL)
+  {
+    const gchar *filename = cd_profile_get_filename(profile);
+    if(filename)
+    {
+      if(g_strcmp0(filename, darktable.control->colord_profile_file))
+      {
+        /* the profile has changed (either because the user changed the colord settings or because we are on a different screen now) */
+        // update darktable.control->colord_profile_file
+        if(darktable.control->colord_profile_file)
+          g_free(darktable.control->colord_profile_file);
+        darktable.control->colord_profile_file = g_strdup(filename);
+        // open file
+        GMappedFile *file = g_mapped_file_new(filename, FALSE, &error);
+        if(file != NULL && error == NULL)
+        {
+          gsize size = g_mapped_file_get_length(file);
+          gchar *data = g_mapped_file_get_contents(file);
+          // read into darktable.control->xprofile_data and set darktable.control->xprofile_size
+          g_free(darktable.control->xprofile_data);
+          darktable.control->xprofile_data = (uint8_t*)malloc(size);
+          memcpy(darktable.control->xprofile_data, data, size);
+          darktable.control->xprofile_size = size;
+        }
+        // close the file
+        if(file)
+          g_mapped_file_unref(file);
+      }
+    }
+  }
+  if(profile)
+    g_object_unref(profile);
+  g_object_unref(window);
+
+  pthread_rwlock_unlock(&darktable.control->xprofile_lock);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+}
+
 // Get the display ICC profile of the monitor associated with the widget.
 // For X display, uses the ICC profile specifications version 0.2 from
 // http://burtonini.com/blog/computers/xicc
 // Based on code from Gimp's modules/cdisplay_lcms.c
-void dt_ctl_get_display_profile(GtkWidget *widget,
-                                guint8 **buffer, gint *buffer_size)
+void dt_ctl_set_display_profile()
 {
+  // make sure that noone gets a broken profile
+  // FIXME: benchmark if the try is really needed when moving/resizing the window. Maybe we can just lock it and block
+  if(pthread_rwlock_trywrlock(&darktable.control->xprofile_lock))
+    return; // we are already updating the profile. Or someone is reading right now. Too bad we can't distinguish that. Whatever ...
+
+  GtkWidget *widget = dt_ui_center(darktable.gui->ui);
+  guint8 **buffer = &darktable.control->xprofile_data;
+  gint *buffer_size = &darktable.control->xprofile_size;
   // thanks to ufraw for this!
+  g_free(*buffer);
   *buffer = NULL;
   *buffer_size = 0;
+
 #if defined GDK_WINDOWING_X11
+  /* let's have a look at the xatom, just in case ... */
   GdkScreen *screen = gtk_widget_get_screen(widget);
   if ( screen==NULL )
     screen = gdk_screen_get_default();
@@ -250,6 +310,13 @@ void dt_ctl_get_display_profile(GtkWidget *widget,
                    &type, &format, buffer_size, buffer);
   g_free(atom_name);
 
+#ifdef USE_COLORDGTK
+  /* also try to get the profile from colord. this will set the value asynchronously! */
+  CdWindow *window = cd_window_new();
+  GtkWidget *center_widget = dt_ui_center(darktable.gui->ui);
+  cd_window_get_profile(window, center_widget, NULL, dt_ctl_get_display_profile_colord_callback, NULL);
+#endif
+
 #elif defined GDK_WINDOWING_QUARTZ
   GdkScreen *screen = gtk_widget_get_screen(widget);
   if ( screen==NULL )
@@ -259,38 +326,41 @@ void dt_ctl_get_display_profile(GtkWidget *widget,
   CMProfileRef prof = NULL;
   CMGetProfileByAVID(monitor, &prof);
   if ( prof==NULL )
-    return;
+  {
+    CFDataRef data;
+    data = CMProfileCopyICCData(NULL, prof);
+    CMCloseProfile(prof);
 
-  CFDataRef data;
-  data = CMProfileCopyICCData(NULL, prof);
-  CMCloseProfile(prof);
+    UInt8 *tmp_buffer = (UInt8 *) g_malloc(CFDataGetLength(data));
+    CFDataGetBytes(data, CFRangeMake(0, CFDataGetLength(data)), tmp_buffer);
 
-  UInt8 *tmp_buffer = (UInt8 *) g_malloc(CFDataGetLength(data));
-  CFDataGetBytes(data, CFRangeMake(0, CFDataGetLength(data)), tmp_buffer);
+    *buffer = (guint8 *) tmp_buffer;
+    *buffer_size = CFDataGetLength(data);
 
-  *buffer = (guint8 *) tmp_buffer;
-  *buffer_size = CFDataGetLength(data);
-
-  CFRelease(data);
+    CFRelease(data);
+  }
 #elif defined G_OS_WIN32
   (void)widget;
   HDC hdc = GetDC (NULL);
-  if ( hdc==NULL )
-    return;
-
-  DWORD len = 0;
-  GetICMProfile (hdc, &len, NULL);
-  gchar *path = g_new (gchar, len);
-
-  if (GetICMProfile (hdc, &len, path))
+  if ( hdc!=NULL )
   {
-    gsize size;
-    g_file_get_contents(path, (gchar**)buffer, &size, NULL);
-    *buffer_size = size;
+    DWORD len = 0;
+    GetICMProfile (hdc, &len, NULL);
+    gchar *path = g_new (gchar, len);
+
+    if (GetICMProfile (hdc, &len, path))
+    {
+      gsize size;
+      g_file_get_contents(path, (gchar**)buffer, &size, NULL);
+      *buffer_size = size;
+    }
+    g_free (path);
+    ReleaseDC (NULL, hdc);
   }
-  g_free (path);
-  ReleaseDC (NULL, hdc);
 #endif
+
+  pthread_rwlock_unlock(&darktable.control->xprofile_lock);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
 }
 
 void dt_control_create_database_schema()
@@ -370,6 +440,7 @@ void dt_control_init(dt_control_t *s)
   dt_pthread_mutex_init(&s->cond_mutex, NULL);
   dt_pthread_mutex_init(&s->queue_mutex, NULL);
   dt_pthread_mutex_init(&s->run_mutex, NULL);
+  pthread_rwlock_init(&s->xprofile_lock, NULL);
 
   // start threads
   s->num_threads = CLAMP(dt_conf_get_int ("worker_threads"), 1, 8);
@@ -714,6 +785,7 @@ void dt_control_cleanup(dt_control_t *s)
   dt_pthread_mutex_destroy(&s->cond_mutex);
   dt_pthread_mutex_destroy(&s->log_mutex);
   dt_pthread_mutex_destroy(&s->run_mutex);
+  pthread_rwlock_destroy(&s->xprofile_lock);
 }
 
 void dt_control_job_init(dt_job_t *j, const char *msg, ...)
