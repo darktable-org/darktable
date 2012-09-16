@@ -136,6 +136,9 @@ dt_develop_blend_params_t;
 
 typedef struct dt_blendop_t
 {
+  int kernel_blendop_mask_Lab;
+  int kernel_blendop_mask_RAW;
+  int kernel_blendop_mask_rgb;
   int kernel_blendop_Lab;
   int kernel_blendop_RAW;
   int kernel_blendop_rgb;
