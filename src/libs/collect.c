@@ -31,7 +31,7 @@
 #include "libs/collect.h"
 #include "views/view.h"
 
-//#include <regex.h>
+#include <regex.h>
 
 DT_MODULE(1)
 
@@ -744,23 +744,29 @@ _folder_tree ()
   return store;
 }
 
-#if 0
 static gboolean
 match_string (GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
 {
-  GtkWidget *entry = (GtkWidget *)data;
+  dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *) data;
   gchar *str;
   const gchar *string;
   gboolean visible = FALSE;
 
+  if (!dr->typing)
+  {
+    visible = TRUE;
+    return visible;
+  }
+
   regex_t re;
-  gchar *pattern;
+  gchar *pattern = NULL;
   int status;
 
   gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_PATH, &str, -1);
 
-  string = gtk_entry_get_text(GTK_ENTRY(entry));
-  pattern = dt_util_str_replace (string, "%", ".*");
+  string = gtk_entry_get_text(GTK_ENTRY(dr->text));
+  //pattern = dt_util_str_replace (string, "%", ".*");
+  pattern = dt_util_dstrcat (pattern, "%s%s%s", ".*", string, ".*"); 
 
   regcomp(&re, pattern, REG_NOSUB);
 
@@ -774,10 +780,9 @@ match_string (GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
 
   return visible;
 }
-#endif
 
 static GtkTreeModel *
-_create_filtered_model (GtkTreeModel *model, GtkTreeIter iter, GtkWidget *entry)
+_create_filtered_model (GtkTreeModel *model, GtkTreeIter iter, dt_lib_collect_rule_t *dr)
 {
   GtkTreeModel *filter = NULL;
   GtkTreePath *path;
@@ -805,7 +810,7 @@ _create_filtered_model (GtkTreeModel *model, GtkTreeIter iter, GtkWidget *entry)
   filter = gtk_tree_model_filter_new (model, path);
   gtk_tree_path_free (path);
   
-//  gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER(filter), match_string, entry, NULL); 
+  gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER(filter), match_string, dr, NULL);
 
   return filter;
 }
@@ -946,22 +951,6 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
   switch(property)
   {
     case 0: // film roll
-/*      if (!strlen(text))
-      goto filmroll;
-      else
-      {
-        if (d->trees != NULL)
-        {
-          for (int i=0; i<d->trees->len; i++)
-          {
-            tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
-            GtkTreeModelFilter *modelfilter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model (tree));
-            gtk_tree_model_filter_refilter (modelfilter);
-          }
-        }
-        goto entry_key_press_exit;
-      }
-*/
       snprintf(query, 1024, "select distinct folder, id from film_rolls where folder like '%%%s%%'  order by folder desc", escaped_text);
       break;
     case 1: // camera
@@ -1056,7 +1045,24 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
       break;
 
     case 15: // folders
-      goto folders;
+      if (!dr->typing || !strlen(escaped_text))
+        goto folders;
+      else
+      {
+        if (d->trees != NULL)
+        {
+          for (int i=0; i<d->trees->len; i++)
+          {
+            tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
+            GtkTreeModelFilter *modelfilter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model (tree));
+            gtk_tree_model_filter_refilter (modelfilter);
+          }
+          
+        gtk_widget_show(GTK_WIDGET(d->sw2));
+        }
+        return FALSE;
+      }
+      
       break;
 
     default: // case 3: // day
@@ -1149,7 +1155,7 @@ folders:
       gtk_box_pack_start(d->box, GTK_WIDGET(label), FALSE, FALSE, 0);
       gtk_widget_show (label);
       
-      model2 = _create_filtered_model(GTK_TREE_MODEL(treemodel), iter, dr->text);
+      model2 = _create_filtered_model(GTK_TREE_MODEL(treemodel), iter, dr);
       tree = _create_treeview_display(GTK_TREE_MODEL(model2));
       g_ptr_array_add(d->trees, (gpointer) tree);
       gtk_box_pack_start(d->box, GTK_WIDGET(tree), FALSE, FALSE, 0);
@@ -1171,6 +1177,19 @@ folders:
       d->tree_new = FALSE;
     }
   }
+  else
+  {
+    if (d->trees != NULL)
+    {
+      for (int i=0; i<d->trees->len; i++)
+      {
+        tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
+        GtkTreeModelFilter *modelfilter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model (tree));
+        gtk_tree_model_filter_refilter (modelfilter);
+      }
+    }
+  }
+  dr->typing = FALSE;
   
   gtk_widget_show(GTK_WIDGET(d->box));
   gtk_widget_show(GTK_WIDGET(d->sw2));
@@ -1212,8 +1231,10 @@ _lib_collect_gui_update (dt_lib_module_t *self)
     gchar *text = dt_conf_get_string(confname);
     if(text)
     {
+      // TODO: We should stop emission of the signal here
       gtk_entry_set_text(GTK_ENTRY(d->rule[i].text), text);
       g_free(text);
+      d->rule[i].typing = FALSE;
     }
 
     GtkDarktableButton *button = DTGTK_BUTTON(d->rule[i].button);
