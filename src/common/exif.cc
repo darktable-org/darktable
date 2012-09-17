@@ -1210,8 +1210,16 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       // set or clear bit in image struct
       if(i == 1) img->flags |= DT_IMAGE_AUTO_PRESETS_APPLIED;
       if(i == 0) img->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
-    } // not found means 0 (old xmp)
-    else img->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
+      // in any case, this is no legacy image.
+      img->flags |= DT_IMAGE_NO_LEGACY_PRESETS;
+    }
+    else
+    {
+      // not found means 0 (old xmp)
+      img->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
+      // so we are legacy (thus have to clear the no-legacy flag)
+      img->flags &= ~DT_IMAGE_NO_LEGACY_PRESETS;
+    }
 
     // history
     Exiv2::XmpData::iterator ver;

@@ -651,18 +651,23 @@ auto_apply_presets(const int imgid)
       "delete from memory.history",
       NULL, NULL, NULL);
 
-  // query for all modules at once:
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+  const char *preset_table[2] = {"presets", "legacy_presets"};
+  const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
+  char query[1024];
+  snprintf(query, 1024, 
       "insert into memory.history select ?1, 0, op_version, operation, op_params, enabled, blendop_params, blendop_version "
-      "from presets where autoapply=1 and "
+      "from %s where autoapply=1 and "
                               "?2 like model and ?3 like maker and ?4 like lens and "
                               "?5 between iso_min and iso_max and "
                               "?6 between exposure_min and exposure_max and "
                               "?7 between aperture_min and aperture_max and "
                               "?8 between focal_length_min and focal_length_max and "
                               "(isldr = 0 or isldr=?9) order by writeprotect desc, "
-                              "length(model), length(maker), length(lens)", -1, &stmt, NULL);
+                              "length(model), length(maker), length(lens)", preset_table[legacy]);
+
+  // query for all modules at once:
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, cimg->exif_model, strlen(cimg->exif_model), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, cimg->exif_maker, strlen(cimg->exif_maker), SQLITE_TRANSIENT);
@@ -687,7 +692,7 @@ auto_apply_presets(const int imgid)
       // if there is anything..
       cnt = sqlite3_column_int(stmt, 0);
       sqlite3_finalize(stmt);
-      fprintf(stderr, "[auto_apply_presets] imageid %d found %d matching presets\n", imgid, cnt);
+      fprintf(stderr, "[auto_apply_presets] imageid %d found %d matching presets (legacy %d)\n", imgid, cnt, legacy);
       // advance the current history by that amount:
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
           "update history set num=num+?1 where imgid=?2",
@@ -708,7 +713,7 @@ auto_apply_presets(const int imgid)
   }
   sqlite3_finalize(stmt);
 
-  image->flags |= DT_IMAGE_AUTO_PRESETS_APPLIED;
+  image->flags |= DT_IMAGE_AUTO_PRESETS_APPLIED | DT_IMAGE_NO_LEGACY_PRESETS;
   dt_pthread_mutex_unlock(&darktable.db_insert);
   // make sure these end up in the image_cache + xmp (sync through here if we set the flag)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
