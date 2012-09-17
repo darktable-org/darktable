@@ -32,6 +32,7 @@
 #include "gui/gtk.h"
 #include "gui/contrast.h"
 #include "gui/draw.h"
+#include "gui/legacy_presets.h"
 
 #ifdef USE_COLORDGTK
 #include "colord-gtk.h"
@@ -182,6 +183,9 @@ static void dt_control_sanitize_database()
                         "operation varchar(256), op_params blob, enabled integer, "
                         "blendop_params blob, blendop_version integer)",
                         NULL, NULL, NULL);
+
+  // create a table legacy_presets with all the presets from pre-auto-apply-cleanup darktable.
+  dt_legacy_presets_create();
 }
 
 int dt_control_load_config(dt_control_t *c)
