@@ -51,6 +51,7 @@ typedef struct dt_lib_collect_rule_t
   GtkComboBox *combo;
   GtkWidget *text;
   GtkWidget *button;
+  gboolean typing;
 }
 dt_lib_collect_rule_t;
 
@@ -929,7 +930,13 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
   int property = gtk_combo_box_get_active(dr->combo);
   const gchar *text = NULL;
   text = gtk_entry_get_text(GTK_ENTRY(dr->text));
-  gchar *escaped_text = dt_util_str_replace(text, "'", "''");
+  gchar *escaped_text = NULL;
+
+  if (!dr->typing)
+    escaped_text = g_strdup("");
+  else
+    escaped_text = dt_util_str_replace(text, "'", "''");
+  
   char confname[200];
   snprintf(confname, 200, "plugins/lighttable/collect/string%1ld", dr->num);
   dt_conf_set_string (confname, text);
@@ -1265,6 +1272,7 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
   GtkTreeIter iter;
   GtkTreeModel *model = NULL;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
+
   if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
   gchar *text;
   const int active = d->active_rule;
@@ -1275,6 +1283,9 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
     gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
   gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
   g_free(text);
+
+  dt_lib_collect_rule_t *dr = &(d->rule[active]);
+  dr->typing = FALSE;
   changed_callback(NULL, d->rule + active);
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
@@ -1301,10 +1312,17 @@ entry_activated (GtkWidget *entry, dt_lib_collect_rule_t *d)
         gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
       gtk_entry_set_text(GTK_ENTRY(d->text), text);
       g_free(text);
+      d->typing = FALSE;
       changed_callback(NULL, d);
     }
   }
   dt_collection_update_query(darktable.collection);
+}
+
+static void
+entry_changed (GtkWidget *entry, gchar *new_text, gint new_length, gpointer *position, dt_lib_collect_rule_t *d)
+{
+  d->typing = TRUE;
 }
 
 int
@@ -1602,7 +1620,7 @@ gui_init (dt_lib_module_t *self)
     /* xgettext:no-c-format */
     g_object_set(G_OBJECT(w), "tooltip-text", _("type your query, use `%' as wildcard"), (char *)NULL);
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
-    g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(changed_callback), d->rule + i);
+    g_signal_connect(G_OBJECT(w), "insert-text", G_CALLBACK(entry_changed), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
     gtk_box_pack_start(box, w, TRUE, TRUE, 0);
     w = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
