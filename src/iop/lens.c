@@ -25,9 +25,6 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <ctype.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
@@ -36,6 +33,7 @@
 #include "control/control.h"
 #include "dtgtk/button.h"
 #include "dtgtk/resetlabel.h"
+#include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
@@ -93,8 +91,6 @@ void connect_key_accels(dt_iop_module_t *self)
                               GTK_WIDGET(g->camera_model));
   dt_accel_connect_button_iop(self, "find camera",
                               GTK_WIDGET(g->find_camera_button));
-  dt_accel_connect_button_iop(self, "auto scale",
-                              GTK_WIDGET(g->auto_scale_button));
 
   dt_accel_connect_slider_iop(self, "scale", GTK_WIDGET(g->scale));
   dt_accel_connect_slider_iop(self, "tca R", GTK_WIDGET(g->tca_r));
@@ -1185,6 +1181,7 @@ static void camera_menusearch_clicked(
   gtk_menu_popup (GTK_MENU (g->camera_menu), NULL, NULL, NULL, NULL,
                   0, gtk_get_current_event_time ());
 }
+
 static void camera_autosearch_clicked(
   GtkWidget *button, gpointer user_data)
 {
@@ -1533,45 +1530,40 @@ static void lens_autosearch_clicked(
 
 /* -- end lens -- */
 
-static void target_geometry_changed (GtkComboBox *widget, gpointer user_data)
+static void target_geometry_changed (GtkWidget *widget, gpointer user_data)
 {
-  if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
 
-  int pos = gtk_combo_box_get_active(widget);
+  int pos = dt_bauhaus_combobox_get(widget);
   p->target_geom = pos + LF_UNKNOWN + 1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void reverse_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+static void reverse_toggled(GtkWidget *widget, gpointer user_data)
 {
-  if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
-  if(gtk_toggle_button_get_active(togglebutton)) p->inverse = 1;
-  else p->inverse = 0;
+  p->inverse = dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void tca_changed(GtkDarktableSlider *slider, dt_iop_module_t *self)
+static void tca_changed(GtkWidget *slider, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
   dt_iop_lensfun_params_t   *p = (dt_iop_lensfun_params_t   *)self->params;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  const float val = dtgtk_slider_get_value(slider);
+  const float val = dt_bauhaus_slider_get(slider);
   if(slider == g->tca_r) p->tca_r = val;
   else                   p->tca_b = val;
   if(p->tca_r != 1.0 || p->tca_b != 1.0) p->tca_override = 1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void scale_changed(GtkDarktableSlider *slider, gpointer user_data)
+static void scale_changed(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
-  if(darktable.gui->reset) return;
-  p->scale = dtgtk_slider_get_value(slider);
+  p->scale = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1612,7 +1604,7 @@ static void autoscale_pressed(GtkWidget *button, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   const float scale = get_autoscale(self);
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  dtgtk_slider_set_value(g->scale, scale);
+  dt_bauhaus_slider_set(g->scale, scale);
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1627,11 +1619,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->lens_menu = NULL;
 
   GtkWidget *button;
-  GtkWidget *label;
 
-  self->widget = gtk_table_new(8, 3, FALSE);
-  gtk_table_set_col_spacings(GTK_TABLE(self->widget), 5);
-  gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
 
   // camera selector
   GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
@@ -1648,7 +1637,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(button), "tooltip-text", _("find camera"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (camera_autosearch_clicked), self);
-  gtk_table_attach(GTK_TABLE(self->widget), hbox, 0, 2, 0, 1, GTK_SHRINK|GTK_FILL, 0, 0, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
   // lens selector
   hbox = gtk_hbox_new(FALSE, 0);
@@ -1665,12 +1654,12 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(button), "tooltip-text", _("find lens"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (lens_autosearch_clicked), self);
-  gtk_table_attach(GTK_TABLE(self->widget), hbox, 0, 2, 1, 2, GTK_SHRINK|GTK_FILL, 0, 0, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
 
   // lens properties
   g->lens_param_box = gtk_hbox_new(FALSE, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->lens_param_box), 0, 2, 2, 3, GTK_EXPAND|GTK_FILL|GTK_SHRINK, 0, 0, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->lens_param_box, TRUE, TRUE, 0);
 
 #if 0
   // if unambigious info is there, use it.
@@ -1690,56 +1679,52 @@ void gui_init(struct dt_iop_module_t *self)
 #endif
 
   // target geometry
-  label = dtgtk_reset_label_new(_("geometry"), self, &p->target_geom, sizeof(lfLensType));
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
-
-  g->target_geom = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  g_object_set(G_OBJECT(g->target_geom), "tooltip-text",
-               _("target geometry"), (char *)NULL);
-  gtk_combo_box_append_text(g->target_geom, _("rectilinear"));
-  gtk_combo_box_append_text(g->target_geom, _("fish-eye"));
-  gtk_combo_box_append_text(g->target_geom, _("panoramic"));
-  gtk_combo_box_append_text(g->target_geom, _("equirectangular"));
-  gtk_combo_box_set_active(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
-  g_signal_connect (G_OBJECT (g->target_geom), "changed",
+  g->target_geom = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->target_geom, _("geometry"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->target_geom, TRUE, TRUE, 0);
+  g_object_set (GTK_OBJECT(g->target_geom), "tooltip-text", _("target geometry"), (char *)NULL);
+  dt_bauhaus_combobox_add(g->target_geom, _("rectilinear"));
+  dt_bauhaus_combobox_add(g->target_geom, _("fish-eye"));
+  dt_bauhaus_combobox_add(g->target_geom, _("panoramic"));
+  dt_bauhaus_combobox_add(g->target_geom, _("equirectangular"));
+  g_signal_connect (G_OBJECT (g->target_geom), "value-changed",
                     G_CALLBACK (target_geometry_changed),
                     (gpointer)self);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->target_geom), 1, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   // scale
-  g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 2.0, 0.005, p->scale, 3));
+  g->scale = dt_bauhaus_slider_new_with_range(self, 0.1, 2.0, 0.005, p->scale, 3);
+  g_object_set (GTK_OBJECT(g->scale), "tooltip-text", _("auto scale"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->scale, _("scale"));
   g_signal_connect (G_OBJECT (g->scale), "value-changed",
                     G_CALLBACK (scale_changed), self);
-  dtgtk_slider_set_label(g->scale, _("scale"));
-  hbox = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
-
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
-  g->auto_scale_button = GTK_WIDGET(button);
-  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("auto scale"), (char *)NULL);
-  g_signal_connect (G_OBJECT (button), "clicked",
-                    G_CALLBACK (autoscale_pressed), self);
-  gtk_table_attach(GTK_TABLE(self->widget), hbox, 0, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-
+  g_signal_connect (G_OBJECT (g->scale), "quad-pressed", G_CALLBACK (autoscale_pressed), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->scale, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_quad_paint(g->scale, dtgtk_cairo_paint_refresh, 0);
 
   // reverse direction
-  g->reverse = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("reverse")));
-  g_object_set(G_OBJECT(g->reverse), "tooltip-text", _("apply distortions instead of correcting them"), (char *)NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->reverse), p->inverse);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->reverse), 1, 2, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  g_signal_connect (G_OBJECT (g->reverse), "toggled",
-                    G_CALLBACK (reverse_toggled), self);
+  g->reverse = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->reverse, _("mode"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->reverse, TRUE, TRUE, 0);
+  g_object_set (GTK_OBJECT(g->reverse), "tooltip-text", _("correct distortions or apply them"), (char *)NULL);
+  dt_bauhaus_combobox_add(g->reverse, _("correct"));
+  dt_bauhaus_combobox_add(g->reverse, _("distort"));
+  g_signal_connect (G_OBJECT (g->reverse), "value-changed",
+                    G_CALLBACK (reverse_toggled),
+                    (gpointer)self);
 
   // override linear tca (if not 1.0):
-  g->tca_r = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.99, 1.01, 0.0001, p->tca_r, 5));
-  g->tca_b = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.99, 1.01, 0.0001, p->tca_b, 5));
-  dtgtk_slider_set_label(g->tca_r, _("tca R"));
-  dtgtk_slider_set_label(g->tca_b, _("tca B"));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_r), 0, 2, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_b), 0, 2, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  g->tca_r = dt_bauhaus_slider_new_with_range(self, 0.99, 1.01, 0.0001, p->tca_r, 5);
+  g_object_set (GTK_OBJECT(g->tca_r), "tooltip-text", _("tca R"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->tca_r, _("scale"));
   g_signal_connect (G_OBJECT (g->tca_r), "value-changed", G_CALLBACK (tca_changed), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->tca_r, TRUE, TRUE, 0);
+
+  g->tca_b = dt_bauhaus_slider_new_with_range(self, 0.99, 1.01, 0.0001, p->tca_b, 5);
+  g_object_set (GTK_OBJECT(g->tca_b), "tooltip-text", _("tca B"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->tca_b, _("scale"));
   g_signal_connect (G_OBJECT (g->tca_b), "value-changed", G_CALLBACK (tca_changed), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->tca_b, TRUE, TRUE, 0);
+
   g_object_set(G_OBJECT(g->tca_r), "tooltip-text", _("override transversal chromatic aberration correction for red channel\nleave at 1.0 for defaults"), (char *)NULL);
   g_object_set(G_OBJECT(g->tca_b), "tooltip-text", _("override transversal chromatic aberration correction for blue channel\nleave at 1.0 for defaults"), (char *)NULL);
 }
@@ -1756,11 +1741,11 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_button_set_label(g->lens_model, p->lens);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
-  gtk_combo_box_set_active(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->reverse), p->inverse);
-  dtgtk_slider_set_value(g->tca_r, p->tca_r);
-  dtgtk_slider_set_value(g->tca_b, p->tca_b);
-  dtgtk_slider_set_value(g->scale, p->scale);
+  dt_bauhaus_combobox_set(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
+  dt_bauhaus_combobox_set(g->reverse, p->inverse);
+  dt_bauhaus_slider_set(g->tca_r, p->tca_r);
+  dt_bauhaus_slider_set(g->tca_b, p->tca_b);
+  dt_bauhaus_slider_set(g->scale, p->scale);
   const lfCamera **cam = NULL;
   g->camera = NULL;
   if(p->camera[0])
