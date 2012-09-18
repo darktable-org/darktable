@@ -17,6 +17,7 @@
 */
 #include "control/control.h"
 #include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "blend.h"
 
 #define CLAMP_RANGE(x,y,z)      (CLAMP(x,y,z))
@@ -1799,6 +1800,27 @@ dt_develop_blend_version(void)
   return DEVELOP_BLEND_VERSION;
 }
 
+/** report back specific memory requirements for blend step */
+void
+tiling_callback_blendop (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
+{
+  dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
+
+  if (d && d->mode!=0)
+  {
+    /* blending enabled */
+    tiling->factor = 2.25f;   // in + out + one quarter buffer for mask
+  }
+  else
+    tiling->factor = 2.0f;   // nothing special, in and out are always there with factor 2.0 
+
+  tiling->maxbuf = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = 0;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+  return;
+}
 
 /** update blendop params from older versions */
 int
