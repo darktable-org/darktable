@@ -21,6 +21,7 @@
 #include "common/darktable.h"
 #include "common/opencl.h"
 #include "common/bilateralcl.h"
+#include "common/gaussiancl.h"
 #include "common/dlopencl.h"
 #include "control/conf.h"
 
@@ -328,7 +329,10 @@ finally:
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] FINALLY: opencl is %sAVAILABLE on this system.\n", cl->inited ? "" : "NOT ");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] initial status of opencl enabled flag is %s.\n", cl->enabled ? "ON" : "OFF");
   if(cl->inited)
+  {
     cl->bilateral = dt_bilateral_init_cl_global();
+    cl->gaussian = dt_gaussian_init_cl_global();
+  }
   return;
 }
 
@@ -337,6 +341,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
   if(cl->inited)
   {
     dt_bilateral_free_cl_global(cl->bilateral);
+    dt_gaussian_free_cl_global(cl->gaussian);
     for(int i=0; i<cl->num_devs; i++)
     {
       dt_pthread_mutex_destroy(&cl->dev[i].lock);

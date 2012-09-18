@@ -54,7 +54,7 @@ gaussian_transpose(global float4 *in, global float4 *out, unsigned int width, un
 kernel void 
 gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsigned int height,
                   const float a0, const float a1, const float a2, const float a3, const float b1, const float b2,
-                  const float coefp, const float coefn)
+                  const float coefp, const float coefn, const float4 Labmax, const float4 Labmin)
 {
   const unsigned int x = get_global_id(0);
 
@@ -69,9 +69,6 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
   float4 xa = (float4)0.0f;
   float4 yn = (float4)0.0f;
   float4 ya = (float4)0.0f;
-
-  const float4 Labmax = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
-  const float4 Labmin = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
 
   // forward filter
   xp = clamp(in[x], Labmin, Labmax); // 0*width+x
@@ -139,7 +136,7 @@ lookup_unbounded(read_only image2d_t lut, const float x, global float *a)
 
 
 kernel void 
-lowpass_mix(global float4 *in, global float4 *out, unsigned int width, unsigned int height, const float saturation, 
+lowpass_mix(read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height, const float saturation, 
             read_only image2d_t table, global float *a)
 {
   const unsigned int x = get_global_id(0);
@@ -147,9 +144,7 @@ lowpass_mix(global float4 *in, global float4 *out, unsigned int width, unsigned 
 
   if(x >= width || y >= height) return;
 
-  const int idx = mad24(y, width, x);
-
-  float4 i = in[idx];
+  float4 i = read_imagef(in, sampleri, (int2)(x, y));
   float4 o;
 
   const float4 Labmin = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
@@ -160,7 +155,7 @@ lowpass_mix(global float4 *in, global float4 *out, unsigned int width, unsigned 
   o.z = clamp(i.z*saturation, Labmin.z, Labmax.z);
   o.w = i.w;
 
-  out[idx] = o;
+  write_imagef(out, (int2)(x, y), o);
 }
 
 
@@ -209,7 +204,8 @@ overlay(const float4 in_a, const float4 in_b, const float opacity, const float t
 
 
 kernel void 
-shadows_highlights_mix(global float4 *inout, global float4 *mask, unsigned int width, unsigned int height, 
+shadows_highlights_mix(read_only image2d_t in, read_only image2d_t mask, write_only image2d_t out, 
+                       unsigned int width, unsigned int height, 
                        const float shadows, const float highlights, const float compress,
                        const float shadows_ccorrect, const float highlights_ccorrect)
 {
@@ -218,19 +214,16 @@ shadows_highlights_mix(global float4 *inout, global float4 *mask, unsigned int w
 
   if(x >= width || y >= height) return;
 
-  const int idx = mad24(y, width, x);
-
-  float4 io = inout[idx];
-  float4 m;
+  float4 io = read_imagef(in, sampleri, (int2)(x, y));
+  float w = io.w;
+  float4 m = (float4)0.0f;
   float xform;
 
   const float4 Labmin = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
   const float4 Labmax = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
 
   /* blurred, inverted and desaturaed mask in m */
-  m.x = 100.0f - mask[idx].x;
-  m.y = 0.0f;
-  m.z = 0.0f;
+  m.x = 100.0f - read_imagef(mask, sampleri, (int2)(x, y)).x;
 
   /* overlay highlights */
   xform = clamp(1.0f - 0.01f * m.x/(1.0f-compress), 0.0f, 1.0f);
@@ -240,21 +233,8 @@ shadows_highlights_mix(global float4 *inout, global float4 *mask, unsigned int w
   xform = clamp(0.01f * m.x/(1.0f-compress) - compress/(1.0f-compress), 0.0f, 1.0f);
   io = overlay(io, m, shadows, xform, shadows_ccorrect);
 
-  inout[idx] = clamp(io, Labmin, Labmax);
+  io.w = w;
+  write_imagef(out, (int2)(x, y), io);
 }
 
-
-__kernel void
-gaussian_copy_alpha (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int width, const int height)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  float4 pixel = read_imagef(in_a, sampleri, (int2)(x, y));
-  pixel.w = read_imagef(in_b, sampleri, (int2)(x, y)).w;
-
-  write_imagef(out, (int2)(x, y), pixel);
-}
 
