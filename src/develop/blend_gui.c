@@ -331,6 +331,13 @@ _blendop_opacity_callback (GtkWidget *slider, dt_iop_gui_blend_data_t *data)
 }
 
 static void
+_blendop_blendif_radius_callback (GtkWidget *slider, dt_iop_gui_blend_data_t *data)
+{
+  data->module->blend_params->radius = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+}
+
+static void
 _blendop_blendif_callback(GtkWidget *b, dt_iop_gui_blend_data_t *data)
 {
   if(dt_bauhaus_combobox_get(b))
@@ -604,6 +611,8 @@ dt_iop_gui_update_blendif(dt_iop_module_t *module)
   dtgtk_gradient_slider_multivalue_set_increment(data->lower_slider, data->increments[tab]);
   dtgtk_gradient_slider_multivalue_set_increment(data->upper_slider, data->increments[tab]);
 
+  dt_bauhaus_slider_set(data->radius_slider, bp->radius);
+
   darktable.gui->reset = reset;
 }
 
@@ -777,16 +786,6 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     bd->lower_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
     bd->upper_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
 
-#if 0
-    for(int k=0; k < bd->numberstops[bd->tab]; k++)
-    {
-      dtgtk_gradient_slider_multivalue_set_stop(bd->lower_slider, (bd->colorstops[bd->tab])[k].stoppoint,
-          (bd->colorstops[bd->tab])[k].color);
-      dtgtk_gradient_slider_multivalue_set_stop(bd->upper_slider, (bd->colorstops[bd->tab])[k].stoppoint,
-          (bd->colorstops[bd->tab])[k].color);
-    }
-#endif
-
     bd->lower_polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
     g_object_set(G_OBJECT(bd->lower_polarity), "tooltip-text", _("toggle polarity. best seen by enabling 'display mask'"), (char *)NULL);
 
@@ -822,11 +821,16 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
       gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_label[k]), FALSE, FALSE, 0);
     }
 
+    bd->radius_slider = dt_bauhaus_slider_new_with_range(module, -100.0, 100.0, 0.1, 0.0, 1);
+    dt_bauhaus_widget_set_label(bd->radius_slider, _("mask blur"));
+    dt_bauhaus_slider_set_format(bd->radius_slider, "%.1f");
+
     gtk_object_set(GTK_OBJECT(bd->blendif_enable), "tooltip-text", _("enable conditional blending"), (char *)NULL);
     gtk_object_set(GTK_OBJECT(bd->lower_slider), "tooltip-text", _("double click to reset"), (char *)NULL);
     gtk_object_set(GTK_OBJECT(bd->upper_slider), "tooltip-text", _("double click to reset"), (char *)NULL);
     gtk_object_set(GTK_OBJECT(output), "tooltip-text", ttoutput, (char *)NULL);
     gtk_object_set(GTK_OBJECT(input), "tooltip-text", ttinput, (char *)NULL);
+    gtk_object_set(GTK_OBJECT(bd->radius_slider), "tooltip-text", _("radius for mask blur. positive values for gaussian blur. negative values for bilateral grid"), (char *)NULL);
 
 
     g_signal_connect (G_OBJECT (bd->lower_slider), "expose-event",
@@ -843,6 +847,9 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
 
     g_signal_connect (G_OBJECT (bd->upper_slider), "value-changed",
                       G_CALLBACK (_blendop_blendif_upper_callback), bd);
+
+    g_signal_connect (G_OBJECT (bd->radius_slider), "value-changed",
+                      G_CALLBACK (_blendop_blendif_radius_callback), bd);
 
     g_signal_connect (G_OBJECT (bd->lower_slider), "value-changed",
                       G_CALLBACK (_blendop_blendif_lower_callback), bd);
@@ -865,6 +872,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(upslider), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(lowlabel), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(lowslider), TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(bd->radius_slider), TRUE, FALSE, 0);
 
     gtk_box_pack_end(GTK_BOX(blendw), GTK_WIDGET(bd->blendif_box),TRUE,TRUE,0);
     gtk_box_pack_end(GTK_BOX(blendw), GTK_WIDGET(bd->blendif_enable),TRUE,TRUE,0);
