@@ -55,8 +55,8 @@ enum
   md_xmp_creator,
   md_xmp_rights,
 
-  /* geolocation */
-  md_geolocation,
+  /* geotagging */
+  md_geotagging,
 
   /* entries, do not touch! */
   md_size
@@ -91,8 +91,8 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_xmp_creator] = _("creator");
   _md_labels[md_xmp_rights] = _("copyright");
 
-  /* geolocation */
-  _md_labels[md_geolocation] = _("location");
+  /* geotagging */
+  _md_labels[md_geotagging] = _("location");
 }
 
 
@@ -250,16 +250,16 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       snprintf(value, vl, NODATA_STRING);
     _metadata_update_value(d->metadata[md_xmp_rights], value);
 
-    /* geolocation */
+    /* geotagging */
     if(isnan(img->latitude) || isnan(img->longitude))
     {
-      _metadata_update_value(d->metadata[md_geolocation], NODATA_STRING);
+      _metadata_update_value(d->metadata[md_geotagging], NODATA_STRING);
     }
     else
     {
       gchar NS = img->latitude<0?'S':'N', EW = img->longitude<0?'W':'E';
       snprintf(value, vl, "%c %09.6f / %c %010.6f", NS, fabs(img->latitude), EW, fabs(img->longitude));
-      _metadata_update_value(d->metadata[md_geolocation], value);
+      _metadata_update_value(d->metadata[md_geotagging], value);
     }
 
     /* release img */

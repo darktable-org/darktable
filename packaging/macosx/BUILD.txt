@@ -11,13 +11,16 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      default configure.ldflags   {"-L${prefix}/lib -Wl,-headerpad_max_install_names"}
     Be aware that this change will probably be lost after "port selfupdate".
     Also some versions of OS X have a bug making PTHREAD_RECURSIVE_MUTEX_INITIALIZER invalid, so gettext needs to be patched:
-     $ mkdir ~/ports/devel
+     $ mkdir -p ~/ports/devel
      $ cp -R /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/devel/gettext ~/ports/devel/
      $ curl -o ~/ports/devel/gettext/files/gettext-mutex-fix.patch https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gettext-mutex-fix.patch
     then add gettext-mutex-fix.patch to patchfiles line in ~/ports/devel/gettext/Portfile and run
      $ portindex ~/ports
+    Add "file:///Users/<username>/ports" (change <username> to your actual login) to /opt/local/etc/macports/sources.conf before [default] line.
+    To have working OpenMP (at least partly, only for C source files) you will also need gcc46:
+     sudo port install gcc46
     Configure darktable with this command instead of just "cmake ..":
-     cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.5
+     CC=gcc-mp-4.6 cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.5
 
 2). Download, patch and install gtk-mac-bundler (assuming darktable was cloned into ~/src directory):
      $ cd ~/src
@@ -27,7 +30,10 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ patch -p1 < ../darktable/packaging/macosx/gtk-mac-bundler-0.6.1.patch
      $ make install
 
-3). You will need to rebuild gtk2 with custom configure flag. Add these lines to ~/ports/gnome/gtk2/Portfile:
+3). You will need to rebuild gtk2 with custom configure flag. Copy gtk2 Portfile to your local overlay:
+     $ mkdir ~/ports/gnome
+     $ cp -R /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/gnome/gtk2 ~/ports/gnome/
+    Add these lines to ~/ports/gnome/gtk2/Portfile:
      variant bundle {
          configure.args-append --enable-quartz-relocation
      }

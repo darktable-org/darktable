@@ -22,6 +22,7 @@
 #include "common/opencl.h"
 #include "common/bilateralcl.h"
 #include "common/dlopencl.h"
+#include "common/nvidia_gpus.h"
 #include "control/conf.h"
 
 #include <string.h>
@@ -162,7 +163,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     {
       // very lame attemt to detect support for atomic float add in global memory.
       // we need compute model sm_20, but let's try for all nvidia devices :(
-      cl->dev[dev].nvidia_sm_20 = 1;
+      cl->dev[dev].nvidia_sm_20 = dt_nvidia_gpu_supports_sm_20(infostr);
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' %s sm_20 support.\n", k, infostr, cl->dev[dev].nvidia_sm_20 ? "has" : "doesn't have");
     }
 
     if(type == CL_DEVICE_TYPE_CPU)
