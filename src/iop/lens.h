@@ -45,7 +45,7 @@ typedef struct dt_iop_lensfun_gui_data_t
 {
   const lfCamera *camera;
   GtkWidget *lens_param_box;
-  GtkComboBoxEntry *cbe[3];
+  GtkWidget *cbe[3];
   GtkButton *camera_model;
   GtkMenu *camera_menu;
   GtkButton *lens_model;
