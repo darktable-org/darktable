@@ -43,7 +43,7 @@ enum _gradient_slider_direction
 {
   MOVE_LEFT = 0,
   MOVE_RIGHT = 1
-} 
+}
 _gradient_slider_direction;
 
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika, henrik andersson.
     copyright (c) 2012 Jose Carlos Garcia Sogo
 
     darktable is free software: you can redistribute it and/or modify
@@ -80,7 +80,8 @@ dt_lib_collect_t;
 typedef struct dt_lib_collect_params_t
 {
   uint32_t rules;
-  struct {
+  struct
+  {
     uint32_t item:16;
     uint32_t mode:16;
     char string[PARAM_STRING_SIZE];
@@ -125,7 +126,8 @@ static void
 row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_lib_collect_t *d);
 
 /* Update the params struct with active ruleset */
-static void _lib_collect_update_params(dt_lib_collect_t *d) {
+static void _lib_collect_update_params(dt_lib_collect_t *d)
+{
   /* reset params */
   dt_lib_collect_params_t *p = d->params;
   memset(p,0,sizeof(dt_lib_collect_params_t));
@@ -133,11 +135,12 @@ static void _lib_collect_update_params(dt_lib_collect_t *d) {
   /* for each active rule set update params */
   const int active = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules") - 1, 0, (MAX_RULES-1));
   char confname[200];
-  for (int i=0; i<=active; i++) {
+  for (int i=0; i<=active; i++)
+  {
     /* get item */
     snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
     p->rule[i].item = dt_conf_get_int(confname);
-    
+
     /* get mode */
     snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i);
     p->rule[i].mode = dt_conf_get_int(confname);
@@ -145,14 +148,15 @@ static void _lib_collect_update_params(dt_lib_collect_t *d) {
     /* get string */
     snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
     gchar* string = dt_conf_get_string(confname);
-    if (string != NULL) {
+    if (string != NULL)
+    {
       snprintf(p->rule[i].string,PARAM_STRING_SIZE,"%s", string);
       g_free(string);
     }
 
     fprintf(stderr,"[%i] %d,%d,%s\n",i, p->rule[i].item, p->rule[i].mode,  p->rule[i].string);
   }
-  
+
   p->rules = active+1;
 
 }
@@ -173,16 +177,17 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   /* update conf settings from params */
   dt_lib_collect_params_t *p = (dt_lib_collect_params_t *)params;
   char confname[200];
-  
-  for (int i=0; i<p->rules; i++) {
+
+  for (int i=0; i<p->rules; i++)
+  {
     /* set item */
     snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
     dt_conf_set_int(confname, p->rule[i].item);
-    
+
     /* set mode */
     snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i);
     dt_conf_set_int(confname, p->rule[i].mode);
-    
+
     /* set string */
     snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
     dt_conf_set_string(confname, p->rule[i].string);
@@ -204,7 +209,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
 uint32_t views()
 {
-  return DT_VIEW_LIGHTTABLE;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_MAP;
 }
 
 uint32_t container()

@@ -84,7 +84,7 @@ dt_database_t *dt_database_init(char *alternative)
   db->is_new_database = FALSE;
 
   /* test if databasefile is available */
-  if(!g_file_test(dbfilename, G_FILE_TEST_IS_REGULAR)) 
+  if(!g_file_test(dbfilename, G_FILE_TEST_IS_REGULAR))
     db->is_new_database = TRUE;
 
   /* opening / creating database */
@@ -105,7 +105,7 @@ dt_database_t *dt_database_init(char *alternative)
      used during instance life time, which is discarded on exit.
   */
   sqlite3_exec(db->handle, "attach database ':memory:' as memory",NULL,NULL,NULL);
-  
+
   sqlite3_exec(db->handle, "PRAGMA synchronous = OFF", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "PRAGMA journal_mode = MEMORY", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "PRAGMA page_size = 32768", NULL, NULL, NULL);
@@ -134,10 +134,10 @@ static void _database_migrate_to_xdg_structure()
 {
   gchar dbfilename[DT_MAX_PATH_LEN]= {0};
   gchar *conf_db = dt_conf_get_string("database");
-  
+
   gchar datadir[DT_MAX_PATH_LEN] = {0};
   dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  
+
   if (conf_db && conf_db[0] != '/')
   {
     char *homedir = getenv ("HOME");
@@ -149,8 +149,8 @@ static void _database_migrate_to_xdg_structure()
       snprintf(destdbname,DT_MAX_PATH_LEN,"%s/%s",datadir,"library.db");
       if(!g_file_test (destdbname,G_FILE_TEST_EXISTS))
       {
-	rename(dbfilename,destdbname);
-	dt_conf_set_string("database","library.db");
+        rename(dbfilename,destdbname);
+        dt_conf_set_string("database","library.db");
       }
     }
   }
@@ -175,7 +175,7 @@ static void _database_delete_mipmaps_files()
     unlink(mipmapfilename);
 
     snprintf(mipmapfilename, DT_MAX_PATH_LEN, "%s/mipmaps.fallback", cachedir);
-    
+
     if(access(mipmapfilename, F_OK) != -1)
       unlink(mipmapfilename);
   }

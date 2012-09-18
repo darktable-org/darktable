@@ -217,9 +217,9 @@ int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int
 
 dt_imageio_retval_t
 dt_imageio_open_hdr(
-    dt_image_t  *img,
-    const char  *filename,
-    dt_mipmap_cache_allocator_t a)
+  dt_image_t  *img,
+  const char  *filename,
+  dt_mipmap_cache_allocator_t a)
 {
   // needed to alloc correct buffer size:
   img->bpp = 4*sizeof(float);
@@ -244,9 +244,9 @@ return_label:
 // open a raw file, libraw path:
 dt_imageio_retval_t
 dt_imageio_open_raw(
-    dt_image_t  *img,
-    const char  *filename,
-    dt_mipmap_cache_allocator_t a)
+  dt_image_t  *img,
+  const char  *filename,
+  dt_mipmap_cache_allocator_t a)
 {
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
@@ -339,42 +339,43 @@ dt_imageio_open_raw(
   return DT_IMAGEIO_OK;
 }
 
-/* magic data: offset,length, xx, yy, ... 
+/* magic data: offset,length, xx, yy, ...
     just add magic bytes to match to this struct
     to extend mathc on ldr formats.
 */
-static const uint8_t _imageio_ldr_magic[] =  {
-    /* jpeg magics */
-    0x00, 0x02, 0xff, 0xd8,                         // SOI marker
-  
-    /* png image */
-    0x01, 0x03, 0x50, 0x4E, 0x47,                   // ASCII 'PNG'
+static const uint8_t _imageio_ldr_magic[] =
+{
+  /* jpeg magics */
+  0x00, 0x02, 0xff, 0xd8,                         // SOI marker
 
-    /* tiff image, intel */
-    // 0x00, 0x04, 0x4d, 0x4d, 0x00, 0x2a,          // unfortunately fails because raw is similar
+  /* png image */
+  0x01, 0x03, 0x50, 0x4E, 0x47,                   // ASCII 'PNG'
 
-    /* tiff image, motorola */
-    // 0x00, 0x04, 0x49, 0x49, 0x2a, 0x00
+  /* tiff image, intel */
+  // 0x00, 0x04, 0x4d, 0x4d, 0x00, 0x2a,          // unfortunately fails because raw is similar
+
+  /* tiff image, motorola */
+  // 0x00, 0x04, 0x49, 0x49, 0x2a, 0x00
 };
 
 gboolean dt_imageio_is_ldr(const char *filename)
 {
   int offset=0;
-  uint8_t block[16]={0};
+  uint8_t block[16]= {0};
   FILE *fin = fopen(filename,"rb");
   if (fin)
   {
     /* read block from file */
     int s = fread(block,16,1,fin);
     fclose(fin);
-    
+
     /* compare magic's */
     while (s)
     {
       if (memcmp(_imageio_ldr_magic+offset+2, block + _imageio_ldr_magic[offset], _imageio_ldr_magic[offset+1]) == 0)
-          return TRUE;
+        return TRUE;
       offset += 2 + (_imageio_ldr_magic+offset)[1];
-      
+
       /* check if finished */
       if(offset >= sizeof(_imageio_ldr_magic))
         break;
@@ -386,9 +387,9 @@ gboolean dt_imageio_is_ldr(const char *filename)
 // transparent read method to load ldr image to dt_raw_image_t with exif and so on.
 dt_imageio_retval_t
 dt_imageio_open_ldr(
-    dt_image_t *img,
-    const char *filename,
-    dt_mipmap_cache_allocator_t a)
+  dt_image_t *img,
+  const char *filename,
+  dt_mipmap_cache_allocator_t a)
 {
   dt_imageio_retval_t ret;
   ret = dt_imageio_open_tiff(img, filename, a);
@@ -454,29 +455,29 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
 }
 
 int dt_imageio_export(
-    const uint32_t              imgid,
-    const char                 *filename,
-    dt_imageio_module_format_t *format,
-    dt_imageio_module_data_t   *format_params)
+  const uint32_t              imgid,
+  const char                 *filename,
+  dt_imageio_module_format_t *format,
+  dt_imageio_module_data_t   *format_params)
 {
   if (strcmp(format->mime(format_params),"x-copy")==0)
     /* This is a just a copy, skip process and just export */
-    return format->write_image(format_params, filename, NULL, NULL, 0, imgid);    
+    return format->write_image(format_params, filename, NULL, NULL, 0, imgid);
   else
     return dt_imageio_export_with_flags(imgid, filename, format, format_params,
-					0, 0, dt_conf_get_bool("plugins/lighttable/export/high_quality_processing"), 0);
+                                        0, 0, dt_conf_get_bool("plugins/lighttable/export/high_quality_processing"), 0);
 }
 
 // internal function: to avoid exif blob reading + 8-bit byteorder flag + high-quality override
 int dt_imageio_export_with_flags(
-    const uint32_t              imgid,
-    const char                 *filename,
-    dt_imageio_module_format_t *format,
-    dt_imageio_module_data_t   *format_params,
-    const int32_t               ignore_exif,
-    const int32_t               display_byteorder,
-    const int32_t               high_quality,
-    const int32_t               thumbnail_export)
+  const uint32_t              imgid,
+  const char                 *filename,
+  dt_imageio_module_format_t *format,
+  dt_imageio_module_data_t   *format_params,
+  const int32_t               ignore_exif,
+  const int32_t               display_byteorder,
+  const int32_t               high_quality,
+  const int32_t               thumbnail_export)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
@@ -547,7 +548,7 @@ int dt_imageio_export_with_flags(
   // get only once at the beginning, in case the user changes it on the way:
   const int high_quality_processing = ((format_params->max_width  == 0 || format_params->max_width  >= pipe.processed_width ) &&
                                        (format_params->max_height == 0 || format_params->max_height >= pipe.processed_height)) ? 0 :
-                                        high_quality;
+                                      high_quality;
   const int width  = high_quality_processing ? 0 : format_params->max_width;
   const int height = high_quality_processing ? 0 : format_params->max_height;
   const float scalex = width  > 0 ? fminf(width /(float)pipe.processed_width,  1.0) : 1.0;
@@ -600,7 +601,7 @@ int dt_imageio_export_with_flags(
       const float *const inbuf = (float *)outbuf;
       for(int k=0; k<processed_width*processed_height; k++)
       {
-        // convert in place, this is unfortunately very serial.. 
+        // convert in place, this is unfortunately very serial..
         const uint8_t r = CLAMP(inbuf[4*k+0]*0xff, 0, 0xff);
         const uint8_t g = CLAMP(inbuf[4*k+1]*0xff, 0, 0xff);
         const uint8_t b = CLAMP(inbuf[4*k+2]*0xff, 0, 0xff);
@@ -613,7 +614,7 @@ int dt_imageio_export_with_flags(
     {
       uint8_t *const buf8 = pipe.backbuf;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(processed_width, processed_height) schedule(static)
+      #pragma omp parallel for default(none) shared(processed_width, processed_height) schedule(static)
 #endif
       // just flip byte order
       for(int k=0; k<processed_width*processed_height; k++)
@@ -630,11 +631,11 @@ int dt_imageio_export_with_flags(
     float    *buff  = (float *)   outbuf;
     uint16_t *buf16 = (uint16_t *)outbuf;
     for(int y=0; y<processed_height; y++) for(int x=0; x<processed_width ; x++)
-    {
-      // convert in place
-      const int k = x + processed_width*y;
-      for(int i=0; i<3; i++) buf16[4*k+i] = CLAMP(buff[4*k+i]*0x10000, 0, 0xffff);
-    }
+      {
+        // convert in place
+        const int k = x + processed_width*y;
+        for(int i=0; i<3; i++) buf16[4*k+i] = CLAMP(buff[4*k+i]*0x10000, 0, 0xffff);
+      }
   }
   // else output float, no further harm done to the pixels :)
 
@@ -677,24 +678,24 @@ has_ldr_extension(const char *filename)
   for(; *cc!='.'&&cc>filename; cc--);
   gchar *ext = g_ascii_strdown(cc+1, -1);
   if(!strcmp(ext, "jpg") || !strcmp(ext, "jpeg") ||
-     !strcmp(ext, "tif") || !strcmp(ext, "tiff"))
-     ret = 1;
+      !strcmp(ext, "tif") || !strcmp(ext, "tiff"))
+    ret = 1;
   g_free(ext);
   return ret;
 }
 
 dt_imageio_retval_t
 dt_imageio_open(
-    dt_image_t  *img,               // non-const * means you hold a write lock!
-    const char  *filename,          // full path
-    dt_mipmap_cache_allocator_t a)  // allocate via dt_mipmap_cache_alloc
+  dt_image_t  *img,               // non-const * means you hold a write lock!
+  const char  *filename,          // full path
+  dt_mipmap_cache_allocator_t a)  // allocate via dt_mipmap_cache_alloc
 {
   /* first of all, check if file exists, dont bother to test loading if not exists */
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
     return !DT_IMAGEIO_OK;
-  
+
   dt_imageio_retval_t ret = DT_IMAGEIO_FILE_CORRUPTED;
-  
+
   /* check if file is ldr using magic's */
   if (dt_imageio_is_ldr(filename))
     ret = dt_imageio_open_ldr(img, filename, a);

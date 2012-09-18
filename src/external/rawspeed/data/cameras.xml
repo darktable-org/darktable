@@ -109,7 +109,7 @@
 		<Alias>Canon EOS 350D</Alias>
 	</Aliases>
   </Camera>
-  <Camera make="Canon" model="Canon EOS 40D" decoder_version="1">
+  <Camera make="Canon" model="Canon EOS 40D" decoder_version="2">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
       <Color x="1" y="0">GREEN</Color>
@@ -129,6 +129,9 @@
   <Camera make="Canon" model="Canon EOS 40D" mode="sRaw2">
     <Crop x="0" y="0" width="1944" height="1296"/>
     <Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="sraw_40d" value=""/>
+		</Hints>
   </Camera>
   <Camera make="Canon" model="Canon EOS 450D">
     <CFA width="2" height="2">
@@ -302,7 +305,7 @@
     <Sensor black="0" white="57200" iso_list="160 320 640 1250"/>
     <Sensor black="0" white="64948"/>
   </Camera>
-  <Camera make="Canon" model="Canon EOS 5D Mark III" decoder_version="1">
+  <Camera make="Canon" model="Canon EOS 5D Mark III" decoder_version="2">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
       <Color x="1" y="0">GREEN</Color>
@@ -315,17 +318,22 @@
     <Vertical x="0" width="120"/>
     <Horizontal y="2" height="78"/>
   </BlackAreas>
-		<Hints>
-			<Hint name="sraw_new" value=""/>
-		</Hints>
   </Camera>
   <Camera make="Canon" model="Canon EOS 5D Mark III" mode="sRaw1">
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="0" white="65535"/>
+    <Sensor black="0" white="48664"/>
+    <Hints>
+      <Hint name="sraw_new" value=""/>
+      <Hint name="invert_sraw_wb" value=""/>
+    </Hints>
   </Camera>
   <Camera make="Canon" model="Canon EOS 5D Mark III" mode="sRaw2">
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="0" white="65535"/>
+    <Sensor black="0" white="48664"/>
+    <Hints>
+      <Hint name="sraw_new" value=""/>
+      <Hint name="invert_sraw_wb" value=""/>
+    </Hints>
   </Camera>
   <Camera make="Canon" model="Canon EOS 7D" decoder_version="1">
     <CFA width="2" height="2">
@@ -1937,6 +1945,14 @@
       <Color x="1" y="1">BLUE</Color>
     </CFA>
     <Crop x="0" y="0" width="3900" height="2616"/>
+    <Sensor black="0" white="4095"/>
+  </Camera>
+  <Camera make="SAMSUNG" model="EX2F">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color><Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color><Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="22" y="12" width="-148" height="-18"/>
     <Sensor black="0" white="4095"/>
   </Camera>
   <Camera make="SAMSUNG" model="EX1">

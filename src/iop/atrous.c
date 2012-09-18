@@ -134,7 +134,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_accel_connect_slider_iop(self ,"mix",
-      ((dt_iop_atrous_gui_data_t*)self->gui_data)->mix);
+                              ((dt_iop_atrous_gui_data_t*)self->gui_data)->mix);
 }
 
 
@@ -498,7 +498,7 @@ process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, voi
     buf1 = buf3;
   }
   /* due to symmetric processing, output will be left in (float *)o */
- 
+
   for(int k=0; k<max_scale; k++) free(detail[k]);
   free(tmp);
 
@@ -1309,8 +1309,8 @@ area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
     reset_mix(self);
     for(int k=0; k<BANDS; k++)
     {
-        p->x[c->channel2][k] = d->x[c->channel2][k];
-        p->y[c->channel2][k] = d->y[c->channel2][k];
+      p->x[c->channel2][k] = d->x[c->channel2][k];
+      p->y[c->channel2][k] = d->y[c->channel2][k];
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(self->widget);

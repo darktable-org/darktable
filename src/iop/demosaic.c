@@ -330,7 +330,7 @@ green_equilibration_lavg(float *out, const float *const in, const int width, con
   if(FC(oj+y, oi+x, filters) != 1) oj++;
   if(FC(oj+y, oi+x, filters) != 1) oi++;
   if(FC(oj+y, oi+x, filters) != 1) oj--;
-  
+
   if(!in_place)
     memcpy(out,in,height*width*sizeof(float));
 
@@ -676,20 +676,20 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
       switch(data->green_eq)
       {
         case DT_IOP_GREEN_EQ_FULL:
-          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, 
-                        data->filters,  roi_in->x, roi_in->y);
+          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height,
+                                   data->filters,  roi_in->x, roi_in->y);
           break;
         case DT_IOP_GREEN_EQ_LOCAL:
           green_equilibration_lavg(in, pixels, roi_in->width, roi_in->height,
-                        data->filters, roi_in->x, roi_in->y, 0);
+                                   data->filters, roi_in->x, roi_in->y, 0);
           break;
         case DT_IOP_GREEN_EQ_BOTH:
-          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, 
-                        data->filters,  roi_in->x, roi_in->y);
+          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height,
+                                   data->filters,  roi_in->x, roi_in->y);
           green_equilibration_lavg(in, in, roi_in->width, roi_in->height,
-                        data->filters, roi_in->x, roi_in->y, 1);
+                                   data->filters, roi_in->x, roi_in->y, 1);
           break;
-      } 
+      }
       if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg((float *)o, in, &roo, &roi, data->filters, data->median_thrs);
       else
@@ -705,8 +705,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     }
   }
   else if(roi_out->scale > .5f ||  // full needed because zoomed in enough
-      (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||  // or in darkroom mode and quality requested by user settings
-      (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))              // we assume you always want that for exports.
+          (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||  // or in darkroom mode and quality requested by user settings
+          (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))              // we assume you always want that for exports.
   {
     // demosaic and then clip and zoom
     // roo.x = roi_out->x / global_scale;
@@ -722,18 +722,18 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
       switch(data->green_eq)
       {
         case DT_IOP_GREEN_EQ_FULL:
-          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, 
-                        data->filters,  roi_in->x, roi_in->y);
+          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height,
+                                   data->filters,  roi_in->x, roi_in->y);
           break;
         case DT_IOP_GREEN_EQ_LOCAL:
           green_equilibration_lavg(in, pixels, roi_in->width, roi_in->height,
-                        data->filters, roi_in->x, roi_in->y, 0);
+                                   data->filters, roi_in->x, roi_in->y, 0);
           break;
         case DT_IOP_GREEN_EQ_BOTH:
-          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, 
-                        data->filters,  roi_in->x, roi_in->y);
+          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height,
+                                   data->filters,  roi_in->x, roi_in->y);
           green_equilibration_lavg(in, in, roi_in->width, roi_in->height,
-                        data->filters, roi_in->x, roi_in->y, 1);
+                                   data->filters, roi_in->x, roi_in->y, 1);
           break;
       }
       // wanted ppg or zoomed out a lot and quality is limited to 1
@@ -800,13 +800,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     const int width = roi_out->width;
     const int height = roi_out->height;
     size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
-     // 1:1 demosaic
+    // 1:1 demosaic
     dev_green_eq = NULL;
     if(data->green_eq != DT_IOP_GREEN_EQ_NO)
     {
       // green equilibration
       dev_green_eq = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float));
-      if (dev_green_eq == NULL) goto error;      
+      if (dev_green_eq == NULL) goto error;
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 0, sizeof(cl_mem), &dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 1, sizeof(cl_mem), &dev_green_eq);
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 2, sizeof(int), &width);
@@ -868,8 +868,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   }
   else if(roi_out->scale > .5f ||  // full needed because zoomed in enough
-      (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||  // or in darkroom mode and quality requested by user settings
-      (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))              // we assume you always want that for exports.
+          (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||  // or in darkroom mode and quality requested by user settings
+          (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))              // we assume you always want that for exports.
   {
     // need to scale to right res
     dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4*sizeof(float));
@@ -1016,21 +1016,21 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     size_t workgroupsize = 0;          // the maximum number of items in a work group
     unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
     size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
-  
+
     // Make sure blocksize is not too large. As our kernel is very register hungry we
     // need to take maximum work group size into account
     int blocksize = BLOCKSIZE;
     int blockwd;
     int blockht;
     if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-       dt_opencl_get_kernel_work_group_size(devid, gd->kernel_color_smoothing, &kernelworkgroupsize) == CL_SUCCESS)
+        dt_opencl_get_kernel_work_group_size(devid, gd->kernel_color_smoothing, &kernelworkgroupsize) == CL_SUCCESS)
     {
 
       while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize*blocksize > workgroupsize ||
             (blocksize+2)*(blocksize+2)*4*sizeof(float) > localmemsize)
       {
         if(blocksize == 1) break;
-        blocksize >>= 1;    
+        blocksize >>= 1;
       }
 
       blockwd = blockht = blocksize;

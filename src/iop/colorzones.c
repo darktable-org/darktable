@@ -191,7 +191,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 4, sizeof(int), (void *)&d->channel); 
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 4, sizeof(int), (void *)&d->channel);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 5, sizeof(cl_mem), (void *)&dev_L);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 6, sizeof(cl_mem), (void *)&dev_a);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorzones, 7, sizeof(cl_mem), (void *)&dev_b);
@@ -200,7 +200,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_L);
   dt_opencl_release_mem_object(dev_a);
-  dt_opencl_release_mem_object(dev_b); 
+  dt_opencl_release_mem_object(dev_b);
   return TRUE;
 
 error:
@@ -892,11 +892,11 @@ request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   self->request_color_pick = gtk_toggle_button_get_active(togglebutton);
   if(darktable.gui->reset) return;
-  
+
   /* set the area sample size*/
   if (self->request_color_pick)
     dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
-  
+
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
 }

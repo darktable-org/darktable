@@ -127,11 +127,11 @@ void capture_view_switch_key_accel(void *p)
 }
 
 gboolean film_strip_key_accel(GtkAccelGroup *accel_group,
-                          GObject *acceleratable,
-                          guint keyval, GdkModifierType modifier,
-                          gpointer data)
+                              GObject *acceleratable,
+                              guint keyval, GdkModifierType modifier,
+                              gpointer data)
 {
-  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module; 
+  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
   gboolean vs = dt_lib_is_visible(m);
   dt_lib_set_visible(m,!vs);
   return TRUE;
@@ -219,7 +219,7 @@ const gchar *_capture_view_get_session_filename(const dt_view_t *view,const char
 
   // Start check if file exist if it does, increase sequence and check again til we know that file doesnt exists..
   gchar *fullfile = g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
-  
+
   if( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE )
   {
     do
@@ -371,9 +371,9 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   else if( lib->image_id >= 0 )  // First of all draw image if availble
   {
     cairo_translate(cr,MARGIN, MARGIN);
-    dt_view_image_expose(&(lib->image_over), lib->image_id, 
-              cr, width-(MARGIN*2.0f), height-(MARGIN*2.0f), 1, 
-              pointerx, pointery);
+    dt_view_image_expose(&(lib->image_over), lib->image_id,
+                         cr, width-(MARGIN*2.0f), height-(MARGIN*2.0f), 1,
+                         pointerx, pointery);
   }
 }
 
@@ -447,15 +447,15 @@ void enter(dt_view_t *self)
 
   /* connect signal for mipmap update for a redraw */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-			    G_CALLBACK(_capture_mipamps_updated_signal_callback), 
-          (gpointer)self);
+                            G_CALLBACK(_capture_mipamps_updated_signal_callback),
+                            (gpointer)self);
 
 
   /* connect signal for fimlstrip image activate */
-  dt_control_signal_connect(darktable.signals, 
-			    DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
-			    G_CALLBACK(_view_capture_filmstrip_activate_callback),
-			    self);
+  dt_control_signal_connect(darktable.signals,
+                            DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+                            G_CALLBACK(_view_capture_filmstrip_activate_callback),
+                            self);
 
   dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->image_id, TRUE);
 
@@ -480,8 +480,8 @@ void leave(dt_view_t *self)
 
   /* disconnect from filmstrip image activate */
   dt_control_signal_disconnect(darktable.signals,
-			       G_CALLBACK(_view_capture_filmstrip_activate_callback),
-			       (gpointer)self);
+                               G_CALLBACK(_view_capture_filmstrip_activate_callback),
+                               (gpointer)self);
 }
 
 void reset(dt_view_t *self)

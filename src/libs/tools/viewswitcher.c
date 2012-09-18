@@ -48,7 +48,7 @@ const char* name()
 
 uint32_t views()
 {
-  return DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
+  return DT_VIEW_ALL;
 }
 
 uint32_t container()
@@ -56,7 +56,7 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_TOP_RIGHT;
 }
 
-int expandable() 
+int expandable()
 {
   return 0;
 }
@@ -74,8 +74,8 @@ void gui_init(dt_lib_module_t *self)
   memset(d,0,sizeof(dt_lib_viewswitcher_t));
 
   self->widget = gtk_hbox_new(FALSE,5);
-  
-  for (int k=0;k<darktable.view_manager->num_views;k++)
+
+  for (int k=0; k<darktable.view_manager->num_views; k++)
   {
     if (darktable.view_manager->view[k].module)
     {
@@ -96,10 +96,10 @@ void gui_init(dt_lib_module_t *self)
 
     }
   }
-  
+
   /* connect callback to view change signal */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, 
-			    G_CALLBACK(_lib_viewswitcher_view_changed_callback), self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
+                            G_CALLBACK(_lib_viewswitcher_view_changed_callback), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -115,30 +115,30 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static void _lib_viewswitcher_enter_notify_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
 {
-  char label[512]={0};
+  char label[512]= {0};
   GtkLabel *l = (GtkLabel *)user_data;
 
   /* if not active view lets highlight */
-  if (strcmp(g_object_get_data(G_OBJECT(w),"view-label"), 
-	     dt_view_manager_name(darktable.view_manager)))
+  if (strcmp(g_object_get_data(G_OBJECT(w),"view-label"),
+             dt_view_manager_name(darktable.view_manager)))
   {
     g_snprintf(label,512,LABEL_HIGHLIGHTED,
-	       (gchar *)g_object_get_data(G_OBJECT(w),"view-label"));
+               (gchar *)g_object_get_data(G_OBJECT(w),"view-label"));
     gtk_label_set_markup(l,label);
   }
 }
 
 static void _lib_viewswitcher_leave_notify_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
 {
-  char label[512]={0};
+  char label[512]= {0};
   GtkLabel *l = (GtkLabel *)user_data;
 
   /* if not active view lets set default */
-  if (strcmp(g_object_get_data(G_OBJECT(w),"view-label"), 
-	     dt_view_manager_name(darktable.view_manager)))
+  if (strcmp(g_object_get_data(G_OBJECT(w),"view-label"),
+             dt_view_manager_name(darktable.view_manager)))
   {
     g_snprintf(label,512,LABEL_DEFAULT,
-	       (gchar *)g_object_get_data(G_OBJECT(w),"view-label"));
+               (gchar *)g_object_get_data(G_OBJECT(w),"view-label"));
     gtk_label_set_markup(l,label);
   }
 }
@@ -162,14 +162,14 @@ static void _lib_viewswitcher_view_changed_callback(gpointer instance, gpointer 
     }
 
     GtkLabel *w = GTK_LABEL(gtk_bin_get_child(GTK_BIN(childs->data)));
-    char label[512]={0};
+    char label[512]= {0};
     /* check if current is the same as the one we iterate, then hilite */
     if(!strcmp(g_object_get_data(G_OBJECT(w),"view-label"),dt_view_manager_name(darktable.view_manager)))
       g_snprintf(label,512,LABEL_SELECTED,
-		 (gchar *)g_object_get_data(G_OBJECT(w),"view-label"));
+                 (gchar *)g_object_get_data(G_OBJECT(w),"view-label"));
     else
       g_snprintf(label,512,LABEL_DEFAULT,
-		 (gchar *)g_object_get_data(G_OBJECT(w),"view-label"));
+                 (gchar *)g_object_get_data(G_OBJECT(w),"view-label"));
 
     /* set label */
     gtk_label_set_markup(w,label);
@@ -182,7 +182,7 @@ static void _lib_viewswitcher_view_changed_callback(gpointer instance, gpointer 
 static GtkWidget* _lib_viewswitcher_create_label(dt_view_t *v)
 {
   GtkWidget *eb = gtk_event_box_new();
-  char label[512]={0};
+  char label[512]= {0};
   g_snprintf(label,512,LABEL_DEFAULT,v->name(v));
   GtkWidget *b = gtk_label_new(label);
   gtk_container_add(GTK_CONTAINER(eb),b);
@@ -192,21 +192,21 @@ static GtkWidget* _lib_viewswitcher_create_label(dt_view_t *v)
   g_object_set_data(G_OBJECT(eb),"view-label",(gchar *)v->name(v));
   gtk_label_set_use_markup(GTK_LABEL(b), TRUE);
   gtk_widget_set_name(b,"view_label");
-  
+
   /* connect button press handler */
   g_signal_connect(G_OBJECT(eb),"button-press-event", G_CALLBACK(_lib_viewswitcher_button_press_callback), (gpointer)(long)v->view(v));
 
   /* set enter/leave notify events and connect signals */
   gtk_widget_add_events(GTK_WIDGET(eb),
-			GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-  
-  g_signal_connect(G_OBJECT(eb), 
-		   "enter-notify-event", 
-		   G_CALLBACK(_lib_viewswitcher_enter_notify_callback), b);
-  g_signal_connect(G_OBJECT(eb), 
-		   "leave-notify-event", 
-		   G_CALLBACK(_lib_viewswitcher_leave_notify_callback), b);
-  
+                        GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+
+  g_signal_connect(G_OBJECT(eb),
+                   "enter-notify-event",
+                   G_CALLBACK(_lib_viewswitcher_enter_notify_callback), b);
+  g_signal_connect(G_OBJECT(eb),
+                   "leave-notify-event",
+                   G_CALLBACK(_lib_viewswitcher_leave_notify_callback), b);
+
 
 
   return eb;
@@ -214,12 +214,14 @@ static GtkWidget* _lib_viewswitcher_create_label(dt_view_t *v)
 
 static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w,GdkEventButton *ev,gpointer user_data)
 {
-  if(ev->button == 1) 
+  if(ev->button == 1)
   {
     /* FIXME: get rid of these mappings and old DT_xxx */
-    if ((long)user_data == DT_VIEW_LIGHTTABLE)
+    if ((long)user_data == DT_VIEW_MAP)
+      dt_ctl_switch_mode_to(DT_MAP);
+    else if ((long)user_data == DT_VIEW_LIGHTTABLE)
       dt_ctl_switch_mode_to(DT_LIBRARY);
-    else if ((long)user_data == DT_VIEW_DARKROOM) 
+    else if ((long)user_data == DT_VIEW_DARKROOM)
       dt_ctl_switch_mode_to(DT_DEVELOP);
     else if ((long)user_data == DT_VIEW_TETHERING)
       dt_ctl_switch_mode_to(DT_CAPTURE);

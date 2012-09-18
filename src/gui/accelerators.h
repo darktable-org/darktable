@@ -66,7 +66,7 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local,
 void dt_accel_register_lib(dt_lib_module_t *self,const gchar *path,
                            guint accel_key, GdkModifierType mods);
 void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local,
-                           const gchar *path);
+                                  const gchar *path);
 
 // Accelerator connection functions
 void dt_accel_connect_global(const gchar *path, GClosure *closure);

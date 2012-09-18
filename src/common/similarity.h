@@ -22,23 +22,23 @@
 
 typedef struct dt_similarity_t
 {
-	float histogram_weight;
-	float lightmap_weight;
-	float redmap_weight;
-	float greenmap_weight;
-	float bluemap_weight;
+  float histogram_weight;
+  float lightmap_weight;
+  float redmap_weight;
+  float greenmap_weight;
+  float bluemap_weight;
 } dt_similarity_t;
 
 #define DT_SIMILARITY_HISTOGRAM_BUCKETS 8
 typedef struct dt_similarity_histogram_t
 {
-	float rgbl[DT_SIMILARITY_HISTOGRAM_BUCKETS][4];
-}dt_similarity_histogram_t;
-	
+  float rgbl[DT_SIMILARITY_HISTOGRAM_BUCKETS][4];
+} dt_similarity_histogram_t;
+
 #define DT_SIMILARITY_LIGHTMAP_SIZE 10
 typedef struct dt_similarity_imagemap_t
 {
-	uint8_t pixels[DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE*4];
+  uint8_t pixels[DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE*4];
 } dt_similarity_lightmap_t;
 
 void dt_similarity_image_dirty(uint32_t imgid);

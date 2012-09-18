@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,6 +18,7 @@
 */
 #include "common/darktable.h"
 #include "control/control.h"
+#include "control/jobs/control_jobs.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
@@ -32,9 +34,9 @@ DT_MODULE(1)
 typedef struct dt_lib_image_t
 {
   GtkWidget
-      *rotate_cw_button, *rotate_ccw_button, *remove_button,
-      *delete_button, *create_hdr_button, *duplicate_button, *reset_button,
-      *move_button, *copy_button;
+  *rotate_cw_button, *rotate_ccw_button, *remove_button,
+  *delete_button, *create_hdr_button, *duplicate_button, *reset_button,
+  *move_button, *copy_button;
 }
 dt_lib_image_t;
 
@@ -126,10 +128,10 @@ gui_init (dt_lib_module_t *self)
 
   button = gtk_button_new_with_label(_("duplicate"));
   d->duplicate_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("add a duplicate to the collection"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("add a duplicate to the collection, including its history stack"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)3);
-  
+
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 

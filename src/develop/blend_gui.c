@@ -65,62 +65,62 @@ _iop_gui_blendif_channel_t;
 
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_L[] =
-{ 
-  { 0.0f, { 0, 0, 0, 0 } },
-  { 0.5f, { 0, LIGHTNESS/2, LIGHTNESS/2, LIGHTNESS/2 } },
-  { 1.0f, { 0, LIGHTNESS, LIGHTNESS, LIGHTNESS } } 
-};
-                                  
-static const dt_iop_gui_blendif_colorstop_t _gradient_a[] =
-{
-  { 0.0f, { 0, 0, 0.34*LIGHTNESS*2, 0.27*LIGHTNESS*2 } },
-  { 0.5f, { 0, LIGHTNESS, LIGHTNESS, LIGHTNESS } },
-  { 1.0f, { 0, 0.53*LIGHTNESS*2, 0.08*LIGHTNESS*2, 0.28*LIGHTNESS*2 } } 
-};
-
-static const dt_iop_gui_blendif_colorstop_t _gradient_b[] = 
-{
-  { 0.0f, { 0, 0, 0.27*LIGHTNESS*2, 0.58*LIGHTNESS*2 } },
-  { 0.5f, { 0, LIGHTNESS, LIGHTNESS, LIGHTNESS } },
-  { 1.0f, { 0, 0.81*LIGHTNESS*2, 0.66*LIGHTNESS*2, 0 } } 
-};
-
-static const dt_iop_gui_blendif_colorstop_t _gradient_gray[] = 
 {
   { 0.0f, { 0, 0, 0, 0 } },
   { 0.5f, { 0, LIGHTNESS/2, LIGHTNESS/2, LIGHTNESS/2 } },
   { 1.0f, { 0, LIGHTNESS, LIGHTNESS, LIGHTNESS } }
 };
 
-static const dt_iop_gui_blendif_colorstop_t _gradient_red[] = 
+static const dt_iop_gui_blendif_colorstop_t _gradient_a[] =
+{
+  { 0.0f, { 0, 0, 0.34*LIGHTNESS*2, 0.27*LIGHTNESS*2 } },
+  { 0.5f, { 0, LIGHTNESS, LIGHTNESS, LIGHTNESS } },
+  { 1.0f, { 0, 0.53*LIGHTNESS*2, 0.08*LIGHTNESS*2, 0.28*LIGHTNESS*2 } }
+};
+
+static const dt_iop_gui_blendif_colorstop_t _gradient_b[] =
+{
+  { 0.0f, { 0, 0, 0.27*LIGHTNESS*2, 0.58*LIGHTNESS*2 } },
+  { 0.5f, { 0, LIGHTNESS, LIGHTNESS, LIGHTNESS } },
+  { 1.0f, { 0, 0.81*LIGHTNESS*2, 0.66*LIGHTNESS*2, 0 } }
+};
+
+static const dt_iop_gui_blendif_colorstop_t _gradient_gray[] =
+{
+  { 0.0f, { 0, 0, 0, 0 } },
+  { 0.5f, { 0, LIGHTNESS/2, LIGHTNESS/2, LIGHTNESS/2 } },
+  { 1.0f, { 0, LIGHTNESS, LIGHTNESS, LIGHTNESS } }
+};
+
+static const dt_iop_gui_blendif_colorstop_t _gradient_red[] =
 {
   { 0.0f, { 0, 0, 0, 0 } },
   { 0.5f, { 0, LIGHTNESS/2, 0, 0 } },
   { 1.0f, { 0, LIGHTNESS, 0, 0 } }
 };
 
-static const dt_iop_gui_blendif_colorstop_t _gradient_green[] = 
+static const dt_iop_gui_blendif_colorstop_t _gradient_green[] =
 {
   { 0.0f, { 0, 0, 0, 0 } },
   { 0.5f, { 0, 0, LIGHTNESS/2, 0 } },
   { 1.0f, { 0, 0, LIGHTNESS, 0 } }
 };
 
-static const dt_iop_gui_blendif_colorstop_t _gradient_blue[] = 
+static const dt_iop_gui_blendif_colorstop_t _gradient_blue[] =
 {
   { 0.0f, { 0, 0, 0, 0 } },
   { 0.5f, { 0, 0, 0, LIGHTNESS/2 } },
   { 1.0f, { 0, 0, 0, LIGHTNESS } }
 };
 
-static const dt_iop_gui_blendif_colorstop_t _gradient_chroma[] = 
+static const dt_iop_gui_blendif_colorstop_t _gradient_chroma[] =
 {
   { 0.0f, { 0, LIGHTNESS, LIGHTNESS, LIGHTNESS } },
   { 0.5f, { 0, LIGHTNESS, LIGHTNESS/2, LIGHTNESS } },
   { 1.0f, { 0, LIGHTNESS, 0, LIGHTNESS } }
 };
 
-static const dt_iop_gui_blendif_colorstop_t _gradient_hue[] = 
+static const dt_iop_gui_blendif_colorstop_t _gradient_hue[] =
 {
   { 0.0f,   { 0, 1.00f*1.5f*LIGHTNESS, 0.68f*1.5f*LIGHTNESS, 0.78f*1.5f*LIGHTNESS } },
   { 0.166f, { 0, 0.95f*1.5f*LIGHTNESS, 0.73f*1.5f*LIGHTNESS, 0.56f*1.5f*LIGHTNESS } },
@@ -131,7 +131,7 @@ static const dt_iop_gui_blendif_colorstop_t _gradient_hue[] =
   { 1.0f,   { 0, 1.00f*1.5f*LIGHTNESS, 0.68f*1.5f*LIGHTNESS, 0.78f*1.5f*LIGHTNESS } }
 };
 
-static const dt_iop_gui_blendif_colorstop_t _gradient_HUE[] = 
+static const dt_iop_gui_blendif_colorstop_t _gradient_HUE[] =
 {
   { 0.0f,   { 0, LIGHTNESS, 0, 0 } },
   { 0.166f, { 0, LIGHTNESS, LIGHTNESS, 0 } },
@@ -143,7 +143,7 @@ static const dt_iop_gui_blendif_colorstop_t _gradient_HUE[] =
 };
 
 
-static inline void 
+static inline void
 _RGB_2_HSL(const float *RGB, float *HSL)
 {
   float H, S, L;
@@ -187,7 +187,7 @@ _RGB_2_HSL(const float *RGB, float *HSL)
 }
 
 
-static inline void 
+static inline void
 _Lab_2_LCH(const float *Lab, float *LCH)
 {
   float var_H = atan2f(Lab[2], Lab[1]);
@@ -216,7 +216,7 @@ _blendif_scale(dt_iop_colorspace_type_t cst, const float *in, float *out)
       out[3] = CLAMP_RANGE(temp[1] / (128.0f * sqrtf(2.0f)), 0.0f, 1.0f);
       out[4] = CLAMP_RANGE(temp[2], 0.0f, 1.0f);
       out[5] = out[6] = out[7] = -1;
-    break;
+      break;
     case iop_cs_rgb:
       _RGB_2_HSL(in, temp);
       out[0] = CLAMP_RANGE(0.3f*in[0] + 0.59f*in[1] + 0.11f*in[2], 0.0f, 1.0f);
@@ -227,7 +227,7 @@ _blendif_scale(dt_iop_colorspace_type_t cst, const float *in, float *out)
       out[5] = CLAMP_RANGE(temp[1], 0.0f, 1.0f);
       out[6] = CLAMP_RANGE(temp[2], 0.0f, 1.0f);
       out[7] = -1;
-    break;
+      break;
     default:
       out[0] = out[1] = out[2] = out[3] = out[4] = out[5] = out[6] = out[7] = -1.0f;
   }
@@ -248,7 +248,7 @@ _blendif_cook(dt_iop_colorspace_type_t cst, const float *in, float *out)
       out[3] = temp[1] / (128.0f * sqrtf(2.0f)) * 100.0f;
       out[4] = temp[2]*360.0f;
       out[5] = out[6] = out[7] = -1;
-    break;
+      break;
     case iop_cs_rgb:
       _RGB_2_HSL(in, temp);
       out[0] = (0.3f*in[0] + 0.59f*in[1] + 0.11f*in[2])*255.0f;
@@ -259,7 +259,7 @@ _blendif_cook(dt_iop_colorspace_type_t cst, const float *in, float *out)
       out[5] = temp[1]*100.0f;
       out[6] = temp[2]*100.0f;
       out[7] = -1;
-    break;
+      break;
     default:
       out[0] = out[1] = out[2] = out[3] = out[4] = out[5] = out[6] = out[7] = -1.0f;
   }
@@ -388,7 +388,7 @@ _blendop_blendif_lower_callback (GtkDarktableGradientSlider *slider, dt_iop_gui_
   int ch = data->channels[tab][0];
 
   float *parameters = &(bp->blendif_parameters[4*ch]);
-  
+
   for(int k=0; k < 4; k++)
     parameters[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
 
@@ -450,11 +450,11 @@ _blendop_blendif_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *mo
   module->request_color_pick = gtk_toggle_button_get_active(togglebutton);
   if(darktable.gui->reset) return;
 
-  
+
   /* set the area sample size*/
   if (module->request_color_pick)
     dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
-  
+
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
 }
@@ -596,9 +596,9 @@ dt_iop_gui_update_blendif(dt_iop_module_t *module)
   for(int k=0; k < data->numberstops[tab]; k++)
   {
     dtgtk_gradient_slider_multivalue_set_stop(data->lower_slider, (data->colorstops[tab])[k].stoppoint,
-                                                                  (data->colorstops[tab])[k].color);
+        (data->colorstops[tab])[k].color);
     dtgtk_gradient_slider_multivalue_set_stop(data->upper_slider, (data->colorstops[tab])[k].stoppoint,
-                                                                  (data->colorstops[tab])[k].color);
+        (data->colorstops[tab])[k].color);
   }
 
   dtgtk_gradient_slider_multivalue_set_increment(data->lower_slider, data->increments[tab]);
@@ -634,7 +634,8 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     char *Lab_tooltips[] = { _("sliders for L channel"), _("sliders for a channel"), _("sliders for b channel"), _("sliders for chroma channel (of LCh)"), _("sliders for hue channel (of LCh)") };
     char *rgb_labels[] = { _(" gray "), _(" red "), _(" green "), _(" blue "), _(" hue "), _(" chroma "), _(" value ") };
     char *rgb_tooltips[] = { _("sliders for gray value"), _("sliders for red channel"), _("sliders for green channel"), _("sliders for blue channel"),
-                             _("sliders for hue channel (of HSL)"), _("sliders for chroma channel (of HSL)"), _("sliders for value channel (of HSL)") };
+                             _("sliders for hue channel (of HSL)"), _("sliders for chroma channel (of HSL)"), _("sliders for value channel (of HSL)")
+                           };
 
     char *ttinput = _("adjustment based on input received by this module:\n* range defined by upper markers: blend fully\n* range defined by lower markers: do not blend at all\n* range between adjacent upper/lower markers: blend gradually");
 
@@ -780,9 +781,9 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     for(int k=0; k < bd->numberstops[bd->tab]; k++)
     {
       dtgtk_gradient_slider_multivalue_set_stop(bd->lower_slider, (bd->colorstops[bd->tab])[k].stoppoint,
-                                                                  (bd->colorstops[bd->tab])[k].color);
+          (bd->colorstops[bd->tab])[k].color);
       dtgtk_gradient_slider_multivalue_set_stop(bd->upper_slider, (bd->colorstops[bd->tab])[k].stoppoint,
-                                                                  (bd->colorstops[bd->tab])[k].color);
+          (bd->colorstops[bd->tab])[k].color);
     }
 #endif
 
@@ -807,7 +808,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     {
       bd->upper_label[k] = GTK_LABEL(gtk_label_new(NULL));
       gtk_label_set_width_chars(bd->upper_label[k], 6);
-      gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(bd->upper_label[k]), FALSE, FALSE, 0);      
+      gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(bd->upper_label[k]), FALSE, FALSE, 0);
     }
 
     GtkWidget *input = gtk_label_new(_("input"));
@@ -818,7 +819,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     {
       bd->lower_label[k] = GTK_LABEL(gtk_label_new(NULL));
       gtk_label_set_width_chars(bd->lower_label[k], 6);
-      gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_label[k]), FALSE, FALSE, 0);      
+      gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_label[k]), FALSE, FALSE, 0);
     }
 
     gtk_object_set(GTK_OBJECT(bd->blendif_enable), "tooltip-text", _("enable conditional blending"), (char *)NULL);
@@ -846,17 +847,17 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     g_signal_connect (G_OBJECT (bd->lower_slider), "value-changed",
                       G_CALLBACK (_blendop_blendif_lower_callback), bd);
 
-    g_signal_connect (G_OBJECT(tb), "toggled", 
+    g_signal_connect (G_OBJECT(tb), "toggled",
                       G_CALLBACK (_blendop_blendif_pick_toggled), module);
 
-    g_signal_connect (G_OBJECT(sm), "toggled", 
+    g_signal_connect (G_OBJECT(sm), "toggled",
                       G_CALLBACK (_blendop_blendif_showmask_toggled), module);
 
     g_signal_connect (G_OBJECT(bd->lower_polarity), "toggled",
-	              	    G_CALLBACK (_blendop_blendif_polarity_callback), bd);  
+                      G_CALLBACK (_blendop_blendif_polarity_callback), bd);
 
     g_signal_connect (G_OBJECT(bd->upper_polarity), "toggled",
-	              	    G_CALLBACK (_blendop_blendif_polarity_callback), bd);  
+                      G_CALLBACK (_blendop_blendif_polarity_callback), bd);
 
 
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(header), TRUE, FALSE, 0);
@@ -881,28 +882,50 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
 
     dt_iop_gui_blendop_modes_t modes[22]; /* number must fit exactly!!! */
-    modes[0].mode  = DEVELOP_BLEND_DISABLED;          modes[0].name  = _("off");
-    modes[1].mode  = DEVELOP_BLEND_NORMAL;            modes[1].name  = _("normal");
-    modes[2].mode  = DEVELOP_BLEND_INVERSE;           modes[2].name  = _("inverse");
-    modes[3].mode  = DEVELOP_BLEND_LIGHTEN;           modes[3].name  = _("lighten");
-    modes[4].mode  = DEVELOP_BLEND_DARKEN;            modes[4].name  = _("darken");
-    modes[5].mode  = DEVELOP_BLEND_MULTIPLY;          modes[5].name  = _("multiply");
-    modes[6].mode  = DEVELOP_BLEND_AVERAGE;           modes[6].name  = _("average");
-    modes[7].mode  = DEVELOP_BLEND_ADD;               modes[7].name  = _("addition");
-    modes[8].mode  = DEVELOP_BLEND_SUBSTRACT;         modes[8].name  = _("subtract");
-    modes[9].mode  = DEVELOP_BLEND_DIFFERENCE;        modes[9].name  = _("difference");
-    modes[10].mode = DEVELOP_BLEND_SCREEN;            modes[10].name = _("screen");
-    modes[11].mode = DEVELOP_BLEND_OVERLAY;           modes[11].name = _("overlay");
-    modes[12].mode = DEVELOP_BLEND_SOFTLIGHT;         modes[12].name = _("softlight");
-    modes[13].mode = DEVELOP_BLEND_HARDLIGHT;         modes[13].name = _("hardlight");
-    modes[14].mode = DEVELOP_BLEND_VIVIDLIGHT;        modes[14].name = _("vividlight");
-    modes[15].mode = DEVELOP_BLEND_LINEARLIGHT;       modes[15].name = _("linearlight");
-    modes[16].mode = DEVELOP_BLEND_PINLIGHT;          modes[16].name = _("pinlight");
-    modes[17].mode = DEVELOP_BLEND_LIGHTNESS;         modes[17].name = _("lightness");
-    modes[18].mode = DEVELOP_BLEND_CHROMA;            modes[18].name = _("chroma");
-    modes[19].mode = DEVELOP_BLEND_HUE;               modes[19].name = _("hue");
-    modes[20].mode = DEVELOP_BLEND_COLOR;             modes[20].name = _("color");
-    modes[21].mode = DEVELOP_BLEND_UNBOUNDED;         modes[21].name = _("unbounded");
+    modes[0].mode  = DEVELOP_BLEND_DISABLED;
+    modes[0].name  = _("off");
+    modes[1].mode  = DEVELOP_BLEND_NORMAL;
+    modes[1].name  = _("normal");
+    modes[2].mode  = DEVELOP_BLEND_INVERSE;
+    modes[2].name  = _("inverse");
+    modes[3].mode  = DEVELOP_BLEND_LIGHTEN;
+    modes[3].name  = _("lighten");
+    modes[4].mode  = DEVELOP_BLEND_DARKEN;
+    modes[4].name  = _("darken");
+    modes[5].mode  = DEVELOP_BLEND_MULTIPLY;
+    modes[5].name  = _("multiply");
+    modes[6].mode  = DEVELOP_BLEND_AVERAGE;
+    modes[6].name  = _("average");
+    modes[7].mode  = DEVELOP_BLEND_ADD;
+    modes[7].name  = _("addition");
+    modes[8].mode  = DEVELOP_BLEND_SUBSTRACT;
+    modes[8].name  = _("subtract");
+    modes[9].mode  = DEVELOP_BLEND_DIFFERENCE;
+    modes[9].name  = _("difference");
+    modes[10].mode = DEVELOP_BLEND_SCREEN;
+    modes[10].name = _("screen");
+    modes[11].mode = DEVELOP_BLEND_OVERLAY;
+    modes[11].name = _("overlay");
+    modes[12].mode = DEVELOP_BLEND_SOFTLIGHT;
+    modes[12].name = _("softlight");
+    modes[13].mode = DEVELOP_BLEND_HARDLIGHT;
+    modes[13].name = _("hardlight");
+    modes[14].mode = DEVELOP_BLEND_VIVIDLIGHT;
+    modes[14].name = _("vividlight");
+    modes[15].mode = DEVELOP_BLEND_LINEARLIGHT;
+    modes[15].name = _("linearlight");
+    modes[16].mode = DEVELOP_BLEND_PINLIGHT;
+    modes[16].name = _("pinlight");
+    modes[17].mode = DEVELOP_BLEND_LIGHTNESS;
+    modes[17].name = _("lightness");
+    modes[18].mode = DEVELOP_BLEND_CHROMA;
+    modes[18].name = _("chroma");
+    modes[19].mode = DEVELOP_BLEND_HUE;
+    modes[19].name = _("hue");
+    modes[20].mode = DEVELOP_BLEND_COLOR;
+    modes[20].name = _("color");
+    modes[21].mode = DEVELOP_BLEND_UNBOUNDED;
+    modes[21].name = _("unbounded");
 
 
     bd->number_modes = sizeof(modes) / sizeof(dt_iop_gui_blendop_modes_t);
@@ -923,7 +946,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
     for(int k = 0; k < bd->number_modes; k++)
       dt_bauhaus_combobox_add(bd->blend_modes_combo, bd->modes[k].name);
-    
+
     dt_bauhaus_combobox_set(bd->blend_modes_combo, 0);
 
     gtk_object_set(GTK_OBJECT(bd->opacity_slider), "tooltip-text", _("set the opacity of the blending"), (char *)NULL);

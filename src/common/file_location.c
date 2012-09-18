@@ -36,7 +36,8 @@
 
 gchar* dt_loc_get_home_dir(const gchar* user)
 {
-  if (user == NULL || g_strcmp0(user, g_get_user_name()) == 0) {
+  if (user == NULL || g_strcmp0(user, g_get_user_name()) == 0)
+  {
     const char* home_dir = g_getenv("HOME");
     return g_strdup((home_dir != NULL) ? home_dir : g_get_home_dir());
   }
@@ -48,7 +49,8 @@ gchar* dt_loc_get_home_dir(const gchar* user)
   struct passwd* result;
 #ifdef _SC_GETPW_R_SIZE_MAX
   int bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
-  if (bufsize < 0) {
+  if (bufsize < 0)
+  {
     bufsize = 4096;
   }
 #else
@@ -56,12 +58,14 @@ gchar* dt_loc_get_home_dir(const gchar* user)
 #endif
 
   gchar* buffer = g_malloc0(sizeof(gchar) * bufsize);
-  if (buffer == NULL) {
+  if (buffer == NULL)
+  {
     return NULL;
   }
 
   getpwnam_r(user, &pwd, buffer, bufsize, &result);
-  if (result == NULL) {
+  if (result == NULL)
+  {
     g_free(buffer);
     return NULL;
   }
@@ -77,15 +81,18 @@ gchar* dt_loc_get_home_dir(const gchar* user)
 
 static gchar * dt_loc_init_generic (const char *value,const char*default_value)
 {
-  if(value) {
-      if (g_file_test (value,G_FILE_TEST_EXISTS)==FALSE)
-          return NULL;
-      return dt_util_fix_path(value);
-  } else {
-      gchar* result = dt_util_fix_path(default_value);
-      if (g_file_test (result,G_FILE_TEST_EXISTS)==FALSE)
-          g_mkdir_with_parents (result,0700);
-      return result;
+  if(value)
+  {
+    if (g_file_test (value,G_FILE_TEST_EXISTS)==FALSE)
+      return NULL;
+    return dt_util_fix_path(value);
+  }
+  else
+  {
+    gchar* result = dt_util_fix_path(default_value);
+    if (g_file_test (result,G_FILE_TEST_EXISTS)==FALSE)
+      g_mkdir_with_parents (result,0700);
+    return result;
   }
 }
 
@@ -114,44 +121,44 @@ void dt_loc_init_user_config_dir (const char *configdir)
 #if defined(__MACH__) || defined(__APPLE__)
 static char* find_install_dir(const char*suffix)
 {
-	gchar *curr = g_get_current_dir();
-	int contains = 0;
-	char tmp[4096];
-	for(int k=0; darktable.progname[k] != 0; k++) if(darktable.progname[k] == '/')
-	{
-		contains = 1;
-		break;
-	}
-	if(darktable.progname[0] == '/') // absolute path
-		snprintf(tmp, 4096, "%s", darktable.progname);
-	else if(contains) // relative path
-		snprintf(tmp, 4096, "%s/%s", curr, darktable.progname);
-	else
-	{
-		// no idea where we have been called. use compiled in path
-		g_free(curr);
-		return NULL;
-	}
-	size_t len = MIN(strlen(tmp), 4096);
-	char *t = tmp + len; // strip off bin/darktable
-	for(; t>tmp && *t!='/'; t--);
-	t--;
-	if(*t == '.' && *(t-1) != '.')
-	{
-		for(; t>tmp && *t!='/'; t--);
-		t--;
-	}
-	for(; t>tmp && *t!='/'; t--);
-	g_strlcpy(t, suffix, 4096-(t-tmp));
-	g_free(curr);
-	return g_strdup(tmp);
+  gchar *curr = g_get_current_dir();
+  int contains = 0;
+  char tmp[4096];
+  for(int k=0; darktable.progname[k] != 0; k++) if(darktable.progname[k] == '/')
+    {
+      contains = 1;
+      break;
+    }
+  if(darktable.progname[0] == '/') // absolute path
+    snprintf(tmp, 4096, "%s", darktable.progname);
+  else if(contains) // relative path
+    snprintf(tmp, 4096, "%s/%s", curr, darktable.progname);
+  else
+  {
+    // no idea where we have been called. use compiled in path
+    g_free(curr);
+    return NULL;
+  }
+  size_t len = MIN(strlen(tmp), 4096);
+  char *t = tmp + len; // strip off bin/darktable
+  for(; t>tmp && *t!='/'; t--);
+  t--;
+  if(*t == '.' && *(t-1) != '.')
+  {
+    for(; t>tmp && *t!='/'; t--);
+    t--;
+  }
+  for(; t>tmp && *t!='/'; t--);
+  g_strlcpy(t, suffix, 4096-(t-tmp));
+  g_free(curr);
+  return g_strdup(tmp);
 }
 #endif
 int dt_loc_init_tmp_dir (const char *tmpdir)
 {
-	darktable.tmpdir = dt_loc_init_generic(tmpdir,DARKTABLE_TMPDIR);
-	if(darktable.tmpdir == NULL)return 1;
-	return 0;
+  darktable.tmpdir = dt_loc_init_generic(tmpdir,DARKTABLE_TMPDIR);
+  if(darktable.tmpdir == NULL)return 1;
+  return 0;
 }
 void dt_loc_init_user_cache_dir (const char *cachedir)
 {
@@ -166,38 +173,59 @@ void dt_loc_init_user_cache_dir (const char *cachedir)
 void dt_loc_init_plugindir(const char *plugindir)
 {
 #if defined(__MACH__) || defined(__APPLE__)
-	char*directory = find_install_dir("/lib/darktable");
-	if(plugindir || !directory) {
-		darktable.plugindir = dt_loc_init_generic(plugindir,DARKTABLE_LIBDIR);
-	} else {
-		darktable.plugindir = directory;
-	}
+  char*directory = find_install_dir("/lib/darktable");
+  if(plugindir || !directory)
+  {
+    darktable.plugindir = dt_loc_init_generic(plugindir,DARKTABLE_LIBDIR);
+  }
+  else
+  {
+    darktable.plugindir = directory;
+  }
 #else
-	darktable.plugindir = dt_loc_init_generic(plugindir,DARKTABLE_LIBDIR);
+  darktable.plugindir = dt_loc_init_generic(plugindir,DARKTABLE_LIBDIR);
 #endif
 }
 
 void dt_loc_init_datadir(const char *datadir)
 {
 #if defined(__MACH__) || defined(__APPLE__)
-	char*directory = find_install_dir("/share/darktable");
-	if(datadir || !directory) {
-		darktable.datadir = dt_loc_init_generic(datadir,DARKTABLE_DATADIR);
-	} else {
-		darktable.datadir = directory;
-	}
+  char*directory = find_install_dir("/share/darktable");
+  if(datadir || !directory)
+  {
+    darktable.datadir = dt_loc_init_generic(datadir,DARKTABLE_DATADIR);
+  }
+  else
+  {
+    darktable.datadir = directory;
+  }
 #else
-	darktable.datadir = dt_loc_init_generic(datadir,DARKTABLE_DATADIR);
+  darktable.datadir = dt_loc_init_generic(datadir,DARKTABLE_DATADIR);
 #endif
 }
 
 
-void dt_loc_get_plugindir(char *plugindir, size_t bufsize){snprintf(plugindir, bufsize, "%s",darktable.plugindir);}
+void dt_loc_get_plugindir(char *plugindir, size_t bufsize)
+{
+  snprintf(plugindir, bufsize, "%s",darktable.plugindir);
+}
 
-void dt_loc_get_user_config_dir(char *configdir, size_t bufsize){snprintf(configdir, bufsize, "%s",darktable.configdir);}
-void dt_loc_get_user_cache_dir(char *cachedir, size_t bufsize){snprintf(cachedir, bufsize, "%s",darktable.cachedir);}
-void dt_loc_get_tmp_dir(char *tmpdir, size_t bufsize){snprintf(tmpdir, bufsize, "%s",darktable.tmpdir);}
-void dt_loc_get_datadir(char *datadir, size_t bufsize){snprintf(datadir, bufsize, "%s",darktable.datadir);}
+void dt_loc_get_user_config_dir(char *configdir, size_t bufsize)
+{
+  snprintf(configdir, bufsize, "%s",darktable.configdir);
+}
+void dt_loc_get_user_cache_dir(char *cachedir, size_t bufsize)
+{
+  snprintf(cachedir, bufsize, "%s",darktable.cachedir);
+}
+void dt_loc_get_tmp_dir(char *tmpdir, size_t bufsize)
+{
+  snprintf(tmpdir, bufsize, "%s",darktable.tmpdir);
+}
+void dt_loc_get_datadir(char *datadir, size_t bufsize)
+{
+  snprintf(datadir, bufsize, "%s",darktable.datadir);
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

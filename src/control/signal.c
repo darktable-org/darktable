@@ -27,13 +27,13 @@ typedef struct dt_control_signal_t
 }
 dt_control_signal_t;
 
-static char *_signal_name[DT_SIGNAL_COUNT] = 
+static char *_signal_name[DT_SIGNAL_COUNT] =
 {
   /* Global signals */
   "dt-global-mouse-over-image-change",            // DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE
 
-  "dt-control-draw-all",                          // DT_SIGNAL_CONTROL_DRAW_ALL
-  "dt-control-draw-center",                       // DT_SIGNAL_CONTROL_DRAW_CENTER
+  "dt-control-redraw-all",                          // DT_SIGNAL_CONTROL_REDRAW_ALL
+  "dt-control-redraw-center",                       // DT_SIGNAL_CONTROL_REDRAW_CENTER
 
   "dt-viewmanager-view-changed",                  // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
   "dt-viewmanager-filmstrip-activate",            // DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE
@@ -47,7 +47,8 @@ static char *_signal_name[DT_SIGNAL_COUNT] =
   "dt-develop-mipmap-updated",                    // DT_SIGNAL_DEVELOP_MIPMAP_UPDATED
   "dt-develop-preview-pipe-finished",             // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED
   "dt-develop-ui-pipe-finished",                  // DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED
-  "dt-develop-history-change"                     // DT_SIGNAL_HISTORY_CHANGE
+  "dt-develop-history-change",                    // DT_SIGNAL_HISTORY_CHANGE
+  "dt-control-profile-changed"                    // DT_SIGNAL_CONTROL_PROFILE_CHANGED
 };
 
 
@@ -59,28 +60,30 @@ dt_control_signal_t *dt_control_signal_init()
   /* setup dummy gobject typeinfo */
   GTypeQuery query;
   GType type;
-  GTypeInfo type_info = {
+  GTypeInfo type_info =
+  {
     0, (GBaseInitFunc) NULL, (GBaseFinalizeFunc) NULL,
     (GClassInitFunc) NULL, (GClassFinalizeFunc) NULL,
-    NULL, 0,0, (GInstanceInitFunc) NULL};
+    NULL, 0,0, (GInstanceInitFunc) NULL
+  };
 
   g_type_query(G_TYPE_OBJECT, &query);
   type_info.class_size = query.class_size;
   type_info.instance_size = query.instance_size;
   type = g_type_register_static(G_TYPE_OBJECT, "DarktableSignals", &type_info, 0);
-  
+
   /* create our pretty empty gobject */
-  ctlsig->sink = g_object_new(type,NULL); 
+  ctlsig->sink = g_object_new(type,NULL);
 
   /* create the signals */
-  for (int k=0;k<DT_SIGNAL_COUNT;k++)
+  for (int k=0; k<DT_SIGNAL_COUNT; k++)
     g_signal_new(_signal_name[k], G_TYPE_OBJECT, G_SIGNAL_RUN_LAST,0,NULL,NULL,
-		  g_cclosure_marshal_VOID__VOID,G_TYPE_NONE,0);
-  
+                 g_cclosure_marshal_VOID__VOID,G_TYPE_NONE,0);
+
   return ctlsig;
 }
 
-void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t signal) 
+void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t signal)
 {
   // ignore all signals on shutdown, especially don't lock anything..
   if(!dt_control_running()) return;
@@ -96,11 +99,11 @@ void dt_control_signal_connect(const dt_control_signal_t *ctlsig,dt_signal_t sig
 
 void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCallback cb,gpointer user_data)
 {
-  g_signal_handlers_disconnect_matched(G_OBJECT(ctlsig->sink), 
-				       G_SIGNAL_MATCH_FUNC|G_SIGNAL_MATCH_DATA, 
-				       0, 0, 
-				       NULL , 
-				       cb, user_data);
+  g_signal_handlers_disconnect_matched(G_OBJECT(ctlsig->sink),
+                                       G_SIGNAL_MATCH_FUNC|G_SIGNAL_MATCH_DATA,
+                                       0, 0,
+                                       NULL ,
+                                       cb, user_data);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

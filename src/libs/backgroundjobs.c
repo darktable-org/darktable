@@ -40,7 +40,8 @@ DT_MODULE(1)
 
 GStaticMutex _lib_backgroundjobs_mutex = G_STATIC_MUTEX_INIT;
 
-typedef struct dt_bgjob_t {
+typedef struct dt_bgjob_t
+{
   uint32_t type;
   GtkWidget *widget,*progressbar,*label;
 #ifdef HAVE_UNITY
@@ -171,7 +172,7 @@ static const guint * _lib_backgroundjobs_create(dt_lib_module_t *self,int type,c
   gtk_box_reorder_child(GTK_BOX(d->jobbox), j->widget, 1);
   gtk_widget_show_all(j->widget);
   gtk_widget_show(d->jobbox);
-  
+
   if(i_own_lock) dt_control_gdk_unlock();
   return key;
 }
@@ -183,10 +184,10 @@ static void _lib_backgroundjobs_destroy(dt_lib_module_t *self, const guint *key)
   gboolean i_own_lock = dt_control_gdk_lock();
 
   dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, key);
-  if(j) 
+  if(j)
   {
     g_hash_table_remove(d->jobs, key);
-    
+
     /* remove job widget from jobbox */
     if(GTK_IS_WIDGET(j->widget))
       gtk_container_remove(GTK_CONTAINER(d->jobbox),j->widget);
@@ -194,7 +195,7 @@ static void _lib_backgroundjobs_destroy(dt_lib_module_t *self, const guint *key)
     /* if jobbox is empty lets hide */
     if(g_list_length(gtk_container_get_children(GTK_CONTAINER(d->jobbox)))==0)
       gtk_widget_hide(d->jobbox);
-    
+
     /* free allocted mem */
     g_free(j);
     g_free((guint*)key);
@@ -226,7 +227,7 @@ static void _lib_backgroundjobs_set_cancellable(dt_lib_module_t *self, const gui
     gtk_box_pack_start (hbox, GTK_WIDGET(button), FALSE, FALSE, 0);
     gtk_widget_show_all(button);
   }
-  
+
   if(i_own_lock) dt_control_gdk_unlock();
 }
 
@@ -234,7 +235,7 @@ static void _lib_backgroundjobs_set_cancellable(dt_lib_module_t *self, const gui
 static void _lib_backgroundjobs_progress(dt_lib_module_t *self, const guint *key, double progress)
 {
   if(!darktable.control->running) return;
-  dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t*)self->data;  
+  dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t*)self->data;
   gboolean i_own_lock = dt_control_gdk_lock();
 
   dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, key);
@@ -247,27 +248,27 @@ static void _lib_backgroundjobs_progress(dt_lib_module_t *self, const guint *key
     if (progress > 0.999999)
     {
       if (GTK_IS_WIDGET(j->widget))
-	gtk_container_remove( GTK_CONTAINER(d->jobbox), j->widget );
+        gtk_container_remove( GTK_CONTAINER(d->jobbox), j->widget );
 
 #ifdef HAVE_UNITY
-	unity_launcher_entry_set_progress( j->darktable_launcher, 1.0 );
-	unity_launcher_entry_set_progress_visible( j->darktable_launcher, FALSE );
+      unity_launcher_entry_set_progress( j->darktable_launcher, 1.0 );
+      unity_launcher_entry_set_progress_visible( j->darktable_launcher, FALSE );
 #endif
 #ifdef MAC_INTEGRATION
-        gtk_osxapplication_attention_request(g_object_new(GTK_TYPE_OSX_APPLICATION, NULL), INFO_REQUEST);
+      gtk_osxapplication_attention_request(g_object_new(GTK_TYPE_OSX_APPLICATION, NULL), INFO_REQUEST);
 #endif
-      
+
       /* hide jobbox if theres no jobs left */
       if (g_list_length(gtk_container_get_children(GTK_CONTAINER(d->jobbox))) == 0 )
-	gtk_widget_hide(d->jobbox);
+        gtk_widget_hide(d->jobbox);
     }
     else
     {
       if( j->type == 0 )
-	gtk_progress_bar_set_fraction( GTK_PROGRESS_BAR(j->progressbar), progress );
+        gtk_progress_bar_set_fraction( GTK_PROGRESS_BAR(j->progressbar), progress );
 
 #ifdef HAVE_UNITY
-	unity_launcher_entry_set_progress( j->darktable_launcher, progress );
+      unity_launcher_entry_set_progress( j->darktable_launcher, progress );
 #endif
     }
   }

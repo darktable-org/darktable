@@ -41,7 +41,7 @@ typedef struct dt_dev_pixelpipe_cache_t
 }
 dt_dev_pixelpipe_cache_t;
 
-/** constructs a new cache with given cache line count (entries) and float buffer entry size in bytes. 
+/** constructs a new cache with given cache line count (entries) and float buffer entry size in bytes.
 	\param[out] returns 0 if fail to allocate mem cache.
 */
 int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, int size);

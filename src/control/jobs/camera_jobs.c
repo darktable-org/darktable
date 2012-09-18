@@ -43,7 +43,7 @@ int32_t dt_captured_image_import_job_run(dt_job_t *job)
     dt_control_queue_redraw();
     //dt_ctl_switch_mode_to(DT_DEVELOP);
   }
- 
+
   dt_control_backgroundjobs_progress(darktable.control, jid, 1.0);
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   return 0;
@@ -65,12 +65,12 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("capturing %d image", "capturing %d images", total), total );
-  
+
   /* try to get exp program mode for nikon */
   char *expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl, NULL, "expprogram");
-  
+
   /* if fail, lets try fetching mode for cannon */
-  if(!expprogram) 
+  if(!expprogram)
     expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl, NULL, "autoexposuremode");
 
   /* Fetch all values for shutterspeed and initialize current value */
@@ -78,7 +78,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   gconstpointer orginal_value=NULL;
   const char *cvalue = dt_camctl_camera_get_property(darktable.camctl, NULL, "shutterspeed");
   const char *value = dt_camctl_camera_property_get_first_choice(darktable.camctl, NULL, "shutterspeed");
-  
+
   /* get values for bracketing */
   if (t->brackets && expprogram && expprogram[0]=='M' && value && cvalue)
   {
@@ -291,7 +291,7 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
   dt_control_log(_("%d/%d imported to %s"), t->import_count+1,g_list_length(t->images), g_path_get_basename(filename));
 
   t->fraction+=1.0/g_list_length(t->images);
-  
+
   dt_control_backgroundjobs_progress(darktable.control, t->bgj, t->fraction );
 
   if( dt_conf_get_bool("plugins/capture/camera/import/backup/enable") == TRUE )

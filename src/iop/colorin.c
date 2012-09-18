@@ -214,7 +214,7 @@ dt_XYZ_to_Lab_SSE(const __m128 XYZ)
   // because d50_inv.z is 0.0f, lab_f(0) == 16/116, so Lab[0] = 116*f[0] - 16 equal to 116*(f[0]-f[3])
   return _mm_mul_ps(coef,_mm_sub_ps(_mm_shuffle_ps(f,f,_MM_SHUFFLE(3,1,0,1)),_mm_shuffle_ps(f,f,_MM_SHUFFLE(3,2,1,3))));
 }
- 
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
@@ -239,19 +239,19 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const __m128 m0 = _mm_set_ps(0.0f,mat[6],mat[3],mat[0]);
       const __m128 m1 = _mm_set_ps(0.0f,mat[7],mat[4],mat[1]);
       const __m128 m2 = _mm_set_ps(0.0f,mat[8],mat[5],mat[2]);
-  
+
       for(int i=0; i<roi_out->width; i++, buf_in+=ch, buf_out+=ch )
       {
-  
+
         // memcpy(cam, buf_in, sizeof(float)*3);
         // avoid calling this for linear profiles (marked with negative entries), assures unbounded
         // color management without extrapolation.
         for(int i=0; i<3; i++) cam[i] = (d->lut[i][0] >= 0.0f) ?
-          ((buf_in[i] < 1.0f) ? lerp_lut(d->lut[i], buf_in[i])
-          : dt_iop_eval_exp(d->unbounded_coeffs[i], buf_in[i]))
-          : buf_in[i];
+                                          ((buf_in[i] < 1.0f) ? lerp_lut(d->lut[i], buf_in[i])
+                                           : dt_iop_eval_exp(d->unbounded_coeffs[i], buf_in[i]))
+                                            : buf_in[i];
 
-        const float YY = cam[0]+cam[1]+cam[2];  
+        const float YY = cam[0]+cam[1]+cam[2];
         if(map_blues && YY > 0.0f)
         {
           // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB.
@@ -270,7 +270,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             cam[2] -= t*amount;
           }
         }
-  
+
 #if 0
         __attribute__((aligned(16))) float XYZ[4];
         _mm_store_ps(XYZ,_mm_add_ps(_mm_add_ps( _mm_mul_ps(m0,_mm_set1_ps(cam[0])), _mm_mul_ps(m1,_mm_set1_ps(cam[1]))), _mm_mul_ps(m2,_mm_set1_ps(cam[2]))));
@@ -454,12 +454,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       for(int t=0; t<num_threads; t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->input, TYPE_Lab_FLT, p->intent, 0);
     }
   }
-  
+
   // now try to initialize unbounded mode:
   // we do a extrapolation for input values above 1.0f.
   // unfortunately we can only do this if we got the computation
   // in our hands, i.e. for the fast builtin-dt-matrix-profile path.
-  for(int k=0;k<3;k++)
+  for(int k=0; k<3; k++)
   {
     // omit luts marked as linear (negative as marker)
     if(d->lut[k][0] >= 0.0f)
@@ -468,7 +468,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       const float y[4] = {lerp_lut(d->lut[k], x[0]),
                           lerp_lut(d->lut[k], x[1]),
                           lerp_lut(d->lut[k], x[2]),
-                          lerp_lut(d->lut[k], x[3])};
+                          lerp_lut(d->lut[k], x[3])
+                         };
       dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs[k]);
     }
     else d->unbounded_coeffs[k][0] = -1.0f;

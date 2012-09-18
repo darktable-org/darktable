@@ -120,7 +120,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_colortransfer_gui_data_t *g =
-      (dt_iop_colortransfer_gui_data_t*)self->gui_data;
+    (dt_iop_colortransfer_gui_data_t*)self->gui_data;
 
   dt_accel_connect_button_iop(self, "acquire", g->acquire_button);
   dt_accel_connect_button_iop(self, "apply", g->apply_button);

@@ -62,9 +62,9 @@ flags ()
 
 
 static gboolean key_softproof_callback(GtkAccelGroup *accel_group,
-                                   GObject *acceleratable,
-                                   guint keyval, GdkModifierType modifier,
-                                   gpointer data)
+                                       GObject *acceleratable,
+                                       guint keyval, GdkModifierType modifier,
+                                       gpointer data)
 {
   dt_iop_module_t* self = (dt_iop_module_t*)data;
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
@@ -92,9 +92,9 @@ static gboolean key_softproof_callback(GtkAccelGroup *accel_group,
 
 
 static gboolean key_gamutcheck_callback(GtkAccelGroup *accel_group,
-                                   GObject *acceleratable,
-                                   guint keyval, GdkModifierType modifier,
-                                   gpointer data)
+                                        GObject *acceleratable,
+                                        guint keyval, GdkModifierType modifier,
+                                        gpointer data)
 {
   dt_iop_module_t* self = (dt_iop_module_t*)data;
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
@@ -125,7 +125,7 @@ static gboolean key_gamutcheck_callback(GtkAccelGroup *accel_group,
 
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
-{ 
+{
   /*  if(old_version == 1 && new_version == 2)
   {
     dt_iop_colorout_params_t *o = (dt_iop_colorout_params_t *)old_params;
@@ -212,7 +212,7 @@ static gchar *_get_display_profile_from_pos(GList *profiles, int pos)
 
 
 static void
-profile_changed (GtkWidget *widget, gpointer user_data)
+output_profile_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -268,6 +268,14 @@ display_profile_changed (GtkWidget *widget, gpointer user_data)
 
   // should really never happen.
   fprintf(stderr, "[colorout] display color profile %s seems to have disappeared!\n", p->displayprofile);
+}
+
+static void
+_signal_profile_changed(gpointer instance, gpointer user_data)
+{
+//   dt_iop_module_t *self = (dt_iop_module_t*)user_data;
+//   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
+  printf("TODO: update the display profile! if this message annoys you you should annoy the developers so they fix this. ;)\n");
 }
 
 #if 1
@@ -390,7 +398,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
       const __m128 m0 = _mm_set_ps(0.0f,d->cmatrix[6],d->cmatrix[3],d->cmatrix[0]);
       const __m128 m1 = _mm_set_ps(0.0f,d->cmatrix[7],d->cmatrix[4],d->cmatrix[1]);
       const __m128 m2 = _mm_set_ps(0.0f,d->cmatrix[8],d->cmatrix[5],d->cmatrix[2]);
-  
+
       for(int i=0; i<roi_out->width; i++, in+=ch, out+=ch )
       {
         const __m128 xyz = dt_Lab_to_XYZ_SSE(_mm_load_ps(in));
@@ -409,10 +417,10 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
 
       float *in  = (float*)ivoid + ch*roi_in->width *j;
       float *out = (float*)ovoid + ch*roi_out->width*j;
-  
+
       for(int i=0; i<roi_out->width; i++, in+=ch, out+=ch )
       {
-        for(int i=0; i<3; i++) 
+        for(int i=0; i<3; i++)
           if (d->lut[i][0] >= 0.0f)
           {
             out[i] = (out[i] < 1.0f) ? lerp_lut(d->lut[i], out[i]) : dt_iop_eval_exp(d->unbounded_coeffs[i], out[i]);
@@ -488,10 +496,10 @@ static cmsHPROFILE _create_profile(gchar *iccprofile)
   else if(!strcmp(iccprofile, "X profile"))
   {
     // x default
+    pthread_rwlock_rdlock(&darktable.control->xprofile_lock);
     if(darktable.control->xprofile_data)
       profile = cmsOpenProfileFromMem(darktable.control->xprofile_data, darktable.control->xprofile_size);
-    else
-      profile = NULL;
+    pthread_rwlock_unlock(&darktable.control->xprofile_lock);
   }
   else
   {
@@ -517,7 +525,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
   gchar *outprofile=NULL;
   int outintent = 0;
-   
+
   /* cleanup profiles */
   if (d->output)
     dt_colorspaces_cleanup_profile(d->output);
@@ -536,8 +544,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   const int num_threads = dt_get_num_threads();
   if (d->xform)
   {
-      cmsDeleteTransform(d->xform);
-      d->xform = 0;
+    cmsDeleteTransform(d->xform);
+    d->xform = 0;
   }
   d->cmatrix[0] = NAN;
   d->lut[0][0] = -1.0f;
@@ -572,7 +580,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->output = _create_profile(outprofile);
 
   /* creating softproof profile if softproof is enabled */
-  if (d->softproof_enabled)
+  if (d->softproof_enabled && pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
     d->softproof =  _create_profile(p->softproofprofile);
 
@@ -586,8 +594,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 
 
   /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
-  if (d->softproof_enabled || (pipe->type == DT_DEV_PIXELPIPE_EXPORT && high_quality_processing) || 
-          dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
+  if (d->softproof_enabled || (pipe->type == DT_DEV_PIXELPIPE_EXPORT && high_quality_processing) ||
+      dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
   {
     d->cmatrix[0] = NAN;
     piece->process_cl_ready = 0;
@@ -613,7 +621,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->cmatrix[0] = NAN;
       piece->process_cl_ready = 0;
       for (int t=0; t<num_threads; t++)
-	
+
         d->xform = cmsCreateProofingTransform(d->Lab,
                                               TYPE_Lab_FLT,
                                               d->output,
@@ -629,7 +637,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // we do extrapolation for input values above 1.0f.
   // unfortunately we can only do this if we got the computation
   // in our hands, i.e. for the fast builtin-dt-matrix-profile path.
-  for(int k=0;k<3;k++)
+  for(int k=0; k<3; k++)
   {
     // omit luts marked as linear (negative as marker)
     if(d->lut[k][0] >= 0.0f)
@@ -638,7 +646,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       const float y[4] = {lerp_lut(d->lut[k], x[0]),
                           lerp_lut(d->lut[k], x[1]),
                           lerp_lut(d->lut[k], x[2]),
-                          lerp_lut(d->lut[k], x[3])};
+                          lerp_lut(d->lut[k], x[3])
+                         };
       dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs[k]);
     }
     else d->unbounded_coeffs[k][0] = -1.0f;
@@ -667,8 +676,8 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   dt_colorspaces_cleanup_profile(d->Lab);
   if (d->xform)
   {
-      cmsDeleteTransform(d->xform);
-      d->xform = 0;
+    cmsDeleteTransform(d->xform);
+    d->xform = 0;
   }
 
   free(piece->data);
@@ -723,8 +732,8 @@ void init(dt_iop_module_t *module)
   module->priority = 803; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t)
-    {"sRGB", "X profile", DT_INTENT_PERCEPTUAL, DT_INTENT_PERCEPTUAL,
-     0, "sRGB",  DT_INTENT_PERCEPTUAL
+  {"sRGB", "X profile", DT_INTENT_PERCEPTUAL, DT_INTENT_PERCEPTUAL,
+    0, "sRGB",  DT_INTENT_PERCEPTUAL
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_colorout_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorout_params_t));
@@ -912,7 +921,7 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (display_intent_changed),
                     (gpointer)self);
   g_signal_connect (G_OBJECT (g->cbox2), "value-changed",
-                    G_CALLBACK (profile_changed),
+                    G_CALLBACK (output_profile_changed),
                     (gpointer)self);
   g_signal_connect (G_OBJECT (g->cbox3), "value-changed",
                     G_CALLBACK (display_profile_changed),
@@ -920,6 +929,10 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->cbox5), "value-changed",
                     G_CALLBACK (softproof_profile_changed),
                     (gpointer)self);
+
+  // reload the profiles when the display profile changed!
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED,
+                            G_CALLBACK(_signal_profile_changed), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -948,11 +961,11 @@ void connect_key_accels(dt_iop_module_t *self)
   GClosure *closure;
 
   closure = g_cclosure_new(G_CALLBACK(key_softproof_callback),
-                                     (gpointer)self, NULL);
+                           (gpointer)self, NULL);
   dt_accel_connect_iop(self, "toggle softproofing", closure);
 
   closure = g_cclosure_new(G_CALLBACK(key_gamutcheck_callback),
-                                     (gpointer)self, NULL);
+                           (gpointer)self, NULL);
   dt_accel_connect_iop(self, "toggle gamutcheck", closure);
 
 }

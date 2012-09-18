@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011 henrik andersson
+    copyright (c) 2011-2012 henrik andersson
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,13 +43,20 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   /* prepare statements */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images where imgid = ?1", -1, &vm->statements.is_selected, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from selected_images where imgid = ?1", -1, &vm->statements.delete_from_selected, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into selected_images values (?1)", -1, &vm->statements.make_selected, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert or ignore into selected_images values (?1)", -1, &vm->statements.make_selected, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num from history where imgid = ?1", -1, &vm->statements.have_history, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select color from color_labels where imgid=?1", -1, &vm->statements.get_color, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where group_id = (select group_id from images where id=?1) and id != ?2", -1, &vm->statements.get_grouped, NULL);
 
   int res=0, midx=0;
-  char *modules[] = {"lighttable","darkroom","capture",NULL};
+  char *modules[] =
+  {
+    "lighttable",
+    "darkroom",
+    "capture",
+    "map",
+    NULL
+  };
   char *module = modules[midx];
   while(module != NULL)
   {
@@ -198,7 +205,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     if(vm->current_view >= 0 && v->leave) v->leave(v);
 
     /* remove all widets in all containers */
-    for(int l=0;l<DT_UI_CONTAINER_SIZE;l++)
+    for(int l=0; l<DT_UI_CONTAINER_SIZE; l++)
       dt_ui_container_clear(darktable.gui->ui, l);
 
     vm->current_view = -1 ;
@@ -209,13 +216,13 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
   if (k < vm->num_views) newv = k;
   dt_view_t *nv = vm->view + newv;
 
-  if (nv->try_enter) 
+  if (nv->try_enter)
     error = nv->try_enter(nv);
 
   if (!error)
   {
     GList *plugins;
-    
+
     /* cleanup current view before initialization of new  */
     if (vm->current_view >=0)
     {
@@ -246,7 +253,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       }
 
       /* remove all widets in all containers */
-      for(int l=0;l<DT_UI_CONTAINER_SIZE;l++)
+      for(int l=0; l<DT_UI_CONTAINER_SIZE; l++)
         dt_ui_container_clear(darktable.gui->ui, l);
     }
 
@@ -302,7 +309,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
         {
           snprintf(var, 1024, "plugins/lighttable/%s/expanded", plugin->plugin_name);
           expanded = dt_conf_get_bool(var);
-	  
+
           /* show expander if visible  */
           if(visible)
           {
@@ -329,7 +336,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       }
 
       /* lets get next plugin */
-      plugins = g_list_previous(plugins); 
+      plugins = g_list_previous(plugins);
     }
 
     /* enter view. crucially, do this before initing the plugins below,
@@ -393,23 +400,23 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
       py = -1.0;
     }
     v->expose(v, cr, v->width, v->height, px, py);
-  
+
     /* expose plugins */
     GList *plugins = g_list_last(darktable.lib->plugins);
     while (plugins)
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
-      
+
       if (!plugin->views)
         fprintf(stderr,"module %s doesnt have views flags\n",plugin->name());
-	  
+
       /* does this module belong to current view ?*/
       if (plugin->gui_post_expose && plugin->views() & v->view(v) )
-	plugin->gui_post_expose(plugin,cr,v->width,v->height,px,py );
+        plugin->gui_post_expose(plugin,cr,v->width,v->height,px,py );
 
       /* get next plugin */
       plugins = g_list_previous(plugins);
-    } 
+    }
   }
 }
 
@@ -445,18 +452,18 @@ void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int
   while (plugins)
   {
     dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
-    
+
     /* does this module belong to current view ?*/
     if (plugin->mouse_moved && plugin->views() & v->view(v) )
       if(plugin->mouse_moved(plugin, x, y, which))
-	handled = TRUE;
-    
+        handled = TRUE;
+
     /* get next plugin */
     plugins = g_list_previous(plugins);
-  } 
-  
+  }
+
   /* if not handled by any plugin let pass to view handler*/
-  if(!handled && v->mouse_moved) 
+  if(!handled && v->mouse_moved)
     v->mouse_moved(v, x, y, which);
 
 }
@@ -480,10 +487,10 @@ int dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y, 
 
     /* get next plugin */
     plugins = g_list_previous(plugins);
-  } 
-  
+  }
+
   /* if not handled by any plugin let pass to view handler*/
-  if(!handled && v->button_released) 
+  if(!handled && v->button_released)
     v->button_released(v, x, y, which,state);
 
   return 0;
@@ -511,7 +518,7 @@ int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, i
   }
 
   /* if not handled by any plugin let pass to view handler*/
-  if(!handled && v->button_pressed) 
+  if(!handled && v->button_pressed)
     return v->button_pressed(v, x, y, which,type,state);
 
   return 0;
@@ -555,7 +562,7 @@ void dt_view_manager_scrolled (dt_view_manager_t *vm, double x, double y, int up
 {
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
-  if(v->scrolled) 
+  if(v->scrolled)
     v->scrolled(v, x, y, up, state);
 }
 
@@ -618,14 +625,14 @@ dt_view_star(cairo_t *cr, float x, float y, float r1, float r2)
 
 void
 dt_view_image_expose(
-    dt_view_image_over_t *image_over,
-    uint32_t imgid,
-    cairo_t *cr,
-    int32_t width,
-    int32_t height,
-    int32_t zoom,
-    int32_t px,
-    int32_t py)
+  dt_view_image_over_t *image_over,
+  uint32_t imgid,
+  cairo_t *cr,
+  int32_t width,
+  int32_t height,
+  int32_t zoom,
+  int32_t px,
+  int32_t py)
 {
   const double start = dt_get_wtime();
   // some performance tuning stuff, for your pleasure.
@@ -663,7 +670,7 @@ dt_view_image_expose(
   /* bind imgid to prepared statments */
   DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, imgid);
   /* lets check if imgid is selected */
-  if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) 
+  if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW)
     selected = 1;
 #endif
 
@@ -673,7 +680,7 @@ dt_view_image_expose(
   DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.have_history, 1, imgid);
 
   /* lets check if imgid has history */
-  if(sqlite3_step(darktable.view_manager->statements.have_history) == SQLITE_ROW) 
+  if(sqlite3_step(darktable.view_manager->statements.have_history) == SQLITE_ROW)
     altered = 1;
 #endif
 
@@ -753,16 +760,16 @@ dt_view_image_expose(
   }
 
   dt_mipmap_buffer_t buf;
-  dt_mipmap_size_t mip = 
+  dt_mipmap_size_t mip =
     dt_mipmap_cache_get_matching_size(
       darktable.mipmap_cache,
       imgwd*width, imgwd*height);
   dt_mipmap_cache_read_get(
-      darktable.mipmap_cache,
-      &buf,
-      imgid,
-      mip,
-      0);
+    darktable.mipmap_cache,
+    &buf,
+    imgid,
+    mip,
+    0);
 #if DRAW_THUMB == 1
   float scale = 1.0;
   // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
@@ -777,9 +784,9 @@ dt_view_image_expose(
     if(zoom == 1)
     {
       scale = fminf(
-			 fminf(darktable.thumbnail_width, width) / (float)buf.width, 
-			 fminf(darktable.thumbnail_height, height) / (float)buf.height
-			 );
+                fminf(darktable.thumbnail_width, width) / (float)buf.width,
+                fminf(darktable.thumbnail_height, height) / (float)buf.height
+              );
     }
     else scale = fminf(width*imgwd/(float)buf.width, height*imgwd/(float)buf.height);
   }
@@ -990,7 +997,7 @@ dt_view_image_expose(
 
     /* clear and reset prepared statement */
     DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_color);
-    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_color); 
+    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_color);
 
     /* setup statement and iterate rows */
     DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_color, 1, imgid);
@@ -1066,16 +1073,16 @@ void dt_view_set_selection(int imgid, int value)
   else if(value)
   {
     /* Select bit is unset and should be set; add it */
-    
-    /* clear and reset statement */ 
+
+    /* clear and reset statement */
     DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.make_selected);
     DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.make_selected);
-    
-    /* setup statement and execute */  
+
+    /* setup statement and execute */
     DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.make_selected, 1, imgid);
     sqlite3_step(darktable.view_manager->statements.make_selected);
   }
- 
+
 }
 
 /**
@@ -1118,8 +1125,8 @@ void dt_view_toggle_selection(int imgid)
  */
 void dt_view_filter_reset_to_show_all(const dt_view_manager_t *vm)
 {
-    if (vm->proxy.filter.module && vm->proxy.filter.reset_filter)
-        vm->proxy.filter.reset_filter(vm->proxy.filter.module);
+  if (vm->proxy.filter.module && vm->proxy.filter.reset_filter)
+    vm->proxy.filter.reset_filter(vm->proxy.filter.module);
 }
 
 void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate )
@@ -1265,6 +1272,13 @@ const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm)
     return vm->proxy.tethering.get_job_code(vm->proxy.tethering.view);
   return NULL;
 }
+
+void dt_view_map_center_on_location(const dt_view_manager_t *vm, gdouble lon, gdouble lat, gdouble zoom)
+{
+  if (vm->proxy.map.view)
+    vm->proxy.map.center_on_location(vm->proxy.map.view, lon, lat, zoom);
+}
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

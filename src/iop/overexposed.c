@@ -136,7 +136,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_overexposed_gui_data_t *g =
-      (dt_iop_overexposed_gui_data_t*)self->gui_data;
+    (dt_iop_overexposed_gui_data_t*)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "lower threshold", GTK_WIDGET(g->lower));
   dt_accel_connect_slider_iop(self, "upper threshold", GTK_WIDGET(g->upper));
@@ -422,8 +422,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->colorscheme, _("red & blue"));
   dt_bauhaus_combobox_add(g->colorscheme, _("purple & green"));
   g_object_set(G_OBJECT(g->colorscheme), "tooltip-text", _("select colors to indicate over/under exposure"), (char *)NULL);
-  g_signal_connect (G_OBJECT (g->colorscheme), "value-changed", 
-		    G_CALLBACK (colorscheme_callback), self);
+  g_signal_connect (G_OBJECT (g->colorscheme), "value-changed",
+                    G_CALLBACK (colorscheme_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->colorscheme), TRUE, TRUE, 0);
 
   /* lower */
@@ -431,17 +431,17 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->lower,"%.0f%%");
   dt_bauhaus_widget_set_label(g->lower,_("lower threshold"));
   g_object_set(G_OBJECT(g->lower), "tooltip-text", _("threshold of what shall be considered underexposed"), (char *)NULL);
-  g_signal_connect (G_OBJECT (g->lower), "value-changed", 
-		    G_CALLBACK (lower_callback), self);
+  g_signal_connect (G_OBJECT (g->lower), "value-changed",
+                    G_CALLBACK (lower_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->lower), TRUE, TRUE, 0);
 
   /* upper */
   g->upper = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->upper, 2);
   dt_bauhaus_slider_set_format(g->upper,"%.0f%%");
-  dt_bauhaus_widget_set_label(g->upper,_("upper threshold"));  
+  dt_bauhaus_widget_set_label(g->upper,_("upper threshold"));
   g_object_set(G_OBJECT(g->upper), "tooltip-text", _("threshold of what shall be considered overexposed"), (char *)NULL);
-  g_signal_connect (G_OBJECT (g->upper), "value-changed", 
-		    G_CALLBACK (upper_callback), self);
+  g_signal_connect (G_OBJECT (g->upper), "value-changed",
+                    G_CALLBACK (upper_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->upper), TRUE, TRUE, 0);
 
 

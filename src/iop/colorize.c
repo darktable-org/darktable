@@ -115,13 +115,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
 
   /* create Lab */
-  float rgb[3]={0}, XYZ[3]={0}, Lab[3]={0};
+  float rgb[3]= {0}, XYZ[3]= {0}, Lab[3]= {0};
   hsl2rgb(rgb,d->hue, d->saturation, d->lightness/100.0);
 
   XYZ[0] = (rgb[0] * 0.5767309) + (rgb[1] * 0.1855540) + (rgb[2] * 0.1881852);
   XYZ[1] = (rgb[0] * 0.2973769) + (rgb[1] * 0.6273491) + (rgb[2] * 0.0752741);
   XYZ[2] = (rgb[0] * 0.0270343) + (rgb[1] * 0.0706872) + (rgb[2] * 0.9911085);
-  
+
   dt_XYZ_to_Lab(XYZ,Lab);
 
 
@@ -133,7 +133,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float mix = d->source_lightness_mix/100.0;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ivoid,ovoid,roi_out) private(in,out) schedule(static)
+  #pragma omp parallel for default(none) shared(ivoid,ovoid,roi_out) private(in,out) schedule(static)
 #endif
   for(int k=0; k<roi_out->height; k++)
   {
@@ -166,13 +166,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int height = roi_in->height;
 
   /* create Lab */
-  float rgb[3]={0}, XYZ[3]={0}, Lab[3]={0};
+  float rgb[3]= {0}, XYZ[3]= {0}, Lab[3]= {0};
   hsl2rgb(rgb,data->hue, data->saturation, data->lightness/100.0);
 
   XYZ[0] = (rgb[0] * 0.5767309) + (rgb[1] * 0.1855540) + (rgb[2] * 0.1881852);
   XYZ[1] = (rgb[0] * 0.2973769) + (rgb[1] * 0.6273491) + (rgb[2] * 0.0752741);
   XYZ[2] = (rgb[0] * 0.0270343) + (rgb[1] * 0.0706872) + (rgb[2] * 0.9911085);
-  
+
   dt_XYZ_to_Lab(XYZ,Lab);
 
 
@@ -264,7 +264,7 @@ hue_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   c.green=color[1]*65535.0;
   c.blue=color[2]*65535.0;
 
-  dtgtk_gradient_slider_set_stop(sslider,1.0,c); 
+  dtgtk_gradient_slider_set_stop(sslider,1.0,c);
 
   gtk_widget_modify_fg(preview,GTK_STATE_NORMAL,&c);
 
@@ -272,7 +272,7 @@ hue_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
 
   gtk_widget_draw(GTK_WIDGET(sslider),NULL);
 
-  if (dtgtk_gradient_slider_is_dragging(slider)==FALSE) 
+  if (dtgtk_gradient_slider_is_dragging(slider)==FALSE)
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -285,11 +285,11 @@ saturation_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
 
   float color[3];
   GtkWidget *preview;
- 
+
   //  hue = dtgtk_gradient_slider_get_value(g->gslider1);
   p->saturation = dtgtk_gradient_slider_get_value(slider);
   preview = GTK_WIDGET(g->colorpick1);
-  
+
   /* convert to rgb */
   hsl2rgb(color,p->hue,p->saturation,0.5);
 
@@ -302,7 +302,7 @@ saturation_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   gtk_widget_modify_fg(preview,GTK_STATE_NORMAL,&c);
 
   if (self->dt->gui->reset) return;
-  if (dtgtk_gradient_slider_is_dragging(slider)==FALSE) 
+  if (dtgtk_gradient_slider_is_dragging(slider)==FALSE)
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -543,7 +543,7 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (source_lightness_mix_callback), self);
   g_signal_connect (G_OBJECT (g->colorpick1), "clicked",
                     G_CALLBACK (colorpick_callback), self);
-  
+
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

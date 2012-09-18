@@ -378,7 +378,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     // reverse direction (useful for renderings)
     if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
-                    LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
+                   LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(roi_out, roi_in, tmpbuf, d, modifier) schedule(static)
@@ -436,7 +436,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 1, sizeof(cl_mem), (void *)&dev_out);
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 2, sizeof(int), (void *)&owidth);
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 3, sizeof(int), (void *)&oheight);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 4, sizeof(cl_mem), (void *)&dev_tmpbuf); 
+      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 4, sizeof(cl_mem), (void *)&dev_tmpbuf);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lens_vignette, osizes);
       if(err != CL_SUCCESS) goto error;
 
@@ -475,7 +475,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 1, sizeof(cl_mem), (void *)&dev_tmp);
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 2, sizeof(int), (void *)&iwidth);
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 3, sizeof(int), (void *)&iheight);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 4, sizeof(cl_mem), (void *)&dev_tmpbuf); 
+      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 4, sizeof(cl_mem), (void *)&dev_tmpbuf);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lens_vignette, isizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -487,7 +487,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
 
     if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
-                    LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
+                   LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(roi_out, roi_in, tmpbuf, d, modifier) schedule(static)
@@ -635,8 +635,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
                                  NULL, p->camera, 0);
     if(cam)
     {
-        camera = cam[0];
-        p->crop = cam[0]->CropFactor;
+      camera = cam[0];
+      p->crop = cam[0]->CropFactor;
     }
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   }
@@ -658,7 +658,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
         tca.Model = LF_TCA_MODEL_LINEAR;
         tca.Terms[0] = p->tca_b;
         tca.Terms[1] = p->tca_r;
-        if(d->lens->CalibTCA) 
+        if(d->lens->CalibTCA)
           while (d->lens->CalibTCA[0])
             lf_lens_remove_calib_tca (d->lens, 0);
         lf_lens_add_calib_tca (d->lens, &tca);

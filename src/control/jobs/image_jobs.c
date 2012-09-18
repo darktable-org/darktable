@@ -36,11 +36,11 @@ int32_t dt_image_load_job_run(dt_job_t *job)
   // hook back into mipmap_cache:
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_read_get(
-      darktable.mipmap_cache,
-      &buf,
-      t->imgid,
-      t->mip,
-      DT_MIPMAP_BLOCKING);
+    darktable.mipmap_cache,
+    &buf,
+    t->imgid,
+    t->mip,
+    DT_MIPMAP_BLOCKING);
 
   // drop read lock, as this is only speculative async loading.
   if(buf.buf)

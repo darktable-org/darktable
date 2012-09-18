@@ -69,10 +69,10 @@ void dt_control_log_busy_leave();
 void dt_control_change_cursor(dt_cursor_t cursor);
 void dt_control_write_sidecar_files();
 void dt_control_delete_images();
-void dt_ctl_get_display_profile(GtkWidget *widget, guint8 **buffer, gint *buffer_size);
+void dt_ctl_set_display_profile();
 
 /** \brief request redraw of the workspace.
-    This redraws the whole workspace within a gdk critical 
+    This redraws the whole workspace within a gdk critical
     section to prevent several threads to carry out a redraw
     which will end up in crashes.
  */
@@ -158,7 +158,7 @@ typedef struct dt_job_t
   /* if job is a delayed job it will be run as a backgroundjob
       and ts_execute will be the timestamp of when to start job */
   time_t ts_execute;
-  
+
   dt_pthread_mutex_t state_mutex;
   dt_pthread_mutex_t wait_mutex;
 
@@ -188,10 +188,10 @@ void dt_control_job_wait(dt_job_t *j);
 typedef struct dt_control_accels_t
 {
   GtkAccelKey
-    filmstrip_forward, filmstrip_back,
-    lighttable_up, lighttable_down, lighttable_right,
-    lighttable_left, lighttable_center, lighttable_preview,
-    global_sideborders, global_header;
+  filmstrip_forward, filmstrip_back,
+                     lighttable_up, lighttable_down, lighttable_right,
+                     lighttable_left, lighttable_center, lighttable_preview,
+                     global_sideborders, global_header;
 
 } dt_control_accels_t;
 
@@ -244,6 +244,8 @@ typedef struct dt_control_t
   int key_accelerators_on;
 
   // xatom color profile:
+  pthread_rwlock_t xprofile_lock;
+  gchar *colord_profile_file;
   uint8_t *xprofile_data;
   int xprofile_size;
 
@@ -259,9 +261,11 @@ typedef struct dt_control_t
   pthread_t thread_res[DT_CTL_WORKER_RESERVED];
 
   /* proxy */
-  struct {
+  struct
+  {
     /* proxy functions for backgroundjobs ui*/
-    struct {
+    struct
+    {
       dt_lib_module_t *module;
       const guint *(*create)(dt_lib_module_t *self, int type, const gchar *message);
       void (*destroy)(dt_lib_module_t *self, const guint *key);
@@ -269,7 +273,8 @@ typedef struct dt_control_t
       void (*set_cancellable)(dt_lib_module_t *self, const guint *key, dt_job_t *job);
     } backgroundjobs;
 
-    struct {
+    struct
+    {
       dt_lib_module_t *module;
       void (*set_message)(dt_lib_module_t *self, const gchar *message);
     } hinter;

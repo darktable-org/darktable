@@ -28,6 +28,7 @@
 #include "common/bilateralcl.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
+#include "develop/tiling.h"
 #include "control/control.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -259,6 +260,20 @@ error:
   return FALSE;
 }
 #endif
+
+void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
+{
+  const float scale = piece->iscale/roi_in->scale;
+  const float sigma_s = 20.0f / scale;
+
+  tiling->factor = 3.25f; // in + out + temp + bilateral
+  tiling->maxbuf = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = ceilf(4*sigma_s);
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+  return;
+}
 
 
 void init_global(dt_iop_module_so_t *module)

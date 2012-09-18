@@ -121,8 +121,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->scale3));
 }
 
-static 
-void compute_gauss_params(const float sigma, dt_iop_gaussian_order_t order, float *a0, float *a1, float *a2, float *a3, 
+static
+void compute_gauss_params(const float sigma, dt_iop_gaussian_order_t order, float *a0, float *a1, float *a2, float *a3,
                           float *b1, float *b2, float *coefp, float *coefn)
 {
   const float alpha = 1.695f / sigma;
@@ -195,20 +195,20 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t workgroupsize = 0;          // the maximum number of items in a work group
   unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
   size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
-  
+
   // make sure blocksize is not too large
   int blocksize = BLOCKSIZE;
   int blockwd;
   int blockht;
   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-     dt_opencl_get_kernel_work_group_size(devid, gd->kernel_gaussian_transpose, &kernelworkgroupsize) == CL_SUCCESS)
+      dt_opencl_get_kernel_work_group_size(devid, gd->kernel_gaussian_transpose, &kernelworkgroupsize) == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
     while(blocksize > maxsizes[0] || blocksize > maxsizes[1]
           || blocksize*blocksize > workgroupsize || blocksize*(blocksize+1)*bpp > localmemsize)
     {
       if(blocksize == 1) break;
-      blocksize >>= 1;    
+      blocksize >>= 1;
     }
 
     blockwd = blockht = blocksize;
@@ -437,7 +437,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       yb[k] = xp[k] * coefp;
       yp[k] = yb[k];
     }
- 
+
     for(int j=0; j<roi_out->height; j++)
     {
       int offset = (i + j * roi_out->width)*ch;
@@ -469,14 +469,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       int offset = (i + j * roi_out->width)*ch;
 
       for(int k=0; k<3; k++)
-      {      
+      {
         xc[k] = CLAMPF(in[offset+k], Labmin[k], Labmax[k]);
 
         yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
 
-        xa[k] = xn[k]; 
-        xn[k] = xc[k]; 
-        ya[k] = yn[k]; 
+        xa[k] = xn[k];
+        xn[k] = xc[k];
+        ya[k] = yn[k];
         yn[k] = yc[k];
 
         temp[offset+k] += yc[k];
@@ -507,7 +507,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       yb[k] = xp[k] * coefp;
       yp[k] = yb[k];
     }
- 
+
     for(int i=0; i<roi_out->width; i++)
     {
       int offset = (i + j * roi_out->width)*ch;
@@ -539,14 +539,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       int offset = (i + j * roi_out->width)*ch;
 
       for(int k=0; k<3; k++)
-      {      
+      {
         xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
 
         yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
 
-        xa[k] = xn[k]; 
-        xn[k] = xc[k]; 
-        ya[k] = yn[k]; 
+        xa[k] = xn[k];
+        xn[k] = xc[k];
+        ya[k] = yn[k];
         yn[k] = yc[k];
 
         out[offset+k] += yc[k];
@@ -578,7 +578,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     yb = _mm_mul_ps(_mm_set_ps1(coefp), xp);
     yp = yb;
 
- 
+
     for(int j=0; j<roi_out->height; j++)
     {
       int offset = (i + j * roi_out->width)*ch;
@@ -589,8 +589,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       //yc = (a0 * xc[k]) + ((a1 * xp) - ((b1 * yp) + (b2 * yb)));
 
       yc = _mm_add_ps(_mm_mul_ps(xc, _mm_set_ps1(a0)),
-           _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
-           _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
+                      _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
+                                 _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
 
       _mm_store_ps(temp+offset, yc);
 
@@ -616,13 +616,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       //yc = (a2 * xn) + ((a3 * xa) - ((b1 * yn) + (b2 * ya)));
 
       yc = _mm_add_ps(_mm_mul_ps(xn, _mm_set_ps1(a2)),
-           _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
-           _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
+                      _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
+                                 _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
 
 
-      xa = xn; 
-      xn = xc; 
-      ya = yn; 
+      xa = xn;
+      xn = xc;
+      ya = yn;
       yn = yc;
 
       _mm_store_ps(temp+offset, _mm_add_ps(_mm_load_ps(temp+offset), yc));
@@ -650,7 +650,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     yb = _mm_mul_ps(_mm_set_ps1(coefp), xp);
     yp = yb;
 
- 
+
     for(int i=0; i<roi_out->width; i++)
     {
       int offset = (i + j * roi_out->width)*ch;
@@ -660,8 +660,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
 
       yc = _mm_add_ps(_mm_mul_ps(xc, _mm_set_ps1(a0)),
-           _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
-           _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
+                      _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
+                                 _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
 
       _mm_store_ps(out+offset, yc);
 
@@ -686,13 +686,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       //yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
 
       yc = _mm_add_ps(_mm_mul_ps(xn, _mm_set_ps1(a2)),
-           _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
-           _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
+                      _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
+                                 _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
 
 
-      xa = xn; 
-      xn = xc; 
-      ya = yn; 
+      xa = xn;
+      xn = xc;
+      ya = yn;
       yn = yc;
 
       _mm_store_ps(out+offset, _mm_add_ps(_mm_load_ps(out+offset), yc));
@@ -710,8 +710,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
-    out[k*ch+0] = (out[k*ch+0] < 100.0f) ? data->table[CLAMP((int)(out[k*ch+0]/100.0f*0x10000ul), 0, 0xffff)] : 
-      dt_iop_eval_exp(data->unbounded_coeffs, out[k*ch+0]/100.0f);
+    out[k*ch+0] = (out[k*ch+0] < 100.0f) ? data->table[CLAMP((int)(out[k*ch+0]/100.0f*0x10000ul), 0, 0xffff)] :
+                  dt_iop_eval_exp(data->unbounded_coeffs, out[k*ch+0]/100.0f);
     out[k*ch+1] = CLAMPF(out[k*ch+1]*data->saturation, Labminf[1], Labmaxf[1]);
     out[k*ch+2] = CLAMPF(out[k*ch+2]*data->saturation, Labminf[2], Labmaxf[2]);
     out[k*ch+3] = in[k*ch+3];
@@ -761,7 +761,7 @@ order_changed (GtkComboBox *combo, gpointer user_data)
 }
 #endif
 
-void 
+void
 commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)p1;
@@ -802,7 +802,8 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
   const float y[4] = {d->table[CLAMP((int)(x[0]*0x10000ul), 0, 0xffff)],
                       d->table[CLAMP((int)(x[1]*0x10000ul), 0, 0xffff)],
                       d->table[CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
-                      d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]};
+                      d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]
+                     };
   dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
 #endif
 }

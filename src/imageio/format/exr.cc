@@ -48,8 +48,8 @@ extern "C"
     int width, height;
   }
   dt_imageio_exr_t;
- 
-  void init(dt_imageio_module_format_t *self) 
+
+  void init(dt_imageio_module_format_t *self)
   {
     Imf::BlobAttribute::registerAttributeType();
   }

@@ -263,8 +263,8 @@ GtkType dtgtk_togglebutton_get_type()
 
 
 void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button,
-                            DTGTKCairoPaintIconFunc paint,
-                            gint paintflags)
+                                  DTGTKCairoPaintIconFunc paint,
+                                  gint paintflags)
 {
   button->icon = paint;
   button->icon_flags = paintflags;

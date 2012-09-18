@@ -30,11 +30,15 @@
     control which view the module should be available in also
     which placement in the panels the module have.
 */
-enum dt_view_type_flags_t {
+enum dt_view_type_flags_t
+{
   DT_VIEW_LIGHTTABLE = 1,
   DT_VIEW_DARKROOM = 2,
   DT_VIEW_TETHERING = 4,
+  DT_VIEW_MAP = 8
 };
+
+#define DT_VIEW_ALL (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP)
 
 /**
  * main dt view module (as lighttable or darkroom)
@@ -98,14 +102,14 @@ dt_view_image_over_t;
 /** expose an image, set image over flags. */
 void
 dt_view_image_expose(
-    dt_view_image_over_t *image_over,
-    uint32_t index,
-    cairo_t *cr,
-    int32_t width,
-    int32_t height,
-    int32_t zoom,
-    int32_t px,
-    int32_t py);
+  dt_view_image_over_t *image_over,
+  uint32_t index,
+  cairo_t *cr,
+  int32_t width,
+  int32_t height,
+  int32_t zoom,
+  int32_t px,
+  int32_t py);
 
 /** Set the selection bit to a given value for the specified image */
 void dt_view_set_selection(int imgid, int value);
@@ -122,11 +126,12 @@ typedef struct dt_view_manager_t
   dt_view_t view[DT_VIEW_MAX_MODULES];
   int32_t current_view, num_views;
 
-  /* reusable db statements 
+  /* reusable db statements
    * TODO: reconsider creating a common/database helper API
    *       instead of having this spread around in sources..
    */
-  struct {
+  struct
+  {
     /* select num from history where imgid = ?1*/
     sqlite3_stmt *have_history;
     /* select * from selected_images where imgid = ?1 */
@@ -145,47 +150,55 @@ typedef struct dt_view_manager_t
   /*
    * Proxy
    */
-  struct {
+  struct
+  {
 
     /* view toolbox proxy object */
-    struct {
+    struct
+    {
       struct dt_lib_module_t *module;
       void (*add)(struct dt_lib_module_t *,GtkWidget *);
     } view_toolbox;
 
     /* module toolbox proxy object */
-    struct {
+    struct
+    {
       struct dt_lib_module_t *module;
       void (*add)(struct dt_lib_module_t *,GtkWidget *);
     } module_toolbox;
 
     /* filter toolbox proxy object */
-    struct {
-        struct dt_lib_module_t *module;
-        void (*reset_filter)(struct dt_lib_module_t *);
+    struct
+    {
+      struct dt_lib_module_t *module;
+      void (*reset_filter)(struct dt_lib_module_t *);
     } filter;
 
     /* module collection proxy object */
-    struct {
+    struct
+    {
       struct dt_lib_module_t *module;
       void (*update)(struct dt_lib_module_t *);
     } module_collect;
 
     /* filmstrip proxy object */
-    struct {
+    struct
+    {
       struct dt_lib_module_t *module;
       void (*scroll_to_image)(struct dt_lib_module_t *, gint imgid, gboolean activate);
       int32_t (*activated_image)(struct dt_lib_module_t *);
     } filmstrip;
 
     /* lighttable view proxy object */
-    struct {
+    struct
+    {
       struct dt_lib_module_t *module;
       void (*set_zoom)(struct dt_lib_module_t *module, gint zoom);
     } lighttable;
 
     /* tethering view proxy object */
-    struct {
+    struct
+    {
       struct dt_view_t *view;
       uint32_t (*get_film_id)(const dt_view_t *view);
       const char *(*get_session_filename)(const dt_view_t *view, const char *filename);
@@ -194,6 +207,13 @@ typedef struct dt_view_manager_t
       void (*set_job_code)(const dt_view_t *view, const char *name);
       uint32_t (*get_selected_imgid)(const dt_view_t *view);
     } tethering;
+
+    /* map view proxy object */
+    struct
+    {
+      struct dt_view_t *view;
+      void (*center_on_location)(const dt_view_t *view, gdouble lon, gdouble lat, double zoom);
+    } map;
 
   } proxy;
 
@@ -278,10 +298,15 @@ void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom);
 
 /** set active image */
 void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm,int iid);
-/** prefetch the next few images in film strip, from selected on. 
+/** prefetch the next few images in film strip, from selected on.
     TODO: move to control ?
 */
 void dt_view_filmstrip_prefetch();
+
+/*
+ * Map View Proxy
+ */
+void dt_view_map_center_on_location(const dt_view_manager_t *vm, gdouble lon, gdouble lat, gdouble zoom);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

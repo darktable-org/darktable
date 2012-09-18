@@ -46,8 +46,8 @@ GtkWidget* dtgtk_togglebutton_new_with_label (const gchar *label,DTGTKCairoPaint
 
 /** Set the paint function and paint flags */
 void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button,
-                            DTGTKCairoPaintIconFunc paint,
-                            gint paintflags);
+                                  DTGTKCairoPaintIconFunc paint,
+                                  gint paintflags);
 G_END_DECLS
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
