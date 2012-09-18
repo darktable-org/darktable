@@ -225,6 +225,7 @@ int dt_control_write_config(dt_control_t *c)
   return 0;
 }
 
+#ifdef USE_COLORDGTK
 static void
 dt_ctl_get_display_profile_colord_callback(GObject *source, GAsyncResult *res, gpointer user_data)
 {
@@ -270,6 +271,7 @@ dt_ctl_get_display_profile_colord_callback(GObject *source, GAsyncResult *res, g
   pthread_rwlock_unlock(&darktable.control->xprofile_lock);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
 }
+#endif
 
 // Get the display ICC profile of the monitor associated with the widget.
 // For X display, uses the ICC profile specifications version 0.2 from

@@ -108,6 +108,11 @@ endif()
 #
 # Find all other required libraries for building
 #
+find_package(Glib 2.26 REQUIRED)
+include_directories(${Glib_INCLUDE_DIRS})
+list(APPEND LIBS ${Glib_LIBRARIES})
+add_definitions(${Glib_DEFINITIONS})
+
 find_package(GTK2 2.6 REQUIRED gtk)
 include_directories(${GTK2_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK2_LIBRARIES})

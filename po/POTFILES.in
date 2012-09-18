@@ -102,7 +102,7 @@ src/libs/colorpicker.c
 src/libs/copy_history.c
 src/libs/export.c
 src/libs/file_manager.c
-src/libs/geolocation.c
+src/libs/geotagging.c
 src/libs/histogram.c
 src/libs/history.c
 src/libs/image.c
