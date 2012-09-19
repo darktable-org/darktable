@@ -30,7 +30,6 @@
 #include "common/debug.h"
 #include "common/opencl.h"
 #include "common/gaussian.h"
-#include "common/gaussiancl.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"

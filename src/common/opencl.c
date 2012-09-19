@@ -21,7 +21,7 @@
 #include "common/darktable.h"
 #include "common/opencl.h"
 #include "common/bilateralcl.h"
-#include "common/gaussiancl.h"
+#include "common/gaussian.h"
 #include "common/dlopencl.h"
 #include "common/nvidia_gpus.h"
 #include "control/conf.h"

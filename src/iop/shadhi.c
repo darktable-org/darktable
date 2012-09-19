@@ -31,7 +31,6 @@
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
 #include "common/gaussian.h"
-#include "common/gaussiancl.h"
 #include "dtgtk/togglebutton.h"
 #include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
