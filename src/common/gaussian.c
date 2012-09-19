@@ -468,8 +468,10 @@ dt_gaussian_init_cl_global()
   dt_gaussian_cl_global_t *g = (dt_gaussian_cl_global_t *)malloc(sizeof(dt_gaussian_cl_global_t));
 
   const int program = 6;   // gaussian.cl, from programs.conf
-  g->kernel_gaussian_column        = dt_opencl_create_kernel(program, "gaussian_column");
-  g->kernel_gaussian_transpose     = dt_opencl_create_kernel(program, "gaussian_transpose");
+  g->kernel_gaussian_column_1c        = dt_opencl_create_kernel(program, "gaussian_column_1c");
+  g->kernel_gaussian_transpose_1c     = dt_opencl_create_kernel(program, "gaussian_transpose_1c");
+  g->kernel_gaussian_column_4c        = dt_opencl_create_kernel(program, "gaussian_column_4c");
+  g->kernel_gaussian_transpose_4c     = dt_opencl_create_kernel(program, "gaussian_transpose_4c");
   return g;
 }
 
@@ -500,10 +502,12 @@ dt_gaussian_init_cl(
     const float sigma,     // gaussian sigma
     const int order)       // order of gaussian blur
 {
+  assert(channels == 1 || channels == 4);
+  
+  if(!(channels == 1 || channels == 4)) return NULL;
+
   dt_gaussian_cl_t *g = (dt_gaussian_cl_t *)malloc(sizeof(dt_gaussian_cl_t));
   if(!g) return NULL;
-
-  assert(channels > 0 && channels <= 4);
 
   g->global = darktable.opencl->gaussian;
   g->devid = devid;
@@ -532,11 +536,12 @@ dt_gaussian_init_cl(
   size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
    
   // make sure blocksize is not too large
+  int kernel_gaussian_transpose = (channels == 1) ? g->global->kernel_gaussian_transpose_1c : g->global->kernel_gaussian_transpose_4c;
   size_t blocksize = 64;
   int blockwd;
   int blockht;
   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-     dt_opencl_get_kernel_work_group_size(devid, g->global->kernel_gaussian_transpose, &kernelworkgroupsize) == CL_SUCCESS)
+     dt_opencl_get_kernel_work_group_size(devid, kernel_gaussian_transpose, &kernelworkgroupsize) == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
     while(blocksize > maxsizes[0] || blocksize > maxsizes[1] 
@@ -609,13 +614,26 @@ dt_gaussian_blur_cl(
   float Labmax[4] = { 0.0f };
   float Labmin[4] = { 0.0f };
 
-  assert(channels <= 4);
-
   for(int k=0; k<MIN(channels, 4); k++)
   {
     Labmax[k] = g->max[k];
     Labmin[k] = g->min[k];
   }
+
+  int kernel_gaussian_column = -1;
+  int kernel_gaussian_transpose = -1;
+
+  if(channels == 1)
+  {
+    kernel_gaussian_column =    g->global->kernel_gaussian_column_1c;
+    kernel_gaussian_transpose = g->global->kernel_gaussian_transpose_1c;
+  }
+  else if(channels == 4)
+  {
+    kernel_gaussian_column =    g->global->kernel_gaussian_column_4c;
+    kernel_gaussian_transpose = g->global->kernel_gaussian_transpose_4c;
+  }
+  else return err;
 
   size_t origin[] = {0, 0, 0};
   size_t region[] = {width, height, 1};
@@ -634,34 +652,34 @@ dt_gaussian_blur_cl(
   sizes[0] = ROUNDUPWD(width);
   sizes[1] = 1;
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 4, sizeof(float), (void *)&a0);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 5, sizeof(float), (void *)&a1);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 6, sizeof(float), (void *)&a2);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 7, sizeof(float), (void *)&a3);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 8, sizeof(float), (void *)&b1);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 12, 4*sizeof(float), (void *)&Labmax);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 13, 4*sizeof(float), (void *)&Labmin);
-  err = dt_opencl_enqueue_kernel_2d(devid, g->global->kernel_gaussian_column, sizes);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp2);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 4, sizeof(float), (void *)&a0);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 5, sizeof(float), (void *)&a1);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 6, sizeof(float), (void *)&a2);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 7, sizeof(float), (void *)&a3);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 8, sizeof(float), (void *)&b1);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 12, channels*sizeof(float), (void *)&Labmax);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 13, channels*sizeof(float), (void *)&Labmin);
+  err = dt_opencl_enqueue_kernel_2d(devid, kernel_gaussian_column, sizes);
   if(err != CL_SUCCESS) return err;
 
   // intermediate step: transpose dev_temp2 -> dev_temp1
   sizes[0] = bwidth;
   sizes[1] = bheight;
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp1);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_transpose, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_transpose, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_transpose, 4, sizeof(int), (void *)&blocksize);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_transpose, 5, bpp*blocksize*(blocksize+1), NULL);
-  err = dt_opencl_enqueue_kernel_2d_with_local(devid, g->global->kernel_gaussian_transpose, sizes, local);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp2);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp1);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 4, sizeof(int), (void *)&blocksize);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 5, bpp*blocksize*(blocksize+1), NULL);
+  err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel_gaussian_transpose, sizes, local);
   if(err != CL_SUCCESS) return err;
 
 
@@ -669,21 +687,21 @@ dt_gaussian_blur_cl(
   sizes[0] = ROUNDUPWD(height);
   sizes[1] = 1;
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 2, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 3, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 4, sizeof(float), (void *)&a0);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 5, sizeof(float), (void *)&a1);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 6, sizeof(float), (void *)&a2);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 7, sizeof(float), (void *)&a3);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 8, sizeof(float), (void *)&b1);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 12, 4*sizeof(float), (void *)&Labmax);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_column, 13, 4*sizeof(float), (void *)&Labmin);
-  err = dt_opencl_enqueue_kernel_2d(devid, g->global->kernel_gaussian_column, sizes);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp2);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 2, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 3, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 4, sizeof(float), (void *)&a0);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 5, sizeof(float), (void *)&a1);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 6, sizeof(float), (void *)&a2);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 7, sizeof(float), (void *)&a3);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 8, sizeof(float), (void *)&b1);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 12, channels*sizeof(float), (void *)&Labmax);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 13, channels*sizeof(float), (void *)&Labmin);
+  err = dt_opencl_enqueue_kernel_2d(devid, kernel_gaussian_column, sizes);
   if(err != CL_SUCCESS) return err;
 
 
@@ -691,13 +709,13 @@ dt_gaussian_blur_cl(
   sizes[0] = bheight;
   sizes[1] = bwidth;
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp1);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_transpose, 2, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_transpose, 3, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_transpose, 4, sizeof(int), (void *)&blocksize);
-  dt_opencl_set_kernel_arg(devid, g->global->kernel_gaussian_transpose, 5, bpp*blocksize*(blocksize+1), NULL);
-  err = dt_opencl_enqueue_kernel_2d_with_local(devid, g->global->kernel_gaussian_transpose, sizes, local);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp2);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp1);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 2, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 3, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 4, sizeof(int), (void *)&blocksize);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 5, bpp*blocksize*(blocksize+1), NULL);
+  err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel_gaussian_transpose, sizes, local);
   if(err != CL_SUCCESS) return err;
 
   // finally produce output in dev_out
@@ -714,8 +732,10 @@ dt_gaussian_free_cl_global(
 {
   if(!g) return;
   // destroy kernels
-  dt_opencl_free_kernel(g->kernel_gaussian_column);
-  dt_opencl_free_kernel(g->kernel_gaussian_transpose);
+  dt_opencl_free_kernel(g->kernel_gaussian_column_1c);
+  dt_opencl_free_kernel(g->kernel_gaussian_transpose_1c);
+  dt_opencl_free_kernel(g->kernel_gaussian_column_4c);
+  dt_opencl_free_kernel(g->kernel_gaussian_transpose_4c);
   free(g);
 }
 

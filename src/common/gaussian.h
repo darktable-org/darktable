@@ -56,7 +56,8 @@ void dt_gaussian_free(dt_gaussian_t *g);
 #ifdef HAVE_OPENCL
 typedef struct dt_gaussian_cl_global_t
 {
-  int kernel_gaussian_column, kernel_gaussian_transpose;
+  int kernel_gaussian_column_4c, kernel_gaussian_transpose_4c;
+  int kernel_gaussian_column_1c, kernel_gaussian_transpose_1c;
 }
 dt_gaussian_cl_global_t;
 

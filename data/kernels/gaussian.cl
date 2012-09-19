@@ -26,7 +26,7 @@ const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_E
 
 
 kernel void 
-gaussian_transpose(global float4 *in, global float4 *out, unsigned int width, unsigned int height, 
+gaussian_transpose_4c(global float4 *in, global float4 *out, unsigned int width, unsigned int height, 
                       unsigned int blocksize, local float4 *buffer)
 {
   unsigned int x = get_global_id(0);
@@ -52,7 +52,33 @@ gaussian_transpose(global float4 *in, global float4 *out, unsigned int width, un
 
 
 kernel void 
-gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsigned int height,
+gaussian_transpose_1c(global float *in, global float *out, unsigned int width, unsigned int height, 
+                      unsigned int blocksize, local float *buffer)
+{
+  unsigned int x = get_global_id(0);
+  unsigned int y = get_global_id(1);
+
+  if((x < width) && (y < height))
+  {
+    const unsigned int iindex = mad24(y, width, x);
+    buffer[mad24(get_local_id(1), blocksize + 1, get_local_id(0))] = in[iindex];
+  }
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  x = mad24(get_group_id(1), blocksize, get_local_id(0));
+  y = mad24(get_group_id(0), blocksize, get_local_id(1));
+
+  if((x < height) && (y < width))
+  {
+    const unsigned int oindex = mad24(y, height, x);
+    out[oindex] = buffer[mad24(get_local_id(0), blocksize + 1, get_local_id(1))];
+  }
+}
+
+
+kernel void 
+gaussian_column_4c(global float4 *in, global float4 *out, unsigned int width, unsigned int height,
                   const float a0, const float a1, const float a2, const float a3, const float b1, const float b2,
                   const float coefp, const float coefn, const float4 Labmax, const float4 Labmin)
 {
@@ -114,6 +140,71 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
 
   }
 }
+
+kernel void 
+gaussian_column_1c(global float *in, global float *out, unsigned int width, unsigned int height,
+                  const float a0, const float a1, const float a2, const float a3, const float b1, const float b2,
+                  const float coefp, const float coefn, const float Labmax, const float Labmin)
+{
+  const unsigned int x = get_global_id(0);
+
+  if(x >= width) return;
+
+  float xp = 0.0f;
+  float yb = 0.0f;
+  float yp = 0.0f;
+  float xc = 0.0f;
+  float yc = 0.0f;
+  float xn = 0.0f;
+  float xa = 0.0f;
+  float yn = 0.0f;
+  float ya = 0.0f;
+
+  // forward filter
+  xp = clamp(in[x], Labmin, Labmax); // 0*width+x
+  yb = xp * coefp;
+  yp = yb;
+
+ 
+  for(int y=0; y<height; y++)
+  {
+    const int idx = mad24((unsigned int)y, width, x);
+
+    xc = clamp(in[idx], Labmin, Labmax);
+    yc = (a0 * xc) + (a1 * xp) - (b1 * yp) - (b2 * yb);
+
+    xp = xc;
+    yb = yp;
+    yp = yc;
+
+    out[idx] = yc;
+
+  }
+
+  // backward filter
+  xn = clamp(in[mad24(height - 1, width, x)], Labmin, Labmax);
+  xa = xn;
+  yn = xn * coefn;
+  ya = yn;
+
+
+  for(int y=height-1; y>-1; y--)
+  {
+    const int idx = mad24((unsigned int)y, width, x);
+
+    xc = clamp(in[idx], Labmin, Labmax);
+    yc = (a2 * xn) + (a3 * xa) - (b1 * yn) - (b2 * ya);
+
+    xa = xn; 
+    xn = xc; 
+    ya = yn; 
+    yn = yc;
+
+    out[idx] += yc;
+
+  }
+}
+
 
 
 float
