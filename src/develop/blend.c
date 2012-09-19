@@ -18,6 +18,7 @@
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
+#include "common/gaussian.h"
 #include "blend.h"
 
 #define CLAMP_RANGE(x,y,z)      (CLAMP(x,y,z))
@@ -1591,7 +1592,9 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   {
     /* get the clipped opacity value  0 - 1 */
     const float opacity = fmin(fmax(0,(d->opacity/100.0f)),1.0f);
-
+    const int maskblur = fabs(d->radius) <= 0.1f ? 0 : 1;
+    const int gaussian = d->radius > 0.0f ? 1 : 0;
+    const float radius = fabs(d->radius);
 
     /* get channel max values depending on colorspace */
     const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
@@ -1626,7 +1629,27 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
       _blend_make_mask(cst, d->blendif, d->blendif_parameters, opacity, in, out, m, stride);
     }
 
-    /* routines to manipulate (blur) blend mask go here */
+    if(maskblur)
+    {
+      if(gaussian)
+      {
+        const float sigma = radius * roi_in->scale / piece ->iscale;
+
+        const float mmax[] = { 1.0f };
+        const float mmin[] = { 0.0f };
+
+        dt_gaussian_t *g = dt_gaussian_init(roi_out->width, roi_out->height, 1, mmax, mmin, sigma, 0);
+        if(g)
+        {
+          dt_gaussian_blur(g, mask, mask);
+          dt_gaussian_free(g);
+        }
+      }
+      else
+      {
+        // potential further blend algorithm (bilateral grid?)
+      }
+    }
 
 #ifdef _OPENMP
 #if !defined(__SUNOS__)
@@ -1712,6 +1735,10 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   const int width = roi_in->width;
   const int height = roi_in->height;
   const unsigned blendif = d->blendif;
+  const int maskblur = fabs(d->radius) <= 0.1f ? 0 : 1;
+  const int gaussian = d->radius > 0.0f ? 1 : 0;
+  const float radius = fabs(d->radius);
+
 
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
@@ -1733,6 +1760,26 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask, sizes);
   if(err != CL_SUCCESS) goto error;
 
+  if(maskblur)
+  {
+    if(gaussian)
+    {
+      const float sigma = radius * roi_in->scale / piece ->iscale;
+      const float mmax[] = { 1.0f };
+      const float mmin[] = { 0.0f };
+
+      dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, roi_out->width, roi_out->height, 1, mmax, mmin, sigma, 0);
+      if(g)
+      {
+        dt_gaussian_blur_cl(g, dev_mask, dev_mask);
+        dt_gaussian_free_cl(g);
+      }
+    }
+    else
+    {
+      // potential further blend algorithm (bilateral grid?)
+    }
+  }
 
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -1809,7 +1856,9 @@ tiling_callback_blendop (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_i
   if (d && d->mode!=0)
   {
     /* blending enabled */
-    tiling->factor = 2.25f;   // in + out + one quarter buffer for mask
+    tiling->factor = 2.25f;                                      // in + out + one quarter buffer for mask
+    float blurincrement = fabs(d->radius) >= 0.1f ? 0.5f : 0.0f; // plus two quarter buffers for blur
+    tiling->factor += blurincrement;
   }
   else
     tiling->factor = 2.0f;   // nothing special, in and out are always there with factor 2.0 
