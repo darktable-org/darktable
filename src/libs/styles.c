@@ -325,6 +325,7 @@ gui_init (dt_lib_module_t *self)
   d->edit_button = NULL;
   self->widget = gtk_vbox_new (FALSE, 5);
   GtkWidget *w;
+  GtkWidget *scrolled;
 
   /* list */
   d->list = GTK_TREE_VIEW (gtk_tree_view_new ());
@@ -354,9 +355,13 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (d->entry, "activate", G_CALLBACK(entry_activated),d);
 
   dt_gui_key_accel_block_on_focus ( GTK_WIDGET (d->entry));
+  
+  scrolled = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
   gtk_box_pack_start(GTK_BOX (self->widget),GTK_WIDGET (d->entry),TRUE,FALSE,0);
-  gtk_box_pack_start(GTK_BOX (self->widget),GTK_WIDGET (d->list),TRUE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX (self->widget),GTK_WIDGET (scrolled),TRUE,FALSE,0);
+  gtk_container_add(GTK_CONTAINER(scrolled), GTK_WIDGET(d->list));
 
   GtkWidget *hbox=gtk_hbox_new (FALSE,5);
 
