@@ -68,7 +68,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "delete"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "export"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "import"), 0, 0);
-  //dt_accel_register_lib(self, NC_("accel", "edit"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "edit"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -176,10 +176,8 @@ _styles_row_activated_callback (GtkTreeView *view, GtkTreePath *path, GtkTreeVie
 
 }
 
-#if 0
 static void edit_clicked(GtkWidget *w,gpointer user_data)
 {
-#error	if this code is reactivated also reactivate the commented line in init_key_accels
   dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
 
   GtkTreeIter iter;
@@ -197,7 +195,6 @@ static void edit_clicked(GtkWidget *w,gpointer user_data)
     _gui_styles_update_view(d);
   }
 }
-#endif
 
 static char* get_style_name(dt_lib_styles_t *list_style)
 {
@@ -244,7 +241,7 @@ static void export_clicked (GtkWidget *w,gpointer user_data)
     if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT )
     {
       char *filedir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-      dt_styles_save_to_file(name,filedir);
+      dt_styles_save_to_file(name,filedir,FALSE);
       g_free (filedir);
     }
     g_free(name);
@@ -365,7 +362,6 @@ gui_init (dt_lib_module_t *self)
 
   GtkWidget *hbox=gtk_hbox_new (FALSE,5);
 
-  GtkWidget *widget;
 
   d->duplicate = gtk_check_button_new_with_label(_("create duplicate"));
   gtk_box_pack_start(GTK_BOX (self->widget),GTK_WIDGET (d->duplicate),TRUE,FALSE,0);
@@ -373,14 +369,11 @@ gui_init (dt_lib_module_t *self)
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (d->duplicate), dt_conf_get_bool("ui_last/styles_create_duplicate"));
   g_object_set (d->duplicate, "tooltip-text", _("creates a duplicate of the image before applying style"), (char *)NULL);
 
-#if 0
-  // TODO: Unfinished stuff
   GtkWidget *widget=gtk_button_new_with_label(_("edit"));
   d->edit_button = widget;
-  also add to the init function
   g_signal_connect (widget, "clicked", G_CALLBACK(edit_clicked),d);
+  g_object_set (widget, "tooltip-text", _("edit the selected style in list above"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX (hbox),widget,TRUE,TRUE,0);
-#endif
 
   widget=gtk_button_new_with_label(_("delete"));
   d->delete_button = widget;

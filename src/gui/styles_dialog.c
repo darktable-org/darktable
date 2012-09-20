@@ -33,7 +33,8 @@ typedef struct dt_gui_styles_dialog_t
 {
   gboolean edit;
   int32_t imgid;
-  GtkWidget *name,*description;
+  gchar *nameorig;
+  GtkWidget *name,*description,*duplicate;
   GtkTreeView *items;
 } dt_gui_styles_dialog_t;
 
@@ -91,6 +92,7 @@ _gui_styles_new_style_response(GtkDialog *dialog, gint response_id, dt_gui_style
         g->imgid,result);
   }
   gtk_widget_destroy(GTK_WIDGET(dialog));
+  g_free(g->nameorig);
   g_free(g);
 }
 
@@ -100,11 +102,26 @@ _gui_styles_edit_style_response(GtkDialog *dialog, gint response_id, dt_gui_styl
   if (response_id == GTK_RESPONSE_ACCEPT)
   {
     /* get the filtered list from dialog */
-    //GList *result = _gui_styles_get_active_items(g);
+    GList *result = _gui_styles_get_active_items(g);
 
-
+    if (gtk_entry_get_text ( GTK_ENTRY (g->name)) && strlen(gtk_entry_get_text ( GTK_ENTRY (g->name)))>0)
+    {
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (g->duplicate)))
+        dt_styles_create_from_style(
+          g->nameorig,
+          gtk_entry_get_text ( GTK_ENTRY (g->name)),
+          gtk_entry_get_text ( GTK_ENTRY (g->description)),
+          result);
+      else
+        dt_styles_update(
+          g->nameorig,
+          gtk_entry_get_text ( GTK_ENTRY (g->name)),
+          gtk_entry_get_text ( GTK_ENTRY (g->description)),
+          result);
+    }
   }
   gtk_widget_destroy(GTK_WIDGET(dialog));
+  g_free(g->nameorig);
   g_free(g);
 }
 
@@ -158,13 +175,22 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
 
   /* initialize the dialog */
   dt_gui_styles_dialog_t *sd=(dt_gui_styles_dialog_t *)g_malloc (sizeof (dt_gui_styles_dialog_t));
+  sd->nameorig = g_strdup(name);
 
   if (edit)
+  {
     sprintf (title,_("edit style"));
+    g_strlcat (title, " \"", 512);
+    g_strlcat(title, name, 512);
+    g_strlcat(title, "\"", 512);
+    sd->duplicate = gtk_check_button_new_with_label(_("duplicate style"));
+    g_object_set (sd->duplicate, "tooltip-text", _("creates a duplicate of the style before applying changes"), (char *)NULL);
+  }
   else
   {
     sd->imgid = imgid;
     sprintf (title,"%s",_("create new style"));
+    sd->duplicate = NULL;
   }
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkDialog *dialog = GTK_DIALOG (gtk_dialog_new_with_buttons (title,
@@ -182,7 +208,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
   gtk_container_add (content_area, alignment);
   GtkBox *box = GTK_BOX (gtk_vbox_new(FALSE, 5));
   gtk_container_add (GTK_CONTAINER (alignment), GTK_WIDGET (box));
-
+  
   sd->name = gtk_entry_new();
   g_object_set (sd->name, "tooltip-text", _("enter a name for the new style"), (char *)NULL);
 
@@ -193,8 +219,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
   if (edit)
   {
     /* name */
-    gtk_entry_set_text (GTK_ENTRY (sd->name),name);
-    gtk_widget_set_sensitive (sd->name,FALSE);
+    gtk_entry_set_text(GTK_ENTRY(sd->name), name);
     /* description */
     gchar *desc = dt_styles_get_description (name);
     if (desc)
@@ -240,6 +265,9 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
   gtk_tree_view_set_model (GTK_TREE_VIEW(sd->items), GTK_TREE_MODEL(liststore));
 
   gtk_box_pack_start (box,GTK_WIDGET (sd->items),TRUE,TRUE,0);
+  
+  if (edit)
+    gtk_box_pack_start (box,GTK_WIDGET (sd->duplicate),FALSE,FALSE,0);
 
 
   /* fill list with history items */
@@ -323,6 +351,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
     g_signal_connect (dialog, "response", G_CALLBACK (_gui_styles_new_style_response), sd);
 
   gtk_widget_show_all (GTK_WIDGET (dialog));
+  gtk_dialog_run(GTK_DIALOG(dialog));
 
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
