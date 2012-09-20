@@ -133,6 +133,7 @@ src/libs/tools/viewswitcher.c
 src/views/capture.c
 src/views/darkroom.c
 src/views/lighttable.c
+src/views/map.c
 src/views/view.c
 src/common/ratings.c
 src/common/colorspaces.c

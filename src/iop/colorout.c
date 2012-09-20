@@ -541,7 +541,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
     g->softproof_enabled = p->softproof_enabled;
   }
-  const int num_threads = dt_get_num_threads();
   if (d->xform)
   {
     cmsDeleteTransform(d->xform);
@@ -620,16 +619,15 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     {
       d->cmatrix[0] = NAN;
       piece->process_cl_ready = 0;
-      for (int t=0; t<num_threads; t++)
 
-        d->xform = cmsCreateProofingTransform(d->Lab,
-                                              TYPE_Lab_FLT,
-                                              d->output,
-                                              TYPE_RGB_FLT,
-                                              d->softproof,
-                                              outintent,
-                                              INTENT_RELATIVE_COLORIMETRIC,
-                                              transformFlags);
+      d->xform = cmsCreateProofingTransform(d->Lab,
+                                            TYPE_Lab_FLT,
+                                            d->output,
+                                            TYPE_RGB_FLT,
+                                            d->softproof,
+                                            outintent,
+                                            INTENT_RELATIVE_COLORIMETRIC,
+                                            transformFlags);
     }
   }
 

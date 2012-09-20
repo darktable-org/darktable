@@ -243,24 +243,18 @@ dt_ctl_get_display_profile_colord_callback(GObject *source, GAsyncResult *res, g
       {
         /* the profile has changed (either because the user changed the colord settings or because we are on a different screen now) */
         // update darktable.control->colord_profile_file
-        if(darktable.control->colord_profile_file)
-          g_free(darktable.control->colord_profile_file);
+        g_free(darktable.control->colord_profile_file);
         darktable.control->colord_profile_file = g_strdup(filename);
-        // open file
-        GMappedFile *file = g_mapped_file_new(filename, FALSE, &error);
-        if(file != NULL && error == NULL)
+        // read the file
+        guchar *tmp_data = NULL;
+        gsize size;
+        g_file_get_contents(filename, (gchar**)&tmp_data, &size, NULL);
+        if(size != 0)
         {
-          gsize size = g_mapped_file_get_length(file);
-          gchar *data = g_mapped_file_get_contents(file);
-          // read into darktable.control->xprofile_data and set darktable.control->xprofile_size
           g_free(darktable.control->xprofile_data);
-          darktable.control->xprofile_data = (uint8_t*)malloc(size);
-          memcpy(darktable.control->xprofile_data, data, size);
+          darktable.control->xprofile_data = tmp_data;
           darktable.control->xprofile_size = size;
         }
-        // close the file
-        if(file)
-          g_mapped_file_unref(file);
       }
     }
   }
@@ -285,12 +279,8 @@ void dt_ctl_set_display_profile()
     return; // we are already updating the profile. Or someone is reading right now. Too bad we can't distinguish that. Whatever ...
 
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
-  guint8 **buffer = &darktable.control->xprofile_data;
-  gint *buffer_size = &darktable.control->xprofile_size;
-  // thanks to ufraw for this!
-  g_free(*buffer);
-  *buffer = NULL;
-  *buffer_size = 0;
+  guint8 *buffer = NULL;
+  gint buffer_size = 0;
 
 #if defined GDK_WINDOWING_X11
   /* let's have a look at the xatom, just in case ... */
@@ -309,7 +299,7 @@ void dt_ctl_set_display_profile()
   gdk_property_get(gdk_screen_get_root_window(screen),
                    gdk_atom_intern(atom_name, FALSE), GDK_NONE,
                    0, 64 * 1024 * 1024, FALSE,
-                   &type, &format, buffer_size, buffer);
+                   &type, &format, &buffer_size, &buffer);
   g_free(atom_name);
 
 #ifdef USE_COLORDGTK
@@ -336,8 +326,8 @@ void dt_ctl_set_display_profile()
     UInt8 *tmp_buffer = (UInt8 *) g_malloc(CFDataGetLength(data));
     CFDataGetBytes(data, CFRangeMake(0, CFDataGetLength(data)), tmp_buffer);
 
-    *buffer = (guint8 *) tmp_buffer;
-    *buffer_size = CFDataGetLength(data);
+    buffer = (guint8 *) tmp_buffer;
+    buffer_size = CFDataGetLength(data);
 
     CFRelease(data);
   }
@@ -353,14 +343,21 @@ void dt_ctl_set_display_profile()
     if (GetICMProfile (hdc, &len, path))
     {
       gsize size;
-      g_file_get_contents(path, (gchar**)buffer, &size, NULL);
-      *buffer_size = size;
+      g_file_get_contents(path, (gchar**)&buffer, &size, NULL);
+      buffer_size = size;
     }
     g_free (path);
     ReleaseDC (NULL, hdc);
   }
 #endif
 
+  if(buffer)
+  {
+    // thanks to ufraw for this!
+    g_free(darktable.control->xprofile_data);
+    darktable.control->xprofile_data = buffer;
+    darktable.control->xprofile_size = buffer_size;
+  }
   pthread_rwlock_unlock(&darktable.control->xprofile_lock);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
 }
