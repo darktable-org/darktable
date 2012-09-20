@@ -34,8 +34,6 @@ typedef struct dt_gui_styles_dialog_t
   gboolean edit;
   int32_t imgid;
   GtkWidget *name,*description;
-  GtkWidget *advanced;
-  GtkBox *advanced_box;
   GtkTreeView *items;
 } dt_gui_styles_dialog_t;
 
@@ -109,24 +107,6 @@ _gui_styles_edit_style_response(GtkDialog *dialog, gint response_id, dt_gui_styl
   gtk_widget_destroy(GTK_WIDGET(dialog));
   g_free(g);
 }
-
-static void
-_gui_styles_toggle_advanced(GtkWidget *widget,gpointer user_data)
-{
-  dt_gui_styles_dialog_t *sd = (dt_gui_styles_dialog_t *)user_data;
-
-  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sd->advanced)))
-  {
-    gtk_widget_set_visible(GTK_WIDGET(sd->advanced_box), TRUE);
-    gtk_widget_set_no_show_all(GTK_WIDGET(sd->advanced_box), FALSE);
-    gtk_widget_show_all (GTK_WIDGET(sd->advanced_box));
-    gtk_widget_set_no_show_all(GTK_WIDGET(sd->advanced_box), TRUE);
-  }
-  else
-    gtk_widget_hide (GTK_WIDGET (sd->advanced_box));
-
-}
-
 
 static void
 _gui_styles_item_toggled (GtkCellRendererToggle *cell,
@@ -224,16 +204,8 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
     }
   }
 
-  sd->advanced_box = GTK_BOX (gtk_vbox_new(FALSE,0));
-
-  sd->advanced = gtk_check_button_new_with_label(_("advanced edit of style"));
-  g_signal_connect (sd->advanced, "toggled", G_CALLBACK (_gui_styles_toggle_advanced), sd);
-
   gtk_box_pack_start (box,sd->name,FALSE,FALSE,0);
   gtk_box_pack_start (box,sd->description,FALSE,FALSE,0);
-  gtk_box_pack_start (box,sd->advanced,FALSE,FALSE,0);
-  gtk_box_pack_start (box,GTK_WIDGET (sd->advanced_box),TRUE,TRUE,0);
-
 
   /* create the list of items */
   sd->items = GTK_TREE_VIEW (gtk_tree_view_new ());
@@ -267,7 +239,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
   gtk_tree_selection_set_mode (gtk_tree_view_get_selection(GTK_TREE_VIEW(sd->items)), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model (GTK_TREE_VIEW(sd->items), GTK_TREE_MODEL(liststore));
 
-  gtk_box_pack_start (sd->advanced_box,GTK_WIDGET (sd->items),TRUE,TRUE,0);
+  gtk_box_pack_start (box,GTK_WIDGET (sd->items),TRUE,TRUE,0);
 
 
   /* fill list with history items */
@@ -350,7 +322,6 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
   else
     g_signal_connect (dialog, "response", G_CALLBACK (_gui_styles_new_style_response), sd);
 
-  gtk_widget_set_no_show_all(GTK_WIDGET(sd->advanced_box), TRUE);
   gtk_widget_show_all (GTK_WIDGET (dialog));
 
 }
