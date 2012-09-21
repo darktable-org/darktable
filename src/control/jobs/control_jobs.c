@@ -1158,7 +1158,7 @@ void dt_control_seed_denoise_job_init(dt_job_t *job)
   dt_control_job_init(job, "collect denoising seeds");
   job->execute = &dt_control_seed_denoise_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_init(t);
+  dt_control_image_enumerator_job_selected_init(t);
 }
 
 void dt_control_denoise_job_init(dt_job_t *job)
@@ -1166,7 +1166,7 @@ void dt_control_denoise_job_init(dt_job_t *job)
   dt_control_job_init(job, "denoise image");
   job->execute = &dt_control_denoise_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_init(t);
+  dt_control_image_enumerator_job_selected_init(t);
 }
 
 void dt_control_indexer_job_init(dt_job_t *job)
