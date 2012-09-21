@@ -64,6 +64,7 @@ src/iop/equalizer.c
 src/iop/exposure.c
 src/iop/flip.c
 src/iop/gamma.c
+src/iop/globaltonemap.c
 src/iop/graduatednd.c
 src/iop/grain.c
 src/iop/highlights.c
