@@ -180,6 +180,7 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
                        GTK_FILL | GTK_EXPAND | GTK_SHRINK,
                        GTK_SHRINK,
                        0, 0);
+      gtk_widget_show_all(module->showhide);
       if(ti < 5) ti++;
       else
       {
