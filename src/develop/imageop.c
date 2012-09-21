@@ -1243,6 +1243,9 @@ dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
   /* update ui to default params*/
   dt_iop_gui_update(module);
 
+  /* update expanded state, especially blend controls */
+  dt_iop_gui_update_expanded(module);
+
   dt_dev_add_history_item(module->dev, module, TRUE);
 }
 
