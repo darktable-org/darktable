@@ -104,6 +104,9 @@ typedef struct dt_opencl_t
 
   // global kernels for bilateral filtering, to be reused by a few plugins.
   struct dt_bilateral_cl_global_t *bilateral;
+
+  // global kernels for gaussian filtering, to be reused by a few plugins.
+  struct dt_gaussian_cl_global_t *gaussian;
 }
 dt_opencl_t;
 

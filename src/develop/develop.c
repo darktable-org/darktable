@@ -658,7 +658,7 @@ void dt_dev_read_history(dt_develop_t *dev)
       }
       modules = g_list_next(modules);
     }
-    if(!hist->module)
+    if(!hist->module && opname)
     {
       fprintf(stderr, "[dev_read_history] the module `%s' requested by image `%s' is not installed on this computer!\n", opname, dev->image_storage.filename);
       free(hist);

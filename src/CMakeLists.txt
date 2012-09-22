@@ -18,6 +18,7 @@ FILE(GLOB SOURCE_FILES
   "common/film.c"
   "common/file_location.c"
   "common/fswatch.c"
+  "common/gaussian.c"
   "common/grouping.c"
   "common/history.c"
   "common/gpx.c"
@@ -414,7 +415,6 @@ find_package(Colord)
 if(COLORD_FOUND)
   include_directories(${COLORD_INCLUDE_DIRS})
   list(APPEND LIBS ${COLORD_LIBRARIES})
-  add_dependencies(lib_darktable colord)
 # we ship our own copy of libcolord-gtk - the one packaged in distros is linked against gtk3 :(
   add_dependencies(lib_darktable colord-gtk)
   add_library(colord-gtk_static STATIC IMPORTED)
@@ -422,6 +422,7 @@ if(COLORD_FOUND)
   target_link_libraries(lib_darktable colord-gtk_static)
   add_subdirectory(external/colord-gtk)
   list(APPEND STATIC_LIBS colord-gtk_static)
+  add_dependencies(colord-gtk colord)
   add_definitions("-DUSE_COLORDGTK")
 endif(COLORD_FOUND)
 

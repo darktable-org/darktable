@@ -302,7 +302,8 @@ void dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path,
   // Looking up the entry in the global accelerators list
   accel = _lookup_accel(accel_path);
 
-  accel->closure = closure;
+  if (accel)
+    accel->closure = closure;
 
   if(accel && accel->local)
   {
@@ -436,7 +437,8 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
                             (gpointer)slider, NULL);
   accel = _lookup_accel(increase_path);
 
-  accel->closure = closure;
+  if (accel)
+    accel->closure = closure;
 
   if(accel && accel->local)
   {
@@ -452,7 +454,10 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
   closure = g_cclosure_new(G_CALLBACK(slider_decrease_callback),
                            (gpointer)slider, NULL);
   accel = _lookup_accel(decrease_path);
-  accel->closure = closure;
+
+  if (accel)
+    accel->closure = closure;
+
   if(accel && accel->local)
   {
     _connect_local_accel(module, accel);
@@ -467,7 +472,10 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
   closure = g_cclosure_new(G_CALLBACK(slider_reset_callback),
                            (gpointer)slider, NULL);
   accel = _lookup_accel(reset_path);
-  accel->closure = closure;
+
+  if (accel)
+    accel->closure = closure;
+
   if(accel && accel->local)
   {
     _connect_local_accel(module, accel);
@@ -482,7 +490,10 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
   closure = g_cclosure_new(G_CALLBACK(slider_edit_callback),
                            (gpointer)slider, NULL);
   accel = _lookup_accel(edit_path);
-  accel->closure = closure;
+
+  if (accel)
+    accel->closure = closure;
+
   if(accel && accel->local)
   {
     _connect_local_accel(module, accel);

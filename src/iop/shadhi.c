@@ -30,6 +30,7 @@
 #include "common/opencl.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
+#include "common/gaussian.h"
 #include "dtgtk/togglebutton.h"
 #include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
@@ -47,18 +48,10 @@
 
 DT_MODULE(2)
 
-typedef enum dt_iop_gaussian_order_t
-{
-  DT_IOP_GAUSSIAN_ZERO = 0,
-  DT_IOP_GAUSSIAN_ONE = 1,
-  DT_IOP_GAUSSIAN_TWO = 2
-}
-dt_iop_gaussian_order_t;
-
 /* legacy version 1 params */
 typedef struct dt_iop_shadhi_params1_t
 {
-  dt_iop_gaussian_order_t order;
+  dt_gaussian_order_t order;
   float radius;
   float shadows;
   float reserved1;
@@ -70,7 +63,7 @@ dt_iop_shadhi_params1_t;
 
 typedef struct dt_iop_shadhi_params_t
 {
-  dt_iop_gaussian_order_t order;
+  dt_gaussian_order_t order;
   float radius;
   float shadows;
   float reserved1;
@@ -92,7 +85,7 @@ dt_iop_shadhi_gui_data_t;
 
 typedef struct dt_iop_shadhi_data_t
 {
-  dt_iop_gaussian_order_t order;
+  dt_gaussian_order_t order;
   float radius;
   float shadows;
   float highlights;
@@ -104,11 +97,7 @@ dt_iop_shadhi_data_t;
 
 typedef struct dt_iop_shadhi_global_data_t
 {
-  int kernel_gaussian_column;
-  // int kernel_gaussian_row;
-  int kernel_gaussian_transpose;
   int kernel_shadows_highlights_mix;
-  int kernel_gaussian_copy_alpha;
 }
 dt_iop_shadhi_global_data_t;
 
@@ -175,59 +164,6 @@ void connect_key_accels(dt_iop_module_t *self)
 }
 
 
-static
-void compute_gauss_params(const float sigma, dt_iop_gaussian_order_t order, float *a0, float *a1, float *a2, float *a3,
-                          float *b1, float *b2, float *coefp, float *coefn)
-{
-  const float alpha = 1.695f / sigma;
-  const float ema = exp(-alpha);
-  const float ema2 = exp(-2.0f * alpha);
-  *b1 = -2.0f * ema;
-  *b2 = ema2;
-  *a0 = 0.0f;
-  *a1 = 0.0f;
-  *a2 = 0.0f;
-  *a3 = 0.0f;
-  *coefp = 0.0f;
-  *coefn = 0.0f;
-
-  switch(order)
-  {
-    default:
-    case DT_IOP_GAUSSIAN_ZERO:
-    {
-      const float k = (1.0f - ema)*(1.0f - ema)/(1.0f + (2.0f * alpha * ema) - ema2);
-      *a0 = k;
-      *a1 = k * (alpha - 1.0f) * ema;
-      *a2 = k * (alpha + 1.0f) * ema;
-      *a3 = -k * ema2;
-    }
-    break;
-
-    case DT_IOP_GAUSSIAN_ONE:
-    {
-      *a0 = (1.0f - ema)*(1.0f - ema);
-      *a1 = 0.0f;
-      *a2 = -*a0;
-      *a3 = 0.0f;
-    }
-    break;
-
-    case DT_IOP_GAUSSIAN_TWO:
-    {
-      const float k = -(ema2 - 1.0f) / (2.0f * alpha * ema);
-      float kn = -2.0f * (-1.0f + (3.0f * ema) - (3.0f * ema * ema) + (ema * ema * ema));
-      kn /= ((3.0f * ema) + 1.0f + (3.0f * ema * ema) + (ema * ema * ema));
-      *a0 = kn;
-      *a1 = -kn * (1.0f + (k * alpha)) * ema;
-      *a2 = kn * (1.0f - (k * alpha)) * ema;
-      *a3 = -kn * ema2;
-    }
-  }
-
-  *coefp = (*a0 + *a1)/(1.0f + *b1 + *b2);
-  *coefn = (*a2 + *a3)/(1.0f + *b1 + *b2);
-}
 
 
 static inline void _Lab_scale(const float *i, float *o)
@@ -256,11 +192,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_shadhi_data_t *data = (dt_iop_shadhi_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
+  const int width = roi_out->width;
+  const int height = roi_out->height;
   const int ch = piece->colors;
-  float a0, a1, a2, a3, b1, b2, coefp, coefn;
-
 
   const int   use_bilateral = data->radius < 0 ? 1 : 0;
+  const int   order = data->order;
   const float radius = fmaxf(0.1f, fabsf(data->radius));
   const float sigma = radius * roi_in->scale / piece ->iscale;
   const float shadows = 2.0*fmin(fmax(-1.0,(data->shadows/100.0)), 1.0f);
@@ -269,304 +206,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float shadows_ccorrect = (fmin(fmax(0,(data->shadows_ccorrect/100.0)), 1.0f) - 0.5f) * sign(shadows) + 0.5f;
   const float highlights_ccorrect = (fmin(fmax(0,(data->highlights_ccorrect/100.0)), 1.0f) - 0.5f) * sign(-highlights) + 0.5f;
 
-  float *temp = dt_alloc_align(64, roi_out->width*roi_out->height*ch*sizeof(float));
-  if(temp==NULL) return;
 
   if(!use_bilateral)
   {
-    // as the function name implies
-    compute_gauss_params(sigma, data->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
-
-#if 0
     const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
     const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
 
-    // vertical blur column by column
-#ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(in,out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
-#endif
-    for(int i=0; i<roi_out->width; i++)
-    {
-      float xp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-      float yb[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-      float yp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-      float xc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-      float yc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-      float xn[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-      float xa[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-      float yn[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-      float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-
-      // forward filter
-      for(int k=0; k<3; k++)
-      {
-        xp[k] = CLAMPF(in[i*ch+k], Labmin[k], Labmax[k]);
-        yb[k] = xp[k] * coefp;
-        yp[k] = yb[k];
-      }
-
-      for(int j=0; j<roi_out->height; j++)
-      {
-        int offset = (i + j * roi_out->width)*ch;
-
-        for(int k=0; k<4; k++)
-        {
-          xc[k] = CLAMPF(in[offset+k], Labmin[k], Labmax[k]);
-          yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
-
-          temp[offset+k] = yc[k];
-
-          xp[k] = xc[k];
-          yb[k] = yp[k];
-          yp[k] = yc[k];
-        }
-      }
-
-      // backward filter
-      for(int k=0; k<3; k++)
-      {
-        xn[k] = CLAMPF(in[((roi_out->height - 1) * roi_out->width + i)*ch+k], Labmin[k], Labmax[k]);
-        xa[k] = xn[k];
-        yn[k] = xn[k] * coefn;
-        ya[k] = yn[k];
-      }
-
-      for(int j=roi_out->height - 1; j > -1; j--)
-      {
-        int offset = (i + j * roi_out->width)*ch;
-
-        for(int k=0; k<3; k++)
-        {
-          xc[k] = CLAMPF(in[offset+k], Labmin[k], Labmax[k]);
-
-          yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
-
-          xa[k] = xn[k];
-          xn[k] = xc[k];
-          ya[k] = yn[k];
-          yn[k] = yc[k];
-
-          temp[offset+k] += yc[k];
-        }
-      }
-    }
-
-    // horizontal blur line by line
-#ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
-#endif
-    for(int j=0; j<roi_out->height; j++)
-    {
-      float xp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-      float yb[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-      float yp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-      float xc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-      float yc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-      float xn[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-      float xa[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-      float yn[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-      float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-
-      // forward filter
-      for(int k=0; k<3; k++)
-      {
-        xp[k] = CLAMPF(temp[j*roi_out->width*ch+k], Labmin[k], Labmax[k]);
-        yb[k] = xp[k] * coefp;
-        yp[k] = yb[k];
-      }
-
-      for(int i=0; i<roi_out->width; i++)
-      {
-        int offset = (i + j * roi_out->width)*ch;
-
-        for(int k=0; k<3; k++)
-        {
-          xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
-          yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
-
-          out[offset+k] = yc[k];
-
-          xp[k] = xc[k];
-          yb[k] = yp[k];
-          yp[k] = yc[k];
-        }
-      }
-
-      // backward filter
-      for(int k=0; k<3; k++)
-      {
-        xn[k] = CLAMPF(temp[((j + 1)*roi_out->width - 1)*ch + k], Labmin[k], Labmax[k]);
-        xa[k] = xn[k];
-        yn[k] = xn[k] * coefn;
-        ya[k] = yn[k];
-      }
-
-      for(int i=roi_out->width - 1; i > -1; i--)
-      {
-        int offset = (i + j * roi_out->width)*ch;
-
-        for(int k=0; k<3; k++)
-        {
-          xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
-
-          yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
-
-          xa[k] = xn[k];
-          xn[k] = xc[k];
-          ya[k] = yn[k];
-          yn[k] = yc[k];
-
-          out[offset+k] += yc[k];
-        }
-      }
-    }
-#else
-
-    const __m128 Labmax = _mm_set_ps(1.0f, 128.0f, 128.0f, 100.0f);
-    const __m128 Labmin = _mm_set_ps(0.0f, -128.0f, -128.0f, 0.0f);
-
-    // vertical blur column by column
-#ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(in,out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
-#endif
-    for(int i=0; i<roi_out->width; i++)
-    {
-      __m128 xp = _mm_setzero_ps();
-      __m128 yb = _mm_setzero_ps();
-      __m128 yp = _mm_setzero_ps();
-      __m128 xc = _mm_setzero_ps();
-      __m128 yc = _mm_setzero_ps();
-      __m128 xn = _mm_setzero_ps();
-      __m128 xa = _mm_setzero_ps();
-      __m128 yn = _mm_setzero_ps();
-      __m128 ya = _mm_setzero_ps();
-
-      // forward filter
-      xp = MMCLAMPPS(_mm_load_ps(in+i*ch), Labmin, Labmax);
-      yb = _mm_mul_ps(_mm_set_ps1(coefp), xp);
-      yp = yb;
-
-
-      for(int j=0; j<roi_out->height; j++)
-      {
-        int offset = (i + j * roi_out->width)*ch;
-
-        xc = MMCLAMPPS(_mm_load_ps(in+offset), Labmin, Labmax);
-
-        //yc = (a0 * xc[k]) + (a1 * xp) - (b1 * yp) - (b2 * yb);
-        //yc = (a0 * xc[k]) + ((a1 * xp) - ((b1 * yp) + (b2 * yb)));
-
-        yc = _mm_add_ps(_mm_mul_ps(xc, _mm_set_ps1(a0)),
-                        _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
-                                   _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
-
-        _mm_store_ps(temp+offset, yc);
-
-        xp = xc;
-        yb = yp;
-        yp = yc;
-
-      }
-
-      // backward filter
-      xn = MMCLAMPPS(_mm_load_ps(in+((roi_out->height - 1) * roi_out->width + i)*ch), Labmin, Labmax);
-      xa = xn;
-      yn = _mm_mul_ps(_mm_set_ps1(coefn), xn);
-      ya = yn;
-
-      for(int j=roi_out->height - 1; j > -1; j--)
-      {
-        int offset = (i + j * roi_out->width)*ch;
-
-        xc = MMCLAMPPS(_mm_load_ps(in+offset), Labmin, Labmax);
-
-        //yc = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
-        //yc = (a2 * xn) + ((a3 * xa) - ((b1 * yn) + (b2 * ya)));
-
-        yc = _mm_add_ps(_mm_mul_ps(xn, _mm_set_ps1(a2)),
-                        _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
-                                   _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
-
-
-        xa = xn;
-        xn = xc;
-        ya = yn;
-        yn = yc;
-
-        _mm_store_ps(temp+offset, _mm_add_ps(_mm_load_ps(temp+offset), yc));
-      }
-    }
-
-    // horizontal blur line by line
-#ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
-#endif
-    for(int j=0; j<roi_out->height; j++)
-    {
-      __m128 xp = _mm_setzero_ps();
-      __m128 yb = _mm_setzero_ps();
-      __m128 yp = _mm_setzero_ps();
-      __m128 xc = _mm_setzero_ps();
-      __m128 yc = _mm_setzero_ps();
-      __m128 xn = _mm_setzero_ps();
-      __m128 xa = _mm_setzero_ps();
-      __m128 yn = _mm_setzero_ps();
-      __m128 ya = _mm_setzero_ps();
-
-      // forward filter
-      xp = MMCLAMPPS(_mm_load_ps(temp+j*roi_out->width*ch), Labmin, Labmax);
-      yb = _mm_mul_ps(_mm_set_ps1(coefp), xp);
-      yp = yb;
-
-
-      for(int i=0; i<roi_out->width; i++)
-      {
-        int offset = (i + j * roi_out->width)*ch;
-
-        xc = MMCLAMPPS(_mm_load_ps(temp+offset), Labmin, Labmax);
-
-        // yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
-
-        yc = _mm_add_ps(_mm_mul_ps(xc, _mm_set_ps1(a0)),
-                        _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
-                                   _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
-
-        _mm_store_ps(out+offset, yc);
-
-        xp = xc;
-        yb = yp;
-        yp = yc;
-      }
-
-      // backward filter
-      xn = MMCLAMPPS(_mm_load_ps(temp+((j + 1)*roi_out->width - 1)*ch), Labmin, Labmax);
-      xa = xn;
-      yn = _mm_mul_ps(_mm_set_ps1(coefn), xn);
-      ya = yn;
-
-
-      for(int i=roi_out->width - 1; i > -1; i--)
-      {
-        int offset = (i + j * roi_out->width)*ch;
-
-        xc = MMCLAMPPS(_mm_load_ps(temp+offset), Labmin, Labmax);
-
-        //yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
-
-        yc = _mm_add_ps(_mm_mul_ps(xn, _mm_set_ps1(a2)),
-                        _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
-                                   _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
-
-
-        xa = xn;
-        xn = xc;
-        ya = yn;
-        yn = yc;
-
-        _mm_store_ps(out+offset, _mm_add_ps(_mm_load_ps(out+offset), yc));
-      }
-    }
-#endif
+    dt_gaussian_t *g = dt_gaussian_init(width, height, ch, Labmax, Labmin, sigma, order);
+    if(!g) return;
+    dt_gaussian_blur_4c(g, in, out);
+    dt_gaussian_free(g);
   }
   else
   {
@@ -574,7 +223,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const float sigma_s = sigma;
     const float detail = -1.0f; // we want the bilateral base layer
 
-    dt_bilateral_t *b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
+    dt_bilateral_t *b = dt_bilateral_init(width, height, sigma_s, sigma_r);
+    if(!b) return;
     dt_bilateral_splat(b, in);
     dt_bilateral_blur(b);
     dt_bilateral_slice(b, in, out, detail);
@@ -598,6 +248,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float lmax = max[0] + fabs(min[0]);
   const float halfmax = lmax/2.0;
   const float doublemax = lmax*2.0;
+
+  float *temp = dt_alloc_align(64, roi_out->width*roi_out->height*ch*sizeof(float));
+  if(temp==NULL) return;
 
   // overlay highlights
 #ifdef _OPENMP
@@ -700,44 +353,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const int bpp = 4*sizeof(float);
+  const int channels = piece->colors;
 
-  // check if we need to reduce blocksize
-  size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
-  size_t workgroupsize = 0;          // the maximum number of items in a work group
-  unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
-
-  // make sure blocksize is not too large
-  size_t blocksize = BLOCKSIZE;
-  int blockwd;
-  int blockht;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-      dt_opencl_get_kernel_work_group_size(devid, gd->kernel_gaussian_transpose, &kernelworkgroupsize) == CL_SUCCESS)
-  {
-    // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1]
-          || blocksize*blocksize > workgroupsize || blocksize*(blocksize+1)*bpp > localmemsize)
-    {
-      if(blocksize == 1) break;
-      blocksize >>= 1;
-    }
-
-    blockwd = blockht = blocksize;
-
-    if(blockwd * blockht > kernelworkgroupsize)
-      blockht = kernelworkgroupsize / blockwd;
-  }
-  else
-  {
-    blockwd = blockht = 1;   // slow but safe
-  }
-
-  // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
-  const size_t bwidth = width % blockwd == 0 ? width : (width / blockwd + 1)*blockwd;
-  const size_t bheight = height % blockht == 0 ? height : (height / blockht + 1)*blockht;
+  const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
+  const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
 
   const int   use_bilateral = d->radius < 0 ? 1 : 0;
+  const int   order = d->order;
   const float radius = fmaxf(0.1f, fabsf(d->radius));
   const float sigma = radius * roi_in->scale / piece ->iscale;
   const float shadows = 2.0*fmin(fmax(-1.0,(d->shadows/100.0f)), 1.0f);
@@ -746,110 +368,28 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const float shadows_ccorrect = (fmin(fmax(0,(d->shadows_ccorrect/100.0)), 1.0f) - 0.5f) * sign(shadows) + 0.5f;
   const float highlights_ccorrect = (fmin(fmax(0,(d->highlights_ccorrect/100.0)), 1.0f) - 0.5f) * sign(-highlights) + 0.5f;
 
-  size_t origin[] = {0, 0, 0};
-  size_t region[] = {width, height, 1};
-  size_t local[] = {blockwd, blockht, 1};
-
   size_t sizes[3];
 
-  cl_mem dev_temp1 = NULL;
-  cl_mem dev_temp2 = NULL;
-
-  const float sigma_r = 100.0f; // does not depend on scale
-  const float sigma_s = sigma;
-  const float detail = -1.0f; // we want the bilateral base layer
-
-  dt_bilateral_cl_t *b = dt_bilateral_init_cl(devid, roi_in->width, roi_in->height, sigma_s, sigma_r);
-  if(!b) goto error;
-
-  // get intermediate vector buffers with read-write access
-  dev_temp1 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*bpp);
-  if(dev_temp1 == NULL) goto error;
-  dev_temp2 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*bpp);
-  if(dev_temp2 == NULL) goto error;
+  dt_gaussian_cl_t *g = NULL;
+  dt_bilateral_cl_t *b = NULL;
 
   if(!use_bilateral)
   {
-    // compute gaussian parameters
-    float a0, a1, a2, a3, b1, b2, coefp, coefn;
-    compute_gauss_params(sigma, d->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
-
-    // copy dev_in to intermediate buffer dev_temp1
-    err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_in, dev_temp1, origin, region, 0);
+    g = dt_gaussian_init_cl(devid, width, height, channels, Labmax, Labmin, sigma, order);
+    if(!g) goto error;
+    err = dt_gaussian_blur_cl(g, dev_in, dev_out);
     if(err != CL_SUCCESS) goto error;
-
-    // first blur step: column by column with dev_temp1 -> dev_temp2
-    sizes[0] = ROUNDUPWD(width);
-    sizes[1] = 1;
-    sizes[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp2);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 4, sizeof(float), (void *)&a0);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 5, sizeof(float), (void *)&a1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 6, sizeof(float), (void *)&a2);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 7, sizeof(float), (void *)&a3);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 8, sizeof(float), (void *)&b1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_gaussian_column, sizes);
-    if(err != CL_SUCCESS) goto error;
-
-    // intermediate step: transpose dev_temp2 -> dev_temp1
-    sizes[0] = bwidth;
-    sizes[1] = bheight;
-    sizes[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp2);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 4, sizeof(int), (void *)&blocksize);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 5, bpp*blocksize*(blocksize+1), NULL);
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_gaussian_transpose, sizes, local);
-    if(err != CL_SUCCESS) goto error;
-
-
-    // second blur step: column by column of transposed image with dev_temp1 -> dev_temp2 (!! height <-> width !!)
-    sizes[0] = ROUNDUPWD(height);
-    sizes[1] = 1;
-    sizes[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp2);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 2, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 3, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 4, sizeof(float), (void *)&a0);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 5, sizeof(float), (void *)&a1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 6, sizeof(float), (void *)&a2);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 7, sizeof(float), (void *)&a3);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 8, sizeof(float), (void *)&b1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_gaussian_column, sizes);
-    if(err != CL_SUCCESS) goto error;
-
-
-    // transpose back dev_temp2 -> dev_temp1
-    sizes[0] = bheight;
-    sizes[1] = bwidth;
-    sizes[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp2);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 2, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 3, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 4, sizeof(int), (void *)&blocksize);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 5, bpp*blocksize*(blocksize+1), NULL);
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_gaussian_transpose, sizes, local);
-    if(err != CL_SUCCESS) goto error;
-
-    // once again produce copy of dev_in, as it is needed for final mixing step: dev_in -> dev_temp2
-    err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_in, dev_temp2, origin, region, 0);
-    if(err != CL_SUCCESS) goto error;
+    dt_gaussian_free_cl(g);
+    g = NULL;
   }
   else
   {
+    const float sigma_r = 100.0f; // does not depend on scale
+    const float sigma_s = sigma;
+    const float detail = -1.0f; // we want the bilateral base layer
+
+    b = dt_bilateral_init_cl(devid, width, height, sigma_s, sigma_r);
+    if(!b) goto error;
     err = dt_bilateral_splat_cl(b, dev_in);
     if (err != CL_SUCCESS) goto error;
     err = dt_bilateral_blur_cl(b);
@@ -858,56 +398,30 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if (err != CL_SUCCESS) goto error;
     dt_bilateral_free_cl(b);
     b = NULL; // make sure we don't clean it up twice
-
-    // once again produce copy of dev_in, as it is needed for final mixing step: dev_in -> dev_temp2
-    err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_in, dev_temp2, origin, region, 0);
-    if(err != CL_SUCCESS) goto error;
-    err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_out, dev_temp1, origin, region, 0);
-    if(err != CL_SUCCESS) goto error;
   }
 
   // final mixing step with dev_temp1 as mask: dev_temp2 -> dev_temp2
   sizes[0] = ROUNDUPWD(width);
   sizes[1] = ROUNDUPHT(height);
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 0, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 1, sizeof(cl_mem), (void *)&dev_temp1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 4, sizeof(float), (void *)&shadows);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 5, sizeof(float), (void *)&highlights);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 6, sizeof(float), (void *)&compress);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 7, sizeof(float), (void *)&shadows_ccorrect);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 8, sizeof(float), (void *)&highlights_ccorrect);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 2, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 3, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 4, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 5, sizeof(float), (void *)&shadows);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 6, sizeof(float), (void *)&highlights);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 7, sizeof(float), (void *)&compress);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 8, sizeof(float), (void *)&shadows_ccorrect);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 9, sizeof(float), (void *)&highlights_ccorrect);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_shadows_highlights_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 
-  // copy final result from dev_temp2 -> dev_out
-  err = dt_opencl_enqueue_copy_buffer_to_image(devid, dev_temp2, dev_out, 0, origin, region);
-  if(err != CL_SUCCESS) goto error;
-
-  if(piece->pipe->mask_display)
-  {
-    sizes[0] = ROUNDUPWD(width);
-    sizes[1] = ROUNDUPWD(height);
-    sizes[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 0, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 1, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 2, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 3, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_copy_alpha, 4, sizeof(int), (void *)&height);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_gaussian_copy_alpha, sizes);
-    if(err != CL_SUCCESS) goto error;
-  }
-
-  if (dev_temp1 != NULL) dt_opencl_release_mem_object(dev_temp1);
-  if (dev_temp2 != NULL) dt_opencl_release_mem_object(dev_temp2);
   return TRUE;
 
 error:
+  if (g) dt_gaussian_free_cl(g);
   if (b) dt_bilateral_free_cl(b);
-  if (dev_temp1 != NULL) dt_opencl_release_mem_object(dev_temp1);
-  if (dev_temp2 != NULL) dt_opencl_release_mem_object(dev_temp2);
   dt_print(DT_DEBUG_OPENCL, "[opencl_shadows&highlights] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -1070,10 +584,7 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 6; // gaussian.cl, from programs.conf
   dt_iop_shadhi_global_data_t *gd = (dt_iop_shadhi_global_data_t *)malloc(sizeof(dt_iop_shadhi_global_data_t));
   module->data = gd;
-  gd->kernel_gaussian_column = dt_opencl_create_kernel(program, "gaussian_column");
-  gd->kernel_gaussian_transpose = dt_opencl_create_kernel(program, "gaussian_transpose");
   gd->kernel_shadows_highlights_mix = dt_opencl_create_kernel(program, "shadows_highlights_mix");
-  gd->kernel_gaussian_copy_alpha = dt_opencl_create_kernel(program, "gaussian_copy_alpha");
 }
 
 
@@ -1088,10 +599,7 @@ void cleanup(dt_iop_module_t *module)
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_shadhi_global_data_t *gd = (dt_iop_shadhi_global_data_t *)module->data;
-  dt_opencl_free_kernel(gd->kernel_gaussian_column);
-  dt_opencl_free_kernel(gd->kernel_gaussian_transpose);
   dt_opencl_free_kernel(gd->kernel_shadows_highlights_mix);
-  dt_opencl_free_kernel(gd->kernel_gaussian_copy_alpha);
   free(module->data);
   module->data = NULL;
 }
