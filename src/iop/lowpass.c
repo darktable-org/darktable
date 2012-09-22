@@ -30,6 +30,8 @@
 #include "common/debug.h"
 #include "common/opencl.h"
 #include "common/gaussian.h"
+#include "common/bilateral.h"
+#include "common/bilateralcl.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -57,6 +59,7 @@ typedef struct dt_iop_lowpass_gui_data_t
 {
   GtkWidget *scale1,*scale2,*scale3;       // radius, contrast, saturation
   GtkWidget *order;			    // order of gaussian
+  GtkWidget *bilat;
 }
 dt_iop_lowpass_gui_data_t;
 
@@ -128,7 +131,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
   const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
 
-  const float radius = fmax(0.1f, d->radius);
+  const int   use_bilateral = d->radius < 0 ? 1 : 0;
+  const float radius = fmax(0.1f, fabs(d->radius));
   const float sigma = radius * roi_in->scale / piece ->iscale;
   const float saturation = d->saturation;
   const int order = d->order;
@@ -138,14 +142,35 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   cl_mem dev_m = NULL;
   cl_mem dev_coeffs = NULL;
 
+  dt_gaussian_cl_t *g = NULL;
+  dt_bilateral_cl_t *b = NULL;
 
-  dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, width, height, channels, Labmax, Labmin, sigma, order);
-  if(!g) goto error;
-  err = dt_gaussian_blur_cl(g, dev_in, dev_out);
-  if(err != CL_SUCCESS) goto error;
-  dt_gaussian_free_cl(g);
-  g = NULL;
+  if(!use_bilateral)
+  {
+    g = dt_gaussian_init_cl(devid, width, height, channels, Labmax, Labmin, sigma, order);
+    if(!g) goto error;
+    err = dt_gaussian_blur_cl(g, dev_in, dev_out);
+    if(err != CL_SUCCESS) goto error;
+    dt_gaussian_free_cl(g);
+    g = NULL;
+  }
+  else
+  {
+    const float sigma_r = 100.0f; // does not depend on scale
+    const float sigma_s = sigma;
+    const float detail = -1.0f; // we want the bilateral base layer
 
+    b = dt_bilateral_init_cl(devid, width, height, sigma_s, sigma_r);
+    if(!b) goto error;
+    err = dt_bilateral_splat_cl(b, dev_in);
+    if (err != CL_SUCCESS) goto error;
+    err = dt_bilateral_blur_cl(b);
+    if (err != CL_SUCCESS) goto error;
+    err = dt_bilateral_slice_cl(b, dev_in, dev_out, detail);
+    if (err != CL_SUCCESS) goto error;
+    dt_bilateral_free_cl(b);
+    b = NULL; // make sure we don't clean it up twice
+  }
 
   dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
   if(dev_m == NULL) goto error;
@@ -171,7 +196,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   return TRUE;
 
 error:
-  dt_gaussian_free_cl(g);
+  if (g) dt_gaussian_free_cl(g);
+  if (b) dt_bilateral_free_cl(b);
   if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
   if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   dt_print(DT_DEBUG_OPENCL, "[opencl_lowpass] couldn't enqueue kernel! %d\n", err);
@@ -183,13 +209,13 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
 {
   dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)piece->data;
 
-  const float radius = fmax(0.1f, d->radius);
+  const float radius = fmax(0.1f, fabs(d->radius));
   const float sigma = radius * roi_in->scale / piece ->iscale;
 
-  tiling->factor = 4.0f; // in + out + 2*temp
+  tiling->factor = 4.25f; // in + out + 2*temp + bilateral
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
-  tiling->overlap = 4*sigma;
+  tiling->overlap = ceilf(4*sigma);
   tiling->xalign = 1;
   tiling->yalign = 1;
   return;
@@ -201,21 +227,40 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
 
+
   const int width = roi_in->width;
   const int height = roi_in->height;
   const int ch = piece->colors;
 
-  const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
-  const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
-
-  const float radius = fmax(0.1f, data->radius);
+  const int   use_bilateral = data->radius < 0 ? 1 : 0;
+  const float radius = fmax(0.1f, fabs(data->radius));
   const float sigma = radius * roi_in->scale / piece ->iscale;
   const int order = data->order;
 
-  dt_gaussian_t *g = dt_gaussian_init(width, height, ch, Labmax, Labmin, sigma, order);
-  if(!g) return;
-  dt_gaussian_blur_4c(g, in, out);
-  dt_gaussian_free(g);
+  const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
+  const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
+
+
+  if(!use_bilateral)
+  {
+    dt_gaussian_t *g = dt_gaussian_init(width, height, ch, Labmax, Labmin, sigma, order);
+    if(!g) return;
+    dt_gaussian_blur_4c(g, in, out);
+    dt_gaussian_free(g);
+  }
+  else
+  {
+    const float sigma_r = 100.0f;// d->sigma_r; // does not depend on scale
+    const float sigma_s = sigma;
+    const float detail = -1.0f; // we want the bilateral base layer
+
+    dt_bilateral_t *b = dt_bilateral_init(width, height, sigma_s, sigma_r);
+    if(!b) return;
+    dt_bilateral_splat(b, in);
+    dt_bilateral_blur(b);
+    dt_bilateral_slice(b, in, out, detail);
+    dt_bilateral_free(b);
+  }
 
   // some aliased pointers for compilers that don't yet understand operators on __m128
   const float *const Labminf = (float *)&Labmin;
@@ -240,7 +285,19 @@ radius_callback (GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
-  p->radius= dt_bauhaus_slider_get(slider);
+  p->radius = copysignf(dt_bauhaus_slider_get(slider), p->radius);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void
+bilat_callback (GtkWidget *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
+  if(dt_bauhaus_combobox_get(widget))
+    p->radius = -fabsf(p->radius);
+  else
+    p->radius = fabsf(p->radius);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -354,6 +411,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)module->params;
   dt_bauhaus_slider_set(g->scale1, p->radius);
+  dt_bauhaus_combobox_set(g->bilat, p->radius < 0 ? 1 : 0);
   dt_bauhaus_slider_set(g->scale2, p->contrast);
   dt_bauhaus_slider_set(g->scale3, p->saturation);
   //gtk_combo_box_set_active(g->order, p->order);
@@ -436,19 +494,29 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale1 = dt_bauhaus_slider_new_with_range(self,0.1, 200.0, 0.1, p->radius, 2);
   g->scale2 = dt_bauhaus_slider_new_with_range(self,-3.0, 3.0, 0.01, p->contrast, 2);
   g->scale3 = dt_bauhaus_slider_new_with_range(self,-3.0, 3.0, 0.01, p->saturation, 2);
+
   dt_bauhaus_widget_set_label(g->scale1,_("radius"));
   dt_bauhaus_widget_set_label(g->scale2,_("contrast"));
   dt_bauhaus_widget_set_label(g->scale3,_("saturation"));
 
+  g->bilat  = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->bilat, _("soften with"));
+  dt_bauhaus_combobox_add(g->bilat, _("gaussian"));
+  dt_bauhaus_combobox_add(g->bilat, _("bilateral filter"));
+
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale1, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->bilat,  TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale2, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale3, TRUE, TRUE, 0);
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the radius of gaussian blur"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the contrast of lowpass filter"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("the color saturation of lowpass filter"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->bilat),  "tooltip-text", _("filter to use for softening"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (radius_callback), self);
+  g_signal_connect (G_OBJECT (g->bilat), "value-changed",
+                    G_CALLBACK (bilat_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
                     G_CALLBACK (contrast_callback), self);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
