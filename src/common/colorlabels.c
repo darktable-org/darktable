@@ -193,65 +193,6 @@ const char* dt_colorlabels_to_string(int label)
 	return dt_colorlabels_name[label];
 }
 
-/********************************************
-  LUA STUFF
-  *******************************************/
-static const char* colorlabel_typename="dt_lua_colorlabel";
-typedef struct {
-	int imgid;
-} colorlabel_type;
-
-void dt_colorlabels_lua_push(lua_State * L,int imgid) {
-	if(dt_lua_numid_find(L,imgid,colorlabel_typename)) {
-		return;
-	}
-	colorlabel_type * my_colorlabel = (colorlabel_type*)lua_newuserdata(L,sizeof(colorlabel_type));
-	my_colorlabel->imgid =imgid;
-	dt_lua_numid_register(L,imgid,colorlabel_typename);
-}
-
-
-static int colorlabel_index(lua_State *L){
-	int imgid=((colorlabel_type*)luaL_checkudata(L,-2,colorlabel_typename))->imgid;
-	const int value =luaL_checkoption(L,-1,NULL,dt_colorlabels_name);
-	if(value < 0 || value >= DT_COLORLABELS_LAST) {
-			return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
-	} else {
-		lua_pushboolean(L,dt_colorlabels_check_label(imgid,value));
-		return 1;
-	}
-}
-
-static int colorlabel_newindex(lua_State *L){
-	int imgid=((colorlabel_type*)luaL_checkudata(L,-3,colorlabel_typename))->imgid;
-	const int value =luaL_checkoption(L,-2,NULL,dt_colorlabels_name);
-	if(value < 0 || value >= DT_COLORLABELS_LAST) {
-			return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
-	} else {
-			if(lua_toboolean(L,-1)) { // no testing of type so we can benefit from all types of values
-				dt_colorlabels_set_label(imgid,value);
-			} else {
-				dt_colorlabels_remove_label(imgid,value);
-			}
-			return 0;
-
-	}
-}
-
-static const luaL_Reg dt_lua_colorlabel_meta[] = {
-	{"__index", colorlabel_index },
-	{"__newindex", colorlabel_newindex },
-	{0,0}
-};
-int dt_lua_init_colorlabel(lua_State * L) {
-	luaL_newmetatable(L,colorlabel_typename);
-	luaL_setfuncs(L,dt_lua_colorlabel_meta,0);
-	dt_lua_init_name_list_pair(L, dt_colorlabels_name);
-	dt_lua_init_numid(L);
-	return 0;
-}
-
-
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

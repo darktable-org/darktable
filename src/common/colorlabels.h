@@ -3,8 +3,6 @@
 
 #include "common/darktable.h"
 #include <gtk/gtk.h>
-#include "lua/dt_lua.h"
-#include "lua/types.h"
 /** array of names and constant to ease lable manipulation */
 typedef enum dt_colorlables_enum {
 	DT_COLORLABELS_RED,
@@ -14,6 +12,8 @@ typedef enum dt_colorlables_enum {
 	DT_COLORLABELS_PURPLE,
 	DT_COLORLABELS_LAST,
 } dt_colorlabels_enum;
+/** array with all names as strings, terminated by a NULL entry */
+extern const char *dt_colorlabels_name[];
 
 
 /** remove assigned colorlabels of selected images*/
@@ -37,15 +37,6 @@ gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
     GObject *acceleratable, guint keyval,
     GdkModifierType modifier, gpointer data);
 
-
-
-
-/********************************************
-  LUA STUFF
-  *******************************************/
-
-void dt_colorlabels_lua_push(lua_State * L,int imgid);
-int dt_lua_init_colorlabel(lua_State * L);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

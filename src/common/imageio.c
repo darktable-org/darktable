@@ -40,7 +40,6 @@
 #include "develop/imageop.h"
 #include "iop/colorout.h"
 #include "libraw/libraw.h"
-#include "lua/image.h"
 
 #include <inttypes.h>
 #include <stdio.h>

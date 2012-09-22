@@ -28,7 +28,6 @@
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
 #include "common/utility.h"
-#include "lua/stmt.h"
 
 
 void dt_history_delete_on_image(int32_t imgid)
@@ -220,119 +219,6 @@ dt_history_copy_and_paste_on_selection (int32_t imgid, gboolean merge)
   sqlite3_finalize(stmt);
   return res;
 }
-
-/********************************************
-  LUA STUFF
-  *******************************************/
-static const char* history_typename = "dt_lua_history";
-typedef struct {
-	int imgid;
-} history_type;
-
-int dt_history_lua_check(lua_State * L,int index){
-	return ((history_type*)luaL_checkudata(L,index,history_typename))->imgid;
-}
-
-void dt_history_lua_push(lua_State * L,int imgid) {
-	// ckeck if history already is in the env
-	// get the metatable and put it on top (side effect of newtable)
-	luaL_newmetatable(L,history_typename);
-	lua_getfield(L,-1,"allocated");
-	lua_pushinteger(L,imgid);
-	lua_gettable(L,-2);
-	// at this point our stack is :
-	// -1 : the object or nil if it is not allocated
-	// -2 : the allocation table
-	// -3 : the metatable
-	lua_remove(L,-3); // remove the metatable, we don't need it anymore
-	if(!lua_isnil(L,-1)) {
-		//printf("%s %d (reuse)\n",__FUNCTION__,imgid);
-		dt_history_lua_check(L,-1);
-		lua_remove(L,-2); // remove the table, but leave the history on top of the stac
-		return;
-	} else {
-		//printf("%s %d (create)\n",__FUNCTION__,imgid);
-		lua_pop(L,1); // remove nil at top
-		lua_pushinteger(L,imgid);
-		history_type * my_history = (history_type*)lua_newuserdata(L,sizeof(history_type));
-		luaL_setmetatable(L,history_typename);
-		my_history->imgid =imgid;
-		// add the value to the metatable, so it can be reused
-		lua_settable(L,-3);
-		// put the value back on top
-		lua_pushinteger(L,imgid);
-		lua_gettable(L,-2);
-		lua_remove(L,-2); // remove the table, but leave the history on top of the stac
-	}
-}
-
-
-static int history_index(lua_State *L){
-	int imgid=dt_history_lua_check(L,-2);
-	int value = luaL_checkinteger(L,-1);
-	sqlite3_stmt *stmt;
-	DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select operation, enabled from history where imgid=?1 and num=?2 ", -1, &stmt, NULL);
-	DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-	DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, value);
-	int result = sqlite3_step(stmt);
-	if(result != SQLITE_ROW){
-		return luaL_error(L,"incorrect history index %d",value);
-	}
-	lua_pushfstring(L,"%s (%s)",sqlite3_column_text (stmt, 0),(sqlite3_column_int (stmt, 1)!=0)?_("on"):_("off"));
-	return 1;
-
-}
-
-static int history_next(lua_State *L) {
-	//printf("%s\n",__FUNCTION__);
-	//TBSL : check index and find the correct position in stmt if index was changed manually
-	// 2 args, table, index, returns the next index,value or nil,nil return the first index,value if index is nil 
-
-	sqlite3_stmt *stmt = dt_lua_stmt_check(L,-2);
-	if(lua_isnil(L,-1)) {
-		sqlite3_reset(stmt);
-	} else if(luaL_checkinteger(L,-1) != sqlite3_column_int(stmt,0)) {
-		return luaL_error(L,"TBSL : changing index of a loop on history images is not supported yet");
-	}
-	int result = sqlite3_step(stmt);
-	if(result != SQLITE_ROW){
-		return 0;
-	}
-	int historyidx = sqlite3_column_int(stmt,0);
-	lua_pushinteger(L,historyidx);
-	lua_pushfstring(L,"%s (%s)",sqlite3_column_text (stmt, 1),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
-	return 2;
-}
-static int history_pairs(lua_State *L) {
-	int imgid=dt_history_lua_check(L,-1);
-	lua_pushcfunction(L,history_next);
-	sqlite3_stmt *stmt;
-	DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled from history where imgid=?1 order by num asc", -1, &stmt, NULL);
-	DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-	dt_lua_stmt_push(L,stmt);
-	lua_pushnil(L); // index set to null for reset
-	return 3;
-}
-static int history_tostring(lua_State *L){
-	int imgid=dt_history_lua_check(L,-1);
-	const char * description =dt_history_get_items_as_string(imgid);
-	if(!description) lua_pushstring(L,"");
-	else lua_pushstring(L,description);
-	return 1;
-}
-static const luaL_Reg dt_lua_history_meta[] = {
-	{"__index", history_index },
-	{"__tostring", history_tostring },
-	{"__pairs", history_pairs },
-	{0,0}
-};
-int dt_lua_init_history(lua_State * L) {
-	luaL_newmetatable(L,history_typename);
-	luaL_setfuncs(L,dt_lua_history_meta,0);
-	dt_lua_init_numid(L);
-	return 0;
-}
-
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

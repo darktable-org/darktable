@@ -17,17 +17,47 @@
  */
 #include "common/darktable.h"
 #include "common/file_location.h"
-#include "common/film.h"
 #include "control/control.h"
 #include "lautoc.h"
 #include "lua/dt_lua.h"
 #include "lua/stmt.h"
 #include "lua/events.h"
 #include "lua/image.h"
-#include "common/colorlabels.h"
-#include "common/history.h"
 #include "common/film.h"
 
+static int dt_film_import_lua(lua_State *L){
+	char* full_name= realpath(luaL_checkstring(L,-1), NULL);
+	int result;
+
+	if (g_file_test(full_name, G_FILE_TEST_IS_DIR)) {
+		result =dt_film_import_blocking(full_name);
+		if(result == 0) {
+			free(full_name);
+			return luaL_error(L,"error while importing");
+		}
+	} else {
+		dt_film_t new_film;
+		dt_film_init(&new_film);
+		char* dirname =g_path_get_dirname(full_name);
+		result = dt_film_new(&new_film,dirname);
+		if(result == 0) {
+			free(full_name);
+			dt_film_cleanup(&new_film);
+			free(dirname);
+			return luaL_error(L,"error while importing");
+		}
+
+		result =dt_film_image_import(&new_film,full_name,TRUE);
+		free(dirname);
+		dt_film_cleanup(&new_film);
+		if(result == 0) {
+			free(full_name);
+			return luaL_error(L,"error while importing");
+		}
+	}
+	free(full_name);
+	return 0;
+}
 int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
 	int result;
 	if(loadresult){

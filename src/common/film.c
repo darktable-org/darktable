@@ -237,8 +237,8 @@ int dt_film_image_import(dt_film_t *film,const char *filename, gboolean override
   return result;
 }
 
-static int
-dt_film_import_blocking(const char *dirname, const int blocking)
+int
+dt_film_import_internal(const char *dirname, const int blocking)
 {
   int rc;
   sqlite3_stmt *stmt;
@@ -457,9 +457,14 @@ void dt_film_import1(dt_film_t *film)
 
 }
 
+int dt_film_import_blocking(const char *dirname)
+{
+  return dt_film_import_internal(dirname,1);
+}
+
 int dt_film_import(const char *dirname)
 {
-  return dt_film_import_blocking(dirname,0);
+  return dt_film_import_internal(dirname,0);
 }
 
 void dt_film_remove_empty()
@@ -552,42 +557,6 @@ void dt_film_remove(const int id)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   // dt_control_update_recent_films();
-}
-/*****************************************
-  LUA stuff
-  ****************************************/
-int dt_film_import_lua(lua_State *L){
-	char* full_name= realpath(luaL_checkstring(L,-1), NULL);
-	int result;
-
-	if (g_file_test(full_name, G_FILE_TEST_IS_DIR)) {
-		result =dt_film_import_blocking(full_name,1);
-		if(result == 0) {
-			free(full_name);
-			return luaL_error(L,"error while importing");
-		}
-	} else {
-		dt_film_t new_film;
-		dt_film_init(&new_film);
-		char* dirname =g_path_get_dirname(full_name);
-		result = dt_film_new(&new_film,dirname);
-		if(result == 0) {
-			free(full_name);
-			dt_film_cleanup(&new_film);
-			free(dirname);
-			return luaL_error(L,"error while importing");
-		}
-
-		result =dt_film_image_import(&new_film,full_name,TRUE);
-		free(dirname);
-		dt_film_cleanup(&new_film);
-		if(result == 0) {
-			free(full_name);
-			return luaL_error(L,"error while importing");
-		}
-	}
-	free(full_name);
-	return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

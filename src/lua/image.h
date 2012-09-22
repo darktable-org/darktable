@@ -25,6 +25,8 @@
 
 
 int dt_lua_init_images(lua_State * L);
+int dt_lua_init_history(lua_State * L);
+int dt_lua_init_colorlabel(lua_State * L);
 
 void dt_lua_image_push(lua_State * L,int imgid);
 int dt_lua_init_image(lua_State * L);
