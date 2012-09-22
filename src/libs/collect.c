@@ -612,7 +612,7 @@ _count_images(const char *path)
   gchar query[1024] = {0};
   int count = 0;
 
-  snprintf(query, 1024, "select count(id) from images where film_id in (select id from film_rolls where folder like '%s%%')", path);
+  snprintf (query, 1024, "select count(id) from images where film_id in (select id from film_rolls where folder like '%s%%')", path);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if (sqlite3_step(stmt) == SQLITE_ROW)
     count = sqlite3_column_int(stmt, 0);
@@ -652,100 +652,97 @@ static GtkTreeStore *
 _folder_tree ()
 {
   /* intialize the tree store */
-  char query[1024];
   sqlite3_stmt *stmt;
-  snprintf(query, 1024, "select * from film_rolls");
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select folder,external_drive from film_rolls", -1, &stmt, NULL);
   GtkTreeStore *store = gtk_tree_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INT);
 
   // initialize the model with the paths
 
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
-    if(strchr((const char *)sqlite3_column_text(stmt, 2),'/')==0)
+    int level = 0;
+    char *value;
+    GtkTreeIter current, iter;
+    GtkTreePath *root;
+    char **pch = g_strsplit((char *)sqlite3_column_text(stmt, 0), "/", -1);
+    char *external = g_strdup((char *)sqlite3_column_text(stmt, 1));
+
+    if (external == NULL)
+      external = g_strdup("Local");
+
+    gboolean found=FALSE;
+
+    root = gtk_tree_path_new_first();
+    gtk_tree_model_get_iter (GTK_TREE_MODEL(store), &iter, root);
+
+    int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),NULL);
+    for (int k=0;k<children;k++)
     {
-      // Do nothing here
+      if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &iter, NULL, k))
+      {
+        gtk_tree_model_get (GTK_TREE_MODEL(store), &iter, 0, &value, -1);
+
+        if (strcmp(value, external)==0)
+        {
+          found = TRUE;
+          current = iter;
+          break;
+        }
+      }
     }
-    else
+
+    if (!found)
     {
-      int level = 0;
-      char *value;
-      GtkTreeIter current, iter;
-      GtkTreePath *root;
-      char *path = g_strdup((char *)sqlite3_column_text(stmt, 2));
-      char *pch = strtok((char *)sqlite3_column_text(stmt, 2),"/");
-      char *external = g_strdup((char *)sqlite3_column_text(stmt, 3));
+      gtk_tree_store_insert(store, &iter, NULL, 0);
+      gtk_tree_store_set(store, &iter, 0, external, -1);
+      current = iter;
+    }
 
-      if (external == NULL)
-        external = g_strdup("Local");
+    level=1;
 
-      gboolean found=FALSE;
-
-      root = gtk_tree_path_new_first();
-      gtk_tree_model_get_iter (GTK_TREE_MODEL(store), &iter, root);
-
-      int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),NULL);
+    // g_strsplit returns pch[0] always as an empty string ""
+    while (pch[level] != NULL)
+    {
+      found = FALSE;
+      int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),level>0?&current:NULL);
+      /* find child with name, if not found create and continue */
       for (int k=0;k<children;k++)
       {
-        if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &iter, NULL, k))
+        if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &iter, level>0?&current:NULL, k))
         {
           gtk_tree_model_get (GTK_TREE_MODEL(store), &iter, 0, &value, -1);
 
-          if (strcmp(value, external)==0)
+          if (strcmp(value, pch[level])==0)
           {
-            found = TRUE;
             current = iter;
+            found = TRUE;
             break;
           }
         }
       }
 
+      /* lets add new path and assign current */
       if (!found)
       {
-        gtk_tree_store_insert(store, &iter, NULL, 0);
-        gtk_tree_store_set(store, &iter, 0, external, -1);
+        gchar *pth2 = NULL;
+        pth2 = dt_util_dstrcat(pth2, "/");
+
+        for (int i=1; i <= level; i++)
+        {
+          pth2 = dt_util_dstrcat(pth2, "%s/", pch[i]);
+        }
+
+        snprintf(pth2+strlen(pth2)-1, 1, "%s", "\0");
+
+        int count = _count_images(pth2);
+        gtk_tree_store_insert(store, &iter, level>0?&current:NULL,0);
+        gtk_tree_store_set(store, &iter, DT_LIB_COLLECT_COL_TEXT, pch[level], DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_COUNT, count, -1);
         current = iter;
       }
 
-      level=1;
-      while (pch != NULL)
-      {
-        found = FALSE;
-        int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),level>0?&current:NULL);
-        /* find child with name, if not found create and continue */
-        for (int k=0;k<children;k++)
-        {
-          if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &iter, level>0?&current:NULL, k))
-          {
-            gtk_tree_model_get (GTK_TREE_MODEL(store), &iter, 0, &value, -1);
-
-            if (strcmp(value, pch)==0)
-            {
-              current = iter;
-              found = TRUE;
-              break;
-            }
-          }
-        }
-
-        /* lets add new path and assign current */
-        if (!found)
-        {
-          const char *pth = g_strndup (path, strstr(path, pch)-path);
-          const char *pth2 = g_strconcat(pth, pch, NULL);
-
-          int count = _count_images(pth2);
-          gtk_tree_store_insert(store, &iter, level>0?&current:NULL,0);
-          gtk_tree_store_set(store, &iter, DT_LIB_COLLECT_COL_TEXT, pch, DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_COUNT, count, -1);
-          current = iter;
-        }
-
-        level++;
-        pch = strtok(NULL, "/");
-      }
+      level++;
     }
   }
-
   return store;
 }
 
