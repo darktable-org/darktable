@@ -22,8 +22,17 @@
 #include <lua.h>
 #include <lauxlib.h>
 
+/**
+  these defines can be used with luaA_struct_member to have checks on read added
+  */
+typedef char* char_20;
+typedef char* char_32;
+typedef char* char_52;
+typedef char* char_filename_length;
 
-void dt_lua_init_name_list_pair(lua_State* L, const char ** list);
+#define dt_lua_init_typed_name_list_pair(L,type_name, list) dt_lua_init_name_list_pair_internal(L,#type_name,list)
+#define dt_lua_init_name_list_pair(L, list) dt_lua_init_name_list_pair_internal(L,NULL,list)
+void dt_lua_init_name_list_pair_internal(lua_State* L, const char*type_name, const char ** list);
 /** helper to build types
   (0,0)
   sets a metadata with an "allocate" subtable for objects that are unique for a given numerical id
@@ -62,6 +71,11 @@ void dt_lua_numid_foreach(lua_State*L,const char * type_name,lua_CFunction funct
   used to easily do a tree organisation of objects
 */
 void dt_lua_goto_subtable(lua_State *L,const char* sub_name);
+
+/**
+  used internally to initialize types at DT startup
+  */
+void dt_lua_initialize_types(lua_State *L);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -49,7 +49,7 @@ luaA_Type luaA_type_add(char* type, size_t size) {
   return num_types-1;
 }
 
-luaA_Type luaA_type_find(char* type) {
+luaA_Type luaA_type_find(const char* type) {
 
   for(int i = 0; i < num_types; i++) {
     if (strcmp(type, type_names[i]) == 0) return i;

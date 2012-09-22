@@ -409,6 +409,14 @@ else(COLORDGTK_FOUND)
   message(STATUS "Either colord is missing or too old (<0.1.20)")
 endif(COLORDGTK_FOUND)
 
+# liblautoc for lua automated interface generation
+add_dependencies(lib_darktable lautoc)
+add_library(lautoc_static STATIC IMPORTED)
+set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
+target_link_libraries(lib_darktable ${LIBS} lautoc_static)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/include)
+add_subdirectory(external/LuaAutoC)
+
 
 install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 list(APPEND LIBS lib_darktable)

@@ -19,6 +19,8 @@
 #include "common/file_location.h"
 #include "common/film.h"
 #include "control/control.h"
+#include "lautoc.h"
+#include "lua/dt_lua.h"
 #include "lua/stmt.h"
 #include "lua/events.h"
 #include "lua/image.h"
@@ -108,6 +110,7 @@ static int load_darktable_lib(lua_State *L) {
 	lua_setfield(L,-2,"__gc");
 	lua_setmetatable(L,-2);
 
+  dt_lua_initialize_types(L);
 	
 	lua_pushstring(L,"import");
 	lua_pushcfunction(L,&dt_film_import_lua);
@@ -157,6 +160,7 @@ void dt_lua_init(const int init_gui,lua_State* L) {
 		darktable.lua_state= L;
 	else
 		darktable.lua_state= luaL_newstate();
+  luaA_open();
 	if(init_gui) {
 		/* call open functions from 'loadedlibs' and set results to global table */
 		for (lib = loadedlibs; lib->func; lib++) {

@@ -13,8 +13,7 @@ set(LUAAUTOC_SOURCES
 #
 # build liblautoc
 #
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -std=gnu99 -Wall -Werror -Wno-unused -O3 -g
-")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -std=gnu99 -Wall -Werror -Wno-unused -O3 -g ")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_library(lautoc STATIC ${LUAAUTOC_SOURCES})

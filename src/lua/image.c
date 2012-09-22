@@ -18,6 +18,7 @@
 
 #include "lua/image.h"
 #include "lua/stmt.h"
+#include "lautoc.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image.h"
@@ -84,21 +85,8 @@ static int image_clone(lua_State *L) {
 }
 
 typedef enum {
-	EXIF_EXPOSURE,
-	EXIF_APERTURE,
-	EXIF_ISO,
-	EXIF_FOCAL_LENGTH,
-	EXIF_FOCUS_DISTANCE,
-	EXIF_CROP,
-	EXIF_MAKER,
-	EXIF_MODEL,
-	EXIF_LENS,
-	EXIF_DATETIME_TAKEN,
-	FILENAME,
 	PATH,
 	DUP_INDEX,
-	WIDTH,
-	HEIGHT,
 	IS_LDR,
 	IS_HDR,
 	IS_RAW,
@@ -115,21 +103,8 @@ typedef enum {
 	LAST_IMAGE_FIELD
 } image_fields;
 const char *image_fields_name[] = {
-	"exif_exposure",
-	"exif_aperture",
-	"exif_iso",
-	"exif_focal_length",
-	"exif_focus_distance",
-	"exif_crop",
-	"exif_maker",
-	"exif_model",
-	"exif_lens",
-	"exif_datetime_taken",
-	"filename",
 	"path",
 	"duplicate_index",
-	"width",
-	"height",
 	"is_ldr",
 	"is_hdr",
 	"is_raw",
@@ -147,41 +122,14 @@ const char *image_fields_name[] = {
 };
 
 static int image_index(lua_State *L){
+  const char* membername = lua_tostring(L, -1);
 	const dt_image_t * my_image=dt_lua_checkreadimage(L,-2);
+  if(luaA_struct_has_member_name(L,dt_image_t,membername)) {
+    const int result = luaA_struct_push_member_name(L, dt_image_t, my_image, membername);
+    dt_lua_releasereadimage(L,my_image);
+    return result;
+  }
 	switch(luaL_checkoption(L,-1,NULL,image_fields_name)) {
-		case EXIF_EXPOSURE:
-			lua_pushnumber(L,my_image->exif_exposure);
-			break;
-		case EXIF_APERTURE:
-			lua_pushnumber(L,my_image->exif_aperture);
-			break;
-		case EXIF_ISO:
-			lua_pushnumber(L,my_image->exif_iso);
-			break;
-		case EXIF_FOCAL_LENGTH:
-			lua_pushnumber(L,my_image->exif_focal_length);
-			break;
-		case EXIF_FOCUS_DISTANCE:
-			lua_pushnumber(L,my_image->exif_focus_distance);
-			break;
-		case EXIF_CROP:
-			lua_pushnumber(L,my_image->exif_crop);
-			break;
-		case EXIF_MAKER:
-			lua_pushstring(L,my_image->exif_maker);
-			break;
-		case EXIF_MODEL:
-			lua_pushstring(L,my_image->exif_model);
-			break;
-		case EXIF_LENS:
-			lua_pushstring(L,my_image->exif_lens);
-			break;
-		case EXIF_DATETIME_TAKEN:
-			lua_pushstring(L,my_image->exif_datetime_taken);
-			break;
-		case FILENAME:
-			lua_pushstring(L,my_image->filename);
-			break;
 		case PATH:
 			{
 				sqlite3_stmt *stmt;
@@ -217,12 +165,6 @@ static int image_index(lua_State *L){
 				lua_pushinteger(L,version);
 				break;
 			}
-		case WIDTH:
-			lua_pushinteger(L,my_image->width);
-			break;
-		case HEIGHT:
-			lua_pushinteger(L,my_image->height);
-			break;
 		case IS_LDR:
 			lua_pushboolean(L,dt_image_is_ldr(my_image));
 			break;
@@ -343,70 +285,19 @@ static int image_index(lua_State *L){
 }
 
 static int image_newindex(lua_State *L){
+  const char* membername = lua_tostring(L, -2);
 	dt_image_t * my_image=dt_lua_checkwriteimage(L,-3);
+  if(luaA_struct_has_member_name(L,dt_image_t,membername)) {
+    if(luaA_type_has_to_func(luaA_struct_typeof_member_name(L,dt_image_t,membername))) {
+      luaA_struct_to_member_name(L, dt_image_t, my_image, membername,-1);
+    } else {
+      dt_lua_releasewriteimage(L,my_image);
+      luaL_error(L,"%s is read only",membername);
+    }
+    dt_lua_releasewriteimage(L,my_image);
+    return 0;
+  }
 	switch(luaL_checkoption(L,-2,NULL,image_fields_name)) {
-		case EXIF_EXPOSURE:
-			my_image->exif_exposure = luaL_checknumber(L,-1);
-			break;
-		case EXIF_APERTURE:
-			my_image->exif_aperture = luaL_checknumber(L,-1);
-			break;
-		case EXIF_ISO:
-			my_image->exif_iso = luaL_checknumber(L,-1);
-			break;
-		case EXIF_FOCAL_LENGTH:
-			my_image->exif_focal_length = luaL_checknumber(L,-1);
-			break;
-		case EXIF_FOCUS_DISTANCE:
-			my_image->exif_focus_distance = luaL_checknumber(L,-1);
-			break;
-		case EXIF_CROP:
-			my_image->exif_crop = luaL_checknumber(L,-1);
-			break;
-		case EXIF_MAKER:
-			{
-				size_t tgt_size;
-				const char * value = luaL_checklstring(L,-1,&tgt_size);
-				if(tgt_size > 32) {
-					dt_lua_releasewriteimage(L,my_image);
-					return luaL_error(L,"string value too long");
-				}
-				strncpy(my_image->exif_maker,value,32);
-				break;
-			}
-		case EXIF_MODEL:
-			{
-				size_t tgt_size;
-				const char * value = luaL_checklstring(L,-1,&tgt_size);
-				if(tgt_size > 32) {
-					dt_lua_releasewriteimage(L,my_image);
-					return luaL_error(L,"string value too long");
-				}
-				strncpy(my_image->exif_maker,value,32);
-				break;
-			}
-		case EXIF_LENS:
-			{
-				size_t tgt_size;
-				const char * value = luaL_checklstring(L,-1,&tgt_size);
-				if(tgt_size > 32) {
-					dt_lua_releasewriteimage(L,my_image);
-					return luaL_error(L,"string value too long");
-				}
-				strncpy(my_image->exif_model,value,32);
-				break;
-			}
-		case EXIF_DATETIME_TAKEN:
-			{
-				size_t tgt_size;
-				const char * value = luaL_checklstring(L,-1,&tgt_size);
-				if(tgt_size > 52) {
-					dt_lua_releasewriteimage(L,my_image);
-					return luaL_error(L,"string value too long");
-				}
-				strncpy(my_image->exif_lens,value,52);
-				break;
-			}
 		case RATING:
 			{
 				int my_score = luaL_checkinteger(L,-1);
@@ -454,11 +345,8 @@ static int image_newindex(lua_State *L){
 				dt_history_copy_and_paste_on_image(source_id, my_image->id, 0);
 				break;
 			}
-		case FILENAME:
 		case PATH:
 		case DUP_INDEX:
-		case WIDTH:
-		case HEIGHT:
 		case IS_LDR:
 		case IS_HDR:
 		case IS_RAW:
@@ -491,14 +379,28 @@ static const luaL_Reg image_meta[] = {
 	{"__tostring", image_tostring },
 	{0,0}
 };
+
 int dt_lua_init_image(lua_State * L) {
 	luaL_newmetatable(L,image_typename);
 	luaL_setfuncs(L,image_meta,0);
-	dt_lua_init_name_list_pair(L, image_fields_name);
+	dt_lua_init_typed_name_list_pair(L, dt_image_t,image_fields_name);
 	dt_lua_init_numid(L);
+  luaA_struct(L,dt_image_t);
+  luaA_struct_member(L,dt_image_t,exif_exposure,float);
+  luaA_struct_member(L,dt_image_t,exif_aperture,float);
+  luaA_struct_member(L,dt_image_t,exif_iso,float);
+  luaA_struct_member(L,dt_image_t,exif_focal_length,float);
+  luaA_struct_member(L,dt_image_t,exif_focus_distance,float);
+  luaA_struct_member(L,dt_image_t,exif_crop,float);
+  luaA_struct_member(L,dt_image_t,exif_maker,char_32);
+  luaA_struct_member(L,dt_image_t,exif_model,char_32);
+  luaA_struct_member(L,dt_image_t,exif_lens,char_52);
+  luaA_struct_member(L,dt_image_t,exif_datetime_taken,char_20);
+  luaA_struct_member(L,dt_image_t,filename,const char_filename_length);
+  luaA_struct_member(L,dt_image_t,width,const int32_t);
+  luaA_struct_member(L,dt_image_t,height,const int32_t);
 	return 0;
 }
-
 
 
 
