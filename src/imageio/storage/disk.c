@@ -29,7 +29,9 @@
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
+#ifdef USE_LUA
 #include "lua/dt_lua.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <glib.h>
@@ -475,6 +477,7 @@ set_params(dt_imageio_module_storage_t *self, void *params, int size)
 /********************************************************************
 LUA STUFF
 *********************************************************************/
+#ifdef USE_LUA
 static int dt_lua_tostring(lua_State *L) {
 	lua_pushstring(L,"storage/disk");
 	return 1;
@@ -498,6 +501,7 @@ int lua_init(lua_State * L) {
 	lua_setfield(L,-2,"disk");
 	return 0;
 }
+#endif
 
 
 

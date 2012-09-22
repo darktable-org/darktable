@@ -27,8 +27,10 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"
+#ifdef USE_LUA
 #include "lua/dt_lua.h"
 #include "lautoc.h"
+#endif
 #include "bauhaus/bauhaus.h"
 #include "views/view.h"
 #include "gui/gtk.h"
@@ -747,10 +749,12 @@ void dt_control_quit()
   dt_pthread_mutex_unlock(&darktable.control->cond_mutex);
   // let gui pick up the running = 0 state and die
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+#ifdef USE_LUA
   if(darktable.lua_state) {
     luaA_close();
     lua_close(darktable.lua_state);
   }
+#endif
 }
 
 void dt_control_shutdown(dt_control_t *s)

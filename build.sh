@@ -25,6 +25,7 @@ OPT_UNITY=-1
 OPT_TETHERING=-1
 OPT_EXPERIMENTAL_IOP=-1
 OPT_GEO=-1
+OPT_LUA=-1
 
 # ---------------------------------------------------------------------------
 # Parse options
@@ -59,6 +60,9 @@ parse_feature()
 		;;
 	experimental)
 		OPT_EXPERIMENTAL_IOP=$value
+		;;
+	lua)
+		OPT_LUA=$value
 		;;
 	geo)
 		OPT_GEO=$value
@@ -135,6 +139,7 @@ so that the cmake script autodetects features.
    --enable-tethering
    --enable-experimental
    --enable-geo
+   --enable-lua
 
 Extra:
 -h --help                Print help message
@@ -206,6 +211,7 @@ cmake_boolean_option USE_UNITY $OPT_UNITY
 cmake_boolean_option USE_CAMERA_SUPPORT $OPT_TETHERING
 cmake_boolean_option INSTALL_IOP_EXPERIMENTAL $OPT_EXPERIMENTAL_IOP
 cmake_boolean_option USE_GEO $OPT_GEO
+cmake_boolean_option USE_LUA $OPT_LUA
 
 # Some people might need this, but ignore if unset in environment
 CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:-}

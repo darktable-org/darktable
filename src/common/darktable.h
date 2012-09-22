@@ -32,8 +32,6 @@
 #include "common/dtpthread.h"
 #include "common/database.h"
 #include "common/utility.h"
-#include <lua.h>
-#include <lauxlib.h>
 #include <time.h>
 #include <sys/resource.h>
 #include <sys/time.h>
@@ -45,10 +43,20 @@
 #include <math.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 #ifdef __APPLE__
 #include <mach/mach.h>
 #include <sys/sysctl.h>
 #endif
+
+#ifdef USE_LUA
+#include <lua.h>
+#include <lauxlib.h>
+#include "lua/dt_lua.h"
+#else
+typedef int lua_State ;
+#endif
+
 #if defined(__DragonFly__) || defined(__FreeBSD__)
 typedef	unsigned int	u_int;
 #include <sys/types.h>

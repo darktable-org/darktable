@@ -21,7 +21,10 @@
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
+
+#ifdef USE_LUA
 #include "lua/types.h"
+#endif
 
 /**
  * defines the plugin structure for image import and export.
@@ -146,8 +149,10 @@ typedef struct dt_imageio_module_storage_t
   void* (*get_params)   (struct dt_imageio_module_storage_t *self, int *size);
   void  (*free_params)  (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
   int   (*set_params)   (struct dt_imageio_module_storage_t *self, const void *params, const int size);
+#ifdef USE_LUA
   /* a lua function called at .so load time to allow lua access to the structure */
   lua_CFunction lua_init;
+#endif
 }
 dt_imageio_module_storage_t;
 

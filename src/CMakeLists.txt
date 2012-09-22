@@ -75,17 +75,22 @@ FILE(GLOB SOURCE_FILES
   "gui/presets.c"
   "gui/styles_dialog.c"
   "libs/lib.c"
-  "lua/dt_lua.c"
-  "lua/events.c"
-  "lua/image.c"
-  "lua/stmt.c"
-  "lua/types.c"
   "views/view.c"
   )
 FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
 
-set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
+if(USE_LUA)
+	FILE(GLOB SOURCE_FILES_LUA
+		"lua/dt_lua.c"
+		"lua/events.c"
+		"lua/image.c"
+		"lua/stmt.c"
+		"lua/types.c"
+		)
+endif(USE_LUA)
+
+set(SOURCES ${SOURCE_FILES} ${SOURCE_FILES_LUA} ${HEADER_FILES})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
@@ -146,17 +151,20 @@ if(INOTIFY_FOUND)
 endif(INOTIFY_FOUND)
 
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2 Lua52)
+foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2)
   find_package(${lib} REQUIRED)
   include_directories(${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
   add_definitions(${${lib}_DEFINITIONS})
 endforeach(lib)
 
-find_package(Lua52 REQUIRED)
-include_directories(${LUA_INCLUDE_DIR})
-list(APPEND LIBS ${LUA_LIBRARIES})
-add_definitions(${LUA_DEFINITIONS})
+if(USE_LUA)
+	add_definitions("-DUSE_LUA")
+	find_package(Lua52)
+	include_directories(${LUA_INCLUDE_DIR})
+	list(APPEND LIBS ${LUA_LIBRARIES})
+	add_definitions(${LUA_DEFINITIONS})
+endif(USE_LUA)
 
 if(USE_NLS)
   find_package(Gettext)
@@ -442,13 +450,15 @@ set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT
 target_link_libraries(lib_darktable ${LIBS} squish_static)
 add_subdirectory(external/squish)
 
-# liblautoc for lua automated interface generation
-add_dependencies(lib_darktable lautoc)
-add_library(lautoc_static STATIC IMPORTED)
-set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
-target_link_libraries(lib_darktable ${LIBS} lautoc_static)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/include)
-add_subdirectory(external/LuaAutoC)
+if(USE_LUA)
+	# liblautoc for lua automated interface generation
+	add_dependencies(lib_darktable lautoc)
+	add_library(lautoc_static STATIC IMPORTED)
+	set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
+	target_link_libraries(lib_darktable ${LIBS} lautoc_static)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/include)
+	add_subdirectory(external/LuaAutoC)
+endif(USE_LUA)
 
 install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 # make sure static libs is first
