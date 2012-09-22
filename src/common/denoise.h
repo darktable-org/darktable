@@ -35,6 +35,24 @@ void dt_nlm_accum(
                                 // and at least 16-byte aligned.
 
 /*
+ * do an iteration of non-local means accumulation
+ * with a downscaled prior.
+ */
+void dt_nlm_accum_scaled(
+    const float *edges,        // input features
+    const float *input2,       // prior payload
+    const float *edges2,       // prior features
+    float       *output,       // accum buffer
+    const int    width,
+    const int    height,
+    const int    prior_width,  // = s*width, s<1
+    const int    prior_height,
+    const int    P,            // patch size
+    const int    K,            // search window size
+    const float  sharpness,
+    float       *tmp);
+
+/*
  * normalize the output buffer after accumulation.
  * divides out the weights in the fourth channel.
  * also does luma/chroma blending with the input

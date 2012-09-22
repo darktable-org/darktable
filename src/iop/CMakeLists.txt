@@ -10,7 +10,7 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
   colortransfer colorize invert shadhi
   cacorrect overexposed bloom soften clahe equalizer highpass
   hotpixels lowlight spots rawdenoise borders nlmeans levels
-  flip globaltonemap bilat)
+  flip globaltonemap bilat superres)
 
 add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")
@@ -56,6 +56,7 @@ add_library(spots MODULE "spots.c")
 add_library(rawdenoise MODULE "rawdenoise.c")
 add_library(borders MODULE "borders.c")
 add_library(nlmeans MODULE "nlmeans.c")
+add_library(superres MODULE "superres.c")
 add_library(colorcontrast MODULE "colorcontrast.c")
 add_library(levels MODULE "levels.c")
 add_library(colorize MODULE "colorize.c")
