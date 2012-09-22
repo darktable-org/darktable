@@ -40,6 +40,7 @@
 #define DEVELOP_BLEND_COLOR				0x13
 #define DEVELOP_BLEND_INVERSE				0x14
 #define DEVELOP_BLEND_UNBOUNDED                         0x15
+#define DEVELOP_BLEND_COLORBLEND                        0x16
 
 #define BLEND_ONLY_LIGHTNESS				8
 
@@ -598,6 +599,17 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       o = clamp(LCH_2_Lab(to), min, max);
       break;
 
+    case DEVELOP_BLEND_COLORBLEND:
+      ta = Lab_2_LCH(clamp(a, min, max));
+      tb = Lab_2_LCH(clamp(b, min, max));
+      to.x = tb.x;
+      to.y = (ta.y * (1.0f - opacity)) + (tb.y * opacity);
+      d = fabs(ta.z - tb.z);
+      s = d > 0.5f ? -opacity*(1.0f - d) / d : opacity;
+      to.z = fmod((ta.z * (1.0f - s)) + (tb.z * s) + 1.0f, 1.0f);
+      o = clamp(LCH_2_Lab(to), min, max);
+      break;
+
     case DEVELOP_BLEND_INVERSE:
       o =  clamp((a * opacity) + (b * (1.0f - opacity)), min, max);
       break;
@@ -730,6 +742,10 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       break;
 
     case DEVELOP_BLEND_COLOR:
+      o = clamp(a, min, max);		// Noop for Raw
+      break;
+
+    case DEVELOP_BLEND_COLORBLEND:
       o = clamp(a, min, max);		// Noop for Raw
       break;
 
@@ -877,6 +893,17 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       to.x = fmod((ta.x * (1.0f - s)) + (tb.x * s) + 1.0f, 1.0f);
       to.y = (ta.y * (1.0f - opacity)) + (tb.y * opacity);
       to.z = ta.z;
+      o = clamp(HSL_2_RGB(to), min, max);
+      break;
+
+    case DEVELOP_BLEND_COLORBLEND:
+      ta = RGB_2_HSL(clamp(a, min, max));
+      tb = RGB_2_HSL(clamp(b, min, max));
+      d = fabs(ta.x - tb.x);
+      s = d > 0.5f ? -opacity*(1.0f - d) / d : opacity;
+      to.x = fmod((ta.x * (1.0f - s)) + (tb.x * s) + 1.0f, 1.0f);
+      to.y = (ta.y * (1.0f - opacity)) + (tb.y * opacity);
+      to.z = tb.z;
       o = clamp(HSL_2_RGB(to), min, max);
       break;
 

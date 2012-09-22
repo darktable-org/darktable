@@ -1457,6 +1457,65 @@ static void _blend_color(dt_iop_colorspace_type_t cst,const float *a, float *b, 
   }
 }
 
+/* color blend; blend hue and chroma; take lightness from module output */
+static void _blend_colorblend(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, int stride, int flag)
+{
+  float ta[3], tb[3];
+  float tta[3], ttb[3];
+  int channels = _blend_colorspace_channels(cst);
+
+  float max[4]= {0},min[4]= {0};
+  _blend_colorspace_channel_range(cst,min,max);
+
+  for(int i=0, j=0; j<stride; i++, j+=4)
+  {
+    float local_opacity = mask[i];
+
+    if(cst==iop_cs_Lab)
+    {
+      _blend_Lab_scale(&a[j], ta);
+      _blend_Lab_scale(&b[j], tb);
+
+      _Lab_2_LCH(ta, tta);
+      _Lab_2_LCH(tb, ttb);
+
+      // ttb[0] (output lightness) unchanged
+      ttb[1] = (tta[1] * (1.0f - local_opacity)) + ttb[1] * local_opacity;
+
+      /* blend hue along shortest distance on color circle */
+      float d = fabs(tta[2] - ttb[2]);
+      float s = d > 0.5f ? -local_opacity*(1.0f - d) / d : local_opacity;
+      ttb[2] = fmod((tta[2] * (1.0f - s)) + ttb[2] * s + 1.0f, 1.0f);
+
+      _LCH_2_Lab(ttb, tb);
+      _CLAMP_XYZ(tb, min, max);
+      _blend_Lab_rescale(tb, &b[j]);
+    }
+    else if(cst==iop_cs_rgb)
+    {
+      _RGB_2_HSL(&a[j], tta);
+      _RGB_2_HSL(&b[j], ttb);
+
+      /* blend hue along shortest distance on color circle */
+      float d = fabs(tta[0] - ttb[0]);
+      float s = d > 0.5f ? -local_opacity*(1.0f - d) / d : local_opacity;
+      ttb[0] = fmod((tta[0] * (1.0f - s)) + ttb[0] * s + 1.0f, 1.0f);
+
+      ttb[1] = (tta[1] * (1.0f - local_opacity)) + ttb[1] * local_opacity;
+      // ttb[2] (output lightness) unchanged
+
+      _HSL_2_RGB(ttb, &b[j]);
+      _CLAMP_XYZ(&b[j], min, max);
+    }
+    else
+      for(int k=0; k<channels; k++)
+        b[j+k] =  CLAMP_RANGE(a[j+k], min[k], max[k]);		// Noop for Raw
+
+    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+  }
+}
+
+
 /* inverse blend */
 static void _blend_inverse(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, int stride, int flag)
 {
@@ -1571,6 +1630,9 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
       break;
     case DEVELOP_BLEND_UNBOUNDED:
       blend = _blend_unbounded;
+      break;
+    case DEVELOP_BLEND_COLORBLEND:
+      blend = _blend_colorblend;
       break;
 
       /* fallback to normal blend */

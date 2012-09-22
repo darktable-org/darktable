@@ -889,7 +889,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     module->blend_data = g_malloc(sizeof(dt_iop_gui_blend_data_t));
     dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
 
-    dt_iop_gui_blendop_modes_t modes[22]; /* number must fit exactly!!! */
+    dt_iop_gui_blendop_modes_t modes[23]; /* number must fit exactly!!! */
     modes[0].mode  = DEVELOP_BLEND_DISABLED;
     modes[0].name  = _("off");
     modes[1].mode  = DEVELOP_BLEND_NORMAL;
@@ -932,8 +932,10 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     modes[19].name = _("hue");
     modes[20].mode = DEVELOP_BLEND_COLOR;
     modes[20].name = _("color");
-    modes[21].mode = DEVELOP_BLEND_UNBOUNDED;
-    modes[21].name = _("unbounded");
+    modes[21].mode = DEVELOP_BLEND_COLORBLEND;
+    modes[21].name = _("colorblend");
+    modes[22].mode = DEVELOP_BLEND_UNBOUNDED;
+    modes[22].name = _("unbounded");
 
 
     bd->number_modes = sizeof(modes) / sizeof(dt_iop_gui_blendop_modes_t);

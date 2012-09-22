@@ -55,6 +55,7 @@
 #define DEVELOP_BLEND_COLOR				  0x13
 #define DEVELOP_BLEND_INVERSE				0x14
 #define DEVELOP_BLEND_UNBOUNDED     0x15
+#define DEVELOP_BLEND_COLORBLEND    0x16
 
 
 typedef enum dt_develop_blendif_channels_t
