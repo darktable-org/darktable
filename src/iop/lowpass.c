@@ -508,10 +508,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->bilat,  TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale2, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale3, TRUE, TRUE, 0);
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the radius of gaussian blur"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the contrast of lowpass filter"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("the color saturation of lowpass filter"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->bilat),  "tooltip-text", _("filter to use for softening"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("radius of gaussian/bilateral blur"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("contrast of lowpass filter"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("color saturation of lowpass filter"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->bilat),  "tooltip-text", _("which filter to use for blurring"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (radius_callback), self);
