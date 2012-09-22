@@ -30,7 +30,7 @@
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 
-#include <colord/cd-profile.h>
+// #include <colord/cd-profile.h>
 
 G_BEGIN_DECLS
 
