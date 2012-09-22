@@ -175,8 +175,8 @@ void connect_key_accels(dt_iop_module_t *self)
 }
 
 
-static 
-void compute_gauss_params(const float sigma, dt_iop_gaussian_order_t order, float *a0, float *a1, float *a2, float *a3, 
+static
+void compute_gauss_params(const float sigma, dt_iop_gaussian_order_t order, float *a0, float *a1, float *a2, float *a3,
                           float *b1, float *b2, float *coefp, float *coefn)
 {
   const float alpha = 1.695f / sigma;
@@ -278,294 +278,294 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     compute_gauss_params(sigma, data->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
 
 #if 0
-  const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
-  const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
+    const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
+    const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
 
-  // vertical blur column by column
+    // vertical blur column by column
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(in,out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
+    #pragma omp parallel for default(none) shared(in,out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
 #endif
-  for(int i=0; i<roi_out->width; i++)
-  {
-    float xp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    float yb[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    float yp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    float xc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    float yc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    float xn[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    float xa[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    float yn[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-
-    // forward filter
-    for(int k=0; k<3; k++)
-    {
-      xp[k] = CLAMPF(in[i*ch+k], Labmin[k], Labmax[k]);
-      yb[k] = xp[k] * coefp;
-      yp[k] = yb[k];
-    }
- 
-    for(int j=0; j<roi_out->height; j++)
-    {
-      int offset = (i + j * roi_out->width)*ch;
-
-      for(int k=0; k<4; k++)
-      {
-        xc[k] = CLAMPF(in[offset+k], Labmin[k], Labmax[k]);
-        yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
-
-        temp[offset+k] = yc[k];
-
-        xp[k] = xc[k];
-        yb[k] = yp[k];
-        yp[k] = yc[k];
-      }
-    }
-
-    // backward filter
-    for(int k=0; k<3; k++)
-    {
-      xn[k] = CLAMPF(in[((roi_out->height - 1) * roi_out->width + i)*ch+k], Labmin[k], Labmax[k]);
-      xa[k] = xn[k];
-      yn[k] = xn[k] * coefn;
-      ya[k] = yn[k];
-    }
-
-    for(int j=roi_out->height - 1; j > -1; j--)
-    {
-      int offset = (i + j * roi_out->width)*ch;
-
-      for(int k=0; k<3; k++)
-      {      
-        xc[k] = CLAMPF(in[offset+k], Labmin[k], Labmax[k]);
-
-        yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
-
-        xa[k] = xn[k]; 
-        xn[k] = xc[k]; 
-        ya[k] = yn[k]; 
-        yn[k] = yc[k];
-
-        temp[offset+k] += yc[k];
-      }
-    }
-  }
-
-  // horizontal blur line by line
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
-#endif
-  for(int j=0; j<roi_out->height; j++)
-  {
-    float xp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    float yb[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    float yp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    float xc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    float yc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    float xn[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    float xa[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    float yn[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-
-    // forward filter
-    for(int k=0; k<3; k++)
-    {
-      xp[k] = CLAMPF(temp[j*roi_out->width*ch+k], Labmin[k], Labmax[k]);
-      yb[k] = xp[k] * coefp;
-      yp[k] = yb[k];
-    }
- 
     for(int i=0; i<roi_out->width; i++)
     {
-      int offset = (i + j * roi_out->width)*ch;
+      float xp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+      float yb[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+      float yp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+      float xc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+      float yc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+      float xn[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+      float xa[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+      float yn[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+      float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
+      // forward filter
       for(int k=0; k<3; k++)
       {
-        xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
-        yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
-
-        out[offset+k] = yc[k];
-
-        xp[k] = xc[k];
-        yb[k] = yp[k];
-        yp[k] = yc[k];
+        xp[k] = CLAMPF(in[i*ch+k], Labmin[k], Labmax[k]);
+        yb[k] = xp[k] * coefp;
+        yp[k] = yb[k];
       }
-    }
 
-    // backward filter
-    for(int k=0; k<3; k++)
-    {
-      xn[k] = CLAMPF(temp[((j + 1)*roi_out->width - 1)*ch + k], Labmin[k], Labmax[k]);
-      xa[k] = xn[k];
-      yn[k] = xn[k] * coefn;
-      ya[k] = yn[k];
-    }
+      for(int j=0; j<roi_out->height; j++)
+      {
+        int offset = (i + j * roi_out->width)*ch;
 
-    for(int i=roi_out->width - 1; i > -1; i--)
-    {
-      int offset = (i + j * roi_out->width)*ch;
+        for(int k=0; k<4; k++)
+        {
+          xc[k] = CLAMPF(in[offset+k], Labmin[k], Labmax[k]);
+          yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
 
+          temp[offset+k] = yc[k];
+
+          xp[k] = xc[k];
+          yb[k] = yp[k];
+          yp[k] = yc[k];
+        }
+      }
+
+      // backward filter
       for(int k=0; k<3; k++)
-      {      
-        xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
+      {
+        xn[k] = CLAMPF(in[((roi_out->height - 1) * roi_out->width + i)*ch+k], Labmin[k], Labmax[k]);
+        xa[k] = xn[k];
+        yn[k] = xn[k] * coefn;
+        ya[k] = yn[k];
+      }
 
-        yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
+      for(int j=roi_out->height - 1; j > -1; j--)
+      {
+        int offset = (i + j * roi_out->width)*ch;
 
-        xa[k] = xn[k]; 
-        xn[k] = xc[k]; 
-        ya[k] = yn[k]; 
-        yn[k] = yc[k];
+        for(int k=0; k<3; k++)
+        {
+          xc[k] = CLAMPF(in[offset+k], Labmin[k], Labmax[k]);
 
-        out[offset+k] += yc[k];
+          yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
+
+          xa[k] = xn[k];
+          xn[k] = xc[k];
+          ya[k] = yn[k];
+          yn[k] = yc[k];
+
+          temp[offset+k] += yc[k];
+        }
       }
     }
-  }
+
+    // horizontal blur line by line
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
+#endif
+    for(int j=0; j<roi_out->height; j++)
+    {
+      float xp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+      float yb[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+      float yp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+      float xc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+      float yc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+      float xn[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+      float xa[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+      float yn[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+      float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+
+      // forward filter
+      for(int k=0; k<3; k++)
+      {
+        xp[k] = CLAMPF(temp[j*roi_out->width*ch+k], Labmin[k], Labmax[k]);
+        yb[k] = xp[k] * coefp;
+        yp[k] = yb[k];
+      }
+
+      for(int i=0; i<roi_out->width; i++)
+      {
+        int offset = (i + j * roi_out->width)*ch;
+
+        for(int k=0; k<3; k++)
+        {
+          xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
+          yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
+
+          out[offset+k] = yc[k];
+
+          xp[k] = xc[k];
+          yb[k] = yp[k];
+          yp[k] = yc[k];
+        }
+      }
+
+      // backward filter
+      for(int k=0; k<3; k++)
+      {
+        xn[k] = CLAMPF(temp[((j + 1)*roi_out->width - 1)*ch + k], Labmin[k], Labmax[k]);
+        xa[k] = xn[k];
+        yn[k] = xn[k] * coefn;
+        ya[k] = yn[k];
+      }
+
+      for(int i=roi_out->width - 1; i > -1; i--)
+      {
+        int offset = (i + j * roi_out->width)*ch;
+
+        for(int k=0; k<3; k++)
+        {
+          xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
+
+          yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
+
+          xa[k] = xn[k];
+          xn[k] = xc[k];
+          ya[k] = yn[k];
+          yn[k] = yc[k];
+
+          out[offset+k] += yc[k];
+        }
+      }
+    }
 #else
 
-  const __m128 Labmax = _mm_set_ps(1.0f, 128.0f, 128.0f, 100.0f);
-  const __m128 Labmin = _mm_set_ps(0.0f, -128.0f, -128.0f, 0.0f);
+    const __m128 Labmax = _mm_set_ps(1.0f, 128.0f, 128.0f, 100.0f);
+    const __m128 Labmin = _mm_set_ps(0.0f, -128.0f, -128.0f, 0.0f);
 
-  // vertical blur column by column
+    // vertical blur column by column
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(in,out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
+    #pragma omp parallel for default(none) shared(in,out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
 #endif
-  for(int i=0; i<roi_out->width; i++)
-  {
-    __m128 xp = _mm_setzero_ps();
-    __m128 yb = _mm_setzero_ps();
-    __m128 yp = _mm_setzero_ps();
-    __m128 xc = _mm_setzero_ps();
-    __m128 yc = _mm_setzero_ps();
-    __m128 xn = _mm_setzero_ps();
-    __m128 xa = _mm_setzero_ps();
-    __m128 yn = _mm_setzero_ps();
-    __m128 ya = _mm_setzero_ps();
-
-    // forward filter
-    xp = MMCLAMPPS(_mm_load_ps(in+i*ch), Labmin, Labmax);
-    yb = _mm_mul_ps(_mm_set_ps1(coefp), xp);
-    yp = yb;
-
- 
-    for(int j=0; j<roi_out->height; j++)
-    {
-      int offset = (i + j * roi_out->width)*ch;
-
-      xc = MMCLAMPPS(_mm_load_ps(in+offset), Labmin, Labmax);
-
-      //yc = (a0 * xc[k]) + (a1 * xp) - (b1 * yp) - (b2 * yb);
-      //yc = (a0 * xc[k]) + ((a1 * xp) - ((b1 * yp) + (b2 * yb)));
-
-      yc = _mm_add_ps(_mm_mul_ps(xc, _mm_set_ps1(a0)),
-           _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
-           _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
-
-      _mm_store_ps(temp+offset, yc);
-
-      xp = xc;
-      yb = yp;
-      yp = yc;
-
-    }
-
-    // backward filter
-    xn = MMCLAMPPS(_mm_load_ps(in+((roi_out->height - 1) * roi_out->width + i)*ch), Labmin, Labmax);
-    xa = xn;
-    yn = _mm_mul_ps(_mm_set_ps1(coefn), xn);
-    ya = yn;
-
-    for(int j=roi_out->height - 1; j > -1; j--)
-    {
-      int offset = (i + j * roi_out->width)*ch;
-
-      xc = MMCLAMPPS(_mm_load_ps(in+offset), Labmin, Labmax);
-
-      //yc = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
-      //yc = (a2 * xn) + ((a3 * xa) - ((b1 * yn) + (b2 * ya)));
-
-      yc = _mm_add_ps(_mm_mul_ps(xn, _mm_set_ps1(a2)),
-           _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
-           _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
-
-
-      xa = xn; 
-      xn = xc; 
-      ya = yn; 
-      yn = yc;
-
-      _mm_store_ps(temp+offset, _mm_add_ps(_mm_load_ps(temp+offset), yc));
-    }
-  }
-
-  // horizontal blur line by line
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
-#endif
-  for(int j=0; j<roi_out->height; j++)
-  {
-    __m128 xp = _mm_setzero_ps();
-    __m128 yb = _mm_setzero_ps();
-    __m128 yp = _mm_setzero_ps();
-    __m128 xc = _mm_setzero_ps();
-    __m128 yc = _mm_setzero_ps();
-    __m128 xn = _mm_setzero_ps();
-    __m128 xa = _mm_setzero_ps();
-    __m128 yn = _mm_setzero_ps();
-    __m128 ya = _mm_setzero_ps();
-
-    // forward filter
-    xp = MMCLAMPPS(_mm_load_ps(temp+j*roi_out->width*ch), Labmin, Labmax);
-    yb = _mm_mul_ps(_mm_set_ps1(coefp), xp);
-    yp = yb;
-
- 
     for(int i=0; i<roi_out->width; i++)
     {
-      int offset = (i + j * roi_out->width)*ch;
+      __m128 xp = _mm_setzero_ps();
+      __m128 yb = _mm_setzero_ps();
+      __m128 yp = _mm_setzero_ps();
+      __m128 xc = _mm_setzero_ps();
+      __m128 yc = _mm_setzero_ps();
+      __m128 xn = _mm_setzero_ps();
+      __m128 xa = _mm_setzero_ps();
+      __m128 yn = _mm_setzero_ps();
+      __m128 ya = _mm_setzero_ps();
 
-      xc = MMCLAMPPS(_mm_load_ps(temp+offset), Labmin, Labmax);
+      // forward filter
+      xp = MMCLAMPPS(_mm_load_ps(in+i*ch), Labmin, Labmax);
+      yb = _mm_mul_ps(_mm_set_ps1(coefp), xp);
+      yp = yb;
 
-      // yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
 
-      yc = _mm_add_ps(_mm_mul_ps(xc, _mm_set_ps1(a0)),
-           _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
-           _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
+      for(int j=0; j<roi_out->height; j++)
+      {
+        int offset = (i + j * roi_out->width)*ch;
 
-      _mm_store_ps(out+offset, yc);
+        xc = MMCLAMPPS(_mm_load_ps(in+offset), Labmin, Labmax);
 
-      xp = xc;
-      yb = yp;
-      yp = yc;
+        //yc = (a0 * xc[k]) + (a1 * xp) - (b1 * yp) - (b2 * yb);
+        //yc = (a0 * xc[k]) + ((a1 * xp) - ((b1 * yp) + (b2 * yb)));
+
+        yc = _mm_add_ps(_mm_mul_ps(xc, _mm_set_ps1(a0)),
+                        _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
+                                   _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
+
+        _mm_store_ps(temp+offset, yc);
+
+        xp = xc;
+        yb = yp;
+        yp = yc;
+
+      }
+
+      // backward filter
+      xn = MMCLAMPPS(_mm_load_ps(in+((roi_out->height - 1) * roi_out->width + i)*ch), Labmin, Labmax);
+      xa = xn;
+      yn = _mm_mul_ps(_mm_set_ps1(coefn), xn);
+      ya = yn;
+
+      for(int j=roi_out->height - 1; j > -1; j--)
+      {
+        int offset = (i + j * roi_out->width)*ch;
+
+        xc = MMCLAMPPS(_mm_load_ps(in+offset), Labmin, Labmax);
+
+        //yc = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
+        //yc = (a2 * xn) + ((a3 * xa) - ((b1 * yn) + (b2 * ya)));
+
+        yc = _mm_add_ps(_mm_mul_ps(xn, _mm_set_ps1(a2)),
+                        _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
+                                   _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
+
+
+        xa = xn;
+        xn = xc;
+        ya = yn;
+        yn = yc;
+
+        _mm_store_ps(temp+offset, _mm_add_ps(_mm_load_ps(temp+offset), yc));
+      }
     }
 
-    // backward filter
-    xn = MMCLAMPPS(_mm_load_ps(temp+((j + 1)*roi_out->width - 1)*ch), Labmin, Labmax);
-    xa = xn;
-    yn = _mm_mul_ps(_mm_set_ps1(coefn), xn);
-    ya = yn;
-
-
-    for(int i=roi_out->width - 1; i > -1; i--)
+    // horizontal blur line by line
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
+#endif
+    for(int j=0; j<roi_out->height; j++)
     {
-      int offset = (i + j * roi_out->width)*ch;
+      __m128 xp = _mm_setzero_ps();
+      __m128 yb = _mm_setzero_ps();
+      __m128 yp = _mm_setzero_ps();
+      __m128 xc = _mm_setzero_ps();
+      __m128 yc = _mm_setzero_ps();
+      __m128 xn = _mm_setzero_ps();
+      __m128 xa = _mm_setzero_ps();
+      __m128 yn = _mm_setzero_ps();
+      __m128 ya = _mm_setzero_ps();
 
-      xc = MMCLAMPPS(_mm_load_ps(temp+offset), Labmin, Labmax);
-
-      //yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
-
-      yc = _mm_add_ps(_mm_mul_ps(xn, _mm_set_ps1(a2)),
-           _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
-           _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
+      // forward filter
+      xp = MMCLAMPPS(_mm_load_ps(temp+j*roi_out->width*ch), Labmin, Labmax);
+      yb = _mm_mul_ps(_mm_set_ps1(coefp), xp);
+      yp = yb;
 
 
-      xa = xn; 
-      xn = xc; 
-      ya = yn; 
-      yn = yc;
+      for(int i=0; i<roi_out->width; i++)
+      {
+        int offset = (i + j * roi_out->width)*ch;
 
-      _mm_store_ps(out+offset, _mm_add_ps(_mm_load_ps(out+offset), yc));
+        xc = MMCLAMPPS(_mm_load_ps(temp+offset), Labmin, Labmax);
+
+        // yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
+
+        yc = _mm_add_ps(_mm_mul_ps(xc, _mm_set_ps1(a0)),
+                        _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
+                                   _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
+
+        _mm_store_ps(out+offset, yc);
+
+        xp = xc;
+        yb = yp;
+        yp = yc;
+      }
+
+      // backward filter
+      xn = MMCLAMPPS(_mm_load_ps(temp+((j + 1)*roi_out->width - 1)*ch), Labmin, Labmax);
+      xa = xn;
+      yn = _mm_mul_ps(_mm_set_ps1(coefn), xn);
+      ya = yn;
+
+
+      for(int i=roi_out->width - 1; i > -1; i--)
+      {
+        int offset = (i + j * roi_out->width)*ch;
+
+        xc = MMCLAMPPS(_mm_load_ps(temp+offset), Labmin, Labmax);
+
+        //yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
+
+        yc = _mm_add_ps(_mm_mul_ps(xn, _mm_set_ps1(a2)),
+                        _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
+                                   _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
+
+
+        xa = xn;
+        xn = xc;
+        ya = yn;
+        yn = yc;
+
+        _mm_store_ps(out+offset, _mm_add_ps(_mm_load_ps(out+offset), yc));
+      }
     }
-  }
 #endif
   }
   else
@@ -606,7 +606,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int j=0; j<roi_out->width*roi_out->height*4; j+=4)
   {
     float ta[3], tb[3];
-    _Lab_scale(&in[j], ta); _Lab_scale(&out[j], tb);
+    _Lab_scale(&in[j], ta);
+    _Lab_scale(&out[j], tb);
 
     float lb = CLAMP_RANGE((tb[0] - halfmax) * sign(-highlights) + halfmax, lmin, lmax);
     float opacity = highlights*highlights;
@@ -622,16 +623,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float chunk = opacity > 1.0f ? 1.0f : opacity;
       float optrans = chunk * xform;
       opacity -= 1.0f;
-      
-      ta[0] = CLAMP_RANGE( la * (1.0 - optrans) + 
-                          ( la>halfmax  ?  lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) : doublemax*la*lb ) * optrans, lmin, lmax) - 
-                          fabs(min[0]);
 
-      ta[1] = CLAMP_RANGE(ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * (ta[0]/lref * (1.0f - highlights_ccorrect) + 
-                           (1.0f - ta[0])/(1.0f - href) * highlights_ccorrect) * optrans, min[1], max[1]);
+      ta[0] = CLAMP_RANGE( la * (1.0 - optrans) +
+                           ( la>halfmax  ?  lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) : doublemax*la*lb ) * optrans, lmin, lmax) -
+              fabs(min[0]);
 
-      ta[2] = CLAMP_RANGE(ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * (ta[0]/lref * (1.0f - highlights_ccorrect) + 
-                           (1.0f - ta[0])/(1.0f - href) * highlights_ccorrect) * optrans, min[2], max[2]);
+      ta[1] = CLAMP_RANGE(ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * (ta[0]/lref * (1.0f - highlights_ccorrect) +
+                          (1.0f - ta[0])/(1.0f - href) * highlights_ccorrect) * optrans, min[1], max[1]);
+
+      ta[2] = CLAMP_RANGE(ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * (ta[0]/lref * (1.0f - highlights_ccorrect) +
+                          (1.0f - ta[0])/(1.0f - href) * highlights_ccorrect) * optrans, min[2], max[2]);
 
     }
 
@@ -646,7 +647,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int j=0; j<roi_out->width*roi_out->height*4; j+=4)
   {
     float ta[3], tb[3];
-    _Lab_scale(&temp[j], ta); _Lab_scale(&out[j], tb);
+    _Lab_scale(&temp[j], ta);
+    _Lab_scale(&out[j], tb);
 
     float lb = CLAMP_RANGE((tb[0] - halfmax) * sign(shadows) + halfmax, lmin, lmax);
     float opacity = shadows*shadows;
@@ -662,16 +664,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float chunk = opacity > 1.0f ? 1.0f : opacity;
       float optrans = chunk * xform;
       opacity -= 1.0f;
-      
-      ta[0] = CLAMP_RANGE( la * (1.0 - optrans) + 
-                          ( la>halfmax  ?  lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) : doublemax*la*lb ) * optrans, lmin, lmax) - 
-                          fabs(min[0]);
 
-      ta[1] = CLAMP_RANGE(ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * (ta[0]/lref * shadows_ccorrect + 
-                           (1.0f - ta[0])/(1.0f - href) * (1.0f - shadows_ccorrect)) * optrans, min[1], max[1]);
+      ta[0] = CLAMP_RANGE( la * (1.0 - optrans) +
+                           ( la>halfmax  ?  lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) : doublemax*la*lb ) * optrans, lmin, lmax) -
+              fabs(min[0]);
 
-      ta[2] = CLAMP_RANGE(ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * (ta[0]/lref * shadows_ccorrect + 
-                           (1.0f - ta[0])/(1.0f - href) * (1.0f - shadows_ccorrect)) * optrans, min[2], max[2]);
+      ta[1] = CLAMP_RANGE(ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * (ta[0]/lref * shadows_ccorrect +
+                          (1.0f - ta[0])/(1.0f - href) * (1.0f - shadows_ccorrect)) * optrans, min[1], max[1]);
+
+      ta[2] = CLAMP_RANGE(ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * (ta[0]/lref * shadows_ccorrect +
+                          (1.0f - ta[0])/(1.0f - href) * (1.0f - shadows_ccorrect)) * optrans, min[2], max[2]);
 
     }
 
@@ -705,20 +707,20 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t workgroupsize = 0;          // the maximum number of items in a work group
   unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
   size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
-   
+
   // make sure blocksize is not too large
   size_t blocksize = BLOCKSIZE;
   int blockwd;
   int blockht;
   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-     dt_opencl_get_kernel_work_group_size(devid, gd->kernel_gaussian_transpose, &kernelworkgroupsize) == CL_SUCCESS)
+      dt_opencl_get_kernel_work_group_size(devid, gd->kernel_gaussian_transpose, &kernelworkgroupsize) == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] 
+    while(blocksize > maxsizes[0] || blocksize > maxsizes[1]
           || blocksize*blocksize > workgroupsize || blocksize*(blocksize+1)*bpp > localmemsize)
     {
       if(blocksize == 1) break;
-      blocksize >>= 1;    
+      blocksize >>= 1;
     }
 
     blockwd = blockht = blocksize;
@@ -1002,7 +1004,7 @@ highlights_ccorrect_callback (GtkWidget *slider, gpointer user_data)
 }
 
 
-void 
+void
 commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)p1;

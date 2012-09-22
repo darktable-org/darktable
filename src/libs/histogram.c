@@ -65,7 +65,7 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_RIGHT_TOP;
 }
 
-int expandable() 
+int expandable()
 {
   return 0;
 }
@@ -76,7 +76,7 @@ int position()
 }
 
 
-static void _lib_histogram_change_callback(gpointer instance, gpointer user_data) 
+static void _lib_histogram_change_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_control_queue_redraw_widget(self->widget);
@@ -95,15 +95,15 @@ void gui_init(dt_lib_module_t *self)
 
   /* create drawingarea */
   self->widget = gtk_drawing_area_new();
-  
-  gtk_widget_add_events(self->widget, 
-			GDK_LEAVE_NOTIFY_MASK | 
-			GDK_ENTER_NOTIFY_MASK | 
-			GDK_POINTER_MOTION_MASK | 
-			GDK_BUTTON_PRESS_MASK | 
-			GDK_BUTTON_RELEASE_MASK | 
-			GDK_SCROLL);
-  
+
+  gtk_widget_add_events(self->widget,
+                        GDK_LEAVE_NOTIFY_MASK |
+                        GDK_ENTER_NOTIFY_MASK |
+                        GDK_POINTER_MOTION_MASK |
+                        GDK_BUTTON_PRESS_MASK |
+                        GDK_BUTTON_RELEASE_MASK |
+                        GDK_SCROLL);
+
   /* connect callbacks */
   g_object_set(G_OBJECT(self->widget), "tooltip-text",
                _("drag to change exposure,\ndoubleclick resets"), (char *)NULL);
@@ -128,8 +128,8 @@ void gui_init(dt_lib_module_t *self)
 
   /* connect to preview pipe finished  signal */
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, G_CALLBACK(_lib_histogram_change_callback), self);
- 
- 
+
+
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -317,7 +317,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  
+
   /* check if exposure hooks are available */
   gboolean hooks_available = dt_dev_exposure_hooks_available(darktable.develop);
 
@@ -453,11 +453,11 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
   if(event->direction == GDK_SCROLL_DOWN && d->highlight == 2)
     dt_dev_exposure_set_white(darktable.develop, cw+0.1);
 
-  if(event->direction == GDK_SCROLL_UP && d->highlight == 1) 
+  if(event->direction == GDK_SCROLL_UP && d->highlight == 1)
     dt_dev_exposure_set_black(darktable.develop, cb-0.005);
 
   if(event->direction == GDK_SCROLL_DOWN && d->highlight == 1)
-    dt_dev_exposure_set_black(darktable.develop, cb+0.005); 
+    dt_dev_exposure_set_black(darktable.develop, cb+0.005);
 
   return TRUE;
 }

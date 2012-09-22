@@ -33,12 +33,12 @@
 #define CLAMPI(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 
 
-/* this defines an additional alignment requirement for opencl image width. 
-   It can have strong effects on processing speed. Reasonable values are a 
+/* this defines an additional alignment requirement for opencl image width.
+   It can have strong effects on processing speed. Reasonable values are a
    power of 2. set to 1 for no effect. */
 #define CL_ALIGNMENT 4
 
-/* parameter RESERVE for extended roi_in sizes due to inaccuracies when doing 
+/* parameter RESERVE for extended roi_in sizes due to inaccuracies when doing
    roi_out -> roi_in estimations.
    Needs to be increased if tiling fails due to insufficient buffer sizes. */
 #define RESERVE 5
@@ -108,7 +108,7 @@ _nm_constraints(double x[], int n)
   x[2] = fabs(x[2]);
   x[3] = fabs(x[3]);
 
-  if(x[0] > 1.0) x[0] = 1.0 - x[0];  
+  if(x[0] > 1.0) x[0] = 1.0 - x[0];
   if(x[1] > 1.0) x[1] = 1.0 - x[1];
   if(x[2] > 1.0) x[2] = 1.0 - x[2];
   if(x[3] > 1.0) x[3] = 1.0 - x[3];
@@ -146,7 +146,7 @@ _nm_fitness(double x[], void *rest[])
 
 /* We use a Nelder-Mead simplex algorithm based on an implementation of Michael F. Hutt.
    It is covered by the following copyright notice: */
-/* 
+/*
  * Program: nmsimplex.c
  * Author : Michael F. Hutt
  * http://www.mikehutt.com
@@ -184,7 +184,7 @@ _nm_fitness(double x[], void *rest[])
 
 static int
 _simplex(double (*objfunc) (double[], void*[]), double start[], int n, double EPSILON,
-	 double scale, int maxiter, void (*constrain) (double[], int n), void *rest[])
+         double scale, int maxiter, void (*constrain) (double[], int n), void *rest[])
 {
 
   int vs;			/* vertex with smallest value */
@@ -241,11 +241,11 @@ _simplex(double (*objfunc) (double[], void*[]), double start[], int n, double EP
     {
       if (i - 1 == j)
       {
-	v[i][j] = pn + start[j];
+        v[i][j] = pn + start[j];
       }
       else
       {
-	v[i][j] = qn + start[j];
+        v[i][j] = qn + start[j];
       }
     }
   }
@@ -283,7 +283,7 @@ _simplex(double (*objfunc) (double[], void*[]), double start[], int n, double EP
     {
       if (f[j] > f[vg])
       {
-	vg = j;
+        vg = j;
       }
     }
 
@@ -293,7 +293,7 @@ _simplex(double (*objfunc) (double[], void*[]), double start[], int n, double EP
     {
       if (f[j] < f[vs])
       {
-	vs = j;
+        vs = j;
       }
     }
 
@@ -303,7 +303,7 @@ _simplex(double (*objfunc) (double[], void*[]), double start[], int n, double EP
     {
       if (f[j] > f[vh] && f[j] < f[vg])
       {
-	vh = j;
+        vh = j;
       }
     }
 
@@ -313,10 +313,10 @@ _simplex(double (*objfunc) (double[], void*[]), double start[], int n, double EP
       cent = 0.0;
       for (m = 0; m <= n; m++)
       {
-	if (m != vg)
-	{
-	  cent += v[m][j];
-	}
+        if (m != vg)
+        {
+          cent += v[m][j];
+        }
       }
       vm[j] = cent / n;
     }
@@ -338,7 +338,7 @@ _simplex(double (*objfunc) (double[], void*[]), double start[], int n, double EP
     {
       for (j = 0; j <= n - 1; j++)
       {
-	v[vg][j] = vr[j];
+        v[vg][j] = vr[j];
       }
       f[vg] = fr;
     }
@@ -348,35 +348,35 @@ _simplex(double (*objfunc) (double[], void*[]), double start[], int n, double EP
     {
       for (j = 0; j <= n - 1; j++)
       {
-	/*ve[j] = GAMMA*vr[j] + (1-GAMMA)*vm[j]; */
-	ve[j] = vm[j] + GAMMA * (vr[j] - vm[j]);
+        /*ve[j] = GAMMA*vr[j] + (1-GAMMA)*vm[j]; */
+        ve[j] = vm[j] + GAMMA * (vr[j] - vm[j]);
       }
       if (constrain != NULL)
       {
-	constrain (ve, n);
+        constrain (ve, n);
       }
       fe = objfunc (ve, rest);
       k++;
 
-      /* by making fe < fr as opposed to fe < f[vs],                     
-         Rosenbrocks function takes 63 iterations as opposed 
+      /* by making fe < fr as opposed to fe < f[vs],
+         Rosenbrocks function takes 63 iterations as opposed
          to 64 when using double variables. */
 
       if (fe < fr)
       {
-	for (j = 0; j <= n - 1; j++)
-	{
-	  v[vg][j] = ve[j];
-	}
-	f[vg] = fe;
+        for (j = 0; j <= n - 1; j++)
+        {
+          v[vg][j] = ve[j];
+        }
+        f[vg] = fe;
       }
       else
       {
-	for (j = 0; j <= n - 1; j++)
-	{
-	  v[vg][j] = vr[j];
-	}
-	f[vg] = fr;
+        for (j = 0; j <= n - 1; j++)
+        {
+          v[vg][j] = vr[j];
+        }
+        f[vg] = fr;
       }
     }
 
@@ -385,73 +385,73 @@ _simplex(double (*objfunc) (double[], void*[]), double start[], int n, double EP
     {
       if (fr < f[vg] && fr >= f[vh])
       {
-	/* perform outside contraction */
-	for (j = 0; j <= n - 1; j++)
-	{
-	  /*vc[j] = BETA*v[vg][j] + (1-BETA)*vm[j]; */
-	  vc[j] = vm[j] + BETA * (vr[j] - vm[j]);
-	}
-	if (constrain != NULL)
-	{
-	  constrain (vc, n);
-	}
-	fc = objfunc (vc, rest);
-	k++;
+        /* perform outside contraction */
+        for (j = 0; j <= n - 1; j++)
+        {
+          /*vc[j] = BETA*v[vg][j] + (1-BETA)*vm[j]; */
+          vc[j] = vm[j] + BETA * (vr[j] - vm[j]);
+        }
+        if (constrain != NULL)
+        {
+          constrain (vc, n);
+        }
+        fc = objfunc (vc, rest);
+        k++;
       }
       else
       {
-	/* perform inside contraction */
-	for (j = 0; j <= n - 1; j++)
-	{
-	  /*vc[j] = BETA*v[vg][j] + (1-BETA)*vm[j]; */
-	  vc[j] = vm[j] - BETA * (vm[j] - v[vg][j]);
-	}
-	if (constrain != NULL)
-	{
-	  constrain (vc, n);
-	}
-	fc = objfunc (vc, rest);
-	k++;
+        /* perform inside contraction */
+        for (j = 0; j <= n - 1; j++)
+        {
+          /*vc[j] = BETA*v[vg][j] + (1-BETA)*vm[j]; */
+          vc[j] = vm[j] - BETA * (vm[j] - v[vg][j]);
+        }
+        if (constrain != NULL)
+        {
+          constrain (vc, n);
+        }
+        fc = objfunc (vc, rest);
+        k++;
       }
 
 
       if (fc < f[vg])
       {
-	for (j = 0; j <= n - 1; j++)
-	{
-	  v[vg][j] = vc[j];
-	}
-	f[vg] = fc;
+        for (j = 0; j <= n - 1; j++)
+        {
+          v[vg][j] = vc[j];
+        }
+        f[vg] = fc;
       }
       /* at this point the contraction is not successful,
-         we must halve the distance from vs to all the 
+         we must halve the distance from vs to all the
          vertices of the simplex and then continue.
-         10/31/97 - modified to account for ALL vertices. 
+         10/31/97 - modified to account for ALL vertices.
        */
       else
       {
-	for (row = 0; row <= n; row++)
-	{
-	  if (row != vs)
-	  {
-	    for (j = 0; j <= n - 1; j++)
-	    {
-	      v[row][j] = v[vs][j] + (v[row][j] - v[vs][j]) / 2.0;
-	    }
-	  }
-	}
-	if (constrain != NULL)
-	{
-	  constrain (v[vg], n);
-	}
-	f[vg] = objfunc (v[vg], rest);
-	k++;
-	if (constrain != NULL)
-	{
-	  constrain (v[vh], n);
-	}
-	f[vh] = objfunc (v[vh], rest);
-	k++;
+        for (row = 0; row <= n; row++)
+        {
+          if (row != vs)
+          {
+            for (j = 0; j <= n - 1; j++)
+            {
+              v[row][j] = v[vs][j] + (v[row][j] - v[vs][j]) / 2.0;
+            }
+          }
+        }
+        if (constrain != NULL)
+        {
+          constrain (v[vg], n);
+        }
+        f[vg] = objfunc (v[vg], rest);
+        k++;
+        if (constrain != NULL)
+        {
+          constrain (v[vh], n);
+        }
+        f[vh] = objfunc (v[vh], rest);
+        k++;
 
 
       }
@@ -464,7 +464,7 @@ _simplex(double (*objfunc) (double[], void*[]), double start[], int n, double EP
     {
       for (i = 0; i < n; i++)
       {
-	printf ("%f %f\n", v[j][i], f[j]);
+        printf ("%f %f\n", v[j][i], f[j]);
       }
     }
 #endif
@@ -551,7 +551,7 @@ _nm_fit_output_to_input_roi(struct dt_iop_module_t *self, struct dt_dev_pixelpip
    We search in two steps. first by a simplicistic iterative search which will succeed in most cases.
    If this does not converge, we do a downhill simplex (nelder-mead) fitting */
 static int
-_fit_output_to_input_roi(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *iroi, dt_iop_roi_t *oroi, int delta, int iter) 
+_fit_output_to_input_roi(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *iroi, dt_iop_roi_t *oroi, int delta, int iter)
 {
   dt_iop_roi_t iroi_probe = *iroi;
   dt_iop_roi_t save_oroi = *oroi;
@@ -559,15 +559,15 @@ _fit_output_to_input_roi(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_i
   // try to go the easy way. this works in many cases where output is
   // just like input, only scaled down
   self->modify_roi_in(self, piece, oroi, &iroi_probe);
-  while ((abs((int)iroi_probe.x - (int)iroi->x) > delta || 
-         abs((int)iroi_probe.y - (int)iroi->y) > delta ||
-         abs((int)iroi_probe.width - (int)iroi->width) > delta ||
-         abs((int)iroi_probe.height - (int)iroi->height) > delta) &&
+  while ((abs((int)iroi_probe.x - (int)iroi->x) > delta ||
+          abs((int)iroi_probe.y - (int)iroi->y) > delta ||
+          abs((int)iroi_probe.width - (int)iroi->width) > delta ||
+          abs((int)iroi_probe.height - (int)iroi->height) > delta) &&
          iter > 0)
   {
     //_print_roi(&iroi_probe, "tile iroi_probe");
     //_print_roi(oroi, "tile oroi old");
-      
+
     oroi->x += (iroi->x - iroi_probe.x) * oroi->scale / iroi->scale;
     oroi->y += (iroi->y - iroi_probe.y) * oroi->scale / iroi->scale;
     oroi->width += (iroi->width - iroi_probe.width) * oroi->scale / iroi->scale;
@@ -640,7 +640,7 @@ _default_process_tiling_ptp (struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
     /* TODO: can we make this more efficient to minimize total overlap between tiles? */
     if(width < height && scale >= 0.333f)
-    { 
+    {
       height = floorf(height * scale);
     }
     else if(height <= width && scale >= 0.333f)
@@ -720,77 +720,77 @@ _default_process_tiling_ptp (struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
   /* iterate over tiles */
   for(int tx=0; tx<tiles_x; tx++)
-    for(int ty=0; ty<tiles_y; ty++)  
-  {
-    piece->pipe->tiling = 1;
+    for(int ty=0; ty<tiles_y; ty++)
+    {
+      piece->pipe->tiling = 1;
 
-    size_t wd = tx * tile_wd + width > roi_in->width  ? roi_in->width - tx * tile_wd : width;
-    size_t ht = ty * tile_ht + height > roi_in->height ? roi_in->height- ty * tile_ht : height;
+      size_t wd = tx * tile_wd + width > roi_in->width  ? roi_in->width - tx * tile_wd : width;
+      size_t ht = ty * tile_ht + height > roi_in->height ? roi_in->height- ty * tile_ht : height;
 
-    /* no need to process end-tiles that are smaller than overlap */
-    if((wd <= overlap && tx > 0) || (ht <= overlap && ty > 0)) continue;
+      /* no need to process end-tiles that are smaller than overlap */
+      if((wd <= overlap && tx > 0) || (ht <= overlap && ty > 0)) continue;
 
-    /* origin and region of effective part of tile, which we want to store later */
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { wd, ht, 1 };
+      /* origin and region of effective part of tile, which we want to store later */
+      size_t origin[] = { 0, 0, 0 };
+      size_t region[] = { wd, ht, 1 };
 
-    /* roi_in and roi_out for process_cl on subbuffer */
-    dt_iop_roi_t iroi = { roi_in->x+tx*tile_wd, roi_in->y+ty*tile_ht, wd, ht, roi_in->scale };
-    dt_iop_roi_t oroi = { roi_out->x+tx*tile_wd, roi_out->y+ty*tile_ht, wd, ht, roi_out->scale };
+      /* roi_in and roi_out for process_cl on subbuffer */
+      dt_iop_roi_t iroi = { roi_in->x+tx*tile_wd, roi_in->y+ty*tile_ht, wd, ht, roi_in->scale };
+      dt_iop_roi_t oroi = { roi_out->x+tx*tile_wd, roi_out->y+ty*tile_ht, wd, ht, roi_out->scale };
 
-    /* offsets of tile into ivoid and ovoid */
-    size_t ioffs = (ty * tile_ht)*ipitch + (tx * tile_wd)*in_bpp;
-    size_t ooffs = (ty * tile_ht)*opitch + (tx * tile_wd)*out_bpp;
+      /* offsets of tile into ivoid and ovoid */
+      size_t ioffs = (ty * tile_ht)*ipitch + (tx * tile_wd)*in_bpp;
+      size_t ooffs = (ty * tile_ht)*opitch + (tx * tile_wd)*out_bpp;
 
 
-    dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, wd, ht, tx*tile_wd, ty*tile_ht);
+      dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, wd, ht, tx*tile_wd, ty*tile_ht);
 
-    /* prepare input tile buffer */
+      /* prepare input tile buffer */
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(input,width,ivoid,ioffs,wd,ht) schedule(static)
+      #pragma omp parallel for default(none) shared(input,width,ivoid,ioffs,wd,ht) schedule(static)
 #endif
-    for(int j=0; j<ht; j++)
-      memcpy((char *)input+j*wd*in_bpp, (char *)ivoid+ioffs+j*ipitch, wd*in_bpp);
+      for(int j=0; j<ht; j++)
+        memcpy((char *)input+j*wd*in_bpp, (char *)ivoid+ioffs+j*ipitch, wd*in_bpp);
 
-    /* take original processed_maximum as starting point */
-    for(int k=0; k<3; k++)
-      piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
+      /* take original processed_maximum as starting point */
+      for(int k=0; k<3; k++)
+        piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
 
-    /* call process() of module */
-    self->process(self, piece, input, output, &iroi, &oroi);
+      /* call process() of module */
+      self->process(self, piece, input, output, &iroi, &oroi);
 
-    /* aggregate resulting processed_maximum */
-    /* TODO: check if there really can be differences between tiles and take
-             appropriate action (calculate minimum, maximum, average, ...?) */
-    for(int k=0; k<3; k++)
-    {
-      if(tx+ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->processed_maximum[k]) > 1.0e-6f)
-        dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] processed_maximum[%d] differs between tiles in module '%s'\n", k, self->op);
-      processed_maximum_new[k] = piece->pipe->processed_maximum[k];
-    }
+      /* aggregate resulting processed_maximum */
+      /* TODO: check if there really can be differences between tiles and take
+               appropriate action (calculate minimum, maximum, average, ...?) */
+      for(int k=0; k<3; k++)
+      {
+        if(tx+ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->processed_maximum[k]) > 1.0e-6f)
+          dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] processed_maximum[%d] differs between tiles in module '%s'\n", k, self->op);
+        processed_maximum_new[k] = piece->pipe->processed_maximum[k];
+      }
 
-    /* correct origin and region of tile for overlap.
-       make sure that we only copy back the "good" part. */
-    if(tx > 0)
-    {
-      origin[0] += overlap;
-      region[0] -= overlap;
-      ooffs += overlap*out_bpp;
-    }
-    if(ty > 0)
-    {
-      origin[1] += overlap;
-      region[1] -= overlap;
-      ooffs += overlap*opitch;
-    }
+      /* correct origin and region of tile for overlap.
+         make sure that we only copy back the "good" part. */
+      if(tx > 0)
+      {
+        origin[0] += overlap;
+        region[0] -= overlap;
+        ooffs += overlap*out_bpp;
+      }
+      if(ty > 0)
+      {
+        origin[1] += overlap;
+        region[1] -= overlap;
+        ooffs += overlap*opitch;
+      }
 
-    /* copy "good" part of tile to output buffer */
+      /* copy "good" part of tile to output buffer */
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(ovoid,ooffs,output,width,origin,region,wd) schedule(static)
+      #pragma omp parallel for default(none) shared(ovoid,ooffs,output,width,origin,region,wd) schedule(static)
 #endif
-    for(int j=0; j<region[1]; j++)
-      memcpy((char *)ovoid+ooffs+j*opitch, (char *)output+((j+origin[1])*wd+origin[0])*out_bpp, region[0]*out_bpp);
-  }
+      for(int j=0; j<region[1]; j++)
+        memcpy((char *)ovoid+ooffs+j*opitch, (char *)output+((j+origin[1])*wd+origin[0])*out_bpp, region[0]*out_bpp);
+    }
 
   /* copy back final processed_maximum */
   for(int k=0; k<3; k++)
@@ -877,7 +877,7 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
     /* TODO: can we make this more efficient to minimize total overlap between tiles? */
     if(width < height && scale >= 0.333f)
-    { 
+    {
       height = floorf(height * scale);
     }
     else if(height <= width && scale >= 0.333f)
@@ -951,142 +951,142 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
   /* iterate over tiles */
   for(int tx=0; tx<tiles_x; tx++)
-    for(int ty=0; ty<tiles_y; ty++)  
-  {
-    piece->pipe->tiling = 1;
-
-    /* the output dimensions of the good part of this specific tile */
-    size_t wd = (tx + 1) * tile_wd > roi_out->width  ? roi_out->width - tx * tile_wd : tile_wd;
-    size_t ht = (ty + 1) * tile_ht > roi_out->height ? roi_out->height- ty * tile_ht : tile_ht;
-
-    /* roi_in and roi_out of good part: oroi_good easy to calculate based on number and dimension of tile.
-       iroi_good is calculated by modify_roi_in() of respective module */
-    dt_iop_roi_t iroi_good = { roi_in->x+tx*tile_wd, roi_in->y+ty*tile_ht, wd, ht, roi_in->scale };
-    dt_iop_roi_t oroi_good = { roi_out->x+tx*tile_wd, roi_out->y+ty*tile_ht, wd, ht, roi_out->scale };
-
-    self->modify_roi_in(self, piece, &oroi_good, &iroi_good);
-
-    /* clamp iroi_good to not exceed roi_in */
-    iroi_good.x = _max(iroi_good.x, roi_in->x);
-    iroi_good.y = _max(iroi_good.y, roi_in->y);
-    iroi_good.width = _min(iroi_good.width, roi_in->width + roi_in->x - iroi_good.x);
-    iroi_good.height = _min(iroi_good.height, roi_in->height + roi_in->y - iroi_good.y);
-
-    //_print_roi(&iroi_good, "tile iroi_good");
-    //_print_roi(&oroi_good, "tile oroi_good");
-
-    /* now we need to calculate full region of this tile: increase input roi to take care of overlap requirements 
-       and alignment and add additional delta to correct for possible rounding errors in modify_roi_in() 
-       -> generates first estimate of iroi_full */
-    const int x_in = iroi_good.x;
-    const int y_in = iroi_good.y;
-    const int width_in = iroi_good.width;
-    const int height_in = iroi_good.height;
-    const int new_x_in = _max(_align_down(x_in - overlap_in - delta, xyalign), roi_in->x);
-    const int new_y_in = _max(_align_down(y_in - overlap_in - delta, xyalign), roi_in->y);
-    const int new_width_in = _min(_align_up(width_in + overlap_in + delta + (x_in - new_x_in), xyalign), roi_in->width + roi_in->x - new_x_in);
-    const int new_height_in = _min(_align_up(height_in + overlap_in + delta + (y_in - new_y_in), xyalign), roi_in->height + roi_in->y - new_y_in);
-
-    /* iroi_full based on calculated numbers and dimensions. oroi_full just set as a starting point for the following iterative search */
-    dt_iop_roi_t iroi_full = { new_x_in, new_y_in, new_width_in, new_height_in, iroi_good.scale };
-    dt_iop_roi_t oroi_full = oroi_good;  // a good starting point for optimization
-
-    //_print_roi(&iroi_full, "tile iroi_full before optimization");
-    //_print_roi(&oroi_full, "tile oroi_full before optimization");
-     
-    /* try to find a matching oroi_full */
-    if (!_fit_output_to_input_roi(self, piece, &iroi_full, &oroi_full, delta, 10))
+    for(int ty=0; ty<tiles_y; ty++)
     {
-      dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] can not handle requested roi's. tiling for module '%s' not possible.\n", self->op);
-      goto error;
-    }
+      piece->pipe->tiling = 1;
 
-    //_print_roi(&iroi_full, "tile iroi_full after optimization");
-    //_print_roi(&oroi_full, "tile oroi_full after optimization");
+      /* the output dimensions of the good part of this specific tile */
+      size_t wd = (tx + 1) * tile_wd > roi_out->width  ? roi_out->width - tx * tile_wd : tile_wd;
+      size_t ht = (ty + 1) * tile_ht > roi_out->height ? roi_out->height- ty * tile_ht : tile_ht;
 
-    /* make sure that oroi_full at least covers the range of oroi_good.
-       this step is needed due to the possibility of rounding errors */
-    oroi_full.x = _min(oroi_full.x, oroi_good.x);
-    oroi_full.y = _min(oroi_full.y, oroi_good.y);
-    oroi_full.width = _max(oroi_full.width, oroi_good.x + oroi_good.width - oroi_full.x);
-    oroi_full.height = _max(oroi_full.height, oroi_good.y + oroi_good.height - oroi_full.y);
+      /* roi_in and roi_out of good part: oroi_good easy to calculate based on number and dimension of tile.
+         iroi_good is calculated by modify_roi_in() of respective module */
+      dt_iop_roi_t iroi_good = { roi_in->x+tx*tile_wd, roi_in->y+ty*tile_ht, wd, ht, roi_in->scale };
+      dt_iop_roi_t oroi_good = { roi_out->x+tx*tile_wd, roi_out->y+ty*tile_ht, wd, ht, roi_out->scale };
 
-    /* clamp oroi_full to not exceed roi_out */
-    oroi_full.x = _max(oroi_full.x, roi_out->x);
-    oroi_full.y = _max(oroi_full.y, roi_out->y);
-    oroi_full.width = _min(oroi_full.width, roi_out->width + roi_out->x - oroi_full.x);
-    oroi_full.height = _min(oroi_full.height, roi_out->height + roi_out->y - oroi_full.y);
+      self->modify_roi_in(self, piece, &oroi_good, &iroi_good);
 
-    /* calculate final iroi_full */
-    self->modify_roi_in(self, piece, &oroi_full, &iroi_full);
+      /* clamp iroi_good to not exceed roi_in */
+      iroi_good.x = _max(iroi_good.x, roi_in->x);
+      iroi_good.y = _max(iroi_good.y, roi_in->y);
+      iroi_good.width = _min(iroi_good.width, roi_in->width + roi_in->x - iroi_good.x);
+      iroi_good.height = _min(iroi_good.height, roi_in->height + roi_in->y - iroi_good.y);
 
-    /* clamp iroi_full to not exceed roi_in */
-    iroi_full.x = _max(iroi_full.x, roi_in->x);
-    iroi_full.y = _max(iroi_full.y, roi_in->y);
-    iroi_full.width = _min(iroi_full.width, roi_in->width + roi_in->x - iroi_full.x);
-    iroi_full.height = _min(iroi_full.height, roi_in->height + roi_in->y - iroi_full.y);
+      //_print_roi(&iroi_good, "tile iroi_good");
+      //_print_roi(&oroi_good, "tile oroi_good");
+
+      /* now we need to calculate full region of this tile: increase input roi to take care of overlap requirements
+         and alignment and add additional delta to correct for possible rounding errors in modify_roi_in()
+         -> generates first estimate of iroi_full */
+      const int x_in = iroi_good.x;
+      const int y_in = iroi_good.y;
+      const int width_in = iroi_good.width;
+      const int height_in = iroi_good.height;
+      const int new_x_in = _max(_align_down(x_in - overlap_in - delta, xyalign), roi_in->x);
+      const int new_y_in = _max(_align_down(y_in - overlap_in - delta, xyalign), roi_in->y);
+      const int new_width_in = _min(_align_up(width_in + overlap_in + delta + (x_in - new_x_in), xyalign), roi_in->width + roi_in->x - new_x_in);
+      const int new_height_in = _min(_align_up(height_in + overlap_in + delta + (y_in - new_y_in), xyalign), roi_in->height + roi_in->y - new_y_in);
+
+      /* iroi_full based on calculated numbers and dimensions. oroi_full just set as a starting point for the following iterative search */
+      dt_iop_roi_t iroi_full = { new_x_in, new_y_in, new_width_in, new_height_in, iroi_good.scale };
+      dt_iop_roi_t oroi_full = oroi_good;  // a good starting point for optimization
+
+      //_print_roi(&iroi_full, "tile iroi_full before optimization");
+      //_print_roi(&oroi_full, "tile oroi_full before optimization");
+
+      /* try to find a matching oroi_full */
+      if (!_fit_output_to_input_roi(self, piece, &iroi_full, &oroi_full, delta, 10))
+      {
+        dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] can not handle requested roi's. tiling for module '%s' not possible.\n", self->op);
+        goto error;
+      }
+
+      //_print_roi(&iroi_full, "tile iroi_full after optimization");
+      //_print_roi(&oroi_full, "tile oroi_full after optimization");
+
+      /* make sure that oroi_full at least covers the range of oroi_good.
+         this step is needed due to the possibility of rounding errors */
+      oroi_full.x = _min(oroi_full.x, oroi_good.x);
+      oroi_full.y = _min(oroi_full.y, oroi_good.y);
+      oroi_full.width = _max(oroi_full.width, oroi_good.x + oroi_good.width - oroi_full.x);
+      oroi_full.height = _max(oroi_full.height, oroi_good.y + oroi_good.height - oroi_full.y);
+
+      /* clamp oroi_full to not exceed roi_out */
+      oroi_full.x = _max(oroi_full.x, roi_out->x);
+      oroi_full.y = _max(oroi_full.y, roi_out->y);
+      oroi_full.width = _min(oroi_full.width, roi_out->width + roi_out->x - oroi_full.x);
+      oroi_full.height = _min(oroi_full.height, roi_out->height + roi_out->y - oroi_full.y);
+
+      /* calculate final iroi_full */
+      self->modify_roi_in(self, piece, &oroi_full, &iroi_full);
+
+      /* clamp iroi_full to not exceed roi_in */
+      iroi_full.x = _max(iroi_full.x, roi_in->x);
+      iroi_full.y = _max(iroi_full.y, roi_in->y);
+      iroi_full.width = _min(iroi_full.width, roi_in->width + roi_in->x - iroi_full.x);
+      iroi_full.height = _min(iroi_full.height, roi_in->height + roi_in->y - iroi_full.y);
 
 
-    //_print_roi(&iroi_full, "tile iroi_full final");
-    //_print_roi(&oroi_full, "tile oroi_full final");
+      //_print_roi(&iroi_full, "tile iroi_full final");
+      //_print_roi(&oroi_full, "tile oroi_full final");
 
-    /* offsets of tile into ivoid and ovoid */
-    size_t ioffs = (iroi_full.y - roi_in->y)*ipitch + (iroi_full.x - roi_in->x)*in_bpp;
-    size_t ooffs = (oroi_good.y - roi_out->y)*opitch + (oroi_good.x - roi_out->x)*out_bpp;
+      /* offsets of tile into ivoid and ovoid */
+      size_t ioffs = (iroi_full.y - roi_in->y)*ipitch + (iroi_full.x - roi_in->x)*in_bpp;
+      size_t ooffs = (oroi_good.y - roi_out->y)*opitch + (oroi_good.x - roi_out->x)*out_bpp;
 
-    dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, iroi_full.width, iroi_full.height, iroi_full.x, iroi_full.y);
+      dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, iroi_full.width, iroi_full.height, iroi_full.x, iroi_full.y);
 
 
-    /* prepare input tile buffer */
-    input = dt_alloc_align(64, iroi_full.width*iroi_full.height*in_bpp);
-    if(input == NULL)
-    {
-      dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] could not alloc input buffer for module '%s'\n", self->op);
-      goto error;
-    }
-    output = dt_alloc_align(64, oroi_full.width*oroi_full.height*out_bpp);
-    if(output == NULL)
-    {
-      dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] could not alloc output buffer for module '%s'\n", self->op);
-      goto error;
-    }
+      /* prepare input tile buffer */
+      input = dt_alloc_align(64, iroi_full.width*iroi_full.height*in_bpp);
+      if(input == NULL)
+      {
+        dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] could not alloc input buffer for module '%s'\n", self->op);
+        goto error;
+      }
+      output = dt_alloc_align(64, oroi_full.width*oroi_full.height*out_bpp);
+      if(output == NULL)
+      {
+        dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] could not alloc output buffer for module '%s'\n", self->op);
+        goto error;
+      }
 
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(input,ivoid,ioffs,iroi_full) schedule(static)
+      #pragma omp parallel for default(none) shared(input,ivoid,ioffs,iroi_full) schedule(static)
 #endif
-    for(int j=0; j<iroi_full.height; j++)
-      memcpy((char *)input+j*iroi_full.width*in_bpp, (char *)ivoid+ioffs+j*ipitch, iroi_full.width*in_bpp);
+      for(int j=0; j<iroi_full.height; j++)
+        memcpy((char *)input+j*iroi_full.width*in_bpp, (char *)ivoid+ioffs+j*ipitch, iroi_full.width*in_bpp);
 
-    /* take original processed_maximum as starting point */
-    for(int k=0; k<3; k++)
-      piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
+      /* take original processed_maximum as starting point */
+      for(int k=0; k<3; k++)
+        piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
 
-    /* call process() of module */
-    self->process(self, piece, input, output, &iroi_full, &oroi_full);
+      /* call process() of module */
+      self->process(self, piece, input, output, &iroi_full, &oroi_full);
 
-    /* aggregate resulting processed_maximum */
-    /* TODO: check if there really can be differences between tiles and take
-             appropriate action (calculate minimum, maximum, average, ...?) */
-    for(int k=0; k<3; k++)
-    {
-      if(tx+ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->processed_maximum[k]) > 1.0e-6f)
-        dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] processed_maximum[%d] differs between tiles in module '%s'\n", k, self->op);
-      processed_maximum_new[k] = piece->pipe->processed_maximum[k];
-    }
+      /* aggregate resulting processed_maximum */
+      /* TODO: check if there really can be differences between tiles and take
+               appropriate action (calculate minimum, maximum, average, ...?) */
+      for(int k=0; k<3; k++)
+      {
+        if(tx+ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->processed_maximum[k]) > 1.0e-6f)
+          dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] processed_maximum[%d] differs between tiles in module '%s'\n", k, self->op);
+        processed_maximum_new[k] = piece->pipe->processed_maximum[k];
+      }
 
-    /* copy "good" part of tile to output buffer */
-    const int origin_x = oroi_good.x - oroi_full.x;
-    const int origin_y = oroi_good.y - oroi_full.y;
+      /* copy "good" part of tile to output buffer */
+      const int origin_x = oroi_good.x - oroi_full.x;
+      const int origin_y = oroi_good.y - oroi_full.y;
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(ovoid,ooffs,output,oroi_good,oroi_full) schedule(static)
+      #pragma omp parallel for default(none) shared(ovoid,ooffs,output,oroi_good,oroi_full) schedule(static)
 #endif
-    for(int j=0; j<oroi_good.height; j++)
-      memcpy((char *)ovoid+ooffs+j*opitch, (char *)output+((j+origin_y)*oroi_full.width+origin_x)*out_bpp, oroi_good.width*out_bpp);
+      for(int j=0; j<oroi_good.height; j++)
+        memcpy((char *)ovoid+ooffs+j*opitch, (char *)output+((j+origin_y)*oroi_full.width+origin_x)*out_bpp, oroi_good.width*out_bpp);
 
-    free(input);
-    free(output);
-    input = output = NULL;
-  }
+      free(input);
+      free(output);
+      input = output = NULL;
+    }
 
   /* copy back final processed_maximum */
   for(int k=0; k<3; k++)
@@ -1165,7 +1165,7 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
     const float scale = singlebuffer/(width*height*max_bpp*maxbuf);
 
     if(width < height && scale >= 0.333f)
-    { 
+    {
       height = floorf(height * scale);
     }
     else if(height <= width && scale >= 0.333f)
@@ -1241,89 +1241,89 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
 
   /* iterate over tiles */
   for(int tx=0; tx<tiles_x; tx++)
-    for(int ty=0; ty<tiles_y; ty++)  
-  {
-    piece->pipe->tiling = 1;
-
-    size_t wd = tx * tile_wd + width > roi_in->width  ? roi_in->width - tx * tile_wd : width;
-    size_t ht = ty * tile_ht + height > roi_in->height ? roi_in->height- ty * tile_ht : height;
-
-    /* no need to process (end)tiles that are smaller than overlap */
-    if((wd <= overlap && tx > 0) || (ht <= overlap && ty > 0)) continue;
-
-    /* origin and region of effective part of tile, which we want to store later */
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { wd, ht, 1 };
-
-    /* roi_in and roi_out for process_cl on subbuffer */
-    dt_iop_roi_t iroi = { roi_in->x+tx*tile_wd, roi_in->y+ty*tile_ht, wd, ht, roi_in->scale };
-    dt_iop_roi_t oroi = { roi_out->x+tx*tile_wd, roi_out->y+ty*tile_ht, wd, ht, roi_out->scale };
-
-
-    /* offsets of tile into ivoid and ovoid */
-    size_t ioffs = (ty * tile_ht)*ipitch + (tx * tile_wd)*in_bpp;
-    size_t ooffs = (ty * tile_ht)*opitch + (tx * tile_wd)*out_bpp;
-
-
-    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_ptp] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, wd, ht, tx*tile_wd, ty*tile_ht);
-
-    /* get input and output buffers */
-    input = dt_opencl_alloc_device(devid, wd, ht, in_bpp);
-    if(input == NULL) goto error;
-    output = dt_opencl_alloc_device(devid, wd, ht, out_bpp);
-    if(output == NULL) goto error;
-
-    /* non-blocking memory transfer: host input buffer -> opencl/device tile */
-    err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, origin, region, ipitch, CL_FALSE);
-    if(err != CL_SUCCESS) goto error;
-
-    /* take original processed_maximum as starting point */
-    for(int k=0; k<3; k++)
-      piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
-
-    /* call process_cl of module */
-    if(!self->process_cl(self, piece, input, output, &iroi, &oroi)) goto error;
-
-    /* aggregate resulting processed_maximum */
-    /* TODO: check if there really can be differences between tiles and take
-             appropriate action (calculate minimum, maximum, average, ...?) */
-    for(int k=0; k<3; k++)
+    for(int ty=0; ty<tiles_y; ty++)
     {
-      if(tx+ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->processed_maximum[k]) > 1.0e-6f)
-        dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_ptp] processed_maximum[%d] differs between tiles in module '%s'\n", k, self->op);
-      processed_maximum_new[k] = piece->pipe->processed_maximum[k];
+      piece->pipe->tiling = 1;
+
+      size_t wd = tx * tile_wd + width > roi_in->width  ? roi_in->width - tx * tile_wd : width;
+      size_t ht = ty * tile_ht + height > roi_in->height ? roi_in->height- ty * tile_ht : height;
+
+      /* no need to process (end)tiles that are smaller than overlap */
+      if((wd <= overlap && tx > 0) || (ht <= overlap && ty > 0)) continue;
+
+      /* origin and region of effective part of tile, which we want to store later */
+      size_t origin[] = { 0, 0, 0 };
+      size_t region[] = { wd, ht, 1 };
+
+      /* roi_in and roi_out for process_cl on subbuffer */
+      dt_iop_roi_t iroi = { roi_in->x+tx*tile_wd, roi_in->y+ty*tile_ht, wd, ht, roi_in->scale };
+      dt_iop_roi_t oroi = { roi_out->x+tx*tile_wd, roi_out->y+ty*tile_ht, wd, ht, roi_out->scale };
+
+
+      /* offsets of tile into ivoid and ovoid */
+      size_t ioffs = (ty * tile_ht)*ipitch + (tx * tile_wd)*in_bpp;
+      size_t ooffs = (ty * tile_ht)*opitch + (tx * tile_wd)*out_bpp;
+
+
+      dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_ptp] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, wd, ht, tx*tile_wd, ty*tile_ht);
+
+      /* get input and output buffers */
+      input = dt_opencl_alloc_device(devid, wd, ht, in_bpp);
+      if(input == NULL) goto error;
+      output = dt_opencl_alloc_device(devid, wd, ht, out_bpp);
+      if(output == NULL) goto error;
+
+      /* non-blocking memory transfer: host input buffer -> opencl/device tile */
+      err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, origin, region, ipitch, CL_FALSE);
+      if(err != CL_SUCCESS) goto error;
+
+      /* take original processed_maximum as starting point */
+      for(int k=0; k<3; k++)
+        piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
+
+      /* call process_cl of module */
+      if(!self->process_cl(self, piece, input, output, &iroi, &oroi)) goto error;
+
+      /* aggregate resulting processed_maximum */
+      /* TODO: check if there really can be differences between tiles and take
+               appropriate action (calculate minimum, maximum, average, ...?) */
+      for(int k=0; k<3; k++)
+      {
+        if(tx+ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->processed_maximum[k]) > 1.0e-6f)
+          dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_ptp] processed_maximum[%d] differs between tiles in module '%s'\n", k, self->op);
+        processed_maximum_new[k] = piece->pipe->processed_maximum[k];
+      }
+
+      /* correct origin and region of tile for overlap.
+         makes sure that we only copy back the "good" part. */
+      if(tx > 0)
+      {
+        origin[0] += overlap;
+        region[0] -= overlap;
+        ooffs += overlap*out_bpp;
+      }
+      if(ty > 0)
+      {
+        origin[1] += overlap;
+        region[1] -= overlap;
+        ooffs += overlap*opitch;
+      }
+
+
+      /* non-blocking memory transfer: opencl/device tile -> host output buffer */
+      err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, origin, region, opitch, CL_FALSE);
+      if(err != CL_SUCCESS) goto error;
+
+      /* release input and output buffers */
+      dt_opencl_release_mem_object(input);
+      input = NULL;
+      dt_opencl_release_mem_object(output);
+      output = NULL;
+
+      /* block until opencl queue has finished to free all used event handlers. needed here as with
+         some OpenCL implementations we would otherwise run out of them */
+      dt_opencl_finish(devid);
     }
-
-    /* correct origin and region of tile for overlap.
-       makes sure that we only copy back the "good" part. */
-    if(tx > 0)
-    {
-      origin[0] += overlap;
-      region[0] -= overlap;
-      ooffs += overlap*out_bpp;
-    }
-    if(ty > 0)
-    {
-      origin[1] += overlap;
-      region[1] -= overlap;
-      ooffs += overlap*opitch;
-    }
-
-
-    /* non-blocking memory transfer: opencl/device tile -> host output buffer */
-    err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, origin, region, opitch, CL_FALSE);
-    if(err != CL_SUCCESS) goto error;
-
-    /* release input and output buffers */
-    dt_opencl_release_mem_object(input);
-    input = NULL;
-    dt_opencl_release_mem_object(output);
-    output = NULL;
-
-    /* block until opencl queue has finished to free all used event handlers. needed here as with
-       some OpenCL implementations we would otherwise run out of them */
-    dt_opencl_finish(devid);
-  }
 
   /* copy back final processed_maximum */
   for(int k=0; k<3; k++)
@@ -1395,7 +1395,7 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
     const float scale = singlebuffer/(width*height*max_bpp*maxbuf);
 
     if(width < height && scale >= 0.333f)
-    { 
+    {
       height = floorf(height * scale);
     }
     else if(height <= width && scale >= 0.333f)
@@ -1472,140 +1472,140 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
 
   /* iterate over tiles */
   for(int tx=0; tx<tiles_x; tx++)
-    for(int ty=0; ty<tiles_y; ty++)  
-  {
-    piece->pipe->tiling = 1;
-
-    /* the output dimensions of the good part of this specific tile */
-    size_t wd = (tx + 1) * tile_wd > roi_out->width  ? roi_out->width - tx * tile_wd : tile_wd;
-    size_t ht = (ty + 1) * tile_ht > roi_out->height ? roi_out->height- ty * tile_ht : tile_ht;
-
-    /* roi_in and roi_out of good part: oroi_good easy to calculate based on number and dimension of tile.
-       iroi_good is calculated by modify_roi_in() of respective module */
-    dt_iop_roi_t iroi_good = { roi_in->x+tx*tile_wd, roi_in->y+ty*tile_ht, wd, ht, roi_in->scale };
-    dt_iop_roi_t oroi_good = { roi_out->x+tx*tile_wd, roi_out->y+ty*tile_ht, wd, ht, roi_out->scale };
-
-    self->modify_roi_in(self, piece, &oroi_good, &iroi_good);
-
-    /* clamp iroi_good to not exceed roi_in */
-    iroi_good.x = _max(iroi_good.x, roi_in->x);
-    iroi_good.y = _max(iroi_good.y, roi_in->y);
-    iroi_good.width = _min(iroi_good.width, roi_in->width + roi_in->x - iroi_good.x);
-    iroi_good.height = _min(iroi_good.height, roi_in->height + roi_in->y - iroi_good.y);
-
-    //_print_roi(&iroi_good, "tile iroi_good");
-    //_print_roi(&oroi_good, "tile oroi_good");
-
-    /* now we need to calculate full region of this tile: increase input roi to take care of overlap requirements 
-       and alignment and add additional delta to correct for possible rounding errors in modify_roi_in() 
-       -> generates first estimate of iroi_full */
-    const int x_in = iroi_good.x;
-    const int y_in = iroi_good.y;
-    const int width_in = iroi_good.width;
-    const int height_in = iroi_good.height;
-    const int new_x_in = _max(_align_down(x_in - overlap_in - delta, xyalign), roi_in->x);
-    const int new_y_in = _max(_align_down(y_in - overlap_in - delta, xyalign), roi_in->y);
-    const int new_width_in = _min(_align_up(width_in + overlap_in + delta + (x_in - new_x_in), xyalign), roi_in->width + roi_in->x - new_x_in);
-    const int new_height_in = _min(_align_up(height_in + overlap_in + delta + (y_in - new_y_in), xyalign), roi_in->height + roi_in->y - new_y_in);
-
-    /* iroi_full based on calculated numbers and dimensions. oroi_full just set as a starting point for the following iterative search */
-    dt_iop_roi_t iroi_full = { new_x_in, new_y_in, new_width_in, new_height_in, iroi_good.scale };
-    dt_iop_roi_t oroi_full = oroi_good;  // a good starting point for optimization
-
-    //_print_roi(&iroi_full, "tile iroi_full before optimization");
-    //_print_roi(&oroi_full, "tile oroi_full before optimization");
-
-    /* try to find a matching oroi_full */
-    if (!_fit_output_to_input_roi(self, piece, &iroi_full, &oroi_full, delta, 10))
+    for(int ty=0; ty<tiles_y; ty++)
     {
-      dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_roi] can not handle requested roi's. tiling for module '%s' not possible.\n", self->op);
-      goto error;
+      piece->pipe->tiling = 1;
+
+      /* the output dimensions of the good part of this specific tile */
+      size_t wd = (tx + 1) * tile_wd > roi_out->width  ? roi_out->width - tx * tile_wd : tile_wd;
+      size_t ht = (ty + 1) * tile_ht > roi_out->height ? roi_out->height- ty * tile_ht : tile_ht;
+
+      /* roi_in and roi_out of good part: oroi_good easy to calculate based on number and dimension of tile.
+         iroi_good is calculated by modify_roi_in() of respective module */
+      dt_iop_roi_t iroi_good = { roi_in->x+tx*tile_wd, roi_in->y+ty*tile_ht, wd, ht, roi_in->scale };
+      dt_iop_roi_t oroi_good = { roi_out->x+tx*tile_wd, roi_out->y+ty*tile_ht, wd, ht, roi_out->scale };
+
+      self->modify_roi_in(self, piece, &oroi_good, &iroi_good);
+
+      /* clamp iroi_good to not exceed roi_in */
+      iroi_good.x = _max(iroi_good.x, roi_in->x);
+      iroi_good.y = _max(iroi_good.y, roi_in->y);
+      iroi_good.width = _min(iroi_good.width, roi_in->width + roi_in->x - iroi_good.x);
+      iroi_good.height = _min(iroi_good.height, roi_in->height + roi_in->y - iroi_good.y);
+
+      //_print_roi(&iroi_good, "tile iroi_good");
+      //_print_roi(&oroi_good, "tile oroi_good");
+
+      /* now we need to calculate full region of this tile: increase input roi to take care of overlap requirements
+         and alignment and add additional delta to correct for possible rounding errors in modify_roi_in()
+         -> generates first estimate of iroi_full */
+      const int x_in = iroi_good.x;
+      const int y_in = iroi_good.y;
+      const int width_in = iroi_good.width;
+      const int height_in = iroi_good.height;
+      const int new_x_in = _max(_align_down(x_in - overlap_in - delta, xyalign), roi_in->x);
+      const int new_y_in = _max(_align_down(y_in - overlap_in - delta, xyalign), roi_in->y);
+      const int new_width_in = _min(_align_up(width_in + overlap_in + delta + (x_in - new_x_in), xyalign), roi_in->width + roi_in->x - new_x_in);
+      const int new_height_in = _min(_align_up(height_in + overlap_in + delta + (y_in - new_y_in), xyalign), roi_in->height + roi_in->y - new_y_in);
+
+      /* iroi_full based on calculated numbers and dimensions. oroi_full just set as a starting point for the following iterative search */
+      dt_iop_roi_t iroi_full = { new_x_in, new_y_in, new_width_in, new_height_in, iroi_good.scale };
+      dt_iop_roi_t oroi_full = oroi_good;  // a good starting point for optimization
+
+      //_print_roi(&iroi_full, "tile iroi_full before optimization");
+      //_print_roi(&oroi_full, "tile oroi_full before optimization");
+
+      /* try to find a matching oroi_full */
+      if (!_fit_output_to_input_roi(self, piece, &iroi_full, &oroi_full, delta, 10))
+      {
+        dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_roi] can not handle requested roi's. tiling for module '%s' not possible.\n", self->op);
+        goto error;
+      }
+
+
+      /* make sure that oroi_full at least covers the range of oroi_good.
+         this step is needed due to the possibility of rounding errors */
+      oroi_full.x = _min(oroi_full.x, oroi_good.x);
+      oroi_full.y = _min(oroi_full.y, oroi_good.y);
+      oroi_full.width = _max(oroi_full.width, oroi_good.x + oroi_good.width - oroi_full.x);
+      oroi_full.height = _max(oroi_full.height, oroi_good.y + oroi_good.height - oroi_full.y);
+
+      /* clamp oroi_full to not exceed roi_out */
+      oroi_full.x = _max(oroi_full.x, roi_out->x);
+      oroi_full.y = _max(oroi_full.y, roi_out->y);
+      oroi_full.width = _min(oroi_full.width, roi_out->width + roi_out->x - oroi_full.x);
+      oroi_full.height = _min(oroi_full.height, roi_out->height + roi_out->y - oroi_full.y);
+
+
+      /* calculate final iroi_full */
+      self->modify_roi_in(self, piece, &oroi_full, &iroi_full);
+
+      /* clamp iroi_full to not exceed roi_in */
+      iroi_full.x = _max(iroi_full.x, roi_in->x);
+      iroi_full.y = _max(iroi_full.y, roi_in->y);
+      iroi_full.width = _min(iroi_full.width, roi_in->width + roi_in->x - iroi_full.x);
+      iroi_full.height = _min(iroi_full.height, roi_in->height + roi_in->y - iroi_full.y);
+
+      //_print_roi(&iroi_full, "tile iroi_full");
+      //_print_roi(&oroi_full, "tile oroi_full");
+
+      /* offsets of tile into ivoid and ovoid */
+      size_t ioffs = (iroi_full.y - roi_in->y)*ipitch + (iroi_full.x - roi_in->x)*in_bpp;
+      size_t ooffs = (oroi_good.y - roi_out->y)*opitch + (oroi_good.x - roi_out->x)*out_bpp;
+
+      dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_roi] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, iroi_full.width, iroi_full.height, iroi_full.x, iroi_full.y);
+
+      /* origin and region of full input tile */
+      size_t iorigin[] = { 0, 0, 0 };
+      size_t iregion[] = { iroi_full.width, iroi_full.height, 1 };
+
+      /* origin and region of good part of output tile */
+      size_t oorigin[] = { oroi_good.x - oroi_full.x, oroi_good.y - oroi_full.y, 0 };
+      size_t oregion[] = { oroi_good.width, oroi_good.height, 1 };
+
+      /* get opencl input and output buffers */
+      input = dt_opencl_alloc_device(devid, iroi_full.width, iroi_full.height, in_bpp);
+      if(input == NULL) goto error;
+
+      output = dt_opencl_alloc_device(devid, oroi_full.width, oroi_full.height, out_bpp);
+      if(output == NULL) goto error;
+
+      /* non-blocking memory transfer: host input buffer -> opencl/device tile */
+      err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, iorigin, iregion, ipitch, CL_FALSE);
+      if(err != CL_SUCCESS) goto error;
+
+      /* take original processed_maximum as starting point */
+      for(int k=0; k<3; k++)
+        piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
+
+      /* call process_cl of module */
+      if(!self->process_cl(self, piece, input, output, &iroi_full, &oroi_full)) goto error;
+
+      /* aggregate resulting processed_maximum */
+      /* TODO: check if there really can be differences between tiles and take
+               appropriate action (calculate minimum, maximum, average, ...?) */
+      for(int k=0; k<3; k++)
+      {
+        if(tx+ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->processed_maximum[k]) > 1.0e-6f)
+          dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_roi] processed_maximum[%d] differs between tiles in module '%s'\n", k, self->op);
+        processed_maximum_new[k] = piece->pipe->processed_maximum[k];
+      }
+
+      /* non-blocking memory transfer: opencl/device tile -> host output buffer */
+      err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, oorigin, oregion, opitch, CL_FALSE);
+      if(err != CL_SUCCESS) goto error;
+
+      /* release input and output buffers */
+      dt_opencl_release_mem_object(input);
+      input = NULL;
+      dt_opencl_release_mem_object(output);
+      output = NULL;
+
+      /* block until opencl queue has finished to free all used event handlers. needed here as with
+         some OpenCL implementations we would otherwise run out of them */
+      dt_opencl_finish(devid);
+
     }
-
-
-    /* make sure that oroi_full at least covers the range of oroi_good.
-       this step is needed due to the possibility of rounding errors */
-    oroi_full.x = _min(oroi_full.x, oroi_good.x);
-    oroi_full.y = _min(oroi_full.y, oroi_good.y);
-    oroi_full.width = _max(oroi_full.width, oroi_good.x + oroi_good.width - oroi_full.x);
-    oroi_full.height = _max(oroi_full.height, oroi_good.y + oroi_good.height - oroi_full.y);
-
-    /* clamp oroi_full to not exceed roi_out */
-    oroi_full.x = _max(oroi_full.x, roi_out->x);
-    oroi_full.y = _max(oroi_full.y, roi_out->y);
-    oroi_full.width = _min(oroi_full.width, roi_out->width + roi_out->x - oroi_full.x);
-    oroi_full.height = _min(oroi_full.height, roi_out->height + roi_out->y - oroi_full.y);
-
-
-    /* calculate final iroi_full */
-    self->modify_roi_in(self, piece, &oroi_full, &iroi_full);
-
-    /* clamp iroi_full to not exceed roi_in */
-    iroi_full.x = _max(iroi_full.x, roi_in->x);
-    iroi_full.y = _max(iroi_full.y, roi_in->y);
-    iroi_full.width = _min(iroi_full.width, roi_in->width + roi_in->x - iroi_full.x);
-    iroi_full.height = _min(iroi_full.height, roi_in->height + roi_in->y - iroi_full.y);
-
-    //_print_roi(&iroi_full, "tile iroi_full");
-    //_print_roi(&oroi_full, "tile oroi_full");
-
-    /* offsets of tile into ivoid and ovoid */
-    size_t ioffs = (iroi_full.y - roi_in->y)*ipitch + (iroi_full.x - roi_in->x)*in_bpp;
-    size_t ooffs = (oroi_good.y - roi_out->y)*opitch + (oroi_good.x - roi_out->x)*out_bpp;
-
-    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_roi] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, iroi_full.width, iroi_full.height, iroi_full.x, iroi_full.y);
-
-    /* origin and region of full input tile */
-    size_t iorigin[] = { 0, 0, 0 };
-    size_t iregion[] = { iroi_full.width, iroi_full.height, 1 };
-
-    /* origin and region of good part of output tile */
-    size_t oorigin[] = { oroi_good.x - oroi_full.x, oroi_good.y - oroi_full.y, 0 };
-    size_t oregion[] = { oroi_good.width, oroi_good.height, 1 };
-
-    /* get opencl input and output buffers */
-    input = dt_opencl_alloc_device(devid, iroi_full.width, iroi_full.height, in_bpp);
-    if(input == NULL) goto error;
-
-    output = dt_opencl_alloc_device(devid, oroi_full.width, oroi_full.height, out_bpp);
-    if(output == NULL) goto error;
-
-    /* non-blocking memory transfer: host input buffer -> opencl/device tile */
-    err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, iorigin, iregion, ipitch, CL_FALSE);
-    if(err != CL_SUCCESS) goto error;
-
-    /* take original processed_maximum as starting point */
-    for(int k=0; k<3; k++)
-      piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
-
-    /* call process_cl of module */
-    if(!self->process_cl(self, piece, input, output, &iroi_full, &oroi_full)) goto error;
-
-    /* aggregate resulting processed_maximum */
-    /* TODO: check if there really can be differences between tiles and take
-             appropriate action (calculate minimum, maximum, average, ...?) */
-    for(int k=0; k<3; k++)
-    {
-      if(tx+ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->processed_maximum[k]) > 1.0e-6f)
-        dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_roi] processed_maximum[%d] differs between tiles in module '%s'\n", k, self->op);
-      processed_maximum_new[k] = piece->pipe->processed_maximum[k];
-    }
-
-    /* non-blocking memory transfer: opencl/device tile -> host output buffer */
-    err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, oorigin, oregion, opitch, CL_FALSE);
-    if(err != CL_SUCCESS) goto error;
-
-    /* release input and output buffers */
-    dt_opencl_release_mem_object(input);
-    input = NULL;
-    dt_opencl_release_mem_object(output);
-    output = NULL;
-
-    /* block until opencl queue has finished to free all used event handlers. needed here as with
-       some OpenCL implementations we would otherwise run out of them */
-    dt_opencl_finish(devid);
-
-  }
 
   /* copy back final processed_maximum */
   for(int k=0; k<3; k++)
@@ -1669,7 +1669,7 @@ void default_tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixel
   return;
 }
 
-int 
+int
 dt_tiling_piece_fits_host_memory(const size_t width, const size_t height, const unsigned bpp, const float factor, const size_t overhead)
 {
   static int host_memory_limit = -1;

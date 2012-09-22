@@ -38,35 +38,35 @@ struct dt_imageio_module_format_t;
 struct dt_imageio_module_data_t;
 int
 dt_imageio_export(
-    const uint32_t imgid,
-    const char *filename,
-    struct dt_imageio_module_format_t *format,
-    struct dt_imageio_module_data_t *format_params);
+  const uint32_t imgid,
+  const char *filename,
+  struct dt_imageio_module_format_t *format,
+  struct dt_imageio_module_data_t *format_params);
 int
 dt_imageio_export_with_flags(
-    const uint32_t                     imgid,
-    const char                        *filename,
-    struct dt_imageio_module_format_t *format,
-    struct dt_imageio_module_data_t   *format_params,
-    const int32_t                      ignore_exif,
-    const int32_t                      display_byteorder,
-    const int32_t                      high_quality,
-    const int32_t                      thumbnail_export);
+  const uint32_t                     imgid,
+  const char                        *filename,
+  struct dt_imageio_module_format_t *format,
+  struct dt_imageio_module_data_t   *format_params,
+  const int32_t                      ignore_exif,
+  const int32_t                      display_byteorder,
+  const int32_t                      high_quality,
+  const int32_t                      thumbnail_export);
 
 int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int orientation);
 
 // general, efficient buffer flipping function using memcopies
 void
 dt_imageio_flip_buffers(
-    char *out,
-    const char *in,
-    const size_t bpp,         // bytes per pixel
-    const int wd,
-    const int ht,
-    const int fwd,
-    const int fht,
-    const int stride,
-    const int orientation);
+  char *out,
+  const char *in,
+  const size_t bpp,         // bytes per pixel
+  const int wd,
+  const int ht,
+  const int fwd,
+  const int fht,
+  const int stride,
+  const int orientation);
 
 void dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const float black, const float white, const int ch, const int wd, const int ht, const int fwd, const int fht, const int stride, const int orientation);
 void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float black, const float white, const int ch, const int wd, const int ht, const int fwd, const int fht, const int stride, const int orientation);

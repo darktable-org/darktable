@@ -49,7 +49,7 @@ const char* name()
 
 uint32_t views()
 {
-  return DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING;
+  return DT_VIEW_ALL;
 }
 
 uint32_t container()
@@ -57,7 +57,7 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_TOP_LEFT;
 }
 
-int expandable() 
+int expandable()
 {
   return 0;
 }
@@ -85,7 +85,7 @@ void gui_init(dt_lib_module_t *self)
                     G_CALLBACK (_lib_darktable_expose_callback), self);
   g_signal_connect (G_OBJECT (self->widget), "button-press-event",
                     G_CALLBACK (_lib_darktable_button_press_callback), self);
-  
+
   /* set size of draw area */
   gtk_widget_set_size_request(self->widget, 220, 48);
 
@@ -114,10 +114,10 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   /* get the current style */
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
   if(!style) style = gtk_rc_get_style(widget);
-  
+
   cairo_t *cr = gdk_cairo_create(widget->window);
 
-  /* fill background */ 
+  /* fill background */
   cairo_set_source_rgb(cr, style->bg[0].red/65535.0, style->bg[0].green/65535.0, style->bg[0].blue/65535.0);
   cairo_paint(cr);
 
@@ -129,11 +129,11 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
 
   /* create a pango layout and print fancy  name/version string */
   PangoLayout *layout;
-  layout = gtk_widget_create_pango_layout (widget,NULL); 
+  layout = gtk_widget_create_pango_layout (widget,NULL);
   pango_font_description_set_weight (style->font_desc, PANGO_WEIGHT_BOLD);
   pango_font_description_set_absolute_size (style->font_desc, 25 * PANGO_SCALE);
-  pango_layout_set_font_description (layout,style->font_desc); 
-  
+  pango_layout_set_font_description (layout,style->font_desc);
+
   pango_layout_set_text (layout,PACKAGE_NAME,-1);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
   cairo_move_to (cr, 42.0, 5.0);
@@ -150,7 +150,7 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   /* cleanup */
   g_object_unref (layout);
   cairo_destroy(cr);
-    
+
   return TRUE;
 }
 
@@ -171,57 +171,57 @@ static void _lib_darktable_show_about_dialog()
   gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://www.darktable.org/");
   gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), "darktable");
   const char *authors[] =
-    {
-      _("* developers *"),
-      "Henrik Andersson",
-      "Johannes Hanika",
-      "Tobias Ellinghaus",
-      "",
-      _("* ubuntu packaging, color management, video tutorials *"),
-      "Pascal de Bruijn",
-      "",
-      _("* opencl pipeline: *"),
-      "Ulrich Pegelow",
-      "",
-      _("* networking, battle testing, translation expert *"),
-      "Alexandre Prokoudine",
-      "",
-      _("* contributors *"),
-      "Alexandre Prokoudine",
-      "Alexey Dokuchaev",
-      "Ammon Riley",
-      "Antony Dovgal",
-      "Boucman",
-      "Brian Teague",
-      "Bruce Guenter",
-      "Cherrot Luo",
-      "Denis Cheremisov",
-      "Edouard Gomez",
-      "Edward Herr",
-      "František Šidák",
-      "Ger Siemerink",
-      "Gianluigi Calcaterra",
-      "James C. McPherson",
-      "Joao Trindade",
-      "Jose Carlos Garcia Sogo",
-      "Michał Prędotka",
-      "Moritz Lipp",
-      "Olivier Tribout",
-      "Pascal de Bruijn",
-      "Petr Styblo",
-      "Robert Bieber",
-      "Rostyslav Pidgornyi",
-      "Sergey Pavlov",
-      "Simon Spannagel",
-      "Terry Jeffress",
-      "Tim Harder",
-      "Tom Vanderpoel",
-      "Ulrich Pegelow",
-      "jan",
-      "maigl",
-      "And all those of you that made previous releases possible",
+  {
+    _("* developers *"),
+    "Henrik Andersson",
+    "Johannes Hanika",
+    "Tobias Ellinghaus",
+    "",
+    _("* ubuntu packaging, color management, video tutorials *"),
+    "Pascal de Bruijn",
+    "",
+    _("* opencl pipeline: *"),
+    "Ulrich Pegelow",
+    "",
+    _("* networking, battle testing, translation expert *"),
+    "Alexandre Prokoudine",
+    "",
+    _("* contributors *"),
+    "Alexandre Prokoudine",
+    "Alexey Dokuchaev",
+    "Ammon Riley",
+    "Antony Dovgal",
+    "Boucman",
+    "Brian Teague",
+    "Bruce Guenter",
+    "Cherrot Luo",
+    "Denis Cheremisov",
+    "Edouard Gomez",
+    "Edward Herr",
+    "František Šidák",
+    "Ger Siemerink",
+    "Gianluigi Calcaterra",
+    "James C. McPherson",
+    "Joao Trindade",
+    "Jose Carlos Garcia Sogo",
+    "Michał Prędotka",
+    "Moritz Lipp",
+    "Olivier Tribout",
+    "Pascal de Bruijn",
+    "Petr Styblo",
+    "Robert Bieber",
+    "Rostyslav Pidgornyi",
+    "Sergey Pavlov",
+    "Simon Spannagel",
+    "Terry Jeffress",
+    "Tim Harder",
+    "Tom Vanderpoel",
+    "Ulrich Pegelow",
+    "jan",
+    "maigl",
+    "And all those of you that made previous releases possible",
     NULL
-    };
+  };
   gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
 
   gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));

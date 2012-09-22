@@ -85,7 +85,7 @@ typedef struct dt_lib_module_t
   /** get the container which the module should be placed in */
   uint32_t (*container)   ();
   /** check if module should use a expander or not, default implementation
-      will make the module expandable and storing the expanding state, 
+      will make the module expandable and storing the expanding state,
       if not the module will always be shown without the expander. */
   int (*expandable) ();
 

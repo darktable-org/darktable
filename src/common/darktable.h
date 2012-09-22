@@ -21,12 +21,13 @@
 // just to be sure. the build system should set this for us already:
 #if defined __DragonFly__ || defined __FreeBSD__ || \
     defined __NetBSD__ || defined __OpenBSD__
-  #define _WITH_DPRINTF
+#define _WITH_DPRINTF
+#define _WITH_GETLINE
 #elif !defined _XOPEN_SOURCE
-  #define _XOPEN_SOURCE 700 // for localtime_r and dprintf
+#define _XOPEN_SOURCE 700 // for localtime_r and dprintf
 #endif
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include "common/dtpthread.h"
 #include "common/database.h"
@@ -307,10 +308,10 @@ static inline void dt_print_mem_usage()
   fclose(f);
 
   fprintf(stderr, "[memory] max address space (vmpeak): %15s"
-                  "[memory] cur address space (vmsize): %15s"
-                  "[memory] max used memory   (vmhwm ): %15s"
-                  "[memory] cur used memory   (vmrss ): %15s",
-                  vmpeak, vmsize, vmhwm, vmrss);
+          "[memory] cur address space (vmsize): %15s"
+          "[memory] max used memory   (vmhwm ): %15s"
+          "[memory] cur used memory   (vmrss ): %15s",
+          vmpeak, vmsize, vmhwm, vmrss);
 
 #elif defined(__APPLE__)
   struct task_basic_info t_info;
@@ -326,11 +327,11 @@ static inline void dt_print_mem_usage()
 
   // Report in kB, to match output of /proc on Linux.
   fprintf(stderr, "[memory] max address space (vmpeak): %15s\n"
-                  "[memory] cur address space (vmsize): %12llu kB\n"
-                  "[memory] max used memory   (vmhwm ): %15s\n"
-                  "[memory] cur used memory   (vmrss ): %12llu kB\n",
-                  "unknown", (uint64_t)t_info.virtual_size / 1024,
-                  "unknown", (uint64_t)t_info.resident_size / 1024);
+          "[memory] cur address space (vmsize): %12llu kB\n"
+          "[memory] max used memory   (vmhwm ): %15s\n"
+          "[memory] cur used memory   (vmrss ): %12llu kB\n",
+          "unknown", (uint64_t)t_info.virtual_size / 1024,
+          "unknown", (uint64_t)t_info.resident_size / 1024);
 #else
   fprintf(stderr, "dt_print_mem_usage() currently unsupported on this platform\n");
 #endif

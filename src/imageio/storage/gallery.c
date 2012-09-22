@@ -316,37 +316,37 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     char prev[256];
     sprintf(prev, "img_%d.html", (num==1)?total:num-1);
 
-/* Becomes unecessary with the Lightbox image viewer overlay
+    /* Becomes unecessary with the Lightbox image viewer overlay
 
-    FILE* subfile = fopen(subfilename, "wb");
-    fprintf(subfile,
-          "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
-          "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
-          "  <head>\n"
-          "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n"
-          "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\" />\n"
-          "    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\" />\n"
-          "    <title>%s</title>\n"
-          "  </head>\n"
-          "  <body>\n"
-          "    <div class=\"title\"><a href=\"index.html\">%s</a></div>\n"
-          "    <div class=\"page\">\n"
-          "      <div style=\"width: 692px; max-width: 692px; height: 10px;\">\n"
-          "        <a style=\"float: left;\" href=\"%s\"><h1>prev</h1></a>\n" 
-          "        <a style=\"float: right;\"href=\"%s\"><h1>next</h1></a>\n"
-          "      </div>\n"
-          "      <a href=\"%s\"><img src=\"%s\" width=\"692\" class=\"img\"/></a>\n"
-          "      %s<br/><span class=\"tags\">%s</span></div>\n"
-          "      <p style=\"clear:both;\"></p>\n"
-          "    </div>\n"
-          "    <div class=\"footer\">\n"
-          "      created with darktable "PACKAGE_VERSION"\n"
-          "    </div>\n"
-          "  </body>\n"
-          "</html>\n",
-          relfilename, title?title:relfilename, prev, next, relfilename, relfilename, description?description:"&nbsp;", tags?tags:"&nbsp;");
-    fclose(subfile);
-*/
+        FILE* subfile = fopen(subfilename, "wb");
+        fprintf(subfile,
+              "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
+              "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
+              "  <head>\n"
+              "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n"
+              "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\" />\n"
+              "    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\" />\n"
+              "    <title>%s</title>\n"
+              "  </head>\n"
+              "  <body>\n"
+              "    <div class=\"title\"><a href=\"index.html\">%s</a></div>\n"
+              "    <div class=\"page\">\n"
+              "      <div style=\"width: 692px; max-width: 692px; height: 10px;\">\n"
+              "        <a style=\"float: left;\" href=\"%s\"><h1>prev</h1></a>\n"
+              "        <a style=\"float: right;\"href=\"%s\"><h1>next</h1></a>\n"
+              "      </div>\n"
+              "      <a href=\"%s\"><img src=\"%s\" width=\"692\" class=\"img\"/></a>\n"
+              "      %s<br/><span class=\"tags\">%s</span></div>\n"
+              "      <p style=\"clear:both;\"></p>\n"
+              "    </div>\n"
+              "    <div class=\"footer\">\n"
+              "      created with darktable "PACKAGE_VERSION"\n"
+              "    </div>\n"
+              "  </body>\n"
+              "</html>\n",
+              relfilename, title?title:relfilename, prev, next, relfilename, relfilename, description?description:"&nbsp;", tags?tags:"&nbsp;");
+        fclose(subfile);
+    */
     pair->pos = num;
     g_free(title);
     g_free(description);
@@ -463,7 +463,7 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   copy_res("/style/prevlabel.gif", filename);
   sprintf(c, "/style/thumb-1.jpg");
   copy_res("/style/thumb-1.jpg", filename);
-  
+
   // create subdir   js for lightbox2 viewer scripts
   sprintf(c, "/js");
   g_mkdir_with_parents(filename, 0755);
@@ -479,7 +479,7 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   copy_res("/js/prototype.js", filename);
   sprintf(c, "/js/scriptaculous.js");
   copy_res("/js/scriptaculous.js", filename);
-  
+
   sprintf(c, "/index.html");
 
   const char *title = d->title;

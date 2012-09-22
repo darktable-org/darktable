@@ -219,7 +219,7 @@ static gboolean _tristatebutton_expose(GtkWidget *widget, GdkEventExpose *event)
       gint pbw = gdk_pixbuf_get_width (pixbuf);
       gint pbh = gdk_pixbuf_get_height (pixbuf);
       gdk_cairo_set_source_pixbuf (cr, pixbuf, widget->allocation.x+((widget->allocation.width/2)-(pbw/2)),
-                                  widget->allocation.y+((widget->allocation.height/2)-(pbh/2)));
+                                   widget->allocation.y+((widget->allocation.height/2)-(pbh/2)));
       cairo_paint (cr);
     }
   }

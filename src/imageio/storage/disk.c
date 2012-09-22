@@ -89,22 +89,24 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
   gtk_widget_destroy (filechooser);
 }
 
-typedef struct completion_spec {
-	gchar *varname;
-	gchar *description;
+typedef struct completion_spec
+{
+  gchar *varname;
+  gchar *description;
 } completion_spec;
 
-typedef enum {
-	COMPL_VARNAME = 0,
-	COMPL_DESCRIPTION
+typedef enum
+{
+  COMPL_VARNAME = 0,
+  COMPL_DESCRIPTION
 } CompletionSpecCol;
 
 /** Called when the user selects a variable from the autocomplete list. */
 static gboolean
 on_match_select(GtkEntryCompletion *widget,
-		GtkTreeModel *model,
-		GtkTreeIter *iter,
-		gpointer user_data)
+                GtkTreeModel *model,
+                GtkTreeIter *iter,
+                gpointer user_data)
 {
 
   const gchar *varname;
@@ -119,17 +121,22 @@ on_match_select(GtkEntryCompletion *widget,
   gtk_tree_model_get_value(model, iter, COMPL_VARNAME, &value);
   varname = g_value_get_string(&value);
 
-  for (p = cur_pos; p - 2 > 0; p--) {
-    if (strncmp(s + p - 2, "$(", 2) == 0) {
+  for (p = cur_pos; p - 2 > 0; p--)
+  {
+    if (strncmp(s + p - 2, "$(", 2) == 0)
+    {
       break;
     }
   }
 
   end = s + cur_pos;
 
-  if (end) {
+  if (end)
+  {
     del_end_pos = end - s + 1;
-  } else {
+  }
+  else
+  {
     del_end_pos = cur_pos;
   }
 
@@ -172,9 +179,11 @@ on_match_func (GtkEntryCompletion *completion, const gchar *key,
   gint var_start;
   gboolean var_present = FALSE;
 
-  for (p = cur_pos; p >= 0; p--) {
+  for (p = cur_pos; p >= 0; p--)
+  {
     gchar *ss = gtk_editable_get_chars(e, p, cur_pos);
-    if (strncmp(ss, "$(", 2) == 0) {
+    if (strncmp(ss, "$(", 2) == 0)
+    {
       var_start = p+2;
       var_present = TRUE;
       g_free(ss);
@@ -183,20 +192,23 @@ on_match_func (GtkEntryCompletion *completion, const gchar *key,
     g_free(ss);
   }
 
-  if (var_present) {
+  if (var_present)
+  {
     gchar *varname = gtk_editable_get_chars(e, var_start, cur_pos);
 
     gtk_tree_model_get (model, iter, COMPL_VARNAME, &item, -1);
 
-    if (item != NULL) {
+    if (item != NULL)
+    {
       // Do utf8-safe case insensitive string compare.
       // Shamelessly stolen from GtkEntryCompletion.
       normalized_string = g_utf8_normalize (item, -1, G_NORMALIZE_ALL);
 
-      if (normalized_string != NULL) {
+      if (normalized_string != NULL)
+      {
         case_normalized_string = g_utf8_casefold (normalized_string, -1);
 
-        if (!g_ascii_strncasecmp(varname, case_normalized_string, 
+        if (!g_ascii_strncasecmp(varname, case_normalized_string,
                                  strlen (varname)))
           ret = TRUE;
 
@@ -222,7 +234,8 @@ build_tooltip_text (const gchar *header, const completion_spec *compl_list)
   g_strlcat(tt, header, sizeof(tt)*tooltip_len);
   g_strlcat(tt, "\n", sizeof(tt)*tooltip_len);
 
-  for(p = compl_list; p->description != NULL; p++) {
+  for(p = compl_list; p->description != NULL; p++)
+  {
     g_strlcat(tt, p->description, sizeof(tt)*tooltip_len);
     g_strlcat(tt, "\n", sizeof(tt)*tooltip_len);
   }
@@ -255,7 +268,8 @@ gui_init (dt_imageio_module_storage_t *self)
   gtk_entry_set_completion(GTK_ENTRY(widget), completion);
   g_signal_connect(G_OBJECT(completion), "match-selected", G_CALLBACK(on_match_select), NULL);
 
-  completion_spec compl_list[] = {
+  completion_spec compl_list[] =
+  {
     { "ROLL_NAME", _("$(ROLL_NAME) - roll of the input image") },
     { "FILE_FOLDER", _("$(FILE_FOLDER) - folder containing the input image") },
     { "FILE_NAME", _("$(FILE_NAME) - basename of the input image") },
@@ -286,14 +300,14 @@ gui_init (dt_imageio_module_storage_t *self)
   {
     gtk_list_store_append(model, &iter);
     gtk_list_store_set(model, &iter, COMPL_VARNAME, l->varname,
-        COMPL_DESCRIPTION, l->description, -1);
+                       COMPL_DESCRIPTION, l->description, -1);
   }
   gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(model));
   gtk_entry_completion_set_match_func(completion, on_match_func, NULL, NULL);
 
   char *tooltip_text = build_tooltip_text (
-             _("enter the path where to put exported images\nrecognized variables:"),
-             compl_list);
+                         _("enter the path where to put exported images\nrecognized variables:"),
+                         compl_list);
 
   d->entry = GTK_ENTRY(widget);
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry));

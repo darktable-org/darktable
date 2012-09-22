@@ -64,6 +64,7 @@ src/iop/equalizer.c
 src/iop/exposure.c
 src/iop/flip.c
 src/iop/gamma.c
+src/iop/globaltonemap.c
 src/iop/graduatednd.c
 src/iop/grain.c
 src/iop/highlights.c
@@ -102,6 +103,7 @@ src/libs/colorpicker.c
 src/libs/copy_history.c
 src/libs/export.c
 src/libs/file_manager.c
+src/libs/geotagging.c
 src/libs/histogram.c
 src/libs/history.c
 src/libs/image.c
@@ -109,6 +111,7 @@ src/libs/import.c
 src/libs/keywords.c
 src/libs/lib.c
 src/libs/live_view.c
+src/libs/location.c
 src/libs/metadata.c
 src/libs/metadata_view.c
 src/libs/modulegroups.c
@@ -131,6 +134,7 @@ src/libs/tools/viewswitcher.c
 src/views/capture.c
 src/views/darkroom.c
 src/views/lighttable.c
+src/views/map.c
 src/views/view.c
 src/common/ratings.c
 src/common/colorspaces.c

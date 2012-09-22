@@ -31,11 +31,11 @@ void dt_ratings_apply_to_selection (int rating)
   {
     dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", count), rating, count);
 #if 0 // not updating cache
-    gchar query[1024]={0};
+    gchar query[1024]= {0};
     g_snprintf(query,1024,
-	       "update images set flags=(images.flags & ~7) | (7 & %d) where id in (select imgid from selected_images)",
-	       rating
-	       );
+               "update images set flags=(images.flags & ~7) | (7 & %d) where id in (select imgid from selected_images)",
+               rating
+              );
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
 #endif
 

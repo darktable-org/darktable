@@ -58,7 +58,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t*)(piece->data);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
 #endif
   for(int k=0; k<roi_out->height; k++)
   {
@@ -183,7 +183,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
 {
   // create part of the gegl pipeline
   dt_iop_levels_data_t *d =
-      (dt_iop_levels_data_t *)malloc(sizeof(dt_iop_levels_data_t));
+    (dt_iop_levels_data_t *)malloc(sizeof(dt_iop_levels_data_t));
   piece->data = (void *)d;
 }
 
@@ -273,7 +273,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (dt_iop_levels_leave_notify), self);
   g_signal_connect (G_OBJECT (c->area), "scroll-event",
-        G_CALLBACK (dt_iop_levels_scroll), self);
+                    G_CALLBACK (dt_iop_levels_scroll), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -345,17 +345,17 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   {
     switch(k)
     {
-    case 0:
-      cairo_set_source_rgb(cr, 0, 0, 0);
-      break;
+      case 0:
+        cairo_set_source_rgb(cr, 0, 0, 0);
+        break;
 
-    case 1:
-      cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-      break;
+      case 1:
+        cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+        break;
 
-    default:
-      cairo_set_source_rgb(cr, 1, 1, 1);
-      break;
+      default:
+        cairo_set_source_rgb(cr, 1, 1, 1);
+        break;
     }
 
     cairo_move_to(cr, width*p->levels[k], height+inset-1);
@@ -425,30 +425,30 @@ static void dt_iop_levels_move_handle(int handle_move, float new_pos, float *lev
   // Determining the minimum and maximum bounds for the drag handles
   switch(handle_move)
   {
-  case 0:
-    max_x = fminf(levels[2] - (0.05 / drag_start_percentage),
-                  1);
-    max_x = fminf((levels[2] * (1 - drag_start_percentage) - 0.05)
-                  / (1 - drag_start_percentage),
-                  max_x);
-    break;
+    case 0:
+      max_x = fminf(levels[2] - (0.05 / drag_start_percentage),
+                    1);
+      max_x = fminf((levels[2] * (1 - drag_start_percentage) - 0.05)
+                    / (1 - drag_start_percentage),
+                    max_x);
+      break;
 
-  case 1:
-    min_x = levels[0] + 0.05;
-    max_x = levels[2] - 0.05;
-    break;
+    case 1:
+      min_x = levels[0] + 0.05;
+      max_x = levels[2] - 0.05;
+      break;
 
-  case 2:
-    min_x = fmaxf((0.05 / drag_start_percentage) + levels[0],
-                  0);
-    min_x = fmaxf((levels[0] * (1 - drag_start_percentage) + 0.05)
-                  / (1 - drag_start_percentage),
-                  min_x);
-    break;
+    case 2:
+      min_x = fmaxf((0.05 / drag_start_percentage) + levels[0],
+                    0);
+      min_x = fmaxf((levels[0] * (1 - drag_start_percentage) + 0.05)
+                    / (1 - drag_start_percentage),
+                    min_x);
+      break;
   }
 
   levels[handle_move] =
-      fminf(max_x, fmaxf(min_x, new_pos));
+    fminf(max_x, fmaxf(min_x, new_pos));
 
   if(handle_move != 1)
     levels[1] = levels[0] + (drag_start_percentage
@@ -511,7 +511,8 @@ static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *ev
   {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
 
-    if(event->type == GDK_2BUTTON_PRESS) {
+    if(event->type == GDK_2BUTTON_PRESS)
+    {
       // Reset
       dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
       memcpy(self->params, self->default_params, self->params_size);
@@ -522,7 +523,9 @@ static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *ev
 
       dt_dev_add_history_item(darktable.develop, self, TRUE);
       gtk_widget_queue_draw(self->widget);
-    } else {
+    }
+    else
+    {
       dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
       c->dragging = 1;
     }
@@ -553,7 +556,8 @@ static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, g
   gboolean updated = FALSE;
   float new_position = 0;
 
-  if (c->dragging) {
+  if (c->dragging)
+  {
     return FALSE;
   }
 
@@ -568,9 +572,10 @@ static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, g
     updated = TRUE;
   }
 
-  if (updated) {
+  if (updated)
+  {
     dt_iop_levels_move_handle(c->handle_move, new_position,
-                  p->levels, c->drag_start_percentage);
+                              p->levels, c->drag_start_percentage);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;
   }

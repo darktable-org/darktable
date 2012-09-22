@@ -76,7 +76,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->preview_pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
     dt_dev_pixelpipe_init(dev->pipe);
     dt_dev_pixelpipe_init_preview(dev->preview_pipe);
-    
+
     dev->histogram = (float *)malloc(sizeof(float)*4*256);
     dev->histogram_pre_tonecurve = (float *)malloc(sizeof(float)*4*256);
     dev->histogram_pre_levels = (float*)malloc(sizeof(float) * 4 * 256);
@@ -169,7 +169,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   dev->preview_pipe->input_timestamp = dev->timestamp;
   dev->preview_dirty = 1;
 
-  // lock if there, issue a background load, if not (best-effort for mip f). 
+  // lock if there, issue a background load, if not (best-effort for mip f).
   dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, dev->image_storage.id, DT_MIPMAP_F, 0);
   if(!buf.buf)
   {
@@ -245,7 +245,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
 
   // failed to load raw?
   if(!buf.buf) return;
-  
+
   dt_dev_pixelpipe_set_input(dev->pipe, dev, (float *)buf.buf, buf.width, buf.height, 1.0);
 
   if(dev->image_loading)
@@ -519,7 +519,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
 
   /* invalidate image data*/
   dt_similarity_image_dirty(dev->image_storage.id);
-  
+
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
@@ -613,10 +613,10 @@ void dt_dev_write_history(dt_develop_t *dev)
     history = g_list_next(history);
     changed = TRUE;
   }
-  
+
   /* attach / detach changed tag reflecting actual change */
   guint tagid = 0;
-  dt_tag_new("darktable|changed",&tagid); 
+  dt_tag_new("darktable|changed",&tagid);
   if(changed)
     dt_tag_attach(tagid, dev->image_storage.id);
   else
@@ -646,7 +646,7 @@ void dt_dev_read_history(dt_develop_t *dev)
       free(hist);
       continue;
     }
-   
+
     hist->module = NULL;
     while(opname && modules)
     {
@@ -658,7 +658,7 @@ void dt_dev_read_history(dt_develop_t *dev)
       }
       modules = g_list_next(modules);
     }
-    if(!hist->module)
+    if(!hist->module && opname)
     {
       fprintf(stderr, "[dev_read_history] the module `%s' requested by image `%s' is not installed on this computer!\n", opname, dev->image_storage.filename);
       free(hist);
@@ -808,7 +808,7 @@ dt_dev_is_current_image (dt_develop_t *dev, uint32_t imgid)
 gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev)
 {
   /* check if exposure iop module has registered its hooks */
-  if( dev->proxy.exposure.module && 
+  if( dev->proxy.exposure.module &&
       dev->proxy.exposure.set_black && dev->proxy.exposure.get_black &&
       dev->proxy.exposure.set_white && dev->proxy.exposure.get_white)
     return TRUE;
@@ -828,14 +828,14 @@ void dt_dev_exposure_reset_defaults(dt_develop_t *dev)
 
 void dt_dev_exposure_set_white(dt_develop_t *dev, const float white)
 {
-   if (dev->proxy.exposure.module && dev->proxy.exposure.set_white)
-     dev->proxy.exposure.set_white(dev->proxy.exposure.module, white);
+  if (dev->proxy.exposure.module && dev->proxy.exposure.set_white)
+    dev->proxy.exposure.set_white(dev->proxy.exposure.module, white);
 }
 
 float dt_dev_exposure_get_white(dt_develop_t *dev)
 {
   if (dev->proxy.exposure.module && dev->proxy.exposure.set_white)
-     return dev->proxy.exposure.get_white(dev->proxy.exposure.module);
+    return dev->proxy.exposure.get_white(dev->proxy.exposure.module);
 
   return 0.0;
 }
@@ -843,18 +843,18 @@ float dt_dev_exposure_get_white(dt_develop_t *dev)
 void dt_dev_exposure_set_black(dt_develop_t *dev, const float black)
 {
   if (dev->proxy.exposure.module && dev->proxy.exposure.set_black)
-     dev->proxy.exposure.set_black(dev->proxy.exposure.module, black);
+    dev->proxy.exposure.set_black(dev->proxy.exposure.module, black);
 }
 
 float dt_dev_exposure_get_black(dt_develop_t *dev)
 {
   if (dev->proxy.exposure.module && dev->proxy.exposure.set_black)
-     return dev->proxy.exposure.get_black(dev->proxy.exposure.module);
+    return dev->proxy.exposure.get_black(dev->proxy.exposure.module);
 
   return 0.0;
 }
 
-gboolean dt_dev_modulegroups_available(dt_develop_t *dev) 
+gboolean dt_dev_modulegroups_available(dt_develop_t *dev)
 {
   if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.set && dev->proxy.modulegroups.get)
     return TRUE;
@@ -879,7 +879,7 @@ uint32_t dt_dev_modulegroups_get(dt_develop_t *dev)
 gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t iop_group)
 {
   if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.test)
-    return dev->proxy.modulegroups.test(dev->proxy.modulegroups.module, group, iop_group); 
+    return dev->proxy.modulegroups.test(dev->proxy.modulegroups.module, group, iop_group);
   return FALSE;
 }
 

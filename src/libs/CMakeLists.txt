@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.6)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # The modules
-set(MODULES import export copy_history styles tagging image select collect recentcollect metadata metadata_view navigation histogram history snapshots modulelist modulegroups backgroundjobs colorpicker similarity keywords hinter)
+set(MODULES import export copy_history styles tagging image select collect recentcollect metadata metadata_view navigation histogram history snapshots modulelist modulegroups backgroundjobs colorpicker similarity keywords hinter location geotagging)
 
 # The tools
 set(MODULES ${MODULES} viewswitcher)
@@ -41,6 +41,8 @@ add_library(modulegroups MODULE "modulegroups.c")
 add_library(backgroundjobs MODULE "backgroundjobs.c")
 add_library(colorpicker MODULE "colorpicker.c")
 add_library(keywords MODULE "keywords.c")
+add_library(location MODULE "location.c")
+add_library(geotagging MODULE "geotagging.c")
 
 # tools
 add_library(viewswitcher MODULE "tools/viewswitcher.c")
@@ -83,7 +85,7 @@ endforeach(module)
 
 # Add installation target for each module
 # TODO: Modules are now not only lighttable related and should be placed
-#       in a better matching structure then just in lighttable directory. 
+#       in a better matching structure then just in lighttable directory.
 foreach(module ${MODULES})
 	install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins/lighttable)
 endforeach(module)

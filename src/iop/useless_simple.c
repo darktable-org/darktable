@@ -119,9 +119,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 /** optional: if this exists, it will be called to init new defaults if a new image is loaded from film strip mode. */
 // void reload_defaults(dt_iop_module_t *module)
 // {
-  // change default_enabled depending on type of image, or set new default_params even.
+// change default_enabled depending on type of image, or set new default_params even.
 
-  // if this callback exists, it has to write default_params and default_enabled.
+// if this callback exists, it has to write default_params and default_enabled.
 // }
 
 /** init, cleanup, commit to pipeline. when using the simple api you don't need to care about params, ... */
@@ -142,60 +142,69 @@ button_callback(GtkWidget *w, gpointer i)
 dt_gui_simple_t* gui_init_simple(dt_iop_module_so_t *self) // sorry, only dt_iop_module_so_t* in here :(
 {
   static char *combobox_entries[] = {"red", "green", "blue", NULL}; // has to be NULL terminated!
-  static dt_gui_simple_t gui = {
+  static dt_gui_simple_t gui =
+  {
     0, // not used currently
     {
       /** a slider */
-      {.slider = {
-        DT_SIMPLE_GUI_SLIDER,
-        "scale",                                     // always make sure to add an id
-        N_("scale"),                                 // just mark the strings for translation using N_()
-        N_("the scale of the checker board"),        // same here
-        NULL,                                        // the rest are specific settings for sliders
-        1, 100, 1, 50,
-        0,
-        NULL,                                        // when no callback is specified a default one is used
-        NULL                                         // no parameter means self. keep that in mind when you want to pass the number 0!
-      }},
+      {
+        .slider = {
+          DT_SIMPLE_GUI_SLIDER,
+          "scale",                                     // always make sure to add an id
+          N_("scale"),                                 // just mark the strings for translation using N_()
+          N_("the scale of the checker board"),        // same here
+          NULL,                                        // the rest are specific settings for sliders
+          1, 100, 1, 50,
+          0,
+          NULL,                                        // when no callback is specified a default one is used
+          NULL                                         // no parameter means self. keep that in mind when you want to pass the number 0!
+        }
+      },
 
       /** a combobox */
-      {.combobox = {
-        DT_SIMPLE_GUI_COMBOBOX,
-        NULL,                                        // this one has no id to show what happens (message on stderr + stupid auto generated id)
-        N_("color"),
-        N_("select color of the checker board"),
-        combobox_entries,                            // the entries have to be in a char* array which is NULL terminated. see above
-        0,                                           // default to 1st element (counting starts at 0. where else?)
-        NULL,                                        // default callback, again
-        NULL
-      }},
+      {
+        .combobox = {
+          DT_SIMPLE_GUI_COMBOBOX,
+          NULL,                                        // this one has no id to show what happens (message on stderr + stupid auto generated id)
+          N_("color"),
+          N_("select color of the checker board"),
+          combobox_entries,                            // the entries have to be in a char* array which is NULL terminated. see above
+          0,                                           // default to 1st element (counting starts at 0. where else?)
+          NULL,                                        // default callback, again
+          NULL
+        }
+      },
 
       /** a button */
-      {.button = {
-        DT_SIMPLE_GUI_BUTTON,
-        "nothing",
-        N_("do nothing"),
-        N_("this button does nothing, it's just looking nice"),
-        NULL,                                        // no icon
-        0,
-        0xdeadbeef,                                  // default is not used for regular buttons
-        &button_callback,                            // you have to provide a callback for regular buttons. there is no sane default behaviour
-        GINT_TO_POINTER(23)                          // this is how you pass an integer to the callback. don't pass 0
-      }},
+      {
+        .button = {
+          DT_SIMPLE_GUI_BUTTON,
+          "nothing",
+          N_("do nothing"),
+          N_("this button does nothing, it's just looking nice"),
+          NULL,                                        // no icon
+          0,
+          0xdeadbeef,                                  // default is not used for regular buttons
+          &button_callback,                            // you have to provide a callback for regular buttons. there is no sane default behaviour
+          GINT_TO_POINTER(23)                          // this is how you pass an integer to the callback. don't pass 0
+        }
+      },
 
       /** a toggle button */
-      {.button = {
-        DT_SIMPLE_GUI_TOGGLE_BUTTON,
-        "triangle",
-        NULL,                                        // more or less like the last button, but with an icon instead of a label
-        N_("another button which does nothing"),
-        dtgtk_cairo_paint_triangle,                  // see?
-        CPF_DIRECTION_RIGHT|CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER,
-        0,                                           // start in the disabled state. 1 would be enabled
-        NULL,                                        // this one uses the default callback
-        NULL                                         // this is how you pass self to the callback. notice that this parameter will
-                                                     // not be used because we are using the default callback!
-      }},
+      {
+        .button = {
+          DT_SIMPLE_GUI_TOGGLE_BUTTON,
+          "triangle",
+          NULL,                                        // more or less like the last button, but with an icon instead of a label
+          N_("another button which does nothing"),
+          dtgtk_cairo_paint_triangle,                  // see?
+          CPF_DIRECTION_RIGHT|CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER,
+          0,                                           // start in the disabled state. 1 would be enabled
+          NULL,                                        // this one uses the default callback
+          NULL                                         // this is how you pass self to the callback. notice that this parameter will
+          // not be used because we are using the default callback!
+        }
+      },
 
       /** the last element has to be of type DT_SIMPLE_GUI_NONE */
       {.common = {DT_SIMPLE_GUI_NONE, NULL, NULL, NULL}}

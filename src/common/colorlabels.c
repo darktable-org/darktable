@@ -139,8 +139,8 @@ int dt_colorlabels_check_label (const int imgid, const int color)
 }
 
 gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
-                                       GObject *acceleratable, guint keyval,
-                                       GdkModifierType modifier, gpointer data)
+    GObject *acceleratable, guint keyval,
+    GdkModifierType modifier, gpointer data)
 {
   const long int mode = (long int)data;
   int selected;

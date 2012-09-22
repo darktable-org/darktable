@@ -36,7 +36,10 @@
 #include <inttypes.h>
 
 #include <librsvg/rsvg.h>
+// ugh, ugly hack. why do people break stuff all the time?
+#ifndef RSVG_CAIRO_H
 #include <librsvg/rsvg-cairo.h>
+#endif
 
 #include "common/metadata.h"
 #include "common/utility.h"
@@ -117,7 +120,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_watermark_gui_data_t *g =
-      (dt_iop_watermark_gui_data_t*)self->gui_data;
+    (dt_iop_watermark_gui_data_t*)self->gui_data;
 
   dt_accel_connect_button_iop(self, "refresh", GTK_WIDGET(g->dtbutton1));
   dt_accel_connect_slider_iop(self, "opacity",
@@ -201,14 +204,14 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
   // EXIF datetime
   struct tm tt_exif = {0};
   if(sscanf(image->exif_datetime_taken,"%d:%d:%d %d:%d:%d",
-              &tt_exif.tm_year,
-              &tt_exif.tm_mon,
-              &tt_exif.tm_mday,
-              &tt_exif.tm_hour,
-              &tt_exif.tm_min,
-              &tt_exif.tm_sec
-             ) == 6
-     )
+            &tt_exif.tm_year,
+            &tt_exif.tm_mon,
+            &tt_exif.tm_mday,
+            &tt_exif.tm_hour,
+            &tt_exif.tm_min,
+            &tt_exif.tm_sec
+           ) == 6
+    )
   {
     tt_exif.tm_year-=1900;
     tt_exif.tm_mon--;
@@ -712,7 +715,7 @@ static void refresh_watermarks( dt_iop_module_t *self )
       snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", configdir, d_name);
       gtk_combo_box_append_text( g->combobox1, d_name );
       count++;
-    } 
+    }
     g_dir_close(dir) ;
   }
 

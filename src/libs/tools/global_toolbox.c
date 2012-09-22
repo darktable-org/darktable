@@ -51,7 +51,7 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT;
 }
 
-int expandable() 
+int expandable()
 {
   return 0;
 }

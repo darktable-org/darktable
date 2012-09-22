@@ -298,15 +298,15 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     snprintf(relfilename, 256, "%s", c);
 
     snprintf(pair->line, 4096,
-        "\\begin{minipage}{\\imgwidth}%%\n"
-        "\\drawtrimcorners%%\n"
-        "\\vskip0pt plus 1filll\n"
-        "\\begin{minipage}{\\imgwidth}%%\n"
-        " \\hfil\\includegraphics[width=\\imgwidth,height=\\imgheight,keepaspectratio]{%s}\\hfil\n"
-        "  %% put text under image here\n"
-        "\\end{minipage}\n"
-        "\\end{minipage}\n"
-        "\\newpage\n\n", relfilename);
+             "\\begin{minipage}{\\imgwidth}%%\n"
+             "\\drawtrimcorners%%\n"
+             "\\vskip0pt plus 1filll\n"
+             "\\begin{minipage}{\\imgwidth}%%\n"
+             " \\hfil\\includegraphics[width=\\imgwidth,height=\\imgheight,keepaspectratio]{%s}\\hfil\n"
+             "  %% put text under image here\n"
+             "\\end{minipage}\n"
+             "\\end{minipage}\n"
+             "\\newpage\n\n", relfilename);
 
     pair->pos = num;
     // g_free(title);
@@ -370,7 +370,7 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
 
   sprintf(c, "/photobook.cls");
   copy_res("/latex/photobook.cls", filename);
-  
+
   sprintf(c, "/main.tex");
 
   const char *title = d->title;
@@ -378,17 +378,17 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   FILE *f = fopen(filename, "wb");
   if(!f) return;
   fprintf(f,
-    "\\newcommand{\\dttitle}{%s}\n"
-    "\\newcommand{\\dtauthor}{the author}\n"
-    "\\newcommand{\\dtsubject}{the matter}\n"
-    "\\newcommand{\\dtkeywords}{this, that}\n"
-    "\\documentclass{photobook} %% use [draftmode] for preview\n"
-    "\\color{white}\n"
-    "\\pagecolor{black}\n"
-    "\\begin{document}\n"
-    "\\maketitle\n"
-    "\\pagestyle{empty}\n",
-    title);
+          "\\newcommand{\\dttitle}{%s}\n"
+          "\\newcommand{\\dtauthor}{the author}\n"
+          "\\newcommand{\\dtsubject}{the matter}\n"
+          "\\newcommand{\\dtkeywords}{this, that}\n"
+          "\\documentclass{photobook} %% use [draftmode] for preview\n"
+          "\\color{white}\n"
+          "\\pagecolor{black}\n"
+          "\\begin{document}\n"
+          "\\maketitle\n"
+          "\\pagestyle{empty}\n",
+          title);
 
   while(d->l)
   {
@@ -399,9 +399,9 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   }
 
   fprintf(f,
-    "\\end{document}"
-    "%% created with darktable "PACKAGE_VERSION"\n"
-    );
+          "\\end{document}"
+          "%% created with darktable "PACKAGE_VERSION"\n"
+         );
   fclose(f);
 }
 

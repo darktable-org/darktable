@@ -22,7 +22,8 @@
 #include "dtgtk/paint.h"
 
 /** possible types of gui elements */
-typedef enum dt_gui_simple_type_t {
+typedef enum dt_gui_simple_type_t
+{
   DT_SIMPLE_GUI_NONE,
   DT_SIMPLE_GUI_SLIDER,
   DT_SIMPLE_GUI_COMBOBOX,
@@ -31,14 +32,16 @@ typedef enum dt_gui_simple_type_t {
 } dt_gui_simple_type_t;
 
 // easy access to common fields of widgets
-typedef struct dt_gui_simple_common_t {
+typedef struct dt_gui_simple_common_t
+{
   dt_gui_simple_type_t type;
   char *id;
   char *label;
   char *tooltip;
 } dt_gui_simple_common_t;
 
-typedef struct dt_gui_simple_slider_t {
+typedef struct dt_gui_simple_slider_t
+{
   dt_gui_simple_type_t type;             // DT_SIMPLE_GUI_SLIDER
   char *id;
   char *label;
@@ -50,7 +53,8 @@ typedef struct dt_gui_simple_slider_t {
   gpointer parameter;
 } dt_gui_simple_slider_t;
 
-typedef struct dt_gui_simple_combobox_t {
+typedef struct dt_gui_simple_combobox_t
+{
   dt_gui_simple_type_t type;             // DT_SIMPLE_GUI_COMBOBOX
   char *id;
   char *label;
@@ -62,7 +66,8 @@ typedef struct dt_gui_simple_combobox_t {
 } dt_gui_simple_combobox_t;
 
 // used both for buttons and toggle buttons
-typedef struct dt_gui_simple_button_t {
+typedef struct dt_gui_simple_button_t
+{
   dt_gui_simple_type_t type;             // DT_SIMPLE_GUI_BUTTON or DT_SIMPLE_GUI_TOGGLE_BUTTON
   char *id;
   char *label;
@@ -75,7 +80,8 @@ typedef struct dt_gui_simple_button_t {
 } dt_gui_simple_button_t;
 
 /** a single element of the gui, access union according to type */
-typedef union dt_gui_simple_element_t {
+typedef union dt_gui_simple_element_t
+{
   dt_gui_simple_common_t common;
   dt_gui_simple_slider_t slider;
   dt_gui_simple_combobox_t combobox;
@@ -83,10 +89,11 @@ typedef union dt_gui_simple_element_t {
 } dt_gui_simple_element_t;
 
 /** the data type returned */
-typedef struct dt_gui_simple_t {
+typedef struct dt_gui_simple_t
+{
   int flags;                             // currently not used
   dt_gui_simple_element_t elements[];    // array of gui elements, terminated by an element of type DT_SIMPLE_GUI_NONE
-}dt_gui_simple_t;
+} dt_gui_simple_t;
 
 #endif
 

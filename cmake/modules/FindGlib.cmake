@@ -10,6 +10,37 @@ include(LibFindMacros)
 # Use pkg-config to get hints about paths
 libfind_pkg_check_modules(Glib_PKGCONF glib-2.0)
 
+if(Glib_FIND_VERSION)
+  cmake_minimum_required(VERSION 2.6.2)
+  set(Glib_FAILED_VERSION_CHECK true)
+
+  if(Glib_FIND_VERSION_EXACT)
+    if(Glib_PKGCONF_VERSION VERSION_EQUAL Glib_FIND_VERSION)
+      set(Glib_FAILED_VERSION_CHECK false)
+    endif()
+  else()
+    if(Glib_PKGCONF_VERSION VERSION_EQUAL   Glib_FIND_VERSION OR
+       Glib_PKGCONF_VERSION VERSION_GREATER Glib_FIND_VERSION)
+      set(Glib_FAILED_VERSION_CHECK false)
+    endif()
+  endif()
+
+  if(Glib_FAILED_VERSION_CHECK)
+    if(Glib_FIND_REQUIRED AND NOT Glib_FIND_QUIETLY)
+        if(Glib_FIND_VERSION_EXACT)
+            message(FATAL_ERROR "Glib version check failed.  Version ${Glib_PKGCONF_VERSION} was found, version ${Glib_FIND_VERSION} is needed exactly.")
+        else(Glib_FIND_VERSION_EXACT)
+            message(FATAL_ERROR "Glib version check failed.  Version ${Glib_PKGCONF_VERSION} was found, at least version ${Glib_FIND_VERSION} is required")
+        endif(Glib_FIND_VERSION_EXACT)
+    endif(Glib_FIND_REQUIRED AND NOT Glib_FIND_QUIETLY)
+
+    # If the version check fails, exit out of the module here
+#     return()
+  endif(Glib_FAILED_VERSION_CHECK)
+
+endif(Glib_FIND_VERSION)
+
+
 # Main include dir
 find_path(Glib_INCLUDE_DIR
   NAMES glib.h

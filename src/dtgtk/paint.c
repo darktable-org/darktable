@@ -304,7 +304,7 @@ void dtgtk_cairo_paint_plusminus(cairo_t *cr,gint x,gint y,gint w,gint h,gint fl
   cairo_arc (cr, 0.5, 0.5, 0.45, 0, 2*M_PI);
   cairo_stroke(cr);
 
-  if( (flags&CPF_ACTIVE) ) 
+  if( (flags&CPF_ACTIVE) )
   {
     cairo_move_to(cr,0.5,0.2);
     cairo_line_to(cr,0.5,0.8);
@@ -585,7 +585,7 @@ void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint 
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
 
   if( (flags&CPF_ACTIVE) )
-    cairo_set_source_rgba(cr, 1.0,1.0,1.0,1.0);     
+    cairo_set_source_rgba(cr, 1.0,1.0,1.0,1.0);
 
 
   // drop
@@ -621,7 +621,7 @@ void dtgtk_cairo_paint_showmask(cairo_t *cr,gint x,gint y,gint w,gint h,gint fla
   cairo_set_line_width(cr,0.1);
 
   if( (flags&CPF_ACTIVE) )
-    cairo_set_source_rgba(cr, 1.0,1.0,1.0,1.0);     
+    cairo_set_source_rgba(cr, 1.0,1.0,1.0,1.0);
 
   /* draw rectangle */
   cairo_rectangle(cr, 0.0, 0.0, 1.0, 1.0);
@@ -1033,7 +1033,7 @@ void dtgtk_cairo_paint_modulegroup_correct(cairo_t *cr, gint x, gint y, gint w, 
   cairo_arc(cr, 0.58, 0.5, 0.40, M_PI, 0);
   cairo_stroke(cr);
 
-  
+
 }
 
 void dtgtk_cairo_paint_modulegroup_effect(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags)

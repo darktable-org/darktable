@@ -101,8 +101,8 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
   if(fabsf(p->color[0] - self->picked_color[0]) < 0.0001f &&
-     fabsf(p->color[1] - self->picked_color[1]) < 0.0001f &&
-     fabsf(p->color[2] - self->picked_color[2]) < 0.0001f)
+      fabsf(p->color[1] - self->picked_color[1]) < 0.0001f &&
+      fabsf(p->color[2] - self->picked_color[2]) < 0.0001f)
   {
     // interrupt infinite loops
     return FALSE;
@@ -172,7 +172,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   //FIXME: it could be wise to make this a NOP when picking colors. not sure about that though.
 //   if(self->request_color_pick){
-    // do nothing
+  // do nothing
 //   }
 
   const int filters = dt_image_flipped_filter(&piece->pipe->image);
@@ -245,7 +245,9 @@ void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_invert_params_t tmp = (dt_iop_invert_params_t)
   {
-    {1.0f, 1.0f, 1.0f}
+    {
+      1.0f, 1.0f, 1.0f
+    }
   };
   memcpy(self->params, &tmp, sizeof(dt_iop_invert_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_invert_params_t));

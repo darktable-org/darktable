@@ -54,7 +54,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_profile_gamma_gui_data_t *g =
-      (dt_iop_profile_gamma_gui_data_t*)self->gui_data;
+    (dt_iop_profile_gamma_gui_data_t*)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "linear part", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "gamma exponential part",

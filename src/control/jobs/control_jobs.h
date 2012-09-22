@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010--2011 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ typedef struct dt_control_image_enumerator_t
 {
   GList *index;
   int flag;
+  gpointer data;
 }
 dt_control_image_enumerator_t;
 
@@ -38,7 +39,8 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job);
 void dt_control_flip_images_job_init(dt_job_t *job, const int32_t cw);
 int32_t dt_control_flip_images_job_run(dt_job_t *job);
 
-void dt_control_image_enumerator_job_init(dt_control_image_enumerator_t *t);
+void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t, int32_t filmid);
+void dt_control_image_enumerator_job_selected_init(dt_control_image_enumerator_t *t);
 
 int32_t dt_control_remove_images_job_run(dt_job_t *job);
 void dt_control_remove_images_job_init(dt_job_t *job);
@@ -52,9 +54,14 @@ void dt_control_copy_images_job_init(dt_job_t *job);
 void dt_control_delete_images_job_init(dt_job_t *job);
 int32_t dt_control_delete_images_job_run(dt_job_t *job);
 
+void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename, int32_t filmid, const gchar *tz);
+int32_t dt_control_gpx_apply_job_run(dt_job_t *job);
+
 void dt_control_export_job_init(dt_job_t *job);
 int32_t dt_control_export_job_run(dt_job_t *job);
 
+void dt_control_time_offset_job_init(dt_job_t *job, const long int offset, long int imgid);
+int32_t dt_control_time_offset_job_run(dt_job_t *job);
 
 void dt_control_write_sidecar_files();
 void dt_control_delete_images();
@@ -65,6 +72,10 @@ void dt_control_move_images();
 void dt_control_copy_images();
 void dt_control_export();
 void dt_control_merge_hdr();
+
+void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz);
+void dt_control_time_offset(const long int offset, long int imgid);
+
 struct dt_similarity_t;
 void dt_control_match_similar(struct dt_similarity_t *data);
 

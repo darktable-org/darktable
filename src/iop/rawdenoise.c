@@ -2,7 +2,7 @@
     This file is part of darktable,
     copyright (c) 2011 bruce guenter
     copyright (c) 2012 henrik andersson
-    
+
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -85,7 +85,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_rawdenoise_gui_data_t *g =
-      (dt_iop_rawdenoise_gui_data_t*)self->gui_data;
+    (dt_iop_rawdenoise_gui_data_t*)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "noise threshold",
                               GTK_WIDGET(g->threshold));
@@ -195,7 +195,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 
       const float thold = threshold * noise[lev];
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(lev) 
+      #pragma omp parallel for default(none) shared(lev)
 #endif
       for (int i=0; i < halfwidth*halfheight; i++)
       {
@@ -356,7 +356,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
-  
+
   /* threshold */
   g->threshold = dt_bauhaus_slider_new_with_range(self, 0.0, 0.1, 0.001, p->threshold, 3);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->threshold), TRUE, TRUE, 0);

@@ -45,7 +45,8 @@ static gboolean _gradient_slider_button_release(GtkWidget *widget, GdkEventButto
 static gboolean _gradient_slider_motion_notify(GtkWidget *widget, GdkEventMotion *event);
 static gboolean _gradient_slider_scroll_event(GtkWidget *widget, GdkEventScroll *event);
 
-enum {
+enum
+{
   VALUE_CHANGED,
   LAST_SIGNAL
 };
@@ -163,13 +164,13 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
       lselected = gslider->positions-1;
     }
     else for(int k=0; k<=gslider->positions-2; k++)
-    {
-      if(newposition >= gslider->position[k] && newposition <= gslider->position[k+1])
       {
-        lselected = newposition - gslider->position[k] < gslider->position[k+1] - newposition ? k : k+1;
-        break;
+        if(newposition >= gslider->position[k] && newposition <= gslider->position[k+1])
+        {
+          lselected = newposition - gslider->position[k] < gslider->position[k+1] - newposition ? k : k+1;
+          break;
+        }
       }
-    }
 
     assert(lselected >= 0);
     assert(lselected <= gslider->positions-1);
@@ -268,7 +269,7 @@ static gboolean _gradient_slider_scroll_event(GtkWidget *widget, GdkEventScroll 
 
     gdouble newvalue = gslider->position[gslider->selected] + ((event->direction == GDK_SCROLL_UP || event->direction == GDK_SCROLL_RIGHT) ? inc : -inc);
 
-    gslider->position[gslider->selected] = newvalue > gslider->max ? gslider->max : (newvalue < gslider->min ? gslider->min : newvalue);    
+    gslider->position[gslider->selected] = newvalue > gslider->max ? gslider->max : (newvalue < gslider->min ? gslider->min : newvalue);
 
     gtk_widget_draw( widget, NULL);
     g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
@@ -295,11 +296,11 @@ static void _gradient_slider_class_init (GtkDarktableGradientSliderClass *klass)
   widget_class->scroll_event = _gradient_slider_scroll_event;
 
   _signals[VALUE_CHANGED] = g_signal_new(
-   "value-changed",
-   G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST,
-   0,NULL,NULL,
-    g_cclosure_marshal_VOID__VOID,
-   GTK_TYPE_NONE,0);
+                              "value-changed",
+                              G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST,
+                              0,NULL,NULL,
+                              g_cclosure_marshal_VOID__VOID,
+                              GTK_TYPE_NONE,0);
 }
 
 static void _gradient_slider_init(GtkDarktableGradientSlider *slider)
@@ -451,21 +452,21 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
     int vx_avg=_scale_to_screen(widget, picker[0]);
 
     cairo_set_source_rgba(cr,
-                        style->fg[state].red/65535.0,
-                        style->fg[state].green/65535.0,
-                        style->fg[state].blue/65535.0,
-                        0.33
-                       );
+                          style->fg[state].red/65535.0,
+                          style->fg[state].green/65535.0,
+                          style->fg[state].blue/65535.0,
+                          0.33
+                         );
 
     cairo_rectangle(cr,vx_min,(height-gheight)/2.0,fmax((float)vx_max-vx_min, 0.0f),gheight);
     cairo_fill(cr);
 
     cairo_set_source_rgba(cr,
-                        style->fg[state].red/65535.0,
-                        style->fg[state].green/65535.0,
-                        style->fg[state].blue/65535.0,
-                        1.0
-                       );
+                          style->fg[state].red/65535.0,
+                          style->fg[state].green/65535.0,
+                          style->fg[state].blue/65535.0,
+                          1.0
+                         );
 
     cairo_move_to(cr,vx_avg,(height-gheight)/2.0);
     cairo_line_to(cr,vx_avg,(height+gheight)/2.0);
@@ -489,21 +490,21 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
     if(l == gslider->selected && (gslider->is_entered == TRUE || gslider->is_dragging == TRUE))
     {
       cairo_set_source_rgba(cr,
-                        style->fg[state].red/65535.0,
-                        style->fg[state].green/65535.0,
-                        style->fg[state].blue/65535.0 * 0.5,
-                        1.0
-                       );
+                            style->fg[state].red/65535.0,
+                            style->fg[state].green/65535.0,
+                            style->fg[state].blue/65535.0 * 0.5,
+                            1.0
+                           );
 
     }
     else
     {
       cairo_set_source_rgba(cr,
-                        style->fg[state].red/65535.0*0.8,
-                        style->fg[state].green/65535.0*0.8,
-                        style->fg[state].blue/65535.0*0.8,
-                        1.0
-                       );
+                            style->fg[state].red/65535.0*0.8,
+                            style->fg[state].green/65535.0*0.8,
+                            style->fg[state].blue/65535.0*0.8,
+                            1.0
+                           );
     }
 
 

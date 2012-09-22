@@ -19,7 +19,7 @@
 #define DT_IOP_LENS_H
 
 #include "develop/imageop.h"
-#include "dtgtk/slider.h"
+#include "bauhaus/bauhaus.h"
 #include <lensfun.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -45,17 +45,12 @@ typedef struct dt_iop_lensfun_gui_data_t
 {
   const lfCamera *camera;
   GtkWidget *lens_param_box;
-  GtkComboBoxEntry *cbe[3];
+  GtkWidget *cbe[3];
   GtkButton *camera_model;
   GtkMenu *camera_menu;
   GtkButton *lens_model;
   GtkMenu *lens_menu;
-  GtkComboBox *target_geom;
-  GtkCheckButton *reverse;
-  GtkDarktableSlider *tca_r;
-  GtkDarktableSlider *tca_b;
-  GtkDarktableSlider *scale;
-  GtkWidget *auto_scale_button;
+  GtkWidget *target_geom, *reverse, *tca_r, *tca_b, *scale;
   GtkWidget *find_lens_button;
   GtkWidget *find_camera_button;
 }

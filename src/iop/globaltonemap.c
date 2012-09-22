@@ -53,7 +53,8 @@ typedef enum _iop_operator_t
 typedef struct dt_iop_global_tonemap_params_t
 {
   _iop_operator_t operator;
-  struct {
+  struct
+  {
     float bias;
     float max_light; // cd/m2
   } drago;
@@ -64,7 +65,8 @@ dt_iop_global_tonemap_params_t;
 typedef struct dt_iop_global_tonemap_gui_data_t
 {
   GtkWidget *operator;
-  struct {
+  struct
+  {
     GtkWidget *bias;
     GtkWidget *max_light;
   } drago;
@@ -89,7 +91,7 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING; 
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 int
@@ -105,7 +107,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
   {
     dt_iop_global_tonemap_params_t *o = (dt_iop_global_tonemap_params_t *)old_params;
     dt_iop_global_tonemap_params_t *n = (dt_iop_global_tonemap_params_t *)new_params;
-    
+
     // only appended detail, 0 is no-op
     memcpy(n, o, sizeof(dt_iop_global_tonemap_params_t) - sizeof(float));
     n->detail = 0.0f;
@@ -114,9 +116,9 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
   return 1;
 }
 
-static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
-				    void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-				    dt_iop_global_tonemap_params_t *data)
+static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                    void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+                                    dt_iop_global_tonemap_params_t *data)
 {
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
@@ -136,9 +138,9 @@ static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpi
   }
 }
 
-static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
-				    void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-				    dt_iop_global_tonemap_params_t *data)
+static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                 void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+                                 dt_iop_global_tonemap_params_t *data)
 {
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
@@ -152,7 +154,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
     float *inp = in + ch*k;
     lwmax = MAX(lwmax, (inp[0]*0.01f));
   }
-  const float ldc = data->drago.max_light * 0.01 / log10f(lwmax+1); 
+  const float ldc = data->drago.max_light * 0.01 / log10f(lwmax+1);
   const float bl = logf(MAX(eps, data->drago.bias)) / logf(0.5);
 
 #ifdef _OPENMP
@@ -169,9 +171,9 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   }
 }
 
-static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
-				    void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-				    dt_iop_global_tonemap_params_t *data)
+static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                  void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+                                  dt_iop_global_tonemap_params_t *data)
 {
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
@@ -210,15 +212,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   switch(data->operator)
   {
-  case OPERATOR_REINHARD:
-    process_reinhard(self, piece, ivoid, ovoid, roi_in, roi_out, data);
-    break;
-  case OPERATOR_DRAGO:
-    process_drago(self, piece, ivoid, ovoid, roi_in, roi_out, data);
-    break;
-  case OPERATOR_FILMIC:
-    process_filmic(self, piece, ivoid, ovoid, roi_in, roi_out, data);
-    break;
+    case OPERATOR_REINHARD:
+      process_reinhard(self, piece, ivoid, ovoid, roi_in, roi_out, data);
+      break;
+    case OPERATOR_DRAGO:
+      process_drago(self, piece, ivoid, ovoid, roi_in, roi_out, data);
+      break;
+    case OPERATOR_FILMIC:
+      process_filmic(self, piece, ivoid, ovoid, roi_in, roi_out, data);
+      break;
   }
 
   if(data->detail != 0.0f)
@@ -261,18 +263,18 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t workgroupsize = 0;          // the maximum number of items in a work group
   unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
   size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
-  
+
   // make sure blocksize is not too large
   int blocksize = BLOCKSIZE;
   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-     dt_opencl_get_kernel_work_group_size(devid, gd->kernel_pixelmax_first, &kernelworkgroupsize) == CL_SUCCESS)
+      dt_opencl_get_kernel_work_group_size(devid, gd->kernel_pixelmax_first, &kernelworkgroupsize) == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
     while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize*blocksize > kernelworkgroupsize
           || blocksize*blocksize > workgroupsize || blocksize*blocksize*sizeof(float) > localmemsize)
     {
       if(blocksize == 1) break;
-      blocksize >>= 1;    
+      blocksize >>= 1;
     }
   }
   else
@@ -280,22 +282,23 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     blocksize = 1;   // slow but safe
   }
 
-  
+
 
   // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
   const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1)*blocksize;
   const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1)*blocksize;
 
-  switch(d->operator) {
-  case OPERATOR_REINHARD:
-    gtkernel = gd->kernel_global_tonemap_reinhard;
-    break;
-  case OPERATOR_DRAGO:
-    gtkernel = gd->kernel_global_tonemap_drago;
-    break;
-  case OPERATOR_FILMIC:
-    gtkernel = gd->kernel_global_tonemap_filmic;
-    break;
+  switch(d->operator)
+  {
+    case OPERATOR_REINHARD:
+      gtkernel = gd->kernel_global_tonemap_reinhard;
+      break;
+    case OPERATOR_DRAGO:
+      gtkernel = gd->kernel_global_tonemap_drago;
+      break;
+    case OPERATOR_FILMIC:
+      gtkernel = gd->kernel_global_tonemap_filmic;
+      break;
   }
 
   if(d->operator == OPERATOR_DRAGO)
@@ -303,7 +306,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     size_t sizes[3];
     size_t local[3];
 
-    int bufsize = (bwidth / blocksize) * (bheight / blocksize); 
+    int bufsize = (bwidth / blocksize) * (bheight / blocksize);
     int reducesize = maxsizes[0] < REDUCESIZE ? maxsizes[0] : REDUCESIZE;
 
     dev_m = dt_opencl_alloc_device_buffer(devid, bufsize*sizeof(float));
@@ -349,7 +352,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     const float eps = 0.0001f;
     const float lwmax = MAX(eps, (maximum[0]*0.01f));
-    const float ldc = d->drago.max_light * 0.01f / log10f(lwmax + 1.0f); 
+    const float ldc = d->drago.max_light * 0.01f / log10f(lwmax + 1.0f);
     const float bl = logf(MAX(eps, d->drago.bias)) / logf(0.5f);
 
     parameters[0] = eps;
@@ -457,7 +460,7 @@ operator_callback (GtkWidget *combobox, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)self->params;
   p->operator = dt_bauhaus_combobox_get(combobox);
-  
+
   gtk_widget_set_visible(g->drago.bias, FALSE);
   gtk_widget_set_visible(g->drago.max_light, FALSE);
   /* show ui for selected operator */
@@ -564,7 +567,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_object_set(G_OBJECT(g->operator), "tooltip-text", _("the global tonemap operator"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->operator), "value-changed",
-                    G_CALLBACK (operator_callback), self);  
+                    G_CALLBACK (operator_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->operator), TRUE, TRUE, 0);
 
   /* drago bias */
@@ -574,7 +577,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->drago.bias), "value-changed",
                     G_CALLBACK (_drago_bias_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->drago.bias, TRUE, TRUE, 0);
-  
+
 
   /* drago bias */
   g->drago.max_light = dt_bauhaus_slider_new_with_range(self,1, 500, 10, p->drago.max_light, 2);

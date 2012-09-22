@@ -140,18 +140,18 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t workgroupsize = 0;          // the maximum number of items in a work group
   unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
   size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
-  
+
   // make sure blocksize is not too large
   int blocksize = BLOCKSIZE;
   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-     dt_opencl_get_kernel_work_group_size(devid, gd->kernel_sharpen_hblur, &kernelworkgroupsize) == CL_SUCCESS)
+      dt_opencl_get_kernel_work_group_size(devid, gd->kernel_sharpen_hblur, &kernelworkgroupsize) == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
     while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize > kernelworkgroupsize
           || blocksize > workgroupsize || (blocksize+2*rad)*sizeof(float) > localmemsize)
     {
       if(blocksize == 1) break;
-      blocksize >>= 1;    
+      blocksize >>= 1;
     }
   }
   else
@@ -422,7 +422,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
-    
+
 static void
 radius_callback (GtkWidget *slider, gpointer user_data)
 {

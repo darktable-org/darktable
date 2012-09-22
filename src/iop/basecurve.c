@@ -73,7 +73,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
   {
     dt_iop_basecurve_params1_t *o = (dt_iop_basecurve_params1_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
-    
+
     // start with a fresh copy of default parameters
     // unfortunately default_params aren't inited at this stage.
     *n = (dt_iop_basecurve_params_t)
@@ -83,8 +83,8 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
           {0.0, 0.0}, {1.0, 1.0}
         },
       },
-        { 2, 3, 3 },
-        { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE}
+      { 2, 3, 3 },
+      { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE}
     };
     for (int k=0; k<6; k++) n->basecurve[0][k].x = o->tonecurve_x[k];
     for (int k=0; k<6; k++) n->basecurve[0][k].y = o->tonecurve_y[k];
@@ -293,7 +293,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     float *inp = in + ch*k;
     float *outp = out + ch*k;
-    for(int i=0;i<3;i++)
+    for(int i=0; i<3; i++)
     {
       // use base curve for values < 1, else use extrapolation.
       if(inp[i] < 1.0f) outp[i] = d->table[CLAMP((int)(inp[i]*0x10000ul), 0, 0xffff)];
@@ -338,7 +338,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   const float y[4] = {d->table[CLAMP((int)(x[0]*0x10000ul), 0, 0xffff)],
                       d->table[CLAMP((int)(x[1]*0x10000ul), 0, 0xffff)],
                       d->table[CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
-                      d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]};
+                      d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]
+                     };
   dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
 }
 
@@ -375,7 +376,8 @@ void init(dt_iop_module_t *module)
   dt_iop_basecurve_params_t tmp = (dt_iop_basecurve_params_t)
   {
     {
-      {							// three curves (L, a, b) with a number of nodes
+      {
+        // three curves (L, a, b) with a number of nodes
         {0.0, 0.0}, {1.0, 1.0}
       },
     },
@@ -464,7 +466,8 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   const float y[4] = {c->draw_ys[CLAMP((int)(x[0]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)],
                       c->draw_ys[CLAMP((int)(x[1]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)],
                       c->draw_ys[CLAMP((int)(x[2]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)],
-                      c->draw_ys[CLAMP((int)(x[3]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)]};
+                      c->draw_ys[CLAMP((int)(x[3]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)]
+                     };
   float unbounded_coeffs[3];
   dt_iop_estimate_exp(x, y, 4, unbounded_coeffs);
 
@@ -586,17 +589,17 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
 
       // delete vertex if order has changed:
       if(nodes > 2)
-      if((c->selected > 0 && basecurve[c->selected-1].x >= mx) ||
-         (c->selected < nodes-1 && basecurve[c->selected+1].x <= mx))
-      {
-        for(int k=c->selected; k<nodes-1; k++)
+        if((c->selected > 0 && basecurve[c->selected-1].x >= mx) ||
+            (c->selected < nodes-1 && basecurve[c->selected+1].x <= mx))
         {
-          basecurve[k].x = basecurve[k+1].x;
-          basecurve[k].y = basecurve[k+1].y;
+          for(int k=c->selected; k<nodes-1; k++)
+          {
+            basecurve[k].x = basecurve[k+1].x;
+            basecurve[k].y = basecurve[k+1].y;
+          }
+          c->selected = -2; // avoid re-insertion of that point immediately after this
+          p->basecurve_nodes[ch] --;
         }
-        c->selected = -2; // avoid re-insertion of that point immediately after this
-        p->basecurve_nodes[ch] --;
-      }
       dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
     else if(nodes < 20 && c->selected >= -1)
@@ -605,13 +608,13 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
       if(basecurve[0].x > mx)
         c->selected = 0;
       else for(int k=1; k<nodes; k++)
-      {
-        if(basecurve[k].x > mx)
         {
-          c->selected = k;
-          break;
+          if(basecurve[k].x > mx)
+          {
+            c->selected = k;
+            break;
+          }
         }
-      }
       if(c->selected == -1) c->selected = nodes;
       for(int i=nodes; i>c->selected; i--)
       {
@@ -634,7 +637,7 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
     for(int k=0; k<nodes; k++)
     {
       float dist = (my - basecurve[k].y)*(my - basecurve[k].y)
-                 + (mx - basecurve[k].x)*(mx - basecurve[k].x);
+                   + (mx - basecurve[k].x)*(mx - basecurve[k].x);
       if(dist < min)
       {
         min = dist;
@@ -664,8 +667,8 @@ dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer
     p->basecurve_type[ch] = d->basecurve_type[ch];
     for(int k=0; k<d->basecurve_nodes[ch]; k++)
     {
-        p->basecurve[ch][k].x = d->basecurve[ch][k].x;
-        p->basecurve[ch][k].y = d->basecurve[ch][k].y;
+      p->basecurve[ch][k].x = d->basecurve[ch][k].x;
+      p->basecurve[ch][k].y = d->basecurve[ch][k].y;
     }
     c->selected = -2; // avoid motion notify re-inserting immediately.
     dt_dev_add_history_item(darktable.develop, self, TRUE);

@@ -85,7 +85,7 @@ typedef struct dt_develop_t
   /* proxy for communication between plugins and develop/darkroom */
   struct
   {
-    // exposure plugin hooks, used by histogram dragging functions 
+    // exposure plugin hooks, used by histogram dragging functions
     struct
     {
       struct dt_iop_module_t *module;
@@ -111,7 +111,7 @@ typedef struct dt_develop_t
     }
     modulegroups;
 
-    // snapshots plugin hooks 
+    // snapshots plugin hooks
     struct
     {
       // this flag is set by snapshot plugin to signal that expose of darkroom
@@ -162,8 +162,8 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
 void dt_dev_configure (dt_develop_t *dev, int wd, int ht);
 void dt_dev_invalidate_from_gui (dt_develop_t *dev);
 
-/* 
- * exposure plugin hook, set the white level 
+/*
+ * exposure plugin hook, set the white level
  */
 
 /** check if exposure iop hooks are available */

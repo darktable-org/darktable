@@ -61,7 +61,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
   {
     dt_iop_tonecurve_1_params_t *o = (dt_iop_tonecurve_1_params_t *)old_params;
     dt_iop_tonecurve_params_t *n = (dt_iop_tonecurve_params_t *)new_params;
-    
+
     // start with a fresh copy of default parameters
     // unfortunately default_params aren't inited at this stage.
     *n = (dt_iop_tonecurve_params_t)
@@ -70,17 +70,17 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
         {
           {0.0, 0.0}, {1.0, 1.0}
         },
-          {
-            {0.0, 0.0}, {0.5, 0.5}, {1.0, 1.0}
-          },
-          {
-            {0.0, 0.0}, {0.5, 0.5}, {1.0, 1.0}
-          }
+        {
+          {0.0, 0.0}, {0.5, 0.5}, {1.0, 1.0}
+        },
+        {
+          {0.0, 0.0}, {0.5, 0.5}, {1.0, 1.0}
+        }
       },
-        { 2, 3, 3 },
-        { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE},
-        1,
-        0
+      { 2, 3, 3 },
+      { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE},
+      1,
+      0
     };
     for (int k=0; k<6; k++) n->tonecurve[ch_L][k].x = o->tonecurve_x[k];
     for (int k=0; k<6; k++) n->tonecurve[ch_L][k].y = o->tonecurve_y[k];
@@ -130,7 +130,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_L);
   dt_opencl_release_mem_object(dev_a);
-  dt_opencl_release_mem_object(dev_b); 
+  dt_opencl_release_mem_object(dev_b);
   dt_opencl_release_mem_object(dev_coeffs);
   return TRUE;
 
@@ -164,7 +164,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const float L_in = in[0]/100.0f;
 
       out[0] = (L_in < xm) ? d->table[ch_L][CLAMP((int)(L_in*0xfffful), 0, 0xffff)] :
-        dt_iop_eval_exp(d->unbounded_coeffs, L_in);
+               dt_iop_eval_exp(d->unbounded_coeffs, L_in);
 
       if (d->autoscale_ab == 0)
       {
@@ -291,7 +291,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   const float y[4] = {d->table[ch_L][CLAMP((int)(x[0]*0x10000ul), 0, 0xffff)],
                       d->table[ch_L][CLAMP((int)(x[1]*0x10000ul), 0, 0xffff)],
                       d->table[ch_L][CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
-                      d->table[ch_L][CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]};
+                      d->table[ch_L][CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]
+                     };
   dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
 }
 
@@ -344,7 +345,8 @@ void init(dt_iop_module_t *module)
   dt_iop_tonecurve_params_t tmp = (dt_iop_tonecurve_params_t)
   {
     {
-      {							// three curves (L, a, b) with a number of nodes
+      {
+        // three curves (L, a, b) with a number of nodes
         {0.0, 0.0}, {1.0, 1.0}
       },
       {
@@ -424,11 +426,11 @@ pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   self->request_color_pick = gtk_toggle_button_get_active(togglebutton);
   if(darktable.gui->reset) return;
-  
+
   /* set the area sample size*/
   if (self->request_color_pick)
     dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
-  
+
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
 }
@@ -529,7 +531,7 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_tonecurve_enter_notify), self);
   g_signal_connect (G_OBJECT (c->area), "configure-event",
                     G_CALLBACK (area_resized), self);
-  g_signal_connect (G_OBJECT(tb), "toggled", 
+  g_signal_connect (G_OBJECT(tb), "toggled",
                     G_CALLBACK (pick_toggled), self);
   g_signal_connect (G_OBJECT (c->area), "scroll-event",
                     G_CALLBACK (scrolled), self);
@@ -596,12 +598,14 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
 
   const float color_labels_left[3][3] = { { 0.3f, 0.3f,  0.3f  },
-                                          { 0.0f, 0.34f, 0.27f },
-                                          { 0.0f, 0.27f, 0.58f }};
+    { 0.0f, 0.34f, 0.27f },
+    { 0.0f, 0.27f, 0.58f }
+  };
 
   const float color_labels_right[3][3] = {{ 0.3f, 0.3f, 0.3f   },
-                                          { 0.53f, 0.08f, 0.28f},
-                                          { 0.81f, 0.66f, 0.0f }};
+    { 0.53f, 0.08f, 0.28f},
+    { 0.81f, 0.66f, 0.0f }
+  };
 
   int ch = c->channel;
   int nodes = p->tonecurve_nodes[ch];
@@ -629,7 +633,8 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   const float y[4] = {c->draw_ys[CLAMP((int)(x[0]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)],
                       c->draw_ys[CLAMP((int)(x[1]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)],
                       c->draw_ys[CLAMP((int)(x[2]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)],
-                      c->draw_ys[CLAMP((int)(x[3]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)]};
+                      c->draw_ys[CLAMP((int)(x[3]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)]
+                     };
   float unbounded_coeffs[3];
   dt_iop_estimate_exp(x, y, 4, unbounded_coeffs);
 
@@ -674,10 +679,10 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
     {
       const float f = (cells-1-j+i)/(2.0f*cells-2.0f);
       cairo_set_source_rgba (cr,
-          (1.0f-f)*color_labels_left[ch][0] + f*color_labels_right[ch][0],
-          (1.0f-f)*color_labels_left[ch][1] + f*color_labels_right[ch][1],
-          (1.0f-f)*color_labels_left[ch][2] + f*color_labels_right[ch][2],
-          .5f); // blend over to make colors darker, so the overlay is more visible
+                             (1.0f-f)*color_labels_left[ch][0] + f*color_labels_right[ch][0],
+                             (1.0f-f)*color_labels_left[ch][1] + f*color_labels_right[ch][1],
+                             (1.0f-f)*color_labels_left[ch][2] + f*color_labels_right[ch][2],
+                             .5f); // blend over to make colors darker, so the overlay is more visible
       cairo_rectangle(cr, width*i/(float)cells, height*j/(float)cells, width/(float)cells, height/(float)cells);
       cairo_fill(cr);
     }
@@ -849,17 +854,17 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
 
       // delete vertex if order has changed:
       if(nodes > 2)
-      if((c->selected > 0 && tonecurve[c->selected-1].x >= mx) ||
-         (c->selected < nodes-1 && tonecurve[c->selected+1].x <= mx))
-      {
-        for(int k=c->selected; k<nodes-1; k++)
+        if((c->selected > 0 && tonecurve[c->selected-1].x >= mx) ||
+            (c->selected < nodes-1 && tonecurve[c->selected+1].x <= mx))
         {
-          tonecurve[k].x = tonecurve[k+1].x;
-          tonecurve[k].y = tonecurve[k+1].y;
+          for(int k=c->selected; k<nodes-1; k++)
+          {
+            tonecurve[k].x = tonecurve[k+1].x;
+            tonecurve[k].y = tonecurve[k+1].y;
+          }
+          c->selected = -2; // avoid re-insertion of that point immediately after this
+          p->tonecurve_nodes[ch] --;
         }
-        c->selected = -2; // avoid re-insertion of that point immediately after this
-        p->tonecurve_nodes[ch] --;
-      }
       dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
     else if(nodes < 20 && c->selected >= -1)
@@ -868,13 +873,13 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
       if(tonecurve[0].x > mx)
         c->selected = 0;
       else for(int k=1; k<nodes; k++)
-      {
-        if(tonecurve[k].x > mx)
         {
-          c->selected = k;
-          break;
+          if(tonecurve[k].x > mx)
+          {
+            c->selected = k;
+            break;
+          }
         }
-      }
       if(c->selected == -1) c->selected = nodes;
       for(int i=nodes; i>c->selected; i--)
       {
@@ -897,7 +902,7 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
     for(int k=0; k<nodes; k++)
     {
       float dist = (my - tonecurve[k].y)*(my - tonecurve[k].y)
-                 + (mx - tonecurve[k].x)*(mx - tonecurve[k].x);
+                   + (mx - tonecurve[k].x)*(mx - tonecurve[k].x);
       if(dist < min)
       {
         min = dist;
@@ -931,8 +936,8 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       p->tonecurve_type[ch] = d->tonecurve_type[ch];
       for(int k=0; k<d->tonecurve_nodes[ch]; k++)
       {
-          p->tonecurve[ch][k].x = d->tonecurve[ch][k].x;
-          p->tonecurve[ch][k].y = d->tonecurve[ch][k].y;
+        p->tonecurve[ch][k].x = d->tonecurve[ch][k].x;
+        p->tonecurve[ch][k].y = d->tonecurve[ch][k].y;
       }
       c->selected = -2; // avoid motion notify re-inserting immediately.
       dt_dev_add_history_item(darktable.develop, self, TRUE);

@@ -53,21 +53,21 @@ int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, in
   }
   cache->queries = cache->misses = 0;
   return 1;
-  
+
 alloc_memory_fail:
   for(int k=0; k<entries; k++)
   {
     if(cache->data[k])
       free(cache->data[k]);
   }
-  
+
   free(cache->data);
   free(cache->size);
   free(cache->hash);
   free(cache->used);
-  
+
   return 0;
-  
+
 }
 
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)

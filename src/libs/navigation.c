@@ -65,7 +65,7 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_LEFT_TOP;
 }
 
-int expandable() 
+int expandable()
 {
   return 0;
 }
@@ -76,7 +76,7 @@ int position()
 }
 
 
-static void _lib_navigation_control_redraw_callback(gpointer instance, gpointer user_data) 
+static void _lib_navigation_control_redraw_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_control_queue_redraw_widget(self->widget);
@@ -98,7 +98,7 @@ void gui_init(dt_lib_module_t *self)
                         | GDK_BUTTON_PRESS_MASK
                         | GDK_BUTTON_RELEASE_MASK
                         | GDK_STRUCTURE_MASK);
-  
+
   /* connect callbacks */
   GTK_WIDGET_UNSET_FLAGS (self->widget, GTK_DOUBLE_BUFFERED);
   GTK_WIDGET_SET_FLAGS   (self->widget, GTK_APP_PAINTABLE);
@@ -126,7 +126,7 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   /* disconnect from signal */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_navigation_control_redraw_callback), self);
-   
+
   g_free(self->data);
   self->data = NULL;
 }
@@ -148,8 +148,8 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
   if(!style) style = gtk_rc_get_style(widget);
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  
-  /* fill background */ 
+
+  /* fill background */
   cairo_set_source_rgb(cr, style->bg[0].red/65535.0, style->bg[0].green/65535.0, style->bg[0].blue/65535.0);
   cairo_paint(cr);
 
@@ -226,7 +226,7 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
   cairo_paint(cr_pixmap);
   cairo_destroy(cr_pixmap);
   cairo_surface_destroy(cst);
-  
+
   return TRUE;
 }
 

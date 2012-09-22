@@ -28,7 +28,7 @@ namespace RawSpeed {
 
 Cr2Decoder::Cr2Decoder(TiffIFD *rootIFD, FileMap* file) :
     RawDecoder(file), mRootIFD(rootIFD) {
-  decoderVersion = 1;
+  decoderVersion = 2;
 }
 
 Cr2Decoder::~Cr2Decoder(void) {
@@ -142,6 +142,20 @@ void Cr2Decoder::checkSupportInternal(CameraMetaData *meta) {
     ThrowRDE("CR2 Support: Make name not found");
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
+  data = mRootIFD->getIFDsWithTag((TiffTag)0xc5d8);
+
+  if (data.empty())
+    ThrowRDE("CR2 Decoder: No image data found");
+
+  TiffIFD* raw = data[0];
+
+  if (raw->hasEntry((TiffTag)0xc6c5)) {
+    ushort16 ss = raw->getEntry((TiffTag)0xc6c5)->getInt();
+    if (ss == 4) {
+      this->checkCameraSupported(meta, make, model, "sRaw1");
+      return;
+    }
+  }
   this->checkCameraSupported(meta, make, model, "");
 }
 
@@ -196,6 +210,11 @@ void Cr2Decoder::sRawInterpolate() {
   sraw_coeffs[0] = wb_data[0];
   sraw_coeffs[1] = (wb_data[1] + wb_data[2] + 1) >> 1;
   sraw_coeffs[2] = wb_data[3];
+
+  if (hints.find("invert_sraw_wb") != hints.end()) {
+    sraw_coeffs[0] = (int)(1024.0f/((float)sraw_coeffs[0]/1024.0f));
+    sraw_coeffs[2] = (int)(1024.0f/((float)sraw_coeffs[2]/1024.0f));
+  }
 
   /* Determine sRaw coefficients */
   bool isOldSraw = hints.find("sraw_40d") != hints.end();

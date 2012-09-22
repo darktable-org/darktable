@@ -112,49 +112,49 @@ typedef void** dt_mipmap_cache_allocator_t;
 // if necessary.
 void*
 dt_mipmap_cache_alloc(
-    dt_image_t *img,
-    dt_mipmap_size_t size,
-    dt_mipmap_cache_allocator_t a);
+  dt_image_t *img,
+  dt_mipmap_size_t size,
+  dt_mipmap_cache_allocator_t a);
 
 void dt_mipmap_cache_init   (dt_mipmap_cache_t *cache);
 void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache);
 void dt_mipmap_cache_print  (dt_mipmap_cache_t *cache);
 
-// get a buffer for reading. 
+// get a buffer for reading.
 // see dt_mipmap_get_flags_t for explanation on the exact
 // behaviour. pass 0 as flags for the default (best effort)
 void
 dt_mipmap_cache_read_get(
-    dt_mipmap_cache_t *cache,
-    dt_mipmap_buffer_t *buf,
-    const uint32_t imgid,
-    const dt_mipmap_size_t mip,
-    const dt_mipmap_get_flags_t flags);
+  dt_mipmap_cache_t *cache,
+  dt_mipmap_buffer_t *buf,
+  const uint32_t imgid,
+  const dt_mipmap_size_t mip,
+  const dt_mipmap_get_flags_t flags);
 
 // lock it for writing. this is always blocking.
 // requires you already hold a read lock.
 void
 dt_mipmap_cache_write_get(
-    dt_mipmap_cache_t *cache,
-    dt_mipmap_buffer_t *buf);
+  dt_mipmap_cache_t *cache,
+  dt_mipmap_buffer_t *buf);
 
 // drop a read lock
 void
 dt_mipmap_cache_read_release(
-    dt_mipmap_cache_t *cache,
-    dt_mipmap_buffer_t *buf);
+  dt_mipmap_cache_t *cache,
+  dt_mipmap_buffer_t *buf);
 
 // drop a write lock, read will still remain.
 void
 dt_mipmap_cache_write_release(
-    dt_mipmap_cache_t *cache,
-    dt_mipmap_buffer_t *buf);
+  dt_mipmap_cache_t *cache,
+  dt_mipmap_buffer_t *buf);
 
 // remove thumbnails, so they will be regenerated:
 void
 dt_mipmap_cache_remove(
-    dt_mipmap_cache_t *cache,
-    const uint32_t imgid);
+  dt_mipmap_cache_t *cache,
+  const uint32_t imgid);
 
 // return the closest mipmap size
 // for the given window you wish to draw.
@@ -164,16 +164,16 @@ dt_mipmap_cache_remove(
 // the thumbnail is loaded.
 dt_mipmap_size_t
 dt_mipmap_cache_get_matching_size(
-    const dt_mipmap_cache_t *cache,
-    const int32_t width,
-    const int32_t height);
+  const dt_mipmap_cache_t *cache,
+  const int32_t width,
+  const int32_t height);
 
 
 // allocate enough memory for an uncompressed thumbnail image.
 // returns NULL if the cache is set to not use compression.
 uint8_t*
 dt_mipmap_cache_alloc_scratchmem(
-    const dt_mipmap_cache_t *cache);
+  const dt_mipmap_cache_t *cache);
 
 // decompress the raw mipmapm buffer into the scratchmemory.
 // returns a pointer to the decompressed memory block. that's because
@@ -181,16 +181,16 @@ dt_mipmap_cache_alloc_scratchmem(
 // buffer and scratchmem can be NULL.
 uint8_t*
 dt_mipmap_cache_decompress(
-    const dt_mipmap_buffer_t *buf,
-    uint8_t *scratchmem);
+  const dt_mipmap_buffer_t *buf,
+  uint8_t *scratchmem);
 
 // writes the scratchmem buffer to compressed
 // format into the mipmap cache. does nothing
 // if compression is disabled.
 void
 dt_mipmap_cache_compress(
-    dt_mipmap_buffer_t *buf,
-    uint8_t *const scratchmem);
+  dt_mipmap_buffer_t *buf,
+  uint8_t *const scratchmem);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

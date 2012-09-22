@@ -83,7 +83,7 @@ extern "C"
   {
     return IOP_GROUP_TONE;
   }
- 
+
   int
   flags ()
   {
@@ -93,7 +93,7 @@ extern "C"
   void init_key_accels(dt_iop_module_so_t *self)
   {
     dt_accel_register_slider_iop(self, FALSE,
-        NC_("accel", "contrast compression"));
+                                 NC_("accel", "contrast compression"));
     dt_accel_register_slider_iop(self, FALSE, NC_("accel", "spatial extent"));
   }
 
@@ -103,9 +103,9 @@ extern "C"
       (dt_iop_tonemapping_gui_data_t*)self->gui_data;
 
     dt_accel_connect_slider_iop(self, "contrast compression",
-        GTK_WIDGET(g->contrast));
+                                GTK_WIDGET(g->contrast));
     dt_accel_connect_slider_iop(self, "spatial extent",
-        GTK_WIDGET(g->Fsize));
+                                GTK_WIDGET(g->Fsize));
   }
 
   void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -132,7 +132,7 @@ extern "C"
     // Build I=log(L)
     // and splat into the lattice
 #ifdef _OPENMP
-#pragma omp parallel for shared(lattice)
+    #pragma omp parallel for shared(lattice)
 #endif
     for(int j=0; j<height; j++)
     {
@@ -177,7 +177,7 @@ extern "C"
 
     const float contr = 1./data->contrast;
 #ifdef _OPENMP
-#pragma omp parallel for
+    #pragma omp parallel for
 #endif
     for(int j=0; j<height; j++)
     {
@@ -283,7 +283,7 @@ extern "C"
     module->params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
     module->default_params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
     module->default_enabled = 1;
-  module->priority = 156; // module order created by iop_dependencies.py, do not edit!
+    module->priority = 156; // module order created by iop_dependencies.py, do not edit!
     module->params_size = sizeof(dt_iop_tonemapping_params_t);
     module->gui_data = NULL;
   }
@@ -310,7 +310,7 @@ extern "C"
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->contrast), TRUE, TRUE, 0);
     dt_bauhaus_widget_set_label(g->contrast,_("contrast compression"));
     g_signal_connect (G_OBJECT (g->contrast), "value-changed",
-		      G_CALLBACK (contrast_callback), self);
+                      G_CALLBACK (contrast_callback), self);
 
     /* spatial extent */
     g->Fsize = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->Fsize, 1);

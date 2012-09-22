@@ -4,6 +4,7 @@ cmake_policy(VERSION 2.6)
 
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
 option(USE_NLS "Build Native Language Support (using gettext)" ON)
+option(USE_GEO "Build geotagging parts" ON)
 option(USE_FLICKR "Enable Flickr support" ON)
 option(USE_KWALLET "Build kwallet password storage backend" ON)
 option(USE_GNOME_KEYRING "Build gnome-keyring password storage backend" ON)
@@ -43,6 +44,10 @@ if(APPLE)
 
 	# prefer macports and/or user-installed libraries over system ones
 	LIST(APPEND CMAKE_PREFIX_PATH /opt/local /usr/local)
+	# except libstdc++ (only one linked via -l flag, not full path)
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib")
+	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/lib")
+	set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -L/usr/lib")
 
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_DARWIN_C_SOURCE")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_DARWIN_C_SOURCE")

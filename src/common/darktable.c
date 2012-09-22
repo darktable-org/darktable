@@ -170,7 +170,7 @@ void _dt_sigill_handler(int param)
 {
   fprintf(stderr, "[this doesn't seem to work]\n");
   GtkWidget *dlg = gtk_message_dialog_new(NULL,GTK_DIALOG_MODAL,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_(
-"darktable has trapped an illegal instruction which probably means that \
+      "darktable has trapped an illegal instruction which probably means that \
 an invalid processor optimized codepath is used for your cpu, please try reproduce the crash running 'gdb darktable' from \
 the console and post the backtrace log to mailing list with information about your CPU and where you got the package from."));
   gtk_dialog_run(GTK_DIALOG(dlg));
@@ -207,14 +207,14 @@ void dt_check_cpu(int argc,char **argv)
   cpuid(0x1,ax,bx,cx,dx);
 
   ax = bx = 0;
-  char message[512]={0};
+  char message[512]= {0};
   strcat(message,_("SIMD extensions found: "));
   if((cx & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE3))
     strcat(message,"SSE3 ");
   if( ((dx >> 26) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE2))
     strcat(message,"SSE2 ");
   if (((dx >> 25) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE))
-   strcat(message,"SSE ");
+    strcat(message,"SSE ");
   if (!darktable.cpu_flags)
     strcat(message,"none");
 
@@ -224,7 +224,7 @@ void dt_check_cpu(int argc,char **argv)
     gtk_init (&argc, &argv);
 
     GtkWidget *dlg = gtk_message_dialog_new(NULL,GTK_DIALOG_MODAL,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_(
-"darktable is very cpu intensive and uses SSE2 SIMD instructions \
+        "darktable is very cpu intensive and uses SSE2 SIMD instructions \
 for heavy calculations. This gives a better user experience but also defines a minimum \
 processor requirement.\n\nThe processor in YOUR system does NOT support SSE2. \
 darktable will now close down.\n\n%s"),message);
@@ -281,7 +281,8 @@ static void strip_semicolons_from_keymap(const char* path)
       c = fgetc(fin);
       if(c != EOF)
         fputc(c, fout);
-    }while(c != '\n' && c != EOF);
+    }
+    while(c != '\n' && c != EOF);
   }
 
   fclose(fin);
@@ -505,7 +506,8 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
 #endif
   dt_loc_init_datadir(datadirFromCommand);
   dt_loc_init_plugindir(moduledirFromCommand);
-  if(dt_loc_init_tmp_dir(tmpdirFromCommand)) {
+  if(dt_loc_init_tmp_dir(tmpdirFromCommand))
+  {
     printf(_("ERROR : invalid temporary directory : %s\n"),darktable.tmpdir);
     return usage(argv[0]);
   }

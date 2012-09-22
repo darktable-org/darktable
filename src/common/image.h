@@ -89,8 +89,13 @@ typedef struct dt_image_t
 
   uint32_t filters;  // demosaic pattern
   int32_t bpp;       // bytes per pixel
- 
+
   dt_image_raw_parameters_t legacy_flip; // unfortunately needed to convert old bits to new flip module.
+
+  /* gps coords */
+  double longitude;
+  double latitude;
+
 }
 dt_image_t;
 
@@ -122,6 +127,8 @@ int32_t dt_image_duplicate(const int32_t imgid);
 /** flips the image, clock wise, if given flag. */
 void dt_image_flip(const int32_t imgid, const int32_t cw);
 void dt_image_set_flip(const int32_t imgid, const int32_t user_flip);
+/** set image location lon/lat */
+void dt_image_set_location(const int32_t imgid, double lon, double lat);
 /** returns 1 if there is history data found for this image, 0 else. */
 int dt_image_altered(const uint32_t imgid);
 /** returns the orientation bits of the image, exif or user override, if set. */
@@ -298,6 +305,9 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid);
 void dt_image_write_sidecar_file(int imgid);
 void dt_image_synch_xmp(const int selected);
 void dt_image_synch_all_xmp(const gchar *pathname);
+
+// add an offset to the exif_datetime_taken field
+void dt_image_add_time_offset(const int imgid, const long int offset);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

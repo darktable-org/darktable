@@ -51,14 +51,14 @@
 DT_MODULE(1)
 
 static gboolean star_key_accel_callback(GtkAccelGroup *accel_group,
-                                    GObject *acceleratable, guint keyval,
-                                    GdkModifierType modifier, gpointer data);
+                                        GObject *acceleratable, guint keyval,
+                                        GdkModifierType modifier, gpointer data);
 static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group,
-                                     GObject *acceleratable, guint keyval,
-                                     GdkModifierType modifier, gpointer data);
+    GObject *acceleratable, guint keyval,
+    GdkModifierType modifier, gpointer data);
 static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group,
-                                       GObject *acceleratable, guint keyval,
-                                       GdkModifierType modifier, gpointer data);
+    GObject *acceleratable, guint keyval,
+    GdkModifierType modifier, gpointer data);
 static gboolean
 go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                            guint keyval, GdkModifierType modifier,
@@ -70,12 +70,12 @@ go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
 
 static void
 group_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-                             guint keyval, GdkModifierType modifier,
-                             gpointer data);
+                         guint keyval, GdkModifierType modifier,
+                         gpointer data);
 static void
 ungroup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-                             guint keyval, GdkModifierType modifier,
-                             gpointer data);
+                           guint keyval, GdkModifierType modifier,
+                           gpointer data);
 
 /**
  * this organises the whole library:
@@ -98,7 +98,8 @@ typedef struct dt_library_t
   int32_t collection_count;
 
   /* prepared and reusable statements */
-  struct {
+  struct
+  {
     /* main query statment, should be update on listener signal of collection */
     sqlite3_stmt *main_query;
     /* select imgid from selected_images */
@@ -167,9 +168,9 @@ void init(dt_view_t *self)
 
   /* setup collection listener and initialize main_query statement */
   dt_control_signal_connect(darktable.signals,
-			    DT_SIGNAL_COLLECTION_CHANGED,
-			    G_CALLBACK(_view_lighttable_collection_listener_callback),
-			    (gpointer) self);
+                            DT_SIGNAL_COLLECTION_CHANGED,
+                            G_CALLBACK(_view_lighttable_collection_listener_callback),
+                            (gpointer) self);
 
   _view_lighttable_collection_listener_callback(NULL,self);
 
@@ -518,18 +519,18 @@ end_query_cache:
 
     float imgwd = iir == 1 ? 0.97 : 0.8;
     dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(
-							     darktable.mipmap_cache,
-							     imgwd*wd, imgwd*(iir==1?height:ht));
+                             darktable.mipmap_cache,
+                             imgwd*wd, imgwd*(iir==1?height:ht));
     while(imgids_num > 0)
     {
       imgids_num --;
       dt_mipmap_buffer_t buf;
       dt_mipmap_cache_read_get(
-			       darktable.mipmap_cache,
-			       &buf,
-			       imgids[imgids_num],
-			       mip,
-			       DT_MIPMAP_PREFETCH);
+        darktable.mipmap_cache,
+        &buf,
+        imgids[imgids_num],
+        mip,
+        DT_MIPMAP_PREFETCH);
     }
   }
 
@@ -548,7 +549,8 @@ failure:
       g_object_set(G_OBJECT(dt_ui_center(darktable.gui->ui)), "tooltip-text", tooltip, (char *)NULL);
       g_free(tooltip);
     }
-  } else if(darktable.gui->center_tooltip == 2) // not set in this round
+  }
+  else if(darktable.gui->center_tooltip == 2)   // not set in this round
   {
     darktable.gui->center_tooltip = 0;
     g_object_set(G_OBJECT(dt_ui_center(darktable.gui->ui)), "tooltip-text", "", (char *)NULL);
@@ -716,7 +718,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
 
   dt_view_set_scrollbar(self, MAX(0, offset_i), DT_LIBRARY_MAX_ZOOM, zoom, DT_LIBRARY_MAX_ZOOM*offset_j,
-			lib->collection_count, DT_LIBRARY_MAX_ZOOM*max_cols);
+                        lib->collection_count, DT_LIBRARY_MAX_ZOOM*max_cols);
 
   cairo_translate(cr, -offset_x*wd, -offset_y*ht);
   cairo_translate(cr, -MIN(offset_i*wd, 0.0), 0.0);
@@ -954,8 +956,8 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
  * if there is an expanded group, than they will be joined there, otherwise a new one will be created. */
 static void
 group_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-                             guint keyval, GdkModifierType modifier,
-                             gpointer data)
+                         guint keyval, GdkModifierType modifier,
+                         gpointer data)
 {
   if(!darktable.gui->grouping)
     return;
@@ -978,8 +980,8 @@ group_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
 /** removes the selected images from their current group. */
 static void
 ungroup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-                             guint keyval, GdkModifierType modifier,
-                             gpointer data)
+                           guint keyval, GdkModifierType modifier,
+                           gpointer data)
 {
   if(!darktable.gui->grouping)
     return;
@@ -1033,8 +1035,8 @@ void enter(dt_view_t *self)
 
   /* connect to signals */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-			    G_CALLBACK(_lighttable_mipamps_updated_signal_callback),
-          (gpointer)self);
+                            G_CALLBACK(_lighttable_mipamps_updated_signal_callback),
+                            (gpointer)self);
 
   // clear some state variables
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -1222,7 +1224,7 @@ int key_released(dt_view_t *self, guint key, guint state)
     return 0;
 
   if(key == accels->lighttable_preview.accel_key
-     && state == accels->lighttable_preview.accel_mods && lib->full_preview_id !=-1)
+      && state == accels->lighttable_preview.accel_mods && lib->full_preview_id !=-1)
   {
 
     lib->full_preview_id = -1;
@@ -1251,7 +1253,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
 
   if(key == accels->lighttable_preview.accel_key
-     && state == accels->lighttable_preview.accel_mods)
+      && state == accels->lighttable_preview.accel_mods)
   {
     int32_t mouse_over_id;
     DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
@@ -1277,7 +1279,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   }
 
   if(key == accels->lighttable_left.accel_key
-     && state == accels->lighttable_left.accel_mods)
+      && state == accels->lighttable_left.accel_mods)
   {
     if(layout == 1 && zoom == 1) lib->track = -DT_LIBRARY_MAX_ZOOM;
     else lib->track = -1;
@@ -1285,7 +1287,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   }
 
   if(key == accels->lighttable_right.accel_key
-     && state == accels->lighttable_right.accel_mods)
+      && state == accels->lighttable_right.accel_mods)
   {
     if(layout == 1 && zoom == 1) lib->track = DT_LIBRARY_MAX_ZOOM;
     else lib->track = 1;
@@ -1293,21 +1295,21 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   }
 
   if(key == accels->lighttable_up.accel_key
-     && state == accels->lighttable_up.accel_mods)
+      && state == accels->lighttable_up.accel_mods)
   {
     lib->track = -DT_LIBRARY_MAX_ZOOM;
     return 1;
   }
 
   if(key == accels->lighttable_down.accel_key
-     && state == accels->lighttable_down.accel_mods)
+      && state == accels->lighttable_down.accel_mods)
   {
     lib->track = DT_LIBRARY_MAX_ZOOM;
     return 1;
   }
 
   if(key == accels->lighttable_center.accel_key
-     && state == accels->lighttable_center.accel_mods)
+      && state == accels->lighttable_center.accel_mods)
   {
     lib->center = 1;
     return 1;
@@ -1388,50 +1390,50 @@ void connect_key_accels(dt_view_t *self)
 
   // Rating keys
   closure = g_cclosure_new(
-      G_CALLBACK(star_key_accel_callback),
-      (gpointer)DT_VIEW_DESERT, NULL);
+              G_CALLBACK(star_key_accel_callback),
+              (gpointer)DT_VIEW_DESERT, NULL);
   dt_accel_connect_view(self, "rate desert", closure);
   closure = g_cclosure_new(
-      G_CALLBACK(star_key_accel_callback),
-      (gpointer)DT_VIEW_STAR_1, NULL);
+              G_CALLBACK(star_key_accel_callback),
+              (gpointer)DT_VIEW_STAR_1, NULL);
   dt_accel_connect_view(self, "rate 1", closure);
   closure = g_cclosure_new(
-      G_CALLBACK(star_key_accel_callback),
-      (gpointer)DT_VIEW_STAR_2, NULL);
+              G_CALLBACK(star_key_accel_callback),
+              (gpointer)DT_VIEW_STAR_2, NULL);
   dt_accel_connect_view(self, "rate 2", closure);
   closure = g_cclosure_new(
-      G_CALLBACK(star_key_accel_callback),
-      (gpointer)DT_VIEW_STAR_3, NULL);
+              G_CALLBACK(star_key_accel_callback),
+              (gpointer)DT_VIEW_STAR_3, NULL);
   dt_accel_connect_view(self, "rate 3", closure);
   closure = g_cclosure_new(
-      G_CALLBACK(star_key_accel_callback),
-      (gpointer)DT_VIEW_STAR_4, NULL);
+              G_CALLBACK(star_key_accel_callback),
+              (gpointer)DT_VIEW_STAR_4, NULL);
   dt_accel_connect_view(self, "rate 4", closure);
   closure = g_cclosure_new(
-      G_CALLBACK(star_key_accel_callback),
-      (gpointer)DT_VIEW_STAR_5, NULL);
+              G_CALLBACK(star_key_accel_callback),
+              (gpointer)DT_VIEW_STAR_5, NULL);
   dt_accel_connect_view(self, "rate 5", closure);
   closure = g_cclosure_new(
-      G_CALLBACK(star_key_accel_callback),
-      (gpointer)DT_VIEW_REJECT, NULL);
+              G_CALLBACK(star_key_accel_callback),
+              (gpointer)DT_VIEW_REJECT, NULL);
   dt_accel_connect_view(self, "rate reject", closure);
 
   // Navigation keys
   closure = g_cclosure_new(
-      G_CALLBACK(go_up_key_accel_callback),
-      (gpointer)self, NULL);
+              G_CALLBACK(go_up_key_accel_callback),
+              (gpointer)self, NULL);
   dt_accel_connect_view(self, "navigate up", closure);
   closure = g_cclosure_new(
-      G_CALLBACK(go_down_key_accel_callback),
-      (gpointer)self, NULL);
+              G_CALLBACK(go_down_key_accel_callback),
+              (gpointer)self, NULL);
   dt_accel_connect_view(self, "navigate down", closure);
   closure = g_cclosure_new(
-      G_CALLBACK(go_pgup_key_accel_callback),
-      (gpointer)self, NULL);
+              G_CALLBACK(go_pgup_key_accel_callback),
+              (gpointer)self, NULL);
   dt_accel_connect_view(self, "navigate page up", closure);
   closure = g_cclosure_new(
-      G_CALLBACK(go_pgdown_key_accel_callback),
-      (gpointer)self, NULL);
+              G_CALLBACK(go_pgdown_key_accel_callback),
+              (gpointer)self, NULL);
   dt_accel_connect_view(self, "navigate page down", closure);
 
   // Color keys

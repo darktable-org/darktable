@@ -32,9 +32,9 @@
 
 dt_imageio_retval_t
 dt_imageio_open_tiff(
-    dt_image_t *img,
-    const char *filename,
-    dt_mipmap_cache_allocator_t a)
+  dt_image_t *img,
+  const char *filename,
+  dt_mipmap_cache_allocator_t a)
 {
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;

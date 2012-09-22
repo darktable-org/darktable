@@ -113,7 +113,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_splittoning_gui_data_t *g =
-      (dt_iop_splittoning_gui_data_t*)self->gui_data;
+    (dt_iop_splittoning_gui_data_t*)self->gui_data;
 
   dt_accel_connect_button_iop(self, "pick primary color",
                               GTK_WIDGET(g->colorpick1));
@@ -134,7 +134,7 @@ void init_presets (dt_iop_module_so_t *self)
   // compress : 0
   dt_gui_presets_add_generic(_("authentic sepia"), self->op, self->version(), &(dt_iop_splittoning_params_t)
   {
-      26.0/360.0, 92.0/100.0, 40.0/360.0, 92.0/100.0, 0.63, 0.0
+    26.0/360.0, 92.0/100.0, 40.0/360.0, 92.0/100.0, 0.63, 0.0
   } , sizeof(dt_iop_splittoning_params_t), 1);
 
   //shadows: #446CBB
@@ -143,7 +143,7 @@ void init_presets (dt_iop_module_so_t *self)
   //compress : 5.22
   dt_gui_presets_add_generic(_("authentic cyanotype"), self->op, self->version(), &(dt_iop_splittoning_params_t)
   {
-      220.0/360.0, 64.0/100.0, 220.0/360.0, 64.0/100.0, 0.0, 5.22
+    220.0/360.0, 64.0/100.0, 220.0/360.0, 64.0/100.0, 0.0, 5.22
   } , sizeof(dt_iop_splittoning_params_t), 1);
 
   // shadows : #A16C5E
@@ -152,7 +152,7 @@ void init_presets (dt_iop_module_so_t *self)
   // compress : 0
   dt_gui_presets_add_generic(_("authentic platinotype"), self->op, self->version(), &(dt_iop_splittoning_params_t)
   {
-      13.0/360.0, 42.0/100.0, 13.0/360.0, 42.0/100.0, 100.0, 0.0
+    13.0/360.0, 42.0/100.0, 13.0/360.0, 42.0/100.0, 100.0, 0.0
   } , sizeof(dt_iop_splittoning_params_t), 1);
 
   // shadows: #211A14
@@ -161,7 +161,7 @@ void init_presets (dt_iop_module_so_t *self)
   // compress : 0
   dt_gui_presets_add_generic(_("chocolate brown"), self->op, self->version(), &(dt_iop_splittoning_params_t)
   {
-      28.0/360.0, 39.0/100.0, 28.0/360.0, 8.0/100.0, 0.60, 0.0
+    28.0/360.0, 39.0/100.0, 28.0/360.0, 8.0/100.0, 0.60, 0.0
   } , sizeof(dt_iop_splittoning_params_t), 1);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);

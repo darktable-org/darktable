@@ -86,7 +86,7 @@ dt_collection_update (const dt_collection_t *collection)
   if (!(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
   {
     int need_operator = 0;
-     
+
     /* add default filters */
     if (collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)
     {
@@ -265,65 +265,65 @@ dt_collection_get_sort_descending(const dt_collection_t *collection)
   return collection->params.descending;
 }
 
-gchar *  
+gchar *
 dt_collection_get_sort_query(const dt_collection_t *collection)
-{ 
+{
   gchar *sq = NULL;
 
   switch(collection->params.sort)
   {
     case DT_COLLECTION_SORT_DATETIME:
       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken");
-    break;
- 
+      break;
+
     case DT_COLLECTION_SORT_RATING:
       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7 desc");
-    break;
+      break;
 
     case DT_COLLECTION_SORT_FILENAME:
       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "filename");
-    break;
+      break;
 
     case DT_COLLECTION_SORT_ID:
       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "id");
-    break;
+      break;
 
     case DT_COLLECTION_SORT_COLOR:
       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color desc, filename");
-    break;
+      break;
   }
- 
- if (collection->params.descending)
- {
-   switch(collection->params.sort)
-   {
-     case DT_COLLECTION_SORT_DATETIME:
-     case DT_COLLECTION_SORT_FILENAME:
-     case DT_COLLECTION_SORT_ID:
-     {
-       sq = dt_util_dstrcat(sq, " %s", "desc");
-     }
-     break;
 
-     /* These two are special as they are descending in the default view */
-     case DT_COLLECTION_SORT_RATING:
-     {
-       g_free(sq);
-       sq = NULL;
-       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7");
-     }
-     break;
+  if (collection->params.descending)
+  {
+    switch(collection->params.sort)
+    {
+      case DT_COLLECTION_SORT_DATETIME:
+      case DT_COLLECTION_SORT_FILENAME:
+      case DT_COLLECTION_SORT_ID:
+      {
+        sq = dt_util_dstrcat(sq, " %s", "desc");
+      }
+      break;
 
-     case DT_COLLECTION_SORT_COLOR:
-     {
-       g_free(sq);
-       sq = NULL;
-       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color, filename");
-     }
-     break;
-   }
- }
- return sq;
+      /* These two are special as they are descending in the default view */
+      case DT_COLLECTION_SORT_RATING:
+      {
+        g_free(sq);
+        sq = NULL;
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7");
+      }
+      break;
+
+      case DT_COLLECTION_SORT_COLOR:
+      {
+        g_free(sq);
+        sq = NULL;
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color, filename");
+      }
+      break;
+    }
+  }
+  return sq;
 }
 
 
@@ -359,13 +359,13 @@ uint32_t dt_collection_get_count(const dt_collection_t *collection)
 
   gchar *fq = g_strstr_len(query, strlen(query), "from");
   if ((collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
-    count_query = dt_util_dstrcat(NULL, "select count(images.id) from images %s", collection->where_ext); 
+    count_query = dt_util_dstrcat(NULL, "select count(images.id) from images %s", collection->where_ext);
   else
     count_query = dt_util_dstrcat(count_query, "select count(id) %s", fq);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), count_query, -1, &stmt, NULL);
-  if ((collection->params.query_flags&COLLECTION_QUERY_USE_LIMIT) && 
-      !(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT)) 
+  if ((collection->params.query_flags&COLLECTION_QUERY_USE_LIMIT) &&
+      !(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
   {
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
@@ -410,7 +410,7 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
 
   query = dt_util_dstrcat(query, "where id in (select imgid from selected_images) %s", sq);
 
-    
+
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
 
   while (sqlite3_step (stmt) == SQLITE_ROW)
@@ -511,7 +511,7 @@ dt_collection_update_query(const dt_collection_t *collection)
 
   const int num_rules = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules"), 1, 10);
   char *conj[] = {"and", "or", "and not"};
-  
+
   complete_query = dt_util_dstrcat(complete_query, "(");
 
   for(int i=0; i<num_rules; i++)
@@ -527,9 +527,9 @@ dt_collection_update_query(const dt_collection_t *collection)
 
     get_query_string(property, escaped_text, query);
 
-    if(i > 0) 
+    if(i > 0)
       complete_query = dt_util_dstrcat(complete_query, " %s %s", conj[mode], query);
-    else 
+    else
       complete_query = dt_util_dstrcat(complete_query, "%s", query);
 
     g_free(escaped_text);
@@ -584,7 +584,7 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   int c = dt_collection_get_count(collection);
   int cs = dt_collection_get_selected_count(collection);
   g_snprintf(message, 1024,
-      ngettext("%d image of %d in current collection is selected", "%d images of %d in current collection are selected", cs), cs, c);
+             ngettext("%d image of %d in current collection is selected", "%d images of %d in current collection are selected", cs), cs, c);
   dt_control_hinter_message(darktable.control, message);
 }
 

@@ -34,8 +34,8 @@ const char* dt_colorlabels_to_string(int label);
 int dt_colorlabels_check_label (const int imgid, const int color);
 
 gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
-                                       GObject *acceleratable, guint keyval,
-                                       GdkModifierType modifier, gpointer data);
+    GObject *acceleratable, guint keyval,
+    GdkModifierType modifier, gpointer data);
 
 
 

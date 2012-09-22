@@ -80,7 +80,7 @@ _icon_expose (GtkWidget *widget, GdkEventExpose *event)
                              0.5);
       cairo_fill (cr);
   */
- 
+
   cairo_set_source_rgb (cr,
                         style->fg[state].red/65535.0,
                         style->fg[state].green/65535.0,
@@ -88,7 +88,7 @@ _icon_expose (GtkWidget *widget, GdkEventExpose *event)
 
   /* draw icon */
   if (DTGTK_ICON(widget)->icon)
-      DTGTK_ICON(widget)->icon(cr, x+border, y+border, width-(border*2), height-(border*2), flags);
+    DTGTK_ICON(widget)->icon(cr, x+border, y+border, width-(border*2), height-(border*2), flags);
 
   cairo_destroy (cr);
 
@@ -129,8 +129,8 @@ GtkType dtgtk_icon_get_type()
 }
 
 void dtgtk_icon_set_paint(GtkWidget *icon,
-                            DTGTKCairoPaintIconFunc paint,
-                            gint paintflags)
+                          DTGTKCairoPaintIconFunc paint,
+                          gint paintflags)
 {
   DTGTK_ICON(icon)->icon = paint;
   DTGTK_ICON(icon)->icon_flags = paintflags;

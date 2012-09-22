@@ -35,7 +35,7 @@ typedef struct dt_develop_tiling_t
   unsigned overhead;
   /** overlap needed between tiles (in pixels) */
   unsigned overlap;
-  /** horizontal and vertical alignment requirement of upper left position 
+  /** horizontal and vertical alignment requirement of upper left position
       of tiles. set to a value of 1 for no alignment, or 2 to account for
       Bayer pattern. */
   unsigned xalign;

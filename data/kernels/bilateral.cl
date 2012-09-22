@@ -89,15 +89,15 @@ splat(
     const int            sizey,
     const int            sizez,
     const float          sigma_s,
-    const float          sigma_r)
+    const float          sigma_r,
+    local int            *gi,
+    local float          *accum)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
   // assert(get_local_size(0) == 32)
   // assert(get_local_size(1) == 32)
-  local int gi[32*32];
-  local float accum[32*32*8];
   const int i = get_local_id(0);
   const int j = get_local_id(1);
   int li = 32*j + i;

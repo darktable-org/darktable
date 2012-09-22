@@ -45,8 +45,8 @@ GtkWidget* dtgtk_icon_new(DTGTKCairoPaintIconFunc paint, gint paintflags);
 
 /** set the paint function for a icon */
 void dtgtk_icon_set_paint(GtkWidget *icon,
-                            DTGTKCairoPaintIconFunc paint,
-                            gint paintflags);
+                          DTGTKCairoPaintIconFunc paint,
+                          gint paintflags);
 
 G_END_DECLS
 #endif
