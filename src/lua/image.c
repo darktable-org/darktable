@@ -399,6 +399,8 @@ int dt_lua_init_image(lua_State * L) {
   luaA_struct_member(L,dt_image_t,filename,const char_filename_length);
   luaA_struct_member(L,dt_image_t,width,const int32_t);
   luaA_struct_member(L,dt_image_t,height,const int32_t);
+  luaA_struct_member(L,dt_image_t,longitude,double);
+  luaA_struct_member(L,dt_image_t,latitude,double);
 	return 0;
 }
 
