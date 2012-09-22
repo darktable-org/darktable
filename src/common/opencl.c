@@ -643,8 +643,10 @@ int dt_opencl_build_program(const int dev, const int prog, const char* binname, 
           char link_dest[1024];
           snprintf(link_dest, 1024, "%s/%s", cachedir, md5sum);
           FILE* f = fopen(link_dest, "w+");
-          fwrite(binaries[i], sizeof(char), binary_sizes[i], f);
-          fclose(f);
+          if(!f) goto ret;
+          size_t bytes_written = fwrite(binaries[i], sizeof(char), binary_sizes[i], f);
+          if(bytes_written != binary_sizes[i]) goto ret;
+          fclose(f);        
 
           // create link (e.g. basic.cl.bin -> f1430102c53867c162bb60af6c163328)
           char cwd[1024];
