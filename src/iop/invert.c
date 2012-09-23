@@ -78,14 +78,17 @@ void connect_key_accels(dt_iop_module_t *self)
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return sizeof(float);
+  // this is bytes per pixel, so it has to be 4*sizeof(float) or sizeof(float) for raw images.
+  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && piece->pipe->image.filters && piece->pipe->image.bpp != 4) return sizeof(uint16_t);
+  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && piece->pipe->image.filters && piece->pipe->image.bpp == 4) return sizeof(float);
+  return 4*sizeof(float);
 }
 
 static void
 request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   self->request_color_pick = gtk_toggle_button_get_active(togglebutton);
-  if(darktable.gui->reset || self->dev->image_storage.filters) return;
+  if(darktable.gui->reset) return;
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
 }
@@ -96,7 +99,6 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   if(darktable.gui->reset) return FALSE;
   if(self->picked_color_max[0] < 0) return FALSE;
   if(!self->request_color_pick) return FALSE;
-  if(self->dev->image_storage.filters) return FALSE;
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
@@ -130,7 +132,7 @@ colorpick_button_callback(GtkButton *button, GtkColorSelectionDialog *csd)
 static void
 colorpicker_callback (GtkDarktableButton *button, dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset || self->dev->image_storage.filters) return;
+  if(self->dt->gui->reset) return;
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
@@ -159,11 +161,11 @@ colorpicker_callback (GtkDarktableButton *button, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-// static int
-// FC(const int row, const int col, const unsigned int filters)
-// {
-//   return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
-// }
+static int
+FC(const int row, const int col, const unsigned int filters)
+{
+  return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
+}
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -179,9 +181,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && piece->pipe->image.bpp != 4)
   {
-    // doesn't work and isn't used.
-//     uint16_t min = -1, max = 0, res[3] = {0,0,0};
-//     uint16_t film_rgb_i[3] = {film_rgb[0]*65535, film_rgb[1]*65535*2, film_rgb[2]*65535};
+    const float *const m = piece->pipe->processed_maximum;
+    const int32_t film_rgb_i[3] = {m[0]*film_rgb[0]*65535, m[1]*film_rgb[1]*65535, m[2]*film_rgb[2]*65535};
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, /*film_rgb_i, min, max, res*/) schedule(static)
 #endif
@@ -191,26 +192,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       uint16_t *out = ((uint16_t*)ovoid) + j*roi_out->width;
       for(int i=0; i<roi_out->width; i++,out++,in++)
       {
-        *out = *in;
-//         *out = film_rgb_i[FC(j+roi_out->x, i+roi_out->y, filters)] - *in;
-//         *out = 65535 - *in;
-//         res[FC(j+roi_out->x, i+roi_out->y, filters)] = MAX(res[FC(j+roi_out->x, i+roi_out->y, filters)], *out);
-//         min = MIN(min, *out);
-//         max = MAX(max, *out);
+        *out = CLAMP(film_rgb_i[FC(j+roi_out->x, i+roi_out->y, filters)] - (int32_t)in[0], 0, 0xffff);
       }
     }
 
-//     for(int k=0; k<3; k++)
-//       piece->pipe->processed_maximum[k] = res[k];
+    for(int k=0; k<3; k++)
+      piece->pipe->processed_maximum[k] = 1.0f;
   }
   else if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && piece->pipe->image.bpp == 4)
   {
-    // doesn't work and isn't used.
-//     float min, max;
-//     min = 650000;
-//     max = -650000;
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid/*, min, max*/) schedule(static)
+    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
@@ -218,12 +210,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float *out = ((float*)ovoid) + j*roi_out->width;
       for(int i=0; i<roi_out->width; i++,out++,in++)
       {
-//         min = MIN(min, *in);
-//         max = MAX(max, *in);
-//         *out = 1.0 - *in;
-        *out = *in;
+        *out = CLAMP(film_rgb[FC(j+roi_out->x, i+roi_out->y, filters)] - *in/(float)0xffff, 0, 1.0f);
       }
     }
+    for(int k=0; k<3; k++)
+      piece->pipe->processed_maximum[k] = 1.0f;
   }
   else
   {
@@ -252,9 +243,6 @@ void reload_defaults(dt_iop_module_t *self)
   memcpy(self->params, &tmp, sizeof(dt_iop_invert_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_invert_params_t));
 
-  // can't be switched on for raw and hdr images:
-  if(dt_image_is_raw(&self->dev->image_storage)) self->hide_enable_button = 1;
-  else self->hide_enable_button = 0;
   self->default_enabled = 0;
 }
 
@@ -301,17 +289,8 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
-  // FIXME: double clicking the reset label twice allows this to be enabled for raw files ...
-  if(self->dev->image_storage.filters)
-  {
-    gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), FALSE);
-    dtgtk_reset_label_set_text(g->label, _("this doesn't work for raw/hdr images."));
-  }
-  else
-  {
-    gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), TRUE);
-    dtgtk_reset_label_set_text(g->label, _("color of film material"));
-  }
+  gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), TRUE);
+  dtgtk_reset_label_set_text(g->label, _("color of film material"));
 
   GdkColor c;
   c.red   = p->color[0]*65535.0;
