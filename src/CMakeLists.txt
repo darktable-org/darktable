@@ -175,6 +175,9 @@ if(USE_GEO)
   include_directories(${LIBSOUP2_INCLUDE_DIRS})
   list(APPEND LIBS ${LIBSOUP2_LIBRARIES})
   add_definitions(${LIBSOUP2_DEFINITIONS})
+  message(STATUS "Map mode: enabled")
+else(USE_GEO)
+  message(STATUS "Map mode: disabled, please install libsoup2")
 endif(USE_GEO)
 
 #
