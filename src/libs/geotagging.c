@@ -445,8 +445,8 @@ _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   GtkWidget *extra_box = gtk_hbox_new(FALSE, 5);
   GtkWidget *label = gtk_label_new(_("camera time zone"));
   g_object_set(G_OBJECT(label), "tooltip-text", _("most cameras don't store the time zone in exif. give the correct time zone so the gpx data can be correctly matched"), (char *)NULL);
-  GtkWidget *tz_selection = gtk_combo_box_text_new();
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(tz_selection), "UTC");
+  GtkWidget *tz_selection = gtk_combo_box_new_text();
+  gtk_combo_box_append_text(GTK_COMBO_BOX(tz_selection), "UTC");
   gtk_combo_box_set_active(GTK_COMBO_BOX(tz_selection), 0);
 
   GList *iter = d->timezones;
@@ -457,7 +457,7 @@ _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
     do
     {
       i++;
-      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(tz_selection), (gchar*)iter->data);
+      gtk_combo_box_append_text(GTK_COMBO_BOX(tz_selection), (gchar*)iter->data);
       if(!strcmp((gchar*)iter->data, old_tz))
         gtk_combo_box_set_active(GTK_COMBO_BOX(tz_selection), i);
     }
@@ -471,7 +471,7 @@ _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
 
   if(gtk_dialog_run(GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
-    gchar *tz = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(tz_selection));
+    gchar *tz = gtk_combo_box_get_active_text(GTK_COMBO_BOX(tz_selection));
     dt_conf_set_string("plugins/lighttable/geotagging/tz", tz);
     gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (filechooser));
     dt_control_gpx_apply(filename, -1, tz);
