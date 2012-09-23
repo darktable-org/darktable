@@ -1311,8 +1311,10 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
     cairo_text_extents_t ext;
     set_text_color(cr, 1);
     set_value_font(cr);
-    // make extra large
-    cairo_set_font_size (cr, .2*height);
+    // make extra large, but without dependency on popup window height
+    // (that might differ for comboboxes for example). only fall back
+    // to height dependency if the popup is really small.
+    cairo_set_font_size (cr, MIN(3*get_line_height(), .2*height));
     cairo_text_extents (cr, darktable.bauhaus->keys, &ext);
     cairo_move_to (cr, wd-4-ht-ext.width, height*0.5);
     cairo_show_text(cr, darktable.bauhaus->keys); // FIXME: pango
