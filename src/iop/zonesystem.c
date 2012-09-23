@@ -521,6 +521,8 @@ dt_iop_zonesystem_bar_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_m
   _iop_zonesystem_calculate_zonemap (p, zonemap);
   float s=(1./(p->size-2));
   cairo_set_antialias (cr, CAIRO_ANTIALIAS_NONE);
+  cairo_text_extents_t ext;
+  char zoneStr[4];
   for(int i=0; i<p->size-1; i++)
   {
     /* draw the reference zone */
@@ -529,12 +531,28 @@ dt_iop_zonesystem_bar_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_m
     cairo_set_source_rgb (cr, z, z, z);
     cairo_fill (cr);
 
+
     /* draw zone mappings */
     cairo_rectangle (cr,
                      zonemap[i],DT_ZONESYSTEM_REFERENCE_SPLIT+DT_ZONESYSTEM_BAR_SPLIT_WIDTH,
                      (zonemap[i+1]-zonemap[i]),1.0-DT_ZONESYSTEM_REFERENCE_SPLIT);
     cairo_set_source_rgb (cr, z, z, z);
     cairo_fill (cr);
+
+    /* draw zone index */
+    cairo_move_to (cr, (1./(p->size-1))*(i + 0.5), 0.);
+    cairo_save(cr);
+    cairo_scale(cr,1./width,1./height);
+    snprintf(zoneStr, 4, "%d", i);
+    float t=z+0.3;
+    t = t < 1 ? t : 1-t;
+    cairo_set_source_rgb(cr,t,t,t);
+    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size (cr, (width/(p->size-1))*0.5);
+    cairo_text_extents (cr, zoneStr, &ext);
+    cairo_rel_move_to(cr, - ext.width/2, ext.height);
+    cairo_show_text (cr, zoneStr);
+    cairo_restore(cr);
 
   }
   cairo_set_antialias (cr, CAIRO_ANTIALIAS_DEFAULT);
