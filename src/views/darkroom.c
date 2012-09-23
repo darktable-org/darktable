@@ -204,7 +204,6 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     image_surface_imgid = dev->image_storage.id;
   }
   else if(!dev->preview_dirty)
-    // else if(!dev->preview_loading)
   {
     // draw preview
     mutex = &dev->preview_pipe->backbuf_mutex;

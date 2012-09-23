@@ -21,6 +21,7 @@
 // our includes go first:
 #include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
+#include "common/interpolation.h"
 #include "gui/gtk.h"
 #include "gui/simple_gui.h"
 
@@ -54,19 +55,73 @@ groups()
   return IOP_GROUP_CORRECT;
 }
 
-// TODO: we want to upsize by 2x--3x!
+// modify regions of interest, we scale the image:
+void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
+{
+  float *d = (float *)piece->data;
+  const float scale = d[2];
+  *roi_out = *roi_in;
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW ||
+     piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL) return;
+  // don't set scale (or else segfault because the input buffer will be ridiculously oversized)
+  roi_out->width  = scale * roi_in->width;
+  roi_out->height = scale * roi_in->height;
+}
 
-/** modify regions of interest (optional, per pixel ops don't need this) */
-// void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in);
-// void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in);
+void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
+{
+  float *d = (float *)piece->data;
+  float scale = d[2];
+  *roi_in = *roi_out;
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW ||
+     piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL) return;
+
+  // if the requested scale is < 1, we don't actually want to request downsized
+  // and upsize it again, but just use it as good as it gets first:
+  if(roi_in->scale < 1.0f)
+  {
+    // let's take away scale from roi_in->scale, but only until we reach 1:1
+    const float iscale = MIN(1.0f, roi_in->scale * scale);
+    // given this new input scale, what will be left to scale?
+    scale = (roi_in->scale * scale) / iscale;
+    roi_in->scale = iscale;
+  }
+
+  // don't set scale (or else segfault because the input buffer will be ridiculously oversized)
+  roi_in->x = roi_out->x/scale;
+  roi_in->y = roi_out->y/scale;
+  roi_in->width  = roi_out->width /scale;
+  roi_in->height = roi_out->height/scale;
+}
 
 /** process, all real work is done here. */
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(
+    struct dt_iop_module_t *self,
+    dt_dev_pixelpipe_iop_t *piece,
+    void *ivoid,
+    void *ovoid,
+    const dt_iop_roi_t *roi_in,
+    const dt_iop_roi_t *roi_out)
 {
-  float *d = (float *)piece->data; // the default param format is an array of int or float, depending on the type of widget
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW ||
+     piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
+  {
+    // nothing to do from this distance:
+    memcpy (ovoid, ivoid, sizeof(float)*4*roi_out->width*roi_out->height);
+    return;
+  }
+
+  /*
+  fprintf(stderr, "process with roi in %d %d %d %d (%f)-- out %d %d %d %d (%f)\n",
+      roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_in->scale,
+      roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale);
+      */
+
+  // float *d = (float *)piece->data; // the default param format is an array of int or float, depending on the type of widget
+  // const float scale    = d[2];
+#if 0
   const float radius   = d[0];
   const float strength = d[1];
-  const float scale    = d[2];
   const float luma     = d[3];
   const float chroma   = d[4];
 
@@ -87,11 +142,29 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   // float nL = 1.0f/max_L, nC = 1.0f/max_C;
   // const float norm2[4] = { nL*nL, nC*nC, nC*nC, 1.0f };
 
-  float *tmp = dt_alloc_align(64, sizeof(float)*roi_out->width*dt_get_num_threads());
+  // float *tmp = dt_alloc_align(64, sizeof(float)*roi_out->width*dt_get_num_threads());
   // we want to sum up weights in col[3], so need to init to 0:
   memset(ovoid, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
+#endif
 
-  // TODO: 
+  dt_iop_roi_t roii = *roi_in;
+  dt_iop_roi_t roio = *roi_out;
+  roii.scale = 1.0f;
+  roio.x = roii.x = 0;
+  roio.y = roii.y = 0;
+  roio.scale = roi_out->width / (float)roi_in->width;
+  const struct dt_interpolation* itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  dt_interpolation_resample(itor, (float *)ovoid, &roio, roi_out->width*4*sizeof(float), (float *)ivoid, &roii, roi_in->width*4*sizeof(float));
+
+#if 0
+  dt_interpolation_resample(
+      const struct dt_interpolation* itor,
+      float *out,
+      const dt_iop_roi_t* const roi_out,
+      const int32_t out_stride,
+      const float* const in,
+      const dt_iop_roi_t* const roi_in,
+      const int32_t in_stride);
   
   dt_nlm_accum_scaled(input_features, prior_payload, prior_features, accum, width, height, prior_width, prior_height, P, K, sharpness, tmp);
   // TODO: multiple scales for denoising?
@@ -101,6 +174,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+#endif
 }
 
 

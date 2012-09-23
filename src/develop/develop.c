@@ -333,11 +333,13 @@ void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid)
 float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_factor, int preview)
 {
   float zoom_scale;
-  // set processed width to something useful while image is not there yet:
-  int procw, proch;
-  dt_dev_get_processed_size(dev, &procw, &proch);
-  const float w = preview ? dev->preview_pipe->backbuf_width  : procw;
-  const float h = preview ? dev->preview_pipe->backbuf_height : proch;
+  
+  const float w = preview ? dev->preview_pipe->processed_width  : dev->pipe->processed_width;
+  const float h = preview ? dev->preview_pipe->processed_height : dev->pipe->processed_height;
+  const float ps = dev->pipe->backbuf_width ? 
+  dev->pipe->processed_width/(float)dev->preview_pipe->processed_width :
+dev->preview_pipe->iscale / dev->preview_downsampling;
+  
   switch(zoom)
   {
     case DT_ZOOM_FIT:
@@ -348,11 +350,11 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
       break;
     case DT_ZOOM_1:
       zoom_scale = closeup_factor;
-      if(preview) zoom_scale *= dev->preview_pipe->iscale / dev->preview_downsampling;
+      if(preview) zoom_scale *= ps;
       break;
     default: // DT_ZOOM_FREE
       DT_CTL_GET_GLOBAL(zoom_scale, dev_zoom_scale);
-      if(preview) zoom_scale *= dev->preview_pipe->iscale / dev->preview_downsampling;
+      if(preview) zoom_scale *= ps;
       break;
   }
   return zoom_scale;
