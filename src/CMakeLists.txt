@@ -114,7 +114,7 @@ include_directories(${Glib_INCLUDE_DIRS})
 list(APPEND LIBS ${Glib_LIBRARIES})
 add_definitions(${Glib_DEFINITIONS})
 
-find_package(GTK2 2.24 REQUIRED gtk)
+find_package(GTK2 2.6 REQUIRED gtk)
 include_directories(${GTK2_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK2_LIBRARIES})
 add_definitions(${GTK2_DEFINITIONS})
