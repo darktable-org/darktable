@@ -518,6 +518,8 @@ drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint 
     }
   }
   gtk_drag_finish(context, success, FALSE, time);
+  if(success)
+    g_signal_emit_by_name(lib->map, "changed");
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
