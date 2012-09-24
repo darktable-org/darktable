@@ -78,7 +78,7 @@ void init(dt_view_t *self)
   lib->map = g_object_new (OSM_TYPE_GPS_MAP,
                            "map-source", OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
                            "tile-cache", "dt.map.cache",
-                           "tile-cache-base", "/tmp",
+//                            "tile-cache-base", "/tmp",
                            "proxy-uri",g_getenv("http_proxy"),
                            NULL);
 
@@ -244,7 +244,19 @@ void enter(dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
 
-  lib->map = OSM_GPS_MAP(osm_gps_map_new());
+  lib->map = g_object_new (OSM_TYPE_GPS_MAP,
+                           "map-source", OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
+                           "proxy-uri",g_getenv("http_proxy"),
+                           NULL);
+
+  if(dt_conf_get_bool("plugins/map/show_map_osd"))
+  {
+    OsmGpsMapLayer *osd = g_object_new (OSM_TYPE_GPS_MAP_OSD,
+                                        "show-scale",TRUE, "show-coordinates",TRUE, "show-dpad",TRUE, "show-zoom",TRUE, NULL);
+
+    osm_gps_map_layer_add(OSM_GPS_MAP(lib->map), osd);
+    g_object_unref(G_OBJECT(osd));
+  }
 
   /* replace center widget */
   GtkWidget *parent = gtk_widget_get_parent(dt_ui_center(darktable.gui->ui));
