@@ -253,6 +253,14 @@ int try_enter(dt_view_t *self)
   return 0;
 }
 
+static gboolean _view_map_redraw(gpointer user_data)
+{
+  dt_view_t *self = (dt_view_t*)user_data;
+  dt_map_t *lib = (dt_map_t *)self->data;
+  g_signal_emit_by_name(lib->map, "changed");
+  return FALSE; // remove the function again
+}
+
 static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
@@ -299,17 +307,17 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 5, center_lat);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 6, center_lon);
 
-
   /* remove the old images */
   osm_gps_map_image_remove_all(map);
 
   /* add  all images to the map */
+  gboolean needs_redraw = FALSE;
   dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, ts, ts);
   while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int(lib->statements.main_query, 0);
     dt_mipmap_buffer_t buf;
-    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BLOCKING);
+    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT);
 
     if(buf.buf)
     {
@@ -340,8 +348,17 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
         g_object_unref(scaled);
       g_free(rgbbuf);
     }
+    else
+      needs_redraw = TRUE;
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
   }
+
+  // not exactly thread safe, but should be good enough for updating the display
+  static int timeout_event_source = 0;
+  if(needs_redraw && timeout_event_source == 0)
+    timeout_event_source = g_timeout_add_seconds(2, _view_map_redraw, self); // try again in two seconds, maybe some pictures have loaded by then
+  else
+    timeout_event_source = 0;
 }
 
 void enter(dt_view_t *self)
