@@ -43,7 +43,7 @@ const char* name()
 
 uint32_t views()
 {
-  return DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
+  return DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP;
 }
 
 uint32_t container()

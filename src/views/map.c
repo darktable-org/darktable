@@ -49,8 +49,6 @@ static guint n_targets = G_N_ELEMENTS (target_list);
 
 /* proxy function to center map view on location at a zoom level */
 static void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdouble lat, gdouble zoom);
-/* callback when collection has change, needs to update map */
-static void _view_map_collection_changed(gpointer instance, gpointer user_data);
 /* callback when an image is selected in filmstrip, centers map */
 static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data);
 /* callback when an image is dropped from filmstrip */
@@ -78,7 +76,7 @@ void init(dt_view_t *self)
   lib->map = g_object_new (OSM_TYPE_GPS_MAP,
                            "map-source", OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
                            "tile-cache", "dt.map.cache",
-                           "tile-cache-base", "/tmp",
+//                            "tile-cache-base", "/tmp",
                            "proxy-uri",g_getenv("http_proxy"),
                            NULL);
 
@@ -87,6 +85,20 @@ void init(dt_view_t *self)
 
   osm_gps_map_layer_add(OSM_GPS_MAP(lib->map), osd);
   g_object_unref(G_OBJECT(osd));
+
+  /* build the query string */
+  int max_images_drawn = dt_conf_get_int("plugins/map/max_images_drawn");
+  if(max_images_drawn == 0)
+    max_images_drawn = 100;
+  char *geo_query = g_strdup_printf("select id from images where \
+                              longitude >= ?1 and longitude <= ?2 and latitude <= ?3 and latitude >= ?4 \
+                              and longitude not NULL and latitude not NULL order by abs(latitude - ?5), abs(longitude - ?6) \
+                              limit 0, %d", max_images_drawn);
+
+  /* prepare the main query statement */
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);
+
+  g_free(geo_query);
 }
 
 void cleanup(dt_view_t *self)
@@ -100,6 +112,7 @@ void configure(dt_view_t *self, int wd, int ht)
   //dt_capture_t *lib=(dt_capture_t*)self->data;
 }
 
+#if 0
 static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_i,
                                   int32_t pointerx, int32_t pointery, gpointer user_data)
 {
@@ -233,18 +246,138 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
   }
 
 }
+#endif
 
 int try_enter(dt_view_t *self)
 {
   return 0;
 }
 
+static gboolean _view_map_redraw(gpointer user_data)
+{
+  dt_view_t *self = (dt_view_t*)user_data;
+  dt_map_t *lib = (dt_map_t *)self->data;
+  g_signal_emit_by_name(lib->map, "changed");
+  return FALSE; // remove the function again
+}
+
+static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
+{
+  dt_map_t *lib = (dt_map_t *)self->data;
+
+  const int ts = 64;
+  OsmGpsMapPoint bb[2], *center=NULL;
+
+  /* get bounding box coords */
+  osm_gps_map_get_bbox(map, &bb[0], &bb[1]);
+  float bb_0_lat = 0.0, bb_0_lon = 0.0, bb_1_lat = 0.0, bb_1_lon = 0.0;
+  osm_gps_map_point_get_degrees(&bb[0], &bb_0_lat, &bb_0_lon);
+  osm_gps_map_point_get_degrees(&bb[1], &bb_1_lat, &bb_1_lon);
+
+  /* make the bounding box a little bigger to the west and south */
+  float lat0 = 0.0, lon0 = 0.0, lat1 = 0.0, lon1 = 0.0;
+  OsmGpsMapPoint *pt0 = osm_gps_map_point_new_degrees(0.0, 0.0), *pt1 = osm_gps_map_point_new_degrees(0.0, 0.0);
+  osm_gps_map_convert_screen_to_geographic(map, 0, 0, pt0);
+  osm_gps_map_convert_screen_to_geographic(map, 1.5*ts, 1.5*ts, pt1);
+  osm_gps_map_point_get_degrees(pt0, &lat0, &lon0);
+  osm_gps_map_point_get_degrees(pt1, &lat1, &lon1);
+  osm_gps_map_point_free(pt0);
+  osm_gps_map_point_free(pt1);
+  double south_border = lat0 - lat1, west_border = lon1 - lon0;
+
+  /* get map view state and store  */
+  int zoom = osm_gps_map_get_zoom(map);
+  center = osm_gps_map_get_center(map);
+  float center_lat, center_lon;
+  dt_conf_set_float("plugins/map/longitude", center->rlon);
+  dt_conf_set_float("plugins/map/latitude", center->rlat);
+  dt_conf_set_int("plugins/map/zoom", zoom);
+  osm_gps_map_point_get_degrees(center, &center_lat, &center_lon);
+  osm_gps_map_point_free(center);
+
+  /* let's reset and reuse the main_query statement */
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
+  DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
+
+  /* bind bounding box coords for the main query */
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 1, bb_0_lon - west_border);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 2, bb_1_lon);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 3, bb_0_lat);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 4, bb_1_lat - south_border);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 5, center_lat);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 6, center_lon);
+
+  /* remove the old images */
+  osm_gps_map_image_remove_all(map);
+
+  /* add  all images to the map */
+  gboolean needs_redraw = FALSE;
+  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, ts, ts);
+  while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
+  {
+    int imgid = sqlite3_column_int(lib->statements.main_query, 0);
+    dt_mipmap_buffer_t buf;
+    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT);
+
+    if(buf.buf)
+    {
+      uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
+      uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
+
+      uint8_t *rgbbuf = g_malloc((buf.width+2)*(buf.height+2)*3);
+      memset(rgbbuf, 64, (buf.width+2)*(buf.height+2)*3);
+      for(int i=1; i<=buf.height; i++)
+        for(int j=1; j<=buf.width; j++)
+          for(int k=0; k<3; k++)
+            rgbbuf[(i*(buf.width+2)+j)*3+k] = buf_decompressed[((i-1)*buf.width+j-1)*4+2-k];
+
+      int w=ts, h=ts;
+      if(buf.width < buf.height) w = (buf.width*ts)/buf.height; // portrait
+      else                       h = (buf.height*ts)/buf.width; // landscape
+
+      GdkPixbuf *source = gdk_pixbuf_new_from_data(rgbbuf, GDK_COLORSPACE_RGB, FALSE, 8, (buf.width+2), (buf.height+2), (buf.width+2)*3, NULL, NULL);
+      GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
+      //TODO: add back the arrow on the left lower corner of the image, pointing to the location
+      const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+      osm_gps_map_image_add_with_alignment(map, cimg->latitude, cimg->longitude, scaled, 0, 1);
+      dt_image_cache_read_release(darktable.image_cache, cimg);
+
+      if(source)
+        g_object_unref(source);
+      if(scaled)
+        g_object_unref(scaled);
+      g_free(rgbbuf);
+    }
+    else
+      needs_redraw = TRUE;
+    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+  }
+
+  // not exactly thread safe, but should be good enough for updating the display
+  static int timeout_event_source = 0;
+  if(needs_redraw && timeout_event_source == 0)
+    timeout_event_source = g_timeout_add_seconds(2, _view_map_redraw, self); // try again in two seconds, maybe some pictures have loaded by then
+  else
+    timeout_event_source = 0;
+}
 
 void enter(dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
 
-  lib->map = OSM_GPS_MAP(osm_gps_map_new());
+  lib->map = g_object_new (OSM_TYPE_GPS_MAP,
+                           "map-source", OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
+                           "proxy-uri",g_getenv("http_proxy"),
+                           NULL);
+
+  if(dt_conf_get_bool("plugins/map/show_map_osd"))
+  {
+    OsmGpsMapLayer *osd = g_object_new (OSM_TYPE_GPS_MAP_OSD,
+                                        "show-scale",TRUE, "show-coordinates",TRUE, "show-dpad",TRUE, "show-zoom",TRUE, NULL);
+
+    osm_gps_map_layer_add(OSM_GPS_MAP(lib->map), osd);
+    g_object_unref(G_OBJECT(osd));
+  }
 
   /* replace center widget */
   GtkWidget *parent = gtk_widget_get_parent(dt_ui_center(darktable.gui->ui));
@@ -259,14 +392,7 @@ void enter(dt_view_t *self)
   darktable.view_manager->proxy.map.view = self;
   darktable.view_manager->proxy.map.center_on_location = _view_map_center_on_location;
 
-  /* setup collection listener and initialize main_query statement */
-  dt_control_signal_connect(darktable.signals,
-                            DT_SIGNAL_COLLECTION_CHANGED,
-                            G_CALLBACK(_view_map_collection_changed),
-                            (gpointer) self);
-
-
-  osm_gps_map_set_post_expose_callback(lib->map, _view_map_post_expose, lib);
+//   osm_gps_map_set_post_expose_callback(lib->map, _view_map_post_expose, lib);
 
   /* restore last zoom,location in map */
   OsmGpsMapPoint *pt;
@@ -280,8 +406,6 @@ void enter(dt_view_t *self)
   osm_gps_map_set_center_and_zoom(lib->map, lat, lon, zoom);
   osm_gps_map_point_free(pt);
 
-  _view_map_collection_changed(NULL, self);
-
   /* connect signal for filmstrip image activate */
   dt_control_signal_connect(darktable.signals,
                             DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
@@ -291,7 +415,7 @@ void enter(dt_view_t *self)
   /* allow drag&drop of images from filmstrip */
   gtk_drag_dest_set(GTK_WIDGET(lib->map), GTK_DEST_DEFAULT_ALL, target_list, n_targets, GDK_ACTION_COPY);
   g_signal_connect(GTK_WIDGET(lib->map), "drag-data-received", G_CALLBACK(drag_and_drop_received), self);
-
+  g_signal_connect(GTK_WIDGET(lib->map), "changed", G_CALLBACK(_view_map_changed_callback), self);
 }
 
 void leave(dt_view_t *self)
@@ -307,10 +431,6 @@ void leave(dt_view_t *self)
 
   /* reset proxy */
   darktable.view_manager->proxy.map.view = NULL;
-
-  /* disconnect from signals */
-  dt_control_signal_disconnect(darktable.signals,
-                               G_CALLBACK(_view_map_collection_changed), (gpointer)self);
 
 }
 
@@ -343,34 +463,6 @@ void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdouble la
 {
   dt_map_t *lib = (dt_map_t *)view->data;
   osm_gps_map_set_center_and_zoom(lib->map, lat, lon, zoom);
-}
-
-
-void _view_map_collection_changed(gpointer instance, gpointer user_data)
-{
-  dt_view_t *self = (dt_view_t *)user_data;
-  dt_map_t *lib = (dt_map_t *)self->data;
-
-  /* check if we can get a query from collection */
-  const gchar *query = dt_collection_get_query (darktable.collection);
-  if(!query)
-    return;
-
-  /* if we have a statment lets clean it */
-  if(lib->statements.main_query)
-    sqlite3_finalize(lib->statements.main_query);
-
-  /* build the new query string */
-  char *geo_query = g_strdup("select id from images where \
-                              longitude >= ?1 and longitude <= ?2 and latitude <= ?3 and latitude >= ?4\
-                              and longitude not NULL and latitude not NULL limit 0, 100");
-
-  /* prepare a new main query statement for collection */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);
-
-  dt_control_queue_redraw_widget(GTK_WIDGET(lib->map));
-
-  g_free(geo_query);
 }
 
 static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data)
@@ -419,6 +511,8 @@ drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint 
     }
   }
   gtk_drag_finish(context, success, FALSE, time);
+  if(success)
+    g_signal_emit_by_name(lib->map, "changed");
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

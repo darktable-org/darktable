@@ -6,23 +6,23 @@ set(MODULES darkroom lighttable)
 add_library(darkroom MODULE "darkroom.c")
 add_library(lighttable MODULE "lighttable.c")
 
-if(LIBSOUP2_FOUND)
+if(USE_GEO)
     add_library(map MODULE "map.c")
     set(MODULES ${MODULES} map)
-endif(LIBSOUP2_FOUND)
+endif(USE_GEO)
 
 
 if(GPHOTO2_FOUND)
-	add_library(views_capture MODULE "capture.c")
-	set_target_properties(views_capture PROPERTIES OUTPUT_NAME capture)
-	set(MODULES ${MODULES} views_capture)
+    add_library(views_capture MODULE "capture.c")
+    set_target_properties(views_capture PROPERTIES OUTPUT_NAME capture)
+    set(MODULES ${MODULES} views_capture)
 endif(GPHOTO2_FOUND)
 
 foreach(module ${MODULES})
-	target_link_libraries(${module} ${LIBS})
+    target_link_libraries(${module} ${LIBS})
 endforeach(module)
 
 foreach(module ${MODULES})
-	install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/views)
+    install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/views)
 endforeach(module)
 
