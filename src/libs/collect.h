@@ -28,6 +28,7 @@ dt_lib_collect_mode_t;
 const char *dt_lib_collect_string[] =
 {
   N_("film roll"),
+  N_("folders"),
   N_("camera"),
   N_("tag"),
   N_("date"),
@@ -41,8 +42,7 @@ const char *dt_lib_collect_string[] =
   N_("lens"),
   N_("iso"),
   N_("aperture"),
-  N_("filename"),
-  N_("folders")
+  N_("filename")
 };
 const int dt_lib_collect_string_cnt = 16;
 
