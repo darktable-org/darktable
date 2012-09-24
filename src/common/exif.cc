@@ -116,7 +116,7 @@ _gps_rationale_to_number(const double r0_1, const double r0_2, const double r1_1
   if (sec != -1.0)
     res += sec/3600.0;
 
-  if (sign == 'S')
+  if (sign == 'S' || sign == 'W')
     res *= -1.0;
 
   return res;
