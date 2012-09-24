@@ -1203,7 +1203,8 @@ entry_key_press_exit:
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(view), DT_LIB_COLLECT_COL_TOOLTIP);
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), listmodel);
   g_signal_connect(G_OBJECT (view), "row-activated", G_CALLBACK (row_activated), d);
-  gtk_widget_show(GTK_WIDGET(d->scrolledwindow));
+  gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
+  gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
   g_object_unref(listmodel);
   return FALSE;
 }
