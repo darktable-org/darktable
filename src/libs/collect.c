@@ -1203,7 +1203,7 @@ entry_key_press_exit:
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(view), DT_LIB_COLLECT_COL_TOOLTIP);
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), listmodel);
   g_signal_connect(G_OBJECT (view), "row-activated", G_CALLBACK (row_activated), d);
-  gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
+  gtk_widget_show(GTK_WIDGET(d->scrolledwindow));
   g_object_unref(listmodel);
   return FALSE;
 }
@@ -1217,6 +1217,10 @@ _lib_collect_gui_update (dt_lib_module_t *self)
   darktable.gui->reset = 1;
   const int active = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules") - 1, 0, (MAX_RULES-1));
   char confname[200];
+
+  gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(d->sw2), TRUE);
+
   for(int i=0; i<MAX_RULES; i++)
   {
     gtk_widget_set_no_show_all(d->rule[i].hbox, TRUE);
@@ -1673,8 +1677,6 @@ gui_init (dt_lib_module_t *self)
   d->listmodel = listmodel;
   
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
-  gtk_widget_hide(GTK_WIDGET(view));
-  gtk_widget_hide(sw);
 
 
   GtkWidget *vbox = gtk_vbox_new(FALSE, 5);
@@ -1687,7 +1689,6 @@ gui_init (dt_lib_module_t *self)
   gtk_widget_set_size_request(GTK_WIDGET(sw2), -1, 300);
  
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw2), TRUE, TRUE, 0);
-  gtk_widget_hide(sw2);
   
   d->labels = NULL;
   d->trees = NULL;
