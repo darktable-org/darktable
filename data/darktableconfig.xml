@@ -847,6 +847,13 @@
     <shortdescription>show information overlay on map</shortdescription>
     <longdescription>overlay location, zoom level and similar data on the map</longdescription>
   </dtconfig>
+  <dtconfig prefs="gui">
+    <name>plugins/map/max_images_drawn</name>
+    <type>int</type>
+    <default>100</default>
+    <shortdescription>maximum number of images drawn on map</shortdescription>
+    <longdescription>the maximum number of geotagged images drawn on the map. increasing this number can slow drawing of the map down (needs a restart).</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>ui_last/expander_metadata</name>
     <type>int</type>
