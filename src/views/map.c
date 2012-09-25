@@ -266,7 +266,7 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   dt_map_t *lib = (dt_map_t *)self->data;
 
   const int ts = 64;
-  OsmGpsMapPoint bb[2], *center=NULL;
+  OsmGpsMapPoint bb[2];
 
   /* get bounding box coords */
   osm_gps_map_get_bbox(map, &bb[0], &bb[1]);
@@ -286,14 +286,12 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   double south_border = lat0 - lat1, west_border = lon1 - lon0;
 
   /* get map view state and store  */
-  int zoom = osm_gps_map_get_zoom(map);
-  center = osm_gps_map_get_center(map);
+  int zoom;
   float center_lat, center_lon;
-  dt_conf_set_float("plugins/map/longitude", center->rlon);
-  dt_conf_set_float("plugins/map/latitude", center->rlat);
+  g_object_get(G_OBJECT(map), "zoom", &zoom, "latitude", &center_lat, "longitude", &center_lon, NULL);
+  dt_conf_set_float("plugins/map/longitude", center_lon);
+  dt_conf_set_float("plugins/map/latitude", center_lat);
   dt_conf_set_int("plugins/map/zoom", zoom);
-  osm_gps_map_point_get_degrees(center, &center_lat, &center_lon);
-  osm_gps_map_point_free(center);
 
   /* let's reset and reuse the main_query statement */
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
@@ -395,16 +393,11 @@ void enter(dt_view_t *self)
 //   osm_gps_map_set_post_expose_callback(lib->map, _view_map_post_expose, lib);
 
   /* restore last zoom,location in map */
-  OsmGpsMapPoint *pt;
-  float lon, lat;
-  const float rlon = dt_conf_get_float("plugins/map/longitude");
-  const float rlat = dt_conf_get_float("plugins/map/latitude");
+  const float lon = dt_conf_get_float("plugins/map/longitude");
+  const float lat = dt_conf_get_float("plugins/map/latitude");
   const int zoom = dt_conf_get_int("plugins/map/zoom");
 
-  pt = osm_gps_map_point_new_radians(rlat,rlon);
-  osm_gps_map_point_get_degrees (pt, &lat, &lon);
   osm_gps_map_set_center_and_zoom(lib->map, lat, lon, zoom);
-  osm_gps_map_point_free(pt);
 
   /* connect signal for filmstrip image activate */
   dt_control_signal_connect(darktable.signals,
