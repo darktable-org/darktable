@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-09-24 18:37-0430\n"
-"PO-Revision-Date: 2012-09-24 19:04-0400\n"
+"PO-Revision-Date: 2012-09-25 07:32-0400\n"
 "Last-Translator: tatica <tatadbb@gmail.com>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -1046,7 +1046,7 @@ msgstr "luminosidad"
 #: ../src/iop/equalizer.c:343
 #: ../src/iop/nlmeans.c:691
 msgid "chroma"
-msgstr "chroma"
+msgstr "croma"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
 #: ../src/develop/blend_gui.c:932
@@ -1127,7 +1127,7 @@ msgstr "vista similar"
 
 #: ../src/libs/similarity.c:128
 msgid "match images with selected image and views the result"
-msgstr "coincidencia en imágenes seleccionadas para ver resultados"
+msgstr "comparar imágenes seleccionadas y ver resultados"
 
 #: ../src/gui/accelerators.c:33
 #: ../src/gui/accelerators.c:77
@@ -1374,12 +1374,12 @@ msgstr "vista de captura"
 #: ../src/gui/gtk.c:834
 msgctxt "accel"
 msgid "lighttable view"
-msgstr "mesa de luz"
+msgstr "Mesa de luz"
 
 #: ../src/gui/gtk.c:835
 msgctxt "accel"
 msgid "darkroom view"
-msgstr "cuarto oscuro"
+msgstr "Cuarto oscuro"
 
 #. register ctrl-q to quit:
 #: ../src/gui/gtk.c:854
@@ -2203,11 +2203,11 @@ msgstr "ecualizador"
 #: ../src/iop/soften.c:105
 msgctxt "accel"
 msgid "mix"
-msgstr "mix"
+msgstr "mezcla"
 
 #: ../src/iop/atrous.c:764
 msgid "enhance coarse"
-msgstr "mejorar tosco"
+msgstr "mejorar aspereza"
 
 #: ../src/iop/atrous.c:778
 msgid "sharpen and denoise (strong)"
@@ -2229,7 +2229,7 @@ msgstr "enfoque"
 
 #: ../src/iop/atrous.c:834
 msgid "chroma denoise"
-msgstr "reducción de ruido (chroma)"
+msgstr "reducción de ruido (croma)"
 
 #: ../src/iop/atrous.c:848
 msgid "denoise (subtle)"
@@ -2261,7 +2261,7 @@ msgstr "claridad"
 #: ../src/iop/atrous.c:1185
 #: ../src/iop/atrous.c:1189
 msgid "coarse"
-msgstr "tosco"
+msgstr "aspereza"
 
 #: ../src/iop/atrous.c:1191
 #: ../src/iop/atrous.c:1195
@@ -2316,7 +2316,7 @@ msgstr "enfoque de los bordes en cada parte"
 #: ../src/iop/atrous.c:1448
 #: ../src/iop/soften.c:601
 msgid "mix"
-msgstr "mix"
+msgstr "mezcla"
 
 #: ../src/iop/atrous.c:1449
 msgid "make effect stronger or weaker"
@@ -3184,7 +3184,7 @@ msgstr "prueba de impresión"
 
 #: ../src/iop/colorout.c:849
 msgid "output intent"
-msgstr "propósito"
+msgstr "salida"
 
 #: ../src/iop/colorout.c:850
 #: ../src/iop/colorout.c:857
@@ -3213,7 +3213,7 @@ msgstr "absoluto colorimétrico"
 
 #: ../src/iop/colorout.c:855
 msgid "display intent"
-msgstr "propósito (pantalla)"
+msgstr "salida en pantalla"
 
 #: ../src/iop/colorout.c:864
 msgid "output profile"
@@ -3242,7 +3242,7 @@ msgstr "sRGB (seguro para web)"
 
 #: ../src/iop/colorout.c:907
 msgid "rendering intent"
-msgstr "propósito"
+msgstr "renderizado"
 
 #: ../src/iop/colorout.c:908
 #, c-format
@@ -3699,7 +3699,7 @@ msgstr "tosquedad"
 
 #: ../src/iop/grain.c:517
 msgid "coarseness"
-msgstr "tosco"
+msgstr "aspereza"
 
 #: ../src/iop/grain.c:520
 msgid "the grain size (~iso of the film)"
@@ -4215,7 +4215,7 @@ msgstr "luma"
 #: ../src/iop/nlmeans.c:114
 msgctxt "accel"
 msgid "chroma"
-msgstr "chroma"
+msgstr "croma"
 
 #: ../src/iop/nlmeans.c:685
 msgid "patch size"
@@ -5153,7 +5153,7 @@ msgstr "crear"
 
 #: ../src/libs/collect.c:86
 msgid "collect images"
-msgstr "selección de imágenes por"
+msgstr "recolectar imagenes"
 
 #: ../src/libs/collect.c:235
 #: ../src/libs/collect.c:237
@@ -5418,7 +5418,7 @@ msgstr "escribir archivos xmp"
 
 #: ../src/libs/export.c:69
 msgid "export selected"
-msgstr "exportar seleccionadas"
+msgstr "exportar selección"
 
 #: ../src/libs/export.c:386
 msgid "target storage"
@@ -5805,7 +5805,7 @@ msgstr "importar desde cámara"
 #: ../src/libs/import.c:107
 msgctxt "accel"
 msgid "tethered shoot"
-msgstr "captura"
+msgstr "Captura"
 
 #: ../src/libs/import.c:108
 msgctxt "accel"
@@ -6303,7 +6303,7 @@ msgstr ""
 
 #: ../src/libs/select.c:126
 msgid "select untouched"
-msgstr "seleccionar no tocadas"
+msgstr "seleccionar no editadas"
 
 #: ../src/libs/select.c:128
 msgid ""
