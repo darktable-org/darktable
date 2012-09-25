@@ -55,7 +55,9 @@ void dt_view_manager_init(dt_view_manager_t *vm)
     "lighttable",
     "darkroom",
     "capture",
+#ifdef HAVE_MAP
     "map",
+#endif
     NULL
   };
   char *module = modules[midx];
