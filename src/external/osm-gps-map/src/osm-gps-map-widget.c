@@ -2910,25 +2910,6 @@ osm_gps_map_set_zoom (OsmGpsMap *map, int zoom)
     return priv->map_zoom;
 }
 
-OsmGpsMapPoint * osm_gps_map_get_center (OsmGpsMap *map)
-{
-  OsmGpsMapPrivate *priv;
-  g_return_val_if_fail (OSM_IS_GPS_MAP (map), 0);
-  priv = map->priv;
-
-  return osm_gps_map_point_new_radians(priv->center_rlat, priv->center_rlon);
-}
-
-int osm_gps_map_get_zoom (OsmGpsMap *map)
-{
-  OsmGpsMapPrivate *priv;
-  g_return_val_if_fail (OSM_IS_GPS_MAP (map), 0);
-  priv = map->priv;
-
-  return priv->map_zoom;
-}
-
-
 /**
  * osm_gps_map_zoom_in:
  *
