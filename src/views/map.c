@@ -90,10 +90,10 @@ void init(dt_view_t *self)
   int max_images_drawn = dt_conf_get_int("plugins/map/max_images_drawn");
   if(max_images_drawn == 0)
     max_images_drawn = 100;
-  char *geo_query = g_strdup_printf("select id from images where \
+  char *geo_query = g_strdup_printf("select * from (select id from images where \
                               longitude >= ?1 and longitude <= ?2 and latitude <= ?3 and latitude >= ?4 \
                               and longitude not NULL and latitude not NULL order by abs(latitude - ?5), abs(longitude - ?6) \
-                              limit 0, %d", max_images_drawn);
+                              limit 0, %d) order by id", max_images_drawn);
 
   /* prepare the main query statement */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);
