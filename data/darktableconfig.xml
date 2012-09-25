@@ -840,12 +840,12 @@
     <shortdescription>ask before deleting a tag</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="gui">
+  <dtconfig>
     <name>plugins/map/show_map_osd</name>
     <type>bool</type>
     <default>TRUE</default>
-    <shortdescription>show information overlay on map</shortdescription>
-    <longdescription>overlay location, zoom level and similar data on the map</longdescription>
+    <shortdescription/>
+    <longdescription/>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>plugins/map/max_images_drawn</name>

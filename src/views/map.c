@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2011 henrik andersson.
+    copyright (c) 2012 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,6 +37,7 @@ typedef struct dt_map_t
 {
   GtkWidget *center;
   OsmGpsMap *map;
+  OsmGpsMapLayer *osd;
   struct
   {
     sqlite3_stmt *main_query;
@@ -49,6 +51,10 @@ static guint n_targets = G_N_ELEMENTS (target_list);
 
 /* proxy function to center map view on location at a zoom level */
 static void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdouble lat, gdouble zoom);
+/* proxy function to show or hide the osd */
+static void _view_map_show_osd(const dt_view_t *view, gboolean enabled);
+/* proxy function to set the map source */
+static void _view_map_set_map_source(const dt_view_t *view, OsmGpsMapSource_t map_source);
 /* callback when an image is selected in filmstrip, centers map */
 static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data);
 /* callback when an image is dropped from filmstrip */
@@ -80,11 +86,8 @@ void init(dt_view_t *self)
                            "proxy-uri",g_getenv("http_proxy"),
                            NULL);
 
-  OsmGpsMapLayer *osd = g_object_new (OSM_TYPE_GPS_MAP_OSD,
-                                      "show-scale",TRUE, NULL);
-
-  osm_gps_map_layer_add(OSM_GPS_MAP(lib->map), osd);
-  g_object_unref(G_OBJECT(osd));
+  lib->osd = g_object_new (OSM_TYPE_GPS_MAP_OSD,
+                                        "show-scale",TRUE, "show-coordinates",TRUE, "show-dpad",TRUE, "show-zoom",TRUE, NULL);
 
   /* build the query string */
   int max_images_drawn = dt_conf_get_int("plugins/map/max_images_drawn");
@@ -103,6 +106,8 @@ void init(dt_view_t *self)
 
 void cleanup(dt_view_t *self)
 {
+  dt_map_t *lib = (dt_map_t *)self->data;
+  g_object_unref(G_OBJECT(lib->osd));
   free(self->data);
 }
 
@@ -363,18 +368,33 @@ void enter(dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
 
+  OsmGpsMapSource_t map_source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
+  const gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
+  if(old_map_source && old_map_source[0] != '\0')
+  {
+    // find the number of the stored map_source
+    for(int i=0; i<=OSM_GPS_MAP_SOURCE_LAST; i++)
+    {
+      const gchar *new_map_source = osm_gps_map_source_get_friendly_name(i);
+      if(!g_strcmp0(old_map_source, new_map_source))
+      {
+        if(osm_gps_map_source_is_valid(i))
+          map_source = i;
+        break;
+      }
+    }
+  }
+  else // open street map should be a nice default ...
+    dt_conf_set_string("plugins/map/map_source", osm_gps_map_source_get_friendly_name(OSM_GPS_MAP_SOURCE_OPENSTREETMAP));
+
   lib->map = g_object_new (OSM_TYPE_GPS_MAP,
-                           "map-source", OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
+                           "map-source", map_source,
                            "proxy-uri",g_getenv("http_proxy"),
                            NULL);
 
   if(dt_conf_get_bool("plugins/map/show_map_osd"))
   {
-    OsmGpsMapLayer *osd = g_object_new (OSM_TYPE_GPS_MAP_OSD,
-                                        "show-scale",TRUE, "show-coordinates",TRUE, "show-dpad",TRUE, "show-zoom",TRUE, NULL);
-
-    osm_gps_map_layer_add(OSM_GPS_MAP(lib->map), osd);
-    g_object_unref(G_OBJECT(osd));
+    osm_gps_map_layer_add(OSM_GPS_MAP(lib->map), lib->osd);
   }
 
   /* replace center widget */
@@ -389,8 +409,8 @@ void enter(dt_view_t *self)
   /* setup proxy functions */
   darktable.view_manager->proxy.map.view = self;
   darktable.view_manager->proxy.map.center_on_location = _view_map_center_on_location;
-
-//   osm_gps_map_set_post_expose_callback(lib->map, _view_map_post_expose, lib);
+  darktable.view_manager->proxy.map.show_osd = _view_map_show_osd;
+  darktable.view_manager->proxy.map.set_map_source = _view_map_set_map_source;
 
   /* restore last zoom,location in map */
   const float lon = dt_conf_get_float("plugins/map/longitude");
@@ -458,8 +478,44 @@ void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdouble la
   osm_gps_map_set_center_and_zoom(lib->map, lat, lon, zoom);
 }
 
+void _view_map_show_osd(const dt_view_t *view, gboolean enabled)
+{
+  dt_map_t *lib = (dt_map_t*)view->data;
+
+  gboolean old_value = dt_conf_get_bool("plugins/map/show_map_osd");
+  if(enabled == old_value)
+    return;
+
+  dt_conf_set_bool("plugins/map/show_map_osd", enabled);
+  if(enabled)
+    osm_gps_map_layer_add(OSM_GPS_MAP(lib->map), lib->osd);
+  else
+    osm_gps_map_layer_remove(OSM_GPS_MAP(lib->map), lib->osd);
+
+  g_signal_emit_by_name(lib->map, "changed");
+}
+
+void _view_map_set_map_source(const dt_view_t *view, OsmGpsMapSource_t map_source)
+{
+  dt_map_t *lib = (dt_map_t*)view->data;
+
+  const gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
+  const gchar *new_map_source = osm_gps_map_source_get_friendly_name(map_source);
+  if(!g_strcmp0(old_map_source, new_map_source))
+    return;
+
+  dt_conf_set_string("plugins/map/map_source", new_map_source);
+  GValue value = {0,};
+  g_value_init(&value, G_TYPE_INT);
+  g_value_set_int(&value, map_source);
+  g_object_set_property(G_OBJECT(lib->map), "map-source", &value);
+  g_value_unset(&value);
+}
+
 static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data)
 {
+  dt_view_t *self = (dt_view_t*)user_data;
+  dt_map_t *lib = (dt_map_t*)self->data;
   double longitude, latitude;
   int32_t imgid = 0;
   if ((imgid=dt_view_filmstrip_get_activated_imgid(darktable.view_manager))>0)
@@ -469,7 +525,11 @@ static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer us
     latitude = cimg->latitude;
     dt_image_cache_read_release(darktable.image_cache, cimg);
     if(!isnan(longitude) && !isnan(latitude))
-      _view_map_center_on_location((dt_view_t*)user_data, longitude, latitude, 16); // TODO: is it better to keep the zoom level?
+    {
+      int zoom;
+      g_object_get(G_OBJECT(lib->map), "zoom", &zoom, NULL);
+      _view_map_center_on_location(self, longitude, latitude, zoom); // TODO: is it better to keep the zoom level or to zoom in? 16 is a nice close up.
+    }
   }
 }
 
