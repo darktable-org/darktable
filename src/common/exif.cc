@@ -447,6 +447,8 @@ int dt_exif_read(dt_image_t *img, const char* path)
     image->readMetadata();
     Exiv2::ExifData &exifData = image->exifData();
 
+    int res = dt_exif_read_data(img, exifData);
+
     // Also read IPTC metadata. I'm not sure if dt_exif_read() is the right place for it ...
     // FIXME: We should pick a few more from http://www.exiv2.org/iptc.html
     Exiv2::IptcData &iptcData = image->iptcData();
@@ -503,7 +505,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
       img->longitude = _gps_string_to_number(xmpPos->toString().c_str());
     }
 
-    return dt_exif_read_data(img, exifData);
+    return res;
   }
   catch (Exiv2::AnyError& e)
   {
