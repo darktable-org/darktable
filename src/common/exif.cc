@@ -81,23 +81,27 @@ _gps_string_to_number(const gchar *input)
   return res;
 }
 
-// TODO: return a gboolean
-static double
-_gps_rationale_to_number(const double r0_1, const double r0_2, const double r1_1, const double r1_2, const double r2_1, const double r2_2, char sign)
+static gboolean
+_gps_rationale_to_number(const double r0_1, const double r0_2,
+                         const double r1_1, const double r1_2,
+                         const double r2_1, const double r2_2,
+                         char sign, double *result)
 {
+  if(!result)
+    return FALSE;
   double res = 0.0;
   // Latitude decoding from Exif.
   double num, den, min, sec;
   num = r0_1;
   den = r0_2;
-  if (den == 0)
-    return 0.0;
+  if(den == 0)
+    return FALSE;
   res = num/den;
 
   num = r1_1;
   den = r1_2;
-  if (den == 0)
-    return 0.0;
+  if(den == 0)
+    return FALSE;
   min = num/den;
   if (min != -1.0)
     res += min/60.0;
@@ -110,7 +114,7 @@ _gps_rationale_to_number(const double r0_1, const double r0_2, const double r1_1
     if (num == 0)
       den = 1;
     else
-      return 0.0;
+      return FALSE;
   }
   sec = num/den;
   if (sec != -1.0)
@@ -119,7 +123,8 @@ _gps_rationale_to_number(const double r0_1, const double r0_2, const double r1_1
   if (sign == 'S' || sign == 'W')
     res *= -1.0;
 
-  return res;
+  *result = res;
+  return TRUE;
 }
 
 // inspired by ufraw_exiv2.cc:
@@ -153,7 +158,7 @@ static void dt_remove_known_keys(Exiv2::XmpData &xmp)
   }
 }
 
-int dt_exif_read_data(dt_image_t *img, Exiv2::ExifData &exifData)
+static int dt_exif_read_data(dt_image_t *img, Exiv2::ExifData &exifData)
 {
   try
   {
@@ -234,10 +239,11 @@ int dt_exif_read_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitudeRef"));
       const char *sign = ref->toString().c_str();
-
-      img->latitude = _gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
-                      pos->toRational(1).first, pos->toRational(1).second,
-                      pos->toRational(2).first, pos->toRational(2).second, sign[0]);
+      double latitude = 0.0;
+      if(_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
+                                  pos->toRational(1).first, pos->toRational(1).second,
+                                  pos->toRational(2).first, pos->toRational(2).second, sign[0], &latitude))
+        img->latitude = latitude;
     }
 
     if ( (pos = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitude")))
@@ -245,11 +251,11 @@ int dt_exif_read_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitudeRef"));
       const char *sign = ref->toString().c_str();
-
-      img->longitude = _gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
-                       pos->toRational(1).first, pos->toRational(1).second,
-                       pos->toRational(2).first, pos->toRational(2).second, sign[0]);
-
+      double longitude = 0.0;
+      if(_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
+                                  pos->toRational(1).first, pos->toRational(1).second,
+                                  pos->toRational(2).first, pos->toRational(2).second, sign[0], &longitude))
+        img->longitude = longitude;
     }
 
     /* Read lens name */
@@ -1485,6 +1491,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   g_free(hierarchical);
 }
 
+// TODO: initialize the xmp data with the one from the input image. same for IPTC data
 int dt_exif_xmp_attach (const int imgid, const char* filename)
 {
   try
