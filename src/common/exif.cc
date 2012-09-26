@@ -437,6 +437,9 @@ int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
   }
 }
 
+/** read the metadata of an image.
+ * XMP data trumps IPTC data trumps EXIF data
+ */
 int dt_exif_read(dt_image_t *img, const char* path)
 {
   try
@@ -447,10 +450,10 @@ int dt_exif_read(dt_image_t *img, const char* path)
     image->readMetadata();
     Exiv2::ExifData &exifData = image->exifData();
 
+    // EXIF metadata
     int res = dt_exif_read_data(img, exifData);
 
-    // Also read IPTC metadata. I'm not sure if dt_exif_read() is the right place for it ...
-    // FIXME: We should pick a few more from http://www.exiv2.org/iptc.html
+    // IPTC metadata.
     Exiv2::IptcData &iptcData = image->iptcData();
     Exiv2::IptcData::iterator iptcPos;
 
@@ -466,16 +469,116 @@ int dt_exif_read(dt_image_t *img, const char* path)
         ++iptcPos;
       }
     }
-
     if ( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Writer")))
          != iptcData.end() )
     {
       std::string str = iptcPos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
     }
+    if ( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Caption")))
+         != iptcData.end() )
+    {
+      std::string str = iptcPos->print(&exifData);
+      dt_metadata_set(img->id, "Xmp.dc.description", str.c_str());
+    }
+    if ( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Copyright")))
+         != iptcData.end() )
+    {
+      std::string str = iptcPos->print(&exifData);
+      dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
+    }
+    if ( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Writer")))
+         != iptcData.end() )
+    {
+      std::string str = iptcPos->print(&exifData);
+      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
+    }
+    else if ( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Contact")))
+         != iptcData.end() )
+    {
+      std::string str = iptcPos->print(&exifData);
+      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
+    }
 
+    // XMP metadata
     Exiv2::XmpData &xmpData = image->xmpData();
     Exiv2::XmpData::iterator xmpPos;
+
+    if ( (xmpPos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.rights")))
+         != xmpData.end() )
+    {
+      // rights
+      char *rights = strdup(xmpPos->toString().c_str());
+      char *adr = rights;
+      if(strncmp(rights, "lang=", 5) == 0)
+      {
+        rights = strchr(rights, ' ');
+        if(rights != NULL)
+          rights++;
+      }
+      dt_metadata_set(img->id, "Xmp.dc.rights", rights);
+      free(adr);
+    }
+    if ( (xmpPos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.description")))
+         != xmpData.end() )
+    {
+      // description
+      char *description = strdup(xmpPos->toString().c_str());
+      char *adr = description;
+      if(strncmp(description, "lang=", 5) == 0)
+      {
+        description = strchr(description, ' ');
+        if(description != NULL)
+          description++;
+      }
+      dt_metadata_set(img->id, "Xmp.dc.description", description);
+      free(adr);
+    }
+    if ( (xmpPos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.title")))
+         != xmpData.end() )
+    {
+      // title
+      char *title = strdup(xmpPos->toString().c_str());
+      char *adr = title;
+      if(strncmp(title, "lang=", 5) == 0)
+      {
+        title = strchr(title, ' ');
+        if(title != NULL)
+          title++;
+      }
+      dt_metadata_set(img->id, "Xmp.dc.title", title);
+      free(adr);
+    }
+    if ( (xmpPos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.creator")))
+         != xmpData.end() )
+    {
+      // creator
+      char *creator = strdup(xmpPos->toString().c_str());
+      char *adr = creator;
+      if(strncmp(creator, "lang=", 5) == 0)
+      {
+        creator = strchr(creator, ' ');
+        if(creator != NULL)
+          creator++;
+      }
+      dt_metadata_set(img->id, "Xmp.dc.creator", creator);
+      free(adr);
+    }
+    if ( (xmpPos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.publisher")))
+         != xmpData.end() )
+    {
+      // publisher
+      char *publisher = strdup(xmpPos->toString().c_str());
+      char *adr = publisher;
+      if(strncmp(publisher, "lang=", 5) == 0)
+      {
+        publisher = strchr(publisher, ' ');
+        if(publisher != NULL)
+          publisher++;
+      }
+      dt_metadata_set(img->id, "Xmp.dc.publisher", publisher);
+      free(adr);
+    }
 
     if ( (xmpPos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating")))
          != xmpData.end() )
