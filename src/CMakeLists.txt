@@ -18,6 +18,7 @@ FILE(GLOB SOURCE_FILES
   "common/film.c"
   "common/file_location.c"
   "common/fswatch.c"
+  "common/gaussian.c"
   "common/grouping.c"
   "common/history.c"
   "common/gpx.c"
@@ -186,13 +187,6 @@ if(USE_FLICKR)
     add_definitions(${FLICKCURL_DEFINITIONS})
   endif(FLICKCURL_FOUND)
 endif(USE_FLICKR)
-
-if(USE_GEO)
-  find_package(LibSoup2)
-  include_directories(${LIBSOUP2_INCLUDE_DIRS})
-  list(APPEND LIBS ${LIBSOUP2_LIBRARIES})
-  add_definitions(${LIBSOUP2_DEFINITIONS})
-endif(USE_GEO)
 
 #
 # Detect compile of optional pwstorage backends
@@ -384,7 +378,6 @@ endif(APPLE)
 set_target_properties(lib_darktable PROPERTIES OUTPUT_NAME darktable)
 set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE C)
 
-
 #
 # the libraw part is a bit of a hack:
 # the static linking didn't work since it was pulling -lstdc++ and -lm into linker flags.
@@ -416,14 +409,27 @@ if(NOT DONT_USE_RAWSPEED)
 endif(NOT DONT_USE_RAWSPEED)
 
 # osm gps map library
-if(LIBSOUP2_FOUND)
+if(USE_GEO)
+  find_package(LibSoup2)
+  if(LIBSOUP2_FOUND)
+    include_directories(${LIBSOUP2_INCLUDE_DIRS})
+    list(APPEND LIBS ${LIBSOUP2_LIBRARIES})
+    add_definitions(${LIBSOUP2_DEFINITIONS})
     add_dependencies(lib_darktable osmgpsmap)
     add_library(osmgpsmap_static STATIC IMPORTED)
     set_target_properties(osmgpsmap_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/osm-gps-map/libosmgpsmap.a)
     target_link_libraries(lib_darktable osmgpsmap_static)
     add_subdirectory(external/osm-gps-map)
     list(APPEND STATIC_LIBS osmgpsmap_static)
-endif(LIBSOUP2_FOUND)
+    add_definitions("-DHAVE_MAP")
+    message(STATUS "Map mode: enabled")
+  else(LIBSOUP2_FOUND)
+    set(USE_GEO OFF)
+    message(STATUS "Map mode: disabled, please install libsoup2")
+  endif(LIBSOUP2_FOUND)
+else(USE_GEO)
+  message(STATUS "Map mode: disabled")
+endif(USE_GEO)
 
 target_link_libraries(lib_darktable ${LIBS})
 

@@ -841,6 +841,27 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/map/show_map_osd</name>
+    <type>bool</type>
+    <default>TRUE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig prefs="gui">
+    <name>plugins/map/max_images_drawn</name>
+    <type>int</type>
+    <default>100</default>
+    <shortdescription>maximum number of images drawn on map</shortdescription>
+    <longdescription>the maximum number of geotagged images drawn on the map. increasing this number can slow drawing of the map down (needs a restart).</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
+    <name>plugins/lighttable/metadata_view/pretty_location</name>
+    <type>bool</type>
+    <default>TRUE</default>
+    <shortdescription>pretty print the image location</shortdescription>
+    <longdescription>show a more readable representation of the location in the image information module</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>ui_last/expander_metadata</name>
     <type>int</type>
     <default>0</default>

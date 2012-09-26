@@ -277,6 +277,7 @@ dt_ctl_get_display_profile_colord_callback(GObject *source, GAsyncResult *res, g
 // Based on code from Gimp's modules/cdisplay_lcms.c
 void dt_ctl_set_display_profile()
 {
+  if(!dt_control_running()) return;
   // make sure that noone gets a broken profile
   // FIXME: benchmark if the try is really needed when moving/resizing the window. Maybe we can just lock it and block
   if(pthread_rwlock_trywrlock(&darktable.control->xprofile_lock))

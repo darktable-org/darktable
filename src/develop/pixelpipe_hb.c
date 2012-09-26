@@ -575,9 +575,23 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     dt_get_times(&start);
 
     dt_develop_tiling_t tiling = { 0 };
+    dt_develop_tiling_t tiling_blendop = { 0 };
 
     /* get tiling requirement of module */
     module->tiling_callback(module, piece, &roi_in, roi_out, &tiling);
+
+    /* get specific requirement for blending */
+    tiling_callback_blendop(module, piece, &roi_in, roi_out, &tiling_blendop);
+
+    /* aggregate in structure tiling */
+    tiling.factor = fmax(tiling.factor, tiling_blendop.factor);
+    tiling.maxbuf = fmax(tiling.maxbuf, tiling_blendop.maxbuf);
+    tiling.overhead = fmax(tiling.overhead, tiling_blendop.overhead);
+
+    /* remark: we do not do tiling for blendop step, neither in opencl nor on cpu. if overall tiling
+       requirements (maximum of module and blendop) require tiling for opencl path, then following blend
+       step is anyhow done on cpu. we assume that blending itself will never require tiling in cpu path,
+       because memory requirements will still be low enough. */
 
     assert(tiling.factor > 0.0f && tiling.factor < 100.0f);
 

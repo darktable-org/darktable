@@ -269,6 +269,7 @@ static gboolean _lib_location_search(gpointer user_data)
   GMarkupParseContext *ctx = NULL;
   CURL *curl = NULL;
   CURLcode res;
+  GError *err = NULL;
 
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_location_t *lib   = (dt_lib_location_t *)self->data;
@@ -317,7 +318,6 @@ static gboolean _lib_location_search(gpointer user_data)
     goto bail_out;
 
   /* parse xml response and populate the result list */
-  GError *err = NULL;
   ctx = g_markup_parse_context_new(&_lib_location_parser, 0, lib, NULL);
   g_markup_parse_context_parse(ctx, lib->response, lib->response_size, &err);
   if (err)

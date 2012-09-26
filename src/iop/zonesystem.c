@@ -644,9 +644,9 @@ dt_iop_zonesystem_bar_scrolled (GtkWidget *widget, GdkEventScroll *event, dt_iop
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
   int cs = p->size;
   if(event->direction == GDK_SCROLL_UP)
-    p->size+=2;
+    p->size+=1;
   else if(event->direction == GDK_SCROLL_DOWN)
-    p->size-=2;
+    p->size-=1;
 
   /* sanity checks */
   p->size = p->size>MAX_ZONE_SYSTEM_SIZE?MAX_ZONE_SYSTEM_SIZE:p->size;

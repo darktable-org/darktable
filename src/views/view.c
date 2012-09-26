@@ -1,7 +1,8 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011-2012 henrik andersson
+    copyright (c) 2011-2012 henrik andersson.
+    copyright (c) 2012 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -54,7 +55,9 @@ void dt_view_manager_init(dt_view_manager_t *vm)
     "lighttable",
     "darkroom",
     "capture",
+#ifdef HAVE_MAP
     "map",
+#endif
     NULL
   };
   char *module = modules[midx];
@@ -1273,12 +1276,25 @@ const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm)
   return NULL;
 }
 
+#ifdef HAVE_MAP
 void dt_view_map_center_on_location(const dt_view_manager_t *vm, gdouble lon, gdouble lat, gdouble zoom)
 {
   if (vm->proxy.map.view)
     vm->proxy.map.center_on_location(vm->proxy.map.view, lon, lat, zoom);
 }
 
+void dt_view_map_show_osd(const dt_view_manager_t *vm, gboolean enabled)
+{
+  if (vm->proxy.map.view)
+    vm->proxy.map.show_osd(vm->proxy.map.view, enabled);
+}
+
+void dt_view_map_set_map_source(const dt_view_manager_t *vm, OsmGpsMapSource_t map_source)
+{
+  if (vm->proxy.map.view)
+    vm->proxy.map.set_map_source(vm->proxy.map.view, map_source);
+}
+#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

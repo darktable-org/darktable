@@ -30,49 +30,72 @@ typedef enum dt_signal_t
 {
   /** \brief This signal is raised when mouse hovers over image thumbs
       both on lighttable and in the filmstrip.
+      no param, no returned value
    */
   DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
 
   /** \brief This signal is raised when dt_control_queue_redraw() is called.
+    no param, no returned value
   */
   DT_SIGNAL_CONTROL_REDRAW_ALL,
 
   /** \brief This signal is raid when dt_control_queue_redraw_center() is called.
+    no param, no returned value
    */
   DT_SIGNAL_CONTROL_REDRAW_CENTER,
 
   /** \brief This signal is raised by viewmanager when a view has changed.
+    no param, no returned value
    */
   DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
 
   /** \bief This signal is rasied when a thumb is doubleclicked in
+    no param, no returned value
       filmstrip module.
    */
   DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
 
-  /** \brief This signal is raised when collection query is changed */
+  /** \brief This signal is raised when collection query is changed 
+  no param, no returned value
+    */
   DT_SIGNAL_COLLECTION_CHANGED,
 
   /** \brief This signal is raised when darktable.develop is initialized.
       \note any modules that wants to acces darktable->develop should connect
       to this signal to be sure darktable.develop is initialized.
+  no param, no returned value
    */
   DT_SIGNAL_DEVELOP_INITIALIZE,
 
-  /** \brief This signal is raised when a mipmap has been generated and flushed to cache */
+  /** \brief This signal is raised when a mipmap has been generated and flushed to cache
+  no param, no returned value
+    */
   DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
 
-  /** \brief This signal is raised when develop preview pipe process is finished */
+  /** \brief This signal is raised when develop preview pipe process is finished
+  no param, no returned value
+    */
   DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
 
-  /** \brief This signal is rasied when pipe is finished and the gui is attached */
+  /** \brief This signal is rasied when pipe is finished and the gui is attached
+  no param, no returned value
+    */
   DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
 
-  /** \brief This signal is raised when develop history is changed */
+  /** \brief This signal is raised when develop history is changed
+  no param, no returned value
+    */
   DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
 
-  /** \brief This signal is raised when the screen profile has changed */
+  /** \brief This signal is raised when the screen profile has changed
+  no param, no returned value
+    */
   DT_SIGNAL_CONTROL_PROFILE_CHANGED,
+  /** \brief This signal is raised when a new image is imported (not cloned)
+    1 uint32_t :  the new image id
+    no return
+    */
+  DT_SIGNAL_IMAGE_IMPORT,
 
   /* do not touch !*/
   DT_SIGNAL_COUNT
@@ -82,7 +105,7 @@ dt_signal_t;
 /* intitialize the signal framework */
 struct dt_control_signal_t *dt_control_signal_init();
 /* raises a signal */
-void dt_control_signal_raise(const struct dt_control_signal_t *ctlsig, const dt_signal_t signal);
+void dt_control_signal_raise(const struct dt_control_signal_t *ctlsig, const dt_signal_t signal,...);
 /* connects a callback to a signal */
 void dt_control_signal_connect(const struct dt_control_signal_t *ctlsig,const dt_signal_t signal, GCallback cb, gpointer user_data);
 /* disconnects a callback from a sink */

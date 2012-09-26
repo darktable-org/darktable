@@ -34,6 +34,7 @@ typedef struct dt_bilateral_cl_t
   int devid;
   int size_x, size_y, size_z;
   int width, height;
+  int blocksizex, blocksizey;
   float sigma_s, sigma_r;
   void *dev_grid;
 }
@@ -80,14 +81,20 @@ dt_bilateral_init_cl(
   unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
   size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
 
+
+  int blocksizex = 64;
+  int blocksizey = 64;
+   
   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-      dt_opencl_get_kernel_work_group_size(devid, darktable.opencl->bilateral->kernel_splat, &kernelworkgroupsize) == CL_SUCCESS)
+     dt_opencl_get_kernel_work_group_size(devid, darktable.opencl->bilateral->kernel_splat, &kernelworkgroupsize) == CL_SUCCESS)
   {
-    if (maxsizes[0] < 32 || maxsizes[1] < 32 || localmemsize < (32*32*8*sizeof(float)+32*32*sizeof(int))
-        || workgroupsize < 32*32 || kernelworkgroupsize < 32*32)
+    while(maxsizes[0] < blocksizex || maxsizes[1] < blocksizey || localmemsize < blocksizex*blocksizey*(8*sizeof(float)+sizeof(int))
+        || workgroupsize < blocksizex*blocksizey || kernelworkgroupsize < blocksizex*blocksizey)
     {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_bilateral] device %d does not offer sufficient resources to run bilateral grid\n", devid);
-      return NULL;
+      if(blocksizex == 1 || blocksizey == 1) break;
+
+      if(blocksizex > blocksizey) blocksizex >>= 1;
+      else                        blocksizey >>= 1;
     }
   }
   else
@@ -95,6 +102,13 @@ dt_bilateral_init_cl(
     dt_print(DT_DEBUG_OPENCL, "[opencl_bilateral] can not identify resource limits for device %d in bilateral grid\n", devid);
     return NULL;
   }
+
+  if(blocksizex * blocksizey < 16*16)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_bilateral] device %d does not offer sufficient resources to run bilateral grid\n", devid);
+    return NULL;
+  }
+
 
   dt_bilateral_cl_t *b = (dt_bilateral_cl_t *)malloc(sizeof(dt_bilateral_cl_t));
   if(!b) return NULL;
@@ -105,6 +119,8 @@ dt_bilateral_init_cl(
   b->size_z = CLAMPS((int)roundf(100.0f/sigma_r), 4, 50) + 1;
   b->width = width;
   b->height = height;
+  b->blocksizex = blocksizex;
+  b->blocksizey = blocksizey;
   b->sigma_s = MAX(height/(b->size_y-1.0f), width/(b->size_x-1.0f));
   b->sigma_r = 100.0f/(b->size_z-1.0f);
   b->devid = devid;
@@ -143,8 +159,8 @@ dt_bilateral_splat_cl(
   cl_mem in)
 {
   cl_int err = -666;
-  size_t sizes[] = { ROUNDUP(b->width, 32), ROUNDUP(b->height, 32), 1};
-  size_t local[] = { 32, 32, 1 };
+  size_t sizes[] = { ROUNDUP(b->width, b->blocksizex), ROUNDUP(b->height, b->blocksizey), 1};
+  size_t local[] = { b->blocksizex, b->blocksizey, 1 };
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 0, sizeof(cl_mem), (void *)&in);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 1, sizeof(cl_mem), (void *)&b->dev_grid);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 2, sizeof(int), (void *)&b->width);
@@ -154,9 +170,8 @@ dt_bilateral_splat_cl(
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 6, sizeof(int), (void *)&b->size_z);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 7, sizeof(float), (void *)&b->sigma_s);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 8, sizeof(float), (void *)&b->sigma_r);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 9, 32*32*sizeof(int), NULL);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 10, 32*32*8*sizeof(float), NULL);
-  // this kernel only runs in 32x32 local size.
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 9, b->blocksizex * b->blocksizey * sizeof(int), NULL);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 10, b->blocksizex * b->blocksizey * 8 * sizeof(float), NULL);
   err = dt_opencl_enqueue_kernel_2d_with_local(b->devid, b->global->kernel_splat, sizes, local);
   return err;
 }

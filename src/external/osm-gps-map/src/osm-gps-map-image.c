@@ -40,6 +40,7 @@ enum
     PROP_X_ALIGN,
     PROP_Y_ALIGN,
     PROP_POINT,
+    PROP_Z_ORDER,
 };
 
 struct _OsmGpsMapImagePrivate
@@ -50,6 +51,7 @@ struct _OsmGpsMapImagePrivate
     int             h;
     gfloat          xalign;
     gfloat          yalign;
+    int             zorder;
 };
 
 static void
@@ -72,6 +74,9 @@ osm_gps_map_image_get_property (GObject    *object,
             break;
         case PROP_POINT:
             g_value_set_boxed (value, priv->pt);
+            break;
+        case PROP_Z_ORDER:
+            g_value_set_int   (value, priv->zorder);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -102,6 +107,9 @@ osm_gps_map_image_set_property (GObject      *object,
             break;
         case PROP_POINT:
             priv->pt = g_value_dup_boxed (value);
+            break;
+        case PROP_Z_ORDER:
+            priv->zorder = g_value_get_int (value);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -172,6 +180,16 @@ osm_gps_map_image_class_init (OsmGpsMapImageClass *klass)
                                                          "location point",
                                                          OSM_TYPE_GPS_MAP_POINT,
                                                          G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (object_class,
+                                     PROP_Z_ORDER,
+                                     g_param_spec_int ("z-order",
+                                                       "z-order",
+                                                       "image z-order",
+                                                       -100, /* minimum property value */
+                                                        100, /* maximum property value */
+                                                          0,
+                                                        G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
 }
 
 static void
@@ -216,4 +234,11 @@ osm_gps_map_image_get_point(OsmGpsMapImage *object)
 {
     g_return_val_if_fail (OSM_IS_GPS_MAP_IMAGE (object), NULL);
     return object->priv->pt;
+}
+
+const gint
+osm_gps_map_image_get_zorder(OsmGpsMapImage *object)
+{
+    g_return_val_if_fail (OSM_IS_GPS_MAP_IMAGE (object), 0);
+    return object->priv->zorder;
 }

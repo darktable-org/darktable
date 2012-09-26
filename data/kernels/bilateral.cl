@@ -95,12 +95,16 @@ splat(
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  if(x >= width || y >= height) return;
-  // assert(get_local_size(0) == 32)
-  // assert(get_local_size(1) == 32)
+  const int lszx = get_local_size(0);
   const int i = get_local_id(0);
   const int j = get_local_id(1);
-  int li = 32*j + i;
+  int li = lszx*j + i;
+
+  // init gi to -1, so we can later identify invalid accumulator values, which
+  // are values outside of width and height of input image
+  gi[li] = -1;
+
+  if(x >= width || y >= height) return;
 
   // splat into downsampled grid
   int4   size  = (int4)(sizex, sizey, sizez, 0);
@@ -134,36 +138,25 @@ splat(
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
+  if(i != 0) return;
+
   // non-logarithmic reduction..
   // but we also need to take care of where to accumulate (only merge where gi[.] == gi[.])
-  if(i == 0)
+
+  li = lszx*j;
+  int lii = 8*li;
+  int oldgi = gi[li];
+  float tmp[8];
+
+  for(int k=0;k<8;k++)
+    tmp[k] = accum[lii+k];
+   
+  for(int ii=1; ii < lszx && oldgi != -1; ii++)
   {
-    li = 32*j;
-    int lii = 8*li;
-    int oldgi = -1;
-    float tmp[8];
+    li = lszx*j + ii;
+    lii = 8*li;
+    if(gi[li] != oldgi)
     {
-      for(int ii=0;ii<32;ii++)
-      {
-        if(gi[li] != oldgi)
-        {
-          atomic_add_f(grid + oldgi,          tmp[0]);
-          atomic_add_f(grid + oldgi+ox,       tmp[1]);
-          atomic_add_f(grid + oldgi+oy,       tmp[2]);
-          atomic_add_f(grid + oldgi+oy+ox,    tmp[3]);
-          atomic_add_f(grid + oldgi+oz,       tmp[4]);
-          atomic_add_f(grid + oldgi+oz+ox,    tmp[5]);
-          atomic_add_f(grid + oldgi+oz+oy,    tmp[6]);
-          atomic_add_f(grid + oldgi+oz+oy+ox, tmp[7]);
-          oldgi = gi[li];
-          for(int k=0;k<8;k++)
-            tmp[k] = accum[lii++];
-        }
-        else
-          for(int k=0;k<8;k++)
-            tmp[k] += accum[lii++];
-        li++;
-      }
       atomic_add_f(grid + oldgi,          tmp[0]);
       atomic_add_f(grid + oldgi+ox,       tmp[1]);
       atomic_add_f(grid + oldgi+oy,       tmp[2]);
@@ -172,8 +165,27 @@ splat(
       atomic_add_f(grid + oldgi+oz+ox,    tmp[5]);
       atomic_add_f(grid + oldgi+oz+oy,    tmp[6]);
       atomic_add_f(grid + oldgi+oz+oy+ox, tmp[7]);
+
+      oldgi = gi[li];
+      for(int k=0;k<8;k++)
+        tmp[k] = accum[lii+k];
+    }
+    else
+    {
+      for(int k=0;k<8;k++)
+        tmp[k] += accum[lii+k];
     }
   }
+
+  if(oldgi == -1) return;
+  atomic_add_f(grid + oldgi,          tmp[0]);
+  atomic_add_f(grid + oldgi+ox,       tmp[1]);
+  atomic_add_f(grid + oldgi+oy,       tmp[2]);
+  atomic_add_f(grid + oldgi+oy+ox,    tmp[3]);
+  atomic_add_f(grid + oldgi+oz,       tmp[4]);
+  atomic_add_f(grid + oldgi+oz+ox,    tmp[5]);
+  atomic_add_f(grid + oldgi+oz+oy,    tmp[6]);
+  atomic_add_f(grid + oldgi+oz+oy+ox, tmp[7]);
 }
 
 kernel void

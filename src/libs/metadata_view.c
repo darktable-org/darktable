@@ -24,6 +24,9 @@
 #include "common/image_cache.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
+#ifdef HAVE_MAP
+#include "osd-utils.h"
+#endif
 
 #include <sys/param.h>
 
@@ -56,7 +59,8 @@ enum
   md_xmp_rights,
 
   /* geotagging */
-  md_geotagging,
+  md_geotagging_lat,
+  md_geotagging_lon,
 
   /* entries, do not touch! */
   md_size
@@ -92,7 +96,8 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_xmp_rights] = _("copyright");
 
   /* geotagging */
-  _md_labels[md_geotagging] = _("location");
+  _md_labels[md_geotagging_lat] = _("latitude");
+  _md_labels[md_geotagging_lon] = _("longitude");
 }
 
 
@@ -251,15 +256,53 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     _metadata_update_value(d->metadata[md_xmp_rights], value);
 
     /* geotagging */
-    if(isnan(img->latitude) || isnan(img->longitude))
+    /* latitude */
+    if(isnan(img->latitude))
     {
-      _metadata_update_value(d->metadata[md_geotagging], NODATA_STRING);
+      _metadata_update_value(d->metadata[md_geotagging_lat], NODATA_STRING);
     }
     else
     {
-      gchar NS = img->latitude<0?'S':'N', EW = img->longitude<0?'W':'E';
-      snprintf(value, vl, "%c %09.6f / %c %010.6f", NS, fabs(img->latitude), EW, fabs(img->longitude));
-      _metadata_update_value(d->metadata[md_geotagging], value);
+#ifdef HAVE_MAP
+      if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
+      {
+        gchar *latitude = osd_latitude_str(img->latitude);
+        _metadata_update_value(d->metadata[md_geotagging_lat], latitude);
+        g_free(latitude);
+      }
+      else
+      {
+#endif
+        gchar NS = img->latitude<0?'S':'N';
+        snprintf(value, vl, "%c %09.6f", NS, fabs(img->latitude));
+        _metadata_update_value(d->metadata[md_geotagging_lat], value);
+#ifdef HAVE_MAP
+      }
+#endif
+    }
+    /* longitude */
+    if(isnan(img->longitude))
+    {
+      _metadata_update_value(d->metadata[md_geotagging_lon], NODATA_STRING);
+    }
+    else
+    {
+#ifdef HAVE_MAP
+      if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
+      {
+        gchar *longitude = osd_longitude_str(img->longitude);
+        _metadata_update_value(d->metadata[md_geotagging_lon], longitude);
+        g_free(longitude);
+      }
+      else
+      {
+#endif
+        gchar EW = img->longitude<0?'W':'E';
+        snprintf(value, vl, "%c %010.6f", EW, fabs(img->longitude));
+        _metadata_update_value(d->metadata[md_geotagging_lon], value);
+#ifdef HAVE_MAP
+      }
+#endif
     }
 
     /* release img */

@@ -27,7 +27,7 @@ extern "C"
 {
 #endif
 
-  /** read exif data from file with full path name, store to image struct. returns 0 on success. */
+  /** read metadata from file with full path name, XMP data trumps IPTC data trumps EXIF data, store to image struct. returns 0 on success. */
   int dt_exif_read(dt_image_t *img, const char* path);
 
   /** read exif data to image struct from given data blob, wherever you got it from. */
