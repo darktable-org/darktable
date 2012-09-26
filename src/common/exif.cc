@@ -2,6 +2,7 @@
    This file is part of darktable,
    copyright (c) 2009--2010 johannes hanika.
    copyright (c) 2011 henrik andersson.
+   copyright (c) 2012 tobias ellinghaus.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -46,6 +47,8 @@ extern "C"
 #include <glib.h>
 
 #define DT_XMP_KEYS_NUM 13 // the number of XmpBag XmpSeq keys that dt uses
+
+static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos);
 
 //this array should contain all XmpBag and XmpSeq keys used by dt
 const char *dt_xmp_keys[DT_XMP_KEYS_NUM] =
@@ -158,7 +161,214 @@ static void dt_remove_known_keys(Exiv2::XmpData &xmp)
   }
 }
 
-static int dt_exif_read_data(dt_image_t *img, Exiv2::ExifData &exifData)
+// FIXME: according to http://www.exiv2.org/doc/classExiv2_1_1Metadatum.html#63c2b87249ba96679c29e01218169124 there is no need to pass xmpData
+static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, bool look_for_version, bool use_defaul_rating)
+{
+  try
+  {
+    Exiv2::XmpData::iterator pos;
+
+    int version = look_for_version?0:1;
+    if((pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.xmp_version"))) != xmpData.end() )
+    {
+      version = pos->toLong();
+    }
+
+    // older darktable version did not write this data correctly:
+    // the reasoning behind strdup'ing all the strings before passing it to sqlite3 is, that
+    // they are somehow corrupt after the call to sqlite3_prepare_v2() -- don't ask me
+    // why for they don't get passed to that function.
+    if(version > 0)
+    {
+      if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.rights"))) != xmpData.end() )
+      {
+        // rights
+        char *rights = strdup(pos->toString().c_str());
+        char *adr = rights;
+        if(strncmp(rights, "lang=", 5) == 0)
+        {
+          rights = strchr(rights, ' ');
+          if(rights != NULL)
+            rights++;
+        }
+        dt_metadata_set(img->id, "Xmp.dc.rights", rights);
+        free(adr);
+      }
+      if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.description"))) != xmpData.end() )
+      {
+        // description
+        char *description = strdup(pos->toString().c_str());
+        char *adr = description;
+        if(strncmp(description, "lang=", 5) == 0)
+        {
+          description = strchr(description, ' ');
+          if(description != NULL)
+            description++;
+        }
+        dt_metadata_set(img->id, "Xmp.dc.description", description);
+        free(adr);
+      }
+      if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.title"))) != xmpData.end() )
+      {
+        // title
+        char *title = strdup(pos->toString().c_str());
+        char *adr = title;
+        if(strncmp(title, "lang=", 5) == 0)
+        {
+          title = strchr(title, ' ');
+          if(title != NULL)
+            title++;
+        }
+        dt_metadata_set(img->id, "Xmp.dc.title", title);
+        free(adr);
+      }
+      if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.creator"))) != xmpData.end() )
+      {
+        // creator
+        char *creator = strdup(pos->toString().c_str());
+        char *adr = creator;
+        if(strncmp(creator, "lang=", 5) == 0)
+        {
+          creator = strchr(creator, ' ');
+          if(creator != NULL)
+            creator++;
+        }
+        dt_metadata_set(img->id, "Xmp.dc.creator", creator);
+        free(adr);
+      }
+      if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.publisher"))) != xmpData.end() )
+      {
+        // publisher
+        char *publisher = strdup(pos->toString().c_str());
+        char *adr = publisher;
+        if(strncmp(publisher, "lang=", 5) == 0)
+        {
+          publisher = strchr(publisher, ' ');
+          if(publisher != NULL)
+            publisher++;
+        }
+        dt_metadata_set(img->id, "Xmp.dc.publisher", publisher);
+        free(adr);
+      }
+    }
+
+    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"))) != xmpData.end() )
+    {
+      int stars = pos->toLong();
+      if(use_defaul_rating && stars == 0)
+        stars = dt_conf_get_int("ui_last/import_initial_rating");
+
+      stars = (stars == -1) ? 6 : stars;
+      img->flags = (img->flags & ~0x7) | (0x7 & stars);
+    }
+
+    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Label"))) != xmpData.end() )
+    {
+      std::string label = pos->toString();
+      if(label == "Red")                       // Is it really called like that in XMP files?
+        dt_colorlabels_set_label(img->id, 0);
+      else if(label == "Yellow")               // Is it really called like that in XMP files?
+        dt_colorlabels_set_label(img->id, 1);
+      else if(label == "Green")
+        dt_colorlabels_set_label(img->id, 2);
+      else if(label == "Blue")                 // Is it really called like that in XMP files?
+        dt_colorlabels_set_label(img->id, 3);
+      else if(label == "Purple")               // Is it really called like that in XMP files?
+        dt_colorlabels_set_label(img->id, 4);
+    }
+    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.colorlabels"))) != xmpData.end() )
+    {
+      // TODO: store these in dc:subject or xmp:Label?
+      // color labels
+      const int cnt = pos->count();
+      dt_colorlabels_remove_labels(img->id);
+      for(int i=0; i<cnt; i++)
+      {
+        dt_colorlabels_set_label(img->id, pos->toLong(i));
+      }
+    }
+
+    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"))) != xmpData.end() )
+      _exif_import_tags(img, pos);
+    else if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.subject"))) != xmpData.end() )
+      _exif_import_tags(img, pos);
+
+    /* read gps location */
+    if ( (pos = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLatitude"))) != xmpData.end() )
+    {
+      img->latitude = _gps_string_to_number(pos->toString().c_str());
+    }
+
+    if ( (pos = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLongitude"))) != xmpData.end() )
+    {
+      img->longitude = _gps_string_to_number(pos->toString().c_str());
+    }
+
+    return true;
+  }
+  catch (Exiv2::AnyError& e)
+  {
+    std::string s(e.what());
+    std::cerr << "[exiv2] " << s << std::endl;
+    return false;
+  }
+}
+
+// FIXME: according to http://www.exiv2.org/doc/classExiv2_1_1Metadatum.html#63c2b87249ba96679c29e01218169124 there is no need to pass iptcData
+static bool dt_exif_read_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
+{
+  try
+  {
+    Exiv2::IptcData::const_iterator pos;
+
+    if( (pos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Keywords")))
+        != iptcData.end() )
+    {
+      while(pos != iptcData.end())
+      {
+        std::string str = pos->print(/*&iptcData*/);
+        guint tagid = 0;
+        dt_tag_new(str.c_str(),&tagid);
+        dt_tag_attach(tagid, img->id);
+        ++pos;
+      }
+    }
+    if ( (pos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Caption")))
+         != iptcData.end() )
+    {
+      std::string str = pos->print(/*&iptcData*/);
+      dt_metadata_set(img->id, "Xmp.dc.description", str.c_str());
+    }
+    if ( (pos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Copyright")))
+         != iptcData.end() )
+    {
+      std::string str = pos->print(/*&iptcData*/);
+      dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
+    }
+    if ( (pos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Writer")))
+         != iptcData.end() )
+    {
+      std::string str = pos->print(/*&iptcData*/);
+      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
+    }
+    else if ( (pos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Contact")))
+         != iptcData.end() )
+    {
+      std::string str = pos->print(/*&iptcData*/);
+      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
+    }
+
+    return true;
+  }
+  catch (Exiv2::AnyError& e)
+  {
+    std::string s(e.what());
+    std::cerr << "[exiv2] " << s << std::endl;
+    return false;
+  }
+}
+
+static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 {
   try
   {
@@ -417,23 +627,24 @@ static int dt_exif_read_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(!strcmp(img->exif_model, "DMC-GH2")) sprintf(img->exif_lens, "(unknown)");
 
     img->exif_inited = 1;
-    return 0;
+    return true;
   }
   catch (Exiv2::AnyError& e)
   {
     std::string s(e.what());
     std::cerr << "[exiv2] " << s << std::endl;
-    return 1;
+    return false;
   }
 }
 
+//TODO: can this blob also contain xmp and iptc data?
 int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
 {
   try
   {
     Exiv2::ExifData exifData;
     Exiv2::ExifParser::decode(exifData, blob, size);
-    return dt_exif_read_data(img, exifData);
+    return dt_exif_read_exif_data(img, exifData)?0:1;
   }
   catch (Exiv2::AnyError& e)
   {
@@ -454,167 +665,21 @@ int dt_exif_read(dt_image_t *img, const char* path)
     image = Exiv2::ImageFactory::open(path);
     assert(image.get() != 0);
     image->readMetadata();
-    Exiv2::ExifData &exifData = image->exifData();
+    bool res;
 
     // EXIF metadata
-    int res = dt_exif_read_data(img, exifData);
+    Exiv2::ExifData &exifData = image->exifData();
+    res = dt_exif_read_exif_data(img, exifData);
 
     // IPTC metadata.
     Exiv2::IptcData &iptcData = image->iptcData();
-    Exiv2::IptcData::iterator iptcPos;
-
-    if( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Keywords")))
-        != iptcData.end() )
-    {
-      while(iptcPos != iptcData.end())
-      {
-        std::string str = iptcPos->print(&exifData);
-        guint tagid = 0;
-        dt_tag_new(str.c_str(),&tagid);
-        dt_tag_attach(tagid, img->id);
-        ++iptcPos;
-      }
-    }
-    if ( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Writer")))
-         != iptcData.end() )
-    {
-      std::string str = iptcPos->print(&exifData);
-      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
-    }
-    if ( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Caption")))
-         != iptcData.end() )
-    {
-      std::string str = iptcPos->print(&exifData);
-      dt_metadata_set(img->id, "Xmp.dc.description", str.c_str());
-    }
-    if ( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Copyright")))
-         != iptcData.end() )
-    {
-      std::string str = iptcPos->print(&exifData);
-      dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
-    }
-    if ( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Writer")))
-         != iptcData.end() )
-    {
-      std::string str = iptcPos->print(&exifData);
-      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
-    }
-    else if ( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Contact")))
-         != iptcData.end() )
-    {
-      std::string str = iptcPos->print(&exifData);
-      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
-    }
+    res = dt_exif_read_iptc_data(img, iptcData) && res;
 
     // XMP metadata
     Exiv2::XmpData &xmpData = image->xmpData();
-    Exiv2::XmpData::iterator xmpPos;
+    res = dt_exif_read_xmp_data(img, xmpData, false, true) && res;
 
-    if ( (xmpPos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.rights")))
-         != xmpData.end() )
-    {
-      // rights
-      char *rights = strdup(xmpPos->toString().c_str());
-      char *adr = rights;
-      if(strncmp(rights, "lang=", 5) == 0)
-      {
-        rights = strchr(rights, ' ');
-        if(rights != NULL)
-          rights++;
-      }
-      dt_metadata_set(img->id, "Xmp.dc.rights", rights);
-      free(adr);
-    }
-    if ( (xmpPos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.description")))
-         != xmpData.end() )
-    {
-      // description
-      char *description = strdup(xmpPos->toString().c_str());
-      char *adr = description;
-      if(strncmp(description, "lang=", 5) == 0)
-      {
-        description = strchr(description, ' ');
-        if(description != NULL)
-          description++;
-      }
-      dt_metadata_set(img->id, "Xmp.dc.description", description);
-      free(adr);
-    }
-    if ( (xmpPos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.title")))
-         != xmpData.end() )
-    {
-      // title
-      char *title = strdup(xmpPos->toString().c_str());
-      char *adr = title;
-      if(strncmp(title, "lang=", 5) == 0)
-      {
-        title = strchr(title, ' ');
-        if(title != NULL)
-          title++;
-      }
-      dt_metadata_set(img->id, "Xmp.dc.title", title);
-      free(adr);
-    }
-    if ( (xmpPos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.creator")))
-         != xmpData.end() )
-    {
-      // creator
-      char *creator = strdup(xmpPos->toString().c_str());
-      char *adr = creator;
-      if(strncmp(creator, "lang=", 5) == 0)
-      {
-        creator = strchr(creator, ' ');
-        if(creator != NULL)
-          creator++;
-      }
-      dt_metadata_set(img->id, "Xmp.dc.creator", creator);
-      free(adr);
-    }
-    if ( (xmpPos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.publisher")))
-         != xmpData.end() )
-    {
-      // publisher
-      char *publisher = strdup(xmpPos->toString().c_str());
-      char *adr = publisher;
-      if(strncmp(publisher, "lang=", 5) == 0)
-      {
-        publisher = strchr(publisher, ' ');
-        if(publisher != NULL)
-          publisher++;
-      }
-      dt_metadata_set(img->id, "Xmp.dc.publisher", publisher);
-      free(adr);
-    }
-
-    if ( (xmpPos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating")))
-         != xmpData.end() )
-    {
-      int stars = xmpPos->toLong();
-      if ( stars == 0 )
-      {
-        stars = dt_conf_get_int("ui_last/import_initial_rating");
-      }
-      else
-      {
-        stars = (stars == -1) ? 6 : stars;
-      }
-      img->flags = (img->flags & ~0x7) | (0x7 & stars);
-    }
-
-    /* read gps location */
-    if ( (xmpPos = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLatitude")))
-         != xmpData.end() )
-    {
-      img->latitude = _gps_string_to_number(xmpPos->toString().c_str());
-    }
-
-    if ( (xmpPos = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLongitude")))
-         != xmpData.end() )
-    {
-      img->longitude = _gps_string_to_number(xmpPos->toString().c_str());
-    }
-
-    return res;
+    return res?0:1;
   }
   catch (Exiv2::AnyError& e)
   {
@@ -1038,129 +1103,10 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
+    if(!history_only)
+      dt_exif_read_xmp_data(img, xmpData, true, false);
 
     Exiv2::XmpData::iterator pos;
-    int version = 0;
-    if((pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.xmp_version"))) != xmpData.end() )
-    {
-      version = pos->toLong();
-    }
-
-    // older darktable version did not write this data correctly:
-    // the reasoning behind strdup'ing all the strings before passing it to sqlite3 is, that
-    // they are somehow corrupt after the call to sqlite3_prepare_v2() -- don't ask me
-    // why for they don't get passed to that function.
-    if(version > 0)
-    {
-      if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.rights"))) != xmpData.end() )
-      {
-        // rights
-        char *rights = strdup(pos->toString().c_str());
-        char *adr = rights;
-        if(strncmp(rights, "lang=", 5) == 0)
-        {
-          rights = strchr(rights, ' ');
-          if(rights != NULL)
-            rights++;
-        }
-        dt_metadata_set(img->id, "Xmp.dc.rights", rights);
-        free(adr);
-      }
-      if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.description"))) != xmpData.end() )
-      {
-        // description
-        char *description = strdup(pos->toString().c_str());
-        char *adr = description;
-        if(strncmp(description, "lang=", 5) == 0)
-        {
-          description = strchr(description, ' ');
-          if(description != NULL)
-            description++;
-        }
-        dt_metadata_set(img->id, "Xmp.dc.description", description);
-        free(adr);
-      }
-      if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.title"))) != xmpData.end() )
-      {
-        // title
-        char *title = strdup(pos->toString().c_str());
-        char *adr = title;
-        if(strncmp(title, "lang=", 5) == 0)
-        {
-          title = strchr(title, ' ');
-          if(title != NULL)
-            title++;
-        }
-        dt_metadata_set(img->id, "Xmp.dc.title", title);
-        free(adr);
-      }
-      if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.creator"))) != xmpData.end() )
-      {
-        // creator
-        char *creator = strdup(pos->toString().c_str());
-        char *adr = creator;
-        if(strncmp(creator, "lang=", 5) == 0)
-        {
-          creator = strchr(creator, ' ');
-          if(creator != NULL)
-            creator++;
-        }
-        dt_metadata_set(img->id, "Xmp.dc.creator", creator);
-        free(adr);
-      }
-      if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.publisher"))) != xmpData.end() )
-      {
-        // publisher
-        char *publisher = strdup(pos->toString().c_str());
-        char *adr = publisher;
-        if(strncmp(publisher, "lang=", 5) == 0)
-        {
-          publisher = strchr(publisher, ' ');
-          if(publisher != NULL)
-            publisher++;
-        }
-        dt_metadata_set(img->id, "Xmp.dc.publisher", publisher);
-        free(adr);
-      }
-    }
-
-    int stars = 1;
-    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"))) != xmpData.end() )
-    {
-      stars = (pos->toLong() == -1) ? 6 : pos->toLong();
-      img->flags = (img->flags & ~0x7) | (0x7 & stars);
-    }
-    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Label"))) != xmpData.end() )
-    {
-      std::string label = pos->toString();
-      if(label == "Red")                       // Is it really called like that in XMP files?
-        dt_colorlabels_set_label(img->id, 0);
-      else if(label == "Yellow")               // Is it really called like that in XMP files?
-        dt_colorlabels_set_label(img->id, 1);
-      else if(label == "Green")
-        dt_colorlabels_set_label(img->id, 2);
-      else if(label == "Blue")                 // Is it really called like that in XMP files?
-        dt_colorlabels_set_label(img->id, 3);
-      else if(label == "Purple")               // Is it really called like that in XMP files?
-        dt_colorlabels_set_label(img->id, 4);
-    }
-
-    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"))) != xmpData.end() )
-      _exif_import_tags(img,pos);
-    else if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.subject"))) != xmpData.end() )
-      _exif_import_tags(img,pos);
-
-    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.colorlabels"))) != xmpData.end() )
-    {
-      // TODO: store these in dc:subject or xmp:Label?
-      // color labels
-      const int cnt = pos->count();
-      dt_colorlabels_remove_labels(img->id);
-      for(int i=0; i<cnt; i++)
-      {
-        dt_colorlabels_set_label(img->id, pos->toLong(i));
-      }
-    }
 
     // convert legacy flip bits (will not be written anymore, convert to flip history item here):
     if ((pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.raw_params"))) != xmpData.end() )
@@ -1170,17 +1116,6 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       int32_t user_flip = raw_params.user_flip;
       img->legacy_flip.user_flip = user_flip;
       img->legacy_flip.legacy = 0;
-    }
-
-    // GPS data
-    if ((pos=xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLatitude"))) != xmpData.end() )
-    {
-      img->latitude = _gps_string_to_number(pos->toString().c_str());
-    }
-
-    if ((pos=xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLongitude"))) != xmpData.end() )
-    {
-      img->longitude = _gps_string_to_number(pos->toString().c_str());
     }
 
     // history
