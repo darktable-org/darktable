@@ -1426,16 +1426,27 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   g_free(hierarchical);
 }
 
-// TODO: initialize the xmp data with the one from the input image. same for IPTC data
 int dt_exif_xmp_attach (const int imgid, const char* filename)
 {
   try
   {
+    char input_filename[1024];
+    dt_image_full_path(imgid, input_filename, 1024);
+
     Exiv2::Image::AutoPtr img = Exiv2::ImageFactory::open(filename);
     // unfortunately it seems we have to read the metadata, to not erase the exif (which we just wrote).
     // will make export slightly slower, oh well.
     // img->clearXmpPacket();
     img->readMetadata();
+
+    // initialize XMP and IPTC data with the one from the original file
+    Exiv2::Image::AutoPtr input_image = Exiv2::ImageFactory::open(input_filename);
+    if(input_image.get() != 0)
+    {
+      input_image->readMetadata();
+      img->setIptcData(input_image->iptcData());
+      img->setXmpData(input_image->xmpData());
+    }
     dt_exif_xmp_read_data(img->xmpData(), imgid);
     img->writeMetadata();
     return 0;
