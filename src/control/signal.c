@@ -42,6 +42,7 @@ typedef struct dt_signal_description
   GType *param_types;
 } dt_signal_description;
 
+static GType uint_arg[] = {G_TYPE_UINT};
 static dt_signal_description _signal_description[DT_SIGNAL_COUNT] =
 {
   /* Global signals */
@@ -62,6 +63,7 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] =
   {"dt-develop-ui-pipe-finished",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},             // DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED
   {"dt-develop-history-change",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},               // DT_SIGNAL_HISTORY_CHANGE
   {"dt-control-profile-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},               // DT_SIGNAL_CONTROL_PROFILE_CHANGED
+  {"dt-image-import",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_generic,1,uint_arg},               // DT_SIGNAL_CONTROL_PROFILE_CHANGED
 };
 
 static  GType _signal_type;

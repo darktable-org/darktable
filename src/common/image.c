@@ -541,6 +541,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   g_free(sql_pattern);
   g_free(globbuf);
 
+  dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_IMPORT,id);
   return id;
 }
 

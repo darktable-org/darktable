@@ -91,6 +91,11 @@ typedef enum dt_signal_t
   no param, no returned value
     */
   DT_SIGNAL_CONTROL_PROFILE_CHANGED,
+  /** \brief This signal is raised when a new image is imported (not cloned)
+    1 uint32_t :  the new image id
+    no return
+    */
+  DT_SIGNAL_IMAGE_IMPORT,
 
   /* do not touch !*/
   DT_SIGNAL_COUNT
