@@ -1,20 +1,20 @@
 /*
-    This file is part of darktable,
-    copyright (c) 2012 Jeremy Rosen
+   This file is part of darktable,
+   copyright (c) 2012 Jeremy Rosen
 
-    darktable is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+   darktable is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-    darktable is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+   darktable is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
-*/
+   You should have received a copy of the GNU General Public License
+   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #ifndef DT_LUA_IMAGE_H
 #define DT_LUA_IMAGE_H
 #include <lualib.h>
@@ -25,11 +25,8 @@
 
 
 int dt_lua_init_images(lua_State * L);
-int dt_lua_init_history(lua_State * L);
-int dt_lua_init_colorlabel(lua_State * L);
 
 void dt_lua_image_push(lua_State * L,int imgid);
-int dt_lua_init_image(lua_State * L);
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

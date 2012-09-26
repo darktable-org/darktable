@@ -30,435 +30,420 @@
 
 /********************************************
   image labels handling
-  *******************************************/
+ *******************************************/
 static const char* colorlabel_typename="dt_lua_colorlabel";
 typedef struct {
-	int imgid;
+  int imgid;
 } colorlabel_type;
 
 static void dt_colorlabels_lua_push(lua_State * L,int imgid) {
-	if(dt_lua_numid_find(L,imgid,colorlabel_typename)) {
-		return;
-	}
-	colorlabel_type * my_colorlabel = (colorlabel_type*)lua_newuserdata(L,sizeof(colorlabel_type));
-	my_colorlabel->imgid =imgid;
-	dt_lua_numid_register(L,imgid,colorlabel_typename);
+  if(dt_lua_numid_find(L,imgid,colorlabel_typename)) {
+    return;
+  }
+  colorlabel_type * my_colorlabel = (colorlabel_type*)lua_newuserdata(L,sizeof(colorlabel_type));
+  my_colorlabel->imgid =imgid;
+  dt_lua_numid_register(L,imgid,colorlabel_typename);
 }
 
 
 static int colorlabel_index(lua_State *L){
-	int imgid=((colorlabel_type*)luaL_checkudata(L,-2,colorlabel_typename))->imgid;
-	const int value =luaL_checkoption(L,-1,NULL,dt_colorlabels_name);
-	if(value < 0 || value >= DT_COLORLABELS_LAST) {
-			return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
-	} else {
-		lua_pushboolean(L,dt_colorlabels_check_label(imgid,value));
-		return 1;
-	}
+  int imgid=((colorlabel_type*)luaL_checkudata(L,-2,colorlabel_typename))->imgid;
+  const int value =luaL_checkoption(L,-1,NULL,dt_colorlabels_name);
+  if(value < 0 || value >= DT_COLORLABELS_LAST) {
+    return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
+  } else {
+    lua_pushboolean(L,dt_colorlabels_check_label(imgid,value));
+    return 1;
+  }
 }
 
 static int colorlabel_newindex(lua_State *L){
-	int imgid=((colorlabel_type*)luaL_checkudata(L,-3,colorlabel_typename))->imgid;
-	const int value =luaL_checkoption(L,-2,NULL,dt_colorlabels_name);
-	if(value < 0 || value >= DT_COLORLABELS_LAST) {
-			return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
-	} else {
-			if(lua_toboolean(L,-1)) { // no testing of type so we can benefit from all types of values
-				dt_colorlabels_set_label(imgid,value);
-			} else {
-				dt_colorlabels_remove_label(imgid,value);
-			}
-			return 0;
+  int imgid=((colorlabel_type*)luaL_checkudata(L,-3,colorlabel_typename))->imgid;
+  const int value =luaL_checkoption(L,-2,NULL,dt_colorlabels_name);
+  if(value < 0 || value >= DT_COLORLABELS_LAST) {
+    return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
+  } else {
+    if(lua_toboolean(L,-1)) { // no testing of type so we can benefit from all types of values
+      dt_colorlabels_set_label(imgid,value);
+    } else {
+      dt_colorlabels_remove_label(imgid,value);
+    }
+    return 0;
 
-	}
+  }
 }
 
 static const luaL_Reg dt_lua_colorlabel_meta[] = {
-	{"__index", colorlabel_index },
-	{"__newindex", colorlabel_newindex },
-	{0,0}
+  {"__index", colorlabel_index },
+  {"__newindex", colorlabel_newindex },
+  {0,0}
 };
-int dt_lua_init_colorlabel(lua_State * L) {
-	luaL_newmetatable(L,colorlabel_typename);
-	luaL_setfuncs(L,dt_lua_colorlabel_meta,0);
-	dt_lua_init_name_list_pair(L, dt_colorlabels_name);
-	dt_lua_init_numid(L);
-	return 0;
-}
-
 
 /************************************
   image history handlig
-  ***********************************/
+ ***********************************/
 static const char* history_typename = "dt_lua_history";
 typedef struct {
-	int imgid;
+  int imgid;
 } history_type;
 
 static int dt_history_lua_check(lua_State * L,int index){
-	return ((history_type*)luaL_checkudata(L,index,history_typename))->imgid;
+  return ((history_type*)luaL_checkudata(L,index,history_typename))->imgid;
 }
 
 static void dt_history_lua_push(lua_State * L,int imgid) {
-	// ckeck if history already is in the env
-	// get the metatable and put it on top (side effect of newtable)
-	luaL_newmetatable(L,history_typename);
-	lua_getfield(L,-1,"allocated");
-	lua_pushinteger(L,imgid);
-	lua_gettable(L,-2);
-	// at this point our stack is :
-	// -1 : the object or nil if it is not allocated
-	// -2 : the allocation table
-	// -3 : the metatable
-	lua_remove(L,-3); // remove the metatable, we don't need it anymore
-	if(!lua_isnil(L,-1)) {
-		//printf("%s %d (reuse)\n",__FUNCTION__,imgid);
-		dt_history_lua_check(L,-1);
-		lua_remove(L,-2); // remove the table, but leave the history on top of the stac
-		return;
-	} else {
-		//printf("%s %d (create)\n",__FUNCTION__,imgid);
-		lua_pop(L,1); // remove nil at top
-		lua_pushinteger(L,imgid);
-		history_type * my_history = (history_type*)lua_newuserdata(L,sizeof(history_type));
-		luaL_setmetatable(L,history_typename);
-		my_history->imgid =imgid;
-		// add the value to the metatable, so it can be reused
-		lua_settable(L,-3);
-		// put the value back on top
-		lua_pushinteger(L,imgid);
-		lua_gettable(L,-2);
-		lua_remove(L,-2); // remove the table, but leave the history on top of the stac
-	}
+  // ckeck if history already is in the env
+  // get the metatable and put it on top (side effect of newtable)
+  luaL_newmetatable(L,history_typename);
+  lua_getfield(L,-1,"allocated");
+  lua_pushinteger(L,imgid);
+  lua_gettable(L,-2);
+  // at this point our stack is :
+  // -1 : the object or nil if it is not allocated
+  // -2 : the allocation table
+  // -3 : the metatable
+  lua_remove(L,-3); // remove the metatable, we don't need it anymore
+  if(!lua_isnil(L,-1)) {
+    //printf("%s %d (reuse)\n",__FUNCTION__,imgid);
+    dt_history_lua_check(L,-1);
+    lua_remove(L,-2); // remove the table, but leave the history on top of the stac
+    return;
+  } else {
+    //printf("%s %d (create)\n",__FUNCTION__,imgid);
+    lua_pop(L,1); // remove nil at top
+    lua_pushinteger(L,imgid);
+    history_type * my_history = (history_type*)lua_newuserdata(L,sizeof(history_type));
+    luaL_setmetatable(L,history_typename);
+    my_history->imgid =imgid;
+    // add the value to the metatable, so it can be reused
+    lua_settable(L,-3);
+    // put the value back on top
+    lua_pushinteger(L,imgid);
+    lua_gettable(L,-2);
+    lua_remove(L,-2); // remove the table, but leave the history on top of the stac
+  }
 }
 
 
 static int history_index(lua_State *L){
-	int imgid=dt_history_lua_check(L,-2);
-	int value = luaL_checkinteger(L,-1);
-	sqlite3_stmt *stmt;
-	DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select operation, enabled from history where imgid=?1 and num=?2 ", -1, &stmt, NULL);
-	DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-	DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, value);
-	int result = sqlite3_step(stmt);
-	if(result != SQLITE_ROW){
-		return luaL_error(L,"incorrect history index %d",value);
-	}
-	lua_pushfstring(L,"%s (%s)",sqlite3_column_text (stmt, 0),(sqlite3_column_int (stmt, 1)!=0)?_("on"):_("off"));
-	return 1;
+  int imgid=dt_history_lua_check(L,-2);
+  int value = luaL_checkinteger(L,-1);
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select operation, enabled from history where imgid=?1 and num=?2 ", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, value);
+  int result = sqlite3_step(stmt);
+  if(result != SQLITE_ROW){
+    return luaL_error(L,"incorrect history index %d",value);
+  }
+  lua_pushfstring(L,"%s (%s)",sqlite3_column_text (stmt, 0),(sqlite3_column_int (stmt, 1)!=0)?_("on"):_("off"));
+  return 1;
 
 }
 
 static int history_next(lua_State *L) {
-	//printf("%s\n",__FUNCTION__);
-	//TBSL : check index and find the correct position in stmt if index was changed manually
-	// 2 args, table, index, returns the next index,value or nil,nil return the first index,value if index is nil 
+  //printf("%s\n",__FUNCTION__);
+  //TBSL : check index and find the correct position in stmt if index was changed manually
+  // 2 args, table, index, returns the next index,value or nil,nil return the first index,value if index is nil 
 
-	sqlite3_stmt *stmt = dt_lua_stmt_check(L,-2);
-	if(lua_isnil(L,-1)) {
-		sqlite3_reset(stmt);
-	} else if(luaL_checkinteger(L,-1) != sqlite3_column_int(stmt,0)) {
-		return luaL_error(L,"TBSL : changing index of a loop on history images is not supported yet");
-	}
-	int result = sqlite3_step(stmt);
-	if(result != SQLITE_ROW){
-		return 0;
-	}
-	int historyidx = sqlite3_column_int(stmt,0);
-	lua_pushinteger(L,historyidx);
-	lua_pushfstring(L,"%s (%s)",sqlite3_column_text (stmt, 1),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
-	return 2;
+  sqlite3_stmt *stmt = dt_lua_stmt_check(L,-2);
+  if(lua_isnil(L,-1)) {
+    sqlite3_reset(stmt);
+  } else if(luaL_checkinteger(L,-1) != sqlite3_column_int(stmt,0)) {
+    return luaL_error(L,"TBSL : changing index of a loop on history images is not supported yet");
+  }
+  int result = sqlite3_step(stmt);
+  if(result != SQLITE_ROW){
+    return 0;
+  }
+  int historyidx = sqlite3_column_int(stmt,0);
+  lua_pushinteger(L,historyidx);
+  lua_pushfstring(L,"%s (%s)",sqlite3_column_text (stmt, 1),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+  return 2;
 }
 static int history_pairs(lua_State *L) {
-	int imgid=dt_history_lua_check(L,-1);
-	lua_pushcfunction(L,history_next);
-	sqlite3_stmt *stmt;
-	DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled from history where imgid=?1 order by num asc", -1, &stmt, NULL);
-	DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-	dt_lua_stmt_push(L,stmt);
-	lua_pushnil(L); // index set to null for reset
-	return 3;
+  int imgid=dt_history_lua_check(L,-1);
+  lua_pushcfunction(L,history_next);
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled from history where imgid=?1 order by num asc", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  dt_lua_stmt_push(L,stmt);
+  lua_pushnil(L); // index set to null for reset
+  return 3;
 }
 static int history_tostring(lua_State *L){
-	int imgid=dt_history_lua_check(L,-1);
-	const char * description =dt_history_get_items_as_string(imgid);
-	if(!description) lua_pushstring(L,"");
-	else lua_pushstring(L,description);
-	return 1;
+  int imgid=dt_history_lua_check(L,-1);
+  const char * description =dt_history_get_items_as_string(imgid);
+  if(!description) lua_pushstring(L,"");
+  else lua_pushstring(L,description);
+  return 1;
 }
 static const luaL_Reg dt_lua_history_meta[] = {
-	{"__index", history_index },
-	{"__tostring", history_tostring },
-	{"__pairs", history_pairs },
-	{0,0}
+  {"__index", history_index },
+  {"__tostring", history_tostring },
+  {"__pairs", history_pairs },
+  {0,0}
 };
-int dt_lua_init_history(lua_State * L) {
-	luaL_newmetatable(L,history_typename);
-	luaL_setfuncs(L,dt_lua_history_meta,0);
-	dt_lua_init_numid(L);
-	return 0;
-}
-
 
 /***********************************************************************
   handling of dt_image_t
  **********************************************************************/
 static const char * image_typename = "dt_lua_image";
 typedef struct {
-	int imgid;
+  int imgid;
 } lua_image;
 
 
 static const dt_image_t*dt_lua_checkreadimage(lua_State*L,int index) {
-	lua_image* tmp_image=luaL_checkudata(L,index,image_typename);
-	return dt_image_cache_read_get(darktable.image_cache,tmp_image->imgid);
+  lua_image* tmp_image=luaL_checkudata(L,index,image_typename);
+  return dt_image_cache_read_get(darktable.image_cache,tmp_image->imgid);
 }
 
 static void dt_lua_releasereadimage(lua_State*L,const dt_image_t* image) {
-	dt_image_cache_read_release(darktable.image_cache,image);
+  dt_image_cache_read_release(darktable.image_cache,image);
 }
 
 static dt_image_t*dt_lua_checkwriteimage(lua_State*L,int index) {
-	const dt_image_t* my_readimage=dt_lua_checkreadimage(L,index);
-	return dt_image_cache_write_get(darktable.image_cache,my_readimage);
+  const dt_image_t* my_readimage=dt_lua_checkreadimage(L,index);
+  return dt_image_cache_write_get(darktable.image_cache,my_readimage);
 }
 
 static void dt_lua_releasewriteimage(lua_State*L,dt_image_t* image) {
-	dt_image_cache_write_release(darktable.image_cache,image,DT_IMAGE_CACHE_SAFE);
-	dt_lua_releasereadimage(L,image);
+  dt_image_cache_write_release(darktable.image_cache,image,DT_IMAGE_CACHE_SAFE);
+  dt_lua_releasereadimage(L,image);
 }
 
 
 void dt_lua_image_push(lua_State * L,int imgid) {
-	if(dt_lua_numid_find(L,imgid,image_typename)) {
-		return;
-	}
-	// check that id is valid
-	sqlite3_stmt *stmt;
-	DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where id = ?1", -1, &stmt, NULL);
-	DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-	if(sqlite3_step(stmt) != SQLITE_ROW) {
-		sqlite3_finalize(stmt);
-		luaL_error(L,"invalid id for image : %d",imgid);
-		return; // lua_error never returns, this is here to remind us of the fact
-	}
-	sqlite3_finalize(stmt);
-	lua_image * my_image = (lua_image*)lua_newuserdata(L,sizeof(lua_image));
-	my_image->imgid=imgid;
-	dt_lua_numid_register(L,imgid,image_typename);
+  if(dt_lua_numid_find(L,imgid,image_typename)) {
+    return;
+  }
+  // check that id is valid
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) != SQLITE_ROW) {
+    sqlite3_finalize(stmt);
+    luaL_error(L,"invalid id for image : %d",imgid);
+    return; // lua_error never returns, this is here to remind us of the fact
+  }
+  sqlite3_finalize(stmt);
+  lua_image * my_image = (lua_image*)lua_newuserdata(L,sizeof(lua_image));
+  my_image->imgid=imgid;
+  dt_lua_numid_register(L,imgid,image_typename);
 }
 
 
 static int image_clone(lua_State *L) {
-	lua_image* tmp_image=luaL_checkudata(L,-1,image_typename);
-	const dt_image_t *my_image= dt_image_cache_read_get(darktable.image_cache,tmp_image->imgid);
-	dt_lua_image_push(L,dt_image_duplicate(my_image->id));
-	return 1;
+  lua_image* tmp_image=luaL_checkudata(L,-1,image_typename);
+  const dt_image_t *my_image= dt_image_cache_read_get(darktable.image_cache,tmp_image->imgid);
+  dt_lua_image_push(L,dt_image_duplicate(my_image->id));
+  return 1;
 }
 
 typedef enum {
-	PATH,
-	DUP_INDEX,
-	IS_LDR,
-	IS_HDR,
-	IS_RAW,
-	RATING,
-	ID,
-	COLORLABEL,
-	CREATOR,
-	PUBLISHER,
-	TITLE,
-	DESCRIPTION,
-	RIGHTS,
-	HISTORY,
-	DUPLICATE,
-	LAST_IMAGE_FIELD
+  PATH,
+  DUP_INDEX,
+  IS_LDR,
+  IS_HDR,
+  IS_RAW,
+  RATING,
+  ID,
+  COLORLABEL,
+  CREATOR,
+  PUBLISHER,
+  TITLE,
+  DESCRIPTION,
+  RIGHTS,
+  HISTORY,
+  DUPLICATE,
+  LAST_IMAGE_FIELD
 } image_fields;
 const char *image_fields_name[] = {
-	"path",
-	"duplicate_index",
-	"is_ldr",
-	"is_hdr",
-	"is_raw",
-	"rating",
-	"id",
-	"colorlabels",
-	"creator",
-	"publisher",
-	"title",
-	"description",
-	"rights",
-	"history",
-	"duplicate",
-	NULL
+  "path",
+  "duplicate_index",
+  "is_ldr",
+  "is_hdr",
+  "is_raw",
+  "rating",
+  "id",
+  "colorlabels",
+  "creator",
+  "publisher",
+  "title",
+  "description",
+  "rights",
+  "history",
+  "duplicate",
+  NULL
 };
 
 static int image_index(lua_State *L){
   const char* membername = lua_tostring(L, -1);
-	const dt_image_t * my_image=dt_lua_checkreadimage(L,-2);
+  const dt_image_t * my_image=dt_lua_checkreadimage(L,-2);
   if(luaA_struct_has_member_name(L,dt_image_t,membername)) {
     const int result = luaA_struct_push_member_name(L, dt_image_t, my_image, membername);
     dt_lua_releasereadimage(L,my_image);
     return result;
   }
-	switch(luaL_checkoption(L,-1,NULL,image_fields_name)) {
-		case PATH:
-			{
-				sqlite3_stmt *stmt;
-				DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-						"select folder from images, film_rolls where "
-						"images.film_id = film_rolls.id and images.id = ?1", -1, &stmt, NULL);
-				DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-				if(sqlite3_step(stmt) == SQLITE_ROW)
-				{
-					lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
-				} else {
-					sqlite3_finalize(stmt);
-					dt_lua_releasereadimage(L,my_image);
-					return luaL_error(L,"should never happen");
-				}
-				sqlite3_finalize(stmt);
-				break;
-			}
-		case DUP_INDEX:
-			{
-				// get duplicate suffix
-				int version = 0;
-				sqlite3_stmt *stmt;
-				DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-						"select count(id) from images where filename in "
-						"(select filename from images where id = ?1) and film_id in "
-						"(select film_id from images where id = ?1) and id < ?1",
-						-1, &stmt, NULL);
-				DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-				if(sqlite3_step(stmt) == SQLITE_ROW)
-					version = sqlite3_column_int(stmt, 0);
-				sqlite3_finalize(stmt);
-				lua_pushinteger(L,version);
-				break;
-			}
-		case IS_LDR:
-			lua_pushboolean(L,dt_image_is_ldr(my_image));
-			break;
-		case IS_HDR:
-			lua_pushboolean(L,dt_image_is_hdr(my_image));
-			break;
-		case IS_RAW:
-			lua_pushboolean(L,dt_image_is_raw(my_image));
-			break;
-		case RATING:
-			{
-				int score = my_image->flags & 0x7;
-				if(score >6) score=5;
-				if(score ==6) score=-1;
+  switch(luaL_checkoption(L,-1,NULL,image_fields_name)) {
+    case PATH:
+      {
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+            "select folder from images, film_rolls where "
+            "images.film_id = film_rolls.id and images.id = ?1", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+        if(sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+        } else {
+          sqlite3_finalize(stmt);
+          dt_lua_releasereadimage(L,my_image);
+          return luaL_error(L,"should never happen");
+        }
+        sqlite3_finalize(stmt);
+        break;
+      }
+    case DUP_INDEX:
+      {
+        // get duplicate suffix
+        int version = 0;
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+            "select count(id) from images where filename in "
+            "(select filename from images where id = ?1) and film_id in "
+            "(select film_id from images where id = ?1) and id < ?1",
+            -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+        if(sqlite3_step(stmt) == SQLITE_ROW)
+          version = sqlite3_column_int(stmt, 0);
+        sqlite3_finalize(stmt);
+        lua_pushinteger(L,version);
+        break;
+      }
+    case IS_LDR:
+      lua_pushboolean(L,dt_image_is_ldr(my_image));
+      break;
+    case IS_HDR:
+      lua_pushboolean(L,dt_image_is_hdr(my_image));
+      break;
+    case IS_RAW:
+      lua_pushboolean(L,dt_image_is_raw(my_image));
+      break;
+    case RATING:
+      {
+        int score = my_image->flags & 0x7;
+        if(score >6) score=5;
+        if(score ==6) score=-1;
 
-				lua_pushinteger(L,score);
-				break;
-			}
-		case ID:
-			lua_pushinteger(L,my_image->height);
-			break;
-		case COLORLABEL:
-			{
-				dt_colorlabels_lua_push(L,my_image->id);
-				break;
-			}
-		case CREATOR:
-			{
-				sqlite3_stmt *stmt;
-				DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
-				DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-				DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_CREATOR);
-				if(sqlite3_step(stmt) != SQLITE_ROW) {
-					lua_pushstring(L,"");
-				} else {
-					lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
-				}
-				sqlite3_finalize(stmt);
-				break;
+        lua_pushinteger(L,score);
+        break;
+      }
+    case ID:
+      lua_pushinteger(L,my_image->height);
+      break;
+    case COLORLABEL:
+      {
+        dt_colorlabels_lua_push(L,my_image->id);
+        break;
+      }
+    case CREATOR:
+      {
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_CREATOR);
+        if(sqlite3_step(stmt) != SQLITE_ROW) {
+          lua_pushstring(L,"");
+        } else {
+          lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+        }
+        sqlite3_finalize(stmt);
+        break;
 
-			}
-		case PUBLISHER:
-			{
-				sqlite3_stmt *stmt;
-				DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
-				DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-				DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_PUBLISHER);
-				if(sqlite3_step(stmt) != SQLITE_ROW) {
-					lua_pushstring(L,"");
-				} else {
-					lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
-				}
-				sqlite3_finalize(stmt);
-				break;
+      }
+    case PUBLISHER:
+      {
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_PUBLISHER);
+        if(sqlite3_step(stmt) != SQLITE_ROW) {
+          lua_pushstring(L,"");
+        } else {
+          lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+        }
+        sqlite3_finalize(stmt);
+        break;
 
-			}
-		case TITLE:
-			{
-				sqlite3_stmt *stmt;
-				DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
-				DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-				DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_TITLE);
-				if(sqlite3_step(stmt) != SQLITE_ROW) {
-					lua_pushstring(L,"");
-				} else {
-					lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
-				}
-				sqlite3_finalize(stmt);
-				break;
+      }
+    case TITLE:
+      {
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_TITLE);
+        if(sqlite3_step(stmt) != SQLITE_ROW) {
+          lua_pushstring(L,"");
+        } else {
+          lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+        }
+        sqlite3_finalize(stmt);
+        break;
 
-			}
-		case DESCRIPTION:
-			{
-				sqlite3_stmt *stmt;
-				DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
-				DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-				DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_DESCRIPTION);
-				if(sqlite3_step(stmt) != SQLITE_ROW) {
-					lua_pushstring(L,"");
-				} else {
-					lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
-				}
-				sqlite3_finalize(stmt);
-				break;
+      }
+    case DESCRIPTION:
+      {
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_DESCRIPTION);
+        if(sqlite3_step(stmt) != SQLITE_ROW) {
+          lua_pushstring(L,"");
+        } else {
+          lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+        }
+        sqlite3_finalize(stmt);
+        break;
 
-			}
-		case RIGHTS:
-			{
-				sqlite3_stmt *stmt;
-				DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
-				DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-				DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_RIGHTS);
-				if(sqlite3_step(stmt) != SQLITE_ROW) {
-					lua_pushstring(L,"");
-				} else {
-					lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
-				}
-				sqlite3_finalize(stmt);
-				break;
+      }
+    case RIGHTS:
+      {
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_RIGHTS);
+        if(sqlite3_step(stmt) != SQLITE_ROW) {
+          lua_pushstring(L,"");
+        } else {
+          lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+        }
+        sqlite3_finalize(stmt);
+        break;
 
-			}
-		case HISTORY:
-			{
-				dt_history_lua_push(L,my_image->id);
-				break;
-			}
-		case DUPLICATE:
-			lua_pushcfunction(L,image_clone); // works as a lua member, i.e meant to be invoked with :
-			break;
+      }
+    case HISTORY:
+      {
+        dt_history_lua_push(L,my_image->id);
+        break;
+      }
+    case DUPLICATE:
+      lua_pushcfunction(L,image_clone); // works as a lua member, i.e meant to be invoked with :
+      break;
 
-		default:
-			dt_lua_releasereadimage(L,my_image);
-			return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
+    default:
+      dt_lua_releasereadimage(L,my_image);
+      return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
 
-	}
-	dt_lua_releasereadimage(L,my_image);
-	return 1;
+  }
+  dt_lua_releasereadimage(L,my_image);
+  return 1;
 }
 
 static int image_newindex(lua_State *L){
   const char* membername = lua_tostring(L, -2);
-	dt_image_t * my_image=dt_lua_checkwriteimage(L,-3);
+  dt_image_t * my_image=dt_lua_checkwriteimage(L,-3);
   if(luaA_struct_has_member_name(L,dt_image_t,membername)) {
     if(luaA_type_has_to_func(luaA_struct_typeof_member_name(L,dt_image_t,membername))) {
       luaA_struct_to_member_name(L, dt_image_t, my_image, membername,-1);
@@ -469,94 +454,166 @@ static int image_newindex(lua_State *L){
     dt_lua_releasewriteimage(L,my_image);
     return 0;
   }
-	switch(luaL_checkoption(L,-2,NULL,image_fields_name)) {
-		case RATING:
-			{
-				int my_score = luaL_checkinteger(L,-1);
-				if(my_score > 5) {
-					dt_lua_releasewriteimage(L,my_image);
-					return luaL_error(L,"rating too high : %d",my_score);
-				}
-				if(my_score == -1) my_score = 6;
-				if(my_score < -1) {
-					dt_lua_releasewriteimage(L,my_image);
-					return luaL_error(L,"rating too low : %d",my_score);
-				}
-				my_image->flags &= ~0x7;
-				my_image->flags |= my_score;
-				break;
-			}
+  switch(luaL_checkoption(L,-2,NULL,image_fields_name)) {
+    case RATING:
+      {
+        int my_score = luaL_checkinteger(L,-1);
+        if(my_score > 5) {
+          dt_lua_releasewriteimage(L,my_image);
+          return luaL_error(L,"rating too high : %d",my_score);
+        }
+        if(my_score == -1) my_score = 6;
+        if(my_score < -1) {
+          dt_lua_releasewriteimage(L,my_image);
+          return luaL_error(L,"rating too low : %d",my_score);
+        }
+        my_image->flags &= ~0x7;
+        my_image->flags |= my_score;
+        break;
+      }
 
-		case CREATOR:
-			dt_metadata_set(my_image->id,"Xmp.dc.creator",luaL_checkstring(L,-1));
-			dt_image_synch_xmp(my_image->id);
-			break;
-		case PUBLISHER:
-			dt_metadata_set(my_image->id,"Xmp.dc.publisher",luaL_checkstring(L,-1));
-			dt_image_synch_xmp(my_image->id);
-			break;
-		case TITLE:
-			dt_metadata_set(my_image->id,"Xmp.dc.title",luaL_checkstring(L,-1));
-			dt_image_synch_xmp(my_image->id);
-			break;
-		case DESCRIPTION:
-			dt_metadata_set(my_image->id,"Xmp.dc.description",luaL_checkstring(L,-1));
-			dt_image_synch_xmp(my_image->id);
-			break;
-		case RIGHTS:
-			dt_metadata_set(my_image->id,"Xmp.dc.title",luaL_checkstring(L,-1));
-			dt_image_synch_xmp(my_image->id);
-			break;
-		case HISTORY:
-			{
-				if(lua_isnil(L,-1)) {
-					dt_history_delete_on_image(my_image->id);
-					break;
-				}
-				int source_id = dt_history_lua_check(L,-1);
-				dt_history_copy_and_paste_on_image(source_id, my_image->id, 0);
-				break;
-			}
-		case PATH:
-		case DUP_INDEX:
-		case IS_LDR:
-		case IS_HDR:
-		case IS_RAW:
-		case ID:
-		case COLORLABEL:
-		case DUPLICATE:
-			dt_lua_releasewriteimage(L,my_image);
-			return luaL_error(L,"read only field : ",lua_tostring(L,-2));
-		default:
-			dt_lua_releasewriteimage(L,my_image);
-			return luaL_error(L,"unknown index for image : ",lua_tostring(L,-2));
+    case CREATOR:
+      dt_metadata_set(my_image->id,"Xmp.dc.creator",luaL_checkstring(L,-1));
+      dt_image_synch_xmp(my_image->id);
+      break;
+    case PUBLISHER:
+      dt_metadata_set(my_image->id,"Xmp.dc.publisher",luaL_checkstring(L,-1));
+      dt_image_synch_xmp(my_image->id);
+      break;
+    case TITLE:
+      dt_metadata_set(my_image->id,"Xmp.dc.title",luaL_checkstring(L,-1));
+      dt_image_synch_xmp(my_image->id);
+      break;
+    case DESCRIPTION:
+      dt_metadata_set(my_image->id,"Xmp.dc.description",luaL_checkstring(L,-1));
+      dt_image_synch_xmp(my_image->id);
+      break;
+    case RIGHTS:
+      dt_metadata_set(my_image->id,"Xmp.dc.title",luaL_checkstring(L,-1));
+      dt_image_synch_xmp(my_image->id);
+      break;
+    case HISTORY:
+      {
+        if(lua_isnil(L,-1)) {
+          dt_history_delete_on_image(my_image->id);
+          break;
+        }
+        int source_id = dt_history_lua_check(L,-1);
+        dt_history_copy_and_paste_on_image(source_id, my_image->id, 0);
+        break;
+      }
+    case PATH:
+    case DUP_INDEX:
+    case IS_LDR:
+    case IS_HDR:
+    case IS_RAW:
+    case ID:
+    case COLORLABEL:
+    case DUPLICATE:
+      dt_lua_releasewriteimage(L,my_image);
+      return luaL_error(L,"read only field : ",lua_tostring(L,-2));
+    default:
+      dt_lua_releasewriteimage(L,my_image);
+      return luaL_error(L,"unknown index for image : ",lua_tostring(L,-2));
 
-	}
-	dt_lua_releasewriteimage(L,my_image);
-	return 0;
+  }
+  dt_lua_releasewriteimage(L,my_image);
+  return 0;
 }
 
 static int image_tostring(lua_State *L) {
-	const dt_image_t * my_image=dt_lua_checkreadimage(L,-1);
-	char image_name[PATH_MAX];
-	dt_image_full_path(my_image->id,image_name,PATH_MAX);
-	dt_image_path_append_version(my_image->id,image_name,PATH_MAX);
-	lua_pushstring(L,image_name);
-	dt_lua_releasereadimage(L,my_image);
-	return 1;
+  const dt_image_t * my_image=dt_lua_checkreadimage(L,-1);
+  char image_name[PATH_MAX];
+  dt_image_full_path(my_image->id,image_name,PATH_MAX);
+  dt_image_path_append_version(my_image->id,image_name,PATH_MAX);
+  lua_pushstring(L,image_name);
+  dt_lua_releasereadimage(L,my_image);
+  return 1;
 }
 static const luaL_Reg image_meta[] = {
-	{"__index", image_index },
-	{"__newindex", image_newindex },
-	{"__tostring", image_tostring },
-	{0,0}
+  {"__index", image_index },
+  {"__newindex", image_newindex },
+  {"__tostring", image_tostring },
+  {0,0}
 };
 
 int dt_lua_init_image(lua_State * L) {
-	luaL_newmetatable(L,image_typename);
-	luaL_setfuncs(L,image_meta,0);
-	dt_lua_init_typed_name_list_pair(L, dt_image_t,image_fields_name);
-	dt_lua_init_numid(L);
+  return 0;
+}
+
+
+
+/***********************************************************************
+  Creating the images global variable
+ **********************************************************************/
+static int images_next(lua_State *L) {
+  //printf("%s\n",__FUNCTION__);
+  //TBSL : check index and find the correct position in stmt if index was changed manually
+  // 2 args, table, index, returns the next index,value or nil,nil return the first index,value if index is nil 
+
+  sqlite3_stmt *stmt = dt_lua_stmt_check(L,-2);
+  if(lua_isnil(L,-1)) {
+    sqlite3_reset(stmt);
+  } else if(luaL_checkinteger(L,-1) != sqlite3_column_int(stmt,0)) {
+    return luaL_error(L,"TBSL : changing index of a loop on variable images is not supported yet");
+  }
+  int result = sqlite3_step(stmt);
+  if(result != SQLITE_ROW){
+    return 0;
+  }
+  int imgid = sqlite3_column_int(stmt,0);
+  lua_pushinteger(L,imgid);
+  dt_lua_image_push(L,imgid);
+  return 2;
+}
+
+static int images_index(lua_State *L) {
+  int imgid = luaL_checkinteger(L,-1);
+  dt_lua_image_push(L,imgid);
+  return 1;
+}
+
+static int images_pairs(lua_State *L) {
+  lua_pushcfunction(L,images_next);
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images", -1, &stmt, NULL);
+  dt_lua_stmt_push(L,stmt);
+  lua_pushnil(L); // index set to null for reset
+  return 3;
+}
+static int images_len(lua_State *L) {
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(id) from images", -1, &stmt, NULL);
+  if(sqlite3_step(stmt) != SQLITE_ROW) {
+    sqlite3_finalize(stmt);
+    return luaL_error(L,"unknown error while searching the number of images");
+  }
+  lua_pushinteger(L, sqlite3_column_int(stmt,0));
+  return 1;
+}
+
+static const luaL_Reg images_meta[] = {
+  {"__pairs", images_pairs },
+  {"__index", images_index },
+  {"__len", images_len },
+  {0,0}
+};
+
+int dt_lua_init_images(lua_State * L) {
+  /* history */
+  luaL_newmetatable(L,history_typename);
+  luaL_setfuncs(L,dt_lua_history_meta,0);
+  dt_lua_init_numid(L);
+  /* colorlabels */
+  luaL_newmetatable(L,colorlabel_typename);
+  luaL_setfuncs(L,dt_lua_colorlabel_meta,0);
+  dt_lua_init_name_list_pair(L, dt_colorlabels_name);
+  dt_lua_init_numid(L);
+  /*  image */
+  luaL_newmetatable(L,image_typename);
+  luaL_setfuncs(L,image_meta,0);
+  dt_lua_init_typed_name_list_pair(L, dt_image_t,image_fields_name);
+  dt_lua_init_numid(L);
   luaA_struct(L,dt_image_t);
   luaA_struct_member(L,dt_image_t,exif_exposure,float);
   luaA_struct_member(L,dt_image_t,exif_aperture,float);
@@ -573,77 +630,16 @@ int dt_lua_init_image(lua_State * L) {
   luaA_struct_member(L,dt_image_t,height,const int32_t);
   luaA_struct_member(L,dt_image_t,longitude,double);
   luaA_struct_member(L,dt_image_t,latitude,double);
-	return 0;
-}
-
-
-
-/***********************************************************************
-  Creating the images global variable
- **********************************************************************/
-static int images_next(lua_State *L) {
-	//printf("%s\n",__FUNCTION__);
-	//TBSL : check index and find the correct position in stmt if index was changed manually
-	// 2 args, table, index, returns the next index,value or nil,nil return the first index,value if index is nil 
-
-	sqlite3_stmt *stmt = dt_lua_stmt_check(L,-2);
-	if(lua_isnil(L,-1)) {
-		sqlite3_reset(stmt);
-	} else if(luaL_checkinteger(L,-1) != sqlite3_column_int(stmt,0)) {
-		return luaL_error(L,"TBSL : changing index of a loop on variable images is not supported yet");
-	}
-	int result = sqlite3_step(stmt);
-	if(result != SQLITE_ROW){
-		return 0;
-	}
-	int imgid = sqlite3_column_int(stmt,0);
-	lua_pushinteger(L,imgid);
-	dt_lua_image_push(L,imgid);
-	return 2;
-}
-
-static int images_index(lua_State *L) {
-	int imgid = luaL_checkinteger(L,-1);
-	dt_lua_image_push(L,imgid);
-	return 1;
-}
-
-static int images_pairs(lua_State *L) {
-	lua_pushcfunction(L,images_next);
-	sqlite3_stmt *stmt;
-	DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images", -1, &stmt, NULL);
-	dt_lua_stmt_push(L,stmt);
-	lua_pushnil(L); // index set to null for reset
-	return 3;
-}
-static int images_len(lua_State *L) {
-	sqlite3_stmt *stmt;
-	DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(id) from images", -1, &stmt, NULL);
-	if(sqlite3_step(stmt) != SQLITE_ROW) {
-		sqlite3_finalize(stmt);
-		return luaL_error(L,"unknown error while searching the number of images");
-	}
-	lua_pushinteger(L, sqlite3_column_int(stmt,0));
-	return 1;
-}
-
-static const luaL_Reg images_meta[] = {
-	{"__pairs", images_pairs },
-	{"__index", images_index },
-	{"__len", images_len },
-	{0,0}
-};
-
-int dt_lua_init_images(lua_State * L) {
-	lua_newtable(L);
-	luaL_setfuncs(L,images_meta,0);
-	lua_newuserdata(L,1); // placeholder we can't use a table because we can't prevent assignment
-	lua_pushvalue(L,-2);
-	lua_setmetatable(L,-2);
-	dt_lua_push_darktable_lib(L);
-	lua_pushvalue(L,-2);
-	lua_setfield(L,-2,"images");
-	return 0;
+  /* images */
+  lua_newtable(L);
+  luaL_setfuncs(L,images_meta,0);
+  lua_newuserdata(L,1); // placeholder we can't use a table because we can't prevent assignment
+  lua_pushvalue(L,-2);
+  lua_setmetatable(L,-2);
+  dt_lua_push_darktable_lib(L);
+  lua_pushvalue(L,-2);
+  lua_setfield(L,-2,"images");
+  return 0;
 }
 
 
