@@ -264,13 +264,20 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     else
     {
 #ifdef HAVE_MAP
-      gchar *latitude = osd_latitude_str(img->latitude);
-      _metadata_update_value(d->metadata[md_geotagging_lat], latitude);
-      g_free(latitude);
-#else
-      gchar NS = img->latitude<0?'S':'N';
-      snprintf(value, vl, "%c %09.6f", NS, fabs(img->latitude));
-      _metadata_update_value(d->metadata[md_geotagging_lat], value);
+      if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
+      {
+        gchar *latitude = osd_latitude_str(img->latitude);
+        _metadata_update_value(d->metadata[md_geotagging_lat], latitude);
+        g_free(latitude);
+      }
+      else
+      {
+#endif
+        gchar NS = img->latitude<0?'S':'N';
+        snprintf(value, vl, "%c %09.6f", NS, fabs(img->latitude));
+        _metadata_update_value(d->metadata[md_geotagging_lat], value);
+#ifdef HAVE_MAP
+      }
 #endif
     }
     /* longitude */
@@ -281,13 +288,20 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     else
     {
 #ifdef HAVE_MAP
-      gchar *longitude = osd_longitude_str(img->longitude);
-      _metadata_update_value(d->metadata[md_geotagging_lon], longitude);
-      g_free(longitude);
-#else
-      gchar EW = img->longitude<0?'W':'E';
-      snprintf(value, vl, "%c %010.6f", EW, fabs(img->longitude));
-      _metadata_update_value(d->metadata[md_geotagging_lon], value);
+      if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
+      {
+        gchar *longitude = osd_longitude_str(img->longitude);
+        _metadata_update_value(d->metadata[md_geotagging_lon], longitude);
+        g_free(longitude);
+      }
+      else
+      {
+#endif
+        gchar EW = img->longitude<0?'W':'E';
+        snprintf(value, vl, "%c %010.6f", EW, fabs(img->longitude));
+        _metadata_update_value(d->metadata[md_geotagging_lon], value);
+#ifdef HAVE_MAP
+      }
 #endif
     }
 
