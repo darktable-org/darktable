@@ -22,6 +22,7 @@
 #include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
+#include "common/denoise.h"
 #include "gui/gtk.h"
 #include "gui/simple_gui.h"
 
@@ -117,9 +118,8 @@ void process(
       roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale);
       */
 
-  // float *d = (float *)piece->data; // the default param format is an array of int or float, depending on the type of widget
+  float *d = (float *)piece->data; // the default param format is an array of int or float, depending on the type of widget
   // const float scale    = d[2];
-#if 0
   const float radius   = d[0];
   const float strength = d[1];
   const float luma     = d[3];
@@ -142,10 +142,21 @@ void process(
   // float nL = 1.0f/max_L, nC = 1.0f/max_C;
   // const float norm2[4] = { nL*nL, nC*nC, nC*nC, 1.0f };
 
-  // float *tmp = dt_alloc_align(64, sizeof(float)*roi_out->width*dt_get_num_threads());
+  float *tmp = (float *)dt_alloc_align(64, sizeof(float)*roi_out->width*dt_get_num_threads());
+
+  // TODO: need buffers:
+  // 2x roi_in  : prior_feature, prior_payload
+  // 1x roi_out : output_payload
+
+  // TODO: prior_feature = blur(input)
+  float *prior_feature = (float *)dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
+  // TODO: prior_payload = input - prior_feature
+  float *prior_payload = (float *)dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
+  // TODO: input_feature = upsample(input) (stored in out buffer)
+  // outpu payload will be nlm filtered result of the above three buffers.
+  float *output_payload = (float *)dt_alloc_align(64, 4*sizeof(float)*roi_out->width*roi_out->height);
   // we want to sum up weights in col[3], so need to init to 0:
-  memset(ovoid, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
-#endif
+  memset(output_payload, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
 
   dt_iop_roi_t roii = *roi_in;
   dt_iop_roi_t roio = *roi_out;
@@ -153,28 +164,25 @@ void process(
   roio.x = roii.x = 0;
   roio.y = roii.y = 0;
   roio.scale = roi_out->width / (float)roi_in->width;
-  const struct dt_interpolation* itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  dt_interpolation_resample(itor, (float *)ovoid, &roio, roi_out->width*4*sizeof(float), (float *)ivoid, &roii, roi_in->width*4*sizeof(float));
+  // need this to be smooth:
+  const struct dt_interpolation* itor = dt_interpolation_new(DT_INTERPOLATION_BICUBIC);
+  dt_interpolation_resample(itor, (float *)ovoid, &roio, roi_out->width*4*sizeof(float),
+                                  (float *)ivoid, &roii, roi_in->width *4*sizeof(float));
 
-#if 0
-  dt_interpolation_resample(
-      const struct dt_interpolation* itor,
-      float *out,
-      const dt_iop_roi_t* const roi_out,
-      const int32_t out_stride,
-      const float* const in,
-      const dt_iop_roi_t* const roi_in,
-      const int32_t in_stride);
-  
-  dt_nlm_accum_scaled(input_features, prior_payload, prior_features, accum, width, height, prior_width, prior_height, P, K, sharpness, tmp);
+  // output_payload = nlm(of the above)
+  dt_nlm_accum_scaled((float *)ovoid, prior_payload, prior_feature, output_payload,
+      roi_out->width, roi_out->height, roi_in->width, roi_in->height, P, K, sharpness, tmp);
   // TODO: multiple scales for denoising?
-  dt_nlm_normalize(input_payload, accum, width, height, luma, chroma);
+  dt_nlm_normalize_add((float *)ovoid, output_payload, roi_out->width, roi_out->height, luma, chroma);
 
+  free(prior_feature);
+  free(prior_payload);
+  free(output_payload);
   free(tmp);
 
-  if(piece->pipe->mask_display)
-    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
-#endif
+  // TODO: upsample that? or if output is the upsampled input just keep it?
+  // if(piece->pipe->mask_display)
+    // dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 

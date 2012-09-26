@@ -66,3 +66,12 @@ void dt_nlm_normalize(
     const float        luma,     // luma blend weight: 0.0 no denoising
     const float        chroma);  // chroma blend weight
 
+/* same as above, but add to input instead of blending. */
+void dt_nlm_normalize_add(
+    const float *const input,    // original input buffer to blend with
+    float       *const output,   // denoised buffer as of dt_nlm_accum output
+    const int          width,    // image size
+    const int          height,
+    const float        luma,     // luma weight: 0.0 no impact
+    const float        chroma);  // chroma weight
+

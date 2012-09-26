@@ -307,6 +307,32 @@ void dt_nlm_accum(
   }
 }
 
+void dt_nlm_normalize_add(
+    const float *const input,
+    float       *const output,
+    const int          width,
+    const int          height,
+    const float        luma,
+    const float        chroma)
+{
+  // normalize and apply chroma/luma blending
+  const __m128 weight = _mm_set_ps(1.0f, chroma, chroma, luma);
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int j=0; j<height; j++)
+  {
+    float *out = output + 4*width*j;
+    const float *in  = input  + 4*width*j;
+    for(int i=0; i<width; i++)
+    {
+      _mm_store_ps(out, _mm_add_ps(_mm_load_ps(in),
+          _mm_mul_ps(_mm_load_ps(out), _mm_div_ps(weight, _mm_set1_ps(out[3])))));
+      out += 4;
+      in  += 4;
+    }
+  }
+}
 void dt_nlm_normalize(
     const float *const input,
     float       *const output,
