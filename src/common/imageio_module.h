@@ -172,6 +172,10 @@ dt_imageio_module_storage_t *dt_imageio_get_storage();
 dt_imageio_module_format_t *dt_imageio_get_format_by_name(const char *name);
 dt_imageio_module_storage_t *dt_imageio_get_storage_by_name(const char *name);
 
+/* get by index */
+dt_imageio_module_format_t *dt_imageio_get_format_by_index(int index);
+dt_imageio_module_storage_t *dt_imageio_get_storage_by_index(int index);
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
