@@ -82,7 +82,7 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, 
     header->findTypedAttribute <Imf::BlobAttribute> ("exif");
   // we append a jpg-compatible exif00 string, so get rid of that again:
   if(exif && exif->value().size > 6)
-    dt_exif_read_from_blob(img, exif->value().data+6, exif->value().size-6);
+    dt_exif_read_from_blob(img, ((uint8_t*)(exif->value().data.get()))+6, exif->value().size-6);
 
   /* Get image width and height */
   Imath::Box2i dw = header->dataWindow();
