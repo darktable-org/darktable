@@ -119,16 +119,16 @@ void process(
       */
 
   float *d = (float *)piece->data; // the default param format is an array of int or float, depending on the type of widget
-  // const float scale    = d[2];
   const float radius   = d[0];
-  const float strength = d[1];
-  const float luma     = d[3];
-  const float chroma   = d[4];
+  // const float strength = d[1];
+  const float scale    = d[2];
+  const float luma     = d[3]/10.0f;
+  const float chroma   = d[4]/10.0f;
 
   // adjust to zoom size:
   const int P = ceilf(radius * roi_in->scale / piece->iscale); // pixel filter size
   const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
-  const float sharpness = 100000.0f/(1.0f+strength);
+  const float sharpness = 0.0f;//1000000.0f/(1.0f+strength);
   if(P < 1)
   {
     // nothing to do from this distance:
@@ -148,24 +148,94 @@ void process(
   // 2x roi_in  : prior_feature, prior_payload
   // 1x roi_out : output_payload
 
-  // TODO: prior_feature = blur(input)
+  // TODO: prior_feature = blur(input) = U(D(I))
   float *prior_feature = (float *)dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
   // TODO: prior_payload = input - prior_feature
   float *prior_payload = (float *)dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
-  // TODO: input_feature = upsample(input) (stored in out buffer)
-  // outpu payload will be nlm filtered result of the above three buffers.
+  const float *input = (float *)ivoid;
+
+#if 0
+  const float filter[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
+  // blur lines in parallel
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) shared(input,prior_payload,roi_in)
+#endif
+  for(int j=0;j<roi_in->height;j++)
+  {
+    for(int i=2;i<roi_in->width-3;i++)
+    {
+      for(int c=0;c<3;c++)
+      {
+        float sum = 0.0f;
+        for(int k=-2;k<=2;k++)
+          sum += filter[2+k] * input[4*(j*roi_in->width + i + k) + c];
+        prior_payload[4*(j*roi_in->width + i) + c] = sum; // abused as temp buffer
+      }
+    }
+  }
+  // blur columns in parallel
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) shared(prior_payload,prior_feature,roi_in)
+#endif
+  for(int i=0;i<roi_in->width;i++)
+  {
+    for(int j=2;j<roi_in->height-2;j++)
+    {
+      for(int c=0;c<3;c++)
+      {
+        float sum = 0.0f;
+        for(int k=-2;k<=2;k++)
+          sum += filter[2+k] * prior_payload[4*((j+k)*roi_in->width + i) + c];
+        prior_feature[4*(j*roi_in->width + i) + c] = sum;
+      }
+    }
+  }
+#else
+  dt_iop_roi_t roii = *roi_in;
+  dt_iop_roi_t roio = *roi_in;
+  roio.x = roii.x = 0;
+  roio.y = roii.y = 0;
+  roio.width  = roii.width  / scale;
+  roio.height = roii.height / scale;
+  roii.scale = 1.0f;
+  roio.scale = 1.0f/scale;
+  // need this to be smooth:
+  const struct dt_interpolation* itor = dt_interpolation_new(DT_INTERPOLATION_BICUBIC);
+  dt_interpolation_resample(itor, prior_payload, &roio, roio.width*4*sizeof(float),
+                                  input,         &roii, roii.width*4*sizeof(float));
+  roio.scale = 1.0f;
+  roii.scale = scale;
+  dt_interpolation_resample(itor, prior_feature, &roii, roii.width*4*sizeof(float),
+                                  prior_payload, &roio, roio.width*4*sizeof(float));
+  // now prior_feature = U(D(I))
+#endif
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) shared(prior_payload,prior_feature,input,roi_in)
+#endif
+  for(int i=0;i<roi_in->width*roi_in->height;i++)
+  {
+    // if that doesn't long for sse.
+    prior_payload[4*i]   = input[4*i]   - prior_feature[4*i];
+    prior_payload[4*i+1] = input[4*i+1] - prior_feature[4*i+1];
+    prior_payload[4*i+2] = input[4*i+2] - prior_feature[4*i+2];
+  }
+
+
+  // output payload will be nlm filtered result of the above three buffers.
   float *output_payload = (float *)dt_alloc_align(64, 4*sizeof(float)*roi_out->width*roi_out->height);
   // we want to sum up weights in col[3], so need to init to 0:
   memset(output_payload, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
 
-  dt_iop_roi_t roii = *roi_in;
-  dt_iop_roi_t roio = *roi_out;
+  // input_feature = upsample(input) (stored in out buffer)
+  roii = *roi_in;
+  roio = *roi_out;
   roii.scale = 1.0f;
   roio.x = roii.x = 0;
   roio.y = roii.y = 0;
   roio.scale = roi_out->width / (float)roi_in->width;
   // need this to be smooth:
-  const struct dt_interpolation* itor = dt_interpolation_new(DT_INTERPOLATION_BICUBIC);
+  // const struct dt_interpolation* itor = dt_interpolation_new(DT_INTERPOLATION_BICUBIC);
   dt_interpolation_resample(itor, (float *)ovoid, &roio, roi_out->width*4*sizeof(float),
                                   (float *)ivoid, &roii, roi_in->width *4*sizeof(float));
 

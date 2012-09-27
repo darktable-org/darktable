@@ -75,25 +75,31 @@ void dt_nlm_accum_scaled(
       // determine relevant pixels, clip to possible bounds of prior
       // we'll access the prior at (i,j) - k(i,j) in this iteration of the loop, so
       // we want that to be inside [0, prior_{width,height}).
-      const int rel_i = CLAMP(pvx - K, MAX(0, ki), MIN(width,  prior_width +ki)),
-                rel_I = CLAMP(pvx + K, MAX(0, ki), MIN(width,  prior_width +ki));
-      const int rel_j = CLAMP(pvy - K, MAX(0, kj), MIN(height, prior_height+kj)),
-                rel_J = CLAMP(pvy + K, MAX(0, kj), MIN(height, prior_height+kj));
+      const int min_i = MAX(ki, 0),
+                min_j = MAX(kj, 0);
+      const int max_i = MIN(width,  prior_width+ki),
+                max_j = MIN(height, prior_height+kj);
+      const int rel_i = CLAMP(pvx - K, min_i, max_i),
+                rel_I = CLAMP(pvx + K, min_i, max_i);
+      const int rel_j = CLAMP(pvy - K, min_j, max_j),
+                rel_J = CLAMP(pvy + K, min_j, max_j);
 #ifdef _OPENMP
 #  pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, edges, edges2, input2, output, tmp)
 #endif
       for(int j=rel_j; j<rel_J; j++)
       {
         float *S = tmp + dt_get_thread_num() * width;
-        const float *ins = input2 + 4*(width *(j-kj) - ki);
-        float *out = output + 4*width*j;
+        const float *ins = input2 + 4*(prior_width *(j-kj) + rel_i - ki);
+        float *out = output + 4*(width*j + rel_i);
 
         // first line of every thread
         if(!inited_slide)
         {
           // TODO: check these!
-          const int Pm = MIN(MIN(P, j-kj), j);
-          const int PM = MIN(MIN(P, rel_J-1-j-kj), rel_J-1-j);
+          const int Pm = MAX(0, MIN(MIN(P, j-kj), j));
+          const int PM = MAX(0, MIN(MIN(P, prior_width-1-j+kj), width-1-j));
+          // const int Pm = MIN(MIN(P, j-kj), j);
+          // const int PM = MIN(MIN(P, rel_J-1-j-kj), rel_J-1-j);
 
           // sum up a line 
           memset(S, 0x0, sizeof(float)*width);
@@ -101,7 +107,7 @@ void dt_nlm_accum_scaled(
           {
             float *s = S + rel_i;
             const float *inp  = edges  + 4*rel_i + 4* width *(j+jj);
-            const float *inps = edges2 + 4*rel_i + 4*(width *(j+jj-kj) - ki);
+            const float *inps = edges2 + 4*rel_i + 4*(prior_width *(j+jj-kj) - ki);
             for(int i=rel_i; i<rel_I; i++)
             {
               for(int k=0;k<3;k++)
@@ -134,9 +140,9 @@ void dt_nlm_accum_scaled(
           // sliding window in j direction:
           float *s = S + rel_i;
           const float *inp  = edges  + 4*rel_i + 4* width *(j+P+1);
-          const float *inps = edges2 + 4*rel_i + 4*(width *(j+P+1-kj) - ki);
+          const float *inps = edges2 + 4*rel_i + 4*(prior_width *(j+P+1-kj) - ki);
           const float *inm  = edges  + 4*rel_i + 4* width *(j-P);
-          const float *inms = edges2 + 4*rel_i + 4*(width *(j-P-kj) - ki);
+          const float *inms = edges2 + 4*rel_i + 4*(prior_width *(j-P-kj) - ki);
           for(int i=rel_i;i<rel_I;i++)
           {
             float stmp = s[0];
@@ -308,12 +314,12 @@ void dt_nlm_accum(
 }
 
 void dt_nlm_normalize_add(
-    const float *const input,
-    float       *const output,
-    const int          width,
-    const int          height,
-    const float        luma,
-    const float        chroma)
+    float *const input,
+    float *const output,
+    const int    width,
+    const int    height,
+    const float  luma,
+    const float  chroma)
 {
   // normalize and apply chroma/luma blending
   const __m128 weight = _mm_set_ps(1.0f, chroma, chroma, luma);
@@ -323,16 +329,20 @@ void dt_nlm_normalize_add(
   for(int j=0; j<height; j++)
   {
     float *out = output + 4*width*j;
-    const float *in  = input  + 4*width*j;
+    float *in  = input  + 4*width*j;
     for(int i=0; i<width; i++)
     {
-      _mm_store_ps(out, _mm_add_ps(_mm_load_ps(in),
-          _mm_mul_ps(_mm_load_ps(out), _mm_div_ps(weight, _mm_set1_ps(out[3])))));
+      // _mm_store_ps(in, _mm_add_ps(_mm_load_ps(in),
+            // _mm_mul_ps(_mm_load_ps(out), _mm_div_ps(weight, _mm_set1_ps(out[3])))));
+      // DEBUG: XXX see only the diff:
+      _mm_store_ps(in, 
+            _mm_mul_ps(_mm_load_ps(out), _mm_div_ps(weight, _mm_set1_ps(out[3]))));
       out += 4;
       in  += 4;
     }
   }
 }
+
 void dt_nlm_normalize(
     const float *const input,
     float       *const output,
