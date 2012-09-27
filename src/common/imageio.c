@@ -476,7 +476,7 @@ int dt_imageio_export_with_flags(
   dt_imageio_module_data_t   *format_params,
   const int32_t               ignore_exif,
   const int32_t               display_byteorder,
-  const int32_t               high_quality,
+  const gboolean              high_quality,
   const int32_t               thumbnail_export)
 {
   dt_develop_t dev;
@@ -546,8 +546,8 @@ int dt_imageio_export_with_flags(
   g_free(overprofile);
 
   // get only once at the beginning, in case the user changes it on the way:
-  const int high_quality_processing = ((format_params->max_width  == 0 || format_params->max_width  >= pipe.processed_width ) &&
-                                       (format_params->max_height == 0 || format_params->max_height >= pipe.processed_height)) ? 0 :
+  const gboolean high_quality_processing = ((format_params->max_width  == 0 || format_params->max_width  >= pipe.processed_width ) &&
+                                       (format_params->max_height == 0 || format_params->max_height >= pipe.processed_height)) ? FALSE :
                                       high_quality;
   const int width  = high_quality_processing ? 0 : format_params->max_width;
   const int height = high_quality_processing ? 0 : format_params->max_height;
