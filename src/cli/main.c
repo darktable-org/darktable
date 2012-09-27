@@ -19,7 +19,7 @@
 /**
  * TODO:
  *  - make --bpp work
- *  - add options for HQ export, interpolator
+ *  - add options for interpolator
  *  - make these settings work
  *  - ???
  *  - profit
@@ -46,7 +46,7 @@ int usleep(useconds_t usec);
 static void
 usage(const char* progname)
 {
-  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max height>,--bpp <bpp> --verbose]\n", progname);
+  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max height>,--bpp <bpp>,--hq <0|1|true|false> --verbose]\n", progname);
 }
 
 int main(int argc, char *arg[])
@@ -60,7 +60,7 @@ int main(int argc, char *arg[])
   char *output_filename = NULL;
   int file_counter = 0;
   int width = 0, height = 0, bpp = 0;
-  gboolean verbose = FALSE;
+  gboolean verbose = FALSE, high_quality = TRUE;
 
   for(int k=1; k<argc; k++)
   {
@@ -91,6 +91,22 @@ int main(int argc, char *arg[])
         k++;
         bpp = MAX(atoi(arg[k]), 0);
         fprintf(stderr, "%s %d\n", _("TODO: sorry, due to api restrictions we currently cannot set the bpp to"), bpp);
+      }
+      else if(!strcmp(arg[k], "--hq"))
+      {
+        k++;
+        gchar *str = g_ascii_strup(arg[k], -1);
+        if(!g_strcmp0(str, "0") || !g_strcmp0(str, "FALSE"))
+          high_quality = FALSE;
+        else if(!g_strcmp0(str, "1") || !g_strcmp0(str, "TRUE"))
+          high_quality = TRUE;
+        else
+        {
+          fprintf(stderr, "%s: %s\n", _("Unknown option for --hq"), arg[k]);
+          usage(arg[0]);
+          exit(1);
+        }
+        g_free(str);
       }
       else if(!strcmp(arg[k], "-v") || !strcmp(arg[k], "--verbose"))
       {
@@ -229,7 +245,7 @@ int main(int argc, char *arg[])
 
   //TODO: add a callback to set the bpp without going through the config
 
-  storage->store(sdata, id, format, fdata, 1, 1);
+  storage->store(sdata, id, format, fdata, 1, 1, high_quality);
 
   // cleanup time
   if(storage->finalize_store) storage->finalize_store(storage, sdata);
