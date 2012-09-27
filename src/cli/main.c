@@ -21,7 +21,6 @@
  *  - make --bpp work
  *  - add options for HQ export, interpolator
  *  - make these settings work
- *  - get rid of setting the storage using the config
  *  - ???
  *  - profit
  */
@@ -37,7 +36,6 @@
 #include "common/imageio_module.h"
 #include "common/exif.h"
 #include "common/history.h"
-#include "control/conf.h"
 
 #include <sys/time.h>
 #include <unistd.h>
@@ -48,7 +46,7 @@ int usleep(useconds_t usec);
 static void
 usage(const char* progname)
 {
-  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max height>,--bpp <bpp> --verbose] [darktable options]\n", progname);
+  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max height>,--bpp <bpp> --verbose]\n", progname);
 }
 
 int main(int argc, char *arg[])
@@ -92,7 +90,7 @@ int main(int argc, char *arg[])
       {
         k++;
         bpp = MAX(atoi(arg[k]), 0);
-        fprintf(stderr, "TODO: sorry, due to api restrictions we currently cannot set the bpp\n");
+        fprintf(stderr, "%s %d\n", _("TODO: sorry, due to api restrictions we currently cannot set the bpp to"), bpp);
       }
       else if(!strcmp(arg[k], "-v") || !strcmp(arg[k], "--verbose"))
       {
@@ -124,11 +122,10 @@ int main(int argc, char *arg[])
     xmp_filename = NULL;
   }
 
-  // don't overwrite files -- shall we be more relaxed about this?
+  // the output file already exists, so there will be a sequence number added
   if(g_file_test(output_filename, G_FILE_TEST_EXISTS))
   {
-    fprintf(stderr, "%s\n", _("output file already exists, aborting"));
-    exit(2);
+    fprintf(stderr, "%s\n", _("output file already exists, it will get renamed"));
   }
 
   char *m_arg[] = {"darktable-cli", "--library", ":memory:", NULL};
@@ -144,7 +141,8 @@ int main(int argc, char *arg[])
   id = dt_image_import(filmid, image_filename, TRUE);
   if(!id)
   {
-    fprintf(stderr, "error: can't open file %s\n", image_filename);
+    fprintf(stderr, _("error: can't open file %s"), image_filename);
+    fprintf(stderr, "\n");
     exit(1);
   }
   g_free(directory);
@@ -179,48 +177,64 @@ int main(int argc, char *arg[])
     ext = "jpeg";
 
   // init the export data structures
+  int size = 0, dat_size = 0;
   dt_imageio_module_format_t *format;
   dt_imageio_module_storage_t *storage;
+  dt_imageio_module_data_t *sdata, *fdata;
 
-  //exporting to disk is the only thing that makes sense here
-  int k=0;
-  int old_k = dt_conf_get_int("plugins/lighttable/export/storage"); //FIXME
-  GList *it = g_list_first(darktable.imageio->plugins_storage);
-  if( it != NULL )
-    do
-    {
-      k++;
-      if(!strcmp(((dt_imageio_module_storage_t *)it->data)->plugin_name, "disk"))
-      {
-        storage = it->data;
-        break;
-      }
-    }
-    while( ( it = g_list_next(it) ) );
-  if(it) // ah, we found the disk storage facility
-  {
-    format = dt_imageio_get_format_by_name(ext);
-    if(format == NULL)
-    {
-      fprintf(stderr, "unknown extension '.%s'\n", ext);
-      exit(1);
-    }
-    int dat_size = 0;
-    dt_imageio_module_data_t *dat = format->get_params(format, &dat_size);
-    dat->max_width  = width;
-    dat->max_height = height;
-    //TODO: add a callback to set the bpp without going through the config
-
-
-    dt_conf_set_int ("plugins/lighttable/export/storage", k); //FIXME this has to change!
-    dt_imageio_export(id, output_filename, format, dat);
-    dt_conf_set_int ("plugins/lighttable/export/storage", old_k); //FIXME
-  }
-  else
+  storage = dt_imageio_get_storage_by_name("disk"); // only exporting to disk makes sense
+  if(storage == NULL)
   {
     fprintf(stderr, "%s\n", _("cannot find disk storage module. please check your installation, something seems to be broken."));
     exit(1);
   }
+
+  sdata = storage->get_params(storage, &size);
+  if(sdata == NULL)
+  {
+    fprintf(stderr, "%s\n", _("failed to get parameters from storage module, aborting export ..."));
+    exit(1);
+  }
+
+  format = dt_imageio_get_format_by_name(ext);
+  if(format == NULL)
+  {
+    fprintf(stderr, _("unknown extension '.%s'"), ext);
+    fprintf(stderr, "\n");
+    exit(1);
+  }
+
+  fdata = format->get_params(format, &dat_size);
+  if(fdata == NULL)
+  {
+    fprintf(stderr, "%s\n", _("failed to get parameters from format module, aborting export ..."));
+    exit(1);
+  }
+
+  uint32_t w,h,fw,fh,sw,sh;
+  fw=fh=sw=sh=0;
+  storage->dimension(storage, &sw, &sh);
+  format->dimension(format, &fw, &fh);
+
+  if( sw==0 || fw==0) w=sw>fw?sw:fw;
+  else w=sw<fw?sw:fw;
+
+  if( sh==0 || fh==0) h=sh>fh?sh:fh;
+  else h=sh<fh?sh:fh;
+
+  fdata->max_width  = width;
+  fdata->max_height = height;
+  fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
+  fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
+
+  //TODO: add a callback to set the bpp without going through the config
+
+  storage->store(sdata, id, format, fdata, 1, 1);
+
+  // cleanup time
+  if(storage->finalize_store) storage->finalize_store(storage, sdata);
+  storage->free_params(storage, sdata);
+  format->free_params(format, fdata);
 
   dt_cleanup();
 }
