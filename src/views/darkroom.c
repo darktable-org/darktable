@@ -696,7 +696,8 @@ export_key_accel_callback(GtkAccelGroup *accel_group,
   int max_height = dt_conf_get_int ("plugins/lighttable/export/height");
   int format_index = dt_conf_get_int ("plugins/lighttable/export/format");
   int storage_index = dt_conf_get_int ("plugins/lighttable/export/storage");
-  dt_control_export(max_width, max_height, format_index, storage_index);
+  gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
+  dt_control_export(max_width, max_height, format_index, storage_index, high_quality);
   return TRUE;
 }
 

@@ -188,7 +188,8 @@ sort_pos(pair_t *a, pair_t *b)
 }
 
 int
-store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
+store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
+       const int num, const int total, const gboolean high_quality)
 {
   dt_imageio_latex_t *d = (dt_imageio_latex_t *)sdata;
 
@@ -317,7 +318,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   /* export image to file */
-  dt_imageio_export(imgid, filename, format, fdata);
+  dt_imageio_export(imgid, filename, format, fdata, high_quality);
 
   printf("[export_job] exported to `%s'\n", filename);
   char *trunc = filename + strlen(filename) - 32;

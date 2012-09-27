@@ -53,6 +53,7 @@ typedef struct dt_control_gpx_apply_t
 typedef struct dt_control_export_t
 {
   int max_width, max_height, format_index, storage_index;
+  gboolean high_quality;
 } dt_control_export_t;
 
 void dt_control_write_sidecar_files()
@@ -1284,7 +1285,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
         else
         {
           dt_image_cache_read_release(darktable.image_cache, image);
-          mstorage->store(sdata, imgid, mformat, fdata, num, total);
+          mstorage->store(sdata, imgid, mformat, fdata, num, total, settings->high_quality);
         }
       }
 #ifdef _OPENMP
@@ -1313,7 +1314,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   return 0;
 }
 
-void dt_control_export_job_init(dt_job_t *job, int max_width, int max_height, int format_index, int storage_index)
+void dt_control_export_job_init(dt_job_t *job, int max_width, int max_height, int format_index, int storage_index, gboolean high_quality)
 {
   dt_control_job_init(job, "export");
   job->execute = &dt_control_export_job_run;
@@ -1324,13 +1325,14 @@ void dt_control_export_job_init(dt_job_t *job, int max_width, int max_height, in
   data->max_height = max_height;
   data->format_index = format_index;
   data->storage_index = storage_index;
+  data->high_quality = high_quality;
   t->data = data;
 }
 
-void dt_control_export(int max_width, int max_height, int format_index, int storage_index)
+void dt_control_export(int max_width, int max_height, int format_index, int storage_index, gboolean high_quality)
 {
   dt_job_t j;
-  dt_control_export_job_init(&j, max_width, max_height, format_index, storage_index);
+  dt_control_export_job_init(&j, max_width, max_height, format_index, storage_index, high_quality);
   dt_control_add_job(darktable.control, &j);
 }
 

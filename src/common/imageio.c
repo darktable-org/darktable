@@ -458,14 +458,15 @@ int dt_imageio_export(
   const uint32_t              imgid,
   const char                 *filename,
   dt_imageio_module_format_t *format,
-  dt_imageio_module_data_t   *format_params)
+  dt_imageio_module_data_t   *format_params,
+  const gboolean              high_quality)
 {
   if (strcmp(format->mime(format_params),"x-copy")==0)
     /* This is a just a copy, skip process and just export */
     return format->write_image(format_params, filename, NULL, NULL, 0, imgid);
   else
     return dt_imageio_export_with_flags(imgid, filename, format, format_params,
-                                        0, 0, dt_conf_get_bool("plugins/lighttable/export/high_quality_processing"), 0);
+                                        0, 0, high_quality, 0);
 }
 
 // internal function: to avoid exif blob reading + 8-bit byteorder flag + high-quality override

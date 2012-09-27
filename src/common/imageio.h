@@ -41,7 +41,9 @@ dt_imageio_export(
   const uint32_t imgid,
   const char *filename,
   struct dt_imageio_module_format_t *format,
-  struct dt_imageio_module_data_t *format_params);
+  struct dt_imageio_module_data_t *format_params,
+  const gboolean high_quality);
+
 int
 dt_imageio_export_with_flags(
   const uint32_t                     imgid,
