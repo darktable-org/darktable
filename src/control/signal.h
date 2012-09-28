@@ -97,6 +97,9 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_IMAGE_IMPORT,
 
+  /** \brief This signal is raised when a filmroll is added/deleted/changed */
+  DT_SIGNAL_FILMROLLS_CHANGED,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 }
