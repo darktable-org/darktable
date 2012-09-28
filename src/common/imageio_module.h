@@ -137,7 +137,7 @@ typedef struct dt_imageio_module_storage_t
   int (*recommended_dimension)    (struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height);
 
   /* this actually does the work */
-  int (*store)(struct dt_imageio_module_data_t *self, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total);
+  int (*store)(struct dt_imageio_module_data_t *self, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total, const gboolean high_quality);
   /* called once at the end (after exporting all images), if implemented. */
   int (*finalize_store) (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
 
@@ -171,6 +171,10 @@ dt_imageio_module_storage_t *dt_imageio_get_storage();
 /* get by name. */
 dt_imageio_module_format_t *dt_imageio_get_format_by_name(const char *name);
 dt_imageio_module_storage_t *dt_imageio_get_storage_by_name(const char *name);
+
+/* get by index */
+dt_imageio_module_format_t *dt_imageio_get_format_by_index(int index);
+dt_imageio_module_storage_t *dt_imageio_get_storage_by_index(int index);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

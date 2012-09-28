@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2012 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +20,9 @@
 #define DT_VIEW_H
 
 #include "common/image.h"
+#ifdef HAVE_MAP
+#include "osm-gps-map-source.h"
+#endif
 #include <inttypes.h>
 #include <gui/gtk.h>
 #include <gmodule.h>
@@ -209,11 +213,15 @@ typedef struct dt_view_manager_t
     } tethering;
 
     /* map view proxy object */
+#ifdef HAVE_MAP
     struct
     {
       struct dt_view_t *view;
       void (*center_on_location)(const dt_view_t *view, gdouble lon, gdouble lat, double zoom);
+      void (*show_osd)(const dt_view_t *view, gboolean enabled);
+      void (*set_map_source)(const dt_view_t *view, OsmGpsMapSource_t map_source);
     } map;
+#endif
 
   } proxy;
 
@@ -306,7 +314,11 @@ void dt_view_filmstrip_prefetch();
 /*
  * Map View Proxy
  */
+#ifdef HAVE_MAP
 void dt_view_map_center_on_location(const dt_view_manager_t *vm, gdouble lon, gdouble lat, gdouble zoom);
+void dt_view_map_show_osd(const dt_view_manager_t *vm, gboolean enabled);
+void dt_view_map_set_map_source(const dt_view_manager_t *vm, OsmGpsMapSource_t map_source);
+#endif
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

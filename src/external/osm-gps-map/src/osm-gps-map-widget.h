@@ -83,22 +83,12 @@ GtkWidget*      osm_gps_map_new                         (void);
 
 gchar*          osm_gps_map_get_default_cache_directory (void);
 
-/* post expose callback */
-typedef void (*osm_gps_map_expose_func_t)(cairo_t *cri, 
-                                     int32_t width_i, int32_t height_i, 
-                                          int32_t pointerx, int32_t pointery, gpointer user_data);
-void            osm_gps_map_set_post_expose_callback(OsmGpsMap *map, osm_gps_map_expose_func_t post_expose, 
-                                                     gpointer user_data);
-
-
 void            osm_gps_map_download_maps               (OsmGpsMap *map, OsmGpsMapPoint *pt1, OsmGpsMapPoint *pt2, int zoom_start, int zoom_end);
 void            osm_gps_map_download_cancel_all         (OsmGpsMap *map);
 void            osm_gps_map_get_bbox                    (OsmGpsMap *map, OsmGpsMapPoint *pt1, OsmGpsMapPoint *pt2);
 void            osm_gps_map_set_center_and_zoom         (OsmGpsMap *map, float latitude, float longitude, int zoom);
 void            osm_gps_map_set_center                  (OsmGpsMap *map, float latitude, float longitude);
-OsmGpsMapPoint *osm_gps_map_get_center                  (OsmGpsMap *map);
 int             osm_gps_map_set_zoom                    (OsmGpsMap *map, int zoom);
-int             osm_gps_map_get_zoom                    (OsmGpsMap *map);
 void            osm_gps_map_set_zoom_offset             (OsmGpsMap *map, int zoom_offset);
 int             osm_gps_map_zoom_in                     (OsmGpsMap *map);
 int             osm_gps_map_zoom_out                    (OsmGpsMap *map);
@@ -112,7 +102,9 @@ void            osm_gps_map_gps_add                     (OsmGpsMap *map, float l
 void            osm_gps_map_gps_clear                   (OsmGpsMap *map);
 OsmGpsMapTrack *osm_gps_map_gps_get_track               (OsmGpsMap *map);
 OsmGpsMapImage *osm_gps_map_image_add                   (OsmGpsMap *map, float latitude, float longitude, GdkPixbuf *image);
+OsmGpsMapImage *osm_gps_map_image_add_z                 (OsmGpsMap *map, float latitude, float longitude, GdkPixbuf *image, gint zorder);
 OsmGpsMapImage *osm_gps_map_image_add_with_alignment    (OsmGpsMap *map, float latitude, float longitude, GdkPixbuf *image, float xalign, float yalign);
+OsmGpsMapImage *osm_gps_map_image_add_with_alignment_z  (OsmGpsMap *map, float latitude, float longitude, GdkPixbuf *image, float xalign, float yalign, gint zorder);
 gboolean        osm_gps_map_image_remove                (OsmGpsMap *map, OsmGpsMapImage *image);
 void            osm_gps_map_image_remove_all            (OsmGpsMap *map);
 void            osm_gps_map_layer_add                   (OsmGpsMap *map, OsmGpsMapLayer *layer);

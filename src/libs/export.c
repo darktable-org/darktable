@@ -83,7 +83,13 @@ static void
 export_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   // Let's get the max dimension restriction if any...
-  dt_control_export();
+  // TODO: pass the relevant values directly, not using the conf ...
+  int max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
+  int max_height = dt_conf_get_int ("plugins/lighttable/export/height");
+  int format_index = dt_conf_get_int ("plugins/lighttable/export/format");
+  int storage_index = dt_conf_get_int ("plugins/lighttable/export/storage");
+  gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
+  dt_control_export(max_width, max_height, format_index, storage_index, high_quality);
 }
 
 static void

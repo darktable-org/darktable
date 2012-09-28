@@ -548,6 +548,10 @@ static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
       mode = DT_LIBRARY;
       break;
 
+    case DT_GUI_VIEW_SWITCH_TO_MAP:
+      mode = DT_MAP;
+      break;
+
   }
 
   /* try switch to mode */
@@ -833,6 +837,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_accel_register_global(NC_("accel", "capture view"), GDK_t, 0);
   dt_accel_register_global(NC_("accel", "lighttable view"), GDK_l, 0);
   dt_accel_register_global(NC_("accel", "darkroom view"), GDK_d, 0);
+  dt_accel_register_global(NC_("accel", "map view"), GDK_m, 0);
 
   dt_accel_connect_global(
     "capture view",
@@ -846,6 +851,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     "darkroom view",
     g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
                    (gpointer)DT_GUI_VIEW_SWITCH_TO_DARKROOM, NULL));
+  dt_accel_connect_global(
+    "map view",
+    g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
+                   (gpointer)DT_GUI_VIEW_SWITCH_TO_MAP, NULL));
 
   // register_keys for applying styles
   init_styles_key_accels();

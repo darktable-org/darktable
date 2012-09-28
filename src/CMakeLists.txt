@@ -202,12 +202,6 @@ if(USE_MAC_INTEGRATION)
   endif(MACINTEGRATION_FOUND)
 endif(USE_MAC_INTEGRATION)
 
-# have a small test program, to be run as root on some systems to enable the driver to run cl stuff
-add_subdirectory(cltest)
-
-# have a command line interface
-add_subdirectory(cli)
-
 if(USE_UNITY)
   find_package(Unity)
   if(UNITY_FOUND)
@@ -403,6 +397,7 @@ if(USE_GEO)
     target_link_libraries(lib_darktable osmgpsmap_static)
     add_subdirectory(external/osm-gps-map)
     list(APPEND STATIC_LIBS osmgpsmap_static)
+    add_definitions("-DHAVE_MAP")
     message(STATUS "Map mode: enabled")
   else(LIBSOUP2_FOUND)
     set(USE_GEO OFF)
@@ -456,7 +451,11 @@ add_subdirectory(iop)
 # Compile export modules
 add_subdirectory(imageio)
 
+# have a small test program, to be run as root on some systems to enable the driver to run cl stuff
+add_subdirectory(cltest)
 
+# have a command line interface
+add_subdirectory(cli)
 
 
 #

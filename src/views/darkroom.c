@@ -692,7 +692,12 @@ export_key_accel_callback(GtkAccelGroup *accel_group,
   dt_dev_write_history((dt_develop_t *)data);
 
   /* export current image */
-  dt_control_export();
+  int max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
+  int max_height = dt_conf_get_int ("plugins/lighttable/export/height");
+  int format_index = dt_conf_get_int ("plugins/lighttable/export/format");
+  int storage_index = dt_conf_get_int ("plugins/lighttable/export/storage");
+  gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
+  dt_control_export(max_width, max_height, format_index, storage_index, high_quality);
   return TRUE;
 }
 

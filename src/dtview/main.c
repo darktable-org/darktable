@@ -276,7 +276,7 @@ process_next_image()
   if(id)
   {
     // get image from cache
-    dt_imageio_export(id, "unused", &buf, &dat);
+    dt_imageio_export(id, "unused", &buf, &dat, FALSE);
   }
   return 0;
 }

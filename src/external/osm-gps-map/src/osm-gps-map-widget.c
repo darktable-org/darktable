@@ -203,10 +203,6 @@ struct _OsmGpsMapPrivate
 #ifdef OSD_DOUBLE_BUFFER
     GdkPixmap *dbuf_pixmap;
 #endif
-
-    osm_gps_map_expose_func_t post_expose_func;
-    gpointer post_expose_func_data;
-
     //additional images or tracks added to the map
     GSList *tracks;
     GSList *images;
@@ -753,8 +749,8 @@ osm_gps_map_blit_tile(OsmGpsMap *map, GdkPixbuf *pixbuf, int offset_x, int offse
 #define MSG_RESPONSE_LEN_FORMAT "%u"
 #else
 #define MSG_RESPONSE_BODY(a)    ((a)->response_body->data)
-#define MSG_RESPONSE_LEN(a)     ((long int)(a)->response_body->length)
-#define MSG_RESPONSE_LEN_FORMAT "%ld"
+#define MSG_RESPONSE_LEN(a)     ((a)->response_body->length)
+#define MSG_RESPONSE_LEN_FORMAT "%"G_GOFFSET_FORMAT
 #endif
 
 #if USE_LIBSOUP22
@@ -777,7 +773,7 @@ osm_gps_map_tile_download_complete (SoupSession *session, SoupMessage *msg, gpoi
             if (g_mkdir_with_parents(dl->folder,0700) == 0) {
                 file = g_fopen(dl->filename, "wb");
                 if (file != NULL) {
-                    if (fwrite (MSG_RESPONSE_BODY(msg), 1, MSG_RESPONSE_LEN(msg), file) > 0) {
+                    if (fwrite (MSG_RESPONSE_BODY(msg), 1, MSG_RESPONSE_LEN(msg), file) > 0)  {
                         file_saved = TRUE;
                         g_debug("Wrote "MSG_RESPONSE_LEN_FORMAT" bytes to %s", MSG_RESPONSE_LEN(msg), dl->filename);
                         fclose (file);
@@ -1534,8 +1530,6 @@ osm_gps_map_init (OsmGpsMap *object)
     priv->images = NULL;
     priv->layers = NULL;
 
-    priv->post_expose_func = NULL;
-
     priv->drag_counter = 0;
     priv->drag_mouse_dx = 0;
     priv->drag_mouse_dy = 0;
@@ -2178,28 +2172,6 @@ osm_gps_map_configure (GtkWidget *widget, GdkEventConfigure *event)
     return FALSE;
 }
 
-void
-osm_gps_map_set_post_expose_callback(OsmGpsMap *map, osm_gps_map_expose_func_t post_expose, gpointer user_data)
-{
-  map->priv->post_expose_func = (gpointer)post_expose;
-  map->priv->post_expose_func_data = user_data;
-}
-
-static void
-osm_gps_map_post_expose(OsmGpsMap *map, GdkDrawable *drawable, GdkEventExpose *event)
-{
-  if (!map->priv->post_expose_func)
-    return;
-
-  cairo_t *cr;
-  int32_t w,h;
-  gdk_drawable_get_size(drawable,&w,&h);
-
-  cr = gdk_cairo_create (drawable);
-  map->priv->post_expose_func(cr,w,h,0,0,map->priv->post_expose_func_data);
-  cairo_destroy (cr);
-}
-
 static gboolean
 osm_gps_map_expose (GtkWidget *widget, GdkEventExpose  *event)
 {
@@ -2292,10 +2264,6 @@ osm_gps_map_expose (GtkWidget *widget, GdkEventExpose  *event)
 #endif
         }
     }
-
-
-    /* post expose */
-    osm_gps_map_post_expose(map, drawable, event);
 
     return FALSE;
 }
@@ -2910,25 +2878,6 @@ osm_gps_map_set_zoom (OsmGpsMap *map, int zoom)
     return priv->map_zoom;
 }
 
-OsmGpsMapPoint * osm_gps_map_get_center (OsmGpsMap *map)
-{
-  OsmGpsMapPrivate *priv;
-  g_return_val_if_fail (OSM_IS_GPS_MAP (map), 0);
-  priv = map->priv;
-
-  return osm_gps_map_point_new_radians(priv->center_rlat, priv->center_rlon);
-}
-
-int osm_gps_map_get_zoom (OsmGpsMap *map)
-{
-  OsmGpsMapPrivate *priv;
-  g_return_val_if_fail (OSM_IS_GPS_MAP (map), 0);
-  priv = map->priv;
-
-  return priv->map_zoom;
-}
-
-
 /**
  * osm_gps_map_zoom_in:
  *
@@ -3184,7 +3133,19 @@ osm_gps_map_gps_add (OsmGpsMap *map, float latitude, float longitude, float head
 OsmGpsMapImage *
 osm_gps_map_image_add (OsmGpsMap *map, float latitude, float longitude, GdkPixbuf *image)
 {
-    return osm_gps_map_image_add_with_alignment (map, latitude, longitude, image, 0.5, 0.5);
+    return osm_gps_map_image_add_with_alignment_z (map, latitude, longitude, image, 0.5, 0.5, 0);
+}
+
+/**
+ * osm_gps_map_image_add_z:
+ *
+ * Returns: (transfer full): A #OsmGpsMapImage representing the added pixbuf
+ * Since: 0.7.4
+ **/
+OsmGpsMapImage *
+osm_gps_map_image_add_z (OsmGpsMap *map, float latitude, float longitude, GdkPixbuf *image, gint zorder)
+{
+    return osm_gps_map_image_add_with_alignment_z (map, latitude, longitude, image, 0.5, 0.5, zorder);
 }
 
 static void
@@ -3202,6 +3163,27 @@ on_image_changed (OsmGpsMapImage *image, GParamSpec *pspec, OsmGpsMap *map)
 OsmGpsMapImage *
 osm_gps_map_image_add_with_alignment (OsmGpsMap *map, float latitude, float longitude, GdkPixbuf *image, float xalign, float yalign)
 {
+    return osm_gps_map_image_add_with_alignment_z (map, latitude, longitude, image, xalign, yalign, 0);
+}
+
+static gint
+osm_gps_map_image_z_compare(gconstpointer item1, gconstpointer item2)
+{
+    gint z1 = osm_gps_map_image_get_zorder(OSM_GPS_MAP_IMAGE(item1));
+    gint z2 = osm_gps_map_image_get_zorder(OSM_GPS_MAP_IMAGE(item2));
+
+    return(z1 - z2 + 1);
+}
+
+/**
+ * osm_gps_map_image_add_with_alignment_z:
+ *
+ * Returns: (transfer full): A #OsmGpsMapImage representing the added pixbuf
+ * Since: 0.7.4
+ **/
+OsmGpsMapImage *
+osm_gps_map_image_add_with_alignment_z (OsmGpsMap *map, float latitude, float longitude, GdkPixbuf *image, float xalign, float yalign, gint zorder)
+{
     OsmGpsMapImage *im;
     OsmGpsMapPoint pt;
 
@@ -3209,11 +3191,12 @@ osm_gps_map_image_add_with_alignment (OsmGpsMap *map, float latitude, float long
     pt.rlat = deg2rad(latitude);
     pt.rlon = deg2rad(longitude);
 
-    im = g_object_new (OSM_TYPE_GPS_MAP_IMAGE, "pixbuf", image, "x-align", xalign, "y-align", yalign, "point", &pt, NULL);
+    im = g_object_new (OSM_TYPE_GPS_MAP_IMAGE, "pixbuf", image, "x-align", xalign, "y-align", yalign, "point", &pt, "z-order", zorder, NULL);
     g_signal_connect(im, "notify",
                     G_CALLBACK(on_image_changed), map);
 
-    map->priv->images = g_slist_append(map->priv->images, im);
+    map->priv->images = g_slist_insert_sorted(map->priv->images, im,
+                                              (GCompareFunc) osm_gps_map_image_z_compare);
     osm_gps_map_map_redraw_idle(map);
     return im;
 }

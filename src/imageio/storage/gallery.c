@@ -187,7 +187,8 @@ sort_pos(pair_t *a, pair_t *b)
 }
 
 int
-store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
+store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
+       const int num, const int total, const gboolean high_quality)
 {
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)sdata;
 
@@ -356,7 +357,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   /* export image to file */
-  if(dt_imageio_export(imgid, filename, format, fdata) != 0)
+  if(dt_imageio_export(imgid, filename, format, fdata, high_quality) != 0)
   {
     fprintf(stderr, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
@@ -375,7 +376,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   if(c <= filename || *c=='/') c = filename + strlen(filename);
   const char *ext = format->extension(fdata);
   sprintf(c,"-thumb.%s",ext);
-  if(dt_imageio_export(imgid, filename, format, fdata) != 0)
+  if(dt_imageio_export(imgid, filename, format, fdata, FALSE) != 0)
   {
     fprintf(stderr, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);

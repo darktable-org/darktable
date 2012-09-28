@@ -58,9 +58,7 @@ extern "C"
 
   int write_image (dt_imageio_exr_t *exr, const char *filename, const float *in, void *exif, int exif_len, int imgid)
   {
-    Imf::Blob exif_blob;
-    exif_blob.size=exif_len;
-    exif_blob.data=(uint8_t *)exif;
+    Imf::Blob exif_blob(exif_len, (uint8_t*)exif);
     Imf::Header header(exr->width,exr->height,1,Imath::V2f (0, 0),1,Imf::INCREASING_Y,Imf::PIZ_COMPRESSION);
     header.insert("comment",Imf::StringAttribute("Developed using Darktable "PACKAGE_VERSION));
     header.insert("exif", Imf::BlobAttribute(exif_blob));
