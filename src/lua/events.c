@@ -20,6 +20,7 @@
 #include "control/control.h"
 #include "lua/dt_lua.h"
 #include "lua/events.h"
+#include "lua/image.h"
 #include "gui/accelerators.h"
 typedef struct event_handler{
 	const char* evt_name;
@@ -27,6 +28,7 @@ typedef struct event_handler{
 	int (*on_event)(lua_State * L,const char* evt_name, int nargs,int nresults);
 } event_handler;
 
+static int dt_lua_trigger_event(const char*event,int nargs,int nresults);
 
 static int register_singleton_event(lua_State* L) {
 	// 1 is the event name (checked)
@@ -318,7 +320,7 @@ static int lua_register_event(lua_State *L) {
 
 }
 
-int dt_lua_trigger_event(const char*event,int nargs,int nresults) {
+static int dt_lua_trigger_event(const char*event,int nargs,int nresults) {
 	lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_event_list");
 	if(lua_isnil(darktable.lua_state,-1)) {// events have been disabled
 		lua_pop(darktable.lua_state,1+nargs);
@@ -336,6 +338,10 @@ int dt_lua_trigger_event(const char*event,int nargs,int nresults) {
 	
 }
 
+static void on_image_imported(gpointer instance,uint8_t id, gpointer user_data){
+  dt_lua_image_push(darktable.lua_state,id);
+  dt_lua_trigger_event("post-import-image",1,0);
+}
 
 void dt_lua_init_events(lua_State *L) {
 		lua_newtable(L);
@@ -353,6 +359,7 @@ void dt_lua_init_events(lua_State *L) {
 		lua_pushcfunction(L,&lua_register_event);
 		lua_settable(L,-3);
     lua_pop(L,1);
+    dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_IMPORT,G_CALLBACK(on_image_imported),NULL);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

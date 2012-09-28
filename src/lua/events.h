@@ -23,13 +23,6 @@
 
 
 /**
-  (-0|+nresult)
-  triggers an event, expects nargs on the stack, will push nresult on the stack
-  where nargs and nresult depend of the type of event.
-
-  */
-int dt_lua_trigger_event(const char*event,int nargs, int nresult);
-/**
   initialize events, called at DT start
   */
 void dt_lua_init_events(lua_State *L);

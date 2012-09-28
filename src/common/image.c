@@ -37,10 +37,6 @@
 #include <assert.h>
 #include <glob.h>
 #include <glib/gstdio.h>
-#ifdef USE_LUA
-#include "lua/events.h"
-#include "lua/image.h"
-#endif
 
 int dt_image_is_ldr(const dt_image_t *img)
 {
@@ -546,10 +542,6 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   g_free(globbuf);
 
   dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_IMPORT,id);
-#ifdef USE_LUA
-  dt_lua_image_push(darktable.lua_state,id);
-  dt_lua_trigger_event("post-import-image",1,0);
-#endif
 
   return id;
 }

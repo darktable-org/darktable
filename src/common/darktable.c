@@ -530,10 +530,6 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
   gegl_init(&argc, &argv);
 #endif
 
-#ifdef USE_LUA
-  // early lua init, doesn't depend on DT stuff yet
-  dt_lua_init(init_gui,L);
-#endif
   // thread-safe init:
   dt_exif_init();
   char datadir[DT_MAX_PATH_LEN];
@@ -701,7 +697,7 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
 
   /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
-  dt_lua_run_init();
+  dt_lua_init(L,init_gui);
 #endif
   return 0;
 }

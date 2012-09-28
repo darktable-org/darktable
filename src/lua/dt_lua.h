@@ -22,8 +22,7 @@
 #include <lauxlib.h>
 
 /** initialize lua stuff at DT start time */
-void dt_lua_init(const int init_gui,lua_State* L);
-void dt_lua_run_init();
+void dt_lua_init(lua_State*L,const int init_gui);
 /** runs a command in the DT lua environement, command in any valid lua string */
 void dt_lua_dostring(const char* command);
 /** executes the chunk on the top of the stack with nargs and nresult

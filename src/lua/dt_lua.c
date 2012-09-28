@@ -24,6 +24,7 @@
 #include "lua/events.h"
 #include "lua/image.h"
 #include "common/film.h"
+#include "common/imageio_module.h"
 
 
 int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
@@ -164,74 +165,84 @@ static int load_darktable_lib(lua_State *L) {
 
 
 
-void dt_lua_init(const int init_gui,lua_State* L) {
-  // init the global lua context
+void dt_lua_init(lua_State*L,const int init_gui){
   if(L)
     darktable.lua_state= L;
   else
     darktable.lua_state= luaL_newstate();
   luaA_open();
+
+  // init the lua environment
   if(init_gui) {
     luaL_openlibs(darktable.lua_state);
     load_darktable_lib(darktable.lua_state);
-    lua_pop(darktable.lua_state, 1);  /* remove _PRELOAD table */
-
-
+    lua_setglobal(darktable.lua_state, "darktable");  /* remove _PRELOAD table */
     dt_lua_init_events(darktable.lua_state);
   }
 
-}
-void dt_lua_run_init() {
-  char configdir[PATH_MAX];
-  dt_loc_get_user_config_dir(configdir, PATH_MAX);
-  g_strlcat(configdir,"/lua_init",PATH_MAX);
-  if (g_file_test(configdir, G_FILE_TEST_IS_DIR)) {
-    GError * error;
-    GDir * lua_dir = g_dir_open(configdir,0,&error);
-    if(!lua_dir) {
-      dt_print(DT_DEBUG_LUA,"error opening %s : %s\n",configdir,error->message);
-    } else {
-      gchar *tmp;
-      const gchar * filename = g_dir_read_name(lua_dir);
-      while(filename) {
-        tmp = g_strconcat(configdir,"/",filename,NULL);
-        if (g_file_test(tmp, G_FILE_TEST_IS_REGULAR) && filename[0] != '.') {
-          dt_lua_do_chunk(darktable.lua_state,luaL_loadfile(darktable.lua_state,tmp),0,0);
+  // init all image storage module
+  dt_imageio_t *iio = darktable.imageio;
+  GList *it = iio->plugins_storage;
+  while(it)
+  {
+    dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
+    if(module->lua_init) dt_lua_protect_call(darktable.lua_state,module->lua_init);
+    it = g_list_next(it);
+  }
+
+  // if we have a UI, we need to load the modules
+  if(init_gui) {
+    char configdir[PATH_MAX];
+    dt_loc_get_user_config_dir(configdir, PATH_MAX);
+    g_strlcat(configdir,"/lua_init",PATH_MAX);
+    if (g_file_test(configdir, G_FILE_TEST_IS_DIR)) {
+      GError * error;
+      GDir * lua_dir = g_dir_open(configdir,0,&error);
+      if(!lua_dir) {
+        dt_print(DT_DEBUG_LUA,"error opening %s : %s\n",configdir,error->message);
+      } else {
+        gchar *tmp;
+        const gchar * filename = g_dir_read_name(lua_dir);
+        while(filename) {
+          tmp = g_strconcat(configdir,"/",filename,NULL);
+          if (g_file_test(tmp, G_FILE_TEST_IS_REGULAR) && filename[0] != '.') {
+            dt_lua_do_chunk(darktable.lua_state,luaL_loadfile(darktable.lua_state,tmp),0,0);
+          }
+          g_free(tmp);
+          filename = g_dir_read_name(lua_dir);
         }
-        g_free(tmp);
-        filename = g_dir_read_name(lua_dir);
       }
+      g_dir_close(lua_dir);
     }
-    g_dir_close(lua_dir);
   }
 
 }
 
 
-int dt_lua_push_darktable_lib(lua_State* L) {
-  lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_dtlib");
-  if(lua_isnil(L,-1)) {
-    lua_pop(L,1);
-    lua_newtable(L);
-    lua_pushvalue(L,-1);
-    lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_dtlib");
+  int dt_lua_push_darktable_lib(lua_State* L) {
+    lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_dtlib");
+    if(lua_isnil(L,-1)) {
+      lua_pop(L,1);
+      lua_newtable(L);
+      lua_pushvalue(L,-1);
+      lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_dtlib");
+    }
+    return 1;
   }
-  return 1;
-}
 
-// function used by the lua interpreter to load darktable
-int luaopen_darktable(lua_State *L) {
-  int tmp_argc = 0;
-  char *tmp_argv[]={"lua",NULL};
-  char **tmp_argv2 = &tmp_argv[0];
-  gtk_init (&tmp_argc, &tmp_argv2);
-  char *m_arg[] = {"lua", "--library", ":memory:", NULL};
-  // init dt without gui:
-  if(dt_init(3, m_arg, 0,L)) exit(1);
-  load_darktable_lib(L);
-  return 1;
-}
+  // function used by the lua interpreter to load darktable
+  int luaopen_darktable(lua_State *L) {
+    int tmp_argc = 0;
+    char *tmp_argv[]={"lua",NULL};
+    char **tmp_argv2 = &tmp_argv[0];
+    gtk_init (&tmp_argc, &tmp_argv2);
+    char *m_arg[] = {"lua", "--library", ":memory:", NULL};
+    // init dt without gui:
+    if(dt_init(3, m_arg, 0,L)) exit(1);
+    load_darktable_lib(L);
+    return 1;
+  }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+  // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+  // vim: shiftwidth=2 expandtab tabstop=2 cindent
+  // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
