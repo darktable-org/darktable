@@ -259,7 +259,7 @@ dt_film_import_blocking(const char *dirname, const int blocking)
   {
     char datetime[20];
     dt_gettime(datetime);
-  
+#if 0  
     /* Should we use one for the whole app? */
     GVolumeMonitor *gv_monitor;
     gv_monitor = g_volume_monitor_get ();
@@ -310,17 +310,19 @@ dt_film_import_blocking(const char *dirname, const int blocking)
     }
     else
       mount_name = g_strdup("Local");
-      
+#endif      
     /* insert a new film roll into database */
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "insert into film_rolls (id, datetime_accessed, folder, external_drive) values "
-                                "(null, ?1, ?2, ?3)", -1, &stmt, NULL);
+//                                "insert into film_rolls (id, datetime_accessed, folder, external_drive) values "
+//                                "(null, ?1, ?2, ?3)", -1, &stmt, NULL);
+                                "insert into film_rolls (id, datetime_accessed, folder) values "
+                                "(null, ?1, ?2)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, strlen(datetime),
                                SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, dirname, strlen(dirname),
                                SQLITE_STATIC);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, mount_name, strlen(mount_name),
-                               SQLITE_STATIC);
+//    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, mount_name, strlen(mount_name),
+//                               SQLITE_STATIC);
     
     rc = sqlite3_step(stmt);
     if(rc != SQLITE_DONE)
@@ -328,7 +330,7 @@ dt_film_import_blocking(const char *dirname, const int blocking)
               sqlite3_errmsg(dt_database_get(darktable.db)));
     sqlite3_finalize(stmt);
     
-    if (mount_name != NULL) g_free (mount_name);
+//    if (mount_name != NULL) g_free (mount_name);
 
     /* requery for filmroll and fetch new id */
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),

@@ -66,7 +66,7 @@ typedef struct dt_lib_collect_t
   GtkTreeModel *listmodel;
   GtkScrolledWindow *scrolledwindow;
   
-  GVolumeMonitor *gv_monitor;
+//  GVolumeMonitor *gv_monitor;
   
   GtkBox *box;
   GtkScrolledWindow *sw2;
@@ -674,7 +674,8 @@ _folder_tree ()
 {
   /* intialize the tree store */
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select folder,external_drive from film_rolls order by folder desc", -1, &stmt, NULL);
+//  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select folder,external_drive from film_rolls order by folder desc", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select folder from film_rolls order by folder desc", -1, &stmt, NULL);
   GtkTreeStore *store = gtk_tree_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INT);
 
   // initialize the model with the paths
@@ -686,16 +687,18 @@ _folder_tree ()
     GtkTreeIter current, iter;
     GtkTreePath *root;
     char **pch = g_strsplit((char *)sqlite3_column_text(stmt, 0), "/", -1);
+#if 0
     char *external = g_strdup((char *)sqlite3_column_text(stmt, 1));
 
     if (external == NULL)
       external = g_strdup("Local");
-
+#endif
     gboolean found=FALSE;
 
     root = gtk_tree_path_new_first();
     gtk_tree_model_get_iter (GTK_TREE_MODEL(store), &iter, root);
-
+    current = iter; // This needs to be deleted if the following code is enabled
+#if 0
     int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),NULL);
     for (int k=0;k<children;k++)
     {
@@ -718,7 +721,7 @@ _folder_tree ()
       gtk_tree_store_set(store, &iter, 0, external, -1);
       current = iter;
     }
-
+#endif
     level=1;
 
     // g_strsplit returns pch[0] always as an empty string ""
@@ -939,7 +942,7 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
   GtkTreeIter iter;
   
 
-  GtkWidget *label;
+  //GtkWidget *label;
   GtkTreeView *tree;
   GtkTreeView *view;
   GtkTreeModel *listmodel;
@@ -1124,6 +1127,7 @@ folders:
   if (d->tree_new)
   {
     /* We have already inited the GUI once, clean around */
+#if 0
     if (d->labels != NULL)
     {
       for (int i=0; i<d->labels->len; i++)
@@ -1143,21 +1147,24 @@ folders:
       }
       d->trees = NULL;
     }
+#endif
     /* set the UI */
     GtkTreeModel *model2;
     
     GtkTreePath *root = gtk_tree_path_new_first();
     gtk_tree_model_get_iter (GTK_TREE_MODEL(treemodel), &iter, root);
-
+    int children = 1; // To be deleted if the following code in enabled
+#if 0
     int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(treemodel), NULL);
     d->labels = g_ptr_array_sized_new(children);
     g_ptr_array_set_free_func (d->labels, destroy_widget);
-
+#endif
     d->trees = g_ptr_array_sized_new(children);
     g_ptr_array_set_free_func (d->trees, destroy_widget);
 
     for (int i=0; i<children; i++)
     {
+#if 0
       GValue value;
       memset(&value,0,sizeof(GValue));
       gtk_tree_model_iter_nth_child (GTK_TREE_MODEL(treemodel), &iter, NULL, i);
@@ -1177,7 +1184,7 @@ folders:
       g_ptr_array_add(d->labels, (gpointer) label);
       gtk_box_pack_start(d->box, GTK_WIDGET(label), FALSE, FALSE, 0);
       gtk_widget_show (label);
-      
+#endif      
       model2 = _create_filtered_model(GTK_TREE_MODEL(treemodel), iter, dr);
       tree = _create_treeview_display(GTK_TREE_MODEL(model2));
       g_ptr_array_add(d->trees, (gpointer) tree);
@@ -1194,9 +1201,11 @@ folders:
       g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (row_activated), d);
       g_signal_connect(G_OBJECT (tree), "button-press-event", G_CALLBACK (view_onButtonPressed), NULL);
       g_signal_connect(G_OBJECT (tree), "popup-menu", G_CALLBACK (view_onPopupMenu), NULL);
-      
+
+#if 0      
       g_value_unset(&value);
       g_free(mount_name);
+#endif
       d->tree_new = FALSE;
     }
   }
@@ -1211,6 +1220,7 @@ folders:
         gtk_tree_model_filter_refilter (modelfilter);
       }
     }
+ 
   }
   dr->typing = FALSE;
   
@@ -1724,7 +1734,7 @@ gui_init (dt_lib_module_t *self)
 
   /* set the monitor */
   /* TODO: probably we should be using the same for the import code */
-  d->gv_monitor = g_volume_monitor_get ();
+//  d->gv_monitor = g_volume_monitor_get ();
 //  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-added", G_CALLBACK(mount_changed), self);
 //  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-removed", G_CALLBACK(mount_changed), self);
 //  g_signal_connect(G_OBJECT(d->gv_monitor), "mount-changed", G_CALLBACK(mount_changed), self);
