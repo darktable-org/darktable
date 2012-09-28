@@ -565,10 +565,12 @@ view_popup_menu (GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
                    (GCallback) view_popup_menu_onSearchFilmroll, treeview);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
+#if 0
   menuitem = gtk_menu_item_new_with_label(_("sync..."));
   g_signal_connect(menuitem, "activate",
                    (GCallback) view_popup_menu_onSync, treeview);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+#endif
 
   menuitem = gtk_menu_item_new_with_label(_("remove..."));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
