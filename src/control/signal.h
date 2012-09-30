@@ -87,6 +87,9 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
 
+  /** \brief This signal is rasied when image is changed in darkroom */
+  DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
+
   /** \brief This signal is raised when the screen profile has changed
   no param, no returned value
     */
