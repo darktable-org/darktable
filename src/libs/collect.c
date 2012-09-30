@@ -699,7 +699,7 @@ _folder_tree ()
 
     root = gtk_tree_path_new_first();
     gtk_tree_model_get_iter (GTK_TREE_MODEL(store), &iter, root);
-    current = iter; // This needs to be deleted if the following code is enabled
+    //current = iter; // This needs to be deleted if the following code is enabled
 #if 0
     int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),NULL);
     for (int k=0;k<children;k++)
@@ -723,11 +723,12 @@ _folder_tree ()
       gtk_tree_store_set(store, &iter, 0, external, -1);
       current = iter;
     }
-#endif
+
     level=1;
+#endif
 
     // g_strsplit returns pch[0] always as an empty string ""
-    while (pch[level] != NULL)
+    while (pch[level+1] != NULL)
     {
       found = FALSE;
       int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),level>0?&current:NULL);
@@ -738,7 +739,7 @@ _folder_tree ()
         {
           gtk_tree_model_get (GTK_TREE_MODEL(store), &iter, 0, &value, -1);
 
-          if (strcmp(value, pch[level])==0)
+          if (strcmp(value, pch[level+1])==0)
           {
             current = iter;
             found = TRUE;
@@ -753,7 +754,7 @@ _folder_tree ()
         gchar *pth2 = NULL;
         pth2 = dt_util_dstrcat(pth2, "/");
 
-        for (int i=1; i <= level; i++)
+        for (int i=0; i <= level; i++)
         {
           pth2 = dt_util_dstrcat(pth2, "%s/", pch[i]);
         }
@@ -762,7 +763,7 @@ _folder_tree ()
 
         int count = _count_images(pth2);
         gtk_tree_store_insert(store, &iter, level>0?&current:NULL,0);
-        gtk_tree_store_set(store, &iter, DT_LIB_COLLECT_COL_TEXT, pch[level], DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_COUNT, count, -1);
+        gtk_tree_store_set(store, &iter, DT_LIB_COLLECT_COL_TEXT, pch[level+1], DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_COUNT, count, -1);
         current = iter;
       }
 
