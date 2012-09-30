@@ -558,6 +558,9 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // to avoid crop/rotate for example to add another history item.
   darktable.gui->reset = 0;
 
+  // Signal develop initialize
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
+
   // prefetch next few from first selected image on.
   dt_view_filmstrip_prefetch();
 }
