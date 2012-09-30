@@ -59,6 +59,9 @@ typedef enum dt_signal_t
   no param, no returned value
     */
   DT_SIGNAL_COLLECTION_CHANGED,
+  
+  /** \brief This signal is raised when a filmroll is added/deleted/changed */
+  DT_SIGNAL_FILMROLLS_CHANGED,
 
   /** \brief This signal is raised when darktable.develop is initialized.
       \note any modules that wants to acces darktable->develop should connect
@@ -99,9 +102,6 @@ typedef enum dt_signal_t
     no return
     */
   DT_SIGNAL_IMAGE_IMPORT,
-
-  /** \brief This signal is raised when a filmroll is added/deleted/changed */
-  DT_SIGNAL_FILMROLLS_CHANGED,
 
   /* do not touch !*/
   DT_SIGNAL_COUNT
