@@ -1530,8 +1530,9 @@ menuitem_change_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
 static void
 collection_updated(gpointer instance,gpointer self)
 {
-  dt_lib_module_t *dm = (dt_lib_module_t *)self;
-  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+//  dt_lib_module_t *dm = (dt_lib_module_t *)self;
+//  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self;
   
   changed_callback (NULL, d->rule + d->active_rule);
 }
@@ -1539,9 +1540,10 @@ collection_updated(gpointer instance,gpointer self)
 static void
 filmrolls_updated(gpointer instance, gpointer self)
 {
-  dt_lib_module_t *dm = (dt_lib_module_t *)self;
-  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
-
+//  dt_lib_module_t *dm = (dt_lib_module_t *)self;
+//  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self;
+  printf("in-function: %p\n",d);
   // update tree
   d->treemodel = GTK_TREE_MODEL(_folder_tree());
   d->tree_new = TRUE;
@@ -1650,16 +1652,16 @@ gui_init (dt_lib_module_t *self)
   gtk_widget_set_size_request(self->widget, 100, -1);
   d->active_rule = 0;
   d->params = (dt_lib_collect_params_t*)malloc(sizeof(dt_lib_collect_params_t));
-
+  printf("caller: %p\n", d);
   dt_control_signal_connect(darktable.signals, 
                            DT_SIGNAL_COLLECTION_CHANGED,
                            G_CALLBACK(collection_updated),
-                           self);
+                           d);
   
   dt_control_signal_connect(darktable.signals, 
                            DT_SIGNAL_FILMROLLS_CHANGED,
                            G_CALLBACK(filmrolls_updated),
-                           self);
+                           d);
   
   GtkBox *box;
   GtkWidget *w;
