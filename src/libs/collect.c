@@ -728,7 +728,7 @@ _folder_tree ()
 #endif
 
     // g_strsplit returns pch[0] always as an empty string ""
-    while (pch[level+1] != NULL)
+    while (pch[level] != NULL)
     {
       found = FALSE;
       int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),level>0?&current:NULL);
@@ -739,7 +739,7 @@ _folder_tree ()
         {
           gtk_tree_model_get (GTK_TREE_MODEL(store), &iter, 0, &value, -1);
 
-          if (strcmp(value, pch[level+1])==0)
+          if (strcmp(value, pch[level])==0)
           {
             current = iter;
             found = TRUE;
@@ -756,14 +756,16 @@ _folder_tree ()
 
         for (int i=0; i <= level; i++)
         {
-          pth2 = dt_util_dstrcat(pth2, "%s/", pch[i]);
+          if (level > 0 && i != 0)
+            pth2 = dt_util_dstrcat(pth2, "%s/", pch[i]);
         }
 
         snprintf(pth2+strlen(pth2)-1, 1, "%s", "\0");
 
         int count = _count_images(pth2);
         gtk_tree_store_insert(store, &iter, level>0?&current:NULL,0);
-        gtk_tree_store_set(store, &iter, DT_LIB_COLLECT_COL_TEXT, pch[level+1], DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_COUNT, count, -1);
+        printf ("Storing path %s on node %s\n", pch[level], pth2); 
+        gtk_tree_store_set(store, &iter, DT_LIB_COLLECT_COL_TEXT, pch[level], DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_COUNT, count, -1);
         current = iter;
       }
 
