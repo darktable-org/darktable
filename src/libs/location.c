@@ -18,7 +18,6 @@
 #include <curl/curl.h>
 #include "views/capture.h"
 #include "common/darktable.h"
-#include "common/camera_control.h"
 #include "control/jobs.h"
 #include "control/control.h"
 #include "control/conf.h"
