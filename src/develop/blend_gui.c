@@ -483,6 +483,17 @@ _blendop_blendif_showmask_toggled(GtkToggleButton *togglebutton, dt_iop_module_t
   dt_dev_add_history_item(darktable.develop, module, TRUE);
 }
 
+static void
+_blendop_blendif_reset(GtkButton *button, dt_iop_module_t *module)
+{
+  module->blend_params->blendif = module->default_blendop_params->blendif | (1<<DEVELOP_BLENDIF_active);
+  module->blend_params->radius = module->default_blendop_params->radius;
+  memcpy(module->blend_params->blendif_parameters, module->default_blendop_params->blendif_parameters, 4*DEVELOP_BLENDIF_SIZE*sizeof(float));
+
+  dt_iop_gui_update_blendif(module);
+  dt_dev_add_history_item(darktable.develop, module, TRUE);
+}
+
 
 static gboolean
 _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *module)
@@ -779,7 +790,11 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     GtkWidget *sm = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT);
     g_object_set(G_OBJECT(sm), "tooltip-text", _("display mask"), (char *)NULL);
 
+    GtkWidget *res = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT);
+    g_object_set(G_OBJECT(res), "tooltip-text", _("reset blend mask settings"), (char *)NULL);
+
     gtk_box_pack_start(GTK_BOX(header), GTK_WIDGET(notebook), TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(res), FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(tb), FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(sm), FALSE, FALSE, 0);
 
@@ -859,6 +874,9 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
 
     g_signal_connect (G_OBJECT(sm), "toggled",
                       G_CALLBACK (_blendop_blendif_showmask_toggled), module);
+
+    g_signal_connect (G_OBJECT(res), "clicked",
+                      G_CALLBACK (_blendop_blendif_reset), module);
 
     g_signal_connect (G_OBJECT(bd->lower_polarity), "toggled",
                       G_CALLBACK (_blendop_blendif_polarity_callback), bd);
