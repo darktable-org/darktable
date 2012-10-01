@@ -76,18 +76,43 @@ void init(dt_view_t *self)
   self->data = malloc(sizeof(dt_map_t));
   memset(self->data,0,sizeof(dt_map_t));
 
-
   dt_map_t *lib = (dt_map_t *)self->data;
 
+  OsmGpsMapSource_t map_source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
+  const gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
+  if(old_map_source && old_map_source[0] != '\0')
+  {
+    // find the number of the stored map_source
+    for(int i=0; i<=OSM_GPS_MAP_SOURCE_LAST; i++)
+    {
+      const gchar *new_map_source = osm_gps_map_source_get_friendly_name(i);
+      if(!g_strcmp0(old_map_source, new_map_source))
+      {
+        if(osm_gps_map_source_is_valid(i))
+          map_source = i;
+        break;
+      }
+    }
+  }
+  else // open street map should be a nice default ...
+    dt_conf_set_string("plugins/map/map_source", osm_gps_map_source_get_friendly_name(OSM_GPS_MAP_SOURCE_OPENSTREETMAP));
+
   lib->map = g_object_new (OSM_TYPE_GPS_MAP,
-                           "map-source", OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
+                           "map-source", map_source,
                            "tile-cache", "dt.map.cache",
-//                            "tile-cache-base", "/tmp",
                            "proxy-uri",g_getenv("http_proxy"),
                            NULL);
 
+  GtkWidget *parent = gtk_widget_get_parent(dt_ui_center(darktable.gui->ui));
+  gtk_box_pack_start(GTK_BOX(parent), GTK_WIDGET(lib->map) ,TRUE, TRUE, 0);
+
   lib->osd = g_object_new (OSM_TYPE_GPS_MAP_OSD,
                                         "show-scale",TRUE, "show-coordinates",TRUE, "show-dpad",TRUE, "show-zoom",TRUE, NULL);
+
+  if(dt_conf_get_bool("plugins/map/show_map_osd"))
+  {
+    osm_gps_map_layer_add(OSM_GPS_MAP(lib->map), lib->osd);
+  }
 
   /* build the query string */
   int max_images_drawn = dt_conf_get_int("plugins/map/max_images_drawn");
@@ -368,39 +393,9 @@ void enter(dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
 
-  OsmGpsMapSource_t map_source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
-  const gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
-  if(old_map_source && old_map_source[0] != '\0')
-  {
-    // find the number of the stored map_source
-    for(int i=0; i<=OSM_GPS_MAP_SOURCE_LAST; i++)
-    {
-      const gchar *new_map_source = osm_gps_map_source_get_friendly_name(i);
-      if(!g_strcmp0(old_map_source, new_map_source))
-      {
-        if(osm_gps_map_source_is_valid(i))
-          map_source = i;
-        break;
-      }
-    }
-  }
-  else // open street map should be a nice default ...
-    dt_conf_set_string("plugins/map/map_source", osm_gps_map_source_get_friendly_name(OSM_GPS_MAP_SOURCE_OPENSTREETMAP));
-
-  lib->map = g_object_new (OSM_TYPE_GPS_MAP,
-                           "map-source", map_source,
-                           "proxy-uri",g_getenv("http_proxy"),
-                           NULL);
-
-  if(dt_conf_get_bool("plugins/map/show_map_osd"))
-  {
-    osm_gps_map_layer_add(OSM_GPS_MAP(lib->map), lib->osd);
-  }
-
   /* replace center widget */
   GtkWidget *parent = gtk_widget_get_parent(dt_ui_center(darktable.gui->ui));
   gtk_widget_hide(dt_ui_center(darktable.gui->ui));
-  gtk_box_pack_start(GTK_BOX(parent), GTK_WIDGET(lib->map) ,TRUE, TRUE, 0);
 
   gtk_box_reorder_child(GTK_BOX(parent), GTK_WIDGET(lib->map), 2);
 
@@ -439,7 +434,8 @@ void leave(dt_view_t *self)
                                (gpointer)self);
 
   dt_map_t *lib = (dt_map_t *)self->data;
-  gtk_widget_destroy(GTK_WIDGET(lib->map));
+
+  gtk_widget_hide(GTK_WIDGET(lib->map));
   gtk_widget_show_all(dt_ui_center(darktable.gui->ui));
 
   /* reset proxy */
