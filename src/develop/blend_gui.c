@@ -641,7 +641,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
   {
     char *Lab_labels[] = { "  L  ", "  a  ", "  b  ", " C ", " h " };
     char *Lab_tooltips[] = { _("sliders for L channel"), _("sliders for a channel"), _("sliders for b channel"), _("sliders for chroma channel (of LCh)"), _("sliders for hue channel (of LCh)") };
-    char *rgb_labels[] = { _(" gray "), _(" red "), _(" green "), _(" blue "), _(" hue "), _(" chroma "), _(" value ") };
+    char *rgb_labels[] = { _(" g "), _(" R "), _(" G "), _(" B "), _(" H "), _(" S "), _(" L ") };
     char *rgb_tooltips[] = { _("sliders for gray value"), _("sliders for red channel"), _("sliders for green channel"), _("sliders for blue channel"),
                              _("sliders for hue channel (of HSL)"), _("sliders for chroma channel (of HSL)"), _("sliders for value channel (of HSL)")
                            };
