@@ -1141,7 +1141,8 @@ folders:
       }
       d->labels = NULL;
     }
-     
+#endif
+         
     if (d->trees != NULL)
     {
       for (int i=0; i<d->trees->len; i++)
@@ -1151,7 +1152,7 @@ folders:
       }
       d->trees = NULL;
     }
-#endif
+    
     /* set the UI */
     GtkTreeModel *model2;
     
@@ -1758,7 +1759,7 @@ gui_cleanup (dt_lib_module_t *self)
   g_free(((dt_lib_collect_t*)self->data)->params);
   
   /* cleanup mem */
-  g_ptr_array_free(d->labels, TRUE);
+  //g_ptr_array_free(d->labels, TRUE);
   g_ptr_array_free(d->trees, TRUE);
 
   /* TODO: Make sure we are cleaning up all allocations */
