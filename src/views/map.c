@@ -114,7 +114,6 @@ void init(dt_view_t *self)
 
   lib->map = g_object_new (OSM_TYPE_GPS_MAP,
                            "map-source", map_source,
-                           "tile-cache", "dt.map.cache",
                            "proxy-uri",g_getenv("http_proxy"),
                            NULL);
 
