@@ -38,12 +38,19 @@ typedef struct dt_map_t
   GtkWidget *center;
   OsmGpsMap *map;
   OsmGpsMapLayer *osd;
+  GSList *images;
   struct
   {
     sqlite3_stmt *main_query;
   } statements;
-}
-dt_map_t;
+} dt_map_t;
+
+typedef struct dt_map_image_t
+{
+  gint imgid;
+  OsmGpsMapImage *image;
+  gint width, height;
+} dt_map_image_t;
 
 // needed for drag&drop
 static GtkTargetEntry target_list[] = { { "image-id", GTK_TARGET_SAME_APP, DND_TARGET_IMGID } };
@@ -337,6 +344,12 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
 
   /* remove the old images */
   osm_gps_map_image_remove_all(map);
+  if(lib->images)
+  {
+    g_slist_foreach(lib->images, (GFunc) g_free, NULL);
+    g_slist_free(lib->images);
+    lib->images = NULL;
+  }
 
   /* add  all images to the map */
   gboolean needs_redraw = FALSE;
@@ -367,7 +380,12 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
       GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
       //TODO: add back the arrow on the left lower corner of the image, pointing to the location
       const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-      osm_gps_map_image_add_with_alignment(map, cimg->latitude, cimg->longitude, scaled, 0, 1);
+      dt_map_image_t *entry = (dt_map_image_t*)g_malloc(sizeof(dt_map_image_t));
+      entry->imgid = imgid;
+      entry->image = osm_gps_map_image_add_with_alignment(map, cimg->latitude, cimg->longitude, scaled, 0, 1);
+      entry->width = w;
+      entry->height = h;
+      lib->images = g_slist_prepend(lib->images, entry);
       dt_image_cache_read_release(darktable.image_cache, cimg);
 
       if(source)
@@ -387,6 +405,58 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
     timeout_event_source = g_timeout_add_seconds(2, _view_map_redraw, self); // try again in two seconds, maybe some pictures have loaded by then
   else
     timeout_event_source = 0;
+}
+
+static int _view_map_get_img_at_pos(dt_view_t *self, double x, double y)
+{
+  dt_map_t *lib = (dt_map_t*)self->data;
+  GSList *iter;
+
+  for(iter = lib->images; iter != NULL; iter = iter->next)
+  {
+    dt_map_image_t *entry = (dt_map_image_t*)iter->data;
+    OsmGpsMapImage *image = entry->image;
+    OsmGpsMapPoint *pt = (OsmGpsMapPoint*)osm_gps_map_image_get_point(image);
+    gint img_x=0, img_y=0;
+    osm_gps_map_convert_geographic_to_screen(lib->map, pt, &img_x, &img_y);
+    if(x >= img_x && x <= img_x + entry->width && y <= img_y && y >= img_y - entry->height)
+      return entry->imgid;
+  }
+
+  return 0;
+}
+
+static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e, dt_view_t *self)
+{
+  dt_map_t *lib = (dt_map_t*)self->data;
+  if (e->button == 1 && e->type == GDK_2BUTTON_PRESS)
+  {
+    // check if the click was on an image or just some random position
+    int imgid = _view_map_get_img_at_pos(self, e->x, e->y);
+
+    if(imgid > 0)
+    {
+      // open the image in darkroom
+      DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, imgid);
+      dt_ctl_switch_mode_to(DT_DEVELOP);
+    }
+    else
+    {
+      // zoom into that position
+      float longitude, latitude;
+      OsmGpsMapPoint *pt = osm_gps_map_point_new_degrees(0.0, 0.0);
+      osm_gps_map_convert_screen_to_geographic(lib->map, e->x, e->y, pt);
+      osm_gps_map_point_get_degrees(pt, &latitude, &longitude);
+      osm_gps_map_point_free(pt);
+      int zoom, max_zoom;
+      g_object_get(G_OBJECT(lib->map), "zoom", &zoom, "max-zoom", &max_zoom, NULL);
+      zoom = MIN(zoom+1, max_zoom);
+      _view_map_center_on_location(self, longitude, latitude, zoom);
+    }
+
+    return TRUE;
+  }
+  return FALSE;
 }
 
 void enter(dt_view_t *self)
@@ -424,6 +494,7 @@ void enter(dt_view_t *self)
   gtk_drag_dest_set(GTK_WIDGET(lib->map), GTK_DEST_DEFAULT_ALL, target_list, n_targets, GDK_ACTION_COPY);
   g_signal_connect(GTK_WIDGET(lib->map), "drag-data-received", G_CALLBACK(drag_and_drop_received), self);
   g_signal_connect(GTK_WIDGET(lib->map), "changed", G_CALLBACK(_view_map_changed_callback), self);
+  g_signal_connect(G_OBJECT(lib->map), "button-press-event", G_CALLBACK(_view_map_button_press_callback), self);
 }
 
 void leave(dt_view_t *self)
