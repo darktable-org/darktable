@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "BitPumpMSB.h"
+
 /*
     RawSpeed - RAW file decoder.
 
@@ -28,48 +29,68 @@ namespace RawSpeed {
 
 
 BitPumpMSB::BitPumpMSB(ByteStream *s):
-    buffer(s->getData()), size(s->getRemainSize() + sizeof(uint32)), mLeft(0), mCurr(0), off(0) {
+    buffer(s->getData()), size(s->getRemainSize() + sizeof(uint32)), mLeft(0), off(0) {
   init();
 }
 
 BitPumpMSB::BitPumpMSB(const uchar8* _buffer, uint32 _size) :
-    buffer(_buffer), size(_size + sizeof(uint32)), mLeft(0), mCurr(0), off(0) {
+    buffer(_buffer), size(_size + sizeof(uint32)), mLeft(0), off(0) {
   init();
 }
 
 __inline void BitPumpMSB::init() {
+  current_buffer = (uchar8*)_aligned_malloc(16, 16);
+  if (!current_buffer)
+    ThrowRDE("BitPumpMSB::init(): Unable to allocate memory");
+  memset(current_buffer,0,16);
   fill();
 }
 
-uint32 BitPumpMSB::getBitSafe() {
-  if (!mLeft) {
-    fill();
-    checkPos();
-  }
+void BitPumpMSB::fill()
+{
+  if (mLeft >=24)
+    return;
+  // Fill in 96 bits
+  int* b = (int*)current_buffer;
+  b[3] = b[0];
+#if defined(LE_PLATFORM_HAS_BSWAP)
+  b[2] = PLATFORM_BSWAP32(*(int*)&buffer[off]);
+  b[1] = PLATFORM_BSWAP32(*(int*)&buffer[off+4]);
+  b[0] = PLATFORM_BSWAP32(*(int*)&buffer[off+8]);
+  off+=12;
+#else
+  b[2] = (buffer[off] << 24) | (buffer[off+1] << 16)  | (buffer[off+2] << 8) | buffer[off+3];
+  off+=4;
+  b[1] = (buffer[off] << 24) | (buffer[off+1] << 16)  | (buffer[off+2] << 8) | buffer[off+3];
+  off+=4;
+  b[0] = (buffer[off] << 24) | (buffer[off+1] << 16)  | (buffer[off+2] << 8) | buffer[off+3];
+  off+=4;
+#endif
+  mLeft+=96;
+}
 
-  return (mCurr >> (--mLeft)) & 1;
+
+uint32 BitPumpMSB::getBitSafe() {
+  fill();
+  checkPos();
+
+  return getBitNoFill();
 }
 
 uint32 BitPumpMSB::getBitsSafe(unsigned int nbits) {
   if (nbits > MIN_GET_BITS)
     throw IOException("Too many bits requested");
 
-  if (mLeft < nbits) {
-    fill();
-    checkPos();
-  }
-
-  return ((mCurr >> (mLeft -= (nbits)))) & ((1 << nbits) - 1);
+  fill();
+  checkPos();
+  return getBitsNoFill(nbits);
 }
 
 
 uchar8 BitPumpMSB::getByteSafe() {
-  if (mLeft < 8) {
-    fill();
-    checkPos();
-  }
-
-  return ((mCurr >> (mLeft -= 8))) & 0xff;
+  fill();
+  checkPos();
+  return getBitsNoFill(8);
 }
 
 void BitPumpMSB::setAbsoluteOffset(unsigned int offset) {
@@ -77,7 +98,6 @@ void BitPumpMSB::setAbsoluteOffset(unsigned int offset) {
     throw IOException("Offset set out of buffer");
 
   mLeft = 0;
-  mCurr = 0;
   off = offset;
   fill();
 }
@@ -85,6 +105,8 @@ void BitPumpMSB::setAbsoluteOffset(unsigned int offset) {
 
 
 BitPumpMSB::~BitPumpMSB(void) {
+	_aligned_free(current_buffer);
 }
 
 } // namespace RawSpeed
+
