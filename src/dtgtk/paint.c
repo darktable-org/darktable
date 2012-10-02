@@ -344,8 +344,40 @@ void dtgtk_cairo_paint_eye(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
   cairo_restore(cr);
   cairo_stroke(cr);
   cairo_identity_matrix(cr);
-
 }
+
+
+void dtgtk_cairo_paint_eye_toggle(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+  gint s=w<h?w:h;
+  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
+  cairo_scale(cr,s,s);
+  cairo_set_line_width(cr,0.15);
+  cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
+
+  cairo_arc (cr, 0.5, 0.5, 0.1,0, 6.2832);
+  cairo_stroke(cr);
+
+  cairo_translate(cr, 0,0.20);
+  cairo_save(cr);
+  cairo_scale(cr,1.0,0.60);
+  cairo_arc (cr, 0.5, 0.5, 0.45, 0, 6.2832);
+  cairo_restore(cr);
+  cairo_stroke(cr);
+
+  cairo_translate(cr, 0,-0.20);
+  if( (flags&CPF_ACTIVE) )
+  {
+    cairo_set_source_rgba(cr, 0.6,0.1,0.1,1.0);
+    cairo_move_to(cr,0.1,0.9);
+    cairo_line_to(cr,0.9,0.1);
+    cairo_stroke(cr);
+  }
+
+  cairo_identity_matrix(cr);
+}
+
+
 
 void dtgtk_cairo_paint_timer(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
 {

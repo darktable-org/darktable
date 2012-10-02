@@ -68,6 +68,8 @@ void dtgtk_cairo_paint_plusminus(cairo_t *cr,gint x,gint y,gint w,gint h,gint fl
 void dtgtk_cairo_paint_color(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a eye icon */
 void dtgtk_cairo_paint_eye(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a eye icon which is crossed out if toggled */
+void dtgtk_cairo_paint_eye_toggle(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a timer icon */
 void dtgtk_cairo_paint_timer(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a filmstrip icon */

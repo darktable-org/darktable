@@ -484,6 +484,23 @@ _blendop_blendif_showmask_toggled(GtkToggleButton *togglebutton, dt_iop_module_t
 }
 
 static void
+_blendop_blendif_suppress_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *module)
+{
+  dt_develop_blend_params_t *bp = module->blend_params;
+
+  module->suppress_mask = gtk_toggle_button_get_active(togglebutton);
+  if(darktable.gui->reset) return;
+
+  if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
+  dt_iop_request_focus(module);
+
+  // hack! in order to force instant redraw we toggle an unused bit in blendif params
+  // TODO: need to find a better way to trigger redraw
+  bp->blendif ^= (1<<DEVELOP_BLENDIF_unused);
+  dt_dev_add_history_item(darktable.develop, module, TRUE);
+}
+
+static void
 _blendop_blendif_reset(GtkButton *button, dt_iop_module_t *module)
 {
   module->blend_params->blendif = module->default_blendop_params->blendif | (1<<DEVELOP_BLENDIF_active);
@@ -793,10 +810,14 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     GtkWidget *res = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT);
     g_object_set(G_OBJECT(res), "tooltip-text", _("reset blend mask settings"), (char *)NULL);
 
+    GtkWidget *sup = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT);
+    g_object_set(G_OBJECT(sup), "tooltip-text", _("temporarily switch off blend mask. only for module in focus."), (char *)NULL);
+
     gtk_box_pack_start(GTK_BOX(header), GTK_WIDGET(notebook), TRUE, TRUE, 0);
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(res), FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(tb), FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(sm), FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(sup), FALSE, FALSE, 0);
 
     bd->lower_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
     bd->upper_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
@@ -877,6 +898,9 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
 
     g_signal_connect (G_OBJECT(res), "clicked",
                       G_CALLBACK (_blendop_blendif_reset), module);
+
+    g_signal_connect (G_OBJECT(sup), "toggled",
+                      G_CALLBACK (_blendop_blendif_suppress_toggled), module);
 
     g_signal_connect (G_OBJECT(bd->lower_polarity), "toggled",
                       G_CALLBACK (_blendop_blendif_polarity_callback), bd);
