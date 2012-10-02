@@ -99,27 +99,6 @@ typedef enum dt_lib_collect_cols_t
 }
 dt_lib_collect_cols_t;
 
-typedef enum dt_lib_collect_properties_t
-{
-  DT_LIB_COLLECT_PROP_FILMROLL,
-  DT_LIB_COLLECT_PROP_FOLDERS,
-  DT_LIB_COLLECT_PROP_CAMERA,
-  DT_LIB_COLLECT_PROP_TAG,
-  DT_LIB_COLLECT_PROP_DAY,
-  DT_LIB_COLLECT_PROP_HISTORY,
-  DT_LIB_COLLECT_PROP_COLORLABEL,
-  DT_LIB_COLLECT_PROP_TITLE,
-  DT_LIB_COLLECT_PROP_DESCRIPTION,
-  DT_LIB_COLLECT_PROP_CREATOR,
-  DT_LIB_COLLECT_PROP_PUBLISHER,
-  DT_LIB_COLLECT_PROP_RIGHTS,
-  DT_LIB_COLLECT_PROP_LENS,
-  DT_LIB_COLLECT_PROP_ISO,
-  DT_LIB_COLLECT_PROP_APERTURE,
-  DT_LIB_COLLECT_PROP_FILENAME
-}
-dt_lib_collect_properties_t;
-
 typedef struct _image_t
 {
   int id;
@@ -980,16 +959,16 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
 
   switch(property)
   {
-    case DT_LIB_COLLECT_PROP_FILMROLL: // film roll
+    case DT_COLLECTION_PROP_FILMROLL: // film roll
       snprintf(query, 1024, "select distinct folder, id from film_rolls where folder like '%%%s%%'  order by folder desc", escaped_text);
       break;
-    case DT_LIB_COLLECT_PROP_CAMERA: // camera
+    case DT_COLLECTION_PROP_CAMERA: // camera
       snprintf(query, 1024, "select distinct maker || ' ' || model as model, 1 from images where maker || ' ' || model like '%%%s%%' order by model", escaped_text);
       break;
-    case DT_LIB_COLLECT_PROP_TAG: // tag
+    case DT_COLLECTION_PROP_TAG: // tag
       snprintf(query, 1024, "SELECT distinct name, id FROM tags WHERE name LIKE '%%%s%%' ORDER BY UPPER(name)", escaped_text);
       break;
-    case DT_LIB_COLLECT_PROP_HISTORY: // History, 2 hardcoded alternatives
+    case DT_COLLECTION_PROP_HISTORY: // History, 2 hardcoded alternatives
       gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
       gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
                           DT_LIB_COLLECT_COL_TEXT,_("altered"),
@@ -1005,7 +984,7 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
       goto entry_key_press_exit;
       break;
 
-    case DT_LIB_COLLECT_PROP_COLORLABEL: // colorlabels
+    case DT_COLLECTION_PROP_COLORLABEL: // colorlabels
       gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
       gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
                           DT_LIB_COLLECT_COL_TEXT,_("red"),
@@ -1041,40 +1020,40 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
 
       // TODO: Add empty string for metadata?
       // TODO: Autogenerate this code?
-    case DT_LIB_COLLECT_PROP_TITLE: // title
+    case DT_COLLECTION_PROP_TITLE: // title
       snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
                DT_METADATA_XMP_DC_TITLE, escaped_text);
       break;
-    case DT_LIB_COLLECT_PROP_DESCRIPTION: // description
+    case DT_COLLECTION_PROP_DESCRIPTION: // description
       snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
                DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
       break;
-    case DT_LIB_COLLECT_PROP_CREATOR: // creator
+    case DT_COLLECTION_PROP_CREATOR: // creator
       snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
                DT_METADATA_XMP_DC_CREATOR, escaped_text);
       break;
-    case DT_LIB_COLLECT_PROP_PUBLISHER: // publisher
+    case DT_COLLECTION_PROP_PUBLISHER: // publisher
       snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
                DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
       break;
-    case DT_LIB_COLLECT_PROP_RIGHTS: // rights
+    case DT_COLLECTION_PROP_RIGHTS: // rights
       snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'order by value ",
                DT_METADATA_XMP_DC_RIGHTS, escaped_text);
       break;
-    case DT_LIB_COLLECT_PROP_LENS: // lens
+    case DT_COLLECTION_PROP_LENS: // lens
       snprintf(query, 1024, "select distinct lens, 1 from images where lens like '%%%s%%' order by lens", escaped_text);
       break;
-    case DT_LIB_COLLECT_PROP_ISO: // iso
+    case DT_COLLECTION_PROP_ISO: // iso
       snprintf(query, 1024, "select distinct cast(iso as integer) as iso, 1 from images where iso like '%%%s%%' order by iso", escaped_text);
       break;
-    case DT_LIB_COLLECT_PROP_APERTURE: // aperture
+    case DT_COLLECTION_PROP_APERTURE: // aperture
       snprintf(query, 1024, "select distinct round(aperture,1) as aperture, 1 from images where aperture like '%%%s%%' order by aperture", escaped_text);
       break;
-    case DT_LIB_COLLECT_PROP_FILENAME: // filename
+    case DT_COLLECTION_PROP_FILENAME: // filename
       snprintf(query, 1024, "select distinct filename, 1 from images where filename like '%%%s%%' order by filename", escaped_text);
       break;
 
-    case DT_LIB_COLLECT_PROP_FOLDERS: // folders
+    case DT_COLLECTION_PROP_FOLDERS: // folders
       if (!dr->typing || !strlen(escaped_text))
         goto folders;
       else
@@ -1341,8 +1320,8 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
   gchar *text;
   const int active = d->active_rule;
   const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[active].combo));
-  if(item == DT_LIB_COLLECT_PROP_FILMROLL || // get full path for film rolls
-     item == DT_LIB_COLLECT_PROP_FOLDERS)    // or folders
+  if(item == DT_COLLECTION_PROP_FILMROLL || // get full path for film rolls
+     item == DT_COLLECTION_PROP_FOLDERS)    // or folders
     gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
   else
     gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
@@ -1371,8 +1350,8 @@ entry_activated (GtkWidget *entry, dt_lib_collect_rule_t *d)
     {
       gchar *text;
       const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->combo));
-      if(item == DT_LIB_COLLECT_PROP_FILMROLL || // get full path for film rolls
-         item == DT_LIB_COLLECT_PROP_FOLDERS)    // or folders
+      if(item == DT_COLLECTION_PROP_FILMROLL || // get full path for film rolls
+         item == DT_COLLECTION_PROP_FOLDERS)    // or folders
         gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
       else
         gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);

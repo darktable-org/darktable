@@ -430,19 +430,19 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
 }
 
 static void
-get_query_string(const int property, const gchar *escaped_text, char *query)
+get_query_string(const dt_collection_properties_t property, const gchar *escaped_text, char *query)
 {
   switch(property)
   {
-    case 0: // film roll
+    case DT_COLLECTION_PROP_FILMROLL: // film roll
       snprintf(query, 1024, "(film_id in (select id from film_rolls where folder like '%s'))", escaped_text);
       break;
 
-    case 15: // folders
+    case DT_COLLECTION_PROP_FOLDERS: // folders
       snprintf(query, 1024, "(film_id in (select id from film_rolls where folder like '%s%%'))", escaped_text);
       break;
 
-    case 5: // colorlabel
+    case DT_COLLECTION_PROP_COLORLABEL: // colorlabel
     {
       int color = 0;
       if     (strcmp(escaped_text,_("red")   )==0) color=0;
@@ -454,50 +454,50 @@ get_query_string(const int property, const gchar *escaped_text, char *query)
     }
     break;
 
-    case 4: // history
+    case DT_COLLECTION_PROP_HISTORY: // history
       snprintf(query, 1024, "(id %s in (select imgid from history where imgid=images.id)) ",(strcmp(escaped_text,_("altered"))==0)?"":"not");
       break;
 
-    case 1: // camera
+    case DT_COLLECTION_PROP_CAMERA: // camera
       snprintf(query, 1024, "(maker || ' ' || model like '%%%s%%')", escaped_text);
       break;
-    case 2: // tag
+    case DT_COLLECTION_PROP_TAG: // tag
       snprintf(query, 1024, "(id in (select imgid from tagged_images as a join "
                "tags as b on a.tagid = b.id where name like '%s'))", escaped_text);
       break;
 
       // TODO: How to handle images without metadata? In the moment they are not shown.
       // TODO: Autogenerate this code?
-    case 6: // title
+    case DT_COLLECTION_PROP_TITLE: // title
       snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
                DT_METADATA_XMP_DC_TITLE, escaped_text);
       break;
-    case 7: // description
+    case DT_COLLECTION_PROP_DESCRIPTION: // description
       snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
                DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
       break;
-    case 8: // creator
+    case DT_COLLECTION_PROP_CREATOR: // creator
       snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
                DT_METADATA_XMP_DC_CREATOR, escaped_text);
       break;
-    case 9: // publisher
+    case DT_COLLECTION_PROP_PUBLISHER: // publisher
       snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
                DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
       break;
-    case 10: // rights
+    case DT_COLLECTION_PROP_RIGHTS: // rights
       snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
                DT_METADATA_XMP_DC_RIGHTS, escaped_text);
       break;
-    case 11: // lens
+    case DT_COLLECTION_PROP_LENS: // lens
       snprintf(query, 1024, "(lens like '%%%s%%')", escaped_text);
       break;
-    case 12: // iso
+    case DT_COLLECTION_PROP_ISO: // iso
       snprintf(query, 1024, "(iso like '%%%s%%')", escaped_text);
       break;
-    case 13: // aperature
+    case DT_COLLECTION_PROP_APERTURE: // aperture
       snprintf(query, 1024, "(aperture like '%%%s%%')", escaped_text);
       break;
-    case 14: // filename
+    case DT_COLLECTION_PROP_FILENAME: // filename
       snprintf(query, 1024, "(filename like '%%%s%%')", escaped_text);
       break;
 
