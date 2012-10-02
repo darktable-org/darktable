@@ -1713,6 +1713,25 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
       }
     }
 
+
+    /* check if mask should be suppressed (i.e. just set to global opacity value) */
+    if(self->suppress_mask && self->dev->gui_attached && self == self->dev->gui_module && piece->pipe == self->dev->pipe && (d->blendif & (1<<31)))
+    {
+#ifdef _OPENMP
+#if !defined(__SUNOS__)
+    #pragma omp parallel for default(none) shared(roi_out,mask,stderr)
+#else
+    #pragma omp parallel for shared(roi_out,mask)
+#endif
+
+#endif
+      for (int k=0; k<roi_out->height*roi_out->width; k++)
+      {
+        mask[k] = opacity;
+      }
+    }
+
+
 #ifdef _OPENMP
 #if !defined(__SUNOS__)
     #pragma omp parallel for default(none) shared(i,roi_out,o,mask,blend,stderr,ch)
@@ -1770,6 +1789,7 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
   int kernel_mask = darktable.blendop->kernel_blendop_mask_Lab;
   int kernel = darktable.blendop->kernel_blendop_Lab;
+  int kernel_set_mask = darktable.blendop->kernel_blendop_set_mask;
 
   switch (cst)
   {
@@ -1843,6 +1863,17 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
     }
   }
 
+  /* check if mask should be suppressed. */
+  if(self->suppress_mask && self->dev->gui_attached && self == self->dev->gui_module && piece->pipe == self->dev->pipe && (d->blendif & (1<<31)))
+  {
+    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 0, sizeof(cl_mem), (void *)&dev_mask);
+    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 1, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 2, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 3, sizeof(float), (void *)&opacity);
+    err = dt_opencl_enqueue_kernel_2d(devid, kernel_set_mask, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_mask);
@@ -1896,9 +1927,10 @@ void dt_develop_blend_init(dt_blendop_t *gd)
   gd->kernel_blendop_RAW = dt_opencl_create_kernel(program, "blendop_RAW");
   gd->kernel_blendop_rgb = dt_opencl_create_kernel(program, "blendop_rgb");
   gd->kernel_blendop_copy_alpha = dt_opencl_create_kernel(program, "blendop_copy_alpha");
+  gd->kernel_blendop_set_mask = dt_opencl_create_kernel(program, "blendop_set_mask");
 #else
   gd->kernel_blendop_Lab = gd->kernel_blendop_RAW = gd->kernel_blendop_rgb = gd->kernel_blendop_copy_alpha = -1;
-  gd->kernel_blendop_mask_Lab = gd->kernel_blendop_mask_RAW = gd->kernel_blendop_mask_rgb = -1;
+  gd->kernel_blendop_mask_Lab = gd->kernel_blendop_mask_RAW = gd->kernel_blendop_mask_rgb = gd->kernel_blendop_set_mask = -1;
 #endif
 }
 

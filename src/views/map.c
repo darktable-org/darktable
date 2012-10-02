@@ -38,16 +38,21 @@ typedef struct dt_map_t
   GtkWidget *center;
   OsmGpsMap *map;
   OsmGpsMapLayer *osd;
+  GSList *images;
+  gint selected_image;
+  gboolean start_drag;
   struct
   {
     sqlite3_stmt *main_query;
   } statements;
-}
-dt_map_t;
+} dt_map_t;
 
-// needed for drag&drop
-static GtkTargetEntry target_list[] = { { "image-id", GTK_TARGET_SAME_APP, DND_TARGET_IMGID } };
-static guint n_targets = G_N_ELEMENTS (target_list);
+typedef struct dt_map_image_t
+{
+  gint imgid;
+  OsmGpsMapImage *image;
+  gint width, height;
+} dt_map_image_t;
 
 /* proxy function to center map view on location at a zoom level */
 static void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdouble lat, gdouble zoom);
@@ -60,6 +65,16 @@ static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer us
 /* callback when an image is dropped from filmstrip */
 static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data,
                                    guint target_type, guint time, gpointer data);
+/* callback when the user drags images FROM the map */
+static void _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *context,
+                                       GtkSelectionData *selection_data, guint target_type, guint time, dt_view_t *self);
+/* callback that readds the images to the map */
+static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self);
+/* callback that handles double clicks on the map */
+static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e, dt_view_t *self);
+/* callback when the mouse is moved */
+static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, dt_view_t *self);
+static gboolean _view_map_dnd_failed_callback(GtkWidget *widget, GdkDragContext *drag_context, GtkDragResult result, dt_view_t *self);
 
 const char *name(dt_view_t *self)
 {
@@ -76,18 +91,42 @@ void init(dt_view_t *self)
   self->data = malloc(sizeof(dt_map_t));
   memset(self->data,0,sizeof(dt_map_t));
 
-
   dt_map_t *lib = (dt_map_t *)self->data;
 
+  OsmGpsMapSource_t map_source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
+  const gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
+  if(old_map_source && old_map_source[0] != '\0')
+  {
+    // find the number of the stored map_source
+    for(int i=0; i<=OSM_GPS_MAP_SOURCE_LAST; i++)
+    {
+      const gchar *new_map_source = osm_gps_map_source_get_friendly_name(i);
+      if(!g_strcmp0(old_map_source, new_map_source))
+      {
+        if(osm_gps_map_source_is_valid(i))
+          map_source = i;
+        break;
+      }
+    }
+  }
+  else // open street map should be a nice default ...
+    dt_conf_set_string("plugins/map/map_source", osm_gps_map_source_get_friendly_name(OSM_GPS_MAP_SOURCE_OPENSTREETMAP));
+
   lib->map = g_object_new (OSM_TYPE_GPS_MAP,
-                           "map-source", OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
-                           "tile-cache", "dt.map.cache",
-//                            "tile-cache-base", "/tmp",
+                           "map-source", map_source,
                            "proxy-uri",g_getenv("http_proxy"),
                            NULL);
 
+  GtkWidget *parent = gtk_widget_get_parent(dt_ui_center(darktable.gui->ui));
+  gtk_box_pack_start(GTK_BOX(parent), GTK_WIDGET(lib->map) ,TRUE, TRUE, 0);
+
   lib->osd = g_object_new (OSM_TYPE_GPS_MAP_OSD,
                                         "show-scale",TRUE, "show-coordinates",TRUE, "show-dpad",TRUE, "show-zoom",TRUE, NULL);
+
+  if(dt_conf_get_bool("plugins/map/show_map_osd"))
+  {
+    osm_gps_map_layer_add(OSM_GPS_MAP(lib->map), lib->osd);
+  }
 
   /* build the query string */
   int max_images_drawn = dt_conf_get_int("plugins/map/max_images_drawn");
@@ -102,6 +141,17 @@ void init(dt_view_t *self)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);
 
   g_free(geo_query);
+
+  /* allow drag&drop of images from filmstrip */
+  gtk_drag_dest_set(GTK_WIDGET(lib->map), GTK_DEST_DEFAULT_ALL, target_list_internal, n_targets_internal, GDK_ACTION_COPY);
+  g_signal_connect(GTK_WIDGET(lib->map), "drag-data-received", G_CALLBACK(drag_and_drop_received), self);
+  g_signal_connect(GTK_WIDGET(lib->map), "changed", G_CALLBACK(_view_map_changed_callback), self);
+  g_signal_connect(G_OBJECT(lib->map), "button-press-event", G_CALLBACK(_view_map_button_press_callback), self);
+  g_signal_connect (G_OBJECT(lib->map), "motion-notify-event", G_CALLBACK(_view_map_motion_notify_callback), self);
+
+  /* allow drag&drop of images from the map, too */
+  g_signal_connect(GTK_WIDGET(lib->map), "drag-data-get", G_CALLBACK(_view_map_dnd_get_callback), self);
+  g_signal_connect(GTK_WIDGET(lib->map), "drag-failed", G_CALLBACK(_view_map_dnd_failed_callback), self);
 }
 
 void cleanup(dt_view_t *self)
@@ -312,6 +362,12 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
 
   /* remove the old images */
   osm_gps_map_image_remove_all(map);
+  if(lib->images)
+  {
+    g_slist_foreach(lib->images, (GFunc) g_free, NULL);
+    g_slist_free(lib->images);
+    lib->images = NULL;
+  }
 
   /* add  all images to the map */
   gboolean needs_redraw = FALSE;
@@ -342,7 +398,12 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
       GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
       //TODO: add back the arrow on the left lower corner of the image, pointing to the location
       const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-      osm_gps_map_image_add_with_alignment(map, cimg->latitude, cimg->longitude, scaled, 0, 1);
+      dt_map_image_t *entry = (dt_map_image_t*)g_malloc(sizeof(dt_map_image_t));
+      entry->imgid = imgid;
+      entry->image = osm_gps_map_image_add_with_alignment(map, cimg->latitude, cimg->longitude, scaled, 0, 1);
+      entry->width = w;
+      entry->height = h;
+      lib->images = g_slist_prepend(lib->images, entry);
       dt_image_cache_read_release(darktable.image_cache, cimg);
 
       if(source)
@@ -359,48 +420,141 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   // not exactly thread safe, but should be good enough for updating the display
   static int timeout_event_source = 0;
   if(needs_redraw && timeout_event_source == 0)
-    timeout_event_source = g_timeout_add_seconds(2, _view_map_redraw, self); // try again in two seconds, maybe some pictures have loaded by then
+    timeout_event_source = g_timeout_add_seconds(1, _view_map_redraw, self); // try again in a second, maybe some pictures have loaded by then
   else
     timeout_event_source = 0;
+}
+
+static int _view_map_get_img_at_pos(dt_view_t *self, double x, double y)
+{
+  dt_map_t *lib = (dt_map_t*)self->data;
+  GSList *iter;
+
+  for(iter = lib->images; iter != NULL; iter = iter->next)
+  {
+    dt_map_image_t *entry = (dt_map_image_t*)iter->data;
+    OsmGpsMapImage *image = entry->image;
+    OsmGpsMapPoint *pt = (OsmGpsMapPoint*)osm_gps_map_image_get_point(image);
+    gint img_x=0, img_y=0;
+    osm_gps_map_convert_geographic_to_screen(lib->map, pt, &img_x, &img_y);
+    if(x >= img_x && x <= img_x + entry->width && y <= img_y && y >= img_y - entry->height)
+      return entry->imgid;
+  }
+
+  return 0;
+}
+
+static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, dt_view_t *self)
+{
+  dt_map_t *lib = (dt_map_t*)self->data;
+  const int ts = 64;
+
+  if(lib->start_drag && lib->selected_image > 0)
+  {
+    for(GSList *iter = lib->images; iter != NULL; iter = iter->next)
+    {
+      dt_map_image_t *entry = (dt_map_image_t*)iter->data;
+      OsmGpsMapImage *image = entry->image;
+      if(entry->imgid == lib->selected_image)
+      {
+        osm_gps_map_image_remove(lib->map, image);
+        break;
+      }
+    }
+
+    lib->start_drag = FALSE;
+    GtkTargetList *targets = gtk_target_list_new(target_list_all, n_targets_all);
+
+    dt_mipmap_buffer_t buf;
+    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, ts, ts);
+    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, lib->selected_image, mip, DT_MIPMAP_BLOCKING);
+
+    if(buf.buf)
+    {
+      uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
+      uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
+
+      uint8_t *rgbbuf = g_malloc((buf.width+2)*(buf.height+2)*3);
+      memset(rgbbuf, 64, (buf.width+2)*(buf.height+2)*3);
+      for(int i=1; i<=buf.height; i++)
+        for(int j=1; j<=buf.width; j++)
+          for(int k=0; k<3; k++)
+            rgbbuf[(i*(buf.width+2)+j)*3+k] = buf_decompressed[((i-1)*buf.width+j-1)*4+2-k];
+
+      int w=ts, h=ts;
+      if(buf.width < buf.height) w = (buf.width*ts)/buf.height; // portrait
+      else                       h = (buf.height*ts)/buf.width; // landscape
+
+      GdkPixbuf *source = gdk_pixbuf_new_from_data(rgbbuf, GDK_COLORSPACE_RGB, FALSE, 8, (buf.width+2), (buf.height+2), (buf.width+2)*3, NULL, NULL);
+      GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
+      GdkDragContext * context = gtk_drag_begin(GTK_WIDGET(lib->map), targets, GDK_ACTION_COPY, 1, (GdkEvent*)e);
+      gtk_drag_set_icon_pixbuf(context, scaled, 0, 0);
+
+      if(source)
+        g_object_unref(source);
+      if(scaled)
+        g_object_unref(scaled);
+      g_free(rgbbuf);
+    }
+
+    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+
+    gtk_target_list_unref(targets);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e, dt_view_t *self)
+{
+  dt_map_t *lib = (dt_map_t*)self->data;
+  if(e->button == 1)
+  {
+    // check if the click was on an image or just some random position
+    lib->selected_image = _view_map_get_img_at_pos(self, e->x, e->y);
+    if(e->type == GDK_BUTTON_PRESS && lib->selected_image > 0)
+    {
+      lib->start_drag = TRUE;
+      return TRUE;
+    }
+    if(e->type == GDK_2BUTTON_PRESS)
+    {
+      if(lib->selected_image > 0)
+      {
+        // open the image in darkroom
+        DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, lib->selected_image);
+        dt_ctl_switch_mode_to(DT_DEVELOP);
+        return TRUE;
+      }
+      else
+      {
+        // zoom into that position
+        float longitude, latitude;
+        OsmGpsMapPoint *pt = osm_gps_map_point_new_degrees(0.0, 0.0);
+        osm_gps_map_convert_screen_to_geographic(lib->map, e->x, e->y, pt);
+        osm_gps_map_point_get_degrees(pt, &latitude, &longitude);
+        osm_gps_map_point_free(pt);
+        int zoom, max_zoom;
+        g_object_get(G_OBJECT(lib->map), "zoom", &zoom, "max-zoom", &max_zoom, NULL);
+        zoom = MIN(zoom+1, max_zoom);
+        _view_map_center_on_location(self, longitude, latitude, zoom);
+      }
+      return TRUE;
+    }
+  }
+  return FALSE;
 }
 
 void enter(dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
 
-  OsmGpsMapSource_t map_source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
-  const gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
-  if(old_map_source && old_map_source[0] != '\0')
-  {
-    // find the number of the stored map_source
-    for(int i=0; i<=OSM_GPS_MAP_SOURCE_LAST; i++)
-    {
-      const gchar *new_map_source = osm_gps_map_source_get_friendly_name(i);
-      if(!g_strcmp0(old_map_source, new_map_source))
-      {
-        if(osm_gps_map_source_is_valid(i))
-          map_source = i;
-        break;
-      }
-    }
-  }
-  else // open street map should be a nice default ...
-    dt_conf_set_string("plugins/map/map_source", osm_gps_map_source_get_friendly_name(OSM_GPS_MAP_SOURCE_OPENSTREETMAP));
-
-  lib->map = g_object_new (OSM_TYPE_GPS_MAP,
-                           "map-source", map_source,
-                           "proxy-uri",g_getenv("http_proxy"),
-                           NULL);
-
-  if(dt_conf_get_bool("plugins/map/show_map_osd"))
-  {
-    osm_gps_map_layer_add(OSM_GPS_MAP(lib->map), lib->osd);
-  }
+  lib->selected_image = 0;
+  lib->start_drag = FALSE;
 
   /* replace center widget */
   GtkWidget *parent = gtk_widget_get_parent(dt_ui_center(darktable.gui->ui));
   gtk_widget_hide(dt_ui_center(darktable.gui->ui));
-  gtk_box_pack_start(GTK_BOX(parent), GTK_WIDGET(lib->map) ,TRUE, TRUE, 0);
 
   gtk_box_reorder_child(GTK_BOX(parent), GTK_WIDGET(lib->map), 2);
 
@@ -424,11 +578,6 @@ void enter(dt_view_t *self)
                             DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
                             G_CALLBACK(_view_map_filmstrip_activate_callback),
                             self);
-
-  /* allow drag&drop of images from filmstrip */
-  gtk_drag_dest_set(GTK_WIDGET(lib->map), GTK_DEST_DEFAULT_ALL, target_list, n_targets, GDK_ACTION_COPY);
-  g_signal_connect(GTK_WIDGET(lib->map), "drag-data-received", G_CALLBACK(drag_and_drop_received), self);
-  g_signal_connect(GTK_WIDGET(lib->map), "changed", G_CALLBACK(_view_map_changed_callback), self);
 }
 
 void leave(dt_view_t *self)
@@ -439,7 +588,8 @@ void leave(dt_view_t *self)
                                (gpointer)self);
 
   dt_map_t *lib = (dt_map_t *)self->data;
-  gtk_widget_destroy(GTK_WIDGET(lib->map));
+
+  gtk_widget_hide(GTK_WIDGET(lib->map));
   gtk_widget_show_all(dt_ui_center(darktable.gui->ui));
 
   /* reset proxy */
@@ -566,6 +716,43 @@ drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint 
   gtk_drag_finish(context, success, FALSE, time);
   if(success)
     g_signal_emit_by_name(lib->map, "changed");
+}
+
+static void
+_view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *context, GtkSelectionData *selection_data,
+                                guint target_type, guint time, dt_view_t *self)
+{
+  dt_map_t *lib = (dt_map_t*)self->data;
+
+  g_assert (selection_data != NULL);
+
+  int imgid = lib->selected_image;
+
+  switch (target_type)
+  {
+    case DND_TARGET_IMGID:
+      gtk_selection_data_set(selection_data, selection_data-> target, _DWORD, (guchar*) &imgid, sizeof(imgid));
+      break;
+    default: // return the location of the file as a last resort
+    case DND_TARGET_URI:
+    {
+      gchar pathname[DT_MAX_PATH_LEN] = {0};
+      dt_image_full_path(imgid, pathname, DT_MAX_PATH_LEN);
+      gchar *uri = g_strdup_printf("file://%s", pathname); // TODO: should we add the host?
+      gtk_selection_data_set(selection_data, selection_data-> target, _BYTE, (guchar*) uri, strlen(uri));
+      g_free(uri);
+      break;
+    }
+  }
+}
+
+static gboolean _view_map_dnd_failed_callback(GtkWidget *widget, GdkDragContext *drag_context, GtkDragResult result, dt_view_t *self)
+{
+  dt_map_t *lib = (dt_map_t*)self->data;
+
+  g_signal_emit_by_name(lib->map, "changed");
+
+  return TRUE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

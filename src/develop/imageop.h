@@ -160,6 +160,8 @@ typedef struct dt_iop_module_t
   int32_t request_color_pick;
   /** set to 1 if you want the mask to be transfered into alpha channel during next eval. gui mode only. */
   int32_t request_mask_display;
+  /** set to 1 if you want the blendif mask to be suppressed in the module in focus. gui mode only. */
+  int32_t suppress_mask;
   /** bounding box in which the mean color is requested. */
   float color_picker_box[4];
   /** single point to pick if in point mode */

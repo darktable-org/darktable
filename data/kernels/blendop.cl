@@ -944,3 +944,16 @@ blendop_copy_alpha (__read_only image2d_t in_a, __read_only image2d_t in_b, __wr
 }
 
 
+__kernel void
+blendop_set_mask (__write_only image2d_t mask, const int width, const int height, const float value)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  write_imagef(mask, (int2)(x, y), value);
+}
+
+
+

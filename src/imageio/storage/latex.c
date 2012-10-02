@@ -200,13 +200,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
 
-    char tmp_dir[DT_MAX_PATH_LEN];
-    dt_variables_expand(d->vp, d->filename, TRUE);
-    g_strlcpy(tmp_dir, dt_variables_get_result(d->vp), DT_MAX_PATH_LEN);
-
     // if filenamepattern is a directory just add ${FILE_NAME} as default..
-    if ( g_file_test(tmp_dir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename)-1)[0]=='/' || (d->filename+strlen(d->filename)-1)[0]=='\\') )
-      snprintf (d->filename+strlen(d->filename), DT_MAX_PATH_LEN-strlen(d->filename), "/$(FILE_NAME)");
+    if ( g_file_test(d->filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename))[0]=='/' || (d->filename+strlen(d->filename))[0]=='\\') )
+      snprintf (d->filename+strlen(d->filename), DT_MAX_PATH_LEN-strlen(d->filename), "$(FILE_NAME)");
 
     // avoid braindead export which is bound to overwrite at random:
     if(total > 1 && !g_strrstr(d->filename, "$"))
@@ -242,8 +238,8 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     snprintf(d->cached_dirname, DT_MAX_PATH_LEN, "%s", dirname);
 
     c = filename + strlen(filename);
-    for(; c>filename && *c != '.' && *c != '/' ; c--);
-    if(c <= filename || *c=='/') c = filename + strlen(filename);
+//     for(; c>filename && *c != '.' && *c != '/' ; c--);
+//     if(c <= filename || *c=='/') c = filename + strlen(filename);
 
     sprintf(c,".%s",ext);
 

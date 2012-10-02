@@ -19,10 +19,10 @@
 
     http://www.klauspost.com
 */
-namespace RawSpeed {
-
 #ifndef SS_Point_H
 #define SS_Point_H
+
+namespace RawSpeed {
 
 #ifdef __unix
 #include <stdlib.h>

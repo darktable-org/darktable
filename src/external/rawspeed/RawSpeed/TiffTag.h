@@ -23,6 +23,9 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#ifndef TIFF_TAG_H
+#define TIFF_TAG_H
+
 namespace RawSpeed {
 
 typedef enum {
@@ -310,3 +313,5 @@ typedef enum {
 } TiffTag;
 
 } // namespace RawSpeed
+
+#endif // TIFF_TAG_H
