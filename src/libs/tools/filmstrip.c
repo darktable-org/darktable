@@ -57,14 +57,6 @@ typedef struct dt_lib_filmstrip_t
 }
 dt_lib_filmstrip_t;
 
-/* drag'n'drop stuff */
-static GtkTargetEntry target_list[] =
-{
-  { "image-id",    0, DND_TARGET_IMGID },
-  { "text/uri-list", 0, DND_TARGET_URI }
-};
-static guint n_targets = G_N_ELEMENTS (target_list);
-
 /* proxy function to center filmstrip on imgid */
 static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gboolean activate);
 /* proxy function for retrieving last activate request image id */
@@ -271,8 +263,8 @@ void gui_init(dt_lib_module_t *self)
   /* allow drag&drop of images from the filmstrip. this has to come before the other callbacks are registered! */
   gtk_drag_source_set(d->filmstrip,
                       GDK_BUTTON1_MASK,
-                      target_list,
-                      n_targets,
+                      target_list_all,
+                      n_targets_all,
                       GDK_ACTION_COPY);
 
   g_signal_connect_after(d->filmstrip, "drag-begin", G_CALLBACK(_lib_filmstrip_dnd_begin_callback), self);

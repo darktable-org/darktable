@@ -41,84 +41,66 @@ public:
 	uchar8 getByteSafe();
 	void setAbsoluteOffset(uint32 offset);     // Set offset in bytes
   __inline uint32 getOffset() { return off-(mLeft>>3);}
-  __inline void checkPos()  { if (off>size) throw IOException("Out of buffer read");};        // Check if we have a valid position
-  __inline uint32 getBitNoFill() {return (mCurr >> (--mLeft)) & 1;}
-  __inline uint32 peekByteNoFill() {return ((mCurr >> (mLeft-8))) & 0xff; }
-  __inline uint32 getBitsNoFill(uint32 nbits) {return ((mCurr >> (mLeft -= (nbits)))) & ((1 << nbits) - 1);}
-  __inline uint32 peekBitsNoFill(uint32 nbits) {return ((mCurr >> (mLeft-nbits))) & ((1 << nbits) - 1); }
+  __inline void checkPos()  { if (off>size+12) throw IOException("Out of buffer read");};        // Check if we have a valid position
 
   // Fill the buffer with at least 24 bits
-__inline void fill() {
-  unsigned char c, c2, c3;
-  int m = mLeft >> 3;
+ void fill();
+ __inline uint32 peekBitsNoFill( uint32 nbits )
+ {
+   int shift = mLeft-nbits;
+   uint32 ret = *(uint32*)&current_buffer[shift>>3];
+   ret >>= shift & 7;
+   return ret & ((1 << nbits) - 1);
+ }
 
-  if (mLeft > 23)
-    return;
 
-  if (m == 2) {
-     // 16 to 23 bits left, we can add 1 byte
-     c = buffer[off++];
-     mCurr = (mCurr << 8) | c;
-     mLeft += 8;
-     return;
-  }
-
-  if (m == 1) {
-    // 8 to 15 bits left, we can add 2 bytes
-      c = buffer[off++];
-	  c2 = buffer[off++];
-	  mCurr = (mCurr << 16) | (c<<8) | c2;
-	  mLeft += 16;
-	  return;
-  }
-
-  // 0 to 7 bits left, we can add 3 bytes
-  c = buffer[off++];
-  c2 = buffer[off++];
-  c3 = buffer[off++];
-  mCurr = (mCurr << 24) | (c<<16) | (c2<<8) | c3;
-  mLeft += 24;
-
+__inline uint32 getBit() {
+  if (!mLeft) fill();
+  mLeft--;
+  uint32 _byte = mLeft >> 3;
+  return (current_buffer[_byte] >> (mLeft & 0x7)) & 1;
 }
 
-  __inline uint32 getBit() {
-    if (!mLeft) fill();
+__inline uint32 getBitsNoFill(uint32 nbits) {
+	uint32 ret = peekBitsNoFill(nbits);
+	mLeft -= nbits;
+	return ret;
+}
+__inline uint32 getBits(uint32 nbits) {
+	fill();
+	return getBitsNoFill(nbits);
+}
 
-    return (mCurr >> (--mLeft)) & 1;
-  }
+__inline uint32 peekBit() {
+  if (!mLeft) fill();
+  return (current_buffer[(mLeft-1) >> 3] >> ((mLeft-1) & 0x7)) & 1;
+}
+__inline uint32 getBitNoFill() {
+  mLeft--;
+  uint32 ret = (current_buffer[mLeft >> 3] >> (mLeft & 0x7)) & 1;
+  return ret;
+}
 
-  __inline uint32 getBits(uint32 nbits) {
-    if (mLeft < nbits) {
-      fill();
-    }
+__inline uint32 peekByteNoFill() {
+  int shift = mLeft-8;
+  uint32 ret = *(uint32*)&current_buffer[shift>>3];
+  ret >>= shift & 7;
+  return ret & 0xff;
+}
 
-    return ((mCurr >> (mLeft -= (nbits)))) & ((1 << nbits) - 1);
-  }
+__inline uint32 peekBits(uint32 nbits) {
+  fill();
+  return peekBitsNoFill(nbits);
+}
 
-  __inline uint32 peekBit() {
-    if (!mLeft) fill();
+__inline uint32 peekByte() {
+   fill();
+ 
+  if (off > size)
+    throw IOException("Out of buffer read");
 
-    return (mCurr >> (mLeft - 1)) & 1;
-  }
-
-  __inline uint32 peekBits(uint32 nbits) {
-    if (mLeft < nbits) {
-      fill();
-    }
-
-    return ((mCurr >> (mLeft - nbits))) & ((1 << nbits) - 1);
-  }
-
-  __inline uint32 peekByte() {
-    if (mLeft < 8) {
-      fill();
-    }
-
-    if (off > size)
-      throw IOException("Out of buffer read");
-
-    return ((mCurr >> (mLeft - 8))) & 0xff;
-  }
+  return peekByteNoFill();
+} 
 
   __inline void skipBits(unsigned int nbits) {
     while (nbits) {
@@ -135,24 +117,25 @@ __inline void fill() {
   }
 
   __inline unsigned char getByte() {
-    if (mLeft < 8) {
-      fill();
-    }
-
-    return ((mCurr >> (mLeft -= 8))) & 0xff;
+    fill();
+    mLeft-=8;
+    int shift = mLeft;
+    uint32 ret = *(uint32*)&current_buffer[shift>>3];
+    ret >>= shift & 7;
+    return ret & 0xff;
   }
 
   virtual ~BitPumpMSB(void);
 protected:
   void __inline init();
   const uchar8* buffer;
+  uchar8* current_buffer;
   const uint32 size;            // This if the end of buffer.
   uint32 mLeft;
-  uint32 mCurr;
   uint32 off;                  // Offset in bytes
 private:
 };
 
 } // namespace RawSpeed
 
-#endif
+#endif//BIT_PUMP_MSB_H

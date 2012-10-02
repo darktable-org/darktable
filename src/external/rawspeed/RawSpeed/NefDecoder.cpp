@@ -95,7 +95,7 @@ RawImage NefDecoder::decodeRawInternal() {
   TiffIFD* exif = data[0];
   TiffEntry *makernoteEntry = exif->getEntry(MAKERNOTE);
   const uchar8* makernote = makernoteEntry->getData();
-  FileMap makermap((uchar8*)&makernote[10], makernoteEntry->count - 10);
+  FileMap makermap((uchar8*)&makernote[10], mFile->getSize() - makernoteEntry->getDataOffset() - 10);
   TiffParser makertiff(&makermap);
   makertiff.parseData();
 
@@ -114,9 +114,8 @@ RawImage NefDecoder::decodeRawInternal() {
   try {
     NikonDecompressor decompressor(mFile, mRaw);
 
-    // Nikon is JPEG (Big Endian) byte order
     ByteStream* metastream;
-    if (getHostEndianness() == big)
+    if (getHostEndianness() == data[0]->endian)
       metastream = new ByteStream(meta->getData(), meta->count);
     else
       metastream = new ByteStreamSwap(meta->getData(), meta->count);
