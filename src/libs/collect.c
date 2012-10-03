@@ -1516,6 +1516,7 @@ collection_updated(gpointer instance,gpointer self)
   changed_callback (NULL, d->rule + d->active_rule);
 }
 
+
 static void
 filmrolls_updated(gpointer instance, gpointer self)
 {
@@ -1629,15 +1630,6 @@ gui_init (dt_lib_module_t *self)
   gtk_widget_set_size_request(self->widget, 100, -1);
   d->active_rule = 0;
   d->params = (dt_lib_collect_params_t*)malloc(sizeof(dt_lib_collect_params_t));
-  dt_control_signal_connect(darktable.signals, 
-                           DT_SIGNAL_COLLECTION_CHANGED,
-                           G_CALLBACK(collection_updated),
-                           d);
-  
-  dt_control_signal_connect(darktable.signals, 
-                           DT_SIGNAL_FILMROLLS_CHANGED,
-                           G_CALLBACK(filmrolls_updated),
-                           d);
   
   GtkBox *box;
   GtkWidget *w;
@@ -1703,7 +1695,7 @@ gui_init (dt_lib_module_t *self)
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw2), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw2), GTK_WIDGET(d->box));
   gtk_widget_set_size_request(GTK_WIDGET(sw2), -1, 300);
- 
+
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw2), TRUE, TRUE, 0);
   
   d->labels = NULL;
@@ -1724,22 +1716,32 @@ gui_init (dt_lib_module_t *self)
   d->treemodel = GTK_TREE_MODEL(_folder_tree());
   d->tree_new = TRUE;
   _lib_collect_gui_update(self);
+  
+  dt_control_signal_connect(darktable.signals, 
+                           DT_SIGNAL_COLLECTION_CHANGED,
+                           G_CALLBACK(collection_updated),
+                           d);
+  
+  dt_control_signal_connect(darktable.signals, 
+                           DT_SIGNAL_FILMROLLS_CHANGED,
+                           G_CALLBACK(filmrolls_updated),
+                           d);
 }
 
 void
 gui_cleanup (dt_lib_module_t *self)
 {
-  dt_lib_module_t *dm = (dt_lib_module_t *)self;
-  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
   
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_updated), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), d);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_updated), d);
   darktable.view_manager->proxy.module_collect.module = NULL;
   g_free(((dt_lib_collect_t*)self->data)->params);
   
   /* cleanup mem */
   //g_ptr_array_free(d->labels, TRUE);
-  g_ptr_array_free(d->trees, TRUE);
+  if (d->trees != NULL)
+    g_ptr_array_free(d->trees, TRUE);
 
   /* TODO: Make sure we are cleaning up all allocations */
   
