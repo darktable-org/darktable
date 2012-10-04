@@ -433,7 +433,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* output */
   g->combo1 = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->combo1, "destination");
+  dt_bauhaus_widget_set_label(g->combo1, _("destination"));
   dt_bauhaus_combobox_add(g->combo1,_("hue"));
   dt_bauhaus_combobox_add(g->combo1,_("saturation"));
   dt_bauhaus_combobox_add(g->combo1,_("lightness"));
