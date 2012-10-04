@@ -64,9 +64,6 @@ uint32_t container()
 static void
 _group_helper_function(void)
 {
-  if(!darktable.gui->grouping)
-    return;
-
   int new_group_id = darktable.gui->expanded_group_id;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct imgid from selected_images", -1, &stmt, NULL);
@@ -78,7 +75,10 @@ _group_helper_function(void)
     dt_grouping_add_to_group(new_group_id, id);
   }
   sqlite3_finalize(stmt);
-  darktable.gui->expanded_group_id = new_group_id;
+  if(darktable.gui->grouping)
+    darktable.gui->expanded_group_id = new_group_id;
+  else
+    darktable.gui->expanded_group_id = -1;
   dt_collection_update_query(darktable.collection);
 }
 
@@ -86,9 +86,6 @@ _group_helper_function(void)
 static void
 _ungroup_helper_function(void)
 {
-  if(!darktable.gui->grouping)
-    return;
-
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct imgid from selected_images", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
