@@ -46,6 +46,7 @@ src/imageio/storage/picasa.c
 src/iop/atrous.c
 src/iop/basecurve.c
 src/iop/bilateral.cc
+src/iop/bilat.c
 src/iop/bloom.c
 src/iop/borders.c
 src/iop/cacorrect.c
