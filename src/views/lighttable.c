@@ -346,6 +346,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
 
 end_query_cache:
 
+  cairo_save(cr);
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
@@ -355,12 +356,6 @@ end_query_cache:
       id = query_ids[row*iir+col];
       if(id > 0)
       {
-        const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, id);
-        int group_id = -1;
-        if(image)
-          group_id = image->group_id;
-        dt_image_cache_read_release(darktable.image_cache, image);
-
         if (iir == 1 && row)
           continue;
 
@@ -384,10 +379,39 @@ end_query_cache:
             dt_selection_select_range(darktable.selection, id);
         }
 
-
         cairo_save(cr);
         // if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
         dt_view_image_expose(&(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
+
+        cairo_restore(cr);
+      }
+      else
+        goto failure;
+
+      cairo_translate(cr, wd, 0.0f);
+    }
+    cairo_translate(cr, -max_cols*wd, ht);
+  }
+  cairo_restore(cr);
+
+  // and now the group borders
+  for(int row = 0; row < max_rows; row++)
+  {
+    for(int col = 0; col < max_cols; col++)
+    {
+      id = query_ids[row*iir+col];
+      if(id > 0)
+      {
+        const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, id);
+        int group_id = -1;
+        if(image)
+          group_id = image->group_id;
+        dt_image_cache_read_release(darktable.image_cache, image);
+
+        if (iir == 1 && row)
+          continue;
+
+        cairo_save(cr);
 
         gboolean paint_border = FALSE;
         // regular highlight border
@@ -395,7 +419,7 @@ end_query_cache:
         {
           if(mouse_over_group == group_id && iir > 1 && ((!darktable.gui->grouping && dt_conf_get_bool("plugins/lighttable/draw_group_borders")) || group_id == darktable.gui->expanded_group_id))
           {
-            cairo_set_source_rgb(cr, 1, 0, 0);
+            cairo_set_source_rgb(cr, 1, 0.8, 0);
             paint_border = TRUE;
           }
           // border of expanded group
