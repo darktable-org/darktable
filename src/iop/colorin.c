@@ -365,21 +365,27 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_darktable_profile(makermodel);
-    if(!d->input) sprintf(p->iccprofile, "cmatrix");
+    if(!d->input) sprintf(p->iccprofile, "ematrix");
   }
   if(!strcmp(p->iccprofile, "vendor"))
   {
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_vendor_profile(makermodel);
-    if(!d->input) sprintf(p->iccprofile, "cmatrix");
+    if(!d->input) sprintf(p->iccprofile, "ematrix");
   }
   if(!strcmp(p->iccprofile, "alternate"))
   {
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_alternate_profile(makermodel);
-    if(!d->input) sprintf(p->iccprofile, "cmatrix");
+    if(!d->input) sprintf(p->iccprofile, "ematrix");
+  }
+  if(!strcmp(p->iccprofile, "ematrix"))
+  {
+    // embedded matrix, hopefully D65
+    if(isnan(pipe->image.d65_color_matrix[0])) sprintf(p->iccprofile, "cmatrix");
+    else d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])pipe->image.d65_color_matrix);
   }
   if(!strcmp(p->iccprofile, "cmatrix"))
   {
@@ -558,6 +564,15 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_color_profile_t *prof;
   int pos = -1;
 
+  // use the matrix embedded in some DNGs
+  if(!isnan(self->dev->image_storage.d65_color_matrix[0]))
+  {
+    prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
+    g_strlcpy(prof->filename, "ematrix", sizeof(prof->filename));
+    g_strlcpy(prof->name, "ematrix", sizeof(prof->name));
+    g->profiles = g_list_append(g->profiles, prof);
+    prof->pos = ++pos;
+  }
   // get color matrix from raw image:
   char makermodel[1024];
   dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
@@ -704,7 +719,9 @@ void gui_init(struct dt_iop_module_t *self)
   while(l)
   {
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
-    if(!strcmp(prof->name, "cmatrix"))
+    if(!strcmp(prof->name, "ematrix"))
+      dt_bauhaus_combobox_add(g->cbox2, _("dng embedded matrix"));
+    else if(!strcmp(prof->name, "cmatrix"))
       dt_bauhaus_combobox_add(g->cbox2, _("standard color matrix"));
     else if(!strcmp(prof->name, "darktable"))
       dt_bauhaus_combobox_add(g->cbox2, _("enhanced color matrix"));

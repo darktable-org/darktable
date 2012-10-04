@@ -89,6 +89,7 @@ typedef struct dt_image_t
 
   uint32_t filters;  // demosaic pattern
   int32_t bpp;       // bytes per pixel
+  float d65_color_matrix[9];
 
   dt_image_raw_parameters_t legacy_flip; // unfortunately needed to convert old bits to new flip module.
 

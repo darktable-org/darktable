@@ -622,6 +622,37 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       img->flags = (img->flags & ~0x7) | (0x7 & stars);
     }
 
+    // read embedded color matrix as used in DNGs
+    {
+      int is_1_65 = -1, is_2_65 = -1; // -1: not found, 0: some random type, 1: D65
+      if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.CalibrationIlluminant1")))
+          != exifData.end() )
+      {
+        is_1_65 = (pos->toLong() == 21)?1:0;
+      }
+      if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.CalibrationIlluminant2")))
+          != exifData.end() )
+      {
+        is_2_65 = (pos->toLong() == 21)?1:0;
+      }
+
+      // use the d65 (type == 21) matrix if we found it, otherwise use whatever we got
+      Exiv2::ExifData::const_iterator cm1_pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix1"));
+      Exiv2::ExifData::const_iterator cm2_pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix2"));
+      if(is_1_65 == 1 && cm1_pos != exifData.end() && cm1_pos->count() == 9)
+        for(int i=0; i<9; i++)
+          img->d65_color_matrix[i] = cm1_pos->toFloat(i);
+      else if(is_2_65== 1 && cm2_pos != exifData.end() && cm2_pos->count() == 9)
+        for(int i=0; i<9; i++)
+          img->d65_color_matrix[i] = cm2_pos->toFloat(i);
+      else if(is_1_65 == 0 && cm1_pos != exifData.end() && cm1_pos->count() == 9)
+        for(int i=0; i<9; i++)
+          img->d65_color_matrix[i] = cm1_pos->toFloat(i);
+      else if(is_2_65 == 0 && cm2_pos != exifData.end() && cm2_pos->count() == 9)
+        for(int i=0; i<9; i++)
+          img->d65_color_matrix[i] = cm2_pos->toFloat(i);
+    }
+
     // workaround for an exiv2 bug writing random garbage into exif_lens for this camera:
     // http://dev.exiv2.org/issues/779
     if(!strcmp(img->exif_model, "DMC-GH2")) sprintf(img->exif_lens, "(unknown)");
