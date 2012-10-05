@@ -48,6 +48,7 @@ private:
   void readCoolpixMangledRaw(ByteStream &input, iPoint2D& size, iPoint2D& offset, int inputPitch);
   void readCoolpixSplitRaw(ByteStream &input, iPoint2D& size, iPoint2D& offset, int inputPitch);
   TiffIFD* FindBestImage(vector<TiffIFD*>* data);
+  string getMode();
 };
 
 class NefSlice {
