@@ -613,12 +613,17 @@ _count_images(const char *path)
   sqlite3_stmt *stmt = NULL;
   gchar query[1024] = {0};
   int count = 0;
+  
+  gchar *escaped_text = NULL;
+  escaped_text = dt_util_str_replace(path, "'", "''");
 
-  snprintf (query, 1024, "select count(id) from images where film_id in (select id from film_rolls where folder like '%s%%')", path);
+  snprintf (query, 1024, "select count(id) from images where film_id in (select id from film_rolls where folder like '%s%%')", escaped_text);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if (sqlite3_step(stmt) == SQLITE_ROW)
     count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
+
+  g_free(escaped_text);
 
   return count;
 }
