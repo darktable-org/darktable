@@ -612,6 +612,7 @@ gui_init (dt_imageio_module_storage_t *self)
 void
 gui_cleanup (dt_imageio_module_storage_t *self)
 {
+        g_free(self->gui_data);
 }
 
 void
