@@ -1720,12 +1720,12 @@ gui_init (dt_lib_module_t *self)
   dt_control_signal_connect(darktable.signals, 
                            DT_SIGNAL_COLLECTION_CHANGED,
                            G_CALLBACK(collection_updated),
-                           d);
+                           self);
   
   dt_control_signal_connect(darktable.signals, 
                            DT_SIGNAL_FILMROLLS_CHANGED,
                            G_CALLBACK(filmrolls_updated),
-                           d);
+                           self);
 }
 
 void
@@ -1733,8 +1733,8 @@ gui_cleanup (dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
   
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), d);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_updated), d);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_updated), self);
   darktable.view_manager->proxy.module_collect.module = NULL;
   g_free(((dt_lib_collect_t*)self->data)->params);
   
