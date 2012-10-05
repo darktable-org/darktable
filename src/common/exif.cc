@@ -657,6 +657,21 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     // http://dev.exiv2.org/issues/779
     if(!strcmp(img->exif_model, "DMC-GH2")) sprintf(img->exif_lens, "(unknown)");
 
+    // Workaround for an issue on newer Sony NEX cams.
+    // The default EXIF field is not used by Sony to store lens data
+    // http://dev.exiv2.org/issues/883
+    // http://darktable.org/redmine/issues/8813
+    // FIXME: This is still a workaround
+    if(!strncmp(img->exif_model, "NEX", 3))
+    {
+      sprintf(img->exif_lens, "(unknown)");
+        if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.LensModel"))) != exifData.end() )
+        {
+           std::string str = pos->print(&exifData);
+           sprintf(img->exif_lens, "%s", str.c_str());
+        }
+    };
+
     img->exif_inited = 1;
     return true;
   }
