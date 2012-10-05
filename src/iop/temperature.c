@@ -405,6 +405,7 @@ void gui_update (struct dt_iop_module_t *self)
   else
     dt_bauhaus_combobox_set(g->presets, -1);
   dt_bauhaus_slider_set(g->finetune, 0);
+  gtk_widget_set_sensitive(g->finetune, 0);
 }
 
 void reload_defaults(dt_iop_module_t *module)
