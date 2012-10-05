@@ -1511,21 +1511,21 @@ menuitem_change_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
 static void
 collection_updated(gpointer instance,gpointer self)
 {
-  dt_lib_collect_t *d = (dt_lib_collect_t *)self;
-  
-  changed_callback (NULL, d->rule + d->active_rule);
+  _lib_collect_gui_update((dt_lib_module_t *)self);
 }
 
 
 static void
 filmrolls_updated(gpointer instance, gpointer self)
 {
-  dt_lib_collect_t *d = (dt_lib_collect_t *)self;
-  
+  dt_lib_module_t *dm = (dt_lib_module_t *)self;
+
+  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+
   // update tree
   d->treemodel = GTK_TREE_MODEL(_folder_tree());
   d->tree_new = TRUE;
-  changed_callback (NULL, d->rule + d->active_rule);
+  _lib_collect_gui_update((dt_lib_module_t *)self);
 }
 
 
