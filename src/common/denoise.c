@@ -95,19 +95,16 @@ void dt_nlm_accum_scaled(
         // first line of every thread
         if(!inited_slide)
         {
-          // TODO: check these!
           const int Pm = MAX(0, MIN(MIN(P, j-kj), j));
-          const int PM = MAX(0, MIN(MIN(P, prior_width-1-j+kj), width-1-j));
-          // const int Pm = MIN(MIN(P, j-kj), j);
-          // const int PM = MIN(MIN(P, rel_J-1-j-kj), rel_J-1-j);
+          const int PM = MAX(0, MIN(MIN(P, prior_height-1-j+kj), height-1-j));
 
           // sum up a line 
           memset(S, 0x0, sizeof(float)*width);
           for(int jj=-Pm;jj<=PM;jj++)
           {
             float *s = S + rel_i;
-            const float *inp  = edges  + 4*rel_i + 4* width *(j+jj);
-            const float *inps = edges2 + 4*rel_i + 4*(prior_width *(j+jj-kj) - ki);
+            const float *inp  = edges  + 4*(rel_i + width *(j+jj));
+            const float *inps = edges2 + 4*(rel_i - ki + prior_width *(j+jj-kj));
             for(int i=rel_i; i<rel_I; i++)
             {
               for(int k=0;k<3;k++)
@@ -332,11 +329,12 @@ void dt_nlm_normalize_add(
     float *in  = input  + 4*width*j;
     for(int i=0; i<width; i++)
     {
-      // _mm_store_ps(in, _mm_add_ps(_mm_load_ps(in),
-            // _mm_mul_ps(_mm_load_ps(out), _mm_div_ps(weight, _mm_set1_ps(out[3])))));
+      if(out[3] > 0.0f)
+        _mm_store_ps(in, _mm_add_ps(_mm_load_ps(in),
+              _mm_mul_ps(_mm_load_ps(out), _mm_div_ps(weight, _mm_set1_ps(out[3])))));
       // DEBUG: XXX see only the diff:
-      _mm_store_ps(in, 
-            _mm_mul_ps(_mm_load_ps(out), _mm_div_ps(weight, _mm_set1_ps(out[3]))));
+      // _mm_store_ps(in, 
+            // _mm_mul_ps(_mm_load_ps(out), _mm_div_ps(weight, _mm_set1_ps(out[3]))));
       out += 4;
       in  += 4;
     }

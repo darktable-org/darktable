@@ -108,7 +108,7 @@ void process(
      piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
   {
     // nothing to do from this distance:
-    memcpy (ovoid, ivoid, sizeof(float)*4*roi_out->width*roi_out->height);
+    memcpy (ovoid, ivoid, sizeof(float)*4*roi_in->width*roi_in->height);
     return;
   }
 
@@ -120,7 +120,7 @@ void process(
 
   float *d = (float *)piece->data; // the default param format is an array of int or float, depending on the type of widget
   const float radius   = d[0];
-  // const float strength = d[1];
+  const float strength = d[1];
   const float scale    = d[2];
   const float luma     = d[3]/10.0f;
   const float chroma   = d[4]/10.0f;
@@ -128,13 +128,17 @@ void process(
   // adjust to zoom size:
   const int P = ceilf(radius * roi_in->scale / piece->iscale); // pixel filter size
   const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
-  const float sharpness = 0.0f;//1000000.0f/(1.0f+strength);
+  // const float sharpness = 0.0f;//1000000.0f/(1.0f+strength);
+  const float sharpness = 1.0f/(100.0f+strength);
+#if 0
   if(P < 1)
   {
     // nothing to do from this distance:
-    memcpy (ovoid, ivoid, sizeof(float)*4*roi_out->width*roi_out->height);
+    // TODO: this is wrong and needs repair:
+    memcpy (ovoid, ivoid, sizeof(float)*4*roi_in->width*roi_in->height);
     return;
   }
+#endif
 
   // adjust to Lab, make L more important
   // TODO: put that where?
@@ -144,13 +148,9 @@ void process(
 
   float *tmp = (float *)dt_alloc_align(64, sizeof(float)*roi_out->width*dt_get_num_threads());
 
-  // TODO: need buffers:
-  // 2x roi_in  : prior_feature, prior_payload
-  // 1x roi_out : output_payload
-
-  // TODO: prior_feature = blur(input) = U(D(I))
+  // prior_feature = blur(input) = U(D(I))
   float *prior_feature = (float *)dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
-  // TODO: prior_payload = input - prior_feature
+  // prior_payload = input - prior_feature
   float *prior_payload = (float *)dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
   const float *input = (float *)ivoid;
 
@@ -191,6 +191,7 @@ void process(
     }
   }
 #else
+#if 1
   dt_iop_roi_t roii = *roi_in;
   dt_iop_roi_t roio = *roi_in;
   roio.x = roii.x = 0;
@@ -199,14 +200,15 @@ void process(
   roio.height = roii.height / scale;
   roii.scale = 1.0f;
   roio.scale = 1.0f/scale;
-  // need this to be smooth:
-  const struct dt_interpolation* itor = dt_interpolation_new(DT_INTERPOLATION_BICUBIC);
+  // need this to be smooth and without overshoots/ringing:
+  const struct dt_interpolation* itor = dt_interpolation_new(DT_INTERPOLATION_BILINEAR);//CUBIC);
   dt_interpolation_resample(itor, prior_payload, &roio, roio.width*4*sizeof(float),
                                   input,         &roii, roii.width*4*sizeof(float));
   roio.scale = 1.0f;
   roii.scale = scale;
   dt_interpolation_resample(itor, prior_feature, &roii, roii.width*4*sizeof(float),
                                   prior_payload, &roio, roio.width*4*sizeof(float));
+#endif
   // now prior_feature = U(D(I))
 #endif
 
@@ -227,6 +229,7 @@ void process(
   // we want to sum up weights in col[3], so need to init to 0:
   memset(output_payload, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
 
+#if 1
   // input_feature = upsample(input) (stored in out buffer)
   roii = *roi_in;
   roio = *roi_out;
@@ -238,12 +241,24 @@ void process(
   // const struct dt_interpolation* itor = dt_interpolation_new(DT_INTERPOLATION_BICUBIC);
   dt_interpolation_resample(itor, (float *)ovoid, &roio, roi_out->width*4*sizeof(float),
                                   (float *)ivoid, &roii, roi_in->width *4*sizeof(float));
+#endif
 
+#if 1
   // output_payload = nlm(of the above)
   dt_nlm_accum_scaled((float *)ovoid, prior_payload, prior_feature, output_payload,
       roi_out->width, roi_out->height, roi_in->width, roi_in->height, P, K, sharpness, tmp);
   // TODO: multiple scales for denoising?
   dt_nlm_normalize_add((float *)ovoid, output_payload, roi_out->width, roi_out->height, luma, chroma);
+
+#else
+  // DEBUG: XXX
+  for(int j=0;j<roi_in->height;j++)
+  {
+    memcpy(ovoid + 4*sizeof(float)*roi_out->width*j, prior_feature + 4*roi_in->width*j, 4*sizeof(float)*roi_in->width);
+    memcpy(ovoid + 4*sizeof(float)*(roi_out->width*j + roi_in->width), prior_payload + 4*roi_in->width*j, 4*sizeof(float)*roi_in->width);
+  }
+
+#endif
 
   free(prior_feature);
   free(prior_payload);
