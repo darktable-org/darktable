@@ -1625,19 +1625,16 @@ void gui_init(struct dt_iop_module_t *self)
 
   // override linear tca (if not 1.0):
   g->tca_r = dt_bauhaus_slider_new_with_range(self, 0.99, 1.01, 0.0001, p->tca_r, 5);
-  g_object_set (GTK_OBJECT(g->tca_r), "tooltip-text", _("tca R"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->tca_r, _("scale"));
+  g_object_set (GTK_OBJECT(g->tca_r), "tooltip-text", _("transversal chromatic aberration red"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->tca_r, _("tca red"));
   g_signal_connect (G_OBJECT (g->tca_r), "value-changed", G_CALLBACK (tca_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->tca_r, TRUE, TRUE, 0);
 
   g->tca_b = dt_bauhaus_slider_new_with_range(self, 0.99, 1.01, 0.0001, p->tca_b, 5);
-  g_object_set (GTK_OBJECT(g->tca_b), "tooltip-text", _("tca B"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->tca_b, _("scale"));
+  g_object_set (GTK_OBJECT(g->tca_b), "tooltip-text", _("transversal chromatic aberration blue"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->tca_b, _("tca blue"));
   g_signal_connect (G_OBJECT (g->tca_b), "value-changed", G_CALLBACK (tca_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->tca_b, TRUE, TRUE, 0);
-
-  g_object_set(G_OBJECT(g->tca_r), "tooltip-text", _("override transversal chromatic aberration correction for red channel\nleave at 1.0 for defaults"), (char *)NULL);
-  g_object_set(G_OBJECT(g->tca_b), "tooltip-text", _("override transversal chromatic aberration correction for blue channel\nleave at 1.0 for defaults"), (char *)NULL);
 }
 
 
