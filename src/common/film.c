@@ -512,8 +512,9 @@ void dt_film_import1(dt_film_t *film)
 
 int dt_film_import(const char *dirname)
 {
-  return dt_film_import_blocking(dirname,0);
+  int v = dt_film_import_blocking(dirname,0);
   dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_CHANGED);
+  return v;
 }
 
 void dt_film_remove_empty()
