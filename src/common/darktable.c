@@ -677,20 +677,27 @@ int dt_init(int argc, char *argv[], const int init_gui)
       gtk_accel_map_load(keyfile);
     else
       gtk_accel_map_save(keyfile); // Save the default keymap if none is present
-  }
 
-  if(init_gui && images_to_load) {
-    // If only one image is listed, attempt to load it in darkroom
-    gboolean load_in_dr = (g_slist_next(images_to_load) == NULL);
-    GSList *p = images_to_load;
-    do {
-      dt_load_from_string((gchar*)p->data, load_in_dr);
-    } while((p = g_slist_next(p))!= NULL);
+    // load image(s) specified on cmdline
+    if (images_to_load)
+    {
+      // If only one image is listed, attempt to load it in darkroom
+      gboolean load_in_dr = (g_slist_next(images_to_load) == NULL);
+      GSList *p = images_to_load;
 
-    if (!load_in_dr) {
-      dt_ctl_switch_mode_to(DT_LIBRARY);
+      while (p != NULL)
+      {
+	dt_load_from_string((gchar*)p->data, load_in_dr);
+	p = g_slist_next(p);
+      }
+
+      if (!load_in_dr)
+	dt_ctl_switch_mode_to(DT_LIBRARY);
+
+      g_slist_free(images_to_load);
     }
-    g_slist_free(images_to_load);
+    else
+      dt_ctl_switch_mode_to(DT_LIBRARY);
   }
 
   /* start the indexer background job */
