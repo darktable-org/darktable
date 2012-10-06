@@ -250,7 +250,6 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     FILE *f = fopen(filename, "rb");
     if(f)
     {
-      GtkWidget * dialog = NULL;
 
       while(!feof(f))
       {
@@ -280,23 +279,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
         if(dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached) != CL_SUCCESS)
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
-          if (dialog) gtk_widget_destroy(dialog);
           goto finally;
-        }
-
-        tend = dt_get_wtime();
-        tdiff = tend - tstart;
-        if ((tdiff > 0.700) && (dialog == NULL))
-        {
-          gtk_init(0, NULL);
-          dialog = gtk_message_dialog_new (NULL,
-                                           GTK_DIALOG_MODAL,
-                                           GTK_MESSAGE_INFO,
-                                           GTK_BUTTONS_NONE,
-                                           "Loading OpenCL kernels.." );
-          gtk_window_set_title(GTK_WINDOW(dialog), "Please wait ...");
-          gtk_widget_show_all(GTK_WIDGET(dialog));
-          while (gtk_events_pending ()) gtk_main_iteration ();
         }
 
       }
@@ -305,7 +288,6 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       tend = dt_get_wtime();
       tdiff = tend - tstart;
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] kernel loading time: %2.4lf \n", tdiff);
-      if (dialog) gtk_widget_destroy(dialog);
     }
     else
     {
