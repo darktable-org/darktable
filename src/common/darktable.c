@@ -418,7 +418,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   darktable.num_openmp_threads = omp_get_num_procs();
 #endif
   darktable.unmuted = 0;
-  char *image_to_load = NULL;
+  GSList *images_to_load = NULL;
   for(int k=1; k<argc; k++)
   {
     if(argv[k][0] == '-')
@@ -489,7 +489,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
     }
     else
     {
-      image_to_load = argv[k];
+      images_to_load = g_slist_append(images_to_load, argv[k]);
     }
   }
 
@@ -679,9 +679,18 @@ int dt_init(int argc, char *argv[], const int init_gui)
       gtk_accel_map_save(keyfile); // Save the default keymap if none is present
   }
 
-  if(init_gui && dt_load_from_string(image_to_load, TRUE) == 0)
-  {
-    dt_ctl_switch_mode_to(DT_LIBRARY);
+  if(init_gui && images_to_load) {
+    // If only one image is listed, attempt to load it in darkroom
+    gboolean load_in_dr = (g_slist_next(images_to_load) == NULL);
+    GSList *p = images_to_load;
+    do {
+      dt_load_from_string((gchar*)p->data, load_in_dr);
+    } while((p = g_slist_next(p))!= NULL);
+
+    if (!load_in_dr) {
+      dt_ctl_switch_mode_to(DT_LIBRARY);
+    }
+    g_slist_free(images_to_load);
   }
 
   /* start the indexer background job */
