@@ -383,7 +383,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->black,"%.3f");
   dt_bauhaus_widget_set_label(g->black,_("black"));
 
-  g->exposure = dt_bauhaus_slider_new_with_range(self, -9.0, 9.0, .02, p->exposure, 3);
+  g->exposure = dt_bauhaus_slider_new_with_range(self, -18.0, 18.0, .02, p->exposure, 3);
   g_object_set(G_OBJECT(g->exposure), "tooltip-text", _("adjust the exposure correction"), (char *)NULL);
   dt_bauhaus_slider_set_format(g->exposure,"%.2fEV");
   dt_bauhaus_widget_set_label(g->exposure,_("exposure"));
