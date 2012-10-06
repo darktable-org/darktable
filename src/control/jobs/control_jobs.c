@@ -1250,8 +1250,10 @@ int32_t dt_control_export_job_run(dt_job_t *job)
     fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
     int num = 0;
     // Invariant: the tagid for 'darktable|changed' will not change while this function runs. Is this a sensible assumption?
-    guint tagid = 0;
+    guint tagid = 0,
+          etagid = 0;
     dt_tag_new("darktable|changed",&tagid);
+    dt_tag_new("darktable|exported",&etagid);
 
     while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
     {
@@ -1270,6 +1272,8 @@ int32_t dt_control_export_job_run(dt_job_t *job)
       }
       // remove 'changed' tag from image
       dt_tag_detach(tagid, imgid);
+      // make sure the 'exported' tag is set on the image
+      dt_tag_attach(etagid, imgid);
       // check if image still exists:
       char imgfilename[DT_MAX_PATH_LEN];
       const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
