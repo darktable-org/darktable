@@ -1674,7 +1674,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
     const int mask_display = piece->pipe->mask_display;
 
 #ifdef _OPENMP
-#if !defined(__SUNOS__)
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
     #pragma omp parallel for default(none) shared(i,roi_out,o,mask,blend,d,stderr,ch)
 #else
     #pragma omp parallel for shared(i,roi_out,o,mask,blend,d,ch)
