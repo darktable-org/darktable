@@ -1143,21 +1143,27 @@ static void camera_autosearch_clicked(
 static void lens_comboentry_focal_update (GtkWidget *widget, dt_iop_module_t *self)
 {
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
-  (void)sscanf (dt_bauhaus_combobox_get_text(widget), "%f", &p->focal);
+  const char *text = dt_bauhaus_combobox_get_text(widget);
+  if(text)
+    (void)sscanf (text, "%f", &p->focal);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void lens_comboentry_aperture_update (GtkWidget *widget, dt_iop_module_t *self)
 {
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
-  (void)sscanf (dt_bauhaus_combobox_get_text(widget), "%f", &p->aperture);
+  const char *text = dt_bauhaus_combobox_get_text(widget);
+  if(text)
+    (void)sscanf (text, "%f", &p->aperture);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void lens_comboentry_distance_update (GtkWidget *widget, dt_iop_module_t *self)
 {
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
-  (void)sscanf (dt_bauhaus_combobox_get_text(widget), "%f", &p->distance);
+  const char *text = dt_bauhaus_combobox_get_text(widget);
+  if(text)
+    (void)sscanf (text, "%f", &p->distance);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 

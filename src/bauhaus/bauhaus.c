@@ -825,14 +825,19 @@ void dt_bauhaus_combobox_set_editable(GtkWidget *widget, int editable)
 const char* dt_bauhaus_combobox_get_text(GtkWidget *widget)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
-  if(w->type != DT_BAUHAUS_COMBOBOX) return 0;
+  if(w->type != DT_BAUHAUS_COMBOBOX) return NULL;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-  if(!d->editable)
+
+  if(d->editable && d->active < 0)
   {
-    if(d->active < 0 || d->active >= d->num_labels) return 0;
+    return d->text;
+  }
+  else
+  {
+    if(d->active < 0 || d->active >= d->num_labels) return NULL;
     return (const char *)g_list_nth_data(d->labels, d->active);
   }
-  return d->text;
+  return NULL;
 }
 
 void dt_bauhaus_combobox_clear(GtkWidget *widget)
