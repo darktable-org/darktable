@@ -33,7 +33,6 @@ static int dt_lua_trigger_event(const char*event,int nargs,int nresults);
 static int register_singleton_event(lua_State* L) {
 	// 1 is the event name (checked)
 	// 2 is the action to perform (checked)
-	// 3 is the extra param (exist at this point)
 	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
 	lua_getfield(L,-1,lua_tostring(L,1));
 	if(!lua_isnil(L,-1)) {
@@ -41,12 +40,11 @@ static int register_singleton_event(lua_State* L) {
 		return luaL_error(L,"an action has already been registered for event %s",lua_tostring(L,1));
 	}
 	lua_pop(L,1);
-	lua_newtable(L);
 	lua_pushvalue(L,2);
+	lua_setfield(L,-2,lua_tostring(L,1));
 	lua_setfield(L,-2,"action");
 	lua_pushvalue(L,3);
 	lua_setfield(L,-2,"data");
-	lua_setfield(L,-2,lua_tostring(L,1));
 	lua_pop(L,1);
 	return 0;
 }
@@ -63,22 +61,18 @@ static int trigger_singleton_event(lua_State * L,const char* evt_name, int nargs
 		return nresults;
 	}
 	// prepare the call
-	lua_getfield(L,-1,"action"); // function to call
-	lua_insert(L,top_marker-nargs+1);
+	lua_insert(L,top_marker-nargs+1); // function to call
 	lua_pushstring(L,evt_name);// param 1 is the event
 	lua_insert(L,top_marker-nargs+2);
-	lua_getfield(L,-1,"data");// callback data
-	lua_insert(L,top_marker-nargs+3);
-	lua_pop(L,2);
+	lua_pop(L,1);
 	return dt_lua_do_chunk(L,0,nargs+2,nresults);
 }
 
 static int register_keyed_event(lua_State* L) {
 	// 1 is the event name (checked)
 	// 2 is the action to perform (checked)
-	// 3 is the extra param (exists at this point)
-	// 4 is the key (unchecked at this point)
-	if(lua_isnoneornil(L,4)) 
+	// 3 is the key (unchecked at this point)
+	if(lua_isnoneornil(L,3)) 
 		return luaL_error(L,"no key provided when registering event");
 	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
 	lua_getfield(L,-1,lua_tostring(L,1));
@@ -88,18 +82,14 @@ static int register_keyed_event(lua_State* L) {
 		lua_pushvalue(L,-1);
 		lua_setfield(L,-3,lua_tostring(L,1));
 	}
-	lua_getfield(L,-1,luaL_checkstring(L,4));
+	lua_getfield(L,-1,luaL_checkstring(L,3));
 	if(!lua_isnil(L,-1)) 
-		return luaL_error(L,"key already registerd for event : %s",luaL_checkstring(L,4));
+		return luaL_error(L,"key already registerd for event : %s",luaL_checkstring(L,3));
 	lua_pop(L,1);
 
-	lua_newtable(L);
 	lua_pushvalue(L,2);
-	lua_setfield(L,-2,"action");
-	lua_pushvalue(L,3);
-	lua_setfield(L,-2,"data");
+	lua_setfield(L,-2,luaL_checkstring(L,3));
 
-	lua_setfield(L,-2,luaL_checkstring(L,4));
 	lua_pop(L,2);
 	return 0;
 }
@@ -125,14 +115,11 @@ static int trigger_keyed_event(lua_State * L,const char* evt_name, int nargs,int
 		return nresults;
 	}
 	// prepare the call
-	lua_getfield(L,-1,"action"); // function to call
 	lua_insert(L,top_marker-nargs+1);
 	lua_pushstring(L,evt_name);// param 1 is the event
 	lua_insert(L,top_marker-nargs+2);
-	lua_getfield(L,-1,"data");// callback data
-	lua_insert(L,top_marker-nargs+3);
-	lua_pop(L,3);
-	return dt_lua_do_chunk(L,0,nargs+2,nresults);
+	lua_pop(L,2);
+	return dt_lua_do_chunk(L,0,nargs+1,nresults);
 }
 
 
@@ -153,19 +140,21 @@ static void closure_destroy(gpointer data,GClosure *closure) {
 static int register_shortcut_event(lua_State* L) {
 	// 1 is the event name (checked)
 	// 2 is the action to perform (checked)
-	// 3 is the extra param (exist at this point)
-	// 4 is the key itself
+	// 3 is the key itself
 	int result = register_keyed_event(L); // will raise an error in case of duplicate key
 	char tmp[1024];
-	snprintf(tmp,1024,"lua/%s\n",luaL_checkstring(L,4));
+	snprintf(tmp,1024,"lua/%s\n",luaL_checkstring(L,3));
 	dt_accel_register_global(tmp,0,0);
-	dt_accel_connect_global(tmp, g_cclosure_new(G_CALLBACK(shortcut_callback),strdup(luaL_checkstring(L,4)),closure_destroy));
+	dt_accel_connect_global(tmp, g_cclosure_new(G_CALLBACK(shortcut_callback),strdup(luaL_checkstring(L,3)),closure_destroy));
 	return result;
 }
+
+
+
+
 static int register_multiinstance_event(lua_State* L) {
 	// 1 is the event name (checked)
 	// 2 is the action to perform (checked)
-	// 3 is the extra param (exist at this point)
 	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
 	lua_getfield(L,-1,lua_tostring(L,1));
 	if(lua_isnil(L,-1)) {
@@ -175,12 +164,7 @@ static int register_multiinstance_event(lua_State* L) {
 		lua_setfield(L,-3,lua_tostring(L,1));
 	}
 
-	lua_newtable(L);
 	lua_pushvalue(L,2);
-	lua_setfield(L,-2,"action");
-	lua_pushvalue(L,3);
-	lua_setfield(L,-2,"data");
-
 	luaL_ref(L,-2);
 	lua_pop(L,2);
 	return 0;
@@ -203,22 +187,14 @@ static int trigger_multiinstance_event(lua_State * L,const char* evt_name, int n
 	lua_pushnil(L);  /* first key */
 	int result = 0;
 	while (lua_next(L, top_marker +1) != 0) {
-		const int loop_index=luaL_checkint(L,-2);
-		lua_remove(L,-2);
-		/* uses 'key' (at index -2) and 'value' (at index -1) */
+		/* uses 'key' (at index -2) and 'value' (at index -1)  value is the function to call*/
 		// prepare the call
-		lua_getfield(L,-1,"action"); // function to call
 		lua_pushstring(L,evt_name);// param 1 is the event
-		lua_getfield(L,-3,"data");// callback data
-		lua_remove(L,-4);
 		for(int i = 0 ; i<nargs ;i++) { // event dependant parameters
 			lua_pushvalue(L, top_marker -nargs +1 +i); 
 		}
-		result += dt_lua_do_chunk(L,0,nargs+2,nresults);
-		lua_pushinteger(L,loop_index);
+		result += dt_lua_do_chunk(L,0,nargs+1,nresults);
 	}
-	for(int i=0; i < nargs+1;i++)
-		lua_remove(L,top_marker-nargs+1); //the table of events + our params
 	return result;
 }
 
@@ -226,7 +202,6 @@ static int trigger_multiinstance_event(lua_State * L,const char* evt_name, int n
 static int register_chained_event(lua_State* L) {
 	// 1 is the event name (checked)
 	// 2 is the action to perform (checked)
-	// 3 is the extra param (exist at this point)
 	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
 	lua_getfield(L,-1,lua_tostring(L,1));
 	if(lua_isnil(L,-1)) {
@@ -236,12 +211,7 @@ static int register_chained_event(lua_State* L) {
 		lua_setfield(L,-3,lua_tostring(L,1));
 	}
 
-	lua_newtable(L);
 	lua_pushvalue(L,2);
-	lua_setfield(L,-2,"action");
-	lua_pushvalue(L,3);
-	lua_setfield(L,-2,"data");
-
 	luaL_ref(L,-2);
 	lua_pop(L,2);
 	return 0;
@@ -252,13 +222,12 @@ static int trigger_chained_event(lua_State * L,const char* evt_name, int nargs,i
 	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
 	lua_getfield(L,-1,evt_name);
 	if(lua_isnil(L,-1)) {
-		lua_pop(L,1);
-		lua_newtable(L);
-		lua_pushvalue(L,-1);
-		lua_setfield(L,-3,lua_tostring(L,1));
+		lua_pop(L,2+nargs);
+		if(nresults == LUA_MULTRET) return 0;
+		for(int i = 0 ; i < nresults ; i++) lua_pushnil(L);
+		return nresults;
 	}
 	lua_remove(L,-2);
-	lua_insert(L,-nargs -1); // push the table below the args
 
 
 	lua_pushnil(L);  /* first key */
@@ -268,13 +237,9 @@ static int trigger_chained_event(lua_State * L,const char* evt_name, int nargs,i
 		lua_remove(L,-2);
 		/* uses 'key' (at index -2) and 'value' (at index -1) */
 		// prepare the call
-		lua_getfield(L,-1,"action"); // function to call
-		lua_insert(L,-(nargs+2));
+		lua_insert(L,-(nargs+1));
 		lua_pushstring(L,evt_name);// param 1 is the event
-		lua_insert(L,-(nargs+2));
-		lua_getfield(L,-1,"data");// callback data
-		lua_insert(L,-(nargs+2));
-		lua_pop(L,1);
+		lua_insert(L,-(nargs+1));
 		lastnargs = dt_lua_do_chunk(L,0,nargs+2,nargs);
 		lua_pushinteger(L,loop_index);
 	}
@@ -288,7 +253,6 @@ static int trigger_chained_event(lua_State * L,const char* evt_name, int nargs,i
 
 
 static event_handler event_list[] = {
-	//{"post-import-image",register_multiinstance_event,trigger_multiinstance_event},
 	{"pre-export",register_chained_event,trigger_chained_event},
 	{"shortcut",register_shortcut_event,trigger_keyed_event}, 
 	{"test",register_singleton_event,trigger_singleton_event},  // avoid error because of unused function
@@ -301,14 +265,10 @@ static int lua_register_event(lua_State *L) {
 	const char*evt_name = luaL_checkstring(L,1);
 	// 2 is event handler
 	luaL_checktype(L,2,LUA_TFUNCTION);
-	// 3 is an optional arg of any type
-	if(lua_gettop(L) == 2) {
-		lua_pushnil(L);
-	}
 	lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_list");
 	lua_getfield(L,-1,evt_name);
 	if(lua_isnil(L,-1)) {
-		lua_pop(L,3);
+		lua_pop(L,2);
 		return luaL_error(L,"incorrect event type : %s\n",evt_name);
 	}
 	luaL_checktype(L,-1,LUA_TLIGHTUSERDATA);
@@ -316,7 +276,6 @@ static int lua_register_event(lua_State *L) {
 	lua_pop(L,2); // restore the stack to only have the 3 parameters
 	handler->on_register(L);
 	return 0;
-
 
 }
 
