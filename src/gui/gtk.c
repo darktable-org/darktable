@@ -1110,7 +1110,7 @@ void init_main_table(GtkWidget *container)
 
   /* setup center drawing area */
   GtkWidget *cda = gtk_drawing_area_new();
-  gtk_widget_set_size_request(cda, -1, 500);
+  gtk_widget_set_size_request(cda, -1, 200);
   gtk_widget_set_app_paintable(cda, TRUE);
   gtk_widget_set_events(cda,
                         GDK_POINTER_MOTION_MASK
