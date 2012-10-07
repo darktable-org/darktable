@@ -86,6 +86,7 @@ if(USE_LUA)
 		"lua/dt_lua.c"
 		"lua/events.c"
 		"lua/image.c"
+		"lua/database.c"
 		"lua/stmt.c"
 		"lua/types.c"
 		)

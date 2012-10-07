@@ -33,35 +33,6 @@ typedef char* char_filename_length;
 #define dt_lua_init_typed_name_list_pair(L,type_name, list) dt_lua_init_name_list_pair_internal(L,#type_name,list)
 #define dt_lua_init_name_list_pair(L, list) dt_lua_init_name_list_pair_internal(L,NULL,list)
 void dt_lua_init_name_list_pair_internal(lua_State* L, const char*type_name, const char ** list);
-/** helper to build types
-  (0,0)
-  sets a metadata with an "allocate" subtable for objects that are unique for a given numerical id
-  -1 : the metatdata to use
-  */
-void dt_lua_init_numid(lua_State* L);
-/** helper to build types
-  (0,+(0|1))
-  checks if data of type type_name already has an element with id, if yes push it at top.
-  returns 1 if the the value was pushed
-  */
-int dt_lua_numid_find(lua_State* L,int id,const char * type_name);
-/** helper to build types
-  (0,0)
-  takes the object at top of the stack
-  - set the metatable
-  - register it with the correct ID (lua_error if already exist)
-
-  -1 the object to register
-  */
-void dt_lua_numid_register(lua_State* L,int id,const char * type_name);
-
-/**
-  (0,0)
-  iterates through all object of singelton type "type" and call "function" on each
-  the call has one parameter
-  -1 : the object of the type
-  */
-void dt_lua_numid_foreach(lua_State*L,const char * type_name,lua_CFunction function);
 
 /**
   (-1,+1)

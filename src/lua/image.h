@@ -24,9 +24,10 @@
 
 
 
-int dt_lua_init_images(lua_State * L);
+int dt_lua_init_image(lua_State * L);
 
 void dt_lua_image_push(lua_State * L,int imgid);
+int dt_lua_image_get(lua_State *L,int index);
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

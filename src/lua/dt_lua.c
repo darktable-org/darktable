@@ -23,7 +23,7 @@
 #include "lua/stmt.h"
 #include "lua/events.h"
 #include "lua/image.h"
-#include "common/film.h"
+#include "lua/database.h"
 #include "common/imageio_module.h"
 
 
@@ -57,7 +57,6 @@ void dt_lua_dostring(const char* command) {
 // closed on GC of the dt lib, usually when the lua interpreter closes
 static int dt_luacleanup(lua_State*L) {
   const int init_gui = (darktable.gui != NULL);
-  dt_film_remove_empty();
   if(!init_gui)
     dt_cleanup();
   return 0;
@@ -73,40 +72,6 @@ static int lua_print(lua_State *L) {
   return 0;
 }
 
-
-static int lua_import_images(lua_State *L){
-  char* full_name= realpath(luaL_checkstring(L,-1), NULL);
-  int result;
-
-  if (g_file_test(full_name, G_FILE_TEST_IS_DIR)) {
-    result =dt_film_import_blocking(full_name);
-    if(result == 0) {
-      free(full_name);
-      return luaL_error(L,"error while importing");
-    }
-  } else {
-    dt_film_t new_film;
-    dt_film_init(&new_film);
-    char* dirname =g_path_get_dirname(full_name);
-    result = dt_film_new(&new_film,dirname);
-    if(result == 0) {
-      free(full_name);
-      dt_film_cleanup(&new_film);
-      free(dirname);
-      return luaL_error(L,"error while importing");
-    }
-
-    result =dt_film_image_import(&new_film,full_name,TRUE);
-    free(dirname);
-    dt_film_cleanup(&new_film);
-    if(result == 0) {
-      free(full_name);
-      return luaL_error(L,"error while importing");
-    }
-  }
-  free(full_name);
-  return 0;
-}
 
 #if 0
 printf("%s %d\n",__FUNCTION__,__LINE__);
@@ -131,7 +96,8 @@ static void debug_table(lua_State * L,int t) {
  */
 static lua_CFunction init_funcs[] = {
   dt_lua_init_stmt,
-  dt_lua_init_images,
+  dt_lua_init_image,
+  dt_lua_init_database,
   NULL
 };
 static int load_darktable_lib(lua_State *L) {
@@ -143,10 +109,6 @@ static int load_darktable_lib(lua_State *L) {
   lua_setmetatable(L,-2);
 
   dt_lua_initialize_types(L);
-
-  lua_pushstring(L,"import");
-  lua_pushcfunction(L,&lua_import_images);
-  lua_settable(L,-3);
 
   lua_pushstring(L,"print");
   lua_pushcfunction(L,&lua_print);
