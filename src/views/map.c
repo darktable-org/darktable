@@ -93,39 +93,53 @@ void init(dt_view_t *self)
 
   dt_map_t *lib = (dt_map_t *)self->data;
 
-  OsmGpsMapSource_t map_source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
-  const gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
-  if(old_map_source && old_map_source[0] != '\0')
+  if(darktable.gui)
   {
-    // find the number of the stored map_source
-    for(int i=0; i<=OSM_GPS_MAP_SOURCE_LAST; i++)
+    OsmGpsMapSource_t map_source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
+    const gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
+    if(old_map_source && old_map_source[0] != '\0')
     {
-      const gchar *new_map_source = osm_gps_map_source_get_friendly_name(i);
-      if(!g_strcmp0(old_map_source, new_map_source))
+      // find the number of the stored map_source
+      for(int i=0; i<=OSM_GPS_MAP_SOURCE_LAST; i++)
       {
-        if(osm_gps_map_source_is_valid(i))
-          map_source = i;
-        break;
+        const gchar *new_map_source = osm_gps_map_source_get_friendly_name(i);
+        if(!g_strcmp0(old_map_source, new_map_source))
+        {
+          if(osm_gps_map_source_is_valid(i))
+            map_source = i;
+          break;
+        }
       }
     }
-  }
-  else // open street map should be a nice default ...
-    dt_conf_set_string("plugins/map/map_source", osm_gps_map_source_get_friendly_name(OSM_GPS_MAP_SOURCE_OPENSTREETMAP));
+    else // open street map should be a nice default ...
+      dt_conf_set_string("plugins/map/map_source", osm_gps_map_source_get_friendly_name(OSM_GPS_MAP_SOURCE_OPENSTREETMAP));
 
-  lib->map = g_object_new (OSM_TYPE_GPS_MAP,
-                           "map-source", map_source,
-                           "proxy-uri",g_getenv("http_proxy"),
-                           NULL);
+    lib->map = g_object_new (OSM_TYPE_GPS_MAP,
+                            "map-source", map_source,
+                            "proxy-uri",g_getenv("http_proxy"),
+                            NULL);
 
-  GtkWidget *parent = gtk_widget_get_parent(dt_ui_center(darktable.gui->ui));
-  gtk_box_pack_start(GTK_BOX(parent), GTK_WIDGET(lib->map) ,TRUE, TRUE, 0);
+    GtkWidget *parent = gtk_widget_get_parent(dt_ui_center(darktable.gui->ui));
+    gtk_box_pack_start(GTK_BOX(parent), GTK_WIDGET(lib->map) ,TRUE, TRUE, 0);
 
-  lib->osd = g_object_new (OSM_TYPE_GPS_MAP_OSD,
-                                        "show-scale",TRUE, "show-coordinates",TRUE, "show-dpad",TRUE, "show-zoom",TRUE, NULL);
+    lib->osd = g_object_new (OSM_TYPE_GPS_MAP_OSD,
+                                          "show-scale",TRUE, "show-coordinates",TRUE, "show-dpad",TRUE, "show-zoom",TRUE, NULL);
 
-  if(dt_conf_get_bool("plugins/map/show_map_osd"))
-  {
-    osm_gps_map_layer_add(OSM_GPS_MAP(lib->map), lib->osd);
+    if(dt_conf_get_bool("plugins/map/show_map_osd"))
+    {
+      osm_gps_map_layer_add(OSM_GPS_MAP(lib->map), lib->osd);
+    }
+
+    /* allow drag&drop of images from filmstrip */
+    gtk_drag_dest_set(GTK_WIDGET(lib->map), GTK_DEST_DEFAULT_ALL, target_list_internal, n_targets_internal, GDK_ACTION_COPY);
+    g_signal_connect(GTK_WIDGET(lib->map), "drag-data-received", G_CALLBACK(drag_and_drop_received), self);
+    g_signal_connect(GTK_WIDGET(lib->map), "changed", G_CALLBACK(_view_map_changed_callback), self);
+    g_signal_connect(G_OBJECT(lib->map), "button-press-event", G_CALLBACK(_view_map_button_press_callback), self);
+    g_signal_connect (G_OBJECT(lib->map), "motion-notify-event", G_CALLBACK(_view_map_motion_notify_callback), self);
+
+    /* allow drag&drop of images from the map, too */
+    g_signal_connect(GTK_WIDGET(lib->map), "drag-data-get", G_CALLBACK(_view_map_dnd_get_callback), self);
+    g_signal_connect(GTK_WIDGET(lib->map), "drag-failed", G_CALLBACK(_view_map_dnd_failed_callback), self);
   }
 
   /* build the query string */
@@ -141,23 +155,13 @@ void init(dt_view_t *self)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);
 
   g_free(geo_query);
-
-  /* allow drag&drop of images from filmstrip */
-  gtk_drag_dest_set(GTK_WIDGET(lib->map), GTK_DEST_DEFAULT_ALL, target_list_internal, n_targets_internal, GDK_ACTION_COPY);
-  g_signal_connect(GTK_WIDGET(lib->map), "drag-data-received", G_CALLBACK(drag_and_drop_received), self);
-  g_signal_connect(GTK_WIDGET(lib->map), "changed", G_CALLBACK(_view_map_changed_callback), self);
-  g_signal_connect(G_OBJECT(lib->map), "button-press-event", G_CALLBACK(_view_map_button_press_callback), self);
-  g_signal_connect (G_OBJECT(lib->map), "motion-notify-event", G_CALLBACK(_view_map_motion_notify_callback), self);
-
-  /* allow drag&drop of images from the map, too */
-  g_signal_connect(GTK_WIDGET(lib->map), "drag-data-get", G_CALLBACK(_view_map_dnd_get_callback), self);
-  g_signal_connect(GTK_WIDGET(lib->map), "drag-failed", G_CALLBACK(_view_map_dnd_failed_callback), self);
 }
 
 void cleanup(dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
-  g_object_unref(G_OBJECT(lib->osd));
+  if(darktable.gui)
+    g_object_unref(G_OBJECT(lib->osd));
   free(self->data);
 }
 
