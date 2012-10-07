@@ -885,13 +885,14 @@ dt_view_image_expose(
     float x, y;
     if(zoom != 1) y = 0.90*height;
     else y = .12*fscale;
+    gboolean image_is_rejected = (img && ((img->flags & 0x7) == 6));
 
     if(img) for(int k=0; k<5; k++)
       {
         if(zoom != 1) x = (0.41+k*0.12)*width;
         else x = (.08+k*0.04)*fscale;
 
-        if((img->flags & 0x7) != 6) //if rejected: draw no stars
+        if(!image_is_rejected) //if rejected: draw no stars
         {
           dt_view_star(cr, x, y, r1, r2);
           if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
@@ -914,6 +915,9 @@ dt_view_image_expose(
     if(zoom !=1) x = 0.11*width;
     else x = .04*fscale;
 
+    if (image_is_rejected)
+      cairo_set_source_rgb(cr, 1., 0., 0.);
+
     if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
     {
       *image_over = DT_VIEW_REJECT; //mouse sensitive
@@ -921,14 +925,9 @@ dt_view_image_expose(
       cairo_arc(cr, x, y, (r1+r2)*.5, 0, 2.0f*M_PI);
       cairo_stroke(cr);
     }
-    else if (img && ((img->flags & 0x7) == 6))
-    {
-      cairo_set_source_rgb(cr, 1., 0., 0.);
-      cairo_new_sub_path(cr);
-      cairo_arc(cr, x, y, (r1+r2)*.5, 0, 2.0f*M_PI);
-      cairo_stroke(cr);
+
+    if (image_is_rejected)
       cairo_set_line_width(cr, 2.5);
-    }
 
     //reject cross:
     cairo_move_to(cr, x-r2, y-r2);
