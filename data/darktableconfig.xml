@@ -933,7 +933,7 @@
         <option>lanczos3</option>
       </enum>
     </type>
-    <default>bilinear</default>
+    <default>lanczos3</default>
     <shortdescription>pixel interpolator</shortdescription>
     <longdescription>pixel interpolator used in rotation and lens correction (bilinear, bicubic, lanczos2, lanczos3).</longdescription>
   </dtconfig>
