@@ -388,7 +388,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     // embedded color profile
     const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, pipe->image.id);
     if(cimg->profile == NULL) sprintf(p->iccprofile, "ematrix");
-    else d->input = cmsOpenProfileFromMem(cimg->profile, cimg->profile_length);
+    else d->input = cmsOpenProfileFromMem(cimg->profile, cimg->profile_size);
     dt_image_cache_read_release(darktable.image_cache, cimg);
   }
   if(!strcmp(p->iccprofile, "ematrix"))
@@ -554,8 +554,8 @@ void reload_defaults(dt_iop_module_t *module)
       if(!dt_imageio_jpeg_read_header(filename, &jpg))
       {
         dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
-        img->profile_length = dt_imageio_jpeg_read_profile(&jpg, &img->profile);
-        use_eprofile = (img->profile_length > 0);
+        img->profile_size = dt_imageio_jpeg_read_profile(&jpg, &img->profile);
+        use_eprofile = (img->profile_size > 0);
         dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
       }
     }
