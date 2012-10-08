@@ -116,67 +116,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "blend h", GTK_WIDGET(g->blendh));
 }
 
-static const float xyz_rgb[3][3] =    /* XYZ from RGB */
-{
-  { 0.412453, 0.357580, 0.180423 },
-  { 0.212671, 0.715160, 0.072169 },
-  { 0.019334, 0.119193, 0.950227 }
-};
-static const float rgb_xyz[3][3] =    /* RGB from XYZ */
-{
-  { 3.24048, -1.53715, -0.498536 },
-  { -0.969255, 1.87599, 0.0415559 },
-  { 0.0556466, -0.204041, 1.05731 }
-};
-
-// convert linear RGB to CIE-LCh
-static void
-rgb_to_lch(float rgb[3], float lch[3])
-{
-  float xyz[3], lab[3];
-  xyz[0] = xyz[1] = xyz[2] = 0.0;
-  for (int c=0; c<3; c++)
-    for (int cc=0; cc<3; cc++)
-      xyz[cc] += xyz_rgb[cc][c] * rgb[c];
-  for (int c=0; c<3; c++)
-    xyz[c] = xyz[c] > 0.008856 ? powf(xyz[c], 1/3.0) : 7.787*xyz[c] + 16/116.0;
-  lab[0] = 116 * xyz[1] - 16;
-  lab[1] = 500 * (xyz[0] - xyz[1]);
-  lab[2] = 200 * (xyz[1] - xyz[2]);
-
-  lch[0] = lab[0];
-  lch[1] = sqrtf(lab[1]*lab[1]+lab[2]*lab[2]);
-  lch[2] = atan2f(lab[2], lab[1]);
-}
-
-// convert CIE-LCh to linear RGB
-static void
-lch_to_rgb(float lch[3], float rgb[3])
-{
-  float xyz[3], fx, fy, fz, kappa, epsilon, tmpf, lab[3];
-  epsilon = 0.008856;
-  kappa = 903.3;
-  lab[0] = lch[0];
-  lab[1] = lch[1] * cosf(lch[2]);
-  lab[2] = lch[1] * sinf(lch[2]);
-  xyz[1] = (lab[0]<=kappa*epsilon) ?
-           (lab[0]/kappa) : (powf((lab[0]+16.0)/116.0, 3.0));
-  fy = (xyz[1]<=epsilon) ? ((kappa*xyz[1]+16.0)/116.0) : ((lab[0]+16.0)/116.0);
-  fz = fy - lab[2]/200.0;
-  fx = lab[1]/500.0 + fy;
-  xyz[2] = (powf(fz, 3.0)<=epsilon) ? ((116.0*fz-16.0)/kappa) : (powf(fz, 3.0));
-  xyz[0] = (powf(fx, 3.0)<=epsilon) ? ((116.0*fx-16.0)/kappa) : (powf(fx, 3.0));
-
-  for (int c=0; c<3; c++)
-  {
-    tmpf = 0;
-    for (int cc=0; cc<3; cc++)
-      tmpf += rgb_xyz[c][cc] * xyz[cc];
-    rgb[c] = MAX(tmpf, 0);
-  }
-}
-
-#ifdef HAVE_OPENCL
+// FIXME: needs repair!
+#if 0// def HAVE_OPENCL
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -209,62 +150,108 @@ error:
 }
 #endif
 
+int
+output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && (pipe->image.flags & DT_IMAGE_RAW)) return sizeof(float);
+  else return 4*sizeof(float);
+}
+
+
+static int
+FC(const int row, const int col, const unsigned int filters)
+{
+  return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
+}
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
+  const int filters = dt_image_flipped_filter(&piece->pipe->image);
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
-  float *in;
-  float *out;
-  const int ch = piece->colors;
 
   const float clip = data->clip * fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
-  float inc[3], lch[3], lchc[3], lchi[3];
+  // const int ch = piece->colors;
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || !filters)
+  {
+    const __m128 clipm = _mm_set1_ps(clip);
+#ifdef _OPENMP
+      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
+#endif
+    for(int j=0; j<roi_out->height; j++)
+    {
+      float *out = (float *)ovoid + 4*roi_out->width*j;
+      float *in  = (float *)ivoid + 4*roi_in->width*j;
+      for(int i=0; i<roi_out->width; i++)
+      {
+        _mm_stream_ps(out, _mm_min_ps(clipm, _mm_set_ps(in[3],in[2],in[1],in[0])));
+        in += 4;
+        out += 4;
+      }
+    }
+    _mm_sfence();
+    return;
+  }
 
   switch(data->mode)
   {
     case DT_IOP_HIGHLIGHTS_LCH:
 #ifdef _OPENMP
-      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out, data, piece) private(in, out, inc, lch, lchc, lchi)
+      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
 #endif
       for(int j=0; j<roi_out->height; j++)
       {
-        out = (float *)ovoid + ch*roi_out->width*j;
-        in  = (float *)ivoid + ch*roi_out->width*j;
+        float *out = (float *)ovoid + roi_out->width*j;
+        float *in  = (float *)ivoid + roi_out->width*j;
         for(int i=0; i<roi_out->width; i++)
         {
-          if(in[0] <= clip && in[1] <= clip && in[2] <= clip)
+          if(in[0] <= clip || i==0 || i==roi_out->width-1 || j==0 || j==roi_out->height-1)
           {
             // fast path for well-exposed pixels.
-            for(int c=0; c<3; c++) out[c] = in[c];
+            out[0] = in[0];
           }
           else
           {
-            for(int c=0; c<3; c++) inc[c] = fminf(clip, in[c]);
-            rgb_to_lch(in, lchi);
-            rgb_to_lch(inc, lchc);
-            lch[0] = lchc[0] + data->blendL * (lchi[0] - lchc[0]);
-            lch[1] = lchc[1] + data->blendC * (lchi[1] - lchc[1]);
-            lch[2] = lchc[2] + data->blendh * (lchi[2] - lchc[2]);
-            lch_to_rgb(lch, out);
+            // r and b are same, so we only need two masks
+            const float lum[3] = { 0.25, 0.5, 0.25 };
+            // go for all 9 neighbours
+            float accum[3] = {0.0f, 0.0f, 0.0f};
+            int cnt[3] = {0, 0, 0};
+            for(int jj=-1;jj<=1;jj++)
+            {
+              for(int ii=-1;ii<=1;ii++)
+              {
+                const int c = FC(j+jj+roi_out->y, i+ii+roi_out->x, filters);
+                accum[c] += lum[c];
+                cnt[c] ++;
+              }
+            }
+            if(cnt[0] && cnt[1] && cnt[2])
+            {
+              out[0] = 0.0f;
+              for(int c=0;c<3;c++)
+                out[0] += accum[c]/cnt[c];
+            }
+            else out[0] = clip;
           }
-          out += ch;
-          in += ch;
+          out ++;
+          in ++;
         }
       }
       break;
     default:
     case DT_IOP_HIGHLIGHTS_CLIP:
 #ifdef _OPENMP
-      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out) private(in, out, inc, lch, lchc, lchi)
+      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out)
 #endif
       for(int j=0; j<roi_out->height; j++)
       {
-        out = (float *)ovoid + ch*roi_out->width*j;
-        in  = (float *)ivoid + ch*roi_out->width*j;
+        float *out = (float *)ovoid + roi_out->width*j;
+        float *in  = (float *)ivoid + roi_out->width*j;
         for(int i=0; i<roi_out->width; i++)
         {
-          for(int c=0; c<3; c++) out[c] = fminf(clip, in[c]);
-          out += ch;
-          in += ch;
+          out[0] = MIN(clip, in[0]);
+          out ++;
+          in ++;
         }
       }
       break;
@@ -398,7 +385,7 @@ void init(dt_iop_module_t *module)
   // module->data = malloc(sizeof(dt_iop_highlights_data_t));
   module->params = malloc(sizeof(dt_iop_highlights_params_t));
   module->default_params = malloc(sizeof(dt_iop_highlights_params_t));
-  module->priority = 134; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 57; // module order created by iop_dependencies.py, do not edit!
   module->default_enabled = 1;
   module->params_size = sizeof(dt_iop_highlights_params_t);
   module->gui_data = NULL;
