@@ -386,15 +386,17 @@ end_query_cache:
         cairo_restore(cr);
       }
       else
-        goto failure;
+        goto escape_image_loop;
 
       cairo_translate(cr, wd, 0.0f);
     }
     cairo_translate(cr, -max_cols*wd, ht);
   }
+escape_image_loop:
   cairo_restore(cr);
 
   // and now the group borders
+  cairo_save(cr);
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
@@ -507,12 +509,14 @@ end_query_cache:
         cairo_restore(cr);
       }
       else
-        goto failure;
+        goto escape_border_loop;
 
       cairo_translate(cr, wd, 0.0f);
     }
     cairo_translate(cr, -max_cols*wd, ht);
   }
+escape_border_loop:
+  cairo_restore(cr);
 
   /* check if offset was changed and we need to prefetch thumbs */
   if (offset_changed)
@@ -549,8 +553,6 @@ end_query_cache:
     }
   }
 
-
-failure:
   g_free(query_ids);
   oldpan = pan;
   if(darktable.unmuted & DT_DEBUG_CACHE)
