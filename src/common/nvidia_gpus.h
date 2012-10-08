@@ -135,7 +135,7 @@ static const char *nvidia_gpus[] = {
 "GeForce GT 420*","1.0",
 "GeForce GT 240","1.2",
 "GeForce GT 220*","1.2",
-"GeForce 210*","1.2",
+"GeForce 210","1.2",
 "GeForce GTS 250","1.1",
 "GeForce GTS 150","1.1",
 "GeForce GT 130*","1.1",
