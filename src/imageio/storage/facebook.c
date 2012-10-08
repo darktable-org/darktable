@@ -979,6 +979,7 @@ static void ui_combo_album_changed(GtkComboBox *combo, gpointer data)
   }
   else
   {
+    gtk_widget_set_no_show_all(GTK_WIDGET(ui->hbox_album), TRUE);
     gtk_widget_hide(GTK_WIDGET(ui->hbox_album));
   }
 
