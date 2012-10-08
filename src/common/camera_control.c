@@ -229,10 +229,13 @@ static void _camera_process_job(const dt_camctl_t *c,const dt_camera_t *camera, 
       if( (res = gp_camera_capture (camera->gpcam, GP_CAPTURE_IMAGE,&fp, c->gpcontext)) == GP_OK )
       {
         CameraFile *destination;
-        const char *output_path = _dispatch_request_image_path(c,camera);
-        if( !output_path ) output_path="/tmp";
-        const char *fname = _dispatch_request_image_filename(c,fp.name,cam);
-        if( !fname ) fname=fp.name;
+        const char *output_path = _dispatch_request_image_path(c, camera);
+        if(!output_path)
+	  output_path="/tmp";
+
+	const char *fname = _dispatch_request_image_filename(c, fp.name,cam);
+	if(!fname)
+	  break;
 
         char *output = g_build_filename (output_path,fname,(char *)NULL);
 
@@ -707,7 +710,8 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images,
       g_free(_file);
 
       const char *fname = _dispatch_request_image_filename(c,filename,cam);
-      if(!fname) fname=filename;
+      if(!fname)
+	continue;
 
       char *output = g_build_filename(output_path,fname,(char *)NULL);
 

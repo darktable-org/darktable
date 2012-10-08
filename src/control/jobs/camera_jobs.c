@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 - 2011 Henrik Andersson.
+    copyright (c) 2010 - 2012 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -322,25 +322,53 @@ const char *_camera_import_request_image_filename(const dt_camera_t *camera,cons
   g_free(t->path);
   t->path = fixed_path;
   dt_variables_expand( t->vp, t->path, FALSE );
-  const gchar *storage=dt_variables_get_result(t->vp);
+  gchar *storage = dt_variables_get_result(t->vp);
 
   dt_variables_expand( t->vp, t->filename, TRUE );
-  const gchar *file = dt_variables_get_result(t->vp);
+  gchar *file = dt_variables_get_result(t->vp);
 
   // Start check if file exist if it does, increase sequence and check again til we know that file doesnt exists..
-  gchar *fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
+  gchar *prev_filename;
+  gchar *fullfile;
+  prev_filename = fullfile = g_build_path(G_DIR_SEPARATOR_S,
+					  storage, file,
+					  (char *)NULL);
+
   if( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE )
   {
     do
     {
-      g_free(fullfile);
       dt_variables_expand( t->vp, t->filename, TRUE );
+      g_free(file);
       file = dt_variables_get_result(t->vp);
-      fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
+      fullfile = g_build_path(G_DIR_SEPARATOR_S, storage, file, (char *)NULL);
+
+      // if we expanded to same filename the variables are wrong and ${SEQUENCE}
+      // is probably missing...
+      if (strcmp(prev_filename, fullfile) == 0)
+      {
+	if (prev_filename != fullfile)
+	  g_free(prev_filename);
+
+	g_free(fullfile);
+	g_free(storage);
+
+	dt_control_log(_("Couldn't expand to a uniq filename for import, please check your import settings."));
+
+	return NULL;
+      }
+
+      g_free(prev_filename);
+      prev_filename = fullfile;
     }
     while( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE);
   }
 
+  if (prev_filename != fullfile)
+    g_free(prev_filename);
+
+  g_free(fullfile);
+  g_free(storage);
   return file;
 }
 
