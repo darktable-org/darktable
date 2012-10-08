@@ -1343,11 +1343,26 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
 static void
 entry_activated (GtkWidget *entry, dt_lib_collect_rule_t *d)
 {
+  GtkTreeView *view;
+  GtkTreeModel *model;
+  int property, rows;
+
   changed_callback(NULL, d);
   dt_lib_collect_t *c = get_collect(d);
-  GtkTreeView *view = c->view;
-  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
-  gint rows = gtk_tree_model_iter_n_children(model, NULL);
+  
+  property = gtk_combo_box_get_active(d->combo);
+
+  if (property != DT_COLLECTION_PROP_FOLDERS)
+  {
+    view = c->view;
+    model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
+  }
+  else
+  {
+    model = c->treemodel;
+  }
+
+  rows = gtk_tree_model_iter_n_children(model, NULL);
   if(rows == 1)
   {
     GtkTreeIter iter;
