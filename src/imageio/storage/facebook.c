@@ -455,10 +455,15 @@ static GList *fb_get_album_list(FBContext *ctx, gboolean* ok)
       continue;
 
     FBAlbum *album = fb_album_init();
+    if (album == NULL)
+      goto error;
+
     const char* id = json_object_get_string_member(obj, "id");
     const char* name = json_object_get_string_member(obj, "name");
-    if (id == NULL || name == NULL)
+    if (id == NULL || name == NULL) {
+      fb_album_destroy(album);
       goto error;
+    }
     album->id = g_strdup(id);
     album->name = g_strdup(name);
     album_list = g_list_append(album_list, album);
