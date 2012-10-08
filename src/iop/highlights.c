@@ -45,7 +45,7 @@ dt_iop_highlights_mode_t;
 typedef struct dt_iop_highlights_params_t
 {
   dt_iop_highlights_mode_t mode;
-  float blendL, blendC, blendh;
+  float blendL, blendC, blendh; // unused
   float clip;
 }
 dt_iop_highlights_params_t;
@@ -53,11 +53,7 @@ dt_iop_highlights_params_t;
 typedef struct dt_iop_highlights_gui_data_t
 {
   GtkWidget *clip;
-  GtkWidget *blendL;
-  GtkWidget *blendC;
-  GtkWidget *blendh;
   GtkWidget *mode;
-  GtkBox    *slider_box;
 }
 dt_iop_highlights_gui_data_t;
 
@@ -97,23 +93,6 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     return 0;
   }
   return 1;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend L"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend C"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend h"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_highlights_gui_data_t *g =
-    (dt_iop_highlights_gui_data_t*)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "blend L", GTK_WIDGET(g->blendL));
-  dt_accel_connect_slider_iop(self, "blend C", GTK_WIDGET(g->blendC));
-  dt_accel_connect_slider_iop(self, "blend h", GTK_WIDGET(g->blendh));
 }
 
 // FIXME: needs repair!
@@ -262,18 +241,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 }
 
 static void
-blend_callback (GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(self->dt->gui->reset) return;
-  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  if      (slider == g->blendL) p->blendL = dt_bauhaus_slider_get(slider);
-  else if (slider == g->blendC) p->blendC = dt_bauhaus_slider_get(slider);
-  else if (slider == g->blendh) p->blendh = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void
 clip_callback (GtkWidget *slider, dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
@@ -286,22 +253,16 @@ static void
 mode_changed (GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   int active = dt_bauhaus_combobox_get(combo);
 
   switch(active)
   {
     case DT_IOP_HIGHLIGHTS_CLIP:
       p->mode = DT_IOP_HIGHLIGHTS_CLIP;
-      gtk_widget_set_visible(GTK_WIDGET(g->slider_box), FALSE);
       break;
     default:
     case DT_IOP_HIGHLIGHTS_LCH:
       p->mode = DT_IOP_HIGHLIGHTS_LCH;
-      gtk_widget_set_visible(GTK_WIDGET(g->slider_box), TRUE);
-      gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), FALSE);
-      gtk_widget_show_all(GTK_WIDGET(g->slider_box));
-      gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), TRUE);
       break;
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -346,21 +307,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)module->params;
-  dt_bauhaus_slider_set(g->blendL, p->blendL);
-  dt_bauhaus_slider_set(g->blendC, p->blendC);
-  dt_bauhaus_slider_set(g->blendh, p->blendh);
   dt_bauhaus_slider_set(g->clip,   p->clip);
-  if(p->mode == DT_IOP_HIGHLIGHTS_CLIP)
-  {
-    gtk_widget_set_visible(GTK_WIDGET(g->slider_box), FALSE);
-  }
-  else
-  {
-    gtk_widget_set_visible(GTK_WIDGET(g->slider_box), TRUE);
-    gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), FALSE);
-    gtk_widget_show_all(GTK_WIDGET(g->slider_box));
-    gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), TRUE);
-  }
   dt_bauhaus_combobox_set(g->mode, p->mode);
 }
 
@@ -407,11 +354,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
-  g->clip = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0, 0.01, p->clip, 3);
-  g_object_set(G_OBJECT(g->clip), "tooltip-text", _("manually adjust the clipping threshold against magenta highlights"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->clip, _("clipping threshold"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->clip, TRUE, TRUE, 0);
-
   g->mode = dt_bauhaus_combobox_new(self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->mode, _("method"));
@@ -419,31 +361,15 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->mode, _("reconstruct in LCh"));
   g_object_set(G_OBJECT(g->mode), "tooltip-text", _("highlight reconstruction method"), (char *)NULL);
 
-  g->slider_box = GTK_BOX(gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE));
-  gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->slider_box), FALSE, FALSE, 0);
+  g->clip = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0, 0.01, p->clip, 3);
+  g_object_set(G_OBJECT(g->clip), "tooltip-text", _("manually adjust the clipping threshold against"
+        " magenta highlights (you shouldn't ever need to touch this)"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->clip, _("clipping threshold"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->clip, TRUE, TRUE, 0);
 
-  g->blendL = dt_bauhaus_slider_new_with_range(self,0.0, 1.0, 0.01, p->blendL, 3);
-  g->blendC = dt_bauhaus_slider_new_with_range(self,0.0, 1.0, 0.01, p->blendC, 3);
-  g->blendh = dt_bauhaus_slider_new_with_range(self,0.0, 1.0, 0.01, p->blendh, 3);
-  g_object_set(G_OBJECT(g->blendL), "tooltip-text", _("blend lightness (0 is same as clipping)"), (char *)NULL);
-  g_object_set(G_OBJECT(g->blendC), "tooltip-text", _("blend colorness (0 is same as clipping)"), (char *)NULL);
-  g_object_set(G_OBJECT(g->blendh), "tooltip-text", _("blend hue (0 is same as clipping)"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->blendL,_("blend L"));
-  dt_bauhaus_widget_set_label(g->blendC,_("blend C"));
-  dt_bauhaus_widget_set_label(g->blendh,_("blend h"));
-  gtk_box_pack_start(g->slider_box, g->blendL, TRUE, TRUE, 0);
-  gtk_box_pack_start(g->slider_box, g->blendC, TRUE, TRUE, 0);
-  gtk_box_pack_start(g->slider_box, g->blendh, TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (g->clip), "value-changed",
                     G_CALLBACK (clip_callback), self);
-  g_signal_connect (G_OBJECT (g->blendL), "value-changed",
-                    G_CALLBACK (blend_callback), self);
-  g_signal_connect (G_OBJECT (g->blendC), "value-changed",
-                    G_CALLBACK (blend_callback), self);
-  g_signal_connect (G_OBJECT (g->blendh), "value-changed",
-                    G_CALLBACK (blend_callback), self);
   g_signal_connect (G_OBJECT (g->mode), "value-changed",
                     G_CALLBACK (mode_changed), self);
 }
