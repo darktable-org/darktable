@@ -246,7 +246,7 @@ void dt_variables_set_time(dt_variables_params_t *params, time_t time)
   params->data->time = time;
 }
 
-const gchar *dt_variables_get_result(dt_variables_params_t *params)
+gchar *dt_variables_get_result(dt_variables_params_t *params)
 {
   return g_strdup(params->data->result);
 }
