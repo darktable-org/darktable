@@ -177,6 +177,7 @@ void gui_init(dt_lib_module_t *self)
   GtkCellRenderer *renderer;
 
   d->view = GTK_TREE_VIEW (gtk_tree_view_new());
+  gtk_widget_set_size_request(GTK_WIDGET(d->view), -1, 300);
 
   renderer = gtk_cell_renderer_text_new ();
   gtk_tree_view_insert_column_with_attributes(d->view,
