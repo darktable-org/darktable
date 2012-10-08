@@ -654,12 +654,13 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 
     // some files have the colorspace explicitly set. try to read that.
+    // is_ldr -> none
     // 0x01   -> sRGB
     // 0x02   -> AdobeRGB
     // 0xffff -> Uncalibrated
     //          + Exif.Iop.InteroperabilityIndex of 'R03' -> AdobeRGB
     //          + Exif.Iop.InteroperabilityIndex of 'R98' -> sRGB
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ColorSpace")))
+    if (dt_image_is_ldr(img) && (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ColorSpace")))
          != exifData.end() )
     {
       int colorspace = pos->toLong();
