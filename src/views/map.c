@@ -384,10 +384,12 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
 
     if(buf.buf)
     {
+      GdkPixbuf *source = NULL, *scaled = NULL;
       uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
       uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
 
-      uint8_t *rgbbuf = g_malloc((buf.width+2)*(buf.height+2)*3);
+      uint8_t *rgbbuf = (uint8_t*)malloc((buf.width+2)*(buf.height+2)*3);
+      if(!rgbbuf) goto map_changed_failure;
       memset(rgbbuf, 64, (buf.width+2)*(buf.height+2)*3);
       for(int i=1; i<=buf.height; i++)
         for(int j=1; j<=buf.width; j++)
@@ -398,11 +400,19 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
       if(buf.width < buf.height) w = (buf.width*ts)/buf.height; // portrait
       else                       h = (buf.height*ts)/buf.width; // landscape
 
-      GdkPixbuf *source = gdk_pixbuf_new_from_data(rgbbuf, GDK_COLORSPACE_RGB, FALSE, 8, (buf.width+2), (buf.height+2), (buf.width+2)*3, NULL, NULL);
-      GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
+      source = gdk_pixbuf_new_from_data(rgbbuf, GDK_COLORSPACE_RGB, FALSE, 8, (buf.width+2), (buf.height+2), (buf.width+2)*3, NULL, NULL);
+      if(!source) goto map_changed_failure;
+      scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
+      if(!scaled) goto map_changed_failure;
       //TODO: add back the arrow on the left lower corner of the image, pointing to the location
       const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-      dt_map_image_t *entry = (dt_map_image_t*)g_malloc(sizeof(dt_map_image_t));
+      if(!cimg) goto map_changed_failure;
+      dt_map_image_t *entry = (dt_map_image_t*)malloc(sizeof(dt_map_image_t));
+      if(!entry)
+      {
+        dt_image_cache_read_release(darktable.image_cache, cimg);
+        goto map_changed_failure;
+      }
       entry->imgid = imgid;
       entry->image = osm_gps_map_image_add_with_alignment(map, cimg->latitude, cimg->longitude, scaled, 0, 1);
       entry->width = w;
@@ -410,11 +420,13 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
       lib->images = g_slist_prepend(lib->images, entry);
       dt_image_cache_read_release(darktable.image_cache, cimg);
 
+map_changed_failure:
       if(source)
         g_object_unref(source);
       if(scaled)
         g_object_unref(scaled);
-      g_free(rgbbuf);
+      if(rgbbuf)
+        free(rgbbuf);
     }
     else
       needs_redraw = TRUE;
@@ -475,10 +487,12 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e
 
     if(buf.buf)
     {
+      GdkPixbuf *scaled = NULL, *source = NULL;
       uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
       uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
 
-      uint8_t *rgbbuf = g_malloc((buf.width+2)*(buf.height+2)*3);
+      uint8_t *rgbbuf = (uint8_t*)malloc((buf.width+2)*(buf.height+2)*3);
+      if(!rgbbuf) goto map_motion_failure;
       memset(rgbbuf, 64, (buf.width+2)*(buf.height+2)*3);
       for(int i=1; i<=buf.height; i++)
         for(int j=1; j<=buf.width; j++)
@@ -489,16 +503,18 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e
       if(buf.width < buf.height) w = (buf.width*ts)/buf.height; // portrait
       else                       h = (buf.height*ts)/buf.width; // landscape
 
-      GdkPixbuf *source = gdk_pixbuf_new_from_data(rgbbuf, GDK_COLORSPACE_RGB, FALSE, 8, (buf.width+2), (buf.height+2), (buf.width+2)*3, NULL, NULL);
-      GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
+      source = gdk_pixbuf_new_from_data(rgbbuf, GDK_COLORSPACE_RGB, FALSE, 8, (buf.width+2), (buf.height+2), (buf.width+2)*3, NULL, NULL);
+      scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
       GdkDragContext * context = gtk_drag_begin(GTK_WIDGET(lib->map), targets, GDK_ACTION_COPY, 1, (GdkEvent*)e);
       gtk_drag_set_icon_pixbuf(context, scaled, 0, 0);
 
+map_motion_failure:
       if(source)
         g_object_unref(source);
       if(scaled)
         g_object_unref(scaled);
-      g_free(rgbbuf);
+      if(rgbbuf)
+        free(rgbbuf);
     }
 
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);

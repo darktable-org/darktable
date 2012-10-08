@@ -333,7 +333,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   }
 
   // prefetch the ids so that we can peek into the future to see if there are adjacent images in the same group.
-  int *query_ids = g_malloc0(max_rows*max_cols*sizeof(int));
+  int *query_ids = (int*)calloc(max_rows*max_cols, sizeof(int));
+  if(!query_ids) goto after_drawing;
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
@@ -517,7 +518,7 @@ escape_image_loop:
   }
 escape_border_loop:
   cairo_restore(cr);
-
+after_drawing:
   /* check if offset was changed and we need to prefetch thumbs */
   if (offset_changed)
   {
@@ -553,7 +554,8 @@ escape_border_loop:
     }
   }
 
-  g_free(query_ids);
+  if(query_ids)
+    free(query_ids);
   oldpan = pan;
   if(darktable.unmuted & DT_DEBUG_CACHE)
     dt_mipmap_cache_print(darktable.mipmap_cache);

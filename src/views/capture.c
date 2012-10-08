@@ -254,7 +254,8 @@ void _capture_view_set_jobcode(const dt_view_t *view, const char *name)
   }
 
   /* lets initialize a new filmroll for the capture... */
-  cv->film=(dt_film_t*)g_malloc(sizeof(dt_film_t));
+  cv->film = (dt_film_t*)malloc(sizeof(dt_film_t));
+  if(!cv->film) return;
   dt_film_init(cv->film);
 
   int current_filmroll = dt_conf_get_int("plugins/capture/current_filmroll");
@@ -296,7 +297,11 @@ void _capture_view_set_jobcode(const dt_view_t *view, const char *name)
     if( g_mkdir_with_parents(cv->film->dirname,0755) == -1 )
     {
       dt_control_log(_("failed to create session path %s."), cv->film->dirname);
-      g_free( cv->film );
+      if(cv->film)
+      {
+        free( cv->film );
+        cv->film = NULL;
+      }
       return;
     }
 
