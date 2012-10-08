@@ -1,6 +1,7 @@
 /*
 	 This file is part of darktable,
 	 copyright (c) 2010-2011 Henrik Andersson.
+	 copyright (c) 2012 Tobias Ellinghaus.
 
 	 darktable is free software: you can redistribute it and/or modify
 	 it under the terms of the GNU General Public License as published by
@@ -340,7 +341,8 @@ static void *dt_camctl_camera_get_live_view(void* data)
 
     // calculate FPS
     double current_time = dt_get_wtime();
-    if(current_time - capture_time >= 1.0){
+    if(current_time - capture_time >= 1.0)
+    {
       // a second has passed
       dt_print(DT_DEBUG_CAMCTL, "%d fps\n", frames+1);
       frames = 0;
@@ -656,12 +658,16 @@ gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
     // read a full copy of config to configuration cache
     gp_camera_get_config( cam->gpcam, &cam->configuration, c->gpcontext );
 
+    // TODO: find a more robust way for this, once we find out how to do it with non-EOS cameras
+    if(cam->can_live_view && dt_camctl_camera_property_exists(camctl, cam, "eoszoomposition"))
+      cam->can_live_view_advanced = TRUE;
+
     // initialize timeout callbacks eg. keep alive, some cameras needs it.
     cam->gpcontext = camctl->gpcontext;
-    gp_camera_set_timeout_funcs(cam->gpcam, 
-				(CameraTimeoutStartFunc)_camera_start_timeout_func,
-				(CameraTimeoutStopFunc)_camera_stop_timeout_func,
-				cam);
+    gp_camera_set_timeout_funcs(cam->gpcam,
+                                (CameraTimeoutStartFunc)_camera_start_timeout_func,
+                                (CameraTimeoutStopFunc)_camera_stop_timeout_func,
+                                cam);
 
 
     dt_pthread_mutex_init(&cam->jobqueue_lock, NULL);
@@ -689,14 +695,14 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images,
     {
       // Split file into folder and filename
       char *eos;
-      char folder[4096]= {0};
-      char filename[4096]= {0};
+      char folder[DT_MAX_PATH_LEN]= {0};
+      char filename[DT_MAX_PATH_LEN]= {0};
       char *file=(char *)ifile->data;
       eos=file+strlen(file);
       while( --eos>file && *eos!='/' );
       char *_file = g_strndup(file, eos-file);
-      g_strlcat(folder, _file, 4096);
-      g_strlcat(filename, eos+1, 4096);
+      g_strlcat(folder, _file, DT_MAX_PATH_LEN);
+      g_strlcat(filename, eos+1, DT_MAX_PATH_LEN);
       g_free(_file);
 
       const char *fname = _dispatch_request_image_filename(c,filename,cam);
@@ -801,11 +807,11 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_
   {
     for(int i=0; i < gp_list_count(folders); i++)
     {
-      char buffer[4096]= {0};
-      g_strlcat(buffer,path, 4096);
-      if(path[1]!='\0') g_strlcat(buffer,"/", 4096);
+      char buffer[DT_MAX_PATH_LEN]= {0};
+      g_strlcat(buffer,path, DT_MAX_PATH_LEN);
+      if(path[1]!='\0') g_strlcat(buffer,"/", DT_MAX_PATH_LEN);
       gp_list_get_name (folders, i, &foldername);
-      g_strlcat(buffer,foldername, 4096);
+      g_strlcat(buffer,foldername, DT_MAX_PATH_LEN);
       if( !_camctl_recursive_get_previews(c,flags,buffer))
         return 0;
     }
@@ -1125,8 +1131,8 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
       /* this is really some undefined behavior, seems like its
       camera driver dependent... very ugly! */
       if( strstr( (char *)data, "4006" ) || // Nikon PTP driver
-        (strstr((char *)data, "PTP Property") && strstr((char *)data, "changed"))  // Some Canon driver maybe all ??
-      )
+          (strstr((char *)data, "PTP Property") && strstr((char *)data, "changed"))  // Some Canon driver maybe all ??
+        )
       {
         // Property change event occured on camera
         // let's update cache and signalling
@@ -1398,4 +1404,6 @@ void _dispatch_camera_error(const dt_camctl_t *c,const dt_camera_t *camera,dt_ca
     while((listener=g_list_next(listener))!=NULL);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

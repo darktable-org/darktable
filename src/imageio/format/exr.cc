@@ -16,47 +16,24 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <memory.h>
-#include <OpenEXR/ImfFrameBuffer.h>
-#include <OpenEXR/ImfTiledOutputFile.h>
-#include <OpenEXR/ImfChannelList.h>
-#include <OpenEXR/ImfStandardAttributes.h>
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "common/colorspaces.h"
 #include "common/imageio_module.h"
+#include "common/imageio_exr.h"
+#include "common/imageio_exr.hh"
+
+#include <cstdlib>
+#include <cstdio>
+#include <memory>
+#include <OpenEXR/ImfFrameBuffer.h>
+#include <OpenEXR/ImfTiledOutputFile.h>
+#include <OpenEXR/ImfChannelList.h>
+#include <OpenEXR/ImfStandardAttributes.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-
-/** Special BLOB attribute implementation.*/
-namespace Imf
-{
-typedef struct Blob
-{
-  uint32_t size;
-  uint8_t *data;
-} Blob;
-typedef Imf::TypedAttribute<Imf::Blob> BlobAttribute;
-template <> const char *BlobAttribute::staticTypeName()
-{
-  return "blob";
-}
-template <> void BlobAttribute::writeValueTo (OStream &os, int version) const
-{
-  Xdr::write <StreamIO> (os, _value.size);
-  Xdr::write <StreamIO> (os, (char *)_value.data,_value.size);
-}
-
-template <> void BlobAttribute::readValueFrom (IStream &is, int size, int version)
-{
-  Xdr::read <StreamIO> (is, _value.size);
-  Xdr::read <StreamIO> (is, (char *)_value.data, _value.size);
-}
-}
 
 #ifdef __cplusplus
 extern "C"
@@ -71,8 +48,8 @@ extern "C"
     int width, height;
   }
   dt_imageio_exr_t;
- 
-  void init(dt_imageio_module_format_t *self) 
+
+  void init(dt_imageio_module_format_t *self)
   {
     Imf::BlobAttribute::registerAttributeType();
   }
@@ -81,9 +58,7 @@ extern "C"
 
   int write_image (dt_imageio_exr_t *exr, const char *filename, const float *in, void *exif, int exif_len, int imgid)
   {
-    Imf::Blob exif_blob= {0};
-    exif_blob.size=exif_len;
-    exif_blob.data=(uint8_t *)exif;
+    Imf::Blob exif_blob(exif_len, (uint8_t*)exif);
     Imf::Header header(exr->width,exr->height,1,Imath::V2f (0, 0),1,Imf::INCREASING_Y,Imf::PIZ_COMPRESSION);
     header.insert("comment",Imf::StringAttribute("Developed using Darktable "PACKAGE_VERSION));
     header.insert("exif", Imf::BlobAttribute(exif_blob));
@@ -122,7 +97,7 @@ extern "C"
     free(red);
     free(green);
     free(blue);
-    return 1;
+    return 0;
   }
 
   void*
@@ -179,3 +154,6 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

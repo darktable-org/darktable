@@ -96,7 +96,7 @@ extern "C"
     dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale4));
     dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale5));
   }
- 
+
   void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
   {
     dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;
@@ -118,7 +118,7 @@ extern "C"
 
     // if rad <= 6 use naive version!
     const int rad = (int)(3.0*fmaxf(sigma[0],sigma[1])+1.0);
-    if(rad <= 6 && (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW))
+    if(rad <= 6 && (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL))
     {
       // no use denoising the thumbnail. takes ages without permutohedral
       memcpy(out, in, sizeof(float)*ch*roi_out->width*roi_out->height);
@@ -129,7 +129,7 @@ extern "C"
       const int wd = 2*rad+1;
       float *m = mat + rad*wd + rad;
       float weight = 0.0f;
-      const float isig2col[3] = {1.0/(2.0f*sigma[2]*sigma[2]), 1.0/(2.0f*sigma[3]*sigma[3]), 1.0/(2.0f*sigma[4]*sigma[4])};
+      const float isig2col[3] = {1.f/(2.0f*sigma[2]*sigma[2]), 1.f/(2.0f*sigma[3]*sigma[3]), 1.f/(2.0f*sigma[4]*sigma[4])};
       // init gaussian kernel
       for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++)
           weight += m[l*wd + k] = expf(- (l*l + k*k)/(2.f*sigma[0]*sigma[0]));
@@ -149,21 +149,21 @@ extern "C"
         {
           sumw = 0.0f;
           for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++)
-          {
-            float *inp = in + ch*(l*roi_in->width+k);
-            sumw += w[l*wd+k] = m[l*wd+k]*expf(-
-                ((in[0]-inp[0])*(in[0]-inp[0])*isig2col[0] +
-                 (in[1]-inp[1])*(in[1]-inp[1])*isig2col[1] +
-                 (in[2]-inp[2])*(in[2]-inp[2])*isig2col[2]));
-          }
+            {
+              float *inp = in + ch*(l*roi_in->width+k);
+              sumw += w[l*wd+k] = m[l*wd+k]*expf(-
+                                                 ((in[0]-inp[0])*(in[0]-inp[0])*isig2col[0] +
+                                                  (in[1]-inp[1])*(in[1]-inp[1])*isig2col[1] +
+                                                  (in[2]-inp[2])*(in[2]-inp[2])*isig2col[2]));
+            }
           for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++) w[l*wd+k] /= sumw;
           for(int c=0; c<3; c++) out[c] = 0.0f;
           for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++)
-          {
-            float *inp = in + ch*(l*roi_in->width+k);
-            float weight = w[l*wd+k];
-            for(int c=0; c<3; c++) out[c] += inp[c]*weight;
-          }
+            {
+              float *inp = in + ch*(l*roi_in->width+k);
+              float weight = w[l*wd+k];
+              for(int c=0; c<3; c++) out[c] += inp[c]*weight;
+            }
           out += ch;
           in += ch;
         }
@@ -192,7 +192,7 @@ extern "C"
 
       // splat into the lattice
 #ifdef _OPENMP
-#pragma omp parallel for
+      #pragma omp parallel for
 #endif
       for(int j=0; j<roi_in->height; j++)
       {
@@ -215,7 +215,7 @@ extern "C"
 
       // slice from the lattice
 #ifdef _OPENMP
-#pragma omp parallel for
+      #pragma omp parallel for
 #endif
       for(int j=0; j<roi_in->height; j++)
       {
@@ -304,7 +304,7 @@ extern "C"
     module->params = (dt_iop_params_t *)malloc(sizeof(dt_iop_bilateral_params_t));
     module->default_params = (dt_iop_params_t *)malloc(sizeof(dt_iop_bilateral_params_t));
     module->default_enabled = 0;
-  module->priority = 313; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 307; // module order created by iop_dependencies.py, do not edit!
     module->params_size = sizeof(dt_iop_bilateral_params_t);
     module->gui_data = NULL;
     dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t)
@@ -372,4 +372,6 @@ extern "C"
 
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

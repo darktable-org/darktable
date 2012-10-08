@@ -12,6 +12,8 @@
 # Copyright 2010 henrik andersson
 #=============================================================================
 
+SET(GPHOTO2_FIND_REQUIRED ${Gphoto2_FIND_REQUIRED})
+
 find_path(GPHOTO2_INCLUDE_DIR gphoto2/gphoto2.h)
 mark_as_advanced(GPHOTO2_INCLUDE_DIR)
 
@@ -30,4 +32,19 @@ find_package_handle_standard_args(GPHOTO2 DEFAULT_MSG GPHOTO2_LIBRARY GPHOTO2_IN
 IF(GPHOTO2_FOUND)
   SET(Gphoto2_LIBRARIES ${GPHOTO2_LIBRARY} ${GPHOTO2_PORT_LIBRARY})
   SET(Gphoto2_INCLUDE_DIRS ${GPHOTO2_INCLUDE_DIR})
+
+  # libgphoto2 dynamically loads and unloads usb library
+  # without calling any cleanup functions (since they are absent from libusb-0.1).
+  # This leaves usb event handling threads running with invalid callback and return addresses,
+  # which causes a crash after any usb event is generated, at least in Mac OS X. 
+  # libusb1 backend does correctly call exit function, but ATM it crashes anyway.
+  # Workaround is to link against libusb so that it wouldn't get unloaded.
+  IF(APPLE)
+    find_library(USB_LIBRARY NAMES usb-1.0 libusb-1.0)
+    mark_as_advanced(USB_LIBRARY)
+    IF(USB_LIBRARY)
+      SET(Gphoto2_LIBRARIES ${Gphoto2_LIBRARIES} ${USB_LIBRARY})
+    ENDIF(USB_LIBRARY)
+  ENDIF(APPLE)
+
 ENDIF(GPHOTO2_FOUND)

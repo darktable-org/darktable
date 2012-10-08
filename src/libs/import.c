@@ -221,11 +221,13 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       /* add camera actions buttons */
       GtkWidget *ib=NULL,*tb=NULL;
       GtkWidget *vbx=gtk_vbox_new(FALSE,5);
-      if( camera->can_import==TRUE ) {
+      if( camera->can_import==TRUE )
+      {
         gtk_box_pack_start (GTK_BOX (vbx),(ib=gtk_button_new_with_label (_("import from camera"))),FALSE,FALSE,0);
         d->import_camera = GTK_BUTTON(ib);
       }
-      if( camera->can_tether==TRUE ) {
+      if( camera->can_tether==TRUE )
+      {
         gtk_box_pack_start (GTK_BOX (vbx),(tb=gtk_button_new_with_label (_("tethered shoot"))),FALSE,FALSE,0);
         d->tethered_shoot = GTK_BUTTON(tb);
       }
@@ -261,7 +263,7 @@ static void _camctl_camera_disconnected_callback (const dt_camera_t *camera,void
 
   /* rescan connected cameras */
   dt_camctl_detect_cameras(darktable.camctl);
-  
+
   /* update gui with detected devices */
   gboolean i_own_lock = dt_control_gdk_lock();
   _lib_import_ui_devices_update(self);
@@ -437,10 +439,10 @@ static GtkWidget* _lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
   GtkCellRenderer *renderer;
   GtkTreeIter iter;
   GtkListStore *model = gtk_list_store_new(N_COLUMNS,
-                                           G_TYPE_STRING /*name*/,
-                                           G_TYPE_STRING /*creator*/,
-                                           G_TYPE_STRING /*publisher*/,
-                                           G_TYPE_STRING /*rights*/);
+                        G_TYPE_STRING /*name*/,
+                        G_TYPE_STRING /*creator*/,
+                        G_TYPE_STRING /*publisher*/,
+                        G_TYPE_STRING /*rights*/);
 
   GtkWidget *presets = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
   renderer = gtk_cell_renderer_text_new();
@@ -527,7 +529,7 @@ static GtkWidget* _lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
 
   g_signal_connect(apply_metadata, "toggled", G_CALLBACK (_lib_import_apply_metadata_toggled), table);
   _lib_import_apply_metadata_toggled(apply_metadata, table); // needed since the apply_metadata starts being turned off,
-                                                             // and setting it to off doesn't emit the 'toggled' signal ...
+  // and setting it to off doesn't emit the 'toggled' signal ...
 
   g_signal_connect(presets, "changed", G_CALLBACK(_lib_import_presets_changed), data);
   g_signal_connect(GTK_ENTRY(creator), "changed", G_CALLBACK (_lib_import_metadata_changed), presets);
@@ -733,7 +735,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
-static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data) 
+static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import film"),
@@ -771,7 +773,11 @@ static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
       filename = (char *)it->data;
       dt_film_import(filename);
       if (!first_filename)
-      first_filename = dt_util_dstrcat(g_strdup(filename), "%%");
+      {
+        first_filename = g_strdup(filename);
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (metadata.recursive)))
+          first_filename = dt_util_dstrcat(first_filename, "%%");
+      }
       g_free (filename);
       it = g_slist_next(it);
     }
@@ -813,7 +819,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect (G_OBJECT (widget), "clicked",
                     G_CALLBACK (_lib_import_single_image_callback),
                     self);
- 
+
   /* adding the import folder button */
   widget = gtk_button_new_with_label(_("folder"));
   d->import_directory = GTK_BUTTON(widget);
@@ -844,7 +850,7 @@ void gui_init(dt_lib_module_t *self)
 }
 
 void gui_cleanup(dt_lib_module_t *self)
-{ 
+{
 #ifdef HAVE_GPHOTO2
   dt_lib_import_t *d = (dt_lib_import_t*)self->data;
   /* unregister camctl listener */
@@ -856,4 +862,6 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

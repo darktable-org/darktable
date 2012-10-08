@@ -62,10 +62,14 @@ void dtgtk_cairo_paint_presets(cairo_t *cr,gint x,gint y,gint w,gint h,gint flag
 void dtgtk_cairo_paint_flip(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a switch icon */
 void dtgtk_cairo_paint_switch(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a plusminus icon */
+void dtgtk_cairo_paint_plusminus(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a color rect icon */
 void dtgtk_cairo_paint_color(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a eye icon */
 void dtgtk_cairo_paint_eye(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a eye icon which is crossed out if toggled */
+void dtgtk_cairo_paint_eye_toggle(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a timer icon */
 void dtgtk_cairo_paint_timer(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a filmstrip icon */
@@ -88,6 +92,8 @@ void dtgtk_cairo_paint_showmask(cairo_t *cr,gint x,gint y,gint w,gint h,gint fla
 void dtgtk_cairo_paint_alignment(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint styles icon */
 void dtgtk_cairo_paint_styles(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** paint the grouping icon. */
+void dtgtk_cairo_paint_grouping(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint the preferences wheel. */
 void dtgtk_cairo_paint_preferences(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint and */
@@ -106,6 +112,12 @@ void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
 void dtgtk_cairo_paint_check_mark(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
 /** paint a over/under exposure icon */
 void dtgtk_cairo_paint_overexposed(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+/** paint a landscape rectangle */
+void dtgtk_cairo_paint_rect_landscape(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** paint a portrait rectangle */
+void dtgtk_cairo_paint_rect_portrait(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** paint a zoom icon */
+void dtgtk_cairo_paint_zoom(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
 
 /** paint active modulgroup icon */
 void dtgtk_cairo_paint_modulegroup_active(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
@@ -129,4 +141,6 @@ void dtgtk_cairo_paint_attach_panel(cairo_t *cr, gint x, gint y, gint w, gint h,
 
 #endif
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -58,7 +58,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t*)(piece->data);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
 #endif
   for(int k=0; k<roi_out->height; k++)
   {
@@ -183,7 +183,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
 {
   // create part of the gegl pipeline
   dt_iop_levels_data_t *d =
-      (dt_iop_levels_data_t *)malloc(sizeof(dt_iop_levels_data_t));
+    (dt_iop_levels_data_t *)malloc(sizeof(dt_iop_levels_data_t));
   piece->data = (void *)d;
 }
 
@@ -210,7 +210,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_levels_params_t));
   module->default_params = malloc(sizeof(dt_iop_levels_params_t));
   module->default_enabled = 0;
-  module->priority = 627; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 634; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_levels_params_t);
   module->gui_data = NULL;
   dt_iop_levels_params_t tmp = (dt_iop_levels_params_t)
@@ -272,6 +272,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_levels_motion_notify), self);
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (dt_iop_levels_leave_notify), self);
+  g_signal_connect (G_OBJECT (c->area), "scroll-event",
+                    G_CALLBACK (dt_iop_levels_scroll), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -343,17 +345,17 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   {
     switch(k)
     {
-    case 0:
-      cairo_set_source_rgb(cr, 0, 0, 0);
-      break;
+      case 0:
+        cairo_set_source_rgb(cr, 0, 0, 0);
+        break;
 
-    case 1:
-      cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-      break;
+      case 1:
+        cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+        break;
 
-    default:
-      cairo_set_source_rgb(cr, 1, 1, 1);
-      break;
+      default:
+        cairo_set_source_rgb(cr, 1, 1, 1);
+        break;
     }
 
     cairo_move_to(cr, width*p->levels[k], height+inset-1);
@@ -376,7 +378,7 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
     dt_develop_t *dev = darktable.develop;
     float *hist, hist_max;
     hist = dev->histogram_pre_levels;
-    hist_max = dev->histogram_pre_levels_max;
+    hist_max = dev->histogram_linear?dev->histogram_pre_levels_max:logf(1.0 + dev->histogram_pre_levels_max);
     if(hist_max > 0)
     {
       cairo_save(cr);
@@ -396,6 +398,64 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   cairo_surface_destroy(cst);
   return TRUE;
 }
+
+/**
+ * Move handler_move to new_pos, storing the value in handles,
+ * while keeping new_pos within a valid range
+ * and preserving the ratio between the three handles.
+ *
+ * @param handle_move Handle to move
+ * @param new_pow New position (0..1)
+ * @param levels Pointer to dt_iop_levels_params->levels.
+ * @param drag_start_percentage Ratio between handle 1, 2 and 3.
+ *
+ * @return TRUE if the marker were given a new position. FALSE otherwise.
+ */
+static void dt_iop_levels_move_handle(int handle_move, float new_pos, float *levels, float drag_start_percentage)
+{
+  float min_x = 0;
+  float max_x = 1;
+
+  if ((handle_move < 0) || handle_move > 2)
+    return;
+
+  if (levels == NULL)
+    return;
+
+  // Determining the minimum and maximum bounds for the drag handles
+  switch(handle_move)
+  {
+    case 0:
+      max_x = fminf(levels[2] - (0.05 / drag_start_percentage),
+                    1);
+      max_x = fminf((levels[2] * (1 - drag_start_percentage) - 0.05)
+                    / (1 - drag_start_percentage),
+                    max_x);
+      break;
+
+    case 1:
+      min_x = levels[0] + 0.05;
+      max_x = levels[2] - 0.05;
+      break;
+
+    case 2:
+      min_x = fmaxf((0.05 / drag_start_percentage) + levels[0],
+                    0);
+      min_x = fmaxf((levels[0] * (1 - drag_start_percentage) + 0.05)
+                    / (1 - drag_start_percentage),
+                    min_x);
+      break;
+  }
+
+  levels[handle_move] =
+    fminf(max_x, fmaxf(min_x, new_pos));
+
+  if(handle_move != 1)
+    levels[1] = levels[0] + (drag_start_percentage
+                             * (levels[2] - levels[0]));
+
+}
+
 
 static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
@@ -418,40 +478,7 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
     {
       const float mx = (CLAMP(event->x - inset, 0, width)) / (float)width;
 
-      float min_x = 0;
-      float max_x = 1;
-
-      // Determining the minimum and maximum bounds for the drag handles
-      switch(c->handle_move)
-      {
-      case 0:
-        max_x = fminf(p->levels[2] - (0.05 / c->drag_start_percentage),
-                      1);
-        max_x = fminf((p->levels[2] * (1 - c->drag_start_percentage) - 0.05)
-                      / (1 - c->drag_start_percentage),
-                      max_x);
-        break;
-
-      case 1:
-        min_x = p->levels[0] + 0.05;
-        max_x = p->levels[2] - 0.05;
-        break;
-
-      case 2:
-        min_x = fmaxf((0.05 / c->drag_start_percentage) + p->levels[0],
-                      0);
-        min_x = fmaxf((p->levels[0] * (1 - c->drag_start_percentage) + 0.05)
-                      / (1 - c->drag_start_percentage),
-                      min_x);
-        break;
-      }
-
-      p->levels[c->handle_move] =
-          fminf(max_x, fmaxf(min_x, mx));
-
-      if(c->handle_move != 1)
-        p->levels[1] = p->levels[0] + (c->drag_start_percentage
-                                       * (p->levels[2] - p->levels[0]));
+      dt_iop_levels_move_handle(c->handle_move, mx, p->levels, c->drag_start_percentage);
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
@@ -483,8 +510,25 @@ static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *ev
   if(event->button == 1)
   {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-    dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
-    c->dragging = 1;
+
+    if(event->type == GDK_2BUTTON_PRESS)
+    {
+      // Reset
+      dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
+      memcpy(self->params, self->default_params, self->params_size);
+
+      // Needed in case the user scrolls or drags immediately after a reset,
+      // as drag_start_percentage is only updated when the mouse is moved.
+      c->drag_start_percentage = 0.5;
+
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      gtk_widget_queue_draw(self->widget);
+    }
+    else
+    {
+      dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
+      c->dragging = 1;
+    }
     return TRUE;
   }
   return FALSE;
@@ -502,3 +546,43 @@ static gboolean dt_iop_levels_button_release(GtkWidget *widget, GdkEventButton *
   return FALSE;
 }
 
+static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
+  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
+
+  const float interval = 0.002; // Distance moved for each scroll event
+  gboolean updated = FALSE;
+  float new_position = 0;
+
+  if (c->dragging)
+  {
+    return FALSE;
+  }
+
+  if(event->direction == GDK_SCROLL_UP)
+  {
+    new_position = p->levels[c->handle_move] + interval;
+    updated = TRUE;
+  }
+  else if(event->direction == GDK_SCROLL_DOWN)
+  {
+    new_position = p->levels[c->handle_move] - interval;
+    updated = TRUE;
+  }
+
+  if (updated)
+  {
+    dt_iop_levels_move_handle(c->handle_move, new_position,
+                              p->levels, c->drag_start_percentage);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

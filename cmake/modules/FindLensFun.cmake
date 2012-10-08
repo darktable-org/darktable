@@ -12,11 +12,16 @@
 # Copyright 2010 henrik andersson
 #=============================================================================
 
-find_path(LENSFUN_INCLUDE_DIR lensfun.h)
+SET(LENSFUN_FIND_REQUIRED ${LensFun_FIND_REQUIRED})
+
+find_path(LENSFUN_INCLUDE_DIR lensfun.h 
+	PATHS /usr/include/lensfun
+	HINTS ENV LENSFUN_INCLUDE_DIR)
 mark_as_advanced(LENSFUN_INCLUDE_DIR)
 
 set(LENSFUN_NAMES ${LENSFUN_NAMES} lensfun liblensfun)
-find_library(LENSFUN_LIBRARY NAMES ${LENSFUN_NAMES} )
+find_library(LENSFUN_LIBRARY NAMES ${LENSFUN_NAMES} 
+	HINTS ENV LENSFUN_LIB_DIR)
 mark_as_advanced(LENSFUN_LIBRARY)
 
 # handle the QUIETLY and REQUIRED arguments and set LENSFUN_FOUND to TRUE if

@@ -61,10 +61,12 @@ struct dt_interpolation
  * <li>Sample computation</li>
  * </ul>
  *
- * @param in Input samples
+ * @param in Input image
  * @param itor interpolator to be used
  * @param x X-Coordinate of the requested sample
  * @param y Y-Coordinate of the requested sample
+ * @param width Width of the input image
+ * @param height Width of the input image
  * @param samplestride Stride in bytes for a sample
  * @param linestride Stride in bytes for complete line
  *
@@ -76,6 +78,8 @@ dt_interpolation_compute_sample(
   const float* in,
   const float x,
   const float y,
+  const int width,
+  const int height,
   const int samplestride,
   const int linestride);
 
@@ -88,11 +92,13 @@ dt_interpolation_compute_sample(
  *
  * NB: a pixel is to be four floats big in stride
  *
- * @param in Input samples
- * @param out Output sample
+ * @param in Pointer to the input image
+ * @param out Pointer to the output sample
  * @param itor interpolator to be used
  * @param x X-Coordinate of the requested sample
  * @param y Y-Coordinate of the requested sample
+ * @param width Width of the input image
+ * @param height Width of the input image
  * @param linestride Stride in bytes for complete line
  *
  */
@@ -100,8 +106,11 @@ void
 dt_interpolation_compute_pixel4c(
   const struct dt_interpolation* itor,
   const float* in,
-  const float* out,
-  const float x, const float y,
+  float* out,
+  const float x,
+  const float y,
+  const int width,
+  const int height,
   const int linestride);
 
 /** Get an interpolator from type
@@ -145,3 +154,6 @@ dt_interpolation_resample(
 
 #endif /* INTERPOLATION_H */
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

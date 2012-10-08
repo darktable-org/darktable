@@ -26,7 +26,7 @@ namespace RawSpeed {
 
 PefDecoder::PefDecoder(TiffIFD *rootIFD, FileMap* file) :
     RawDecoder(file), mRootIFD(rootIFD) {
-      decoderVersion = 2;
+      decoderVersion = 3;
 }
 
 PefDecoder::~PefDecoder(void) {
@@ -74,24 +74,26 @@ RawImage PefDecoder::decodeRawInternal() {
     PentaxDecompressor l(mFile, mRaw);
     l.decodePentax(mRootIFD, offsets->getInt(), counts->getInt());
   } catch (IOException &e) {
-    errors.push_back(_strdup(e.what()));
+    mRaw->setError(e.what());
     // Let's ignore it, it may have delivered somewhat useful data.
   }
 
   return mRaw;
 }
 
-void PefDecoder::checkSupport(CameraMetaData *meta) {
+void PefDecoder::checkSupportInternal(CameraMetaData *meta) {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
   if (data.empty())
     ThrowRDE("PEF Support check: Model name found");
+  if (!data[0]->hasEntry(MAKE))
+    ThrowRDE("PEF Support: Make name not found");
 
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
   this->checkCameraSupported(meta, make, model, "");
 }
 
-void PefDecoder::decodeMetaData(CameraMetaData *meta) {
+void PefDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   int iso = 0;
   mRaw->cfa.setCFA(CFA_RED, CFA_GREEN, CFA_GREEN2, CFA_BLUE);
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
@@ -108,6 +110,14 @@ void PefDecoder::decodeMetaData(CameraMetaData *meta) {
     iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
 
   setMetaData(meta, make, model, "", iso);
+
+  // Read black level
+  if (mRootIFD->hasEntryRecursive((TiffTag)0x200)) {
+    TiffEntry *black = mRootIFD->getEntryRecursive((TiffTag)0x200);
+    const ushort16 *levels = black->getShortArray();
+    for (int i = 0; i < 4; i++)
+      mRaw->blackLevelSeparate[i] = levels[i];
+  }
 }
 
 } // namespace RawSpeed

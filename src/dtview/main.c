@@ -40,6 +40,7 @@ int usleep(useconds_t usec);
 int running;
 int width, height;
 uint32_t random_state;
+int32_t repeat;
 int use_random;
 float *pixels;
 uint32_t scramble = 0;
@@ -62,7 +63,8 @@ int init(int argc, char *arg[])
 
   info = SDL_GetVideoInfo( );
 
-  if (info == NULL) {
+  if (info == NULL)
+  {
     fprintf( stderr, "[%s] video info failed: %s\n", arg[0], SDL_GetError());
     exit(1);
   }
@@ -194,6 +196,12 @@ bpp (dt_imageio_module_data_t *data)
   return 32;
 }
 
+static const char*
+mime(dt_imageio_module_data_t *data)
+{
+  return "memory";
+}
+
 static int
 write_image (dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif, int exif_len, int imgid)
 {
@@ -203,7 +211,7 @@ write_image (dt_imageio_module_data_t *data, const char *filename, const void *i
   const float *rd = in;
   memset(pixels, 0, 4*sizeof(float)*width*height);
   const float alpha = 0.2f;
-  for(int i=3;i<4*width*height;i+=4) pixels[i] = 0.2f;
+  for(int i=3; i<4*width*height; i+=4) pixels[i] = 0.2f;
   for(int j=0; j<MIN(data->height, height); j++)
   {
     for(int i=0; i<MIN(data->width, width); i++)
@@ -234,6 +242,7 @@ process_next_image()
   static int counter = 0;
   dt_imageio_module_format_t buf;
   dt_imageio_module_data_t dat;
+  buf.mime = mime;
   buf.bpp = bpp;
   buf.write_image = write_image;
   dat.max_width  = width;
@@ -267,7 +276,7 @@ process_next_image()
   if(id)
   {
     // get image from cache
-    dt_imageio_export(id, "unused", &buf, &dat);
+    dt_imageio_export(id, "unused", &buf, &dat, FALSE);
   }
   return 0;
 }
@@ -275,13 +284,14 @@ process_next_image()
 int main(int argc, char *arg[])
 {
   gtk_init (&argc, &arg);
-  random_state = use_random = 0;
+  repeat = random_state = use_random = 0;
   for(int k=1; k<argc; k++)
   {
     if(!strcmp(arg[k], "--random")) use_random = 1;
+    else if(!strcmp(arg[k], "--repeat")) repeat = -1;
     else if(!strcmp(arg[k], "-h") || !strcmp(arg[k], "--help"))
     {
-      fprintf(stderr, "usage: %s [--random]\n", arg[0]);
+      fprintf(stderr, "usage: %s [--random] [--repeat]\n", arg[0]);
       exit(0);
     }
   }
@@ -294,27 +304,41 @@ int main(int argc, char *arg[])
   running = init(argc, arg);
   srand48(SDL_GetTicks());
   if(use_random) random_state = drand48() * INT_MAX;
+  if(repeat < 0) repeat = random_state;
   while(running)
   {
     pump_events();
     if(!running) break;
-    if(process_next_image()) break;
+    if(process_next_image())
+    {
+      if(repeat >= 0)
+      {
+        // start over
+        random_state = repeat;
+        continue;
+      }
+      break;
+    }
     for(int k=0; k<=18; k++)
     {
       update(k);
       usleep(10000);
     }
-    for(int k=0;k<100;k++)
+    for(int k=0; k<100; k++)
     {
       pump_events();
       if(!running) break;
       usleep(35000);
     }
   }
-  if(oldprofile) {
+  if(oldprofile)
+  {
     dt_conf_set_string("plugins/lighttable/export/iccprofile", oldprofile);
     g_free(oldprofile);
   }
   dtv_shutdown();
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

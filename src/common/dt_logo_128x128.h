@@ -4,11 +4,12 @@
 #pragma align 4 (dt_logo_128x128)
 #endif
 #ifdef __GNUC__
-static const guint8 dt_logo_128x128[] __attribute__ ((__aligned__ (4))) = 
+static const guint8 dt_logo_128x128[] __attribute__ ((__aligned__ (4))) =
 #else
-static const guint8 dt_logo_128x128[] = 
+static const guint8 dt_logo_128x128[] =
 #endif
-{ ""
+{
+  ""
   /* Pixbuf magic (0x47646b50) */
   "GdkP"
   /* length: header (24) + pixel_data (65536) */
@@ -2284,6 +2285,10 @@ static const guint8 dt_logo_128x128[] =
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-  "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"};
+  "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+};
 
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

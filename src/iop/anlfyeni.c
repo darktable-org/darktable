@@ -185,7 +185,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_anlfyeni_params_t));
   module->default_params = malloc(sizeof(dt_iop_anlfyeni_params_t));
   module->default_enabled = 0;
-  module->priority = 705; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 711; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_anlfyeni_params_t);
   module->gui_data = NULL;
   // TODO: check the defaults if there's better ones
@@ -317,4 +317,6 @@ void gui_cleanup  (dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -15,7 +15,7 @@
 # SET(FLICKCURL_LIBS ${_flickcurlCflags})
 
 FIND_PATH(FLICKCURL_INCLUDE_DIR flickcurl.h
-  /usr/include
+  PATHS /usr/include
   /usr/local/include
   /opt/local/include
   HINTS ENV FLICKCURL_INCLUDE_DIR

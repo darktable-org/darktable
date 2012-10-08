@@ -35,7 +35,7 @@ typedef struct dt_develop_tiling_t
   unsigned overhead;
   /** overlap needed between tiles (in pixels) */
   unsigned overlap;
-  /** horizontal and vertical alignment requirement of upper left position 
+  /** horizontal and vertical alignment requirement of upper left position
       of tiles. set to a value of 1 for no alignment, or 2 to account for
       Bayer pattern. */
   unsigned xalign;
@@ -52,9 +52,14 @@ void process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
 void default_tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling);
 
+void tiling_callback_blendop  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling);
+
 void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling);
 
 int dt_tiling_piece_fits_host_memory(const size_t width, const size_t height, const unsigned bpp, const float factor, const size_t overhead);
 
 #endif
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

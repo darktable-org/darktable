@@ -480,7 +480,7 @@ gui_init (dt_imageio_module_storage_t *self)
   ui->label4 = GTK_LABEL(  gtk_label_new( NULL ) );
 
   set_status(ui,_("click login button to start"), "#ffffff");
-  
+
   ui->label5 = GTK_LABEL(  gtk_label_new( _("title") ) );
   ui->label6 = GTK_LABEL(  gtk_label_new( _("summary") ) );
   gtk_misc_set_alignment(GTK_MISC(ui->label1),      0.0, 0.5);
@@ -534,7 +534,7 @@ gui_init (dt_imageio_module_storage_t *self)
 
   ui->dtbutton1 = DTGTK_BUTTON( dtgtk_button_new(dtgtk_cairo_paint_refresh,0) );
   g_object_set(G_OBJECT(ui->dtbutton1), "tooltip-text", _("refresh album list"), (char *)NULL);
-  
+
   ui->button = GTK_BUTTON(gtk_button_new_with_label(_("login")));
   g_object_set(G_OBJECT(ui->button), "tooltip-text", _("Flickr login"), (char *)NULL);
 
@@ -594,7 +594,7 @@ gui_init (dt_imageio_module_storage_t *self)
   g_signal_connect(G_OBJECT(ui->comboBox1), "changed", G_CALLBACK(flickr_album_changed), (gpointer)ui);
 
   /**
- dont' populate the combo on startup, save 3 second
+  dont' populate the combo on startup, save 3 second
 
   // If username and password is stored, let's populate the combo
   if( _username && _password )
@@ -612,6 +612,7 @@ gui_init (dt_imageio_module_storage_t *self)
 void
 gui_cleanup (dt_imageio_module_storage_t *self)
 {
+        g_free(self->gui_data);
 }
 
 void
@@ -620,7 +621,8 @@ gui_reset (dt_imageio_module_storage_t *self)
 }
 
 int
-store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
+store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
+       const int num, const int total, const gboolean high_quality)
 {
   gint result=1;
   dt_storage_flickr_params_t *p=(dt_storage_flickr_params_t *)sdata;
@@ -670,7 +672,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   }
   dt_image_cache_read_release(darktable.image_cache, img);
 
-  if(dt_imageio_export(imgid, fname, format, fdata) != 0)
+  if(dt_imageio_export(imgid, fname, format, fdata, high_quality) != 0)
   {
     fprintf(stderr, "[imageio_storage_flickr] could not export to file: `%s'!\n", fname);
     dt_control_log(_("could not export to file `%s'!"), fname);
@@ -883,4 +885,6 @@ free_params(dt_imageio_module_storage_t *self, void *params)
   free(params);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

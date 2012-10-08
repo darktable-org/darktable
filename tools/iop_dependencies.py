@@ -45,9 +45,9 @@ def add_edges(gr):
   gr.add_edge(('demosaic', 'rawdenoise'))
   gr.add_edge(('demosaic', 'cacorrect'))
   
-  # cacorrect works better on denoised data:
-  gr.add_edge(('cacorrect', 'hotpixels'))
-  gr.add_edge(('cacorrect', 'rawdenoise'))
+  # cacorrect works better on undenoised data:
+  gr.add_edge(('hotpixels', 'cacorrect'))
+  gr.add_edge(('rawdenoise', 'cacorrect'))
   
   # all these need white balanced input:
   gr.add_edge(('rawdenoise', 'temperature'))
@@ -108,6 +108,7 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'nlmeans'))
   gr.add_edge(('colorout', 'colortransfer'))
   gr.add_edge(('colorout', 'atrous'))
+  gr.add_edge(('colorout', 'bilat'))
   gr.add_edge(('colorout', 'colorzones'))
   gr.add_edge(('colorout', 'lowlight'))
   gr.add_edge(('colorout', 'monochrome'))
@@ -128,6 +129,7 @@ def add_edges(gr):
   gr.add_edge(('nlmeans', 'colorin'))
   gr.add_edge(('colortransfer', 'colorin'))
   gr.add_edge(('atrous', 'colorin'))
+  gr.add_edge(('bilat', 'colorin'))
   gr.add_edge(('colorzones', 'colorin'))
   gr.add_edge(('lowlight', 'colorin'))
   gr.add_edge(('monochrome', 'colorin'))
@@ -169,6 +171,7 @@ def add_edges(gr):
   gr.add_edge(('colorcorrection', 'monochrome'))
   
   # want to enhance detail/local contrast/sharpen denoised images:
+  gr.add_edge(('bilat', 'nlmeans'))
   gr.add_edge(('atrous', 'nlmeans'))
   gr.add_edge(('sharpen', 'nlmeans'))
   gr.add_edge(('anlfyeni', 'nlmeans'))
@@ -288,6 +291,7 @@ gr.add_nodes([
 'atrous',
 'basecurve',
 'bilateral',
+'bilat',
 'bloom',
 'borders',
 'cacorrect',

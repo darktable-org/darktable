@@ -19,7 +19,7 @@
 #define DT_IOP_LENS_H
 
 #include "develop/imageop.h"
-#include "dtgtk/slider.h"
+#include "bauhaus/bauhaus.h"
 #include <lensfun.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -45,17 +45,12 @@ typedef struct dt_iop_lensfun_gui_data_t
 {
   const lfCamera *camera;
   GtkWidget *lens_param_box;
-  GtkComboBoxEntry *cbe[3];
+  GtkWidget *cbe[3];
   GtkButton *camera_model;
   GtkMenu *camera_menu;
   GtkButton *lens_model;
   GtkMenu *lens_menu;
-  GtkComboBox *target_geom;
-  GtkCheckButton *reverse;
-  GtkDarktableSlider *tca_r;
-  GtkDarktableSlider *tca_b;
-  GtkDarktableSlider *scale;
-  GtkWidget *auto_scale_button;
+  GtkWidget *target_geom, *reverse, *tca_r, *tca_b, *scale;
   GtkWidget *find_lens_button;
   GtkWidget *find_camera_button;
 }
@@ -110,3 +105,6 @@ void gui_cleanup  (struct dt_iop_module_t *self);
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

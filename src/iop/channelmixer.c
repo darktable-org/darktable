@@ -139,7 +139,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_channelmixer_gui_data_t *g =
-      (dt_iop_channelmixer_gui_data_t*)self->gui_data;
+    (dt_iop_channelmixer_gui_data_t*)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale2));
@@ -402,7 +402,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_channelmixer_params_t));
   module->default_params = malloc(sizeof(dt_iop_channelmixer_params_t));
   module->default_enabled = 0;
-  module->priority = 823; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 826; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_channelmixer_params_t);
   module->gui_data = NULL;
   dt_iop_channelmixer_params_t tmp = (dt_iop_channelmixer_params_t)
@@ -433,7 +433,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* output */
   g->combo1 = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->combo1, "destination");
+  dt_bauhaus_widget_set_label(g->combo1, _("destination"));
   dt_bauhaus_combobox_add(g->combo1,_("hue"));
   dt_bauhaus_combobox_add(g->combo1,_("saturation"));
   dt_bauhaus_combobox_add(g->combo1,_("lightness"));
@@ -543,4 +543,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

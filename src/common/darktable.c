@@ -56,7 +56,7 @@
 #include <unistd.h>
 #include <locale.h>
 
-#if !defined(__APPLE__) && !defined(__FreeBSD__)
+#if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__DragonFly__)
 #include <malloc.h>
 #endif
 #ifdef __APPLE__
@@ -85,6 +85,7 @@ static int usage(const char *argv0)
   printf(" [--tmpdir <tmp directory>]");
   printf(" [--configdir <user config directory>]");
   printf(" [--cachedir <user config directory>]");
+  printf(" [--localedir <locale directory>]");
   printf("\n");
   return 1;
 }
@@ -116,12 +117,14 @@ void _dt_sigsegv_handler(int param)
   gchar *name_used;
   int fout;
   gboolean delete_file = FALSE;
+  char datadir[DT_MAX_PATH_LEN];
 
   if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
     fout = STDOUT_FILENO; // just print everything to stdout
 
   dprintf(fout, "this is %s reporting a segfault:\n\n", PACKAGE_STRING);
-  gchar *command = g_strdup_printf("gdb %s %d -batch -x %s/gdb_commands", darktable.progname, (int)getpid(), DARKTABLE_DATADIR);
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  gchar *command = g_strdup_printf("gdb %s %d -batch -x %s/gdb_commands", darktable.progname, (int)getpid(), datadir);
 
   if((fd = popen(command, "r")) != NULL)
   {
@@ -166,7 +169,7 @@ void _dt_sigill_handler(int param)
 {
   fprintf(stderr, "[this doesn't seem to work]\n");
   GtkWidget *dlg = gtk_message_dialog_new(NULL,GTK_DIALOG_MODAL,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_(
-"darktable has trapped an illegal instruction which probably means that \
+      "darktable has trapped an illegal instruction which probably means that \
 an invalid processor optimized codepath is used for your cpu, please try reproduce the crash running 'gdb darktable' from \
 the console and post the backtrace log to mailing list with information about your CPU and where you got the package from."));
   gtk_dialog_run(GTK_DIALOG(dlg));
@@ -192,8 +195,8 @@ the console and post the backtrace log to mailing list with information about yo
 #endif
 
 
-static 
-void dt_check_cpu(int argc,char **argv) 
+static
+void dt_check_cpu(int argc,char **argv)
 {
   /* hook up SIGILL handler */
   _dt_sigill_old_handler = signal(SIGILL,&_dt_sigill_handler);
@@ -201,32 +204,32 @@ void dt_check_cpu(int argc,char **argv)
   /* call cpuid for  SSE level */
   int ax,bx,cx,dx;
   cpuid(0x1,ax,bx,cx,dx);
-  
+
   ax = bx = 0;
-  char message[512]={0};
+  char message[512]= {0};
   strcat(message,_("SIMD extensions found: "));
   if((cx & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE3))
     strcat(message,"SSE3 ");
   if( ((dx >> 26) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE2))
     strcat(message,"SSE2 ");
   if (((dx >> 25) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE))
-   strcat(message,"SSE ");
+    strcat(message,"SSE ");
   if (!darktable.cpu_flags)
     strcat(message,"none");
- 
+
   /* for now, bail out if SSE2 is not availble */
   if(!(darktable.cpu_flags & DT_CPU_FLAG_SSE2))
   {
     gtk_init (&argc, &argv);
-    
+
     GtkWidget *dlg = gtk_message_dialog_new(NULL,GTK_DIALOG_MODAL,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_(
-"darktable is very cpu intensive and uses SSE2 SIMD instructions \
+        "darktable is very cpu intensive and uses SSE2 SIMD instructions \
 for heavy calculations. This gives a better user experience but also defines a minimum \
 processor requirement.\n\nThe processor in YOUR system does NOT support SSE2. \
 darktable will now close down.\n\n%s"),message);
-    
+
     gtk_dialog_run(GTK_DIALOG(dlg));
-    
+
     exit(11);
   }
 }
@@ -251,13 +254,13 @@ gboolean dt_supported_image(const gchar *filename)
 
 static void strip_semicolons_from_keymap(const char* path)
 {
-  char pathtmp[1024];
+  char pathtmp[DT_MAX_PATH_LEN];
   FILE *fin = fopen(path, "r");
   FILE *fout;
   int i;
   int c = '\0';
 
-  snprintf(pathtmp, 1024, "%s_tmp", path);
+  snprintf(pathtmp, DT_MAX_PATH_LEN, "%s_tmp", path);
   fout = fopen(pathtmp, "w");
 
   // First ignoring the first three lines
@@ -277,7 +280,8 @@ static void strip_semicolons_from_keymap(const char* path)
       c = fgetc(fin);
       if(c != EOF)
         fputc(c, fout);
-    }while(c != '\n' && c != EOF);
+    }
+    while(c != '\n' && c != EOF);
   }
 
   fclose(fin);
@@ -285,6 +289,94 @@ static void strip_semicolons_from_keymap(const char* path)
   g_file_delete(g_file_new_for_path(path), NULL, NULL);
   g_file_move(g_file_new_for_path(pathtmp), g_file_new_for_path(path), 0,
               NULL, NULL, NULL, NULL);
+}
+
+int dt_load_from_string(const gchar* input, gboolean open_image_in_dr)
+{
+  int id = 0;
+  if(input == NULL || input[0] == '\0')
+    return 0;
+
+  char* filename;
+  if(g_str_has_prefix(input, "file://")) // in this case we should take care of %XX encodings in the string (for example %20 = ' ')
+  {
+    input += strlen("file://");
+    filename = g_uri_unescape_string(input, NULL);
+  }
+  else
+    filename = g_strdup(input);
+
+  if(g_path_is_absolute(filename) == FALSE)
+  {
+    char* current_dir = g_get_current_dir();
+    char* tmp_filename = g_build_filename(current_dir, filename, NULL);
+    g_free(filename);
+    filename = (char*)g_malloc(sizeof(char)*MAXPATHLEN);
+    if(realpath(tmp_filename, filename) == NULL)
+    {
+      dt_control_log(_("found strange path `%s'"), tmp_filename);
+      g_free(current_dir);
+      g_free(tmp_filename);
+      g_free(filename);
+      return 0;
+    }
+    g_free(current_dir);
+    g_free(tmp_filename);
+  }
+
+  if(g_file_test(filename, G_FILE_TEST_IS_DIR))
+  {
+    // import a directory into a film roll
+    unsigned int last_char = strlen(filename)-1;
+    if(filename[last_char] == '/')
+      filename[last_char] = '\0';
+    id = dt_film_import(filename);
+    if(id)
+    {
+      dt_film_open(id);
+      dt_ctl_switch_mode_to(DT_LIBRARY);
+    }
+    else
+    {
+      dt_control_log(_("error loading directory `%s'"), filename);
+    }
+  }
+  else
+  {
+    // import a single image
+    gchar *directory = g_path_get_dirname((const gchar *)filename);
+    dt_film_t film;
+    const int filmid = dt_film_new(&film, directory);
+    id = dt_image_import(filmid, filename, TRUE);
+    g_free (directory);
+    if(id)
+    {
+      dt_film_open(filmid);
+      // make sure buffers are loaded (load full for testing)
+      dt_mipmap_buffer_t buf;
+      dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
+      if(!buf.buf)
+      {
+        id = 0;
+        dt_control_log(_("file `%s' has unknown format!"), filename);
+      }
+      else
+      {
+        dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+        if(open_image_in_dr)
+        {
+          DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
+          dt_ctl_switch_mode_to(DT_DEVELOP);
+        }
+      }
+    }
+    else
+    {
+      dt_control_log(_("error loading file `%s'"), filename);
+    }
+  }
+  g_free(filename);
+  return id;
 }
 
 int dt_init(int argc, char *argv[], const int init_gui)
@@ -300,21 +392,21 @@ int dt_init(int argc, char *argv[], const int init_gui)
 #endif
 
 #ifdef M_MMAP_THRESHOLD
-  mallopt(M_MMAP_THRESHOLD,128*1024) ; /* use mmap() for large allocations */   
+  mallopt(M_MMAP_THRESHOLD,128*1024) ; /* use mmap() for large allocations */
 #endif
 
   bindtextdomain (GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
 
-  
+
   // init all pointers to 0:
   memset(&darktable, 0, sizeof(darktable_t));
 
   darktable.progname = argv[0];
-   
+
   // database
-  gchar *dbfilenameFromCommand = NULL;
+  gchar *dbfilename_from_command = NULL;
   char *datadirFromCommand = NULL;
   char *moduledirFromCommand = NULL;
   char *tmpdirFromCommand = NULL;
@@ -326,12 +418,16 @@ int dt_init(int argc, char *argv[], const int init_gui)
   darktable.num_openmp_threads = omp_get_num_procs();
 #endif
   darktable.unmuted = 0;
-  char *image_to_load = NULL;
+  GSList *images_to_load = NULL;
   for(int k=1; k<argc; k++)
   {
     if(argv[k][0] == '-')
     {
       if(!strcmp(argv[k], "--help"))
+      {
+        return usage(argv[0]);
+      }
+      if(!strcmp(argv[k], "-h"))
       {
         return usage(argv[0]);
       }
@@ -342,7 +438,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
       }
       else if(!strcmp(argv[k], "--library"))
       {
-        dbfilenameFromCommand = argv[++k];
+        dbfilename_from_command = argv[++k];
       }
       else if(!strcmp(argv[k], "--datadir"))
       {
@@ -363,6 +459,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
       else if(!strcmp(argv[k], "--cachedir"))
       {
         cachedirFromCommand = argv[++k];
+      }
+      else if(!strcmp(argv[k], "--localedir"))
+      {
+        bindtextdomain (GETTEXT_PACKAGE, argv[++k]);
       }
       else if(argv[k][1] == 'd' && argc > k+1)
       {
@@ -389,7 +489,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
     }
     else
     {
-      image_to_load = argv[k];
+      images_to_load = g_slist_append(images_to_load, argv[k]);
     }
   }
 
@@ -404,9 +504,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
 #endif
   dt_loc_init_datadir(datadirFromCommand);
   dt_loc_init_plugindir(moduledirFromCommand);
-  if(dt_loc_init_tmp_dir(tmpdirFromCommand)) {
-	  printf(_("ERROR : invalid temporary directory : %s\n"),darktable.tmpdir);
-	  return usage(argv[0]);
+  if(dt_loc_init_tmp_dir(tmpdirFromCommand))
+  {
+    printf(_("ERROR : invalid temporary directory : %s\n"),darktable.tmpdir);
+    return usage(argv[0]);
   }
   dt_loc_init_user_config_dir(configdirFromCommand);
   dt_loc_init_user_cache_dir(cachedirFromCommand);
@@ -420,16 +521,20 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // dt_check_cpu(argc,argv);
 
 #ifdef HAVE_GEGL
-  (void)setenv("GEGL_PATH", DARKTABLE_DATADIR"/gegl:/usr/lib/gegl-0.0", 1);
+  char geglpath[DT_MAX_PATH_LEN];
+  char datadir[DT_MAX_PATH_LEN];
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  snprintf(geglpath, DT_MAX_PATH_LEN, "%s/gegl:/usr/lib/gegl-0.0", datadir);
+  (void)setenv("GEGL_PATH", geglpath, 1);
   gegl_init(&argc, &argv);
 #endif
 
   // thread-safe init:
   dt_exif_init();
-  char datadir[1024];
-  dt_loc_get_user_config_dir (datadir,1024);
-  char filename[1024];
-  snprintf(filename, 1024, "%s/darktablerc", datadir);
+  char datadir[DT_MAX_PATH_LEN];
+  dt_loc_get_user_config_dir (datadir,DT_MAX_PATH_LEN);
+  char filename[DT_MAX_PATH_LEN];
+  snprintf(filename, DT_MAX_PATH_LEN, "%s/darktablerc", datadir);
 
   // intialize the config backend. this needs to be done first...
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
@@ -445,7 +550,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   }
 
   // initialize the database
-  darktable.db = dt_database_init(dbfilenameFromCommand);
+  darktable.db = dt_database_init(dbfilename_from_command);
 
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
@@ -481,14 +586,12 @@ int dt_init(int argc, char *argv[], const int init_gui)
   }
   else
   {
-#if 0 // TODO: move int dt_database_t 
     // this is in memory, so schema can't exist yet.
-    if(!strcmp(dbfilename, ":memory:"))
+    if(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"))
     {
       dt_control_create_database_schema();
       dt_gui_presets_init(); // also init preset db schema.
     }
-#endif
     darktable.control->running = 0;
     darktable.control->accelerators = NULL;
     dt_pthread_mutex_init(&darktable.control->run_mutex, NULL);
@@ -551,112 +654,50 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
     dt_control_load_config(darktable.control);
     g_strlcpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
-
-    darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
-    memset(darktable.imageio, 0, sizeof(dt_imageio_t));
-    dt_imageio_init(darktable.imageio);
   }
+  darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
+  memset(darktable.imageio, 0, sizeof(dt_imageio_t));
+  dt_imageio_init(darktable.imageio);
 
   if(init_gui)
   {
     // Loading the keybindings
-    char keyfile[1024];
+    char keyfile[DT_MAX_PATH_LEN];
 
     // First dump the default keymapping
-    snprintf(keyfile, 1024, "%s/keyboardrc_default", datadir);
+    snprintf(keyfile, DT_MAX_PATH_LEN, "%s/keyboardrc_default", datadir);
     gtk_accel_map_save(keyfile);
 
     // Removing extraneous semi-colons from the default keymap
     strip_semicolons_from_keymap(keyfile);
 
     // Then load any modified keys if available
-    snprintf(keyfile, 1024, "%s/keyboardrc", datadir);
+    snprintf(keyfile, DT_MAX_PATH_LEN, "%s/keyboardrc", datadir);
     if(g_file_test(keyfile, G_FILE_TEST_EXISTS))
       gtk_accel_map_load(keyfile);
     else
       gtk_accel_map_save(keyfile); // Save the default keymap if none is present
-  }
 
-  int id = 0;
-  if(init_gui && image_to_load)
-  {
-    char* filename;
-    if(g_str_has_prefix(image_to_load, "file://"))
-      image_to_load += strlen("file://");
-    if(g_path_is_absolute(image_to_load) == FALSE)
+    // load image(s) specified on cmdline
+    if (images_to_load)
     {
-      char* current_dir = g_get_current_dir();
-      char* tmp_filename = g_build_filename(current_dir, image_to_load, NULL);
-      filename = (char*)g_malloc(sizeof(char)*MAXPATHLEN);
-      if(realpath(tmp_filename, filename) == NULL)
+      // If only one image is listed, attempt to load it in darkroom
+      gboolean load_in_dr = (g_slist_next(images_to_load) == NULL);
+      GSList *p = images_to_load;
+
+      while (p != NULL)
       {
-        dt_control_log(_("found strange path `%s'"), tmp_filename);
-        g_free(current_dir);
-        g_free(tmp_filename);
-        g_free(filename);
-        return 0;
+	dt_load_from_string((gchar*)p->data, load_in_dr);
+	p = g_slist_next(p);
       }
-      g_free(current_dir);
-      g_free(tmp_filename);
+
+      if (!load_in_dr)
+	dt_ctl_switch_mode_to(DT_LIBRARY);
+
+      g_slist_free(images_to_load);
     }
     else
-    {
-      filename = g_strdup(image_to_load);
-    }
-
-    if(g_file_test(filename, G_FILE_TEST_IS_DIR))
-    {
-      // import a directory into a film roll
-      unsigned int last_char = strlen(filename)-1;
-      if(filename[last_char] == '/')
-        filename[last_char] = '\0';
-      id = dt_film_import(filename);
-      if(id)
-      {
-        dt_film_open(id);
-        dt_ctl_switch_mode_to(DT_LIBRARY);
-      }
-      else
-      {
-        dt_control_log(_("error loading directory `%s'"), filename);
-      }
-    }
-    else
-    {
-      // import a single image
-      gchar *directory = g_path_get_dirname((const gchar *)filename);
-      dt_film_t film;
-      const int filmid = dt_film_new(&film, directory);
-      id = dt_image_import(filmid, filename, TRUE);
-      g_free (directory);
-      if(id)
-      {
-        dt_film_open(filmid);
-        // make sure buffers are loaded (load full for testing)
-        dt_mipmap_buffer_t buf;
-        dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
-        if(!buf.buf)
-        {
-          id = 0;
-          dt_control_log(_("file `%s' has unknown format!"), filename);
-        }
-        else
-        {
-          dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-          DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
-          dt_ctl_switch_mode_to(DT_DEVELOP);
-        }
-      }
-      else
-      {
-        dt_control_log(_("error loading file `%s'"), filename);
-      }
-    }
-    g_free(filename);
-  }
-  if(init_gui && !id)
-  {
-    dt_ctl_switch_mode_to(DT_LIBRARY);
+      dt_ctl_switch_mode_to(DT_LIBRARY);
   }
 
   /* start the indexer background job */
@@ -718,7 +759,7 @@ void dt_cleanup()
   dt_database_destroy(darktable.db);
 
   dt_bauhaus_cleanup();
- 
+
   dt_pthread_mutex_destroy(&(darktable.db_insert));
   dt_pthread_mutex_destroy(&(darktable.plugin_threadsafe));
 
@@ -810,4 +851,6 @@ void dt_configure_defaults()
   }
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

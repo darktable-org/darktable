@@ -54,4 +54,9 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
 int dt_imageio_jpeg_read_header(const char *filename, dt_imageio_jpeg_t *jpg);
 /** reads the jpeg to the (sufficiently allocated) buffer, closes file. */
 int dt_imageio_jpeg_read(dt_imageio_jpeg_t *jpg, uint8_t *out);
+/** reads the color profile attached to the jpeg, closes file. */
+int dt_imageio_jpeg_read_profile(dt_imageio_jpeg_t *jpg, uint8_t **out);
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

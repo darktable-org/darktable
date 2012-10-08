@@ -14,7 +14,7 @@ style "clearlooks-default"
   GtkScrollbar::shadow-type = GTK_SHADOW_NONE
   GtkMenuItem::selected_shadow_type = out
   GtkWidget::interior_focus = 1
-  GtkWidget::focus-line-width = 0
+  GtkWidget::focus-line-width = 1
   GtkScrollbar::focus_padding = 0
   GtkScrolledWindow::focus_padding = 0
   GtkButton::default_border = { 0, 0, 0, 0 }
@@ -39,11 +39,11 @@ style "clearlooks-default"
 
   xthickness = 2
   ythickness = 2
-  fg[NORMAL]        = "#CACAC6"
-  fg[ACTIVE]        = "#CACAC6"
+  fg[NORMAL]        = "#cacaca"
+  fg[ACTIVE]        = "#cacaca"
   fg[INSENSITIVE]   = "#000000"
-  fg[PRELIGHT]      = "#E2E2E2"
-  fg[SELECTED]      = "#E2E2E2"
+  fg[PRELIGHT]      = "#cacaca"
+  fg[SELECTED]      = "#cacaca"
 
   bg[ACTIVE]        = "#494949"
   bg[NORMAL]        = "#212121" 
@@ -204,7 +204,7 @@ style "clearlooks-header" = "clearlooks-default"
   fg[NORMAL]      = "#7f7f7f"
   fg[ACTIVE]      = "#B0B0B0"
   fg[PRELIGHT]    = "#e2e2e2"
-  font_name = "Sans bold 9"
+  font_name = "Sans bold ${GTKRC_HEADER_FONT_SIZE}"
 }
 
 style "clearlooks-plugin" = "clearlooks-default"

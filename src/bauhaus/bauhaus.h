@@ -58,6 +58,7 @@ typedef struct dt_bauhaus_slider_data_t
   float defpos;   // default value (normalized)
   float min, max; // min and max range
   float scale;    // step width for loupe mode
+  int   digits;   // how many decimals to round to
 
   float grad_col[10][3]; // colors for gradient slider
   int   grad_cnt;        // how many stops
@@ -93,6 +94,8 @@ dt_bauhaus_data_t;
 typedef struct dt_bauhaus_widget_t DtBauhausWidget;
 typedef struct dt_bauhaus_widget_class_t DtBauhausWidgetClass;
 
+typedef void (* dt_bauhaus_quad_paint_f)(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+
 // our new widget and its private members, inheriting from drawing area:
 typedef struct dt_bauhaus_widget_t
 {
@@ -103,6 +106,12 @@ typedef struct dt_bauhaus_widget_t
   dt_iop_module_t *module;
   // label text, short
   char label[256];
+  // callback function to draw the quad icon
+  dt_bauhaus_quad_paint_f quad_paint;
+  // minimal modifiers for paint function.
+  int quad_paint_flags;
+  // quad is a toggle button?
+  int quad_toggle;
 
   // goes last, might extend past the end:
   dt_bauhaus_data_t data;
@@ -120,6 +129,7 @@ dt_bauhaus_widget_class_t;
 enum
 {
   DT_BAUHAUS_VALUE_CHANGED_SIGNAL,
+  DT_BAUHAUS_QUAD_PRESSED_SIGNAL,
   DT_BAUHAUS_LAST_SIGNAL
 };
 
@@ -130,13 +140,25 @@ typedef struct dt_bauhaus_t
   GtkWidget *popup_area;
   // are set by the motion notification, to be used during drawing.
   float mouse_x, mouse_y;
+  // time when the popup window was opened. this is sortof a hack to
+  // detect `double clicks between windows' to reset the combobox.
+  double opentime;
   // pointer position when popup window is closed
   float end_mouse_x, end_mouse_y;
+  // used to determine whether the user crossed the line already.
+  int change_active;
+  float mouse_line_distance;
   // key input buffer
   char keys[64];
   int keys_cnt;
   // our custom signals
   guint signals[DT_BAUHAUS_LAST_SIGNAL];
+
+  // vim-style keyboard interfacing/scripting stuff:
+  GHashTable *keymap;   // hashtable translating control name -> bauhaus widget ptr
+  GList      *key_mod;  // for autocomplete, before the point: module.
+  GList      *key_val;  // for autocomplete, after the point: .value
+  char key_history[64][256];
 
   // appearance relevant stuff:
   // sizes and fonts:
@@ -149,6 +171,7 @@ typedef struct dt_bauhaus_t
   float value_font_size;// percent of line height to fill with font for values
   char label_font[256]; // font to draw the label with
   char value_font[256]; // font to draw the value with
+  PangoFontDescription *pango_font_desc; // no need to recreate this for every string we want to print
 
   // colors:
   float bg_normal;      // background without focus
@@ -163,7 +186,7 @@ dt_bauhaus_t;
 static inline int
 dt_bauhaus_get_widget_space()
 {
-  return darktable.bauhaus->scale * darktable.bauhaus->widget_space;
+  return darktable.bauhaus->widget_space;
 }
 #define DT_BAUHAUS_SPACE dt_bauhaus_get_widget_space()
 
@@ -172,7 +195,12 @@ void dt_bauhaus_init();
 void dt_bauhaus_cleanup();
 
 // common functions:
+// set the label text:
 void dt_bauhaus_widget_set_label(GtkWidget *w, const char *text);
+// attach a custom painted quad to the space at the right side (overwriting the default icon if any):
+void dt_bauhaus_widget_set_quad_paint(GtkWidget *w, dt_bauhaus_quad_paint_f f, int paint_flags);
+// make this quad a toggle button:
+void dt_bauhaus_widget_set_quad_toggle(GtkWidget *w, int toggle);
 
 // slider:
 GtkWidget* dt_bauhaus_slider_new(dt_iop_module_t *self);
@@ -193,5 +221,16 @@ void dt_bauhaus_combobox_set_editable(GtkWidget *w, int editable);
 const char* dt_bauhaus_combobox_get_text(GtkWidget *w);
 void dt_bauhaus_combobox_set_text(GtkWidget *w, const char *text);
 int  dt_bauhaus_combobox_get(GtkWidget *w);
+const GList* dt_bauhaus_combobox_get_labels(GtkWidget *w);
+void dt_bauhaus_combobox_clear(GtkWidget *w);
+
+// key accel parsing:
+// execute a line of input
+void dt_bauhaus_vimkey_exec(const char *input);
+// give autocomplete suggestions
+GList* dt_bauhaus_vimkey_complete(const char *input);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

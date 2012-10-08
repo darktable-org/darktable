@@ -37,7 +37,7 @@ gchar *dt_util_dstrcat(gchar *str,const gchar *format, ... )
   va_start(args, format);
   int clen = str ? strlen(str) : 0;
   int alen = g_vsnprintf(NULL, 0, format, args);
-  int nsize = alen + clen + 1; 
+  int nsize = alen + clen + 1;
 
   /* realloc for new string */
   ns = g_realloc(str, nsize);
@@ -50,7 +50,7 @@ gchar *dt_util_dstrcat(gchar *str,const gchar *format, ... )
   va_end(args);
 
   ns[nsize-1]='\0';
-  
+
   return ns;
 }
 
@@ -145,14 +145,16 @@ gchar* dt_util_glist_to_str(const gchar* separator, GList * items, const unsigne
 
 gchar* dt_util_fix_path(const gchar* path)
 {
-  if (path == NULL || strlen(path) == 0) {
+  if (path == NULL || strlen(path) == 0)
+  {
     return NULL;
   }
 
   gchar* rpath = NULL;
 
   /* check if path has a prepended tilde */
-  if (path[0] == '~') {
+  if (path[0] == '~')
+  {
     int len    = strlen(path);
     char* user = NULL;
     int off    = 1;
@@ -164,8 +166,10 @@ gchar* dt_util_fix_path(const gchar* path)
      * e.g.: ~foo will be evaluated as the home directory of the
      * user foo */
 
-    if (len > 1 && path[1] != '/') {
-      while (path[off] != '\0' && path[off] != '/') {
+    if (len > 1 && path[1] != '/')
+    {
+      while (path[off] != '\0' && path[off] != '/')
+      {
         ++off;
       }
 
@@ -175,15 +179,20 @@ gchar* dt_util_fix_path(const gchar* path)
     gchar* home_path = dt_loc_get_home_dir(user);
     g_free(user);
 
-    if (home_path == NULL) {
+    if (home_path == NULL)
+    {
       return g_strdup(path);
     }
 
     rpath = g_build_filename(home_path, path + off, NULL);
-  } else {
+  }
+  else
+  {
     rpath = g_strdup(path);
   }
 
   return rpath;
 }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

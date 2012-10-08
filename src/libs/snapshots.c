@@ -39,7 +39,7 @@ typedef struct dt_lib_snapshot_t
   float zoom_x, zoom_y, zoom_scale;
   int32_t zoom, closeup;
   char filename[512];
-} 
+}
 dt_lib_snapshot_t;
 
 
@@ -131,7 +131,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     double xpt = xp*0.01;
     double ypt = yp*0.01;
     gboolean mouse_over_control = d->vertical ? ((xp > d->vp_xpointer-xpt && xp < d->vp_xpointer+xpt)?TRUE:FALSE) :
-      ((yp > d->vp_ypointer-ypt && yp < d->vp_ypointer+ypt)?TRUE:FALSE);
+                                    ((yp > d->vp_ypointer-ypt && yp < d->vp_ypointer+ypt)?TRUE:FALSE);
 
     /* set x,y,w,h of surface depending on split align and invert */
     double x = d->vertical ? (d->inverted?width*d->vp_xpointer:0) : 0;
@@ -145,18 +145,18 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     cairo_fill(cri);
 
     /* draw the split line */
-    cairo_set_source_rgb(cri, .7, .7, .7);        
+    cairo_set_source_rgb(cri, .7, .7, .7);
     cairo_set_line_width(cri, (mouse_over_control ? 2.0 : 0.5) );
 
     if(d->vertical)
-    {
+  {
       cairo_move_to(cri, width*d->vp_xpointer, 0.0f);
       cairo_line_to(cri, width*d->vp_xpointer, height);
     }
     else
     {
       cairo_move_to(cri, 0.0f,  height*d->vp_ypointer);
-      cairo_line_to(cri, width, height*d->vp_ypointer); 
+      cairo_line_to(cri, width, height*d->vp_ypointer);
     }
     cairo_stroke(cri);
 
@@ -166,9 +166,9 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
       cairo_set_line_width(cri,0.5);
       double s = width*HANDLE_SIZE;
       dtgtk_cairo_paint_refresh(cri,
-          (d->vertical ? width*d->vp_xpointer : width*0.5)-(s*0.5),
-          (d->vertical ? height*0.5 : height*d->vp_ypointer)-(s*0.5),
-          s,s,d->vertical?1:0);
+                                (d->vertical ? width*d->vp_xpointer : width*0.5)-(s*0.5),
+                                (d->vertical ? height*0.5 : height*d->vp_ypointer)-(s*0.5),
+                                s,s,d->vertical?1:0);
     }
   }
 }
@@ -180,7 +180,7 @@ int button_released(struct dt_lib_module_t *self, double x, double y, int which,
   {
     d->dragging = FALSE;
     return 1;
-  } 
+  }
   return 0;
 }
 
@@ -206,10 +206,10 @@ int button_pressed (struct dt_lib_module_t *self, double x, double y, int which,
     /* do the split rotating */
     double hhs = HANDLE_SIZE*0.5;
     if (which==1 && (
-          ((d->vertical && xp > d->vp_xpointer-hhs && xp <  d->vp_xpointer+hhs) && 
+          ((d->vertical && xp > d->vp_xpointer-hhs && xp <  d->vp_xpointer+hhs) &&
            yp>0.5-hhs && yp<0.5+hhs) ||
           ((yp > d->vp_ypointer-hhs && yp < d->vp_ypointer+hhs) && xp>0.5-hhs && xp<0.5+hhs)
-          ))
+        ))
     {
       /* let's rotate */
       _lib_snapshot_rotation_cnt++;
@@ -223,11 +223,11 @@ int button_pressed (struct dt_lib_module_t *self, double x, double y, int which,
       dt_control_queue_redraw_center();
     }
     /* do the dragging !? */
-    else if (which==1 && 
-        (
-         (d->vertical && xp > d->vp_xpointer-xpt && xp < d->vp_xpointer+xpt) ||
-         (yp > d->vp_ypointer-ypt && yp < d->vp_ypointer+ypt)
-        ))
+    else if (which==1 &&
+             (
+               (d->vertical && xp > d->vp_xpointer-xpt && xp < d->vp_xpointer+xpt) ||
+               (yp > d->vp_ypointer-ypt && yp < d->vp_ypointer+ypt)
+             ))
     {
       d->dragging = TRUE;
       d->vp_ypointer = yp;
@@ -235,7 +235,7 @@ int button_pressed (struct dt_lib_module_t *self, double x, double y, int which,
       dt_control_queue_redraw_center();
     }
     return 1;
-  } 
+  }
   return 0;
 }
 
@@ -257,7 +257,7 @@ int mouse_moved(dt_lib_module_t *self, double x, double y, int which)
     //double xpt = xp*0.01;
 
     /* update x pointer */
-    if(d->dragging) 
+    if(d->dragging)
     {
       d->vp_xpointer = xp;
       d->vp_ypointer = yp;
@@ -268,7 +268,7 @@ int mouse_moved(dt_lib_module_t *self, double x, double y, int which)
     dt_control_queue_redraw_center();
 
     return 1;
-  } 
+  }
 
   return 0;
 }
@@ -279,7 +279,7 @@ void gui_reset(dt_lib_module_t *self)
   d->num_snapshots = 0;
   d->snapshot_image = NULL;
 
-  for(int k=0;k<d->size;k++)
+  for(int k=0; k<d->size; k++)
     gtk_widget_hide(d->snapshot[k].button);
 
   dt_control_queue_redraw_center();
@@ -308,24 +308,24 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *button = gtk_button_new_with_label(_("take snapshot"));
   d->take_button = button;
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_snapshots_add_button_clicked_callback), self);
-  g_object_set(button, "tooltip-text", 
-      _("take snapshot to compare with another image or the same image at another stage of development"), 
-      (char *)NULL);
+  g_object_set(button, "tooltip-text",
+               _("take snapshot to compare with another image or the same image at another stage of development"),
+               (char *)NULL);
 
-  /* 
-   * initialize snapshots 
+  /*
+   * initialize snapshots
    */
-  char wdname[32]={0};
-  char localtmpdir[4096]={0};
+  char wdname[32]= {0};
+  char localtmpdir[4096]= {0};
   dt_loc_get_tmp_dir (localtmpdir,4096);
 
-  for (long k=0;k<d->size;k++)
+  for (long k=0; k<d->size; k++)
   {
     /* create snapshot button */
     d->snapshot[k].button = dtgtk_togglebutton_new_with_label (wdname,NULL,CPF_STYLE_FLAT);
     g_signal_connect(G_OBJECT ( d->snapshot[k].button), "clicked",
-        G_CALLBACK (_lib_snapshots_toggled_callback),
-        self);
+                     G_CALLBACK (_lib_snapshots_toggled_callback),
+                     self);
 
     /* assign snapshot number to widget */
     g_object_set_data(G_OBJECT(d->snapshot[k].button),"snapshot",(gpointer)(k+1));
@@ -371,7 +371,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
     d->snapshot[k] = d->snapshot[k-1];
     d->snapshot[k].button = b;
     gtk_button_set_label(GTK_BUTTON(d->snapshot[k].button),
-			 gtk_button_get_label(GTK_BUTTON(d->snapshot[k-1].button)));
+                         gtk_button_get_label(GTK_BUTTON(d->snapshot[k-1].button)));
   }
 
   /* update top slot with new snapshot */
@@ -382,8 +382,8 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   const gchar *name = _("original");
   if (darktable.develop->history_end > 0)
   {
-    dt_iop_module_t *module  = ((dt_dev_history_item_t *)g_list_nth_data(darktable.develop->history, 
-									 darktable.develop->history_end-1))->module;
+    dt_iop_module_t *module  = ((dt_dev_history_item_t *)g_list_nth_data(darktable.develop->history,
+                                darktable.develop->history_end-1))->module;
     if (module)
       name = module->name();
     else
@@ -402,7 +402,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   /* update slots used */
   if (d->num_snapshots != d->size)
     d->num_snapshots++;
-  
+
   /* show active snapshot slots */
   for (int k=0; k < d->num_snapshots; k++)
     gtk_widget_show(d->snapshot[k].button);
@@ -428,10 +428,10 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
 
   /* check if snapshot is activated */
   if (gtk_toggle_button_get_active(widget))
-  { 
+  {
     /* lets inactivate all togglebuttons except for self */
     for(int k=0; k<d->size; k++)
-      if(GTK_WIDGET(widget) != d->snapshot[k].button) 
+      if(GTK_WIDGET(widget) != d->snapshot[k].button)
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button), FALSE);
 
     /* setup snapshot */
@@ -453,3 +453,6 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
   dt_control_queue_redraw_center();
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

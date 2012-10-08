@@ -26,6 +26,7 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
+#include "bauhaus/bauhaus.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <stdlib.h>
@@ -36,24 +37,74 @@
 #define DT_GUI_CURVE_EDITOR_INSET 5
 #define DT_GUI_CURVE_INFL .3f
 #define DT_IOP_TONECURVE_RES 64
+#define MAXNODES 20
 
 
-DT_MODULE(1)
+DT_MODULE(2)
+
+typedef struct dt_iop_basecurve_node_t
+{
+  float x;
+  float y;
+}
+dt_iop_basecurve_node_t;
 
 typedef struct dt_iop_basecurve_params_t
+{
+  // three curves (c, ., .) with max number of nodes
+  // the other two are reserved, maybe we'll have cam rgb at some point.
+  dt_iop_basecurve_node_t basecurve[3][MAXNODES];
+  int basecurve_nodes[3];
+  int basecurve_type[3];
+}
+dt_iop_basecurve_params_t;
+
+typedef struct dt_iop_basecurve_params1_t
 {
   float tonecurve_x[6], tonecurve_y[6];
   int tonecurve_preset;
 }
-dt_iop_basecurve_params_t;
+dt_iop_basecurve_params1_t;
 
-static const char linear[] = N_("linear");
+int
+legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    dt_iop_basecurve_params1_t *o = (dt_iop_basecurve_params1_t *)old_params;
+    dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
+
+    // start with a fresh copy of default parameters
+    // unfortunately default_params aren't inited at this stage.
+    *n = (dt_iop_basecurve_params_t)
+    {
+      {
+        {
+          {0.0, 0.0}, {1.0, 1.0}
+        },
+      },
+      { 2, 3, 3 },
+      { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE}
+    };
+    for (int k=0; k<6; k++) n->basecurve[0][k].x = o->tonecurve_x[k];
+    for (int k=0; k<6; k++) n->basecurve[0][k].y = o->tonecurve_y[k];
+    n->basecurve_nodes[0] = 6;
+    n->basecurve_type[0] = CUBIC_SPLINE;
+    return 0;
+  }
+  return 1;
+}
+
 static const char dark_contrast[] = N_("dark contrast");
 static const char canon_eos[] = N_("canon eos like");
+static const char canon_eos_alt[] = N_("canon eos like alternate");
 static const char nikon[] = N_("nikon like");
+static const char nikon_alt[] = N_("nikon like alternate");
 static const char sony_alpha[] = N_("sony alpha like");
 static const char pentax[] = N_("pentax like");
+static const char ricoh[] = N_("ricoh like");
 static const char olympus[] = N_("olympus like");
+static const char olympus_alt[] = N_("olympus like alternate");
 static const char panasonic[] = N_("panasonic like");
 static const char leica[] = N_("leica like");
 static const char kodak_easyshare[] = N_("kodak easyshare like");
@@ -74,45 +125,57 @@ typedef struct basecurve_preset_t
 }
 basecurve_preset_t;
 
+#define m MONOTONE_HERMITE
 static const basecurve_preset_t basecurve_presets[] =
 {
-  {linear, "", "", 0, 51200, {{0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, {0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, 0}, 0},
-  {dark_contrast, "", "", 0, 51200, {{0.000000, 0.072581, 0.157258, 0.491935, 0.758065, 1.000000}, {0.000000, 0.040000, 0.138710, 0.491935, 0.758065, 1.000000}, 0}, 0},
+  // just remove noise in dark areas:
   // pascals canon eos curve (well tested):
-  {canon_eos, "Canon", "", 0, 51200, {{0.000000, 0.028226, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
+  // pascals alternate canon eos curve for 5D Mark II and III and potentially a future IV
   // pascals nikon curve (new curve, needs testing):
-  {nikon, "NIKON", "", 0, 51200, {{0.000000, 0.036290, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.036532, 0.228226, 0.759678, 0.983468, 1.000000}, 0}, 1},
+  // pascals alternate nikon curve for (four digit) Nikon Dxxxx models
   // pascals sony alpha curve (needs testing):
-  {sony_alpha, "SONY", "", 0, 51200, {{0.000000, 0.031949, 0.105431, 0.434505, 0.855738, 1.000000}, {0.000000, 0.036532, 0.228226, 0.759678, 0.983468, 1.000000}, 0}, 1},
   // pascals pentax curve (needs testing):
-  {pentax, "PENTAX", "", 0, 51200, {{0.000000, 0.032258, 0.120968, 0.205645, 0.604839, 1.000000}, {0.000000, 0.024596, 0.166419, 0.328527, 0.790171, 1.000000}, 0}, 1},
+  // (needs testing):
   // pascals olympus curve (needs testing):
-  {olympus, "OLYMPUS", "", 0, 51200, {{0.000000, 0.012097, 0.116935, 0.556452, 0.899194, 1.000000}, {0.000000, 0.010322, 0.167742, 0.711291, 0.956855, 1.000000}, 0}, 1},
+  // pascals alternate olympus curve for E-M5
   // pascals panasonic/leica curves (needs testing):
-  {panasonic, "Panasonic", "", 0, 51200, {{0.000000, 0.036290, 0.120968, 0.205645, 0.604839, 1.000000}, {0.000000, 0.024596, 0.166419, 0.328527, 0.790171, 1.000000}, 0}, 1},
-  {leica, "Leica Camera AG", "", 0, 51200, {{0.000000, 0.0362901, 0.120968, 0.205645, 0.604839, 1.000000}, {0.000000, 0.024596, 0.166419, 0.328527, 0.790171, 1.000000}, 0}, 1},
+  // (needs testing):
   // pascals kodak curve
-  {kodak_easyshare, "EASTMAN KODAK COMPANY", "", 0, 51200, {{0.000000, 0.044355, 0.133065, 0.209677, 0.572581, 1.000000}, {0.000000, 0.020967, 0.154322, 0.300301, 0.753477, 1.000000}, 0}, 1},
   // pascals minolta curve
-  {konica_minolta, "MINOLTA", "", 0, 51200, {{0.000000, 0.020161, 0.112903, 0.500000, 0.899194, 1.000000}, {0.000000, 0.010322, 0.167742, 0.711291, 0.956855, 1.000000}, 0}, 1},
   // pascals samsung curve (needs testing):
-  {samsung, "SAMSUNG", "", 0, 51200, {{0.000000, 0.040323, 0.133065, 0.447581, 0.842742, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
   // pascals fujifilm curve
-  {fujifilm, "FUJIFILM", "", 0, 51200, {{0.000000, 0.028226, 0.104839, 0.387097, 0.754032, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
   // Fotogenetic - Point and shoot v4.1
-  {fotogenetic_v41, "", "", 0, 51200, {{0.000000, 0.087879, 0.175758, 0.353535, 0.612658, 1.000000}, {0.000000, 0.125252, 0.250505, 0.501010, 0.749495, 0.876573}, 0}, 0},
   // Fotogenetic - EV3 v4.2
-  {fotogenetic_v42, "", "", 0, 51200, {{0.000000, 0.100943, 0.201886, 0.301010, 0.404040, 1.000000}, {0.000000, 0.125252, 0.250505, 0.377778, 0.503030, 0.876768}, 0}, 0}
+  {dark_contrast, "", "", 0, 51200,                        {{{{0.000000, 0.000000},{0.072581, 0.040000},{0.157258, 0.138710},{0.491935, 0.491935},{0.758065, 0.758065},{1.000000, 1.000000}}}, {6}, {m}}, 0},
+  {canon_eos, "Canon", "", 0, 51200,                       {{{{0.000000, 0.000000},{0.028226, 0.029677},{0.120968, 0.232258},{0.459677, 0.747581},{0.858871, 0.967742},{1.000000, 1.000000}}}, {6}, {m}}, 1},
+  {canon_eos_alt, "Canon", "DISABLED", 0, 51200,           {{{{0.000000, 0.000000},{0.026210, 0.029677},{0.108871, 0.232258},{0.350806, 0.747581},{0.669355, 0.967742},{1.000000, 1.000000}}}, {6}, {m}}, 1},
+  {nikon, "NIKON", "", 0, 51200,                           {{{{0.000000, 0.000000},{0.036290, 0.036532},{0.120968, 0.228226},{0.459677, 0.759678},{0.858871, 0.983468},{1.000000, 1.000000}}}, {6}, {m}}, 1},
+  {nikon_alt, "NIKON", "DISABLED", 0, 51200,               {{{{0.000000, 0.000000},{0.001000, 0.000010},{0.056452, 0.074871},{0.358871, 0.646775},{0.717742, 0.955242},{1.000000, 1.000000}}}, {6}, {m}}, 1},
+  {sony_alpha, "SONY", "", 0, 51200,                       {{{{0.000000, 0.000000},{0.031949, 0.036532},{0.105431, 0.228226},{0.434505, 0.759678},{0.855738, 0.983468},{1.000000, 1.000000}}}, {6}, {m}}, 1},
+  {pentax, "PENTAX", "", 0, 51200,                         {{{{0.000000, 0.000000},{0.032258, 0.024596},{0.120968, 0.166419},{0.205645, 0.328527},{0.604839, 0.790171},{1.000000, 1.000000}}}, {6}, {m}}, 1},
+  {ricoh, "RICOH", "", 0, 51200,                           {{{{0.000000, 0.000000},{0.032259, 0.024596},{0.120968, 0.166419},{0.205645, 0.328527},{0.604839, 0.790171},{1.000000, 1.000000}}}, {6}, {m}}, 1},
+  {olympus, "OLYMPUS", "", 0, 51200,                       {{{{0.000000, 0.000000},{0.012097, 0.010322},{0.116935, 0.167742},{0.556452, 0.711291},{0.899194, 0.956855},{1.000000, 1.000000}}}, {6}, {m}}, 1},
+  {olympus_alt, "OLYMPUS", "DISABLED", 0, 51200,           {{{{0.000000, 0.000000},{0.012097, 0.010322},{0.072581, 0.167742},{0.310484, 0.711291},{0.645161, 0.956855},{1.000000, 1.000000}}}, {6}, {m}}, 1},
+  {panasonic, "Panasonic", "", 0, 51200,                   {{{{0.000000, 0.000000},{0.036290, 0.024596},{0.120968, 0.166419},{0.205645, 0.328527},{0.604839, 0.790171},{1.000000, 1.000000}}}, {6}, {m}}, 1},
+  {leica, "Leica Camera AG", "", 0, 51200,                 {{{{0.000000, 0.000000},{0.036291, 0.024596},{0.120968, 0.166419},{0.205645, 0.328527},{0.604839, 0.790171},{1.000000, 1.000000}}}, {6}, {m}}, 1},
+  {kodak_easyshare, "EASTMAN KODAK COMPANY", "", 0, 51200, {{{{0.000000, 0.000000},{0.044355, 0.020967},{0.133065, 0.154322},{0.209677, 0.300301},{0.572581, 0.753477},{1.000000, 1.000000}}}, {6}, {m}}, 1},
+  {konica_minolta, "MINOLTA", "", 0, 51200,                {{{{0.000000, 0.000000},{0.020161, 0.010322},{0.112903, 0.167742},{0.500000, 0.711291},{0.899194, 0.956855},{1.000000, 1.000000}}}, {6}, {m}}, 1},
+  {samsung, "SAMSUNG", "", 0, 51200,                       {{{{0.000000, 0.000000},{0.040323, 0.029677},{0.133065, 0.232258},{0.447581, 0.747581},{0.842742, 0.967742},{1.000000, 1.000000}}}, {6}, {m}}, 1},
+  {fujifilm, "FUJIFILM", "", 0, 51200,                     {{{{0.000000, 0.000000},{0.028226, 0.029677},{0.104839, 0.232258},{0.387097, 0.747581},{0.754032, 0.967742},{1.000000, 1.000000}}}, {6}, {m}}, 1},
+  {fotogenetic_v41, "", "", 0, 51200,                      {{{{0.000000, 0.000000},{0.087879, 0.125252},{0.175758, 0.250505},{0.353535, 0.501010},{0.612658, 0.749495},{1.000000, 0.876573}}}, {6}, {m}}, 0},
+  {fotogenetic_v42, "", "", 0, 51200,                      {{{{0.000000, 0.000000},{0.100943, 0.125252},{0.201886, 0.250505},{0.301010, 0.377778},{0.404040, 0.503030},{1.000000, 0.876768}}}, {6}, {m}}, 0}
 };
+#undef m
 static const int basecurve_presets_cnt = sizeof(basecurve_presets)/sizeof(basecurve_preset_t);
 
 typedef struct dt_iop_basecurve_gui_data_t
 {
   dt_draw_curve_t *minmax_curve;        // curve for gui to draw
+  int minmax_curve_type, minmax_curve_nodes;
   GtkHBox *hbox;
   GtkDrawingArea *area;
   double mouse_x, mouse_y;
-  int selected, dragging, x_move;
+  int selected;
   double selected_offset, selected_y, selected_min, selected_max;
   float draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
   float draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
@@ -123,6 +186,8 @@ dt_iop_basecurve_gui_data_t;
 typedef struct dt_iop_basecurve_data_t
 {
   dt_draw_curve_t *curve;      // curve for gegl nodes and pixel processing
+  int basecurve_type;
+  int basecurve_nodes;
   float table[0x10000];        // precomputed look-up table for tone curve
   float unbounded_coeffs[3];   // approximation for extrapolation
 }
@@ -228,61 +293,67 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     float *inp = in + ch*k;
     float *outp = out + ch*k;
-    for(int i=0;i<3;i++)
+    for(int i=0; i<3; i++)
     {
       // use base curve for values < 1, else use extrapolation.
       if(inp[i] < 1.0f) outp[i] = d->table[CLAMP((int)(inp[i]*0x10000ul), 0, 0xffff)];
       else              outp[i] = dt_iop_eval_exp(d->unbounded_coeffs, inp[i]);
     }
+
+    outp[3] = inp[3];
   }
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  // pull in new params to gegl
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)p1;
-  for(int k=0; k<6; k++)
+
+  const int ch = 0;
+  // take care of possible change of curve type or number of nodes (not yet implemented in UI)
+  if(d->basecurve_type != p->basecurve_type[ch] || d->basecurve_nodes != p->basecurve_nodes[ch])
   {
-    // printf("tmp.tonecurve_x[%d] = %f;\n", k, p->tonecurve_x[k]);
-    // printf("tmp.tonecurve_y[%d] = %f;\n", k, p->tonecurve_y[k]);
-    dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
+    if(d->curve) // catch initial init_pipe case
+      dt_draw_curve_destroy(d->curve);
+    d->curve = dt_draw_curve_new(0.0, 1.0, p->basecurve_type[ch]);
+    d->basecurve_nodes = p->basecurve_nodes[ch];
+    d->basecurve_type = p->basecurve_type[ch];
+    for(int k=0; k<p->basecurve_nodes[ch]; k++)
+    {
+      // printf("tmp.basecurve_x[%d] = %f;\n", k, p->basecurve_x[k]);
+      // printf("tmp.basecurve_y[%d] = %f;\n", k, p->basecurve_y[k]);
+      (void)dt_draw_curve_add_point(d->curve, p->basecurve[ch][k].x, p->basecurve[ch][k].y);
+    }
+  }
+  else
+  {
+    for(int k=0; k<p->basecurve_nodes[ch]; k++)
+      dt_draw_curve_set_point(d->curve, k, p->basecurve[ch][k].x, p->basecurve[ch][k].y);
   }
   dt_draw_curve_calc_values(d->curve, 0.0f, 1.0f, 0x10000, NULL, d->table);
 
   // now the extrapolation stuff:
-  const float x[4] = {0.7f, 0.8f, 0.9f, 1.0f};
+  const float xm = p->basecurve[0][p->basecurve_nodes[0]-1].x;
+  const float x[4] = {0.7f*xm, 0.8f*xm, 0.9f*xm, 1.0f*xm};
   const float y[4] = {d->table[CLAMP((int)(x[0]*0x10000ul), 0, 0xffff)],
                       d->table[CLAMP((int)(x[1]*0x10000ul), 0, 0xffff)],
                       d->table[CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
-                      d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]};
+                      d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]
+                     };
   dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // create part of the gegl pipeline
-  dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)malloc(sizeof(dt_iop_basecurve_data_t));
-  dt_iop_basecurve_params_t *default_params = (dt_iop_basecurve_params_t *)self->default_params;
-  piece->data = (void *)d;
-  d->curve = dt_draw_curve_new(0.0, 1.0, CUBIC_SPLINE);
-  for(int k=0; k<6; k++) (void)dt_draw_curve_add_point(d->curve, default_params->tonecurve_x[k], default_params->tonecurve_y[k]);
-#ifdef HAVE_GEGL
-  piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-contrast-curve", "sampling-points", 65535, "curve", d->curve, NULL);
-#else
-  for(int k=0; k<0x10000; k++) d->table[k] = k/0x10000; // identity
-#endif
+  piece->data = malloc(sizeof(dt_iop_basecurve_data_t));
+  memset(piece->data, 0, sizeof(dt_iop_basecurve_data_t));
+  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // clean up everything again.
-#ifdef HAVE_GEGL
-  // dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
-  (void)gegl_node_remove_child(pipe->gegl, piece->input);
-  // (void)gegl_node_remove_child(pipe->gegl, d->node);
-  // (void)gegl_node_remove_child(pipe->gegl, piece->output);
-#endif
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
   dt_draw_curve_destroy(d->curve);
   free(piece->data);
@@ -299,16 +370,19 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_basecurve_params_t));
   module->default_params = malloc(sizeof(dt_iop_basecurve_params_t));
   module->default_enabled = 0;
-  module->priority = 274; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 269; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_basecurve_params_t);
   module->gui_data = NULL;
   dt_iop_basecurve_params_t tmp = (dt_iop_basecurve_params_t)
   {
     {
-      0.0, 0.08, 0.4, 0.6, 0.92, 1.0
+      {
+        // three curves (L, a, b) with a number of nodes
+        {0.0, 0.0}, {1.0, 1.0}
+      },
     },
-    {0.0, 0.08, 0.4, 0.6, 0.92, 1.0},
-    0
+    { 2, 0, 0 },					// number of nodes per curve
+    { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE},
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_basecurve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_basecurve_params_t));
@@ -367,7 +441,36 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
-  for(int k=0; k<6; k++) dt_draw_curve_set_point(c->minmax_curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
+
+  int nodes = p->basecurve_nodes[0];
+  dt_iop_basecurve_node_t *basecurve = p->basecurve[0];
+  if(c->minmax_curve_type != p->basecurve_type[0] || c->minmax_curve_nodes != p->basecurve_nodes[0])
+  {
+    dt_draw_curve_destroy(c->minmax_curve);
+    c->minmax_curve = dt_draw_curve_new(0.0, 1.0, p->basecurve_type[0]);
+    c->minmax_curve_nodes = p->basecurve_nodes[0];
+    c->minmax_curve_type = p->basecurve_type[0];
+    for(int k=0; k<p->basecurve_nodes[0]; k++)
+      (void)dt_draw_curve_add_point(c->minmax_curve, p->basecurve[0][k].x, p->basecurve[0][k].y);
+  }
+  else
+  {
+    for(int k=0; k<p->basecurve_nodes[0]; k++)
+      dt_draw_curve_set_point(c->minmax_curve, k, p->basecurve[0][k].x, p->basecurve[0][k].y);
+  }
+  dt_draw_curve_t *minmax_curve = c->minmax_curve;
+  dt_draw_curve_calc_values(minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_xs, c->draw_ys);
+
+  const float xm = basecurve[nodes-1].x;
+  const float x[4] = {0.7f*xm, 0.8f*xm, 0.9f*xm, 1.0f*xm};
+  const float y[4] = {c->draw_ys[CLAMP((int)(x[0]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)],
+                      c->draw_ys[CLAMP((int)(x[1]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)],
+                      c->draw_ys[CLAMP((int)(x[2]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)],
+                      c->draw_ys[CLAMP((int)(x[3]*DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES-1)]
+                     };
+  float unbounded_coeffs[3];
+  dt_iop_estimate_exp(x, y, 4, unbounded_coeffs);
+
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -401,87 +504,30 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill(cr);
 
-  if(c->mouse_y > 0 || c->dragging)
-  {
-    float oldx1, oldy1;
-    oldx1 = p->tonecurve_x[c->selected];
-    oldy1 = p->tonecurve_y[c->selected];
-    if(c->selected == 0) dt_draw_curve_set_point(c->minmax_curve, 1, p->tonecurve_x[1], fmaxf(c->selected_min, p->tonecurve_y[1]));
-    if(c->selected == 2) dt_draw_curve_set_point(c->minmax_curve, 1, p->tonecurve_x[1], fminf(c->selected_min, fmaxf(0.0, p->tonecurve_y[1] + DT_GUI_CURVE_INFL*(c->selected_min - oldy1))));
-    if(c->selected == 3) dt_draw_curve_set_point(c->minmax_curve, 4, p->tonecurve_x[4], fmaxf(c->selected_min, fminf(1.0, p->tonecurve_y[4] + DT_GUI_CURVE_INFL*(c->selected_min - oldy1))));
-    if(c->selected == 5) dt_draw_curve_set_point(c->minmax_curve, 4, p->tonecurve_x[4], fminf(c->selected_min, p->tonecurve_y[4]));
-    dt_draw_curve_set_point(c->minmax_curve, c->selected, oldx1, c->selected_min);
-    dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_min_xs, c->draw_min_ys);
-
-    if(c->selected == 0) dt_draw_curve_set_point(c->minmax_curve, 1, p->tonecurve_x[1], fmaxf(c->selected_max, p->tonecurve_y[1]));
-    if(c->selected == 2) dt_draw_curve_set_point(c->minmax_curve, 1, p->tonecurve_x[1], fminf(c->selected_max, fmaxf(0.0, p->tonecurve_y[1] + DT_GUI_CURVE_INFL*(c->selected_max - oldy1))));
-    if(c->selected == 3) dt_draw_curve_set_point(c->minmax_curve, 4, p->tonecurve_x[4], fmaxf(c->selected_max, fminf(1.0, p->tonecurve_y[4] + DT_GUI_CURVE_INFL*(c->selected_max - oldy1))));
-    if(c->selected == 5) dt_draw_curve_set_point(c->minmax_curve, 4, p->tonecurve_x[4], fminf(c->selected_max, p->tonecurve_y[4]));
-    dt_draw_curve_set_point  (c->minmax_curve, c->selected, oldx1, c->selected_max);
-    dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_max_xs, c->draw_max_ys);
-  }
-  for(int k=0; k<6; k++) dt_draw_curve_set_point(c->minmax_curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
-  dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_xs, c->draw_ys);
-
+#if 1
   // draw grid
   cairo_set_line_width(cr, .4);
   cairo_set_source_rgb (cr, .1, .1, .1);
   dt_draw_grid(cr, 4, 0, 0, width, height);
 
-  // draw x positions
+  // draw nodes positions
   cairo_set_line_width(cr, 1.);
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
-  const float arrw = 7.0f;
-  for(int k=1; k<5; k++)
+  cairo_translate(cr, 0, height);
+
+  for(int k=0; k<nodes; k++)
   {
-    cairo_move_to(cr, width*p->tonecurve_x[k], height+inset-1);
-    cairo_rel_line_to(cr, -arrw*.5f, 0);
-    cairo_rel_line_to(cr, arrw*.5f, -arrw);
-    cairo_rel_line_to(cr, arrw*.5f, arrw);
-    cairo_close_path(cr);
-    if(c->x_move == k) cairo_fill(cr);
-    else               cairo_stroke(cr);
+    cairo_arc(cr, basecurve[k].x*width, -basecurve[k].y*height, 3, 0, 2.*M_PI);
+    cairo_stroke(cr);
   }
 
   // draw selected cursor
   cairo_set_line_width(cr, 1.);
-  cairo_translate(cr, 0, height);
 
-#if 0 // this is the wrong hist (tonecurve)
-  // draw lum h istogram in background
-  dt_develop_t *dev = darktable.develop;
-  float *hist, hist_max;
-  hist = dev->histogram_pre_tonecurve;
-  hist_max = dev->histogram_pre_tonecurve_max;
-  if(hist_max > 0)
+  if(c->selected >= 0)
   {
-    cairo_save(cr);
-    cairo_scale(cr, width/63.0, -(height-5)/(float)hist_max);
-    cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-    dt_gui_histogram_draw_8(cr, hist, 3);
-    cairo_restore(cr);
-  }
-#endif
-
-  if(c->mouse_y > 0 || c->dragging)
-  {
-    // draw min/max, if selected
-    cairo_set_source_rgba(cr, .6, .6, .6, .5);
-    cairo_move_to(cr, 0, - height*c->draw_min_ys[0]);
-    for(int k=1; k<DT_IOP_TONECURVE_RES; k++)   cairo_line_to(cr, k*width/(DT_IOP_TONECURVE_RES-1.0), - height*c->draw_min_ys[k]);
-    cairo_line_to(cr, width, - height*c->draw_min_ys[DT_IOP_TONECURVE_RES-1]);
-    cairo_line_to(cr, width, - height*c->draw_max_ys[DT_IOP_TONECURVE_RES-1]);
-    for(int k=DT_IOP_TONECURVE_RES-2; k>=0; k--) cairo_line_to(cr, k*width/(DT_IOP_TONECURVE_RES-1.0), - height*c->draw_max_ys[k]);
-    cairo_close_path(cr);
-    cairo_fill(cr);
-    // draw mouse focus circle
     cairo_set_source_rgb(cr, .9, .9, .9);
-    const float pos = MAX(0, (DT_IOP_TONECURVE_RES-1) * c->mouse_x/(float)width - 1);
-    int k = (int)pos;
-    const float f = k - pos;
-    if(k >= DT_IOP_TONECURVE_RES-1) k = DT_IOP_TONECURVE_RES - 2;
-    float ht = -height*(f*c->draw_ys[k] + (1-f)*c->draw_ys[k+1]);
-    cairo_arc(cr, c->mouse_x, ht, 4, 0, 2.*M_PI);
+    cairo_arc(cr, basecurve[c->selected].x*width, -basecurve[c->selected].y*height, 4, 0, 2.*M_PI);
     cairo_stroke(cr);
   }
 
@@ -490,7 +536,19 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   cairo_set_source_rgb(cr, .9, .9, .9);
   // cairo_set_line_cap  (cr, CAIRO_LINE_CAP_SQUARE);
   cairo_move_to(cr, 0, -height*c->draw_ys[0]);
-  for(int k=1; k<DT_IOP_TONECURVE_RES; k++) cairo_line_to(cr, k*width/(DT_IOP_TONECURVE_RES-1.0), - height*c->draw_ys[k]);
+  for(int k=1; k<DT_IOP_TONECURVE_RES; k++)
+  {
+    const float xx = k/(DT_IOP_TONECURVE_RES-1.0);
+    if(xx > xm)
+    {
+      const float yy = dt_iop_eval_exp(unbounded_coeffs, xx);
+      cairo_line_to(cr, xx*width, - height*yy);
+    }
+    else
+    {
+      cairo_line_to(cr, xx*width, - height*c->draw_ys[k]);
+    }
+  }
   cairo_stroke(cr);
 
   cairo_destroy(cr);
@@ -500,6 +558,7 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   cairo_destroy(cr_pixmap);
   cairo_surface_destroy(cst);
   return TRUE;
+#endif
 }
 
 static
@@ -508,63 +567,77 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+  int ch = 0;
+  int nodes = p->basecurve_nodes[ch];
+  dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
+
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
-  if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width);
+  c->mouse_x = CLAMP(event->x - inset, 0, width);
   c->mouse_y = CLAMP(event->y - inset, 0, height);
 
-  if(c->dragging)
+  const float mx = c->mouse_x/(float)width;
+  const float my = 1.0f - c->mouse_y/(float)height;
+
+  if(event->state & GDK_BUTTON1_MASK)
   {
-    if(c->x_move >= 0)
+    // got a vertex selected:
+    if(c->selected >= 0)
     {
-      const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
-      if(c->x_move > 0 && c->x_move < 6-1)
+      basecurve[c->selected].x = mx;
+      basecurve[c->selected].y = my;
+
+      // delete vertex if order has changed:
+      if(nodes > 2)
+        if((c->selected > 0 && basecurve[c->selected-1].x >= mx) ||
+            (c->selected < nodes-1 && basecurve[c->selected+1].x <= mx))
+        {
+          for(int k=c->selected; k<nodes-1; k++)
+          {
+            basecurve[k].x = basecurve[k+1].x;
+            basecurve[k].y = basecurve[k+1].y;
+          }
+          c->selected = -2; // avoid re-insertion of that point immediately after this
+          p->basecurve_nodes[ch] --;
+        }
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+    }
+    else if(nodes < 20 && c->selected >= -1)
+    {
+      // no vertex was close, create a new one!
+      if(basecurve[0].x > mx)
+        c->selected = 0;
+      else for(int k=1; k<nodes; k++)
+        {
+          if(basecurve[k].x > mx)
+          {
+            c->selected = k;
+            break;
+          }
+        }
+      if(c->selected == -1) c->selected = nodes;
+      for(int i=nodes; i>c->selected; i--)
       {
-        const float minx = p->tonecurve_x[c->x_move-1] + 0.001f;
-        const float maxx = p->tonecurve_x[c->x_move+1] - 0.001f;
-        p->tonecurve_x[c->x_move] = fminf(maxx, fmaxf(minx, mx));
+        basecurve[i].x = basecurve[i-1].x;
+        basecurve[i].y = basecurve[i-1].y;
       }
+      // found a new point
+      basecurve[c->selected].x = mx;
+      basecurve[c->selected].y = my;
+      p->basecurve_nodes[ch] ++;
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
-    else
-    {
-      float f = c->selected_y - (c->mouse_y-c->selected_offset)/height;
-      f = fmaxf(c->selected_min, fminf(c->selected_max, f));
-      if(c->selected == 0) p->tonecurve_y[1] = fmaxf(f, p->tonecurve_y[1]);
-      if(c->selected == 2) p->tonecurve_y[1] = fminf(f, fmaxf(0.0, p->tonecurve_y[1] + DT_GUI_CURVE_INFL*(f - p->tonecurve_y[2])));
-      if(c->selected == 3) p->tonecurve_y[4] = fmaxf(f, fminf(1.0, p->tonecurve_y[4] + DT_GUI_CURVE_INFL*(f - p->tonecurve_y[3])));
-      if(c->selected == 5) p->tonecurve_y[4] = fminf(f, p->tonecurve_y[4]);
-      p->tonecurve_y[c->selected] = f;
-    }
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
   else
   {
-    if(event->y > height)
+    // minimum area around the node to select it:
+    float min = .04f;
+    min *= min; // comparing against square
+    int nearest = -1;
+    for(int k=0; k<nodes; k++)
     {
-      c->x_move = 1;
-      const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
-      float dist = fabsf(p->tonecurve_x[1] - mx);
-      for(int k=2; k<5; k++)
-      {
-        float d2 = fabsf(p->tonecurve_x[k] - mx);
-        if(d2 < dist)
-        {
-          c->x_move = k;
-          dist = d2;
-        }
-      }
-    }
-    else
-    {
-      c->x_move = -1;
-    }
-    float pos = (event->x - inset)/width;
-    float min = 100.0;
-    int nearest = 0;
-    for(int k=0; k<6; k++)
-    {
-      float dist = (pos - p->tonecurve_x[k]);
-      dist *= dist;
+      float dist = (my - basecurve[k].y)*(my - basecurve[k].y)
+                   + (mx - basecurve[k].x)*(mx - basecurve[k].x);
       if(dist < min)
       {
         min = dist;
@@ -572,26 +645,6 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
       }
     }
     c->selected = nearest;
-    c->selected_y = p->tonecurve_y[c->selected];
-    c->selected_offset = c->mouse_y;
-    const float f = 0.8f;
-    if(c->selected == 0)
-    {
-      c->selected_min = 0.0f;
-      c->selected_max = 0.2f;
-    }
-    else if(c->selected == 5)
-    {
-      c->selected_min = 0.8f;
-      c->selected_max = 1.0f;
-    }
-    else
-    {
-      c->selected_min = fmaxf(c->selected_y - 0.2f, (1.-f)*c->selected_y + f*p->tonecurve_y[c->selected-1]);
-      c->selected_max = fminf(c->selected_y + 0.2f, (1.-f)*c->selected_y + f*p->tonecurve_y[c->selected+1]);
-    }
-    if(c->selected == 1) c->selected_max *= 0.7;
-    if(c->selected == 4) c->selected_min = 1.0 - 0.7*(1.0 - c->selected_min);
   }
   gtk_widget_queue_draw(widget);
   return TRUE;
@@ -600,29 +653,61 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
 static gboolean
 dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  // set active point
-  if(event->button == 1)
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+  dt_iop_basecurve_params_t *d = (dt_iop_basecurve_params_t *)self->factory_params;
+  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+
+  int ch = 0;
+
+  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-    dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-    c->dragging = 1;
+    // reset current curve
+    p->basecurve_nodes[ch] = d->basecurve_nodes[ch];
+    p->basecurve_type[ch] = d->basecurve_type[ch];
+    for(int k=0; k<d->basecurve_nodes[ch]; k++)
+    {
+      p->basecurve[ch][k].x = d->basecurve[ch][k].x;
+      p->basecurve[ch][k].y = d->basecurve[ch][k].y;
+    }
+    c->selected = -2; // avoid motion notify re-inserting immediately.
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(self->widget);
     return TRUE;
   }
   return FALSE;
 }
 
 static gboolean
-dt_iop_basecurve_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+area_resized(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
-  if(event->button == 1)
-  {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-    dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-    c->dragging = 0;
-    return TRUE;
-  }
-  return FALSE;
+  GtkRequisition r;
+  r.width  = widget->allocation.width;
+  r.height = widget->allocation.width;
+  gtk_widget_size_request(widget, &r);
+  return TRUE;
 }
+
+static gboolean
+scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+
+  int ch = 0;
+  dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
+
+  if(c->selected >= 0)
+  {
+    if(event->direction == GDK_SCROLL_UP  ) basecurve[c->selected].y = MAX(0.0f, basecurve[c->selected].y + 0.001f);
+    if(event->direction == GDK_SCROLL_DOWN) basecurve[c->selected].y = MIN(1.0f, basecurve[c->selected].y - 0.001f);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(widget);
+  }
+  return TRUE;
+}
+
 
 void gui_init(struct dt_iop_module_t *self)
 {
@@ -630,35 +715,37 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
 
-  c->minmax_curve = dt_draw_curve_new(0.0, 1.0, CUBIC_SPLINE);
-  for(int k=0; k<6; k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->tonecurve_x[k], p->tonecurve_y[k]);
+  c->minmax_curve = dt_draw_curve_new(0.0, 1.0, p->basecurve_type[0]);
+  c->minmax_curve_type = p->basecurve_type[0];
+  c->minmax_curve_nodes = p->basecurve_nodes[0];
+  for(int k=0; k<p->basecurve_nodes[0]; k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->basecurve[0][k].x, p->basecurve[0][k].y);
   c->mouse_x = c->mouse_y = -1.0;
   c->selected = -1;
-  c->selected_offset = 0.0;
-  c->dragging = 0;
-  c->x_move = -1;
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
+
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  g_object_set (GTK_OBJECT(c->area), "tooltip-text", _("abscissa: input, ordinate: output \nworks on RGB channels"), (char *)NULL);
-  GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
-  gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
-  // gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  gtk_drawing_area_size(c->area, 258, 258);
+  g_object_set (GTK_OBJECT(c->area), "tooltip-text", _("abscissa: input, ordinate: output. works on RGB channels"), (char *)NULL);
+  // GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
+  // gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
+  // gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+  gtk_drawing_area_size(c->area, 0, 258);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
                     G_CALLBACK (dt_iop_basecurve_expose), self);
   g_signal_connect (G_OBJECT (c->area), "button-press-event",
                     G_CALLBACK (dt_iop_basecurve_button_press), self);
-  g_signal_connect (G_OBJECT (c->area), "button-release-event",
-                    G_CALLBACK (dt_iop_basecurve_button_release), self);
   g_signal_connect (G_OBJECT (c->area), "motion-notify-event",
                     G_CALLBACK (dt_iop_basecurve_motion_notify), self);
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (dt_iop_basecurve_leave_notify), self);
   g_signal_connect (G_OBJECT (c->area), "enter-notify-event",
                     G_CALLBACK (dt_iop_basecurve_enter_notify), self);
+  g_signal_connect (G_OBJECT (c->area), "configure-event",
+                    G_CALLBACK (area_resized), self);
+  g_signal_connect (G_OBJECT (c->area), "scroll-event",
+                    G_CALLBACK (scrolled), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -669,3 +756,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

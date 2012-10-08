@@ -51,7 +51,7 @@ typedef struct dt_lib_camera_t
   struct
   {
     GtkWidget *label1,*label2,*label3,*label4,*label5;               // Capture modes, delay, sequenced, brackets, steps
-    GtkDarktableToggleButton *tb1,*tb2,*tb3,*tb4;        // Delayed capture, Sequenced capture, brackets, live view
+    GtkDarktableToggleButton *tb1,*tb2,*tb3;        // Delayed capture, Sequenced capture, brackets
     GtkWidget *sb1,*sb2,*sb3,*sb4;                         // delay, sequence, brackets, steps
     GtkWidget *button1;
 
@@ -99,13 +99,12 @@ gui_reset (dt_lib_module_t *self)
 int
 position ()
 {
-  return 998;
+  return 997;
 }
 
 void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "capture image(s)"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "toggle live view"), GDK_v, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -114,8 +113,6 @@ void connect_key_accels(dt_lib_module_t *self)
 
   dt_accel_connect_button_lib(self, "capture image(s)",
                               GTK_WIDGET(lib->gui.button1));
-  dt_accel_connect_button_lib(self, "toggle live view",
-                              GTK_WIDGET(lib->gui.tb4));
 }
 
 /** Property changed*/
@@ -344,22 +341,8 @@ static void _toggle_capture_mode_clicked(GtkWidget *widget, gpointer user_data)
 
 }
 
-// Congratulations to Simon for being the first one recognizing live view in a screen shot ^^
-static void _toggle_live_view_clicked(GtkWidget *widget, gpointer user_data)
-{
-  if(gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(widget) ) == TRUE)
-  {
-    if(dt_camctl_camera_start_live_view(darktable.camctl) == FALSE)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
-  }
-  else
-  {
-    dt_camctl_camera_stop_live_view(darktable.camctl);
-  }
-}
 
-
-#define BAR_HEIGHT 18
+#define BAR_HEIGHT 18 /* also change in views/capture.c */
 static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_lib_camera_t *lib=(dt_lib_camera_t *)self->data;
@@ -477,13 +460,11 @@ gui_init (dt_lib_module_t *self)
   lib->gui.tb1=DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_timer,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   lib->gui.tb2=DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_filmstrip,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   lib->gui.tb3=DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_bracket,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  lib->gui.tb4=DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
 
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.tb1), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.tb2), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.tb3), TRUE, TRUE, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.tb4), TRUE, TRUE, 0);
   gtk_box_pack_start(vbox2, GTK_WIDGET(hbox),FALSE, FALSE, 0);
 
   lib->gui.sb1=gtk_spin_button_new_with_range(1,60,1);
@@ -505,7 +486,6 @@ gui_init (dt_lib_module_t *self)
   g_object_set(G_OBJECT(lib->gui.tb1), "tooltip-text", _("toggle delayed capture mode"), (char *)NULL);
   g_object_set(G_OBJECT( lib->gui.tb2), "tooltip-text", _("toggle sequenced capture mode"), (char *)NULL);
   g_object_set(G_OBJECT( lib->gui.tb3), "tooltip-text", _("toggle bracketed capture mode"), (char *)NULL);
-  g_object_set(G_OBJECT( lib->gui.tb4), "tooltip-text", _("toggle live view"), (char *)NULL);
   g_object_set(G_OBJECT( lib->gui.sb1), "tooltip-text", _("the count of seconds before actually doing a capture"), (char *)NULL);
   g_object_set(G_OBJECT( lib->gui.sb2), "tooltip-text", _("the amount of images to capture in a sequence,\nyou can use this in conjuction with delayed mode to create stop-motion sequences."), (char *)NULL);
   g_object_set(G_OBJECT( lib->gui.sb3), "tooltip-text", _("the amount of brackets on each side of centered shoot, amount of images = (brackets*2)+1."), (char *)NULL);
@@ -514,7 +494,6 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(lib->gui.tb1), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
   g_signal_connect(G_OBJECT(lib->gui.tb2), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
   g_signal_connect(G_OBJECT(lib->gui.tb3), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
-  g_signal_connect(G_OBJECT(lib->gui.tb4), "clicked", G_CALLBACK(_toggle_live_view_clicked), lib);
   g_signal_connect(G_OBJECT(lib->gui.button1), "clicked", G_CALLBACK(_capture_button_clicked), lib);
 
   gtk_widget_set_sensitive( GTK_WIDGET(lib->gui.sb1),FALSE);
@@ -733,4 +712,6 @@ gui_cleanup (dt_lib_module_t *self)
 
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

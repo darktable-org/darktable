@@ -11,6 +11,8 @@
 # Copyright 2010 henrik andersson
 #=============================================================================
 
+SET(INOTIFY_FIND_REQUIRED ${INotify_FIND_REQUIRED})
+
 find_path(INOTIFY_INCLUDE_DIR sys/inotify.h)
 mark_as_advanced(INOTIFY_INCLUDE_DIR)
 
