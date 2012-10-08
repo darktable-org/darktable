@@ -576,6 +576,8 @@ void dt_image_init(dt_image_t *img)
   img->latitude = NAN;
   img->longitude = NAN;
   img->d65_color_matrix[0] = NAN;
+  img->profile = NULL;
+  img->profile_size = 0;
 }
 
 int32_t dt_image_move(const int32_t imgid, const int32_t filmid)

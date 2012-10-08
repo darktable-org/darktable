@@ -83,6 +83,9 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **bu
       memcpy(img->d65_color_matrix, color_matrix, sizeof(img->d65_color_matrix));
     else
       img->d65_color_matrix[0] = NAN;
+    g_free(img->profile);
+    img->profile = NULL;
+    img->profile_size = 0;
     // buffer size?
     if(img->flags & DT_IMAGE_LDR)
       img->bpp = 4*sizeof(float);
@@ -108,6 +111,9 @@ dt_image_cache_deallocate(void *data, const uint32_t key, void *payload)
 {
   // don't free. memory is only allocated once.
   dt_image_t *img = (dt_image_t *)payload;
+
+  // except for the profile
+  g_free(img->profile);
 
   // but reset all the stuff. not strictly necessary, but experience tells
   // it might be best to make sure star ratings and such don't spill.
@@ -135,6 +141,7 @@ dt_image_cache_init(dt_image_cache_t *cache)
   // might have been rounded to power of two:
   num = dt_cache_capacity(&cache->cache);
   cache->images = dt_alloc_align(64, sizeof(dt_image_t)*num);
+  memset(cache->images, 0, sizeof(dt_image_t)*num);
   dt_print(DT_DEBUG_CACHE, "[image_cache] has %d entries\n", num);
   // initialize first image as empty data:
   dt_image_init(cache->images);

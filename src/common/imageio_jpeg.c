@@ -256,7 +256,6 @@ write_icc_profile (j_compress_ptr cinfo,
 }
 
 
-#if 0
 /*
  * Prepare for reading an ICC profile
  */
@@ -315,7 +314,7 @@ marker_is_icc (jpeg_saved_marker_ptr marker)
  */
 
 boolean
-read_icc_profile (j_decompress_ptr cinfo,
+read_icc_profile (j_decompress_ptr dinfo,
                   JOCTET **icc_data_ptr,
                   unsigned int *icc_data_len)
 {
@@ -339,7 +338,7 @@ read_icc_profile (j_decompress_ptr cinfo,
   for (seq_no = 1; seq_no <= MAX_SEQ_NO; seq_no++)
     marker_present[seq_no] = 0;
 
-  for (marker = cinfo->marker_list; marker != NULL; marker = marker->next)
+  for (marker = dinfo->marker_list; marker != NULL; marker = marker->next)
   {
     if (marker_is_icc(marker))
     {
@@ -382,7 +381,7 @@ read_icc_profile (j_decompress_ptr cinfo,
     return FALSE;		/* oops, out of memory */
 
   /* and fill it in */
-  for (marker = cinfo->marker_list; marker != NULL; marker = marker->next)
+  for (marker = dinfo->marker_list; marker != NULL; marker = marker->next)
   {
     if (marker_is_icc(marker))
     {
@@ -405,7 +404,6 @@ read_icc_profile (j_decompress_ptr cinfo,
 
   return TRUE;
 }
-#endif
 #undef ICC_MARKER
 #undef ICC_OVERHEAD_LEN
 #undef MAX_BYTES_IN_MARKER
@@ -494,6 +492,7 @@ int dt_imageio_jpeg_read_header(const char *filename, dt_imageio_jpeg_t *jpg)
   }
   jpeg_create_decompress(&(jpg->dinfo));
   jpeg_stdio_src(&(jpg->dinfo), jpg->f);
+  setup_read_icc_profile(&(jpg->dinfo));
   // jpg->dinfo.buffered_image = TRUE;
   jpeg_read_header(&(jpg->dinfo), TRUE);
   jpg->width  = jpg->dinfo.image_width;
@@ -539,7 +538,14 @@ int dt_imageio_jpeg_read(dt_imageio_jpeg_t *jpg, uint8_t *out)
   return 0;
 }
 
-
+int dt_imageio_jpeg_read_profile(dt_imageio_jpeg_t *jpg, uint8_t **out)
+{
+  unsigned int length = 0;
+  boolean res = read_icc_profile(&(jpg->dinfo), out, &length);
+  jpeg_destroy_decompress(&(jpg->dinfo));
+  fclose(jpg->f);
+  return res?length:0;
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -87,9 +87,11 @@ typedef struct dt_image_t
   // used by library
   int32_t num, flags, film_id, id, group_id;
 
-  uint32_t filters;  // demosaic pattern
-  int32_t bpp;       // bytes per pixel
-  float d65_color_matrix[9];
+  uint32_t filters;          // demosaic pattern
+  int32_t bpp;               // bytes per pixel
+  float d65_color_matrix[9]; // the 3x3 matrix embedded in some DNGs
+  uint8_t *profile;          // embedded profile, for example from JPEGs
+  uint32_t profile_size;
 
   dt_image_raw_parameters_t legacy_flip; // unfortunately needed to convert old bits to new flip module.
 
