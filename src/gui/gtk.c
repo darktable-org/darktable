@@ -68,7 +68,6 @@ const char *_ui_panel_config_names[] =
   "bottom"
 };
 
-// TODO LGU
 typedef struct dt_panel_t
 {
   GtkWidget *container, *header_surface, *footer_surface, *window, *border;
@@ -118,11 +117,11 @@ static void _ui_init_panel_bottom(dt_ui_t *ui, GtkWidget *container);
 /* generic callback for redraw widget signals */
 static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget);
 
-// TODO LGU
 /* Callbacks for detaching the panels */
 static void _init_panel_header(dt_panel_t *panel);
 static void _detach_panel_callback(GtkButton *button, gpointer panel);
 static void _attach_panel_callback(GtkButton *button, gpointer panel);
+static void _save_panel_position(dt_panel_t *panel);
 static gboolean _panel_window_expose_callback(GtkWidget *widget,
                                               GdkEvent *event,
                                               gpointer user_data);
@@ -530,6 +529,9 @@ borders_scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 
 void dt_gui_gtk_quit()
 {
+  _save_panel_position(&(darktable.gui->ui->panels[DT_UI_PANEL_LEFT]));
+  _save_panel_position(&(darktable.gui->ui->panels[DT_UI_PANEL_RIGHT]));
+
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
   gtk_window_iconify(win);
 
@@ -1075,7 +1077,6 @@ void init_widgets()
     if(!dt_conf_key_exists(key))
       dt_conf_set_bool(key,TRUE);
 
-    // TODO LGU
     // If the panel is detached, we hide the container panel
     if (k == DT_UI_PANEL_LEFT && darktable.gui->ui->panels[DT_UI_PANEL_LEFT].window )
       gtk_widget_hide(darktable.gui->widgets.left_border);
@@ -1242,7 +1243,6 @@ void dt_ui_container_clear(struct dt_ui_t *ui, const dt_ui_container_t c)
   gtk_container_foreach(GTK_CONTAINER(ui->containers[c]), (GtkCallback)gtk_widget_destroy, (gpointer)c);
 }
 
-// TODO LGU
 void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui)
 {
   char key[512];
@@ -1274,7 +1274,6 @@ void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui)
   dt_conf_set_int(key, state);
 }
 
-// TODO LGU
 void dt_ui_restore_panels(dt_ui_t *ui)
 {
   /* restore visible state of panels for current view */
@@ -1297,7 +1296,6 @@ void dt_ui_restore_panels(dt_ui_t *ui)
     {
       g_snprintf(key, 512, "%s/ui/%s_visible",cv->module_name, _ui_panel_config_names[k]);
       if (dt_conf_key_exists(key))
-        // TODO LGU
         gtk_widget_set_visible(ui->panels[k].container, dt_conf_get_bool(key));
       else
         gtk_widget_set_visible(ui->panels[k].container, 1);
@@ -1408,7 +1406,7 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
   widget = gtk_vbox_new(FALSE, 0);
   gtk_container_add(GTK_CONTAINER(container), widget);
 
-  // TODO LGU Adding the panel header
+  // Adding the panel header
   _init_panel_header(&ui->panels[DT_UI_PANEL_LEFT]);
 
   /* add top,center,bottom*/
@@ -1417,7 +1415,7 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
   ui->containers[DT_UI_CONTAINER_PANEL_LEFT_CENTER] = _ui_init_panel_container_center(container, FALSE);
   ui->containers[DT_UI_CONTAINER_PANEL_LEFT_BOTTOM] = _ui_init_panel_container_bottom(container);
 
-  /* TODO LGU lets show all widgets */
+  /* lets show all widgets */
   gtk_widget_show_all(ui->panels[DT_UI_PANEL_LEFT].container);
   if(!ui->panels[DT_UI_PANEL_LEFT].window)
     gtk_widget_hide(ui->panels[DT_UI_PANEL_LEFT].footer_surface);
@@ -1700,7 +1698,6 @@ static void _detach_panel_callback(GtkButton *button, gpointer data)
 static void _attach_panel_callback(GtkButton *button, gpointer data)
 {
   char key[256];
-  gint x, y, width, height;
   dt_panel_t *panel = (dt_panel_t*)data;
   GtkWidget *container = darktable.gui->ui->main_table;
 
@@ -1708,18 +1705,8 @@ static void _attach_panel_callback(GtkButton *button, gpointer data)
   snprintf(key, 256, "ui_last/%s_panel_detached", panel->name);
   dt_conf_set_int(key, FALSE);
 
-
   // Saving size/position from gconf
-  gtk_window_get_position(GTK_WINDOW(panel->window), &x, &y);
-  gtk_window_get_size(GTK_WINDOW(panel->window), &width, &height);
-  snprintf(key, 256, "ui_last/%s_panel_x", panel->name);
-  dt_conf_set_int(key, x);
-  snprintf(key, 256, "ui_last/%s_panel_y", panel->name);
-  dt_conf_set_int(key, y);
-  snprintf(key, 256, "ui_last/%s_panel_w", panel->name);
-  dt_conf_set_int(key, width);
-  snprintf(key, 256, "ui_last/%s_panel_h", panel->name);
-  dt_conf_set_int(key, height);
+  _save_panel_position(panel);
 
   // Attaching the panel
   g_object_ref(panel->container);
@@ -1748,6 +1735,27 @@ static void _attach_panel_callback(GtkButton *button, gpointer data)
   // Showing the border
   gtk_widget_show(panel->border);
 
+}
+
+static void _save_panel_position(dt_panel_t *panel)
+{
+  char key[256];
+  gint x, y, width, height;
+
+  // Saving size/position from gconf
+  if (panel->window)
+  {
+    gtk_window_get_position(GTK_WINDOW(panel->window), &x, &y);
+    gtk_window_get_size(GTK_WINDOW(panel->window), &width, &height);
+    snprintf(key, 256, "ui_last/%s_panel_x", panel->name);
+    dt_conf_set_int(key, x);
+    snprintf(key, 256, "ui_last/%s_panel_y", panel->name);
+    dt_conf_set_int(key, y);
+    snprintf(key, 256, "ui_last/%s_panel_w", panel->name);
+    dt_conf_set_int(key, width);
+    snprintf(key, 256, "ui_last/%s_panel_h", panel->name);
+    dt_conf_set_int(key, height);
+  }
 }
 
 static gboolean _panel_window_expose_callback(GtkWidget *widget,

@@ -1773,19 +1773,8 @@ int dt_control_key_pressed_override(guint key, guint state)
   if(key == accels->global_sideborders.accel_key &&
       state == accels->global_sideborders.accel_mods)
   {
-// TODO LGU
-// HEAD
     /* toggle panel viewstate */
     dt_ui_toggle_panels_visibility(darktable.gui->ui);
-//<<<<<<< HEAD
-    
-/* ====
-    gboolean visible = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT);
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, !visible);
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, !visible);
->> detachable */
-//=======
-//>>>>>>> master
 
     /* trigger invalidation of centerview to reprocess pipe */
     dt_dev_invalidate(darktable.develop);
