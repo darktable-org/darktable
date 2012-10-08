@@ -104,12 +104,12 @@ static void _slider_class_init (GtkDarktableSliderClass *klass)
   widget_class->leave_notify_event = _slider_enter_notify_event;
   //object_class->destroy = _slider_destroy;
   _slider_signals[VALUE_CHANGED] = g_signal_new(
-                              "value-changed",
-                              G_TYPE_FROM_CLASS(klass), 
-			      G_SIGNAL_RUN_LAST,
-                              0,NULL,NULL,
-                              g_cclosure_marshal_VOID__VOID,
-                              GTK_TYPE_NONE,0);
+                                     "value-changed",
+                                     G_TYPE_FROM_CLASS(klass),
+                                     G_SIGNAL_RUN_LAST,
+                                     0,NULL,NULL,
+                                     g_cclosure_marshal_VOID__VOID,
+                                     GTK_TYPE_NONE,0);
 }
 
 
@@ -677,4 +677,6 @@ GtkType dtgtk_slider_get_type()
   return dtgtk_slider_type;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

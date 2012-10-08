@@ -46,7 +46,7 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT;
 }
 
-int expandable() 
+int expandable()
 {
   return 0;
 }
@@ -65,7 +65,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* the toolbar container */
   d->container = self->widget = gtk_hbox_new(FALSE,10);
-  
+
   /* setup proxy */
   darktable.view_manager->proxy.view_toolbox.module = self;
   darktable.view_manager->proxy.view_toolbox.add = _lib_view_toolbox_add;
@@ -84,3 +84,6 @@ static void _lib_view_toolbox_add(dt_lib_module_t *self,GtkWidget *widget)
   gtk_box_pack_start(GTK_BOX(d->container), widget, TRUE, FALSE, 0);
   gtk_widget_show_all(widget);
 }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

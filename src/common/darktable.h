@@ -21,12 +21,13 @@
 // just to be sure. the build system should set this for us already:
 #if defined __DragonFly__ || defined __FreeBSD__ || \
     defined __NetBSD__ || defined __OpenBSD__
-  #define _WITH_DPRINTF
+#define _WITH_DPRINTF
+#define _WITH_GETLINE
 #elif !defined _XOPEN_SOURCE
-  #define _XOPEN_SOURCE 700 // for localtime_r and dprintf
+#define _XOPEN_SOURCE 700 // for localtime_r and dprintf
 #endif
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include "common/dtpthread.h"
 #include "common/database.h"
@@ -140,7 +141,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_PWSTORAGE = 64,
   DT_DEBUG_OPENCL = 128,
   DT_DEBUG_SQL = 256,
-  DT_DEBUG_MEMORY = 512,
+  DT_DEBUG_MEMORY = 512
 }
 dt_debug_thread_t;
 
@@ -152,7 +153,7 @@ typedef struct darktable_t
 {
   uint32_t cpu_flags;
   int32_t num_openmp_threads;
-	
+
   int32_t thumbnail_width, thumbnail_height;
   int32_t unmuted;
   GList                          *iop;
@@ -303,10 +304,10 @@ static inline void dt_print_mem_usage()
   fclose(f);
 
   fprintf(stderr, "[memory] max address space (vmpeak): %15s"
-                  "[memory] cur address space (vmsize): %15s"
-                  "[memory] max used memory   (vmhwm ): %15s"
-                  "[memory] cur used memory   (vmrss ): %15s",
-                  vmpeak, vmsize, vmhwm, vmrss);
+          "[memory] cur address space (vmsize): %15s"
+          "[memory] max used memory   (vmhwm ): %15s"
+          "[memory] cur used memory   (vmrss ): %15s",
+          vmpeak, vmsize, vmhwm, vmrss);
 
 #elif defined(__APPLE__)
   struct task_basic_info t_info;
@@ -322,11 +323,11 @@ static inline void dt_print_mem_usage()
 
   // Report in kB, to match output of /proc on Linux.
   fprintf(stderr, "[memory] max address space (vmpeak): %15s\n"
-                  "[memory] cur address space (vmsize): %12llu kB\n"
-                  "[memory] max used memory   (vmhwm ): %15s\n"
-                  "[memory] cur used memory   (vmrss ): %12llu kB\n",
-                  "unknown", (uint64_t)t_info.virtual_size / 1024,
-                  "unknown", (uint64_t)t_info.resident_size / 1024);
+          "[memory] cur address space (vmsize): %12llu kB\n"
+          "[memory] max used memory   (vmhwm ): %15s\n"
+          "[memory] cur used memory   (vmrss ): %12llu kB\n",
+          "unknown", (uint64_t)t_info.virtual_size / 1024,
+          "unknown", (uint64_t)t_info.resident_size / 1024);
 #else
   fprintf(stderr, "dt_print_mem_usage() currently unsupported on this platform\n");
 #endif
@@ -335,7 +336,7 @@ static inline void dt_print_mem_usage()
 static inline size_t
 dt_get_total_memory()
 {
-#if defined(__linux__) 
+#if defined(__linux__)
   FILE *f = fopen("/proc/meminfo", "rb");
   if(!f) return 0;
   size_t mem = 0;
@@ -361,7 +362,7 @@ dt_get_total_memory()
   size_t length = sizeof(uint64_t);
   sysctl(mib, 2, (void *)&physical_memory, &length, (void *)NULL, 0);
   return physical_memory / 1024;
-#else 
+#else
   // assume 2GB until we have a better solution.
   fprintf(stderr, "Unknown memory size. Assuming 2GB\n");
   return 2097152;
@@ -370,4 +371,16 @@ dt_get_total_memory()
 
 void dt_configure_defaults();
 
+// helper function which loads whatever image_to_load points to: single image files or whole directories
+int dt_load_from_string(const gchar* image_to_load, gboolean open_image_in_dr);
+
+/** define for max path/filename length */
+#define DT_MAX_FILENAME_LEN 256
+// TODO: separate into path/filename and store 256 for filename
+#define DT_MAX_PATH_LEN 1024
+
 #endif
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

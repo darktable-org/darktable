@@ -86,16 +86,15 @@ dt_collection_update (const dt_collection_t *collection)
   if (!(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
   {
     int need_operator = 0;
-     
+
     /* add default filters */
     if (collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)
     {
       wq = dt_util_dstrcat(wq, "(film_id = %d)", collection->params.film_id);
       need_operator = 1;
     }
-    // DON'T SELECT IMAGES MAKED TO BE DELETED.
+    // DON'T SELECT IMAGES MARKED TO BE DELETED.
     wq = dt_util_dstrcat(wq, " %s (flags & %d) != %d", (need_operator)?"and":((need_operator=1)?"":""), DT_IMAGE_REMOVE, DT_IMAGE_REMOVE);
-    
 
     if (collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
       wq = dt_util_dstrcat(wq, " %s (flags & 7) >= %d and (flags & 7) != 6", (need_operator)?"and":((need_operator=1)?"":""), collection->params.rating);
@@ -114,7 +113,11 @@ dt_collection_update (const dt_collection_t *collection)
   else
     wq = dt_util_dstrcat(wq, "%s", collection->where_ext);
 
-  
+  /* grouping */
+  if(darktable.gui && darktable.gui->grouping)
+  {
+    wq = dt_util_dstrcat(wq, " and group_id = id or group_id = %d", darktable.gui->expanded_group_id);
+  }
 
   /* build select part includes where */
   if (collection->params.sort == DT_COLLECTION_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
@@ -262,65 +265,65 @@ dt_collection_get_sort_descending(const dt_collection_t *collection)
   return collection->params.descending;
 }
 
-gchar *  
+gchar *
 dt_collection_get_sort_query(const dt_collection_t *collection)
-{ 
+{
   gchar *sq = NULL;
 
   switch(collection->params.sort)
   {
     case DT_COLLECTION_SORT_DATETIME:
       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken");
-    break;
- 
+      break;
+
     case DT_COLLECTION_SORT_RATING:
       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7 desc");
-    break;
+      break;
 
     case DT_COLLECTION_SORT_FILENAME:
       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "filename");
-    break;
+      break;
 
     case DT_COLLECTION_SORT_ID:
       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "id");
-    break;
+      break;
 
     case DT_COLLECTION_SORT_COLOR:
       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color desc, filename");
-    break;
+      break;
   }
- 
- if (collection->params.descending)
- {
-   switch(collection->params.sort)
-   {
-     case DT_COLLECTION_SORT_DATETIME:
-     case DT_COLLECTION_SORT_FILENAME:
-     case DT_COLLECTION_SORT_ID:
-     {
-       sq = dt_util_dstrcat(sq, " %s", "desc");
-     }
-     break;
 
-     /* These two are special as they are descending in the default view */
-     case DT_COLLECTION_SORT_RATING:
-     {
-       g_free(sq);
-       sq = NULL;
-       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7");
-     }
-     break;
+  if (collection->params.descending)
+  {
+    switch(collection->params.sort)
+    {
+      case DT_COLLECTION_SORT_DATETIME:
+      case DT_COLLECTION_SORT_FILENAME:
+      case DT_COLLECTION_SORT_ID:
+      {
+        sq = dt_util_dstrcat(sq, " %s", "desc");
+      }
+      break;
 
-     case DT_COLLECTION_SORT_COLOR:
-     {
-       g_free(sq);
-       sq = NULL;
-       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color, filename");
-     }
-     break;
-   }
- }
- return sq;
+      /* These two are special as they are descending in the default view */
+      case DT_COLLECTION_SORT_RATING:
+      {
+        g_free(sq);
+        sq = NULL;
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7");
+      }
+      break;
+
+      case DT_COLLECTION_SORT_COLOR:
+      {
+        g_free(sq);
+        sq = NULL;
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color, filename");
+      }
+      break;
+    }
+  }
+  return sq;
 }
 
 
@@ -356,13 +359,13 @@ uint32_t dt_collection_get_count(const dt_collection_t *collection)
 
   gchar *fq = g_strstr_len(query, strlen(query), "from");
   if ((collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
-    count_query = dt_util_dstrcat(NULL, "select count(images.id) from images %s", collection->where_ext); 
+    count_query = dt_util_dstrcat(NULL, "select count(images.id) from images %s", collection->where_ext);
   else
     count_query = dt_util_dstrcat(count_query, "select count(id) %s", fq);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), count_query, -1, &stmt, NULL);
-  if ((collection->params.query_flags&COLLECTION_QUERY_USE_LIMIT) && 
-      !(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT)) 
+  if ((collection->params.query_flags&COLLECTION_QUERY_USE_LIMIT) &&
+      !(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
   {
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
@@ -407,7 +410,7 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
 
   query = dt_util_dstrcat(query, "where id in (select imgid from selected_images) %s", sq);
 
-    
+
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
 
   while (sqlite3_step (stmt) == SQLITE_ROW)
@@ -427,15 +430,19 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
 }
 
 static void
-get_query_string(const int property, const gchar *escaped_text, char *query)
+get_query_string(const dt_collection_properties_t property, const gchar *escaped_text, char *query)
 {
   switch(property)
   {
-    case 0: // film roll
+    case DT_COLLECTION_PROP_FILMROLL: // film roll
       snprintf(query, 1024, "(film_id in (select id from film_rolls where folder like '%s'))", escaped_text);
       break;
 
-    case 5: // colorlabel
+    case DT_COLLECTION_PROP_FOLDERS: // folders
+      snprintf(query, 1024, "(film_id in (select id from film_rolls where folder like '%s%%'))", escaped_text);
+      break;
+
+    case DT_COLLECTION_PROP_COLORLABEL: // colorlabel
     {
       int color = 0;
       if     (strcmp(escaped_text,_("red")   )==0) color=0;
@@ -447,50 +454,50 @@ get_query_string(const int property, const gchar *escaped_text, char *query)
     }
     break;
 
-    case 4: // history
+    case DT_COLLECTION_PROP_HISTORY: // history
       snprintf(query, 1024, "(id %s in (select imgid from history where imgid=images.id)) ",(strcmp(escaped_text,_("altered"))==0)?"":"not");
       break;
 
-    case 1: // camera
+    case DT_COLLECTION_PROP_CAMERA: // camera
       snprintf(query, 1024, "(maker || ' ' || model like '%%%s%%')", escaped_text);
       break;
-    case 2: // tag
+    case DT_COLLECTION_PROP_TAG: // tag
       snprintf(query, 1024, "(id in (select imgid from tagged_images as a join "
                "tags as b on a.tagid = b.id where name like '%s'))", escaped_text);
       break;
 
       // TODO: How to handle images without metadata? In the moment they are not shown.
       // TODO: Autogenerate this code?
-    case 6: // title
+    case DT_COLLECTION_PROP_TITLE: // title
       snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
                DT_METADATA_XMP_DC_TITLE, escaped_text);
       break;
-    case 7: // description
+    case DT_COLLECTION_PROP_DESCRIPTION: // description
       snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
                DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
       break;
-    case 8: // creator
+    case DT_COLLECTION_PROP_CREATOR: // creator
       snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
                DT_METADATA_XMP_DC_CREATOR, escaped_text);
       break;
-    case 9: // publisher
+    case DT_COLLECTION_PROP_PUBLISHER: // publisher
       snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
                DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
       break;
-    case 10: // rights
+    case DT_COLLECTION_PROP_RIGHTS: // rights
       snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
                DT_METADATA_XMP_DC_RIGHTS, escaped_text);
       break;
-    case 11: // lens
+    case DT_COLLECTION_PROP_LENS: // lens
       snprintf(query, 1024, "(lens like '%%%s%%')", escaped_text);
       break;
-    case 12: // iso
+    case DT_COLLECTION_PROP_ISO: // iso
       snprintf(query, 1024, "(iso like '%%%s%%')", escaped_text);
       break;
-    case 13: // aperature
+    case DT_COLLECTION_PROP_APERTURE: // aperture
       snprintf(query, 1024, "(aperture like '%%%s%%')", escaped_text);
       break;
-    case 14: // filename
+    case DT_COLLECTION_PROP_FILENAME: // filename
       snprintf(query, 1024, "(filename like '%%%s%%')", escaped_text);
       break;
 
@@ -508,7 +515,7 @@ dt_collection_update_query(const dt_collection_t *collection)
 
   const int num_rules = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules"), 1, 10);
   char *conj[] = {"and", "or", "and not"};
-  
+
   complete_query = dt_util_dstrcat(complete_query, "(");
 
   for(int i=0; i<num_rules; i++)
@@ -524,9 +531,9 @@ dt_collection_update_query(const dt_collection_t *collection)
 
     get_query_string(property, escaped_text, query);
 
-    if(i > 0) 
+    if(i > 0)
       complete_query = dt_util_dstrcat(complete_query, " %s %s", conj[mode], query);
-    else 
+    else
       complete_query = dt_util_dstrcat(complete_query, "%s", query);
 
     g_free(escaped_text);
@@ -581,8 +588,10 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   int c = dt_collection_get_count(collection);
   int cs = dt_collection_get_selected_count(collection);
   g_snprintf(message, 1024,
-      ngettext("%d image of %d in current collection is selected", "%d images of %d in current collection are selected", cs), cs, c);
+             ngettext("%d image of %d in current collection is selected", "%d images of %d in current collection are selected", cs), cs, c);
   dt_control_hinter_message(darktable.control, message);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -48,8 +48,8 @@ public:
   Rw2Decoder(TiffIFD *rootIFD, FileMap* file);
   virtual ~Rw2Decoder(void);
   RawImage decodeRawInternal();
-  virtual void decodeMetaData(CameraMetaData *meta);
-  virtual void checkSupport(CameraMetaData *meta);
+  virtual void decodeMetaDataInternal(CameraMetaData *meta);
+  virtual void checkSupportInternal(CameraMetaData *meta);
   TiffIFD *mRootIFD;
 protected:
   virtual void decodeThreaded(RawDecoderThread* t);

@@ -41,7 +41,7 @@ _email_attachment_t;
 // saved params
 typedef struct dt_imageio_email_t
 {
-  char filename[1024];
+  char filename[DT_MAX_PATH_LEN];
   GList *images;
 }
 dt_imageio_email_t;
@@ -80,7 +80,8 @@ gui_reset (dt_imageio_module_storage_t *self)
 }
 
 int
-store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
+store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
+       const int num, const int total, const gboolean high_quality)
 {
   dt_imageio_email_t *d = (dt_imageio_email_t *)sdata;
 
@@ -99,7 +100,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   attachment->file = g_build_filename( tmpdir, filename, (char *)NULL );
 
-  if(dt_imageio_export(imgid, attachment->file, format, fdata) != 0)
+  if(dt_imageio_export(imgid, attachment->file, format, fdata, high_quality) != 0)
   {
     fprintf(stderr, "[imageio_storage_email] could not export to file: `%s'!\n", attachment->file);
     dt_control_log(_("could not export to file `%s'!"), attachment->file);
@@ -152,7 +153,7 @@ finalize_store(dt_imageio_module_storage_t *self, void *params)
   gchar body[4096]= {0};
   gchar attachments[4096]= {0};
   gchar *uriFormat=NULL;
-  gchar *subject="images exported from darktable";
+  gchar *subject=_("images exported from darktable");
   gchar *imageBodyFormat="%s %s"; // filename, exif oneliner
   gchar *attachmentFormat=NULL;
   gchar *attachmentSeparator="";
@@ -201,4 +202,6 @@ int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_mod
   return 1;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -53,21 +53,21 @@ int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, in
   }
   cache->queries = cache->misses = 0;
   return 1;
-  
+
 alloc_memory_fail:
   for(int k=0; k<entries; k++)
   {
     if(cache->data[k])
       free(cache->data[k]);
   }
-  
+
   free(cache->data);
   free(cache->size);
   free(cache->hash);
   free(cache->used);
-  
+
   return 0;
-  
+
 }
 
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
@@ -215,3 +215,6 @@ void dt_dev_pixelpipe_cache_print(dt_dev_pixelpipe_cache_t *cache)
   printf("cache hit rate so far: %.3f\n", (cache->queries - cache->misses)/(float)cache->queries);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

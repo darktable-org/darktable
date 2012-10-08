@@ -4,6 +4,7 @@
 #include "LJpegPlain.h"
 #include "TiffIFD.h"
 #include "DngDecoderSlices.h"
+#include "DngOpcodes.h"
 /* 
     RawSpeed - RAW file decoder.
 
@@ -35,8 +36,8 @@ public:
   DngDecoder(TiffIFD *rootIFD, FileMap* file);
   virtual ~DngDecoder(void);
   virtual RawImage decodeRawInternal();
-  virtual void decodeMetaData(CameraMetaData *meta);
-  virtual void checkSupport(CameraMetaData *meta);
+  virtual void decodeMetaDataInternal(CameraMetaData *meta);
+  virtual void checkSupportInternal(CameraMetaData *meta);
 protected:
   TiffIFD *mRootIFD;
   bool mFixLjpeg;

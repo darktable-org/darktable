@@ -53,43 +53,46 @@ void dt_image_cache_print  (dt_image_cache_t *cache);
 // point where sql and xmp can be synched (unsafe setting).
 const dt_image_t*
 dt_image_cache_read_get(
-    dt_image_cache_t *cache,
-    const uint32_t imgid);
+  dt_image_cache_t *cache,
+  const uint32_t imgid);
 
 // same as read_get, but doesn't block and returns NULL if the image
 // is currently unavailable.
 const dt_image_t*
 dt_image_cache_read_testget(
-    dt_image_cache_t *cache,
-    const uint32_t imgid);
+  dt_image_cache_t *cache,
+  const uint32_t imgid);
 
 // drops the read lock on an image struct
 void
 dt_image_cache_read_release(
-    dt_image_cache_t *cache,
-    const dt_image_t *img);
+  dt_image_cache_t *cache,
+  const dt_image_t *img);
 
 // augments the already acquired read lock on an image to write the struct.
 // blocks until all readers have stepped back from this image (all but one,
 // which is assumed to be this thread)
 dt_image_t*
 dt_image_cache_write_get(
-    dt_image_cache_t *cache,
-    const dt_image_t *img);
+  dt_image_cache_t *cache,
+  const dt_image_t *img);
 
 // drops the write priviledges on an image struct.
 // thtis triggers a write-through to sql, and if the setting
 // is present, also to xmp sidecar files (safe setting).
 void
 dt_image_cache_write_release(
-    dt_image_cache_t *cache,
-    dt_image_t *img,
-    dt_image_cache_write_mode_t mode);
+  dt_image_cache_t *cache,
+  dt_image_t *img,
+  dt_image_cache_write_mode_t mode);
 
 // remove the image from the cache
 void
 dt_image_cache_remove(
-    dt_image_cache_t *cache,
-    const uint32_t imgid);
+  dt_image_cache_t *cache,
+  const uint32_t imgid);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

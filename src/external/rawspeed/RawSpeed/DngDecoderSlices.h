@@ -56,21 +56,19 @@ public:
 class DngDecoderSlices
 {
 public:
-  DngDecoderSlices(FileMap* file, RawImage img );
+  DngDecoderSlices(FileMap* file, RawImage img, int compression );
   ~DngDecoderSlices(void);
   void addSlice(DngSliceElement slice);
   void startDecoding();
   void decodeSlice(DngDecoderThread* t);
-  void setError(const char* err);
   int size();
   queue<DngSliceElement> slices;
   vector<DngDecoderThread*> threads;
   FileMap *mFile; 
   RawImage mRaw;
-  vector<const char*> errors;
-  pthread_mutex_t errMutex;   // Mutex for above
   bool mFixLjpeg;
   uint32 nThreads;
+  int compression;
 };
 
 } // namespace RawSpeed

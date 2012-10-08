@@ -31,8 +31,8 @@ extern "C"
 #include "control/conf.h"
 }
 
+#include "common/imageio_exr.hh"
 #include <memory>
-#include <memory.h>
 #include <stdio.h>
 #include <inttypes.h>
 #include <string.h>
@@ -76,6 +76,13 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, 
   {
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
+
+  // read back exif data
+  const Imf::BlobAttribute *exif =
+    header->findTypedAttribute <Imf::BlobAttribute> ("exif");
+  // we append a jpg-compatible exif00 string, so get rid of that again:
+  if(exif && exif->value().size > 6)
+    dt_exif_read_from_blob(img, ((uint8_t*)(exif->value().data.get()))+6, exif->value().size-6);
 
   /* Get image width and height */
   Imath::Box2i dw = header->dataWindow();
@@ -122,3 +129,6 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, 
   return DT_IMAGEIO_OK;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -49,8 +49,8 @@ uint32_t container()
 typedef struct dt_lib_select_t
 {
   GtkWidget
-      *select_all_button, *select_none_button, *select_invert_button,
-      *select_film_roll_button, *select_untouched_button;
+  *select_all_button, *select_none_button, *select_invert_button,
+  *select_film_roll_button, *select_untouched_button;
 } dt_lib_select_t;
 
 static void
@@ -58,7 +58,7 @@ button_clicked(GtkWidget *widget, gpointer user_data)
 {
   switch((long int)user_data)
   {
-    case 0:  // all 
+    case 0:  // all
       dt_selection_select_all(darktable.selection);
       break;
     case 1: // none
@@ -164,3 +164,6 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "select untouched",
                               d->select_untouched_button);
 }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

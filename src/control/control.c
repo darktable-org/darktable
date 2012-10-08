@@ -27,10 +27,15 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"
+#include "bauhaus/bauhaus.h"
 #include "views/view.h"
 #include "gui/gtk.h"
 #include "gui/contrast.h"
 #include "gui/draw.h"
+
+#ifdef USE_COLORDGTK
+#include "colord-gtk.h"
+#endif
 
 #ifdef GDK_WINDOWING_QUARTZ
 #  include <Carbon/Carbon.h>
@@ -139,10 +144,10 @@ static void dt_control_sanitize_database()
   sqlite3_stmt *stmt;
   sqlite3_stmt *innerstmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "select id, filename from images where filename like '/%'",
-    -1, &stmt, NULL);
+                              "select id, filename from images where filename like '/%'",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "update images set filename = ?1 where id = ?2", -1, &innerstmt, NULL);
+                              "update images set filename = ?1 where id = ?2", -1, &innerstmt, NULL);
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
     int id = sqlite3_column_int(stmt, 0);
@@ -158,21 +163,20 @@ static void dt_control_sanitize_database()
   sqlite3_finalize(stmt);
   sqlite3_finalize(innerstmt);
 
-  // TODO: Create in attached memory database
   // temporary stuff for some ops, need this for some reason with newer sqlite3:
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "CREATE TABLE memory.color_labels_temp (imgid INTEGER PRIMARY KEY)",
-    NULL, NULL, NULL);
+                        "CREATE TABLE memory.color_labels_temp (imgid INTEGER PRIMARY KEY)",
+                        NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "CREATE TABLE memory.tmp_selection (imgid INTEGER)", NULL, NULL, NULL);
+                        "CREATE TABLE memory.tmp_selection (imgid INTEGER)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "CREATE TABLE memory.tagq (tmpid INTEGER PRIMARY KEY, id INTEGER)",
-    NULL, NULL, NULL);
+                        "CREATE TABLE memory.tagq (tmpid INTEGER PRIMARY KEY, id INTEGER)",
+                        NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "CREATE TABLE memory.taglist "
-    "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT REPLACE, "
-    "count INTEGER)",
-    NULL, NULL, NULL);
+                        "CREATE TABLE memory.taglist "
+                        "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT REPLACE, "
+                        "count INTEGER)",
+                        NULL, NULL, NULL);
 }
 
 int dt_control_load_config(dt_control_t *c)
@@ -207,76 +211,80 @@ int dt_control_write_config(dt_control_t *c)
   dt_conf_set_int ("ui_last/window_w",  widget->allocation.width);
   dt_conf_set_int ("ui_last/window_h",  widget->allocation.height);
   dt_conf_set_bool("ui_last/maximized",
-    (gdk_window_get_state(widget->window) & GDK_WINDOW_STATE_MAXIMIZED));
+                   (gdk_window_get_state(widget->window) & GDK_WINDOW_STATE_MAXIMIZED));
 
   sqlite3_stmt *stmt;
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "update settings set settings = ?1 where rowid = 1", -1, &stmt, NULL);
+                              "update settings set settings = ?1 where rowid = 1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 1, &(darktable.control->global_settings),
-    sizeof(dt_ctl_settings_t), SQLITE_STATIC);
+                             sizeof(dt_ctl_settings_t), SQLITE_STATIC);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
   return 0;
 }
 
+#ifdef USE_COLORDGTK
+static void
+dt_ctl_get_display_profile_colord_callback(GObject *source, GAsyncResult *res, gpointer user_data)
+{
+  pthread_rwlock_wrlock(&darktable.control->xprofile_lock);
+
+  CdWindow *window = CD_WINDOW(source);
+  GError *error = NULL;
+  CdProfile *profile = cd_window_get_profile_finish(window, res, &error);
+  if(error == NULL && profile != NULL)
+  {
+    const gchar *filename = cd_profile_get_filename(profile);
+    if(filename)
+    {
+      if(g_strcmp0(filename, darktable.control->colord_profile_file))
+      {
+        /* the profile has changed (either because the user changed the colord settings or because we are on a different screen now) */
+        // update darktable.control->colord_profile_file
+        g_free(darktable.control->colord_profile_file);
+        darktable.control->colord_profile_file = g_strdup(filename);
+        // read the file
+        guchar *tmp_data = NULL;
+        gsize size;
+        g_file_get_contents(filename, (gchar**)&tmp_data, &size, NULL);
+        if(size != 0)
+        {
+          g_free(darktable.control->xprofile_data);
+          darktable.control->xprofile_data = tmp_data;
+          darktable.control->xprofile_size = size;
+        }
+      }
+    }
+  }
+  if(profile)
+    g_object_unref(profile);
+  g_object_unref(window);
+
+  pthread_rwlock_unlock(&darktable.control->xprofile_lock);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+}
+#endif
+
 // Get the display ICC profile of the monitor associated with the widget.
 // For X display, uses the ICC profile specifications version 0.2 from
 // http://burtonini.com/blog/computers/xicc
 // Based on code from Gimp's modules/cdisplay_lcms.c
-#ifdef GDK_WINDOWING_QUARTZ
-typedef struct
+void dt_ctl_set_display_profile()
 {
-  guchar *data;
-  gsize   len;
-}
-ProfileTransfer;
+  if(!dt_control_running()) return;
+  // make sure that noone gets a broken profile
+  // FIXME: benchmark if the try is really needed when moving/resizing the window. Maybe we can just lock it and block
+  if(pthread_rwlock_trywrlock(&darktable.control->xprofile_lock))
+    return; // we are already updating the profile. Or someone is reading right now. Too bad we can't distinguish that. Whatever ...
 
-enum
-{
-  openReadSpool  = 1, /* start read data process         */
-  openWriteSpool = 2, /* start write data process        */
-  readSpool      = 3, /* read specified number of bytes  */
-  writeSpool     = 4, /* write specified number of bytes */
-  closeSpool     = 5  /* complete data transfer process  */
-};
+  GtkWidget *widget = dt_ui_center(darktable.gui->ui);
+  guint8 *buffer = NULL;
+  gint buffer_size = 0;
 
-#ifndef __LP64__
-static OSErr dt_ctl_lcms_flatten_profile(SInt32  command,
-    SInt32 *size, void *data, void *refCon)
-{
-  // ProfileTransfer *transfer = static_cast<ProfileTransfer*>(refCon);
-  ProfileTransfer *transfer = (ProfileTransfer *)refCon;
-
-  switch (command)
-  {
-    case openWriteSpool:
-      g_return_val_if_fail(transfer->data==NULL && transfer->len==0, -1);
-      break;
-
-    case writeSpool:
-      transfer->data = (guchar *)
-                       g_realloc(transfer->data, transfer->len + *size);
-      memcpy(transfer->data + transfer->len, data, *size);
-      transfer->len += *size;
-      break;
-
-    default:
-      break;
-  }
-  return 0;
-}
-#endif /* __LP64__ */
-#endif /* GDK_WINDOWING_QUARTZ */
-
-void dt_ctl_get_display_profile(GtkWidget *widget,
-                                guint8 **buffer, gint *buffer_size)
-{
-  // thanks to ufraw for this!
-  *buffer = NULL;
-  *buffer_size = 0;
 #if defined GDK_WINDOWING_X11
+  /* let's have a look at the xatom, just in case ... */
   GdkScreen *screen = gtk_widget_get_screen(widget);
   if ( screen==NULL )
     screen = gdk_screen_get_default();
@@ -292,8 +300,15 @@ void dt_ctl_get_display_profile(GtkWidget *widget,
   gdk_property_get(gdk_screen_get_root_window(screen),
                    gdk_atom_intern(atom_name, FALSE), GDK_NONE,
                    0, 64 * 1024 * 1024, FALSE,
-                   &type, &format, buffer_size, buffer);
+                   &type, &format, &buffer_size, &buffer);
   g_free(atom_name);
+
+#ifdef USE_COLORDGTK
+  /* also try to get the profile from colord. this will set the value asynchronously! */
+  CdWindow *window = cd_window_new();
+  GtkWidget *center_widget = dt_ui_center(darktable.gui->ui);
+  cd_window_get_profile(window, center_widget, NULL, dt_ctl_get_display_profile_colord_callback, NULL);
+#endif
 
 #elif defined GDK_WINDOWING_QUARTZ
   GdkScreen *screen = gtk_widget_get_screen(widget);
@@ -304,90 +319,110 @@ void dt_ctl_get_display_profile(GtkWidget *widget,
   CMProfileRef prof = NULL;
   CMGetProfileByAVID(monitor, &prof);
   if ( prof==NULL )
-    return;
+  {
+    CFDataRef data;
+    data = CMProfileCopyICCData(NULL, prof);
+    CMCloseProfile(prof);
 
-  ProfileTransfer transfer = { NULL, 0 };
-  //The following code does not work on 64bit OSX. 
-  //Disable if we are compiling there.
-#ifndef __LP64__
-  Boolean foo;
-  CMFlattenProfile(prof, 0, dt_ctl_lcms_flatten_profile, &transfer, &foo);
-  CMCloseProfile(prof);
-#endif
-  *buffer = transfer.data;
-  *buffer_size = transfer.len;
+    UInt8 *tmp_buffer = (UInt8 *) g_malloc(CFDataGetLength(data));
+    CFDataGetBytes(data, CFRangeMake(0, CFDataGetLength(data)), tmp_buffer);
 
+    buffer = (guint8 *) tmp_buffer;
+    buffer_size = CFDataGetLength(data);
+
+    CFRelease(data);
+  }
 #elif defined G_OS_WIN32
   (void)widget;
   HDC hdc = GetDC (NULL);
-  if ( hdc==NULL )
-    return;
-
-  DWORD len = 0;
-  GetICMProfile (hdc, &len, NULL);
-  gchar *path = g_new (gchar, len);
-
-  if (GetICMProfile (hdc, &len, path))
+  if ( hdc!=NULL )
   {
-    gsize size;
-    g_file_get_contents(path, (gchar**)buffer, &size, NULL);
-    *buffer_size = size;
+    DWORD len = 0;
+    GetICMProfile (hdc, &len, NULL);
+    gchar *path = g_new (gchar, len);
+
+    if (GetICMProfile (hdc, &len, path))
+    {
+      gsize size;
+      g_file_get_contents(path, (gchar**)&buffer, &size, NULL);
+      buffer_size = size;
+    }
+    g_free (path);
+    ReleaseDC (NULL, hdc);
   }
-  g_free (path);
-  ReleaseDC (NULL, hdc);
 #endif
+
+  if(buffer)
+  {
+    // thanks to ufraw for this!
+    g_free(darktable.control->xprofile_data);
+    darktable.control->xprofile_data = buffer;
+    darktable.control->xprofile_size = buffer_size;
+  }
+  pthread_rwlock_unlock(&darktable.control->xprofile_lock);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
 }
 
 void dt_control_create_database_schema()
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "create table settings (settings blob)", NULL, NULL, NULL);
+                        "create table settings (settings blob)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "create table film_rolls "
-    "(id integer primary key, datetime_accessed char(20), "
-    "folder varchar(1024))", NULL, NULL, NULL);
+                        "create table film_rolls "
+                        "(id integer primary key, datetime_accessed char(20), "
+//                        "folder varchar(1024), external_drive varchar(1024))",
+                        "folder varchar(1024))",
+                         NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "create table images (id integer primary key, film_id integer, "
-    "width int, height int, filename varchar, maker varchar, model varchar, "
-    "lens varchar, exposure real, aperture real, iso real, focal_length real, "
-    "focus_distance real, datetime_taken char(20), flags integer, "
-    "output_width integer, output_height integer, crop real, "
-    "raw_parameters integer, raw_denoise_threshold real, "
-    "raw_auto_bright_threshold real, raw_black real, raw_maximum real, "
-    "caption varchar, description varchar, license varchar, sha1sum char(40), "
-    "orientation integer ,histogram blob, lightmap blob)", NULL, NULL, NULL);
+                        "create table images (id integer primary key, group_id integer, film_id integer, "
+                        "width int, height int, filename varchar, maker varchar, model varchar, "
+                        "lens varchar, exposure real, aperture real, iso real, focal_length real, "
+                        "focus_distance real, datetime_taken char(20), flags integer, "
+                        "output_width integer, output_height integer, crop real, "
+                        "raw_parameters integer, raw_denoise_threshold real, "
+                        "raw_auto_bright_threshold real, raw_black real, raw_maximum real, "
+                        "caption varchar, description varchar, license varchar, sha1sum char(40), "
+                        "orientation integer ,histogram blob, lightmap blob, longitude double, "
+                        "latitude double, color_matrix blob)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "create table selected_images (imgid integer)", NULL, NULL, NULL);
+                        "create index if not exists group_id_index on images (group_id)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "create table history (imgid integer, num integer, module integer, "
-    "operation varchar(256), op_params blob, enabled integer, "
-    "blendop_params blob, blendop_version integer)", NULL, NULL, NULL);
+                        "create table selected_images (imgid integer primary key)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "create table tags (id integer primary key, name varchar, icon blob, "
-    "description varchar, flags integer)", NULL, NULL, NULL);
+                        "create table history (imgid integer, num integer, module integer, "
+                        "operation varchar(256), op_params blob, enabled integer, "
+                        "blendop_params blob, blendop_version integer)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "create table tagxtag (id1 integer, id2 integer, count integer, "
-    "primary key(id1, id2))", NULL, NULL, NULL);
+                        "create index if not exists imgid_index on history (imgid)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "create table tagged_images (imgid integer, tagid integer, "
-    "primary key(imgid, tagid))", NULL, NULL, NULL);
+                        "create table tags (id integer primary key, name varchar, icon blob, "
+                        "description varchar, flags integer)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "create table styles (name varchar,description varchar)", NULL, NULL, NULL);
+                        "create table tagxtag (id1 integer, id2 integer, count integer, "
+                        "primary key(id1, id2))", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "create table style_items (styleid integer, num integer, module integer, "
-    "operation varchar(256), op_params blob, enabled integer, "
-    "blendop_params blob, blendop_version integer)", NULL, NULL, NULL);
+                        "create table tagged_images (imgid integer, tagid integer, "
+                        "primary key(imgid, tagid))", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "create table color_labels (imgid integer, color integer)",
-    NULL, NULL, NULL);
+                        "create table styles (name varchar,description varchar)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-    "create table meta_data (id integer,key integer,value varchar)",
-    NULL, NULL, NULL);
+                        "create table style_items (styleid integer, num integer, module integer, "
+                        "operation varchar(256), op_params blob, enabled integer, "
+                        "blendop_params blob, blendop_version integer)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "create table color_labels (imgid integer, color integer)",
+                        NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "create table meta_data (id integer,key integer,value varchar)",
+                        NULL, NULL, NULL);
 }
 
 void dt_control_init(dt_control_t *s)
 {
   dt_ctl_settings_init(s);
+
+  memset(s->vimkey, 0, sizeof(s->vimkey));
+  s->vimkey_cnt = 0;
 
   // s->last_expose_time = dt_get_wtime();
   s->key_accelerators_on = 1;
@@ -407,6 +442,7 @@ void dt_control_init(dt_control_t *s)
   dt_pthread_mutex_init(&s->cond_mutex, NULL);
   dt_pthread_mutex_init(&s->queue_mutex, NULL);
   dt_pthread_mutex_init(&s->run_mutex, NULL);
+  pthread_rwlock_init(&s->xprofile_lock, NULL);
 
   // start threads
   s->num_threads = CLAMP(dt_conf_get_int ("worker_threads"), 1, 8);
@@ -416,10 +452,10 @@ void dt_control_init(dt_control_t *s)
   dt_pthread_mutex_unlock(&s->run_mutex);
   for(int k=0; k<s->num_threads; k++)
     pthread_create(&s->thread[k], NULL, dt_control_work, s);
-  
+
   /* create queue kicker thread */
   pthread_create(&s->kick_on_workers_thread, NULL, _control_worker_kicker, s);
-  
+
   for(int k=0; k<DT_CTL_WORKER_RESERVED; k++)
   {
     s->new_res[k] = 0;
@@ -436,20 +472,20 @@ void dt_control_init(dt_control_t *s)
       if((res=pthread_setschedparam(s->thread_res[k], SCHED_RR, &sched_params))!=0)
         fprintf(stderr,"Failed to set background thread scheduling to nice level: %d.",res);
 
-    } 
+    }
 #endif
-    
+
   }
   s->button_down = 0;
   s->button_down_which = 0;
 
-  
+
   // init database schema:
   int rc;
   sqlite3_stmt *stmt;
 
   rc = sqlite3_prepare_v2(dt_database_get(darktable.db),
-    "select settings from settings", -1, &stmt, NULL);
+                          "select settings from settings", -1, &stmt, NULL);
   if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
   {
     dt_pthread_mutex_lock(&(darktable.control->global_mutex));
@@ -463,127 +499,186 @@ void dt_control_init(dt_control_t *s)
     if(darktable.control->global_settings.version != DT_VERSION)
     {
       fprintf(stderr,
-        "[load_config] wrong version %d (should be %d), substituting defaults.\n",
-        darktable.control->global_settings.version, DT_VERSION);
+              "[load_config] wrong version %d (should be %d), substituting defaults.\n",
+              darktable.control->global_settings.version, DT_VERSION);
       memcpy(&(darktable.control->global_settings),
-        &(darktable.control->global_defaults), sizeof(dt_ctl_settings_t));
+             &(darktable.control->global_defaults), sizeof(dt_ctl_settings_t));
       dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
       // drop all, restart. TODO: freeze this version or have update facility!
       sqlite3_exec(dt_database_get(darktable.db),
-        "drop table settings", NULL, NULL, NULL);
+                   "drop table settings", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-        "drop table film_rolls", NULL, NULL, NULL);
+                   "drop table film_rolls", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-        "drop table images", NULL, NULL, NULL);
+                   "drop table images", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-        "drop table selected_images", NULL, NULL, NULL);
+                   "drop table selected_images", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-        "drop table mipmaps", NULL, NULL, NULL);
+                   "drop table mipmaps", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-        "drop table mipmap_timestamps", NULL, NULL, NULL);
+                   "drop table mipmap_timestamps", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-        "drop table history", NULL, NULL, NULL);
+                   "drop table history", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-        "drop table tags", NULL, NULL, NULL);
+                   "drop table tags", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-        "drop table tagxtag", NULL, NULL, NULL);
+                   "drop table tagxtag", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-        "drop table tagged_images", NULL, NULL, NULL);
+                   "drop table tagged_images", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-        "drop table styles", NULL, NULL, NULL);
+                   "drop table styles", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-        "drop table style_items", NULL, NULL, NULL);
+                   "drop table style_items", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-        "drop table meta_data", NULL, NULL, NULL);
+                   "drop table meta_data", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "drop index imgid_index", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "drop index group_id_index", NULL, NULL, NULL);
       goto create_tables;
     }
     else
     {
       // silly check if old table is still present:
       sqlite3_exec(dt_database_get(darktable.db),
-        "delete from color_labels where imgid=0", NULL, NULL, NULL);
+                   "delete from color_labels where imgid=0", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-        "insert into color_labels values (0, 0)", NULL, NULL, NULL);
+                   "insert into color_labels values (0, 0)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-        "insert into color_labels values (0, 1)", NULL, NULL, NULL);
+                   "insert into color_labels values (0, 1)", NULL, NULL, NULL);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-        "select max(color) from color_labels where imgid=0", -1, &stmt, NULL);
+                                  "select max(color) from color_labels where imgid=0", -1, &stmt, NULL);
       int col = 0;
       // still the primary key option set?
       if(sqlite3_step(stmt) == SQLITE_ROW)
         col = MAX(col, sqlite3_column_int(stmt, 0));
       sqlite3_finalize(stmt);
       if(col != 1) sqlite3_exec(dt_database_get(darktable.db),
-        "drop table color_labels", NULL, NULL, NULL);
+                                  "drop table color_labels", NULL, NULL, NULL);
 
       // insert new tables, if not there (statement will just fail if so):
       sqlite3_exec(dt_database_get(darktable.db),
-	  "create table color_labels (imgid integer, color integer)",
-	  NULL, NULL, NULL);
+                   "create table color_labels (imgid integer, color integer)",
+                   NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "drop table mipmaps", NULL, NULL, NULL);
+                   "drop table mipmaps", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "drop table mipmap_timestamps", NULL, NULL, NULL);
+                   "drop table mipmap_timestamps", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "create table styles (name varchar, description varchar)",
-	  NULL, NULL, NULL);
+                   "create table styles (name varchar, description varchar)",
+                   NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "create table style_items (styleid integer, num integer, "
-	  "module integer, operation varchar(256), op_params blob, "
-	  "enabled integer)", NULL, NULL, NULL);
+                   "create table style_items (styleid integer, num integer, "
+                   "module integer, operation varchar(256), op_params blob, "
+                   "enabled integer)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "create table meta_data (id integer, key integer,value varchar)",
-	  NULL, NULL, NULL);
+                   "create table meta_data (id integer, key integer,value varchar)",
+                   NULL, NULL, NULL);
+
+      // selected_images should have a primary key. add it if it's missing:
+      int is_in_primary_key = 0;
+      sqlite3_table_column_metadata(dt_database_get(darktable.db), NULL, "selected_images", "imgid", NULL, NULL, NULL, &is_in_primary_key, NULL);
+      if(is_in_primary_key == 0)
+      {
+        sqlite3_exec(dt_database_get(darktable.db),
+                     "begin transaction",
+                     NULL, NULL, NULL);
+
+        sqlite3_exec(dt_database_get(darktable.db),
+                     "create temporary table selected_images_backup(imgid integer)",
+                     NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+                     "insert into selected_images_backup select imgid from selected_images",
+                     NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+                     "drop table selected_images",
+                     NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+                     "create table selected_images (imgid integer primary key)",
+                     NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+                     "insert or ignore into selected_images select imgid from selected_images_backup",
+                     NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+                     "drop table selected_images_backup",
+                     NULL, NULL, NULL);
+        sqlite3_exec(dt_database_get(darktable.db),
+                     "commit",
+                     NULL, NULL, NULL);
+      }
 
       // add columns where needed. will just fail otherwise:
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table images add column orientation integer",
-	  NULL, NULL, NULL);
+                   "alter table images add column orientation integer",
+                   NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "update images set orientation = -1 where orientation is NULL",
-	  NULL, NULL, NULL);
+                   "update images set orientation = -1 where orientation is NULL",
+                   NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table images add column focus_distance real",
-	  NULL, NULL, NULL);
+                   "alter table images add column focus_distance real",
+                   NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "update images set focus_distance = -1 where focus_distance is NULL",
-	  NULL, NULL, NULL);
+                   "update images set focus_distance = -1 where focus_distance is NULL",
+                   NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table images add column histogram blob",
-	  NULL, NULL, NULL);
+                   "alter table images add column group_id integer",
+                   NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table images add column lightmap blob",
-	  NULL, NULL, NULL);
+                   "update images set group_id = id where group_id is NULL",
+                   NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "alter table images add column histogram blob",
+                   NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "alter table images add column lightmap blob",
+                   NULL, NULL, NULL);
+/*      sqlite3_exec(dt_database_get(darktable.db),
+                   "alter table film_rolls add column external_drive varchar(1024)",
+                   NULL, NULL, NULL);
+*/
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "create index if not exists group_id_index on images (group_id)",
+                   NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "create index if not exists imgid_index on history (imgid)",
+                   NULL, NULL, NULL);
 
       // add column for blendops
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table history add column blendop_params blob",
-	  NULL, NULL, NULL);
+                   "alter table history add column blendop_params blob",
+                   NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table history add column blendop_version integer",
-	  NULL, NULL, NULL);
+                   "alter table history add column blendop_version integer",
+                   NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "update history set blendop_version = 1 where blendop_version is NULL",
-	  NULL, NULL, NULL);
+                   "update history set blendop_version = 1 where blendop_version is NULL",
+                   NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table style_items add column blendop_params blob",
-	  NULL, NULL, NULL);
+                   "alter table style_items add column blendop_params blob",
+                   NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table style_items add column blendop_version integer",
-	  NULL, NULL, NULL);
+                   "alter table style_items add column blendop_version integer",
+                   NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "update style_items set blendop_version = 1 where "
-	  "blendop_version is NULL",
-	  NULL, NULL, NULL);
+                   "update style_items set blendop_version = 1 where "
+                   "blendop_version is NULL",
+                   NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table presets add column blendop_params blob",
-	  NULL, NULL, NULL);
+                   "alter table presets add column blendop_params blob",
+                   NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "alter table presets add column blendop_version integer",
-	  NULL, NULL, NULL);
+                   "alter table presets add column blendop_version integer",
+                   NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
-	  "update presets set blendop_version = 1 where blendop_version is NULL",
-	  NULL, NULL, NULL);
+                   "update presets set blendop_version = 1 where blendop_version is NULL",
+                   NULL, NULL, NULL);
+
+      // add column for gps
+      sqlite3_exec(dt_database_get(darktable.db), "alter table images add column longitude double", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "alter table images add column latitude double", NULL, NULL, NULL);
+
+      // and the color matrix
+      sqlite3_exec(dt_database_get(darktable.db), "alter table images add column color_matrix blob", NULL, NULL, NULL);
 
       dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
@@ -595,9 +690,9 @@ void dt_control_init(dt_control_t *s)
 create_tables:
     dt_control_create_database_schema();
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-      "insert into settings (settings) values (?1)", -1, &stmt, NULL);
+                                "insert into settings (settings) values (?1)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 1, &(darktable.control->global_defaults),
-      sizeof(dt_ctl_settings_t), SQLITE_STATIC);
+                               sizeof(dt_ctl_settings_t), SQLITE_STATIC);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
@@ -608,7 +703,7 @@ create_tables:
 void dt_control_key_accelerators_on(struct dt_control_t *s)
 {
   gtk_window_add_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
-    darktable.control->accelerators);
+                             darktable.control->accelerators);
   if(!s->key_accelerators_on)
     s->key_accelerators_on = 1;
 }
@@ -616,8 +711,8 @@ void dt_control_key_accelerators_on(struct dt_control_t *s)
 void dt_control_key_accelerators_off(struct dt_control_t *s)
 {
   gtk_window_remove_accel_group(
-      GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
-      darktable.control->accelerators);
+    GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
+    darktable.control->accelerators);
   s->key_accelerators_on = 0;
 }
 
@@ -645,6 +740,23 @@ int dt_control_running()
   return running;
 }
 
+void dt_control_quit()
+{
+  // since map mode doesn't like to quit we just switch to lighttable mode. hacky, but it works :(
+  if(dt_conf_get_int("ui_last/view") == DT_MAP) // we are in map mode where no expose is running
+    dt_ctl_switch_mode_to(DT_LIBRARY);
+
+  dt_gui_gtk_quit();
+  // thread safe quit, 1st pass:
+  dt_pthread_mutex_lock(&darktable.control->cond_mutex);
+  dt_pthread_mutex_lock(&darktable.control->run_mutex);
+  darktable.control->running = 0;
+  dt_pthread_mutex_unlock(&darktable.control->run_mutex);
+  dt_pthread_mutex_unlock(&darktable.control->cond_mutex);
+  // let gui pick up the running = 0 state and die
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+}
+
 void dt_control_shutdown(dt_control_t *s)
 {
   dt_pthread_mutex_lock(&s->cond_mutex);
@@ -656,10 +768,10 @@ void dt_control_shutdown(dt_control_t *s)
 
   /* cancel background job if any */
   dt_control_job_cancel(&s->job_res[DT_CTL_WORKER_7]);
-  
+
   /* first wait for kick_on_workers_thread */
   pthread_join(s->kick_on_workers_thread, NULL);
-  
+
   // gdk_threads_leave();
   int k;
   for(k=0; k<s->num_threads; k++)
@@ -668,8 +780,8 @@ void dt_control_shutdown(dt_control_t *s)
   for(k=0; k<DT_CTL_WORKER_RESERVED; k++)
     // pthread_kill(s->thread_res[k], 9);
     pthread_join(s->thread_res[k], NULL);
-  
-   
+
+
   // gdk_threads_enter();
 }
 
@@ -682,6 +794,7 @@ void dt_control_cleanup(dt_control_t *s)
   dt_pthread_mutex_destroy(&s->cond_mutex);
   dt_pthread_mutex_destroy(&s->log_mutex);
   dt_pthread_mutex_destroy(&s->run_mutex);
+  pthread_rwlock_destroy(&s->xprofile_lock);
 }
 
 void dt_control_job_init(dt_job_t *j, const char *msg, ...)
@@ -787,14 +900,14 @@ int32_t dt_control_run_job(dt_control_t *s)
 {
   dt_job_t *j=NULL,*bj=NULL;
   dt_pthread_mutex_lock(&s->queue_mutex);
-  
+
   /* check if queue is empty */
   if(g_list_length(s->queue) == 0)
   {
     dt_pthread_mutex_unlock(&s->queue_mutex);
     return -1;
   }
-    
+
   /* go thru the queue and find one normal job and a background job
       that is up for execution.*/
   time_t ts_now = time(NULL);
@@ -803,44 +916,45 @@ int32_t dt_control_run_job(dt_control_t *s)
     do
     {
       dt_job_t *tj = jobitem->data;
-      
+
       /* check if it's a scheduled job and is waiting to be executed */
       if(!bj && (tj->ts_execute > tj->ts_added) && tj->ts_execute <= ts_now)
         bj = tj;
-      else if ((tj->ts_execute < tj->ts_added) && !j) 
+      else if ((tj->ts_execute < tj->ts_added) && !j)
         j = tj;
-      
+
       /* if we got a normal job, and a background job, we are finished */
       if(bj && j) break;
-      
-    } while ((jobitem = g_list_next(jobitem)));
+
+    }
+    while ((jobitem = g_list_next(jobitem)));
 
   /* remove the found jobs from queue */
   if (bj)
-     s->queue = g_list_remove(s->queue, bj);
-  
+    s->queue = g_list_remove(s->queue, bj);
+
   if (j)
-     s->queue = g_list_remove(s->queue, j);
-  
+    s->queue = g_list_remove(s->queue, j);
+
   /* unlock the queue */
   dt_pthread_mutex_unlock(&s->queue_mutex);
 
   /* push background job on reserved backgruond worker */
- if(bj)
- {
+  if(bj)
+  {
     dt_control_add_job_res(s,bj,DT_CTL_WORKER_7);
     g_free (bj);
- }
+  }
   /* dont continue if we dont have have a job to execute */
   if(!j)
     return -1;
-  
+
   /* change state to running */
   dt_pthread_mutex_lock (&j->wait_mutex);
   if (dt_control_job_get_state (j) == DT_JOB_STATE_QUEUED)
   {
     dt_print(DT_DEBUG_CONTROL, "[run_job+] %02d %f ",
-      DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
+             DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
     dt_control_job_print(j);
     dt_print(DT_DEBUG_CONTROL, "\n");
 
@@ -852,14 +966,16 @@ int32_t dt_control_run_job(dt_control_t *s)
     _control_job_set_state (j,DT_JOB_STATE_FINISHED);
 
     dt_print(DT_DEBUG_CONTROL, "[run_job-] %02d %f ",
-      DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
+             DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
     dt_control_job_print(j);
     dt_print(DT_DEBUG_CONTROL, "\n");
-    
+
     /* free job */
+    dt_pthread_mutex_unlock (&j->wait_mutex);
     g_free(j);
+    j = NULL;
   }
-  dt_pthread_mutex_unlock (&j->wait_mutex);
+  if(j) dt_pthread_mutex_unlock (&j->wait_mutex);
 
   return 0;
 }
@@ -883,14 +999,14 @@ int32_t dt_control_add_job_res(dt_control_t *s, dt_job_t *job, int32_t res)
 
 /* Background jobs will be timestamped and added to queue
     the queue will then check ts and detect if its background job
-    and place it on the job_res if its available... 
+    and place it on the job_res if its available...
 */
 int32_t dt_control_add_background_job(dt_control_t *s, dt_job_t *job, time_t delay)
 {
   /* setup timestamps */
   job->ts_added = time(NULL);
   job->ts_execute = job->ts_added+delay;
-  
+
   /* pass the job further to scheduled jobs worker */
   return dt_control_add_job(s,job);
 }
@@ -899,15 +1015,16 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
 {
   /* set ts_added if unset */
   if (job->ts_added == 0)
-     job->ts_added = time(NULL);
-  
+    job->ts_added = time(NULL);
+
   dt_pthread_mutex_lock(&s->queue_mutex);
-  
+
   /* check if equivalent job exist in queue, and discard job
       if duplicate found .*/
   GList *jobitem = g_list_first(s->queue);
   if(jobitem)
-    do {
+    do
+    {
       if(!memcmp(job, jobitem->data, sizeof(dt_job_t)))
       {
         dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in queue\n");
@@ -915,12 +1032,13 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
         dt_pthread_mutex_unlock(&s->queue_mutex);
         return -1;
       }
-    } while((jobitem=g_list_next(jobitem)));
-    
+    }
+    while((jobitem=g_list_next(jobitem)));
+
   dt_print(DT_DEBUG_CONTROL, "[add_job] %d ", g_list_length(s->queue));
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
-  
+
   /* add job to queue if not full, otherwise discard the job */
   if( g_list_length(s->queue) < DT_CONTROL_MAX_JOBS)
   {
@@ -953,11 +1071,12 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
   dt_print(DT_DEBUG_CONTROL, "[revive_job] ");
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
-  
+
   /* find equivalent job and move it to top of the stack */
   GList *jobitem = g_list_first(s->queue);
   if (jobitem)
-    do {
+    do
+    {
       if(!memcmp(job, jobitem->data, sizeof(dt_job_t)))
       {
         s->queue = g_list_remove_link(s->queue, jobitem);
@@ -966,11 +1085,12 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
         found_j = 1;
         break;
       }
-    } while((jobitem=g_list_next(jobitem)));
+    }
+    while((jobitem=g_list_next(jobitem)));
 
   /* unlock the queue */
   dt_pthread_mutex_unlock(&s->queue_mutex);
-  
+
   /* notify workers */
   dt_pthread_mutex_lock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
@@ -980,16 +1100,16 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
 
 int32_t dt_control_get_threadid()
 {
-  for(int k=0;k<darktable.control->num_threads;k++)
+  for(int k=0; k<darktable.control->num_threads; k++)
     if(pthread_equal(darktable.control->thread[k], pthread_self())) return k;
   return darktable.control->num_threads;
 }
 
 int32_t dt_control_get_threadid_res()
 {
-  for(int k=0;k<DT_CTL_WORKER_RESERVED;k++)
+  for(int k=0; k<DT_CTL_WORKER_RESERVED; k++)
     if(pthread_equal(darktable.control->thread_res[k], pthread_self())) return k;
-  return DT_CTL_WORKER_RESERVED;  
+  return DT_CTL_WORKER_RESERVED;
 }
 
 void *dt_control_work_res(void *ptr)
@@ -1016,14 +1136,15 @@ void *dt_control_work_res(void *ptr)
   return NULL;
 }
 
-void * _control_worker_kicker(void *ptr) {
+void * _control_worker_kicker(void *ptr)
+{
   dt_control_t *s = (dt_control_t *)ptr;
   while(dt_control_running())
   {
-      sleep(2);
-      dt_pthread_mutex_lock(&s->cond_mutex);
-      pthread_cond_broadcast(&s->cond);
-      dt_pthread_mutex_unlock(&s->cond_mutex);
+    sleep(2);
+    dt_pthread_mutex_lock(&s->cond_mutex);
+    pthread_cond_broadcast(&s->cond);
+    dt_pthread_mutex_unlock(&s->cond_mutex);
   }
   return NULL;
 }
@@ -1104,7 +1225,7 @@ void *dt_control_expose(void *voidptr)
   cairo_new_path(cr);
   // draw view
   dt_view_manager_expose(darktable.view_manager, cr, width-2*tb, height-2*tb,
-    pointerx-tb, pointery-tb);
+                         pointerx-tb, pointery-tb);
   cairo_restore(cr);
 
   // draw status bar, if any
@@ -1113,14 +1234,14 @@ void *dt_control_expose(void *voidptr)
     tb = fmaxf(20, width/40.0);
     char num[10];
     cairo_rectangle(cr, width*0.4, height*0.85,
-      width*0.2*darktable.control->progress/100.0f, tb);
+                    width*0.2*darktable.control->progress/100.0f, tb);
     cairo_fill(cr);
     cairo_set_source_rgb(cr, 0., 0., 0.);
     cairo_rectangle(cr, width*0.4, height*0.85, width*0.2, tb);
     cairo_stroke(cr);
     cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
     cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
-      CAIRO_FONT_WEIGHT_BOLD);
+                            CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size (cr, tb/3);
     cairo_move_to (cr, width/2.0-10, height*0.85+2.*tb/3.);
     snprintf(num, 10, "%d%%", (int)darktable.control->progress);
@@ -1131,12 +1252,12 @@ void *dt_control_expose(void *voidptr)
   if(darktable.control->log_ack != darktable.control->log_pos)
   {
     cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
-      CAIRO_FONT_WEIGHT_BOLD);
+                            CAIRO_FONT_WEIGHT_BOLD);
     const float fontsize = 14;
     cairo_set_font_size (cr, fontsize);
     cairo_text_extents_t ext;
     cairo_text_extents (cr,
-      darktable.control->log_message[darktable.control->log_ack], &ext);
+                        darktable.control->log_message[darktable.control->log_ack], &ext);
     const float pad = 20.0f, xc = width/2.0;
     const float yc = height*0.85+10, wd = pad + ext.width*.5f;
     float rad = 14;
@@ -1160,13 +1281,13 @@ void *dt_control_expose(void *voidptr)
     cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
     cairo_move_to (cr, xc-wd+.5f*pad, yc + 1./3.*fontsize);
     cairo_show_text (cr,
-      darktable.control->log_message[darktable.control->log_ack]);
+                     darktable.control->log_message[darktable.control->log_ack]);
   }
   // draw busy indicator
   if(darktable.control->log_busy > 0)
   {
     cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
-      CAIRO_FONT_WEIGHT_BOLD);
+                            CAIRO_FONT_WEIGHT_BOLD);
     const float fontsize = 14;
     cairo_set_font_size (cr, fontsize);
     cairo_text_extents_t ext;
@@ -1255,9 +1376,9 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
 
   char buf[512];
   snprintf(buf, sizeof(buf) - 1, _("switch to %s mode"),
-    dt_view_manager_name(darktable.view_manager));
+           dt_view_manager_name(darktable.view_manager));
 
-  gboolean i_own_lock = dt_control_gdk_lock(); 
+  gboolean i_own_lock = dt_control_gdk_lock();
 
   int error = dt_view_manager_switch(darktable.view_manager, mode);
 
@@ -1326,7 +1447,7 @@ void dt_control_log(const char* msg, ...)
   va_list ap;
   va_start(ap, msg);
   vsnprintf(darktable.control->log_message[darktable.control->log_pos],
-    DT_CTL_LOG_MSG_SIZE, msg, ap);
+            DT_CTL_LOG_MSG_SIZE, msg, ap);
   va_end(ap);
   if(darktable.control->log_message_timeout_id)
     g_source_remove(darktable.control->log_message_timeout_id);
@@ -1334,6 +1455,14 @@ void dt_control_log(const char* msg, ...)
   darktable.control->log_pos = (darktable.control->log_pos+1)%DT_CTL_LOG_SIZE;
   darktable.control->log_message_timeout_id =
     g_timeout_add(DT_CTL_LOG_TIMEOUT,_dt_ctl_log_message_timeout_callback, NULL);
+  dt_pthread_mutex_unlock(&darktable.control->log_mutex);
+  dt_control_queue_redraw_center();
+}
+
+static void dt_control_log_ack_all()
+{
+  dt_pthread_mutex_lock(&darktable.control->log_mutex);
+  darktable.control->log_pos = darktable.control->log_ack;
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
   dt_control_queue_redraw_center();
 }
@@ -1365,8 +1494,8 @@ gboolean dt_control_gdk_lock()
   /* if we dont have any managed locks just lock and return */
   g_static_mutex_lock(&_control_gdk_lock_threads_mutex);
   if(!_control_gdk_lock_threads)
-     goto lock_and_return;
- 
+    goto lock_and_return;
+
   /* lets check if current thread has a managed lock */
   if(g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self()))
   {
@@ -1378,7 +1507,7 @@ gboolean dt_control_gdk_lock()
 lock_and_return:
   /* lets add current thread to managed locks */
   _control_gdk_lock_threads = g_list_append(_control_gdk_lock_threads,
-    (gpointer)pthread_self());
+                              (gpointer)pthread_self());
   g_static_mutex_unlock(&_control_gdk_lock_threads_mutex);
 
   /* enter gdk critical section */
@@ -1390,14 +1519,13 @@ lock_and_return:
 void dt_control_gdk_unlock()
 {
   /* check if current thread has a lock and remove if exists */
-  GList *item=NULL;
   g_static_mutex_lock(&_control_gdk_lock_threads_mutex);
-  if((item=g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self()))) 
+  if(g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self()))
   {
     /* remove lock */
     _control_gdk_lock_threads = g_list_remove(_control_gdk_lock_threads,
-      (gpointer)pthread_self());  
-    
+                                (gpointer)pthread_self());
+
     /* leave critical section */
     gdk_threads_leave();
   }
@@ -1442,9 +1570,9 @@ void _control_queue_redraw_wrapper(dt_signal_t signal)
     G_UNLOCK(counter);
 
   /* unlock our locks */
-  if (i_own_lock) 
+  if (i_own_lock)
     dt_control_gdk_unlock();
-      
+
   g_static_mutex_unlock(&_control_redraw_mutex);
 
 }
@@ -1454,8 +1582,8 @@ void dt_control_queue_redraw()
   _control_queue_redraw_wrapper(DT_SIGNAL_CONTROL_REDRAW_ALL);
 }
 
-void dt_control_queue_redraw_center() 
-{  
+void dt_control_queue_redraw_center()
+{
   _control_queue_redraw_wrapper(DT_SIGNAL_CONTROL_REDRAW_CENTER);
 }
 
@@ -1542,33 +1670,135 @@ int dt_control_key_pressed_override(guint key, guint state)
 {
   dt_control_accels_t* accels = &darktable.control->accels;
 
+  // TODO: if darkroom mode
+  // did a : vim-style command start?
+  static GList *autocomplete = NULL;
+  static char   vimkey_input[256];
+  if(darktable.control->vimkey_cnt)
+  {
+    if(key == GDK_Return)
+    {
+      if(!strcmp(darktable.control->vimkey, ":q"))
+      {
+        dt_control_quit();
+      }
+      else
+      {
+        dt_bauhaus_vimkey_exec(darktable.control->vimkey);
+      }
+      darktable.control->vimkey[0] = 0;
+      darktable.control->vimkey_cnt = 0;
+      dt_control_log_ack_all();
+      g_list_free(autocomplete);
+      autocomplete = NULL;
+    }
+    else if(key == GDK_Escape)
+    {
+      darktable.control->vimkey[0] = 0;
+      darktable.control->vimkey_cnt = 0;
+      dt_control_log_ack_all();
+      g_list_free(autocomplete);
+      autocomplete = NULL;
+    }
+    else if(key == GDK_BackSpace)
+    {
+      darktable.control->vimkey_cnt = MAX(0, darktable.control->vimkey_cnt-1);
+      darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
+      if(darktable.control->vimkey_cnt == 0)
+        dt_control_log_ack_all();
+      else
+        dt_control_log(darktable.control->vimkey);
+      g_list_free(autocomplete);
+      autocomplete = NULL;
+    }
+    else if(key == GDK_Tab)
+    {
+      // TODO: also support :preset and :get?
+      // auto complete:
+      if(darktable.control->vimkey_cnt < 5)
+      {
+        sprintf(darktable.control->vimkey, ":set ");
+        darktable.control->vimkey_cnt = 5;
+      }
+      else if(!autocomplete)
+      {
+        // TODO: handle '.'-separated things separately
+        // this is a static list, and tab cycles through the list
+        strncpy(vimkey_input, darktable.control->vimkey + 5, 256);
+        autocomplete = dt_bauhaus_vimkey_complete(darktable.control->vimkey + 5);
+        autocomplete = g_list_append(autocomplete, vimkey_input); // remember input to cycle back
+      }
+      if(autocomplete)
+      {
+        // pop first.
+        // the paths themselves are owned by bauhaus,
+        // no free required.
+        snprintf(darktable.control->vimkey, 256, ":set %s", (char *)autocomplete->data);
+        autocomplete = g_list_remove(autocomplete, autocomplete->data);
+        darktable.control->vimkey_cnt = strlen(darktable.control->vimkey);
+      }
+      dt_control_log(darktable.control->vimkey);
+    }
+    else if(key >= ' ' && key <= '~') // printable ascii character
+    {
+      darktable.control->vimkey[darktable.control->vimkey_cnt] = key;
+      darktable.control->vimkey_cnt = MIN(255, darktable.control->vimkey_cnt+1);
+      darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
+      dt_control_log(darktable.control->vimkey);
+      g_list_free(autocomplete);
+      autocomplete = NULL;
+    }
+    else if(key == GDK_Up)
+    {
+      // TODO: step history up and copy to vimkey
+    }
+    else if(key == GDK_Down)
+    {
+      // TODO: step history down and copy to vimkey
+    }
+    return 1;
+  }
+  else if(key == ':' && darktable.control->key_accelerators_on)
+  {
+    darktable.control->vimkey[0] = ':';
+    darktable.control->vimkey[1] = 0;
+    darktable.control->vimkey_cnt = 1;
+    dt_control_log(darktable.control->vimkey);
+    return 1;
+  }
+
   /* check if key accelerators are enabled*/
   if (darktable.control->key_accelerators_on != 1) return 0;
 
-  if(key == accels->global_sideborders.accel_key
-     && state == accels->global_sideborders.accel_mods)
+  if(key == accels->global_sideborders.accel_key &&
+      state == accels->global_sideborders.accel_mods)
   {
 // TODO LGU
 // HEAD
     /* toggle panel viewstate */
     dt_ui_toggle_panels_visibility(darktable.gui->ui);
+//<<<<<<< HEAD
     
 /* ====
     gboolean visible = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT);
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, !visible);
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, !visible);
 >> detachable */
+//=======
+//>>>>>>> master
 
     /* trigger invalidation of centerview to reprocess pipe */
     dt_dev_invalidate(darktable.develop);
-
-  } else if (key == accels->global_header.accel_key &&
-	     state == accels->global_header.accel_mods)
+    gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+    return 1;
+  }
+  else if(key == accels->global_header.accel_key &&
+          state == accels->global_header.accel_mods)
   {
     char key[512];
     const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
 
-    /* do nothing if in collaps panel state 
+    /* do nothing if in collaps panel state
        TODO: reconsider adding this check to ui api */
     g_snprintf(key, 512, "%s/ui/panel_collaps_state",cv->module_name);
     if (dt_conf_get_int(key))
@@ -1578,25 +1808,24 @@ int dt_control_key_pressed_override(guint key, guint state)
     g_snprintf(key, 512, "%s/ui/show_header", cv->module_name);
     gboolean header = !dt_conf_get_bool(key);
     dt_conf_set_bool(key, header);
-    
+
     /* show/hide the actual header panel */
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, header); 
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, header);
+    gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+    return 1;
   }
- 
-  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
   return 0;
 }
 
 int dt_control_key_pressed(guint key, guint state)
 {
-  int needRedraw;
-
-  needRedraw = dt_view_manager_key_pressed(darktable.view_manager, key,
-                                               state);
-  if( needRedraw )
+  int handled = dt_view_manager_key_pressed(
+                  darktable.view_manager,
+                  key,
+                  state);
+  if(handled)
     gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
-  
-  return 0;
+  return handled;
 }
 
 int dt_control_key_released(guint key, guint state)
@@ -1604,16 +1833,17 @@ int dt_control_key_released(guint key, guint state)
   // this line is here to find the right key code on different platforms (mac).
   // printf("key code pressed: %d\n", which);
 
+  int handled = 0;
   switch (key)
   {
     default:
       // propagate to view modules.
-      dt_view_manager_key_released(darktable.view_manager, key, state);
+      handled = dt_view_manager_key_released(darktable.view_manager, key, state);
       break;
   }
 
-  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
-  return 0;
+  if(handled) gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+  return handled;
 }
 
 void dt_control_hinter_message(const struct dt_control_t *s, const char *message)
@@ -1647,4 +1877,6 @@ void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, con
     s->proxy.backgroundjobs.set_cancellable(s->proxy.backgroundjobs.module, key, job);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

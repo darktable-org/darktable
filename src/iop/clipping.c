@@ -45,7 +45,7 @@
 DT_MODULE(3)
 
 // number of gui ratios in combo box
-#define NUM_RATIOS 10
+#define NUM_RATIOS 11
 
 /** flip H/V, rotate an image, then clip the buffer. */
 typedef enum dt_iop_clipping_flags_t
@@ -142,7 +142,7 @@ typedef struct dt_iop_clipping_global_data_t
 dt_iop_clipping_global_data_t;
 
 static void commit_box(dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g,
-                        dt_iop_clipping_params_t *p);
+                       dt_iop_clipping_params_t *p);
 
 static void mul_mat_vec_2(const float *m, const float *p, float *o)
 {
@@ -786,6 +786,7 @@ aspect_presets_changed (GtkWidget *combo, dt_iop_module_t *self)
       char text[128];
       snprintf(text, 128, "%.3f:1", g->current_aspect);
       dt_bauhaus_combobox_set_text(combo, text);
+      if(self->dt->gui->reset) return;
       apply_box_aspect(self, 5);
       dt_control_queue_redraw_center();
     }
@@ -804,6 +805,7 @@ aspect_presets_changed (GtkWidget *combo, dt_iop_module_t *self)
         // *c = '\0'; // not needed, atof will stop there.
         c++;
         g->current_aspect = atof(text) / atof(c);
+        if(self->dt->gui->reset) return;
         apply_box_aspect(self, 5);
         dt_control_queue_redraw_center();
       }
@@ -815,6 +817,7 @@ aspect_presets_changed (GtkWidget *combo, dt_iop_module_t *self)
 
     g->current_aspect = g->aspect_ratios[which];
 
+    if(self->dt->gui->reset) return;
     apply_box_aspect(self, 5);
     dt_control_queue_redraw_center();
   }
@@ -882,9 +885,9 @@ void gui_update(struct dt_iop_module_t *self)
     else          hvflip = 0;
   }
   dt_bauhaus_combobox_set(g->hvflip, hvflip);
-  
+
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
-  if (act < -1 || act >= NUM_RATIOS) 
+  if (act < -1 || act >= NUM_RATIOS)
     act = 0;
 
 
@@ -913,7 +916,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_clipping_params_t);
   module->gui_data = NULL;
-  module->priority = 392; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 384; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -939,7 +942,7 @@ hvflip_callback(GtkWidget *widget, dt_iop_module_t *self)
 
 static void
 key_swap_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-                    guint keyval, GdkModifierType modifier, gpointer d)
+                  guint keyval, GdkModifierType modifier, gpointer d)
 {
   (void)accel_group;
   (void)acceleratable;
@@ -953,9 +956,9 @@ key_swap_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
 }
 
 static gboolean key_commit_callback(GtkAccelGroup *accel_group,
-                                GObject *acceleratable,
-                                guint keyval, GdkModifierType modifier,
-                                gpointer data)
+                                    GObject *acceleratable,
+                                    guint keyval, GdkModifierType modifier,
+                                    gpointer data)
 {
   dt_iop_module_t* self = (dt_iop_module_t*)data;
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
@@ -1063,7 +1066,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->aspect_presets, _("square"));
   dt_bauhaus_combobox_add(g->aspect_presets, _("DIN"));
   dt_bauhaus_combobox_add(g->aspect_presets, _("16:9"));
-  
+  dt_bauhaus_combobox_add(g->aspect_presets, _("10:8 in print"));
+
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
   if(act < 0 || act >= NUM_RATIOS) act = 0;
   dt_bauhaus_combobox_set(g->aspect_presets, act);
@@ -1130,9 +1134,10 @@ void _iop_clipping_update_ratios(dt_iop_module_t *self)
   g->aspect_ratios[7] = 1.0;
   g->aspect_ratios[8] = sqrtf(2.0);
   g->aspect_ratios[9] = 16.0f/9.0f;
+  g->aspect_ratios[10] = 244.5f/203.2f;
 
   // if adding new presets, make sure to change this as well:
-  assert(NUM_RATIOS == 10);
+  assert(NUM_RATIOS == 11);
 
   /* swap default fixed ratios for portraits */
   if (g->aspect_ratios[1] < 1.0)
@@ -1218,7 +1223,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_clip(cr);
   cairo_set_line_width(cr, 1.0/zoom_scale);
   cairo_set_source_rgb(cr, .8, .8, .8);
- 
+
   // draw guides
   cairo_set_dash(cr, &dashes, 1, 0);
 
@@ -1413,7 +1418,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
           float xx = 0.0;
           float yy = 0.0;
 
-          if (grab & 1 || grab & 4) 
+          if (grab & 1 || grab & 4)
             xx = (grab & 1) ? (pzx-bzx) : (bzx-pzx);
           if (grab & 2 || grab & 8)
             yy = (grab & 2) ? (pzy-bzy) : (bzy-pzy);
@@ -1551,7 +1556,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
   }
   if(which == 3 || which == 1)
   {
-    if (self->off) 
+    if (self->off)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
 
     g->button_down_x = x;
@@ -1608,4 +1613,6 @@ void connect_key_accels(dt_iop_module_t *self)
 
 #undef NUM_RATIOS
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

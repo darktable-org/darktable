@@ -96,6 +96,13 @@ Camera* CameraMetaData::getCamera(string make, string model, string mode) {
   return cameras[id];
 }
 
+bool CameraMetaData::hasCamera(string make, string model, string mode) {
+  string id = string(make).append(model).append(mode);
+  if (cameras.end() == cameras.find(id))
+    return FALSE;
+  return TRUE;
+}
+
 void CameraMetaData::addCamera( Camera* cam )
 {
   string id = string(cam->make).append(cam->model).append(cam->mode);

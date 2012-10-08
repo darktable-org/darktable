@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2009--2012 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,12 +20,20 @@
 
 #include "common/darktable.h"
 #include "common/opencl.h"
+#include "common/bilateralcl.h"
+#include "common/gaussian.h"
 #include "common/dlopencl.h"
+#include "common/nvidia_gpus.h"
 #include "control/conf.h"
 
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
+
+#include <sys/stat.h>
+#include <errno.h>
+#include <libgen.h>
+#include <ctype.h>
 
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
@@ -59,14 +67,14 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
   // dynamically load opencl runtime
   if(!dt_dlopencl_init(library, &cl->dlocl))
-    {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] no working opencl library found. Continue with opencl disabled\n");
-      goto finally;
-    }
-    else
-    {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl library '%s' found on your system and loaded\n", cl->dlocl->library);
-    }
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] no working opencl library found. Continue with opencl disabled\n");
+    goto finally;
+  }
+  else
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl library '%s' found on your system and loaded\n", cl->dlocl->library);
+  }
 
   cl_int err;
   cl_platform_id all_platforms[DT_OPENCL_MAX_PLATFORMS];
@@ -84,6 +92,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] no opencl platform available\n");
     goto finally;
   }
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d platform%s\n", num_platforms, num_platforms > 1 ? "s" : "");
 
   for(int n=0; n < num_platforms; n++)
   {
@@ -94,7 +103,6 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get device id size: %d\n", err);
-      goto finally;
     }
   }
 
@@ -113,12 +121,12 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get devices list: %d\n", err);
-      goto finally;
     }
     devs += all_num_devices[n];
   }
- 
+
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d device%s\n", num_devices, num_devices > 1 ? "s" : "");
+  if(num_devices == 0) goto finally;
 
   int dev = 0;
   for(int k=0; k<num_devices; k++)
@@ -133,21 +141,32 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     cl->dev[dev].lostevents = 0;
     cl->dev[dev].summary=CL_COMPLETE;
     cl->dev[dev].used_global_mem = 0;
+    cl->dev[dev].nvidia_sm_20 = 0;
     cl_device_id devid = cl->dev[dev].devid = devices[k];
 
     char infostr[1024];
+    char vendor[256];
     size_t infoint;
     size_t infointtab[1024];
     cl_device_type type;
     cl_bool image_support = 0;
 
     // test GPU memory and image support:
+    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VENDOR, sizeof(vendor), &vendor, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_NAME, sizeof(infostr), &infostr, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_TYPE, sizeof(cl_device_type), &type,  NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE_SUPPORT, sizeof(cl_bool), &image_support, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(size_t), &(cl->dev[dev].max_image_height), NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_WIDTH,  sizeof(size_t), &(cl->dev[dev].max_image_width),  NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_MEM_ALLOC_SIZE,  sizeof(cl_ulong), &(cl->dev[dev].max_mem_alloc),  NULL);
+
+    if(!strncasecmp(vendor, "NVIDIA", 6))
+    {
+      // very lame attemt to detect support for atomic float add in global memory.
+      // we need compute model sm_20, but let's try for all nvidia devices :(
+      cl->dev[dev].nvidia_sm_20 = dt_nvidia_gpu_supports_sm_20(infostr);
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' %s sm_20 support.\n", k, infostr, cl->dev[dev].nvidia_sm_20 ? "has" : "doesn't have");
+    }
 
     if(type == CL_DEVICE_TYPE_CPU)
     {
@@ -199,43 +218,76 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create command queue for device %d: %d\n", k, err);
       goto finally;
     }
-    char dtpath[1024], filename[1024], programname[1024];
-    dt_loc_get_datadir(dtpath, 1024);
-    snprintf(filename, 1024, "%s/kernels/programs.conf", dtpath);
+
+    char dtcache[DT_MAX_PATH_LEN];
+    char cachedir[DT_MAX_PATH_LEN];
+    char devname[1024];
+    double tstart, tend, tdiff;
+    dt_loc_get_user_cache_dir(dtcache, DT_MAX_PATH_LEN);
+
+    int len = strlen(infostr);
+    int j=0;
+    // remove non-alphanumeric chars from device name
+    for (int i=0; i < len; i++) if (isalnum(infostr[i])) devname[j++]=infostr[i];
+    devname[j] = 0;
+    snprintf(cachedir, DT_MAX_PATH_LEN, "%s/cached_kernels_for_%s", dtcache, devname);
+    if (mkdir(cachedir, 0700) && (errno != EEXIST))
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to create directory `%s'!\n", cachedir);
+      goto finally;
+    }
+
+    char dtpath[DT_MAX_PATH_LEN];
+    char filename[DT_MAX_PATH_LEN];
+    char programname[DT_MAX_PATH_LEN];
+    char binname[DT_MAX_PATH_LEN];
+    dt_loc_get_datadir(dtpath, DT_MAX_PATH_LEN);
+    snprintf(filename, DT_MAX_PATH_LEN, "%s/kernels/programs.conf", dtpath);
+
     // now load all darktable cl kernels.
     // TODO: compile as a job?
+    tstart = dt_get_wtime();
     FILE *f = fopen(filename, "rb");
     if(f)
     {
+
       while(!feof(f))
       {
         int rd = fscanf(f, "%[^\n]\n", programname);
         if(rd != 1) continue;
         // remove comments:
-        for(int k=0; k<strlen(programname); k++)
-          if(programname[k] == '#')
+        for(int pos=0; pos<strlen(programname); pos++)
+          if(programname[pos] == '#')
           {
-            programname[k] = '\0';
-            for(int l=k-1; l>=0; l--)
-            {   
+            programname[pos] = '\0';
+            for(int l=pos-1; l>=0; l--)
+            {
               if (programname[l] == ' ')
-	        programname[l] = '\0';
+                programname[l] = '\0';
               else
-	        break;
+                break;
             }
             break;
           }
         if(programname[0] == '\0') continue;
-        snprintf(filename, 1024, "%s/kernels/%s", dtpath, programname);
+        snprintf(filename, DT_MAX_PATH_LEN, "%s/kernels/%s", dtpath, programname);
+        snprintf(binname, DT_MAX_PATH_LEN, "%s/%s.bin", cachedir, programname);
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
-        const int prog = dt_opencl_load_program(dev, filename);
-        if(dt_opencl_build_program(dev, prog))
+        int loaded_cached;
+        char md5sum[33];
+        const int prog = dt_opencl_load_program(dev, filename, binname, cachedir, md5sum, &loaded_cached);
+        if(dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached) != CL_SUCCESS)
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
           goto finally;
         }
+
       }
+
       fclose(f);
+      tend = dt_get_wtime();
+      tdiff = tend - tstart;
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] kernel loading time: %2.4lf \n", tdiff);
     }
     else
     {
@@ -260,12 +312,21 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 finally:
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] FINALLY: opencl is %sAVAILABLE on this system.\n", cl->inited ? "" : "NOT ");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] initial status of opencl enabled flag is %s.\n", cl->enabled ? "ON" : "OFF");
+  if(cl->inited)
+  {
+    cl->bilateral = dt_bilateral_init_cl_global();
+    cl->gaussian = dt_gaussian_init_cl_global();
+  }
   return;
 }
 
 void dt_opencl_cleanup(dt_opencl_t *cl)
 {
-  if(cl->inited) for(int i=0; i<cl->num_devs; i++)
+  if(cl->inited)
+  {
+    dt_bilateral_free_cl_global(cl->bilateral);
+    dt_gaussian_free_cl_global(cl->gaussian);
+    for(int i=0; i<cl->num_devs; i++)
     {
       dt_pthread_mutex_destroy(&cl->dev[i].lock);
       for(int k=0; k<DT_OPENCL_MAX_KERNELS; k++) if(cl->dev[i].kernel_used [k]) (cl->dlocl->symbols->dt_clReleaseKernel) (cl->dev[i].kernel [k]);
@@ -276,8 +337,10 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
       if(cl->dev[i].eventlist) free(cl->dev[i].eventlist);
       if(cl->dev[i].eventtags) free(cl->dev[i].eventtags);
     }
+  }
 
-  if(cl->dlocl) {
+  if(cl->dlocl)
+  {
     free(cl->dlocl->symbols);
     free(cl->dlocl);
   }
@@ -332,60 +395,156 @@ void dt_opencl_unlock_device(const int dev)
   dt_pthread_mutex_unlock(&cl->dev[dev].lock);
 }
 
-int dt_opencl_load_program(const int dev, const char *filename)
+static FILE* fopen_stat(const char* filename, struct stat* st)
 {
-  cl_int err;
-  dt_opencl_t *cl = darktable.opencl;
   FILE *f = fopen(filename, "rb");
   if(!f)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not open file `%s'!\n", filename);
-    return -1;
+    dt_print(DT_DEBUG_OPENCL, "[opencl_fopen_stat] could not open file `%s'!\n", filename);
+    return NULL;
   }
-  fseek(f, 0, SEEK_END);
-  size_t filesize = ftell(f);
-  fseek(f, 0, SEEK_SET);
-  char file[filesize+1];
-  int rd = fread(file, sizeof(char), filesize, f);
+  int fd = fileno(f);
+  if(fstat(fd, st)<0)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_fopen_stat] could not stat file `%s'!\n", filename);
+    return NULL;
+  }
+  return f;
+}
+
+
+int dt_opencl_load_program(const int dev, const char *filename, const char* binname, const char* cachedir, char* md5sum, int* loaded_cached)
+{
+  cl_int err;
+  dt_opencl_t *cl = darktable.opencl;
+
+  struct stat filestat, cachedstat;
+  *loaded_cached = 0;
+  int k = 0;
+
+  FILE* f = fopen_stat(filename, &filestat);
+  if (!f) return -1;
+
+  size_t filesize = filestat.st_size;
+  char* file = (char*)malloc(filesize+1024);
+  size_t rd = fread(file, sizeof(char), filesize, f);
   fclose(f);
   if(rd != filesize)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not read all of file `%s'!\n", filename);
+    free(file);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] could not read all of file `%s'!\n", filename);
     return -1;
   }
-  if(file[filesize-1] != '\n')
+
+  char *start = file + filesize;
+  char *end = start + 1024;
+  size_t len;
+
+  cl_device_id devid = cl->dev[dev].devid;
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DRIVER_VERSION, end-start, start, &len);
+  start += len;
+
+  cl_platform_id platform;
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platform, NULL);
+
+  (cl->dlocl->symbols->dt_clGetPlatformInfo)(platform, CL_PLATFORM_VERSION, end-start, start, &len);
+  start += len;
+
+  char *source_md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)file, start-file);
+  strncpy(md5sum, source_md5, 33);
+  g_free(source_md5);
+
+  file[filesize] = '\0';
+
+  char linkedfile[1024];
+  ssize_t linkedfile_len = 0;
+
+  FILE *cached = fopen_stat(binname, &cachedstat);
+  if (cached)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] no newline at end of file `%s'!\n", filename);
-    file[filesize] = '\n';
-  }
-  int lines = 0;
-  for(int k=0; k<filesize; k++) if(file[k] == '\n') lines++;
-  const char *sptr[lines+1];
-  size_t lengths[lines];
-  int curr = 0;
-  sptr[curr++] = file;
-  for(int k=0; k<filesize; k++)
-    if(file[k] == '\n')
+
+    if ((linkedfile_len=readlink(binname, linkedfile, 1023)) > 0)
     {
-      sptr[curr] = file + k + 1;
-      lengths[curr-1] = sptr[curr] - sptr[curr-1];
-      curr++;
-    }
-  lengths[lines-1] = file + filesize - sptr[lines-1];
-  sptr[lines] = NULL;
-  int k = 0;
-  for(; k<DT_OPENCL_MAX_PROGRAMS; k++) if(!cl->dev[dev].program_used[k])
-    {
-      cl->dev[dev].program_used[k] = 1;
-      cl->dev[dev].program[k] = (cl->dlocl->symbols->dt_clCreateProgramWithSource)(cl->dev[dev].context, lines, sptr, lengths, &err);
-      if(err != CL_SUCCESS)
+      linkedfile[linkedfile_len] = '\0';
+
+      if (strncmp(linkedfile, md5sum, 33)==0)
       {
-        dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not create program from file `%s'! (%d)\n", filename, err);
-        cl->dev[dev].program_used[k] = 0;
-        return -1;
+        // md5sum matches, load cached binary
+        size_t cached_filesize = cachedstat.st_size;
+
+        unsigned char *cached_content = (unsigned char *)malloc(cached_filesize+1);
+        int rd = fread(cached_content, sizeof(char), cached_filesize, cached);
+        if (rd != cached_filesize)
+        {
+          dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not read all of file `%s'!\n", binname);
+        }
+        else
+        {
+          for(k = 0; k<DT_OPENCL_MAX_PROGRAMS; k++) if(!cl->dev[dev].program_used[k])
+            {
+              cl->dev[dev].program[k] = (cl->dlocl->symbols->dt_clCreateProgramWithBinary)(cl->dev[dev].context, 1, &(cl->dev[dev].devid), &cached_filesize, (const unsigned char **)&cached_content, NULL, &err);
+              if(err != CL_SUCCESS)
+              {
+                dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not load cached binary program from file `%s'! (%d)\n", binname, err);
+                break;
+              }
+              else
+              {
+                cl->dev[dev].program_used[k] = 1;
+                *loaded_cached = 1;
+                break;
+              }
+            }
+        }
+        free(cached_content);
       }
-      else break;
+
     }
+
+    fclose(cached);
+  }
+
+
+  if (*loaded_cached == 0)
+  {
+    // if loading cached was unsuccessful for whatever reason,
+    // try to remove cached binary & link
+    if (linkedfile_len>0)
+    {
+      char link_dest[1024];
+      snprintf(link_dest, 1024, "%s/%s", cachedir, linkedfile);
+      unlink(link_dest);
+    }
+    unlink(binname);
+
+    if (k != DT_OPENCL_MAX_PROGRAMS)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not load cached binary program, trying to compile source\n");
+
+      for(k=0; k<DT_OPENCL_MAX_PROGRAMS; k++) if(!cl->dev[dev].program_used[k])
+        {
+          cl->dev[dev].program[k] = (cl->dlocl->symbols->dt_clCreateProgramWithSource)(cl->dev[dev].context, 1, (const char**)&file, &filesize, &err);
+          free(file);
+          if(err != CL_SUCCESS)
+          {
+            dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] could not create program from file `%s'! (%d)\n", filename, err);
+            return -1;
+          }
+          else
+          {
+            cl->dev[dev].program_used[k] = 1;
+            break;
+          }
+        }
+    }
+  }
+  else
+  {
+    free(file);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] loaded cached binary program from file `%s'\n", binname);
+  }
+
+
   if(k < DT_OPENCL_MAX_PROGRAMS)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] successfully loaded program from `%s'\n", filename);
@@ -398,19 +557,21 @@ int dt_opencl_load_program(const int dev, const char *filename)
   }
 }
 
-int dt_opencl_build_program(const int dev, const int prog)
+int dt_opencl_build_program(const int dev, const int prog, const char* binname, const char* cachedir, char* md5sum, int loaded_cached)
 {
   if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return -1;
   dt_opencl_t *cl = darktable.opencl;
   cl_program program = cl->dev[dev].program[prog];
   cl_int err;
-  err = (cl->dlocl->symbols->dt_clBuildProgram)(program, 1, &cl->dev[dev].devid, "-cl-fast-relaxed-math -cl-strict-aliasing", 0, 0);
+  char options[256];
+  snprintf(options, 256, "-cl-fast-relaxed-math -cl-strict-aliasing%s", cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : "");
+  err = (cl->dlocl->symbols->dt_clBuildProgram)(program, 1, &cl->dev[dev].devid, options, 0, 0);
   if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] could not build program: %d\n", err);
     cl_build_status build_status;
     (cl->dlocl->symbols->dt_clGetProgramBuildInfo)(program, cl->dev[dev].devid, CL_PROGRAM_BUILD_STATUS, sizeof(cl_build_status), &build_status, NULL);
-    if (build_status != CL_SUCCESS)
+    if (build_status != CL_BUILD_SUCCESS)
     {
       char *build_log;
       size_t ret_val_size;
@@ -425,12 +586,76 @@ int dt_opencl_build_program(const int dev, const int prog)
 
       free(build_log);
     }
+    return err;
   }
   else
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] successfully built program\n");
+    if (!loaded_cached)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] saving binary\n");
+
+      cl_uint numdev = 0;
+      err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_NUM_DEVICES, sizeof(cl_uint), &numdev, NULL);
+      if (err != CL_SUCCESS)
+      {
+        dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_NUM_DEVICES failed: %d\n", err);
+        return CL_SUCCESS;
+      }
+
+      cl_device_id devices[numdev];
+      err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_DEVICES, sizeof(cl_device_id)*numdev, devices, NULL);
+      if (err != CL_SUCCESS)
+      {
+        dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_DEVICES failed: %d\n", err);
+        return CL_SUCCESS;
+      }
+
+      size_t binary_sizes[numdev];
+      err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_BINARY_SIZES, sizeof(size_t)*numdev, binary_sizes, NULL);
+      if (err != CL_SUCCESS)
+      {
+        dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_BINARY_SIZES failed: %d\n", err);
+        return CL_SUCCESS;
+      }
+
+      unsigned char* binaries[numdev];
+      for (int i=0; i<numdev; i++) binaries[i] = (unsigned char*)malloc(binary_sizes[i]);
+      err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_BINARIES, sizeof(unsigned char*) * numdev, binaries, NULL);
+      if (err != CL_SUCCESS)
+      {
+        dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_BINARIES failed: %d\n", err);
+        goto ret;
+      }
+
+      for (int i=0; i<numdev; i++)
+        if (cl->dev[dev].devid == devices[i])
+        {
+          // save opencl compiled binary as md5sum-named file
+          char link_dest[1024];
+          snprintf(link_dest, 1024, "%s/%s", cachedir, md5sum);
+          FILE* f = fopen(link_dest, "w+");
+          if(!f) goto ret;
+          size_t bytes_written = fwrite(binaries[i], sizeof(char), binary_sizes[i], f);
+          if(bytes_written != binary_sizes[i]) goto ret;
+          fclose(f);
+
+          // create link (e.g. basic.cl.bin -> f1430102c53867c162bb60af6c163328)
+          char cwd[1024];
+          if (!getcwd(cwd, 1024)) goto ret;
+          if (chdir(cachedir)!=0) goto ret;
+          char dup[1024];
+          strncpy(dup, binname, 1024);
+          char* bname = basename(dup);
+          if (symlink(md5sum, bname)!=0) goto ret;
+          if (chdir(cwd)!=0) goto ret;
+        }
+
+ret:
+      for (int i=0; i<numdev; i++) free(binaries[i]);
+    }
+    return CL_SUCCESS;
   }
-  return err;
 }
 
 int dt_opencl_create_kernel(const int prog, const char *name)
@@ -656,9 +881,9 @@ void* dt_opencl_copy_host_to_device_constant(const int devid, const int size, vo
   if(!darktable.opencl->inited || devid < 0) return NULL;
   cl_int err;
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer) (darktable.opencl->dev[devid].context,
-                               CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
-                               size,
-                               host, &err);
+               CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
+               size,
+               host, &err);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_host_to_device_constant] could not alloc buffer on device %d: %d\n", devid, err);
   return dev;
 }
@@ -693,10 +918,10 @@ void* dt_opencl_copy_host_to_device_rowpitch(const int devid, void *host, const 
 
   // TODO: if fmt = uint16_t, blow up to 4xuint16_t and copy manually!
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage2D) (darktable.opencl->dev[devid].context,
-                                CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-                                &fmt,
-                                width, height, rowpitch,
-                                host, &err);
+               CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+               &fmt,
+               width, height, rowpitch,
+               host, &err);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_host_to_device] could not alloc/copy img buffer on device %d: %d\n", devid, err);
   return dev;
 }
@@ -733,10 +958,10 @@ void* dt_opencl_alloc_device(const int devid, const int width, const int height,
   else return NULL;
 
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage2D) (darktable.opencl->dev[devid].context,
-                                CL_MEM_READ_WRITE,
-                                &fmt,
-                                width, height, 0,
-                                NULL, &err);
+               CL_MEM_READ_WRITE,
+               &fmt,
+               width, height, 0,
+               NULL, &err);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device] could not alloc img buffer on device %d: %d\n", devid, err);
   return dev;
 }
@@ -766,10 +991,10 @@ void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, 
   else return NULL;
 
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage2D) (darktable.opencl->dev[devid].context,
-                                CL_MEM_READ_WRITE | ((host == NULL) ? CL_MEM_ALLOC_HOST_PTR : CL_MEM_USE_HOST_PTR),
-                                &fmt,
-                                width, height, rowpitch,
-                                host, &err);
+               CL_MEM_READ_WRITE | ((host == NULL) ? CL_MEM_ALLOC_HOST_PTR : CL_MEM_USE_HOST_PTR),
+               &fmt,
+               width, height, rowpitch,
+               host, &err);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_use_host_pointer] could not alloc img buffer on device %d: %d\n", devid, err);
   return dev;
 }
@@ -781,9 +1006,9 @@ void* dt_opencl_alloc_device_buffer(const int devid, const int size)
   cl_int err;
 
   cl_mem buf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer) (darktable.opencl->dev[devid].context,
-                               CL_MEM_READ_WRITE,
-                               size,
-                               NULL, &err);
+               CL_MEM_READ_WRITE,
+               size,
+               NULL, &err);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_buffer] could not alloc buffer on device %d: %d\n", devid, err);
   return buf;
 }
@@ -876,7 +1101,7 @@ int dt_opencl_update_enabled(void)
   if (darktable.opencl->enabled != prefs)
   {
     darktable.opencl->enabled = prefs;
-    dt_print(DT_DEBUG_OPENCL, "[opencl_update_enabled] enabled flag set to %s\n", prefs ? "ON" : "OFF");    
+    dt_print(DT_DEBUG_OPENCL, "[opencl_update_enabled] enabled flag set to %s\n", prefs ? "ON" : "OFF");
   }
   return darktable.opencl->enabled;
 }
@@ -937,7 +1162,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
     return (*eventlist)+*numevents-1;
   }
 
-  // if no more space left in eventlist: grow buffer		
+  // if no more space left in eventlist: grow buffer
   if (*numevents == *maxevents)
   {
     int newevents = *maxevents + DT_OPENCL_EVENTLISTSIZE;
@@ -951,7 +1176,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
     }
     memset(neweventtags, 0, newevents*sizeof(dt_opencl_eventtag_t));
     memcpy(neweventlist, *eventlist, *maxevents*sizeof(cl_event));
-    memcpy(neweventtags, *eventtags, *maxevents*sizeof(dt_opencl_eventtag_t));	
+    memcpy(neweventtags, *eventtags, *maxevents*sizeof(dt_opencl_eventtag_t));
     free(*eventlist);
     free(*eventtags);
     *eventlist = neweventlist;
@@ -1020,7 +1245,7 @@ void dt_opencl_events_wait_for(const int devid)
 
   if (*eventlist==NULL || *numevents==0) return; // nothing to do
 
-  // check if last event slot was acutally used and correct numevents if needed	
+  // check if last event slot was acutally used and correct numevents if needed
   if (!memcmp((*eventlist)+*numevents-1, zeroevent, sizeof(cl_event)))
   {
     (*numevents)--;
@@ -1063,7 +1288,7 @@ cl_int dt_opencl_events_flush(const int devid, const int reset)
   // Wait for command queue to terminate (side effect: might adjust *numevents)
   dt_opencl_events_wait_for(devid);
 
-  // now check return status and profiling data of all newly terminated events	
+  // now check return status and profiling data of all newly terminated events
   for (int k = *eventsconsolidated; k < *numevents; k++)
   {
     cl_int err;
@@ -1109,7 +1334,7 @@ cl_int dt_opencl_events_flush(const int devid, const int reset)
   {
     // output profiling info if wanted
     if (darktable.unmuted & DT_DEBUG_PERF)
-        dt_opencl_events_profiling(devid, 1);
+      dt_opencl_events_profiling(devid, 1);
 
     // reset eventlist structures to empty state
     dt_opencl_events_reset(devid);
@@ -1166,7 +1391,7 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
       else // tag is new
       {
         // make new entry
-	items++;
+        items++;
         tags[items-1] = (*eventtags)[k].tag;
         timings[items-1] = (*eventtags)[k].timelapsed * 1e-9;
       }
@@ -1189,16 +1414,19 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
   }
   // aggregated timing info for items without tag (if any)
   if (timings[0] != 0.0f)
-  {		
+  {
     dt_print(DT_DEBUG_OPENCL, "[opencl_profiling] spent %7.4f seconds (unallocated)\n", (double)timings[0]);
     total += timings[0];
   }
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_profiling] spent %7.4f seconds totally in command queue (with %d event%s missing)\n",
-        (double)total, *lostevents, *lostevents == 1 ? "" : "s");
+           (double)total, *lostevents, *lostevents == 1 ? "" : "s");
 
   return;
 }
 
 #endif
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,7 +17,11 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/darktable.h"
+#include "common/debug.h"
+#include "common/grouping.h"
+#include "common/collection.h"
 #include "control/control.h"
+#include "control/jobs/control_jobs.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
@@ -32,8 +37,9 @@ DT_MODULE(1)
 typedef struct dt_lib_image_t
 {
   GtkWidget
-      *rotate_cw_button, *rotate_ccw_button, *remove_button,
-      *delete_button, *create_hdr_button, *duplicate_button, *reset_button;
+  *rotate_cw_button, *rotate_ccw_button, *remove_button,
+  *delete_button, *create_hdr_button, *duplicate_button, *reset_button,
+  *move_button, *copy_button, *group_button, *ungroup_button;
 }
 dt_lib_image_t;
 
@@ -53,6 +59,45 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
+/** merges all the selected images into a single group.
+ * if there is an expanded group, than they will be joined there, otherwise a new one will be created. */
+static void
+_group_helper_function(void)
+{
+  int new_group_id = darktable.gui->expanded_group_id;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct imgid from selected_images", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int id = sqlite3_column_int(stmt, 0);
+    if(new_group_id == -1)
+      new_group_id = id;
+    dt_grouping_add_to_group(new_group_id, id);
+  }
+  sqlite3_finalize(stmt);
+  if(darktable.gui->grouping)
+    darktable.gui->expanded_group_id = new_group_id;
+  else
+    darktable.gui->expanded_group_id = -1;
+  dt_collection_update_query(darktable.collection);
+}
+
+/** removes the selected images from their current group. */
+static void
+_ungroup_helper_function(void)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct imgid from selected_images", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int id = sqlite3_column_int(stmt, 0);
+    dt_grouping_remove_from_group(id);
+  }
+  sqlite3_finalize(stmt);
+  darktable.gui->expanded_group_id = -1;
+  dt_collection_update_query(darktable.collection);
+}
+
 static void
 button_clicked(GtkWidget *widget, gpointer user_data)
 {
@@ -65,6 +110,10 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   else if(i == 5) dt_control_flip_images(1);
   else if(i == 6) dt_control_flip_images(2);
   else if(i == 7) dt_control_merge_hdr();
+  else if(i == 8) dt_control_move_images();
+  else if(i == 9) dt_control_copy_images();
+  else if(i == 10) _group_helper_function();
+  else if(i == 11) _ungroup_helper_function();
   dt_control_queue_redraw_center();
 }
 
@@ -77,8 +126,8 @@ position ()
 void
 gui_init (dt_lib_module_t *self)
 {
-   dt_lib_image_t *d = (dt_lib_image_t *)malloc(sizeof(dt_lib_image_t));
-   self->data = (void *)d;
+  dt_lib_image_t *d = (dt_lib_image_t *)malloc(sizeof(dt_lib_image_t));
+  self->data = (void *)d;
   self->widget = gtk_vbox_new(TRUE, 5);
   GtkBox *hbox;
   GtkWidget *button;
@@ -99,6 +148,22 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
+  button = gtk_button_new_with_label(_("move"));
+  d->move_button = button;
+  g_object_set(G_OBJECT(button), "tooltip-text", _("move to other folder"), (char *)NULL);
+  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)8);
+
+  button = gtk_button_new_with_label(_("copy"));
+  d->copy_button = button;
+  g_object_set(G_OBJECT(button), "tooltip-text", _("copy to other folder"), (char *)NULL);
+  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)9);
+
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+
   button = gtk_button_new_with_label(_("create hdr"));
   d->create_hdr_button = button;
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
@@ -107,10 +172,10 @@ gui_init (dt_lib_module_t *self)
 
   button = gtk_button_new_with_label(_("duplicate"));
   d->duplicate_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("add a duplicate to the collection"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("add a duplicate to the collection, including its history stack"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)3);
-  
+
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
@@ -135,7 +200,21 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)6);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
+  button = gtk_button_new_with_label(_("group"));
+  d->group_button = button;
+  g_object_set(G_OBJECT(button), "tooltip-text", _("add selected images to expanded group or create a new one"), (char *)NULL);
+  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)10);
+
+  button = gtk_button_new_with_label(_("ungroup"));
+  d->ungroup_button = button;
+  g_object_set(G_OBJECT(button), "tooltip-text", _("remove selected images from the group"), (char *)NULL);
+  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)11);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 }
 
 void
@@ -159,6 +238,9 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "create hdr"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "duplicate"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "reset rotation"), 0, 0);
+  // Grouping keys
+  dt_accel_register_lib(self, NC_("accel", "group"), GDK_g, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "ungroup"), GDK_g, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -174,4 +256,10 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "create hdr", d->create_hdr_button);
   dt_accel_connect_button_lib(self, "duplicate", d->duplicate_button);
   dt_accel_connect_button_lib(self, "reset rotation", d->reset_button);
+  // Grouping keys
+  dt_accel_connect_button_lib(self, "group", d->group_button);
+  dt_accel_connect_button_lib(self, "ungroup", d->ungroup_button);
 }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

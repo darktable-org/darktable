@@ -59,6 +59,7 @@ protected:
   void parseHint( xmlDocPtr doc, xmlNodePtr cur );
   void parseBlackAreas( xmlDocPtr doc, xmlNodePtr cur );
   void parseSensorInfo( xmlDocPtr doc, xmlNodePtr cur );
+  vector<int> MultipleStringToInt(const xmlChar *in, const xmlChar *tag, const char* attribute);
 };
 
 } // namespace RawSpeed

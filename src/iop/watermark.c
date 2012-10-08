@@ -22,6 +22,7 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -35,7 +36,10 @@
 #include <inttypes.h>
 
 #include <librsvg/rsvg.h>
+// ugh, ugly hack. why do people break stuff all the time?
+#ifndef RSVG_CAIRO_H
 #include <librsvg/rsvg-cairo.h>
+#endif
 
 #include "common/metadata.h"
 #include "common/utility.h"
@@ -78,7 +82,7 @@ typedef struct dt_iop_watermark_gui_data_t
   GtkComboBox *combobox1;		                                             // watermark
   GtkDarktableButton *dtbutton1;	                                         // refresh watermarks...
   GtkDarktableToggleButton *dtba[9];	                                   // Alignment buttons
-  GtkDarktableSlider *scale1,*scale2,*scale3,*scale4;      	     // opacity, scale, xoffs, yoffs
+  GtkWidget *scale1,*scale2,*scale3,*scale4;      	     // opacity, scale, xoffs, yoffs
 }
 dt_iop_watermark_gui_data_t;
 
@@ -116,7 +120,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_watermark_gui_data_t *g =
-      (dt_iop_watermark_gui_data_t*)self->gui_data;
+    (dt_iop_watermark_gui_data_t*)self->gui_data;
 
   dt_accel_connect_button_iop(self, "refresh", GTK_WIDGET(g->dtbutton1));
   dt_accel_connect_slider_iop(self, "opacity",
@@ -178,13 +182,15 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
   gsize length;
 
   gchar *svgdoc=NULL;
-  gchar configdir[1024],datadir[1024], *filename;
-  dt_loc_get_datadir(datadir, 1024);
-  dt_loc_get_user_config_dir(configdir, 1024);
-  g_strlcat(datadir,"/watermarks/",1024);
-  g_strlcat(configdir,"/watermarks/",1024);
-  g_strlcat(datadir,data->filename,1024);
-  g_strlcat(configdir,data->filename,1024);
+  gchar configdir[DT_MAX_PATH_LEN];
+  gchar datadir[DT_MAX_PATH_LEN];
+  gchar *filename;
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  dt_loc_get_user_config_dir(configdir, DT_MAX_PATH_LEN);
+  g_strlcat(datadir,"/watermarks/", DT_MAX_PATH_LEN);
+  g_strlcat(configdir,"/watermarks/", DT_MAX_PATH_LEN);
+  g_strlcat(datadir,data->filename, DT_MAX_PATH_LEN);
+  g_strlcat(configdir,data->filename, DT_MAX_PATH_LEN);
 
   if (g_file_test(configdir,G_FILE_TEST_EXISTS))
     filename=configdir;
@@ -198,14 +204,14 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
   // EXIF datetime
   struct tm tt_exif = {0};
   if(sscanf(image->exif_datetime_taken,"%d:%d:%d %d:%d:%d",
-              &tt_exif.tm_year,
-              &tt_exif.tm_mon,
-              &tt_exif.tm_mday,
-              &tt_exif.tm_hour,
-              &tt_exif.tm_min,
-              &tt_exif.tm_sec
-             ) == 6
-     )
+            &tt_exif.tm_year,
+            &tt_exif.tm_mon,
+            &tt_exif.tm_mday,
+            &tt_exif.tm_hour,
+            &tt_exif.tm_min,
+            &tt_exif.tm_sec
+           ) == 6
+    )
   {
     tt_exif.tm_year-=1900;
     tt_exif.tm_mon--;
@@ -679,11 +685,13 @@ static void refresh_watermarks( dt_iop_module_t *self )
   // check watermarkdir and update combo with entries...
   int count=0;
   const gchar *d_name = NULL;
-  gchar configdir[1024],datadir[1024],filename[2048];
-  dt_loc_get_datadir(datadir, 1024);
-  dt_loc_get_user_config_dir(configdir, 1024);
-  g_strlcat(datadir,"/watermarks",1024);
-  g_strlcat(configdir,"/watermarks",1024);
+  gchar configdir[DT_MAX_PATH_LEN];
+  gchar datadir[DT_MAX_PATH_LEN];
+  gchar filename[DT_MAX_PATH_LEN];
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  dt_loc_get_user_config_dir(configdir, DT_MAX_PATH_LEN);
+  g_strlcat(datadir,"/watermarks", DT_MAX_PATH_LEN);
+  g_strlcat(configdir,"/watermarks", DT_MAX_PATH_LEN);
 
   /* read watermarks from datadir */
   GDir *dir = g_dir_open(datadir, 0, NULL);
@@ -691,7 +699,7 @@ static void refresh_watermarks( dt_iop_module_t *self )
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      snprintf(filename, 1024, "%s/%s", datadir, d_name);
+      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", datadir, d_name);
       gtk_combo_box_append_text( g->combobox1, d_name );
       count++;
     }
@@ -704,10 +712,10 @@ static void refresh_watermarks( dt_iop_module_t *self )
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      snprintf(filename, 2048, "%s/%s", configdir, d_name);
+      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", configdir, d_name);
       gtk_combo_box_append_text( g->combobox1, d_name );
       count++;
-    } 
+    }
     g_dir_close(dir) ;
   }
 
@@ -758,42 +766,42 @@ alignment_callback(GtkWidget *tb, gpointer user_data)
 }
 
 static void
-opacity_callback(GtkDarktableSlider *slider, gpointer user_data)
+opacity_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  p->opacity= dtgtk_slider_get_value(slider);
+  p->opacity= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-xoffset_callback(GtkDarktableSlider *slider, gpointer user_data)
+xoffset_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  p->xoffset= dtgtk_slider_get_value(slider);
+  p->xoffset= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-yoffset_callback(GtkDarktableSlider *slider, gpointer user_data)
+yoffset_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  p->yoffset= dtgtk_slider_get_value(slider);
+  p->yoffset= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-scale_callback(GtkDarktableSlider *slider, gpointer user_data)
+scale_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  p->scale= dtgtk_slider_get_value(slider);
+  p->scale= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -845,10 +853,10 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale1, p->opacity);
-  dtgtk_slider_set_value(g->scale2, p->scale);
-  dtgtk_slider_set_value(g->scale3, p->xoffset);
-  dtgtk_slider_set_value(g->scale4, p->yoffset);
+  dt_bauhaus_slider_set(g->scale1, p->opacity);
+  dt_bauhaus_slider_set(g->scale2, p->scale);
+  dt_bauhaus_slider_set(g->scale3, p->xoffset);
+  dt_bauhaus_slider_set(g->scale4, p->yoffset);
   gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(g->dtba[ p->alignment ]), TRUE);
   _combo_box_set_active_text( g->combobox1, p->filename );
 }
@@ -901,14 +909,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   // Add opacity/scale sliders to table
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->opacity, 0.5));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 100.0, 1.0, p->scale, 0.5));
-  dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_label(g->scale1,_("opacity"));
-  dtgtk_slider_set_unit(g->scale1,"%");
-  dtgtk_slider_set_label(g->scale2,_("scale"));
-  dtgtk_slider_set_unit(g->scale2,"%");
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->opacity, 0.5);
+  dt_bauhaus_slider_set_format(g->scale1, "%.f%%");
+  dt_bauhaus_widget_set_label(g->scale1,_("opacity"));
+  g->scale2 = dt_bauhaus_slider_new_with_range(self, 1.0, 100.0, 1.0, p->scale, 0.5);
+  dt_bauhaus_slider_set_format(g->scale2, "%.f%%");
+  dt_bauhaus_widget_set_label(g->scale2,_("scale"));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
@@ -927,10 +933,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
 
   // x/y offset
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->xoffset,3));
-  g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->yoffset, 3));
-  dtgtk_slider_set_label(g->scale3,_("x offset"));
-  dtgtk_slider_set_label(g->scale4,_("y offset"));
+  g->scale3 = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1,0.001, p->xoffset, 3);
+  dt_bauhaus_slider_set_format(g->scale3, "%.3f");
+  dt_bauhaus_widget_set_label(g->scale3,_("x offset"));
+  g->scale4 = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1,0.001, p->yoffset, 3);
+  dt_bauhaus_slider_set_format(g->scale4, "%.3f");
+  dt_bauhaus_widget_set_label(g->scale4,_("y offset"));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
 
@@ -966,4 +974,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

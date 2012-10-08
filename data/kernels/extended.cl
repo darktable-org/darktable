@@ -309,12 +309,11 @@ colorcontrast (read_only image2d_t in, write_only image2d_t out, const int width
 
   if(x >= width || y >= height) return;
 
-  const float4 Labmin = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
-  const float4 Labmax = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
-
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  pixel.xyz = clamp(pixel * scale + offset, Labmin, Labmax).xyz;
+  pixel.xyz = (pixel * scale + offset).xyz;
+  pixel.y = clamp(pixel.y, -128.0f, 128.0f);
+  pixel.z = clamp(pixel.z, -128.0f, 128.0f);
 
   write_imagef (out, (int2)(x, y), pixel); 
 }

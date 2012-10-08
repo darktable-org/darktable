@@ -18,7 +18,10 @@ FILE(GLOB SOURCE_FILES
   "common/film.c"
   "common/file_location.c"
   "common/fswatch.c"
+  "common/gaussian.c"
+  "common/grouping.c"
   "common/history.c"
+  "common/gpx.c"
   "common/image.c"
   "common/image_cache.c"
   "common/image_compression.c"
@@ -67,6 +70,7 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/resetlabel.c"
   "gui/accelerators.c"
   "gui/contrast.c"
+  "gui/gtkentry.c"
   "gui/guides.c"
   "gui/gtk.c"
   "gui/preferences.c"
@@ -83,6 +87,8 @@ set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LibRaw)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/osm-gps-map/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/colord-gtk/src)
 
 # initial compiler flags
 add_definitions("-DHAVE_CONFIG_H")
@@ -104,6 +110,11 @@ endif()
 #
 # Find all other required libraries for building
 #
+find_package(Glib 2.26 REQUIRED)
+include_directories(${Glib_INCLUDE_DIRS})
+list(APPEND LIBS ${Glib_LIBRARIES})
+add_definitions(${Glib_DEFINITIONS})
+
 find_package(GTK2 2.6 REQUIRED gtk)
 include_directories(${GTK2_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK2_LIBRARIES})
@@ -123,8 +134,16 @@ if(USE_CAMERA_SUPPORT)
   add_definitions(${Gphoto2_DEFINITIONS})
 endif(USE_CAMERA_SUPPORT)
 
+# INotify isn't used anymore as it seems
+find_package(INotify)
+if(INOTIFY_FOUND)
+  include_directories(${INOTIFY_INCLUDE_DIRS})
+  list(APPEND LIBS ${INOTIFY_LIBRARIES})
+  add_definitions(${INOTIFY_DEFINITIONS})
+endif(INOTIFY_FOUND)
+
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2)
+foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2)
   find_package(${lib} REQUIRED)
   include_directories(${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -152,10 +171,19 @@ if(USE_FLICKR)
   endif(FLICKCURL_FOUND)
 endif(USE_FLICKR)
 
+if(USE_GLIBJSON)
+  find_package(JsonGlib)
+  if(JsonGlib_FOUND)
+	include_directories(${JsonGlib_INCLUDE_DIRS})
+	list(APPEND LIBS ${JsonGlib_LIBRARIES})
+	add_definitions(${JsonGlib_DEFINITIONS})
+  endif(JsonGlib_FOUND)
+endif(USE_GLIBJSON)
+
 #
 # Detect compile of optional pwstorage backends
 #
-if(USE_KWALLET) 
+if(USE_KWALLET)
 find_package(DBUSGLIB)
   if(DBUSGLIB_FOUND)
     list(APPEND SOURCES "common/pwstorage/backend_kwallet.c")
@@ -175,8 +203,14 @@ if(USE_GNOME_KEYRING)
   endif(GNOMEKEYRING_FOUND)
 endif(USE_GNOME_KEYRING)
 
-# have a small test program, to be run as root on some systems to enable the driver to run cl stuff
-add_subdirectory(cltest)
+if(USE_MAC_INTEGRATION)
+  find_package(MacIntegration)
+  if(MACINTEGRATION_FOUND)
+    include_directories(${MacIntegration_INCLUDE_DIRS})
+    list(APPEND LIBS ${MacIntegration_LIBRARIES})
+    add_definitions("-DMAC_INTEGRATION")
+  endif(MACINTEGRATION_FOUND)
+endif(USE_MAC_INTEGRATION)
 
 if(USE_UNITY)
   find_package(Unity)
@@ -188,7 +222,7 @@ if(USE_UNITY)
 endif(USE_UNITY)
 
 # build opengl slideshow viewer?
-if(BUILD_SLIDESHOW) 
+if(BUILD_SLIDESHOW)
   find_package(SDL)
   find_package(OpenGL)
   if(SDL_FOUND AND OPENGL_FOUND)
@@ -252,7 +286,7 @@ if(NOT BINARY_PACKAGE_BUILD)
 	MESSAGE("-- Checking for -march=native support")
 	CHECK_C_COMPILER_FLAG("-march=native" MARCHNATIVE)
 	if (MARCHNATIVE)
-		set(MARCH "-march=native")	
+		set(MARCH "-march=native")
 	else()
 		MESSAGE("-- Checking for -mtune=native support")
 		CHECK_C_COMPILER_FLAG("-mtune=native" MTUNENATIVE)
@@ -330,7 +364,6 @@ endif(APPLE)
 set_target_properties(lib_darktable PROPERTIES OUTPUT_NAME darktable)
 set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE C)
 
-
 #
 # the libraw part is a bit of a hack:
 # the static linking didn't work since it was pulling -lstdc++ and -lm into linker flags.
@@ -346,7 +379,8 @@ else(APPLE)
   set(LIBRAW_STATIC_LIBS libraw_static)
 endif(APPLE)
 
-target_link_libraries(lib_darktable ${LIBS} ${LIBRAW_STATIC_LIBS})
+target_link_libraries(lib_darktable ${LIBRAW_STATIC_LIBS})
+list(APPEND STATIC_LIBS ${LIBRAW_STATIC_LIBS})
 
 # same for librawspeed (can switch it off with -DDONT_USE_RAWSPEED, for macs):
 if(NOT DONT_USE_RAWSPEED)
@@ -354,10 +388,52 @@ if(NOT DONT_USE_RAWSPEED)
   add_dependencies(lib_darktable rawspeed)
   add_library(rawspeed_static STATIC IMPORTED)
   set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/rawspeed/librawspeed.a)
-  target_link_libraries(lib_darktable ${LIBS} rawspeed_static)
+  target_link_libraries(lib_darktable rawspeed_static)
   # compile rawspeed
   add_subdirectory(external/rawspeed)
+  list(APPEND STATIC_LIBS rawspeed_static)
 endif(NOT DONT_USE_RAWSPEED)
+
+# osm gps map library
+if(USE_GEO)
+  find_package(LibSoup2)
+  if(LIBSOUP2_FOUND)
+    include_directories(${LIBSOUP2_INCLUDE_DIRS})
+    list(APPEND LIBS ${LIBSOUP2_LIBRARIES})
+    add_definitions(${LIBSOUP2_DEFINITIONS})
+    add_dependencies(lib_darktable osmgpsmap)
+    add_library(osmgpsmap_static STATIC IMPORTED)
+    set_target_properties(osmgpsmap_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/osm-gps-map/libosmgpsmap.a)
+    target_link_libraries(lib_darktable osmgpsmap_static)
+    add_subdirectory(external/osm-gps-map)
+    list(APPEND STATIC_LIBS osmgpsmap_static)
+    add_definitions("-DHAVE_MAP")
+    message(STATUS "Map mode: enabled")
+  else(LIBSOUP2_FOUND)
+    set(USE_GEO OFF)
+    message(STATUS "Map mode: disabled, please install libsoup2")
+  endif(LIBSOUP2_FOUND)
+else(USE_GEO)
+  message(STATUS "Map mode: disabled")
+endif(USE_GEO)
+
+target_link_libraries(lib_darktable ${LIBS})
+
+# libcolord-gtk:
+find_package(Colord)
+if(COLORD_FOUND)
+  include_directories(${COLORD_INCLUDE_DIRS})
+  list(APPEND LIBS ${COLORD_LIBRARIES})
+# we ship our own copy of libcolord-gtk - the one packaged in distros is linked against gtk3 :(
+  add_dependencies(lib_darktable colord-gtk)
+  add_library(colord-gtk_static STATIC IMPORTED)
+  set_target_properties(colord-gtk_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/colord-gtk/libcolord-gtk.a)
+  target_link_libraries(lib_darktable colord-gtk_static)
+  add_subdirectory(external/colord-gtk)
+  list(APPEND STATIC_LIBS colord-gtk_static)
+  add_dependencies(colord-gtk colord)
+  add_definitions("-DUSE_COLORDGTK")
+endif(COLORD_FOUND)
 
 # libsquish for compressed thumbnails:
 add_dependencies(lib_darktable squish)
@@ -366,21 +442,9 @@ set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT
 target_link_libraries(lib_darktable ${LIBS} squish_static)
 add_subdirectory(external/squish)
 
-# libcolord-gtk:
-find_package(ColordGtk)
-if(COLORDGTK_FOUND)
-  message(STATUS "Using colord to fetch color profiles")
-  include_directories(${COLORDGTK_INCLUDE_DIRS})
-  list(APPEND LIBS ${COLORDGTK_LIBRARIES})
-  add_definitions("-DUSE_COLORDGTK")
-#   add_dependencies(lib_darktable colord-gtk)
-else(COLORDGTK_FOUND)
-  message(STATUS "Either colord is missing or too old (<0.1.20)")
-endif(COLORDGTK_FOUND)
-
-
 install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
-list(APPEND LIBS lib_darktable)
+# make sure static libs is first
+list(INSERT LIBS 0 lib_darktable ${STATIC_LIBS})
 
 # Compile libraw modules
 add_subdirectory(external/LibRaw)
@@ -397,7 +461,11 @@ add_subdirectory(iop)
 # Compile export modules
 add_subdirectory(imageio)
 
+# have a small test program, to be run as root on some systems to enable the driver to run cl stuff
+add_subdirectory(cltest)
 
+# have a command line interface
+add_subdirectory(cli)
 
 
 #
@@ -408,9 +476,9 @@ set_target_properties(darktable PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set_target_properties(darktable PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set_target_properties(darktable PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
 set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
-if(APPLE AND USE_OPENCL)
-set_target_properties(darktable PROPERTIES LINK_FLAGS -Wl,-syslibroot,/Developer-old/SDKs/MacOSX10.6.sdk)
-endif(APPLE AND USE_OPENCL)
+if(APPLE)
+  set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon")
+endif(APPLE)
 target_link_libraries(darktable ${LIBS})
 install(TARGETS darktable DESTINATION bin)
 

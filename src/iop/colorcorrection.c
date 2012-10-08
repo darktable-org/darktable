@@ -221,7 +221,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colorcorrection_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorcorrection_params_t));
   module->default_enabled = 0;
-  module->priority = 666; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 673; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorcorrection_params_t);
   module->gui_data = NULL;
   dt_iop_colorcorrection_params_t tmp = (dt_iop_colorcorrection_params_t)
@@ -261,8 +261,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(g->area));
   gtk_drawing_area_size(g->area, 258, 258);
   g_object_set (GTK_OBJECT(g->area), "tooltip-text", _("drag the line for split toning. "
-        "bright means highlights, dark means shadows. "
-        "use mouse wheel to change saturation."), (char *)NULL);
+                "bright means highlights, dark means shadows. "
+                "use mouse wheel to change saturation."), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (g->area), "expose-event",
@@ -458,4 +458,6 @@ dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScroll *event, gpoint
   return TRUE;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

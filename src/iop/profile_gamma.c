@@ -54,7 +54,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_profile_gamma_gui_data_t *g =
-      (dt_iop_profile_gamma_gui_data_t*)self->gui_data;
+    (dt_iop_profile_gamma_gui_data_t*)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "linear part", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "gamma exponential part",
@@ -167,7 +167,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_profile_gamma_params_t);
   module->gui_data = NULL;
-  module->priority = 333; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 326; // module order created by iop_dependencies.py, do not edit!
   dt_iop_profile_gamma_params_t tmp = (dt_iop_profile_gamma_params_t)
   {
     1.0, 1.0
@@ -233,4 +233,6 @@ static void linear_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

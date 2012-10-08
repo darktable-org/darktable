@@ -186,7 +186,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int stride = bpp*roi_in->width;
 
   dt_imageio_flip_buffers((char *)ovoid, (const char *)ivoid, bpp,
-      roi_in->width, roi_in->height, roi_in->width, roi_in->height, stride, d->orientation);
+                          roi_in->width, roi_in->height, roi_in->width, roi_in->height, stride, d->orientation);
 }
 
 
@@ -210,7 +210,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 4, sizeof(int), (void *)&orientation); 
+  dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 4, sizeof(int), (void *)&orientation);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_flip, sizes);
 
   if(err != CL_SUCCESS) goto error;
@@ -258,7 +258,10 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 
 void init_presets (dt_iop_module_so_t *self)
 {
-  dt_iop_flip_params_t p = (dt_iop_flip_params_t) { 0 };
+  dt_iop_flip_params_t p = (dt_iop_flip_params_t)
+  {
+    0
+  };
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
   p.orientation = 1;
   dt_gui_presets_add_generic(_("flip horizontally"), self->op, self->version(), &p, sizeof(p), 1);
@@ -275,10 +278,13 @@ void init_presets (dt_iop_module_so_t *self)
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_flip_params_t tmp = (dt_iop_flip_params_t) { 0 };
+  dt_iop_flip_params_t tmp = (dt_iop_flip_params_t)
+  {
+    0
+  };
   self->default_enabled = 0;
   if(self->dev->image_storage.legacy_flip.user_flip != 0 &&
-     self->dev->image_storage.legacy_flip.user_flip != 0xff)
+      self->dev->image_storage.legacy_flip.user_flip != 0xff)
   {
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from history where imgid = ?1 and operation = 'flip'", -1, &stmt, NULL);
@@ -308,7 +314,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_flip_params_t);
   module->gui_data = NULL;
-  module->priority = 235; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 230; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -350,13 +356,13 @@ rotate_ccw(GtkWidget *widget, dt_iop_module_t *self)
   do_rotate(self, 0);
 }
 static gboolean
-rotate_cw_key(dt_iop_module_t *self)
+rotate_cw_key(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval, GdkModifierType modifier, dt_iop_module_t *self)
 {
   do_rotate(self, 1);
   return TRUE;
 }
 static gboolean
-rotate_ccw_key(dt_iop_module_t *self)
+rotate_ccw_key(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval, GdkModifierType modifier, dt_iop_module_t *self)
 {
   do_rotate(self, 0);
   return TRUE;
@@ -393,9 +399,9 @@ void gui_cleanup(struct dt_iop_module_t *self)
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_iop(self, TRUE, NC_("accel", "rotate 90 degrees ccw"),
-                        0, 0);
+                        GDK_bracketleft, 0);
   dt_accel_register_iop(self, TRUE, NC_("accel", "rotate 90 degrees cw"),
-                        0, 0);
+                        GDK_bracketright, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -409,4 +415,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_iop(self, "rotate 90 degrees ccw", closure);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -66,7 +66,7 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local,
 void dt_accel_register_lib(dt_lib_module_t *self,const gchar *path,
                            guint accel_key, GdkModifierType mods);
 void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local,
-                           const gchar *path);
+                                  const gchar *path);
 
 // Accelerator connection functions
 void dt_accel_connect_global(const gchar *path, GClosure *closure);
@@ -101,3 +101,6 @@ void dt_accel_rename_preset_lib(dt_lib_module_t *module,const gchar *path,const 
 void dt_accel_rename_global(const gchar *path,const gchar *new_path);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

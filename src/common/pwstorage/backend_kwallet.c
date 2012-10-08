@@ -333,7 +333,8 @@ gboolean dt_pwstorage_kwallet_set(const gchar* slot, GHashTable* table)
 
   g_array_free(byte_array, TRUE);
 
-  CheckError(error);
+  if (CheckError(error))
+    return FALSE;
 
   if (ret != 0)
     dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_kwallet_set] Warning: bad return code %d from kwallet\n", ret);
@@ -431,3 +432,6 @@ GHashTable* dt_pwstorage_kwallet_get(const gchar* slot)
 
   return table;
 }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

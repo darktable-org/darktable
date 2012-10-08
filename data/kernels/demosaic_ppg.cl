@@ -125,8 +125,8 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const int width
     med[ii] = tmp;
   }
   float4 color = (float4)(0.0f);
-  // const float cc = (cnt > 1 || variation > 0.06) ? med[(cnt-1)/2]) : med[4] - 64.0f;
-  const float cc = (c1 || cnt > 1 || variation > 0.06) ? med[(cnt-1)/2] : med[4] - 64.0f;
+  // const float cc = (cnt > 1 || variation > 0.06f) ? med[(cnt-1)/2]) : med[4] - 64.0f;
+  const float cc = (c1 || cnt > 1 || variation > 0.06f) ? med[(cnt-1)/2] : med[4] - 64.0f;
   if(f4) ((float *)&color)[c] = cc;
   else   color.x              = cc;
   write_imagef (out, (int2)(x, y), color);
@@ -288,6 +288,10 @@ clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out, const int wi
   write_imagef (out, (int2)(x, y), color);
 }
 
+
+#define MIN(a,b)      ((a) < (b) ? (a) : (b))
+#define MAX_SAMPLES   512
+
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
  * and writes it to out in float4 format.
@@ -296,7 +300,7 @@ clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out, const int wi
  */
 __kernel void
 clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height,
-    const int r_x, const int r_y, const int r_wd, const int r_ht, const float r_scale, const unsigned int filters)
+    const int r_x, const int r_y, const int rin_wd, const int rin_ht, const float r_scale, const unsigned int filters)
 {
   // global id is pixel in output image (float4)
   const int x = get_global_id(0);
@@ -305,39 +309,56 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
   if(x >= width || y >= height) return;
 
   float4 color = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
+  float weight = 0.0f;
+
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
-  const float px_footprint = .5f/r_scale;
+  const float px_footprint = 1.0f/r_scale;
   // how many 2x2 blocks can be sampled inside that area
-  const int samples = ((int)px_footprint)/2;
+  const int samples = MIN(round(px_footprint/2.0f), MAX_SAMPLES-2);
 
-  // init gauss with sigma = samples (half footprint)
-  // float filter[2*samples + 1];
-  // float sum = 0.0f;
-  // for(int i=-samples;i<=samples;i++) sum += (filter[i+samples] = expf(-i*i/(samples*samples)));
-  // for(int k=0;k<2*samples+1;k++) filter[k] /= sum;
+  int trggbx = 0, trggby = 0;
+  if(FC(trggby, trggbx+1, filters) != 1) trggbx++;
+  if(FC(trggby, trggbx,   filters) != 0)
+  {
+    trggbx = (trggbx + 1)&1;
+    trggby++;
+  }
+  const int2 rggb = (int2)(trggbx, trggby);
+
 
   // upper left corner:
-  const int2 p = backtransformi((float2)(x+.5f, y+.5f), r_x, r_y, r_wd, r_ht, r_scale);
+  const float2 f = (float2)((x + r_x) * px_footprint, (y + r_y) * px_footprint);
+  int2 p = (int2)((int)f.x & ~1, (int)f.y & ~1);
+  const float2 d = (float2)((f.x - p.x)/2.0f, (f.y - p.y)/2.0f);
 
-  // round down to next even number:
-  p.x &= ~0x1; p.y &= ~0x1;
+  float xfilter[MAX_SAMPLES];
+  float yfilter[MAX_SAMPLES];
+  for(int i=1;i<=samples;i++) xfilter[i] = yfilter[i] = 1.0f;
+  xfilter[0] = 1.0f - d.x;
+  yfilter[0] = 1.0f - d.y;
+  xfilter[samples+1] = d.x;
+  yfilter[samples+1] = d.y;
 
   // now move p to point to an rggb block:
-  if(FC(p.y, p.x+1, filters) != 1) p.x ++;
-  if(FC(p.y, p.x,   filters) != 0) { p.x ++; p.y ++; }
+  p += rggb;
 
-  for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
+  for(int j=0;j<=samples+1;j++) for(int i=0;i<=samples+1;i++)
   {
+    const int xx = p.x + 2*i;
+    const int yy = p.y + 2*j;
+
+    if(xx + 1 >= rin_wd || yy + 1 >= rin_ht) continue;
+
     // get four mosaic pattern uint16:
-    float4 p1 = read_imagef(in, sampleri, (int2)(p.x+2*i,   p.y+2*j  ));
-    float4 p2 = read_imagef(in, sampleri, (int2)(p.x+2*i+1, p.y+2*j  ));
-    float4 p3 = read_imagef(in, sampleri, (int2)(p.x+2*i,   p.y+2*j+1));
-    float4 p4 = read_imagef(in, sampleri, (int2)(p.x+2*i+1, p.y+2*j+1));
-    // color += filter[j+samples]*filter[i+samples]*(float4)(p1.x, (p2.x+p3.x)*.5f, p4.x, 0.0f);
-    color += (float4)(p1.x, (p2.x+p3.x)*0.5f, p4.x, 0.0f);
+    float p1 = read_imagef(in, sampleri, (int2)(xx,   yy  )).x;
+    float p2 = read_imagef(in, sampleri, (int2)(xx+1, yy  )).x;
+    float p3 = read_imagef(in, sampleri, (int2)(xx,   yy+1)).x;
+    float p4 = read_imagef(in, sampleri, (int2)(xx+1, yy+1)).x;
+    color += yfilter[j]*xfilter[i]*(float4)(p1, (p2+p3)*0.5f, p4, 0.0f);
+    weight += yfilter[j]*xfilter[i];
   }
-  color /= (2*samples+1)*(2*samples+1);
+  color /= weight;
   write_imagef (out, (int2)(x, y), color);
 }
 
@@ -425,7 +446,7 @@ ppg_demosaic_green_median (__read_only image2d_t in, __write_only image2d_t out,
   const int col = x;
   const int c = FC(row, col, filters);
 
-  const float4 pc = read_imagef(in, sampleri, (int2)(col, row));
+  float4 pc = read_imagef(in, sampleri, (int2)(col, row));
 
   // fill green layer for red and blue pixels:
   if(c == 0 || c == 2)

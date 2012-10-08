@@ -26,11 +26,6 @@
 #include <glib.h>
 #include <inttypes.h>
 
-/** define for max path/filename length */
-#define DT_MAX_FILENAME_LEN 256
-// TODO: separate into path/filename and store 256 for filename
-#define DT_MAX_PATH_LEN 1024
-
 /** return value of image io functions. */
 typedef enum dt_imageio_retval_t
 {
@@ -90,15 +85,20 @@ typedef struct dt_image_t
   // common stuff
   int32_t width, height;
   // used by library
-  int32_t num, flags, film_id, id;
+  int32_t num, flags, film_id, id, group_id;
 
-  // FIXME: find out what this should do, and how
-  int32_t dirty;
+  uint32_t filters;          // demosaic pattern
+  int32_t bpp;               // bytes per pixel
+  float d65_color_matrix[9]; // the 3x3 matrix embedded in some DNGs
+  uint8_t *profile;          // embedded profile, for example from JPEGs
+  uint32_t profile_size;
 
-  uint32_t filters;  // demosaic pattern
-  int32_t bpp;       // bytes per pixel
- 
   dt_image_raw_parameters_t legacy_flip; // unfortunately needed to convert old bits to new flip module.
+
+  /* gps coords */
+  double longitude;
+  double latitude;
+
 }
 dt_image_t;
 
@@ -130,6 +130,8 @@ int32_t dt_image_duplicate(const int32_t imgid);
 /** flips the image, clock wise, if given flag. */
 void dt_image_flip(const int32_t imgid, const int32_t cw);
 void dt_image_set_flip(const int32_t imgid, const int32_t user_flip);
+/** set image location lon/lat */
+void dt_image_set_location(const int32_t imgid, double lon, double lat);
 /** returns 1 if there is history data found for this image, 0 else. */
 int dt_image_altered(const uint32_t imgid);
 /** returns the orientation bits of the image, exif or user override, if set. */
@@ -296,9 +298,21 @@ dt_image_orientation_to_flip_bits(const int orient)
   }
 }
 
+/** physically move image with imgid and its duplicates to the film roll
+ *  given by filmid. returns -1 on error, 0 on success. */
+int32_t dt_image_move(const int32_t imgid, const int32_t filmid);
+/** physically cope image to the folder of the film roll with filmid and
+ *  duplicate update database entries. */
+int32_t dt_image_copy(const int32_t imgid, const int32_t filmid);
 // xmp functions:
 void dt_image_write_sidecar_file(int imgid);
 void dt_image_synch_xmp(const int selected);
 void dt_image_synch_all_xmp(const gchar *pathname);
 
+// add an offset to the exif_datetime_taken field
+void dt_image_add_time_offset(const int imgid, const long int offset);
+
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

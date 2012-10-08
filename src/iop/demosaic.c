@@ -330,7 +330,7 @@ green_equilibration_lavg(float *out, const float *const in, const int width, con
   if(FC(oj+y, oi+x, filters) != 1) oj++;
   if(FC(oj+y, oi+x, filters) != 1) oi++;
   if(FC(oj+y, oi+x, filters) != 1) oj--;
-  
+
   if(!in_place)
     memcpy(out,in,height*width*sizeof(float));
 
@@ -634,6 +634,21 @@ modify_roi_in (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
     roi_in->height = piece->pipe->image.height;
 }
 
+static int get_quality()
+{
+  int qual = 1;
+  gchar *quality = dt_conf_get_string("plugins/darkroom/demosaic/quality");
+  if(quality)
+  {
+    if(!strcmp(quality, "always bilinear (fast)"))
+      qual = 0;
+    else if(!strcmp(quality, "full (possibly slow)"))
+      qual = 2;
+    g_free(quality);
+  }
+  return qual;
+}
+
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -644,6 +659,12 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   // roi_out->scale = global scale: (iscale == 1.0, always when demosaic is on)
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
+
+  const int qual = get_quality();
+  int demosaicing_method = data->demosaicing_method;
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2) // only overwrite setting if quality << requested and in dr mode
+    demosaicing_method = DT_IOP_DEMOSAIC_PPG;
+
   const float *const pixels = (float *)i;
   if(roi_out->scale > .999f)
   {
@@ -655,21 +676,21 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
       switch(data->green_eq)
       {
         case DT_IOP_GREEN_EQ_FULL:
-          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, 
-                        data->filters,  roi_in->x, roi_in->y);
+          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height,
+                                   data->filters,  roi_in->x, roi_in->y);
           break;
         case DT_IOP_GREEN_EQ_LOCAL:
           green_equilibration_lavg(in, pixels, roi_in->width, roi_in->height,
-                        data->filters, roi_in->x, roi_in->y, 0);
+                                   data->filters, roi_in->x, roi_in->y, 0);
           break;
         case DT_IOP_GREEN_EQ_BOTH:
-          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, 
-                        data->filters,  roi_in->x, roi_in->y);
+          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height,
+                                   data->filters,  roi_in->x, roi_in->y);
           green_equilibration_lavg(in, in, roi_in->width, roi_in->height,
-                        data->filters, roi_in->x, roi_in->y, 1);
+                                   data->filters, roi_in->x, roi_in->y, 1);
           break;
-      } 
-      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      }
+      if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg((float *)o, in, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, in, (float *)o, &roi, &roo, data->filters);
@@ -677,13 +698,15 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     }
     else
     {
-      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg((float *)o, pixels, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, pixels, (float *)o, &roi, &roo, data->filters);
     }
   }
-  else if(roi_out->scale > .5f)
+  else if(roi_out->scale > .5f ||  // full needed because zoomed in enough
+          (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||  // or in darkroom mode and quality requested by user settings
+          (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))              // we assume you always want that for exports.
   {
     // demosaic and then clip and zoom
     // roo.x = roi_out->x / global_scale;
@@ -699,21 +722,22 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
       switch(data->green_eq)
       {
         case DT_IOP_GREEN_EQ_FULL:
-          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, 
-                        data->filters,  roi_in->x, roi_in->y);
+          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height,
+                                   data->filters,  roi_in->x, roi_in->y);
           break;
         case DT_IOP_GREEN_EQ_LOCAL:
           green_equilibration_lavg(in, pixels, roi_in->width, roi_in->height,
-                        data->filters, roi_in->x, roi_in->y, 0);
+                                   data->filters, roi_in->x, roi_in->y, 0);
           break;
         case DT_IOP_GREEN_EQ_BOTH:
-          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, 
-                        data->filters,  roi_in->x, roi_in->y);
+          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height,
+                                   data->filters,  roi_in->x, roi_in->y);
           green_equilibration_lavg(in, in, roi_in->width, roi_in->height,
-                        data->filters, roi_in->x, roi_in->y, 1);
+                                   data->filters, roi_in->x, roi_in->y, 1);
           break;
       }
-      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      // wanted ppg or zoomed out a lot and quality is limited to 1
+      if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, in, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, data->filters);
@@ -721,7 +745,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     }
     else
     {
-      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, pixels, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, pixels, tmp, &roi, &roo, data->filters);
@@ -757,20 +781,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
 
-  // Demosaic mode AMAZE not implemented in OpenCL yet. Fall back to cpu path then.
-  if(data->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaicing method AMAZE not implemented yet in OpenCL\n");
-    return FALSE;
-  }
-
-  // If in tiling context we can not green-equalize over full image. Fall back to cpu path then.
-  if(piece->pipe->tiling && (data->green_eq == DT_IOP_GREEN_EQ_FULL || data->green_eq == DT_IOP_GREEN_EQ_BOTH))
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] cannot green-equalize over full image in tiling context\n");
-    return FALSE;
-  }
-
+  const int qual = get_quality();
   const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   if(interpolation->id != DT_INTERPOLATION_BILINEAR && roi_out->scale <= .99999f && roi_out->scale > 0.5f)
   {
@@ -789,13 +800,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     const int width = roi_out->width;
     const int height = roi_out->height;
     size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
-     // 1:1 demosaic
+    // 1:1 demosaic
     dev_green_eq = NULL;
     if(data->green_eq != DT_IOP_GREEN_EQ_NO)
     {
       // green equilibration
       dev_green_eq = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float));
-      if (dev_green_eq == NULL) goto error;      
+      if (dev_green_eq == NULL) goto error;
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 0, sizeof(cl_mem), &dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 1, sizeof(cl_mem), &dev_green_eq);
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 2, sizeof(int), &width);
@@ -856,7 +867,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if(err != CL_SUCCESS) goto error;
 
   }
-  else if(roi_out->scale > .5f)
+  else if(roi_out->scale > .5f ||  // full needed because zoomed in enough
+          (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||  // or in darkroom mode and quality requested by user settings
+          (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))              // we assume you always want that for exports.
   {
     // need to scale to right res
     dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4*sizeof(float));
@@ -977,8 +990,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 3, sizeof(int), &height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 4, sizeof(int), (void*)&zero);
     dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 5, sizeof(int), (void*)&zero);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 6, sizeof(int), (void*)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 7, sizeof(int), (void*)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 6, sizeof(int), (void*)&roi_in->width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 7, sizeof(int), (void*)&roi_in->height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 8, sizeof(float), (void*)&roi_out->scale);
     dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 9, sizeof(uint32_t), (void*)&data->filters);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_zoom_half_size, sizes);
@@ -1003,21 +1016,21 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     size_t workgroupsize = 0;          // the maximum number of items in a work group
     unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
     size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
-  
+
     // Make sure blocksize is not too large. As our kernel is very register hungry we
     // need to take maximum work group size into account
     int blocksize = BLOCKSIZE;
     int blockwd;
     int blockht;
     if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-       dt_opencl_get_kernel_work_group_size(devid, gd->kernel_color_smoothing, &kernelworkgroupsize) == CL_SUCCESS)
+        dt_opencl_get_kernel_work_group_size(devid, gd->kernel_color_smoothing, &kernelworkgroupsize) == CL_SUCCESS)
     {
 
       while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize*blocksize > workgroupsize ||
             (blocksize+2)*(blocksize+2)*4*sizeof(float) > localmemsize)
       {
         if(blocksize == 1) break;
-        blocksize >>= 1;    
+        blocksize >>= 1;
       }
 
       blockwd = blockht = blocksize;
@@ -1111,7 +1124,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_enabled = 1;
-  module->priority = 117; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 115; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;
@@ -1173,6 +1186,16 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   d->color_smoothing = p->color_smoothing;
   d->median_thrs = p->median_thrs;
   d->demosaicing_method = p->demosaicing_method;
+
+  piece->process_cl_ready = 1;
+
+  // Demosaic mode AMAZE not implemented in OpenCL yet.
+  if(d->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
+    piece->process_cl_ready = 0;
+
+  // OpenCL can not (yet) green-equilibrate over full image.
+  if(d->green_eq == DT_IOP_GREEN_EQ_FULL || d->green_eq == DT_IOP_GREEN_EQ_BOTH)
+    piece->process_cl_ready = 0;
 }
 
 void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1269,8 +1292,8 @@ void gui_init     (struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
 
   g->demosaic_method = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_combobox_add(g->demosaic_method, _("ppg"));
-  dt_bauhaus_combobox_add(g->demosaic_method, _("AMaZE"));
+  dt_bauhaus_combobox_add(g->demosaic_method, _("ppg (fast)"));
+  dt_bauhaus_combobox_add(g->demosaic_method, _("amaze (slow)"));
   dt_bauhaus_widget_set_label(g->demosaic_method, _("method"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method, TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->demosaic_method), "tooltip-text", _("demosaicing raw data method"), (char *)NULL);
@@ -1317,4 +1340,6 @@ void gui_cleanup  (struct dt_iop_module_t *self)
 }
 
 #include "iop/amaze_demosaic_RT.cc"
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

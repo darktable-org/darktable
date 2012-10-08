@@ -120,7 +120,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_colortransfer_gui_data_t *g =
-      (dt_iop_colortransfer_gui_data_t*)self->gui_data;
+    (dt_iop_colortransfer_gui_data_t*)self->gui_data;
 
   dt_accel_connect_button_iop(self, "acquire", g->acquire_button);
   dt_accel_connect_button_iop(self, "apply", g->apply_button);
@@ -549,7 +549,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colortransfer_params_t));
   module->default_params = malloc(sizeof(dt_iop_colortransfer_params_t));
   module->default_enabled = 0;
-  module->priority = 431; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 423; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colortransfer_params_t);
   module->gui_data = NULL;
   dt_iop_colortransfer_params_t tmp;
@@ -690,3 +690,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 #undef HISTN
 #undef MAXN
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

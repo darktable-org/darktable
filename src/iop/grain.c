@@ -485,7 +485,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_grain_params_t));
   module->default_params = malloc(sizeof(dt_iop_grain_params_t));
   module->default_enabled = 0;
-  module->priority = 764; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 769; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_grain_params_t);
   module->gui_data = NULL;
   dt_iop_grain_params_t tmp = (dt_iop_grain_params_t)
@@ -524,7 +524,7 @@ void gui_init(struct dt_iop_module_t *self)
   /* strength */
   g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->strength, 2);
   dt_bauhaus_widget_set_label(g->scale2, _("strength"));
-  dt_bauhaus_slider_set_format(g->scale2,"%.0f%%");  
+  dt_bauhaus_slider_set_format(g->scale2,"%.0f%%");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the strength of applied grain"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
@@ -538,4 +538,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

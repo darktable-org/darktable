@@ -12,6 +12,8 @@
 # Copyright 2010 henrik andersson
 #=============================================================================
 
+SET(PANGOCAIRO_FIND_REQUIRED ${PangoCairo_FIND_REQUIRED})
+
 find_path(PANGOCAIRO_INCLUDE_DIR pango/pangocairo.h PATH_SUFFIXES pango-1.0/ )
 mark_as_advanced(PANGOCAIRO_INCLUDE_DIR)
 

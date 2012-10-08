@@ -39,7 +39,7 @@ typedef struct dt_camera_t
   /** Camera configuration cache */
   CameraWidget *configuration;
 
-  /** Registered timeout func */  
+  /** Registered timeout func */
   CameraTimeoutFunc timeout;
 
   gboolean config_changed;
@@ -50,6 +50,8 @@ typedef struct dt_camera_t
   gboolean can_tether;
   /** This camera/device can do live view. */
   gboolean can_live_view;
+  /** This camera/device can do advanced live view things like zoom. */
+  gboolean can_live_view_advanced;
   /** This camera/device can be remote controlled. */
   gboolean can_config;
 
@@ -81,6 +83,12 @@ typedef struct dt_camera_t
   int32_t live_view_rotation;
   /** Zoom level for live view */
   gboolean live_view_zoom;
+  /** Pan the zoomed live view */
+  gboolean live_view_pan;
+  /** Position of the live view zoom region */
+  gint live_view_zoom_x, live_view_zoom_y;
+  /** Mirror the live view for easier self portraits */
+  gboolean live_view_flip;
   /** The thread adding the live view jobs */
   pthread_t live_view_thread;
   /** A guard so that writing and reading the pixbuf don't interfere */
@@ -236,4 +244,6 @@ void dt_camctl_camera_build_property_menu (const dt_camctl_t *c,const dt_camera_
 
 #endif
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

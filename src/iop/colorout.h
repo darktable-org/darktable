@@ -24,6 +24,14 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
+typedef enum dt_iop_colorout_softproof_t
+{
+  DT_SOFTPROOF_DISABLED            = 0,
+  DT_SOFTPROOF_ENABLED             = 1,
+  DT_SOFTPROOF_GAMUTCHECK          = 2
+}
+dt_iop_colorout_softproof_t;
+
 typedef struct dt_iop_colorout_global_data_t
 {
   int kernel_colorout;
@@ -46,7 +54,7 @@ dt_iop_colorout_params_t;
 
 typedef struct dt_iop_colorout_gui_data_t
 {
-  gboolean softproof_enabled;
+  gint softproof_enabled;
   GtkWidget *cbox1, *cbox2, *cbox3, *cbox4,*cbox5;
   GList *profiles;
 
@@ -55,7 +63,7 @@ dt_iop_colorout_gui_data_t;
 
 typedef struct dt_iop_colorout_data_t
 {
-  gboolean softproof_enabled;
+  gint softproof_enabled;
   float lut[3][LUT_SAMPLES];
   float cmatrix[9];
   cmsHPROFILE softproof;
@@ -67,3 +75,6 @@ typedef struct dt_iop_colorout_data_t
 dt_iop_colorout_data_t;
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

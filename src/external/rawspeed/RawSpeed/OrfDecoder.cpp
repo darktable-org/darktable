@@ -95,7 +95,7 @@ RawImage OrfDecoder::decodeRawInternal() {
   try {
     decodeCompressed(s, width, height);
   } catch (IOException &e) {
-    errors.push_back(_strdup(e.what()));
+    mRaw->setError(e.what());
     // Let's ignore it, it may have delivered somewhat useful data.
   }
 
@@ -245,16 +245,18 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
   }
 }
 
-void OrfDecoder::checkSupport(CameraMetaData *meta) {
+void OrfDecoder::checkSupportInternal(CameraMetaData *meta) {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
   if (data.empty())
     ThrowRDE("ORF Support check: Model name found");
+  if (!data[0]->hasEntry(MAKE))
+    ThrowRDE("ORF Support: Make name not found");
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
   this->checkCameraSupported(meta, make, model, "");
 }
 
-void OrfDecoder::decodeMetaData(CameraMetaData *meta) {
+void OrfDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   int iso = 0;
   mRaw->cfa.setCFA(CFA_RED, CFA_GREEN, CFA_GREEN, CFA_BLUE);
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
