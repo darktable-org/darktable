@@ -7,6 +7,10 @@ if(FLICKCURL_FOUND)
 	list(APPEND MODULES flickr)
 endif(FLICKCURL_FOUND)
 
+if (JsonGlib_FOUND)
+	list(APPEND MODULES facebook)
+endif(JsonGlib_FOUND)
+
 foreach(module ${MODULES} ${MODULES_EXPERIMENTAL})
 	add_library(${module} MODULE "${module}.c")
 endforeach(module)
