@@ -769,10 +769,29 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
 
 void dt_dev_get_processed_size(const dt_develop_t *dev, int *procw, int *proch)
 {
-  // [jo] TODO: i hate this whole function. thread-safe? get rid of it!
-  const float scale = dev->preview_pipe ? (dev->preview_pipe->iscale / dev->preview_downsampling) : 1.0f;
-  *procw = dev->pipe && dev->pipe->processed_width  ? dev->pipe->processed_width  : scale * dev->preview_pipe->processed_width;
-  *proch = dev->pipe && dev->pipe->processed_height ? dev->pipe->processed_height : scale * dev->preview_pipe->processed_height;
+  if (!dev)
+    return;
+
+  // if pipe is processed, lets return its size
+  if (dev->pipe && !dev->pipe->processing)
+  {
+    *procw = dev->pipe->processed_width;
+    *proch = dev->pipe->processed_height;
+    return;
+  }
+
+  // fallback on preview pipe
+  if (dev->preview_pipe && !dev->preview_pipe->processing)
+  {
+    const float scale = (dev->preview_pipe->iscale / dev->preview_downsampling);
+    *procw = scale * dev->preview_pipe->processed_width;
+    *proch = scale * dev->preview_pipe->processed_height;
+    return;
+  }
+
+  // no processed pipes, lets return 0 size
+  *procw = *proch = 0;
+  return;
 }
 
 void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float py, float *zoom_x, float *zoom_y)
