@@ -731,8 +731,6 @@ static void ui_refresh_users(dt_storage_facebook_gui_data_t *ui)
   GtkListStore *list_store = GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_username));
   GtkTreeIter iter;
 
-  // reset iter before clearing model to avoid a crash
-  gtk_combo_box_set_active_iter(ui->comboBox_username, NULL);
   gtk_list_store_clear(list_store);
   gtk_list_store_append(list_store, &iter);
 
@@ -780,8 +778,6 @@ static void ui_refresh_albums(dt_storage_facebook_gui_data_t *ui)
     goto cleanup;
   }
 
-  // reset iter before clearing model to avoid a crash
-  gtk_combo_box_set_active_iter(ui->comboBox_album, NULL);
   GtkListStore *model_album = GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_album));
   GtkTreeIter iter;
   gtk_list_store_clear(model_album);
@@ -856,8 +852,6 @@ static gboolean ui_authenticate(dt_storage_facebook_gui_data_t *ui)
       g_return_val_if_fail(accountinfo != NULL, FALSE);
       save_account_info(ui, accountinfo);
 
-      // reset iter before clearing model to avoid a crash
-      gtk_combo_box_set_active_iter(ui->comboBox_username, NULL);
       //add account to user list and select it
       GtkListStore *model =  GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_username));
       GtkTreeIter iter;
@@ -938,8 +932,6 @@ static void ui_login_clicked(GtkButton *button, gpointer data)
 
 static void ui_reset_albums_creation(struct dt_storage_facebook_gui_data_t *ui)
 {
-  // iter must be reset before nuking the model if we want to avoid crashing.
-  gtk_combo_box_set_active_iter(ui->comboBox_album, NULL);
   GtkListStore *model_album = GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_album));
   gtk_list_store_clear(model_album);
   gtk_entry_set_text(ui->entry_album_summary, "");
