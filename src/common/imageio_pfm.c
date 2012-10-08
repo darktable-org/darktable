@@ -67,14 +67,14 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
   for(int j=0; j < img->height/2; j++)
   {
     memcpy(line,
-        buf + img->width*j*4,
-        4*sizeof(float)*img->width);
+           buf + img->width*j*4,
+           4*sizeof(float)*img->width);
     memcpy(buf + img->width*j*4,
-        buf + img->width*(img->height-1-j)*4,
-        4*sizeof(float)*img->width);
+           buf + img->width*(img->height-1-j)*4,
+           4*sizeof(float)*img->width);
     memcpy(buf + img->width*(img->height-1-j)*4,
-        line,
-        4*sizeof(float)*img->width);
+           line,
+           4*sizeof(float)*img->width);
   }
   free(line);
   fclose(f);
@@ -88,3 +88,6 @@ error_cache_full:
   return DT_IMAGEIO_CACHE_FULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

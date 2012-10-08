@@ -106,7 +106,7 @@ RawImage ArwDecoder::decodeRawInternal() {
     else
       DecodeARW2(input, width, height, bitPerPixel);
   } catch (IOException &e) {
-    errors.push_back(_strdup(e.what()));
+    mRaw->setError(e.what());
     // Let's ignore it, it may have delivered somewhat useful data.
   }
 
@@ -172,7 +172,7 @@ void ArwDecoder::DecodeARW2(ByteStream &input, uint32 w, uint32 h, uint32 bpp) {
   ThrowRDE("Unsupported bit depth");
 }
 
-void ArwDecoder::checkSupport(CameraMetaData *meta) {
+void ArwDecoder::checkSupportInternal(CameraMetaData *meta) {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
   if (data.empty())
     ThrowRDE("ARW Support check: Model name found");
@@ -181,7 +181,7 @@ void ArwDecoder::checkSupport(CameraMetaData *meta) {
   this->checkCameraSupported(meta, make, model, "");
 }
 
-void ArwDecoder::decodeMetaData(CameraMetaData *meta) {
+void ArwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   //Default
   int iso = 0;
 
@@ -190,6 +190,8 @@ void ArwDecoder::decodeMetaData(CameraMetaData *meta) {
 
   if (data.empty())
     ThrowRDE("ARW Meta Decoder: Model name found");
+  if (!data[0]->hasEntry(MAKE))
+    ThrowRDE("ARW Decoder: Make name not found");
 
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();

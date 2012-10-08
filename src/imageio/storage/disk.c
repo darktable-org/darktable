@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2009--2012 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
+#include "gui/gtkentry.h"
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
 #include <stdio.h>
@@ -46,7 +47,7 @@ disk_t;
 // saved params
 typedef struct dt_imageio_disk_t
 {
-  char filename[1024];
+  char filename[DT_MAX_PATH_LEN];
   dt_variables_params_t *vp;
 }
 dt_imageio_disk_t;
@@ -79,8 +80,8 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-    char composed[1024];
-    snprintf(composed, 1024, "%s/$(FILE_NAME)", dir);
+    char composed[DT_MAX_PATH_LEN];
+    snprintf(composed, DT_MAX_PATH_LEN, "%s/$(FILE_NAME)", dir);
     gtk_entry_set_text(GTK_ENTRY(d->entry), composed);
     dt_conf_set_string("plugins/imageio/storage/disk/file_directory", composed);
     g_free(dir);
@@ -104,37 +105,23 @@ gui_init (dt_imageio_module_storage_t *self)
     gtk_entry_set_text(GTK_ENTRY(widget), dir);
     g_free(dir);
   }
+
+  dt_gtkentry_setup_completion(GTK_ENTRY(widget), dt_gtkentry_get_default_path_compl_list());
+
+  char *tooltip_text = dt_gtkentry_build_completion_tooltip_text (
+                         _("enter the path where to put exported images\nrecognized variables:"),
+                         dt_gtkentry_get_default_path_compl_list());
+
   d->entry = GTK_ENTRY(widget);
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry));
-  g_object_set(G_OBJECT(widget), "tooltip-text", _("enter the path where to put exported images:\n"
-               "$(ROLL_NAME) - roll of the input image\n"
-               "$(FILE_DIRECTORY) - directory of the input image\n"
-               "$(FILE_NAME) - basename of the input image\n"
-               "$(FILE_EXTENSION) - extension of the input image\n"
-               "$(SEQUENCE) - sequence number\n"
-               "$(YEAR) - year\n"
-               "$(MONTH) - month\n"
-               "$(DAY) - day\n"
-               "$(HOUR) - hour\n"
-               "$(MINUTE) - minute\n"
-               "$(SECOND) - second\n"
-               "$(EXIF_YEAR) - exif year\n"
-               "$(EXIF_MONTH) - exif month\n"
-               "$(EXIF_DAY) - exif day\n"
-               "$(EXIF_HOUR) - exif hour\n"
-               "$(EXIF_MINUTE) - exif minute\n"
-               "$(EXIF_SECOND) - exif second\n"
-               "$(STARS) - star rating\n"
-               "$(LABELS) - colorlabels\n"
-               "$(PICTURES_FOLDER) - pictures folder\n"
-               "$(HOME_FOLDER) - home folder\n"
-               "$(DESKTOP_FOLDER) - desktop folder"
-                                                  ), (char *)NULL);
+  g_object_set(G_OBJECT(widget), "tooltip-text", tooltip_text, (char *)NULL);
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, 18, 18);
   g_object_set(G_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
+
+  g_free(tooltip_text);
 }
 
 void
@@ -148,18 +135,19 @@ gui_reset (dt_imageio_module_storage_t *self)
 {
   disk_t *d = (disk_t *)self->gui_data;
   // global default can be annoying:
-  // gtk_entry_set_text(GTK_ENTRY(d->entry), "$(FILE_DIRECTORY)/darktable_exported/$(FILE_NAME)");
+  // gtk_entry_set_text(GTK_ENTRY(d->entry), "$(FILE_FOLDER)/darktable_exported/img_$(SEQUENCE)");
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", gtk_entry_get_text(d->entry));
 }
 
 int
-store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
+store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
+       const int num, const int total, const gboolean high_quality)
 {
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
 
-  char filename[1024]= {0};
-  char dirname[1024]= {0};
-  dt_image_full_path(imgid, dirname, 1024);
+  char filename[DT_MAX_PATH_LEN]= {0};
+  char dirname[DT_MAX_PATH_LEN]= {0};
+  dt_image_full_path(imgid, dirname, DT_MAX_PATH_LEN);
   int fail = 0;
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -167,16 +155,16 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
     // if filenamepattern is a directory just let att ${FILE_NAME} as default..
     if ( g_file_test(d->filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename))[0]=='/' || (d->filename+strlen(d->filename))[0]=='\\') )
-      snprintf (d->filename+strlen(d->filename), 1024-strlen(d->filename), "$(FILE_NAME)");
+      snprintf (d->filename+strlen(d->filename), DT_MAX_PATH_LEN-strlen(d->filename), "$(FILE_NAME)");
 
     // avoid braindead export which is bound to overwrite at random:
     if(total > 1 && !g_strrstr(d->filename, "$"))
     {
-      snprintf(d->filename+strlen(d->filename), 1024-strlen(d->filename), "_$(SEQUENCE)");
+      snprintf(d->filename+strlen(d->filename), DT_MAX_PATH_LEN-strlen(d->filename), "_$(SEQUENCE)");
     }
 
     gchar* fixed_path = dt_util_fix_path(d->filename);
-    g_strlcpy(d->filename, fixed_path, 1024);
+    g_strlcpy(d->filename, fixed_path, DT_MAX_PATH_LEN);
     g_free(fixed_path);
 
     d->vp->filename = dirname;
@@ -184,8 +172,8 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     d->vp->imgid = imgid;
     d->vp->sequence = num;
     dt_variables_expand(d->vp, d->filename, TRUE);
-    g_strlcpy(filename, dt_variables_get_result(d->vp), 1024);
-    g_strlcpy(dirname, filename, 1024);
+    g_strlcpy(filename, dt_variables_get_result(d->vp), DT_MAX_PATH_LEN);
+    g_strlcpy(dirname, filename, DT_MAX_PATH_LEN);
 
     const char *ext = format->extension(fdata);
     char *c = dirname + strlen(dirname);
@@ -231,7 +219,7 @@ failed:
   if(fail) return 1;
 
   /* export image to file */
-  if(dt_imageio_export(imgid, filename, format, fdata) != 0)
+  if(dt_imageio_export(imgid, filename, format, fdata, high_quality) != 0)
   {
     fprintf(stderr, "[imageio_storage_disk] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
@@ -242,7 +230,8 @@ failed:
   if(dt_exif_xmp_attach(imgid, filename) != 0)
   {
     fprintf(stderr, "[imageio_storage_disk] could not attach xmp data to file: `%s'!\n", filename);
-    dt_control_log(_("could not attach xmp data to file `%s'!"), filename);
+    // don't report that one to gui, as some formats (pfm, ppm, exr) just don't support
+    // writing xmp via exiv2, so it might not be to worry.
     return 1;
   }
 
@@ -264,7 +253,7 @@ get_params(dt_imageio_module_storage_t *self, int* size)
   d->vp = NULL;
   dt_variables_params_init(&d->vp);
   const char *text = gtk_entry_get_text(GTK_ENTRY(g->entry));
-  g_strlcpy(d->filename, text, 1024);
+  g_strlcpy(d->filename, text, DT_MAX_PATH_LEN);
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
   return d;
 }
@@ -288,4 +277,6 @@ set_params(dt_imageio_module_storage_t *self, void *params, int size)
   return 0;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -83,7 +83,13 @@ static void
 export_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   // Let's get the max dimension restriction if any...
-  dt_control_export();
+  // TODO: pass the relevant values directly, not using the conf ...
+  int max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
+  int max_height = dt_conf_get_int ("plugins/lighttable/export/height");
+  int format_index = dt_conf_get_int ("plugins/lighttable/export/format");
+  int storage_index = dt_conf_get_int ("plugins/lighttable/export/storage");
+  gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
+  dt_control_export(max_width, max_height, format_index, storage_index, high_quality);
 }
 
 static void
@@ -484,25 +490,28 @@ gui_init (dt_lib_module_t *self)
   d->profiles = g_list_append(d->profiles, prof);
 
   // read datadir/color/out/*.icc
-  char datadir[1024], confdir[1024], dirname[1024], filename[1024];
-  dt_loc_get_user_config_dir(confdir, 1024);
-  dt_loc_get_datadir(datadir, 1024);
+  char datadir[DT_MAX_PATH_LEN];
+  char confdir[DT_MAX_PATH_LEN];
+  char dirname[DT_MAX_PATH_LEN];
+  char filename[DT_MAX_PATH_LEN];
+  dt_loc_get_user_config_dir(confdir, DT_MAX_PATH_LEN);
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
   cmsHPROFILE tmpprof;
   const gchar *d_name;
-  snprintf(dirname, 1024, "%s/color/out", confdir);
+  snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/out", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
-    snprintf(dirname, 1024, "%s/color/out", datadir);
+    snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/out", datadir);
   GDir *dir = g_dir_open(dirname, 0, NULL);
   if(dir)
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      snprintf(filename, 1024, "%s/%s", dirname, d_name);
+      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", dirname, d_name);
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
-	char *lang = getenv("LANG");
-	if (!lang) lang = "en_US";
+        char *lang = getenv("LANG");
+        if (!lang) lang = "en_US";
 
         dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
         char name[1024];
@@ -767,4 +776,6 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "export", GTK_WIDGET(d->export_button));
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

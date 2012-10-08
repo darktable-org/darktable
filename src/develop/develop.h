@@ -80,11 +80,12 @@ typedef struct dt_develop_t
   // histogram for display.
   float *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
   float histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
+  gboolean histogram_linear;
 
   /* proxy for communication between plugins and develop/darkroom */
   struct
   {
-    // exposure plugin hooks, used by histogram dragging functions 
+    // exposure plugin hooks, used by histogram dragging functions
     struct
     {
       struct dt_iop_module_t *module;
@@ -110,7 +111,7 @@ typedef struct dt_develop_t
     }
     modulegroups;
 
-    // snapshots plugin hooks 
+    // snapshots plugin hooks
     struct
     {
       // this flag is set by snapshot plugin to signal that expose of darkroom
@@ -161,8 +162,8 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
 void dt_dev_configure (dt_develop_t *dev, int wd, int ht);
 void dt_dev_invalidate_from_gui (dt_develop_t *dev);
 
-/* 
- * exposure plugin hook, set the white level 
+/*
+ * exposure plugin hook, set the white level
  */
 
 /** check if exposure iop hooks are available */
@@ -196,3 +197,6 @@ gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t io
 void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

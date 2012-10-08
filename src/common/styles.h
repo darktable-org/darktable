@@ -45,6 +45,12 @@ typedef struct dt_style_item_t
 /** creates a new style from specified image, items are the history stack number of items to include in style */
 void dt_styles_create_from_image (const char *name,const char *description,int32_t imgid,GList *items);
 
+/** creates a new style from specified style, items are the style number of items to include in style */
+void dt_styles_create_from_style (const char *name, const char *newname, const char *description, GList *filter);
+
+/** update a style */
+void dt_styles_update (const char *name, const char *newname, const char *description, GList *filter);
+
 /** applies the style to selection of images */
 void dt_styles_apply_to_selection (const char *name,gboolean duplicate);
 
@@ -63,11 +69,14 @@ GList *dt_styles_get_list (const char *filter);
 /** get a list of items for a named style */
 GList *dt_styles_get_item_list (const char *name);
 
+/** get list of items for a named style as a nice string */
+char *dt_styles_get_item_list_as_string(const char *name);
+
 /** get a description of a named style */
 gchar *dt_styles_get_description (const char *name);
 
 /** save style to file */
-void dt_styles_save_to_file(const char *style_name,const char *filedir);
+void dt_styles_save_to_file(const char *style_name,const char *filedir,gboolean overwrite);
 
 /** load style from file */
 void dt_styles_import_from_file(const char *style_path);
@@ -77,3 +86,6 @@ void init_styles_key_accels();
 /** connect global style accelerators at start time */
 void connect_styles_key_accels();
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

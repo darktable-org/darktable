@@ -26,25 +26,32 @@ const sampler_t samplerc =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP     
 
 
 /* 
-    To speed up processing we use an algorithm proposed from B. Goossens, H.Q. Luong, J. Aelterman, A. Pizurica,  and W. Philips, 
+    To speed up processing we use an algorithm proposed by B. Goossens, H.Q. Luong, J. Aelterman, A. Pizurica,  and W. Philips, 
     "A GPU-Accelerated Real-Time NLMeans Algorithm for Denoising Color Video Sequences", in Proc. ACIVS (2), 2010, pp.46-57. 
 
     Benchmarking figures (export of a 20MPx image on a i7-2600 with an NVIDIA GTS450):
 
-    This GPU-code: 18s
+    This GPU-code: 13s
     Brute force GPU-code: 136s
     Optimized CPU-code: 27s
 
 */
 
-
-float gh(const float f)
+float fast_mexp2f(const float x)
 {
-  // make spread bigger: less smoothing
-  const float spread = 100.f;
-  return 1.0f/(1.0f + fabs(f)*spread);
+  const float i1 = (float)0x3f800000u; // 2^0
+  const float i2 = (float)0x3f000000u; // 2^-1
+  const float k0 = i1 + x * (i2 - i1);
+  union { float f; unsigned int i } k;
+  k.i = (k0 >= (float)0x800000u) ? k0 : 0;
+  return k.f;
 }
 
+float gh(const float f, const float sharpness)
+{
+  // make sharpness bigger: less smoothing
+  return fast_mexp2f(f*f*sharpness);
+}
 
 float ddirac(const int2 q)
 {
@@ -132,7 +139,7 @@ nlmeans_horiz(read_only image2d_t U4_in, write_only image2d_t U4_out, const int 
 
 kernel void
 nlmeans_vert(read_only image2d_t U4_in, write_only image2d_t U4_out, const int width, const int height, 
-              const int2 q, const int P, local float *buffer)
+              const int2 q, const int P, const float sharpness, local float *buffer)
 {
   const int lid = get_local_id(1);
   const int lsz = get_local_size(1);
@@ -174,7 +181,7 @@ nlmeans_vert(read_only image2d_t U4_in, write_only image2d_t U4_out, const int w
     distacc += buffer[pj];
   }
 
-  distacc = gh(distacc);
+  distacc = gh(distacc, sharpness);
 
   write_imagef (U4_out, (int2)(x, y), distacc);
 }

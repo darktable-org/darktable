@@ -49,7 +49,7 @@ typedef struct dt_dev_pixelpipe_iop_t
   float iscale;                    // input actually just downscaled buffer? iscale*iwidth = actual width
   int iwidth, iheight;             // width and height of input buffer
   uint64_t hash;                   // hash of params and enabled.
-  int bpc;                         // bits per channel, 32 means flat
+  int bpc;                         // bits per channel, 32 means float
   int colors;                      // how many colors per pixel
   dt_iop_roi_t buf_in, buf_out;    // theoretical full buffer regions of interest, as passed through modify_roi_out
   int process_cl_ready;            // set this to 0 in commit_params to temporarily disable the use of process_cl
@@ -134,6 +134,8 @@ struct dt_develop_t;
 
 // inits the pixelpipe with plain passthrough input/output and empty input and default caching settings.
 int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
+// inits the preview pixelpipe with plain passthrough input/output and empty input and default caching settings.
+int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe);
 // inits the pixelpipe with settings optimized for full-image export (no history stack cache)
 int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
 // inits the pixelpipe with settings optimized for thumbnail export (no history stack cache)
@@ -176,3 +178,6 @@ void dt_dev_pixelpipe_add_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *de
 void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int n);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

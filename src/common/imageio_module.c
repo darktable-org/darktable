@@ -291,4 +291,22 @@ dt_imageio_module_storage_t *dt_imageio_get_storage_by_name(const char *name)
   return NULL;
 }
 
+dt_imageio_module_format_t *dt_imageio_get_format_by_index(int index)
+{
+  dt_imageio_t *iio = darktable.imageio;
+  GList *it = g_list_nth(iio->plugins_format, index);
+  if(!it) it = iio->plugins_format;
+  return (dt_imageio_module_format_t *)it->data;
+}
+
+dt_imageio_module_storage_t *dt_imageio_get_storage_by_index(int index)
+{
+  dt_imageio_t *iio = darktable.imageio;
+  GList *it = g_list_nth(iio->plugins_storage, index);
+  if(!it) it = iio->plugins_storage;
+  return (dt_imageio_module_storage_t *)it->data;
+}
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

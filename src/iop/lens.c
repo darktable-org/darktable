@@ -25,9 +25,6 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <ctype.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
@@ -36,6 +33,7 @@
 #include "control/control.h"
 #include "dtgtk/button.h"
 #include "dtgtk/resetlabel.h"
+#include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
@@ -93,8 +91,6 @@ void connect_key_accels(dt_iop_module_t *self)
                               GTK_WIDGET(g->camera_model));
   dt_accel_connect_button_iop(self, "find camera",
                               GTK_WIDGET(g->find_camera_button));
-  dt_accel_connect_button_iop(self, "auto scale",
-                              GTK_WIDGET(g->auto_scale_button));
 
   dt_accel_connect_slider_iop(self, "scale", GTK_WIDGET(g->scale));
   dt_accel_connect_slider_iop(self, "tca R", GTK_WIDGET(g->tca_r));
@@ -113,7 +109,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
 
   const unsigned int pixelformat = ch == 3 ? LF_CR_3 (RED, GREEN, BLUE) : LF_CR_4 (RED, GREEN, BLUE, UNKNOWN);
 
-  if(!d->lens->Maker)
+  if(!d->lens->Maker || d->crop <= 0.0f)
   {
     memcpy(out, in, ch*sizeof(float)*roi_out->width*roi_out->height);
     return;
@@ -158,31 +154,21 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
           modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
         // reverse transform the global coords from lf to our buffer
         float *buf = ((float *)ovoid) + y*roi_out->width*ch;
-        for (int x = 0; x < roi_out->width; x++,buf+=ch)
+        for (int x = 0; x < roi_out->width; x++,buf+=ch,pi+=6)
         {
-          for(int c=0; c<3; c++,pi+=2)
+          for(int c=0; c<3; c++)
           {
-            const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
-            const int ii = (int)pi0, jj = (int)pi1;
-            if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
-            {
-              const float *inp = in + ch*(roi_in->width*jj+ii) + c;
-              buf[c] = dt_interpolation_compute_sample(interpolation, inp, pi0, pi1, ch, ch_width);
-            }
-            else buf[c] = 0.0f;
+            const float pi0 = pi[c*2] - roi_in->x;
+            const float pi1 = pi[c*2+1] - roi_in->y;
+            buf[c] = dt_interpolation_compute_sample(interpolation, in+c, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
           }
 
           if(mask_display)
           {
-            float *pi = (float *)(((char *)d->tmpbuf2) + req2*dt_get_thread_num()) + 2; // take green channel distortion also for alpha channel
-            const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
-            const int ii = (int)pi0, jj = (int)pi1;
-            if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
-            {
-              const float *inp = in + ch*(roi_in->width*jj+ii) + 3;
-              buf[3] = dt_interpolation_compute_sample(interpolation, inp, pi0, pi1, ch, ch_width);
-            }
-            else buf[3] = 0.0f;
+            // take green channel distortion also for alpha channel
+            const float pi0 = pi[2] - roi_in->x;
+            const float pi1 = pi[3] - roi_in->y;
+            buf[3] = dt_interpolation_compute_sample(interpolation, in+3, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
           }
         }
       }
@@ -263,31 +249,21 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
           modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
         // reverse transform the global coords from lf to our buffer
         float *out = ((float *)ovoid) + y*roi_out->width*ch;
-        for (int x = 0; x < roi_out->width; x++)
+        for (int x = 0; x < roi_out->width; x++,pi+=6)
         {
-          for(int c=0; c<3; c++,pi+=2)
+          for(int c=0; c<3; c++)
           {
-            const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
-            const int ii = (int)pi0, jj = (int)pi1;
-            if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
-            {
-              const float *inp = d->tmpbuf + ch*(roi_in->width*jj+ii)+c;
-              out[c] = dt_interpolation_compute_sample(interpolation, inp, pi0, pi1, ch, ch_width);
-            }
-            else out[c] = 0.0f;
+            const float pi0 = pi[c*2] - roi_in->x;
+            const float pi1 = pi[c*2+1] - roi_in->y;
+            out[c] = dt_interpolation_compute_sample(interpolation, d->tmpbuf+c, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
           }
 
           if(mask_display)
           {
-            float *pi = (float *)(((char *)d->tmpbuf2) + req2*dt_get_thread_num()) + 2; // take green channel distortion also for alpha channel
-            const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
-            const int ii = (int)pi0, jj = (int)pi1;
-            if(ii >= (interpolation->width-1) && jj >= (interpolation->width-1) && ii < roi_in->width-interpolation->width && jj < roi_in->height-interpolation->width)
-            {
-              const float *inp = d->tmpbuf + ch*(roi_in->width*jj+ii) + 3;
-              out[3] = dt_interpolation_compute_sample(interpolation, inp, pi0, pi1, ch, ch_width);
-            }
-            else out[3] = 0.0f;
+            // take green channel distortion also for alpha channel
+            const float pi0 = pi[2] - roi_in->x;
+            const float pi1 = pi[3] - roi_in->y;
+            out[3] = dt_interpolation_compute_sample(interpolation, d->tmpbuf+3, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
           }
           out += ch;
         }
@@ -344,7 +320,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t isizes[] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1};
   size_t osizes[] = { ROUNDUPWD(owidth), ROUNDUPHT(oheight), 1};
 
-  if(!d->lens->Maker)
+  if(!d->lens->Maker || d->crop <= 0.0f)
   {
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, oregion);
     if(err != CL_SUCCESS) goto error;
@@ -398,7 +374,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     // reverse direction (useful for renderings)
     if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
-                    LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
+                   LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(roi_out, roi_in, tmpbuf, d, modifier) schedule(static)
@@ -410,8 +386,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
           modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
       }
 
-      /* non-blocking memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, owidth*oheight*2*3*sizeof(float), CL_FALSE);
+      /* _blocking_ memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
+      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, owidth*oheight*2*3*sizeof(float), CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
       dt_opencl_set_kernel_arg(devid, ldkernel, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -438,7 +414,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(roi_out, roi_in, tmpbuf, modifier, d) schedule(static)
 #endif
-      for (int y = 0; y < roi_in->height; y++)
+      for (int y = 0; y < roi_out->height; y++)
       {
         /* Colour correction: vignetting and CCI */
         // actually this way row stride does not matter.
@@ -448,15 +424,15 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
                                               roi_out->width, 1, pixelformat, ch*roi_out->width);
       }
 
-      /* non-blocking memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, ch*roi_out->width*roi_out->height*sizeof(float), CL_FALSE);
+      /* _blocking_ memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
+      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, ch*roi_out->width*roi_out->height*sizeof(float), CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 0, sizeof(cl_mem), (void *)&dev_tmp);
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 1, sizeof(cl_mem), (void *)&dev_out);
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 2, sizeof(int), (void *)&owidth);
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 3, sizeof(int), (void *)&oheight);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 4, sizeof(cl_mem), (void *)&dev_tmpbuf); 
+      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 4, sizeof(cl_mem), (void *)&dev_tmpbuf);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lens_vignette, osizes);
       if(err != CL_SUCCESS) goto error;
 
@@ -487,15 +463,15 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
                                               roi_in->width, 1, pixelformat, ch*roi_in->width);
       }
 
-      /* non-blocking memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, ch*roi_in->width*roi_in->height*sizeof(float), CL_FALSE);
+      /* _blocking_ memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
+      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, ch*roi_in->width*roi_in->height*sizeof(float), CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 0, sizeof(cl_mem), (void *)&dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 1, sizeof(cl_mem), (void *)&dev_tmp);
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 2, sizeof(int), (void *)&iwidth);
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 3, sizeof(int), (void *)&iheight);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 4, sizeof(cl_mem), (void *)&dev_tmpbuf); 
+      dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 4, sizeof(cl_mem), (void *)&dev_tmpbuf);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lens_vignette, isizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -507,7 +483,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
 
     if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
-                    LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
+                   LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(roi_out, roi_in, tmpbuf, d, modifier) schedule(static)
@@ -519,8 +495,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
           modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
       }
 
-      /* non-blocking memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, owidth*oheight*2*3*sizeof(float), CL_FALSE);
+      /* _blocking_ memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
+      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, owidth*oheight*2*3*sizeof(float), CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
       dt_opencl_set_kernel_arg(devid, ldkernel, 0, sizeof(cl_mem), (void *)&dev_tmp);
@@ -582,7 +558,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   *roi_in = *roi_out;
   // inverse transform with given params
 
-  if(!d->lens->Maker) return;
+  if(!d->lens->Maker || d->crop <= 0.0f) return;
 
   const float orig_w = roi_in->scale*piece->iwidth,
               orig_h = roi_in->scale*piece->iheight;
@@ -655,8 +631,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
                                  NULL, p->camera, 0);
     if(cam)
     {
-        camera = cam[0];
-        p->crop = cam[0]->CropFactor;
+      camera = cam[0];
+      p->crop = cam[0]->CropFactor;
     }
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   }
@@ -678,7 +654,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
         tca.Model = LF_TCA_MODEL_LINEAR;
         tca.Terms[0] = p->tca_b;
         tca.Terms[1] = p->tca_r;
-        if(d->lens->CalibTCA) 
+        if(d->lens->CalibTCA)
           while (d->lens->CalibTCA[0])
             lf_lens_remove_calib_tca (d->lens, 0);
         lf_lens_add_calib_tca (d->lens, &tca);
@@ -810,7 +786,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_lensfun_params_t);
   module->gui_data = NULL;
-  module->priority = 215; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 211; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -841,23 +817,6 @@ void cleanup_global(dt_iop_module_so_t *module)
 /// gui stuff: inspired by ufraws lensfun tab:
 
 
-static GtkComboBoxEntry *combo_entry_text (
-  GtkWidget *container, guint x, guint y, gchar *lbl, gchar *tip)
-{
-  GtkWidget *label, *combo;
-
-  (void)label;
-
-  combo = gtk_combo_box_entry_new_text ();
-  if (GTK_IS_TABLE (container))
-    gtk_table_attach (GTK_TABLE (container), combo, x+1, x+2, y, y+1, 0, 0, 2, 0);
-  else if (GTK_IS_BOX (container))
-    gtk_box_pack_start (GTK_BOX (container), combo, TRUE, TRUE, 2);
-  g_object_set(G_OBJECT(combo), "tooltip-text", tip, (char *)NULL);
-
-  return GTK_COMBO_BOX_ENTRY (combo);
-}
-
 /* simple function to compute the floating-point precision
    which is enough for "normal use". The criteria is to have
    about 3 leading digits after the initial zeros.  */
@@ -881,69 +840,6 @@ static int precision (double x, double adj)
       return 1;
   else
     return 0;
-}
-
-static GtkComboBoxEntry *combo_entry_numeric (
-  GtkWidget *container, guint x, guint y, gchar *lbl, gchar *tip,
-  gdouble val, gdouble precadj, gdouble *values, int nvalues)
-{
-  int i;
-  char txt [30];
-  GtkEntry *entry;
-  GtkComboBoxEntry *combo;
-
-  combo = combo_entry_text (container, x, y, lbl, tip);
-  entry = GTK_ENTRY (GTK_BIN (combo)->child);
-
-  gtk_entry_set_width_chars (entry, 4);
-
-  snprintf (txt, sizeof (txt), "%.*f", precision (val, precadj), val);
-  gtk_entry_set_text (entry, txt);
-
-  for (i = 0; i < nvalues; i++)
-  {
-    gdouble v = values [i];
-    snprintf (txt, sizeof (txt), "%.*f", precision (v, precadj), v);
-    gtk_combo_box_append_text (GTK_COMBO_BOX (combo), txt);
-  }
-
-  return combo;
-}
-
-static GtkComboBoxEntry *combo_entry_numeric_log (
-  GtkWidget *container, guint x, guint y, gchar *lbl, gchar *tip,
-  gdouble val, gdouble min, gdouble max, gdouble step, gdouble precadj)
-{
-  int phase, nvalues;
-  gdouble *values = NULL;
-  for (phase = 0; phase < 2; phase++)
-  {
-    nvalues = 0;
-    gboolean done = FALSE;
-    gdouble v = min;
-    while (!done)
-    {
-      if (v > max)
-      {
-        v = max;
-        done = TRUE;
-      }
-
-      if (values)
-        values [nvalues++] = v;
-      else
-        nvalues++;
-
-      v *= step;
-    }
-    if (!values)
-      values = g_new (gdouble, nvalues);
-  }
-
-  GtkComboBoxEntry *cbe = combo_entry_numeric (
-                            container, x, y, lbl, tip, val, precadj, values, nvalues);
-  g_free (values);
-  return cbe;
 }
 
 /* -- ufraw ptr array functions -- */
@@ -1205,6 +1101,7 @@ static void camera_menusearch_clicked(
   gtk_menu_popup (GTK_MENU (g->camera_menu), NULL, NULL, NULL, NULL,
                   0, gtk_get_current_event_time ());
 }
+
 static void camera_autosearch_clicked(
   GtkWidget *button, gpointer user_data)
 {
@@ -1243,62 +1140,31 @@ static void camera_autosearch_clicked(
 
 /* -- end camera -- */
 
-static void lens_comboentry_focal_update (GtkComboBox *widget, dt_iop_module_t *self)
+static void lens_comboentry_focal_update (GtkWidget *widget, dt_iop_module_t *self)
 {
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
-  (void)sscanf (gtk_combo_box_get_active_text (widget), "%f", &p->focal);
-  if(!darktable.gui->reset) dt_dev_add_history_item(darktable.develop, self, TRUE);
+  const char *text = dt_bauhaus_combobox_get_text(widget);
+  if(text)
+    (void)sscanf (text, "%f", &p->focal);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void lens_focal_reset(
-  GtkWidget *button, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  char txt [30];
-  const float val = ((dt_iop_lensfun_params_t*)self->default_params)->focal;
-  snprintf (txt, sizeof (txt), "%.*f", precision (val, 10.0), val);
-  GtkEntry *entry;
-  entry = GTK_ENTRY (GTK_BIN (g->cbe[0])->child);
-  gtk_entry_set_text (entry, txt);
-}
-
-static void lens_comboentry_aperture_update (GtkComboBox *widget, dt_iop_module_t *self)
+static void lens_comboentry_aperture_update (GtkWidget *widget, dt_iop_module_t *self)
 {
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
-  (void)sscanf (gtk_combo_box_get_active_text (widget), "%f", &p->aperture);
-  if(!darktable.gui->reset) dt_dev_add_history_item(darktable.develop, self, TRUE);
+  const char *text = dt_bauhaus_combobox_get_text(widget);
+  if(text)
+    (void)sscanf (text, "%f", &p->aperture);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void lens_aperture_reset(
-  GtkWidget *button, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  char txt [30];
-  float val = ((dt_iop_lensfun_params_t*)self->default_params)->aperture;
-  snprintf (txt, sizeof (txt), "%.*f", precision (val, 10.0), val);
-  GtkEntry *entry;
-  entry = GTK_ENTRY (GTK_BIN (g->cbe[1])->child);
-  gtk_entry_set_text (entry, txt);
-}
-static void lens_distance_reset(GtkWidget *button, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  char txt[30];
-  float val = ((dt_iop_lensfun_params_t *)self->default_params)->distance;
-  snprintf(txt, sizeof(txt), "%.*f", precision (val, 10.0), val);
-  GtkEntry *entry;
-  entry = GTK_ENTRY(GTK_BIN(g->cbe[2])->child);
-  gtk_entry_set_text(entry, txt);
-}
-
-static void lens_comboentry_distance_update (GtkComboBox *widget, dt_iop_module_t *self)
+static void lens_comboentry_distance_update (GtkWidget *widget, dt_iop_module_t *self)
 {
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
-  (void)sscanf (gtk_combo_box_get_active_text (widget), "%f", &p->distance);
-  if(!darktable.gui->reset) dt_dev_add_history_item(darktable.develop, self, TRUE);
+  const char *text = dt_bauhaus_combobox_get_text(widget);
+  if(text)
+    (void)sscanf (text, "%f", &p->distance);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void delete_children (GtkWidget *widget, gpointer data)
@@ -1399,42 +1265,70 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
     fli = sizeof (focal_values) / sizeof (gdouble);
   if (fli < ffi)
     fli = ffi + 1;
-  g->cbe[0] = combo_entry_numeric (
-                g->lens_param_box, 0, 0, _("mm"), _("focal length (mm)"),
-                p->focal, 10.0, focal_values + ffi, fli - ffi);
-  g_signal_connect (G_OBJECT(g->cbe[0]), "changed",
-                    G_CALLBACK(lens_comboentry_focal_update), self);
-  GtkWidget* button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
-  gtk_box_pack_start(GTK_BOX(g->lens_param_box), button, FALSE, FALSE, 0);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("reset from exif data"), (char *)NULL);
-  g_signal_connect (G_OBJECT (button), "clicked",
-                    G_CALLBACK (lens_focal_reset), self);
 
+
+  GtkWidget *w;
+  char txt[30];
+
+  // focal length
+  w = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(w, _("mm"));
+  g_object_set(G_OBJECT(w), "tooltip-text", _("focal length (mm)"), (char *)NULL);
+  snprintf(txt, sizeof (txt), "%.*f", precision(p->focal, 10.0), p->focal);
+  dt_bauhaus_combobox_add(w, txt);
+  for(int k=0;k<fli-ffi;k++)
+  {
+    snprintf(txt, sizeof (txt), "%.*f", precision(focal_values[ffi+k], 10.0), focal_values[ffi+k]);
+    dt_bauhaus_combobox_add(w, txt);
+  }
+  g_signal_connect (G_OBJECT(w), "value-changed",
+                    G_CALLBACK(lens_comboentry_focal_update), self);
+  gtk_box_pack_start(GTK_BOX(g->lens_param_box), w, TRUE, TRUE, 0);
+  dt_bauhaus_combobox_set_editable(w, 1);
+  g->cbe[0] = w;
+
+
+  // f-stop
   ffi = 0;
   for (i = 0; i < sizeof (aperture_values) / sizeof (gdouble); i++)
     if (aperture_values [i] < lens->MinAperture)
       ffi = i + 1;
-  g->cbe[1] = combo_entry_numeric (
-                g->lens_param_box, 0, 0, _("f/"), _("f-number (aperture)"),
-                p->aperture, 10.0, aperture_values + ffi, sizeof (aperture_values) / sizeof (gdouble) - ffi);
-  g_signal_connect (G_OBJECT(g->cbe[1]), "changed",
-                    G_CALLBACK(lens_comboentry_aperture_update), self);
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
-  gtk_box_pack_start(GTK_BOX(g->lens_param_box), button, FALSE, FALSE, 0);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("reset from exif data"), (char *)NULL);
-  g_signal_connect (G_OBJECT (button), "clicked",
-                    G_CALLBACK (lens_aperture_reset), self);
 
-  g->cbe[2] = combo_entry_numeric_log (
-                g->lens_param_box, 0, 0, _("d"), _("distance to subject"),
-                p->distance, 0.25, 1000, 1.41421356237309504880, 10.0);
-  g_signal_connect (G_OBJECT(g->cbe[2]), "changed",
+  w = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(w, _("f/"));
+  g_object_set(G_OBJECT(w), "tooltip-text", _("f-number (aperture)"), (char *)NULL);
+  snprintf(txt, sizeof (txt), "%.*f", precision(p->aperture, 10.0), p->aperture);
+  dt_bauhaus_combobox_add(w, txt);
+  for(int k=0;k<sizeof(aperture_values)/sizeof(gdouble)-ffi;k++)
+  {
+    snprintf(txt, sizeof (txt), "%.*f", precision(aperture_values[ffi+k], 10.0), aperture_values[ffi+k]);
+    dt_bauhaus_combobox_add(w, txt);
+  }
+  g_signal_connect (G_OBJECT(w), "value-changed",
+                    G_CALLBACK(lens_comboentry_aperture_update), self);
+  gtk_box_pack_start(GTK_BOX(g->lens_param_box), w, TRUE, TRUE, 0);
+  dt_bauhaus_combobox_set_editable(w, 1);
+  g->cbe[1] = w;
+
+  w = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(w, _("d"));
+  g_object_set(G_OBJECT(w), "tooltip-text", _("distance to subject"), (char *)NULL);
+  snprintf(txt, sizeof (txt), "%.*f", precision(p->distance, 10.0), p->distance);
+  dt_bauhaus_combobox_add(w, txt);
+  float val = 0.25f;
+  for(int k=0;k<25;k++)
+  {
+    if(val > 1000.0f) val = 1000.0f;
+    snprintf(txt, sizeof (txt), "%.*f", precision(val, 10.0), val);
+    dt_bauhaus_combobox_add(w, txt);
+    if(val >= 1000.0f) break;
+    val *= sqrtf(2.0f);
+  }
+  g_signal_connect (G_OBJECT(w), "value-changed",
                     G_CALLBACK(lens_comboentry_distance_update), self);
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
-  gtk_box_pack_start(GTK_BOX(g->lens_param_box), button, FALSE, FALSE, 0);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("reset from exif data"), (char *)NULL);
-  g_signal_connect (G_OBJECT (button), "clicked",
-                    G_CALLBACK (lens_distance_reset), self);
+  gtk_box_pack_start(GTK_BOX(g->lens_param_box), w, TRUE, TRUE, 0);
+  dt_bauhaus_combobox_set_editable(w, 1);
+  g->cbe[2] = w;
 
   gtk_widget_show_all (g->lens_param_box);
 }
@@ -1553,45 +1447,40 @@ static void lens_autosearch_clicked(
 
 /* -- end lens -- */
 
-static void target_geometry_changed (GtkComboBox *widget, gpointer user_data)
+static void target_geometry_changed (GtkWidget *widget, gpointer user_data)
 {
-  if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
 
-  int pos = gtk_combo_box_get_active(widget);
+  int pos = dt_bauhaus_combobox_get(widget);
   p->target_geom = pos + LF_UNKNOWN + 1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void reverse_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+static void reverse_toggled(GtkWidget *widget, gpointer user_data)
 {
-  if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
-  if(gtk_toggle_button_get_active(togglebutton)) p->inverse = 1;
-  else p->inverse = 0;
+  p->inverse = dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void tca_changed(GtkDarktableSlider *slider, dt_iop_module_t *self)
+static void tca_changed(GtkWidget *slider, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
   dt_iop_lensfun_params_t   *p = (dt_iop_lensfun_params_t   *)self->params;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  const float val = dtgtk_slider_get_value(slider);
+  const float val = dt_bauhaus_slider_get(slider);
   if(slider == g->tca_r) p->tca_r = val;
   else                   p->tca_b = val;
   if(p->tca_r != 1.0 || p->tca_b != 1.0) p->tca_override = 1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void scale_changed(GtkDarktableSlider *slider, gpointer user_data)
+static void scale_changed(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
-  if(darktable.gui->reset) return;
-  p->scale = dtgtk_slider_get_value(slider);
+  p->scale = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1632,7 +1521,7 @@ static void autoscale_pressed(GtkWidget *button, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   const float scale = get_autoscale(self);
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  dtgtk_slider_set_value(g->scale, scale);
+  dt_bauhaus_slider_set(g->scale, scale);
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1647,50 +1536,47 @@ void gui_init(struct dt_iop_module_t *self)
   g->lens_menu = NULL;
 
   GtkWidget *button;
-  GtkWidget *label;
 
-  self->widget = gtk_table_new(8, 3, FALSE);
-  gtk_table_set_col_spacings(GTK_TABLE(self->widget), 5);
-  gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
 
   // camera selector
   GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
-  g->camera_model = GTK_BUTTON(gtk_button_new());
+  g->camera_model = GTK_BUTTON(dtgtk_button_new(NULL, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->camera_model));
   gtk_button_set_label(g->camera_model, self->dev->image_storage.exif_model);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
   g_signal_connect (G_OBJECT (g->camera_model), "clicked",
                     G_CALLBACK (camera_menusearch_clicked), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->camera_model), TRUE, TRUE, 0);
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
+  button = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_STYLE_FLAT|CPF_DIRECTION_DOWN);
   g->find_camera_button = button;
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   g_object_set(G_OBJECT(button), "tooltip-text", _("find camera"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (camera_autosearch_clicked), self);
-  gtk_table_attach(GTK_TABLE(self->widget), hbox, 0, 2, 0, 1, GTK_SHRINK|GTK_FILL, 0, 0, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
   // lens selector
   hbox = gtk_hbox_new(FALSE, 0);
-  g->lens_model = GTK_BUTTON(gtk_button_new());
+  g->lens_model = GTK_BUTTON(dtgtk_button_new(NULL, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->lens_model));
   gtk_button_set_label(g->lens_model, self->dev->image_storage.exif_lens);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
   g_signal_connect (G_OBJECT (g->lens_model), "clicked",
                     G_CALLBACK (lens_menusearch_clicked), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->lens_model), TRUE, TRUE, 0);
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
+  button = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_STYLE_FLAT|CPF_DIRECTION_DOWN);
   g->find_lens_button = GTK_WIDGET(button);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   g_object_set(G_OBJECT(button), "tooltip-text", _("find lens"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (lens_autosearch_clicked), self);
-  gtk_table_attach(GTK_TABLE(self->widget), hbox, 0, 2, 1, 2, GTK_SHRINK|GTK_FILL, 0, 0, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
 
   // lens properties
   g->lens_param_box = gtk_hbox_new(FALSE, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->lens_param_box), 0, 2, 2, 3, GTK_EXPAND|GTK_FILL|GTK_SHRINK, 0, 0, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->lens_param_box, TRUE, TRUE, 0);
 
 #if 0
   // if unambigious info is there, use it.
@@ -1710,58 +1596,51 @@ void gui_init(struct dt_iop_module_t *self)
 #endif
 
   // target geometry
-  label = dtgtk_reset_label_new(_("geometry"), self, &p->target_geom, sizeof(lfLensType));
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
-
-  g->target_geom = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  g_object_set(G_OBJECT(g->target_geom), "tooltip-text",
-               _("target geometry"), (char *)NULL);
-  gtk_combo_box_append_text(g->target_geom, _("rectilinear"));
-  gtk_combo_box_append_text(g->target_geom, _("fish-eye"));
-  gtk_combo_box_append_text(g->target_geom, _("panoramic"));
-  gtk_combo_box_append_text(g->target_geom, _("equirectangular"));
-  gtk_combo_box_set_active(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
-  g_signal_connect (G_OBJECT (g->target_geom), "changed",
+  g->target_geom = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->target_geom, _("geometry"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->target_geom, TRUE, TRUE, 0);
+  g_object_set (GTK_OBJECT(g->target_geom), "tooltip-text", _("target geometry"), (char *)NULL);
+  dt_bauhaus_combobox_add(g->target_geom, _("rectilinear"));
+  dt_bauhaus_combobox_add(g->target_geom, _("fish-eye"));
+  dt_bauhaus_combobox_add(g->target_geom, _("panoramic"));
+  dt_bauhaus_combobox_add(g->target_geom, _("equirectangular"));
+  g_signal_connect (G_OBJECT (g->target_geom), "value-changed",
                     G_CALLBACK (target_geometry_changed),
                     (gpointer)self);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->target_geom), 1, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   // scale
-  g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 2.0, 0.005, p->scale, 3));
+  g->scale = dt_bauhaus_slider_new_with_range(self, 0.1, 2.0, 0.005, p->scale, 3);
+  g_object_set (GTK_OBJECT(g->scale), "tooltip-text", _("auto scale"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->scale, _("scale"));
   g_signal_connect (G_OBJECT (g->scale), "value-changed",
                     G_CALLBACK (scale_changed), self);
-  dtgtk_slider_set_label(g->scale, _("scale"));
-  hbox = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
-
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
-  g->auto_scale_button = GTK_WIDGET(button);
-  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("auto scale"), (char *)NULL);
-  g_signal_connect (G_OBJECT (button), "clicked",
-                    G_CALLBACK (autoscale_pressed), self);
-  gtk_table_attach(GTK_TABLE(self->widget), hbox, 0, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-
+  g_signal_connect (G_OBJECT (g->scale), "quad-pressed", G_CALLBACK (autoscale_pressed), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->scale, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_quad_paint(g->scale, dtgtk_cairo_paint_refresh, 0);
 
   // reverse direction
-  g->reverse = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("reverse")));
-  g_object_set(G_OBJECT(g->reverse), "tooltip-text", _("apply distortions instead of correcting them"), (char *)NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->reverse), p->inverse);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->reverse), 1, 2, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  g_signal_connect (G_OBJECT (g->reverse), "toggled",
-                    G_CALLBACK (reverse_toggled), self);
+  g->reverse = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->reverse, _("mode"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->reverse, TRUE, TRUE, 0);
+  g_object_set (GTK_OBJECT(g->reverse), "tooltip-text", _("correct distortions or apply them"), (char *)NULL);
+  dt_bauhaus_combobox_add(g->reverse, _("correct"));
+  dt_bauhaus_combobox_add(g->reverse, _("distort"));
+  g_signal_connect (G_OBJECT (g->reverse), "value-changed",
+                    G_CALLBACK (reverse_toggled),
+                    (gpointer)self);
 
   // override linear tca (if not 1.0):
-  g->tca_r = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.99, 1.01, 0.0001, p->tca_r, 5));
-  g->tca_b = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.99, 1.01, 0.0001, p->tca_b, 5));
-  dtgtk_slider_set_label(g->tca_r, _("tca R"));
-  dtgtk_slider_set_label(g->tca_b, _("tca B"));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_r), 0, 2, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_b), 0, 2, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  g->tca_r = dt_bauhaus_slider_new_with_range(self, 0.99, 1.01, 0.0001, p->tca_r, 5);
+  g_object_set (GTK_OBJECT(g->tca_r), "tooltip-text", _("transversal chromatic aberration red"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->tca_r, _("tca red"));
   g_signal_connect (G_OBJECT (g->tca_r), "value-changed", G_CALLBACK (tca_changed), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->tca_r, TRUE, TRUE, 0);
+
+  g->tca_b = dt_bauhaus_slider_new_with_range(self, 0.99, 1.01, 0.0001, p->tca_b, 5);
+  g_object_set (GTK_OBJECT(g->tca_b), "tooltip-text", _("transversal chromatic aberration blue"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->tca_b, _("tca blue"));
   g_signal_connect (G_OBJECT (g->tca_b), "value-changed", G_CALLBACK (tca_changed), self);
-  g_object_set(G_OBJECT(g->tca_r), "tooltip-text", _("override transversal chromatic aberration correction for red channel\nleave at 1.0 for defaults"), (char *)NULL);
-  g_object_set(G_OBJECT(g->tca_b), "tooltip-text", _("override transversal chromatic aberration correction for blue channel\nleave at 1.0 for defaults"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->tca_b, TRUE, TRUE, 0);
 }
 
 
@@ -1776,11 +1655,11 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_button_set_label(g->lens_model, p->lens);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
-  gtk_combo_box_set_active(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->reverse), p->inverse);
-  dtgtk_slider_set_value(g->tca_r, p->tca_r);
-  dtgtk_slider_set_value(g->tca_b, p->tca_b);
-  dtgtk_slider_set_value(g->scale, p->scale);
+  dt_bauhaus_combobox_set(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
+  dt_bauhaus_combobox_set(g->reverse, p->inverse);
+  dt_bauhaus_slider_set(g->tca_r, p->tca_r);
+  dt_bauhaus_slider_set(g->tca_b, p->tca_b);
+  dt_bauhaus_slider_set(g->scale, p->scale);
   const lfCamera **cam = NULL;
   g->camera = NULL;
   if(p->camera[0])
@@ -1812,4 +1691,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -45,8 +45,6 @@ tone curve
 color correction
 base curve
 
-exposure plugin: indicate over/under exposure?
-
 compress history stack: removes raw import settings.
 
 big stuff:
@@ -65,96 +63,62 @@ big stuff:
 
 - image_cache sometimes not initing images (wrong old thumbs etc)
 
-- xmp embedded in exported files with possibility to read them again
-
-- histogram still flickers
-
-- preferences dialog with presets?
-
 - crop rotate messed up when first rotating and then cropping
   mipf scaled wrong in dr mode when cropped?
 
 - inotify not working? or not re-reading rotation of images in lt mode
 
 - lighttable:
-  - history of views
   - lower bound not just one row of images in sight, but max 1 row of empty images.
-
-- select lt plugin: one line label with currently selected count
 
 - tiff import broken?
 
 - lists: library/collection: height to multiple of baselineskip
 
-- default button in presets system not working (is this needed over auto-apply?)
 - BUG: full image not loaded due to 1st buffer > mem limit
-
-- film strip view keyboard bindings
 
 - more sophisticated auto complete in preset creation
 - colorin default: read input color profile from ldr images
 
-- ctrl-c/ctrl-v in darkroom mode
 - ctrl-z ctrl-shift-z up/down in history stack
 
 
-- eos-movrec.sf.net ? :)
-- tagging to include description/title/licence and presets -- kind of DONE in 'houz' branch
-- hierarchical tags
 - translatable darkroom mode plugin template
-- mac dreggn?
 - spot brushes?
 
-- fine-grained history stack copying/replacing: 
+- fine-grained history stack copying/replacing:
   - copy history stack augmented by list of favorite image styles
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
 - tiff/png input
 - remove lensfun add crop autocrop
-- move lensfun to pre colorin rgb?
 
 - denoise with too small values crashes (for hdr input).
 - denoise preset/max values meaningless for hdr input
 
 - snapshots: side-by-side mode/split along different axes, etc..
-- import film roll: reset top panel and collect plugin.
-- libchamplain geotagging?
 - steal gegl tonemapping operators?
 - port input imageio to plugins?
-- color labels: more colors -- DONE
 - stars: possibility to filter by exact number, not >=
 - filmstrip h/v/match/off
 - backup tables: presets, color labels
-- gtkentrycompletion for tagging and collect -- DONE
-- clean-up-gui mode for darkroom: collapse all and hide unused ops
-  when entering darkroom mode
-- image flag: history changed but not exported
-  . select by this flag
-  . export these flags to xmp
 
 - annoying coarse pixels when we have to wait anyways, and no moving took place.
 - mipf not loaded on time in develop for small displays.
 
-- customizable key accels
-
-- read additional tags from exif?
+- read additional tags from exif
 - mouse wheel zoom in navigation
 - splines: linear interpolation check box
-- auto select image if there is only one on the light table
 - decapitalize icc profile names
 - lock zoom/pan checkbox in darkroom mode
 - lensfun + crop: preview/full image differ in zoom/pan?
-- embed custom exif data in export plugin
 - remember visible image/center image for each film and mode
 - thumbnail regeneration trigger: expose after image loaded not enough?
-- give tag for each film roll during import, make editing easy after
 - compare sha1sum in db with image on open.
 - whitebalance finetune presets: interpolate if not all in wb_presets.c
-- develop bottom panel: color picker: output color profile + zone
 - gimp code: optimized jpeg + gui for export
 - save custom defaults (sqlite table iop_defaults) to external file as well
-- if film roll dir is not found, try known top-levels or ask for new
 - gnome-color-manager dbus interaction
 - views/browse.c: browse by similar tag:
   inner 1:1 lighttable image, border with smaller images with
@@ -165,11 +129,9 @@ big stuff:
   - select (random?) representative
 - lighttable side-by-side mode
 - embedded thumbnail as static snapshot
-- mac bitch: gegl.h and Carbon.h are not friends.
 - closeup in 3:1 5:1 or 2:1 ?
 - keep stdout clean! (shut up exiv2 and jpg)
 - copy function in lib:
   - flags, tags
 - bzip2 compressed content
 - offline media reference in db
-- libglade => gtkbuilder.

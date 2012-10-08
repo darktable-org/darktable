@@ -50,6 +50,8 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
   // Fetch colorprofile into buffer if wanted
   uint8_t *profile = NULL;
   uint32_t profile_len = 0;
+  int rc = 0;
+
   if(imgid > 0)
   {
     cmsHPROFILE out_profile = dt_colorspaces_create_output_profile(imgid);
@@ -143,10 +145,15 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
     free(rowdata);
   }
 
-  if(exif) dt_exif_write_blob(exif,exif_len,filename);
+  if(exif)
+    rc = dt_exif_write_blob(exif,exif_len,filename);
+
   free(profile);
 
-  return 1;
+  /*
+   * Until we get symbolic error status codes, if rc is 1, return 0.
+   */
+  return ((rc == 1) ? 0 : 1);
 }
 
 #if 0
@@ -261,4 +268,6 @@ void gui_reset   (dt_imageio_module_format_t *self)
   // TODO: reset to conf? reset to factory defaults?
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

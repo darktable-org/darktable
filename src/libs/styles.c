@@ -68,7 +68,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "delete"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "export"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "import"), 0, 0);
-  //dt_accel_register_lib(self, NC_("accel", "edit"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "edit"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -122,15 +122,29 @@ static void _gui_styles_update_view( dt_lib_styles_t *d)
     {
       dt_style_t *style = (dt_style_t *)result->data;
 
+      char* items_string = dt_styles_get_item_list_as_string (style->name);
+      gchar* tooltip = NULL;
+
+      if((style->description) && strlen (style->description))
+      {
+        tooltip = g_strconcat("<b><i>", style->description, "</i></b>\n", items_string, NULL);
+      }
+      else
+      {
+        tooltip = g_strdup(items_string);
+      }
+
       gtk_list_store_append (GTK_LIST_STORE(model), &iter);
       gtk_list_store_set (GTK_LIST_STORE(model), &iter,
                           DT_STYLES_COL_NAME, style->name,
-                          DT_STYLES_COL_TOOLTIP, (strlen (style->description)?style->description:NULL),
+                          DT_STYLES_COL_TOOLTIP, tooltip,
                           -1);
 
       g_free(style->name);
       g_free(style->description);
       g_free(style);
+      g_free(items_string);
+      g_free(tooltip);
     }
     while ((result=g_list_next(result))!=NULL);
   }
@@ -162,10 +176,8 @@ _styles_row_activated_callback (GtkTreeView *view, GtkTreePath *path, GtkTreeVie
 
 }
 
-#if 0
 static void edit_clicked(GtkWidget *w,gpointer user_data)
 {
-#error	if this code is reactivated also reactivate the commented line in init_key_accels
   dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
 
   GtkTreeIter iter;
@@ -183,7 +195,6 @@ static void edit_clicked(GtkWidget *w,gpointer user_data)
     _gui_styles_update_view(d);
   }
 }
-#endif
 
 static char* get_style_name(dt_lib_styles_t *list_style)
 {
@@ -230,7 +241,7 @@ static void export_clicked (GtkWidget *w,gpointer user_data)
     if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT )
     {
       char *filedir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-      dt_styles_save_to_file(name,filedir);
+      dt_styles_save_to_file(name,filedir,FALSE);
       g_free (filedir);
     }
     g_free(name);
@@ -311,6 +322,7 @@ gui_init (dt_lib_module_t *self)
   d->edit_button = NULL;
   self->widget = gtk_vbox_new (FALSE, 5);
   GtkWidget *w;
+  GtkWidget *scrolled;
 
   /* list */
   d->list = GTK_TREE_VIEW (gtk_tree_view_new ());
@@ -340,28 +352,27 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (d->entry, "activate", G_CALLBACK(entry_activated),d);
 
   dt_gui_key_accel_block_on_focus ( GTK_WIDGET (d->entry));
+  
+  scrolled = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
   gtk_box_pack_start(GTK_BOX (self->widget),GTK_WIDGET (d->entry),TRUE,FALSE,0);
-  gtk_box_pack_start(GTK_BOX (self->widget),GTK_WIDGET (d->list),TRUE,FALSE,0);
-
-  GtkWidget *hbox=gtk_hbox_new (FALSE,5);
-
-  GtkWidget *widget;
+  gtk_box_pack_start(GTK_BOX (self->widget),GTK_WIDGET (scrolled),TRUE,FALSE,0);
+  gtk_container_add(GTK_CONTAINER(scrolled), GTK_WIDGET(d->list));
 
   d->duplicate = gtk_check_button_new_with_label(_("create duplicate"));
   gtk_box_pack_start(GTK_BOX (self->widget),GTK_WIDGET (d->duplicate),TRUE,FALSE,0);
   g_signal_connect (d->duplicate, "toggled", G_CALLBACK(duplicate_callback),d);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (d->duplicate), dt_conf_get_bool("ui_last/styles_create_duplicate"));
   g_object_set (d->duplicate, "tooltip-text", _("creates a duplicate of the image before applying style"), (char *)NULL);
+  
+  GtkWidget *hbox=gtk_hbox_new (FALSE,5);
 
-#if 0
-  // TODO: Unfinished stuff
   GtkWidget *widget=gtk_button_new_with_label(_("edit"));
   d->edit_button = widget;
-  also add to the init function
   g_signal_connect (widget, "clicked", G_CALLBACK(edit_clicked),d);
+  g_object_set (widget, "tooltip-text", _("edit the selected style in list above"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX (hbox),widget,TRUE,TRUE,0);
-#endif
 
   widget=gtk_button_new_with_label(_("delete"));
   d->delete_button = widget;
@@ -369,6 +380,8 @@ gui_init (dt_lib_module_t *self)
   g_object_set (widget, "tooltip-text", _("deletes the selected style in list above"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX (hbox),widget,TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX (self->widget),hbox,TRUE,FALSE,0);
+  
+  hbox=gtk_hbox_new (FALSE,5);
   // Export Button
   GtkWidget *exportButton = gtk_button_new_with_label(_("export"));
   d->export_button = exportButton;
@@ -381,6 +394,7 @@ gui_init (dt_lib_module_t *self)
   g_object_set (importButton, "tooltip-text", _("import style from a style file"), (char *)NULL);
   g_signal_connect (importButton, "clicked", G_CALLBACK(import_clicked),d);
   gtk_box_pack_start(GTK_BOX (hbox),importButton,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX (self->widget),hbox,TRUE,FALSE,0);
   // add entry completion
   GtkEntryCompletion *completion = gtk_entry_completion_new();
   gtk_entry_completion_set_model(completion, gtk_tree_view_get_model(GTK_TREE_VIEW(d->list)));
@@ -401,3 +415,6 @@ gui_cleanup (dt_lib_module_t *self)
 }
 
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

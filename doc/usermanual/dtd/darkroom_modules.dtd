@@ -42,6 +42,7 @@
 <!ENTITY darkroom_module_splittoning SYSTEM "../darkroom/modules/splittoning.xml">
 <!ENTITY darkroom_module_overexposed SYSTEM "../darkroom/modules/overexposed.xml">
 <!ENTITY darkroom_module_watermark SYSTEM "../darkroom/modules/watermark.xml">
+<!ENTITY darkroom_module_shadhi SYSTEM "../darkroom/modules/shadhi.xml">
 
 <!ENTITY darkroom_module_spotremoval SYSTEM "../darkroom/modules/spotremoval.xml">
 <!ENTITY darkroom_module_lowlight SYSTEM "../darkroom/modules/lowlight.xml">

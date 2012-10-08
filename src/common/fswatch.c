@@ -182,7 +182,7 @@ void dt_fswatch_destroy(const dt_fswatch_t *fswatch)
 
 void dt_fswatch_add(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *data)
 {
-  char filename[1024];
+  char filename[DT_MAX_PATH_LEN];
   uint32_t mask=0;
   dt_fswatch_t *ctx=(dt_fswatch_t *)fswatch;
   filename[0] = '\0';
@@ -191,7 +191,7 @@ void dt_fswatch_add(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *d
   {
     case DT_FSWATCH_IMAGE:
       mask=IN_ALL_EVENTS;
-      dt_image_full_path(((dt_image_t *)data)->id, filename, 1024);
+      dt_image_full_path(((dt_image_t *)data)->id, filename, DT_MAX_PATH_LEN);
       break;
     case DT_FSWATCH_CURVE_DIRECTORY:
       break;
@@ -245,3 +245,6 @@ void dt_fswatch_destroy(const dt_fswatch_t *fswatch) {}
 void dt_fswatch_add(const dt_fswatch_t *fswatch, dt_fswatch_type_t type, void *data) {}
 void dt_fswatch_remove(const dt_fswatch_t * fswatch, dt_fswatch_type_t type, void *data) {}
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

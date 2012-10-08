@@ -94,7 +94,7 @@ void gui_init (dt_lib_module_t *self)
   self->data = d;
   d->histogram_weight = dt_conf_get_float("plugins/lighttable/similarity/histogram_weight");
   d->lightmap_weight = dt_conf_get_float("plugins/lighttable/similarity/lightmap_weight");
-  
+
   /* for now, just take red and set all color maps weighting from that */
   d->redmap_weight = d->greenmap_weight = d->bluemap_weight = dt_conf_get_float("plugins/lighttable/similarity/rmap_weight");
   self->widget = gtk_vbox_new(TRUE, 5);
@@ -106,7 +106,7 @@ void gui_init (dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(_histogram_weight_callback),d);
   g_object_set(G_OBJECT(slider), "tooltip-text", _("set the score weight of histogram matching"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(slider), TRUE, TRUE, 0);
- 
+
   /* add the lightmap slider */
   slider = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, d->lightmap_weight*100, 2));
   dtgtk_slider_set_label(slider,_("light map weight"));
@@ -114,7 +114,7 @@ void gui_init (dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(_lightmap_weight_callback),d);
   g_object_set(G_OBJECT(slider), "tooltip-text", _("set the score weight of light map matching"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(slider), TRUE, TRUE, 0);
-  
+
   /* add the rgbmap weighting slider */
   slider = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, d->redmap_weight*100, 2));
   dtgtk_slider_set_label(slider,_("color map weight"));
@@ -122,12 +122,12 @@ void gui_init (dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(_rgb_weight_callback),d);
   g_object_set(G_OBJECT(slider), "tooltip-text", _("set the score weight of color map matching"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(slider), TRUE, TRUE, 0);
- 
+
   GtkWidget *button = gtk_button_new_with_label(_("view similar"));
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_button_callback),d);
   g_object_set(G_OBJECT(button), "tooltip-text", _("match images with selected image and views the result"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(button), TRUE, TRUE, 0);
-  
+
 }
 
 
@@ -137,3 +137,6 @@ void gui_cleanup (dt_lib_module_t *self)
   self->data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

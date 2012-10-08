@@ -397,7 +397,6 @@ float *spline_cubic_set( int n, float t[], float y[])
 float *monotone_hermite_set ( int n, float x[], float y[])
 {
   float *delta;
-  float alpha, beta, tau;
   float *m;
   int i;
   if ( n <= 1 )
@@ -442,18 +441,16 @@ float *monotone_hermite_set ( int n, float x[], float y[])
     {
       m[i] = 0.0f;
       m[i+1] = 0.0f;
-      i++;
     }
     else
     {
-      alpha = m[i]/delta[i];
-      beta = m[i+1]/delta[i];
-      tau = alpha*alpha+beta*beta;
+      const float alpha = m[i]/delta[i];
+      const float beta = m[i+1]/delta[i];
+      const float tau = alpha*alpha+beta*beta;
       if (tau > 9.0f)
       {
         m[i] = 3.0f*alpha*delta[i]/sqrtf(tau);
         m[i+1] = 3.0f*beta*delta[i]/sqrtf(tau);
-        i++;
       }
     }
   }
@@ -758,3 +755,6 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
   return CT_SUCCESS;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

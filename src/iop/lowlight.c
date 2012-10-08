@@ -107,7 +107,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *g =
-      (dt_iop_lowlight_gui_data_t*)self->gui_data;
+    (dt_iop_lowlight_gui_data_t*)self->gui_data;
   dt_accel_connect_slider_iop(self, "blue shift", g->scale_blueness);
 }
 
@@ -288,7 +288,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_lowlight_params_t));
   module->default_params = malloc(sizeof(dt_iop_lowlight_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 549; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 557; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_lowlight_params_t);
   module->gui_data = NULL;
   dt_iop_lowlight_params_t tmp;
@@ -702,7 +702,7 @@ static gboolean
 lowlight_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     // reset current curve
     dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
@@ -831,4 +831,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

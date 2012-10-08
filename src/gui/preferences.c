@@ -86,15 +86,15 @@ static void delete_matching_accels(gpointer path, gpointer key_event);
 static void import_export(GtkButton *button, gpointer data);
 static void restore_defaults(GtkButton *button, gpointer data);
 static gint compare_rows_accels(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
-                         gpointer data);
+                                gpointer data);
 static gint compare_rows_presets(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
-                         gpointer data);
+                                 gpointer data);
 
 // Signal handlers
 static void tree_row_activated_accels(GtkTreeView *tree, GtkTreePath *path,
-                               GtkTreeViewColumn *column, gpointer data);
+                                      GtkTreeViewColumn *column, gpointer data);
 static void tree_row_activated_presets(GtkTreeView *tree, GtkTreePath *path,
-                               GtkTreeViewColumn *column, gpointer data);
+                                       GtkTreeViewColumn *column, gpointer data);
 static void tree_selection_changed(GtkTreeSelection *selection, gpointer data);
 static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
                                gpointer data);
@@ -214,11 +214,11 @@ void dt_gui_preferences_show()
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   _preferences_dialog = gtk_dialog_new_with_buttons(
-      _("darktable preferences"), GTK_WINDOW (win),
-      GTK_DIALOG_DESTROY_WITH_PARENT|GTK_DIALOG_MODAL,
-      _("close"),
-      GTK_RESPONSE_ACCEPT,
-      NULL);
+                          _("darktable preferences"), GTK_WINDOW (win),
+                          GTK_DIALOG_DESTROY_WITH_PARENT|GTK_DIALOG_MODAL,
+                          _("close"),
+                          GTK_RESPONSE_ACCEPT,
+                          NULL);
   gtk_window_set_position(GTK_WINDOW(_preferences_dialog), GTK_WIN_POS_CENTER_ALWAYS);
   gtk_window_resize(GTK_WINDOW(_preferences_dialog), 600, 300);
   GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (_preferences_dialog));
@@ -247,7 +247,8 @@ void dt_gui_preferences_show()
 
 }
 
-static void tree_insert_presets(GtkTreeStore *tree_model){
+static void tree_insert_presets(GtkTreeStore *tree_model)
+{
   GtkTreeIter iter, parent;
   sqlite3_stmt *stmt;
   gchar *last_module = NULL;
@@ -261,7 +262,7 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
   dtgtk_cairo_paint_lock(lock_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);
   guchar* data = cairo_image_surface_get_data(lock_cst);
   GdkPixbuf* lock_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE,
-                                                    ICON_SIZE, cairo_image_surface_get_stride(lock_cst), NULL, NULL);
+                           ICON_SIZE, cairo_image_surface_get_stride(lock_cst), NULL, NULL);
   // check mark
   cairo_surface_t *check_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
   cairo_t *check_cr = cairo_create(check_cst);
@@ -269,7 +270,7 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
   dtgtk_cairo_paint_check_mark(check_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);
   data = cairo_image_surface_get_data(check_cst);
   GdkPixbuf* check_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE,
-                                                    ICON_SIZE, cairo_image_surface_get_stride(check_cst), NULL, NULL);
+                            ICON_SIZE, cairo_image_surface_get_stride(check_cst), NULL, NULL);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select rowid, name, operation, autoapply, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, writeprotect from presets order by operation,name", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -349,20 +350,20 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
 
     gtk_tree_store_append(tree_model, &iter, &parent);
     gtk_tree_store_set(tree_model, &iter,
-                         P_ROWID_COLUMN, rowid,
-                         P_OPERATION_COLUMN, operation,
-                         P_MODULE_COLUMN, "",
-                         P_EDITABLE_COLUMN, writeprotect?lock_pixbuf:NULL,
-                         P_NAME_COLUMN, name,
-                         P_MODEL_COLUMN, model,
-                         P_MAKER_COLUMN, maker,
-                         P_LENS_COLUMN, lens,
-                         P_ISO_COLUMN, iso,
-                         P_EXPOSURE_COLUMN, exposure,
-                         P_APERTURE_COLUMN, aperture,
-                         P_FOCAL_LENGTH_COLUMN, focal_length,
-                         P_AUTOAPPLY_COLUMN, autoapply?check_pixbuf:NULL,
-                      -1);
+                       P_ROWID_COLUMN, rowid,
+                       P_OPERATION_COLUMN, operation,
+                       P_MODULE_COLUMN, "",
+                       P_EDITABLE_COLUMN, writeprotect?lock_pixbuf:NULL,
+                       P_NAME_COLUMN, name,
+                       P_MODEL_COLUMN, model,
+                       P_MAKER_COLUMN, maker,
+                       P_LENS_COLUMN, lens,
+                       P_ISO_COLUMN, iso,
+                       P_EXPOSURE_COLUMN, exposure,
+                       P_APERTURE_COLUMN, aperture,
+                       P_FOCAL_LENGTH_COLUMN, focal_length,
+                       P_AUTOAPPLY_COLUMN, autoapply?check_pixbuf:NULL,
+                       -1);
 
   }
   sqlite3_finalize(stmt);
@@ -379,10 +380,10 @@ static void init_tab_presets(GtkWidget *book)
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   GtkWidget *tree = gtk_tree_view_new();
   GtkTreeStore *model = gtk_tree_store_new(P_N_COLUMNS, G_TYPE_INT /*rowid*/, G_TYPE_STRING /*operation*/,
-                                           G_TYPE_STRING /*module*/, GDK_TYPE_PIXBUF /*editable*/, G_TYPE_STRING /*name*/,
-                                           G_TYPE_STRING /*model*/, G_TYPE_STRING /*maker*/, G_TYPE_STRING /*lens*/,
-                                           G_TYPE_STRING /*iso*/, G_TYPE_STRING /*exposure*/, G_TYPE_STRING /*aperture*/, G_TYPE_STRING /*focal length*/,
-                                           GDK_TYPE_PIXBUF /*auto*/);
+                        G_TYPE_STRING /*module*/, GDK_TYPE_PIXBUF /*editable*/, G_TYPE_STRING /*name*/,
+                        G_TYPE_STRING /*model*/, G_TYPE_STRING /*maker*/, G_TYPE_STRING /*lens*/,
+                        G_TYPE_STRING /*iso*/, G_TYPE_STRING /*exposure*/, G_TYPE_STRING /*aperture*/, G_TYPE_STRING /*focal length*/,
+                        GDK_TYPE_PIXBUF /*auto*/);
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
 
@@ -396,86 +397,86 @@ static void init_tab_presets(GtkWidget *book)
 
   // Seting a custom sort functions so expandable groups rise to the top
   gtk_tree_sortable_set_sort_column_id(
-      GTK_TREE_SORTABLE(model), P_MODULE_COLUMN, GTK_SORT_ASCENDING);
+    GTK_TREE_SORTABLE(model), P_MODULE_COLUMN, GTK_SORT_ASCENDING);
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(model), P_MODULE_COLUMN,
                                   compare_rows_presets, NULL, NULL);
 
   // Setting up the cell renderers
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      _("module"), renderer,
-      "text", P_MODULE_COLUMN,
-      NULL);
+             _("module"), renderer,
+             "text", P_MODULE_COLUMN,
+             NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   renderer = gtk_cell_renderer_pixbuf_new();
   column = gtk_tree_view_column_new_with_attributes(
-      "", renderer,
-      "pixbuf", P_EDITABLE_COLUMN,
-      NULL);
+             "", renderer,
+             "pixbuf", P_EDITABLE_COLUMN,
+             NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      _("name"), renderer,
-      "text", P_NAME_COLUMN,
-      NULL);
+             _("name"), renderer,
+             "text", P_NAME_COLUMN,
+             NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      _("model"), renderer,
-      "text", P_MODEL_COLUMN,
-      NULL);
+             _("model"), renderer,
+             "text", P_MODEL_COLUMN,
+             NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      _("maker"), renderer,
-      "text", P_MAKER_COLUMN,
-      NULL);
+             _("maker"), renderer,
+             "text", P_MAKER_COLUMN,
+             NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      _("lens"), renderer,
-      "text", P_LENS_COLUMN,
-      NULL);
+             _("lens"), renderer,
+             "text", P_LENS_COLUMN,
+             NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      _("iso"), renderer,
-      "text", P_ISO_COLUMN,
-      NULL);
+             _("iso"), renderer,
+             "text", P_ISO_COLUMN,
+             NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      _("exposure"), renderer,
-      "text", P_EXPOSURE_COLUMN,
-      NULL);
+             _("exposure"), renderer,
+             "text", P_EXPOSURE_COLUMN,
+             NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      _("aperture"), renderer,
-      "text", P_APERTURE_COLUMN,
-      NULL);
+             _("aperture"), renderer,
+             "text", P_APERTURE_COLUMN,
+             NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      _("focal length"), renderer,
-      "text", P_FOCAL_LENGTH_COLUMN,
-      NULL);
+             _("focal length"), renderer,
+             "text", P_FOCAL_LENGTH_COLUMN,
+             NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   renderer = gtk_cell_renderer_pixbuf_new();
   column = gtk_tree_view_column_new_with_attributes(
-      _("auto"), renderer,
-      "pixbuf", P_AUTOAPPLY_COLUMN,
-      NULL);
+             _("auto"), renderer,
+             "pixbuf", P_AUTOAPPLY_COLUMN,
+             NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   // Attaching treeview signals
@@ -510,8 +511,8 @@ static void init_tab_accels(GtkWidget *book)
   GtkWidget *button;
   GtkWidget *hbox;
   GtkTreeStore *model = gtk_tree_store_new(A_N_COLUMNS,
-                                           G_TYPE_STRING, G_TYPE_STRING,
-                                           G_TYPE_STRING);
+                        G_TYPE_STRING, G_TYPE_STRING,
+                        G_TYPE_STRING);
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
 
@@ -527,23 +528,23 @@ static void init_tab_accels(GtkWidget *book)
 
   // Seting a custom sort functions so expandable groups rise to the top
   gtk_tree_sortable_set_sort_column_id(
-      GTK_TREE_SORTABLE(model), A_TRANS_COLUMN, GTK_SORT_ASCENDING);
+    GTK_TREE_SORTABLE(model), A_TRANS_COLUMN, GTK_SORT_ASCENDING);
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(model), A_TRANS_COLUMN,
                                   compare_rows_accels, NULL, NULL);
 
   // Setting up the cell renderers
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      _("shortcut"), renderer,
-      "text", A_TRANS_COLUMN,
-      NULL);
+             _("shortcut"), renderer,
+             "text", A_TRANS_COLUMN,
+             NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      _("binding"), renderer,
-      "text", A_BINDING_COLUMN,
-      NULL);
+             _("binding"), renderer,
+             "text", A_BINDING_COLUMN,
+             NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   // Attaching treeview signals
@@ -616,7 +617,7 @@ static void tree_insert_accel(gpointer accel_struct, gpointer model_link)
   // Getting the first significant parts of the paths
   char *accel_path = accel->path;
   char *translated_path = accel->translated_path;
-  
+
   /* if prefixed lets forward pointer */
   if (!strncmp(accel_path,"<Darktable>",strlen("<Darktable>")))
   {
@@ -648,7 +649,7 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
   if (*accel_path==0) return;
 
   /* check if we are on a leaf or a branch  */
-  if (!g_strrstr(accel_path,"/")) 
+  if (!g_strrstr(accel_path,"/"))
   {
     /* we are on a leaf lets add */
     gchar *name = gtk_accelerator_name(accel_key, accel_mods);
@@ -656,12 +657,12 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
     gtk_tree_store_set(model, &iter,
                        A_ACCEL_COLUMN, accel_path,
                        A_BINDING_COLUMN, g_dpgettext2("gtk20",
-                                                    "keyboard label",
-                                                    name),
+                           "keyboard label",
+                           name),
                        A_TRANS_COLUMN, translated_path,
                        -1);
-    g_free(name);    
-  } 
+    g_free(name);
+  }
   else
   {
     /* we are on a branch let's get the node name */
@@ -673,26 +674,26 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
 
     /* search the tree if we alread have an sibiling with node name */
     int sibilings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(model),
-                                                   parent);
+                    parent);
     for (i = 0; i < sibilings; i++)
     {
       gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(model), &iter, parent, i);
       gtk_tree_model_get(GTK_TREE_MODEL(model), &iter,
                          A_ACCEL_COLUMN, &val_str,
                          -1);
-      
+
       /* do we match current sibiling */
       if (!strcmp(val_str, node)) found = TRUE;
-      
+
       g_free(val_str);
-      
+
       /* if we found a matching node let's break out */
       if(found) break;
     }
 
     /* if not found let's add a branch */
     if(!found)
-    {      
+    {
       gtk_tree_store_append(model, &iter, parent);
       gtk_tree_store_set(model, &iter,
                          A_ACCEL_COLUMN, node,
@@ -705,7 +706,7 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
     tree_insert_rec(model, &iter, accel_path + strlen(node) + 1,
                     translated_path + strlen(trans_node) + 1,
                     accel_key, accel_mods);
-    
+
     /* free up data */
     g_free(node);
     g_free(trans_node);
@@ -794,9 +795,9 @@ static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent,
 
     gtk_accel_map_lookup_entry(path, &key);
     gtk_tree_store_set(
-        GTK_TREE_STORE(model), parent,
-        A_BINDING_COLUMN, gtk_accelerator_name(key.accel_key, key.accel_mods),
-        -1);
+      GTK_TREE_STORE(model), parent,
+      A_BINDING_COLUMN, gtk_accelerator_name(key.accel_key, key.accel_mods),
+      -1);
   }
 }
 
@@ -816,10 +817,10 @@ static void delete_matching_accels(gpointer current, gpointer mapped)
   gtk_accel_map_lookup_entry(mapped_accel->path, &mapped_key);
 
   if(current_key.accel_key == mapped_key.accel_key // Key code matches
-     && current_key.accel_mods == mapped_key.accel_mods // Key state matches
-     && current_accel->views & mapped_accel->views // Conflicting views
-     && !(current_accel->local && mapped_accel->local  // Not both local to
-          && strcmp(current_accel->module, mapped_accel->module))) // diff mods
+      && current_key.accel_mods == mapped_key.accel_mods // Key state matches
+      && current_accel->views & mapped_accel->views // Conflicting views
+      && !(current_accel->local && mapped_accel->local  // Not both local to
+           && strcmp(current_accel->module, mapped_accel->module))) // diff mods
     gtk_accel_map_change_entry(current_accel->path, 0, 0, TRUE);
 
 }
@@ -833,7 +834,7 @@ static gint _accelcmp(gconstpointer a, gconstpointer b)
 //TODO: remember which sections were collapsed/expanded and where the view was scrolled to and restore that after editing is done
 //      Alternative: change edit_preset_response to not clear+refill the tree, but to update the single row which changed.
 static void tree_row_activated_presets(GtkTreeView *tree, GtkTreePath *path,
-                               GtkTreeViewColumn *column, gpointer data)
+                                       GtkTreeViewColumn *column, gpointer data)
 {
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(tree);
@@ -870,7 +871,7 @@ static void tree_row_activated_presets(GtkTreeView *tree, GtkTreePath *path,
 }
 
 static void tree_row_activated_accels(GtkTreeView *tree, GtkTreePath *path,
-                               GtkTreeViewColumn *column, gpointer data)
+                                      GtkTreeViewColumn *column, gpointer data)
 {
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(tree);
@@ -938,7 +939,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
   GtkTreeModel *model = (GtkTreeModel*)data;
   GtkTreeIter iter;
   GtkTreeSelection *selection =
-      gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
+    gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
   GtkTreePath *path;
   GSList *remapped;
   dt_accel_t query;
@@ -996,7 +997,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
 
     // If nothing is selected, or branch node selected, just return
     if(!gtk_tree_selection_get_selected(selection, &model, &iter)
-      || gtk_tree_model_iter_has_child(model, &iter))
+        || gtk_tree_model_iter_has_child(model, &iter))
       return FALSE;
 
     // Otherwise, construct the proper accelerator path and delete its entry
@@ -1029,26 +1030,26 @@ static void import_export(GtkButton *button, gpointer data)
   {
     // Non-zero value indicates export
     chooser = gtk_file_chooser_dialog_new(
-        _("select file to export"),
-        NULL,
-        GTK_FILE_CHOOSER_ACTION_SAVE,
-        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-        GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
-        NULL);
+                _("select file to export"),
+                NULL,
+                GTK_FILE_CHOOSER_ACTION_SAVE,
+                GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+                NULL);
     gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(chooser),
-                                                   TRUE);
+        TRUE);
     if(dt_conf_get_string("ui_last/export_path"))
       gtk_file_chooser_set_current_folder(
-          GTK_FILE_CHOOSER(chooser),
-          dt_conf_get_string("ui_last/export_path"));
+        GTK_FILE_CHOOSER(chooser),
+        dt_conf_get_string("ui_last/export_path"));
     gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(chooser), "keyboardrc");
     if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
     {
       gtk_accel_map_save(
-          gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)));
+        gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)));
       dt_conf_set_string(
-          "ui_last/export_path",
-          gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser)));
+        "ui_last/export_path",
+        gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser)));
     }
     gtk_widget_destroy(chooser);
   }
@@ -1056,17 +1057,17 @@ static void import_export(GtkButton *button, gpointer data)
   {
     // Zero value indicates import
     chooser = gtk_file_chooser_dialog_new(
-        _("select file to import"),
-        NULL,
-        GTK_FILE_CHOOSER_ACTION_OPEN,
-        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-        GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-        NULL);
+                _("select file to import"),
+                NULL,
+                GTK_FILE_CHOOSER_ACTION_OPEN,
+                GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                NULL);
 
     if(dt_conf_get_string("ui_last/import_path"))
       gtk_file_chooser_set_current_folder(
-          GTK_FILE_CHOOSER(chooser),
-          dt_conf_get_string("ui_last/import_path"));
+        GTK_FILE_CHOOSER(chooser),
+        dt_conf_get_string("ui_last/import_path"));
     if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
     {
       if(g_file_test(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)),
@@ -1074,7 +1075,7 @@ static void import_export(GtkButton *button, gpointer data)
       {
         // Loading the file
         gtk_accel_map_load(
-            gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)));
+          gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)));
 
         // Saving to the permanent keyboardrc
         dt_loc_get_user_config_dir(confdir, 1024);
@@ -1082,8 +1083,8 @@ static void import_export(GtkButton *button, gpointer data)
         gtk_accel_map_save(accelpath);
 
         dt_conf_set_string(
-            "ui_last/import_path",
-            gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser)));
+          "ui_last/import_path",
+          gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser)));
       }
     }
     gtk_widget_destroy(chooser);
@@ -1099,11 +1100,11 @@ static void restore_defaults(GtkButton *button, gpointer data)
   gchar path[1024];
 
   GtkWidget *message = gtk_message_dialog_new(
-      NULL, GTK_DIALOG_MODAL,
-      GTK_MESSAGE_WARNING,
-      GTK_BUTTONS_OK_CANCEL,
-      _("Are you sure you want to restore the default keybindings?  This will "
-        "erase any modifications you have made."));
+                         NULL, GTK_DIALOG_MODAL,
+                         GTK_MESSAGE_WARNING,
+                         GTK_BUTTONS_OK_CANCEL,
+                         _("Are you sure you want to restore the default keybindings?  This will "
+                           "erase any modifications you have made."));
   if(gtk_dialog_run(GTK_DIALOG(message)) == GTK_RESPONSE_OK)
   {
     // First load the default keybindings for immediate effect
@@ -1148,18 +1149,18 @@ static gboolean prefix_search(GtkTreeModel *model, gint column,
 
 // Custom sort function for TreeModel entries for accels list
 static gint compare_rows_accels(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
-                         gpointer data)
+                                gpointer data)
 {
   gchar *a_text;
   gchar *b_text;
 
   // First prioritize branch nodes over leaves
   if(gtk_tree_model_iter_has_child(model, a)
-    && !gtk_tree_model_iter_has_child(model, b))
+      && !gtk_tree_model_iter_has_child(model, b))
     return -1;
 
   if(gtk_tree_model_iter_has_child(model, b)
-    && !gtk_tree_model_iter_has_child(model, a))
+      && !gtk_tree_model_iter_has_child(model, a))
     return 1;
 
   // Otherwise just return alphabetical order
@@ -1171,7 +1172,7 @@ static gint compare_rows_accels(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter
 
 // Custom sort function for TreeModel entries for presets list
 static gint compare_rows_presets(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
-                         gpointer data)
+                                 gpointer data)
 {
   gchar *a_text;
   gchar *b_text;
@@ -1377,9 +1378,9 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
   // commit all the user input fields
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set description = ?1, "
-          "model = ?2, maker = ?3, lens = ?4, iso_min = ?5, iso_max = ?6, exposure_min = ?7, exposure_max = ?8, aperture_min = ?9, "
-          "aperture_max = ?10, focal_length_min = ?11, focal_length_max = ?12, autoapply = ?13, filter = ?14, def = 0 "
-          "where rowid = ?15", -1, &stmt, NULL);
+                              "model = ?2, maker = ?3, lens = ?4, iso_min = ?5, iso_max = ?6, exposure_min = ?7, exposure_max = ?8, aperture_min = ?9, "
+                              "aperture_max = ?10, focal_length_min = ?11, focal_length_max = ?12, autoapply = ?13, filter = ?14, def = 0 "
+                              "where rowid = ?15", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, gtk_entry_get_text(g->description), -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, gtk_entry_get_text(g->model), -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, gtk_entry_get_text(g->maker), -1, SQLITE_TRANSIENT);
@@ -1406,4 +1407,6 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
   free(g);
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

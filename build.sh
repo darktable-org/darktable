@@ -24,6 +24,7 @@ OPT_OPENCL=-1
 OPT_UNITY=-1
 OPT_TETHERING=-1
 OPT_EXPERIMENTAL_IOP=-1
+OPT_GEO=-1
 
 # ---------------------------------------------------------------------------
 # Parse options
@@ -58,6 +59,9 @@ parse_feature()
 		;;
 	experimental)
 		OPT_EXPERIMENTAL_IOP=$value
+		;;
+	geo)
+		OPT_GEO=$value
 		;;
 	*)
 		echo "warning: unknown feature '$feature'"
@@ -130,6 +134,7 @@ so that the cmake script autodetects features.
    --enable-unity
    --enable-tethering
    --enable-experimental
+   --enable-geo
 
 Extra:
 -h --help                Print help message
@@ -200,6 +205,11 @@ cmake_boolean_option USE_OPENCL $OPT_OPENCL
 cmake_boolean_option USE_UNITY $OPT_UNITY
 cmake_boolean_option USE_CAMERA_SUPPORT $OPT_TETHERING
 cmake_boolean_option INSTALL_IOP_EXPERIMENTAL $OPT_EXPERIMENTAL_IOP
+cmake_boolean_option USE_GEO $OPT_GEO
+
+# Some people might need this, but ignore if unset in environment
+CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:-}
+CMAKE_MORE_OPTIONS="${CMAKE_MORE_OPTIONS} ${CMAKE_PREFIX_PATH}"
 
 # ---------------------------------------------------------------------------
 # Let's go
@@ -226,7 +236,7 @@ cd "$BUILD_DIR"
 cmake \
 	-DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
 	-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-	$CMAKE_MORE_OPTIONS \
+	${CMAKE_MORE_OPTIONS} \
 	"$DT_SRC_DIR" \
 && $MAKE -j $MAKE_TASKS
 
@@ -235,4 +245,6 @@ if [ $? = 0 ]; then
 Darktable finished building, to actually install darktable you need to type:
 # cd "$BUILD_DIR"; sudo make install
 EOF
+else
+   exit 1
 fi

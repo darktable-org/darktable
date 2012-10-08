@@ -405,6 +405,7 @@ void gui_update (struct dt_iop_module_t *self)
   else
     dt_bauhaus_combobox_set(g->presets, -1);
   dt_bauhaus_slider_set(g->finetune, 0);
+  gtk_widget_set_sensitive(g->finetune, 0);
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -422,14 +423,14 @@ void reload_defaults(dt_iop_module_t *module)
   };
 
   // get white balance coefficients, as shot
-  char filename[1024];
+  char filename[DT_MAX_PATH_LEN];
   int ret=0;
   /* check if file is raw / hdr */
   if(dt_image_is_raw(&module->dev->image_storage))
   {
-    dt_image_full_path(module->dev->image_storage.id, filename, 1024);
+    dt_image_full_path(module->dev->image_storage.id, filename, DT_MAX_PATH_LEN);
     libraw_data_t *raw = libraw_init(0);
-  
+
     ret = libraw_open_file(raw, filename);
     if(!ret)
     {
@@ -445,12 +446,12 @@ void reload_defaults(dt_iop_module_t *module)
         char makermodel[1024];
         char *model = makermodel;
         dt_colorspaces_get_makermodel_split(makermodel, 1024, &model,
-            module->dev->image_storage.exif_maker,
-            module->dev->image_storage.exif_model);
+                                            module->dev->image_storage.exif_maker,
+                                            module->dev->image_storage.exif_model);
         for(int i=0; i<wb_preset_count; i++)
         {
           if(!strcmp(wb_preset[i].make,  makermodel) &&
-             !strcmp(wb_preset[i].model, model))
+              !strcmp(wb_preset[i].model, model))
           {
             // just take the first preset we find for this camera
             for(int k=0; k<3; k++) tmp.coeffs[k] = wb_preset[i].channel[k];
@@ -493,7 +494,7 @@ void init (dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_temperature_params_t));
   module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
-  module->priority = 39; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 38; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
 }
@@ -802,4 +803,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

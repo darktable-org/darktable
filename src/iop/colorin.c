@@ -27,6 +27,8 @@
 #include "common/colorspaces.h"
 #include "common/colormatrices.c"
 #include "common/opencl.h"
+#include "common/image_cache.h"
+#include "common/imageio_jpeg.h"
 #include "external/adobe_coeff.c"
 #include <xmmintrin.h>
 #include <stdlib.h>
@@ -214,7 +216,7 @@ dt_XYZ_to_Lab_SSE(const __m128 XYZ)
   // because d50_inv.z is 0.0f, lab_f(0) == 16/116, so Lab[0] = 116*f[0] - 16 equal to 116*(f[0]-f[3])
   return _mm_mul_ps(coef,_mm_sub_ps(_mm_shuffle_ps(f,f,_MM_SHUFFLE(3,1,0,1)),_mm_shuffle_ps(f,f,_MM_SHUFFLE(3,2,1,3))));
 }
- 
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
@@ -239,25 +241,25 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const __m128 m0 = _mm_set_ps(0.0f,mat[6],mat[3],mat[0]);
       const __m128 m1 = _mm_set_ps(0.0f,mat[7],mat[4],mat[1]);
       const __m128 m2 = _mm_set_ps(0.0f,mat[8],mat[5],mat[2]);
-  
+
       for(int i=0; i<roi_out->width; i++, buf_in+=ch, buf_out+=ch )
       {
-  
+
         // memcpy(cam, buf_in, sizeof(float)*3);
         // avoid calling this for linear profiles (marked with negative entries), assures unbounded
         // color management without extrapolation.
         for(int i=0; i<3; i++) cam[i] = (d->lut[i][0] >= 0.0f) ?
-          ((buf_in[i] < 1.0f) ? lerp_lut(d->lut[i], buf_in[i])
-          : dt_iop_eval_exp(d->unbounded_coeffs[i], buf_in[i]))
-          : buf_in[i];
-  
-        if(map_blues)
+                                          ((buf_in[i] < 1.0f) ? lerp_lut(d->lut[i], buf_in[i])
+                                           : dt_iop_eval_exp(d->unbounded_coeffs[i], buf_in[i]))
+                                            : buf_in[i];
+
+        const float YY = cam[0]+cam[1]+cam[2];
+        if(map_blues && YY > 0.0f)
         {
           // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB.
           // deeply saturated blues turn into purple fringes, so dampen them before conversion.
           // this is off for non-raw images, which don't seem to have this problem.
           // might be caused by too loose clipping bounds during highlight clipping?
-          const float YY = cam[0]+cam[1]+cam[2];
           const float zz = cam[2]/YY;
           // lower amount and higher bound_z make the effect smaller.
           // the effect is weakened the darker input values are, saturating at bound_Y
@@ -270,7 +272,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             cam[2] -= t*amount;
           }
         }
-  
+
 #if 0
         __attribute__((aligned(16))) float XYZ[4];
         _mm_store_ps(XYZ,_mm_add_ps(_mm_add_ps( _mm_mul_ps(m0,_mm_set1_ps(cam[0])), _mm_mul_ps(m1,_mm_set1_ps(cam[1]))), _mm_mul_ps(m2,_mm_set1_ps(cam[2]))));
@@ -351,15 +353,49 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
   piece->process_cl_ready = 1;
-  char datadir[1024];
-  char filename[1024];
-  dt_loc_get_datadir(datadir, 1024);
+  char datadir[DT_MAX_PATH_LEN];
+  char filename[DT_MAX_PATH_LEN];
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  if(!strcmp(p->iccprofile, "Lab"))
+  {
+    piece->enabled = 0;
+    return;
+  }
+  piece->enabled = 1;
   if(!strcmp(p->iccprofile, "darktable"))
   {
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_darktable_profile(makermodel);
-    if(!d->input) sprintf(p->iccprofile, "cmatrix");
+    if(!d->input) sprintf(p->iccprofile, "eprofile");
+  }
+  if(!strcmp(p->iccprofile, "vendor"))
+  {
+    char makermodel[1024];
+    dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
+    d->input = dt_colorspaces_create_vendor_profile(makermodel);
+    if(!d->input) sprintf(p->iccprofile, "eprofile");
+  }
+  if(!strcmp(p->iccprofile, "alternate"))
+  {
+    char makermodel[1024];
+    dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
+    d->input = dt_colorspaces_create_alternate_profile(makermodel);
+    if(!d->input) sprintf(p->iccprofile, "eprofile");
+  }
+  if(!strcmp(p->iccprofile, "eprofile"))
+  {
+    // embedded color profile
+    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, pipe->image.id);
+    if(cimg->profile == NULL) sprintf(p->iccprofile, "ematrix");
+    else d->input = cmsOpenProfileFromMem(cimg->profile, cimg->profile_size);
+    dt_image_cache_read_release(darktable.image_cache, cimg);
+  }
+  if(!strcmp(p->iccprofile, "ematrix"))
+  {
+    // embedded matrix, hopefully D65
+    if(isnan(pipe->image.d65_color_matrix[0])) sprintf(p->iccprofile, "cmatrix");
+    else d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])pipe->image.d65_color_matrix);
   }
   if(!strcmp(p->iccprofile, "cmatrix"))
   {
@@ -394,7 +430,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   }
   else if(!d->input)
   {
-    dt_colorspaces_find_profile(filename, 1024, p->iccprofile, "in");
+    dt_colorspaces_find_profile(filename, DT_MAX_PATH_LEN, p->iccprofile, "in");
     d->input = cmsOpenProfileFromFile(filename, "r");
   }
   if(d->input)
@@ -434,12 +470,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       for(int t=0; t<num_threads; t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->input, TYPE_Lab_FLT, p->intent, 0);
     }
   }
-  
+
   // now try to initialize unbounded mode:
   // we do a extrapolation for input values above 1.0f.
   // unfortunately we can only do this if we got the computation
   // in our hands, i.e. for the fast builtin-dt-matrix-profile path.
-  for(int k=0;k<3;k++)
+  for(int k=0; k<3; k++)
   {
     // omit luts marked as linear (negative as marker)
     if(d->lut[k][0] >= 0.0f)
@@ -448,7 +484,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       const float y[4] = {lerp_lut(d->lut[k], x[0]),
                           lerp_lut(d->lut[k], x[1]),
                           lerp_lut(d->lut[k], x[2]),
-                          lerp_lut(d->lut[k], x[3])};
+                          lerp_lut(d->lut[k], x[3])
+                         };
       dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs[k]);
     }
     else d->unbounded_coeffs[k][0] = -1.0f;
@@ -497,13 +534,44 @@ void gui_update(struct dt_iop_module_t *self)
   if(strcmp(p->iccprofile, "darktable")) fprintf(stderr, "[colorin] could not find requested profile `%s'!\n", p->iccprofile);
 }
 
+// FIXME: update the gui when we add/remove the eprofile or ematrix
 void reload_defaults(dt_iop_module_t *module)
 {
+  gboolean use_eprofile = FALSE;
+  // some file formats like jpeg can have an embedded color profile
+  // currently we only support jpeg
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, module->dev->image_storage.id);
+  if(!cimg->profile)
+  {
+    char filename[DT_MAX_PATH_LEN];
+    dt_image_full_path(cimg->id, filename, DT_MAX_PATH_LEN);
+    const gchar *cc = filename + strlen(filename);
+    for(; *cc!='.'&&cc>filename; cc--);
+    gchar *ext = g_ascii_strdown(cc+1, -1);
+    if(!strcmp(ext, "jpg") || !strcmp(ext, "jpeg"))
+    {
+      dt_imageio_jpeg_t jpg;
+      if(!dt_imageio_jpeg_read_header(filename, &jpg))
+      {
+        dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+        img->profile_size = dt_imageio_jpeg_read_profile(&jpg, &img->profile);
+        use_eprofile = (img->profile_size > 0);
+        dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+      }
+    }
+    g_free(ext);
+  }
+  else
+    use_eprofile = TRUE; // the image has a profile assigned
+  dt_image_cache_read_release(darktable.image_cache, cimg);
+
   dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t)
   {
     "darktable", DT_INTENT_PERCEPTUAL
   };
-  if(dt_image_is_ldr(&module->dev->image_storage)) g_strlcpy(tmp.iccprofile, "sRGB", sizeof(tmp.iccprofile));
+
+  if(use_eprofile) g_strlcpy(tmp.iccprofile, "eprofile", sizeof(tmp.iccprofile));
+  else if(dt_image_is_ldr(&module->dev->image_storage)) g_strlcpy(tmp.iccprofile, "sRGB", sizeof(tmp.iccprofile));
   memcpy(module->params, &tmp, sizeof(dt_iop_colorin_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorin_params_t));
 }
@@ -515,7 +583,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorin_params_t));
   module->params_size = sizeof(dt_iop_colorin_params_t);
   module->gui_data = NULL;
-  module->priority = 352; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 346; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
 }
 
@@ -536,7 +604,27 @@ void gui_init(struct dt_iop_module_t *self)
   g->profiles = NULL;
   dt_iop_color_profile_t *prof;
   int pos = -1;
-
+  // some file formats like jpeg can have an embedded color profile
+  // currently we only support jpeg
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, self->dev->image_storage.id);
+  if(cimg->profile)
+  {
+    prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
+    g_strlcpy(prof->filename, "eprofile", sizeof(prof->filename));
+    g_strlcpy(prof->name, "eprofile", sizeof(prof->name));
+    g->profiles = g_list_append(g->profiles, prof);
+    prof->pos = ++pos;
+  }
+  dt_image_cache_read_release(darktable.image_cache, cimg);
+  // use the matrix embedded in some DNGs
+  if(!isnan(self->dev->image_storage.d65_color_matrix[0]))
+  {
+    prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
+    g_strlcpy(prof->filename, "ematrix", sizeof(prof->filename));
+    g_strlcpy(prof->name, "ematrix", sizeof(prof->name));
+    g->profiles = g_list_append(g->profiles, prof);
+    prof->pos = ++pos;
+  }
   // get color matrix from raw image:
   char makermodel[1024];
   dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
@@ -560,6 +648,34 @@ void gui_init(struct dt_iop_module_t *self)
       prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
       g_strlcpy(prof->filename, "darktable", sizeof(prof->filename));
       g_strlcpy(prof->name, "darktable", sizeof(prof->name));
+      g->profiles = g_list_append(g->profiles, prof);
+      prof->pos = ++pos;
+      break;
+    }
+  }
+
+  // darktable vendor matrix, if applicable
+  for(int k=0; k<dt_vendor_colormatrix_cnt; k++)
+  {
+    if(!strcmp(makermodel, dt_vendor_colormatrices[k].makermodel))
+    {
+      prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+      g_strlcpy(prof->filename, "vendor", sizeof(prof->filename));
+      g_strlcpy(prof->name, "vendor", sizeof(prof->name));
+      g->profiles = g_list_append(g->profiles, prof);
+      prof->pos = ++pos;
+      break;
+    }
+  }
+
+  // darktable alternate matrix, if applicable
+  for(int k=0; k<dt_alternate_colormatrix_cnt; k++)
+  {
+    if(!strcmp(makermodel, dt_alternate_colormatrices[k].makermodel))
+    {
+      prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+      g_strlcpy(prof->filename, "alternate", sizeof(prof->filename));
+      g_strlcpy(prof->name, "alternate", sizeof(prof->name));
       g->profiles = g_list_append(g->profiles, prof);
       prof->pos = ++pos;
       break;
@@ -594,6 +710,13 @@ void gui_init(struct dt_iop_module_t *self)
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
 
+  // Lab built-in
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
+  g_strlcpy(prof->filename, "Lab", sizeof(prof->filename));
+  g_strlcpy(prof->name, "Lab", sizeof(prof->name));
+  g->profiles = g_list_append(g->profiles, prof);
+  prof->pos = ++pos;
+
   // infrared built-in
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "infrared", sizeof(prof->filename));
@@ -602,12 +725,15 @@ void gui_init(struct dt_iop_module_t *self)
   prof->pos = ++pos;
 
   // read {userconfig,datadir}/color/in/*.icc, in this order.
-  char datadir[1024], confdir[1024], dirname[1024], filename[1024];
-  dt_loc_get_user_config_dir(confdir, 1024);
-  dt_loc_get_datadir(datadir, 1024);
-  snprintf(dirname, 1024, "%s/color/in", confdir);
+  char datadir[DT_MAX_PATH_LEN];
+  char confdir[DT_MAX_PATH_LEN];
+  char dirname[DT_MAX_PATH_LEN];
+  char filename[DT_MAX_PATH_LEN];
+  dt_loc_get_user_config_dir(confdir, DT_MAX_PATH_LEN);
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/in", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
-    snprintf(dirname, 1024, "%s/color/in", datadir);
+    snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/in", datadir);
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   GDir *dir = g_dir_open(dirname, 0, NULL);
@@ -616,7 +742,7 @@ void gui_init(struct dt_iop_module_t *self)
     while((d_name = g_dir_read_name(dir)))
     {
       if(!strcmp(d_name, "linear_rgb")) continue;
-      snprintf(filename, 1024, "%s/%s", dirname, d_name);
+      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", dirname, d_name);
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
@@ -645,10 +771,18 @@ void gui_init(struct dt_iop_module_t *self)
   while(l)
   {
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
-    if(!strcmp(prof->name, "cmatrix"))
+    if(!strcmp(prof->name, "eprofile"))
+      dt_bauhaus_combobox_add(g->cbox2, _("embedded icc profile"));
+    else if(!strcmp(prof->name, "ematrix"))
+      dt_bauhaus_combobox_add(g->cbox2, _("dng embedded matrix"));
+    else if(!strcmp(prof->name, "cmatrix"))
       dt_bauhaus_combobox_add(g->cbox2, _("standard color matrix"));
     else if(!strcmp(prof->name, "darktable"))
       dt_bauhaus_combobox_add(g->cbox2, _("enhanced color matrix"));
+    else if(!strcmp(prof->name, "vendor"))
+      dt_bauhaus_combobox_add(g->cbox2, _("vendor color matrix"));
+    else if(!strcmp(prof->name, "alternate"))
+      dt_bauhaus_combobox_add(g->cbox2, _("alternate color matrix"));
     else if(!strcmp(prof->name, "sRGB"))
       dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. jpg)"));
     else if(!strcmp(prof->name, "adobergb"))
@@ -659,6 +793,8 @@ void gui_init(struct dt_iop_module_t *self)
       dt_bauhaus_combobox_add(g->cbox2, _("linear infrared BGR"));
     else if(!strcmp(prof->name, "XYZ"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear XYZ"));
+    else if(!strcmp(prof->name, "Lab"))
+      dt_bauhaus_combobox_add(g->cbox2, _("Lab"));
     else
       dt_bauhaus_combobox_add(g->cbox2, prof->name);
     l = g_list_next(l);
@@ -686,4 +822,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -62,18 +62,18 @@ void dt_cache_static_allocation(dt_cache_t *cache, uint8_t *buf, const uint32_t 
 
 static inline void
 dt_cache_set_allocate_callback(
-    dt_cache_t *cache,
-    int32_t (*allocate)(void*, const uint32_t, int32_t*, void**),
-    void *allocate_data)
+  dt_cache_t *cache,
+  int32_t (*allocate)(void*, const uint32_t, int32_t*, void**),
+  void *allocate_data)
 {
   cache->allocate = allocate;
   cache->allocate_data = allocate_data;
 }
 static inline void
 dt_cache_set_cleanup_callback(
-    dt_cache_t *cache,
-    void (*cleanup)(void*, const uint32_t, void*),
-    void *cleanup_data)
+  dt_cache_t *cache,
+  void (*cleanup)(void*, const uint32_t, void*),
+  void *cleanup_data)
 {
   cache->cleanup = cleanup;
   cache->cleanup_data = cleanup_data;
@@ -121,8 +121,11 @@ void dt_cache_realloc(dt_cache_t *cache, const uint32_t key, const int32_t cost,
 // returns non zero the first time process() returns non zero.
 int
 dt_cache_for_all(
-    dt_cache_t *cache,
-    int (*process)(const uint32_t key, const void *data, void *user_data),
-    void *user_data);
+  dt_cache_t *cache,
+  int (*process)(const uint32_t key, const void *data, void *user_data),
+  void *user_data);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

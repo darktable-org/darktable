@@ -169,7 +169,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_graduatednd_gui_data_t *g =
-      (dt_iop_graduatednd_gui_data_t*)self->gui_data;
+    (dt_iop_graduatednd_gui_data_t*)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "density", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "compression", GTK_WIDGET(g->scale2));
@@ -333,91 +333,91 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   if (data->density > 0)
   {
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, color, data, ivoid, ovoid) schedule(static)
+    #pragma omp parallel for default(none) shared(roi_out, color, data, ivoid, ovoid) schedule(static)
 #endif
-  for(int y=0; y<roi_out->height; y++)
-  {
-    int k=roi_out->width*y*ch;
-    const float *in = (float*)ivoid + k;
-    float *out = (float*)ovoid + k;
-
-    float length = (sinv * (-1.0+ix*hw_inv) - cosv * (-1.0+(iy+y)*hh_inv) - 1.0 + offset) * filter_compression;
-    const float length_inc = sinv * hw_inv * filter_compression;
-
-    __m128 c = _mm_set_ps(0,color[2],color[1],color[0]); 
-    __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f),c); 
-
-    for(int x=0; x<roi_out->width; x++, in+=ch, out+=ch)
+    for(int y=0; y<roi_out->height; y++)
     {
-      length += length_inc;
+      int k=roi_out->width*y*ch;
+      const float *in = (float*)ivoid + k;
+      float *out = (float*)ovoid + k;
+
+      float length = (sinv * (-1.0+ix*hw_inv) - cosv * (-1.0+(iy+y)*hh_inv) - 1.0 + offset) * filter_compression;
+      const float length_inc = sinv * hw_inv * filter_compression;
+
+      __m128 c = _mm_set_ps(0,color[2],color[1],color[0]);
+      __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f),c);
+
+      for(int x=0; x<roi_out->width; x++, in+=ch, out+=ch)
+      {
+        length += length_inc;
 
 #if 1
-      // !!! approximation is ok only when highest density is 8
-      // for input x = (data->density * CLIP( 0.5+length ), calculate 2^x as (e^(ln2*x/8))^8
-      // use exp2f approximation to calculate e^(ln2*x/8)
-      // in worst case - density==8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
-      const float t = 0.693147181f /* ln2 */ * (data->density * CLIP( 0.5f+length )/8.0f);
-      float d1 = t*t*0.5f;
-      float d2 = d1*t*0.333333333f;
-      float d3 = d2*t*0.25f;
-      float d = 1+t+d1+d2+d3; /* taylor series for e^x till x^4 */
-      __m128 density = _mm_set1_ps(d);
-      density = _mm_mul_ps(density,density);
-      density = _mm_mul_ps(density,density);
-      density = _mm_mul_ps(density,density);
+        // !!! approximation is ok only when highest density is 8
+        // for input x = (data->density * CLIP( 0.5+length ), calculate 2^x as (e^(ln2*x/8))^8
+        // use exp2f approximation to calculate e^(ln2*x/8)
+        // in worst case - density==8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
+        const float t = 0.693147181f /* ln2 */ * (data->density * CLIP( 0.5f+length )/8.0f);
+        float d1 = t*t*0.5f;
+        float d2 = d1*t*0.333333333f;
+        float d3 = d2*t*0.25f;
+        float d = 1+t+d1+d2+d3; /* taylor series for e^x till x^4 */
+        __m128 density = _mm_set1_ps(d);
+        density = _mm_mul_ps(density,density);
+        density = _mm_mul_ps(density,density);
+        density = _mm_mul_ps(density,density);
 #else
-      // use fair exp2f
-      __m128 density = _mm_set1_ps(exp2f(data->density * CLIP( 0.5f+length )));
+        // use fair exp2f
+        __m128 density = _mm_set1_ps(exp2f(data->density * CLIP( 0.5f+length )));
 #endif
-      
-      /* max(0,in / (c + (1-c)*density)) */
-      _mm_stream_ps(out,_mm_max_ps(_mm_set1_ps(0.0f),_mm_div_ps(_mm_load_ps(in),_mm_add_ps(c,_mm_mul_ps(c1,density)))));
+
+        /* max(0,in / (c + (1-c)*density)) */
+        _mm_stream_ps(out,_mm_max_ps(_mm_set1_ps(0.0f),_mm_div_ps(_mm_load_ps(in),_mm_add_ps(c,_mm_mul_ps(c1,density)))));
+      }
     }
-  }
   }
   else
   {
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, color, data, ivoid, ovoid) schedule(static)
+    #pragma omp parallel for default(none) shared(roi_out, color, data, ivoid, ovoid) schedule(static)
 #endif
-  for(int y=0; y<roi_out->height; y++)
-  {
-    int k=roi_out->width*y*ch;
-    const float *in = (float*)ivoid + k;
-    float *out = (float*)ovoid + k;
-
-    float length = (sinv * (-1.0f+ix*hw_inv) - cosv * (-1.0f+(iy+y)*hh_inv) - 1.0f + offset) * filter_compression;
-    const float length_inc = sinv * hw_inv * filter_compression;
-
-    __m128 c = _mm_set_ps(0,color[2],color[1],color[0]); 
-    __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f),c); 
-
-    for(int x=0; x<roi_out->width; x++, in+=ch, out+=ch)
+    for(int y=0; y<roi_out->height; y++)
     {
-      length += length_inc;
+      int k=roi_out->width*y*ch;
+      const float *in = (float*)ivoid + k;
+      float *out = (float*)ovoid + k;
+
+      float length = (sinv * (-1.0f+ix*hw_inv) - cosv * (-1.0f+(iy+y)*hh_inv) - 1.0f + offset) * filter_compression;
+      const float length_inc = sinv * hw_inv * filter_compression;
+
+      __m128 c = _mm_set_ps(0,color[2],color[1],color[0]);
+      __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f),c);
+
+      for(int x=0; x<roi_out->width; x++, in+=ch, out+=ch)
+      {
+        length += length_inc;
 
 #if 1
-      // !!! approximation is ok only when lowest density is -8
-      // for input x = (-data->density * CLIP( 0.5-length ), calculate 2^x as (e^(ln2*x/8))^8
-      // use exp2f approximation to calculate e^(ln2*x/8)
-      // in worst case - density==-8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
-      const float t = 0.693147181f /* ln2 */ * (-data->density * CLIP( 0.5f-length )/8.0f);
-      float d1 = t*t*0.5f;
-      float d2 = d1*t*0.333333333f;
-      float d3 = d2*t*0.25f;
-      float d = 1+t+d1+d2+d3; /* taylor series for e^x till x^4 */
-      __m128 density = _mm_set1_ps(d);
-      density = _mm_mul_ps(density,density);
-      density = _mm_mul_ps(density,density);
-      density = _mm_mul_ps(density,density);
+        // !!! approximation is ok only when lowest density is -8
+        // for input x = (-data->density * CLIP( 0.5-length ), calculate 2^x as (e^(ln2*x/8))^8
+        // use exp2f approximation to calculate e^(ln2*x/8)
+        // in worst case - density==-8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
+        const float t = 0.693147181f /* ln2 */ * (-data->density * CLIP( 0.5f-length )/8.0f);
+        float d1 = t*t*0.5f;
+        float d2 = d1*t*0.333333333f;
+        float d3 = d2*t*0.25f;
+        float d = 1+t+d1+d2+d3; /* taylor series for e^x till x^4 */
+        __m128 density = _mm_set1_ps(d);
+        density = _mm_mul_ps(density,density);
+        density = _mm_mul_ps(density,density);
+        density = _mm_mul_ps(density,density);
 #else
-      __m128 density = _mm_set1_ps(exp2f(-data->density * CLIP( 0.5f-length )));
+        __m128 density = _mm_set1_ps(exp2f(-data->density * CLIP( 0.5f-length )));
 #endif
 
-      /* max(0,in * (c + (1-c)*density)) */
-      _mm_stream_ps(out,_mm_max_ps(_mm_set1_ps(0.0f),_mm_mul_ps(_mm_load_ps(in),_mm_add_ps(c,_mm_mul_ps(c1,density)))));
+        /* max(0,in * (c + (1-c)*density)) */
+        _mm_stream_ps(out,_mm_max_ps(_mm_set1_ps(0.0f),_mm_mul_ps(_mm_load_ps(in),_mm_add_ps(c,_mm_mul_ps(c1,density)))));
+      }
     }
-  }
   }
   _mm_sfence();
 
@@ -613,12 +613,12 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_graduatednd_params_t));
   module->default_params = malloc(sizeof(dt_iop_graduatednd_params_t));
   module->default_enabled = 0;
-  module->priority = 254; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 249; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_graduatednd_params_t);
   module->gui_data = NULL;
   dt_iop_graduatednd_params_t tmp = (dt_iop_graduatednd_params_t)
   {
-    2.0,0,0,50,0,0
+    1.0,0,0,50,0,0
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_graduatednd_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_graduatednd_params_t));
@@ -673,15 +673,15 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
 
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
-  
+
   /* density */
   g->scale1 = dt_bauhaus_slider_new_with_range(self,-8.0, 8.0, 0.1, p->density, 2);
-  dt_bauhaus_slider_set_format(g->scale1,"%.2fEV");
+  dt_bauhaus_slider_set_format(g->scale1,"%.2fev");
   dt_bauhaus_widget_set_label(g->scale1,_("density"));
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the density in EV for the filter"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the density in ev for the filter"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (density_callback), self);
-  
+
   /* compression */
   g->scale2 = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 1.0, p->compression, 0);
   dt_bauhaus_slider_set_format(g->scale2,"%.0f%%");
@@ -749,4 +749,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

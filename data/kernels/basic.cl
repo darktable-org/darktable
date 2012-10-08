@@ -242,10 +242,11 @@ colorin (read_only image2d_t in, write_only image2d_t out, const int width, cons
   cam[1] = lookup_unbounded(lutg, pixel.y, a+3);
   cam[2] = lookup_unbounded(lutb, pixel.z, a+6);
 
-  if(map_blues)
+
+  const float YY = cam[0]+cam[1]+cam[2];
+  if(map_blues && YY > 0.0f)
   {
     // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-    const float YY = cam[0]+cam[1]+cam[2];
     const float zz = cam[2]/YY;
     // lower amount and higher bound_z make the effect smaller.
     // the effect is weakened the darker input values are, saturating at bound_Y
@@ -950,18 +951,72 @@ fast_expf(const float x)
 }
 
 
+float
+envelope(const float L)
+{
+  const float x = clamp(L/100.0f, 0.0f, 1.0f);
+  // const float alpha = 2.0f;
+  const float beta = 0.6f;
+  if(x < beta)
+  {
+    // return 1.0f-fabsf(x/beta-1.0f)^2
+    const float tmp = fabs(x/beta-1.0f);
+    return 1.0f-tmp*tmp;
+  }
+  else
+  {
+    const float tmp1 = (1.0f-x)/(1.0f-beta);
+    const float tmp2 = tmp1*tmp1;
+    const float tmp3 = tmp2*tmp1;
+    return 3.0f*tmp2 - 2.0f*tmp3;
+  }
+}
+
 /* kernel for monochrome */
-__kernel void
-monochrome(read_only image2d_t in, write_only image2d_t out, const int width, const int height, 
-           const float a, const float b, const float size)
+kernel void
+monochrome_filter(
+    read_only image2d_t in,
+    write_only image2d_t out,
+    const int width,
+    const int height, 
+    const float a,
+    const float b,
+    const float size)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  pixel.x *= fast_expf(-clamp(((pixel.y - a)*(pixel.y - a) + (pixel.z - b)*(pixel.z - b))/(2.0f * size), 0.0f, 1.0f));
+  float4 pixel = read_imagef (in,   sampleri, (int2)(x, y));
+  // TODO: this could be a native_expf, or exp2f, need to evaluate comparisons with cpu though:
+  pixel.x = 100.0f*fast_expf(-clamp(((pixel.y - a)*(pixel.y - a) + (pixel.z - b)*(pixel.z - b))/(2.0f * size), 0.0f, 1.0f));
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+kernel void
+monochrome(
+    read_only image2d_t in,
+    read_only image2d_t base,
+    write_only image2d_t out,
+    const int width,
+    const int height, 
+    const float a,
+    const float b,
+    const float size,
+    float highlights)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef (in,   sampleri, (int2)(x, y));
+  float4 basep = read_imagef (base, sampleri, (int2)(x, y));
+  float filter  = fast_expf(-clamp(((pixel.y - a)*(pixel.y - a) + (pixel.z - b)*(pixel.z - b))/(2.0f * size), 0.0f, 1.0f));
+  float tt = envelope(pixel.x);
+  float t  = tt + (1.0f-tt)*(1.0f-highlights);
+  pixel.x = mix(pixel.x, pixel.x*basep.x/100.0f, t);
   pixel.y = pixel.z = 0.0f;
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -1142,12 +1197,13 @@ zonesystem (read_only image2d_t in, write_only image2d_t out, const int width, c
 
 /* kernel to fill an image with a color (for the borders plugin). */
 kernel void
-borders_fill (write_only image2d_t out, const int width, const int height, const float4 color)
+borders_fill (write_only image2d_t out, const int left, const int top, const int width, const int height, const float4 color)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  if(x >= width || y >= height) return;
+  if(x < left || y < top) return;
+  if(x >= width + left || y >= height + top) return;
 
   write_imagef (out, (int2)(x, y), color);
 }
@@ -1156,7 +1212,7 @@ borders_fill (write_only image2d_t out, const int width, const int height, const
 /* kernel for the overexposed plugin. */
 kernel void
 overexposed (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-             const float lower, const float upper)
+             const float lower, const float upper, const float4 lower_color, const float4 upper_color)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1167,15 +1223,11 @@ overexposed (read_only image2d_t in, write_only image2d_t out, const int width, 
 
   if(pixel.x >= upper || pixel.y >= upper || pixel.z >= upper)
   {
-    pixel.x = 1.0f;
-    pixel.y = 0.0f;
-    pixel.z = 0.0f;
+    pixel.xyz = upper_color.xyz;
   }
-  else if(pixel.x <= lower || pixel.y <= lower || pixel.z <= lower)
+  else if(pixel.x <= lower && pixel.y <= lower && pixel.z <= lower)
   {
-    pixel.x = 0.0f;
-    pixel.y = 0.0f;
-    pixel.z = 1.0f;
+    pixel.xyz = lower_color.xyz;
   }
 
   write_imagef (out, (int2)(x, y), pixel);

@@ -427,6 +427,114 @@ dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)
 }
 
 cmsHPROFILE
+dt_colorspaces_create_alternate_profile(const char *makermodel)
+{
+  dt_profiled_colormatrix_t *preset = NULL;
+  for(int k=0; k<dt_alternate_colormatrix_cnt; k++)
+  {
+    if(!strcmp(makermodel, dt_alternate_colormatrices[k].makermodel))
+    {
+      preset = dt_alternate_colormatrices + k;
+      break;
+    }
+  }
+  if(!preset) return NULL;
+
+  const float wxyz = preset->white[0]+preset->white[1]+preset->white[2];
+  const float rxyz = preset->rXYZ[0] +preset->rXYZ[1] +preset->rXYZ[2];
+  const float gxyz = preset->gXYZ[0] +preset->gXYZ[1] +preset->gXYZ[2];
+  const float bxyz = preset->bXYZ[0] +preset->bXYZ[1] +preset->bXYZ[2];
+  cmsCIExyY       WP = {preset->white[0]/wxyz, preset->white[1]/wxyz, 1.0};
+  cmsCIExyYTRIPLE XYZPrimaries   =
+  {
+    {preset->rXYZ[0]/rxyz, preset->rXYZ[1]/rxyz, 1.0},
+    {preset->gXYZ[0]/gxyz, preset->gXYZ[1]/gxyz, 1.0},
+    {preset->bXYZ[0]/bxyz, preset->bXYZ[1]/bxyz, 1.0}
+  };
+  cmsToneCurve *Gamma[3];
+  cmsHPROFILE  hp;
+
+  Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
+
+  hp = cmsCreateRGBProfile(&WP, &XYZPrimaries, Gamma);
+  cmsFreeToneCurve(Gamma[0]);
+  if (hp == NULL) return NULL;
+
+  char name[512];
+  snprintf(name, 512, "darktable alternate %s", makermodel);
+  cmsSetProfileVersion(hp, 2.1);
+  cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
+  cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu1, "en", "US", name);
+  cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu2, "en", "US", name);
+  cmsWriteTag(hp, cmsSigDeviceMfgDescTag,   mlu0);
+  cmsWriteTag(hp, cmsSigDeviceModelDescTag, mlu1);
+  // this will only be displayed when the embedded profile is read by for example GIMP
+  cmsWriteTag(hp, cmsSigProfileDescriptionTag, mlu2);
+  cmsMLUfree(mlu0);
+  cmsMLUfree(mlu1);
+  cmsMLUfree(mlu2);
+
+  return hp;
+}
+
+cmsHPROFILE
+dt_colorspaces_create_vendor_profile(const char *makermodel)
+{
+  dt_profiled_colormatrix_t *preset = NULL;
+  for(int k=0; k<dt_vendor_colormatrix_cnt; k++)
+  {
+    if(!strcmp(makermodel, dt_vendor_colormatrices[k].makermodel))
+    {
+      preset = dt_vendor_colormatrices + k;
+      break;
+    }
+  }
+  if(!preset) return NULL;
+
+  const float wxyz = preset->white[0]+preset->white[1]+preset->white[2];
+  const float rxyz = preset->rXYZ[0] +preset->rXYZ[1] +preset->rXYZ[2];
+  const float gxyz = preset->gXYZ[0] +preset->gXYZ[1] +preset->gXYZ[2];
+  const float bxyz = preset->bXYZ[0] +preset->bXYZ[1] +preset->bXYZ[2];
+  cmsCIExyY       WP = {preset->white[0]/wxyz, preset->white[1]/wxyz, 1.0};
+  cmsCIExyYTRIPLE XYZPrimaries   =
+  {
+    {preset->rXYZ[0]/rxyz, preset->rXYZ[1]/rxyz, 1.0},
+    {preset->gXYZ[0]/gxyz, preset->gXYZ[1]/gxyz, 1.0},
+    {preset->bXYZ[0]/bxyz, preset->bXYZ[1]/bxyz, 1.0}
+  };
+  cmsToneCurve *Gamma[3];
+  cmsHPROFILE  hp;
+
+  Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
+
+  hp = cmsCreateRGBProfile(&WP, &XYZPrimaries, Gamma);
+  cmsFreeToneCurve(Gamma[0]);
+  if (hp == NULL) return NULL;
+
+  char name[512];
+  snprintf(name, 512, "darktable vendor %s", makermodel);
+  cmsSetProfileVersion(hp, 2.1);
+  cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
+  cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu1, "en", "US", name);
+  cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu2, "en", "US", name);
+  cmsWriteTag(hp, cmsSigDeviceMfgDescTag,   mlu0);
+  cmsWriteTag(hp, cmsSigDeviceModelDescTag, mlu1);
+  // this will only be displayed when the embedded profile is read by for example GIMP
+  cmsWriteTag(hp, cmsSigProfileDescriptionTag, mlu2);
+  cmsMLUfree(mlu0);
+  cmsMLUfree(mlu1);
+  cmsMLUfree(mlu2);
+
+  return hp;
+}
+
+cmsHPROFILE
 dt_colorspaces_create_darktable_profile(const char *makermodel)
 {
   dt_profiled_colormatrix_t *preset = NULL;
@@ -590,12 +698,12 @@ dt_colorspaces_create_linear_infrared_profile(void)
 int
 dt_colorspaces_find_profile(char *filename, const int filename_len, const char *profile, const char *inout)
 {
-  char datadir[1024];
-  dt_loc_get_user_config_dir(datadir, 1024);
+  char datadir[DT_MAX_PATH_LEN];
+  dt_loc_get_user_config_dir(datadir, DT_MAX_PATH_LEN);
   snprintf(filename, filename_len, "%s/color/%s/%s", datadir, inout, profile);
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
   {
-    dt_loc_get_datadir(datadir, 1024);
+    dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
     snprintf(filename, filename_len, "%s/color/%s/%s", datadir, inout, profile);
     if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return 1;
   }
@@ -647,13 +755,18 @@ dt_colorspaces_create_output_profile(const int imgid)
     output = dt_colorspaces_create_xyz_profile();
   else if(!strcmp(profile, "adobergb"))
     output = dt_colorspaces_create_adobergb_profile();
-  else if(!strcmp(profile, "X profile") && darktable.control->xprofile_data)
-    output = cmsOpenProfileFromMem(darktable.control->xprofile_data, darktable.control->xprofile_size);
+  else if(!strcmp(profile, "X profile"))
+  {
+    pthread_rwlock_rdlock(&darktable.control->xprofile_lock);
+    if(darktable.control->xprofile_data)
+      output = cmsOpenProfileFromMem(darktable.control->xprofile_data, darktable.control->xprofile_size);
+    pthread_rwlock_unlock(&darktable.control->xprofile_lock);
+  }
   else
   {
     // else: load file name
-    char filename[1024];
-    dt_colorspaces_find_profile(filename, 1024, profile, "out");
+    char filename[DT_MAX_PATH_LEN];
+    dt_colorspaces_find_profile(filename, DT_MAX_PATH_LEN, profile, "out");
     output = cmsOpenProfileFromFile(filename, "r");
   }
   if(!output) output = dt_colorspaces_create_srgb_profile();
@@ -828,7 +941,8 @@ static inline float hue2rgb(float m1,float m2,float hue)
 void hsl2rgb(float rgb[3],float h,float s,float l)
 {
   float m1,m2;
-  if( s==0) {
+  if( s==0)
+  {
     rgb[0]=rgb[1]=rgb[2]=l;
     return;
   }
@@ -840,4 +954,6 @@ void hsl2rgb(float rgb[3],float h,float s,float l)
 
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

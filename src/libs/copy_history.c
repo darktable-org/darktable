@@ -169,6 +169,13 @@ paste_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_control_queue_redraw_center();
 }
 
+static void
+pastemode_combobox_changed(GtkWidget *widget, gpointer user_data)
+{
+  int mode = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
+}
+
 void
 gui_reset (dt_lib_module_t *self)
 {
@@ -245,6 +252,9 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (G_OBJECT (loadbutton), "clicked",
                     G_CALLBACK (load_button_clicked),
                     (gpointer)self);
+  g_signal_connect (G_OBJECT (d->pastemode), "changed",
+                    G_CALLBACK (pastemode_combobox_changed),
+                    (gpointer)self);
 }
 
 void
@@ -256,9 +266,9 @@ gui_cleanup (dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "copy"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "copy"), GDK_c, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "discard"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "paste"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "paste"), GDK_v, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "load sidecar files"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "write sidecar files"), 0, 0);
 }
@@ -275,3 +285,6 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "write sidecar files",
                               GTK_WIDGET(d->write_button));
 }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

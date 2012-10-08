@@ -34,16 +34,19 @@ class Cr2Decoder :
 public:
   Cr2Decoder(TiffIFD *rootIFD, FileMap* file);
   virtual RawImage decodeRawInternal();
-  virtual void checkSupport(CameraMetaData *meta);
-  virtual void decodeMetaData(CameraMetaData *meta);
+  virtual void checkSupportInternal(CameraMetaData *meta);
+  virtual void decodeMetaDataInternal(CameraMetaData *meta);
   virtual ~Cr2Decoder(void);
 protected:
   int sraw_coeffs[3];
 
   void sRawInterpolate();
+  int getHue();
   void interpolate_420(int w, int h, int start_h , int end_h);
   void interpolate_422(int w, int h, int start_h , int end_h);
   void interpolate_422_old(int w, int h, int start_h , int end_h);
+  void interpolate_420_new(int w, int h, int start_h , int end_h);
+  void interpolate_422_new(int w, int h, int start_h , int end_h);
   TiffIFD *mRootIFD;
 };
 

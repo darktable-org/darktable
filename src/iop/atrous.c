@@ -134,7 +134,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_accel_connect_slider_iop(self ,"mix",
-      ((dt_iop_atrous_gui_data_t*)self->gui_data)->mix);
+                              ((dt_iop_atrous_gui_data_t*)self->gui_data)->mix);
 }
 
 
@@ -498,7 +498,7 @@ process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, voi
     buf1 = buf3;
   }
   /* due to symmetric processing, output will be left in (float *)o */
- 
+
   for(int k=0; k<max_scale; k++) free(detail[k]);
   free(tmp);
 
@@ -655,7 +655,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_enabled = 0;
-  module->priority = 509; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 499; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_atrous_params_t);
   module->gui_data = NULL;
   dt_iop_atrous_params_t tmp;
@@ -1309,8 +1309,8 @@ area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
     reset_mix(self);
     for(int k=0; k<BANDS; k++)
     {
-        p->x[c->channel2][k] = d->x[c->channel2][k];
-        p->y[c->channel2][k] = d->y[c->channel2][k];
+      p->x[c->channel2][k] = d->x[c->channel2][k];
+      p->y[c->channel2][k] = d->y[c->channel2][k];
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(self->widget);
@@ -1460,4 +1460,6 @@ void gui_cleanup  (struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

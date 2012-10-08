@@ -59,7 +59,7 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT;
 }
 
-int expandable() 
+int expandable()
 {
   return 0;
 }
@@ -87,7 +87,7 @@ void gui_init(dt_lib_module_t *self)
                         GDK_EXPOSURE_MASK
                         | GDK_POINTER_MOTION_MASK
                         | GDK_POINTER_MOTION_HINT_MASK
-			| GDK_LEAVE_NOTIFY_MASK
+                        | GDK_LEAVE_NOTIFY_MASK
                         | GDK_BUTTON_PRESS_MASK
                         | GDK_BUTTON_RELEASE_MASK
                         | GDK_STRUCTURE_MASK);
@@ -110,7 +110,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_size_request(da, (STAR_SIZE*6)+(STAR_SPACING*5), STAR_SIZE);
 
   gtk_container_add(GTK_CONTAINER(self->widget),da);
-    
+
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -126,10 +126,10 @@ static gboolean _lib_ratings_expose_callback(GtkWidget *widget, GdkEventExpose *
 
   if(!darktable.control->running) return TRUE;
 
-  int width = widget->allocation.width, height = widget->allocation.height;  
+  int width = widget->allocation.width, height = widget->allocation.height;
 
   /* get current style */
-  GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET); 
+  GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
   if(!style) style = gtk_rc_get_style(widget);
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
@@ -143,29 +143,30 @@ static gboolean _lib_ratings_expose_callback(GtkWidget *widget, GdkEventExpose *
   cairo_set_line_width(cr, 1.5);
   cairo_set_source_rgba(cr, style->fg[0].red/65535.0, style->fg[0].green/65535.0, style->fg[0].blue/65535.0, 0.8);
   d->current = 0;
-  for(int k=0;k<5;k++)
+  for(int k=0; k<5; k++)
   {
     /* outline star */
     dt_draw_star(cr, STAR_SIZE/2.0+x, STAR_SIZE/2.0, STAR_SIZE/2.0, STAR_SIZE/4.0);
     if(x < d->pointerx)
     {
-      cairo_fill_preserve(cr); 
+      cairo_fill_preserve(cr);
       cairo_set_source_rgba(cr, style->fg[0].red/65535.0, style->fg[0].green/65535.0, style->fg[0].blue/65535.0, 0.5);
       cairo_stroke(cr);
       cairo_set_source_rgba(cr, style->fg[0].red/65535.0, style->fg[0].green/65535.0, style->fg[0].blue/65535.0, 0.8);
       if((k+1) > d->current) d->current = (k+1);
-    } else
+    }
+    else
       cairo_stroke(cr);
     x+=STAR_SIZE+STAR_SPACING;
   }
 
   /* blit memsurface onto widget*/
-  cairo_destroy(cr); 
+  cairo_destroy(cr);
   cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface (cr_pixmap, cst, 0, 0);  
-  cairo_paint(cr_pixmap);   
-  cairo_destroy(cr_pixmap);   
-  cairo_surface_destroy(cst); 
+  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+  cairo_paint(cr_pixmap);
+  cairo_destroy(cr_pixmap);
+  cairo_surface_destroy(cst);
 
   return TRUE;
 }
@@ -190,8 +191,8 @@ static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventBu
 
 static gboolean _lib_ratings_button_release_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-/*  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  self=NULL;*/
+  /*  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+    self=NULL;*/
   return TRUE;
 }
 
@@ -206,3 +207,6 @@ static gboolean _lib_ratings_leave_notify_callback(GtkWidget *widget, GdkEventCr
 
 
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

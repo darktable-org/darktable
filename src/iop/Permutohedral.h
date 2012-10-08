@@ -398,18 +398,18 @@ public:
       offset_remap[i] = new int[filled];
       for (int j = 0; j < filled; j++)
       {
-	float *val = hashTables[0].lookup(oldKeys+j*D, true);
-	const float *oldVal = oldVals + j*VD;
-	for (int k = 0; k < VD; k++)
-	  val[k] += oldVal[k];
-	offset_remap[i][j] = val - hashTables[0].getValues();
+        float *val = hashTables[0].lookup(oldKeys+j*D, true);
+        const float *oldVal = oldVals + j*VD;
+        for (int k = 0; k < VD; k++)
+          val[k] += oldVal[k];
+        offset_remap[i][j] = val - hashTables[0].getValues();
       }
     }
 
     /* Rewrite the offsets in the replay structure from the above generated table. */
     for (int i = 0; i < nData*(D+1); i++)
       if (replay[i].table > 0)
-	replay[i].offset = offset_remap[replay[i].table][replay[i].offset/VD];
+        replay[i].offset = offset_remap[replay[i].table][replay[i].offset/VD];
 
     for (int i = 1; i < nThreads; i++)
       delete[] offset_remap[i];
@@ -448,14 +448,14 @@ public:
     for (int j = 0; j <= D; j++)
     {
 #ifdef _OPENMP
-#pragma omp parallel for shared(j, oldValue, newValue, hashTableBase, zero)
+      #pragma omp parallel for shared(j, oldValue, newValue, hashTableBase, zero)
 #endif
       // For each vertex in the lattice,
       for (int i = 0; i < hashTables[0].size(); i++)   // blur point i in dimension j
       {
         const short *key    = hashTables[0].getKeys() + i*(D); // keys to current vertex
-	short neighbor1[D+1];
-	short neighbor2[D+1];
+        short neighbor1[D+1];
+        short neighbor2[D+1];
         for (int k = 0; k < D; k++)
         {
           neighbor1[k] = key[k] + 1;
@@ -518,3 +518,6 @@ private:
 };
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

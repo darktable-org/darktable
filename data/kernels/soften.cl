@@ -168,14 +168,13 @@ soften_hblur(read_only image2d_t in, write_only image2d_t out, global const floa
   m += rad;
 
   float4 sum = (float4)0.0f;
-  float weight = 0.0f;
 
-  for (int i=-rad; i<rad; i++)
+  for (int i=-rad; i<=rad; i++)
   {
     sum += buffer[i] * m[i];
-    weight += m[i];
   }
-  pixel = weight > 0.0f ? sum/weight : (float4)0.0f;
+
+  pixel = sum;
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -223,14 +222,13 @@ soften_vblur(read_only image2d_t in, write_only image2d_t out, global const floa
   m += rad;
 
   float4 sum = (float4)0.0f;
-  float weight = 0.0f;
 
-  for (int i=-rad; i<rad; i++)
+  for (int i=-rad; i<=rad; i++)
   {
     sum += buffer[i] * m[i];
-    weight += m[i];
   }
-  pixel = weight > 0.0f ? sum/weight : (float4)0.0f;
+
+  pixel = sum;
   write_imagef (out, (int2)(x, y), pixel);
 }
 

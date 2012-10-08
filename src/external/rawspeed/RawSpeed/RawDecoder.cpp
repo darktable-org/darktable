@@ -30,10 +30,6 @@ namespace RawSpeed {
 }
 
 RawDecoder::~RawDecoder(void) {
-  for (uint32 i = 0 ; i < errors.size(); i++) {
-    free((void*)errors[i]);
-  }
-  errors.clear();
 }
 
 void RawDecoder::decodeUncompressed(TiffIFD *rawIFD, bool MSBOrder) {
@@ -81,12 +77,12 @@ void RawDecoder::decodeUncompressed(TiffIFD *rawIFD, bool MSBOrder) {
       readUncompressedRaw(in, size, pos, width*bitPerPixel / 8, bitPerPixel, MSBOrder);
     } catch (RawDecoderException &e) {
       if (i>0)
-        errors.push_back(_strdup(e.what()));
+        mRaw->setError(e.what());
       else
         throw;
     } catch (IOException &e) {
       if (i>0)
-        errors.push_back(_strdup(e.what()));
+        mRaw->setError(e.what());
       else
         ThrowRDE("RAW decoder: IO error occurred in first slice, unable to decode more. Error is: %s", e.what());
     }
@@ -214,6 +210,7 @@ bool RawDecoder::checkCameraSupported(CameraMetaData *meta, string make, string 
 }
 
 void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, string mode, int iso_speed) {
+  mRaw->isoSpeed = iso_speed;
   TrimSpaces(make);
   TrimSpaces(model);
   Camera *cam = meta->getCamera(make, model, mode);
@@ -232,7 +229,8 @@ void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, st
   if (new_size.y <= 0)
     new_size.y = mRaw->dim.y - cam->cropPos.y + new_size.y;
 
-  mRaw->subFrame(cam->cropPos, new_size);
+  iRectangle2D(cam->cropPos, new_size);
+  mRaw->subFrame(iRectangle2D(cam->cropPos, new_size));
   mRaw->cfa = cam->cfa;
 
   // Shift CFA to match crop
@@ -253,9 +251,9 @@ void *RawDecoderDecodeThread(void *_this) {
   try {
     me->parent->decodeThreaded(me);
   } catch (RawDecoderException &ex) {
-    me->error = _strdup(ex.what());
+    me->parent->mRaw->setError(ex.what());
   } catch (IOException &ex) {
-    me->error = _strdup(ex.what());
+    me->parent->mRaw->setError(ex.what());
   }
 
   pthread_exit(NULL);
@@ -286,11 +284,8 @@ void RawDecoder::startThreads() {
   void *status;
   for (uint32 i = 0; i < threads; i++) {
     pthread_join(t[i].threadid, &status);
-    if (t[i].error) {
-      errors.push_back(t[i].error);
-    }
   }
-  if (errors.size() >= threads)
+  if (mRaw->errors.size() >= threads)
     ThrowRDE("RawDecoder::startThreads: All threads reported errors. Cannot load image.");
 
   delete[] t;
@@ -312,6 +307,32 @@ RawSpeed::RawImage RawDecoder::decodeRaw()
     ThrowRDE("%s", e.what());
   }
   return NULL;
+}
+
+void RawDecoder::decodeMetaData(CameraMetaData *meta)
+{
+  try {
+    return decodeMetaDataInternal(meta);
+  } catch (TiffParserException &e) {
+    ThrowRDE("%s", e.what());
+  } catch (FileIOException &e) {
+    ThrowRDE("%s", e.what());
+  } catch (IOException &e) {
+    ThrowRDE("%s", e.what());
+  }
+}
+
+void RawDecoder::checkSupport(CameraMetaData *meta)
+{
+  try {
+    return checkSupportInternal(meta);
+  } catch (TiffParserException &e) {
+    ThrowRDE("%s", e.what());
+  } catch (FileIOException &e) {
+    ThrowRDE("%s", e.what());
+  } catch (IOException &e) {
+    ThrowRDE("%s", e.what());
+  }
 }
 
 } // namespace RawSpeed

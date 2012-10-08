@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2011-2012 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 */
 
 #include "common/darktable.h"
+#include "develop/develop.h"
 #include "common/metadata.h"
 #include "common/debug.h"
 #include "control/control.h"
@@ -24,14 +25,21 @@
 #include "common/image_cache.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
+#ifdef HAVE_MAP
+#include "osd-utils.h"
+#endif
+
+#include <sys/param.h>
 
 DT_MODULE(1)
 
-enum {
+enum
+{
   /* internal */
   md_internal_filmroll=0,
   md_internal_imgid,
   md_internal_filename,
+  md_internal_fullpath,
 
   /* exif */
   md_exif_model,
@@ -51,6 +59,10 @@ enum {
   md_xmp_creator,
   md_xmp_rights,
 
+  /* geotagging */
+  md_geotagging_lat,
+  md_geotagging_lon,
+
   /* entries, do not touch! */
   md_size
 };
@@ -64,6 +76,7 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_internal_filmroll] = _("filmroll");
   _md_labels[md_internal_imgid] = _("image id");
   _md_labels[md_internal_filename] = _("filename");
+  _md_labels[md_internal_fullpath] = _("full path");
 
   /* exif */
   _md_labels[md_exif_model] = _("model");
@@ -83,6 +96,9 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_xmp_creator] = _("creator");
   _md_labels[md_xmp_rights] = _("copyright");
 
+  /* geotagging */
+  _md_labels[md_geotagging_lat] = _("latitude");
+  _md_labels[md_geotagging_lon] = _("longitude");
 }
 
 
@@ -100,7 +116,7 @@ const char* name()
 /* show module in left panel in all views */
 uint32_t views()
 {
-  return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_DARKROOM;
+  return DT_VIEW_ALL;
 }
 
 uint32_t container()
@@ -113,19 +129,34 @@ int position()
   return 299;
 }
 
+/* helper which eliminates non-ascii and non-printable characters from a string */
+static void _filter_non_printable(char *string, int length)
+{
+  unsigned char *str = (unsigned char *)string;
+  int n = 0;
+
+  while(*str != '\000' && n < length)
+  {
+    if((*str < 0x20) || (*str >= 0x7f)) *str = '.';
+
+    str++;
+    n++;
+  }
+}
+
 /* helper function for updating a metadata value */
 static void _metadata_update_value(GtkLabel *label, const char *value)
 {
-    gtk_label_set_text(GTK_LABEL(label), value);
-    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
-    g_object_set(G_OBJECT(label), "tooltip-text", value, (char *)NULL);
+  gtk_label_set_text(GTK_LABEL(label), value);
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
+  g_object_set(G_OBJECT(label), "tooltip-text", value, (char *)NULL);
 }
 
 static void _metadata_update_value_end(GtkLabel *label, const char *value)
 {
-    gtk_label_set_text(GTK_LABEL(label), value);
-    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-    g_object_set(G_OBJECT(label), "tooltip-text", value, (char *)NULL);
+  gtk_label_set_text(GTK_LABEL(label), value);
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  g_object_set(G_OBJECT(label), "tooltip-text", value, (char *)NULL);
 }
 
 #define NODATA_STRING "-"
@@ -136,7 +167,10 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
   int32_t mouse_over_id = -1;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  
+
+  if (mouse_over_id == -1)
+    mouse_over_id = darktable.develop->image_storage.id;
+
   if(mouse_over_id >= 0)
   {
     const int vl = 512;
@@ -150,7 +184,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     }
 
     /* update all metadata */
-    
+
     dt_image_film_roll(img, value, vl);
     _metadata_update_value(d->metadata[md_internal_filmroll], value);
 
@@ -159,6 +193,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     _metadata_update_value(d->metadata[md_internal_filename], img->filename);
 
+    dt_image_full_path(img->id, value, MAXPATHLEN);
+    _metadata_update_value(d->metadata[md_internal_fullpath], value);
+
     /* EXIF */
     _metadata_update_value_end(d->metadata[md_exif_model], img->exif_model);
     _metadata_update_value_end(d->metadata[md_exif_lens], img->exif_lens);
@@ -166,71 +203,128 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     snprintf(value, vl, "F/%.1f", img->exif_aperture);
     _metadata_update_value(d->metadata[md_exif_aperture], value);
-   
+
     if(img->exif_exposure <= 0.5) snprintf(value, vl, "1/%.0f", 1.0/img->exif_exposure);
     else                          snprintf(value, vl, "%.1f''", img->exif_exposure);
     _metadata_update_value(d->metadata[md_exif_exposure], value);
-   
+
     snprintf(value, vl, "%.0f", img->exif_focal_length);
     _metadata_update_value(d->metadata[md_exif_focal_length], value);
-  
+
     snprintf(value, vl, "%.0f", img->exif_focus_distance);
     _metadata_update_value(d->metadata[md_exif_focus_distance], value);
- 
+
     snprintf(value, vl, "%.0f", img->exif_iso);
     _metadata_update_value(d->metadata[md_exif_iso], value);
-    
+
     _metadata_update_value(d->metadata[md_exif_datetime], img->exif_datetime_taken);
 
     snprintf(value, vl, "%d", img->height);
     _metadata_update_value(d->metadata[md_exif_height], value);
     snprintf(value, vl, "%d", img->width);
     _metadata_update_value(d->metadata[md_exif_width], value);
-    
+
     /* XMP */
     GList *res;
-    if((res = dt_metadata_get(img->id, "Xmp.dc.title", NULL))!=NULL) {
+    if((res = dt_metadata_get(img->id, "Xmp.dc.title", NULL))!=NULL)
+    {
       snprintf(value, vl, "%s", (char*)res->data);
+      _filter_non_printable(value, vl);
       g_free(res->data);
       g_list_free(res);
-    } else
-    snprintf(value, vl, NODATA_STRING);
+    }
+    else
+      snprintf(value, vl, NODATA_STRING);
     _metadata_update_value(d->metadata[md_xmp_title], value);
-   
-    if((res = dt_metadata_get(img->id, "Xmp.dc.creator", NULL))!=NULL) {
+
+    if((res = dt_metadata_get(img->id, "Xmp.dc.creator", NULL))!=NULL)
+    {
       snprintf(value, vl, "%s", (char*)res->data);
+      _filter_non_printable(value, vl);
       g_free(res->data);
       g_list_free(res);
-    } else
+    }
+    else
       snprintf(value, vl, NODATA_STRING);
     _metadata_update_value(d->metadata[md_xmp_creator], value);
-   
-    if((res = dt_metadata_get(img->id, "Xmp.dc.rights", NULL))!=NULL) {
+
+    if((res = dt_metadata_get(img->id, "Xmp.dc.rights", NULL))!=NULL)
+    {
       snprintf(value, vl, "%s", (char*)res->data);
+      _filter_non_printable(value, vl);
       g_free(res->data);
       g_list_free(res);
-    } else
-    snprintf(value, vl, NODATA_STRING);
+    }
+    else
+      snprintf(value, vl, NODATA_STRING);
     _metadata_update_value(d->metadata[md_xmp_rights], value);
-   
-   
+
+    /* geotagging */
+    /* latitude */
+    if(isnan(img->latitude))
+    {
+      _metadata_update_value(d->metadata[md_geotagging_lat], NODATA_STRING);
+    }
+    else
+    {
+#ifdef HAVE_MAP
+      if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
+      {
+        gchar *latitude = osd_latitude_str(img->latitude);
+        _metadata_update_value(d->metadata[md_geotagging_lat], latitude);
+        g_free(latitude);
+      }
+      else
+      {
+#endif
+        gchar NS = img->latitude<0?'S':'N';
+        snprintf(value, vl, "%c %09.6f", NS, fabs(img->latitude));
+        _metadata_update_value(d->metadata[md_geotagging_lat], value);
+#ifdef HAVE_MAP
+      }
+#endif
+    }
+    /* longitude */
+    if(isnan(img->longitude))
+    {
+      _metadata_update_value(d->metadata[md_geotagging_lon], NODATA_STRING);
+    }
+    else
+    {
+#ifdef HAVE_MAP
+      if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
+      {
+        gchar *longitude = osd_longitude_str(img->longitude);
+        _metadata_update_value(d->metadata[md_geotagging_lon], longitude);
+        g_free(longitude);
+      }
+      else
+      {
+#endif
+        gchar EW = img->longitude<0?'W':'E';
+        snprintf(value, vl, "%c %010.6f", EW, fabs(img->longitude));
+        _metadata_update_value(d->metadata[md_geotagging_lon], value);
+#ifdef HAVE_MAP
+      }
+#endif
+    }
+
     /* release img */
     dt_image_cache_read_release(darktable.image_cache, img);
-    
+
   }
 
   return;
 
-/* reset */
+  /* reset */
 fill_minuses:
-  for(int k=0;k<md_size;k++)
+  for(int k=0; k<md_size; k++)
     _metadata_update_value(d->metadata[k],NODATA_STRING);
-
 
 }
 
 /* calback for the mouse over image change signal */
-static void _mouse_over_image_callback(gpointer instance,gpointer user_data) 
+static void _mouse_over_image_callback(gpointer instance,gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   if(dt_control_running())
@@ -245,10 +339,10 @@ void gui_init(dt_lib_module_t *self)
   _lib_metatdata_view_init_labels();
 
   self->widget = gtk_table_new(md_size, 2, FALSE);
-  
+
 
   /* intialize the metadata name/value labels */
-  for (int k = 0;k < md_size;k++) 
+  for (int k = 0; k < md_size; k++)
   {
     GtkLabel *name = GTK_LABEL(gtk_label_new(_md_labels[k]));
     d->metadata[k] = GTK_LABEL(gtk_label_new("-"));
@@ -259,21 +353,28 @@ void gui_init(dt_lib_module_t *self)
   }
 
   /* lets signup for mouse over image change signals */
-  dt_control_signal_connect(darktable.signals,DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, 
-			    G_CALLBACK(_mouse_over_image_callback), self);
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+                            G_CALLBACK(_mouse_over_image_callback), self);
 
-  /* signup for develop initialize to update info of current 
+  /* lets signup for develop image changed signals */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
+                            G_CALLBACK(_mouse_over_image_callback), self);
+
+  /* signup for develop initialize to update info of current
      image in darkroom when enter */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE,
-			    G_CALLBACK(_mouse_over_image_callback), self);
+                            G_CALLBACK(_mouse_over_image_callback), self);
 
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_control_signal_disconnect(darktable.signals,
-			    G_CALLBACK(_mouse_over_image_callback), self);
+                               G_CALLBACK(_mouse_over_image_callback), self);
   g_free(self->data);
   self->data = NULL;
 }
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

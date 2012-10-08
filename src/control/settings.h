@@ -62,6 +62,7 @@ typedef enum dt_ctl_gui_mode_t
   DT_LIBRARY = 0,
   DT_DEVELOP = 1,
   DT_CAPTURE = 2,
+  DT_MAP = 3,
   DT_MODE_NONE = 4
 }
 dt_ctl_gui_mode_t;
@@ -135,8 +136,8 @@ typedef struct dt_ctl_settings_t
 }
 dt_ctl_settings_t;
 
-enum dt_dev_zoom_t;
-
 #endif
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

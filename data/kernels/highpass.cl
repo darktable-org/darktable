@@ -78,14 +78,13 @@ highpass_hblur(read_only image2d_t in, write_only image2d_t out, global float *m
   m += rad;
 
   float sum = 0.0f;
-  float weight = 0.0f;
 
-  for (int i=-rad; i<rad; i++)
+  for (int i=-rad; i<=rad; i++)
   {
     sum += buffer[i] * m[i];
-    weight += m[i];
   }
-  pixel.x = weight > 0.0f ? sum/weight : 0.0f;
+
+  pixel.x = sum;
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -133,14 +132,13 @@ highpass_vblur(read_only image2d_t in, write_only image2d_t out, global float *m
   m += rad;
 
   float sum = 0.0f;
-  float weight = 0.0f;
 
-  for (int i=-rad; i<rad; i++)
+  for (int i=-rad; i<=rad; i++)
   {
     sum += buffer[i] * m[i];
-    weight += m[i];
   }
-  pixel.x = weight > 0.0f ? sum/weight : 0.0f;
+
+  pixel.x = sum;
   write_imagef (out, (int2)(x, y), pixel);
 }
 
