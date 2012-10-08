@@ -76,66 +76,10 @@ exposure (read_only image2d_t in, write_only image2d_t out, const int width, con
   write_imagef (out, (int2)(x, y), pixel);
 }
 
-/* helpers for the highlights plugin: convert to lch. */
-
-constant float xyz_rgb[9] = {  /* XYZ from RGB */
-	  0.412453, 0.357580, 0.180423,
-	  0.212671, 0.715160, 0.072169,
-	  0.019334, 0.119193, 0.950227};
-constant float rgb_xyz[9] = {  /* RGB from XYZ */
-	  3.24048, -1.53715, -0.498536,
-	  -0.969255, 1.87599, 0.0415559,
-	  0.0556466, -0.204041, 1.05731};
-
-void
-rgb_to_lch (float *rgb, float *lch)
-{
-	float xyz[3], lab[3];
-	xyz[0] = xyz[1] = xyz[2] = 0.0f;
-	for (int c=0; c<3; c++)
-		for (int cc=0; cc<3; cc++)
-			xyz[cc] += xyz_rgb[3*cc+c] * rgb[c];
-	for (int c=0; c<3; c++)
-		xyz[c] = xyz[c] > 0.008856f ? native_powr(xyz[c], 1.0f/3.0f) : 7.787f*xyz[c] + 16.0f/116.0f;
-	lab[0] = 116.0f * xyz[1] - 16.0f;
-	lab[1] = 500.0f * (xyz[0] - xyz[1]);
-	lab[2] = 200.0f * (xyz[1] - xyz[2]);
-
-	lch[0] = lab[0];
-	lch[1] = native_sqrt(lab[1]*lab[1]+lab[2]*lab[2]);
-	lch[2] = atan2(lab[2], lab[1]);
-}
-
-// convert CIE-LCh to linear RGB
-void
-lch_to_rgb(float *lch, float *rgb)
-{
-	float xyz[3], lab[3];
-	const float epsilon = 0.008856f, kappa = 903.3f;
-	lab[0] = lch[0];
-	lab[1] = lch[1] * native_cos(lch[2]);
-	lab[2] = lch[1] * native_sin(lch[2]);
-	xyz[1] = (lab[0]<=kappa*epsilon) ?
-		(lab[0]/kappa) : (native_powr((lab[0]+16.0f)/116.0f, 3.0f));
-	const float fy = (xyz[1]<=epsilon) ? ((kappa*xyz[1]+16.0f)/116.0f) : ((lab[0]+16.0f)/116.0f);
-	const float fz = fy - lab[2]/200.0f;
-	const float fx = lab[1]/500.0f + fy;
-	xyz[2] = (native_powr(fz, 3.0f)<=epsilon) ? ((116.0f*fz-16.0f)/kappa) : (native_powr(fz, 3.0f));
-	xyz[0] = (native_powr(fx, 3.0f)<=epsilon) ? ((116.0f*fx-16.0f)/kappa) : (native_powr(fx, 3.0f));
-
-	for (int c=0; c<3; c++)
-	{
-		float tmpf = 0.0f;
-		for (int cc=0; cc<3; cc++)
-			tmpf += rgb_xyz[3*c+cc] * xyz[cc];
-		rgb[c] = fmax(tmpf, 0.0f);
-	}
-}
-
 /* kernel for the highlights plugin. */
 kernel void
-highlights (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-            const int mode, const float clip, const float blendL, const float blendC, const float blendh)
+highlights_4f (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+               const int mode, const float clip)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -143,24 +87,66 @@ highlights (read_only image2d_t in, write_only image2d_t out, const int width, c
   if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  float4 inc, lchi, lchc, lch;
   switch(mode)
   {
     case 1: // DT_IOP_HIGHLIGHTS_LCH
-      inc.x = fmin(clip, pixel.x);
-      inc.y = fmin(clip, pixel.y);
-      inc.z = fmin(clip, pixel.z);
-      rgb_to_lch((float *)&pixel, (float *)&lchi);
-      rgb_to_lch((float *)&inc, (float *)&lchc);
-      lch.x = lchc.x + blendL * (lchi.x - lchc.x);
-      lch.y = lchc.y + blendC * (lchi.y - lchc.y);
-      lch.z = lchc.z + blendh * (lchi.z - lchc.z);
-      lch_to_rgb((float *)&lch, (float *)&pixel);
+      if(pixel.x > clip || pixel.y > clip || pixel.z > clip)
+        pixel.x = pixel.y = pixel.z = 0.299f * pixel.x + 0.587f * pixel.y + 0.144f*pixel.z;
       break;
     default: // 0, DT_IOP_HIGHLIGHTS_CLIP
       pixel.x = fmin(clip, pixel.x);
       pixel.y = fmin(clip, pixel.y);
       pixel.z = fmin(clip, pixel.z);
+      break;
+  }
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+kernel void
+highlights_1f (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+               const int mode, const float clip, const int rx, const int ry, const int filters)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  // just carry over other 3 channels:
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float lum[3] = {0.299f, 0.587f, 0.144f};
+  float accum[3] = {0.0f, 0.0f, 0.0f};
+  int cnt[3] = {0, 0, 0};
+
+  switch(mode)
+  {
+    case 1: // DT_IOP_HIGHLIGHTS_LCH
+      if(pixel.x > clip)
+      {
+        // go through all 9 neighbours
+        for(int jj=-1;jj<=1;jj++)
+        {
+          for(int ii=-1;ii<=1;ii++)
+          {
+            float px = read_imagef(in, sampleri, (int2)(x+ii, y+jj)).x;
+            if(px > clip)
+            {
+              int c = FC(ry+y+jj, rx+x+ii, filters);
+              accum[c] += lum[c]*px;
+              cnt[c] ++;
+            }
+          }
+        }
+        if(cnt[0] && cnt[1] && cnt[2])
+        {
+          pixel.x = 0.0f;
+          for(int c=0;c<3;c++)
+            pixel.x += accum[c]/cnt[c];
+        }
+        else pixel.x = clip;
+      }
+      break;
+    default: // 0, DT_IOP_HIGHLIGHTS_CLIP
+      pixel.x = fmin(clip, pixel.x);
       break;
   }
   write_imagef (out, (int2)(x, y), pixel);

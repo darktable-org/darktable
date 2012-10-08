@@ -61,7 +61,8 @@ typedef dt_iop_highlights_params_t dt_iop_highlights_data_t;
 
 typedef struct dt_iop_highlights_global_data_t
 {
-  int kernel_highlights;
+  int kernel_highlights_1f;
+  int kernel_highlights_4f;
 }
 dt_iop_highlights_global_data_t;
 
@@ -95,8 +96,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
   return 1;
 }
 
-// FIXME: needs repair!
-#if 0// def HAVE_OPENCL
+#ifdef HAVE_OPENCL
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -110,17 +110,32 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
   const float clip = d->clip * fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 4, sizeof(int), (void *)&d->mode);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 5, sizeof(float), (void *)&clip);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 6, sizeof(float), (void *)&d->blendL);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 7, sizeof(float), (void *)&d->blendC);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 8, sizeof(float), (void *)&d->blendh);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights, sizes);
-  if(err != CL_SUCCESS) goto error;
+  const int filters = dt_image_flipped_filter(&piece->pipe->image);
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || !filters)
+  {
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f, 4, sizeof(int), (void *)&d->mode);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f, 5, sizeof(float), (void *)&clip);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_4f, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+  else
+  {
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 4, sizeof(int), (void *)&d->mode);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 5, sizeof(float), (void *)&clip);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 6, sizeof(int), (void *)&roi_out->x);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 7, sizeof(int), (void *)&roi_out->y);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 8, sizeof(int), (void *)&filters);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_1f, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
   return TRUE;
 
 error:
@@ -191,7 +206,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           else
           {
             // r and b are same, so we only need two masks
-            const float lum[3] = { 0.25, 0.5, 0.25 };
+            const float lum[3] = { 0.299, 0.587, 0.144 };
             // go for all 9 neighbours
             float accum[3] = {0.0f, 0.0f, 0.0f};
             int cnt[3] = {0, 0, 0};
@@ -199,9 +214,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             {
               for(int ii=-1;ii<=1;ii++)
               {
-                const int c = FC(j+jj+roi_out->y, i+ii+roi_out->x, filters);
-                accum[c] += lum[c];
-                cnt[c] ++;
+                const float val = in[jj*roi_out->width + ii];
+                if(val > clip)
+                {
+                  const int c = FC(j+jj+roi_out->y, i+ii+roi_out->x, filters);
+                  accum[c] += lum[c] * val;
+                  cnt[c] ++;
+                }
               }
             }
             if(cnt[0] && cnt[1] && cnt[2])
@@ -280,13 +299,15 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)malloc(sizeof(dt_iop_highlights_global_data_t));
   module->data = gd;
-  gd->kernel_highlights = dt_opencl_create_kernel(program, "highlights");
+  gd->kernel_highlights_1f = dt_opencl_create_kernel(program, "highlights_1f");
+  gd->kernel_highlights_4f = dt_opencl_create_kernel(program, "highlights_4f");
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)module->data;
-  dt_opencl_free_kernel(gd->kernel_highlights);
+  dt_opencl_free_kernel(gd->kernel_highlights_4f);
+  dt_opencl_free_kernel(gd->kernel_highlights_1f);
   free(module->data);
   module->data = NULL;
 }
