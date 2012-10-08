@@ -688,6 +688,24 @@ static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer us
 }
 
 static void
+_view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint y)
+{
+  dt_map_t *lib = (dt_map_t*)self->data;
+  float longitude, latitude;
+  OsmGpsMapPoint *pt = osm_gps_map_point_new_degrees(0.0, 0.0);
+  osm_gps_map_convert_screen_to_geographic(lib->map, x, y, pt);
+  osm_gps_map_point_get_degrees(pt, &latitude, &longitude);
+  osm_gps_map_point_free(pt);
+
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+  dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+  img->longitude = longitude;
+  img->latitude = latitude;
+  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_read_release(darktable.image_cache, cimg);
+}
+
+static void
 drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data,
                        guint target_type, guint time, gpointer data)
 {
@@ -698,22 +716,19 @@ drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint 
 
   if((selection_data != NULL) && (selection_data->length >= 0) && target_type == DND_TARGET_IMGID)
   {
-    float longitude, latitude;
     int *imgid = (int*)selection_data->data;
-    if(imgid > 0)
+    if(*imgid > 0)
     {
-      OsmGpsMapPoint *pt = osm_gps_map_point_new_degrees(0.0, 0.0);
-      osm_gps_map_convert_screen_to_geographic(lib->map, x, y, pt);
-      osm_gps_map_point_get_degrees(pt, &latitude, &longitude);
-      osm_gps_map_point_free(pt);
-
-      const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, *imgid);
-      dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
-      img->longitude = longitude;
-      img->latitude = latitude;
-      dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
-      dt_image_cache_read_release(darktable.image_cache, cimg);
-
+      _view_map_add_image_to_map(self, *imgid, x, y);
+      success = TRUE;
+    }
+    else if(*imgid == -1) // everything which is selected
+    {
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct imgid from selected_images", -1, &stmt, NULL);
+      while (sqlite3_step (stmt) == SQLITE_ROW)
+        _view_map_add_image_to_map(self, sqlite3_column_int(stmt, 0), x, y);
+      sqlite3_finalize(stmt);
       success = TRUE;
     }
   }
