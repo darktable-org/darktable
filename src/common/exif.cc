@@ -653,6 +653,34 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
           img->d65_color_matrix[i] = cm2_pos->toFloat(i);
     }
 
+    // some files have the colorspace explicitly set. try to read that.
+    // 0x01   -> sRGB
+    // 0x02   -> AdobeRGB
+    // 0xffff -> Uncalibrated
+    //          + Exif.Iop.InteroperabilityIndex of 'R03' -> AdobeRGB
+    //          + Exif.Iop.InteroperabilityIndex of 'R98' -> sRGB
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ColorSpace")))
+         != exifData.end() )
+    {
+      int colorspace = pos->toLong();
+      if(colorspace == 0x01)
+        img->colorspace = DT_IMAGE_COLORSPACE_SRGB;
+      else if(colorspace == 0x02)
+        img->colorspace = DT_IMAGE_COLORSPACE_ADOBE_RGB;
+      else if(colorspace == 0xffff)
+      {
+        if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Iop.InteroperabilityIndex")))
+              != exifData.end() )
+        {
+          std::string interop_index = pos->toString();
+          if(interop_index == "R03")
+            img->colorspace = DT_IMAGE_COLORSPACE_ADOBE_RGB;
+          else if(interop_index == "R98")
+            img->colorspace = DT_IMAGE_COLORSPACE_SRGB;
+        }
+      }
+    }
+
     // workaround for an exiv2 bug writing random garbage into exif_lens for this camera:
     // http://dev.exiv2.org/issues/779
     if(!strcmp(img->exif_model, "DMC-GH2")) sprintf(img->exif_lens, "(unknown)");

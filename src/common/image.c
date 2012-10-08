@@ -578,6 +578,7 @@ void dt_image_init(dt_image_t *img)
   img->d65_color_matrix[0] = NAN;
   img->profile = NULL;
   img->profile_size = 0;
+  img->colorspace = DT_IMAGE_COLORSPACE_NONE;
 }
 
 int32_t dt_image_move(const int32_t imgid, const int32_t filmid)

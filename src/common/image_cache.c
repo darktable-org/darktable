@@ -38,7 +38,7 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **bu
   // load stuff from db and store in cache:
   char *str;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id, group_id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, crop, orientation, focus_distance, raw_parameters, longitude, latitude, color_matrix from images where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id, group_id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, crop, orientation, focus_distance, raw_parameters, longitude, latitude, color_matrix, colorspace from images where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -86,6 +86,8 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **bu
     g_free(img->profile);
     img->profile = NULL;
     img->profile_size = 0;
+    img->colorspace = sqlite3_column_int(stmt, 22);
+
     // buffer size?
     if(img->flags & DT_IMAGE_LDR)
       img->bpp = 4*sizeof(float);
@@ -225,7 +227,7 @@ dt_image_cache_write_release(
                               "lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, "
                               "focus_distance = ?10, film_id = ?11, datetime_taken = ?12, flags = ?13, "
                               "crop = ?14, orientation = ?15, raw_parameters = ?16, group_id = ?17, longitude = ?18, "
-                              "latitude = ?19, color_matrix = ?20 where id = ?21", -1, &stmt, NULL);
+                              "latitude = ?19, color_matrix = ?20, colorspace = ?21 where id = ?22", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, img->exif_maker, strlen(img->exif_maker), SQLITE_STATIC);
@@ -246,7 +248,8 @@ dt_image_cache_write_release(
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 18, img->longitude);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 19, img->latitude);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 20, &img->d65_color_matrix, sizeof(img->d65_color_matrix), SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 21, img->id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 21, img->colorspace);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, img->id);
   int rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "[image_cache_write_release] sqlite3 error %d\n", rc);
   sqlite3_finalize(stmt);

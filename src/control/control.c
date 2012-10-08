@@ -383,7 +383,7 @@ void dt_control_create_database_schema()
                         "raw_auto_bright_threshold real, raw_black real, raw_maximum real, "
                         "caption varchar, description varchar, license varchar, sha1sum char(40), "
                         "orientation integer ,histogram blob, lightmap blob, longitude double, "
-                        "latitude double, color_matrix blob)", NULL, NULL, NULL);
+                        "latitude double, color_matrix blob, colorspace integer)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create index if not exists group_id_index on images (group_id)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
@@ -679,6 +679,8 @@ void dt_control_init(dt_control_t *s)
 
       // and the color matrix
       sqlite3_exec(dt_database_get(darktable.db), "alter table images add column color_matrix blob", NULL, NULL, NULL);
+      // and the colorspace as specified in some image types
+      sqlite3_exec(dt_database_get(darktable.db), "alter table images add column colorspace integer", NULL, NULL, NULL);
 
       dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
