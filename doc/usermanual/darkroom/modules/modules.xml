@@ -76,6 +76,14 @@
 	                        </para>			
 	                </sect4>
 
+			<sect4 status="draft"><title>Coloradjustment</title>
+				<para>Some modules act predominantly on the tonal values of an image but involve some adjustment of color saturation
+                                      as well, e.g. module "levels". This blend mode completely takes the lightness of the output data and
+                                      mixes colors from input and output. This way you can control the modules automatic color adjustment.
+	                        </para>			
+	                </sect4>
+
+
 	                   <!--
 				<sect4 status="draft"><title>Multiply</title>
 					<para></para>			

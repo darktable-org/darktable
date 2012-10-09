@@ -1457,8 +1457,8 @@ static void _blend_color(dt_iop_colorspace_type_t cst,const float *a, float *b, 
   }
 }
 
-/* color blend; blend hue and chroma; take lightness from module output */
-static void _blend_colorblend(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, int stride, int flag)
+/* color adjustment; blend hue and chroma; take lightness from module output */
+static void _blend_coloradjust(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, int stride, int flag)
 {
   float ta[3], tb[3];
   float tta[3], ttb[3];
@@ -1631,8 +1631,8 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
     case DEVELOP_BLEND_UNBOUNDED:
       blend = _blend_unbounded;
       break;
-    case DEVELOP_BLEND_COLORBLEND:
-      blend = _blend_colorblend;
+    case DEVELOP_BLEND_COLORADJUST:
+      blend = _blend_coloradjust;
       break;
 
       /* fallback to normal blend */

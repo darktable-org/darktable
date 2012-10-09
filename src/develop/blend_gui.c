@@ -974,8 +974,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     modes[19].name = _("hue");
     modes[20].mode = DEVELOP_BLEND_COLOR;
     modes[20].name = _("color");
-    modes[21].mode = DEVELOP_BLEND_COLORBLEND;
-    modes[21].name = _("colorblend");
+    modes[21].mode = DEVELOP_BLEND_COLORADJUST;
+    modes[21].name = _("coloradjustment");
     modes[22].mode = DEVELOP_BLEND_UNBOUNDED;
     modes[22].name = _("unbounded");
 
