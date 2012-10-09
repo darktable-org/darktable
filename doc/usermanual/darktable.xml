@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 		<!ENTITY % darktable_dtd SYSTEM "dtd/darktable.dtd">
 		%darktable_dtd;
-		<!ENTITY % darkroom_modules_dtd SYSTEM "dtd/darkroom_modules.dtd">
-		%darkroom_modules_dtd;
-		<!ENTITY % darkroom_examples_dtd SYSTEM "dtd/darkroom_examples.dtd">
-		%darkroom_examples_dtd;
 		]>
 	       
 <book lang="en">
+	<title>darktable</title>
 	<bookinfo>
 		<legalnotice>
 			<para>
@@ -44,7 +41,7 @@
 			<surname>Andersson</surname>
 		</author>
 		<copyright>
-			<year>2010-2011</year>
+			<year>2010-2012</year>
 			<holder>P.H. Andersson</holder>
 		</copyright>
 		<copyright>
@@ -52,7 +49,7 @@
 			<holder>Olivier Tribout</holder>
 		</copyright>
 	</bookinfo>
-	<title>darktable</title>
+
 	<preface id="overview"><title>Preface to darktable</title>
 		<para><indexterm><primary>darktable</primary></indexterm>
 			<indexterm><primary>Preface</primary></indexterm>
@@ -83,8 +80,17 @@
 			For example, the <emphasis>z</emphasis> allowing a full-screen view on english keyboards, becomes <emphasis>w</emphasis> on french keyboard.
 		</para>
 	</preface>
-&chapter_overview;
-&chapter_lighttable;
-&chapter_darkroom;
-&addendum;
+
+<!-- Overview chapter -->
+<xi:include href="overview/overview.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Lighttable chapter -->
+<xi:include href="lighttable/lighttable.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Darkroom Chapter -->
+<xi:include href="darkroom/darkroom.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Addendum -->
+<xi:include href="addendum/addendum.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 </book>

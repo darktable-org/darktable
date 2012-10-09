@@ -1,3 +1,8 @@
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect1 status="final"><title>Modules</title>
 	<para>Each correction, enhancement or effect is implemented as modules, and this section includes documentation
 			of each module and its specific parameters.
@@ -443,50 +448,10 @@
         </sect2>
 	
 
-	<!--&darkroom_module_rawimport;-->
-	<!--&darkroom_module_denoise;-->
-	
-	&darkroom_module_whitebalance;
-	&darkroom_module_rawdenoise;
-	&darkroom_module_chromatic; 
-	&darkroom_module_demosaic;
-	&darkroom_module_invert;
-	&darkroom_module_tonemapping;
-	&darkroom_module_exposure;
-	&darkroom_module_highlightreconstruction;
-	&darkroom_module_graduatedneutraldensity;
-	&darkroom_module_basecurve;
-	&darkroom_module_lenscorrection;
-	&darkroom_module_unbreakinputprofile;
-	&darkroom_module_inputcolorprofile;
-	&darkroom_module_bloom;	
-	&darkroom_module_spotremoval;	
-	&darkroom_module_colortransfer;
-	<!--&darkroom_module_equalizer;-->
-	&darkroom_module_equalizer2;
-	&darkroom_module_colorzones;
-	&darkroom_module_lowlight;
-	&darkroom_module_monochrome;
-	&darkroom_module_shadhi;
-	&darkroom_module_zonesystem;
-	&darkroom_module_tonecurve;
-	&darkroom_module_relight;
-	&darkroom_module_colorcorrection;
-	&darkroom_module_sharpen;
-	&darkroom_module_grain;
-	&darkroom_module_colorcontrast;
-	&darkroom_module_localcontrast2;	
-	&darkroom_module_clipping;
-	&darkroom_module_highpass;
-	&darkroom_module_lowpass;
-	&darkroom_module_outputcolorprofile;
-	&darkroom_module_channelmixer;
-	<!--&darkroom_module_localcontrast;-->
-	&darkroom_module_velvia;
-	&darkroom_module_soften;  	  	
-	&darkroom_module_vignetting;
-	&darkroom_module_splittoning;
-	&darkroom_module_watermark;
-	&darkroom_module_overexposed;
-	&darkroom_module_framing;
+	<xi:include href="basic/group_basic.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	<xi:include href="tone/group_tone.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	<xi:include href="color/group_color.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	<xi:include href="correction/group_correction.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	<xi:include href="effect/group_effect.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 </sect1>
