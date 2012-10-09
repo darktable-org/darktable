@@ -597,15 +597,15 @@ dt_iop_gui_update_blendif(dt_iop_module_t *module)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->upper_polarity), opolarity);
 
 
-  dtgtk_gradient_slider_multivalue_set_marker(data->lower_slider, ipolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG, 0);
-  dtgtk_gradient_slider_multivalue_set_marker(data->lower_slider, ipolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 1);
-  dtgtk_gradient_slider_multivalue_set_marker(data->lower_slider, ipolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 2);
-  dtgtk_gradient_slider_multivalue_set_marker(data->lower_slider, ipolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG, 3);
+  dtgtk_gradient_slider_multivalue_set_marker(data->lower_slider, ipolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 0);
+  dtgtk_gradient_slider_multivalue_set_marker(data->lower_slider, ipolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 1);
+  dtgtk_gradient_slider_multivalue_set_marker(data->lower_slider, ipolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 2);
+  dtgtk_gradient_slider_multivalue_set_marker(data->lower_slider, ipolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 3);
 
-  dtgtk_gradient_slider_multivalue_set_marker(data->upper_slider, opolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG, 0);
-  dtgtk_gradient_slider_multivalue_set_marker(data->upper_slider, opolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 1);
-  dtgtk_gradient_slider_multivalue_set_marker(data->upper_slider, opolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 2);
-  dtgtk_gradient_slider_multivalue_set_marker(data->upper_slider, opolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG, 3);
+  dtgtk_gradient_slider_multivalue_set_marker(data->upper_slider, opolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 0);
+  dtgtk_gradient_slider_multivalue_set_marker(data->upper_slider, opolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 1);
+  dtgtk_gradient_slider_multivalue_set_marker(data->upper_slider, opolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 2);
+  dtgtk_gradient_slider_multivalue_set_marker(data->upper_slider, opolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 3);
 
 
 
