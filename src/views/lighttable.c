@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2011--2012 Henrik Andersson.
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -833,14 +833,13 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 
   // Let's show full preview if in that state...
   dt_library_t *lib = (dt_library_t *)self->data;
-  int32_t mouse_over_id;
-  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+
   if( lib->full_preview_id!=-1 )
   {
     lib->image_over = DT_VIEW_DESERT;
     cairo_set_source_rgb (cr, .1, .1, .1);
     cairo_paint(cr);
-    dt_view_image_expose(&(lib->image_over),mouse_over_id, cr, width, height, 1, pointerx, pointery);
+    dt_view_image_expose(&(lib->image_over), lib->full_preview_id, cr, width, height, 1, pointerx, pointery);
   }
   else // we do pass on expose to manager or zoomable
   {
