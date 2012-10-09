@@ -527,6 +527,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     dt_iop_reload_defaults(module);
+    dt_iop_gui_update(module);
     modules = g_list_previous(modules);
   }
 
