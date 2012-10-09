@@ -131,14 +131,11 @@
 		</informaltable>
 	</sect2>
 </sect1>
-		
 
-&darkroom_modules;
+<!-- Modules -->
+<xi:include href="modules/modules.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-<sect1><title>Examples</title>
-&darkroom_example_crossprocessing;
-&darkroom_example_cyantone;
-&darkroom_example_blackandwhite;
-</sect1>
+<!-- Examples -->
+<xi:include href="examples/examples.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 </chapter>
