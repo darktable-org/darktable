@@ -1,14 +1,14 @@
-<sect2 status="draft"><title>MODULE NAME</title>
+<sect2 status="draft"><title>Denoise - Non local means</title>
 	<sect3><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>SHORT AND CONSIST MODULE DESCRIPTION
+						<entry>This is another variant of denoise algorithm, which will work on chroma and/or luma.
 						</entry>
 						<entry>
-							<graphic fileref="darkroom/modules/images/soften.png" scalefit="1" width="80%" align="center" />
+							<graphic fileref="darkroom/modules/images/denoise_nlm.png" scalefit="1" width="80%" align="center" />
 						</entry>
 					</row>
 				</tbody>
@@ -19,17 +19,20 @@
 	<sect3><title>Usage</title>
 		<para>USAGE DESCRIPTION
 		</para>
-		<sect4><title>PARAM 1</title>
-			<para>PARAM 1 DESCRIPTION</para>
+		<sect4><title>patch size</title>
+			<para>The size of noise to detect.</para>
 		</sect4>
-		<sect4><title>PARAM 2</title>
-			<para>PARAM 2 DESCRIPTION</para>
+		<sect4><title>strength</title>
+			<para>The strength of the denoise</para>
 		</sect4>	
-		<sect4><title>PARAM 3</title>
-			<para>PARAM 3 DESCRIPTION</para>
+		<sect4><title>luma</title>
+			<para>Amount of denoise to apply on luma</para>
+		</sect4>	
+		<sect4><title>chroma</title>
+			<para>Amount of denoise to apply on chroma</para>
 		</sect4>	
 	</sect3>
-	
+<!--
 	<sect3><title>Examples</title>
 		<para>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
@@ -56,5 +59,5 @@
 			</informaltable>
 		</para>	
 	</sect3>
-	
+-->	
 </sect2>

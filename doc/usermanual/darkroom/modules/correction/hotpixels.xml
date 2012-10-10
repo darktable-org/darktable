@@ -1,14 +1,14 @@
-<sect2 status="draft"><title>MODULE NAME</title>
+<sect2 status="draft"><title>hotpixels</title>
 	<sect3><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>SHORT AND CONSIST MODULE DESCRIPTION
+						<entry>Hotpixels module do try it best to blend unwanted pixels that is detected by a threshold against its neighbours.
 						</entry>
 						<entry>
-							<graphic fileref="darkroom/modules/images/soften.png" scalefit="1" width="80%" align="center" />
+							<graphic fileref="darkroom/modules/images/hotpixels.png" scalefit="1" width="80%" align="center" />
 						</entry>
 					</row>
 				</tbody>
@@ -17,19 +17,23 @@
 	</sect3>
 
 	<sect3><title>Usage</title>
-		<para>USAGE DESCRIPTION
+		<para>Control the sensitive with the threshold parameter and the strength of how
+		hard to try to blend the pixel with surroundings.
 		</para>
-		<sect4><title>PARAM 1</title>
-			<para>PARAM 1 DESCRIPTION</para>
+		<sect4><title>threshold</title>
+			<para>The threshold of the detection</para>
 		</sect4>
-		<sect4><title>PARAM 2</title>
-			<para>PARAM 2 DESCRIPTION</para>
+		<sect4><title>stregth</title>
+			<para>The strength of blending</para>
 		</sect4>	
-		<sect4><title>PARAM 3</title>
-			<para>PARAM 3 DESCRIPTION</para>
+		<sect4><title>detect by 3 neighbours</title>
+			<para>Wille extend the decetion to use neighbours.</para>
 		</sect4>	
-	</sect3>
-	
+		<sect4><title>mark fixed pixels</title>
+			<para>This options will mark the pixels in the view that is corrected, and also display the count of detected pixels that is fixed.</para>
+		</sect4>	
+	</sect3>x
+<!--	
 	<sect3><title>Examples</title>
 		<para>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
@@ -56,5 +60,5 @@
 			</informaltable>
 		</para>	
 	</sect3>
-	
+-->	
 </sect2>

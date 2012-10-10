@@ -1,17 +1,17 @@
 <sect2 status="draft"><title>Equalizer</title>
-	<sect3><title>Deprecation Warning</title>
-  This module is superseeded by Equalizer II and should not be used anymore!
-  </sect3>
 	<sect3><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>This module is an equalizer based on edge-avoiding wavelets. It allows to smooth or enhance details by acting on luminance frequencies and multiplying them by a factor.
+						<entry>This versatile module can be used to achieve a variety
+            of effects, such as: bloom, denoising, and local contrast
+            enhancement. It works in the wavelet domain, and parameters
+            can be tuned for each frequency band separately.
 						</entry>
 						<entry>
-							<graphic fileref="darkroom/modules/images/equalizer.png" scalefit="1" width="80%" align="center" />
+							<graphic fileref="darkroom/modules/images/atrous.png" scalefit="1" width="90%" align="right" />
 						</entry>
 					</row>
 				</tbody>
@@ -20,12 +20,101 @@
 	</sect3>
 
 	<sect3><title>Usage</title>
-		<para>Low frequencies are on the left, high frequencies on the right. The vertical scale represents a multiplying factor. 
-			Low frequencies represent wide homogenous areas, whereas high frequencies are small details.
-		</para>
-		<para>By default, the user sees a straight line with factor equal to 1, meaning that no frequency is changed.
-			To sharpen, you can draw a line going up from the low frequencies to the high ones. On the contrary, if you want to attenuate, just draw a line going down.
-			You can change the area of influence by mouse scrolling. Moreover you can act separately on the luminance or the chrominance values.
-		</para>
+    <para>The parameters can be tweaked for each frequency band. In particular, you can adjust contrast boost and denoise
+    threshold splines for both lightness and chromaticity, as well as the sharpness of the wavelet basis on each frequency
+    scale. </para>
+
+    <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>Each spline can be dragged with a proportional edit approach, use the mouse wheel to adjust the
+            radius in which your changes will have an effect. The transparent area indicates where you would drag
+            the spline with the current mouse position and radius. Also the little triangles at the bottom can
+            be moved to alter the x-position of the spline nodes.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/atrous-1.png" scalefit="1" width="90%" align="right" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+    <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>Drag the upper line (bright circles, here for the lightness channel) to affect local contrast. Pulling it up, as shown
+            here, will result in a contrast boost for that frequency band. Higher frequencies, i.e. smaller details, are
+            to the right of the grid. Pulling it down works, too.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/atrous-2.png" scalefit="1" width="90%" align="right" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+    <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>The bottom spline (black circles) is used to perform denoising. It adjusts the wavelet shrinkage
+            threshold for each frequency band. Pull it up to see the effect. In this example, the noise which has been
+            amplified by local contrast enhancement is removed.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/atrous-4.png" scalefit="1" width="90%" align="right" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+    <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>This screen shows the effect of the sharpen parameter. It is here pulled down to zero for all bands.
+            This is effectively a regular à trous wavelet, without edge detection, and results in the characteristic halos
+            around sharp edges in the image.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/atrous-5.png" scalefit="1" width="90%" align="right" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+     <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>This image is the other extreme. The wavelet basis now oversharpens, which results in ugly
+            gradient reversals near the ridge of the rock.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/atrous-6.png" scalefit="1" width="90%" align="right" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+    <para>Note that the sharpness parameter only affects the wavelet basis, not the image directly. So you have to change some
+    denoise/contrast boost parameters to see an effect if fiddling with the sharpness parameter.</para>
+
+
+    <para>Also have a look at the presets. All parameters are changed in there, so these might be a good starting point
+    to gain an intuitive understanding about them. Note that the sharpness of the wavelet basis has been set to zero to
+    achieve the bloom effect.</para>
 	</sect3>
 </sect2>
