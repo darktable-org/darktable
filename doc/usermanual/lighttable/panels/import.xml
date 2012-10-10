@@ -1,0 +1,47 @@
+<sect2 status="invalid"><title>Import</title>
+			<para>This module shows connected devices; for now only cameras are shown up there, but in future scanners too will.</para>
+
+		 	 <para>In library, you import and remove your filmrolls. You can either import a complete folder
+      				by pressing 'import filmroll' or a single image 'import single image'. 
+		  	</para>
+			<para>A filmroll is the same as a folder in the filesystem, except for 'single images' filmroll that contains images spread among your filesystem.
+				You can import a single image or a folder; if a folder is imported, darktable will not recurse down in several folder levels but it will just import the images that resides inside
+				the chosen folder into a filmroll whose name becomes the name of the imported folder.
+			</para>
+			<para status="draft">Importing a folder does not mean that darktable copies your images in another folder.
+			It just means that the images are visible in lighttable and thus can be developed. It means that
+     			if you delete an image/a folder after having imported them, darktable will not be able to access them anymore.
+      			Importing an image/folder in darktable is not a backup of your filesystem!
+      			Moreover darktable does not currently watch changes in filesystem. Thus if on your filesystem you add an image
+			after having imported that folder in darktable, the new image will not be shown until you explicitely import it.
+			</para>
+			<para>All your filmrolls are available in a list which can be filtered using the editbox to fast find the filmroll of interest.
+					Double click on a filmroll in the list and it will open.
+				You can also click the recent filmroll items to open the latest ones you have worked with.
+			</para>
+
+
+			<sect3><title>Cameras</title>
+				<para>When a camera is detected, it will show up in the device panel; if you hover your mouse over the camera tab label a tooltip
+					will pop up with some information about the camera such as model, firmware version and a lot more...
+				</para>
+				<para>Depending of the support of your camera, buttons with actions will be available such as import images and tethering.
+				</para>
+				<sect4><title>Import images</title>
+					<para>This will bring up an import dialog, showing the images on camera that can be selected for import into a filmroll in
+						darktable.
+					</para>
+				</sect4>
+				<sect4><title>Tethering</title>
+					<para>Tethering is used to integrate darktable with your camera. While you take images with your camera, they will
+						automatically be imported into darktable so you can review the result of the shoot. You can also
+						setup remote capture jobs, controlling number of images and time between captures along with camera settings such as exposition time, f-length and more.
+					</para>
+					<para>If supported by your camera, tethering will take you into capture view for tethered shoot. Read more about tethering in chapter 3.</para>
+				</sect4>
+			</sect3>
+
+		</sect2>
+
+		
+
