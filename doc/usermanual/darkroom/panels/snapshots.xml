@@ -16,4 +16,6 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
+		<para>You can control the split view by moving the splitline back and forth and if you hover mouse over the split line, a small rotation icon will appear
+		on the center of the line, click it to change to a horizontal split view.</para>
 	</sect2>
