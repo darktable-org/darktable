@@ -185,8 +185,9 @@ int main(int argc, char *arg[])
   }
 
   // try to find out the export format from the output_filename
-  const char *ext = output_filename + strlen(output_filename);
+  char *ext = output_filename + strlen(output_filename);
   while(ext > output_filename && *ext != '.') ext--;
+  *ext = '\0';
   ext++;
 
   if(!strcmp(ext, "jpg"))
@@ -211,6 +212,10 @@ int main(int argc, char *arg[])
     fprintf(stderr, "%s\n", _("failed to get parameters from storage module, aborting export ..."));
     exit(1);
   }
+
+  // and now for the really ugly hacks. don't tell your children about this one or they won't sleep at night any longer ...
+  g_strlcpy((char*)sdata, output_filename, DT_MAX_PATH_LEN);
+  // all is good now, the last line didn't happen.
 
   format = dt_imageio_get_format_by_name(ext);
   if(format == NULL)
