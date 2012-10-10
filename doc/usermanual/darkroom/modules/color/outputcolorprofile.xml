@@ -14,10 +14,14 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
+		<para>Profiles to be used is picked up from the users home directory ~/.config/darktable/color/out</para>
 	</sect3>
 
 	<sect3><title>Usage</title>
-		<para>You can set intent and profile for both display and output. You can go to "Input profile" to have details on the different available options.</para>			
-	 <para> The softproof profile, available thanks to "space", allows you to define a printer profile and see on screen how the picture will be rendered after printing.</para>
-  </sect3>
+		<para>You can set intent and profile for both display and output. You can go to "Input profile" to have details 
+		on the different available options.</para>
+			
+		<para>Softproof is toggled on/off using "space",this function allows you to preview the image rendered using a 
+		printer profile to se how colors will end up on the final pring.</para>
+	</sect3>
 </sect2>
