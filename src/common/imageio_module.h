@@ -22,6 +22,9 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
+/** Flag for the format modules */
+#define FORMAT_FLAGS_SUPPORT_XMP   1
+
 /**
  * defines the plugin structure for image import and export.
  *
@@ -97,6 +100,9 @@ typedef struct dt_imageio_module_format_t
   int (*bpp)(dt_imageio_module_data_t *data);
   /* write to file, with exif if not NULL, and icc profile if supported. */
   int (*write_image)(dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif, int exif_len, int imgid);
+
+  // sometimes we want to tell the world about what we can do
+  int (*flags)();
 
   // reading functions:
   /* read header from file, get width and height */
