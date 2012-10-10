@@ -1,0 +1,19 @@
+	<sect2 status="final"><title>Snapshots</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>You can take a snapshot of what is displayed in the center view; 
+							this snapshot can then be selected and is overlayed in the current center view to help you with a side by side comparasion 
+							(left: snapshot, right: active) when you are tuning parameters of a module. 
+							In the active view, history remains usable in order to compare with the snapshot.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/images/panel_snapshots.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect2>
