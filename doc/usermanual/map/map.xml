@@ -1,0 +1,23 @@
+<chapter>
+<chapterinfo>
+<keywordset>
+  <keyword>geotagging</keyword>
+  <keyword>map</keyword>
+  <keyword>view</keyword>
+</keywordset>
+</chapterinfo>
+<title>Map</title>
+<para>The Map view is were you geotag your images.</para>
+<screenshot>
+	<screeninfo>The tethering view</screeninfo>
+	<graphic fileref="images/map_view.png" scalefit="1" width="80%"></graphic>
+</screenshot>
+
+<sect1><title>Overview</title>
+	<para>Drag and drop images from film strip onto the map to assign them a location.</para>
+</sect1>
+
+<!-- Panels -->
+<xi:include href="panels/panels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+</chapter>

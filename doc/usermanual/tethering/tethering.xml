@@ -1,0 +1,25 @@
+<chapter>
+<chapterinfo>
+<keywordset>
+  <keyword>tethering</keyword>
+  <keyword>view</keyword>
+</keywordset>
+</chapterinfo>
+<title>Tethering</title>
+<para>The tethering view is were you remote control and captures images from your connect camera directly into darktable.</para>
+<screenshot>
+	<screeninfo>The tethering view</screeninfo>
+	<graphic fileref="images/tethering_view.png" scalefit="1" width="80%"></graphic>
+</screenshot>
+
+<sect1><title>Overview</title>
+	<para></para>
+</sect1>
+
+<!-- Panels -->
+<xi:include href="panels/panels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Examples -->
+<xi:include href="examples/examples.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+</chapter>

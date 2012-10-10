@@ -90,6 +90,12 @@
 <!-- Darkroom Chapter -->
 <xi:include href="darkroom/darkroom.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+<!-- Tethering Chapter -->
+<xi:include href="tethering/tethering.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Geotagging  Chapter -->
+<xi:include href="map/map.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 <!-- Addendum -->
 <xi:include href="addendum/addendum.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
