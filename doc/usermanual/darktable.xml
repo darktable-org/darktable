@@ -4,16 +4,17 @@
 		<!ENTITY % darktable_dtd SYSTEM "dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-	       
+
 <book lang="en">
 	<title>darktable</title>
 	<bookinfo>
 		<legalnotice>
 			<para>
 			The owner of the darktable project is Johannes Hanika.
-			Main developers are Johannes Hanika and Henrik Andersson.
-
-  			darktable is a free software: you can redistribute it and/or modify
+			Main developers are Johannes Hanika, Henrik Andersson and Tobias Ellinghaus.
+			</para>
+			<para>
+  			darktable is free software: you can redistribute it and/or modify
    			it under the terms of the GNU General Public License as published by
    			the Free Software Foundation, either version 3 of the License, or
    			(at your option) any later version.
@@ -32,7 +33,7 @@
 			</para>
 			<para>
 			The present user manual is under license <emphasis>cc by-sa </emphasis>,
-			meaning <emphasis>Attribution Share Alike </emphasis>. 
+			meaning <emphasis>Attribution Share Alike </emphasis>.
 			You can visit <emphasis>http://creativecommons.org/about/licenses/</emphasis> to get more information.
 			</para>
 		</legalnotice>
@@ -73,11 +74,13 @@
 							<entry>02/06/11</entry>
 						</row>
 					</tbody>
-				</tgroup></informaltable> 
+				</tgroup></informaltable>
 		</para>
-		<para>Please note that every key accelerators given in this manual is only applicable on english keyboards layout. 
-			The key accelerators are not linked to the actual letter printed on it, but only to its position on the keyboard. 
+<!--		<para>Please note that every key accelerators given in this manual is only applicable on english keyboards layout.
+			The key accelerators are not linked to the actual letter printed on it, but only to its position on the keyboard.
 			For example, the <emphasis>z</emphasis> allowing a full-screen view on english keyboards, becomes <emphasis>w</emphasis> on french keyboard.
+		</para> --> <!-- no longer true! -->
+		<para>For the course of this documentation the arrow keys on your keyboard are referenced as with arrow symbols: &uarr;&larr;&darr;&rarr;.
 		</para>
 	</preface>
 

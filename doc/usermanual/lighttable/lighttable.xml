@@ -1,3 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+
 <chapter>
 	<chapterinfo>
 		<keywordset>
@@ -6,12 +10,12 @@
 		</keywordset>
 	</chapterinfo>
 	<title>Lighttable</title>
-	<para>The lighttable is where you manage all your images, ratings, exporting and much more...</para>
+	<para>The lighttable is where you manage all your images, ratings, export and much more&nbsp;&hellip;</para>
 	<screenshot>
 		<screeninfo>The lighttable view</screeninfo>
 		<graphic fileref="images/lighttable_view.png" scalefit="1" width="80%"></graphic>
 	</screenshot>
-	
+
 	<sect1><title>Overview</title>
 		<para></para>
 		<sect2 status="final"><title>Lighttable</title>
@@ -19,11 +23,11 @@
 					<colspec colwidth='70%'/>
 					<colspec colwidth='5cm'/>
 					<tbody>
-						<row>						
-							<entry>In this centerview, your images are shown as thumbs; each thumb has a frame and while mouse is over
-								an image, the information of rating, colorlabels and if image is altered in darkroom 
+						<row>
+							<entry>In the central view, your images are shown as thumbs; each thumb has a frame and while the mouse is over
+								an image, the information of rating, color labels and if image is altered in darkroom
 								<inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/> is shown.
-								Also when mouse hovers over an image frame the specific image metadata is shown in the metadata panel.
+								Also when the mouse hovers over an image frame the specific image metadata is shown in the metadata panel.
 							</entry>
 							<entry>
 								<graphic fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" />
@@ -33,28 +37,28 @@
 				</tgroup>
 			</informaltable>
 
-			<para>In order to locate where you are in your collection, you have read-only sliders at the extreme border of the window : left/right for your vertical position in the collection, 
+			<para>In order to locate where you are in your collection, you have read-only sliders at the extreme border of the window: left/right for your vertical position in the collection,
 				top/bottom (when in zoomable lighttable mode, see below) for your zoom level.</para>
-							
-			<para>While mouse is over an image frame, you have additional actions accessed from keyboard to apply on image; here
+
+			<para>While the mouse is over an image frame, you can access additional actions from your keyboard to apply on the image; here
 				follows a table of key accelerators and assigned actions.
 				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='3cm'/>
 					<tbody>
 						<row>
-							<entry><emphasis>0 - 5</emphasis></entry>
+							<entry><emphasis>0&nbsp;&ndash; 5</emphasis></entry>
 							<entry>set the rating of the image; if an image has 1 star and you hit the <emphasis>1</emphasis> key, the image will be unrated.
-								Pressing <emphasis>del</emphasis> rejects the image.
+								Pressing <emphasis>r</emphasis> rejects the image.
 							</entry>
 						</row>
 						<row>
-							<entry><emphasis>F1 - F5</emphasis></entry><entry>set a color label for the image</entry>
+							<entry><emphasis>F1&nbsp;&ndash; F5</emphasis></entry><entry>set a color label for the image</entry>
 						</row>
 						<row>
-							<entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry>
+							<entry><emphasis>ctrl-c</emphasis></entry><entry>copy the history stack of the image</entry>
 						</row>
 						<row>
-							<entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack on the image</entry>
+							<entry><emphasis>ctrl-v</emphasis></entry><entry>paste the copied history stack on the image</entry>
 						</row>
 						<row>
 							<entry><emphasis>d</emphasis></entry><entry>open the image in darkroom view for developing</entry>
@@ -68,25 +72,25 @@
 			<para>At the bottom you have an option to choose between zoomable lighttable view or filemanger view of the thumbnails.
 			</para>
 			<para>Using the zoomable lighttable view, scroll with your mouse wheel to zoom in and out.
-			The <emphasis>hold left-click</emphasis> allows you to navigate through your collection.
+			Moving the mouse while <emphasis>pressing the left mouse button</emphasis> allows you to navigate through your collection.
 			</para>
 			<para>While in filemanager you can use <emphasis>ctrl-(mouse wheel)</emphasis> to change the number of thumbs displayed
 			in a row. That action is a key accelerator of the counter that can be found beside the filemanager option.
 			Use your mouse wheel to navigate through your collection.
 			</para>
-			<para>While in filemanager, by pressing <emphasis>w/s</emphasis> you can scroll (not select) up and down through your collection. 
-				In zoomable lighttable <emphasis>a/d/w/s</emphasis> allow you to move left/right/up/down through your collection.
-				Pressing <emphasis>ctrl-g</emphasis> goes top, <emphasis>ctrl-shift-g</emphasis> bottom.
+			<para>While in filemanager mode, by pressing <emphasis>&uarr;/&darr;</emphasis> you can scroll (not select) up and down through your collection.
+				In zoomable lighttable <emphasis>&larr;/&rarr;/&uarr;/&darr;</emphasis> allow you to move left/right/up/down through your collection.
+				Pressing <emphasis>g</emphasis> goes to the top, <emphasis>shift-g</emphasis> to the bottom.
 			</para>
 		</sect2>
 		<sect2 status="draft"><title>Filtering and sort order</title>
 			<para>The filtering and sort order of images on lighttable are accessed and changed in the top bar
-				where you can select among a few predefined filters and ordering like date, color labels, rating
+				where you can select among a few predefined filters and ordering like date, color labels or rating
 				among others.
 			</para>
 		</sect2>
 	</sect1>
-	
+
 	<!-- Panels -->
 	<xi:include href="panels/panels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </chapter>
