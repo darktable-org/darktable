@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 
 FILE(GLOB_RECURSE IMAGE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.png")
 FILE(GLOB_RECURSE IMAGES_PATHS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "images")
+FILE(GLOB_RECURSE XML_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.xml")
 
 message(STATUS ${IMAGES_PATHS})
 
@@ -37,7 +38,7 @@ if(can_build_usermanual)
 
 	set(TARGET_MEDIA_COMPRESSION_QUALITY "90")
 	set(TARGET_MEDIA_RESIZE "800x800>")
-	
+
 	# Create directory tree for media target image transformation
 	foreach(image ${IMAGE_FILES})
 		# Rewrite output url for transformed images
@@ -50,18 +51,18 @@ if(can_build_usermanual)
 
 	# Images converting for different media targets
 	set(TARGET_MEDIA_IMAGES "")
-	
+
 	foreach(image ${IMAGE_FILES})
 		# Remove image extensions png
 		string(REGEX REPLACE "\\.png$" "" image ${image})
-		
+
 		# Rewrite output url for transformed images
 		string(REGEX REPLACE "\\images/" "" new_image ${image})
 		set(new_image "images/${new_image}")
 		set(TARGET_MEDIA_IMAGES ${TARGET_MEDIA_IMAGES} "${CMAKE_CURRENT_BINARY_DIR}/media/${new_image}.jpg")
 		add_custom_command(
 			OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/media/${new_image}.jpg"
-			COMMAND convert -resize ${TARGET_MEDIA_RESIZE} -quality ${TARGET_MEDIA_COMPRESSION_QUALITY} -filter Lanczos ${CMAKE_CURRENT_SOURCE_DIR}/${image}.png ${CMAKE_CURRENT_BINARY_DIR}/media/${new_image}.jpg 
+			COMMAND convert -resize ${TARGET_MEDIA_RESIZE} -quality ${TARGET_MEDIA_COMPRESSION_QUALITY} -filter Lanczos ${CMAKE_CURRENT_SOURCE_DIR}/${image}.png ${CMAKE_CURRENT_BINARY_DIR}/media/${new_image}.jpg
 			COMMENT "Tranforming image ${image}.png into media target" VERBATIM
 		)
 	endforeach()
@@ -77,11 +78,11 @@ if(can_build_usermanual)
 		COMMAND xsltproc --xinclude --output ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.tmp xsl/darktable_profile.xsl darktable.xml
 		COMMAND cat ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.tmp | sed "s/fileref=\"\\([^>]*\\)\\(\\/images\\/\\)\\([^>]*\\)\\(.png\\)\"/fileref=\"${binary_path}\\/media\\/images\\/\\1\\/\\3.jpg\"/g ; s/fileref=\"images\\/\\([^>]*\\)\\(.png\\)\"/fileref=\"${binary_path}\\/media\\/images\\/\\1.jpg\"/g" > ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		DEPENDS darktable.xml
+		DEPENDS darktable.xml ${XML_FILES}
 		COMMENT "Generating the main docbook xml file" VERBATIM
 	)
 	add_custom_target(darktable_single_xml DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml)
-	
+
 	#
 	# add target for final xml file
 	#
@@ -93,7 +94,7 @@ if(can_build_usermanual)
 		COMMENT "Profiling final docbook xml file" VERBATIM
 	)
 	add_custom_target(darktable_single_final_xml DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml)
-	
+
 	#
 	# draft pdf usermanual
 	#
@@ -118,7 +119,7 @@ if(can_build_usermanual)
 		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/usermanual.css
 		COMMENT "Updating usermanual.css" VERBATIM
 	)
-	
+
 	add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
 		COMMAND xsltproc --stringparam base.dir ${CMAKE_CURRENT_BINARY_DIR}/html/ xsl/darktable_html_single.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
@@ -132,11 +133,11 @@ if(can_build_usermanual)
 	add_custom_target(darktable-usermanual-html DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html/index.html )
 	add_dependencies(darktable-usermanual-html target_media_images darktable_single_xml )
 	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
-	
+
 	#
 	# draft chunked usermanual for wordpress
 	#
-	
+
 	add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wp/index.html.php
 		COMMAND xsltproc  --stringparam chunker.output.encoding UTF-8 --stringparam base.dir ${CMAKE_CURRENT_BINARY_DIR}/wp/ xsl/darktable_html.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
@@ -156,7 +157,7 @@ if(can_build_usermanual)
 	add_custom_target(darktable-usermanual-wordpress DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/wp/index.html.php )
 	add_dependencies(darktable-usermanual-wordpress target_media_images darktable_single_xml )
 	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/wp DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
-	
+
 	#
 	# final translated usermanual's
 	#
