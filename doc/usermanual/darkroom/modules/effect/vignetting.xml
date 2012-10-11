@@ -1,5 +1,5 @@
-<sect2 status="draft"><title>Vignetting</title>
-	<sect3><title>Overview</title>
+<sect3 status="draft"><title>Vignetting</title>
+	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
@@ -14,30 +14,30 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
-	</sect3>
+	</sect4>
 
-	<sect3><title>Usage</title>
+	<sect4><title>Usage</title>
 		<para>The vignetting module has extensive parameters to precisely tune your effect.</para>
-		<sect4><title>scale</title>
+		<sect5><title>scale</title>
 			<para>Set radii of the vignetting beginning.</para>
-		</sect4>
-		<sect4><title>fall-off strength</title>
+		</sect5>
+		<sect5><title>fall-off strength</title>
 			<para>Set the progressiveness of the fall-off.</para>
-		</sect4>
-		<sect4><title>strength</title>
+		</sect5>
+		<sect5><title>strength</title>
 			<para>Set the strength of the effect.</para>
-		</sect4>
-		<sect4><title>uniformity</title>
+		</sect5>
+		<sect5><title>uniformity</title>
 			<para>Set the uniformity of the effect.</para>
-		</sect4>
-		<sect4><title>b/s ratio</title>
+		</sect5>
+		<sect5><title>b/s ratio</title>
 			<para>Set the ratio of brightness and saturation the vignetting should apply on.</para>
-		</sect4>
-		<sect4><title>saturation</title>
+		</sect5>
+		<sect5><title>saturation</title>
 			<para>Invert the effect of saturation. By default the vignetting desaturates at the border. Using this button you can saturate it.</para>
-		</sect4>
-		<sect4><title>fall-off</title>
+		</sect5>
+		<sect5><title>fall-off</title>
 			<para>Invert the effect of brightness. By default the vignetting darkens at the border. Using this button you can brighter it.</para>
-		</sect4>			
-	</sect3>
-</sect2>
+		</sect5>			
+	</sect4>
+</sect3>

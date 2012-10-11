@@ -1,5 +1,5 @@
-<sect2 status="draft"><title>Graduated Neutral Density</title>
-	<sect3><title>Overview</title>
+<sect3 status="draft"><title>Graduated Neutral Density</title>
+	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
@@ -14,11 +14,11 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
-	</sect3>
+	</sect4>
 
-	<sect3><title>Usage</title>
+	<sect4><title>Usage</title>
 		<para>The module uses a gradient to modify the exposure and the color cast of the image in a non-homogeneously manner.</para>
-		<sect4><title>density</title>
+		<sect5><title>density</title>
 			<para>Set the density of the filter in [ev]. A low value underexposes slightly whereas a high value creates a strong filter.</para>
 			<para>It is expressed as [ev] that is equivalent to <emphasis>f-stops</emphasis>. Lens filters are often referred as ND2, ND4, ND8 and so on.
 			Each time you add an [ev] you double the ND. So ND2 is 1 ev, ND4 is 2 ev, and so on. You can also express it in optical density or transmittance. 
@@ -60,31 +60,31 @@
 				</tgroup></informaltable> 
 
 			</para>
-		</sect4>
-		<sect4><title>compression</title>
+		</sect5>
+		<sect5><title>compression</title>
 			<para>Set progressiveness of the gradient. A low value creates a smooth transition, whereas a high value makes the transition abrupt.</para>
-		</sect4>
-		<sect4><title>split</title>
+		</sect5>
+		<sect5><title>split</title>
 			<para>Set split to offset the filter, i.e. to move the transition zone above or below the centerline. Expressed as a percentage, values above 50% set the transition zone above the centerline.</para>
-		</sect4>
-		<sect4><title>rotation</title>
+		</sect5>
+		<sect5><title>rotation</title>
 			<para>Set the rotation so the gradient acts along an axis different from the vertical one. Expressed in degrees, negative values turn clockwise.</para>
-		</sect4>
-		<sect4><title>hue</title>
+		</sect5>
+		<sect5><title>hue</title>
 			<para>Set the hue to add a colorcast to the gradient.</para>
-		</sect4>
-		<sect4><title>saturation</title>
+		</sect5>
+		<sect5><title>saturation</title>
 			<para>Set the saturation to add a colorcast to the gradient.</para>
-		</sect4>
+		</sect5>
 		<para> TIP: If you know you intend to use the GND filter before actually making a shot with your camera you might want to underexpose by one or two
 			thirds of an f-stop to make sure detail remains in the highlights. When all detail has truly been blown out the GND filter cannot produce
 			a pleasing results, this is a limitation that is inherent to digital postprocessing. For instructions on how to intentionally underexpose,
 			please consult your camera's manual, look for 'exposure compensation'.
 
 		</para>		
-	</sect3>
+	</sect4>
 	
-	<sect3><title>Examples</title>
+	<sect4><title>Examples</title>
 		<para>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='30%'/>
@@ -118,5 +118,5 @@
 				</tgroup>
 			</informaltable>
 		</para>	
-	</sect3>
-</sect2>
+	</sect4>
+</sect3>
