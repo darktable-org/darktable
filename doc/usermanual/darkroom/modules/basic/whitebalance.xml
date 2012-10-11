@@ -1,5 +1,5 @@
-<sect2 status="draft"><title>White balance</title>
-	<sect3><title>Overview</title>
+<sect3 status="draft"><title>White balance</title>
+	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
@@ -16,19 +16,19 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
-	</sect3>
+	</sect4>
 
-	<sect3><title>Usage</title>
-		<sect4><title>tint</title>
+	<sect4><title>Usage</title>
+		<sect5><title>tint</title>
 			<para>Alter the colour tint of the image, from magenta (value &lt; 1) to green (value &gt; 1). The channel sliders will be updated when you adjust this parameter.</para>
-		</sect4>
-		<sect4><title>temperature in/out</title>
+		</sect5>
+		<sect5><title>temperature in/out</title>
 			<para>Set the temperature in and temperature out (in Kelvin). The channel sliders will be updated when you adjust this parameter.</para>
-		</sect4>
-		<sect4><title>red, green and blue channels</title>
+		</sect5>
+		<sect5><title>red, green and blue channels</title>
 			<para>Set the channel values on a scale from 0 to 8.</para>
-		</sect4>
-		<sect4><title>preset</title>
+		</sect5>
+		<sect5><title>preset</title>
 			<para>Select a preset white balance.
 				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='3cm'/>
@@ -54,10 +54,10 @@
 				</tgroup></informaltable>
 
 			</para>
-		</sect4>
-		<sect4>
+		</sect5>
+		<sect5>
 			<title>finetune</title>
 			<para>Only available when a camera preset is selected. Each camera white balance can be fine tuned within a camera specific range or steps. The adjustments are usually towards yellow (value &lt; 1) or blue (value &gt; 1).</para>
-		</sect4>
-	</sect3>
-</sect2>
+		</sect5>
+	</sect4>
+</sect3>
