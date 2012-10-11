@@ -1,5 +1,5 @@
-<sect2 status="draft"><title>Invert</title>
-	<sect3><title>Overview</title>
+<sect3 status="draft"><title>Invert</title>
+	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
@@ -15,11 +15,11 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
-	</sect3>
+	</sect4>
 
-	<sect3><title>Usage</title>
-		<sect4><title></title>
+	<sect4><title>Usage</title>
+		<sect5><title></title>
 			<para></para>
-		</sect4>
-	</sect3>
-</sect2>
+		</sect5>
+	</sect4>
+</sect3>

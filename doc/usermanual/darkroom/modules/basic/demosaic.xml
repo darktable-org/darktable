@@ -1,5 +1,5 @@
-<sect2 status="draft"><title>Demosaic</title>
-	<sect3><title>Overview</title>
+<sect3 status="draft"><title>Demosaic</title>
+	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
@@ -14,23 +14,23 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
-	</sect3>
+	</sect4>
 
-	<sect3><title>Usage</title>
+	<sect4><title>Usage</title>
 		<para>Demosaic is done on display only when zoom is greater than 50%.</para>
-                <sect4><title>method</title>
+                <sect5><title>method</title>
 			<para>Set the method to demosaic.</para>
-		</sect4>
+		</sect5>
 
-                <sect4><title>edge threshold</title>
+                <sect5><title>edge threshold</title>
 			<para>Set the threshold for the median pass.</para>
-		</sect4>	
-		  <sect4><title>color smoothing</title>
+		</sect5>	
+		<sect5><title>color smoothing</title>
 			<para>Number of passes for color smoothing.</para>
-		</sect4>
-			<sect4><title>match greens</title>
+		</sect5>
+		<sect5><title>match greens</title>
 			<para>Greens correction, useful for some camera.</para>
-		</sect4>
+		</sect5>
 
-	</sect3>
-</sect2>
+	</sect4>
+</sect3>
