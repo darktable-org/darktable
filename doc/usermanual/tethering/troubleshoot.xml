@@ -1,0 +1,10 @@
+<sect1>
+  <title>Troubleshoot</title>
+  <sect2>
+    <title>Verify that your camera is supported</title>
+	<para>This troubleshoting guide will give you steps how to verify that your camera can be used
+	with tethering, this is mainly done using the gphoto2 commandline tools due to this is what 
+	Darktable uses to interface with your camera.
+	</para>
+  </sect2>
+</sect1>
