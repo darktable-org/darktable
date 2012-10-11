@@ -1,5 +1,5 @@
-<sect2 status="draft"><title>Denoise - Non local means</title>
-	<sect3><title>Overview</title>
+<sect3 status="draft"><title>Denoise - Non local means</title>
+	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
@@ -14,26 +14,26 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
-	</sect3>
+	</sect4>
 
-	<sect3><title>Usage</title>
+	<sect4><title>Usage</title>
 		<para>USAGE DESCRIPTION
 		</para>
-		<sect4><title>patch size</title>
+		<sect5><title>patch size</title>
 			<para>The size of noise to detect.</para>
-		</sect4>
-		<sect4><title>strength</title>
+		</sect5>
+		<sect5><title>strength</title>
 			<para>The strength of the denoise</para>
-		</sect4>	
-		<sect4><title>luma</title>
+		</sect5>	
+		<sect5><title>luma</title>
 			<para>Amount of denoise to apply on luma</para>
-		</sect4>	
-		<sect4><title>chroma</title>
+		</sect5>	
+		<sect5><title>chroma</title>
 			<para>Amount of denoise to apply on chroma</para>
-		</sect4>	
-	</sect3>
+		</sect5>	
+	</sect4>
 <!--
-	<sect3><title>Examples</title>
+	<sect4><title>Examples</title>
 		<para>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='30%'/>
@@ -58,6 +58,6 @@
 				</tgroup>
 			</informaltable>
 		</para>	
-	</sect3>
+	</sect4>
 -->	
-</sect2>
+</sect3>
