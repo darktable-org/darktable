@@ -21,7 +21,7 @@
 /**
  * Called when the user selects an entry from the autocomplete list.
  *
- * @param[in] widget    
+ * @param[in] widget
  * @param[in] model     Data structure containing autocomplete strings.
  * @param[in] iter      Pointer into data structure.
  * @param[in] user_data unused here
@@ -179,7 +179,7 @@ dt_gtkentry_setup_completion(GtkEntry *entry, const dt_gtkentry_completion_spec 
   }
   gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(model));
   gtk_entry_completion_set_match_func(completion, on_match_func, NULL, NULL);
-
+  g_object_unref(model);
 }
 
 /**
@@ -244,3 +244,6 @@ dt_gtkentry_build_completion_tooltip_text (const gchar *header,
 }
 
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -480,6 +480,8 @@ static GtkWidget* _lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
   }
   sqlite3_finalize(stmt);
 
+  g_object_unref(model);
+
   int line = 0;
 
   label = gtk_label_new(_("preset"));

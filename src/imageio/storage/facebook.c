@@ -1100,6 +1100,9 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   g_signal_connect(G_OBJECT(ui->comboBox_username), "changed", G_CALLBACK(ui_combo_username_changed), (gpointer)ui);
   g_signal_connect(G_OBJECT(ui->comboBox_album), "changed", G_CALLBACK(ui_combo_album_changed), (gpointer)ui);
 
+  g_object_unref(model_username);
+  g_object_unref(model_album);
+  g_object_unref(list_store);
 }
 
 /* destroy resources */
