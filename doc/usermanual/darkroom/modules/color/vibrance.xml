@@ -1,5 +1,5 @@
-<sect2 status="draft"><title>Vibrance</title>
-	<sect3><title>Overview</title>
+<sect3 status="draft"><title>Vibrance</title>
+	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
@@ -17,18 +17,18 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
-	</sect3>
+	</sect4>
 
-	<sect3><title>Usage</title>
+	<sect4><title>Usage</title>
 		<para>Vibrance does only have one parameter which controls the amount of vibrance to apply.
 		</para>
-		<sect4><title>vibrance</title>
+		<sect5><title>vibrance</title>
 			<para>The amount of vibrance to apply to the image.</para>
-		</sect4>
-	</sect3>
+		</sect5>
+	</sect4>
 
 <!--	
-	<sect3><title>Examples</title>
+	<sect4><title>Examples</title>
 		<para>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='30%'/>
@@ -53,6 +53,6 @@
 				</tgroup>
 			</informaltable>
 		</para>	
-	</sect3>
+	</sect4>
 -->	
-</sect2>
+</sect3>
