@@ -1,5 +1,5 @@
-<sect2 status="draft"><title>Channel mixer</title>
-	<sect3><title>Overview</title>
+<sect3 status="draft"><title>Channel mixer</title>
+	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
@@ -15,13 +15,13 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
-	</sect3>
+	</sect4>
 
-	<sect3><title>Usage</title>
+	<sect4><title>Usage</title>
 		<para>Select your output channel and then set the amount of each channel to feed the output channel.</para>			
-	</sect3>
+	</sect4>
 	
-	<sect3><title>Examples</title>
+	<sect4><title>Examples</title>
 		<para>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='30%'/>
@@ -58,7 +58,7 @@
 			</informaltable>
 		</para>	
 
-		<sect4><title>Table of mixing values for some b/w films</title>
+		<sect5><title>Table of mixing values for some b/w films</title>
 			<para>Select gray as output mixing channel, and try out the values descibed below for your like...</para>
 				<informaltable frame="none">
 					<tgroup cols="4" colsep="0" rowsep="0">
@@ -86,6 +86,6 @@
 						</tbody>
 					</tgroup>
 				</informaltable>
-		</sect4>
-	</sect3>
-</sect2>
+		</sect5>
+	</sect4>
+</sect3>
