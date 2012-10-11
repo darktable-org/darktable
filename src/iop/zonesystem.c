@@ -674,18 +674,16 @@ dt_iop_zonesystem_bar_motion_notify (GtkWidget *widget, GdkEventMotion *event, d
   const int inset = DT_ZONESYSTEM_INSET;
   int width = widget->allocation.width - 2*inset, height = widget->allocation.height - 2*inset;
 
+  /* calculate zonemap */
+  float zonemap[MAX_ZONE_SYSTEM_SIZE]= {-1};
+  _iop_zonesystem_calculate_zonemap (p,zonemap);
+
   /* record mouse position within control */
   g->mouse_x = CLAMP(event->x - inset, 0, width);
   g->mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
 
-  g->zone_under_mouse = (g->mouse_x/width) / (1.0/(p->size-1));
-
   if (g->is_dragging)
   {
-    /* calculate zonemap */
-    float zonemap[MAX_ZONE_SYSTEM_SIZE]= {-1};
-    _iop_zonesystem_calculate_zonemap (p,zonemap);
-
     if ( (g->mouse_x/width) > zonemap[g->current_zone-1] &&  (g->mouse_x/width) < zonemap[g->current_zone+1] )
     {
       p->zone[g->current_zone] = (g->mouse_x/width);
@@ -693,7 +691,24 @@ dt_iop_zonesystem_bar_motion_notify (GtkWidget *widget, GdkEventMotion *event, d
     }
   }
   else
-    g->hilite_zone = (g->mouse_y<(height/2.0))?TRUE:FALSE;
+  {
+    /* decide which zone the mouse is over */
+    if(g->mouse_y >= height*(1.0-DT_ZONESYSTEM_REFERENCE_SPLIT))
+      g->zone_under_mouse = (g->mouse_x/width) / (1.0/(p->size-1));
+    else
+    {
+      float xpos = g->mouse_x/width;
+      for(int z = 0; z < p->size-1; z++)
+      {
+        if(xpos >= zonemap[z] && xpos < zonemap[z+1])
+        {
+          g->zone_under_mouse = z;
+          break;
+        }
+      }
+    }
+    g->hilite_zone = (g->mouse_y<height)?TRUE:FALSE;
+  }
 
   gtk_widget_queue_draw (self->widget);
   gtk_widget_queue_draw (g->preview);
