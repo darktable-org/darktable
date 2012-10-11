@@ -1,5 +1,5 @@
-<sect2 status="draft"><title>Equalizer</title>
-	<sect3><title>Overview</title>
+<sect3 status="draft"><title>Equalizer</title>
+	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
@@ -17,9 +17,9 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
-	</sect3>
+	</sect4>
 
-	<sect3><title>Usage</title>
+	<sect4><title>Usage</title>
     <para>The parameters can be tweaked for each frequency band. In particular, you can adjust contrast boost and denoise
     threshold splines for both lightness and chromaticity, as well as the sharpness of the wavelet basis on each frequency
     scale. </para>
@@ -116,5 +116,5 @@
     <para>Also have a look at the presets. All parameters are changed in there, so these might be a good starting point
     to gain an intuitive understanding about them. Note that the sharpness of the wavelet basis has been set to zero to
     achieve the bloom effect.</para>
-	</sect3>
-</sect2>
+	</sect4>
+</sect3>

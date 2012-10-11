@@ -1,5 +1,5 @@
-<sect2 status="draft"><title>Spot removal</title>
-	<sect3><title>Overview</title>
+<sect3 status="draft"><title>Spot removal</title>
+	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
@@ -14,15 +14,15 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
-	</sect3>
+	</sect4>
 
-	<sect3><title>Usage</title>
+	<sect4><title>Usage</title>
 		<para>click on the area to be healed then drag to a clean area. The circle with line inside is the clean one.</para>	
 		<para>use mouse scroll-wheel over the stroke to change size.</para>
 		<para>right-click on a stroke to delete.</para>		
-	</sect3>
+	</sect4>
 	
-	<sect3><title>Examples</title>
+	<sect4><title>Examples</title>
 		<para>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='30%'/>
@@ -58,5 +58,5 @@
 				</tgroup>
 			</informaltable>
 		</para>	
-	</sect3>
-</sect2>
+	</sect4>
+</sect3>
