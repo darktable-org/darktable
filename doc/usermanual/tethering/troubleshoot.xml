@@ -6,5 +6,64 @@
 	with tethering, this is mainly done using the gphoto2 commandline tools due to this is what 
 	Darktable uses to interface with your camera.
 	</para>
+	
+	<orderedlist>
+	  <listitem><para>Verify that camera is detected</para>
+	    <para>The following cmomand will provide which cameras are detected and connected to the computer,
+	    find your camera port name and user it in the following tests below, usally port <command>usb:</command> 
+	    will be enough and therefore used in the examples below.
+	    <programlisting>
+	      env LANG=C gphoto2 --auto-detect
+	    </programlisting>
+	    </para>
+	  </listitem>
+
+	  <listitem><para>Verify camera driver abillities</para>
+	    <para>Execute the following command and verify that the "Capture choices" ability supports Image and 
+	    "Configuration support" is yes. These two abilities is checked and decides if "tethered shoot" button 
+	    should be shown or not in Darktable.
+	    <programlisting>
+	      env LANG=C gphoto2 --port usb: --abilities
+	    </programlisting>
+	    </para>
+	  </listitem>
+
+	  <listitem><para>Verify camera remote capture</para>
+	    <para>This step should will veerify that you camera can be remotly control and capture an images and then
+	    download it to your computer from software .
+	    <programlisting>
+	      env LANG=C gphoto2 --port usb: --capture-image-and-download
+	    </programlisting>
+	    </para>
+	  </listitem>
+
+	  <listitem><para>Verify camera tethered capture</para>
+	    <para>And this last step tests if your camera supports events whichs is heavliy used, running this command will
+	    make the gphoto2 process to wait for image capture event which you manually trig by taking an image using your
+	    camera, and when event is fetch it will download the image.
+	    <programlisting>
+	      env LANG=C gphoto2 --port usb: --capture-tethered
+	    </programlisting>
+	    </para>
+	  </listitem>
+	</orderedlist>
   </sect2>
+
+  <sect2>
+    <title>Soo now what?</title>
+    <para>If you successfully went thru all the tests above your camera will likly be supported by Darktable and tethering, 
+    if you anyway stumble into a problem in Darktable please file a bug at http://tiny.cc/dt-bug and  attach outputs of 
+    the 2 steps above and the log file output while running darktable with th following command.
+    <programlisting>
+      darktable -d camctl 2&gt;1 &gt;camctl.log
+    </programlisting>
+    If any of the steps above failed, there are problems with your specific camera and driver, please report the issues to 
+    gphoto2 mailing list for further help, include these flags to the command above that failed to attach to the mail for 
+    better support.
+    <programlisting>
+    --debug --debug-file gphoto2_debug.log
+    </programlisting>
+    </para>
+  </sect2>
+
 </sect1>
