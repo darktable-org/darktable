@@ -511,13 +511,15 @@ int dt_lua_init_image(lua_State * L) {
   /* history */
   luaL_newmetatable(L,history_typename);
   luaL_setfuncs(L,dt_lua_history_meta,0);
+  luaL_newmetatable(L,history_typename);
+  lua_pushcfunction(L,numid_compare);
+	lua_setfield(L,-2,"__eq");
   /* colorlabels */
   luaA_conversion(dt_lua_colorlabel_t,colorlabels_pushFunc,colorlabels_toFunc);
   dt_lua_init_type(L,dt_lua_colorlabel_t,dt_colorlabels_name,colorlabel_index,colorlabel_newindex);
+  lua_pushcfunction(L,numid_compare);
+	lua_setfield(L,-2,"__eq");
   /*  image */
-  luaL_newmetatable(L,image_typename);
-  luaL_setfuncs(L,image_meta,0);
-  //dt_lua_init_typed_name_list_pair(L, dt_image_t,image_fields_name);
   luaA_struct(L,dt_image_t);
   luaA_struct_member(L,dt_image_t,exif_exposure,float);
   luaA_struct_member(L,dt_image_t,exif_aperture,float);
@@ -534,6 +536,9 @@ int dt_lua_init_image(lua_State * L) {
   luaA_struct_member(L,dt_image_t,height,const int32_t);
   luaA_struct_member(L,dt_image_t,longitude,double);
   luaA_struct_member(L,dt_image_t,latitude,double);
+  luaL_newmetatable(L,image_typename);
+  luaL_setfuncs(L,image_meta,0);
+  //dt_lua_init_typed_name_list_pair(L, dt_image_t,image_fields_name);
 
 
   /* darktable.images() */

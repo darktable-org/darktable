@@ -25,6 +25,7 @@
 #include "lua/image.h"
 #include "lua/database.h"
 #include "common/imageio_module.h"
+#include "config.h"
 
 
 int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
@@ -112,6 +113,10 @@ static int load_darktable_lib(lua_State *L) {
 
   lua_pushstring(L,"print");
   lua_pushcfunction(L,&lua_print);
+  lua_settable(L,-3);
+
+  lua_pushstring(L,"version");
+  lua_pushstring(darktable.lua_state,PACKAGE_VERSION);
   lua_settable(L,-3);
 
   lua_CFunction* cur_type = init_funcs;
