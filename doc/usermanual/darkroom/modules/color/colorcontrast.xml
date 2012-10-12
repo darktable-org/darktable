@@ -18,10 +18,13 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<sect5><title>green vs. magenta</title>
+                <para>Higher values increase color contrast, lower values decrease it. The effect of this module
+                      is similar to a steepened or flattened a- or b-curve in module tonecurve.
+                </para>
+		<sect5><title>Green vs. magenta</title>
 			<para>Changes color contrast for green versus magenta.</para>
 		</sect5>
-		<sect5><title>contrast boost</title>
+		<sect5><title>Blue vs. yellow</title>
 			<para>Changes color contrast for blue versus yellow.</para>
 		</sect5>
 	</sect4>

@@ -1,11 +1,11 @@
-<sect3 status="draft"><title>Low pass</title>
+<sect3 status="draft"><title>Lowpass</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>A lowpass filter eg. gaussian blur with additional control
+						<entry>A lowpass filter (eg. gaussian blur) with additional control
 						of outcome as contrast and saturation.
 						The primary usage for lowpass filter is in combination with a
 						blending operator, try out the preset named 'local contrast mask' 
@@ -24,11 +24,19 @@
 		<sect5><title>Radius</title>
 			<para>Set the radius of the blur.</para>
 		</sect5>
+		<sect5><title>Soften with</title>
+			<para>This combobox defines the algorithm of the blur; you can chose between Gaussian blur (default)
+                              and bilateral filter. The latter leads to an edge preserving blur.</para>
+		</sect5>
 		<sect5><title>Contrast</title>
-			<para>Changes the contrast of the mask, negative value is inverted contrast.</para>
+			<para>Changes the contrast. Negative values result in an inverted negative image. Higher
+                              absolute values increase contrast; lower absolute values reduce contrast. A value of zero leads to
+                              a neutral plane.</para>
 		</sect5>			
 		<sect5><title>Saturation</title>
-			<para>Changes the saturation level od the mask.</para>
+			<para>Changes the color saturation. Negative values result in complementary colors by inverting the
+                              a/b-channels. Higher absolute values increase color saturation; lower absolute values reduce color
+                              saturation. A value of zero leads to a desaturated black&amp;white image.</para>
 		</sect5>			
 	</sect4>
 </sect3>
