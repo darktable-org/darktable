@@ -468,6 +468,8 @@ void LJpegDecompressor::createBigTable(HuffmanTable *htbl) {
   uint32 l;
 
   htbl->bigTable = (int*)_aligned_malloc(size * sizeof(int), 16);
+  if (!htbl->bigTable)
+	ThrowRDE("Out of memory, failed to allocate %d bytes", size*sizeof(int));
   for (uint32 i = 0; i < size; i++) {
     ushort16 input = i << 2; // Calculate input value
     int code = input >> 8;   // Get 8 bits

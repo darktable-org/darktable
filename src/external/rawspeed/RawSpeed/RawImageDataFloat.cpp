@@ -168,6 +168,9 @@ namespace RawSpeed {
       __m128i ssesub2;
       __m128i ssesign;
       uint32* sub_mul = (uint32*)_aligned_malloc(16*4*2, 16);
+	  if (!sub_mul)
+		ThrowRDE("Out of memory, failed to allocate 128 bytes");
+
       uint32 gw = pitch / 16;
       // 10 bit fraction
       uint32 mul = (int)(1024.0f * 65535.0f / (float)(whitePoint - blackLevelSeparate[mOffset.x&1]));  
