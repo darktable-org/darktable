@@ -1,3 +1,8 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect3 status="draft"><title>Overexposed</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
@@ -17,11 +22,18 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>Overexposed is used to visualize pixels that are above and/or below a user-defined threshold.</para>
-		<sect5><title>lower threshold</title>
+		<para>Overexposed is used to visualize pixels that are above and/or below a user-defined threshold. You can activate this plugin
+                      the usual way. You can also press icon <inlinegraphic fileref="&icon_module_overexposed;" scalefit="1" width="2%" align="center" /> 
+                      in the lower panel as a shortcut.</para>
+		<sect5><title>Color scheme</title>
+			<para>In its default color scheme this module will display deep shadows in blue and highlights in red. These
+                              colors will be easy to identify in most cases. In some cases you might want to change that to
+                              black &amp; white or purple &amp; green, eg. if you experience overexposed highlights in red blossoms.</para>
+		</sect5>
+		<sect5><title>Lower threshold</title>
 			<para>Set lower threshold, expressed as a percentage of the maximal brightness.</para>
 		</sect5>
-		<sect5><title>upper threshold</title>
+		<sect5><title>Upper threshold</title>
 			<para>Set upper threshold, expressed as a percentage of the maximal brightness.</para>
 		</sect5>			
 	</sect4>
