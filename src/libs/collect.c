@@ -95,6 +95,7 @@ typedef enum dt_lib_collect_cols_t
   DT_LIB_COLLECT_COL_TOOLTIP,
   DT_LIB_COLLECT_COL_PATH,
   DT_LIB_COLLECT_COL_COUNT,
+  DT_LIB_COLLECT_COL_VISIBLE,
   DT_LIB_COLLECT_NUM_COLS
 }
 dt_lib_collect_cols_t;
@@ -667,7 +668,7 @@ _folder_tree ()
   sqlite3_stmt *stmt;
 //  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select folder,external_drive from film_rolls order by folder desc", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select folder from film_rolls order by folder desc", -1, &stmt, NULL);
-  GtkTreeStore *store = gtk_tree_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INT);
+  GtkTreeStore *store = gtk_tree_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_BOOLEAN);
 
   // initialize the model with the paths
 
@@ -753,7 +754,10 @@ _folder_tree ()
 
         int count = _count_images(pth2);
         gtk_tree_store_insert(store, &iter, level>0?&current:NULL,0);
-        gtk_tree_store_set(store, &iter, DT_LIB_COLLECT_COL_TEXT, pch[level], DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_COUNT, count, -1);
+        gtk_tree_store_set(store, &iter, DT_LIB_COLLECT_COL_TEXT, pch[level], 
+                                         DT_LIB_COLLECT_COL_PATH, pth2, 
+                                         DT_LIB_COLLECT_COL_COUNT, count, 
+                                         DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
         current = iter;
       }
 
@@ -764,41 +768,107 @@ _folder_tree ()
 }
 
 static gboolean
-match_string (GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
+match_string (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
 {
   dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *) data;
-  gchar *str;
+  gchar *str = NULL;
   const gchar *string;
-  gboolean visible = FALSE;
+  gboolean cur_state, visible;
 
-  if (!dr->typing)
+  gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_VISIBLE, &cur_state, -1);
+
+  if (!dr->typing && !cur_state)
   {
     visible = TRUE;
-    return visible;
+    gtk_tree_store_set (GTK_TREE_STORE(model), iter, DT_LIB_COLLECT_COL_VISIBLE, visible, -1);
+
+    //g_free(str);
+    //str = NULL;
+
+    return FALSE;
   }
 
   regex_t re;
   gchar *pattern = NULL;
   int status;
 
-  gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_PATH, &str, -1);
-
   string = gtk_entry_get_text(GTK_ENTRY(dr->text));
-  //pattern = dt_util_str_replace (string, "%", ".*");
   pattern = dt_util_dstrcat (pattern, "%s%s%s", ".*", string, ".*"); 
 
   regcomp(&re, pattern, REG_NOSUB);
 
   status = regexec (&re, str, (size_t) 0, NULL, 0);
   regfree (&re);
+  printf("Model: %s -- Entry: %s -- Status: %s\n", str, string, status == REG_NOMATCH?"No Match":"MATCH!"); 
 
-  if (!status)
+  if (status == REG_NOMATCH)
+    visible = FALSE;
+  else
     visible = TRUE;
 
-  g_free(str);
+  gtk_tree_store_set (GTK_TREE_STORE(model), iter, DT_LIB_COLLECT_COL_VISIBLE, visible, -1);
 
-  return visible;
+  //g_free(str);
+
+  return FALSE;
 }
+
+
+static gboolean
+reveal_func (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+{
+  gboolean state;
+  GtkTreeIter parent, child = *iter;
+  gchar *str;
+
+  gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_VISIBLE, &state, -1);
+  printf("Model: %s -- State: %s\n", str, state?"TRUE":"FALSE"); 
+  if (!state)
+    return FALSE;
+
+  while (gtk_tree_model_iter_parent (model, &parent, &child))
+  {
+    gtk_tree_model_get (model, &parent, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_VISIBLE, &state, -1);
+    printf("Changing: Model: %s -- State from: %s to TRUE\n", str, state?"TRUE":"FALSE"); 
+    gtk_tree_store_set (GTK_TREE_STORE (model), &parent, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
+    child = parent;
+  }
+
+  return FALSE; 
+}
+
+static gboolean
+expand_row (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, GtkTreeView *view)
+{
+  gboolean state;
+
+  gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_VISIBLE, &state, -1);
+
+  if (state)
+    gtk_tree_view_expand_row (view, path, TRUE);
+
+  return FALSE;
+}
+
+static void
+expand_tree (GtkTreeView *view, dt_lib_collect_rule_t *dr)
+{
+  GtkTreeModel *model = gtk_tree_view_get_model (view);
+
+  if (dr->typing)
+  {
+    gtk_tree_model_foreach (model, (GtkTreeModelForeachFunc)expand_row, view);
+  }
+}
+
+static void
+refilter (GtkTreeModel *model, gpointer data)
+{
+  gtk_tree_model_foreach (model, (GtkTreeModelForeachFunc)match_string, data);
+  
+  gtk_tree_model_foreach (model, (GtkTreeModelForeachFunc)reveal_func, NULL);
+}
+
 
 static GtkTreeModel *
 _create_filtered_model (GtkTreeModel *model, GtkTreeIter iter, dt_lib_collect_rule_t *dr)
@@ -828,8 +898,10 @@ _create_filtered_model (GtkTreeModel *model, GtkTreeIter iter, dt_lib_collect_ru
   /* Create filter and set virtual root */
   filter = gtk_tree_model_filter_new (model, path);
   gtk_tree_path_free (path);
+
+  gtk_tree_model_filter_set_visible_column (GTK_TREE_MODEL_FILTER(filter), DT_LIB_COLLECT_COL_VISIBLE);
   
-  gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER(filter), match_string, dr, NULL);
+  refilter (model, dr);
 
   return filter;
 }
@@ -1066,17 +1138,20 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
       break;
 
     case DT_COLLECTION_PROP_FOLDERS: // folders
-      if (!dr->typing || !strlen(escaped_text))
+      if (!dr->typing || strlen(escaped_text) == 0)
         goto folders;
       else
       {
+        /* Refilter all trees */
         if (d->trees != NULL)
         {
           for (int i=0; i<d->trees->len; i++)
           {
             tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
             GtkTreeModelFilter *modelfilter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model (tree));
-            gtk_tree_model_filter_refilter (modelfilter);
+            GtkTreeModel *model = gtk_tree_model_filter_get_model (modelfilter);
+            refilter (model, dr);
+            expand_tree (tree, dr);
           }
           
         gtk_widget_show(GTK_WIDGET(d->sw2));
@@ -1213,7 +1288,8 @@ folders:
       {
         tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
         GtkTreeModelFilter *modelfilter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model (tree));
-        gtk_tree_model_filter_refilter (modelfilter);
+        GtkTreeModel *model = gtk_tree_model_filter_get_model (modelfilter);
+        refilter (model, dr);
       }
     }
  
@@ -1330,7 +1406,11 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
 
   if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
   gchar *text;
+  
   const int active = d->active_rule;
+  dt_lib_collect_rule_t *dr = &(d->rule[active]);
+  dr->typing = FALSE;
+  
   const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[active].combo));
   if(item == DT_COLLECTION_PROP_FILMROLL || // get full path for film rolls
      item == DT_COLLECTION_PROP_FOLDERS)    // or folders
@@ -1340,8 +1420,6 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
   gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
   g_free(text);
 
-  dt_lib_collect_rule_t *dr = &(d->rule[active]);
-  dr->typing = FALSE;
   changed_callback(NULL, d->rule + active);
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
@@ -1709,7 +1787,7 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_add_attribute(col, renderer, "text", DT_LIB_COLLECT_COL_TEXT);
 
-  GtkTreeModel *listmodel = GTK_TREE_MODEL(gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT));
+  GtkTreeModel *listmodel = GTK_TREE_MODEL(gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_BOOLEAN));
   d->listmodel = listmodel;
   
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
