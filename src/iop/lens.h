@@ -24,6 +24,28 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
+typedef enum dt_iop_lensfun_modflag_t
+{
+  LENSFUN_MODFLAG_NONE        = 0,
+  LENSFUN_MODFLAG_ALL         = LF_MODIFY_DISTORTION | LF_MODIFY_TCA | LF_MODIFY_VIGNETTING,
+  LENSFUN_MODFLAG_DIST_TCA    = LF_MODIFY_DISTORTION | LF_MODIFY_TCA,
+  LENSFUN_MODFLAG_DIST_VIGN   = LF_MODIFY_DISTORTION | LF_MODIFY_VIGNETTING,
+  LENSFUN_MODFLAG_TCA_VIGN    = LF_MODIFY_TCA | LF_MODIFY_VIGNETTING,
+  LENSFUN_MODFLAG_DIST        = LF_MODIFY_DISTORTION,
+  LENSFUN_MODFLAG_TCA         = LF_MODIFY_TCA,
+  LENSFUN_MODFLAG_VIGN        = LF_MODIFY_VIGNETTING,
+  LENSFUN_MODFLAG_MASK        = LF_MODIFY_DISTORTION | LF_MODIFY_TCA | LF_MODIFY_VIGNETTING
+}
+dt_iop_lensfun_modflag_t;
+
+typedef struct dt_iop_lensfun_modifier_t
+{
+  char name[40];
+  int  pos;           // position in combo box
+  int  modflag;
+}
+dt_iop_lensfun_modifier_t;
+
 typedef struct dt_iop_lensfun_params_t
 {
   int modify_flags;
@@ -50,9 +72,11 @@ typedef struct dt_iop_lensfun_gui_data_t
   GtkMenu *camera_menu;
   GtkButton *lens_model;
   GtkMenu *lens_menu;
-  GtkWidget *target_geom, *reverse, *tca_r, *tca_b, *scale;
+  GtkWidget *modflags, *target_geom, *reverse, *tca_r, *tca_b, *scale;
   GtkWidget *find_lens_button;
   GtkWidget *find_camera_button;
+  GList *modifiers;
+  GtkLabel *message;
 }
 dt_iop_lensfun_gui_data_t;
 

@@ -1,0 +1,62 @@
+<sect3 status="draft"><title>Global tonemap</title>
+	<sect4><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>This modules contains a few implementations of global tonemap operators used for
+						compressing high dynamic ranged images into lower dynamic range.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/global_tonemap.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+		<para>Reinhard, Filmic and Drago tonamap operators are available for use.</para>
+	</sect4>
+<!--
+	<sect4><title>Usage</title>
+		<para>USAGE DESCRIPTION
+		</para>
+		<sect5><title>PARAM 1</title>
+			<para>PARAM 1 DESCRIPTION</para>
+		</sect5>
+		<sect5><title>PARAM 2</title>
+			<para>PARAM 2 DESCRIPTION</para>
+		</sect5>	
+		<sect5><title>PARAM 3</title>
+			<para>PARAM 3 DESCRIPTION</para>
+		</sect5>	
+	</sect4>
+	
+	<sect4><title>Examples</title>
+		<para>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='30%'/>
+					<colspec colwidth='70%'/>
+					<tbody>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/soften_ex1.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry><para>This is the original image, use it as reference for the changes below...</para></entry>
+						</row>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/soften_ex2.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry>
+								<para>EXAMPLE 2 DESCRIPTION
+								</para>
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</para>	
+	</sect4>
+-->	
+</sect3>

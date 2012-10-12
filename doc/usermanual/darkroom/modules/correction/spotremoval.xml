@@ -1,0 +1,62 @@
+<sect3 status="draft"><title>Spot removal</title>
+	<sect4><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>Spot removal allows you to correct a zone in your image by using another zone as model.		
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/spotremoval.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect4>
+
+	<sect4><title>Usage</title>
+		<para>click on the area to be healed then drag to a clean area. The circle with line inside is the clean one.</para>	
+		<para>use mouse scroll-wheel over the stroke to change size.</para>
+		<para>right-click on a stroke to delete.</para>		
+	</sect4>
+	
+	<sect4><title>Examples</title>
+		<para>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='30%'/>
+					<colspec colwidth='70%'/>
+					<tbody>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/spotremoval_ex1_1.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry><para>Let's use this portrait as example; we want to remove some dirt and unwanted catchlight from camera popup strobe.</para></entry>
+						</row>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/spotremoval_ex1_2.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry>
+								<para>I have marked all the spots that I want to remove from the image. I first start by pressing the spot and drag to an area that
+									should be used as reference to remove the spot. The handle (circle) which has a line that ends in the center of the circle
+									indicates reference source.
+								</para>
+							</entry>
+						</row>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/spotremoval_ex1_3.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry>
+								<para>And here is the result image of the spotremoval.
+								</para>
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</para>	
+	</sect4>
+</sect3>

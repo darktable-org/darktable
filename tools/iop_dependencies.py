@@ -40,19 +40,25 @@ def add_edges(gr):
   
   # these work on mosaic data:
   gr.add_edge(('demosaic', 'rawspeed'))
-  gr.add_edge(('demosaic', 'temperature'))
+  # handle highlights correctly:
+  # we want highlights as early as possible, to avoid
+  # pink highlights in plugins (happens only before highlight clipping)
+  gr.add_edge(('demosaic', 'highlights'))
   gr.add_edge(('demosaic', 'hotpixels'))
   gr.add_edge(('demosaic', 'rawdenoise'))
   gr.add_edge(('demosaic', 'cacorrect'))
+
+  # highlights come directly after whitebalance
+  gr.add_edge(('highlights', 'temperature'))
   
   # cacorrect works better on undenoised data:
   gr.add_edge(('hotpixels', 'cacorrect'))
   gr.add_edge(('rawdenoise', 'cacorrect'))
   
-  # all these need white balanced input:
-  gr.add_edge(('rawdenoise', 'temperature'))
-  gr.add_edge(('hotpixels', 'temperature'))
-  gr.add_edge(('cacorrect', 'temperature'))
+  # all these need white balanced and clipped input:
+  gr.add_edge(('rawdenoise', 'highlights'))
+  gr.add_edge(('hotpixels', 'highlights'))
+  gr.add_edge(('cacorrect', 'highlights'))
   
   # and of course rawspeed needs to give us the pixels first:
   gr.add_edge(('temperature', 'rawspeed'))
@@ -79,16 +85,6 @@ def add_edges(gr):
   gr.add_edge(('clipping', 'flip'))
   gr.add_edge(('graduatednd', 'flip'))
   gr.add_edge(('vignette', 'flip'))
-  # handle highlights correctly:
-  # we want highlights as early as possible, to avoid
-  # pink highlights in plugins (happens only before highlight clipping)
-  gr.add_edge(('highlights', 'demosaic'))
-  gr.add_edge(('exposure', 'highlights'))
-  gr.add_edge(('graduatednd', 'highlights'))
-  gr.add_edge(('basecurve', 'highlights'))
-  gr.add_edge(('lens', 'highlights'))
-  gr.add_edge(('tonemap', 'highlights'))
-  gr.add_edge(('shrecovery', 'highlights'))
   # gives the ability to change the space of shadow recovery fusion.
   # maybe this has to go the other way round, let's see what experience shows!
   gr.add_edge(('shrecovery', 'basecurve'))
@@ -108,6 +104,7 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'nlmeans'))
   gr.add_edge(('colorout', 'colortransfer'))
   gr.add_edge(('colorout', 'atrous'))
+  gr.add_edge(('colorout', 'bilat'))
   gr.add_edge(('colorout', 'colorzones'))
   gr.add_edge(('colorout', 'lowlight'))
   gr.add_edge(('colorout', 'monochrome'))
@@ -128,6 +125,7 @@ def add_edges(gr):
   gr.add_edge(('nlmeans', 'colorin'))
   gr.add_edge(('colortransfer', 'colorin'))
   gr.add_edge(('atrous', 'colorin'))
+  gr.add_edge(('bilat', 'colorin'))
   gr.add_edge(('colorzones', 'colorin'))
   gr.add_edge(('lowlight', 'colorin'))
   gr.add_edge(('monochrome', 'colorin'))
@@ -169,6 +167,7 @@ def add_edges(gr):
   gr.add_edge(('colorcorrection', 'monochrome'))
   
   # want to enhance detail/local contrast/sharpen denoised images:
+  gr.add_edge(('bilat', 'nlmeans'))
   gr.add_edge(('atrous', 'nlmeans'))
   gr.add_edge(('sharpen', 'nlmeans'))
   gr.add_edge(('anlfyeni', 'nlmeans'))
@@ -288,6 +287,7 @@ gr.add_nodes([
 'atrous',
 'basecurve',
 'bilateral',
+'bilat',
 'bloom',
 'borders',
 'cacorrect',

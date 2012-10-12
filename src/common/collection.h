@@ -59,6 +59,27 @@ typedef enum dt_collection_sort_t
 }
 dt_collection_sort_t;
 
+typedef enum dt_collection_properties_t
+{
+  DT_COLLECTION_PROP_FILMROLL,
+  DT_COLLECTION_PROP_FOLDERS,
+  DT_COLLECTION_PROP_CAMERA,
+  DT_COLLECTION_PROP_TAG,
+  DT_COLLECTION_PROP_DAY,
+  DT_COLLECTION_PROP_HISTORY,
+  DT_COLLECTION_PROP_COLORLABEL,
+  DT_COLLECTION_PROP_TITLE,
+  DT_COLLECTION_PROP_DESCRIPTION,
+  DT_COLLECTION_PROP_CREATOR,
+  DT_COLLECTION_PROP_PUBLISHER,
+  DT_COLLECTION_PROP_RIGHTS,
+  DT_COLLECTION_PROP_LENS,
+  DT_COLLECTION_PROP_ISO,
+  DT_COLLECTION_PROP_APERTURE,
+  DT_COLLECTION_PROP_FILENAME
+}
+dt_collection_properties_t;
+
 typedef struct dt_collection_params_t
 {
   /** flags for which query parts to use, see COLLECTION_QUERY_x defines... */

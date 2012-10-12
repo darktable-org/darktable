@@ -1,0 +1,28 @@
+<sect3 status="draft"><title>Overexposed</title>
+	<sect4><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>This module is a useful feature that displays pixel outside dynamic range.				
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/overexposed.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect4>
+
+	<sect4><title>Usage</title>
+		<para>Overexposed is used to visualize pixels that are above and/or below a user-defined threshold.</para>
+		<sect5><title>lower threshold</title>
+			<para>Set lower threshold, expressed as a percentage of the maximal brightness.</para>
+		</sect5>
+		<sect5><title>upper threshold</title>
+			<para>Set upper threshold, expressed as a percentage of the maximal brightness.</para>
+		</sect5>			
+	</sect4>
+</sect3>

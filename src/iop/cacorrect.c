@@ -25,6 +25,8 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
+#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
+
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
 DT_MODULE(1)
@@ -1111,7 +1113,7 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
           c = FC(row,col,filters);
 
           // rawData[row][col] = CLIP((int)(65535.0f*rgb[(rr)*TS+cc][c] + 0.5f));
-          out[indx] = rgb[(rr)*TS+cc][c];
+          out[indx] = CLIP(rgb[(rr)*TS+cc][c]);
           //image[indx][c] = CLIP((int)(65535.0*rgb[(rr)*TS+cc][c] + 0.5));//for dcraw implementation
         }
     }
@@ -1163,7 +1165,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
 
   // we come just before demosaicing.
-  module->priority = 58; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 76; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_cacorrect_params_t);
   module->gui_data = NULL;
 }

@@ -376,32 +376,32 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     Exiv2::ExifData::const_iterator pos;
     /* Read shutter time */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ExposureTime")))
-         != exifData.end() )
+         != exifData.end() && pos->size())
     {
       // dt_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
       img->exif_exposure = pos->toFloat ();
     }
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ShutterSpeedValue")))
-              != exifData.end() )
+              != exifData.end() && pos->size())
     {
       // uf_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
       img->exif_exposure = 1.0/pos->toFloat ();
     }
     /* Read aperture */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.FNumber")))
-         != exifData.end() )
+         != exifData.end() && pos->size())
     {
       img->exif_aperture = pos->toFloat ();
     }
     else if ( (pos=exifData.findKey(
                      Exiv2::ExifKey("Exif.Photo.ApertureValue")))
-              != exifData.end() )
+              != exifData.end() && pos->size())
     {
       img->exif_aperture = pos->toFloat ();
     }
     /* Read ISO speed - Nikon happens to return a pair for Lo and Hi modes */
     if ( (pos=Exiv2::isoSpeed(exifData) )
-         != exifData.end() )
+         != exifData.end() && pos->size())
     {
       int isofield = pos->count () > 1  ? 1 : 0;
       img->exif_iso = pos->toFloat (isofield);
@@ -409,26 +409,26 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 #if EXIV2_MINOR_VERSION>19
     /* Read focal length  */
     if ( (pos=Exiv2::focalLength(exifData))
-         != exifData.end() )
+         != exifData.end() &&  pos->size())
     {
       img->exif_focal_length = pos->toFloat ();
     }
 
     if ( (pos=Exiv2::subjectDistance(exifData))
-         != exifData.end() )
+         != exifData.end() && pos->size())
     {
       img->exif_focus_distance = pos->toFloat ();
     }
 #endif
     /** read image orientation */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Orientation")))
-         != exifData.end() )
+         != exifData.end() && pos->size())
     {
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
     /* sony has its own rotation */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.MinoltaCs7D.Rotation")))
-         != exifData.end() )
+         != exifData.end() && pos->size())
     {
       switch(pos->toLong())
       {
@@ -445,7 +445,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
     /* read gps location */
     if ( (pos = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitude")))
-         != exifData.end() )
+         != exifData.end() && pos->size())
     {
       Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitudeRef"));
       const char *sign = ref->toString().c_str();
@@ -457,7 +457,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 
     if ( (pos = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitude")))
-         != exifData.end() )
+         != exifData.end() && pos->size())
     {
       Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitudeRef"));
       const char *sign = ref->toString().c_str();
@@ -469,21 +469,22 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 
     /* Read lens name */
-    if ( (pos=Exiv2::lensName(exifData)) != exifData.end() )
+    if ( (pos=Exiv2::lensName(exifData)) != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
-    else if (((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
-             ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end()))
+    else if ((((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
+             ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end())
+	      ) && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Panasonic.LensType"))) != exifData.end() )
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Panasonic.LensType"))) != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
 #if EXIV2_MINOR_VERSION>20
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.OlympusEq.LensModel"))) != exifData.end() )
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.OlympusEq.LensModel"))) != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
@@ -492,20 +493,20 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 #if 0
     /* Read flash mode */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.Flash")))
-         != exifData.end() )
+         != exifData.end() && pos->size())
     {
       uf_strlcpy_to_utf8(uf->conf->flashText, max_name, pos, exifData);
     }
     /* Read White Balance Setting */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.WhiteBalance")))
-         != exifData.end() )
+         != exifData.end() && pos->size())
     {
       uf_strlcpy_to_utf8(uf->conf->whiteBalanceText, max_name, pos, exifData);
     }
 #endif
 
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Make")))
-         != exifData.end() )
+         != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_maker, 32, pos, exifData);
       for(char *c=img->exif_maker+31; c > img->exif_maker; c--) if(*c != ' ' && *c != '\0')
@@ -515,7 +516,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         }
     }
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Model")))
-         != exifData.end() )
+         != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_model, 32, pos, exifData);
       for(char *c=img->exif_model+31; c > img->exif_model; c--) if(*c != ' ' && *c != '\0')
@@ -525,7 +526,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         }
     }
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.DateTimeOriginal")))
-         != exifData.end() )
+         != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
     }
@@ -536,13 +537,13 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_metadata_set(img->id, "Xmp.dc.creator", str);
     }
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Artist")))
-              != exifData.end() )
+              != exifData.end() && pos->size())
     {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
     }
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Canon.OwnerName")))
-              != exifData.end() )
+              != exifData.end() && pos->size())
     {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
@@ -550,7 +551,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
     // FIXME: Should the UserComment go into the description? Or do we need an extra field for this?
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.UserComment")))
-         != exifData.end() )
+         != exifData.end() && pos->size())
     {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.description", str.c_str());
@@ -562,7 +563,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_metadata_set(img->id, "Xmp.dc.rights", str);
     }
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Copyright")))
-              != exifData.end() )
+              != exifData.end() && pos->size())
     {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
@@ -594,7 +595,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Rating")))
-         != exifData.end() )
+         != exifData.end() && pos->size())
     {
       int stars = pos->toLong();
       if ( stars == 0 )
@@ -608,7 +609,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       img->flags = (img->flags & ~0x7) | (0x7 & stars);
     }
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.RatingPercent")))
-              != exifData.end() )
+              != exifData.end() && pos->size())
     {
       int stars = pos->toLong()*5./100;
       if ( stars == 0 )
@@ -622,9 +623,84 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       img->flags = (img->flags & ~0x7) | (0x7 & stars);
     }
 
+    // read embedded color matrix as used in DNGs
+    {
+      int is_1_65 = -1, is_2_65 = -1; // -1: not found, 0: some random type, 1: D65
+      if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.CalibrationIlluminant1")))
+	   != exifData.end() && pos->size())
+      {
+        is_1_65 = (pos->toLong() == 21)?1:0;
+      }
+      if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.CalibrationIlluminant2")))
+	   != exifData.end() && pos->size())
+      {
+        is_2_65 = (pos->toLong() == 21)?1:0;
+      }
+
+      // use the d65 (type == 21) matrix if we found it, otherwise use whatever we got
+      Exiv2::ExifData::const_iterator cm1_pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix1"));
+      Exiv2::ExifData::const_iterator cm2_pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix2"));
+      if(is_1_65 == 1 && cm1_pos != exifData.end() && cm1_pos->count() == 9 && cm1_pos->size())
+        for(int i=0; i<9; i++)
+          img->d65_color_matrix[i] = cm1_pos->toFloat(i);
+      else if(is_2_65== 1 && cm2_pos != exifData.end() && cm2_pos->count() == 9 && cm2_pos->size())
+        for(int i=0; i<9; i++)
+          img->d65_color_matrix[i] = cm2_pos->toFloat(i);
+      else if(is_1_65 == 0 && cm1_pos != exifData.end() && cm1_pos->count() == 9 && cm1_pos->size())
+        for(int i=0; i<9; i++)
+          img->d65_color_matrix[i] = cm1_pos->toFloat(i);
+      else if(is_2_65 == 0 && cm2_pos != exifData.end() && cm2_pos->count() == 9 && cm2_pos->size())
+        for(int i=0; i<9; i++)
+          img->d65_color_matrix[i] = cm2_pos->toFloat(i);
+    }
+
+    // some files have the colorspace explicitly set. try to read that.
+    // is_ldr -> none
+    // 0x01   -> sRGB
+    // 0x02   -> AdobeRGB
+    // 0xffff -> Uncalibrated
+    //          + Exif.Iop.InteroperabilityIndex of 'R03' -> AdobeRGB
+    //          + Exif.Iop.InteroperabilityIndex of 'R98' -> sRGB
+    if (dt_image_is_ldr(img) && (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ColorSpace")))
+	!= exifData.end() && pos->size())
+    {
+      int colorspace = pos->toLong();
+      if(colorspace == 0x01)
+        img->colorspace = DT_IMAGE_COLORSPACE_SRGB;
+      else if(colorspace == 0x02)
+        img->colorspace = DT_IMAGE_COLORSPACE_ADOBE_RGB;
+      else if(colorspace == 0xffff)
+      {
+        if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Iop.InteroperabilityIndex")))
+	     != exifData.end() && pos->size())
+        {
+          std::string interop_index = pos->toString();
+          if(interop_index == "R03")
+            img->colorspace = DT_IMAGE_COLORSPACE_ADOBE_RGB;
+          else if(interop_index == "R98")
+            img->colorspace = DT_IMAGE_COLORSPACE_SRGB;
+        }
+      }
+    }
+
     // workaround for an exiv2 bug writing random garbage into exif_lens for this camera:
     // http://dev.exiv2.org/issues/779
     if(!strcmp(img->exif_model, "DMC-GH2")) sprintf(img->exif_lens, "(unknown)");
+
+    // Workaround for an issue on newer Sony NEX cams.
+    // The default EXIF field is not used by Sony to store lens data
+    // http://dev.exiv2.org/issues/883
+    // http://darktable.org/redmine/issues/8813
+    // FIXME: This is still a workaround
+    if(!strncmp(img->exif_model, "NEX", 3))
+    {
+      sprintf(img->exif_lens, "(unknown)");
+      if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.LensModel"))) != exifData.end() && pos->size())
+      {
+	std::string str = pos->print(&exifData);
+	sprintf(img->exif_lens, "%s", str.c_str());
+      }
+    };
 
     img->exif_inited = 1;
     return true;

@@ -39,15 +39,16 @@
 				<xsl:if test="@mode != ''">, Mode: <span style="font-style:italic;"><xsl:value-of select="@mode"/></span></xsl:if>
 			</h2>
 			<div class="text">
-         <xsl:for-each select="Aliases/Alias">
-            Also known as: <span class="param">&quot;<xsl:value-of select="."/>&quot;</span><br/>
-         </xsl:for-each>
-
+			<xsl:if test="Aliases">
+				<xsl:for-each select="Aliases/Alias">
+					Also known as: <span class="param">&quot;<xsl:value-of select="."/>&quot;</span><br/>
+				</xsl:for-each>
 				<br/>
+			</xsl:if>
 				<xsl:variable name = "supported" ><xsl:value-of select="@supported"/></xsl:variable>
 				<xsl:if test ="$supported = 'no'">Supported: <span style="color:red;font-style:italic;">No.</span></xsl:if>
 					<xsl:if test ="not($supported = 'no')">Supported: <span style="color:green;font-style:italic;">Yes.</span>
-					<br/>
+					<br/><br/>
 					Crop Top,Left: <span class="param"><xsl:value-of select="Crop/@x"/>,<xsl:value-of select="Crop/@y"/> pixels.</span>
 					<br/>
 					<xsl:if test ="Crop/@height &gt; 0">
@@ -82,31 +83,31 @@
 						<span class="param"><xsl:value-of select="@white"/>.</span>
 						<br/>
 					</xsl:for-each>
-					Uncropped Sensor Colors Positions:<br/>
-					<xsl:for-each select="CFA/Color">
-						<xsl:sort data-type = "number" select = "@y*2+@x"/>
-						<xsl:variable name = "color" ><xsl:value-of select="."/></xsl:variable>
-						<xsl:if test="position()=last()-1"><br/></xsl:if>						
-						<xsl:if test ="$color = 'RED'"><span class="param" style="color:red;">[<xsl:copy-of select="$color" />]</span></xsl:if>
-						<xsl:if test ="$color = 'GREEN'"><span class="param" style="color:green;">[<xsl:copy-of select="$color" />]</span></xsl:if>
-						<xsl:if test ="$color = 'BLUE'"><span class="param" style="color:blue;">[<xsl:copy-of select="$color" />]</span></xsl:if>
-					</xsl:for-each>
-					<br/>
+					<xsl:if test="CFA"><br/>
+						Uncropped Sensor Colors Positions:<br/>
+						<xsl:for-each select="CFA/Color">
+							<xsl:sort data-type = "number" select = "@y*2+@x"/>
+							<xsl:variable name = "color" ><xsl:value-of select="."/></xsl:variable>
+							<xsl:if test="position()=last()-1"><br/></xsl:if>						
+							<xsl:if test ="$color = 'RED'"><span class="param" style="color:red;">[<xsl:copy-of select="$color" />]</span></xsl:if>
+							<xsl:if test ="$color = 'GREEN'"><span class="param" style="color:green;">[<xsl:copy-of select="$color" />]</span></xsl:if>
+							<xsl:if test ="$color = 'BLUE'"><span class="param" style="color:blue;">[<xsl:copy-of select="$color" />]</span></xsl:if>
+						</xsl:for-each>
+						<br/><br/>
+					</xsl:if>
 					<xsl:for-each select="BlackAreas/Horizontal">
-						<br/>Horizontal Black Area at Y = <span class="param"><xsl:value-of select="@y"/></span>, height is <span class="param"><xsl:value-of select="@height"/> pixels.</span>
+						Horizontal Black Area at Y = <span class="param"><xsl:value-of select="@y"/></span>, height is <span class="param"><xsl:value-of select="@height"/> pixels.</span><br/>
 					</xsl:for-each>					
 					<xsl:for-each select="BlackAreas/Vertical">
-						<br/>Vertical Black Area at X = <span class="param"><xsl:value-of select="@x"/></span>, width is <span class="param"><xsl:value-of select="@width"/> pixels.</span>
+						Vertical Black Area at X = <span class="param"><xsl:value-of select="@x"/></span>, width is <span class="param"><xsl:value-of select="@width"/> pixels.</span><br/>
 					</xsl:for-each>					
 					<xsl:for-each select="Hints/Hint">
-					  <br/>
-            Decoder Hint: <span class="param">&quot;<xsl:value-of select="@name"/>&quot;</span>:<span class="param">&quot;<xsl:value-of select="@value"/>&quot;</span> 
-          </xsl:for-each>
+						Decoder Hint: <span class="param">&quot;<xsl:value-of select="@name"/>&quot;</span>:<span class="param">&quot;<xsl:value-of select="@value"/>&quot;</span> <br/>
+					</xsl:for-each>
 				 </xsl:if>
 			</div>
-		 <br/>
 		</xsl:for-each>
-		<div class="toptext">There are a total of <xsl:value-of select="count(Cameras/Camera[not(@model=preceding-sibling::Camera/@model)]/@model)"/> unique cameras.</div>
+		<div class="toptext">There is a total of <xsl:value-of select="count(Cameras/Camera[not(@model=preceding-sibling::Camera/@model)]/@model)"/> unique cameras.</div>
 
 	</body>
 </html>

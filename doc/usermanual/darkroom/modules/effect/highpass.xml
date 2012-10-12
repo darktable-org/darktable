@@ -1,0 +1,27 @@
+<sect3 status="draft"><title>High pass</title>
+	<sect4><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>Highpass acts as high pass filter.			
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/highpass.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect4>
+
+	<sect4><title>Usage</title>
+		<sect5><title>sharpen</title>
+			<para>Set the sharpen. The higher, the more details.</para>
+		</sect5>
+		<sect5><title>contrast boost</title>
+			<para>Set the contrast boost.</para>
+		</sect5>			
+	</sect4>
+</sect3>

@@ -30,4 +30,30 @@ enum
   DND_TARGET_URI
 };
 
+/* drag & drop for internal image ids */
+static const GtkTargetEntry target_list_internal[] =
+{
+  { "image-id",    0, DND_TARGET_IMGID }
+};
+static const guint n_targets_internal = G_N_ELEMENTS (target_list_internal);
+
+/* drag & drop for global uris */
+static const GtkTargetEntry target_list_external[] =
+{
+  { "text/uri-list", 0, DND_TARGET_URI }
+};
+static const guint n_targets_external = G_N_ELEMENTS (target_list_external);
+
+/* drag & drop for both internal image ids and global uris */
+static const GtkTargetEntry target_list_all[] =
+{
+  { "image-id",                            0, DND_TARGET_IMGID },
+  { "text/uri-list",                       0, DND_TARGET_URI }
+};
+static const guint n_targets_all = G_N_ELEMENTS (target_list_all);
+
 #endif
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

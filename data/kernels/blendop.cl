@@ -40,7 +40,7 @@
 #define DEVELOP_BLEND_COLOR				0x13
 #define DEVELOP_BLEND_INVERSE				0x14
 #define DEVELOP_BLEND_UNBOUNDED                         0x15
-#define DEVELOP_BLEND_COLORBLEND                        0x16
+#define DEVELOP_BLEND_COLORADJUST                       0x16
 
 #define BLEND_ONLY_LIGHTNESS				8
 
@@ -599,7 +599,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       o = clamp(LCH_2_Lab(to), min, max);
       break;
 
-    case DEVELOP_BLEND_COLORBLEND:
+    case DEVELOP_BLEND_COLORADJUST:
       ta = Lab_2_LCH(clamp(a, min, max));
       tb = Lab_2_LCH(clamp(b, min, max));
       to.x = tb.x;
@@ -745,7 +745,7 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       o = clamp(a, min, max);		// Noop for Raw
       break;
 
-    case DEVELOP_BLEND_COLORBLEND:
+    case DEVELOP_BLEND_COLORADJUST:
       o = clamp(a, min, max);		// Noop for Raw
       break;
 
@@ -896,7 +896,7 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       o = clamp(HSL_2_RGB(to), min, max);
       break;
 
-    case DEVELOP_BLEND_COLORBLEND:
+    case DEVELOP_BLEND_COLORADJUST:
       ta = RGB_2_HSL(clamp(a, min, max));
       tb = RGB_2_HSL(clamp(b, min, max));
       d = fabs(ta.x - tb.x);
@@ -942,5 +942,18 @@ blendop_copy_alpha (__read_only image2d_t in_a, __read_only image2d_t in_b, __wr
 
   write_imagef(out, (int2)(x, y), pixel);
 }
+
+
+__kernel void
+blendop_set_mask (__write_only image2d_t mask, const int width, const int height, const float value)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  write_imagef(mask, (int2)(x, y), value);
+}
+
 
 

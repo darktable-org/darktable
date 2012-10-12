@@ -177,6 +177,7 @@ void gui_init(dt_lib_module_t *self)
   GtkCellRenderer *renderer;
 
   d->view = GTK_TREE_VIEW (gtk_tree_view_new());
+  gtk_widget_set_size_request(GTK_WIDGET(d->view), -1, 300);
 
   renderer = gtk_cell_renderer_text_new ();
   gtk_tree_view_insert_column_with_attributes(d->view,
@@ -429,7 +430,7 @@ static void _lib_keywords_add_collection_rule(GtkTreeView *view, GtkTreePath *tp
 
   /* set tag rule type */
   snprintf(confname, 200, "plugins/lighttable/collect/item%1d", rule);
-  dt_conf_set_int(confname, 2);
+  dt_conf_set_int(confname, 3);
 
   dt_conf_set_int("plugins/lighttable/collect/num_rules", rule+1);
 

@@ -1,0 +1,63 @@
+<sect3 status="draft"><title>Denoise - Non local means</title>
+	<sect4><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>This is another variant of denoise algorithm, which will work on chroma and/or luma.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/denoise_nlm.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect4>
+
+	<sect4><title>Usage</title>
+		<para>USAGE DESCRIPTION
+		</para>
+		<sect5><title>patch size</title>
+			<para>The size of noise to detect.</para>
+		</sect5>
+		<sect5><title>strength</title>
+			<para>The strength of the denoise</para>
+		</sect5>	
+		<sect5><title>luma</title>
+			<para>Amount of denoise to apply on luma</para>
+		</sect5>	
+		<sect5><title>chroma</title>
+			<para>Amount of denoise to apply on chroma</para>
+		</sect5>	
+	</sect4>
+<!--
+	<sect4><title>Examples</title>
+		<para>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='30%'/>
+					<colspec colwidth='70%'/>
+					<tbody>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/soften_ex1.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry><para>This is the original image, use it as reference for the changes below...</para></entry>
+						</row>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/soften_ex2.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry>
+								<para>EXAMPLE 2 DESCRIPTION
+								</para>
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</para>	
+	</sect4>
+-->	
+</sect3>

@@ -27,6 +27,8 @@
 #include "common/colorspaces.h"
 #include "common/colormatrices.c"
 #include "common/opencl.h"
+#include "common/image_cache.h"
+#include "common/imageio_jpeg.h"
 #include "external/adobe_coeff.c"
 #include <xmmintrin.h>
 #include <stdlib.h>
@@ -365,21 +367,35 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_darktable_profile(makermodel);
-    if(!d->input) sprintf(p->iccprofile, "cmatrix");
+    if(!d->input) sprintf(p->iccprofile, "eprofile");
   }
   if(!strcmp(p->iccprofile, "vendor"))
   {
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_vendor_profile(makermodel);
-    if(!d->input) sprintf(p->iccprofile, "cmatrix");
+    if(!d->input) sprintf(p->iccprofile, "eprofile");
   }
   if(!strcmp(p->iccprofile, "alternate"))
   {
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_alternate_profile(makermodel);
-    if(!d->input) sprintf(p->iccprofile, "cmatrix");
+    if(!d->input) sprintf(p->iccprofile, "eprofile");
+  }
+  if(!strcmp(p->iccprofile, "eprofile"))
+  {
+    // embedded color profile
+    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, pipe->image.id);
+    if(cimg->profile == NULL) sprintf(p->iccprofile, "ematrix");
+    else d->input = cmsOpenProfileFromMem(cimg->profile, cimg->profile_size);
+    dt_image_cache_read_release(darktable.image_cache, cimg);
+  }
+  if(!strcmp(p->iccprofile, "ematrix"))
+  {
+    // embedded matrix, hopefully D65
+    if(isnan(pipe->image.d65_color_matrix[0])) sprintf(p->iccprofile, "cmatrix");
+    else d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])pipe->image.d65_color_matrix);
   }
   if(!strcmp(p->iccprofile, "cmatrix"))
   {
@@ -518,13 +534,46 @@ void gui_update(struct dt_iop_module_t *self)
   if(strcmp(p->iccprofile, "darktable")) fprintf(stderr, "[colorin] could not find requested profile `%s'!\n", p->iccprofile);
 }
 
+// FIXME: update the gui when we add/remove the eprofile or ematrix
 void reload_defaults(dt_iop_module_t *module)
 {
+  gboolean use_eprofile = FALSE;
+  // some file formats like jpeg can have an embedded color profile
+  // currently we only support jpeg
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, module->dev->image_storage.id);
+  if(!cimg->profile)
+  {
+    char filename[DT_MAX_PATH_LEN];
+    dt_image_full_path(cimg->id, filename, DT_MAX_PATH_LEN);
+    const gchar *cc = filename + strlen(filename);
+    for(; *cc!='.'&&cc>filename; cc--);
+    gchar *ext = g_ascii_strdown(cc+1, -1);
+    if(!strcmp(ext, "jpg") || !strcmp(ext, "jpeg"))
+    {
+      dt_imageio_jpeg_t jpg;
+      if(!dt_imageio_jpeg_read_header(filename, &jpg))
+      {
+        dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+        img->profile_size = dt_imageio_jpeg_read_profile(&jpg, &img->profile);
+        use_eprofile = (img->profile_size > 0);
+        dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+      }
+    }
+    g_free(ext);
+  }
+  else
+    use_eprofile = TRUE; // the image has a profile assigned
+  dt_image_cache_read_release(darktable.image_cache, cimg);
+
   dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t)
   {
     "darktable", DT_INTENT_PERCEPTUAL
   };
-  if(dt_image_is_ldr(&module->dev->image_storage)) g_strlcpy(tmp.iccprofile, "sRGB", sizeof(tmp.iccprofile));
+
+  if(use_eprofile) g_strlcpy(tmp.iccprofile, "eprofile", sizeof(tmp.iccprofile));
+  else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_SRGB) g_strlcpy(tmp.iccprofile, "sRGB", sizeof(tmp.iccprofile));
+  else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_ADOBE_RGB) g_strlcpy(tmp.iccprofile, "adobergb", sizeof(tmp.iccprofile));
+  else if(dt_image_is_ldr(&module->dev->image_storage)) g_strlcpy(tmp.iccprofile, "sRGB", sizeof(tmp.iccprofile));
   memcpy(module->params, &tmp, sizeof(dt_iop_colorin_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorin_params_t));
 }
@@ -536,7 +585,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorin_params_t));
   module->params_size = sizeof(dt_iop_colorin_params_t);
   module->gui_data = NULL;
-  module->priority = 352; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 346; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
 }
 
@@ -557,7 +606,27 @@ void gui_init(struct dt_iop_module_t *self)
   g->profiles = NULL;
   dt_iop_color_profile_t *prof;
   int pos = -1;
-
+  // some file formats like jpeg can have an embedded color profile
+  // currently we only support jpeg
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, self->dev->image_storage.id);
+  if(cimg->profile)
+  {
+    prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
+    g_strlcpy(prof->filename, "eprofile", sizeof(prof->filename));
+    g_strlcpy(prof->name, "eprofile", sizeof(prof->name));
+    g->profiles = g_list_append(g->profiles, prof);
+    prof->pos = ++pos;
+  }
+  dt_image_cache_read_release(darktable.image_cache, cimg);
+  // use the matrix embedded in some DNGs
+  if(!isnan(self->dev->image_storage.d65_color_matrix[0]))
+  {
+    prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
+    g_strlcpy(prof->filename, "ematrix", sizeof(prof->filename));
+    g_strlcpy(prof->name, "ematrix", sizeof(prof->name));
+    g->profiles = g_list_append(g->profiles, prof);
+    prof->pos = ++pos;
+  }
   // get color matrix from raw image:
   char makermodel[1024];
   dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
@@ -704,7 +773,11 @@ void gui_init(struct dt_iop_module_t *self)
   while(l)
   {
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
-    if(!strcmp(prof->name, "cmatrix"))
+    if(!strcmp(prof->name, "eprofile"))
+      dt_bauhaus_combobox_add(g->cbox2, _("embedded icc profile"));
+    else if(!strcmp(prof->name, "ematrix"))
+      dt_bauhaus_combobox_add(g->cbox2, _("dng embedded matrix"));
+    else if(!strcmp(prof->name, "cmatrix"))
       dt_bauhaus_combobox_add(g->cbox2, _("standard color matrix"));
     else if(!strcmp(prof->name, "darktable"))
       dt_bauhaus_combobox_add(g->cbox2, _("enhanced color matrix"));

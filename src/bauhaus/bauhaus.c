@@ -825,14 +825,19 @@ void dt_bauhaus_combobox_set_editable(GtkWidget *widget, int editable)
 const char* dt_bauhaus_combobox_get_text(GtkWidget *widget)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
-  if(w->type != DT_BAUHAUS_COMBOBOX) return 0;
+  if(w->type != DT_BAUHAUS_COMBOBOX) return NULL;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-  if(!d->editable)
+
+  if(d->editable && d->active < 0)
   {
-    if(d->active < 0 || d->active >= d->num_labels) return 0;
+    return d->text;
+  }
+  else
+  {
+    if(d->active < 0 || d->active >= d->num_labels) return NULL;
     return (const char *)g_list_nth_data(d->labels, d->active);
   }
-  return d->text;
+  return NULL;
 }
 
 void dt_bauhaus_combobox_clear(GtkWidget *widget)
@@ -1119,7 +1124,7 @@ dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
       int active = darktable.bauhaus->end_mouse_y / (widget->allocation.height + get_line_space());
       GList *it = d->labels;
-      int k = 0, i = 0, kk = 0;
+      int k = 0, i = 0, kk = 0, match = 1;
       while(it)
       {
         gchar *text = (gchar *)it->data;
@@ -1131,21 +1136,26 @@ dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
             return;
           }
           kk = i; // remember for down there
+          // editable should only snap to perfect matches, not prefixes:
+          if(d->editable && strcmp(text, darktable.bauhaus->keys)) match = 0;
           k++;
         }
         i++;
         it = g_list_next(it);
       }
-      // didn't find it, but had only one choice?
-      if(k == 1) dt_bauhaus_combobox_set(widget, kk);
-      if(d->editable && k == 0)
+      // if list is short (2 entries could be: typed something similar, and one similar)
+      if(k < 3)
       {
-        // alternatively: if editable always only use text?
-        // didn't find any match anymore?
-        memset(d->text, 0, sizeof(d->text));
-        strncpy(d->text, darktable.bauhaus->keys, MIN(darktable.bauhaus->keys_cnt, sizeof(d->text)));
-        // select custom entry
-        dt_bauhaus_combobox_set(widget, -1);
+        // didn't find it, but had only one matching choice?
+        if(k == 1 && match) dt_bauhaus_combobox_set(widget, kk);
+        else if(d->editable)
+        {
+          // had no close match (k == 1 && !match) or no match at all (k == 0)
+          memset(d->text, 0, sizeof(d->text));
+          strncpy(d->text, darktable.bauhaus->keys, MIN(darktable.bauhaus->keys_cnt, sizeof(d->text)));
+          // select custom entry
+          dt_bauhaus_combobox_set(widget, -1);
+        }
       }
       break;
     }
@@ -1662,8 +1672,11 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
       else if(darktable.bauhaus->keys_cnt > 0 && darktable.bauhaus->keys_cnt + 1 < 64 &&
               (event->keyval == GDK_Return || event->keyval == GDK_KP_Enter))
       {
-        // accept first line:
-        darktable.bauhaus->end_mouse_y = 0;
+        // accept unique matches only for editable:
+        if(darktable.bauhaus->current->data.combobox.editable)
+          darktable.bauhaus->end_mouse_y = FLT_MAX;
+        else
+          darktable.bauhaus->end_mouse_y = 0;
         darktable.bauhaus->keys[darktable.bauhaus->keys_cnt] = 0;
         dt_bauhaus_widget_accept(darktable.bauhaus->current);
         darktable.bauhaus->keys_cnt = 0;

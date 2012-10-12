@@ -55,6 +55,8 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] =
   {"dt-viewmanager-filmstrip-activate",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},       // DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE
 
   {"dt-collection-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                   // DT_SIGNAL_COLLECTION_CHANGED
+  {"dt-filmrolls-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                          // DT_SIGNAL_FILMROLLS_CHANGED
+
 
   /* Develop related signals */
   {"dt-develop-initialized",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                  // DT_SIGNAL_DEVELOP_INITIALIZED
@@ -62,6 +64,7 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] =
   {"dt-develop-preview-pipe-finished",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},        // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED
   {"dt-develop-ui-pipe-finished",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},             // DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED
   {"dt-develop-history-change",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},               // DT_SIGNAL_HISTORY_CHANGE
+  {"dt-develop-image-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},        // DT_SIGNAL_DEVELOP_IMAGE_CHANGE
   {"dt-control-profile-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},               // DT_SIGNAL_CONTROL_PROFILE_CHANGED
   {"dt-image-import",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_generic,1,uint_arg},               // DT_SIGNAL_CONTROL_PROFILE_CHANGED
 };

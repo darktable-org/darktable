@@ -1,0 +1,42 @@
+		<sect2 status="draft"><title>History stack</title>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='70%'/>
+					<colspec colwidth='30%'/>
+					<tbody>
+						<row>						
+							<entry>This panel allows to manipulate development.
+							For each image, development is written in a sidecar file (.xmp) and is fully 
+              						non-destructive.
+							</entry>
+							<entry>
+								<graphic fileref="lighttable/images/panel_historystack.png" scalefit="1" width="80%" align="center" />
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+				<sect4><title>copy</title>
+					<para>Copy the history stack (development) of the first selected image.
+					</para>
+				</sect4>
+				<sect4><title>discard</title>
+					<para>Physically delete the history stack (development) of the selected images.
+					Beware, this action can not be undone!
+					</para>
+				</sect4>
+				<sect4><title>overwrite/append</title>
+					<para>Describes how a new history stack must behave if pasted on an image having already an
+					history stack. 'Overwrite' will delete previous history stack whereas 'append' will add the
+					two history stacks.
+					</para>
+				</sect4>
+				<sect4><title>paste</title>
+					<para>Paste a previously copied history stack on another image.
+					</para>
+				</sect4>
+				<sect4><title>load sidecar file</title>
+					<para>Prompt a dialog box to allow you to select a .xmp file, thus loading 
+					an history stack that you will past (thanks to 'past' button) on images.
+					</para>
+				</sect4>
+		</sect2>

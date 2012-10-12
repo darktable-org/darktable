@@ -55,7 +55,7 @@
 #define DEVELOP_BLEND_COLOR				  0x13
 #define DEVELOP_BLEND_INVERSE				0x14
 #define DEVELOP_BLEND_UNBOUNDED     0x15
-#define DEVELOP_BLEND_COLORBLEND    0x16
+#define DEVELOP_BLEND_COLORADJUST   0x16
 
 
 typedef enum dt_develop_blendif_channels_t
@@ -172,6 +172,7 @@ typedef struct dt_blendop_t
   int kernel_blendop_RAW;
   int kernel_blendop_rgb;
   int kernel_blendop_copy_alpha;
+  int kernel_blendop_set_mask;
 }
 dt_blendop_t;
 

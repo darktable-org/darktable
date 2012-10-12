@@ -22,6 +22,7 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+#include <xmmintrin.h>
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -45,7 +46,7 @@ dt_iop_highlights_mode_t;
 typedef struct dt_iop_highlights_params_t
 {
   dt_iop_highlights_mode_t mode;
-  float blendL, blendC, blendh;
+  float blendL, blendC, blendh; // unused
   float clip;
 }
 dt_iop_highlights_params_t;
@@ -53,11 +54,7 @@ dt_iop_highlights_params_t;
 typedef struct dt_iop_highlights_gui_data_t
 {
   GtkWidget *clip;
-  GtkWidget *blendL;
-  GtkWidget *blendC;
-  GtkWidget *blendh;
   GtkWidget *mode;
-  GtkBox    *slider_box;
 }
 dt_iop_highlights_gui_data_t;
 
@@ -65,7 +62,8 @@ typedef dt_iop_highlights_params_t dt_iop_highlights_data_t;
 
 typedef struct dt_iop_highlights_global_data_t
 {
-  int kernel_highlights;
+  int kernel_highlights_1f;
+  int kernel_highlights_4f;
 }
 dt_iop_highlights_global_data_t;
 
@@ -99,83 +97,6 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
   return 1;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend L"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend C"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend h"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_highlights_gui_data_t *g =
-    (dt_iop_highlights_gui_data_t*)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "blend L", GTK_WIDGET(g->blendL));
-  dt_accel_connect_slider_iop(self, "blend C", GTK_WIDGET(g->blendC));
-  dt_accel_connect_slider_iop(self, "blend h", GTK_WIDGET(g->blendh));
-}
-
-static const float xyz_rgb[3][3] =    /* XYZ from RGB */
-{
-  { 0.412453, 0.357580, 0.180423 },
-  { 0.212671, 0.715160, 0.072169 },
-  { 0.019334, 0.119193, 0.950227 }
-};
-static const float rgb_xyz[3][3] =    /* RGB from XYZ */
-{
-  { 3.24048, -1.53715, -0.498536 },
-  { -0.969255, 1.87599, 0.0415559 },
-  { 0.0556466, -0.204041, 1.05731 }
-};
-
-// convert linear RGB to CIE-LCh
-static void
-rgb_to_lch(float rgb[3], float lch[3])
-{
-  float xyz[3], lab[3];
-  xyz[0] = xyz[1] = xyz[2] = 0.0;
-  for (int c=0; c<3; c++)
-    for (int cc=0; cc<3; cc++)
-      xyz[cc] += xyz_rgb[cc][c] * rgb[c];
-  for (int c=0; c<3; c++)
-    xyz[c] = xyz[c] > 0.008856 ? powf(xyz[c], 1/3.0) : 7.787*xyz[c] + 16/116.0;
-  lab[0] = 116 * xyz[1] - 16;
-  lab[1] = 500 * (xyz[0] - xyz[1]);
-  lab[2] = 200 * (xyz[1] - xyz[2]);
-
-  lch[0] = lab[0];
-  lch[1] = sqrtf(lab[1]*lab[1]+lab[2]*lab[2]);
-  lch[2] = atan2f(lab[2], lab[1]);
-}
-
-// convert CIE-LCh to linear RGB
-static void
-lch_to_rgb(float lch[3], float rgb[3])
-{
-  float xyz[3], fx, fy, fz, kappa, epsilon, tmpf, lab[3];
-  epsilon = 0.008856;
-  kappa = 903.3;
-  lab[0] = lch[0];
-  lab[1] = lch[1] * cosf(lch[2]);
-  lab[2] = lch[1] * sinf(lch[2]);
-  xyz[1] = (lab[0]<=kappa*epsilon) ?
-           (lab[0]/kappa) : (powf((lab[0]+16.0)/116.0, 3.0));
-  fy = (xyz[1]<=epsilon) ? ((kappa*xyz[1]+16.0)/116.0) : ((lab[0]+16.0)/116.0);
-  fz = fy - lab[2]/200.0;
-  fx = lab[1]/500.0 + fy;
-  xyz[2] = (powf(fz, 3.0)<=epsilon) ? ((116.0*fz-16.0)/kappa) : (powf(fz, 3.0));
-  xyz[0] = (powf(fx, 3.0)<=epsilon) ? ((116.0*fx-16.0)/kappa) : (powf(fx, 3.0));
-
-  for (int c=0; c<3; c++)
-  {
-    tmpf = 0;
-    for (int cc=0; cc<3; cc++)
-      tmpf += rgb_xyz[c][cc] * xyz[cc];
-    rgb[c] = MAX(tmpf, 0);
-  }
-}
-
 #ifdef HAVE_OPENCL
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -190,17 +111,32 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
   const float clip = d->clip * fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 4, sizeof(int), (void *)&d->mode);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 5, sizeof(float), (void *)&clip);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 6, sizeof(float), (void *)&d->blendL);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 7, sizeof(float), (void *)&d->blendC);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 8, sizeof(float), (void *)&d->blendh);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights, sizes);
-  if(err != CL_SUCCESS) goto error;
+  const int filters = dt_image_flipped_filter(&piece->pipe->image);
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || !filters)
+  {
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f, 4, sizeof(int), (void *)&d->mode);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f, 5, sizeof(float), (void *)&clip);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_4f, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+  else
+  {
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 4, sizeof(int), (void *)&d->mode);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 5, sizeof(float), (void *)&clip);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 6, sizeof(int), (void *)&roi_out->x);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 7, sizeof(int), (void *)&roi_out->y);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f, 8, sizeof(int), (void *)&filters);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_1f, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
   return TRUE;
 
 error:
@@ -209,62 +145,112 @@ error:
 }
 #endif
 
+int
+output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && (pipe->image.flags & DT_IMAGE_RAW)) return sizeof(float);
+  else return 4*sizeof(float);
+}
+
+
+static int
+FC(const int row, const int col, const unsigned int filters)
+{
+  return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
+}
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
+  const int filters = dt_image_flipped_filter(&piece->pipe->image);
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
-  float *in;
-  float *out;
-  const int ch = piece->colors;
 
   const float clip = data->clip * fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
-  float inc[3], lch[3], lchc[3], lchi[3];
+  // const int ch = piece->colors;
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || !filters)
+  {
+    const __m128 clipm = _mm_set1_ps(clip);
+#ifdef _OPENMP
+      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
+#endif
+    for(int j=0; j<roi_out->height; j++)
+    {
+      float *out = (float *)ovoid + 4*roi_out->width*j;
+      float *in  = (float *)ivoid + 4*roi_in->width*j;
+      for(int i=0; i<roi_out->width; i++)
+      {
+        _mm_stream_ps(out, _mm_min_ps(clipm, _mm_set_ps(in[3],in[2],in[1],in[0])));
+        in += 4;
+        out += 4;
+      }
+    }
+    _mm_sfence();
+    return;
+  }
 
   switch(data->mode)
   {
     case DT_IOP_HIGHLIGHTS_LCH:
 #ifdef _OPENMP
-      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out, data, piece) private(in, out, inc, lch, lchc, lchi)
+      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
 #endif
       for(int j=0; j<roi_out->height; j++)
       {
-        out = (float *)ovoid + ch*roi_out->width*j;
-        in  = (float *)ivoid + ch*roi_out->width*j;
+        float *out = (float *)ovoid + roi_out->width*j;
+        float *in  = (float *)ivoid + roi_out->width*j;
         for(int i=0; i<roi_out->width; i++)
         {
-          if(in[0] <= clip && in[1] <= clip && in[2] <= clip)
+          if(in[0] <= clip || i==0 || i==roi_out->width-1 || j==0 || j==roi_out->height-1)
           {
             // fast path for well-exposed pixels.
-            for(int c=0; c<3; c++) out[c] = in[c];
+            out[0] = in[0];
           }
           else
           {
-            for(int c=0; c<3; c++) inc[c] = fminf(clip, in[c]);
-            rgb_to_lch(in, lchi);
-            rgb_to_lch(inc, lchc);
-            lch[0] = lchc[0] + data->blendL * (lchi[0] - lchc[0]);
-            lch[1] = lchc[1] + data->blendC * (lchi[1] - lchc[1]);
-            lch[2] = lchc[2] + data->blendh * (lchi[2] - lchc[2]);
-            lch_to_rgb(lch, out);
+            // r and b are same, so we only need two masks
+            const float lum[3] = { 0.299, 0.587, 0.144 };
+            // go for all 9 neighbours
+            float accum[3] = {0.0f, 0.0f, 0.0f};
+            int cnt[3] = {0, 0, 0};
+            for(int jj=-1;jj<=1;jj++)
+            {
+              for(int ii=-1;ii<=1;ii++)
+              {
+                const float val = in[jj*roi_out->width + ii];
+                if(val > clip)
+                {
+                  const int c = FC(j+jj+roi_out->y, i+ii+roi_out->x, filters);
+                  accum[c] += lum[c] * val;
+                  cnt[c] ++;
+                }
+              }
+            }
+            if(cnt[0] && cnt[1] && cnt[2])
+            {
+              out[0] = 0.0f;
+              for(int c=0;c<3;c++)
+                out[0] += accum[c]/cnt[c];
+            }
+            else out[0] = clip;
           }
-          out += ch;
-          in += ch;
+          out ++;
+          in ++;
         }
       }
       break;
     default:
     case DT_IOP_HIGHLIGHTS_CLIP:
 #ifdef _OPENMP
-      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out) private(in, out, inc, lch, lchc, lchi)
+      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out)
 #endif
       for(int j=0; j<roi_out->height; j++)
       {
-        out = (float *)ovoid + ch*roi_out->width*j;
-        in  = (float *)ivoid + ch*roi_out->width*j;
+        float *out = (float *)ovoid + roi_out->width*j;
+        float *in  = (float *)ivoid + roi_out->width*j;
         for(int i=0; i<roi_out->width; i++)
         {
-          for(int c=0; c<3; c++) out[c] = fminf(clip, in[c]);
-          out += ch;
-          in += ch;
+          out[0] = MIN(clip, in[0]);
+          out ++;
+          in ++;
         }
       }
       break;
@@ -272,18 +258,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
-}
-
-static void
-blend_callback (GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(self->dt->gui->reset) return;
-  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  if      (slider == g->blendL) p->blendL = dt_bauhaus_slider_get(slider);
-  else if (slider == g->blendC) p->blendC = dt_bauhaus_slider_get(slider);
-  else if (slider == g->blendh) p->blendh = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -299,22 +273,16 @@ static void
 mode_changed (GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   int active = dt_bauhaus_combobox_get(combo);
 
   switch(active)
   {
     case DT_IOP_HIGHLIGHTS_CLIP:
       p->mode = DT_IOP_HIGHLIGHTS_CLIP;
-      gtk_widget_set_visible(GTK_WIDGET(g->slider_box), FALSE);
       break;
     default:
     case DT_IOP_HIGHLIGHTS_LCH:
       p->mode = DT_IOP_HIGHLIGHTS_LCH;
-      gtk_widget_set_visible(GTK_WIDGET(g->slider_box), TRUE);
-      gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), FALSE);
-      gtk_widget_show_all(GTK_WIDGET(g->slider_box));
-      gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), TRUE);
       break;
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -332,13 +300,15 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)malloc(sizeof(dt_iop_highlights_global_data_t));
   module->data = gd;
-  gd->kernel_highlights = dt_opencl_create_kernel(program, "highlights");
+  gd->kernel_highlights_1f = dt_opencl_create_kernel(program, "highlights_1f");
+  gd->kernel_highlights_4f = dt_opencl_create_kernel(program, "highlights_4f");
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)module->data;
-  dt_opencl_free_kernel(gd->kernel_highlights);
+  dt_opencl_free_kernel(gd->kernel_highlights_4f);
+  dt_opencl_free_kernel(gd->kernel_highlights_1f);
   free(module->data);
   module->data = NULL;
 }
@@ -359,21 +329,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)module->params;
-  dt_bauhaus_slider_set(g->blendL, p->blendL);
-  dt_bauhaus_slider_set(g->blendC, p->blendC);
-  dt_bauhaus_slider_set(g->blendh, p->blendh);
   dt_bauhaus_slider_set(g->clip,   p->clip);
-  if(p->mode == DT_IOP_HIGHLIGHTS_CLIP)
-  {
-    gtk_widget_set_visible(GTK_WIDGET(g->slider_box), FALSE);
-  }
-  else
-  {
-    gtk_widget_set_visible(GTK_WIDGET(g->slider_box), TRUE);
-    gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), FALSE);
-    gtk_widget_show_all(GTK_WIDGET(g->slider_box));
-    gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), TRUE);
-  }
   dt_bauhaus_combobox_set(g->mode, p->mode);
 }
 
@@ -398,7 +354,7 @@ void init(dt_iop_module_t *module)
   // module->data = malloc(sizeof(dt_iop_highlights_data_t));
   module->params = malloc(sizeof(dt_iop_highlights_params_t));
   module->default_params = malloc(sizeof(dt_iop_highlights_params_t));
-  module->priority = 137; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 57; // module order created by iop_dependencies.py, do not edit!
   module->default_enabled = 1;
   module->params_size = sizeof(dt_iop_highlights_params_t);
   module->gui_data = NULL;
@@ -420,11 +376,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
-  g->clip = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0, 0.01, p->clip, 3);
-  g_object_set(G_OBJECT(g->clip), "tooltip-text", _("manually adjust the clipping threshold against magenta highlights"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->clip, _("clipping threshold"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->clip, TRUE, TRUE, 0);
-
   g->mode = dt_bauhaus_combobox_new(self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->mode, _("method"));
@@ -432,31 +383,15 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->mode, _("reconstruct in LCh"));
   g_object_set(G_OBJECT(g->mode), "tooltip-text", _("highlight reconstruction method"), (char *)NULL);
 
-  g->slider_box = GTK_BOX(gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE));
-  gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->slider_box), FALSE, FALSE, 0);
+  g->clip = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0, 0.01, p->clip, 3);
+  g_object_set(G_OBJECT(g->clip), "tooltip-text", _("manually adjust the clipping threshold against"
+        " magenta highlights (you shouldn't ever need to touch this)"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->clip, _("clipping threshold"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->clip, TRUE, TRUE, 0);
 
-  g->blendL = dt_bauhaus_slider_new_with_range(self,0.0, 1.0, 0.01, p->blendL, 3);
-  g->blendC = dt_bauhaus_slider_new_with_range(self,0.0, 1.0, 0.01, p->blendC, 3);
-  g->blendh = dt_bauhaus_slider_new_with_range(self,0.0, 1.0, 0.01, p->blendh, 3);
-  g_object_set(G_OBJECT(g->blendL), "tooltip-text", _("blend lightness (0 is same as clipping)"), (char *)NULL);
-  g_object_set(G_OBJECT(g->blendC), "tooltip-text", _("blend colorness (0 is same as clipping)"), (char *)NULL);
-  g_object_set(G_OBJECT(g->blendh), "tooltip-text", _("blend hue (0 is same as clipping)"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->blendL,_("blend L"));
-  dt_bauhaus_widget_set_label(g->blendC,_("blend C"));
-  dt_bauhaus_widget_set_label(g->blendh,_("blend h"));
-  gtk_box_pack_start(g->slider_box, g->blendL, TRUE, TRUE, 0);
-  gtk_box_pack_start(g->slider_box, g->blendC, TRUE, TRUE, 0);
-  gtk_box_pack_start(g->slider_box, g->blendh, TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (g->clip), "value-changed",
                     G_CALLBACK (clip_callback), self);
-  g_signal_connect (G_OBJECT (g->blendL), "value-changed",
-                    G_CALLBACK (blend_callback), self);
-  g_signal_connect (G_OBJECT (g->blendC), "value-changed",
-                    G_CALLBACK (blend_callback), self);
-  g_signal_connect (G_OBJECT (g->blendh), "value-changed",
-                    G_CALLBACK (blend_callback), self);
   g_signal_connect (G_OBJECT (g->mode), "value-changed",
                     G_CALLBACK (mode_changed), self);
 }

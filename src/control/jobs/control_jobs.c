@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010-2011 henrik andersson, johannes hanika
+    copyright (c) 2010-2011 johannes hanika
+    copyright (c) 2010-2012 henrik andersson
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,6 +50,12 @@ typedef struct dt_control_gpx_apply_t
   gchar *filename;
   gchar *tz;
 } dt_control_gpx_apply_t;
+
+typedef struct dt_control_export_t
+{
+  int max_width, max_height, format_index, storage_index;
+  gboolean high_quality;
+} dt_control_export_t;
 
 void dt_control_write_sidecar_files()
 {
@@ -1182,12 +1189,13 @@ int32_t dt_control_export_job_run(dt_job_t *job)
 {
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
+  dt_control_export_t *settings = (dt_control_export_t*)t1->data;
   GList *t = t1->index;
   const int total = g_list_length(t);
   int size = 0;
-  dt_imageio_module_format_t  *mformat  = dt_imageio_get_format();
+  dt_imageio_module_format_t  *mformat  = dt_imageio_get_format_by_index(settings->format_index);
   g_assert(mformat);
-  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
+  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_index(settings->storage_index);
   g_assert(mstorage);
 
   // Get max dimensions...
@@ -1207,6 +1215,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   if(sdata == NULL)
   {
     dt_control_log(_("failed to get parameters from storage module, aborting export.."));
+    g_free(t1->data);
     return 1;
   }
   dt_control_log(ngettext ("exporting %d image..", "exporting %d images..", total), total);
@@ -1226,23 +1235,25 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   // GCC won't accept that this variable is used in a macro, considers
   // it set but not used, which makes for instance Fedora break.
   const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, 8));
-#if !defined(__SUNOS__)
-  #pragma omp parallel default(none) private(imgid, size) shared(control, fraction, w, h, stderr, mformat, mstorage, t, sdata, job, jid, darktable) num_threads(num_threads) if(num_threads > 1)
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+  #pragma omp parallel default(none) private(imgid, size) shared(control, fraction, w, h, stderr, mformat, mstorage, t, sdata, job, jid, darktable, settings) num_threads(num_threads) if(num_threads > 1)
 #else
-  #pragma omp parallel private(imgid, size) shared(control, fraction, w, h, mformat, mstorage, t, sdata, job, jid, darktable) num_threads(num_threads) if(num_threads > 1)
+  #pragma omp parallel private(imgid, size) shared(control, fraction, w, h, mformat, mstorage, t, sdata, job, jid, darktable, settings) num_threads(num_threads) if(num_threads > 1)
 #endif
   {
 #endif
     // get a thread-safe fdata struct (one jpeg struct per thread etc):
     dt_imageio_module_data_t *fdata = mformat->get_params(mformat, &size);
-    fdata->max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
-    fdata->max_height = dt_conf_get_int ("plugins/lighttable/export/height");
+    fdata->max_width = settings->max_width;
+    fdata->max_height = settings->max_height;
     fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
     fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
     int num = 0;
     // Invariant: the tagid for 'darktable|changed' will not change while this function runs. Is this a sensible assumption?
-    guint tagid = 0;
+    guint tagid = 0,
+          etagid = 0;
     dt_tag_new("darktable|changed",&tagid);
+    dt_tag_new("darktable|exported",&etagid);
 
     while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
     {
@@ -1261,6 +1272,8 @@ int32_t dt_control_export_job_run(dt_job_t *job)
       }
       // remove 'changed' tag from image
       dt_tag_detach(tagid, imgid);
+      // make sure the 'exported' tag is set on the image
+      dt_tag_attach(etagid, imgid);
       // check if image still exists:
       char imgfilename[DT_MAX_PATH_LEN];
       const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
@@ -1277,7 +1290,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
         else
         {
           dt_image_cache_read_release(darktable.image_cache, image);
-          mstorage->store(sdata, imgid, mformat, fdata, num, total);
+          mstorage->store(sdata, imgid, mformat, fdata, num, total, settings->high_quality);
         }
       }
 #ifdef _OPENMP
@@ -1302,21 +1315,29 @@ int32_t dt_control_export_job_run(dt_job_t *job)
 #ifdef _OPENMP
   }
 #endif
+  g_free(t1->data);
   return 0;
 }
 
-void dt_control_export_job_init(dt_job_t *job)
+void dt_control_export_job_init(dt_job_t *job, int max_width, int max_height, int format_index, int storage_index, gboolean high_quality)
 {
   dt_control_job_init(job, "export");
   job->execute = &dt_control_export_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
   dt_control_image_enumerator_job_selected_init(t);
+  dt_control_export_t *data = (dt_control_export_t*)malloc(sizeof(dt_control_export_t));
+  data->max_width = max_width;
+  data->max_height = max_height;
+  data->format_index = format_index;
+  data->storage_index = storage_index;
+  data->high_quality = high_quality;
+  t->data = data;
 }
 
-void dt_control_export()
+void dt_control_export(int max_width, int max_height, int format_index, int storage_index, gboolean high_quality)
 {
   dt_job_t j;
-  dt_control_export_job_init(&j);
+  dt_control_export_job_init(&j, max_width, max_height, format_index, storage_index, high_quality);
   dt_control_add_job(darktable.control, &j);
 }
 

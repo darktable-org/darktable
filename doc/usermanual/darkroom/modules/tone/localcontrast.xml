@@ -1,0 +1,30 @@
+<sect3 status="draft"><title>Local contrast</title>
+	<sect4><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>This module allows to enhance the local contrast. It uses CLAHE (Contrast Limited Adaptive Histogram Equalization).				
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/localcontrast.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect4>
+
+	<sect4><title>Usage</title>
+		<para>Local contrast boosts the details of your image without changing the global contrast.</para>
+		<sect5><title>radius</title>
+			<para>Set the size of the region around pixels whose histogram will be equalized in order to boost contrast. This value must be greater than the size of the details to preserve.
+				A small value limits the effect.
+			</para>
+		</sect5>
+		<sect5><title>amount</title>
+			<para>Set the strength of the effect, by giving the allowable stretch in histogram. the greater the value, the stronger the effect.</para>
+		</sect5>			
+	</sect4>
+</sect3>

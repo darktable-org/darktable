@@ -28,6 +28,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
+#include "gui/gtkentry.h"
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
 #include <stdio.h>
@@ -119,30 +120,42 @@ gui_init (dt_imageio_module_storage_t *self)
   }
   d->entry = GTK_ENTRY(widget);
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry));
-  g_object_set(G_OBJECT(widget), "tooltip-text", _("enter the path where to create the latex template:\n"
-               "$(ROLL_NAME) - roll of the input image\n"
-               "$(FILE_DIRECTORY) - directory of the input image\n"
-               "$(FILE_NAME) - basename of the input image\n"
-               "$(FILE_EXTENSION) - extension of the input image\n"
-               "$(SEQUENCE) - sequence number\n"
-               "$(YEAR) - year\n"
-               "$(MONTH) - month\n"
-               "$(DAY) - day\n"
-               "$(HOUR) - hour\n"
-               "$(MINUTE) - minute\n"
-               "$(SECOND) - second\n"
-               "$(EXIF_YEAR) - exif year\n"
-               "$(EXIF_MONTH) - exif month\n"
-               "$(EXIF_DAY) - exif day\n"
-               "$(EXIF_HOUR) - exif hour\n"
-               "$(EXIF_MINUTE) - exif minute\n"
-               "$(EXIF_SECOND) - exif second\n"
-               "$(STARS) - star rating\n"
-               "$(LABELS) - colorlabels\n"
-               "$(PICTURES_FOLDER) - pictures folder\n"
-               "$(HOME_FOLDER) - home folder\n"
-               "$(DESKTOP_FOLDER) - desktop folder"
-                                                  ), (char *)NULL);
+
+  dt_gtkentry_completion_spec compl_list[] =
+  {
+    { "ROLL_NAME", _("$(ROLL_NAME) - roll of the input image") },
+    { "FILE_FOLDER", _("$(FILE_FOLDER) - folder containing the input image") },
+    { "FILE_NAME", _("$(FILE_NAME) - basename of the input image") },
+    { "FILE_EXTENSION", _("$(FILE_EXTENSION) - extension of the input image") },
+    { "SEQUENCE", _("$(SEQUENCE) - sequence number") },
+    { "YEAR", _("$(YEAR) - year") },
+    { "MONTH", _("$(MONTH) - month") },
+    { "DAY", _("$(DAY) - day") },
+    { "HOUR", _("$(HOUR) - hour") },
+    { "MINUTE", _("$(MINUTE) - minute") },
+    { "SECOND", _("$(SECOND) - second") },
+    { "EXIF_YEAR", _("$(EXIF_YEAR) - exif year") },
+    { "EXIF_MONTH", _("$(EXIF_MONTH) - exif month") },
+    { "EXIF_DAY", _("$(EXIF_DAY) - exif day") },
+    { "EXIF_HOUR", _("$(EXIF_HOUR) - exif hour") },
+    { "EXIF_MINUTE", _("$(EXIF_MINUTE) - exif minute") },
+    { "EXIF_SECOND", _("$(EXIF_SECOND) - exif second") },
+    { "STARS", _("$(STARS) - star rating") },
+    { "LABELS", _("$(LABELS) - colorlabels") },
+    { "PICTURES_FOLDER", _("$(PICTURES_FOLDER) - pictures folder") },
+    { "HOME", _("$(HOME) - home folder") },
+    { "DESKTOP", _("$(DESKTOP) - desktop folder") },
+    { NULL, NULL }
+  };
+
+  dt_gtkentry_setup_completion(GTK_ENTRY(widget), compl_list);
+
+  char *tooltip_text = dt_gtkentry_build_completion_tooltip_text (
+                         _("enter the path where to put exported images\nrecognized variables:"),
+                         compl_list);
+  g_object_set(G_OBJECT(widget), "tooltip-text", tooltip_text, (char *)NULL);
+  g_free(tooltip_text);
+
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, 18, 18);
   g_object_set(G_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
@@ -188,7 +201,8 @@ sort_pos(pair_t *a, pair_t *b)
 }
 
 int
-store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
+store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
+       const int num, const int total, const gboolean high_quality)
 {
   dt_imageio_latex_t *d = (dt_imageio_latex_t *)sdata;
 
@@ -199,13 +213,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
 
-    char tmp_dir[DT_MAX_PATH_LEN];
-    dt_variables_expand(d->vp, d->filename, TRUE);
-    g_strlcpy(tmp_dir, dt_variables_get_result(d->vp), DT_MAX_PATH_LEN);
-
     // if filenamepattern is a directory just add ${FILE_NAME} as default..
-    if ( g_file_test(tmp_dir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename)-1)[0]=='/' || (d->filename+strlen(d->filename)-1)[0]=='\\') )
-      snprintf (d->filename+strlen(d->filename), DT_MAX_PATH_LEN-strlen(d->filename), "/$(FILE_NAME)");
+    if ( g_file_test(d->filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename))[0]=='/' || (d->filename+strlen(d->filename))[0]=='\\') )
+      snprintf (d->filename+strlen(d->filename), DT_MAX_PATH_LEN-strlen(d->filename), "$(FILE_NAME)");
 
     // avoid braindead export which is bound to overwrite at random:
     if(total > 1 && !g_strrstr(d->filename, "$"))
@@ -241,8 +251,8 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     snprintf(d->cached_dirname, DT_MAX_PATH_LEN, "%s", dirname);
 
     c = filename + strlen(filename);
-    for(; c>filename && *c != '.' && *c != '/' ; c--);
-    if(c <= filename || *c=='/') c = filename + strlen(filename);
+//     for(; c>filename && *c != '.' && *c != '/' ; c--);
+//     if(c <= filename || *c=='/') c = filename + strlen(filename);
 
     sprintf(c,".%s",ext);
 
@@ -317,7 +327,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   /* export image to file */
-  dt_imageio_export(imgid, filename, format, fdata);
+  dt_imageio_export(imgid, filename, format, fdata, high_quality);
 
   printf("[export_job] exported to `%s'\n", filename);
   char *trunc = filename + strlen(filename) - 32;

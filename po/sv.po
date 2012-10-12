@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-04-26 19:48+0200\n"
-"PO-Revision-Date: 2012-04-26 19:47+0100\n"
+"PO-Revision-Date: 2012-10-11 20:56+0200\n"
 "Last-Translator: Henrik Andersson <hean01@users.sourceforge.net>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -430,8 +430,8 @@ msgstr "inga bilder som stöds hittades för importering"
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
-msgstr[0] "impoerterar %d bilder..."
-msgstr[1] "exporterar %d bilder..."
+msgstr[0] "importerar %d bilder..."
+msgstr[1] "importerar %d bilder..."
 
 #: ../src/common/history.c:109
 msgid "you need to copy history from an image before you paste it onto another"
@@ -1746,7 +1746,7 @@ msgstr "chroma brusreducering"
 
 #: ../src/iop/atrous.c:844
 msgid "denoise (subtle)"
-msgstr "reducera brus (mycket)"
+msgstr "reducera brus (svagt)"
 
 #: ../src/iop/atrous.c:858 ../src/iop/equalizer.c:285
 msgid "denoise"
@@ -1762,7 +1762,7 @@ msgstr "bloom"
 
 #: ../src/iop/atrous.c:903
 msgid "clarity (subtle)"
-msgstr "klarhet"
+msgstr "klarhet (svag)"
 
 #: ../src/iop/atrous.c:917
 msgid "clarity"

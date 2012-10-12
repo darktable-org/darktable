@@ -70,6 +70,7 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/resetlabel.c"
   "gui/accelerators.c"
   "gui/contrast.c"
+  "gui/gtkentry.c"
   "gui/guides.c"
   "gui/gtk.c"
   "gui/preferences.c"
@@ -189,6 +190,15 @@ if(USE_FLICKR)
   endif(FLICKCURL_FOUND)
 endif(USE_FLICKR)
 
+if(USE_GLIBJSON)
+  find_package(JsonGlib)
+  if(JsonGlib_FOUND)
+	include_directories(${JsonGlib_INCLUDE_DIRS})
+	list(APPEND LIBS ${JsonGlib_LIBRARIES})
+	add_definitions(${JsonGlib_DEFINITIONS})
+  endif(JsonGlib_FOUND)
+endif(USE_GLIBJSON)
+
 #
 # Detect compile of optional pwstorage backends
 #
@@ -220,12 +230,6 @@ if(USE_MAC_INTEGRATION)
     add_definitions("-DMAC_INTEGRATION")
   endif(MACINTEGRATION_FOUND)
 endif(USE_MAC_INTEGRATION)
-
-# have a small test program, to be run as root on some systems to enable the driver to run cl stuff
-add_subdirectory(cltest)
-
-# have a command line interface
-add_subdirectory(cli)
 
 if(USE_UNITY)
   find_package(Unity)
@@ -486,7 +490,11 @@ add_subdirectory(iop)
 # Compile export modules
 add_subdirectory(imageio)
 
+# have a small test program, to be run as root on some systems to enable the driver to run cl stuff
+add_subdirectory(cltest)
 
+# have a command line interface
+add_subdirectory(cli)
 
 
 #

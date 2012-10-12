@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2011-2012 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 */
 
 #include "common/darktable.h"
+#include "develop/develop.h"
 #include "common/metadata.h"
 #include "common/debug.h"
 #include "control/control.h"
@@ -166,6 +167,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
   int32_t mouse_over_id = -1;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+
+  if (mouse_over_id == -1)
+    mouse_over_id = darktable.develop->image_storage.id;
 
   if(mouse_over_id >= 0)
   {
@@ -317,7 +321,6 @@ fill_minuses:
   for(int k=0; k<md_size; k++)
     _metadata_update_value(d->metadata[k],NODATA_STRING);
 
-
 }
 
 /* calback for the mouse over image change signal */
@@ -351,6 +354,10 @@ void gui_init(dt_lib_module_t *self)
 
   /* lets signup for mouse over image change signals */
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+                            G_CALLBACK(_mouse_over_image_callback), self);
+
+  /* lets signup for develop image changed signals */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
                             G_CALLBACK(_mouse_over_image_callback), self);
 
   /* signup for develop initialize to update info of current

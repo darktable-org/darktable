@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2011--2012 Henrik Andersson.
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -333,7 +333,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   }
 
   // prefetch the ids so that we can peek into the future to see if there are adjacent images in the same group.
-  int *query_ids = g_malloc0(max_rows*max_cols*sizeof(int));
+  int *query_ids = (int*)calloc(max_rows*max_cols, sizeof(int));
+  if(!query_ids) goto after_drawing;
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
@@ -346,6 +347,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
 
 end_query_cache:
 
+  cairo_save(cr);
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
@@ -355,12 +357,6 @@ end_query_cache:
       id = query_ids[row*iir+col];
       if(id > 0)
       {
-        const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, id);
-        int group_id = -1;
-        if(image)
-          group_id = image->group_id;
-        dt_image_cache_read_release(darktable.image_cache, image);
-
         if (iir == 1 && row)
           continue;
 
@@ -384,10 +380,41 @@ end_query_cache:
             dt_selection_select_range(darktable.selection, id);
         }
 
-
         cairo_save(cr);
         // if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
         dt_view_image_expose(&(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
+
+        cairo_restore(cr);
+      }
+      else
+        goto escape_image_loop;
+
+      cairo_translate(cr, wd, 0.0f);
+    }
+    cairo_translate(cr, -max_cols*wd, ht);
+  }
+escape_image_loop:
+  cairo_restore(cr);
+
+  // and now the group borders
+  cairo_save(cr);
+  for(int row = 0; row < max_rows; row++)
+  {
+    for(int col = 0; col < max_cols; col++)
+    {
+      id = query_ids[row*iir+col];
+      if(id > 0)
+      {
+        const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, id);
+        int group_id = -1;
+        if(image)
+          group_id = image->group_id;
+        dt_image_cache_read_release(darktable.image_cache, image);
+
+        if (iir == 1 && row)
+          continue;
+
+        cairo_save(cr);
 
         gboolean paint_border = FALSE;
         // regular highlight border
@@ -395,7 +422,7 @@ end_query_cache:
         {
           if(mouse_over_group == group_id && iir > 1 && ((!darktable.gui->grouping && dt_conf_get_bool("plugins/lighttable/draw_group_borders")) || group_id == darktable.gui->expanded_group_id))
           {
-            cairo_set_source_rgb(cr, 1, 0, 0);
+            cairo_set_source_rgb(cr, 1, 0.8, 0);
             paint_border = TRUE;
           }
           // border of expanded group
@@ -483,13 +510,15 @@ end_query_cache:
         cairo_restore(cr);
       }
       else
-        goto failure;
+        goto escape_border_loop;
 
       cairo_translate(cr, wd, 0.0f);
     }
     cairo_translate(cr, -max_cols*wd, ht);
   }
-
+escape_border_loop:
+  cairo_restore(cr);
+after_drawing:
   /* check if offset was changed and we need to prefetch thumbs */
   if (offset_changed)
   {
@@ -525,9 +554,8 @@ end_query_cache:
     }
   }
 
-
-failure:
-  g_free(query_ids);
+  if(query_ids)
+    free(query_ids);
   oldpan = pan;
   if(darktable.unmuted & DT_DEBUG_CACHE)
     dt_mipmap_cache_print(darktable.mipmap_cache);
@@ -805,14 +833,13 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 
   // Let's show full preview if in that state...
   dt_library_t *lib = (dt_library_t *)self->data;
-  int32_t mouse_over_id;
-  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+
   if( lib->full_preview_id!=-1 )
   {
     lib->image_over = DT_VIEW_DESERT;
     cairo_set_source_rgb (cr, .1, .1, .1);
     cairo_paint(cr);
-    dt_view_image_expose(&(lib->image_over),mouse_over_id, cr, width, height, 1, pointerx, pointery);
+    dt_view_image_expose(&(lib->image_over), lib->full_preview_id, cr, width, height, 1, pointerx, pointery);
   }
   else // we do pass on expose to manager or zoomable
   {

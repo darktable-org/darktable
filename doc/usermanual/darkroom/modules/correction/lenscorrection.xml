@@ -1,0 +1,123 @@
+<sect3 status="draft"><title>Lens correction</title>
+	<sect4><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>This module is able to correct certain lens flaws, namely distortions, transversal
+                                                       chromatic aberrations (TCA) and vignetting. It relies on the external library
+                                                       lensfun, which comes with correction profiles for many (but not all) common cameras
+                                                       end lenses.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/lenscorrection.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect4>
+
+	<sect4><title>Usage</title>
+		<para>In order to perform lens corrections the module uses EXIF data of your image to identify the specific camera/lens
+                      combination and collects the needed correction parameters from a profile in lensfun's database. 
+                </para>
+		<sect5><title>Camera</title>
+			<para>The camera make and model as determined by EXIF data. You can overrride this manually and select
+                              your camera from a hierarchical menu.
+                        </para>
+		</sect5>
+		<sect5><title>Lens</title>
+			<para>The lens make and model as determined by EXIF data. You can overrride this manually and select
+                              your lens from a hierarchical menu. This is mainly needed for pure mechanical lenses.
+                        </para>
+		</sect5>	
+		<sect5><title>Photometric parameters</title>
+			<para>Corrections additionally depend on certain photometric parameters that are read from EXIF-data: focal 
+                              length (needed for distortion, TCA, vignetting), aperture (needed for TCA, vignetting) and focal distance 
+                              (needed for vignetting). Many cameras do not record focal distance in their EXIF data; most likely you need 
+                              to set this manually. You can override all automatically selected values.
+                        </para>
+                        <para>
+                              If no controls for the three photometric parameters are displayed, this means that no correction profile could
+                              be found for the automatically identified camera/lens combination. You may try to find
+                              the right profile yourself by searching for it in the menu. If there is no matching profile, visit lensfun's home page at 
+                              http://lensfun.berlios.de and learn how to generate your own set of correction parameters. Don't forget to share
+                              your profile with the lensfun team!
+                        </para>
+		</sect5>
+		<sect5><title>Corrections</title>
+			<para>This combobox gives you a choice about which corrections (out of distortion, TCA and vignetting) darktable 
+                              shall apply. Change this from its default "all", if your camera has already done some internal
+                              corrections (e.g. of vignetting), or if you plan to do certain corrections with a separate program.
+                        </para>
+		</sect5>	
+		<sect5><title>Geometry</title>
+			<para>In addition to correction of lens flaws, this module can change the projection type of your image. Set this
+                              combobox to the aimed projection type. 
+                        </para>
+		</sect5>	
+		<sect5><title>Scale</title>
+			<para>This slider allows you to adjust the scaling factor of your image. Pressing the auto scale button (right to the
+                              slider) will let darktable find the best fit to avoid black corners.
+                        </para>
+		</sect5>	
+		<sect5><title>Mode</title>
+			<para>The default behavior of this module is to correct lens flaws. Switch this togglebutton to "distort" in
+                              order to simulate the behavior of a specific lens (inverted effect).
+                        </para>
+                </sect5>
+		<sect5><title>TCA red</title>
+			<para>This slider allows to override the correction parameter for TCA. You can also use this slider to manually
+                              set the parameter in case the lens profile does not support TCA correction. Look out for colored seams at
+                              features with high contrast edges and adjust this parameter and the following one to
+                              minimize those seams.
+                        </para>
+                </sect5>
+		<sect5><title>TCA blue</title>
+			<para>This slider allows to override the correction parameter for TCA. You can also use this slider to manually
+                              set the parameter in case the lens profile does not support TCA correction.
+                        </para>
+                </sect5>
+		<sect5><title>Corrections done</title>
+			<para>You will sometimes observe that for a given camera/lens combination only part of the possible corrections 
+                              (distortion, TCA, vignetting) are supported by lensfun's profiles. This message box will tell you what 
+                              corrections have actually been applied. 
+                        </para>
+		</sect5>	
+	</sect4>
+	
+<!--	
+        <sect4><title>Examples</title>
+		<para>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='30%'/>
+					<colspec colwidth='70%'/>
+					<tbody>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/lenscorrection_ex1.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry><para>This is the original image, taken with a xyz lens on a 
+                                                                     abc camera at a focal length of hkl.
+                                                               </para>
+                                                         </entry>
+						</row>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/lenscorrection_ex2.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry>
+								<para>This is the image with distortions corrected.
+								</para>
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</para>	
+	</sect4>
+-->
+	
+</sect3>

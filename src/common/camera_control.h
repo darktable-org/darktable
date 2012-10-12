@@ -130,6 +130,8 @@ dt_camera_error_t;
 typedef struct dt_camctl_t
 {
   dt_pthread_mutex_t lock;
+  dt_pthread_mutex_t listeners_lock;
+
   /** Camera event thread. */
   pthread_t camera_event_thread;
   /** List of registered listeners of camera control. \see dt_camctl_register_listener() , dt_camctl_unregister_listener() */

@@ -1,0 +1,40 @@
+		<sect2 status="draft"><title>Selected image(s)</title>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='70%'/>
+					<colspec colwidth='30%'/>
+					<tbody>
+						<row>						
+							<entry>This panel allows to perform some actions on selected images.
+							</entry>
+							<entry>
+								<graphic fileref="lighttable/images/panel_selectedimages.png" scalefit="1" width="80%" align="center" />
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+				<sect4><title>remove</title>
+					<para>Remove the selected images from the darktable database. Those images will not be shown
+					in lighttable anymore, but remain on filesystem.
+					</para>
+				</sect4>
+				<sect4><title>delete</title>
+					<para>Physically delete selected images from filesystem.
+					</para>
+				</sect4>
+				<sect4><title>write sidecar files</title>
+					<para>Write .xmp sidecar files.
+					</para>
+				</sect4>
+				<sect4><title>duplicate</title>
+					<para>Create a virtual copy of selected images within darktable but not physically on
+					your filesystem. It allows to test and try different developments for the same image for example.
+					</para>
+				</sect4>
+				<sect4><title>rotation</title>
+					<para>Perform a counter-clock wise/clockwise rotation on selected images. The third button
+					allows to reset rotation to EXIF value.
+					</para>
+				</sect4>
+		</sect2>
+

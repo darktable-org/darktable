@@ -56,7 +56,7 @@
 #include <unistd.h>
 #include <locale.h>
 
-#if !defined(__APPLE__) && !defined(__FreeBSD__)
+#if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__DragonFly__)
 #include <malloc.h>
 #endif
 #ifdef __APPLE__
@@ -418,7 +418,7 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
   darktable.num_openmp_threads = omp_get_num_procs();
 #endif
   darktable.unmuted = 0;
-  char *image_to_load = NULL;
+  GSList *images_to_load = NULL;
   for(int k=1; k<argc; k++)
   {
     if(argv[k][0] == '-')
@@ -490,7 +490,7 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
     }
     else
     {
-      image_to_load = argv[k];
+      images_to_load = g_slist_append(images_to_load, argv[k]);
     }
   }
 
@@ -679,11 +679,27 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
       gtk_accel_map_load(keyfile);
     else
       gtk_accel_map_save(keyfile); // Save the default keymap if none is present
-  }
 
-  if(init_gui && dt_load_from_string(image_to_load, TRUE) == 0)
-  {
-    dt_ctl_switch_mode_to(DT_LIBRARY);
+    // load image(s) specified on cmdline
+    if (images_to_load)
+    {
+      // If only one image is listed, attempt to load it in darkroom
+      gboolean load_in_dr = (g_slist_next(images_to_load) == NULL);
+      GSList *p = images_to_load;
+
+      while (p != NULL)
+      {
+	dt_load_from_string((gchar*)p->data, load_in_dr);
+	p = g_slist_next(p);
+      }
+
+      if (!load_in_dr)
+	dt_ctl_switch_mode_to(DT_LIBRARY);
+
+      g_slist_free(images_to_load);
+    }
+    else
+      dt_ctl_switch_mode_to(DT_LIBRARY);
   }
 
   /* start the indexer background job */

@@ -33,8 +33,6 @@
 // and includes version information about compile-time dt
 DT_MODULE(1)
 
-// TODO: some build system to support dt-less compilation and translation!
-
 typedef struct dt_iop_bilat_params_t
 {
   float sigma_r;
@@ -60,8 +58,7 @@ dt_iop_bilat_global_data_t;
 // this returns a translatable name
 const char *name()
 {
-  // make sure you put all your translatable strings into _() !
-  return _("test bilateral grid");
+  return _("local contrast");
 }
 
 // some additional flags (self explanatory i think):
@@ -75,7 +72,7 @@ flags()
 int
 groups()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_TONE;
 }
 
 #ifdef HAVE_OPENCL
@@ -157,7 +154,7 @@ void init(dt_iop_module_t *module)
   // by default:
   module->default_enabled = 0;
   // order has to be changed by editing the dependencies in tools/iop_dependencies.py
-  module->priority = 788; // chosen manually to avoid conflicts during merge.
+  module->priority = 519; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_bilat_params_t);
   module->gui_data = NULL;
   // init defaults:
@@ -223,14 +220,14 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
   g->spatial = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 50, 0);
-  dt_bauhaus_widget_set_label(g->spatial, _("spatial sigma"));
+  dt_bauhaus_widget_set_label(g->spatial, _("coarseness"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->spatial, TRUE, TRUE, 0);
 
   g->range = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 8, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->range, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->range, _("range sigma"));
+  dt_bauhaus_widget_set_label(g->range, _("contrast"));
 
-  g->detail = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, 0.2, 3);
+  g->detail = dt_bauhaus_slider_new_with_range(self, -1.0, 2.0, 0.01, 0.2, 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->detail, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->detail, _("detail"));
 

@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 		<!ENTITY % darktable_dtd SYSTEM "dtd/darktable.dtd">
 		%darktable_dtd;
-		<!ENTITY % darkroom_modules_dtd SYSTEM "dtd/darkroom_modules.dtd">
-		%darkroom_modules_dtd;
-		<!ENTITY % darkroom_examples_dtd SYSTEM "dtd/darkroom_examples.dtd">
-		%darkroom_examples_dtd;
 		]>
-	       
+
 <book lang="en">
+	<title>darktable</title>
 	<bookinfo>
 		<legalnotice>
 			<para>
 			The owner of the darktable project is Johannes Hanika.
-			Main developers are Johannes Hanika and Henrik Andersson.
-
-  			darktable is a free software: you can redistribute it and/or modify
+			Main developers are Johannes Hanika, Henrik Andersson and Tobias Ellinghaus.
+			</para>
+			<para>
+  			darktable is free software: you can redistribute it and/or modify
    			it under the terms of the GNU General Public License as published by
    			the Free Software Foundation, either version 3 of the License, or
    			(at your option) any later version.
@@ -34,8 +32,8 @@
 			<para>
 			</para>
 			<para>
-			The present user manual is under license <emphasis>cc by-nc-sa </emphasis>,
-			meaning <emphasis>Attribution Non-Commercial Share Alike </emphasis>. 
+			The present user manual is under license <emphasis>cc by-sa </emphasis>,
+			meaning <emphasis>Attribution Share Alike </emphasis>.
 			You can visit <emphasis>http://creativecommons.org/about/licenses/</emphasis> to get more information.
 			</para>
 		</legalnotice>
@@ -44,7 +42,7 @@
 			<surname>Andersson</surname>
 		</author>
 		<copyright>
-			<year>2010-2011</year>
+			<year>2010-2012</year>
 			<holder>P.H. Andersson</holder>
 		</copyright>
 		<copyright>
@@ -52,7 +50,7 @@
 			<holder>Olivier Tribout</holder>
 		</copyright>
 	</bookinfo>
-	<title>darktable</title>
+
 	<preface id="overview"><title>Preface to darktable</title>
 		<para><indexterm><primary>darktable</primary></indexterm>
 			<indexterm><primary>Preface</primary></indexterm>
@@ -76,15 +74,32 @@
 							<entry>02/06/11</entry>
 						</row>
 					</tbody>
-				</tgroup></informaltable> 
+				</tgroup></informaltable>
 		</para>
-		<para>Please note that every key accelerators given in this manual is only applicable on english keyboards layout. 
-			The key accelerators are not linked to the actual letter printed on it, but only to its position on the keyboard. 
+<!--		<para>Please note that every key accelerators given in this manual is only applicable on english keyboards layout.
+			The key accelerators are not linked to the actual letter printed on it, but only to its position on the keyboard.
 			For example, the <emphasis>z</emphasis> allowing a full-screen view on english keyboards, becomes <emphasis>w</emphasis> on french keyboard.
+		</para> --> <!-- no longer true! -->
+		<para>For the course of this documentation the arrow keys on your keyboard are referenced as with arrow symbols: &uarr;&larr;&darr;&rarr;.
 		</para>
 	</preface>
-&chapter_overview;
-&chapter_lighttable;
-&chapter_darkroom;
-&addendum;
+
+<!-- Overview chapter -->
+<xi:include href="overview/overview.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Lighttable chapter -->
+<xi:include href="lighttable/lighttable.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Darkroom Chapter -->
+<xi:include href="darkroom/darkroom.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Tethering Chapter -->
+<xi:include href="tethering/tethering.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Geotagging  Chapter -->
+<xi:include href="map/map.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Addendum -->
+<xi:include href="addendum/addendum.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 </book>

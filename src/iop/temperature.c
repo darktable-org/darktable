@@ -252,7 +252,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // process aligned pixels with SSE
       for( ; i < roi_out->width - 3 ; i+=4,out+=4,in+=4)
       {
-        _mm_stream_ps(out,_mm_mul_ps(coeffs,_mm_set_ps(in[3],in[2],in[1],in[0])));
+         _mm_stream_ps(out,_mm_mul_ps(coeffs,_mm_set_ps(in[3],in[2],in[1],in[0])));
       }
 
       // process the rest
@@ -405,6 +405,7 @@ void gui_update (struct dt_iop_module_t *self)
   else
     dt_bauhaus_combobox_set(g->presets, -1);
   dt_bauhaus_slider_set(g->finetune, 0);
+  gtk_widget_set_sensitive(g->finetune, 0);
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -493,7 +494,7 @@ void init (dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_temperature_params_t));
   module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
-  module->priority = 39; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 38; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
 }

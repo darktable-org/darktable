@@ -1,0 +1,64 @@
+<sect3 status="draft"><title>hotpixels</title>
+	<sect4><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>Hotpixels module do try it best to blend unwanted pixels that is detected by a threshold against its neighbours.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/hotpixels.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect4>
+
+	<sect4><title>Usage</title>
+		<para>Control the sensitive with the threshold parameter and the strength of how
+		hard to try to blend the pixel with surroundings.
+		</para>
+		<sect5><title>threshold</title>
+			<para>The threshold of the detection</para>
+		</sect5>
+		<sect5><title>stregth</title>
+			<para>The strength of blending</para>
+		</sect5>	
+		<sect5><title>detect by 3 neighbours</title>
+			<para>Wille extend the decetion to use neighbours.</para>
+		</sect5>	
+		<sect5><title>mark fixed pixels</title>
+			<para>This options will mark the pixels in the view that is corrected, and also display the count of detected pixels that is fixed.</para>
+		</sect5>	
+	</sect4>x
+<!--	
+	<sect4><title>Examples</title>
+		<para>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='30%'/>
+					<colspec colwidth='70%'/>
+					<tbody>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/soften_ex1.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry><para>This is the original image, use it as reference for the changes below...</para></entry>
+						</row>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/soften_ex2.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry>
+								<para>EXAMPLE 2 DESCRIPTION
+								</para>
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</para>	
+	</sect4>
+-->	
+</sect3>

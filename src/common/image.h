@@ -56,6 +56,13 @@ typedef enum
 }
 dt_image_flags_t;
 
+typedef enum dt_image_colorspace_t
+{
+  DT_IMAGE_COLORSPACE_NONE,
+  DT_IMAGE_COLORSPACE_SRGB,
+  DT_IMAGE_COLORSPACE_ADOBE_RGB
+} dt_image_colorspace_t;
+
 typedef struct dt_image_raw_parameters_t
 {
   unsigned legacy    : 24;
@@ -87,8 +94,12 @@ typedef struct dt_image_t
   // used by library
   int32_t num, flags, film_id, id, group_id;
 
-  uint32_t filters;  // demosaic pattern
-  int32_t bpp;       // bytes per pixel
+  uint32_t filters;          // demosaic pattern
+  int32_t bpp;               // bytes per pixel
+  float d65_color_matrix[9]; // the 3x3 matrix embedded in some DNGs
+  uint8_t *profile;          // embedded profile, for example from JPEGs
+  uint32_t profile_size;
+  dt_image_colorspace_t colorspace; // the colorspace that is specified in exif. mostly used for jpeg files
 
   dt_image_raw_parameters_t legacy_flip; // unfortunately needed to convert old bits to new flip module.
 

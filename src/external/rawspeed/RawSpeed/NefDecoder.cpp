@@ -28,7 +28,7 @@ namespace RawSpeed {
 
 NefDecoder::NefDecoder(TiffIFD *rootIFD, FileMap* file) :
     RawDecoder(file), mRootIFD(rootIFD) {
-  decoderVersion = 3;
+  decoderVersion = 4;
 }
 
 NefDecoder::~NefDecoder(void) {
@@ -95,7 +95,7 @@ RawImage NefDecoder::decodeRawInternal() {
   TiffIFD* exif = data[0];
   TiffEntry *makernoteEntry = exif->getEntry(MAKERNOTE);
   const uchar8* makernote = makernoteEntry->getData();
-  FileMap makermap((uchar8*)&makernote[10], makernoteEntry->count - 10);
+  FileMap makermap((uchar8*)&makernote[10], mFile->getSize() - makernoteEntry->getDataOffset() - 10);
   TiffParser makertiff(&makermap);
   makertiff.parseData();
 
@@ -114,9 +114,8 @@ RawImage NefDecoder::decodeRawInternal() {
   try {
     NikonDecompressor decompressor(mFile, mRaw);
 
-    // Nikon is JPEG (Big Endian) byte order
     ByteStream* metastream;
-    if (getHostEndianness() == big)
+    if (getHostEndianness() == data[0]->endian)
       metastream = new ByteStream(meta->getData(), meta->count);
     else
       metastream = new ByteStreamSwap(meta->getData(), meta->count);
@@ -335,7 +334,24 @@ void NefDecoder::checkSupportInternal(CameraMetaData *meta) {
     ThrowRDE("NEF Support check: Model name found");
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
-  this->checkCameraSupported(meta, make, model, "");
+  string mode = getMode();
+  if (meta->hasCamera(make, model, mode))
+    this->checkCameraSupported(meta, make, model, mode);
+  else
+    this->checkCameraSupported(meta, make, model, "");
+}
+
+string NefDecoder::getMode() {
+  ostringstream mode;
+  vector<TiffIFD*>  data = mRootIFD->getIFDsWithTag(CFAPATTERN);
+  TiffIFD* raw = FindBestImage(&data);
+  int compression = raw->getEntry(COMPRESSION)->getInt();
+  uint32 bitPerPixel = raw->getEntry(BITSPERSAMPLE)->getInt();
+  if (1 == compression)
+    mode << bitPerPixel << "bit-uncompressed";
+  else
+    mode << bitPerPixel << "bit-uncompressed";
+  return mode.str();
 }
 
 void NefDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
@@ -358,7 +374,12 @@ void NefDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
     iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
 
-  setMetaData(meta, make, model, "", iso);
+  string mode = getMode();
+  if (meta->hasCamera(make, model, mode)) {
+    setMetaData(meta, make, model, mode, iso);
+  } else {
+    setMetaData(meta, make, model, "", iso);
+  }
 
   if (white != 65536)
     mRaw->whitePoint = white;

@@ -1,3 +1,8 @@
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect1 status="final"><title>Modules</title>
 	<para>Each correction, enhancement or effect is implemented as modules, and this section includes documentation
 			of each module and its specific parameters.
@@ -36,204 +41,22 @@
 			   </listitem>		   
 			</orderedlist>
 	</sect2>
-	<sect2 status="draft"><title>Blending operators</title>
-		<para>Blending operators are a blend functionality that works on the incoming image information and 
-				the output of the current module. Not all modules support blending because it would not work
-				and break the use of the module.
-		</para>
-		<para>Modules that do support blending, inherit additional controls at the bottom of module userinterface to control
-				parameters of the blending.
-		</para>
-		
-		<!--
-		<sect3><title>Operators</title>
-			<para>There are a few operators implemented and more can be added, but for now the common ones are there and
-					you will recognize a few of them from other imaging softwares.
-			</para>
-			<sect4 status="draft"><title>Normal</title>
-				<para>This will probably be the most used blending operator, it does just mix input and output and will be used
-					to control the modules effect amount for an example. Perfect for better controlling raw denoise result.
-				</para>			
-			</sect4>
-			<sect4 status="draft"><title>Lighten</title>
-				<para></para>			
-			</sect4>
-			<sect4 status="draft"><title>Darken</title>
-				<para></para>			
-			</sect4>
-			<sect4 status="draft"><title>Multiply</title>
-				<para></para>			
-			</sect4>
-			<sect4 status="draft"><title>Average</title>
-				<para></para>			
-			</sect4>
-			<sect4 status="draft"><title>Add</title>
-				<para></para>			
-			</sect4>
-			<sect4 status="draft"><title>Substract</title>
-				<para></para>			
-			</sect4>
-			<sect4 status="draft"><title>Difference</title>
-				<para></para>			
-			</sect4>
-			<sect4 status="draft"><title>Screen</title>
-				<para></para>			
-			</sect4>
-			<sect4 status="draft"><title>Overlay</title>
-				<para></para>			
-			</sect4>
-			<sect4 status="draft"><title>Soft light</title>
-				<para></para>			
-			</sect4>
-			<sect4 status="draft"><title>Hard light</title>
-				<para></para>			
-			</sect4>
-			<sect4 status="draft"><title>Vivid light</title>
-				<para></para>			
-			</sect4>
-			<sect4 status="draft"><title>Linear light</title>
-				<para></para>			
-			</sect4>
-			<sect4 status="draft"><title>Pin light</title>
-				<para></para>			
-			</sect4>
-		</sect3> -->
-		
-		<sect3><title>Examples</title>
-			<sect4 status="draft"><title>Texturing an image</title>
-				<para>The watermark module supports svg files with embedded images and thanks to it we can easily texture an 
-						image using the watermark module in conjunction with a blending operator.
-				</para>
-			</sect4>
-			
-			<sect4 status="draft"><title>Gritty details</title>
-				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-						<colspec colwidth='70%'/>
-						<colspec colwidth='30%'/>
-						<tbody>
-							<row>						
-								<entry>When blending operators were introduced into darktable, a new module named highpass was added. It produces
-										a highpass filter of the image to be implicitly used with blending. It allows to produce a gritty detailed image and
-										is a widely used workflow with other imaging softwares.				
-								</entry>
-								<entry>
-									<graphic fileref="darkroom/modules/images/blendop_highpass.png" scalefit="1" width="80%" align="center" />
-								</entry>
-							</row>
-						</tbody>
-					</tgroup>
-				</informaltable>
-			
-				<para>
-					<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-							<colspec colwidth='30%'/>
-							<colspec colwidth='70%'/>
-							<tbody>
-								<row>
-									<entry>
-										<graphic fileref="darkroom/modules/images/blendop_highpass_ex1_1.png" scalefit="1" width="90%" align="center" />
-									</entry>						
-									<entry>
-										<para>This is the original image, pretty heavy processed: first black and white, then some blue splittoning but as you see
-											it lacks pop in details and is a bit out of focus...
-										</para>
-									</entry>
-								</row>
-								<row>
-									<entry>
-										<graphic fileref="darkroom/modules/images/blendop_highpass_ex1_2.png" scalefit="1" width="90%" align="center" />
-									</entry>						
-									<entry>
-										<para>Here we applied the highpass filter with the values shown in the images above of the module userinterface; 
-											you can now see that the details are very boosted and we got a really gritty detailed image.
-										</para>
-									</entry>
-								</row>
-							</tbody>
-						</tgroup>
-					</informaltable>
-				</para>
-			</sect4>
-			
-		</sect3>
-	</sect2>
-	<sect2 status="final"><title>Presets</title>
-		<para>
-			Presets are stored configurations for the module parameters both internal and user-defined is available
-				through clicking the <inlinegraphic fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/> icon and a list of available presets are shown for your choice, 
-				the activated preset is in bold text.
-		</para>
-		<para>
-			The preset system does also support automatic preset selection based on image data such as focal length, iso,  
-				camera model and much more fields.
-		</para>
-		<sect3><title>Creating a new preset</title>
-			<para>
-				Configure the specific module of choice as you like then you click the <inlinegraphic fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/> icon and select
-				store new preset menu choice.
-				Following dialog will be shown to configure the preset:
-			</para>
-			<graphic fileref="darkroom/modules/images/new_preset.png" scalefit="1" width="60%" align="center" />
-			<para>
-				The first two fields are used for setting a name and a description of the preset.
-			</para>
-			<para>
-				In the example i have also checked the auto apply option which brings up the image selection fields where you can define a filter
-				that is used to decide if the preset should be applied the image or not.
-				The example dialog above does set up following rules, if lens name matches and aperture is >= 8 and focal length is in range 24 - 35mm the preset will be automatically applied, 
-				it will also only show in the preset list if the image does match this rule.
-			</para>
-			<para>
-				The data used is the EXIF information so if you want a preset to be applied to all images from a specific camera, then leave all fields at default values,
-				lookup model string in metadata panel and enter it into the model field.
-			</para>
-			
-		</sect3>
-	</sect2>
-
-	<!--&darkroom_module_rawimport;-->
-	<!--&darkroom_module_denoise;-->
 	
-	&darkroom_module_whitebalance;
-	&darkroom_module_rawdenoise;
-	&darkroom_module_chromatic; 
-	&darkroom_module_demosaic;
-	&darkroom_module_invert;
-	&darkroom_module_tonemapping;
-	&darkroom_module_exposure;
-	&darkroom_module_highlightreconstruction;
-	&darkroom_module_graduatedneutraldensity;
-	&darkroom_module_basecurve;
-	&darkroom_module_lenscorrection;
-	&darkroom_module_unbreakinputprofile;
-	&darkroom_module_inputcolorprofile;
-	&darkroom_module_bloom;	
-	&darkroom_module_spotremoval;	
-	&darkroom_module_colortransfer;
-	<!--&darkroom_module_equalizer;-->
-	&darkroom_module_equalizer2;
-	&darkroom_module_colorzones;
-	&darkroom_module_lowlight;
-	&darkroom_module_monochrome;
-	&darkroom_module_zonesystem;
-	&darkroom_module_tonecurve;
-	&darkroom_module_relight;
-	&darkroom_module_colorcorrection;
-	&darkroom_module_sharpen;
-	&darkroom_module_grain;
-	&darkroom_module_colorcontrast;
-	&darkroom_module_localcontrast2;	
-	&darkroom_module_clipping;
-	&darkroom_module_highpass;
-	&darkroom_module_lowpass;
-	&darkroom_module_outputcolorprofile;
-	&darkroom_module_channelmixer;
-	<!--&darkroom_module_localcontrast;-->
-	&darkroom_module_velvia;
-	&darkroom_module_soften;  	  	
-	&darkroom_module_vignetting;
-	&darkroom_module_splittoning;
-	&darkroom_module_watermark;
-	&darkroom_module_overexposed;
-	&darkroom_module_framing;
+
+	<!-- Blending sections -->
+	<xi:include href="blend_operators.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+	<!-- Conditional blending  -->
+	<xi:include href="blend_conditional.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+	<!-- Presets -->
+	<xi:include href="presets.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	
+	<!-- Modules groups -->
+	<xi:include href="basic/group_basic.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	<xi:include href="tone/group_tone.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	<xi:include href="color/group_color.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	<xi:include href="correction/group_correction.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	<xi:include href="effect/group_effect.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 </sect1>

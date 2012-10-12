@@ -38,9 +38,15 @@ dt_imageio_sort_modules_format (gconstpointer a, gconstpointer b)
   return strcmp(am->name(), bm->name());
 }
 
-/** Default implementation of dimension module function, used if format modules does not implements dimension() */
+/** Default implementation of dimension module function, used if format module does not implement dimension() */
 static int
 _default_format_dimension(dt_imageio_module_format_t *module, uint32_t *width, uint32_t *height)
+{
+  return 0;
+}
+/** Default implementation of flags, used if format module does not implement flags() */
+static int
+_default_format_flags()
 {
   return 0;
 }
@@ -61,19 +67,20 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
   }
   if(!g_module_symbol(module->module, "name",                         (gpointer)&(module->name)))                         goto error;
   if(!g_module_symbol(module->module, "init",                         (gpointer)&(module->init)))                         goto error;
-  if(!g_module_symbol(module->module, "cleanup",                         (gpointer)&(module->cleanup)))                         goto error;
+  if(!g_module_symbol(module->module, "cleanup",                      (gpointer)&(module->cleanup)))                      goto error;
   if(!g_module_symbol(module->module, "gui_reset",                    (gpointer)&(module->gui_reset)))                    goto error;
   if(!g_module_symbol(module->module, "gui_init",                     (gpointer)&(module->gui_init)))                     goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",                  (gpointer)&(module->gui_cleanup)))                  goto error;
 
   if(!g_module_symbol(module->module, "mime",                         (gpointer)&(module->mime)))                         goto error;
   if(!g_module_symbol(module->module, "extension",                    (gpointer)&(module->extension)))                    goto error;
-  if(!g_module_symbol(module->module, "dimension",                   (gpointer)&(module->dimension)))                   module->dimension = _default_format_dimension;
+  if(!g_module_symbol(module->module, "dimension",                    (gpointer)&(module->dimension)))                    module->dimension = _default_format_dimension;
   if(!g_module_symbol(module->module, "get_params",                   (gpointer)&(module->get_params)))                   goto error;
   if(!g_module_symbol(module->module, "free_params",                  (gpointer)&(module->free_params)))                  goto error;
   if(!g_module_symbol(module->module, "set_params",                   (gpointer)&(module->set_params)))                   goto error;
   if(!g_module_symbol(module->module, "write_image",                  (gpointer)&(module->write_image)))                  goto error;
   if(!g_module_symbol(module->module, "bpp",                          (gpointer)&(module->bpp)))                          goto error;
+  if(!g_module_symbol(module->module, "flags",                        (gpointer)&(module->flags)))                        module->flags = _default_format_flags;
 
   if(!g_module_symbol(module->module, "decompress_header",            (gpointer)&(module->decompress_header)))            module->decompress_header = NULL;
   if(!g_module_symbol(module->module, "decompress",                   (gpointer)&(module->decompress)))                   module->decompress = NULL;
@@ -291,6 +298,22 @@ dt_imageio_module_storage_t *dt_imageio_get_storage_by_name(const char *name)
     it = g_list_next(it);
   }
   return NULL;
+}
+
+dt_imageio_module_format_t *dt_imageio_get_format_by_index(int index)
+{
+  dt_imageio_t *iio = darktable.imageio;
+  GList *it = g_list_nth(iio->plugins_format, index);
+  if(!it) it = iio->plugins_format;
+  return (dt_imageio_module_format_t *)it->data;
+}
+
+dt_imageio_module_storage_t *dt_imageio_get_storage_by_index(int index)
+{
+  dt_imageio_t *iio = darktable.imageio;
+  GList *it = g_list_nth(iio->plugins_storage, index);
+  if(!it) it = iio->plugins_storage;
+  return (dt_imageio_module_storage_t *)it->data;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

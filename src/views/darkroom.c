@@ -460,14 +460,9 @@ static void
 select_this_image(const int imgid)
 {
   // select this image, if no multiple selection:
-  int count = 0;
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(imgid) from selected_images", -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-    count = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
-  if(count < 2)
+  if(dt_collection_get_selected_count(NULL) < 2)
   {
+    sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert or ignore into selected_images values (?1)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -532,6 +527,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     dt_iop_reload_defaults(module);
+    dt_iop_gui_update(module);
     modules = g_list_previous(modules);
   }
 
@@ -557,6 +553,9 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // make signals work again, but only after focus event,
   // to avoid crop/rotate for example to add another history item.
   darktable.gui->reset = 0;
+
+  // Signal develop initialize
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
 
   // prefetch next few from first selected image on.
   dt_view_filmstrip_prefetch();
@@ -692,7 +691,12 @@ export_key_accel_callback(GtkAccelGroup *accel_group,
   dt_dev_write_history((dt_develop_t *)data);
 
   /* export current image */
-  dt_control_export();
+  int max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
+  int max_height = dt_conf_get_int ("plugins/lighttable/export/height");
+  int format_index = dt_conf_get_int ("plugins/lighttable/export/format");
+  int storage_index = dt_conf_get_int ("plugins/lighttable/export/storage");
+  gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
+  dt_control_export(max_width, max_height, format_index, storage_index, high_quality);
   return TRUE;
 }
 

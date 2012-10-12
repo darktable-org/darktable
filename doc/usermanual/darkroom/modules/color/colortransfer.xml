@@ -1,0 +1,30 @@
+<sect3 status="draft"><title>Color transfer</title>
+	<sect4><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>This module allows to transfer on an image the colors found on another.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/colortransfer.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect4>
+
+	<sect4><title>Usage</title>
+		<sect5><title>number of clusters</title>
+			<para>Set the number of color clusters to use.</para>
+		</sect5>
+		<sect5><title>acquire</title>
+			<para>Acquire the colors of the current image.</para>
+		</sect5>
+		<sect5><title>apply</title>
+			<para>Apply the colors (shown above) previously acquire on another image, on the current image.</para>
+		</sect5>
+	</sect4>
+</sect3>
