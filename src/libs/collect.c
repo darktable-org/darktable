@@ -1305,7 +1305,6 @@ folders:
 entry_key_press_exit:
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(view), DT_LIB_COLLECT_COL_TOOLTIP);
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), listmodel);
-  g_signal_connect(G_OBJECT (view), "row-activated", G_CALLBACK (row_activated), d);
   gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
   gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
   g_object_unref(listmodel);
@@ -1417,10 +1416,11 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
     gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
   else
     gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
+  // TODO: We should stop emitting the signal here
   gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
   g_free(text);
 
-  changed_callback(NULL, d->rule + active);
+  //changed_callback(NULL, d->rule + active);
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
 }
@@ -1780,6 +1780,7 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_view_set_headers_visible(view, FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(view), -1, 300);
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
+  g_signal_connect(G_OBJECT (view), "row-activated", G_CALLBACK (row_activated), d);
   
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
