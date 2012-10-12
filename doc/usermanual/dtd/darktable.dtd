@@ -9,4 +9,5 @@
 <!ENTITY icon_module_eye "images/darkroom_module_icon_eye.png">
 <!ENTITY icon_module_mask "images/darkroom_module_icon_mask.png">
 <!ENTITY icon_module_picker "images/darkroom_module_icon_picker.png">
+<!ENTITY icon_module_overexposed "images/darkroom_module_icon_overexposed.png">
 
