@@ -40,40 +40,45 @@ static int numid_compare(lua_State*L) {
 /********************************************
   image labels handling
  *******************************************/
-static const char* colorlabel_typename="dt_lua_colorlabel";
+typedef int dt_lua_colorlabel_t;
 
-static void dt_colorlabels_lua_push(lua_State * L,int imgid) {
-  int * my_colorlabel = (int*)lua_newuserdata(L,sizeof(int));
-  *my_colorlabel = imgid;
-	luaL_setmetatable(L,colorlabel_typename);
+static int colorlabels_pushFunc(lua_State* L,const void* colorlabel_ptr){
+  int * my_colorlabel = (int*)lua_newuserdata(L,sizeof(dt_lua_colorlabel_t));
+  *my_colorlabel = *(int*)colorlabel_ptr;
+	luaL_setmetatable(L,"dt_lua_colorlabel_t");
+  return 1;
+}
+
+static void colorlabels_toFunc(lua_State*L, void* colorlabel_ptr, int index) {
+  *(int*)colorlabel_ptr =*((int*)luaL_checkudata(L,index,"dt_lua_colorlabel_t"));
 }
 
 
 static int colorlabel_index(lua_State *L){
-  int imgid=*((int*)luaL_checkudata(L,-2,colorlabel_typename));
-  const int value =luaL_checkoption(L,-1,NULL,dt_colorlabels_name);
-  lua_pushboolean(L,dt_colorlabels_check_label(imgid,value));
+  int imgid;
+  luaA_to(L,dt_lua_colorlabel_t,&imgid,-2);
+  lua_pushboolean(L,dt_colorlabels_check_label(imgid,lua_tointeger(L,-1)));
   return 1;
 }
 
 static int colorlabel_newindex(lua_State *L){
-  int imgid=*((int*)luaL_checkudata(L,-3,colorlabel_typename));
-  const int value =luaL_checkoption(L,-2,NULL,dt_colorlabels_name);
+  int imgid;
+  luaA_to(L,dt_lua_colorlabel_t,&imgid,-3);
   if(lua_toboolean(L,-1)) { // no testing of type so we can benefit from all types of values
-    dt_colorlabels_set_label(imgid,value);
+    dt_colorlabels_set_label(imgid,lua_tointeger(L,-2));
   } else {
-    dt_colorlabels_remove_label(imgid,value);
+    dt_colorlabels_remove_label(imgid,lua_tointeger(L,-2));
   }
   return 0;
-
 }
-
+/*
 static const luaL_Reg dt_lua_colorlabel_meta[] = {
   {"__index", colorlabel_index },
   {"__newindex", colorlabel_newindex },
   {"__eq", numid_compare },
   {0,0}
 };
+}*/
 
 /************************************
   image history handlig
@@ -300,7 +305,7 @@ static int image_index(lua_State *L){
       break;
     case COLORLABEL:
       {
-        dt_colorlabels_lua_push(L,my_image->id);
+        luaA_push(L,dt_lua_colorlabel_t,&my_image->id);
         break;
       }
     case CREATOR:
@@ -507,13 +512,12 @@ int dt_lua_init_image(lua_State * L) {
   luaL_newmetatable(L,history_typename);
   luaL_setfuncs(L,dt_lua_history_meta,0);
   /* colorlabels */
-  luaL_newmetatable(L,colorlabel_typename);
-  luaL_setfuncs(L,dt_lua_colorlabel_meta,0);
-  dt_lua_init_name_list_pair(L, dt_colorlabels_name);
+  luaA_conversion(dt_lua_colorlabel_t,colorlabels_pushFunc,colorlabels_toFunc);
+  dt_lua_init_type(L,dt_lua_colorlabel_t,dt_colorlabels_name,colorlabel_index,colorlabel_newindex);
   /*  image */
   luaL_newmetatable(L,image_typename);
   luaL_setfuncs(L,image_meta,0);
-  dt_lua_init_typed_name_list_pair(L, dt_image_t,image_fields_name);
+  //dt_lua_init_typed_name_list_pair(L, dt_image_t,image_fields_name);
   luaA_struct(L,dt_image_t);
   luaA_struct_member(L,dt_image_t,exif_exposure,float);
   luaA_struct_member(L,dt_image_t,exif_aperture,float);

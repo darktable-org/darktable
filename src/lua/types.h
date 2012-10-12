@@ -29,10 +29,23 @@ typedef char* char_20;
 typedef char* char_32;
 typedef char* char_52;
 typedef char* char_filename_length;
+typedef char* char_path_length;
 
-#define dt_lua_init_typed_name_list_pair(L,type_name, list) dt_lua_init_name_list_pair_internal(L,#type_name,list)
-#define dt_lua_init_name_list_pair(L, list) dt_lua_init_name_list_pair_internal(L,NULL,list)
-void dt_lua_init_name_list_pair_internal(lua_State* L, const char*type_name, const char ** list);
+/**
+   creates a struct-like type that is lua friendly
+   * iteratable 
+   * indexable
+   * new indexable
+   * printable
+   if the type has been registered with luaA and some members described there, they will be handle via luaA
+   unknown fields are refused if not in the list, or passed to index/newindex for handling
+
+   list can be NULL in which case the type will only use luaA (or be a struct with no member if there is no luaA type
+   */
+   
+#define dt_lua_init_type(L,type_name, list,index,newindex) dt_lua_init_type_internal(L,#type_name,list,index,newindex)
+void dt_lua_init_type_internal(lua_State* L, const char*type_name,const char ** list,lua_CFunction index,lua_CFunction newindex);
+
 
 /**
   (-1,+1)
