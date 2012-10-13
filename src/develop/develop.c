@@ -692,7 +692,7 @@ auto_apply_presets(const int imgid)
       // if there is anything..
       cnt = sqlite3_column_int(stmt, 0);
       sqlite3_finalize(stmt);
-      fprintf(stderr, "[auto_apply_presets] imageid %d found %d matching presets (legacy %d)\n", imgid, cnt, legacy);
+      // fprintf(stderr, "[auto_apply_presets] imageid %d found %d matching presets (legacy %d)\n", imgid, cnt, legacy);
       // advance the current history by that amount:
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
           "update history set num=num+?1 where imgid=?2",
