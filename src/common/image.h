@@ -52,7 +52,11 @@ typedef enum
   // set during import if images is a high-dynamic range image..
   DT_IMAGE_HDR = 128,
   // set when marked for deletion
-  DT_IMAGE_REMOVE = 256
+  DT_IMAGE_REMOVE = 256,
+  // set when auto-applying presets have been applied to this image.
+  DT_IMAGE_AUTO_PRESETS_APPLIED = 512,
+  // legacy flag. is set for all new images. i hate to waste a bit on this :(
+  DT_IMAGE_NO_LEGACY_PRESETS = 1024
 }
 dt_image_flags_t;
 

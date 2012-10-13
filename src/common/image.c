@@ -429,12 +429,14 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   }
   sqlite3_finalize(stmt);
 
+  // also need to set the no-legacy bit, to make sure we get the right presets (new ones)
   uint32_t flags = dt_conf_get_int("ui_last/import_initial_rating");
   if(flags > 5)
   {
     flags = 1;
     dt_conf_set_int("ui_last/import_initial_rating", 1);
   }
+  flags |= DT_IMAGE_NO_LEGACY_PRESETS;
   // insert dummy image entry in database
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "insert into images (id, film_id, filename, caption, description, "
