@@ -99,7 +99,7 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
   mRaw->whitePoint = curve[_max-1];
   mRaw->blackLevel = curve[0];
 
-  uint32 top = mRaw->whitePoint;
+  ushort16 top = mRaw->whitePoint;
   for (int i = _max; i < 0x8000; i++)
     curve[i] = top;
 
@@ -122,12 +122,12 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
     pUp2[y&1] += HuffDecodeNikon();
     pLeft1 = pUp1[y&1];
     pLeft2 = pUp2[y&1];
-    dest[0] = curve[pLeft1&0x7fff] | (curve[pLeft2&0x7fff] << 16);
+    dest[0] = curve[pLeft1&0x7fff] | ((uint32)curve[pLeft2&0x7fff] << 16);
     for (x = 1; x < cw; x++) {
       bits->checkPos();
       pLeft1 += HuffDecodeNikon();
       pLeft2 += HuffDecodeNikon();
-      dest[x] = curve[pLeft1&0x7fff] | (curve[pLeft2&0x7fff] << 16);
+      dest[x] = curve[pLeft1&0x7fff] | ((uint32)curve[pLeft2&0x7fff] << 16);
     }
   }
 }
