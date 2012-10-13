@@ -71,14 +71,6 @@ static int colorlabel_newindex(lua_State *L){
   }
   return 0;
 }
-/*
-static const luaL_Reg dt_lua_colorlabel_meta[] = {
-  {"__index", colorlabel_index },
-  {"__newindex", colorlabel_newindex },
-  {"__eq", numid_compare },
-  {0,0}
-};
-}*/
 
 /************************************
   image history handlig
@@ -113,7 +105,6 @@ static int history_index(lua_State *L){
 }
 
 static int history_next(lua_State *L) {
-  //printf("%s\n",__FUNCTION__);
   //TBSL : check index and find the correct position in stmt if index was changed manually
   // 2 args, table, index, returns the next index,value or nil,nil return the first index,value if index is nil 
 

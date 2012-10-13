@@ -1337,6 +1337,7 @@ void dt_control_export_job_init(dt_job_t *job, int max_width, int max_height, in
 void dt_control_export(int max_width, int max_height, int format_index, int storage_index, gboolean high_quality)
 {
   dt_job_t j;
+  dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_SELECTION,format_index,storage_index);
   dt_control_export_job_init(&j, max_width, max_height, format_index, storage_index, high_quality);
   dt_control_add_job(darktable.control, &j);
 }

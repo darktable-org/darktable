@@ -22,6 +22,7 @@
 #include "lua/events.h"
 #include "lua/image.h"
 #include "gui/accelerators.h"
+#include "common/imageio_module.h"
 typedef struct event_handler{
   const char* evt_name;
   lua_CFunction on_register;
@@ -253,10 +254,11 @@ static int trigger_chained_event(lua_State * L,const char* evt_name, int nargs,i
 
 
 static event_handler event_list[] = {
-  {"pre-export",register_chained_event,trigger_chained_event},
+  {"pre-export-selection",register_multiinstance_event,trigger_multiinstance_event},
   {"shortcut",register_shortcut_event,trigger_keyed_event}, 
+  {"post-import-image",register_multiinstance_event,trigger_multiinstance_event},
   {"test",register_singleton_event,trigger_singleton_event},  // avoid error because of unused function
-  {"post-import-image",register_multiinstance_event,trigger_multiinstance_event}, // avoid error because of unused function
+  {"test2",register_chained_event,trigger_chained_event}, // avoid error because of unused function
   {NULL,NULL,NULL}
 };
 
@@ -305,6 +307,11 @@ static int dt_lua_trigger_event(const char*event,int nargs,int nresults) {
   return res;
 }
 
+static void on_export_selection(gpointer instance,
+     gpointer user_data){
+  dt_lua_trigger_event("pre-export-selection",0,0);
+}
+
 static void on_image_imported(gpointer instance,uint8_t id, gpointer user_data){
   dt_lua_image_push(darktable.lua_state,id);
   dt_lua_trigger_event("post-import-image",1,0);
@@ -327,6 +334,7 @@ void dt_lua_init_events(lua_State *L) {
   lua_settable(L,-3);
   lua_pop(L,1);
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_IMPORT,G_CALLBACK(on_image_imported),NULL);
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_SELECTION,G_CALLBACK(on_export_selection),NULL);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
