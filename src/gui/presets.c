@@ -517,6 +517,15 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter),    0);
   }
   sqlite3_finalize(stmt);
+  
+  // now delete preset, so we can re-insert the new values:
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, module->version() );
+
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 
   g_signal_connect (dialog, "response", G_CALLBACK (edit_preset_response), g);
   gtk_widget_show_all (dialog);
