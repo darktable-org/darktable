@@ -30,9 +30,6 @@
 #include "gui/gtkentry.h"
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
-#ifdef USE_LUA
-#include "lua/dt_lua.h"
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <glib.h>
@@ -279,38 +276,6 @@ set_params(dt_imageio_module_storage_t *self, void *params, int size)
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
   return 0;
 }
-/********************************************************************
-LUA STUFF
-*********************************************************************/
-#ifdef USE_LUA
-static int dt_lua_tostring(lua_State *L) {
-	lua_pushstring(L,"storage/disk");
-	return 1;
-}
-
-
-static const luaL_Reg lua_meta[] = {
-	{"__tostring", dt_lua_tostring },
-	{0,0}
-
-};
-int lua_init(lua_State * L) {
-	lua_newtable(L);
-	luaL_setfuncs(L,lua_meta,0);
-	lua_newuserdata(L,1); // placeholder we can't use a table because we can't prevent assignment
-	lua_pushvalue(L,-2);
-	lua_setmetatable(L,-2);
-	dt_lua_push_darktable_lib(L);
-	dt_lua_goto_subtable(L,"storage");
-	lua_pushvalue(L,-2);
-	lua_setfield(L,-2,"disk");
-	return 0;
-}
-#endif
-
-
-
-
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -178,8 +178,6 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   if(!g_module_symbol(module->module, "dimension",              (gpointer)&(module->dimension)))            	module->dimension = _default_storage_dimension;
   if(!g_module_symbol(module->module, "recommended_dimension",  (gpointer)&(module->recommended_dimension)))  module->recommended_dimension = _default_storage_dimension;
 
-  if(!g_module_symbol(module->module, "lua_init",               (gpointer)&(module->lua_init)))               module->lua_init = NULL;
-
   return 0;
 error:
   fprintf(stderr, "[imageio_load_module] failed to open storage `%s': %s\n", plugin_name, g_module_error());

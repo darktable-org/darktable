@@ -109,6 +109,15 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_IMAGE_EXPORT_SELECTION,
 
+  /** \brief This signal is raised after an image has been exported
+    to a file, but before it is sent to facebook/picassa etc...
+    export won't happen until this function returns
+    1 int : the imgid exported
+    2 char* : the filename we exported to
+    no return
+    */
+  DT_SIGNAL_IMAGE_EXPORT_TMPFILE,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 }

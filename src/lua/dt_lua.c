@@ -149,15 +149,6 @@ void dt_lua_init(lua_State*L,const int init_gui){
     dt_lua_init_gui(darktable.lua_state);
   }
 
-  // init all image storage module
-  dt_imageio_t *iio = darktable.imageio;
-  GList *it = iio->plugins_storage;
-  while(it)
-  {
-    dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
-    if(module->lua_init) dt_lua_protect_call(darktable.lua_state,module->lua_init);
-    it = g_list_next(it);
-  }
 
   // if we have a UI, we need to load the modules
   if(init_gui) {

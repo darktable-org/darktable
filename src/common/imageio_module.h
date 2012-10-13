@@ -22,9 +22,6 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-#ifdef USE_LUA
-#include "lua/types.h"
-#endif
 /** Flag for the format modules */
 #define FORMAT_FLAGS_SUPPORT_XMP   1
 
@@ -154,8 +151,6 @@ typedef struct dt_imageio_module_storage_t
   void* (*get_params)   (struct dt_imageio_module_storage_t *self, int *size);
   void  (*free_params)  (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
   int   (*set_params)   (struct dt_imageio_module_storage_t *self, const void *params, const int size);
-  /* a lua function called at .so load time to allow lua access to the structure */
-  lua_CFunction lua_init;
 }
 dt_imageio_module_storage_t;
 
