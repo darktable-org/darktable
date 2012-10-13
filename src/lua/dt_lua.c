@@ -24,6 +24,7 @@
 #include "lua/events.h"
 #include "lua/image.h"
 #include "lua/database.h"
+#include "lua/gui.h"
 #include "common/imageio_module.h"
 #include "config.h"
 
@@ -145,6 +146,7 @@ void dt_lua_init(lua_State*L,const int init_gui){
     load_darktable_lib(darktable.lua_state);
     lua_setglobal(darktable.lua_state, "darktable");  /* remove _PRELOAD table */
     dt_lua_init_events(darktable.lua_state);
+    dt_lua_init_gui(darktable.lua_state);
   }
 
   // init all image storage module

@@ -84,10 +84,11 @@ FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*
 
 if(USE_LUA)
 	FILE(GLOB SOURCE_FILES_LUA
+		"lua/database.c"
 		"lua/dt_lua.c"
 		"lua/events.c"
+		"lua/gui.c"
 		"lua/image.c"
-		"lua/database.c"
 		"lua/stmt.c"
 		"lua/types.c"
 		)
