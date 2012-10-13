@@ -22,6 +22,7 @@
 #include "control/control.h"
 #include "common/colormatrices.c"
 #include "common/debug.h"
+#include "common/srgb_tone_curve_values.h"
 #include <lcms2.h>
 
 
@@ -164,21 +165,6 @@ dt_colorspaces_get_matrix_from_output_profile (cmsHPROFILE prof, float *matrix, 
   return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 0);
 }
 
-
-static cmsToneCurve*
-build_srgb_gamma(void)
-{
-  double Parameters[5];
-
-  Parameters[0] = 2.4;
-  Parameters[1] = 1. / 1.055;
-  Parameters[2] = 0.055 / 1.055;
-  Parameters[3] = 1. / 12.92;
-  Parameters[4] = 0.04045;    // d
-
-  return cmsBuildParametricToneCurve(NULL, 4, Parameters);
-}
-
 cmsHPROFILE
 dt_colorspaces_create_lab_profile()
 {
@@ -199,7 +185,7 @@ dt_colorspaces_create_srgb_profile()
   cmsHPROFILE  hsRGB;
 
   cmsWhitePointFromTemp(&D65, 6504.0);
-  Gamma22[0] = Gamma22[1] = Gamma22[2] = build_srgb_gamma();
+  Gamma22[0] = Gamma22[1] = Gamma22[2] = cmsBuildTabulatedToneCurve16(NULL, dt_srgb_tone_curve_values_int_n, dt_srgb_tone_curve_values_int);
 
   hsRGB = cmsCreateRGBProfile(&D65, &Rec709Primaries, Gamma22);
   cmsFreeToneCurve(Gamma22[0]);
@@ -207,7 +193,7 @@ dt_colorspaces_create_srgb_profile()
 
   cmsSetProfileVersion(hsRGB, 2.1);
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
+  cmsMLUsetASCII(mlu0, "en", "US", "Darktable");
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu1, "en", "US", "sRGB");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
@@ -221,18 +207,6 @@ dt_colorspaces_create_srgb_profile()
   cmsMLUfree(mlu2);
 
   return hsRGB;
-}
-
-static cmsToneCurve*
-build_adobergb_gamma(void)
-{
-  // this is wrong, this should be a TRC not a table gamma
-  double Parameters[2];
-
-  Parameters[0] = 2.2;
-  Parameters[1] = 0;
-
-  return cmsBuildParametricToneCurve(NULL, 1, Parameters);
 }
 
 // Create the ICC virtual profile for adobe rgb space
@@ -250,7 +224,7 @@ dt_colorspaces_create_adobergb_profile(void)
   cmsHPROFILE  hAdobeRGB;
 
   cmsWhitePointFromTemp(&D65, 6504.0);
-  Gamma22[0] = Gamma22[1] = Gamma22[2] = build_adobergb_gamma();
+  Gamma22[0] = Gamma22[1] = Gamma22[2] = cmsBuildGamma(NULL, 2.2);
 
   hAdobeRGB = cmsCreateRGBProfile(&D65, &AdobePrimaries, Gamma22);
   cmsFreeToneCurve(Gamma22[0]);
@@ -258,7 +232,7 @@ dt_colorspaces_create_adobergb_profile(void)
 
   cmsSetProfileVersion(hAdobeRGB, 2.1);
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
+  cmsMLUsetASCII(mlu0, "en", "US", "Darktable");
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu1, "en", "US", "AdobeRGB");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
