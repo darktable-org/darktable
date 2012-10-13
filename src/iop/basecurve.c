@@ -320,8 +320,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->basecurve_type = p->basecurve_type[ch];
     for(int k=0; k<p->basecurve_nodes[ch]; k++)
     {
-      // printf("tmp.basecurve_x[%d] = %f;\n", k, p->basecurve_x[k]);
-      // printf("tmp.basecurve_y[%d] = %f;\n", k, p->basecurve_y[k]);
+      // printf("p->basecurve[ch][k].x = %f;\n", k, p->basecurve[ch][k].x);
+      // printf("p->basecurve[ch][k].y = %f;\n", k, p->basecurve[ch][k].y);
       (void)dt_draw_curve_add_point(d->curve, p->basecurve[ch][k].x, p->basecurve[ch][k].y);
     }
   }
