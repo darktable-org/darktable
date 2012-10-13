@@ -47,8 +47,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
   // user selectable parameter defines minimum requirement on GPU memory
   // default is 768MB
-  // values below 256 will be (re)set to 256
-  const int opencl_memory_requirement = max(256, dt_conf_get_int("opencl_memory_requirement"));
+  // values below 200 will be (re)set to 200
+  const int opencl_memory_requirement = max(200, dt_conf_get_int("opencl_memory_requirement"));
   dt_conf_set_int("opencl_memory_requirement", opencl_memory_requirement);
 
 

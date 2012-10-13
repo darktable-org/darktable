@@ -97,7 +97,7 @@
     <type>int</type>
     <default>768</default>
     <shortdescription>minmum amount of GPU memory (MB) required to activate opencl</shortdescription>
-    <longdescription>opencl will only be activated if your graphics card has at least this amount of memory. reducing the value will allow cards with less GPU memory to be used - but at the risk of lower system stability and occasional crashes. values below 256 will be treated as 256.</longdescription>
+    <longdescription>opencl will only be activated if your graphics card has at least this amount of memory. reducing the value will allow cards with less GPU memory to be used - but at the risk of lower system stability and occasional crashes. values below 200 will be treated as 200.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_size_roundup</name>
