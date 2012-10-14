@@ -174,37 +174,53 @@ dt_colorspaces_create_lab_profile()
 cmsHPROFILE
 dt_colorspaces_create_srgb_profile()
 {
-  cmsCIExyY       D65;
-  cmsCIExyYTRIPLE Rec709Primaries =
+  cmsHPROFILE hsRGB;
+
+  cmsCIEXYZTRIPLE Colorants =
   {
-    {0.6400, 0.3300, 1.0},
-    {0.3000, 0.6000, 1.0},
-    {0.1500, 0.0600, 1.0}
+    {0.436066, 0.222488, 0.013916},
+    {0.385147, 0.716873, 0.097076},
+    {0.143066, 0.060608, 0.714096}
   };
-  cmsToneCurve *Gamma22[3];
-  cmsHPROFILE  hsRGB;
 
-  cmsWhitePointFromTemp(&D65, 6504.0);
-  Gamma22[0] = Gamma22[1] = Gamma22[2] = cmsBuildTabulatedToneCurve16(NULL, dt_srgb_tone_curve_values_int_n, dt_srgb_tone_curve_values_int);
+  cmsCIEXYZ black = { 0, 0, 0 };
+  cmsCIEXYZ D65 = { 0.95045, 1, 1.08905 };
+  cmsToneCurve* transferFunction;
 
-  hsRGB = cmsCreateRGBProfile(&D65, &Rec709Primaries, Gamma22);
-  cmsFreeToneCurve(Gamma22[0]);
-  if (hsRGB == NULL) return NULL;
+  transferFunction = cmsBuildTabulatedToneCurve16(NULL, dt_srgb_tone_curve_values_n, dt_srgb_tone_curve_values);
+
+  hsRGB = cmsCreateProfilePlaceholder(0);
 
   cmsSetProfileVersion(hsRGB, 2.1);
+
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu0, "en", "US", "Darktable");
+  cmsMLUsetASCII(mlu0, "en", "US", "sRGB");
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu1, "en", "US", "sRGB");
+  cmsMLUsetASCII(mlu1, "en", "US", "Darktable");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu2, "en", "US", "Darktable sRGB");
-  cmsWriteTag(hsRGB, cmsSigDeviceMfgDescTag,   mlu0);
-  cmsWriteTag(hsRGB, cmsSigDeviceModelDescTag, mlu1);
+  cmsMLUsetASCII(mlu2, "en", "US", "sRGB");
   // this will only be displayed when the embedded profile is read by for example GIMP
-  cmsWriteTag(hsRGB, cmsSigProfileDescriptionTag, mlu2);
+  cmsWriteTag(hsRGB, cmsSigProfileDescriptionTag, mlu0);
+  cmsWriteTag(hsRGB, cmsSigDeviceMfgDescTag,      mlu1);
+  cmsWriteTag(hsRGB, cmsSigDeviceModelDescTag,    mlu2);
   cmsMLUfree(mlu0);
   cmsMLUfree(mlu1);
   cmsMLUfree(mlu2);
+
+  cmsSetDeviceClass(hsRGB, cmsSigDisplayClass);
+  cmsSetColorSpace(hsRGB, cmsSigRgbData);
+  cmsSetPCS(hsRGB, cmsSigXYZData);
+
+  cmsWriteTag(hsRGB, cmsSigMediaWhitePointTag, &D65);
+  cmsWriteTag(hsRGB, cmsSigMediaBlackPointTag, &black);
+
+  cmsWriteTag(hsRGB, cmsSigRedColorantTag, (void*) &Colorants.Red);
+  cmsWriteTag(hsRGB, cmsSigGreenColorantTag, (void*) &Colorants.Green);
+  cmsWriteTag(hsRGB, cmsSigBlueColorantTag, (void*) &Colorants.Blue);
+
+  cmsWriteTag(hsRGB, cmsSigRedTRCTag, (void*) transferFunction);
+  cmsLinkTag(hsRGB, cmsSigGreenTRCTag, cmsSigRedTRCTag );
+  cmsLinkTag(hsRGB, cmsSigBlueTRCTag, cmsSigRedTRCTag );
 
   return hsRGB;
 }
@@ -213,37 +229,53 @@ dt_colorspaces_create_srgb_profile()
 cmsHPROFILE
 dt_colorspaces_create_adobergb_profile(void)
 {
-  cmsCIExyY       D65;
-  cmsCIExyYTRIPLE AdobePrimaries =
-  {
-    {0.6400, 0.3300, 1.0},
-    {0.2100, 0.7100, 1.0},
-    {0.1500, 0.0600, 1.0}
-  };
-  cmsToneCurve *Gamma22[3];
   cmsHPROFILE  hAdobeRGB;
 
-  cmsWhitePointFromTemp(&D65, 6504.0);
-  Gamma22[0] = Gamma22[1] = Gamma22[2] = cmsBuildGamma(NULL, 2.2);
+  cmsCIEXYZTRIPLE Colorants =
+  {
+    {0.609741, 0.311111, 0.019470},
+    {0.205276, 0.625671, 0.060867},
+    {0.149185, 0.063217, 0.744568}
+  };
 
-  hAdobeRGB = cmsCreateRGBProfile(&D65, &AdobePrimaries, Gamma22);
-  cmsFreeToneCurve(Gamma22[0]);
-  if (hAdobeRGB == NULL) return NULL;
+  cmsCIEXYZ black = { 0, 0, 0 };
+  cmsCIEXYZ D65 = { 0.95045, 1, 1.08905 };
+  cmsToneCurve* transferFunction;
+
+  transferFunction = cmsBuildGamma(NULL, 2.2);
+
+  hAdobeRGB = cmsCreateProfilePlaceholder(0);
 
   cmsSetProfileVersion(hAdobeRGB, 2.1);
+
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu0, "en", "US", "Darktable");
+  cmsMLUsetASCII(mlu0, "en", "US", "AdobeRGB");
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu1, "en", "US", "AdobeRGB");
+  cmsMLUsetASCII(mlu1, "en", "US", "Darktable");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu2, "en", "US", "Darktable AdobeRGB");
-  cmsWriteTag(hAdobeRGB, cmsSigDeviceMfgDescTag,   mlu0);
-  cmsWriteTag(hAdobeRGB, cmsSigDeviceModelDescTag, mlu1);
+  cmsMLUsetASCII(mlu2, "en", "US", "AdobeRGB");
   // this will only be displayed when the embedded profile is read by for example GIMP
-  cmsWriteTag(hAdobeRGB, cmsSigProfileDescriptionTag, mlu2);
+  cmsWriteTag(hAdobeRGB, cmsSigProfileDescriptionTag, mlu0);
+  cmsWriteTag(hAdobeRGB, cmsSigDeviceMfgDescTag,      mlu1);
+  cmsWriteTag(hAdobeRGB, cmsSigDeviceModelDescTag,    mlu2);
   cmsMLUfree(mlu0);
   cmsMLUfree(mlu1);
   cmsMLUfree(mlu2);
+
+  cmsSetDeviceClass(hAdobeRGB, cmsSigDisplayClass);
+  cmsSetColorSpace(hAdobeRGB, cmsSigRgbData);
+  cmsSetPCS(hAdobeRGB, cmsSigXYZData);
+
+  cmsWriteTag(hAdobeRGB, cmsSigMediaWhitePointTag, &D65);
+  cmsWriteTag(hAdobeRGB, cmsSigMediaBlackPointTag, &black);
+
+  cmsWriteTag(hAdobeRGB, cmsSigRedColorantTag, (void*) &Colorants.Red);
+  cmsWriteTag(hAdobeRGB, cmsSigGreenColorantTag, (void*) &Colorants.Green);
+  cmsWriteTag(hAdobeRGB, cmsSigBlueColorantTag, (void*) &Colorants.Blue);
+
+  cmsWriteTag(hAdobeRGB, cmsSigRedTRCTag, (void*) transferFunction);
+  cmsLinkTag(hAdobeRGB, cmsSigGreenTRCTag, cmsSigRedTRCTag );
+  cmsLinkTag(hAdobeRGB, cmsSigBlueTRCTag, cmsSigRedTRCTag );
 
   return hAdobeRGB;
 }

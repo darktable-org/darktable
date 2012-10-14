@@ -528,7 +528,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
     g->num_samples = get_samples (g->sample, d, roi_in, piece);
-    dt_control_queue_redraw_widget(GTK_WIDGET(g->area));
+    // dt_control_queue_redraw_widget(GTK_WIDGET(g->area));
     // tries to acquire gdk lock and this prone to deadlock:
     // dt_control_queue_draw(GTK_WIDGET(g->area));
   }
@@ -617,6 +617,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_synthesize, sizes);
     if(err != CL_SUCCESS) goto error;
   }
+
+  dt_opencl_finish(devid);
 
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   for(int k=0; k<max_scale; k++)
