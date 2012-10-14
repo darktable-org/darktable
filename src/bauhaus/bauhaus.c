@@ -281,6 +281,26 @@ dt_bauhaus_root_button_press(GtkWidget *wd, GdkEventButton *event, gpointer user
   return FALSE;
 }
 
+static void
+combobox_popup_scroll(int up)
+{
+  gint wx, wy;
+  GtkWidget *w = GTK_WIDGET(darktable.bauhaus->current);
+  const int ht = w->allocation.height;
+  const int skip = ht + get_line_space();
+  gdk_window_get_origin (gtk_widget_get_window (w), &wx, &wy);
+  dt_bauhaus_combobox_data_t *d = &darktable.bauhaus->current->data.combobox;
+  if(up)
+    dt_bauhaus_combobox_set(w, CLAMP(d->active-1, 0, d->num_labels-1));
+  else
+    dt_bauhaus_combobox_set(w, CLAMP(d->active+1, 0, d->num_labels-1));
+  gdk_window_move(gtk_widget_get_window(darktable.bauhaus->popup_window), wx, wy - d->active * skip);
+  // make sure highlighted entry is updated:
+  darktable.bauhaus->mouse_x = 0;
+  darktable.bauhaus->mouse_y = d->active * skip + ht/2;
+  gtk_widget_queue_draw(darktable.bauhaus->popup_area);
+}
+
 
 static gboolean
 dt_bauhaus_popup_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
@@ -290,24 +310,8 @@ dt_bauhaus_popup_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_
   switch(w->type)
   {
     case DT_BAUHAUS_COMBOBOX:
-    {
-      gint wx, wy;
-      GtkWidget *w = GTK_WIDGET(darktable.bauhaus->current);
-      const int ht = w->allocation.height;
-      const int skip = ht + get_line_space();
-      gdk_window_get_origin (gtk_widget_get_window (w), &wx, &wy);
-      dt_bauhaus_combobox_data_t *d = &darktable.bauhaus->current->data.combobox;
-      if(event->direction == GDK_SCROLL_UP)
-        dt_bauhaus_combobox_set(w, CLAMP(d->active-1, 0, d->num_labels-1));
-      else
-        dt_bauhaus_combobox_set(w, CLAMP(d->active+1, 0, d->num_labels-1));
-      gdk_window_move(gtk_widget_get_window(darktable.bauhaus->popup_window), wx, wy - d->active * skip);
-      // make sure highlighted entry is updated:
-      darktable.bauhaus->mouse_x = 0;
-      darktable.bauhaus->mouse_y = d->active * skip + ht/2;
-      gtk_widget_queue_draw(darktable.bauhaus->popup_area);
-    }
-    break;
+      combobox_popup_scroll(event->direction == GDK_SCROLL_UP);
+      break;
     case DT_BAUHAUS_SLIDER:
       break;
     default:
@@ -1122,7 +1126,9 @@ dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
     {
       // only set to what's in the filtered list.
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-      int active = darktable.bauhaus->end_mouse_y / (widget->allocation.height + get_line_space());
+      int active = darktable.bauhaus->end_mouse_y >= 0
+        ? (darktable.bauhaus->end_mouse_y / (widget->allocation.height + get_line_space()))
+        : d->active;
       GList *it = d->labels;
       int k = 0, i = 0, kk = 0, match = 1;
       while(it)
@@ -1688,6 +1694,24 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         // discard input and close popup
         darktable.bauhaus->keys_cnt = 0;
         memset(darktable.bauhaus->keys, 0, 64);
+        dt_bauhaus_hide_popup();
+      }
+      else if(event->keyval == GDK_Up)
+      {
+        combobox_popup_scroll(1);
+      }
+      else if(event->keyval == GDK_Down)
+      {
+        combobox_popup_scroll(0);
+      }
+      else if(event->keyval == GDK_Return || event->keyval == GDK_KP_Enter)
+      {
+        // return pressed, but didn't type anything
+        darktable.bauhaus->end_mouse_y = -1; // negative will use currently highlighted instead.
+        darktable.bauhaus->keys[darktable.bauhaus->keys_cnt] = 0;
+        darktable.bauhaus->keys_cnt = 0;
+        memset(darktable.bauhaus->keys, 0, 64);
+        dt_bauhaus_widget_accept(darktable.bauhaus->current);
         dt_bauhaus_hide_popup();
       }
       else return FALSE;
