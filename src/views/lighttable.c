@@ -851,48 +851,45 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
         sqlite3_finalize(stmt);
       }
 
-      if (sel_img_count > 1)
-      {
-        sqlite3_stmt *stmt;
-        char stmt_string[128] = "select imgid from selected_images WHERE ";
-        sprintf(stmt_string, "select imgid from selected_images WHERE imgid %s %d ORDER BY imgid %s LIMIT 1",
+      /* Build outer select criteria */
+      char filter_criteria[128] = {0};
+      snprintf(filter_criteria, 128,
+            " WHERE id %s %d ORDER BY id %s LIMIT 1",
             (offset > 0) ? ">" : "<",
             lib->full_preview_id,
             (offset > 0) ? "" : "DESC");
 
+      sqlite3_stmt *stmt;
+      if (sel_img_count > 1)
+      {
+        char stmt_string[256];
+        sprintf(stmt_string,
+            "select imgid as id from selected_images %s",
+            filter_criteria);
+
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
-
-        if(sqlite3_step(stmt) == SQLITE_ROW) {
-          lib->full_preview_id = sqlite3_column_int(stmt, 0);
-        }
-
-        sqlite3_finalize(stmt);
-
       } else {
         /* We need to augment the current main query a bit to fetch the
          * row we need. */
         const char *main_query = sqlite3_sql(lib->statements.main_query);
         const size_t stmt_string_len = strlen(main_query)+100;
         char *stmt_string = calloc(stmt_string_len, sizeof(char));
-        sqlite3_stmt *stmt;
         snprintf(stmt_string, stmt_string_len,
-            "select id from (%s) WHERE id %s %d ORDER BY id %s LIMIT 1",
-            main_query,
-            (offset > 0) ? ">" : "<",
-            lib->full_preview_id,
-            (offset > 0) ? "" : "DESC");
+            "select id from (%s) %s",
+            main_query, filter_criteria);
 
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
 
-        if(sqlite3_step(stmt) == SQLITE_ROW) {
-          lib->full_preview_id = sqlite3_column_int(stmt, 0);
-        }
-
-        sqlite3_finalize(stmt);
-
+        free(stmt_string);
       }
+
+      if(sqlite3_step(stmt) == SQLITE_ROW) {
+        lib->full_preview_id = sqlite3_column_int(stmt, 0);
+      }
+
+      sqlite3_finalize(stmt);
     }
 
     lib->image_over = DT_VIEW_DESERT;
