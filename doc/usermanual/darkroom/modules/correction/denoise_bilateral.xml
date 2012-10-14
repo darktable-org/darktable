@@ -11,7 +11,7 @@
 							Quite counter-intuitively, the greater the values for sliders, the lesser resources.
 						</entry>
 						<entry>
-							<graphic fileref="darkroom/modules/images/denoise.png" scalefit="1" width="80%" align="center" />
+							<graphic fileref="darkroom/modules/images/denoise_bilateral.png" scalefit="1" width="80%" align="center" />
 						</entry>
 					</row>
 				</tbody>
@@ -20,16 +20,20 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<sect5><title>radius</title>
-			<para>Set the spatial extension of the gaussian blur.</para>
+		<para>A bilateral filter is an edge-preserving noise reduction filter. The intensity values at each pixel in an image are replaced by a weighted average of intensity values from nearby pixels.
+                      The weights - based on a Gaussian distribution - depend not only on Euclidean distance but also on the range differences (differences in color intensities). Bilateral denoise preserves sharp edges.
+                      As denoising is resource hungry it slows down pixelpipe processing significantly; it makes sense to activate this module late in your workflow.
+		</para>
+		<sect5><title>Radius</title>
+			<para>Set the spatial extent of the gaussian blur.</para>
 		</sect5>
-		<sect5><title>red</title>
+		<sect5><title>Red</title>
 			<para>Blur intensity for red channel.</para>
 		</sect5>
-		<sect5><title>green</title>
+		<sect5><title>Green</title>
 			<para>Blur intensity for green channel.</para>
 		</sect5>
-		<sect5><title>blue</title>
+		<sect5><title>Blue</title>
 			<para>Blur intensity for blue channel.</para>
 		</sect5>
 	</sect4>
