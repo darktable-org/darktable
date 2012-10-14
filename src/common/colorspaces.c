@@ -183,10 +183,11 @@ dt_colorspaces_create_srgb_profile()
     {0.14307, 0.06061, 0.71410}
   };
 
+  cmsCIEXYZ black = { 0, 0, 0 };
   cmsCIEXYZ D65 = { 0.95045, 1, 1.08905 };
   cmsToneCurve* transferFunction;
 
-  transferFunction = cmsBuildTabulatedToneCurve16(NULL, dt_srgb_tone_curve_values_int_n, dt_srgb_tone_curve_values_int);
+  transferFunction = cmsBuildTabulatedToneCurve16(NULL, dt_srgb_tone_curve_values_n, dt_srgb_tone_curve_values);
 
   hsRGB = cmsCreateProfilePlaceholder(0);
 
@@ -210,6 +211,7 @@ dt_colorspaces_create_srgb_profile()
   cmsSetColorSpace(hsRGB, cmsSigRgbData);
   cmsSetPCS(hsRGB, cmsSigXYZData);
 
+  cmsWriteTag(hsRGB, cmsSigMediaBlackPointTag, &black);
   cmsWriteTag(hsRGB, cmsSigMediaWhitePointTag, &D65);
 
   cmsWriteTag(hsRGB, cmsSigRedColorantTag, (void*) &Colorants.Red);
