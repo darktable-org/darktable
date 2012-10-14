@@ -213,8 +213,8 @@ dt_colorspaces_create_srgb_profile()
   cmsWriteTag(hsRGB, cmsSigMediaWhitePointTag, &D65);
 
   cmsWriteTag(hsRGB, cmsSigRedColorantTag, (void*) &Colorants.Red);
-  cmsWriteTag(hsRGB, cmsSigBlueColorantTag, (void*) &Colorants.Blue);
   cmsWriteTag(hsRGB, cmsSigGreenColorantTag, (void*) &Colorants.Green);
+  cmsWriteTag(hsRGB, cmsSigBlueColorantTag, (void*) &Colorants.Blue);
 
   cmsWriteTag(hsRGB, cmsSigRedTRCTag, (void*) transferFunction);
   cmsLinkTag(hsRGB, cmsSigGreenTRCTag, cmsSigRedTRCTag );
@@ -268,8 +268,8 @@ dt_colorspaces_create_adobergb_profile(void)
   cmsWriteTag(hAdobeRGB, cmsSigMediaWhitePointTag, &D65);
 
   cmsWriteTag(hAdobeRGB, cmsSigRedColorantTag, (void*) &Colorants.Red);
-  cmsWriteTag(hAdobeRGB, cmsSigBlueColorantTag, (void*) &Colorants.Blue);
   cmsWriteTag(hAdobeRGB, cmsSigGreenColorantTag, (void*) &Colorants.Green);
+  cmsWriteTag(hAdobeRGB, cmsSigBlueColorantTag, (void*) &Colorants.Blue);
 
   cmsWriteTag(hAdobeRGB, cmsSigRedTRCTag, (void*) transferFunction);
   cmsLinkTag(hAdobeRGB, cmsSigGreenTRCTag, cmsSigRedTRCTag );
