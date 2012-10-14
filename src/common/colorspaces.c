@@ -194,15 +194,15 @@ dt_colorspaces_create_srgb_profile()
   cmsSetProfileVersion(hsRGB, 2.1);
 
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu0, "en", "US", "Darktable");
+  cmsMLUsetASCII(mlu0, "en", "US", "sRGB");
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu1, "en", "US", "sRGB");
+  cmsMLUsetASCII(mlu1, "en", "US", "Darktable");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu2, "en", "US", "sRGB");
-  cmsWriteTag(hsRGB, cmsSigDeviceMfgDescTag,   mlu0);
-  cmsWriteTag(hsRGB, cmsSigDeviceModelDescTag, mlu1);
   // this will only be displayed when the embedded profile is read by for example GIMP
-  cmsWriteTag(hsRGB, cmsSigProfileDescriptionTag, mlu2);
+  cmsWriteTag(hsRGB, cmsSigProfileDescriptionTag, mlu0);
+  cmsWriteTag(hsRGB, cmsSigDeviceMfgDescTag,      mlu1);
+  cmsWriteTag(hsRGB, cmsSigDeviceModelDescTag,    mlu2);
   cmsMLUfree(mlu0);
   cmsMLUfree(mlu1);
   cmsMLUfree(mlu2);
@@ -211,8 +211,8 @@ dt_colorspaces_create_srgb_profile()
   cmsSetColorSpace(hsRGB, cmsSigRgbData);
   cmsSetPCS(hsRGB, cmsSigXYZData);
 
-  cmsWriteTag(hsRGB, cmsSigMediaBlackPointTag, &black);
   cmsWriteTag(hsRGB, cmsSigMediaWhitePointTag, &D65);
+  cmsWriteTag(hsRGB, cmsSigMediaBlackPointTag, &black);
 
   cmsWriteTag(hsRGB, cmsSigRedColorantTag, (void*) &Colorants.Red);
   cmsWriteTag(hsRGB, cmsSigGreenColorantTag, (void*) &Colorants.Green);
@@ -249,15 +249,15 @@ dt_colorspaces_create_adobergb_profile(void)
   cmsSetProfileVersion(hAdobeRGB, 2.1);
 
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu0, "en", "US", "Darktable");
+  cmsMLUsetASCII(mlu0, "en", "US", "AdobeRGB");
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu1, "en", "US", "AdobeRGB");
+  cmsMLUsetASCII(mlu1, "en", "US", "Darktable");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu2, "en", "US", "AdobeRGB");
-  cmsWriteTag(hAdobeRGB, cmsSigDeviceMfgDescTag,   mlu0);
-  cmsWriteTag(hAdobeRGB, cmsSigDeviceModelDescTag, mlu1);
   // this will only be displayed when the embedded profile is read by for example GIMP
-  cmsWriteTag(hAdobeRGB, cmsSigProfileDescriptionTag, mlu2);
+  cmsWriteTag(hAdobeRGB, cmsSigProfileDescriptionTag, mlu0);
+  cmsWriteTag(hAdobeRGB, cmsSigDeviceMfgDescTag,      mlu1);
+  cmsWriteTag(hAdobeRGB, cmsSigDeviceModelDescTag,    mlu2);
   cmsMLUfree(mlu0);
   cmsMLUfree(mlu1);
   cmsMLUfree(mlu2);
@@ -266,8 +266,8 @@ dt_colorspaces_create_adobergb_profile(void)
   cmsSetColorSpace(hAdobeRGB, cmsSigRgbData);
   cmsSetPCS(hAdobeRGB, cmsSigXYZData);
 
-  cmsWriteTag(hAdobeRGB, cmsSigMediaBlackPointTag, &black);
   cmsWriteTag(hAdobeRGB, cmsSigMediaWhitePointTag, &D65);
+  cmsWriteTag(hAdobeRGB, cmsSigMediaBlackPointTag, &black);
 
   cmsWriteTag(hAdobeRGB, cmsSigRedColorantTag, (void*) &Colorants.Red);
   cmsWriteTag(hAdobeRGB, cmsSigGreenColorantTag, (void*) &Colorants.Green);
