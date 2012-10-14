@@ -852,31 +852,39 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       }
 
       /* Build outer select criteria */
-      char filter_criteria[128] = {0};
-      snprintf(filter_criteria, 128,
-            " WHERE id %s %d ORDER BY id %s LIMIT 1",
+      char filter_criteria[512] = {0};
+      snprintf(filter_criteria, 512,
+            " WHERE ((images.filename = (select filename from images where id=%d)) and (images.id %s %d)) or (images.filename %s (select filename from images where id=%d)) ORDER BY images.filename %s, images.id %s LIMIT 1",
+            lib->full_preview_id,
             (offset > 0) ? ">" : "<",
             lib->full_preview_id,
+            (offset > 0) ? ">" : "<",
+            lib->full_preview_id,
+            (offset > 0) ? "" : "DESC",
             (offset > 0) ? "" : "DESC");
 
       sqlite3_stmt *stmt;
       if (sel_img_count > 1)
       {
-        char stmt_string[256];
+        char stmt_string[1024];
         sprintf(stmt_string,
-            "select imgid as id from selected_images %s",
+            "select imgid as id from selected_images inner join images on selected_images.imgid=images.id %s",
             filter_criteria);
+
+        printf("sql=%s\n", stmt_string);
 
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
       } else {
         /* We need to augment the current main query a bit to fetch the
          * row we need. */
         const char *main_query = sqlite3_sql(lib->statements.main_query);
-        const size_t stmt_string_len = strlen(main_query)+100;
+        const size_t stmt_string_len = strlen(main_query)+1024;
         char *stmt_string = calloc(stmt_string_len, sizeof(char));
         snprintf(stmt_string, stmt_string_len,
-            "select id from (%s) %s",
+            "select images.id as id from (%s) as q1 inner join images on q1.id=images.id %s",
             main_query, filter_criteria);
+
+        printf("sql=%s\n", stmt_string);
 
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
