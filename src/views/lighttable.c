@@ -840,7 +840,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       /* If more than one image is selected, iterate over these. */
       /* If only one image is selected, scroll through all known images. */
 
-      int sel_img_count;
+      int sel_img_count = 0;
       {
         sqlite3_stmt *stmt;
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select COUNT(*) from selected_images", -1, &stmt, NULL);
@@ -873,7 +873,9 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
             filter_criteria);
 
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
-      } else {
+      }
+      else
+      {
         /* We need to augment the current main query a bit to fetch the
          * row we need. */
         const char *main_query = sqlite3_sql(lib->statements.main_query);
