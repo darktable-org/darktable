@@ -467,23 +467,53 @@ static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButto
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
   int32_t mouse_over_id = strip->mouse_over_id;
+  strip->select = DT_LIB_FILMSTRIP_SELECT_NONE;
 
-  /* is this an activation of image */
   if (e->button == 1)
   {
     if(e->type == GDK_BUTTON_PRESS)
     {
-      strip->select = DT_LIB_FILMSTRIP_SELECT_NONE;
-      if ((e->state & (GDK_SHIFT_MASK|GDK_CONTROL_MASK)) == 0)
-        strip->select = DT_LIB_FILMSTRIP_SELECT_SINGLE;
-      else if ((e->state & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
-        strip->select = DT_LIB_FILMSTRIP_SELECT_TOGGLE;
-      else if ((e->state & (GDK_SHIFT_MASK)) == GDK_SHIFT_MASK)
-        strip->select = DT_LIB_FILMSTRIP_SELECT_RANGE;
-      if(strip->select != DT_LIB_FILMSTRIP_SELECT_NONE)
+      /* let check if any thumb controls was clicked */
+      switch(strip->image_over)
       {
-        strip->select_id = mouse_over_id;
-        return TRUE;
+        case DT_VIEW_DESERT:
+          /* is this an activation of image */
+          if ((e->state & (GDK_SHIFT_MASK|GDK_CONTROL_MASK)) == 0)
+            strip->select = DT_LIB_FILMSTRIP_SELECT_SINGLE;
+          else if ((e->state & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
+            strip->select = DT_LIB_FILMSTRIP_SELECT_TOGGLE;
+          else if ((e->state & (GDK_SHIFT_MASK)) == GDK_SHIFT_MASK)
+            strip->select = DT_LIB_FILMSTRIP_SELECT_RANGE;
+          if(strip->select != DT_LIB_FILMSTRIP_SELECT_NONE)
+          {
+            strip->select_id = mouse_over_id;
+            return TRUE;
+          }
+          break;
+        case DT_VIEW_REJECT:
+        case DT_VIEW_STAR_1:
+        case DT_VIEW_STAR_2:
+        case DT_VIEW_STAR_3:
+        case DT_VIEW_STAR_4:
+        case DT_VIEW_STAR_5:
+        {
+          const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
+          dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
+          if(strip->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
+          else if(strip->image_over == DT_VIEW_REJECT && ((image->flags & 0x7) == 6)) image->flags &= ~0x7;
+          else
+          {
+            image->flags &= ~0x7;
+            image->flags |= strip->image_over;
+          }
+          dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+          dt_image_cache_read_release(darktable.image_cache, image);
+          gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
+          return TRUE;
+        }
+
+        default:
+          return FALSE;
       }
     }
     else if(e->type == GDK_2BUTTON_PRESS)
@@ -497,37 +527,7 @@ static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButto
     }
   }
 
-  /* let check if any thumb controls was clicked */
-  switch(strip->image_over)
-  {
-    case DT_VIEW_DESERT:
-      break;
-    case DT_VIEW_REJECT:
-    case DT_VIEW_STAR_1:
-    case DT_VIEW_STAR_2:
-    case DT_VIEW_STAR_3:
-    case DT_VIEW_STAR_4:
-    case DT_VIEW_STAR_5:
-    {
-      const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
-      dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
-      if(strip->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
-      else if(strip->image_over == DT_VIEW_REJECT && ((image->flags & 0x7) == 6)) image->flags &= ~0x7;
-      else
-      {
-        image->flags &= ~0x7;
-        image->flags |= strip->image_over;
-      }
-      dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
-      dt_image_cache_read_release(darktable.image_cache, image);
-      break;
-    }
-
-    default:
-      return FALSE;
-  }
-
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean _lib_filmstrip_button_release_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
