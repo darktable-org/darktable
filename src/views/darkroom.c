@@ -131,7 +131,6 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     {
       dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
       dt_iop_gui_update(module);
-      dt_iop_gui_update_expanded(module);
       modules = g_list_next(modules);
     }
     darktable.gui->reset = 0;
@@ -529,7 +528,6 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     dt_iop_reload_defaults(module);
     dt_iop_gui_update(module);
-    dt_iop_gui_update_expanded(module);
     modules = g_list_previous(modules);
   }
 

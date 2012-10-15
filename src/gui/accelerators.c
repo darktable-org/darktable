@@ -623,7 +623,6 @@ static gboolean preset_iop_module_callback(GtkAccelGroup *accel_group,
   }
   sqlite3_finalize(stmt);
   dt_iop_gui_update(module);
-  dt_iop_gui_update_expanded(module);
   dt_dev_add_history_item(darktable.develop, module, FALSE);
   gtk_widget_queue_draw(module->widget);
   return TRUE;

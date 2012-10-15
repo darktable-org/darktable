@@ -586,7 +586,6 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     dt_iop_gui_update(module);
-    dt_iop_gui_update_expanded(module);
     modules = g_list_next(modules);
   }
   dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
