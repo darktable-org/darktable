@@ -185,6 +185,9 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
   /* Special case when entering nothing (just before leaving dt) */
   if ( k==DT_MODE_NONE )
   {
+    /* leave the current view*/
+    if(vm->current_view >= 0 && v->leave) v->leave(v);
+
     /* iterator plugins and cleanup plugins in current view */
     GList *plugins = g_list_last(darktable.lib->plugins);
     while (plugins)
@@ -205,9 +208,6 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       /* get next plugin */
       plugins = g_list_previous(plugins);
     }
-
-    /* leave the current view*/
-    if(vm->current_view >= 0 && v->leave) v->leave(v);
 
     /* remove all widets in all containers */
     for(int l=0; l<DT_UI_CONTAINER_SIZE; l++)
