@@ -873,7 +873,7 @@ void dt_dev_get_processed_size(const dt_develop_t *dev, int *procw, int *proch)
     return;
 
   // if pipe is processed, lets return its size
-  if (dev->pipe && !dev->pipe->processing)
+  if (dev->pipe && dev->pipe->processed_width)
   {
     *procw = dev->pipe->processed_width;
     *proch = dev->pipe->processed_height;
@@ -881,7 +881,7 @@ void dt_dev_get_processed_size(const dt_develop_t *dev, int *procw, int *proch)
   }
 
   // fallback on preview pipe
-  if (dev->preview_pipe && !dev->preview_pipe->processing)
+  if (dev->preview_pipe && dev->preview_pipe->processed_width)
   {
     const float scale = (dev->preview_pipe->iscale / dev->preview_downsampling);
     *procw = scale * dev->preview_pipe->processed_width;
