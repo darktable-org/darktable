@@ -314,6 +314,7 @@ finally:
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] initial status of opencl enabled flag is %s.\n", cl->enabled ? "ON" : "OFF");
   if(cl->inited)
   {
+    dt_capabilities_add("opencl");
     cl->bilateral = dt_bilateral_init_cl_global();
     cl->gaussian = dt_gaussian_init_cl_global();
   }

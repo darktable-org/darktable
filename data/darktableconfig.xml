@@ -78,7 +78,7 @@
     <shortdescription>write sidecar file for each image</shortdescription>
     <longdescription>these redundant files can later be re-imported into a different database, preserving your changes to the image.</longdescription>
   </dtconfig>
-  <dtconfig prefs="core">
+  <dtconfig prefs="core" capability="opencl">
     <name>opencl</name>
     <type>bool</type>
     <default>true</default>

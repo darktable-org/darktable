@@ -105,6 +105,10 @@
 	<xsl:if test="longdescription != ''">
 		<xsl:text>&#xA;    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("</xsl:text><xsl:value-of select="longdescription"/><xsl:text>"), (char *)NULL);</xsl:text>
 	</xsl:if>
+	<xsl:if test="@capability">
+                <xsl:text>&#xA;    gtk_widget_set_sensitive(labelev, dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"));</xsl:text>
+                <xsl:text>&#xA;    gtk_widget_set_sensitive(widget, dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"));</xsl:text>
+	</xsl:if>
 	<xsl:text>
     gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
