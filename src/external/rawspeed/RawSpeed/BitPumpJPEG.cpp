@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "BitPumpJPEG.h"
+
 /*
     RawSpeed - RAW file decoder.
 
@@ -20,131 +21,77 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
     http://www.klauspost.com
-
-    This is based on code by Hubert Figuiere.
-    Copyright (C) 2007 Hubert Figuiere, released under LGPL
 */
 
 namespace RawSpeed {
 
 /*** Used for entropy encoded sections ***/
 
-#define BITS_PER_LONG (8*sizeof(uint32))
-#define MIN_GET_BITS  (BITS_PER_LONG-7)    /* max value for long getBuffer */
-
 
 BitPumpJPEG::BitPumpJPEG(ByteStream *s):
-    buffer(s->getData()), size(s->getRemainSize() + sizeof(uint32)), mLeft(0), mCurr(0), off(0) {
+    buffer(s->getData()), size(s->getRemainSize() + sizeof(uint32)), mLeft(0), off(0), stuffed(0) {
   init();
 }
-
 
 BitPumpJPEG::BitPumpJPEG(const uchar8* _buffer, uint32 _size) :
-    buffer(_buffer), size(_size + sizeof(uint32)), mLeft(0), mCurr(0), off(0) {
+    buffer(_buffer), size(_size + sizeof(uint32)), mLeft(0), off(0), stuffed(0) {
   init();
 }
 
-
-void __inline BitPumpJPEG::init() {
-  stuffed = 0;
+__inline void BitPumpJPEG::init() {
+  current_buffer = (uchar8*)_aligned_malloc(16, 16);
+  if (!current_buffer)
+    ThrowRDE("BitPumpJPEG::init(): Unable to allocate memory");
+  memset(current_buffer,0,16);
   fill();
 }
 
-uint32 BitPumpJPEG::getBit() {
-  if (!mLeft) fill();
-
-  return (mCurr >> (--mLeft)) & 1;
-}
-
-
-uint32 BitPumpJPEG::getBits(uint32 nbits) {
-  _ASSERTE(nbits < 24);
-
-  if (mLeft < nbits) {
-    fill();
-  }
-  return ((mCurr >> (mLeft -= (nbits)))) & ((1 << nbits) - 1);
-}
-
-
-uint32 BitPumpJPEG::peekBit() {
-  if (!mLeft) fill();
-  return (mCurr >> (mLeft - 1)) & 1;
-}
-
-
-uint32 BitPumpJPEG::peekBits(uint32 nbits) {
-  if (mLeft < nbits) {
-    fill();
-  }
-  return ((mCurr >> (mLeft - nbits))) & ((1 << nbits) - 1);
-}
-
-
-uint32 BitPumpJPEG::peekByte() {
-  if (mLeft < 8) {
-    fill();
-  }
-  if (off > size)
-    throw IOException("Out of buffer read");
-
-  return ((mCurr >> (mLeft - 8))) & 0xff;
+void BitPumpJPEG::fill()
+{
+  if (mLeft >=24)
+    return;
+  // Fill in 96 bits
+  int* b = (int*)current_buffer;
+  b[3] = b[0];
+  for (int i = 0; i < 12; i++) {
+    uchar8 val = buffer[off++];
+    if (val == 0xff) {
+      if (buffer[off] == 0)
+        off++;
+      else {
+        val = 0;
+        off--;
+        stuffed++;
+      }
+      current_buffer[11-i] = val;
+    }
+  } 
+  mLeft+=96;
 }
 
 
 uint32 BitPumpJPEG::getBitSafe() {
-  if (!mLeft) {
-    fill();
-    if (off > size)
-      throw IOException("Out of buffer read");
-  }
+  fill();
+  checkPos();
 
-  return (mCurr >> (--mLeft)) & 1;
+  return getBitNoFill();
 }
-
 
 uint32 BitPumpJPEG::getBitsSafe(unsigned int nbits) {
   if (nbits > MIN_GET_BITS)
     throw IOException("Too many bits requested");
 
-  if (mLeft < nbits) {
-    fill();
-    checkPos();
-  }
-  return ((mCurr >> (mLeft -= (nbits)))) & ((1 << nbits) - 1);
-}
-
-
-void BitPumpJPEG::skipBits(unsigned int nbits) {
-  _ASSERTE(nbits < 24);
-
-  if (mLeft < nbits) {
-    fill();
-    checkPos();
-  }
-
-  mLeft -= nbits;
-}
-
-
-uchar8 BitPumpJPEG::getByte() {
-  if (mLeft < 8) {
-    fill();
-  }
-
-  return ((mCurr >> (mLeft -= 8))) & 0xff;
+  fill();
+  checkPos();
+  return getBitsNoFill(nbits);
 }
 
 
 uchar8 BitPumpJPEG::getByteSafe() {
-  if (mLeft < 8) {
-    fill();
-    checkPos();
-  }
-
-  return ((mCurr >> (mLeft -= 8))) & 0xff;
+  fill();
+  checkPos();
+  return getBitsNoFill(8);
 }
-
 
 void BitPumpJPEG::setAbsoluteOffset(unsigned int offset) {
   if (offset >= size)
@@ -156,7 +103,10 @@ void BitPumpJPEG::setAbsoluteOffset(unsigned int offset) {
 }
 
 
+
 BitPumpJPEG::~BitPumpJPEG(void) {
+	_aligned_free(current_buffer);
 }
 
 } // namespace RawSpeed
+
