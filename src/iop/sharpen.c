@@ -31,6 +31,7 @@
 #include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -84,6 +85,15 @@ flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
+void init_presets (dt_iop_module_so_t *self)
+{
+  dt_iop_sharpen_params_t tmp = (dt_iop_sharpen_params_t)
+    { 2.0, 0.5, 0.5 };
+  // add the preset.
+  dt_gui_presets_add_generic(_("sharpen"), self->op, self->version(), &tmp, sizeof(dt_iop_sharpen_params_t), 1);
+  // make it auto-apply for matching images:
+  dt_gui_presets_update_autoapply(_("sharpen"), self->op, self->version(), 1);
+}
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
@@ -505,7 +515,7 @@ void init(dt_iop_module_t *module)
   // module->data = malloc(sizeof(dt_iop_sharpen_data_t));
   module->params = malloc(sizeof(dt_iop_sharpen_params_t));
   module->default_params = malloc(sizeof(dt_iop_sharpen_params_t));
-  module->default_enabled = 1;
+  module->default_enabled = 0;
   module->priority = 692; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_sharpen_params_t);
   module->gui_data = NULL;
