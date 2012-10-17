@@ -20,9 +20,9 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>A bilateral filter is an edge-preserving noise reduction filter. The intensity values at each pixel in an image are replaced by a weighted average of intensity values from nearby pixels.
-                      The weights - based on a Gaussian distribution - depend not only on Euclidean distance but also on the range differences (differences in color intensities). Bilateral denoise preserves sharp edges.
-                      As denoising is resource hungry it slows down pixelpipe processing significantly; it makes sense to activate this module late in your workflow.
+                <para>This module reduces noise in your image but preserves sharp edges. This is accomplished by averaging pixels with their neighbors, taking into account not only the geometric distance but
+                      also the distance on the range scale, i.e. differences in color intensities. As denoising is a resource hungry process, it slows down pixelpipe processing significantly; consider to activate 
+                      this module late in your workflow.
 		</para>
 		<sect5><title>Radius</title>
 			<para>Set the spatial extent of the gaussian blur.</para>

@@ -17,9 +17,9 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>Non-local means is an image denoising process based on non-local averaging of pixels in an image. The amount of weighting for a pixel is based on the degree of similarity between 
-                      a small patch centered around that pixel and the small patch centered around the pixel being denoised. As denoising is resource hungry it slows down pixelpipe processing significantly; 
-                      it makes sense to activate this module late in your workflow.
+		<para>This module reduces noise in your image but preserves structures. This is accomplished by averaging a pixel with other pixels in the image. The weight of averaging
+                      depends on the similarity of the pixels surroundings with the surrounding of the one pixel to be denoised. As denoising is a resource hungry process, it slows down pixelpipe processing significantly; 
+                      consider to activate this module late in your workflow.
 		</para>
 		<sect5><title>Patch size</title>
 			<para>The size of the patch.</para>
