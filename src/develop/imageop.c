@@ -663,7 +663,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->color_picker_point[0] = module->color_picker_point[1] = 0.5f;
   module->request_mask_display = 0;
   module->suppress_mask = 0;
-  module->enabled = module->default_enabled = 1; // all modules enabled by default.
+  module->enabled = module->default_enabled = 0; // all modules disabled by default.
   g_strlcpy(module->op, so->op, 20);
 
   // only reference cached results of dlopen:
