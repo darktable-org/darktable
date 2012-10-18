@@ -864,6 +864,8 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
             (offset > 0) ? "" : "DESC",
             (offset > 0) ? "" : "DESC");
 
+      dt_image_cache_read_release(darktable.image_cache, img);
+
       sqlite3_stmt *stmt;
       gchar *stmt_string = NULL;
       if (sel_img_count > 1)
