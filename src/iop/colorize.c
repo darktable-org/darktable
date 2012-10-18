@@ -52,11 +52,8 @@ dt_iop_colorize_params_t;
 
 typedef struct dt_iop_colorize_gui_data_t
 {
-  GtkVBox   *vbox1,  *vbox2;
-  GtkWidget  *label1,*label2,*label3,*label4;	 			 // hue, sat, lightnessm source, lightness mix
   GtkWidget *scale1,*scale2;       					//  lightness, source_lightnessmix
-  GtkDarktableButton *colorpick1;	   					// colorpick
-  GtkDarktableGradientSlider *gslider1,*gslider2;		//hue, saturation
+  GtkWidget *gslider1,*gslider2;		//hue, saturation
 }
 dt_iop_colorize_gui_data_t;
 
@@ -94,7 +91,6 @@ groups ()
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_iop(self, FALSE, NC_("accel", "pick color"), 0, 0);
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lightness"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "source mix"));
 }
@@ -103,7 +99,6 @@ void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t*)self->gui_data;
 
-  dt_accel_connect_button_iop(self, "pick color", GTK_WIDGET(g->colorpick1));
   dt_accel_connect_slider_iop(self, "lightness", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "source mix", GTK_WIDGET(g->scale2));
 }
@@ -240,73 +235,37 @@ source_lightness_mix_callback (GtkWidget *slider, gpointer user_data)
 }
 
 static void
-hue_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
+hue_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
   dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
 
+  const float hue = dt_bauhaus_slider_get(g->gslider1);
+  //fprintf(stderr," hue: %f, saturation: %f\n",hue,dtgtk_gradient_slider_get_value(g->gslider2));
+  float saturation = 1.0f;
   float color[3];
-  GtkWidget *preview;
-  GtkDarktableGradientSlider *sslider=NULL;
+  hsl2rgb(color, hue, saturation, 0.5f);
 
+  dt_bauhaus_slider_set_stop(g->gslider2, 1.0f, color[0], color[1], color[2]);  // Update saturation end color
 
-  p->hue = dtgtk_gradient_slider_get_value(slider);
-  preview = GTK_WIDGET(g->colorpick1);
-  sslider = g->gslider2;
+  gtk_widget_draw(GTK_WIDGET(g->gslider2),NULL);
 
-  /* convert to rgb */
-  hsl2rgb(color,p->hue,p->saturation,0.5);
-
-  /* update preview color */
-  GdkColor c;
-  c.red=color[0]*65535.0;
-  c.green=color[1]*65535.0;
-  c.blue=color[2]*65535.0;
-
-  dtgtk_gradient_slider_set_stop(sslider,1.0,c);
-
-  gtk_widget_modify_fg(preview,GTK_STATE_NORMAL,&c);
-
-  if (self->dt->gui->reset) return;
-
-  gtk_widget_draw(GTK_WIDGET(sslider),NULL);
-
-  if (dtgtk_gradient_slider_is_dragging(slider)==FALSE)
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+  p->hue = hue;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-saturation_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
+saturation_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
-  dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
 
-  float color[3];
-  GtkWidget *preview;
-
-  //  hue = dtgtk_gradient_slider_get_value(g->gslider1);
-  p->saturation = dtgtk_gradient_slider_get_value(slider);
-  preview = GTK_WIDGET(g->colorpick1);
-
-  /* convert to rgb */
-  hsl2rgb(color,p->hue,p->saturation,0.5);
-
-  GdkColor c;
-  c.red=color[0]*65535.0;
-  c.green=color[1]*65535.0;
-  c.blue=color[2]*65535.0;
-
-  /* update preview color */
-  gtk_widget_modify_fg(preview,GTK_STATE_NORMAL,&c);
-
-  if (self->dt->gui->reset) return;
-  if (dtgtk_gradient_slider_is_dragging(slider)==FALSE)
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+  p->saturation = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-
+#if 0 // TODO: could bind those to quad callback, if needed.
 static void
 colorpick_button_callback(GtkButton *button,gpointer user_data)
 {
@@ -360,8 +319,7 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
   gtk_widget_destroy(GTK_WIDGET(csd));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
-
-
+#endif
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -407,11 +365,12 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)module->params;
 
-  dtgtk_gradient_slider_set_value(g->gslider1,p->hue);
-  dtgtk_gradient_slider_set_value(g->gslider2,p->saturation);
+  dt_bauhaus_slider_set(g->gslider1, p->hue);
+  dt_bauhaus_slider_set(g->gslider2, p->saturation);
   dt_bauhaus_slider_set(g->scale1, p->lightness);
   dt_bauhaus_slider_set(g->scale2, p->source_lightness_mix);
 
+#if 0 // could update quad drawing color here
   float color[3];
   hsl2rgb(color,p->hue,p->saturation,0.5);
 
@@ -421,6 +380,7 @@ void gui_update(struct dt_iop_module_t *self)
   c.blue=color[2]*65535.0;
 
   gtk_widget_modify_fg(GTK_WIDGET(g->colorpick1),GTK_STATE_NORMAL,&c);
+#endif
 }
 
 void init(dt_iop_module_t *module)
@@ -453,80 +413,43 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
-  g->colorpick1 = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE|CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  gtk_widget_set_size_request(GTK_WIDGET(g->colorpick1),32,32);
-
-  GtkWidget *hbox = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  gtk_box_pack_end(GTK_BOX(hbox),GTK_WIDGET(g->colorpick1),FALSE,FALSE,0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
-
-  g->label1 = dtgtk_reset_label_new (_("hue"), self, &p->hue, sizeof(float));
-  g->label2 = dtgtk_reset_label_new (_("saturation"), self, &p->saturation, sizeof(float));
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
-
-  int lightness=32768;
-  g->gslider1 = DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color((GdkColor)
-  {
-    0,lightness,0,0
-  },(GdkColor)
-  {
-    0,lightness,0,0
-  }));
-  dtgtk_gradient_slider_set_stop(g->gslider1,0.166,(GdkColor)
-  {
-    0,lightness,lightness,0
-  });
-  dtgtk_gradient_slider_set_stop(g->gslider1,0.332,(GdkColor)
-  {
-    0,0,lightness,0
-  });
-  dtgtk_gradient_slider_set_stop(g->gslider1,0.498,(GdkColor)
-  {
-    0,0,lightness,lightness
-  });
-  dtgtk_gradient_slider_set_stop(g->gslider1,0.664,(GdkColor)
-  {
-    0,0,0,lightness
-  });
-  dtgtk_gradient_slider_set_stop(g->gslider1,0.83,(GdkColor)
-  {
-    0,lightness,0,lightness
-  });
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->gslider1), TRUE, TRUE, 0);
+  /* hue slider */
+  g->gslider1 = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01f, 0.0f, 2);
+  dt_bauhaus_slider_set_stop(g->gslider1, 0.0f, 1.0f, 0.0f, 0.0f);
+  // dt_bauhaus_slider_set_format(g->gslider1, "");
+  dt_bauhaus_widget_set_label(g->gslider1, _("hue"));
+  dt_bauhaus_slider_set_stop(g->gslider1, 0.166f, 1.0f, 1.0f, 0.0f);
+  dt_bauhaus_slider_set_stop(g->gslider1, 0.322f, 0.0f, 1.0f, 0.0f);
+  dt_bauhaus_slider_set_stop(g->gslider1, 0.498f, 0.0f, 1.0f, 1.0f);
+  dt_bauhaus_slider_set_stop(g->gslider1, 0.664f, 0.0f, 0.0f, 1.0f);
+  dt_bauhaus_slider_set_stop(g->gslider1, 0.830f, 1.0f, 0.0f, 1.0f);
+  dt_bauhaus_slider_set_stop(g->gslider1, 1.0f, 1.0f, 0.0f, 0.0f);
   g_object_set(G_OBJECT(g->gslider1), "tooltip-text", _("select the hue tone"), (char *)NULL);
 
-  g->gslider2=DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color((GdkColor)
-  {
-    0,lightness,lightness,lightness
-  },(GdkColor)
-  {
-    0,lightness,lightness,lightness
-  }));
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->gslider2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->gslider1, TRUE, TRUE, 0);
+
+  /* saturation slider */
+  g->gslider2 = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01f, 0.0f, 2);
+  // dt_bauhaus_slider_set_format(g->gslider2, "");
+  dt_bauhaus_widget_set_label(g->gslider2, _("saturation"));
+  dt_bauhaus_slider_set_stop(g->gslider2, 0.0f, 1.0f, 1.0f, 1.0f);
+  dt_bauhaus_slider_set_stop(g->gslider2, 1.0f, 1.0f, 1.0f, 1.0f);
   g_object_set(G_OBJECT(g->gslider2), "tooltip-text", _("select the saturation shadow tone"), (char *)NULL);
 
-  // Additional paramters
-  hbox=GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->gslider2, TRUE, TRUE, 0);
 
+  // Additional paramters
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->lightness*100.0, 2);
   dt_bauhaus_slider_set_format(g->scale1, "%.2f%%");
   dt_bauhaus_widget_set_label(g->scale1, _("lightness"));
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
   g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->source_lightness_mix, 2);
   dt_bauhaus_slider_set_format(g->scale2, "%.2f%%");
   dt_bauhaus_widget_set_label(g->scale2, _("source mix"));
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
 
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("lightness of color"), (char *)NULL);
@@ -536,14 +459,10 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (hue_callback), self);
   g_signal_connect (G_OBJECT (g->gslider2), "value-changed",
                     G_CALLBACK (saturation_callback), self);
-
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (lightness_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
                     G_CALLBACK (source_lightness_mix_callback), self);
-  g_signal_connect (G_OBJECT (g->colorpick1), "clicked",
-                    G_CALLBACK (colorpick_callback), self);
-
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
