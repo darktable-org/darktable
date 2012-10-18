@@ -63,8 +63,8 @@ void BitPumpJPEG::fill()
         off--;
         stuffed++;
       }
-      current_buffer[11-i] = val;
     }
+    current_buffer[11-i] = val;
   } 
   mLeft+=96;
 }

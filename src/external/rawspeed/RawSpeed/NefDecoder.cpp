@@ -28,7 +28,7 @@ namespace RawSpeed {
 
 NefDecoder::NefDecoder(TiffIFD *rootIFD, FileMap* file) :
     RawDecoder(file), mRootIFD(rootIFD) {
-  decoderVersion = 4;
+  decoderVersion = 5;
 }
 
 NefDecoder::~NefDecoder(void) {
@@ -63,7 +63,7 @@ RawImage NefDecoder::decodeRawInternal() {
     }
   }
 
-  if (compression == 1) {
+  if (compression == 1 || (hints.find(string("force_uncompressed")) != hints.end())) {
     DecodeUncompressed();
     return mRaw;
   }
@@ -196,6 +196,16 @@ void NefDecoder::DecodeUncompressed() {
   if (bitPerPixel == 14 && width*slices[0].h*2 == slices[0].count)
     bitPerPixel = 16; // D3
 
+  if(hints.find("real_bpp") != hints.end()) {
+    stringstream convert(hints.find("real_bpp")->second);
+    convert >> bitPerPixel;
+  }
+
+  bool bitorder = true;
+  map<string,string>::iterator msb_hint = hints.find("msb_override");
+  if (msb_hint != hints.end())
+    bitorder = (0 == (msb_hint->second).compare("true"));
+
   offY = 0;
   for (uint32 i = 0; i < slices.size(); i++) {
     NefSlice slice = slices[i];
@@ -208,7 +218,7 @@ void NefDecoder::DecodeUncompressed() {
       else if (hints.find(string("coolpixsplit")) != hints.end())
         readCoolpixSplitRaw(in, size, pos, width*bitPerPixel / 8);
       else
-        readUncompressedRaw(in, size, pos, width*bitPerPixel / 8, bitPerPixel, true);
+        readUncompressedRaw(in, size, pos, width*bitPerPixel / 8, bitPerPixel, bitorder);
     } catch (RawDecoderException e) {
       if (i>0)
         mRaw->setError(e.what());
