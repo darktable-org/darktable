@@ -663,7 +663,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->color_picker_point[0] = module->color_picker_point[1] = 0.5f;
   module->request_mask_display = 0;
   module->suppress_mask = 0;
-  module->enabled = module->default_enabled = 1; // all modules enabled by default.
+  module->enabled = module->default_enabled = 0; // all modules disabled by default.
   g_strlcpy(module->op, so->op, 20);
 
   // only reference cached results of dlopen:
@@ -1096,7 +1096,6 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   darktable.gui->reset = 1;
   if (!dt_iop_is_hidden(module))
   {
-    dt_iop_gui_update_expanded(module);
     module->gui_update(module);
     if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
@@ -1112,6 +1111,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
     }
     if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
   }
+  dt_iop_gui_update_expanded(module);
   darktable.gui->reset = reset;
 }
 
@@ -1177,9 +1177,6 @@ dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
 
   /* update ui to default params*/
   dt_iop_gui_update(module);
-
-  /* update expanded state, especially blend controls */
-  dt_iop_gui_update_expanded(module);
 
   dt_dev_add_history_item(module->dev, module, TRUE);
 }

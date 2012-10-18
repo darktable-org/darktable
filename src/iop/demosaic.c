@@ -666,7 +666,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     demosaicing_method = DT_IOP_DEMOSAIC_PPG;
 
   const float *const pixels = (float *)i;
-  if(roi_out->scale > .999f)
+  if(roi_out->scale > .99999f && roi_out->scale < 1.00001f)
   {
     // output 1:1
     // green eq:
@@ -704,7 +704,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
         amaze_demosaic_RT(self, piece, pixels, (float *)o, &roi, &roo, data->filters);
     }
   }
-  else if(roi_out->scale > .5f ||  // full needed because zoomed in enough
+  else if(roi_out->scale > .5f ||                                      // also covers roi_out->scale >1
           (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||  // or in darkroom mode and quality requested by user settings
           (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))              // we assume you always want that for exports.
   {
@@ -785,7 +785,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   if(interpolation->id != DT_INTERPOLATION_BILINEAR && roi_out->scale <= .99999f && roi_out->scale > 0.5f)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] only bilinear interpolation mode supported here\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] only bilinear interpolation currently supported by opencl demosaic\n");
+    return FALSE;
+  }
+
+  if(roi_out->scale >= 1.00001f)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaic with upscaling not yet supported by opencl code\n");
     return FALSE;
   }
 
@@ -1103,7 +1109,7 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
 
   tiling->factor = 1.0f + ioratio;
 
-  if(roi_out->scale > 0.999f)
+  if(roi_out->scale > 0.99999f && roi_out->scale < 1.00001f)
     tiling->factor += fmax(0.25f, smooth);
   else if(roi_out->scale > 0.5f)
     tiling->factor += fmax(1.25f, smooth);

@@ -321,8 +321,10 @@ void dt_image_write_sidecar_file(int imgid);
 void dt_image_synch_xmp(const int selected);
 void dt_image_synch_all_xmp(const gchar *pathname);
 
+#if GLIB_CHECK_VERSION (2, 26, 0)
 // add an offset to the exif_datetime_taken field
 void dt_image_add_time_offset(const int imgid, const long int offset);
+#endif
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

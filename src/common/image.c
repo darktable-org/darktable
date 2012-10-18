@@ -859,6 +859,7 @@ void dt_image_synch_all_xmp(const gchar *pathname)
   }
 }
 
+#if GLIB_CHECK_VERSION (2, 26, 0)
 void dt_image_add_time_offset(const int imgid, const long int offset)
 {
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
@@ -915,6 +916,7 @@ void dt_image_add_time_offset(const int imgid, const long int offset)
   dt_image_cache_read_release(darktable.image_cache, cimg);
   g_free(datetime);
 }
+#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

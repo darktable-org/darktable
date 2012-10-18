@@ -236,8 +236,9 @@ static const char *nvidia_gpus[] = {
 "GeForce 9200M GS","1.1",
 "GeForce 9100M G","1.1",
 "GeForce 8400M GT","1.1",
-"GeForce G105M","1.1"};
-static const int num_nvidia_gpus = 217;
+"GeForce G105M","1.1",
+"ION","1.0"};
+static const int num_nvidia_gpus = 218;
 
 int dt_nvidia_gpu_supports_sm_20(const char *model)
 {
