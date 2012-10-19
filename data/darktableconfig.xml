@@ -8,7 +8,7 @@
     <shortdescription>widget scale</shortdescription>
     <longdescription>scaling factor for bauhaus widgets, will affect font size</longdescription>
   </dtconfig>
-  <dtconfig prefs="core">
+  <dtconfig>
     <name>database</name>
     <type>string</type>
     <default>library.db</default>
