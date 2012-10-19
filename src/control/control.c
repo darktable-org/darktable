@@ -424,6 +424,10 @@ void dt_control_create_database_schema()
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create table meta_data (id integer,key integer,value varchar)",
                         NULL, NULL, NULL);
+  // quick hack to detect if the db is already used by another process
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "create table lock (id integer)",
+                        NULL, NULL, NULL);
 }
 
 void dt_control_init(dt_control_t *s)
@@ -582,6 +586,10 @@ void dt_control_init(dt_control_t *s)
                    "enabled integer)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
                    "create table meta_data (id integer, key integer,value varchar)",
+                   NULL, NULL, NULL);
+      // quick hack to detect if the db is already used by another process
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "create table lock (id integer)",
                    NULL, NULL, NULL);
 
       // selected_images should have a primary key. add it if it's missing:

@@ -551,6 +551,11 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
   // initialize the database
   darktable.db = dt_database_init(dbfilename_from_command);
+  if(darktable.db == NULL)
+  {
+    printf("ERROR : cannot open database\n");
+    return 1;
+  }
 
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
