@@ -40,12 +40,12 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
+#if GLIB_CHECK_VERSION (2, 26, 0)
 typedef struct dt_control_time_offset_t
 {
   long int offset;
 } dt_control_time_offset_t;
 
-#if GLIB_CHECK_VERSION (2, 26, 0)
 typedef struct dt_control_gpx_apply_t
 {
   gchar *filename;
@@ -1356,6 +1356,7 @@ void dt_control_start_indexer()
   dt_control_add_background_job(darktable.control, &j, 10);
 }
 
+#if GLIB_CHECK_VERSION (2, 26, 0)
 int32_t dt_control_time_offset_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
@@ -1427,6 +1428,7 @@ void dt_control_time_offset(const long int offset, long int imgid)
   dt_control_time_offset_job_init(&j, offset, imgid);
   dt_control_add_job(darktable.control, &j);
 }
+#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
