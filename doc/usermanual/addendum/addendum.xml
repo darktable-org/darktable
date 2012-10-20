@@ -14,7 +14,10 @@
 <!-- core options -->
 <xi:include href="core_options.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-<!-- Keyaccelerators -->
+<!-- Keyaccelerators/shortcuts -->
 <xi:include href="keyaccelerators.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- presets -->
+<xi:include href="presets.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 </appendix>		
