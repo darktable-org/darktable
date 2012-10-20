@@ -45,7 +45,7 @@
 DT_MODULE(3)
 
 // number of gui ratios in combo box
-#define NUM_RATIOS 11
+#define NUM_RATIOS 12
 
 /** flip H/V, rotate an image, then clip the buffer. */
 typedef enum dt_iop_clipping_flags_t
@@ -1066,6 +1066,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->aspect_presets, _("square"));
   dt_bauhaus_combobox_add(g->aspect_presets, _("DIN"));
   dt_bauhaus_combobox_add(g->aspect_presets, _("16:9"));
+  dt_bauhaus_combobox_add(g->aspect_presets, _("16:10"));
   dt_bauhaus_combobox_add(g->aspect_presets, _("10:8 in print"));
 
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
@@ -1134,10 +1135,11 @@ void _iop_clipping_update_ratios(dt_iop_module_t *self)
   g->aspect_ratios[7] = 1.0;
   g->aspect_ratios[8] = sqrtf(2.0);
   g->aspect_ratios[9] = 16.0f/9.0f;
-  g->aspect_ratios[10] = 244.5f/203.2f;
+  g->aspect_ratios[10] = 16.0f/10.0f;
+  g->aspect_ratios[11] = 244.5f/203.2f;
 
   // if adding new presets, make sure to change this as well:
-  assert(NUM_RATIOS == 11);
+  assert(NUM_RATIOS == 12);
 
   /* swap default fixed ratios for portraits */
   if (g->aspect_ratios[1] < 1.0)
@@ -1204,6 +1206,26 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, g->clip_h*ht);
     cairo_set_source_rgb(cr, .7, .7, .7);
     cairo_stroke (cr);
+  }
+
+  //draw cropping window dimensions if first mouse button is pressed
+  if(darktable.control->button_down && darktable.control->button_down_which == 1)
+  {
+    char dimensions[16];
+    dimensions[0] = '\0';
+    cairo_text_extents_t extents;
+
+    int procw, proch;
+    dt_dev_get_processed_size(dev, &procw, &proch);
+    sprintf(dimensions, "%.0fx%.0f",
+            (float)procw * g->clip_w, (float)proch * g->clip_h);
+    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
+                           CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size(cr, 16);
+
+    cairo_text_extents (cr, dimensions, &extents);
+    cairo_move_to(cr, (g->clip_x + g->clip_w / 2) * wd - extents.width * .5f, (g->clip_y + g->clip_h/2) * ht);
+    cairo_show_text(cr, dimensions);
   }
 
   // draw crop area guides
@@ -1337,6 +1359,28 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_move_to (cr, bzx*wd, bzy*ht);
     cairo_line_to (cr, pzx*wd, pzy*ht);
     cairo_stroke (cr);
+
+    //show rotation angle
+    float dx = pzx*wd - bzx*wd, dy = pzy*ht - bzy*ht ;
+    if(dx < 0)
+    {
+      dx = -dx;
+      dy = -dy;
+    }
+    float angle = atan2f(dy, dx);
+    angle = angle * 180 / M_PI;
+    if (angle > 45.0) angle -= 90;
+    if (angle < -45.0) angle += 90;
+
+    char view_angle[16];
+    view_angle[0] = '\0';
+    sprintf(view_angle, "%.2f degrees", angle);
+    cairo_set_source_rgb(cr, .7, .7, .7);
+    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
+                           CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size(cr, 16);
+    cairo_move_to (cr, pzx*wd + 20, pzy*ht);
+    cairo_show_text(cr, view_angle);
   }
   else
   {

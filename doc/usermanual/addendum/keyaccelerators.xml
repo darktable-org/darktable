@@ -1,0 +1,10 @@
+<sect1 status="draft"><title>Keyaccelerators</title>
+  <para>Darktable has a big set of keyaccelerators that with the work of Robert Bieber
+    now is userconfigurable through the preference pane. Here follows a table with the default
+    keybindings of actions available in darktable.
+  </para>
+
+  <para>
+    <xi:include href="keymappings.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  </para>
+</sect1>

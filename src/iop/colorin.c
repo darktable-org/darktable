@@ -587,6 +587,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   module->priority = 346; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
+  module->default_enabled = 1;
 }
 
 void cleanup(dt_iop_module_t *module)

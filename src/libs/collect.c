@@ -610,6 +610,10 @@ view_onPopupMenu (GtkWidget *treeview, gpointer userdata)
 static int
 _count_images(const char *path)
 {
+  // FIXME: this function is a major performance problem
+  //        if many folders are counted. until it's cached somehow, it's switched off:
+  return 0;
+#if 0
   sqlite3_stmt *stmt = NULL;
   gchar query[1024] = {0};
   int count = 0;
@@ -626,6 +630,7 @@ _count_images(const char *path)
   g_free(escaped_text);
 
   return count;
+#endif
 }
 
 static gboolean
@@ -833,8 +838,8 @@ static GtkTreeView *
 _create_treeview_display (GtkTreeModel *model)
 {
   GtkTreeView *tree;
-  GtkCellRenderer *renderer, *renderer2;
-  GtkTreeViewColumn *col1, *col2;
+  GtkCellRenderer *renderer;
+  GtkTreeViewColumn *col1;
 
   tree = GTK_TREE_VIEW(gtk_tree_view_new ());
 
@@ -851,12 +856,14 @@ _create_treeview_display (GtkTreeModel *model)
   
   gtk_tree_view_column_set_cell_data_func(col1, renderer, _show_filmroll_present, NULL, NULL);
 
-  col2 = gtk_tree_view_column_new();
+#if 0 // FIXME: count switched off for now, as it is a performance regression (see #8981).
+  GtkTreeViewColumn *col2 = gtk_tree_view_column_new();
   gtk_tree_view_append_column(tree,col2);
   
-  renderer2 = gtk_cell_renderer_text_new();
+  GtkCellRenderer *renderer2 = gtk_cell_renderer_text_new();
   gtk_tree_view_column_pack_start(col2, renderer2, TRUE);
   gtk_tree_view_column_add_attribute(col2, renderer2, "text", DT_LIB_COLLECT_COL_COUNT);
+#endif
   
   gtk_tree_view_set_model(tree, GTK_TREE_MODEL(model));
   

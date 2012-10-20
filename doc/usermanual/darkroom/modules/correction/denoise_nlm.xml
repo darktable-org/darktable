@@ -5,7 +5,7 @@
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>This is another variant of denoise algorithm, which will work on chroma and/or luma.
+						<entry>This is a denoise algorithm, which will work on chroma and/or luma.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/denoise_nlm.png" scalefit="1" width="80%" align="center" />
@@ -17,19 +17,21 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>USAGE DESCRIPTION
+		<para>This module reduces noise in your image but preserves structures. This is accomplished by averaging a pixel with other pixels in the image. The weight of averaging
+                      depends on the similarity of the pixels surroundings with the surrounding of the one pixel to be denoised. As denoising is a resource hungry process, it slows down pixelpipe processing significantly; 
+                      consider to activate this module late in your workflow.
 		</para>
-		<sect5><title>patch size</title>
-			<para>The size of noise to detect.</para>
+		<sect5><title>Patch size</title>
+			<para>The size of the patch.</para>
 		</sect5>
-		<sect5><title>strength</title>
-			<para>The strength of the denoise</para>
+		<sect5><title>Strength</title>
+			<para>The strength of the denoise. Higher values lead to a stronger effect.</para>
 		</sect5>	
-		<sect5><title>luma</title>
-			<para>Amount of denoise to apply on luma</para>
+		<sect5><title>Luma</title>
+			<para>Amount of denoise to apply on luma. Select carefully in order not to lose too much structure.</para>
 		</sect5>	
-		<sect5><title>chroma</title>
-			<para>Amount of denoise to apply on chroma</para>
+		<sect5><title>Chroma</title>
+			<para>Amount of denoise to apply on chroma. You can be much more aggressive with this parameter compared to luma.</para>
 		</sect5>	
 	</sect4>
 <!--

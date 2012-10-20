@@ -553,6 +553,11 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
 
   // initialize the database
   darktable.db = dt_database_init(dbfilename_from_command);
+  if(darktable.db == NULL)
+  {
+    printf("ERROR : cannot open database\n");
+    return 1;
+  }
 
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
@@ -580,6 +585,7 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
   // FIXME: move there into dt_database_t
   dt_pthread_mutex_init(&(darktable.db_insert), NULL);
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
+  dt_pthread_mutex_init(&(darktable.capabilities_threadsafe), NULL);
   darktable.control = (dt_control_t *)malloc(sizeof(dt_control_t));
   memset(darktable.control, 0, sizeof(dt_control_t));
   if(init_gui)
@@ -605,6 +611,9 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
 
   /* initialize sellection */
   darktable.selection = dt_selection_new();
+
+  /* capabilities set to NULL */
+  darktable.capabilities = NULL;
 
   darktable.opencl = (dt_opencl_t *)malloc(sizeof(dt_opencl_t));
   memset(darktable.opencl, 0, sizeof(dt_opencl_t));
@@ -766,8 +775,11 @@ void dt_cleanup()
 
   dt_bauhaus_cleanup();
 
+  dt_capabilities_cleanup();
+
   dt_pthread_mutex_destroy(&(darktable.db_insert));
   dt_pthread_mutex_destroy(&(darktable.plugin_threadsafe));
+  dt_pthread_mutex_destroy(&(darktable.capabilities_threadsafe));
 
   dt_exif_cleanup();
 #ifdef HAVE_GEGL
@@ -856,6 +868,51 @@ void dt_configure_defaults()
     dt_conf_set_int("plugins/lighttable/thumbnail_height", 500);
   }
 }
+
+
+int dt_capabilities_check(char *capability)
+{
+  GList *capabilities = darktable.capabilities;
+
+  while(capabilities)
+  {
+    if(!strcmp(capabilities->data, capability))
+    {
+      return TRUE;
+    }
+    capabilities = g_list_next(capabilities);
+  }
+  return FALSE;
+}
+
+
+void dt_capabilities_add(char *capability)
+{
+  dt_pthread_mutex_lock(&darktable.capabilities_threadsafe);
+
+  if(!dt_capabilities_check(capability))
+    darktable.capabilities = g_list_append(darktable.capabilities, capability);
+
+  dt_pthread_mutex_unlock(&darktable.capabilities_threadsafe);
+}
+
+
+void dt_capabilities_remove(char *capability)
+{
+  dt_pthread_mutex_lock(&darktable.capabilities_threadsafe);
+
+  darktable.capabilities = g_list_remove(darktable.capabilities, capability);
+
+  dt_pthread_mutex_unlock(&darktable.capabilities_threadsafe);
+}
+
+
+void dt_capabilities_cleanup()
+{
+  while(darktable.capabilities)
+    darktable.capabilities = g_list_delete_link(darktable.capabilities, darktable.capabilities);
+}
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

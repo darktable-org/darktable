@@ -784,7 +784,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
             DT_DEBUG_SQLITE3_BIND_INT(lib->statements.delete_except_arg, 1, id);
             sqlite3_step(lib->statements.delete_except_arg);
           }
-          // FIXME: whatever comes first assumtion is broken!
+          // FIXME: whatever comes first assumption is broken!
           // if((lib->modifiers & GDK_SHIFT_MASK) && (last_seli == (1<<30)) &&
           //    (image->id == lib->last_selected_id || image->id == mouse_over_id)) { last_seli = col; last_selj = row; }
           // if(last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= MIN(last_seli,seli) && row >= MIN(last_selj,selj) &&
@@ -825,6 +825,87 @@ failure:
     dt_mipmap_cache_print(darktable.mipmap_cache);
 }
 
+/**
+ * Displays a full screen preview of the image currently under the mouse pointer.
+ */
+void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+{
+    dt_library_t *lib = (dt_library_t *)self->data;
+    int offset = 0;
+    if(lib->track >  2) offset++;
+    if(lib->track < -2) offset--;
+    lib->track = 0;
+
+    if (offset) {
+      /* If more than one image is selected, iterate over these. */
+      /* If only one image is selected, scroll through all known images. */
+
+      int sel_img_count = 0;
+      {
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select COUNT(*) from selected_images", -1, &stmt, NULL);
+        if (sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          sel_img_count = sqlite3_column_int(stmt, 0);
+        }
+        sqlite3_finalize(stmt);
+      }
+
+      const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, lib->full_preview_id);
+
+      /* Build outer select criteria */
+      gchar *filter_criteria = g_strdup_printf(
+            "inner join images on s1.id=images.id WHERE ((images.filename = \"%s\") and (images.id %s %d)) or (images.filename %s \"%s\") ORDER BY images.filename %s, images.id %s LIMIT 1",
+            img->filename,
+            (offset > 0) ? ">" : "<",
+            lib->full_preview_id,
+            (offset > 0) ? ">" : "<",
+            img->filename,
+            (offset > 0) ? "" : "DESC",
+            (offset > 0) ? "" : "DESC");
+
+      dt_image_cache_read_release(darktable.image_cache, img);
+
+      sqlite3_stmt *stmt;
+      gchar *stmt_string = NULL;
+      if (sel_img_count > 1)
+      {
+        stmt_string = g_strdup_printf(
+            "select images.id as id from (select imgid as id from selected_images) as s1 %s",
+            filter_criteria);
+
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
+      }
+      else
+      {
+        /* We need to augment the current main query a bit to fetch the
+         * row we need. */
+        const char *main_query = sqlite3_sql(lib->statements.main_query);
+        stmt_string = g_strdup_printf(
+                "select images.id as id from (%s) as s1 %s",
+                main_query, filter_criteria);
+
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+
+      }
+      g_free(stmt_string);
+      g_free(filter_criteria);
+
+      if(sqlite3_step(stmt) == SQLITE_ROW) {
+        lib->full_preview_id = sqlite3_column_int(stmt, 0);
+      }
+
+      sqlite3_finalize(stmt);
+    }
+
+    lib->image_over = DT_VIEW_DESERT;
+    cairo_set_source_rgb (cr, .1, .1, .1);
+    cairo_paint(cr);
+    dt_view_image_expose(&(lib->image_over), lib->full_preview_id, cr, width, height, 1, pointerx, pointery);
+}
+
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   const int i = dt_conf_get_int("plugins/lighttable/layout");
@@ -836,10 +917,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 
   if( lib->full_preview_id!=-1 )
   {
-    lib->image_over = DT_VIEW_DESERT;
-    cairo_set_source_rgb (cr, .1, .1, .1);
-    cairo_paint(cr);
-    dt_view_image_expose(&(lib->image_over), lib->full_preview_id, cr, width, height, 1, pointerx, pointery);
+    expose_full_preview(self, cr, width, height, pointerx, pointery);
   }
   else // we do pass on expose to manager or zoomable
   {

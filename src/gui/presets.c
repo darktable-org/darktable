@@ -517,6 +517,15 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter),    0);
   }
   sqlite3_finalize(stmt);
+  
+  // now delete preset, so we can re-insert the new values:
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, module->version() );
+
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 
   g_signal_connect (dialog, "response", G_CALLBACK (edit_preset_response), g);
   gtk_widget_show_all (dialog);
@@ -587,11 +596,11 @@ menuitem_pick_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
   sqlite3_finalize(stmt);
   g_free(name);
   dt_iop_gui_update(module);
-  dt_iop_gui_update_expanded(module);
   dt_dev_add_history_item(darktable.develop, module, FALSE);
   gtk_widget_queue_draw(module->widget);
 }
 
+#if 0 // customizable defaults removed, see below.
 static void
 menuitem_store_default (GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
@@ -611,6 +620,7 @@ menuitem_store_default (GtkMenuItem *menuitem, dt_iop_module_t *module)
   sqlite3_finalize(stmt);
   dt_iop_load_default_params(module);
 }
+#endif
 
 static void
 menuitem_factory_default (GtkMenuItem *menuitem, dt_iop_module_t *module)
@@ -695,7 +705,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
   menu = darktable.gui->presets_popup_menu;
 
   GtkWidget *mi;
-  int active_preset = -1, cnt = 0, writeprotect = 0, selected_default = 0;
+  int active_preset = -1, cnt = 0, writeprotect = 0;//, selected_default = 0;
   sqlite3_stmt *stmt;
   // order: get shipped defaults first
   if(image)
@@ -747,7 +757,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
       mi = gtk_menu_item_new_with_label("");
       if(isdefault)
       {
-        selected_default = 1;
+        // selected_default = 1;
         markup = g_markup_printf_escaped ("<span weight=\"bold\">%s %s</span>", sqlite3_column_text(stmt, 0), _("(default)"));
       }
       else
@@ -800,6 +810,9 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
       }
 
+#if 0 // we found these confusing, so the gui for it is removed.
+      // for consistency between machines via xmp, it would at least need to be
+      // if(!module->enabled) or module->default_enabled and always leave it off.
       if(!selected_default)
       {
         // only show if it is not the default already
@@ -807,6 +820,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
         g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_store_default), module);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
       }
+#endif
     }
     else
     {

@@ -170,6 +170,7 @@ typedef struct darktable_t
   int32_t unmuted;
   GList                          *iop;
   GList                          *collection_listeners;
+  GList                          *capabilities;
   struct dt_conf_t               *conf;
   struct dt_develop_t            *develop;
   struct dt_lib_t                *lib;
@@ -192,6 +193,7 @@ typedef struct darktable_t
   struct dt_blendop_t            *blendop;
   dt_pthread_mutex_t db_insert;
   dt_pthread_mutex_t plugin_threadsafe;
+  dt_pthread_mutex_t capabilities_threadsafe;
   char *progname;
   char *datadir;
   char *plugindir;
@@ -218,6 +220,10 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...);
 void dt_gettime_t(char *datetime, time_t t);
 void dt_gettime(char *datetime);
 void *dt_alloc_align(size_t alignment, size_t size);
+int dt_capabilities_check(char *capability);
+void dt_capabilities_add(char *capability);
+void dt_capabilities_remove(char *capability);
+void dt_capabilities_cleanup();
 
 static inline double dt_get_wtime(void)
 {

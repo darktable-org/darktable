@@ -262,14 +262,14 @@ dt_film_import_internal(const char *dirname, const int blocking)
   {
     char datetime[20];
     dt_gettime(datetime);
-#if 0  
+#if 0
     /* Should we use one for the whole app? */
     GVolumeMonitor *gv_monitor;
     gv_monitor = g_volume_monitor_get ();
-    
+
     GList *mounts;
     mounts = g_volume_monitor_get_mounts(gv_monitor);
-    
+
     gchar *mount_name = NULL;
     if (mounts != NULL)
     {
@@ -277,21 +277,21 @@ dt_film_import_internal(const char *dirname, const int blocking)
       GMount *filmroll_mount;
       GError *error = NULL;
       gchar *filmroll_path;
-      
+
       filmroll_mount = g_file_find_enclosing_mount(g_file_new_for_path(dirname), NULL, &error);
       if (!error)
       /* We are considering that the only error is that there is no mount
        * because the filmroll added is in a local drive */
       {
         filmroll_path = g_file_get_path((g_mount_get_default_location(filmroll_mount)));
-      
+
         for (int i=0; i < g_list_length (mounts); i++)
         {
           gchar *p;
 
           mount_gfile = g_mount_get_default_location((GMount *)g_list_nth_data(mounts, i));
           p = g_file_get_path(mount_gfile);
-          
+
           if (g_strcmp0(p, filmroll_path))
           {
             mount_name = g_mount_get_name(g_list_nth_data(mounts, i));
@@ -313,7 +313,7 @@ dt_film_import_internal(const char *dirname, const int blocking)
     }
     else
       mount_name = g_strdup("Local");
-#endif      
+#endif
     /* insert a new film roll into database */
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
 //                                "insert into film_rolls (id, datetime_accessed, folder, external_drive) values "
@@ -326,13 +326,13 @@ dt_film_import_internal(const char *dirname, const int blocking)
                                SQLITE_STATIC);
 //    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, mount_name, strlen(mount_name),
 //                               SQLITE_STATIC);
-    
+
     rc = sqlite3_step(stmt);
     if(rc != SQLITE_DONE)
       fprintf(stderr, "[film_import] failed to insert film roll! %s\n",
               sqlite3_errmsg(dt_database_get(darktable.db)));
     sqlite3_finalize(stmt);
-    
+
 //    if (mount_name != NULL) g_free (mount_name);
 
     /* requery for filmroll and fetch new id */
@@ -456,6 +456,7 @@ void dt_film_import1(dt_film_t *film)
     if(!cfr || g_strcmp0(cfr->dirname, cdn) != 0)
     {
 
+#if GLIB_CHECK_VERSION (2, 26, 0)
       /* check if we can find a gpx data file to be auto applied
          to images in the jsut imported filmroll */
       g_dir_rewind(cfr->dir);
@@ -471,6 +472,7 @@ void dt_film_import1(dt_film_t *film)
           g_free(gpx_file);
         }
       }
+#endif
 
       /* cleanup previously imported filmroll*/
       if(cfr && cfr!=film)
@@ -499,6 +501,7 @@ void dt_film_import1(dt_film_t *film)
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_CHANGED);
 
+#if GLIB_CHECK_VERSION (2, 26, 0)
   /* check if we can find a gpx data file to be auto applied
      to images in the just imported filmroll */
   g_dir_rewind(cfr->dir);
@@ -514,6 +517,7 @@ void dt_film_import1(dt_film_t *film)
       g_free(gpx_file);
     }
   }
+#endif
 
 }
 

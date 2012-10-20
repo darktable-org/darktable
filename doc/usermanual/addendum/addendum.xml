@@ -1,11 +1,20 @@
-<appendix><title>Keyaccelerators</title>
-  <para>darktable have a big set of keyaccelerators that with the work of Robert Beiber
-    now is userconfigurable thru the preference pane. Here follows a table with the default
-    keybindings of actions available in darktable.
-  </para>
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 
-  <para>
-    <xi:include href="keymappings.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-  </para>
-  
+<appendix><title>Preferences</title>
+	<para>Darktable comes with a number of settings that can be configured by users. You reach the configuration
+      	      system by clicking <inlinegraphic fileref="&icon_preferences;" scalefit="1" width="2%" align="center" />.</para>
+
+<!-- gui options -->
+<xi:include href="gui_options.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- core options -->
+<xi:include href="core_options.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Keyaccelerators -->
+<xi:include href="keyaccelerators.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 </appendix>		

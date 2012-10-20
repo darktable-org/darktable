@@ -101,6 +101,16 @@ dt_database_t *dt_database_init(char *alternative)
     return NULL;
   }
 
+  /* having more than one instance of darktable using the same database is a bad idea */
+  if(sqlite3_exec(db->handle, "delete from lock", NULL, NULL, NULL) > SQLITE_ERROR)
+  {
+    fprintf(stderr, "[init] database is locked, probably another process is already using it\n");
+    sqlite3_close(db->handle);
+    g_free(dbname);
+    g_free(db);
+    return NULL;
+  }
+
   /* attach a memory database to db connection for use with temporary tables
      used during instance life time, which is discarded on exit.
   */

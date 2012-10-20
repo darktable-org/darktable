@@ -11,7 +11,7 @@
 							Quite counter-intuitively, the greater the values for sliders, the lesser resources.
 						</entry>
 						<entry>
-							<graphic fileref="darkroom/modules/images/denoise.png" scalefit="1" width="80%" align="center" />
+							<graphic fileref="darkroom/modules/images/denoise_bilateral.png" scalefit="1" width="80%" align="center" />
 						</entry>
 					</row>
 				</tbody>
@@ -20,16 +20,20 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<sect5><title>radius</title>
-			<para>Set the spatial extension of the gaussian blur.</para>
+                <para>This module reduces noise in your image but preserves sharp edges. This is accomplished by averaging pixels with their neighbors, taking into account not only the geometric distance but
+                      also the distance on the range scale, i.e. differences in color intensities. As denoising is a resource hungry process, it slows down pixelpipe processing significantly; consider to activate 
+                      this module late in your workflow.
+		</para>
+		<sect5><title>Radius</title>
+			<para>Set the spatial extent of the gaussian blur.</para>
 		</sect5>
-		<sect5><title>red</title>
+		<sect5><title>Red</title>
 			<para>Blur intensity for red channel.</para>
 		</sect5>
-		<sect5><title>green</title>
+		<sect5><title>Green</title>
 			<para>Blur intensity for green channel.</para>
 		</sect5>
-		<sect5><title>blue</title>
+		<sect5><title>Blue</title>
 			<para>Blur intensity for blue channel.</para>
 		</sect5>
 	</sect4>
