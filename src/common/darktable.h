@@ -141,7 +141,8 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_PWSTORAGE = 64,
   DT_DEBUG_OPENCL = 128,
   DT_DEBUG_SQL = 256,
-  DT_DEBUG_MEMORY = 512
+  DT_DEBUG_MEMORY = 512,
+  DT_DEBUG_LIGHTTABLE = 1024
 }
 dt_debug_thread_t;
 

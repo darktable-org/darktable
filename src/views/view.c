@@ -1041,7 +1041,8 @@ dt_view_image_expose(
   // if(zoom == 1) cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
 
   const double end = dt_get_wtime();
-  dt_print(DT_DEBUG_PERF, "[lighttable] image expose took %0.04f sec\n", end-start);
+  if (darktable.unmuted & DT_DEBUG_PERF)
+    dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] image expose took %0.04f sec\n", end-start);
 }
 
 

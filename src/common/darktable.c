@@ -75,7 +75,7 @@ const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2
 
 static int usage(const char *argv0)
 {
-  printf("usage: %s [-d {all,cache,camctl,control,dev,fswatch,memory,opencl,perf,pwstorage,sql}] [IMG_1234.{RAW,..}|image_folder/]", argv0);
+  printf("usage: %s [-d {all,cache,camctl,control,dev,fswatch,lighttable,memory,opencl,perf,pwstorage,sql}] [IMG_1234.{RAW,..}|image_folder/]", argv0);
 #ifdef HAVE_OPENCL
   printf(" [--disable-opencl]");
 #endif
@@ -466,17 +466,18 @@ int dt_init(int argc, char *argv[], const int init_gui)
       }
       else if(argv[k][1] == 'd' && argc > k+1)
       {
-        if(!strcmp(argv[k+1], "all"))            darktable.unmuted = 0xffffffff;   // enable all debug information
-        else if(!strcmp(argv[k+1], "cache"))     darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
-        else if(!strcmp(argv[k+1], "control"))   darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
-        else if(!strcmp(argv[k+1], "dev"))       darktable.unmuted |= DT_DEBUG_DEV; // develop module
-        else if(!strcmp(argv[k+1], "fswatch"))   darktable.unmuted |= DT_DEBUG_FSWATCH; // fswatch module
-        else if(!strcmp(argv[k+1], "camctl"))    darktable.unmuted |= DT_DEBUG_CAMCTL; // camera control module
-        else if(!strcmp(argv[k+1], "perf"))      darktable.unmuted |= DT_DEBUG_PERF; // performance measurements
-        else if(!strcmp(argv[k+1], "pwstorage")) darktable.unmuted |= DT_DEBUG_PWSTORAGE; // pwstorage module
-        else if(!strcmp(argv[k+1], "opencl"))    darktable.unmuted |= DT_DEBUG_OPENCL;    // gpu accel via opencl
-        else if(!strcmp(argv[k+1], "sql"))       darktable.unmuted |= DT_DEBUG_SQL; // SQLite3 queries
-        else if(!strcmp(argv[k+1], "memory"))    darktable.unmuted |= DT_DEBUG_MEMORY; // some stats on mem usage now and then.
+        if(!strcmp(argv[k+1], "all"))             darktable.unmuted = 0xffffffff;   // enable all debug information
+        else if(!strcmp(argv[k+1], "cache"))      darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
+        else if(!strcmp(argv[k+1], "control"))    darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
+        else if(!strcmp(argv[k+1], "dev"))        darktable.unmuted |= DT_DEBUG_DEV; // develop module
+        else if(!strcmp(argv[k+1], "fswatch"))    darktable.unmuted |= DT_DEBUG_FSWATCH; // fswatch module
+        else if(!strcmp(argv[k+1], "camctl"))     darktable.unmuted |= DT_DEBUG_CAMCTL; // camera control module
+        else if(!strcmp(argv[k+1], "perf"))       darktable.unmuted |= DT_DEBUG_PERF; // performance measurements
+        else if(!strcmp(argv[k+1], "pwstorage"))  darktable.unmuted |= DT_DEBUG_PWSTORAGE; // pwstorage module
+        else if(!strcmp(argv[k+1], "opencl"))     darktable.unmuted |= DT_DEBUG_OPENCL;    // gpu accel via opencl
+        else if(!strcmp(argv[k+1], "sql"))        darktable.unmuted |= DT_DEBUG_SQL; // SQLite3 queries
+        else if(!strcmp(argv[k+1], "memory"))     darktable.unmuted |= DT_DEBUG_MEMORY; // some stats on mem usage now and then.
+        else if(!strcmp(argv[k+1], "lighttable")) darktable.unmuted |= DT_DEBUG_LIGHTTABLE; // lighttable related stuff.
         else return usage(argv[0]);
         k ++;
       }
