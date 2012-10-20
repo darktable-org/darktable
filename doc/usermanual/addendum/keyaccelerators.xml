@@ -3,10 +3,10 @@
         now is user configurable through the preference pane.
   </para>
 
-  <para>When you open the shortcuts menu you are presented with a hierarchical list of all operation that
-        can receive a keyaccelerators. Go into the operation you want to change and double click. You are then
-        prompted to press the new key combination to be mapped to the selection operation. In order to remove an
-        existing keyaccelerator, click on the operation and press backspace.
+  <para>When you open the shortcuts menu you are presented with a hierarchical list of all actions that
+        can receive a keyaccelerator. Go to the action you want to change and double click. You are then
+        prompted to press the new key combination to be mapped to the selected action. In order to remove an
+        existing keyaccelerator, click on the action and press backspace.
   </para>
 
   <para>You can export your mappings to a file or import mappings from a file. Press "default" to reset all

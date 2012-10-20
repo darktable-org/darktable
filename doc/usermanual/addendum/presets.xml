@@ -41,7 +41,7 @@
 		</para>
 	  </sect4>
 
-	  <sect4><title>make</title>
+	  <sect4><title>maker</title>
 		<para>a pattern to be matched against the EXIF field that describes the maker of your camera; use "%" as wildcard.
 		</para>
 	  </sect4>
@@ -52,24 +52,24 @@
 	  </sect4>
 
 	  <sect4><title>iso</title>
-		<para>only apply the preset if the iso value of your image matches the given range.
+		<para>only apply the preset if the iso value of your image lies within the given range.
 		</para>
 	  </sect4>
 
 	  <sect4><title>exposure</title>
-		<para>only apply the preset if the exposure time of your image matches the given range; set "+" as the upper value
+		<para>only apply the preset if the exposure time of your image lies within the given range; set "+" as the upper value
                       to match arbitrarily long exposures.
 		</para>
 	  </sect4>
 
 	  <sect4><title>aperture</title>
-		<para>only apply the preset if the aperture of your image matches the given range; set "f/0" as the lower value to match arbitrarily
+		<para>only apply the preset if the aperture of your image lies within the given range; set "f/0" as the lower value to match arbitrarily
                       open apertures; set "f/+" as the upper value to match arbitrarily closed apertures.
 		</para>
 	  </sect4>
 
 	  <sect4><title>focal length</title>
-		<para>only apply the preset if the focal length of your image matches the given range (from 0 to 1000).
+		<para>only apply the preset if the focal length of your image lies within the given range (from 0 to 1000).
 		</para>
 	  </sect4>
 
