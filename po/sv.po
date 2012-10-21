@@ -17,7 +17,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-10-20 18:46+0200\n"
-"PO-Revision-Date: 2012-10-21 19:25+0200\n"
+"PO-Revision-Date: 2012-10-22 00:20+0200\n"
 "Last-Translator: Henrik Andersson <hean01@users.sourceforge.net>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -3512,7 +3512,7 @@ msgstr "matcha grön"
 
 #: ../src/iop/demosaic.c:1326
 msgid "disabled"
-msgstr "obrukbar"
+msgstr "av"
 
 #: ../src/iop/demosaic.c:1327
 msgid "local average"
