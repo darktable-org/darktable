@@ -16,8 +16,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-19 19:38+0200\n"
-"PO-Revision-Date: 2012-10-19 19:35+0200\n"
+"POT-Creation-Date: 2012-10-20 18:46+0200\n"
+"PO-Revision-Date: 2012-10-21 19:25+0200\n"
 "Last-Translator: Henrik Andersson <hean01@users.sourceforge.net>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -7054,7 +7054,7 @@ msgstr "snabbtillgång av förinställningar av dina favoriter"
 
 #: ../src/views/darkroom.c:845
 msgid "quick access for applying any of your styles"
-msgstr "sanntillgång för applicering av dina stilar"
+msgstr "snabbtillgång för applicering av dina stilar"
 
 #. Zoom shortcuts
 #: ../src/views/darkroom.c:1299
