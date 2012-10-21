@@ -45,7 +45,7 @@
 DT_MODULE(3)
 
 // number of gui ratios in combo box
-#define NUM_RATIOS 12
+#define NUM_RATIOS 13
 
 /** flip H/V, rotate an image, then clip the buffer. */
 typedef enum dt_iop_clipping_flags_t
@@ -1061,6 +1061,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->aspect_presets, _("golden cut"));
   dt_bauhaus_combobox_add(g->aspect_presets, _("1:2"));
   dt_bauhaus_combobox_add(g->aspect_presets, _("3:2"));
+  dt_bauhaus_combobox_add(g->aspect_presets, _("7:5"));
   dt_bauhaus_combobox_add(g->aspect_presets, _("4:3"));
   dt_bauhaus_combobox_add(g->aspect_presets, _("5:4"));
   dt_bauhaus_combobox_add(g->aspect_presets, _("square"));
@@ -1130,16 +1131,17 @@ void _iop_clipping_update_ratios(dt_iop_module_t *self)
   g->aspect_ratios[2] = PHI;
   g->aspect_ratios[3] = 2.0/1.0;
   g->aspect_ratios[4] = 3.0/2.0;
-  g->aspect_ratios[5] = 4.0/3.0;
-  g->aspect_ratios[6] = 5.0f/4.0f;
-  g->aspect_ratios[7] = 1.0;
-  g->aspect_ratios[8] = sqrtf(2.0);
-  g->aspect_ratios[9] = 16.0f/9.0f;
-  g->aspect_ratios[10] = 16.0f/10.0f;
-  g->aspect_ratios[11] = 244.5f/203.2f;
+  g->aspect_ratios[5] = 7.0/5.0;
+  g->aspect_ratios[6] = 4.0/3.0;
+  g->aspect_ratios[7] = 5.0f/4.0f;
+  g->aspect_ratios[8] = 1.0;
+  g->aspect_ratios[9] = sqrtf(2.0);
+  g->aspect_ratios[10] = 16.0f/9.0f;
+  g->aspect_ratios[11] = 16.0f/10.0f;
+  g->aspect_ratios[12] = 244.5f/203.2f;
 
   // if adding new presets, make sure to change this as well:
-  assert(NUM_RATIOS == 12);
+  assert(NUM_RATIOS == 13);
 
   /* swap default fixed ratios for portraits */
   if (g->aspect_ratios[1] < 1.0)
