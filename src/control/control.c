@@ -1310,10 +1310,10 @@ void *dt_control_expose(void *voidptr)
     const float fontsize = 14;
     cairo_set_font_size (cr, fontsize);
     cairo_text_extents_t ext;
-    cairo_text_extents (cr, _("working..."), &ext);
+    cairo_text_extents (cr, _("working.."), &ext);
     const float xc = width/2.0, yc = height*0.85-30, wd = ext.width*.5f;
     cairo_move_to (cr, xc-wd, yc + 1./3.*fontsize);
-    cairo_text_path (cr, _("working..."));
+    cairo_text_path (cr, _("working.."));
     cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
     cairo_fill_preserve(cr);
     cairo_set_line_width(cr, 0.7);
