@@ -340,6 +340,35 @@ static inline void dt_print_mem_usage()
 #endif
 }
 
+static inline int
+dt_get_num_atom_cores()
+{
+#if defined(__linux__)
+  int count = 0;
+  char line[256];
+  FILE *f = fopen("/proc/cpuinfo", "r");
+  if (f)
+  {
+    while (!feof(f))
+    {
+      if (fgets(line, sizeof(line), f))
+      {
+        if (!strncmp(line, "model name", 10))
+        {
+          if (strstr(line, "Atom"))
+          {
+            count++;
+          }
+        }
+      }
+    }
+  }
+  return count;
+#else
+  return 0;
+#endif
+}
+
 static inline size_t
 dt_get_total_memory()
 {
