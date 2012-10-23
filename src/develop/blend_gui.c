@@ -469,35 +469,25 @@ _blendop_blendif_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *mo
 static void
 _blendop_blendif_showmask_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *module)
 {
-  dt_develop_blend_params_t *bp = module->blend_params;
-
   module->request_mask_display = gtk_toggle_button_get_active(togglebutton);
   if(darktable.gui->reset) return;
 
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
 
-  // hack! in order to force instant redraw we toggle an unused bit in blendif params
-  // TODO: need to find a better way to trigger redraw
-  bp->blendif ^= (1<<DEVELOP_BLENDIF_unused);
-  dt_dev_add_history_item(darktable.develop, module, TRUE);
+  dt_dev_reprocess_all(module->dev);
 }
 
 static void
 _blendop_blendif_suppress_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *module)
 {
-  dt_develop_blend_params_t *bp = module->blend_params;
-
   module->suppress_mask = gtk_toggle_button_get_active(togglebutton);
   if(darktable.gui->reset) return;
 
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
 
-  // hack! in order to force instant redraw we toggle an unused bit in blendif params
-  // TODO: need to find a better way to trigger redraw
-  bp->blendif ^= (1<<DEVELOP_BLENDIF_unused);
-  dt_dev_add_history_item(darktable.develop, module, TRUE);
+  dt_dev_reprocess_all(module->dev);
 }
 
 static void

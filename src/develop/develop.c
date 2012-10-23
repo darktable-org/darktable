@@ -826,6 +826,28 @@ void dt_dev_read_history(dt_develop_t *dev)
   sqlite3_finalize (stmt);
 }
 
+
+void dt_dev_reprocess_all(dt_develop_t *dev)
+{
+  if(darktable.gui->reset) return;
+  if(dev && dev->gui_attached)
+  {
+    dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
+    dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
+    dev->pipe->cache_obsolete = 1;
+    dev->preview_pipe->cache_obsolete = 1;
+
+    dt_similarity_image_dirty(dev->image_storage.id);
+
+    // invalidate buffers and force redraw of darkroom
+    dt_dev_invalidate_all(dev);
+
+    /* redraw */
+    dt_control_queue_redraw_center();
+  }
+}
+
+
 void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, dt_dev_zoom_t zoom, int closeup, float *boxww, float *boxhh)
 {
   int procw, proch;
