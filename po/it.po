@@ -4,7 +4,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-10-18 21:04+1300\n"
 "PO-Revision-Date: \n"
-"Last-Translator: EugenioB <eugeniob@racine.ra.it>\n"
+"Last-Translator: Eugenio B <eugeniob@racine.ra.it>\n"
 "Language-Team: \n"
 "Language: \n"
 "MIME-Version: 1.0\n"
@@ -16,11 +16,11 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:932
 msgid "gui options"
-msgstr "Opzioni interfaccia"
+msgstr "opzioni interfaccia"
 
 #: ../build/src/preferences_gen.h:935
 msgid "width of the side panels in pixels"
-msgstr "Dimensione dei pannelli laterali in pixel"
+msgstr "dimensione dei pannelli laterali in pixel"
 
 #: ../build/src/preferences_gen.h:947
 #: ../build/src/preferences_gen.h:966
@@ -59,11 +59,11 @@ msgstr "Dimensione dei pannelli laterali in pixel"
 #: ../build/src/preferences_gen.h:1696
 #, c-format
 msgid "double click to reset to `%s'"
-msgstr "Doppio click per ripristinare a '%s'"
+msgstr "doppio click per ripristinare a '%s'"
 
 #: ../build/src/preferences_gen.h:950
 msgid " (needs a restart)"
-msgstr "(Riavvio necessario)"
+msgstr "(necessario riavvio)"
 
 #: ../build/src/preferences_gen.h:957
 msgid "don't use embedded preview jpeg but half-size raw"
@@ -416,8 +416,8 @@ msgstr "Modificato"
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
-msgstr[0] "%d immagine è %d stata selezionate nella collezione"
-msgstr[1] "%d immagini sono %d state selezionate nella collezione"
+msgstr[0] "%d immagine è stata selezionate nella raccolta di %d"
+msgstr[1] "%d immagini sono state selezionate nella raccolta di %d"
 
 #: ../src/common/darktable.c:172
 msgid "darktable has trapped an illegal instruction which probably means that an invalid processor optimized codepath is used for your cpu, please try reproduce the crash running 'gdb darktable' from the console and post the backtrace log to mailing list with information about your CPU and where you got the package from."
@@ -709,8 +709,8 @@ msgstr "scegli una immagine come principale per la ricerca di immagini simili"
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural "do you really want to remove %d selected images from the collection?"
-msgstr[0] "Sicuro di voler eliminare l'immagine selezionata dalla collezione?"
-msgstr[1] "Sicuro di voler eliminare le %d immagini selezionate dalla collezione?"
+msgstr[0] "Sicuro di voler eliminare l'immagine selezionata dalla raccolta?"
+msgstr[1] "Sicuro di voler eliminare le %d immagini selezionate dalla raccolta?"
 
 #: ../src/control/jobs/control_jobs.c:966
 msgid "remove images?"
@@ -1439,7 +1439,7 @@ msgstr "Modalità acquisizione vista "
 #: ../src/gui/gtk.c:838
 msgctxt "accel"
 msgid "lighttable view"
-msgstr "Lavagna "
+msgstr "vista Tavolo Luminoso"
 
 #: ../src/gui/gtk.c:839
 msgctxt "accel"
@@ -4429,7 +4429,7 @@ msgstr "Quanto sfumare sui colori"
 
 #: ../src/iop/overexposed.c:99
 msgid "overexposed"
-msgstr "Sovraesposizzione"
+msgstr "Sovresposizione"
 
 #: ../src/iop/overexposed.c:131
 msgctxt "accel"
@@ -5823,7 +5823,7 @@ msgstr "molte fotocamere non memorizzano il fuso orario fra i dati exif.  assegn
 
 #: ../src/libs/geotagging.c:574
 msgid "time offset"
-msgstr "deviazione oraria"
+msgstr "deviaz.oraria"
 
 #: ../src/libs/geotagging.c:584
 msgid ""
@@ -5945,7 +5945,7 @@ msgstr "Rimuovi"
 
 #: ../src/libs/image.c:138
 msgid "remove from the collection"
-msgstr "Rimuovi dalla collezione"
+msgstr "Rimuovi dalla raccolta"
 
 #. delete
 #: ../src/libs/image.c:142
@@ -6021,7 +6021,7 @@ msgstr "togli le immagini selezionate dal gruppo"
 #: ../src/libs/image.c:229
 msgctxt "accel"
 msgid "remove from collection"
-msgstr "Rimuovi dalla collezione"
+msgstr "Rimuovi dalla raccolta"
 
 #: ../src/libs/image.c:231
 msgctxt "accel"
@@ -6118,7 +6118,7 @@ msgstr "Nessun dispositivo supportato"
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
 #: ../src/libs/import.c:372
 msgid "import options"
-msgstr "importa opzioni"
+msgstr "opzioni di importazione"
 
 #. recursive opening.
 #: ../src/libs/import.c:392
@@ -6176,7 +6176,7 @@ msgstr "Seleziona una cartella da importare come rullino"
 
 #: ../src/libs/keywords.c:60
 msgid "keywords"
-msgstr "chiavi"
+msgstr "parole chiave"
 
 #: ../src/libs/lib.c:189
 #, c-format
@@ -6563,7 +6563,7 @@ msgstr "Tutte"
 
 #: ../src/libs/select.c:98
 msgid "select all images in current collection (ctrl-a)"
-msgstr "Seleziona tutte le immagini in questa collezione (Ctrl-a)"
+msgstr "Seleziona tutte le immagini in questa raccolta (Ctrl-a)"
 
 #: ../src/libs/select.c:102
 msgid "select none"
@@ -6583,7 +6583,7 @@ msgid ""
 "in current collection (ctrl-!)"
 msgstr ""
 "Seleziona le immagini non selezionate\n"
-"nella collezione corrente (Ctrl-!)"
+"nella raccolta corrente (Ctrl-!)"
 
 #: ../src/libs/select.c:117
 msgid "select film roll"
@@ -6607,7 +6607,7 @@ msgid ""
 "current collection"
 msgstr ""
 "Seleziona immagini non modificate\n"
-"in questa collezione"
+"in questa raccolta"
 
 #: ../src/libs/select.c:144
 msgctxt "accel"
@@ -7094,11 +7094,11 @@ msgstr "hinter"
 #: ../src/libs/tools/lighttable.c:58
 #: ../src/views/lighttable.c:113
 msgid "lighttable"
-msgstr "Lavagna"
+msgstr "Tavolo Luminoso"
 
 #: ../src/libs/tools/lighttable.c:94
 msgid "zoomable light table"
-msgstr "Lavagna zoomabile"
+msgstr "Tavolo Luminoso zoomabile"
 
 #: ../src/libs/tools/lighttable.c:133
 msgctxt "accel"
