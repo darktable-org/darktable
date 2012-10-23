@@ -273,9 +273,9 @@ display_profile_changed (GtkWidget *widget, gpointer user_data)
 static void
 _signal_profile_changed(gpointer instance, gpointer user_data)
 {
-//   dt_iop_module_t *self = (dt_iop_module_t*)user_data;
-//   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
-  printf("TODO: update the display profile! if this message annoys you you should annoy the developers so they fix this. ;)\n");
+  dt_develop_t *dev = (dt_develop_t*)user_data;
+  if(!dev->gui_attached || dev->gui_leaving) return;
+  dt_dev_reprocess_all(dev);
 }
 
 #if 1
@@ -931,7 +931,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // reload the profiles when the display profile changed!
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED,
-                            G_CALLBACK(_signal_profile_changed), self);
+                            G_CALLBACK(_signal_profile_changed), self->dev);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

@@ -342,7 +342,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   if(self->picked_color_max[0] < 0.0f)
   {
     // provoke reprocessing of image to get valid color picker data
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_reprocess_all(self->dev);
     return FALSE;
   }
 
