@@ -529,7 +529,10 @@ int dt_lua_init_image(lua_State * L) {
   luaA_struct_member(L,dt_image_t,latitude,double);
   luaL_newmetatable(L,image_typename);
   luaL_setfuncs(L,image_meta,0);
-  //dt_lua_init_typed_name_list_pair(L, dt_image_t,image_fields_name);
+	lua_pushlightuserdata(L,image_fields_name);
+  lua_pushstring(L,"dt_image_t");
+	lua_pushcclosure(L,dt_lua_autotype_pairs,2);
+	lua_setfield(L,-2,"__pairs");
 
 
   /* darktable.images() */

@@ -36,7 +36,6 @@ typedef char* char_path_length;
    * iteratable 
    * indexable
    * new indexable
-   * printable
    if the type has been registered with luaA and some members described there, they will be handle via luaA
    unknown fields are refused if not in the list, or passed to index/newindex for handling
 
@@ -46,7 +45,17 @@ typedef char* char_path_length;
 #define dt_lua_init_type(L,type_name, list,index,newindex) dt_lua_init_type_internal(L,#type_name,list,index,newindex)
 void dt_lua_init_type_internal(lua_State* L, const char*type_name,const char ** list,lua_CFunction index,lua_CFunction newindex);
 
+/**
+  (-1,+3)
+  returns a next function, the top value and a nil
+  see lua documentation on how pairs() work
 
+  upvalue 1 : an array of const char* for special members (can be null, can be nil)
+  upvalue 2 : the name of an autotype whos members will be used to iterate
+
+  this function is the one used by dt_lua_init_type internally
+  */
+int dt_lua_autotype_pairs(lua_State *L);
 /**
   (-1,+1)
   check that the top of the stack is a table, creates or find a subtable named "name", 

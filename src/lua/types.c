@@ -81,7 +81,7 @@ static int type_next(lua_State *L){
   lua_insert(L,-2); // move the index string below the value object
   return 2;
 }
-static int type_pairs(lua_State *L){
+int dt_lua_autotype_pairs(lua_State *L){
 	// one upvalue, the lightuserdata 
 	const char **list = lua_touserdata(L,lua_upvalueindex(1));
 	const char *type_name = lua_tostring(L,lua_upvalueindex(2));
@@ -149,7 +149,7 @@ void dt_lua_init_type_internal(lua_State* L, const char*type_name,const char ** 
 
 	lua_pushlightuserdata(L,list);
   lua_pushstring(L,type_name);
-	lua_pushcclosure(L,type_pairs,2);
+	lua_pushcclosure(L,dt_lua_autotype_pairs,2);
 	lua_setfield(L,-2,"__pairs");
 
 	lua_pushlightuserdata(L,list);
