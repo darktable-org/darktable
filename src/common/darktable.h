@@ -55,7 +55,7 @@
 #include "lua/dt_lua.h"
 #else
 typedef int lua_State ;
-typedef int (*lua_CFunction)(lua_state *L);
+typedef int (*lua_CFunction)(lua_State *L);
 #endif
 
 #if defined(__DragonFly__) || defined(__FreeBSD__)
