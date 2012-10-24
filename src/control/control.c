@@ -769,6 +769,12 @@ void dt_control_quit()
   if(dt_conf_get_int("ui_last/view") == DT_MAP) // we are in map mode where no expose is running
     dt_ctl_switch_mode_to(DT_LIBRARY);
 
+#ifdef USE_LUA
+  if(darktable.lua_state) {
+    luaA_close();
+    lua_close(darktable.lua_state);
+  }
+#endif
   dt_gui_gtk_quit();
   // thread safe quit, 1st pass:
   dt_pthread_mutex_lock(&darktable.control->cond_mutex);
@@ -778,12 +784,6 @@ void dt_control_quit()
   dt_pthread_mutex_unlock(&darktable.control->cond_mutex);
   // let gui pick up the running = 0 state and die
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
-#ifdef USE_LUA
-  if(darktable.lua_state) {
-    luaA_close();
-    lua_close(darktable.lua_state);
-  }
-#endif
 }
 
 void dt_control_shutdown(dt_control_t *s)
