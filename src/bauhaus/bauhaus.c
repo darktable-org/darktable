@@ -1165,14 +1165,19 @@ dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
         : d->active;
       GList *it = d->labels;
       int k = 0, i = 0, kk = 0, match = 1;
+
+      gchar *keys = g_utf8_casefold(darktable.bauhaus->keys, -1);
       while(it)
       {
         gchar *text = (gchar *)it->data;
-        if(!strncmp(text, darktable.bauhaus->keys, darktable.bauhaus->keys_cnt))
+        gchar *text_cmp = g_utf8_casefold(text, -1);
+        if(!strncmp(text_cmp, keys, darktable.bauhaus->keys_cnt))
         {
           if(active == k)
           {
             dt_bauhaus_combobox_set(widget, i);
+            g_free(keys);
+            g_free(text_cmp);
             return;
           }
           kk = i; // remember for down there
@@ -1182,6 +1187,7 @@ dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
         }
         i++;
         it = g_list_next(it);
+        g_free(text_cmp);
       }
       // if list is short (2 entries could be: typed something similar, and one similar)
       if(k < 3)
@@ -1197,6 +1203,7 @@ dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
           dt_bauhaus_combobox_set(widget, -1);
         }
       }
+      g_free(keys);
       break;
     }
     case DT_BAUHAUS_SLIDER:
@@ -1329,10 +1336,12 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
       GList *it = d->labels;
       int k = 0, i = 0;
       int hovered = darktable.bauhaus->mouse_y / (ht + get_line_space());
+      gchar *keys = g_utf8_casefold(darktable.bauhaus->keys, -1);
       while(it)
       {
         gchar *text = (gchar *)it->data;
-        if(!strncmp(text, darktable.bauhaus->keys, darktable.bauhaus->keys_cnt))
+        gchar *text_cmp = g_utf8_casefold(text, -1);
+        if(!strncmp(text_cmp, keys, darktable.bauhaus->keys_cnt))
         {
           gboolean highlight = FALSE;
           if(i == hovered)
@@ -1344,8 +1353,10 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         }
         i++;
         it = g_list_next(it);
+        g_free(text_cmp);
       }
       cairo_restore(cr);
+      g_free(keys);
     }
     break;
     default:
@@ -1696,19 +1707,24 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
     }
     case DT_BAUHAUS_COMBOBOX:
     {
+      if(!g_utf8_validate(event->string, -1, NULL)) return FALSE;
+      gunichar c = g_utf8_get_char(event->string);
+      long int char_width = g_utf8_next_char(event->string) - event->string;
       // if(event->string[0] == 'p') return system("scrot");
       // else
-      if(darktable.bauhaus->keys_cnt + 2 < 64 &&
-          (event->string[0] >= 32 && event->string[0] <= 126))
+      if(darktable.bauhaus->keys_cnt + 1 + char_width < 64 && g_unichar_isprint(c))
       {
         // only accept key input if still valid or editable?
-        darktable.bauhaus->keys[darktable.bauhaus->keys_cnt++] = event->string[0];
+        g_utf8_strncpy(darktable.bauhaus->keys+darktable.bauhaus->keys_cnt, event->string, 1);
+        darktable.bauhaus->keys_cnt += char_width;
         gtk_widget_queue_draw(darktable.bauhaus->popup_area);
       }
       else if(darktable.bauhaus->keys_cnt > 0 &&
               (event->keyval == GDK_BackSpace || event->keyval == GDK_Delete))
       {
-        darktable.bauhaus->keys[--darktable.bauhaus->keys_cnt] = 0;
+        darktable.bauhaus->keys_cnt -= (darktable.bauhaus->keys+darktable.bauhaus->keys_cnt) -
+                                        g_utf8_prev_char(darktable.bauhaus->keys+darktable.bauhaus->keys_cnt);
+        darktable.bauhaus->keys[darktable.bauhaus->keys_cnt] = 0;
         gtk_widget_queue_draw(darktable.bauhaus->popup_area);
       }
       else if(darktable.bauhaus->keys_cnt > 0 && darktable.bauhaus->keys_cnt + 1 < 64 &&
