@@ -100,6 +100,7 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t
   pipe->backbuf_size = size;
   if(!dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, pipe->backbuf_size))
     return 0;
+  pipe->cache_obsolete = 0;
   pipe->backbuf = NULL;
   pipe->processing = 0;
   pipe->shutdown = 0;
@@ -1372,6 +1373,10 @@ restart:
 
   // image max is normalized before
   for(int k=0; k<3; k++) pipe->processed_maximum[k] = 1.0f; // dev->image->maximum;
+
+  // check if we should obsolete caches
+  if(pipe->cache_obsolete) dt_dev_pixelpipe_cache_flush(&(pipe->cache));
+  pipe->cache_obsolete = 0;
 
   // mask display off as a starting point
   pipe->mask_display = 0;

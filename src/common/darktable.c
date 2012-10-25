@@ -842,10 +842,11 @@ void dt_show_times(const dt_times_t *start, const char *prefix, const char *suff
 
 void dt_configure_defaults()
 {
+  const int atom_cores = dt_get_num_atom_cores();
   const int threads = dt_get_num_threads();
   const size_t mem = dt_get_total_memory();
   const int bits = (sizeof(void*) == 4) ? 32 : 64;
-  fprintf(stderr, "[defaults] found a %d-bit system with %zu kb ram and %d cores\n", bits, mem, threads);
+  fprintf(stderr, "[defaults] found a %d-bit system with %zu kb ram and %d cores (%d atom based)\n", bits, mem, threads, atom_cores);
   if(mem > (2u<<20) && threads > 4)
   {
     fprintf(stderr, "[defaults] setting high quality defaults\n");
@@ -854,13 +855,16 @@ void dt_configure_defaults()
     dt_conf_set_int("plugins/lighttable/thumbnail_width", 1300);
     dt_conf_set_int("plugins/lighttable/thumbnail_height", 1000);
   }
-  if(mem < (1u<<20) || threads <= 2 || bits < 64)
+  if(mem < (1u<<20) || threads <= 2 || bits < 64 || atom_cores > 0)
   {
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
     dt_conf_set_int("worker_threads", 1);
     dt_conf_set_int("cache_memory", 200u<<10);
+    dt_conf_set_int("host_memory_limit", 500);
+    dt_conf_set_int("singlebuffer_limit", 8);
     dt_conf_set_int("plugins/lighttable/thumbnail_width", 800);
     dt_conf_set_int("plugins/lighttable/thumbnail_height", 500);
+    dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");
   }
 }
 
