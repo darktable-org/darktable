@@ -4,7 +4,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-10-18 21:04+1300\n"
 "PO-Revision-Date: \n"
-"Last-Translator: Eugenio B <eugeniob@racine.ra.it>\n"
+"Last-Translator: EugenioB <eugeniob@racine.ra.it>\n"
 "Language-Team: \n"
 "Language: \n"
 "MIME-Version: 1.0\n"
@@ -3747,15 +3747,15 @@ msgstr "Gamma"
 
 #: ../src/iop/globaltonemap.c:89
 msgid "global tonemap"
-msgstr "mappa tonale globale"
+msgstr "mappatura tonale globale"
 
 #: ../src/iop/globaltonemap.c:562
 msgid "operator"
-msgstr "opratore"
+msgstr "operatore"
 
 #: ../src/iop/globaltonemap.c:568
 msgid "the global tonemap operator"
-msgstr "the global tonemap operator"
+msgstr "operatore della mappatura tonale globale"
 
 #: ../src/iop/globaltonemap.c:575
 msgid "bias"
@@ -3763,7 +3763,7 @@ msgstr "diagonale"
 
 #: ../src/iop/globaltonemap.c:576
 msgid "the bias for tonemapper controls the linearity, the higher the more details in blacks"
-msgstr "il bias per tonemapper controlla la linearità, più sono elevate più sono distinti i neri"
+msgstr "il bias per la mappatura tonale controlla la linearità, più sono elevate più sono distinti i neri"
 
 #: ../src/iop/globaltonemap.c:584
 msgid "target"
@@ -3771,7 +3771,7 @@ msgstr "destinazione"
 
 #: ../src/iop/globaltonemap.c:585
 msgid "the target light for tonemapper specified as cd/m2"
-msgstr "la luce obiettivo per tonemapper specificato come cd/m2"
+msgstr "la luce obiettivo per la mappatura tonale specificato come cd/m2"
 
 #: ../src/iop/graduatednd.c:69
 msgid "neutral grey ND2 (soft)"
@@ -3994,23 +3994,23 @@ msgstr "Inverti"
 #: ../src/iop/invert.c:66
 msgctxt "accel"
 msgid "pick color of film material from image"
-msgstr "Prendi colore della pellicola dall'immagine"
+msgstr "preleva il colore della pellicola dall'immagine"
 
 #: ../src/iop/invert.c:142
 msgid "select color of film material"
-msgstr "Seleziona il colore della pellicola"
+msgstr "seleziona il colore del supporto della pellicola"
 
 #: ../src/iop/invert.c:297
 msgid "color of film material"
-msgstr "Colore del materiale della pellicola"
+msgstr "colore supporto della pellicola"
 
 #: ../src/iop/invert.c:328
 msgid "pick color of film material from image"
-msgstr "Prendi il colore della pellicola dall'immagine"
+msgstr "preleva il colore della pellicola dall'immagine"
 
 #: ../src/iop/lens.c:48
 msgid "lens correction"
-msgstr "Correzione lente"
+msgstr "correzione lente"
 
 #: ../src/iop/lens.c:71
 #: ../src/iop/vignette.c:134
@@ -4149,7 +4149,7 @@ msgstr "Trova lente"
 
 #: ../src/iop/lens.c:1729
 msgid "corrections"
-msgstr "correzzioni"
+msgstr "correzioni"
 
 #: ../src/iop/lens.c:1731
 msgid "which corrections to apply"
@@ -4460,7 +4460,7 @@ msgstr "rosso & blu"
 
 #: ../src/iop/overexposed.c:423
 msgid "purple & green"
-msgstr "viola e Verde"
+msgstr "viola & verde"
 
 #: ../src/iop/overexposed.c:424
 msgid "select colors to indicate over/under exposure"
@@ -4602,11 +4602,11 @@ msgstr "Compresso"
 
 #: ../src/iop/shadhi.c:630
 msgid "shadows color adjustment"
-msgstr "regolazione del colore zone d'ombra"
+msgstr "regolaz.colore zone d'ombra"
 
 #: ../src/iop/shadhi.c:631
 msgid "highlights color adjustment"
-msgstr "regolazione del colore alteluci"
+msgstr "regolaz.colore alteluci"
 
 #: ../src/iop/shadhi.c:647
 msgid "correct shadows"
@@ -5400,7 +5400,7 @@ msgstr "Crea"
 
 #: ../src/libs/collect.c:118
 msgid "collect images"
-msgstr "Raggruppa immagini"
+msgstr "raccolta immagini"
 
 #: ../src/libs/collect.c:415
 msgid "search filmroll"
@@ -6004,7 +6004,7 @@ msgstr "Ripristina rotazione ai dati EXIF"
 
 #: ../src/libs/image.c:205
 msgid "group"
-msgstr "gruppo"
+msgstr "raggruppa"
 
 #: ../src/libs/image.c:207
 msgid "add selected images to expanded group or create a new one"
@@ -6176,7 +6176,7 @@ msgstr "Seleziona una cartella da importare come rullino"
 
 #: ../src/libs/keywords.c:60
 msgid "keywords"
-msgstr "parole chiave"
+msgstr "chiavi"
 
 #: ../src/libs/lib.c:189
 #, c-format
@@ -6535,7 +6535,7 @@ msgstr "Navigazione"
 
 #: ../src/libs/recentcollect.c:50
 msgid "recently used collections"
-msgstr "Collezioni usate recentemente"
+msgstr "raccolte usate recentemente"
 
 #: ../src/libs/recentcollect.c:149
 #, c-format
@@ -7188,11 +7188,11 @@ msgstr "Nessuno stile è stato ancora creato"
 
 #: ../src/views/darkroom.c:831
 msgid "quick access to presets of your favorites"
-msgstr "accesso rapido alle tue preimpostazioni preferite"
+msgstr "accesso rapido alle preimpostazioni preferite"
 
 #: ../src/views/darkroom.c:845
 msgid "quick access for applying any of your styles"
-msgstr "accesso rapido all'applicazione dei tuoi stili"
+msgstr "accesso rapido all'applicazione degli stili"
 
 #. Zoom shortcuts
 #: ../src/views/darkroom.c:1299
