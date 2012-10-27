@@ -1210,6 +1210,26 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_stroke (cr);
   }
 
+  //draw cropping window dimensions if first mouse button is pressed
+  if(darktable.control->button_down && darktable.control->button_down_which == 1)
+  {
+    char dimensions[16];
+    dimensions[0] = '\0';
+    cairo_text_extents_t extents;
+
+    int procw, proch;
+    dt_dev_get_processed_size(dev, &procw, &proch);
+    sprintf(dimensions, "%.0fx%.0f",
+            (float)procw * g->clip_w, (float)proch * g->clip_h);
+    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
+                           CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size(cr, 16);
+
+    cairo_text_extents (cr, dimensions, &extents);
+    cairo_move_to(cr, (g->clip_x + g->clip_w / 2) * wd - extents.width * .5f, (g->clip_y + g->clip_h/2) * ht);
+    cairo_show_text(cr, dimensions);
+  }
+
   // draw crop area guides
   float left, top, right, bottom, xThird, yThird;
   left = g->clip_x*wd;
@@ -1341,6 +1361,28 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_move_to (cr, bzx*wd, bzy*ht);
     cairo_line_to (cr, pzx*wd, pzy*ht);
     cairo_stroke (cr);
+
+    //show rotation angle
+    float dx = pzx*wd - bzx*wd, dy = pzy*ht - bzy*ht ;
+    if(dx < 0)
+    {
+      dx = -dx;
+      dy = -dy;
+    }
+    float angle = atan2f(dy, dx);
+    angle = angle * 180 / M_PI;
+    if (angle > 45.0) angle -= 90;
+    if (angle < -45.0) angle += 90;
+
+    char view_angle[16];
+    view_angle[0] = '\0';
+    sprintf(view_angle, "%.2f degrees", angle);
+    cairo_set_source_rgb(cr, .7, .7, .7);
+    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
+                           CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size(cr, 16);
+    cairo_move_to (cr, pzx*wd + 20, pzy*ht);
+    cairo_show_text(cr, view_angle);
   }
   else
   {
