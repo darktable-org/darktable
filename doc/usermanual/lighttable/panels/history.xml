@@ -36,7 +36,7 @@
 				</sect4>
 				<sect4><title>load sidecar file</title>
 					<para>Prompt a dialog box to allow you to select a .xmp file, thus loading 
-					an history stack that you will past (thanks to 'past' button) on images.
+					an history stack that you will paste (thanks to 'paste' button) on images.
 					</para>
 				</sect4>
 		</sect2>
