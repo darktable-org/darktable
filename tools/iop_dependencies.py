@@ -74,6 +74,10 @@ def add_edges(gr):
   gr.add_edge(('colorin', 'lens'))
   gr.add_edge(('colorin', 'profile_gamma'))
   gr.add_edge(('colorin', 'shrecovery'))
+
+  # very linear:
+  gr.add_edge(('basecurve', 'lens'))
+  gr.add_edge(('basecurve', 'exposure'))
   
   # flip is a distortion plugin, and as such has to go after spot removal
   # and lens correction, which depend on original input buffers.
