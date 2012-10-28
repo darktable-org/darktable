@@ -8,7 +8,7 @@
     <shortdescription>widget scale</shortdescription>
     <longdescription>scaling factor for bauhaus widgets, will affect font size</longdescription>
   </dtconfig>
-  <dtconfig prefs="core">
+  <dtconfig>
     <name>database</name>
     <type>string</type>
     <default>library.db</default>
@@ -52,7 +52,7 @@
   </dtconfig>
   <dtconfig prefs="core">
     <name>singlebuffer_limit</name>
-    <type>int</type>
+    <type min="2">int</type>
     <default>16</default>
     <shortdescription>minimum amount of memory (in MB) for a single buffer in tiling</shortdescription>
     <longdescription>if set to a positive, non-zero value this variable defines the minimum amount of memory (in MB) that tiling should take for a single image buffer. has precedence over heuristics based on host_memory_limit. needs a restart.</longdescription>
@@ -78,7 +78,7 @@
     <shortdescription>write sidecar file for each image</shortdescription>
     <longdescription>these redundant files can later be re-imported into a different database, preserving your changes to the image.</longdescription>
   </dtconfig>
-  <dtconfig prefs="core">
+  <dtconfig prefs="core" capability="opencl">
     <name>opencl</name>
     <type>bool</type>
     <default>true</default>
@@ -97,7 +97,7 @@
     <type>int</type>
     <default>768</default>
     <shortdescription>minmum amount of GPU memory (MB) required to activate opencl</shortdescription>
-    <longdescription>opencl will only be activated if your graphics card has at least this amount of memory. reducing the value will allow cards with less GPU memory to be used - but at the risk of lower system stability and occasional crashes. values below 256 will be treated as 256.</longdescription>
+    <longdescription>opencl will only be activated if your graphics card has at least this amount of memory. reducing the value will allow cards with less GPU memory to be used - but at the risk of lower system stability and occasional crashes. values below 200 will be treated as 200.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_size_roundup</name>

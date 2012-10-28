@@ -34,6 +34,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "PENTAX K-x",                   { 821548, 337357,  42923}, { 247818, 1042969, -218735}, { -4105, -293045, 1085129}, {792206, 821823, 668640}},
 
+  // Alessandro Miliucci, Wolf Faust IT8, direct sunlight, well lit
+  { "PENTAX K-r",                   { 960464, 390625,  16312}, { 295563, 1230850, -255936}, {-11536, -339279, 1276337}, {688797, 717697, 605698}},
+
   // Denis Cheremisov, CMP Digital Target 4, strobe, well lit
   { "PENTAX K-5",                   { 795456, 343674,  70389}, { 137650,  907654, -299805}, { 31097, -251328, 1054321}, {663452, 689972, 517853}},
 

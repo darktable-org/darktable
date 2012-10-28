@@ -144,7 +144,7 @@ RawDecoder* TiffParser::getDecoder() {
         mRootIFD = NULL;
         return new PefDecoder(root, mInput);
       }
-      if (!make.compare("Panasonic")) {
+      if (!make.compare("Panasonic") || !make.compare("LEICA")) {
         mRootIFD = NULL;
         return new Rw2Decoder(root, mInput);
       }

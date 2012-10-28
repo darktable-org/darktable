@@ -38,7 +38,7 @@ public:
 private:
   void initTable(uint32 huffSelect);
   int HuffDecodeNikon();
-  uint32 curve[0xffff];
+  ushort16 curve[0x8000];
   BitPumpMSB *bits;
 };
 

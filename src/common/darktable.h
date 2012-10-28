@@ -141,7 +141,8 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_PWSTORAGE = 64,
   DT_DEBUG_OPENCL = 128,
   DT_DEBUG_SQL = 256,
-  DT_DEBUG_MEMORY = 512
+  DT_DEBUG_MEMORY = 512,
+  DT_DEBUG_LIGHTTABLE = 1024
 }
 dt_debug_thread_t;
 
@@ -158,6 +159,7 @@ typedef struct darktable_t
   int32_t unmuted;
   GList                          *iop;
   GList                          *collection_listeners;
+  GList                          *capabilities;
   struct dt_conf_t               *conf;
   struct dt_develop_t            *develop;
   struct dt_lib_t                *lib;
@@ -180,6 +182,7 @@ typedef struct darktable_t
   struct dt_blendop_t            *blendop;
   dt_pthread_mutex_t db_insert;
   dt_pthread_mutex_t plugin_threadsafe;
+  dt_pthread_mutex_t capabilities_threadsafe;
   char *progname;
   char *datadir;
   char *plugindir;
@@ -205,6 +208,10 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...);
 void dt_gettime_t(char *datetime, time_t t);
 void dt_gettime(char *datetime);
 void *dt_alloc_align(size_t alignment, size_t size);
+int dt_capabilities_check(char *capability);
+void dt_capabilities_add(char *capability);
+void dt_capabilities_remove(char *capability);
+void dt_capabilities_cleanup();
 
 static inline double dt_get_wtime(void)
 {
@@ -330,6 +337,86 @@ static inline void dt_print_mem_usage()
           "unknown", (uint64_t)t_info.resident_size / 1024);
 #else
   fprintf(stderr, "dt_print_mem_usage() currently unsupported on this platform\n");
+#endif
+}
+
+static inline int
+dt_get_num_atom_cores()
+{
+#if defined(__linux__)
+  int count = 0;
+  char line[256];
+  FILE *f = fopen("/proc/cpuinfo", "r");
+  if (f)
+  {
+    while (!feof(f))
+    {
+      if (fgets(line, sizeof(line), f))
+      {
+        if (!strncmp(line, "model name", 10))
+        {
+          if (strstr(line, "Atom"))
+          {
+            count++;
+          }
+        }
+      }
+    }
+  }
+  return count;
+#elif defined(__DragonFly__) || \
+  defined(__FreeBSD__) || \
+  defined(__NetBSD__) || \
+  defined(__OpenBSD__)
+  int ret, hw_ncpu;
+  int mib[2] = { CTL_HW, HW_MODEL };
+  char *hw_model, *index;
+  size_t length;
+
+  /* Query hw.model to get the required buffer length and allocate the
+   * buffer. */
+  ret = sysctl(mib, 2, NULL, &length, NULL, 0);
+  if (ret != 0)
+  {
+    return 0;
+  }
+
+  hw_model = (char *)malloc(length + 1);
+  if (hw_model == NULL)
+  {
+    return 0;
+  }
+
+  /* Query hw.model again, this time with the allocated buffer. */
+  ret = sysctl(mib, 2, hw_model, &length, NULL, 0);
+  if (ret != 0)
+  {
+    free(hw_model);
+    return 0;
+  }
+  hw_model[length] = '\0';
+
+  /* Check if the processor model name contains "Atom". */
+  index = strstr(hw_model, "Atom");
+  free(hw_model);
+  if (index == NULL)
+  {
+    return 0;
+  }
+
+  /* Get the number of cores, using hw.ncpu sysctl. */
+  mib[1]  = HW_NCPU;
+  hw_ncpu = 0;
+  length  = sizeof(hw_ncpu);
+  ret = sysctl(mib, 2, &hw_ncpu, &length, NULL, 0);
+  if (ret != 0)
+  {
+    return 0;
+  }
+
+  return hw_ncpu;
+#else
+  return 0;
 #endif
 }
 

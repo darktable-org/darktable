@@ -366,35 +366,41 @@ gui_init (dt_lib_module_t *self)
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (d->duplicate), dt_conf_get_bool("ui_last/styles_create_duplicate"));
   g_object_set (d->duplicate, "tooltip-text", _("creates a duplicate of the image before applying style"), (char *)NULL);
   
-  GtkWidget *hbox=gtk_hbox_new (FALSE,5);
+  GtkWidget *hbox  = gtk_hbox_new(TRUE, 5);
+  GtkWidget *vbox1 = gtk_vbox_new(TRUE, 5);
+  GtkWidget *vbox2 = gtk_vbox_new(TRUE, 5);
+  gtk_box_pack_start(GTK_BOX (hbox), vbox1, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX (hbox), vbox2, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX (self->widget),hbox,TRUE,FALSE,0);
 
-  GtkWidget *widget=gtk_button_new_with_label(_("edit"));
+  // edit
+  GtkWidget *widget = gtk_button_new_with_label(_("edit"));
   d->edit_button = widget;
   g_signal_connect (widget, "clicked", G_CALLBACK(edit_clicked),d);
   g_object_set (widget, "tooltip-text", _("edit the selected style in list above"), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX (hbox),widget,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX (vbox1),widget,TRUE,TRUE,0);
 
+  // delete
   widget=gtk_button_new_with_label(_("delete"));
   d->delete_button = widget;
   g_signal_connect (widget, "clicked", G_CALLBACK(delete_clicked),d);
   g_object_set (widget, "tooltip-text", _("deletes the selected style in list above"), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX (hbox),widget,TRUE,TRUE,0);
-  gtk_box_pack_start(GTK_BOX (self->widget),hbox,TRUE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX (vbox2),widget,TRUE,TRUE,0);
   
-  hbox=gtk_hbox_new (FALSE,5);
-  // Export Button
-  GtkWidget *exportButton = gtk_button_new_with_label(_("export"));
-  d->export_button = exportButton;
-  g_object_set (exportButton, "tooltip-text", _("export the selected style into a style file"), (char *)NULL);
-  g_signal_connect (exportButton, "clicked", G_CALLBACK(export_clicked),d);
-  gtk_box_pack_start(GTK_BOX (hbox),exportButton,TRUE,TRUE,0);
-  // Import Button
+  // import button
   GtkWidget *importButton = gtk_button_new_with_label(C_("styles", "import"));
   d->import_button = importButton;
   g_object_set (importButton, "tooltip-text", _("import style from a style file"), (char *)NULL);
   g_signal_connect (importButton, "clicked", G_CALLBACK(import_clicked),d);
-  gtk_box_pack_start(GTK_BOX (hbox),importButton,TRUE,TRUE,0);
-  gtk_box_pack_start(GTK_BOX (self->widget),hbox,TRUE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX (vbox1),importButton,TRUE,TRUE,0);
+
+  // export button
+  GtkWidget *exportButton = gtk_button_new_with_label(_("export"));
+  d->export_button = exportButton;
+  g_object_set (exportButton, "tooltip-text", _("export the selected style into a style file"), (char *)NULL);
+  g_signal_connect (exportButton, "clicked", G_CALLBACK(export_clicked),d);
+  gtk_box_pack_start(GTK_BOX (vbox2),exportButton,TRUE,TRUE,0);
+
   // add entry completion
   GtkEntryCompletion *completion = gtk_entry_completion_new();
   gtk_entry_completion_set_model(completion, gtk_tree_view_get_model(GTK_TREE_VIEW(d->list)));

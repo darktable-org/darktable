@@ -697,7 +697,9 @@ static void save_account_info(dt_storage_facebook_gui_data_t *ui, FBAccountInfo 
   JsonNode *node = json_builder_get_root(builder);
   JsonGenerator *generator = json_generator_new();
   json_generator_set_root(generator, node);
+#if JSON_CHECK_VERSION(0, 14, 0)
   json_generator_set_pretty(generator, FALSE);
+#endif
   gchar *data = json_generator_to_data(generator, NULL);
 
   json_node_free(node);
@@ -1100,6 +1102,9 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   g_signal_connect(G_OBJECT(ui->comboBox_username), "changed", G_CALLBACK(ui_combo_username_changed), (gpointer)ui);
   g_signal_connect(G_OBJECT(ui->comboBox_album), "changed", G_CALLBACK(ui_combo_album_changed), (gpointer)ui);
 
+  g_object_unref(model_username);
+  g_object_unref(model_album);
+  g_object_unref(list_store);
 }
 
 /* destroy resources */

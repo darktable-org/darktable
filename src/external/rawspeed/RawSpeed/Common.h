@@ -42,11 +42,11 @@ void* _aligned_malloc(size_t bytes, size_t alignment);
 #define _aligned_free(a) do { free(a); } while (0)
 #ifndef MIN
 #define MIN(a, b)  lmin(a,b)
-typedef unsigned long long uint64;
 #endif
 #ifndef MAX
 #define MAX(a, b)  lmax(a,b)
 #endif
+typedef unsigned long long uint64;
 #ifndef __MINGW32__
 typedef char* LPCWSTR;
 #endif

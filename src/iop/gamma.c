@@ -161,6 +161,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   module->priority = 1000; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
+  module->default_enabled = 1;
   dt_iop_gamma_params_t tmp = (dt_iop_gamma_params_t)
   {
     1.0, 1.0

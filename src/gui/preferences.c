@@ -230,8 +230,8 @@ void dt_gui_preferences_show()
   darktable.control->accel_remap_path = NULL;
 
 //   init_tab_gui(notebook, &hardcoded_gui);
-  init_tab_gui(notebook, NULL);
-  init_tab_core(notebook, NULL);
+  init_tab_gui(_preferences_dialog, notebook, NULL);
+  init_tab_core(_preferences_dialog, notebook, NULL);
   init_tab_accels(notebook);
   init_tab_presets(notebook);
   gtk_widget_show_all(_preferences_dialog);

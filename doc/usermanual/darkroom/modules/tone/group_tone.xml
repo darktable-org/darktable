@@ -1,0 +1,13 @@
+<sect2 status="final">
+  <title>Tone group</title>
+  <para>This group contains the modules to work with the tone in the image, this means only changin the lightness
+  and leaving the color intact.
+  </para>
+  <xi:include href="filllight.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="levels.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="tonecurve.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="zonesystem.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="localcontrast.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="global_tonemap.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="tonemapping.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
+</sect2>

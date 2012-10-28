@@ -1,8 +1,14 @@
 <!ENTITY author_firstname "Henrik">
 <!ENTITY author_surname "Andersson">
-<!ENTITY chapter_overview SYSTEM "../overview/overview.xml">
-<!ENTITY chapter_lighttable SYSTEM "../lighttable/lighttable.xml">
-<!ENTITY chapter_darkroom SYSTEM "../darkroom/darkroom.xml">
 
-<!ENTITY addendum SYSTEM "../addendum/addendum.xml">
-<!ENTITY addendum_keyaccelerators SYSTEM "../addendum/keymappings.xml">
+<!-- Shared graphics -->
+<!ENTITY img_module_expander "images/darkroom_module_expander.png">
+<!ENTITY icon_module_presets "images/darkroom_module_icon_presets.png">
+<!ENTITY icon_module_enable "images/darkroom_module_icon_enable.png">
+<!ENTITY icon_module_reset "images/darkroom_module_icon_reset.png">
+<!ENTITY icon_module_eye "images/darkroom_module_icon_eye.png">
+<!ENTITY icon_module_mask "images/darkroom_module_icon_mask.png">
+<!ENTITY icon_module_picker "images/darkroom_module_icon_picker.png">
+<!ENTITY icon_module_overexposed "images/darkroom_module_icon_overexposed.png">
+<!ENTITY icon_preferences "images/darkroom_preferences.png">
+

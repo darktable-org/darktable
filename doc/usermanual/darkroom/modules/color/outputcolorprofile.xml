@@ -1,0 +1,56 @@
+<sect3 status="draft"><title>Output color profile</title>
+	<sect4><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>This module manages the output profile both for display and for export.					
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/outputcolorprofile.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+	</sect4>
+
+	<sect4><title>Usage</title>
+                <sect5><title>Output intent</title>
+          		<para>Sets the rendering intent for output/export. Please visit our documentation on "Input profile" for more details 
+		        on the available options for intent. You can easily override this setting whenever you do exports from lighttable mode.</para>
+                </sect5>
+                <sect5><title>Display intent</title>
+          		<para>Sets the rendering intent for the display. Please visit our documentation on "Input profile" for more details 
+		        on the available options for intent.</para>
+                </sect5>
+                <sect5><title>Output profile</title>
+          		<para>Sets the color profile for output/export. Profiles to be used is picked up from /usr/share/darktable/color/out and 
+                        $HOME/.config/darktable/color/out.</para>
+                </sect5>
+                <sect5><title>Softproof profile</title>
+          		<para>Sets the color profile for softproof. Profiles to be used is picked up from /usr/share/darktable/color/out and 
+                        $HOME/.config/darktable/color/out.</para>
+
+          		<para>Softproof is toggled on/off by pressing "s"; this function allows you to preview the image rendered using a 
+	        	printer profile, to see how colors will end up on the final print.</para>
+
+        		<para>Likewise Gamut Check is toggled on/off by pressing "g"; this function marks all pixels, which are out of gamut
+                        with respect to the selected softproof profile, by showing them in cyan. Softproof and Gamut Check are mutually exclusive modes.</para>
+
+                        <para>Softproof and Gamut Check can be activated at any place in darkroom mode. Only if module "Output color profile" is in
+                        focus, you will get the status displayed left below the center image. Especially for Softproof this may raise doubts,
+                        if this mode is still active or not. If in doubt press "g", which will switch to Gamut Check and will be 
+                        clearly discernible by cyan marked pixels. Press "g" again and you are back to normal display without Softproof 
+                        or Gamut Check.
+                        </para>  
+                </sect5>
+                <sect5><title>Display profile</title>
+          		<para>Sets the color profile for the display. Profiles to be used is picked up from /usr/share/darktable/color/out and 
+                        $HOME/.config/darktable/color/out. The additional option "system display profile" is taken directly from your system's
+                        color manager or from your X Server. When working with a calibrated display this is the preferred option to choose.</para>
+                </sect5>
+	</sect4>
+</sect3>

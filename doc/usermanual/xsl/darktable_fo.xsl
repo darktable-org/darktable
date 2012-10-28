@@ -72,13 +72,20 @@
 
   <xsl:attribute-set name="section.title.level4.properties">
     <xsl:attribute name="font-size">
+      <xsl:value-of select="$body.font.master * 1.1"/>
+      <xsl:text>pt</xsl:text>
+    </xsl:attribute>
+  </xsl:attribute-set>
+
+  <xsl:attribute-set name="section.title.level5.properties">
+    <xsl:attribute name="font-size">
       <xsl:value-of select="$body.font.master * 0.9"/>
       <xsl:text>pt</xsl:text>
     </xsl:attribute>  
      <xsl:attribute name="start-indent">0.25in</xsl:attribute>
   </xsl:attribute-set> 
 
-  <xsl:attribute-set name="section.title.level5.properties">
+  <xsl:attribute-set name="section.title.level6.properties">
     <xsl:attribute name="font-size">
       <xsl:value-of select="$body.font.master * 0.8"/>
       <xsl:text>pt</xsl:text>

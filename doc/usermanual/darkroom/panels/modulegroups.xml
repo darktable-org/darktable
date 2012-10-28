@@ -1,0 +1,38 @@
+	<sect2 status="draft"><title>Modulegroups</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>
+						  <para>The modulegroups button bar give you quick access to the set of modules available in darktable, each one categorized into groups, see the specification below.</para>
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/images/panel_modulegroups.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+		<para>
+		  Here follows descriptions of the module groups available:
+		</para>
+		<para>
+		  <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+		    <colspec colwidth='20%'/>
+		    <colspec colwidth='80%'/>
+		    <tbody>
+		      <row><entry>Active</entry><entry>Shows the list of current active modules for the processed image</entry></row>
+		      <row><entry>Favorites</entry><entry>Modules you have marked as favorites using "more modules" will show up here</entry></row>
+		      <row><entry>Basic</entry><entry>The basic group of modules that is frequently used when processing raw, such as exposure, temperature etc.</entry></row>
+		      <row><entry>Tone</entry><entry>These modules does only work with the image tone, like levels, tonemap etc.</entry></row>
+		      <row><entry>Color</entry><entry>Modules that just affects colors, such as color correction, vibrance etc.</entry></row>
+		      <row><entry>Correction</entry><entry>Modules that makes corrections to the image, denoise, ca correction etc. </entry></row>
+		      <row><entry>Effect</entry><entry>Modules with a more artistic output, vignetting, softening etc.</entry></row>
+
+		    </tbody>
+		  </tgroup>
+		  </informaltable>
+		</para>
+	</sect2>
+	

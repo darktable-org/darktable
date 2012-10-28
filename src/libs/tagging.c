@@ -404,6 +404,7 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(d->current),
                               GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(d->current, GTK_TREE_MODEL(liststore));
+  g_object_unref(liststore);
   g_object_set(G_OBJECT(d->current), "tooltip-text", _("attached tags,\ndoubleclick to detach"), (char *)NULL);
   g_signal_connect(G_OBJECT (d->current), "row-activated", G_CALLBACK (detach_activated), (gpointer)self);
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->current));
@@ -460,6 +461,7 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(d->related),
                               GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(d->related, GTK_TREE_MODEL(liststore));
+  g_object_unref(liststore);
   g_object_set(G_OBJECT(d->related), "tooltip-text", _("related tags,\ndoubleclick to attach"), (char *)NULL);
   g_signal_connect(G_OBJECT (d->related), "row-activated", G_CALLBACK (attach_activated), (gpointer)self);
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->related));

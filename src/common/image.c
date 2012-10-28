@@ -429,12 +429,14 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   }
   sqlite3_finalize(stmt);
 
+  // also need to set the no-legacy bit, to make sure we get the right presets (new ones)
   uint32_t flags = dt_conf_get_int("ui_last/import_initial_rating");
   if(flags > 5)
   {
     flags = 1;
     dt_conf_set_int("ui_last/import_initial_rating", 1);
   }
+  flags |= DT_IMAGE_NO_LEGACY_PRESETS;
   // insert dummy image entry in database
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "insert into images (id, film_id, filename, caption, description, "
@@ -857,6 +859,7 @@ void dt_image_synch_all_xmp(const gchar *pathname)
   }
 }
 
+#if GLIB_CHECK_VERSION (2, 26, 0)
 void dt_image_add_time_offset(const int imgid, const long int offset)
 {
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
@@ -913,6 +916,7 @@ void dt_image_add_time_offset(const int imgid, const long int offset)
   dt_image_cache_read_release(darktable.image_cache, cimg);
   g_free(datetime);
 }
+#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

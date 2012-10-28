@@ -86,6 +86,8 @@ typedef struct dt_dev_pixelpipe_t
 {
   // store history/zoom caches
   dt_dev_pixelpipe_cache_t cache;
+  // set to non-zero in order to obsolete old cache entries on next pixelpipe run
+  int cache_obsolete;
   // input buffer
   float *input;
   // width and height of input buffer

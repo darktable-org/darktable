@@ -6603,7 +6603,10 @@ msgstr "* contribuidores*"
 
 #: ../src/libs/tools/darktable.c:227
 msgid "translator-credits"
-msgstr "creditos-traductores"
+msgstr ""
+"Jose Carlos Garcia Sogo\n"
+"\n"
+"Tatica Leandro"
 
 #: ../src/libs/tools/filmstrip.c:114
 msgid "filmstrip"

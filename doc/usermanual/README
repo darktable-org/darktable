@@ -1,5 +1,9 @@
 All invocations of 'make' have to be done inside of your build/ dir after running cmake!
 
+Building manual
+---------------------------------------------------------
+To build the usermanual you need to install the following tools:
+  xsltproc, fop and gnome-doc-utils (for xml2po)
 
 
 Writing guidelines
@@ -51,6 +55,8 @@ To add you language just simple edit po/LINGUAS and add your language code.
 make update-template updates the pot file.
 
 For updating po file from the template just enter the po directory and execute 'make update-usermanual-nl'
+
+
 
 
 

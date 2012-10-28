@@ -1,0 +1,9 @@
+<sect1><title>Panels</title>
+	<para>This section contains documentation for panels that are specific to the
+	map view.
+	</para>
+
+	<!-- Right side -->
+	<xi:include href="find_location.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+	<xi:include href="map_settings.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+</sect1>

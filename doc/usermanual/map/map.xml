@@ -1,0 +1,58 @@
+<chapter>
+<chapterinfo>
+<keywordset>
+  <keyword>geotagging</keyword>
+  <keyword>map</keyword>
+  <keyword>view</keyword>
+</keywordset>
+</chapterinfo>
+<title>Map</title>
+<para>The Map view is were you geotag your images.</para>
+<screenshot>
+	<screeninfo>The map view</screeninfo>
+	<graphic fileref="images/map_view.png" scalefit="1" width="80%"></graphic>
+</screenshot>
+
+<sect1>
+  <title>Overview</title>
+  <para>Map view will show you a world map and pin images that is geotagged into the map, there are
+  several processes to get this happen, some cameras have an internal gps that tags images with location
+  data such as smartphones, other cameras such as DSLR needs some additional GPS component to do this.
+  </para>
+
+  <para>Darktable however supports GPX tracks data to be applied onto images, this mean as while you are
+  on a walk and uses the right app on your smartphone that have GPS functionality thats records your walking
+  track, and whil on that track you are taking images with your camera, the timestamp of images taken can be
+  matched into the track data log and therefor a location can be estimated.
+  </para>
+
+
+  <sect2 status="final">
+    <title>Map</title>
+    <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+      <colspec colwidth='70%'/>
+      <colspec colwidth='5cm'/>
+      <tbody>
+	<row>						
+	  <entry>In the center of the map view you will see a map .).
+	  </entry>
+	  <entry>
+	    <graphic fileref="images/tethering_thumb.png" scalefit="1" width="80%" align="center" />
+	  </entry>
+	</row>
+      </tbody>
+    </tgroup>
+    </informaltable>
+    
+    <para>more information about map view</para>    
+    <para>another para for the map view, now when user read all this, he wants to get into panels
+    and see whats features is hiding behind this map view.</para>
+
+  </sect2>
+
+</sect1>
+
+<!-- Panels -->
+<xi:include href="panels/panels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+</chapter>

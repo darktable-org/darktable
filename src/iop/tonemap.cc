@@ -264,11 +264,6 @@ extern "C"
 
   void reload_defaults(dt_iop_module_t *module)
   {
-    if(dt_image_is_hdr(&module->dev->image_storage))
-      module->default_enabled = 1;
-    else
-      module->default_enabled = 0;
-
     dt_iop_tonemapping_params_t tmp = (dt_iop_tonemapping_params_t)
     {
       2.5,30
@@ -282,7 +277,7 @@ extern "C"
     // module->data = malloc(sizeof(dt_iop_tonemapping_data_t));
     module->params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
     module->default_params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
-    module->default_enabled = 1;
+    module->default_enabled = 0;
   module->priority = 153; // module order created by iop_dependencies.py, do not edit!
     module->params_size = sizeof(dt_iop_tonemapping_params_t);
     module->gui_data = NULL;

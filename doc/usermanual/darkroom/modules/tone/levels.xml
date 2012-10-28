@@ -1,0 +1,52 @@
+<sect3 status="draft"><title>Levels</title>
+	<sect4><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>A level tool that most of you will recognize how to use from other imaging softwares.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/levels.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect4>
+
+	<sect4><title>Usage</title>
+		<para>The levels tool shows the histogram of the image an displays three bars with handles for you to drag and correct
+		the tone in the image, bars represent black, middle gray and white.
+		</para>
+	</sect4>
+<!--	
+	<sect4><title>Examples</title>
+		<para>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='30%'/>
+					<colspec colwidth='70%'/>
+					<tbody>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/soften_ex1.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry><para>This is the original image, use it as reference for the changes below...</para></entry>
+						</row>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/soften_ex2.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry>
+								<para>EXAMPLE 2 DESCRIPTION
+								</para>
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</para>	
+	</sect4>
+-->	
+</sect3>

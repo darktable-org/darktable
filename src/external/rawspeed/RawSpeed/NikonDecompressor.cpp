@@ -26,7 +26,7 @@ namespace RawSpeed {
 
 NikonDecompressor::NikonDecompressor(FileMap* file, RawImage img) :
     LJpegDecompressor(file, img) {
-  for (uint32 i = 0; i < 0xffff ; i++) {
+  for (uint32 i = 0; i < 0x8000 ; i++) {
     curve[i]  = i;
   }
   bits = 0;
@@ -94,11 +94,14 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
     }
     _max = csize;
   }
-  while (curve[_max-2] == curve[_max-1]) _max--;
   initTable(huffSelect);
 
   mRaw->whitePoint = curve[_max-1];
   mRaw->blackLevel = curve[0];
+
+  ushort16 top = mRaw->whitePoint;
+  for (int i = _max; i < 0x8000; i++)
+    curve[i] = top;
 
   uint32 x, y;
   bits = new BitPumpMSB(mFile->getData(offset), size);
@@ -119,12 +122,12 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
     pUp2[y&1] += HuffDecodeNikon();
     pLeft1 = pUp1[y&1];
     pLeft2 = pUp2[y&1];
-    dest[0] = curve[MIN(_max-1, MAX(0,pLeft1))] | (curve[MIN(_max-1, MAX(0,pLeft2))] << 16);
+    dest[0] = curve[pLeft1&0x7fff] | ((uint32)curve[pLeft2&0x7fff] << 16);
     for (x = 1; x < cw; x++) {
       bits->checkPos();
       pLeft1 += HuffDecodeNikon();
       pLeft2 += HuffDecodeNikon();
-      dest[x] =  curve[MIN(_max-1, MAX(0,pLeft1))] | (curve[MIN(_max-1, MAX(0,pLeft2))] << 16);
+      dest[x] = curve[pLeft1&0x7fff] | ((uint32)curve[pLeft2&0x7fff] << 16);
     }
   }
 }

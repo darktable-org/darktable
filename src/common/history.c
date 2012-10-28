@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2010 henrik andersson,
-    copyright (c) 2011 johannes hanika
+    copyright (c) 2011-2012 johannes hanika
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +29,19 @@
 #include "common/tags.h"
 #include "common/utility.h"
 
+static void
+remove_preset_flag(const int imgid)
+{
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+  dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
+
+  // clear flag
+  image->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
+
+  // write through to sql+xmp
+  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_read_release(darktable.image_cache, cimg);
+}
 
 void dt_history_delete_on_image(int32_t imgid)
 {
@@ -37,9 +50,7 @@ void dt_history_delete_on_image(int32_t imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
-
-  dt_image_t tmp;
-  dt_image_init (&tmp);
+  remove_preset_flag(imgid);
 
   /* if current image in develop reload history */
   if (dt_dev_is_current_image (darktable.develop, imgid))
@@ -49,8 +60,7 @@ void dt_history_delete_on_image(int32_t imgid)
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
 
   /* remove darktable|style|* tags */
-  dt_tag_detach_by_string("darktable|style%",imgid);
-
+  dt_tag_detach_by_string("darktable|style%", imgid);
 }
 
 void

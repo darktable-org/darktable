@@ -44,101 +44,15 @@
 
 
 </sect1>
-<sect1><title>Panels</title>
-	<sect2 status="draft"><title>Navigation</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
-				<tbody>
-					<row>						
-						<entry>This panels shows the whole image and a rectangle is showing the current zoom view that  you see, you can move this rectangle to 
-								pan around in same zoomlevel.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/images/panel_navigation.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect2>
-	<sect2 status="final"><title>Snapshots</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
-				<tbody>
-					<row>						
-						<entry>You can take a snapshot of what is displayed in the center view; 
-							this snapshot can then be selected and is overlayed in the current center view to help you with a side by side comparasion 
-							(left: snapshot, right: active) when you are tuning parameters of a module. 
-							In the active view, history remains usable in order to compare with the snapshot.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/images/panel_snapshots.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect2>
-	<sect2 status="draft"><title>Metadata</title>
-		<para>Shows the metadata for an image, same as in lighttable mode.
-		</para>
-	</sect2>
-	<sect2 status="draft"><title>History</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
-				<tbody>
-					<row>						
-						<entry>
-						<para>The historystack lists every change of state (activate/de-activated) for all modules.
-            					Here you can select a point in stack to return to that point of development history.
-            					If you then activate a new module, all modules above the current point will be discarded.
-						</para>
-						<para>
-            					Hitting 'compress historystack' generates the shortest historystack that produces the
-            					current image, i.e. suppressing all de-activated modules.
-						</para>
-						<para>The button to the right lets you create a new styles by poping-up a new window.
-						Use the first line to name your style, the second to add a searchable description.
-						The "advanced presets" allows you chose which modules are to be taken into account for the styles.
-						</para>
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/images/panel_history.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect2>
-	<sect2 status="draft"><title>Histogram</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
-				<tbody>
-					<row>						
-						<entry>Show a logarithmic histogram of the developed image; you can change exposure by left mouse click in the right side of histogram and drag 
-								right for increase or left to decrease the exposure. The same goes for the black level but you left click in the left part of histogram.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/images/panel_histogram.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect2>
-</sect1>
-		
 
-&darkroom_modules;
 
-<sect1><title>Examples</title>
-&darkroom_example_crossprocessing;
-&darkroom_example_cyantone;
-&darkroom_example_blackandwhite;
-</sect1>
+<!-- Panels -->
+<xi:include href="panels/panels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Modules -->
+<xi:include href="modules/modules.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Examples -->
+<xi:include href="examples/examples.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 </chapter>

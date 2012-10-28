@@ -1,0 +1,73 @@
+<sect3 status="draft"><title>Watermark</title>
+	<sect4><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry><para>The watermark module provides a way to render an vector-based overlay onto your image.
+									Watermarks are standard SVG documents and can be designed using Inkscape. The SVG 
+									processor of darktable also substitutes strings within the SVG document which gives
+									the oppurtunity to include image dependent information in the watermark such as aperture, 
+									exposure time and other metadata.</para>
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/watermark.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+		<para>User-designed watermarks are placed into the directory ~/.config/darktable/watermarks;
+		once in place, use the reload button at the right of the watermark file name to update the list 
+		of available watermarks to use.
+		</para>
+
+		<para>
+		  Here follows a list of available variable strings that is supported for substitution within
+		  the svg document.
+		  <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0"><tbody>
+		    <row> <entry>$(DARKTABLE.NAME)</entry><entry><para>The application name</para></entry></row>
+		    <row> <entry>$(DARKTABLE.VERSION)</entry><entry><para>The version of darktable</para></entry></row>
+		    <row> <entry>$(IMAGE.ID)</entry><entry><para>The uniq image id within current library</para></entry></row>
+		    <row> <entry>$(IMAGE.FILENAME)</entry><entry><para>The iamge filename</para></entry></row>
+		    <row> <entry>$(IMAGE.EXIF)</entry><entry><para>The image exif string</para></entry></row>
+		    <row> <entry>$(EXIF.DATE)</entry><entry><para>The image date</para></entry></row>								    
+		    <row> <entry>$(EXIF.MAKER)</entry><entry><para>The maker of camera model</para></entry></row>
+		    <row> <entry>$(EXIF.MODEL)</entry><entry><para>The camera model</para></entry></row>
+		    <row> <entry>$(EXIF.LENS)</entry><entry><para>The specific lens used</para></entry></row>
+		    <row> <entry>$(XMP.DC.CREATOR)</entry><entry><para>The creator string</para></entry></row>
+		    <row> <entry>$(XMP.DC.PUBLISHER)</entry><entry><para>The publisher string</para></entry></row>
+		    <row> <entry>$(XMP.DC.TITLE)</entry><entry><para>The title of the image</para></entry></row>
+		    <row> <entry>$(XMP.DC.DESCRIPTION)</entry><entry><para>The description of the image</para></entry></row>
+		    <row> <entry>$(XMP.DC.RIGHTS)</entry><entry><para>The rights assigned to the image</para></entry></row>
+		  </tbody></tgroup></informaltable>  
+		</para>
+		
+	</sect4>
+
+	<sect4><title>Usage</title>
+		<para>Watermark module does </para>
+		<sect5><title>marker</title>
+			<para>Choose the watermark of interest, use the reload button next to the combobox to update list
+				with newly added watermarks.
+			</para>
+		</sect5>
+		<sect5><title>opacity</title>
+			<para>Set the opacity of the render of watermark.</para>
+		</sect5>
+		<sect5><title>scale</title>
+			<para>Scale the watermark pixelindependent.</para>
+		</sect5>
+		<sect5><title>alignment</title>
+			<para>Use these controls to align the watermark to any edge or center of the image.</para>
+		</sect5>
+		<sect5><title>x offset</title>
+			<para>Pixel-independent offset realtive to the choice of alignment on x-axis.</para>
+		</sect5>
+		<sect5><title>y offset</title>
+			<para>Pixel-independent offset relative to the choice of alignment on y-axis.</para>
+		</sect5>
+	</sect4>
+</sect3>

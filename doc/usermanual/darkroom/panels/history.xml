@@ -1,0 +1,28 @@
+	<sect2 status="draft"><title>History</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>
+						<para>The historystack lists every change of state (activate/de-activated) for all modules.
+            					Here you can select a point in stack to return to that point of development history.
+            					If you then activate a new module, all modules above the current point will be discarded.
+						</para>
+						<para>
+            					Hitting 'compress historystack' generates the shortest historystack that produces the
+            					current image, i.e. suppressing all de-activated modules.
+						</para>
+						<para>The button to the right lets you create a new styles by poping-up a new window.
+						Use the first line to name your style, the second to add a searchable description.
+						The "advanced presets" allows you chose which modules are to be taken into account for the styles.
+						</para>
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/images/panel_history.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect2>

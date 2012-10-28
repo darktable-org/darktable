@@ -1,0 +1,16 @@
+	<sect2 status="draft"><title>Navigation</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>The navigation panels shows a full preview of your image image the current viewport of zoom, drag the rectangle around to pan the zoomed in view.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/images/panel_navigation.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect2>

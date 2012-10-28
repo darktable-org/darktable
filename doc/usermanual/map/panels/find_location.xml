@@ -1,0 +1,20 @@
+<sect2 status="draft">
+  <title>Find location</title>
+  <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth='70%'/>
+    <colspec colwidth='30%'/>
+    <tbody>
+      <row>						
+	<entry>
+	  <para>Use this modules to search for a place on map, you need to be connected to internet to use this feature.</para>
+	  <para>To use, just name a place and hit enter and a list of results will be shown, click on an item in result
+	  and the map will zoom into the place and you can start drop images into that location for geotagging.</para>
+	</entry>
+	<entry>
+	  <graphic fileref="map/images/find_location.png" scalefit="1" width="80%" align="center" />
+	</entry>
+      </row>
+    </tbody>
+  </tgroup>
+  </informaltable>
+</sect2>
