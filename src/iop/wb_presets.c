@@ -1588,6 +1588,13 @@ const wb_data wb_preset[] =
   { "NIKON", "COOLPIX P7100", Flash, 0,		{ 2.1349, 1, 1.6579, 0 } },
   { "NIKON", "COOLPIX P7100", Flash, 6,		{ 1.9629, 1, 1.8534, 0 } },
 
+  { "NIKON", "1 V1", Incandescent, 0,		{ 1.210938, 1, 2.308594, 0 } },
+  { "NIKON", "1 V1", CoolWhiteFluorescent, 0,	{ 1.6875, 1, 2.199219, 0 } },
+  { "NIKON", "1 V1", DirectSunlight, 0,		{ 1.828125, 1, 1.550781, 0 } },
+  { "NIKON", "1 V1", Flash, 0,			{ 2.101563, 1, 1.335938, 0 } },
+  { "NIKON", "1 V1", Cloudy, 0,			{ 1.960938, 1, 1.40625, 0 } },
+  { "NIKON", "1 V1", Shade, 0,			{ 2.257813, 1, 1.277344, 0 } },
+
   { "NIKON", "D1", Incandescent, -3,		{ 1, 1.439891, 2.125769, 0 } },
   { "NIKON", "D1", Incandescent, 0,		{ 1, 1.582583, 2.556096, 0 } },
   { "NIKON", "D1", Incandescent, 3,		{ 1, 1.745033, 3.044175, 0 } },
