@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-20 23:43+0200\n"
-"PO-Revision-Date: 2012-10-21 00:00+0100\n"
+"POT-Creation-Date: 2012-10-28 09:34+0100\n"
+"PO-Revision-Date: 2012-10-28 09:35+0100\n"
 "Last-Translator: Olivier TRIBOUT <olivier.tribout@noos.fr>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -480,7 +480,7 @@ msgstr "il est nécessaire de copier le développement d'une image avant de le c
 #: ../src/common/history.c:176
 #: ../src/common/history.c:188
 #: ../src/common/styles.c:418
-#: ../src/develop/develop.c:918
+#: ../src/develop/develop.c:940
 #: ../src/libs/history.c:151
 #: ../src/libs/live_view.c:406
 msgid "on"
@@ -489,8 +489,8 @@ msgstr "activé"
 #: ../src/common/history.c:176
 #: ../src/common/history.c:188
 #: ../src/common/styles.c:418
-#: ../src/develop/blend_gui.c:936
-#: ../src/develop/develop.c:918
+#: ../src/develop/blend_gui.c:926
+#: ../src/develop/develop.c:940
 #: ../src/iop/demosaic.c:1315
 #: ../src/libs/history.c:151
 #: ../src/libs/live_view.c:405
@@ -561,8 +561,8 @@ msgstr "le style '%s' a été importé"
 
 #: ../src/common/variables.c:217
 #: ../src/iop/clipping.c:1028
-#: ../src/iop/clipping.c:1083
-#: ../src/iop/clipping.c:1095
+#: ../src/iop/clipping.c:1084
+#: ../src/iop/clipping.c:1096
 #: ../src/iop/lens.c:1620
 #: ../src/libs/live_view.c:324
 #: ../src/libs/live_view.c:336
@@ -573,7 +573,7 @@ msgstr "sans"
 
 #: ../src/control/control.c:1313
 #: ../src/control/control.c:1316
-msgid "working..."
+msgid "working.."
 msgstr "en cours..."
 
 #: ../src/control/control.c:1397
@@ -808,83 +808,83 @@ msgstr[1] "ajout du décalage horaire à %d images"
 msgid "added time offset to %d image(s)"
 msgstr "décalage horaire ajouté à %d image(s)"
 
-#: ../src/develop/blend_gui.c:671
+#: ../src/develop/blend_gui.c:661
 msgid "sliders for L channel"
 msgstr "conditions de fusion sur le canal L"
 
-#: ../src/develop/blend_gui.c:671
+#: ../src/develop/blend_gui.c:661
 msgid "sliders for a channel"
 msgstr "conditions de fusion sur le canal a"
 
-#: ../src/develop/blend_gui.c:671
+#: ../src/develop/blend_gui.c:661
 msgid "sliders for b channel"
 msgstr "conditions de fusion sur le canal b"
 
-#: ../src/develop/blend_gui.c:671
+#: ../src/develop/blend_gui.c:661
 msgid "sliders for chroma channel (of LCh)"
 msgstr "conditions de fusion sur le canal de chromaticité C (de LCh)"
 
-#: ../src/develop/blend_gui.c:671
+#: ../src/develop/blend_gui.c:661
 msgid "sliders for hue channel (of LCh)"
 msgstr "conditions de fusion sur le canal de teinte h (de LCh)"
 
-#: ../src/develop/blend_gui.c:672
+#: ../src/develop/blend_gui.c:662
 msgid " g "
 msgstr " g"
 
-#: ../src/develop/blend_gui.c:672
+#: ../src/develop/blend_gui.c:662
 msgid " R "
 msgstr " R"
 
-#: ../src/develop/blend_gui.c:672
+#: ../src/develop/blend_gui.c:662
 msgid " G "
 msgstr " V"
 
-#: ../src/develop/blend_gui.c:672
+#: ../src/develop/blend_gui.c:662
 msgid " B "
 msgstr " B"
 
-#: ../src/develop/blend_gui.c:672
+#: ../src/develop/blend_gui.c:662
 msgid " H "
 msgstr " H"
 
-#: ../src/develop/blend_gui.c:672
+#: ../src/develop/blend_gui.c:662
 msgid " S "
 msgstr " S"
 
-#: ../src/develop/blend_gui.c:672
+#: ../src/develop/blend_gui.c:662
 msgid " L "
 msgstr " L"
 
-#: ../src/develop/blend_gui.c:673
+#: ../src/develop/blend_gui.c:663
 msgid "sliders for gray value"
 msgstr "conditions de fusion sur le canal gris"
 
-#: ../src/develop/blend_gui.c:673
+#: ../src/develop/blend_gui.c:663
 msgid "sliders for red channel"
 msgstr "conditions de fusion sur le canal rouge"
 
-#: ../src/develop/blend_gui.c:673
+#: ../src/develop/blend_gui.c:663
 msgid "sliders for green channel"
 msgstr "conditions de fusion sur le canal vert"
 
-#: ../src/develop/blend_gui.c:673
+#: ../src/develop/blend_gui.c:663
 msgid "sliders for blue channel"
 msgstr "conditions de fusion sur le canal bleu"
 
-#: ../src/develop/blend_gui.c:674
+#: ../src/develop/blend_gui.c:664
 msgid "sliders for hue channel (of HSL)"
 msgstr "conditions de fusion sur le canal de teinte h (de HSL)"
 
-#: ../src/develop/blend_gui.c:674
+#: ../src/develop/blend_gui.c:664
 msgid "sliders for chroma channel (of HSL)"
 msgstr "conditions de fusion sur le canal de saturation (de HSL)"
 
-#: ../src/develop/blend_gui.c:674
+#: ../src/develop/blend_gui.c:664
 msgid "sliders for value channel (of HSL)"
 msgstr "conditions de fusion sur le canal de valeur L (de HSL)"
 
-#: ../src/develop/blend_gui.c:677
+#: ../src/develop/blend_gui.c:667
 msgid ""
 "adjustment based on input received by this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -896,7 +896,7 @@ msgstr ""
 "* intervalle à l’extérieur des marqueurs externes (triangles vides du bas) : pas de fusion\n"
 "* intervalle entre 2 marqueurs adjacents interne/externe : fusion progressive"
 
-#: ../src/develop/blend_gui.c:679
+#: ../src/develop/blend_gui.c:669
 msgid ""
 "adjustment based on unblended output of this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -908,139 +908,139 @@ msgstr ""
 "* intervalle à l’extérieur des marqueurs externes (triangles vides du bas) : pas de fusion\n"
 "* intervalle entre 2 marqueurs adjacents interne/externe : fusion progressive"
 
-#: ../src/develop/blend_gui.c:785
+#: ../src/develop/blend_gui.c:775
 msgid "blend"
 msgstr "fusion"
 
-#: ../src/develop/blend_gui.c:786
+#: ../src/develop/blend_gui.c:776
 msgid "uniformly"
 msgstr "uniforme"
 
-#: ../src/develop/blend_gui.c:787
+#: ../src/develop/blend_gui.c:777
 msgid "only, if.."
 msgstr "seulement si..."
 
-#: ../src/develop/blend_gui.c:805
+#: ../src/develop/blend_gui.c:795
 #: ../src/iop/colorzones.c:942
 #: ../src/iop/tonecurve.c:500
 msgid "pick gui color from image"
 msgstr "choisit une couleur dans l'image"
 
-#: ../src/develop/blend_gui.c:808
+#: ../src/develop/blend_gui.c:798
 msgid "display mask"
 msgstr "affiche le masque"
 
-#: ../src/develop/blend_gui.c:811
+#: ../src/develop/blend_gui.c:801
 msgid "reset blend mask settings"
 msgstr "réinitialise les paramètres de fusion conditionnelle"
 
-#: ../src/develop/blend_gui.c:814
+#: ../src/develop/blend_gui.c:804
 msgid "temporarily switch off blend mask. only for module in focus."
 msgstr "désactive temporairement le masque de fusion conditionnelle. uniquement pour le module actif."
 
-#: ../src/develop/blend_gui.c:826
-#: ../src/develop/blend_gui.c:829
+#: ../src/develop/blend_gui.c:816
+#: ../src/develop/blend_gui.c:819
 msgid "toggle polarity. best seen by enabling 'display mask'"
 msgstr "inverse le masque"
 
-#: ../src/develop/blend_gui.c:838
+#: ../src/develop/blend_gui.c:828
 msgid "output"
 msgstr "sortie"
 
-#: ../src/develop/blend_gui.c:849
+#: ../src/develop/blend_gui.c:839
 msgid "input"
 msgstr "entrée"
 
-#: ../src/develop/blend_gui.c:861
+#: ../src/develop/blend_gui.c:851
 msgid "mask blur"
 msgstr "masque d'adoucissement"
 
-#: ../src/develop/blend_gui.c:864
+#: ../src/develop/blend_gui.c:854
 msgid "enable conditional blending"
 msgstr "active la fusion conditionnelle"
 
-#: ../src/develop/blend_gui.c:865
-#: ../src/develop/blend_gui.c:866
+#: ../src/develop/blend_gui.c:855
+#: ../src/develop/blend_gui.c:856
 msgid "double click to reset"
 msgstr "double-cliquer pour réinitialiser"
 
-#: ../src/develop/blend_gui.c:869
+#: ../src/develop/blend_gui.c:859
 msgid "radius for gaussian blur of blend mask"
 msgstr "rayon du flou pour le masque d'adoucissement"
 
-#: ../src/develop/blend_gui.c:938
+#: ../src/develop/blend_gui.c:928
 #: ../src/libs/live_view.c:377
 msgid "normal"
 msgstr "normal"
 
-#: ../src/develop/blend_gui.c:940
+#: ../src/develop/blend_gui.c:930
 msgid "inverse"
 msgstr "inverser"
 
-#: ../src/develop/blend_gui.c:942
+#: ../src/develop/blend_gui.c:932
 #: ../src/libs/live_view.c:386
 msgid "lighten"
 msgstr "éclaircir"
 
-#: ../src/develop/blend_gui.c:944
+#: ../src/develop/blend_gui.c:934
 #: ../src/libs/live_view.c:385
 msgid "darken"
 msgstr "assombrir"
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:936
 #: ../src/libs/live_view.c:382
 msgid "multiply"
 msgstr "multiplier"
 
-#: ../src/develop/blend_gui.c:948
+#: ../src/develop/blend_gui.c:938
 msgid "average"
 msgstr "moyenne"
 
-#: ../src/develop/blend_gui.c:950
+#: ../src/develop/blend_gui.c:940
 msgid "addition"
 msgstr "addition"
 
-#: ../src/develop/blend_gui.c:952
+#: ../src/develop/blend_gui.c:942
 msgid "subtract"
 msgstr "soustraire"
 
-#: ../src/develop/blend_gui.c:954
+#: ../src/develop/blend_gui.c:944
 #: ../src/libs/live_view.c:391
 msgid "difference"
 msgstr "différence"
 
-#: ../src/develop/blend_gui.c:956
+#: ../src/develop/blend_gui.c:946
 #: ../src/libs/live_view.c:383
 msgid "screen"
 msgstr "écran"
 
-#: ../src/develop/blend_gui.c:958
+#: ../src/develop/blend_gui.c:948
 #: ../src/libs/live_view.c:353
 #: ../src/libs/live_view.c:384
 msgid "overlay"
 msgstr "superposer"
 
-#: ../src/develop/blend_gui.c:960
+#: ../src/develop/blend_gui.c:950
 msgid "softlight"
 msgstr "lumière douce"
 
-#: ../src/develop/blend_gui.c:962
+#: ../src/develop/blend_gui.c:952
 msgid "hardlight"
 msgstr "lumière dure"
 
-#: ../src/develop/blend_gui.c:964
+#: ../src/develop/blend_gui.c:954
 msgid "vividlight"
 msgstr "lumière vive"
 
-#: ../src/develop/blend_gui.c:966
+#: ../src/develop/blend_gui.c:956
 msgid "linearlight"
 msgstr "lumière linéaire"
 
-#: ../src/develop/blend_gui.c:968
+#: ../src/develop/blend_gui.c:958
 msgid "pinlight"
 msgstr "lumière ponctuelle"
 
-#: ../src/develop/blend_gui.c:970
+#: ../src/develop/blend_gui.c:960
 #: ../src/iop/channelmixer.c:439
 #: ../src/iop/colorize.c:441
 #: ../src/iop/colorzones.c:931
@@ -1048,7 +1048,7 @@ msgstr "lumière ponctuelle"
 msgid "lightness"
 msgstr "luminance"
 
-#: ../src/develop/blend_gui.c:972
+#: ../src/develop/blend_gui.c:962
 #: ../src/iop/atrous.c:1412
 #: ../src/iop/equalizer.c:343
 #: ../src/iop/nlmeans.c:691
@@ -1056,7 +1056,7 @@ msgid "chroma"
 msgstr "chroma"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
-#: ../src/develop/blend_gui.c:974
+#: ../src/develop/blend_gui.c:964
 #: ../src/iop/channelmixer.c:437
 #: ../src/iop/colorize.c:417
 #: ../src/iop/colorzones.c:933
@@ -1067,32 +1067,32 @@ msgstr "chroma"
 msgid "hue"
 msgstr "teinte"
 
-#: ../src/develop/blend_gui.c:976
+#: ../src/develop/blend_gui.c:966
 msgid "color"
 msgstr "couleur"
 
-#: ../src/develop/blend_gui.c:978
+#: ../src/develop/blend_gui.c:968
 msgid "coloradjustment"
 msgstr "ajustement des couleurs"
 
-#: ../src/develop/blend_gui.c:980
+#: ../src/develop/blend_gui.c:970
 msgid "unbounded"
 msgstr "non limité"
 
-#: ../src/develop/blend_gui.c:992
+#: ../src/develop/blend_gui.c:982
 msgid "blend mode"
 msgstr "mode de fusion"
 
-#: ../src/develop/blend_gui.c:994
+#: ../src/develop/blend_gui.c:984
 #: ../src/iop/watermark.c:914
 msgid "opacity"
 msgstr "opacité"
 
-#: ../src/develop/blend_gui.c:1004
+#: ../src/develop/blend_gui.c:994
 msgid "set the opacity of the blending"
 msgstr "opacité de la fusion"
 
-#: ../src/develop/blend_gui.c:1005
+#: ../src/develop/blend_gui.c:995
 msgid "choose blending mode"
 msgstr "détermine le mode de fusion"
 
@@ -2051,7 +2051,7 @@ msgstr "impossible d'écrire dans le répertoire %s !"
 
 #: ../src/imageio/storage/disk.c:225
 #: ../src/imageio/storage/email.c:106
-#: ../src/imageio/storage/facebook.c:1181
+#: ../src/imageio/storage/facebook.c:1183
 #: ../src/imageio/storage/flickr.c:678
 #: ../src/imageio/storage/gallery.c:376
 #: ../src/imageio/storage/gallery.c:395
@@ -2106,20 +2106,20 @@ msgstr "entrer l'url de validation"
 msgid "the given url is not valid, it should look like: "
 msgstr "l'url donnée n'est pas valide, elle devrait ressembler à :"
 
-#: ../src/imageio/storage/facebook.c:745
+#: ../src/imageio/storage/facebook.c:747
 msgid "new account"
 msgstr "nouveau compte"
 
-#: ../src/imageio/storage/facebook.c:752
+#: ../src/imageio/storage/facebook.c:754
 msgid "other account"
 msgstr "autre compte"
 
-#: ../src/imageio/storage/facebook.c:782
+#: ../src/imageio/storage/facebook.c:784
 msgid "unable to retreive the album list"
 msgstr "impossible de rafraîchir la liste d'album"
 
 #. Add standard action
-#: ../src/imageio/storage/facebook.c:790
+#: ../src/imageio/storage/facebook.c:792
 #: ../src/imageio/storage/flickr.c:392
 #: ../src/imageio/storage/flickr.c:420
 #: ../src/imageio/storage/picasa.c:661
@@ -2127,35 +2127,35 @@ msgstr "impossible de rafraîchir la liste d'album"
 msgid "create new album"
 msgstr "créer un nouvel album"
 
-#: ../src/imageio/storage/facebook.c:912
+#: ../src/imageio/storage/facebook.c:914
 msgid "logout"
 msgstr "se déconnecter"
 
 #. Set default permission to private
-#: ../src/imageio/storage/facebook.c:916
-#: ../src/imageio/storage/facebook.c:929
-#: ../src/imageio/storage/facebook.c:956
-#: ../src/imageio/storage/facebook.c:1063
+#: ../src/imageio/storage/facebook.c:918
+#: ../src/imageio/storage/facebook.c:931
+#: ../src/imageio/storage/facebook.c:958
+#: ../src/imageio/storage/facebook.c:1065
 #: ../src/imageio/storage/flickr.c:538
 msgid "login"
 msgstr "connexion"
 
-#: ../src/imageio/storage/facebook.c:993
+#: ../src/imageio/storage/facebook.c:995
 msgid "facebook webalbum"
 msgstr "album web facebook"
 
 #. create labels
-#: ../src/imageio/storage/facebook.c:1006
+#: ../src/imageio/storage/facebook.c:1008
 #: ../src/imageio/storage/picasa.c:758
 msgid "user"
 msgstr "utilisateur"
 
-#: ../src/imageio/storage/facebook.c:1007
+#: ../src/imageio/storage/facebook.c:1009
 msgid "album"
 msgstr "album"
 
 #. xmp
-#: ../src/imageio/storage/facebook.c:1008
+#: ../src/imageio/storage/facebook.c:1010
 #: ../src/imageio/storage/flickr.c:484
 #: ../src/imageio/storage/gallery.c:167
 #: ../src/imageio/storage/latex.c:167
@@ -2166,46 +2166,46 @@ msgstr "album"
 msgid "title"
 msgstr "titre"
 
-#: ../src/imageio/storage/facebook.c:1009
+#: ../src/imageio/storage/facebook.c:1011
 #: ../src/imageio/storage/flickr.c:485
 #: ../src/imageio/storage/picasa.c:763
 msgid "summary"
 msgstr "résumé"
 
-#: ../src/imageio/storage/facebook.c:1010
+#: ../src/imageio/storage/facebook.c:1012
 msgid "privacy"
 msgstr "vie privée"
 
-#: ../src/imageio/storage/facebook.c:1052
+#: ../src/imageio/storage/facebook.c:1054
 msgid "Only Me"
 msgstr "juste moi"
 
-#: ../src/imageio/storage/facebook.c:1054
+#: ../src/imageio/storage/facebook.c:1056
 msgid "Friends"
 msgstr "amis"
 
-#: ../src/imageio/storage/facebook.c:1056
+#: ../src/imageio/storage/facebook.c:1058
 msgid "Public"
 msgstr "public"
 
-#: ../src/imageio/storage/facebook.c:1058
+#: ../src/imageio/storage/facebook.c:1060
 msgid "Friends of Friends"
 msgstr "amis d'amis"
 
-#: ../src/imageio/storage/facebook.c:1190
+#: ../src/imageio/storage/facebook.c:1192
 msgid "unable to create album, no title provided"
 msgstr "impossible de créer un album, titre manquant"
 
-#: ../src/imageio/storage/facebook.c:1197
+#: ../src/imageio/storage/facebook.c:1199
 msgid "unable to create album"
 msgstr "impossible de créer un nouvel album"
 
-#: ../src/imageio/storage/facebook.c:1207
+#: ../src/imageio/storage/facebook.c:1209
 msgid "unable to export photo to webalbum"
 msgstr "impossible d'exporter les photos vers l'album web"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/facebook.c:1224
+#: ../src/imageio/storage/facebook.c:1226
 #, c-format
 msgid "%d/%d exported to facebook webalbum"
 msgstr "%d/%d exportée(s) vers l'album web facebook"
@@ -2774,7 +2774,7 @@ msgid "2:1"
 msgstr "2:1"
 
 #: ../src/iop/borders.c:900
-#: ../src/iop/clipping.c:1068
+#: ../src/iop/clipping.c:1069
 msgid "16:9"
 msgstr "16:9"
 
@@ -2793,17 +2793,17 @@ msgid "A4"
 msgstr "A4"
 
 #: ../src/iop/borders.c:904
-#: ../src/iop/clipping.c:1067
+#: ../src/iop/clipping.c:1068
 msgid "DIN"
 msgstr "DIN"
 
 #: ../src/iop/borders.c:905
-#: ../src/iop/clipping.c:1064
+#: ../src/iop/clipping.c:1065
 msgid "4:3"
 msgstr "4:3"
 
 #: ../src/iop/borders.c:906
-#: ../src/iop/clipping.c:1066
+#: ../src/iop/clipping.c:1067
 msgid "square"
 msgstr "carré"
 
@@ -3035,7 +3035,7 @@ msgid "crop and rotate"
 msgstr "recadrer et pivoter"
 
 #: ../src/iop/clipping.c:1027
-#: ../src/iop/clipping.c:1094
+#: ../src/iop/clipping.c:1095
 #: ../src/libs/live_view.c:335
 msgid "flip"
 msgstr "symétrie miroir"
@@ -3049,7 +3049,7 @@ msgid "vertical"
 msgstr "verticale"
 
 #: ../src/iop/clipping.c:1031
-#: ../src/iop/clipping.c:1098
+#: ../src/iop/clipping.c:1099
 #: ../src/libs/live_view.c:339
 msgid "both"
 msgstr "les deux"
@@ -3090,120 +3090,124 @@ msgstr "libre"
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/clipping.c:1065
+#: ../src/iop/clipping.c:1064
+msgid "7:5"
+msgstr "7:5"
+
+#: ../src/iop/clipping.c:1066
 msgid "5:4"
 msgstr "5:4"
 
-#: ../src/iop/clipping.c:1069
+#: ../src/iop/clipping.c:1070
 msgid "16:10"
 msgstr "16:10"
 
-#: ../src/iop/clipping.c:1070
+#: ../src/iop/clipping.c:1071
 msgid "10:8 in print"
 msgstr "10:8 in print"
 
-#: ../src/iop/clipping.c:1076
+#: ../src/iop/clipping.c:1077
 msgid "set the aspect ratio (w:h)"
 msgstr "rapport largeur/hauteur"
 
-#: ../src/iop/clipping.c:1082
+#: ../src/iop/clipping.c:1083
 #: ../src/libs/live_view.c:323
 msgid "guides"
 msgstr "guides"
 
-#: ../src/iop/clipping.c:1084
+#: ../src/iop/clipping.c:1085
 #: ../src/libs/live_view.c:325
 msgid "grid"
 msgstr "grille"
 
-#: ../src/iop/clipping.c:1085
+#: ../src/iop/clipping.c:1086
 #: ../src/libs/live_view.c:326
 msgid "rules of thirds"
 msgstr "règle des tiers"
 
-#: ../src/iop/clipping.c:1086
+#: ../src/iop/clipping.c:1087
 #: ../src/libs/live_view.c:327
 msgid "diagonal method"
 msgstr "diagonales"
 
-#: ../src/iop/clipping.c:1087
+#: ../src/iop/clipping.c:1088
 #: ../src/libs/live_view.c:328
 msgid "harmonious triangles"
 msgstr "triangles harmonieux"
 
-#: ../src/iop/clipping.c:1088
+#: ../src/iop/clipping.c:1089
 #: ../src/libs/live_view.c:329
 msgid "golden mean"
 msgstr "nombre d'or"
 
-#: ../src/iop/clipping.c:1089
+#: ../src/iop/clipping.c:1090
 #: ../src/libs/live_view.c:330
 msgid "display guide lines to help compose your photograph"
 msgstr "affiche des guides pour vous aider à composer votre photo"
 
-#: ../src/iop/clipping.c:1096
+#: ../src/iop/clipping.c:1097
 #: ../src/libs/live_view.c:337
 msgid "horizontally"
 msgstr "horizontale"
 
-#: ../src/iop/clipping.c:1097
+#: ../src/iop/clipping.c:1098
 #: ../src/libs/live_view.c:338
 msgid "vertically"
 msgstr "verticale"
 
-#: ../src/iop/clipping.c:1099
+#: ../src/iop/clipping.c:1100
 #: ../src/libs/live_view.c:340
 msgid "flip guides"
 msgstr "retourne les guides"
 
-#: ../src/iop/clipping.c:1104
+#: ../src/iop/clipping.c:1105
 #: ../src/libs/live_view.c:344
 msgid "extra"
 msgstr "guides supplémentaires"
 
-#: ../src/iop/clipping.c:1105
+#: ../src/iop/clipping.c:1106
 #: ../src/libs/live_view.c:345
 msgid "golden sections"
 msgstr "sections d'or"
 
-#: ../src/iop/clipping.c:1106
+#: ../src/iop/clipping.c:1107
 #: ../src/libs/live_view.c:346
 msgid "golden spiral sections"
 msgstr "sections de spirale d'or"
 
-#: ../src/iop/clipping.c:1107
+#: ../src/iop/clipping.c:1108
 #: ../src/libs/live_view.c:347
 msgid "golden spiral"
 msgstr "spirale d'or"
 
-#: ../src/iop/clipping.c:1108
+#: ../src/iop/clipping.c:1109
 #: ../src/iop/lens.c:1626
 #: ../src/libs/live_view.c:348
 #: ../src/libs/tools/filter.c:101
 msgid "all"
 msgstr "tout"
 
-#: ../src/iop/clipping.c:1109
+#: ../src/iop/clipping.c:1110
 #: ../src/libs/live_view.c:349
 msgid "show some extra guides"
 msgstr "afficher des guides supplémentaires"
 
-#: ../src/iop/clipping.c:1628
+#: ../src/iop/clipping.c:1588
 msgctxt "accel"
 msgid "commit"
 msgstr "valider"
 
-#: ../src/iop/clipping.c:1630
+#: ../src/iop/clipping.c:1590
 msgctxt "accel"
 msgid "angle"
 msgstr "angle"
 
-#: ../src/iop/clipping.c:1631
+#: ../src/iop/clipping.c:1591
 msgctxt "accel"
 msgid "keystone h"
 msgstr "horizontal"
 
-#: ../src/iop/clipping.c:1632
+#: ../src/iop/clipping.c:1592
 msgctxt "accel"
 msgid "keystone v"
 msgstr "vertical"
