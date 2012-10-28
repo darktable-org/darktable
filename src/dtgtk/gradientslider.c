@@ -26,7 +26,7 @@
 
 #define CLAMP_RANGE(x,y,z)      (CLAMP(x,y,z))
 
-//#define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY 250
+#define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY 250
 #define DTGTK_GRADIENT_SLIDER_DEFAULT_INCREMENT 0.01
 
 
@@ -53,7 +53,8 @@ enum
 
 static guint _signals[LAST_SIGNAL] = { 0 };
 
-/*static gboolean _gradient_slider_postponed_value_change(gpointer data) {
+static gboolean _gradient_slider_postponed_value_change(gpointer data)
+{
   gdk_threads_enter();
   if(DTGTK_GRADIENT_SLIDER(data)->is_changed==TRUE)
   {
@@ -62,7 +63,7 @@ static guint _signals[LAST_SIGNAL] = { 0 };
   }
   gdk_threads_leave();
   return DTGTK_GRADIENT_SLIDER(data)->is_dragging;	// This is called by the gtk mainloop and is threadsafe
-}*/
+}
 
 
 static inline gdouble _screen_to_scale(GtkWidget *widget, gint screen)
@@ -189,7 +190,10 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
       _slider_move(widget, gslider->selected, newposition, direction);
       gslider->min = gslider->selected == 0 ? 0.0f : gslider->position[gslider->selected-1];
       gslider->max = gslider->selected == gslider->positions-1 ? 1.0f : gslider->position[gslider->selected+1];
-      g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
+
+      gslider->is_changed = TRUE;
+      g_timeout_add(DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY, _gradient_slider_postponed_value_change, widget);
+      //g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
 
     }
     else if (gslider->positions > 1) // right mouse button: switch on/off selection (only if we have more than one marker)
@@ -209,6 +213,7 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
       gtk_widget_draw(widget,NULL);
     }
   }
+
   return TRUE;
 }
 
@@ -227,7 +232,7 @@ static gboolean _gradient_slider_motion_notify(GtkWidget *widget, GdkEventMotion
     gslider->min = gslider->selected == 0 ? 0.0f : gslider->position[gslider->selected-1];
     gslider->max = gslider->selected == gslider->positions-1 ? 1.0f : gslider->position[gslider->selected+1];
 
-    g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
+    gslider->is_changed = TRUE;
 
     gtk_widget_draw(widget,NULL);
   }
