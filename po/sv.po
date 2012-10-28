@@ -6,6 +6,7 @@
 # Ordhjälp:
 #
 # demosaicing         demosaicking (ref: http://cstjanster.idg.se/sprakwebben/ord.asp?ord=demosaicking)
+# dodge/burn          blek/bränn
 #
 #
 # Ställen att kolla upp ord:
@@ -16,8 +17,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-25 04:34+0200\n"
-"PO-Revision-Date: 2012-10-25 05:21+0200\n"
+"POT-Creation-Date: 2012-10-28 14:05+0100\n"
+"PO-Revision-Date: 2012-10-28 14:07+0100\n"
 "Last-Translator: Henrik Andersson <hean01@users.sourceforge.net>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -566,7 +567,7 @@ msgstr "på"
 
 #: ../src/common/history.c:176 ../src/common/history.c:188
 #: ../src/common/styles.c:418 ../src/develop/blend_gui.c:926
-#: ../src/develop/develop.c:940 ../src/iop/demosaic.c:1315
+#: ../src/develop/develop.c:940 ../src/iop/demosaic.c:1317
 #: ../src/libs/history.c:151 ../src/libs/live_view.c:405
 msgid "off"
 msgstr "av"
@@ -2568,7 +2569,7 @@ msgid "denoise (bilateral filter)"
 msgstr "brusreducering (bilateral filter)"
 
 #: ../src/iop/bilateral.cc:85 ../src/iop/lowpass.c:102 ../src/iop/shadhi.c:148
-#: ../src/iop/sharpen.c:100
+#: ../src/iop/sharpen.c:102
 msgctxt "accel"
 msgid "radius"
 msgstr "radie"
@@ -2608,7 +2609,7 @@ msgid "how much to blur blue"
 msgstr "mängd av oskärpa att applicera på blå kanal"
 
 #: ../src/iop/bilateral.cc:345 ../src/iop/clahe.c:342 ../src/iop/lowpass.c:498
-#: ../src/iop/shadhi.c:628 ../src/iop/sharpen.c:568
+#: ../src/iop/shadhi.c:628 ../src/iop/sharpen.c:570
 msgid "radius"
 msgstr "radie"
 
@@ -2617,7 +2618,7 @@ msgctxt "accel"
 msgid "size"
 msgstr "storlek"
 
-#: ../src/iop/bloom.c:81 ../src/iop/hotpixels.c:78 ../src/iop/sharpen.c:102
+#: ../src/iop/bloom.c:81 ../src/iop/hotpixels.c:78 ../src/iop/sharpen.c:104
 msgctxt "accel"
 msgid "threshold"
 msgstr "tröskel"
@@ -2635,7 +2636,7 @@ msgstr "storlek"
 msgid "the size of bloom"
 msgstr "överstrålningens storlek"
 
-#: ../src/iop/bloom.c:341 ../src/iop/hotpixels.c:285 ../src/iop/sharpen.c:574
+#: ../src/iop/bloom.c:341 ../src/iop/hotpixels.c:285 ../src/iop/sharpen.c:576
 msgid "threshold"
 msgstr "tröskel"
 
@@ -2937,7 +2938,7 @@ msgstr "s/v mjuk hy"
 msgid "b/w blue artifacts reduce"
 msgstr "s/v reducering av artefakter"
 
-#: ../src/iop/clahe.c:344 ../src/iop/sharpen.c:571
+#: ../src/iop/clahe.c:344 ../src/iop/sharpen.c:573
 msgid "amount"
 msgstr "mängd"
 
@@ -3092,22 +3093,22 @@ msgstr "alla"
 msgid "show some extra guides"
 msgstr "visa extra guider"
 
-#: ../src/iop/clipping.c:1588
+#: ../src/iop/clipping.c:1630
 msgctxt "accel"
 msgid "commit"
 msgstr "applicera"
 
-#: ../src/iop/clipping.c:1590
+#: ../src/iop/clipping.c:1632
 msgctxt "accel"
 msgid "angle"
 msgstr "vinkel"
 
-#: ../src/iop/clipping.c:1591
+#: ../src/iop/clipping.c:1633
 msgctxt "accel"
 msgid "keystone h"
 msgstr "perspektivkorr h"
 
-#: ../src/iop/clipping.c:1592
+#: ../src/iop/clipping.c:1634
 msgctxt "accel"
 msgid "keystone v"
 msgstr "perspektivkorr v"
@@ -3452,23 +3453,23 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "kant tröskel"
 
-#: ../src/iop/demosaic.c:1301
+#: ../src/iop/demosaic.c:1303
 msgid "ppg (fast)"
 msgstr "ppg (snabb)"
 
-#: ../src/iop/demosaic.c:1302
+#: ../src/iop/demosaic.c:1304
 msgid "amaze (slow)"
 msgstr "amaze (långsam)"
 
-#: ../src/iop/demosaic.c:1303 ../src/iop/highlights.c:381
+#: ../src/iop/demosaic.c:1305 ../src/iop/highlights.c:381
 msgid "method"
 msgstr "metod"
 
-#: ../src/iop/demosaic.c:1305
+#: ../src/iop/demosaic.c:1307
 msgid "demosaicing raw data method"
 msgstr "demosaicing-metod för rådata"
 
-#: ../src/iop/demosaic.c:1308
+#: ../src/iop/demosaic.c:1310
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -3478,59 +3479,59 @@ msgstr ""
 "värde 0.0 stänger av funktionen.\n"
 "värde 1.0 ignorerar kanter."
 
-#: ../src/iop/demosaic.c:1309
+#: ../src/iop/demosaic.c:1311
 msgid "edge threshold"
 msgstr "kant tröskel"
 
-#: ../src/iop/demosaic.c:1313
+#: ../src/iop/demosaic.c:1315
 msgid "color smoothing"
 msgstr "färguppmjukning"
 
-#: ../src/iop/demosaic.c:1316
+#: ../src/iop/demosaic.c:1318
 msgid "one time"
 msgstr "en gång"
 
-#: ../src/iop/demosaic.c:1317
+#: ../src/iop/demosaic.c:1319
 msgid "two times"
 msgstr "två gånger"
 
-#: ../src/iop/demosaic.c:1318
+#: ../src/iop/demosaic.c:1320
 msgid "three times"
 msgstr "tre gånger"
 
-#: ../src/iop/demosaic.c:1319
+#: ../src/iop/demosaic.c:1321
 msgid "four times"
 msgstr "fyra gånger"
 
-#: ../src/iop/demosaic.c:1320
+#: ../src/iop/demosaic.c:1322
 msgid "five times"
 msgstr "fem gånger"
 
-#: ../src/iop/demosaic.c:1321
+#: ../src/iop/demosaic.c:1323
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "antal färkuppmjukningspass efter demosaicking"
 
-#: ../src/iop/demosaic.c:1325
+#: ../src/iop/demosaic.c:1327
 msgid "match greens"
 msgstr "matcha grön"
 
-#: ../src/iop/demosaic.c:1326
+#: ../src/iop/demosaic.c:1328
 msgid "disabled"
 msgstr "av"
 
-#: ../src/iop/demosaic.c:1327
+#: ../src/iop/demosaic.c:1329
 msgid "local average"
 msgstr "lokalt medel"
 
-#: ../src/iop/demosaic.c:1328
+#: ../src/iop/demosaic.c:1330
 msgid "full average"
 msgstr "fullständigt medel"
 
-#: ../src/iop/demosaic.c:1329
+#: ../src/iop/demosaic.c:1331
 msgid "full and local average"
 msgstr "fullständig och lokalt medel"
 
-#: ../src/iop/demosaic.c:1330
+#: ../src/iop/demosaic.c:1332
 msgid "green channels matching method"
 msgstr "metod för matchning av grön färgkanal"
 
@@ -3657,7 +3658,9 @@ msgstr "påverkan"
 msgid ""
 "the bias for tonemapper controls the linearity, the higher the more details "
 "in blacks"
-msgstr "påverkan (bias) i tonemapping kontrollerar lineariteten, ju högre värde desto mer detaljer i de mörka områdena"
+msgstr ""
+"påverkan (bias) i tonemapping kontrollerar lineariteten, ju högre värde "
+"desto mer detaljer i de mörka områdena"
 
 #: ../src/iop/globaltonemap.c:584
 msgid "target"
@@ -4528,25 +4531,26 @@ msgid "sharpen"
 msgstr "skärpa"
 
 #. add the preset.
+#. restrict to raw images
 #. make it auto-apply for matching images:
-#: ../src/iop/sharpen.c:93 ../src/iop/sharpen.c:95
+#: ../src/iop/sharpen.c:93 ../src/iop/sharpen.c:95 ../src/iop/sharpen.c:97
 msgid "sharpen"
 msgstr "skärp"
 
-#: ../src/iop/sharpen.c:101
+#: ../src/iop/sharpen.c:103
 msgctxt "accel"
 msgid "amount"
 msgstr "mängd"
 
-#: ../src/iop/sharpen.c:567
+#: ../src/iop/sharpen.c:569
 msgid "spatial extent of the unblurring"
 msgstr "rumslig utsträckning för oskarp mask"
 
-#: ../src/iop/sharpen.c:570
+#: ../src/iop/sharpen.c:572
 msgid "strength of the sharpen"
 msgstr "styrka på skärpningen"
 
-#: ../src/iop/sharpen.c:573
+#: ../src/iop/sharpen.c:575
 msgid "threshold to activate sharpen"
 msgstr "tröskelvärde för aktivering av skärpa"
 
@@ -6156,11 +6160,11 @@ msgstr "färgmättnad"
 
 #: ../src/libs/live_view.c:387
 msgid "color dodge"
-msgstr "ljusa upp färg"
+msgstr "färgblekning"
 
 #: ../src/libs/live_view.c:388
 msgid "color burn"
-msgstr "mörka ned färg"
+msgstr "färgbränning"
 
 #: ../src/libs/live_view.c:389
 msgid "hard light"
