@@ -586,6 +586,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_decompose, sizes);
     if(err != CL_SUCCESS) goto error;
+
+    // indirectly give gpu some air to breathe (and to do display related stuff)
+    dt_iop_nap(1000);
   }
 
   /* now synthesize again */
@@ -616,6 +619,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_synthesize, sizes);
     if(err != CL_SUCCESS) goto error;
+
+    // indirectly give gpu some air to breathe (and to do display related stuff)
+    dt_iop_nap(1000);
   }
 
   dt_opencl_finish(devid);
