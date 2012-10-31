@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-28 14:05+0100\n"
+"POT-Creation-Date: 2012-10-31 19:51+1300\n"
 "PO-Revision-Date: 2012-10-28 14:07+0100\n"
 "Last-Translator: Henrik Andersson <hean01@users.sourceforge.net>\n"
 "Language-Team: Svenska <>\n"
@@ -560,14 +560,14 @@ msgstr ""
 "du behöver kopiera historik från en bild innan du klistrar in på en annan"
 
 #: ../src/common/history.c:176 ../src/common/history.c:188
-#: ../src/common/styles.c:418 ../src/develop/develop.c:940
+#: ../src/common/styles.c:418 ../src/develop/develop.c:958
 #: ../src/libs/history.c:151 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "på"
 
 #: ../src/common/history.c:176 ../src/common/history.c:188
 #: ../src/common/styles.c:418 ../src/develop/blend_gui.c:926
-#: ../src/develop/develop.c:940 ../src/iop/demosaic.c:1317
+#: ../src/develop/develop.c:958 ../src/iop/demosaic.c:1317
 #: ../src/libs/history.c:151 ../src/libs/live_view.c:405
 msgid "off"
 msgstr "av"
@@ -1113,7 +1113,7 @@ msgstr "snävt ljus"
 msgid "lightness"
 msgstr "ljushet"
 
-#: ../src/develop/blend_gui.c:962 ../src/iop/atrous.c:1412
+#: ../src/develop/blend_gui.c:962 ../src/iop/atrous.c:1418
 #: ../src/iop/equalizer.c:343 ../src/iop/nlmeans.c:691
 msgid "chroma"
 msgstr "chroma"
@@ -2361,110 +2361,110 @@ msgctxt "accel"
 msgid "mix"
 msgstr "blanda"
 
-#: ../src/iop/atrous.c:766
+#: ../src/iop/atrous.c:772
 msgid "enhance coarse"
 msgstr "förbättra ojämnheter"
 
-#: ../src/iop/atrous.c:780
+#: ../src/iop/atrous.c:786
 msgid "sharpen and denoise (strong)"
 msgstr "skärpning och brusreducering  (mycket)"
 
-#: ../src/iop/atrous.c:794
+#: ../src/iop/atrous.c:800
 msgid "sharpen and denoise"
 msgstr "skärpa och brusreducering"
 
-#: ../src/iop/atrous.c:808 ../src/iop/equalizer.c:259
+#: ../src/iop/atrous.c:814 ../src/iop/equalizer.c:259
 msgid "sharpen (strong)"
 msgstr "skärpa (mycket)"
 
-#: ../src/iop/atrous.c:822
+#: ../src/iop/atrous.c:828
 msgctxt "atrous"
 msgid "sharpen"
 msgstr "skärpa"
 
-#: ../src/iop/atrous.c:836
+#: ../src/iop/atrous.c:842
 msgid "chroma denoise"
 msgstr "chroma brusreducering"
 
-#: ../src/iop/atrous.c:850
+#: ../src/iop/atrous.c:856
 msgid "denoise (subtle)"
 msgstr "reducera brus (svagt)"
 
-#: ../src/iop/atrous.c:864 ../src/iop/equalizer.c:285
+#: ../src/iop/atrous.c:870 ../src/iop/equalizer.c:285
 msgid "denoise"
 msgstr "reducera brus"
 
-#: ../src/iop/atrous.c:880 ../src/iop/equalizer.c:295
+#: ../src/iop/atrous.c:886 ../src/iop/equalizer.c:295
 msgid "denoise (strong)"
 msgstr "reducera brus (mycket)"
 
-#: ../src/iop/atrous.c:895 ../src/iop/bloom.c:64
+#: ../src/iop/atrous.c:901 ../src/iop/bloom.c:64
 msgid "bloom"
 msgstr "överstrålning"
 
-#: ../src/iop/atrous.c:909
+#: ../src/iop/atrous.c:915
 msgid "clarity (subtle)"
 msgstr "klarhet (svag)"
 
-#: ../src/iop/atrous.c:923
+#: ../src/iop/atrous.c:929
 msgid "clarity"
 msgstr "klarhet"
 
-#: ../src/iop/atrous.c:1187 ../src/iop/atrous.c:1191
+#: ../src/iop/atrous.c:1193 ../src/iop/atrous.c:1197
 msgid "coarse"
 msgstr "ojämnheter"
 
-#: ../src/iop/atrous.c:1193 ../src/iop/atrous.c:1197
+#: ../src/iop/atrous.c:1199 ../src/iop/atrous.c:1203
 msgid "fine"
 msgstr "fin"
 
-#: ../src/iop/atrous.c:1204
+#: ../src/iop/atrous.c:1210
 msgid "contrasty"
 msgstr "kontrast"
 
-#: ../src/iop/atrous.c:1205 ../src/iop/atrous.c:1209
+#: ../src/iop/atrous.c:1211 ../src/iop/atrous.c:1215
 msgid "smooth"
 msgstr "mjuk"
 
-#: ../src/iop/atrous.c:1210
+#: ../src/iop/atrous.c:1216
 msgid "noisy"
 msgstr "brusig"
 
 #. case atrous_s:
-#: ../src/iop/atrous.c:1213
+#: ../src/iop/atrous.c:1219
 msgid "bold"
 msgstr "kraftig"
 
-#: ../src/iop/atrous.c:1214
+#: ../src/iop/atrous.c:1220
 msgid "dull"
 msgstr "mörk"
 
-#: ../src/iop/atrous.c:1410 ../src/iop/equalizer.c:342
+#: ../src/iop/atrous.c:1416 ../src/iop/equalizer.c:342
 #: ../src/iop/nlmeans.c:689
 msgid "luma"
 msgstr "luma"
 
-#: ../src/iop/atrous.c:1411
+#: ../src/iop/atrous.c:1417
 msgid "change lightness at each feature size"
 msgstr "ändra ljushet på vardera detaljstorlek"
 
-#: ../src/iop/atrous.c:1413
+#: ../src/iop/atrous.c:1419
 msgid "change color saturation at each feature size"
 msgstr "ändra färgmättnad på vardera detaljstorlek"
 
-#: ../src/iop/atrous.c:1414 ../src/iop/highpass.c:509
+#: ../src/iop/atrous.c:1420 ../src/iop/highpass.c:509
 msgid "sharpness"
 msgstr "skärpa"
 
-#: ../src/iop/atrous.c:1415
+#: ../src/iop/atrous.c:1421
 msgid "sharpness of edges at each feature size"
 msgstr "skärpa av kanter på vardera detaljstorlek"
 
-#: ../src/iop/atrous.c:1450 ../src/iop/soften.c:601
+#: ../src/iop/atrous.c:1456 ../src/iop/soften.c:601
 msgid "mix"
 msgstr "blanda"
 
-#: ../src/iop/atrous.c:1451
+#: ../src/iop/atrous.c:1457
 msgid "make effect stronger or weaker"
 msgstr "gör effekten starkare eller svagare"
 
@@ -6797,23 +6797,23 @@ msgstr "organisera och utveckla bilder från digital kameror"
 msgid "* developers *"
 msgstr "* utvecklare *"
 
-#: ../src/libs/tools/darktable.c:180
+#: ../src/libs/tools/darktable.c:181
 msgid "* ubuntu packaging, color management, video tutorials *"
 msgstr "* paketerare, färghantering, video tutorial *"
 
-#: ../src/libs/tools/darktable.c:183
+#: ../src/libs/tools/darktable.c:184
 msgid "* opencl pipeline: *"
 msgstr ""
 
-#: ../src/libs/tools/darktable.c:186
+#: ../src/libs/tools/darktable.c:187
 msgid "* networking, battle testing, translation expert *"
 msgstr "* nätverkande, testning, översättnings expert *"
 
-#: ../src/libs/tools/darktable.c:189
+#: ../src/libs/tools/darktable.c:190
 msgid "* contributors *"
 msgstr "* bidragsgivare *"
 
-#: ../src/libs/tools/darktable.c:227
+#: ../src/libs/tools/darktable.c:247
 msgid "translator-credits"
 msgstr ""
 "Henrik Andersson\n"
