@@ -18,7 +18,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-10-31 19:51+1300\n"
-"PO-Revision-Date: 2012-10-28 14:07+0100\n"
+"PO-Revision-Date: 2012-10-31 09:28+0100\n"
 "Last-Translator: Henrik Andersson <hean01@users.sourceforge.net>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -395,7 +395,7 @@ msgstr ""
 
 #: ../src/cli/main.c:93
 msgid "TODO: sorry, due to api restrictions we currently cannot set the bpp to"
-msgstr ""
+msgstr "ATT GÖRA: ledsen, på grund av begränsningar i programmeringsgränssnittet kan vi för närvarande inte sätta bpp till\""
 
 #: ../src/cli/main.c:105
 msgid "Unknown option for --hq"
@@ -4076,7 +4076,7 @@ msgstr "panoramisk"
 
 #: ../src/iop/lens.c:1752
 msgid "equirectangular"
-msgstr ""
+msgstr "ekvirektangulär"
 
 #: ../src/iop/lens.c:1759
 msgid "auto scale"
@@ -4303,11 +4303,11 @@ msgstr "chroma"
 
 #: ../src/iop/nlmeans.c:685
 msgid "patch size"
-msgstr ""
+msgstr "storlek"
 
 #: ../src/iop/nlmeans.c:693
 msgid "radius of the patches to match"
-msgstr ""
+msgstr "radien på elementen att identifiera"
 
 #: ../src/iop/nlmeans.c:695
 msgid "how much to smooth brightness"
@@ -6803,7 +6803,7 @@ msgstr "* paketerare, färghantering, video tutorial *"
 
 #: ../src/libs/tools/darktable.c:184
 msgid "* opencl pipeline: *"
-msgstr ""
+msgstr "* opencl-pipeline: *"
 
 #: ../src/libs/tools/darktable.c:187
 msgid "* networking, battle testing, translation expert *"
