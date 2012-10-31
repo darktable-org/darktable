@@ -223,12 +223,10 @@ static inline double dt_get_wtime(void)
 static inline void dt_get_times(dt_times_t *t)
 {
   struct rusage ru;
-  if (darktable.unmuted & DT_DEBUG_PERF)
-  {
-    getrusage(RUSAGE_SELF, &ru);
-    t->clock = dt_get_wtime();
-    t->user = ru.ru_utime.tv_sec + ru.ru_utime.tv_usec * (1.0/1000000.0);
-  }
+
+  getrusage(RUSAGE_SELF, &ru);
+  t->clock = dt_get_wtime();
+  t->user = ru.ru_utime.tv_sec + ru.ru_utime.tv_usec * (1.0/1000000.0);
 }
 
 void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...);

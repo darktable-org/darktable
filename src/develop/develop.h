@@ -50,6 +50,8 @@ typedef struct dt_develop_t
   int32_t image_force_reload;
   int32_t preview_loading, preview_dirty, preview_input_changed;
   uint32_t timestamp;
+  uint32_t average_delay;
+  uint32_t preview_average_delay;
   struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.
   float preview_downsampling; // < 1.0: optionally downsample preview
 
@@ -196,6 +198,9 @@ gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t io
 
 /** request snapshot */
 void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename);
+
+/** update gliding average for pixelpipe delay */
+void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_delay);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

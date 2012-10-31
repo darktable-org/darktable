@@ -23,10 +23,13 @@
 #include <assert.h>
 
 #include "gradientslider.h"
+#include "common/darktable.h"
+#include "develop/develop.h"
 
 #define CLAMP_RANGE(x,y,z)      (CLAMP(x,y,z))
 
-#define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY 250
+#define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MAX 250
+#define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MIN  25
 #define DTGTK_GRADIENT_SLIDER_DEFAULT_INCREMENT 0.01
 
 
@@ -192,7 +195,8 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
       gslider->max = gslider->selected == gslider->positions-1 ? 1.0f : gslider->position[gslider->selected+1];
 
       gslider->is_changed = TRUE;
-      g_timeout_add(DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY, _gradient_slider_postponed_value_change, widget);
+      int delay = CLAMP_RANGE(darktable.develop->average_delay*3/2, DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MIN, DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MAX);
+      g_timeout_add(delay, _gradient_slider_postponed_value_change, widget);
       //g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
 
     }
