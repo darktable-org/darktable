@@ -42,6 +42,9 @@
 #define DT_IS_BAUHAUS_WIDGET_CLASS(obj)    (G_TYPE_CHECK_CLASS_TYPE ((obj), DT_BAUHAUS_WIDGET_TYPE))
 #define DT_BAUHAUS_WIDGET_GET_CLASS        (G_TYPE_INSTANCE_GET_CLASS ((obj), DT_BAUHAUS_WIDGET_TYPE, DtBauausWidgetClass))
 
+#define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX     500
+#define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN     25
+
 typedef enum dt_bauhaus_type_t
 {
   DT_BAUHAUS_SLIDER = 1,
@@ -65,6 +68,9 @@ typedef struct dt_bauhaus_slider_data_t
   float grad_pos[10];    // and position of these.
 
   char format[24];// numeric value is printed with this string
+
+  int  is_dragging; // indicates is mouse is dragging slider 
+  int  is_changed;  // indicates new data
 }
 dt_bauhaus_slider_data_t;
 
