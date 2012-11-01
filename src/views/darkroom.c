@@ -138,7 +138,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   }
 
   if(dev->image_dirty || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp) dt_dev_process_image(dev);
-  if(dev->preview_dirty) dt_dev_process_preview(dev);
+  if(dev->preview_dirty || dev->pipe->input_timestamp > dev->preview_pipe->input_timestamp) dt_dev_process_preview(dev);
 
   dt_pthread_mutex_t *mutex = NULL;
   int wd, ht, stride, closeup;
