@@ -12,4 +12,13 @@
 <!ENTITY icon_module_overexposed "images/darkroom_module_icon_overexposed.png">
 <!ENTITY icon_preferences "images/darkroom_preferences.png">
 <!ENTITY icon_directory "images/lighttable_directory.png">
+<!ENTITY icon_styles "images/darkroom_styles.png">
+<!ENTITY icon_group_active "images/darkroom_group_active.png">
+<!ENTITY icon_group_favorites "images/darkroom_group_favorites.png">
+<!ENTITY icon_group_basic "images/darkroom_group_basic.png">
+<!ENTITY icon_group_tone "images/darkroom_group_tone.png">
+<!ENTITY icon_group_color "images/darkroom_group_color.png">
+<!ENTITY icon_group_correction "images/darkroom_group_correction.png">
+<!ENTITY icon_group_effect "images/darkroom_group_effect.png">
+
 

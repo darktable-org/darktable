@@ -11,23 +11,23 @@
 				<tbody>
 					<row>						
 						<entry>
-						<para>The historystack lists every change of state (activate/de-activated) for all modules.
+						<para>The history stack lists every change of state (activate/de-activated) for all modules.
             					Here you can select a point in stack to return to that point of development history.
             					If you then activate a new module, all modules above the current point will be discarded.
                                                 </para>
                                                 <para>
-                                                Be cautious: also activating actions by key accelerators will discard all modules above the current, e.g.
-                                                if you press "o" to see over/under exposed areas. The same happens if you press the according
+                                                Be cautious: also activating actions by key accelerators will discard all modules above 
+                                                the current one, e.g. if you press "o" to see over/under exposed areas. The same happens if you press the according
                                                 toggle button <inlinegraphic fileref="&icon_module_overexposed;" scalefit="1" width="2%" align="center" />.
 						</para>
 						<para>
-            					Hitting 'compress historystack' generates the shortest historystack that produces the
+            					Hitting "compress history stack" generates the shortest historystack that produces the
             					current image, i.e. suppressing all de-activated modules. This will also discard all modules above
                                                 the currently selected one.
 						</para>
-						<para>The button to the right lets you create a new styles by poping-up a new window.
-						Use the first line to name your style, the second to add a searchable description.
-						The "advanced presets" allows you chose which modules are to be taken into account for the styles.
+						<para>The button to the right <inlinegraphic fileref="&icon_styles;" scalefit="1" width="2%" align="center" /> 
+                                                lets you create a new styles by popping up a new dialog. Use the first line to name your style, the second to add a 
+                                                searchable description. The "advanced presets" allows you chose which modules are to be taken into account for the styles.
 						</para>
 						</entry>
 						<entry>
