@@ -726,8 +726,8 @@ dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
   // for combobox, where mouse-release triggers a selection, we need to catch this
   // event where the mouse-press occurred, which will be this widget. we just pass
   // it on though:
-  g_signal_connect (G_OBJECT (w), "button-release-event",
-                    G_CALLBACK (dt_bauhaus_popup_button_release), (gpointer)NULL);
+  // g_signal_connect (G_OBJECT (w), "button-release-event",
+  //                   G_CALLBACK (dt_bauhaus_popup_button_release), (gpointer)NULL);
 }
 
 void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *text)
@@ -844,6 +844,8 @@ dt_bauhaus_combobox_new(dt_iop_module_t *self)
   memset(d->text, 0, sizeof(d->text));
   g_signal_connect (G_OBJECT (w), "button-press-event",
                     G_CALLBACK (dt_bauhaus_combobox_button_press), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (w), "button-release-event",
+                    G_CALLBACK (dt_bauhaus_popup_button_release), (gpointer)NULL);
   g_signal_connect (G_OBJECT (w), "scroll-event",
                     G_CALLBACK (dt_bauhaus_combobox_scroll), (gpointer)NULL);
   g_signal_connect (G_OBJECT (w), "destroy",
@@ -1685,6 +1687,7 @@ dt_bauhaus_slider_postponed_value_change(gpointer data)
     d->is_changed = 0;
   }
   gdk_threads_leave();
+
   return d->is_dragging;
 }
 
@@ -1824,6 +1827,7 @@ dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton *event, gpointe
     if(event->type == GDK_2BUTTON_PRESS)
     {
       dt_bauhaus_slider_data_t *d = &w->data.slider;
+      d->is_dragging = 0;
       dt_bauhaus_slider_set_normalized(w, d->defpos);
     }
     else
@@ -1844,14 +1848,15 @@ dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton *event, gpointe
 static gboolean
 dt_bauhaus_slider_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  if(event->button==1)
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+
+  if((event->button == 1) && (d->is_dragging))
   {
-    dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
-    dt_bauhaus_slider_data_t *d = &w->data.slider;
-    d->is_dragging = 0;
     dt_iop_request_focus(w->module);
     GtkAllocation tmp;
     gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
+    d->is_dragging = 0;
     const float l = 4.0f/tmp.width;
     const float r = 1.0f-(tmp.height+4.0f)/tmp.width;
     dt_bauhaus_slider_set_normalized(w, (event->x/tmp.width - l)/(r-l));
