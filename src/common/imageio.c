@@ -287,7 +287,6 @@ dt_imageio_open_raw(
   ret = libraw_unpack(raw);
   // img->black   = raw->color.black/65535.0;
   // img->maximum = raw->color.maximum/65535.0;
-  img->bpp = sizeof(uint16_t);
   // printf("black, max: %d %d %f %f\n", raw->color.black, raw->color.maximum, img->black, img->maximum);
   HANDLE_ERRORS(ret, 1);
   ret = libraw_dcraw_process(raw);
@@ -301,6 +300,7 @@ dt_imageio_open_raw(
     img->orientation = raw->sizes.flip;
   // filters seem only ever to take a useful value after unpack/process
   img->filters = raw->idata.filters;
+  img->bpp = img->filters ? sizeof(uint16_t) : 4*sizeof(float);
   img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
   img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
   img->exif_iso = raw->other.iso_speed;
