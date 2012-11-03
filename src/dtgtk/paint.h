@@ -43,7 +43,8 @@ dtgtk_cairo_paint_flags_t;
 
 
 typedef void (*DTGTKCairoPaintIconFunc)(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
-
+/** Paint nothing */
+void dtgtk_cairo_paint_empty(cairo_t *cr, gint x,int y,gint w,gint h, gint flags);
 /** Paint a triangle left/right/up/down */
 void dtgtk_cairo_paint_triangle(cairo_t *cr, gint x,int y,gint w,gint h, gint flags);
 /** Paint a solid triangle left/right/up/down */

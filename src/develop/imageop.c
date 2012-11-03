@@ -647,7 +647,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->dev = dev;
   module->widget = NULL;
   module->header = NULL;
-  module->showhide = NULL;
+  module->state = dt_iop_state_HIDDEN;
   module->off = NULL;
   module->priority = 0;
   module->hide_enable_button = 0;
@@ -1454,7 +1454,7 @@ _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_d
           additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
 
         /* add special group flag for favorite */
-        if(module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2)
+        if(module->state == dt_iop_state_FAVORITE)
           additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
 
         /* if module is the current, always expand it */
@@ -2230,10 +2230,10 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group,
   dt_iop_module_t *module = (dt_iop_module_t*)data;
 
   // Showing the module, if it isn't already visible
-  if(!dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(module->showhide)))
+  if(module->state == dt_iop_state_HIDDEN)
   {
-    dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide), 1);
-    gtk_widget_queue_draw(module->showhide);
+    module->state = dt_iop_state_ACTIVE;
+    gtk_widget_queue_draw(module->state_widget);
   }
 
   // FIXME

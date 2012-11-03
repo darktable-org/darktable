@@ -24,7 +24,8 @@
 #include "develop/develop.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
-#include "dtgtk/tristatebutton.h"
+#include "dtgtk/icon.h"
+#include "dtgtk/label.h"
 #include "gui/draw.h"
 
 DT_MODULE(1)
@@ -33,11 +34,12 @@ DT_MODULE(1)
 
 typedef struct dt_lib_modulelist_t
 {
+  GtkList *list;
 }
 dt_lib_modulelist_t;
 
 /* handle iop module click */
-static void _lib_modulelist_tristate_changed_callback(GtkWidget *,gint state, gpointer user_data);
+static void _lib_modulelist_row_changed_callback(GtkWidget *,GdkEvent *unused, gpointer user_data);
 /* callback for iop modules loaded signal */
 static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_data);
 
@@ -67,10 +69,12 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_modulelist_t *d = (dt_lib_modulelist_t *)g_malloc(sizeof(dt_lib_modulelist_t));
   memset(d,0,sizeof(dt_lib_modulelist_t));
   self->data = (void *)d;
-
-  self->widget = gtk_table_new(2, 6, TRUE);
-  gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_MODULE_LIST_SPACING);
-  gtk_table_set_col_spacings(GTK_TABLE(self->widget), DT_MODULE_LIST_SPACING);
+  self->widget = gtk_scrolled_window_new(NULL, NULL); //GTK_ADJUSTMENT(gtk_adjustment_new(200, 100, 200, 10, 100, 100))
+  gtk_widget_set_size_request(self->widget, -1, 200);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(self->widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
+  d->list = GTK_LIST(gtk_list_new());
+  gtk_widget_set_size_request(GTK_WIDGET(d->list), 50, -1);
+  gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(self->widget), GTK_WIDGET(d->list));
 
   /* connect to signal for darktable.develop initialization */
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_INITIALIZE,G_CALLBACK(_lib_modulelist_populate_callback),self);
@@ -84,11 +88,12 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static gboolean _lib_modulelist_tristate_set_state(GtkWidget *w,gint state,dt_iop_module_t *module)
+static gboolean _lib_modulelist_row_set_state(gint state,dt_iop_module_t *module)
 {
   char option[1024];
   gboolean expand = FALSE;
-  if(state==0)
+  module->state = state%dt_iop_state_LAST;
+  if(module->state==dt_iop_state_HIDDEN)
   {
     /* module is hidden lets set conf values */
     gtk_widget_hide(GTK_WIDGET(module->expander));
@@ -96,11 +101,15 @@ static gboolean _lib_modulelist_tristate_set_state(GtkWidget *w,gint state,dt_io
     dt_conf_set_bool (option, FALSE);
     snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool (option, FALSE);
+    GtkWidget *icon = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->state_widget)),1);
+    dtgtk_icon_set_paint(icon,dtgtk_cairo_paint_empty,CPF_STYLE_FLAT);
+    icon = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->state_widget)),0);
+    dtgtk_label_set_text(DTGTK_LABEL(icon),module->name(),DARKTABLE_LABEL_ALIGN_LEFT);
 
     /* construct tooltip text into option */
     snprintf(option, 512, _("show %s"), module->name());
   }
-  else if(state==1)
+  else if(module->state==dt_iop_state_ACTIVE)
   {
     /* module is shown lets set conf values */
     // FIXME
@@ -110,13 +119,17 @@ static gboolean _lib_modulelist_tristate_set_state(GtkWidget *w,gint state,dt_io
     dt_conf_set_bool (option, TRUE);
     snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool (option, FALSE);
+    GtkWidget *icon = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->state_widget)),1);
+    dtgtk_icon_set_paint(icon,dtgtk_cairo_paint_empty,CPF_STYLE_FLAT | CPF_ACTIVE);
+    icon = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->state_widget)),0);
+    dtgtk_label_set_text(DTGTK_LABEL(icon),module->name(),DARKTABLE_LABEL_ALIGN_LEFT | DARKTABLE_LABEL_BACKFILLED);
 
     expand = TRUE;
 
     /* construct tooltip text into option */
     snprintf(option, 512, _("%s as favorite"), module->name());
   }
-  else if(state==2)
+  else if(module->state==dt_iop_state_FAVORITE)
   {
     /* module is shown and favorite lets set conf values */
     // FIXME
@@ -126,6 +139,10 @@ static gboolean _lib_modulelist_tristate_set_state(GtkWidget *w,gint state,dt_io
     dt_conf_set_bool (option, TRUE);
     snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool (option, TRUE);
+    GtkWidget *icon = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->state_widget)),1);
+    dtgtk_icon_set_paint(icon,dtgtk_cairo_paint_modulegroup_favorites,CPF_STYLE_FLAT | CPF_ACTIVE);
+    icon = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->state_widget)),0);
+    dtgtk_label_set_text(DTGTK_LABEL(icon),module->name(),DARKTABLE_LABEL_ALIGN_LEFT | DARKTABLE_LABEL_BACKFILLED);
 
     expand = TRUE;
 
@@ -133,7 +150,7 @@ static gboolean _lib_modulelist_tristate_set_state(GtkWidget *w,gint state,dt_io
     snprintf(option, 512, _("hide %s"), module->name());
   }
 
-  g_object_set(G_OBJECT(w), "tooltip-text", option, (char *)NULL);
+  //g_object_set(G_OBJECT(module->state_widget), "tooltip-text", option, (char *)NULL);
   return expand;
 }
 
@@ -141,22 +158,29 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
 
-  /* go thru list of iop modules and add tp table */
+  /* go thru list of iop modules and add them to the list */
   GList *modules = g_list_last(darktable.develop->iop);
-  int ti = 0, tj = 0;
+ 
+  GList *rows = NULL;
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
-      module->showhide = dtgtk_tristatebutton_new(NULL,0);
+      module->state_widget = gtk_table_new(1,3,FALSE);
       char filename[DT_MAX_PATH_LEN], datadir[DT_MAX_PATH_LEN];
       dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
       snprintf(filename, DT_MAX_PATH_LEN, "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
       if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
         snprintf(filename, DT_MAX_PATH_LEN, "%s/pixmaps/plugins/darkroom/template.png", datadir);
-      GtkWidget *image = gtk_image_new_from_file(filename);
-      gtk_button_set_image(GTK_BUTTON(module->showhide), image);
+      GtkWidget *tmp_widget = gtk_image_new_from_file(filename);
+      gtk_table_attach(GTK_TABLE(module->state_widget),tmp_widget,0,1,0,1,GTK_FILL  | GTK_SHRINK,GTK_SHRINK,0,0);
+
+      tmp_widget =dtgtk_icon_new(dtgtk_cairo_paint_modulegroup_favorites, CPF_STYLE_FLAT);
+      gtk_table_attach(GTK_TABLE(module->state_widget),tmp_widget,1,2,0,1,GTK_FILL | GTK_SHRINK,GTK_SHRINK,0,0);
+
+      tmp_widget = dtgtk_label_new(module->name(),DARKTABLE_LABEL_ALIGN_LEFT);
+      gtk_table_attach(GTK_TABLE(module->state_widget),tmp_widget,2,3,0,1,GTK_FILL | GTK_EXPAND | GTK_SHRINK,GTK_EXPAND|GTK_FILL ,0,0);
 
       /* set button state */
       char option[1024];
@@ -164,43 +188,36 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
       gboolean active = dt_conf_get_bool (option);
       snprintf(option, 1024, "plugins/darkroom/%s/favorite", module->op);
       gboolean favorite = dt_conf_get_bool (option);
-      gint state=0;
+      module->state=0;
       if(active)
       {
-        state++;
-        if(favorite) state++;
+        module->state++;
+        if(favorite) module->state++;
       }
-      _lib_modulelist_tristate_set_state(module->showhide,state,module);
-      dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide), state);
+      _lib_modulelist_row_set_state(module->state,module);
 
-      /* connect tristate button callback*/
-      g_signal_connect(G_OBJECT(module->showhide), "tristate-changed",
-                       G_CALLBACK(_lib_modulelist_tristate_changed_callback), module);
-      gtk_table_attach(GTK_TABLE(self->widget), module->showhide, ti, ti+1, tj, tj+1,
-                       GTK_FILL | GTK_EXPAND | GTK_SHRINK,
-                       GTK_SHRINK,
-                       0, 0);
-      gtk_widget_show_all(module->showhide);
-      if(ti < 5) ti++;
-      else
-      {
-        ti = 0;
-        tj ++;
-      }
+      GtkEventBox * box = GTK_EVENT_BOX(gtk_event_box_new());
+      gtk_event_box_set_above_child(box,TRUE);
+      gtk_event_box_set_visible_window(box, FALSE);
+      g_signal_connect(G_OBJECT(box), "button-press-event",
+                      G_CALLBACK(_lib_modulelist_row_changed_callback), module);
+      gtk_container_add(GTK_CONTAINER(box),module->state_widget);
+      rows = g_list_append(rows, box);
+      gtk_widget_show_all(GTK_WIDGET(box));
     }
 
     modules = g_list_previous(modules);
   }
+  gtk_list_append_items(((dt_lib_modulelist_t*)self->data)->list, rows);
 }
 
 
 
-static void _lib_modulelist_tristate_changed_callback(GtkWidget *w,gint state, gpointer user_data)
+static void _lib_modulelist_row_changed_callback(GtkWidget *w,GdkEvent *unused, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
 
-  /* set state of tristate button and expand iop if wanted */
-  gboolean expanded = _lib_modulelist_tristate_set_state(w,state,module);
+  gboolean expanded = _lib_modulelist_row_set_state(module->state+1,module);
   dt_dev_modulegroups_switch(module->dev, module);
   dt_iop_gui_set_expanded(module, expanded);
 
