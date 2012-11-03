@@ -130,7 +130,7 @@ int dt_opencl_lock_device(const int dev);
 void dt_opencl_unlock_device(const int dev);
 
 /** loads the given .cl file and returns a reference to an internal program. */
-int dt_opencl_load_program(const int dev, const char *filename, const char* binname, const char* cachedir, char* md5sum, int* loaded_cached);
+int dt_opencl_load_program(const int dev, const int prog, const char *filename, const char* binname, const char* cachedir, char* md5sum, int* loaded_cached);
 
 /** builds the given program. */
 int dt_opencl_build_program(const int dev, const int prog, const char* binname, const char* cachedir, char* md5sum, int loaded_cached);

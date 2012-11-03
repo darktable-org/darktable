@@ -131,7 +131,9 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   int dev = 0;
   for(int k=0; k<num_devices; k++)
   {
+    memset(cl->dev[dev].program, 0x0, sizeof(cl_program)*DT_OPENCL_MAX_PROGRAMS);
     memset(cl->dev[dev].program_used, 0x0, sizeof(int)*DT_OPENCL_MAX_PROGRAMS);
+    memset(cl->dev[dev].kernel,  0x0, sizeof(cl_kernel)*DT_OPENCL_MAX_KERNELS);
     memset(cl->dev[dev].kernel_used,  0x0, sizeof(int)*DT_OPENCL_MAX_KERNELS);
     cl->dev[dev].eventlist = NULL;
     cl->dev[dev].eventtags = NULL;
@@ -239,7 +241,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
     char dtpath[DT_MAX_PATH_LEN];
     char filename[DT_MAX_PATH_LEN];
-    char programname[DT_MAX_PATH_LEN];
+    char confentry[DT_MAX_PATH_LEN];
     char binname[DT_MAX_PATH_LEN];
     dt_loc_get_datadir(dtpath, DT_MAX_PATH_LEN);
     snprintf(filename, DT_MAX_PATH_LEN, "%s/kernels/programs.conf", dtpath);
@@ -253,30 +255,44 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
       while(!feof(f))
       {
-        int rd = fscanf(f, "%[^\n]\n", programname);
+        int prog = -1;
+        int rd = fscanf(f, "%[^\n]\n", confentry);
         if(rd != 1) continue;
         // remove comments:
-        for(int pos=0; pos<strlen(programname); pos++)
-          if(programname[pos] == '#')
+        for(int pos=0; pos<strlen(confentry); pos++)
+          if(confentry[pos] == '#')
           {
-            programname[pos] = '\0';
+            confentry[pos] = '\0';
             for(int l=pos-1; l>=0; l--)
             {
-              if (programname[l] == ' ')
-                programname[l] = '\0';
+              if (confentry[l] == ' ')
+                confentry[l] = '\0';
               else
                 break;
             }
             break;
           }
-        if(programname[0] == '\0') continue;
+        if(confentry[0] == '\0') continue;
+
+        const char *delim = " \t";
+        char *programname = strtok(confentry, delim);
+        char *programnumber = strtok(NULL, delim);
+
+        prog = programnumber ? strtol(programnumber, NULL, 10) : -1;
+
+        if(!programname || programname[0] == '\0' || prog < 0)
+        {
+          dt_print(DT_DEBUG_OPENCL, "[opencl_init] malformated entry in programs.conf `%s'; ignoring it!\n", confentry);
+          continue;
+        }
+
         snprintf(filename, DT_MAX_PATH_LEN, "%s/kernels/%s", dtpath, programname);
         snprintf(binname, DT_MAX_PATH_LEN, "%s/%s.bin", cachedir, programname);
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
         int loaded_cached;
         char md5sum[33];
-        const int prog = dt_opencl_load_program(dev, filename, binname, cachedir, md5sum, &loaded_cached);
-        if(dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached) != CL_SUCCESS)
+        if(dt_opencl_load_program(dev, prog, filename, binname, cachedir, md5sum, &loaded_cached) && 
+           dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached) != CL_SUCCESS)
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
           goto finally;
@@ -414,17 +430,28 @@ static FILE* fopen_stat(const char* filename, struct stat* st)
 }
 
 
-int dt_opencl_load_program(const int dev, const char *filename, const char* binname, const char* cachedir, char* md5sum, int* loaded_cached)
+int dt_opencl_load_program(const int dev, const int prog, const char *filename, const char* binname, const char* cachedir, char* md5sum, int* loaded_cached)
 {
   cl_int err;
   dt_opencl_t *cl = darktable.opencl;
 
   struct stat filestat, cachedstat;
   *loaded_cached = 0;
-  int k = 0;
+
+  if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] invalid program number `%d' of file `%s'!\n", prog, filename);
+    return 0;
+  }
+
+  if(cl->dev[dev].program_used[prog])
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] program number `%d' already in use when loading file `%s'!\n", prog, filename);
+    return 0;
+  }
 
   FILE* f = fopen_stat(filename, &filestat);
-  if (!f) return -1;
+  if (!f) return 0;
 
   size_t filesize = filestat.st_size;
   char* file = (char*)malloc(filesize+1024);
@@ -434,7 +461,7 @@ int dt_opencl_load_program(const int dev, const char *filename, const char* binn
   {
     free(file);
     dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] could not read all of file `%s'!\n", filename);
-    return -1;
+    return 0;
   }
 
   char *start = file + filesize;
@@ -481,27 +508,20 @@ int dt_opencl_load_program(const int dev, const char *filename, const char* binn
         }
         else
         {
-          for(k = 0; k<DT_OPENCL_MAX_PROGRAMS; k++) if(!cl->dev[dev].program_used[k])
-            {
-              cl->dev[dev].program[k] = (cl->dlocl->symbols->dt_clCreateProgramWithBinary)(cl->dev[dev].context, 1, &(cl->dev[dev].devid), &cached_filesize, (const unsigned char **)&cached_content, NULL, &err);
-              if(err != CL_SUCCESS)
-              {
-                dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not load cached binary program from file `%s'! (%d)\n", binname, err);
-                break;
-              }
-              else
-              {
-                cl->dev[dev].program_used[k] = 1;
-                *loaded_cached = 1;
-                break;
-              }
-            }
+          cl->dev[dev].program[prog] = (cl->dlocl->symbols->dt_clCreateProgramWithBinary)(cl->dev[dev].context, 1, &(cl->dev[dev].devid), &cached_filesize, (const unsigned char **)&cached_content, NULL, &err);
+          if(err != CL_SUCCESS)
+          {
+            dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not load cached binary program from file `%s'! (%d)\n", binname, err);
+          }
+          else
+          {
+            cl->dev[dev].program_used[prog] = 1;
+            *loaded_cached = 1;
+          }
         }
         free(cached_content);
       }
-
     }
-
     fclose(cached);
   }
 
@@ -518,25 +538,18 @@ int dt_opencl_load_program(const int dev, const char *filename, const char* binn
     }
     unlink(binname);
 
-    if (k != DT_OPENCL_MAX_PROGRAMS)
-    {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not load cached binary program, trying to compile source\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not load cached binary program, trying to compile source\n");
 
-      for(k=0; k<DT_OPENCL_MAX_PROGRAMS; k++) if(!cl->dev[dev].program_used[k])
-        {
-          cl->dev[dev].program[k] = (cl->dlocl->symbols->dt_clCreateProgramWithSource)(cl->dev[dev].context, 1, (const char**)&file, &filesize, &err);
-          free(file);
-          if(err != CL_SUCCESS)
-          {
-            dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] could not create program from file `%s'! (%d)\n", filename, err);
-            return -1;
-          }
-          else
-          {
-            cl->dev[dev].program_used[k] = 1;
-            break;
-          }
-        }
+    cl->dev[dev].program[prog] = (cl->dlocl->symbols->dt_clCreateProgramWithSource)(cl->dev[dev].context, 1, (const char**)&file, &filesize, &err);
+    free(file);
+    if(err != CL_SUCCESS)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] could not create program from file `%s'! (%d)\n", filename, err);
+      return 0;
+    }
+    else
+    {
+      cl->dev[dev].program_used[prog] = 1;
     }
   }
   else
@@ -545,17 +558,10 @@ int dt_opencl_load_program(const int dev, const char *filename, const char* binn
     dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] loaded cached binary program from file `%s'\n", binname);
   }
 
+  dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] successfully loaded program from `%s'\n", filename);
 
-  if(k < DT_OPENCL_MAX_PROGRAMS)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] successfully loaded program from `%s'\n", filename);
-    return k;
-  }
-  else
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] too many programs! can't load `%s'\n", filename);
-    return -1;
-  }
+  return 1;
+
 }
 
 int dt_opencl_build_program(const int dev, const int prog, const char* binname, const char* cachedir, char* md5sum, int loaded_cached)
