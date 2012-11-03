@@ -178,7 +178,18 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     const char *ext = format->extension(fdata);
     char *c = dirname + strlen(dirname);
     for(; c>dirname && *c != '/'; c--);
-    if(*c == '/') *c = '\0';
+    if(*c == '/')
+    {
+      if(c > dirname) // /.../.../foo
+        c[0] = '\0';
+      else // /foo
+        c[1] = '\0';
+    }
+    else if(c == dirname) // foo
+    {
+      c[0] = '.'; c[1] = '\0';
+    }
+
     if(g_mkdir_with_parents(dirname, 0755))
     {
       fprintf(stderr, "[imageio_storage_disk] could not create directory: `%s'!\n", dirname);
