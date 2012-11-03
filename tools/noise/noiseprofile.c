@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
+#include <string.h>
 
 typedef float elem_type;
 #define ELEM_SWAP(a,b) { elem_type t=(a);(a)=(b);(b)=t; }
@@ -99,17 +100,34 @@ int main(int argc, char *arg[])
 {
   if(argc < 2)
   {
-    fprintf(stderr, "usage: %s input.pfm\n", arg[0]);
+    fprintf(stderr, "usage: %s input.pfm [-c a1 a2 a3 b]\n", arg[0]);
     exit(1);
   }
   int wd, ht;
   float *input = read_pfm(arg[1], &wd, &ht);
+  // sanity checks:
+  for(int k=0;k<3*wd*ht;k++) input[k] = clamp(input[k], 0.0f, 1.0f);
+
+  // correction requested?
+  if(argc >= 6 && !strcmp(arg[2], "-c"))
+  {
+    const float a[3] = { atof(arg[3]), atof(arg[4]), atof(arg[5]) };
+    const float b = atof(arg[6]);
+    // TODO: get rid of the constant:
+    const float m = 1.0/2000.0f;
+    // TODO: (and get rid of the analytical inverse and use the cdf directly)
+    for(int k=0;k<wd*ht;k++)
+    {
+      for(int c=0;c<3;c++)
+      {
+        // input[3*k+c] = powf(a[c]*N*input[3*k+c], b)*m;
+        input[3*k+c] = powf(N*input[3*k+c], 1.0f/b)/a[c]*m;
+      }
+    }
+  }
 
   float std[N][3] = {{0.0f}};
   float cnt[N][3] = {{0.0f}};
-
-  // sanity checks:
-  for(int k=0;k<3*wd*ht;k++) input[k] = clamp(input[k], 0.0f, 1.0f);
 
   // one level haar decomposition, separable, decimated, lifting scheme
   for(int j=0;j<ht;j++)
@@ -223,9 +241,14 @@ int main(int argc, char *arg[])
 #endif
 
   // output variance per brightness level:
-  fprintf(stdout, "# bin std_r std_g std_b\n");
+  fprintf(stdout, "# bin std_r std_g std_b hist_r hist_g hist_b cdf_r cdf_g cdf_b\n");
+  float cdf[3] = {0.0f};
   for(int i=0;i<N;i++)
-    fprintf(stdout, "%d %f %f %f %f %f %f\n", i, std[i][0], std[i][1], std[i][2], cnt[i][0], cnt[i][1], cnt[i][2]);
+  {
+    fprintf(stdout, "%d %f %f %f %f %f %f %f %f %f\n", i, std[i][0], std[i][1], std[i][2],
+        cnt[i][0], cnt[i][1], cnt[i][2], cdf[0], cdf[1], cdf[2]);
+    for(int k=0;k<3;k++) cdf[k] += std[i][k];
+  }
 
   free(llhh);
   free(input);
