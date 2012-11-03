@@ -17,9 +17,10 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>Demosaic is done on display only when zoom is greater than 50%.</para>
+		<para>Demosaic is done on display only when zoom is greater than 50% or when the according
+                      preference setting "demosaicing for zoomed out darkroom mode" is set accordingly.</para>
                 <sect5><title>method</title>
-			<para>Set the method to demosaic.</para>
+			<para>Set the demosaic method. Darktable currently supports PPG and AMAZE.</para>
 		</sect5>
 
                 <sect5><title>edge threshold</title>
@@ -29,7 +30,8 @@
 			<para>Number of passes for color smoothing.</para>
 		</sect5>
 		<sect5><title>match greens</title>
-			<para>Greens correction, useful for some camera.</para>
+			<para>Greens correction, useful for some camera. Available options
+                              are "diabled", "local average", "full average" and "full and local average".</para>
 		</sect5>
 
 	</sect4>

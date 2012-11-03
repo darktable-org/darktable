@@ -121,7 +121,7 @@
 				</sect4>
 
 				<sect4><title>intent</title>
-					<para>This option lets you define the intent, i.e. the way darktable will deal with out-of-gamut colors. See module "input color profile" for a more detailed description of the
+					<para>This option lets you define the intent, i.e. the way darktable will deal with out-of-gamut colors. See module "output color profile" for a more detailed description of the
                                               available options. Select "image settings" if you want the settings in module "output color profile" of the individual images to take precedence.
 					</para>
 				</sect4>
