@@ -1351,11 +1351,9 @@ _lib_collect_gui_update (dt_lib_module_t *self)
     gchar *text = dt_conf_get_string(confname);
     if(text)
     {
-      int z;
-      z = g_signal_handlers_block_matched (d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, callback, NULL);
-      printf ("_lib_collect_gui_update: %d signals closed\n", z);
+      g_signal_handlers_block_matched (d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, update_view, NULL);
       gtk_entry_set_text(GTK_ENTRY(d->rule[i].text), text);
-      g_signal_handlers_unblock_matched (d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, callback, NULL);
+      g_signal_handlers_unblock_matched (d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, update_view, NULL);
       g_signal_handlers_block_matched (d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
       gtk_entry_set_text(GTK_ENTRY(d->rule[i].text), text);
       g_signal_handlers_unblock_matched (d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
@@ -1495,7 +1493,6 @@ entry_activated (GtkWidget *entry, dt_lib_collect_rule_t *d)
 static void
 entry_changed (GtkWidget *entry, gchar *new_text, gint new_length, gpointer *position, dt_lib_collect_rule_t *d)
 {
-  printf ("entry_changed callback!\n");
   d->typing = TRUE;
 }
 
