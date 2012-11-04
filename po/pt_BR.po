@@ -45,7 +45,7 @@ msgstr "clique duplo para redefinir para `%s'"
 
 #: ../build/src/preferences_gen.h:924
 msgid " (needs a restart)"
-msgstr "(é necessario reiniciar) "
+msgstr "(é necessário reiniciar) "
 
 #: ../build/src/preferences_gen.h:931
 msgid "don't use embedded preview jpeg but half-size raw"
@@ -94,7 +94,7 @@ msgstr "perguntar antes de copiar imagens para uma nova pasta de rolo de filme"
 
 #: ../build/src/preferences_gen.h:1019
 msgid "always ask the user before any image file is copied."
-msgstr "sempre perguntar ao usuário antes de copiar qualquer aquivo de imagem."
+msgstr "sempre perguntar ao usuário antes de copiar qualquer arquivo de imagem."
 
 #: ../build/src/preferences_gen.h:1026
 msgid "number of folder levels to show in lists"
@@ -122,7 +122,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1067
 msgid "recursive directory traversal when importing filmrolls"
-msgstr "atravessar diretórisos recursivamente ao importar rolos de filme"
+msgstr "atravessar diretórios recursivamente ao importar rolos de filme"
 
 #: ../build/src/preferences_gen.h:1085
 msgid "creator to be applied when importing"
@@ -138,7 +138,7 @@ msgstr "direitos a ser aplicado ao importar"
 
 #: ../build/src/preferences_gen.h:1139
 msgid "comma separated tags to be applied when importing"
-msgstr "etiquetas separadas por vírgular a seem aplicadas ao importar"
+msgstr "etiquetas separadas por vírgular a serem aplicadas ao importar"
 
 #: ../build/src/preferences_gen.h:1157
 msgid "initial import rating"
@@ -151,7 +151,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1181
 msgid "enable filmstrip"
-msgstr "habiltar tira de filme"
+msgstr "habilitar tira de filme"
 
 #: ../build/src/preferences_gen.h:1193
 msgid "enable the filmstrip in darkroom and tethering modes."
@@ -223,7 +223,7 @@ msgid ""
 "show a more readable representation of the location in the image information "
 "module"
 msgstr ""
-"mostra uma representação mais legível da localizaçao no módulo de informação "
+"mostra uma representação mais legível da localização no módulo de informação "
 "da imagem"
 
 #: ../build/src/preferences_gen.h:1351
@@ -236,7 +236,7 @@ msgstr "memória em bytes disponíveis para o cache mipmap"
 
 #: ../build/src/preferences_gen.h:1369
 msgid " (needs a restart) "
-msgstr "(é necessario reiniciar) "
+msgstr "(é necessário reiniciar) "
 
 #: ../build/src/preferences_gen.h:1376
 msgid "number of background threads"
@@ -314,7 +314,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1485
 msgid "activate opencl support"
-msgstr "ativa supporte a opencl"
+msgstr "ativa suporte a opencl"
 
 #: ../build/src/preferences_gen.h:1497
 msgid ""
@@ -374,7 +374,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1611
 msgid "password storage backend to use"
-msgstr "usar backend para armazenanto de senha"
+msgstr "usar backend para armazenamento de senha"
 
 #: ../build/src/preferences_gen.h:1636
 msgid "the storage backend for password storage: none, kwallet, gnome keyring"
@@ -476,7 +476,7 @@ msgstr "alterado"
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
 msgstr[0] "%d imagem de %d na coleção atual está selecionada"
-msgstr[1] "%d imagems de %d na coleção atual foram selecionadas"
+msgstr[1] "%d imagens de %d na coleção atual foram selecionadas"
 
 #: ../src/common/darktable.c:172
 msgid ""
@@ -613,7 +613,7 @@ msgstr "estilo nomeado '%s' criado com sucesso"
 #: ../src/common/styles.c:497
 #, c-format
 msgid "failed to overwrite style file for %s"
-msgstr "falha o sobrescrever aquivo de estilo para %s"
+msgstr "falha o sobrescrever arquivo de estilo para %s"
 
 #: ../src/common/styles.c:503
 #, c-format
@@ -755,7 +755,7 @@ msgstr[1] "removendo %d imagens"
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "excluindo %d imagem"
-msgstr[1] "excluido %d imagens"
+msgstr[1] "excluindo %d imagens"
 
 #: ../src/control/jobs/control_jobs.c:725
 msgid "failed to parse gpx file"
@@ -1907,7 +1907,7 @@ msgstr "nova predefinição"
 
 #: ../src/gui/presets.c:804 ../src/libs/lib.c:408
 msgid "edit this preset.."
-msgstr "editar esta predefiniçao..."
+msgstr "editar esta predefinição..."
 
 #: ../src/gui/presets.c:808 ../src/libs/lib.c:412
 msgid "delete this preset"
@@ -2118,7 +2118,7 @@ msgstr "incapaz de recuperar a lista de álbuns"
 #: ../src/imageio/storage/flickr.c:420 ../src/imageio/storage/picasa.c:661
 #: ../src/imageio/storage/picasa.c:702
 msgid "create new album"
-msgstr "criar novo album"
+msgstr "criar novo álbum"
 
 #: ../src/imageio/storage/facebook.c:914
 msgid "logout"
@@ -2235,7 +2235,7 @@ msgstr "autenticado"
 #. Add standard action
 #: ../src/imageio/storage/flickr.c:391
 msgid "without album"
-msgstr "sem album"
+msgstr "sem álbum"
 
 #: ../src/imageio/storage/flickr.c:477
 msgid "flickr user"
@@ -2271,7 +2271,7 @@ msgstr "Flickr login"
 
 #: ../src/imageio/storage/flickr.c:546 ../src/imageio/storage/picasa.c:829
 msgid "export tags"
-msgstr "esportar etiquetas"
+msgstr "exportar etiquetas"
 
 #: ../src/imageio/storage/flickr.c:550
 msgid "you"
@@ -2297,7 +2297,7 @@ msgstr "todos"
 #: ../src/imageio/storage/flickr.c:749
 #, c-format
 msgid "%d/%d exported to flickr webalbum"
-msgstr "%d/%d exportos para o álbum flickr"
+msgstr "%d/%d exportados para o álbum flickr"
 
 #: ../src/imageio/storage/flickr.c:854
 msgid "Flickr account not authenticated"
@@ -2549,7 +2549,7 @@ msgstr "curva base"
 
 #: ../src/iop/basecurve.c:727
 msgid "abscissa: input, ordinate: output. works on RGB channels"
-msgstr "abscissa: entrada, ordenada: saida. trabalha nos canais RGB"
+msgstr "abscissa: entrada, ordenada: saída. trabalha nos canais RGB"
 
 #: ../src/iop/bilat.c:61 ../src/iop/clahe.c:66
 msgid "local contrast"
@@ -2597,7 +2597,7 @@ msgstr "azul"
 
 #: ../src/iop/bilateral.cc:340
 msgid "spatial extent of the gaussian"
-msgstr "extenão espacial do gaussiano"
+msgstr "extensão espacial do gaussiano"
 
 #: ../src/iop/bilateral.cc:341
 msgid "how much to blur red"
@@ -2834,11 +2834,11 @@ msgstr "tamanho da linha de moldura em percentagem da largura mínima da borda"
 
 #: ../src/iop/borders.c:1008
 msgid "frame line offset"
-msgstr "deslocamento linda de moldura"
+msgstr "deslocamento da linha de moldura"
 
 #: ../src/iop/borders.c:1011
 msgid "offset of the frame line begining on picture side"
-msgstr "deslocamento da linde de moldura começando no lado da imagem"
+msgstr "deslocamento da linha de moldura começando no lado da imagem"
 
 #: ../src/iop/borders.c:1017
 msgid "border color"
@@ -2854,7 +2854,7 @@ msgstr "cor da linha de moldura"
 
 #: ../src/iop/borders.c:1035
 msgid "pick frame line color from image"
-msgstr "slecione cor da linha de moldura da imagem"
+msgstr "selecione cor da linha de moldura da imagem"
 
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/cacorrect.c:59
@@ -3387,7 +3387,7 @@ msgstr "alterna verifica gamut"
 
 #: ../src/iop/colortransfer.c:105
 msgid "color transfer"
-msgstr "tranferencia de cor"
+msgstr "tranferência de cor"
 
 #: ../src/iop/colortransfer.c:116
 msgctxt "accel"
@@ -3540,7 +3540,7 @@ msgstr "média global e local"
 
 #: ../src/iop/demosaic.c:1332
 msgid "green channels matching method"
-msgstr "método the correspondencia canal verde"
+msgstr "método de correspondência canal verde"
 
 #: ../src/iop/equalizer.c:42
 msgid "legacy equalizer"
@@ -5952,7 +5952,7 @@ msgstr "desagrupa"
 
 #: ../src/libs/import.c:84
 msgid "import"
-msgstr "importa"
+msgstr "importar"
 
 #: ../src/libs/import.c:105
 msgctxt "accel"
@@ -6642,7 +6642,7 @@ msgstr "esclui os estilos selecionados na lista acima"
 #: ../src/libs/styles.c:391
 msgctxt "styles"
 msgid "import"
-msgstr "importa"
+msgstr "importar"
 
 #: ../src/libs/styles.c:393
 msgid "import style from a style file"
@@ -6659,12 +6659,12 @@ msgstr "tagging"
 #: ../src/libs/tagging.c:78
 msgctxt "accel"
 msgid "attach"
-msgstr "anexa"
+msgstr "anexar"
 
 #: ../src/libs/tagging.c:79
 msgctxt "accel"
 msgid "detach"
-msgstr "remove"
+msgstr "remover"
 
 #: ../src/libs/tagging.c:80
 msgctxt "accel"
@@ -6705,7 +6705,7 @@ msgstr ""
 
 #: ../src/libs/tagging.c:415
 msgid "attach"
-msgstr "anexa"
+msgstr "anexar"
 
 #: ../src/libs/tagging.c:417
 msgid "attach tag to all selected images"
@@ -6713,7 +6713,7 @@ msgstr "anexa etiqueta as imagens selecionadas"
 
 #: ../src/libs/tagging.c:422
 msgid "detach"
-msgstr "remove"
+msgstr "remover"
 
 #: ../src/libs/tagging.c:424
 msgid "detach tag from all selected images"
@@ -6920,7 +6920,7 @@ msgstr "filtro"
 #. list label
 #: ../src/libs/tools/filter.c:95
 msgid "view"
-msgstr "visualiza"
+msgstr "visualizar"
 
 #: ../src/libs/tools/filter.c:102
 msgid "unstarred only"
@@ -7168,7 +7168,7 @@ msgstr "rolar para o centro"
 #: ../src/views/lighttable.c:1431
 msgctxt "accel"
 msgid "preview"
-msgstr "visualizaçao"
+msgstr "visualização"
 
 #: ../src/views/map.c:81
 msgid "map"
