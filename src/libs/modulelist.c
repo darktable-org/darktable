@@ -46,6 +46,8 @@ static void _lib_modulelist_row_changed_callback(GtkTreeView *tree_view, gpointe
 static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_data);
 /* force refresh of tree */
 static void _lib_modulelist_gui_update(struct dt_lib_module_t *);
+/* helper for sorting */
+static gint _lib_modulelist_gui_sort(GtkTreeModel *model, GtkTreeIter  *a, GtkTreeIter  *b, gpointer      userdata);
 
 const char* name()
 {
@@ -78,7 +80,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(self->widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
   d->tree = GTK_TREE_VIEW(gtk_tree_view_new());
   gtk_widget_set_size_request(GTK_WIDGET(d->tree), 50, -1);
-  gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(self->widget), GTK_WIDGET(d->tree));
+  gtk_container_add(GTK_CONTAINER(self->widget), GTK_WIDGET(d->tree));
 
   /* connect to signal for darktable.develop initialization */
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_INITIALIZE,G_CALLBACK(_lib_modulelist_populate_callback),self);
@@ -151,6 +153,10 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   store = gtk_list_store_new (NUM_COLS, GDK_TYPE_PIXBUF,  G_TYPE_POINTER);
   gtk_tree_view_set_model (GTK_TREE_VIEW(view), GTK_TREE_MODEL(store));
   g_object_unref (store);
+
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(store), COL_MODULE, _lib_modulelist_gui_sort, NULL, NULL);
+  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store), COL_MODULE, GTK_SORT_ASCENDING);
+
 
   pix_renderer = gtk_cell_renderer_pixbuf_new ();
   g_object_set(pix_renderer,"cell-background-gdk",&style->bg[GTK_STATE_ACTIVE],NULL);
@@ -247,7 +253,13 @@ static void _lib_modulelist_gui_update(struct dt_lib_module_t *module)
 
 }
 
-
+static gint _lib_modulelist_gui_sort(GtkTreeModel *model, GtkTreeIter  *a, GtkTreeIter  *b, gpointer      userdata)
+{
+  dt_iop_module_t *modulea,*moduleb;
+  gtk_tree_model_get(model, a, COL_MODULE, &modulea, -1);
+  gtk_tree_model_get(model, b, COL_MODULE, &moduleb, -1);
+  return strcmp(modulea->name(),moduleb->name());
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
