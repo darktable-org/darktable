@@ -180,7 +180,7 @@ static void dt_control_sanitize_database()
                         NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "CREATE TABLE memory.history (imgid integer, num integer, module integer, "
-                        "operation varchar(256), op_params blob, enabled integer, "
+                        "operation varchar(256) UNIQUE ON CONFLICT REPLACE, op_params blob, enabled integer, "
                         "blendop_params blob, blendop_version integer)",
                         NULL, NULL, NULL);
 
