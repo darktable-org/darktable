@@ -39,9 +39,6 @@ DT_MODULE(1)
 
 #define PARAM_STRING_SIZE 256 // FIXME: is this enough !?
 
-/* Folders code starts here
- TODO: Clean it */
-
 //DT_MODULE(1)
 
 typedef struct dt_lib_collect_rule_t
@@ -110,8 +107,9 @@ typedef struct _image_t
 }
 _image_t;
 
-static void _lib_collect_gui_update (dt_lib_module_t *d);
+static void _lib_collect_gui_update (dt_lib_module_t *self);
 static void _lib_folders_update_collection(const gchar *filmroll);
+static void entry_changed (GtkWidget *entry, gchar *new_text, gint new_length, gpointer *position, dt_lib_collect_rule_t *d);
 
 const char*
 name ()
@@ -777,7 +775,7 @@ match_string (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointe
 
   gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_VISIBLE, &cur_state, -1);
 
-  if (!dr->typing && !cur_state)
+  if (dr->typing == FALSE && !cur_state)
   {
     visible = TRUE;
     gtk_tree_store_set (GTK_TREE_STORE(model), iter, DT_LIB_COLLECT_COL_VISIBLE, visible, -1);
@@ -822,14 +820,12 @@ reveal_func (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer
   gchar *str;
 
   gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_VISIBLE, &state, -1);
-  //printf("Model: %s -- State: %s\n", str, state?"TRUE":"FALSE"); 
   if (!state)
     return FALSE;
 
   while (gtk_tree_model_iter_parent (model, &parent, &child))
   {
     gtk_tree_model_get (model, &parent, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_VISIBLE, &state, -1);
-    //printf("Changing: Model: %s -- State from: %s to TRUE\n", str, state?"TRUE":"FALSE"); 
     gtk_tree_store_set (GTK_TREE_STORE (model), &parent, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
     child = parent;
   }
@@ -1015,7 +1011,7 @@ set_properties (dt_lib_collect_rule_t *dr)
 }
 
 static void
-folder_stuff (dt_lib_collect_rule_t *dr)
+folders_view (dt_lib_collect_rule_t *dr)
 {
   dt_lib_collect_t *d = get_collect (dr);
   
@@ -1026,38 +1022,30 @@ folder_stuff (dt_lib_collect_rule_t *dr)
   
   set_properties (dr);
 
-  if (d->trees != NULL)
+if (d->trees != NULL)
+{
+  if (dr->typing == FALSE)
   {
-    if (dr->typing == FALSE)
+    // Do nothing here
+  }
+  else
+  {
+    for (int i=0; i<d->trees->len; i++)
     {
-      printf("Refiltering: NOT TYPING\n");
-      for (int i=0; i<d->trees->len; i++)
-      {
-        tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
-        GtkTreeModelFilter *modelfilter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model (tree));
-        GtkTreeModel *model = gtk_tree_model_filter_get_model (modelfilter);
-        refilter (model, dr);
-      }
-    }
-    else
-    {
-      printf("Refiltering: TYPING\n");
-      for (int i=0; i<d->trees->len; i++)
-      {
-        tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
-        GtkTreeModelFilter *modelfilter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model (tree));
-        GtkTreeModel *model = gtk_tree_model_filter_get_model (modelfilter);
-        refilter (model, dr);
-        expand_tree (tree, dr);
-      }
+      tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
+      GtkTreeModelFilter *modelfilter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model (tree));
+      GtkTreeModel *model = gtk_tree_model_filter_get_model (modelfilter);
+      refilter (model, dr);
+      expand_tree (tree, dr);
     }
   }
-  gtk_widget_show(GTK_WIDGET(d->box));
-  gtk_widget_show(GTK_WIDGET(d->sw2));
+}
+gtk_widget_show(GTK_WIDGET(d->box));
+gtk_widget_show(GTK_WIDGET(d->sw2));
 }
 
 static void
-rest (dt_lib_collect_rule_t *dr)
+list_view (dt_lib_collect_rule_t *dr)
 {
   // update related list
   dt_lib_collect_t *d = get_collect(dr);
@@ -1225,14 +1213,14 @@ entry_key_press_exit:
 }
 
 static void
-callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
+update_view (GtkEntry *entry, dt_lib_collect_rule_t *dr)
 {
   int property = gtk_combo_box_get_active(dr->combo);
   
   if (property == DT_COLLECTION_PROP_FOLDERS)
-    folder_stuff(dr);
+    folders_view(dr);
   else
-    rest(dr);
+    list_view(dr);
 }
 
 static void
@@ -1368,6 +1356,9 @@ _lib_collect_gui_update (dt_lib_module_t *self)
       printf ("_lib_collect_gui_update: %d signals closed\n", z);
       gtk_entry_set_text(GTK_ENTRY(d->rule[i].text), text);
       g_signal_handlers_unblock_matched (d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, callback, NULL);
+      g_signal_handlers_block_matched (d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
+      gtk_entry_set_text(GTK_ENTRY(d->rule[i].text), text);
+      g_signal_handlers_unblock_matched (d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
       g_free(text);
       d->rule[i].typing = FALSE;
     }
@@ -1397,7 +1388,7 @@ _lib_collect_gui_update (dt_lib_module_t *self)
 
   // update list of proposals
   create_folders_gui (d->rule + d->active_rule);  
-  callback(NULL, d->rule + d->active_rule);
+  update_view(NULL, d->rule + d->active_rule);
   darktable.gui->reset = old;
 }
 
@@ -1415,14 +1406,12 @@ static void
 combo_changed (GtkComboBox *combo, dt_lib_collect_rule_t *d)
 {
   if(darktable.gui->reset) return;
-  int z;
-  z = g_signal_handlers_block_matched (d->text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, callback, NULL);
-  printf ("combo_changed: %d signals blocked\n", z);
+  g_signal_handlers_block_matched (d->text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
   gtk_entry_set_text(GTK_ENTRY(d->text), "");
-  g_signal_handlers_unblock_matched (d->text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, callback, NULL);
+  g_signal_handlers_unblock_matched (d->text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;
-  callback(NULL, d);
+  update_view(NULL, d);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -1446,14 +1435,12 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
   else
     gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
   
-  int z;
-  z = g_signal_handlers_block_matched (d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, callback, NULL);
-  printf ("row_activated: %d signals blocked\n", z);
+  g_signal_handlers_block_matched (d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
   gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
-  g_signal_handlers_unblock_matched (d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, callback, NULL);
+  g_signal_handlers_unblock_matched (d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
   g_free(text);
 
-  callback(NULL, d->rule + active);
+  update_view(NULL, d->rule + active);
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
 }
@@ -1465,7 +1452,7 @@ entry_activated (GtkWidget *entry, dt_lib_collect_rule_t *d)
   GtkTreeModel *model;
   int property, rows;
 
-  callback(NULL, d);
+  update_view(NULL, d);
   dt_lib_collect_t *c = get_collect(d);
   
   property = gtk_combo_box_get_active(d->combo);
@@ -1494,14 +1481,12 @@ entry_activated (GtkWidget *entry, dt_lib_collect_rule_t *d)
       else
         gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
 
-      int z;
-      z = g_signal_handlers_block_matched (d->text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, callback, NULL);
-      printf ("entry activated: %d signals blocked\n", z);
+      g_signal_handlers_block_matched (d->text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
       gtk_entry_set_text(GTK_ENTRY(d->text), text);
-      g_signal_handlers_unblock_matched (d->text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, callback, NULL);
+      g_signal_handlers_unblock_matched (d->text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
       g_free(text);
       d->typing = FALSE;
-      callback(NULL, d);
+      update_view(NULL, d);
     }
   }
   dt_collection_update_query(darktable.collection);
@@ -1525,7 +1510,7 @@ entry_focus_in_callback (GtkWidget *w, GdkEventFocus *event, dt_lib_collect_rule
 {
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;
-  callback(NULL, c->rule + c->active_rule);
+  update_view(NULL, c->rule + c->active_rule);
 }
 
 #if 0
@@ -1660,7 +1645,7 @@ collection_updated(gpointer instance,gpointer self)
 
   dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
 
-  callback(NULL, d->rule + d->active_rule);
+  update_view(NULL, d->rule + d->active_rule);
 }
 
 
@@ -1674,7 +1659,7 @@ filmrolls_updated(gpointer instance, gpointer self)
   // update tree
   d->treemodel = GTK_TREE_MODEL(_folder_tree());
   d->tree_new = TRUE;
-  _lib_collect_gui_update((dt_lib_module_t *)self);
+  _lib_collect_gui_update(self); 
 }
 
 
@@ -1694,6 +1679,9 @@ menuitem_clear (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     dt_conf_set_int("plugins/lighttable/collect/mode0", DT_LIB_COLLECT_MODE_AND);
     dt_conf_set_int("plugins/lighttable/collect/item0", 0);
     dt_conf_set_string("plugins/lighttable/collect/string0", "");
+    d->typing = FALSE;
+    gtk_combo_box_set_active (d->combo, 0);
+    gtk_entry_set_text (GTK_ENTRY(d->text), "");
   }
   // move up all still active rules by one.
   for(int i=d->num; i<MAX_RULES-1; i++)
@@ -1716,6 +1704,8 @@ menuitem_clear (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
       g_free(string);
     }
   }
+  refilter (c->treemodel, d);
+
   dt_collection_update_query(darktable.collection);
 }
 
@@ -1805,7 +1795,7 @@ gui_init (dt_lib_module_t *self)
     g_object_set(G_OBJECT(w), "tooltip-text", _("type your query, use `%' as wildcard"), (char *)NULL);
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "insert-text", G_CALLBACK(entry_changed), d->rule + i);
-    g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(callback), d->rule + i);
+    g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(update_view), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
     gtk_box_pack_start(box, w, TRUE, TRUE, 0);
     w = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
