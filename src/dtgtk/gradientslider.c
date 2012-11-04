@@ -23,10 +23,13 @@
 #include <assert.h>
 
 #include "gradientslider.h"
+#include "common/darktable.h"
+#include "develop/develop.h"
 
 #define CLAMP_RANGE(x,y,z)      (CLAMP(x,y,z))
 
-//#define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY 250
+#define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MAX 500
+#define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MIN  25
 #define DTGTK_GRADIENT_SLIDER_DEFAULT_INCREMENT 0.01
 
 
@@ -53,7 +56,8 @@ enum
 
 static guint _signals[LAST_SIGNAL] = { 0 };
 
-/*static gboolean _gradient_slider_postponed_value_change(gpointer data) {
+static gboolean _gradient_slider_postponed_value_change(gpointer data)
+{
   gdk_threads_enter();
   if(DTGTK_GRADIENT_SLIDER(data)->is_changed==TRUE)
   {
@@ -62,7 +66,7 @@ static guint _signals[LAST_SIGNAL] = { 0 };
   }
   gdk_threads_leave();
   return DTGTK_GRADIENT_SLIDER(data)->is_dragging;	// This is called by the gtk mainloop and is threadsafe
-}*/
+}
 
 
 static inline gdouble _screen_to_scale(GtkWidget *widget, gint screen)
@@ -189,7 +193,11 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
       _slider_move(widget, gslider->selected, newposition, direction);
       gslider->min = gslider->selected == 0 ? 0.0f : gslider->position[gslider->selected-1];
       gslider->max = gslider->selected == gslider->positions-1 ? 1.0f : gslider->position[gslider->selected+1];
-      g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
+
+      gslider->is_changed = TRUE;
+      int delay = CLAMP_RANGE(darktable.develop->average_delay*3/2, DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MIN, DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MAX);
+      g_timeout_add(delay, _gradient_slider_postponed_value_change, widget);
+      //g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
 
     }
     else if (gslider->positions > 1) // right mouse button: switch on/off selection (only if we have more than one marker)
@@ -209,6 +217,7 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
       gtk_widget_draw(widget,NULL);
     }
   }
+
   return TRUE;
 }
 
@@ -227,7 +236,7 @@ static gboolean _gradient_slider_motion_notify(GtkWidget *widget, GdkEventMotion
     gslider->min = gslider->selected == 0 ? 0.0f : gslider->position[gslider->selected-1];
     gslider->max = gslider->selected == gslider->positions-1 ? 1.0f : gslider->position[gslider->selected+1];
 
-    g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
+    gslider->is_changed = TRUE;
 
     gtk_widget_draw(widget,NULL);
   }

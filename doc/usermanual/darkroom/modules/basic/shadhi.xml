@@ -10,7 +10,7 @@
           <row>
             <entry>The shadows and highlights module allows to adjust the tonal range of darker parts of an image (shadows) and lighter parts (highlights); it can bring back details in shadows and highlights by enhancing local contrast.</entry>
             <entry>
-              <graphic width="80%" fileref="darkroom/modules/images/shadhi_1.png" align="center" scalefit="1" />
+              <graphic width="80%" fileref="darkroom/modules/images/shadhi.png" align="center" scalefit="1" />
             </entry>
           </row>
         </tbody>

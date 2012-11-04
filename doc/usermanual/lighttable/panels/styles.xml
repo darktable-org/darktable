@@ -20,5 +20,28 @@
 					and thus avoiding you to create multiple duplicates before trying various styles on it.
 					</para>
 				</sect4>
+				<sect4><title>edit</title>
+					<para>Styles are a collection of history stack items. After pressing edit you are prompted with a dialog in which you can deselect
+                                              specific items. Check option "duplicate" if you want to create a new style instead of overwriting the existing
+                                              one; you need to give a new style name in this case.
+					</para>
+				</sect4>
+
+				<sect4><title>delete</title>
+					<para>This will delete the selected style without further question.
+					</para>
+
+				</sect4>
+
+				<sect4><title>import</title>
+					<para>You can import a style which has been previously saved by darktable. Darktable stores its files in xml files with the extension .dtstyle.
+					</para>
+
+				</sect4>
+
+				<sect4><title>export</title>
+					<para>This option saves a selected style to disk as a .dtstyle file. This allows to share styles among users.
+					</para>
+				</sect4>
 		</sect2>
     

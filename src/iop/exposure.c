@@ -293,11 +293,17 @@ autoexp_callback (GtkToggleButton *button, dt_iop_module_t *self)
 
   self->request_color_pick = gtk_toggle_button_get_active(button);
 
-  if (self->request_color_pick)
-    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
-
   dt_iop_request_focus(self);
+
+  if (self->request_color_pick)
+  {
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+    dt_dev_reprocess_all(self->dev);
+  }
+
   gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), gtk_toggle_button_get_active(button));
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -339,12 +345,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
   if(!self->request_color_pick) return FALSE;
-  if(self->picked_color_max[0] < 0.0f)
-  {
-    // provoke reprocessing of image to get valid color picker data
-    dt_dev_reprocess_all(self->dev);
-    return FALSE;
-  }
+  if(self->picked_color_max[0] < 0.0f) return FALSE;
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 

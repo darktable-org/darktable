@@ -90,12 +90,13 @@ static int usage(const char *argv0)
   return 1;
 }
 
+#ifndef __APPLE__
 typedef void (dt_signal_handler_t)(int) ;
 // static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
 static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
+#endif
 
-#if (defined(__APPLE__) && defined(APPLE_NEED_DPRINTF)) ||        \
-  (defined(__FreeBSD_version) && (__FreeBSD_version < 800071)) || \
+#if (defined(__FreeBSD_version) && (__FreeBSD_version < 800071)) || \
   defined(__SUNOS__)
 static int dprintf(int fd,const char *fmt, ...)
 {
@@ -109,6 +110,7 @@ static int dprintf(int fd,const char *fmt, ...)
 }
 #endif
 
+#ifndef __APPLE__
 static
 void _dt_sigsegv_handler(int param)
 {
@@ -162,6 +164,7 @@ void _dt_sigsegv_handler(int param)
   /* pass it further to the old handler*/
   _dt_sigsegv_old_handler(param);
 }
+#endif
 
 #if 0
 static
@@ -860,6 +863,8 @@ void dt_configure_defaults()
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
     dt_conf_set_int("worker_threads", 1);
     dt_conf_set_int("cache_memory", 200u<<10);
+    dt_conf_set_int("host_memory_limit", 500);
+    dt_conf_set_int("singlebuffer_limit", 8);
     dt_conf_set_int("plugins/lighttable/thumbnail_width", 800);
     dt_conf_set_int("plugins/lighttable/thumbnail_height", 500);
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");

@@ -223,12 +223,10 @@ static inline double dt_get_wtime(void)
 static inline void dt_get_times(dt_times_t *t)
 {
   struct rusage ru;
-  if (darktable.unmuted & DT_DEBUG_PERF)
-  {
-    getrusage(RUSAGE_SELF, &ru);
-    t->clock = dt_get_wtime();
-    t->user = ru.ru_utime.tv_sec + ru.ru_utime.tv_usec * (1.0/1000000.0);
-  }
+
+  getrusage(RUSAGE_SELF, &ru);
+  t->clock = dt_get_wtime();
+  t->user = ru.ru_utime.tv_sec + ru.ru_utime.tv_usec * (1.0/1000000.0);
 }
 
 void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...);
@@ -364,6 +362,57 @@ dt_get_num_atom_cores()
     }
   }
   return count;
+#elif defined(__DragonFly__) || \
+  defined(__FreeBSD__) || \
+  defined(__NetBSD__) || \
+  defined(__OpenBSD__)
+  int ret, hw_ncpu;
+  int mib[2] = { CTL_HW, HW_MODEL };
+  char *hw_model, *index;
+  size_t length;
+
+  /* Query hw.model to get the required buffer length and allocate the
+   * buffer. */
+  ret = sysctl(mib, 2, NULL, &length, NULL, 0);
+  if (ret != 0)
+  {
+    return 0;
+  }
+
+  hw_model = (char *)malloc(length + 1);
+  if (hw_model == NULL)
+  {
+    return 0;
+  }
+
+  /* Query hw.model again, this time with the allocated buffer. */
+  ret = sysctl(mib, 2, hw_model, &length, NULL, 0);
+  if (ret != 0)
+  {
+    free(hw_model);
+    return 0;
+  }
+  hw_model[length] = '\0';
+
+  /* Check if the processor model name contains "Atom". */
+  index = strstr(hw_model, "Atom");
+  free(hw_model);
+  if (index == NULL)
+  {
+    return 0;
+  }
+
+  /* Get the number of cores, using hw.ncpu sysctl. */
+  mib[1]  = HW_NCPU;
+  hw_ncpu = 0;
+  length  = sizeof(hw_ncpu);
+  ret = sysctl(mib, 2, &hw_ncpu, &length, NULL, 0);
+  if (ret != 0)
+  {
+    return 0;
+  }
+
+  return hw_ncpu;
 #else
   return 0;
 #endif

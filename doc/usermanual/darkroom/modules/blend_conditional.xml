@@ -68,7 +68,7 @@
                               the higher the blend mask value. With the color picker button <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" /> 
                               you can select a probe from your image. The corresponding values for the real and virtual data channels are displayed in each color channel slider. 
 		              With the reset button <inlinegraphic fileref="&icon_module_reset;" scalefit="1" width="2%" align="center" /> you can put all conditional blending 
-                              settings back to there default state.
+                              settings back to their default state.
 		        </para>
 	        </sect3>
 

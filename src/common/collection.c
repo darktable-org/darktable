@@ -116,7 +116,7 @@ dt_collection_update (const dt_collection_t *collection)
   /* grouping */
   if(darktable.gui && darktable.gui->grouping)
   {
-    wq = dt_util_dstrcat(wq, " and group_id = id or group_id = %d", darktable.gui->expanded_group_id);
+    wq = dt_util_dstrcat(wq, " and (group_id = id or group_id = %d)", darktable.gui->expanded_group_id);
   }
 
   /* build select part includes where */

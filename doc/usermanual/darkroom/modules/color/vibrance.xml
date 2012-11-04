@@ -5,8 +5,8 @@
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>This modules affects the vibrance in the image this is a widely used term
-						and the endresult differs from program to program, vibrance in darktable does 
+						<entry>This modules affects the vibrance in the image. Vibrance is a widely used term
+						and the endresult differs from program to program. Vibrance in darktable does 
 						saturate the most saturated pixels and brings down the lightness of those pixels 
 						to make the colors more vivid.
 						</entry>

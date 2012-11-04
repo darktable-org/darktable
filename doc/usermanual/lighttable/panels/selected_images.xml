@@ -22,13 +22,23 @@
 					<para>Physically delete selected images from filesystem.
 					</para>
 				</sect4>
-				<sect4><title>write sidecar files</title>
-					<para>Write .xmp sidecar files.
+				<sect4><title>move</title>
+					<para>Physically move selected images (parent file plus accompanying .xmp sidecar file) to another filesystem folder.
+					</para>
+				</sect4>
+				<sect4><title>copy</title>
+					<para>Physically copy selected images (parent file plus accompanying .xmp sidecar file) to another filesystem folder.
+					</para>
+				</sect4>
+				<sect4><title>create hdr</title>
+					<para>Create a high dynamic range image from the selected images and store it as a new source file in DNG format. Images
+                                              need to be properly aligned.
 					</para>
 				</sect4>
 				<sect4><title>duplicate</title>
 					<para>Create a virtual copy of selected images within darktable but not physically on
-					your filesystem. It allows to test and try different developments for the same image for example.
+					your filesystem. It allows to test and try different developments for the same image for example. Duplicate images will
+                                        share the same parent input file but each have their own .xmp sidecar file.
 					</para>
 				</sect4>
 				<sect4><title>rotation</title>
@@ -36,5 +46,15 @@
 					allows to reset rotation to EXIF value.
 					</para>
 				</sect4>
+				<sect4><title>group</title>
+					<para>Create a new group from selected images.
+					</para>
+				</sect4>
+				<sect4><title>ungroup</title>
+					<para>Remove selected images from the group.
+					</para>
+				</sect4>
+
+
 		</sect2>
 
