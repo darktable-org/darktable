@@ -18,14 +18,10 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<sect5><title>Saturation</title>
+		<sect5><title>strength</title>
 			<para>This slider controls the strength of saturation for the effect.</para>
 		</sect5>
-		<sect5><title>Vibrance</title>
-			<para>Vibrance controls how much of the saturation is applied to weighted pixels.
-			</para>
-		</sect5>
-		<sect5><title>Mid-tones bias</title>
+		<sect5><title>mid-tones bias</title>
 			<para>This slider controls saturation preservation in mid-tones. It is expressed
 			as the lightness repartition between mid-tones and shadows/highlights. The greater the first
 			number, the stronger the effect.
