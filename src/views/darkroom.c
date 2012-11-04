@@ -122,7 +122,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
-  if(dev->gui_synch)
+  if(dev->gui_synch && !dev->image_loading)
   {
     // synch module guis from gtk thread:
     darktable.gui->reset = 1;
