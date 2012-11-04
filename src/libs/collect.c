@@ -1010,7 +1010,7 @@ set_properties (dt_lib_collect_rule_t *dr)
 }
 
 static void
-folder_stuff (dt_lib_collect_rule_t *dr)
+folders_view (dt_lib_collect_rule_t *dr)
 {
   dt_lib_collect_t *d = get_collect (dr);
   
@@ -1044,7 +1044,7 @@ folder_stuff (dt_lib_collect_rule_t *dr)
 }
 
 static void
-rest (dt_lib_collect_rule_t *dr)
+list_view (dt_lib_collect_rule_t *dr)
 {
   // update related list
   dt_lib_collect_t *d = get_collect(dr);
@@ -1212,14 +1212,14 @@ entry_key_press_exit:
 }
 
 static void
-callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
+update_view (GtkEntry *entry, dt_lib_collect_rule_t *dr)
 {
   int property = gtk_combo_box_get_active(dr->combo);
   
   if (property == DT_COLLECTION_PROP_FOLDERS)
-    folder_stuff(dr);
+    folders_view(dr);
   else
-    rest(dr);
+    list_view(dr);
 }
 
 static void
@@ -1382,7 +1382,7 @@ _lib_collect_gui_update (dt_lib_module_t *self)
 
   // update list of proposals
   create_folders_gui (d->rule + d->active_rule);  
-  callback(NULL, d->rule + d->active_rule);
+  update_view(NULL, d->rule + d->active_rule);
   darktable.gui->reset = old;
 }
 
@@ -1405,7 +1405,7 @@ combo_changed (GtkComboBox *combo, dt_lib_collect_rule_t *d)
   g_signal_handlers_unblock_matched (d->text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;
-  callback(NULL, d);
+  update_view(NULL, d);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -1434,7 +1434,7 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
   g_signal_handlers_unblock_matched (d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
   g_free(text);
 
-  callback(NULL, d->rule + active);
+  update_view(NULL, d->rule + active);
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
 }
@@ -1446,7 +1446,7 @@ entry_activated (GtkWidget *entry, dt_lib_collect_rule_t *d)
   GtkTreeModel *model;
   int property, rows;
 
-  callback(NULL, d);
+  update_view(NULL, d);
   dt_lib_collect_t *c = get_collect(d);
   
   property = gtk_combo_box_get_active(d->combo);
@@ -1480,7 +1480,7 @@ entry_activated (GtkWidget *entry, dt_lib_collect_rule_t *d)
       g_signal_handlers_unblock_matched (d->text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
       g_free(text);
       d->typing = FALSE;
-      callback(NULL, d);
+      update_view(NULL, d);
     }
   }
   dt_collection_update_query(darktable.collection);
@@ -1503,7 +1503,7 @@ entry_focus_in_callback (GtkWidget *w, GdkEventFocus *event, dt_lib_collect_rule
 {
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;
-  callback(NULL, c->rule + c->active_rule);
+  update_view(NULL, c->rule + c->active_rule);
 }
 
 #if 0
@@ -1638,7 +1638,7 @@ collection_updated(gpointer instance,gpointer self)
 
   dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
 
-  callback(NULL, d->rule + d->active_rule);
+  update_view(NULL, d->rule + d->active_rule);
 }
 
 
@@ -1788,7 +1788,7 @@ gui_init (dt_lib_module_t *self)
     g_object_set(G_OBJECT(w), "tooltip-text", _("type your query, use `%' as wildcard"), (char *)NULL);
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "insert-text", G_CALLBACK(entry_changed), d->rule + i);
-    g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(callback), d->rule + i);
+    g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(update_view), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
     gtk_box_pack_start(box, w, TRUE, TRUE, 0);
     w = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
