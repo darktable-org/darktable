@@ -2343,8 +2343,7 @@ void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state)
   else if(state==dt_iop_state_ACTIVE)
   {
     /* module is shown lets set conf values */
-    // FIXME
-    // dt_gui_iop_modulegroups_switch(module->groups());
+    dt_dev_modulegroups_switch(darktable.develop,module);
     if(module->expander) gtk_widget_show(GTK_WIDGET(module->expander));
     snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool (option, TRUE);
@@ -2354,8 +2353,7 @@ void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state)
   else if(state==dt_iop_state_FAVORITE)
   {
     /* module is shown and favorite lets set conf values */
-    // FIXME
-    // dt_gui_iop_modulegroups_switch(module->groups());
+    dt_dev_modulegroups_set(darktable.develop,DT_MODULEGROUP_FAVORITES);
     if(module->expander) gtk_widget_show(GTK_WIDGET(module->expander));
     snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool (option, TRUE);
@@ -2366,6 +2364,7 @@ void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state)
   dt_view_manager_t * vm = darktable.view_manager;
   if (vm->proxy.more_module.module)
     vm->proxy.more_module.update(vm->proxy.more_module.module);
+  dt_view_manager_reset(vm);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

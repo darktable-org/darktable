@@ -76,7 +76,7 @@ void gui_init(dt_lib_module_t *self)
   memset(d,0,sizeof(dt_lib_modulelist_t));
   self->data = (void *)d;
   self->widget = gtk_scrolled_window_new(NULL, NULL); //GTK_ADJUSTMENT(gtk_adjustment_new(200, 100, 200, 10, 100, 100))
-  gtk_widget_set_size_request(self->widget, -1, 200);
+  gtk_widget_set_size_request(self->widget, -1, 208);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(self->widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
   d->tree = GTK_TREE_VIEW(gtk_tree_view_new());
   gtk_widget_set_size_request(GTK_WIDGET(d->tree), 50, -1);
@@ -184,15 +184,15 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
 
   gtk_tree_view_insert_column_with_data_func (GTK_TREE_VIEW (view),
                                                -1,      
-                                               "image",  
-                                               pix_renderer,
-                                               image_renderer_function,
-                                               NULL,NULL);
-  gtk_tree_view_insert_column_with_data_func (GTK_TREE_VIEW (view),
-                                               -1,      
                                                "favorite",  
                                                fav_renderer,
                                                favorite_renderer_function,
+                                               NULL,NULL);
+  gtk_tree_view_insert_column_with_data_func (GTK_TREE_VIEW (view),
+                                               -1,      
+                                               "image",  
+                                               pix_renderer,
+                                               image_renderer_function,
                                                NULL,NULL);
   gtk_tree_view_insert_column_with_data_func (GTK_TREE_VIEW (view),
                                                -1,      
