@@ -125,9 +125,18 @@ void dt_nlm_accum_scaled(
         {
           if(i-P > rel_i && i+P<rel_I)
             slide += s[P] - s[-P-1];
+#if 0
           const __m128 iv = { ins[0], ins[1], ins[2], 1.0f };
           _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(
                 fast_mexp2f(slide, sharpness)));
+#else
+          const float w = fast_mexp2f(slide, sharpness);
+          if(out[3] < w)
+          {
+            const __m128 iv = { ins[0], ins[1], ins[2], w };
+            _mm_store_ps(out, iv);
+          }
+#endif
 
           s++; ins+=4; out+=4;
         }
@@ -331,7 +340,7 @@ void dt_nlm_normalize_add(
     {
       if(out[3] > 0.0f)
         _mm_store_ps(in, _mm_add_ps(_mm_load_ps(in),
-              _mm_mul_ps(_mm_load_ps(out), _mm_div_ps(weight, _mm_set1_ps(out[3])))));
+              _mm_mul_ps(_mm_load_ps(out), weight)));//_mm_div_ps(weight, _mm_set1_ps(out[3])))));
       // DEBUG: XXX see only the diff:
       // _mm_store_ps(in, 
             // _mm_mul_ps(_mm_load_ps(out), _mm_div_ps(weight, _mm_set1_ps(out[3]))));
