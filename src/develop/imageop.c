@@ -647,7 +647,6 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->dev = dev;
   module->widget = NULL;
   module->header = NULL;
-  module->state = dt_iop_state_HIDDEN;
   module->off = NULL;
   module->priority = 0;
   module->hide_enable_button = 0;
@@ -716,6 +715,13 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->reset_button = NULL;
   module->presets_button = NULL;
   module->fusion_slider = NULL;
+
+  /* set button state */
+  char option[1024];
+  snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
+  module->active = dt_conf_get_bool (option);
+  snprintf(option, 1024, "plugins/darkroom/%s/favorite", module->op);
+  module->favorite = dt_conf_get_bool (option);
 
   // now init the instance:
   module->init(module);
@@ -1454,7 +1460,7 @@ _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_d
           additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
 
         /* add special group flag for favorite */
-        if(module->state == dt_iop_state_FAVORITE)
+        if(module->favorite)
           additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
 
         /* if module is the current, always expand it */
@@ -2230,10 +2236,10 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group,
   dt_iop_module_t *module = (dt_iop_module_t*)data;
 
   // Showing the module, if it isn't already visible
-  if(module->state == dt_iop_state_HIDDEN)
+  if(!module->active)
   {
-    module->state = dt_iop_state_ACTIVE;
-    gtk_widget_queue_draw(module->state_widget);
+    module->active = TRUE;
+//TODO    gtk_widget_queue_draw(module->state_widget);
   }
 
   // FIXME

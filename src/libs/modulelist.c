@@ -34,12 +34,12 @@ DT_MODULE(1)
 
 typedef struct dt_lib_modulelist_t
 {
-  GtkList *list;
+  GtkTreeView *tree;
 }
 dt_lib_modulelist_t;
 
 /* handle iop module click */
-static void _lib_modulelist_row_changed_callback(GtkWidget *,GdkEvent *unused, gpointer user_data);
+static void _lib_modulelist_row_changed_callback(GtkTreeView *tree_view, gpointer     user_data);
 /* callback for iop modules loaded signal */
 static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_data);
 
@@ -72,9 +72,9 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_scrolled_window_new(NULL, NULL); //GTK_ADJUSTMENT(gtk_adjustment_new(200, 100, 200, 10, 100, 100))
   gtk_widget_set_size_request(self->widget, -1, 200);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(self->widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
-  d->list = GTK_LIST(gtk_list_new());
-  gtk_widget_set_size_request(GTK_WIDGET(d->list), 50, -1);
-  gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(self->widget), GTK_WIDGET(d->list));
+  d->tree = GTK_TREE_VIEW(gtk_tree_view_new());
+  gtk_widget_set_size_request(GTK_WIDGET(d->tree), 50, -1);
+  gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(self->widget), GTK_WIDGET(d->tree));
 
   /* connect to signal for darktable.develop initialization */
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_INITIALIZE,G_CALLBACK(_lib_modulelist_populate_callback),self);
@@ -88,141 +88,158 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static gboolean _lib_modulelist_row_set_state(gint state,dt_iop_module_t *module)
+enum
 {
-  char option[1024];
-  gboolean expand = FALSE;
-  module->state = state%dt_iop_state_LAST;
-  if(module->state==dt_iop_state_HIDDEN)
-  {
-    /* module is hidden lets set conf values */
-    gtk_widget_hide(GTK_WIDGET(module->expander));
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
-    dt_conf_set_bool (option, FALSE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
-    dt_conf_set_bool (option, FALSE);
-    GtkWidget *icon = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->state_widget)),1);
-    dtgtk_icon_set_paint(icon,dtgtk_cairo_paint_empty,CPF_STYLE_FLAT);
-    icon = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->state_widget)),0);
-    dtgtk_label_set_text(DTGTK_LABEL(icon),module->name(),DARKTABLE_LABEL_ALIGN_LEFT);
-
-    /* construct tooltip text into option */
-    snprintf(option, 512, _("show %s"), module->name());
-  }
-  else if(module->state==dt_iop_state_ACTIVE)
-  {
-    /* module is shown lets set conf values */
-    // FIXME
-    // dt_gui_iop_modulegroups_switch(module->groups());
-    gtk_widget_show(GTK_WIDGET(module->expander));
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
-    dt_conf_set_bool (option, TRUE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
-    dt_conf_set_bool (option, FALSE);
-    GtkWidget *icon = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->state_widget)),1);
-    dtgtk_icon_set_paint(icon,dtgtk_cairo_paint_empty,CPF_STYLE_FLAT | CPF_ACTIVE);
-    icon = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->state_widget)),0);
-    dtgtk_label_set_text(DTGTK_LABEL(icon),module->name(),DARKTABLE_LABEL_ALIGN_LEFT | DARKTABLE_LABEL_BACKFILLED);
-
-    expand = TRUE;
-
-    /* construct tooltip text into option */
-    snprintf(option, 512, _("%s as favorite"), module->name());
-  }
-  else if(module->state==dt_iop_state_FAVORITE)
-  {
-    /* module is shown and favorite lets set conf values */
-    // FIXME
-    // dt_gui_iop_modulegroups_switch(module->groups());
-    gtk_widget_show(GTK_WIDGET(module->expander));
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
-    dt_conf_set_bool (option, TRUE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
-    dt_conf_set_bool (option, TRUE);
-    GtkWidget *icon = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->state_widget)),1);
-    dtgtk_icon_set_paint(icon,dtgtk_cairo_paint_modulegroup_favorites,CPF_STYLE_FLAT | CPF_ACTIVE);
-    icon = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->state_widget)),0);
-    dtgtk_label_set_text(DTGTK_LABEL(icon),module->name(),DARKTABLE_LABEL_ALIGN_LEFT | DARKTABLE_LABEL_BACKFILLED);
-
-    expand = TRUE;
-
-    /* construct tooltip text into option */
-    snprintf(option, 512, _("hide %s"), module->name());
-  }
-
-  //g_object_set(G_OBJECT(module->state_widget), "tooltip-text", option, (char *)NULL);
-  return expand;
+  COL_IMAGE=0,
+  COL_MODULE,
+  NUM_COLS
+} ;
+static void image_renderer_function (GtkTreeViewColumn *col,
+    GtkCellRenderer   *renderer,
+    GtkTreeModel      *model,
+    GtkTreeIter       *iter,
+    gpointer           user_data)
+{
+  GdkImage * pixbuf;
+  dt_iop_module_t *module;
+  gtk_tree_model_get(model, iter, COL_IMAGE, &pixbuf, -1);
+  gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
+  g_object_set(renderer,"pixbuf",pixbuf,NULL);
+  g_object_set(renderer,"cell-background-set",module->active,NULL);
+  g_object_unref(pixbuf);
+}
+static GdkPixbuf* fav_pixbuf=NULL;
+static void favorite_renderer_function (GtkTreeViewColumn *col,
+    GtkCellRenderer   *renderer,
+    GtkTreeModel      *model,
+    GtkTreeIter       *iter,
+    gpointer           user_data)
+{
+  dt_iop_module_t *module;
+  gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
+  g_object_set(renderer,"cell-background-set",module->active,NULL);
+  g_object_set(renderer,"pixbuf",module->favorite?fav_pixbuf:NULL,NULL);
+}
+static void text_renderer_function (GtkTreeViewColumn *col,
+    GtkCellRenderer   *renderer,
+    GtkTreeModel      *model,
+    GtkTreeIter       *iter,
+    gpointer           user_data)
+{
+  dt_iop_module_t *module;
+  gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
+  g_object_set(renderer,"text",module->name(),NULL);
+  g_object_set(renderer,"cell-background-set",module->active,NULL);
 }
 
 static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
 
+  GtkListStore  *store;
+  GtkTreeIter    iter;
+  GtkWidget     *view=GTK_WIDGET(((dt_lib_modulelist_t*)self->data)->tree);
+  GtkCellRenderer     *pix_renderer,*fav_renderer,*text_renderer;
+  GtkStyle *style=gtk_widget_get_style(view);
+  
+  store = gtk_list_store_new (NUM_COLS, GDK_TYPE_PIXBUF,  G_TYPE_POINTER);
+  gtk_tree_view_set_model (GTK_TREE_VIEW(view), GTK_TREE_MODEL(store));
+  g_object_unref (store);
+
+  pix_renderer = gtk_cell_renderer_pixbuf_new ();
+  g_object_set(pix_renderer,"cell-background-gdk",&style->bg[GTK_STATE_ACTIVE],NULL);
+
+  fav_renderer = gtk_cell_renderer_pixbuf_new ();
+  g_object_set(fav_renderer,"cell-background-gdk",&style->bg[GTK_STATE_ACTIVE],NULL);
+  char filename[DT_MAX_PATH_LEN], datadir[DT_MAX_PATH_LEN];
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  snprintf(filename, DT_MAX_PATH_LEN, "%s/pixmaps/favorite.png", datadir);
+  fav_pixbuf = gdk_pixbuf_new_from_file(filename,NULL);
+
+  text_renderer = gtk_cell_renderer_text_new ();
+  g_object_set(text_renderer,"cell-background-gdk",&style->bg[GTK_STATE_ACTIVE],NULL);
+
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view),FALSE);
+  gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(view),FALSE);
+  gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(view),FALSE);
+  GtkTreeSelection  *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
+  gtk_tree_selection_set_mode(selection, GTK_SELECTION_NONE);
+  g_signal_connect(view, "cursor-changed", G_CALLBACK(_lib_modulelist_row_changed_callback), NULL);
+
+  gtk_tree_view_insert_column_with_data_func (GTK_TREE_VIEW (view),
+                                               -1,      
+                                               "image",  
+                                               pix_renderer,
+                                               image_renderer_function,
+                                               NULL,NULL);
+  gtk_tree_view_insert_column_with_data_func (GTK_TREE_VIEW (view),
+                                               -1,      
+                                               "favorite",  
+                                               fav_renderer,
+                                               favorite_renderer_function,
+                                               NULL,NULL);
+  gtk_tree_view_insert_column_with_data_func (GTK_TREE_VIEW (view),
+                                               -1,      
+                                               "name",  
+                                               text_renderer,
+                                               text_renderer_function,
+                                               NULL,NULL);
+
   /* go thru list of iop modules and add them to the list */
   GList *modules = g_list_last(darktable.develop->iop);
  
-  GList *rows = NULL;
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
-      module->state_widget = gtk_table_new(1,3,FALSE);
       char filename[DT_MAX_PATH_LEN], datadir[DT_MAX_PATH_LEN];
       dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
       snprintf(filename, DT_MAX_PATH_LEN, "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
       if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
         snprintf(filename, DT_MAX_PATH_LEN, "%s/pixmaps/plugins/darkroom/template.png", datadir);
-      GtkWidget *tmp_widget = gtk_image_new_from_file(filename);
-      gtk_table_attach(GTK_TABLE(module->state_widget),tmp_widget,0,1,0,1,GTK_FILL  | GTK_SHRINK,GTK_SHRINK,0,0);
 
-      tmp_widget =dtgtk_icon_new(dtgtk_cairo_paint_modulegroup_favorites, CPF_STYLE_FLAT);
-      gtk_table_attach(GTK_TABLE(module->state_widget),tmp_widget,1,2,0,1,GTK_FILL | GTK_SHRINK,GTK_SHRINK,0,0);
 
-      tmp_widget = dtgtk_label_new(module->name(),DARKTABLE_LABEL_ALIGN_LEFT);
-      gtk_table_attach(GTK_TABLE(module->state_widget),tmp_widget,2,3,0,1,GTK_FILL | GTK_EXPAND | GTK_SHRINK,GTK_EXPAND|GTK_FILL ,0,0);
-
-      /* set button state */
-      char option[1024];
-      snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
-      gboolean active = dt_conf_get_bool (option);
-      snprintf(option, 1024, "plugins/darkroom/%s/favorite", module->op);
-      gboolean favorite = dt_conf_get_bool (option);
-      module->state=0;
-      if(active)
-      {
-        module->state++;
-        if(favorite) module->state++;
-      }
-      _lib_modulelist_row_set_state(module->state,module);
-
-      GtkEventBox * box = GTK_EVENT_BOX(gtk_event_box_new());
-      gtk_event_box_set_above_child(box,TRUE);
-      gtk_event_box_set_visible_window(box, FALSE);
-      g_signal_connect(G_OBJECT(box), "button-press-event",
-                      G_CALLBACK(_lib_modulelist_row_changed_callback), module);
-      gtk_container_add(GTK_CONTAINER(box),module->state_widget);
-      rows = g_list_append(rows, box);
-      gtk_widget_show_all(GTK_WIDGET(box));
+      GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(filename,NULL);
+      gtk_list_store_append (store, &iter);
+      gtk_list_store_set (store, &iter,
+          COL_IMAGE, pixbuf,
+          COL_MODULE,module,
+          -1);
+      g_object_unref (pixbuf);
     }
 
     modules = g_list_previous(modules);
   }
-  gtk_list_append_items(((dt_lib_modulelist_t*)self->data)->list, rows);
+
 }
 
 
-
-static void _lib_modulelist_row_changed_callback(GtkWidget *w,GdkEvent *unused, gpointer user_data)
+static void _lib_modulelist_row_changed_callback(GtkTreeView *treeview, gpointer     user_data)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-
-  gboolean expanded = _lib_modulelist_row_set_state(module->state+1,module);
-  dt_dev_modulegroups_switch(module->dev, module);
-  dt_iop_gui_set_expanded(module, expanded);
+  dt_iop_module_t *module;
+  GtkTreeIter   iter;
+  GtkTreeModel *model;
+  GtkTreePath  *path;
+  gtk_tree_view_get_cursor(treeview, &path, NULL);
+  model = gtk_tree_view_get_model(treeview);
+  gtk_tree_model_get_iter(model, &iter, path);
+  gtk_tree_path_free(path);
+  gtk_tree_model_get(model, &iter, COL_MODULE, &module, -1);
+  if(!module->active) {
+    module->active = TRUE;
+    module->favorite = FALSE;
+  } else if(!module->favorite) {
+    module->active = TRUE;
+    module->favorite = TRUE;
+  } else {
+    module->active = FALSE;
+    module->favorite = FALSE;
+  }
+  
+  gtk_widget_queue_draw(GTK_WIDGET(treeview));
 
 }
-
 
 
 

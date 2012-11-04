@@ -236,7 +236,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
         case DT_MODULEGROUP_FAVORITES:
         {
-          if(module->state == dt_iop_state_FAVORITE)
+          if(module->favorite)
             gtk_widget_show(w);
           else
           {
@@ -249,7 +249,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         case DT_MODULEGROUP_NONE:
         {
           /* show all exept hidden ones */
-          if((module->state != dt_iop_state_HIDDEN || module->enabled) &&
+          if((module->active || module->enabled) &&
               (!(module->flags() & IOP_FLAGS_DEPRECATED)))
             gtk_widget_show(w);
           else
@@ -263,7 +263,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         default:
         {
           if ( _lib_modulegroups_test(self,d->current, module->groups()) &&
-               module->state != dt_iop_state_HIDDEN &&
+               module->active &&
                (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled))
             gtk_widget_show(w);
           else

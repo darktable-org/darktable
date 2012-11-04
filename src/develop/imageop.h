@@ -70,16 +70,6 @@ typedef void dt_iop_gui_data_t;
 typedef void dt_iop_data_t;
 typedef void dt_iop_global_data_t;
 
-/** status of a module*/
-typedef enum dt_iop_module_state_t
-{
-  dt_iop_state_HIDDEN = 0, // keep first
-  dt_iop_state_ACTIVE,
-  dt_iop_state_FAVORITE,
-  dt_iop_state_LAST
-
-}
-dt_iop_module_state_t;
 /** part of the module which only contains the cached dlopen stuff. */
 struct dt_iop_module_so_t;
 struct dt_iop_module_t;
@@ -206,8 +196,8 @@ typedef struct dt_iop_module_t
   GtkWidget *header;
 
   /** button used to show/hide this module in the plugin list. */
-  dt_iop_module_state_t state;
-  GtkWidget *state_widget;
+  gboolean active;
+  gboolean favorite;
   /** expander containing the widget and flag to store expanded state */
   GtkWidget *expander;
   gboolean expanded;
