@@ -32,9 +32,11 @@ DT_MODULE(1)
 
 #define DT_MODULE_LIST_SPACING 2
 
+#define ICON_SIZE 20
 typedef struct dt_lib_modulelist_t
 {
   GtkTreeView *tree;
+  GdkPixbuf* fav_pixbuf;
 }
 dt_lib_modulelist_t;
 
@@ -42,6 +44,8 @@ dt_lib_modulelist_t;
 static void _lib_modulelist_row_changed_callback(GtkTreeView *tree_view, gpointer     user_data);
 /* callback for iop modules loaded signal */
 static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_data);
+/* force refresh of tree */
+static void _lib_modulelist_gui_update(struct dt_lib_module_t *);
 
 const char* name()
 {
@@ -79,6 +83,8 @@ void gui_init(dt_lib_module_t *self)
   /* connect to signal for darktable.develop initialization */
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_INITIALIZE,G_CALLBACK(_lib_modulelist_populate_callback),self);
 
+  darktable.view_manager->proxy.more_module.module = self;
+  darktable.view_manager->proxy.more_module.update = _lib_modulelist_gui_update;
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -105,10 +111,9 @@ static void image_renderer_function (GtkTreeViewColumn *col,
   gtk_tree_model_get(model, iter, COL_IMAGE, &pixbuf, -1);
   gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
   g_object_set(renderer,"pixbuf",pixbuf,NULL);
-  g_object_set(renderer,"cell-background-set",module->active,NULL);
+  g_object_set(renderer,"cell-background-set",module->state != dt_iop_state_HIDDEN,NULL);
   g_object_unref(pixbuf);
 }
-static GdkPixbuf* fav_pixbuf=NULL;
 static void favorite_renderer_function (GtkTreeViewColumn *col,
     GtkCellRenderer   *renderer,
     GtkTreeModel      *model,
@@ -117,8 +122,9 @@ static void favorite_renderer_function (GtkTreeViewColumn *col,
 {
   dt_iop_module_t *module;
   gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
-  g_object_set(renderer,"cell-background-set",module->active,NULL);
-  g_object_set(renderer,"pixbuf",module->favorite?fav_pixbuf:NULL,NULL);
+  g_object_set(renderer,"cell-background-set",module->state != dt_iop_state_HIDDEN,NULL);
+  GdkPixbuf *fav_pixbuf = ((dt_lib_modulelist_t*)darktable.view_manager->proxy.more_module.module->data)->fav_pixbuf;
+  g_object_set(renderer,"pixbuf",module->state==dt_iop_state_FAVORITE?fav_pixbuf:NULL,NULL);
 }
 static void text_renderer_function (GtkTreeViewColumn *col,
     GtkCellRenderer   *renderer,
@@ -129,7 +135,7 @@ static void text_renderer_function (GtkTreeViewColumn *col,
   dt_iop_module_t *module;
   gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
   g_object_set(renderer,"text",module->name(),NULL);
-  g_object_set(renderer,"cell-background-set",module->active,NULL);
+  g_object_set(renderer,"cell-background-set",module->state != dt_iop_state_HIDDEN,NULL);
 }
 
 static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_data)
@@ -150,11 +156,15 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   g_object_set(pix_renderer,"cell-background-gdk",&style->bg[GTK_STATE_ACTIVE],NULL);
 
   fav_renderer = gtk_cell_renderer_pixbuf_new ();
+  cairo_surface_t *fav_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
+  cairo_t *fav_cr = cairo_create(fav_cst);
+  cairo_set_source_rgb(fav_cr, 0.7,0.7,0.7);
+  dtgtk_cairo_paint_modulegroup_favorites(fav_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);
+  guchar* data = cairo_image_surface_get_data(fav_cst);
+  ((dt_lib_modulelist_t*)self->data)->fav_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE,
+    ICON_SIZE, cairo_image_surface_get_stride(fav_cst), NULL, NULL);
   g_object_set(fav_renderer,"cell-background-gdk",&style->bg[GTK_STATE_ACTIVE],NULL);
-  char filename[DT_MAX_PATH_LEN], datadir[DT_MAX_PATH_LEN];
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  snprintf(filename, DT_MAX_PATH_LEN, "%s/pixmaps/favorite.png", datadir);
-  fav_pixbuf = gdk_pixbuf_new_from_file(filename,NULL);
+  g_object_set(fav_renderer,"width",gdk_pixbuf_get_width(((dt_lib_modulelist_t*)self->data)->fav_pixbuf),NULL);
 
   text_renderer = gtk_cell_renderer_text_new ();
   g_object_set(text_renderer,"cell-background-gdk",&style->bg[GTK_STATE_ACTIVE],NULL);
@@ -226,21 +236,16 @@ static void _lib_modulelist_row_changed_callback(GtkTreeView *treeview, gpointer
   gtk_tree_model_get_iter(model, &iter, path);
   gtk_tree_path_free(path);
   gtk_tree_model_get(model, &iter, COL_MODULE, &module, -1);
-  if(!module->active) {
-    module->active = TRUE;
-    module->favorite = FALSE;
-  } else if(!module->favorite) {
-    module->active = TRUE;
-    module->favorite = TRUE;
-  } else {
-    module->active = FALSE;
-    module->favorite = FALSE;
-  }
-  
-  gtk_widget_queue_draw(GTK_WIDGET(treeview));
+
+  dt_iop_gui_set_state(module,(module->state+1)%dt_iop_state_LAST);
 
 }
 
+static void _lib_modulelist_gui_update(struct dt_lib_module_t *module)
+{
+  gtk_widget_queue_draw(GTK_WIDGET(((dt_lib_modulelist_t*)module->data)->tree));
+
+}
 
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
