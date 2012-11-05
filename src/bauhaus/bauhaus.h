@@ -69,8 +69,9 @@ typedef struct dt_bauhaus_slider_data_t
 
   char format[24];// numeric value is printed with this string
 
-  int  is_dragging; // indicates is mouse is dragging slider 
-  int  is_changed;  // indicates new data
+  int   is_dragging;     // indicates is mouse is dragging slider 
+  int   is_changed;      // indicates new data
+  guint timeout_handle; // used to store id of timout routine
 }
 dt_bauhaus_slider_data_t;
 

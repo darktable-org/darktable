@@ -93,6 +93,7 @@ typedef struct _GtkDarktableGradientSlider
   gboolean is_resettable;
   gboolean do_reset;
   gboolean is_entered;
+  guint timeout_handle;
 } GtkDarktableGradientSlider;
 
 typedef struct _GtkDarktableGradientSliderClass

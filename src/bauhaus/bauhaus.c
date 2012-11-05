@@ -774,6 +774,16 @@ void dt_bauhaus_widget_set_quad_toggle(GtkWidget *widget, int toggle)
   w->quad_toggle = toggle;
 }
 
+static void
+dt_bauhaus_slider_destroy(dt_bauhaus_widget_t *widget, gpointer user_data)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  if(d->timeout_handle) g_source_remove(d->timeout_handle);
+  d->timeout_handle = 0;
+}
+
 GtkWidget*
 dt_bauhaus_slider_new(dt_iop_module_t *self)
 {
@@ -802,6 +812,7 @@ dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, fl
 
   d->is_dragging = 0;
   d->is_changed = 0;
+  d->timeout_handle = 0;
 
   g_signal_connect (G_OBJECT (w), "button-press-event",
                     G_CALLBACK (dt_bauhaus_slider_button_press), (gpointer)NULL);
@@ -813,9 +824,10 @@ dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, fl
                     G_CALLBACK (dt_bauhaus_slider_motion_notify), (gpointer)NULL);
   g_signal_connect (G_OBJECT (w), "leave-notify-event",
                     G_CALLBACK (dt_bauhaus_slider_leave_notify), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (w), "destroy",
+                    G_CALLBACK (dt_bauhaus_slider_destroy), (gpointer)NULL);
   return GTK_WIDGET(w);
 }
-
 
 static void
 dt_bauhaus_combobox_destroy(dt_bauhaus_widget_t *widget, gpointer user_data)
@@ -1686,6 +1698,9 @@ dt_bauhaus_slider_postponed_value_change(gpointer data)
     g_signal_emit_by_name(G_OBJECT(w),"value-changed");
     d->is_changed = 0;
   }
+
+  if(!d->is_dragging) d->timeout_handle = 0;
+
   gdk_threads_leave();
 
   return d->is_dragging;
@@ -1838,7 +1853,9 @@ dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton *event, gpointe
       dt_bauhaus_slider_data_t *d = &w->data.slider;
       d->is_dragging = 1;
       int delay = CLAMP(darktable.develop->average_delay*3/2, DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN, DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX);
-      g_timeout_add(delay, dt_bauhaus_slider_postponed_value_change, widget);
+      // timeout_handle should always be zero here, but check just in case
+      if(!d->timeout_handle)
+        d->timeout_handle = g_timeout_add(delay, dt_bauhaus_slider_postponed_value_change, widget);
     }
     return TRUE;
   }
@@ -1857,6 +1874,8 @@ dt_bauhaus_slider_button_release(GtkWidget *widget, GdkEventButton *event, gpoin
     GtkAllocation tmp;
     gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
     d->is_dragging = 0;
+    if(d->timeout_handle) g_source_remove(d->timeout_handle);
+    d->timeout_handle = 0;
     const float l = 4.0f/tmp.width;
     const float r = 1.0f-(tmp.height+4.0f)/tmp.width;
     dt_bauhaus_slider_set_normalized(w, (event->x/tmp.width - l)/(r-l));
