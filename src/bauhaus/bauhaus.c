@@ -1266,13 +1266,13 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   {
     // separate more clearly (looks terrible in a way but might help separate text
     // from other widgets above and below)
-    cairo_move_to(cr, 1.0, 1.0);
-    cairo_line_to(cr, 1.0, height-1.0);
+    cairo_move_to(cr, 1.0, height-1.0);
     cairo_line_to(cr, width-1.0, height-1.0);
     cairo_line_to(cr, width-1.0, 1.0);
     cairo_stroke(cr);
-    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.3);
-    cairo_move_to(cr, 1.0, 1.0);
+    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.4);
+    cairo_move_to(cr, 1.0, height-1.0);
+    cairo_line_to(cr, 1.0, 1.0);
     cairo_line_to(cr, width-1.0, 1.0);
     cairo_stroke(cr);
   }
@@ -1692,7 +1692,7 @@ dt_bauhaus_slider_postponed_value_change(gpointer data)
 {
   gdk_threads_enter();
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)data;
-  dt_bauhaus_slider_data_t *d = &w->data.slider;  
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
   if(d->is_changed)
   {
     g_signal_emit_by_name(G_OBJECT(w),"value-changed");
