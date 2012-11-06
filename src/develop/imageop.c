@@ -716,17 +716,20 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->presets_button = NULL;
   module->fusion_slider = NULL;
 
-  /* set button state */
-  char option[1024];
-  snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
-  dt_iop_module_state_t state=dt_iop_state_HIDDEN;
-  if(dt_conf_get_bool (option))
+  if(module->dev->gui_attached)
   {
-    state = dt_iop_state_ACTIVE;
-    snprintf(option, 1024, "plugins/darkroom/%s/favorite", module->op);
-    if(dt_conf_get_bool (option)) state = dt_iop_state_FAVORITE;
+    /* set button state */
+    char option[1024];
+    snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
+    dt_iop_module_state_t state=dt_iop_state_HIDDEN;
+    if(dt_conf_get_bool (option))
+    {
+      state = dt_iop_state_ACTIVE;
+      snprintf(option, 1024, "plugins/darkroom/%s/favorite", module->op);
+      if(dt_conf_get_bool (option)) state = dt_iop_state_FAVORITE;
+    }
+    dt_iop_gui_set_state(module,state);
   }
-  dt_iop_gui_set_state(module,state);
 
   // now init the instance:
   module->init(module);
