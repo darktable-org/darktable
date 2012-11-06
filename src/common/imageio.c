@@ -321,11 +321,14 @@ dt_imageio_open_raw(
     free(image);
     return DT_IMAGEIO_CACHE_FULL;
   }
+  if(img->filters)
+  {
 #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) shared(img, image, raw, buf)
 #endif
-  for(int k=0; k<img->width*img->height; k++)
-    ((uint16_t *)buf)[k] = CLAMPS((((uint16_t *)image->data)[k] - raw->color.black)*65535.0f/(float)(raw->color.maximum - raw->color.black), 0, 0xffff);
+    for(int k=0; k<img->width*img->height; k++)
+      ((uint16_t *)buf)[k] = CLAMPS((((uint16_t *)image->data)[k] - raw->color.black)*65535.0f/(float)(raw->color.maximum - raw->color.black), 0, 0xffff);
+  }
   // clean up raw stuff.
   libraw_recycle(raw);
   libraw_close(raw);
@@ -333,9 +336,19 @@ dt_imageio_open_raw(
   raw = NULL;
   image = NULL;
 
-  img->flags &= ~DT_IMAGE_LDR;
-  img->flags &= ~DT_IMAGE_HDR;
-  img->flags |= DT_IMAGE_RAW;
+  if(img->filters)
+  {
+    img->flags &= ~DT_IMAGE_LDR;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_RAW;
+  }
+  else
+  {
+    // ldr dng. it exists :(
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+  }
   return DT_IMAGEIO_OK;
 }
 
