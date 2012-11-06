@@ -53,7 +53,7 @@ kth_smallest(elem_type a[], int n, int k)
 
 
 
-static float *
+static float*
 read_pfm(const char *filename, int *wd, int*ht)
 {
   FILE *f = fopen(filename, "rb");
@@ -65,6 +65,23 @@ read_pfm(const char *filename, int *wd, int*ht)
   fread(p, sizeof(float)*3, (*wd)*(*ht), f);
   fclose(f);
   return p;
+}
+
+static float*
+read_histogram(const char *filename, int *bins)
+{
+  *bins = 0;
+  FILE *f = fopen(filename, "rb");
+  if(!f) return 0;
+
+  while(!feof(f))
+  {
+    (*bins) ++;
+  }
+    // TODO second round, alloc and read
+
+  fclose(f);
+  return h;
 }
 
 #if 0
@@ -113,8 +130,8 @@ int main(int argc, char *arg[])
   {
     const float a[3] = { atof(arg[3]), atof(arg[4]), atof(arg[5]) };
     const float b = atof(arg[6]);
-    // TODO: get rid of the constant:
-    const float m = 1.0/2000.0f;
+    // scale to maximum (1.0/max value of pow):
+    const float m = fminf(fminf(a[0], a[1]), a[2]);
     // TODO: (and get rid of the analytical inverse and use the cdf directly)
     for(int k=0;k<wd*ht;k++)
     {
