@@ -643,7 +643,7 @@ auto_apply_presets(const int imgid)
 
   // flag was already set? only apply presets once in the lifetime of a history stack.
   // (the flag will be cleared when removing it)
-  if(!run)
+  if(!run || cimg->id <= 0)
   {
     dt_image_cache_read_release(darktable.image_cache, cimg);
     return;
