@@ -32,7 +32,7 @@
 		<sect5><title>mark fixed pixels</title>
 			<para>This options will mark the pixels in the view that is corrected, and also display the count of detected pixels that is fixed.</para>
 		</sect5>	
-	</sect4>x
+	</sect4>
 <!--	
 	<sect4><title>Examples</title>
 		<para>
