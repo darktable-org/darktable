@@ -320,9 +320,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
     snprintf(pair->line, 4096,
              "\n"
-             "      <div><a class=\"dia\" rel=\"lightbox[viewer]\" title=\"%s - %s\" href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
+             "      <div><a class=\"dia\" rel=\"lightzap[viewer]\" href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
              "      <h1>%s</h1>\n"
-             "      %s<br/><span class=\"tags\">%s</span></div>\n", title?title:relfilename, description?description:"&nbsp;", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
+             "      %s<br/><span class=\"tags\">%s</span></div>\n", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
 
     char next[256];
     sprintf(next, "img_%d.html", (num)%total+1);
@@ -330,37 +330,6 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     char prev[256];
     sprintf(prev, "img_%d.html", (num==1)?total:num-1);
 
-    /* Becomes unecessary with the Lightbox image viewer overlay
-
-        FILE* subfile = fopen(subfilename, "wb");
-        fprintf(subfile,
-              "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
-              "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
-              "  <head>\n"
-              "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n"
-              "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\" />\n"
-              "    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\" />\n"
-              "    <title>%s</title>\n"
-              "  </head>\n"
-              "  <body>\n"
-              "    <div class=\"title\"><a href=\"index.html\">%s</a></div>\n"
-              "    <div class=\"page\">\n"
-              "      <div style=\"width: 692px; max-width: 692px; height: 10px;\">\n"
-              "        <a style=\"float: left;\" href=\"%s\"><h1>prev</h1></a>\n"
-              "        <a style=\"float: right;\"href=\"%s\"><h1>next</h1></a>\n"
-              "      </div>\n"
-              "      <a href=\"%s\"><img src=\"%s\" width=\"692\" class=\"img\"/></a>\n"
-              "      %s<br/><span class=\"tags\">%s</span></div>\n"
-              "      <p style=\"clear:both;\"></p>\n"
-              "    </div>\n"
-              "    <div class=\"footer\">\n"
-              "      created with darktable "PACKAGE_VERSION"\n"
-              "    </div>\n"
-              "  </body>\n"
-              "</html>\n",
-              relfilename, title?title:relfilename, prev, next, relfilename, relfilename, description?description:"&nbsp;", tags?tags:"&nbsp;");
-        fclose(subfile);
-    */
     pair->pos = num;
     g_free(title);
     g_free(description);
@@ -451,48 +420,46 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   // also create style/ subdir:
   sprintf(c, "/style");
   g_mkdir_with_parents(filename, 0755);
-  sprintf(c, "/style/style.css");
-  copy_res("/style/style.css", filename);
+
+  sprintf(c, "/style/bg.png");
+  copy_res("/style/bg.png", filename);
+  sprintf(c, "/style/close.png");
+  copy_res("/style/close.png", filename);
+  sprintf(c, "/style/download.png");
+  copy_res("/style/download.png", filename);
+  sprintf(c, "/style/dtbg_logo.png");
+  copy_res("/style/dtbg_logo.png", filename);
   sprintf(c, "/style/favicon.ico");
   copy_res("/style/favicon.ico", filename);
-  sprintf(c, "/style/bullet.gif");
-  copy_res("/style/bullet.gif", filename);
-  sprintf(c, "/style/close.gif");
-  copy_res("/style/close.gif", filename);
-  sprintf(c, "/style/closelabel.gif");
-  copy_res("/style/closelabel.gif", filename);
-  sprintf(c, "/style/donate-button.gif");
-  copy_res("/style/donate-button.gif", filename);
-  sprintf(c, "/style/download-icon.gif");
-  copy_res("/style/download-icon.gif", filename);
-  sprintf(c, "/style/image-1.jpg");
-  copy_res("/style/image-1.jpg", filename);
-  sprintf(c, "/style/lightbox.css");
-  copy_res("/style/lightbox.css", filename);
+  sprintf(c, "/style/fullscreen.png");
+  copy_res("/style/fullscreen.png", filename);
+  sprintf(c, "/style/lightzap.css");
+  copy_res("/style/lightzap.css", filename);
+  sprintf(c, "/style/like.png");
+  copy_res("/style/like.png", filename);
   sprintf(c, "/style/loading.gif");
   copy_res("/style/loading.gif", filename);
-  sprintf(c, "/style/nextlabel.gif");
-  copy_res("/style/nextlabel.gif", filename);
-  sprintf(c, "/style/prevlabel.gif");
-  copy_res("/style/prevlabel.gif", filename);
-  sprintf(c, "/style/thumb-1.jpg");
-  copy_res("/style/thumb-1.jpg", filename);
+  sprintf(c, "/style/lz-theme.css");
+  copy_res("/style/lz-theme.css", filename);
+  sprintf(c, "/style/more.png");
+  copy_res("/style/more.png", filename);
+  sprintf(c, "/style/next.png");
+  copy_res("/style/next.png", filename);
+  sprintf(c, "/style/prev.png");
+  copy_res("/style/prev.png", filename);
+  sprintf(c, "/style/print.png");
+  copy_res("/style/print.png", filename);
+  sprintf(c, "/style/style.css");
+  copy_res("/style/style.css", filename);
 
   // create subdir   js for lightbox2 viewer scripts
   sprintf(c, "/js");
   g_mkdir_with_parents(filename, 0755);
-  sprintf(c, "/js/builder.js");
-  copy_res("/js/builder.js", filename);
-  sprintf(c, "/js/effects.js");
-  copy_res("/js/effects.js", filename);
-  sprintf(c, "/js/lightbox.js");
-  copy_res("/js/lightbox.js", filename);
-  sprintf(c, "/js/lightbox-web.js");
-  copy_res("/js/lightbox-web.js", filename);
-  sprintf(c, "/js/prototype.js");
-  copy_res("/js/prototype.js", filename);
-  sprintf(c, "/js/scriptaculous.js");
-  copy_res("/js/scriptaculous.js", filename);
+
+  sprintf(c, "/js/jquery-1.8.2.min.js");
+  copy_res("/js/jquery-1.8.2.min.js", filename);
+  sprintf(c, "/js/lightzap.js");
+  copy_res("/js/lightzap.js", filename);
 
   sprintf(c, "/index.html");
 
@@ -507,14 +474,13 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
           "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n"
           "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\" />\n"
           "    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\" />\n"
-          "    <link rel=\"stylesheet\" href=\"style/lightbox.css\" type=\"text/css\" media=\"screen\" />"
-          "    <script type=\"text/javascript\" src=\"js/prototype.js\"></script>\n"
-          "    <script type=\"text/javascript\" src=\"js/scriptaculous.js?load=effects,builder\"></script>\n"
-          "    <script type=\"text/javascript\" src=\"js/lightbox.js\"></script>\n"
+          "    <link href=\"style/lightzap.css\" rel=\"stylesheet\" type=\"text/css\"/>\n"
+          "    <script src=\"js/jquery-1.8.2.min.js\" type=\"text/javascript\"></script>\n"
+          "    <script src=\"js/lightzap.js\" type=\"text/javascript\"></script>\n"
           "    <title>%s</title>\n"
           "  </head>\n"
           "  <body>\n"
-          "    <div class=\"title\">%s</div>\n"
+          "    <div class=\"title\"><a href=\"http://www.darktable.org\" target=\"_blank\"><img src=\"style/dtbg_logo.png\" alt=\"logo\" class=\"img\"/></a>%s</div>\n"
           "    <div class=\"page\">\n",
           title, title);
 
