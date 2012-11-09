@@ -251,11 +251,15 @@ int32_t dt_image_duplicate(const int32_t imgid)
                               "(id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
                               "aperture, iso, focal_length, focus_distance, datetime_taken, flags, "
                               "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
-                              "raw_auto_bright_threshold, raw_black, raw_maximum, orientation) "
+                              "raw_auto_bright_threshold, raw_black, raw_maximum, "
+                              "caption, description, license, sha1sum, orientation, histogram, lightmap, "
+                              "longitude, latitude, color_matrix, colorspace) "
                               "select null, group_id, film_id, width, height, filename, maker, model, lens, "
                               "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
                               "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
-                              "raw_auto_bright_threshold, raw_black, raw_maximum, orientation "
+                              "raw_auto_bright_threshold, raw_black, raw_maximum, "
+                              "caption, description, license, sha1sum, orientation, histogram, lightmap, "
+                              "longitude, latitude, color_matrix, colorspace "
                               "from images where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
@@ -704,11 +708,15 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
                                   "(id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
                                   "aperture, iso, focal_length, focus_distance, datetime_taken, flags, "
                                   "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
-                                  "raw_auto_bright_threshold, raw_black, raw_maximum, orientation) "
+                                  "raw_auto_bright_threshold, raw_black, raw_maximum, "
+                                  "caption, description, license, sha1sum, orientation, histogram, lightmap, "
+                                  "longitude, latitude, color_matrix, colorspace) "
                                   "select null, group_id, ?1 as film_id, width, height, filename, maker, model, lens, "
                                   "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
                                   "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
-                                  "raw_auto_bright_threshold, raw_black, raw_maximum, orientation "
+                                  "raw_auto_bright_threshold, raw_black, raw_maximum, "
+                                  "caption, description, license, sha1sum, orientation, histogram, lightmap, "
+                                  "longitude, latitude, color_matrix, colorspace "
                                   "from images where id = ?2", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
