@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 
 <chapter>
 	<chapterinfo>
@@ -15,13 +18,6 @@
 	<para>It is fully non-destructive and works on a 32 bit floating point format per channel.
 			Most of the actions on the pixelpipe are done in CIELab.</para>
 
-	<sect1 status="final"><title>Preferences</title>
-		<para> A button located at the upper panel (displaying a gear wheel) allows you to define various parameters.
-		</para>
-		<para> The options are quite self-explaining. In case you need more information, just let your mouse hover a text label and/or entry box to display more information.
-		</para>
-
-	</sect1>
 
 	<sect1 status="final"><title>User interface</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
@@ -96,6 +92,7 @@
 
 
 	</sect1>
+
 
 	<sect1 status="final"><title>darktable basic workflow</title>
 		<sect2 status="draft"><title>Importing images</title>
@@ -186,4 +183,14 @@
 
 		</sect2>
 	</sect1>
+
+	<sect1 status="draft"><title>Preferences</title>
+		<para>A button <inlinegraphic fileref="&icon_preferences;" scalefit="1" width="2%" align="center" /> located at the upper panel allows you to define various parameters.
+		</para>
+		<para>The options are quite self-explaining. In case you need more information, just let your mouse hover a text label and/or entry box to display more information. Furthermore all
+                      configuration parameters are explained in a later chapter of this manual.
+		</para>
+
+	</sect1>
+
 </chapter>

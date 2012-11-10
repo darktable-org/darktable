@@ -53,6 +53,10 @@ GType dtgtk_label_get_type (void);
 
 /** Instansiate a new darktable label control passing paint function as content */
 GtkWidget* dtgtk_label_new(const gchar *label,_darktable_label_flags_t flags);
+/** set the text of the label */
+void dtgtk_label_set_text(GtkDarktableLabel *label,
+                          const gchar *text,
+                          _darktable_label_flags_t flags);
 G_END_DECLS
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

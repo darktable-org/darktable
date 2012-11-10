@@ -77,8 +77,7 @@ const char uf_manual_wb[] = N_("Manual WB");
 const char uf_camera_wb[] = N_("Camera WB");
 const char uf_auto_wb[] = N_("Auto WB");
 
-const wb_data wb_preset[] =
-{
+const wb_data wb_preset[] = {
 
 
   { "Canon", "PowerShot A630", Daylight, 0,	{ 1.831422, 1, 1.245671, 0 } },
@@ -1143,26 +1142,27 @@ const wb_data wb_preset[] =
   { "Canon", "EOS Kiss Digital X4", WhiteFluorescent, 0, { 1.9072, 1, 2.1973, 0 } },
   { "Canon", "EOS Kiss Digital X4", Flash, 0,	{ 2.3701, 1, 1.4141, 0 } },
 
-  { "Canon", "EOS 600D", Daylight, 0,		{ 2.1602, 1, 1.5752, 0 } },
-  { "Canon", "EOS 600D", Shade, 0,		{ 2.5098, 1, 1.3418, 0 } },
-  { "Canon", "EOS 600D", Cloudy, 0,		{ 2.3330, 1, 1.4502, 0 } },
-  { "Canon", "EOS 600D", Tungsten, 0,		{ 1.5371, 1, 2.3594, 0 } },
-  { "Canon", "EOS 600D", WhiteFluorescent, 0,	{ 1.8789, 1, 2.2402, 0 } },
-  { "Canon", "EOS 600D", Flash, 0,		{ 2.4268, 1, 1.4297, 0 } },
+  // Canon EOS 600D firmware version 1.0.2
+  { "Canon", "EOS 600D", Daylight, 0,		{ 2.235352, 1, 1.612305, 0 } },
+  { "Canon", "EOS 600D", Shade, 0,		{ 2.592773, 1, 1.377930, 0 } },
+  { "Canon", "EOS 600D", Cloudy, 0,		{ 2.409180, 1, 1.486328, 0 } },
+  { "Canon", "EOS 600D", Tungsten, 0,		{ 1.597656, 1, 2.409180, 0 } },
+  { "Canon", "EOS 600D", Fluorescent, 0,	{ 1.958008, 1, 2.260742, 0 } },
+  { "Canon", "EOS 600D", Flash, 0,		{ 2.509766, 1, 1.464844, 0 } },
 
-  { "Canon", "EOS REBEL T3i", Daylight, 0,	{ 2.1602, 1, 1.5752, 0 } },
-  { "Canon", "EOS REBEL T3i", Shade, 0,		{ 2.5098, 1, 1.3418, 0 } },
-  { "Canon", "EOS REBEL T3i", Cloudy, 0,	{ 2.3330, 1, 1.4502, 0 } },
-  { "Canon", "EOS REBEL T3i", Tungsten, 0,	{ 1.5371, 1, 2.3594, 0 } },
-  { "Canon", "EOS REBEL T3i", WhiteFluorescent, 0, { 1.8789, 1, 2.2402, 0 } },
-  { "Canon", "EOS REBEL T3i", Flash, 0,		{ 2.4268, 1, 1.4297, 0 } },
+  { "Canon", "EOS REBEL T3i", Daylight, 0,	{ 2.235352, 1, 1.612305, 0 } },
+  { "Canon", "EOS REBEL T3i", Shade, 0,		{ 2.592773, 1, 1.377930, 0 } },
+  { "Canon", "EOS REBEL T3i", Cloudy, 0,	{ 2.409180, 1, 1.486328, 0 } },
+  { "Canon", "EOS REBEL T3i", Tungsten, 0,	{ 1.597656, 1, 2.409180, 0 } },
+  { "Canon", "EOS REBEL T3i", Fluorescent, 0,	{ 1.958008, 1, 2.260742, 0 } },
+  { "Canon", "EOS REBEL T3i", Flash, 0,		{ 2.509766, 1, 1.464844, 0 } },
 
-  { "Canon", "EOS Kiss Digital X5", Daylight, 0, { 2.1602, 1, 1.5752, 0 } },
-  { "Canon", "EOS Kiss Digital X5", Shade, 0,	{ 2.5098, 1, 1.3418, 0 } },
-  { "Canon", "EOS Kiss Digital X5", Cloudy, 0,	{ 2.3330, 1, 1.4502, 0 } },
-  { "Canon", "EOS Kiss Digital X5", Tungsten, 0, { 1.5371, 1, 2.3594, 0 } },
-  { "Canon", "EOS Kiss Digital X5", WhiteFluorescent, 0, { 1.8789, 1, 2.2402, 0 } },
-  { "Canon", "EOS Kiss Digital X5", Flash, 0,	{ 2.4268, 1, 1.4297, 0 } },
+  { "Canon", "EOS Kiss Digital X5", Daylight, 0, { 2.235352, 1, 1.612305, 0 } },
+  { "Canon", "EOS Kiss Digital X5", Shade, 0,	{ 2.592773, 1, 1.377930, 0 } },
+  { "Canon", "EOS Kiss Digital X5", Cloudy, 0,	{ 2.409180, 1, 1.486328, 0 } },
+  { "Canon", "EOS Kiss Digital X5", Tungsten, 0, { 1.597656, 1, 2.409180, 0 } },
+  { "Canon", "EOS Kiss Digital X5", Fluorescent, 0, { 1.958008, 1, 2.260742, 0 } },
+  { "Canon", "EOS Kiss Digital X5", Flash, 0,	{ 2.509766, 1, 1.464844, 0 } },
 
   { "Canon", "EOS 1000D", Daylight, 0,		{ 2.183594, 1, 1.526367, 0 } },
   { "Canon", "EOS 1000D", Shade, 0,		{ 2.553711, 1, 1.262695, 0 } },
@@ -1563,6 +1563,21 @@ const wb_data wb_preset[] =
   { "MINOLTA", "DYNAX 7D", "5000K", 0,		{ 1.609375, 1, 1.726562, 0 } },
   { "MINOLTA", "DYNAX 7D", "5500K", 0,		{ 1.710938, 1, 1.601562, 0 } },
   { "MINOLTA", "DYNAX 7D", "6500K", 0,		{ 1.875000, 1, 1.421875, 0 } },
+
+  { "NIKON", "1 V1", Incandescent, 0,		{ 1.210938, 1, 2.308594, 0 } },
+  { "NIKON", "1 V1", CoolWhiteFluorescent, 0,	{ 1.687500, 1, 2.199219, 0 } },
+  { "NIKON", "1 V1", DirectSunlight, 0,		{ 1.828125, 1, 1.550781, 0 } },
+  { "NIKON", "1 V1", Flash, 0,			{ 2.101563, 1, 1.335938, 0 } },
+  { "NIKON", "1 V1", Cloudy, 0,			{ 1.960938, 1, 1.406250, 0 } },
+  { "NIKON", "1 V1", Shade, 0,			{ 2.257813, 1, 1.277344, 0 } },
+
+  // copied from NIKON 1 V1
+  { "NIKON", "1 J1", Incandescent, 0,           { 1.210938, 1, 2.308594, 0 } },
+  { "NIKON", "1 J1", CoolWhiteFluorescent, 0,   { 1.687500, 1, 2.199219, 0 } },
+  { "NIKON", "1 J1", DirectSunlight, 0,         { 1.828125, 1, 1.550781, 0 } },
+  { "NIKON", "1 J1", Flash, 0,                  { 2.101563, 1, 1.335938, 0 } },
+  { "NIKON", "1 J1", Cloudy, 0,                 { 1.960938, 1, 1.406250, 0 } },
+  { "NIKON", "1 J1", Shade, 0,                  { 2.257813, 1, 1.277344, 0 } },
 
   // Fine tuning is from A6 to B6 on amber-blue.
   { "NIKON", "COOLPIX P7100", DirectSunlight, -6, { 1.7908, 1, 1.9042, 0 } },
@@ -2112,16 +2127,16 @@ const wb_data wb_preset[] =
   { "NIKON", "D300S", HighTempMercuryVaporFluorescent, 0, { 1.961, 1, 1.328, 0 } },
   { "NIKON", "D300S", HighTempMercuryVaporFluorescent, 6, { 1.855, 1, 1.523, 0 } },
 
-  { "NIKON", "D600", Incandescent, 0,		{ 1.226563, 1, 2.214844, 0 } },
-  { "NIKON", "D600", DirectSunlight, 0,		{ 1.90625, 1, 1.390625, 0 } },
+  { "NIKON", "D600", DirectSunlight, 0,		{ 1.906250, 1, 1.390625, 0 } },
   { "NIKON", "D600", Flash, 0,			{ 2.136719, 1, 1.214844, 0 } },
   { "NIKON", "D600", Cloudy, 0,			{ 2.039063, 1, 1.261719, 0 } },
   { "NIKON", "D600", Shade, 0,			{ 2.328125, 1, 1.136719, 0 } },
+  { "NIKON", "D600", Incandescent, 0,		{ 1.226563, 1, 2.214844, 0 } },
   { "NIKON", "D600", SodiumVaporFluorescent, 0,	{ 1.148438, 1, 2.433594, 0 } },
   { "NIKON", "D600", WarmWhiteFluorescent, 0,	{ 1.230469, 1, 1.953125, 0 } },
-  { "NIKON", "D600", WhiteFluorescent, 0,	{ 1.421875, 1, 2.28125, 0 } },
+  { "NIKON", "D600", WhiteFluorescent, 0,	{ 1.421875, 1, 2.281250, 0 } },
   { "NIKON", "D600", CoolWhiteFluorescent, 0,	{ 1.730469, 1, 2.003906, 0 } },
-  { "NIKON", "D600", DayWhiteFluorescent, 0,	{ 1.777344, 1, 1.375, 0 } },
+  { "NIKON", "D600", DayWhiteFluorescent, 0,	{ 1.777344, 1, 1.375000, 0 } },
   { "NIKON", "D600", DaylightFluorescent, 0,	{ 2.039063, 1, 1.117188, 0 } },
   { "NIKON", "D600", HighTempMercuryVaporFluorescent, 0, { 2.332031, 1, 1.355469, 0 } },
 
@@ -3737,6 +3752,16 @@ const wb_data wb_preset[] =
   { "SAMSUNG", "NX200", Tungsten, 0,		{ 1.511719, 1, 2.941406, 0 } },
   { "SAMSUNG", "NX200", Flash, 0,		{ 2.914063, 1, 1.191406, 0 } },
 
+  { "SONY", "DSC-RX100", Daylight, 0,		{ 2.0703, 1, 2.1602, 0 } },
+  { "SONY", "DSC-RX100", Shade, 0,		{ 2.4531, 1, 1.7852, 0 } },
+  { "SONY", "DSC-RX100", Cloudy, 0,		{ 2.2305, 1, 1.9844, 0 } },
+  { "SONY", "DSC-RX100", Tungsten, 0,		{ 1.2891, 1, 3.8242, 0 } },
+  { "SONY", "DSC-RX100", WarmWhiteFluorescent, 0, { 1.5156, 1, 3.7656, 0 } },
+  { "SONY", "DSC-RX100", CoolWhiteFluorescent, 0, { 2.0430, 1, 3.1055, 0 } },
+  { "SONY", "DSC-RX100", DayWhiteFluorescent, 0, { 2.0000, 1, 2.1602, 0 } },
+  { "SONY", "DSC-RX100", DaylightFluorescent, 0, { 2.2266, 1, 1.8789, 0 } },
+  { "SONY", "DSC-RX100", Flash, 0,		{ 2.5352, 1, 1.6797, 0 } },
+
   { "SONY", "DSLR-A100", Daylight, -3,		{ 1.601562, 1, 2.101562, 0 } },
   { "SONY", "DSLR-A100", Daylight, 0,		{ 1.746094, 1, 1.843750, 0 } },
   { "SONY", "DSLR-A100", Daylight, 3,		{ 1.914062, 1, 1.628906, 0 } },
@@ -4070,15 +4095,15 @@ const wb_data wb_preset[] =
   { "SONY", "NEX-5", Flash, 2,			{ 2.9883, 1, 1.1289, 0 } },
   { "SONY", "NEX-5", Flash, 3,			{ 3.0742, 1, 1.0938, 0 } },
 
-  { "SONY", "NEX-7", Daylight, 0,		{ 2.695313, 1, 1.425781, 0 } },
-  { "SONY", "NEX-7", Shade, 0,			{ 3.214844, 1, 1.1875,   0 } },
-  { "SONY", "NEX-7", Cloudy, 0,			{ 2.914063, 1, 1.316406, 0 } },
-  { "SONY", "NEX-7", Tungsten, 0,		{ 1.660156, 1, 2.445313, 0 } },
-  { "SONY", "NEX-7", Fluorescent, -1,		{ 1.902344, 1, 2.402344, 0 } },
-  { "SONY", "NEX-7", Fluorescent, 0,		{ 2.421875, 1, 1.957031, 0 } },
-  { "SONY", "NEX-7", Fluorescent, 1,		{ 2.566406, 1, 1.496094, 0 } },
-  { "SONY", "NEX-7", Fluorescent, 2,		{ 2.894531, 1, 1.332031, 0 } },
-  { "SONY", "NEX-7", Flash, 0,			{ 3.050781, 1, 1.347656, 0 } },
+  { "SONY", "NEX-7", Daylight, 0,		{ 2.5820, 1, 1.5273, 0 } },
+  { "SONY", "NEX-7", Shade, 0,			{ 3.0781, 1, 1.2734, 0 } },
+  { "SONY", "NEX-7", Cloudy, 0,			{ 2.7930, 1, 1.4102, 0 } },
+  { "SONY", "NEX-7", Tungsten, 0,		{ 1.5859, 1, 2.6133, 0 } },
+  { "SONY", "NEX-7", WarmWhiteFluorescent, 0,	{ 1.8203, 1, 2.5703, 0 } },
+  { "SONY", "NEX-7", CoolWhiteFluorescent, 0,	{ 2.3164, 1, 2.0937, 0 } },
+  { "SONY", "NEX-7", DayWhiteFluorescent, 0,	{ 2.4570, 1, 1.6055, 0 } },
+  { "SONY", "NEX-7", DaylightFluorescent, 0,	{ 2.7734, 1, 1.4258, 0 } },
+  { "SONY", "NEX-7", Flash, 0,			{ 2.9219, 1, 1.4453, 0 } },
 
   { "SONY", "SLT-A55V", Daylight, -3,		{ 2.3320, 1, 1.6758, 0 } },
   { "SONY", "SLT-A55V", Daylight, -2,		{ 2.3984, 1, 1.6172, 0 } },

@@ -54,13 +54,8 @@ if(APPLE)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_DARWIN_C_SOURCE")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_DARWIN_C_SOURCE")
 	add_definitions("-DOS_OBJECT_USE_OBJC=0")
-
-        # Detect the OS X version: Use '/usr/bin/sw_vers -productVersion' to extract V from '10.V.x'.
-        EXEC_PROGRAM(/usr/bin/sw_vers ARGS -productVersion OUTPUT_VARIABLE MACOSX_VERSION_RAW)
-        STRING(REGEX REPLACE "10\\.([0-9]).*" "\\1" MACOSX_VERSION "${MACOSX_VERSION_RAW}")
-        if(${MACOSX_VERSION} LESS 7)
-          add_definitions("-DAPPLE_NEED_DPRINTF")
-        endif()
+	# Make sure we don't use functions unavailable in OS X 10.6 and later (only works with system compiler, vanilla gcc from macports ignores this)
+	add_definitions("-D__MAC_OS_X_VERSION_MAX_ALLOWED=1060")
 endif(APPLE)
 
 if(CMAKE_COMPILER_IS_GNUCC)

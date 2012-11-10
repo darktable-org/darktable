@@ -647,7 +647,6 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->dev = dev;
   module->widget = NULL;
   module->header = NULL;
-  module->showhide = NULL;
   module->off = NULL;
   module->priority = 0;
   module->hide_enable_button = 0;
@@ -716,6 +715,18 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->reset_button = NULL;
   module->presets_button = NULL;
   module->fusion_slider = NULL;
+
+  /* set button state */
+  char option[1024];
+  snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
+  dt_iop_module_state_t state=dt_iop_state_HIDDEN;
+  if(dt_conf_get_bool (option))
+  {
+    state = dt_iop_state_ACTIVE;
+    snprintf(option, 1024, "plugins/darkroom/%s/favorite", module->op);
+    if(dt_conf_get_bool (option)) state = dt_iop_state_FAVORITE;
+  }
+  dt_iop_gui_set_state(module,state);
 
   // now init the instance:
   module->init(module);
@@ -1454,7 +1465,7 @@ _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_d
           additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
 
         /* add special group flag for favorite */
-        if(module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2)
+        if(module->state == dt_iop_state_FAVORITE)
           additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
 
         /* if module is the current, always expand it */
@@ -2230,10 +2241,9 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group,
   dt_iop_module_t *module = (dt_iop_module_t*)data;
 
   // Showing the module, if it isn't already visible
-  if(!dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(module->showhide)))
+  if(module->state == dt_iop_state_HIDDEN)
   {
-    dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide), 1);
-    gtk_widget_queue_draw(module->showhide);
+    dt_iop_gui_set_state(module,dt_iop_state_ACTIVE);
   }
 
   // FIXME
@@ -2317,6 +2327,45 @@ dt_iop_get_localized_name(const gchar * op)
   return (gchar*)g_hash_table_lookup(module_names, op);
 }
 
+void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state)
+{
+  char option[1024];
+  module->state = state;
+  if(state==dt_iop_state_HIDDEN)
+  {
+    /* module is hidden lets set conf values */
+    if(module->expander) gtk_widget_hide(GTK_WIDGET(module->expander));
+    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
+    dt_conf_set_bool (option, FALSE);
+    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
+    dt_conf_set_bool (option, FALSE);
+  }
+  else if(state==dt_iop_state_ACTIVE)
+  {
+    /* module is shown lets set conf values */
+    dt_dev_modulegroups_switch(darktable.develop,module);
+    if(module->expander) gtk_widget_show(GTK_WIDGET(module->expander));
+    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
+    dt_conf_set_bool (option, TRUE);
+    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
+    dt_conf_set_bool (option, FALSE);
+  }
+  else if(state==dt_iop_state_FAVORITE)
+  {
+    /* module is shown and favorite lets set conf values */
+    dt_dev_modulegroups_set(darktable.develop,DT_MODULEGROUP_FAVORITES);
+    if(module->expander) gtk_widget_show(GTK_WIDGET(module->expander));
+    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
+    dt_conf_set_bool (option, TRUE);
+    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
+    dt_conf_set_bool (option, TRUE);
+  }
+
+  dt_view_manager_t * vm = darktable.view_manager;
+  if (vm->proxy.more_module.module)
+    vm->proxy.more_module.update(vm->proxy.more_module.module);
+  dt_view_manager_reset(vm);
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

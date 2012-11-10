@@ -1,3 +1,8 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 	<sect2 status="draft"><title>Modulegroups</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='70%'/>
@@ -18,18 +23,39 @@
 		  Here follows descriptions of the module groups available:
 		</para>
 		<para>
-		  <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+		  <informaltable frame="none"><tgroup cols="3" colsep="0" rowsep="0">
 		    <colspec colwidth='20%'/>
-		    <colspec colwidth='80%'/>
+		    <colspec colwidth='20%'/>
+		    <colspec colwidth='60%'/>
 		    <tbody>
-		      <row><entry>Active</entry><entry>Shows the list of current active modules for the processed image</entry></row>
-		      <row><entry>Favorites</entry><entry>Modules you have marked as favorites using "more modules" will show up here</entry></row>
-		      <row><entry>Basic</entry><entry>The basic group of modules that is frequently used when processing raw, such as exposure, temperature etc.</entry></row>
-		      <row><entry>Tone</entry><entry>These modules does only work with the image tone, like levels, tonemap etc.</entry></row>
-		      <row><entry>Color</entry><entry>Modules that just affects colors, such as color correction, vibrance etc.</entry></row>
-		      <row><entry>Correction</entry><entry>Modules that makes corrections to the image, denoise, ca correction etc. </entry></row>
-		      <row><entry>Effect</entry><entry>Modules with a more artistic output, vignetting, softening etc.</entry></row>
-
+		      <row><entry><graphic fileref="darkroom/images/darkroom_group_active.png" scalefit="1" width="20%" align="center" /></entry>
+                           <entry>Active</entry>
+                           <entry>Shows the list of current active modules for the processed image</entry>
+                      </row>
+		      <row><entry><graphic fileref="darkroom/images/darkroom_group_favorites.png" scalefit="1" width="20%" align="center" /></entry>
+                           <entry>Favorites</entry>
+                           <entry>Modules you have marked as favorites using "more modules" will show up here</entry>
+                      </row>
+		      <row><entry><graphic fileref="darkroom/images/darkroom_group_basic.png" scalefit="1" width="20%" align="center" /></entry>
+                           <entry>Basic</entry>
+                           <entry>The basic group of modules that is frequently used when processing raw, such as exposure, temperature etc.</entry>
+                      </row>
+		      <row><entry><graphic fileref="darkroom/images/darkroom_group_tone.png" scalefit="1" width="20%" align="center" /></entry>
+                           <entry>Tone</entry>
+                           <entry>These modules does only work with the image tone, like levels, tonemap etc.</entry>
+                      </row>
+		      <row><entry><graphic fileref="darkroom/images/darkroom_group_color.png" scalefit="1" width="20%" align="center" /></entry>
+                           <entry>Color</entry>
+                           <entry>Modules that just affects colors, such as color correction, vibrance etc.</entry>
+                      </row>
+		      <row><entry><graphic fileref="darkroom/images/darkroom_group_correction.png" scalefit="1" width="20%" align="center" /></entry>
+                           <entry>Correction</entry>
+                           <entry>Modules that makes corrections to the image, denoise, ca correction etc. </entry>
+                      </row>
+		      <row><entry><graphic fileref="darkroom/images/darkroom_group_effect.png" scalefit="1" width="20%" align="center" /></entry>
+                           <entry>Effect</entry>
+                           <entry>Modules with a more artistic output, vignetting, softening etc.</entry>
+                      </row>
 		    </tbody>
 		  </tgroup>
 		  </informaltable>

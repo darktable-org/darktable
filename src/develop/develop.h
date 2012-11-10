@@ -50,6 +50,8 @@ typedef struct dt_develop_t
   int32_t image_force_reload;
   int32_t preview_loading, preview_dirty, preview_input_changed;
   uint32_t timestamp;
+  uint32_t average_delay;
+  uint32_t preview_average_delay;
   struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.
   float preview_downsampling; // < 1.0: optionally downsample preview
 
@@ -151,7 +153,8 @@ void dt_dev_invalidate_all(dt_develop_t *dev);
 void dt_dev_set_histogram(dt_develop_t *dev);
 void dt_dev_set_histogram_pre(dt_develop_t *dev);
 void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, const int cnt);
-
+void dt_dev_reprocess_all(dt_develop_t *dev);
+void dt_dev_reprocess_center(dt_develop_t *dev);
 
 void dt_dev_get_processed_size(const dt_develop_t *dev, int *procw, int *proch);
 void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, dt_dev_zoom_t zoom, int closeup, float *boxw, float *boxh);
@@ -195,6 +198,9 @@ gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t io
 
 /** request snapshot */
 void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename);
+
+/** update gliding average for pixelpipe delay */
+void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_delay);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

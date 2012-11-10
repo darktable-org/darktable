@@ -15,10 +15,12 @@ LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
 
-IUSE="gphoto2 openmp gnome-keyring kde"
+IUSE="facebook flickr gphoto2 openmp gnome-keyring kde"
 RDEPEND="dev-db/sqlite:3
 	dev-libs/libxml2:2
 	gnome-base/libglade:2.0
+	facebook? ( dev-libs/json-glib )
+	flickr? ( media-libs/flickcurl )
 	gnome-keyring? ( gnome-base/gnome-keyring )
 	kde? ( kde-base/kwalletd )
 	media-gfx/exiv2
@@ -43,6 +45,8 @@ src_configure() {
 	mycmakeargs=(
 		"$(cmake-utils_use_use openmp OPENMP)"
 		"$(cmake-utils_use_use gphoto2 CAMERA_SUPPORT)"
+		"$(cmake-utils_use_use flickr USE_FLICKR)"
+		"$(cmake-utils_use_use facebook USE_GLIBJSON)"
 		"$(cmake-utils_use_use gnome-keyring GNOME_KEYRING)"
 		"$(cmake-utils_use_use kde KWALLET)"
 		"-DINSTALL_IOP_EXPERIMENTAL=ON"

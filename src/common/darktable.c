@@ -75,7 +75,7 @@ const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2
 
 static int usage(const char *argv0)
 {
-  printf("usage: %s [-d {all,cache,camctl,control,dev,fswatch,memory,opencl,perf,pwstorage,sql}] [IMG_1234.{RAW,..}|image_folder/]", argv0);
+  printf("usage: %s [-d {all,cache,camctl,control,dev,fswatch,lighttable,memory,opencl,perf,pwstorage,sql}] [IMG_1234.{RAW,..}|image_folder/]", argv0);
 #ifdef HAVE_OPENCL
   printf(" [--disable-opencl]");
 #endif
@@ -90,12 +90,13 @@ static int usage(const char *argv0)
   return 1;
 }
 
+#ifndef __APPLE__
 typedef void (dt_signal_handler_t)(int) ;
 // static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
 static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
+#endif
 
-#if (defined(__APPLE__) && defined(APPLE_NEED_DPRINTF)) ||        \
-  (defined(__FreeBSD_version) && (__FreeBSD_version < 800071)) || \
+#if (defined(__FreeBSD_version) && (__FreeBSD_version < 800071)) || \
   defined(__SUNOS__)
 static int dprintf(int fd,const char *fmt, ...)
 {
@@ -109,6 +110,7 @@ static int dprintf(int fd,const char *fmt, ...)
 }
 #endif
 
+#ifndef __APPLE__
 static
 void _dt_sigsegv_handler(int param)
 {
@@ -162,6 +164,7 @@ void _dt_sigsegv_handler(int param)
   /* pass it further to the old handler*/
   _dt_sigsegv_old_handler(param);
 }
+#endif
 
 #if 0
 static
@@ -466,17 +469,18 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
       }
       else if(argv[k][1] == 'd' && argc > k+1)
       {
-        if(!strcmp(argv[k+1], "all"))            darktable.unmuted = 0xffffffff;   // enable all debug information
-        else if(!strcmp(argv[k+1], "cache"))     darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
-        else if(!strcmp(argv[k+1], "control"))   darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
-        else if(!strcmp(argv[k+1], "dev"))       darktable.unmuted |= DT_DEBUG_DEV; // develop module
-        else if(!strcmp(argv[k+1], "fswatch"))   darktable.unmuted |= DT_DEBUG_FSWATCH; // fswatch module
-        else if(!strcmp(argv[k+1], "camctl"))    darktable.unmuted |= DT_DEBUG_CAMCTL; // camera control module
-        else if(!strcmp(argv[k+1], "perf"))      darktable.unmuted |= DT_DEBUG_PERF; // performance measurements
-        else if(!strcmp(argv[k+1], "pwstorage")) darktable.unmuted |= DT_DEBUG_PWSTORAGE; // pwstorage module
-        else if(!strcmp(argv[k+1], "opencl"))    darktable.unmuted |= DT_DEBUG_OPENCL;    // gpu accel via opencl
-        else if(!strcmp(argv[k+1], "sql"))       darktable.unmuted |= DT_DEBUG_SQL; // SQLite3 queries
-        else if(!strcmp(argv[k+1], "memory"))    darktable.unmuted |= DT_DEBUG_MEMORY; // some stats on mem usage now and then.
+        if(!strcmp(argv[k+1], "all"))             darktable.unmuted = 0xffffffff;   // enable all debug information
+        else if(!strcmp(argv[k+1], "cache"))      darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
+        else if(!strcmp(argv[k+1], "control"))    darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
+        else if(!strcmp(argv[k+1], "dev"))        darktable.unmuted |= DT_DEBUG_DEV; // develop module
+        else if(!strcmp(argv[k+1], "fswatch"))    darktable.unmuted |= DT_DEBUG_FSWATCH; // fswatch module
+        else if(!strcmp(argv[k+1], "camctl"))     darktable.unmuted |= DT_DEBUG_CAMCTL; // camera control module
+        else if(!strcmp(argv[k+1], "perf"))       darktable.unmuted |= DT_DEBUG_PERF; // performance measurements
+        else if(!strcmp(argv[k+1], "pwstorage"))  darktable.unmuted |= DT_DEBUG_PWSTORAGE; // pwstorage module
+        else if(!strcmp(argv[k+1], "opencl"))     darktable.unmuted |= DT_DEBUG_OPENCL;    // gpu accel via opencl
+        else if(!strcmp(argv[k+1], "sql"))        darktable.unmuted |= DT_DEBUG_SQL; // SQLite3 queries
+        else if(!strcmp(argv[k+1], "memory"))     darktable.unmuted |= DT_DEBUG_MEMORY; // some stats on mem usage now and then.
+        else if(!strcmp(argv[k+1], "lighttable")) darktable.unmuted |= DT_DEBUG_LIGHTTABLE; // lighttable related stuff.
         else if(!strcmp(argv[k+1], "lua"))       darktable.unmuted |= DT_DEBUG_LUA; // lua errors are reported on console
         else return usage(argv[0]);
         k ++;
@@ -847,10 +851,11 @@ void dt_show_times(const dt_times_t *start, const char *prefix, const char *suff
 
 void dt_configure_defaults()
 {
+  const int atom_cores = dt_get_num_atom_cores();
   const int threads = dt_get_num_threads();
   const size_t mem = dt_get_total_memory();
   const int bits = (sizeof(void*) == 4) ? 32 : 64;
-  fprintf(stderr, "[defaults] found a %d-bit system with %zu kb ram and %d cores\n", bits, mem, threads);
+  fprintf(stderr, "[defaults] found a %d-bit system with %zu kb ram and %d cores (%d atom based)\n", bits, mem, threads, atom_cores);
   if(mem > (2u<<20) && threads > 4)
   {
     fprintf(stderr, "[defaults] setting high quality defaults\n");
@@ -859,13 +864,16 @@ void dt_configure_defaults()
     dt_conf_set_int("plugins/lighttable/thumbnail_width", 1300);
     dt_conf_set_int("plugins/lighttable/thumbnail_height", 1000);
   }
-  if(mem < (1u<<20) || threads <= 2 || bits < 64)
+  if(mem < (1u<<20) || threads <= 2 || bits < 64 || atom_cores > 0)
   {
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
     dt_conf_set_int("worker_threads", 1);
     dt_conf_set_int("cache_memory", 200u<<10);
+    dt_conf_set_int("host_memory_limit", 500);
+    dt_conf_set_int("singlebuffer_limit", 8);
     dt_conf_set_int("plugins/lighttable/thumbnail_width", 800);
     dt_conf_set_int("plugins/lighttable/thumbnail_height", 500);
+    dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");
   }
 }
 

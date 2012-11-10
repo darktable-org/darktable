@@ -4,8 +4,10 @@
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>Show a logarithmic histogram of the developed image; you can change exposure by left mouse click in the right side of histogram and drag 
-								right for increase or left to decrease the exposure. The same goes for the black level but you left click in the left part of histogram.
+						<entry>Show a histogram of the developed image; you can change exposure by left mouse click in the right side of histogram and drag 
+							right for increase or left to decrease the exposure. The same goes for the black level but you left click in the left part of histogram.
+                                                       You can switch between linear and logarithmic histogram view by toggling a corresponding button. In its default state histograms for all three
+                                                       color channels RGB are displayed; toggle one of the colored squares to enable/disable a specific color channel.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/images/panel_histogram.png" scalefit="1" width="80%" align="center" />

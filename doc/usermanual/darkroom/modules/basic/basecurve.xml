@@ -18,7 +18,8 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>The basecurve works in camera linear RGB. You can click on any point on the curve and drag to adjust; you can also
-			use the 4 controlpoints (triangles which have a constant vertical value) at bottom to adjust the curve.</para>
+		<para>The basecurve works in camera linear RGB. It is defined by two or more nodes. You can click on any node and drag to adjust; you can also
+		      create additional nodes by clicking on a curve segment between two nodes. In order to remove a node drag it outside of the diagram area.
+                </para>
 	</sect4>
 </sect3>

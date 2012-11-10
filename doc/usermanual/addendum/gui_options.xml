@@ -93,7 +93,7 @@
         </sect4>
 
 	<sect4><title>maximum number of images drawn on map</title>
-		<para>the maximum number of geotagged images drawn on the map. increasing this number can slow drawing of the map down; needs a restart (default 100).
+		<para>the maximum number of geotagged images drawn on the map. increasing this number can slow drawing of the map down; needs a restart if changed (default 100).
 		</para>
         </sect4>
 

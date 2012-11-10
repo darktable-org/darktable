@@ -697,7 +697,9 @@ static void save_account_info(dt_storage_facebook_gui_data_t *ui, FBAccountInfo 
   JsonNode *node = json_builder_get_root(builder);
   JsonGenerator *generator = json_generator_new();
   json_generator_set_root(generator, node);
+#if JSON_CHECK_VERSION(0, 14, 0)
   json_generator_set_pretty(generator, FALSE);
+#endif
   gchar *data = json_generator_to_data(generator, NULL);
 
   json_node_free(node);
