@@ -312,28 +312,23 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     if(c <= relthumbfilename) c = relthumbfilename + strlen(relthumbfilename);
     sprintf(c, "-thumb.%s", ext);
 
-    char subfilename[DT_MAX_PATH_LEN], relsubfilename[256];
-    snprintf(subfilename, DT_MAX_PATH_LEN, "%s", d->cached_dirname);
-    char* sc = subfilename + strlen(subfilename);
-    sprintf(sc, "/img_%d.html", num);
-    sprintf(relsubfilename, "img_%d.html", num);
-
     snprintf(pair->line, 4096,
              "\n"
-             "      <div><a class=\"dia\" rel=\"lightzap[viewer]\" href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
+             "      <div><a class=\"dia\" rel=\"lightzap[viewer]\" href=\"%s\" desc=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
              "      <h1>%s</h1>\n"
-             "      %s<br/><span class=\"tags\">%s</span></div>\n", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
-
-    char next[256];
-    sprintf(next, "img_%d.html", (num)%total+1);
-
-    char prev[256];
-    sprintf(prev, "img_%d.html", (num==1)?total:num-1);
+             "      %s<br/><span class=\"tags\">%s</span></div>\n", relfilename, description?description:relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
 
     pair->pos = num;
-    g_free(title);
-    g_free(description);
-    g_free(tags);
+
+    if(title)
+      g_free(title);
+
+    if(description)
+      g_free(description);
+
+    if(tags)
+      g_free(tags);
+
     d->l = g_list_insert_sorted(d->l, pair, (GCompareFunc)sort_pos);
   } // end of critical block
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
