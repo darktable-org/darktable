@@ -220,6 +220,9 @@ restart:
   dt_show_times(&start, "[dev_process_preview] pixel pipeline processing", NULL);
 
   dev->preview_dirty = 0;
+  // redraw the whole thing, to also update color picker values and histograms etc.
+  if(dev->gui_attached)
+    dt_control_queue_redraw();
   dt_control_log_busy_leave();
   dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 }
@@ -316,7 +319,9 @@ restart:
   dev->image_loading = 0;
 
   dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-  dt_control_queue_redraw_center();
+  // redraw the whole thing, to also update color picker values and histograms etc.
+  if(dev->gui_attached)
+    dt_control_queue_redraw();
   dt_control_log_busy_leave();
 }
 
