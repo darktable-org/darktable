@@ -1243,6 +1243,14 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS-1D Mark IV", Fluorescent, 0,	{ 1.767892, 1, 2.205029, 0 } },
   { "Canon", "EOS-1D Mark IV", Flash, 0,	{ 2.230469, 1, 1.423828, 0 } },
 
+  // Canon EOS M Firmware 1.0.6
+  { "Canon", "EOS", Cloudy, 0,			{ 2.15625,  1, 1.448242, 0 } },
+  { "Canon", "EOS", Daylight, 0,		{ 2.007813, 1, 1.575195, 0 } },
+  { "Canon", "EOS", Flash, 0,			{ 2.230469, 1, 1.429688, 0 } },
+  { "Canon", "EOS", Tungsten, 0,		{ 1.448242, 1, 2.386719, 0 } },
+  { "Canon", "EOS", Shade, 0,			{ 2.300781, 1, 1.334961, 0 } },
+  { "Canon", "EOS", Fluorescent, 0,		{ 1.78418,  1, 2.275391, 0 } },
+
   { "FUJIFILM", "FinePix E900", Daylight, 0,	{ 1.571875, 1, 1.128125, 0 } },
   { "FUJIFILM", "FinePix E900", Shade, 0,	{ 1.668750, 1, 1.006250, 0 } },
   { "FUJIFILM", "FinePix E900", DaylightFluorescent, 0, { 1.907609, 1, 1.016304, 0 } },
