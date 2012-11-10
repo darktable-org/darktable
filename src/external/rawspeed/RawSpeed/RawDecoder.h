@@ -6,6 +6,7 @@
 #include "BitPumpJPEG.h" // Includes bytestream
 #include "RawImage.h"
 #include "BitPumpMSB.h"
+#include "BitPumpMSB32.h"
 #include "BitPumpPlain.h"
 #include "CameraMetaData.h"
 #include "TiffIFD.h"
@@ -92,7 +93,6 @@ public:
   /* DNGs are always attempted to be decoded, so this variable has no effect on DNGs */
   bool failOnUnknown;
 
-
 protected:
   /* Attempt to decode the image */
   /* A RawDecoderException will be thrown if the image cannot be decoded, */
@@ -123,15 +123,15 @@ protected:
   /* offset: offset to write the data into the final image */
   /* inputPitch: Number of bytes between each line in the input image */
   /* bitPerPixel: Number of bits to read for each input pixel. */
-  /* MSBOrder: true -  bits are read from MSB (JPEG style) False: Read from LSB. */
-  void readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D& offset, int inputPitch, int bitPerPixel, bool MSBOrder);
+  /* order: Order of the bits - see Common.h for possibilities. */
+  void readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D& offset, int inputPitch, int bitPerPixel, BitOrder order);
 
   /* Faster version for unpacking 12 bit LSB data */
   void Decode12BitRaw(ByteStream &input, uint32 w, uint32 h);
 
   /* Generic decompressor for uncompressed images */
-  /* MSBOrder: true -  bits are read from MSB (JPEG style) False: Read from LSB. */
-  void decodeUncompressed(TiffIFD *rawIFD, bool MSBOrder);
+  /* order: Order of the bits - see Common.h for possibilities. */
+  void decodeUncompressed(TiffIFD *rawIFD, BitOrder order);
 
   /* The Raw input file to be decoded */
   FileMap *mFile; 
