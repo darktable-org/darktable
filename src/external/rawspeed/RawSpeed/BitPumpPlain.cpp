@@ -38,27 +38,27 @@ BitPumpPlain::BitPumpPlain(const uchar8* _buffer, uint32 _size) :
     buffer(_buffer), size(_size*8), off(0) {
 }
 
-uint32 BitPumpPlain::getBit() {
+uint32 BitPumpPlain::getBit() throw() {
   uint32 v = *(uint32*) & buffer[off>>3] >> (off & 7) & 1;
   off++;
   return v;
 }
 
-uint32 BitPumpPlain::getBits(uint32 nbits) {
+uint32 BitPumpPlain::getBits(uint32 nbits) throw() {
   uint32 v = *(uint32*) & buffer[off>>3] >> (off & 7) & ((1 << nbits) - 1);
   off += nbits;
   return v;
 }
 
-uint32 BitPumpPlain::peekBit() {
+uint32 BitPumpPlain::peekBit() throw() {
   return *(uint32*)&buffer[off>>3] >> (off&7) & 1;
 }
 
-uint32 BitPumpPlain::peekBits(uint32 nbits) {
+uint32 BitPumpPlain::peekBits(uint32 nbits) throw() {
   return *(uint32*)&buffer[off>>3] >> (off&7) & ((1 << nbits) - 1);
 }
 
-uint32 BitPumpPlain::peekByte() {
+uint32 BitPumpPlain::peekByte() throw() {
   return *(uint32*)&buffer[off>>3] >> (off&7) & 0xff;
 }
 
@@ -77,7 +77,7 @@ void BitPumpPlain::skipBits(unsigned int nbits) {
   checkPos();
 }
 
-uchar8 BitPumpPlain::getByte() {
+uchar8 BitPumpPlain::getByte() throw() {
   uint32 v = *(uint32*) & buffer[off>>3] >> (off & 7) & 0xff;
   off += 8;
   return v;

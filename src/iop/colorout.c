@@ -275,7 +275,7 @@ _signal_profile_changed(gpointer instance, gpointer user_data)
 {
   dt_develop_t *dev = (dt_develop_t*)user_data;
   if(!dev->gui_attached || dev->gui_leaving) return;
-  dt_dev_reprocess_all(dev);
+  dt_dev_reprocess_center(dev);
 }
 
 #if 1

@@ -26,7 +26,9 @@
 			<para>Adjust the exposure correction [ev].</para>
 		</sect5>
 		<sect5><title>auto</title>
-			<para>Calculate a correct exposition for the rectangular view appeared in the centre of the image. You can draw your own zone using your mouse.</para>
+			<para>Calculate a correct exposition for the rectangular view appearing in the centre of the image. You can draw your own selection using your mouse.
+                              An adjustment slider right to the auto exposure checkbox lets you define what percentage of bright values to be clipped out in the calculation.
+                        </para>
 		</sect5>
 	</sect4>
 </sect3>

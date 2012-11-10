@@ -17,7 +17,13 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>Use the saturation slider to correct the global saturation.</para>
-		<para>You can also draw an area on the color diagram to give a global tint to the image.</para>			
+		<sect5><title>color board</title>
+			<para>You can drag a white dot and a dark dot independently to give global tint to highlights and shadows. Set dots to the same color
+                              for a homogeneous global tint or to different colors for split toning.</para>
+		</sect5>
+		<sect5><title>saturation</title>
+			<para>Use the saturation slider to correct the global saturation.
+			</para>
+		</sect5>
 	</sect4>
 </sect3>

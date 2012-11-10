@@ -1,3 +1,10 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+
+
 		<sect2 status="draft"><title>Export selected</title>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='70%'/>
@@ -6,8 +13,8 @@
 						<row>						
 							<entry>Each workflow has to end by this panel: the exportation of your developed images.
 							Currently, you can export either to a file on your disk, or to various on-line storages.
-							<emphasis>TIP</emphasis>: you can use <emphasis>ctrl-alt-e</emphasis> to export.
-              </entry>
+							<emphasis>TIP</emphasis>: you can use <emphasis>ctrl-alt-e</emphasis> from within darkroom mode to export.
+                                                        </entry>
 							<entry>
 								<graphic fileref="lighttable/images/panel_exportselected.png" scalefit="1" width="80%" align="center" />
 							</entry>
@@ -15,4 +22,119 @@
 					</tbody>
 				</tgroup>
 			</informaltable>
+				<sect4><title>target storage</title>
+					<para>Where to store your selected images. Different back-ends are implemented, including file on disk, a LaTeX book template and
+                                              various web albums. Depending on the selected target you will be asked to give additional information like filenames, account
+                                              name and password.
+					</para>
+				</sect4>
+				<sect4><title>filename template</title>
+					<para>You can define the filenames that darktable generates for export. Several pre-defined variables can be used as placeholders:
+					</para>
+                                        <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+                                        <tbody>
+                                        <row>
+                                             <entry>$(ROLL_NAME)</entry><entry>roll of the input image</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(FILE_FOLDER)</entry><entry>folder containing the input image</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(FILE_NAME)</entry><entry>basename of the input image</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(FILE_EXTENSION)</entry><entry>extension of the input image</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(SEQUENCE)</entry><entry>a sequence number within export job</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(YEAR)</entry><entry>year at date of export</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(MONTH)</entry><entry>month at date of export</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(DAY)</entry><entry>day at date of export</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(HOUR)</entry><entry>hour at time of export</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(MINUTE)</entry><entry>minute at time of export</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(SECOND)</entry><entry>second at time of export</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(EXIF_YEAR)</entry><entry>exif year</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(EXIF_MONTH)</entry><entry>exif month</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(EXIF_DAY)</entry><entry>exif day</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(EXIF_HOUR)</entry><entry>exif hour</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(EXIF_MINUTE)</entry><entry>exif minute</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(EXIF_SECOND)</entry><entry>exif second</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(STARS)</entry><entry>star rating</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(LABELS)</entry><entry>colorlabels</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(PICTURES_FOLDER)</entry><entry>pictures folder</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(HOME)</entry><entry>home folder</entry>
+                                        </row>
+                                        <row>
+                                             <entry>$(DESKTOP)</entry><entry>desktop folder</entry>
+                                        </row>
+                                        </tbody>
+                                        </tgroup>
+                                </informaltable>
+				</sect4>
+				<sect4><title>output directory</title>
+					<para>Pressing button <inlinegraphic fileref="&icon_directory;" scalefit="1" width="2%" align="center" /> will open a dialog to select the parent directory for export.
+					</para>
+				</sect4>
+
+				<sect4><title>file format</title>
+					<para>darktable knows various file formats to export to. For some of them you need to additionally define your desired bit depth. If you export to a jpeg file you
+                                              can additionally define an output quality. Higher values will lead to larger file sizes.
+					</para>
+				</sect4>
+
+				<sect4><title>max size</title>
+					<para>Set the maximum width and height of your output images in pixels. Set both to a value of "0" to export with full resolution. Darktable currently can only do down-scaling; the maximum
+                                              output resolution is defined by the parent image.
+					</para>
+				</sect4>
+
+				<sect4><title>intent</title>
+					<para>This option lets you define the intent, i.e. the way darktable will deal with out-of-gamut colors. See module "output color profile" for a more detailed description of the
+                                              available options. Select "image settings" if you want the settings in module "output color profile" of the individual images to take precedence.
+					</para>
+				</sect4>
+
+				<sect4><title>profile</title>
+					<para>This defines the output color profile. Select "image settings" if you want the settings in module "output color profile" of the individual images to take precedence.
+					</para>
+				</sect4>
+				<sect4><title>export</title>
+					<para>Pressing this button will start a background job to export all selected images. A bar at the bottom of the left side panel will display the progress. Whenever a file
+                                              is successfully exported a notification message will pop up. You may press on the pop-up to make it disappear.
+					</para>
+				</sect4>
+
+
 		</sect2>

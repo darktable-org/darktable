@@ -17,36 +17,10 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<sect5><title>intent</title>
-			<para>Set intent to use for input profile. As a reminder, the intent is the way darktable will deal with out-of-gamut colors.						
-				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth='3cm'/>
-					<tbody>
-						<row>
-							<entry><emphasis>perceptual</emphasis></entry>
-							<entry>Suited to pictures. It scales one gamut to fit into the other while maintaining the relative position of colors. 
-							</entry>
-						</row>
-						<row>
-							<entry><emphasis>relative colorimetric</emphasis></entry>
-							<entry>Out-of-gamut colors are converted to colors having the same lightness,
-							but different saturation. Other colors remain unmodified. </entry>
-						</row>
-						<row>
-							<entry><emphasis>saturation</emphasis></entry>
-							<entry> Saturation is kept but lightness is slightly changed.</entry>
-						</row>
-						<row>
-							<entry><emphasis>absolute colorimetric</emphasis></entry>
-							<entry>Keep the white point.</entry>
-						</row>
-
-					</tbody>
-				</tgroup></informaltable>
-			</para>
-		</sect5>
 		<sect5><title>profile</title>
-			<para>Choose the color matrix to apply. darktable offers many widespread profile along with an enhanced matrix processed by darktable team in order to provide a look close to the manufacturer one.
+			<para>Choose the profile or color matrix to apply. Darktable offers many widespread matrices along with an enhanced matrix processed by darktable team in 
+                              order to provide a look close to the manufacturer one. You can also supply your own input profiles and put them into $DARKTABLE/share/darktable/color/in or
+                              $HOME/.config/darktable/color/in, where $DARKTABLE is darktables installation directory and $HOME is your home directory.
 			</para>
 		</sect5>
 	</sect4>

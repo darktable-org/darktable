@@ -596,6 +596,13 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
     assert(tiling.factor > 0.0f && tiling.factor < 100.0f);
 
+    if(pipe->shutdown)
+    {
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      return 1;
+    }
+
+
 #ifdef HAVE_OPENCL
     /* do we have opencl at all? did user tell us to use it? did we get a resource? */
     if (dt_opencl_is_inited() && pipe->opencl_enabled && pipe->devid >= 0)
@@ -638,6 +645,13 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             }
           }
 
+          if(pipe->shutdown)
+          {
+            if(cl_mem_input != NULL) dt_opencl_release_mem_object(cl_mem_input);
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
+
           /* try to allocate GPU memory for output */
           if (success_opencl)
           {
@@ -651,19 +665,35 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
           // fprintf(stderr, "[opencl_pixelpipe 2] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
 
+          // indirectly give gpu some air to breathe (and to do display related stuff)
+          dt_iop_nap(1000);
+
           /* now call process_cl of module; module should emit meaningful messages in case of error */
           if (success_opencl)
             success_opencl = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
 
+          if(pipe->shutdown)
+          {
+            if(cl_mem_input != NULL) dt_opencl_release_mem_object(cl_mem_input);
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
 
           /* process blending */
           if (success_opencl)
             success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
 
-
           /* synchronization point for opencl pipe */
           if (success_opencl)
             success_opencl = dt_opencl_finish(pipe->devid);
+
+
+          if(pipe->shutdown)
+          {
+            if(cl_mem_input != NULL) dt_opencl_release_mem_object(cl_mem_input);
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
 
         }
         else if(module->flags() & IOP_FLAGS_ALLOW_TILING)
@@ -693,9 +723,24 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             valid_input_on_gpu_only = FALSE;
           }
 
+          if(pipe->shutdown)
+          {
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
+
+          // indirectly give gpu some air to breathe (and to do display related stuff)
+          dt_iop_nap(1000);
+
           /* now call process_tiling_cl of module; module should emit meaningful messages in case of error */
           if (success_opencl)
             success_opencl = module->process_tiling_cl(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+
+          if(pipe->shutdown)
+          {
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
 
           /* do process blending on cpu (this is anyhow fast enough) */
           if (success_opencl)
@@ -704,6 +749,13 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           /* synchronization point for opencl pipe */
           if (success_opencl)
             success_opencl = dt_opencl_finish(pipe->devid);
+
+          if(pipe->shutdown)
+          {
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
+
         }
         else
         {
@@ -713,9 +765,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
         if(pipe->shutdown)
         {
-          if (cl_mem_input) dt_opencl_release_mem_object(cl_mem_input);
-          if (*cl_mem_output) dt_opencl_release_mem_object(*cl_mem_output);
-          cl_mem_input = *cl_mem_output = NULL;
+          if(cl_mem_input) dt_opencl_release_mem_object(cl_mem_input);
           dt_pthread_mutex_unlock(&pipe->busy_mutex);
           return 1;
         }
@@ -727,8 +777,39 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         {
           /* Nice, everything went fine */
 
+          /* write back input into cache for faster re-usal (not for export or thumbnails) */
+          if (cl_mem_input != NULL && pipe->type != DT_DEV_PIXELPIPE_EXPORT && pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL)
+          {
+            cl_int err;
+
+            /* copy input to host memory, so we can find it in cache */
+            err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height, in_bpp);
+            if (err != CL_SUCCESS)
+            {
+              /* late opencl error, not likely to happen here */
+              dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (e)] late opencl error detected while copying back to cpu buffer: %d\n", err);
+              /* that's all we do here, we later make sure to invalidate cache line */
+            }
+            else
+            {
+              /* success: cache line is valid now, so we will not need to invalidate it later */
+              valid_input_on_gpu_only = FALSE;
+          
+              // TODO: check if we need to wait for finished opencl pipe before we release cl_mem_input
+              // dt_dev_finish(pipe->devid);
+            }
+          }
+
+          if(pipe->shutdown)
+          {
+            if(cl_mem_input != NULL) dt_opencl_release_mem_object(cl_mem_input);
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
+ 
           /* we can now release cl_mem_input */
-          if (cl_mem_input) dt_opencl_release_mem_object(cl_mem_input);
+          if(cl_mem_input != NULL) dt_opencl_release_mem_object(cl_mem_input);
+          cl_mem_input = NULL;
           // we speculate on the next plug-in to possibly copy back cl_mem_output to output,
           // so we're not just yet invalidating the (empty) output cache line.
         }
@@ -768,6 +849,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             valid_input_on_gpu_only = FALSE;
           }
 
+          if(pipe->shutdown)
+          {
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
+
           /* process module on cpu. use tiling if needed and possible. */
           if((module->flags() & IOP_FLAGS_ALLOW_TILING) &&
               !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height),
@@ -775,6 +862,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
           else
             module->process(module, piece, input, *output, &roi_in, roi_out);
+
+          if(pipe->shutdown)
+          {
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
 
           /* process blending on cpu */
           dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
@@ -815,6 +908,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           valid_input_on_gpu_only = FALSE;
         }
 
+        if(pipe->shutdown)
+        {
+          dt_pthread_mutex_unlock(&pipe->busy_mutex);
+          return 1;
+        }
+
         /* process module on cpu. use tiling if needed and possible. */
         if((module->flags() & IOP_FLAGS_ALLOW_TILING) &&
             !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height),
@@ -822,6 +921,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
         else
           module->process(module, piece, input, *output, &roi_in, roi_out);
+
+        if(pipe->shutdown)
+        {
+          dt_pthread_mutex_unlock(&pipe->busy_mutex);
+          return 1;
+        }
 
         /* process blending */
         dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
@@ -848,6 +953,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
       else
         module->process(module, piece, input, *output, &roi_in, roi_out);
+
+      if(pipe->shutdown)
+      {
+        dt_pthread_mutex_unlock(&pipe->busy_mutex);
+        return 1;
+      }
 
       // Lab color picking for module
       if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
@@ -883,6 +994,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
     else
       module->process(module, piece, input, *output, &roi_in, roi_out);
+
+    if(pipe->shutdown)
+    {
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      return 1;
+    }
 
     // Lab color picking for module
     if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport

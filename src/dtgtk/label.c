@@ -192,6 +192,15 @@ GtkWidget* dtgtk_label_new(const gchar *text, _darktable_label_flags_t flags)
   return (GtkWidget *)label;
 }
 
+void dtgtk_label_set_text(GtkDarktableLabel *label,
+                          const gchar *text,
+                          _darktable_label_flags_t flags)
+{
+  gtk_label_set_text(GTK_LABEL(label),text);
+  label->flags=flags;
+  gtk_widget_queue_draw(GTK_WIDGET(label));
+}
+
 GtkType dtgtk_label_get_type()
 {
   static GtkType dtgtk_label_type = 0;
