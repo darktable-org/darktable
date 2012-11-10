@@ -1,6 +1,5 @@
 NP=~/vcs/darktable/tools/noise/noiseprofile
-#for i in *.pfm
-for i in iso6400_wb.pfm
+for i in *.pfm
 do
   echo "profiling : $i"
   $NP $i > ${i%pfm}dat
