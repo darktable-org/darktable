@@ -270,6 +270,21 @@
 		<Alias>Canon EOS Kiss X6i</Alias>
 	</Aliases>
   </Camera>
+  <Camera make="Canon" model="Canon EOS M">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="76" y="56" width="0" height="0"/>
+    <Sensor black="2026" white="13584" iso_min="0" iso_max = "199"/>
+    <Sensor black="2026" white="15304"/>
+        <BlackAreas>
+                <Vertical x="0" width="70"/>
+                <Horizontal y="4" height="44"/>
+        </BlackAreas>
+  </Camera>
   <Camera make="Canon" model="Canon EOS 5D">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
