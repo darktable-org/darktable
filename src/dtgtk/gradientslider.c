@@ -58,6 +58,8 @@ static guint _signals[LAST_SIGNAL] = { 0 };
 
 static gboolean _gradient_slider_postponed_value_change(gpointer data)
 {
+  if(!GTK_IS_WIDGET(data)) return 0;
+
   gdk_threads_enter();
 
   if(DTGTK_GRADIENT_SLIDER(data)->is_changed==TRUE)
@@ -230,10 +232,10 @@ static gboolean _gradient_slider_motion_notify(GtkWidget *widget, GdkEventMotion
 {
   GtkDarktableGradientSlider *gslider=DTGTK_GRADIENT_SLIDER(widget);
 
-  assert(gslider->timeout_handle > 0);
-
   if( gslider->is_dragging==TRUE && gslider->selected != -1 && gslider->do_reset==FALSE )
   {
+    assert(gslider->timeout_handle > 0);
+
     gdouble newposition = roundf(_screen_to_scale(widget, event->x)/gslider->increment)*gslider->increment;
 
     newposition = CLAMP_RANGE(newposition, 0.0, 1.0);

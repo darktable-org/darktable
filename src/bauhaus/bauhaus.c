@@ -1690,6 +1690,8 @@ dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
 static gboolean
 dt_bauhaus_slider_postponed_value_change(gpointer data)
 {
+  if(!GTK_IS_WIDGET(data)) return 0;
+
   gdk_threads_enter();
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)data;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
