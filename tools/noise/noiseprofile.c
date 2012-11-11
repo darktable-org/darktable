@@ -1,6 +1,6 @@
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <assert.h>
 #include <string.h>
 
@@ -67,6 +67,7 @@ read_pfm(const char *filename, int *wd, int*ht)
   return p;
 }
 
+#if 0
 static float*
 read_histogram(const char *filename, int *bins)
 {
@@ -83,6 +84,7 @@ read_histogram(const char *filename, int *bins)
   fclose(f);
   return h;
 }
+#endif
 
 #if 0
 static void
@@ -117,28 +119,37 @@ int main(int argc, char *arg[])
 {
   if(argc < 2)
   {
-    fprintf(stderr, "usage: %s input.pfm [-c a1 a2 a3 b]\n", arg[0]);
+    fprintf(stderr, "usage: %s input.pfm [-c a0 a1 a2 b c]\n", arg[0]);
     exit(1);
   }
   int wd, ht;
   float *input = read_pfm(arg[1], &wd, &ht);
   // sanity checks:
-  for(int k=0;k<3*wd*ht;k++) input[k] = clamp(input[k], 0.0f, 1.0f);
+  // for(int k=0;k<3*wd*ht;k++) input[k] = clamp(input[k], 0.0f, 1.0f);
 
   // correction requested?
-  if(argc >= 6 && !strcmp(arg[2], "-c"))
+  if(argc >= 7 && !strcmp(arg[2], "-c"))
   {
     const float a[3] = { atof(arg[3]), atof(arg[4]), atof(arg[5]) };
-    const float b = atof(arg[6]);
+    const float wb[3] = {atof(arg[6]), 1.0f, atof(arg[7])};
+    const float m[3] = {
+      a[0] + a[1]*300/wb[0] + a[2]*300*300/(wb[0]*wb[0]),
+      a[0] + a[1]*300/wb[1] + a[2]*300*300/(wb[1]*wb[1]),
+      a[0] + a[1]*300/wb[2] + a[2]*300*300/(wb[2]*wb[2])
+    };
     // scale to maximum (1.0/max value of pow):
-    const float m = fminf(fminf(a[0], a[1]), a[2]);
+    // const float m = fminf(fminf(a[0], a[1]), a[2]);
     // TODO: (and get rid of the analytical inverse and use the cdf directly)
     for(int k=0;k<wd*ht;k++)
     {
       for(int c=0;c<3;c++)
       {
         // input[3*k+c] = powf(a[c]*N*input[3*k+c], b)*m;
-        input[3*k+c] = powf(N*input[3*k+c], 1.0f/b)/a[c]*m;
+        // input[3*k+c] = powf(N*input[3*k+c], 1.0f/b)/a[c]*m;
+        const float y = input[3*k+c]/m[c];
+        const float d = 4.0f*a[2]*y - 4*a[0]*a[2] + a[1]*a[1];
+        const float x = (-a[1] + sqrtf(fmaxf(0.0f, d)))/(2.0f*a[2]);
+        input[3*k+c] = x / (300.0 * wb[c]);
       }
     }
   }
