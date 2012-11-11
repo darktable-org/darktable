@@ -459,6 +459,9 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   sprintf(c, "/index.html");
 
   const char *title = d->title;
+  gboolean showBanner = FALSE;
+  if(title && strcmp(title, "") == 0)
+    showBanner = TRUE;
 
   FILE *f = fopen(filename, "wb");
   if(!f) return;
@@ -475,9 +478,9 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
           "    <title>%s</title>\n"
           "  </head>\n"
           "  <body>\n"
-          "    <div class=\"title\"><a href=\"http://www.darktable.org\" target=\"_blank\"><img src=\"style/dtbg_logo.png\" alt=\"logo\" class=\"img\"/></a>%s</div>\n"
+          "    <div class=\"title\">%s</div>\n"
           "    <div class=\"page\">\n",
-          title, title);
+          title, showBanner?"<a href=\"http://www.darktable.org\" target=\"_blank\"><img src=\"style/dtbg_logo.png\" alt=\"logo\" class=\"img\"/></a>":title);
 
   while(d->l)
   {
