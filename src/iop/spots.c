@@ -97,10 +97,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const int xc = (d->spot[i].xc*piece->buf_in.width)/scale - roi_in->x;
     const int yc = (d->spot[i].yc*piece->buf_in.height)/scale - roi_in->y;
     const int rad = d->spot[i].radius * MIN(piece->buf_in.width, piece->buf_in.height)/scale;
-    const int um = CLAMP(MIN(x, xc), 0, rad);
-    const int uM = CLAMP(MIN(roi_in->width-1-xc, roi_in->width-1-x), 0, rad);
-    const int vm = CLAMP(MIN(y, yc), 0, rad);
-    const int vM = CLAMP(MIN(roi_in->height-1-yc, roi_in->height-1-y), 0, rad);
+    const int um = MIN(rad, MIN(x, xc));
+    const int uM = MIN(rad, MIN(roi_in->width-1-xc, roi_in->width-1-x));
+    const int vm = MIN(rad, MIN(y, yc));
+    const int vM = MIN(rad, MIN(roi_in->height-1-yc, roi_in->height-1-y));
     float filter[2*rad + 1];
     // for(int k=-rad; k<=rad; k++) filter[rad + k] = expf(-k*k*2.f/(rad*rad));
     if(rad > 0)
