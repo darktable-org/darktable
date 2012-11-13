@@ -4,7 +4,17 @@
 		%darktable_dtd;
 		]>
 
-<appendix><title>Preferences</title>
+<chapter>
+<chapterinfo>
+<keywordset>
+  <keyword>preferences</keyword>
+  <keyword>settings</keyword>
+  <keyword>configuration</keyword>
+  <keyword>options</keyword>
+  <keyword>accelerators</keyword>
+</keywordset>
+</chapterinfo>
+<title>Preferences and Settings</title>
 	<para>Darktable comes with a number of settings that can be configured by users. You reach the configuration
       	      system by clicking <inlinegraphic fileref="&icon_preferences;" scalefit="1" width="2%" align="center" />.</para>
 
@@ -20,4 +30,4 @@
 <!-- presets -->
 <xi:include href="presets.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-</appendix>		
+</chapter>		

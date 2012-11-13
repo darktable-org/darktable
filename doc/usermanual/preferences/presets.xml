@@ -17,7 +17,7 @@
 					<entry>Double clicking on a user-defined preset will open a menu.
 					</entry>
 					<entry>
-						<graphic fileref="addendum/images/presets.png" scalefit="1" width="80%" align="center" />
+						<graphic fileref="preferences/images/presets.png" scalefit="1" width="80%" align="center" />
 					</entry>
 				</row>
 			</tbody>
