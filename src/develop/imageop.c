@@ -1111,21 +1111,10 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   if (!dt_iop_is_hidden(module))
   {
     module->gui_update(module);
-    if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
-    {
-      dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
-
-      dt_bauhaus_combobox_set(bd->blend_modes_combo, dt_iop_gui_blending_mode_seq(bd, module->blend_params->mode));
-      dt_bauhaus_slider_set(bd->opacity_slider, module->blend_params->opacity);
-      if(bd->blendif_support)
-      {
-        dt_bauhaus_combobox_set(bd->blendif_enable, (module->blend_params->blendif & (1<<DEVELOP_BLENDIF_active)) != 0);
-        dt_iop_gui_update_blendif(module);
-      }
-    }
+    dt_iop_gui_update_blending(module);
+    dt_iop_gui_update_expanded(module);
     if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
   }
-  dt_iop_gui_update_expanded(module);
   darktable.gui->reset = reset;
 }
 
@@ -1310,32 +1299,6 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
     /* show plugin ui */
     gtk_widget_show(pluginui);
 
-    /* ensure that blending widgets are shown as they should */
-    dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
-
-    if (bd != NULL)
-    {
-      if(bd->modes[dt_bauhaus_combobox_get(bd->blend_modes_combo)].mode == DEVELOP_BLEND_DISABLED)
-      {
-        gtk_widget_hide(GTK_WIDGET(bd->opacity_slider));
-        if(bd->blendif_support)
-        {
-          gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
-          gtk_widget_hide(GTK_WIDGET(bd->blendif_enable));
-        }
-      }
-      else
-      {
-        gtk_widget_show(GTK_WIDGET(bd->opacity_slider));
-        if(bd->blendif_support)
-        {
-          gtk_widget_show(GTK_WIDGET(bd->blendif_enable));
-          if(dt_bauhaus_combobox_get(bd->blendif_enable) != 0)
-            gtk_widget_show(GTK_WIDGET(bd->blendif_box));
-        }
-      }
-    }
-
     /* set this module to receive focus / draw events*/
     dt_iop_request_focus(module);
 
@@ -1381,42 +1344,9 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module)
   dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);
 
   if (expanded)
-  {
-    /* show plugin ui */
     gtk_widget_show(pluginui);
-
-    /* ensure that blending widgets are show as the should */
-    dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
-
-    if (bd != NULL)
-    {
-      if(bd->modes[dt_bauhaus_combobox_get(bd->blend_modes_combo)].mode == DEVELOP_BLEND_DISABLED)
-      {
-        gtk_widget_hide(GTK_WIDGET(bd->opacity_slider));
-        if(bd->blendif_support)
-        {
-          gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
-          gtk_widget_hide(GTK_WIDGET(bd->blendif_enable));
-        }
-      }
-      else
-      {
-        gtk_widget_show(GTK_WIDGET(bd->opacity_slider));
-        if(bd->blendif_support)
-        {
-          gtk_widget_show(GTK_WIDGET(bd->blendif_enable));
-          if(dt_bauhaus_combobox_get(bd->blendif_enable) != 0)
-            gtk_widget_show(GTK_WIDGET(bd->blendif_box));
-          else
-            gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
-        }
-      }
-    }
-  }
   else
-  {
     gtk_widget_hide(pluginui);
-  }
 }
 
 
