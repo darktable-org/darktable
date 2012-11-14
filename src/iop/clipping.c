@@ -624,9 +624,9 @@ void gui_focus (struct dt_iop_module_t *self, gboolean in)
       // need to get gui stuff for the first time for this image,
       // and advice the pipe to redraw in full:
       g->clip_x = p->cx;
-      g->clip_w = p->cw - p->cx;
+      g->clip_w = fabsf(p->cw) - p->cx;
       g->clip_y = p->cy;
-      g->clip_h = p->ch - p->cy;
+      g->clip_h = fabsf(p->ch) - p->cy;
       // flip one bit to trigger the cache:
       uint32_t hack = *(uint32_t*)&p->cy;
       hack ^= 1;
@@ -903,9 +903,9 @@ void gui_update(struct dt_iop_module_t *self)
   // reset gui draw box to what we have in the parameters:
   g->applied = 1;
   g->clip_x = p->cx;
-  g->clip_w = p->cw - p->cx;
+  g->clip_w = fabsf(p->cw) - p->cx;
   g->clip_y = p->cy;
-  g->clip_h = p->ch - p->cy;
+  g->clip_h = fabsf(p->ch) - p->cy;
 }
 
 void init(dt_iop_module_t *module)
