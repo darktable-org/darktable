@@ -469,12 +469,13 @@ clip_rotate_bicubic(read_only image2d_t in, write_only image2d_t out, const int 
     float wy = interpolation_func_bicubic((float)(ty + jj) - po.y);
     float w = wx * wy;
 
-    if (tx+ii>=0 && tx+ii<in_width && ty+jj>=0 && ty+jj<in_height)
-      pixel += read_imagef(in, sampleri, (int2)(tx + ii, ty + jj)) * w;
+    pixel += read_imagef(in, sampleri, (int2)(tx + ii, ty + jj)) * w;
     weight += w;
   }
 
-  write_imagef (out, (int2)(x, y), pixel / weight);
+  pixel = (tx >= 0 && ty >= 0 && tx < in_width && ty < in_height) ? pixel / weight : (float4)0.0f;
+
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
@@ -523,12 +524,13 @@ clip_rotate_lanczos2(read_only image2d_t in, write_only image2d_t out, const int
     float wy = interpolation_func_lanczos(2, (float)(ty + jj) - po.y);
     float w = wx * wy;
 
-    if (tx+ii>=0 && tx+ii<in_width && ty+jj>=0 && ty+jj<in_height)
-      pixel += read_imagef(in, sampleri, (int2)(tx + ii, ty + jj)) * w;
+    pixel += read_imagef(in, sampleri, (int2)(tx + ii, ty + jj)) * w;
     weight += w;
   }
 
-  write_imagef (out, (int2)(x, y), pixel / weight);
+  pixel = (tx >= 0 && ty >= 0 && tx < in_width && ty < in_height) ? pixel / weight : (float4)0.0f;
+
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
@@ -578,12 +580,13 @@ clip_rotate_lanczos3(read_only image2d_t in, write_only image2d_t out, const int
     float wy = interpolation_func_lanczos(3, (float)(ty + jj) - po.y);
     float w = wx * wy;
 
-    if (tx+ii>=0 && tx+ii<in_width && ty+jj>=0 && ty+jj<in_height)
-      pixel += read_imagef(in, sampleri, (int2)(tx + ii, ty + jj)) * w;
+    pixel += read_imagef(in, sampleri, (int2)(tx + ii, ty + jj)) * w;
     weight += w;
   }
 
-  write_imagef (out, (int2)(x, y), pixel / weight);
+  pixel = (tx >= 0 && ty >= 0 && tx < in_width && ty < in_height) ? pixel / weight : (float4)0.0f;
+
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
