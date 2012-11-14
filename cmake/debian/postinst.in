@@ -1,7 +1,7 @@
 # postinst cmake template
 
 # update icon cache
-if test -z "$(DESTDIR)"; then
+if test -z "${DESTDIR}"; then
 	echo "Updating Gtk icon cache."; 
 	${GTK_UPDATE_ICON_CACHE};
 else 
