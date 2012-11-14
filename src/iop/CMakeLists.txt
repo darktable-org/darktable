@@ -10,7 +10,7 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
   colortransfer colorize invert shadhi
   cacorrect overexposed bloom soften clahe equalizer highpass
   hotpixels lowlight spots rawdenoise borders nlmeans levels
-  flip globaltonemap bilat superres)
+  flip globaltonemap bilat superres denoiseprofile)
 
 add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")
@@ -65,6 +65,7 @@ add_library(vibrance MODULE "vibrance.c")
 add_library(flip MODULE "flip.c")
 add_library(globaltonemap MODULE "globaltonemap.c")
 add_library(bilat MODULE "bilat.c")
+add_library(denoiseprofile MODULE "denoiseprofile.c")
 
 if(RSVG2_FOUND)
 	add_library(watermark MODULE "watermark.c")

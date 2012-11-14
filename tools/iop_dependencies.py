@@ -102,6 +102,7 @@ def add_edges(gr):
   gr.add_edge(('profile_gamma', 'lens'))
   gr.add_edge(('profile_gamma', 'shrecovery'))
   gr.add_edge(('profile_gamma', 'bilateral'))
+  gr.add_edge(('profile_gamma', 'denoiseprofile'))
   
   # these need Lab (between color in/out): 
   gr.add_edge(('colorout', 'bloom'))
@@ -278,6 +279,10 @@ def add_edges(gr):
   # the bilateral filter, in linear input rgb
   gr.add_edge(('colorin', 'bilateral'))
   gr.add_edge(('bilateral', 'demosaic'))
+  # same for denoise based on noise profiles:
+  gr.add_edge(('colorin', 'denoiseprofile'))
+  gr.add_edge(('denoiseprofile', 'demosaic'))
+
   gr.add_edge(('colorout', 'equalizer'))
   # for smooth b/w images, we want chroma denoise to go before
   # color zones, where chrome can affect luma:
@@ -306,6 +311,7 @@ gr.add_nodes([
 'colorzones',
 'colorcontrast',
 'demosaic',
+'denoiseprofile',
 'equalizer', # deprecated
 'exposure',
 'flip',
