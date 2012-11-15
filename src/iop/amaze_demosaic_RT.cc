@@ -25,6 +25,26 @@
 //#include <gtk/gtk.h>
 //#include <stdlib.h>
 
+
+#include <math.h>
+
+static inline
+float clampnan(const float x, const float m, const float M)
+{
+  float r;
+
+  // clamp to [m, M] if x is infinite; return average of m and M if x is NaN; else just return x
+
+  if(isinf(x))
+    r = (isless(x, m) ? m : (isgreater(x, M) ? M : x));
+  else if(isnan(x))
+    r = (m + M)/2.0f;
+  else // normal number
+    r = x;
+
+  return r;
+}
+
 /*==================================================================================
  * begin raw therapee code, hg checkout of april 22, 2011 branch defloat.
  *==================================================================================*/
@@ -1301,9 +1321,9 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             //blue[row][col] = ((65535.0f*rgb[indx][2]));
             if(col < roi_out->width && row < roi_out->height)
             {
-              out[(row*roi_out->width+col)*4]   = rgb[indx][0];
-              out[(row*roi_out->width+col)*4+1] = rgb[indx][1];
-              out[(row*roi_out->width+col)*4+2] = rgb[indx][2];
+              out[(row*roi_out->width+col)*4]   = clampnan(rgb[indx][0], 0.0f, 1.0f);
+              out[(row*roi_out->width+col)*4+1] = clampnan(rgb[indx][1], 0.0f, 1.0f);
+              out[(row*roi_out->width+col)*4+2] = clampnan(rgb[indx][2], 0.0f, 1.0f);
             }
 
             //for dcraw implementation
