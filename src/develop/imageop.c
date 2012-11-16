@@ -1104,6 +1104,12 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
   // printf("commit params hash += module %s: %lu, enabled = %d\n", piece->module->op, piece->hash, piece->enabled);
 }
 
+void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
+{
+  module->gui_cleanup(module);
+  dt_iop_gui_cleanup_blending(module);
+}
+
 void dt_iop_gui_update(dt_iop_module_t *module)
 {
   int reset = darktable.gui->reset;

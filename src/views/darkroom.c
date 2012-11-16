@@ -27,7 +27,6 @@
 #include "dtgtk/button.h"
 #include "dtgtk/tristatebutton.h"
 #include "develop/imageop.h"
-#include "develop/blend.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"
@@ -988,10 +987,7 @@ void leave(dt_view_t *self)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
     if (!dt_iop_is_hidden(module))
-    {
-      module->gui_cleanup(module);
-      dt_iop_gui_cleanup_blending(module);
-    }
+      dt_iop_gui_cleanup_module(module);
 
     dt_dev_cleanup_module_accels(module);
     module->accel_closures = NULL;
