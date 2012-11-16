@@ -1191,8 +1191,11 @@ void dt_ui_container_add_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWidge
 
 void dt_ui_container_focus_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w)
 {
-  //if(!GTK_IS_CONTAINER(ui->containers[c])) return;
   g_return_if_fail(GTK_IS_CONTAINER(ui->containers[c]));
+
+  if (GTK_WIDGET(ui->containers[c]) != w->parent)
+    return;
+
   gtk_container_set_focus_child(GTK_CONTAINER(ui->containers[c]), w);
   gtk_widget_queue_draw(ui->containers[c]);
 }
