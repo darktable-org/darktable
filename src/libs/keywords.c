@@ -93,11 +93,24 @@ void connect_key_accels(dt_lib_module_t *self)
 
 void gui_init(dt_lib_module_t *self)
 {
+  
   /* initialize ui widgets */
   dt_lib_keywords_t *d = (dt_lib_keywords_t *)g_malloc(sizeof(dt_lib_keywords_t));
   memset(d,0,sizeof(dt_lib_keywords_t));
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 5);
+
+  /* Create a new scrolled window, with scrollbars only if needed */
+  GtkWidget *scrolled_window;
+  scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+  
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
+                                    GTK_POLICY_AUTOMATIC, 
+                                    GTK_POLICY_AUTOMATIC);
+
+
+  
+  
 
   GtkTreeStore *store = gtk_tree_store_new(1, G_TYPE_STRING);
 
@@ -179,6 +192,10 @@ void gui_init(dt_lib_module_t *self)
   d->view = GTK_TREE_VIEW (gtk_tree_view_new());
   gtk_widget_set_size_request(GTK_WIDGET(d->view), -1, 300);
 
+  
+  gtk_container_add(GTK_CONTAINER(scrolled_window), GTK_WIDGET(d->view));
+  
+
   renderer = gtk_cell_renderer_text_new ();
   gtk_tree_view_insert_column_with_attributes(d->view,
       -1,
@@ -220,7 +237,7 @@ void gui_init(dt_lib_module_t *self)
   /* free store, treeview has its own storage now */
   g_object_unref(store);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->view), TRUE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(scrolled_window), TRUE, TRUE, 0);
 
   gtk_widget_show_all(GTK_WIDGET(d->view));
 
