@@ -14,9 +14,10 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
-		<para>Each modules is shown as a small icon, hover mouse pointer over the button to show the name. 
-		You can toggle a module by clicking the button to show/hide and add modules favorite modules group.
-                The icon background color indicates the status: dark grey for hidden modules, light grey for visible
-                modules, red for favorite modules.
+		<para>Each modules is shown as a small icon and the module name.
+		Left-click with your mouse to toggle a module's status: visible, hidden or favorite. Favorite modules are indicated by 
+                a star in front of the icon and will additionally to their normal module group show up in module group "favorites".
+                This is a good way to get fast access to modules that you use very frequently. Visible modules are indicated in the list
+                by a light grey background. Hidden modules have a dark grey background; they will not display any controls whatsoever.
 		</para>
 	</sect2>

@@ -17,8 +17,8 @@
 	   </para>
 	    <orderedlist>
 			   <listitem>
-			     <para>Arrows</para>
-			     <para> You can use the arrows around the slider to control precisely the increase/decrease of the value.
+			     <para>Triangular marker</para>
+			     <para>You left-click with your mouse on the triangular marker and move it around.
 			     </para>
 			   </listitem>
 			   <listitem>
@@ -28,11 +28,27 @@
 			   </listitem>
    			   <listitem>
 			     <para>Right-click</para>
-			     <para>Your mouse being over a slider, right-click gives you numerical access the slider values.
-			     Note that the numerical value needed to be entered is sometimes different from the one displayed.
-			     For example, the percentage repartition is displayed as X/Y (eg 70/30) but numerical value to be entered
-			     is -1 for 0/100, 0 for 50/50 and 1 for 0/100.
-			     </para>
+                             <para>Your mouse being over a slider, right click gives you a multi-functional pop-up below the slider for fine control
+                                   with your mouse and for entering numerical values with your keyboard. A bent line that extends from the
+                                   triangular marker moves as you move your mouse. The closer your mouse pointer is to the triangular marker the
+                                   coarser the control; the further away from the triangular marker the finer is your control. Left-click with your
+                                   mouse to accept the current value and go back to normal control. You can also directly type in the desired value
+                                   with your keyboard; there is no cursor, you just start typing.
+                             </para>
+	                     <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>Darktable's innovative way of value input: coarse and fine value adjustments in one single control element.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/images/darkroom_bauhaus.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+                                </tgroup>
+                           </informaltable>
 			   </listitem>		
    			   <listitem>
 			     <para>Double-click on parameter label</para>
