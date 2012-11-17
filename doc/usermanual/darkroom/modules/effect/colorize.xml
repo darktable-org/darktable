@@ -1,0 +1,35 @@
+<sect3 status="draft"><title>Colorize</title>
+	<sect4><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>This module is an artistic feature that adds a solid layer of color to your image.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/colorize.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect4>
+
+	<sect4><title>Usage</title>
+                <para>Several parameters control the effect of this module. Much more versatility can be reached if you apply blending or even conditional blending.
+                </para>
+		<sect5><title>Hue</title>
+			<para>Select the hue tone of the color layer.</para>
+		</sect5>
+		<sect5><title>Saturation</title>
+			<para>Select the color saturation of shadow tones.</para>
+		</sect5>	
+		<sect5><title>Lightness</title>
+			<para>Select the lightness of the color layer.</para>
+		</sect5>	
+		<sect5><title>Source mix</title>
+			<para>This slider controls how the lightness of input image is mixed in. If you set this to zero a uniformly colored plane will result.</para>
+		</sect5>
+	</sect4>
+</sect3>
