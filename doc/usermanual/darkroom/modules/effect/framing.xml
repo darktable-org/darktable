@@ -1,3 +1,8 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect3 status="draft"><title>Framing</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
@@ -5,7 +10,9 @@
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>This module allows you to add an artistic frame around an image.				
+						<entry>This module is an artistic feature to generate a frame around your image. The frame consists of a border with a user defined
+                                                       color and a frame line inside that border, which has another user defined color. There are various options for you to control the
+                                                       geometry of your frame.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/framing.png" scalefit="1" width="80%" align="center" />
@@ -17,16 +24,42 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>A simple tool to simulate a postcard.</para>
-                <sect5><title>border size</title>
-			<para>Set size of the border, expressed in percentage of the image.</para>
+		<sect5><title>Border size</title>
+			<para>This slider controls the size of the frame in percent of the underlying full image.</para>
 		</sect5>
-
-                <sect5><title>aspect</title>
-			<para>Set the ratio height/width.</para>
-		</sect5>	
-		<sect5><title>frame color</title>
-			<para>Set the color of the frame.</para>
+		<sect5><title>Aspect</title>
+			<para>With this combobox you can choose between different aspect ratios for the final output of this module, i.e. underlying image plus frame.</para>
+		</sect5>
+		<sect5><title>Orientation</title>
+			<para>If you select a non-square aspect ratio this combobox defines the orientation - portrait or landscape. Set to "auto" if you want darktable to
+                              select the most reasonable orientation based on the underlying image.
+                        </para>
+		</sect5>
+		<sect5><title>Horizontal position</title>
+			<para>Select from a set of pre-defined ratios where you want your underlying image be positioned on the horizontal axis. You can also right click and enter
+                              your own ratio as "x/y".
+                        </para>
+		</sect5>
+		<sect5><title>Vertical position</title>
+			<para>Select from a set of pre-defined ratios where you want your underlying image be positioned on the vertical axis. You can also right click and enter
+                              your own ratio as "x/y".</para>
+		</sect5>
+		<sect5><title>Frame line size</title>
+			<para>The percentage of the frame line size relative to the border size at its smallest part.</para>
+		</sect5>
+		<sect5><title>Frame line offset</title>
+			<para>Where the frame line is positioned relative to the underlying image. Select 0 for a frame line touching the image, 100% for a frame line touching the
+                              outer border limits.</para>
+		</sect5>
+		<sect5><title>Border color</title>
+			<para>Clicking on the colored field will open a color selector dialog which allows to define a color for the border in HSL or RGB color space.
+                              You can also activate a color picker by pressing <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+                              and take a color probe from your image.</para>
+		</sect5>
+		<sect5><title>Frame line color</title>
+			<para>Clicking on the colored field will open a color selector dialog which allows to define a color for the frame in HSL or RGB color space.
+                              You can also activate a color picker by pressing <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+                              and take a color probe from your image.</para>
 		</sect5>
 	</sect4>
 </sect3>
