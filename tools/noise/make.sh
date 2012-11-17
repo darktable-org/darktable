@@ -21,7 +21,6 @@ do
   fit f1(x) "${i%pfm}dat" u 1:8  via b
   fit f3(x) "${i%pfm}dat" u 1:10 via c
 # print a0, a1, a2, a3, a4, a5, b, c
-  b=1.; c=2.;
   print a0, a1, a2, b, c
   set xrange [0:300]
   set output "${i%.pfm}_cdf.pdf"
@@ -46,12 +45,13 @@ do
 #  set xrange [0:150]
 #  plot "${i%pfm}dat" u 1:(\$8-f1(\$1)) w l lw 4 title "cdf ${i%.pfm}", '' u 1:(\$9-f2(\$1)) w l lw 4, '' u 1:(\$10-f3(\$1)) w l lw 4
 EOF
-  $NP $i -c $(cat ${i%pfm}fit) > ${i%.pfm}_flat.dat
+  $NP $i -c $(cat ${i%pfm}fit) > ${i%.pfm}_flat.dat 2> ${i%.pfm}_curves.dat
   echo "flattened : $i"
   gnuplot << EOF
   set term pdf
   set output "${i%.pfm}_flat.pdf"
   plot "${i%.pfm}_flat.dat" u 1:2 w l lw 4 title "flat noise levels ${i%.pfm}", '' u 1:3 w l lw 4, '' u 1:4 w l lw 4
   plot "${i%pfm}dat" u 1:(log(\$5)) w l lw 4 title "flat histogram ${i%.pfm}", '' u 1:(log(\$6)) w l lw 4, '' u 1:(log(\$7)) w l lw 4
+  plot "${i%.pfm}_curves.dat" u 0:1 w l lw 4 title "conversion curves", '' u 0:2 w l lw 4, '' u 0:3 w l lw 4
 EOF
 done

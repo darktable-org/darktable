@@ -128,18 +128,33 @@ int main(int argc, char *arg[])
   // for(int k=0;k<3*wd*ht;k++) input[k] = clamp(input[k], 0.0f, 1.0f);
 
   // correction requested?
-  if(argc >= 7 && !strcmp(arg[2], "-c"))
+  if(argc >= 8 && !strcmp(arg[2], "-c"))
   {
     const float a[3] = { atof(arg[3]), atof(arg[4]), atof(arg[5]) };
     const float wb[3] = {atof(arg[6]), 1.0f, atof(arg[7])};
     const float m[3] = {
-      a[0] + a[1]*300/wb[0] + a[2]*300*300/(wb[0]*wb[0]),
-      a[0] + a[1]*300/wb[1] + a[2]*300*300/(wb[1]*wb[1]),
-      a[0] + a[1]*300/wb[2] + a[2]*300*300/(wb[2]*wb[2])
+      a[0] + a[1]*N/wb[0] + a[2]*N*N/(wb[0]*wb[0]),
+      a[0] + a[1]*N/wb[1] + a[2]*N*N/(wb[1]*wb[1]),
+      a[0] + a[1]*N/wb[2] + a[2]*N*N/(wb[2]*wb[2])
     };
+#if 1
+    // dump curves:
+    // TODO: make these stick at (0,0)!
+    for(int k=0;k<N;k++)
+    {
+      for(int c=0;c<3;c++)
+      {
+        const float y = k/(N-1.0f);
+        const float d = 4.0f*a[2]*y - 4*a[0]*a[2] + a[1]*a[1];
+        const float x = (-a[1] + sqrtf(fmaxf(0.0f, d)))/(2.0f*a[2]);
+        fprintf(stderr, "%f ", x / (N * wb[c]));
+      }
+      fprintf(stderr, "\n");
+    }
+#endif
     // scale to maximum (1.0/max value of pow):
     // const float m = fminf(fminf(a[0], a[1]), a[2]);
-    // TODO: (and get rid of the analytical inverse and use the cdf directly)
+    // (get rid of the analytical inverse and use the cdf directly)?
     for(int k=0;k<wd*ht;k++)
     {
       for(int c=0;c<3;c++)
@@ -149,7 +164,7 @@ int main(int argc, char *arg[])
         const float y = input[3*k+c]/m[c];
         const float d = 4.0f*a[2]*y - 4*a[0]*a[2] + a[1]*a[1];
         const float x = (-a[1] + sqrtf(fmaxf(0.0f, d)))/(2.0f*a[2]);
-        input[3*k+c] = x / (300.0 * wb[c]);
+        input[3*k+c] = x / (N * wb[c]);
       }
     }
   }
