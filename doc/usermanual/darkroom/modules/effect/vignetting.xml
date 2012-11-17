@@ -40,4 +40,23 @@
 			<para>Invert the effect of brightness. By default the vignetting darkens at the border. Using this button you can brighter it.</para>
 		</sect5>			
 	</sect4>
+
+	<sect4><title>Examples</title>
+		<para>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='30%'/>
+					<colspec colwidth='70%'/>
+					<tbody>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/vignetting_ex1.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry><para>An image with graphical vignetting controls.</para></entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</para>	
+	</sect4>
+
 </sect3>

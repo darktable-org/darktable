@@ -60,7 +60,16 @@ struct dt_develop_tiling_t;
 #define IOP_FLAGS_ALLOW_TILING         16                       // Does allow tile-wise processing (valid for CPU and GPU processing)
 #define IOP_FLAGS_HIDDEN               32                       // Hide the iop from userinterface
 #define IOP_FLAGS_TILING_FULL_ROI      64                       // Tiling code has to expect arbitrary roi's for this module (incl. flipping, mirroring etc.)
+/** status of a module*/
+typedef enum dt_iop_module_state_t
+{
+  dt_iop_state_HIDDEN = 0, // keep first
+  dt_iop_state_ACTIVE,
+  dt_iop_state_FAVORITE,
+  dt_iop_state_LAST
 
+}
+dt_iop_module_state_t;
 typedef struct dt_iop_params_t
 {
   int keep;
@@ -196,7 +205,7 @@ typedef struct dt_iop_module_t
   GtkWidget *header;
 
   /** button used to show/hide this module in the plugin list. */
-  GtkWidget *showhide;
+  dt_iop_module_state_t state;
   /** expander containing the widget and flag to store expanded state */
   GtkWidget *expander;
   gboolean expanded;
@@ -303,6 +312,8 @@ void dt_iop_cleanup_module(dt_iop_module_t *module);
 void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** checks if iop do have an ui */
 gboolean dt_iop_is_hidden(dt_iop_module_t *module);
+/** cleans up gui of module and of blendops */
+void dt_iop_gui_cleanup_module(dt_iop_module_t *module);
 /** updates the gui params and the enabled switch. */
 void dt_iop_gui_update(dt_iop_module_t *module);
 /** reset the ui to its defaults */
@@ -311,6 +322,8 @@ void dt_iop_gui_reset(dt_iop_module_t *module);
 void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded);
 /** refresh iop according to set expanded state */
 void dt_iop_gui_update_expanded(dt_iop_module_t *module);
+/** change module state */
+void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state);
 
 /** commits params and updates piece hash. */
 void dt_iop_commit_params(dt_iop_module_t *module, struct dt_iop_params_t *params, struct dt_develop_blend_params_t * blendop_params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);

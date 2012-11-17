@@ -23,6 +23,13 @@
 #define M_PI 3.141592654
 #endif
 
+void dtgtk_cairo_paint_empty(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+  cairo_translate(cr, x, y);
+  cairo_scale(cr,w,h);
+  cairo_stroke(cr);
+  cairo_identity_matrix(cr);
+}
 void dtgtk_cairo_paint_color(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
 {
   cairo_translate(cr, x, y);

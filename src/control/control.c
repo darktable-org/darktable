@@ -180,7 +180,7 @@ static void dt_control_sanitize_database()
                         NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "CREATE TABLE memory.history (imgid integer, num integer, module integer, "
-                        "operation varchar(256), op_params blob, enabled integer, "
+                        "operation varchar(256) UNIQUE ON CONFLICT REPLACE, op_params blob, enabled integer, "
                         "blendop_params blob, blendop_version integer)",
                         NULL, NULL, NULL);
 
@@ -383,7 +383,7 @@ void dt_control_create_database_schema()
                         "folder varchar(1024))",
                          NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create table images (id integer primary key, group_id integer, film_id integer, "
+                        "create table images (id integer primary key autoincrement, group_id integer, film_id integer, "
                         "width int, height int, filename varchar, maker varchar, model varchar, "
                         "lens varchar, exposure real, aperture real, iso real, focal_length real, "
                         "focus_distance real, datetime_taken char(20), flags integer, "

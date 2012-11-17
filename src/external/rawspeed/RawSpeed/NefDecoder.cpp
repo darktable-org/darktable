@@ -218,7 +218,7 @@ void NefDecoder::DecodeUncompressed() {
       else if (hints.find(string("coolpixsplit")) != hints.end())
         readCoolpixSplitRaw(in, size, pos, width*bitPerPixel / 8);
       else
-        readUncompressedRaw(in, size, pos, width*bitPerPixel / 8, bitPerPixel, bitorder);
+        readUncompressedRaw(in, size, pos, width*bitPerPixel / 8, bitPerPixel, bitorder ? BitOrder_Jpeg : BitOrder_Plain);
     } catch (RawDecoderException e) {
       if (i>0)
         mRaw->setError(e.what());

@@ -39,12 +39,18 @@
 #include <assert.h>
 
 
+#define DT_DEV_AVERAGE_DELAY_START            250
+#define DT_DEV_PREVIEW_AVERAGE_DELAY_START     50
+#define DT_DEV_AVERAGE_DELAY_COUNT              5
+
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
   memset(dev,0,sizeof(dt_develop_t));
   dev->preview_downsampling = 1.0f;
   dev->gui_module = NULL;
   dev->timestamp = 0;
+  dev->average_delay = DT_DEV_AVERAGE_DELAY_START;
+  dev->preview_average_delay = DT_DEV_PREVIEW_AVERAGE_DELAY_START;
   dev->gui_leaving = 0;
   dev->gui_synch = 0;
   dt_pthread_mutex_init(&dev->history_mutex, NULL);
@@ -218,8 +224,12 @@ restart:
     else goto restart;
   }
   dt_show_times(&start, "[dev_process_preview] pixel pipeline processing", NULL);
+  dt_dev_average_delay_update(&start, &dev->preview_average_delay);
 
   dev->preview_dirty = 0;
+  // redraw the whole thing, to also update color picker values and histograms etc.
+  if(dev->gui_attached)
+    dt_control_queue_redraw();
   dt_control_log_busy_leave();
   dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 }
@@ -307,6 +317,7 @@ restart:
     else goto restart;
   }
   dt_show_times(&start, "[dev_process_image] pixel pipeline processing", NULL);
+  dt_dev_average_delay_update(&start, &dev->average_delay);
 
   // maybe we got zoomed/panned in the meantime?
   if(dev->pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
@@ -316,7 +327,9 @@ restart:
   dev->image_loading = 0;
 
   dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-  dt_control_queue_redraw_center();
+  // redraw the whole thing, to also update color picker values and histograms etc.
+  if(dev->gui_attached)
+    dt_control_queue_redraw();
   dt_control_log_busy_leave();
 }
 
@@ -635,7 +648,7 @@ auto_apply_presets(const int imgid)
 
   // flag was already set? only apply presets once in the lifetime of a history stack.
   // (the flag will be cleared when removing it)
-  if(!run)
+  if(!run || cimg->id <= 0)
   {
     dt_image_cache_read_release(darktable.image_cache, cimg);
     return;
@@ -1059,6 +1072,14 @@ void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename)
 void dt_dev_invalidate_from_gui (dt_develop_t *dev)
 {
   dt_dev_pop_history_items(darktable.develop, darktable.develop->history_end);
+}
+
+void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_delay)
+{
+  dt_times_t end;
+  dt_get_times(&end);
+
+  *average_delay += ((end.clock - start->clock)*1000/DT_DEV_AVERAGE_DELAY_COUNT - *average_delay/DT_DEV_AVERAGE_DELAY_COUNT);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
