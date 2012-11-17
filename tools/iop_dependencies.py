@@ -282,6 +282,7 @@ def add_edges(gr):
   # same for denoise based on noise profiles:
   gr.add_edge(('colorin', 'denoiseprofile'))
   gr.add_edge(('denoiseprofile', 'demosaic'))
+  gr.add_edge(('basecurve', 'denoiseprofile'))
 
   gr.add_edge(('colorout', 'equalizer'))
   # for smooth b/w images, we want chroma denoise to go before
