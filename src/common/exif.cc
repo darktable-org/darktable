@@ -584,10 +584,18 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         gchar **entry = tokens;
         while(*entry)
         {
+          // remove leading and trailing spaces
+          char *e = *entry + strlen(*entry) - 1;
+          while(*e == ' ' && e > *entry) *e = '\0';
+          e = *entry;
+          while(*e == ' ' && *e != '\0') e++;
+          if(*e)
+          {
           // add the tag to the image
-          guint tagid = 0;
-          dt_tag_new(*entry,&tagid);
-          dt_tag_attach(tagid, img->id);
+            guint tagid = 0;
+            dt_tag_new(e,&tagid);
+            dt_tag_attach(tagid, img->id);
+          }
           entry++;
         }
       }
