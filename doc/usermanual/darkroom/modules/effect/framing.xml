@@ -24,39 +24,39 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<sect5><title>Border size</title>
+		<sect5><title>border size</title>
 			<para>This slider controls the size of the frame in percent of the underlying full image.</para>
 		</sect5>
-		<sect5><title>Aspect</title>
+		<sect5><title>aspect</title>
 			<para>With this combobox you can choose between different aspect ratios for the final output of this module, i.e. underlying image plus frame.</para>
 		</sect5>
-		<sect5><title>Orientation</title>
+		<sect5><title>orientation</title>
 			<para>If you select a non-square aspect ratio this combobox defines the orientation - portrait or landscape. Set to "auto" if you want darktable to
                               select the most reasonable orientation based on the underlying image.
                         </para>
 		</sect5>
-		<sect5><title>Horizontal position</title>
+		<sect5><title>horizontal position</title>
 			<para>Select from a set of pre-defined ratios where you want your underlying image be positioned on the horizontal axis. You can also right click and enter
                               your own ratio as "x/y".
                         </para>
 		</sect5>
-		<sect5><title>Vertical position</title>
+		<sect5><title>vertical position</title>
 			<para>Select from a set of pre-defined ratios where you want your underlying image be positioned on the vertical axis. You can also right click and enter
                               your own ratio as "x/y".</para>
 		</sect5>
-		<sect5><title>Frame line size</title>
+		<sect5><title>frame line size</title>
 			<para>The percentage of the frame line size relative to the border size at its smallest part.</para>
 		</sect5>
-		<sect5><title>Frame line offset</title>
+		<sect5><title>frame line offset</title>
 			<para>Where the frame line is positioned relative to the underlying image. Select 0 for a frame line touching the image, 100% for a frame line touching the
                               outer border limits.</para>
 		</sect5>
-		<sect5><title>Border color</title>
+		<sect5><title>border color</title>
 			<para>Clicking on the colored field will open a color selector dialog which allows to define a color for the border in HSL or RGB color space.
                               You can also activate a color picker by pressing <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
                               and take a color probe from your image.</para>
 		</sect5>
-		<sect5><title>Frame line color</title>
+		<sect5><title>frame line color</title>
 			<para>Clicking on the colored field will open a color selector dialog which allows to define a color for the frame in HSL or RGB color space.
                               You can also activate a color picker by pressing <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
                               and take a color probe from your image.</para>

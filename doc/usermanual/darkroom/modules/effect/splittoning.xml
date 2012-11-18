@@ -30,17 +30,17 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<sect5><title>Shadows and Highlights color</title>
+		<sect5><title>shadows and highlights color</title>
 			<para>These controls are used to set the color of the splittoning effect, you select the desire color and 
 					saturation for both shadows and highlights, you can also click the color preview box too bring up a
 					common color picker dialog.</para>
 		</sect5>
-		<sect5><title>Balance</title>
+		<sect5><title>balance</title>
 			<para>The balance is presented as an ratio bar and default value is 50/50 which means that 50% of lightness 
 			range in image are used for shadows toning and the other 50% for highlights toning.
 			</para>
 		</sect5>
-		<sect5><title>Compression</title>
+		<sect5><title>compression</title>
 			<para>Compression is a percentage of total lightness range that not is affected by color toning, default value is
 				set to 33% which not is the default behaviour of a original splittoning which would be 0% compression.
 				The choice of 33% as default is to invite you exprimenting with these parameters and how it extends the original 

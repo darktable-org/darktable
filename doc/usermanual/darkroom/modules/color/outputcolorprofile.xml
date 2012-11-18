@@ -18,7 +18,7 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-                <sect5><title>Output intent</title>
+                <sect5><title>output intent</title>
           		<para>Sets the rendering intent for output/export. You can easily override this setting whenever you do exports from lighttable mode.
 				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='40%'/>
@@ -46,14 +46,14 @@
 					</tbody>
 				</tgroup></informaltable></para>
                 </sect5>
-                <sect5><title>Display intent</title>
+                <sect5><title>display intent</title>
           		<para>Sets the rendering intent for your display. See above for available options.</para>
                 </sect5>
-                <sect5><title>Output profile</title>
+                <sect5><title>output profile</title>
           		<para>Sets the color profile for output/export. Profiles to be used are picked up from $DARKTABLE/share/darktable/color/out and 
                         $HOME/.config/darktable/color/out, where $DARKTABLE is darktables installation directory and $HOME is your home directory.</para>
                 </sect5>
-                <sect5><title>Softproof profile</title>
+                <sect5><title>softproof profile</title>
           		<para>Sets the color profile for softproof. Profiles to be used are picked up from $DARKTABLE/share/darktable/color/out and 
                         $HOME/.config/darktable/color/out, where $DARKTABLE is darktables installation directory and $HOME is your home directory.</para>
 
@@ -70,7 +70,7 @@
                         or Gamut Check.
                         </para>  
                 </sect5>
-                <sect5><title>Display profile</title>
+                <sect5><title>display profile</title>
           		<para>Sets the color profile for the display. Profiles to be used is picked up from /usr/share/darktable/color/out and 
                         $HOME/.config/darktable/color/out. The additional option "system display profile" is taken directly from your system's
                         color manager or from your X Server. When working with a calibrated display this is the preferred option to choose.</para>

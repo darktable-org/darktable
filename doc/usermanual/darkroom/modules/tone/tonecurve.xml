@@ -59,7 +59,7 @@
                              depending on input pixel's colors.
                         </para>
 		</sect5>	
-		<sect5><title>Scale chroma</title>
+		<sect5><title>scale chroma</title>
 			<para>Darktable does an automatic adjustment of color saturation if this combobox is set to "auto". The level of this
                               adjustment is dependent on the pixel's color values and its L-value modification by the L-channel tonecurve. It is
                               designed to give an overall boost in color saturation if the L-curve gives a contrast boost. Look at blend mode

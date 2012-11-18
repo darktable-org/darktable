@@ -24,16 +24,16 @@
                       also the distance on the range scale, i.e. differences in color intensities. As denoising is a resource hungry process, it slows down pixelpipe processing significantly; consider to activate 
                       this module late in your workflow.
 		</para>
-		<sect5><title>Radius</title>
+		<sect5><title>radius</title>
 			<para>Set the spatial extent of the gaussian blur.</para>
 		</sect5>
-		<sect5><title>Red</title>
+		<sect5><title>red</title>
 			<para>Blur intensity for red channel.</para>
 		</sect5>
-		<sect5><title>Green</title>
+		<sect5><title>green</title>
 			<para>Blur intensity for green channel.</para>
 		</sect5>
-		<sect5><title>Blue</title>
+		<sect5><title>blue</title>
 			<para>Blur intensity for blue channel.</para>
 		</sect5>
 	</sect4>

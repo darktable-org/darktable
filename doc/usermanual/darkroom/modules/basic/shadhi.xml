@@ -20,32 +20,32 @@
   <sect4>
     <title>Usage</title>
     <sect5>
-      <title>Shadows</title>
+      <title>shadows</title>
       <para>This slider controls the effect on shadows. Positive values lighten, negative values darken tonal range.
 </para>
     </sect5>
     <sect5>
-      <title>Highlights</title>
+      <title>highlights</title>
       <para>This slider controls the effect on highlights; negative values darken, positive values lighten tonal range.</para>
     </sect5>
     <sect5>
-      <title>Soften with</title>
+      <title>soften with</title>
       <para>This combobox choses the underlying blurring filter; gaussian or bilateral. Chose bilateral to prevent halos.</para>
     </sect5>
     <sect5>
-      <title>Radius</title>
+      <title>radius</title>
       <para>This slider controls the radius of the blurring filter. Higher values give softer transitions but might introduce halos. Lower values reduce the size of halos but may lead to an artifical look.</para>
     </sect5>
     <sect5>
-      <title>Compress</title>
+      <title>compress</title>
       <para>This slider controls how strong the effect extends to midtones; high values reduce the effect to the extreme shadows and highlights; low values cause strong adjustments also on midtones.</para>
     </sect5>
     <sect5>
-      <title>Shadows color adjustment</title>
+      <title>shadows color adjustment</title>
       <para>This slider controls the color saturation adjustment made to shadows; high values cause saturation enhancements on lightened shadows; low values cause desaturation on lightened shadows.</para>
     </sect5>
     <sect5>
-      <title>Highlights color adjustment</title>
+      <title>highlights color adjustment</title>
       <para>This slider controls the color saturation adjustment made to highlights; high values cause saturation enhancements on darkened highlights; low values cause desaturation on darkened highlights.</para>
     </sect5>
   </sect4>

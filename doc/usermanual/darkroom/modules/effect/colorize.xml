@@ -19,16 +19,16 @@
 	<sect4><title>Usage</title>
                 <para>Several parameters control the effect of this module. Much more versatility can be reached if you apply blending or even conditional blending.
                 </para>
-		<sect5><title>Hue</title>
+		<sect5><title>hue</title>
 			<para>Select the hue tone of the color layer.</para>
 		</sect5>
-		<sect5><title>Saturation</title>
+		<sect5><title>saturation</title>
 			<para>Select the color saturation of shadow tones.</para>
 		</sect5>	
-		<sect5><title>Lightness</title>
+		<sect5><title>lightness</title>
 			<para>Select the lightness of the color layer.</para>
 		</sect5>	
-		<sect5><title>Source mix</title>
+		<sect5><title>source mix</title>
 			<para>This slider controls how the lightness of input image is mixed in. If you set this to zero a uniformly colored plane will result.</para>
 		</sect5>
 	</sect4>

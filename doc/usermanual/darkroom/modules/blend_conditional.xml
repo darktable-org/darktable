@@ -27,7 +27,7 @@
 	        </sect3>
 
 
-		<sect3><title>Overview of controls</title>
+		<sect3><title>Usage</title>
 		        <para>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 			<colspec colwidth='70%'/>
@@ -45,9 +45,8 @@
 			</tgroup>
 			</informaltable>
 		        </para>
-	        </sect3>
 
-	        <sect3><title>Notebook tabs</title>
+	        <sect4><title>Notebook tabs</title>
 		        <para>Each notebook tab represents a data channel - real or virtual. Modules acting in Lab color space have data channels for
 		              L, a, b, C (chroma of LCh) and h (hue of LCh). Modules acting in RGB color space have data channels for g (grey), R, G, B,
 		              H (hue of HSL), S (saturation of HSL), and L (lightness of HSL). Consult http://en.wikipedia.org/wiki/Color_space for a deeper
@@ -57,9 +56,9 @@
 		              Within each notebook tab two color channel sliders are given; one for the input data that the module receives; and one for
 		              the output data that the module produces prior to blending.
 		        </para>
-	        </sect3>
+	        </sect4>
 
-	        <sect3><title>Control buttons</title>
+	        <sect4><title>Control buttons</title>
 		        <para>Control buttons help you when designing a blend mask. With the eye button 
                               <inlinegraphic fileref="&icon_module_eye;" scalefit="1" width="2%" align="center" /> you can temporarily deactivate the blend mask;
 		              blend mode and global opacity slider remain in effect. Switch this button on and off to see if the module is acting on
@@ -70,9 +69,9 @@
 		              With the reset button <inlinegraphic fileref="&icon_module_reset;" scalefit="1" width="2%" align="center" /> you can put all conditional blending 
                               settings back to their default state.
 		        </para>
-	        </sect3>
+	        </sect4>
 
-	        <sect3><title>Color channel sliders</title>
+	        <sect4><title>Color channel sliders</title>
 		        <para>With the color channel slider you construct a trapezoidal opacity function. For this purpose there are four markers per slider.
 		              Two triangles above the slider; they mark the range of values where opacity is 1.
 		              Two triangles below the slider; they mark the range values where opacity is zero.
@@ -128,14 +127,15 @@
 			</tgroup>
 			</informaltable>
 		        </para>
-	        </sect3>
+	        </sect4>
 
-	        <sect3><title>Mask blur</title>
+	        <sect4><title>Mask blur</title>
 		        <para>The mask blur slider applies a gaussian blur to the final blend mask. The higher the radius, the stronger the blur;
 		              set to 0 for an unblurred mask. This option is useful to get a softer transitions between blended and unblended parts
 		              of an image and avoids artifacts.
 		        </para>
-	        </sect3>
+	        </sect4>
+                </sect3>
 
 	        <sect3><title>Examples</title>
 			<sect4 status="draft"><title>Colorkey effect</title>
