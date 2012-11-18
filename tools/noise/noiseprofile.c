@@ -285,11 +285,16 @@ int main(int argc, char *arg[])
 
   // output variance per brightness level:
   fprintf(stdout, "# bin std_r std_g std_b hist_r hist_g hist_b cdf_r cdf_g cdf_b\n");
+  float sum[3] = {0.0f};
+  for(int i=0;i<N;i++)
+    for(int k=0;k<3;k++) sum[k] += std[i][k];
   float cdf[3] = {0.0f};
   for(int i=0;i<N;i++)
   {
-    fprintf(stdout, "%d %f %f %f %f %f %f %f %f %f\n", i, std[i][0], std[i][1], std[i][2],
-        cnt[i][0], cnt[i][1], cnt[i][2], cdf[0], cdf[1], cdf[2]);
+    fprintf(stdout, "%f %f %f %f %f %f %f %f %f %f\n", i/(float)N, std[i][0], std[i][1], std[i][2],
+        cnt[i][0], cnt[i][1], cnt[i][2],
+        cdf[0]/sum[0], cdf[1]/sum[1], cdf[2]/sum[2]);
+        // cdf[0], cdf[1], cdf[2]);
     for(int k=0;k<3;k++) cdf[k] += std[i][k];
   }
 
