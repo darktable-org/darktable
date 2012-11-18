@@ -11,7 +11,8 @@
 		<legalnotice>
 			<para>
 			The owner of the darktable project is Johannes Hanika.
-			Main developers are Johannes Hanika, Henrik Andersson and Tobias Ellinghaus.
+			Main developers are Johannes Hanika, Henrik Andersson, Tobias Ellinghaus
+                        and Ulrich Pegelow.
 			</para>
 			<para>
   			darktable is free software: you can redistribute it and/or modify
@@ -49,6 +50,11 @@
 			<year>2010-2011</year>
 			<holder>Olivier Tribout</holder>
 		</copyright>
+		<copyright>
+			<year>2012</year>
+			<holder>Ulrich Pegelow</holder>
+		</copyright>
+
 	</bookinfo>
 
 	<preface id="overview"><title>Preface to darktable</title>
@@ -66,12 +72,12 @@
 						<row>
 							<entry>user manual</entry>
 							<entry></entry>
-							<entry>02/06/11</entry>
+							<entry>November 2012</entry>
 						</row>
 						<row>
 							<entry>darktable</entry>
-							<entry>darktable 0.8+550~gd1cdadd</entry>
-							<entry>02/06/11</entry>
+							<entry>1.1</entry>
+							<entry>November 2012</entry>
 						</row>
 					</tbody>
 				</tgroup></informaltable>
