@@ -48,7 +48,6 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>Watermark module does </para>
 		<sect5><title>marker</title>
 			<para>Choose the watermark of interest, use the reload button next to the combobox to update list
 				with newly added watermarks.

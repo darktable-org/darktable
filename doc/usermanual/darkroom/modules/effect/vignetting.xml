@@ -51,7 +51,7 @@
 							<entry>
 								<graphic fileref="darkroom/modules/images/vignetting_ex1.png" scalefit="1" width="90%" align="center" />
 							</entry>						
-							<entry><para>An image with graphical vignetting controls.</para></entry>
+							<entry><para>An image with vignetting and with graphical vignetting controls.</para></entry>
 						</row>
 					</tbody>
 				</tgroup>

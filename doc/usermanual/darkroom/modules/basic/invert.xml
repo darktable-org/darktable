@@ -10,7 +10,7 @@
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>The main purpose of this module to invert scanned negatives.
+						<entry>The main purpose of this module is to invert scanned negatives.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/invert.png" scalefit="1" width="80%" align="center" />
