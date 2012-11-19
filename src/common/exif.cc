@@ -1345,23 +1345,29 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   const int xmp_version = 1;
   int stars = 1, raw_params = 0;
   double longitude = NAN, latitude = NAN;
+  gchar *filename = NULL;
   // get stars and raw params from db
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select flags, raw_parameters, longitude, latitude from images where id = ?1",
+                              "select filename, flags, raw_parameters, longitude, latitude from images where id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    stars      = sqlite3_column_int(stmt, 0);
-    raw_params = sqlite3_column_int(stmt, 1);
-    if(sqlite3_column_type(stmt, 2) == SQLITE_FLOAT)
-      longitude  = sqlite3_column_double(stmt, 2);
+    filename   = (gchar*)sqlite3_column_text(stmt, 0);
+    stars      = sqlite3_column_int(stmt, 1);
+    raw_params = sqlite3_column_int(stmt, 2);
     if(sqlite3_column_type(stmt, 3) == SQLITE_FLOAT)
-      latitude   = sqlite3_column_double(stmt, 3);
+      longitude  = sqlite3_column_double(stmt, 3);
+    if(sqlite3_column_type(stmt, 4) == SQLITE_FLOAT)
+      latitude   = sqlite3_column_double(stmt, 4);
   }
   sqlite3_finalize(stmt);
   xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); //rejected image = -1, others = 0..5
+
+  // The original file name
+  if(filename)
+    xmpData["Xmp.xmpMM.DerivedFrom"] = filename;
 
   // GPS data
   if(!isnan(longitude) && !isnan(latitude))
