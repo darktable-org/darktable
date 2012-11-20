@@ -67,7 +67,6 @@ read_pfm(const char *filename, int *wd, int*ht)
   return p;
 }
 
-#if 0
 static float*
 read_histogram(const char *filename, int *bins)
 {
@@ -77,14 +76,47 @@ read_histogram(const char *filename, int *bins)
 
   while(!feof(f))
   {
+    fscanf(f, "%*f %*f %*f %*f %*f %*f %*f %*f %*f %*f\n");
     (*bins) ++;
   }
-    // TODO second round, alloc and read
+  fseek(f, 0, SEEK_SET);
+  // second round, alloc and read
+  float *hist = (float *)malloc(3*sizeof(float)*(*bins));
+  int k=0;
+  while(!feof(f))
+  {
+    fscanf(f, "%*f %*f %*f %*f %*f %*f %*f %f %f %f\n", hist + 3*k, hist+3*k+1, hist+3*k+2);
+    k++;
+  }
 
   fclose(f);
-  return h;
+  return hist;
 }
-#endif
+
+static void
+invert_histogram(
+    const float *const hist,
+    float *const inv_hist,
+    const int bins)
+{
+  // invert non-normalised accumulated hist
+  for(int c=0;c<3;c++)
+  {
+    int last = 0;
+    for(int i=last+1; i<bins; i++)
+    {
+      for(int k=last; k<bins; k++)
+      {
+        if(hist[3*k+c] >= i/(float)bins)
+        {
+          last = k;
+          inv_hist[3*i+c] = k/(float)bins;
+          break;
+        }
+      }
+    }
+  }
+}
 
 #if 0
 static void
@@ -119,7 +151,7 @@ int main(int argc, char *arg[])
 {
   if(argc < 2)
   {
-    fprintf(stderr, "usage: %s input.pfm [-c a0 a1 a2 b c]\n", arg[0]);
+    fprintf(stderr, "usage: %s input.pfm [-c a1 b1]\n", arg[0]);
     exit(1);
   }
   int wd, ht;
@@ -128,15 +160,13 @@ int main(int argc, char *arg[])
   // for(int k=0;k<3*wd*ht;k++) input[k] = clamp(input[k], 0.0f, 1.0f);
 
   // correction requested?
-  if(argc >= 8 && !strcmp(arg[2], "-c"))
+  if(argc >= 9 && !strcmp(arg[2], "-c"))
   {
-    const float a[3] = { atof(arg[3]), atof(arg[4]), atof(arg[5]) };
-    const float wb[3] = {atof(arg[6]), 1.0f, atof(arg[7])};
+    const float a[3] = {atof(arg[3]), atof(arg[4]), atof(arg[5])}, b[3] = {atof(arg[6]), atof(arg[7]), atof(arg[8])};
     const float m[3] = {
-      a[0] + a[1]*N/wb[0] + a[2]*N*N/(wb[0]*wb[0]),
-      a[0] + a[1]*N/wb[1] + a[2]*N*N/(wb[1]*wb[1]),
-      a[0] + a[1]*N/wb[2] + a[2]*N*N/(wb[2]*wb[2])
-    };
+      2.0f*sqrt(a[0]*1.0f+b[0])/a[0],
+      2.0f*sqrt(a[1]*1.0f+b[1])/a[1],
+      2.0f*sqrt(a[2]*1.0f+b[2])/a[2]};
 #if 1
     // dump curves:
     // TODO: make these stick at (0,0)!
@@ -145,9 +175,8 @@ int main(int argc, char *arg[])
       for(int c=0;c<3;c++)
       {
         const float y = k/(N-1.0f);
-        const float d = 4.0f*a[2]*y - 4*a[0]*a[2] + a[1]*a[1];
-        const float x = (-a[1] + sqrtf(fmaxf(0.0f, d)))/(2.0f*a[2]);
-        fprintf(stderr, "%f ", x / (N * wb[c]));
+        const float x = m[c]*m[c]*a[c]*y*y/4.0f - b[c]/a[c];
+        fprintf(stderr, "%f ", x);
       }
       fprintf(stderr, "\n");
     }
@@ -159,12 +188,31 @@ int main(int argc, char *arg[])
     {
       for(int c=0;c<3;c++)
       {
-        // input[3*k+c] = powf(a[c]*N*input[3*k+c], b)*m;
-        // input[3*k+c] = powf(N*input[3*k+c], 1.0f/b)/a[c]*m;
-        const float y = input[3*k+c]/m[c];
-        const float d = 4.0f*a[2]*y - 4*a[0]*a[2] + a[1]*a[1];
-        const float x = (-a[1] + sqrtf(fmaxf(0.0f, d)))/(2.0f*a[2]);
-        input[3*k+c] = x / (N * wb[c]);
+        input[3*k+c] = 2.0f*sqrtf(a[c]*input[3*k+c]+b[c])/(a[c]*m[c]);
+      }
+    }
+  }
+  else if(argc >= 4 && !strcmp(arg[2], "-h"))
+  {
+    int bins = 0;
+    float *hist = read_histogram(arg[3], &bins);
+    float *inv_hist = (float *)malloc(3*sizeof(float)*bins);
+    invert_histogram(hist, inv_hist, bins);
+#if 1
+    // output curves and their inverse:
+    for(int k=0;k<bins;k++)
+      // fprintf(stderr, "%f %f %f %f %f %f %f\n", k/(float)bins, hist[3*k], hist[3*k+1], hist[3*k+2], inv_hist[3*k], inv_hist[3*k+1], inv_hist[3*k+2]);
+      fprintf(stderr, "%f %f %f\n", inv_hist[3*k], inv_hist[3*k+1], inv_hist[3*k+2]);
+    // fprintf(stderr,"scanned %d bins\n", bins);
+#endif
+    for(int k=0;k<wd*ht;k++)
+    {
+      for(int c=0;c<3;c++)
+      {
+        float f = clamp(input[3*k+c]*bins, 0, bins-2);
+        const int bin = (int)f;
+        f -= bin;
+        input[3*k+c] = (1.0f-f)*inv_hist[3*bin+c] + f*inv_hist[3*(bin+1)+c];
       }
     }
   }
@@ -284,7 +332,7 @@ int main(int argc, char *arg[])
 #endif
 
   // output variance per brightness level:
-  fprintf(stdout, "# bin std_r std_g std_b hist_r hist_g hist_b cdf_r cdf_g cdf_b\n");
+  // fprintf(stdout, "# bin std_r std_g std_b hist_r hist_g hist_b cdf_r cdf_g cdf_b\n");
   float sum[3] = {0.0f};
   for(int i=0;i<N;i++)
     for(int k=0;k<3;k++) sum[k] += std[i][k];
@@ -302,3 +350,4 @@ int main(int argc, char *arg[])
   free(input);
   exit(0);
 }
+
