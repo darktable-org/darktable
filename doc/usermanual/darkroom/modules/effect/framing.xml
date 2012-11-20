@@ -62,4 +62,23 @@
                               and take a color probe from your image.</para>
 		</sect5>
 	</sect4>
+
+	<sect4><title>Examples</title>
+		<para>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='30%'/>
+					<colspec colwidth='70%'/>
+					<tbody>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/framing_ex1.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry><para>Example image with a user defined frame.</para></entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</para>	
+	</sect4>
+
 </sect3>
