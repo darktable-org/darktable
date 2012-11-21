@@ -293,13 +293,13 @@ typedef unsigned __int64 uint64_t;
 
 static inline uint32_t gen_rand32(struct sfmt_state_t *s);
 static inline uint64_t gen_rand64(struct sfmt_state_t *s);
-static inline void fill_array32(struct sfmt_state_t *s, uint32_t *array, int size);
-static inline void fill_array64(struct sfmt_state_t *s, uint64_t *array, int size);
-static inline void init_gen_rand(struct sfmt_state_t *s, uint32_t seed);
-static inline void init_by_array(struct sfmt_state_t *s, uint32_t *init_key, int key_length);
-static inline const char *get_idstring(void);
-static inline int get_min_array_size32(void);
-static inline int get_min_array_size64(void);
+static inline void fill_array32(struct sfmt_state_t *s, uint32_t *array, int size) __attribute__ ((unused));
+static inline void fill_array64(struct sfmt_state_t *s, uint64_t *array, int size) __attribute__ ((unused));
+static inline void init_gen_rand(struct sfmt_state_t *s, uint32_t seed) __attribute__ ((unused));
+static inline void init_by_array(struct sfmt_state_t *s, uint32_t *init_key, int key_length) __attribute__ ((unused));
+static inline const char *get_idstring(void) __attribute__ ((unused));
+static inline int get_min_array_size32(void) __attribute__ ((unused));
+static inline int get_min_array_size64(void) __attribute__ ((unused));
 
 /* These real versions are due to Isaku Wada */
 /** generates a random number on [0,1]-real-interval */
