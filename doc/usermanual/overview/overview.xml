@@ -104,16 +104,16 @@
 		</sect2>
 
 		<sect2 status="draft"><title>Importing from camera</title>
-			<sect3><title>Introduction</title>
+		<!--	<sect3><title>Introduction</title> -->
 				<para>Connect your camera to your system and if your distribution tries to automount it, select the option to abort the mount operation.
 					Otherwise the camera will be locked and not accessible from within darktable.</para>
 
 				<para>In the left panel of lighttable view you have the import pane and if you don't see your camera there you need to hit the
 					scan for devices button. Your camera will then appear in same pane with additional actions: import and tethering.</para>
-			</sect3>
+               <!--		</sect3>
 
 			<sect3 status="draft"><title>Settings</title>
-			</sect3>
+			</sect3>  -->
 		</sect2>
 
 		<sect2 status="draft"><title>Basic correction</title>
