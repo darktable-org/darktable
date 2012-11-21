@@ -1362,7 +1362,6 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     if(sqlite3_column_type(stmt, 4) == SQLITE_FLOAT)
       latitude   = sqlite3_column_double(stmt, 4);
   }
-  sqlite3_finalize(stmt);
   xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); //rejected image = -1, others = 0..5
 
   // The original file name
@@ -1392,6 +1391,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     g_free(long_str);
     g_free(lat_str);
   }
+  sqlite3_finalize(stmt);
 
   // the meta data
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
