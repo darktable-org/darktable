@@ -5,13 +5,13 @@
   <tbody>
     <row>						
       <entry>
-	<para>In this panel you control the map settings, you can select the source for map data
+	<para>In this panel you control the map settings. You can select the source for map data
 	from different providers and what layers they bring such as satelite view etc.
 	</para>
 	<para>You can also toggle the view of some overlay info.</para> 
       </entry>
       <entry>
-	<graphic fileref="map/images/panel_map_settings.png" scalefit="1" width="80%" align="center" />
+	<graphic fileref="map/images/map_settings.png" scalefit="1" width="80%" align="center" />
       </entry>
     </row>
   </tbody>
