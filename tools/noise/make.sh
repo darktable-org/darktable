@@ -35,7 +35,7 @@ do
   a1=0.1;b1=0.01;
   a2=0.1;b2=0.01;
   a3=0.1;b3=0.01;
-  set xrange [0:0.6]
+  set xrange [0:0.35]
   fit f1(x) "${i%pfm}dat" u 1:(\$2**2) via a1,b1
   set xrange [0:0.9]
   fit f2(x) "${i%pfm}dat" u 1:(\$3**2) via a2,b2
