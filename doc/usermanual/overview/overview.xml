@@ -165,9 +165,11 @@
 				</para>
 			</sect3>
 
-  		<!--	<sect3 status="draft"><title>Noise reduction</title>
-				<para></para>
-			</sect3> -->
+  		<sect3 status="draft"><title>Noise reduction</title>
+				<para>You have several options in darktable to reduce noise. You'll find them in the correct group.
+        There is the hot pixel removal module, raw denosie, denoising based on bilateral filter, non-local means, and based on wavelets (the equalizer). Most convenient to use is probably denoising based on non-local means, as it allows you to treat color and luminance noise separately.
+        </para>
+			</sect3>
 
 
 		</sect2>
