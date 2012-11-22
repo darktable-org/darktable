@@ -279,10 +279,15 @@ def add_edges(gr):
   # the bilateral filter, in linear input rgb
   gr.add_edge(('colorin', 'bilateral'))
   gr.add_edge(('bilateral', 'demosaic'))
-  # same for denoise based on noise profiles:
+  # same for denoise based on noise profiles.
+  # also avoid any noise confusion potentially caused
+  # by distortions/averages or exposure gain.
   gr.add_edge(('colorin', 'denoiseprofile'))
   gr.add_edge(('denoiseprofile', 'demosaic'))
   gr.add_edge(('basecurve', 'denoiseprofile'))
+  gr.add_edge(('lens', 'denoiseprofile'))
+  gr.add_edge(('exposure', 'denoiseprofile'))
+  gr.add_edge(('graduatednd', 'denoiseprofile'))
 
   gr.add_edge(('colorout', 'equalizer'))
   # for smooth b/w images, we want chroma denoise to go before

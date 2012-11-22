@@ -29,20 +29,15 @@
 #include <stdlib.h>
 #include <xmmintrin.h>
 
-
-#define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
-
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
 DT_MODULE(1)
 
 typedef struct dt_iop_nlmeans_params_t
 {
-  // these are stored in db.
-  float radius;
-  float strength;
-  // TODO: best quadratic fit parameters for chip + wb coeffs?
-  float a0, a1, a2, wbr, wbb;
+  float radius;      // search radius
+  float strength;    // noise level after equilization
+  float a[3], b[3];  // fit for poissonian-gaussian noise per color channel.
 }
 dt_iop_nlmeans_params_t;
 
@@ -54,17 +49,6 @@ typedef struct dt_iop_nlmeans_gui_data_t
 dt_iop_nlmeans_gui_data_t;
 
 typedef dt_iop_nlmeans_params_t dt_iop_nlmeans_data_t;
-
-typedef struct dt_iop_nlmeans_global_data_t
-{
-  int kernel_nlmeans_init;
-  int kernel_nlmeans_dist;
-  int kernel_nlmeans_horiz;
-  int kernel_nlmeans_vert;
-  int kernel_nlmeans_accu;
-  int kernel_nlmeans_finish;
-}
-dt_iop_nlmeans_global_data_t;
 
 const char *name()
 {
@@ -90,6 +74,7 @@ typedef union floatint_t
 }
 floatint_t;
 
+// very fast approximation for 2^-x
 static inline float
 fast_mexp2f(const float x)
 {
@@ -100,190 +85,6 @@ fast_mexp2f(const float x)
   k.i = k0 >= (float)0x800000u ? k0 : 0;
   return k.f;
 }
-
-static float gh(const float f, const float sharpness)
-{
-  const float f2 = f*f*sharpness;
-  return fast_mexp2f(f2);
-  // return 0.0001f + dt_fast_expf(-fabsf(f)*800.0f);
-  // return 1.0f/(1.0f + f*f);
-  // make spread bigger: less smoothing
-  // const float spread = 100.f;
-  // return 1.0f/(1.0f + fabsf(f)*spread);
-}
-
-
-// FIXME: bring this back once we know what we want
-#if 0// def HAVE_OPENCL
-int
-process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
-{
-  dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
-  dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)self->data;
-
-
-  const int devid = piece->pipe->devid;
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-
-  cl_mem dev_U4 = NULL;
-  cl_mem dev_U4_t = NULL;
-
-  cl_int err = -999;
-
-  const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
-  const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
-  const float sharpness = 100000.0f/(1.0f+d->strength);
-
-  if(P < 1)
-  {
-    size_t origin[] = { 0, 0, 0};
-    size_t region[] = { width, height, 1};
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
-    if (err != CL_SUCCESS) goto error;
-    return TRUE;
-  }
-
-  float max_L = 120.0f, max_C = 512.0f;
-  float nL = 1.0f/max_L, nC = 1.0f/max_C;
-  float nL2 = nL*nL, nC2 = nC*nC;
-  //float weight[4] = { powf(d->luma, 0.6), powf(d->chroma, 0.6), powf(d->chroma, 0.6), 1.0f };
-  float weight[4] = { d->luma, d->chroma, d->chroma, 1.0f };
-
-  dev_U4 = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, sizeof(float));
-  if (dev_U4 == NULL) goto error;
-
-  dev_U4_t = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, sizeof(float));
-  if (dev_U4_t == NULL) goto error;
-
-
-  // prepare local work group
-  size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
-  size_t workgroupsize = 0;          // the maximum number of items in a work group
-  unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group of the kernel
-  // assuming this is the same for nlmeans_horiz and nlmeans_vert
-
-  // make sure blocksize is not too large
-  int blocksize = BLOCKSIZE;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-      dt_opencl_get_kernel_work_group_size(devid, gd->kernel_nlmeans_horiz, &kernelworkgroupsize) == CL_SUCCESS)
-  {
-    // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize > kernelworkgroupsize
-          || blocksize > workgroupsize || (blocksize+2*P)*sizeof(float) > localmemsize)
-    {
-      if(blocksize == 1) break;
-      blocksize >>= 1;
-    }
-  }
-  else
-  {
-    blocksize = 1;   // slow but safe
-  }
-
-  const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1)*blocksize;
-  const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1)*blocksize;
-
-  size_t sizesl[3];
-  size_t local[3];
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_init, 0, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_init, 1, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_init, 2, sizeof(int), (void *)&height);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_init, sizes);
-  if(err != CL_SUCCESS) goto error;
-
-
-
-  for(int j = -K; j <= 0; j++)
-    for(int i = -K; i <= K; i++)
-    {
-      int q[2] = { i, j};
-
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 0, sizeof(cl_mem), (void *)&dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 1, sizeof(cl_mem), (void *)&dev_U4);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 2, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 4, 2*sizeof(int), (void *)&q);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 5, sizeof(float), (void *)&nL2);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 6, sizeof(float), (void *)&nC2);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_dist, sizes);
-      if(err != CL_SUCCESS) goto error;
-
-      sizesl[0] = bwidth;
-      sizesl[1] = ROUNDUPHT(height);
-      sizesl[2] = 1;
-      local[0] = blocksize;
-      local[1] = 1;
-      local[2] = 1;
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 0, sizeof(cl_mem), (void *)&dev_U4);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 1, sizeof(cl_mem), (void *)&dev_U4_t);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 2, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 4, 2*sizeof(int), (void *)&q);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 5, sizeof(int), (void *)&P);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 6, (blocksize+2*P)*sizeof(float), NULL);
-      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_nlmeans_horiz, sizesl, local);
-      if(err != CL_SUCCESS) goto error;
-
-
-      sizesl[0] = ROUNDUPWD(width);
-      sizesl[1] = bheight;
-      sizesl[2] = 1;
-      local[0] = 1;
-      local[1] = blocksize;
-      local[2] = 1;
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 0, sizeof(cl_mem), (void *)&dev_U4_t);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 1, sizeof(cl_mem), (void *)&dev_U4);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 2, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 4, 2*sizeof(int), (void *)&q);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 5, sizeof(int), (void *)&P);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 6, sizeof(float), (void *)&sharpness);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 7, (blocksize+2*P)*sizeof(float), NULL);
-      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_nlmeans_vert, sizesl, local);
-      if(err != CL_SUCCESS) goto error;
-
-
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 0, sizeof(cl_mem), (void *)&dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 1, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 2, sizeof(cl_mem), (void *)&dev_U4);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 3, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 4, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 5, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 6, 2*sizeof(int), (void *)&q);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_accu, sizes);
-      if(err != CL_SUCCESS) goto error;
-
-      dt_opencl_finish(devid);
-
-      // indirectly give gpu some air to breathe (and to do display related stuff)
-      if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW) dt_iop_nap(1000);
-    }
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 2, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 3, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 4, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 5, 4*sizeof(float), (void *)&weight);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_finish, sizes);
-  if(err != CL_SUCCESS) goto error;
-
-  if (dev_U4 != NULL) dt_opencl_release_mem_object(dev_U4);
-  if (dev_U4_t != NULL) dt_opencl_release_mem_object(dev_U4_t);
-  return TRUE;
-
-error:
-  if(dev_U4 != NULL) dt_opencl_release_mem_object(dev_U4);
-  if (dev_U4_t != NULL) dt_opencl_release_mem_object(dev_U4_t);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't enqueue kernel! %d\n", err);
-  return FALSE;
-}
-#endif
-
 
 void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
@@ -312,7 +113,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // adjust to zoom size:
   const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
   const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood XXX see above comment
-  const float sharpness = 100000.0f/(1.0f+d->strength);
+  // TODO: use d->strength to precodition data
 
   // P == 0 : this will degenerate to a (fast) bilateral filter.
 
@@ -380,7 +181,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           if(i+ki >= 0 && i+ki < roi_out->width)
           {
             const __m128 iv = { ins[0], ins[1], ins[2], 1.0f };
-            _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(gh(slide, sharpness)));
+            _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(fast_mexp2f(slide)));
           }
           s   ++;
           ins += 4;
@@ -401,7 +202,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             float stmp = s[0];
             for(int k=0; k<3; k++)
               stmp += ((inp[k] - inps[k])*(inp[k] - inps[k])
-                       -  (inm[k] - inms[k])*(inm[k] - inms[k])) * norm2[k];
+                       -  (inm[k] - inms[k])*(inm[k] - inms[k]));
             s[0] = stmp;
           }
           /* Process most of the line 4 pixels at a time */
@@ -419,13 +220,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             const __m128 inp34hi = _mm_unpackhi_ps(inp3,inp4);
 
             const __m128 inpv0 = _mm_movelh_ps(inp12lo,inp34lo);
-            sv += inpv0*inpv0 * _mm_set1_ps(norm2[0]);
+            sv += inpv0*inpv0;
 
             const __m128 inpv1 = _mm_movehl_ps(inp34lo,inp12lo);
-            sv += inpv1*inpv1 * _mm_set1_ps(norm2[1]);
+            sv += inpv1*inpv1;
 
             const __m128 inpv2 = _mm_movelh_ps(inp12hi,inp34hi);
-            sv += inpv2*inpv2 * _mm_set1_ps(norm2[2]);
+            sv += inpv2*inpv2;
 
             const __m128 inm1 = _mm_load_ps(inm)    - _mm_load_ps(inms);
             const __m128 inm2 = _mm_load_ps(inm+4)  - _mm_load_ps(inms+4);
@@ -438,13 +239,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             const __m128 inm34hi = _mm_unpackhi_ps(inm3,inm4);
 
             const __m128 inmv0 = _mm_movelh_ps(inm12lo,inm34lo);
-            sv -= inmv0*inmv0 * _mm_set1_ps(norm2[0]);
+            sv -= inmv0*inmv0;
 
             const __m128 inmv1 = _mm_movehl_ps(inm34lo,inm12lo);
-            sv -= inmv1*inmv1 * _mm_set1_ps(norm2[1]);
+            sv -= inmv1*inmv1;
 
             const __m128 inmv2 = _mm_movelh_ps(inm12hi,inm34hi);
-            sv -= inmv2*inmv2 * _mm_set1_ps(norm2[2]);
+            sv -= inmv2*inmv2;
 
             _mm_store_ps(s, sv);
           }
@@ -470,7 +271,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *out = ((float *)ovoid) + 4*roi_out->width*j;
     for(int i=0; i<roi_out->width; i++)
     {
-      _mm_store_ps(out, _mm_mul_ps(_mm_load_ps(out), 1.0f/out[3]));
+      _mm_store_ps(out, _mm_mul_ps(_mm_load_ps(out), _mm_set1_ps(1.0f/out[3])));
       out += 4;
     }
   }
@@ -489,7 +290,7 @@ void reload_defaults(dt_iop_module_t *module)
   // init defaults:
   dt_iop_nlmeans_params_t tmp = (dt_iop_nlmeans_params_t)
   {
-    2.0f, 50.0f, 0.5f, 1.0f
+    2.0f, 50.0f, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_nlmeans_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_nlmeans_params_t));
@@ -500,7 +301,6 @@ void init(dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_nlmeans_params_t));
   module->default_params = malloc(sizeof(dt_iop_nlmeans_params_t));
-  // about the first thing to do in Lab space:
   module->priority = 264; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_nlmeans_params_t);
   module->gui_data = NULL;
@@ -515,40 +315,12 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-void init_global(dt_iop_module_so_t *module)
-{
-  const int program = 5; // nlmeans.cl, from programs.conf
-  dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)malloc(sizeof(dt_iop_nlmeans_global_data_t));
-  module->data = gd;
-  gd->kernel_nlmeans_init   = dt_opencl_create_kernel(program, "nlmeans_init");
-  gd->kernel_nlmeans_dist   = dt_opencl_create_kernel(program, "nlmeans_dist");
-  gd->kernel_nlmeans_horiz  = dt_opencl_create_kernel(program, "nlmeans_horiz");
-  gd->kernel_nlmeans_vert   = dt_opencl_create_kernel(program, "nlmeans_vert");
-  gd->kernel_nlmeans_accu   = dt_opencl_create_kernel(program, "nlmeans_accu");
-  gd->kernel_nlmeans_finish = dt_opencl_create_kernel(program, "nlmeans_finish");
-}
-
-void cleanup_global(dt_iop_module_so_t *module)
-{
-  dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)module->data;
-  dt_opencl_free_kernel(gd->kernel_nlmeans_init);
-  dt_opencl_free_kernel(gd->kernel_nlmeans_dist);
-  dt_opencl_free_kernel(gd->kernel_nlmeans_horiz);
-  dt_opencl_free_kernel(gd->kernel_nlmeans_vert);
-  dt_opencl_free_kernel(gd->kernel_nlmeans_accu);
-  dt_opencl_free_kernel(gd->kernel_nlmeans_finish);
-  free(module->data);
-  module->data = NULL;
-}
-
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)params;
   dt_iop_nlmeans_data_t *d = (dt_iop_nlmeans_data_t *)piece->data;
   memcpy(d, p, sizeof(*d));
-  d->luma   = MAX(0.0001f, p->luma);
-  d->chroma = MAX(0.0001f, p->chroma);
 }
 
 void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -580,25 +352,6 @@ strength_callback(GtkWidget *w, dt_iop_module_t *self)
   p->strength = dt_bauhaus_slider_get(w);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
-static void
-luma_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  // this is important to avoid cycles!
-  if(darktable.gui->reset) return;
-  dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  p->luma = dt_bauhaus_slider_get(w)*(1.0f/100.0f);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void
-chroma_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  // this is important to avoid cycles!
-  if(darktable.gui->reset) return;
-  dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  p->chroma = dt_bauhaus_slider_get(w)*(1.0f/100.0f);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
 
 /** gui callbacks, these are needed. */
 void gui_update    (dt_iop_module_t *self)
@@ -608,8 +361,6 @@ void gui_update    (dt_iop_module_t *self)
   dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
   dt_bauhaus_slider_set(g->radius,   p->radius);
   dt_bauhaus_slider_set(g->strength, p->strength);
-  dt_bauhaus_slider_set(g->luma,     p->luma   * 100.f);
-  dt_bauhaus_slider_set(g->chroma,   p->chroma * 100.f);
 }
 
 void gui_init     (dt_iop_module_t *self)
@@ -620,28 +371,16 @@ void gui_init     (dt_iop_module_t *self)
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
   g->radius   = dt_bauhaus_slider_new_with_range(self, 1.0f, 4.0f, 1., 2.f, 0);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 50.f, 0);
-  g->luma     = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 50.f, 0);
-  g->chroma   = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 100.f, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->luma, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->chroma, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->radius, _("patch size"));
   dt_bauhaus_slider_set_format(g->radius, "%.0f");
   dt_bauhaus_widget_set_label(g->strength, _("strength"));
   dt_bauhaus_slider_set_format(g->strength, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->luma, _("luma"));
-  dt_bauhaus_slider_set_format(g->luma, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->chroma, _("chroma"));
-  dt_bauhaus_slider_set_format(g->chroma, "%.0f%%");
   g_object_set (GTK_OBJECT(g->radius),   "tooltip-text", _("radius of the patches to match"), (char *)NULL);
   g_object_set (GTK_OBJECT(g->strength), "tooltip-text", _("strength of the effect"), (char *)NULL);
-  g_object_set (GTK_OBJECT(g->luma),   "tooltip-text", _("how much to smooth brightness"), (char *)NULL);
-  g_object_set (GTK_OBJECT(g->chroma), "tooltip-text", _("how much to smooth colors"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->radius),   "value-changed", G_CALLBACK (radius_callback),   self);
   g_signal_connect (G_OBJECT (g->strength), "value-changed", G_CALLBACK (strength_callback), self);
-  g_signal_connect (G_OBJECT (g->luma),     "value-changed", G_CALLBACK (luma_callback),     self);
-  g_signal_connect (G_OBJECT (g->chroma),   "value-changed", G_CALLBACK (chroma_callback),   self);
 }
 
 void gui_cleanup  (dt_iop_module_t *self)
