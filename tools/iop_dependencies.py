@@ -244,6 +244,8 @@ def add_edges(gr):
   # need demosaiced data, but not Lab:
   gr.add_edge(('tonemap', 'demosaic'))
   gr.add_edge(('colorin', 'tonemap'))
+  # global variant is Lab:
+  gr.add_edge(('globaltonemap', 'colorin'))
   
   # want to fine-tune stuff after injection of color transfer:
   gr.add_edge(('atrous', 'colortransfer'))
@@ -323,6 +325,7 @@ gr.add_nodes([
 'exposure',
 'flip',
 'gamma',
+'globaltonemap',
 'graduatednd',
 'grain',
 'highlights',
