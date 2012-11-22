@@ -288,6 +288,7 @@ def add_edges(gr):
   gr.add_edge(('lens', 'denoiseprofile'))
   gr.add_edge(('exposure', 'denoiseprofile'))
   gr.add_edge(('graduatednd', 'denoiseprofile'))
+  gr.add_edge(('tonemap', 'denoiseprofile'))
 
   gr.add_edge(('colorout', 'equalizer'))
   # for smooth b/w images, we want chroma denoise to go before
