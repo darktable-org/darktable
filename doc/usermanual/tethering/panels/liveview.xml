@@ -6,11 +6,11 @@
     <tbody>
       <row>						
 	<entry>
-	  <para>This panel gives you access to control the live view and how you want to work with, functionality
-	  such as zoom, rotation adding guides and overlays.</para>
+	  <para>This panel gives you access to control your camera's live view mode. Functionality
+	  such as focus setting, rotation, adding guides and overlays are supported.</para>
 	</entry>
 	<entry>
-	  <graphic fileref="darkroom/images/panel_liveview.png" scalefit="1" width="80%" align="center" />
+	  <graphic fileref="tethering/images/panel_liveview.png" scalefit="1" width="80%" align="center" />
 	</entry>
       </row>
     </tbody>

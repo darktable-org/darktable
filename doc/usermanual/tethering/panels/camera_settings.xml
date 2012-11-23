@@ -10,7 +10,7 @@
 	can be controlled remotly from within darktable.
 	</entry>
 	<entry>
-	  <graphic fileref="darkroom/images/panel_camera_settings.png" scalefit="1" width="80%" align="center" />
+	  <graphic fileref="tethering/images/panel_camera_settings.png" scalefit="1" width="80%" align="center" />
 	</entry>
       </row>
     </tbody>
