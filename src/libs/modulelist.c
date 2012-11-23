@@ -273,7 +273,7 @@ static gint _lib_modulelist_gui_sort(GtkTreeModel *model, GtkTreeIter  *a, GtkTr
   dt_iop_module_t *modulea,*moduleb;
   gtk_tree_model_get(model, a, COL_MODULE, &modulea, -1);
   gtk_tree_model_get(model, b, COL_MODULE, &moduleb, -1);
-  return strcmp(modulea->name(),moduleb->name());
+  return g_utf8_collate(modulea->name(),moduleb->name());
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
