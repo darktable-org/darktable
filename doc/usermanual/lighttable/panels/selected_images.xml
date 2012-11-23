@@ -19,7 +19,8 @@
 					</para>
 				</sect4>
 				<sect4><title>delete</title>
-					<para>Physically delete selected images from filesystem.
+					<para>Physically delete selected images from filesystem. See also preference option 'ask before erasing images from disk'; if
+                                              this option is not active, darktable will delete the file(s) without further question!
 					</para>
 				</sect4>
 				<sect4><title>move</title>

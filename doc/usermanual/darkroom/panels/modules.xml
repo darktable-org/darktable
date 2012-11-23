@@ -4,8 +4,8 @@
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>More modules at the bottom of right panel is used to hide modules you don't use, as default only
-						standard modules are shown to the user so if you are missing anything you should check here and show it.
+						<entry>More modules at the bottom of right panel is used to hide modules you don't use. As a default only
+						standard modules are shown to the user, so if you are missing anything you should check here and show it.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/images/panel_moremodules.png" scalefit="1" width="80%" align="center" />

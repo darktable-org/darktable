@@ -17,8 +17,8 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>The levels tool shows the histogram of the image an displays three bars with handles for you to drag and correct
-		the tone in the image, bars represent black, middle gray and white.
+		<para>The levels tool shows the histogram of the image and displays three bars with handles for you to drag and correct
+		the tone in the image. Those bars represent black, middle gray and white.
 		</para>
 	</sect4>
 <!--	
