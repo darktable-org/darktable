@@ -9,8 +9,8 @@
 	
 	<orderedlist>
 	  <listitem><para>Verify that camera is detected</para>
-	    <para>The following cmomand will provide which cameras are detected and connected to the computer,
-	    find your camera port name to use it in the following tests below. Usally port <command>usb:</command> 
+	    <para>The following command will provide which cameras are detected and connected to the computer.0
+	    Find your camera port name to use it in the following tests below. Usally port <command>usb:</command> 
 	    will be enough and therefore used in these examples.
 	    <programlisting>
 	      env LANG=C gphoto2 --auto-detect
