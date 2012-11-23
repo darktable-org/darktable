@@ -53,7 +53,7 @@
 
     <para>Some on-screen controls and displays assist you to find your way. There is a navigation area on top left.
           Use it as an alternative to mouse-dragging and scrolling. The scale of your map is displayed on bottom left.
-          On bottom right you see the geographical coordinates at your mouse pointer position.</para>
+          On bottom right you see the geographical coordinates of the center of the map.</para>
 
     <para>Images that already have geo location attributes in their metadata are displayed as small icons on the map.</para>
 
