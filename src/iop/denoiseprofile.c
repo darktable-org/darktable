@@ -101,9 +101,70 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   return;
 }
 
+static inline void
+precondition(
+    float *const buf
+    const int wd
+    const int ht
+    float a[3],
+    float b[3])
+{
+  const float sigma2[3] = {
+    (b[0]/a[0])*(b[0]/a[0]),
+    (b[1]/a[1])*(b[1]/a[1]),
+    (b[2]/a[1])*(b[2]/a[1])};
 
-/** process, all real work is done here. */
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+#ifdef _OPENMP
+#  pragma omp parallel for schedule(static) default(none)
+#endif
+  for(int j=0; j<ht; j++)
+  {
+    float *buf2 = buf + 4*j*wd;
+    for(int i=0;i<wd;i++)
+    {
+      for(int c=0;c<3;c++)
+      {
+        buf2[c] /= a[c];
+        const float d = fmaxf(0.0f, buf2[c] + 3./8. + sigma2[c]);
+        buf2[c] = 2.0f*sqrtf(d);
+      }
+      buf2 += 4;
+    }
+  }
+}
+
+static inline void
+backtransform(
+    float *const buf
+    const int wd
+    const int ht
+    float a[3],
+    float b[3])
+{
+  const float sigma2[3] = {
+    (b[0]/a[0])*(b[0]/a[0]),
+    (b[1]/a[1])*(b[1]/a[1]),
+    (b[2]/a[1])*(b[2]/a[1])};
+
+#ifdef _OPENMP
+#  pragma omp parallel for schedule(static) default(none)
+#endif
+  for(int j=0; j<ht; j++)
+  {
+    float *buf2 = buf + 4*j*wd;
+    for(int i=0;i<wd;i++)
+    {
+      for(int c=0;c<3;c++)
+      {
+        const float x = buf[c];
+        buf2[c] = 1./4.*x*x + 1./4.*sqrtf(3./2.)/x - 11./8.*1.0/(x*x) + 5./8.*sqrtf(3./2.)*1.0/(x*x*x) - 1./8. - sigma2[c];
+      }
+      buf2 += 4;
+    }
+  }
+}
+
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
@@ -120,6 +181,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *Sa = dt_alloc_align(64, sizeof(float)*roi_out->width*dt_get_num_threads());
   // we want to sum up weights in col[3], so need to init to 0:
   memset(ovoid, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
+  float *in = dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
+  
+  precondition(in, roi_in->width, roi_in->height, d->a, d->b);
 
   // for each shift vector
   for(int kj=-K; kj<=K; kj++)
@@ -133,7 +197,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else we will add up errors)
       // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more memory
 #ifdef _OPENMP
-      #  pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, roi_out, roi_in, ivoid, ovoid, Sa)
+#  pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, roi_out, roi_in, ivoid, ovoid, Sa)
 #endif
       for(int j=0; j<roi_out->height; j++)
       {
@@ -181,7 +245,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           if(i+ki >= 0 && i+ki < roi_out->width)
           {
             const __m128 iv = { ins[0], ins[1], ins[2], 1.0f };
-            _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(fast_mexp2f(slide)));
+            _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(fast_mexp2f(slide-2var)));
           }
           s   ++;
           ins += 4;
@@ -277,6 +341,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   // free shared tmp memory:
   free(Sa);
+  free(in);
+  backtransform(out, roi_in->width, roi_in->height, d->a, d->b);
 
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
