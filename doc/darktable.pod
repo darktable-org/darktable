@@ -65,7 +65,7 @@ Enable all debugging output.
 
 =item B<--library override.db>
 
-Uses override.db instead of the gconf/darktablerc specified library file. Should be an absolute path.
+Uses override.db instead of the darktablerc specified library file. Should be an absolute path.
 
 =item B<--disable-opencl>
 

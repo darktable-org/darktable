@@ -8,24 +8,27 @@ to build it, you need:
 
 optionally, you might need for special features:
 
- - gconf (for gconf backend)
  - gphoto2 (for camera support, recommended)
  - librsvg2 (for watermark plugin)
  - flickcurl (for Flickr support)
  - libGL/sdl12 (to build slideshow viewer)
  - dbus-glib, gnome-keyring (kwallet/gnome keyring support)
+ - libsoup2 for geo tagging view
+ - lensfun (lens distortion plugin)
+ - OpenEXR for HDR export
 
 other used packages (supplied in the source tree):
 
  - LibRaw nikon_curve (taken from ufraw)
+ - RawSpeed
+ - osm-gps-maps
+ - squish
 
 then, type:
-$ mkdir build && cd build
-$ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-$ make install (or sudo make install)
+$ ./build.sh --prefix /usr --buildtype Release
+$ cd build && make install (or sudo make install)
 $ darktable
 
-(the first step is only necessary when building from git for the first time)
 and enjoy!
 
 send any bug reports to the mailing list: darktable-devel@lists.sf.net
