@@ -202,7 +202,7 @@ static void _lib_darktable_show_about_dialog()
     "Loic Guibert",
     "James C. McPherson",
     "Moritz Lipp",
-    "tatica",
+    "Tatica Leandro",
     "Raphael Manfredi",
     "Alexandre Prokoudine",
     "Alexander Clausen",
