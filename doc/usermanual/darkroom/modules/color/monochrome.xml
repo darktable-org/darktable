@@ -1,8 +1,8 @@
 <sect3 status="draft"><title>Monochrome</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>This module is a quick way to convert image in black and white. You can simulate a color filter in order to modify you conversion. 

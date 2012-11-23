@@ -4,8 +4,8 @@
     <title>Overview</title>
     <informaltable frame="none" >
       <tgroup cols="2" rowsep="0" colsep="0" >
-        <colspec colwidth="70%" />
-        <colspec colwidth="30%" />
+        <colspec colwidth="6*" />
+        <colspec colwidth="4*" />
         <tbody>
           <row>
             <entry>The shadows and highlights module allows to adjust the tonal range of darker parts of an image (shadows) and lighter parts (highlights); it can bring back details in shadows and highlights by enhancing local contrast.</entry>

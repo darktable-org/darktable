@@ -1,8 +1,8 @@
 <sect3 status="draft"><title>Local contrast</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>This module allows to enhance local contrast. It uses the unnormalized bilateral filter and works on the L channel from Lab.
@@ -35,8 +35,8 @@
 
 	<sect4><title>Example</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>before

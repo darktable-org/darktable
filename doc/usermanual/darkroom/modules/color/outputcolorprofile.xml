@@ -1,8 +1,8 @@
 <sect3 status="draft"><title>Output color profile</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>This module manages the output profile both for display and for export.					
@@ -21,8 +21,8 @@
                 <sect5><title>output intent</title>
           		<para>Sets the rendering intent for output/export. You can easily override this setting whenever you do exports from lighttable mode.
 				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth='40%'/>
-                                        <colspec colwidth='60%'/>
+					<colspec colwidth='4*'/>
+                                        <colspec colwidth='6*'/>
 					<tbody>
 						<row>
 							<entry><emphasis>perceptual</emphasis></entry>

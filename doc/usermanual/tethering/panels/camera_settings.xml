@@ -1,8 +1,8 @@
 <sect2 status="draft">
   <title>Camera settings</title>
   <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth='70%'/>
-    <colspec colwidth='30%'/>
+    <colspec colwidth="6*"/>
+    <colspec colwidth="4*"/>
     <tbody>
       <row>						
 	<entry>In the camera settings you have access to functionality as setting up a capture job which

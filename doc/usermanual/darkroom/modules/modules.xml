@@ -36,8 +36,8 @@
                                    with your keyboard; there is no cursor, you just start typing.
                              </para>
 	                     <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>Darktable's innovative way of value input: coarse and fine value adjustments in one single control element.
