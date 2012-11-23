@@ -1229,6 +1229,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       // so we are legacy (thus have to clear the no-legacy flag)
       img->flags &= ~DT_IMAGE_NO_LEGACY_PRESETS;
     }
+    // when we are reading the xmp data it doesn't make sense to flag the image as removed
+    img->flags &= ~DT_IMAGE_REMOVE;
 
     // history
     Exiv2::XmpData::iterator ver;
