@@ -19,11 +19,23 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
+                <para>This module is responsible for one of the most basic steps in each raw image development. An exposure adjustment value allows you - within certain limits - to
+                      correct for under- or overexposure. A shift by 1EV is equivalent to a change of exposure time by a factor of 2.
+		</para>
+		<para>Positive exposure corrections will make the image brighter. As a side effect noise level gets higher. Depending on the basic noise level of your
+                      camera and the iso value of your image, positive exposure compensations with up to 1EV or 2EV still give reasonable results.
+		</para>
+		<para>Negative exposure corrections will make the image darker. Given the nature of digital images this can not correct for blown out highlights (see
+                      also module "highlight reconstruction").
+		</para>
+		<para>A black level adjustment is a basic tool to increase contrast and pop of an image. The value defines at what threshold dark gray values will
+                      be cut off to pure black. Use with care as these dark gray values can not be recovered in other modules further down the pixelpipe.
+		</para>
 		<sect5><title>black</title>
 			<para>Adjust the black level.</para>
 		</sect5>
 		<sect5><title>exposure</title>
-			<para>Adjust the exposure correction [ev].</para>
+			<para>Adjust the exposure correction [EV].</para>
 		</sect5>
 		<sect5><title>auto</title>
 			<para>Calculate a correct exposition for the rectangular view appearing in the centre of the image. You can draw your own selection using your mouse.
