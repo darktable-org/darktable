@@ -51,7 +51,8 @@
                 </sect5>
                 <sect5><title>output profile</title>
           		<para>Sets the color profile for output/export. Profiles to be used are picked up from $DARKTABLE/share/darktable/color/out and 
-                        $HOME/.config/darktable/color/out, where $DARKTABLE is darktables installation directory and $HOME is your home directory.</para>
+                        $HOME/.config/darktable/color/out, where $DARKTABLE is used here as a placeholder for darktable's installation directory and $HOME 
+                        is your home directory.</para>
                 </sect5>
                 <sect5><title>softproof profile</title>
           		<para>Sets the color profile for softproof. Profiles to be used are picked up from $DARKTABLE/share/darktable/color/out and 
@@ -71,7 +72,7 @@
                         </para>  
                 </sect5>
                 <sect5><title>display profile</title>
-          		<para>Sets the color profile for the display. Profiles to be used is picked up from /usr/share/darktable/color/out and 
+          		<para>Sets the color profile for the display. Profiles to be used is picked up from $DARKTABLE/share/darktable/color/out and 
                         $HOME/.config/darktable/color/out. The additional option "system display profile" is taken directly from your system's
                         color manager or from your X Server. When working with a calibrated display this is the preferred option to choose.</para>
                 </sect5>

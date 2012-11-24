@@ -4,7 +4,8 @@
 					<colspec colwidth="4*"/>
 					<tbody>
 						<row>						
-							<entry>Using this panel you can import and apply GPX track data on selection of images, you also have the ability to add an time offset to GPX tracks for correction of time differences between your camera and gps reciever.
+							<entry>Using this panel you can import and apply GPX track data on selection of images, you also have the ability to add an time offset to GPX tracks for correction of 
+								time differences between your camera and gps receiver. You can also manually geotag your images within the 'Map' view. See chapter 5 for more details.
 							</entry>
 							<entry>
 								<graphic fileref="lighttable/images/panel_geotagging.png" scalefit="1" width="80%" align="center" />

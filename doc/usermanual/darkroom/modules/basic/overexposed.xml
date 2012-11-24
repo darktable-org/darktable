@@ -22,7 +22,7 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>Overexposed is used to visualize pixels that are above and/or below a user-defined threshold. You can activate this plugin
+		<para>Overexposed is used to visualize pixels that are above and/or below a user-defined threshold. You can activate this module
                       the usual way. You can also press icon <inlinegraphic fileref="&icon_module_overexposed;" scalefit="1" width="2%" align="center" /> 
                       in the lower panel as a shortcut.</para>
 		<sect5><title>color scheme</title>

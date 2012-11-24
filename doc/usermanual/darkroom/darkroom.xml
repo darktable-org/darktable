@@ -13,7 +13,7 @@
 </screenshot>
 
 <sect1><title>Overview</title>
-	<para>In darkroom you are in develop mode for the specific image; here you have a lot of tools (named module) to
+	<para>In darkroom you are in develop mode for the specific image; here you have a lot of tools (named modules) to
 		develop you image.
 	</para>
 	<para>On the left side you have the navigation, snapshots and history panels, each of them being described below; 
@@ -37,10 +37,11 @@
 
 </sect1>
 <sect1 status="draft"><title>Filmstrip</title>
-	<para>The filmstrip is used to quickly switch between image to develop in darkroom view, the images viewed are the same
-		as the ones in the lighttable view. 
+	<para>The filmstrip is used to quickly switch between images to develop in darkroom view, the images viewed are the same
+		as the ones in the lighttable view.
 	</para>
-	<para>The filmstrip can be switch on and off using <emphasis>ctrl-f</emphasis> shortcut.</para>
+	<para>The filmstrip can be switched on and off using <emphasis>ctrl-f</emphasis> shortcut. You can scroll with your mouse to quickly navigate
+              through the images. The height of the filmstrip panel can be changed by dragging the corresponding marker.</para>
 	<graphic fileref="darkroom/images/filmstrip.png" scalefit="1" width="80%" align="center" />
 
 </sect1>

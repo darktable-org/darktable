@@ -25,7 +25,8 @@
 					<colspec colwidth='4*'/>
 					<tbody>
 						<row>
-							<entry>This section describes the layout of the user interface. You can change darktable's contrast by using <emphasis>F7</emphasis> and <emphasis>F8</emphasis>.
+							<entry>This section describes the layout of the user interface. You can change darktable's contrast by using <emphasis>F7</emphasis> and <emphasis>F8</emphasis>
+                                                               and darktable's lightness by using <emphasis>F9</emphasis> and <emphasis>F10</emphasis>.
 							</entry>
 							<entry>
 								<graphic fileref="images/lighttable_view.png" scalefit="1" width="80%" align="center" />
@@ -79,42 +80,43 @@
 				<para>This view allows to see images that are geo-tagged on a map.
 				</para>
 			</sect3>
+               </sect2>
+               <sect2 status="final"><title>Filmstrip</title>
+			<para>The filmstrip shows the same images as lighttable with respect to filters and sort order; it is turned on/off with key accelerator <emphasis>ctrl-f</emphasis>.
+		  	You can navigate along the filmstrip by wheel scrolling.
+			The filmstrip allows you to interact with images when you are not in lighttable mode. For example you can, while being in darkroom mode and developing an image,
+			switch to another image to develop by double clicking the thumb in the filmstrip. You can also rate the images as you do in lighttable, copy/paste history stack, etc.
+			</para>
+			<graphic fileref="overview/images/filmstrip.png" scalefit="1" width="80%" align="center" />
+        	</sect2>
 
-			<sect3 status="final"><title>Filmstrip</title>
-				<para>The filmstrip shows the same images as lighttable with respect to filters and sort order; it is turned on/off with key accelerator <emphasis>ctrl-f</emphasis>.
-			  	You can navigate along the filmstrip by wheel scrolling.
-				The filmstrip allows you to interact with images when you are not in lighttable mode. For example you can, while being in darkroom mode and developing an image,
-				switch to another image to develop by double clicking the thumb in the filmstrip. You can also rate the images as you do in lighttable, copy/paste history stack, etc.
-				</para>
-				<graphic fileref="overview/images/filmstrip.png" scalefit="1" width="80%" align="center" />
-
-			</sect3>
+		<sect2 status="draft"><title>Preferences</title>
+			<para>A button <inlinegraphic fileref="&icon_preferences;" scalefit="1" width="2%" align="center" /> located at the upper panel allows you to define various parameters.
+			</para>
+			<para>The options are quite self-explaining. In case you need more information, just let your mouse hover a text label and/or entry box to display more information. Furthermore all
+	                      configuration parameters are explained in a later chapter of this manual.
+			</para>
 		</sect2>
-
-
 	</sect1>
 
 
 	<sect1 status="final"><title>darktable basic workflow</title>
-		<sect2 status="draft"><title>Importing images</title>
+		<sect2 status ="draft"><title>Importing Images</title>
 			<para>To begin with darktable, you first need to import images. You can either import
-					from your filesystem or from your camera if supported.</para>
-			<para>In the left panel you will find the import module, here you have the choice to import either a single image or a folder,
-					darktable will analyse its content, detect images that are already imported and only import new images.
-			</para>
-		</sect2>
+				from your filesystem or from your camera if supported.</para>
 
-		<sect2 status="draft"><title>Importing from camera</title>
-		<!--	<sect3><title>Introduction</title> -->
+			<sect3 status="draft"><title>Importing images from filesystem</title>
+				<para>In the left panel you will find the import module, here you have the choice to import either a single image or a folder,
+						darktable will analyse its content, detect images that are already imported and only import new images.
+				</para>
+			</sect3>
+
+			<sect3 status="draft"><title>Importing from camera</title>
 				<para>Connect your camera to your system and if your distribution tries to automount it, select the option to abort the mount operation.
 					Otherwise the camera will be locked and not accessible from within darktable.</para>
-
-				<para>In the left panel of lighttable view you have the import pane and if you don't see your camera there you need to hit the
+				<para>In the left panel of lighttable view you have the import pane. If you don't see your camera there, you need to hit the
 					scan for devices button. Your camera will then appear in same pane with additional actions: import and tethering.</para>
-               <!--		</sect3>
-
-			<sect3 status="draft"><title>Settings</title>
-			</sect3>  -->
+			</sect3>
 		</sect2>
 
 		<sect2 status="draft"><title>Basic correction</title>
@@ -143,7 +145,7 @@
 					darktable ships with a bunch of modules and each of them is arranged into groups named module groups, these module groups are accessed
 					via toggle buttons in the right panel just under the histogram.
 					There are also two special module groups named active and favorites, where active will only show modules enabled in the history for the current image and
-						favorites will only show modules selected as a favorite by you. This is done in the <quote>more plugins</quote> at the bottom of the right panel, just click your favorite module
+						favorites will only show modules selected as a favorite by you. This is done in the <quote>more modules</quote> at the bottom of the right panel, just click your favorite module
 					until it gets a star displayed in front of the icon and you have chosen your favorite.
 				</para>
 			</sect3>
@@ -186,15 +188,6 @@
 			</para>
 
 		</sect2>
-	</sect1>
-
-	<sect1 status="draft"><title>Preferences</title>
-		<para>A button <inlinegraphic fileref="&icon_preferences;" scalefit="1" width="2%" align="center" /> located at the upper panel allows you to define various parameters.
-		</para>
-		<para>The options are quite self-explaining. In case you need more information, just let your mouse hover a text label and/or entry box to display more information. Furthermore all
-                      configuration parameters are explained in a later chapter of this manual.
-		</para>
-
 	</sect1>
 
 </chapter>

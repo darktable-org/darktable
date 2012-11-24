@@ -18,9 +18,17 @@
 
 	<sect4><title>Usage</title>
 		<sect5><title>profile</title>
-			<para>Choose the profile or color matrix to apply. Darktable offers many widespread matrices along with an enhanced matrix processed by darktable team in 
-                              order to provide a look close to the manufacturer one. You can also supply your own input profiles and put them into $DARKTABLE/share/darktable/color/in or
-                              $HOME/.config/darktable/color/in, where $DARKTABLE is darktables installation directory and $HOME is your home directory.
+			<para>Choose the profile or color matrix to apply. Darktable offers many widespread matrices along with an enhanced matrix for various camera models. The
+                              enhanced matrices were processed by the darktable team in order to provide a look close to the manufacturer one.
+			</para>
+			<para>
+			      You can also supply your own input ICC profiles and put them into $DARKTABLE/share/darktable/color/in or
+                              $HOME/.config/darktable/color/in. $DARKTABLE is used here as a placeholder for darktable's installation directory and $HOME is your home directory.
+                              One common source of ICC profiles is the software that is shipped with your camera; it often contains profiles specific to your camera model.
+			</para>
+
+			<para>If your input image is a JPEG file it will already contain an embedded ICC profile. Darktable will use this as a default on those images. If you know what
+                              you are doing, you can overrule darktable and select a different one. Select 'embedded icc profile' to restore the default.
 			</para>
 		</sect5>
 	</sect4>
