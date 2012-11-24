@@ -135,6 +135,7 @@ static const char *nvidia_gpus[] = {
 "GeForce GT 420*","1.0",
 "GeForce GT 240","1.2",
 "GeForce GT 220*","1.2",
+"GeForce GT 220","1.2",
 "GeForce 210","1.2",
 "GeForce GTS 250","1.1",
 "GeForce GTS 150","1.1",
@@ -237,18 +238,20 @@ static const char *nvidia_gpus[] = {
 "GeForce 9100M G","1.1",
 "GeForce 8400M GT","1.1",
 "GeForce G105M","1.1",
-"ION","1.0"};
-static const int num_nvidia_gpus = 218;
+"ION","1.0",
+NULL, NULL};
 
 int dt_nvidia_gpu_supports_sm_20(const char *model)
 {
-  for(int i=0;i<num_nvidia_gpus;i++)
+  int i=0;
+  while(nvidia_gpus[2*i] != NULL)
   {
     if(!strcasecmp(model, nvidia_gpus[2*i]))
     {
       if(nvidia_gpus[2*i+1][0] >= '2') return 1;
       return 0;
     }
+    i++;
   }
   // if we don't know the device, it's probably too new and all good.
   return 1;
