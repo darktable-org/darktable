@@ -17,22 +17,45 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>Demosaic is done on display only when zoom is greater than 50% or when the according
-                      preference setting "demosaicing for zoomed out darkroom mode" is set accordingly.</para>
+                <para>Demosaic is an essential step for any raw image development process.</para>
+
+		<para>A detailed description would be beyond the scope of this manual. In a nutshell, the sensor 
+		      cells of a digital camera are only able to record different levels of lightness, not color. In order 
+                      to get a color image, each cell is covered by a color filter, either in red, green or blue.
+                      Due to the color sensitivity of the human vision, there are two times more green cells than red or blue.
+                      Filters are arranged in a certain mosaic, called Bayer pattern. Therefore each pixel of your image originally 
+                      only has information about one color channel. Demosaic reconstructs the missing color channels 
+                      by interpolation with data of the neighboring pixels.</para>
+
+		<para>As all this is prone to produce artifacts, various different demosaic algorithms have
+                      been developed in the past. Artifacts would typically be visible as Moiree-like patterns when you strongly zoom into
+                      your image. Currently darktable supports PPG and AMAZE. Both algorithms produce high quality output with a low
+                      tendency for artifacts. AMAZE is reported to sometimes give slightly better results. However, as AMAZE is significantly
+                      slower, darktable uses PPG as a default.</para>
+
+		<para>Some further parameters of this module can activate additional averaging and smoothing steps. They might help to reduce
+                      remaining artifacts in special cases.</para>
+
+		<para>Demosaic is done on monitor display only when zoom is greater than 50% or when the according
+                      preference setting "demosaicing for zoomed out darkroom mode" is set accordingly. Else color channels are
+                      taken from neighboring pixels without an expensive interpolation.</para>
+
                 <sect5><title>method</title>
 			<para>Set the demosaic method. Darktable currently supports PPG and AMAZE.</para>
 		</sect5>
 
                 <sect5><title>edge threshold</title>
-			<para>Set the threshold for the median pass.</para>
+			<para>Set the threshold for an additional median pass. Defaults to 0 which disables median filtering.</para>
 		</sect5>	
 		<sect5><title>color smoothing</title>
-			<para>Number of passes for color smoothing.</para>
+			<para>Activates a number of additional color smoothing passes. Defaults to off.</para>
 		</sect5>
 		<sect5><title>match greens</title>
-			<para>Greens correction, useful for some camera. Available options
+			<para>In some cameras the green filters have slightly varying properties. This parameter adds an 
+                              aditional equilibration step, which suppresses artifacts that otherwise could result. Available options
                               are "diabled", "local average", "full average" and "full and local average".</para>
 		</sect5>
 
 	</sect4>
 </sect3>
+

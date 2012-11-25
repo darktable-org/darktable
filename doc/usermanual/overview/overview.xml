@@ -14,11 +14,69 @@
 		</keywordset>
 	</chapterinfo>
 	<title>Overview</title>
-	<para>darktable is an application to manage and develop your digital images.</para>
-	<para>It is fully non-destructive and works on a 32 bit floating point format per channel.
-			Most of the actions on the pixelpipe are done in CIELab.</para>
 
+        <para>darktable is an open source photography workflow application and RAW developer. A virtual lighttable and darkroom for photographers.</para>
+        <para>It manages your digital negatives in a database, lets you view them through a zoomable lighttable and enables you to develop raw images and enhance them.</para>
 
+	<itemizedlist>
+		<title>General Features</title>
+		<listitem>
+			<para>darktable runs on GNU/Linux / GNOME, Mac OS X / macports and Solaris 11 / GNOME.</para>
+		</listitem>
+                <listitem>
+			<para>Fully non-destructive editing.</para>
+                </listitem>
+		<listitem>
+			<para>All darktable core functions operate on 4x32-bit floating point pixel buffers for high accuracy processing; preventing banding and color breaks.</para>
+		</listitem>
+		<listitem>
+			<para>Heavy use of SSE instructions for speedups.</para>
+		</listitem>
+		<listitem>
+			<para>GPU acceleration via OpenCL (runtime detection and enabling).</para>
+		</listitem>
+		<listitem>
+			<para>Most of the actions on the pixelpipe are done in CIELab color space, which is much larger than the gamut of modern displays, printers or even human vision.</para>
+		</listitem>
+		<listitem>
+			<para>Full color managed display and built-in ICC profile support for export: sRGB, Adobe RGB, XYZ and linear RGB.</para>
+		</listitem>
+		<listitem>
+			<para>A collect module allows you to execute flexible database queries, search your images by tags, image rating (stars), color labels and many more. 
+			Filtering and sorting your collections within the base query or simple tagging by related tags are useful tools in your every-day photo workflow.</para>
+		</listitem>
+		<listitem>
+			<para>Import a variety of standard, raw and high dynamic range image formats (e.g. jpg, cr2, hdr, pfm, .. ).</para>
+		</listitem>
+		<listitem>
+			<para>darktable has a zero-latency fullscreen, zoomable user interface through multi-level software caches.</para>
+		</listitem>
+		<listitem>
+			<para>Tethered shooting.</para>
+		</listitem>
+		<listitem>
+			<para>The powerful export system supports Picasa webalbum, flickr upload, disk storage, 1:1 copy, email attachments and can 
+			generate a simple html-based web gallery. darktable allows you to export to low dynamic range (JPEG, PNG, TIFF), 16-bit (PPM, TIFF), 
+			or linear high dynamic range (PFM, EXR) images.</para>
+		</listitem>
+		<listitem>
+			<para>darktable uses both XMP sidecar files as well as its fast database for saving metadata and processing settings. All Exif data is 
+			read and written using libexiv2.</para>
+		</listitem>
+		<listitem>
+			<para>darktable comes with 47 image operation modules which cover everything from basic operations, tonal value changes, color 
+                              manipulation, correction of common image defects to artistic effects.</para>
+		</listitem>
+		<listitem>
+			<para>Many of darktables modules can be combined with blending operators for even more development options.</para>
+		</listitem>
+		<listitem>
+			<para>A powerful blend mask feature gives you fine control on module's effect to different parts of an image.</para>
+		</listitem>
+
+	</itemizedlist>
+		
+		
 	<sect1 status="final"><title>User interface</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='6*'/>
