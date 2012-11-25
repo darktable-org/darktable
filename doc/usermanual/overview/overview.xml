@@ -14,21 +14,80 @@
 		</keywordset>
 	</chapterinfo>
 	<title>Overview</title>
-	<para>darktable is an application to manage and develop your digital images.</para>
-	<para>It is fully non-destructive and works on a 32 bit floating point format per channel.
-			Most of the actions on the pixelpipe are done in CIELab.</para>
 
+        <para>darktable is an open source photography workflow application and RAW developer. A virtual lighttable and darkroom for photographers.</para>
+        <para>It manages your digital negatives in a database, lets you view them through a zoomable lighttable and enables you to develop raw images and enhance them.</para>
 
+	<itemizedlist>
+		<title>General Features</title>
+		<listitem>
+			<para>darktable runs on GNU/Linux / GNOME, Mac OS X / macports and Solaris 11 / GNOME.</para>
+		</listitem>
+                <listitem>
+			<para>Fully non-destructive editing.</para>
+                </listitem>
+		<listitem>
+			<para>All darktable core functions operate on 4x32-bit floating point pixel buffers for high accuracy processing; preventing banding and color breaks.</para>
+		</listitem>
+		<listitem>
+			<para>Heavy use of SSE instructions for speedups.</para>
+		</listitem>
+		<listitem>
+			<para>GPU acceleration via OpenCL (runtime detection and enabling).</para>
+		</listitem>
+		<listitem>
+			<para>Most of the actions on the pixelpipe are done in CIELab color space, which is much larger than the gamut of modern displays, printers or even human vision.</para>
+		</listitem>
+		<listitem>
+			<para>Full color managed display and built-in ICC profile support for export: sRGB, Adobe RGB, XYZ and linear RGB.</para>
+		</listitem>
+		<listitem>
+			<para>A collect module allows you to execute flexible database queries, search your images by tags, image rating (stars), color labels and many more. 
+			Filtering and sorting your collections within the base query or simple tagging by related tags are useful tools in your every-day photo workflow.</para>
+		</listitem>
+		<listitem>
+			<para>Import a variety of standard, raw and high dynamic range image formats (e.g. jpg, cr2, hdr, pfm, .. ).</para>
+		</listitem>
+		<listitem>
+			<para>darktable has a zero-latency fullscreen, zoomable user interface through multi-level software caches.</para>
+		</listitem>
+		<listitem>
+			<para>Tethered shooting.</para>
+		</listitem>
+		<listitem>
+			<para>The powerful export system supports Picasa webalbum, flickr upload, disk storage, 1:1 copy, email attachments and can 
+			generate a simple html-based web gallery. darktable allows you to export to low dynamic range (JPEG, PNG, TIFF), 16-bit (PPM, TIFF), 
+			or linear high dynamic range (PFM, EXR) images.</para>
+		</listitem>
+		<listitem>
+			<para>darktable uses both XMP sidecar files as well as its fast database for saving metadata and processing settings. All Exif data is 
+			read and written using libexiv2.</para>
+		</listitem>
+		<listitem>
+			<para>darktable comes with 47 image operation modules which cover everything from basic operations, tonal value changes, color 
+                              manipulation, correction of common image defects to artistic effects.</para>
+		</listitem>
+		<listitem>
+			<para>Many of darktables modules can be combined with blending operators for even more development options.</para>
+		</listitem>
+		<listitem>
+			<para>A powerful blend mask feature gives you fine control on module's effect to different parts of an image.</para>
+		</listitem>
+
+	</itemizedlist>
+		
+		
 	<sect1 status="final"><title>User interface</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth='100%'/>
-					<colspec colwidth='5cm'/>
+					<colspec colwidth='6*'/>
+					<colspec colwidth='4*'/>
 					<tbody>
 						<row>
-							<entry>This section describes the layout of the user interface. You can change darktable's contrast by using <emphasis>F7</emphasis> and <emphasis>F8</emphasis>.
+							<entry>This section describes the layout of the user interface. You can change darktable's contrast by using <emphasis>F7</emphasis> and <emphasis>F8</emphasis>
+                                                               and darktable's lightness by using <emphasis>F9</emphasis> and <emphasis>F10</emphasis>.
 							</entry>
 							<entry>
-								<!--<graphic fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" />-->
+								<graphic fileref="images/lighttable_view.png" scalefit="1" width="80%" align="center" />
 							</entry>
 						</row>
 					</tbody>
@@ -40,7 +99,8 @@
 				in this section. The current view is identified by the label at the top of the right panel.
 				Some key accelerators, allowing to access the different views, are described in the table below:
 				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-						<colspec colwidth='3cm'/>
+						<colspec colwidth='1*'/>
+						<colspec colwidth='9*'/>
 						<tbody>
 							<row>
 								<entry><emphasis>l</emphasis></entry><entry>switches to lighttable view</entry>
@@ -71,48 +131,49 @@
 				</para>
 			</sect3>
 			<sect3 status="final"><title>Tethering</title>
-				<para>This view is where you do camera tethering eg. connecting your camera to the computer and remotely capturing images that will be downloaded and shown on your computer screen.
+				<para>This view is where you do camera tethering, ie. connecting your camera to the computer and remotely capturing images that will be downloaded and shown on your computer screen.
 				</para>
 			</sect3>
 			<sect3 status="final"><title>Map</title>
 				<para>This view allows to see images that are geo-tagged on a map.
 				</para>
 			</sect3>
+               </sect2>
+               <sect2 status="final"><title>Filmstrip</title>
+			<para>The filmstrip shows the same images as lighttable with respect to filters and sort order; it is turned on/off with key accelerator <emphasis>ctrl-f</emphasis>.
+		  	You can navigate along the filmstrip by wheel scrolling.
+			The filmstrip allows you to interact with images when you are not in lighttable mode. For example you can, while being in darkroom mode and developing an image,
+			switch to another image to develop by double clicking the thumb in the filmstrip. You can also rate the images as you do in lighttable, copy/paste history stack, etc.
+			</para>
+			<graphic fileref="overview/images/filmstrip.png" scalefit="1" width="80%" align="center" />
+        	</sect2>
 
-			<sect3 status="final"><title>Filmstrip</title>
-				<para>The filmstrip shows the same images as lighttable with respect to filters and sort order; it is turned on/off with key accelerator <emphasis>ctrl-f</emphasis>.
-			  	You can navigate along the filmstrip by wheel scrolling.
-				The filmstrip allows you to interact with images when you are not in lighttable mode. For example you can, while being in darkroom mode and developing an image,
-				switch to another image to develop by double clicking the thumb in the filmstrip. You can also rate the images as you do in lighttable, copy/paste history stack, etc.
-				</para>
-				<graphic fileref="overview/images/filmstrip.png" scalefit="1" width="80%" align="center" />
-
-			</sect3>
+		<sect2 status="draft"><title>Preferences</title>
+			<para>A button <inlinegraphic fileref="&icon_preferences;" scalefit="1" width="2%" align="center" /> located at the upper panel allows you to define various parameters.
+			</para>
+			<para>The options are quite self-explaining. In case you need more information, just let your mouse hover a text label and/or entry box to display more information. Furthermore all
+	                      configuration parameters are explained in a later chapter of this manual.
+			</para>
 		</sect2>
-
-
 	</sect1>
 
 
 	<sect1 status="final"><title>darktable basic workflow</title>
-		<sect2 status="draft"><title>Importing images</title>
+		<sect2 status ="draft"><title>Importing Images</title>
 			<para>To begin with darktable, you first need to import images. You can either import
-					from your filesystem or from your camera if supported.</para>
-			<para>In the left panel you will find the import module, here you have the choice to import either a single image or a folder,
-					darktable will analyse its content, detect images that are already imported and only import new images.
-			</para>
-		</sect2>
+				from your filesystem or from your camera if supported.</para>
 
-		<sect2 status="draft"><title>Importing from camera</title>
-			<sect3><title>Introduction</title>
-				<para>Connect your camera to your system and if your distribution tries to automount it, select the option to abort the mount operation.
-					Otherwise the camera will be locked and not accessible from within darktable.</para>
-
-				<para>In the left panel of lighttable view you have the import pane and if you don't see your camera there you need to hit the
-					scan for devices button. Your camera will then appear in same pane with additional actions: import and tethering.</para>
+			<sect3 status="draft"><title>Importing images from filesystem</title>
+				<para>In the left panel you will find the import module, here you have the choice to import either a single image or a folder,
+						darktable will analyse its content, detect images that are already imported and only import new images.
+				</para>
 			</sect3>
 
-			<sect3 status="draft"><title>Settings</title>
+			<sect3 status="draft"><title>Importing from camera</title>
+				<para>Connect your camera to your system and if your distribution tries to automount it, select the option to abort the mount operation.
+					Otherwise the camera will be locked and not accessible from within darktable.</para>
+				<para>In the left panel of lighttable view you have the import pane. If you don't see your camera there, you need to hit the
+					scan for devices button. Your camera will then appear in same pane with additional actions: import and tethering.</para>
 			</sect3>
 		</sect2>
 
@@ -134,7 +195,7 @@
 				<para>
 					On the left panel in darkroom mode you have the history stack showing changes starting from bottom and building up with each change
 					you have made to the image. You can select a point in this history to show how the image looked in that point for comparison of changes.
-					The stack can be compressed and will discard changes done during the development but will make it optimized, when you think you are done
+					The stack can be compressed and will discard changes done during the development but will make it optimized. When you think you are done
 					and have a good feeling of what you have done, just compress the history stack.
 				</para>
 
@@ -142,8 +203,8 @@
 					darktable ships with a bunch of modules and each of them is arranged into groups named module groups, these module groups are accessed
 					via toggle buttons in the right panel just under the histogram.
 					There are also two special module groups named active and favorites, where active will only show modules enabled in the history for the current image and
-						favorites will only show modules selected as a favorite by you. This is done in the <quote>more plugins</quote> at the bottom of the right panel, just click your favorite module
-					until it gets a red tinted background and you have chosen your favorite.
+						favorites will only show modules selected as a favorite by you. This is done in the <quote>more modules</quote> at the bottom of the right panel, just click your favorite module
+					until it gets a star displayed in front of the icon and you have chosen your favorite.
 				</para>
 			</sect3>
 
@@ -165,32 +226,26 @@
 				</para>
 			</sect3>
 
-			<sect3 status="draft"><title>Noise reduction</title>
-				<para></para>
+  		<sect3 status="draft"><title>Noise reduction</title>
+				<para>You have several options in darktable to reduce noise. You'll find them in the correct group.
+        There is the hot pixel removal module, raw denosie, denoising based on bilateral filter, non-local means, and based on wavelets (the equalizer). Most convenient to use is probably denoising based on non-local means, as it allows you to treat color and luminance noise separately.
+        </para>
 			</sect3>
 
 
 		</sect2>
 
 		<sect2 status="draft"><title>Exporting images</title>
-			<para>Your changes to an image are not saved as in a regular image editor. darktable is a non destructive editor which means all your changes are stored in a database and the original image is untouched and therefor you need to export your images to get an <quote>image</quote> file to distribute with your special processing.</para>
-			<para>Images are exported from lighttable using the export module in the right panel. In general, export means save my developed RAW image as a JPEG.</para>
+			<para>Your changes to an image are not saved as in a regular image editor. darktable is a non destructive editor which means all your changes are stored in a database and the original image is untouched      			and therefore you need to export your images to get an <quote>image</quote> file to distribute with your special processing.</para>
+			<para>Images are exported from lighttable using the export module in the right panel. In general, export means: save my developed RAW image as a JPEG.</para>
 			<para>The export is also modularized into storage and format. darktable is shipping several storage modules such as save on disk, picasa and flickr webalbum and more.
 				Format modules are the actual image formats such as JPEG, PNG, TIFF, OpenEXR and more.
 			</para>
-			<para>Select images on your lighttable that you want to export, then choose your target storage and format to use and set the maximum width and height image restraint, this means that none of the images will be bigger than any of the width/height restraint. Leave the width and height restraint as zero value if you want the original resolution and hit the export button.
+			<para>Select images on your lighttable that you want to export, then choose your target storage and format to use and set the maximum width and height image restraint, this means that 
+                              none of the images will be bigger than any of the width/height restraint. Leave the width and height restraint as zero value if you want the original resolution and hit the export button.
 			</para>
 
 		</sect2>
-	</sect1>
-
-	<sect1 status="draft"><title>Preferences</title>
-		<para>A button <inlinegraphic fileref="&icon_preferences;" scalefit="1" width="2%" align="center" /> located at the upper panel allows you to define various parameters.
-		</para>
-		<para>The options are quite self-explaining. In case you need more information, just let your mouse hover a text label and/or entry box to display more information. Furthermore all
-                      configuration parameters are explained in a later chapter of this manual.
-		</para>
-
 	</sect1>
 
 </chapter>

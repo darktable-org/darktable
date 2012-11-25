@@ -1,7 +1,7 @@
 		<sect2 status="draft"><title>Tagging</title>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth='70%'/>
-					<colspec colwidth='30%'/>
+					<colspec colwidth="6*"/>
+					<colspec colwidth="4*"/>
 					<tbody>
 						<row>						
 							<entry>This panel allows to manage tags for your images.
@@ -9,7 +9,7 @@
 							darktable database for a faster access.
 							The panel is divided into two parts: the upper part contains the tag(s) currently set for the image 
 							either under mouse (if mouse is over an image) or selected (if mouse is outside the lighttable).
-							The lower part contains all tags available; those can be filter thanks to the upper text box.
+							The lower part contains all tags available; those can be filtered thanks to the upper text box.
 							</entry>
 							<entry>
 								<graphic fileref="lighttable/images/panel_tagging.png" scalefit="1" width="80%" align="center" />

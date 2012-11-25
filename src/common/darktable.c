@@ -238,15 +238,15 @@ darktable will now close down.\n\n%s"),message);
 }
 #endif
 
-/*  TODO: make this case insensitive */
 gboolean dt_supported_image(const gchar *filename)
 {
   gboolean supported = FALSE;
   char **extensions = g_strsplit(dt_supported_extensions, ",", 100);
   char *ext = g_strrstr(filename,".");
   if(!ext) return FALSE;
+  ext++;
   for(char **i=extensions; *i!=NULL; i++)
-    if(!g_ascii_strncasecmp(ext+1, *i,strlen(*i)))
+    if(!g_ascii_strncasecmp(ext, *i,strlen(*i)))
     {
       supported = TRUE;
       break;

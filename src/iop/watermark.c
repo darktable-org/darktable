@@ -909,10 +909,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   // Add opacity/scale sliders to table
-  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->opacity, 0.5);
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->opacity, 0);
   dt_bauhaus_slider_set_format(g->scale1, "%.f%%");
   dt_bauhaus_widget_set_label(g->scale1,_("opacity"));
-  g->scale2 = dt_bauhaus_slider_new_with_range(self, 1.0, 100.0, 1.0, p->scale, 0.5);
+  g->scale2 = dt_bauhaus_slider_new_with_range(self, 1.0, 100.0, 1.0, p->scale, 0);
   dt_bauhaus_slider_set_format(g->scale2, "%.f%%");
   dt_bauhaus_widget_set_label(g->scale2,_("scale"));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);

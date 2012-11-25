@@ -73,7 +73,7 @@ uint32_t container()
 
 int position()
 {
-  return 399;
+  return 300;
 }
 
 void init_key_accels(dt_lib_module_t *self)

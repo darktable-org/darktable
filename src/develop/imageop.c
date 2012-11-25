@@ -716,7 +716,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->presets_button = NULL;
   module->fusion_slider = NULL;
 
-  if(module->dev->gui_attached)
+  if(module->dev && module->dev->gui_attached)
   {
     /* set button state */
     char option[1024];

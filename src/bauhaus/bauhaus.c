@@ -1131,20 +1131,20 @@ dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
   else
   {
     // regular baseline
-    set_grid_color(cr, .9f);
+    set_grid_color(cr, 0);
   }
 
   cairo_rectangle(cr, 2, htm, wd-4-ht-2, htM);
   cairo_fill(cr);
 
   // have a `fill ratio feel'
-  set_indicator_color(cr, .95f);
+  set_indicator_color(cr, 0);
   cairo_rectangle(cr, 2, htm, d->pos*(wd-4-ht-2), htM);
   cairo_fill(cr);
 
   cairo_rectangle(cr, 2, htm, wd-4-ht-2, htM);
   cairo_set_line_width(cr, 1.);
-  set_grid_color(cr, 1.);
+  set_grid_color(cr, 1);
   cairo_stroke(cr);
 
   cairo_restore(cr);

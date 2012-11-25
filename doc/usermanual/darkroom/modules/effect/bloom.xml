@@ -1,8 +1,8 @@
 <sect3 status="draft"><title>Bloom</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>This module boost highlights and softly blooms them over the image hence the name of the effect,
@@ -35,8 +35,8 @@
 	<sect4><title>Examples</title>
 		<para>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth='30%'/>
-					<colspec colwidth='70%'/>
+					<colspec colwidth="4*"/>
+					<colspec colwidth="6*"/>
 					<tbody>
 						<row>
 							<entry>

@@ -1,11 +1,11 @@
 <sect3 status="draft"><title>Local contrast</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module allows to enhance the local contrast. It uses CLAHE (Contrast Limited Adaptive Histogram Equalization).				
+						<entry>This module allows to enhance local contrast. It uses the unnormalized bilateral filter and works on the L channel from Lab.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/localcontrast.png" scalefit="1" width="80%" align="center" />
@@ -17,14 +17,43 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>Local contrast boosts the details of your image without changing the global contrast.</para>
-		<sect5><title>radius</title>
-			<para>Set the size of the region around pixels whose histogram will be equalized in order to boost contrast. This value must be greater than the size of the details to preserve.
-				A small value limits the effect.
+		<para>Local contrast boosts the details of your image much like the equalizer does, but in only one frequency band.
+    </para>
+		<sect5><title>coarseness</title>
+			<para>Make the details you want to adjust finer or coarser (this maps to sigma_s in the algorithm).
 			</para>
 		</sect5>
-		<sect5><title>amount</title>
-			<para>Set the strength of the effect, by giving the allowable stretch in histogram. the greater the value, the stronger the effect.</para>
+		<sect5><title>contrast</title>
+			<para>How strongly the algorithm distinguishes between brightness levels (maps to sigma_r in the algorithm).
+      Increasing the value will result in a more contrasty look.
+			</para>
+		</sect5>
+		<sect5><title>detail</title>
+			<para>Add or remove detail. higher values will increase local contrast.</para>
 		</sect5>			
+	</sect4>
+
+	<sect4><title>Example</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
+				<tbody>
+					<row>						
+						<entry>before
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/localcontrast_before.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+					<row>						
+						<entry>After, a little overdone to demonstrate the effect. Use this sparingly to avoid a cheap overprocessed look.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/localcontrast_after.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
 	</sect4>
 </sect3>

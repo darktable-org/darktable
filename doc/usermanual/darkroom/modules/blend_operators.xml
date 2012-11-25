@@ -12,125 +12,96 @@
 		<para>Modules that do support blending, inherit additional controls at the bottom of module user interface to control
 			parameters of the blending.
 		</para>
-	
 
-		<sect3><title>Blend Modes</title>
-			<para>There are several modes implemented and more can be added, for now all the common ones are there and
+                <sect3><title>Usage</title>	
+
+		<sect4><title>blend mode</title>
+			<para>There are several modes implemented and more can be added. For now all the common ones are there and
 			      you will recognize a few of them from other imaging software. A good introduction on many
         	              common blend modes is given in The Gimp Manual (Chapter 8.2, "Layer Modes"). Therefore we
         	              only discuss a few blend modes here in more detail.
 			</para>
 
-			<sect4 status="draft"><title>Normal</title>
+			<sect5><title>off</title>
+				<para>If set to "off" no blending will be done and blending related controls are hidden.
+			        </para>			
+			</sect5>
+
+
+			<sect5><title>normal</title>
 				<para>This will probably be the most used blend mode, it does just mix input and output and will be used
 				      to control the modules effect amount for an example. Perfect for better controlling raw denoise result.
 			        </para>			
-			</sect4>
+			</sect5>
 
-		        <sect4 status="draft"><title>Inverse</title>
+		        <sect5><title>inverse</title>
 				<para>This blend mode acts similar to blend mode "Normal", only that the role of input and output of the
         	                      current module are reversed. Can be used together with conditional blending (next chapter) to
         	                      get the effect of an inversed blend mask.
         	                </para>			
-			</sect4>
+			</sect5>
 
-			<sect4 status="draft"><title>Unbounded</title>
+			<sect5><title>unbounded</title>
 				<para>This blend mode acts similar to blend mode "Normal", only that input and output data are not
         	                      clamped to a certain min/max value range. This already tells you that all other blend modes
         	                      clamp their input and output. In some cases (e.g. highly color saturated extreme highlights) it is 
         	                      important to  let unbound values traved through the pixelpipe in order to properly deal with them at 
         	                      the right place (e.g. in module "output color profile").
 	                        </para>			
-	                </sect4>
+	                </sect5>
 
-			<sect4 status="draft"><title>Lightness</title>
+			<sect5><title>lightness</title>
 				<para>This blend mode mixes lightness from input and output image. Color data (chroma and hue) are
 	                              taken unaltered from the input image.
 	                        </para>			
-	                </sect4>
+	                </sect5>
 
 
-			<sect4 status="draft"><title>Chroma</title>
+			<sect5><title>chroma</title>
 				<para>This blend mode mixes chroma (saturation) from input and output image. Lightness and hue are
 	                              taken unaltered from the input image.
 	                        </para>			
-	                </sect4>
+	                </sect5>
 
-			<sect4 status="draft"><title>Hue</title>
+			<sect5><title>hue</title>
 				<para>This blend mode mixes hue (color tint) from input and output image. Lightness and chroma are
 	                              taken unaltered from the input image. For modules which drastically modify hue (e.g. generating
 	                              complementary colors) this blend mode can result in strong color noise.
 	                        </para>			
-	                </sect4>
+	                </sect5>
 
-			<sect4 status="draft"><title>Color</title>
+			<sect5><title>color</title>
 				<para>This blend mode mixes color (chroma and hue) from input and output image. Lightness is
 	                              taken unaltered from the input image. For modules which drastically modify hue (e.g. generating
 	                              complementary colors) this blend mode can result in strong color noise.
 	                        </para>			
-	                </sect4>
+	                </sect5>
 
-			<sect4 status="draft"><title>Coloradjustment</title>
+			<sect5><title>coloradjustment</title>
 				<para>Some modules act predominantly on the tonal values of an image but involve some adjustment of color saturation
                                       as well, e.g. module "levels". This blend mode takes the lightness only from output data and
                                       mixes colors from input and output. This way you can control the module's automatic color adjustment.
 	                        </para>			
-	                </sect4>
+	                </sect5>
 
 
-	                   <!--
-				<sect4 status="draft"><title>Multiply</title>
-					<para></para>			
-				</sect4>
-				<sect4 status="draft"><title>Average</title>
-					<para></para>			
-				</sect4>
-				<sect4 status="draft"><title>Add</title>
-					<para></para>			
-				</sect4>
-				<sect4 status="draft"><title>Substract</title>
-					<para></para>			
-				</sect4>
-				<sect4 status="draft"><title>Difference</title>
-					<para></para>			
-				</sect4>
-				<sect4 status="draft"><title>Screen</title>
-					<para></para>			
-				</sect4>
-				<sect4 status="draft"><title>Overlay</title>
-					<para></para>			
-				</sect4>
-				<sect4 status="draft"><title>Soft light</title>
-					<para></para>			
-				</sect4>
-				<sect4 status="draft"><title>Hard light</title>
-					<para></para>			
-				</sect4>
-				<sect4 status="draft"><title>Vivid light</title>
-					<para></para>			
-				</sect4>
-				<sect4 status="draft"><title>Linear light</title>
-					<para></para>			
-				</sect4>
-				<sect4 status="draft"><title>Pin light</title>
-					<para></para>			
-				</sect4>  -->
-		</sect3> 
+		</sect4> 
 		
-		<sect3><title>Opacity</title>
+		<sect4><title>opacity</title>
 			<para>This slider controls the amount of blending. A value of 100% gives the module's full effect into the
         	              pixelpipe; a value of 0% means no effect of this module. With blend mode Normal and a proper selection
         	              of opacity you can therefore control the strength of a module's effect.
 			</para>
 
-	        </sect3>
+	        </sect4>
 
-	        <sect3><title>Conditional Blending</title>
+	        <sect4><title>blend</title>
         	        <para>Most modules offer additional control on blending by a user-defined blend mask. In order to activate these
         	              controls you need to switch from "blend uniformily" to "blend only, if..". More details on conditional blending
         	              are given in a separate chapter.
         	        </para>
-	        </sect3>
+	        </sect4>
+                </sect3>
 
 		<sect3><title>Examples</title>
 			<sect4 status="draft"><title>Texturing an image</title>
@@ -141,8 +112,8 @@
 		
 			<sect4 status="draft"><title>Gritty details</title>
 				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-						<colspec colwidth='70%'/>
-						<colspec colwidth='30%'/>
+						<colspec colwidth="6*"/>
+						<colspec colwidth="4*"/>
 						<tbody>
 							<row>						
 								<entry>When blending operators were introduced into darktable, a new module named highpass was added. It produces
@@ -159,8 +130,8 @@
 			
 				<para>
 					<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-							<colspec colwidth='30%'/>
-							<colspec colwidth='70%'/>
+							<colspec colwidth="4*"/>
+							<colspec colwidth="6*"/>
 							<tbody>
 								<row>
 									<entry>

@@ -1,16 +1,16 @@
 <sect2 status="draft">
   <title>Live view</title>
   <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth='70%'/>
-    <colspec colwidth='30%'/>
+    <colspec colwidth="6*"/>
+    <colspec colwidth="4*"/>
     <tbody>
       <row>						
 	<entry>
-	  <para>This panel gives you access to control the live view and how you want to work with, functionality
-	  such as zoom, rotation adding guides and overlays.</para>
+	  <para>This panel gives you access to control your camera's live view mode. Functionality
+	  such as focus setting, rotation, adding guides and overlays are supported.</para>
 	</entry>
 	<entry>
-	  <graphic fileref="darkroom/images/panel_liveview.png" scalefit="1" width="80%" align="center" />
+	  <graphic fileref="tethering/images/panel_liveview.png" scalefit="1" width="80%" align="center" />
 	</entry>
       </row>
     </tbody>

@@ -83,17 +83,17 @@ if(can_build_usermanual)
 	)
 	add_custom_target(darktable_single_xml DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml)
 
-	#
-	# add target for final xml file
-	#
-	add_custom_command(
-		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final.xml
-		COMMAND xsltproc --output ${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final.xml --stringparam profile.status "final" xsl/darktable_profile.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
-		COMMENT "Profiling final docbook xml file" VERBATIM
-	)
-	add_custom_target(darktable_single_final_xml DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml)
+#	#
+#	# add target for final xml file
+#	#
+#	add_custom_command(
+#		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final.xml
+#		COMMAND xsltproc --output ${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final.xml --stringparam profile.status "final" xsl/darktable_profile.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+#		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+#		COMMENT "Profiling final docbook xml file" VERBATIM
+#	)
+#	add_custom_target(darktable_single_final_xml DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml)
 
 	#
 	# draft pdf usermanual
@@ -158,48 +158,48 @@ if(can_build_usermanual)
 	add_dependencies(darktable-usermanual-wordpress target_media_images darktable_single_xml )
 	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/wp DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
 
-	#
-	# final translated usermanual's
-	#
-	add_custom_command(
-		OUTPUT darktable-usermanual-en.pdf
-		COMMAND xsltproc --output ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual_profiled_final.fo xsl/darktable_fo.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final.xml
-		COMMAND fop -c fopconfig.xml ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual_profiled_final.fo -pdf darktable-usermanual-final.pdf
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
-		COMMENT "Building final usermanual" VERBATIM
-	)
-	add_custom_target(darktable-usermanual-final DEPENDS darktable-usermanual-en.pdf )
-	add_dependencies(darktable-usermanual-final target_media_images darktable_single_final_xml )
-	add_dependencies(usermanual darktable-usermanual-final)
-	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/darktable-usermanual-final.pdf DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
-
-	if(NOT ${Xml2po_BIN} STREQUAL "Xml2po_BIN-NOTFOUND")
-		# localized final usermanuals
-		file(GLOB LANGUAGES po/*.po)
-		foreach(language ${LANGUAGES})
-			set(pofile ${language})
-			string(REGEX REPLACE "(.+(\\\\|/))+" "" language ${language})
-			string(REGEX REPLACE "\\.po$" "" language ${language})
-			set(pdffile "darktable-usermanual-${language}.pdf")
-			set(fofile "${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual-${language}.fo")
-			set(xmlfile "${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final.xml")
-			set(xmllangfile "${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final-${language}.xml")
-			add_custom_command(
-				OUTPUT ${pdffile}
-				COMMAND xml2po -e -p ${pofile} -l ${language} ${xmlfile} > ${xmllangfile}
-				COMMAND xsltproc --output ${fofile} xsl/darktable_fo.xsl ${xmllangfile}
-				COMMAND fop -c fopconfig.xml ${fofile} -pdf ${pdffile}
-				DEPENDS ${pofile} ${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final.xml
-				WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-				COMMENT "Building ${language} usermanual" VERBATIM
-			)
-			add_custom_target(darktable-usermanual-${language} DEPENDS ${pdffile})
-			add_dependencies(usermanual darktable-usermanual-${language})
-			add_dependencies(darktable-usermanual-${language} target_media_images darktable_single_final_xml )
-			install(FILES ${pdffile} DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
-		endforeach(language)
-	endif()
+#	#
+#	# final translated usermanual's
+#	#
+#	add_custom_command(
+#		OUTPUT darktable-usermanual-en.pdf
+#		COMMAND xsltproc --output ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual_profiled_final.fo xsl/darktable_fo.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final.xml
+#		COMMAND fop -c fopconfig.xml ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual_profiled_final.fo -pdf darktable-usermanual-final.pdf
+#		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+#		COMMENT "Building final usermanual" VERBATIM
+#	)
+#	add_custom_target(darktable-usermanual-final DEPENDS darktable-usermanual-en.pdf )
+#	add_dependencies(darktable-usermanual-final target_media_images darktable_single_final_xml )
+#	add_dependencies(usermanual darktable-usermanual-final)
+#	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/darktable-usermanual-final.pdf DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
+#
+#	if(NOT ${Xml2po_BIN} STREQUAL "Xml2po_BIN-NOTFOUND")
+#		# localized final usermanuals
+#		file(GLOB LANGUAGES po/*.po)
+#		foreach(language ${LANGUAGES})
+#			set(pofile ${language})
+#			string(REGEX REPLACE "(.+(\\\\|/))+" "" language ${language})
+#			string(REGEX REPLACE "\\.po$" "" language ${language})
+#			set(pdffile "darktable-usermanual-${language}.pdf")
+#			set(fofile "${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual-${language}.fo")
+#			set(xmlfile "${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final.xml")
+#			set(xmllangfile "${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final-${language}.xml")
+#			add_custom_command(
+#				OUTPUT ${pdffile}
+#				COMMAND xml2po -e -p ${pofile} -l ${language} ${xmlfile} > ${xmllangfile}
+#				COMMAND xsltproc --output ${fofile} xsl/darktable_fo.xsl ${xmllangfile}
+#				COMMAND fop -c fopconfig.xml ${fofile} -pdf ${pdffile}
+#				DEPENDS ${pofile} ${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final.xml
+#				WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#				COMMENT "Building ${language} usermanual" VERBATIM
+#			)
+#			add_custom_target(darktable-usermanual-${language} DEPENDS ${pdffile})
+#			add_dependencies(usermanual darktable-usermanual-${language})
+#			add_dependencies(darktable-usermanual-${language} target_media_images darktable_single_final_xml )
+#			install(FILES ${pdffile} DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
+#		endforeach(language)
+#	endif()
 
 else(can_build_usermanual)
 	message("Can NOT build usermanual")

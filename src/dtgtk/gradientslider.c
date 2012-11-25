@@ -204,7 +204,7 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
       gslider->is_dragging = TRUE;
       // timeout_handle should always be zero here, but check just in case
       int delay = CLAMP_RANGE(darktable.develop->average_delay*3/2, DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MIN, DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MAX);
-      if(!gslider->timeout_handle);
+      if(!gslider->timeout_handle)
         gslider->timeout_handle = g_timeout_add(delay, _gradient_slider_postponed_value_change, widget);
     }
     else if (gslider->positions > 1) // right mouse button: switch on/off selection (only if we have more than one marker)

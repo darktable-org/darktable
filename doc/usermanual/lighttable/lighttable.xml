@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <chapter>
 	<chapterinfo>
 		<keywordset>
@@ -20,7 +22,7 @@
 		<para></para>
 		<sect2 status="final"><title>Lighttable</title>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth='70%'/>
+					<colspec colwidth="6*"/>
 					<colspec colwidth='5cm'/>
 					<tbody>
 						<row>
@@ -78,8 +80,8 @@
 			in a row. That action is a key accelerator of the counter that can be found beside the filemanager option.
 			Use your mouse wheel to navigate through your collection.
 			</para>
-			<para>While in filemanager mode, by pressing <emphasis>&uarr;/&darr;</emphasis> you can scroll (not select) up and down through your collection.
-				In zoomable lighttable <emphasis>&larr;/&rarr;/&uarr;/&darr;</emphasis> allow you to move left/right/up/down through your collection.
+			<para>While in filemanager mode, by pressing &uarr;/&darr; you can scroll (not select) up and down through your collection.
+				In zoomable lighttable &larr;/&rarr;/&uarr;/&darr; allow you to move left/right/up/down through your collection.
 				Pressing <emphasis>g</emphasis> goes to the top, <emphasis>shift-g</emphasis> to the bottom.
 			</para>
 		</sect2>

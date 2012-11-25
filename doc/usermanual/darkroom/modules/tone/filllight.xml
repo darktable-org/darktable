@@ -6,8 +6,8 @@
 <sect3 status="draft"><title>Fill light</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>This module allows the local modification of the exposition based on pixel lightness.				
@@ -25,15 +25,15 @@
 		<para>The module pushes exposure by increasing lightness in the form of a Gaussian curve, centered on a given lightness, 
                       with a given width in lightness. 
                 </para>
-		<sect5><title>Exposure</title>
+		<sect5><title>exposure</title>
 			<para>Set the fill-light exposure in [EV].</para>
 		</sect5>
-		<sect5><title>Center</title>
+		<sect5><title>center</title>
 			<para>Set the median lightness being impacted by the fill-light. A color picker is activated by pressing 
                              <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />. It will show 
                              the picked lightness value in the gradient bar and thus helps to find the right center value.</para>
 		</sect5>
-		<sect5><title>Width</title>
+		<sect5><title>width</title>
 			<para>Set the width of the Gaussian curve. It is expressed in zone, the whole dynamic range being 10 zones.
                               As the Gaussian is symmetric, only even numbers can be entered.</para>
 		</sect5>	

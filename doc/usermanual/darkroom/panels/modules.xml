@@ -1,11 +1,11 @@
 	<sect2 status="draft"><title>More modules</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>More modules at the bottom of right panel is used to hide modules you don't use, as default only
-						standard modules are shown to the user so if you are missing anything you should check here and show it.
+						<entry>More modules at the bottom of right panel is used to hide modules you don't use. As a default only
+						standard modules are shown to the user, so if you are missing anything you should check here and show it.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/images/panel_moremodules.png" scalefit="1" width="80%" align="center" />
@@ -14,9 +14,10 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
-		<para>Each modules is shown as a small icon, hover mouse pointer over the button to show the name. 
-		You can toggle a module by clicking the button to show/hide and add modules favorite modules group.
-                The icon background color indicates the status: dark grey for hidden modules, light grey for visible
-                modules, red for favorite modules.
+		<para>Each modules is shown as a small icon and the module name.
+		Left-click with your mouse to toggle a module's status: visible, hidden or favorite. Favorite modules are indicated by 
+                a star in front of the icon and will additionally to their normal module group show up in module group "favorites".
+                This is a good way to get fast access to modules that you use very frequently. Visible modules are indicated in the list
+                by a light grey background. Hidden modules have a dark grey background; they will not display any controls whatsoever.
 		</para>
 	</sect2>

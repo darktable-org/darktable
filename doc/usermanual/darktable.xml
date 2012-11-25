@@ -6,12 +6,13 @@
 		]>
 
 <book lang="en">
-	<title>darktable</title>
+	<title>darktable 1.1</title>
 	<bookinfo>
 		<legalnotice>
 			<para>
 			The owner of the darktable project is Johannes Hanika.
-			Main developers are Johannes Hanika, Henrik Andersson and Tobias Ellinghaus.
+			Main developers are Johannes Hanika, Henrik Andersson, Tobias Ellinghaus,
+                        Pascal de Bruijn and Ulrich Pegelow.
 			</para>
 			<para>
   			darktable is free software: you can redistribute it and/or modify
@@ -49,12 +50,17 @@
 			<year>2010-2011</year>
 			<holder>Olivier Tribout</holder>
 		</copyright>
+		<copyright>
+			<year>2012</year>
+			<holder>Ulrich Pegelow</holder>
+		</copyright>
+
 	</bookinfo>
 
-	<preface id="overview"><title>Preface to darktable</title>
-		<para><indexterm><primary>darktable</primary></indexterm>
-			<indexterm><primary>Preface</primary></indexterm>
-		The current user manual is a draft issue. It is at an early stage of writing. User manual version and applicable darktable version are listed below:
+	<preface id="overview"><title>Preface to this manual</title>
+		<indexterm><primary>darktable</primary></indexterm>
+		<indexterm><primary>Preface</primary></indexterm>
+		<para>The current user manual is a draft issue. It is at an early stage of writing. User manual version and applicable darktable version are listed below:
 				<informaltable frame="none"><tgroup cols="3" colsep="0" rowsep="0">
 					<colspec colwidth='3cm'/>
 					<tbody>
@@ -65,13 +71,13 @@
 						</row>
 						<row>
 							<entry>user manual</entry>
-							<entry></entry>
-							<entry>02/06/11</entry>
+							<entry>1.1.0 (draft)</entry>
+							<entry>November 2012</entry>
 						</row>
 						<row>
 							<entry>darktable</entry>
-							<entry>darktable 0.8+550~gd1cdadd</entry>
-							<entry>02/06/11</entry>
+							<entry>1.1</entry>
+							<entry>November 2012</entry>
 						</row>
 					</tbody>
 				</tgroup></informaltable>
@@ -101,5 +107,8 @@
 
 <!-- Preferences and Settings Chapter -->
 <xi:include href="preferences/preferences.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Special Topics Chapter -->
+<xi:include href="topics/topics.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 </book>

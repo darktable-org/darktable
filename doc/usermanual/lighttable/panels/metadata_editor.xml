@@ -1,7 +1,7 @@
 		<sect2><title>Metadata editor</title>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth='70%'/>
-					<colspec colwidth='30%'/>
+					<colspec colwidth="6*"/>
+					<colspec colwidth="4*"/>
 					<tbody>
 						<row>						
 							<entry>Edit some metadata of your image. You can define your own presets if you want to apply specific settings frequently.
