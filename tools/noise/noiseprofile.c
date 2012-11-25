@@ -134,7 +134,7 @@ write_pfm(const char *filename, float *buf, int wd, int ht)
 #define MIN(a,b) ((a>b)?b:a)
 #define MAX(a,b) ((a>b)?a:b)
 
-#define N 300
+#define N 30
 
 static inline float
 clamp(float f, float m, float M)
@@ -163,32 +163,34 @@ int main(int argc, char *arg[])
   if(argc >= 9 && !strcmp(arg[2], "-c"))
   {
     const float a[3] = {atof(arg[3]), atof(arg[4]), atof(arg[5])}, b[3] = {atof(arg[6]), atof(arg[7]), atof(arg[8])};
-    const float m[3] = {
-      2.0f*sqrt(a[0]*1.0f+b[0])/a[0],
-      2.0f*sqrt(a[1]*1.0f+b[1])/a[1],
-      2.0f*sqrt(a[2]*1.0f+b[2])/a[2]};
+    // const float m[3] = {1, 1, 1};
+    //   2.0f*sqrt(a[0]*1.0f+b[0])/a[0],
+    //   2.0f*sqrt(a[1]*1.0f+b[1])/a[1],
+    //   2.0f*sqrt(a[2]*1.0f+b[2])/a[2]};
 #if 1
     // dump curves:
-    // TODO: make these stick at (0,0)!
     for(int k=0;k<N;k++)
     {
       for(int c=0;c<3;c++)
       {
-        const float y = k/(N-1.0f);
-        const float x = m[c]*m[c]*a[c]*y*y/4.0f - b[c]/a[c];
+        // const float y = k/(N-1.0f);
+        // const float x = m[c]*m[c]*a[c]*y*y/4.0f - b[c]/a[c];
+        float x = k/(N-1.0f)/a[c];
+        const float d = fmaxf(0.0f, x + 3./8. + (b[c]/a[c])*(b[c]/a[c]));
+        x = 2.0f*sqrtf(d);
         fprintf(stderr, "%f ", x);
       }
       fprintf(stderr, "\n");
     }
 #endif
-    // scale to maximum (1.0/max value of pow):
-    // const float m = fminf(fminf(a[0], a[1]), a[2]);
-    // (get rid of the analytical inverse and use the cdf directly)?
     for(int k=0;k<wd*ht;k++)
     {
       for(int c=0;c<3;c++)
       {
-        input[3*k+c] = 2.0f*sqrtf(a[c]*input[3*k+c]+b[c])/(a[c]*m[c]);
+        // input[3*k+c] = 2.0f*sqrtf(a[c]*input[3*k+c]+b[c])/(a[c]*m[c]);
+        input[3*k+c] = input[3*k+c] / a[c];
+        const float d = fmaxf(0.0f, input[3*k+c] + 3./8. + (b[c]/a[c])*(b[c]/a[c]));
+        input[3*k+c] = 2.0f*sqrtf(d);
       }
     }
   }

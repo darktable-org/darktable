@@ -72,9 +72,19 @@ void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_nlmeans_params_t p = (dt_iop_nlmeans_params_t)
   {
-    2.0f, 50.0f, {.02f, .02f, .02f}, {0.01f, 0.01f, 0.01f}
+    2.0f, 50.0f, {2.645e-06f, 2.645e-06f, 2.645e-06f}, {-1.69e-07f, -1.69e-07f, -1.69e-07f}
   };
-  dt_gui_presets_add_generic(_("canon eos 5dm2 iso 3200"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("canon eos 5dm2 iso 100"), self->op, self->version(), &p, sizeof(p), 1);
+  p = (dt_iop_nlmeans_params_t)
+  {
+    2.0f, 50.0f, {0.0003f, 0.0003f, 0.0003f}, {1.05e-5f, 1.05e-5f, 1.05e-5f}
+  };
+  dt_gui_presets_add_generic(_("canon eos 5dm2 iso 25600"), self->op, self->version(), &p, sizeof(p), 1);
+  p = (dt_iop_nlmeans_params_t)
+  {
+    2.0f, 50.0f, {0.01f, 0.01f, 0.01}, {0.0f, 0.0f, 0.0f}
+  };
+  dt_gui_presets_add_generic(_("generic poissonian"), self->op, self->version(), &p, sizeof(p), 1);
 }
 
 typedef union floatint_t
@@ -262,8 +272,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
             slide += s[P] - s[-P-1];
           if(i+ki >= 0 && i+ki < roi_out->width)
           {
+            // TODO: could put that outside the loop.
+            const float norm = 1.0f/(2*P+1);
             const __m128 iv = { ins[0], ins[1], ins[2], 1.0f };
-            _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(fast_mexp2f(slide-2.0f)));
+            _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(fast_mexp2f(fmaxf(0.0f, slide*norm-2.0f))));
           }
           s   ++;
           ins += 4;
@@ -374,7 +386,7 @@ void reload_defaults(dt_iop_module_t *module)
   // init defaults:
   dt_iop_nlmeans_params_t tmp = (dt_iop_nlmeans_params_t)
   {
-    2.0f, 50.0f, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}
+    2.0f, 50.0f, {.01f, .01f, .01f}, {0.0f, 0.0f, 0.0f}
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_nlmeans_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_nlmeans_params_t));
@@ -407,13 +419,13 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   memcpy(d, p, sizeof(*d));
 }
 
-void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_nlmeans_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
-void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
 }
@@ -427,6 +439,7 @@ radius_callback(GtkWidget *w, dt_iop_module_t *self)
   p->radius = (int)dt_bauhaus_slider_get(w);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
+
 static void
 strength_callback(GtkWidget *w, dt_iop_module_t *self)
 {
@@ -437,8 +450,7 @@ strength_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-/** gui callbacks, these are needed. */
-void gui_update    (dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   // let gui slider match current parameters:
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
@@ -447,13 +459,13 @@ void gui_update    (dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->strength, p->strength);
 }
 
-void gui_init     (dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
   self->gui_data = malloc(sizeof(dt_iop_nlmeans_gui_data_t));
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
-  g->radius   = dt_bauhaus_slider_new_with_range(self, 1.0f, 4.0f, 1., 2.f, 0);
+  g->radius   = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1., 2.f, 0);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 50.f, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
@@ -467,7 +479,7 @@ void gui_init     (dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->strength), "value-changed", G_CALLBACK (strength_callback), self);
 }
 
-void gui_cleanup  (dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   // nothing else necessary, gtk will clean up the slider.
   free(self->gui_data);
