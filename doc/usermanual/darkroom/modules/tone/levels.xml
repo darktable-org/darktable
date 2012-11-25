@@ -1,8 +1,8 @@
 <sect3 status="draft"><title>Levels</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>A level tool that most of you will recognize how to use from other imaging softwares.
@@ -17,16 +17,16 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>The levels tool shows the histogram of the image an displays three bars with handles for you to drag and correct
-		the tone in the image, bars represent black, middle gray and white.
+		<para>The levels tool shows the histogram of the image and displays three bars with handles for you to drag and correct
+		the tone in the image. Those bars represent black, middle gray and white.
 		</para>
 	</sect4>
 <!--	
 	<sect4><title>Examples</title>
 		<para>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth='30%'/>
-					<colspec colwidth='70%'/>
+					<colspec colwidth="4*"/>
+					<colspec colwidth="6*"/>
 					<tbody>
 						<row>
 							<entry>

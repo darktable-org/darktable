@@ -13,6 +13,7 @@
   <xi:include href="lowpass.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="lowlight.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="bloom.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="colorize.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="graduatedneutraldensity.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 </sect2>

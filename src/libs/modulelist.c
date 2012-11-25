@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2012 Tobias Ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -44,6 +45,8 @@ dt_lib_modulelist_t;
 static void _lib_modulelist_row_changed_callback(GtkTreeView *tree_view, gpointer     user_data);
 /* callback for iop modules loaded signal */
 static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_data);
+/* callback that makes sure that the tree is repopulated when the style changes */
+static void _lib_modulelist_style_set(GtkWidget *widget, GtkStyle *previous_style, gpointer user_data);
 /* force refresh of tree */
 static void _lib_modulelist_gui_update(struct dt_lib_module_t *);
 /* helper for sorting */
@@ -84,6 +87,8 @@ void gui_init(dt_lib_module_t *self)
 
   /* connect to signal for darktable.develop initialization */
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_INITIALIZE,G_CALLBACK(_lib_modulelist_populate_callback),self);
+  g_signal_connect(GTK_WIDGET(d->tree), "style-set", G_CALLBACK(_lib_modulelist_style_set), self);
+  g_signal_connect(GTK_WIDGET(d->tree), "cursor-changed", G_CALLBACK(_lib_modulelist_row_changed_callback), NULL);
 
   darktable.view_manager->proxy.more_module.module = self;
   darktable.view_manager->proxy.more_module.update = _lib_modulelist_gui_update;
@@ -143,20 +148,20 @@ static void text_renderer_function (GtkTreeViewColumn *col,
 static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  if(!self || !(self->data)) return;
 
   GtkListStore  *store;
   GtkTreeIter    iter;
   GtkWidget     *view=GTK_WIDGET(((dt_lib_modulelist_t*)self->data)->tree);
   GtkCellRenderer     *pix_renderer,*fav_renderer,*text_renderer;
   GtkStyle *style=gtk_widget_get_style(view);
-  
+
   store = gtk_list_store_new (NUM_COLS, GDK_TYPE_PIXBUF,  G_TYPE_POINTER);
   gtk_tree_view_set_model (GTK_TREE_VIEW(view), GTK_TREE_MODEL(store));
   g_object_unref (store);
 
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(store), COL_MODULE, _lib_modulelist_gui_sort, NULL, NULL);
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store), COL_MODULE, GTK_SORT_ASCENDING);
-
 
   pix_renderer = gtk_cell_renderer_pixbuf_new ();
   g_object_set(pix_renderer,"cell-background-gdk",&style->bg[GTK_STATE_ACTIVE],NULL);
@@ -180,30 +185,36 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(view),FALSE);
   GtkTreeSelection  *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_NONE);
-  g_signal_connect(view, "cursor-changed", G_CALLBACK(_lib_modulelist_row_changed_callback), NULL);
 
+  GtkTreeViewColumn *col;
+  col = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 0);
+  if(col) gtk_tree_view_remove_column(GTK_TREE_VIEW(view), col);
   gtk_tree_view_insert_column_with_data_func (GTK_TREE_VIEW (view),
-                                               -1,      
-                                               "favorite",  
+                                               0,
+                                               "favorite",
                                                fav_renderer,
                                                favorite_renderer_function,
                                                NULL,NULL);
+  col = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 1);
+  if(col) gtk_tree_view_remove_column(GTK_TREE_VIEW(view), col);
   gtk_tree_view_insert_column_with_data_func (GTK_TREE_VIEW (view),
-                                               -1,      
-                                               "image",  
+                                               1,
+                                               "image",
                                                pix_renderer,
                                                image_renderer_function,
                                                NULL,NULL);
+  col = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 2);
+  if(col) gtk_tree_view_remove_column(GTK_TREE_VIEW(view), col);
   gtk_tree_view_insert_column_with_data_func (GTK_TREE_VIEW (view),
-                                               -1,      
-                                               "name",  
+                                               2,
+                                               "name",
                                                text_renderer,
                                                text_renderer_function,
                                                NULL,NULL);
 
   /* go thru list of iop modules and add them to the list */
   GList *modules = g_list_last(darktable.develop->iop);
- 
+
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
@@ -230,6 +241,10 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
 
 }
 
+static void _lib_modulelist_style_set(GtkWidget *widget, GtkStyle *previous_style, gpointer user_data)
+{
+  _lib_modulelist_populate_callback(NULL, user_data);
+}
 
 static void _lib_modulelist_row_changed_callback(GtkTreeView *treeview, gpointer     user_data)
 {
@@ -258,7 +273,7 @@ static gint _lib_modulelist_gui_sort(GtkTreeModel *model, GtkTreeIter  *a, GtkTr
   dt_iop_module_t *modulea,*moduleb;
   gtk_tree_model_get(model, a, COL_MODULE, &modulea, -1);
   gtk_tree_model_get(model, b, COL_MODULE, &moduleb, -1);
-  return strcmp(modulea->name(),moduleb->name());
+  return g_utf8_collate(modulea->name(),moduleb->name());
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

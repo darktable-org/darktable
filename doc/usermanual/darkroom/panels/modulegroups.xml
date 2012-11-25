@@ -5,8 +5,8 @@
 		]>
 	<sect2 status="draft"><title>Modulegroups</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>
@@ -20,13 +20,13 @@
 			</tgroup>
 		</informaltable>
 		<para>
-		  Here follows descriptions of the module groups available:
+		  Here follows a description of the module groups available:
 		</para>
 		<para>
 		  <informaltable frame="none"><tgroup cols="3" colsep="0" rowsep="0">
-		    <colspec colwidth='20%'/>
-		    <colspec colwidth='20%'/>
-		    <colspec colwidth='60%'/>
+		    <colspec colwidth="2*"/>
+		    <colspec colwidth="2*"/>
+		    <colspec colwidth="6*"/>
 		    <tbody>
 		      <row><entry><graphic fileref="darkroom/images/darkroom_group_active.png" scalefit="1" width="20%" align="center" /></entry>
                            <entry>Active</entry>

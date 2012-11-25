@@ -131,6 +131,8 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t * lib, const gch
     if( (value=dt_camctl_camera_property_get_first_choice(darktable.camctl,NULL,propertyname)) != NULL )
     {
       // We got a value for property lets construct the gui for the property and add values
+      int i=0;
+      const char *current_value = dt_camctl_camera_get_property(darktable.camctl, NULL, propertyname);
       dt_lib_camera_property_t *prop = malloc(sizeof(dt_lib_camera_property_t));
       memset(prop,0,sizeof(dt_lib_camera_property_t));
       prop->name=label;
@@ -144,6 +146,9 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t * lib, const gch
       do
       {
         gtk_combo_box_append_text(prop->values, g_dgettext("libgphoto2-2", value));
+        if(!strcmp(current_value, g_dgettext("libgphoto2-2", value)))
+          gtk_combo_box_set_active(prop->values, i);
+        i++;
       }
       while( (value=dt_camctl_camera_property_get_next_choice(darktable.camctl,NULL,propertyname)) != NULL );
       lib->gui.properties=g_list_append(lib->gui.properties,prop);

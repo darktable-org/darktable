@@ -350,8 +350,8 @@
     <Sensor black="1025" white="8150" iso_min="12800" iso_max="12800"/>
     <Sensor black="2050" white="16300"/>
 	<BlackAreas>
-		<Vertical x="0" width="156"/>
-		<Horizontal y="2" height="48"/>
+		<Vertical x="8" width="156"/>
+		<Horizontal y="32" height="18"/>
 	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon EOS 7D" mode="sRaw1">

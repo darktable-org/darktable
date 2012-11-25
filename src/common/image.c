@@ -431,6 +431,11 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
     g_free(imgfname);
     sqlite3_finalize(stmt);
     g_free(ext);
+    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, id);
+    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+    img->flags &= ~DT_IMAGE_REMOVE;
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_read_release(darktable.image_cache, img);
     return id;
   }
   sqlite3_finalize(stmt);

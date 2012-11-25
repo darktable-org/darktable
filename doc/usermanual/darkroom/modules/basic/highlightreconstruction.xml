@@ -1,8 +1,8 @@
 <sect3 status="draft"><title>Highlight reconstruction</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>This module tries to reconstruct color information that is usually clipped 
@@ -20,12 +20,13 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>You can choose between two methods: clipping highlight or blending LCh.</para>
-		<sect5><title>Clipping highlight</title>
-			<para>Clipping highlight analyses each pixel having at least one channel clipped. Then it sets all channels to the minium value found among the channels.</para>
+		<sect5><title>method</title>
+			<para>You can choose between two methods: clipping highlight or reconstructing in LCh.
+			      Clipping highlight analyses each pixel having at least one channel clipped. Then it sets all channels to the minium value found among the channels.
+			      Reconstruct in LCh analyses each pixel having at least one channel clipped and transforms the information in LCh color space to linearly mix the channels.</para>
 		</sect5>
-		<sect5><title>Blending LCh</title>
-			<para>Blending LCh analyses each pixel having at least one channel clipped and transforms the information in LCh color space to linearly mix the channels.</para>
+		<sect5><title>clipping threshold</title>
+                       <para>Manually adjust the clipping threshold against magenta highlights. It's normally not needed to touch this.</para>
 		</sect5>
 	</sect4>
 </sect3>

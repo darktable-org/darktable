@@ -58,6 +58,8 @@ static guint _signals[LAST_SIGNAL] = { 0 };
 
 static gboolean _gradient_slider_postponed_value_change(gpointer data)
 {
+  if(!GTK_IS_WIDGET(data)) return 0;
+
   gdk_threads_enter();
 
   if(DTGTK_GRADIENT_SLIDER(data)->is_changed==TRUE)
@@ -202,7 +204,7 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
       gslider->is_dragging = TRUE;
       // timeout_handle should always be zero here, but check just in case
       int delay = CLAMP_RANGE(darktable.develop->average_delay*3/2, DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MIN, DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MAX);
-      if(!gslider->timeout_handle);
+      if(!gslider->timeout_handle)
         gslider->timeout_handle = g_timeout_add(delay, _gradient_slider_postponed_value_change, widget);
     }
     else if (gslider->positions > 1) // right mouse button: switch on/off selection (only if we have more than one marker)
@@ -230,10 +232,10 @@ static gboolean _gradient_slider_motion_notify(GtkWidget *widget, GdkEventMotion
 {
   GtkDarktableGradientSlider *gslider=DTGTK_GRADIENT_SLIDER(widget);
 
-  assert(gslider->timeout_handle > 0);
-
   if( gslider->is_dragging==TRUE && gslider->selected != -1 && gslider->do_reset==FALSE )
   {
+    assert(gslider->timeout_handle > 0);
+
     gdouble newposition = roundf(_screen_to_scale(widget, event->x)/gslider->increment)*gslider->increment;
 
     newposition = CLAMP_RANGE(newposition, 0.0, 1.0);

@@ -235,7 +235,7 @@ msgstr "memoria en bytes para usar en la cache mipmap"
 
 #: ../build/src/preferences_gen.h:1369
 msgid " (needs a restart) "
-msgstr " (necesita reiniciarse)"
+msgstr " (necesita reiniciarse) "
 
 #: ../build/src/preferences_gen.h:1376
 msgid "number of background threads"
@@ -495,7 +495,7 @@ msgstr ""
 
 #: ../src/common/darktable.c:210
 msgid "SIMD extensions found: "
-msgstr "se encontraron extensiones SIMD:"
+msgstr "se encontraron extensiones SIMD: "
 
 #: ../src/common/darktable.c:226
 #, c-format
@@ -904,27 +904,27 @@ msgstr "deslizador para canal de matiz (de LCh)"
 
 #: ../src/develop/blend_gui.c:662
 msgid " g "
-msgstr "g"
+msgstr " g "
 
 #: ../src/develop/blend_gui.c:662
 msgid " R "
-msgstr "R"
+msgstr " R "
 
 #: ../src/develop/blend_gui.c:662
 msgid " G "
-msgstr "G"
+msgstr " G "
 
 #: ../src/develop/blend_gui.c:662
 msgid " B "
-msgstr "B"
+msgstr " B "
 
 #: ../src/develop/blend_gui.c:662
 msgid " H "
-msgstr "H"
+msgstr " H "
 
 #: ../src/develop/blend_gui.c:662
 msgid " S "
-msgstr "S"
+msgstr " S "
 
 #: ../src/develop/blend_gui.c:662
 msgid " L "
@@ -1948,7 +1948,7 @@ msgstr "crea un duplicado del estulo antes de aplicar los cambios"
 
 #: ../src/gui/styles_dialog.c:192
 msgid "create new style"
-msgstr "crear estilo nuevo "
+msgstr "crear estilo nuevo"
 
 #: ../src/gui/styles_dialog.c:213
 msgid "enter a name for the new style"
@@ -2490,7 +2490,7 @@ msgstr "similar a canon eos"
 
 #: ../src/iop/basecurve.c:100
 msgid "canon eos like alternate"
-msgstr "similar a canon eos "
+msgstr "similar a canon eos"
 
 #: ../src/iop/basecurve.c:101
 msgid "nikon like"
@@ -2498,7 +2498,7 @@ msgstr "similar a nikon"
 
 #: ../src/iop/basecurve.c:102
 msgid "nikon like alternate"
-msgstr "similar a nikon "
+msgstr "similar a nikon"
 
 #: ../src/iop/basecurve.c:103
 msgid "sony alpha like"
@@ -2518,7 +2518,7 @@ msgstr "similar a olympus"
 
 #: ../src/iop/basecurve.c:107
 msgid "olympus like alternate"
-msgstr "similar a olympus "
+msgstr "similar a olympus"
 
 #: ../src/iop/basecurve.c:108
 msgid "panasonic like"
@@ -2663,7 +2663,7 @@ msgstr "fuerza"
 
 #: ../src/iop/bloom.c:348
 msgid "the strength of bloom"
-msgstr "fuerza del resplandor "
+msgstr "fuerza del resplandor"
 
 #: ../src/iop/borders.c:136
 msgid "framing"
@@ -2757,7 +2757,7 @@ msgstr "borde constante"
 
 #: ../src/iop/borders.c:929 ../src/iop/borders.c:934
 msgid "center"
-msgstr "centro "
+msgstr "centro"
 
 #: ../src/iop/borders.c:930 ../src/iop/borders.c:935
 msgid "1/3"
@@ -2926,7 +2926,7 @@ msgstr "intercambiar G y B"
 
 #: ../src/iop/channelmixer.c:495
 msgid "color contrast boost"
-msgstr "incremento de contraste "
+msgstr "incremento de contraste"
 
 #: ../src/iop/channelmixer.c:501
 msgid "color details boost"
@@ -3093,7 +3093,7 @@ msgstr "secciones áureas"
 
 #: ../src/iop/clipping.c:1107 ../src/libs/live_view.c:346
 msgid "golden spiral sections"
-msgstr "secciones espirales "
+msgstr "secciones espirales"
 
 #: ../src/iop/clipping.c:1108 ../src/libs/live_view.c:347
 msgid "golden spiral"
@@ -3131,7 +3131,7 @@ msgstr "trapezoide v"
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/colorcontrast.c:87
 msgid "color contrast"
-msgstr "contraste de color "
+msgstr "contraste de color"
 
 #: ../src/iop/colorcontrast.c:107
 msgctxt "accel"
@@ -3765,7 +3765,7 @@ msgstr "densidad"
 
 #: ../src/iop/graduatednd.c:681
 msgid "the density in ev for the filter"
-msgstr "la densidad en EV para el filtro "
+msgstr "la densidad en EV para el filtro"
 
 #: ../src/iop/graduatednd.c:688
 msgid "compression"
@@ -4121,7 +4121,7 @@ msgstr "aberraciónes cromáticas trasversal roja"
 
 #: ../src/iop/lens.c:1781
 msgid "tca red"
-msgstr "tca rojo "
+msgstr "tca rojo"
 
 #: ../src/iop/lens.c:1786
 msgid "transversal chromatic aberration blue"
@@ -4133,7 +4133,7 @@ msgstr "tca azul"
 
 #: ../src/iop/lens.c:1794
 msgid "corrections done: "
-msgstr "correcciónes realizadas:"
+msgstr "correcciónes realizadas: "
 
 #: ../src/iop/lens.c:1795
 msgid "which corrections have actually been done"
@@ -4262,7 +4262,7 @@ msgstr "gausiano"
 
 #: ../src/iop/lowpass.c:505 ../src/iop/shadhi.c:621
 msgid "bilateral filter"
-msgstr "reducción de ruido (filtro bilateral) "
+msgstr "reducción de ruido (filtro bilateral)"
 
 #: ../src/iop/lowpass.c:511
 msgid "radius of gaussian/bilateral blur"
@@ -4359,7 +4359,7 @@ msgstr "esquema de color"
 
 #: ../src/iop/overexposed.c:421
 msgid "black & white"
-msgstr "blanco y negro "
+msgstr "blanco y negro"
 
 #: ../src/iop/overexposed.c:422
 msgid "red & blue"
@@ -4508,7 +4508,7 @@ msgstr "ajuste de sombras de color"
 
 #: ../src/iop/shadhi.c:631
 msgid "highlights color adjustment"
-msgstr "reconstrucción de luces "
+msgstr "reconstrucción de luces"
 
 #: ../src/iop/shadhi.c:647
 msgid "correct shadows"
@@ -4781,7 +4781,7 @@ msgstr "alto contraste"
 
 #: ../src/iop/tonecurve.c:487
 msgid "  L  "
-msgstr "  L"
+msgstr "  L  "
 
 #: ../src/iop/tonecurve.c:488
 msgid "tonecurve for L channel"
@@ -4789,7 +4789,7 @@ msgstr "curva para el canal L"
 
 #: ../src/iop/tonecurve.c:489
 msgid "  a  "
-msgstr "  a"
+msgstr "  a  "
 
 #: ../src/iop/tonecurve.c:490
 msgid "tonecurve for a channel"
@@ -4797,7 +4797,7 @@ msgstr "curva para el canal a"
 
 #: ../src/iop/tonecurve.c:491
 msgid "  b  "
-msgstr "  b"
+msgstr "  b  "
 
 #: ../src/iop/tonecurve.c:492
 msgid "tonecurve for b channel"
@@ -5371,7 +5371,7 @@ msgstr "cambiar a: y"
 
 #: ../src/libs/collect.c:1633
 msgid "change to: or"
-msgstr "cambiar a: "
+msgstr "cambiar a: o"
 
 #: ../src/libs/collect.c:1637
 msgid "change to: except"
@@ -5615,7 +5615,7 @@ msgid ""
 "set to 0 for no scaling"
 msgstr ""
 "máximo ancho de salida\n"
-"0 para no escalar "
+"0 para no escalar"
 
 #: ../src/libs/export.c:433
 msgid ""
@@ -5905,7 +5905,7 @@ msgstr "restablecer rotación con los datos exif"
 
 #: ../src/libs/image.c:205
 msgid "group"
-msgstr "grupo "
+msgstr "grupo"
 
 #: ../src/libs/image.c:207
 msgid "add selected images to expanded group or create a new one"
@@ -5914,7 +5914,7 @@ msgstr ""
 
 #: ../src/libs/image.c:211
 msgid "ungroup"
-msgstr "desagrupar "
+msgstr "desagrupar"
 
 #: ../src/libs/image.c:213
 msgid "remove selected images from the group"
@@ -6171,7 +6171,7 @@ msgstr "introduzca el id de la imagen para solapar manualmente"
 
 #: ../src/libs/live_view.c:376
 msgid "overlay mode"
-msgstr "solapar "
+msgstr "solapar"
 
 #: ../src/libs/live_view.c:378
 msgid "xor"
@@ -6183,11 +6183,11 @@ msgstr "agregar"
 
 #: ../src/libs/live_view.c:380
 msgid "saturate"
-msgstr "saturación "
+msgstr "saturación"
 
 #: ../src/libs/live_view.c:387
 msgid "color dodge"
-msgstr "zonas de color "
+msgstr "zonas de color"
 
 #: ../src/libs/live_view.c:388
 msgid "color burn"
@@ -6195,11 +6195,11 @@ msgstr "quemado"
 
 #: ../src/libs/live_view.c:389
 msgid "hard light"
-msgstr "luz fuerte "
+msgstr "luz fuerte"
 
 #: ../src/libs/live_view.c:390
 msgid "soft light"
-msgstr "luz suave "
+msgstr "luz suave"
 
 #: ../src/libs/live_view.c:392
 msgid "exclusion"
@@ -6442,18 +6442,18 @@ msgstr "colecciones recientes"
 #: ../src/libs/recentcollect.c:149
 #, c-format
 msgid " and "
-msgstr "y"
+msgstr " y "
 
 #: ../src/libs/recentcollect.c:152
 #, c-format
 msgid " or "
-msgstr "o"
+msgstr " o "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
 #: ../src/libs/recentcollect.c:155
 #, c-format
 msgid " but not "
-msgstr "pero no"
+msgstr " pero no "
 
 #: ../src/libs/select.c:36
 msgid "select"
@@ -6689,7 +6689,7 @@ msgstr "nueva"
 #: ../src/libs/tagging.c:82
 msgctxt "accel"
 msgid "tag"
-msgstr "etiqueta "
+msgstr "etiqueta"
 
 #: ../src/libs/tagging.c:314
 #, c-format
@@ -6942,7 +6942,7 @@ msgstr "vista"
 
 #: ../src/libs/tools/filter.c:102
 msgid "unstarred only"
-msgstr "sin estrellas "
+msgstr "sin estrellas"
 
 #: ../src/libs/tools/filter.c:108
 msgid "rejected only"
@@ -7121,7 +7121,7 @@ msgstr "no hay imagenes en esta colección"
 
 #: ../src/views/lighttable.c:276
 msgid "if you have not imported any images yet"
-msgstr "si no ha importado ninguna imagen aún "
+msgstr "si no ha importado ninguna imagen aún"
 
 #: ../src/views/lighttable.c:278
 msgid "you can do so in the import module"
@@ -7215,19 +7215,19 @@ msgstr "mapa"
 #~ msgstr "factor exponencial gamma"
 
 #~ msgid " green "
-#~ msgstr "verde"
+#~ msgstr " verde "
 
 #~ msgid " blue "
-#~ msgstr "azul"
+#~ msgstr " azul "
 
 #~ msgid " hue "
-#~ msgstr "tono (h)"
+#~ msgstr " tono (h) "
 
 #~ msgid " chroma "
-#~ msgstr "croma"
+#~ msgstr " croma "
 
 #~ msgid " value "
-#~ msgstr "valor"
+#~ msgstr " valor "
 
 #~ msgid "colorblend"
 #~ msgstr "colorblend"
