@@ -23,6 +23,7 @@
 #include "bauhaus/bauhaus.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
+#include "gui/presets.h"
 #include "gui/gtk.h"
 #include "common/opencl.h"
 #include <gtk/gtk.h>
@@ -67,6 +68,15 @@ flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
+void init_presets (dt_iop_module_so_t *self)
+{
+  dt_iop_nlmeans_params_t p = (dt_iop_nlmeans_params_t)
+  {
+    2.0f, 50.0f, {.02f, .02f, .02f}, {0.01f, 0.01f, 0.01f}
+  };
+  dt_gui_presets_add_generic(_("canon eos 5dm2 iso 3200"), self->op, self->version(), &p, sizeof(p), 1);
+}
+
 typedef union floatint_t
 {
   float f;
@@ -103,11 +113,12 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
 
 static inline void
 precondition(
-    float *const buf
-    const int wd
-    const int ht
-    float a[3],
-    float b[3])
+    const float *const in,
+    float *const buf,
+    const int wd,
+    const int ht,
+    const float a[3],
+    const float b[3])
 {
   const float sigma2[3] = {
     (b[0]/a[0])*(b[0]/a[0]),
@@ -115,31 +126,33 @@ precondition(
     (b[2]/a[1])*(b[2]/a[1])};
 
 #ifdef _OPENMP
-#  pragma omp parallel for schedule(static) default(none)
+#  pragma omp parallel for schedule(static) default(none) shared(a)
 #endif
   for(int j=0; j<ht; j++)
   {
     float *buf2 = buf + 4*j*wd;
+    const float *in2 = in + 4*j*wd;
     for(int i=0;i<wd;i++)
     {
       for(int c=0;c<3;c++)
       {
-        buf2[c] /= a[c];
+        buf2[c] = in2[c] / a[c];
         const float d = fmaxf(0.0f, buf2[c] + 3./8. + sigma2[c]);
         buf2[c] = 2.0f*sqrtf(d);
       }
       buf2 += 4;
+      in2 += 4;
     }
   }
 }
 
 static inline void
 backtransform(
-    float *const buf
-    const int wd
-    const int ht
-    float a[3],
-    float b[3])
+    float *const buf,
+    const int wd,
+    const int ht,
+    const float a[3],
+    const float b[3])
 {
   const float sigma2[3] = {
     (b[0]/a[0])*(b[0]/a[0]),
@@ -147,7 +160,7 @@ backtransform(
     (b[2]/a[1])*(b[2]/a[1])};
 
 #ifdef _OPENMP
-#  pragma omp parallel for schedule(static) default(none)
+#  pragma omp parallel for schedule(static) default(none) shared(a)
 #endif
   for(int j=0; j<ht; j++)
   {
@@ -156,8 +169,9 @@ backtransform(
     {
       for(int c=0;c<3;c++)
       {
-        const float x = buf[c];
+        const float x = buf2[c];
         buf2[c] = 1./4.*x*x + 1./4.*sqrtf(3./2.)/x - 11./8.*1.0/(x*x) + 5./8.*sqrtf(3./2.)*1.0/(x*x*x) - 1./8. - sigma2[c];
+        buf2[c] *= a[c];
       }
       buf2 += 4;
     }
@@ -183,7 +197,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   memset(ovoid, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
   float *in = dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
   
-  precondition(in, roi_in->width, roi_in->height, d->a, d->b);
+  const float aa[3] = {
+    d->a[0]*piece->pipe->processed_maximum[0],
+    d->a[1]*piece->pipe->processed_maximum[1],
+    d->a[2]*piece->pipe->processed_maximum[2]};
+  precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, d->b);
 
   // for each shift vector
   for(int kj=-K; kj<=K; kj++)
@@ -197,13 +215,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else we will add up errors)
       // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more memory
 #ifdef _OPENMP
-#  pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, roi_out, roi_in, ivoid, ovoid, Sa)
+#  pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, roi_out, roi_in, in, ovoid, Sa)
 #endif
       for(int j=0; j<roi_out->height; j++)
       {
         if(j+kj < 0 || j+kj >= roi_out->height) continue;
         float *S = Sa + dt_get_thread_num() * roi_out->width;
-        const float *ins = ((float *)ivoid) + 4*(roi_in->width *(j+kj) + ki);
+        const float *ins = in + 4*(roi_in->width *(j+kj) + ki);
         float *out = ((float *)ovoid) + 4*roi_out->width*j;
 
         const int Pm = MIN(MIN(P, j+kj), j);
@@ -218,8 +236,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
           {
             int i = MAX(0, -ki);
             float *s = S + i;
-            const float *inp  = ((float *)ivoid) + 4*i + 4* roi_in->width *(j+jj);
-            const float *inps = ((float *)ivoid) + 4*i + 4*(roi_in->width *(j+jj+kj) + ki);
+            const float *inp  = in + 4*i + 4* roi_in->width *(j+jj);
+            const float *inps = in + 4*i + 4*(roi_in->width *(j+jj+kj) + ki);
             const int last = roi_out->width + MIN(0, -ki);
             for(; i<last; i++, inp+=4, inps+=4, s++)
             {
@@ -245,7 +263,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
           if(i+ki >= 0 && i+ki < roi_out->width)
           {
             const __m128 iv = { ins[0], ins[1], ins[2], 1.0f };
-            _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(fast_mexp2f(slide-2var)));
+            _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(fast_mexp2f(slide-2.0f)));
           }
           s   ++;
           ins += 4;
@@ -256,10 +274,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
           // sliding window in j direction:
           int i = MAX(0, -ki);
           float *s = S + i;
-          const float *inp  = ((float *)ivoid) + 4*i + 4* roi_in->width *(j+P+1);
-          const float *inps = ((float *)ivoid) + 4*i + 4*(roi_in->width *(j+P+1+kj) + ki);
-          const float *inm  = ((float *)ivoid) + 4*i + 4* roi_in->width *(j-P);
-          const float *inms = ((float *)ivoid) + 4*i + 4*(roi_in->width *(j-P+kj) + ki);
+          const float *inp  = in + 4*i + 4* roi_in->width *(j+P+1);
+          const float *inps = in + 4*i + 4*(roi_in->width *(j+P+1+kj) + ki);
+          const float *inm  = in + 4*i + 4* roi_in->width *(j-P);
+          const float *inms = in + 4*i + 4*(roi_in->width *(j-P+kj) + ki);
           const int last = roi_out->width + MIN(0, -ki);
           for(; ((unsigned long)s & 0xf) != 0 && i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
           {
@@ -328,7 +346,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   }
   // normalize
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(ovoid,ivoid,roi_out,d)
+  #pragma omp parallel for default(none) schedule(static) shared(ovoid,roi_out,d)
 #endif
   for(int j=0; j<roi_out->height; j++)
   {
@@ -342,7 +360,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   // free shared tmp memory:
   free(Sa);
   free(in);
-  backtransform(out, roi_in->width, roi_in->height, d->a, d->b);
+  backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, d->b);
 
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
