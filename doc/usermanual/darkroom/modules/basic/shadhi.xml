@@ -60,4 +60,44 @@
             your specific image; but be aware that sometimes results still might not be fully satisfying.</para>
     </sect5>
   </sect4>
+
+  <sect4><title>Examples</title>
+	<para>
+        	<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+			<colspec colwidth="4*"/>
+			<colspec colwidth="6*"/>
+			<tbody>
+				<row>
+					<entry>
+						<graphic fileref="darkroom/modules/images/shadhi_ex1.png" scalefit="1" width="90%" align="center" />
+					</entry>						
+					<entry>
+						<para>Original image exposed for the outer sunlit wall to avoid clipped highlights. As a consequence 
+                                                      the interior of the barn has pitch black shadows.</para>
+                                        </entry>
+				</row>
+				<row>
+					<entry>
+						<graphic fileref="darkroom/modules/images/shadhi_ex2.png" scalefit="1" width="90%" align="center" />
+					</entry>						
+					<entry>
+						<para>Shadows get lightened; highlights are untouched; overall effect
+                                                      toned down a bit by blend mode "normal" and an opacity of 65%.</para>
+					</entry>
+				</row>
+				<row>
+					<entry>
+						<graphic fileref="darkroom/modules/images/shadhi_ex3.png" scalefit="1" width="90%" align="center" />
+					</entry>						
+					<entry>
+						<para>Resulting image.
+						</para>
+					</entry>
+				</row>
+			</tbody>
+			</tgroup>
+		</informaltable>
+	</para>	
+  </sect4>
+
 </sect3>
