@@ -1049,9 +1049,170 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/anlfyeni/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/anlfyeni/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/atrous/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/atrous/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/basecurve/visible</name>
+    <type>bool</type>
+    <default>TRUE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/basecurve/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/bilat/visible</name>
+    <type>bool</type>
+    <default>TRUE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/bilat/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/bilateral/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/bilateral/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/bloom/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/bloom/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/borders/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/borders/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/cacorrect/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/cacorrect/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/channelmixer/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/channelmixer/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/clahe/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/clahe/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/clipping/visible</name>
     <type>bool</type>
     <default>TRUE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/clipping/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/colorcontrast/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/colorcontrast/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -1063,9 +1224,37 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/colorcorrection/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/colorin/visible</name>
     <type>bool</type>
     <default>TRUE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/colorin/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/colorize/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/colorize/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -1077,21 +1266,77 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/monochrome/visible</name>
+    <name>plugins/darkroom/colorout/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/colortransfer/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/colortransfer/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/colorzones/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/colorzones/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/demosaic/visible</name>
     <type>bool</type>
     <default>TRUE</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/atrous/visible</name>
+    <name>plugins/darkroom/demosaic/expanded</name>
     <type>bool</type>
-    <default>TRUE</default>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/densitycurve/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/densitycurve/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/equalizer/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/equalizer/expanded</name>
     <type>bool</type>
     <default>FALSE</default>
     <shortdescription/>
@@ -1105,7 +1350,133 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/exposure/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/flip/visible</name>
+    <type>bool</type>
+    <default>TRUE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/flip/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/gamma/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/gamma/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/globaltonemap/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/globaltonemap/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/graduatednd/visible</name>
+    <type>bool</type>
+    <default>TRUE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/graduatednd/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/grain/visible</name>
+    <type>bool</type>
+    <default>TRUE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/grain/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/highlights/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/highlights/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/highpass/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/highpass/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/hotpixels/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/hotpixels/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/invert/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/invert/expanded</name>
     <type>bool</type>
     <default>FALSE</default>
     <shortdescription/>
@@ -1119,65 +1490,9 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/sharpen/visible</name>
+    <name>plugins/darkroom/lens/expanded</name>
     <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/temperature/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/tonecurve/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/basecurve/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/colorzones/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/grain/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/borders/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/velvia/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/soften/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
+    <default>FALSE</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -1189,121 +1504,121 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/zonesystem/visible</name>
+    <name>plugins/darkroom/levels/expanded</name>
     <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/nlmeans/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/graduatednd/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/watermark/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/cacorrect/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/rawdenoise/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/hotpixels/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/demosaic/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/highlights/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/tonemap/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/spots/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/bilateral/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/bloom/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/colortransfer/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/colorize/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/vibrance/visible</name>
-    <type>bool</type>
-    <default>TRUE</default>
+    <default>FALSE</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/lowlight/visible</name>
     <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/lowlight/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/lowpass/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/lowpass/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/monochrome/visible</name>
+    <type>bool</type>
     <default>TRUE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/monochrome/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/nlmeans/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/nlmeans/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/overexposed/visible</name>
+    <type>bool</type>
+    <default>TRUE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/overexposed/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/profile_gamma/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/profile_gamma/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/rawdenoise/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/rawdenoise/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/relight/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/relight/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -1315,37 +1630,149 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/lowpass/visible</name>
+    <name>plugins/darkroom/shadhi/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/sharpen/visible</name>
     <type>bool</type>
     <default>TRUE</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/relight/visible</name>
+    <name>plugins/darkroom/sharpen/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/shrecovery/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/shrecovery/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/soften/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/soften/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/splittoning/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/splittoning/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spots/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spots/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/temperature/visible</name>
     <type>bool</type>
     <default>TRUE</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/highpass/visible</name>
+    <name>plugins/darkroom/temperature/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/tonecurve/visible</name>
     <type>bool</type>
     <default>TRUE</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/colorcontrast/visible</name>
+    <name>plugins/darkroom/tonecurve/expanded</name>
     <type>bool</type>
-    <default>TRUE</default>
+    <default>FALSE</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/channelmixer/visible</name>
+    <name>plugins/darkroom/tonemap/visible</name>
     <type>bool</type>
-    <default>TRUE</default>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/tonemap/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/velvia/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/velvia/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/vibrance/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/vibrance/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -1357,16 +1784,37 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/splittoning/visible</name>
+    <name>plugins/darkroom/vignette/expanded</name>
     <type>bool</type>
-    <default>TRUE</default>
+    <default>FALSE</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/clipping/expanded</name>
+    <name>plugins/darkroom/watermark/visible</name>
     <type>bool</type>
-    <default>TRUE</default>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/watermark/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/zonesystem/visible</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/zonesystem/expanded</name>
+    <type>bool</type>
+    <default>FALSE</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -1382,111 +1830,6 @@
     <type>int</type>
     <default>1</default>
     <shortdescription>last chosen aspect ratio preset</shortdescription>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/colorcorrection/expanded</name>
-    <type>bool</type>
-    <default>FALSE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/colorin/expanded</name>
-    <type>bool</type>
-    <default>FALSE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/colorout/expanded</name>
-    <type>bool</type>
-    <default>FALSE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/atrous/expanded</name>
-    <type>bool</type>
-    <default>FALSE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/equalizer/expanded</name>
-    <type>bool</type>
-    <default>FALSE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/exposure/expanded</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/gamma/expanded</name>
-    <type>bool</type>
-    <default>FALSE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/lens/expanded</name>
-    <type>bool</type>
-    <default>FALSE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/monochrome/expanded</name>
-    <type>bool</type>
-    <default>FALSE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/rawimport/expanded</name>
-    <type>bool</type>
-    <default>FALSE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/colorzones/expanded</name>
-    <type>bool</type>
-    <default>FALSE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/sharpen/expanded</name>
-    <type>bool</type>
-    <default>FALSE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/temperature/expanded</name>
-    <type>bool</type>
-    <default>FALSE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/tonecurve/expanded</name>
-    <type>bool</type>
-    <default>FALSE</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/basecurve/expanded</name>
-    <type>bool</type>
-    <default>FALSE</default>
-    <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
