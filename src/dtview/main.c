@@ -222,6 +222,8 @@ write_image (dt_imageio_module_data_t *data, const char *filename, const void *i
     out += 4*width;
     rd  += 4*data->width;
   }
+
+  return 0;
 }
 
 uint32_t next_random()

@@ -118,7 +118,7 @@ void RawImageDataU16::calculateBlackAreas() {
 void RawImageDataU16::scaleBlackWhite() {
   const int skipBorder = 250;
   int gw = (dim.x - skipBorder) * cpp;
-  if ((blackAreas.empty() && blackLevelSeparate[0] < 0 && blackLevel < 0) || whitePoint == 65536) {  // Estimate
+  if ((blackAreas.empty() && blackLevelSeparate[0] < 0 && blackLevel < 0) || whitePoint >= 65536) {  // Estimate
     int b = 65536;
     int m = 0;
     for (int row = skipBorder*cpp;row < (dim.y - skipBorder);row++) {
@@ -131,7 +131,7 @@ void RawImageDataU16::scaleBlackWhite() {
     }
     if (blackLevel < 0)
       blackLevel = b;
-    if (whitePoint == 65536)
+    if (whitePoint >= 65536)
       whitePoint = m;
     printf("ISO:%d, Estimated black:%d, Estimated white: %d\n", isoSpeed, blackLevel, whitePoint);
   }
@@ -144,7 +144,8 @@ void RawImageDataU16::scaleBlackWhite() {
   if (blackLevelSeparate[0] < 0)
     calculateBlackAreas();
 
-  //printf("ISO:%d, black:%d, white: %d\n", isoSpeed, blackLevelSeparate[0], whitePoint);
+//  printf("ISO:%d, black[0]:%d, white: %d\n", isoSpeed, blackLevelSeparate[0], whitePoint);
+//  printf("black[1]:%d, black[2]:%d, black[3]:%d\n", blackLevelSeparate[1], blackLevelSeparate[2], blackLevelSeparate[3]);
 
   int threads = getThreadCount(); 
   if (threads <= 1)

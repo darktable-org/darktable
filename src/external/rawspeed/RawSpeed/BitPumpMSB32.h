@@ -64,6 +64,16 @@ void fill();
     return (uint32)((mCurr >> (mLeft -= (nbits))) & ((1 << nbits) - 1));
   }
 
+  __inline void skipBits(unsigned int nbits) {
+    while (nbits) {
+      fill();
+      checkPos();
+      int n = MIN(nbits, mLeft);
+      mLeft -= n;
+      nbits -= n;
+    }
+  }
+
   virtual ~BitPumpMSB32(void);
 protected:
   void __inline init();

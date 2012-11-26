@@ -1131,20 +1131,20 @@ dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
   else
   {
     // regular baseline
-    set_grid_color(cr, .9f);
+    set_grid_color(cr, 0);
   }
 
   cairo_rectangle(cr, 2, htm, wd-4-ht-2, htM);
   cairo_fill(cr);
 
   // have a `fill ratio feel'
-  set_indicator_color(cr, .95f);
+  set_indicator_color(cr, 0);
   cairo_rectangle(cr, 2, htm, d->pos*(wd-4-ht-2), htM);
   cairo_fill(cr);
 
   cairo_rectangle(cr, 2, htm, wd-4-ht-2, htM);
   cairo_set_line_width(cr, 1.);
-  set_grid_color(cr, 1.);
+  set_grid_color(cr, 1);
   cairo_stroke(cr);
 
   cairo_restore(cr);
@@ -1266,13 +1266,13 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   {
     // separate more clearly (looks terrible in a way but might help separate text
     // from other widgets above and below)
-    cairo_move_to(cr, 1.0, 1.0);
-    cairo_line_to(cr, 1.0, height-1.0);
+    cairo_move_to(cr, 1.0, height-1.0);
     cairo_line_to(cr, width-1.0, height-1.0);
     cairo_line_to(cr, width-1.0, 1.0);
     cairo_stroke(cr);
-    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.3);
-    cairo_move_to(cr, 1.0, 1.0);
+    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.4);
+    cairo_move_to(cr, 1.0, height-1.0);
+    cairo_line_to(cr, 1.0, 1.0);
     cairo_line_to(cr, width-1.0, 1.0);
     cairo_stroke(cr);
   }
@@ -1690,9 +1690,11 @@ dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
 static gboolean
 dt_bauhaus_slider_postponed_value_change(gpointer data)
 {
+  if(!GTK_IS_WIDGET(data)) return 0;
+
   gdk_threads_enter();
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)data;
-  dt_bauhaus_slider_data_t *d = &w->data.slider;  
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
   if(d->is_changed)
   {
     g_signal_emit_by_name(G_OBJECT(w),"value-changed");

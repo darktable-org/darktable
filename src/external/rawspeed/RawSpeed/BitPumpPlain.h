@@ -33,15 +33,15 @@ class BitPumpPlain
 public:
   BitPumpPlain(ByteStream *s);
   BitPumpPlain(const uchar8* _buffer, uint32 _size );
-	uint32 getBits(uint32 nbits);
-	uint32 getBit();
+	uint32 getBits(uint32 nbits) throw ();
+	uint32 getBit() throw ();
 	uint32 getBitsSafe(uint32 nbits);
 	uint32 getBitSafe();
-	uint32 peekBits(uint32 nbits);
-	uint32 peekBit();
-  uint32 peekByte();
+	uint32 peekBits(uint32 nbits) throw ();
+	uint32 peekBit() throw ();
+  uint32 peekByte() throw ();
   void skipBits(uint32 nbits);
-	uchar8 getByte();
+	uchar8 getByte() throw();
 	uchar8 getByteSafe();
 	void setAbsoluteOffset(uint32 offset);
   uint32 getOffset() { return off>>3;}

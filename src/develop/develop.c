@@ -227,6 +227,9 @@ restart:
   dt_dev_average_delay_update(&start, &dev->preview_average_delay);
 
   dev->preview_dirty = 0;
+  // redraw the whole thing, to also update color picker values and histograms etc.
+  if(dev->gui_attached)
+    dt_control_queue_redraw();
   dt_control_log_busy_leave();
   dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 }
@@ -324,7 +327,9 @@ restart:
   dev->image_loading = 0;
 
   dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-  dt_control_queue_redraw_center();
+  // redraw the whole thing, to also update color picker values and histograms etc.
+  if(dev->gui_attached)
+    dt_control_queue_redraw();
   dt_control_log_busy_leave();
 }
 
@@ -643,7 +648,7 @@ auto_apply_presets(const int imgid)
 
   // flag was already set? only apply presets once in the lifetime of a history stack.
   // (the flag will be cleared when removing it)
-  if(!run)
+  if(!run || cimg->id <= 0)
   {
     dt_image_cache_read_release(darktable.image_cache, cimg);
     return;

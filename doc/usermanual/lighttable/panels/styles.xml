@@ -1,12 +1,12 @@
 		<sect2 status="draft"><title>Styles</title>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth='70%'/>
-					<colspec colwidth='30%'/>
+					<colspec colwidth="6*"/>
+					<colspec colwidth="4*"/>
 					<tbody>
 						<row>						
 							<entry>This panel lets you use a powerful functionality of darktable: to store and apply a history stack.
 							Styles are created in darkroom mode thanks to a button placed below the history stack.
-							Then they are managed thanks to this panel, that allows you to apply and delete a style.
+							Then they are managed within this panel, that allows you to apply and delete a style.
 							</entry>
 							<entry>
 								<graphic fileref="lighttable/images/panel_styles.png" scalefit="1" width="80%" align="center" />
@@ -16,8 +16,8 @@
 				</tgroup>
 			</informaltable>
 				<sect4><title>create duplicate</title>
-					<para>When applying a style on selected images, activate this box lets you create a duplicate before applying the styles 
-					and thus avoiding you to create multiple duplicates before trying various styles on it.
+					<para>When applying a style on selected images, activating this box lets you create a duplicate before applying the styles. 
+					      De-activate this option if you want to try various styles; this will avoid that you create multiple duplicates.
 					</para>
 				</sect4>
 				<sect4><title>edit</title>

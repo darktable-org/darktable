@@ -55,56 +55,6 @@ if(UNIX)
 	endif("${LSB_DISTRIB}" MATCHES "Fedora|Mandriva")
 	
 	
-	# For Debian-based distros we want to create DEB packages.
-	if("${LSB_DISTRIB}" MATCHES "Ubuntu|Debian")
-		make_directory(${CMAKE_BINARY_DIR}/packaging/debian)
-		set(GTK_UPDATE_ICON_CACHE "gtk-update-icon-cache -f -t ${THEME_DIRECTORY}")
-		configure_file( ${CMAKE_SOURCE_DIR}/cmake/debian/postinst.in ${CMAKE_BINARY_DIR}/packaging/debian/postinst )
-		configure_file( ${CMAKE_SOURCE_DIR}/cmake/debian/prerm.in ${CMAKE_BINARY_DIR}/packaging/debian/prerm )
-	
-		set(CPACK_GENERATOR "DEB")
-		set(CPACK_DEBIAN_PACKAGE_PRIORITY "extra")
-		set(CPACK_DEBIAN_PACKAGE_SECTION "photos")
-		set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "")
-		set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/packaging/debian/postinst;${CMAKE_BINARY_DIR}/packaging/debian/prerm;" )
-		
-		# We need to alter the architecture names as per distro rules
-		if("${CPACK_PACKAGE_ARCHITECTURE}" MATCHES "i[3-6]86")
-			set(CPACK_PACKAGE_ARCHITECTURE i386)
-		endif("${CPACK_PACKAGE_ARCHITECTURE}" MATCHES "i[3-6]86")
-		if("${CPACK_PACKAGE_ARCHITECTURE}" MATCHES "x86_64")
-			set(CPACK_PACKAGE_ARCHITECTURE amd64)
-		endif("${CPACK_PACKAGE_ARCHITECTURE}" MATCHES "x86_64")
-
-		# Set the dependencies based on the distro version
-
-		# Ubuntu
-		if("${LSB_DISTRIB}" MATCHES "Ubuntu9.10")
-			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-5, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data")
-		endif("${LSB_DISTRIB}" MATCHES "Ubuntu9.10")
-
-		if("${LSB_DISTRIB}" MATCHES "Ubuntu10.04")
-			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-5, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data")
-		endif("${LSB_DISTRIB}" MATCHES "Ubuntu10.04")
-
-		if("${LSB_DISTRIB}" MATCHES "Ubuntu10.10")
-			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-6, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data")
-		endif("${LSB_DISTRIB}" MATCHES "Ubuntu10.10")
-
-		# Debian
-		if("${LSB_DISTRIB}" MATCHES "Debian5.*")
-			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-5, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data")
-		endif("${LSB_DISTRIB}" MATCHES "Debian5.*")
-
-		if("${LSB_DISTRIB}" MATCHES "Debiantesting")
-                	set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-5, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data")
-		endif("${LSB_DISTRIB}" MATCHES "Debiantesting")
-
-		if(NOT CPACK_DEBIAN_PACKAGE_DEPENDS)
-			message("WARNING: ${LSB_DISTRIB} not supported yet.\nPlease set deps in cmake/darktable-packaging.cmake before packaging.")
-		endif(NOT CPACK_DEBIAN_PACKAGE_DEPENDS)
-		string(TOLOWER "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}-${LSB_DISTRIB}_${CPACK_PACKAGE_ARCHITECTURE}" CPACK_PACKAGE_FILE_NAME)
-	endif("${LSB_DISTRIB}" MATCHES "Ubuntu|Debian")
 	
 endif(UNIX)
 

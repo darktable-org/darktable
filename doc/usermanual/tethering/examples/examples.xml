@@ -1,43 +1,42 @@
 <sect1><title>Examples</title>
-	<para>This section contains examples of usages and how to perform them in using tethering.
+	<para>This section contains examples of typical usages of tethering.
 	</para>
 
 	<sect2>
 	  <title>Studio setup with screening</title>
 
-	  <para>This is a pretty common use case, you have your studio and subject rigged an while camera
-	  is connected and tethering view is active in darktable, you work behind the camera and when ever
-	  you want you can screen the image taken directly on your monitor instead of using the camera LCD 
-	  for validating an image to be captured as yuo wanted.</para>
+	  <para>This is a pretty common use case. You have your studio and subject rigged, camera
+	  is connected to your computer and tethering view is active in darktable. You work behind the camera and take images.
+          Whenever you want you can screen the image directly on your computer monitor instead of using the camera LCD for validation.
+          </para>
 
-	  <para>This workflow is effective, due to you dont need to take 20 captures and then later while out 
-	  of the rigg review them and hope that you got "the one", just do it up front. If you shooting a model
-	  this is pretty nice way to preshow the captures to the client instead of fumbling around with your camera
-	  buttons and viewing them on camera screen.</para>
+	  <para>This workflow is effective, as you don't need to take 20 captures and then later - while out 
+	  of the rigg - review them and hope that you got "the one". Just do it up front. If you're shooting a model
+	  this is a pretty nice way to pre-show the captures to the client instead of fumbling around with your camera.
+          </para>
 
-	  <para>This workflow is kind of out-of-the-box when entering tethering view, you just need to set a session 
-	  name, preferable subject name of the shoot for example, the just start take images and they will fall into 
-	  right filmroll for the session for easily review on-site.</para>
+	  <para>This workflow is kind of out-of-the-box when entering tethering view. You just need to set a session 
+	  name - preferable subject name of the shoot - then just start to take images. They will fall into 
+	  the right filmroll for the session for easy review on-site.</para>
 
 	</sect2>
 
 	<sect2>
 	  <title>Capturing a timelapse</title>
 
-	  <para>A timelapse is a video clip composed out of images taken on a interval of X seconds, a typical examples
-	  is to take a timelapse of cityscapes wher you capture clouds and traffic etc.</para>
+	  <para>A timelapse is a video clip composed out of images taken on a interval of X seconds. A typical example
+	  is to take a timelapse of cityscapes where you capture clouds and traffic etc.</para>
 
-	  <para>To setup a timelapse capture you should as always create a new session as descibed before, then you need
-	  to decide if you want to shoot in manual or auto mode, only go for auto in situations were the ambient light will
-	  change over time of the timelapse eg. shooting a timelapse over 24 hours might give you easier control of  lights
+	  <para>To setup a timelapse capture you should as always create a new session as descibed before. Then you need
+	  to decide if you want to shoot in manual or auto mode. Only go for auto in situations were the ambient light will
+	  strongly change over time of the timelapse. Eg. shooting a timelapse over 24 hours might give you easier control of lights
 	  in that kind of captured sequence.</para>
 
-	  <para>Then head over to the camera settings panel, where you enables the buttons, delay and sequence, and you are 
-	  now ready to setup a timelapse captuer, sequence will give you the oppertunity to choose how many images you want 
-	  to capture and delay will set the time in seconds between capture.</para>
+	  <para>Head over to the camera settings panel where you define delay and sequence. Sequence will give you the oppertunity to 
+          choose how many images you want to capture and delay will set the time in seconds between capture.</para>
 
 	  <para>To start the capture just hit the capture button in the same panel and watch the filmstrip fill up with 
-	  images and were the latest captured on is previewd in center view.</para>
+	  images. The latest captured image is always previewed in center view.</para>
 	</sect2>
 
 </sect1>

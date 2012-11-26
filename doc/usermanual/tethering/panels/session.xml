@@ -1,14 +1,15 @@
 <sect2 status="draft">
   <title>Session</title>
   <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth='70%'/>
-    <colspec colwidth='30%'/>
+    <colspec colwidth="6*"/>
+    <colspec colwidth="4*"/>
     <tbody>
       <row>						
 	<entry>
-	  <para>Session is a definiton of tethering coupled with a filmroll, a new session equals a new filmroll. A filmroll is created with the same storage structure that is used when you import images from camera into Darktable.</para>
+	  <para>A session is a sequence of exposures taken in tethering mode and going into a single filmroll. A new session equals a new filmroll. A filmroll is created with the same storage 
+                structure that is used when you import images from camera into Darktable.</para>
 
-	  <para>It's a bit akward bu configuring this storage structure is done in the camera import dialog for now.</para>
+          <para>It's a bit akward, but configuring this storage structure is done in the camera import dialog for now.</para>
 	</entry>
 	<entry>
 	  <graphic fileref="tethering/images/panel_session.png" scalefit="1" width="80%" align="center" />

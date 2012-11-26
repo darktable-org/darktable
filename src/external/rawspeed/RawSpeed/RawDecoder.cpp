@@ -32,7 +32,7 @@ namespace RawSpeed {
 RawDecoder::~RawDecoder(void) {
 }
 
-void RawDecoder::decodeUncompressed(TiffIFD *rawIFD, bool MSBOrder) {
+void RawDecoder::decodeUncompressed(TiffIFD *rawIFD, BitOrder order) {
   uint32 nslices = rawIFD->getEntry(STRIPOFFSETS)->count;
   const uint32 *offsets = rawIFD->getEntry(STRIPOFFSETS)->getIntArray();
   const uint32 *counts = rawIFD->getEntry(STRIPBYTECOUNTS)->getIntArray();
@@ -74,7 +74,7 @@ void RawDecoder::decodeUncompressed(TiffIFD *rawIFD, bool MSBOrder) {
     iPoint2D pos(0, offY);
     bitPerPixel = (int)((uint64)(slice.count * 8) / (slice.h * width));
     try {
-      readUncompressedRaw(in, size, pos, width*bitPerPixel / 8, bitPerPixel, MSBOrder);
+      readUncompressedRaw(in, size, pos, width*bitPerPixel / 8, bitPerPixel, order);
     } catch (RawDecoderException &e) {
       if (i>0)
         mRaw->setError(e.what());
@@ -90,7 +90,7 @@ void RawDecoder::decodeUncompressed(TiffIFD *rawIFD, bool MSBOrder) {
   }
 }
 
-void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D& offset, int inputPitch, int bitPerPixel, bool MSBOrder) {
+void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D& offset, int inputPitch, int bitPerPixel, BitOrder order) {
   uchar8* data = mRaw->getData();
   uint32 outPitch = mRaw->pitch;
   uint32 w = size.x;
@@ -124,7 +124,7 @@ void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D
     return;
   }
 
-  if (MSBOrder) {
+  if (BitOrder_Jpeg == order) {
     BitPumpMSB bits(&input);
     w *= cpp;
     for (; y < h; y++) {
@@ -136,6 +136,18 @@ void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D
       }
       bits.skipBits(skipBits);
     }
+  } else if (BitOrder_Jpeg32 == order) {
+      BitPumpMSB32 bits(&input);
+      w *= cpp;
+      for (; y < h; y++) {
+        ushort16* dest = (ushort16*) & data[offset.x*sizeof(ushort16)*cpp+y*outPitch];
+        bits.checkPos();
+        for (uint32 x = 0 ; x < w; x++) {
+          uint32 b = bits.getBits(bitPerPixel);
+          dest[x] = b;
+        }
+        bits.skipBits(skipBits);
+      }
 
   } else {
 

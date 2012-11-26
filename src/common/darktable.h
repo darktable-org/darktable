@@ -373,6 +373,7 @@ dt_get_num_atom_cores()
         }
       }
     }
+    fclose(f);
   }
   return count;
 #elif defined(__DragonFly__) || \

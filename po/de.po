@@ -2,17 +2,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-31 19:51+1300\n"
-"PO-Revision-Date: 2012-09-18 17:19+0100\n"
+"POT-Creation-Date: 2012-11-14 19:31+0100\n"
+"PO-Revision-Date: 2012-11-14 19:31+0100\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
-"Language: \n"
+"Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-Language: German\n"
-"X-Poedit-Country: GERMANY\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Poedit 1.5.4\n"
 
 #: ../build/src/preferences_gen.h:906
 msgid "gui options"
@@ -203,25 +202,28 @@ msgid "ask before deleting a tag"
 msgstr "Vor dem Löschen eines Tags nachfragen"
 
 #: ../build/src/preferences_gen.h:1294
-#, fuzzy
 msgid "maximum number of images drawn on map"
-msgstr "Maximale Höhe der Zeichenfläche für Bilder"
+msgstr "Maximale Anzahl Bilder, die auf der Karte gezeigt werden"
 
 #: ../build/src/preferences_gen.h:1309
 msgid ""
 "the maximum number of geotagged images drawn on the map. increasing this "
 "number can slow drawing of the map down (needs a restart)."
 msgstr ""
+"Die maximale Anzahl an Bilder, die auf der Karte angezeigt werden. Ein "
+"Erhöhen dieser Zahl kann das Zeichnen der Karte verlangsamen (erfordert "
+"Neustart)."
 
 #: ../build/src/preferences_gen.h:1316
 msgid "pretty print the image location"
-msgstr ""
+msgstr "Bildposition schön formatieren"
 
 #: ../build/src/preferences_gen.h:1328
 msgid ""
 "show a more readable representation of the location in the image information "
 "module"
 msgstr ""
+"Zeige eine besser lesbare Darstellung der Position im Bildinformations-Modul"
 
 # zu frei?
 #: ../build/src/preferences_gen.h:1351
@@ -385,32 +387,33 @@ msgstr "Indexer ausführen"
 #: ../build/src/preferences_gen.h:1655
 msgid "index images in background, so you can search them by similarity."
 msgstr ""
-"indiziere Bilder im Hintergrund, so dass diese anhand von Ähnlichkeiten "
+"Indiziere Bilder im Hintergrund, so dass diese anhand von Ähnlichkeiten "
 "gesucht werden können."
 
-#: ../src/cli/main.c:93
+#: ../src/cli/main.c:97
 msgid "TODO: sorry, due to api restrictions we currently cannot set the bpp to"
 msgstr ""
+"TODO: Entschuldigung, aber aufgrund von API-Beschränkungen können wir die "
+"bpp momentan nicht setzen:"
 
-#: ../src/cli/main.c:105
+#: ../src/cli/main.c:109
 msgid "Unknown option for --hq"
-msgstr ""
+msgstr "Unbekannte Option für --hq"
 
-#: ../src/cli/main.c:144
-#, fuzzy
+#: ../src/cli/main.c:148
 msgid "output file already exists, it will get renamed"
-msgstr "Ausgabedatei existiert bereits, breche ab"
+msgstr "Ausgabedatei existiert bereits, sie wird umbenannt"
 
-#: ../src/cli/main.c:160
-#, fuzzy, c-format
+#: ../src/cli/main.c:164
+#, c-format
 msgid "error: can't open file %s"
-msgstr "Fehler beim Laden von Datei ‚%s‘"
+msgstr "Fehler: kann Datei %s nicht öffnen"
 
-#: ../src/cli/main.c:184
+#: ../src/cli/main.c:188
 msgid "empty history stack"
 msgstr "leerer Verlaufsstapel"
 
-#: ../src/cli/main.c:205
+#: ../src/cli/main.c:209
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -418,22 +421,20 @@ msgstr ""
 "kann Modul zum Speichern auf der Festplatten nicht finden. Bitte die "
 "Installation prüfen, irgendwas scheint kaputt zu sein."
 
-#: ../src/cli/main.c:212
-#, fuzzy
+#: ../src/cli/main.c:216
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
 "Konnte keine Einstellungen vom Speicher-Modul bekommen, breche Export ab …"
 
-#: ../src/cli/main.c:223
+#: ../src/cli/main.c:227
 #, c-format
 msgid "unknown extension '.%s'"
-msgstr ""
+msgstr "unbekannte Datei-Erweiterung '.%s'"
 
-#: ../src/cli/main.c:231
-#, fuzzy
+#: ../src/cli/main.c:235
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
-"Konnte keine Einstellungen vom Speicher-Modul bekommen, breche Export ab …"
+"Konnte keine Einstellungen vom Format-Modul bekommen, breche Export ab …"
 
 #: ../src/common/collection.c:448 ../src/iop/bilateral.cc:346
 #: ../src/iop/channelmixer.c:440 ../src/iop/channelmixer.c:452
@@ -479,7 +480,7 @@ msgid_plural "%d images of %d in current collection are selected"
 msgstr[0] "%d Bild von %d ist in der aktuellen Sammlung ausgewählt"
 msgstr[1] "%d Bilder von %d sind in der aktuellen Sammlung ausgewählt"
 
-#: ../src/common/darktable.c:172
+#: ../src/common/darktable.c:175
 msgid ""
 "darktable has trapped an illegal instruction which probably means that an "
 "invalid processor optimized codepath is used for your cpu, please try "
@@ -495,11 +496,11 @@ msgstr ""
 "Informationen über Ihren Prozessor und woher Sie dieses Programm bezogen "
 "haben."
 
-#: ../src/common/darktable.c:210
+#: ../src/common/darktable.c:213
 msgid "SIMD extensions found: "
 msgstr "SIMD-Erweiterungen gefunden:"
 
-#: ../src/common/darktable.c:226
+#: ../src/common/darktable.c:229
 #, c-format
 msgid ""
 "darktable is very cpu intensive and uses SSE2 SIMD instructions for heavy "
@@ -520,27 +521,27 @@ msgstr ""
 "\n"
 "%s"
 
-#: ../src/common/darktable.c:317
+#: ../src/common/darktable.c:320
 #, c-format
 msgid "found strange path `%s'"
 msgstr "Ungewöhnlicher Pfad ‚%s‘ gefunden"
 
-#: ../src/common/darktable.c:341
+#: ../src/common/darktable.c:344
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "Fehler beim Laden von Verzeichnis ‚%s‘"
 
-#: ../src/common/darktable.c:361
+#: ../src/common/darktable.c:364
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "Datei ‚%s‘ hat ein unbekanntes Format!"
 
-#: ../src/common/darktable.c:375 ../src/libs/import.c:711
+#: ../src/common/darktable.c:378 ../src/libs/import.c:711
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Fehler beim Laden von Datei ‚%s‘"
 
-#: ../src/common/darktable.c:510
+#: ../src/common/darktable.c:513
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "FEHLER : ungültiges temporäres Verzeichnis : %s\n"
@@ -563,14 +564,14 @@ msgstr ""
 "anderes Bild angewandt werden kann."
 
 #: ../src/common/history.c:176 ../src/common/history.c:188
-#: ../src/common/styles.c:418 ../src/develop/develop.c:958
+#: ../src/common/styles.c:418 ../src/develop/develop.c:971
 #: ../src/libs/history.c:151 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "ein"
 
 #: ../src/common/history.c:176 ../src/common/history.c:188
 #: ../src/common/styles.c:418 ../src/develop/blend_gui.c:926
-#: ../src/develop/develop.c:958 ../src/iop/demosaic.c:1317
+#: ../src/develop/develop.c:971 ../src/iop/demosaic.c:1317
 #: ../src/libs/history.c:151 ../src/libs/live_view.c:405
 msgid "off"
 msgstr "aus"
@@ -606,7 +607,7 @@ msgstr "kein Bild ausgewählt um Bewertung anzuwenden"
 #: ../src/common/similarity.c:119 ../src/common/similarity.c:129
 #: ../src/common/similarity.c:138
 msgid "this image has not been indexed yet."
-msgstr ""
+msgstr "dieses Bild wurde noch nicht indiziert."
 
 #: ../src/common/styles.c:90
 #, c-format
@@ -619,9 +620,9 @@ msgid "style named '%s' successfully created"
 msgstr "Stil mit dem Namen ‚%s‘ erfolgreich angelegt"
 
 #: ../src/common/styles.c:497
-#, fuzzy, c-format
+#, c-format
 msgid "failed to overwrite style file for %s"
-msgstr "Fehler beim Erstellen des Sitzungs-Pfades %s."
+msgstr "Fehler beim Überschreiben der Stil-Datei für %s"
 
 #: ../src/common/styles.c:503
 #, c-format
@@ -681,6 +682,8 @@ msgid ""
 "Couldn't expand to a uniq filename for import, please check your import "
 "settings."
 msgstr ""
+"Konnte keinen einmaligen Dateinamen zum Import generieren, bitte die Import-"
+"Einstellungen überprüfen."
 
 #: ../src/control/jobs/camera_jobs.c:385
 msgid "starting to import images from camera"
@@ -757,27 +760,27 @@ msgid_plural "removing %d images"
 msgstr[0] "%d Bild entfernen"
 msgstr[1] "%d Bilder entfernen"
 
-#: ../src/control/jobs/control_jobs.c:641
+#: ../src/control/jobs/control_jobs.c:640
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "%d Bild löschen"
 msgstr[1] "%d Bilder löschen"
 
-#: ../src/control/jobs/control_jobs.c:725
+#: ../src/control/jobs/control_jobs.c:724
 msgid "failed to parse gpx file"
 msgstr "Fehler beim lesen der GPX-Datei"
 
-#: ../src/control/jobs/control_jobs.c:792
+#: ../src/control/jobs/control_jobs.c:791
 #, c-format
 msgid "applied matched gpx location onto %d image(s)"
 msgstr "passende GPX-Position auf %d Bild(er) angewandt"
 
-#: ../src/control/jobs/control_jobs.c:938
+#: ../src/control/jobs/control_jobs.c:937
 msgid "select an image as target for search of similar images"
 msgstr "ein Bild als Ziel für die Suche nach ähnlichen Bildern auswählen"
 
-#: ../src/control/jobs/control_jobs.c:971
+#: ../src/control/jobs/control_jobs.c:970
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -787,11 +790,11 @@ msgstr[0] ""
 msgstr[1] ""
 "Sollen wirklich %d ausgewählte Bilder aus der Sammlung entfernt werden?"
 
-#: ../src/control/jobs/control_jobs.c:974
+#: ../src/control/jobs/control_jobs.c:973
 msgid "remove images?"
 msgstr "Bilder entfernen?"
 
-#: ../src/control/jobs/control_jobs.c:1000
+#: ../src/control/jobs/control_jobs.c:999
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -803,25 +806,25 @@ msgstr[1] ""
 "Sollen wirklich %d ausgewählte Bilder physikalisch von der Festplatte "
 "gelöscht werden?"
 
-#: ../src/control/jobs/control_jobs.c:1003
+#: ../src/control/jobs/control_jobs.c:1002
 msgid "delete images?"
 msgstr "Bilder löschen?"
 
-#: ../src/control/jobs/control_jobs.c:1036
+#: ../src/control/jobs/control_jobs.c:1035
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 "Fehler beim Erstellen einer Filmrolle für das Zielverzeichnis, Verschieben "
 "abgebrochen ..."
 
-#: ../src/control/jobs/control_jobs.c:1065
-#: ../src/control/jobs/control_jobs.c:1122 ../src/imageio/storage/disk.c:67
+#: ../src/control/jobs/control_jobs.c:1064
+#: ../src/control/jobs/control_jobs.c:1121 ../src/imageio/storage/disk.c:67
 #: ../src/imageio/storage/disk.c:120 ../src/imageio/storage/gallery.c:78
 #: ../src/imageio/storage/gallery.c:161 ../src/imageio/storage/latex.c:78
 #: ../src/imageio/storage/latex.c:161 ../src/libs/styles.c:233
 msgid "select directory"
 msgstr "Verzeichnis wählen"
 
-#: ../src/control/jobs/control_jobs.c:1088
+#: ../src/control/jobs/control_jobs.c:1087
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -838,13 +841,13 @@ msgstr[1] ""
 "werden?\n"
 "(alle nicht ausgewählten Duplikate werden auch verschoben)"
 
-#: ../src/control/jobs/control_jobs.c:1092
+#: ../src/control/jobs/control_jobs.c:1091
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "Bild verschieben?"
 msgstr[1] "Bilder verschieben?"
 
-#: ../src/control/jobs/control_jobs.c:1145
+#: ../src/control/jobs/control_jobs.c:1144
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -854,45 +857,45 @@ msgstr[1] ""
 "Sollen die %d ausgewählten Bilder wirklich physikalisch nach %s kopiert "
 "werden?"
 
-#: ../src/control/jobs/control_jobs.c:1148
+#: ../src/control/jobs/control_jobs.c:1147
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "Bild kopieren?"
 msgstr[1] "Bilder kopieren?"
 
-#: ../src/control/jobs/control_jobs.c:1225
+#: ../src/control/jobs/control_jobs.c:1224
 msgid "failed to get parameters from storage module, aborting export.."
 msgstr ""
 "Konnte keine Einstellungen vom Speicher-Modul bekommen, breche Export ab …"
 
-#: ../src/control/jobs/control_jobs.c:1229
+#: ../src/control/jobs/control_jobs.c:1228
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "Exportiere %d Bild …"
 msgstr[1] "Exportiere %d Bilder …"
 
-#: ../src/control/jobs/control_jobs.c:1231
+#: ../src/control/jobs/control_jobs.c:1230
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "%d Bild nach %s exportieren"
 msgstr[1] "%d Bilder nach %s exportieren"
 
-#: ../src/control/jobs/control_jobs.c:1293
-#: ../src/control/jobs/control_jobs.c:1294 ../src/views/darkroom.c:446
+#: ../src/control/jobs/control_jobs.c:1292
+#: ../src/control/jobs/control_jobs.c:1293 ../src/views/darkroom.c:446
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "Bild ‚%s‘ ist momentan nicht verfügbar"
 
-#: ../src/control/jobs/control_jobs.c:1381
+#: ../src/control/jobs/control_jobs.c:1380
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "füge Zeitversatz zu %d Bild hinzu"
 msgstr[1] "füge Zeitversatz zu %d Bildern hinzu"
 
-#: ../src/control/jobs/control_jobs.c:1401
+#: ../src/control/jobs/control_jobs.c:1400
 #, c-format
 msgid "added time offset to %d image(s)"
 msgstr "Zeitversatz zu %d Bild(ern) hinzugefügt"
@@ -918,34 +921,32 @@ msgid "sliders for hue channel (of LCh)"
 msgstr "Regler für Farbton-Kanal (von LCh)"
 
 #: ../src/develop/blend_gui.c:662
-#, fuzzy
 msgid " g "
-msgstr " Grau "
+msgstr " g "
 
 #: ../src/develop/blend_gui.c:662
 msgid " R "
-msgstr ""
+msgstr " R "
 
 #: ../src/develop/blend_gui.c:662
 msgid " G "
-msgstr ""
+msgstr " G "
 
 #: ../src/develop/blend_gui.c:662
 msgid " B "
-msgstr ""
+msgstr " B "
 
 #: ../src/develop/blend_gui.c:662
 msgid " H "
-msgstr ""
+msgstr " H "
 
 #: ../src/develop/blend_gui.c:662
 msgid " S "
-msgstr ""
+msgstr " S "
 
 #: ../src/develop/blend_gui.c:662
-#, fuzzy
 msgid " L "
-msgstr "  L  "
+msgstr " L "
 
 #: ../src/develop/blend_gui.c:663
 msgid "sliders for gray value"
@@ -1025,11 +1026,11 @@ msgstr "Maske anzeigen"
 
 #: ../src/develop/blend_gui.c:801
 msgid "reset blend mask settings"
-msgstr ""
+msgstr "Masken-Einstellung zurücksetzen"
 
 #: ../src/develop/blend_gui.c:804
 msgid "temporarily switch off blend mask. only for module in focus."
-msgstr ""
+msgstr "Maske des aktiven Moduls vorübergehend ausschalten."
 
 #: ../src/develop/blend_gui.c:816 ../src/develop/blend_gui.c:819
 msgid "toggle polarity. best seen by enabling 'display mask'"
@@ -1045,7 +1046,7 @@ msgstr "Eingabe"
 
 #: ../src/develop/blend_gui.c:851
 msgid "mask blur"
-msgstr ""
+msgstr "Maske weichzeichnen"
 
 #: ../src/develop/blend_gui.c:854
 msgid "enable conditional blending"
@@ -1056,9 +1057,8 @@ msgid "double click to reset"
 msgstr "Doppelklick zum Zurücksetzen"
 
 #: ../src/develop/blend_gui.c:859
-#, fuzzy
 msgid "radius for gaussian blur of blend mask"
-msgstr "der Radius des Gaußschen Weichzeichners"
+msgstr "Radius des Gaußschen Weichzeichners der Maske"
 
 #: ../src/develop/blend_gui.c:928 ../src/libs/live_view.c:377
 msgid "normal"
@@ -1149,9 +1149,8 @@ msgid "color"
 msgstr "Farbe"
 
 #: ../src/develop/blend_gui.c:968
-#, fuzzy
 msgid "coloradjustment"
-msgstr "Farbanpassung der Schatten"
+msgstr "Farbanpassung"
 
 #: ../src/develop/blend_gui.c:970
 msgid "unbounded"
@@ -1173,7 +1172,7 @@ msgstr "Deckkraft des Überblendens anpassen"
 msgid "choose blending mode"
 msgstr "Modus des Überblendens wählen"
 
-#: ../src/develop/develop.c:783
+#: ../src/develop/develop.c:796
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: Modul ‚%s‘ hat unpassende Version: %d != %d"
@@ -1188,17 +1187,17 @@ msgid "error creating gui, DT_SIMPLE_GUI_NONE could not be found"
 msgstr ""
 "Fehler beim Generieren der GUI, DT_SIMPLE_GUI_NONE wurde nicht gefunden"
 
-#: ../src/develop/imageop.c:762 ../src/develop/imageop.c:1562
+#: ../src/develop/imageop.c:776 ../src/develop/imageop.c:1576
 #, c-format
 msgid "%s is switched on"
 msgstr "%s ist eingeschaltet"
 
-#: ../src/develop/imageop.c:762 ../src/develop/imageop.c:1562
+#: ../src/develop/imageop.c:776 ../src/develop/imageop.c:1576
 #, c-format
 msgid "%s is switched off"
 msgstr "%s ist ausgeschaltet"
 
-#: ../src/develop/imageop.c:929 ../src/gui/accelerators.c:636
+#: ../src/develop/imageop.c:943 ../src/gui/accelerators.c:636
 #: ../src/gui/accelerators.c:716 ../src/gui/accelerators.c:860
 #: ../src/gui/accelerators.c:885 ../src/gui/presets.c:189
 #: ../src/gui/presets.c:262 ../src/gui/presets.c:553
@@ -1207,37 +1206,37 @@ msgstr "%s ist ausgeschaltet"
 msgid "preset"
 msgstr "Voreinstellung"
 
-#: ../src/develop/imageop.c:970
+#: ../src/develop/imageop.c:984
 msgctxt "accel"
 msgid "fusion"
 msgstr "Überblenden-Deckkraft"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:975
+#: ../src/develop/imageop.c:989
 msgctxt "accel"
 msgid "show module"
 msgstr "Modul zeigen"
 
-#: ../src/develop/imageop.c:976
+#: ../src/develop/imageop.c:990
 msgctxt "accel"
 msgid "enable module"
 msgstr "Modul aktivieren"
 
-#: ../src/develop/imageop.c:979 ../src/libs/lib.c:494
+#: ../src/develop/imageop.c:993 ../src/libs/lib.c:494
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "Modul-Einstellungen zurücksetzen"
 
-#: ../src/develop/imageop.c:981 ../src/libs/lib.c:499
+#: ../src/develop/imageop.c:995 ../src/libs/lib.c:499
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "Voreinstellungs-Menü zeigen"
 
-#: ../src/develop/imageop.c:1541 ../src/libs/lib.c:782
+#: ../src/develop/imageop.c:1555 ../src/libs/lib.c:782
 msgid "reset parameters"
 msgstr "Einstellungen zurücksetzen"
 
-#: ../src/develop/imageop.c:1550 ../src/gui/preferences.c:394
+#: ../src/develop/imageop.c:1564 ../src/gui/preferences.c:394
 #: ../src/libs/lib.c:795
 msgid "presets"
 msgstr "Voreinstellungen"
@@ -1534,10 +1533,9 @@ msgid "darkroom view"
 msgstr "Dunkelkammer-Ansicht"
 
 #: ../src/gui/gtk.c:840
-#, fuzzy
 msgctxt "accel"
 msgid "map view"
-msgstr "Aufnahme-Ansicht"
+msgstr "Karten-Ansicht"
 
 #. register ctrl-q to quit:
 #: ../src/gui/gtk.c:863
@@ -1747,7 +1745,7 @@ msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:456 ../src/gui/preferences.c:1295
-#: ../src/gui/presets.c:415 ../src/iop/exposure.c:42 ../src/iop/exposure.c:389
+#: ../src/gui/presets.c:415 ../src/iop/exposure.c:42 ../src/iop/exposure.c:390
 #: ../src/iop/relight.c:376 ../src/libs/metadata_view.c:86
 msgid "exposure"
 msgstr "Belichtung"
@@ -1767,7 +1765,7 @@ msgid "focal length"
 msgstr "Brennweite"
 
 #: ../src/gui/preferences.c:477 ../src/iop/borders.c:979
-#: ../src/iop/exposure.c:394 ../src/iop/tonecurve.c:541
+#: ../src/iop/exposure.c:395 ../src/iop/tonecurve.c:541
 msgid "auto"
 msgstr "auto"
 
@@ -1964,14 +1962,12 @@ msgid "edit style"
 msgstr "Stil bearbeiten"
 
 #: ../src/gui/styles_dialog.c:186
-#, fuzzy
 msgid "duplicate style"
-msgstr "duplizieren"
+msgstr "Stil duplizieren"
 
 #: ../src/gui/styles_dialog.c:187
-#, fuzzy
 msgid "creates a duplicate of the style before applying changes"
-msgstr "Erzeuge ein Duplikat des Bildes, bevor der Stil angewendet wird."
+msgstr "erzeuge ein Duplikat des Stils, bevor die Änderungen angewandt werden"
 
 #: ../src/gui/styles_dialog.c:192
 msgid "create new style"
@@ -2067,18 +2063,18 @@ msgstr ""
 "Speicherpfad für exportierte Bilder angeben\n"
 "mögliche Variablen:"
 
-#: ../src/imageio/storage/disk.c:185 ../src/imageio/storage/gallery.c:248
+#: ../src/imageio/storage/disk.c:196 ../src/imageio/storage/gallery.c:248
 #: ../src/imageio/storage/latex.c:245
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "Konnte Verzeichnis ‚%s‘ nicht erstellen!"
 
-#: ../src/imageio/storage/disk.c:192
+#: ../src/imageio/storage/disk.c:203
 #, c-format
 msgid "could not write to directory `%s'!"
 msgstr "Konnte nicht in Verzeichnis ‚%s‘ schreiben!"
 
-#: ../src/imageio/storage/disk.c:225 ../src/imageio/storage/email.c:106
+#: ../src/imageio/storage/disk.c:236 ../src/imageio/storage/email.c:106
 #: ../src/imageio/storage/facebook.c:1183 ../src/imageio/storage/flickr.c:678
 #: ../src/imageio/storage/gallery.c:376 ../src/imageio/storage/gallery.c:395
 #: ../src/imageio/storage/picasa.c:953
@@ -2086,7 +2082,7 @@ msgstr "Konnte nicht in Verzeichnis ‚%s‘ schreiben!"
 msgid "could not export to file `%s'!"
 msgstr "Konnte nicht in Datei ‚%s‘ exportieren!"
 
-#: ../src/imageio/storage/disk.c:241 ../src/imageio/storage/email.c:114
+#: ../src/imageio/storage/disk.c:252 ../src/imageio/storage/email.c:114
 #: ../src/imageio/storage/gallery.c:405 ../src/imageio/storage/latex.c:335
 #, c-format
 msgid "%d/%d exported to `%s%s'"
@@ -2103,57 +2099,53 @@ msgstr "Aus darktable exportierte Bilder"
 #: ../src/imageio/storage/facebook.c:240
 #, c-format
 msgid "[facebook] unexpeted url format\n"
-msgstr ""
+msgstr "[facebook] unerwartetes format der URL\n"
 
 #. //////////// build & show the validation dialog
 #: ../src/imageio/storage/facebook.c:599
-#, fuzzy
 msgid ""
 "step 1: a new window or tab of your browser should have beenloaded. you have "
 "to login into your facebook account there and authorize darktable to upload "
 "photos before continuing."
 msgstr ""
 "Schritt 1: Ein neues Fenster oder Tab sollte sich in Ihrem Browser geöffnet "
-"haben. Loggen Sie sich dort nun in Ihren Flickr-Account ein und autorisieren "
-"Sie darktable Fotos hochzuladen, bevor Sie fortfahren."
+"haben. Loggen Sie sich dort nun in Ihren Facebook-Account ein und "
+"autorisieren Sie darktable Fotos hochzuladen, bevor Sie fortfahren."
 
 #: ../src/imageio/storage/facebook.c:602
-#, fuzzy
 msgid ""
 "step 2: paste your browser url and click the ok button once you are done."
-msgstr "Schritt 2: Auf OK klicken, sobald Sie fertig sind."
+msgstr ""
+"Schritt 2: Fügen Sie die Browser-URL hier ein und klicken Sie auf OK, sobald "
+"Sie fertig sind."
 
 #: ../src/imageio/storage/facebook.c:610
-#, fuzzy
 msgid "Facebook authentication"
-msgstr "Flickr-Authentifizierung"
+msgstr "Facebook-Authentifizierung"
 
 #: ../src/imageio/storage/facebook.c:616
 msgid "url:"
-msgstr ""
+msgstr "URL:"
 
 #: ../src/imageio/storage/facebook.c:636
 msgid "please enter the validation url"
-msgstr ""
+msgstr "bitte die Validierungs-URL eingeben"
 
 #: ../src/imageio/storage/facebook.c:647
 msgid "the given url is not valid, it should look like: "
-msgstr ""
+msgstr "die angegebene URL ist nicht gültig, sie sollte wie folgt aussehen:"
 
 #: ../src/imageio/storage/facebook.c:747
-#, fuzzy
 msgid "new account"
-msgstr "Anzahl"
+msgstr "neuer Account"
 
 #: ../src/imageio/storage/facebook.c:754
-#, fuzzy
 msgid "other account"
-msgstr "Menge an Lebendigkeit"
+msgstr "anderer Account"
 
 #: ../src/imageio/storage/facebook.c:784
-#, fuzzy
 msgid "unable to retreive the album list"
-msgstr "Albenliste aktualisieren"
+msgstr "konnte Albenliste nicht holen"
 
 #. Add standard action
 #: ../src/imageio/storage/facebook.c:792 ../src/imageio/storage/flickr.c:392
@@ -2162,9 +2154,10 @@ msgstr "Albenliste aktualisieren"
 msgid "create new album"
 msgstr "Neues Album erstellen"
 
+# abmelden wäre besser, aber der andere Knopf heißt "einloggen" und nicht anmelden.
 #: ../src/imageio/storage/facebook.c:914
 msgid "logout"
-msgstr ""
+msgstr "logout"
 
 # "anmelden" ist zu lang
 #. Set default permission to private
@@ -2175,9 +2168,8 @@ msgid "login"
 msgstr "login"
 
 #: ../src/imageio/storage/facebook.c:995
-#, fuzzy
 msgid "facebook webalbum"
-msgstr "Flickr-Webalbum"
+msgstr "Facebook-Webalbum"
 
 #. create labels
 #: ../src/imageio/storage/facebook.c:1008 ../src/imageio/storage/picasa.c:758
@@ -2185,9 +2177,8 @@ msgid "user"
 msgstr "Benutzer"
 
 #: ../src/imageio/storage/facebook.c:1009
-#, fuzzy
 msgid "album"
-msgstr "Alben"
+msgstr "Album"
 
 #. xmp
 #: ../src/imageio/storage/facebook.c:1010 ../src/imageio/storage/flickr.c:484
@@ -2204,44 +2195,41 @@ msgstr "Zusammenfassung"
 
 #: ../src/imageio/storage/facebook.c:1012
 msgid "privacy"
-msgstr ""
+msgstr "Privatsphäre"
 
 #: ../src/imageio/storage/facebook.c:1054
 msgid "Only Me"
-msgstr ""
+msgstr "nur Ich"
 
 #: ../src/imageio/storage/facebook.c:1056
-#, fuzzy
 msgid "Friends"
 msgstr "Freunde"
 
 #: ../src/imageio/storage/facebook.c:1058
 msgid "Public"
-msgstr ""
+msgstr "öffentlich"
 
 #: ../src/imageio/storage/facebook.c:1060
-#, fuzzy
 msgid "Friends of Friends"
-msgstr "Drittelregel"
+msgstr "Freunde von Freunden"
 
 #: ../src/imageio/storage/facebook.c:1192
 msgid "unable to create album, no title provided"
-msgstr ""
+msgstr "kann Album nicht anlegen, kein Titel angegeben"
 
 #: ../src/imageio/storage/facebook.c:1199
-#, fuzzy
 msgid "unable to create album"
-msgstr "Neues Album erstellen"
+msgstr "kann Album nicht erstellen"
 
 #: ../src/imageio/storage/facebook.c:1209
 msgid "unable to export photo to webalbum"
-msgstr ""
+msgstr "kann Foto nicht ins Webalbum exportieren"
 
 #. this makes sense only if the export was successful
 #: ../src/imageio/storage/facebook.c:1226
-#, fuzzy, c-format
+#, c-format
 msgid "%d/%d exported to facebook webalbum"
-msgstr "%d/%d ins Flickr-Webalbum exportiert"
+msgstr "%d/%d ins Facebook-Webalbum exportiert"
 
 #: ../src/imageio/storage/flickr.c:117
 #, c-format
@@ -2361,13 +2349,12 @@ msgstr "Titel für die Webseite eingeben"
 
 #: ../src/imageio/storage/latex.c:70
 msgid "latex book template"
-msgstr ""
+msgstr "LaTeX-Buch-Vorlage"
 
 #. TODO: support title, author, subject, keywords (collect tags?)
 #: ../src/imageio/storage/latex.c:174
-#, fuzzy
 msgid "enter the title of the book"
-msgstr "Titel für die Webseite eingeben"
+msgstr "den Titel für das Buch eingeben"
 
 #: ../src/imageio/storage/picasa.c:599
 msgid "picasa webalbum"
@@ -2616,9 +2603,8 @@ msgid "contrast"
 msgstr "Kontrast"
 
 #: ../src/iop/bilat.c:232 ../src/iop/globaltonemap.c:593
-#, fuzzy
 msgid "detail"
-msgstr "entfernen"
+msgstr "Detail"
 
 #: ../src/iop/bilateral.cc:69
 msgid "denoise (bilateral filter)"
@@ -2933,9 +2919,8 @@ msgid "channel mixer"
 msgstr "Kanalmixer"
 
 #: ../src/iop/channelmixer.c:436
-#, fuzzy
 msgid "destination"
-msgstr "Beschreibung"
+msgstr "Ziel"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:282
@@ -3076,7 +3061,7 @@ msgstr "1:2"
 
 #: ../src/iop/clipping.c:1064
 msgid "7:5"
-msgstr ""
+msgstr "7:5"
 
 #: ../src/iop/clipping.c:1066
 msgid "5:4"
@@ -3084,7 +3069,7 @@ msgstr "5:4"
 
 #: ../src/iop/clipping.c:1070
 msgid "16:10"
-msgstr ""
+msgstr "16:10"
 
 #: ../src/iop/clipping.c:1071
 msgid "10:8 in print"
@@ -3153,7 +3138,7 @@ msgstr "Goldene Spirale"
 #: ../src/iop/clipping.c:1109 ../src/iop/lens.c:1626
 #: ../src/libs/live_view.c:348 ../src/libs/tools/filter.c:101
 msgid "all"
-msgstr "Alles"
+msgstr "alles"
 
 #: ../src/iop/clipping.c:1110 ../src/libs/live_view.c:349
 msgid "show some extra guides"
@@ -3254,11 +3239,11 @@ msgstr "Profil"
 
 #: ../src/iop/colorin.c:778
 msgid "embedded icc profile"
-msgstr ""
+msgstr "eingebettetes ICC-Profil"
 
 #: ../src/iop/colorin.c:780
 msgid "dng embedded matrix"
-msgstr ""
+msgstr "in DNG eingebettete Matrix"
 
 #: ../src/iop/colorin.c:782
 msgid "standard color matrix"
@@ -3642,19 +3627,19 @@ msgctxt "accel"
 msgid "auto-exposure"
 msgstr "automatische Belichtung"
 
-#: ../src/iop/exposure.c:382
+#: ../src/iop/exposure.c:383
 msgid "adjust the black level"
 msgstr "Schwarzwert anpassen"
 
-#: ../src/iop/exposure.c:384
+#: ../src/iop/exposure.c:385
 msgid "black"
 msgstr "Schwarz"
 
-#: ../src/iop/exposure.c:387
+#: ../src/iop/exposure.c:388
 msgid "adjust the exposure correction"
 msgstr "Belichtungskorrektur anpassen"
 
-#: ../src/iop/exposure.c:397
+#: ../src/iop/exposure.c:398
 msgid "percentage of bright values clipped out"
 msgstr "Prozentsatz der hellen Werte, die abgeschnitten werden"
 
@@ -3706,38 +3691,39 @@ msgid "gamma"
 msgstr "Gamma"
 
 #: ../src/iop/globaltonemap.c:89
-#, fuzzy
 msgid "global tonemap"
-msgstr "globale Optionen"
+msgstr "globales Tonemapping"
 
+# Ugh ...
+# Die Operatoren sollten auch übersetzt werden!
 #: ../src/iop/globaltonemap.c:562
-#, fuzzy
 msgid "operator"
-msgstr "Blende"
+msgstr "Operator"
 
 #: ../src/iop/globaltonemap.c:568
-#, fuzzy
 msgid "the global tonemap operator"
-msgstr "Globale Sättigung setzen"
+msgstr "der globale Tonemapping-Operator"
 
 #: ../src/iop/globaltonemap.c:575
 msgid "bias"
-msgstr ""
+msgstr "Bias"
 
+# ...?
 #: ../src/iop/globaltonemap.c:576
 msgid ""
 "the bias for tonemapper controls the linearity, the higher the more details "
 "in blacks"
 msgstr ""
+"das Bias des Tonemappers bestimmt die Linearität, je höher desto mehr "
+"Details in schwarzen Bereichen"
 
 #: ../src/iop/globaltonemap.c:584
-#, fuzzy
 msgid "target"
-msgstr "Speicherziel"
+msgstr "Ziel"
 
 #: ../src/iop/globaltonemap.c:585
 msgid "the target light for tonemapper specified as cd/m2"
-msgstr ""
+msgstr "die Zielhelligkeit des Tonemappers, angegeben in cd/m2"
 
 #: ../src/iop/graduatednd.c:69
 msgid "neutral grey ND2 (soft)"
@@ -3896,11 +3882,12 @@ msgid "highlight reconstruction method"
 msgstr "Methode zur Rekonstruktion der Spitzlichter"
 
 #: ../src/iop/highlights.c:387
-#, fuzzy
 msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
-msgstr "Abschneide-Schwellwert gegen magenta Spitzlichter manuell anpassen"
+msgstr ""
+"Abschneide-Schwellwert gegen magenta Spitzlichter manuell anpassen (es "
+"sollte niemals nötig sein, diesen Wert zu ändern)"
 
 #: ../src/iop/highlights.c:389
 msgid "clipping threshold"
@@ -4024,10 +4011,9 @@ msgid "lens model"
 msgstr "Objektiv"
 
 #: ../src/iop/lens.c:80
-#, fuzzy
 msgctxt "accel"
 msgid "select corrections"
-msgstr "Objektivkorrektur"
+msgstr "Korrekturen auswählen"
 
 #: ../src/iop/lens.c:1025
 #, c-format
@@ -4086,33 +4072,28 @@ msgid "distance to subject"
 msgstr "Entfernung"
 
 #: ../src/iop/lens.c:1632
-#, fuzzy
 msgid "distortion & TCA"
-msgstr "verzerren"
+msgstr "Verzerrung & TCA"
 
 #: ../src/iop/lens.c:1638
-#, fuzzy
 msgid "distortion & vignetting"
-msgstr "Vignettierung"
+msgstr "Verzerrung & Vignettierung"
 
 #: ../src/iop/lens.c:1644
-#, fuzzy
 msgid "TCA & vignetting"
-msgstr "Vignettierung"
+msgstr "TCA & Vignettierung"
 
 #: ../src/iop/lens.c:1650
-#, fuzzy
 msgid "only distortion"
-msgstr "verzerren"
+msgstr "nur Verzerrung"
 
 #: ../src/iop/lens.c:1656
 msgid "only TCA"
-msgstr ""
+msgstr "nur TCA"
 
 #: ../src/iop/lens.c:1662
-#, fuzzy
 msgid "only vignetting"
-msgstr "Vignettierung"
+msgstr "nur Vignettierung"
 
 #: ../src/iop/lens.c:1683
 msgid "find camera"
@@ -4122,16 +4103,13 @@ msgstr "Kamera finden"
 msgid "find lens"
 msgstr "Objektiv finden"
 
-# zu frei?
 #: ../src/iop/lens.c:1729
-#, fuzzy
 msgid "corrections"
-msgstr "zentrale Optionen"
+msgstr "Korrekturen"
 
 #: ../src/iop/lens.c:1731
-#, fuzzy
 msgid "which corrections to apply"
-msgstr "Verzerrungen korrigieren oder hinzufügen"
+msgstr "welche Korrekturen sollen angewandt werden"
 
 #: ../src/iop/lens.c:1746
 msgid "geometry"
@@ -4155,7 +4133,7 @@ msgstr "Panorama"
 
 #: ../src/iop/lens.c:1752
 msgid "equirectangular"
-msgstr "Equirectangular"
+msgstr "equirectangular"
 
 #: ../src/iop/lens.c:1759
 msgid "auto scale"
@@ -4182,33 +4160,28 @@ msgid "distort"
 msgstr "verzerren"
 
 #: ../src/iop/lens.c:1780
-#, fuzzy
 msgid "transversal chromatic aberration red"
-msgstr "Chromatische Aberration"
+msgstr "transversale chromatische Aberration Rot"
 
 #: ../src/iop/lens.c:1781
-#, fuzzy
 msgid "tca red"
-msgstr " Rot "
+msgstr "TCA Rot"
 
 #: ../src/iop/lens.c:1786
-#, fuzzy
 msgid "transversal chromatic aberration blue"
-msgstr "Chromatische Aberration"
+msgstr "transversale chromatische Aberration Blau"
 
 #: ../src/iop/lens.c:1787
-#, fuzzy
 msgid "tca blue"
-msgstr " Blau "
+msgstr "TCA Blau"
 
 #: ../src/iop/lens.c:1794
-#, fuzzy
 msgid "corrections done: "
-msgstr "Korrekturgruppe"
+msgstr "ausgeführte Korrekturen: "
 
 #: ../src/iop/lens.c:1795
 msgid "which corrections have actually been done"
-msgstr ""
+msgstr "welche Korrekturen wurden tatsächlich ausgeführt"
 
 #: ../src/iop/levels.c:40
 msgid "levels"
@@ -4337,23 +4310,20 @@ msgid "bilateral filter"
 msgstr "bilateralem Filter"
 
 #: ../src/iop/lowpass.c:511
-#, fuzzy
 msgid "radius of gaussian/bilateral blur"
-msgstr "der Radius des Gaußschen Weichzeichners"
+msgstr "Radius des Gaußschen/bilateralen Weichzeichners"
 
 #: ../src/iop/lowpass.c:512
-#, fuzzy
 msgid "contrast of lowpass filter"
-msgstr "der Kontrast des Tiefpassfilters"
+msgstr "Kontrast des Tiefpassfilters"
 
 #: ../src/iop/lowpass.c:513
-#, fuzzy
 msgid "color saturation of lowpass filter"
-msgstr "die Farbsättigung des Tiefpassfilters"
+msgstr "Farbsättigung des Tiefpassfilters"
 
 #: ../src/iop/lowpass.c:514
 msgid "which filter to use for blurring"
-msgstr ""
+msgstr "Filter, der zum Weichzeichnen genutzt wird"
 
 #: ../src/iop/monochrome.c:69
 msgid "monochrome"
@@ -4392,15 +4362,14 @@ msgctxt "accel"
 msgid "chroma"
 msgstr "Chrominanz"
 
-# "maximale Größe" sprengt leider das Layout. :-(
 #: ../src/iop/nlmeans.c:685
-#, fuzzy
 msgid "patch size"
-msgstr "max. Größe"
+msgstr "Fleckgröße"
 
+# Ugh ...
 #: ../src/iop/nlmeans.c:693
 msgid "radius of the patches to match"
-msgstr ""
+msgstr "Radius der Flecken, die verglichen werden"
 
 #: ../src/iop/nlmeans.c:695
 msgid "how much to smooth brightness"
@@ -4629,7 +4598,6 @@ msgstr "Schärfen"
 #. restrict to raw images
 #. make it auto-apply for matching images:
 #: ../src/iop/sharpen.c:93 ../src/iop/sharpen.c:95 ../src/iop/sharpen.c:97
-#, fuzzy
 msgid "sharpen"
 msgstr "schärfen"
 
@@ -4763,7 +4731,7 @@ msgstr ""
 msgid "spot removal"
 msgstr "Fleckenentfernung"
 
-#: ../src/iop/spots.c:185
+#: ../src/iop/spots.c:196
 msgid ""
 "click on a spot and drag on canvas to heal.\n"
 "use the mouse wheel to adjust size.\n"
@@ -4773,11 +4741,11 @@ msgstr ""
 "Größe kann mit Mausrad angepasst werden.\n"
 "Rechtsklick entfernt eine Korrektur."
 
-#: ../src/iop/spots.c:189
+#: ../src/iop/spots.c:200
 msgid "number of strokes:"
 msgstr "Anzahl Korrekturen:"
 
-#: ../src/iop/spots.c:346
+#: ../src/iop/spots.c:357
 msgid "spot removal only supports up to 32 spots"
 msgstr "Fleckenentfernung unterstützt nur 32 Flecken"
 
@@ -5404,37 +5372,33 @@ msgid "collect images"
 msgstr "Bilder sammeln"
 
 #: ../src/libs/collect.c:415
-#, fuzzy
 msgid "search filmroll"
-msgstr "Filmrolle auswählen"
+msgstr "Filmrolle suchen"
 
 #: ../src/libs/collect.c:503
 #, c-format
 msgid "Problem selecting new path for the filmroll in %s"
-msgstr ""
+msgstr "Problem beim Auswählen des neuen Pfads für die Filmrolle in %s"
 
 #: ../src/libs/collect.c:542
-#, fuzzy
 msgid "search filmroll..."
-msgstr "Filmrolle auswählen"
+msgstr "Filmrolle suchen ..."
 
 #: ../src/libs/collect.c:548
 msgid "sync..."
-msgstr ""
+msgstr "synchronisieren ..."
 
 #: ../src/libs/collect.c:554
-#, fuzzy
 msgid "remove..."
-msgstr "entfernen"
+msgstr "entfernen ..."
 
 #: ../src/libs/collect.c:992 ../src/libs/collect.c:994
 msgid "not altered"
 msgstr "ungeändert"
 
 #: ../src/libs/collect.c:1174
-#, fuzzy
 msgid "local hdd"
-msgstr "Lokaler Kontrast"
+msgstr "lokale Festplatte"
 
 #: ../src/libs/collect.c:1279 ../src/libs/collect.c:1293
 #: ../src/libs/collect.c:1609
@@ -5479,9 +5443,8 @@ msgid "film roll"
 msgstr "Filmrolle"
 
 #: ../src/libs/collect.h:31
-#, fuzzy
 msgid "folders"
-msgstr "Verzeichnis"
+msgstr "Verzeichnisse"
 
 #: ../src/libs/collect.h:32
 msgid "camera"
@@ -5822,11 +5785,11 @@ msgstr ""
 "die korrekte Zeitzone angegeben werden, damit die GPX-Daten richtig "
 "zugeordnet werden können"
 
-#: ../src/libs/geotagging.c:574
+#: ../src/libs/geotagging.c:573
 msgid "time offset"
 msgstr "Zeitversatz"
 
-#: ../src/libs/geotagging.c:584
+#: ../src/libs/geotagging.c:583
 msgid ""
 "time offset\n"
 "format: [+-]?[[hh:]mm:]ss"
@@ -5834,20 +5797,20 @@ msgstr ""
 "Zeitversatz\n"
 "Format: [+-]?[[hh:]mm:]ss"
 
-#: ../src/libs/geotagging.c:594
+#: ../src/libs/geotagging.c:593
 msgid "calculate the time offset from an image"
 msgstr "Zeitversatz anhand eines Bildes berechnen"
 
-#: ../src/libs/geotagging.c:599
+#: ../src/libs/geotagging.c:598
 msgid "apply time offset to selected images"
 msgstr "Zeitversatz auf ausgewählte Bilder anwenden"
 
 #. gpx
-#: ../src/libs/geotagging.c:607
+#: ../src/libs/geotagging.c:606
 msgid "apply gpx track file"
 msgstr "GPX-Track-Datei anwenden"
 
-#: ../src/libs/geotagging.c:608
+#: ../src/libs/geotagging.c:607
 msgid "parses a gpx file and updates location of selected images"
 msgstr "liest eine GPX-Datei und setzt die Position der ausgewählten Bilder"
 
@@ -5993,30 +5956,29 @@ msgstr "Ausgewählte Bilder um 90° im Uhrzeigersinn drehen"
 
 #: ../src/libs/image.c:196
 msgid "reset rotation"
-msgstr "Drehung zurücksetzen"
+msgstr "Drehung entfernen"
 
 #: ../src/libs/image.c:198
 msgid "reset rotation to exif data"
 msgstr "Drehung auf EXIF-Angabe zurücksetzen"
 
 #: ../src/libs/image.c:205
-#, fuzzy
 msgid "group"
 msgstr "gruppieren"
 
 #: ../src/libs/image.c:207
 msgid "add selected images to expanded group or create a new one"
 msgstr ""
+"ausgewählte Bilder zur aufgeklappten Gruppe hinzufügen oder neue Gruppe "
+"erstellen"
 
 #: ../src/libs/image.c:211
-#, fuzzy
 msgid "ungroup"
-msgstr "Gruppierung aufheben"
+msgstr "Gruppe auflösen"
 
 #: ../src/libs/image.c:213
-#, fuzzy
 msgid "remove selected images from the group"
-msgstr "Ausgewählte Bilder um 90° im Uhrzeigersinn drehen"
+msgstr "Ausgewählte Bilder aus der Gruppe entfernen"
 
 #: ../src/libs/image.c:229
 msgctxt "accel"
@@ -6341,27 +6303,25 @@ msgid "find location"
 msgstr "Position finden"
 
 #: ../src/libs/map_settings.c:37
-#, fuzzy
 msgid "map settings"
-msgstr "Bildeinstellungen"
+msgstr "Karteneinstellungen"
 
 #: ../src/libs/map_settings.c:92
-#, fuzzy
 msgid "show osd"
-msgstr "%s anzeigen"
+msgstr "OSD anzeigen"
 
 #: ../src/libs/map_settings.c:93
 msgid "toggle the visibility of the map overlays"
-msgstr ""
+msgstr "Sichtbarkeit der Karten-Überlagerungen umschalten"
 
 #: ../src/libs/map_settings.c:101
-#, fuzzy
 msgid "map source"
-msgstr "Quellanteil"
+msgstr "Karten-Quelle"
 
 #: ../src/libs/map_settings.c:107
 msgid "select the source of the map. some entries might not work"
 msgstr ""
+"Quelle der Karte auswählen. Manche Einträge könnten nicht funktionieren"
 
 #: ../src/libs/metadata.c:52
 msgid "metadata editor"
@@ -6479,11 +6439,11 @@ msgstr "Rechte"
 #. geotagging
 #: ../src/libs/metadata_view.c:100
 msgid "latitude"
-msgstr ""
+msgstr "Breite"
 
 #: ../src/libs/metadata_view.c:101
 msgid "longitude"
-msgstr ""
+msgstr "Länge"
 
 #: ../src/libs/metadata_view.c:113
 msgid "image information"
@@ -6521,27 +6481,9 @@ msgstr "Helligkeitsgruppe"
 msgid "effect group"
 msgstr "Effektgruppe"
 
-#: ../src/libs/modulelist.c:46
+#: ../src/libs/modulelist.c:54
 msgid "more modules"
 msgstr "weitere Module"
-
-#. construct tooltip text into option
-#: ../src/libs/modulelist.c:101
-#, c-format
-msgid "show %s"
-msgstr "%s anzeigen"
-
-#. construct tooltip text into option
-#: ../src/libs/modulelist.c:117
-#, c-format
-msgid "%s as favorite"
-msgstr "%s als Favorit"
-
-#. construct tooltip text into option
-#: ../src/libs/modulelist.c:133
-#, c-format
-msgid "hide %s"
-msgstr "%s verstecken"
 
 #: ../src/libs/navigation.c:55
 msgid "navigation"
@@ -6761,9 +6703,8 @@ msgstr "bearbeiten"
 
 # hmm, ...
 #: ../src/libs/styles.c:380
-#, fuzzy
 msgid "edit the selected style in list above"
-msgstr "ausgewählten Stil in der Liste löschen"
+msgstr "ausgewählten Stil in der Liste bearbeiten"
 
 # hmm, ...
 #: ../src/libs/styles.c:387
@@ -7309,9 +7250,17 @@ msgid "preview"
 msgstr "Vorschau"
 
 #: ../src/views/map.c:81
-#, fuzzy
 msgid "map"
-msgstr "Maximum"
+msgstr "Karte"
+
+#~ msgid "show %s"
+#~ msgstr "%s anzeigen"
+
+#~ msgid "%s as favorite"
+#~ msgstr "%s als Favorit"
+
+#~ msgid "hide %s"
+#~ msgstr "%s verstecken"
 
 #~ msgid "database location"
 #~ msgstr "Speicherort der Datenbank"
@@ -7322,6 +7271,22 @@ msgstr "Maximum"
 #~ msgstr ""
 #~ "Dateiname relativ zum Verzeichnis ~/.config/darktable, sonst mit "
 #~ "Schrägstrich beginnen (erfordert Neustart)."
+
+#~ msgctxt "accel"
+#~ msgid "pick color"
+#~ msgstr "Farbe wählen"
+
+#~ msgctxt "accel"
+#~ msgid "linear part"
+#~ msgstr "linearer Teil"
+
+#~ msgctxt "accel"
+#~ msgid "gamma exponential part"
+#~ msgstr "exponentieller Gamma-Teil"
+
+#, fuzzy
+#~ msgid "colorblend"
+#~ msgstr "Farbmarkierung Blau"
 
 #~ msgid " green "
 #~ msgstr " Grün "
@@ -7334,9 +7299,6 @@ msgstr "Maximum"
 
 #~ msgid " value "
 #~ msgstr " Hellwert "
-
-#~ msgid "advanced edit of style"
-#~ msgstr "Erweiterter Stil-Editor"
 
 # nicht schön
 #~ msgid ""
@@ -7389,10 +7351,6 @@ msgstr "Maximum"
 #~ "$(DESKTOP) - Desktop-Verzeichnis"
 
 #~ msgctxt "accel"
-#~ msgid "pick color"
-#~ msgstr "Farbe wählen"
-
-#~ msgctxt "accel"
 #~ msgid "blend L"
 #~ msgstr "mische L"
 
@@ -7422,9 +7380,6 @@ msgstr "Maximum"
 #~ msgid "blend h"
 #~ msgstr "mische h"
 
-#~ msgid "this doesn't work for raw/hdr images."
-#~ msgstr "Dies funktioniert nicht bei RAW/HDR-Bildern."
-
 #~ msgid "tca R"
 #~ msgstr "TCA R"
 
@@ -7447,16 +7402,14 @@ msgstr "Maximum"
 #~ "Aberrationskorrektur für den Blau-Kanal.\n"
 #~ "für Standardwert bei 1.0 belassen"
 
-#~ msgctxt "accel"
-#~ msgid "linear part"
-#~ msgstr "linearer Teil"
-
-#~ msgctxt "accel"
-#~ msgid "gamma exponential part"
-#~ msgstr "exponentieller Gamma-Teil"
-
 #~ msgid "location"
 #~ msgstr "Position"
+
+#~ msgid "advanced edit of style"
+#~ msgstr "Erweiterter Stil-Editor"
+
+#~ msgid "this doesn't work for raw/hdr images."
+#~ msgstr "Dies funktioniert nicht bei RAW/HDR-Bildern."
 
 #~ msgid "geolocation"
 #~ msgstr "Geotagging"
