@@ -126,8 +126,11 @@ typedef struct dt_iop_graduatednd_gui_data_t
 {
   GtkVBox   *vbox;
   GtkWidget  *label1,*label2,*label3,*label4,*label5,*label6;            			      // density, compression, rotation, offset, hue, saturation
-  GtkWidget *scale1,*scale2,*scale3,*scale4;        // density, compression, rotation, offset
+  GtkWidget *scale1,*scale2;        // density, compression
   GtkWidget *gslider1, *gslider2; // hue, saturation
+  
+  int selected;
+  int dragging;
 }
 dt_iop_graduatednd_gui_data_t;
 
@@ -162,8 +165,6 @@ void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "density"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "compression"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "split"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -173,8 +174,6 @@ void connect_key_accels(dt_iop_module_t *self)
 
   dt_accel_connect_slider_iop(self, "density", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "compression", GTK_WIDGET(g->scale2));
-  dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->scale3));
-  dt_accel_connect_slider_iop(self, "split", GTK_WIDGET(g->scale4));
 }
 
 static inline float
@@ -189,95 +188,115 @@ typedef struct dt_iop_vector_2d_t
   double y;
 } dt_iop_vector_2d_t;
 
-// static int
-// get_grab(float pointerx, float pointery, float zoom_scale){
-//   const float radius = 5.0/zoom_scale;
-//
-//   //TODO add correct calculations
-//   if(powf(pointerx-startx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 2;    // x size
-//   if(powf(pointerx, 2)+powf(pointery-starty, 2) <= powf(radius, 2)) return 4;    // y size
-//   if(powf(pointerx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 1;           // center
-//   if(powf(pointerx-endx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 8;      // x falloff
-//   if(powf(pointerx, 2)+powf(pointery-endy, 2) <= powf(radius, 2)) return 16;     // y falloff
-//
-//   return 0;
-// }
-
-// static void
-// draw_overlay(cairo_t *cr, float wd, float ht, int grab, float zoom_scale)
-// {
-//   const float radius_reg = 4.0/zoom_scale;
-//
-//   // top-left
-//   cairo_arc(cr, 0.0, 0.0, radius_reg, 0.0, M_PI*2.0);
-//   cairo_stroke(cr);
-//
-//   // bottom-right
-//   cairo_arc(cr, wd, ht, radius_reg, 0.0, M_PI*2.0);
-//   cairo_stroke(cr);
-// }
-
 void
 gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
+  dt_develop_t *dev = self->dev;
+  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
+  dt_iop_graduatednd_params_t *p   = (dt_iop_graduatednd_params_t *)self->params;
 
-  dt_develop_t *dev             = self->dev;
-//   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-//   dt_iop_graduatednd_params_t *p   = (dt_iop_graduatednd_params_t *)self->params;
-
-  // general house keeping.
   int32_t zoom, closeup;
   float zoom_x, zoom_y;
   float wd = dev->preview_pipe->backbuf_width;
   float ht = dev->preview_pipe->backbuf_height;
-
-// Commented out to allow this stub to be compilable with some versions of gcc ...
-//  float bigger_side, smaller_side;
-//  if(wd >= ht)
-//  {
-//    bigger_side = wd;
-//    smaller_side = ht;
-//  }
-//  else
-//  {
-//    bigger_side = ht;
-//    smaller_side = wd;
-//  }
   DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
   DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
   DT_CTL_GET_GLOBAL(zoom, dev_zoom);
   DT_CTL_GET_GLOBAL(closeup, dev_closeup);
   float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
-  float pzx, pzy;
-  dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
 
-  cairo_translate(cr, width/2.0, height/2.0);
+  cairo_translate(cr, width/2.0, height/2.0f);
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
-
-  // now top-left is (0,0) and bottom-right is (wd,ht)
-
-  //TODO calculate values for and execute cairo_translate() and cairo_rotate().
-  //     of course the results can also be passed to draw_overlay() if it's easier to use them there instead.
-
-  // finally draw the guides. if rotation and translation is done correctly it can be drawn statically in draw_overlay().
-//   int grab = get_grab(pzx*wd*0.5, pzy*ht*0.5, zoom_scale); //FIXME use the calculated offsets in the 1st and 2nd paramter to get correct mouse positions
+  
+  //we get center point
+  const float cx = 0.5;
+  const float cy = p->offset/100.0;
+  
+  //and the extremity
+  const float v=(-p->rotation/180)*M_PI;
+  const float r = tanf(v)*0.5;
+  
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
-  cairo_set_line_width(cr, 3.0/zoom_scale);
+  if(g->selected == 1 || g->dragging == 1) cairo_set_line_width(cr, 5.0/zoom_scale);
+  else                           cairo_set_line_width(cr, 3.0/zoom_scale);
   cairo_set_source_rgba(cr, .3, .3, .3, .8);
-//   draw_overlay(cr, wd, ht, grab, zoom_scale); //FIXME removed to not annoy users as long as this is just a demo.
-  cairo_set_line_width(cr, 1.0/zoom_scale);
-  cairo_set_source_rgba(cr, .8, .8, .8, .8);
-//   draw_overlay(cr, wd, ht, grab, zoom_scale); //FIXME removed to not annoy users as long as this is just a demo.
+  
+  cairo_move_to(cr,0,(cy-r)*ht);
+  cairo_line_to(cr,wd,(cy+r)*ht);
+  cairo_stroke(cr);
 
+  if(g->selected == 1 || g->dragging == 1) cairo_set_line_width(cr, 2.0/zoom_scale);
+  else                           cairo_set_line_width(cr, 1.0/zoom_scale);
+  cairo_set_source_rgba(cr, .8, .8, .8, .8);
+  cairo_move_to(cr,0,(cy-r)*ht);
+  cairo_line_to(cr,wd,(cy+r)*ht);
+  cairo_stroke(cr);
+  
+  //and the center point
+  float pt_size = 8.0/zoom_scale;
+  if(g->selected == 2 || g->dragging == 2) cairo_set_line_width(cr, 2.0/zoom_scale);
+  else                           cairo_set_line_width(cr, 1.0/zoom_scale);
+  cairo_rectangle(cr, cx*wd - pt_size*0.5, cy*ht - pt_size*0.5, pt_size,pt_size);
+  cairo_fill_preserve(cr);
+  cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.5);
+  cairo_stroke(cr);
 }
 
 int
 mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 {
-  //TODO see vignette.c ...
+  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
+  dt_iop_graduatednd_params_t *p   = (dt_iop_graduatednd_params_t *)self->params;
+  int32_t zoom, closeup;
+  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+  float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2 : 1, 1);
+  float pzx, pzy;
+  dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+  pzx += 0.5f;
+  pzy += 0.5f;
+  
+  //are we dragging something ?
+  if (g->dragging > 0)
+  {
+    if (g->dragging == 2)
+    {
+      p->offset = pzy*100.0;
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+    }
+    else
+    {
+      float alpha = atan2f((pzy-p->offset/100.0),(pzx-0.5));
+      //hey, don't jump too much
+      alpha = -alpha*180.0/M_PI;
+      if (fabsf(alpha-p->rotation) > 90.0 && fabsf(alpha-p->rotation) < 270) alpha -= 180;
+      if (alpha > 180) alpha -= 360;
+      else if (alpha < -180) alpha += 360;
+      p->rotation = alpha;
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+    }
+  }
+  else
+  {
+    g->selected = 0;
+    const float cy = p->offset/100.0;
+    const float ext = 0.05f / zoom_scale;
+    //are we near the center point ?
+    if (pzy>cy-ext && pzy<cy+ext && pzx>0.5-ext && pzx<0.5+ext)
+    {
+      g->selected = 2;
+    }
+    else
+    {
+      const float a = tanf((-p->rotation/180)*M_PI);
+      float b = cy - a*0.5;
+      //let's see if we are on the line
+      float ny = a*pzx+b;
+      if (fabsf(pzy-ny) < ext*0.5) g->selected = 1;
+    }
+  }
+
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -285,15 +304,49 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 int
 button_pressed(struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state)
 {
-  if(which == 1)
+  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
+  if(g->selected>0 && which == 1)
+  {
+    g->dragging = g->selected;
     return 1;
+  }
+  g->dragging = 0;
   return 0;
 }
 
 int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
 {
-  if(which == 1)
+  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
+  g->dragging = 0;
+  return 0;
+}
+
+int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state)
+{
+  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
+  dt_iop_graduatednd_params_t *p   = (dt_iop_graduatednd_params_t *)self->params;
+  if ((state&GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+  {
+    float dens;
+    if (up) dens = fminf(8.0,p->density+0.1);
+    else dens = fmaxf(-8.0,p->density-0.1);
+    if (dens != p->density)
+    {
+      dt_bauhaus_slider_set(g->scale1,dens);
+    }
     return 1;
+  }
+  if ((state&GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+  {
+    float comp;
+    if (up) comp = fminf(100.0,p->compression+1.0);
+    else comp = fmaxf(0.0,p->compression-1.0);
+    if (comp != p->compression)
+    {
+      dt_bauhaus_slider_set(g->scale2,comp);
+    }
+    return 1;
+  }
   return 0;
 }
 
@@ -533,28 +586,6 @@ compression_callback (GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void
-rotation_callback (GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
-  p->rotation= dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-
-static void
-offset_callback (GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
-  p->offset= dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)p1;
@@ -602,8 +633,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)module->params;
   dt_bauhaus_slider_set(g->scale1, p->density);
   dt_bauhaus_slider_set(g->scale2, p->compression);
-  dt_bauhaus_slider_set(g->scale3, p->rotation);
-  dt_bauhaus_slider_set(g->scale4, p->offset);
   dt_bauhaus_slider_set(g->gslider1, p->hue);
   dt_bauhaus_slider_set(g->gslider2, p->saturation);
 }
@@ -691,26 +720,9 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
                     G_CALLBACK (compression_callback), self);
 
-  /* rotation */
-  g->scale3 = dt_bauhaus_slider_new_with_range(self,-180, 180,0.5, p->rotation, 2);
-  dt_bauhaus_widget_set_label(g->scale3,_("rotation"));
-  dt_bauhaus_slider_set_format(g->scale3,"%.2f°");
-  g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("rotation of filter -180 to 180 degrees"), (char *)NULL);
-  g_signal_connect (G_OBJECT (g->scale3), "value-changed",
-                    G_CALLBACK (rotation_callback), self);
-  /* offset */
-  g->scale4 = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 1.0, p->offset, 0);
-  dt_bauhaus_slider_set_format(g->scale4,"%.0f%%");
-  dt_bauhaus_widget_set_label(g->scale4,_("split"));
-  g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("offset of filter in angle of rotation"), (char *)NULL);
-  g_signal_connect (G_OBJECT (g->scale4), "value-changed",
-                    G_CALLBACK (offset_callback), self);
-
   /* add widgets to ui */
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
 
   /* hue slider */
   g->gslider1 = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01f, 0.0f, 2);
@@ -731,7 +743,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* saturation slider */
   g->gslider2 = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01f, 0.0f, 2);
-  // dt_bauhaus_slider_set_format(g->gslider2, "");
   dt_bauhaus_widget_set_label(g->gslider2, _("saturation"));
   dt_bauhaus_slider_set_stop(g->gslider2, 0.0f, 1.0f, 1.0f, 1.0f);
   dt_bauhaus_slider_set_stop(g->gslider2, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -740,6 +751,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (saturation_callback), self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->gslider2, TRUE, TRUE, 0);
+  g->selected = 0;
+  g->dragging = 0;
 
 }
 
