@@ -1352,10 +1352,9 @@ _lib_collect_gui_update (dt_lib_module_t *self)
     if(text)
     {
       g_signal_handlers_block_matched (d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, update_view, NULL);
-      gtk_entry_set_text(GTK_ENTRY(d->rule[i].text), text);
-      g_signal_handlers_unblock_matched (d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, update_view, NULL);
       g_signal_handlers_block_matched (d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
       gtk_entry_set_text(GTK_ENTRY(d->rule[i].text), text);
+      g_signal_handlers_unblock_matched (d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, update_view, NULL);
       g_signal_handlers_unblock_matched (d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
       g_free(text);
       d->rule[i].typing = FALSE;
