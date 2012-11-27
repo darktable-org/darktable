@@ -21,6 +21,8 @@
 #endif
 #include "common/camera_control.h"
 #include "control/control.h"
+#include "libraw/libraw.h"
+#include <gphoto2/gphoto2-file.h>
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -775,12 +777,35 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_
           if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_PREVIEW,preview,c->gpcontext) < GP_OK )
           {
             // No preview for file lets check image size to se if we should download full image for preview...
-            if( cfi.file.size > 0  && cfi.file.size < 512000 )
+            if( cfi.file.size > 0  && cfi.file.size < 512000 ) {
               if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_NORMAL,preview,c->gpcontext) < GP_OK )
               {
                 preview=NULL;
                 dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to retreive preview of file %s\n",filename);
               }
+            } else if (!strncmp(c->active_camera->port, "disk:", 5)) {
+              int ret;
+              char fullpath[512];
+              snprintf(fullpath,512,"%s/%s/%s",c->active_camera->port+5, path, filename);
+              libraw_data_t *raw = libraw_init(0);
+              libraw_processed_image_t *image = NULL;
+              ret = libraw_open_file(raw, fullpath);
+              if(ret) goto libraw_thumb_fail;
+              ret = libraw_unpack_thumb(raw);
+              if(ret) goto libraw_thumb_fail;
+              ret = libraw_adjust_sizes_info_only(raw);
+              if(ret) goto libraw_thumb_fail;
+              image = libraw_dcraw_make_mem_thumb(raw, &ret);
+              if(!image || ret) goto libraw_thumb_fail;
+              gp_file_set_type(preview, GP_FILE_ACCESSTYPE_MEMORY);
+              char *img = (char *) malloc(image->data_size);
+              if (!img) goto libraw_thumb_fail;
+              memcpy(img, image->data, image->data_size); 
+              gp_file_set_data_and_size(preview, img,(unsigned long int) image->data_size);
+              free(image);
+libraw_thumb_fail:
+              libraw_close(raw);
+            }
           }
         }
 
