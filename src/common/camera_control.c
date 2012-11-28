@@ -797,7 +797,6 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_
               if(ret) goto libraw_thumb_fail;
               image = libraw_dcraw_make_mem_thumb(raw, &ret);
               if(!image || ret) goto libraw_thumb_fail;
-              gp_file_set_type(preview, GP_FILE_ACCESSTYPE_MEMORY);
               char *img = (char *) malloc(image->data_size);
               if (!img) goto libraw_thumb_fail;
               memcpy(img, image->data, image->data_size); 
