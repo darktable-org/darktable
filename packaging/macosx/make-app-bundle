@@ -2,7 +2,7 @@
 ~/.local/bin/gtk-mac-bundler darktable.bundle
 sed -i '' 's|/opt/local/share/locale||' package/darktable.app/Contents/Resources/etc/gtk-2.0/gtk.immodules
 sed -i '' 's|@executable_path|../..|' package/darktable.app/Contents/Resources/etc/pango/pango.modules
-sed -i '' 's|{VERSION}|'$(git describe --tags --long|cut -d- -f2)'|' package/darktable.app/Contents/Info.plist
+sed -i '' 's|{VERSION}|'$(git describe --tags --long|cut -d- -f2|sed 's/^\([0-9]*\.[0-9]*\)$/\1.0/')'|' package/darktable.app/Contents/Info.plist
 sed -i '' 's|{COMMITS}|'$(git describe --tags --long|cut -d- -f3)'|' package/darktable.app/Contents/Info.plist
 rm package/darktable.app/Contents/Resources/etc/pango/pangorc
 rm package/darktable.app/Contents/Resources/lib/libgphoto2/print-camera-list
