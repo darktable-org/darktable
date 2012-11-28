@@ -81,7 +81,7 @@ typedef struct dt_iop_clipping_params_t
   float angle, cx, cy, cw, ch, k_h, k_v;
   float kxa, kya, kxb, kyb, kxc, kyc, kxd, kyd;
   int k_type, k_sym;
-  gboolean k_apply, crop_auto;
+  int k_apply, crop_auto;
 }
 dt_iop_clipping_params_t;
 
@@ -139,8 +139,8 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
       if (n->k_h ==0 && n->k_v==0) n->k_type = 0;
       else n->k_type = 4;
       n->k_sym = 0;
-      n->k_apply = FALSE;
-      n->crop_auto = TRUE;
+      n->k_apply = 0;
+      n->crop_auto = 1;
     }
     free(tmp);
     return 0;
@@ -192,8 +192,8 @@ typedef struct dt_iop_clipping_data_t
   
   float k_space[4];         //space for the "destination" rectangle of the keystone quadrilatere
   float kxa, kya, kxb, kyb, kxc, kyc, kxd, kyd; //point of the "source" quadrilatere (modified if keystone is not "full")
-  gboolean k_apply;
-  gboolean crop_auto;
+  int k_apply;
+  int crop_auto;
   float enlarge_x, enlarge_y;
 }
 dt_iop_clipping_data_t;
@@ -351,7 +351,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
     d->m[3] = - rt[3];
   }
   
-  if (!d->k_apply && d->crop_auto)  //this is the old solution.
+  if (d->k_apply==0 && d->crop_auto==1)  //this is the old solution.
   {
     /* Account for interpolation constraints right now, so when doing the
      * backtransform in modify_roi_in all nicely fits */
@@ -430,7 +430,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
       //keystone
       o[0] = corn_x[c];
       o[1] = corn_y[c];
-      if (d->k_apply)
+      if (d->k_apply==1)
       {
         o[0] /= (float)roi_in->width, o[1] /= (float)roi_in->height;
         if (!keystone_transform(o,d->k_space,d->kxa,d->kxb,d->kxc,d->kxd,d->kya,d->kyb,d->kyc,d->kyd))
@@ -555,7 +555,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     o[1] += d->ty*so;
     o[0] /= kw;
     o[1] /= kh;
-    if (d->k_apply) keystone_backtransform(o,d->k_space,d->kxa,d->kxb,d->kxc,d->kxd,d->kya,d->kyb,d->kyc,d->kyd);
+    if (d->k_apply==1) keystone_backtransform(o,d->k_space,d->kxa,d->kxb,d->kxc,d->kxd,d->kya,d->kyb,d->kyc,d->kyd);
     o[0] *= kw;
     o[1] *= kh;
     // transform to roi_in space, get aabb.
@@ -658,7 +658,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         po[1] *= roi_in->scale;
         po[0] += d->tx*roi_in->scale;
         po[1] += d->ty*roi_in->scale;
-        if (d->k_apply) keystone_backtransform(po,k_space,kxa,kxb,kxc,kxd,kya,kyb,kyc,kyd);
+        if (d->k_apply==1) keystone_backtransform(po,k_space,kxa,kxb,kxc,kxd,kya,kyb,kyc,kyd);
         po[0] -= roi_in->x;
         po[1] -= roi_in->y;
 
@@ -724,7 +724,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     float k_sizes[2] = {piece->buf_in.width*roi_in->scale, piece->buf_in.height*roi_in->scale};
     float k_space[4] = { d->k_space[0]*k_sizes[0], d->k_space[1]*k_sizes[1], d->k_space[2]*k_sizes[0], d->k_space[3]*k_sizes[1]};
-    if (!d->k_apply) k_space[2] = 0.0f;
+    if (d->k_apply==0) k_space[2] = 0.0f;
     float ka[2] = { d->kxa*k_sizes[0], d->kya*k_sizes[1]};
     float kb[2] = { d->kxb*k_sizes[0], d->kyb*k_sizes[1]};
     float kc[2] = { d->kxc*k_sizes[0], d->kyc*k_sizes[1]};
@@ -820,7 +820,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->kxb = d->kxc = d->kyc = d->kyd = 0.6f;
   d->k_space[0] = d->k_space[1] = 0.2f;
   d->k_space[2] = d->k_space[3] = 0.6f;
-  d->k_apply = FALSE;
+  d->k_apply = 0;
   d->enlarge_x = d->enlarge_y = 0.0f;
   d->flip = 0;
   d->angle = M_PI/180.0 * p->angle;
@@ -833,7 +833,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if (p->k_type == 4)
   {
     //this is for old keystoning
-    d->k_apply = FALSE;
+    d->k_apply = 0;
     d->all_off = 1;
     if(fabsf(p->k_h) >= .0001) d->all_off = 0;
     if(p->k_h >= -1.0 && p->k_h <= 1.0) d->ki_h = p->k_h;
@@ -842,7 +842,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(p->k_v >= -1.0 && p->k_v <= 1.0) d->ki_v = p->k_v;
     else d->ki_v = 0.0f;
   }
-  else if (p->k_type >= 0 && p->k_apply)
+  else if (p->k_type >= 0 && p->k_apply==1)
   {
     //we reset old keystoning values
     d->ki_h = d->ki_v = 0;
@@ -936,19 +936,19 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->kyc = d->kyc - d->k_space[1];
     d->kyd = d->kyd - d->k_space[1]; 
     
-    d->k_apply = TRUE;
+    d->k_apply = 1;
     d->all_off = 0;
-    d->crop_auto = FALSE;
+    d->crop_auto = 0;
   }
   else if (p->k_type == 0)
   {
     d->all_off = 1;
-    d->k_apply = FALSE;
+    d->k_apply = 0;
   }
   else
   {
     d->all_off = 1;
-    d->k_apply = FALSE;
+    d->k_apply = 0;
     //we are setting the keystone points, so we disable flip and rotate
     d->angle = 0.0f;
     d->flags = 0;
@@ -996,13 +996,12 @@ void gui_focus (struct dt_iop_module_t *self, gboolean in)
     else
     {
       // lost focus, commit current params:
-      commit_box (self, g, p);
-      
       //if the keystone setting is not finished, we discard it
-      if (p->k_type < 4 && p->k_type > 0)
+      if (p->k_apply == 0 && p->k_type < 4 && p->k_type > 0)
       {
         keystone_type_populate(self,FALSE,0);
-      }
+      }      
+      commit_box (self, g, p);
     }
   }
 }
@@ -1228,7 +1227,7 @@ keystone_type_changed (GtkWidget *combo, dt_iop_module_t *self)
   }
   
   //we set the params
-  p->k_apply = FALSE;
+  p->k_apply = 0;
   p->k_type = which;
   if (which == 0 || which == 4) g->k_show = 0;
   else g->k_show = 1;  
@@ -1297,7 +1296,7 @@ void gui_update(struct dt_iop_module_t *self)
     act = 0;
 
   //keystone :
-  if (p->k_apply) g->k_show = 2; //needed to initialise correctly the combobox
+  if (p->k_apply==1) g->k_show = 2; //needed to initialise correctly the combobox
   if (g->k_show == 2)
   {
     keystone_type_populate(self,TRUE,99);
@@ -2315,7 +2314,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
           g->k_selected = -1;
           g->k_drag = FALSE;
           //do the changes
-          p->k_apply = TRUE;
+          p->k_apply = 1;
           commit_box(self,g,p);
         }
         //Horizontal symetry button (1)
