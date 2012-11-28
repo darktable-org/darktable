@@ -27,11 +27,12 @@ REPODIR=/tmp/darktable.repo.$$
 MYPUBLISHER=
 CSET=`git rev-parse --short=15 --verify HEAD`
 # change the VERSION depending on what the latest Release is
-RELEASE=1.0.3
+RELEASE=1.1
 SUFFIX=
 if [ "$1" = "-r" ]; then
     SUFFIX=""
     VERSION=${RELEASE}
+    CSET=${RELEASE}
 else
     SUFFIX="-git"
     VERSION=`git describe HEAD |awk -F"-" '{print $3}'`

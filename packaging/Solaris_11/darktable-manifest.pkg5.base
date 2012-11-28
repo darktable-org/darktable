@@ -27,7 +27,17 @@ dir  path=opt/darktable/bin owner=root group=root mode=755
 file path=opt/darktable/bin/darktable owner=root group=root mode=755
 file path=opt/darktable/bin/darktable-cltest owner=root group=root mode=755
 file path=opt/darktable/bin/darktable-viewer owner=root group=root mode=755
+file path=opt/darktable/bin/sqlite3 owner=root group=root mode=755
+dir  path=opt/darktable/include owner=root group=root mode=755
+file path=opt/darktable/include/sqlite3.h owner=root group=root mode=644
+file path=opt/darktable/include/sqlite3ext.h owner=root group=root mode=644
 dir  path=opt/darktable/lib owner=root group=root mode=755
+file path=opt/darktable/lib/libsqlite3.a owner=root group=root mode=644
+file path=opt/darktable/lib/libsqlite3.so.0.8.6 owner=root group=root mode=755
+link path=opt/darktable/lib/libsqlite3.so.0 target=./libsqlite3.so.0.8.6
+link path=opt/darktable/lib/libsqlite3.so target=./libsqlite3.so.0.8.6.
+dir  path=opt/darktable/lib/pkgconfig owner=root group=root mode=755
+file path=opt/darktable/lib/pkgconfig/sqlite3.pc owner=root group=root mode=644
 dir  path=opt/darktable/lib/darktable owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/libdarktable.so owner=root group=root \
     mode=755
@@ -60,11 +70,15 @@ file path=opt/darktable/lib/darktable/plugins/imageio/storage/libflickr.so \
     owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/imageio/storage/libgallery.so \
     owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/imageio/storage/liblatex.so \
+    owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/imageio/storage/libpicasa.so \
     owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/libatrous.so owner=root \
     group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/libbasecurve.so owner=root \
+    group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libbilat.so owner=root \
     group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/libbilateral.so owner=root \
     group=root mode=755
@@ -188,6 +202,8 @@ file path=opt/darktable/lib/darktable/plugins/lighttable/libfilmstrip.so \
     owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/lighttable/libfilter.so \
     owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libgeotagging.so \
+    owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/lighttable/libglobal_toolbox.so \
     owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/lighttable/libhinter.so \
@@ -203,6 +219,12 @@ file path=opt/darktable/lib/darktable/plugins/lighttable/libimport.so \
 file path=opt/darktable/lib/darktable/plugins/lighttable/libkeywords.so \
     owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/lighttable/liblighttable_mode.so \
+    owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/liblive_view.so \
+    owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/liblocation.so \
+    owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libmap_settings.so \
     owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/lighttable/libmetadata.so \
     owner=root group=root mode=755
@@ -240,6 +262,8 @@ file path=opt/darktable/lib/darktable/views/libcapture.so owner=root \
 file path=opt/darktable/lib/darktable/views/libdarkroom.so owner=root \
     group=root mode=755
 file path=opt/darktable/lib/darktable/views/liblighttable.so owner=root \
+    group=root mode=755
+file path=opt/darktable/lib/darktable/views/libmap.so owner=root \
     group=root mode=755
 dir  path=opt/darktable/share/darktable owner=root group=root mode=755
 file path=opt/darktable/share/darktable/darktable.gtkrc owner=root group=root \
@@ -543,6 +567,8 @@ dir  path=opt/darktable/share/man owner=root group=root mode=755
 dir  path=opt/darktable/share/man/man1 owner=root group=root mode=755
 file path=opt/darktable/share/man/man1/darktable.1 owner=root group=root \
     mode=644
+file path=opt/darktable/share/man/man1/sqlite3.1 owner=root group=root \
+    mode=644
 dir  path=opt/darktable/share/man/man3 owner=root group=root mode=755
 file path=opt/darktable/share/darktable/style/bullet.gif owner=root \
     group=root mode=644
@@ -603,7 +629,6 @@ depend type=require fmri=pkg://sfe/library/libiconv
 #depend type=require-any fmri=pkg://sfe/runtime/gcc fmri=pkg://system/library/gcc-45-runtime
 
 depend type=require fmri=pkg://sfe/runtime/gcc
-depend type=require fmri=pkg://solaris/database/sqlite-3
 depend type=require fmri=pkg://solaris/image/library/libjpeg
 depend type=require fmri=pkg://solaris/library/libxml2
 depend type=require fmri=pkg://solaris/library/zlib
@@ -613,3 +638,5 @@ depend type=require fmri=pkg://solaris/web/curl
 depend type=require fmri=pkg://solaris/x11/library/libxevie
 depend type=require fmri=pkg://solaris/x11/library/mesa
 
+#
+depend type=exclude fmri=pkg:/darktable/darktable-git
