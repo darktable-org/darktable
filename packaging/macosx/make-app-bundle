@@ -11,7 +11,7 @@ find package/darktable.app/Contents/MacOS/darktable-bin package/darktable.app/Co
   install_name_tool -change @executable_path/../lib/darktable/libdarktable.dylib @executable_path/../Resources/lib/darktable/libdarktable.dylib \{} \;
 ln -s /Applications package/
 
-if [ -n "$DEBUGINFO" ]
+if [ -z "$STRIPDEBUGINFO" ]
 then
 	find package/darktable.app/Contents/Resources/lib/darktable \( -name \*.dylib -or -name \*.so \) -exec dsymutil \{} \;
 	dsymutil package/darktable.app/Contents/MacOS/darktable-bin
