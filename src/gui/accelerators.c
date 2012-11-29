@@ -328,6 +328,7 @@ void dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path,
                                   closure);
 
   dt_accel_t *accel =_lookup_accel(accel_path);
+  if(!accel) return; // this happens when the path doesn't match any accel (typos, ...)
 
   accel->closure = closure;
 
