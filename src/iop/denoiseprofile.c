@@ -72,17 +72,17 @@ void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_nlmeans_params_t p = (dt_iop_nlmeans_params_t)
   {
-    2.0f, 50.0f, {2.645e-06f, 2.645e-06f, 2.645e-06f}, {-1.69e-07f, -1.69e-07f, -1.69e-07f}
+    0.0f, 50.0f, {2.645e-06f, 2.645e-06f, 2.645e-06f}, {-1.69e-07f, -1.69e-07f, -1.69e-07f}
   };
   dt_gui_presets_add_generic(_("canon eos 5dm2 iso 100"), self->op, self->version(), &p, sizeof(p), 1);
   p = (dt_iop_nlmeans_params_t)
   {
-    2.0f, 50.0f, {0.0003f, 0.0003f, 0.0003f}, {1.05e-5f, 1.05e-5f, 1.05e-5f}
+    0.0f, 50.0f, {0.0003f, 0.0003f, 0.0003f}, {1.05e-5f, 1.05e-5f, 1.05e-5f}
   };
   dt_gui_presets_add_generic(_("canon eos 5dm2 iso 25600"), self->op, self->version(), &p, sizeof(p), 1);
   p = (dt_iop_nlmeans_params_t)
   {
-    2.0f, 50.0f, {0.01f, 0.01f, 0.01}, {0.0f, 0.0f, 0.0f}
+    0.0f, 50.0f, {0.01f, 0.01f, 0.01}, {0.0f, 0.0f, 0.0f}
   };
   dt_gui_presets_add_generic(_("generic poissonian"), self->op, self->version(), &p, sizeof(p), 1);
 }
@@ -94,7 +94,7 @@ typedef union floatint_t
 }
 floatint_t;
 
-// very fast approximation for 2^-x
+// very fast approximation for 2^-x (returns 0 for x > 126)
 static inline float
 fast_mexp2f(const float x)
 {
@@ -197,7 +197,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   // TODO: fixed K to use adaptive size trading variance and bias!
   // adjust to zoom size:
   const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
-  const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood XXX see above comment
+  const int K = ceilf(10 * roi_in->scale / piece->iscale); // nbhood XXX see above comment
   // TODO: use d->strength to precodition data
 
   // P == 0 : this will degenerate to a (fast) bilateral filter.
@@ -273,7 +273,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
           if(i+ki >= 0 && i+ki < roi_out->width)
           {
             // TODO: could put that outside the loop.
-            const float norm = 1.0f/(2*P+1);
+            // DEBUG XXX bring back to computable range:
+            const float norm = .01f/(2*P+1);
             const __m128 iv = { ins[0], ins[1], ins[2], 1.0f };
             _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(fast_mexp2f(fmaxf(0.0f, slide*norm-2.0f))));
           }
@@ -366,6 +367,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     for(int i=0; i<roi_out->width; i++)
     {
       _mm_store_ps(out, _mm_mul_ps(_mm_load_ps(out), _mm_set1_ps(1.0f/out[3])));
+      // DEBUG show weights
+      // _mm_store_ps(out, _mm_set1_ps(1.0f/out[3]));
       out += 4;
     }
   }

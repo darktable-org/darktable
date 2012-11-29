@@ -134,7 +134,7 @@ write_pfm(const char *filename, float *buf, int wd, int ht)
 #define MIN(a,b) ((a>b)?b:a)
 #define MAX(a,b) ((a>b)?a:b)
 
-#define N 30
+#define N 300
 
 static inline float
 clamp(float f, float m, float M)
@@ -156,6 +156,7 @@ int main(int argc, char *arg[])
   }
   int wd, ht;
   float *input = read_pfm(arg[1], &wd, &ht);
+  float max = 0.0f;
   // sanity checks:
   // for(int k=0;k<3*wd*ht;k++) input[k] = clamp(input[k], 0.0f, 1.0f);
 
@@ -191,8 +192,10 @@ int main(int argc, char *arg[])
         input[3*k+c] = input[3*k+c] / a[c];
         const float d = fmaxf(0.0f, input[3*k+c] + 3./8. + (b[c]/a[c])*(b[c]/a[c]));
         input[3*k+c] = 2.0f*sqrtf(d);
+        max = fmaxf(max, input[3*k+c]);
       }
     }
+    for(int k=0;k<3*wd*ht;k++) input[k] /= max;
   }
   else if(argc >= 4 && !strcmp(arg[2], "-h"))
   {
@@ -333,6 +336,10 @@ int main(int argc, char *arg[])
         std[i][c] = 0.0f;
 #endif
 
+  // scale back in case we needed to bin it down:
+  if(max > 0.0f)
+    for(int i=0;i<N;i++)
+      for(int k=0;k<3;k++) std[i][k] *= max;
   // output variance per brightness level:
   // fprintf(stdout, "# bin std_r std_g std_b hist_r hist_g hist_b cdf_r cdf_g cdf_b\n");
   float sum[3] = {0.0f};

@@ -8,7 +8,7 @@ do
   set term pdf
   set print "${i%pfm}fit"
   set output "${i%pfm}pdf"
-  plot "${i%pfm}dat" u 1:2 w l lw 4 title "noise levels ${i%.pfm}", '' u 1:3 w l lw 4, '' u 1:4 w l lw 4
+# plot "${i%pfm}dat" u 1:2 w l lw 4 title "noise levels ${i%.pfm}", '' u 1:3 w l lw 4, '' u 1:4 w l lw 4
   plot "${i%pfm}dat" u 1:(log(\$5)) w l lw 4 title "histogram ${i%.pfm}", '' u 1:(log(\$6)) w l lw 4, '' u 1:(log(\$7)) w l lw 4
 
 # f2(x) = a0 + a1*x + a2*x**2 + a3*x**3 +a4*x**4 + a5*x**5
