@@ -167,7 +167,7 @@ typedef struct dt_iop_clipping_gui_data_t
   /* last box before change */
   float prev_clip_x, prev_clip_y, prev_clip_w, prev_clip_h;
 
-  int k_selected, k_show;
+  int k_selected, k_show, k_selected_segment;
   gboolean k_drag;
   
   int cropping, straightening, applied, center_lock;
@@ -1879,10 +1879,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     float p2[2] = {p->kxb*wd,p->kyb*ht};
     float p3[2] = {p->kxc*wd,p->kyc*ht};
     float p4[2] = {p->kxd*wd,p->kyd*ht};
-    //gui_backtransform_point(self,p1,wd,ht);
-    //gui_backtransform_point(self,p2,wd,ht);
-    //gui_backtransform_point(self,p3,wd,ht);
-    //gui_backtransform_point(self,p4,wd,ht);
 
     if (p->k_type == 3)
     {
@@ -1909,6 +1905,32 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       cairo_move_to(cr,0,h2l);
       cairo_line_to(cr,wd,h2r);
       cairo_stroke(cr);
+      //redraw selected one
+      cairo_set_line_width(cr, 4.0/zoom_scale);
+      if (g->k_selected_segment == 0)
+      {
+        cairo_move_to(cr,p->kxa*wd,p->kya*ht);
+        cairo_line_to(cr,p->kxb*wd,p->kyb*ht);
+        cairo_stroke(cr);
+      }
+      else if (g->k_selected_segment == 1)
+      {
+        cairo_move_to(cr,p->kxc*wd,p->kyc*ht);
+        cairo_line_to(cr,p->kxb*wd,p->kyb*ht);
+        cairo_stroke(cr);
+      }
+      else if (g->k_selected_segment == 2)
+      {
+        cairo_move_to(cr,p->kxc*wd,p->kyc*ht);
+        cairo_line_to(cr,p->kxd*wd,p->kyd*ht);
+        cairo_stroke(cr);
+      }
+      else if (g->k_selected_segment == 3)
+      {
+        cairo_move_to(cr,p->kxa*wd,p->kya*ht);
+        cairo_line_to(cr,p->kxd*wd,p->kyd*ht);
+        cairo_stroke(cr);
+      }
     }
     else if (p->k_type == 2)
     {
@@ -1925,6 +1947,20 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       cairo_move_to(cr,0,h2l);
       cairo_line_to(cr,wd,h2r);
       cairo_stroke(cr);
+      //redraw selected one
+      cairo_set_line_width(cr, 4.0/zoom_scale);
+      if (g->k_selected_segment == 1)
+      {
+        cairo_move_to(cr,p->kxc*wd,p->kyc*ht);
+        cairo_line_to(cr,p->kxb*wd,p->kyb*ht);
+        cairo_stroke(cr);
+      }
+      else if (g->k_selected_segment == 3)
+      {
+        cairo_move_to(cr,p->kxa*wd,p->kya*ht);
+        cairo_line_to(cr,p->kxd*wd,p->kyd*ht);
+        cairo_stroke(cr);
+      }
     }
     else if (p->k_type == 1)
     {
@@ -1941,6 +1977,20 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       cairo_move_to(cr,v2t,0);
       cairo_line_to(cr,v2b,ht);
       cairo_stroke(cr);
+      //redraw selected one
+      cairo_set_line_width(cr, 4.0/zoom_scale);
+      if (g->k_selected_segment == 0)
+      {
+        cairo_move_to(cr,p->kxa*wd,p->kya*ht);
+        cairo_line_to(cr,p->kxb*wd,p->kyb*ht);
+        cairo_stroke(cr);
+      }
+      else if (g->k_selected_segment == 2)
+      {
+        cairo_move_to(cr,p->kxc*wd,p->kyc*ht);
+        cairo_line_to(cr,p->kxd*wd,p->kyd*ht);
+        cairo_stroke(cr);
+      }
     }
       
     //draw the points
@@ -2022,6 +2072,28 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   }
 }
 
+//determine the distance between the segment [(xa,ya)(xb,yb)] and the point (xc,yc)
+float dist_seg (float xa,float ya,float xb,float yb,float xc,float yc)
+{
+  if (xa==xb && ya==yb) return (xc-xa)*(xc-xa)+(yc-ya)*(yc-ya);
+ 
+  float sx=xb-xa;
+  float sy=yb-ya;
+   
+  float ux=xc-xa;
+  float uy=yc-ya;
+   
+  float dp=sx*ux+sy*uy;
+  if (dp<0) return (xc-xa)*(xc-xa)+(yc-ya)*(yc-ya);
+   
+  float sn2 = sx*sx+sy*sy;
+  if (dp>sn2) return (xc-xb)*(xc-xb)+(yc-yb)*(yc-yb);
+
+  float ah2 = dp*dp / sn2;
+  float un2=ux*ux+uy*uy;
+  return un2-ah2;
+}
+
 int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
@@ -2040,7 +2112,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
   static int old_grab = -1;
   int grab = get_grab (pzx, pzy, g, 30.0/zoom_scale, wd, ht);
 
-  if(darktable.control->button_down && darktable.control->button_down_which == 3)
+  if(darktable.control->button_down && darktable.control->button_down_which == 3 && !g->k_show)
   {
     // second mouse button, straighten activated:
     g->straightening = 1;
@@ -2081,6 +2153,52 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
         if (p->k_sym > 1) p->kyd = fmaxf(yy,(p->kyc+p->kyb+0.01f)/2.0f), p->kya = p->kyc-p->kyd+p->kyb;
         else p->kyd=fmaxf(yy,p->kya+0.01f);
       }
+      dt_control_queue_redraw_center();
+      return 1;
+    }
+    //case when we drag a segment for keystone
+    if (g->k_drag == TRUE && g->k_selected_segment >= 0)
+    {
+      float decalx = pzx - g->button_down_zoom_x;
+      float decaly = pzy - g->button_down_zoom_y;
+      if (g->k_selected_segment == 0 && (p->k_type == 1 || p->k_type == 3))
+      {
+        decaly = fminf(decaly,p->kyd-p->kya);
+        decaly = fminf(decaly,p->kyc-p->kyb);
+        p->kxa += decalx;
+        p->kya += decaly;
+        p->kxb += decalx;
+        p->kyb += decaly;
+      }
+      else if (g->k_selected_segment == 1 && (p->k_type == 2 || p->k_type == 3)) 
+      {
+        decalx = fmaxf(decalx,p->kxa-p->kxb);
+        decalx = fmaxf(decalx,p->kxd-p->kxc);
+        p->kxc += decalx;
+        p->kyc += decaly;
+        p->kxb += decalx;
+        p->kyb += decaly;
+      }
+      else if (g->k_selected_segment == 2 && (p->k_type == 1 || p->k_type == 3)) 
+      {
+        decaly = fmaxf(decaly,p->kya-p->kyd);
+        decaly = fmaxf(decaly,p->kyb-p->kyc);
+        p->kxc += decalx;
+        p->kyc += decaly;
+        p->kxd += decalx;
+        p->kyd += decaly;
+      }
+      else if (g->k_selected_segment == 3 && (p->k_type == 2 || p->k_type == 3)) 
+      {
+        decalx = fminf(decalx,p->kxb-p->kxa);
+        decalx = fminf(decalx,p->kxc-p->kxd);
+        p->kxa += decalx;
+        p->kya += decaly;
+        p->kxd += decalx;
+        p->kyd += decaly;
+      }
+      g->button_down_zoom_x = pzx;
+      g->button_down_zoom_y = pzy;
       dt_control_queue_redraw_center();
       return 1;
     }
@@ -2197,11 +2315,25 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
       float xx=pzx, yy=pzy;
       //are we near a keystone point ?
       g->k_selected = -1;
+      g->k_selected_segment = -1;
       if (xx<p->kxa+ext && xx>p->kxa-ext && yy<p->kya+ext && yy>p->kya-ext) g->k_selected = 0;
       if (xx<p->kxb+ext && xx>p->kxb-ext && yy<p->kyb+ext && yy>p->kyb-ext) g->k_selected = 1;
       if (xx<p->kxc+ext && xx>p->kxc-ext && yy<p->kyc+ext && yy>p->kyc-ext) g->k_selected = 2;
       if (xx<p->kxd+ext && xx>p->kxd-ext && yy<p->kyd+ext && yy>p->kyd-ext) g->k_selected = 3;
-      
+      //or near a keystone segment
+      if (g->k_selected < 0)
+      {
+        if (p->k_type == 1 || p->k_type == 3)
+        {
+          if (dist_seg(p->kxa,p->kya,p->kxb,p->kyb,pzx,pzy) < ext*ext) g->k_selected_segment = 0;
+          else if (dist_seg(p->kxd,p->kyd,p->kxc,p->kyc,pzx,pzy) < ext*ext) g->k_selected_segment = 2;
+        }
+        if (p->k_type == 1 || p->k_type == 3)
+        {
+          if (dist_seg(p->kxb,p->kyb,p->kxc,p->kyc,pzx,pzy) < ext*ext) g->k_selected_segment = 1;
+          else if (dist_seg(p->kxd,p->kyd,p->kxa,p->kya,pzx,pzy) < ext*ext) g->k_selected_segment = 3;
+        }
+      }
       if (g->k_selected >=0) dt_control_change_cursor(GDK_CROSS);
       else dt_control_change_cursor(GDK_FLEUR);
     }
@@ -2298,12 +2430,8 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
         pzx += 0.5f;
         pzy += 0.5f;
         float c[2] = {(MIN(p->kxc,p->kxb)+MAX(p->kxa,p->kxd))/2.0f, (MIN(p->kyc,p->kyd)+MAX(p->kya,p->kyb))/2.0f};
-        //if (p->ch < 0) c[0] = (MIN(1.0f-p->kxc,1.0f-p->kxb)+MAX(1.0f-p->kxa,1.0f-p->kxd))/2.0f;
-        //if (p->cw < 0) c[1] = (MIN(1.0f-p->kyc,1.0f-p->kyd)+MAX(1.0f-p->kya,1.0f-p->kyb))/2.0f;
         float ext = 10.0/(wd*zoom_scale);
         float xx=pzx, yy=pzy;
-        //if (p->ch < 0) xx = 1.0f-pzx;
-        //if (p->cw < 0) yy = 1.0f-pzy;
         //Apply button
         if (pzx>c[0]-ext && pzx<c[0]+ext && pzy>c[1]-ext && pzy<c[1]+ext)
         {
@@ -2317,41 +2445,64 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
           p->k_apply = 1;
           commit_box(self,g,p);
         }
-        //Horizontal symetry button (1)
-        c[0] = (p->kxa+p->kxd)/2.0f, c[1] = (p->kya+p->kyd)/2.0f;
-        if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext && (p->k_type==1 || p->k_type==3))
+        else
         {
-          if (p->k_sym == 0) p->k_sym = 1;
-          else if(p->k_sym == 1) p->k_sym = 0;
-          else if(p->k_sym == 2) p->k_sym = 3;
-          else p->k_sym = 2;
-        }
-        //Horizontal symetry button (2)
-        c[0] = (p->kxb+p->kxc)/2.0f, c[1] = (p->kyb+p->kyc)/2.0f;
-        if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext && (p->k_type==1 || p->k_type==3))
-        {
-          if (p->k_sym == 0) p->k_sym = 1;
-          else if(p->k_sym == 1) p->k_sym = 0;
-          else if(p->k_sym == 2) p->k_sym = 3;
-          else p->k_sym = 2;
-        }
-        //vertical symetry button (1)
-        c[0] = (p->kxb+p->kxa)/2.0f, c[1] = (p->kyb+p->kya)/2.0f;
-        if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext && (p->k_type==2 || p->k_type==3))
-        {
-          if (p->k_sym == 0) p->k_sym = 2;
-          else if(p->k_sym == 1) p->k_sym = 3;
-          else if(p->k_sym == 2) p->k_sym = 0;
-          else p->k_sym = 1;
-        }
-        //vertical symetry button (2)
-        c[0] = (p->kxc+p->kxd)/2.0f, c[1] = (p->kyc+p->kyd)/2.0f;
-        if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext && (p->k_type==2 || p->k_type==3))
-        {
-          if (p->k_sym == 0) p->k_sym = 2;
-          else if(p->k_sym == 1) p->k_sym = 3;
-          else if(p->k_sym == 2) p->k_sym = 0;
-          else p->k_sym = 1;
+          //Horizontal symetry button (1)
+          c[0] = (p->kxa+p->kxd)/2.0f, c[1] = (p->kya+p->kyd)/2.0f;
+          if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext && (p->k_type==1 || p->k_type==3))
+          {
+            if (p->k_sym == 0) p->k_sym = 1;
+            else if(p->k_sym == 1) p->k_sym = 0;
+            else if(p->k_sym == 2) p->k_sym = 3;
+            else p->k_sym = 2;
+          }
+          else
+          {
+            //Horizontal symetry button (2)
+            c[0] = (p->kxb+p->kxc)/2.0f, c[1] = (p->kyb+p->kyc)/2.0f;
+            if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext && (p->k_type==1 || p->k_type==3))
+            {
+              if (p->k_sym == 0) p->k_sym = 1;
+              else if(p->k_sym == 1) p->k_sym = 0;
+              else if(p->k_sym == 2) p->k_sym = 3;
+              else p->k_sym = 2;
+            }
+            else
+            {
+              //vertical symetry button (1)
+              c[0] = (p->kxb+p->kxa)/2.0f, c[1] = (p->kyb+p->kya)/2.0f;
+              if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext && (p->k_type==2 || p->k_type==3))
+              {
+                if (p->k_sym == 0) p->k_sym = 2;
+                else if(p->k_sym == 1) p->k_sym = 3;
+                else if(p->k_sym == 2) p->k_sym = 0;
+                else p->k_sym = 1;
+              }
+              else
+              {
+                //vertical symetry button (2)
+                c[0] = (p->kxc+p->kxd)/2.0f, c[1] = (p->kyc+p->kyd)/2.0f;
+                if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext && (p->k_type==2 || p->k_type==3))
+                {
+                  if (p->k_sym == 0) p->k_sym = 2;
+                  else if(p->k_sym == 1) p->k_sym = 3;
+                  else if(p->k_sym == 2) p->k_sym = 0;
+                  else p->k_sym = 1;
+                }
+                else
+                {
+                  //dragging a border ?
+                  if (g->k_selected_segment >=0)
+                  {
+                    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
+                    g->button_down_zoom_x += 0.5;
+                    g->button_down_zoom_y += 0.5;
+                    g->k_drag = TRUE;
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
