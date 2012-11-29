@@ -1454,6 +1454,16 @@
 			<Vertical x="4064" width="6"/>
 		</BlackAreas>
   </Camera>
+  <Camera make="OLYMPUS IMAGING CORP." model="E-PM2">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="250" white="4095"/>
+  </Camera>
   <Camera make="OLYMPUS IMAGING CORP." model="E-P2">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
@@ -2518,6 +2528,16 @@
     <Sensor black="520" white="16383"/>
   </Camera>
   <Camera make="SONY" model="NEX-5N" supported="yes">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-12" height="0"/>
+    <Sensor black="520" white="16596"/>
+  </Camera>
+  <Camera make="SONY" model="NEX-5R" supported="yes">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
       <Color x="1" y="0">GREEN</Color>

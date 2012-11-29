@@ -72,7 +72,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
 // STL
 #include <iostream>
 #include <string>
