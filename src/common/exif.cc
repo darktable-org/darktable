@@ -578,28 +578,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     str = dt_conf_get_string("ui_last/import_last_tags");
     if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE && str != NULL && str[0] != '\0')
     {
-      gchar **tokens = g_strsplit(str, ",", 0);
-      if(tokens)
-      {
-        gchar **entry = tokens;
-        while(*entry)
-        {
-          // remove leading and trailing spaces
-          char *e = *entry + strlen(*entry) - 1;
-          while(*e == ' ' && e > *entry) *e = '\0';
-          e = *entry;
-          while(*e == ' ' && *e != '\0') e++;
-          if(*e)
-          {
-          // add the tag to the image
-            guint tagid = 0;
-            dt_tag_new(e,&tagid);
-            dt_tag_attach(tagid, img->id);
-          }
-          entry++;
-        }
-      }
-      g_strfreev(tokens);
+      dt_tag_attach_string_list(str, img->id);
     }
 
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Rating")))
