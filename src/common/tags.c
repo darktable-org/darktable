@@ -160,7 +160,7 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
   
   /* raise signal of tags change to refresh keywords module */
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  //dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 gboolean dt_tag_exists(const char *name,guint *tagid)
