@@ -100,41 +100,43 @@ splat(
   const int j = get_local_id(1);
   int li = lszx*j + i;
 
-  // init gi to -1, so we can later identify invalid accumulator values, which
-  // are values outside of width and height of input image
-  gi[li] = -1;
-
-  if(x >= width || y >= height) return;
-
-  // splat into downsampled grid
   int4   size  = (int4)(sizex, sizey, sizez, 0);
   float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
-
-  const float4 pixel = read_imagef (in, sampleri, (int2)(x, y));
-  float L = pixel.x;
-  float4 p = (float4)(x, y, L, 0);
-  float4 gridp = image_to_grid(p, size, sigma);
-  int4 xi = min(size - 2, (int4)(gridp.x, gridp.y, gridp.z, 0));
-  float fx = gridp.x - xi.x;
-  float fy = gridp.y - xi.y;
-  float fz = gridp.z - xi.z;
 
   int ox = 1;
   int oy = size.x;
   int oz = size.y*size.x;
 
-  // first accumulate into local memory
-  gi[li] = xi.x + oy*xi.y + oz*xi.z;
-  float contrib = 100.0f/(sigma_s*sigma_s);
-  li *= 8;
-  accum[li++] = contrib * (1.0f-fx) * (1.0f-fy) * (1.0f-fz);
-  accum[li++] = contrib * (     fx) * (1.0f-fy) * (1.0f-fz);
-  accum[li++] = contrib * (1.0f-fx) * (     fy) * (1.0f-fz);
-  accum[li++] = contrib * (     fx) * (     fy) * (1.0f-fz);
-  accum[li++] = contrib * (1.0f-fx) * (1.0f-fy) * (     fz);
-  accum[li++] = contrib * (     fx) * (1.0f-fy) * (     fz);
-  accum[li++] = contrib * (1.0f-fx) * (     fy) * (     fz);
-  accum[li++] = contrib * (     fx) * (     fy) * (     fz);
+  if(x < width && y < height)
+  {
+    // splat into downsampled grid
+
+    const float4 pixel = read_imagef (in, sampleri, (int2)(x, y));
+    float L = pixel.x;
+    float4 p = (float4)(x, y, L, 0);
+    float4 gridp = image_to_grid(p, size, sigma);
+    int4 xi = min(size - 2, (int4)(gridp.x, gridp.y, gridp.z, 0));
+    float fx = gridp.x - xi.x;
+    float fy = gridp.y - xi.y;
+    float fz = gridp.z - xi.z;
+
+    // first accumulate into local memory
+    gi[li] = xi.x + oy*xi.y + oz*xi.z;
+    float contrib = 100.0f/(sigma_s*sigma_s);
+    li *= 8;
+    accum[li++] = contrib * (1.0f-fx) * (1.0f-fy) * (1.0f-fz);
+    accum[li++] = contrib * (     fx) * (1.0f-fy) * (1.0f-fz);
+    accum[li++] = contrib * (1.0f-fx) * (     fy) * (1.0f-fz);
+    accum[li++] = contrib * (     fx) * (     fy) * (1.0f-fz);
+    accum[li++] = contrib * (1.0f-fx) * (1.0f-fy) * (     fz);
+    accum[li++] = contrib * (     fx) * (1.0f-fy) * (     fz);
+    accum[li++] = contrib * (1.0f-fx) * (     fy) * (     fz);
+    accum[li++] = contrib * (     fx) * (     fy) * (     fz);
+  }
+  else
+  {
+    gi[li] = -1;
+  }
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
