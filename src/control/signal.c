@@ -55,6 +55,7 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] =
   {"dt-viewmanager-filmstrip-activate",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},       // DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE
 
   {"dt-collection-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                   // DT_SIGNAL_COLLECTION_CHANGED
+  {"dt-tag-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                   // DT_SIGNAL_TAG_CHANGED
   {"dt-filmrolls-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                          // DT_SIGNAL_FILMROLLS_CHANGED
 
 

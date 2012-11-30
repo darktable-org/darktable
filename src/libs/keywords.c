@@ -20,6 +20,7 @@
 #include "common/debug.h"
 #include "common/tags.h"
 #include "common/collection.h"
+#include "control/control.h"
 #include "control/conf.h"
 #include "libs/lib.h"
 
@@ -54,6 +55,9 @@ static void _lib_keywords_drag_data_get_callback(GtkWidget *w,
 /* add keyword to collection rules */
 static void _lib_keywords_add_collection_rule(GtkTreeView *view, GtkTreePath *tp,
     GtkTreeViewColumn *tvc, gpointer user_data);
+
+
+
 
 const char* name()
 {
@@ -90,27 +94,10 @@ void connect_key_accels(dt_lib_module_t *self)
 }
 
 #define UNCATEGORIZED_TAG "uncategorized"
-
-void gui_init(dt_lib_module_t *self)
+static void
+_lib_tag_gui_update (dt_lib_module_t *self)
 {
-  
-  /* initialize ui widgets */
-  dt_lib_keywords_t *d = (dt_lib_keywords_t *)g_malloc(sizeof(dt_lib_keywords_t));
-  memset(d,0,sizeof(dt_lib_keywords_t));
-  self->data = (void *)d;
-  self->widget = gtk_vbox_new(FALSE, 5);
-
-  /* Create a new scrolled window, with scrollbars only if needed */
-  GtkWidget *scrolled_window;
-  scrolled_window = gtk_scrolled_window_new (NULL, NULL);
-  
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
-                                    GTK_POLICY_AUTOMATIC, 
-                                    GTK_POLICY_AUTOMATIC);
-
-
-  
-  
+  dt_lib_keywords_t *d = (dt_lib_keywords_t*)self->data;
 
   GtkTreeStore *store = gtk_tree_store_new(1, G_TYPE_STRING);
 
@@ -122,8 +109,15 @@ void gui_init(dt_lib_module_t *self)
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT name,icon,description FROM tags ORDER BY UPPER(name) DESC", -1, &stmt, NULL);
+
+  gtk_tree_store_clear(store);
+                              
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
+    
+    printf("DEBUG @@@ _lib_tag_gui_update -> %s\n", sqlite3_column_text(stmt, 0));
+
+    
     if(strchr((const char *)sqlite3_column_text(stmt, 0),'|')==0)
     {
       /* add uncategorized root iter if not exists */
@@ -185,16 +179,44 @@ void gui_init(dt_lib_module_t *self)
       }
     }
   }
+  
+  gtk_tree_view_set_model(d->view, GTK_TREE_MODEL(store));
+    
+  /* free store, treeview has its own storage now */
+  g_object_unref(store);
+
+
+
+
+}
+
+
+void gui_init(dt_lib_module_t *self)
+{
+  /* initialize ui widgets */
+  dt_lib_keywords_t *d = (dt_lib_keywords_t *)g_malloc(sizeof(dt_lib_keywords_t));
+  
+  
+  memset(d,0,sizeof(dt_lib_keywords_t));
+  self->data = (void *)d;
+  self->widget = gtk_vbox_new(FALSE, 5);
+
+  /* Create a new scrolled window, with scrollbars only if needed */
+  GtkWidget *scrolled_window;
+  scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+  
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
+                                    GTK_POLICY_AUTOMATIC, 
+                                    GTK_POLICY_AUTOMATIC);
+
 
   /* add the treeview to show hirarchy tags*/
   GtkCellRenderer *renderer;
 
   d->view = GTK_TREE_VIEW (gtk_tree_view_new());
   gtk_widget_set_size_request(GTK_WIDGET(d->view), -1, 300);
-
   
   gtk_container_add(GTK_CONTAINER(scrolled_window), GTK_WIDGET(d->view));
-  
 
   renderer = gtk_cell_renderer_text_new ();
   gtk_tree_view_insert_column_with_attributes(d->view,
@@ -206,7 +228,8 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_tree_view_set_headers_visible(d->view, FALSE);
 
-  gtk_tree_view_set_model(d->view, GTK_TREE_MODEL(store));
+  
+
 
   /* setup dnd source and destination within treeview */
   static const GtkTargetEntry dnd_target = { "keywords-reorganize",
@@ -234,15 +257,24 @@ void gui_init(dt_lib_module_t *self)
 
 
 
-  /* free store, treeview has its own storage now */
-  g_object_unref(store);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(scrolled_window), TRUE, TRUE, 0);
 
   gtk_widget_show_all(GTK_WIDGET(d->view));
 
+  dt_control_signal_connect(darktable.signals, 
+                           DT_SIGNAL_TAG_CHANGED,
+                           G_CALLBACK(_lib_tag_gui_update),
+                           self);
+
+
+  _lib_tag_gui_update(self);
+
 
 }
+
+
+
 
 void gui_cleanup(dt_lib_module_t *self)
 {
