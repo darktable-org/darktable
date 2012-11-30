@@ -58,12 +58,17 @@ atomic_add_f(
   }
   new_val;
 
+  global volatile unsigned int *ival = (global volatile unsigned int *)val;
+
   do
   {
-    old_val.f = *val;
+    // the following is equivalent to old_val.f = *val. however, as according to the opencl standard
+    // we can not rely on global buffer val to be consistently cached (relaxed memory consistency) we 
+    // access it via a slower but consistent atomic operation.
+    old_val.i = atom_add(ival, 0);
     new_val.f = old_val.f + delta;
   }
-  while (atom_cmpxchg ((global unsigned int *)val, old_val.i, new_val.i) != old_val.i);
+  while (atom_cmpxchg (ival, old_val.i, new_val.i) != old_val.i);
 #endif
 }
 
@@ -192,7 +197,8 @@ splat(
 
 kernel void
 blur_line_z(
-    global float *buf,
+    global const float *ibuf,
+    global float *obuf,
     const int offset1,
     const int offset2,
     const int offset3,
@@ -209,31 +215,32 @@ blur_line_z(
 
   int index = k*offset1 + j*offset2;
 
-  float tmp1 = buf[index];
-  buf[index] = w1*buf[index + offset3] + w2*buf[index + 2*offset3];
+  float tmp1 = ibuf[index];
+  obuf[index] = w1*ibuf[index + offset3] + w2*ibuf[index + 2*offset3];
   index += offset3;
-  float tmp2 = buf[index];
-  buf[index] = w1*(buf[index + offset3] - tmp1) + w2*buf[index + 2*offset3];
+  float tmp2 = ibuf[index];
+  obuf[index] = w1*(ibuf[index + offset3] - tmp1) + w2*ibuf[index + 2*offset3];
   index += offset3;
   for(int i=2;i<size3-2;i++)
   {
-    const float tmp3 = buf[index];
-    buf[index] =
-      + w1*(buf[index + offset3]   - tmp2)
-      + w2*(buf[index + 2*offset3] - tmp1);
+    const float tmp3 = ibuf[index];
+    obuf[index] =
+      + w1*(ibuf[index + offset3]   - tmp2)
+      + w2*(ibuf[index + 2*offset3] - tmp1);
     index += offset3;
     tmp1 = tmp2;
     tmp2 = tmp3;
   }
-  const float tmp3 = buf[index];
-  buf[index] = w1*(buf[index + offset3] - tmp2) - w2*tmp1;
+  const float tmp3 = ibuf[index];
+  obuf[index] = w1*(ibuf[index + offset3] - tmp2) - w2*tmp1;
   index += offset3;
-  buf[index] = - w1*tmp3 - w2*tmp2;
+  obuf[index] = - w1*tmp3 - w2*tmp2;
 }
 
 kernel void
 blur_line(
-    global float *buf,
+    global const float *ibuf,
+    global float *obuf,
     const int offset1,
     const int offset2,
     const int offset3,
@@ -250,26 +257,26 @@ blur_line(
   const float w2 = 1.f/16.f;
   int index = k*offset1 + j*offset2;
 
-  float tmp1 = buf[index];
-  buf[index] = buf[index]*w0 + w1*buf[index + offset3] + w2*buf[index + 2*offset3];
+  float tmp1 = ibuf[index];
+  obuf[index] = ibuf[index]*w0 + w1*ibuf[index + offset3] + w2*ibuf[index + 2*offset3];
   index += offset3;
-  float tmp2 = buf[index];
-  buf[index] = buf[index]*w0 + w1*(buf[index + offset3] + tmp1) + w2*buf[index + 2*offset3];
+  float tmp2 = ibuf[index];
+  obuf[index] = ibuf[index]*w0 + w1*(ibuf[index + offset3] + tmp1) + w2*ibuf[index + 2*offset3];
   index += offset3;
   for(int i=2;i<size3-2;i++)
   {
-    const float tmp3 = buf[index];
-    buf[index] = buf[index]*w0
-      + w1*(buf[index + offset3]   + tmp2)
-      + w2*(buf[index + 2*offset3] + tmp1);
+    const float tmp3 = ibuf[index];
+    obuf[index] = ibuf[index]*w0
+      + w1*(ibuf[index + offset3]   + tmp2)
+      + w2*(ibuf[index + 2*offset3] + tmp1);
     index += offset3;
     tmp1 = tmp2;
     tmp2 = tmp3;
   }
-  const float tmp3 = buf[index];
-  buf[index] = buf[index]*w0 + w1*(buf[index + offset3] + tmp2) + w2*tmp1;
+  const float tmp3 = ibuf[index];
+  obuf[index] = ibuf[index]*w0 + w1*(ibuf[index + offset3] + tmp2) + w2*tmp1;
   index += offset3;
-  buf[index] = buf[index]*w0 + w1*tmp3 + w2*tmp2;
+  obuf[index] = ibuf[index]*w0 + w1*tmp3 + w2*tmp2;
 }
 
 kernel void

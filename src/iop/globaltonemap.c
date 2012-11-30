@@ -414,7 +414,7 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   const float ih = piece->buf_in.height/scale;
   const float sigma_s = fminf(iw, ih)*0.03f;
 
-  tiling->factor = 2.25f; // in + out + bilateral
+  tiling->factor = 2.5f; // in + out + bilateral
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = ceilf(4*sigma_s);
