@@ -95,9 +95,11 @@ void connect_key_accels(dt_lib_module_t *self)
 
 #define UNCATEGORIZED_TAG "uncategorized"
 static void
-_lib_tag_gui_update (dt_lib_module_t *self)
+_lib_tag_gui_update (gpointer instance,gpointer self)
 {
-  dt_lib_keywords_t *d = (dt_lib_keywords_t*)self->data;
+  dt_lib_module_t *dm = (dt_lib_module_t *)self;  
+
+  dt_lib_keywords_t *d = (dt_lib_keywords_t*)dm->data;
 
   GtkTreeStore *store = gtk_tree_store_new(1, G_TYPE_STRING);
 
@@ -114,10 +116,6 @@ _lib_tag_gui_update (dt_lib_module_t *self)
                               
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
-    
-    printf("DEBUG @@@ _lib_tag_gui_update -> %s\n", sqlite3_column_text(stmt, 0));
-
-    
     if(strchr((const char *)sqlite3_column_text(stmt, 0),'|')==0)
     {
       /* add uncategorized root iter if not exists */
@@ -196,7 +194,6 @@ void gui_init(dt_lib_module_t *self)
   /* initialize ui widgets */
   dt_lib_keywords_t *d = (dt_lib_keywords_t *)g_malloc(sizeof(dt_lib_keywords_t));
   
-  
   memset(d,0,sizeof(dt_lib_keywords_t));
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 5);
@@ -228,9 +225,6 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_tree_view_set_headers_visible(d->view, FALSE);
 
-  
-
-
   /* setup dnd source and destination within treeview */
   static const GtkTargetEntry dnd_target = { "keywords-reorganize",
                               GTK_TARGET_SAME_WIDGET, 0
@@ -255,9 +249,6 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->view), "row-activated",
                    G_CALLBACK(_lib_keywords_add_collection_rule), self);
 
-
-
-
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(scrolled_window), TRUE, TRUE, 0);
 
   gtk_widget_show_all(GTK_WIDGET(d->view));
@@ -267,10 +258,8 @@ void gui_init(dt_lib_module_t *self)
                            G_CALLBACK(_lib_tag_gui_update),
                            self);
 
-
-  _lib_tag_gui_update(self);
-
-
+  /* raise signal of tags change to refresh keywords tree */
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 
@@ -279,6 +268,8 @@ void gui_init(dt_lib_module_t *self)
 void gui_cleanup(dt_lib_module_t *self)
 {
   // dt_lib_import_t *d = (dt_lib_import_t*)self->data;
+
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_tag_gui_update), self);
 
   /* cleanup mem */
   g_free(self->data);
