@@ -266,7 +266,7 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   const float scale = piece->iscale/roi_in->scale;
   const float sigma_s = 20.0f / scale;
 
-  tiling->factor = 3.25f; // in + out + temp + bilateral
+  tiling->factor = 3.5f; // in + out + temp + bilateral
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = ceilf(4*sigma_s);
