@@ -2112,7 +2112,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
   static int old_grab = -1;
   int grab = get_grab (pzx, pzy, g, 30.0/zoom_scale, wd, ht);
 
-  if(darktable.control->button_down && darktable.control->button_down_which == 3 && !g->k_show)
+  if(darktable.control->button_down && darktable.control->button_down_which == 3 && g->k_show != 1)
   {
     // second mouse button, straighten activated:
     g->straightening = 1;
