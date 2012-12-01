@@ -15,20 +15,6 @@
             					Here you can select a point in stack to return to that point of development history.
             					If you then activate a new module, all modules above the current point will be discarded.
                                                 </para>
-                                                <para>
-                                                <emphasis>Be cautious: also activating actions by key accelerators will discard all modules above 
-                                                the current one, e.g. if you press "o" to see over/under exposed areas. The same happens if you press the according
-                                                toggle button <inlinegraphic fileref="&icon_module_overexposed;" scalefit="1" width="4%" align="center" />.</emphasis>
-						</para>
-						<para>
-            					Hitting "compress history stack" generates the shortest historystack that produces the
-            					current image, i.e. suppressing all de-activated modules. This will also discard all modules above
-                                                the currently selected one.
-						</para>
-						<para>The button to the right <inlinegraphic fileref="&icon_styles;" scalefit="1" width="4%" align="center" /> 
-                                                lets you create a new style by popping up a dialog window. Use the first line to name your style, the second to add a 
-                                                searchable description. The "advanced presets" allows you chose which modules are to be taken into account for the styles.
-						</para>
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/images/panel_history.png" scalefit="1" width="80%" align="center" />
@@ -37,4 +23,18 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
+                <para><emphasis>Be cautious: also activating any action by key accelerators will discard all modules above 
+                the current one, e.g. if you press "o" to see over/under exposed areas. The same happens if you press the according
+                toggle button <inlinegraphic fileref="&icon_module_overexposed;" scalefit="1" width="2%" align="center" />. It is easy
+                to lose all development work on an image this way.</emphasis>
+		</para>
+		<para>
+            	Hitting "compress history stack" generates the shortest historystack that produces the
+            	current image, i.e. suppressing all de-activated modules. This will also discard all modules above
+                the currently selected one.
+		</para>
+		<para>The button to the right <inlinegraphic fileref="&icon_styles;" scalefit="1" width="2%" align="center" /> 
+                lets you create a new style by popping up a dialog window. Use the first line to name your style, the second to add a 
+                searchable description. The "advanced presets" allows you chose which modules are to be taken into account for the styles.
+		</para>
 	</sect2>
