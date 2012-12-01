@@ -70,19 +70,30 @@ flags ()
 
 void init_presets (dt_iop_module_so_t *self)
 {
+  // TODO: nicer list, more like basecurves
   dt_iop_nlmeans_params_t p = (dt_iop_nlmeans_params_t)
   {
-    0.0f, 50.0f, {2.645e-06f, 2.645e-06f, 2.645e-06f}, {-1.69e-07f, -1.69e-07f, -1.69e-07f}
+    1.0f, 50.0f, {2.645e-06f, 2.645e-06f, 2.645e-06f}, {-1.69e-07f, -1.69e-07f, -1.69e-07f}
   };
   dt_gui_presets_add_generic(_("canon eos 5dm2 iso 100"), self->op, self->version(), &p, sizeof(p), 1);
   p = (dt_iop_nlmeans_params_t)
   {
-    0.0f, 50.0f, {0.0003f, 0.0003f, 0.0003f}, {1.05e-5f, 1.05e-5f, 1.05e-5f}
+    1.0f, 50.0f, {4.3515e-05, 4.3515e-05, 4.3515e-05}, {-8.078e-07, -8.078e-07, -8.078e-07}
+  };
+  dt_gui_presets_add_generic(_("canon eos 5dm2 iso 3200"), self->op, self->version(), &p, sizeof(p), 1);
+  p = (dt_iop_nlmeans_params_t)
+  {
+    1.0f, 50.0f, {8.0e-05f, 8.0e-05f, 8.0e-05f}, {1.55665e-07f, 1.55665e-07f, 1.55665e-07f}
+  };
+  dt_gui_presets_add_generic(_("canon eos 5dm2 iso 6400"), self->op, self->version(), &p, sizeof(p), 1);
+  p = (dt_iop_nlmeans_params_t)
+  {
+    1.0f, 50.0f, {0.0003f, 0.0003f, 0.0003f}, {1.05e-5f, 1.05e-5f, 1.05e-5f}
   };
   dt_gui_presets_add_generic(_("canon eos 5dm2 iso 25600"), self->op, self->version(), &p, sizeof(p), 1);
   p = (dt_iop_nlmeans_params_t)
   {
-    0.0f, 50.0f, {0.01f, 0.01f, 0.01}, {0.0f, 0.0f, 0.0f}
+    1.0f, 50.0f, {0.01f, 0.01f, 0.01}, {0.0f, 0.0f, 0.0f}
   };
   dt_gui_presets_add_generic(_("generic poissonian"), self->op, self->version(), &p, sizeof(p), 1);
 }
@@ -188,7 +199,13 @@ backtransform(
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(
+    struct dt_iop_module_t *self,
+    dt_dev_pixelpipe_iop_t *piece,
+    void *ivoid,
+    void *ovoid,
+    const dt_iop_roi_t *roi_in,
+    const dt_iop_roi_t *roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
@@ -197,7 +214,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   // TODO: fixed K to use adaptive size trading variance and bias!
   // adjust to zoom size:
   const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
-  const int K = ceilf(10 * roi_in->scale / piece->iscale); // nbhood XXX see above comment
+  const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood XXX see above comment
   // TODO: use d->strength to precodition data
 
   // P == 0 : this will degenerate to a (fast) bilateral filter.
@@ -207,11 +224,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   memset(ovoid, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
   float *in = dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
   
+  const float wb[3] = {
+    piece->pipe->processed_maximum[0]*piece->pipe->processed_maximum[0],
+    piece->pipe->processed_maximum[1]*piece->pipe->processed_maximum[1],
+    piece->pipe->processed_maximum[2]*piece->pipe->processed_maximum[2]};
   const float aa[3] = {
-    d->a[0]*piece->pipe->processed_maximum[0],
-    d->a[1]*piece->pipe->processed_maximum[1],
-    d->a[2]*piece->pipe->processed_maximum[2]};
-  precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, d->b);
+    d->a[0]*wb[0],
+    d->a[1]*wb[1],
+    d->a[2]*wb[2]};
+  const float bb[3] = {
+    d->b[0]*wb[0],
+    d->b[1]*wb[1],
+    d->b[2]*wb[2]};
+  precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
 
   // for each shift vector
   for(int kj=-K; kj<=K; kj++)
@@ -274,7 +299,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
           {
             // TODO: could put that outside the loop.
             // DEBUG XXX bring back to computable range:
-            const float norm = .01f/(2*P+1);
+            const float norm = .02f/(2*P+1);
             const __m128 iv = { ins[0], ins[1], ins[2], 1.0f };
             _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(fast_mexp2f(fmaxf(0.0f, slide*norm-2.0f))));
           }
@@ -366,7 +391,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     float *out = ((float *)ovoid) + 4*roi_out->width*j;
     for(int i=0; i<roi_out->width; i++)
     {
-      _mm_store_ps(out, _mm_mul_ps(_mm_load_ps(out), _mm_set1_ps(1.0f/out[3])));
+      if(out[3] > 0.0f)
+        _mm_store_ps(out, _mm_mul_ps(_mm_load_ps(out), _mm_set1_ps(1.0f/out[3])));
       // DEBUG show weights
       // _mm_store_ps(out, _mm_set1_ps(1.0f/out[3]));
       out += 4;
@@ -375,7 +401,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   // free shared tmp memory:
   free(Sa);
   free(in);
-  backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, d->b);
+  backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
 
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
