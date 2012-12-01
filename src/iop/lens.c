@@ -1563,6 +1563,8 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return FALSE;
 
+  if(g->corrections_done == -1) return FALSE;
+
   char *message = "";
   GList *modifiers = g->modifiers;
   while(modifiers)
@@ -1576,6 +1578,8 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
     }
     modifiers = g_list_next(modifiers);
   }
+
+  g->corrections_done = -1;
 
   darktable.gui->reset = 1;
   gtk_label_set_text(g->message, message);
@@ -1596,7 +1600,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->camera_menu = NULL;
   g->lens_menu = NULL;
   g->modifiers = NULL;
-  g->corrections_done = 0;
+  g->corrections_done = -1;
 
 
   // initialize modflags options
