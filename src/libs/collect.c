@@ -1393,8 +1393,8 @@ void
 gui_reset (dt_lib_module_t *self)
 {
   dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
-  dt_conf_set_int("plugins/lighttable/collect/item0", 0);
-  dt_conf_set_string("plugins/lighttable/collect/string0", "%");
+  dt_conf_set_int("plugins/lighttable/collect/item0", DT_COLLECTION_PROP_FILMROLL);
+  dt_conf_set_string("plugins/lighttable/collect/string0", "");
   dt_collection_set_query_flags(darktable.collection,COLLECTION_QUERY_FULL);
   dt_collection_update_query(darktable.collection);
 }
@@ -1408,6 +1408,16 @@ combo_changed (GtkComboBox *combo, dt_lib_collect_rule_t *d)
   g_signal_handlers_unblock_matched (d->text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;
+
+  int property = gtk_combo_box_get_active(d->combo);
+
+  if (property == DT_COLLECTION_PROP_FOLDERS)
+  {
+    d->typing = FALSE;
+    refilter(c->treemodel, d);
+  }
+
+
   update_view(NULL, d);
   dt_collection_update_query(darktable.collection);
 }
@@ -1636,12 +1646,7 @@ menuitem_change_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
 static void
 collection_updated(gpointer instance,gpointer self)
 {
-  // FIXME: We should recount images in this case
-  dt_lib_module_t *dm = (dt_lib_module_t *)self;
-
-  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
-
-  update_view(NULL, d->rule + d->active_rule);
+  _lib_collect_gui_update(self);
 }
 
 
@@ -1651,13 +1656,52 @@ filmrolls_updated(gpointer instance, gpointer self)
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
 
   dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+  int active = d->active_rule;
+  
+  //TODO: We should update the count of images here
+  _lib_collect_gui_update(self); 
+}
+
+static void
+filmrolls_imported(gpointer instance, gpointer self)
+{
+  dt_lib_module_t *dm = (dt_lib_module_t *)self;
+
+  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+  int active = 0;
+  d->active_rule = active;
 
   // update tree
   d->treemodel = GTK_TREE_MODEL(_folder_tree());
   d->tree_new = TRUE;
+  d->rule[active].typing = FALSE;
+ 
+  // reset active rules
+  dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
+  dt_conf_set_int("plugins/lighttable/collect/item0", DT_COLLECTION_PROP_FILMROLL); 
   _lib_collect_gui_update(self); 
 }
 
+static void
+filmrolls_removed(gpointer instance, gpointer self)
+{
+  dt_lib_module_t *dm = (dt_lib_module_t *)self;
+  
+  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+  int active = 0;
+  d->active_rule = active;
+
+  // update tree
+  d->treemodel = GTK_TREE_MODEL(_folder_tree());
+  d->tree_new = TRUE;
+  d->rule[active].typing = FALSE;
+  
+  // reset active rules
+  dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
+  dt_conf_set_int("plugins/lighttable/collect/item0", DT_COLLECTION_PROP_FILMROLL);
+  dt_conf_set_string("plugins/lighttable/collect/string0", "");
+  _lib_collect_gui_update(self); 
+}
 
 static void
 menuitem_clear (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
@@ -1863,6 +1907,16 @@ gui_init (dt_lib_module_t *self)
                            DT_SIGNAL_FILMROLLS_CHANGED,
                            G_CALLBACK(filmrolls_updated),
                            self);
+
+  dt_control_signal_connect(darktable.signals,
+                           DT_SIGNAL_FILMROLLS_IMPORTED,
+                           G_CALLBACK(filmrolls_imported),
+                           self);
+  
+  dt_control_signal_connect(darktable.signals,
+                           DT_SIGNAL_FILMROLLS_REMOVED,
+                           G_CALLBACK(filmrolls_removed),
+                           self);
 }
 
 void
@@ -1872,6 +1926,7 @@ gui_cleanup (dt_lib_module_t *self)
   
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_updated), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_imported), self);
   darktable.view_manager->proxy.module_collect.module = NULL;
   g_free(((dt_lib_collect_t*)self->data)->params);
   
