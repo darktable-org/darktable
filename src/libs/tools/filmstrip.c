@@ -102,6 +102,9 @@ static gboolean _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *a
 static gboolean _lib_filmstrip_discard_history_key_accel_callback(GtkAccelGroup *accel_group,
     GObject *aceeleratable, guint keyval,
     GdkModifierType modifier, gpointer data);
+static gboolean _lib_filmstrip_duplicate_image_key_accel_callback(GtkAccelGroup *accel_group,
+    GObject *aceeleratable, guint keyval,
+    GdkModifierType modifier, gpointer data);
 static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_group,
     GObject *aceeleratable, guint keyval,
     GdkModifierType modifier, gpointer data);
@@ -157,8 +160,10 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "paste history"),
                         GDK_v, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "discard history"),
-                        GDK_d, GDK_CONTROL_MASK);
+                        0, 0);
 
+  dt_accel_register_lib(self, NC_("accel", "duplicate image"),
+                        GDK_d, GDK_CONTROL_MASK);
 
 
   /* setup color label accelerators */
@@ -224,6 +229,12 @@ void connect_key_accels(dt_lib_module_t *self)
     self, "discard history",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_discard_history_key_accel_callback),
+      (gpointer)self->data,NULL));
+
+  dt_accel_connect_lib(
+    self, "duplicate image",
+    g_cclosure_new(
+      G_CALLBACK(_lib_filmstrip_duplicate_image_key_accel_callback),
       (gpointer)self->data,NULL));
 
   // Color label accels
@@ -785,14 +796,30 @@ static gboolean _lib_filmstrip_discard_history_key_accel_callback(GtkAccelGroup 
     GObject *aceeleratable, guint keyval,
     GdkModifierType modifier, gpointer data)
 {
-  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
-  if (strip->history_copy_imgid==-1) return FALSE;
-
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
   if(mouse_over_id <= 0) return FALSE;
 
   dt_history_delete_on_image(mouse_over_id);
+  dt_control_queue_redraw_center();
+  return TRUE;
+}
+
+static gboolean _lib_filmstrip_duplicate_image_key_accel_callback(GtkAccelGroup *accel_group,
+    GObject *aceeleratable, guint keyval,
+    GdkModifierType modifier, gpointer data)
+{
+  int32_t mouse_over_id;
+  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  if(mouse_over_id <= 0) return FALSE;
+
+  /* check if images is currently loaded in darkroom */
+  if(dt_dev_is_current_image(darktable.develop, mouse_over_id))
+    dt_dev_write_history(darktable.develop);
+
+  int32_t newimgid = dt_image_duplicate(mouse_over_id);
+  if(newimgid != -1) dt_history_copy_and_paste_on_image(mouse_over_id, newimgid, FALSE);
+
   dt_control_queue_redraw_center();
   return TRUE;
 }

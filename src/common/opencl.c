@@ -152,8 +152,10 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     size_t infointtab[1024];
     cl_device_type type;
     cl_bool image_support = 0;
+    cl_bool device_available = 0;
 
-    // test GPU memory and image support:
+    // test GPU availability, vendor, memory, image support etc:
+    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_AVAILABLE, sizeof(cl_bool), &device_available, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VENDOR, sizeof(vendor), &vendor, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_NAME, sizeof(infostr), &infostr, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_TYPE, sizeof(cl_device_type), &type,  NULL);
@@ -161,6 +163,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(size_t), &(cl->dev[dev].max_image_height), NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_WIDTH,  sizeof(size_t), &(cl->dev[dev].max_image_width),  NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_MEM_ALLOC_SIZE,  sizeof(cl_ulong), &(cl->dev[dev].max_mem_alloc),  NULL);
+
 
     if(!strncasecmp(vendor, "NVIDIA", 6))
     {
@@ -173,6 +176,12 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     if(type == CL_DEVICE_TYPE_CPU)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding CPU device %d `%s' as it will not deliver any performance gain.\n", k, infostr);
+      continue;
+    }
+
+    if(!device_available)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' as it is not available.\n", k, infostr);
       continue;
     }
 
@@ -861,6 +870,16 @@ int dt_opencl_enqueue_copy_buffer_to_image(const int devid, cl_mem src_buffer, c
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Buffer to Image (on device)]");
   err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBufferToImage)(darktable.opencl->dev[devid].cmd_queue, src_buffer, dst_image, offset, origin, region, 0, NULL, eventp);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_image] could not copy buffer: %d\n", err);
+  return err;
+}
+
+int dt_opencl_enqueue_copy_buffer_to_buffer(const int devid, cl_mem src_buffer, cl_mem dst_buffer, size_t srcoffset, size_t dstoffset, size_t size)
+{
+  if(!darktable.opencl->inited) return -1;
+  cl_int err;
+  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Buffer to Buffer (on device)]");
+  err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBuffer)(darktable.opencl->dev[devid].cmd_queue, src_buffer, dst_buffer, srcoffset, dstoffset, size, 0, NULL, eventp);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_buffer] could not copy buffer: %d\n", err);
   return err;
 }
 

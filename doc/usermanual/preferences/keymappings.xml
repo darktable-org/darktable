@@ -140,18 +140,18 @@ F2
 </row>
 <row>
 <entry>
-&lt;darktable&gt;/film strip/history/discard
-</entry>
-<entry>
-&lt;Control&gt;d
-</entry>
-</row>
-<row>
-<entry>
 &lt;darktable&gt;/film strip/history/paste
 </entry>
 <entry>
 &lt;Control&gt;v
+</entry>
+</row>
+<row>
+<entry>
+&lt;darktable&gt;/film strip/duplicate
+</entry>
+<entry>
+&lt;Control&gt;d
 </entry>
 </row>
 <row>

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2009--2012 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -287,28 +287,9 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
   }
   lf_modifier_destroy(modifier);
 
-  if (g != NULL)
+  if(g != NULL && self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
   {
-    // lock gui thread mutex, if we are not called from gui thread (very likely)
-    gboolean i_have_lock = dt_control_gdk_lock();
-    char *text = "";
-
-    modflags &= LENSFUN_MODFLAG_MASK;
-    GList *modifiers = g->modifiers;
-    while(modifiers)
-    {
-      // could use g_list_nth. this seems safer?
-      dt_iop_lensfun_modifier_t *mm = (dt_iop_lensfun_modifier_t *)modifiers->data;
-      if(mm->modflag == modflags)
-      {
-        text = mm->name;
-        break;
-      }
-      modifiers = g_list_next(modifiers);
-    }
-
-    gtk_label_set_text(g->message, text);
-    if(i_have_lock) dt_control_gdk_unlock();
+    g->corrections_done = (modflags & LENSFUN_MODFLAG_MASK);
   }
 }
 
@@ -318,7 +299,6 @@ int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
   cl_mem dev_tmpbuf = NULL;
   cl_mem dev_tmp = NULL;
@@ -547,30 +527,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       if(err != CL_SUCCESS) goto error;
     }
 
-  }
-
-  if (g != NULL)
-  {
-    // lock gui thread mutex, if we are not called from gui thread (very likely)
-    gboolean i_have_lock = dt_control_gdk_lock();
-    char *text = "";
-
-    modflags &= LENSFUN_MODFLAG_MASK;
-    GList *modifiers = g->modifiers;
-    while(modifiers)
-    {
-      // could use g_list_nth. this seems safer?
-      dt_iop_lensfun_modifier_t *mm = (dt_iop_lensfun_modifier_t *)modifiers->data;
-      if(mm->modflag == modflags)
-      {
-        text = mm->name;
-        break;
-      }
-      modifiers = g_list_next(modifiers);
-    }
-
-    gtk_label_set_text(g->message, text);
-    if(i_have_lock) dt_control_gdk_unlock();
   }
 
   dt_opencl_release_mem_object(dev_tmpbuf);
@@ -1600,6 +1556,39 @@ static void autoscale_pressed(GtkWidget *button, gpointer user_data)
   dt_bauhaus_slider_set(g->scale, scale);
 }
 
+
+static gboolean
+expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+{
+  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  if(darktable.gui->reset) return FALSE;
+
+  if(g->corrections_done == -1) return FALSE;
+
+  char *message = "";
+  GList *modifiers = g->modifiers;
+  while(modifiers)
+  {
+    // could use g_list_nth. this seems safer?
+    dt_iop_lensfun_modifier_t *mm = (dt_iop_lensfun_modifier_t *)modifiers->data;
+    if(mm->modflag == g->corrections_done)
+    {
+      message = mm->name;
+      break;
+    }
+    modifiers = g_list_next(modifiers);
+  }
+
+  g->corrections_done = -1;
+
+  darktable.gui->reset = 1;
+  gtk_label_set_text(g->message, message);
+  darktable.gui->reset = 0;
+
+  return FALSE;
+}
+
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_lensfun_gui_data_t));
@@ -1611,6 +1600,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->camera_menu = NULL;
   g->lens_menu = NULL;
   g->modifiers = NULL;
+  g->corrections_done = -1;
 
 
   // initialize modflags options
@@ -1667,6 +1657,8 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *button;
 
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
+
+  g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
 
   // camera selector
   GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
@@ -1799,6 +1791,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
 
 }
+
 
 
 void gui_update(struct dt_iop_module_t *self)
