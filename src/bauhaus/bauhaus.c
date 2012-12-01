@@ -372,8 +372,8 @@ dt_bauhaus_popup_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointe
                                 widget->allocation.width);
       if(!darktable.bauhaus->change_active)
       {
-        if((darktable.bauhaus->mouse_line_distance < 0 && mouse_off > 0) ||
-            (darktable.bauhaus->mouse_line_distance > 0 && mouse_off < 0))
+        if((darktable.bauhaus->mouse_line_distance < 0 && mouse_off >= 0) ||
+            (darktable.bauhaus->mouse_line_distance > 0 && mouse_off <= 0))
           darktable.bauhaus->change_active = 1;
         darktable.bauhaus->mouse_line_distance = mouse_off;
       }
