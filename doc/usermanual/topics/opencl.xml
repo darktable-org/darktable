@@ -62,6 +62,20 @@
 		<para>There also exist a few on-CPU implementations of OpenCL. These come as drivers provided by INTEL or AMD. We observed that they do not give us any speed gain versus our hand-optimized CPU code. Therefore we simply 			discard these devices.</para>
 	</sect2>
 
+        <sect2><title>OpenCL still does not run for me!</title>
+		<para>As has been said before OpenCL systems come with a huge variety of setups: different gpu manufacturers, different gpu models, varying amounts of gpu memory, different drivers,
+		different distributions etc. Many of the potential problems will only appear with a very specific combination of those factors.</para>
+
+		<para>As we developers of darktable on our computers only have access to a small fraction of those variations, please understand that we might not be able to fix your specific problem.
+		There is not much we can do, if there is no way for us to reproduce.</para>
+
+		<para>If nothing else helps, the best option might be to start darktable with
+			<programlisting>
+				darktable --disable-opencl
+			</programlisting>
+		In the end there is nothing in darktable which only runs on gpu. Don't let OpenCL discourage you; also darktable's cpu code is highly optimized and performant!</para>
+	</sect2>
+
 </sect1>
 
 
