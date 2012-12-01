@@ -11,6 +11,7 @@ FILE(GLOB SOURCE_FILES
   "common/collection.c"
   "common/colorlabels.c"
   "common/colorspaces.c"
+  "common/denoise.c"
   "common/curve_tools.c"
   "common/darktable.c"
   "common/database.c"

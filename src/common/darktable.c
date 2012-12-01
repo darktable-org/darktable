@@ -55,6 +55,7 @@
 #include <sys/param.h>
 #include <unistd.h>
 #include <locale.h>
+#include <xmmintrin.h>
 
 #if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__DragonFly__)
 #include <malloc.h>
@@ -384,6 +385,8 @@ int dt_load_from_string(const gchar* input, gboolean open_image_in_dr)
 
 int dt_init(int argc, char *argv[], const int init_gui)
 {
+  // make everything go a lot faster.
+  _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 #ifndef __APPLE__
   _dt_sigsegv_old_handler = signal(SIGSEGV,&_dt_sigsegv_handler);
 #endif
