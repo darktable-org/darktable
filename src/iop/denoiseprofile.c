@@ -73,27 +73,27 @@ void init_presets (dt_iop_module_so_t *self)
   // TODO: nicer list, more like basecurves
   dt_iop_nlmeans_params_t p = (dt_iop_nlmeans_params_t)
   {
-    1.0f, 50.0f, {2.645e-06f, 2.645e-06f, 2.645e-06f}, {-1.69e-07f, -1.69e-07f, -1.69e-07f}
+    1.0f, 1.0f, {2.645e-06f, 2.645e-06f, 2.645e-06f}, {-1.69e-07f, -1.69e-07f, -1.69e-07f}
   };
   dt_gui_presets_add_generic(_("canon eos 5dm2 iso 100"), self->op, self->version(), &p, sizeof(p), 1);
   p = (dt_iop_nlmeans_params_t)
   {
-    1.0f, 50.0f, {4.3515e-05, 4.3515e-05, 4.3515e-05}, {-8.078e-07, -8.078e-07, -8.078e-07}
+    1.0f, 1.0f, {4.3515e-05, 4.3515e-05, 4.3515e-05}, {-8.078e-07, -8.078e-07, -8.078e-07}
   };
   dt_gui_presets_add_generic(_("canon eos 5dm2 iso 3200"), self->op, self->version(), &p, sizeof(p), 1);
   p = (dt_iop_nlmeans_params_t)
   {
-    1.0f, 50.0f, {8.0e-05f, 8.0e-05f, 8.0e-05f}, {1.55665e-07f, 1.55665e-07f, 1.55665e-07f}
+    1.0f, 1.0f, {8.0e-05f, 8.0e-05f, 8.0e-05f}, {1.55665e-07f, 1.55665e-07f, 1.55665e-07f}
   };
   dt_gui_presets_add_generic(_("canon eos 5dm2 iso 6400"), self->op, self->version(), &p, sizeof(p), 1);
   p = (dt_iop_nlmeans_params_t)
   {
-    1.0f, 50.0f, {0.0003f, 0.0003f, 0.0003f}, {1.05e-5f, 1.05e-5f, 1.05e-5f}
+    1.0f, 1.0f, {0.0003f, 0.0003f, 0.0003f}, {1.05e-5f, 1.05e-5f, 1.05e-5f}
   };
   dt_gui_presets_add_generic(_("canon eos 5dm2 iso 25600"), self->op, self->version(), &p, sizeof(p), 1);
   p = (dt_iop_nlmeans_params_t)
   {
-    1.0f, 50.0f, {0.01f, 0.01f, 0.01}, {0.0f, 0.0f, 0.0f}
+    1.0f, 1.0f, {0.01f, 0.01f, 0.01}, {0.0f, 0.0f, 0.0f}
   };
   dt_gui_presets_add_generic(_("generic poissonian"), self->op, self->version(), &p, sizeof(p), 1);
 }
@@ -215,7 +215,6 @@ void process(
   // adjust to zoom size:
   const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
   const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood XXX see above comment
-  // TODO: use d->strength to precodition data
 
   // P == 0 : this will degenerate to a (fast) bilateral filter.
 
@@ -225,9 +224,9 @@ void process(
   float *in = dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
   
   const float wb[3] = {
-    piece->pipe->processed_maximum[0]*piece->pipe->processed_maximum[0],
-    piece->pipe->processed_maximum[1]*piece->pipe->processed_maximum[1],
-    piece->pipe->processed_maximum[2]*piece->pipe->processed_maximum[2]};
+    piece->pipe->processed_maximum[0]*piece->pipe->processed_maximum[0]*d->strength,
+    piece->pipe->processed_maximum[1]*piece->pipe->processed_maximum[1]*d->strength,
+    piece->pipe->processed_maximum[2]*piece->pipe->processed_maximum[2]*d->strength};
   const float aa[3] = {
     d->a[0]*wb[0],
     d->a[1]*wb[1],
@@ -495,13 +494,12 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
   g->radius   = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1., 2.f, 0);
-  g->strength = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 50.f, 0);
+  g->strength = dt_bauhaus_slider_new_with_range(self, 0.0f, 2.0f, .05, 1.f, 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->radius, _("patch size"));
   dt_bauhaus_slider_set_format(g->radius, "%.0f");
   dt_bauhaus_widget_set_label(g->strength, _("strength"));
-  dt_bauhaus_slider_set_format(g->strength, "%.0f%%");
   g_object_set (GTK_OBJECT(g->radius),   "tooltip-text", _("radius of the patches to match"), (char *)NULL);
   g_object_set (GTK_OBJECT(g->strength), "tooltip-text", _("strength of the effect"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->radius),   "value-changed", G_CALLBACK (radius_callback),   self);
