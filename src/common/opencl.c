@@ -179,7 +179,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
     if(!device_available)
     {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' as it is not be available.\n", k, infostr);
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' as it is not available.\n", k, infostr);
       continue;
     }
 
