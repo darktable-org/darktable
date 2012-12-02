@@ -5,7 +5,7 @@
 					<colspec colwidth="4*"/>
 					<tbody>
 						<row>						
-							<entry>Darktable's splittoning method creates a two color linear toning effect where the 
+							<entry>darktable's splittoning method creates a two color linear toning effect where the 
 								shadows and highlights are represented by two different colors.
 								In the example image below you can see an original black and white image and one where
 								a splittoning effect are applied with blue in shadows and yellow-ish color in highlights.
