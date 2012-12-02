@@ -49,6 +49,7 @@ typedef struct dt_iop_hotpixels_gui_data_t
   GtkToggleButton *markfixed;
   GtkToggleButton *permissive;
   GtkLabel *message;
+  int pixels_fixed;
 }
 dt_iop_hotpixels_gui_data_t;
 
@@ -158,14 +159,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
     }
   }
-  if (g != NULL)
+
+  if(g != NULL && self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
-    // lock gui thread mutex, if we are not called from gui thread (very likely)
-    gboolean i_have_lock = dt_control_gdk_lock();
-    char buf[256];
-    snprintf(buf, sizeof buf, _("fixed %d pixels"), fixed);
-    gtk_label_set_text(g->message, buf);
-    if(i_have_lock) dt_control_gdk_unlock();
+    g->pixels_fixed = fixed;
   }
 }
 
@@ -269,6 +266,27 @@ void gui_update    (dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->threshold, p->threshold);
   gtk_toggle_button_set_active(g->markfixed, p->markfixed);
   gtk_toggle_button_set_active(g->permissive, p->permissive);
+  g->pixels_fixed = -1;
+  gtk_label_set_text(g->message, "");
+}
+
+static gboolean
+expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+{
+  dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
+  if(darktable.gui->reset) return FALSE;
+
+  if(g->pixels_fixed < 0) return FALSE;
+
+  char buf[256];
+  snprintf(buf, sizeof buf, _("fixed %d pixels"), g->pixels_fixed);
+  g->pixels_fixed = -1;
+
+  darktable.gui->reset = 1;
+  gtk_label_set_text(g->message, buf);
+  darktable.gui->reset = 0;
+
+  return FALSE;
 }
 
 void gui_init     (dt_iop_module_t *self)
@@ -276,8 +294,10 @@ void gui_init     (dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_hotpixels_gui_data_t));
   dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t*)self->gui_data;
   dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t*)self->params;
+  g->pixels_fixed = -1;
 
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
 
   /* threshold */
   g->threshold = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.005, p->threshold, 4);

@@ -44,7 +44,7 @@
 		<para>On activation of checkbox "restrict histogram to selection" only the values of your selected area or point are taken into account
                       by the histogram on top of right panel. This is a useful tool if you want to know which tonal values are present in a specific area.
 		</para>
-		<para>Picked colors in area or point mode can be "stored" as live samples by pressing the "Add" button. Darktable shows a color swatch
+		<para>Picked colors in area or point mode can be "stored" as live samples by pressing the "Add" button. darktable shows a color swatch
                       and numerical values for each stored sample. You can once again select which numerical value (mean, min, max) is to be displayed and
                       if this is to be done in RGB or Lab color space.
 		</para>
