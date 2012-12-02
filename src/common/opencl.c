@@ -42,6 +42,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   dt_pthread_mutex_init(&cl->lock, NULL);
   cl->inited = 0;
   cl->enabled = 0;
+  cl->use_events = dt_conf_get_bool("opencl_use_events");
   cl->dlocl = NULL;
   int exclude_opencl = 0;
 
@@ -1147,6 +1148,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || devid < 0) return NULL;
+  if(!cl->use_events) return NULL;
 
   static const cl_event zeroevent[1];   // implicitly initialized to zero
   cl_event **eventlist = &(cl->dev[devid].eventlist);
@@ -1230,6 +1232,7 @@ void dt_opencl_events_reset(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || devid < 0) return;
+  if(!cl->use_events) return;
 
   cl_event **eventlist = &(cl->dev[devid].eventlist);
   dt_opencl_eventtag_t **eventtags = &(cl->dev[devid].eventtags);
@@ -1262,6 +1265,7 @@ void dt_opencl_events_wait_for(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || devid < 0) return;
+  if(!cl->use_events) return;
 
   static const cl_event zeroevent[1];   // implicitly initialized to zero
   cl_event **eventlist = &(cl->dev[devid].eventlist);
@@ -1301,6 +1305,7 @@ cl_int dt_opencl_events_flush(const int devid, const int reset)
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || devid < 0) return FALSE;
+  if(!cl->use_events) return FALSE;
 
   cl_event **eventlist = &(cl->dev[devid].eventlist);
   dt_opencl_eventtag_t **eventtags = &(cl->dev[devid].eventtags);
@@ -1375,6 +1380,7 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || devid < 0) return;
+  if(!cl->use_events) return;
 
   cl_event **eventlist = &(cl->dev[devid].eventlist);
   dt_opencl_eventtag_t **eventtags = &(cl->dev[devid].eventtags);
