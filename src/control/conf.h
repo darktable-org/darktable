@@ -141,7 +141,7 @@ static inline int dt_conf_get_bool(const char *name)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
   const int num = dt_conf_get_var_pos(name);
-  const int val = darktable.conf->varval[num][0] == 'T';
+  const int val = (darktable.conf->varval[num][0] == 'T') || (darktable.conf->varval[num][0] == 't');
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 }

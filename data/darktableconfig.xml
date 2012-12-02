@@ -64,6 +64,13 @@
     <shortdescription>amount of opencl memory (in MB) which we assume as being reserved for the driver</shortdescription>
     <longdescription>this amount of memory (in MB) will be substracted from total gpu memory in order to calculate the available opencl memory. too low values will lead to out-of-memory situations in opencl processing. too high values will lead to unnecessary tiling (needs a restart).</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>opencl_use_events</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>use opencl events for error detection and profiling</shortdescription>
+    <longdescription>this defines if opencl events should be used. if this option is deactivated, opencl errors could pass by unnoticed and image output may be garbled. don't change this from its default TRUE, unless you know what you are doing.</longdescription>
+  </dtconfig>
   <dtconfig prefs="gui">
     <name>never_use_embedded_thumb</name>
     <type>bool</type>
