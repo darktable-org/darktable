@@ -41,7 +41,7 @@
                       taken from neighboring pixels without an expensive interpolation.</para>
 
                 <sect5><title>method</title>
-			<para>Set the demosaic method. Darktable currently supports PPG and AMAZE.</para>
+			<para>Set the demosaic method. darktable currently supports PPG and AMAZE.</para>
 		</sect5>
 
                 <sect5><title>edge threshold</title>

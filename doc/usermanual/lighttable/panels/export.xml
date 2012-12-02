@@ -115,7 +115,7 @@
 				</sect4>
 
 				<sect4><title>max size</title>
-					<para>Set the maximum width and height of your output images in pixels. Set both to a value of "0" to export with full resolution. Darktable currently can only do down-scaling; the maximum
+					<para>Set the maximum width and height of your output images in pixels. Set both to a value of "0" to export with full resolution. darktable currently can only do down-scaling; the maximum
                                               output resolution is defined by the parent image.
 					</para>
 				</sect4>
