@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # this uses astyle to standardize our indentation/braces etc
 
