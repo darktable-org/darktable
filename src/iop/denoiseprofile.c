@@ -495,8 +495,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->radius, _("patch size"));
   dt_bauhaus_slider_set_format(g->radius, "%.0f");
   dt_bauhaus_widget_set_label(g->strength, _("strength"));
-  g_object_set (GTK_OBJECT(g->radius),   "tooltip-text", _("radius of the patches to match"), (char *)NULL);
-  g_object_set (GTK_OBJECT(g->strength), "tooltip-text", _("strength of the effect"), (char *)NULL);
+  g_object_set (GTK_OBJECT(g->radius),   "tooltip-text", _("radius of the patches to match. increase for more sharpness"), (char *)NULL);
+  g_object_set (GTK_OBJECT(g->strength), "tooltip-text", _("finetune denoising strength"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->radius),   "value-changed", G_CALLBACK (radius_callback),   self);
   g_signal_connect (G_OBJECT (g->strength), "value-changed", G_CALLBACK (strength_callback), self);
 }
