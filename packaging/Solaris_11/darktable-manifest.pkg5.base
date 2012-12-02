@@ -272,8 +272,6 @@ file path=opt/darktable/share/darktable/darktablerc owner=root group=root \
     mode=644
 file path=opt/darktable/share/darktable/gdb_commands owner=root group=root \
     mode=644
-file path=opt/darktable/share/darktable/js/.DS_Store owner=root group=root \
-    mode=644
 file path=opt/darktable/share/darktable/js/builder.js owner=root group=root \
     mode=644
 file path=opt/darktable/share/darktable/js/effects.js owner=root group=root \
