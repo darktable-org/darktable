@@ -216,7 +216,7 @@ void process(
   // TODO: fixed K to use adaptive size trading variance and bias!
   // adjust to zoom size:
   const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
-  const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood XXX see above comment
+  const int K = ceilf(10 * roi_in->scale / piece->iscale); // nbhood XXX see above comment
 
   // P == 0 : this will degenerate to a (fast) bilateral filter.
 
@@ -245,7 +245,8 @@ void process(
     for(int ki=-K; ki<=K; ki++)
     {
       // TODO: adaptive K tests here!
-      // TODO: expf eval for real bilateral experience :)
+      // expf eval for real bilateral experience :)
+      const float falloff = expf(-(ki*ki + kj*kj)*(1.0f/(0.25f*K*K)));
 
       int inited_slide = 0;
       // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else we will add up errors)
@@ -302,7 +303,7 @@ void process(
             // DEBUG XXX bring back to computable range:
             const float norm = .02f/(2*P+1);
             const __m128 iv = { ins[0], ins[1], ins[2], 1.0f };
-            _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(fast_mexp2f(fmaxf(0.0f, slide*norm-2.0f))));
+            _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(falloff * fast_mexp2f(fmaxf(0.0f, slide*norm-2.0f))));
           }
           s   ++;
           ins += 4;
