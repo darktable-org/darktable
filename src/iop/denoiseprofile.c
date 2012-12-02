@@ -68,34 +68,33 @@ flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
+typedef struct noiseprofile_t
+{
+  const char *name;
+  const char *maker;
+  const char *model;
+  int iso_min, iso_max;
+  dt_iop_nlmeans_params_t params;
+}
+noiseprofile_t;
+
+static const noiseprofile_t noiseprofiles[] = {
+// preset name                   maker    model            iso range      rad   tune   a a a                                 b b b 
+{N_("generic poissonian"),       "",      "",              0, 0,         {1.0f, 1.0f, {0.0001f, 0.0001f, 0.0001},           {0.0f, 0.0f, 0.0f}}},
+{N_("canon eos 5dm2 iso 100"),   "CANON", "EOS 5D Mark 2", 0, 1600,      {1.0f, 1.0f, {2.645e-06f, 2.645e-06f, 2.645e-06f}, {-1.69e-07f, -1.69e-07f, -1.69e-07f}}},
+{N_("canon eos 5dm2 iso 3200"),  "CANON", "EOS 5D Mark 2", 1600, 4800,   {1.0f, 1.0f, {4.3515e-05, 4.3515e-05, 4.3515e-05}, {-8.078e-07, -8.078e-07, -8.078e-07}}},
+{N_("canon eos 5dm2 iso 6400"),  "CANON", "EOS 5D Mark 2", 4800, 12800,  {1.0f, 1.0f, {8.0e-05f, 8.0e-05f, 8.0e-05f},       {1.5567e-07, 1.5567e-07, 1.5567e-07}}},
+{N_("canon eos 5dm2 iso 25600"), "CANON", "EOS 5D Mark 2", 12800, 51200, {1.0f, 1.0f, {0.0003f, 0.0003f, 0.0003f},          {1.05e-5f, 1.05e-5f, 1.05e-5f}}}
+};
+static const int noiseprofile_cnt = sizeof(noiseprofiles)/sizeof(noiseprofile_t);
+
 void init_presets (dt_iop_module_so_t *self)
 {
-  // TODO: nicer list, more like basecurves
-  dt_iop_nlmeans_params_t p = (dt_iop_nlmeans_params_t)
+  for(int i=0;i<noiseprofile_cnt;i++)
   {
-    1.0f, 1.0f, {2.645e-06f, 2.645e-06f, 2.645e-06f}, {-1.69e-07f, -1.69e-07f, -1.69e-07f}
-  };
-  dt_gui_presets_add_generic(_("canon eos 5dm2 iso 100"), self->op, self->version(), &p, sizeof(p), 1);
-  p = (dt_iop_nlmeans_params_t)
-  {
-    1.0f, 1.0f, {4.3515e-05, 4.3515e-05, 4.3515e-05}, {-8.078e-07, -8.078e-07, -8.078e-07}
-  };
-  dt_gui_presets_add_generic(_("canon eos 5dm2 iso 3200"), self->op, self->version(), &p, sizeof(p), 1);
-  p = (dt_iop_nlmeans_params_t)
-  {
-    1.0f, 1.0f, {8.0e-05f, 8.0e-05f, 8.0e-05f}, {1.55665e-07f, 1.55665e-07f, 1.55665e-07f}
-  };
-  dt_gui_presets_add_generic(_("canon eos 5dm2 iso 6400"), self->op, self->version(), &p, sizeof(p), 1);
-  p = (dt_iop_nlmeans_params_t)
-  {
-    1.0f, 1.0f, {0.0003f, 0.0003f, 0.0003f}, {1.05e-5f, 1.05e-5f, 1.05e-5f}
-  };
-  dt_gui_presets_add_generic(_("canon eos 5dm2 iso 25600"), self->op, self->version(), &p, sizeof(p), 1);
-  p = (dt_iop_nlmeans_params_t)
-  {
-    1.0f, 1.0f, {0.01f, 0.01f, 0.01}, {0.0f, 0.0f, 0.0f}
-  };
-  dt_gui_presets_add_generic(_("generic poissonian"), self->op, self->version(), &p, sizeof(p), 1);
+    dt_gui_presets_add_generic(_(noiseprofiles[i].name), self->op, self->version(), &noiseprofiles[i].params, sizeof(dt_iop_nlmeans_params_t), 1);
+    // TODO: apply show only for matching cameras constraint. auto-apply only with enabled=false i guess.
+  }
 }
 
 typedef union floatint_t
@@ -412,12 +411,8 @@ void reload_defaults(dt_iop_module_t *module)
   // our module is disabled by default
   module->default_enabled = 0;
   // init defaults:
-  dt_iop_nlmeans_params_t tmp = (dt_iop_nlmeans_params_t)
-  {
-    2.0f, 50.0f, {.01f, .01f, .01f}, {0.0f, 0.0f, 0.0f}
-  };
-  memcpy(module->params, &tmp, sizeof(dt_iop_nlmeans_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_nlmeans_params_t));
+  memcpy(module->params, &noiseprofiles[0].params, sizeof(dt_iop_nlmeans_params_t));
+  memcpy(module->default_params, &noiseprofiles[0].params, sizeof(dt_iop_nlmeans_params_t));
 }
 
 /** init, cleanup, commit to pipeline */
