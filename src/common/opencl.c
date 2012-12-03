@@ -37,6 +37,8 @@
 
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
+static const char *dt_opencl_get_vendor_by_id(unsigned int id);
+
 void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 {
   dt_pthread_mutex_init(&cl->lock, NULL);
@@ -143,6 +145,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     cl->dev[dev].summary=CL_COMPLETE;
     cl->dev[dev].used_global_mem = 0;
     cl->dev[dev].nvidia_sm_20 = 0;
+    cl->dev[dev].vendor = "";
     cl_device_id devid = cl->dev[dev].devid = devices[k];
 
     char infostr[1024];
@@ -152,10 +155,12 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     cl_device_type type;
     cl_bool image_support = 0;
     cl_bool device_available = 0;
+    cl_uint vendor_id = 0;
 
     // test GPU availability, vendor, memory, image support etc:
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_AVAILABLE, sizeof(cl_bool), &device_available, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VENDOR, sizeof(vendor), &vendor, NULL);
+    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VENDOR_ID, sizeof(cl_uint), &vendor_id, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_NAME, sizeof(infostr), &infostr, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_TYPE, sizeof(cl_device_type), &type,  NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE_SUPPORT, sizeof(cl_bool), &image_support, NULL);
@@ -196,6 +201,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' due to insufficient global memory (%luMB).\n", k, infostr, cl->dev[dev].max_global_mem/1024/1024);
       continue;
     }
+
+    cl->dev[dev].vendor = dt_opencl_get_vendor_by_id(vendor_id);
 
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' supports image sizes of %zd x %zd\n", k, infostr, cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' allows GPU memory allocations of up to %luMB\n", k, infostr, cl->dev[dev].max_mem_alloc/1024/1024);
@@ -357,6 +364,28 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
   }
 
   dt_pthread_mutex_destroy(&cl->lock);
+}
+
+static const char *dt_opencl_get_vendor_by_id(unsigned int id)
+{
+  const char *vendor;
+
+  switch(id)
+  {
+    case 4098:
+      vendor = "AMD";
+      break;
+    case 4318:
+      vendor = "NVIDIA";
+      break;
+    case 0x8086u:
+      vendor = "INTEL";
+      break;
+    default:
+      vendor = "UNKNOWN";
+  }
+
+  return vendor;
 }
 
 int dt_opencl_finish(const int devid)
@@ -575,7 +604,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char* binname, 
   cl_program program = cl->dev[dev].program[prog];
   cl_int err;
   char options[256];
-  snprintf(options, 256, "-cl-fast-relaxed-math -cl-strict-aliasing%s", cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : "");
+  snprintf(options, 256, "-cl-fast-relaxed-math -cl-strict-aliasing%s -D%s=1", cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : "", cl->dev[dev].vendor);
   err = (cl->dlocl->symbols->dt_clBuildProgram)(program, 1, &cl->dev[dev].devid, options, 0, 0);
   if(err != CL_SUCCESS)
   {
