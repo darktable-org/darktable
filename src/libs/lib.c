@@ -102,6 +102,15 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_lib_presets_edit_di
   if(response_id == GTK_RESPONSE_ACCEPT)
   {
     sqlite3_stmt *stmt;
+
+    // now delete preset, so we can re-insert the new values:
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, g->original_name, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, g->plugin_name, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, g->version);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
     if ( ((g->old_id >= 0) && (strcmp(g->original_name, gtk_entry_get_text(g->name)) != 0)) || (g->old_id < 0) )
     {
 
@@ -227,14 +236,6 @@ edit_preset (const char *name_in, dt_lib_module_info_t *minfo)
     g->old_id = sqlite3_column_int(stmt, 0);
     gtk_entry_set_text(g->description, (const char *)sqlite3_column_text(stmt, 1));
   }
-  sqlite3_finalize(stmt);
-
-  // now delete preset, so we can re-insert the new values:
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, minfo->plugin_name, strlen(minfo->plugin_name), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo->version);
-  sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
   g_signal_connect (dialog, "response", G_CALLBACK (edit_preset_response), g);
