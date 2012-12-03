@@ -372,8 +372,8 @@ dt_bauhaus_popup_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointe
                                 widget->allocation.width);
       if(!darktable.bauhaus->change_active)
       {
-        if((darktable.bauhaus->mouse_line_distance < 0 && mouse_off > 0) ||
-            (darktable.bauhaus->mouse_line_distance > 0 && mouse_off < 0))
+        if((darktable.bauhaus->mouse_line_distance < 0 && mouse_off >= 0) ||
+            (darktable.bauhaus->mouse_line_distance > 0 && mouse_off <= 0))
           darktable.bauhaus->change_active = 1;
         darktable.bauhaus->mouse_line_distance = mouse_off;
       }
@@ -1432,7 +1432,7 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     case DT_BAUHAUS_COMBOBOX:
     {
       // draw label and quad area at right end
-      float label_width = show_pango_text(cr, w->label, 2, 0, 0, FALSE, TRUE, FALSE);
+      float label_width = show_pango_text(cr, w->label, 2, 0, 0, FALSE, gtk_widget_is_sensitive(widget), FALSE);
       dt_bauhaus_draw_quad(w, cr);
 
       if(gtk_widget_is_sensitive(widget))
@@ -1464,7 +1464,7 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
         show_pango_text(cr, text, width-4-height, 0, 0, TRUE, TRUE, FALSE);
       }
       // label on top of marker:
-      show_pango_text(cr, w->label, 2, 0, 0, FALSE, TRUE, FALSE);
+      show_pango_text(cr, w->label, 2, 0, 0, FALSE, gtk_widget_is_sensitive(widget), FALSE);
     }
     break;
     default:

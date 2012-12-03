@@ -34,7 +34,7 @@
 				</sect4>
 
 				<sect4><title>import</title>
-					<para>You can import a style which has been previously saved by darktable. Darktable stores its files in xml files with the extension .dtstyle.
+					<para>You can import a style which has been previously saved by darktable. darktable stores its files in xml files with the extension .dtstyle.
 					</para>
 
 				</sect4>

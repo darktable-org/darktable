@@ -832,7 +832,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 3, sizeof(int), &height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 4, sizeof(uint32_t), (void*)&data->filters);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 5, sizeof(float), (void*)&data->median_thrs);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 6, sizeof(uint32_t), (void*)&one);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 6, sizeof(int), (void*)&one);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_pre_median, sizes);
       if(err != CL_SUCCESS) goto error;
 
@@ -900,12 +900,14 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     if(data->median_thrs > 0.0f)
     {
+      const int one = 1;
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 0, sizeof(cl_mem), &dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 1, sizeof(cl_mem), &dev_tmp);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 2, sizeof(int), &width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 3, sizeof(int), &height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 4, sizeof(uint32_t), (void*)&data->filters);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 5, sizeof(float), (void*)&data->median_thrs);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 6, sizeof(int), (void*)&one);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_pre_median, sizes);
       if(err != CL_SUCCESS) goto error;
 
@@ -964,7 +966,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   else
   {
     // sample half-size image:
-    int zero = 0;
+    const int zero = 0;
     cl_mem dev_pix = dev_in;
     if(piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT && data->median_thrs > 0.0f)
     {
@@ -980,7 +982,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 3, sizeof(int), &height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 4, sizeof(uint32_t), (void*)&data->filters);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 5, sizeof(float), (void*)&data->median_thrs);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 6, sizeof(uint32_t), (void*)&zero);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 6, sizeof(int), (void*)&zero);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_pre_median, sizes);
       if(err != CL_SUCCESS) goto error;
       dev_pix = dev_tmp;

@@ -98,8 +98,6 @@ nlmeans_horiz(read_only image2d_t U4_in, write_only image2d_t U4_out, const int 
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  if(y >= height) return;
-
   /* fill center part of buffer */
   buffer[P + lid] = read_imagef(U4_in, samplerc, (int2)(x, y)).x;
 
@@ -123,7 +121,7 @@ nlmeans_horiz(read_only image2d_t U4_in, write_only image2d_t U4_out, const int 
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  if(x >= width) return;
+  if(x >= width || y >= height) return;
 
   buffer += lid + P;
 
@@ -145,8 +143,6 @@ nlmeans_vert(read_only image2d_t U4_in, write_only image2d_t U4_out, const int w
   const int lsz = get_local_size(1);
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-
-  if(x >= width) return;
 
   /* fill center part of buffer */
   buffer[P + lid] = read_imagef(U4_in, samplerc, (int2)(x, y)).x;
@@ -171,7 +167,7 @@ nlmeans_vert(read_only image2d_t U4_in, write_only image2d_t U4_out, const int w
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  if(y >= height) return;
+  if(x >= width || y >= height) return;
 
   buffer += lid + P;
 

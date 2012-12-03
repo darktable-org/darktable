@@ -242,15 +242,16 @@ new_button_clicked (GtkButton *button, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
   const gchar *tag = gtk_entry_get_text(d->entry);
-  /* create new tag */
-  guint tid=0;
-  dt_tag_new(tag, &tid);
 
   /** attach tag to selected images  */
-  dt_tag_attach(tid,-1);
+  dt_tag_attach_string_list(tag, -1);
   dt_image_synch_xmp(-1);
 
   update(self, 1);
+  update(self, 0);
+
+  /** clear input box */
+  gtk_entry_set_text(d->entry, "");
 }
 
 static void
@@ -261,12 +262,8 @@ entry_activated (GtkButton *button, gpointer user_data)
   const gchar *tag = gtk_entry_get_text(d->entry);
   if(!tag || tag[0] == '\0') return;
 
-  /* create new tag */
-  guint tid=0;
-  dt_tag_new(tag, &tid);
-
   /** attach tag to selected images  */
-  dt_tag_attach(tid,-1);
+  dt_tag_attach_string_list(tag, -1);
   dt_image_synch_xmp(-1);
 
   update(self, 1);
@@ -522,13 +519,10 @@ _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t
     case GDK_KP_Enter:
     {
       const gchar *tag = gtk_entry_get_text(GTK_ENTRY(entry));
-      /* create new tag */
-      guint tid=0;
-      dt_tag_new(tag, &tid);
       /* attach tag to images  */
       if(d->floating_tag_imgid > 0) // just a single image
       {
-        dt_tag_attach(tid, d->floating_tag_imgid);
+        dt_tag_attach_string_list(tag, d->floating_tag_imgid);
         dt_image_synch_xmp(d->floating_tag_imgid);
       }
       else // all selected images
@@ -540,7 +534,7 @@ _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t
           do
           {
             int imgid = GPOINTER_TO_INT(iter->data);
-            dt_tag_attach(tid, imgid);
+            dt_tag_attach_string_list(tag, imgid);
             dt_image_synch_xmp(imgid);
           }
           while( (iter=g_list_next(iter)) !=NULL );

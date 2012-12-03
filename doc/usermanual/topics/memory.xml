@@ -1,5 +1,9 @@
 <sect1 status="draft"><title>darktable and memory</title>
-	<para>Darktable's memory requirements are high. A simple calculation makes this clear. If you have a 20MPx image, DT for precision reasons will store this internally as a 4 × 32-bit floating point cell for each pixel. Each 		full image of this size will need about 300MB of memory. As we want to process the image, we will at least need two buffers for each module – one for input and one for output. If we have a more complex module, its algorithm 	might additionally require several intermediate buffers of the same size. Without further optimization, anything between 600MB and 3GB would be needed only to store and process image data. On top we have darktable’s code 		segment, the code and data of all dynamically linked system libraries, and not to forget further buffers where darktable stores intermediate images for quick access during interactive work (mip map cache). All in all darktable 		would like to see a minimum of about 4GB to run happily.</para>
+	<para>darktable's memory requirements are high. A simple calculation makes this clear. If you have a 20MPx image, darktable for precision reasons will store this internally as a 4 × 32-bit floating
+              point cell for each pixel. Each full image of this size will need about 300MB of memory. As we want to process the image, we will at least need two buffers for each module – one for input and 
+              one for output. If we have a more complex module, its algorithm 	might additionally require several intermediate buffers of the same size. Without further optimization, anything between 600MB 
+              and 3GB would be needed only to store and process image data. On top we have darktable’s code segment, the code and data of all dynamically linked system libraries, and not to forget further 
+              buffers where darktable stores intermediate images for quick access during interactive work (mip map cache). All in all darktable would like to see a minimum of about 4GB to run happily.</para>
 
 	<sect2><title>Total system memory</title>
 		<para>From what I said before, it is evident that your computer needs a sane memory setup to properly run darktable. We suggest that you have a least 4GB of physical RAM plus 4 to 8GB of additional swap space 			installed. The latter is required, so that your system can swap out temporarily unneeded data to disk in order to free physical RAM.</para>
@@ -10,11 +14,11 @@
 	<sect2><title>Available address space</title>
 		<para>Besides the total amount of system memory there is another limiting factor: the available address space of your hardware architecture. How much memory can be addressed by a process depends on the number of 			address bits your CPU offers. For a CPU with 32-bit address registers, this is 2^32 bytes, which makes a total of 4GB. This is the absolute upper limit of memory that can be used by a process and it constitutes a tight 			situation for darktable as we have seen above.</para>
 
-		<para>Darktable’s escape route is called tiling. Instead of processing an image in one big chunk, we split the image into smaller parts for every processing step (module). This will still require one full input and 			output buffer, but intermediate buffers can be made small enough to have everything fit into the hardware limits.</para>
+		<para>darktable’s escape route is called tiling. Instead of processing an image in one big chunk, we split the image into smaller parts for every processing step (module). This will still require one full input and 			output buffer, but intermediate buffers can be made small enough to have everything fit into the hardware limits.</para>
 	</sect2>
 
 	<sect2><title>Memory fragmentation</title>
-		<para>Unfortunately this is not the full story yet. There is an effect called memory fragmentation, which can and will hit software that needs to do extensive memory management. If such a program allocates 5 times 			300MB at a time and frees it again, that memory should normally be available for one big 1.5GB allocation afterwards. This however is often not the case. The system’s memory allocator might no longer see this area as 			one contiguous 1.5GB block but as a row of 300MB areas. If there is no other free area of 1.5GB available, the allocation would fail. During a program run this mechanism will take away more and more of the larger 			memory blocks in favor of smaller ones. Darktable 1.0 introduces a caching algorithm to address this problem. It pre-allocates blocks of memory and makes them available on request.</para>
+		<para>Unfortunately this is not the full story yet. There is an effect called memory fragmentation, which can and will hit software that needs to do extensive memory management. If such a program allocates 5 times 			300MB at a time and frees it again, that memory should normally be available for one big 1.5GB allocation afterwards. This however is often not the case. The system’s memory allocator might no longer see this area as 			one contiguous 1.5GB block but as a row of 300MB areas. If there is no other free area of 1.5GB available, the allocation would fail. During a program run this mechanism will take away more and more of the larger 			memory blocks in favor of smaller ones. darktable 1.0 introduces a caching algorithm to address this problem. It pre-allocates blocks of memory and makes them available on request.</para>
 	</sect2>
 
 	<sect2><title>Further Limitations</title>
@@ -22,11 +26,14 @@
 	</sect2>
 	
 	<sect2><title>Setting up darktable on 32-bit systems</title>
-		<para>As we’ve seen 32-bit systems are difficult environments for darktable. Still many users are successfully running DT on them, if the basic requirements in terms of total system memory and the topics mentioned in 			the paragraphs above are addressed properly.</para>
+		<para>As we’ve seen 32-bit systems are difficult environments for darktable. Still many users are successfully running darktable on them, if the basic requirements in terms of total system memory and the 
+                topics mentioned in the paragraphs above are addressed properly.</para>
 
-		<para>There are several adjustment parameters to get it running. If you make a fresh install, DT will detect your system and set conservative values by default. However, if you upgrade DT from an older version (e.g. 		coming from 0.9.3 and going to 1.0), chances are you have unfavorable settings in your preferences. The consequences might be DT aborting due to allocation failures or – very typically – DT not being able to properly 			import a new film roll. As a frequent symptom you get skulls displayed instead of thumbs for many of your pictures.</para>
+		<para>There are several adjustment parameters to get it running. If you make a fresh install, darktable will detect your system and set conservative values by default. However, if you upgrade darktable 
+                from an older version (e.g. coming from 0.9.3 and going to 1.0), chances are you have unfavorable settings in your preferences. The consequences might be darktable aborting due to allocation failures or 
+                – very typically – darktable not being able to properly import a new film roll. As a frequent symptom you get skulls displayed instead of thumbs for many of your pictures.</para>
 
-		<para>Take a minute to optimize the preference settings in this case. You will find them under “core options” in DT’s preference dialog. You might also find these parameters as configuration variables in 			$HOME/.config/darktable/darktablerc and edit them there.</para>
+		<para>Take a minute to optimize the preference settings in this case. You will find them under “core options” in darktable’s preference dialog. You might also find these parameters as configuration variables in 			$HOME/.config/darktable/darktablerc and edit them there.</para>
 
 		<para>Here is a short explanation of the relevant parameters and their proposed settings.</para>
 
@@ -35,7 +42,9 @@
 		</sect4>
 
 		<sect4><title>host memory limit (in MB) for tiling</title>
-			<para>This parameter tells DT how much memory (in MB) it should assume as available to store image buffers during module operations. If an image can not be processed within these limits in one chunk, tiling 				will take over and process the image in several parts, one after the other. Set this to the lowest possible value of 500 as a starting point. You might experiment later whether you can increase it a bit in 				order to reduce the overhead of tiling.</para>
+			<para>This parameter tells darktable how much memory (in MB) it should assume as available to store image buffers during module operations. If an image can not be processed within these limits in 
+                        one chunk, tiling will take over and process the image in several parts, one after the other. Set this to the lowest possible value of 500 as a starting point. You might experiment later whether 
+                        you can increase it a bit in order to reduce the overhead of tiling.</para>
 		</sect4>
 
 		<sect4><title>minimum amount of memory (in MB) for a single buffer in tiling</title>
@@ -47,7 +56,7 @@
 		</sect4>
 	</sect2>
 
-	<sect2><title>Darktable on 64-bit systems</title>
+	<sect2><title>darktable on 64-bit systems</title>
 		<para>There's not much to be said here. Of course also 64-bit systems require a sufficient amount of main memory. So the 4GB plus swap recommendation holds true. On the other hand, 64-bit architectures do not suffer 		from the specific 32-bit limitations like small address space and fragmentation madness.</para>
 
 		<para>Most modern Intel or AMD 64-bit CPUs will have an available address space in the range of several Terabytes. The word "modern" is relative in this context: all AMD and Intel CPUs introduced since 2003 and 2004, 			respectively, offer a 64-bit mode. Linux 64-bit has been available since many years.</para>
