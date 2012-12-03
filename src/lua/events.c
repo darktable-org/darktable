@@ -194,7 +194,13 @@ static int trigger_multiinstance_event(lua_State * L,const char* evt_name, int n
     for(int i = 0 ; i<nargs ;i++) { // event dependant parameters
       lua_pushvalue(L, top_marker -nargs +1 +i); 
     }
-    result += dt_lua_do_chunk(L,0,nargs+1,nresults);
+    int tmp_result = dt_lua_do_chunk(L,0,nargs+1,nresults);
+    if(tmp_result > 0) {
+      lua_pushvalue(L,-(tmp_result+1));//push index on top
+      lua_remove(L,-(tmp_result+2));//remove old index still in stack
+    }
+    result += tmp_result;
+    //result += dt_lua_do_chunk(L,0,nargs+1,nresults);
   }
   return result;
 }
@@ -219,47 +225,44 @@ static int register_chained_event(lua_State* L) {
 }
 
 static int trigger_chained_event(lua_State * L,const char* evt_name, int nargs,int nresults) {
-  // -1..-n are our args
+  // nresults is unused
+  // -1..-n a
   lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
   lua_getfield(L,-1,evt_name);
   if(lua_isnil(L,-1)) {
     lua_pop(L,2+nargs);
-    if(nresults == LUA_MULTRET) return 0;
-    for(int i = 0 ; i < nresults ; i++) lua_pushnil(L);
-    return nresults;
+    for(int i = 0 ; i < nargs ; i++) lua_pushnil(L);
+    return nargs;
   }
   lua_remove(L,-2);
 
+  for(int i = 0 ; i< nargs; i++) {
+    lua_pushvalue(L,-(nargs+1)); // copy all args over the table
+  }
 
   lua_pushnil(L);  /* first key */
-  int lastnargs = nargs;
-  while (lua_next(L, -(lastnargs+2)) != 0) {
+  while (lua_next(L, -(nargs+2)) != 0) {
     const int loop_index=luaL_checkint(L,-2);
     lua_remove(L,-2);
     /* uses 'key' (at index -2) and 'value' (at index -1) */
     // prepare the call
-    lua_insert(L,-(nargs+1));
+    lua_insert(L,-(nargs+1)); // move fn call below args
     lua_pushstring(L,evt_name);// param 1 is the event
-    lua_insert(L,-(nargs+1));
-    lastnargs = dt_lua_do_chunk(L,0,nargs+2,nargs);
+    lua_insert(L,-(nargs+1)); // move evt name below params
+    dt_lua_do_chunk(L,0,nargs+1,nargs);
     lua_pushinteger(L,loop_index);
   }
-  lua_remove(L,-lastnargs -1); //our data
-  if(nresults == LUA_MULTRET) return lastnargs;
-  else if(lastnargs < nresults) for(int i = lastnargs; i< nresults; i++) lua_pushnil(L);
-  else if(lastnargs > nresults) for(int i = nresults; i< lastnargs; i++) lua_pop(L,1);
-
-  return nresults;
+  lua_remove(L,-(nargs+1));
+  return nargs;
 }
 
 
 static event_handler event_list[] = {
-  {"pre-export-selection",register_multiinstance_event,trigger_multiinstance_event},
+  {"pre-export",register_chained_event,trigger_chained_event},
   {"post-import-image",register_multiinstance_event,trigger_multiinstance_event},
   {"shortcut",register_shortcut_event,trigger_keyed_event}, 
   {"tmp-export-image",register_multiinstance_event,trigger_multiinstance_event},
   {"test",register_singleton_event,trigger_singleton_event},  // avoid error because of unused function
-  {"test2",register_chained_event,trigger_chained_event}, // avoid error because of unused function
   {NULL,NULL,NULL}
 };
 
@@ -308,9 +311,27 @@ static int dt_lua_trigger_event(const char*event,int nargs,int nresults) {
   return res;
 }
 
-static void on_export_selection(gpointer instance,
+static void on_export_selection(gpointer instance,GList **list,
      gpointer user_data){
-  dt_lua_trigger_event("pre-export-selection",0,0);
+  GList * elt = *list;
+  lua_newtable(darktable.lua_state);
+  while(elt) {
+    dt_lua_image_push(darktable.lua_state,(long int)elt->data);
+    luaL_ref(darktable.lua_state,-2);
+    elt = g_list_delete_link(elt,elt);
+  }
+  *list =NULL;
+  dt_lua_trigger_event("pre-export",1,1);
+  if(lua_isnoneornil(darktable.lua_state,-1)) {return; }// everything already has been removed
+  // recreate list of images
+  lua_pushnil(darktable.lua_state);  /* first key */
+  while (lua_next(darktable.lua_state, -2) != 0) {
+    /* uses 'key' (at index -2) and 'value' (at index -1) */
+    long int imgid = dt_lua_image_get(darktable.lua_state,-1);
+    lua_pop(darktable.lua_state,1);
+    *list = g_list_prepend(*list,(gpointer)imgid);
+  }
+  *list = g_list_reverse(*list);
 }
 
 static void on_export_image_tmpfile(gpointer instance,
@@ -344,7 +365,7 @@ void dt_lua_init_events(lua_State *L) {
   lua_settable(L,-3);
   lua_pop(L,1);
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_IMPORT,G_CALLBACK(on_image_imported),NULL);
-  dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_SELECTION,G_CALLBACK(on_export_selection),NULL);
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,G_CALLBACK(on_export_selection),NULL);
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_TMPFILE,G_CALLBACK(on_export_image_tmpfile),NULL);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

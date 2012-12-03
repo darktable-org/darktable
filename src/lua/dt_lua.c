@@ -42,6 +42,11 @@ int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
     dt_control_log("LUA ERROR %s",lua_tostring(L,-1));
     dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(L,-1));
     lua_pop(L,1);
+    if(nresults !=LUA_MULTRET) {
+      for(int i= 0 ; i < nresults; i++) {
+        lua_pushnil(L);
+      }
+    }
   }
   result= lua_gettop(L) -result;
 

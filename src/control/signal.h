@@ -104,10 +104,10 @@ typedef enum dt_signal_t
   DT_SIGNAL_IMAGE_IMPORT,
 
   /** \brief This signal is raised when multiple images are exporte
-    no param
+    1 Glist **: list of imgid to be exported, can be edited when the signal is called or set to NULL to cancel all export, but you need to handle freeing correctly
     no return
     */
-  DT_SIGNAL_IMAGE_EXPORT_SELECTION,
+  DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,
 
   /** \brief This signal is raised after an image has been exported
     to a file, but before it is sent to facebook/picassa etc...

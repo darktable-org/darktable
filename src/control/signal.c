@@ -44,6 +44,10 @@ typedef struct dt_signal_description
 
 static GType uint_arg[] = {G_TYPE_UINT};
 static GType image_export_arg[] = {G_TYPE_UINT,G_TYPE_STRING};
+static GType pointer_arg[] = {G_TYPE_POINTER};
+
+
+
 static dt_signal_description _signal_description[DT_SIGNAL_COUNT] =
 {
   /* Global signals */
@@ -68,7 +72,7 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] =
   {"dt-develop-image-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},        // DT_SIGNAL_DEVELOP_IMAGE_CHANGE
   {"dt-control-profile-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},               // DT_SIGNAL_CONTROL_PROFILE_CHANGED
   {"dt-image-import",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__UINT,1,uint_arg},               // DT_SIGNAL_CONTROL_PROFILE_CHANGED
-  {"dt-image-export-selection",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},               // DT_SIGNAL_IMAGE_EXPORT_SELECTION
+  {"dt-image-export-multiple",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__POINTER,1,pointer_arg},               // DT_SIGNAL_IMAGE_EXPORT_MULTIPLE
   {"dt-image-export-tmpfile",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_generic,2,image_export_arg},               // DT_SIGNAL_IMAGE_EXPORT_TMPFILE
 };
 
