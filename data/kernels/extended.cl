@@ -351,7 +351,7 @@ vignette (read_only image2d_t in, write_only image2d_t out, const int width, con
 
   if(x >= width || y >= height) return;
 
-  const float2 pv = (float2)(x,y) * scale - roi_center_scaled;
+  const float2 pv = fabs((float2)(x,y) * scale - roi_center_scaled);
 
   const float cplen = pow(pow(pv.x, expt.x) + pow(pv.y, expt.x), expt.y);
 
@@ -366,7 +366,7 @@ vignette (read_only image2d_t in, write_only image2d_t out, const int width, con
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  if(weight > 0)
+  if(weight > 0.0f)
   {
     float falloff = brightness < 0.0f ? 1.0 + (weight * brightness) : weight * brightness;
 
