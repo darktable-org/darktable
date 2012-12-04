@@ -7,7 +7,7 @@
       <row>						
 	<entry>
 	  <para>A session is a sequence of exposures taken in tethering mode and going into a single filmroll. A new session equals a new filmroll. A filmroll is created with the same storage 
-                structure that is used when you import images from camera into Darktable.</para>
+                structure that is used when you import images from camera into darktable.</para>
 
           <para>It's a bit akward, but configuring this storage structure is done in the camera import dialog for now.</para>
 	</entry>

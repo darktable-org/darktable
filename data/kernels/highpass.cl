@@ -46,8 +46,6 @@ highpass_hblur(read_only image2d_t in, write_only image2d_t out, global float *m
   const int y = get_global_id(1);
   float4 pixel = (float4)0.0f;
 
-  if(y >= height) return;
-
   /* read pixel and fill center part of buffer */
   pixel = read_imagef(in, sampleri, (int2)(x, y));
   buffer[rad + lid] = pixel.x;
@@ -72,7 +70,7 @@ highpass_hblur(read_only image2d_t in, write_only image2d_t out, global float *m
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  if(x >= width) return;
+  if(x >= width || y >= height) return;
 
   buffer += lid + rad;
   m += rad;
@@ -100,8 +98,6 @@ highpass_vblur(read_only image2d_t in, write_only image2d_t out, global float *m
   const int y = get_global_id(1);
   float4 pixel = (float4)0.0f;
 
-  if(x >= width) return;
-
   /* read pixel and fill center part of buffer */
   pixel = read_imagef(in, sampleri, (int2)(x, y));
   buffer[rad + lid] = pixel.x;
@@ -126,7 +122,7 @@ highpass_vblur(read_only image2d_t in, write_only image2d_t out, global float *m
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  if(y >= height) return;
+  if(x >= width || y >= height) return;
 
   buffer += lid + rad;
   m += rad;

@@ -290,7 +290,6 @@ clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out, const int wi
 
 
 #define MIN(a,b)      ((a) < (b) ? (a) : (b))
-#define MAX_SAMPLES   512
 
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
@@ -315,7 +314,7 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
   // pixel footprint on input buffer, radius:
   const float px_footprint = 1.0f/r_scale;
   // how many 2x2 blocks can be sampled inside that area
-  const int samples = MIN(round(px_footprint/2.0f), MAX_SAMPLES-2);
+  const int samples = round(px_footprint/2.0f);
 
   int trggbx = 0, trggby = 0;
   if(FC(trggby, trggbx+1, filters) != 1) trggbx++;
@@ -332,14 +331,6 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
   int2 p = (int2)((int)f.x & ~1, (int)f.y & ~1);
   const float2 d = (float2)((f.x - p.x)/2.0f, (f.y - p.y)/2.0f);
 
-  float xfilter[MAX_SAMPLES];
-  float yfilter[MAX_SAMPLES];
-  for(int i=1;i<=samples;i++) xfilter[i] = yfilter[i] = 1.0f;
-  xfilter[0] = 1.0f - d.x;
-  yfilter[0] = 1.0f - d.y;
-  xfilter[samples+1] = d.x;
-  yfilter[samples+1] = d.y;
-
   // now move p to point to an rggb block:
   p += rggb;
 
@@ -350,13 +341,16 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
 
     if(xx + 1 >= rin_wd || yy + 1 >= rin_ht) continue;
 
+    float xfilter = (i == 0) ? 1.0f - d.x : ((i == samples+1) ? d.x : 1.0f);
+    float yfilter = (j == 0) ? 1.0f - d.y : ((j == samples+1) ? d.y : 1.0f);
+
     // get four mosaic pattern uint16:
     float p1 = read_imagef(in, sampleri, (int2)(xx,   yy  )).x;
     float p2 = read_imagef(in, sampleri, (int2)(xx+1, yy  )).x;
     float p3 = read_imagef(in, sampleri, (int2)(xx,   yy+1)).x;
     float p4 = read_imagef(in, sampleri, (int2)(xx+1, yy+1)).x;
-    color += yfilter[j]*xfilter[i]*(float4)(p1, (p2+p3)*0.5f, p4, 0.0f);
-    weight += yfilter[j]*xfilter[i];
+    color += yfilter*xfilter*(float4)(p1, (p2+p3)*0.5f, p4, 0.0f);
+    weight += yfilter*xfilter;
   }
   color /= weight;
   write_imagef (out, (int2)(x, y), color);

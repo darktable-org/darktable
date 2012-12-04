@@ -46,7 +46,7 @@
     </informaltable>
     
     <para>Map data are taken from open map sources on the internet. New map data are only available if
-          you are connected to the internet. Darktable keeps a disk cache of already loaded map data.</para>
+          you are connected to the internet. darktable keeps a disk cache of already loaded map data.</para>
 
     <para>You can navigate in your map using the mouse. Left-click will drag the map; using the scroll-wheel
           will zoom in or out.</para>
@@ -59,7 +59,7 @@
 
     <para>In order to assign geo coordinates to an image, activate the film-strip on the lower panel (press <emphasis> Ctrl-f</emphasis>).
           You can simply assign a geo location to an image by dragging the image icon from the film-strip and position it onto
-          the map. Darktable will record the new geo location (longitude and latitude) as part of the image metadata.
+          the map. darktable will record the new geo location (longitude and latitude) as part of the image metadata.
           Exported images will inherit these settings.</para>
 
     <para>Left and right to the central map there are panels for additional control.</para>

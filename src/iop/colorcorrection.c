@@ -411,11 +411,11 @@ dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
   else
   {
     g->selected = 0;
-    const float thrs = 10.0f;
+    const float thrs = 5.0f;
     const float distlo = (p->loa-ma)*(p->loa-ma) + (p->lob-mb)*(p->lob-mb);
     const float disthi = (p->hia-ma)*(p->hia-ma) + (p->hib-mb)*(p->hib-mb);
-    if(distlo < thrs*thrs) g->selected = 1;
-    else if(disthi < thrs*thrs) g->selected = 2;
+    if(distlo < thrs*thrs && distlo < disthi) g->selected = 1;
+    else if(disthi < thrs*thrs && disthi <= distlo) g->selected = 2;
   }
   gtk_widget_queue_draw(self->widget);
   return TRUE;
@@ -428,10 +428,25 @@ dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventButton *event, gp
   {
     // double click resets:
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
     dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
-    dt_iop_colorcorrection_params_t *d = (dt_iop_colorcorrection_params_t *)self->factory_params;
-    memcpy(p, d, sizeof(*p));
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    switch(g->selected)
+    {
+      case 1:  // only reset lo
+        p->loa = p->lob = 0.0;
+        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        break;
+      case 2:  // only reset hi
+        p->hia = p->hib = 0.0;
+        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        break;
+      default: // reset everything
+      {
+        dt_iop_colorcorrection_params_t *d = (dt_iop_colorcorrection_params_t *)self->factory_params;
+        memcpy(p, d, sizeof(*p));
+        dt_dev_add_history_item(darktable.develop, self, TRUE);
+      }
+    }
     return TRUE;
   }
   return FALSE;

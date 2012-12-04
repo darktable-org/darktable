@@ -65,8 +65,13 @@
 #endif
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include "jpeglib.h"
-
+#ifdef __cplusplus
+}
+#endif
 // STL
 #include <iostream>
 #include <string>

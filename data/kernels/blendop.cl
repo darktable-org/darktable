@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 ulrich pegelow.
+    copyright (c) 2011-2012 ulrich pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -359,6 +359,7 @@ blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __writ
   write_imagef(mask, (int2)(x, y), opacity);
 }
 
+#if 0
 __kernel void
 blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t mask, const int width, const int height, 
              const float gopacity, const int blendif, global const float *blendif_parameters)
@@ -370,6 +371,31 @@ blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __writ
 
   write_imagef(mask, (int2)(x, y), gopacity);
 }
+#else
+// the following is a workaround for a current bug (as of Nov. 2012) in NVIDIA's OpenCL compiler, affecting GeForce GT6xx gpus.
+// the above original kernel would simply not compile. the code below is functionally equivalent, a bit slower, and complicated enough
+// to trick the compiler.
+// thanks to Jens Fendler for finding this workaround.
+// TODO: review after some time (May 2013) if this is still needed.
+__kernel void
+blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t mask, const int width, const int height, 
+             const float gopacity, const int blendif, global const float *blendif_parameters)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
+  float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
+
+  float bif = blendif_factor_Lab(a, b, blendif, blendif_parameters);
+  float opacity = gopacity * bif;
+  opacity /= bif;
+
+  write_imagef(mask, (int2)(x, y), opacity);
+}
+#endif
 
 __kernel void
 blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t mask, const int width, const int height, 

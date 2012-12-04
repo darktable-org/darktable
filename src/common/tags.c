@@ -231,6 +231,32 @@ void dt_tag_attach_list(GList *tags,gint imgid)
     while( (child=g_list_next(child)) !=NULL);
 }
 
+void dt_tag_attach_string_list(const gchar *tags, gint imgid)
+{
+  gchar **tokens = g_strsplit(tags, ",", 0);
+  if(tokens)
+  {
+    gchar **entry = tokens;
+    while(*entry)
+    {
+      // remove leading and trailing spaces
+      char *e = *entry + strlen(*entry) - 1;
+      while(*e == ' ' && e > *entry) *e = '\0';
+      e = *entry;
+      while(*e == ' ' && *e != '\0') e++;
+      if(*e)
+      {
+      // add the tag to the image
+        guint tagid = 0;
+        dt_tag_new(e,&tagid);
+        dt_tag_attach(tagid, imgid);
+      }
+      entry++;
+    }
+  }
+  g_strfreev(tokens);
+}
+
 void dt_tag_detach(guint tagid,gint imgid)
 {
   sqlite3_stmt *stmt;

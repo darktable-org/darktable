@@ -419,7 +419,7 @@ float *monotone_hermite_set ( int n, float x[], float y[])
 
   delta = (float *)calloc(n,sizeof(float));
   //nc_merror(delta, "spline_cubic_set");
-  m = (float *)calloc(n,sizeof(float));
+  m = (float *)calloc(n+1,sizeof(float));
   //nc_merror(m, "spline_cubic_set");
   //calculate the slopes
   for (i = 0; i<n-1; i++)
