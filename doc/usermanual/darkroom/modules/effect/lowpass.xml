@@ -21,6 +21,7 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
+                <para>This module offers enormous artistic potential, albeit with difficult to predict results sometimes.</para>
 		<sect5><title>radius</title>
 			<para>Set the radius of the blur.</para>
 		</sect5>
@@ -40,4 +41,43 @@
                               saturation. A value of zero leads to a desaturated black&amp;white image.</para>
 		</sect5>			
 	</sect4>
+
+	<sect4><title>Examples</title>
+		<para>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth="4*"/>
+					<colspec colwidth="6*"/>
+					<tbody>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/lowpass_ex1.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry><para>The original image, already heavily processed. The boat is almost a silhouette.</para></entry>
+						</row>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/lowpass_ex2.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry><para>Bilateral blur with high radius. Desaturated, inverted and with high contrast.</para></entry>
+						</row>
+                                                <row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/lowpass_ex3.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry><para>Resulting image from lowpass filter ...</para></entry>
+						</row>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/lowpass_ex4.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry><para>... and final image after this was applied with blend mode "vividlight".</para></entry>
+						</row>
+
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</para>	
+	</sect4>
+
+
 </sect3>
