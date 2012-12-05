@@ -287,8 +287,6 @@ clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out, const int wi
 }
 
 
-#define MIN(a,b)      ((a) < (b) ? (a) : (b))
-
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
  * and writes it to out in float4 format.
