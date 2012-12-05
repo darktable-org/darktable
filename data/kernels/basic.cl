@@ -19,11 +19,6 @@
 #include "common.h"
 
 
-#ifndef M_PI_F
-#define M_PI_F           3.14159265358979323846f  // should be defined by the OpenCL compiler acc. to standard
-#endif
-
-
 kernel void
 whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *coeffs,
     const unsigned int filters, const int rx, const int ry)

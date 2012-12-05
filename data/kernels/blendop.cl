@@ -45,10 +45,6 @@
 #define BLEND_ONLY_LIGHTNESS				8
 
 
-#ifndef M_PI_F
-#define M_PI_F           3.14159265358979323846f  // should be defined by the OpenCL compiler acc. to standard
-#endif
-
 #include "common.h"
 
 

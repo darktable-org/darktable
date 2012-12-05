@@ -18,11 +18,6 @@
 
 #include "common.h"
 
-#ifndef M_PI_F
-#define M_PI_F           3.14159265358979323846f  // should be defined by the OpenCL compiler acc. to standard
-#endif
-
-
 
 __kernel void
 graduatedndp (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const float4 color,
