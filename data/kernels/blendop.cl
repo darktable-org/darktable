@@ -49,8 +49,7 @@
 #define M_PI_F           3.14159265358979323846f  // should be defined by the OpenCL compiler acc. to standard
 #endif
 
-
-const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
+#include "common.h"
 
 
 typedef enum iop_cs_t 
