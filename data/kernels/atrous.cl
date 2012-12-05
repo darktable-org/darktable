@@ -19,7 +19,6 @@
 #include "common.h"
 
 
-#define ICLAMP(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 
 float4
 weight(const float4 c1, const float4 c2, const float sharpen)

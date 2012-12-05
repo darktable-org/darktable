@@ -19,8 +19,6 @@
 
 #include "common.h"
 
-#define ICLAMP(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
-
 
 
 /* 

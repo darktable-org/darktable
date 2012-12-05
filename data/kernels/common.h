@@ -9,6 +9,7 @@ constant sampler_t samplerc =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP  
 #define M_PI_F           3.14159265358979323846  // should be defined by the OpenCL compiler acc. to standard
 #endif
 
+#define ICLAMP(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 
 
 int
