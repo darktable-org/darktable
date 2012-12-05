@@ -19,11 +19,6 @@
 #include "common.h"
 
 
-int
-FC(const int row, const int col, const unsigned int filters)
-{
-  return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
-}
 
 // FC return values are either 0/1/2/3 = G/M/C/Y or 0/1/2/3 = R/G1/B/G2
 #define FCV(val, col) ((col == 0) ? val.x : ((col & 1) ? val.y : val.z) )

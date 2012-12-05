@@ -7,3 +7,8 @@ constant sampler_t samplerc =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP  
 
 
 
+int
+FC(const int row, const int col, const unsigned int filters)
+{
+  return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
+}

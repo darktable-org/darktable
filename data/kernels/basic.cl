@@ -23,12 +23,6 @@
 #define M_PI_F           3.14159265358979323846f  // should be defined by the OpenCL compiler acc. to standard
 #endif
 
-int
-FC(const int row, const int col, const unsigned int filters)
-{
-  return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
-}
-
 
 kernel void
 whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *coeffs,
