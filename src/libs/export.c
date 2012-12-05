@@ -19,6 +19,7 @@
 #include "common/darktable.h"
 #include "common/colorspaces.h"
 #include "common/imageio_module.h"
+#include "common/collection.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
@@ -89,7 +90,7 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
   int format_index = dt_conf_get_int ("plugins/lighttable/export/format");
   int storage_index = dt_conf_get_int ("plugins/lighttable/export/storage");
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
-  dt_control_export(max_width, max_height, format_index, storage_index, high_quality);
+  dt_control_export(dt_collection_get_selected(darktable.collection),max_width, max_height, format_index, storage_index, high_quality);
 }
 
 static void
