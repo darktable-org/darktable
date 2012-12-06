@@ -1653,10 +1653,10 @@ collection_updated(gpointer instance,gpointer self)
 static void
 filmrolls_updated(gpointer instance, gpointer self)
 {
-  dt_lib_module_t *dm = (dt_lib_module_t *)self;
+//  dt_lib_module_t *dm = (dt_lib_module_t *)self;
 
-  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
-  int active = d->active_rule;
+//  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+//  int active = d->active_rule;
   
   //TODO: We should update the count of images here
   _lib_collect_gui_update(self); 
