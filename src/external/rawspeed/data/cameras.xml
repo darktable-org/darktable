@@ -339,6 +339,38 @@
       <Hint name="invert_sraw_wb" value=""/>
     </Hints>
   </Camera>
+  <Camera make="Canon" model="Canon EOS 6D" decoder_version="2">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="74" y="40" width="0" height="0"/>
+    <Sensor black="2048" white="16383"/>
+  <BlackAreas>
+    <Vertical x="0" width="68"/>
+    <Horizontal y="2" height="36"/>
+  </BlackAreas>
+  </Camera>
+	<!---Guess -->
+  <Camera make="Canon" model="Canon EOS 6D" mode="sRaw1">
+    <Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="0" white="48664"/>
+    <Hints>
+      <Hint name="sraw_new" value=""/>
+      <Hint name="invert_sraw_wb" value=""/>
+    </Hints>
+  </Camera>
+	<!---Guess -->
+  <Camera make="Canon" model="Canon EOS 6D" mode="sRaw2">
+    <Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="0" white="48664"/>
+    <Hints>
+      <Hint name="sraw_new" value=""/>
+      <Hint name="invert_sraw_wb" value=""/>
+    </Hints>
+  </Camera>
   <Camera make="Canon" model="Canon EOS 7D" decoder_version="1">
     <CFA width="2" height="2">
       <Color x="0" y="0">GREEN</Color>
@@ -1087,8 +1119,8 @@
       <Color x="0" y="1">GREEN</Color>
       <Color x="1" y="1">BLUE</Color>
     </CFA>
-    <Crop x="0" y="0" width="0" height="-2"/>
-    <Sensor black="0" white="0"/>
+    <Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="0" white="4095"/>
   </Camera>
   <Camera make="NIKON" model="E5400" decoder_version="3">
     <CFA width="2" height="2">
@@ -2597,6 +2629,16 @@
     <Crop x="0" y="0" width="0" height="0"/>
     <Sensor black="520" white="16360"/>
   </Camera>  
+  <Camera make="SONY" model="DSC-RX1">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-18" height="0"/>
+    <Sensor black="520" white="16628"/>
+  </Camera>
   <Camera make="SONY" model="SLT-A33">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
