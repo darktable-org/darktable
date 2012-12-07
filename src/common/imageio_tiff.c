@@ -67,6 +67,8 @@ dt_imageio_open_tiff(
     img->height = height;
   }
 
+  img->bpp = 4*sizeof(float);
+
   float *mipbuf = (float *)dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
   if(!mipbuf)
   {

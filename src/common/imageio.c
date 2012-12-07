@@ -339,23 +339,26 @@ dt_imageio_open_raw(
   return DT_IMAGEIO_OK;
 }
 
-/* magic data: offset,length, xx, yy, ...
+/* magic data: exclusion,offset,length, xx, yy, ...
     just add magic bytes to match to this struct
     to extend mathc on ldr formats.
 */
 static const uint8_t _imageio_ldr_magic[] =
 {
   /* jpeg magics */
-  0x00, 0x02, 0xff, 0xd8,                         // SOI marker
+  0x00, 0x00, 0x02, 0xff, 0xd8,                         // SOI marker
 
   /* png image */
-  0x01, 0x03, 0x50, 0x4E, 0x47,                   // ASCII 'PNG'
+  0x00, 0x01, 0x03, 0x50, 0x4E, 0x47,                   // ASCII 'PNG'
+
+  /* canon CR2 */
+  0x01, 0x00, 0x0a, 0x4d, 0x4d, 0x00, 0x2a, 0x00, 0x10, 0x00, 0x00, 0x52, 0x43,  // Canon CR2 is like TIFF with aditional magic number. must come before tiff as an exclusion
 
   /* tiff image, intel */
-  // 0x00, 0x04, 0x4d, 0x4d, 0x00, 0x2a,          // unfortunately fails because raw is similar
+  0x00, 0x00, 0x04, 0x4d, 0x4d, 0x00, 0x2a,             // unfortunately fails because raw is similar
 
   /* tiff image, motorola */
-  // 0x00, 0x04, 0x49, 0x49, 0x2a, 0x00
+  0x00, 0x00, 0x04, 0x49, 0x49, 0x2a, 0x00
 };
 
 gboolean dt_imageio_is_ldr(const char *filename)
@@ -372,9 +375,14 @@ gboolean dt_imageio_is_ldr(const char *filename)
     /* compare magic's */
     while (s)
     {
-      if (memcmp(_imageio_ldr_magic+offset+2, block + _imageio_ldr_magic[offset], _imageio_ldr_magic[offset+1]) == 0)
-        return TRUE;
-      offset += 2 + (_imageio_ldr_magic+offset)[1];
+      if (memcmp(_imageio_ldr_magic+offset+3, block + _imageio_ldr_magic[offset+1], _imageio_ldr_magic[offset+2]) == 0)
+      {
+        if(_imageio_ldr_magic[offset] == 0x01)
+          return FALSE;
+        else
+          return TRUE;
+      }
+      offset += 3 + (_imageio_ldr_magic+offset)[2];
 
       /* check if finished */
       if(offset >= sizeof(_imageio_ldr_magic))
