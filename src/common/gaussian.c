@@ -486,8 +486,8 @@ dt_gaussian_free_cl(
   free(g->min);
   free(g->max);
   // free device mem
-  dt_opencl_release_mem_object(g->dev_temp1);
-  dt_opencl_release_mem_object(g->dev_temp2);
+  if(g->dev_temp1) dt_opencl_release_mem_object(g->dev_temp1);
+  if(g->dev_temp2) dt_opencl_release_mem_object(g->dev_temp2);
   free(g);
 }
 
@@ -584,6 +584,7 @@ error:
   free(g->max);
   if(g->dev_temp1) dt_opencl_release_mem_object(g->dev_temp1);
   if(g->dev_temp2) dt_opencl_release_mem_object(g->dev_temp2);
+  g->dev_temp1 = g->dev_temp2 = NULL;
   free(g);
   return NULL;
 }
