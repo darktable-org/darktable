@@ -1,0 +1,59 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+
+	<sect2 status="draft"><title>Color picker</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
+				<tbody>
+					<row>						
+						<entry>
+						<para>Within the global color picker panel you can take color samples from your image, display their
+                                                      values in multiple ways and compare colors from different locations. Color picker is activated
+						      by pressing icon <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="3%" align="center" />.
+                                                      Various parameters control how color picker works. All settings remain in effect until you leave
+                                                      darkroom mode.</para>
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/images/panel_colorpicker.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+                <para>Besides the global color picker, which we describe here, there are local color pickers in various modules (eg. tonecurve).
+                      Global and local color pickers are different. The global color picker works in monitor color space; it takes samples after
+                      the complete pixelpipe has been processed and colors are transfered into RGB suited for your monitor. The local color pickers
+                      run in the color space of the individual module, which is most often Lab; they only see input and/or output colors of that
+                      specific module within pixelpipe.
+                </para>
+		<para>Color picker can be run in point or area mode. When in point mode only a small spot under your cursor is taken as a sample.
+                      In area mode you can draw a rectangle with your mouse; darktable samples the area within that rectangle. The combobox to switch
+                      between point and area mode can also be used to toggle the mode of local color pickers.
+                </para>
+                <para>If samples are taken in area mode, darktable will calculate mean, min and max color channel values. A combobox allows you to select
+                      which of those are displayed. For obvious reasons mean, min and max are identical in point mode.
+                </para>
+                <para>A color swatch representing the sampled point or area is displayed. Numerical values are shown as well. As said before global 
+                      color picker works in monitor RGB color space. You can also let darktable translate these numerical values into Lab
+                      color space. Beware that Lab values are approximated here; darktable does not take your specific monitor profile into account.
+                </para>
+		<para>On activation of checkbox "restrict histogram to selection" only the values of your selected area or point are taken into account
+                      by the histogram on top of right panel. This is a useful tool if you want to know which tonal values are present in a specific area.
+		</para>
+		<para>Picked colors in area or point mode can be "stored" as live samples by pressing the "Add" button. darktable shows a color swatch
+                      and numerical values for each stored sample. You can once again select which numerical value (mean, min, max) is to be displayed and
+                      if this is to be done in RGB or Lab color space.
+		</para>
+		<para>Newly created live samples are not locked. If you change the parameters of your image these changes will be reflected in your stored
+                      samples. Use this if you want to get an overview how changing a parameters has effect to different parts of an image. If you click
+                      on the color swatch of a stored live sample it gets locked - a lock symbol is displayed. Further changes of parameters will not affect
+                      this live sample any longer. You can for example take two live samples from the same location and have one of them locked. This way
+                      you can keep the locked one as a reference sample for comparison.
+                </para>
+                <para>Live sample locations are indicated in your image if you check option "display sample areas on image".
+		</para>
+	</sect2>
