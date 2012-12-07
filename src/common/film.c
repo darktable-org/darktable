@@ -450,19 +450,22 @@ void dt_film_import1(dt_film_t *film)
     {
 
 #if GLIB_CHECK_VERSION (2, 26, 0)
-      /* check if we can find a gpx data file to be auto applied
-         to images in the jsut imported filmroll */
-      g_dir_rewind(cfr->dir);
-      const gchar *dfn = NULL;
-      while ((dfn = g_dir_read_name(cfr->dir)) != NULL)
+      if(cfr && cfr->dir)
       {
-        /* check if we have a gpx to be auto applied to filmroll */
-        if(strcmp(dfn+strlen(dfn)-4,".gpx") == 0 ||
-            strcmp(dfn+strlen(dfn)-4,".GPX") == 0)
+        /* check if we can find a gpx data file to be auto applied
+           to images in the jsut imported filmroll */
+        g_dir_rewind(cfr->dir);
+        const gchar *dfn = NULL;
+        while ((dfn = g_dir_read_name(cfr->dir)) != NULL)
         {
-          gchar *gpx_file = g_build_path (G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);
-          dt_control_gpx_apply(gpx_file, cfr->id, dt_conf_get_string("plugins/lighttable/geotagging/tz"));
-          g_free(gpx_file);
+          /* check if we have a gpx to be auto applied to filmroll */
+          if(strcmp(dfn+strlen(dfn)-4,".gpx") == 0 ||
+              strcmp(dfn+strlen(dfn)-4,".GPX") == 0)
+          {
+            gchar *gpx_file = g_build_path (G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);
+            dt_control_gpx_apply(gpx_file, cfr->id, dt_conf_get_string("plugins/lighttable/geotagging/tz"));
+            g_free(gpx_file);
+          }
         }
       }
 #endif
@@ -495,24 +498,27 @@ void dt_film_import1(dt_film_t *film)
   dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_CHANGED);
 
 #if GLIB_CHECK_VERSION (2, 26, 0)
-  /* check if we can find a gpx data file to be auto applied
-     to images in the just imported filmroll */
-  g_dir_rewind(cfr->dir);
-  const gchar *dfn = NULL;
-  while ((dfn = g_dir_read_name(cfr->dir)) != NULL)
+  if(cfr && cfr->dir)
   {
-    /* check if we have a gpx to be auto applied to filmroll */
-    if(strcmp(dfn+strlen(dfn)-4,".gpx") == 0 ||
-        strcmp(dfn+strlen(dfn)-4,".GPX") == 0)
+    /* check if we can find a gpx data file to be auto applied
+       to images in the just imported filmroll */
+    g_dir_rewind(cfr->dir);
+    const gchar *dfn = NULL;
+    while ((dfn = g_dir_read_name(cfr->dir)) != NULL)
     {
-      gchar *gpx_file = g_build_path (G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);
-      dt_control_gpx_apply(gpx_file, cfr->id, dt_conf_get_string("plugins/lighttable/geotagging/tz"));
-      g_free(gpx_file);
+      /* check if we have a gpx to be auto applied to filmroll */
+      if(strcmp(dfn+strlen(dfn)-4,".gpx") == 0 ||
+          strcmp(dfn+strlen(dfn)-4,".GPX") == 0)
+      {
+        gchar *gpx_file = g_build_path (G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);
+        dt_control_gpx_apply(gpx_file, cfr->id, dt_conf_get_string("plugins/lighttable/geotagging/tz"));
+        g_free(gpx_file);
+      }
     }
   }
 #endif
-
 }
+
 
 int dt_film_import(const char *dirname)
 {

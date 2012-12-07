@@ -10,7 +10,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module is a classical tool in digital photography. Darktable's special feature is to
+						<entry>This module is a classical tool in digital photography. darktable's special feature is to
                                                        have this module act in Lab color space. Thus, is offers three independent curves for L, a, and b channels.
 						</entry>
 						<entry>
@@ -61,7 +61,7 @@
                         </para>
 		</sect5>	
 		<sect5><title>scale chroma</title>
-			<para>Darktable does an automatic adjustment of color saturation if this combobox is set to "auto". The level of this
+			<para>darktable does an automatic adjustment of color saturation if this combobox is set to "auto". The level of this
                               adjustment is dependent on the pixel's color values and its L-value modification by the L-channel tonecurve. It is
                               designed to give an overall boost in color saturation if the L-curve gives a contrast boost. Look at blend mode
                               "coloradjustment" to adjust the strength of this effect. Only if this combobox is set to "manual", you can do your

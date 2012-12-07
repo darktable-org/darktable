@@ -17,28 +17,38 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>The vignetting module has extensive parameters to precisely tune your effect. It also will display graphical controls in center image
-                      view if the module is in focus.</para>
+		<para>The vignetting module has an extensive set of parameters to precisely tune its effect. It also will display graphical 
+                      controls in center view if the module is in focus. Give it a try to get a feeling how it works. On-screen controls 
+                      and parameter sliders will stay in sync.</para>
 		<sect5><title>scale</title>
-			<para>Set radii of the vignetting beginning.</para>
+			<para>Set radius of the vignetting area.</para>
 		</sect5>
 		<sect5><title>fall-off strength</title>
-			<para>Set the progressiveness of the fall-off.</para>
+			<para>Set the progressiveness of the fall-off. Higher values will cause a steeper transition.</para>
 		</sect5>
-		<sect5><title>strength</title>
-			<para>Set the strength of the effect.</para>
-		</sect5>
-		<sect5><title>uniformity</title>
-			<para>Set the uniformity of the effect.</para>
-		</sect5>
-		<sect5><title>b/s ratio</title>
-			<para>Set the ratio of brightness and saturation the vignetting should apply on.</para>
+		<sect5><title>brightness</title>
+			<para>Sets the intensity of brightening (positive values) or darkening (negative values).</para>
 		</sect5>
 		<sect5><title>saturation</title>
-			<para>Invert the effect of saturation. By default the vignetting desaturates at the border. Using this button you can saturate it.</para>
+			<para>Controls how strong colors get desaturated or saturated in the darkened or brightened vignetting area.</para>
 		</sect5>
-		<sect5><title>fall-off</title>
-			<para>Invert the effect of brightness. By default the vignetting darkens at the border. Using this button you can brighter it.</para>
+		<sect5><title>horizontal center</title>
+			<para>Shifts the center of the vignetting area horizontally.</para>
+		</sect5>
+		<sect5><title>vertical center</title>
+			<para>Shifts the center of the vignetting area vertically.</para>
+		</sect5>
+		<sect5><title>shape</title>
+			<para>Influences the shape of the vignetting area. The default value of 1 causes a circular or elliptical
+                              area. Smaller values will shift the shape into a more square one; higher values turn it into
+                              a cross-like shape.</para>
+		</sect5>
+		<sect5><title>automatic ratio</title>
+			<para>Click this button to automatically adjust the width/height ratio of the vignetting area to the
+                              aspect ratio of the underlying image. The vignetting area will typically become elliptical.</para>
+		</sect5>
+		<sect5><title>width/height ratio</title>
+			<para>Manually adjust the width/height ratio of the vignetting area.</para>
 		</sect5>			
 	</sect4>
 
