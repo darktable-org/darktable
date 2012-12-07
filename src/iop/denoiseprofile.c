@@ -651,9 +651,10 @@ void process(
           {
             // TODO: could put that outside the loop.
             // DEBUG XXX bring back to computable range:
-            const float norm = .02f/(2*P+1);
+            const float norm = .015f/(2*P+1);
             const __m128 iv = { ins[0], ins[1], ins[2], 1.0f };
             _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(fast_mexp2f(fmaxf(0.0f, slide*norm-2.0f))));
+            // _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(fast_mexp2f(fmaxf(0.0f, slide*norm))));
           }
           s   ++;
           ins += 4;
@@ -734,20 +735,27 @@ void process(
       }
     }
   }
+  const __m128 weight = _mm_set_ps(1.0f, 0.7f, 0.7f, 0.7f);
+  const __m128 invert = _mm_sub_ps(_mm_set1_ps(1.0f), weight);
   // normalize
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(ovoid,roi_out,d)
+  #pragma omp parallel for default(none) schedule(static) shared(ovoid,roi_out,d,in)
 #endif
   for(int j=0; j<roi_out->height; j++)
   {
     float *out = ((float *)ovoid) + 4*roi_out->width*j;
+    const float *ins = in + 4*roi_out->width*j;
     for(int i=0; i<roi_out->width; i++)
     {
+        //_mm_store_ps(out, _mm_mul_ps(_mm_load_ps(out), _mm_set1_ps(1.0f/out[3])));
       if(out[3] > 0.0f)
-        _mm_store_ps(out, _mm_mul_ps(_mm_load_ps(out), _mm_set1_ps(1.0f/out[3])));
+        _mm_store_ps(out, _mm_add_ps(
+                     _mm_mul_ps(_mm_load_ps(ins),  invert),
+                     _mm_mul_ps(_mm_load_ps(out), _mm_div_ps(weight, _mm_set1_ps(out[3])))));
       // DEBUG show weights
       // _mm_store_ps(out, _mm_set1_ps(1.0f/out[3]));
       out += 4;
+      ins += 4;
     }
   }
   // free shared tmp memory:
