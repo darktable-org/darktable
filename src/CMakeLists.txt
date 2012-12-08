@@ -181,6 +181,16 @@ if(USE_GLIBJSON)
   endif(JsonGlib_FOUND)
 endif(USE_GLIBJSON)
 
+if(USE_OPENJPEG)
+  find_package(OpenJPEG)
+  if(OPENJPEG_FOUND)
+    include_directories(${OPENJPEG_INCLUDE_DIRS})
+    list(APPEND LIBS ${OPENJPEG_LIBRARIES})
+    add_definitions(${OPENJPEG_DEFINITIONS})
+    add_definitions("-DHAVE_OPENJPEG")
+  endif(OPENJPEG_FOUND)
+endif(USE_OPENJPEG)
+
 #
 # Detect compile of optional pwstorage backends
 #
