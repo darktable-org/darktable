@@ -268,7 +268,7 @@ void gui_reset   (dt_imageio_module_format_t *self)
   // TODO: reset to conf? reset to factory defaults?
 }
 
-int flags()
+int flags(dt_imageio_module_data_t *data)
 {
   return FORMAT_FLAGS_SUPPORT_XMP;
 }

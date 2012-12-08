@@ -622,7 +622,7 @@ extension(dt_imageio_module_data_t *data)
 }
 
 int
-flags()
+flags(dt_imageio_module_data_t *data)
 {
   return FORMAT_FLAGS_SUPPORT_XMP;
 }
