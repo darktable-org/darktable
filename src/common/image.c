@@ -667,6 +667,10 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
       g_list_free(dup_list);
       result = 0;
     }
+    else
+    {
+      fprintf(stderr, "[dt_image_move] error moving `%s' -> `%s'\n", oldimg, newimg);
+    }
   }
 
   return result;
