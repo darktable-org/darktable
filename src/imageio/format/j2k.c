@@ -562,10 +562,7 @@ int bpp(dt_imageio_j2k_t *p)
 const char*
 mime(dt_imageio_j2k_t *data)
 {
-  if(data->format == J2K_CFMT)
-    return "image/j2k";
-  else
-    return "image/jp2";
+  return "image/jp2";
 }
 
 const char*
