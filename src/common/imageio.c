@@ -31,6 +31,7 @@
 #include "common/imageio_tiff.h"
 #include "common/imageio_pfm.h"
 #include "common/imageio_rgbe.h"
+#include "common/imageio_gm.h"
 #include "common/imageio_rawspeed.h"
 #include "common/image_compression.h"
 #include "common/mipmap_cache.h"
@@ -717,6 +718,10 @@ dt_imageio_open(
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_hdr(img, filename, a);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)      // failsafing, if ldr magic test fails..
+#ifdef HAVE_GRAPHICSMAGICK
+    ret = dt_imageio_open_gm(img, filename, a);
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+#endif
     ret = dt_imageio_open_ldr(img, filename, a);
 
   img->flags &= ~DT_IMAGE_THUMBNAIL;
