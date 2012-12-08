@@ -55,6 +55,7 @@
 #include <sys/param.h>
 #include <unistd.h>
 #include <locale.h>
+#include <magick/api.h>
 
 #if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__DragonFly__)
 #include <malloc.h>
@@ -617,6 +618,11 @@ int dt_init(int argc, char *argv[], const int init_gui)
   /* capabilities set to NULL */
   darktable.capabilities = NULL;
 
+#ifdef HAVE_GRAPHICSMAGICK
+  /* GraphicsMagick init */
+  InitializeMagick(darktable.progname);
+#endif
+
   darktable.opencl = (dt_opencl_t *)malloc(sizeof(dt_opencl_t));
   memset(darktable.opencl, 0, sizeof(dt_opencl_t));
   dt_opencl_init(darktable.opencl, argc, argv);
@@ -768,6 +774,10 @@ void dt_cleanup()
 #endif
   dt_pwstorage_destroy(darktable.pwstorage);
   dt_fswatch_destroy(darktable.fswatch);
+
+#ifdef HAVE_GRAPHICSMAGICK
+  DestroyMagick();
+#endif
 
   dt_database_destroy(darktable.db);
 

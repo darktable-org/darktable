@@ -49,7 +49,6 @@ dt_imageio_open_gm(
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
 
-  InitializeMagick(darktable.progname);
   GetExceptionInfo(&exception);
   image_info=CloneImageInfo((ImageInfo *) NULL);
 
@@ -116,7 +115,6 @@ dt_imageio_open_gm(
   if(image) DestroyImage(image);
   if(image_info) DestroyImageInfo(image_info);
   DestroyExceptionInfo(&exception);
-  DestroyMagick();
 
   img->filters = 0;
   img->flags &= ~DT_IMAGE_RAW;
