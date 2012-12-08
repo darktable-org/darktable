@@ -221,6 +221,16 @@ if(USE_UNITY)
   endif(UNITY_FOUND)
 endif(USE_UNITY)
 
+if(USE_GRAPHICSMAGICK)
+  find_package(GraphicsMagick)
+  if(GraphicsMagick_FOUND)
+    add_definitions(-DHAVE_GRAPHICSMAGICK)
+    include_directories(${GraphicsMagick_INCLUDE_DIRS})
+    list(APPEND LIBS ${GraphicsMagick_LIBRARIES})
+  endif(GraphicsMagick_FOUND)
+endif(USE_GRAPHICSMAGICK)
+
+
 # build opengl slideshow viewer?
 if(BUILD_SLIDESHOW)
   find_package(SDL)
