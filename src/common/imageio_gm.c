@@ -117,6 +117,12 @@ dt_imageio_open_gm(
   if(image_info) DestroyImageInfo(image_info);
   DestroyExceptionInfo(&exception);
   DestroyMagick();
+
+  img->filters = 0;
+  img->flags &= ~DT_IMAGE_RAW;
+  img->flags &= ~DT_IMAGE_HDR;
+  img->flags |= DT_IMAGE_LDR;
+
   return DT_IMAGEIO_OK;
 
 error:
