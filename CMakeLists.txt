@@ -23,6 +23,7 @@ option(BINARY_PACKAGE_BUILD "Sets march optimization to generic" OFF)
 option(APRIL_FOOLS "Add the \"file manager\" (a shell) to lighttable mode" OFF)
 option(GTK3_MIGRATION_CHECKS "Help getting darktable ready for GTK3" OFF)
 option(USE_XMLLINT "Run xmllint to test if darktableconfig.xml is valid" ON)
+option(USE_OPENJPEG "Enable JPEG 2000 support" ON)
 if(APPLE)
 	option(USE_MAC_INTEGRATION "Enable OS X integration" ON)
 else(APPLE)
@@ -139,7 +140,7 @@ if(Gettext_FOUND)
 			SET(LOCALE_DIR "${CMAKE_INSTALL_PREFIX}/share/locale")
 		endif(WIN32)
 	endif(NOT LOCALE_DIR)
-	
+
 	if(NOT LOCALE_DIR)
 		message(QUIET "Set LOCALE_DIR to path to get Gettext working")
 	else()
@@ -158,12 +159,12 @@ endif(USE_NLS)
 if(NOT TMP_DIR)
 	SET(TMP_DIR "~/.local/tmp")
 endif(NOT TMP_DIR)
-	
+
 #find a cache directory
 if(NOT CACHE_DIR)
 	SET(CACHE_DIR "~/.cache/darktable")
 endif(NOT CACHE_DIR)
-	
+
 # needed to generate file "preferences_gen.h" accordingly
 if(USE_OPENCL)
 	SET(HAVE_OPENCL 1)
@@ -194,17 +195,17 @@ endif(GTK3_MIGRATION_CHECKS)
 # 				set(SSE_CHECK_COMMAND grep ${sse_test} /proc/cpuinfo)
 # 			endif(WIN32)
 # 			execute_process(COMMAND ${SSE_CHECK_COMMAND} RESULT_VARIABLE ret_var OUTPUT_VARIABLE out_var)
-# 			
+#
 # 			if(ret_var EQUAL 0) # grep returns 0 on success
 # 				set(SSE_FOUND TRUE)
 # 				message("--  ${sse_test} detected and working.")
 # 				set(USE_SSE_SET ${sse_test})
 # 			endif(ret_var EQUAL 0)
-# 			
+#
 # 		endif(NOT SSE_FOUND)
 # 	endforeach(sse_test)
 # endif(NOT USE_SSE_FLAG)
-# 
+#
 # # set the SSE
 # if(USE_SSE_SET)
 # 	set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-m${USE_SSE_SET}")
