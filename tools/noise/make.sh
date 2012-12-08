@@ -1,6 +1,9 @@
 #!/bin/bash
 NP=~/vcs/darktable/tools/noise/noiseprofile
 
+# clear file
+> presets.txt
+
 for i in *.pfm
 do
   echo "profiling : $i"
@@ -45,5 +48,14 @@ EOF
   plot "${i%pfm}dat" u 1:(log(\$5)) w l lw 4 title "flat histogram ${i%.pfm}", '' u 1:(log(\$6)) w l lw 4, '' u 1:(log(\$7)) w l lw 4
   plot "${i%.pfm}_curves.dat" u 0:1 w l lw 4 title "conversion curves", '' u 0:2 w l lw 4, '' u 0:3 w l lw 4
 EOF
+ # output preset for dt:
+ dir=$(pwd)
+ cam=${dir##*/}
+ iso=${i%.pfm}
+ a=$(cat ${i%pfm}fit | cut -f2 -d' ')
+ b=$(cat ${i%pfm}fit | cut -f5 -d' ')
+
+ echo "{N_(\"${cam} ${iso}\"),       \"\",      \"\",              0, 0,         {1.0f, 1.0f, {$a, $a, $a}, {$b, $b, $b}}}," >> presets.txt
+ 
 done
 
