@@ -28,6 +28,7 @@
 #include "common/imageio_module.h"
 #include "common/imageio_exr.h"
 #include "common/imageio_jpeg.h"
+#include "common/imageio_png.h"
 #include "common/imageio_tiff.h"
 #include "common/imageio_pfm.h"
 #include "common/imageio_rgbe.h"
@@ -401,6 +402,16 @@ dt_imageio_open_ldr(
 {
   dt_imageio_retval_t ret;
   ret = dt_imageio_open_tiff(img, filename, a);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
+  {
+    img->filters = 0;
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+    return ret;
+  }
+
+  ret = dt_imageio_open_png(img, filename, a);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
     img->filters = 0;

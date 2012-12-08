@@ -28,6 +28,7 @@ FILE(GLOB SOURCE_FILES
   "common/imageio.c"
   "common/imageio_exr.cc"
   "common/imageio_jpeg.c"
+  "common/imageio_png.c"
   "common/imageio_module.c"
   "common/imageio_pfm.c"
   "common/imageio_rgbe.c"
