@@ -404,6 +404,7 @@ int write_image (dt_imageio_j2k_t *j2k, const char *filename, const float *in, v
 
   /* encode the destination image */
   /* ---------------------------- */
+  int rc = 1;
   if(parameters.cod_format == J2K_CFMT)        /* J2K format output */
   {
     int codestream_length;
@@ -504,6 +505,10 @@ int write_image (dt_imageio_j2k_t *j2k, const char *filename, const float *in, v
 
     /* free remaining compression structures */
     opj_destroy_compress(cinfo);
+
+    /* add exif data blob. seems to not work for j2k files :( */
+    if(exif)
+      rc = dt_exif_write_blob(exif,exif_len,filename);
   }
 
   /* free image data */
@@ -512,11 +517,6 @@ int write_image (dt_imageio_j2k_t *j2k, const char *filename, const float *in, v
   /* free user parameters structure */
   g_free(parameters.cp_comment);
   if(parameters.cp_matrice) free(parameters.cp_matrice);
-
-  int rc = 1;
-
-  if(exif)
-    rc = dt_exif_write_blob(exif,exif_len,filename);
 
   return ((rc == 1) ? 0 : 1);
 }
@@ -656,9 +656,10 @@ void gui_cleanup (dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self) {}
 
-int flags()
+int flags(dt_imageio_module_data_t *data)
 {
-  return FORMAT_FLAGS_SUPPORT_XMP;
+  dt_imageio_j2k_t *j = (dt_imageio_j2k_t*)data;
+  return (j->format == JP2_CFMT?FORMAT_FLAGS_SUPPORT_XMP:0);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -21,6 +21,8 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "common/exif.h"
+#include "common/imageio.h"
 #include "common/colorspaces.h"
 #include "common/imageio_jpeg.h"
 #include <setjmp.h>
@@ -546,6 +548,48 @@ int dt_imageio_jpeg_read_profile(dt_imageio_jpeg_t *jpg, uint8_t **out)
   fclose(jpg->f);
   return res?length:0;
 }
+
+dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img,  const char *filename, dt_mipmap_cache_allocator_t a)
+{
+  const char *ext = filename + strlen(filename);
+  while(*ext != '.' && ext > filename) ext--;
+  if(strncmp(ext, ".jpg", 4) && strncmp(ext, ".JPG", 4) && strncmp(ext, ".jpeg", 5) && strncmp(ext, ".JPEG", 5))
+    return DT_IMAGEIO_FILE_CORRUPTED;
+
+  if(!img->exif_inited)
+    (void) dt_exif_read(img, filename);
+
+  const int orientation = dt_image_orientation(img);
+
+  dt_imageio_jpeg_t jpg;
+  if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
+  img->width  = (orientation & 4) ? jpg.height : jpg.width;
+  img->height = (orientation & 4) ? jpg.width  : jpg.height;
+
+
+  uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
+  if(dt_imageio_jpeg_read(&jpg, tmp))
+  {
+    free(tmp);
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
+
+  img->bpp = 4*sizeof(float);
+  void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
+  if(!buf)
+  {
+    free(tmp);
+    return DT_IMAGEIO_CACHE_FULL;
+  }
+
+  dt_imageio_flip_buffers_ui8_to_float((float *)buf, tmp, 0.0f, 255.0f, 4, jpg.width, jpg.height, jpg.width, jpg.height, 4*jpg.width, orientation);
+
+  free(tmp);
+
+  return DT_IMAGEIO_OK;
+}
+
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
