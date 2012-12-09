@@ -284,7 +284,7 @@ clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out, const int wi
     float4 px = read_imagef(in, samplerf, (float2)(p.x+i, p.y+j));
     color += px;
   }
-  color /= (2*samples+1)*(2*samples+1);
+  color /= (float4)((2*samples+1)*(2*samples+1));
   write_imagef (out, (int2)(x, y), color);
 }
 
