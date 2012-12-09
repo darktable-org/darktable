@@ -192,6 +192,7 @@ typedef struct dt_iop_clipping_data_t
   
   float k_space[4];         //space for the "destination" rectangle of the keystone quadrilatere
   float kxa, kya, kxb, kyb, kxc, kyc, kxd, kyd; //point of the "source" quadrilatere (modified if keystone is not "full")
+  float a,b,d,e,g,h; //value of the transformation matrix (c=f=0 && i=1)
   int k_apply;
   int crop_auto;
   float enlarge_x, enlarge_y;
@@ -267,39 +268,38 @@ gui_has_focus(struct dt_iop_module_t *self)
 }
 
 static void
-keystone_backtransform(float *i, float *k_space, float kxa, float kxb, float kxc, float kxd, float kya, float kyb, float kyc, float kyd)
+keystone_get_matrix(float *k_space, float kxa, float kxb, float kxc, float kxd, float kya, float kyb, float kyc, float kyd,
+                    float *a, float *b, float *d, float *e, float *g, float *h)
+{
+  *a=-((kxb*(kyd*kyd-kyc*kyd)-kxc*kyd*kyd+kyb*(kxc*kyd-kxd*kyd)+kxd*kyc*kyd)*k_space[2])/(kxb*(kxc*kyd*kyd-kxd*kyc*kyd)+kyb*(kxd*kxd*kyc-kxc*kxd*kyd));
+  *b=((kxb*(kxd*kyd-kxd*kyc)-kxc*kxd*kyd+kxd*kxd*kyc+(kxc*kxd-kxd*kxd)*kyb)*k_space[2])/(kxb*(kxc*kyd*kyd-kxd*kyc*kyd)+kyb*(kxd*kxd*kyc-kxc*kxd*kyd));
+  *d=(kyb*(kxb*(kyd*k_space[3]-kyc*k_space[3])-kxc*kyd*k_space[3]+kxd*kyc*k_space[3])+kyb*kyb*(kxc*k_space[3]-kxd*k_space[3]))/(kxb*kyb*(-kxc*kyd-kxd*kyc)+kxb*kxb*kyc*kyd+kxc*kxd*kyb*kyb);
+  *e=-(kxb*(kxd*kyc*k_space[3]-kxc*kyd*k_space[3])+kxb*kxb*(kyd*k_space[3]-kyc*k_space[3])+kxb*kyb*(kxc*k_space[3]-kxd*k_space[3]))/(kxb*kyb*(-kxc*kyd-kxd*kyc)+kxb*kxb*kyc*kyd+kxc*kxd*kyb*kyb);
+  *g=-(kyb*(kxb*(2.0f*kxc*kyd*kyd-2.0f*kxc*kyc*kyd)-kxc*kxc*kyd*kyd+2.0f*kxc*kxd*kyc*kyd-kxd*kxd*kyc*kyc)+kxb*kxb*(kyc*kyc*kyd-kyc*kyd*kyd)+kyb*kyb*(-2.0f*kxc*kxd*kyd+kxc*kxc*kyd+kxd*kxd*kyc))/(kxb*kxb*(kxd*kyc*kyc*kyd-kxc*kyc*kyd*kyd)+kxb*kyb*(kxc*kxc*kyd*kyd-kxd*kxd*kyc*kyc)+kyb*kyb*(kxc*kxd*kxd*kyc-kxc*kxc*kxd*kyd));
+  *h=(kxb*(-kxc*kxc*kyd*kyd+2.0f*kxc*kxd*kyc*kyd-kxd*kxd*kyc*kyc)+kxb*kxb*(kxc*kyd*kyd-2.0f*kxd*kyc*kyd+kxd*kyc*kyc)+kxb*(2.0f*kxd*kxd-2.0f*kxc*kxd)*kyb*kyc+(kxc*kxc*kxd-kxc*kxd*kxd)*kyb*kyb)/(kxb*kxb*(kxd*kyc*kyc*kyd-kxc*kyc*kyd*kyd)+kxb*kyb*(kxc*kxc*kyd*kyd-kxd*kxd*kyc*kyc)+kyb*kyb*(kxc*kxd*kxd*kyc-kxc*kxc*kxd*kyd));
+}
+
+static void
+keystone_backtransform(float *i, float *k_space, float a, float b, float d, float e, float g, float h, float kxa, float kya)
 {
   float xx = i[0] - k_space[0];
   float yy = i[1] - k_space[1];
   
-  i[0] = (xx/k_space[2])*(yy/k_space[3])*(kxa-kxb+kxc-kxd) - (xx/k_space[2])*(kxa-kxb) - (yy/k_space[3])*(kxa-kxd) + kxa + k_space[0];
-  i[1] = (xx/k_space[2])*(yy/k_space[3])*(kya-kyb+kyc-kyd) - (xx/k_space[2])*(kya-kyb) - (yy/k_space[3])*(kya-kyd) + kya + k_space[1];
+  float div = ((d*xx-a*yy)*h+(b*yy-e*xx)*g+a*e-b*d);
+  
+  i[0]= (e*xx-b*yy)/div + kxa;
+  i[1]=-(d*xx-a*yy)/div + kya;
 }
 
 static int
-keystone_transform(float *i, float *k_space, float kxa, float kxb, float kxc, float kxd, float kya, float kyb, float kyc, float kyd)
+keystone_transform(float *i, float *k_space, float a, float b, float d, float e, float g, float h, float kxa, float kya)
 {
-  float xx = i[0] - k_space[0];
-  float yy = i[1] - k_space[1]; 
+  float xx = i[0] - kxa;
+  float yy = i[1] - kya;
   
-  //we have to resolve the equation ax2 + bx + c = 0 where
-  float a = (kxc-kxb)*(kyd-kya) - (kxd-kxa)*(kyc-kyb);
-  float b = kxb*(kyd-kya) + (kxc-kxb)*kya - (kxd-kxa)*kyb - kxa*(kyc-kyb) + (kya-kyb+kyc-kyd)*xx - (kxa-kxb+kxc-kxd)*yy;
-  float c = kxb*kya - kxa*kyb + (kyb-kya)*xx - (kxb-kxa)*yy;
-  float mu = 0.0f;
-  float delta = b*b - 4*a*c;
-  
-  if (a==0 && b==0) return -1;
-  if (delta < 0) return -2;
-  
-  if (a==0) mu = -c/b;
-  else mu = (-b + sqrt(delta))/(2*a);
-
-  if (kxb - kxa + mu*(kxa-kxb+kxc-kxd) == 0) return -3;
-  
-  i[0] = (xx - kxa + mu*(kxa-kxd))/(kxb - kxa + mu*(kxa-kxb+kxc-kxd))*k_space[2] + k_space[0];
-  i[1] = mu*k_space[3] + k_space[1];  
-  
+  float div = g*xx+h*yy+1;
+  i[0] = (a*xx+b*yy)/div + k_space[0];
+  i[1] = (d*xx+e*yy)/div + k_space[1];
   return 1;
 }
 
@@ -433,7 +433,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
       if (d->k_apply==1)
       {
         o[0] /= (float)roi_in->width, o[1] /= (float)roi_in->height;
-        if (!keystone_transform(o,d->k_space,d->kxa,d->kxb,d->kxc,d->kxd,d->kya,d->kyb,d->kyc,d->kyd))
+        if (keystone_transform(o,d->k_space,d->a,d->b,d->d,d->e,d->g,d->h,d->kxa,d->kya) != 1)
         {
           //we set the point to maximum possible
           if (o[0]<0.5f) o[0]=-1.0f;
@@ -555,7 +555,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     o[1] += d->ty*so;
     o[0] /= kw;
     o[1] /= kh;
-    if (d->k_apply==1) keystone_backtransform(o,d->k_space,d->kxa,d->kxb,d->kxc,d->kxd,d->kya,d->kyb,d->kyc,d->kyd);
+    if (d->k_apply==1) keystone_backtransform(o,d->k_space,d->a,d->b,d->d,d->e,d->g,d->h,d->kxa,d->kya);
     o[0] *= kw;
     o[1] *= kh;
     // transform to roi_in space, get aabb.
@@ -624,9 +624,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float k_space[4] = {d->k_space[0]*rx,d->k_space[1]*ry,d->k_space[2]*rx,d->k_space[3]*ry};
     const float kxa = d->kxa*rx, kxb = d->kxb*rx, kxc = d->kxc*rx, kxd = d->kxd*rx;
     const float kya = d->kya*ry, kyb = d->kyb*ry, kyc = d->kyc*ry, kyd = d->kyd*ry;
+    float ma,mb,md,me,mg,mh;
+    keystone_get_matrix(k_space,kxa,kxb,kxc,kxd,kya,kyb,kyc,kyd,&ma,&mb,&md,&me,&mg,&mh);
     
 #ifdef _OPENMP
-    #pragma omp parallel for schedule(static) default(none) shared(d,ivoid,ovoid,roi_in,roi_out,interpolation,k_space)
+    #pragma omp parallel for schedule(static) default(none) shared(d,ivoid,ovoid,roi_in,roi_out,interpolation,k_space,ma,mb,md,me,mg,mh)
 #endif
     // (slow) point-by-point transformation.
     // TODO: optimize with scanlines and linear steps between?
@@ -658,7 +660,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         po[1] *= roi_in->scale;
         po[0] += d->tx*roi_in->scale;
         po[1] += d->ty*roi_in->scale;
-        if (d->k_apply==1) keystone_backtransform(po,k_space,kxa,kxb,kxc,kxd,kya,kyb,kyc,kyd);
+        if (d->k_apply==1) keystone_backtransform(po,k_space,ma,mb,md,me,mg,mh,kxa,kya);
         po[0] -= roi_in->x;
         po[1] -= roi_in->y;
 
@@ -725,10 +727,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     float k_sizes[2] = {piece->buf_in.width*roi_in->scale, piece->buf_in.height*roi_in->scale};
     float k_space[4] = { d->k_space[0]*k_sizes[0], d->k_space[1]*k_sizes[1], d->k_space[2]*k_sizes[0], d->k_space[3]*k_sizes[1]};
     if (d->k_apply==0) k_space[2] = 0.0f;
+    float ma,mb,md,me,mg,mh;
+    keystone_get_matrix(k_space,d->kxa*k_sizes[0],d->kxb*k_sizes[0],d->kxc*k_sizes[0],d->kxd*k_sizes[0],
+                        d->kya*k_sizes[1],d->kyb*k_sizes[1],d->kyc*k_sizes[1],d->kyd*k_sizes[1],&ma,&mb,&md,&me,&mg,&mh);
     float ka[2] = { d->kxa*k_sizes[0], d->kya*k_sizes[1]};
-    float kb[2] = { d->kxb*k_sizes[0], d->kyb*k_sizes[1]};
-    float kc[2] = { d->kxc*k_sizes[0], d->kyc*k_sizes[1]};
-    float kd[2] = { d->kxd*k_sizes[0], d->kyd*k_sizes[1]};
+    float maa[4] = { ma,mb,md,me };
+    float mbb[2] = { mg,mh };
     
     size_t sizes[3];
 
@@ -751,9 +755,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     dt_opencl_set_kernel_arg(devid, crkernel, 13, 4*sizeof(float), &m);
     dt_opencl_set_kernel_arg(devid, crkernel, 14, 4*sizeof(float), &k_space);
     dt_opencl_set_kernel_arg(devid, crkernel, 15, 2*sizeof(float), &ka);
-    dt_opencl_set_kernel_arg(devid, crkernel, 16, 2*sizeof(float), &kb);
-    dt_opencl_set_kernel_arg(devid, crkernel, 17, 2*sizeof(float), &kc);
-    dt_opencl_set_kernel_arg(devid, crkernel, 18, 2*sizeof(float), &kd);
+    dt_opencl_set_kernel_arg(devid, crkernel, 16, 4*sizeof(float), &maa);
+    dt_opencl_set_kernel_arg(devid, crkernel, 17, 2*sizeof(float), &mbb);
     err = dt_opencl_enqueue_kernel_2d(devid, crkernel, sizes);
     if(err != CL_SUCCESS) goto error;
   }
@@ -927,14 +930,15 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->k_space[1]=fabsf((d->kya+d->kyb)/2.0f);
     d->k_space[2]=fabsf((d->kxb+d->kxc)/2.0f)-d->k_space[0];
     d->k_space[3]=fabsf((d->kyc+d->kyd)/2.0f)-d->k_space[1];
-    d->kxa = d->kxa - d->k_space[0];
-    d->kxb = d->kxb - d->k_space[0];
-    d->kxc = d->kxc - d->k_space[0];
-    d->kxd = d->kxd - d->k_space[0];
-    d->kya = d->kya - d->k_space[1];
-    d->kyb = d->kyb - d->k_space[1];
-    d->kyc = d->kyc - d->k_space[1];
-    d->kyd = d->kyd - d->k_space[1]; 
+    //d->kxa = d->kxa -d->kxa; //- d->k_space[0];
+    d->kxb = d->kxb -d->kxa; //- d->k_space[0];
+    d->kxc = d->kxc -d->kxa; //- d->k_space[0];
+    d->kxd = d->kxd -d->kxa; //- d->k_space[0];
+    //d->kya = d->kya -d->kya; //- d->k_space[1];
+    d->kyb = d->kyb -d->kya; //- d->k_space[1];
+    d->kyc = d->kyc -d->kya; //- d->k_space[1];
+    d->kyd = d->kyd -d->kya; //- d->k_space[1]; 
+    keystone_get_matrix(d->k_space,d->kxa,d->kxb,d->kxc,d->kxd,d->kya,d->kyb,d->kyc,d->kyd,&d->a,&d->b,&d->d,&d->e,&d->g,&d->h);
     
     d->k_apply = 1;
     d->all_off = 0;
@@ -1488,7 +1492,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->crop_auto, _("automatic cropping"));
   dt_bauhaus_combobox_add(g->crop_auto, _("no"));
   dt_bauhaus_combobox_add(g->crop_auto, _("yes"));
-  g_object_set(G_OBJECT(g->crop_auto), "tooltip-text", _("do you want your image to be autically crop ?"), (char *)NULL);
+  g_object_set(G_OBJECT(g->crop_auto), "tooltip-text", _("automatically crop to avoid black edges"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->crop_auto), "value-changed", G_CALLBACK (crop_auto_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->crop_auto, TRUE, TRUE, 0);
   
@@ -2047,13 +2051,13 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_text_extents_t extents;
     cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, 16);
-    cairo_text_extents (cr, "OK", &extents);
+    cairo_text_extents (cr, "ok", &extents);
     int c[2] = {(MIN(p3[0],p2[0])+MAX(p1[0],p4[0]))/2.0f, (MIN(p3[1],p4[1])+MAX(p1[1],p2[1]))/2.0f};
     cairo_set_source_rgba(cr, .5,.5,.5, .9);
     gui_draw_rounded_rectangle(cr,extents.width+8,extents.height+12,c[0]-extents.width/2.0f-4,c[1]-extents.height/2.0f-6);
     cairo_move_to(cr,c[0]-extents.width/2.0f,c[1]+extents.height/2.0f);
     cairo_set_source_rgba(cr, .2,.2,.2, .9);
-    cairo_show_text(cr, "OK");
+    cairo_show_text(cr, "ok");
     
     //draw the symetry buttons
     gboolean sym = FALSE;

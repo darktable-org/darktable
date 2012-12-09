@@ -326,12 +326,12 @@ backtransform(float2 *p, float2 *o, const float4 m, const float2 t)
 }
 
 void
-keystone_backtransform(float2 *i, const float4 k_space, const float2 ka, const float2 kb, const float2 kc, const float2 kd)
+keystone_backtransform(float2 *i, const float4 k_space, const float2 ka, const float4 ma, const float2 mb)
 {
   float xx = (*i).x - k_space.x;
   float yy = (*i).y - k_space.y;
   
-  float u = ka.x-kb.x+kc.x-kd.x;
+  /*float u = ka.x-kb.x+kc.x-kd.x;
   float v = ka.x-kb.x;
   float w = ka.x-kd.x;
   float z = ka.x;
@@ -342,7 +342,11 @@ keystone_backtransform(float2 *i, const float4 k_space, const float2 ka, const f
   w = ka.y-kd.y;
   z = ka.y;
   //(*i).y = (xx/k_space.z)*(yy/k_space.w)*(ka.y-kb.y+kc.y-kd.y) - (xx/k_space.z)*(ka.y-kb.y) - (yy/k_space.w)*(ka.y-kd.y) + ka.y + k_space.y;
-  (*i).y = (xx/k_space.z)*(yy/k_space.w)*u - (xx/k_space.z)*v - (yy/k_space.w)*w + z + k_space.y;
+  (*i).y = (xx/k_space.z)*(yy/k_space.w)*u - (xx/k_space.z)*v - (yy/k_space.w)*w + z + k_space.y;*/
+  float div = ((ma.z*xx-ma.x*yy)*mb.y+(ma.y*yy-ma.w*xx)*mb.x+ma.x*ma.w-ma.y*ma.z);
+  
+  (*i).x = (ma.w*xx-ma.y*yy)/div + ka.x;
+  (*i).y =-(ma.z*xx-ma.x*yy)/div + ka.y;
 }
 
 
@@ -404,7 +408,7 @@ clip_rotate_bilinear(read_only image2d_t in, write_only image2d_t out, const int
             const int in_width, const int in_height,
             const int2 roi_in, const float2 roi_out, const float scale_in, const float scale_out,
             const int flip, const float2 t, const float2 k, const float4 mat,
-            const float4 k_space, const float2 ka, const float2 kb, const float2 kc, const float2 kd)
+            const float4 k_space, const float2 ka, const float4 ma, const float2 mb)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -426,7 +430,7 @@ clip_rotate_bilinear(read_only image2d_t in, write_only image2d_t out, const int
   po.x += t.x * scale_in;
   po.y += t.y * scale_in;
 
-  if (k_space.z > 0.0f) keystone_backtransform(&po,k_space,ka,kb,kc,kd);
+  if (k_space.z > 0.0f) keystone_backtransform(&po,k_space,ka,ma,mb);
 
   po.x -= roi_in.x;
   po.y -= roi_in.y;
@@ -452,7 +456,7 @@ clip_rotate_bicubic(read_only image2d_t in, write_only image2d_t out, const int 
             const int in_width, const int in_height,
             const int2 roi_in, const float2 roi_out, const float scale_in, const float scale_out,
             const int flip, const float2 t, const float2 k, const float4 mat,
-            const float4 k_space, const float2 ka, const float2 kb, const float2 kc, const float2 kd)
+            const float4 k_space, const float2 ka, const float4 ma, const float2 mb)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -476,7 +480,7 @@ clip_rotate_bicubic(read_only image2d_t in, write_only image2d_t out, const int 
   po.x += t.x * scale_in;
   po.y += t.y * scale_in;
 
-  if (k_space.z > 0.0f) keystone_backtransform(&po,k_space,ka,kb,kc,kd);
+  if (k_space.z > 0.0f) keystone_backtransform(&po,k_space,ka,ma,mb);
 
   po.x -= roi_in.x;
   po.y -= roi_in.y;
@@ -510,7 +514,7 @@ clip_rotate_lanczos2(read_only image2d_t in, write_only image2d_t out, const int
             const int in_width, const int in_height,
             const int2 roi_in, const float2 roi_out, const float scale_in, const float scale_out,
             const int flip, const float2 t, const float2 k, const float4 mat,
-            const float4 k_space, const float2 ka, const float2 kb, const float2 kc, const float2 kd)
+            const float4 k_space, const float2 ka, const float4 ma, const float2 mb)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -534,7 +538,7 @@ clip_rotate_lanczos2(read_only image2d_t in, write_only image2d_t out, const int
   po.x += t.x * scale_in;
   po.y += t.y * scale_in;
 
-  if (k_space.z > 0.0f) keystone_backtransform(&po,k_space,ka,kb,kc,kd);
+  if (k_space.z > 0.0f) keystone_backtransform(&po,k_space,ka,ma,mb);
 
   po.x -= roi_in.x;
   po.y -= roi_in.y;
@@ -569,7 +573,7 @@ clip_rotate_lanczos3(read_only image2d_t in, write_only image2d_t out, const int
             const int in_width, const int in_height,
             const int2 roi_in, const float2 roi_out, const float scale_in, const float scale_out,
             const int flip, const float2 t, const float2 k, const float4 mat,
-            const float4 k_space, const float2 ka, const float2 kb, const float2 kc, const float2 kd)
+            const float4 k_space, const float2 ka, const float4 ma, const float2 mb)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -593,7 +597,7 @@ clip_rotate_lanczos3(read_only image2d_t in, write_only image2d_t out, const int
   po.x += t.x * scale_in;
   po.y += t.y * scale_in;
 
-  if (k_space.z > 0.0f) keystone_backtransform(&po,k_space,ka,kb,kc,kd);
+  if (k_space.z > 0.0f) keystone_backtransform(&po,k_space,ka,ma,mb);
 
   po.x -= roi_in.x ;
   po.y -= roi_in.y ;
