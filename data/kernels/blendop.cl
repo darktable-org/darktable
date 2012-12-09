@@ -45,8 +45,8 @@
 #define BLEND_ONLY_LIGHTNESS				8
 
 
-#ifndef M_PI
-#define M_PI           3.14159265358979323846  // should be defined by the OpenCL compiler acc. to standard
+#ifndef M_PI_F
+#define M_PI_F           3.14159265358979323846f  // should be defined by the OpenCL compiler acc. to standard
 #endif
 
 
@@ -193,7 +193,7 @@ float4 Lab_2_LCH(float4 Lab)
 {
   float H = atan2(Lab.z, Lab.y);
 
-  H = (H > 0.0f) ? H / (2.0f*M_PI) : 1.0f - fabs(H) / (2.0f*M_PI);
+  H = (H > 0.0f) ? H / (2.0f*M_PI_F) : 1.0f - fabs(H) / (2.0f*M_PI_F);
 
   float L = Lab.x;
   float C = sqrt(Lab.y*Lab.y + Lab.z*Lab.z);
@@ -205,8 +205,8 @@ float4 Lab_2_LCH(float4 Lab)
 float4 LCH_2_Lab(float4 LCH)
 {
   float L = LCH.x;
-  float a = cos(2.0f*M_PI*LCH.z) * LCH.y;
-  float b = sin(2.0f*M_PI*LCH.z) * LCH.y;
+  float a = cos(2.0f*M_PI_F*LCH.z) * LCH.y;
+  float b = sin(2.0f*M_PI_F*LCH.z) * LCH.y;
 
   return (float4)(L, a, b, LCH.w);
 }
