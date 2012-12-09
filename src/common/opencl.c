@@ -613,31 +613,33 @@ int dt_opencl_build_program(const int dev, const int prog, const char* binname, 
   char options[256];
   snprintf(options, 256, "-cl-fast-relaxed-math -cl-strict-aliasing%s -D%s=1", cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : "", cl->dev[dev].vendor);
   err = (cl->dlocl->symbols->dt_clBuildProgram)(program, 1, &cl->dev[dev].devid, options, 0, 0);
+
   if(err != CL_SUCCESS)
-  {
     dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] could not build program: %d\n", err);
-    cl_build_status build_status;
-    (cl->dlocl->symbols->dt_clGetProgramBuildInfo)(program, cl->dev[dev].devid, CL_PROGRAM_BUILD_STATUS, sizeof(cl_build_status), &build_status, NULL);
-    if (build_status != CL_BUILD_SUCCESS)
-    {
-      char *build_log;
-      size_t ret_val_size;
-      (cl->dlocl->symbols->dt_clGetProgramBuildInfo)(program, cl->dev[dev].devid, CL_PROGRAM_BUILD_LOG, 0, NULL, &ret_val_size);
-      build_log = (char *)malloc(sizeof(char)*(ret_val_size+1));
-      (cl->dlocl->symbols->dt_clGetProgramBuildInfo)(program, cl->dev[dev].devid, CL_PROGRAM_BUILD_LOG, ret_val_size, build_log, NULL);
+  else
+    dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] successfully built program\n");
 
-      build_log[ret_val_size] = '\0';
+  cl_build_status build_status;
+  (cl->dlocl->symbols->dt_clGetProgramBuildInfo)(program, cl->dev[dev].devid, CL_PROGRAM_BUILD_STATUS, sizeof(cl_build_status), &build_status, NULL);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] BUILD STATUS: %d\n", build_status);
 
-      dt_print(DT_DEBUG_OPENCL, "BUILD LOG:\n");
-      dt_print(DT_DEBUG_OPENCL, "%s\n", build_log);
+  char *build_log;
+  size_t ret_val_size;
+  (cl->dlocl->symbols->dt_clGetProgramBuildInfo)(program, cl->dev[dev].devid, CL_PROGRAM_BUILD_LOG, 0, NULL, &ret_val_size);
+  build_log = (char *)malloc(sizeof(char)*(ret_val_size+1));
+  (cl->dlocl->symbols->dt_clGetProgramBuildInfo)(program, cl->dev[dev].devid, CL_PROGRAM_BUILD_LOG, ret_val_size, build_log, NULL);
 
-      free(build_log);
-    }
+  build_log[ret_val_size] = '\0';
+
+  dt_print(DT_DEBUG_OPENCL, "BUILD LOG:\n");
+  dt_print(DT_DEBUG_OPENCL, "%s\n", build_log);
+
+  free(build_log);
+
+  if(err != CL_SUCCESS)
     return err;
-  }
   else
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] successfully built program\n");
     if (!loaded_cached)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] saving binary\n");
