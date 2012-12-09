@@ -353,10 +353,10 @@ static const uint8_t _imageio_ldr_magic[] =
   0x00, 0x01, 0x03, 0x50, 0x4E, 0x47,                   // ASCII 'PNG'
 
   /* canon CR2 */
-  0x01, 0x00, 0x0a, 0x4d, 0x4d, 0x00, 0x2a, 0x00, 0x10, 0x00, 0x00, 0x52, 0x43,  // Canon CR2 is like TIFF with aditional magic number. must come before tiff as an exclusion
+  0x01, 0x00, 0x0a, 0x49, 0x49, 0x2a, 0x00, 0x10, 0x00, 0x00, 0x00, 0x43, 0x52,  // Canon CR2 is like TIFF with aditional magic number. must come before tiff as an exclusion
 
   /* tiff image, intel */
-  0x00, 0x00, 0x04, 0x4d, 0x4d, 0x00, 0x2a,             // unfortunately fails because raw is similar
+  0x00, 0x00, 0x04, 0x4d, 0x4d, 0x00, 0x2a, 
 
   /* tiff image, motorola */
   0x00, 0x00, 0x04, 0x49, 0x49, 0x2a, 0x00
@@ -421,40 +421,17 @@ dt_imageio_open_ldr(
     return ret;
   }
 
-  // jpeg stuff here:
-  if(!img->exif_inited)
-    (void) dt_exif_read(img, filename);
-  const int orientation = dt_image_orientation(img);
-
-  dt_imageio_jpeg_t jpg;
-  if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
-  img->width  = (orientation & 4) ? jpg.height : jpg.width;
-  img->height = (orientation & 4) ? jpg.width  : jpg.height;
-
-  uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
-  if(dt_imageio_jpeg_read(&jpg, tmp))
+  ret = dt_imageio_open_jpeg(img, filename, a);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    free(tmp);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    img->filters = 0;
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+    return ret;
   }
 
-  img->bpp = 4*sizeof(float);
-  void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
-  if(!buf)
-  {
-    free(tmp);
-    return DT_IMAGEIO_CACHE_FULL;
-  }
-
-  dt_imageio_flip_buffers_ui8_to_float((float *)buf, tmp, 0.0f, 255.0f, 4, jpg.width, jpg.height, jpg.width, jpg.height, 4*jpg.width, orientation);
-
-  free(tmp);
-
-  img->filters = 0;
-  img->flags &= ~DT_IMAGE_RAW;
-  img->flags &= ~DT_IMAGE_HDR;
-  img->flags |= DT_IMAGE_LDR;
-  return DT_IMAGEIO_OK;
+  return DT_IMAGEIO_FILE_CORRUPTED;
 }
 
 void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
