@@ -19,8 +19,8 @@
 const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
 const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
 
-#ifndef M_PI
-#define M_PI           3.14159265358979323846  // should be defined by the OpenCL compiler acc. to standard
+#ifndef M_PI_F
+#define M_PI_F           3.14159265358979323846f  // should be defined by the OpenCL compiler acc. to standard
 #endif
 
 int
@@ -346,7 +346,7 @@ interpolation_func_lanczos(float width, float t)
 {
   float ta = fabs(t);
 
-  float r = (ta > width) ? 0.0f : ((ta < DT_LANCZOS_EPSILON) ? 1.0f : width*native_sin(M_PI*t)*native_sin(M_PI*t/width)/(M_PI*M_PI*t*t));
+  float r = (ta > width) ? 0.0f : ((ta < DT_LANCZOS_EPSILON) ? 1.0f : width*native_sin(M_PI_F*t)*native_sin(M_PI_F*t/width)/(M_PI_F*M_PI_F*t*t));
 
   return r;
 }
@@ -354,10 +354,10 @@ interpolation_func_lanczos(float width, float t)
 float
 sinf_fast(float t)
 {
-  const float a = 4/(M_PI*M_PI);
+  const float a = 4.0f/(M_PI_F*M_PI_F);
   const float p = 0.225f;
 
-  t = a*t*(M_PI - fabs(t));
+  t = a*t*(M_PI_F - fabs(t));
 
   return p*(t*fabs(t) - t) + t;
 }
@@ -374,7 +374,7 @@ interpolation_func_lanczos(float width, float t)
   union { float f; unsigned int i; } sign;
   sign.i = ((a&1)<<31) | 0x3f800000;
 
-  return (DT_LANCZOS_EPSILON + width*sign.f*sinf_fast(M_PI*r)*sinf_fast(M_PI*t/width))/(DT_LANCZOS_EPSILON + M_PI*M_PI*t*t);
+  return (DT_LANCZOS_EPSILON + width*sign.f*sinf_fast(M_PI_F*r)*sinf_fast(M_PI_F*t/width))/(DT_LANCZOS_EPSILON + M_PI_F*M_PI_F*t*t);
 }
 #endif
 
@@ -1127,7 +1127,7 @@ colorzones (read_only image2d_t in, write_only image2d_t out, const int width, c
 
   const float a = pixel.y;
   const float b = pixel.z;
-  const float h = fmod(atan2(b, a) + 2.0f*M_PI, 2.0f*M_PI)/(2.0f*M_PI);
+  const float h = fmod(atan2(b, a) + 2.0f*M_PI_F, 2.0f*M_PI_F)/(2.0f*M_PI_F);
   const float C = sqrt(b*b + a*a);
 
   float select = 0.0f;
@@ -1156,8 +1156,8 @@ colorzones (read_only image2d_t in, write_only image2d_t out, const int width, c
   const float L = pixel.x * pow(2.0f, 4.0f*Lm);
 
   pixel.x = L;
-  pixel.y = cos(2.0f*M_PI*(h + hm)) * Cm * C;
-  pixel.z = sin(2.0f*M_PI*(h + hm)) * Cm * C;
+  pixel.y = cos(2.0f*M_PI_F*(h + hm)) * Cm * C;
+  pixel.z = sin(2.0f*M_PI_F*(h + hm)) * Cm * C;
 
   write_imagef (out, (int2)(x, y), pixel); 
 }
