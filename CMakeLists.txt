@@ -4,6 +4,7 @@ cmake_policy(VERSION 2.6)
 
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
 option(USE_NLS "Build Native Language Support (using gettext)" ON)
+option(USE_COLORD "Enable colord support" ON)
 option(USE_GEO "Build geotagging parts" ON)
 option(USE_FLICKR "Enable Flickr support" ON)
 option(USE_GLIBJSON "Enable GlibJson support" ON)

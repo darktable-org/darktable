@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 2.6)
 
 add_subdirectory(pixmaps)
 
-add_subdirectory(kernels)
+if(USE_OPENCL)
+	add_subdirectory(kernels)
+endif(USE_OPENCL)
 
 #
 # Generate and instal gtkrc
