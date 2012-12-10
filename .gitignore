@@ -6,3 +6,4 @@ doc/api/
 tools/iop_deps.pdf
 .DS_Store
 cscope.out
+.*.swp
