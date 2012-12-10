@@ -932,8 +932,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui)
 {
   g_free(darktable.control->xprofile_data);
+#ifdef USE_COLORDGTK
   g_free(darktable.control->colord_profile_file);
   darktable.control->colord_profile_file = NULL;
+#endif
   darktable.control->xprofile_size = 0;
 }
 

@@ -414,7 +414,7 @@ void gui_cleanup (dt_imageio_module_format_t *self)
 
 void gui_reset (dt_imageio_module_format_t *self) {}
 
-int flags()
+int flags(dt_imageio_module_data_t *data)
 {
   return FORMAT_FLAGS_SUPPORT_XMP;
 }

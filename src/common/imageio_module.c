@@ -46,7 +46,7 @@ _default_format_dimension(dt_imageio_module_format_t *module, uint32_t *width, u
 }
 /** Default implementation of flags, used if format module does not implement flags() */
 static int
-_default_format_flags()
+_default_format_flags(dt_imageio_module_data_t *data)
 {
   return 0;
 }

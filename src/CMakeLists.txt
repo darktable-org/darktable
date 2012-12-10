@@ -28,6 +28,7 @@ FILE(GLOB SOURCE_FILES
   "common/imageio.c"
   "common/imageio_exr.cc"
   "common/imageio_jpeg.c"
+  "common/imageio_png.c"
   "common/imageio_module.c"
   "common/imageio_pfm.c"
   "common/imageio_rgbe.c"
@@ -87,8 +88,6 @@ set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LibRaw)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/osm-gps-map/src)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/colord-gtk/src)
 
 # initial compiler flags
 add_definitions("-DHAVE_CONFIG_H")
@@ -179,6 +178,16 @@ if(USE_GLIBJSON)
 	add_definitions(${JsonGlib_DEFINITIONS})
   endif(JsonGlib_FOUND)
 endif(USE_GLIBJSON)
+
+if(USE_OPENJPEG)
+  find_package(OpenJPEG)
+  if(OPENJPEG_FOUND)
+    include_directories(${OPENJPEG_INCLUDE_DIRS})
+    list(APPEND LIBS ${OPENJPEG_LIBRARIES})
+    add_definitions(${OPENJPEG_DEFINITIONS})
+    add_definitions("-DHAVE_OPENJPEG")
+  endif(OPENJPEG_FOUND)
+endif(USE_OPENJPEG)
 
 #
 # Detect compile of optional pwstorage backends
@@ -403,6 +412,7 @@ if(USE_GEO)
     include_directories(${LIBSOUP2_INCLUDE_DIRS})
     list(APPEND LIBS ${LIBSOUP2_LIBRARIES})
     add_definitions(${LIBSOUP2_DEFINITIONS})
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/osm-gps-map/src)
     add_dependencies(lib_darktable osmgpsmap)
     add_library(osmgpsmap_static STATIC IMPORTED)
     set_target_properties(osmgpsmap_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/osm-gps-map/libosmgpsmap.a)
@@ -422,20 +432,23 @@ endif(USE_GEO)
 target_link_libraries(lib_darktable ${LIBS})
 
 # libcolord-gtk:
-find_package(Colord)
-if(COLORD_FOUND)
-  include_directories(${COLORD_INCLUDE_DIRS})
-  list(APPEND LIBS ${COLORD_LIBRARIES})
-# we ship our own copy of libcolord-gtk - the one packaged in distros is linked against gtk3 :(
-  add_dependencies(lib_darktable colord-gtk)
-  add_library(colord-gtk_static STATIC IMPORTED)
-  set_target_properties(colord-gtk_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/colord-gtk/libcolord-gtk.a)
-  target_link_libraries(lib_darktable colord-gtk_static)
-  add_subdirectory(external/colord-gtk)
-  list(APPEND STATIC_LIBS colord-gtk_static)
-  add_dependencies(colord-gtk colord)
-  add_definitions("-DUSE_COLORDGTK")
-endif(COLORD_FOUND)
+if(USE_COLORD)
+  find_package(Colord)
+  if(COLORD_FOUND)
+    include_directories(${COLORD_INCLUDE_DIRS})
+    list(APPEND LIBS ${COLORD_LIBRARIES})
+    # we ship our own copy of libcolord-gtk - the one packaged in distros is linked against gtk3 :(
+    add_dependencies(lib_darktable colord-gtk)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/colord-gtk/src)
+    add_library(colord-gtk_static STATIC IMPORTED)
+    set_target_properties(colord-gtk_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/colord-gtk/libcolord-gtk.a)
+    target_link_libraries(lib_darktable colord-gtk_static)
+    add_subdirectory(external/colord-gtk)
+    list(APPEND STATIC_LIBS colord-gtk_static)
+    add_dependencies(colord-gtk colord)
+    add_definitions("-DUSE_COLORDGTK")
+  endif(COLORD_FOUND)
+endif(USE_COLORD)
 
 # libsquish for compressed thumbnails:
 add_dependencies(lib_darktable squish)

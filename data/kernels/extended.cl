@@ -19,8 +19,8 @@
 const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
 const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
 
-#ifndef M_PI
-#define M_PI           3.14159265358979323846  // should be defined by the OpenCL compiler acc. to standard
+#ifndef M_PI_F
+#define M_PI_F           3.14159265358979323846f  // should be defined by the OpenCL compiler acc. to standard
 #endif
 
 
@@ -351,7 +351,7 @@ vignette (read_only image2d_t in, write_only image2d_t out, const int width, con
 
   if(x >= width || y >= height) return;
 
-  const float2 pv = (float2)(x,y) * scale - roi_center_scaled;
+  const float2 pv = fabs((float2)(x,y) * scale - roi_center_scaled);
 
   const float cplen = pow(pow(pv.x, expt.x) + pow(pv.y, expt.x), expt.y);
 
@@ -361,12 +361,12 @@ vignette (read_only image2d_t in, write_only image2d_t out, const int width, con
   {
     weight = ((cplen - dscale) / fscale);
 
-    weight = weight >= 1.0f ? 1.0f : (weight <= 0.0f ? 0.0f : 0.5f - cos(M_PI * weight) / 2.0f);
+    weight = weight >= 1.0f ? 1.0f : (weight <= 0.0f ? 0.0f : 0.5f - cos(M_PI_F * weight) / 2.0f);
   }
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  if(weight > 0)
+  if(weight > 0.0f)
   {
     float falloff = brightness < 0.0f ? 1.0 + (weight * brightness) : weight * brightness;
 

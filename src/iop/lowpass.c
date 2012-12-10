@@ -410,7 +410,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)module->params;
-  dt_bauhaus_slider_set(g->scale1, p->radius);
+  dt_bauhaus_slider_set(g->scale1, fabsf(p->radius));
   dt_bauhaus_combobox_set(g->bilat, p->radius < 0 ? 1 : 0);
   dt_bauhaus_slider_set(g->scale2, p->contrast);
   dt_bauhaus_slider_set(g->scale3, p->saturation);

@@ -38,6 +38,7 @@ src/gui/presets.c
 src/gui/styles_dialog.c
 src/imageio/format/copy.c
 src/imageio/format/exr.cc
+src/imageio/format/j2k.c
 src/imageio/format/jpeg.c
 src/imageio/format/pfm.c
 src/imageio/format/png.c

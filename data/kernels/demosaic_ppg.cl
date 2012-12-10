@@ -26,6 +26,9 @@ FC(const int row, const int col, const unsigned int filters)
   return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
 }
 
+// FC return values are either 0/1/2/3 = G/M/C/Y or 0/1/2/3 = R/G1/B/G2
+#define FCV(val, col) ((col == 0) ? val.x : ((col & 1) ? val.y : val.z) )
+
 int2
 backtransformi (float2 p, const int r_x, const int r_y, const int r_wd, const int r_ht, const float r_scale)
 {
@@ -127,11 +130,12 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const int width
   float4 color = (float4)(0.0f);
   // const float cc = (cnt > 1 || variation > 0.06f) ? med[(cnt-1)/2]) : med[4] - 64.0f;
   const float cc = (c1 || cnt > 1 || variation > 0.06f) ? med[(cnt-1)/2] : med[4] - 64.0f;
-  if(f4) ((float *)&color)[c] = cc;
-  else   color.x              = cc;
+  if(f4)
+    (c == 0) ? (color.x = cc) : ((c & 1) ? (color.y = cc) : (color.z = cc));
+  else
+     color.x = cc;
   write_imagef (out, (int2)(x, y), color);
 }
-
 
 // This median filter is inspired by GPL code from socles, an OpenCL image processing library.
 
@@ -284,7 +288,7 @@ clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out, const int wi
     float4 px = read_imagef(in, samplerf, (float2)(p.x+i, p.y+j));
     color += px;
   }
-  color /= (2*samples+1)*(2*samples+1);
+  color /= (float4)((2*samples+1)*(2*samples+1));
   write_imagef (out, (int2)(x, y), color);
 }
 
@@ -458,17 +462,32 @@ ppg_demosaic_green_median (__read_only image2d_t in, __write_only image2d_t out,
     const float4 pxM  = read_imagef(in, sampleri, (int2)(col+1, row));  // g
     const float4 pxM2 = read_imagef(in, sampleri, (int2)(col+2, row));
     const float4 pxM3 = read_imagef(in, sampleri, (int2)(col+3, row));  // g
-    // FIXME: now we need the xyz mess again!
-    const float guessx = (pxm.y + ((float *)&pc)[c] + pxM.y) * 2.0f - ((float *)&pxM2)[c] - ((float *)&pxm2)[c];
-    const float diffx  = (fabs(((float *)&pxm2)[c] - ((float *)&pc)[c]) +
-                          fabs(((float *)&pxM2)[c] - ((float *)&pc)[c]) + 
+
+    const float pc_c = FCV(pc,c);
+    float4 px_c  = (float4)0.0;
+    if (c == 0)
+      px_c = (float4)(pxm2.z,pxM2.z,pym2.z,pyM2.z);
+    else if (c & 1) 
+      px_c = (float4)(pxm2.y,pxM2.y,pym2.y,pyM2.y);
+    else
+      px_c = (float4)(pxm2.x,pxM2.x,pym2.x,pyM2.x);
+    #define pxm2_c px_c.x
+    #define pxM2_c px_c.y
+    #define pym2_c px_c.z
+    #define pyM2_c px_c.w
+
+    const float guessx = (pxm.y + pc_c + pxM.y) * 2.0f - pxM2_c - pxm2_c;
+    const float diffx  = (fabs(pxm2_c - pc_c) +
+                          fabs(pxM2_c - pc_c) + 
                           fabs(pxm.y  - pxM.y)) * 3.0f +
                          (fabs(pxM3.y - pxM.y) + fabs(pxm3.y - pxm.y)) * 2.0f;
-    const float guessy = (pym.y + ((float *)&pc)[c] + pyM.y) * 2.0f - ((float *)&pyM2)[c] - ((float *)&pym2)[c];
-    const float diffy  = (fabs(((float *)&pym2)[c] - ((float *)&pc)[c]) +
-                          fabs(((float *)&pyM2)[c] - ((float *)&pc)[c]) + 
+    const float guessy = (pym.y + pc_c + pyM.y) * 2.0f - pyM2_c - pym2_c;
+    const float diffy  = (fabs(pym2_c - pc_c) +
+                          fabs(pyM2_c - pc_c) + 
                           fabs(pym.y  - pyM.y)) * 3.0f +
                          (fabs(pyM3.y - pyM.y) + fabs(pym3.y - pym.y)) * 2.0f;
+
+
     if(diffx > diffy)
     {
       // use guessy
