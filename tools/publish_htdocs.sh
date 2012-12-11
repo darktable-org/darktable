@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # usage: publish_html.sh <sf_username>
 
