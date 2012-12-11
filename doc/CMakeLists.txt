@@ -20,7 +20,11 @@ add_custom_command(
 add_custom_target(manpages ALL DEPENDS darktable.1)
 
 if(NOT MAN_INSTALL_DIR)
-	set(MAN_INSTALL_DIR "./share/man/man1")
+	if(CMAKE_SYSTEM_NAME MATCHES "^(DragonFly|FreeBSD|NetBSD|OpenBSD)$")
+		set(MAN_INSTALL_DIR "./man/man1")
+	else()
+		set(MAN_INSTALL_DIR "./share/man/man1")
+	endif()
 endif(NOT MAN_INSTALL_DIR)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.1 DESTINATION ${MAN_INSTALL_DIR})
