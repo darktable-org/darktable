@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 DBFILE=~/.config/darktable/library.db
 QUERY="select A.id,B.folder,A.filename from images as A join film_rolls as B on A.film_id = B.id"
