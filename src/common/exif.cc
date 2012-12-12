@@ -46,7 +46,7 @@ extern "C"
 #include <cassert>
 #include <glib.h>
 
-#define DT_XMP_KEYS_NUM 13 // the number of XmpBag XmpSeq keys that dt uses
+#define DT_XMP_KEYS_NUM 15 // the number of XmpBag XmpSeq keys that dt uses
 
 static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos);
 
@@ -57,6 +57,7 @@ const char *dt_xmp_keys[DT_XMP_KEYS_NUM] =
   "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled",
   "Xmp.darktable.history_operation", "Xmp.darktable.history_params",
   "Xmp.darktable.blendop_params", "Xmp.darktable.blendop_version",
+  "Xmp.darktable.multi_priority", "Xmp.darktable.multi_name",
   "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights"
 };
 
@@ -1218,6 +1219,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     Exiv2::XmpData::iterator param;
     Exiv2::XmpData::iterator blendop = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.blendop_params"));
     Exiv2::XmpData::iterator blendop_version = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.blendop_version"));
+    Exiv2::XmpData::iterator multi_priority = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.multi_priority"));
+    Exiv2::XmpData::iterator multi_name = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.multi_name"));
 
     if ( (ver=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_modversion"))) != xmpData.end() &&
          (en=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_enabled")))     != xmpData.end() &&
@@ -1242,7 +1245,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
                                     -1, &stmt_ins_hist, NULL);
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "update history set operation = ?1, op_params = ?2, "
-                                    "blendop_params = ?7, blendop_version = ?8, module = ?3, enabled = ?4 "
+                                    "blendop_params = ?7, blendop_version = ?8, multi_priority = ?9, multi_name = ?10, module = ?3, enabled = ?4 "
                                     "where imgid = ?5 and num = ?6", -1, &stmt_upd_hist, NULL);
         for(int i=0; i<cnt; i++)
         {
@@ -1294,6 +1297,22 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           }
           DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 8, blversion);
 
+          /* multi instances */
+          int mprio = 0;
+          if (multi_priority != xmpData.end())  mprio = multi_priority->toLong(i);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 9, mprio);
+          if(multi_name != xmpData.end() && multi_name->size() > 0 && multi_name->toString(i).c_str() != NULL)
+          {
+            const char *mname = multi_name->toString(i).c_str();
+            DT_DEBUG_SQLITE3_BIND_TEXT(stmt_upd_hist, 10, mname, strlen(mname), SQLITE_TRANSIENT);
+          }
+          else
+          {
+            const char *mname = "0";
+            DT_DEBUG_SQLITE3_BIND_TEXT(stmt_upd_hist, 10, mname, strlen(mname), SQLITE_TRANSIENT);
+          }
+          
+          
           sqlite3_step (stmt_upd_hist);
           free(params);
           free(blendop_params);
@@ -1470,13 +1489,15 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   xmpData.add(Exiv2::XmpKey("Xmp.darktable.history_params"), &tv);
   xmpData.add(Exiv2::XmpKey("Xmp.darktable.blendop_params"), &tv);
   xmpData.add(Exiv2::XmpKey("Xmp.darktable.blendop_version"), &tv);
+  xmpData.add(Exiv2::XmpKey("Xmp.darktable.multi_priority"), &tv);
+  xmpData.add(Exiv2::XmpKey("Xmp.darktable.multi_name"), &tv);
 
   // reset tv
   tv.setXmpArrayType(Exiv2::XmpValue::xaNone);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "select imgid, num, module, operation, op_params, enabled, blendop_params, "
-                              "blendop_version from history where imgid = ?1 order by num",
+                              "blendop_version, multi_priority, multi_name from history where imgid = ?1 order by num",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1521,6 +1542,17 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     snprintf(val, 2048, "%d", blversion);
     tv.read(val);
     snprintf(key, 1024, "Xmp.darktable.blendop_version[%d]", num);
+    xmpData.add(Exiv2::XmpKey(key), &tv);
+
+    /* read and add multi instances */
+    int32_t mprio = sqlite3_column_int(stmt, 8);
+    snprintf(val, 2048, "%d", mprio);
+    tv.read(val);
+    snprintf(key, 1024, "Xmp.darktable.multi_priority[%d]", num);
+    xmpData.add(Exiv2::XmpKey(key), &tv);
+    const char *mname = (const char *)sqlite3_column_text(stmt, 9);
+    tv.read(mname);
+    snprintf(key, 1024, "Xmp.darktable.multi_name[%d]", num);
     xmpData.add(Exiv2::XmpKey(key), &tv);
 
     num ++;

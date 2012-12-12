@@ -257,6 +257,7 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
     // modules have been added in between or removed. need to rebuild the whole pipeline.
     dt_dev_pixelpipe_cleanup_nodes(pipe);
     dt_dev_pixelpipe_create_nodes(pipe, dev);
+    dt_dev_pixelpipe_synch_all(pipe, dev);
   }
   pipe->changed = DT_DEV_PIPE_UNCHANGED;
   dt_pthread_mutex_unlock(&dev->history_mutex);

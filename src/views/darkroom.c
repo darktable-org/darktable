@@ -27,6 +27,7 @@
 #include "dtgtk/button.h"
 #include "dtgtk/tristatebutton.h"
 #include "develop/imageop.h"
+#include "develop/blend.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"
@@ -522,16 +523,96 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
 
   // make sure no signals propagate here:
   darktable.gui->reset = 1;
+  
   GList *modules = g_list_last(dev->iop);
+  int nb_iop = g_list_length(dev->iop);
+  dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
+  dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
+  for (int i=nb_iop-1; i>0; i--)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(g_list_nth_data(dev->iop,i));
+    if (module->multi_priority == 0) //if the module is the "base" instance, we keep it
+    {
+      dt_iop_reload_defaults(module);
+      dt_iop_gui_update(module);
+    }
+    else  //else we delete it and remove it from the panel
+    {
+      if (!dt_iop_is_hidden(module))
+      {
+        gtk_container_remove (GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),module->expander);
+        dt_iop_gui_cleanup_module(module);
+      }  
+
+      //we remove the module from the list
+      dev->iop = g_list_remove_link(dev->iop,g_list_nth(dev->iop,i));
+  
+      //we cleanup the module
+      dt_accel_disconnect_list(module->accel_closures);
+      dt_accel_cleanup_locals_iop(module);
+      module->accel_closures = NULL;
+      dt_iop_cleanup_module(module);
+      free(module);
+    }
+  }
+  dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
+  dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
+  dt_dev_read_history(dev);
+  
+  //we have to init all module instances other than "base" instance
+  modules = dev->iop;
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    dt_iop_reload_defaults(module);
-    dt_iop_gui_update(module);
-    modules = g_list_previous(modules);
+    if(module->multi_priority > 0)
+    {
+      if (!dt_iop_is_hidden(module))
+      {
+        module->gui_init(module);
+        //we search the base iop corresponding
+        GList *mods = g_list_first(dev->iop);
+        dt_iop_module_t *base = NULL;
+        int pos_module = 0;
+        int pos_base = 0;
+        int pos = 0;
+        while (mods)
+        {
+          dt_iop_module_t *mod = (dt_iop_module_t *)(mods->data);
+          if (mod->multi_priority == 0 && mod->instance == module->instance)
+          {
+            base = mod;
+            pos_base = pos;
+          }
+          else if (mod == module) pos_module = pos;
+          mods = g_list_next(mods);
+          pos++;
+        }
+        if (!base) continue;
+        
+        /* add module to right panel */
+        GtkWidget *expander = dt_iop_gui_get_expander(module);
+        dt_ui_container_add_widget(darktable.gui->ui,
+                                   DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
+        GValue gv = G_VALUE_INIT;
+        g_value_init(&gv,G_TYPE_INT);
+        gtk_container_child_get_property(GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),base->expander,"position",&gv);
+        gtk_box_reorder_child (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),expander,g_value_get_int(&gv)+pos_base-pos_module);
+        dt_iop_gui_set_expanded(module, TRUE);
+        dt_iop_gui_update_blending(module);
+      }
+    
+      /* setup key accelerators */
+      module->accel_closures = NULL;
+      if(module->connect_key_accels)
+        module->connect_key_accels(module);
+      dt_iop_connect_common_accels(module);
+      
+      //we update show params for multi-instances for each other instances
+      dt_dev_modules_update_multishow(module->dev);
+    }
+    modules = g_list_next(modules);
   }
-
-  dt_dev_read_history(dev);
+    
   dt_dev_pop_history_items(dev, dev->history_end);
 
   if(active_plugin)
@@ -820,6 +901,7 @@ void enter(dt_view_t *self)
   DT_CTL_SET_GLOBAL(dev_closeup, 0);
 
   // take a copy of the image struct for convenience.
+
   dt_dev_load_image(darktable.develop, dev->image_storage.id);
 
   /*

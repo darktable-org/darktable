@@ -60,6 +60,7 @@ struct dt_develop_tiling_t;
 #define IOP_FLAGS_ALLOW_TILING         16                       // Does allow tile-wise processing (valid for CPU and GPU processing)
 #define IOP_FLAGS_HIDDEN               32                       // Hide the iop from userinterface
 #define IOP_FLAGS_TILING_FULL_ROI      64                       // Tiling code has to expect arbitrary roi's for this module (incl. flipping, mirroring etc.)
+#define IOP_FLAGS_ONE_INSTANCE        128     // The module doesn't support multiple instances
 /** status of a module*/
 typedef enum dt_iop_module_state_t
 {
@@ -222,6 +223,14 @@ typedef struct dt_iop_module_t
   /** the correspoinding SO object */
   dt_iop_module_so_t *so;
 
+  /** multi-instances things */
+  int multi_priority; //user may change this
+  char multi_name[128]; //user may change this name
+  gboolean multi_show_close;
+  gboolean multi_show_up;
+  gboolean multi_show_down;
+  GtkWidget *duplicate_button;
+  GtkWidget *multimenu_button;
 
   /** version of the parameters in the database. */
   int (*version)          ();
@@ -306,6 +315,8 @@ void dt_iop_load_modules_so();
 void dt_iop_unload_modules_so();
 /** returns a list of instances referencing stuff loaded in load_modules_so. */
 GList *dt_iop_load_modules(struct dt_develop_t *dev);
+int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, struct dt_develop_t *dev);
+gint sort_plugins(gconstpointer a, gconstpointer b);
 /** calls module->cleanup and closes the dl connection. */
 void dt_iop_cleanup_module(dt_iop_module_t *module);
 /** initialize pipe. */
