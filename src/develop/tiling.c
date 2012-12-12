@@ -1314,15 +1314,15 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
       err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, origin, region, opitch, CL_FALSE);
       if(err != CL_SUCCESS) goto error;
 
+      /* block until opencl queue has finished to free all used event handlers. needed here as with
+         some OpenCL implementations we would otherwise run out of them */
+      dt_opencl_finish(devid);
+
       /* release input and output buffers */
       dt_opencl_release_mem_object(input);
       input = NULL;
       dt_opencl_release_mem_object(output);
       output = NULL;
-
-      /* block until opencl queue has finished to free all used event handlers. needed here as with
-         some OpenCL implementations we would otherwise run out of them */
-      dt_opencl_finish(devid);
     }
 
   /* copy back final processed_maximum */
@@ -1595,16 +1595,15 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
       err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, oorigin, oregion, opitch, CL_FALSE);
       if(err != CL_SUCCESS) goto error;
 
+      /* block until opencl queue has finished to free all used event handlers. needed here as with
+         some OpenCL implementations we would otherwise run out of them */
+      dt_opencl_finish(devid);
+
       /* release input and output buffers */
       dt_opencl_release_mem_object(input);
       input = NULL;
       dt_opencl_release_mem_object(output);
       output = NULL;
-
-      /* block until opencl queue has finished to free all used event handlers. needed here as with
-         some OpenCL implementations we would otherwise run out of them */
-      dt_opencl_finish(devid);
-
     }
 
   /* copy back final processed_maximum */
