@@ -261,6 +261,7 @@ void _sync_list(gpointer *data, gpointer *user_data)
   }
 }
 
+#if 0
 void view_popup_menu_onSync (GtkWidget *menuitem, gpointer userdata)
 {
   GtkTreeView *treeview = GTK_TREE_VIEW(userdata);
@@ -397,6 +398,7 @@ void view_popup_menu_onSync (GtkWidget *menuitem, gpointer userdata)
   gtk_widget_destroy (dialog);
 
 }
+#endif
 
 void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
 {
