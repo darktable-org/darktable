@@ -38,10 +38,6 @@
 			You can visit <emphasis>http://creativecommons.org/about/licenses/</emphasis> to get more information.
 			</para>
 		</legalnotice>
-		<author>
-			<firstname>Henrik</firstname>
-			<surname>Andersson</surname>
-		</author>
 		<copyright>
 			<year>2010-2012</year>
 			<holder>P.H. Andersson</holder>
@@ -71,7 +67,7 @@
 						</row>
 						<row>
 							<entry>user manual</entry>
-							<entry>1.1.1 (draft)</entry>
+							<entry>1.1.2 (draft)</entry>
 							<entry>December 2012</entry>
 						</row>
 						<row>

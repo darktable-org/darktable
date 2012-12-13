@@ -30,22 +30,22 @@
 
 			<sect5><title>normal</title>
 				<para>This will probably be the most used blend mode, it does just mix input and output and will be used
-				      to control the modules effect amount for an example. Perfect for better controlling raw denoise result.
+				      to control the amount of a module's effect.
 			        </para>			
 			</sect5>
 
 		        <sect5><title>inverse</title>
-				<para>This blend mode acts similar to blend mode "Normal", only that the role of input and output of the
+				<para>This blend mode acts similar to blend mode "normal", only that the role of input and output of the
         	                      current module are reversed. Can be used together with conditional blending (next chapter) to
         	                      get the effect of an inversed blend mask.
         	                </para>			
 			</sect5>
 
 			<sect5><title>unbounded</title>
-				<para>This blend mode acts similar to blend mode "Normal", only that input and output data are not
+				<para>This blend mode acts similar to blend mode "normal", only that input and output data are not
         	                      clamped to a certain min/max value range. This already tells you that all other blend modes
         	                      clamp their input and output. In some cases (e.g. highly color saturated extreme highlights) it is 
-        	                      important to  let unbound values traved through the pixelpipe in order to properly deal with them at 
+        	                      important to  let unbound values travel through the pixelpipe in order to properly deal with them at 
         	                      the right place (e.g. in module "output color profile").
 	                        </para>			
 	                </sect5>
@@ -79,8 +79,9 @@
 
 			<sect5><title>coloradjustment</title>
 				<para>Some modules act predominantly on the tonal values of an image but involve some adjustment of color saturation
-                                      as well, e.g. module "levels". This blend mode takes the lightness only from output data and
-                                      mixes colors from input and output. This way you can control the module's automatic color adjustment.
+                                      as well, e.g. module <emphasis>levels</emphasis> and <emphasis>tonecurve</emphasis>. This blend mode takes the 
+                                      lightness only from output data and mixes colors from input and output. This way you can control the module's automatic 
+                                      color adjustment.
 	                        </para>			
 	                </sect5>
 

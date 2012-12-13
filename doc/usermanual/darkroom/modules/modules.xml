@@ -4,16 +4,20 @@
 		%darktable_dtd;
 		]>
 <sect1 status="final"><title>Modules</title>
-	<para>Each correction, enhancement or effect is implemented as modules, and this section includes documentation
-			of each module and its specific parameters.
-			A module consists of an expander bar <inlinegraphic fileref="&img_module_expander;" scalefit="1" width="30%" align="center"/>  
-			where the <inlinegraphic fileref="&icon_module_enable;" scalefit="1" width="2%"  align="center"/> icon is used to turn the module
-			on or off. Then there is the name of the module; press this to expand the module to see the parameters user interface.
-			Icon <inlinegraphic fileref="&icon_module_presets;" scalefit="1" width="2%" align="center" /> is the preset icon to access the available presets stored for the module or to create new ones. 
-			The <inlinegraphic fileref="&icon_module_reset;" scalefit="1" width="2%" align="center"/>  icon is used to reset the module parameters to their default values.
+	<para>Each correction, enhancement or effect is implemented a module.
+        </para>
+        <para>
+               This section includes documentation of each module and its specific parameters.
+               A module consists of an expander bar <inlinegraphic fileref="&img_module_expander;" scalefit="1" width="30%" align="center"/>  
+               where the <inlinegraphic fileref="&icon_module_enable;" scalefit="1" width="2%"  align="center"/> icon is used to turn the module
+               on or off. Then there is the name of the module; press this to expand the module to see the parameters user interface.
+               Icon <inlinegraphic fileref="&icon_module_presets;" scalefit="1" width="2%" align="center" /> is the preset icon to access the available presets stored for the module or to create new ones. 
+               The <inlinegraphic fileref="&icon_module_reset;" scalefit="1" width="2%" align="center"/>  icon is used to reset the module parameters to their default values.
 	</para>
 	<sect2 status="draft"><title>Interacting with modules</title>
-	   <para>For each slider, you can interact in three different ways, depending on the level of control you need.
+           <para>The most frequently used control elements are sliders, comboboxes and curves.
+           </para>
+	   <para>For each slider, you can interact in four different ways, depending on the level of control you need.
 	   </para>
 	    <orderedlist>
 			   <listitem>
@@ -56,6 +60,12 @@
 			     </para>
 			   </listitem>		   
 			</orderedlist>
+          <para>Clicking on a combobox will open a list of available options. Click on the item you want to select
+          </para>
+
+          <para>Some modules are controlled by adjusting curves. More detail is given later in this chapter when the respective
+                modules are explained.
+          </para>
 	</sect2>
 	
 
