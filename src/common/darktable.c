@@ -72,7 +72,7 @@
 #endif
 
 darktable_t darktable;
-const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2,dcr,dng,erf,fff,exr,ia,iiq,jpg,jpeg,k25,kc2,kdc,mdc,mef,mos,mrw,nef,nrw,orf,pef,pfm,pxn,qtk,raf,raw,rdc,rw2,rwl,sr2,srf,srw,sti,tif,tiff,x3f";
+const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2,dcr,dng,erf,fff,exr,ia,iiq,jpg,jpeg,k25,kc2,kdc,mdc,mef,mos,mrw,nef,nrw,orf,pef,pfm,pxn,qtk,raf,raw,rdc,rw2,rwl,sr2,srf,srw,sti,tif,tiff,x3f,png";
 
 static int usage(const char *argv0)
 {
@@ -865,7 +865,7 @@ void dt_configure_defaults()
   {
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
     dt_conf_set_int("worker_threads", 1);
-    dt_conf_set_int("cache_memory", 200u<<10);
+    dt_conf_set_int("cache_memory", 200u<<20);
     dt_conf_set_int("host_memory_limit", 500);
     dt_conf_set_int("singlebuffer_limit", 8);
     dt_conf_set_int("plugins/lighttable/thumbnail_width", 800);
