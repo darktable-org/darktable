@@ -4,7 +4,7 @@
 					<colspec colwidth="4*"/>
 					<tbody>
 						<row>						
-							<entry>Thanks to this panel, you can manage your collection (current view)
+							<entry>With this panel, you can manage your collection (current view)
 							by filtering images with various criteria.
 							The left combo box lets you choose from different filters, such a 'filmroll', 'historystack',
 							'date', 'camera' and much more. The table below lists all available data for the selected filter.

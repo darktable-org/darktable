@@ -20,7 +20,7 @@
                 <para>Demosaic is an essential step for any raw image development process.</para>
 
 		<para>A detailed description would be beyond the scope of this manual. In a nutshell, the sensor 
-		      cells of a digital camera are only able to record different levels of lightness, not color. In order 
+		      cells of a digital camera are only able to record different levels of lightness, not different color. In order 
                       to get a color image, each cell is covered by a color filter, either in red, green or blue.
                       Due to the color sensitivity of the human vision, there are two times more green cells than red or blue.
                       Filters are arranged in a certain mosaic, called Bayer pattern. Therefore each pixel of your image originally 
@@ -36,8 +36,8 @@
 		<para>Some further parameters of this module can activate additional averaging and smoothing steps. They might help to reduce
                       remaining artifacts in special cases.</para>
 
-		<para>Demosaic is done on monitor display only when zoom is greater than 50% or when the according
-                      preference setting "demosaicing for zoomed out darkroom mode" is set accordingly. Else color channels are
+		<para>Demosaic is always applied when exporting images. Demosaic is done on monitor display only when zoom is greater than 50% or 
+                      when the according preference setting "demosaicing for zoomed out darkroom mode" is set accordingly. Else color channels are
                       taken from neighboring pixels without an expensive interpolation.</para>
 
                 <sect5><title>method</title>

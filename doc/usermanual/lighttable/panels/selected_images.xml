@@ -15,12 +15,15 @@
 			</informaltable>
 				<sect4><title>remove</title>
 					<para>Remove the selected images from the darktable database. Those images will not be shown
-					in lighttable anymore, but remain on filesystem.
+					in lighttable anymore, but remain on filesystem. As darktable stores XMP files with your development
+                                        parameters on disk, you can later fully reconstruct your work by just re-importing the images. When
+                                        backing up your RAWs make sure to also save the XMP files!
 					</para>
 				</sect4>
 				<sect4><title>delete</title>
 					<para>Physically delete selected images from filesystem. See also preference option 'ask before erasing images from disk'; if
-                                              this option is not active, darktable will delete the file(s) without further question!
+                                              this option is not active, darktable will delete the file(s) without further question! This is not reversible and will
+                                              also erase your development work an these images.
 					</para>
 				</sect4>
 				<sect4><title>move</title>

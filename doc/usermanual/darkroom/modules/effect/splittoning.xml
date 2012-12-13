@@ -21,11 +21,10 @@
 		<para>darktable splittoning module has more parameters that impacts on the default above behavior- 
 				We have 'balance' which offsets the 50% gray level in image and 'compression' that does compress
 				toning in the shadows and highlights which  leaves a gap which are untouched by the effect.
-				Read more and see examples of these additional parameters to splittoning module in "usage" section.
 		</para>
 		<para>The splittoning module does not convert images to black and white and has limited benefits on color images.
-				So if you want to do traditional splittoning, use the monochrome module to make the image black and white
-				before playing around with splittoning effect.
+                      So if you want to do traditional splittoning, use the monochrome module to make the image black and white
+                      before playing around with splittoning effect.
 		</para>
 	</sect4>
 
@@ -36,7 +35,7 @@
 					common color picker dialog.</para>
 		</sect5>
 		<sect5><title>balance</title>
-			<para>The balance is presented as an ratio bar and default value is 50/50 which means that 50% of lightness 
+			<para>The balance is presented as a ratio and defaults to 50/50, which means that 50% of lightness 
 			range in image are used for shadows toning and the other 50% for highlights toning.
 			</para>
 		</sect5>
