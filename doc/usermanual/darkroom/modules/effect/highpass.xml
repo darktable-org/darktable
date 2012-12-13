@@ -5,7 +5,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>Highpass acts as high pass filter. The primary usage for this filter is in combination with a
+						<entry>Highpass acts as a high pass filter. The primary usage for this filter is in combination with a
 						blending operator. Try out blend mode "soft light" to get highpass sharpening. Use the opacity slider
                                                 to adjust the strength of the effect or even conditional blending to limit the effect to only parts of
                                                 your image.			

@@ -5,11 +5,8 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry><para>The watermark module provides a way to render an vector-based overlay onto your image.
-									Watermarks are standard SVG documents and can be designed using Inkscape. The SVG 
-									processor of darktable also substitutes strings within the SVG document which gives
-									the oppurtunity to include image dependent information in the watermark such as aperture, 
-									exposure time and other metadata.</para>
+						<entry><para>The watermark module provides a way to render a vector-based overlay onto your image.
+                                                             Watermarks are standard SVG documents and can be designed using Inkscape.</para>
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/watermark.png" scalefit="1" width="80%" align="center" />
@@ -19,8 +16,13 @@
 			</tgroup>
 		</informaltable>
 
-		<para>User-designed watermarks are placed into the directory ~/.config/darktable/watermarks;
-		once in place, use the reload button at the right of the watermark file name to update the list 
+                <para>The SVG processor of darktable also substitutes strings within the SVG document, which gives
+                the oppurtunity to include image dependent information in the watermark such as aperture, 
+                exposure time and other metadata.
+                </para>
+
+		<para>User-designed watermarks are placed into the directory $HOME/.config/darktable/watermarks.
+		Once in place, use the reload button at the right of the watermark file name to update the list 
 		of available watermarks to use.
 		</para>
 

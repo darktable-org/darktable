@@ -18,9 +18,15 @@
 				<graphic fileref="lighttable/images/panel_import.png" scalefit="1" width="60%" align="center"></graphic>
 
 				<para>When you click on 'import single image' or 'import filmroll' a file selector dialog will pop up. Navigate through your filesystem
-                                      and select the item you want to import. On the lower part of the dialog you can define some import options. As the name implies checking
-                                      'import directories recursively' will recurse from the currently selected directory through all subdirectories and import all images
-                                      found. Checking 'ignore jpeg files' is a good choice if there are jpeg images in the same folder that you do not want to process with
+                                      and select the item you want to import. On the lower part of the dialog you can define some further import options. 
+                                </para>
+                                <para>
+                                      As the name implies checking 'import directories recursively' will recurse from the currently selected directory through all 
+                                      subdirectories and import all images found.
+                                      It is not recommended and wasting resources to this on an exhaustive list of images. darktable would generate thumbnails for all of them
+                                      but in the end keep the recent ones in its cache. Better import images part by part as separate filmrolls.
+                                </para>
+                                <para>Checking 'ignore jpeg files' is a good choice if there are jpeg images in the same folder that you do not want to process with
                                       darktable; eg. if your camera stores RAW+JPEG you often will only want to work further on your raws and let the jpegs alone. You can
                                       also apply some metadata already on import; see the section on 'Metadata editor' later in this manual for more details.
 				</para>

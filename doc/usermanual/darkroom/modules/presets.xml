@@ -6,11 +6,13 @@
 
 	<sect2 status="final"><title>Presets</title>
 		    <para>
-			    Presets are stored configurations for the module parameters both internal and user-defined is available	through clicking the <inlinegraphic fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/> icon and a list of available presets are shown for your choice, the activated preset is in bold text.
+			    Presets are stored configurations for the module parameters. Some modules come with internal, pre-defined presets. You can also define your own ones. Both internal 
+                            and user-defined presets are accessible through clicking the <inlinegraphic fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/> icon. A list of available 
+                            presets is shown for your choice; the activated preset is in bold text.
 		    </para>
 		    <para>
 			    The preset system does also support automatic preset selection based on image data such as focal length, iso,  
-				    camera model and much more fields.
+				    camera model and many more fields.
     </para>
 		    <sect3><title>Creating a new preset</title>
 			    <para>
@@ -21,10 +23,14 @@
 				    The first two fields are used for setting a name and a description of the preset.
 			    </para>
 			    <para>
-			    In the example i have also checked the auto apply option which brings up the image selection fields where you can define a filter that is used to decide if the preset should be applied the image or not.	The example dialog above does set up following rules, if lens name matches and aperture is >= 8 and focal length is in range 24 - 35mm the preset will be automatically applied, it will also only show in the preset list if the image does match this rule.
+			    In the example above we have also checked the auto apply option. This brings up additional selection fields where you can define a filter, that is used to decide if the preset should be applied the 
+                            image or not. The example dialog above does set up following rules, if lens name matches and aperture is greater or equal to 8 and focal length is in range of 24 to 35mm the preset will be 
+                            automatically applied. Also the second checkbox is clicked, so that this preset will only show in the preset list, if the image does matches this rule.
 			    </para>
 			    <para>
-				    The data used is the EXIF information so if you want a preset to be applied to all images from a specific camera, then leave all fields at default values,	lookup model string in metadata panel and enter it into the model field.
+ 			    darktable finds these data in the EXIF information of your images. If you want a preset to be applied to all images from a specific camera, then leave all fields at default 
+                            values, only lookup model string in metadata panel and enter it into the model field.
 			    </para>
+
             </sect3>
         </sect2>

@@ -292,15 +292,17 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -fno-strict-aliasing")
 # c++ code doesn't like -Werror (libraw)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fno-strict-aliasing")
 
+if(NOT WIN32)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
+endif(NOT WIN32)
+
+if(NOT CUSTOM_CFLAGS)
+
 if(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
   # apple build fails on deprecated warnings..
   # and too many warnings reported by Clang for now
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
 endif(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
-
-if(NOT WIN32)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
-endif(NOT WIN32)
 
 if(NOT BINARY_PACKAGE_BUILD)
 	MESSAGE("-- Checking for -march=native support")
@@ -322,10 +324,10 @@ endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -g")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math ${MARCH}")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g -D_DEBUG")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -g")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math ${MARCH}")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -D_DEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
 if(CMAKE_COMPILER_IS_GNUCC)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fexpensive-optimizations")
@@ -334,6 +336,11 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fexpensive-optimizations")
 endif()
+
+endif(NOT CUSTOM_CFLAGS)
+
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
 
 #
 # Generate config.h
