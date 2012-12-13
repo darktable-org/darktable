@@ -3,6 +3,7 @@
   <para>The basic group of modules contains the modules for basic develeopment. These are ones you probably will use most often, such as exposure, temperature etc.
   </para>
 
+  <xi:include href="crop_and_rotate.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="overexposed.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="shadhi.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="basecurve.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
