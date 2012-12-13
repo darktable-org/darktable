@@ -30,7 +30,7 @@
 			<para>All darktable core functions operate on 4x32-bit floating point pixel buffers for high accuracy processing; preventing banding and color breaks.</para>
 		</listitem>
 		<listitem>
-			<para>Heavy use of SSE instructions for speedups.</para>
+			<para>Heavy use of SSE instructions of your CPU for speedups.</para>
 		</listitem>
 		<listitem>
 			<para>GPU acceleration via OpenCL (runtime detection and enabling).</para>
@@ -39,7 +39,7 @@
 			<para>Most of the actions on the pixelpipe are done in CIELab color space, which is much larger than the gamut of modern displays, printers or even human vision.</para>
 		</listitem>
 		<listitem>
-			<para>Full color managed display and built-in ICC profile support for export: sRGB, Adobe RGB, XYZ and linear RGB.</para>
+			<para>Full color managed display with softproofing and gamut-check. Built-in ICC profile support for export: sRGB, Adobe RGB, XYZ and linear RGB.</para>
 		</listitem>
 		<listitem>
 			<para>A collect module allows you to execute flexible database queries, search your images by tags, image rating (stars), color labels and many more. 
@@ -135,7 +135,7 @@
 				</para>
 			</sect3>
 			<sect3 status="final"><title>Map</title>
-				<para>This view allows to see images that are geo-tagged on a map.
+				<para>This view shows images that are geo-tagged on a map and allows you to manually geo-tag new images.
 				</para>
 			</sect3>
                </sect2>
@@ -164,8 +164,8 @@
 				from your filesystem or from your camera if supported.</para>
 
 			<sect3 status="draft"><title>Importing images from filesystem</title>
-				<para>In the left panel you will find the import module, here you have the choice to import either a single image or a folder,
-						darktable will analyse its content, detect images that are already imported and only import new images.
+				<para>In the left panel of lighttable view you will find the import module, here you have the choice to import either a single image or a folder,
+			              darktable will analyse its content, detect images that are already imported and only import new images.
 				</para>
 			</sect3>
 
@@ -179,7 +179,7 @@
 
 		<sect2 status="draft"><title>Basic correction</title>
 			<sect3><title>Introduction</title>
-				<para>This section will guide you through the basics about developing your image which includes most common changes to an image like
+				<para>This section will guide you through the basics about developing your image in darkroom view, which includes most common changes to an image like
 					noise reduction, color temperature, exposure etc.
 				</para>
 
@@ -189,7 +189,8 @@
 				</para>
 
 				<para>Each change you make on a module when developing your image is turned into a history stack item, the history is stored in a database
-					and in an XMP sidecar file for the specific image.
+				      and in an XMP sidecar file for the specific image. Changes are stored automatically without the need to press a "save" button. 
+                                      Therefore you can safely leave darkroom mode and darktable and come back later to continue your work.
 				</para>
 
 				<para>
@@ -227,9 +228,10 @@
 			</sect3>
 
   		<sect3 status="draft"><title>Noise reduction</title>
-				<para>You have several options in darktable to reduce noise. You'll find them in the correct group.
-        There is the hot pixel removal module, raw denosie, denoising based on bilateral filter, non-local means, and based on wavelets (the equalizer). Most convenient to use is probably denoising based on non-local means, as it allows you to treat color and luminance noise separately.
-        </para>
+				<para>You have several options in darktable to reduce noise. You'll find them in the correct group. There is the hot pixel removal module, raw denoise, 
+                                      denoising based on bilateral filter, non-local means, and based on wavelets (the equalizer). Most convenient to use is probably denoising based 
+                                      on non-local means, as it allows you to treat color and luminance noise separately.
+                                </para>
 			</sect3>
 
 
@@ -238,11 +240,11 @@
 		<sect2 status="draft"><title>Exporting images</title>
 			<para>Your changes to an image are not saved as in a regular image editor. darktable is a non destructive editor which means all your changes are stored in a database and the original image is untouched      			and therefore you need to export your images to get an <quote>image</quote> file to distribute with your special processing.</para>
 			<para>Images are exported from lighttable using the export module in the right panel. In general, export means: save my developed RAW image as a JPEG.</para>
-			<para>The export is also modularized into storage and format. darktable is shipping several storage modules such as save on disk, picasa and flickr webalbum and more.
+			<para>The export is modularized into storage and format. darktable is shipping several storage modules such as save on disk, picasa and flickr webalbum and more.
 				Format modules are the actual image formats such as JPEG, PNG, TIFF, OpenEXR and more.
 			</para>
-			<para>Select images on your lighttable that you want to export, then choose your target storage and format to use and set the maximum width and height image restraint, this means that 
-                              none of the images will be bigger than any of the width/height restraint. Leave the width and height restraint as zero value if you want the original resolution and hit the export button.
+			<para>Select images on your lighttable that you want to export, then choose your target storage and format to use and set the maximum width and height image restraint. This means that 
+                              none of the images will be bigger than any of the width/height restraint. Leave the width and height restraint as zero if you want the original resolution and hit the export button.
 			</para>
 
 		</sect2>

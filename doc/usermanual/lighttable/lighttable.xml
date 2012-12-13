@@ -27,7 +27,7 @@
 					<tbody>
 						<row>
 							<entry>In the central view, your images are shown as thumbs; each thumb has a frame and while the mouse is over
-								an image, the information of rating, color labels and if image is altered in darkroom
+								an image, the information of rating, color labels and if image has already been altered in darkroom
 								<inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/> is shown.
 								Also when the mouse hovers over an image frame the specific image metadata is shown in the metadata panel.
 							</entry>
@@ -87,8 +87,7 @@
 		</sect2>
 		<sect2 status="draft"><title>Filtering and sort order</title>
 			<para>The filtering and sort order of images on lighttable are accessed and changed in the top bar
-				where you can select among a few predefined filters and ordering like date, color labels or rating
-				among others.
+				where you can select among a few predefined filters and ordering like date, color labels or rating.
 			</para>
 		</sect2>
 
