@@ -120,7 +120,10 @@ void init_presets (dt_iop_module_so_t *self)
   for(int i=0;i<noiseprofile_cnt;i++)
   {
     dt_gui_presets_add_generic(_(noiseprofiles[i].name), self->op, self->version(), &noiseprofiles[i].params, sizeof(dt_iop_nlmeans_params_t), 1);
-    // TODO: apply show only for matching cameras constraint. auto-apply only with enabled=false i guess.
+    // show only for matching cameras.
+    dt_gui_presets_update_mml(_(noiseprofiles[i].name), self->op, self->version(), noiseprofiles[i].maker, noiseprofiles[i].model, "%");
+    dt_gui_presets_update_filter(_(noiseprofiles[i].name), self->op, self->version(), 1);
+    // TODO: maybe use iso setting as well.
   }
 }
 
