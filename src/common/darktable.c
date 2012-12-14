@@ -55,7 +55,9 @@
 #include <sys/param.h>
 #include <unistd.h>
 #include <locale.h>
+#ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
+#endif
 
 #if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__DragonFly__)
 #include <malloc.h>
