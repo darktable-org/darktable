@@ -1,5 +1,18 @@
 #!/bin/bash
-NP=~/vcs/darktable/tools/noise/noiseprofile
+
+# grab path to our binary (have to call it with full path in the directory where your pictures are):
+path=${0%/*}
+# find the compiled executable there (run ./build.sh in that directory if it's not there)
+NP=$path/noiseprofile
+
+
+if [ ! -x $NP ]
+then
+  echo "*** couldn't find noise profiling binary, please do the following:"
+  echo "cd $path"
+  echo "./build.sh"
+  exit 1
+fi
 
 # clear file
 > presets.txt
@@ -56,6 +69,8 @@ EOF
  b=$(cat ${i%pfm}fit | cut -f5 -d' ')
 
  echo "{N_(\"${cam} ${iso}\"),       \"\",      \"\",              0, 0,         {1.0f, 1.0f, {$a, $a, $a}, {$b, $b, $b}}}," >> presets.txt
+ # TODO: use $path/floatdump to instert test preset, like
+ # TODO: echo "insert into presets values(1,1, \"X`echo 1.35f | $path/floatdump`\")" | sqlite3 /tmp/test.db
  
 done
 
