@@ -3,19 +3,17 @@
 
 EAPI="5"
 
-inherit cmake-utils eutils git-2 gnome2-utils toolchain-funcs
+inherit cmake-utils toolchain-funcs gnome2-utils git-2 eutils
+
+EGIT_REPO_URI="git://github.com/darktable-org/darktable.git"
 
 DESCRIPTION="A virtual lighttable and darkroom for photographers"
 HOMEPAGE="http://www.darktable.org/"
-EGIT_REPO_URI="git://github.com/darktable-org/darktable.git"
-
-EGIT_BRANCH="master"
-EGIT_COMMIT="master"
 
 LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
-IUSE="colord facebook flickr geo gnome-keyring gphoto2 kde nls opencl openmp +rawspeed +slideshow"
+KEYWORDS=""
+IUSE="colord facebook flickr geo gnome-keyring gphoto2 graphicsmagick jpeg2k kde nls opencl openmp +rawspeed +slideshow"
 
 RDEPEND="
 	dev-db/sqlite:3
@@ -27,6 +25,8 @@ RDEPEND="
 	gnome-keyring? ( gnome-base/gnome-keyring )
 	gnome-base/librsvg:2
 	gphoto2? ( media-libs/libgphoto2 )
+	graphicsmagick? ( media-gfx/graphicsmagick )
+	jpeg2k? ( media-libs/openjpeg )
 	kde? (
 		dev-libs/dbus-glib
 		kde-base/kwalletd
@@ -60,27 +60,30 @@ pkg_pretend() {
 
 src_prepare() {
 	base_src_prepare
-	sed -i -e "s:\(/share/doc/\)darktable:\1${PF}:" \
-		-e "s:LICENSE::" doc/CMakeLists.txt || die
+	sed -e "s:\(/share/doc/\)darktable:\1${PF}:" \
+		-e "s:LICENSE::" \
+		-i doc/CMakeLists.txt || die
 }
 
 src_configure() {
-	mycmakeargs=(
+	local mycmakeargs=(
 		$(cmake-utils_use_use colord COLORD)
 		$(cmake-utils_use_use facebook GLIBJSON)
 		$(cmake-utils_use_use flickr FLICKR)
 		$(cmake-utils_use_use geo GEO)
 		$(cmake-utils_use_use gnome-keyring GNOME_KEYRING)
 		$(cmake-utils_use_use gphoto2 CAMERA_SUPPORT)
+		$(cmake-utils_use_use graphicsmagick GRAPHICSMAGICK)
+		$(cmake-utils_use_use jpeg2k OPENJPEG)
 		$(cmake-utils_use_use kde KWALLET)
 		$(cmake-utils_use_use nls NLS)
 		$(cmake-utils_use_use opencl OPENCL)
 		$(cmake-utils_use_use openmp OPENMP)
 		$(cmake-utils_use !rawspeed DONT_USE_RAWSPEED)
 		$(cmake-utils_use_build slideshow SLIDESHOW)
+		-DCUSTOM_CFLAGS=ON
 		-DINSTALL_IOP_EXPERIMENTAL=ON
 		-DINSTALL_IOP_LEGACY=ON
-		-DCUSTOM_CFLAGS=ON
 	)
 	cmake-utils_src_configure
 }
