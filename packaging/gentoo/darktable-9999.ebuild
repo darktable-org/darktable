@@ -3,7 +3,7 @@
 
 EAPI="5"
 
-inherit cmake-utils toolchain-funcs gnome2-utils git-2 eutils
+inherit cmake-utils toolchain-funcs gnome2-utils git-2
 
 EGIT_REPO_URI="git://github.com/darktable-org/darktable.git"
 
