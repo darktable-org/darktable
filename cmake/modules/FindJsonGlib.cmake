@@ -23,9 +23,14 @@ find_library(JsonGlib_LIBRARY
   PATHS ${JsonGlib_PKGCONF_LIBRARY_DIRS}
 )
 
-# Set the include dir variables and the libraries and let libfind_process do the rest.
-# NOTE: Singular variables for this library, plural for libraries this this lib depends on.
-set(JsonGlib_PROCESS_INCLUDES JsonGlib_INCLUDE_DIR)
-set(JsonGlib_PROCESS_LIBS JsonGlib_LIBRARY)
-libfind_process(JsonGlib)
+if(JsonGlib_PKGCONF_FOUND)
+  # Set the include dir variables and the libraries and let libfind_process do the rest.
+  # NOTE: Singular variables for this library, plural for libraries this this lib depends on.
+  set(JsonGlib_PROCESS_INCLUDES JsonGlib_INCLUDE_DIRS)
+  set(JsonGlib_PROCESS_LIBS JsonGlib_LIBRARIES)
+  libfind_process(JsonGlib)
+else(JsonGlib_PKGCONF_FOUND)
+  set(USE_GLIBJSON, off)
+  set(JsonGlib_FOUND, off)
+endif(JsonGlib_PKGCONF_FOUND)
 
