@@ -4,6 +4,17 @@
 path=${0%/*}
 # find the compiled executable there (run ./build.sh in that directory if it's not there)
 NP=$path/noiseprofile
+database=/tmp/noiseprofiletest.db
+copyfrom=~/.config/darktable/library.db
+echo "copying library.db for testing purposes to ${database}"
+if [ ! -e $copyfrom ]
+then
+  echo "*** please run darktable at least once to create an initial library"
+  echo "*** or copy some valid library to ${database} manualy before running."
+  echo "*** this is needed so we can setup a testing environment for your new presets."
+  exit 1
+fi
+cp ${copyfrom} ${database}
 
 
 if [ ! -x $NP ]
@@ -11,7 +22,7 @@ then
   echo "*** couldn't find noise profiling binary, please do the following:"
   echo "cd $path"
   echo "./build.sh"
-  exit 1
+  exit 2
 fi
 
 # clear file
@@ -69,8 +80,21 @@ EOF
  b=$(cat ${i%pfm}fit | cut -f5 -d' ')
 
  echo "{N_(\"${cam} ${iso}\"),       \"\",      \"\",              0, 0,         {1.0f, 1.0f, {$a, $a, $a}, {$b, $b, $b}}}," >> presets.txt
- # TODO: use $path/floatdump to instert test preset, like
- # TODO: echo "insert into presets values(1,1, \"X`echo 1.35f | $path/floatdump`\")" | sqlite3 /tmp/test.db
- 
+ # use $path/floatdump to instert test preset, like
+ bin1=$(echo 1.0f | $path/floatdump)
+ bina=$(echo $a | $path/floatdump)
+ binb=$(echo $b | $path/floatdump)
+ # schema for this table is:
+ # CREATE TABLE presets (name varchar, description varchar, operation varchar, op_version integer, op_params blob, enabled integer, blendop_params blob, model varchar, maker varchar, lens varchar, iso_min real, iso_max real, exposure_min real, exposure_max real, aperture_min real, aperture_max real, focal_length_min real, focal_length_max real, writeprotect integer, autoapply integer, filter integer, def integer, isldr integer, blendop_version integer);
+ echo "insert into presets values ('test ${cam} ${iso}', '', 'denoiseprofile', 1, X'${bin1}${bin1}${bina}${bina}${bina}${binb}${binb}${binb}', 1, X'00', '', '', '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4);" | sqlite3 ${database}
 done
 
+echo ""
+echo "* all done! i inserted your new presets for you to test into ${database}."
+echo "* to test them locally, run:"
+echo ""
+echo "  darktable --library ${database}"
+echo ""
+echo "* if you're happy with the results, post presets.txt to us."
+echo "* if not, probably something went wrong. it's probably a good idea to get in touch"
+echo "* so we can help you sort it out."
