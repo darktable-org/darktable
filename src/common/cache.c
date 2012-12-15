@@ -868,7 +868,8 @@ dt_cache_remove(dt_cache_t *cache, const uint32_t key)
   return 1;
 }
 
-#if 0
+#define DT_CACHE_BFL
+#ifdef DT_CACHE_BFL
 // debug helper functions, in case we want a big fat lock for dt_cache_gc():
 static int
 dt_cache_remove_no_lru_lock(dt_cache_t *cache, const uint32_t key)
@@ -899,19 +900,12 @@ dt_cache_remove_no_lru_lock(dt_cache_t *cache, const uint32_t key)
         dt_cache_unlock(&segment->lock);
         return 1;
       }
-      void *rc = curr_bucket->data;
-      const int32_t cost = curr_bucket->cost;
       remove_key(cache, segment, start_bucket, curr_bucket, last_bucket, hash);
       if(cache->optimize_cacheline)
         optimize_cacheline_use(cache, segment, curr_bucket);
       // put back into unused part of the cache: remove from lru list.
       dt_cache_unlock(&segment->lock);
       lru_remove(cache, curr_bucket);
-      // clean up the user data
-      if(cache->cleanup)
-        cache->cleanup(cache->cleanup_data, key, rc);
-      // keep track of cost
-      add_cost(cache, -cost);
       // fprintf(stderr, "[cache remove] freeing %d for %u\n", cost, key);
       return 0;
     }
@@ -955,13 +949,19 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     fprintf(stderr, "[cache gc] current cost: %u/%u\n", cache->cost, cache->cost_quota);
   }
 #endif
+#ifdef DT_CACHE_BFL
   // sorry, bfl
-  // dt_cache_lock(&cache->lru_lock);
+  dt_cache_lock(&cache->lru_lock);
+#endif
   int32_t curr;
   // get least recently used bucket
+#ifdef DT_CACHE_BFL
+  curr = cache->lru;
+#else
   dt_cache_lock(&cache->lru_lock);
   curr = cache->lru;
   dt_cache_unlock(&cache->lru_lock);
+#endif
   int i = 0;
   // while still too full:
   while(cache->cost > fill_ratio * cache->cost_quota)
@@ -977,6 +977,9 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
         // dt_cache_unlock(&cache->lru_lock);
         // fprintf(stderr, "[cache gc] failed to free space!\n");
         // dt_cache_print_locked(cache);
+#ifdef DT_CACHE_BFL
+        dt_cache_unlock(&cache->lru_lock);
+#endif
         return 1;
       }
       break;
@@ -991,19 +994,28 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     // in the very unlikely case the bucket in question got just removed,
     // and the lru not cleaned up yet, but another image already occupies that slot...
     // it will be read locked and we go on. very worst case we clean up the wrong image.
+#ifdef DT_CACHE_BFL
+    const int err = dt_cache_remove_bucket_no_lru_lock(cache, curr);
+#else
     const int err = dt_cache_remove_bucket(cache, curr);
-    // =const int err = dt_cache_remove_bucket_no_lru_lock(cache, curr);
+#endif
     if(err)
     {
       // fprintf(stderr, "[cache gc] remove failed %d\n", err);
       // in case we failed, try next entry
+#ifdef DT_CACHE_BFL
+      curr = cache->table[curr].mru;
+#else
       dt_cache_lock(&cache->lru_lock);
       curr = cache->table[curr].mru;
       dt_cache_unlock(&cache->lru_lock);
+#endif
     }
     i++;
   }
-  // dt_cache_unlock(&cache->lru_lock);
+#ifdef DT_CACHE_BFL
+  dt_cache_unlock(&cache->lru_lock);
+#endif
 #if 0
   if(cache->bucket_mask <= 4)
   {
