@@ -128,7 +128,6 @@ error:
   if(image) DestroyImage(image);
   if(image_info) DestroyImageInfo(image_info);
   DestroyExceptionInfo(&exception);
-  DestroyMagick();
   return err;
 }
 #endif
