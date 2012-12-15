@@ -16,15 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
-const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
+#include "common.h"
 
 
-int
-FC(const int row, const int col, const unsigned int filters)
-{
-  return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
-}
 
 // FC return values are either 0/1/2/3 = G/M/C/Y or 0/1/2/3 = R/G1/B/G2
 #define FCV(val, col) ((col == 0) ? val.x : ((col & 1) ? val.y : val.z) )
@@ -292,8 +286,6 @@ clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out, const int wi
   write_imagef (out, (int2)(x, y), color);
 }
 
-
-#define MIN(a,b)      ((a) < (b) ? (a) : (b))
 
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
