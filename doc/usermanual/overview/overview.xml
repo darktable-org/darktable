@@ -98,7 +98,7 @@
 			<para>darktable consists of several views also mentioned as modes. For the time being, there are four available views as described
 				in this section. The current view is identified by the label at the top of the right panel.
 				Some key accelerators, allowing to access the different views, are described in the table below:
-				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<informaltable frame="none" width="60%"><tgroup cols="2" colsep="0" rowsep="0">
 						<colspec colwidth='1*'/>
 						<colspec colwidth='9*'/>
 						<tbody>
