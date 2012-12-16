@@ -1008,7 +1008,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->frame_offset, _("frame line offset"));
   dt_bauhaus_slider_set_format(g->frame_offset, "%.2f%%");
   g_signal_connect (G_OBJECT (g->frame_offset), "value-changed", G_CALLBACK (frame_offset_callback), self);
-  g_object_set(G_OBJECT(g->frame_offset), "tooltip-text", _("offset of the frame line begining on picture side"), (char *)NULL);
+  g_object_set(G_OBJECT(g->frame_offset), "tooltip-text", _("offset of the frame line beginning on picture side"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), g->frame_offset, TRUE, TRUE, 0);
 
   GtkWidget *box = gtk_hbox_new(FALSE, 0);

@@ -353,7 +353,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data)
 
   // Storage structure
   gtk_box_pack_start(GTK_BOX(data->settings.page),dtgtk_label_new(_("storage structure"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT),FALSE,FALSE,0);
-  GtkWidget *l=gtk_label_new(_("the following three settings describe the directory structure and file renaming for import storage and images; if you dont know how to use this, keep the default settings."));
+  GtkWidget *l=gtk_label_new(_("the following three settings describe the directory structure and file renaming for import storage and images; if you don't know how to use this, keep the default settings."));
   gtk_label_set_line_wrap(GTK_LABEL(l),TRUE);
   gtk_widget_set_size_request(l,400,-1);
   gtk_misc_set_alignment(GTK_MISC(l), 0.0, 0.0);
