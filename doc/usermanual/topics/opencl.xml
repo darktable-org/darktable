@@ -1,0 +1,89 @@
+<sect1 status="draft"><title>darktable and OpenCL</title>
+	<para>darktable can use GPU acceleration via OpenCL to improve performance.</para>
+
+	<sect2><title>The Background</title>
+		<para>Processing high resolution images belongs to the more demanding tasks in modern computing. Both, in terms of memory requirements and in terms of CPU power, getting the best out of a typical 15, 20 or 25 Megapixel 				image can quickly bring your computer to its limits.</para>
+
+		<para>darktable’s requirements are no exception. Our decision to not compromise processing quality, has led to all calculations being done on 4 × 32bit floating point numbers. This is slower than “ordinary” 8 or 16bit 				integer algebra, but eliminates all problems of tonal breaks or loss of information.</para>
+
+		<para>A lot of hand optimization has been invested to make darktable as fast as possible. If you run a current version of darktable on a modern computer, you might not even notice any “slowness”. However, there are 				conditions and certain modules where you feel (or hear from the howling of your CPU fan) how much your poor multi-core processor has to struggle.</para>
+
+		<para>That’s where OpenCL comes in. OpenCL allows us to take advantage of the enormous power of modern graphics cards. It has been gamer’s demand for more and more highly detailed 3D worlds in modern ego shooters, that 				has fostered GPU development. ATI, NVIDIA and Co had to put enormous FPU processing power into their GPUs to meet these demands. The result is modern graphics cards with highly parallelized GPUs to quickly 				calculate surfaces and textures at high frame rates.</para>
+
+		<para>You are not a gamer and you don’t take advantage of that power? Well, then you should at least use it in darktable! For the task of highly parallel floating point calculations modern GPUs are much faster than 				CPUs. That is especially true, when you want to do the same few processing steps over millions of items. Typical use case: processing of megapixel images.</para>
+	</sect2>
+
+	<sect2><title>How OpenCL works</title>
+		<para>As you can imagine, hardware architectures of GPUs can vary significantly. There are different producers, and even different generations of GPUs from the same producer may differ clearly. At the same time GPU 			manufacturers are normally not willing to disclose many hardware details of their products to the public. One of the known consequences is the need to use proprietary drivers under Linux, if you want to take full 			advantage of your graphics card.</para>
+
+		<para>Fortunately an industry consortium lead by The Khronos Group has developed an open, standardized interface called OpenCL. It eases the use of your GPU as a numerical processing device. OpenCL offers a C99-like 		programming language with a strong focus on parallel computing. An application that wants to use OpenCL will need to bring along a suited OpenCL source code that it then hands over to a hardware specific OpenCL 			compiler at run-time. This way the application can use OpenCL on different GPU architectures (even at the same time). All “hardware secrets” are hidden in this compiler and are normally not visible to the user (or the 			application). The compiled OpenCL code is loaded onto your GPU and - with certain API calls - it is ready to do calculations for you.</para>
+	</sect2>
+
+	<sect2><title>How to activate OpenCL in darktable</title>
+		<para>Using OpenCL in darktable requires that your PC is equipped with a suitable graphics card and that it has the required libraries in place. Namely modern graphics cards from NVIDIA and ATI come with full OpenCL 		support. The OpenCL compiler is normally shipped as part of the proprietary graphics driver; it is reachable as a dynamic library called “libOpenCL.so”. This library must be in a folder where it is found by your 			system’s dynamic linker.</para>
+
+		<para>When darktable starts, it will first try to find and load libOpenCL.so and – on success – check if the available graphics card comes with OpenCL support. A sufficient amount of graphics memory (1GB+) needs to be 			available to take advantage of the GPU. If that is OK, darktable tries to setup its OpenCL environment: a processing context needs to be initialized, a calculation pipeline to be started, OpenCL source code files 			(extension is .cl) need to be read and compiled and the included routines (called OpenCL kernels) need to be prepared for darktablele’s modules. If all that is done, the preparation is finished.</para>
+
+		<para>Per default OpenCL support is activated in darktable if all the above steps were successful. If you want to de-activate it you can do so in "core options" by unchecking "activate opencl support". This
+                configuration parameter also tells you if OpenCL initialization failed: it is grayed out in that case.</para>
+
+		<para>You can at any time switch OpenCL support off and on; this will take immediate action. Depending on the type of modules you are using, you will notice the effect as a general speed-up during interactive work and 			during export. Most modules in darktable can take advantage of OpenCL but not all modules are demanding enough to make a noticeable difference. In order to feel a real difference, take modules like "shadows and 			highlights", "sharpen", "lowpass", "highpass" or as an extreme case "equalizer".</para>
+
+		<para>If you are interested in profiling figures, you can call darktable with command line parameters -d opencl -d perf. After each run of the pixelpipe you will get a detailed allocation of processing time to each   			module plus an even more fine grained profile for all used OpenCL kernels.</para>
+
+		<para>Besides the speed-up you should not see any difference in the results between CPU and GPU processing. Except of rounding errors, the results are designed to be identical. If, for some reasons, darktable fails to 			properly finish a GPU calculation, it will normally notice and automatically (and transparently) fall back to CPU processing.</para>
+	</sect2>
+
+	<sect2><title>Possible Problems and Solutions</title>
+		<para>darktable will detect OpenCL run-time problems automatically. It will then reprocess everything on CPU; only speed is affected, the final result should not be endangered.</para>
+
+		<para>There can be various reasons why OpenCL could fail during initialization phase. We depend on hardware requirements and on the presence of certain drivers and libraries. In addition all these have to fit in terms 			of maker model and revision number. If anything does not fit, e.g. your graphics driver (loaded as a kernel module) does not match the version of your libOpenCL.so, OpenCL support is likely not available.</para>
+
+		<para>In that case, the best thing to do is start darktable from a console with
+		    <programlisting>
+			darktable –d opencl
+		    </programlisting>
+		This will give additional debugging output about the initialization and use of OpenCL. First see if you find a line that starts with "[opencl_init] FINALLY …" This should tell you, if OpenCL support is available 			for you or not. If initialization failed, look at the messages above for anything that reads like "could not be detected" or "could not be created". Check if there is a hint about where it failed.</para>
+
+		<para>Here are a few cases observed in the past:</para>
+
+		<para>darktable might tell you that no OpenCL aware graphics card is detected or that the available memory on your GPU is too low and the device is discarded. In that case you might need to buy a new card, 
+                if you really want OpenCL support.</para>
+
+                <para>darktable might find your libOpenCL.so but then tell you that it couldn't get a platform. NVIDIA drivers will often give error code -1001 in that case. This happens because libOpenCL.so is only a
+                wrapper library. For the real work further libraries - specific to vendor, device and driver - need to be loaded. This failed for some reason. There is a structure of files in /etc/OpenCL on your system 
+                that libOpenCL.so consults to find these libraries. Check if you find something fishy in there and try to fix it. Often the needed libraries cannot be found by your system's dynamic loader. Giving full path 
+                names might help.</para>
+
+		<para>darktable might also tell you that a context could not be created. This often indicates a version mismatch between (loaded) graphics driver and libOpenCL. Check if you have left-over kernel modules or
+                graphics libraries of an older install and take appropriate action. In doubt, make a clean reinstall of your graphics driver. Sometimes, immediately after a driver update, the loaded kernel driver does not 
+                match the newly installed libraries: reboot your system in that case.</para>
+
+		<para>darktable might crash in very rare cases directly during startup. This can happen if your OpenCL setup is completely broken or if driver/library contains a severe bug. If you can’t fix it, you can 
+                still use darktable with option --disable-opencl, which will skip the entire OpenCL initialization step.</para>
+
+		<para>darktable might on some systems fail to compile its OpenCL source files at run-time. In that case you will get a number of error messages looking like typical compiler errors. This could indicate 
+                an incompatibility between your OpenCL implementation and our interpretation of the standard. In that case visit us at darktable-devel@sourceforge.net and report the problem. Chances are good that we can 
+                help you. Please also report in case you see significant differences between CPU and GPU processing of an image!</para>
+
+		<para>There also exist a few on-CPU implementations of OpenCL. These come as drivers provided by INTEL or AMD. We observed that they do not give us any speed gain versus our hand-optimized CPU code. Therefore 
+                we simply discard these devices.</para>
+	</sect2>
+
+        <sect2><title>OpenCL still does not run for me!</title>
+		<para>As has been said before OpenCL systems come with a huge variety of setups: different gpu manufacturers, different gpu models, varying amounts of gpu memory, different drivers,
+		different distributions etc. Many of the potential problems will only appear with a very specific combination of those factors.</para>
+
+		<para>As we developers of darktable on our computers only have access to a small fraction of those variations, please understand that we might not be able to fix your specific problem.
+		There is not much we can do, if there is no way for us to reproduce.</para>
+
+		<para>If nothing else helps, the best option might be to start darktable with
+			<programlisting>
+				darktable --disable-opencl
+			</programlisting>
+		In the end there is nothing in darktable which only runs on gpu. Don't let OpenCL discourage you; also darktable's cpu code is highly optimized and performant!</para>
+	</sect2>
+
+</sect1>
+
+

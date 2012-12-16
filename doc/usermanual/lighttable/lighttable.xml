@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <chapter>
 	<chapterinfo>
 		<keywordset>
@@ -20,12 +22,12 @@
 		<para></para>
 		<sect2 status="final"><title>Lighttable</title>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth='70%'/>
+					<colspec colwidth="6*"/>
 					<colspec colwidth='5cm'/>
 					<tbody>
 						<row>
 							<entry>In the central view, your images are shown as thumbs; each thumb has a frame and while the mouse is over
-								an image, the information of rating, color labels and if image is altered in darkroom
+								an image, the information of rating, color labels and if image has already been altered in darkroom
 								<inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/> is shown.
 								Also when the mouse hovers over an image frame the specific image metadata is shown in the metadata panel.
 							</entry>
@@ -78,19 +80,60 @@
 			in a row. That action is a key accelerator of the counter that can be found beside the filemanager option.
 			Use your mouse wheel to navigate through your collection.
 			</para>
-			<para>While in filemanager mode, by pressing <emphasis>&uarr;/&darr;</emphasis> you can scroll (not select) up and down through your collection.
-				In zoomable lighttable <emphasis>&larr;/&rarr;/&uarr;/&darr;</emphasis> allow you to move left/right/up/down through your collection.
+			<para>While in filemanager mode, by pressing &uarr;/&darr; you can scroll (not select) up and down through your collection.
+				In zoomable lighttable &larr;/&rarr;/&uarr;/&darr; allow you to move left/right/up/down through your collection.
 				Pressing <emphasis>g</emphasis> goes to the top, <emphasis>shift-g</emphasis> to the bottom.
 			</para>
 		</sect2>
 		<sect2 status="draft"><title>Filtering and sort order</title>
 			<para>The filtering and sort order of images on lighttable are accessed and changed in the top bar
-				where you can select among a few predefined filters and ordering like date, color labels or rating
-				among others.
+				where you can select among a few predefined filters and ordering like date, color labels or rating.
 			</para>
 		</sect2>
+
+		<sect2 status="draft"><title>Image grouping</title>
+			<para>Image grouping helps you to improve structure and clearness of your image collection as 
+                              displayed in lighttable view.
+			</para>
+                        <para>You can combine images into a group by selecting them and then 
+                              clicking button "group" in panel <emphasis>selected image(s)</emphasis> or by typing 
+                              <emphasis>ctrl-g</emphasis>. Likewise you can remove images from a group by clicking
+                              button "ungroup" or typing <emphasis>shift-ctrl-g</emphasis>. Images that you generate by 
+                              duplicating an existing one, will automatically constitute an image group. If you import 
+                              images from file system or camera, images which have the same base name but different 
+                              extensions will form a group (eg. IMG_1234.CR2 and IMG_1234.JPG). Images which are members
+                              of a group are labelled with a symbol "G" in their thumbnails. 
+                        </para>
+                        <para>With button <inlinegraphic  fileref="images/lighttable_icon_group.png" scalefit="1" width="2%"/> 
+                              in the top panel of lightroom mode you toggle grouping mode on and off.
+                        </para>
+                        <para>If grouping is <emphasis>off</emphasis> each image is displayed as an individual thumb.
+                        </para>
+                        <para>If grouping is <emphasis>on</emphasis> images of a group are by default collapsed, which means they are 
+                              represented by one thumbnail.
+                              The image you see is called the group head. If you press symbol "G" in the thumbnail of a group, only this
+                              group gets expanded; if another group was expanded at that time it gets collapsed. To collapse an expanded 
+                              group again, just click on symbol "G" of its group head.
+                        </para>
+                        <para>You can define which image constitutes the group head. When you are in expanded view of a group, 
+                              just go to the thumbnail of the desired image and click on the symbol "G" within that thumb.
+                        </para>
+                        <para>If you are in collapsed view and enter darkroom mode with an image group (eg. by 
+                              double-clicking on the thumbnail) only the group head will be opened.
+                        </para>
+                        <para>his is a convenient way to protect an existing history stack against unintentional changes. Suppose you have 
+                              just finalized an image; all you need to do now is generate a duplicate and make sure grouping is
+                              switched on and the group is collapsed. Whenever you open the image group again in darkroom and do 
+                              further changes, only the group head will be altered. The underlying duplicate remains unchanged. 
+                              Please note that duplicating images only means that a second copy of your history stack and a second small 
+                              XMP file is generated. There still is only one RAW file, so you don't waste a lot of disk space.
+                        </para>
+		</sect2>
+
+
 	</sect1>
 
 	<!-- Panels -->
 	<xi:include href="panels/panels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </chapter>
+

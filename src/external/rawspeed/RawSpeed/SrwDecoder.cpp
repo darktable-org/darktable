@@ -59,7 +59,7 @@ RawImage SrwDecoder::decodeRawInternal() {
     map<string,string>::iterator msb_hint = hints.find("msb_override");
     if (msb_hint != hints.end())
       bit_order = (0 == (msb_hint->second).compare("true"));
-    this->decodeUncompressed(raw, bit_order);
+    this->decodeUncompressed(raw, bit_order ? BitOrder_Jpeg : BitOrder_Plain);
     return mRaw;
   }
 
@@ -69,7 +69,7 @@ RawImage SrwDecoder::decodeRawInternal() {
     map<string,string>::iterator msb_hint = hints.find("msb_override");
     if (msb_hint != hints.end())
       bit_order = (0 == (msb_hint->second).compare("true"));
-    this->decodeUncompressed(raw, bit_order);
+    this->decodeUncompressed(raw, bit_order ? BitOrder_Jpeg : BitOrder_Plain);
     return mRaw;
   }
   ThrowRDE("Srw Decoder: Unsupported compression");

@@ -529,6 +529,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   free(weight);
 error:
   dt_control_backgroundjobs_destroy(darktable.control, jid);
+  dt_control_queue_redraw_center();
   return 0;
 }
 
@@ -553,6 +554,7 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
   dt_control_backgroundjobs_destroy(darktable.control, jid);
+  dt_control_queue_redraw_center();
   return 0;
 }
 
@@ -576,6 +578,7 @@ int32_t dt_control_flip_images_job_run(dt_job_t *job)
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
   dt_control_backgroundjobs_destroy(darktable.control, jid);
+  dt_control_queue_redraw_center();
   return 0;
 }
 
@@ -601,7 +604,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   sqlite3_stmt *stmt = NULL;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id in (select imgid from selected_images)", -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
+  while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     list = g_list_append(list, g_strdup((const gchar *)sqlite3_column_text(stmt, 0)));
   }
@@ -623,9 +626,9 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
     dt_image_synch_all_xmp(imgname);
     list = g_list_delete_link(list, list);
   }
-  g_list_free(list);
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
+  dt_control_queue_redraw_center();
   return 0;
 }
 
@@ -700,6 +703,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   g_list_free(list);
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
+  dt_control_queue_redraw_center();
   return 0;
 }
 
@@ -1049,6 +1053,7 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
   dt_collection_update(darktable.collection);
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
+  dt_control_queue_redraw_center();
   return 0;
 }
 

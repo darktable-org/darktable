@@ -832,7 +832,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 3, sizeof(int), &height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 4, sizeof(uint32_t), (void*)&data->filters);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 5, sizeof(float), (void*)&data->median_thrs);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 6, sizeof(uint32_t), (void*)&one);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 6, sizeof(int), (void*)&one);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_pre_median, sizes);
       if(err != CL_SUCCESS) goto error;
 
@@ -900,12 +900,14 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     if(data->median_thrs > 0.0f)
     {
+      const int one = 1;
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 0, sizeof(cl_mem), &dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 1, sizeof(cl_mem), &dev_tmp);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 2, sizeof(int), &width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 3, sizeof(int), &height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 4, sizeof(uint32_t), (void*)&data->filters);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 5, sizeof(float), (void*)&data->median_thrs);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 6, sizeof(int), (void*)&one);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_pre_median, sizes);
       if(err != CL_SUCCESS) goto error;
 
@@ -964,7 +966,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   else
   {
     // sample half-size image:
-    int zero = 0;
+    const int zero = 0;
     cl_mem dev_pix = dev_in;
     if(piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT && data->median_thrs > 0.0f)
     {
@@ -980,7 +982,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 3, sizeof(int), &height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 4, sizeof(uint32_t), (void*)&data->filters);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 5, sizeof(float), (void*)&data->median_thrs);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 6, sizeof(uint32_t), (void*)&zero);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 6, sizeof(int), (void*)&zero);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_pre_median, sizes);
       if(err != CL_SUCCESS) goto error;
       dev_pix = dev_tmp;
@@ -1104,14 +1106,16 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
 
-  float ioratio = (float)roi_out->width*roi_out->height/((float)roi_in->width*roi_in->height);
-  float smooth = data->color_smoothing ? ioratio : 0.0f;
+  const int qual = get_quality();
+  const float ioratio = (float)roi_out->width*roi_out->height/((float)roi_in->width*roi_in->height);
+  const float smooth = data->color_smoothing ? ioratio : 0.0f;
 
   tiling->factor = 1.0f + ioratio;
 
   if(roi_out->scale > 0.99999f && roi_out->scale < 1.00001f)
     tiling->factor += fmax(0.25f, smooth);
-  else if(roi_out->scale > 0.5f)
+  else if(roi_out->scale > 0.5f || 
+          (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) || (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))
     tiling->factor += fmax(1.25f, smooth);
   else
     tiling->factor += fmax(0.25f, smooth);

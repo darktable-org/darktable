@@ -13,11 +13,11 @@
 </screenshot>
 
 <sect1><title>Overview</title>
-	<para>In darkroom you are in develop mode for the specific image; here you have a lot of tools (named module) to
+	<para>In darkroom you are in develop mode for the specific image; here you have a lot of tools (named modules) to
 		develop you image.
 	</para>
-	<para>On the left side you have the navigation, snapshots and history panels, each of them being described below; 
-	in the right panel you can see the histogram and then a list of available modules to use when working with your image. 
+	<para>On the left side you have the navigation, snapshots and history panels, each of them being described below. 
+	In the right panel you can see the histogram and then a list of available modules to use when working with your image. 
 	At the bottom of the right panel you can enable/disable view of individual modules.
 	</para>
 	<para>Since darktable 0.6.1, modules are grouped into four groups: basic, color, correct, effect.
@@ -33,15 +33,16 @@
 	<para>You can use <emphasis>middle-click</emphasis>  to zoom 1:1. A double <emphasis>middle-click</emphasis>  takes you to 2:1.
 	</para>
 
-	<para>You can export directly from the darkroom by using <emphasis>ctrl-e</emphasis> shortcut. Parameters are those currently selected in lighttable.</para>
+	<para>You can export directly from the darkroom by using <emphasis>ctrl-e</emphasis> shortcut. Export parameters are those currently selected in lighttable.</para>
 
 </sect1>
 <sect1 status="draft"><title>Filmstrip</title>
-	<para>The filmstrip is used to quickly switch between image to develop in darkroom view, the images viewed are the same
-		as the ones in the lighttable view. 
+	<para>The filmstrip is used to quickly switch between images to develop in darkroom view, the images viewed are the same
+		as the ones in the lighttable view.
 	</para>
-	<para>The filmstrip can be switch on and off using <emphasis>ctrl-f</emphasis> shortcut.</para>
-
+	<para>The filmstrip can be switched on and off using <emphasis>ctrl-f</emphasis> shortcut. You can scroll with your mouse to quickly navigate
+              through the images. The height of the filmstrip panel can be changed by dragging the corresponding marker.</para>
+	<graphic fileref="darkroom/images/filmstrip.png" scalefit="1" width="80%" align="center" />
 
 </sect1>
 

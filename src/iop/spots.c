@@ -92,17 +92,28 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int i=0; i<d->num_spots; i++)
   {
     // convert from world space:
-    const int x  = (d->spot[i].x *piece->buf_in.width)/scale - roi_in->x, y  = (d->spot[i].y *piece->buf_in.height)/scale - roi_in->y;
-    const int xc = (d->spot[i].xc*piece->buf_in.width)/scale - roi_in->x, yc = (d->spot[i].yc*piece->buf_in.height)/scale - roi_in->y;
+    const int x  = (d->spot[i].x *piece->buf_in.width)/scale - roi_in->x;
+    const int y  = (d->spot[i].y *piece->buf_in.height)/scale - roi_in->y;
+    const int xc = (d->spot[i].xc*piece->buf_in.width)/scale - roi_in->x;
+    const int yc = (d->spot[i].yc*piece->buf_in.height)/scale - roi_in->y;
     const int rad = d->spot[i].radius * MIN(piece->buf_in.width, piece->buf_in.height)/scale;
-    const int um = MIN(rad, MIN(x, xc)), uM = MIN(rad, MIN(roi_in->width -1-xc, roi_in->width -1-x));
-    const int vm = MIN(rad, MIN(y, yc)), vM = MIN(rad, MIN(roi_in->height-1-yc, roi_in->height-1-y));
+    const int um = MIN(rad, MIN(x, xc));
+    const int uM = MIN(rad, MIN(roi_in->width-1-xc, roi_in->width-1-x));
+    const int vm = MIN(rad, MIN(y, yc));
+    const int vM = MIN(rad, MIN(roi_in->height-1-yc, roi_in->height-1-y));
     float filter[2*rad + 1];
     // for(int k=-rad; k<=rad; k++) filter[rad + k] = expf(-k*k*2.f/(rad*rad));
-    for(int k=-rad; k<=rad; k++)
+    if(rad > 0)
     {
-      const float kk = 1.0f - fabsf(k/(float)rad);
-      filter[rad + k] = kk*kk*(3.0f - 2.0f*kk);
+      for(int k=-rad; k<=rad; k++)
+      {
+        const float kk = 1.0f - fabsf(k/(float)rad);
+        filter[rad + k] = kk*kk*(3.0f - 2.0f*kk);
+      }
+    }
+    else
+    {
+      filter[0] = 1.0f;
     }
     for(int u=-um; u<=uM; u++) for(int v=-vm; v<=vM; v++)
       {

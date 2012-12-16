@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
-const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
+#include "common.h"
 
 
 /* This is highpass for Lab space. We only do invert/blur/mix on L and desaturate a and b */
@@ -46,8 +45,6 @@ highpass_hblur(read_only image2d_t in, write_only image2d_t out, global float *m
   const int y = get_global_id(1);
   float4 pixel = (float4)0.0f;
 
-  if(y >= height) return;
-
   /* read pixel and fill center part of buffer */
   pixel = read_imagef(in, sampleri, (int2)(x, y));
   buffer[rad + lid] = pixel.x;
@@ -72,7 +69,7 @@ highpass_hblur(read_only image2d_t in, write_only image2d_t out, global float *m
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  if(x >= width) return;
+  if(x >= width || y >= height) return;
 
   buffer += lid + rad;
   m += rad;
@@ -100,8 +97,6 @@ highpass_vblur(read_only image2d_t in, write_only image2d_t out, global float *m
   const int y = get_global_id(1);
   float4 pixel = (float4)0.0f;
 
-  if(x >= width) return;
-
   /* read pixel and fill center part of buffer */
   pixel = read_imagef(in, sampleri, (int2)(x, y));
   buffer[rad + lid] = pixel.x;
@@ -126,7 +121,7 @@ highpass_vblur(read_only image2d_t in, write_only image2d_t out, global float *m
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  if(y >= height) return;
+  if(x >= width || y >= height) return;
 
   buffer += lid + rad;
   m += rad;

@@ -1,8 +1,8 @@
 <sect2 status="final"><title>Cross-processing</title>
 	<sect3><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth='70%'/>
-					<colspec colwidth='30%'/>
+					<colspec colwidth="6*"/>
+					<colspec colwidth="4*"/>
 					<tbody>
 						<row>						
 							<entry>Cross-processing is a analog processing technique where slide film (normally developped thanks to an E6 solution) is processed in chemicals used

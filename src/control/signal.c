@@ -56,6 +56,8 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] =
 
   {"dt-collection-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                   // DT_SIGNAL_COLLECTION_CHANGED
   {"dt-filmrolls-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                          // DT_SIGNAL_FILMROLLS_CHANGED
+  {"dt-filmrolls-imported",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                    //DT_SIGNAL_FILMROLLS_IMPORTED
+  {"dt-filmrolls-removed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                    //DT_SIGNAL_FILMROLLS_REMOVED
 
 
   /* Develop related signals */
@@ -66,7 +68,7 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] =
   {"dt-develop-history-change",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},               // DT_SIGNAL_HISTORY_CHANGE
   {"dt-develop-image-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},        // DT_SIGNAL_DEVELOP_IMAGE_CHANGE
   {"dt-control-profile-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},               // DT_SIGNAL_CONTROL_PROFILE_CHANGED
-  {"dt-image-import",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_generic,1,uint_arg},               // DT_SIGNAL_CONTROL_PROFILE_CHANGED
+  {"dt-image-import",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__UINT,1,uint_arg},               // DT_SIGNAL_CONTROL_PROFILE_CHANGED
 };
 
 static  GType _signal_type;

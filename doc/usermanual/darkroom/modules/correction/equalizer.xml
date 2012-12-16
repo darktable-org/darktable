@@ -1,8 +1,8 @@
 <sect3 status="draft"><title>Equalizer</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>This versatile module can be used to achieve a variety
@@ -25,8 +25,8 @@
     scale. </para>
 
     <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>Each spline can be dragged with a proportional edit approach, use the mouse wheel to adjust the
@@ -43,8 +43,8 @@
 		</informaltable>
 
     <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>Drag the upper line (bright circles, here for the lightness channel) to affect local contrast. Pulling it up, as shown
@@ -60,8 +60,8 @@
 		</informaltable>
 
     <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>The bottom spline (black circles) is used to perform denoising. It adjusts the wavelet shrinkage
@@ -77,8 +77,8 @@
 		</informaltable>
 
     <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>This screen shows the effect of the sharpen parameter. It is here pulled down to zero for all bands.
@@ -94,8 +94,8 @@
 		</informaltable>
 
      <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>This image is the other extreme. The wavelet basis now oversharpens, which results in ugly

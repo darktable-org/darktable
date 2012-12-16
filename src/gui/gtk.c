@@ -932,8 +932,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui)
 {
   g_free(darktable.control->xprofile_data);
+#ifdef USE_COLORDGTK
   g_free(darktable.control->colord_profile_file);
   darktable.control->colord_profile_file = NULL;
+#endif
   darktable.control->xprofile_size = 0;
 }
 
@@ -1191,8 +1193,11 @@ void dt_ui_container_add_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWidge
 
 void dt_ui_container_focus_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w)
 {
-  //if(!GTK_IS_CONTAINER(ui->containers[c])) return;
   g_return_if_fail(GTK_IS_CONTAINER(ui->containers[c]));
+
+  if (GTK_WIDGET(ui->containers[c]) != w->parent)
+    return;
+
   gtk_container_set_focus_child(GTK_CONTAINER(ui->containers[c]), w);
   gtk_widget_queue_draw(ui->containers[c]);
 }

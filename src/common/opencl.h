@@ -84,6 +84,7 @@ typedef struct dt_opencl_device_t
   int maxevents;
   int lostevents;
   int nvidia_sm_20;
+  const char *vendor;
   cl_int summary;
 }
 dt_opencl_device_t;
@@ -97,6 +98,8 @@ typedef struct dt_opencl_t
 {
   dt_pthread_mutex_t lock;
   int inited;
+  int use_events;
+  int omit_whitebalance;
   int enabled;
   int num_devs;
   dt_opencl_device_t *dev;
@@ -130,10 +133,10 @@ int dt_opencl_lock_device(const int dev);
 void dt_opencl_unlock_device(const int dev);
 
 /** loads the given .cl file and returns a reference to an internal program. */
-int dt_opencl_load_program(const int dev, const char *filename, const char* binname, const char* cachedir, char* md5sum, int* loaded_cached);
+int dt_opencl_load_program(const int dev, const int prog, const char *filename, const char* binname, const char* cachedir, char* md5sum, int* loaded_cached);
 
 /** builds the given program. */
-int dt_opencl_build_program(const int dev, const int prog, const char* binname, const char* cachedir, char* md5sum, int loaded_cached);
+int dt_opencl_build_program(const int dev, const int prog, const char* binname, const char* cachedir, char* md5sum, int loaded_cached, const char* kerneldir);
 
 /** inits a kernel. returns the index or -1 if fail. */
 int dt_opencl_create_kernel(const int program, const char *name);
@@ -201,6 +204,8 @@ void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, 
 int dt_opencl_enqueue_copy_image_to_buffer(const int devid, cl_mem src_image, cl_mem dst_buffer, size_t *origin, size_t *region, size_t offset);
 
 int dt_opencl_enqueue_copy_buffer_to_image(const int devid, cl_mem src_buffer, cl_mem dst_image, size_t offset, size_t *origin, size_t *region);
+
+int dt_opencl_enqueue_copy_buffer_to_buffer(const int devid, cl_mem src_buffer, cl_mem dst_buffer, size_t srcoffset, size_t dstoffset, size_t size);
 
 int dt_opencl_read_buffer_from_device(const int devid, void *host, void *device, const size_t offset, const size_t size, const int blocking);
 

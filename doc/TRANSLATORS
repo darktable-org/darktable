@@ -6,7 +6,7 @@ To start working on your translation you need to:
 
 1. Fetch source code, preferably from git. Here is the magic command:
 
-git clone git://darktable.git.sourceforge.net/gitroot/darktable/darktable
+git clone git://github.com/darktable-org/darktable.git
 
 Copy the checked out source code tree somewhere to work on it or, if you know git well enough, create your own branch and work on it.
 

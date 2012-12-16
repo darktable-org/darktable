@@ -122,7 +122,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
-  if(dev->gui_synch)
+  if(dev->gui_synch && !dev->image_loading)
   {
     // synch module guis from gtk thread:
     darktable.gui->reset = 1;
@@ -138,7 +138,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   }
 
   if(dev->image_dirty || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp) dt_dev_process_image(dev);
-  if(dev->preview_dirty) dt_dev_process_preview(dev);
+  if(dev->preview_dirty || dev->pipe->input_timestamp > dev->preview_pipe->input_timestamp) dt_dev_process_preview(dev);
 
   dt_pthread_mutex_t *mutex = NULL;
   int wd, ht, stride, closeup;
@@ -987,7 +987,7 @@ void leave(dt_view_t *self)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
     if (!dt_iop_is_hidden(module))
-      module->gui_cleanup(module);
+      dt_iop_gui_cleanup_module(module);
 
     dt_dev_cleanup_module_accels(module);
     module->accel_closures = NULL;

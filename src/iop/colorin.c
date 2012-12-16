@@ -28,6 +28,9 @@
 #include "common/colormatrices.c"
 #include "common/opencl.h"
 #include "common/image_cache.h"
+#ifdef HAVE_OPENJPEG
+#include "common/imageio_j2k.h"
+#endif
 #include "common/imageio_jpeg.h"
 #include "external/adobe_coeff.c"
 #include <xmmintrin.h>
@@ -559,6 +562,15 @@ void reload_defaults(dt_iop_module_t *module)
         dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
       }
     }
+#ifdef HAVE_OPENJPEG
+    else if(!strcmp(ext, "jp2") || !strcmp(ext, "j2k") || !strcmp(ext, "j2c") || !strcmp(ext, "jpc"))
+    {
+      dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+      img->profile_size = dt_imageio_j2k_read_profile(filename, &img->profile);
+      use_eprofile = (img->profile_size > 0);
+      dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    }
+#endif
     g_free(ext);
   }
   else

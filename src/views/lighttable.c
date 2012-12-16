@@ -932,7 +932,8 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     }
   }
   const double end = dt_get_wtime();
-  dt_print(DT_DEBUG_PERF, "[lighttable] expose took %0.04f sec\n", end-start);
+  if (darktable.unmuted & DT_DEBUG_PERF)
+    dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] expose took %0.04f sec\n", end-start);
 }
 
 static gboolean

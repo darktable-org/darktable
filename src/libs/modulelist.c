@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2012 Tobias Ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,22 +25,32 @@
 #include "develop/develop.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
-#include "dtgtk/tristatebutton.h"
+#include "dtgtk/icon.h"
+#include "dtgtk/label.h"
 #include "gui/draw.h"
 
 DT_MODULE(1)
 
 #define DT_MODULE_LIST_SPACING 2
 
+#define ICON_SIZE 20
 typedef struct dt_lib_modulelist_t
 {
+  GtkTreeView *tree;
+  GdkPixbuf* fav_pixbuf;
 }
 dt_lib_modulelist_t;
 
 /* handle iop module click */
-static void _lib_modulelist_tristate_changed_callback(GtkWidget *,gint state, gpointer user_data);
+static void _lib_modulelist_row_changed_callback(GtkTreeView *tree_view, gpointer     user_data);
 /* callback for iop modules loaded signal */
 static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_data);
+/* callback that makes sure that the tree is repopulated when the style changes */
+static void _lib_modulelist_style_set(GtkWidget *widget, GtkStyle *previous_style, gpointer user_data);
+/* force refresh of tree */
+static void _lib_modulelist_gui_update(struct dt_lib_module_t *);
+/* helper for sorting */
+static gint _lib_modulelist_gui_sort(GtkTreeModel *model, GtkTreeIter  *a, GtkTreeIter  *b, gpointer      userdata);
 
 const char* name()
 {
@@ -67,14 +78,20 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_modulelist_t *d = (dt_lib_modulelist_t *)g_malloc(sizeof(dt_lib_modulelist_t));
   memset(d,0,sizeof(dt_lib_modulelist_t));
   self->data = (void *)d;
-
-  self->widget = gtk_table_new(2, 6, TRUE);
-  gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_MODULE_LIST_SPACING);
-  gtk_table_set_col_spacings(GTK_TABLE(self->widget), DT_MODULE_LIST_SPACING);
+  self->widget = gtk_scrolled_window_new(NULL, NULL); //GTK_ADJUSTMENT(gtk_adjustment_new(200, 100, 200, 10, 100, 100))
+  gtk_widget_set_size_request(self->widget, -1, 208);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(self->widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
+  d->tree = GTK_TREE_VIEW(gtk_tree_view_new());
+  gtk_widget_set_size_request(GTK_WIDGET(d->tree), 50, -1);
+  gtk_container_add(GTK_CONTAINER(self->widget), GTK_WIDGET(d->tree));
 
   /* connect to signal for darktable.develop initialization */
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_INITIALIZE,G_CALLBACK(_lib_modulelist_populate_callback),self);
+  g_signal_connect(GTK_WIDGET(d->tree), "style-set", G_CALLBACK(_lib_modulelist_style_set), self);
+  g_signal_connect(GTK_WIDGET(d->tree), "cursor-changed", G_CALLBACK(_lib_modulelist_row_changed_callback), NULL);
 
+  darktable.view_manager->proxy.more_module.module = self;
+  darktable.view_manager->proxy.more_module.update = _lib_modulelist_gui_update;
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -84,131 +101,180 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static gboolean _lib_modulelist_tristate_set_state(GtkWidget *w,gint state,dt_iop_module_t *module)
+enum
 {
-  char option[1024];
-  gboolean expand = FALSE;
-  if(state==0)
-  {
-    /* module is hidden lets set conf values */
-    gtk_widget_hide(GTK_WIDGET(module->expander));
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
-    dt_conf_set_bool (option, FALSE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
-    dt_conf_set_bool (option, FALSE);
-
-    /* construct tooltip text into option */
-    snprintf(option, 512, _("show %s"), module->name());
-  }
-  else if(state==1)
-  {
-    /* module is shown lets set conf values */
-    // FIXME
-    // dt_gui_iop_modulegroups_switch(module->groups());
-    gtk_widget_show(GTK_WIDGET(module->expander));
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
-    dt_conf_set_bool (option, TRUE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
-    dt_conf_set_bool (option, FALSE);
-
-    expand = TRUE;
-
-    /* construct tooltip text into option */
-    snprintf(option, 512, _("%s as favorite"), module->name());
-  }
-  else if(state==2)
-  {
-    /* module is shown and favorite lets set conf values */
-    // FIXME
-    // dt_gui_iop_modulegroups_switch(module->groups());
-    gtk_widget_show(GTK_WIDGET(module->expander));
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
-    dt_conf_set_bool (option, TRUE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
-    dt_conf_set_bool (option, TRUE);
-
-    expand = TRUE;
-
-    /* construct tooltip text into option */
-    snprintf(option, 512, _("hide %s"), module->name());
-  }
-
-  g_object_set(G_OBJECT(w), "tooltip-text", option, (char *)NULL);
-  return expand;
+  COL_IMAGE=0,
+  COL_MODULE,
+  NUM_COLS
+} ;
+static void image_renderer_function (GtkTreeViewColumn *col,
+    GtkCellRenderer   *renderer,
+    GtkTreeModel      *model,
+    GtkTreeIter       *iter,
+    gpointer           user_data)
+{
+  GdkImage * pixbuf;
+  dt_iop_module_t *module;
+  gtk_tree_model_get(model, iter, COL_IMAGE, &pixbuf, -1);
+  gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
+  g_object_set(renderer,"pixbuf",pixbuf,NULL);
+  g_object_set(renderer,"cell-background-set",module->state != dt_iop_state_HIDDEN,NULL);
+  g_object_unref(pixbuf);
+}
+static void favorite_renderer_function (GtkTreeViewColumn *col,
+    GtkCellRenderer   *renderer,
+    GtkTreeModel      *model,
+    GtkTreeIter       *iter,
+    gpointer           user_data)
+{
+  dt_iop_module_t *module;
+  gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
+  g_object_set(renderer,"cell-background-set",module->state != dt_iop_state_HIDDEN,NULL);
+  GdkPixbuf *fav_pixbuf = ((dt_lib_modulelist_t*)darktable.view_manager->proxy.more_module.module->data)->fav_pixbuf;
+  g_object_set(renderer,"pixbuf",module->state==dt_iop_state_FAVORITE?fav_pixbuf:NULL,NULL);
+}
+static void text_renderer_function (GtkTreeViewColumn *col,
+    GtkCellRenderer   *renderer,
+    GtkTreeModel      *model,
+    GtkTreeIter       *iter,
+    gpointer           user_data)
+{
+  dt_iop_module_t *module;
+  gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
+  g_object_set(renderer,"text",module->name(),NULL);
+  g_object_set(renderer,"cell-background-set",module->state != dt_iop_state_HIDDEN,NULL);
 }
 
 static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  if(!self || !(self->data)) return;
 
-  /* go thru list of iop modules and add tp table */
+  GtkListStore  *store;
+  GtkTreeIter    iter;
+  GtkWidget     *view=GTK_WIDGET(((dt_lib_modulelist_t*)self->data)->tree);
+  GtkCellRenderer     *pix_renderer,*fav_renderer,*text_renderer;
+  GtkStyle *style=gtk_widget_get_style(view);
+
+  store = gtk_list_store_new (NUM_COLS, GDK_TYPE_PIXBUF,  G_TYPE_POINTER);
+  gtk_tree_view_set_model (GTK_TREE_VIEW(view), GTK_TREE_MODEL(store));
+  g_object_unref (store);
+
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(store), COL_MODULE, _lib_modulelist_gui_sort, NULL, NULL);
+  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store), COL_MODULE, GTK_SORT_ASCENDING);
+
+  pix_renderer = gtk_cell_renderer_pixbuf_new ();
+  g_object_set(pix_renderer,"cell-background-gdk",&style->bg[GTK_STATE_ACTIVE],NULL);
+
+  fav_renderer = gtk_cell_renderer_pixbuf_new ();
+  cairo_surface_t *fav_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
+  cairo_t *fav_cr = cairo_create(fav_cst);
+  cairo_set_source_rgb(fav_cr, 0.7,0.7,0.7);
+  dtgtk_cairo_paint_modulegroup_favorites(fav_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);
+  guchar* data = cairo_image_surface_get_data(fav_cst);
+  ((dt_lib_modulelist_t*)self->data)->fav_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE,
+    ICON_SIZE, cairo_image_surface_get_stride(fav_cst), NULL, NULL);
+  g_object_set(fav_renderer,"cell-background-gdk",&style->bg[GTK_STATE_ACTIVE],NULL);
+  g_object_set(fav_renderer,"width",gdk_pixbuf_get_width(((dt_lib_modulelist_t*)self->data)->fav_pixbuf),NULL);
+
+  text_renderer = gtk_cell_renderer_text_new ();
+  g_object_set(text_renderer,"cell-background-gdk",&style->bg[GTK_STATE_ACTIVE],NULL);
+
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view),FALSE);
+  gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(view),FALSE);
+  gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(view),FALSE);
+  GtkTreeSelection  *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
+  gtk_tree_selection_set_mode(selection, GTK_SELECTION_NONE);
+
+  GtkTreeViewColumn *col;
+  col = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 0);
+  if(col) gtk_tree_view_remove_column(GTK_TREE_VIEW(view), col);
+  gtk_tree_view_insert_column_with_data_func (GTK_TREE_VIEW (view),
+                                               0,
+                                               "favorite",
+                                               fav_renderer,
+                                               favorite_renderer_function,
+                                               NULL,NULL);
+  col = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 1);
+  if(col) gtk_tree_view_remove_column(GTK_TREE_VIEW(view), col);
+  gtk_tree_view_insert_column_with_data_func (GTK_TREE_VIEW (view),
+                                               1,
+                                               "image",
+                                               pix_renderer,
+                                               image_renderer_function,
+                                               NULL,NULL);
+  col = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 2);
+  if(col) gtk_tree_view_remove_column(GTK_TREE_VIEW(view), col);
+  gtk_tree_view_insert_column_with_data_func (GTK_TREE_VIEW (view),
+                                               2,
+                                               "name",
+                                               text_renderer,
+                                               text_renderer_function,
+                                               NULL,NULL);
+
+  /* go thru list of iop modules and add them to the list */
   GList *modules = g_list_last(darktable.develop->iop);
-  int ti = 0, tj = 0;
+
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
-      module->showhide = dtgtk_tristatebutton_new(NULL,0);
       char filename[DT_MAX_PATH_LEN], datadir[DT_MAX_PATH_LEN];
       dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
       snprintf(filename, DT_MAX_PATH_LEN, "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
       if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
         snprintf(filename, DT_MAX_PATH_LEN, "%s/pixmaps/plugins/darkroom/template.png", datadir);
-      GtkWidget *image = gtk_image_new_from_file(filename);
-      gtk_button_set_image(GTK_BUTTON(module->showhide), image);
 
-      /* set button state */
-      char option[1024];
-      snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
-      gboolean active = dt_conf_get_bool (option);
-      snprintf(option, 1024, "plugins/darkroom/%s/favorite", module->op);
-      gboolean favorite = dt_conf_get_bool (option);
-      gint state=0;
-      if(active)
-      {
-        state++;
-        if(favorite) state++;
-      }
-      _lib_modulelist_tristate_set_state(module->showhide,state,module);
-      dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide), state);
 
-      /* connect tristate button callback*/
-      g_signal_connect(G_OBJECT(module->showhide), "tristate-changed",
-                       G_CALLBACK(_lib_modulelist_tristate_changed_callback), module);
-      gtk_table_attach(GTK_TABLE(self->widget), module->showhide, ti, ti+1, tj, tj+1,
-                       GTK_FILL | GTK_EXPAND | GTK_SHRINK,
-                       GTK_SHRINK,
-                       0, 0);
-      gtk_widget_show_all(module->showhide);
-      if(ti < 5) ti++;
-      else
-      {
-        ti = 0;
-        tj ++;
-      }
+      GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(filename,NULL);
+      gtk_list_store_append (store, &iter);
+      gtk_list_store_set (store, &iter,
+          COL_IMAGE, pixbuf,
+          COL_MODULE,module,
+          -1);
+      g_object_unref (pixbuf);
     }
 
     modules = g_list_previous(modules);
   }
+
 }
 
-
-
-static void _lib_modulelist_tristate_changed_callback(GtkWidget *w,gint state, gpointer user_data)
+static void _lib_modulelist_style_set(GtkWidget *widget, GtkStyle *previous_style, gpointer user_data)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+  _lib_modulelist_populate_callback(NULL, user_data);
+}
 
-  /* set state of tristate button and expand iop if wanted */
-  gboolean expanded = _lib_modulelist_tristate_set_state(w,state,module);
-  dt_dev_modulegroups_switch(module->dev, module);
-  dt_iop_gui_set_expanded(module, expanded);
+static void _lib_modulelist_row_changed_callback(GtkTreeView *treeview, gpointer     user_data)
+{
+  dt_iop_module_t *module;
+  GtkTreeIter   iter;
+  GtkTreeModel *model;
+  GtkTreePath  *path;
+  gtk_tree_view_get_cursor(treeview, &path, NULL);
+  model = gtk_tree_view_get_model(treeview);
+  gtk_tree_model_get_iter(model, &iter, path);
+  gtk_tree_path_free(path);
+  gtk_tree_model_get(model, &iter, COL_MODULE, &module, -1);
+
+  dt_iop_gui_set_state(module,(module->state+1)%dt_iop_state_LAST);
 
 }
 
+static void _lib_modulelist_gui_update(struct dt_lib_module_t *module)
+{
+  gtk_widget_queue_draw(GTK_WIDGET(((dt_lib_modulelist_t*)module->data)->tree));
 
+}
 
-
+static gint _lib_modulelist_gui_sort(GtkTreeModel *model, GtkTreeIter  *a, GtkTreeIter  *b, gpointer      userdata)
+{
+  dt_iop_module_t *modulea,*moduleb;
+  gtk_tree_model_get(model, a, COL_MODULE, &modulea, -1);
+  gtk_tree_model_get(model, b, COL_MODULE, &moduleb, -1);
+  return g_utf8_collate(modulea->name(),moduleb->name());
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

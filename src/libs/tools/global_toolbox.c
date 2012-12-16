@@ -19,6 +19,7 @@
 #include "common/darktable.h"
 #include "common/collection.h"
 #include "libs/lib.h"
+#include "gui/accelerators.h"
 #include "gui/preferences.h"
 #include "dtgtk/button.h"
 #include "dtgtk/togglebutton.h"
@@ -28,6 +29,7 @@ DT_MODULE(1)
 
 typedef struct dt_lib_tool_preferences_t
 {
+  GtkWidget *preferences_button, *grouping_button;
 }
 dt_lib_tool_preferences_t;
 
@@ -66,33 +68,29 @@ void gui_init(dt_lib_module_t *self)
   /* initialize ui widgets */
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)g_malloc(sizeof(dt_lib_tool_preferences_t));
   self->data = (void *)d;
-  memset(d,0,sizeof(dt_lib_tool_preferences_t));
 
   self->widget = gtk_hbox_new(FALSE,2);
 
-  /**/
-  GtkWidget *widget;
-
   /* create the grouping button */
-  widget = dtgtk_togglebutton_new(dtgtk_cairo_paint_grouping, CPF_STYLE_FLAT);
-  gtk_widget_set_size_request(widget, 18,18);
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 2);
+  d->grouping_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_grouping, CPF_STYLE_FLAT);
+  gtk_widget_set_size_request(d->grouping_button, 18,18);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->grouping_button, FALSE, FALSE, 2);
   if(darktable.gui->grouping)
-    g_object_set(G_OBJECT(widget), "tooltip-text", _("expand grouped images"), (char *)NULL);
+    g_object_set(G_OBJECT(d->grouping_button), "tooltip-text", _("expand grouped images"), (char *)NULL);
   else
-    g_object_set(G_OBJECT(widget), "tooltip-text", _("collapse grouped images"), (char *)NULL);
-  g_signal_connect (G_OBJECT (widget), "clicked",
+    g_object_set(G_OBJECT(d->grouping_button), "tooltip-text", _("collapse grouped images"), (char *)NULL);
+  g_signal_connect (G_OBJECT (d->grouping_button), "clicked",
                     G_CALLBACK (_lib_filter_grouping_button_clicked),
                     NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), darktable.gui->grouping);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->grouping_button), darktable.gui->grouping);
 
   /* create the preference button */
-  widget = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT);
-  gtk_widget_set_size_request(widget, 18,18);
-  gtk_box_pack_end(GTK_BOX(self->widget), widget, FALSE, FALSE, 2);
-  g_object_set(G_OBJECT(widget), "tooltip-text", _("show global preferences"),
+  d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT);
+  gtk_widget_set_size_request(d->preferences_button, 18,18);
+  gtk_box_pack_end(GTK_BOX(self->widget), d->preferences_button, FALSE, FALSE, 2);
+  g_object_set(G_OBJECT(d->preferences_button), "tooltip-text", _("show global preferences"),
                (char *)NULL);
-  g_signal_connect (G_OBJECT (widget), "clicked",
+  g_signal_connect (G_OBJECT (d->preferences_button), "clicked",
                     G_CALLBACK (_lib_preferences_button_clicked),
                     NULL);
 }
@@ -118,6 +116,20 @@ static void _lib_filter_grouping_button_clicked (GtkWidget *widget, gpointer use
   dt_conf_set_bool("ui_last/grouping", darktable.gui->grouping);
   darktable.gui->expanded_group_id = -1;
   dt_collection_update_query(darktable.collection);
+}
+
+void init_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_register_lib(self, NC_("accel", "grouping"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "preferences"), 0, 0);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t*)self->data;
+
+  dt_accel_connect_button_lib(self, "grouping", d->grouping_button);
+  dt_accel_connect_button_lib(self, "preferences", d->preferences_button);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

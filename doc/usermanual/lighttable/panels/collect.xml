@@ -1,13 +1,13 @@
 		<sect2 status="draft"><title>Collect images</title>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth='70%'/>
-					<colspec colwidth='30%'/>
+					<colspec colwidth="6*"/>
+					<colspec colwidth="4*"/>
 					<tbody>
 						<row>						
-							<entry>Thanks to this panel, you can manage your collection (current view)
-							by filtering image thanks to various criteria.
+							<entry>With this panel, you can manage your collection (current view)
+							by filtering images with various criteria.
 							The left combo box lets you choose from different filters, such a 'filmroll', 'historystack',
-							'date', 'camera' and much more. The table belows lists all available data for the selected filter.
+							'date', 'camera' and much more. The table below lists all available data for the selected filter.
 							You can then select the data of your choice by double-clicking.						
 							</entry>
 							<entry>

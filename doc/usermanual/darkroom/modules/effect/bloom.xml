@@ -1,8 +1,8 @@
 <sect3 status="draft"><title>Bloom</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>This module boost highlights and softly blooms them over the image hence the name of the effect,
@@ -22,7 +22,7 @@
 				then change the size to control the spread of light.
 		</para>
 		<sect5><title>size</title>
-			<para>Reprensents the spatial extent of the bloom effect.</para>
+			<para>Represents the spatial extent of the bloom effect.</para>
 		</sect5>
 		<sect5><title>threshold</title>
 			<para>Set the threshold turning on the increase in brightness.</para>
@@ -35,8 +35,8 @@
 	<sect4><title>Examples</title>
 		<para>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth='30%'/>
-					<colspec colwidth='70%'/>
+					<colspec colwidth="4*"/>
+					<colspec colwidth="6*"/>
 					<tbody>
 						<row>
 							<entry>
@@ -49,7 +49,7 @@
 								<graphic fileref="darkroom/modules/images/bloom_ex2.png" scalefit="1" width="90%" align="center" />
 							</entry>						
 							<entry>
-								<para>Here I have choosen to use the size 10% which is a rather small radie for the soft light spread, 
+								<para>Here I have choosen to use the size 10% which is a rather small radius for the soft light spread, 
 									and I also boosted up the strength to 50% for a more exaggerated effect.
 								</para>
 							</entry>

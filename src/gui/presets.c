@@ -209,6 +209,15 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
   {
     sqlite3_stmt *stmt;
 
+    // now delete preset, so we can re-insert the new values:
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, g->original_name, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, g->module->op, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, g->module->version() );
+
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
     if ( ((g->old_id >= 0) && (strcmp(g->original_name, gtk_entry_get_text(g->name)) != 0)) || (g->old_id < 0) )
     {
 
@@ -517,15 +526,6 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter),    0);
   }
   sqlite3_finalize(stmt);
-  
-  // now delete preset, so we can re-insert the new values:
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, module->op, strlen(module->op), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, module->version() );
-
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
 
   g_signal_connect (dialog, "response", G_CALLBACK (edit_preset_response), g);
   gtk_widget_show_all (dialog);
@@ -653,7 +653,7 @@ void dt_gui_favorite_presets_menu_show()
       dt_iop_module_t *iop = (dt_iop_module_t *)modules->data;
 
       /* check if module is favorite */
-      if(iop->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(iop->showhide))==2)
+      if(iop->state == dt_iop_state_FAVORITE)
       {
         /* create submenu for module */
         GtkMenuItem *smi = (GtkMenuItem*)gtk_menu_item_new_with_label(iop->name());

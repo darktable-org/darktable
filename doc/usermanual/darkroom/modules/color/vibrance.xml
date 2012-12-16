@@ -1,12 +1,12 @@
 <sect3 status="draft"><title>Vibrance</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This modules affects the vibrance in the image this is a widely used term
-						and the endresult differs from program to program, vibrance in darktable does 
+						<entry>This modules affects the vibrance in the image. Vibrance is a widely used term
+						and the endresult differs from program to program. Vibrance in darktable does 
 						saturate the most saturated pixels and brings down the lightness of those pixels 
 						to make the colors more vivid.
 						</entry>
@@ -31,8 +31,8 @@
 	<sect4><title>Examples</title>
 		<para>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth='30%'/>
-					<colspec colwidth='70%'/>
+					<colspec colwidth="4*"/>
+					<colspec colwidth="6*"/>
 					<tbody>
 						<row>
 							<entry>

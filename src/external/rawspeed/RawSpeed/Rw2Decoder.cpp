@@ -77,7 +77,7 @@ RawImage Rw2Decoder::decodeRawInternal() {
     mRaw->createData();
     ByteStream input_start(mFile->getData(off), mFile->getSize() - off);
     iPoint2D pos(0, 0);
-    readUncompressedRaw(input_start, mRaw->dim,pos, width*2, 16, FALSE);
+    readUncompressedRaw(input_start, mRaw->dim,pos, width*2, 16, BitOrder_Plain);
 
   } else {
 

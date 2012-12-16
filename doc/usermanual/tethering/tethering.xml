@@ -6,41 +6,48 @@
 </keywordset>
 </chapterinfo>
 <title>Tethering</title>
-<para>The tethering view is were you remote control and captures images from your connect camera directly into darktable.</para>
+<para>The tethering view is where you remote control and capture images from your connected camera directly into darktable.</para>
 <screenshot>
   <screeninfo>The tethering view</screeninfo>
-  <graphic fileref="images/tethering_view.png" scalefit="1" width="80%"></graphic>
+  <graphic fileref="tethering/images/tethering_view.png" scalefit="1" width="80%"></graphic>
 </screenshot>
 
 <sect1>
   <title>Overview</title>
-  <para>To use the tethering feature you need to connect your camera to your pc using a usb cable, when your desktop environment ask a question of what you want to do unmount/eject is the answer. This is required to unlock the camera soo Darktable can lock it for usage.</para>
+  <para>To use the tethering feature you need to connect your camera to your PC using an USB cable. Your desktop environment might ask a question of what you want to do.
+        In that case <emphasis>unmount/eject</emphasis> is the answer. This is required to unlock the camera so darktable can lock it for usage.</para>
   
-  <para>When camera is connected, head over to the import panel in lighttable, if your camera not is visible in this panel, hit the 'scan devices' button and it will appear with 2 functions import from camera and tethered shoot, the latter button is the one you should press to enter tethering mode.</para>
+  <para>When your camera is connected, head over to the import panel in lighttable. If your camera is not visible in this panel, hit the 'scan devices' button and it will 
+        appear with two functions: "import from camera" and "tethered shoot", the latter button is the one you should press to enter tethering mode.</para>
   
-  <para>Darktable uses gphoto to interface with your camera, if you have problems with to find the connected camera as described above do check the troubleshot section in this chapter to verify that your camera is supported for use with tethering.</para>  
+  <para>darktable uses gphoto2 to interface with your camera. If you have problems to find the connected camera as described above, do check the troubleshoot section in 
+        this chapter in order to verify that your camera is supported for use with tethering.</para>  
 
   <sect2 status="final">
     <title>Tethering</title>
     <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-      <colspec colwidth='70%'/>
-      <colspec colwidth='5cm'/>
+      <colspec colwidth="6*"/>
+      <colspec colwidth="4*"/>
       <tbody>
 	<row>						
-	  <entry>In the center view images are shown while you capture them either by using Darktable userinterface
-	  or manually triggering a capture, if you are using LiveView center will show the live view.
+	  <entry>In the center view images are shown while you capture them. You can get an exposure by either using darktable's userinterface
+	  or manually triggering a capture on your camera. If you are using LiveView it will be shown in darktable's center view.
 	  </entry>
 	  <entry>
-	    <graphic fileref="images/tethering_thumb.png" scalefit="1" width="80%" align="center" />
+	    <graphic fileref="tethering/images/tethering_center_view.png" scalefit="1" width="80%" align="center" />
 	  </entry>
 	</row>
       </tbody>
     </tgroup>
     </informaltable>
 
-    <para>When entering tethering view a filmroll will be created using the same structure as defined when you import from the camera, job code will be predefined as capture, if you want to change job code to group your captures into several filmrolls, you should use the session panel in right side, when entering a new name and hitting enter a new filmroll will be created and captured images will go into this new filmroll.</para>
+    <para>When entering tethering view, a filmroll will be created using the same structure as defined when you import from the camera. Job code will be predefined as "capture".</para>
 
-    <para>Darktable provides some nifty tools to setup a capture using the ui, you can setup timelaps captures and brackets for HDR creations, the configuration is so dynamic that you can create sequencial capture of brackets, go figure... For more information how to, read the documentation about capture panel and the examples in this chapter.</para>
+    <para>If you want to group your captures into different filmrolls, you should use the session panel in right side. When entering a new name and hitting enter, a new filmroll will be created and captured images will go into this new filmroll.</para>
+
+    <para>darktable provides some nifty tools to setup a capture using the user interface. You can setup timelapse captures and brackets for HDR creations. The configuration 
+          is so dynamic that you can create sequential capture of brackets - go figure... For more information read the documentation about capture panel and the examples
+          in this chapter.</para>
 
   </sect2>
 </sect1>

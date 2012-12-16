@@ -1,11 +1,11 @@
 <sect3 status="draft"><title>Sharpen</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This is an standard UnSharp Mask tool for sharpen the details of an image.
+						<entry>This is an standard UnSharp Mask tool for sharpening the details of an image.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/sharpen.png" scalefit="1" width="80%" align="center" />
@@ -17,6 +17,22 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para></para>
+		<para>This module works by enhancing the contrast around edges and thereby enhances sharpness impression of an image. In darktable this module
+                      is only applied to the L-channel in Lab color space.</para>
+		<sect5><title>radius</title>
+			<para>USM applies a gaussian blur to your image as part of its algorithm. This controls the blur radius which in turn defines the spatial extent
+                              of edge enhancement. Too high values will lead to ugly over-sharpening.
+                        </para>
+		</sect5>
+		<sect5><title>amount</title>
+			<para>This controls the strength of sharpening.
+                        </para>
+		</sect5>	
+		<sect5><title>threshold</title>
+			<para>Contrast differences below this threshold are excluded from sharpening. Use this to avoid amplification of noise.
+                        </para>
+		</sect5>	
+
+
 	</sect4>
 </sect3>

@@ -2,9 +2,10 @@ How to make disk image with darktable application bundle (64 bit Intel only):
 
 1). Build darktable (and make sure it works) using instructions found in this blog post:
     http://www.darktable.org/2012/08/bringing-current-darktable-to-os-x/
-    Macports will need some tuning though, so before you build anything add this line to /opt/local/etc/macports/macports.conf:
-     macosx_deployment_target 10.5
-    (10.4 had very limited 64 bit support, so I chose 10.5 as first supported version)
+    Macports will need some tuning though, so before you build anything add these lines to /opt/local/etc/macports/macports.conf:
+     buildfromsource always
+     macosx_deployment_target 10.6
+    (practice showed that support for versions older than 10.6 isn't viable)
     And edit /opt/local/share/macports/Tcl/port1.0/portconfigure.tcl - change
      default configure.ldflags   {-L${prefix}/lib}
     to
@@ -20,7 +21,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     To have working OpenMP (at least partly, only for C source files) you will also need gcc46:
      sudo port install gcc46
     Configure darktable with this command instead of just "cmake ..":
-     CC=gcc-mp-4.6 cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.5
+     CC=gcc-mp-4.6 cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.6
 
 2). Download, patch and install gtk-mac-bundler (assuming darktable was cloned into ~/src directory):
      $ cd ~/src

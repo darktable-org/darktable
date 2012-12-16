@@ -1,27 +1,47 @@
 <sect2 status="invalid"><title>Import</title>
-			<para>This module shows connected devices; for now only cameras are shown up there, but in future scanners too will.</para>
-
-		 	 <para>In library, you import and remove your filmrolls. You can either import a complete folder
-      				by pressing 'import filmroll' or a single image 'import single image'. 
+		 	 <para>In this panel you import your filmrolls. You can either import a complete folder
+      				by pressing 'import filmroll' or a single image 'import single image'. You can also import directly from a connected camera.
 		  	</para>
-			<para>A filmroll is the same as a folder in the filesystem, except for 'single images' filmroll that contains images spread among your filesystem.
-				You can import a single image or a folder; if a folder is imported, darktable will not recurse down in several folder levels but it will just import the images that resides inside
-				the chosen folder into a filmroll whose name becomes the name of the imported folder.
-			</para>
-			<para status="draft">Importing a folder does not mean that darktable copies your images in another folder.
-			It just means that the images are visible in lighttable and thus can be developed. It means that
-     			if you delete an image/a folder after having imported them, darktable will not be able to access them anymore.
-      			Importing an image/folder in darktable is not a backup of your filesystem!
-      			Moreover darktable does not currently watch changes in filesystem. Thus if on your filesystem you add an image
-			after having imported that folder in darktable, the new image will not be shown until you explicitely import it.
-			</para>
+
+
 			<para>All your filmrolls are available in a list which can be filtered using the editbox to fast find the filmroll of interest.
-					Double click on a filmroll in the list and it will open.
+				Double click on a filmroll in the list and it will open.
 				You can also click the recent filmroll items to open the latest ones you have worked with.
 			</para>
 
+			<sect3><title>Import from filesystem</title>
+				<para>A filmroll is the same as a folder in the filesystem. You can import a single image or a folder. If a folder is imported the images
+	                                in that folder will show up in a filmroll whose name becomes the name of the imported folder. If single images are imported they
+	                                will show up in filmroll 'single images'.
+				</para>
+		
+				<graphic fileref="lighttable/images/panel_import.png" scalefit="1" width="60%" align="center"></graphic>
 
-			<sect3><title>Cameras</title>
+				<para>When you click on 'import single image' or 'import filmroll' a file selector dialog will pop up. Navigate through your filesystem
+                                      and select the item you want to import. On the lower part of the dialog you can define some further import options. 
+                                </para>
+                                <para>
+                                      As the name implies checking 'import directories recursively' will recurse from the currently selected directory through all 
+                                      subdirectories and import all images found.
+                                      It is not recommended and wasting resources to this on an exhaustive list of images. darktable would generate thumbnails for all of them
+                                      but in the end keep the recent ones in its cache. Better import images part by part as separate filmrolls.
+                                </para>
+                                <para>Checking 'ignore jpeg files' is a good choice if there are jpeg images in the same folder that you do not want to process with
+                                      darktable; eg. if your camera stores RAW+JPEG you often will only want to work further on your raws and let the jpegs alone. You can
+                                      also apply some metadata already on import; see the section on 'Metadata editor' later in this manual for more details.
+				</para>
+
+				<para status="draft">Importing a folder does not mean that darktable copies your images in another folder.
+					It just means that the images are visible in lighttable and thus can be developed. It means that
+	     				if you delete an image/a folder after having imported them, darktable will not be able to access them anymore.
+		      			Importing an image/folder in darktable is not a backup of your filesystem!
+		      			Moreover darktable does not currently watch changes in filesystem. Thus if on your filesystem you add an image
+					after having imported that folder in darktable, the new image will not be shown until you explicitely import it.
+				</para>
+
+			</sect3>
+
+			<sect3><title>Import from cameras</title>
 				<para>When a camera is detected, it will show up in the device panel; if you hover your mouse over the camera tab label a tooltip
 					will pop up with some information about the camera such as model, firmware version and a lot more...
 				</para>
@@ -37,9 +57,31 @@
 						automatically be imported into darktable so you can review the result of the shoot. You can also
 						setup remote capture jobs, controlling number of images and time between captures along with camera settings such as exposition time, f-length and more.
 					</para>
-					<para>If supported by your camera, tethering will take you into capture view for tethered shoot. Read more about tethering in chapter 3.</para>
+					<para>If supported by your camera, tethering will take you into capture view for tethered shoot. Read more about tethering in chapter 4.</para>
 				</sect4>
 			</sect3>
+
+                        <sect3><title>Supported file formats</title>
+                               <para>darktable has its main focus on managing and developing camera RAW files. Therefore a huge number of different file formats from various camera manufacturers is supported. In addition
+                                     darktable can read specific <emphasis>low dynamic range</emphasis> and <emphasis>high dynamic range</emphasis> images - mainly for data exchange between darktable
+                                     and other software.
+                               </para>
+				<sect4><title>Camera RAW files</title>
+					<para>darktable reads RAW files using two open source libraries: RawSpeed (developed by Klaus Post) and - failing that - with LibRaw. The number of supported cameras and file
+                                              formats is constantly increasing. It would be beyond the scope of this manual to give an exhaustive list. Most modern camera models are supported and new
+                                              ones tend to get in very quickly. darktable does not decode images from cameras with non-Bayer sensors (e.g. Fuji X-Pro1 or Sigmas with Foveon X3 sensor).
+					</para>
+				</sect4>
+				<sect4><title>LDR image files</title>
+					<para>darktable reads "ordinary" images in JPEG, 8-bit/16-bit PNG and 8-bit/16-bit TIFF format.
+					</para>
+				</sect4>
+				<sect4><title>HDR image files</title>
+					<para>darktable reads high dynamic range images in OpenEXR, RGBE and PFM format.
+					</para>
+				</sect4>
+                        </sect3>
+
 
 		</sect2>
 

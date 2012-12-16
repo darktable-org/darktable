@@ -1,0 +1,30 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+
+<chapter>
+<chapterinfo>
+<keywordset>
+  <keyword>topics</keyword>
+  <keyword>special</keyword>
+</keywordset>
+</chapterinfo>
+<title>Special Topics</title>
+<para>darktable's home page at www.darktable.org has an extensive blog section. It covers many technical details, background
+      information as well as tips and tricks. We replicate a few of our blog articles here as they might be helpful to get
+      things running.</para>
+<screenshot>
+	<screeninfo>The darktable blog</screeninfo>
+	<graphic fileref="images/darktable_blog.png" scalefit="1" width="80%"></graphic>
+</screenshot>
+
+
+<!-- darktable and memory -->
+<xi:include href="memory.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- darktable and opencl -->
+<xi:include href="opencl.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+</chapter>		

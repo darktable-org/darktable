@@ -251,11 +251,15 @@ int32_t dt_image_duplicate(const int32_t imgid)
                               "(id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
                               "aperture, iso, focal_length, focus_distance, datetime_taken, flags, "
                               "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
-                              "raw_auto_bright_threshold, raw_black, raw_maximum, orientation) "
+                              "raw_auto_bright_threshold, raw_black, raw_maximum, "
+                              "caption, description, license, sha1sum, orientation, histogram, lightmap, "
+                              "longitude, latitude, color_matrix, colorspace) "
                               "select null, group_id, film_id, width, height, filename, maker, model, lens, "
                               "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
                               "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
-                              "raw_auto_bright_threshold, raw_black, raw_maximum, orientation "
+                              "raw_auto_bright_threshold, raw_black, raw_maximum, "
+                              "caption, description, license, sha1sum, orientation, histogram, lightmap, "
+                              "longitude, latitude, color_matrix, colorspace "
                               "from images where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
@@ -314,10 +318,13 @@ int32_t dt_image_duplicate(const int32_t imgid)
 void dt_image_remove(const int32_t imgid)
 {
   sqlite3_stmt *stmt;
-
   const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
   int old_group_id = img->group_id;
   dt_image_cache_read_release(darktable.image_cache, img);
+
+  // make sure we remove from the cache first, or else the cache will look for imgid in sql
+  dt_image_cache_remove(darktable.image_cache, imgid);
+
   int new_group_id = dt_grouping_remove_from_group(imgid);
   if(darktable.gui && darktable.gui->expanded_group_id == old_group_id)
     darktable.gui->expanded_group_id = new_group_id;
@@ -361,7 +368,6 @@ void dt_image_remove(const int32_t imgid)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   // also clear all thumbnails in mipmap_cache.
-  dt_image_cache_remove(darktable.image_cache, imgid);
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
 }
 
@@ -425,6 +431,11 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
     g_free(imgfname);
     sqlite3_finalize(stmt);
     g_free(ext);
+    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, id);
+    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+    img->flags &= ~DT_IMAGE_REMOVE;
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_read_release(darktable.image_cache, img);
     return id;
   }
   sqlite3_finalize(stmt);
@@ -702,11 +713,15 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
                                   "(id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
                                   "aperture, iso, focal_length, focus_distance, datetime_taken, flags, "
                                   "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
-                                  "raw_auto_bright_threshold, raw_black, raw_maximum, orientation) "
+                                  "raw_auto_bright_threshold, raw_black, raw_maximum, "
+                                  "caption, description, license, sha1sum, orientation, histogram, lightmap, "
+                                  "longitude, latitude, color_matrix, colorspace) "
                                   "select null, group_id, ?1 as film_id, width, height, filename, maker, model, lens, "
                                   "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
                                   "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
-                                  "raw_auto_bright_threshold, raw_black, raw_maximum, orientation "
+                                  "raw_auto_bright_threshold, raw_black, raw_maximum, "
+                                  "caption, description, license, sha1sum, orientation, histogram, lightmap, "
+                                  "longitude, latitude, color_matrix, colorspace "
                                   "from images where id = ?2", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);

@@ -13,15 +13,15 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Darktable</string>
+	<string>darktable</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1.0</string>
+	<string>{VERSION}.9999</string>
 	<key>CFBundleSignature</key>
 	<string>drkt</string>
 	<key>CFBundleVersion</key>
-	<string>1.1.0.5</string>
+	<string>{VERSION}.9999.{COMMITS}</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>CFBundleDocumentTypes</key>

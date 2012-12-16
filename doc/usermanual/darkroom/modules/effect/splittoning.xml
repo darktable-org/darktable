@@ -1,14 +1,14 @@
 <sect3><title>Splittoning</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth='70%'/>
-					<colspec colwidth='30%'/>
+					<colspec colwidth="6*"/>
+					<colspec colwidth="4*"/>
 					<tbody>
 						<row>						
-							<entry>Original splittoning method creates a two color linear toning effect where the 
-									shadows and highlights are represented by two different colors.
-									In the example image below you can see an original black and white image and one where
-									a splittoning effect are applied with blue in shadows and yellow-ish color in highlights.
+							<entry>darktable's splittoning method creates a two color linear toning effect where the 
+								shadows and highlights are represented by two different colors.
+								In the example image below you can see an original black and white image and one where
+								a splittoning effect are applied with blue in shadows and yellow-ish color in highlights.
 							</entry>
 							<entry>
 								<graphic fileref="darkroom/modules/images/splittoning.png" scalefit="1" width="80%" align="center" />
@@ -18,35 +18,58 @@
 				</tgroup>
 			</informaltable>
 			
-		<para>darktable splittoning module has more parameters that impacts on the default above behavior, 
-				we have balance which offsets the 50% gray level in image and compression that does compress
+		<para>darktable splittoning module has more parameters that impacts on the default above behavior- 
+				We have 'balance' which offsets the 50% gray level in image and 'compression' that does compress
 				toning in the shadows and highlights which  leaves a gap which are untouched by the effect.
-				Read more and see examples of these additional parameters to splittoning module in "usage" section.
 		</para>
-		<para>The splittoning module does not convert image to black and white and works extensible nice on color images,
-				soo if you want to do traditional splittoning, use the monochrome module to make the image black and white
-				before playing around with splittoning effect.
+		<para>The splittoning module does not convert images to black and white and has limited benefits on color images.
+                      So if you want to do traditional splittoning, use the monochrome module to make the image black and white
+                      before playing around with splittoning effect.
 		</para>
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>...</para>
-		<sect5><title>Shadows and Highlights color</title>
-			<para>These controls are used to set the color of the splittoning effect, you select the desire color and 
-					saturation for both shadows and highlights, you can also click the color preview box too bring up a
+		<sect5><title>shadows and highlights color</title>
+			<para>These controls are used to set the color of the splittoning effect, you select the desired color and 
+					saturation for both shadows and highlights, you can also click the color preview box to bring up a
 					common color picker dialog.</para>
 		</sect5>
-		<sect5><title>Balance</title>
-			<para>The balance is presented as an ratio bar and default value is 50/50 which means that 50% of lightness 
+		<sect5><title>balance</title>
+			<para>The balance is presented as a ratio and defaults to 50/50, which means that 50% of lightness 
 			range in image are used for shadows toning and the other 50% for highlights toning.
 			</para>
 		</sect5>
-		<sect5><title>Compression</title>
-			<para>Compression is a percentage of total lightness range that not is affected by color toning, default value is
-				set to 33% which not is the default behaviour of a original splittoning which would be 0% compression.
-				The choice of 33% as default is to invite you exprimenting with these parameters and how it extends the original 
-				splittoning method...
+		<sect5><title>compression</title>
+			<para>Compression is a percentage of total lightness range that is not affected by color toning. Default value is
+				set to 33%; this is not the default behaviour of an original splittoning which would be 0% compression.
+				The choice of 33% as a default is to invite you exprimenting with these parameters and how it extends the original 
+				splittoning method.
 			</para>
 		</sect5>
+	</sect4>
+
+	<sect4><title>Examples</title>
+		<para>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth="4*"/>
+					<colspec colwidth="6*"/>
+					<tbody>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/splittoning_ex1.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry><para>Original black and white image.</para></entry>
+						</row>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/splittoning_ex2.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry><para>Splittoning with blue shadows and yellow highlights.</para></entry>
+						</row>
+
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</para>	
 	</sect4>
 </sect3>

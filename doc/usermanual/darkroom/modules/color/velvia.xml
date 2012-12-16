@@ -1,8 +1,8 @@
 <sect3 status="final"><title>Velvia</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>The velvia module enhances the saturation in the image; it increases saturation
@@ -18,14 +18,10 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<sect5><title>Saturation</title>
+		<sect5><title>strength</title>
 			<para>This slider controls the strength of saturation for the effect.</para>
 		</sect5>
-		<sect5><title>Vibrance</title>
-			<para>Vibrance controls how much of the saturation is applied to weighted pixels.
-			</para>
-		</sect5>
-		<sect5><title>Mid-tones bias</title>
+		<sect5><title>mid-tones bias</title>
 			<para>This slider controls saturation preservation in mid-tones. It is expressed
 			as the lightness repartition between mid-tones and shadows/highlights. The greater the first
 			number, the stronger the effect.

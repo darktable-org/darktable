@@ -77,6 +77,7 @@ typedef struct dt_iop_lensfun_gui_data_t
   GtkWidget *find_camera_button;
   GList *modifiers;
   GtkLabel *message;
+  int corrections_done;
 }
 dt_iop_lensfun_gui_data_t;
 

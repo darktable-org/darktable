@@ -146,7 +146,7 @@ fast_mexp2f(const float x)
 
 static float gh(const float f, const float sharpness)
 {
-  const float f2 = f*f*sharpness;
+  const float f2 = f*sharpness;
   return fast_mexp2f(f2);
   // return 0.0001f + dt_fast_expf(-fabsf(f)*800.0f);
   // return 1.0f/(1.0f + f*f);
@@ -175,7 +175,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
   const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
-  const float sharpness = 100000.0f/(1.0f+d->strength);
+  const float sharpness = 3000.0f/(1.0f+d->strength);
 
   if(P < 1)
   {
@@ -354,7 +354,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // adjust to zoom size:
   const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
   const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
-  const float sharpness = 100000.0f/(1.0f+d->strength);
+  const float sharpness = 3000.0f/(1.0f+d->strength);
   if(P < 1)
   {
     // nothing to do from this distance:

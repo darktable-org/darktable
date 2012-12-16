@@ -578,20 +578,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     str = dt_conf_get_string("ui_last/import_last_tags");
     if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE && str != NULL && str[0] != '\0')
     {
-      gchar **tokens = g_strsplit(str, ",", 0);
-      if(tokens)
-      {
-        gchar **entry = tokens;
-        while(*entry)
-        {
-          // add the tag to the image
-          guint tagid = 0;
-          dt_tag_new(*entry,&tagid);
-          dt_tag_attach(tagid, img->id);
-          entry++;
-        }
-      }
-      g_strfreev(tokens);
+      dt_tag_attach_string_list(str, img->id);
     }
 
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Rating")))
@@ -1221,6 +1208,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       // so we are legacy (thus have to clear the no-legacy flag)
       img->flags &= ~DT_IMAGE_NO_LEGACY_PRESETS;
     }
+    // when we are reading the xmp data it doesn't make sense to flag the image as removed
+    img->flags &= ~DT_IMAGE_REMOVE;
 
     // history
     Exiv2::XmpData::iterator ver;
@@ -1337,23 +1326,28 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   const int xmp_version = 1;
   int stars = 1, raw_params = 0;
   double longitude = NAN, latitude = NAN;
+  gchar *filename = NULL;
   // get stars and raw params from db
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select flags, raw_parameters, longitude, latitude from images where id = ?1",
+                              "select filename, flags, raw_parameters, longitude, latitude from images where id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    stars      = sqlite3_column_int(stmt, 0);
-    raw_params = sqlite3_column_int(stmt, 1);
-    if(sqlite3_column_type(stmt, 2) == SQLITE_FLOAT)
-      longitude  = sqlite3_column_double(stmt, 2);
+    filename   = (gchar*)sqlite3_column_text(stmt, 0);
+    stars      = sqlite3_column_int(stmt, 1);
+    raw_params = sqlite3_column_int(stmt, 2);
     if(sqlite3_column_type(stmt, 3) == SQLITE_FLOAT)
-      latitude   = sqlite3_column_double(stmt, 3);
+      longitude  = sqlite3_column_double(stmt, 3);
+    if(sqlite3_column_type(stmt, 4) == SQLITE_FLOAT)
+      latitude   = sqlite3_column_double(stmt, 4);
   }
-  sqlite3_finalize(stmt);
   xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); //rejected image = -1, others = 0..5
+
+  // The original file name
+  if(filename)
+    xmpData["Xmp.xmpMM.DerivedFrom"] = filename;
 
   // GPS data
   if(!isnan(longitude) && !isnan(latitude))
@@ -1378,6 +1372,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     g_free(long_str);
     g_free(lat_str);
   }
+  sqlite3_finalize(stmt);
 
   // the meta data
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),

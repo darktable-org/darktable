@@ -504,43 +504,43 @@ static gboolean
 borders_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
-  if(self->picked_color_max[0] < 0) return FALSE;
+  if(self->picked_output_color_max[0] < 0) return FALSE;
   if(!self->request_color_pick) return FALSE;
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
 
-  if(fabsf(p->color[0] - self->picked_color[0]) < 0.0001f &&
-      fabsf(p->color[1] - self->picked_color[1]) < 0.0001f &&
-      fabsf(p->color[2] - self->picked_color[2]) < 0.0001f)
+  if(fabsf(p->color[0] - self->picked_output_color[0]) < 0.0001f &&
+      fabsf(p->color[1] - self->picked_output_color[1]) < 0.0001f &&
+      fabsf(p->color[2] - self->picked_output_color[2]) < 0.0001f)
   {
     // interrupt infinite loops
     return FALSE;
   }
 
-  if(fabsf(p->frame_color[0] - self->picked_color[0]) < 0.0001f &&
-      fabsf(p->frame_color[1] - self->picked_color[1]) < 0.0001f &&
-      fabsf(p->frame_color[2] - self->picked_color[2]) < 0.0001f)
+  if(fabsf(p->frame_color[0] - self->picked_output_color[0]) < 0.0001f &&
+      fabsf(p->frame_color[1] - self->picked_output_color[1]) < 0.0001f &&
+      fabsf(p->frame_color[2] - self->picked_output_color[2]) < 0.0001f)
   {
     // interrupt infinite loops
     return FALSE;
   }
 
   GdkColor c;
-  c.red   = self->picked_color[0]*65535.0;
-  c.green = self->picked_color[1]*65535.0;
-  c.blue  = self->picked_color[2]*65535.0;
+  c.red   = self->picked_output_color[0]*65535.0;
+  c.green = self->picked_output_color[1]*65535.0;
+  c.blue  = self->picked_output_color[2]*65535.0;
   if (g->active_colorpick == g->frame_colorpick)
   {
-    p->frame_color[0] = self->picked_color[0];
-    p->frame_color[1] = self->picked_color[1];
-    p->frame_color[2] = self->picked_color[2];
+    p->frame_color[0] = self->picked_output_color[0];
+    p->frame_color[1] = self->picked_output_color[1];
+    p->frame_color[2] = self->picked_output_color[2];
     gtk_widget_modify_fg(GTK_WIDGET(g->frame_colorpick), GTK_STATE_NORMAL, &c);
   }
   else
   {
-    p->color[0] = self->picked_color[0];
-    p->color[1] = self->picked_color[1];
-    p->color[2] = self->picked_color[2];
+    p->color[0] = self->picked_output_color[0];
+    p->color[1] = self->picked_output_color[1];
+    p->color[2] = self->picked_output_color[2];
     gtk_widget_modify_fg(GTK_WIDGET(g->colorpick), GTK_STATE_NORMAL, &c);
   }
 

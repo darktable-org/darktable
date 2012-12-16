@@ -1,8 +1,8 @@
 <sect3 status="draft"><title>Zone system</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>This module is another way to change the lightness of your image. It is based on the Ansel Adams system.
@@ -23,15 +23,15 @@
 		<para>The center view shows the image broken down in zones. </para>
 		<para>When hovering above a zone on the lightness scale, the current zone is highligthed on the preview.
 			The number of zones can be changed by mouse-scrolling on the lightness scale.</para>
-		<para>Left click and drag a handle in the zonebar to modify the zonemapping, use right click to remove controlpoint.</para> 
+		<para>Left click and drag a handle in the zonebar to modify the zonemapping, use right click to remove a controlpoint.</para> 
 			
 	</sect4>
 	
 	<sect4><title>Examples</title>
 		<para>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth='30%'/>
-					<colspec colwidth='70%'/>
+					<colspec colwidth="4*"/>
+					<colspec colwidth="6*"/>
 					<tbody>
 						<row>
 							<entry>

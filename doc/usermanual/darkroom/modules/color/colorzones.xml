@@ -1,12 +1,17 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect3 status="draft"><title>Color zones</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
 						<entry>This module allows to selectively modify the colors in your image. 
-						It is highly versatile and allow every transformation possible in the LCh colorspace.					
+						It is highly versatile and allows every transformation possible in the LCh colorspace.					
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/colorzones.png" scalefit="1" width="80%" align="center" />
@@ -18,8 +23,15 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>The horizontal axis represent the different values you can modify. The vertical axis shows the changes you can achieve.</para>
-		<para>For both horizontal and vertical axises you can work on Luminance (L), Colorness (C) or hue (h). As a reminder, colorness is a notion close to saturation but changing colorness
-			does not change the perceived lightness as saturation can do.</para>			
+		<para>The horizontal axis represent the different values you can modify. The vertical axis shows the changes you can achieve.
+                </para>
+		<para>For both horizontal and vertical axises you can work on lightness, saturation or hue. A color picker is activated by pressing 
+                      <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" /> and will show the picked values in
+                      the diagram.
+                </para>
+                <para>You can click on any of the six nodes on the curve and drag to adjust it vertically. A circle indicates how strong adjacent nodes
+                      will be affected. Use the scroll wheel of your mouse to change the circle diameter. You can also use the six controlpoints 
+                      (triangles which define the vertical value of the nodes) at bottom to adjust the curve.
+                </para>			
 	</sect4>
 </sect3>

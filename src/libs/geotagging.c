@@ -59,7 +59,7 @@ uint32_t container()
 int
 position ()
 {
-  return 550;
+  return 450;
 }
 
 /* try to parse the offset string. returns true if it worked, false otherwise.
@@ -497,14 +497,13 @@ _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
 // - getenv("TZDIR")
 // - apparently on solaris there is no zones.tab. we need to collect the information ourselves like this:
 //   /bin/grep -h ^Zone /usr/share/lib/zoneinfo/src/* | /bin/awk '{print "??\t+9999+99999\t" $2}'
+#define MAX_LINE_LENGTH 256
 static GList *
 _lib_geotagging_get_timezones(void)
 {
   GList *tz = NULL;
   FILE *fp;
-  char *line = NULL;
-  size_t len = 0;
-  ssize_t read;
+  char line[MAX_LINE_LENGTH];
 
   // find the file using known possible locations
   gchar *zone_tab = g_strdup("/usr/share/zoneinfo/zone.tab");
@@ -532,7 +531,7 @@ _lib_geotagging_get_timezones(void)
   if(!fp)
     return NULL;
 
-  while((read = getline(&line, &len, fp)) != -1)
+  while(fgets(line, MAX_LINE_LENGTH, fp))
   {
     if(line[0] == '#' || line[0] == '\0')
       continue;
@@ -550,7 +549,6 @@ _lib_geotagging_get_timezones(void)
     tz = g_list_append(tz, name);
   }
 
-  g_free(line);
   fclose(fp);
 
   // sort tz
@@ -558,6 +556,7 @@ _lib_geotagging_get_timezones(void)
 
   return g_list_first(tz);
 }
+#undef MAX_LINE_LENGTH
 
 void
 gui_init (dt_lib_module_t *self)

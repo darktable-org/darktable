@@ -101,7 +101,11 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **bu
     else // raw
       img->bpp = sizeof(uint16_t);
   }
-  else fprintf(stderr, "[image_cache_allocate] failed to open image from database: %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+  else
+  {
+    img->id = -1;
+    fprintf(stderr, "[image_cache_allocate] failed to open image %d from database: %s\n", key, sqlite3_errmsg(dt_database_get(darktable.db)));
+  }
   sqlite3_finalize(stmt);
 
   *buf = c->images + slot;

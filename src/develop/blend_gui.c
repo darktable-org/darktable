@@ -469,35 +469,25 @@ _blendop_blendif_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *mo
 static void
 _blendop_blendif_showmask_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *module)
 {
-  dt_develop_blend_params_t *bp = module->blend_params;
-
   module->request_mask_display = gtk_toggle_button_get_active(togglebutton);
   if(darktable.gui->reset) return;
 
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
 
-  // hack! in order to force instant redraw we toggle an unused bit in blendif params
-  // TODO: need to find a better way to trigger redraw
-  bp->blendif ^= (1<<DEVELOP_BLENDIF_unused);
-  dt_dev_add_history_item(darktable.develop, module, TRUE);
+  dt_dev_reprocess_all(module->dev);
 }
 
 static void
 _blendop_blendif_suppress_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *module)
 {
-  dt_develop_blend_params_t *bp = module->blend_params;
-
   module->suppress_mask = gtk_toggle_button_get_active(togglebutton);
   if(darktable.gui->reset) return;
 
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
 
-  // hack! in order to force instant redraw we toggle an unused bit in blendif params
-  // TODO: need to find a better way to trigger redraw
-  bp->blendif ^= (1<<DEVELOP_BLENDIF_unused);
-  dt_dev_add_history_item(darktable.develop, module, TRUE);
+  dt_dev_reprocess_all(module->dev);
 }
 
 static void
@@ -575,7 +565,7 @@ dt_iop_gui_update_blendif(dt_iop_module_t *module)
   dt_develop_blend_params_t *bp = module->blend_params;
   dt_develop_blend_params_t *dp = module->default_blendop_params;
 
-  if (!data->blendif_support) return;
+  if (!data || !data->blendif_support || !data->blendif_inited) return;
 
   int tab = data->tab;
   int in_ch = data->channels[tab][0];
@@ -592,6 +582,8 @@ dt_iop_gui_update_blendif(dt_iop_module_t *module)
 
   int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
+
+  dt_bauhaus_combobox_set(data->blendif_enable, (module->blend_params->blendif & (1<<DEVELOP_BLENDIF_active)) ? 1 : 0);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->lower_polarity), ipolarity);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->upper_polarity), opolarity);
@@ -785,6 +777,8 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     dt_bauhaus_widget_set_label(bd->blendif_enable, _("blend"));
     dt_bauhaus_combobox_add(bd->blendif_enable, _("uniformly"));
     dt_bauhaus_combobox_add(bd->blendif_enable, _("only, if.."));
+    dt_bauhaus_combobox_set(bd->blendif_enable, 0);
+
 
     bd->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
@@ -918,9 +912,62 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
 
     gtk_box_pack_end(GTK_BOX(blendw), GTK_WIDGET(bd->blendif_box),TRUE,TRUE,0);
     gtk_box_pack_end(GTK_BOX(blendw), GTK_WIDGET(bd->blendif_enable),TRUE,TRUE,0);
+
+    bd->blendif_inited = 1;
   }
 }
 
+
+void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
+{
+  if (!module->blend_data) return;
+
+  memset(module->blend_data, 0, sizeof(dt_iop_gui_blend_data_t));
+
+  g_free(module->blend_data);
+  module->blend_data = NULL;
+}
+
+
+void dt_iop_gui_update_blending(dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
+
+  if (!(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) || !bd || !bd->blend_inited) return;
+
+  int reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
+
+  dt_bauhaus_combobox_set(bd->blend_modes_combo, dt_iop_gui_blending_mode_seq(bd, module->blend_params->mode));
+  dt_bauhaus_slider_set(bd->opacity_slider, module->blend_params->opacity);
+
+  dt_iop_gui_update_blendif(module);
+
+
+  /* now show hide controls as required */
+  if(bd->modes[dt_bauhaus_combobox_get(bd->blend_modes_combo)].mode == DEVELOP_BLEND_DISABLED)
+  {
+    gtk_widget_hide(GTK_WIDGET(bd->opacity_slider));
+    if(bd->blendif_support && bd->blendif_inited)
+    {
+      gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
+      gtk_widget_hide(GTK_WIDGET(bd->blendif_enable));
+    }
+  }
+  else
+  {
+    gtk_widget_show(GTK_WIDGET(bd->opacity_slider));
+    if(bd->blendif_support && bd->blendif_inited)
+    {
+      gtk_widget_show(GTK_WIDGET(bd->blendif_enable));
+      if(dt_bauhaus_combobox_get(bd->blendif_enable) != 0)
+        gtk_widget_show(GTK_WIDGET(bd->blendif_box));
+      else
+        gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
+    }
+  }
+  darktable.gui->reset = reset;
+}
 
 
 void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
@@ -929,6 +976,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
   if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
   {
     module->blend_data = g_malloc(sizeof(dt_iop_gui_blend_data_t));
+    memset(module->blend_data, 0, sizeof(dt_iop_gui_blend_data_t));
     dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
 
     dt_iop_gui_blendop_modes_t modes[23]; /* number must fit exactly!!! */
@@ -1016,7 +1064,9 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     {
       dt_iop_gui_init_blendif(GTK_VBOX(iopw), module);
     }
+    bd->blend_inited = 1;
     gtk_widget_queue_draw(GTK_WIDGET(iopw));
+    dt_iop_gui_update_blending(module);
   }
 }
 

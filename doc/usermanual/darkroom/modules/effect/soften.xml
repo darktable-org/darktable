@@ -1,13 +1,11 @@
 <sect3 status="draft"><title>Soften</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='70%'/>
-				<colspec colwidth='30%'/>
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module is an artistic feature that creates the Orton effect also commonly known as softening the image.
-								Michael Orton achieved such result on slide film by using 2 exposures of the same scene: one well exposed and one overexposed; then 
-								he used a technique to blend those into a final image where the overexposed image was blurred.
+						<entry>This module is an artistic feature that creates a softened image also commonly known as the Orton effect.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/soften.png" scalefit="1" width="80%" align="center" />
@@ -19,7 +17,10 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>This module is almost a copy of Orton's analogue process into the digital domain and you can control brightnesss and blur with the provided parameters; 
+                <para>Michael Orton achieved such results on slide film by using two exposures of the same scene: one well exposed and one overexposed; then 
+                      he used a darkroom technique to blend those into a final image where the overexposed image was blurred.
+                </para>
+		<para>This module is almost a copy of Orton's analogue process into the digital domain. You can control brightnesss and blur with the provided parameters; 
 			we also add a control for saturation of the overexposured image for more play.
 		</para>
 		<sect5><title>size</title>
@@ -39,8 +40,8 @@
 	<sect4><title>Examples</title>
 		<para>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth='30%'/>
-					<colspec colwidth='70%'/>
+					<colspec colwidth="4*"/>
+					<colspec colwidth="6*"/>
 					<tbody>
 						<row>
 							<entry>

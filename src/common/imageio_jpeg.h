@@ -28,6 +28,9 @@
 #undef HAVE_STDLIB_H
 #undef HAVE_STDDEF_H
 
+#include "common/image.h"
+#include "common/mipmap_cache.h"
+
 typedef struct dt_imageio_jpeg_t
 {
   int width, height;
@@ -56,6 +59,9 @@ int dt_imageio_jpeg_read_header(const char *filename, dt_imageio_jpeg_t *jpg);
 int dt_imageio_jpeg_read(dt_imageio_jpeg_t *jpg, uint8_t *out);
 /** reads the color profile attached to the jpeg, closes file. */
 int dt_imageio_jpeg_read_profile(dt_imageio_jpeg_t *jpg, uint8_t **out);
+
+/** utility function to read and open jpeg from imagio.c */
+dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
