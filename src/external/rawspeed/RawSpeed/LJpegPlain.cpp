@@ -244,8 +244,6 @@ void LJpegPlain::decodeScanLeftGeneric() {
       }
       dest += (maxSuperH * comps) - comps;
       pixInSlice -= maxSuperH;
-      // Check if we are still within the file.
-      bits->checkPos();
     }
     // Update predictors
     for (uint32 i = 0; i < comps; i++) {
@@ -254,6 +252,8 @@ void LJpegPlain::decodeScanLeftGeneric() {
       if (!(pixInSlice == 0 || maxSuperV == 1))
         ThrowRDE("LJpegPlain::decodeScanLeftGeneric: Slice not placed at new line");
     }
+    // Check if we are still within the file.
+    bits->checkPos();
     predict = dest;
     x = 0;
   }
@@ -378,8 +378,6 @@ void LJpegPlain::decodeScanLeft4_2_0() {
 
       dest += COMPS * 2;
       pixInSlice -= 2;
-      // Check if we are still within the file.
-      bits->checkPos();
     }
 
     // Update predictors
@@ -387,6 +385,8 @@ void LJpegPlain::decodeScanLeft4_2_0() {
     p2 = predict[1];
     p3 = predict[2];
     _ASSERTE(pixInSlice == 0);  // Ensure, that there is a slice shift at new line
+    // Check if we are still within the file.
+    bits->checkPos();
 
     x = 0;
   }
@@ -497,8 +497,6 @@ void LJpegPlain::decodeScanLeft4_2_2() {
 
       dest += COMPS * 2;
       pixInSlice -= 2;
-      // Check if we are still within the file.
-      bits->checkPos();
     }
 
     // Update predictors
@@ -507,6 +505,8 @@ void LJpegPlain::decodeScanLeft4_2_2() {
     p3 = predict[2];
     predict = dest;
     x = 0;
+    // Check if we are still within the file.
+    bits->checkPos();
   }
 }
 
@@ -583,7 +583,6 @@ void LJpegPlain::decodeScanLeft2Comps() {
           ThrowRDE("LJpegPlain::decodeScanLeft: Offset out of bounds");
         pixInSlice = slice_width[o>>28];
       }
-      bits->checkPos();
     }
 
     if (skipX) {
@@ -597,6 +596,7 @@ void LJpegPlain::decodeScanLeft2Comps() {
     p2 = predict[1];
     predict = dest;  // Adjust destination for next prediction
     x = 0;
+    bits->checkPos();
   }
 }
 
@@ -676,7 +676,6 @@ void LJpegPlain::decodeScanLeft3Comps() {
         _ASSERTE((o >> 28) < slicesW.size());
         pixInSlice = slice_width[o>>28];
       }
-      bits->checkPos();
     }
 
     if (skipX) {
@@ -692,6 +691,7 @@ void LJpegPlain::decodeScanLeft3Comps() {
     p3 = predict[2];  // Predictors for next row
     predict = dest;  // Adjust destination for next prediction
     x = 0;
+    bits->checkPos();
   }
 }
 
@@ -775,7 +775,6 @@ void LJpegPlain::decodeScanLeft4Comps() {
           ThrowRDE("LJpegPlain::decodeScanLeft: Offset out of bounds");
         pixInSlice = slice_width[o>>28];
       }
-      bits->checkPos();
     }
     if (skipX) {
       for (uint32 i = 0; i < skipX; i++) {
@@ -785,6 +784,7 @@ void LJpegPlain::decodeScanLeft4Comps() {
         HuffDecode(dctbl4);
       }
     }
+    bits->checkPos();
     p1 = predict[0];  // Predictors for next row
     p2 = predict[1];
     p3 = predict[2];  // Predictors for next row

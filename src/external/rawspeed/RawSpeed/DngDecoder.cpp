@@ -216,7 +216,7 @@ RawImage DngDecoder::decodeRawInternal() {
           if (bps != 8 && bps != 16)
             big_endian = true;
           try {
-            readUncompressedRaw(in, size, pos, width*bps / 8, bps, big_endian ? BitOrder_Jpeg : BitOrder_Plain);
+            readUncompressedRaw(in, size, pos, mRaw->getCpp()* width * bps / 8, bps, big_endian ? BitOrder_Jpeg : BitOrder_Plain);
           } catch(IOException &ex) {
             if (i > 0)
               mRaw->setError(ex.what());
