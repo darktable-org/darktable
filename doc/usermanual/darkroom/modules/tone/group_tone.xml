@@ -8,6 +8,6 @@
   <xi:include href="tonecurve.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="zonesystem.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="localcontrast.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
-  <xi:include href="global_tonemap.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="tonemapping.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="global_tonemap.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </sect2>

@@ -27,11 +27,15 @@
 #include "common/imageio.h"
 #include "common/imageio_module.h"
 #include "common/imageio_exr.h"
+#ifdef HAVE_OPENJPEG
+#include "common/imageio_j2k.h"
+#endif
 #include "common/imageio_jpeg.h"
 #include "common/imageio_png.h"
 #include "common/imageio_tiff.h"
 #include "common/imageio_pfm.h"
 #include "common/imageio_rgbe.h"
+#include "common/imageio_gm.h"
 #include "common/imageio_rawspeed.h"
 #include "common/image_compression.h"
 #include "common/mipmap_cache.h"
@@ -349,6 +353,14 @@ static const uint8_t _imageio_ldr_magic[] =
   /* jpeg magics */
   0x00, 0x00, 0x02, 0xff, 0xd8,                         // SOI marker
 
+#ifdef HAVE_OPENJPEG
+  /* jpeg 2000, jp2 format */
+  0x00, 0x00, 0x0c, 0x0, 0x0, 0x0, 0x0C, 0x6A, 0x50, 0x20, 0x20, 0x0D, 0x0A, 0x87, 0x0A,
+
+  /* jpeg 2000, j2k format */
+  0x00, 0x00, 0x05, 0xFF, 0x4F, 0xFF, 0x51, 0x00,
+#endif
+
   /* png image */
   0x00, 0x01, 0x03, 0x50, 0x4E, 0x47,                   // ASCII 'PNG'
 
@@ -356,7 +368,7 @@ static const uint8_t _imageio_ldr_magic[] =
   0x01, 0x00, 0x0a, 0x49, 0x49, 0x2a, 0x00, 0x10, 0x00, 0x00, 0x00, 0x43, 0x52,  // Canon CR2 is like TIFF with aditional magic number. must come before tiff as an exclusion
 
   /* tiff image, intel */
-  0x00, 0x00, 0x04, 0x4d, 0x4d, 0x00, 0x2a, 
+  0x00, 0x00, 0x04, 0x4d, 0x4d, 0x00, 0x2a,
 
   /* tiff image, motorola */
   0x00, 0x00, 0x04, 0x49, 0x49, 0x2a, 0x00
@@ -420,6 +432,18 @@ dt_imageio_open_ldr(
     img->flags |= DT_IMAGE_LDR;
     return ret;
   }
+
+#ifdef HAVE_OPENJPEG
+  ret = dt_imageio_open_j2k(img, filename, a);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
+  {
+    img->filters = 0;
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+    return ret;
+  }
+#endif
 
   ret = dt_imageio_open_jpeg(img, filename, a);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
@@ -705,6 +729,10 @@ dt_imageio_open(
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_hdr(img, filename, a);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)      // failsafing, if ldr magic test fails..
+#ifdef HAVE_GRAPHICSMAGICK
+    ret = dt_imageio_open_gm(img, filename, a);
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+#endif
     ret = dt_imageio_open_ldr(img, filename, a);
 
   img->flags &= ~DT_IMAGE_THUMBNAIL;

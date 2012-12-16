@@ -38,10 +38,10 @@
 								<graphic fileref="darkroom/modules/images/channelmixer_ex2.png" scalefit="1" width="60%" align="center" />
 							</entry>						
 							<entry>
-								<para>Here we use gray as output and the following rgb mix: 0.9, 0.3, -0.3, what this does is to reduce blue colors in the mix which usally 
-								represents some details, and we use some more red than green due the skin does contain a very even red tone and the results out of this
+								<para>Here we use gray as output and the following rgb mix: 0.9, 0.3, -0.3. What this does is to reduce blue colors in the mix which usally 
+								represents some details. We use some more red than green as the skin does contain a very even red tone and the results out of this
 								is a pretty smooth skin of the portrait.</para>
-								<para>Due to the images nature, i needed to lighten it up with 0.1 EV</para>
+								<para>Due to the images nature, I needed to lighten it up with 0.1 EV</para>
 							</entry>
 						</row>
 						<row>
@@ -49,8 +49,8 @@
 								<graphic fileref="darkroom/modules/images/channelmixer_ex3.png" scalefit="1" width="60%" align="center" />
 							</entry>						
 							<entry>
-								<para>In this example we use a rgb mix of 0.4, 0.75, -0.15, the difference with the previous example here is that we use more green than red
-								which brings some features back but we will still reduce the blue channel in the mix to dampen artefacts..</para>
+								<para>In this example we use an rgb mix of 0.4, 0.75, -0.15. The difference with the previous example is that we use more green than red,
+								which brings some features back. We still reduce the blue channel in the mix to dampen artefacts.</para>
 							</entry>
 						</row>
 					</tbody>

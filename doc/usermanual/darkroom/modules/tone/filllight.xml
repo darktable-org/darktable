@@ -10,7 +10,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module allows the local modification of the exposition based on pixel lightness.				
+						<entry>This module allows a local modification of the exposure based on pixel lightness.				
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/relight.png" scalefit="1" width="80%" align="center" />

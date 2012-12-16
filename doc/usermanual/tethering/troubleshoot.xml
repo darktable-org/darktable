@@ -9,7 +9,7 @@
 	
 	<orderedlist>
 	  <listitem><para>Verify that camera is detected</para>
-	    <para>The following command will provide which cameras are detected and connected to the computer.0
+	    <para>The following command will provide which cameras are detected and connected to the computer.
 	    Find your camera port name to use it in the following tests below. Usally port <command>usb:</command> 
 	    will be enough and therefore used in these examples.
 	    <programlisting>
@@ -59,7 +59,7 @@
     </programlisting>
     </para>
 
-    <para>If you successfully went through all the tests above, your camera will likly be supported by darktable. 
+    <para>If you successfully went through all the tests above, your camera will likely be supported by darktable. 
     If you anyway stumble into a problem in darktable please file a bug at http://www.darktable.org/redmine. Please attach outputs of 
     the steps above and the log file output while running darktable with the following command.
     <programlisting>
