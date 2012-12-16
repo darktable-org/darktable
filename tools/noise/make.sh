@@ -86,7 +86,9 @@ EOF
  binb=$(echo $b | $path/floatdump)
  # schema for this table is:
  # CREATE TABLE presets (name varchar, description varchar, operation varchar, op_version integer, op_params blob, enabled integer, blendop_params blob, model varchar, maker varchar, lens varchar, iso_min real, iso_max real, exposure_min real, exposure_max real, aperture_min real, aperture_max real, focal_length_min real, focal_length_max real, writeprotect integer, autoapply integer, filter integer, def integer, isldr integer, blendop_version integer);
- echo "insert into presets values ('test ${cam} ${iso}', '', 'denoiseprofile', 1, X'${bin1}${bin1}${bina}${bina}${bina}${binb}${binb}${binb}', 1, X'00', '', '', '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4);" | sqlite3 ${database}
+ echo "insert into presets " \
+ "(name, description, operation, op_version, op_params, enabled, blendop_params, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, writeprotect, autoapply, filter, def, isldr, blendop_version) " \
+ "values ('test ${cam} ${iso}', '', 'denoiseprofile', 1, X'${bin1}${bin1}${bina}${bina}${bina}${binb}${binb}${binb}', 1, X'00', '', '', '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4);" | sqlite3 ${database}
 done
 
 echo ""
