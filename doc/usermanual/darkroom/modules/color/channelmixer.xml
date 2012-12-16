@@ -60,9 +60,12 @@
 
 		<sect5><title>Table of mixing values for some b/w films</title>
 			<para>Select gray as output mixing channel, and try out the values descibed below for your like...</para>
-				<informaltable frame="none">
+				<informaltable frame="none" width="60%">
 					<tgroup cols="4" colsep="0" rowsep="0">
-						
+						<colspec colwidth="2*"/>
+						<colspec colwidth="1*"/>
+						<colspec colwidth="1*"/>
+						<colspec colwidth="1*"/>
 						<tbody>
 							<row><entry>Film Type</entry><entry>Red</entry><entry>Green</entry><entry>Blue</entry></row>				
 							<row><entry>AGFA 200X</entry><entry>0.18</entry><entry>0.41</entry><entry>0.41</entry></row>		

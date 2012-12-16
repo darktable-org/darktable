@@ -29,7 +29,7 @@
 		<para>
 		  Here follows a list of available variable strings that is supported for substitution within
 		  the svg document.
-		  <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0"><tbody>
+		  <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0"><tbody>
 		    <row> <entry>$(DARKTABLE.NAME)</entry><entry><para>The application name</para></entry></row>
 		    <row> <entry>$(DARKTABLE.VERSION)</entry><entry><para>The version of darktable</para></entry></row>
 		    <row> <entry>$(IMAGE.ID)</entry><entry><para>The uniq image id within current library</para></entry></row>
