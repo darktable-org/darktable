@@ -18,8 +18,7 @@
 
 #pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
 
-const sampler_t sampleri = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;
-
+#include "common.h"
 
 float4
 image_to_grid(
@@ -116,7 +115,7 @@ splat(
   {
     // splat into downsampled grid
 
-    const float4 pixel = read_imagef (in, sampleri, (int2)(x, y));
+    const float4 pixel = read_imagef (in, samplerc, (int2)(x, y));
     float L = pixel.x;
     float4 p = (float4)(x, y, L, 0);
     float4 gridp = image_to_grid(p, size, sigma);
@@ -307,8 +306,8 @@ slice_to_output(
   int4   size  = (int4)(sizex, sizey, sizez, 0);
   float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
 
-  float4 pixel  = read_imagef (in,   sampleri, (int2)(x, y));
-  float4 pixel2 = read_imagef (out2, sampleri, (int2)(x, y));
+  float4 pixel  = read_imagef (in,   samplerc, (int2)(x, y));
+  float4 pixel2 = read_imagef (out2, samplerc, (int2)(x, y));
   float L = pixel.x;
   float4 p = (float4)(x, y, L, 0);
   float4 gridp = image_to_grid(p, size, sigma);
@@ -360,7 +359,7 @@ slice(
   int4   size  = (int4)(sizex, sizey, sizez, 0);
   float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
 
-  float4 pixel = read_imagef (in, sampleri, (int2)(x, y));
+  float4 pixel = read_imagef (in, samplerc, (int2)(x, y));
   float L = pixel.x;
   float4 p = (float4)(x, y, L, 0);
   float4 gridp = image_to_grid(p, size, sigma);
