@@ -17,7 +17,7 @@ fi
 cp ${copyfrom} ${database}
 
 
-if [ ! -x $NP ]
+if [ ! -x $NP -o ! -x ${path}/floatdump ]
 then
   echo "*** couldn't find noise profiling binary, please do the following:"
   echo "cd $path"
