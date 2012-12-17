@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 cd build 
 rm -r doc/usermanual
 make darktable-usermanual-html
