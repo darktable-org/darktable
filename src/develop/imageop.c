@@ -909,6 +909,7 @@ init_presets(dt_iop_module_so_t *module_so)
       if( module->legacy_params(module, old_params, old_params_version, new_params, module_version ) )
       {
         free(new_params);
+        dt_iop_cleanup_module(module);
         free(module);
         continue;
       }
@@ -927,6 +928,7 @@ init_presets(dt_iop_module_so_t *module_so)
       sqlite3_finalize(stmt2);
 
       free(new_params);
+      dt_iop_cleanup_module(module);
       free(module);
     }
     else if( module_version > old_params_version )
@@ -955,6 +957,7 @@ init_presets(dt_iop_module_so_t *module_so)
       if( dt_develop_blend_legacy_params(module, old_blend_params, old_blend_params_version, new_blend_params, dt_develop_blend_version(), old_blend_params_size) )
       {
         free(new_blend_params);
+        dt_iop_cleanup_module(module);
         free(module);
         continue;
       }
@@ -973,6 +976,7 @@ init_presets(dt_iop_module_so_t *module_so)
       sqlite3_finalize(stmt2);
 
       free(new_blend_params);
+      dt_iop_cleanup_module(module);
       free(module);
     }
   }
