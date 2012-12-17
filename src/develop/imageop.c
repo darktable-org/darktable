@@ -906,7 +906,12 @@ init_presets(dt_iop_module_so_t *module_so)
       void *new_params = malloc(new_params_size);
 
       // convert the old params to new
-      module->legacy_params(module, old_params, old_params_version, new_params, module_version );
+      if( module->legacy_params(module, old_params, old_params_version, new_params, module_version ) )
+      {
+        free(new_params);
+        free(module);
+        continue;
+      }
 
       // and write the new params back to the database
       sqlite3_stmt *stmt2;
@@ -921,6 +926,7 @@ init_presets(dt_iop_module_so_t *module_so)
       sqlite3_step(stmt2);
       sqlite3_finalize(stmt2);
 
+      free(new_params);
       free(module);
     }
     else if( module_version > old_params_version )
