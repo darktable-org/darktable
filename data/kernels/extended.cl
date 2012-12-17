@@ -341,25 +341,60 @@ vibrance (read_only image2d_t in, write_only image2d_t out, const int width, con
 }
 
 
+#define TEA_ROUNDS 8
+
+void
+encrypt_tea(unsigned int *arg)
+{
+  const unsigned int key[] = {0xa341316c, 0xc8013ea4, 0xad90777d, 0x7e95761e};
+  unsigned int v0 = arg[0], v1 = arg[1];
+  unsigned int sum = 0;
+  unsigned int delta = 0x9e3779b9;
+  for(int i = 0; i < TEA_ROUNDS; i++)
+  {
+    sum += delta;
+    v0 += ((v1 << 4) + key[0]) ^ (v1 + sum) ^ ((v1 >> 5) + key[1]);
+    v1 += ((v0 << 4) + key[2]) ^ (v0 + sum) ^ ((v0 >> 5) + key[3]);
+  }
+  arg[0] = v0;
+  arg[1] = v1;
+}
+
+float
+tpdf(unsigned int urandom)
+{
+  float frandom = (float)urandom / 0xFFFFFFFFu;
+
+  return (frandom < 0.5f ? (sqrt(2.0f*frandom) - 1.0f) : (1.0f - sqrt(2.0f*(1.0f - frandom))));
+}
+
+
 __kernel void
 vignette (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
           const float2 scale, const float2 roi_center_scaled, const float2 expt,
-          const float dscale, const float fscale, const float brightness, const float saturation)
+          const float dscale, const float fscale, const float brightness, const float saturation,
+          const float dither)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
+  unsigned int tea_state[2] = { mad24(y, width, x), 0 };
+  encrypt_tea(tea_state);
+
   const float2 pv = fabs((float2)(x,y) * scale - roi_center_scaled);
 
   const float cplen = pow(pow(pv.x, expt.x) + pow(pv.y, expt.x), expt.y);
 
   float weight = 0.0f;
+  float dith = 0.0f;
 
   if(cplen >= dscale)
   {
     weight = ((cplen - dscale) / fscale);
+
+    dith = (weight <= 1.0f && weight >= 0.0f) ? dither * tpdf(tea_state[0]) : 0.0f;
 
     weight = weight >= 1.0f ? 1.0f : (weight <= 0.0f ? 0.0f : 0.5f - cos(M_PI_F * weight) / 2.0f);
   }
@@ -370,9 +405,9 @@ vignette (read_only image2d_t in, write_only image2d_t out, const int width, con
   {
     float falloff = brightness < 0.0f ? 1.0 + (weight * brightness) : weight * brightness;
 
-    pixel.x =clamp(brightness < 0.0f ? pixel.x * falloff : pixel.x + falloff, 0.0f, 1.0f);
-    pixel.y =clamp(brightness < 0.0f ? pixel.y * falloff : pixel.y + falloff, 0.0f, 1.0f);
-    pixel.z =clamp(brightness < 0.0f ? pixel.z * falloff : pixel.z + falloff, 0.0f, 1.0f);
+    pixel.x =clamp(brightness < 0.0f ? pixel.x * falloff + dith : pixel.x + falloff + dith, 0.0f, 1.0f);
+    pixel.y =clamp(brightness < 0.0f ? pixel.y * falloff + dith : pixel.y + falloff + dith, 0.0f, 1.0f);
+    pixel.z =clamp(brightness < 0.0f ? pixel.z * falloff + dith : pixel.z + falloff + dith, 0.0f, 1.0f);
 
     float mv = (pixel.x + pixel.y + pixel.z) / 3.0f;
     float wss = weight * saturation;
