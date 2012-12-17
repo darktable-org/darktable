@@ -16,19 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
-const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
+#include "common.h"
 
-#ifndef M_PI
-#define M_PI           3.14159265358979323846  // should be defined by the OpenCL compiler acc. to standard
-#endif
-
-int
-FC(const int row, const int col, const unsigned int filters)
-{
-  return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
-}
-
+#include "colorspace.cl"
 
 kernel void
 whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *coeffs,
@@ -197,17 +187,6 @@ basecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
 }
 
 
-void
-XYZ_to_Lab(float *xyz, float *lab)
-{
-  xyz[0] *= (1.0f/0.9642f);
-  xyz[2] *= (1.0f/0.8242f);
-	for (int c=0; c<3; c++)
-		xyz[c] = xyz[c] > 0.008856f ? native_powr(xyz[c], 1.0f/3.0f) : 7.787f*xyz[c] + 16.0f/116.0f;
-	lab[0] = 116.0f * xyz[1] - 16.0f;
-	lab[1] = 500.0f * (xyz[0] - xyz[1]);
-	lab[2] = 200.0f * (xyz[1] - xyz[2]);
-}
 
 /* kernel for the plugin colorin */
 kernel void
@@ -346,7 +325,7 @@ interpolation_func_lanczos(float width, float t)
 {
   float ta = fabs(t);
 
-  float r = (ta > width) ? 0.0f : ((ta < DT_LANCZOS_EPSILON) ? 1.0f : width*native_sin(M_PI*t)*native_sin(M_PI*t/width)/(M_PI*M_PI*t*t));
+  float r = (ta > width) ? 0.0f : ((ta < DT_LANCZOS_EPSILON) ? 1.0f : width*native_sin(M_PI_F*t)*native_sin(M_PI_F*t/width)/(M_PI_F*M_PI_F*t*t));
 
   return r;
 }
@@ -354,10 +333,10 @@ interpolation_func_lanczos(float width, float t)
 float
 sinf_fast(float t)
 {
-  const float a = 4/(M_PI*M_PI);
+  const float a = 4.0f/(M_PI_F*M_PI_F);
   const float p = 0.225f;
 
-  t = a*t*(M_PI - fabs(t));
+  t = a*t*(M_PI_F - fabs(t));
 
   return p*(t*fabs(t) - t) + t;
 }
@@ -374,7 +353,7 @@ interpolation_func_lanczos(float width, float t)
   union { float f; unsigned int i; } sign;
   sign.i = ((a&1)<<31) | 0x3f800000;
 
-  return (DT_LANCZOS_EPSILON + width*sign.f*sinf_fast(M_PI*r)*sinf_fast(M_PI*t/width))/(DT_LANCZOS_EPSILON + M_PI*M_PI*t*t);
+  return (DT_LANCZOS_EPSILON + width*sign.f*sinf_fast(M_PI_F*r)*sinf_fast(M_PI_F*t/width))/(DT_LANCZOS_EPSILON + M_PI_F*M_PI_F*t*t);
 }
 #endif
 
@@ -1014,26 +993,6 @@ monochrome(
 }
 
 
-float
-lab_f_inv(float x)
-{
-  const float epsilon = 0.206896551f; 
-  const float kappa   = 24389.0f/27.0f;
-  if(x > epsilon) return x*x*x;
-  else return (116.0f*x - 16.0f)/kappa;
-}
-
-void
-Lab_to_XYZ(float *Lab, float *XYZ)
-{
-  const float d50[3] = { 0.9642f, 1.0f, 0.8249f };
-  const float fy = (Lab[0] + 16.0f)/116.0f;
-  const float fx = Lab[1]/500.0f + fy;
-  const float fz = fy - Lab[2]/200.0f;
-  XYZ[0] = d50[0]*lab_f_inv(fx);
-  XYZ[1] = d50[1]*lab_f_inv(fy);
-  XYZ[2] = d50[2]*lab_f_inv(fz);
-}
 
 /* kernel for the plugin colorout, fast matrix + shaper path only */
 kernel void
@@ -1127,7 +1086,7 @@ colorzones (read_only image2d_t in, write_only image2d_t out, const int width, c
 
   const float a = pixel.y;
   const float b = pixel.z;
-  const float h = fmod(atan2(b, a) + 2.0f*M_PI, 2.0f*M_PI)/(2.0f*M_PI);
+  const float h = fmod(atan2(b, a) + 2.0f*M_PI_F, 2.0f*M_PI_F)/(2.0f*M_PI_F);
   const float C = sqrt(b*b + a*a);
 
   float select = 0.0f;
@@ -1156,8 +1115,8 @@ colorzones (read_only image2d_t in, write_only image2d_t out, const int width, c
   const float L = pixel.x * pow(2.0f, 4.0f*Lm);
 
   pixel.x = L;
-  pixel.y = cos(2.0f*M_PI*(h + hm)) * Cm * C;
-  pixel.z = sin(2.0f*M_PI*(h + hm)) * Cm * C;
+  pixel.y = cos(2.0f*M_PI_F*(h + hm)) * Cm * C;
+  pixel.z = sin(2.0f*M_PI_F*(h + hm)) * Cm * C;
 
   write_imagef (out, (int2)(x, y), pixel); 
 }

@@ -16,16 +16,16 @@ endif(BUILD_USERMANUAL)
 set(can_build_usermanual ON)
 
 find_program(Fop_BIN fop)
-find_program(Xsltproc_BIN xsltproc)
 find_program(Xml2po_BIN xml2po)
+find_package(Xslt)
 
 if(${Fop_BIN} STREQUAL "Fop_BIN-NOTFOUND")
 	message("Missing fop")
 	set(can_build_usermanual OFF)
 endif()
 
-if(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
-	message("Missing xsltproc")
+if (NOT Xslt_FOUND)
+	message("No Xslt processor found")
 	set(can_build_usermanual OFF)
 endif()
 
@@ -120,9 +120,10 @@ if(can_build_usermanual)
 		COMMENT "Updating usermanual.css" VERBATIM
 	)
 
-	add_custom_command(
+        if (XSLT_SAXON_COMMAND AND Xslt_SAXON_EXTENSIONS)
+	    add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
-		COMMAND xsltproc --stringparam chunker.output.encoding UTF-8 --stringparam base.dir ${CMAKE_CURRENT_BINARY_DIR}/html/ xsl/darktable_html_single.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+                COMMAND ${XSLT_SAXON_COMMAND} ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml xsl/darktable_html_single_ext.xsl chunker.output.encoding=UTF-8 base.dir=${CMAKE_CURRENT_BINARY_DIR}/html/
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/html -name *.html -exec sed -i s/${binary_path}\\/media\\///g {} \;
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/html -name *.html -exec sed -i "s/<body[^>]*>/<body class='usermanual' onLoad='parent.onContentLoad(this);'>/g" {} \;
 		COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/html/
@@ -130,6 +131,18 @@ if(can_build_usermanual)
 		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml ${CMAKE_CURRENT_BINARY_DIR}/html/usermanual.css
 		COMMENT "Building html usermanual" VERBATIM
 	)
+        else (XSLT_SAXON_COMMAND AND Xslt_SAXON_EXTENSIONS)
+            add_custom_command(
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
+                COMMAND ${XSLT_XSLTPROC_EXECUTABLE} --stringparam chunker.output.encoding UTF-8 --stringparam base.dir ${CMAKE_CURRENT_BINARY_DIR}/html/ xsl/darktable_html_single.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/html -name *.html -exec sed -i s/${binary_path}\\/media\\///g {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/html -name *.html -exec sed -i "s/<body[^>]*>/<body class='usermanual' onLoad='parent.onContentLoad(this);'>/g" {} \;
+		COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/html/
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml ${CMAKE_CURRENT_BINARY_DIR}/html/usermanual.css
+		COMMENT "Building html usermanual" VERBATIM
+	)
+        endif (XSLT_SAXON_COMMAND AND Xslt_SAXON_EXTENSIONS)
 	add_custom_target(darktable-usermanual-html DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html/index.html )
 	add_dependencies(darktable-usermanual-html target_media_images darktable_single_xml )
 	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
@@ -138,9 +151,10 @@ if(can_build_usermanual)
 	# draft chunked usermanual for wordpress
 	#
 
-	add_custom_command(
+        if (XSLT_SAXON_COMMAND AND Xslt_SAXON_EXTENSIONS)
+            add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wp/index.html.php
-		COMMAND xsltproc  --stringparam chunker.output.encoding UTF-8 --stringparam base.dir ${CMAKE_CURRENT_BINARY_DIR}/wp/ xsl/darktable_html.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+                COMMAND ${XSLT_SAXON_COMMAND} ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml xsl/darktable_html_ext.xsl chunker.output.encoding=UTF-8 base.dir=${CMAKE_CURRENT_BINARY_DIR}/wp/
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i s/${binary_path}\\/media\\///g {} \;
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/<html>.*<title>/<?php define('WP_USE_THEMES', false);require('\\.\\.\\/wp-config\\.php'); add_filter('wp_title', 'set_title_page'); function set_title_page(){echo '/g" {} \;
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/<\\/title>.*<\\/head>/ | user manual | ';}?>/g" {} \;
@@ -154,6 +168,24 @@ if(can_build_usermanual)
 		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
 		COMMENT "Building php usermanual" VERBATIM
 	)
+        else (XSLT_SAXON_COMMAND AND Xslt_SAXON_EXTENSIONS)
+            add_custom_command(
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wp/index.html.php
+                COMMAND ${XSLT_XSLTPROC_EXECUTABLE} --stringparam chunker.output.encoding UTF-8 --stringparam base.dir ${CMAKE_CURRENT_BINARY_DIR}/wp/ xsl/darktable_html.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i s/${binary_path}\\/media\\///g {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/<html>.*<title>/<?php define('WP_USE_THEMES', false);require('\\.\\.\\/wp-config\\.php'); add_filter('wp_title', 'set_title_page'); function set_title_page(){echo '/g" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/<\\/title>.*<\\/head>/ | user manual | ';}?>/g" {} \;
+
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/<body[^>]*>/<?php get_header(); ?><div id=\"primary\"><div id=\"content\" role=\"main\"><div class=\"usermanual\">/g" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/<\\/body><\\/html>/<\\/div><\\/div><\\/div><?php get_footer(); ?>/g" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/\\.html/\\.html\\.php/g" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec mv {} {}.php \;
+		COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/wp/
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+		COMMENT "Building php usermanual" VERBATIM
+	)
+        endif (XSLT_SAXON_COMMAND AND Xslt_SAXON_EXTENSIONS)
 	add_custom_target(darktable-usermanual-wordpress DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/wp/index.html.php )
 	add_dependencies(darktable-usermanual-wordpress target_media_images darktable_single_xml )
 	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/wp DESTINATION ./share/doc/darktable/usermanual OPTIONAL)

@@ -16,13 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
-const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
-
-#ifndef M_PI
-#define M_PI           3.14159265358979323846  // should be defined by the OpenCL compiler acc. to standard
-#endif
-
+#include "common.h"
+#include "colorspace.cl"
 
 
 __kernel void
@@ -134,89 +129,6 @@ relight (read_only image2d_t in, write_only image2d_t out, const int width, cons
   pixel.x = 100.0f * clamp(lightness*relight, 0.0f, 1.0f);
 
   write_imagef (out, (int2)(x, y), pixel); 
-}
-
-
-float4 RGB_2_HSL(const float4 RGB)
-{
-  float H, S, L;
-
-  // assumes that each channel is scaled to [0; 1]
-  float R = RGB.x;
-  float G = RGB.y;
-  float B = RGB.z;
-
-  float var_Min = fmin(R, fmin(G, B));
-  float var_Max = fmax(R, fmax(G, B));
-  float del_Max = var_Max - var_Min;
-
-  L = (var_Max + var_Min) / 2.0f;
-
-  if (del_Max == 0.0f)
-  {
-    H = 0.0f;
-    S = 0.0f;
-  }
-  else
-  {
-    if (L < 0.5f) S = del_Max / (var_Max + var_Min);
-    else          S = del_Max / (2.0f - var_Max - var_Min);
-
-    float del_R = (((var_Max - R) / 6.0f) + (del_Max / 2.0f)) / del_Max;
-    float del_G = (((var_Max - G) / 6.0f) + (del_Max / 2.0f)) / del_Max;
-    float del_B = (((var_Max - B) / 6.0f) + (del_Max / 2.0f)) / del_Max;
-
-    if      (R == var_Max) H = del_B - del_G;
-    else if (G == var_Max) H = (1.0f / 3.0f) + del_R - del_B;
-    else if (B == var_Max) H = (2.0f / 3.0f) + del_G - del_R;
-
-    if (H < 0.0f) H += 1.0f;
-    if (H > 1.0f) H -= 1.0f;
-  }
-
-  return (float4)(H, S, L, RGB.w);
-}
-
-
-float Hue_2_RGB(float v1, float v2, float vH)
-{
-  if (vH < 0.0f) vH += 1.0f;
-  if (vH > 1.0f) vH -= 1.0f;
-  if ((6.0f * vH) < 1.0f) return (v1 + (v2 - v1) * 6.0f * vH);
-  if ((2.0f * vH) < 1.0f) return (v2);
-  if ((3.0f * vH) < 2.0f) return (v1 + (v2 - v1) * ((2.0f / 3.0f) - vH) * 6.0f);
-  return (v1);
-}
-
-
-float4 HSL_2_RGB(const float4 HSL)
-{
-  float R, G, B;
-
-  float H = HSL.x;
-  float S = HSL.y;
-  float L = HSL.z;
-
-  float var_1, var_2;
-
-  if (S == 0.0f)
-  {
-    R = B = G = L;
-  }
-  else
-  {
-    if (L < 0.5f) var_2 = L * (1.0f + S);
-    else          var_2 = (L + S) - (S * L);
-
-    var_1 = 2.0f * L - var_2;
-
-    R = Hue_2_RGB(var_1, var_2, H + (1.0f / 3.0f)); 
-    G = Hue_2_RGB(var_1, var_2, H);
-    B = Hue_2_RGB(var_1, var_2, H - (1.0f / 3.0f));
-  } 
-
-  // returns RGB scaled to [0; 1] for each channel
-  return (float4)(R, G, B, HSL.w);
 }
 
 
@@ -341,38 +253,73 @@ vibrance (read_only image2d_t in, write_only image2d_t out, const int width, con
 }
 
 
+#define TEA_ROUNDS 8
+
+void
+encrypt_tea(unsigned int *arg)
+{
+  const unsigned int key[] = {0xa341316c, 0xc8013ea4, 0xad90777d, 0x7e95761e};
+  unsigned int v0 = arg[0], v1 = arg[1];
+  unsigned int sum = 0;
+  unsigned int delta = 0x9e3779b9;
+  for(int i = 0; i < TEA_ROUNDS; i++)
+  {
+    sum += delta;
+    v0 += ((v1 << 4) + key[0]) ^ (v1 + sum) ^ ((v1 >> 5) + key[1]);
+    v1 += ((v0 << 4) + key[2]) ^ (v0 + sum) ^ ((v0 >> 5) + key[3]);
+  }
+  arg[0] = v0;
+  arg[1] = v1;
+}
+
+float
+tpdf(unsigned int urandom)
+{
+  float frandom = (float)urandom / 0xFFFFFFFFu;
+
+  return (frandom < 0.5f ? (sqrt(2.0f*frandom) - 1.0f) : (1.0f - sqrt(2.0f*(1.0f - frandom))));
+}
+
+
 __kernel void
 vignette (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
           const float2 scale, const float2 roi_center_scaled, const float2 expt,
-          const float dscale, const float fscale, const float brightness, const float saturation)
+          const float dscale, const float fscale, const float brightness, const float saturation,
+          const float dither)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  const float2 pv = (float2)(x,y) * scale - roi_center_scaled;
+  unsigned int tea_state[2] = { mad24(y, width, x), 0 };
+  encrypt_tea(tea_state);
+
+  const float2 pv = fabs((float2)(x,y) * scale - roi_center_scaled);
 
   const float cplen = pow(pow(pv.x, expt.x) + pow(pv.y, expt.x), expt.y);
 
   float weight = 0.0f;
+  float dith = 0.0f;
 
   if(cplen >= dscale)
   {
     weight = ((cplen - dscale) / fscale);
 
-    weight = weight >= 1.0f ? 1.0f : (weight <= 0.0f ? 0.0f : 0.5f - cos(M_PI * weight) / 2.0f);
+    dith = (weight <= 1.0f && weight >= 0.0f) ? dither * tpdf(tea_state[0]) : 0.0f;
+
+    weight = weight >= 1.0f ? 1.0f : (weight <= 0.0f ? 0.0f : 0.5f - cos(M_PI_F * weight) / 2.0f);
   }
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  if(weight > 0)
+  if(weight > 0.0f)
   {
     float falloff = brightness < 0.0f ? 1.0 + (weight * brightness) : weight * brightness;
 
-    pixel.x =clamp(brightness < 0.0f ? pixel.x * falloff : pixel.x + falloff, 0.0f, 1.0f);
-    pixel.y =clamp(brightness < 0.0f ? pixel.y * falloff : pixel.y + falloff, 0.0f, 1.0f);
-    pixel.z =clamp(brightness < 0.0f ? pixel.z * falloff : pixel.z + falloff, 0.0f, 1.0f);
+    pixel.x =clamp(brightness < 0.0f ? pixel.x * falloff + dith : pixel.x + falloff + dith, 0.0f, 1.0f);
+    pixel.y =clamp(brightness < 0.0f ? pixel.y * falloff + dith : pixel.y + falloff + dith, 0.0f, 1.0f);
+    pixel.z =clamp(brightness < 0.0f ? pixel.z * falloff + dith : pixel.z + falloff + dith, 0.0f, 1.0f);
 
     float mv = (pixel.x + pixel.y + pixel.z) / 3.0f;
     float wss = weight * saturation;

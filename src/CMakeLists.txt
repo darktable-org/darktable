@@ -28,10 +28,12 @@ FILE(GLOB SOURCE_FILES
   "common/imageio.c"
   "common/imageio_exr.cc"
   "common/imageio_jpeg.c"
+  "common/imageio_png.c"
   "common/imageio_module.c"
   "common/imageio_pfm.c"
   "common/imageio_rgbe.c"
   "common/imageio_tiff.c"
+  "common/imageio_gm.c"
   "common/imageio_rawspeed.cc"
   "common/interpolation.c"
   "common/metadata.c"
@@ -100,8 +102,6 @@ set(SOURCES ${SOURCE_FILES} ${SOURCE_FILES_LUA} ${HEADER_FILES})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LibRaw)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/osm-gps-map/src)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/colord-gtk/src)
 
 # initial compiler flags
 add_definitions("-DHAVE_CONFIG_H")
@@ -195,11 +195,26 @@ endif(USE_FLICKR)
 if(USE_GLIBJSON)
   find_package(JsonGlib)
   if(JsonGlib_FOUND)
-	include_directories(${JsonGlib_INCLUDE_DIRS})
-	list(APPEND LIBS ${JsonGlib_LIBRARIES})
-	add_definitions(${JsonGlib_DEFINITIONS})
+    include_directories(${JsonGlib_INCLUDE_DIRS})
+    list(APPEND LIBS ${JsonGlib_LIBRARIES})
   endif(JsonGlib_FOUND)
 endif(USE_GLIBJSON)
+
+if(USE_OPENJPEG)
+  find_package(OpenJPEG)
+  if(OPENJPEG_FOUND)
+    list(APPEND SOURCES "common/imageio_j2k.c")
+    include_directories(${OPENJPEG_INCLUDE_DIRS})
+    list(APPEND LIBS ${OPENJPEG_LIBRARIES})
+    add_definitions(${OPENJPEG_DEFINITIONS})
+    add_definitions("-DHAVE_OPENJPEG")
+    if(OPENJPEG_VERSION VERSION_GREATER "1.5.0")
+      add_definitions("-DHAVE_OPENJPEG_ICC")
+    else()
+      message(STATUS "OpenJPEG version ${OPENJPEG_VERSION} found. Only 1.5 and newer support reading of icc profiles.")
+    endif()
+  endif(OPENJPEG_FOUND)
+endif(USE_OPENJPEG)
 
 #
 # Detect compile of optional pwstorage backends
@@ -241,6 +256,16 @@ if(USE_UNITY)
     list(APPEND LIBS ${UNITY_LIBRARIES})
   endif(UNITY_FOUND)
 endif(USE_UNITY)
+
+if(USE_GRAPHICSMAGICK)
+  find_package(GraphicsMagick)
+  if(GraphicsMagick_FOUND)
+    add_definitions(-DHAVE_GRAPHICSMAGICK)
+    include_directories(${GraphicsMagick_INCLUDE_DIRS})
+    list(APPEND LIBS ${GraphicsMagick_LIBRARIES})
+  endif(GraphicsMagick_FOUND)
+endif(USE_GRAPHICSMAGICK)
+
 
 # build opengl slideshow viewer?
 if(BUILD_SLIDESHOW)
@@ -293,15 +318,17 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -fno-strict-aliasing")
 # c++ code doesn't like -Werror (libraw)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fno-strict-aliasing")
 
+if(NOT WIN32)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
+endif(NOT WIN32)
+
+if(NOT CUSTOM_CFLAGS)
+
 if(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
   # apple build fails on deprecated warnings..
   # and too many warnings reported by Clang for now
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
 endif(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
-
-if(NOT WIN32)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
-endif(NOT WIN32)
 
 if(NOT BINARY_PACKAGE_BUILD)
 	MESSAGE("-- Checking for -march=native support")
@@ -323,10 +350,10 @@ endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -g")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math ${MARCH}")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g -D_DEBUG")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -g")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math ${MARCH}")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -D_DEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
 if(CMAKE_COMPILER_IS_GNUCC)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fexpensive-optimizations")
@@ -335,6 +362,11 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fexpensive-optimizations")
 endif()
+
+endif(NOT CUSTOM_CFLAGS)
+
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
 
 #
 # Generate config.h
@@ -424,6 +456,7 @@ if(USE_GEO)
     include_directories(${LIBSOUP2_INCLUDE_DIRS})
     list(APPEND LIBS ${LIBSOUP2_LIBRARIES})
     add_definitions(${LIBSOUP2_DEFINITIONS})
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/osm-gps-map/src)
     add_dependencies(lib_darktable osmgpsmap)
     add_library(osmgpsmap_static STATIC IMPORTED)
     set_target_properties(osmgpsmap_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/osm-gps-map/libosmgpsmap.a)
@@ -443,20 +476,23 @@ endif(USE_GEO)
 target_link_libraries(lib_darktable ${LIBS})
 
 # libcolord-gtk:
-find_package(Colord)
-if(COLORD_FOUND)
-  include_directories(${COLORD_INCLUDE_DIRS})
-  list(APPEND LIBS ${COLORD_LIBRARIES})
-# we ship our own copy of libcolord-gtk - the one packaged in distros is linked against gtk3 :(
-  add_dependencies(lib_darktable colord-gtk)
-  add_library(colord-gtk_static STATIC IMPORTED)
-  set_target_properties(colord-gtk_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/colord-gtk/libcolord-gtk.a)
-  target_link_libraries(lib_darktable colord-gtk_static)
-  add_subdirectory(external/colord-gtk)
-  list(APPEND STATIC_LIBS colord-gtk_static)
-  add_dependencies(colord-gtk colord)
-  add_definitions("-DUSE_COLORDGTK")
-endif(COLORD_FOUND)
+if(USE_COLORD)
+  find_package(Colord)
+  if(COLORD_FOUND)
+    include_directories(${COLORD_INCLUDE_DIRS})
+    list(APPEND LIBS ${COLORD_LIBRARIES})
+    # we ship our own copy of libcolord-gtk - the one packaged in distros is linked against gtk3 :(
+    add_dependencies(lib_darktable colord-gtk)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/colord-gtk/src)
+    add_library(colord-gtk_static STATIC IMPORTED)
+    set_target_properties(colord-gtk_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/colord-gtk/libcolord-gtk.a)
+    target_link_libraries(lib_darktable colord-gtk_static)
+    add_subdirectory(external/colord-gtk)
+    list(APPEND STATIC_LIBS colord-gtk_static)
+    add_dependencies(colord-gtk colord)
+    add_definitions("-DUSE_COLORDGTK")
+  endif(COLORD_FOUND)
+endif(USE_COLORD)
 
 # libsquish for compressed thumbnails:
 add_dependencies(lib_darktable squish)

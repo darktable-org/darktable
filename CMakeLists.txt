@@ -4,6 +4,7 @@ cmake_policy(VERSION 2.6)
 
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
 option(USE_NLS "Build Native Language Support (using gettext)" ON)
+option(USE_COLORD "Enable colord support" ON)
 option(USE_GEO "Build geotagging parts" ON)
 option(USE_LUA "Build lua scripting support" ON)
 option(USE_FLICKR "Enable Flickr support" ON)
@@ -14,7 +15,9 @@ option(USE_UNITY "Use libunity to report progress in the launcher" OFF)
 option(BUILD_SLIDESHOW "Build the opengl slideshow viewer" ON)
 option(USE_OPENMP "Use openmp threading support." ON)
 option(USE_OPENCL "Use OpenCL support." ON)
+option(USE_GRAPHICSMAGICK "Use GraphicsMagick library for image import." ON)
 option(USE_DARKTABLE_PROFILING OFF)
+option(CUSTOM_CFLAGS "Don't override compiler optimization flags." OFF)
 option(DONT_USE_RAWSPEED "Dont compile rawspeed backend." OFF)
 option(BUILD_USERMANUAL "Build all the versions of the usermanual." OFF)
 option(INSTALL_IOP_EXPERIMENTAL "Also install unstable, unfinished, broken, and likely-to-change-soon plugins." OFF)
@@ -23,6 +26,7 @@ option(BINARY_PACKAGE_BUILD "Sets march optimization to generic" OFF)
 option(APRIL_FOOLS "Add the \"file manager\" (a shell) to lighttable mode" OFF)
 option(GTK3_MIGRATION_CHECKS "Help getting darktable ready for GTK3" OFF)
 option(USE_XMLLINT "Run xmllint to test if darktableconfig.xml is valid" ON)
+option(USE_OPENJPEG "Enable JPEG 2000 support" ON)
 if(APPLE)
 	option(USE_MAC_INTEGRATION "Enable OS X integration" ON)
 else(APPLE)
@@ -108,6 +112,10 @@ if(NOT CMAKE_BUILD_TYPE)
 	SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
+if(CMAKE_BUILD_TYPE MATCHES "^[Dd][Ee][Bb][Uu][Gg]$")
+	message(FATAL_ERROR "ERROR: Debug build type most likely isn't what you want, use RelWithDebInfo instead. If you're absolutely sure that this is what you want then just comment out this line.")
+endif()
+
 if(WIN32)
 	set(SHARE_INSTALL "." CACHE STRING "Data file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
 else(WIN32)
@@ -139,7 +147,7 @@ if(Gettext_FOUND)
 			SET(LOCALE_DIR "${CMAKE_INSTALL_PREFIX}/share/locale")
 		endif(WIN32)
 	endif(NOT LOCALE_DIR)
-	
+
 	if(NOT LOCALE_DIR)
 		message(QUIET "Set LOCALE_DIR to path to get Gettext working")
 	else()
@@ -158,12 +166,12 @@ endif(USE_NLS)
 if(NOT TMP_DIR)
 	SET(TMP_DIR "~/.local/tmp")
 endif(NOT TMP_DIR)
-	
+
 #find a cache directory
 if(NOT CACHE_DIR)
 	SET(CACHE_DIR "~/.cache/darktable")
 endif(NOT CACHE_DIR)
-	
+
 # needed to generate file "preferences_gen.h" accordingly
 if(USE_OPENCL)
 	SET(HAVE_OPENCL 1)
@@ -194,17 +202,17 @@ endif(GTK3_MIGRATION_CHECKS)
 # 				set(SSE_CHECK_COMMAND grep ${sse_test} /proc/cpuinfo)
 # 			endif(WIN32)
 # 			execute_process(COMMAND ${SSE_CHECK_COMMAND} RESULT_VARIABLE ret_var OUTPUT_VARIABLE out_var)
-# 			
+#
 # 			if(ret_var EQUAL 0) # grep returns 0 on success
 # 				set(SSE_FOUND TRUE)
 # 				message("--  ${sse_test} detected and working.")
 # 				set(USE_SSE_SET ${sse_test})
 # 			endif(ret_var EQUAL 0)
-# 			
+#
 # 		endif(NOT SSE_FOUND)
 # 	endforeach(sse_test)
 # endif(NOT USE_SSE_FLAG)
-# 
+#
 # # set the SSE
 # if(USE_SSE_SET)
 # 	set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-m${USE_SSE_SET}")

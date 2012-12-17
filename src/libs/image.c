@@ -80,6 +80,7 @@ _group_helper_function(void)
   else
     darktable.gui->expanded_group_id = -1;
   dt_collection_update_query(darktable.collection);
+  dt_control_queue_redraw_center();
 }
 
 /** removes the selected images from their current group. */
@@ -96,6 +97,7 @@ _ungroup_helper_function(void)
   sqlite3_finalize(stmt);
   darktable.gui->expanded_group_id = -1;
   dt_collection_update_query(darktable.collection);
+  dt_control_queue_redraw_center();
 }
 
 static void
@@ -114,7 +116,6 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   else if(i == 9) dt_control_copy_images();
   else if(i == 10) _group_helper_function();
   else if(i == 11) _ungroup_helper_function();
-  dt_control_queue_redraw_center();
 }
 
 int

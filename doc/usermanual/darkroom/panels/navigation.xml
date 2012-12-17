@@ -4,7 +4,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>The navigation panels shows a full preview of your image and the current viewport of zoom. Drag the rectangle around to pan the zoomed in view.
+						<entry>The navigation panels shows a full preview of your image and the current viewport of zoom. Drag the rectangle around to pan the zoomed-in view.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/images/panel_navigation.png" scalefit="1" width="80%" align="center" />

@@ -61,6 +61,8 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] =
 
   {"dt-collection-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                   // DT_SIGNAL_COLLECTION_CHANGED
   {"dt-filmrolls-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                          // DT_SIGNAL_FILMROLLS_CHANGED
+  {"dt-filmrolls-imported",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                    //DT_SIGNAL_FILMROLLS_IMPORTED
+  {"dt-filmrolls-removed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                    //DT_SIGNAL_FILMROLLS_REMOVED
 
 
   /* Develop related signals */

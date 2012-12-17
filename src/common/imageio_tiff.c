@@ -54,6 +54,14 @@ dt_imageio_open_tiff(
   TIFFGetField(image, TIFFTAG_BITSPERSAMPLE, &bpp);
   TIFFGetField(image, TIFFTAG_SAMPLESPERPIXEL, &spp);
 
+  // we only support 8-bit and 16-bit here. in case of other formats let's hope for GraphicsMagick to deal them
+  if(bpp != 8 && bpp != 16)
+  {
+    fprintf(stderr, "[tiff_open] could not handle image with %d bit depth `%s'\n", bpp, img->filename);
+    TIFFClose(image);
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
+
   const int orientation = dt_image_orientation(img);
 
   if(orientation & 4)
@@ -66,6 +74,8 @@ dt_imageio_open_tiff(
     img->width = width;
     img->height = height;
   }
+
+  img->bpp = 4*sizeof(float);
 
   float *mipbuf = (float *)dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
   if(!mipbuf)
@@ -97,7 +107,7 @@ dt_imageio_open_tiff(
     for (row = 0; row < imagelength; row++)
     {
       TIFFReadScanline(image, buf, row, 0);
-      if(bpp < 12) for(int i=0; i<width; i++)
+      if(bpp == 8) for(int i=0; i<width; i++)
           for(int k=0; k<3; k++) mipbuf[4*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf8[spp*i + k]*(1.0/255.0);
       else for(int i=0; i<width; i++)
           for(int k=0; k<3; k++) mipbuf[4*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf16[spp*i + k]*(1.0/65535.0);

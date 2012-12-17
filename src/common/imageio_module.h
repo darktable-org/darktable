@@ -102,7 +102,7 @@ typedef struct dt_imageio_module_format_t
   int (*write_image)(dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif, int exif_len, int imgid);
 
   // sometimes we want to tell the world about what we can do
-  int (*flags)();
+  int (*flags)(dt_imageio_module_data_t *data);
 
   // reading functions:
   /* read header from file, get width and height */

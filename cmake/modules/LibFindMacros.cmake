@@ -40,22 +40,22 @@ macro (libfind_process PREFIX)
 
     # Process all includes and set _FOUND to false if any are missing
     foreach (i ${${PREFIX}_PROCESS_INCLUDES})
-      if (${i})
+      if (i)
         set (${PREFIX}_INCLUDE_DIRS ${${PREFIX}_INCLUDE_DIRS} ${${i}})
         mark_as_advanced(${i})
-      else (${i})
+      else (i)
         set (${PREFIX}_FOUND FALSE)
-      endif (${i})
+      endif (i)
     endforeach (i)
 
     # Process all libraries and set _FOUND to false if any are missing
     foreach (i ${${PREFIX}_PROCESS_LIBS})
-      if (${i})
+      if (i)
         set (${PREFIX}_LIBRARIES ${${PREFIX}_LIBRARIES} ${${i}})
         mark_as_advanced(${i})
-      else (${i})
+      else (i)
         set (${PREFIX}_FOUND FALSE)
-      endif (${i})
+      endif (i)
     endforeach (i)
 
     # Print message and/or exit on fatal error

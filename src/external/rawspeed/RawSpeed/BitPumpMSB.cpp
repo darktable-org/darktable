@@ -39,6 +39,7 @@ BitPumpMSB::BitPumpMSB(const uchar8* _buffer, uint32 _size) :
 }
 
 __inline void BitPumpMSB::init() {
+  mStuffed = 0;
   current_buffer = (uchar8*)_aligned_malloc(16, 16);
   if (!current_buffer)
     ThrowRDE("BitPumpMSB::init(): Unable to allocate memory");
@@ -52,6 +53,23 @@ void BitPumpMSB::fill()
     return;
   // Fill in 96 bits
   int* b = (int*)current_buffer;
+  if ((off + 12) > size) {
+    while(mLeft <= 64 && off < size) {
+      for (int i = (mLeft>>3); i >= 0; i--)
+        current_buffer[i+1] = current_buffer[i];
+      current_buffer[0] = buffer[off++];
+      mLeft+=8;
+    }
+    while (mLeft <= 64) {
+      b[3] = b[2];
+      b[2] = b[1];
+      b[1] = b[0];
+      b[0] = 0;
+      mLeft +=32;
+      mStuffed += 4;
+    }
+    return;
+  }
   b[3] = b[0];
 #if defined(LE_PLATFORM_HAS_BSWAP)
   b[2] = PLATFORM_BSWAP32(*(int*)&buffer[off]);
@@ -79,7 +97,7 @@ uint32 BitPumpMSB::getBitSafe() {
 
 uint32 BitPumpMSB::getBitsSafe(unsigned int nbits) {
   if (nbits > MIN_GET_BITS)
-    throw IOException("Too many bits requested");
+    ThrowIOE("Too many bits requested");
 
   fill();
   checkPos();
@@ -95,9 +113,10 @@ uchar8 BitPumpMSB::getByteSafe() {
 
 void BitPumpMSB::setAbsoluteOffset(unsigned int offset) {
   if (offset >= size)
-    throw IOException("Offset set out of buffer");
+    ThrowIOE("Offset set out of buffer");
 
   mLeft = 0;
+  mStuffed = 0;
   off = offset;
   fill();
 }

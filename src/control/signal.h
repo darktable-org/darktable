@@ -60,9 +60,18 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_COLLECTION_CHANGED,
   
-  /** \brief This signal is raised when a filmroll is added/deleted/changed */
+  /** \brief This signal is raised when a filmroll is deleted/changed but not imported
+      \note when a filmroll is imported, use DT_SIGNALS_FILMOLLS_IMPORTED, as the gui
+       has to behave differently
+  */
   DT_SIGNAL_FILMROLLS_CHANGED,
 
+  /** \brief This signal is raised only when a filmroll is imported */
+  DT_SIGNAL_FILMROLLS_IMPORTED,
+
+  /** \brief This signal is raised only when a filmroll is removed */
+  DT_SIGNAL_FILMROLLS_REMOVED,
+  
   /** \brief This signal is raised when darktable.develop is initialized.
       \note any modules that wants to acces darktable->develop should connect
       to this signal to be sure darktable.develop is initialized.

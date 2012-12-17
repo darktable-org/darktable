@@ -5,7 +5,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>darktable comes with general enhanced basecurve presets for several models that is per automatic applied
+						<entry>darktable comes with general enhanced basecurve presets for several models. These are automatically applied
 							to raw images for better colors and contrast.
 						</entry>
 						<entry>

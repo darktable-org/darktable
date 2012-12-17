@@ -55,6 +55,9 @@
 #include <sys/param.h>
 #include <unistd.h>
 #include <locale.h>
+#ifdef HAVE_GRAPHICSMAGICK
+#include <magick/api.h>
+#endif
 
 #if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__DragonFly__)
 #include <malloc.h>
@@ -71,7 +74,14 @@
 #endif
 
 darktable_t darktable;
-const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2,dcr,dng,erf,fff,exr,ia,iiq,jpg,jpeg,k25,kc2,kdc,mdc,mef,mos,mrw,nef,nrw,orf,pef,pfm,pxn,qtk,raf,raw,rdc,rw2,rwl,sr2,srf,srw,sti,tif,tiff,x3f";
+const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2,dcr,dng,erf,fff,exr,ia,iiq,jpeg,jpg,k25,kc2,kdc,mdc,mef,mos,mrw,nef,nrw,orf,pef,pfm,pxn,qtk,raf,raw,rdc,rw2,rwl,sr2,srf,srw,sti,tif,tiff,x3f,png"
+#ifdef HAVE_OPENJPEG
+",j2c,j2k,jp2,jpc"
+#endif
+#ifdef HAVE_GRAPHICSMAGICK
+",gif,jpc,jp2,bmp,dcm,jng,miff,mng,pbm,pnm,ppm,pgm"
+#endif
+;
 
 static int usage(const char *argv0)
 {
@@ -619,6 +629,11 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
   /* capabilities set to NULL */
   darktable.capabilities = NULL;
 
+#ifdef HAVE_GRAPHICSMAGICK
+  /* GraphicsMagick init */
+  InitializeMagick(darktable.progname);
+#endif
+
   darktable.opencl = (dt_opencl_t *)malloc(sizeof(dt_opencl_t));
   memset(darktable.opencl, 0, sizeof(dt_opencl_t));
   dt_opencl_init(darktable.opencl, argc, argv);
@@ -775,6 +790,10 @@ void dt_cleanup()
   dt_pwstorage_destroy(darktable.pwstorage);
   dt_fswatch_destroy(darktable.fswatch);
 
+#ifdef HAVE_GRAPHICSMAGICK
+  DestroyMagick();
+#endif
+
   dt_database_destroy(darktable.db);
 
   dt_bauhaus_cleanup();
@@ -868,7 +887,7 @@ void dt_configure_defaults()
   {
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
     dt_conf_set_int("worker_threads", 1);
-    dt_conf_set_int("cache_memory", 200u<<10);
+    dt_conf_set_int("cache_memory", 200u<<20);
     dt_conf_set_int("host_memory_limit", 500);
     dt_conf_set_int("singlebuffer_limit", 8);
     dt_conf_set_int("plugins/lighttable/thumbnail_width", 800);

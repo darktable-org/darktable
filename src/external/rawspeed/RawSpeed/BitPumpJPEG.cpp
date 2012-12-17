@@ -52,6 +52,33 @@ void BitPumpJPEG::fill()
     return;
   // Fill in 96 bits
   int* b = (int*)current_buffer;
+  if ((off + 12) >= size) {
+    while(mLeft <= 64 && off < size) {
+      for (int i = (mLeft>>3); i >= 0; i--)
+        current_buffer[i+1] = current_buffer[i];
+      uchar8 val = buffer[off++];
+      if (val == 0xff) {
+        if (buffer[off] == 0)
+          off++;
+        else {
+          // We hit another marker - don't forward bitpump anymore
+          val = 0;
+          off--;
+          stuffed++;
+        }
+      }
+      current_buffer[0] = val;
+      mLeft+=8;
+    }
+    while (mLeft < 64) {
+      b[2] = b[1];
+      b[1] = b[0];
+      b[0] = 0;
+      mLeft +=32;
+      stuffed +=4;  //We are adding to mLeft without incrementing offset
+    }
+    return;
+  }
   b[3] = b[0];
   for (int i = 0; i < 12; i++) {
     uchar8 val = buffer[off++];

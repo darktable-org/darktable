@@ -30,7 +30,7 @@
 		</sect5>
 		<sect5><title>preset</title>
 			<para>Select a preset white balance.
-				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='4*'/>
 					<colspec colwidth='6*'/>
 					<tbody>
@@ -58,7 +58,8 @@
 		</sect5>
 		<sect5>
 			<title>finetune</title>
-			<para>Only available when a camera preset is selected. Each camera white balance can be fine tuned within a camera specific range or steps. The adjustments are usually towards yellow (value &lt; 1) or blue (value &gt; 1).</para>
+			<para>Some cameras offer additional finetuning parameters if one of the camera presets is selected. Depending on camera white balance can be adjusted step-wise within a certain range. The adjustments 
+                              are usually towards yellow (value &lt; 1) or blue (value &gt; 1).</para>
 		</sect5>
 	</sect4>
 </sect3>
