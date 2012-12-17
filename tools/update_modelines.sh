@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # this appends modelines to all source and header files to make sure kate and
 # vim know how to format their stuff.
