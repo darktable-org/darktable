@@ -15,25 +15,24 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DT_LUA_IMAGE_H
-#define DT_LUA_IMAGE_H
+#ifndef DT_LUA_GLIST_H
+#define DT_LUA_GLIST_H
 #include <lualib.h>
 #include <lua.h>
+#include <lautoc.h>
 #include <glib.h>
-#include "lua/dt_lua.h"
-#include "lua/types.h"
 
 
 
-int dt_lua_init_image(lua_State * L);
+int dt_lua_init_glist(lua_State * L);
 
-void dt_lua_image_push(lua_State * L,int imgid);
-int dt_lua_image_get(lua_State *L,int index);
+// handle list of data who's elementes are type_name* (!!not type_name casted)
+#define dt_lua_push_glist(L,list, type_name) dt_lua_push_glist_internal(L,list,luaA_type_id(type_name))
+void dt_lua_push_glist_typeid(lua_State *L,GList * list, luaA_Type elt_type);
 
-void dt_lua_image_glist_push(lua_State *L, GList *list);
-GList * dt_lua_image_glist_get(lua_State *L,int index);
- 
-
+// return a malloced list who's elements are malloced type_name*
+#define dt_lua_to_glist(L,list, type_name,index) dt_lua_to_glist_internal(L,list,luaA_type_id(type_name),index)
+GList* dt_lua_to_glist_typeid(lua_State *L, luaA_Type elt_type,int index);
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

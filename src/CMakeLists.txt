@@ -87,6 +87,7 @@ if(USE_LUA)
 		"lua/database.c"
 		"lua/dt_lua.c"
 		"lua/events.c"
+		"lua/glist.c"
 		"lua/gui.c"
 		"lua/image.c"
 		"lua/stmt.c"

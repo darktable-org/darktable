@@ -313,25 +313,12 @@ static int dt_lua_trigger_event(const char*event,int nargs,int nresults) {
 
 static void on_export_selection(gpointer instance,GList **list,
      gpointer user_data){
-  GList * elt = *list;
-  lua_newtable(darktable.lua_state);
-  while(elt) {
-    dt_lua_image_push(darktable.lua_state,(long int)elt->data);
-    luaL_ref(darktable.lua_state,-2);
-    elt = g_list_delete_link(elt,elt);
-  }
+  dt_lua_image_glist_push(darktable.lua_state,*list);
+  g_list_free(*list);
   *list =NULL;
   dt_lua_trigger_event("pre-export",1,1);
   if(lua_isnoneornil(darktable.lua_state,-1)) {return; }// everything already has been removed
-  // recreate list of images
-  lua_pushnil(darktable.lua_state);  /* first key */
-  while (lua_next(darktable.lua_state, -2) != 0) {
-    /* uses 'key' (at index -2) and 'value' (at index -1) */
-    long int imgid = dt_lua_image_get(darktable.lua_state,-1);
-    lua_pop(darktable.lua_state,1);
-    *list = g_list_prepend(*list,(gpointer)imgid);
-  }
-  *list = g_list_reverse(*list);
+  *list = dt_lua_image_glist_get(darktable.lua_state,-1);
 }
 
 static void on_export_image_tmpfile(gpointer instance,

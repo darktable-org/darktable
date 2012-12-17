@@ -193,7 +193,31 @@ void dt_lua_image_push(lua_State * L,int imgid) {
 	luaL_setmetatable(L,image_typename);
 }
 
+void dt_lua_image_glist_push(lua_State *L,GList * list) 
+{
+  GList * elt = list;
+  lua_newtable(L);
+  while(elt) {
+    dt_lua_image_push(L,(long int)elt->data);
+    luaL_ref(L,-2);
+    elt = g_list_next(elt);
+  }
+}
 
+GList * dt_lua_image_glist_get(lua_State *L,int index)
+{
+  GList * list = NULL;
+  // recreate list of images
+  lua_pushnil(L);  /* first key */
+  while (lua_next(L, index -1) != 0) {
+    /* uses 'key' (at index -2) and 'value' (at index -1) */
+    long int imgid = dt_lua_image_get(L,-1);
+    lua_pop(L,1);
+    list = g_list_prepend(list,(gpointer)imgid);
+  }
+  list = g_list_reverse(list);
+  return list;
+}
 typedef enum {
   PATH,
   DUP_INDEX,

@@ -15,26 +15,43 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DT_LUA_IMAGE_H
-#define DT_LUA_IMAGE_H
-#include <lualib.h>
-#include <lua.h>
-#include <glib.h>
-#include "lua/dt_lua.h"
-#include "lua/types.h"
 
+#include "lua/glist.h"
+#include <lauxlib.h>
+#include <stdlib.h>
 
+void dt_lua_push_glist_typeid(lua_State *L,GList * list, luaA_Type elt_type)
+{
+  GList * elt = list;
+  lua_newtable(L);
+  while(elt) {
+    luaA_push_typeid(L,elt_type,elt->data);
+    luaL_ref(L,-2);
+    elt = g_list_next(elt);
+  }
+}
 
-int dt_lua_init_image(lua_State * L);
+GList* dt_lua_to_glist_typeid(lua_State *L, luaA_Type elt_type,int index)
+{
+  // recreate list of images
+  GList * list = NULL;
+  size_t type_size = luaA_type_size(elt_type);
+  lua_pushnil(L);  /* first key */
+  while (lua_next(L, index -1) != 0) {
+    /* uses 'key' (at index -2) and 'value' (at index -1) */
+    void*obj = malloc(type_size);
+    luaA_to_typeid(L,elt_type,obj,-1);
+    lua_pop(L,1);
+    list = g_list_prepend(list,(gpointer)obj);
+  }
+  list = g_list_reverse(list);
+  return list;
+}
 
-void dt_lua_image_push(lua_State * L,int imgid);
-int dt_lua_image_get(lua_State *L,int index);
+int dt_lua_init_glist(lua_State * L) {
+  return 0;
+}
 
-void dt_lua_image_glist_push(lua_State *L, GList *list);
-GList * dt_lua_image_glist_get(lua_State *L,int index);
- 
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
