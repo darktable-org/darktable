@@ -25,7 +25,7 @@
 
 #define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 #define MMCLAMPPS(a, mn, mx) (_mm_min_ps((mx), _mm_max_ps((a), (mn))))
-
+#define BLOCKSIZE 32
 
 static 
 void compute_gauss_params(const float sigma, dt_gaussian_order_t order, float *a0, float *a1, float *a2, float *a3, 
@@ -79,6 +79,32 @@ void compute_gauss_params(const float sigma, dt_gaussian_order_t order, float *a
 
   *coefp = (*a0 + *a1)/(1.0f + *b1 + *b2);
   *coefn = (*a2 + *a3)/(1.0f + *b1 + *b2);
+}
+
+size_t
+dt_gaussian_memory_use(
+    const int width,       // width of input image
+    const int height,      // height of input image
+    const int channels)    // channels per pixel
+{
+  size_t mem_use = width*height*channels*sizeof(float);
+#ifdef HAVE_OPENCL
+  mem_use = (width+BLOCKSIZE)*(height+BLOCKSIZE)*channels*sizeof(float)*2;
+#endif
+  return mem_use;
+}
+
+size_t
+dt_gaussian_singlebuffer_size(
+    const int width,       // width of input image
+    const int height,      // height of input image
+    const int channels)    // channels per pixel
+{
+  size_t mem_use = width*height*channels*sizeof(float);
+#ifdef HAVE_OPENCL
+  mem_use = (width+BLOCKSIZE)*(height+BLOCKSIZE)*channels*sizeof(float);
+#endif
+  return mem_use;
 }
 
 
