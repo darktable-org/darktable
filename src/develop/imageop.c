@@ -766,65 +766,37 @@ void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t 
 static void
 dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
 {
-  //if we delete the priority 0, we have to move the next module to priority 0 !
-  if (module->multi_priority == 0)
-  {
-    //we find the next module
-    GList *modules = g_list_last(module->dev->iop);
-    dt_iop_module_t *next2 = NULL;
-    int find = 0;
-    while (modules)
-    {
-      dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-      if (mod == module) find=1;
-      else if(mod->instance == module->instance && find==1)
-      {
-        next2=mod;
-        break;      
-      }
-      modules = g_list_previous(modules);
-    }
-    if (!next2) return;
-    
-    //we set priority of next to 0
-    next2->multi_priority = 0;
-    
-    //we change this in the history stack too
-    GList *history = g_list_first(module->dev->history);
-    while(history)
-    {
-      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-      if (hist->module == next2) hist->multi_priority = 0;
-      history = g_list_next(history);
-    }
-  }
-    
   dt_develop_t *dev = module->dev;
-  //we unfocus the module
-  //we find the next module
-  GList *modules = g_list_last(module->dev->iop);
+  
+  //we search another module with the same base
+  //we want the next module if any or the previous one
+  GList *modules = g_list_first(module->dev->iop);
   dt_iop_module_t *next = NULL;
   int find = 0;
   while (modules)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-    if (mod == module) find=1;
-    else if(find==1)
+    if (mod == module)
+    {
+      find = 1;
+      if (next) break;
+    }
+    else if(mod->instance == module->instance)
     {
       next=mod;
-      break;      
+      if (find) break;    
     }
-    modules = g_list_previous(modules);
+    modules = g_list_next(modules);
   }
-  if (!next)
-  {
-    modules = g_list_first(module->dev->iop);
-    modules = g_list_next(module->dev->iop);
-    next = (dt_iop_module_t *)modules->data;
-  }
+  if (!next) return; //what happend ???
   
+  //we must pay attention if priority is 0
+  gboolean is_zero = (module->multi_priority == 0);
+  
+  //we set the focus to the other instance
   dt_iop_request_focus(next);
   
+  //we remove the plugin effectively
   darktable.gui->reset = 1;
   //we cleanup the widget
   if (!dt_iop_is_hidden(module))
@@ -848,6 +820,22 @@ dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
   module->accel_closures = NULL;
   dt_iop_cleanup_module(module) ;
   free(module);
+  
+  //if module was priority 0, then we set next to priority 0
+  if (is_zero)
+  {
+    //we set priority of next to 0
+    next->multi_priority = 0;
+    
+    //we change this in the history stack too
+    GList *history = g_list_first(module->dev->history);
+    while(history)
+    {
+      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+      if (hist->module == next) hist->multi_priority = 0;
+      history = g_list_next(history);
+    }
+  }
   
   //we update show params for multi-instances for each other instances
   dt_dev_modules_update_multishow(dev);
