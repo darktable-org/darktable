@@ -147,7 +147,7 @@ static gchar*
 get_active_preset_name(dt_iop_module_t *module)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, op_params, blendop_params, enabled from presets where operation=?1 and op_version=?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, op_params, blendop_params, enabled from presets where operation=?1 and op_version=?2 order by writeprotect", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
   gchar *name = NULL;
@@ -801,18 +801,15 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
 
   if(module)
   {
-    if(active_preset >= 0)
+    if(active_preset >= 0 && !writeprotect)
     {
-      if(!writeprotect)
-      {
-        mi = gtk_menu_item_new_with_label(_("edit this preset.."));
-        g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_edit_preset), module);
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+      mi = gtk_menu_item_new_with_label(_("edit this preset.."));
+      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_edit_preset), module);
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
-        mi = gtk_menu_item_new_with_label(_("delete this preset"));
-        g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_delete_preset), module);
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-      }
+      mi = gtk_menu_item_new_with_label(_("delete this preset"));
+      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_delete_preset), module);
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
 #if 0 // we found these confusing, so the gui for it is removed.
       // for consistency between machines via xmp, it would at least need to be
