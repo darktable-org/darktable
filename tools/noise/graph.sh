@@ -1,6 +1,6 @@
 #!/bin/bash
 
-isolist="100 3200"
+isolist="100 800 1600 3200"
 
 for iso in $isolist
 do
