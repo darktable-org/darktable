@@ -1,0 +1,536 @@
+#!/bin/sh
+
+set -e
+
+scriptname=$(basename $0)
+scriptdir=$(cd $(dirname $0) && pwd)
+
+# --------------------------------------------------------------------
+# Internal functions.
+# --------------------------------------------------------------------
+
+camera_is_plugged() {
+	gphoto2 -a >/dev/null 2>&1
+}
+
+get_camera_name() {
+	if camera_is_plugged; then
+		camera=$(gphoto2 -a | head -n 1 | sed -r s'/^[^:]+: //')
+		echo $camera
+	fi
+}
+
+get_camera_raw_setting() {
+	raw_setting=$(gphoto2 --get-config /main/imgsettings/imageformat | awk '
+/^Choice: [0-9]+ RAW$/ {
+	id = $0;
+	sub(/^Choice: /, "", id);
+	sub(/ RAW$/, "", id);
+	print id;
+	exit;
+}
+')
+
+	echo $raw_setting
+}
+
+get_camera_iso_settings() {
+	iso_settings=$(gphoto2 --get-config /main/imgsettings/iso | awk '
+/^Choice: [0-9]+ [0-9]+$/ {
+	iso = $0;
+	sub(/^Choice: [0-9]+ /, "", iso);
+	print iso;
+}
+')
+
+	echo $iso_settings
+}
+
+get_image_iso() {
+	iso=$(exiv2 -g Exif.Photo.ISOSpeedRatings -Pt "$1" 2>/dev/null || :)
+
+	if [ "$iso" = "65535" ]; then
+		iso=$(exiv2 -g Exif.Photo.RecommendedExposureIndex -Pt "$1" 2>/dev/null || :)
+	fi
+
+	echo $iso
+}
+
+get_image_camera_maker() {
+	maker=$(exiv2 -g Exif.Image.Make -Pt "$1" 2>/dev/null || :)
+	echo $maker
+}
+
+get_image_camera_model() {
+	model=$(exiv2 -g Exif.Image.Model -Pt "$1" 2>/dev/null || :)
+	echo $model
+}
+
+set_var() {
+	eval "var_$1=\"$2\""
+}
+
+get_var() {
+	eval echo \${var_$1}
+}
+
+profile_image() {
+	image="$1"
+	presets="$2"
+	files_list="$3"
+
+	maker=$(get_image_camera_maker "$image")
+	model=$(get_image_camera_model "$image")
+	iso=$(get_image_iso "$image")
+
+	xmp="$scriptdir/profiling-shot.xmp"
+	noiseprofile="$scriptdir/noiseprofile"
+	floatdump="$scriptdir/floatdump"
+
+	echo
+	echo "===> Profile image for \"$maker - $model - $iso ISO\""
+
+	pfm="${image%.*}.pfm"
+	if [ "$force_profiling_conv" = "1" ]; then
+		rm -f "$pfm"
+	fi
+
+	if [ ! -f "$pfm" -o "$image" -nt "$pfm" -o "$xmp" -nt "$pfm" ]; then
+		echo "--> Converting $image (ISO $iso)"
+		rm -f "$pfm"
+		darktable-cli $image $xmp $pfm
+	else
+		echo "--> Skip $image (ISO $iso); output up-to-date"
+	fi
+
+	echo "--> Run noiseprofile"
+	dat="${pfm%.pfm}.dat"
+	$noiseprofile "$pfm" > "$dat"
+
+	echo "--> Plotting $pfm"
+	title="$maker, $model, $iso ISO ($(basename "${pfm%.pfm}"))"
+	fit="${pfm%.pfm}.fit"
+	pdf="${pfm%.pfm}.pdf"
+	gnuplot 2>/dev/null <<EOF
+	set term pdf
+	set print "$fit"
+	set output "$pdf"
+	set title "Histogram - $title"
+	plot "$dat" u 1:(log(\$5)) w l lw 4 title "red",		\
+	  '' u 1:(log(\$6)) w l lw 4 title "green",			\
+	  '' u 1:(log(\$7)) w l lw 4 title "blue"
+
+	f1(x) = a1*x + b1
+	f2(x) = a2*x + b2
+	f3(x) = a3*x + b3
+	a1=0.1;b1=0.01;
+	a2=0.1;b2=0.01;
+	a3=0.1;b3=0.01;
+	set xrange [0:0.35]
+	fit f1(x) "$dat" u 1:(\$2**2) via a1,b1
+	set xrange [0:0.9]
+	fit f2(x) "$dat" u 1:(\$3**2) via a2,b2
+	set xrange [0:0.5]
+	fit f3(x) "$dat" u 1:(\$4**2) via a3,b3
+
+	set xrange [0:1]
+	set title "Noise levels - $title"
+	plot "$dat" u 1:2 w l lw 4 title "red",				\
+	  '' u 1:3 w l lw 4 title "green",				\
+	  '' u 1:4 w l lw 4 title" blue",				\
+	  '' u 1:(sqrt(f1(\$1))) w l lw 2 lt 1 title "red (fit)",	\
+	  '' u 1:(sqrt(f2(\$1))) w l lw 2 lt 2 title "green (fit)",	\
+	  '' u 1:(sqrt(f3(\$1))) w l lw 2 lt 3 title "blue (fit)"
+
+	print a1, a2, a3, b1, b2, b3
+EOF
+
+	# Fitted parametric curves:
+	echo "--> Fitted parametric curves"
+	flat_dat="${pfm%.pfm}_flat.dat"
+	curves_dat="${pfm%.pfm}_curves.dat"
+	$noiseprofile $pfm -c $(cat $fit) > $flat_dat 2> $curves_dat
+
+	# Data based histogram inversion:
+	# $noiseprofile $pfm -h $dat > $flat_dat 2> $curves_dat
+	echo "--> Flattened $pfm"
+	flat_pdf="${pfm%.pfm}_flat.pdf"
+	gnuplot 2>/dev/null << EOF
+	set term pdf
+	set output "$flat_pdf"
+	set title "Flat noise levels - $title"
+	plot "$flat_dat" u 1:2 w l lw 4 title "red",			\
+	  '' u 1:3 w l lw 4 title "green",				\
+	  '' u 1:4 w l lw 4 title "blue"
+	set title "Flat histogram - $title"
+	plot "$dat" u 1:(log(\$5)) w l lw 4 title "red",		\
+	  '' u 1:(log(\$6)) w l lw 4 title "green",			\
+	  '' u 1:(log(\$7)) w l lw 4 title "blue"
+	set title "Conversion curves - $title"
+	plot "$curves_dat" u 0:1 w l lw 4 title "red",			\
+	  '' u 0:2 w l lw 4 title "green",				\
+	  '' u 0:3 w l lw 4 title "blue"
+EOF
+	# Output preset for dt:
+	echo "--> Save generated preset"
+	a=$(cat $fit | cut -f2 -d' ')
+	b=$(cat $fit | cut -f5 -d' ')
+
+	echo "{N_(\"$model - $iso ISO\"),       \"$maker\",      \"$model\",              $iso, $iso,         {1.0f, 1.0f, {$a, $a, $a}, {$b, $b, $b}}}," >> $presets
+
+	# use $path/floatdump to insert test preset, like
+	echo "--> Record preset in library for testing purpose"
+	bin1=$(echo 1.0f | $floatdump)
+	bina=$(echo $a | $floatdump)
+	binb=$(echo $b | $floatdump)
+	# schema for this table is:
+	# CREATE TABLE presets (name varchar, description varchar, operation varchar, op_version integer, op_params blob, enabled integer, blendop_params blob, model varchar, maker varchar, lens varchar, iso_min real, iso_max real, exposure_min real, exposure_max real, aperture_min real, aperture_max real, focal_length_min real, focal_length_max real, writeprotect integer, autoapply integer, filter integer, def integer, isldr integer, blendop_version integer);
+	echo "insert into presets " \
+	 "(name, description, operation, op_version, op_params, enabled, blendop_params, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, writeprotect, autoapply, filter, def, isldr, blendop_version) " \
+	 "values ('(test) $model - $iso ISO', '', 'denoiseprofile', 1, X'${bin1}${bin1}${bina}${bina}${bina}${binb}${binb}${binb}', 1, X'00', '', '', '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4);" | sqlite3 $database
+
+	# Clean unused files.
+	rm -f $dat $flat_dat $curves_dat $fit
+
+	echo "$pdf" >> "$files_list"
+	echo "$flat_pdf" >> "$files_list"
+}
+
+# --------------------------------------------------------------------
+# Read command line arguments.
+# --------------------------------------------------------------------
+
+args=$(getopt Cd:i:P $*)
+if [ $? -ne 0 ]; then
+	echo bla
+fi
+set -- $args
+
+while true; do
+	case "$1" in
+	-C)
+		force_profiling_conv=1
+		shift
+		;;
+	-d)
+		profiling_dir=$2
+		shift; shift
+		;;
+	-i)
+		if [ -z "$iso_settings" ]; then
+			iso_settings=$2
+		else
+			iso_settings="$iso_settings $2"
+		fi
+		shift; shift
+		;;
+	-P)
+		force_profiling_shots=1
+		shift
+		;;
+	--)
+		shift; break
+		;;
+	esac
+done
+
+# Sort user-specified ISO settings.
+if [ "$iso_settings" ]; then
+	iso_settings=$(for iso in $iso_settings; do echo $iso; done | sort -n)
+fi
+
+# --------------------------------------------------------------------
+# Part #1: Get profiling shots.
+# --------------------------------------------------------------------
+
+# If the user didn't specified a profiling shots directory, use a
+# default one.
+#
+# Defaults to /var/tmp/dt-profiling/$camera/profiling-shots.
+
+if [ -z "$profiling_dir" ]; then
+	if camera_is_plugged; then
+		camera=$(get_camera_name)
+		subdir=$(echo $camera | sed -r 's/[^a-zA-Z0-9]/-/g')
+		profiling_dir="/var/tmp/darktable-noise-profiling/$subdir"
+		test -d "$profiling_dir" || mkdir -p "$profiling_dir"
+	else
+		cat <<EOF
+ERROR: Please specify a directory to read or write profiling shots
+(using the "-d" flag) or plug your camera and turn it on.
+EOF
+		exit 1
+	fi
+fi
+
+# Check the profiling shots to see if there's at least one shot for
+# each ISO settings, either specified by the user, or supported by the
+# camera.
+
+echo "===> Checking existing profiling shots"
+for image in "$profiling_dir"/*; do
+	if [ "$image" = "$profiling_dir/*" ]; then
+		# Directory empty.
+		break
+	fi
+
+	iso=$(get_image_iso "$image")
+	if [ -z "$iso" ]; then
+		# Not an image.
+		continue
+	fi
+
+	echo "--> Found ISO $iso shot: $image"
+
+	# Record filename for this ISO setting.
+	images=$(get_var "images_$iso")
+	if [ -z "$image" ]; then
+		images=$image
+	else
+		images="$images $image"
+	fi
+	set_var "images_$iso" "$images"
+
+	# Add ISO setting to a list.
+	case "$shots_for_iso_settings" in
+	$iso|$iso\ *|*\ $iso\ *|*\ $iso)
+		;;
+	*)
+		if [ -z "$shots_for_iso_settings" ]; then
+			shots_for_iso_settings=$iso
+		else
+			shots_for_iso_settings="$shots_for_iso_settings $iso"
+		fi
+		;;
+	esac
+done
+
+do_profiling_shots=0
+if [ -z "$shots_for_iso_settings" -o "$force_profiling_shots" = "1" ]; then
+	do_profiling_shots=1
+fi
+if [ "$iso_settings" ]; then
+	for iso in $iso_settings; do
+		images=$(get_var "images_$iso")
+		if [ -z "$images" ]; then
+			do_profiling_shots=1
+		fi
+	done
+else
+	iso_settings=$shots_for_iso_settings
+fi
+
+if [ "$do_profiling_shots" = "1" ]; then
+	# The profiling shots directory is empty. Check for the camera
+	# presence, and if no camera is found, ask the user to plug in
+	# his camera or point to an appropriate directory.
+
+	profiling_note_displayed=0
+	profiling_note="Important note about the required images:
+
+    o  The subject must contain both under-exposed AND over-exposed
+       areas. A possible subject could be a sunny window (or an in-door
+       light) on half of the picture and a dark/shadowed in-door object on
+       the other half.
+
+    o  Disable auto-focus and put everything out of focus."
+
+	if ! camera_is_plugged; then
+		profiling_note_displayed=1
+		cat <<EOF
+
+Noise profiling requires at least a RAW image per supported ISO setting.
+
+Either:
+
+    o  Plug your camera to this computer and, when detected, hit Return.
+       This script will query the camera for supported ISO settings and
+       take the appropriate images.
+
+    o  Type Ctrl+C, take at least one image per supported ISO setting and
+       put them in a dedicated directory. Then, re-run this script and be
+       sure to indicate this directory by using the "-d" flag.
+
+$profiling_note
+EOF
+		read answer
+	fi
+	while ! camera_is_plugged; do
+		cat <<EOF
+ERROR: No camera found by gphoto2(1)!
+
+Retry or check gphoto2 documentation.
+EOF
+		read answer
+	done
+
+	# If we reach this part, a camera is plugged in and the user
+	# wants us to take the pictures for him.
+
+	# If he didn't specify any ISO settings, query the camera.
+	if [ -z "$iso_settings" ]; then
+		iso_settings=$(get_camera_iso_settings)
+	fi
+	iso_settings=$(for iso in $iso_settings; do echo $iso; done | sort -n)
+
+	camera=$(get_camera_name)
+
+	# We are now ready to take pictures for each supported/wanted
+	# ISO settings.
+
+	shots_per_iso=1
+	case $(uname -s) in
+	Linux) shots_seq=$(seq $shots_per_iso) ;;
+	*BSD)  shots_seq=$(jot $shots_per_iso) ;;
+	esac
+
+	cd "$profiling_dir"
+	for iso in $iso_settings; do
+		if [ "$force_profiling_shots" = 1 ]; then
+			# Remove existing shots for this ISO setting.
+			echo "--> (remove ISO $iso existing shots)"
+			files=$(get_var "images_$iso")
+			for file in $files; do
+				rm -v $file
+			done
+			set_var "images_$iso" ""
+		fi
+
+		images=$(get_var "images_$iso")
+		if [ "$images" ]; then
+			# We already have images for this ISO setting,
+			# continue with the next one.
+			continue
+		fi
+
+		echo
+		echo "===> Taking $shots_per_iso profiling shot(s) for \"$camera - ISO $iso\""
+		if [ "$profiling_note_displayed" = "0" ]; then
+			profiling_note_displayed=1
+			cat <<EOF
+
+$profiling_note
+EOF
+			read answer
+		fi
+
+		if [ -z "$raw_id" ]; then
+			raw_id=$(get_camera_raw_setting)
+		fi
+
+		# This script will do 3 shots for each ISO setting.
+		for i in $shots_seq; do
+			gphoto2						\
+			 --set-config /main/imgsettings/imageformat=$raw_id\
+			 --set-config /main/imgsettings/iso=$iso	\
+			 --filename="$iso-$i.%C"			\
+			 --capture-image-and-download
+
+			image=$(ls -t "$profiling_dir/$iso-$i".* | head -n 1)
+			images=$(get_var "images_$iso")
+			if [ -z "$image" ]; then
+				images=$image
+			else
+				images="$images $image"
+			fi
+			set_var "images_$iso" "$images"
+		done
+	done
+	cd -
+fi
+
+echo
+echo "===> Summing up profiling shots"
+for iso in $iso_settings; do
+	echo "--> ISO $iso:"
+	images=$(get_var "images_$iso")
+	for image in $images; do
+		echo "    $image"
+	done
+done
+
+# --------------------------------------------------------------------
+# Part #2: Profile all images.
+# --------------------------------------------------------------------
+
+# First, prepare the working directory:
+#   o  build tools
+#   o  copy darktable database
+#   o  remove previous presets
+
+echo
+echo "===> Prepare profiling job"
+
+presets="$profiling_dir/presets.txt"
+files_list="$profiling_dir/output-files-list.txt"
+
+echo "--> Build profiling tools"
+make -C "$scriptdir"
+
+echo "--> Copy darktable library for testing purpose"
+database="$profiling_dir/library.db"
+database_orig="$HOME/.config/darktable/library.db"
+if [ ! -f "$database_orig" ]; then
+	cat <<EOF
+ERROR: Please run darktable at least once to create an initial library
+or copy some valid library to $database manually before running this
+script. This is needed to setup a testing environment for your new
+presets.
+EOF
+	exit 1
+fi
+
+cp "$database_orig" "$database"
+
+echo "--> Remove previous presets"
+rm -f "$profiling_dir"/*.pdf
+rm -f "$profiling_dir"/*.fit
+rm -f "$profiling_dir"/*.dat
+rm -f "$profiling_dir"/fit.log
+rm -f "$presets"
+rm -f "$files_list"
+
+# Now, for each shots, profile it.
+cat <<EOF
+--> Ready to profile images
+
+NOTE: This process takes some time and a lot of memory and disc space
+(up-to several gigabytes, depending on the number of ISO settings and
+the size of the RAW files.
+EOF
+
+for iso in $iso_settings; do
+	images=$(get_var "images_$iso")
+	for from in $images; do
+		profile_image "$from" "$presets" "$files_list"
+	done
+done
+
+# Prepare a tarball ready to be sent to the darktable team.
+echo
+echo "===> Prepare final tarball"
+tarball="$profiling_dir"/dt-noiseprofile-$(date +'%Y%m%d').tar.gz
+tar -cf - "$presets" $(cat "$files_list") | gzip > "$tarball"
+
+echo "--> Cleanup"
+rm -f "$profiling_dir"/fit.log
+rm -f "$files_list"
+
+color_green=$'\033[32m'
+color_reset=$'\033[0m'
+
+cat <<EOF
+
+${color_green}== Noise profiling done! ==${color_reset}
+
+Presets were inserted into $database. to test them locally, run:
+
+  darktable --library $database
+
+If you're happy with the results, post the following file to us:
+
+  $tarball
+
+If not, probably something went wrong. It's a good idea to get in touch
+so we can help you sort it out.
+EOF
