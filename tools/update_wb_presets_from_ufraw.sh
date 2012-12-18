@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Script updates our wb_presets which we regularly steal from UFRaw.
 #
@@ -12,14 +12,14 @@ wget http://ufraw.cvs.sourceforge.net/viewvc/ufraw/ufraw/wb_presets.c?content-ty
 
 echo "Processing ${TEMP_FILE} into ${OUT_FILE}, this may take a while"
 
-IFS='\n'
+IFS="\n"
 cat ${TEMP_FILE} | while read LINE; do
-  if [[ "${LINE}" == '#include "ufraw.h"' ]]; then
+  if [ "${LINE}" = '#include "ufraw.h"' ]; then
     echo '#ifdef HAVE_CONFIG_H'
     echo '#include "config.h"'
     echo '#endif'
     echo ''
-  elif [[ "${LINE}" == '#include <glib/gi18n.h>' ]]; then
+  elif [ "${LINE}" = '#include <glib/gi18n.h>' ]; then
     echo '#include <glib.h>'
     echo '#include <glib/gi18n.h>'
     echo ''

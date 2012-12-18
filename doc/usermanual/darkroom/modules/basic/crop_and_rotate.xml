@@ -1,0 +1,97 @@
+<sect3 status="final"><title>Crop and rotate</title>
+	<sect4 status="final"><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
+				<tbody>
+					<row>						
+						<entry>This module is used to crop, rotate and correct perspective of your image. 
+							It also includes many helpful guidelines that assist you using the tools.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/crop_and_rotate.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect4>
+
+	<sect4 status="draft"><title>Usage</title>
+                <para>Whenever the user interface of this module is in focus, you will see the full uncropped image overlayed with
+                      handles and guiding lines.
+                </para>
+		<para>First off, select what aspect ratio you want and size the crop bounds by dragging border and corner handles.
+		      Use the button right to the aspect box, to swap between portrait and landscape of the cropping rectangle.
+		      You can move around the crop rectangle by holding down left mouse button and move around.
+		      When you are done and want to execute the crop, just give focus to another module. You can at any time change
+                      your crop area by just giving back focus to this module.
+		</para>
+
+		<sect5><title>angle</title>
+			<para>This is the rotation angle to correct, for example, a non-leveled horizon.
+			You can either set a numerical value or use your mouse directly on the image.
+			To use your mouse, right-click, hold it down and draw a line along the horizon; as soon as you release the
+                        mouse button the image is rotated so the line you drew matches the horizontal axis.
+			</para>
+		</sect5>
+		<sect5><title>keystone h and v</title>
+			<para>This tool is used to correct any perspective distortions in your image. Useful when you shoot 
+			      an high building from ground, aiming upwards with camera with short focal length for example.
+			</para>
+		</sect5>
+		
+		<sect5><title>aspect</title>
+			<para>Here you can change what aspect ratio you want to have on the result, thus constraining the ability to drag and crop 
+			      rectangle out of the aspect ratio of your choice. Many common numerical ratios are pre-defined. You also select any
+                              other ratio after opening the combobox and typing it in the form of "x:y". A few special aspect ratios deserve explanation:
+                        </para>
+			<para>
+				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='3cm'/>
+					<tbody>
+						<row>
+							<entry><emphasis>free</emphasis></entry><entry>free forming the rectangle without any ratio restrictions</entry>
+						</row>
+						<row>
+							<entry><emphasis>image</emphasis></entry><entry>this option constrains the ratio to be equal to image ratio</entry>
+						</row>
+						<row>
+							<entry><emphasis>golden cut</emphasis></entry><entry>this option constrains the ratio to be equal the golden number</entry>
+						</row>
+						<row>
+							<entry><emphasis>square</emphasis></entry><entry>this option constrains the ratio to be 1</entry>
+						</row>
+					</tbody>
+				</tgroup></informaltable>
+			</para>
+		</sect5>
+		<sect5><title>guides</title>
+			<para>Many self-explaining guides are available to help you compose your image.
+			</para>
+		</sect5>
+	</sect4>
+
+  <sect4><title>Examples</title>
+	<para>
+        	<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+			<colspec colwidth="4*"/>
+			<colspec colwidth="6*"/>
+			<tbody>
+				<row>
+					<entry>
+						<graphic fileref="darkroom/modules/images/crop_and_rotate_ex1.png" scalefit="1" width="90%" align="center" />
+					</entry>						
+					<entry>
+						<para>A cropped image in center view when module crop and rotate is in focus. The cropped area is visible as
+                                                      well as some guiding lines.</para>
+                                        </entry>
+				</row>
+			</tbody>
+			</tgroup>
+		</informaltable>
+	</para>	
+  </sect4>
+
+
+</sect3>

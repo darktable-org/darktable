@@ -33,6 +33,7 @@ FILE(GLOB SOURCE_FILES
   "common/imageio_pfm.c"
   "common/imageio_rgbe.c"
   "common/imageio_tiff.c"
+  "common/imageio_gm.c"
   "common/imageio_rawspeed.cc"
   "common/interpolation.c"
   "common/metadata.c"
@@ -173,19 +174,24 @@ endif(USE_FLICKR)
 if(USE_GLIBJSON)
   find_package(JsonGlib)
   if(JsonGlib_FOUND)
-	include_directories(${JsonGlib_INCLUDE_DIRS})
-	list(APPEND LIBS ${JsonGlib_LIBRARIES})
-	add_definitions(${JsonGlib_DEFINITIONS})
+    include_directories(${JsonGlib_INCLUDE_DIRS})
+    list(APPEND LIBS ${JsonGlib_LIBRARIES})
   endif(JsonGlib_FOUND)
 endif(USE_GLIBJSON)
 
 if(USE_OPENJPEG)
   find_package(OpenJPEG)
   if(OPENJPEG_FOUND)
+    list(APPEND SOURCES "common/imageio_j2k.c")
     include_directories(${OPENJPEG_INCLUDE_DIRS})
     list(APPEND LIBS ${OPENJPEG_LIBRARIES})
     add_definitions(${OPENJPEG_DEFINITIONS})
     add_definitions("-DHAVE_OPENJPEG")
+    if(OPENJPEG_VERSION VERSION_GREATER "1.5.0")
+      add_definitions("-DHAVE_OPENJPEG_ICC")
+    else()
+      message(STATUS "OpenJPEG version ${OPENJPEG_VERSION} found. Only 1.5 and newer support reading of icc profiles.")
+    endif()
   endif(OPENJPEG_FOUND)
 endif(USE_OPENJPEG)
 
@@ -229,6 +235,16 @@ if(USE_UNITY)
     list(APPEND LIBS ${UNITY_LIBRARIES})
   endif(UNITY_FOUND)
 endif(USE_UNITY)
+
+if(USE_GRAPHICSMAGICK)
+  find_package(GraphicsMagick)
+  if(GraphicsMagick_FOUND)
+    add_definitions(-DHAVE_GRAPHICSMAGICK)
+    include_directories(${GraphicsMagick_INCLUDE_DIRS})
+    list(APPEND LIBS ${GraphicsMagick_LIBRARIES})
+  endif(GraphicsMagick_FOUND)
+endif(USE_GRAPHICSMAGICK)
+
 
 # build opengl slideshow viewer?
 if(BUILD_SLIDESHOW)

@@ -18,11 +18,11 @@
 
 	<sect4><title>Usage</title>
 		<para>This module reduces noise in your image but preserves structures. This is accomplished by averaging a pixel with other pixels in the image. The weight of averaging
-                      depends on the similarity of the pixels surroundings with the surrounding of the one pixel to be denoised. As denoising is a resource hungry process, it slows down pixelpipe processing significantly; 
-                      consider to activate this module late in your workflow.
+                      depends on the similarity of the pixels surroundings with the surrounding of the one pixel to be denoised. A patch with a certain size is used to measure that similarity.
+                      As denoising is a resource hungry process, it slows down pixelpipe processing significantly; consider to activate this module late in your workflow.
 		</para>
 		<sect5><title>patch size</title>
-			<para>The size of the patch.</para>
+			<para>The radius of the patch.</para>
 		</sect5>
 		<sect5><title>strength</title>
 			<para>The strength of the denoise. Higher values lead to a stronger effect.</para>

@@ -25,7 +25,13 @@ find_library(JsonGlib_LIBRARY
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.
 # NOTE: Singular variables for this library, plural for libraries this this lib depends on.
-set(JsonGlib_PROCESS_INCLUDES JsonGlib_INCLUDE_DIR)
-set(JsonGlib_PROCESS_LIBS JsonGlib_LIBRARY)
+set(JsonGlib_PROCESS_INCLUDES ${JsonGlib_INCLUDE_DIR})
+set(JsonGlib_PROCESS_LIBS ${JsonGlib_LIBRARY})
 libfind_process(JsonGlib)
+
+if(JsonGlib_FOUND)
+  set(JsonGlib_INCLUDE_DIRS ${JsonGlib_INCLUDE_DIR})
+  set(JsonGlib_LIBRARIES ${JsonGlib_LIBRARY})
+endif(JsonGlib_FOUND)
+
 

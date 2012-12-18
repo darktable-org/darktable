@@ -30,7 +30,7 @@
 			<para>All darktable core functions operate on 4x32-bit floating point pixel buffers for high accuracy processing; preventing banding and color breaks.</para>
 		</listitem>
 		<listitem>
-			<para>Heavy use of SSE instructions for speedups.</para>
+			<para>Heavy use of SSE instructions of your CPU for speedups.</para>
 		</listitem>
 		<listitem>
 			<para>GPU acceleration via OpenCL (runtime detection and enabling).</para>
@@ -39,7 +39,7 @@
 			<para>Most of the actions on the pixelpipe are done in CIELab color space, which is much larger than the gamut of modern displays, printers or even human vision.</para>
 		</listitem>
 		<listitem>
-			<para>Full color managed display and built-in ICC profile support for export: sRGB, Adobe RGB, XYZ and linear RGB.</para>
+			<para>Full color managed display with softproofing and gamut-check. Built-in ICC profile support for export: sRGB, Adobe RGB, XYZ and linear RGB.</para>
 		</listitem>
 		<listitem>
 			<para>A collect module allows you to execute flexible database queries, search your images by tags, image rating (stars), color labels and many more. 
@@ -98,7 +98,7 @@
 			<para>darktable consists of several views also mentioned as modes. For the time being, there are four available views as described
 				in this section. The current view is identified by the label at the top of the right panel.
 				Some key accelerators, allowing to access the different views, are described in the table below:
-				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<informaltable frame="none" width="60%"><tgroup cols="2" colsep="0" rowsep="0">
 						<colspec colwidth='1*'/>
 						<colspec colwidth='9*'/>
 						<tbody>
@@ -135,7 +135,7 @@
 				</para>
 			</sect3>
 			<sect3 status="final"><title>Map</title>
-				<para>This view allows to see images that are geo-tagged on a map.
+				<para>This view shows images that are geo-tagged on a map and allows you to manually geo-tag new images.
 				</para>
 			</sect3>
                </sect2>
@@ -164,8 +164,8 @@
 				from your filesystem or from your camera if supported.</para>
 
 			<sect3 status="draft"><title>Importing images from filesystem</title>
-				<para>In the left panel you will find the import module, here you have the choice to import either a single image or a folder,
-						darktable will analyse its content, detect images that are already imported and only import new images.
+				<para>In the left panel of lighttable view you will find the import module, here you have the choice to import either a single image or a folder,
+			              darktable will analyse its content, detect images that are already imported and only import new images.
 				</para>
 			</sect3>
 
@@ -177,10 +177,9 @@
 			</sect3>
 		</sect2>
 
-		<sect2 status="draft"><title>Basic correction</title>
+		<sect2 status="draft"><title>Basic development steps</title>
 			<sect3><title>Introduction</title>
-				<para>This section will guide you through the basics about developing your image which includes most common changes to an image like
-					noise reduction, color temperature, exposure etc.
+				<para>This section will guide you through the basics about developing your image in darkroom view.
 				</para>
 
 				<para>To begin you need to open an image in darkroom mode which you will do by double clicking an image thumbnail on the lighttable,
@@ -189,7 +188,8 @@
 				</para>
 
 				<para>Each change you make on a module when developing your image is turned into a history stack item, the history is stored in a database
-					and in an XMP sidecar file for the specific image.
+				      and in an XMP sidecar file for the specific image. Changes are stored automatically without the need to press a "save" button. 
+                                      Therefore you can safely leave darkroom mode and darktable and come back later to continue your work.
 				</para>
 
 				<para>
@@ -203,33 +203,103 @@
 					darktable ships with a bunch of modules and each of them is arranged into groups named module groups, these module groups are accessed
 					via toggle buttons in the right panel just under the histogram.
 					There are also two special module groups named active and favorites, where active will only show modules enabled in the history for the current image and
-						favorites will only show modules selected as a favorite by you. This is done in the <quote>more modules</quote> at the bottom of the right panel, just click your favorite module
+					favorites will only show modules selected as a favorite by you. This is done in the <quote>more modules</quote> at the bottom of the right panel, just click your favorite module
 					until it gets a star displayed in front of the icon and you have chosen your favorite.
 				</para>
 			</sect3>
 
 			<sect3 status="draft"><title>White balance</title>
-				<para>This module controls the white balance of the image, it's always enabled and reads its default
-					values from metadata embedded in the image which will be set by your camera.
-					The most common change here will be fine-tuning the white balance and this is done using the
-					temperature in slider.
-					Taking it down will make the color balance cooler and steering it up will make it warmer.
+				<para>Module <emphasis>white balance</emphasis>controls, well, the white balance of the image. It's always enabled and reads its default
+				      values from metadata embedded in the image which will be set by your camera. The most common change here will be fine-tuning the 
+                                      white balance and this is done using the temperature in slider.	Taking it down will make the color balance cooler and steering it up will
+                                      make it warmer.
 				</para>
 			</sect3>
 
-			<sect3 status="draft"><title>Exposure</title>
-				<para>This might be the simplest module of them all, fine-tune your exposure and use the histogram to guide you if you don't know what you are doing.
-						You can also boost the black level by increasing the black but be careful, use small amount like 0.005 steps.
-						If you feel lucky use the auto correction feature, this might fail for several technical reasons&nbsp;&hellip;
+			<sect3 status="draft"><title>Exposure correction</title>
+				<para>Module <emphasis>exposure</emphasis> might be the simplest module of them all, fine-tune your exposure and use the histogram to guide you if you 
+                                      don't know what you are doing. You can also boost the black level by increasing the black but be careful, use small amount like 0.005 steps.
+                                      If you feel lucky use the auto correction feature, this might fail for several technical reasons&nbsp;&hellip;
 				</para>
 				<para>You can also click-and-drag in the histogram to change exposure / blackpoint.
 				</para>
 			</sect3>
 
-  		<sect3 status="draft"><title>Noise reduction</title>
-				<para>You have several options in darktable to reduce noise. You'll find them in the correct group.
-        There is the hot pixel removal module, raw denosie, denoising based on bilateral filter, non-local means, and based on wavelets (the equalizer). Most convenient to use is probably denoising based on non-local means, as it allows you to treat color and luminance noise separately.
-        </para>
+  	         	<sect3 status="draft"><title>Noise reduction</title>
+           			<para>You have several options in darktable to reduce noise. You'll find them in the correct group. There is <emphasis>raw denoise</emphasis>, 
+                                      <emphasis>denoising based on bilateral filter</emphasis>, <emphasis>non-local means</emphasis>, and <emphasis>equalizer</emphasis> based on wavelets. 
+                                      Most convenient to use is probably denoising based on non-local means, as it allows you to treat color and luminance noise separately.
+                                </para>
+			</sect3>
+
+			<sect3 status="draft"><title>Fixing spots</title>
+				<para>Sometimes you will need to remove spots caused by sensor dirt. Module <emphasis>spot removal</emphasis> is at your
+                                      hand and can also correct other disturbing elements like skin blemishes. If your camera has stuck
+                                      pixels or tends to produce hotpixel at high iso values or longer exposure times, have look at module 
+                                      <emphasis>hotpixels</emphasis> for an automatic correction.
+				</para>
+			</sect3>
+
+			<sect3 status="draft"><title>Geometrical corrections</title>
+				<para>Quite frequently you want to only show part of the captured scene in your image, e.g. to 
+                                      take away some disturbing features close to the edge. In other cases the horizon in your image 
+                                      maybe leveled or you observe some perspective distortions. All this can be corrected in 
+                                      module <emphasis>crop and rotate</emphasis>. If you need to correct typical flaws of a camera lens 
+                                      like cushion distortion, transversal chromatic aberrations or vignetting there is a separate module in darktable called 
+                                      <emphasis>lens correction</emphasis>.
+				</para>
+			</sect3>
+
+			<sect3 status="draft"><title>Bringing back detail</title>
+				<para>Digital RAW images often contain more information than you can see at first sight. Especially 
+                                      in the shadows of an image there are lots of details hidden. Module <emphasis>shadows and highlights</emphasis>
+                                      helps to bring these shades back into tonal values where they contribute to the visual 
+                                      impression. Structural details in fully blown-out highlights by nature of the digital sensor can not 
+                                      be recovered. However, you can correct unfavorable color casts in these areas with module <emphasis>highlight
+                                      reconstruction</emphasis>.
+				</para>
+			</sect3>
+
+			<sect3 status="draft"><title>Adjusting global contrast</title>
+				<para>Almost each workflow will cover as one basic element the adjustment of 
+                                      global contrast. You will want to control which of the available tonal ranges of your output 
+                                      medium are represented in your image. Darktable offers several alternative modules to take 
+                                      care of that. In one of them, module <emphasis>tonecurve</emphasis>, you adjust tonal values by constructing a 
+                                      gradation curve. Module <emphasis>levels</emphasis> offers a much simpler interface with just three 
+                                      sliders. In addition there is module <emphasis>zone system</emphasis> which allows to control tonal values
+                                      in certain zones, inspired by the work of Ansel Adams.
+				</para>
+			</sect3>
+
+			<sect3 status="draft"><title>Enhancing local contrast</title>
+				<para>Local contrast enhancement will emphasize detail and clarity in your image; carefully used it can give your 
+                                      photograph the right pop. Darktable offers several modules for this task. Module <emphasis>local contrast</emphasis> is 
+                                      easy to handle with just a few parameters. A much more versatile but also more complex 
+                                      technique is offered by module <emphasis>equalizer</emphasis>. Have a look at equalizer's preset to get a feeling for 
+                                      how it works. Equalizer is darktable's "Swiss Army Knife" for many adjustments where spatial dimension
+                                      plays a role. 
+				</para>
+			</sect3>
+
+			<sect3 status="draft"><title>Color adjustments</title>
+				<para>darktable offers many modules to adjust colors in your image. A very straightforward technique is 
+                                      implemented in module <emphasis>color correction</emphasis>. Use it to give your image an overall tint or to adjust overall 
+                                      color saturation. Module <emphasis>color zones</emphasis> offers a much finer control to adjust saturation or lightness 
+                                      and even hue in user defined zones. Also darktable's <emphasis>tonecurve</emphasis> module - in addition to the 
+                                      classical adjustment of tonal values - gives you fine control over the colors in your image. 
+                                      Finally, if you intend to convert your image into black&amp;white, a good starting point with an 
+                                      easy to use and intuitive user interface is offered by module <emphasis>monochrome</emphasis>. Alternatively
+                                      you might consider to use darktable's <emphasis>channel mixer</emphasis>.
+				</para>
+			</sect3>
+
+			<sect3 status="draft"><title>Sharpening</title>
+				<para>If you start your workflow from an RAW image, you will need to have your final output 
+                                      sharpened. Module <emphasis>sharpen</emphasis> can do this with the classical USM (unsharp mask) approach, well 
+                                      known from more or less all image processing software around. Another very versatile way to 
+                                      enhance edges in your image is offered by module <emphasis>highpass</emphasis> in combination with
+                                      darktable's rich set of blending operators.
+				</para>
 			</sect3>
 
 
@@ -238,11 +308,11 @@
 		<sect2 status="draft"><title>Exporting images</title>
 			<para>Your changes to an image are not saved as in a regular image editor. darktable is a non destructive editor which means all your changes are stored in a database and the original image is untouched      			and therefore you need to export your images to get an <quote>image</quote> file to distribute with your special processing.</para>
 			<para>Images are exported from lighttable using the export module in the right panel. In general, export means: save my developed RAW image as a JPEG.</para>
-			<para>The export is also modularized into storage and format. darktable is shipping several storage modules such as save on disk, picasa and flickr webalbum and more.
+			<para>The export is modularized into storage and format. darktable is shipping several storage modules such as save on disk, picasa and flickr webalbum and more.
 				Format modules are the actual image formats such as JPEG, PNG, TIFF, OpenEXR and more.
 			</para>
-			<para>Select images on your lighttable that you want to export, then choose your target storage and format to use and set the maximum width and height image restraint, this means that 
-                              none of the images will be bigger than any of the width/height restraint. Leave the width and height restraint as zero value if you want the original resolution and hit the export button.
+			<para>Select images on your lighttable that you want to export, then choose your target storage and format to use and set the maximum width and height image restraint. This means that 
+                              none of the images will be bigger than any of the width/height restraint. Leave the width and height restraint as zero if you want the original resolution and hit the export button.
 			</para>
 
 		</sect2>

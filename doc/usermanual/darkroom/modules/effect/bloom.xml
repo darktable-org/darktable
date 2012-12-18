@@ -22,7 +22,7 @@
 				then change the size to control the spread of light.
 		</para>
 		<sect5><title>size</title>
-			<para>Reprensents the spatial extent of the bloom effect.</para>
+			<para>Represents the spatial extent of the bloom effect.</para>
 		</sect5>
 		<sect5><title>threshold</title>
 			<para>Set the threshold turning on the increase in brightness.</para>
@@ -49,7 +49,7 @@
 								<graphic fileref="darkroom/modules/images/bloom_ex2.png" scalefit="1" width="90%" align="center" />
 							</entry>						
 							<entry>
-								<para>Here I have choosen to use the size 10% which is a rather small radie for the soft light spread, 
+								<para>Here I have choosen to use the size 10% which is a rather small radius for the soft light spread, 
 									and I also boosted up the strength to 50% for a more exaggerated effect.
 								</para>
 							</entry>

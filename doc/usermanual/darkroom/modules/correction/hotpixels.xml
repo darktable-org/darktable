@@ -5,7 +5,8 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>Hotpixels module do try it best to blend unwanted pixels that is detected by a threshold against its neighbours.
+						<entry>This module is able to automatically detect and eliminate hotpixels. Hotpixels are pixels which failed
+                                                       to record light level correctly. Detected hotpixels are replaced by an average value of their neighbors.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/hotpixels.png" scalefit="1" width="80%" align="center" />
@@ -17,20 +18,20 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>Control the sensitive with the threshold parameter and the strength of how
-		hard to try to blend the pixel with surroundings.
+		<para>Control the detection sensitivity with the threshold parameter and the level of elimination with the strength parameter.
 		</para>
 		<sect5><title>threshold</title>
-			<para>The threshold of the detection</para>
+			<para>The threshold of the detection, i.e. how strong a pixel's value needs to deviate from its neighbors to be regarded as a hotpixel.</para>
 		</sect5>
-		<sect5><title>stregth</title>
-			<para>The strength of blending</para>
+		<sect5><title>strength</title>
+			<para>The strength of blending hotpixels with their surrounding.</para>
 		</sect5>	
 		<sect5><title>detect by 3 neighbours</title>
-			<para>Wille extend the decetion to use neighbours.</para>
+			<para>Will extend the detection of hotpixels. Even regard a pixel as hot if a minimum of only three (instead of four) neighbor pixels deviate by more
+                              than the threshold level.</para>
 		</sect5>	
 		<sect5><title>mark fixed pixels</title>
-			<para>This options will mark the pixels in the view that is corrected, and also display the count of detected pixels that is fixed.</para>
+			<para>This options will mark the pixels that have been corrected. It also displays the count of detected and fixed pixels.</para>
 		</sect5>	
 	</sect4>
 <!--	

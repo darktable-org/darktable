@@ -40,7 +40,7 @@
 				</sect4>
 
 				<sect4><title>export</title>
-					<para>This option saves a selected style to disk as a .dtstyle file. This allows to share styles among users.
+					<para>This option saves a selected style to disk as a .dtstyle file. This allows to share styles with other users.
 					</para>
 				</sect4>
 		</sect2>

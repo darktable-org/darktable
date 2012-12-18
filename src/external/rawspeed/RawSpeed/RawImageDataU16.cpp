@@ -180,13 +180,25 @@ void RawImageDataU16::scaleValues(int start_y, int end_y) {
   use_sse2 = TRUE;
 #endif
 
-  float app_scale = 65535.0f / (whitePoint - blackLevelSeparate[0]);
+  int depth_values = whitePoint - blackLevelSeparate[0];
+  float app_scale = 65535.0f / depth_values;
+
+  // Scale in 30.2 fp
+  int full_scale_fp = (int)(app_scale * 4.0f);
+  // Half Scale in 18.14 fp
+  int half_scale_fp = (int)(app_scale * 4095.0f);
+
   // Check SSE2
   if (use_sse2 && app_scale < 63) {
 
     __m128i sseround;
     __m128i ssesub2;
     __m128i ssesign;
+    __m128i rand_mul;
+    __m128i rand_mask;
+    __m128i sse_full_scale_fp;
+    __m128i sse_half_scale_fp;
+
     uint32* sub_mul = (uint32*)_aligned_malloc(16*4*2, 16);
     if (!sub_mul)
 	  ThrowRDE("Out of memory, failed to allocate 128 bytes");
@@ -213,8 +225,14 @@ void RawImageDataU16::scaleValues(int start_y, int end_y) {
     sseround = _mm_set_epi32(512, 512, 512, 512);
     ssesub2 = _mm_set_epi32(32768, 32768, 32768, 32768);
     ssesign = _mm_set_epi32(0x80008000, 0x80008000, 0x80008000, 0x80008000);
+    sse_full_scale_fp = _mm_set1_epi32(full_scale_fp|(full_scale_fp<<16));
+    sse_half_scale_fp = _mm_set1_epi32(half_scale_fp >> 4);
+
+    rand_mul = _mm_set1_epi32(0x4d9f1d32);
+    rand_mask = _mm_set1_epi32(0x00ff00ff);  // 8 random bits
 
     for (int y = start_y; y < end_y; y++) {
+      __m128i sserandom = _mm_set_epi32(dim.x*1676+y*18000, dim.x*2342+y*34311, dim.x*4272+y*12123, dim.x*1234+y*23464);
       __m128i* pixel = (__m128i*) & data[(mOffset.y+y)*pitch];
       __m128i ssescale, ssesub;
       if (((y+mOffset.y)&1) == 0) { 
@@ -240,6 +258,18 @@ void RawImageDataU16::scaleValues(int start_y, int end_y) {
         // Add rounder
         pix_low = _mm_add_epi32(pix_low, sseround);
         pix_high = _mm_add_epi32(pix_high, sseround);
+
+        sserandom = _mm_xor_si128(_mm_mulhi_epi16(sserandom, rand_mul), _mm_mullo_epi16(sserandom, rand_mul));
+        __m128i rand_masked = _mm_and_si128(sserandom, rand_mask);  // Get 8 random bits
+        rand_masked = _mm_mullo_epi16(rand_masked, sse_full_scale_fp);
+        
+        __m128i zero = _mm_setzero_si128();
+        __m128i rand_lo = _mm_sub_epi32(sse_half_scale_fp, _mm_unpacklo_epi16(rand_masked,zero));
+        __m128i rand_hi = _mm_sub_epi32(sse_half_scale_fp, _mm_unpackhi_epi16(rand_masked,zero));
+
+        pix_low = _mm_add_epi32(pix_low, rand_lo);
+        pix_high = _mm_add_epi32(pix_high, rand_hi);
+
         // Shift down
         pix_low = _mm_srai_epi32(pix_low, 10);
         pix_high = _mm_srai_epi32(pix_high, 10);
@@ -270,11 +300,14 @@ void RawImageDataU16::scaleValues(int start_y, int end_y) {
       sub[i] = blackLevelSeparate[v];
     }
     for (int y = start_y; y < end_y; y++) {
+      int v = dim.x + y * 36969;
       ushort16 *pixel = (ushort16*)getData(0, y);
       int *mul_local = &mul[2*(y&1)];
       int *sub_local = &sub[2*(y&1)];
       for (int x = 0 ; x < gw; x++) {
-        pixel[x] = clampbits(((pixel[x] - sub_local[x&1]) * mul_local[x&1] + 8192) >> 14, 16);
+        v = 18000 *(v & 65535) + (v >> 16);
+        int rand = half_scale_fp - (full_scale_fp * (v&2047));
+        pixel[x] = clampbits(((pixel[x] - sub_local[x&1]) * mul_local[x&1] + 8192 + rand) >> 14, 16);
       }
     }
   }
@@ -286,6 +319,14 @@ void RawImageDataU16::scaleValues(int start_y, int end_y) {
   int gw = dim.x * cpp;
   int mul[4];
   int sub[4];
+  int depth_values = whitePoint - blackLevelSeparate[0];
+  float app_scale = 65535.0f / depth_values;
+
+  // Scale in 30.2 fp
+  int full_scale_fp = (int)(app_scale * 4.0f);
+  // Half Scale in 18.14 fp
+  int half_scale_fp = (int)(app_scale * 4095.0f);
+
   for (int i = 0; i < 4; i++) {
     int v = i;
     if ((mOffset.x&1) != 0)
@@ -296,11 +337,14 @@ void RawImageDataU16::scaleValues(int start_y, int end_y) {
     sub[i] = blackLevelSeparate[v];
   }
   for (int y = start_y; y < end_y; y++) {
+    int v = dim.x + y * 36969;
     ushort16 *pixel = (ushort16*)getData(0, y);
     int *mul_local = &mul[2*(y&1)];
     int *sub_local = &sub[2*(y&1)];
     for (int x = 0 ; x < gw; x++) {
-      pixel[x] = clampbits(((pixel[x] - sub_local[x&1]) * mul_local[x&1] + 8192) >> 14, 16);
+      v = 18000 *(v & 65535) + (v >> 16);
+      int rand = half_scale_fp - (full_scale_fp * (v&2047));
+      pixel[x] = clampbits(((pixel[x] - sub_local[x&1]) * mul_local[x&1] + 8192 + rand) >> 14, 16);
     }
   }
 }

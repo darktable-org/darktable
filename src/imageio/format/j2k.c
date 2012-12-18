@@ -405,111 +405,63 @@ int write_image (dt_imageio_j2k_t *j2k, const char *filename, const float *in, v
   /* encode the destination image */
   /* ---------------------------- */
   int rc = 1;
+  OPJ_CODEC_FORMAT codec;
   if(parameters.cod_format == J2K_CFMT)        /* J2K format output */
-  {
-    int codestream_length;
-    size_t res;
-    opj_cio_t *cio = NULL;
-    FILE *f = NULL;
-
-    /* get a J2K compressor handle */
-    opj_cinfo_t* cinfo = opj_create_compress(CODEC_J2K);
-
-    /* catch events using our callbacks and give a local context */
-    opj_set_event_mgr((opj_common_ptr)cinfo, &event_mgr, stderr);
-
-    /* setup the encoder parameters using the current image and user parameters */
-    opj_setup_encoder(cinfo, &parameters, image);
-
-    /* open a byte stream for writing */
-    /* allocate memory for all tiles */
-    cio = opj_cio_open((opj_common_ptr)cinfo, NULL, 0);
-
-    /* encode the image */
-    if(!opj_encode(cinfo, cio, image, NULL))
-    {
-      opj_cio_close(cio);
-      fprintf(stderr, "failed to encode image\n");
-      return 1;
-    }
-    codestream_length = cio_tell(cio);
-
-    /* write the buffer to disk */
-    f = fopen(filename, "wb");
-    if(!f)
-    {
-      fprintf(stderr, "failed to open %s for writing\n", filename);
-      return 1;
-    }
-    res = fwrite(cio->buffer, 1, codestream_length, f);
-    if(res < (size_t)codestream_length) /* FIXME */
-    {
-      fprintf(stderr, "failed to write %d (%s)\n", codestream_length, filename);
-      return 1;
-    }
-    fclose(f);
-
-    /* close and free the byte stream */
-    opj_cio_close(cio);
-
-    /* free remaining compression structures */
-    opj_destroy_compress(cinfo);
-  }
+    codec = CODEC_J2K;
   else
-  {                        /* JP2 format output */
-    int codestream_length;
-    size_t res;
-    opj_cio_t *cio = NULL;
-    FILE *f = NULL;
-    opj_cinfo_t *cinfo = NULL;
+    codec = CODEC_JP2;
 
-    /* get a JP2 compressor handle */
-    cinfo = opj_create_compress(CODEC_JP2);
+  int codestream_length;
+  size_t res;
+  opj_cio_t *cio = NULL;
+  FILE *f = NULL;
 
-    /* catch events using our callbacks and give a local context */
-    opj_set_event_mgr((opj_common_ptr)cinfo, &event_mgr, stderr);
+  /* get a J2K/JP2 compressor handle */
+  opj_cinfo_t* cinfo = opj_create_compress(codec);
 
-    /* setup the encoder parameters using the current image and using user parameters */
-    opj_setup_encoder(cinfo, &parameters, image);
+  /* catch events using our callbacks and give a local context */
+  opj_set_event_mgr((opj_common_ptr)cinfo, &event_mgr, stderr);
 
-    /* open a byte stream for writing */
-    /* allocate memory for all tiles */
-    cio = opj_cio_open((opj_common_ptr)cinfo, NULL, 0);
+  /* setup the encoder parameters using the current image and user parameters */
+  opj_setup_encoder(cinfo, &parameters, image);
 
-    /* encode the image */
-    if(!opj_encode(cinfo, cio, image, NULL))
-    {
-      opj_cio_close(cio);
-      fprintf(stderr, "failed to encode image\n");
-      return 1;
-    }
-    codestream_length = cio_tell(cio);
+  /* open a byte stream for writing */
+  /* allocate memory for all tiles */
+  cio = opj_cio_open((opj_common_ptr)cinfo, NULL, 0);
 
-    /* write the buffer to disk */
-    f = fopen(filename, "wb");
-    if(!f)
-    {
-      fprintf(stderr, "failed to open %s for writing\n", filename);
-      return 1;
-    }
-    res = fwrite(cio->buffer, 1, codestream_length, f);
-    if(res < (size_t)codestream_length) /* FIXME */
-    {
-      fprintf(stderr, "failed to write %d (%s)\n", codestream_length, filename);
-      return 1;
-    }
-    fclose(f);
-
-    /* close and free the byte stream */
+  /* encode the image */
+  if(!opj_encode(cinfo, cio, image, NULL))
+  {
     opj_cio_close(cio);
-
-    /* free remaining compression structures */
-    opj_destroy_compress(cinfo);
-
-    /* add exif data blob. seems to not work for j2k files :( */
-    if(exif)
-      rc = dt_exif_write_blob(exif,exif_len,filename);
+    fprintf(stderr, "failed to encode image\n");
+    return 1;
   }
+  codestream_length = cio_tell(cio);
+
+  /* write the buffer to disk */
+  f = fopen(filename, "wb");
+  if(!f)
+  {
+    fprintf(stderr, "failed to open %s for writing\n", filename);
+    return 1;
+  }
+  res = fwrite(cio->buffer, 1, codestream_length, f);
+  if(res < (size_t)codestream_length) /* FIXME */
+  {
+    fprintf(stderr, "failed to write %d (%s)\n", codestream_length, filename);
+    return 1;
+  }
+  fclose(f);
+
+  /* close and free the byte stream */
+  opj_cio_close(cio);
+
+  /* free remaining compression structures */
+  opj_destroy_compress(cinfo);
+
+  /* add exif data blob. seems to not work for j2k files :( */
+  if(exif && j2k->format == JP2_CFMT)
+    rc = dt_exif_write_blob(exif,exif_len,filename);
 
   /* free image data */
   opj_image_destroy(image);
