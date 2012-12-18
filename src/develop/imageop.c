@@ -936,7 +936,7 @@ init_presets(dt_iop_module_so_t *module_so)
       fprintf(stderr, "[imageop_init_presets] Can't upgrade '%s' preset '%s' from version %d to %d, no legacy_params() implemented \n", module_so->op, name, old_params_version, module_version );
     }
 
-    if( old_blend_params && dt_develop_blend_version() > old_blend_params_version ) // TODO: handle old presets with no blending params
+    if( !old_blend_params || dt_develop_blend_version() > old_blend_params_version )
     {
       fprintf(stderr, "[imageop_init_presets] updating '%s' preset '%s' from blendop version %d to version %d\n", module_so->op, name, old_blend_params_version, dt_develop_blend_version() );
 
@@ -954,12 +954,13 @@ init_presets(dt_iop_module_so_t *module_so)
       void *new_blend_params = malloc(sizeof(dt_develop_blend_params_t));
 
       // convert the old blend params to new
-      if( dt_develop_blend_legacy_params(module, old_blend_params, old_blend_params_version, new_blend_params, dt_develop_blend_version(), old_blend_params_size) )
+      if( old_blend_params && dt_develop_blend_legacy_params(module, old_blend_params, old_blend_params_version, new_blend_params, dt_develop_blend_version(), old_blend_params_size) == 0 )
       {
-        free(new_blend_params);
-        dt_iop_cleanup_module(module);
-        free(module);
-        continue;
+        // do nothing
+      }
+      else
+      {
+        memcpy(new_blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
       }
 
       // and write the new blend params back to the database
