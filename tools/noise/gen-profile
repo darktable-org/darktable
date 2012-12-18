@@ -53,6 +53,16 @@ get_image_iso() {
 		iso=$(exiv2 -g Exif.Photo.RecommendedExposureIndex -Pt "$1" 2>/dev/null || :)
 	fi
 
+        # then try some brand specific values if still not found
+
+        if [ "$iso" = "" ]; then
+            case "$(get_image_camera_maker $1)" in
+                NIKON*)
+                    iso=$(exiv2 -g Exif.NikonIi.ISO -Pt "$1" 2>/dev/null || :)
+                    ;;
+            esac
+        fi
+
 	echo $iso
 }
 
