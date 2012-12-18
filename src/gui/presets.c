@@ -147,7 +147,7 @@ static gchar*
 get_active_preset_name(dt_iop_module_t *module)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, op_params, blendop_params, writeprotect from presets where operation=?1 and op_version=?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, op_params, blendop_params, enabled from presets where operation=?1 and op_version=?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
   gchar *name = NULL;
@@ -158,8 +158,10 @@ get_active_preset_name(dt_iop_module_t *module)
     int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
     void *blendop_params = (void *)sqlite3_column_blob(stmt, 2);
     int32_t bl_params_size = sqlite3_column_bytes(stmt, 2);
+    int enabled = sqlite3_column_int(stmt, 3);
     if(!memcmp(module->params, op_params, MIN(op_params_size, module->params_size)) &&
-        !memcmp(module->blend_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t))))
+        !memcmp(module->blend_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t))) &&
+        module->enabled == enabled)
     {
       name = g_strdup((char *)sqlite3_column_text(stmt, 0));
       break;
@@ -711,7 +713,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
   if(image)
   {
     // only matching if filter is on:
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, op_params, writeprotect, description, blendop_params, op_version from presets where operation=?1 and "
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, op_params, writeprotect, description, blendop_params, op_version, enabled from presets where operation=?1 and "
                                 "(filter=0 or ( "
                                 "?2 like model and ?3 like maker and ?4 like lens and "
                                 "?5 between iso_min and iso_max and "
@@ -733,7 +735,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
   else
   {
     // don't know for which image. show all we got:
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, op_params, writeprotect, description, blendop_params, op_version from presets where operation=?1 order by writeprotect desc, rowid", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, op_params, writeprotect, description, blendop_params, op_version, enabled from presets where operation=?1 order by writeprotect desc, rowid", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, op, strlen(op), SQLITE_TRANSIENT);
   }
   // collect all presets for op from db
@@ -744,12 +746,14 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
     void *blendop_params = (void *)sqlite3_column_blob(stmt, 4);
     int32_t bl_params_size = sqlite3_column_bytes(stmt, 4);
     int32_t preset_version = sqlite3_column_int(stmt, 5);
+    int32_t enabled = sqlite3_column_int(stmt, 6);
     int32_t isdefault = 0;
     int32_t isdisabled = (preset_version == version ? 0 : 1);
     if(module && !memcmp(module->default_params, op_params, MIN(op_params_size, module->params_size)) &&
         !memcmp(module->default_blendop_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))) isdefault = 1;
     if(!memcmp(params, op_params, MIN(op_params_size, params_size)) &&
-        !memcmp(bl_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t))))
+        !memcmp(bl_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t))) &&
+        module->enabled == enabled)
     {
       active_preset = cnt;
       writeprotect = sqlite3_column_int(stmt, 2);
