@@ -1125,7 +1125,7 @@ gboolean dt_dev_modulegroups_available(dt_develop_t *dev)
 
 void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group)
 {
-  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.set)
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.set && dev->first_load == 0)
     dev->proxy.modulegroups.set(dev->proxy.modulegroups.module, group);
 }
 
