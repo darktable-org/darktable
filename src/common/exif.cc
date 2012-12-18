@@ -857,6 +857,11 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int 
          != exifData.end() )
       exifData.erase(pos);
 
+    /* CFAPattern makes no sense for output formats */
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.CFAPattern")))
+         != exifData.end() )
+      exifData.erase(pos);
+
     /* Delete various MakerNote fields only applicable to the raw file */
 
     // Nikon thumbnail data
