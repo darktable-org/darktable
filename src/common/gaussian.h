@@ -46,6 +46,10 @@ dt_gaussian_t;
 
 dt_gaussian_t *dt_gaussian_init(const int width, const int height, const int channels, const float *max, const float *min, const float sigma, const int order);
 
+size_t dt_gaussian_memory_use(const int width, const int height, const int channels);
+
+size_t dt_gaussian_singlebuffer_size(const int width, const int height, const int channels);
+
 void dt_gaussian_blur(dt_gaussian_t *g, float *in, float *out);
 
 void dt_gaussian_blur_4c(dt_gaussian_t *g, float *in, float *out);
