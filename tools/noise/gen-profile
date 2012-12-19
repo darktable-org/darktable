@@ -251,6 +251,13 @@ for image in "$profiling_dir"/*; do
 		break
 	fi
 
+	case "$image" in
+	*.jpg)
+		# Skip jpeg files, if any.
+		continue
+		;;
+	esac
+
 	iso=$(get_image_iso "$image")
 	if [ -z "$iso" ]; then
 		# Not an image.
