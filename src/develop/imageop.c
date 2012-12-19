@@ -795,15 +795,19 @@ dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
   
   //we set the focus to the other instance
   dt_iop_request_focus(next);
+  gtk_widget_grab_focus(next->expander);
   
   //we remove the plugin effectively
-  darktable.gui->reset = 1;
-  //we cleanup the widget
   if (!dt_iop_is_hidden(module))
   {
-    gtk_container_remove (GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),module->expander);
-    dt_iop_gui_cleanup_module(module);
-  }  
+    //we just hide the module to avoid lots of gtk critical warnings
+    gtk_widget_hide(module->expander);
+    //we move the module far away, to avoid problems when reordering instance after that
+    gtk_box_reorder_child (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),module->expander,-1);
+  }
+  darktable.gui->reset = 1;
+  //we cleanup the widget
+  if (!dt_iop_is_hidden(module)) dt_iop_gui_cleanup_module(module);
 
   //we remove all references in the history stack and dev->iop
   dt_dev_module_remove(dev,module);
@@ -1083,27 +1087,23 @@ dt_iop_gui_multimenu_callback(GtkButton *button, gpointer user_data)
   g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_duplicate_callback), module);
   gtk_menu_append(menu, item);
   
-  if (module->multi_show_up)
-  {    
-    item = gtk_menu_item_new_with_label(_("move up"));
-    //g_object_set(G_OBJECT(item), "tooltip-text", _("move this instance up"), (char *)NULL);
-    g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_moveup_callback), module);
-    gtk_menu_append(menu, item);
-  }
-  if (module->multi_show_down)
-  {
-    item = gtk_menu_item_new_with_label(_("move down"));
-    //g_object_set(G_OBJECT(item), "tooltip-text", _("move this instance down"), (char *)NULL);
-    g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_movedown_callback), module);
-    gtk_menu_append(menu, item);
-  }
-  if (module->multi_show_close)
-  {
-    item = gtk_menu_item_new_with_label(_("delete"));
-    //g_object_set(G_OBJECT(item), "tooltip-text", _("delete this instance"), (char *)NULL);
-    g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_delete_callback), module);
-    gtk_menu_append(menu, item);
-  }
+  item = gtk_menu_item_new_with_label(_("move up"));
+  //g_object_set(G_OBJECT(item), "tooltip-text", _("move this instance up"), (char *)NULL);
+  g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_moveup_callback), module);
+  gtk_widget_set_sensitive(item, module->multi_show_up);
+  gtk_menu_append(menu, item);
+
+  item = gtk_menu_item_new_with_label(_("move down"));
+  //g_object_set(G_OBJECT(item), "tooltip-text", _("move this instance down"), (char *)NULL);
+  g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_movedown_callback), module);
+  gtk_widget_set_sensitive(item, module->multi_show_down);
+  gtk_menu_append(menu, item);
+
+  item = gtk_menu_item_new_with_label(_("delete"));
+  //g_object_set(G_OBJECT(item), "tooltip-text", _("delete this instance"), (char *)NULL);
+  g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_delete_callback), module);
+  gtk_widget_set_sensitive(item, module->multi_show_close);
+  gtk_menu_append(menu, item);
   
   gtk_widget_show_all(menu);
   //popup
@@ -1542,7 +1542,6 @@ dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
   return iop_cs_rgb;
 }
 
-
 static void
 dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
 {
@@ -1558,7 +1557,6 @@ dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
 
   dt_dev_add_history_item(module->dev, module, TRUE);
 }
-
 
 
 static void
