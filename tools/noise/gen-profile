@@ -194,10 +194,10 @@ required pictures. Otherwise, it's optional.
 EOF
 fi
 
-if ! tool_installed sqlite3; then
+if ! tool_installed convert; then
 	cat 1>&2 <<EOF
-sqlite3 is required to prepare a database allowing you to test the
-generated presets. Please install this command and re-run this script.
+ImageMagick is required to check input images correctness. Please
+install this package and re-run this script.
 
 EOF
 	missing_tool=1
@@ -207,6 +207,15 @@ if ! tool_installed gnuplot; then
 	cat 1>&2 <<EOF
 gnuplot is required to generate the graphs used to estimate the quality
 of the presets. Please install this command and re-run this script.
+
+EOF
+	missing_tool=1
+fi
+
+if ! tool_installed sqlite3; then
+	cat 1>&2 <<EOF
+sqlite3 is required to prepare a database allowing you to test the
+generated presets. Please install this command and re-run this script.
 
 EOF
 	missing_tool=1
@@ -415,6 +424,9 @@ EOF
 			 --capture-image-and-download
 
 			image=$(ls -t "$profiling_dir/$iso-$i".* | head -n 1)
+
+			"$scriptdir"/check-image-correctness "$image"
+
 			images=$(get_var "images_$iso")
 			if [ -z "$image" ]; then
 				images=$image
@@ -434,6 +446,9 @@ for iso in $iso_settings; do
 	images=$(get_var "images_$iso")
 	for image in $images; do
 		echo "    $image"
+		if [ "$do_profiling_shots" = "0" ]; then
+			"$scriptdir"/check-image-correctness "$image"
+		fi
 	done
 done
 
