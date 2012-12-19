@@ -292,7 +292,6 @@ dt_imageio_open_raw(
   ret = libraw_unpack(raw);
   // img->black   = raw->color.black/65535.0;
   // img->maximum = raw->color.maximum/65535.0;
-  img->bpp = sizeof(uint16_t);
   // printf("black, max: %d %d %f %f\n", raw->color.black, raw->color.maximum, img->black, img->maximum);
   HANDLE_ERRORS(ret, 1);
   ret = libraw_dcraw_process(raw);
@@ -306,6 +305,7 @@ dt_imageio_open_raw(
     img->orientation = raw->sizes.flip;
   // filters seem only ever to take a useful value after unpack/process
   img->filters = raw->idata.filters;
+  img->bpp = img->filters ? sizeof(uint16_t) : 4*sizeof(float);
   img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
   img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
   img->exif_iso = raw->other.iso_speed;
@@ -326,11 +326,14 @@ dt_imageio_open_raw(
     free(image);
     return DT_IMAGEIO_CACHE_FULL;
   }
+  if(img->filters)
+  {
 #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) shared(img, image, raw, buf)
 #endif
-  for(int k=0; k<img->width*img->height; k++)
-    ((uint16_t *)buf)[k] = CLAMPS((((uint16_t *)image->data)[k] - raw->color.black)*65535.0f/(float)(raw->color.maximum - raw->color.black), 0, 0xffff);
+    for(int k=0; k<img->width*img->height; k++)
+      ((uint16_t *)buf)[k] = CLAMPS((((uint16_t *)image->data)[k] - raw->color.black)*65535.0f/(float)(raw->color.maximum - raw->color.black), 0, 0xffff);
+  }
   // clean up raw stuff.
   libraw_recycle(raw);
   libraw_close(raw);
@@ -338,9 +341,19 @@ dt_imageio_open_raw(
   raw = NULL;
   image = NULL;
 
-  img->flags &= ~DT_IMAGE_LDR;
-  img->flags &= ~DT_IMAGE_HDR;
-  img->flags |= DT_IMAGE_RAW;
+  if(img->filters)
+  {
+    img->flags &= ~DT_IMAGE_LDR;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_RAW;
+  }
+  else
+  {
+    // ldr dng. it exists :(
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+  }
   return DT_IMAGEIO_OK;
 }
 
@@ -486,7 +499,7 @@ int dt_imageio_export(
     return format->write_image(format_params, filename, NULL, NULL, 0, imgid);
   else
     return dt_imageio_export_with_flags(imgid, filename, format, format_params,
-                                        0, 0, high_quality, 0);
+                                        0, 0, high_quality, 0, NULL);
 }
 
 // internal function: to avoid exif blob reading + 8-bit byteorder flag + high-quality override
@@ -498,7 +511,8 @@ int dt_imageio_export_with_flags(
   const int32_t               ignore_exif,
   const int32_t               display_byteorder,
   const gboolean              high_quality,
-  const int32_t               thumbnail_export)
+  const int32_t               thumbnail_export,
+  const char                 *filter)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
@@ -535,6 +549,13 @@ int dt_imageio_export_with_flags(
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
+  if(filter)
+  {
+    if(!strncmp(filter, "pre:", 4))
+      dt_dev_pixelpipe_disable_after(&pipe, filter+4);
+    if(!strncmp(filter, "post:", 5))
+      dt_dev_pixelpipe_disable_before(&pipe, filter+5);
+  }
   dt_show_times(&start, "[export] creating pixelpipe", NULL);
 
   // find output color profile for this image:
