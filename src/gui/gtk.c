@@ -1161,6 +1161,10 @@ void dt_ui_destroy(struct dt_ui_t *ui)
   g_free(ui);
 }
 
+GtkBox *dt_ui_get_container(struct dt_ui_t *ui, const dt_ui_container_t c)
+{
+  return GTK_BOX(ui->containers[c]);
+}
 void dt_ui_container_add_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w)
 {
   //  if(!GTK_IS_BOX(ui->containers[c])) return;
