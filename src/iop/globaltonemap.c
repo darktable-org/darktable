@@ -413,9 +413,16 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   const float iw = piece->buf_in.width /scale;
   const float ih = piece->buf_in.height/scale;
   const float sigma_s = fminf(iw, ih)*0.03f;
+  const float sigma_r = 8.0f;
 
-  tiling->factor = 2.5f; // in + out + bilateral
-  tiling->maxbuf = 1.0f;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const int channels = piece->colors;
+
+  const size_t basebuffer = width*height*channels*sizeof(float);
+
+  tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width,height,sigma_s,sigma_r)/basebuffer;    
+  tiling->maxbuf = fmax(1.0f, (float)dt_bilateral_singlebuffer_size(width,height,sigma_s,sigma_r)/basebuffer);
   tiling->overhead = 0;
   tiling->overlap = ceilf(4*sigma_s);
   tiling->xalign = 1;
