@@ -323,6 +323,10 @@ EOF
 	# We are now ready to take pictures for each supported/wanted
 	# ISO settings.
 
+	# TODO: For now, we take one image per ISO setting. When
+	# benchmark is automated, this value can be raised to 3 for
+	# instance, and the benchmark script will choose the best
+	# preset.
 	shots_per_iso=1
 	case $(uname -s) in
 	Linux) shots_seq=$(seq $shots_per_iso) ;;
@@ -363,7 +367,7 @@ EOF
 			raw_id=$(get_camera_raw_setting)
 		fi
 
-		# This script will do 3 shots for each ISO setting.
+		# This script will do $shots_seq shots for each ISO setting.
 		for i in $shots_seq; do
 			gphoto2						\
 			 --set-config /main/imgsettings/imageformat=$raw_id\
