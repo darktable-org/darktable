@@ -232,13 +232,13 @@ fi
 # If the user didn't specified a profiling shots directory, use a
 # default one.
 #
-# Defaults to /var/tmp/dt-profiling/$camera/profiling-shots.
+# Defaults to /var/tmp/darktable-noise-profiling/$camera/profiling.
 
 if [ -z "$profiling_dir" ]; then
 	if camera_is_plugged; then
 		camera=$(get_camera_name)
 		subdir=$(echo $camera | sed -r 's/[^a-zA-Z0-9]/-/g')
-		profiling_dir="/var/tmp/darktable-noise-profiling/$subdir"
+		profiling_dir="/var/tmp/darktable-noise-profiling/$subdir/profiling"
 		test -d "$profiling_dir" || mkdir -p "$profiling_dir"
 	else
 		cat <<EOF
