@@ -176,7 +176,7 @@ EOF
 	a=$(cat $fit | cut -f2 -d' ')
 	b=$(cat $fit | cut -f5 -d' ')
 
-	echo "{N_(\"$model - $iso ISO\"),       \"$maker\",      \"$model\",              $iso, $iso,         {1.0f, 1.0f, {$a, $a, $a}, {$b, $b, $b}}}," >> $presets
+	echo "{N_(\"$model - $iso ISO\"),       \"$maker\",      \"$model\",              $iso,         {1.0f, 1.0f, {$a, $a, $a}, {$b, $b, $b}}}," >> $presets
 
 	# use $path/floatdump to insert test preset, like
 	echo "--> Record preset in library for testing purpose"
