@@ -183,21 +183,29 @@ EOF
 EOF
 	# Output preset for dt:
 	echo "--> Save generated preset"
-	a=$(cat $fit | cut -f2 -d' ')
-	b=$(cat $fit | cut -f5 -d' ')
+	a0=$(cat $fit | cut -f1 -d' ')
+	a1=$(cat $fit | cut -f2 -d' ')
+	a2=$(cat $fit | cut -f3 -d' ')
+	b0=$(cat $fit | cut -f4 -d' ')
+	b1=$(cat $fit | cut -f5 -d' ')
+	b2=$(cat $fit | cut -f6 -d' ')
 
-	echo "{N_(\"$model - $iso ISO\"),       \"$maker\",      \"$model\",              $iso,         {1.0f, 1.0f, {$a, $a, $a}, {$b, $b, $b}}}," >> $presets
+	echo "{N_(\"$model - $iso ISO\"),       \"$maker\",      \"$model\",              $iso,         {1.0f, 1.0f, {$a0, $a1, $a2}, {$b0, $b1, $b2}}}," >> $presets
 
 	# use $path/floatdump to insert test preset, like
 	echo "--> Record preset in library for testing purpose"
 	bin1=$(echo 1.0f | $floatdump)
-	bina=$(echo $a | $floatdump)
-	binb=$(echo $b | $floatdump)
+	bina0=$(echo $a0 | $floatdump)
+	bina1=$(echo $a1 | $floatdump)
+	bina2=$(echo $a2 | $floatdump)
+	binb0=$(echo $b0 | $floatdump)
+	binb1=$(echo $b1 | $floatdump)
+	binb2=$(echo $b2 | $floatdump)
 	# schema for this table is:
 	# CREATE TABLE presets (name varchar, description varchar, operation varchar, op_version integer, op_params blob, enabled integer, blendop_params blob, model varchar, maker varchar, lens varchar, iso_min real, iso_max real, exposure_min real, exposure_max real, aperture_min real, aperture_max real, focal_length_min real, focal_length_max real, writeprotect integer, autoapply integer, filter integer, def integer, isldr integer, blendop_version integer);
 	echo "insert into presets " \
 	 "(name, description, operation, op_version, op_params, enabled, blendop_params, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, writeprotect, autoapply, filter, def, isldr, blendop_version) " \
-	 "values ('(test) $model - $iso ISO', '', 'denoiseprofile', 1, X'${bin1}${bin1}${bina}${bina}${bina}${binb}${binb}${binb}', 1, X'00', '', '', '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4);" | sqlite3 $database
+	 "values ('(test) $model - $iso ISO', '', 'denoiseprofile', 1, X'${bin1}${bin1}${bina0}${bina1}${bina2}${binb0}${binb1}${binb2}', 1, X'00', '', '', '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4);" | sqlite3 $database
 
 	# Clean unused files.
 	rm -f $dat $flat_dat $curves_dat $fit
