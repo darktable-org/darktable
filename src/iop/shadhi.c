@@ -455,9 +455,6 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
     tiling->maxbuf = fmax(1.0f, (float)dt_gaussian_singlebuffer_size(width, height, channels)/basebuffer);
   }
 
-  printf("tiling->factor %f\n", tiling->factor);
-  printf("tiling->maxbuf %f\n", tiling->maxbuf);
-
   tiling->overhead = 0;
   tiling->overlap = ceilf(4*sigma);
   tiling->xalign = 1;
