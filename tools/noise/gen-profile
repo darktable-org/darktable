@@ -5,84 +5,11 @@ set -e
 scriptname=$(basename $0)
 scriptdir=$(cd $(dirname $0) && pwd)
 
+. "$scriptdir/subr.sh"
+
 # --------------------------------------------------------------------
 # Internal functions.
 # --------------------------------------------------------------------
-
-camera_is_plugged() {
-	gphoto2 -a >/dev/null 2>&1
-}
-
-get_camera_name() {
-	if camera_is_plugged; then
-		camera=$(gphoto2 -a | head -n 1 | sed -r s'/^[^:]+: //')
-		echo $camera
-	fi
-}
-
-get_camera_raw_setting() {
-	raw_setting=$(gphoto2 --get-config /main/imgsettings/imageformat | awk '
-/^Choice: [0-9]+ RAW$/ {
-	id = $0;
-	sub(/^Choice: /, "", id);
-	sub(/ RAW$/, "", id);
-	print id;
-	exit;
-}
-')
-
-	echo $raw_setting
-}
-
-get_camera_iso_settings() {
-	iso_settings=$(gphoto2 --get-config /main/imgsettings/iso | awk '
-/^Choice: [0-9]+ [0-9]+$/ {
-	iso = $0;
-	sub(/^Choice: [0-9]+ /, "", iso);
-	print iso;
-}
-')
-
-	echo $iso_settings
-}
-
-get_image_iso() {
-	iso=$(exiv2 -g Exif.Photo.ISOSpeedRatings -Pt "$1" 2>/dev/null || :)
-
-	if [ "$iso" = "65535" ]; then
-		iso=$(exiv2 -g Exif.Photo.RecommendedExposureIndex -Pt "$1" 2>/dev/null || :)
-	fi
-
-        # then try some brand specific values if still not found
-
-        if [ "$iso" = "" ]; then
-            case "$(get_image_camera_maker $1)" in
-                NIKON*)
-                    iso=$(exiv2 -g Exif.NikonIi.ISO -Pt "$1" 2>/dev/null || :)
-                    ;;
-            esac
-        fi
-
-	echo $iso
-}
-
-get_image_camera_maker() {
-	maker=$(exiv2 -g Exif.Image.Make -Pt "$1" 2>/dev/null || :)
-	echo $maker
-}
-
-get_image_camera_model() {
-	model=$(exiv2 -g Exif.Image.Model -Pt "$1" 2>/dev/null || :)
-	echo $model
-}
-
-set_var() {
-	eval "var_$1=\"$2\""
-}
-
-get_var() {
-	eval echo \${var_$1}
-}
 
 profile_image() {
 	image="$1"
@@ -257,6 +184,47 @@ if [ "$iso_settings" ]; then
 	iso_settings=$(for iso in $iso_settings; do echo $iso; done | sort -n)
 fi
 
+# Check for required tools.
+missing_tool=0
+if ! tool_installed gphoto2; then
+	cat 1>&2 <<EOF
+gphoto2 is needed if you want this script to automatically take the
+required pictures. Otherwise, it's optional.
+
+EOF
+fi
+
+if ! tool_installed convert; then
+	cat 1>&2 <<EOF
+ImageMagick is required to check input images correctness. Please
+install this package and re-run this script.
+
+EOF
+	missing_tool=1
+fi
+
+if ! tool_installed gnuplot; then
+	cat 1>&2 <<EOF
+gnuplot is required to generate the graphs used to estimate the quality
+of the presets. Please install this command and re-run this script.
+
+EOF
+	missing_tool=1
+fi
+
+if ! tool_installed sqlite3; then
+	cat 1>&2 <<EOF
+sqlite3 is required to prepare a database allowing you to test the
+generated presets. Please install this command and re-run this script.
+
+EOF
+	missing_tool=1
+fi
+
+if [ "$missing_tool" = "1" ]; then
+	exit 1
+fi
+
 # --------------------------------------------------------------------
 # Part #1: Get profiling shots.
 # --------------------------------------------------------------------
@@ -264,13 +232,13 @@ fi
 # If the user didn't specified a profiling shots directory, use a
 # default one.
 #
-# Defaults to /var/tmp/dt-profiling/$camera/profiling-shots.
+# Defaults to /var/tmp/darktable-noise-profiling/$camera/profiling.
 
 if [ -z "$profiling_dir" ]; then
 	if camera_is_plugged; then
 		camera=$(get_camera_name)
 		subdir=$(echo $camera | sed -r 's/[^a-zA-Z0-9]/-/g')
-		profiling_dir="/var/tmp/darktable-noise-profiling/$subdir"
+		profiling_dir="/var/tmp/darktable-noise-profiling/$subdir/profiling"
 		test -d "$profiling_dir" || mkdir -p "$profiling_dir"
 	else
 		cat <<EOF
@@ -291,6 +259,13 @@ for image in "$profiling_dir"/*; do
 		# Directory empty.
 		break
 	fi
+
+	case "$image" in
+	*.jpg)
+		# Skip jpeg files, if any.
+		continue
+		;;
+	esac
 
 	iso=$(get_image_iso "$image")
 	if [ -z "$iso" ]; then
@@ -396,6 +371,10 @@ EOF
 	# We are now ready to take pictures for each supported/wanted
 	# ISO settings.
 
+	# TODO: For now, we take one image per ISO setting. When
+	# benchmark is automated, this value can be raised to 3 for
+	# instance, and the benchmark script will choose the best
+	# preset.
 	shots_per_iso=1
 	case $(uname -s) in
 	Linux) shots_seq=$(seq $shots_per_iso) ;;
@@ -436,7 +415,7 @@ EOF
 			raw_id=$(get_camera_raw_setting)
 		fi
 
-		# This script will do 3 shots for each ISO setting.
+		# This script will do $shots_seq shots for each ISO setting.
 		for i in $shots_seq; do
 			gphoto2						\
 			 --set-config /main/imgsettings/imageformat=$raw_id\
@@ -445,6 +424,9 @@ EOF
 			 --capture-image-and-download
 
 			image=$(ls -t "$profiling_dir/$iso-$i".* | head -n 1)
+
+			"$scriptdir"/check-image-correctness "$image"
+
 			images=$(get_var "images_$iso")
 			if [ -z "$image" ]; then
 				images=$image
@@ -464,6 +446,9 @@ for iso in $iso_settings; do
 	images=$(get_var "images_$iso")
 	for image in $images; do
 		echo "    $image"
+		if [ "$do_profiling_shots" = "0" ]; then
+			"$scriptdir"/check-image-correctness "$image"
+		fi
 	done
 done
 
@@ -534,8 +519,8 @@ echo "--> Cleanup"
 rm -f "$profiling_dir"/fit.log
 rm -f "$files_list"
 
-color_green='\033[32m'
-color_reset='\033[0m'
+color_green=$'\033[32m'
+color_reset=$'\033[0m'
 
 echo ""
 echo "${color_green}== Noise profiling done! ==${color_reset}"
