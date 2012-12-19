@@ -2,8 +2,17 @@
 # Internal functions.
 # --------------------------------------------------------------------
 
+tool_installed() {
+	if ! which $1 >/dev/null 2>&1; then
+		echo "$1 not found" 1>&2
+		return 1
+	fi
+
+	return 0
+}
+
 camera_is_plugged() {
-	gphoto2 -a >/dev/null 2>&1
+	tool_installed gphoto2 2>/dev/null && gphoto2 -a >/dev/null 2>&1
 }
 
 get_camera_name() {
