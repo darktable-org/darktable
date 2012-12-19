@@ -504,8 +504,8 @@ echo "--> Cleanup"
 rm -f "$profiling_dir"/fit.log
 rm -f "$files_list"
 
-color_green='\033[32m'
-color_reset='\033[0m'
+color_green=$'\033[32m'
+color_reset=$'\033[0m'
 
 echo ""
 echo "${color_green}== Noise profiling done! ==${color_reset}"
