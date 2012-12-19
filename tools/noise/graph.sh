@@ -23,7 +23,7 @@ do
   set format y "%g"
   set xlabel 'poissonian'
   set ylabel 'gaussian'
-  plot "noise_${iso}.dat" u 3:4 w p title "iso $iso", '' u 3:4:2 w labels notitle
+  plot "noise_${iso}.dat" u 3:4 w p title "iso $iso", '' u 3:4:(sprintf("\n%s", stringcolumn(2))) w labels notitle
 EOF
 done
 
