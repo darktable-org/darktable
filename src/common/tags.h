@@ -76,6 +76,7 @@ void dt_tag_free_result(GList **result);
 /** reorgnize tags */
 void dt_tag_reorganize(const gchar *source, const gchar *dest);
 
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
