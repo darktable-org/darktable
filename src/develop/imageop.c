@@ -2008,7 +2008,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   }
   else
   {
-    hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+    hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
     module->multimenu_button = GTK_WIDGET(hw[idx]);
     g_object_set(G_OBJECT(hw[idx]), "tooltip-text", _("multiple instances actions"), (char *)NULL);
     g_signal_connect (G_OBJECT (hw[idx]), "clicked",
