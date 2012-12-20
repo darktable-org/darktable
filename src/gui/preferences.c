@@ -98,6 +98,8 @@ static void tree_row_activated_presets(GtkTreeView *tree, GtkTreePath *path,
 static void tree_selection_changed(GtkTreeSelection *selection, gpointer data);
 static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
                                gpointer data);
+static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event,
+                               gpointer data);
 static gboolean prefix_search(GtkTreeModel *model, gint column,
                               const gchar *key, GtkTreeIter *iter, gpointer d);
 
@@ -484,6 +486,10 @@ static void init_tab_presets(GtkWidget *book)
   // row-activated either expands/collapses a row or activates editing
   g_signal_connect(G_OBJECT(tree), "row-activated",
                    G_CALLBACK(tree_row_activated_presets), NULL);
+
+  // A keypress may delete preset
+  g_signal_connect(G_OBJECT(tree), "key-press-event",
+                   G_CALLBACK(tree_key_press_presets), (gpointer)model);
 
   // Setting up the search functionality
   gtk_tree_view_set_search_column(GTK_TREE_VIEW(tree), P_NAME_COLUMN);
@@ -1011,6 +1017,72 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
 
     // Saving the changed bindings
     gtk_accel_map_save(accelpath);
+
+    return TRUE;
+  }
+  else
+  {
+    return FALSE;
+  }
+}
+
+static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event,
+    gpointer data)
+{
+
+  GtkTreeModel *model = (GtkTreeModel*)data;
+  GtkTreeIter iter;
+  GtkTreeSelection *selection =
+    gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
+
+  // We can just ignore mod key presses outright
+  if(event->is_modifier)
+    return FALSE;
+
+  if(event->keyval == GDK_Delete || event->keyval == GDK_BackSpace)
+  {
+    // If a leaf node is selected, delete that preset
+
+    // If nothing is selected, or branch node selected, just return
+    if(!gtk_tree_selection_get_selected(selection, &model, &iter)
+        || gtk_tree_model_iter_has_child(model, &iter))
+      return FALSE;
+
+    // For leaf nodes, open delete confirmation window if the preset is not writeprotected
+    gint rowid;
+    gchar *name;
+    GdkPixbuf *editable;
+    gtk_tree_model_get(model, &iter,
+        P_ROWID_COLUMN, &rowid,
+        P_NAME_COLUMN, &name,
+        P_EDITABLE_COLUMN, &editable,
+        -1);
+    if(editable == NULL) {
+      sqlite3_stmt *stmt;
+
+      GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+      GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+          GTK_DIALOG_DESTROY_WITH_PARENT,
+          GTK_MESSAGE_QUESTION,
+          GTK_BUTTONS_YES_NO,
+          _("do you really want to delete the preset `%s'?"), name);
+      gtk_window_set_title(GTK_WINDOW (dialog), _("delete preset?"));
+      if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
+      {
+        // TODO: remove accel
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where rowid=?1 and writeprotect=0", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+        GtkTreeStore *tree_store = GTK_TREE_STORE(model);
+        gtk_tree_store_clear(tree_store);
+        tree_insert_presets(tree_store);
+      }
+      gtk_widget_destroy (dialog);
+    }
+    else
+      g_object_unref(editable);
+    g_free(name);
 
     return TRUE;
   }
