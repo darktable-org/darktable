@@ -337,7 +337,7 @@ int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state)
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
   if(g->selected >= 0)
   {
-    if(up && p->spot[g->selected].radius > 0.005f) p->spot[g->selected].radius *= 0.9f;
+    if(up && p->spot[g->selected].radius > 0.002f) p->spot[g->selected].radius *= 0.9f;
     else  if(p->spot[g->selected].radius < 0.1f  ) p->spot[g->selected].radius *= 1.0f/0.9f;
     g->last_radius = p->spot[g->selected].radius;
     dt_conf_set_float("ui_last/spot_size", g->last_radius);
