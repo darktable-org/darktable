@@ -69,6 +69,37 @@ dt_bilateral_free_cl(
   free(b);
 }
 
+
+size_t
+dt_bilateral_memory_use(
+  const int width,       // width of input image
+  const int height,      // height of input image
+  const float sigma_s,   // spatial sigma (blur pixel coords)
+  const float sigma_r)   // range sigma (blur luma values)
+{
+  size_t size_x = CLAMPS((int)roundf(width/sigma_s), 4, 900) + 1;
+  size_t size_y = CLAMPS((int)roundf(height/sigma_s), 4, 900) + 1;
+  size_t size_z = CLAMPS((int)roundf(100.0f/sigma_r), 4, 50) + 1;
+
+  return size_x*size_y*size_z*sizeof(float)*2;
+}
+
+
+size_t
+dt_bilateral_singlebuffer_size(
+  const int width,       // width of input image
+  const int height,      // height of input image
+  const float sigma_s,   // spatial sigma (blur pixel coords)
+  const float sigma_r)   // range sigma (blur luma values)
+{
+  size_t size_x = CLAMPS((int)roundf(width/sigma_s), 4, 900) + 1;
+  size_t size_y = CLAMPS((int)roundf(height/sigma_s), 4, 900) + 1;
+  size_t size_z = CLAMPS((int)roundf(100.0f/sigma_r), 4, 50) + 1;
+
+  return size_x*size_y*size_z*sizeof(float);
+}
+
+
 dt_bilateral_cl_t *
 dt_bilateral_init_cl(
   const int devid,
