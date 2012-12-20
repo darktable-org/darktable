@@ -351,9 +351,11 @@ backtransform(
       {
         const float x = buf2[c];
         // closed form approximation to unbiased inverse (input range was 0..200 for fit, not 0..1)
-        // buf2[c] = fmaxf(0.0f, 1./4.*x*x + 1./4.*sqrtf(3./2.)/x - 11./8.*1.0/(x*x) + 5./8.*sqrtf(3./2.)*1.0/(x*x*x) - 1./8. - sigma2[c]);
+        if(x < .5f) buf2[c] = 0.0f;
+        else
+          buf2[c] = 1./4.*x*x + 1./4.*sqrtf(3./2.)/x - 11./8.*1.0/(x*x) + 5./8.*sqrtf(3./2.)*1.0/(x*x*x) - 1./8. - sigma2[c];
         // asymptotic form:
-        buf2[c] = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2[c]);
+        // buf2[c] = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2[c]);
         buf2[c] *= a[c];
       }
       buf2 += 4;
