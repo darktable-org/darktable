@@ -1021,7 +1021,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
   g->radius   = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1., 2.f, 0);
-  g->strength = dt_bauhaus_slider_new_with_range(self, 0.0f, 2.0f, .05, 1.f, 3);
+  g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 2.0f, .05, 1.f, 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->radius, _("patch size"));
