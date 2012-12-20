@@ -24,43 +24,40 @@ float4 LCH_2_Lab(float4 LCH)
 }
 
 
-
-void
-XYZ_to_Lab(float *xyz, float *lab)
+float4 XYZ_to_Lab(float4 xyz)
 {
-  xyz[0] *= (1.0f/0.9642f);
-  xyz[2] *= (1.0f/0.8242f);
-  for (int c=0; c<3; c++)
-    xyz[c] = xyz[c] > 0.008856f ? native_powr(xyz[c], 1.0f/3.0f) : 7.787f*xyz[c] + 16.0f/116.0f;
-  lab[0] = 116.0f * xyz[1] - 16.0f;
-  lab[1] = 500.0f * (xyz[0] - xyz[1]);
-  lab[2] = 200.0f * (xyz[1] - xyz[2]);
+  float4 lab;
+
+  xyz.x *= (1.0f/0.9642f);
+  xyz.z *= (1.0f/0.8242f);
+  xyz = (xyz > (float4)0.008856f) ? native_powr(xyz, (float4)1.0f/3.0f) : 7.787f*xyz + (float4)(16.0f/116.0f);
+  lab.x = 116.0f * xyz.y - 16.0f;
+  lab.y = 500.0f * (xyz.x - xyz.y);
+  lab.z = 200.0f * (xyz.y - xyz.z);
+
+  return lab;
 }
 
 
-
-float
-lab_f_inv(float x)
+float4 lab_f_inv(float4 x)
 {
-  const float epsilon = 0.206896551f;
-  const float kappa   = 24389.0f/27.0f;
-  if(x > epsilon) return x*x*x;
-  else return (116.0f*x - 16.0f)/kappa;
+  const float4 epsilon = (float4)0.206896551f;
+  const float4 kappa   = (float4)(24389.0f/27.0f);
+  return (x > epsilon) ? x*x*x : (116.0f*x - (float4)16.0f)/kappa;
 }
 
 
-void
-Lab_to_XYZ(float *Lab, float *XYZ)
+float4 Lab_to_XYZ(float4 Lab)
 {
-  const float d50[3] = { 0.9642f, 1.0f, 0.8249f };
-  const float fy = (Lab[0] + 16.0f)/116.0f;
-  const float fx = Lab[1]/500.0f + fy;
-  const float fz = fy - Lab[2]/200.0f;
-  XYZ[0] = d50[0]*lab_f_inv(fx);
-  XYZ[1] = d50[1]*lab_f_inv(fy);
-  XYZ[2] = d50[2]*lab_f_inv(fz);
-}
+  const float4 d50 = (float4)(0.9642f, 1.0f, 0.8249f, 0.0f);
+  float4 f, XYZ;
+  f.y = (Lab.x + 16.0f)/116.0f;
+  f.x = Lab.y/500.0f + f.y;
+  f.z = f.y - Lab.z/200.0f;
+  XYZ = d50 * lab_f_inv(f);
 
+  return XYZ;
+}
 
 
 float4 RGB_2_HSL(const float4 RGB)
