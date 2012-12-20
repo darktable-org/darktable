@@ -181,7 +181,7 @@ static void dt_control_sanitize_database()
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "CREATE TABLE memory.history (imgid integer, num integer, module integer, "
                         "operation varchar(256) UNIQUE ON CONFLICT REPLACE, op_params blob, enabled integer, "
-                        "blendop_params blob, blendop_version integer)",
+                        "blendop_params blob, blendop_version integer, multi_priority integer, multi_name varchar(256))",
                         NULL, NULL, NULL);
 
   // create a table legacy_presets with all the presets from pre-auto-apply-cleanup darktable.
@@ -400,7 +400,7 @@ void dt_control_create_database_schema()
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create table history (imgid integer, num integer, module integer, "
                         "operation varchar(256), op_params blob, enabled integer, "
-                        "blendop_params blob, blendop_version integer)", NULL, NULL, NULL);
+                        "blendop_params blob, blendop_version integer, multi_priority integer, multi_name varchar(256))", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create index if not exists imgid_index on history (imgid)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
@@ -417,7 +417,7 @@ void dt_control_create_database_schema()
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create table style_items (styleid integer, num integer, module integer, "
                         "operation varchar(256), op_params blob, enabled integer, "
-                        "blendop_params blob, blendop_version integer)", NULL, NULL, NULL);
+                        "blendop_params blob, blendop_version integer, multi_priority integer, multi_name varchar(256))", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create table color_labels (imgid integer, color integer)",
                         NULL, NULL, NULL);
@@ -694,6 +694,24 @@ void dt_control_init(dt_control_t *s)
       sqlite3_exec(dt_database_get(darktable.db), "alter table images add column longitude double", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db), "alter table images add column latitude double", NULL, NULL, NULL);
 
+      //add columns for multi instance
+      sqlite3_exec(dt_database_get(darktable.db), "alter table history add column multi_priority integer", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "alter table history add column multi_name varchar(256)", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "update history set multi_priority = 0 where multi_priority is NULL", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "update history set multi_name = ' ' where multi_name is NULL", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "alter table style_items add column multi_priority integer", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "alter table style_items add column multi_name varchar(256)", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "update style_items set multi_priority = 0 where multi_priority is NULL", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "update style_items set multi_name = ' ' where multi_name is NULL", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "alter table presets add column multi_priority integer", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "alter table presets add column multi_name varchar(256)", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "update presets set multi_priority = 0 where multi_priority is NULL", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "update presets set multi_name = ' ' where multi_name is NULL", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "alter table legacy_presets add column multi_priority integer", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "alter table legacy_presets add column multi_name varchar(256)", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "update legacy_presets set multi_priority = 0 where multi_priority is NULL", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "update legacy_presets set multi_name = ' ' where multi_name is NULL", NULL, NULL, NULL);
+      
       // and the color matrix
       sqlite3_exec(dt_database_get(darktable.db), "alter table images add column color_matrix blob", NULL, NULL, NULL);
       // and the colorspace as specified in some image types

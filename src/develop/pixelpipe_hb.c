@@ -257,6 +257,7 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
     // modules have been added in between or removed. need to rebuild the whole pipeline.
     dt_dev_pixelpipe_cleanup_nodes(pipe);
     dt_dev_pixelpipe_create_nodes(pipe, dev);
+    dt_dev_pixelpipe_synch_all(pipe, dev);
   }
   pipe->changed = DT_DEV_PIPE_UNCHANGED;
   dt_pthread_mutex_unlock(&dev->history_mutex);
@@ -1413,6 +1414,41 @@ int dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe, dt_develop_t *de
   return ret;
 }
 
+void dt_dev_pixelpipe_disable_after(
+    dt_dev_pixelpipe_t *pipe,
+    const char *op)
+{
+  GList *nodes = g_list_last(pipe->nodes);
+  dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
+  while(strcmp(piece->module->op, op))
+  {
+    piece->enabled = 0;
+    piece = NULL;
+    nodes = g_list_previous(nodes);
+    if(!nodes) break;
+    piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
+  }
+  // disable the last (matching one), too
+  if(piece) piece->enabled = 0;
+}
+
+void dt_dev_pixelpipe_disable_before(
+    dt_dev_pixelpipe_t *pipe,
+    const char *op)
+{
+  GList *nodes = pipe->nodes;
+  dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
+  while(strcmp(piece->module->op, op))
+  {
+    piece->enabled = 0;
+    piece = NULL;
+    nodes = g_list_next(nodes);
+    if(!nodes) break;
+    piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
+  }
+  // disable the last (matching one), too
+  if(piece) piece->enabled = 0;
+}
 
 static int
 dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output, void **cl_mem_output, int *out_bpp,

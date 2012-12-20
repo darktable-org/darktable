@@ -172,6 +172,11 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev,
 // convenience method that does not gamma-compress the image.
 int dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int x, int y, int width, int height, float scale);
 
+// disable given op and all that comes after it in the pipe:
+void dt_dev_pixelpipe_disable_after(dt_dev_pixelpipe_t *pipe, const char *op);
+// disable given op andn all that comes before it in the pipe:
+void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
+
 
 // TODO: future application: remove/add modules from list, load from disk, user programmable etc
 // TODO: add n-th module in dev list to gegl pipeline

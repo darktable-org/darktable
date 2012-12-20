@@ -206,6 +206,7 @@ dt_gtkentry_get_default_path_compl_list ()
     { "EXIF_HOUR", N_("$(EXIF_HOUR) - exif hour") },
     { "EXIF_MINUTE", N_("$(EXIF_MINUTE) - exif minute") },
     { "EXIF_SECOND", N_("$(EXIF_SECOND) - exif second") },
+    { "EXIF_ISO", N_("$(EXIF_ISO) - iso value") },
     { "STARS", N_("$(STARS) - star rating") },
     { "LABELS", N_("$(LABELS) - colorlabels") },
     { "PICTURES_FOLDER", N_("$(PICTURES_FOLDER) - pictures folder") },

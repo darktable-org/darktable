@@ -1271,7 +1271,7 @@ libraw_fail:
     dat.head.max_height = ht;
     dat.buf = buf;
     // export with flags: ignore exif (don't load from disk), don't swap byte order, don't do hq processing, and signal we want thumbnail export
-    res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, 1, 1, 0, 1);
+    res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, 1, 1, 0, 1, NULL);
     if(!res)
     {
       // might be smaller, or have a different aspect than what we got as input.

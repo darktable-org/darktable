@@ -1,0 +1,30 @@
+#!/bin/sh
+# See: http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=19805
+
+orig_image=$1
+jpeg_image="${orig_image%.*}-cic.jpg"
+
+if [ "$jpeg_image" -nt "$orig_image" -a "$jpeg_image" -nt "$0" ]; then
+	exit 0
+fi
+
+# Convert image to jpeg; otherwise, following tests take too much time.
+rm -f "$jpeg_image"
+darktable-cli "$orig_image" "$jpeg_image" 1>/dev/null 2>&1
+rm -f "$orig_image.xmp"
+
+over=$(convert "$jpeg_image" -channel RGB -threshold 99% -separate -append -format "%[mean]" info: | cut -f1 -d.)
+if [ "$over" -a "$over" -lt 80 ]; then
+	# Image not over-exposed.
+	echo "\"$orig_image\" not over-exposed ($over)"
+	rm -f "$jpeg_image"
+	exit 1
+fi
+
+under=$(convert "$jpeg_image" -negate -channel RGB -threshold 99% -separate -append -format "%[mean]" info: | cut -f1 -d.)
+if [ "$under" -a "$under" -lt 80 ]; then
+	# Image not under-exposed.
+	echo "\"$orig_image\" not under-exposed ($under)"
+	rm -f "$jpeg_image"
+	exit 2
+fi
