@@ -773,13 +773,13 @@ void process(
     piece->pipe->processed_maximum[1]*d->strength,
     piece->pipe->processed_maximum[2]*d->strength};
   const float aa[3] = {
-    d->a[0]*wb[0],
+    d->a[1]*wb[0],
     d->a[1]*wb[1],
-    d->a[2]*wb[2]};
+    d->a[1]*wb[2]};
   const float bb[3] = {
-    d->b[0]*wb[0],
+    d->b[1]*wb[0],
     d->b[1]*wb[1],
-    d->b[2]*wb[2]};
+    d->b[1]*wb[2]};
   precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
 
   // for each shift vector
