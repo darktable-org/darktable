@@ -211,17 +211,25 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
   {
     sqlite3_stmt *stmt;
 
-    // now delete preset, so we can re-insert the new values:
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, g->original_name, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, g->module->op, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, g->module->version() );
-
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-
     if ( ((g->old_id >= 0) && (strcmp(g->original_name, gtk_entry_get_text(g->name)) != 0)) || (g->old_id < 0) )
     {
+
+      if(strcmp(_("new preset"), gtk_entry_get_text(g->name)) == 0 || strlen(gtk_entry_get_text(g->name)) == 0)
+      {
+        //show error dialog
+        GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+        GtkWidget *dlg_changename = gtk_message_dialog_new (GTK_WINDOW(window),
+                                   GTK_DIALOG_DESTROY_WITH_PARENT,
+                                   GTK_MESSAGE_WARNING,
+                                   GTK_BUTTONS_OK,
+                                   _("please give preset a name"));
+
+        gtk_window_set_title(GTK_WINDOW (dlg_changename), _("unnamed preset"));
+
+        dlg_ret = gtk_dialog_run (GTK_DIALOG (dlg_changename));
+        gtk_widget_destroy (dlg_changename);
+        return;
+      }
 
       // editing existing preset with different name or store new preset -> check for a preset with the same name:
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name from presets where name = ?1 and operation=?2 and op_version=?3", -1, &stmt, NULL);
@@ -255,6 +263,18 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
         is_new = 1;
         sqlite3_finalize(stmt);
       }
+    }
+
+    if(g->old_id >= 0)
+    {
+      // now delete old preset:
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, g->original_name, -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, g->module->op, -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, g->module->version() );
+
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
     }
 
     if (is_new == 0)
