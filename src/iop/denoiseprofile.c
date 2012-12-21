@@ -79,7 +79,7 @@ typedef struct noiseprofile_t
 noiseprofile_t;
 
 static const noiseprofile_t noiseprofiles[] = {
-// preset name                   maker    model            iso    rad   tune   a a a                                 b b b 
+// preset name                   maker    model            iso    rad   tune   a a a                                 b b b
 {N_("generic poissonian"),       "",      "",              0,    {1.0f, 1.0f, {0.0001f, 0.0001f, 0.0001},           {0.0f, 0.0f, 0.0f}}},
 
 // Canon EOS 20D, contributed by Jean-Sébastien Pédron <jean-sebastien.pedron@dumbbell.fr>.
@@ -269,6 +269,22 @@ static const noiseprofile_t noiseprofiles[] = {
 {N_("NIKON D90 - 4032 ISO"), "NIKON CORPORATION", "NIKON D90",   4032,         {1.0f, 1.0f, {0.000124097416564837, 5.54124139423422e-05, 9.11944698437289e-05}, {2.4443599690721e-06, 2.64013513553918e-06, 3.03607819469662e-06}}},
 {N_("NIKON D90 - 5080 ISO"), "NIKON CORPORATION", "NIKON D90",   5080,         {1.0f, 1.0f, {0.000142469848208086, 6.0920961430653e-05, 0.000103326719116896}, {4.17181926169198e-06, 4.91229459605856e-06, 5.4870190949478e-06}}},
 {N_("NIKON D90 - 6400 ISO"), "NIKON CORPORATION", "NIKON D90",   6400,         {1.0f, 1.0f, {0.000187041275653718, 7.65384488442822e-05, 0.000130795773598612}, {5.4329665813471e-06, 7.16171942228706e-06, 7.37306938180301e-06}}},
+
+// canon eos 40d, contributed by houz
+{N_("Canon EOS 40D - 100 ISO"),       "Canon",      "Canon EOS 40D",              100,         {1.0f, 1.0f, {7.39900423781777e-06, 2.9713313813436e-06, 4.21511325063104e-06}, {-6.99012510541225e-08, -1.13757516438559e-07, -4.74585576913066e-08}}},
+{N_("Canon EOS 40D - 125 ISO"),       "Canon",      "Canon EOS 40D",              125,         {1.0f, 1.0f, {9.02520177304784e-06, 3.73356648475064e-06, 5.43129834968573e-06}, {-7.57515744406694e-08, -1.47305265001261e-07, -7.86026933820827e-08}}},
+{N_("Canon EOS 40D - 160 ISO"),       "Canon",      "Canon EOS 40D",              160,         {1.0f, 1.0f, {1.00695554103393e-05, 4.02260779664769e-06, 6.43019802119816e-06}, {-9.32648100232828e-08, -1.05388947605862e-07, -1.04979783445669e-07}}},
+{N_("Canon EOS 40D - 200 ISO"),       "Canon",      "Canon EOS 40D",              200,         {1.0f, 1.0f, {1.22130386957006e-05, 5.0619783360062e-06, 7.78527682034452e-06}, {-5.47059132570496e-08, -1.39674063010831e-07, -9.43694501196755e-08}}},
+{N_("Canon EOS 40D - 250 ISO"),       "Canon",      "Canon EOS 40D",              250,         {1.0f, 1.0f, {1.52311905987912e-05, 6.18623920147629e-06, 1.00824298208424e-05}, {-5.39766189393016e-08, -1.17378821476111e-07, -9.94781704427921e-08}}},
+{N_("Canon EOS 40D - 320 ISO"),       "Canon",      "Canon EOS 40D",              320,         {1.0f, 1.0f, {1.78189984559572e-05, 6.88772516010262e-06, 1.18044807355514e-05}, {-6.73495977169258e-08, -5.41485434483161e-08, -1.13316667331978e-07}}},
+{N_("Canon EOS 40D - 400 ISO"),       "Canon",      "Canon EOS 40D",              400,         {1.0f, 1.0f, {2.25207336278158e-05, 9.16637028101817e-06, 1.51022686185286e-05}, {-6.67982810941066e-08, -1.72680707638979e-07, -1.65183704301437e-07}}},
+{N_("Canon EOS 40D - 500 ISO"),       "Canon",      "Canon EOS 40D",              500,         {1.0f, 1.0f, {2.87016816891022e-05, 1.13751303189441e-05, 1.88805885491619e-05}, {-1.66266540843082e-08, -9.50441379899329e-08, -1.18859216761113e-07}}},
+{N_("Canon EOS 40D - 640 ISO"),       "Canon",      "Canon EOS 40D",              640,         {1.0f, 1.0f, {3.33532785153493e-05, 1.2822157848651e-05, 2.22882748703524e-05}, {-9.16548547608322e-09, 2.70703820871384e-09, -1.76217684475927e-07}}},
+{N_("Canon EOS 40D - 800 ISO"),       "Canon",      "Canon EOS 40D",              800,         {1.0f, 1.0f, {4.3427335466968e-05, 1.73525437031211e-05, 2.69563542347771e-05}, {-2.31121972917224e-08, -2.37170559393232e-07, -9.23581613434914e-08}}},
+{N_("Canon EOS 40D - 1000 ISO"),       "Canon",      "Canon EOS 40D",              1000,         {1.0f, 1.0f, {5.46164679422114e-05, 2.170836468898e-05, 3.51997957800681e-05}, {7.64814308622481e-08, -1.19021497494906e-07, -1.28745064222917e-07}}},
+{N_("Canon EOS 40D - 1250 ISO"),       "Canon",      "Canon EOS 40D",              1250,         {1.0f, 1.0f, {5.92037887340325e-05, 2.30204381503481e-05, 4.09829292024051e-05}, {6.15951348896358e-07, 5.08319828653446e-07, 1.65226199327568e-08}}},
+{N_("Canon EOS 40D - 1600 ISO"),       "Canon",      "Canon EOS 40D",              1600,         {1.0f, 1.0f, {8.17119781522567e-05, 3.21480155099706e-05, 5.42859931775532e-05}, {4.18607021461971e-07, 9.53720721738403e-08, -7.27540162444034e-08}}},
+{N_("Canon EOS 40D - 3200 ISO"),       "Canon",      "Canon EOS 40D",              3200,         {1.0f, 1.0f, {0.000162632060167329, 6.31089962556068e-05, 0.000105224710396166}, {1.47894831033359e-06, 6.43348607486187e-07, 3.34708983739415e-07}}},
 };
 static const int noiseprofile_cnt = sizeof(noiseprofiles)/sizeof(noiseprofile_t);
 
@@ -663,7 +679,7 @@ void process(
   for(int k=0;k<=max_scale;k++)
     buf[k] = dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
   buf[max_scale+1] = (float *)ovoid;
-  
+
   const float wb[3] = {
     piece->pipe->processed_maximum[0]*d->strength,
     piece->pipe->processed_maximum[1]*d->strength,
@@ -767,7 +783,7 @@ void process(
   // we want to sum up weights in col[3], so need to init to 0:
   memset(ovoid, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
   float *in = dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
-  
+
   const float wb[3] = {
     piece->pipe->processed_maximum[0]*d->strength,
     piece->pipe->processed_maximum[1]*d->strength,
