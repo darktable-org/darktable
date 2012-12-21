@@ -191,8 +191,8 @@ fi
 missing_tool=0
 if ! tool_installed gphoto2; then
 	cat 1>&2 <<EOF
-gphoto2 is needed if you want this script to automatically take the
-required pictures. Otherwise, it's optional.
+(optional) gphoto2 is needed if you want this script to automatically
+take the required pictures.
 
 EOF
 fi
