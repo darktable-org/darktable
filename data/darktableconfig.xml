@@ -1728,6 +1728,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/spots/size</name>
+    <type>float</type>
+    <default>0.01</default>
+    <shortdescription>percent of image size</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/temperature/visible</name>
     <type>bool</type>
     <default>TRUE</default>

@@ -194,7 +194,7 @@ void gui_init     (dt_iop_module_t *self)
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
   g->dragging = -1;
   g->selected = -1;
-  g->last_radius = MAX(0.01f, dt_conf_get_float("ui_last/spot_size"));
+  g->last_radius = MAX(0.01f, dt_conf_get_float("plugins/darkroom/spots/size"));
   self->widget = gtk_vbox_new(FALSE, 5);
   GtkWidget *label = gtk_label_new(_("click on a spot and drag on canvas to heal.\nuse the mouse wheel to adjust size.\nright click to remove a stroke."));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0f, 0.5f);
@@ -340,7 +340,7 @@ int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state)
     if(up && p->spot[g->selected].radius > 0.002f) p->spot[g->selected].radius *= 0.9f;
     else  if(p->spot[g->selected].radius < 0.1f  ) p->spot[g->selected].radius *= 1.0f/0.9f;
     g->last_radius = p->spot[g->selected].radius;
-    dt_conf_set_float("ui_last/spot_size", g->last_radius);
+    dt_conf_set_float("plugins/darkroom/spots/size", g->last_radius);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return 1;
   }
