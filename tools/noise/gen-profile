@@ -28,7 +28,7 @@ profile_image() {
 	echo "===> Profile image for \"$maker - $model - $iso ISO\""
 
 	pfm="${image%.*}.pfm"
-	if [ ! -f "$pfm" -o "$image" -nt "$pfm" -o "$xmp" -nt "$pfm" ]; then
+	if [ ! -f "$pfm" -o "$image" -nt "$pfm" -o "$xmp" -nt "$pfm" -o "$0" -nt "$pfm" ]; then
 		echo "--> Converting $image (ISO $iso)"
 		rm -f "$pfm"
 		darktable-cli $image $xmp $pfm
@@ -475,20 +475,23 @@ for iso in $iso_settings; do
 	for image in $images; do
 		echo "    $image"
 
-		# Export RAW file to jpeg file. It's used to have a
-		# preview of the image in the final tarball and to have
-		# a copy of the Exif metadata.
-		jpeg_export="${image%.*}.jpg"
-		if [ ! "$jpeg_export" -nt "$image" ]; then
+		# Export RAW file to jpeg file, then make a thumbnail
+		# from this jpeg. The large jpeg file is used to perform
+		# correctness checks. The small jpeg file added to the
+		# final tarball to have a preview of the original RAW
+		# file and a copy of the Exif metadata.
+		jpeg_export="${image%.*}-large.jpg"
+		jpeg_thumb="${image%.*}-thumb.jpg"
+		if [ ! -f "$jpeg_export" -o "$image" -nt "$jpeg_export" -o "$0" -nt "$jpeg_export" ]; then
 			rm -f "$jpeg_export"
 			darktable-cli "$image" "$jpeg_export" 1>/dev/null 2>&1
 			rm -f "$image.xmp"
-		fi
-		echo "$(basename "$jpeg_export")" >> $files_list
 
-		# Use this exported jpeg image to perform correctness
-		# checks.
-		if [ "$kip_correctness_check" != "1" ]; then
+			convert "$jpeg_export" -resize 1024x1024 "$jpeg_thumb"
+		fi
+		echo "$(basename "$jpeg_thumb")" >> $files_list
+
+		if [ "$skip_correctness_check" != "1" ]; then
 			if ! "$check_correctness" "$image" "$jpeg_export"; then
 				if [ "$incorrect_isos" ]; then
 					incorrect_isos="$iso"
