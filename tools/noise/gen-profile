@@ -28,10 +28,6 @@ profile_image() {
 	echo "===> Profile image for \"$maker - $model - $iso ISO\""
 
 	pfm="${image%.*}.pfm"
-	if [ "$force_profiling_conv" = "1" ]; then
-		rm -f "$pfm"
-	fi
-
 	if [ ! -f "$pfm" -o "$image" -nt "$pfm" -o "$xmp" -nt "$pfm" ]; then
 		echo "--> Converting $image (ISO $iso)"
 		rm -f "$pfm"
@@ -136,6 +132,9 @@ EOF
 
 	# Clean unused files.
 	rm -f $dat $flat_dat $curves_dat $fit
+	if [ "$keep_pfms" != "1" ]; then
+		rm -f "$pfm"
+	fi
 
 	echo "$pdf" >> "$files_list"
 	echo "$flat_pdf" >> "$files_list"
@@ -145,7 +144,7 @@ EOF
 # Read command line arguments.
 # --------------------------------------------------------------------
 
-args=$(getopt Cd:i:P $*)
+args=$(getopt d:i:KP $*)
 if [ $? -ne 0 ]; then
 	echo bla
 fi
@@ -153,10 +152,6 @@ set -- $args
 
 while true; do
 	case "$1" in
-	-C)
-		force_profiling_conv=1
-		shift
-		;;
 	-d)
 		profiling_dir=$2
 		shift; shift
@@ -168,6 +163,10 @@ while true; do
 			iso_settings="$iso_settings $2"
 		fi
 		shift; shift
+		;;
+	-K)
+		keep_pfms=1
+		shift
 		;;
 	-P)
 		force_profiling_shots=1
