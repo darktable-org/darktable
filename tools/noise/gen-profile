@@ -144,7 +144,7 @@ EOF
 # Read command line arguments.
 # --------------------------------------------------------------------
 
-args=$(getopt d:i:KP $*)
+args=$(getopt Cd:i:KP $*)
 if [ $? -ne 0 ]; then
 	echo bla
 fi
@@ -152,6 +152,10 @@ set -- $args
 
 while true; do
 	case "$1" in
+	-C)
+		skip_correctness_check=1
+		shift
+		;;
 	-d)
 		profiling_dir=$2
 		shift; shift
@@ -433,8 +437,6 @@ EOF
 
 			image=$(ls -t "$profiling_dir/$iso-$i".* | head -n 1)
 
-			"$scriptdir"/check-image-correctness "$image"
-
 			images=$(get_var "images_$iso")
 			if [ -z "$image" ]; then
 				images=$image
@@ -448,17 +450,43 @@ EOF
 fi
 
 echo
-echo "===> Summing up profiling shots"
+if [ "$skip_correctness_check" = "1" ]; then
+	echo "===> Summing up profiling shots"
+else
+	echo "===> Checking profiling shots correctness"
+fi
 for iso in $iso_settings; do
 	echo "--> ISO $iso:"
 	images=$(get_var "images_$iso")
 	for image in $images; do
 		echo "    $image"
-		if [ "$do_profiling_shots" = "0" ]; then
-			"$scriptdir"/check-image-correctness "$image"
+		if [ "$kip_correctness_check" != "1" ]; then
+			if "$scriptdir"/check-image-correctness "$image"; then
+				if [ "$incorrect_isos" ]; then
+					incorrect_isos="$iso"
+				else
+					incorrect_isos="$incorrect_isos $iso"
+				fi
+			fi
 		fi
 	done
 done
+
+if [ "$incorrect_isos" ]; then
+	cat <<EOF
+
+The following ISO settings have incorrect images:
+EOF
+	for iso in $incorrect_isos; do
+		echo "    o  $iso ISO"
+	done
+	cat <<EOF
+
+Please read the error messages associated with each file above, check
+your subject and re-do the shots.
+EOF
+	exit 1
+fi
 
 # --------------------------------------------------------------------
 # Part #2: Profile all images.
