@@ -910,6 +910,13 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
+  <dtconfig>
+    <name>ui_last/spot_size</name>
+    <type>float</type>
+    <default>0.01</default>
+    <shortdescription>percent of image size</shortdescription>
+    <longdescription/>
+  </dtconfig>
   <dtconfig prefs="core">
     <name>plugins/lighttable/export/force_lcms2</name>
     <type>bool</type>
