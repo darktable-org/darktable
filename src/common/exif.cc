@@ -905,6 +905,53 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int 
          != exifData.end() )
       exifData.erase(pos);
 
+    // Samsung makernote cleanup, the entries below have no relevance for exported images
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.SensorAreas")))
+         != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.ColorSpace")))
+         != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.EncryptionKey")))
+         != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.WB_RGGBLevelsUncorrected")))
+         != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.WB_RGGBLevelsAuto")))
+         != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.WB_RGGBLevelsIlluminator1")))
+         != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.WB_RGGBLevelsIlluminator2")))
+         != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.WB_RGGBLevelsBlack")))
+         != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.ColorMatrix")))
+         != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.ColorMatrixSRGB")))
+         != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.ColorMatrixAdobeRGB")))
+         != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.ToneCurve1")))
+         != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.ToneCurve2")))
+         != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.ToneCurve3")))
+         != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.ToneCurve4")))
+         != exifData.end() )
+      exifData.erase(pos);
+
     /* Write appropriate color space tag if using sRGB output */
     if (sRGB)
       exifData["Exif.Photo.ColorSpace"] = uint16_t(1);      /* sRGB */
