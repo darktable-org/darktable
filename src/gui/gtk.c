@@ -532,11 +532,8 @@ static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
     case DT_GUI_VIEW_SWITCH_TO_TETHERING:
       // switching to capture view using "plugins/capture/current_filmroll" as session...
       // and last used camera
-      if (dt_camctl_can_enter_tether_mode(darktable.camctl,NULL) )
-      {
-        dt_conf_set_int( "plugins/capture/mode", DT_CAPTURE_MODE_TETHERED);
-        mode = DT_CAPTURE;
-      }
+      dt_conf_set_int( "plugins/capture/mode", DT_CAPTURE_MODE_TETHERED);
+      mode = DT_CAPTURE;
       break;
 #endif
 
