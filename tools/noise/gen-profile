@@ -136,8 +136,8 @@ EOF
 		rm -f "$pfm"
 	fi
 
-	echo "$pdf" >> "$files_list"
-	echo "$flat_pdf" >> "$files_list"
+	echo "$(basename "$pdf")" >> "$files_list"
+	echo "$(basename "$flat_pdf")" >> "$files_list"
 }
 
 # --------------------------------------------------------------------
@@ -573,7 +573,9 @@ done
 echo
 echo "===> Prepare final tarball"
 tarball="$profiling_dir"/dt-noiseprofile-$(date +'%Y%m%d').tar.gz
-tar -cf - "$presets" $(cat "$files_list") | gzip > "$tarball"
+cd "$profiling_dir"
+tar -cf - "$(basename "$presets")" $(cat "$(basename "$files_list")") | gzip > "$(basename "$tarball")"
+cd -
 
 echo "--> Cleanup"
 rm -f "$profiling_dir"/fit.log
