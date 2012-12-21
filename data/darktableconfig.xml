@@ -966,6 +966,13 @@
     <longdescription>height of the exported image, or 0 if no scaling should be done.</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/export/storage</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/export/format</name>
     <type>int</type>
     <default>1</default>
