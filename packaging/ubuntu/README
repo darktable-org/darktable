@@ -1,9 +1,8 @@
-# DEBEMAIL="johannes hanika <hanatos@gmail.com>" dch -v 0.5
-make dist
-cp darktable-*.tar.bz2 /tmp
-cd /tmp; tar xvjf darktable-*.tar.bz2; cd -
-cp -r packaging/ubuntu/debian /tmp/darktable-?.?
-cd /tmp/darktable-?.?
-dh_make -e hanatos@gmail.com -f ../darktable-*.tar.bz2 -c gpl
-dpkg-buildpackage -k0xF98D76B8 -rfakeroot
-cd -
+Please refer to documentation on the Darktable website
+
+http://www.darktable.org/install/#ubuntu
+
+And the .debian.tar.gz files available from the Darktable PPAs:
+
+https://launchpad.net/~pmjdebruijn/+archive/darktable-release/+packages
+https://launchpad.net/~pmjdebruijn/+archive/darktable-unstable/+packages
