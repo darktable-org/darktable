@@ -197,6 +197,16 @@ take the required pictures.
 EOF
 fi
 
+if ! tool_installed darktable-cli; then
+	cat 1>&2 <<EOF
+darktable-cli (shipped with darktable 1.1 and later) is required to
+export RAW images to jpeg and PFM files. Please install this package and
+re-run this script.
+
+EOF
+	missing_tool=1
+fi
+
 if ! tool_installed convert; then
 	cat 1>&2 <<EOF
 ImageMagick is required to check input images correctness. Please
@@ -451,17 +461,31 @@ fi
 
 echo
 if [ "$skip_correctness_check" = "1" ]; then
-	echo "===> Summing up profiling RAW images"
+	echo "===> Summing up profiling RAW images + Jpeg export"
 else
-	echo "===> Checking profiling RAW images correctness"
+	echo "===> Checking profiling RAW images correctness + Jpeg export"
 fi
+check_correctness="$scriptdir"/check-image-correctness
 for iso in $iso_settings; do
 	echo "--> ISO $iso:"
 	images=$(get_var "images_$iso")
 	for image in $images; do
 		echo "    $image"
+
+		# Export RAW file to jpeg file. It's used to have a
+		# preview of the image in the final tarball and to have
+		# a copy of the Exif metadata.
+		jpeg_export="${image%.*}.jpg"
+		if [ ! "$jpeg_export" -nt "$image" ]; then
+			rm -f "$jpeg_export"
+			darktable-cli "$image" "$jpeg_export" 1>/dev/null 2>&1
+			rm -f "$image.xmp"
+		fi
+
+		# Use this exported jpeg image to perform correctness
+		# checks.
 		if [ "$kip_correctness_check" != "1" ]; then
-			if "$scriptdir"/check-image-correctness "$image"; then
+			if ! "$check_correctness" "$image" "$jpeg_export"; then
 				if [ "$incorrect_isos" ]; then
 					incorrect_isos="$iso"
 				else
