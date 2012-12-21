@@ -271,6 +271,9 @@ EOF
 	fi
 fi
 
+files_list="$profiling_dir/output-files-list.txt"
+rm -f "$files_list"
+
 # Check the profiling shots to see if there's at least one shot for
 # each ISO settings, either specified by the user, or supported by the
 # camera.
@@ -481,6 +484,7 @@ for iso in $iso_settings; do
 			darktable-cli "$image" "$jpeg_export" 1>/dev/null 2>&1
 			rm -f "$image.xmp"
 		fi
+		echo "$(basename "$jpeg_export")" >> $files_list
 
 		# Use this exported jpeg image to perform correctness
 		# checks.
@@ -525,7 +529,6 @@ echo
 echo "===> Prepare profiling job"
 
 presets="$profiling_dir/presets.txt"
-files_list="$profiling_dir/output-files-list.txt"
 
 echo "--> Build profiling tools"
 make -C "$scriptdir"
@@ -551,7 +554,6 @@ rm -f "$profiling_dir"/*.fit
 rm -f "$profiling_dir"/*.dat
 rm -f "$profiling_dir"/fit.log
 rm -f "$presets"
-rm -f "$files_list"
 
 # Now, for each shots, profile it.
 cat <<EOF
