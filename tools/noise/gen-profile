@@ -265,7 +265,7 @@ fi
 # each ISO settings, either specified by the user, or supported by the
 # camera.
 
-echo "===> Checking existing profiling shots"
+echo "===> Checking existing profiling RAW images"
 for image in "$profiling_dir"/*; do
 	if [ "$image" = "$profiling_dir/*" ]; then
 		# Directory empty.
@@ -285,7 +285,7 @@ for image in "$profiling_dir"/*; do
 		continue
 	fi
 
-	echo "--> Found ISO $iso shot: $image"
+	echo "--> Found ISO $iso image: $image"
 
 	# Record filename for this ISO setting.
 	images=$(get_var "images_$iso")
@@ -451,9 +451,9 @@ fi
 
 echo
 if [ "$skip_correctness_check" = "1" ]; then
-	echo "===> Summing up profiling shots"
+	echo "===> Summing up profiling RAW images"
 else
-	echo "===> Checking profiling shots correctness"
+	echo "===> Checking profiling RAW images correctness"
 fi
 for iso in $iso_settings; do
 	echo "--> ISO $iso:"
