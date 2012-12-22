@@ -41,6 +41,14 @@ typedef struct dt_iop_bilat_params_t
 }
 dt_iop_bilat_params_t;
 
+typedef struct dt_iop_bilat_data_t
+{
+  float sigma_r;
+  float sigma_s;
+  float detail;
+}
+dt_iop_bilat_data_t;
+
 typedef struct dt_iop_bilat_gui_data_t
 {
   GtkWidget *spatial;
@@ -79,7 +87,7 @@ groups()
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_bilat_params_t *d = (dt_iop_bilat_params_t *)piece->data;
+  dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   const float scale = piece->iscale/roi_in->scale;
@@ -107,7 +115,7 @@ error:
 
 void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
-  dt_iop_bilat_params_t *d = (dt_iop_bilat_params_t *)piece->data;
+  dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   const float scale = piece->iscale/roi_in->scale;
@@ -129,13 +137,42 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   return;
 }
 
+void
+commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)p1;
+  dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
+
+  d->sigma_r = p->sigma_r;
+  d->sigma_s = p->sigma_s;
+  d->detail = p->detail;
+
+#ifdef HAVE_OPENCL
+  piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
+#endif
+}
+
+
+void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  piece->data = malloc(sizeof(dt_iop_bilat_data_t));
+  memset(piece->data,0,sizeof(dt_iop_bilat_data_t));
+  self->commit_params(self, self->default_params, pipe, piece);
+}
+
+
+void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  free(piece->data);
+}
+
 
 /** process, all real work is done here. */
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
-  dt_iop_bilat_params_t *d = (dt_iop_bilat_params_t *)piece->data;
+  dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   const float scale = piece->iscale/roi_in->scale;
@@ -154,7 +191,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 void init(dt_iop_module_t *module)
 {
   // we don't need global data:
-  module->data = NULL; //malloc(sizeof(dt_iop_bilat_global_data_t));
+  module->data = malloc(sizeof(dt_iop_bilat_global_data_t));
   module->params = malloc(sizeof(dt_iop_bilat_params_t));
   module->default_params = malloc(sizeof(dt_iop_bilat_params_t));
   // our module is disabled by default

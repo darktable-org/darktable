@@ -62,6 +62,18 @@ typedef struct dt_iop_global_tonemap_params_t
 }
 dt_iop_global_tonemap_params_t;
 
+typedef struct dt_iop_global_tonemap_data_t
+{
+  _iop_operator_t operator;
+  struct
+  {
+    float bias;
+    float max_light; // cd/m2
+  } drago;
+  float detail;
+}
+dt_iop_global_tonemap_data_t;
+
 typedef struct dt_iop_global_tonemap_gui_data_t
 {
   GtkWidget *operator;
@@ -118,7 +130,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
 
 static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                     void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                                    dt_iop_global_tonemap_params_t *data)
+                                    dt_iop_global_tonemap_data_t *data)
 {
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
@@ -140,7 +152,7 @@ static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpi
 
 static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                  void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                                 dt_iop_global_tonemap_params_t *data)
+                                 dt_iop_global_tonemap_data_t *data)
 {
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
@@ -173,7 +185,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
 
 static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                   void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                                  dt_iop_global_tonemap_params_t *data)
+                                  dt_iop_global_tonemap_data_t *data)
 {
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
@@ -196,7 +208,7 @@ static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_global_tonemap_params_t *data = (dt_iop_global_tonemap_params_t *)piece->data;
+  dt_iop_global_tonemap_data_t *data = (dt_iop_global_tonemap_data_t *)piece->data;
   const float scale = piece->iscale/roi_in->scale;
   const float sigma_r = 8.0f; // does not depend on scale
   const float iw = piece->buf_in.width /scale;
@@ -239,7 +251,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_global_tonemap_params_t *d = (dt_iop_global_tonemap_params_t *)piece->data;
+  dt_iop_global_tonemap_data_t *d = (dt_iop_global_tonemap_data_t *)piece->data;
   dt_iop_global_tonemap_global_data_t *gd = (dt_iop_global_tonemap_global_data_t *)self->data;
   dt_bilateral_cl_t *b = NULL;
 
@@ -430,7 +442,34 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   return;
 }
 
+void
+commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)p1;
+  dt_iop_global_tonemap_data_t *d = (dt_iop_global_tonemap_data_t *)piece->data;
 
+  d->operator = p->operator;
+  d->drago.bias = p->drago.bias;
+  d->drago.max_light = p->drago.max_light;
+  d->detail = p->detail;
+
+#ifdef HAVE_OPENCL
+  if(d->detail != 0.0f)
+    piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
+#endif
+}
+
+void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  piece->data = malloc(sizeof(dt_iop_global_tonemap_data_t));
+  memset(piece->data,0,sizeof(dt_iop_global_tonemap_data_t));
+  self->commit_params(self, self->default_params, pipe, piece);
+}
+
+void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  free(piece->data);
+}
 
 void init_global(dt_iop_module_so_t *module)
 {

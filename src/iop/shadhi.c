@@ -553,6 +553,11 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
   d->compress = p->compress;
   d->shadows_ccorrect = p->shadows_ccorrect;
   d->highlights_ccorrect = p->highlights_ccorrect;
+
+#ifdef HAVE_OPENCL
+  if(d->radius < 0.0f)
+    piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
+#endif
 #endif
 }
 

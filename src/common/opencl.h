@@ -102,8 +102,8 @@ typedef struct dt_opencl_t
 {
   dt_pthread_mutex_t lock;
   int inited;
+  int avoid_atomics;
   int use_events;
-  int omit_whitebalance;
   int enabled;
   int num_devs;
   dt_opencl_device_t *dev;
