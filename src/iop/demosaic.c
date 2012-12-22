@@ -358,7 +358,7 @@ green_equilibration_lavg(float *out, const float *const in, const int width, con
         const float c2 = (fabsf(o2_1-o2_2)+fabsf(o2_1-o2_3)+fabsf(o2_1-o2_4)+fabsf(o2_2-o2_3)+fabsf(o2_3-o2_4)+fabsf(o2_2-o2_4))/6.0f;
         if((in[j*width+i]<maximum*0.95f)&&(c1<maximum*thr)&&(c2<maximum*thr))
         {
-          out[j*width+i] = in[j*width+i]*m1/m2;
+          out[j*width+i] = (in[j*width+i] + m1 + m2) / 3.0f;
         }
       }
     }
