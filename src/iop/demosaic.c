@@ -783,6 +783,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
+  const dt_image_t *img = &self->dev->image_storage;
+  const float threshold = 0.0001f * img->exif_iso;
 
   const int qual = get_quality();
   const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
@@ -821,6 +823,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 2, sizeof(int), &width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 3, sizeof(int), &height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 4, sizeof(uint32_t), (void*)&data->filters);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 5, sizeof(float), (void*)&threshold);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_green_eq, sizes);
       if(err != CL_SUCCESS) goto error;
       dev_in = dev_green_eq;
@@ -896,6 +899,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 2, sizeof(int), &width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 3, sizeof(int), &height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 4, sizeof(uint32_t), (void*)&data->filters);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 5, sizeof(float), (void*)&threshold);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_green_eq, sizes);
       if(err != CL_SUCCESS) goto error;
       dev_in = dev_green_eq;
