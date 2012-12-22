@@ -83,8 +83,12 @@ typedef struct dt_opencl_device_t
   int eventsconsolidated;
   int maxevents;
   int lostevents;
+  int totalevents;
+  int totalsuccess;
+  int totallost;
   int nvidia_sm_20;
   const char *vendor;
+  const char *name;
   cl_int summary;
 }
 dt_opencl_device_t;
@@ -98,8 +102,8 @@ typedef struct dt_opencl_t
 {
   dt_pthread_mutex_t lock;
   int inited;
+  int avoid_atomics;
   int use_events;
-  int omit_whitebalance;
   int enabled;
   int num_devs;
   dt_opencl_device_t *dev;

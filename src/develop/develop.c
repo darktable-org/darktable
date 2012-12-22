@@ -561,8 +561,6 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
 
 void dt_dev_reload_history_items(dt_develop_t *dev)
 {
-  
-  
   dt_dev_pop_history_items(dev, 0);
   // remove unused history items:
   GList *history = g_list_nth(dev->history, dev->history_end);
@@ -618,11 +616,15 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
         gtk_box_reorder_child (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),expander,g_value_get_int(&gv)+pos_base-pos_module);
         dt_iop_gui_set_expanded(module, TRUE);
         dt_iop_gui_update_blending(module);
+        
+        //the pipe need to be reconstruct
+        dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
+        dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
       }
     }
     modules = g_list_next(modules);
   }
-  
+
   dt_dev_pop_history_items(dev, dev->history_end);
 }
 
@@ -1258,9 +1260,9 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
     if(dev->gui_attached && del)
   {
     /* signal that history has changed */
-    //dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
     /* redraw */
-    //dt_control_queue_redraw_center();
+    dt_control_queue_redraw_center();
   }
     
 }

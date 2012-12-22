@@ -46,6 +46,12 @@ typedef struct dt_iop_monochrome_params_t
 }
 dt_iop_monochrome_params_t;
 
+typedef struct dt_iop_monochrome_data_t
+{
+  float a, b, size, highlights;
+}
+dt_iop_monochrome_data_t;
+
 typedef struct dt_iop_monochrome_gui_data_t
 {
   GtkDrawingArea *area;
@@ -146,7 +152,7 @@ envelope(const float L)
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_monochrome_params_t *d = (dt_iop_monochrome_params_t *)piece->data;
+  dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
   const float sigma2 = (d->size*128.0)*(d->size*128.0f);
   // first pass: evaluate color filter:
 #ifdef _OPENMP
@@ -196,7 +202,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_monochrome_params_t *d = (dt_iop_monochrome_params_t *)piece->data;
+  dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
   dt_iop_monochrome_global_data_t *gd = (dt_iop_monochrome_global_data_t *)self->data;
 
   cl_int err = -999;
@@ -265,15 +271,38 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
 {
   const float scale = piece->iscale/roi_in->scale;
   const float sigma_s = 20.0f / scale;
+  const float sigma_r = 250.0f; 
 
-  tiling->factor = 3.5f; // in + out + temp + bilateral
-  tiling->maxbuf = 1.0f;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const int channels = piece->colors;
+
+  const size_t basebuffer = width*height*channels*sizeof(float);
+
+  tiling->factor = 3.0f + (float)dt_bilateral_memory_use(width,height,sigma_s,sigma_r)/basebuffer;    
+  tiling->maxbuf = fmax(1.0f, (float)dt_bilateral_singlebuffer_size(width,height,sigma_s,sigma_r)/basebuffer);
   tiling->overhead = 0;
   tiling->overlap = ceilf(4*sigma_s);
   tiling->xalign = 1;
   tiling->yalign = 1;
   return;
 }
+
+void
+commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)p1;
+  dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
+  d->a = p->a;
+  d->b = p->b;
+  d->size = p->size;
+  d->highlights = p->highlights;
+
+#ifdef HAVE_OPENCL
+  piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
+#endif
+}
+
 
 
 void init_global(dt_iop_module_so_t *module)
@@ -324,6 +353,18 @@ void cleanup(dt_iop_module_t *module)
   module->gui_data = NULL;
   free(module->params);
   module->params = NULL;
+}
+
+void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  piece->data = malloc(sizeof(dt_iop_monochrome_data_t));
+  memset(piece->data,0,sizeof(dt_iop_monochrome_data_t));
+  self->commit_params(self, self->default_params, pipe, piece);
+}
+
+void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  free(piece->data);
 }
 
 static gboolean

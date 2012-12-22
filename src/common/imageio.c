@@ -533,14 +533,14 @@ int dt_imageio_export_with_flags(
   {
     dt_control_log(_("failed to allocate memory for export, please lower the threads used for export or buy more memory."));
     dt_dev_cleanup(&dev);
-    if(buf.buf)
-      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
     return 1;
   }
 
   if(!buf.buf)
   {
     dt_control_log(_("image `%s' is not available!"), img->filename);
+    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
     dt_dev_cleanup(&dev);
     return 1;
   }

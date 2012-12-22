@@ -139,7 +139,7 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   sqlite3_finalize (stmt);
 
   /* add the history items to stack offest */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid, num, module, operation, op_params, enabled, blendop_params, blendop_version) select ?1, num+?2, module, operation, op_params, enabled, blendop_params, blendop_version from history where imgid = ?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid, num, module, operation, op_params, enabled, blendop_params, blendop_version, multi_name, multi_priority) select ?1, num+?2, module, operation, op_params, enabled, blendop_params, blendop_version, multi_name, multi_priority from history where imgid = ?3", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, offs);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);

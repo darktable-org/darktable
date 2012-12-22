@@ -65,18 +65,18 @@
     <longdescription>this amount of memory (in MB) will be substracted from total gpu memory in order to calculate the available opencl memory. too low values will lead to out-of-memory situations in opencl processing. too high values will lead to unnecessary tiling (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>opencl_avoid_atomics</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>do not run opencl kernels which require atomic operations</shortdescription>
+    <longdescription>if set to TRUE darktable will not use opencl kernels which contain atomic operations (example bilateral). pixelpipe processing will be done on cpu for the affected modules. useful if your opencl implementation freezes/crashes on atomics or if they are processed with a bad performance.</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>opencl_use_events</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>use opencl events for error detection and profiling</shortdescription>
     <longdescription>this defines if opencl events should be used. if this option is deactivated, opencl errors could pass by unnoticed and image output may be garbled. don't change this from its default TRUE, unless you know what you are doing.</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>opencl_omit_whitebalance</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>if true, do not run module whitebalance with opencl</shortdescription>
-    <longdescription>setting this to TRUE works around a rare opencl bug with some AMD cards which could freeze your system.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>never_use_embedded_thumb</name>
@@ -966,6 +966,13 @@
     <longdescription>height of the exported image, or 0 if no scaling should be done.</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/export/storage</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/export/format</name>
     <type>int</type>
     <default>1</default>
@@ -1718,6 +1725,13 @@
     <type>bool</type>
     <default>FALSE</default>
     <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spots/size</name>
+    <type>float</type>
+    <default>0.01</default>
+    <shortdescription>percent of image size</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>

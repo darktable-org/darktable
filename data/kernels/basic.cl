@@ -230,7 +230,8 @@ colorin (read_only image2d_t in, write_only image2d_t out, const int width, cons
     XYZ[j] = 0.0f;
     for(int i=0;i<3;i++) XYZ[j] += mat[3*j+i] * cam[i];
   }
-  XYZ_to_Lab(XYZ, (float *)&pixel);
+  float4 xyz = (float4)(XYZ[0], XYZ[1], XYZ[2], 0.0f);
+  pixel = XYZ_to_Lab(xyz);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -1042,7 +1043,10 @@ colorout (read_only image2d_t in, write_only image2d_t out, const int width, con
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   float XYZ[3], rgb[3];
-  Lab_to_XYZ((float *)&pixel, XYZ);
+  float4 xyz = Lab_to_XYZ(pixel);
+  XYZ[0] = xyz.x;
+  XYZ[1] = xyz.y;
+  XYZ[2] = xyz.z;
   for(int i=0;i<3;i++)
   {
     rgb[i] = 0.0f;
@@ -1233,13 +1237,12 @@ lowlight (read_only image2d_t in, write_only image2d_t out, const int width, con
   const float c = 0.5f;
   const float threshold = 0.01f;
 
-  float4 XYZ;
   float V;
   float w;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  Lab_to_XYZ((float*)&pixel, (float *)&XYZ);
+  float4 XYZ = Lab_to_XYZ(pixel);
 
   // calculate scotopic luminance
   if (XYZ.x > threshold)
@@ -1261,7 +1264,7 @@ lowlight (read_only image2d_t in, write_only image2d_t out, const int width, con
 
   XYZ = w * XYZ + (1.0f - w) * V * XYZ_sw;
 
-  XYZ_to_Lab((float *)&XYZ, (float *)&pixel);
+  pixel = XYZ_to_Lab(XYZ);
 
   write_imagef (out, (int2)(x, y), pixel);
 }

@@ -431,11 +431,30 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
 {
   dt_iop_shadhi_data_t *d = (dt_iop_shadhi_data_t *)piece->data;
 
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const int channels = piece->colors;
+
   const float radius = fmax(0.1f, fabs(d->radius));
   const float sigma = radius * roi_in->scale / piece ->iscale;
+  const float sigma_r = 100.0f; // does not depend on scale
+  const float sigma_s = sigma;
 
-  tiling->factor = 4.5f; // in + out + 2*temp + bilateral
-  tiling->maxbuf = 1.0f;
+  const size_t basebuffer = width*height*channels*sizeof(float);
+
+  if(d->radius < 0.0f)
+  {
+    // bilateral filter
+    tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width,height,sigma_s,sigma_r)/basebuffer;    
+    tiling->maxbuf = fmax(1.0f, (float)dt_bilateral_singlebuffer_size(width,height,sigma_s,sigma_r)/basebuffer);
+  }
+  else
+  {
+    // gaussian blur
+    tiling->factor = 2.0f + (float)dt_gaussian_memory_use(width, height, channels)/basebuffer;
+    tiling->maxbuf = fmax(1.0f, (float)dt_gaussian_singlebuffer_size(width, height, channels)/basebuffer);
+  }
+
   tiling->overhead = 0;
   tiling->overlap = ceilf(4*sigma);
   tiling->xalign = 1;
@@ -534,6 +553,11 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
   d->compress = p->compress;
   d->shadows_ccorrect = p->shadows_ccorrect;
   d->highlights_ccorrect = p->highlights_ccorrect;
+
+#ifdef HAVE_OPENCL
+  if(d->radius < 0.0f)
+    piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
+#endif
 #endif
 }
 

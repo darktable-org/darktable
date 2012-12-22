@@ -203,6 +203,15 @@ EOF
 	missing_tool=1
 fi
 
+if ! tool_installed exiv2; then
+	cat 1>&2 <<EOF
+exiv2 is required to read Exif from images. Please install this package
+and re-run this script.
+
+EOF
+	missing_tool=1
+fi
+
 if ! tool_installed gnuplot; then
 	cat 1>&2 <<EOF
 gnuplot is required to generate the graphs used to estimate the quality
