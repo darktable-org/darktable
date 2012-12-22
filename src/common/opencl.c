@@ -46,7 +46,6 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   cl->enabled = 0;
   cl->use_events = dt_conf_get_bool("opencl_use_events");
   cl->avoid_atomics = dt_conf_get_bool("opencl_avoid_atomics");
-  cl->omit_whitebalance = dt_conf_get_bool("opencl_omit_whitebalance");
   cl->dlocl = NULL;
   int exclude_opencl = 0;
 
