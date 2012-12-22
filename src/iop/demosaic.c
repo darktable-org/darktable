@@ -322,11 +322,11 @@ color_smoothing(float *out, const dt_iop_roi_t *const roi_out, const int num_pas
 #undef SWAP
 
 static void
-green_equilibration_lavg(float *out, const float *const in, const int width, const int height, const uint32_t filters, const int x, const int y, const int in_place)
+green_equilibration_lavg(float *out, const float *const in, const int width, const int height, const uint32_t filters, const int x, const int y, const int in_place, const float thr)
 {
-  int oj = 2, oi = 2;
-  const float thr = 0.01f;
   const float maximum = 1.0f;
+
+  int oj = 2, oi = 2;
   if(FC(oj+y, oi+x, filters) != 1) oj++;
   if(FC(oj+y, oi+x, filters) != 1) oi++;
   if(FC(oj+y, oi+x, filters) != 1) oj--;
@@ -652,6 +652,9 @@ static int get_quality()
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
+  const dt_image_t *img = &self->dev->image_storage;
+  const float threshold = 0.0001f * img->exif_iso;
+
   dt_iop_roi_t roi, roo;
   roi = *roi_in;
   roo = *roi_out;
@@ -681,13 +684,13 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
           break;
         case DT_IOP_GREEN_EQ_LOCAL:
           green_equilibration_lavg(in, pixels, roi_in->width, roi_in->height,
-                                   data->filters, roi_in->x, roi_in->y, 0);
+                                   data->filters, roi_in->x, roi_in->y, 0, threshold);
           break;
         case DT_IOP_GREEN_EQ_BOTH:
           green_equilibration_favg(in, pixels, roi_in->width, roi_in->height,
                                    data->filters,  roi_in->x, roi_in->y);
           green_equilibration_lavg(in, in, roi_in->width, roi_in->height,
-                                   data->filters, roi_in->x, roi_in->y, 1);
+                                   data->filters, roi_in->x, roi_in->y, 1, threshold);
           break;
       }
       if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
@@ -727,13 +730,13 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
           break;
         case DT_IOP_GREEN_EQ_LOCAL:
           green_equilibration_lavg(in, pixels, roi_in->width, roi_in->height,
-                                   data->filters, roi_in->x, roi_in->y, 0);
+                                   data->filters, roi_in->x, roi_in->y, 0, threshold);
           break;
         case DT_IOP_GREEN_EQ_BOTH:
           green_equilibration_favg(in, pixels, roi_in->width, roi_in->height,
                                    data->filters,  roi_in->x, roi_in->y);
           green_equilibration_lavg(in, in, roi_in->width, roi_in->height,
-                                   data->filters, roi_in->x, roi_in->y, 1);
+                                   data->filters, roi_in->x, roi_in->y, 1, threshold);
           break;
       }
       // wanted ppg or zoomed out a lot and quality is limited to 1
