@@ -365,6 +365,11 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
   d->contrast = p->contrast;
   d->saturation = p->saturation;
 
+#ifdef HAVE_OPENCL
+  if(d->radius < 0.0f)
+    piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
+#endif
+
   if(fabs(d->contrast) <= 1.0f)
   {
     // linear curve for contrast up to +/- 1
