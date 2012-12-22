@@ -70,6 +70,37 @@
                 we simply discard these devices.</para>
 	</sect2>
 
+        <sect2><title>Setting up OpenCL for AMD/ATI devices</title>
+                <para>While NVIDIA devices will most often run out of the box, there is more to do for AMD/ATI graphics cards. This already starts with the fact that AMD/ATI will only report to darktable half of
+                the total GPU memory. For a 1GB device this amounts to 512MB, a value which darktable in its standard configuration will refuse as not being sufficient for its tasks. Consequence: the device will 
+                not be used.</para>
+
+                <para>On the net you might find as a tip to set environment variable GPU_MAX_HEAP_SIZE=100 in this case. Indeed this will cause the AMD/ATI driver to report the full installed memory to darktable.
+                However, there is a problem. On many (most?) cards this will cause buffers not to be allocated on your device but on host! In this case all memory transfers will need to go through the slow PCIe bus. 
+                This will cost you a factor of 10 or more in performance and will render OpenCL useless for you, especially when exporting files.</para>
+
+                <para>Another environment variable which changes driver behavior is GPU_MAX_ALLOC_PERCENT. You could set this to 100 in order to allow memory allocations as high as 1GB on your AMD/ATI card. Problem is
+                that this simply tends not to work and cause darktable to crash sooner or later.</para>
+
+                <para>Our recommendation is to leave these settings untouched. Most often your card will be recognized with 512MB memory and a maximum allocation size of 128MB. There are three configuration parameter
+                which you set in file $HOME/.config/darktable/darktablerc to get things running. Here are the details:</para>
+
+		<sect4><title>opencl_memory_requirement</title>
+                      <para>Set this parameter to 500 so that darktable will accept your 512MB graphics memory as being sufficient in memory.</para>
+                </sect4>
+
+		<sect4><title>opencl_memory_headroom</title>
+                      <para>This parameter controls how much graphics memory (out of the reported one) darktable should leave untouched for driver and display use. As for AMD/ATI devices we anyhow only can get half 
+                      of the available RAM it's safe to set this to zero. So all of the 512MB can be used by darktable.</para>
+                </sect4>
+
+		<sect4><title>opencl_avoid_atomics</title>
+                      <para>Atomic operations in OpenCL are a special way of data synchronization. They are only used in few kernels. Unfortunately some (most?) AMD/ATI devices are extremely slow in processing
+                      atomics. It's better to process the affected modules on CPU rather than accepting an ultra-slow GPU codepath. Set this parameter to TRUE if you experience slow processing of modules like
+                      shadows&amp;highlights, monochrome, local contrast or global tonemap or if you even get intermittent system freezes.</para>
+                </sect4>
+        </sect2>
+
         <sect2><title>OpenCL still does not run for me!</title>
 		<para>As has been said before OpenCL systems come with a huge variety of setups: different gpu manufacturers, different gpu models, varying amounts of gpu memory, different drivers,
 		different distributions etc. Many of the potential problems will only appear with a very specific combination of those factors.</para>
