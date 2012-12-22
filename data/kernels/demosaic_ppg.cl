@@ -36,7 +36,7 @@ backtransformf (float2 p, const int r_x, const int r_y, const int r_wd, const in
 }
 
 __kernel void
-green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, const unsigned int filters)
+green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, const unsigned int filters, const float thr)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -44,7 +44,6 @@ green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const 
   if(x >= width || y >= height) return;
 
   const int c = FC(y, x, filters);
-  const float thr = 0.01f;
   const float maximum = 1.0f;
   const float o = read_imagef(in, sampleri, (int2)(x, y)).x;
   if(c == 1 && (y & 1))
@@ -66,7 +65,7 @@ green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const 
       const float c2 = (fabs(o2_1-o2_2)+fabs(o2_1-o2_3)+fabs(o2_1-o2_4)+fabs(o2_2-o2_3)+fabs(o2_3-o2_4)+fabs(o2_2-o2_4))/6.0f;
       if((o<maximum*0.95f)&&(c1<maximum*thr)&&(c2<maximum*thr))
       {
-        write_imagef (out, (int2)(x, y), o*m1/m2);
+        write_imagef (out, (int2)(x, y), (o + m1 + m2)/3.0f);
       }
       else write_imagef (out, (int2)(x, y), o);
     }
