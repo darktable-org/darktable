@@ -690,7 +690,7 @@ int dt_imageio_export_with_flags(
     uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
     char pathname[1024];
     dt_image_full_path(imgid, pathname, 1024);
-    length = dt_exif_read_blob(exif_profile, pathname, sRGB, imgid);
+    length = dt_exif_read_blob(exif_profile, pathname, sRGB, imgid, processed_width, processed_height);
 
     res = format->write_image (format_params, filename, outbuf, exif_profile, length, imgid);
   }
