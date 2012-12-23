@@ -1,12 +1,12 @@
-# - Find XSLT processors.
+# - Find Saxon XSLT processors.
 #
-# xsltproc and Saxon 6.5.[345] are supported.
+# Saxon 6.5.[345] are supported.
 #
 # The following important variables are created:
 # XSLT_SAXON_COMMAND
 # XSLT_XSLTPROC_EXECUTABLE
 # Xslt_SAXON_EXTENSIONS
-# Xslt_FOUND
+# Saxon_FOUND
 #
 find_package (Java)
 if (JAVA_RUNTIME)
@@ -92,22 +92,16 @@ if (JAVA_RUNTIME)
   endif (SAXON)
 endif (JAVA_RUNTIME)
 
-find_program (XSLT_XSLTPROC_EXECUTABLE
-  NAMES xsltproc
-  DOC   "path to the libxslt XSLT processor xsltproc"
-)
-mark_as_advanced (XSLT_XSLTPROC_EXECUTABLE)
 
+if (XSLT_SAXON_COMMAND)
+  set (Saxon_FOUND true)
+endif (XSLT_SAXON_COMMAND)
 
-if (XSLT_XSLTPROC_EXECUTABLE OR XSLT_SAXON_COMMAND)
-  set (Xslt_FOUND true)
-endif (XSLT_XSLTPROC_EXECUTABLE OR XSLT_SAXON_COMMAND)
-
-if (NOT Xslt_FOUND)
-  if (NOT Xslt_FIND_QUIETLY)
-    message (STATUS "No supported XSLT processor found. Supported XSLT processors are: xsltproc and saxon-6.5.x")
-  endif (NOT Xslt_FIND_QUIETLY)
-  if (Xslt_FIND_REQUIRED)
-    message (FATAL_ERROR "No supported XSLT processor found but it is required.")
-  endif (Xslt_FIND_REQUIRED)
-endif (NOT Xslt_FOUND)
+if (NOT Saxon_FOUND)
+  if (NOT Saxon_FIND_QUIETLY)
+    message (STATUS "No saxon XSLT processor found.")
+  endif (NOT Saxon_FIND_QUIETLY)
+  if (Saxon_FIND_REQUIRED)
+    message (FATAL_ERROR "No saxon XSLT processor found but it is required.")
+  endif (Saxon_FIND_REQUIRED)
+endif (NOT Saxon_FOUND)
