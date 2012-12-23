@@ -790,7 +790,7 @@ int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path)
   return 1;
 }
 
-int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int imgid)
+int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int imgid, const int out_width, const int out_height)
 {
   try
   {
@@ -957,6 +957,12 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int 
       exifData["Exif.Photo.ColorSpace"] = uint16_t(1);      /* sRGB */
     else
       exifData["Exif.Photo.ColorSpace"] = uint16_t(0xFFFF); /* Uncalibrated */
+
+    /* Replace RAW dimension with output dimensions (for example after crop/scale) */
+    if (out_width > 0)
+      exifData["Exif.Photo.PixelXDimension"] = out_width;
+    if (out_height > 0)
+      exifData["Exif.Photo.PixelYDimension"] = out_height;
 
     exifData["Exif.Image.Software"] = PACKAGE_STRING;
 
