@@ -48,6 +48,7 @@ profile_image() {
 	set term pdf
 	set print "$fit"
 	set output "$pdf"
+	set fit "/dev/null"
 	set title "Histogram - $title"
 	plot "$dat" u 1:(log(\$5)) w l lw 4 title "red",		\
 	  '' u 1:(log(\$6)) w l lw 4 title "green",			\
@@ -555,7 +556,6 @@ echo "--> Remove previous presets"
 rm -f "$profiling_dir"/*.pdf
 rm -f "$profiling_dir"/*.fit
 rm -f "$profiling_dir"/*.dat
-rm -f "$profiling_dir"/fit.log
 rm -f "$presets"
 
 # Now, for each shots, profile it.
@@ -583,7 +583,6 @@ tar -cf - "$(basename "$presets")" $(cat "$(basename "$files_list")") | gzip > "
 cd -
 
 echo "--> Cleanup"
-rm -f "$profiling_dir"/fit.log
 rm -f "$files_list"
 
 color_green=$'\033[32m'
