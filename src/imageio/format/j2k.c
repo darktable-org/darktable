@@ -449,6 +449,7 @@ int write_image (dt_imageio_j2k_t *j2k, const char *filename, const float *in, v
   if(res < (size_t)codestream_length) /* FIXME */
   {
     fprintf(stderr, "failed to write %d (%s)\n", codestream_length, filename);
+    fclose(f);
     return 1;
   }
   fclose(f);
