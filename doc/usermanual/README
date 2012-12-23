@@ -3,7 +3,12 @@ All invocations of 'make' have to be done inside of your build/ dir after runnin
 Building manual
 ---------------------------------------------------------
 To build the usermanual you need to install the following tools:
-  xsltproc, fop and gnome-doc-utils (for xml2po)
+  saxon (or xsltproc), fop and gnome-doc-utils (for xml2po)
+
+XSLT processor saxon is able to give a nicely looking html usermanual with
+correctly displayed images and screenshots. If saxon is not found, xsltproc
+will be used as a fallback. Expect inconsistent screenshot and image dimensions in
+that case.
 
 
 Writing guidelines
