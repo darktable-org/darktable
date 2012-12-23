@@ -1,0 +1,44 @@
+<sect1 status="draft"><title>Backing up darktable data</title>
+	<para>Backing up data of applications can be useful in different situations. First, users want to make sure that they can recover from different disaster scenarios. On the other hand, backing up application data can be a requirement when moving to another computer. Therefore this chapter describes darktable's data structures and its storage locations. Besides the sidecar files the contents of the library database are described. </para>
+
+	<sect2><title>Sidecar files</title>
+                <para>Bla </para>
+
+	</sect2>
+
+	<sect2><title>The Library</title>
+		<para>Other bla 
+
+			<programlisting>
+cp ~/.config/darktable/library.db /tmp
+sqlite3 /tmp/library.db
+
+SQLite version 3.7.14.1 2012-10-04 19:37:12
+Enter ".help" for instructions
+Enter SQL statements terminated with a ";"
+sqlite> 
+			</programlisting>
+			<programlisting>
+sqlite> SELECT * FROM film_rolls;
+1|2012:08:18 01:34:14|/mnt/pod/pictures/balkan_2012
+2|2012:08:18 23:45:24|/mnt/pod/pictures/gletscher_2012
+3|2012:12:07 21:18:18|/mnt/pod/pictures/soa_orig
+
+UPDATE film_rolls SET 
+folder = REPLACE(film_rolls.folder, '/mnt/pod/pictures', '/tmp');
+
+sqlite> SELECT * FROM film_rolls;
+1|2012:08:18 01:34:14|/tmp/balkan_2012
+2|2012:08:18 23:45:24|/tmp/gletscher_2012
+3|2012:12:07 21:18:18|/tmp/soa_orig
+			</programlisting>
+                In case everything went fine copy the library database back to its place:
+			<programlisting>
+cp /tmp/library.db ~/.config/darktable/library.db
+			</programlisting>
+		In the end ...</para>
+	</sect2>
+
+</sect1>
+
+
