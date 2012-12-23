@@ -593,11 +593,11 @@ int dt_imageio_export_with_flags(
                                       high_quality;
   const int width  = high_quality_processing ? 0 : format_params->max_width;
   const int height = high_quality_processing ? 0 : format_params->max_height;
-  const float scalex = width  > 0 ? fminf(width /(float)pipe.processed_width,  1.0) : 1.0;
-  const float scaley = height > 0 ? fminf(height/(float)pipe.processed_height, 1.0) : 1.0;
-  const float scale = fminf(scalex, scaley);
-  int processed_width  = scale*pipe.processed_width;
-  int processed_height = scale*pipe.processed_height;
+  const double scalex = width  > 0 ? fminf(width /(double)pipe.processed_width,  1.0) : 1.0;
+  const double scaley = height > 0 ? fminf(height/(double)pipe.processed_height, 1.0) : 1.0;
+  const double scale = fminf(scalex, scaley);
+  int processed_width  = scale*pipe.processed_width  + .5f;
+  int processed_height = scale*pipe.processed_height + .5f;
   const int bpp = format->bpp(format_params);
 
   // downsampling done last, if high quality processing was requested:
@@ -606,9 +606,9 @@ int dt_imageio_export_with_flags(
   if(high_quality_processing)
   {
     dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
-    const float scalex = format_params->max_width  > 0 ? fminf(format_params->max_width /(float)pipe.processed_width,  1.0) : 1.0;
-    const float scaley = format_params->max_height > 0 ? fminf(format_params->max_height/(float)pipe.processed_height, 1.0) : 1.0;
-    const float scale = fminf(scalex, scaley);
+    const double scalex = format_params->max_width  > 0 ? fminf(format_params->max_width /(double)pipe.processed_width,  1.0) : 1.0;
+    const double scaley = format_params->max_height > 0 ? fminf(format_params->max_height/(double)pipe.processed_height, 1.0) : 1.0;
+    const double scale = fminf(scalex, scaley);
     processed_width  = scale*pipe.processed_width  + .5f;
     processed_height = scale*pipe.processed_height + .5f;
     moutbuf = (uint8_t *)dt_alloc_align(64, sizeof(float)*processed_width*processed_height*4);
