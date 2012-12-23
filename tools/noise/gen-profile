@@ -145,7 +145,7 @@ EOF
 # Read command line arguments.
 # --------------------------------------------------------------------
 
-args=$(getopt Cd:i:KP $*)
+args=$(getopt Cd:i:KPp: $*)
 if [ $? -ne 0 ]; then
 	echo bla
 fi
@@ -176,6 +176,10 @@ while true; do
 	-P)
 		force_profiling_shots=1
 		shift
+		;;
+	-p)
+		pause_between_shots=$2
+		shift; shift
 		;;
 	--)
 		shift; break
@@ -443,6 +447,12 @@ EOF
 
 		# This script will do $shots_seq shots for each ISO setting.
 		for i in $shots_seq; do
+			if [ "$pause_between_shots" -a "$not_first_round" ]; then
+				echo "(waiting $pause_between_shots seconds before shooting)"
+				sleep "$pause_between_shots"
+			fi
+			not_first_round=1
+
 			gphoto2						\
 			 --set-config /main/imgsettings/imageformat=$raw_id\
 			 --set-config /main/imgsettings/iso=$iso	\
