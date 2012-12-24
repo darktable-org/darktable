@@ -222,7 +222,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   }
   // go through all history items and adjust params
   GList *history = dev->history;
-  for(int k=0; k<dev->history_end; k++)
+  for(int k=0; k<dev->history_end && history; k++)
   {
     dt_dev_pixelpipe_synch(pipe, dev, history);
     history = g_list_next(history);
