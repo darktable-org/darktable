@@ -145,47 +145,33 @@ EOF
 # Read command line arguments.
 # --------------------------------------------------------------------
 
-args=$(getopt Cd:i:KPp: $*)
-if [ $? -ne 0 ]; then
-	echo bla
-fi
-set -- $args
-
-while true; do
-	case "$1" in
-	-C)
+while getopts ":Cd:i:KPp:" opt; do
+	case $opt in
+	C)
 		skip_correctness_check=1
-		shift
 		;;
-	-d)
-		profiling_dir=$2
-		shift; shift
+	d)
+		profiling_dir=$OPTARG
 		;;
-	-i)
+	i)
 		if [ -z "$iso_settings" ]; then
-			iso_settings=$2
+			iso_settings=$OPTARG
 		else
-			iso_settings="$iso_settings $2"
+			iso_settings="$iso_settings $OPTARG"
 		fi
-		shift; shift
 		;;
-	-K)
+	K)
 		keep_pfms=1
-		shift
 		;;
-	-P)
+	P)
 		force_profiling_shots=1
-		shift
 		;;
-	-p)
-		pause_between_shots=$2
-		shift; shift
-		;;
-	--)
-		shift; break
+	p)
+		pause_between_shots=$OPTARG
 		;;
 	esac
 done
+shift $((OPTIND-1))
 
 # Sort user-specified ISO settings.
 if [ "$iso_settings" ]; then
