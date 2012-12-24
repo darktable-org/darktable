@@ -791,7 +791,7 @@ int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path)
   return 1;
 }
 
-int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int imgid, const int out_width, const int out_height)
+int dt_exif_read_blob(uint8_t *buf, const char* path, const int imgid, const int sRGB, const int out_width, const int out_height)
 {
   try
   {
