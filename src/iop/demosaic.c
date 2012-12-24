@@ -355,7 +355,7 @@ green_equilibration_lavg(float *out, const float *const in, const int width, con
 
       // prevent divide by zero and ...
       // guard against m1/m2 becoming too large (due to m2 being too small) which results in hot pixels
-      if (m2>0.0f && m1/m2<2*maximum)
+      if (m2>0.0f && m1/m2<maximum*2.0f)
       {
         const float c1 = (fabsf(o1_1-o1_2)+fabsf(o1_1-o1_3)+fabsf(o1_1-o1_4)+fabsf(o1_2-o1_3)+fabsf(o1_3-o1_4)+fabsf(o1_2-o1_4))/6.0f;
         const float c2 = (fabsf(o2_1-o2_2)+fabsf(o2_1-o2_3)+fabsf(o2_1-o2_4)+fabsf(o2_2-o2_3)+fabsf(o2_3-o2_4)+fabsf(o2_2-o2_4))/6.0f;
