@@ -1354,7 +1354,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           int mprio = 0;
           if (multi_priority != xmpData.end())  mprio = multi_priority->toLong(i);
           DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 9, mprio);
-          if(multi_name != xmpData.end() && multi_name->size() > 0 && multi_name->toString(i).c_str() != NULL)
+          if(multi_name != xmpData.end() && multi_name->size() > 0 &&
+             multi_name->count() > i && multi_name->toString(i).c_str() != NULL)
           {
             const char *mname = multi_name->toString(i).c_str();
             DT_DEBUG_SQLITE3_BIND_TEXT(stmt_upd_hist, 10, mname, strlen(mname), SQLITE_TRANSIENT);
