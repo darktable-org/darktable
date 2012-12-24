@@ -28,11 +28,7 @@ profile_image() {
 	echo "===> Profile image for \"$maker - $model - $iso ISO\""
 
 	pfm="${image%.*}.pfm"
-	if [ "$force_profiling_conv" = "1" ]; then
-		rm -f "$pfm"
-	fi
-
-	if [ ! -f "$pfm" -o "$image" -nt "$pfm" -o "$xmp" -nt "$pfm" ]; then
+	if [ ! -f "$pfm" -o "$image" -nt "$pfm" -o "$xmp" -nt "$pfm" -o "$0" -nt "$pfm" ]; then
 		echo "--> Converting $image (ISO $iso)"
 		rm -f "$pfm"
 		darktable-cli $image $xmp $pfm
@@ -52,6 +48,7 @@ profile_image() {
 	set term pdf
 	set print "$fit"
 	set output "$pdf"
+	set fit logfile "/dev/null"
 	set title "Histogram - $title"
 	plot "$dat" u 1:(log(\$5)) w l lw 4 title "red",		\
 	  '' u 1:(log(\$6)) w l lw 4 title "green",			\
@@ -117,67 +114,49 @@ EOF
 	b1=$(cat $fit | cut -f5 -d' ')
 	b2=$(cat $fit | cut -f6 -d' ')
 
-	echo "{N_(\"$model - $iso ISO\"),       \"$maker\",      \"$model\",              $iso,         {1.0f, 1.0f, {$a0, $a1, $a2}, {$b0, $b1, $b2}}}," >> $presets
-
-	# use $path/floatdump to insert test preset, like
-	echo "--> Record preset in library for testing purpose"
-	bin1=$(echo 1.0f | $floatdump)
-	bina0=$(echo $a0 | $floatdump)
-	bina1=$(echo $a1 | $floatdump)
-	bina2=$(echo $a2 | $floatdump)
-	binb0=$(echo $b0 | $floatdump)
-	binb1=$(echo $b1 | $floatdump)
-	binb2=$(echo $b2 | $floatdump)
-	# schema for this table is:
-	# CREATE TABLE presets (name varchar, description varchar, operation varchar, op_version integer, op_params blob, enabled integer, blendop_params blob, model varchar, maker varchar, lens varchar, iso_min real, iso_max real, exposure_min real, exposure_max real, aperture_min real, aperture_max real, focal_length_min real, focal_length_max real, writeprotect integer, autoapply integer, filter integer, def integer, isldr integer, blendop_version integer);
-	echo "insert into presets " \
-	 "(name, description, operation, op_version, op_params, enabled, blendop_params, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, writeprotect, autoapply, filter, def, isldr, blendop_version) " \
-	 "values ('(test) $model - $iso ISO', '', 'denoiseprofile', 1, X'${bin1}${bin1}${bina0}${bina1}${bina2}${binb0}${binb1}${binb2}', 1, X'00', '', '', '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4);" | sqlite3 $database
+	echo "{N_(\"$model - $iso ISO\"),       \"$maker\",      \"$model\",              $iso,         {1.0f, 1.0f, {$a0, $a1, $a2}, {$b0, $b1, $b2}}}," >> "$presets"
 
 	# Clean unused files.
 	rm -f $dat $flat_dat $curves_dat $fit
+	if [ "$keep_pfms" != "1" ]; then
+		rm -f "$pfm"
+	fi
 
-	echo "$pdf" >> "$files_list"
-	echo "$flat_pdf" >> "$files_list"
+	echo "$(basename "$pdf")" >> "$files_list"
+	echo "$(basename "$flat_pdf")" >> "$files_list"
 }
 
 # --------------------------------------------------------------------
 # Read command line arguments.
 # --------------------------------------------------------------------
 
-args=$(getopt Cd:i:P $*)
-if [ $? -ne 0 ]; then
-	echo bla
-fi
-set -- $args
-
-while true; do
-	case "$1" in
-	-C)
-		force_profiling_conv=1
-		shift
+while getopts ":Cd:i:KPp:" opt; do
+	case $opt in
+	C)
+		skip_correctness_check=1
 		;;
-	-d)
-		profiling_dir=$2
-		shift; shift
+	d)
+		profiling_dir=$OPTARG
 		;;
-	-i)
+	i)
 		if [ -z "$iso_settings" ]; then
-			iso_settings=$2
+			iso_settings=$OPTARG
 		else
-			iso_settings="$iso_settings $2"
+			iso_settings="$iso_settings $OPTARG"
 		fi
-		shift; shift
 		;;
-	-P)
+	K)
+		keep_pfms=1
+		;;
+	P)
 		force_profiling_shots=1
-		shift
 		;;
-	--)
-		shift; break
+	p)
+		pause_between_shots=$OPTARG
 		;;
 	esac
 done
+shift $((OPTIND-1))
 
 # Sort user-specified ISO settings.
 if [ "$iso_settings" ]; then
@@ -188,10 +167,20 @@ fi
 missing_tool=0
 if ! tool_installed gphoto2; then
 	cat 1>&2 <<EOF
-gphoto2 is needed if you want this script to automatically take the
-required pictures. Otherwise, it's optional.
+(optional) gphoto2 is needed if you want this script to automatically
+take the required pictures.
 
 EOF
+fi
+
+if ! tool_installed darktable-cli; then
+	cat 1>&2 <<EOF
+darktable-cli (shipped with darktable 1.1 and later) is required to
+export RAW images to jpeg and PFM files. Please install this package and
+re-run this script.
+
+EOF
+	missing_tool=1
 fi
 
 if ! tool_installed convert; then
@@ -258,11 +247,14 @@ EOF
 	fi
 fi
 
+files_list="$profiling_dir/output-files-list.txt"
+rm -f "$files_list"
+
 # Check the profiling shots to see if there's at least one shot for
 # each ISO settings, either specified by the user, or supported by the
 # camera.
 
-echo "===> Checking existing profiling shots"
+echo "===> Checking existing profiling RAW images"
 for image in "$profiling_dir"/*; do
 	if [ "$image" = "$profiling_dir/*" ]; then
 		# Directory empty.
@@ -282,7 +274,7 @@ for image in "$profiling_dir"/*; do
 		continue
 	fi
 
-	echo "--> Found ISO $iso shot: $image"
+	echo "--> Found ISO $iso image: $image"
 
 	# Record filename for this ISO setting.
 	images=$(get_var "images_$iso")
@@ -426,6 +418,12 @@ EOF
 
 		# This script will do $shots_seq shots for each ISO setting.
 		for i in $shots_seq; do
+			if [ "$pause_between_shots" -a "$not_first_round" ]; then
+				echo "(waiting $pause_between_shots seconds before shooting)"
+				sleep "$pause_between_shots"
+			fi
+			not_first_round=1
+
 			gphoto2						\
 			 --set-config /main/imgsettings/imageformat=$raw_id\
 			 --set-config /main/imgsettings/iso=$iso	\
@@ -433,8 +431,6 @@ EOF
 			 --capture-image-and-download
 
 			image=$(ls -t "$profiling_dir/$iso-$i".* | head -n 1)
-
-			"$scriptdir"/check-image-correctness "$image"
 
 			images=$(get_var "images_$iso")
 			if [ -z "$image" ]; then
@@ -449,17 +445,61 @@ EOF
 fi
 
 echo
-echo "===> Summing up profiling shots"
+if [ "$skip_correctness_check" = "1" ]; then
+	echo "===> Summing up profiling RAW images + Jpeg export"
+else
+	echo "===> Checking profiling RAW images correctness + Jpeg export"
+fi
+check_correctness="$scriptdir"/check-image-correctness
 for iso in $iso_settings; do
 	echo "--> ISO $iso:"
 	images=$(get_var "images_$iso")
 	for image in $images; do
 		echo "    $image"
-		if [ "$do_profiling_shots" = "0" ]; then
-			"$scriptdir"/check-image-correctness "$image"
+
+		# Export RAW file to jpeg file, then make a thumbnail
+		# from this jpeg. The large jpeg file is used to perform
+		# correctness checks. The small jpeg file added to the
+		# final tarball to have a preview of the original RAW
+		# file and a copy of the Exif metadata.
+		jpeg_export="${image%.*}-large.jpg"
+		jpeg_thumb="${image%.*}-thumb.jpg"
+		if [ ! -f "$jpeg_export" -o "$image" -nt "$jpeg_export" -o "$0" -nt "$jpeg_export" ]; then
+			rm -f "$jpeg_export"
+			darktable-cli "$image" "$jpeg_export" 1>/dev/null 2>&1
+			rm -f "$image.xmp"
+
+			convert "$jpeg_export" -resize 1024x1024 "$jpeg_thumb"
+		fi
+		echo "$(basename "$jpeg_thumb")" >> $files_list
+
+		if [ "$skip_correctness_check" != "1" ]; then
+			if ! "$check_correctness" "$image" "$jpeg_export"; then
+				if [ "$incorrect_isos" ]; then
+					incorrect_isos="$iso"
+				else
+					incorrect_isos="$incorrect_isos $iso"
+				fi
+			fi
 		fi
 	done
 done
+
+if [ "$incorrect_isos" ]; then
+	cat <<EOF
+
+The following ISO settings have incorrect images:
+EOF
+	for iso in $incorrect_isos; do
+		echo "    o  $iso ISO"
+	done
+	cat <<EOF
+
+Please read the error messages associated with each file above, check
+your subject and re-do the shots.
+EOF
+	exit 1
+fi
 
 # --------------------------------------------------------------------
 # Part #2: Profile all images.
@@ -474,7 +514,6 @@ echo
 echo "===> Prepare profiling job"
 
 presets="$profiling_dir/presets.txt"
-files_list="$profiling_dir/output-files-list.txt"
 
 echo "--> Build profiling tools"
 make -C "$scriptdir"
@@ -498,9 +537,7 @@ echo "--> Remove previous presets"
 rm -f "$profiling_dir"/*.pdf
 rm -f "$profiling_dir"/*.fit
 rm -f "$profiling_dir"/*.dat
-rm -f "$profiling_dir"/fit.log
 rm -f "$presets"
-rm -f "$files_list"
 
 # Now, for each shots, profile it.
 cat <<EOF
@@ -518,14 +555,20 @@ for iso in $iso_settings; do
 	done
 done
 
+# Insert presets in the copied database.
+echo
+echo "===> Record preset in library for testing purpose"
+"$scriptdir"/add-profile -d "$database" -P "[test] " "$presets"
+
 # Prepare a tarball ready to be sent to the darktable team.
 echo
 echo "===> Prepare final tarball"
 tarball="$profiling_dir"/dt-noiseprofile-$(date +'%Y%m%d').tar.gz
-tar -cf - "$presets" $(cat "$files_list") | gzip > "$tarball"
+cd "$profiling_dir"
+tar -cf - "$(basename "$presets")" $(cat "$(basename "$files_list")") | gzip > "$(basename "$tarball")"
+cd -
 
 echo "--> Cleanup"
-rm -f "$profiling_dir"/fit.log
 rm -f "$files_list"
 
 color_green=$'\033[32m'
