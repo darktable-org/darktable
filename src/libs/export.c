@@ -120,6 +120,7 @@ gui_reset (dt_lib_module_t *self)
   gtk_combo_box_set_active(d->storage, k);
 
   gtk_combo_box_set_active(d->intent, (int)dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
+  // iccprofile
   int iccfound = 0;
   gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   if(iccprofile)
@@ -461,6 +462,8 @@ gui_init (dt_lib_module_t *self)
   gtk_combo_box_append_text(d->intent, C_("rendering intent", "saturation"));
   gtk_combo_box_append_text(d->intent, _("absolute colorimetric"));
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->intent), 1, 2, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+
+  //  Add profile combo
 
   d->profiles = NULL;
 
