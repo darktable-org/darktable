@@ -42,7 +42,6 @@ typedef struct dt_dev_history_item_t
 dt_dev_history_item_t;
 
 struct dt_dev_pixelpipe_t;
-struct dt_iop_module_t;
 typedef struct dt_develop_t
 {
   int32_t gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be gui_init'ed.
