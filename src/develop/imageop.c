@@ -851,7 +851,7 @@ static void
 dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
 {
   dt_develop_t *dev = module->dev;
-  
+
   //we search another module with the same base
   //we want the next module if any or the previous one
   GList *modules = g_list_first(module->dev->iop);
@@ -868,19 +868,19 @@ dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
     else if(mod->instance == module->instance)
     {
       next=mod;
-      if (find) break;    
+      if (find) break;
     }
     modules = g_list_next(modules);
   }
   if (!next) return; //what happend ???
-  
+
   //we must pay attention if priority is 0
   gboolean is_zero = (module->multi_priority == 0);
-  
+
   //we set the focus to the other instance
   dt_iop_request_focus(next);
   gtk_widget_grab_focus(next->expander);
-  
+
   //we remove the plugin effectively
   if (!dt_iop_is_hidden(module))
   {
@@ -895,26 +895,26 @@ dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
 
   //we remove all references in the history stack and dev->iop
   dt_dev_module_remove(dev,module);
-  
+
   //we recreate the pipe
   dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
   dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
   dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
-  
+
   //we cleanup the module
   dt_accel_disconnect_list(module->accel_closures);
   dt_accel_cleanup_locals_iop(module);
   module->accel_closures = NULL;
   dt_iop_cleanup_module(module) ;
   free(module);
-  
+
   //if module was priority 0, then we set next to priority 0
   if (is_zero)
   {
     //we set priority of next to 0
     next->multi_priority = 0;
-    
+
     //we change this in the history stack too
     GList *history = g_list_first(module->dev->history);
     while(history)
@@ -924,7 +924,7 @@ dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
       history = g_list_next(history);
     }
   }
-  
+
   //we update show params for multi-instances for each other instances
   dt_dev_modules_update_multishow(dev);
 
@@ -957,17 +957,17 @@ dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *module)
     else if(mod->instance == module->instance && find==1)
     {
       next=mod;
-      break;      
+      break;
     }
     modules = g_list_previous(modules);
   }
   if (!next) return;
-  
+
   //we exchange the priority of both module
   int oldp = next->multi_priority;
   next->multi_priority = module->multi_priority;
   module->multi_priority = oldp;
-  
+
   //we change this in the history stack too
   GList *history = g_list_first(module->dev->history);
   while(history)
@@ -977,7 +977,7 @@ dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *module)
     else if (hist->module == next) hist->multi_priority = next->multi_priority;
     history = g_list_next(history);
   }
-  
+
   //we update the list of iop
   modules = g_list_first(next->dev->iop);
   while (modules)
@@ -986,22 +986,22 @@ dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *module)
     if (mod == module)
     {
       next->dev->iop = g_list_remove_link(next->dev->iop,modules);
-      break;      
+      break;
     }
     modules = g_list_next(modules);
   }
   next->dev->iop = g_list_insert_sorted(next->dev->iop,module,sort_plugins);
-  
+
   //we update the headers
   dt_dev_module_update_multishow(next->dev,module);
   dt_dev_module_update_multishow(next->dev,next);
-  
+
   //we move the headers
-  GValue gv = G_VALUE_INIT;
+  GValue gv = { 0, { { 0 } } };
   g_value_init(&gv,G_TYPE_INT);
   gtk_container_child_get_property(GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),module->expander,"position",&gv);
   gtk_box_reorder_child (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),module->expander,g_value_get_int(&gv)+1);
-  
+
   //we rebuild the pipe
   next->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
   next->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
@@ -1029,17 +1029,17 @@ dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
     else if(mod->instance == module->instance && find==1)
     {
       prev=mod;
-      break;      
+      break;
     }
     modules = g_list_next(modules);
   }
   if (!prev) return;
-  
+
   //we exchange the priority of both module
   int oldp = prev->multi_priority;
   prev->multi_priority = module->multi_priority;
   module->multi_priority = oldp;
-  
+
   //we change this in the history stack too
   GList *history = g_list_first(module->dev->history);
   while(history)
@@ -1049,7 +1049,7 @@ dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
     else if (hist->module == prev) hist->multi_priority = prev->multi_priority;
     history = g_list_next(history);
   }
-  
+
   //we update the list of iop
   modules = g_list_first(prev->dev->iop);
   while (modules)
@@ -1058,22 +1058,22 @@ dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
     if (mod == module)
     {
       prev->dev->iop = g_list_remove_link(prev->dev->iop,modules);
-      break;      
+      break;
     }
     modules = g_list_next(modules);
   }
   prev->dev->iop = g_list_insert_sorted(prev->dev->iop,module,sort_plugins);
-  
+
   //we update the headers
   dt_dev_module_update_multishow(prev->dev,module);
   dt_dev_module_update_multishow(prev->dev,prev);
-  
+
   //we move the headers
-  GValue gv = G_VALUE_INIT;
+  GValue gv = { 0, { { 0 } } };
   g_value_init(&gv,G_TYPE_INT);
   gtk_container_child_get_property(GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),module->expander,"position",&gv);
   gtk_box_reorder_child (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),module->expander,g_value_get_int(&gv)-1);
-  
+
   //we rebuild the pipe
   prev->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
   prev->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
@@ -1094,7 +1094,7 @@ dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
   //first we create the new module
   dt_iop_module_t *module = dt_dev_module_duplicate(base->dev,base,-1);
   if (!module) return;
-  
+
   //what is the position of the module in the pipe ?
   GList *modules = g_list_first(module->dev->iop);
   int pos_module = 0;
@@ -1108,7 +1108,7 @@ dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
     modules = g_list_next(modules);
     pos++;
   }
-  
+
   //we set the gui part of it
   //darktable.gui->reset = 1;
   /* initialize gui if iop have one defined */
@@ -1120,7 +1120,7 @@ dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
     GtkWidget *expander = dt_iop_gui_get_expander(module);
     dt_ui_container_add_widget(darktable.gui->ui,
                                DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
-    GValue gv = G_VALUE_INIT;
+    GValue gv = { 0, { { 0 } } };
     g_value_init(&gv,G_TYPE_INT);
     gtk_container_child_get_property(GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),base->expander,"position",&gv);
     gtk_box_reorder_child (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),expander,g_value_get_int(&gv)+pos_base-pos_module);
@@ -1134,10 +1134,10 @@ dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
     module->connect_key_accels(module);
   dt_iop_connect_common_accels(module);
   //darktable.gui->reset = 0;
-  
+
   //we update show params for multi-instances for each other instances
   dt_dev_modules_update_multishow(module->dev);
-  
+
   //and we refresh the pipe
   dt_iop_request_focus(module);
   if(module->dev->gui_attached)
@@ -1162,15 +1162,15 @@ dt_iop_gui_multimenu_callback(GtkButton *button, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   if(module->flags() & IOP_FLAGS_ONE_INSTANCE) return;
-  
+
   GtkWidget *menu = gtk_menu_new();
   GtkWidget *item;
-  
+
   item = gtk_menu_item_new_with_label(_("new instance"));
   //g_object_set(G_OBJECT(item), "tooltip-text", _("add a new instance of this module to the pipe"), (char *)NULL);
   g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_duplicate_callback), module);
   gtk_menu_append(menu, item);
-  
+
   item = gtk_menu_item_new_with_label(_("move up"));
   //g_object_set(G_OBJECT(item), "tooltip-text", _("move this instance up"), (char *)NULL);
   g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_moveup_callback), module);
@@ -1188,7 +1188,7 @@ dt_iop_gui_multimenu_callback(GtkButton *button, gpointer user_data)
   g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_delete_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_close);
   gtk_menu_append(menu, item);
-  
+
   gtk_widget_show_all(menu);
   //popup
   gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
@@ -1993,7 +1993,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   g_signal_connect (G_OBJECT (hw[idx]), "clicked",
                     G_CALLBACK (dt_iop_gui_duplicate_callback), module);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);*/
-  
+
   /* add module label */
   char label[128];
   g_snprintf(label,128,"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
@@ -2054,7 +2054,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
       gtk_box_pack_start(GTK_BOX(header), hw[i],i==1?TRUE:FALSE,i==1?TRUE:FALSE,2);
   gtk_misc_set_alignment(GTK_MISC(hw[1]),1.0,0.5);
   dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);
-  
+
 
   /* add the blending ui if supported */
   GtkWidget * iopw = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);

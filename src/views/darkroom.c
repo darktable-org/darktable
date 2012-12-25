@@ -522,7 +522,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
 
   // make sure no signals propagate here:
   darktable.gui->reset = 1;
-  
+
   GList *modules = g_list_last(dev->iop);
   int nb_iop = g_list_length(dev->iop);
   dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
@@ -541,11 +541,11 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       {
         gtk_container_remove (GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),module->expander);
         dt_iop_gui_cleanup_module(module);
-      }  
+      }
 
       //we remove the module from the list
       dev->iop = g_list_remove_link(dev->iop,g_list_nth(dev->iop,i));
-  
+
       //we cleanup the module
       dt_accel_disconnect_list(module->accel_closures);
       dt_accel_cleanup_locals_iop(module);
@@ -557,7 +557,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
   dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
   dt_dev_read_history(dev);
-  
+
   //we have to init all module instances other than "base" instance
   modules = dev->iop;
   while(modules)
@@ -587,31 +587,31 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
           pos++;
         }
         if (!base) continue;
-        
+
         /* add module to right panel */
         GtkWidget *expander = dt_iop_gui_get_expander(module);
         dt_ui_container_add_widget(darktable.gui->ui,
                                    DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
-        GValue gv = G_VALUE_INIT;
+        GValue gv = { 0, { { 0 } } };
         g_value_init(&gv,G_TYPE_INT);
         gtk_container_child_get_property(GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),base->expander,"position",&gv);
         gtk_box_reorder_child (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),expander,g_value_get_int(&gv)+pos_base-pos_module);
         dt_iop_gui_set_expanded(module, TRUE);
         dt_iop_gui_update_blending(module);
       }
-    
+
       /* setup key accelerators */
       module->accel_closures = NULL;
       if(module->connect_key_accels)
         module->connect_key_accels(module);
       dt_iop_connect_common_accels(module);
-      
+
       //we update show params for multi-instances for each other instances
       dt_dev_modules_update_multishow(module->dev);
     }
     modules = g_list_next(modules);
   }
-    
+
   dt_dev_pop_history_items(dev, dev->history_end);
 
   if(active_plugin)

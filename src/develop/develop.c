@@ -346,13 +346,13 @@ void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid)
 float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_factor, int preview)
 {
   float zoom_scale;
-  
+
   const float w = preview ? dev->preview_pipe->processed_width  : dev->pipe->processed_width;
   const float h = preview ? dev->preview_pipe->processed_height : dev->pipe->processed_height;
-  const float ps = dev->pipe->backbuf_width ? 
+  const float ps = dev->pipe->backbuf_width ?
   dev->pipe->processed_width/(float)dev->preview_pipe->processed_width :
 dev->preview_pipe->iscale / dev->preview_downsampling;
-  
+
   switch(zoom)
   {
     case DT_ZOOM_FIT:
@@ -463,7 +463,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       history = next;
     }
     history = g_list_nth(dev->history, dev->history_end-1);
-    if(!history || module->instance != ((dt_dev_history_item_t *)history->data)->module->instance || 
+    if(!history || module->instance != ((dt_dev_history_item_t *)history->data)->module->instance ||
         module->multi_priority != ((dt_dev_history_item_t *)history->data)->module->multi_priority)
     {
       // new operation, push new item
@@ -575,7 +575,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
     history = next;
   }
   dt_dev_read_history(dev);
-  
+
   //we have to add new module instances first
   GList *modules = dev->iop;
   while(modules)
@@ -605,18 +605,18 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
           pos++;
         }
         if (!base) continue;
-        
+
         /* add module to right panel */
         GtkWidget *expander = dt_iop_gui_get_expander(module);
         dt_ui_container_add_widget(darktable.gui->ui,
                                    DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
-        GValue gv = G_VALUE_INIT;
+        GValue gv = { 0, { { 0 } } };
         g_value_init(&gv,G_TYPE_INT);
         gtk_container_child_get_property(GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),base->expander,"position",&gv);
         gtk_box_reorder_child (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),expander,g_value_get_int(&gv)+pos_base-pos_module);
         dt_iop_gui_set_expanded(module, TRUE);
         dt_iop_gui_update_blending(module);
-        
+
         //the pipe need to be reconstruct
         dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
         dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
@@ -728,7 +728,7 @@ auto_apply_presets(const int imgid)
   const char *preset_table[2] = {"presets", "legacy_presets"};
   const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
   char query[1024];
-  snprintf(query, 1024, 
+  snprintf(query, 1024,
       "insert into memory.history select ?1, 0, op_version, operation, op_params, enabled, blendop_params, blendop_version, multi_priority, multi_name "
       "from %s where autoapply=1 and "
                               "?2 like model and ?3 like maker and ?4 like lens and "
@@ -803,7 +803,7 @@ void dt_dev_read_history(dt_develop_t *dev)
   auto_apply_presets(dev->image_storage.id);
 
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), 
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
       "select imgid, num, module, operation, op_params, enabled, blendop_params, blendop_version, multi_priority, multi_name from history where imgid = ?1 order by num", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
   dev->history_end = 0;
@@ -841,7 +841,7 @@ void dt_dev_read_history(dt_develop_t *dev)
         {
           //we just say that we find the name, so we just have to add new instance of this module
           find_op = module;
-        }        
+        }
       }
       modules = g_list_next(modules);
     }
@@ -852,16 +852,16 @@ void dt_dev_read_history(dt_develop_t *dev)
       if (!dt_iop_load_module(new_module, find_op->so, dev))
       {
         new_module->multi_priority = multi_priority;
-        
+
         snprintf(new_module->multi_name,128,"%s",multi_name);
-        
+
         dev->iop = g_list_insert_sorted(dev->iop, new_module, sort_plugins);
-        
+
         new_module->instance = find_op->instance;
         hist->module = new_module;
       }
     }
-    
+
     if(!hist->module && opname)
     {
       fprintf(stderr, "[dev_read_history] the module `%s' requested by image `%s' is not installed on this computer!\n", opname, dev->image_storage.filename);
@@ -1183,7 +1183,7 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
   dt_iop_module_t *module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
   if (dt_iop_load_module(module,base->so,base->dev)) return NULL;
   module->instance = base->instance;
-  
+
   //we set the multi-instance priority
   if (priority < 0)
   {
@@ -1194,7 +1194,7 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
       dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
       if(mod->instance == base->instance)
       {
-        if (pmax < mod->multi_priority) pmax = mod->multi_priority;       
+        if (pmax < mod->multi_priority) pmax = mod->multi_priority;
       }
       modules = g_list_next(modules);
     }
@@ -1206,7 +1206,7 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
   snprintf(module->multi_name,128,"%d",module->multi_priority);
   //we insert this module into dev->iop
   base->dev->iop = g_list_insert_sorted(base->dev->iop, module, sort_plugins);
-  
+
   //that's all. rest of insertion is gui work !
   return module;
 }
@@ -1223,12 +1223,12 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
     for (int i=0; i<nb; i++)
     {
       GList *elem = g_list_nth(dev->history,pos);
-      
+
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(elem->data);
-      
+
       if (module->instance == hist->module->instance && module->multi_priority == hist->module->multi_priority)
       {
-        free(hist->params);        
+        free(hist->params);
         free(hist->blend_params);
         free(hist);
         dev->history = g_list_delete_link(dev->history, elem);
@@ -1243,7 +1243,7 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   }
 
   dt_pthread_mutex_unlock(&dev->history_mutex);
-  
+
   //and we remove it from the list
   GList *modules = g_list_first(dev->iop);
   while(modules)
@@ -1252,11 +1252,11 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
     if(mod == module)
     {
       dev->iop = g_list_remove_link(dev->iop,modules);
-      break;      
+      break;
     }
     modules = g_list_next(modules);
   }
-  
+
     if(dev->gui_attached && del)
   {
     /* signal that history has changed */
@@ -1264,13 +1264,13 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
     /* redraw */
     dt_control_queue_redraw_center();
   }
-    
+
 }
 
 void dt_dev_module_update_multishow(dt_develop_t *dev, struct dt_iop_module_t *module)
 {
   //if the module is not multi instances compatible, then exit
-  
+
   //We count the number of other instances
   int nb_before = 0;
   int nb_after = 0;
@@ -1284,15 +1284,15 @@ void dt_dev_module_update_multishow(dt_develop_t *dev, struct dt_iop_module_t *m
     else if(mod->instance == module->instance)
     {
       if (pos_module < 0) nb_before++;
-      else nb_after++;      
+      else nb_after++;
     }
     modules = g_list_next(modules);
     pos++;
   }
-  
+
   module->multi_show_close = (nb_after+nb_before > 0);
   module->multi_show_up = (nb_after > 0);
-  module->multi_show_down = (nb_before > 0);  
+  module->multi_show_down = (nb_before > 0);
 }
 void dt_dev_modules_update_multishow(dt_develop_t *dev)
 {
