@@ -1996,7 +1996,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   /* add module label */
   char label[128];
-  g_snprintf(label,128,"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
+  g_snprintf(label,128,"<span weight=\"bold\">%s</span> %s",module->name(),module->multi_name);
   hw[idx] = gtk_label_new("");
   gtk_label_set_markup(GTK_LABEL(hw[idx++]),label);
 
