@@ -1516,7 +1516,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 
   // create an array:
   Exiv2::XmpTextValue tv("");
-  tv.setXmpArrayType(Exiv2::XmpValue::xaBag);
+  tv.setXmpArrayType(Exiv2::XmpValue::xaSeq);
   xmpData.add(Exiv2::XmpKey("Xmp.darktable.history_modversion"), &tv);
   xmpData.add(Exiv2::XmpKey("Xmp.darktable.history_enabled"), &tv);
   xmpData.add(Exiv2::XmpKey("Xmp.darktable.history_operation"), &tv);
