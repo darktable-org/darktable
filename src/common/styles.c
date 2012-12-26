@@ -574,6 +574,7 @@ dt_styles_style_plugin_new ()
   plugin->operation = g_string_new("");
   plugin->op_params = g_string_new("");
   plugin->blendop_params = g_string_new("");
+  plugin->multi_name = g_string_new("");
   return plugin;
 }
 

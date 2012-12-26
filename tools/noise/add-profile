@@ -1,0 +1,118 @@
+#!/bin/sh
+
+set -e
+
+scriptname=$(basename $0)
+scriptdir=$(cd $(dirname $0) && pwd)
+
+. "$scriptdir/subr.sh"
+
+# --------------------------------------------------------------------
+# Internal functions.
+# --------------------------------------------------------------------
+
+add_profile() {
+	iso=$1; shift
+	a0=$1; shift
+	a1=$1; shift
+	a2=$1; shift
+	b0=$1; shift
+	b1=$1; shift
+	b2=$1; shift
+	label="$@"
+
+	floatdump="$scriptdir/floatdump"
+
+	bin1=$(echo 1.0f | $floatdump)
+	bina0=$(echo $a0 | $floatdump)
+	bina1=$(echo $a1 | $floatdump)
+	bina2=$(echo $a2 | $floatdump)
+	binb0=$(echo $b0 | $floatdump)
+	binb1=$(echo $b1 | $floatdump)
+	binb2=$(echo $b2 | $floatdump)
+
+	echo "--> Adding \"$label_prefix$label\" to database"
+
+	echo "insert into presets ("					\
+	 "name,"							\
+	 "description,"							\
+	 "operation,"							\
+	 "op_version,"							\
+	 "op_params,"							\
+	 "enabled,"							\
+	 "blendop_params,"						\
+	 "model,"							\
+	 "maker,"							\
+	 "lens,"							\
+	 "iso_min,"							\
+	 "iso_max,"							\
+	 "exposure_min,"						\
+	 "exposure_max,"						\
+	 "aperture_min,"						\
+	 "aperture_max,"						\
+	 "focal_length_min,"						\
+	 "focal_length_max,"						\
+	 "writeprotect,"						\
+	 "autoapply,"							\
+	 "filter,"							\
+	 "def,"								\
+	 "isldr,"							\
+	 "blendop_version"						\
+	 ") "								\
+	 "values ("							\
+	 "'$label_prefix$label', '', 'denoiseprofile', 1, "		\
+	 "X'${bin1}${bin1}${bina0}${bina1}${bina2}${binb0}${binb1}${binb2}', "\
+	 "1, X'00', '', '', '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4);" | \
+	sqlite3 $database
+}
+
+# --------------------------------------------------------------------
+# Read command line arguments.
+# --------------------------------------------------------------------
+
+while getopts ":d:P:" opt; do
+	case $opt in
+	d)
+		database=$OPTARG
+		;;
+	P)
+		label_prefix=$OPTARG
+		;;
+	esac
+done
+shift $((OPTIND-1))
+
+profile=$1
+
+if [ -z "$database" ]; then
+	database="$HOME/.config/darktable/library.db"
+fi
+
+missing_tool=0
+if ! tool_installed sqlite3; then
+	cat 1>&2 <<EOF
+sqlite3 is required to prepare a database allowing you to test the
+generated presets. Please install this command and re-run this script.
+
+EOF
+	missing_tool=1
+fi
+
+if [ "$missing_tool" = "1" ]; then
+	exit 1
+fi
+
+# --------------------------------------------------------------------
+# Part #1: Compile floatdump.
+# --------------------------------------------------------------------
+
+make -C "$scriptdir"
+
+# --------------------------------------------------------------------
+# Part #2: Parse profile(s).
+# --------------------------------------------------------------------
+
+awk -f "$scriptdir/extract-values-from-presets.awk" < "$profile" | while read line; do
+	set -- $line
+	add_profile "$@"
+done

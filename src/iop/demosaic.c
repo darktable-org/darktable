@@ -352,13 +352,16 @@ green_equilibration_lavg(float *out, const float *const in, const int width, con
 
       const float m1 = (o1_1+o1_2+o1_3+o1_4)/4.0f;
       const float m2 = (o2_1+o2_2+o2_3+o2_4)/4.0f;
-      if (m2 > 0.0f)
+
+      // prevent divide by zero and ...
+      // guard against m1/m2 becoming too large (due to m2 being too small) which results in hot pixels
+      if (m2>0.0f && m1/m2<maximum*2.0f)
       {
         const float c1 = (fabsf(o1_1-o1_2)+fabsf(o1_1-o1_3)+fabsf(o1_1-o1_4)+fabsf(o1_2-o1_3)+fabsf(o1_3-o1_4)+fabsf(o1_2-o1_4))/6.0f;
         const float c2 = (fabsf(o2_1-o2_2)+fabsf(o2_1-o2_3)+fabsf(o2_1-o2_4)+fabsf(o2_2-o2_3)+fabsf(o2_3-o2_4)+fabsf(o2_2-o2_4))/6.0f;
         if((in[j*width+i]<maximum*0.95f)&&(c1<maximum*thr)&&(c2<maximum*thr))
         {
-          out[j*width+i] = (in[j*width+i] + m1 + m2) / 3.0f;
+          out[j*width+i] = in[j*width+i]*m1/m2;
         }
       }
     }
@@ -1141,7 +1144,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_enabled = 1;
-  module->priority = 134; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 129; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;

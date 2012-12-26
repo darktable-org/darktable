@@ -791,7 +791,7 @@ int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path)
   return 1;
 }
 
-int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int imgid)
+int dt_exif_read_blob(uint8_t *buf, const char* path, const int imgid, const int sRGB, const int out_width, const int out_height)
 {
   try
   {
@@ -958,6 +958,12 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int 
       exifData["Exif.Photo.ColorSpace"] = uint16_t(1);      /* sRGB */
     else
       exifData["Exif.Photo.ColorSpace"] = uint16_t(0xFFFF); /* Uncalibrated */
+
+    /* Replace RAW dimension with output dimensions (for example after crop/scale) */
+    if (out_width > 0)
+      exifData["Exif.Photo.PixelXDimension"] = out_width;
+    if (out_height > 0)
+      exifData["Exif.Photo.PixelYDimension"] = out_height;
 
     exifData["Exif.Image.Software"] = PACKAGE_STRING;
 
@@ -1348,7 +1354,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           int mprio = 0;
           if (multi_priority != xmpData.end())  mprio = multi_priority->toLong(i);
           DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 9, mprio);
-          if(multi_name != xmpData.end() && multi_name->size() > 0 && multi_name->toString(i).c_str() != NULL)
+          if(multi_name != xmpData.end() && multi_name->size() > 0 &&
+             multi_name->count() > i && multi_name->toString(i).c_str() != NULL)
           {
             const char *mname = multi_name->toString(i).c_str();
             DT_DEBUG_SQLITE3_BIND_TEXT(stmt_upd_hist, 10, mname, strlen(mname), SQLITE_TRANSIENT);

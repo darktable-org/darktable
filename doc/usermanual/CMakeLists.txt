@@ -17,22 +17,31 @@ set(can_build_usermanual ON)
 
 find_program(Fop_BIN fop)
 find_program(Xml2po_BIN xml2po)
-find_package(Xslt)
+find_package(Saxon)
+find_program(Xslt_BIN xsltproc)
 
 if(${Fop_BIN} STREQUAL "Fop_BIN-NOTFOUND")
 	message("Missing fop")
 	set(can_build_usermanual OFF)
 endif()
 
-if (NOT Xslt_FOUND)
+if((NOT Saxon_FOUND) AND (${Xslt_BIN} STREQUAL "Xslt_BIN-NOTFOUND"))
 	message("No Xslt processor found")
 	set(can_build_usermanual OFF)
+endif()
+
+if(NOT Saxon_FOUND)
+        message("Xslt processor saxon not found. HTML usermanual will be built with xsltproc;")
+        message("expect usermanual with inconsistent screenshot and image dimensions.")
+	set(XSLT_XSLTPROC_EXECUTABLE "${Xslt_BIN}")
 endif()
 
 if(${Xml2po_BIN} STREQUAL "Xml2po_BIN-NOTFOUND")
 	message("Missing xml2po. No localized usermanuals are build")
 # 	set(can_build_usermanual OFF)
 endif()
+
+
 
 if(can_build_usermanual)
 
