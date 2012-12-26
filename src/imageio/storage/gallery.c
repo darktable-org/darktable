@@ -312,59 +312,24 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     if(c <= relthumbfilename) c = relthumbfilename + strlen(relthumbfilename);
     sprintf(c, "-thumb.%s", ext);
 
-    char subfilename[DT_MAX_PATH_LEN], relsubfilename[256];
-    snprintf(subfilename, DT_MAX_PATH_LEN, "%s", d->cached_dirname);
-    char* sc = subfilename + strlen(subfilename);
-    sprintf(sc, "/img_%d.html", num);
-    sprintf(relsubfilename, "img_%d.html", num);
-
     snprintf(pair->line, 4096,
              "\n"
-             "      <div><a class=\"dia\" rel=\"lightbox[viewer]\" title=\"%s - %s\" href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
-             "      <h1>%s</h1>\n"
-             "      %s<br/><span class=\"tags\">%s</span></div>\n", title?title:relfilename, description?description:"&nbsp;", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
+             "      <a href=\"%s\">\n"
+             "        <img data-title=\"%s\" data-description=\"%s\" src=\"%s\"/>\n"
+             "      </a>\n"
+             , relfilename, title?title:relfilename, description?description:tags?tags:"", relthumbfilename);
 
-    char next[256];
-    sprintf(next, "img_%d.html", (num)%total+1);
-
-    char prev[256];
-    sprintf(prev, "img_%d.html", (num==1)?total:num-1);
-
-    /* Becomes unecessary with the Lightbox image viewer overlay
-
-        FILE* subfile = fopen(subfilename, "wb");
-        fprintf(subfile,
-              "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
-              "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
-              "  <head>\n"
-              "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n"
-              "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\" />\n"
-              "    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\" />\n"
-              "    <title>%s</title>\n"
-              "  </head>\n"
-              "  <body>\n"
-              "    <div class=\"title\"><a href=\"index.html\">%s</a></div>\n"
-              "    <div class=\"page\">\n"
-              "      <div style=\"width: 692px; max-width: 692px; height: 10px;\">\n"
-              "        <a style=\"float: left;\" href=\"%s\"><h1>prev</h1></a>\n"
-              "        <a style=\"float: right;\"href=\"%s\"><h1>next</h1></a>\n"
-              "      </div>\n"
-              "      <a href=\"%s\"><img src=\"%s\" width=\"692\" class=\"img\"/></a>\n"
-              "      %s<br/><span class=\"tags\">%s</span></div>\n"
-              "      <p style=\"clear:both;\"></p>\n"
-              "    </div>\n"
-              "    <div class=\"footer\">\n"
-              "      created with darktable "PACKAGE_VERSION"\n"
-              "    </div>\n"
-              "  </body>\n"
-              "</html>\n",
-              relfilename, title?title:relfilename, prev, next, relfilename, relfilename, description?description:"&nbsp;", tags?tags:"&nbsp;");
-        fclose(subfile);
-    */
     pair->pos = num;
-    g_free(title);
-    g_free(description);
-    g_free(tags);
+
+    if(title)
+      g_free(title);
+
+    if(description)
+      g_free(description);
+
+    if(tags)
+      g_free(tags);
+
     d->l = g_list_insert_sorted(d->l, pair, (GCompareFunc)sort_pos);
   } // end of critical block
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
@@ -377,8 +342,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     return 1;
   }
 
-  /* also export thumbnail: */
-  // write with reduced resolution:
+  /* also export thumbnail - write with reduced resolution */
   const int max_width  = fdata->max_width;
   const int max_height = fdata->max_height;
   fdata->max_width  = 200;
@@ -451,48 +415,27 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   // also create style/ subdir:
   sprintf(c, "/style");
   g_mkdir_with_parents(filename, 0755);
-  sprintf(c, "/style/style.css");
-  copy_res("/style/style.css", filename);
+
+  sprintf(c, "/style/classic-loader.gif");
+  copy_res("/style/classic-loader.gif", filename);
+  sprintf(c, "/style/classic-map.png");
+  copy_res("/style/classic-map.png", filename);
+  sprintf(c, "/style/dtbg_logo.png");
+  copy_res("/style/dtbg_logo.png", filename);
   sprintf(c, "/style/favicon.ico");
   copy_res("/style/favicon.ico", filename);
-  sprintf(c, "/style/bullet.gif");
-  copy_res("/style/bullet.gif", filename);
-  sprintf(c, "/style/close.gif");
-  copy_res("/style/close.gif", filename);
-  sprintf(c, "/style/closelabel.gif");
-  copy_res("/style/closelabel.gif", filename);
-  sprintf(c, "/style/donate-button.gif");
-  copy_res("/style/donate-button.gif", filename);
-  sprintf(c, "/style/download-icon.gif");
-  copy_res("/style/download-icon.gif", filename);
-  sprintf(c, "/style/image-1.jpg");
-  copy_res("/style/image-1.jpg", filename);
-  sprintf(c, "/style/lightbox.css");
-  copy_res("/style/lightbox.css", filename);
-  sprintf(c, "/style/loading.gif");
-  copy_res("/style/loading.gif", filename);
-  sprintf(c, "/style/nextlabel.gif");
-  copy_res("/style/nextlabel.gif", filename);
-  sprintf(c, "/style/prevlabel.gif");
-  copy_res("/style/prevlabel.gif", filename);
-  sprintf(c, "/style/thumb-1.jpg");
-  copy_res("/style/thumb-1.jpg", filename);
+  sprintf(c, "/style/galleria.classic.css");
+  copy_res("/style/galleria.classic.css", filename);
 
-  // create subdir   js for lightbox2 viewer scripts
+  // create subdir js for Java scripts
   sprintf(c, "/js");
   g_mkdir_with_parents(filename, 0755);
-  sprintf(c, "/js/builder.js");
-  copy_res("/js/builder.js", filename);
-  sprintf(c, "/js/effects.js");
-  copy_res("/js/effects.js", filename);
-  sprintf(c, "/js/lightbox.js");
-  copy_res("/js/lightbox.js", filename);
-  sprintf(c, "/js/lightbox-web.js");
-  copy_res("/js/lightbox-web.js", filename);
-  sprintf(c, "/js/prototype.js");
-  copy_res("/js/prototype.js", filename);
-  sprintf(c, "/js/scriptaculous.js");
-  copy_res("/js/scriptaculous.js", filename);
+  sprintf(c, "/js/galleria.classic.js");
+  copy_res("/js/galleria.classic.js", filename);
+  sprintf(c, "/js/galleria.js");
+  copy_res("/js/galleria.js", filename);
+  sprintf(c, "/js/jquery.js");
+  copy_res("/js/jquery.js", filename);
 
   sprintf(c, "/index.html");
 
@@ -504,19 +447,29 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
           "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
           "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
           "  <head>\n"
-          "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n"
-          "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\" />\n"
-          "    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\" />\n"
-          "    <link rel=\"stylesheet\" href=\"style/lightbox.css\" type=\"text/css\" media=\"screen\" />"
-          "    <script type=\"text/javascript\" src=\"js/prototype.js\"></script>\n"
-          "    <script type=\"text/javascript\" src=\"js/scriptaculous.js?load=effects,builder\"></script>\n"
-          "    <script type=\"text/javascript\" src=\"js/lightbox.js\"></script>\n"
+          "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\"/>\n"
+          "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\"/>\n"
+          "    <script type=\"text/javascript\" src=\"js/jquery.js\"></script>\n"
+          "    <script type=\"text/javascript\" src=\"js/galleria.js\"></script>\n"
+          "    <style>\n"
+          "      html,body{background:#111;margin:0;height:100%%}\n"
+          "      body{border-top:5px solid #000;}\n"
+          "      .content{color:#777;font:12px/1.4 \"helvetica neue\",arial,sans-serif;margin:0 auto;}\n"
+          "      h1{font-size:12px;font-weight:normal;color:#ddd;margin:0;}\n"
+          "      p{margin:0 0 20px}\n"
+          "      a {color:#22BCB9;text-decoration:none;}\n"
+          "      #galleria {width:100%%;height:100%%;background:#000}\n"
+          "      #fullscreen { left:500px }\n"
+          "      #fullscreen:hover { color:#fff }\n"
+          "    </style>\n"
           "    <title>%s</title>\n"
           "  </head>\n"
           "  <body>\n"
-          "    <div class=\"title\">%s</div>\n"
-          "    <div class=\"page\">\n",
-          title, title);
+          "    <div class=\"content\">\n"
+          "      <a href=\"http://www.darktable.org\" target=\"_blank\"><img src=\"style/dtbg_logo.png\"/></a> &nbsp; &nbsp; &nbsp;\n"
+          "      <a id=\"fullscreen\" href=\"#\">Enter fullscreen</a>\n"
+          "      <div id=\"galleria\">\n"
+          , title?title:"");
 
   while(d->l)
   {
@@ -527,14 +480,35 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   }
 
   fprintf(f,
-          "        <p style=\"clear:both;\"></p>\n"
-          "    </div>\n"
-          "    <div class=\"footer\">\n"
-          "      <script language=\"JavaScript\" type=\"text/javascript\">\n"
-          "      document.write(\"download all: <em>wget -r -np -nc -k \" + document.documentURI + \"</em>\")\n"
-          "      </script><br />\n"
-          "      created with darktable "PACKAGE_VERSION"\n"
-          "    </div>\n"
+          "      </div>\n"
+          "    </div>\n"    
+          "    <script>\n"
+          "      // Calculate screen height\n"
+          "      $('.content').css('height', ($(window).height() - 50) + 'px');\n"
+          "      \n"
+          "      // Load the classic theme\n"
+          "      Galleria.loadTheme('js/galleria.classic.js');\n"
+          "      \n"
+          "      // Initialize Galleria\n"
+          "      Galleria.run('#galleria', {\n"
+          "        carousel : true,\n"
+          "        fullscreenCrop: false,\n"
+          "        idleMode: 'hover',\n"
+          "        imageCrop: false,\n"
+          "        transition: 'fade',\n"
+          "        trueFullscreen: true,\n"
+          "        \n"
+          "        extend: function() {\n"
+          "          $('#fullscreen').click(this.proxy(function(e) {\n"
+          "            e.preventDefault();\n"
+          "            \n"
+          "            // call the enterFullscreen() method from the galleria API\n"
+          "            this.enterFullscreen();\n"
+          "           }));\n"
+          "        }\n"
+          "      });\n"
+          "      \n"
+          "      </script>\n"
           "  </body>\n"
           "</html>\n"
          );
