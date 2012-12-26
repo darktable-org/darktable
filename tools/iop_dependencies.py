@@ -201,6 +201,7 @@ def add_edges(gr):
   gr.add_edge(('gamma', 'watermark'))
   gr.add_edge(('gamma', 'overexposed'))
   gr.add_edge(('gamma', 'borders'))
+  gr.add_edge(('gamma', 'dither'))
   gr.add_edge(('channelmixer', 'colorout'))
   gr.add_edge(('clahe', 'colorout'))
   gr.add_edge(('velvia', 'colorout'))
@@ -209,6 +210,7 @@ def add_edges(gr):
   gr.add_edge(('splittoning', 'colorout'))
   gr.add_edge(('watermark', 'colorout'))
   gr.add_edge(('overexposed', 'colorout'))
+  gr.add_edge(('dither', 'colorout'))
   
   # borders should not change shape/color:
   gr.add_edge(('borders', 'colorout'))
@@ -223,6 +225,9 @@ def add_edges(gr):
 
   # but watermark can be drawn on top of borders
   gr.add_edge(('watermark', 'borders'))
+
+  # want dithering very late
+  gr.add_edge(('dither', 'watermark'))
   
   # want to sharpen after geometric transformations:
   gr.add_edge(('sharpen', 'clipping'))
@@ -321,6 +326,7 @@ gr.add_nodes([
 'colorcontrast',
 'demosaic',
 'denoiseprofile',
+'dither',
 'equalizer', # deprecated
 'exposure',
 'flip',
