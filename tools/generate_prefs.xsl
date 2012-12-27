@@ -178,7 +178,7 @@
 	</xsl:template>
 
 	<xsl:template match="dtconfig[type='int']" mode="tab">
-		<xsl:text>    gint min = 0;&#xA;    gint max = 1000000000;&#xA;</xsl:text>
+		<xsl:text>    gint min = 0;&#xA;    gint max = G_MAXINT;&#xA;</xsl:text>
 		<xsl:apply-templates select="type" mode="range"/>
 		<xsl:text>    widget = gtk_spin_button_new_with_range(min, max, 1);
     gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
