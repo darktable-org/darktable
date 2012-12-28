@@ -162,7 +162,7 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
 }
 
 GList *
-dt_history_get_items(int32_t imgid)
+dt_history_get_items(int32_t imgid, gboolean enabled)
 {
   GList *result=NULL;
   sqlite3_stmt *stmt;
@@ -171,12 +171,21 @@ dt_history_get_items(int32_t imgid)
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
     char name[512]= {0};
-    dt_history_item_t *item=g_malloc (sizeof (dt_history_item_t));
-    item->num = sqlite3_column_int (stmt, 0);
-    g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)), (sqlite3_column_int(stmt, 2)!=0)?_("on"):_("off"));
-    item->name = g_strdup (name);
-    item->op = g_strdup((gchar *)sqlite3_column_text(stmt, 1));
-    result = g_list_append (result,item);
+    const int is_active = sqlite3_column_int(stmt, 2);
+
+    if (enabled == FALSE || is_active)
+    {
+      dt_history_item_t *item=g_malloc (sizeof (dt_history_item_t));
+      item->num = sqlite3_column_int (stmt, 0);
+
+      if (enabled)
+        g_snprintf(name,512,"%s",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)));
+      else
+        g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)), (is_active!=0)?_("on"):_("off"));
+      item->name = g_strdup (name);
+      item->op = g_strdup((gchar *)sqlite3_column_text(stmt, 1));
+      result = g_list_append (result,item);
+    }
   }
   return result;
 }

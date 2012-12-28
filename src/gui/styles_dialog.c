@@ -297,7 +297,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
   }
   else
   {
-    GList *items = dt_history_get_items (imgid);
+    GList *items = dt_history_get_items (imgid,FALSE);
     if (items)
     {
       do
