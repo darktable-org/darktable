@@ -33,6 +33,7 @@ typedef struct dt_imageio_tiff_t
 {
   int max_width, max_height;
   int width, height;
+  char style[128];
   int bpp;
   TIFF *handle;
 }

@@ -403,21 +403,48 @@ dt_styles_delete_by_name(const char *name)
 }
 
 GList *
-dt_styles_get_item_list (const char *name)
+dt_styles_get_item_list (const char *name, gboolean params)
 {
   GList *result=NULL;
   sqlite3_stmt *stmt;
   int id=0;
   if ((id=dt_styles_get_id_by_name(name)) != 0)
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
+    if (params)
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled, op_params, blendop_params from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
+    else
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
+
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
       char name[512]= {0};
       dt_style_item_t *item=g_malloc (sizeof (dt_style_item_t));
       item->num = sqlite3_column_int (stmt, 0);
-      g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+
+      if (params)
+      {
+        // when we get the parameters we do not want to get the operation localized as this
+        // is used to compare against the internal module name.
+        g_snprintf(name,512,"%s",sqlite3_column_text (stmt, 1));
+
+        const unsigned char *op_blob = sqlite3_column_blob(stmt, 3);
+        const int32_t op_len = sqlite3_column_bytes(stmt, 3);
+        const unsigned char *bop_blob = sqlite3_column_blob(stmt, 4);
+        const int32_t bop_len = sqlite3_column_bytes(stmt, 4);
+
+        item->params = malloc(op_len);
+        memcpy(item->params, op_blob, op_len);
+
+        item->blendop_params = malloc(bop_len);
+        memcpy(item->blendop_params, bop_blob, bop_len);
+      }
+      else
+      {
+        g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+        item->params = NULL;
+        item->blendop_params = NULL;
+      }
       item->name = g_strdup (name);
       result = g_list_append (result,item);
     }
@@ -429,7 +456,7 @@ dt_styles_get_item_list (const char *name)
 char *
 dt_styles_get_item_list_as_string(const char *name)
 {
-  GList *items = dt_styles_get_item_list(name);
+  GList *items = dt_styles_get_item_list(name, FALSE);
   if (items)
   {
     GList* names = NULL;

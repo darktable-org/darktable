@@ -81,6 +81,7 @@ typedef struct dt_imageio_j2k_t
 {
   int max_width, max_height;
   int width, height;
+  char style[128];
   int bpp;
   int format;
   enum{DT_J2K_PRESET_OFF, DT_J2K_PRESET_CINEMA2K_24, DT_J2K_PRESET_CINEMA2K_48, DT_J2K_PRESET_CINEMA4K_24} preset;

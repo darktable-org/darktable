@@ -39,10 +39,12 @@
 #include "common/imageio_rawspeed.h"
 #include "common/image_compression.h"
 #include "common/mipmap_cache.h"
+#include "common/styles.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/blend.h"
 #include "iop/colorout.h"
 #include "libraw/libraw.h"
 
@@ -543,6 +545,55 @@ int dt_imageio_export_with_flags(
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
     dt_dev_cleanup(&dev);
     return 1;
+  }
+
+  //  If a style is to be applied during export, add the iop params into the history
+  if (!thumbnail_export && strlen(format_params->style) && strcmp(format_params->style,_("none")))
+  {
+    GList *stls;
+
+    GList *modules = dev.iop;
+    dt_iop_module_t *m = NULL;
+
+    if ((stls=dt_styles_get_item_list(format_params->style, TRUE)) == 0)
+    {
+      dt_control_log(_("cannot find the style '%s' to apply during export."), format_params->style);
+      dt_dev_cleanup(&dev);
+      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      return 1;
+    }
+
+    //  Add each params
+    while (stls)
+    {
+      dt_style_item_t *s = (dt_style_item_t *) stls->data;
+
+      modules = dev.iop;
+      while (modules)
+      {
+        m = (dt_iop_module_t *)modules->data;
+
+        if (strcmp(m->op, s->name) == 0)
+        {
+          dt_dev_history_item_t *h = malloc(sizeof(dt_dev_history_item_t));
+
+          h->params = s->params;
+          h->enabled = 1;
+          h->module = m;
+          h->multi_priority = 1;
+          strcpy(h->multi_name, "");
+
+          h->blend_params = malloc(sizeof(dt_develop_blend_params_t));
+          memset(h->blend_params, 0, sizeof(dt_develop_blend_params_t));
+
+          dev.history_end++;
+          dev.history = g_list_append(dev.history, h);
+          break;
+        }
+        modules = g_list_next(modules);
+      }
+      stls = g_list_next(stls);
+    }
   }
 
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, 1.0);

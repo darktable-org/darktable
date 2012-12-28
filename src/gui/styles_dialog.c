@@ -275,7 +275,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
   if (edit)
   {
     /* get history items for named style and populate the items list */
-    GList *items = dt_styles_get_item_list (name);
+    GList *items = dt_styles_get_item_list (name, FALSE);
     if (items)
     {
       do
