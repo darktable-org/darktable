@@ -37,6 +37,7 @@ typedef struct dt_imageio_png_t
 {
   int max_width, max_height;
   int width, height;
+  char style[128];
   int bpp;
   FILE *f;
   png_structp png_ptr;

@@ -42,6 +42,7 @@ typedef struct dt_imageio_jpeg_t
 {
   int max_width, max_height;
   int width, height;
+  char style[128];
   int quality;
   struct jpeg_source_mgr src;
   struct jpeg_destination_mgr dest;

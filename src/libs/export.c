@@ -19,6 +19,7 @@
 #include "common/darktable.h"
 #include "common/colorspaces.h"
 #include "common/imageio_module.h"
+#include "common/styles.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
@@ -41,7 +42,7 @@ typedef struct dt_lib_export_t
   GtkComboBox *storage, *format;
   int format_lut[128];
   GtkContainer *storage_box, *format_box;
-  GtkComboBox *profile, *intent;
+  GtkComboBox *profile, *intent, *style;
   GList *profiles;
   GtkButton *export_button;
 }
@@ -82,6 +83,8 @@ uint32_t container()
 static void
 export_button_clicked (GtkWidget *widget, gpointer user_data)
 {
+  char style[128];
+
   // Let's get the max dimension restriction if any...
   // TODO: pass the relevant values directly, not using the conf ...
   int max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
@@ -89,7 +92,8 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
   int format_index = dt_conf_get_int ("plugins/lighttable/export/format");
   int storage_index = dt_conf_get_int ("plugins/lighttable/export/storage");
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
-  dt_control_export(max_width, max_height, format_index, storage_index, high_quality);
+  strncpy (style, dt_conf_get_string("plugins/lighttable/export/style"), 128);
+  dt_control_export(max_width, max_height, format_index, storage_index, high_quality, style);
 }
 
 static void
@@ -120,6 +124,7 @@ gui_reset (dt_lib_module_t *self)
   gtk_combo_box_set_active(d->storage, k);
 
   gtk_combo_box_set_active(d->intent, (int)dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
+  // iccprofile
   int iccfound = 0;
   gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   if(iccprofile)
@@ -138,6 +143,11 @@ gui_reset (dt_lib_module_t *self)
     }
     g_free(iccprofile);
   }
+  // style
+  gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
+  _combo_box_set_active_text(d->style, style);
+  g_free(style);
+
   if(!iccfound) gtk_combo_box_set_active(d->profile, 0);
   dt_imageio_module_format_t *mformat = dt_imageio_get_format();
   if(mformat) mformat->gui_reset(mformat);
@@ -306,6 +316,13 @@ intent_changed (GtkComboBox *widget, dt_lib_export_t *d)
   dt_conf_set_int("plugins/lighttable/export/iccintent", pos-1);
 }
 
+static void
+style_changed (GtkComboBox *widget, dt_lib_export_t *d)
+{
+  gchar *style = gtk_combo_box_get_active_text(d->style);
+  dt_conf_set_string("plugins/lighttable/export/style", style);
+}
+
 int
 position ()
 {
@@ -462,6 +479,8 @@ gui_init (dt_lib_module_t *self)
   gtk_combo_box_append_text(d->intent, _("absolute colorimetric"));
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->intent), 1, 2, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
+  //  Add profile combo
+
   d->profiles = NULL;
 
   dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
@@ -561,17 +580,44 @@ gui_init (dt_lib_module_t *self)
   char tooltip[1024];
   snprintf(tooltip, 1024, _("output icc profiles in %s/color/out or %s/color/out"), confdir, datadir);
   g_object_set(G_OBJECT(d->profile), "tooltip-text", tooltip, (char *)NULL);
+
+
+  //  Add style combo
+
+  label = gtk_label_new(_("style"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  d->style = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  gtk_combo_box_append_text(d->style, _("none"));
+
+  GList *styles = dt_styles_get_list("");
+  while (styles)
+  {
+    dt_style_t *style=(dt_style_t *)styles->data;
+    gtk_combo_box_append_text(d->style, style->name);
+    styles=g_list_next(styles);
+  }
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->style), 1, 2, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  g_object_set(G_OBJECT(d->style), "tooltip-text", _("style to use while exporting"), (char *)NULL);
+
+  //  Set callback signals
+
   g_signal_connect (G_OBJECT (d->intent), "changed",
                     G_CALLBACK (intent_changed),
                     (gpointer)d);
   g_signal_connect (G_OBJECT (d->profile), "changed",
                     G_CALLBACK (profile_changed),
                     (gpointer)d);
+  g_signal_connect (G_OBJECT (d->style), "changed",
+                    G_CALLBACK (style_changed),
+                    (gpointer)d);
+
+  // Export button
 
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
   d->export_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("export with current settings (ctrl-e)"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(button), 1, 2, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(button), 1, 2, 11, 12, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (export_button_clicked),
@@ -632,6 +678,7 @@ get_params (dt_lib_module_t *self, int *size)
     fdata->max_height = 0;
     fdata->width  = 0;
     fdata->height = 0;
+    fdata->style[0] = '\0';
   }
 
   // FIXME: also the web preset has to be applied twice to be known as preset! (other dimension magic going on here?)
@@ -641,6 +688,7 @@ get_params (dt_lib_module_t *self, int *size)
   int32_t max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
   int32_t max_height = dt_conf_get_int ("plugins/lighttable/export/height");
   gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
   if(!iccprofile)
   {
     iccprofile = (char *)g_malloc(1);
@@ -649,7 +697,7 @@ get_params (dt_lib_module_t *self, int *size)
 
   char *fname = mformat->plugin_name, *sname = mstorage->plugin_name;
   int32_t fname_len = strlen(fname), sname_len = strlen(sname);
-  *size = fname_len + sname_len + 2 + 2*sizeof(int32_t) + fsize + ssize + 3*sizeof(int32_t) + strlen(iccprofile) + 1;
+  *size = fname_len + sname_len + 2 + 2*sizeof(int32_t) + fsize + ssize + 3*sizeof(int32_t) + strlen(iccprofile) + 1 + strlen(style) + 1;
 
   char *params = (char *)malloc(*size);
   memset(params, 0, *size);
@@ -662,6 +710,8 @@ get_params (dt_lib_module_t *self, int *size)
   pos += sizeof(int32_t);
   memcpy(params+pos, iccprofile, strlen(iccprofile)+1);
   pos += strlen(iccprofile) + 1;
+  memcpy(params+pos, style, strlen(style)+1);
+  pos += strlen(style) + 1;
   memcpy(params+pos, fname, fname_len+1);
   pos += fname_len+1;
   memcpy(params+pos, sname, sname_len+1);
@@ -704,6 +754,8 @@ set_params (dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(int32_t);
   const char *iccprofile = buf;
   buf += strlen(iccprofile) + 1;
+  const char *style  = buf;
+  buf += strlen(style) + 1;
 
   // reverse these by setting the gui, not the conf vars!
   gtk_combo_box_set_active (d->intent, iccintent + 1);
@@ -725,6 +777,7 @@ set_params (dt_lib_module_t *self, const void *params, int size)
       prof = g_list_next(prof);
     }
   }
+  _combo_box_set_active_text(d->style, style);
 
   // parse both names to '\0'
   const char *fname = buf;
@@ -742,7 +795,7 @@ set_params (dt_lib_module_t *self, const void *params, int size)
   const int ssize = *(const int *)buf;
   buf += sizeof(int32_t);
 
-  if(size != strlen(fname) + strlen(sname) + 2 + 2*sizeof(int32_t) + fsize + ssize + 3*sizeof(int32_t) + strlen(iccprofile) + 1) return 1;
+  if(size != strlen(fname) + strlen(sname) + 2 + 2*sizeof(int32_t) + fsize + ssize + 3*sizeof(int32_t) + strlen(iccprofile) + 1 + strlen(style) + 1) return 1;
 
   const dt_imageio_module_data_t *fdata = (const dt_imageio_module_data_t *)buf;
   buf += fsize;

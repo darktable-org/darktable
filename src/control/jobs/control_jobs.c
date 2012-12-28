@@ -57,6 +57,7 @@ typedef struct dt_control_export_t
 {
   int max_width, max_height, format_index, storage_index;
   gboolean high_quality;
+  char style[128];
 } dt_control_export_t;
 
 void dt_control_write_sidecar_files()
@@ -1261,6 +1262,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
     fdata->max_height = settings->max_height;
     fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
     fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
+    strcpy(fdata->style,settings->style);
     int num = 0;
     // Invariant: the tagid for 'darktable|changed' will not change while this function runs. Is this a sensible assumption?
     guint tagid = 0,
@@ -1332,7 +1334,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   return 0;
 }
 
-void dt_control_export_job_init(dt_job_t *job, int max_width, int max_height, int format_index, int storage_index, gboolean high_quality)
+void dt_control_export_job_init(dt_job_t *job, int max_width, int max_height, int format_index, int storage_index, gboolean high_quality, char *style)
 {
   dt_control_job_init(job, "export");
   job->execute = &dt_control_export_job_run;
@@ -1344,13 +1346,14 @@ void dt_control_export_job_init(dt_job_t *job, int max_width, int max_height, in
   data->format_index = format_index;
   data->storage_index = storage_index;
   data->high_quality = high_quality;
+  strncpy(data->style,style,128);
   t->data = data;
 }
 
-void dt_control_export(int max_width, int max_height, int format_index, int storage_index, gboolean high_quality)
+void dt_control_export(int max_width, int max_height, int format_index, int storage_index, gboolean high_quality, char *style)
 {
   dt_job_t j;
-  dt_control_export_job_init(&j, max_width, max_height, format_index, storage_index, high_quality);
+  dt_control_export_job_init(&j, max_width, max_height, format_index, storage_index, high_quality, style);
   dt_control_add_job(darktable.control, &j);
 }
 
