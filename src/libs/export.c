@@ -598,7 +598,7 @@ gui_init (dt_lib_module_t *self)
     styles=g_list_next(styles);
   }
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->style), 1, 2, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  g_object_set(G_OBJECT(d->style), "tooltip-text", _("style to use while exporting"), (char *)NULL);
+  g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to append while exporting"), (char *)NULL);
 
   //  Set callback signals
 
