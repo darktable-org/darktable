@@ -1,9 +1,9 @@
 /"generic poissonian"/ {
 	next;
 }
-/^ *{N_\("/ {
+/^ *{"/ {
 	tail = $0;
-	sub(/ *{N_\("/, "", tail);
+	sub(/ *{"/, "", tail);
 	label = tail;
 	sub(/".*$/, "", label);
 
