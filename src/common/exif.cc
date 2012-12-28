@@ -1365,8 +1365,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
             const char *mname = "0";
             DT_DEBUG_SQLITE3_BIND_TEXT(stmt_upd_hist, 10, mname, strlen(mname), SQLITE_TRANSIENT);
           }
-          
-          
+
+
           sqlite3_step (stmt_upd_hist);
           free(params);
           free(blendop_params);
@@ -1536,7 +1536,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 
   // create an array:
   Exiv2::XmpTextValue tv("");
-  tv.setXmpArrayType(Exiv2::XmpValue::xaBag);
+  tv.setXmpArrayType(Exiv2::XmpValue::xaSeq);
   xmpData.add(Exiv2::XmpKey("Xmp.darktable.history_modversion"), &tv);
   xmpData.add(Exiv2::XmpKey("Xmp.darktable.history_enabled"), &tv);
   xmpData.add(Exiv2::XmpKey("Xmp.darktable.history_operation"), &tv);
