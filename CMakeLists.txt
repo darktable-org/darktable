@@ -47,6 +47,7 @@ if(APPLE)
 
 	# prefer macports and/or user-installed libraries over system ones
 	LIST(APPEND CMAKE_PREFIX_PATH /opt/local /usr/local)
+	set(CMAKE_FIND_FRAMEWORK "LAST")
 	# except libstdc++ (only one linked via -l flag, not full path)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/lib")
