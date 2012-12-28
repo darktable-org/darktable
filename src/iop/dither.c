@@ -160,11 +160,11 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   {
     case DITHER_FS1BIT:
       nearest_color = _find_nearest_color_n_levels_gray;
-      levels = MAX(2, MIN(bds, 256));
+      levels = MAX(2, MIN(bds+1, 256));
       break;
     case DITHER_FS4BIT_GRAY:
       nearest_color = _find_nearest_color_n_levels_gray;
-      levels = MAX(16, MIN(15*bds, 256));
+      levels = MAX(16, MIN(15*bds+1, 256));
       break;
     case DITHER_FS8BIT:
       nearest_color = _find_nearest_color_n_levels_rgb;
