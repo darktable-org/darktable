@@ -101,6 +101,12 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
+int
+flags ()
+{
+  return IOP_FLAGS_ONE_INSTANCE;
+}
+
 
 void _find_nearest_color_n_levels_gray(const float *inRGB, float *outRGB, float *err, int n)
 {
@@ -431,7 +437,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_dither_params_t tmp = (dt_iop_dither_params_t)
   {
-    DITHER_RANDOM, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f }
+    DITHER_FS8BIT, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f }
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_dither_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_dither_params_t));
