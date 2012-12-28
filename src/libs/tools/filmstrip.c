@@ -810,15 +810,17 @@ static gboolean _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *a
     GdkModifierType modifier, gpointer data)
 {
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
-  if (strip->history_copy_imgid==-1) return FALSE;
-
-  int32_t mouse_over_id;
-  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  if(mouse_over_id <= 0) return FALSE;
-
   int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
 
-  dt_history_copy_and_paste_on_image(strip->history_copy_imgid, mouse_over_id, (mode == 0)?TRUE:FALSE,strip->dg.selops);
+  if (dt_history_copy_and_paste_on_selection (strip->history_copy_imgid, (mode==0)?TRUE:FALSE, strip->dg.selops)!=0)
+  {
+    int32_t mouse_over_id;
+    DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+    if(mouse_over_id <= 0) return FALSE;
+
+    dt_history_copy_and_paste_on_image(strip->history_copy_imgid, mouse_over_id, (mode == 0)?TRUE:FALSE,strip->dg.selops);
+  }
+
   dt_control_queue_redraw_center();
   return TRUE;
 }
