@@ -686,6 +686,7 @@ get_params (dt_lib_module_t *self, int *size)
   int32_t max_height = dt_conf_get_int ("plugins/lighttable/export/height");
   gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
+  strncpy(fdata->style, style, 128);
   if(!iccprofile)
   {
     iccprofile = (char *)g_malloc(1);
@@ -694,7 +695,7 @@ get_params (dt_lib_module_t *self, int *size)
 
   char *fname = mformat->plugin_name, *sname = mstorage->plugin_name;
   int32_t fname_len = strlen(fname), sname_len = strlen(sname);
-  *size = fname_len + sname_len + 2 + 2*sizeof(int32_t) + fsize + ssize + 3*sizeof(int32_t) + strlen(iccprofile) + 1 + strlen(style) + 1;
+  *size = fname_len + sname_len + 2 + 2*sizeof(int32_t) + fsize + ssize + 3*sizeof(int32_t) + strlen(iccprofile) + 1;
 
   char *params = (char *)malloc(*size);
   memset(params, 0, *size);
@@ -707,8 +708,6 @@ get_params (dt_lib_module_t *self, int *size)
   pos += sizeof(int32_t);
   memcpy(params+pos, iccprofile, strlen(iccprofile)+1);
   pos += strlen(iccprofile) + 1;
-  memcpy(params+pos, style, strlen(style)+1);
-  pos += strlen(style) + 1;
   memcpy(params+pos, fname, fname_len+1);
   pos += fname_len+1;
   memcpy(params+pos, sname, sname_len+1);
@@ -751,8 +750,6 @@ set_params (dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(int32_t);
   const char *iccprofile = buf;
   buf += strlen(iccprofile) + 1;
-  const char *style  = buf;
-  buf += strlen(style) + 1;
 
   // reverse these by setting the gui, not the conf vars!
   gtk_combo_box_set_active (d->intent, iccintent + 1);
@@ -774,7 +771,6 @@ set_params (dt_lib_module_t *self, const void *params, int size)
       prof = g_list_next(prof);
     }
   }
-  _combo_box_set_active_text(d->style, style);
 
   // parse both names to '\0'
   const char *fname = buf;
@@ -792,9 +788,10 @@ set_params (dt_lib_module_t *self, const void *params, int size)
   const int ssize = *(const int *)buf;
   buf += sizeof(int32_t);
 
-  if(size != strlen(fname) + strlen(sname) + 2 + 2*sizeof(int32_t) + fsize + ssize + 3*sizeof(int32_t) + strlen(iccprofile) + 1 + strlen(style) + 1) return 1;
+  if(size != strlen(fname) + strlen(sname) + 2 + 2*sizeof(int32_t) + fsize + ssize + 3*sizeof(int32_t) + strlen(iccprofile) + 1) return 1;
 
   const dt_imageio_module_data_t *fdata = (const dt_imageio_module_data_t *)buf;
+  _combo_box_set_active_text(d->style, fdata->style);
   buf += fsize;
   const void *sdata = buf;
 
