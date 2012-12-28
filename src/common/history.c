@@ -109,7 +109,7 @@ dt_history_load_and_apply_on_selection (gchar *filename)
 }
 
 int
-dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean merge)
+dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean merge, GList *ops)
 {
   sqlite3_stmt *stmt;
   if(imgid==dest_imgid) return 1;
@@ -138,8 +138,32 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   }
   sqlite3_finalize (stmt);
 
+  //  prepare SQL request
+  char req[2048];
+  strcpy (req, "insert into history (imgid, num, module, operation, op_params, enabled, blendop_params, blendop_version, multi_name, multi_priority) select ?1, num+?2, module, operation, op_params, enabled, blendop_params, blendop_version, multi_name, multi_priority from history where imgid = ?3");
+
+  //  Add ops selection if any format: ... and num in (val1, val2)
+  if (ops)
+  {
+    int first = 1;
+    strcat (req, " and num in (");
+
+    while (ops)
+    {
+      long unsigned int value = (long unsigned int)ops->data;
+      char v[30];
+
+      if (!first) strcat (req, ",");
+      snprintf (v, 30, "%lu", value);
+      strcat (req, v);
+      first=0;
+      ops = g_list_next(ops);
+    }
+    strcat (req, ")");
+  }
+
   /* add the history items to stack offest */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid, num, module, operation, op_params, enabled, blendop_params, blendop_version, multi_name, multi_priority) select ?1, num+?2, module, operation, op_params, enabled, blendop_params, blendop_version, multi_name, multi_priority from history where imgid = ?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), req, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, offs);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
@@ -212,7 +236,7 @@ dt_history_get_items_as_string(int32_t imgid)
 }
 
 int
-dt_history_copy_and_paste_on_selection (int32_t imgid, gboolean merge)
+dt_history_copy_and_paste_on_selection (int32_t imgid, gboolean merge, GList *ops)
 {
   if (imgid < 0) return 1;
 
@@ -228,7 +252,7 @@ dt_history_copy_and_paste_on_selection (int32_t imgid, gboolean merge)
       int32_t dest_imgid = sqlite3_column_int (stmt, 0);
 
       /* paste history stack onto image id */
-      dt_history_copy_and_paste_on_image(imgid,dest_imgid,merge);
+      dt_history_copy_and_paste_on_image(imgid,dest_imgid,merge,ops);
 
     }
     while (sqlite3_step (stmt) == SQLITE_ROW);
