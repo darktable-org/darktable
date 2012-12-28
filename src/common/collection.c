@@ -592,6 +592,31 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   dt_control_hinter_message(darktable.control, message);
 }
 
+int dt_collection_image_offset(int imgid)
+{
+  const gchar *qin = dt_collection_get_query (darktable.collection);
+  int offset = 0;
+  sqlite3_stmt *stmt;
+
+  if(!qin) return offset;
+
+  char query[1024];
+
+  if(qin)
+  {
+    snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1,  0);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      offset = sqlite3_column_int(stmt, 0) - 1;
+    sqlite3_finalize(stmt);
+  }
+
+  return offset;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

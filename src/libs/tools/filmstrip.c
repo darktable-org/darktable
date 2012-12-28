@@ -722,22 +722,7 @@ static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gb
 
   strip->activated_image = imgid;
 
-  char query[1024];
-  const gchar *qin = dt_collection_get_query (darktable.collection);
-  if(qin)
-  {
-    snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1,  0);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      strip->offset = sqlite3_column_int(stmt, 0) - 1;
-    }
-    sqlite3_finalize(stmt);
-  }
+  strip->offset = dt_collection_image_offset(imgid);
 
   /* activate the image if requested */
   if (activate)
