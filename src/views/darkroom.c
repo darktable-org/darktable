@@ -583,7 +583,6 @@ static void _view_darkroom_filmstrip_activate_callback(gpointer instance,gpointe
 static void
 dt_dev_jump_image(dt_develop_t *dev, int diff)
 {
-  char query[1024];
   const gchar *qin = dt_collection_get_query (darktable.collection);
   int offset = 0;
   if(qin)
@@ -596,14 +595,7 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
       orig_imgid = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
 
-    snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1,  0);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, orig_imgid);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-      offset = sqlite3_column_int(stmt, 0) - 1;
-    sqlite3_finalize(stmt);
+    offset = dt_collection_image_offset (orig_imgid);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset + diff);
