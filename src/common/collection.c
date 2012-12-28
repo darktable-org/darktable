@@ -598,22 +598,30 @@ int dt_collection_image_offset(int imgid)
   int offset = 0;
   sqlite3_stmt *stmt;
 
-  if(!qin) return offset;
-
-  char query[1024];
-
   if(qin)
   {
-    snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1,  0);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-      offset = sqlite3_column_int(stmt, 0) - 1;
+
+    gboolean found = FALSE;
+
+    while (sqlite3_step (stmt) == SQLITE_ROW)
+    {
+      int id = sqlite3_column_int(stmt, 0);
+      if (imgid == id)
+      {
+        found = TRUE;
+        break;
+      }
+      offset++;
+    }
+
+    if (!found)
+      offset = 0;
+
     sqlite3_finalize(stmt);
   }
-
   return offset;
 }
 
