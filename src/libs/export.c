@@ -673,12 +673,9 @@ get_params (dt_lib_module_t *self, int *size)
   if(!fdata) fsize = 0;
   if(fdata)
   {
-    // clean up format global params:
-    fdata->max_width  = 0;
-    fdata->max_height = 0;
-    fdata->width  = 0;
-    fdata->height = 0;
-    fdata->style[0] = '\0';
+    // clean up format global params (need to set all bytes to reliably detect which preset is active).
+    // we happen to want to set it all to 0
+    memset(fdata, 0, sizeof(dt_imageio_module_data_t));
   }
 
   // FIXME: also the web preset has to be applied twice to be known as preset! (other dimension magic going on here?)
