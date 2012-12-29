@@ -1148,6 +1148,17 @@ void dtgtk_cairo_paint_modulegroup_effect(cairo_t *cr, gint x, gint y, gint w, g
   cairo_stroke(cr);
 }
 
+void dtgtk_cairo_paint_map_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags)
+{
+  gint s=w<h?w:h;
+  cairo_scale(cr, s, s);
+  cairo_move_to(cr, 0.2, 0.0);
+  cairo_line_to(cr, 0.0, 1.0);
+  cairo_line_to(cr, 0.7, 0.0);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -77,6 +77,7 @@ FILE(GLOB SOURCE_FILES
   "gui/gtkentry.c"
   "gui/guides.c"
   "gui/gtk.c"
+  "gui/hist_dialog.c"
   "gui/preferences.c"
   "gui/presets.c"
   "gui/styles_dialog.c"

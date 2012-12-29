@@ -23,6 +23,7 @@
 #include "control/jobs.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/hist_dialog.h"
 #include "libs/lib.h"
 #include <stdlib.h>
 #include <gtk/gtk.h>
@@ -37,9 +38,19 @@ typedef struct dt_lib_copy_history_t
   GtkComboBox *pastemode;
   GtkButton *paste;
   GtkWidget *copy_button, *delete_button, *load_button, *write_button;
+
+  dt_gui_hist_dialog_t dg;
 }
 dt_lib_copy_history_t;
 
+typedef enum _hist_items_columns_t
+{
+  DT_STYLE_ITEMS_COL_ENABLED=0,
+  DT_STYLE_ITEMS_COL_NAME,
+  DT_STYLE_ITEMS_COL_NUM,
+  DT_STYLE_ITEMS_NUM_COLS
+}
+_hist_columns_t;
 
 const char*
 name ()
@@ -133,6 +144,9 @@ copy_button_clicked (GtkWidget *widget, gpointer user_data)
     d->imageid = mouse_over_id;
   }
   sqlite3_finalize(stmt);
+
+  // launch dialog to select the ops to copy
+  dt_gui_hist_dialog_new (&(d->dg), d->imageid);
 }
 
 static void
@@ -154,15 +168,14 @@ paste_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
 
   /* copy history from d->imageid and past onto selection */
-  if (dt_history_copy_and_paste_on_selection (d->imageid, (mode==0)?TRUE:FALSE )!=0)
+  if (dt_history_copy_and_paste_on_selection (d->imageid, (mode==0)?TRUE:FALSE, d->dg.selops)!=0)
   {
     /* no selection is used, use mouse over id */
     int32_t mouse_over_id=0;
     DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
     if(mouse_over_id <= 0) return;
 
-    dt_history_copy_and_paste_on_image(d->imageid,mouse_over_id,(mode==0)?TRUE:FALSE);
-
+    dt_history_copy_and_paste_on_image(d->imageid,mouse_over_id,(mode==0)?TRUE:FALSE,d->dg.selops);
   }
 
   /* redraw */

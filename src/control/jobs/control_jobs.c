@@ -549,7 +549,7 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   {
     imgid = (long int)t->data;
     newimgid = dt_image_duplicate(imgid);
-    if(newimgid != -1) dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE);
+    if(newimgid != -1) dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE,NULL);
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);

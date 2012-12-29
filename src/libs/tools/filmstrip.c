@@ -32,6 +32,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/drag_and_drop.h"
+#include "gui/hist_dialog.h"
 
 #include <gdk/gdkkeysyms.h>
 
@@ -65,6 +66,8 @@ typedef struct dt_lib_filmstrip_t
   int32_t activated_image;
   dt_lib_filmstrip_select_t select;
   int32_t select_id;
+
+  dt_gui_hist_dialog_t dg;
 }
 dt_lib_filmstrip_t;
 
@@ -94,6 +97,9 @@ static void _lib_filmstrip_collection_changed_callback(gpointer instance, gpoint
 
 /* key accelerators callback */
 static gboolean _lib_filmstrip_copy_history_key_accel_callback(GtkAccelGroup *accel_group,
+    GObject *aceeleratable, guint keyval,
+    GdkModifierType modifier, gpointer data);
+static gboolean _lib_filmstrip_copy_history_parts_key_accel_callback(GtkAccelGroup *accel_group,
     GObject *aceeleratable, guint keyval,
     GdkModifierType modifier, gpointer data);
 static gboolean _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *accel_group,
@@ -156,6 +162,8 @@ void init_key_accels(dt_lib_module_t *self)
 
   /* setup history key accelerators */
   dt_accel_register_lib(self, NC_("accel", "copy history"),
+                        GDK_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "copy history parts"),
                         GDK_c, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "paste history"),
                         GDK_v, GDK_CONTROL_MASK);
@@ -219,6 +227,11 @@ void connect_key_accels(dt_lib_module_t *self)
     self, "copy history",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_copy_history_key_accel_callback),
+      (gpointer)self->data,NULL));
+  dt_accel_connect_lib(
+    self, "copy history parts",
+    g_cclosure_new(
+      G_CALLBACK(_lib_filmstrip_copy_history_parts_key_accel_callback),
       (gpointer)self->data,NULL));
   dt_accel_connect_lib(
     self, "paste history",
@@ -774,20 +787,40 @@ static gboolean _lib_filmstrip_copy_history_key_accel_callback(GtkAccelGroup *ac
   return TRUE;
 }
 
+static gboolean _lib_filmstrip_copy_history_parts_key_accel_callback(GtkAccelGroup *accel_group,
+    GObject *aceeleratable, guint keyval,
+    GdkModifierType modifier, gpointer data)
+{
+  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
+  int32_t mouse_over_id;
+  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  if(mouse_over_id <= 0) return FALSE;
+  strip->history_copy_imgid = mouse_over_id;
+
+  dt_gui_hist_dialog_new (&(strip->dg), strip->history_copy_imgid);
+
+  /* check if images is currently loaded in darkroom */
+  if (dt_dev_is_current_image(darktable.develop, mouse_over_id))
+    dt_dev_write_history(darktable.develop);
+  return TRUE;
+}
+
 static gboolean _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *accel_group,
     GObject *aceeleratable, guint keyval,
     GdkModifierType modifier, gpointer data)
 {
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
-  if (strip->history_copy_imgid==-1) return FALSE;
-
-  int32_t mouse_over_id;
-  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  if(mouse_over_id <= 0) return FALSE;
-
   int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
 
-  dt_history_copy_and_paste_on_image(strip->history_copy_imgid, mouse_over_id, (mode == 0)?TRUE:FALSE);
+  if (dt_history_copy_and_paste_on_selection (strip->history_copy_imgid, (mode==0)?TRUE:FALSE, strip->dg.selops)!=0)
+  {
+    int32_t mouse_over_id;
+    DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+    if(mouse_over_id <= 0) return FALSE;
+
+    dt_history_copy_and_paste_on_image(strip->history_copy_imgid, mouse_over_id, (mode == 0)?TRUE:FALSE,strip->dg.selops);
+  }
+
   dt_control_queue_redraw_center();
   return TRUE;
 }
@@ -818,7 +851,7 @@ static gboolean _lib_filmstrip_duplicate_image_key_accel_callback(GtkAccelGroup 
     dt_dev_write_history(darktable.develop);
 
   int32_t newimgid = dt_image_duplicate(mouse_over_id);
-  if(newimgid != -1) dt_history_copy_and_paste_on_image(mouse_over_id, newimgid, FALSE);
+  if(newimgid != -1) dt_history_copy_and_paste_on_image(mouse_over_id, newimgid, FALSE, NULL);
 
   dt_control_queue_redraw_center();
   return TRUE;
