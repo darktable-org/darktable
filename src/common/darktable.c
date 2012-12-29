@@ -491,10 +491,12 @@ int dt_init(int argc, char *argv[], const int init_gui)
         k ++;
       }
     }
+#ifndef MAC_INTEGRATION
     else
     {
       images_to_load = g_slist_append(images_to_load, argv[k]);
     }
+#endif
   }
 
   if(darktable.unmuted & DT_DEBUG_MEMORY)
