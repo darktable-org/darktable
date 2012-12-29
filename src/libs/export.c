@@ -686,7 +686,11 @@ get_params (dt_lib_module_t *self, int *size)
   int32_t max_height = dt_conf_get_int ("plugins/lighttable/export/height");
   gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
-  strncpy(fdata->style, style, 128);
+
+  if (fdata) {
+    strncpy(fdata->style, style, 128);
+  }
+
   if(!iccprofile)
   {
     iccprofile = (char *)g_malloc(1);
