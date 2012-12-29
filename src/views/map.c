@@ -105,31 +105,7 @@ static GdkPixbuf *init_pin()
   cairo_set_source_rgba(cr, r, g, b, a);
   dtgtk_cairo_paint_map_pin(cr, 0, 0, w, h, 0);
   uint8_t* data = cairo_image_surface_get_data(cst);
-
-  for(int y=0; y<h; y++)
-    for(int x=0; x<w; x++)
-    {
-      uint8_t *r, *g, *b, *a, tmp;
-      r = &data[(y*w+x)*4+0];
-      g = &data[(y*w+x)*4+1];
-      b = &data[(y*w+x)*4+2];
-      a = &data[(y*w+x)*4+3];
-
-      // switch r and b
-      tmp = *r;
-      *r = *b;
-      *b = tmp;
-
-      // cairo uses premultiplied alpha, reverse that
-      if(*a != 0)
-      {
-        float inv_a = 255.0 / *a;
-        *r *= inv_a;
-        *g *= inv_a;
-        *b *= inv_a;
-      }
-    }
-
+  dt_draw_cairo_to_gdk_pixbuf(data, w, h);
   return gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w*4, (GdkPixbufDestroyNotify) free, NULL);
 }
 

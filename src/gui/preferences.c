@@ -22,6 +22,7 @@
 #include "common/debug.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
+#include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/preferences.h"
 #include "develop/imageop.h"
@@ -256,13 +257,13 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
   gchar *last_module = NULL;
 
   // Create a GdkPixbuf with a cairo drawing.
-  // WARNING: In general, this doesn't work as the pixel format of GDK and cairo differs. But in our case with a monochrome icon that doesn't matter. :-)
   // lock
   cairo_surface_t *lock_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
   cairo_t *lock_cr = cairo_create(lock_cst);
   cairo_set_source_rgb(lock_cr, 0.7,0.7,0.7);
   dtgtk_cairo_paint_lock(lock_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);
   guchar* data = cairo_image_surface_get_data(lock_cst);
+  dt_draw_cairo_to_gdk_pixbuf(data, ICON_SIZE, ICON_SIZE);
   GdkPixbuf* lock_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE,
                            ICON_SIZE, cairo_image_surface_get_stride(lock_cst), NULL, NULL);
   // check mark
@@ -271,6 +272,7 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
   cairo_set_source_rgb(check_cr, 0.7,0.7,0.7);
   dtgtk_cairo_paint_check_mark(check_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);
   data = cairo_image_surface_get_data(check_cst);
+  dt_draw_cairo_to_gdk_pixbuf(data, ICON_SIZE, ICON_SIZE);
   GdkPixbuf* check_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE,
                             ICON_SIZE, cairo_image_surface_get_stride(check_cst), NULL, NULL);
 
