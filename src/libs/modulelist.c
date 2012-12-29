@@ -172,6 +172,7 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   cairo_set_source_rgb(fav_cr, 0.7,0.7,0.7);
   dtgtk_cairo_paint_modulegroup_favorites(fav_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);
   guchar* data = cairo_image_surface_get_data(fav_cst);
+  dt_draw_cairo_to_gdk_pixbuf(data, ICON_SIZE, ICON_SIZE);
   ((dt_lib_modulelist_t*)self->data)->fav_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE,
     ICON_SIZE, cairo_image_surface_get_stride(fav_cst), NULL, NULL);
   g_object_set(fav_renderer,"cell-background-gdk",&style->bg[GTK_STATE_ACTIVE],NULL);
