@@ -92,7 +92,11 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
   int format_index = dt_conf_get_int ("plugins/lighttable/export/format");
   int storage_index = dt_conf_get_int ("plugins/lighttable/export/storage");
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
-  strncpy (style, dt_conf_get_string("plugins/lighttable/export/style"), 128);
+  char* tmp = dt_conf_get_string("plugins/lighttable/export/style");
+  if (tmp) {
+    strncpy (style, tmp, 128);
+    g_free(tmp);
+  }
   dt_control_export(max_width, max_height, format_index, storage_index, high_quality, style);
 }
 
@@ -686,7 +690,11 @@ get_params (dt_lib_module_t *self, int *size)
   int32_t max_height = dt_conf_get_int ("plugins/lighttable/export/height");
   gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
-  strncpy(fdata->style, style, 128);
+
+  if (fdata) {
+    strncpy(fdata->style, style, 128);
+  }
+
   if(!iccprofile)
   {
     iccprofile = (char *)g_malloc(1);
@@ -729,6 +737,7 @@ get_params (dt_lib_module_t *self, int *size)
   g_assert(pos == *size);
 
   g_free(iccprofile);
+  g_free(style);
 
   if(fdata) mformat->free_params(mformat, fdata);
   if(sdata) mstorage->free_params(mstorage, sdata);

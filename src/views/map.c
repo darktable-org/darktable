@@ -27,6 +27,7 @@
 #include "views/view.h"
 #include "libs/lib.h"
 #include "gui/drag_and_drop.h"
+#include "gui/draw.h"
 
 #include "osm-gps-map.h"
 
@@ -39,6 +40,7 @@ typedef struct dt_map_t
   OsmGpsMap *map;
   OsmGpsMapLayer *osd;
   GSList *images;
+  GdkPixbuf *pin;
   gint selected_image;
   gboolean start_drag;
   struct
@@ -53,6 +55,9 @@ typedef struct dt_map_image_t
   OsmGpsMapImage *image;
   gint width, height;
 } dt_map_image_t;
+
+static const int thumb_size = 64, thumb_border = 1, pin_size = 13;
+static const uint32_t thumb_frame_color = 0x000000aa;
 
 /* proxy function to center map view on location at a zoom level */
 static void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdouble lat, gdouble zoom);
@@ -86,6 +91,24 @@ uint32_t view(dt_view_t *self)
   return DT_VIEW_MAP;
 }
 
+static GdkPixbuf *init_pin()
+{
+  int w = thumb_size + 2*thumb_border, h = pin_size;
+  float r, g, b, a;
+  r = ((thumb_frame_color & 0xff000000) >> 24) / 255.0;
+  g = ((thumb_frame_color & 0x00ff0000) >> 16) / 255.0;
+  b = ((thumb_frame_color & 0x0000ff00) >>  8) / 255.0;
+  a = ((thumb_frame_color & 0x000000ff) >>  0) / 255.0;
+
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
+  cairo_t *cr = cairo_create(cst);
+  cairo_set_source_rgba(cr, r, g, b, a);
+  dtgtk_cairo_paint_map_pin(cr, 0, 0, w, h, 0);
+  uint8_t* data = cairo_image_surface_get_data(cst);
+  dt_draw_cairo_to_gdk_pixbuf(data, w, h);
+  return gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w*4, (GdkPixbufDestroyNotify) free, NULL);
+}
+
 void init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_map_t));
@@ -95,6 +118,8 @@ void init(dt_view_t *self)
 
   if(darktable.gui)
   {
+    lib->pin = init_pin();
+
     OsmGpsMapSource_t map_source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
     const gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
     if(old_map_source && old_map_source[0] != '\0')
@@ -146,10 +171,10 @@ void init(dt_view_t *self)
   int max_images_drawn = dt_conf_get_int("plugins/map/max_images_drawn");
   if(max_images_drawn == 0)
     max_images_drawn = 100;
-  char *geo_query = g_strdup_printf("select * from (select id from images where \
+  char *geo_query = g_strdup_printf("select * from (select id, latitude from images where \
                               longitude >= ?1 and longitude <= ?2 and latitude <= ?3 and latitude >= ?4 \
                               and longitude not NULL and latitude not NULL order by abs(latitude - ?5), abs(longitude - ?6) \
-                              limit 0, %d) order by id", max_images_drawn);
+                              limit 0, %d) order by (180 - latitude), id", max_images_drawn);
 
   /* prepare the main query statement */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);
@@ -161,151 +186,17 @@ void cleanup(dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
   if(darktable.gui)
+  {
+    g_object_unref(G_OBJECT(lib->pin));
     g_object_unref(G_OBJECT(lib->osd));
+  }
   free(self->data);
 }
-
 
 void configure(dt_view_t *self, int wd, int ht)
 {
   //dt_capture_t *lib=(dt_capture_t*)self->data;
 }
-
-#if 0
-static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_i,
-                                  int32_t pointerx, int32_t pointery, gpointer user_data)
-{
-  const int ts = 64;
-  OsmGpsMapPoint bb[2], *l=NULL, *center=NULL;
-  int px,py;
-  dt_map_t *lib = (dt_map_t *)user_data;
-
-  /* get bounding box coords */
-  osm_gps_map_get_bbox(lib->map, &bb[0], &bb[1]);
-  float bb_0_lat = 0.0, bb_0_lon = 0.0, bb_1_lat = 0.0, bb_1_lon = 0.0;
-  osm_gps_map_point_get_degrees(&bb[0], &bb_0_lat, &bb_0_lon);
-  osm_gps_map_point_get_degrees(&bb[1], &bb_1_lat, &bb_1_lon);
-
-  /* make the bounding box a little bigger to the west and south */
-  float lat0 = 0.0, lon0 = 0.0, lat1 = 0.0, lon1 = 0.0;
-  OsmGpsMapPoint *pt0 = osm_gps_map_point_new_degrees(0.0, 0.0), *pt1 = osm_gps_map_point_new_degrees(0.0, 0.0);
-  osm_gps_map_convert_screen_to_geographic(lib->map, 0, 0, pt0);
-  osm_gps_map_convert_screen_to_geographic(lib->map, 1.5*ts, 1.5*ts, pt1);
-  osm_gps_map_point_get_degrees(pt0, &lat0, &lon0);
-  osm_gps_map_point_get_degrees(pt1, &lat1, &lon1);
-  osm_gps_map_point_free(pt0);
-  osm_gps_map_point_free(pt1);
-  double south_border = lat0 - lat1, west_border = lon1 - lon0;
-
-  /* get map view state and store  */
-  int zoom = osm_gps_map_get_zoom(lib->map);
-  center = osm_gps_map_get_center(lib->map);
-  dt_conf_set_float("plugins/map/longitude", center->rlon);
-  dt_conf_set_float("plugins/map/latitude", center->rlat);
-  dt_conf_set_int("plugins/map/zoom", zoom);
-  osm_gps_map_point_free(center);
-
-  /* let's reset and reuse the main_query statement */
-  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
-  DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
-
-  /* bind bounding box coords for the main query */
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 1, bb_0_lon - west_border);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 2, bb_1_lon);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 3, bb_0_lat);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(lib->statements.main_query, 4, bb_1_lat - south_border);
-
-  /* query collection ids */
-  while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
-  {
-    int32_t imgid = sqlite3_column_int(lib->statements.main_query, 0);
-
-    cairo_set_source_rgba(cri, 0, 0, 0, 0.4);
-
-    /* free l if allocated */
-    if (l)
-      osm_gps_map_point_free(l);
-
-    /* for each image check if within bbox */
-    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-    double longitude = cimg->longitude;
-    double latitude  = cimg->latitude;
-    dt_image_cache_read_release(darktable.image_cache, cimg);
-    if(isnan(latitude) || isnan(longitude))
-      continue;
-    l = osm_gps_map_point_new_degrees(latitude, longitude);
-
-    /* translate l into screen coords */
-    osm_gps_map_convert_geographic_to_screen(lib->map, l, &px, &py);
-
-    /* dependent on scale draw different overlays */
-    if (zoom >= 14)
-    {
-      dt_mipmap_buffer_t buf;
-      dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, ts, ts);
-      dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, 0);
-
-      cairo_surface_t *surface = NULL;
-      if(buf.buf)
-      {
-        float ms = fminf(
-                     ts/(float)buf.width,
-                     ts/(float)buf.height);
-
-#if 0
-        // this doesn't work since osm-gps-map always gives 0/0 as mouse coords :(
-        /* find out if the cursor is over the image */
-        if(pointerx >= px && pointerx <= (px + buf.width*ms + 4) && pointery <= (py - 8) && pointery >= (py - buf.height*ms - 8 - 4))
-        {
-          printf("over\n");
-          cairo_set_source_rgba(cri, 1, 0, 0, 0.7);
-        }
-//         else
-//           printf("%d/%d, %d/%d\n", px, py, pointerx, pointery);
-#endif
-        const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
-        surface = cairo_image_surface_create_for_data (buf.buf, CAIRO_FORMAT_RGB24,
-                  buf.width, buf.height, stride);
-
-        cairo_pattern_set_filter(cairo_get_source(cri), CAIRO_FILTER_NEAREST);
-        cairo_save(cri);
-
-        /* first of lets draw a pin */
-        cairo_move_to(cri, px, py);
-        cairo_line_to(cri, px+8, py-8);
-        cairo_line_to(cri, px+4, py-8);
-        cairo_fill(cri);
-
-        /* and the frame around image */
-        cairo_move_to(cri, px+2, py-8);
-        cairo_line_to(cri, px+2 + (buf.width*ms) + 4, py-8);
-        cairo_line_to(cri, px+2 + (buf.width*ms) + 4 , py-8-(buf.height*ms) - 4);
-        cairo_line_to(cri, px+2 , py-8-(buf.height*ms) - 4);
-        cairo_fill(cri);
-
-
-        /* draw image*/
-        cairo_translate(cri, px+4, py - 8 - (buf.height*ms) - 2);
-        cairo_scale(cri, ms, ms);
-        cairo_set_source_surface (cri, surface, 0, 0);
-        cairo_paint(cri);
-
-        cairo_restore(cri);
-
-        cairo_surface_destroy(surface);
-
-      }
-    }
-    else
-    {
-      /* just draw a patch indicating that there is images at the location */
-      cairo_rectangle(cri, px-8, py-8, 16, 16);
-      cairo_fill(cri);
-    }
-  }
-
-}
-#endif
 
 int try_enter(dt_view_t *self)
 {
@@ -324,7 +215,6 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
 
-  const int ts = 64;
   OsmGpsMapPoint bb[2];
 
   /* get bounding box coords */
@@ -337,7 +227,7 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   float lat0 = 0.0, lon0 = 0.0, lat1 = 0.0, lon1 = 0.0;
   OsmGpsMapPoint *pt0 = osm_gps_map_point_new_degrees(0.0, 0.0), *pt1 = osm_gps_map_point_new_degrees(0.0, 0.0);
   osm_gps_map_convert_screen_to_geographic(map, 0, 0, pt0);
-  osm_gps_map_convert_screen_to_geographic(map, 1.5*ts, 1.5*ts, pt1);
+  osm_gps_map_convert_screen_to_geographic(map, 1.5*thumb_size, 1.5*thumb_size, pt1);
   osm_gps_map_point_get_degrees(pt0, &lat0, &lon0);
   osm_gps_map_point_get_degrees(pt1, &lat1, &lon1);
   osm_gps_map_point_free(pt0);
@@ -375,7 +265,7 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
 
   /* add  all images to the map */
   gboolean needs_redraw = FALSE;
-  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, ts, ts);
+  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, thumb_size, thumb_size);
   while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int(lib->statements.main_query, 0);
@@ -384,27 +274,38 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
 
     if(buf.buf)
     {
-      GdkPixbuf *source = NULL, *scaled = NULL;
+      GdkPixbuf *source = NULL, *thumb = NULL;
       uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
       uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
 
-      uint8_t *rgbbuf = (uint8_t*)malloc((buf.width+2)*(buf.height+2)*3);
+      // convert image to pixbuf compatible rgb format
+      uint8_t *rgbbuf = (uint8_t*)malloc(buf.width*buf.height*3);
       if(!rgbbuf) goto map_changed_failure;
-      memset(rgbbuf, 64, (buf.width+2)*(buf.height+2)*3);
-      for(int i=1; i<=buf.height; i++)
-        for(int j=1; j<=buf.width; j++)
+      for(int i=0; i<buf.height; i++)
+        for(int j=0; j<buf.width; j++)
           for(int k=0; k<3; k++)
-            rgbbuf[(i*(buf.width+2)+j)*3+k] = buf_decompressed[((i-1)*buf.width+j-1)*4+2-k];
+            rgbbuf[(i*buf.width+j)*3+k] = buf_decompressed[(i*buf.width+j)*4+2-k];
 
-      int w=ts, h=ts;
-      if(buf.width < buf.height) w = (buf.width*ts)/buf.height; // portrait
-      else                       h = (buf.height*ts)/buf.width; // landscape
+      int w=thumb_size, h=thumb_size;
+      if(buf.width < buf.height) w = (buf.width*thumb_size)/buf.height; // portrait
+      else                       h = (buf.height*thumb_size)/buf.width; // landscape
 
-      source = gdk_pixbuf_new_from_data(rgbbuf, GDK_COLORSPACE_RGB, FALSE, 8, (buf.width+2), (buf.height+2), (buf.width+2)*3, NULL, NULL);
+      // next we get a pixbuf for the image
+      source = gdk_pixbuf_new_from_data(rgbbuf, GDK_COLORSPACE_RGB, FALSE, 8, buf.width, buf.height, buf.width*3, NULL, NULL);
       if(!source) goto map_changed_failure;
-      scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
-      if(!scaled) goto map_changed_failure;
-      //TODO: add back the arrow on the left lower corner of the image, pointing to the location
+
+      // now we want a slightly larger pixbuf that we can put the image on
+      thumb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, w+2*thumb_border, h+2*thumb_border+pin_size);
+      if(!thumb) goto map_changed_failure;
+      gdk_pixbuf_fill(thumb, thumb_frame_color);
+
+      // put the image onto the frame
+      gdk_pixbuf_scale(source, thumb, thumb_border, thumb_border, w, h, thumb_border, thumb_border,
+                       (1.0*w) / buf.width, (1.0*h) / buf.height, GDK_INTERP_HYPER);
+
+      // and finally add the pin
+      gdk_pixbuf_copy_area(lib->pin, 0, 0, w+2*thumb_border, pin_size, thumb, 0, h+2*thumb_border);
+
       const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
       if(!cimg) goto map_changed_failure;
       dt_map_image_t *entry = (dt_map_image_t*)malloc(sizeof(dt_map_image_t));
@@ -414,7 +315,7 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
         goto map_changed_failure;
       }
       entry->imgid = imgid;
-      entry->image = osm_gps_map_image_add_with_alignment(map, cimg->latitude, cimg->longitude, scaled, 0, 1);
+      entry->image = osm_gps_map_image_add_with_alignment(map, cimg->latitude, cimg->longitude, thumb, 0, 1);
       entry->width = w;
       entry->height = h;
       lib->images = g_slist_prepend(lib->images, entry);
@@ -423,10 +324,9 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
 map_changed_failure:
       if(source)
         g_object_unref(source);
-      if(scaled)
-        g_object_unref(scaled);
-      if(rgbbuf)
-        free(rgbbuf);
+      if(thumb)
+        g_object_unref(thumb);
+      free(rgbbuf);
     }
     else
       needs_redraw = TRUE;
@@ -453,6 +353,7 @@ static int _view_map_get_img_at_pos(dt_view_t *self, double x, double y)
     OsmGpsMapPoint *pt = (OsmGpsMapPoint*)osm_gps_map_image_get_point(image);
     gint img_x=0, img_y=0;
     osm_gps_map_convert_geographic_to_screen(lib->map, pt, &img_x, &img_y);
+    img_y -= pin_size;
     if(x >= img_x && x <= img_x + entry->width && y <= img_y && y >= img_y - entry->height)
       return entry->imgid;
   }
@@ -463,7 +364,6 @@ static int _view_map_get_img_at_pos(dt_view_t *self, double x, double y)
 static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t*)self->data;
-  const int ts = 64;
 
   if(lib->start_drag && lib->selected_image > 0)
   {
@@ -482,39 +382,47 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e
     GtkTargetList *targets = gtk_target_list_new(target_list_all, n_targets_all);
 
     dt_mipmap_buffer_t buf;
-    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, ts, ts);
+    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, thumb_size, thumb_size);
     dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, lib->selected_image, mip, DT_MIPMAP_BLOCKING);
 
     if(buf.buf)
     {
-      GdkPixbuf *scaled = NULL, *source = NULL;
+      GdkPixbuf *source = NULL, *thumb = NULL;
       uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
       uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
 
-      uint8_t *rgbbuf = (uint8_t*)malloc((buf.width+2)*(buf.height+2)*3);
+      // convert image to pixbuf compatible rgb format
+      uint8_t *rgbbuf = (uint8_t*)malloc(buf.width*buf.height*3);
       if(!rgbbuf) goto map_motion_failure;
-      memset(rgbbuf, 64, (buf.width+2)*(buf.height+2)*3);
-      for(int i=1; i<=buf.height; i++)
-        for(int j=1; j<=buf.width; j++)
+      for(int i=0; i<buf.height; i++)
+        for(int j=0; j<buf.width; j++)
           for(int k=0; k<3; k++)
-            rgbbuf[(i*(buf.width+2)+j)*3+k] = buf_decompressed[((i-1)*buf.width+j-1)*4+2-k];
+            rgbbuf[(i*buf.width+j)*3+k] = buf_decompressed[(i*buf.width+j)*4+2-k];
 
-      int w=ts, h=ts;
-      if(buf.width < buf.height) w = (buf.width*ts)/buf.height; // portrait
-      else                       h = (buf.height*ts)/buf.width; // landscape
+      int w=thumb_size, h=thumb_size;
+      if(buf.width < buf.height) w = (buf.width*thumb_size)/buf.height; // portrait
+      else                       h = (buf.height*thumb_size)/buf.width; // landscape
 
-      source = gdk_pixbuf_new_from_data(rgbbuf, GDK_COLORSPACE_RGB, FALSE, 8, (buf.width+2), (buf.height+2), (buf.width+2)*3, NULL, NULL);
-      scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
+      // next we get a pixbuf for the image
+      source = gdk_pixbuf_new_from_data(rgbbuf, GDK_COLORSPACE_RGB, FALSE, 8, buf.width, buf.height, buf.width*3, NULL, NULL);
+
+      // now we want a slightly larger pixbuf that we can put the image on
+      thumb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, w+2*thumb_border, h+2*thumb_border);
+      gdk_pixbuf_fill(thumb, thumb_frame_color);
+
+      // put the image onto the frame
+      gdk_pixbuf_scale(source, thumb, thumb_border, thumb_border, w, h, thumb_border, thumb_border,
+                       (1.0*w) / buf.width, (1.0*h) / buf.height, GDK_INTERP_HYPER);
+
       GdkDragContext * context = gtk_drag_begin(GTK_WIDGET(lib->map), targets, GDK_ACTION_COPY, 1, (GdkEvent*)e);
-      gtk_drag_set_icon_pixbuf(context, scaled, 0, 0);
+      gtk_drag_set_icon_pixbuf(context, thumb, 0, 0);
 
 map_motion_failure:
       if(source)
         g_object_unref(source);
-      if(scaled)
-        g_object_unref(scaled);
-      if(rgbbuf)
-        free(rgbbuf);
+      if(thumb)
+        g_object_unref(thumb);
+      free(rgbbuf);
     }
 
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);

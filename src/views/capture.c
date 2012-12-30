@@ -378,7 +378,7 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
     cairo_translate(cr,MARGIN, MARGIN);
     dt_view_image_expose(&(lib->image_over), lib->image_id,
                          cr, width-(MARGIN*2.0f), height-(MARGIN*2.0f), 1,
-                         pointerx, pointery);
+                         pointerx, pointery, FALSE);
   }
 }
 

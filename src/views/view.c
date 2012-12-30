@@ -637,7 +637,8 @@ dt_view_image_expose(
   int32_t height,
   int32_t zoom,
   int32_t px,
-  int32_t py)
+  int32_t py,
+  gboolean full_preview)
 {
   const double start = dt_get_wtime();
   // some performance tuning stuff, for your pleasure.
@@ -863,7 +864,7 @@ dt_view_image_expose(
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 
   const float fscale = fminf(width, height);
-  if(imgsel == imgid)
+  if(imgsel == imgid || full_preview)
   {
     // draw mouseover hover effects, set event hook for mouse button down!
     *image_over = DT_VIEW_DESERT;
@@ -1175,7 +1176,6 @@ void dt_view_filmstrip_prefetch()
   const gchar *qin = dt_collection_get_query (darktable.collection);
   if(!qin) return;
 
-  char query[1024];
   int offset = 0;
   if(qin)
   {
@@ -1186,14 +1186,7 @@ void dt_view_filmstrip_prefetch()
       imgid = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
 
-    snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1,  0);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-      offset = sqlite3_column_int(stmt, 0) - 1;
-    sqlite3_finalize(stmt);
+    offset = dt_collection_image_offset(imgid);
   }
 
   sqlite3_stmt *stmt;
