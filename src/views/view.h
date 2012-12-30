@@ -113,7 +113,8 @@ dt_view_image_expose(
   int32_t height,
   int32_t zoom,
   int32_t px,
-  int32_t py);
+  int32_t py,
+  gboolean full_preview);
 
 /** Set the selection bit to a given value for the specified image */
 void dt_view_set_selection(int imgid, int value);

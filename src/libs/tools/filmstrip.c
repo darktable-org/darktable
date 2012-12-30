@@ -680,7 +680,7 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
       // FIXME find out where the y translation is done, how big the value is and use it directly instead of getting it from the matrix ...
       cairo_matrix_t m;
       cairo_get_matrix(cr, &m);
-      dt_view_image_expose(&(strip->image_over), id, cr, wd, ht, max_cols, img_pointerx, img_pointery);
+      dt_view_image_expose(&(strip->image_over), id, cr, wd, ht, max_cols, img_pointerx, img_pointery, FALSE);
       cairo_restore(cr);
     }
     else if (step_res == SQLITE_DONE)
