@@ -105,11 +105,11 @@ void dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy
 
   if (iscopy)
   {
-    strcpy(label, "copy all");
+    strcpy(label, _("copy all"));
     d->copied_imageid = imgid;
   }
   else
-    strcpy(label, "paste all");
+    strcpy(label, _("paste all"));
 
   GtkDialog *dialog = GTK_DIALOG
     (gtk_dialog_new_with_buttons
