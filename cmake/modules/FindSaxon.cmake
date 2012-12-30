@@ -58,10 +58,11 @@ if (JAVA_RUNTIME)
   mark_as_advanced (SAXON)
 
   find_file (JAVA_DOCBOOK_XSL_SAXON_LIBRARY
-    NAMES saxon65.jar saxon653.jar saxon654.jar saxon655.jar
+    NAMES saxon65.jar saxon653.jar saxon654.jar saxon655.jar docbook-xsl-saxon.jar
     PATH_SUFFIXES share/xml/docbook/stylesheet/nwalsh/current/extensions
     PATH_SUFFIXES share/xml/docbook-xsl/extensions
     PATH_SUFFIXES share/xml/docbook/xsl/extensions
+    PATH_SUFFIXES share/java
     DOC "location of saxon 6.5.x DocBook XSL extension JAR file"
     CMAKE_FIND_ROOT_PATH_BOTH
   )
