@@ -231,7 +231,7 @@ colorin (read_only image2d_t in, write_only image2d_t out, const int width, cons
     for(int i=0;i<3;i++) XYZ[j] += mat[3*j+i] * cam[i];
   }
   float4 xyz = (float4)(XYZ[0], XYZ[1], XYZ[2], 0.0f);
-  pixel = XYZ_to_Lab(xyz);
+  pixel.xyz = XYZ_to_Lab(xyz).xyz;
   write_imagef (out, (int2)(x, y), pixel);
 }
 
