@@ -883,7 +883,8 @@ _create_filtered_model (GtkTreeModel *model, GtkTreeIter iter, dt_lib_collect_ru
   /* Filter level */
   while (gtk_tree_model_iter_has_child(model, &iter))
   {
-    if (gtk_tree_model_iter_n_children(model, &iter) >= 1)
+    int n_children = gtk_tree_model_iter_n_children(model, &iter);
+    if ( n_children >= 1)
     {
       /* Check if this path also matches a filmroll */
       gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_PATH, &pth, -1);
@@ -904,7 +905,10 @@ _create_filtered_model (GtkTreeModel *model, GtkTreeIter iter, dt_lib_collect_ru
         gtk_tree_model_iter_parent(model, &iter, &child);
         break;
       }
+    }
 
+    if ( n_children == 1)
+    {
       gtk_tree_model_iter_children(model, &child, &iter);
 
       if (gtk_tree_model_iter_n_children(model, &child) != 0)
