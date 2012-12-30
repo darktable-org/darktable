@@ -637,7 +637,8 @@ dt_view_image_expose(
   int32_t height,
   int32_t zoom,
   int32_t px,
-  int32_t py)
+  int32_t py,
+  gboolean full_preview)
 {
   const double start = dt_get_wtime();
   // some performance tuning stuff, for your pleasure.
@@ -863,7 +864,7 @@ dt_view_image_expose(
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 
   const float fscale = fminf(width, height);
-  if(imgsel == imgid)
+  if(imgsel == imgid || full_preview)
   {
     // draw mouseover hover effects, set event hook for mouse button down!
     *image_over = DT_VIEW_DESERT;
