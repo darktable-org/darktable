@@ -105,6 +105,9 @@ static gboolean _lib_filmstrip_copy_history_parts_key_accel_callback(GtkAccelGro
 static gboolean _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *accel_group,
     GObject *aceeleratable, guint keyval,
     GdkModifierType modifier, gpointer data);
+static gboolean _lib_filmstrip_paste_history_parts_key_accel_callback(GtkAccelGroup *accel_group,
+    GObject *aceeleratable, guint keyval,
+    GdkModifierType modifier, gpointer data);
 static gboolean _lib_filmstrip_discard_history_key_accel_callback(GtkAccelGroup *accel_group,
     GObject *aceeleratable, guint keyval,
     GdkModifierType modifier, gpointer data);
@@ -167,6 +170,8 @@ void init_key_accels(dt_lib_module_t *self)
                         GDK_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_register_lib(self, NC_("accel", "paste history"),
                         GDK_v, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "paste history parts"),
+                        GDK_v, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_register_lib(self, NC_("accel", "discard history"),
                         0, 0);
 
@@ -237,6 +242,11 @@ void connect_key_accels(dt_lib_module_t *self)
     self, "paste history",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_paste_history_key_accel_callback),
+      (gpointer)self->data,NULL));
+  dt_accel_connect_lib(
+    self, "paste history parts",
+    g_cclosure_new(
+      G_CALLBACK(_lib_filmstrip_paste_history_parts_key_accel_callback),
       (gpointer)self->data,NULL));
   dt_accel_connect_lib(
     self, "discard history",
@@ -782,7 +792,7 @@ static gboolean _lib_filmstrip_copy_history_parts_key_accel_callback(GtkAccelGro
   if(mouse_over_id <= 0) return FALSE;
   strip->history_copy_imgid = mouse_over_id;
 
-  dt_gui_hist_dialog_new (&(strip->dg), strip->history_copy_imgid);
+  dt_gui_hist_dialog_new (&(strip->dg), strip->history_copy_imgid, TRUE);
 
   /* check if images is currently loaded in darkroom */
   if (dt_dev_is_current_image(darktable.develop, mouse_over_id))
@@ -801,6 +811,30 @@ static gboolean _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *a
   {
     int32_t mouse_over_id;
     DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+    if(mouse_over_id <= 0) return FALSE;
+
+    dt_history_copy_and_paste_on_image(strip->history_copy_imgid, mouse_over_id, (mode == 0)?TRUE:FALSE,strip->dg.selops);
+  }
+
+  dt_control_queue_redraw_center();
+  return TRUE;
+}
+
+static gboolean _lib_filmstrip_paste_history_parts_key_accel_callback(GtkAccelGroup *accel_group,
+    GObject *aceeleratable, guint keyval,
+    GdkModifierType modifier, gpointer data)
+{
+  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
+  int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
+
+  // get mouse over before launching the dialog
+  int32_t mouse_over_id;
+  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+
+  dt_gui_hist_dialog_new (&(strip->dg), strip->history_copy_imgid, FALSE);
+
+  if (dt_history_copy_and_paste_on_selection (strip->history_copy_imgid, (mode==0)?TRUE:FALSE, strip->dg.selops)!=0)
+  {
     if(mouse_over_id <= 0) return FALSE;
 
     dt_history_copy_and_paste_on_image(strip->history_copy_imgid, mouse_over_id, (mode == 0)?TRUE:FALSE,strip->dg.selops);

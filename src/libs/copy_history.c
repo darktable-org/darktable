@@ -137,6 +137,7 @@ copy_button_clicked (GtkWidget *widget, gpointer user_data)
   sqlite3_finalize(stmt);
 
   d->dg.selops = NULL;
+  d->dg.copied_imageid = d->imageid;
 }
 
 static gboolean _copy_history_parts_key_accel_callback
@@ -167,7 +168,7 @@ static gboolean _copy_history_parts_key_accel_callback
   sqlite3_finalize(stmt);
 
   // launch dialog to select the ops to copy
-  dt_gui_hist_dialog_new (&(d->dg), d->imageid);
+  dt_gui_hist_dialog_new (&(d->dg), d->imageid, TRUE);
 
   return TRUE;
 }
@@ -203,6 +204,36 @@ paste_button_clicked (GtkWidget *widget, gpointer user_data)
 
   /* redraw */
   dt_control_queue_redraw_center();
+}
+
+static gboolean _paste_history_parts_key_accel_callback
+(GtkAccelGroup *accel_group,
+ GObject *aceeleratable, guint keyval,
+ GdkModifierType modifier, gpointer data)
+{
+  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)data;
+
+  /* get past mode and store, overwrite / merge */
+  int mode = gtk_combo_box_get_active(d->pastemode);
+  dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
+
+  // launch dialog to select the ops to paste
+  dt_gui_hist_dialog_new (&(d->dg), d->dg.copied_imageid, FALSE);
+
+  /* copy history from d->imageid and past onto selection */
+  if (dt_history_copy_and_paste_on_selection (d->imageid, (mode==0)?TRUE:FALSE, d->dg.selops)!=0)
+  {
+    /* no selection is used, use mouse over id */
+    int32_t mouse_over_id=0;
+    DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+    if(mouse_over_id <= 0) return FALSE;
+
+    dt_history_copy_and_paste_on_image(d->imageid,mouse_over_id,(mode==0)?TRUE:FALSE,d->dg.selops);
+  }
+
+  /* redraw */
+  dt_control_queue_redraw_center();
+  return TRUE;
 }
 
 static void
@@ -306,6 +337,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "copy parts"), GDK_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_register_lib(self, NC_("accel", "discard"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "paste"), GDK_v, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "paste parts"), GDK_v, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_register_lib(self, NC_("accel", "load sidecar files"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "write sidecar files"), 0, 0);
 }
@@ -321,6 +353,10 @@ void connect_key_accels(dt_lib_module_t *self)
                     (gpointer)self->data,NULL));
   dt_accel_connect_button_lib(self, "discard", GTK_WIDGET(d->delete_button));
   dt_accel_connect_button_lib(self, "paste", GTK_WIDGET(d->paste));
+  dt_accel_connect_lib
+    (self, "paste parts",
+     g_cclosure_new(G_CALLBACK(_paste_history_parts_key_accel_callback),
+                    (gpointer)self->data,NULL));
   dt_accel_connect_button_lib(self, "load sidecar files",
                               GTK_WIDGET(d->load_button));
   dt_accel_connect_button_lib(self, "write sidecar files",
