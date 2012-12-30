@@ -140,6 +140,38 @@ copy_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_gui_hist_dialog_new (&(d->dg), d->imageid);
 }
 
+static gboolean _copy_all_history_key_accel_callback
+(GtkAccelGroup *accel_group,
+ GObject *aceeleratable, guint keyval,
+ GdkModifierType modifier, gpointer data)
+{
+  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)data;
+
+  /* get imageid for source if history past */
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    /* copy history of first image in selection */
+    d->imageid = sqlite3_column_int(stmt, 0);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->paste), TRUE);
+    //dt_control_log(_("history of first image in selection copied"));
+  }
+  else
+  {
+    /* no selection is used, use mouse over id */
+    int32_t mouse_over_id=0;
+    DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+    if(mouse_over_id <= 0) return FALSE;
+    d->imageid = mouse_over_id;
+  }
+  sqlite3_finalize(stmt);
+
+  d->dg.selops = NULL;
+
+  return TRUE;
+}
+
 static void
 delete_button_clicked (GtkWidget *widget, gpointer user_data)
 {
@@ -270,7 +302,8 @@ gui_cleanup (dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "copy"), GDK_c, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "copy"), GDK_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "copy history parts"), GDK_c, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "discard"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "paste"), GDK_v, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "load sidecar files"), 0, 0);
@@ -281,7 +314,11 @@ void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t*)self->data;
 
-  dt_accel_connect_button_lib(self, "copy", GTK_WIDGET(d->copy_button));
+  dt_accel_connect_button_lib(self, "copy history parts", GTK_WIDGET(d->copy_button));
+  dt_accel_connect_lib
+    (self, "copy",
+     g_cclosure_new(G_CALLBACK(_copy_all_history_key_accel_callback),
+                    (gpointer)self->data,NULL));
   dt_accel_connect_button_lib(self, "discard", GTK_WIDGET(d->delete_button));
   dt_accel_connect_button_lib(self, "paste", GTK_WIDGET(d->paste));
   dt_accel_connect_button_lib(self, "load sidecar files",
