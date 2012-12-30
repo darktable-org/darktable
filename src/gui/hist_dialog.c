@@ -106,7 +106,7 @@ void dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid)
      ("select parts",
       GTK_WINDOW(window),
       GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-      GTK_STOCK_SELECT_ALL,
+      "copy all",
       GTK_RESPONSE_ACCEPT,
       GTK_STOCK_OK,
       GTK_RESPONSE_YES,
