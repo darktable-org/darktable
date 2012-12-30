@@ -209,8 +209,8 @@ static inline void dt_draw_histogram_8(cairo_t *cr, float *hist, int32_t channel
 /** transform a data blob from cairo's premultiplied rgba/bgra to GdkPixbuf's un-premultiplied bgra/rgba */
 static inline void dt_draw_cairo_to_gdk_pixbuf(uint8_t *data, unsigned int width, unsigned int height)
 {
-  for(int y=0; y<height; y++)
-    for(int x=0; x<width; x++)
+  for(uint32_t y=0; y<height; y++)
+    for(uint32_t x=0; x<width; x++)
     {
       uint8_t *r, *g, *b, *a, tmp;
       r = &data[(y*width+x)*4+0];
