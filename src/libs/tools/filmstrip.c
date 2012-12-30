@@ -162,9 +162,9 @@ void init_key_accels(dt_lib_module_t *self)
 
   /* setup history key accelerators */
   dt_accel_register_lib(self, NC_("accel", "copy history"),
-                        GDK_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_lib(self, NC_("accel", "copy history parts"),
                         GDK_c, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "copy history parts"),
+                        GDK_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_register_lib(self, NC_("accel", "paste history"),
                         GDK_v, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "discard history"),

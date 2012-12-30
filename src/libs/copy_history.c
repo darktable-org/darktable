@@ -136,11 +136,10 @@ copy_button_clicked (GtkWidget *widget, gpointer user_data)
   }
   sqlite3_finalize(stmt);
 
-  // launch dialog to select the ops to copy
-  dt_gui_hist_dialog_new (&(d->dg), d->imageid);
+  d->dg.selops = NULL;
 }
 
-static gboolean _copy_all_history_key_accel_callback
+static gboolean _copy_history_parts_key_accel_callback
 (GtkAccelGroup *accel_group,
  GObject *aceeleratable, guint keyval,
  GdkModifierType modifier, gpointer data)
@@ -167,7 +166,8 @@ static gboolean _copy_all_history_key_accel_callback
   }
   sqlite3_finalize(stmt);
 
-  d->dg.selops = NULL;
+  // launch dialog to select the ops to copy
+  dt_gui_hist_dialog_new (&(d->dg), d->imageid);
 
   return TRUE;
 }
@@ -302,8 +302,8 @@ gui_cleanup (dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "copy"), GDK_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_lib(self, NC_("accel", "copy history parts"), GDK_c, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "copy"), GDK_c, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "copy parts"), GDK_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_register_lib(self, NC_("accel", "discard"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "paste"), GDK_v, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "load sidecar files"), 0, 0);
@@ -314,10 +314,10 @@ void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t*)self->data;
 
-  dt_accel_connect_button_lib(self, "copy history parts", GTK_WIDGET(d->copy_button));
+  dt_accel_connect_button_lib(self, "copy", GTK_WIDGET(d->copy_button));
   dt_accel_connect_lib
-    (self, "copy",
-     g_cclosure_new(G_CALLBACK(_copy_all_history_key_accel_callback),
+    (self, "copy parts",
+     g_cclosure_new(G_CALLBACK(_copy_history_parts_key_accel_callback),
                     (gpointer)self->data,NULL));
   dt_accel_connect_button_lib(self, "discard", GTK_WIDGET(d->delete_button));
   dt_accel_connect_button_lib(self, "paste", GTK_WIDGET(d->paste));
