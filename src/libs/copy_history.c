@@ -43,15 +43,6 @@ typedef struct dt_lib_copy_history_t
 }
 dt_lib_copy_history_t;
 
-typedef enum _hist_items_columns_t
-{
-  DT_STYLE_ITEMS_COL_ENABLED=0,
-  DT_STYLE_ITEMS_COL_NAME,
-  DT_STYLE_ITEMS_COL_NUM,
-  DT_STYLE_ITEMS_NUM_COLS
-}
-_hist_columns_t;
-
 const char*
 name ()
 {
