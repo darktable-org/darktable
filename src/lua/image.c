@@ -42,14 +42,14 @@ static int numid_compare(lua_State*L) {
  *******************************************/
 typedef int dt_lua_colorlabel_t;
 
-static int colorlabels_pushFunc(lua_State* L,const void* colorlabel_ptr){
+static int colorlabels_pushFunc(lua_State* L,luaA_Type type_id,const void* colorlabel_ptr){
   int * my_colorlabel = (int*)lua_newuserdata(L,sizeof(dt_lua_colorlabel_t));
   *my_colorlabel = *(int*)colorlabel_ptr;
 	luaL_setmetatable(L,"dt_lua_colorlabel_t");
   return 1;
 }
 
-static void colorlabels_toFunc(lua_State*L, void* colorlabel_ptr, int index) {
+static void colorlabels_toFunc(lua_State*L,luaA_Type type_id, void* colorlabel_ptr, int index) {
   *(int*)colorlabel_ptr =*((int*)luaL_checkudata(L,index,"dt_lua_colorlabel_t"));
 }
 
@@ -530,8 +530,8 @@ int dt_lua_init_image(lua_State * L) {
   lua_pushcfunction(L,numid_compare);
 	lua_setfield(L,-2,"__eq");
   /* colorlabels */
-  luaA_conversion(dt_lua_colorlabel_t,colorlabels_pushFunc,colorlabels_toFunc);
   dt_lua_init_type(L,dt_lua_colorlabel_t,dt_colorlabels_name,colorlabel_index,colorlabel_newindex);
+  luaA_conversion(dt_lua_colorlabel_t,colorlabels_pushFunc,colorlabels_toFunc);
   lua_pushcfunction(L,numid_compare);
 	lua_setfield(L,-2,"__eq");
   /*  image */

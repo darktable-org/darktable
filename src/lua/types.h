@@ -48,7 +48,11 @@ typedef char* char_path_length;
 
    */
    
-#define dt_lua_init_type(L,type_name, list,index,newindex) dt_lua_init_type_internal(L,#type_name,list,index,newindex)
+#define dt_lua_init_type(L,type_name, list,index,newindex) do {\
+  luaA_type_add(#type_name,sizeof(type_name)); \
+  dt_lua_init_type_internal(L,#type_name,list,index,newindex); \
+}while(0)
+
 void dt_lua_init_type_internal(lua_State* L, const char*type_name,const char ** list,lua_CFunction index,lua_CFunction newindex);
 
 /**

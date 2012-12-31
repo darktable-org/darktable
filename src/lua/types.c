@@ -20,27 +20,28 @@
 #include "control/control.h"
 #include "lautoc.h"
 #include "lua/types.h"
+#include <string.h>
 
-void to_char_num(lua_State* L, void* c_out, int index,int size)
+void to_char_num(lua_State* L, luaA_Type type_id,void* c_out, int index,int size)
 {
   size_t tgt_size;
   const char * value = luaL_checklstring(L,index,&tgt_size);
   if(tgt_size > size) {
     luaL_error(L,"string '%s' too long (max is %d)",value,size);
   }
-  luaA_to_char_ptr(L,c_out,index);
+  luaA_to_char_ptr(L,type_id,c_out,index);
 }
 
-int push_char_array(lua_State* L,const void* c_in) {
+int push_char_array(lua_State* L, luaA_Type type_id,const void* c_in) {
   lua_pushstring(L, c_in);
   return 1;
 }
 
-void to_char20(lua_State* L, void* c_out, int index) { to_char_num(L,c_out,index,20);}
-void to_char32(lua_State* L, void* c_out, int index) { to_char_num(L,c_out,index,32);}
-void to_char52(lua_State* L, void* c_out, int index) { to_char_num(L,c_out,index,52);}
-void to_charfilename_length(lua_State* L, void* c_out, int index) { to_char_num(L,c_out,index,DT_MAX_FILENAME_LEN);}
-void to_charpath_length(lua_State* L, void* c_out, int index) { to_char_num(L,c_out,index,DT_MAX_PATH_LEN);}
+void to_char20(lua_State* L, luaA_Type type_id, void* c_out, int index) { to_char_num(L,type_id,c_out,index,20);}
+void to_char32(lua_State* L, luaA_Type type_id, void* c_out, int index) { to_char_num(L,type_id,c_out,index,32);}
+void to_char52(lua_State* L, luaA_Type type_id, void* c_out, int index) { to_char_num(L,type_id,c_out,index,52);}
+void to_charfilename_length(lua_State* L, luaA_Type type_id, void* c_out, int index) { to_char_num(L,type_id,c_out,index,DT_MAX_FILENAME_LEN);}
+void to_charpath_length(lua_State* L, luaA_Type type_id, void* c_out, int index) { to_char_num(L,type_id,c_out,index,DT_MAX_PATH_LEN);}
 
 static int type_next(lua_State *L){
   int index;
@@ -146,13 +147,35 @@ static int type_newindex(lua_State *L){
 }
 
 
+static int autotype_full_pushfunc(lua_State *L, luaA_Type type_id, const void *cin) 
+{
+  size_t type_size= luaA_type_size(type_id);
+  void* udata = lua_newuserdata(L,type_size);
+  memcpy(udata,cin,type_size);
+	luaL_setmetatable(L,luaA_type_name(type_id));
+  return 1;
+}
+
+static void autotype_tofunc(lua_State*L, luaA_Type type_id, void* cout, int index)
+{
+  void * udata = luaL_checkudata(L,index,luaA_type_name(type_id));
+  memcpy(cout,udata,luaA_type_size(type_id));
+}
+
+
 void dt_lua_init_type_internal(lua_State* L, const char*type_name,const char ** list,lua_CFunction index,lua_CFunction newindex){
   luaL_newmetatable(L,type_name);
 
   luaA_Type my_type =  luaA_type_find(type_name);
+  if(my_type == LUAA_INVALID_TYPE) {
+    // can only happen if someone calls the function without the wrapper, and does it incorrectly
+    printf("program error : type %s is not registered to luaAutoC\n",type_name);
+  }
   lua_pushnumber(L,my_type);
 	lua_setfield(L,-2,"__luaA_Type");
 
+
+  luaA_conversion_typeid(my_type,autotype_full_pushfunc,autotype_tofunc);
 
 	lua_pushlightuserdata(L,list);
 	lua_pushcclosure(L,dt_lua_autotype_pairs,1);
@@ -169,7 +192,6 @@ void dt_lua_init_type_internal(lua_State* L, const char*type_name,const char ** 
 	lua_setfield(L,-2,"__newindex");
 
 }
-
 
 void dt_lua_initialize_types(lua_State *L)
 {
