@@ -963,13 +963,15 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 #ifdef _OPENMP
   #pragma omp critical
 #endif
+  {
   // Fetch the attached tags of image id if exported..
   if( p->export_tags == TRUE )
     tags = imgid;
 
   // Upload image to picasa
-  if( _picasa_api_upload_photo( p->picasa_api, mime , data, size , caption, description, tags ) == 201 )
-    result=0;
+    if( _picasa_api_upload_photo( p->picasa_api, mime , data, size , caption, description, tags ) == 201 )
+      result=0;
+  }
 
   // Unreference the memorymapped file...
   g_mapped_file_unref( imgfile );
