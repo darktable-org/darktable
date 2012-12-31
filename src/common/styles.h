@@ -53,7 +53,7 @@ void dt_styles_create_from_image (const char *name,const char *description,int32
 void dt_styles_create_from_style (const char *name, const char *newname, const char *description, GList *filter);
 
 /** update a style */
-void dt_styles_update (const char *name, const char *newname, const char *description, GList *filter);
+void dt_styles_update (const char *name, const char *newname, const char *newdescription, GList *filter);
 
 /** applies the style to selection of images */
 void dt_styles_apply_to_selection (const char *name,gboolean duplicate);

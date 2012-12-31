@@ -26,6 +26,7 @@
 #include "lua/database.h"
 #include "lua/gui.h"
 #include "lua/glist.h"
+#include "lua/styles.h"
 #include "common/imageio_module.h"
 #include "config.h"
 
@@ -105,6 +106,7 @@ static void debug_table(lua_State * L,int t) {
 static lua_CFunction init_funcs[] = {
   dt_lua_init_stmt,
   dt_lua_init_glist,
+  dt_lua_init_styles,
   dt_lua_init_image,
   dt_lua_init_database,
   NULL

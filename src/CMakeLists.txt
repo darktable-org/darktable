@@ -96,6 +96,7 @@ if(USE_LUA)
 		"lua/gui.c"
 		"lua/image.c"
 		"lua/stmt.c"
+		"lua/styles.c"
 		"lua/types.c"
 		)
 endif(USE_LUA)
