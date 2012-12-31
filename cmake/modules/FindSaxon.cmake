@@ -58,10 +58,11 @@ if (JAVA_RUNTIME)
   mark_as_advanced (SAXON)
 
   find_file (JAVA_DOCBOOK_XSL_SAXON_LIBRARY
-    NAMES saxon65.jar saxon653.jar saxon654.jar saxon655.jar
+    NAMES saxon65.jar saxon653.jar saxon654.jar saxon655.jar docbook-xsl-saxon.jar
     PATH_SUFFIXES share/xml/docbook/stylesheet/nwalsh/current/extensions
     PATH_SUFFIXES share/xml/docbook-xsl/extensions
     PATH_SUFFIXES share/xml/docbook/xsl/extensions
+    PATH_SUFFIXES share/java
     DOC "location of saxon 6.5.x DocBook XSL extension JAR file"
     CMAKE_FIND_ROOT_PATH_BOTH
   )
@@ -93,15 +94,15 @@ if (JAVA_RUNTIME)
 endif (JAVA_RUNTIME)
 
 
-if (XSLT_SAXON_COMMAND)
+if (XSLT_SAXON_COMMAND AND JAVA_DOCBOOK_XSL_SAXON_LIBRARY)
   set (Saxon_FOUND true)
 endif (XSLT_SAXON_COMMAND)
 
 if (NOT Saxon_FOUND)
   if (NOT Saxon_FIND_QUIETLY)
-    message (STATUS "No saxon XSLT processor found.")
+    message (STATUS "No saxon XSLT processor and/or no docbook saxon extension library found.")
   endif (NOT Saxon_FIND_QUIETLY)
   if (Saxon_FIND_REQUIRED)
-    message (FATAL_ERROR "No saxon XSLT processor found but it is required.")
+    message (FATAL_ERROR "No saxon XSLT processor and/or no docbook saxon extension library found but it is required.")
   endif (Saxon_FIND_REQUIRED)
 endif (NOT Saxon_FOUND)

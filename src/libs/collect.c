@@ -1683,9 +1683,12 @@ menuitem_change_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
 }
 
 static void
-collection_updated(gpointer instance,gpointer self)
+collection_updated(gpointer instance, gpointer self)
 {
-  _lib_collect_gui_update(self);
+  dt_lib_module_t *dm = (dt_lib_module_t *)self;
+  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+
+  update_view (NULL, d->rule + d->active_rule);
 }
 
 
