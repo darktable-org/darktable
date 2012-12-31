@@ -168,4 +168,4 @@ if /bin/expr "x$1" : '^x-psn_' > /dev/null; then
     shift 1
 fi
 
-$EXEC "$bundle_contents/MacOS/$name-bin" "$@" --datadir "$bundle_data/darktable" --moduledir "$bundle_lib/darktable" --localedir "$bundle_data/locale" $EXTRA_ARGS
+$EXEC "$bundle_contents/MacOS/$name-bin" --datadir "$bundle_data/darktable" --moduledir "$bundle_lib/darktable" --localedir "$bundle_data/locale" $EXTRA_ARGS "$@"

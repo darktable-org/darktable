@@ -55,6 +55,7 @@
 #include <sys/param.h>
 #include <unistd.h>
 #include <locale.h>
+#include <xmmintrin.h>
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
 #endif
@@ -394,6 +395,8 @@ int dt_load_from_string(const gchar* input, gboolean open_image_in_dr)
 
 int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
 {
+  // make everything go a lot faster.
+  _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 #ifndef __APPLE__
   _dt_sigsegv_old_handler = signal(SIGSEGV,&_dt_sigsegv_handler);
 #endif
@@ -502,10 +505,12 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
         k ++;
       }
     }
+#ifndef MAC_INTEGRATION
     else
     {
       images_to_load = g_slist_append(images_to_load, argv[k]);
     }
+#endif
   }
 
   if(darktable.unmuted & DT_DEBUG_MEMORY)

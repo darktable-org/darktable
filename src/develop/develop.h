@@ -36,17 +36,18 @@ typedef struct dt_dev_history_item_t
   int32_t enabled;                // switched respective module on/off
   struct dt_iop_params_t *params; // parameters for this operation
   struct dt_develop_blend_params_t *blend_params;
+  int multi_priority;
+  char multi_name[128];
 }
 dt_dev_history_item_t;
 
 struct dt_dev_pixelpipe_t;
-struct dt_iop_module_t;
 typedef struct dt_develop_t
 {
   int32_t gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be gui_init'ed.
   int32_t gui_leaving;  // set if everything is scheduled to shut down.
   int32_t gui_synch; // set by the render threads if gui_update should be called in the modules.
-  int32_t image_loading, image_dirty;
+  int32_t image_loading, image_dirty, first_load;
   int32_t image_force_reload;
   int32_t preview_loading, preview_dirty, preview_input_changed;
   uint32_t timestamp;
@@ -201,6 +202,18 @@ void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename);
 
 /** update gliding average for pixelpipe delay */
 void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_delay);
+
+/*
+ * multi instances
+ */
+/** duplicate a existant module */
+struct dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, struct dt_iop_module_t *base, int priority);
+/** remove an existant module */
+void dt_dev_module_remove(dt_develop_t *dev, struct dt_iop_module_t *module);
+/** update "show" values of the multi instance part (show_move, show_delete, ...) */
+void dt_dev_module_update_multishow(dt_develop_t *dev, struct dt_iop_module_t *module);
+/** same, but for all modules */
+void dt_dev_modules_update_multishow(dt_develop_t *dev);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

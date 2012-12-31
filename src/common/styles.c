@@ -49,6 +49,8 @@ typedef struct
   GString   *op_params;
   GString   *blendop_params;
   int   blendop_version;
+  int   multi_priority;
+  GString   *multi_name;
   int   enabled;
 } StylePluginData;
 
@@ -207,11 +209,11 @@ dt_styles_create_from_style (const char *name, const char *newname, const char *
       g_strlcat(include,")", 2048);
       char query[4096]= {0};
 
-      sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version from style_items where styleid=?2 and %s",include);
+      sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from style_items where styleid=?2 and %s",include);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     }
     else
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version from style_items where style_id=?2", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from style_items where style_id=?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, oldid);
     sqlite3_step (stmt);
@@ -266,11 +268,11 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
       while ((list=g_list_next(list)));
       g_strlcat(include,")", 2048);
       char query[4096]= {0};
-      sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version from history where imgid=?2 and %s",include);
+      sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from history where imgid=?2 and %s",include);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     }
     else
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version from history where imgid=?2", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from history where imgid=?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step (stmt);
@@ -343,7 +345,7 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
     sqlite3_finalize (stmt);
 
     /* copy history items from styles onto image */
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid,num,module,operation,op_params,enabled,blendop_params,blendop_version) select ?1, num+?2,module,operation,op_params,enabled,blendop_params,blendop_version from style_items where styleid=?3", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select ?1, num+?2,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from style_items where styleid=?3", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, offs);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, id);
@@ -401,21 +403,48 @@ dt_styles_delete_by_name(const char *name)
 }
 
 GList *
-dt_styles_get_item_list (const char *name)
+dt_styles_get_item_list (const char *name, gboolean params)
 {
   GList *result=NULL;
   sqlite3_stmt *stmt;
   int id=0;
   if ((id=dt_styles_get_id_by_name(name)) != 0)
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
+    if (params)
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled, op_params, blendop_params from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
+    else
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
+
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
       char name[512]= {0};
       dt_style_item_t *item=g_malloc (sizeof (dt_style_item_t));
       item->num = sqlite3_column_int (stmt, 0);
-      g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+
+      if (params)
+      {
+        // when we get the parameters we do not want to get the operation localized as this
+        // is used to compare against the internal module name.
+        g_snprintf(name,512,"%s",sqlite3_column_text (stmt, 1));
+
+        const unsigned char *op_blob = sqlite3_column_blob(stmt, 3);
+        const int32_t op_len = sqlite3_column_bytes(stmt, 3);
+        const unsigned char *bop_blob = sqlite3_column_blob(stmt, 4);
+        const int32_t bop_len = sqlite3_column_bytes(stmt, 4);
+
+        item->params = malloc(op_len);
+        memcpy(item->params, op_blob, op_len);
+
+        item->blendop_params = malloc(bop_len);
+        memcpy(item->blendop_params, bop_blob, bop_len);
+      }
+      else
+      {
+        g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+        item->params = NULL;
+        item->blendop_params = NULL;
+      }
       item->name = g_strdup (name);
       result = g_list_append (result,item);
     }
@@ -427,7 +456,7 @@ dt_styles_get_item_list (const char *name)
 char *
 dt_styles_get_item_list_as_string(const char *name)
 {
-  GList *items = dt_styles_get_item_list(name);
+  GList *items = dt_styles_get_item_list(name, FALSE);
   if (items)
   {
     GList* names = NULL;
@@ -528,7 +557,7 @@ dt_styles_save_to_file(const char *style_name,const char *filedir,gboolean overw
   xmlTextWriterEndElement(writer);
 
   xmlTextWriterStartElement(writer, BAD_CAST "style");
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num,module,operation,op_params,enabled,blendop_params,blendop_version from style_items where styleid =?1",-1, &stmt,NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from style_items where styleid =?1",-1, &stmt,NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt,1,dt_styles_get_id_by_name(style_name));
   while (sqlite3_step (stmt) == SQLITE_ROW)
   {
@@ -540,6 +569,8 @@ dt_styles_save_to_file(const char *style_name,const char *filedir,gboolean overw
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "enabled", "%d", sqlite3_column_int(stmt,4));
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_params", "%s", dt_style_encode(stmt,5));
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_version", "%d", sqlite3_column_int(stmt,6));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_priority", "%d", sqlite3_column_int(stmt,7));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_name", "%s", sqlite3_column_text(stmt,8));
     xmlTextWriterEndElement(writer);
   }
   sqlite3_finalize(stmt);
@@ -570,6 +601,7 @@ dt_styles_style_plugin_new ()
   plugin->operation = g_string_new("");
   plugin->op_params = g_string_new("");
   plugin->blendop_params = g_string_new("");
+  plugin->multi_name = g_string_new("");
   return plugin;
 }
 
@@ -657,6 +689,14 @@ dt_styles_style_text_handler (GMarkupParseContext *context,
     {
       plug->blendop_version =  atoi(text);
     }
+    else if (g_ascii_strcasecmp (elt, "multi_priority") == 0 )
+    {
+      plug->multi_priority =  atoi(text);
+    }
+    else if (g_ascii_strcasecmp (elt, "multi_name") == 0 )
+    {
+      g_string_append_len (plug->multi_name, text, text_len);
+    }
     else if (g_ascii_strcasecmp (elt, "num") == 0 )
     {
       plug->num = atoi(text);
@@ -687,7 +727,7 @@ dt_style_plugin_save(StylePluginData *plugin,gpointer styleId)
 {
   int id = GPOINTER_TO_INT(styleId);
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version) values(?1,?2,?3,?4,?5,?6,?7,?8)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) values(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, plugin->num);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, plugin->module);
@@ -709,6 +749,9 @@ dt_style_plugin_save(StylePluginData *plugin,gpointer styleId)
 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, plugin->blendop_version);
 
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, plugin->multi_priority);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, plugin->multi_name->str, plugin->multi_name->len, SQLITE_TRANSIENT);
+  
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   g_free(params);

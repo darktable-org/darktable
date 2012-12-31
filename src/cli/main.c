@@ -251,6 +251,7 @@ int main(int argc, char *arg[])
   fdata->max_height = height;
   fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
   fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
+  fdata->style[0] = '\0';
 
   //TODO: add a callback to set the bpp without going through the config
 

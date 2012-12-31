@@ -59,6 +59,9 @@ typedef enum dt_signal_t
   no param, no returned value
     */
   DT_SIGNAL_COLLECTION_CHANGED,
+
+  /** \brief This signal is raised when tags is added/deleted/changed  */
+  DT_SIGNAL_TAG_CHANGED,
   
   /** \brief This signal is raised when a filmroll is deleted/changed but not imported
       \note when a filmroll is imported, use DT_SIGNALS_FILMOLLS_IMPORTED, as the gui

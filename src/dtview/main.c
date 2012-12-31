@@ -249,6 +249,7 @@ process_next_image()
   buf.write_image = write_image;
   dat.max_width  = width;
   dat.max_height = height;
+  strcpy(dat.style, "none");
 
   // get random image id from sql
   int32_t id = 0;
@@ -277,8 +278,7 @@ process_next_image()
 
   if(id)
   {
-    // get image from cache
-    dt_imageio_export(id, "unused", &buf, &dat, FALSE);
+    dt_imageio_export(id, "unused", &buf, &dat, TRUE);
   }
   return 0;
 }

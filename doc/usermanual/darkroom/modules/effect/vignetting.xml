@@ -50,6 +50,14 @@
 		<sect5><title>width/height ratio</title>
 			<para>Manually adjust the width/height ratio of the vignetting area.</para>
 		</sect5>			
+		<sect5><title>dithering</title>
+			<para>With this combobox you can activate dithering which prevents banding artifacts. Those artifacts are generated
+                              when darktable's continuous 32-bit float data are quantized into an 8-bit or 16-bit output format. Select "8-bit output" to
+                              prevent banding on monitor display and for JPEGs. When set to "16-bit output", only a little dithering will be applied, just
+                              strong enough to compensate for banding on the fine grained 16-bit level.</para>
+		</sect5>			
+
+
 	</sect4>
 
 	<sect4><title>Examples</title>

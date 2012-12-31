@@ -25,8 +25,6 @@
 void
 dt_grouping_add_to_group(int group_id, int image_id)
 {
-//   sqlite3_stmt *stmt;
-
   // remove from old group
   dt_grouping_remove_from_group(image_id);
 
@@ -35,12 +33,6 @@ dt_grouping_add_to_group(int group_id, int image_id)
   img->group_id = group_id;
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
   dt_image_cache_read_release(darktable.image_cache, cimg);
-
-//   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set group_id = ?1 where id = ?2", -1, &stmt, NULL);
-//   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
-//   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, image_id);
-//   sqlite3_step(stmt);
-//   sqlite3_finalize(stmt);
 }
 
 /** remove an image from a group */
@@ -83,10 +75,6 @@ dt_grouping_remove_from_group(int image_id)
     dt_image_t *wimg = dt_image_cache_write_get(darktable.image_cache, img);
     new_group_id = wimg->group_id;
     wimg->group_id = image_id;
-//     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set group_id = id where id = ?1", -1, &stmt, NULL);
-//     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, image_id);
-//     sqlite3_step(stmt);
-//     sqlite3_finalize(stmt);
     dt_image_cache_write_release(darktable.image_cache, wimg, DT_IMAGE_CACHE_SAFE);
   }
   dt_image_cache_read_release(darktable.image_cache, img);
@@ -118,11 +106,6 @@ dt_grouping_change_representative(int image_id)
   }
   sqlite3_finalize(stmt);
 
-//   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set group_id = ?1 where group_id = ?2", -1, &stmt, NULL);
-//   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, image_id);
-//   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, group_id);
-//   sqlite3_step(stmt);
-//   sqlite3_finalize(stmt);
   return image_id;
 }
 

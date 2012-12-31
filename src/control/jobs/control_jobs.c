@@ -57,6 +57,7 @@ typedef struct dt_control_export_t
 {
   int max_width, max_height, format_index, storage_index;
   gboolean high_quality;
+  char style[128];
 } dt_control_export_t;
 
 void dt_control_write_sidecar_files()
@@ -507,7 +508,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   uint8_t exif[65535];
   char pathname[DT_MAX_PATH_LEN];
   dt_image_full_path(first_imgid, pathname, DT_MAX_PATH_LEN);
-  const int exif_len = dt_exif_read_blob(exif, pathname, 0, first_imgid);
+  const int exif_len = dt_exif_read_blob(exif, pathname, first_imgid, 0, 0, 0);
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname)-(c-pathname));
@@ -548,7 +549,7 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   {
     imgid = (long int)t->data;
     newimgid = dt_image_duplicate(imgid);
-    if(newimgid != -1) dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE);
+    if(newimgid != -1) dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE,NULL);
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
@@ -1261,6 +1262,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     fdata->max_height = settings->max_height;
     fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
     fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
+    strcpy(fdata->style,settings->style);
     int num = 0;
     // Invariant: the tagid for 'darktable|changed' will not change while this function runs. Is this a sensible assumption?
     guint tagid = 0,
@@ -1334,7 +1336,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 }
 
 
-void dt_control_export(GList *imgid_list,int max_width, int max_height, int format_index, int storage_index, gboolean high_quality)
+void dt_control_export(GList *imgid_list,int max_width, int max_height, int format_index, int storage_index, gboolean high_quality, char *style)
 {
   dt_job_t job;
   dt_control_job_init(&job, "export");
@@ -1347,6 +1349,7 @@ void dt_control_export(GList *imgid_list,int max_width, int max_height, int form
   data->format_index = format_index;
   data->storage_index = storage_index;
   data->high_quality = high_quality;
+  strncpy(data->style,style,128);
   t->data = data;
   dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,&t->index);
   dt_control_add_job(darktable.control, &job);

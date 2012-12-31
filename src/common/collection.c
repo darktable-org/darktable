@@ -435,7 +435,10 @@ get_query_string(const dt_collection_properties_t property, const gchar *escaped
   switch(property)
   {
     case DT_COLLECTION_PROP_FILMROLL: // film roll
-      snprintf(query, 1024, "(film_id in (select id from film_rolls where folder like '%s'))", escaped_text);
+      if (strlen(escaped_text) == 0)
+        snprintf(query, 1024, "(film_id in (select id from film_rolls where folder like '%s%%'))", escaped_text);
+      else
+        snprintf(query, 1024, "(film_id in (select id from film_rolls where folder like '%s'))", escaped_text);
       break;
 
     case DT_COLLECTION_PROP_FOLDERS: // folders
@@ -590,6 +593,39 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   g_snprintf(message, 1024,
              ngettext("%d image of %d in current collection is selected", "%d images of %d in current collection are selected", cs), cs, c);
   dt_control_hinter_message(darktable.control, message);
+}
+
+int dt_collection_image_offset(int imgid)
+{
+  const gchar *qin = dt_collection_get_query (darktable.collection);
+  int offset = 0;
+  sqlite3_stmt *stmt;
+
+  if(qin)
+  {
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1,  0);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+
+    gboolean found = FALSE;
+
+    while (sqlite3_step (stmt) == SQLITE_ROW)
+    {
+      int id = sqlite3_column_int(stmt, 0);
+      if (imgid == id)
+      {
+        found = TRUE;
+        break;
+      }
+      offset++;
+    }
+
+    if (!found)
+      offset = 0;
+
+    sqlite3_finalize(stmt);
+  }
+  return offset;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

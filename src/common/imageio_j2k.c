@@ -161,8 +161,10 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
     codec = CODEC_JP2;
   else if(file_format == JPT_CFMT)   /* JPEG 2000, JPIP */
     codec = CODEC_JPT;
-  else
+  else {
+    free(src);
     return DT_IMAGEIO_FILE_CORRUPTED; // can't happen
+  }
 
   /* get a decoder handle */
   dinfo = opj_create_decompress(codec);

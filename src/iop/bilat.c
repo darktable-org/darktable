@@ -41,6 +41,14 @@ typedef struct dt_iop_bilat_params_t
 }
 dt_iop_bilat_params_t;
 
+typedef struct dt_iop_bilat_data_t
+{
+  float sigma_r;
+  float sigma_s;
+  float detail;
+}
+dt_iop_bilat_data_t;
+
 typedef struct dt_iop_bilat_gui_data_t
 {
   GtkWidget *spatial;
@@ -79,7 +87,7 @@ groups()
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_bilat_params_t *d = (dt_iop_bilat_params_t *)piece->data;
+  dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   const float scale = piece->iscale/roi_in->scale;
@@ -107,19 +115,55 @@ error:
 
 void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
-  dt_iop_bilat_params_t *d = (dt_iop_bilat_params_t *)piece->data;
+  dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   const float scale = piece->iscale/roi_in->scale;
+  const float sigma_r = d->sigma_r;
   const float sigma_s = d->sigma_s / scale;
 
-  tiling->factor = 2.5f; // in + out + bilateral
-  tiling->maxbuf = 1.0f;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const int channels = piece->colors;
+
+  const size_t basebuffer = width*height*channels*sizeof(float);
+
+  tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width,height,sigma_s,sigma_r)/basebuffer;    
+  tiling->maxbuf = fmax(1.0f, (float)dt_bilateral_singlebuffer_size(width,height,sigma_s,sigma_r)/basebuffer);
   tiling->overhead = 0;
   tiling->overlap = ceilf(4*sigma_s);
   tiling->xalign = 1;
   tiling->yalign = 1;
   return;
+}
+
+void
+commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)p1;
+  dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
+
+  d->sigma_r = p->sigma_r;
+  d->sigma_s = p->sigma_s;
+  d->detail = p->detail;
+
+#ifdef HAVE_OPENCL
+  piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
+#endif
+}
+
+
+void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  piece->data = malloc(sizeof(dt_iop_bilat_data_t));
+  memset(piece->data,0,sizeof(dt_iop_bilat_data_t));
+  self->commit_params(self, self->default_params, pipe, piece);
+}
+
+
+void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  free(piece->data);
 }
 
 
@@ -128,7 +172,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
-  dt_iop_bilat_params_t *d = (dt_iop_bilat_params_t *)piece->data;
+  dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   const float scale = piece->iscale/roi_in->scale;
@@ -147,14 +191,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 void init(dt_iop_module_t *module)
 {
   // we don't need global data:
-  module->data = NULL; //malloc(sizeof(dt_iop_bilat_global_data_t));
+  module->data = malloc(sizeof(dt_iop_bilat_global_data_t));
   module->params = malloc(sizeof(dt_iop_bilat_params_t));
   module->default_params = malloc(sizeof(dt_iop_bilat_params_t));
   // our module is disabled by default
   // by default:
   module->default_enabled = 0;
   // order has to be changed by editing the dependencies in tools/iop_dependencies.py
-  module->priority = 519; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 518; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_bilat_params_t);
   module->gui_data = NULL;
   // init defaults:

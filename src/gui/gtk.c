@@ -532,11 +532,8 @@ static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
     case DT_GUI_VIEW_SWITCH_TO_TETHERING:
       // switching to capture view using "plugins/capture/current_filmroll" as session...
       // and last used camera
-      if (dt_camctl_can_enter_tether_mode(darktable.camctl,NULL) )
-      {
-        dt_conf_set_int( "plugins/capture/mode", DT_CAPTURE_MODE_TETHERED);
-        mode = DT_CAPTURE;
-      }
+      dt_conf_set_int( "plugins/capture/mode", DT_CAPTURE_MODE_TETHERED);
+      mode = DT_CAPTURE;
       break;
 #endif
 
@@ -1161,6 +1158,10 @@ void dt_ui_destroy(struct dt_ui_t *ui)
   g_free(ui);
 }
 
+GtkBox *dt_ui_get_container(struct dt_ui_t *ui, const dt_ui_container_t c)
+{
+  return GTK_BOX(ui->containers[c]);
+}
 void dt_ui_container_add_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w)
 {
   //  if(!GTK_IS_BOX(ui->containers[c])) return;

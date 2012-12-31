@@ -10,7 +10,7 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
   colortransfer colorize invert shadhi
   cacorrect overexposed bloom soften clahe equalizer highpass
   hotpixels lowlight spots rawdenoise borders nlmeans levels
-  flip globaltonemap bilat)
+  flip globaltonemap bilat denoiseprofile dither)
 
 add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")
@@ -29,6 +29,7 @@ add_library(colorin MODULE "colorin.c")
 add_library(colorout MODULE "colorout.c")
 add_library(clipping MODULE "clipping.c")
 add_library(sharpen MODULE "sharpen.c")
+add_library(dither MODULE "dither.c")
 add_library(monochrome MODULE "monochrome.c")
 add_library(basecurve MODULE "basecurve.c")
 add_library(colorzones MODULE "colorzones.c")
@@ -64,6 +65,7 @@ add_library(vibrance MODULE "vibrance.c")
 add_library(flip MODULE "flip.c")
 add_library(globaltonemap MODULE "globaltonemap.c")
 add_library(bilat MODULE "bilat.c")
+add_library(denoiseprofile MODULE "denoiseprofile.c")
 
 if(RSVG2_FOUND)
 	add_library(watermark MODULE "watermark.c")

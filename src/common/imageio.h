@@ -53,7 +53,8 @@ dt_imageio_export_with_flags(
   const int32_t                      ignore_exif,
   const int32_t                      display_byteorder,
   const gboolean                     high_quality,
-  const int32_t                      thumbnail_export);
+  const int32_t                      thumbnail_export,
+  const char                        *filter);
 
 int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int orientation);
 

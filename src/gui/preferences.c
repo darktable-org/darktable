@@ -22,6 +22,7 @@
 #include "common/debug.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
+#include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/preferences.h"
 #include "develop/imageop.h"
@@ -97,6 +98,8 @@ static void tree_row_activated_presets(GtkTreeView *tree, GtkTreePath *path,
                                        GtkTreeViewColumn *column, gpointer data);
 static void tree_selection_changed(GtkTreeSelection *selection, gpointer data);
 static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
+                               gpointer data);
+static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event,
                                gpointer data);
 static gboolean prefix_search(GtkTreeModel *model, gint column,
                               const gchar *key, GtkTreeIter *iter, gpointer d);
@@ -254,13 +257,13 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
   gchar *last_module = NULL;
 
   // Create a GdkPixbuf with a cairo drawing.
-  // WARNING: In general, this doesn't work as the pixel format of GDK and cairo differs. But in our case with a monochrome icon that doesn't matter. :-)
   // lock
   cairo_surface_t *lock_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
   cairo_t *lock_cr = cairo_create(lock_cst);
   cairo_set_source_rgb(lock_cr, 0.7,0.7,0.7);
   dtgtk_cairo_paint_lock(lock_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);
   guchar* data = cairo_image_surface_get_data(lock_cst);
+  dt_draw_cairo_to_gdk_pixbuf(data, ICON_SIZE, ICON_SIZE);
   GdkPixbuf* lock_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE,
                            ICON_SIZE, cairo_image_surface_get_stride(lock_cst), NULL, NULL);
   // check mark
@@ -269,6 +272,7 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
   cairo_set_source_rgb(check_cr, 0.7,0.7,0.7);
   dtgtk_cairo_paint_check_mark(check_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);
   data = cairo_image_surface_get_data(check_cst);
+  dt_draw_cairo_to_gdk_pixbuf(data, ICON_SIZE, ICON_SIZE);
   GdkPixbuf* check_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE,
                             ICON_SIZE, cairo_image_surface_get_stride(check_cst), NULL, NULL);
 
@@ -484,6 +488,10 @@ static void init_tab_presets(GtkWidget *book)
   // row-activated either expands/collapses a row or activates editing
   g_signal_connect(G_OBJECT(tree), "row-activated",
                    G_CALLBACK(tree_row_activated_presets), NULL);
+
+  // A keypress may delete preset
+  g_signal_connect(G_OBJECT(tree), "key-press-event",
+                   G_CALLBACK(tree_key_press_presets), (gpointer)model);
 
   // Setting up the search functionality
   gtk_tree_view_set_search_column(GTK_TREE_VIEW(tree), P_NAME_COLUMN);
@@ -1011,6 +1019,72 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
 
     // Saving the changed bindings
     gtk_accel_map_save(accelpath);
+
+    return TRUE;
+  }
+  else
+  {
+    return FALSE;
+  }
+}
+
+static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event,
+    gpointer data)
+{
+
+  GtkTreeModel *model = (GtkTreeModel*)data;
+  GtkTreeIter iter;
+  GtkTreeSelection *selection =
+    gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
+
+  // We can just ignore mod key presses outright
+  if(event->is_modifier)
+    return FALSE;
+
+  if(event->keyval == GDK_Delete || event->keyval == GDK_BackSpace)
+  {
+    // If a leaf node is selected, delete that preset
+
+    // If nothing is selected, or branch node selected, just return
+    if(!gtk_tree_selection_get_selected(selection, &model, &iter)
+        || gtk_tree_model_iter_has_child(model, &iter))
+      return FALSE;
+
+    // For leaf nodes, open delete confirmation window if the preset is not writeprotected
+    gint rowid;
+    gchar *name;
+    GdkPixbuf *editable;
+    gtk_tree_model_get(model, &iter,
+        P_ROWID_COLUMN, &rowid,
+        P_NAME_COLUMN, &name,
+        P_EDITABLE_COLUMN, &editable,
+        -1);
+    if(editable == NULL) {
+      sqlite3_stmt *stmt;
+
+      GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+      GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+          GTK_DIALOG_DESTROY_WITH_PARENT,
+          GTK_MESSAGE_QUESTION,
+          GTK_BUTTONS_YES_NO,
+          _("do you really want to delete the preset `%s'?"), name);
+      gtk_window_set_title(GTK_WINDOW (dialog), _("delete preset?"));
+      if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
+      {
+        // TODO: remove accel
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where rowid=?1 and writeprotect=0", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+        GtkTreeStore *tree_store = GTK_TREE_STORE(model);
+        gtk_tree_store_clear(tree_store);
+        tree_insert_presets(tree_store);
+      }
+      gtk_widget_destroy (dialog);
+    }
+    else
+      g_object_unref(editable);
+    g_free(name);
 
     return TRUE;
   }

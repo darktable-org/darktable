@@ -875,10 +875,39 @@ _create_filtered_model (GtkTreeModel *model, GtkTreeIter iter, dt_lib_collect_ru
   GtkTreePath *path;
   GtkTreeIter child;
 
+  sqlite3_stmt *stmt = NULL;
+  gchar *pth, *query = NULL;
+  int id = -1;
+
+
   /* Filter level */
   while (gtk_tree_model_iter_has_child(model, &iter))
   {
-    if (gtk_tree_model_iter_n_children(model, &iter) == 1)
+    int n_children = gtk_tree_model_iter_n_children(model, &iter);
+    if ( n_children >= 1)
+    {
+      /* Check if this path also matches a filmroll */
+      gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_PATH, &pth, -1);
+
+      query = dt_util_dstrcat(query, "select id from film_rolls where folder like '%s'", pth);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if (sqlite3_step(stmt) == SQLITE_ROW)
+        id = sqlite3_column_int(stmt, 0);
+      sqlite3_finalize(stmt);
+
+      g_free(pth);
+      g_free(query);
+      query = NULL;
+      
+      if (id != -1)
+      {
+        child = iter;
+        gtk_tree_model_iter_parent(model, &iter, &child);
+        break;
+      }
+    }
+
+    if ( n_children == 1)
     {
       gtk_tree_model_iter_children(model, &child, &iter);
 
@@ -899,7 +928,8 @@ _create_filtered_model (GtkTreeModel *model, GtkTreeIter iter, dt_lib_collect_ru
 
   gtk_tree_model_filter_set_visible_column (GTK_TREE_MODEL_FILTER(filter), DT_LIB_COLLECT_COL_VISIBLE);
   
-  refilter (model, dr);
+  if (dr != NULL)
+    refilter (model, dr);
 
   return filter;
 }
@@ -1233,6 +1263,8 @@ create_folders_gui (dt_lib_collect_rule_t *dr)
   GtkTreeIter iter;
   dt_lib_collect_t *d = get_collect(dr);
 
+  dt_lib_collect_rule_t *rule = NULL;
+
   treemodel = d->treemodel;
 
   if (d->tree_new)
@@ -1298,8 +1330,11 @@ create_folders_gui (dt_lib_collect_rule_t *dr)
       g_ptr_array_add(d->labels, (gpointer) label);
       gtk_box_pack_start(d->box, GTK_WIDGET(label), FALSE, FALSE, 0);
       gtk_widget_show (label);
-#endif      
-      model2 = _create_filtered_model(GTK_TREE_MODEL(treemodel), iter, dr);
+#endif
+      /* Only pass a rule (and filter the tree) if the typing property is TRUE */
+      if (dr->typing != FALSE)
+        rule = dr;      
+      model2 = _create_filtered_model(GTK_TREE_MODEL(treemodel), iter, rule);
       tree = _create_treeview_display(GTK_TREE_MODEL(model2));
       g_ptr_array_add(d->trees, (gpointer) tree);
       gtk_box_pack_start(d->box, GTK_WIDGET(tree), FALSE, FALSE, 0);
@@ -1648,9 +1683,12 @@ menuitem_change_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
 }
 
 static void
-collection_updated(gpointer instance,gpointer self)
+collection_updated(gpointer instance, gpointer self)
 {
-  _lib_collect_gui_update(self);
+  dt_lib_module_t *dm = (dt_lib_module_t *)self;
+  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+
+  update_view (NULL, d->rule + d->active_rule);
 }
 
 
@@ -1820,6 +1858,7 @@ gui_init (dt_lib_module_t *self)
   for(int i=0; i<MAX_RULES; i++)
   {
     d->rule[i].num = i;
+    d->rule[i].typing = FALSE;
     box = GTK_BOX(gtk_hbox_new(FALSE, 5));
     d->rule[i].hbox = GTK_WIDGET(box);
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);

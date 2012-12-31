@@ -81,6 +81,7 @@ typedef struct dt_imageio_j2k_t
 {
   int max_width, max_height;
   int width, height;
+  char style[128];
   int bpp;
   int format;
   enum{DT_J2K_PRESET_OFF, DT_J2K_PRESET_CINEMA2K_24, DT_J2K_PRESET_CINEMA2K_48, DT_J2K_PRESET_CINEMA4K_24} preset;
@@ -449,6 +450,7 @@ int write_image (dt_imageio_j2k_t *j2k, const char *filename, const float *in, v
   if(res < (size_t)codestream_length) /* FIXME */
   {
     fprintf(stderr, "failed to write %d (%s)\n", codestream_length, filename);
+    fclose(f);
     return 1;
   }
   fclose(f);

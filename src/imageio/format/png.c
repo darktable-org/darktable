@@ -37,6 +37,7 @@ typedef struct dt_imageio_png_t
 {
   int max_width, max_height;
   int width, height;
+  char style[128];
   int bpp;
   FILE *f;
   png_structp png_ptr;
@@ -327,7 +328,7 @@ int read_image (dt_imageio_png_t *png, uint8_t *out)
 void*
 get_params(dt_imageio_module_format_t *self, int *size)
 {
-  *size = 5*sizeof(int);
+  *size = sizeof(dt_imageio_module_data_t) + sizeof(int);
   dt_imageio_png_t *d = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
   memset(d, 0, sizeof(dt_imageio_png_t));
   d->bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
@@ -345,7 +346,7 @@ free_params(dt_imageio_module_format_t *self, void *params)
 int
 set_params(dt_imageio_module_format_t *self, void *params, int size)
 {
-  if(size != 5*sizeof(int)) return 1;
+  if(size != sizeof(dt_imageio_module_data_t) + sizeof(int)) return 1;
   dt_imageio_png_t *d = (dt_imageio_png_t *)params;
   dt_imageio_png_gui_t *g = (dt_imageio_png_gui_t *)self->gui_data;
   if(d->bpp < 12) gtk_toggle_button_set_active(g->b8, TRUE);

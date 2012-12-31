@@ -36,7 +36,7 @@ backtransformf (float2 p, const int r_x, const int r_y, const int r_wd, const in
 }
 
 __kernel void
-green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, const unsigned int filters)
+green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, const unsigned int filters, const float thr)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -44,7 +44,6 @@ green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const 
   if(x >= width || y >= height) return;
 
   const int c = FC(y, x, filters);
-  const float thr = 0.01f;
   const float maximum = 1.0f;
   const float o = read_imagef(in, sampleri, (int2)(x, y)).x;
   if(c == 1 && (y & 1))
@@ -60,13 +59,13 @@ green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const 
 
     const float m1 = (o1_1+o1_2+o1_3+o1_4)/4.0f;
     const float m2 = (o2_1+o2_2+o2_3+o2_4)/4.0f;
-    if (m2 > 0.0f)
+    if (m2 > 0.0f && m1/m2<maximum*2.0f)
     {
       const float c1 = (fabs(o1_1-o1_2)+fabs(o1_1-o1_3)+fabs(o1_1-o1_4)+fabs(o1_2-o1_3)+fabs(o1_3-o1_4)+fabs(o1_2-o1_4))/6.0f;
       const float c2 = (fabs(o2_1-o2_2)+fabs(o2_1-o2_3)+fabs(o2_1-o2_4)+fabs(o2_2-o2_3)+fabs(o2_3-o2_4)+fabs(o2_2-o2_4))/6.0f;
       if((o<maximum*0.95f)&&(c1<maximum*thr)&&(c2<maximum*thr))
       {
-        write_imagef (out, (int2)(x, y), o*m1/m2);
+        write_imagef (out, (int2)(x, y), o * m1/m2);
       }
       else write_imagef (out, (int2)(x, y), o);
     }

@@ -20,7 +20,7 @@ void dt_gui_presets_update_ldr(const char *name, dt_dev_operation_t op, const in
 /** set auto apply property of preset. */
 void dt_gui_presets_update_autoapply(const char *name, dt_dev_operation_t op, const int32_t version, const int autoapply);
 /** set filter mode. if 1, the preset will only show for matching images. */
-void dt_gui_presets_update_autoapply(const char *name, dt_dev_operation_t op, const int32_t version, const int filter);
+void dt_gui_presets_update_filter(const char *name, dt_dev_operation_t op, const int32_t version, const int filter);
 
 /** show a popup menu without initialized module. */
 void

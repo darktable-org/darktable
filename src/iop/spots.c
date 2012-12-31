@@ -20,6 +20,7 @@
 #endif
 #include "develop/imageop.h"
 #include "control/control.h"
+#include "control/conf.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -53,6 +54,7 @@ typedef struct dt_iop_spots_gui_data_t
   int dragging;
   int selected;
   gboolean hoover_c; // is the pointer over the "clone from" end?
+  float last_radius;
 }
 dt_iop_spots_gui_data_t;
 
@@ -136,7 +138,7 @@ void init(dt_iop_module_t *module)
   // our module is disabled by default
   // by default:
   module->default_enabled = 0;
-  module->priority = 192; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 203; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_spots_params_t);
   module->gui_data = NULL;
   // init defaults:
@@ -192,6 +194,7 @@ void gui_init     (dt_iop_module_t *self)
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
   g->dragging = -1;
   g->selected = -1;
+  g->last_radius = MAX(0.01f, dt_conf_get_float("plugins/darkroom/spots/size"));
   self->widget = gtk_vbox_new(FALSE, 5);
   GtkWidget *label = gtk_label_new(_("click on a spot and drag on canvas to heal.\nuse the mouse wheel to adjust size.\nright click to remove a stroke."));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0f, 0.5f);
@@ -334,8 +337,10 @@ int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state)
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
   if(g->selected >= 0)
   {
-    if(up && p->spot[g->selected].radius > 0.005f) p->spot[g->selected].radius *= 0.9f;
+    if(up && p->spot[g->selected].radius > 0.002f) p->spot[g->selected].radius *= 0.9f;
     else  if(p->spot[g->selected].radius < 0.1f  ) p->spot[g->selected].radius *= 1.0f/0.9f;
+    g->last_radius = p->spot[g->selected].radius;
+    dt_conf_set_float("plugins/darkroom/spots/size", g->last_radius);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return 1;
   }
@@ -366,7 +371,7 @@ int button_pressed(dt_iop_module_t *self, double x, double y, int which, int typ
       // on *wd|*ht scale, radius on *min(wd, ht).
       p->spot[i].x = p->spot[i].xc = pzx;
       p->spot[i].y = p->spot[i].yc = pzy;
-      p->spot[i].radius = 0.01f;
+      p->spot[i].radius = g->last_radius;
       g->selected = i;
       g->hoover_c = TRUE;
     }

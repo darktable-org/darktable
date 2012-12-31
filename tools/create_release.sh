@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 
 git log ^release-1.0.5 HEAD| grep ^Author: | sed 's/ <.*//; s/^Author: //' | sort | uniq -c | sort -nr
 
 echo "are you sure these guys received proper credit in the about dialog?"
-read
+read answer
 
 # prefix rc with ~, so debian thinks its less than
 dt_decoration=$(git describe --tags $branch | sed 's,^release-,,;s,-,+,;s,-,~,;' | sed 's/rc/~rc/')

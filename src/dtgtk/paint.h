@@ -119,6 +119,8 @@ void dtgtk_cairo_paint_rect_landscape(cairo_t *cr,gint x,gint y,gint w,gint h,gi
 void dtgtk_cairo_paint_rect_portrait(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint a zoom icon */
 void dtgtk_cairo_paint_zoom(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+/** paint a duplicate/multi instance indicator */
+void dtgtk_cairo_paint_multiinstance(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
 
 /** paint active modulgroup icon */
 void dtgtk_cairo_paint_modulegroup_active(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
@@ -134,6 +136,9 @@ void dtgtk_cairo_paint_modulegroup_color(cairo_t *cr, gint x, gint y, gint w, gi
 void dtgtk_cairo_paint_modulegroup_correct(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
 /** paint effect modulgroup icon */
 void dtgtk_cairo_paint_modulegroup_effect(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+
+/** paint the pin for map thumbnails */
+void dtgtk_cairo_paint_map_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
 
 #endif
 

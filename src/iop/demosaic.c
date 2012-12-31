@@ -116,7 +116,7 @@ groups ()
 int
 flags ()
 {
-  return IOP_FLAGS_ALLOW_TILING;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -322,11 +322,11 @@ color_smoothing(float *out, const dt_iop_roi_t *const roi_out, const int num_pas
 #undef SWAP
 
 static void
-green_equilibration_lavg(float *out, const float *const in, const int width, const int height, const uint32_t filters, const int x, const int y, const int in_place)
+green_equilibration_lavg(float *out, const float *const in, const int width, const int height, const uint32_t filters, const int x, const int y, const int in_place, const float thr)
 {
-  int oj = 2, oi = 2;
-  const float thr = 0.01f;
   const float maximum = 1.0f;
+
+  int oj = 2, oi = 2;
   if(FC(oj+y, oi+x, filters) != 1) oj++;
   if(FC(oj+y, oi+x, filters) != 1) oi++;
   if(FC(oj+y, oi+x, filters) != 1) oj--;
@@ -352,7 +352,10 @@ green_equilibration_lavg(float *out, const float *const in, const int width, con
 
       const float m1 = (o1_1+o1_2+o1_3+o1_4)/4.0f;
       const float m2 = (o2_1+o2_2+o2_3+o2_4)/4.0f;
-      if (m2 > 0.0f)
+
+      // prevent divide by zero and ...
+      // guard against m1/m2 becoming too large (due to m2 being too small) which results in hot pixels
+      if (m2>0.0f && m1/m2<maximum*2.0f)
       {
         const float c1 = (fabsf(o1_1-o1_2)+fabsf(o1_1-o1_3)+fabsf(o1_1-o1_4)+fabsf(o1_2-o1_3)+fabsf(o1_3-o1_4)+fabsf(o1_2-o1_4))/6.0f;
         const float c2 = (fabsf(o2_1-o2_2)+fabsf(o2_1-o2_3)+fabsf(o2_1-o2_4)+fabsf(o2_2-o2_3)+fabsf(o2_3-o2_4)+fabsf(o2_2-o2_4))/6.0f;
@@ -652,6 +655,9 @@ static int get_quality()
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
+  const dt_image_t *img = &self->dev->image_storage;
+  const float threshold = 0.0001f * img->exif_iso;
+
   dt_iop_roi_t roi, roo;
   roi = *roi_in;
   roo = *roi_out;
@@ -681,13 +687,13 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
           break;
         case DT_IOP_GREEN_EQ_LOCAL:
           green_equilibration_lavg(in, pixels, roi_in->width, roi_in->height,
-                                   data->filters, roi_in->x, roi_in->y, 0);
+                                   data->filters, roi_in->x, roi_in->y, 0, threshold);
           break;
         case DT_IOP_GREEN_EQ_BOTH:
           green_equilibration_favg(in, pixels, roi_in->width, roi_in->height,
                                    data->filters,  roi_in->x, roi_in->y);
           green_equilibration_lavg(in, in, roi_in->width, roi_in->height,
-                                   data->filters, roi_in->x, roi_in->y, 1);
+                                   data->filters, roi_in->x, roi_in->y, 1, threshold);
           break;
       }
       if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
@@ -727,13 +733,13 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
           break;
         case DT_IOP_GREEN_EQ_LOCAL:
           green_equilibration_lavg(in, pixels, roi_in->width, roi_in->height,
-                                   data->filters, roi_in->x, roi_in->y, 0);
+                                   data->filters, roi_in->x, roi_in->y, 0, threshold);
           break;
         case DT_IOP_GREEN_EQ_BOTH:
           green_equilibration_favg(in, pixels, roi_in->width, roi_in->height,
                                    data->filters,  roi_in->x, roi_in->y);
           green_equilibration_lavg(in, in, roi_in->width, roi_in->height,
-                                   data->filters, roi_in->x, roi_in->y, 1);
+                                   data->filters, roi_in->x, roi_in->y, 1, threshold);
           break;
       }
       // wanted ppg or zoomed out a lot and quality is limited to 1
@@ -780,6 +786,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
+  const dt_image_t *img = &self->dev->image_storage;
+  const float threshold = 0.0001f * img->exif_iso;
 
   const int qual = get_quality();
   const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
@@ -818,6 +826,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 2, sizeof(int), &width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 3, sizeof(int), &height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 4, sizeof(uint32_t), (void*)&data->filters);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 5, sizeof(float), (void*)&threshold);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_green_eq, sizes);
       if(err != CL_SUCCESS) goto error;
       dev_in = dev_green_eq;
@@ -893,6 +902,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 2, sizeof(int), &width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 3, sizeof(int), &height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 4, sizeof(uint32_t), (void*)&data->filters);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 5, sizeof(float), (void*)&threshold);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_green_eq, sizes);
       if(err != CL_SUCCESS) goto error;
       dev_in = dev_green_eq;
@@ -1134,7 +1144,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_enabled = 1;
-  module->priority = 134; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 129; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;

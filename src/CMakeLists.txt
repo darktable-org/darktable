@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
+cmake_policy(SET CMP0011 NEW)
+
 include(CheckCCompilerFlag)
 
 #
@@ -75,6 +77,7 @@ FILE(GLOB SOURCE_FILES
   "gui/gtkentry.c"
   "gui/guides.c"
   "gui/gtk.c"
+  "gui/hist_dialog.c"
   "gui/preferences.c"
   "gui/presets.c"
   "gui/styles_dialog.c"

@@ -74,6 +74,10 @@ def add_edges(gr):
   gr.add_edge(('colorin', 'lens'))
   gr.add_edge(('colorin', 'profile_gamma'))
   gr.add_edge(('colorin', 'shrecovery'))
+
+  # very linear:
+  gr.add_edge(('basecurve', 'lens'))
+  gr.add_edge(('basecurve', 'exposure'))
   
   # flip is a distortion plugin, and as such has to go after spot removal
   # and lens correction, which depend on original input buffers.
@@ -98,6 +102,7 @@ def add_edges(gr):
   gr.add_edge(('profile_gamma', 'lens'))
   gr.add_edge(('profile_gamma', 'shrecovery'))
   gr.add_edge(('profile_gamma', 'bilateral'))
+  gr.add_edge(('profile_gamma', 'denoiseprofile'))
   
   # these need Lab (between color in/out): 
   gr.add_edge(('colorout', 'bloom'))
@@ -196,6 +201,7 @@ def add_edges(gr):
   gr.add_edge(('gamma', 'watermark'))
   gr.add_edge(('gamma', 'overexposed'))
   gr.add_edge(('gamma', 'borders'))
+  gr.add_edge(('gamma', 'dither'))
   gr.add_edge(('channelmixer', 'colorout'))
   gr.add_edge(('clahe', 'colorout'))
   gr.add_edge(('velvia', 'colorout'))
@@ -204,6 +210,7 @@ def add_edges(gr):
   gr.add_edge(('splittoning', 'colorout'))
   gr.add_edge(('watermark', 'colorout'))
   gr.add_edge(('overexposed', 'colorout'))
+  gr.add_edge(('dither', 'colorout'))
   
   # borders should not change shape/color:
   gr.add_edge(('borders', 'colorout'))
@@ -218,6 +225,9 @@ def add_edges(gr):
 
   # but watermark can be drawn on top of borders
   gr.add_edge(('watermark', 'borders'))
+
+  # want dithering very late
+  gr.add_edge(('dither', 'watermark'))
   
   # want to sharpen after geometric transformations:
   gr.add_edge(('sharpen', 'clipping'))
@@ -239,6 +249,8 @@ def add_edges(gr):
   # need demosaiced data, but not Lab:
   gr.add_edge(('tonemap', 'demosaic'))
   gr.add_edge(('colorin', 'tonemap'))
+  # global variant is Lab:
+  gr.add_edge(('globaltonemap', 'colorin'))
   
   # want to fine-tune stuff after injection of color transfer:
   gr.add_edge(('atrous', 'colortransfer'))
@@ -274,6 +286,17 @@ def add_edges(gr):
   # the bilateral filter, in linear input rgb
   gr.add_edge(('colorin', 'bilateral'))
   gr.add_edge(('bilateral', 'demosaic'))
+  # same for denoise based on noise profiles.
+  # also avoid any noise confusion potentially caused
+  # by distortions/averages or exposure gain.
+  gr.add_edge(('colorin', 'denoiseprofile'))
+  gr.add_edge(('denoiseprofile', 'demosaic'))
+  gr.add_edge(('basecurve', 'denoiseprofile'))
+  gr.add_edge(('lens', 'denoiseprofile'))
+  gr.add_edge(('exposure', 'denoiseprofile'))
+  gr.add_edge(('graduatednd', 'denoiseprofile'))
+  gr.add_edge(('tonemap', 'denoiseprofile'))
+
   gr.add_edge(('colorout', 'equalizer'))
   # for smooth b/w images, we want chroma denoise to go before
   # color zones, where chrome can affect luma:
@@ -302,10 +325,13 @@ gr.add_nodes([
 'colorzones',
 'colorcontrast',
 'demosaic',
+'denoiseprofile',
+'dither',
 'equalizer', # deprecated
 'exposure',
 'flip',
 'gamma',
+'globaltonemap',
 'graduatednd',
 'grain',
 'highlights',

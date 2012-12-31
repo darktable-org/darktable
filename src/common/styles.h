@@ -20,6 +20,8 @@
 #define DT_STYLES_H
 
 #include "common/darktable.h"
+#include "develop/imageop.h"
+#include "develop/blend.h"
 
 #include <sqlite3.h>
 #include <glib.h>
@@ -40,6 +42,8 @@ typedef struct dt_style_item_t
 {
   int num;
   gchar *name;
+  dt_iop_params_t *params;
+  dt_develop_blend_params_t *blendop_params;
 } dt_style_item_t;
 
 /** creates a new style from specified image, items are the history stack number of items to include in style */
@@ -67,7 +71,7 @@ gboolean dt_styles_exists (const char *name);
 GList *dt_styles_get_list (const char *filter);
 
 /** get a list of items for a named style */
-GList *dt_styles_get_item_list (const char *name);
+GList *dt_styles_get_item_list (const char *name, gboolean params);
 
 /** get list of items for a named style as a nice string */
 char *dt_styles_get_item_list_as_string(const char *name);
