@@ -245,13 +245,6 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
-  d->pastemode = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(d->pastemode, _("append"));
-  gtk_combo_box_append_text(d->pastemode, _("overwrite"));
-  g_object_set(G_OBJECT(d->pastemode), "tooltip-text", _("how to handle existing history"), (char *)NULL);
-  gtk_box_pack_start(hbox, GTK_WIDGET(d->pastemode), TRUE, TRUE, 0);
-  gtk_combo_box_set_active(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
-
   d->paste_parts = GTK_BUTTON(gtk_button_new_with_label(_("paste")));
   g_object_set(G_OBJECT(d->paste_parts), "tooltip-text", _("paste part history stack to\nall selected images (ctrl-shift-v)"), (char *)NULL);
   d->imageid = -1;
@@ -262,6 +255,13 @@ gui_init (dt_lib_module_t *self)
   g_object_set(G_OBJECT(d->paste), "tooltip-text", _("paste history stack to\nall selected images (ctrl-v)"), (char *)NULL);
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
   gtk_box_pack_start(hbox, GTK_WIDGET(d->paste), TRUE, TRUE, 0);
+
+  d->pastemode = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  gtk_combo_box_append_text(d->pastemode, _("append"));
+  gtk_combo_box_append_text(d->pastemode, _("overwrite"));
+  g_object_set(G_OBJECT(d->pastemode), "tooltip-text", _("how to handle existing history"), (char *)NULL);
+  gtk_box_pack_start(hbox, GTK_WIDGET(d->pastemode), TRUE, TRUE, 0);
+  gtk_combo_box_set_active(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
