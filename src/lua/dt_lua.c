@@ -186,30 +186,43 @@ void dt_lua_init(lua_State*L,const int init_gui){
 }
 
 
-  int dt_lua_push_darktable_lib(lua_State* L) {
-    lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_dtlib");
-    if(lua_isnil(L,-1)) {
-      lua_pop(L,1);
-      lua_newtable(L);
-      lua_pushvalue(L,-1);
-      lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_dtlib");
-    }
-    return 1;
+int dt_lua_push_darktable_lib(lua_State* L) {
+  lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_dtlib");
+  if(lua_isnil(L,-1)) {
+    lua_pop(L,1);
+    lua_newtable(L);
+    lua_pushvalue(L,-1);
+    lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_dtlib");
   }
+  return 1;
+}
 
-  // function used by the lua interpreter to load darktable
-  int luaopen_darktable(lua_State *L) {
-    int tmp_argc = 0;
-    char *tmp_argv[]={"lua",NULL};
-    char **tmp_argv2 = &tmp_argv[0];
-    gtk_init (&tmp_argc, &tmp_argv2);
-    char *m_arg[] = {"lua", "--library", ":memory:", NULL};
-    // init dt without gui:
-    if(dt_init(3, m_arg, 0,L)) exit(1);
-    load_darktable_lib(L);
-    return 1;
+
+void dt_lua_goto_subtable(lua_State *L,const char* sub_name) {
+  luaL_checktype(L,-1,LUA_TTABLE);
+  lua_getfield(L,-1,sub_name);
+  if(lua_isnil(L,-1)) {
+    lua_pop(L,1);
+    lua_newtable(L);
+    lua_setfield(L,-2,sub_name);
+    lua_getfield(L,-1,sub_name);
   }
+  lua_remove(L,-2);
+}
 
-  // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
-  // vim: shiftwidth=2 expandtab tabstop=2 cindent
-  // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// function used by the lua interpreter to load darktable
+int luaopen_darktable(lua_State *L) {
+  int tmp_argc = 0;
+  char *tmp_argv[]={"lua",NULL};
+  char **tmp_argv2 = &tmp_argv[0];
+  gtk_init (&tmp_argc, &tmp_argv2);
+  char *m_arg[] = {"lua", "--library", ":memory:", NULL};
+  // init dt without gui:
+  if(dt_init(3, m_arg, 0,L)) exit(1);
+  load_darktable_lib(L);
+  return 1;
+}
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

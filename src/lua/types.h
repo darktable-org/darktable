@@ -31,7 +31,10 @@ typedef char* char_52;
 typedef char* char_filename_length;
 typedef char* char_path_length;
 
+
+
 /**
+  (0,+1)
    creates a struct-like type that is lua friendly
    * iteratable 
    * indexable
@@ -40,6 +43,9 @@ typedef char* char_path_length;
    unknown fields are refused if not in the list, or passed to index/newindex for handling
 
    list can be NULL in which case the type will only use luaA (or be a struct with no member if there is no luaA type
+
+   this function leaves the metatable on top of the stack for further editing
+
    */
    
 #define dt_lua_init_type(L,type_name, list,index,newindex) dt_lua_init_type_internal(L,#type_name,list,index,newindex)
@@ -50,21 +56,13 @@ void dt_lua_init_type_internal(lua_State* L, const char*type_name,const char ** 
   returns a next function, the top value and a nil
   see lua documentation on how pairs() work
 
+  this function uses a __luaA_Type entry in the metadata containing the luaA_Type for the type iterated
+
   upvalue 1 : an array of const char* for special members (can be null, can be nil)
-  upvalue 2 : the name of an autotype whos members will be used to iterate
 
   this function is the one used by dt_lua_init_type internally
   */
 int dt_lua_autotype_pairs(lua_State *L);
-/**
-  (-1,+1)
-  check that the top of the stack is a table, creates or find a subtable named "name", 
-  adds it on top of the stack, and remove the previous table
-
-  used to easily do a tree organisation of objects
-*/
-void dt_lua_goto_subtable(lua_State *L,const char* sub_name);
-
 /**
   used internally to initialize types at DT startup
   */

@@ -45,12 +45,13 @@ void to_charpath_length(lua_State* L, void* c_out, int index) { to_char_num(L,c_
 static int type_next(lua_State *L){
   int index;
   const char **list = lua_touserdata(L,lua_upvalueindex(1));
-  const char *type_name = lua_tostring(L,lua_upvalueindex(2));
   // all type related entries go first
+  luaL_getmetafield(L,-2,"__luaA_Type");
+  const luaA_Type my_type =lua_tointeger(L,-1);
+  lua_pop(L,1);
   const char * member=NULL; // the next key
-  luaA_Type my_type =  luaA_type_find(type_name);
   bool has_old_member = false;
-  if(type_name && luaA_struct_registered_typeid(L,my_type)) {
+  if(my_type != LUAA_INVALID_TYPE && luaA_struct_registered_typeid(L,my_type)) {
     if(lua_isnil(L,-1)) {
       member = luaA_struct_next_member_name_typeid(L,my_type,NULL);
     } else if(luaA_struct_has_member_name_typeid(L,my_type,luaL_checkstring(L,-1))){
@@ -84,10 +85,8 @@ static int type_next(lua_State *L){
 int dt_lua_autotype_pairs(lua_State *L){
 	// one upvalue, the lightuserdata 
 	const char **list = lua_touserdata(L,lua_upvalueindex(1));
-	const char *type_name = lua_tostring(L,lua_upvalueindex(2));
 	lua_pushlightuserdata(L,list);
-	lua_pushstring(L,type_name);
-	lua_pushcclosure(L,type_next,2);
+	lua_pushcclosure(L,type_next,1);
 	lua_pushvalue(L,-2);
 	lua_pushnil(L); // index set to null for reset
 	return 3;
@@ -95,12 +94,13 @@ int dt_lua_autotype_pairs(lua_State *L){
 
 static int type_index(lua_State *L){
 	const char **list = lua_touserdata(L,lua_upvalueindex(1));
-	const char *type_name = lua_tostring(L,lua_upvalueindex(2));
-	const lua_CFunction index_function = lua_tocfunction(L,lua_upvalueindex(3));
+	const lua_CFunction index_function = lua_tocfunction(L,lua_upvalueindex(2));
 
   const char* membername = lua_tostring(L, -1);
   const void* object = lua_touserdata(L, -2);
-  const luaA_Type my_type =luaA_type_find(type_name);
+  luaL_getmetafield(L,-2,"__luaA_Type");
+  const luaA_Type my_type =lua_tointeger(L,-1);
+  lua_pop(L,1);
 
   if(luaA_struct_registered_typeid(L,my_type) && luaA_struct_has_member_name_typeid(L,my_type,membername)) {
       const int result = luaA_struct_push_member_name_typeid(L, my_type, object, membername);
@@ -112,19 +112,20 @@ static int type_index(lua_State *L){
     lua_pushinteger(L,switch_index);
     return index_function(L);
   }
-  return luaL_error(L,"field %s not found for type %s\n",membername,type_name);
+  return luaL_error(L,"field %s not found for type %s\n",membername,luaA_type_name(my_type));
 }
 
 
 
 static int type_newindex(lua_State *L){
 	const char **list = lua_touserdata(L,lua_upvalueindex(1));
-	const char *type_name = lua_tostring(L,lua_upvalueindex(2));
-	const lua_CFunction newindex_function = lua_tocfunction(L,lua_upvalueindex(3));
+	const lua_CFunction newindex_function = lua_tocfunction(L,lua_upvalueindex(2));
 
   const char* membername = lua_tostring(L, -2);
   void* object = lua_touserdata(L, -3);
-  const luaA_Type my_type =luaA_type_find(type_name);
+  luaL_getmetafield(L,-2,"__luaA_Type");
+  const luaA_Type my_type =lua_tointeger(L,-1);
+  lua_pop(L,1);
 
   if(luaA_struct_registered_typeid(L,my_type) && luaA_struct_has_member_name_typeid(L,my_type,membername)) {
     if(luaA_type_has_to_func(luaA_struct_typeof_member_name_typeid(L,my_type,membername))) {
@@ -141,43 +142,32 @@ static int type_newindex(lua_State *L){
     lua_insert(L,-2);
     return newindex_function(L);
   }
-  return luaL_error(L,"field %s not found for type %s\n",membername,type_name);
+  return luaL_error(L,"field %s not found for type %s\n",membername,luaA_type_name(my_type));
 }
+
 
 void dt_lua_init_type_internal(lua_State* L, const char*type_name,const char ** list,lua_CFunction index,lua_CFunction newindex){
   luaL_newmetatable(L,type_name);
 
+  luaA_Type my_type =  luaA_type_find(type_name);
+  lua_pushnumber(L,my_type);
+	lua_setfield(L,-2,"__luaA_Type");
+
+
 	lua_pushlightuserdata(L,list);
-  lua_pushstring(L,type_name);
-	lua_pushcclosure(L,dt_lua_autotype_pairs,2);
+	lua_pushcclosure(L,dt_lua_autotype_pairs,1);
 	lua_setfield(L,-2,"__pairs");
 
 	lua_pushlightuserdata(L,list);
-  lua_pushstring(L,type_name);
 	lua_pushcfunction(L,index);
-	lua_pushcclosure(L,type_index,3);
+	lua_pushcclosure(L,type_index,2);
 	lua_setfield(L,-2,"__index");
 
 	lua_pushlightuserdata(L,list);
-  lua_pushstring(L,type_name);
 	lua_pushcfunction(L,newindex);
-	lua_pushcclosure(L,type_newindex,3);
+	lua_pushcclosure(L,type_newindex,2);
 	lua_setfield(L,-2,"__newindex");
 
-  lua_pop(L,1);
-}
-
-
-void dt_lua_goto_subtable(lua_State *L,const char* sub_name) {
-	luaL_checktype(L,-1,LUA_TTABLE);
-	lua_getfield(L,-1,sub_name);
-	if(lua_isnil(L,-1)) {
-		lua_pop(L,1);
-		lua_newtable(L);
-		lua_setfield(L,-2,sub_name);
-		lua_getfield(L,-1,sub_name);
-	}
-	lua_remove(L,-2);
 }
 
 

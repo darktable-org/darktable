@@ -553,9 +553,11 @@ int dt_lua_init_image(lua_State * L) {
   luaA_struct_member(L,dt_image_t,latitude,double);
   luaL_newmetatable(L,image_typename);
   luaL_setfuncs(L,image_meta,0);
+  luaA_Type my_type =  luaA_type_find(image_typename);
+  lua_pushnumber(L,my_type);
+	lua_setfield(L,-2,"__luaA_Type");
 	lua_pushlightuserdata(L,image_fields_name);
-  lua_pushstring(L,"dt_image_t");
-	lua_pushcclosure(L,dt_lua_autotype_pairs,2);
+	lua_pushcclosure(L,dt_lua_autotype_pairs,1);
 	lua_setfield(L,-2,"__pairs");
 
 
