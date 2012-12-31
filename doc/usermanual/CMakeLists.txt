@@ -129,7 +129,7 @@ if(can_build_usermanual)
 		COMMENT "Updating usermanual.css" VERBATIM
 	)
 
-        if (XSLT_SAXON_COMMAND AND Xslt_SAXON_EXTENSIONS)
+        if (Saxon_FOUND)
 	    add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
                 COMMAND ${XSLT_SAXON_COMMAND} ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml xsl/darktable_html_single_ext.xsl chunker.output.encoding=UTF-8 base.dir=${CMAKE_CURRENT_BINARY_DIR}/html/
@@ -140,7 +140,7 @@ if(can_build_usermanual)
 		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml ${CMAKE_CURRENT_BINARY_DIR}/html/usermanual.css
 		COMMENT "Building html usermanual" VERBATIM
 	)
-        else (XSLT_SAXON_COMMAND AND Xslt_SAXON_EXTENSIONS)
+        else (Saxon_FOUND)
             add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
                 COMMAND ${XSLT_XSLTPROC_EXECUTABLE} --stringparam chunker.output.encoding UTF-8 --stringparam base.dir ${CMAKE_CURRENT_BINARY_DIR}/html/ xsl/darktable_html_single.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
@@ -151,7 +151,7 @@ if(can_build_usermanual)
 		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml ${CMAKE_CURRENT_BINARY_DIR}/html/usermanual.css
 		COMMENT "Building html usermanual" VERBATIM
 	)
-        endif (XSLT_SAXON_COMMAND AND Xslt_SAXON_EXTENSIONS)
+        endif (Saxon_FOUND)
 	add_custom_target(darktable-usermanual-html DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html/index.html )
 	add_dependencies(darktable-usermanual-html target_media_images darktable_single_xml )
 	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
@@ -160,7 +160,7 @@ if(can_build_usermanual)
 	# draft chunked usermanual for wordpress
 	#
 
-        if (XSLT_SAXON_COMMAND AND Xslt_SAXON_EXTENSIONS)
+        if (Saxon_FOUND)
             add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wp/index.html.php
                 COMMAND ${XSLT_SAXON_COMMAND} ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml xsl/darktable_html_ext.xsl chunker.output.encoding=UTF-8 base.dir=${CMAKE_CURRENT_BINARY_DIR}/wp/
@@ -177,7 +177,7 @@ if(can_build_usermanual)
 		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
 		COMMENT "Building php usermanual" VERBATIM
 	)
-        else (XSLT_SAXON_COMMAND AND Xslt_SAXON_EXTENSIONS)
+        else (Saxon_FOUND)
             add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wp/index.html.php
                 COMMAND ${XSLT_XSLTPROC_EXECUTABLE} --stringparam chunker.output.encoding UTF-8 --stringparam base.dir ${CMAKE_CURRENT_BINARY_DIR}/wp/ xsl/darktable_html.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
@@ -194,7 +194,7 @@ if(can_build_usermanual)
 		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
 		COMMENT "Building php usermanual" VERBATIM
 	)
-        endif (XSLT_SAXON_COMMAND AND Xslt_SAXON_EXTENSIONS)
+        endif (Saxon_FOUND)
 	add_custom_target(darktable-usermanual-wordpress DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/wp/index.html.php )
 	add_dependencies(darktable-usermanual-wordpress target_media_images darktable_single_xml )
 	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/wp DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
