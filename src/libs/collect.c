@@ -153,7 +153,7 @@ static void _lib_collect_update_params(dt_lib_collect_t *d)
       g_free(string);
     }
 
-    fprintf(stderr,"[%i] %d,%d,%s\n",i, p->rule[i].item, p->rule[i].mode,  p->rule[i].string);
+    // fprintf(stderr,"[%i] %d,%d,%s\n",i, p->rule[i].item, p->rule[i].mode,  p->rule[i].string);
   }
 
   p->rules = active+1;
