@@ -23,7 +23,73 @@
 #include <stdlib.h>
 #include "common/styles.h"
 
+/////////////////////////
+// dt_style_t
+/////////////////////////
+typedef enum {
+  GET_ITEMS,
+  LAST_STYLE_FIELD
+} style_fields;
+const char *style_fields_name[] = {
+  "get_items",
+  NULL
+};
+static int style_gc(lua_State*L) {
+	dt_style_t * style =luaL_checkudata(L,-1,"dt_style_t");
+	free(style->name);
+	free(style->description);
+	return 0;
+}
 
+static int style_tostring(lua_State*L) {
+	dt_style_t * style =luaL_checkudata(L,-1,"dt_style_t");
+	lua_pushstring(L,style->name);
+	return 1;
+}
+
+
+static int style_get_items(lua_State*L) {
+  dt_style_t * style =luaL_checkudata(L,-1,"dt_style_t");
+  GList * items = dt_styles_get_item_list(style->name,true);
+  dt_lua_push_glist(L,items,dt_style_item_t);
+  while(items) {
+    g_free(items->data);
+    items = items->next;
+  }
+  return 1;
+}
+
+static int style_index(lua_State*L) {
+  int index = lua_tonumber(L,-1);
+  switch(index) {
+    case GET_ITEMS:
+      lua_pushcfunction(L,style_get_items);
+      return 1;
+    default:
+      return luaL_error(L,"should never happen %d",index);
+  }
+}
+/////////////////////////
+// dt_style_item_t
+/////////////////////////
+
+
+static int style_item_tostring(lua_State*L) {
+	dt_style_item_t * item =luaL_checkudata(L,-1,"dt_style_item_t");
+	lua_pushfstring(L,"%d : %s",item->num,item->name);
+  return 1;
+}
+
+static int style_item_gc(lua_State*L) {
+	dt_style_item_t * item =luaL_checkudata(L,-1,"dt_style_item_t");
+	free(item->name);
+	free(item->params);
+	free(item->blendop_params);
+	return 0;
+}
+/////////////////////////
+// toplevel and common
+/////////////////////////
 static int style_table(lua_State*L) {
 	GList *style_list = dt_styles_get_list ("");
 	dt_lua_push_glist(L,style_list,dt_style_t);
@@ -35,30 +101,25 @@ static int style_table(lua_State*L) {
 	return 1;
 }
 
-static int style_gc(lua_State*L) {
-	dt_style_t * style =luaL_checkudata(L,-1,"dt_style_t");
-	free(style->name);
-	free(style->description);
-	return 0;
-}
-
-
-static int style_tostring(lua_State*L) {
-	dt_style_t * style =luaL_checkudata(L,-1,"dt_style_t");
-	lua_pushstring(L,style->name);
-	return 1;
-}
-
-
 int dt_lua_init_styles(lua_State * L) {
   // dt_style
-  dt_lua_init_type(L,dt_style_t,NULL,NULL,NULL);
+  dt_lua_init_type(L,dt_style_t,style_fields_name,style_index,NULL);
   luaA_struct(L,dt_style_t);
   luaA_struct_member(L,dt_style_t,name,const char*);
   luaA_struct_member(L,dt_style_t,description,const char*);
   lua_pushcfunction(L,style_gc);
   lua_setfield(L,-2,"__gc");
   lua_pushcfunction(L,style_tostring);
+  lua_setfield(L,-2,"__tostring");
+
+  //dt_style_item_t
+  dt_lua_init_type(L,dt_style_item_t,NULL,NULL,NULL);
+  luaA_struct(L,dt_style_item_t);
+  luaA_struct_member(L,dt_style_item_t,num,int);
+  luaA_struct_member(L,dt_style_item_t,name,const char *);
+  lua_pushcfunction(L,style_item_gc);
+  lua_setfield(L,-2,"__gc");
+  lua_pushcfunction(L,style_item_tostring);
   lua_setfield(L,-2,"__tostring");
 
 
