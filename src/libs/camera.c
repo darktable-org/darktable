@@ -346,75 +346,12 @@ static void _toggle_capture_mode_clicked(GtkWidget *widget, gpointer user_data)
 
 }
 
-
-#define BAR_HEIGHT 18 /* also change in views/capture.c */
-static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
-{
-  dt_lib_camera_t *lib=(dt_lib_camera_t *)self->data;
-
-  // Draw infobar background at top
-  cairo_set_source_rgb (cr, .0,.0,.0);
-  cairo_rectangle(cr, 0, 0, width, BAR_HEIGHT);
-  cairo_fill (cr);
-
-  cairo_set_source_rgb (cr,.8,.8,.8);
-
-  // Draw left aligned value camera model value
-  cairo_text_extents_t te;
-  char model[4096]= {0};
-  sprintf(model+strlen(model),"%s", lib->data.camera_model );
-  cairo_text_extents (cr, model, &te);
-  cairo_move_to (cr,5, 1+BAR_HEIGHT - te.height / 2 );
-  cairo_show_text(cr, model);
-
-  // Draw right aligned battary value
-  const char *battery_value=dt_camctl_camera_get_property(darktable.camctl,NULL,"batterylevel");
-  char battery[4096]= {0};
-  sprintf(battery,"%s: %s", _("battery"), battery_value?battery_value:_("n/a"));
-  cairo_text_extents (cr, battery, &te);
-  cairo_move_to(cr,width-te.width-5, 1+BAR_HEIGHT - te.height / 2 );
-  cairo_show_text(cr, battery);
-
-  // Let's cook up the middle part of infobar
-  gchar center[1024]= {0};
-  for(int i=0; i<g_list_length(lib->gui.properties); i++)
-  {
-    dt_lib_camera_property_t *prop=(dt_lib_camera_property_t *)g_list_nth_data(lib->gui.properties,i);
-    if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prop->osd)) == TRUE )
-    {
-      g_strlcat(center,"      ",1024);
-      g_strlcat(center,prop->name,1024);
-      g_strlcat(center,": ",1024);
-      g_strlcat(center,gtk_combo_box_get_active_text(prop->values),1024);
-    }
-  }
-  g_strlcat(center,"      ",1024);
-
-  // Now lets put it in center view...
-  cairo_text_extents (cr, center, &te);
-  cairo_move_to(cr,(width/2)-(te.width/2), 1+BAR_HEIGHT - te.height / 2 );
-  cairo_show_text(cr, center);
-
-
-}
-
-static void _expose_settings_bar(dt_lib_module_t *self, cairo_t *cr,int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
-{
-  /*// Draw control bar at bottom
-  cairo_set_source_rgb (cr, .0,.0,.0);
-  cairo_rectangle(cr, 0, height-BAR_HEIGHT, width, BAR_HEIGHT);
-  cairo_fill (cr);*/
-}
-
 void
 gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   // Setup cairo font..
   cairo_set_font_size (cr, 11.5);
   cairo_select_font_face (cr, "Sans",CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-
-  _expose_info_bar(self,cr,width,height,pointerx,pointery);
-  _expose_settings_bar(self,cr,width,height,pointerx,pointery);
 }
 
 void
