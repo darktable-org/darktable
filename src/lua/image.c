@@ -18,6 +18,7 @@
 
 #include "lua/image.h"
 #include "lua/stmt.h"
+#include "lua/glist.h"
 #include "lautoc.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -73,83 +74,21 @@ static int colorlabel_newindex(lua_State *L){
 }
 
 /************************************
-  image history handlig
+  image history handling
  ***********************************/
-static const char* history_typename = "dt_lua_history";
 
-static int dt_history_lua_check(lua_State * L,int index){
-  return *((int*)luaL_checkudata(L,index,history_typename));
-}
-
-static void dt_history_lua_push(lua_State * L,int imgid) {
-  int * history = (int*)lua_newuserdata(L,sizeof(int));
-  *history = imgid;
-	luaL_setmetatable(L,history_typename);
-}
-
-
-static int history_index(lua_State *L){
-  int imgid=dt_history_lua_check(L,-2);
-  int value = luaL_checkinteger(L,-1);
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select operation, enabled from history where imgid=?1 and num=?2 ", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, value);
-  int result = sqlite3_step(stmt);
-  if(result != SQLITE_ROW){
-    return luaL_error(L,"incorrect history index %d",value);
-  }
-  lua_pushfstring(L,"%s (%s)",sqlite3_column_text (stmt, 0),(sqlite3_column_int (stmt, 1)!=0)?_("on"):_("off"));
-  return 1;
-
-}
-
-static int history_next(lua_State *L) {
-  //TBSL : check index and find the correct position in stmt if index was changed manually
-  // 2 args, table, index, returns the next index,value or nil,nil return the first index,value if index is nil 
-
-  sqlite3_stmt *stmt = dt_lua_stmt_check(L,-2);
-  if(lua_isnil(L,-1)) {
-    sqlite3_reset(stmt);
-  } else if(luaL_checkinteger(L,-1) != sqlite3_column_int(stmt,0)) {
-    return luaL_error(L,"TBSL : changing index of a loop on history images is not supported yet");
-  }
-  int result = sqlite3_step(stmt);
-  if(result != SQLITE_ROW){
-    return 0;
-  }
-  int historyidx = sqlite3_column_int(stmt,0);
-  lua_pushinteger(L,historyidx);
-  lua_pushfstring(L,"%s (%s)",sqlite3_column_text (stmt, 1),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
-  return 2;
-}
-
-static int history_pairs(lua_State *L) {
-  int imgid=dt_history_lua_check(L,-1);
-  lua_pushcfunction(L,history_next);
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled from history where imgid=?1 order by num asc", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  dt_lua_stmt_push(L,stmt);
-  lua_pushnil(L); // index set to null for reset
-  return 3;
-}
-
-static int history_tostring(lua_State *L){
-  int imgid=dt_history_lua_check(L,-1);
-  const char * description =dt_history_get_items_as_string(imgid);
-  if(!description) lua_pushstring(L,"");
-  else lua_pushstring(L,description);
+static int history_item_tostring(lua_State*L) {
+	dt_history_item_t * item =luaL_checkudata(L,-1,"dt_history_item_t");
+	lua_pushfstring(L,"%d : %s (%s)",item->num,item->name,item->op);
   return 1;
 }
-static const luaL_Reg dt_lua_history_meta[] = {
-  {"__index", history_index },
-  {"__tostring", history_tostring },
-  {"__pairs", history_pairs },
-  {"__eq", numid_compare },
-  {0,0}
-};
 
+static int history_item_gc(lua_State*L) {
+	dt_history_item_t * item =luaL_checkudata(L,-1,"dt_history_item_t");
+	free(item->name);
+	free(item->op);
+	return 0;
+}
 /***********************************************************************
   handling of dt_image_t
  **********************************************************************/
@@ -218,6 +157,21 @@ GList * dt_lua_image_glist_get(lua_State *L,int index)
   list = g_list_reverse(list);
   return list;
 }
+
+
+static int image_get_history(lua_State*L) {
+  const dt_image_t * image =dt_lua_checkreadimage(L,-1);
+  GList * items = dt_history_get_items(image->id,true);
+  dt_lua_push_glist(L,items,dt_history_item_t,true);
+  while(items) {
+    g_free(items->data);
+    items = items->next;
+  }
+  dt_lua_releasereadimage(L,image);
+  return 1;
+}
+
+
 typedef enum {
   PATH,
   DUP_INDEX,
@@ -232,7 +186,7 @@ typedef enum {
   TITLE,
   DESCRIPTION,
   RIGHTS,
-  HISTORY,
+  GET_HISTORY,
   LAST_IMAGE_FIELD
 } image_fields;
 const char *image_fields_name[] = {
@@ -249,7 +203,7 @@ const char *image_fields_name[] = {
   "title",
   "description",
   "rights",
-  "history",
+  "get_history",
   NULL
 };
 
@@ -398,9 +352,9 @@ static int image_index(lua_State *L){
         break;
 
       }
-    case HISTORY:
+    case GET_HISTORY:
       {
-        dt_history_lua_push(L,my_image->id);
+        lua_pushcfunction(L,image_get_history);
         break;
       }
     default:
@@ -463,16 +417,7 @@ static int image_newindex(lua_State *L){
       dt_metadata_set(my_image->id,"Xmp.dc.title",luaL_checkstring(L,-1));
       dt_image_synch_xmp(my_image->id);
       break;
-    case HISTORY:
-      /*{
-        if(lua_isnil(L,-1)) {
-          dt_history_delete_on_image(my_image->id);
-          break;
-        }
-        int source_id = dt_history_lua_check(L,-1);
-        dt_history_copy_and_paste_on_image(source_id, my_image->id, 0);
-        break;
-      }*/
+    case GET_HISTORY:
     case PATH:
     case DUP_INDEX:
     case IS_LDR:
@@ -507,7 +452,9 @@ static const luaL_Reg image_meta[] = {
   {"__eq", numid_compare },
   {0,0}
 };
-
+///////////////
+// toplevel and common
+///////////////
 
 static int image_table(lua_State*L) {
 	lua_newtable(L);
@@ -524,11 +471,15 @@ static int image_table(lua_State*L) {
 
 int dt_lua_init_image(lua_State * L) {
   /* history */
-  luaL_newmetatable(L,history_typename);
-  luaL_setfuncs(L,dt_lua_history_meta,0);
-  luaL_newmetatable(L,history_typename);
-  lua_pushcfunction(L,numid_compare);
-	lua_setfield(L,-2,"__eq");
+  dt_lua_init_type(L,dt_history_item_t,NULL,NULL,NULL);
+  luaA_struct(L,dt_history_item_t);
+  luaA_struct_member(L,dt_history_item_t,num,const int);
+  luaA_struct_member(L,dt_history_item_t,op,const char*);
+  luaA_struct_member(L,dt_history_item_t,name,const char*);
+  lua_pushcfunction(L,history_item_gc);
+  lua_setfield(L,-2,"__gc");
+  lua_pushcfunction(L,history_item_tostring);
+  lua_setfield(L,-2,"__tostring");
   /* colorlabels */
   dt_lua_init_type(L,dt_lua_colorlabel_t,dt_colorlabels_name,colorlabel_index,colorlabel_newindex);
   luaA_conversion(dt_lua_colorlabel_t,colorlabels_pushFunc,colorlabels_toFunc);

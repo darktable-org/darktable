@@ -20,14 +20,24 @@
 #include <lauxlib.h>
 #include <stdlib.h>
 
-void dt_lua_push_glist_typeid(lua_State *L,GList * list, luaA_Type elt_type)
+void dt_lua_push_glist_typeid(lua_State *L,GList * list, luaA_Type elt_type,bool reverse)
 {
-  GList * elt = list;
-  lua_newtable(L);
-  while(elt) {
-    luaA_push_typeid(L,elt_type,elt->data);
-    luaL_ref(L,-2);
-    elt = g_list_next(elt);
+  if(reverse) {
+    GList * elt = g_list_last(list);
+    lua_newtable(L);
+    while(elt) {
+      luaA_push_typeid(L,elt_type,elt->data);
+      luaL_ref(L,-2);
+      elt = g_list_previous(elt);
+    }
+  } else {
+    GList * elt = list;
+    lua_newtable(L);
+    while(elt) {
+      luaA_push_typeid(L,elt_type,elt->data);
+      luaL_ref(L,-2);
+      elt = g_list_next(elt);
+    }
   }
 }
 

@@ -51,7 +51,7 @@ static int style_tostring(lua_State*L) {
 static int style_get_items(lua_State*L) {
   dt_style_t * style =luaL_checkudata(L,-1,"dt_style_t");
   GList * items = dt_styles_get_item_list(style->name,true);
-  dt_lua_push_glist(L,items,dt_style_item_t);
+  dt_lua_push_glist(L,items,dt_style_item_t,true);
   while(items) {
     g_free(items->data);
     items = items->next;
@@ -92,7 +92,7 @@ static int style_item_gc(lua_State*L) {
 /////////////////////////
 static int style_table(lua_State*L) {
 	GList *style_list = dt_styles_get_list ("");
-	dt_lua_push_glist(L,style_list,dt_style_t);
+	dt_lua_push_glist(L,style_list,dt_style_t,false);
 
   while(style_list) {
     g_free(style_list->data);
@@ -115,7 +115,7 @@ int dt_lua_init_styles(lua_State * L) {
   //dt_style_item_t
   dt_lua_init_type(L,dt_style_item_t,NULL,NULL,NULL);
   luaA_struct(L,dt_style_item_t);
-  luaA_struct_member(L,dt_style_item_t,num,int);
+  luaA_struct_member(L,dt_style_item_t,num,const int);
   luaA_struct_member(L,dt_style_item_t,name,const char *);
   lua_pushcfunction(L,style_item_gc);
   lua_setfield(L,-2,"__gc");
