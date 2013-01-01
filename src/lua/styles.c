@@ -30,11 +30,13 @@ static GList * style_item_table_to_id_list(lua_State*L, int index);
 typedef enum {
   GET_ITEMS,
   UPDATE,
+  DUPLICATE,
   LAST_STYLE_FIELD
 } style_fields;
 const char *style_fields_name[] = {
   "get_items",
   "update",
+  "duplicate",
   NULL
 };
 static int style_gc(lua_State*L) {
@@ -71,6 +73,14 @@ static int style_update(lua_State*L) {
   return 0;
 }
 
+static int style_duplicate(lua_State*L) {
+	dt_style_t * style =luaL_checkudata(L,1,"dt_style_t");
+  const char * newname =luaL_checkstring(L,2);
+	const char * description =lua_isnoneornil(L,3)?style->description:luaL_checkstring(L,3);
+  GList* filter= style_item_table_to_id_list(L, 4);
+  dt_styles_create_from_style(style->name,newname,description,filter,TRUE);
+  return 0;
+}
 static int style_index(lua_State*L) {
   int index = lua_tonumber(L,-1);
   switch(index) {
@@ -79,6 +89,9 @@ static int style_index(lua_State*L) {
       return 1;
     case UPDATE:
       lua_pushcfunction(L,style_update);
+      return 1;
+    case DUPLICATE:
+      lua_pushcfunction(L,style_duplicate);
       return 1;
     default:
       return luaL_error(L,"should never happen %d",index);
