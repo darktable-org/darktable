@@ -19,8 +19,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-12-30 17:05+0100\n"
-"PO-Revision-Date: 2012-12-30 17:06+0100\n"
+"POT-Creation-Date: 2013-01-01 07:51+0100\n"
+"PO-Revision-Date: 2013-01-01 08:04+0100\n"
 "Last-Translator: Henrik Andersson <hean01@users.sourceforge.net>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -439,44 +439,44 @@ msgstr "okänt suffix ',%s'"
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr "kunde inte hämta parametrar från formatmodul, avbryter exporten..."
 
-#: ../src/common/collection.c:448 ../src/iop/bilateral.cc:346
+#: ../src/common/collection.c:451 ../src/iop/bilateral.cc:346
 #: ../src/iop/channelmixer.c:440 ../src/iop/channelmixer.c:452
-#: ../src/iop/temperature.c:732 ../src/libs/collect.c:1141
-#: ../src/libs/collect.c:1143
+#: ../src/iop/temperature.c:732 ../src/libs/collect.c:1138
+#: ../src/libs/collect.c:1140
 msgid "red"
 msgstr "röd"
 
-#: ../src/common/collection.c:449 ../src/libs/collect.c:1147
-#: ../src/libs/collect.c:1149
+#: ../src/common/collection.c:452 ../src/libs/collect.c:1144
+#: ../src/libs/collect.c:1146
 msgid "yellow"
 msgstr "gul"
 
-#: ../src/common/collection.c:450 ../src/iop/bilateral.cc:347
+#: ../src/common/collection.c:453 ../src/iop/bilateral.cc:347
 #: ../src/iop/channelmixer.c:441 ../src/iop/channelmixer.c:459
-#: ../src/iop/temperature.c:733 ../src/libs/collect.c:1153
-#: ../src/libs/collect.c:1155
+#: ../src/iop/temperature.c:733 ../src/libs/collect.c:1150
+#: ../src/libs/collect.c:1152
 msgid "green"
 msgstr "grön"
 
-#: ../src/common/collection.c:451 ../src/iop/bilateral.cc:348
+#: ../src/common/collection.c:454 ../src/iop/bilateral.cc:348
 #: ../src/iop/channelmixer.c:442 ../src/iop/channelmixer.c:466
-#: ../src/iop/temperature.c:734 ../src/libs/collect.c:1159
-#: ../src/libs/collect.c:1161
+#: ../src/iop/temperature.c:734 ../src/libs/collect.c:1156
+#: ../src/libs/collect.c:1158
 msgid "blue"
 msgstr "blå"
 
-#: ../src/common/collection.c:452 ../src/libs/collect.c:1165
-#: ../src/libs/collect.c:1167
+#: ../src/common/collection.c:455 ../src/libs/collect.c:1162
+#: ../src/libs/collect.c:1164
 msgid "purple"
 msgstr "lila"
 
 #. history
-#: ../src/common/collection.c:458 ../src/libs/collect.c:1125
-#: ../src/libs/collect.c:1127
+#: ../src/common/collection.c:461 ../src/libs/collect.c:1122
+#: ../src/libs/collect.c:1124
 msgid "altered"
 msgstr "förändrad"
 
-#: ../src/common/collection.c:591
+#: ../src/common/collection.c:594
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -560,16 +560,15 @@ msgstr[1] "importerar %d bilder..."
 
 #: ../src/common/history.c:119
 msgid "you need to copy history from an image before you paste it onto another"
-msgstr ""
-"du behöver kopiera historik från en bild innan du klistrar in på en annan"
+msgstr "du måste kopiera historik från en bild innan du klistrar in på en annan"
 
-#: ../src/common/history.c:208 ../src/common/history.c:221
+#: ../src/common/history.c:209 ../src/common/history.c:222
 #: ../src/common/styles.c:444 ../src/develop/develop.c:1064
 #: ../src/libs/history.c:151 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "på"
 
-#: ../src/common/history.c:208 ../src/common/history.c:221
+#: ../src/common/history.c:209 ../src/common/history.c:222
 #: ../src/common/styles.c:444 ../src/develop/blend_gui.c:984
 #: ../src/develop/develop.c:1064 ../src/imageio/format/j2k.c:595
 #: ../src/iop/demosaic.c:1329 ../src/iop/vignette.c:1120
@@ -2011,7 +2010,7 @@ msgstr "post"
 msgid "can't create style out of unaltered image"
 msgstr "kan inte skapa en stil utifrån en orörd bild"
 
-#: ../src/imageio/format/copy.c:143 ../src/libs/copy_history.c:214
+#: ../src/imageio/format/copy.c:143 ../src/libs/copy_history.c:230
 #: ../src/libs/image.c:158
 msgid "copy"
 msgstr "kopiera"
@@ -2300,11 +2299,11 @@ msgid "flickr webalbum"
 msgstr "flickr-album"
 
 #: ../src/imageio/storage/flickr.c:336 ../src/imageio/storage/flickr.c:376
-#: ../src/imageio/storage/flickr.c:846 ../src/imageio/storage/flickr.c:852
+#: ../src/imageio/storage/flickr.c:849 ../src/imageio/storage/flickr.c:855
 msgid "not authenticated"
 msgstr "inte autentiserad"
 
-#: ../src/imageio/storage/flickr.c:372 ../src/imageio/storage/flickr.c:842
+#: ../src/imageio/storage/flickr.c:372 ../src/imageio/storage/flickr.c:845
 #: ../src/imageio/storage/picasa.c:638
 msgid "authenticated"
 msgstr "autentiserad"
@@ -2371,12 +2370,12 @@ msgid "everyone"
 msgstr "alla"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/flickr.c:749
+#: ../src/imageio/storage/flickr.c:752
 #, c-format
 msgid "%d/%d exported to flickr webalbum"
 msgstr "%d/%d exporterad till flickr-album"
 
-#: ../src/imageio/storage/flickr.c:854
+#: ../src/imageio/storage/flickr.c:857
 msgid "Flickr account not authenticated"
 msgstr "flickr-konto är inte autentiserat"
 
@@ -2427,7 +2426,7 @@ msgstr "mitt nya album"
 msgid "public album"
 msgstr "publikt album"
 
-#: ../src/imageio/storage/picasa.c:990
+#: ../src/imageio/storage/picasa.c:992
 #, c-format
 msgid "%d/%d exported to picasa webalbum"
 msgstr "%d/%d exporterad till picasa webbalbum"
@@ -5412,48 +5411,48 @@ msgstr "synk..."
 msgid "remove..."
 msgstr "ta bort..."
 
-#: ../src/libs/collect.c:1131 ../src/libs/collect.c:1133
+#: ../src/libs/collect.c:1128 ../src/libs/collect.c:1130
 msgid "not altered"
 msgstr "oförändrad"
 
-#: ../src/libs/collect.c:1324
+#: ../src/libs/collect.c:1321
 msgid "local hdd"
 msgstr "lokal hårddisk"
 
-#: ../src/libs/collect.c:1407 ../src/libs/collect.c:1421
-#: ../src/libs/collect.c:1800
+#: ../src/libs/collect.c:1404 ../src/libs/collect.c:1418
+#: ../src/libs/collect.c:1797
 msgid "clear this rule"
 msgstr "ta bort denna regel"
 
-#: ../src/libs/collect.c:1412
+#: ../src/libs/collect.c:1409
 msgid "clear this rule or add new rules"
 msgstr "rensa denna regel eller skapa en ny"
 
-#: ../src/libs/collect.c:1806
+#: ../src/libs/collect.c:1803
 msgid "narrow down search"
 msgstr "smalna av sökning"
 
-#: ../src/libs/collect.c:1810
+#: ../src/libs/collect.c:1807
 msgid "add more images"
 msgstr "lägg till fler bilder"
 
-#: ../src/libs/collect.c:1814
+#: ../src/libs/collect.c:1811
 msgid "exclude images"
 msgstr "exkludera bilder"
 
-#: ../src/libs/collect.c:1820
+#: ../src/libs/collect.c:1817
 msgid "change to: and"
 msgstr "ändra till: och"
 
-#: ../src/libs/collect.c:1824
+#: ../src/libs/collect.c:1821
 msgid "change to: or"
 msgstr "ändra till: eller"
 
-#: ../src/libs/collect.c:1828
+#: ../src/libs/collect.c:1825
 msgid "change to: except"
 msgstr "ändra till: för utom"
 
-#: ../src/libs/collect.c:1875
+#: ../src/libs/collect.c:1872
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "ange din förfrågan, använd `%' som wildcard"
@@ -5554,29 +5553,41 @@ msgstr "begränsa histogram till val"
 msgid "display sample areas on image"
 msgstr "visa prov ytor på bilden"
 
-#: ../src/libs/copy_history.c:58
+#: ../src/libs/copy_history.c:50
 msgid "history stack"
 msgstr "historik"
 
-#: ../src/libs/copy_history.c:81
+#: ../src/libs/copy_history.c:73
 msgid "open sidecar file"
 msgstr "öppna inställnings fil"
 
-#: ../src/libs/copy_history.c:91
+#: ../src/libs/copy_history.c:83
 msgid "xmp sidecar files"
 msgstr "XMP inställningsfil"
 
-#: ../src/libs/copy_history.c:96 ../src/libs/geotagging.c:446
+#: ../src/libs/copy_history.c:88 ../src/libs/geotagging.c:446
 #: ../src/libs/import.c:680 ../src/libs/styles.c:273
 msgid "all files"
 msgstr "alla filer"
 
-#: ../src/libs/copy_history.c:110
+#: ../src/libs/copy_history.c:102
 #, c-format
 msgid "error loading file '%s'"
 msgstr "fel uppstod vid läsning av fil '%s'"
 
-#: ../src/libs/copy_history.c:216
+#: ../src/libs/copy_history.c:232
+msgid ""
+"copy part history stack of\n"
+"first selected image (ctrl-shift-c)"
+msgstr ""
+"kopiera delar av historiken från\n"
+"den första valda bild (ctrl-shift-c)."
+
+#: ../src/libs/copy_history.c:235
+msgid "copy all"
+msgstr "kopiera allt"
+
+#: ../src/libs/copy_history.c:237
 msgid ""
 "copy history stack of\n"
 "first selected image (ctrl-c)"
@@ -5584,47 +5595,59 @@ msgstr ""
 "kopiera historiken från\n"
 "den första valda bild (ctrl-c)."
 
-#: ../src/libs/copy_history.c:219
+#: ../src/libs/copy_history.c:240
 msgid "discard"
 msgstr "förkasta"
 
-#: ../src/libs/copy_history.c:221
+#: ../src/libs/copy_history.c:242
 msgid ""
 "discard history stack of\n"
 "all selected images"
 msgstr ""
-"förkasta ändringar på\n"
+"förkasta historiken på\n"
 "alla valda bilder"
 
-#: ../src/libs/copy_history.c:228
-msgid "append"
-msgstr "lägg till"
-
-#: ../src/libs/copy_history.c:229
-msgid "overwrite"
-msgstr "skriv över"
-
-#: ../src/libs/copy_history.c:230
-msgid "how to handle existing history"
-msgstr "hur nuvarande historik ska hanteras"
-
-#: ../src/libs/copy_history.c:234
+#: ../src/libs/copy_history.c:248
 msgid "paste"
 msgstr "klistra in"
 
-#: ../src/libs/copy_history.c:235
+#: ../src/libs/copy_history.c:249
+msgid ""
+"paste part history stack to\n"
+"all selected images (ctrl-shift-v)"
+msgstr ""
+"klistra in delar av historiken på\n"
+"alla valda bilder (ctrl-shift-v)."
+
+#: ../src/libs/copy_history.c:254
+msgid "paste all"
+msgstr "klistra in allt"
+
+#: ../src/libs/copy_history.c:255
 msgid ""
 "paste history stack to\n"
 "all selected images (ctrl-v)"
 msgstr ""
-"klistra in ändringshistoriken på\n"
+"klistra in historiken på\n"
 "alla valda bilder (ctrl-v)."
 
-#: ../src/libs/copy_history.c:243
+#: ../src/libs/copy_history.c:260
+msgid "append"
+msgstr "lägg till"
+
+#: ../src/libs/copy_history.c:261
+msgid "overwrite"
+msgstr "skriv över"
+
+#: ../src/libs/copy_history.c:262
+msgid "how to handle existing history"
+msgstr "hur nuvarande historik ska hanteras"
+
+#: ../src/libs/copy_history.c:269
 msgid "load sidecar file"
 msgstr "läs in inställningsfil"
 
-#: ../src/libs/copy_history.c:245
+#: ../src/libs/copy_history.c:271
 msgid ""
 "open an xmp sidecar file\n"
 "and apply it to selected images"
@@ -5632,35 +5655,45 @@ msgstr ""
 "öppna en xmp inställningsfil\n"
 "och tillämpa på valda bilder."
 
-#: ../src/libs/copy_history.c:248
+#: ../src/libs/copy_history.c:274
 msgid "write sidecar files"
 msgstr "skapa sidofiler med inställningar"
 
-#: ../src/libs/copy_history.c:250
+#: ../src/libs/copy_history.c:276
 msgid "write history stack and tags to xmp sidecar files"
 msgstr "skriv historik och taggar till xmp sidofil"
 
-#: ../src/libs/copy_history.c:282
+#: ../src/libs/copy_history.c:314
 msgctxt "accel"
 msgid "copy"
 msgstr "kopiera"
 
-#: ../src/libs/copy_history.c:283
+#: ../src/libs/copy_history.c:315
+msgctxt "accel"
+msgid "copy parts"
+msgstr "kopiera delar"
+
+#: ../src/libs/copy_history.c:316
 msgctxt "accel"
 msgid "discard"
 msgstr "förkasta"
 
-#: ../src/libs/copy_history.c:284
+#: ../src/libs/copy_history.c:317
 msgctxt "accel"
 msgid "paste"
 msgstr "klistra in"
 
-#: ../src/libs/copy_history.c:285
+#: ../src/libs/copy_history.c:318
+msgctxt "accel"
+msgid "paste parts"
+msgstr "klistra in delar"
+
+#: ../src/libs/copy_history.c:319
 msgctxt "accel"
 msgid "load sidecar files"
 msgstr "läs in inställningsfil"
 
-#: ../src/libs/copy_history.c:286
+#: ../src/libs/copy_history.c:320
 msgctxt "accel"
 msgid "write sidecar files"
 msgstr "skapa sidofiler med inställningar"
@@ -5899,15 +5932,15 @@ msgstr "applicerar en vald stil från popup-menyn"
 #: ../src/libs/history.c:79
 msgctxt "accel"
 msgid "compress history stack"
-msgstr "komprimera förändringshistorik"
+msgstr "komprimera historiken"
 
 #: ../src/libs/history.c:106
 msgid "compress history stack"
-msgstr "komprimera historikstack"
+msgstr "komprimera historiken"
 
 #: ../src/libs/history.c:108
 msgid "create a minimal history stack which produces the same image"
-msgstr "skapar en minimal historikstack som producerar samma bildresultat"
+msgstr "skapar en minimal historik som producerar samma bildresultat"
 
 #: ../src/libs/history.c:116
 msgid "create a style from the current history stack"
@@ -5959,7 +5992,7 @@ msgstr "duplicera"
 
 #: ../src/libs/image.c:176
 msgid "add a duplicate to the collection, including its history stack"
-msgstr "lägg till en kopia till samlingen, inklusive dess historia"
+msgstr "lägg till en kopia till samlingen, inklusive dess historik"
 
 #: ../src/libs/image.c:186
 msgid "rotate selected images 90 degrees ccw"
@@ -6902,97 +6935,102 @@ msgstr ""
 "Mattias Eriksson\n"
 "Richard Levitte"
 
-#: ../src/libs/tools/filmstrip.c:128
+#: ../src/libs/tools/filmstrip.c:131
 msgid "filmstrip"
 msgstr "filmrulle"
 
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:154 ../src/views/lighttable.c:1393
+#: ../src/libs/tools/filmstrip.c:157 ../src/views/lighttable.c:1393
 msgctxt "accel"
 msgid "rate desert"
 msgstr "ingen rang"
 
-#: ../src/libs/tools/filmstrip.c:155 ../src/views/lighttable.c:1394
+#: ../src/libs/tools/filmstrip.c:158 ../src/views/lighttable.c:1394
 msgctxt "accel"
 msgid "rate 1"
 msgstr "rang 1"
 
-#: ../src/libs/tools/filmstrip.c:156 ../src/views/lighttable.c:1395
+#: ../src/libs/tools/filmstrip.c:159 ../src/views/lighttable.c:1395
 msgctxt "accel"
 msgid "rate 2"
 msgstr "rang 2"
 
-#: ../src/libs/tools/filmstrip.c:157 ../src/views/lighttable.c:1396
+#: ../src/libs/tools/filmstrip.c:160 ../src/views/lighttable.c:1396
 msgctxt "accel"
 msgid "rate 3"
 msgstr "rang 3"
 
-#: ../src/libs/tools/filmstrip.c:158 ../src/views/lighttable.c:1397
+#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1397
 msgctxt "accel"
 msgid "rate 4"
 msgstr "rang 4"
 
-#: ../src/libs/tools/filmstrip.c:159 ../src/views/lighttable.c:1398
+#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1398
 msgctxt "accel"
 msgid "rate 5"
 msgstr "rang 5"
 
-#: ../src/libs/tools/filmstrip.c:160 ../src/views/lighttable.c:1399
+#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1399
 msgctxt "accel"
 msgid "rate reject"
 msgstr "avvisad"
 
 #. setup history key accelerators
-#: ../src/libs/tools/filmstrip.c:164
+#: ../src/libs/tools/filmstrip.c:167
 msgctxt "accel"
 msgid "copy history"
 msgstr "kopiera historik"
 
-#: ../src/libs/tools/filmstrip.c:166
+#: ../src/libs/tools/filmstrip.c:169
 msgctxt "accel"
 msgid "copy history parts"
 msgstr "kopiera delar av historiken"
 
-#: ../src/libs/tools/filmstrip.c:168
+#: ../src/libs/tools/filmstrip.c:171
 msgctxt "accel"
 msgid "paste history"
 msgstr "klistra in historik"
 
-#: ../src/libs/tools/filmstrip.c:170
+#: ../src/libs/tools/filmstrip.c:173
+msgctxt "accel"
+msgid "paste history parts"
+msgstr "klistra in delar av historik"
+
+#: ../src/libs/tools/filmstrip.c:175
 msgctxt "accel"
 msgid "discard history"
 msgstr "släng historik"
 
-#: ../src/libs/tools/filmstrip.c:173
+#: ../src/libs/tools/filmstrip.c:178
 msgctxt "accel"
 msgid "duplicate image"
 msgstr "duplicerar bild"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:178 ../src/views/lighttable.c:1412
+#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:1412
 msgctxt "accel"
 msgid "color red"
 msgstr "röd färg"
 
-#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:1413
+#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:1413
 msgctxt "accel"
 msgid "color yellow"
 msgstr "gul färg"
 
-#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:1414
+#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:1414
 msgctxt "accel"
 msgid "color green"
 msgstr "grön färg"
 
-#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:1415
+#: ../src/libs/tools/filmstrip.c:186 ../src/views/lighttable.c:1415
 msgctxt "accel"
 msgid "color blue"
 msgstr "blå färg"
 
-#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:1416
+#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1416
 msgctxt "accel"
 msgid "color purple"
 msgstr "lila färg"
