@@ -89,7 +89,7 @@ _gui_styles_new_style_response(GtkDialog *dialog, gint response_id, dt_gui_style
       dt_styles_create_from_image(
         gtk_entry_get_text ( GTK_ENTRY (g->name)),
         gtk_entry_get_text ( GTK_ENTRY (g->description)),
-        g->imgid,result);
+        g->imgid,result,FALSE);
   }
   gtk_widget_destroy(GTK_WIDGET(dialog));
   g_free(g->nameorig);
@@ -111,13 +111,13 @@ _gui_styles_edit_style_response(GtkDialog *dialog, gint response_id, dt_gui_styl
           g->nameorig,
           gtk_entry_get_text ( GTK_ENTRY (g->name)),
           gtk_entry_get_text ( GTK_ENTRY (g->description)),
-          result);
+          result,FALSE);
       else
         dt_styles_update(
           g->nameorig,
           gtk_entry_get_text ( GTK_ENTRY (g->name)),
           gtk_entry_get_text ( GTK_ENTRY (g->description)),
-          result);
+          result,FALSE);
     }
   }
   gtk_widget_destroy(GTK_WIDGET(dialog));

@@ -102,7 +102,7 @@ dt_styles_create_style_header(const char *name, const char *description)
 }
 
 void
-dt_styles_update (const char *name, const char *newname, const char *newdescription, GList *filter)
+dt_styles_update (const char *name, const char *newname, const char *newdescription, GList *filter,gboolean silent)
 {
   sqlite3_stmt *stmt;
   int id=0;
@@ -153,7 +153,7 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
   g_strlcat(stylesdir,"/styles",1024);
   g_mkdir_with_parents(stylesdir,00755);
   
-  dt_styles_save_to_file(newname,stylesdir,TRUE);
+  dt_styles_save_to_file(newname,stylesdir,TRUE,silent);
   
   /* delete old accelerator and create a new one */
   //TODO: sould better use dt_accel_rename_global() to keep the old accel_key untouched, but it seems to be buggy
@@ -178,7 +178,7 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
   
 
 void
-dt_styles_create_from_style (const char *name, const char *newname, const char *description, GList *filter)
+dt_styles_create_from_style (const char *name, const char *newname, const char *description, GList *filter,gboolean silent)
 {
   sqlite3_stmt *stmt;
   int id=0;
@@ -225,7 +225,7 @@ dt_styles_create_from_style (const char *name, const char *newname, const char *
     g_strlcat(stylesdir,"/styles",1024);
     g_mkdir_with_parents(stylesdir,00755);
 
-    dt_styles_save_to_file(newname,stylesdir,FALSE);
+    dt_styles_save_to_file(newname,stylesdir,FALSE,silent);
 
       char tmp_accel[1024];
       gchar* tmp_name = g_strdup(newname); // freed by _destro_style_shortcut_callback
@@ -241,7 +241,7 @@ dt_styles_create_from_style (const char *name, const char *newname, const char *
 }
 
 void
-dt_styles_create_from_image (const char *name,const char *description,int32_t imgid,GList *filter)
+dt_styles_create_from_image (const char *name,const char *description,int32_t imgid,GList *filter,gboolean silent)
 {
   int id=0;
   sqlite3_stmt *stmt;
@@ -284,7 +284,7 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
     g_strlcat(stylesdir,"/styles",1024);
     g_mkdir_with_parents(stylesdir,00755);
 
-    dt_styles_save_to_file(name,stylesdir,FALSE);
+    dt_styles_save_to_file(name,stylesdir,FALSE,silent);
 
     char tmp_accel[1024];
     gchar* tmp_name = g_strdup(name); // freed by _destro_style_shortcut_callback
@@ -295,7 +295,7 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
                 G_CALLBACK(_apply_style_shortcut_callback),
                 tmp_name, _destroy_style_shortcut_callback);
     dt_accel_connect_global(tmp_accel, closure);
-    dt_control_log(_("style named '%s' successfully created"),name);
+    if(!silent) dt_control_log(_("style named '%s' successfully created"),name);
   }
 }
 
@@ -508,7 +508,7 @@ dt_style_encode(sqlite3_stmt *stmt, int row)
 }
 
 void
-dt_styles_save_to_file(const char *style_name,const char *filedir,gboolean overwrite)
+dt_styles_save_to_file(const char *style_name,const char *filedir,gboolean overwrite,gboolean silent)
 {
   int rc = 0;
   char stylename[520];
@@ -576,7 +576,7 @@ dt_styles_save_to_file(const char *style_name,const char *filedir,gboolean overw
   sqlite3_finalize(stmt);
   xmlTextWriterEndDocument(writer);
   xmlFreeTextWriter(writer);
-  dt_control_log(_("style %s was successfully saved"),style_name);
+  if(!silent) dt_control_log(_("style %s was successfully saved"),style_name);
 }
 
 static StyleData *

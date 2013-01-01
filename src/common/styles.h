@@ -47,13 +47,13 @@ typedef struct dt_style_item_t
 } dt_style_item_t;
 
 /** creates a new style from specified image, items are the history stack number of items to include in style */
-void dt_styles_create_from_image (const char *name,const char *description,int32_t imgid,GList *items);
+void dt_styles_create_from_image (const char *name,const char *description,int32_t imgid,GList *items,gboolean silent);
 
 /** creates a new style from specified style, items are the style number of items to include in style */
-void dt_styles_create_from_style (const char *name, const char *newname, const char *description, GList *filter);
+void dt_styles_create_from_style (const char *name, const char *newname, const char *description, GList *filter,gboolean silent);
 
 /** update a style */
-void dt_styles_update (const char *name, const char *newname, const char *newdescription, GList *filter);
+void dt_styles_update (const char *name, const char *newname, const char *newdescription, GList *filter,gboolean silent);
 
 /** applies the style to selection of images */
 void dt_styles_apply_to_selection (const char *name,gboolean duplicate);
@@ -80,7 +80,7 @@ char *dt_styles_get_item_list_as_string(const char *name);
 gchar *dt_styles_get_description (const char *name);
 
 /** save style to file */
-void dt_styles_save_to_file(const char *style_name,const char *filedir,gboolean overwrite);
+void dt_styles_save_to_file(const char *style_name,const char *filedir,gboolean overwrite,gboolean silent);
 
 /** load style from file */
 void dt_styles_import_from_file(const char *style_path);

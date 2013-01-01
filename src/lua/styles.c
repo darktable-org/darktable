@@ -23,15 +23,18 @@
 #include <stdlib.h>
 #include "common/styles.h"
 
+static GList * style_item_table_to_id_list(lua_State*L, int index);
 /////////////////////////
 // dt_style_t
 /////////////////////////
 typedef enum {
   GET_ITEMS,
+  UPDATE,
   LAST_STYLE_FIELD
 } style_fields;
 const char *style_fields_name[] = {
   "get_items",
+  "update",
   NULL
 };
 static int style_gc(lua_State*L) {
@@ -59,11 +62,23 @@ static int style_get_items(lua_State*L) {
   return 1;
 }
 
+static int style_update(lua_State*L) {
+	dt_style_t * style =luaL_checkudata(L,1,"dt_style_t");
+  const char * newname =lua_isnoneornil(L,2)?style->name:luaL_checkstring(L,2);
+	const char * description =lua_isnoneornil(L,3)?style->description:luaL_checkstring(L,3);
+  GList* filter= style_item_table_to_id_list(L, 4);
+  dt_styles_update(style->name,newname,description,filter,TRUE);
+  return 0;
+}
+
 static int style_index(lua_State*L) {
   int index = lua_tonumber(L,-1);
   switch(index) {
     case GET_ITEMS:
       lua_pushcfunction(L,style_get_items);
+      return 1;
+    case UPDATE:
+      lua_pushcfunction(L,style_update);
       return 1;
     default:
       return luaL_error(L,"should never happen %d",index);
@@ -72,7 +87,6 @@ static int style_index(lua_State*L) {
 /////////////////////////
 // dt_style_item_t
 /////////////////////////
-
 
 static int style_item_tostring(lua_State*L) {
 	dt_style_item_t * item =luaL_checkudata(L,-1,"dt_style_item_t");
@@ -101,6 +115,20 @@ static int style_table(lua_State*L) {
 	return 1;
 }
 
+static GList * style_item_table_to_id_list(lua_State*L, int index) {
+  if(lua_isnoneornil(L,index)) return NULL;
+  luaL_checktype(L,index,LUA_TTABLE);
+  lua_pushnil(L);  /* first key */
+  GList * result=NULL;
+  while (lua_next(L, index) != 0) {
+    /* uses 'key' (at index -2) and 'value' (at index -1) */
+    dt_style_item_t * item =luaL_checkudata(L,-1,"dt_style_item_t");
+    result =g_list_prepend(result,(gpointer)(long unsigned int)item->num);
+    lua_pop(L,1);
+  }
+  result = g_list_reverse(result);
+  return result;
+}
 int dt_lua_init_styles(lua_State * L) {
   // dt_style
   dt_lua_init_type(L,dt_style_t,style_fields_name,style_index,NULL);

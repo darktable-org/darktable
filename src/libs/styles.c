@@ -241,7 +241,7 @@ static void export_clicked (GtkWidget *w,gpointer user_data)
     if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT )
     {
       char *filedir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-      dt_styles_save_to_file(name,filedir,FALSE);
+      dt_styles_save_to_file(name,filedir,FALSE,FALSE);
       g_free (filedir);
     }
     g_free(name);
