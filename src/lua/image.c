@@ -160,15 +160,21 @@ GList * dt_lua_image_glist_get(lua_State *L,int index)
 
 
 static int image_get_history(lua_State*L) {
-  const dt_image_t * image =dt_lua_checkreadimage(L,-1);
-  GList * items = dt_history_get_items(image->id,true);
+  int imgid = dt_lua_image_get(L,-1);
+  GList * items = dt_history_get_items(imgid,true);
   dt_lua_push_glist(L,items,dt_history_item_t,true);
   while(items) {
     g_free(items->data);
     items = items->next;
   }
-  dt_lua_releasereadimage(L,image);
   return 1;
+}
+
+
+static int image_reset_history(lua_State*L) {
+  int imgid = dt_lua_image_get(L,-1);
+  dt_history_delete_on_image(imgid);
+  return 0;
 }
 
 
@@ -187,6 +193,7 @@ typedef enum {
   DESCRIPTION,
   RIGHTS,
   GET_HISTORY,
+  RESET,
   LAST_IMAGE_FIELD
 } image_fields;
 const char *image_fields_name[] = {
@@ -204,6 +211,7 @@ const char *image_fields_name[] = {
   "description",
   "rights",
   "get_history",
+  "reset",
   NULL
 };
 
@@ -357,6 +365,11 @@ static int image_index(lua_State *L){
         lua_pushcfunction(L,image_get_history);
         break;
       }
+    case RESET:
+      {
+        lua_pushcfunction(L,image_reset_history);
+        break;
+      }
     default:
       dt_lua_releasereadimage(L,my_image);
       return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
@@ -418,6 +431,7 @@ static int image_newindex(lua_State *L){
       dt_image_synch_xmp(my_image->id);
       break;
     case GET_HISTORY:
+    case RESET:
     case PATH:
     case DUP_INDEX:
     case IS_LDR:
