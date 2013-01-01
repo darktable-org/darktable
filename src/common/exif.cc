@@ -1605,7 +1605,8 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     snprintf(key, 1024, "Xmp.darktable.multi_priority[%d]", num);
     xmpData.add(Exiv2::XmpKey(key), &tv);
     const char *mname = (const char *)sqlite3_column_text(stmt, 9);
-    tv.read(mname);
+    if(mname) tv.read(mname);
+    else tv.read("");
     snprintf(key, 1024, "Xmp.darktable.multi_name[%d]", num);
     xmpData.add(Exiv2::XmpKey(key), &tv);
 
