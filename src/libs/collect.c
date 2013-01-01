@@ -1054,26 +1054,26 @@ folders_view (dt_lib_collect_rule_t *dr)
   
   set_properties (dr);
 
-if (d->trees != NULL)
-{
-  if (dr->typing == FALSE)
+  if (d->trees != NULL)
   {
-    // Do nothing here
-  }
-  else
-  {
-    for (int i=0; i<d->trees->len; i++)
+    if (dr->typing == FALSE)
     {
-      tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
-      GtkTreeModelFilter *modelfilter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model (tree));
-      GtkTreeModel *model = gtk_tree_model_filter_get_model (modelfilter);
-      refilter (model, dr);
-      expand_tree (tree, dr);
+      // Do nothing here
+    }
+    else
+    {
+      for (int i=0; i<d->trees->len; i++)
+      {
+        tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
+        GtkTreeModelFilter *modelfilter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model (tree));
+        GtkTreeModel *model = gtk_tree_model_filter_get_model (modelfilter);
+        refilter (model, dr);
+        expand_tree (tree, dr);
+      }
     }
   }
-}
-gtk_widget_show(GTK_WIDGET(d->box));
-gtk_widget_show(GTK_WIDGET(d->sw2));
+  gtk_widget_show(GTK_WIDGET(d->box));
+  gtk_widget_show(GTK_WIDGET(d->sw2));
 }
 
 static void
