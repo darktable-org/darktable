@@ -1103,10 +1103,7 @@ list_view (dt_lib_collect_rule_t *dr)
   text = gtk_entry_get_text(GTK_ENTRY(dr->text));
   gchar *escaped_text = NULL;
 
-  if (!dr->typing)
-    escaped_text = g_strdup("");
-  else
-    escaped_text = dt_util_str_replace(text, "'", "''");
+  escaped_text = dt_util_str_replace(text, "'", "''");
   
   switch(property)
   {
@@ -1685,10 +1682,7 @@ menuitem_change_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
 static void
 collection_updated(gpointer instance, gpointer self)
 {
-  dt_lib_module_t *dm = (dt_lib_module_t *)self;
-  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
-
-  update_view (NULL, d->rule + d->active_rule);
+  _lib_collect_gui_update(self);
 }
 
 
