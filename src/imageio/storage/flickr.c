@@ -683,13 +683,16 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 #ifdef _OPENMP
   #pragma omp critical
 #endif
-//TODO: Check if this could be done in threads, so we enhace export time by using
-//      upload time for one image to export another image to disk.
-  // Upload image
-  // Do we export tags?
-  if( p->export_tags == TRUE )
-    tags = imgid;
-  photo_status = _flickr_api_upload_photo( p, fname, caption, description, tags );
+  {
+    //TODO: Check if this could be done in threads, so we enhace export time by using
+    //      upload time for one image to export another image to disk.
+    // Upload image
+    // Do we export tags?
+    if( p->export_tags == TRUE )
+      tags = imgid;
+    photo_status = _flickr_api_upload_photo( p, fname, caption, description, tags );
+  }
+
   if( !photo_status )
   {
     result=0;

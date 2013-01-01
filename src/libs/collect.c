@@ -153,7 +153,7 @@ static void _lib_collect_update_params(dt_lib_collect_t *d)
       g_free(string);
     }
 
-    fprintf(stderr,"[%i] %d,%d,%s\n",i, p->rule[i].item, p->rule[i].mode,  p->rule[i].string);
+    // fprintf(stderr,"[%i] %d,%d,%s\n",i, p->rule[i].item, p->rule[i].mode,  p->rule[i].string);
   }
 
   p->rules = active+1;
@@ -1054,26 +1054,26 @@ folders_view (dt_lib_collect_rule_t *dr)
   
   set_properties (dr);
 
-if (d->trees != NULL)
-{
-  if (dr->typing == FALSE)
+  if (d->trees != NULL)
   {
-    // Do nothing here
-  }
-  else
-  {
-    for (int i=0; i<d->trees->len; i++)
+    if (dr->typing == FALSE)
     {
-      tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
-      GtkTreeModelFilter *modelfilter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model (tree));
-      GtkTreeModel *model = gtk_tree_model_filter_get_model (modelfilter);
-      refilter (model, dr);
-      expand_tree (tree, dr);
+      // Do nothing here
+    }
+    else
+    {
+      for (int i=0; i<d->trees->len; i++)
+      {
+        tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
+        GtkTreeModelFilter *modelfilter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model (tree));
+        GtkTreeModel *model = gtk_tree_model_filter_get_model (modelfilter);
+        refilter (model, dr);
+        expand_tree (tree, dr);
+      }
     }
   }
-}
-gtk_widget_show(GTK_WIDGET(d->box));
-gtk_widget_show(GTK_WIDGET(d->sw2));
+  gtk_widget_show(GTK_WIDGET(d->box));
+  gtk_widget_show(GTK_WIDGET(d->sw2));
 }
 
 static void
@@ -1103,10 +1103,7 @@ list_view (dt_lib_collect_rule_t *dr)
   text = gtk_entry_get_text(GTK_ENTRY(dr->text));
   gchar *escaped_text = NULL;
 
-  if (!dr->typing)
-    escaped_text = g_strdup("");
-  else
-    escaped_text = dt_util_str_replace(text, "'", "''");
+  escaped_text = dt_util_str_replace(text, "'", "''");
   
   switch(property)
   {
@@ -1685,10 +1682,7 @@ menuitem_change_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
 static void
 collection_updated(gpointer instance, gpointer self)
 {
-  dt_lib_module_t *dm = (dt_lib_module_t *)self;
-  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
-
-  update_view (NULL, d->rule + d->active_rule);
+  _lib_collect_gui_update(self);
 }
 
 
