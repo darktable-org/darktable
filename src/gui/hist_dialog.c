@@ -61,20 +61,41 @@ _gui_hist_get_active_items (dt_gui_hist_dialog_t *d)
 }
 
 static void
+_gui_hist_set_items (dt_gui_hist_dialog_t *d, gboolean active)
+{
+  /* run thru all items and set active status */
+  GtkTreeIter iter;
+  GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (d->items));
+  if (gtk_tree_model_get_iter_first(model,&iter))
+  {
+    do
+    {
+      gtk_list_store_set (GTK_LIST_STORE (model), &iter, DT_HIST_ITEMS_COL_ENABLED, active, -1);
+    }
+    while (gtk_tree_model_iter_next (model,&iter));
+  }
+}
+
+static void
 _gui_hist_copy_response(GtkDialog *dialog, gint response_id, dt_gui_hist_dialog_t *g)
 {
-  if (response_id == GTK_RESPONSE_YES)
+  switch(response_id)
   {
-    /* get the filtered list from dialog */
-    g->selops = _gui_hist_get_active_items(g);
-  }
-  else if (g->selops)
-  {
-    /* otherwise all is copied, nullify the ops list. */
-    g->selops = NULL;
-  }
+  case GTK_RESPONSE_CANCEL:
+    break;
 
-  gtk_widget_destroy(GTK_WIDGET(dialog));
+  case GTK_RESPONSE_YES:
+    _gui_hist_set_items (g, TRUE);
+    break;
+
+  case GTK_RESPONSE_NONE:
+    _gui_hist_set_items (g, FALSE);
+    break;
+
+  case GTK_RESPONSE_OK:
+    g->selops = _gui_hist_get_active_items(g);
+    break;
+  }
 }
 
 static void
@@ -98,18 +119,32 @@ _gui_hist_item_toggled (GtkCellRendererToggle *cell,
   gtk_tree_path_free (path);
 }
 
-void dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid)
+void dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
 {
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+  char label[10];
+
+  if (iscopy)
+  {
+    strcpy(label, _("copy all"));
+    d->copied_imageid = imgid;
+  }
+  else
+    strcpy(label, _("paste all"));
+
   GtkDialog *dialog = GTK_DIALOG
     (gtk_dialog_new_with_buttons
      ("select parts",
       GTK_WINDOW(window),
       GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+      GTK_STOCK_CANCEL,
+      GTK_RESPONSE_CANCEL,
       GTK_STOCK_SELECT_ALL,
-      GTK_RESPONSE_ACCEPT,
-      GTK_STOCK_OK,
       GTK_RESPONSE_YES,
+      GTK_STOCK_CLEAR,
+      GTK_RESPONSE_NONE,
+      GTK_STOCK_OK,
+      GTK_RESPONSE_OK,
       NULL));
 
   GtkContainer *content_area = GTK_CONTAINER (gtk_dialog_get_content_area (GTK_DIALOG (dialog)));
@@ -164,7 +199,7 @@ void dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid)
 
       gtk_list_store_append (GTK_LIST_STORE(liststore), &iter);
       gtk_list_store_set (GTK_LIST_STORE(liststore), &iter,
-                          DT_HIST_ITEMS_COL_ENABLED, FALSE,
+                          DT_HIST_ITEMS_COL_ENABLED, TRUE,
                           DT_HIST_ITEMS_COL_NAME, item->name,
                           DT_HIST_ITEMS_COL_NUM, (guint)item->num,
                           -1);
@@ -186,7 +221,15 @@ void dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid)
   g_signal_connect (dialog, "response", G_CALLBACK (_gui_hist_copy_response), d);
 
   gtk_widget_show_all (GTK_WIDGET (dialog));
-  gtk_dialog_run(GTK_DIALOG(dialog));
+
+  while(1)
+  {
+    int res = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (res == GTK_RESPONSE_CANCEL || res == GTK_RESPONSE_OK)
+      break;
+  }
+
+  gtk_widget_destroy(GTK_WIDGET(dialog));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
