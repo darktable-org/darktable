@@ -27,7 +27,11 @@
 static int style_table(lua_State*L) {
 	GList *style_list = dt_styles_get_list ("");
 	dt_lua_push_glist(L,style_list,dt_style_t);
-	// TODO memleak, style must be destroyed
+
+  while(style_list) {
+    g_free(style_list->data);
+    style_list = style_list->next;
+  }
 	return 1;
 }
 
@@ -47,6 +51,7 @@ static int style_tostring(lua_State*L) {
 
 
 int dt_lua_init_styles(lua_State * L) {
+  // dt_style
   dt_lua_init_type(L,dt_style_t,NULL,NULL,NULL);
   luaA_struct(L,dt_style_t);
   luaA_struct_member(L,dt_style_t,name,const char*);
@@ -55,6 +60,8 @@ int dt_lua_init_styles(lua_State * L) {
   lua_setfield(L,-2,"__gc");
   lua_pushcfunction(L,style_tostring);
   lua_setfield(L,-2,"__tostring");
+
+
 
   /* darktable.styles.members() */
   dt_lua_push_darktable_lib(L);
