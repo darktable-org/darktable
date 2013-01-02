@@ -19,9 +19,11 @@
 #include "lua/styles.h"
 #include "lua/glist.h"
 #include "lua/types.h"
+#include "lua/image.h"
 #include <lauxlib.h>
 #include <stdlib.h>
 #include "common/styles.h"
+#include "common/history.h"
 
 static GList * style_item_table_to_id_list(lua_State*L, int index);
 /////////////////////////
@@ -31,12 +33,14 @@ typedef enum {
   GET_ITEMS,
   UPDATE,
   DUPLICATE,
+  DELETE,
   LAST_STYLE_FIELD
 } style_fields;
 const char *style_fields_name[] = {
   "get_items",
   "update",
   "duplicate",
+  "delete",
   NULL
 };
 static int style_gc(lua_State*L) {
@@ -64,12 +68,19 @@ static int style_get_items(lua_State*L) {
   return 1;
 }
 
+static int style_delete(lua_State*L) {
+	dt_style_t * style =luaL_checkudata(L,1,"dt_style_t");
+  dt_styles_delete_by_name(style->name);
+  return 0;
+}
+
 static int style_update(lua_State*L) {
 	dt_style_t * style =luaL_checkudata(L,1,"dt_style_t");
   const char * newname =lua_isnoneornil(L,2)?style->name:luaL_checkstring(L,2);
 	const char * description =lua_isnoneornil(L,3)?style->description:luaL_checkstring(L,3);
   GList* filter= style_item_table_to_id_list(L, 4);
   dt_styles_update(style->name,newname,description,filter,TRUE);
+  g_list_free(filter);
   return 0;
 }
 
@@ -79,6 +90,7 @@ static int style_duplicate(lua_State*L) {
 	const char * description =lua_isnoneornil(L,3)?style->description:luaL_checkstring(L,3);
   GList* filter= style_item_table_to_id_list(L, 4);
   dt_styles_create_from_style(style->name,newname,description,filter,TRUE);
+  g_list_free(filter);
   return 0;
 }
 static int style_index(lua_State*L) {
@@ -92,6 +104,9 @@ static int style_index(lua_State*L) {
       return 1;
     case DUPLICATE:
       lua_pushcfunction(L,style_duplicate);
+      return 1;
+    case DELETE:
+      lua_pushcfunction(L,style_delete);
       return 1;
     default:
       return luaL_error(L,"should never happen %d",index);
@@ -114,19 +129,6 @@ static int style_item_gc(lua_State*L) {
 	free(item->blendop_params);
 	return 0;
 }
-/////////////////////////
-// toplevel and common
-/////////////////////////
-static int style_table(lua_State*L) {
-	GList *style_list = dt_styles_get_list ("");
-	dt_lua_push_glist(L,style_list,dt_style_t,false);
-
-  while(style_list) {
-    g_free(style_list->data);
-    style_list = style_list->next;
-  }
-	return 1;
-}
 
 static GList * style_item_table_to_id_list(lua_State*L, int index) {
   if(lua_isnoneornil(L,index)) return NULL;
@@ -142,6 +144,35 @@ static GList * style_item_table_to_id_list(lua_State*L, int index) {
   result = g_list_reverse(result);
   return result;
 }
+
+
+/////////////////////////
+// toplevel and common
+/////////////////////////
+static int style_table(lua_State*L) {
+  GList *style_list = dt_styles_get_list ("");
+  lua_newtable(L);
+  while(style_list) {
+    dt_style_t *data =style_list->data;
+    luaA_push(L,dt_style_t,data);
+    lua_setfield(L,-2,data->name);
+    style_list = g_list_delete_link(style_list,style_list);
+  }
+  return 1;
+}
+
+
+static int style_create_from_image(lua_State*L) {
+  int imgid = dt_lua_image_get(L,1);
+  const char * newname =luaL_checkstring(L,2);
+	const char * description =lua_isnoneornil(L,3)?"":luaL_checkstring(L,3);
+  GList* filter= dt_lua_history_item_table_to_id_list(L, 4);
+  dt_styles_create_from_image(newname,description,imgid,filter,TRUE);
+  g_list_free(filter);
+  return 0;
+}
+
+
 int dt_lua_init_styles(lua_State * L) {
   // dt_style
   dt_lua_init_type(L,dt_style_t,style_fields_name,style_index,NULL);
@@ -170,6 +201,8 @@ int dt_lua_init_styles(lua_State * L) {
   dt_lua_goto_subtable(L,"styles");
   lua_pushcfunction(L,style_table);
   lua_setfield(L,-2,"members");
+  lua_pushcfunction(L,style_create_from_image);
+  lua_setfield(L,-2,"create");
   return 0;
 }
 
