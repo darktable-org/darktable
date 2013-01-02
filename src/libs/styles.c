@@ -176,6 +176,14 @@ _styles_row_activated_callback (GtkTreeView *view, GtkTreePath *path, GtkTreeVie
 
 }
 
+static void create_clicked(GtkWidget *w,gpointer user_data)
+{
+  dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
+
+  dt_styles_create_from_selection();
+  _gui_styles_update_view(d);
+}
+
 static void edit_clicked(GtkWidget *w,gpointer user_data)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
@@ -372,6 +380,12 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX (hbox), vbox1, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX (hbox), vbox2, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX (self->widget),hbox,TRUE,FALSE,0);
+
+  // create
+  GtkWidget *cbutton = gtk_button_new_with_label(_("create"));
+  g_signal_connect (G_OBJECT (cbutton), "clicked", G_CALLBACK (create_clicked),d);
+  g_object_set (G_OBJECT (cbutton), "tooltip-text", _("create styles from history stack of selected images"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX (vbox1),cbutton,TRUE,TRUE,0);
 
   // edit
   GtkWidget *widget = gtk_button_new_with_label(_("edit"));
