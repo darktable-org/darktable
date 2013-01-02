@@ -11,14 +11,19 @@
 include(LibFindMacros)
 
 # On Linux there is no pkgconfig script, but with this we force Gettext_PKGCONF_INCLUDE_DIRS to ""
-libfind_pkg_check_modules(Gettext_PKGCONF Gettext)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  set(Gettext_PKGCONF_INCLUDE_DIRS "")
+else(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  libfind_pkg_check_modules(Gettext_PKGCONF Gettext)
+endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+
 if(WIN32 OR APPLE)
   set(Gettext_LIBRARY_SEARCH_DIRS
     ${Gettext_PKGCONF_LIBRARY_DIRS}
     /opt/local/lib
     /sw/local/lib
   )
-  
+
   find_library(Gettext_LIBRARY
     NAMES intl
     PATHS ${Gettext_LIBRARY_SEARCH_DIRS}
