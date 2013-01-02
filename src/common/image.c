@@ -626,9 +626,8 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
                                 -1, &duplicates_stmt, NULL);
 
     // move image
-    // TODO: Use gio's' g_file_move instead of g_rename?
     if (!g_file_test(newimg, G_FILE_TEST_EXISTS)
-        && (g_rename(oldimg, newimg) == 0))
+        && (g_file_move(g_file_new_for_path(oldimg), g_file_new_for_path(newimg), 0, NULL, NULL, NULL, NULL) == TRUE))
     {
       // first move xmp files of image and duplicates
       GList *dup_list = NULL;
@@ -637,15 +636,15 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
       {
         int32_t id = sqlite3_column_int(duplicates_stmt, 0);
         dup_list = g_list_append(dup_list, GINT_TO_POINTER(id));
-        gchar oldxmp[512], newxmp[512];
-        g_strlcpy(oldxmp, oldimg, 512);
-        g_strlcpy(newxmp, newimg, 512);
-        dt_image_path_append_version(id, oldxmp, 512);
-        dt_image_path_append_version(id, newxmp, 512);
-        g_strlcat(oldxmp, ".xmp", 512);
-        g_strlcat(newxmp, ".xmp", 512);
+        gchar oldxmp[DT_MAX_PATH_LEN], newxmp[DT_MAX_PATH_LEN];
+        g_strlcpy(oldxmp, oldimg, DT_MAX_PATH_LEN);
+        g_strlcpy(newxmp, newimg, DT_MAX_PATH_LEN);
+        dt_image_path_append_version(id, oldxmp, DT_MAX_PATH_LEN);
+        dt_image_path_append_version(id, newxmp, DT_MAX_PATH_LEN);
+        g_strlcat(oldxmp, ".xmp", DT_MAX_PATH_LEN);
+        g_strlcat(newxmp, ".xmp", DT_MAX_PATH_LEN);
         if (g_file_test(oldxmp, G_FILE_TEST_EXISTS))
-          (void)g_rename(oldxmp, newxmp);
+          (void)g_file_move(g_file_new_for_path(oldxmp), g_file_new_for_path(newxmp), 0, NULL, NULL, NULL, NULL);
       }
       sqlite3_reset(duplicates_stmt);
       sqlite3_clear_bindings(duplicates_stmt);
