@@ -652,9 +652,6 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
       sqlite3_reset(duplicates_stmt);
       sqlite3_clear_bindings(duplicates_stmt);
 
-      g_object_unref(old);
-      g_object_unref(new);
-
       // then update database and cache
       // if update was performed in above loop, dt_image_path_append_version()
       // would return wrong version!
@@ -676,6 +673,10 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
     {
       fprintf(stderr, "[dt_image_move] error moving `%s' -> `%s'\n", oldimg, newimg);
     }
+    
+    g_object_unref(old);
+    g_object_unref(new);
+
   }
 
   return result;
