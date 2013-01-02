@@ -626,8 +626,11 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
                                 -1, &duplicates_stmt, NULL);
 
     // move image
+    GFile *old, *new;
+    old = g_file_new_for_path(oldimg);
+    new = g_file_new_for_path(newimg);
     if (!g_file_test(newimg, G_FILE_TEST_EXISTS)
-        && (g_file_move(g_file_new_for_path(oldimg), g_file_new_for_path(newimg), 0, NULL, NULL, NULL, NULL) == TRUE))
+        && (g_file_move(old, new, 0, NULL, NULL, NULL, NULL) == TRUE))
     {
       // first move xmp files of image and duplicates
       GList *dup_list = NULL;
@@ -648,6 +651,9 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
       }
       sqlite3_reset(duplicates_stmt);
       sqlite3_clear_bindings(duplicates_stmt);
+
+      g_object_unref(old);
+      g_object_unref(new);
 
       // then update database and cache
       // if update was performed in above loop, dt_image_path_append_version()
