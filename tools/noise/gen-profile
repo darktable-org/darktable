@@ -31,7 +31,7 @@ profile_image() {
 	if [ ! -f "$pfm" -o "$image" -nt "$pfm" -o "$xmp" -nt "$pfm" -o "$0" -nt "$pfm" ]; then
 		echo "--> Converting $image (ISO $iso)"
 		rm -f "$pfm"
-		darktable-cli $image $xmp $pfm
+		darktable-cli "$image" "$xmp" "$pfm"
 	else
 		echo "--> Skip $image (ISO $iso); output up-to-date"
 	fi
