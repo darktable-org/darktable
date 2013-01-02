@@ -179,6 +179,7 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   memcpy(ovoid, ivoid, width*height*ch*sizeof(float));
 
   if(nearest_color == NULL) return;
+  if(width < 3 || height < 3) return;
 
   // first height-1 rows
   for(int j=0; j<height-1; j++)
