@@ -108,12 +108,12 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
   sqlite3_stmt *stmt;
   int id=0;
   gchar *desc = NULL;
-  
+
   id = dt_styles_get_id_by_name(name);
   if(id == 0) return;
-  
+
   desc = dt_styles_get_description (name);
-  
+
   if ((g_strcmp0(name, newname)) || (g_strcmp0(desc, newdescription)))
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update styles set name=?1, description=?2 where rowid=?3", -1, &stmt, NULL);
@@ -123,7 +123,7 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
-  
+
   if (filter)
   {
     GList *list=filter;
@@ -139,7 +139,7 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
     }
     while ((list=g_list_next(list)));
     g_strlcat(include,")", 2048);
-    
+
     char query[4096]= {0};
     sprintf(query,"delete from style_items where styleid=?1 and %s", include);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -147,15 +147,15 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
-  
+
   /* backup style to disk */
   char stylesdir[1024];
   dt_loc_get_user_config_dir(stylesdir, 1024);
   g_strlcat(stylesdir,"/styles",1024);
   g_mkdir_with_parents(stylesdir,00755);
-  
+
   dt_styles_save_to_file(newname,stylesdir,TRUE);
-  
+
   /* delete old accelerator and create a new one */
   //TODO: sould better use dt_accel_rename_global() to keep the old accel_key untouched, but it seems to be buggy
   if (g_strcmp0(name, newname))
@@ -163,7 +163,7 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
     char tmp_accel[1024];
     snprintf(tmp_accel, 1024, "styles/Apply %s", name);
     dt_accel_deregister_global(tmp_accel);
-  
+
     gchar* tmp_name = g_strdup(newname); // freed by _destro_style_shortcut_callback
     snprintf(tmp_accel, 1024, "styles/Apply %s", newname);
     dt_accel_register_global( tmp_accel, 0, 0);
@@ -173,10 +173,10 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
         tmp_name, _destroy_style_shortcut_callback);
     dt_accel_connect_global(tmp_accel, closure);
   }
-  
+
   g_free(desc);
 }
-  
+
 
 void
 dt_styles_create_from_style (const char *name, const char *newname, const char *description, GList *filter)
@@ -184,13 +184,13 @@ dt_styles_create_from_style (const char *name, const char *newname, const char *
   sqlite3_stmt *stmt;
   int id=0;
   int oldid=0;
-  
+
   oldid = dt_styles_get_id_by_name(name);
   if(oldid == 0) return;
 
   /* create the style header */
   if (!dt_styles_create_style_header(newname, description)) return;
-  
+
   if ((id=dt_styles_get_id_by_name(newname)) != 0)
   {
     if (filter)
@@ -771,7 +771,7 @@ dt_style_plugin_save(StylePluginData *plugin,gpointer styleId)
 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, plugin->multi_priority);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, plugin->multi_name->str, plugin->multi_name->len, SQLITE_TRANSIENT);
-  
+
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   g_free(params);

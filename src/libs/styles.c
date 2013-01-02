@@ -360,7 +360,7 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (d->entry, "activate", G_CALLBACK(entry_activated),d);
 
   dt_gui_key_accel_block_on_focus ( GTK_WIDGET (d->entry));
-  
+
   scrolled = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
@@ -373,7 +373,7 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (d->duplicate, "toggled", G_CALLBACK(duplicate_callback),d);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (d->duplicate), dt_conf_get_bool("ui_last/styles_create_duplicate"));
   g_object_set (d->duplicate, "tooltip-text", _("creates a duplicate of the image before applying style"), (char *)NULL);
-  
+
   GtkWidget *hbox  = gtk_hbox_new(TRUE, 5);
   GtkWidget *vbox1 = gtk_vbox_new(TRUE, 5);
   GtkWidget *vbox2 = gtk_vbox_new(TRUE, 5);
@@ -400,7 +400,7 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (widget, "clicked", G_CALLBACK(delete_clicked),d);
   g_object_set (widget, "tooltip-text", _("deletes the selected style in list above"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX (vbox2),widget,TRUE,TRUE,0);
-  
+
   // import button
   GtkWidget *importButton = gtk_button_new_with_label(C_("styles", "import"));
   d->import_button = importButton;
