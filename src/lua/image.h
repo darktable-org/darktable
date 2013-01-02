@@ -34,6 +34,7 @@ void dt_lua_image_glist_push(lua_State *L, GList *list);
 GList * dt_lua_image_glist_get(lua_State *L,int index);
  
 
+GList * dt_lua_history_item_table_to_id_list(lua_State*L, int index);
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

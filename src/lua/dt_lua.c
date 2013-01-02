@@ -53,6 +53,7 @@ int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
   result= lua_gettop(L) -result;
 
   lua_gc(L,LUA_GCCOLLECT,0);
+  if(darktable.gui!=NULL) dt_control_queue_redraw();
   return result;
 }
 void dt_lua_protect_call(lua_State *L,lua_CFunction func) {

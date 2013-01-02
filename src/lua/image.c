@@ -30,15 +30,6 @@
 #include "metadata_gen.h"
 
 /********************************************
-common : for all types that are internally linked to a numid
- *******************************************/
-static int numid_compare(lua_State*L) {
-  int imgid=*((int*)lua_touserdata(L,-1));
-  int imgid2=*((int*)lua_touserdata(L,-1));
-  lua_pushboolean(L,imgid==imgid2);
-  return 1;
-}
-/********************************************
   image labels handling
  *******************************************/
 typedef int dt_lua_colorlabel_t;
@@ -73,6 +64,12 @@ static int colorlabel_newindex(lua_State *L){
   return 0;
 }
 
+static int numid_compare(lua_State*L) {
+  int imgid=*((int*)lua_touserdata(L,-1));
+  int imgid2=*((int*)lua_touserdata(L,-1));
+  lua_pushboolean(L,imgid==imgid2);
+  return 1;
+}
 /************************************
   image history handling
  ***********************************/
@@ -88,6 +85,22 @@ static int history_item_gc(lua_State*L) {
 	free(item->name);
 	free(item->op);
 	return 0;
+}
+
+
+GList * dt_lua_history_item_table_to_id_list(lua_State*L, int index) {
+  if(lua_isnoneornil(L,index)) return NULL;
+  luaL_checktype(L,index,LUA_TTABLE);
+  lua_pushnil(L);  /* first key */
+  GList * result=NULL;
+  while (lua_next(L, index) != 0) {
+    /* uses 'key' (at index -2) and 'value' (at index -1) */
+    dt_history_item_t * item =luaL_checkudata(L,-1,"dt_history_item_t");
+    result =g_list_prepend(result,(gpointer)(long unsigned int)item->num);
+    lua_pop(L,1);
+  }
+  result = g_list_reverse(result);
+  return result;
 }
 /***********************************************************************
   handling of dt_image_t
