@@ -30,6 +30,7 @@
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
 #include "gui/accelerators.h"
+#include "gui/styles.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -311,6 +312,25 @@ dt_styles_apply_to_selection(const char *name,gboolean duplicate)
     dt_styles_apply_to_image (name,duplicate,imgid);
   }
   sqlite3_finalize(stmt);
+}
+
+void
+dt_styles_create_from_selection()
+{
+  gboolean selected = FALSE;
+  /* for each selected create style */
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int imgid = sqlite3_column_int (stmt, 0);
+    dt_gui_styles_dialog_new (imgid);
+    selected = TRUE;
+  }
+  sqlite3_finalize(stmt);
+
+  if (!selected)
+    dt_control_log(_("no image selected!"));
 }
 
 void
