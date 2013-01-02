@@ -251,6 +251,15 @@ def add_edges(gr):
   gr.add_edge(('colorin', 'tonemap'))
   # global variant is Lab:
   gr.add_edge(('globaltonemap', 'colorin'))
+  gr.add_edge(('colorout', 'globaltonemap'))
+  # we want it to first tonemap, then adjust contrast:
+  gr.add_edge(('tonecurve', 'globaltonemap'))
+  gr.add_edge(('colorcorrection', 'globaltonemap'))
+  gr.add_edge(('levels', 'globaltonemap'))
+  gr.add_edge(('atrous', 'globaltonemap'))
+  gr.add_edge(('shadhi', 'globaltonemap'))
+  gr.add_edge(('zonesystem', 'globaltonemap'))
+  gr.add_edge(('bilat', 'globaltonemap'))
   
   # want to fine-tune stuff after injection of color transfer:
   gr.add_edge(('atrous', 'colortransfer'))

@@ -1359,7 +1359,7 @@ void init(dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_nlmeans_params_t));
   module->default_params = malloc(sizeof(dt_iop_nlmeans_params_t));
-  module->priority = 148; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 145; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_nlmeans_params_t);
   module->gui_data = NULL;
   module->data = NULL;

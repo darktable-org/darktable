@@ -1,6 +1,8 @@
 #!/bin/bash
 
-isolist="100 800 1600 3200"
+isolist="200 400 800 1600"
+
+rm -f poissonian_all.txt gaussian_all.txt
 
 for iso in $isolist
 do
@@ -10,6 +12,14 @@ do
 
   join cams.txt poissonian.txt > tmp.txt
   join tmp.txt gaussian.txt > noise_${iso}.dat
+
+  echo -n "${iso} " >> poissonian_all.txt
+  cat poissonian.txt | awk '{print $2}' | tr "\n" " " >> poissonian_all.txt
+  echo  "" >> poissonian_all.txt
+
+  echo -n "${iso} " >> gaussian_all.txt
+  cat gaussian.txt | awk '{print $2}' | tr "\n" " " >> gaussian_all.txt
+  echo  "" >> gaussian_all.txt
 
   rm -f cams.txt poissonian.txt gaussian.txt tmp.txt
 
@@ -27,6 +37,16 @@ do
 EOF
 done
 
-rm -f noise_*.dat
+gnuplot << EOF
+set term pdf fontscale 0.5 size 10, 10
+set output 'poissonian.pdf'
+title(n) = sprintf("column %d", n)
+plot for [i=2:37] './poissonian_all.txt' u 1:(column(i)) w lp t title(i)
+
+set output 'gaussian.pdf'
+plot for [i=2:37] './gaussian_all.txt' u 1:(column(i)) w lp t title(i)
+EOF
+
+rm -f noise_*.dat poissonian_all.txt gauissan_all.txt
 
 
