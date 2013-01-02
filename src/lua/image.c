@@ -27,6 +27,7 @@
 #include "common/colorlabels.h"
 #include "common/history.h"
 #include "common/metadata.h"
+#include "common/styles.h"
 #include "metadata_gen.h"
 
 /********************************************
@@ -190,6 +191,12 @@ static int image_reset_history(lua_State*L) {
   return 0;
 }
 
+static int image_apply_style(lua_State*L) {
+  int imgid = dt_lua_image_get(L,1);
+	dt_style_t * style =luaL_checkudata(L,2,"dt_style_t");
+  dt_styles_apply_to_image(style->name,FALSE,imgid);
+  return 0;
+}
 
 typedef enum {
   PATH,
@@ -207,6 +214,7 @@ typedef enum {
   RIGHTS,
   GET_HISTORY,
   RESET,
+  APPLY_STYLE,
   LAST_IMAGE_FIELD
 } image_fields;
 const char *image_fields_name[] = {
@@ -225,6 +233,7 @@ const char *image_fields_name[] = {
   "rights",
   "get_history",
   "reset",
+  "apply_style",
   NULL
 };
 
@@ -383,6 +392,11 @@ static int image_index(lua_State *L){
         lua_pushcfunction(L,image_reset_history);
         break;
       }
+    case APPLY_STYLE:
+      {
+        lua_pushcfunction(L,image_apply_style);
+        break;
+      }
     default:
       dt_lua_releasereadimage(L,my_image);
       return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
@@ -445,6 +459,7 @@ static int image_newindex(lua_State *L){
       break;
     case GET_HISTORY:
     case RESET:
+    case APPLY_STYLE:
     case PATH:
     case DUP_INDEX:
     case IS_LDR:
