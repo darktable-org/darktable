@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include "common/darktable.h"
 #include "common/imageio_module.h"
+#include "common/imageio.h"
 
 DT_MODULE(1)
 
@@ -515,6 +516,11 @@ free_params(dt_imageio_module_format_t *self, void *params)
 int bpp(dt_imageio_module_data_t *p)
 {
   return 32;
+}
+
+int levels(dt_imageio_module_data_t *p)
+{
+  return IMAGEIO_RGB|IMAGEIO_FLOAT;
 }
 
 const char*

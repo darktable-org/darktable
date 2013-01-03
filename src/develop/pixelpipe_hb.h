@@ -20,6 +20,7 @@
 
 #include "common/image.h"
 #include "control/conf.h"
+#include "common/imageio.h"
 #include "develop/imageop.h"
 #include "develop/develop.h"
 #include "develop/pixelpipe_cache.h"
@@ -126,6 +127,8 @@ typedef struct dt_dev_pixelpipe_t
   // input data based on this timestamp:
   int input_timestamp;
   dt_dev_pixelpipe_type_t type;
+  // the final output pixel format this pixelpipe will be converted to
+  dt_imageio_levels_t levels;
   // opencl device that has been locked for this pipe.
   int devid;
   // image struct as it was when the pixelpipe was initialized. copied to avoid race conditions.
@@ -140,7 +143,7 @@ int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
 // inits the preview pixelpipe with plain passthrough input/output and empty input and default caching settings.
 int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe);
 // inits the pixelpipe with settings optimized for full-image export (no history stack cache)
-int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
+int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels);
 // inits the pixelpipe with settings optimized for thumbnail export (no history stack cache)
 int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
 // inits the pixelpipe with given cacheline size and number of entries.
