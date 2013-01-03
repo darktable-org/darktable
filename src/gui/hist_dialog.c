@@ -125,7 +125,7 @@ void dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy
 
   GtkDialog *dialog = GTK_DIALOG
     (gtk_dialog_new_with_buttons
-     ("select parts",
+     (_("select parts"),
       GTK_WINDOW(window),
       GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
       GTK_STOCK_CANCEL,
