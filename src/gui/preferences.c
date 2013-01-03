@@ -1200,7 +1200,10 @@ static void restore_defaults(GtkButton *button, gpointer data)
     // on next startup
     dt_loc_get_user_config_dir(dir, 1024);
     snprintf(path, 1024, "%s/keyboardrc", dir);
-    g_file_delete(g_file_new_for_path(path), NULL, NULL);
+
+    GFile *gpath = g_file_new_for_path(path);
+    g_file_delete(gpath, NULL, NULL);
+    g_object_unref(gpath);
   }
   gtk_widget_destroy(message);
 }
