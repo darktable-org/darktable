@@ -646,8 +646,15 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
         dt_image_path_append_version(id, newxmp, DT_MAX_PATH_LEN);
         g_strlcat(oldxmp, ".xmp", DT_MAX_PATH_LEN);
         g_strlcat(newxmp, ".xmp", DT_MAX_PATH_LEN);
+
+        GFile *goldxmp = g_file_new_for_path(oldxmp);
+        GFile *gnewxmp = g_file_new_for_path(newxmp);
+
         if (g_file_test(oldxmp, G_FILE_TEST_EXISTS))
-          (void)g_file_move(g_file_new_for_path(oldxmp), g_file_new_for_path(newxmp), 0, NULL, NULL, NULL, NULL);
+          (void)g_file_move(goldxmp, gnewxmp, 0, NULL, NULL, NULL, NULL);
+
+        g_object_unref(goldxmp);
+        g_object_unref(gnewxmp);
       }
       sqlite3_reset(duplicates_stmt);
       sqlite3_clear_bindings(duplicates_stmt);
@@ -673,7 +680,7 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
     {
       fprintf(stderr, "[dt_image_move] error moving `%s' -> `%s'\n", oldimg, newimg);
     }
-    
+
     g_object_unref(old);
     g_object_unref(new);
 
