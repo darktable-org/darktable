@@ -119,22 +119,14 @@ _gui_hist_item_toggled (GtkCellRendererToggle *cell,
   gtk_tree_path_free (path);
 }
 
-void dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
+int dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
 {
+  int res;
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-  char label[10];
-
-  if (iscopy)
-  {
-    strcpy(label, _("copy all"));
-    d->copied_imageid = imgid;
-  }
-  else
-    strcpy(label, _("paste all"));
 
   GtkDialog *dialog = GTK_DIALOG
     (gtk_dialog_new_with_buttons
-     ("select parts",
+     (_("select parts"),
       GTK_WINDOW(window),
       GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
       GTK_STOCK_CANCEL,
@@ -213,7 +205,7 @@ void dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy
   else
   {
     dt_control_log(_("can't copy history out of unaltered image"));
-    return;
+    return GTK_RESPONSE_CANCEL;
   }
 
   g_object_unref (liststore);
@@ -224,12 +216,13 @@ void dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy
 
   while(1)
   {
-    int res = gtk_dialog_run(GTK_DIALOG(dialog));
+    res = gtk_dialog_run(GTK_DIALOG(dialog));
     if (res == GTK_RESPONSE_CANCEL || res == GTK_RESPONSE_OK)
       break;
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
+  return res;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

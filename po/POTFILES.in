@@ -36,6 +36,7 @@ src/gui/gtkentry.c
 src/gui/preferences.c
 src/gui/presets.c
 src/gui/styles_dialog.c
+src/gui/hist_dialog.c
 src/imageio/format/copy.c
 src/imageio/format/exr.cc
 src/imageio/format/j2k.c

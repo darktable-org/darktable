@@ -111,11 +111,10 @@ load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
-static void
-copy_button_clicked (GtkWidget *widget, gpointer user_data)
+static int
+get_selected_image (void)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
+  int imgid;
 
   /* get imageid for source if history past */
   sqlite3_stmt *stmt;
@@ -123,9 +122,7 @@ copy_button_clicked (GtkWidget *widget, gpointer user_data)
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     /* copy history of first image in selection */
-    d->imageid = sqlite3_column_int(stmt, 0);
-    gtk_widget_set_sensitive(GTK_WIDGET(d->paste), TRUE);
-    gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), TRUE);
+    imgid = sqlite3_column_int(stmt, 0);
     //dt_control_log(_("history of first image in selection copied"));
   }
   else
@@ -133,13 +130,29 @@ copy_button_clicked (GtkWidget *widget, gpointer user_data)
     /* no selection is used, use mouse over id */
     int32_t mouse_over_id=0;
     DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-    if(mouse_over_id <= 0) return;
-    d->imageid = mouse_over_id;
+    imgid = mouse_over_id;
   }
   sqlite3_finalize(stmt);
 
-  d->dg.selops = NULL;
-  d->dg.copied_imageid = d->imageid;
+  return imgid;
+}
+
+static void
+copy_button_clicked (GtkWidget *widget, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
+
+  d->imageid = get_selected_image();
+
+  if (d->imageid>0)
+  {
+    d->dg.selops = NULL;
+    d->dg.copied_imageid = d->imageid;
+
+    gtk_widget_set_sensitive(GTK_WIDGET(d->paste), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), TRUE);
+  }
 }
 
 static void
@@ -148,9 +161,19 @@ copy_parts_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
-  copy_button_clicked (widget, user_data);
-  // launch dialog to select the ops to copy
-  dt_gui_hist_dialog_new (&(d->dg), d->imageid, TRUE);
+  d->imageid = get_selected_image();
+
+  if (d->imageid>0)
+  {
+    // launch dialog to select the ops to copy
+    int res = dt_gui_hist_dialog_new (&(d->dg), d->imageid, TRUE);
+
+    if (res != GTK_RESPONSE_CANCEL && d->dg.selops)
+    {
+      gtk_widget_set_sensitive(GTK_WIDGET(d->paste), TRUE);
+      gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), TRUE);
+    }
+  }
 }
 
 static void
