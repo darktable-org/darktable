@@ -334,11 +334,11 @@ gui_cleanup (dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "copy"), GDK_c, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "copy parts"), GDK_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "copy all"), GDK_c, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "copy"), GDK_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_register_lib(self, NC_("accel", "discard"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "paste"), GDK_v, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "paste parts"), GDK_v, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "paste all"), GDK_v, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "paste"), GDK_v, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_register_lib(self, NC_("accel", "load sidecar files"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "write sidecar files"), 0, 0);
 }
@@ -347,11 +347,11 @@ void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t*)self->data;
 
-  dt_accel_connect_button_lib(self, "copy", GTK_WIDGET(d->copy_button));
-  dt_accel_connect_button_lib(self, "copy parts", GTK_WIDGET(d->copy_parts_button));
+  dt_accel_connect_button_lib(self, "copy all", GTK_WIDGET(d->copy_button));
+  dt_accel_connect_button_lib(self, "copy", GTK_WIDGET(d->copy_parts_button));
   dt_accel_connect_button_lib(self, "discard", GTK_WIDGET(d->delete_button));
-  dt_accel_connect_button_lib(self, "paste", GTK_WIDGET(d->paste));
-  dt_accel_connect_button_lib(self, "paste parts", GTK_WIDGET(d->paste_parts));
+  dt_accel_connect_button_lib(self, "paste all", GTK_WIDGET(d->paste));
+  dt_accel_connect_button_lib(self, "paste", GTK_WIDGET(d->paste_parts));
   dt_accel_connect_button_lib(self, "load sidecar files",
                               GTK_WIDGET(d->load_button));
   dt_accel_connect_button_lib(self, "write sidecar files",
