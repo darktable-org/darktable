@@ -680,7 +680,7 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
     {
       fprintf(stderr, "[dt_image_move] error moving `%s' -> `%s'\n", oldimg, newimg);
     }
-    
+
     g_object_unref(old);
     g_object_unref(new);
 

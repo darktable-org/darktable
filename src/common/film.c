@@ -538,9 +538,9 @@ void dt_film_remove_empty()
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
     gint id = sqlite3_column_int(stmt, 0);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), 
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "delete from film_rolls where id=?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id); 
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step(stmt);
     dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_REMOVED);
   }
