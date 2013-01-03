@@ -122,15 +122,6 @@ _gui_hist_item_toggled (GtkCellRendererToggle *cell,
 void dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
 {
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-  char label[10];
-
-  if (iscopy)
-  {
-    strcpy(label, _("copy all"));
-    d->copied_imageid = imgid;
-  }
-  else
-    strcpy(label, _("paste all"));
 
   GtkDialog *dialog = GTK_DIALOG
     (gtk_dialog_new_with_buttons
