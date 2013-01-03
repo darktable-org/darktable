@@ -82,6 +82,7 @@ dt_iop_dither_gui_data_t;
 typedef struct dt_iop_dither_data_t
 {
   int dither_type;
+  int dither_center_view;
   struct
   {
     float radius;
@@ -218,6 +219,11 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
           nearest_color = NULL;
           break;
       }
+      // no automatic dithering for preview and thumbnail and also not for center view if according
+      // config variable is FALSE
+      if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL ||
+           (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && !data->dither_center_view))
+         nearest_color = NULL;
       break;
   }
 
@@ -449,6 +455,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_dither_data_t *d = (dt_iop_dither_data_t *)piece->data;
 
   d->dither_type = p->dither_type;
+  d->dither_center_view = dt_conf_get_bool("plugins/darkroom/dithering/dither_center_view");
   memcpy(&(d->random.range), &(p->random.range), sizeof(p->random.range));
   d->random.radius = p->random.radius;
   d->random.damping = p->random.damping;
