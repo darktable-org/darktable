@@ -592,6 +592,18 @@ gui_init (dt_lib_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   d->style = GTK_COMBO_BOX(gtk_combo_box_new_text());
+
+  // set ellipsisation:
+  GList *renderers = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(d->style));
+  it = renderers;
+  while(it)
+  {
+    GtkCellRendererText *tr = GTK_CELL_RENDERER_TEXT(it->data);
+    g_object_set(G_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
+    it = g_list_next(it);
+  }
+  g_list_free(renderers);
+
   gtk_combo_box_append_text(d->style, _("none"));
 
   GList *styles = dt_styles_get_list("");
