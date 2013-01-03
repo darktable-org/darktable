@@ -74,7 +74,10 @@ dt_database_t *dt_database_init(char *alternative)
   else
   {
     snprintf(dbfilename, DT_MAX_PATH_LEN, "%s", alternative);
-    dbname = g_file_get_basename (g_file_new_for_path(alternative));
+
+    GFile *galternative = g_file_new_for_path(alternative);
+    dbname = g_file_get_basename (galternative);
+    g_object_unref(galternative);
   }
 
   /* create database */

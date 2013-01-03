@@ -274,8 +274,11 @@ dt_film_import_blocking(const char *dirname, const int blocking)
       GMount *filmroll_mount;
       GError *error = NULL;
       gchar *filmroll_path;
+      GFile *gdirname = g_file_new_for_path(dirname);
 
-      filmroll_mount = g_file_find_enclosing_mount(g_file_new_for_path(dirname), NULL, &error);
+      filmroll_mount = g_file_find_enclosing_mount(gdirname, NULL, &error);
+      g_object_unref(gdirname);
+
       if (!error)
       /* We are considering that the only error is that there is no mount
        * because the filmroll added is in a local drive */
