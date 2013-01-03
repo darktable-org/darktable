@@ -13,6 +13,20 @@ do
   join cams.txt poissonian.txt > tmp.txt
   join tmp.txt gaussian.txt > noise_${iso}.dat
 
+  if [ ! -e poissonian_all.txt ]
+  then
+    echo -n "iso " >> poissonian_all.txt
+    cat cams.txt | awk '{print $2}' | tr "\n" " " >> poissonian_all.txt
+    echo  "" >> poissonian_all.txt
+  fi
+
+  if [ ! -e gaussian_all.txt ]
+  then
+    echo -n "iso " >> gaussian_all.txt
+    cat cams.txt | awk '{print $2}' | tr "\n" " " >> gaussian_all.txt
+    echo  "" >> gaussian_all.txt
+  fi
+
   echo -n "${iso} " >> poissonian_all.txt
   cat poissonian.txt | awk '{print $2}' | tr "\n" " " >> poissonian_all.txt
   echo  "" >> poissonian_all.txt
@@ -40,13 +54,13 @@ done
 gnuplot << EOF
 set term pdf fontscale 0.5 size 10, 10
 set output 'poissonian.pdf'
-title(n) = sprintf("column %d", n)
-plot for [i=2:37] './poissonian_all.txt' u 1:(column(i)) w lp t title(i)
+set key autotitle columnhead
+plot for [i=2:37] './poissonian_all.txt' u 1:(column(i)) w lp title column(i)
 
 set output 'gaussian.pdf'
-plot for [i=2:37] './gaussian_all.txt' u 1:(column(i)) w lp t title(i)
+plot for [i=2:37] './gaussian_all.txt' u 1:(column(i)) w lp title column(i)
 EOF
 
-rm -f noise_*.dat poissonian_all.txt gauissan_all.txt
+# rm -f noise_*.dat poissonian_all.txt gauissan_all.txt
 
 
