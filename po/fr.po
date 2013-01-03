@@ -2,9 +2,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-01-03 15:26+0100\n"
-"PO-Revision-Date: 2013-01-03 15:27+0100\n"
-"Last-Translator: Pascal Obry <pascal@obry.net>\n"
+"POT-Creation-Date: 2013-01-03 19:03+0100\n"
+"PO-Revision-Date: 2013-01-03 19:25+0100\n"
+"Last-Translator: Olivier Tribout <olivier.tribout@noos.fr>\n"
 "Language-Team: \n"
 "Language: \n"
 "MIME-Version: 1.0\n"
@@ -1161,9 +1161,9 @@ msgstr "%s est désactivé"
 #: ../src/gui/accelerators.c:717
 #: ../src/gui/accelerators.c:861
 #: ../src/gui/accelerators.c:886
-#: ../src/gui/presets.c:192
-#: ../src/gui/presets.c:294
-#: ../src/gui/presets.c:576
+#: ../src/gui/presets.c:191
+#: ../src/gui/presets.c:293
+#: ../src/gui/presets.c:575
 #: ../src/iop/temperature.c:745
 #: ../src/libs/import.c:487
 #: ../src/libs/lib.c:267
@@ -1693,21 +1693,21 @@ msgstr "nom"
 #. exif
 #: ../src/gui/preferences.c:432
 #: ../src/gui/preferences.c:1338
-#: ../src/gui/presets.c:413
+#: ../src/gui/presets.c:412
 #: ../src/libs/metadata_view.c:82
 msgid "model"
 msgstr "modèle"
 
 #: ../src/gui/preferences.c:439
 #: ../src/gui/preferences.c:1345
-#: ../src/gui/presets.c:420
+#: ../src/gui/presets.c:419
 #: ../src/libs/metadata_view.c:83
 msgid "maker"
 msgstr "fabricant"
 
 #: ../src/gui/preferences.c:446
 #: ../src/gui/preferences.c:1352
-#: ../src/gui/presets.c:427
+#: ../src/gui/presets.c:426
 #: ../src/libs/collect.h:42
 #: ../src/libs/metadata_view.c:84
 msgid "lens"
@@ -1716,7 +1716,7 @@ msgstr "objectif"
 #. iso
 #: ../src/gui/preferences.c:453
 #: ../src/gui/preferences.c:1359
-#: ../src/gui/presets.c:434
+#: ../src/gui/presets.c:433
 #: ../src/libs/camera.c:592
 #: ../src/libs/collect.h:43
 #: ../src/libs/metadata_view.c:89
@@ -1726,7 +1726,7 @@ msgstr "iso"
 #. exposure
 #: ../src/gui/preferences.c:460
 #: ../src/gui/preferences.c:1372
-#: ../src/gui/presets.c:447
+#: ../src/gui/presets.c:446
 #: ../src/iop/exposure.c:42
 #: ../src/iop/exposure.c:390
 #: ../src/iop/relight.c:376
@@ -1737,7 +1737,7 @@ msgstr "exposition"
 #. aperture
 #: ../src/gui/preferences.c:467
 #: ../src/gui/preferences.c:1387
-#: ../src/gui/presets.c:462
+#: ../src/gui/presets.c:461
 #: ../src/libs/camera.c:544
 #: ../src/libs/camera.c:553
 #: ../src/libs/collect.h:44
@@ -1748,7 +1748,7 @@ msgstr "ouverture"
 #. focal length
 #: ../src/gui/preferences.c:474
 #: ../src/gui/preferences.c:1402
-#: ../src/gui/presets.c:477
+#: ../src/gui/presets.c:476
 #: ../src/libs/camera.c:563
 #: ../src/libs/metadata_view.c:87
 msgid "focal length"
@@ -1797,14 +1797,14 @@ msgid "press key combination to remap..."
 msgstr "entrer la nouvelle combinaison de touches"
 
 #: ../src/gui/preferences.c:1070
-#: ../src/gui/presets.c:187
+#: ../src/gui/presets.c:186
 #: ../src/libs/lib.c:291
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "voulez-vous réellement supprimer le pré-réglage `%s' ?"
 
 #: ../src/gui/preferences.c:1071
-#: ../src/gui/presets.c:188
+#: ../src/gui/presets.c:187
 #: ../src/libs/lib.c:292
 msgid "delete preset?"
 msgstr "supprimer ce pré-réglage ?"
@@ -1822,104 +1822,104 @@ msgid "Are you sure you want to restore the default keybindings?  This will eras
 msgstr "êtes-vous sûr de vouloir rétablir les réglages par défaut ? cela va effacer les modifications que vous avez faites."
 
 #: ../src/gui/preferences.c:1288
-#: ../src/gui/presets.c:361
+#: ../src/gui/presets.c:360
 #, c-format
 msgid "edit `%s' for module `%s'"
 msgstr "éditer `%s' pour le module `%s'"
 
 #: ../src/gui/preferences.c:1317
-#: ../src/gui/presets.c:392
+#: ../src/gui/presets.c:391
 #: ../src/libs/lib.c:227
 msgid "description or further information"
 msgstr "description ou information complémentaire"
 
 #: ../src/gui/preferences.c:1319
-#: ../src/gui/presets.c:394
+#: ../src/gui/presets.c:393
 msgid "auto apply this preset to matching images"
 msgstr "appliquer automatiquement ce pré-réglage aux images correspondantes"
 
 #: ../src/gui/preferences.c:1321
-#: ../src/gui/presets.c:396
+#: ../src/gui/presets.c:395
 msgid "only show this preset for matching images"
 msgstr "n'afficher ce pré-réglage qu'aux images correspondantes"
 
 #: ../src/gui/preferences.c:1322
-#: ../src/gui/presets.c:397
+#: ../src/gui/presets.c:396
 msgid "be very careful with this option. this might be the last time you see your preset."
 msgstr "soyez vigilants avec cette option, ce pourrait être la dernière fois que vous voyez votre pré-réglage"
 
 #: ../src/gui/preferences.c:1337
-#: ../src/gui/presets.c:412
+#: ../src/gui/presets.c:411
 #, c-format
 msgid "string to match model (use % as wildcard)"
 msgstr "nom du modèle (use % as wildcard)"
 
 #: ../src/gui/preferences.c:1344
-#: ../src/gui/presets.c:419
+#: ../src/gui/presets.c:418
 #, c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr "nom du fabricant (use % as wildcard)"
 
 #: ../src/gui/preferences.c:1351
-#: ../src/gui/presets.c:426
+#: ../src/gui/presets.c:425
 #, c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr "nom de l'objectif (use % as wildcard)"
 
 #: ../src/gui/preferences.c:1363
-#: ../src/gui/presets.c:438
+#: ../src/gui/presets.c:437
 msgid "minimum iso value"
 msgstr "valeur d'iso minimale"
 
 #: ../src/gui/preferences.c:1367
-#: ../src/gui/presets.c:442
+#: ../src/gui/presets.c:441
 msgid "maximum iso value"
 msgstr "valeur d'iso maximale"
 
 #: ../src/gui/preferences.c:1377
-#: ../src/gui/presets.c:452
+#: ../src/gui/presets.c:451
 msgid "minimum exposure time"
 msgstr "temps d'exposition maximum"
 
 #: ../src/gui/preferences.c:1378
-#: ../src/gui/presets.c:453
+#: ../src/gui/presets.c:452
 msgid "maximum exposure time"
 msgstr "temps d'exposition maximum"
 
 #: ../src/gui/preferences.c:1392
-#: ../src/gui/presets.c:467
+#: ../src/gui/presets.c:466
 msgid "minimum aperture value"
 msgstr "valeur d'ouverture minimale"
 
 #: ../src/gui/preferences.c:1393
-#: ../src/gui/presets.c:468
+#: ../src/gui/presets.c:467
 msgid "maximum aperture value"
 msgstr "valeur d'ouverture maximale"
 
 #: ../src/gui/preferences.c:1409
-#: ../src/gui/presets.c:484
+#: ../src/gui/presets.c:483
 msgid "minimum focal length"
 msgstr "longueur focale minimale"
 
 #: ../src/gui/preferences.c:1410
-#: ../src/gui/presets.c:485
+#: ../src/gui/presets.c:484
 msgid "maximum focal length"
 msgstr "longueur focale maximale"
 
 #. selected_default = 1;
-#: ../src/gui/presets.c:142
-#: ../src/gui/presets.c:786
-#: ../src/gui/presets.c:799
+#: ../src/gui/presets.c:141
+#: ../src/gui/presets.c:785
+#: ../src/gui/presets.c:798
 #: ../src/libs/lib.c:68
 msgid "(default)"
 msgstr "(défaut)"
 
 #. then show edit dialog
-#: ../src/gui/presets.c:218
-#: ../src/gui/presets.c:569
-#: ../src/gui/presets.c:576
-#: ../src/gui/presets.c:578
-#: ../src/gui/presets.c:580
+#: ../src/gui/presets.c:217
+#: ../src/gui/presets.c:568
+#: ../src/gui/presets.c:575
+#: ../src/gui/presets.c:577
+#: ../src/gui/presets.c:579
 #: ../src/libs/lib.c:251
 #: ../src/libs/lib.c:259
 #: ../src/libs/lib.c:267
@@ -1928,16 +1928,15 @@ msgstr "(défaut)"
 msgid "new preset"
 msgstr "nouveau pré-réglage"
 
-#: ../src/gui/presets.c:226
+#: ../src/gui/presets.c:225
 msgid "please give preset a name"
 msgstr "merci de donner un nom au pré-réglage"
 
-#: ../src/gui/presets.c:228
-#, fuzzy
+#: ../src/gui/presets.c:227
 msgid "unnamed preset"
-msgstr "nouveau pré-réglage"
+msgstr "pré-réglage sans nom"
 
-#: ../src/gui/presets.c:251
+#: ../src/gui/presets.c:250
 #: ../src/libs/lib.c:133
 #, c-format
 msgid ""
@@ -1947,38 +1946,38 @@ msgstr ""
 "le pré-réglage '%s' existe déjà.\n"
 "voulez-vous le remplacer ?"
 
-#: ../src/gui/presets.c:254
+#: ../src/gui/presets.c:253
 #: ../src/libs/lib.c:136
 msgid "overwrite preset?"
 msgstr "remplacer ce pré-réglage ?"
 
-#: ../src/gui/presets.c:388
+#: ../src/gui/presets.c:387
 #: ../src/libs/lib.c:223
 msgid "name of the preset"
 msgstr "nom du pré-réglage"
 
-#: ../src/gui/presets.c:827
+#: ../src/gui/presets.c:826
 #: ../src/libs/lib.c:409
 msgid "edit this preset.."
 msgstr "modifier ce pré-réglage"
 
-#: ../src/gui/presets.c:831
+#: ../src/gui/presets.c:830
 #: ../src/libs/lib.c:413
 msgid "delete this preset"
 msgstr "supprimer ce pré-réglage"
 
 #. only show if it is not the default already
-#: ../src/gui/presets.c:841
+#: ../src/gui/presets.c:840
 msgid "use preset as default"
 msgstr "utiliser ce pré-réglage par défaut"
 
-#: ../src/gui/presets.c:849
+#: ../src/gui/presets.c:848
 #: ../src/libs/lib.c:420
 msgid "store new preset.."
 msgstr "nouveau pré-réglage..."
 
 #. only show this if presets already contains a default
-#: ../src/gui/presets.c:860
+#: ../src/gui/presets.c:859
 msgid "remove default"
 msgstr "supprimer les valeurs par défaut"
 
@@ -2024,11 +2023,11 @@ msgstr "impossible de créer un style depuis une image non développée"
 
 #: ../src/gui/hist_dialog.c:129
 msgid "select parts"
-msgstr "sélectionner des modules"
+msgstr "sélectionner les modules à copier"
 
 #: ../src/gui/hist_dialog.c:207
 msgid "can't copy history out of unaltered image"
-msgstr "impossible de sélectionner l'historique d'une image non modifiée"
+msgstr "impossible de copier le développement d'une image non développée"
 
 #: ../src/imageio/format/copy.c:143
 #: ../src/libs/copy_history.c:253
@@ -5761,7 +5760,7 @@ msgid ""
 "copy part history stack of\n"
 "first selected image (ctrl-shift-c)"
 msgstr ""
-"copier partiellement le développement\n"
+"copie partiellement le développement\n"
 "de la première image \n"
 "sélectionnée (ctrl-shift-c)"
 
@@ -5800,7 +5799,7 @@ msgid ""
 "paste part history stack to\n"
 "all selected images (ctrl-shift-v)"
 msgstr ""
-"coller partiellement le développement\n"
+"applique partiellement le développement\n"
 "à toutes les images sélectionnées (ctrl-shift-v)"
 
 #: ../src/libs/copy_history.c:277
@@ -6129,7 +6128,7 @@ msgstr "compresser l'historique"
 
 #: ../src/libs/history.c:108
 msgid "create a minimal history stack which produces the same image"
-msgstr "génère l'historique minimum qui produise la même image"
+msgstr "génère l'historique minimum qui produit la même image"
 
 #: ../src/libs/history.c:116
 msgid "create a style from the current history stack"
@@ -7184,43 +7183,43 @@ msgstr "bandeau"
 #. Initializing accelerators
 #. Rating keys
 #: ../src/libs/tools/filmstrip.c:157
-#: ../src/views/lighttable.c:1393
+#: ../src/views/lighttable.c:1396
 msgctxt "accel"
 msgid "rate desert"
 msgstr "sans étoile"
 
 #: ../src/libs/tools/filmstrip.c:158
-#: ../src/views/lighttable.c:1394
+#: ../src/views/lighttable.c:1397
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 étoile"
 
 #: ../src/libs/tools/filmstrip.c:159
-#: ../src/views/lighttable.c:1395
+#: ../src/views/lighttable.c:1398
 msgctxt "accel"
 msgid "rate 2"
 msgstr "2 étoiles"
 
 #: ../src/libs/tools/filmstrip.c:160
-#: ../src/views/lighttable.c:1396
+#: ../src/views/lighttable.c:1399
 msgctxt "accel"
 msgid "rate 3"
 msgstr "3 étoiles"
 
 #: ../src/libs/tools/filmstrip.c:161
-#: ../src/views/lighttable.c:1397
+#: ../src/views/lighttable.c:1400
 msgctxt "accel"
 msgid "rate 4"
 msgstr "4 étoiles"
 
 #: ../src/libs/tools/filmstrip.c:162
-#: ../src/views/lighttable.c:1398
+#: ../src/views/lighttable.c:1401
 msgctxt "accel"
 msgid "rate 5"
 msgstr "5 étoiles"
 
 #: ../src/libs/tools/filmstrip.c:163
-#: ../src/views/lighttable.c:1399
+#: ../src/views/lighttable.c:1402
 msgctxt "accel"
 msgid "rate reject"
 msgstr "rejeter"
@@ -7259,31 +7258,31 @@ msgstr "cloner l'image"
 #. setup color label accelerators
 #. Color keys
 #: ../src/libs/tools/filmstrip.c:183
-#: ../src/views/lighttable.c:1412
+#: ../src/views/lighttable.c:1415
 msgctxt "accel"
 msgid "color red"
 msgstr "couleur rouge"
 
 #: ../src/libs/tools/filmstrip.c:184
-#: ../src/views/lighttable.c:1413
+#: ../src/views/lighttable.c:1416
 msgctxt "accel"
 msgid "color yellow"
 msgstr "couleur jaune"
 
 #: ../src/libs/tools/filmstrip.c:185
-#: ../src/views/lighttable.c:1414
+#: ../src/views/lighttable.c:1417
 msgctxt "accel"
 msgid "color green"
 msgstr "couleur verte"
 
 #: ../src/libs/tools/filmstrip.c:186
-#: ../src/views/lighttable.c:1415
+#: ../src/views/lighttable.c:1418
 msgctxt "accel"
 msgid "color blue"
 msgstr "couleur bleue"
 
 #: ../src/libs/tools/filmstrip.c:187
-#: ../src/views/lighttable.c:1416
+#: ../src/views/lighttable.c:1419
 msgctxt "accel"
 msgid "color purple"
 msgstr "couleur violette"
@@ -7484,75 +7483,75 @@ msgctxt "accel"
 msgid "image back"
 msgstr "image précédente"
 
-#: ../src/views/lighttable.c:274
+#: ../src/views/lighttable.c:277
 msgid "there are no images in this collection"
 msgstr "il n'y a pas d'images dans cette collection"
 
-#: ../src/views/lighttable.c:276
+#: ../src/views/lighttable.c:279
 msgid "if you have not imported any images yet"
 msgstr "si vous n'avez pas encore importé d'images"
 
-#: ../src/views/lighttable.c:278
+#: ../src/views/lighttable.c:281
 msgid "you can do so in the import module"
 msgstr "vous pouvez le faire dans le module 'importer'"
 
-#: ../src/views/lighttable.c:285
+#: ../src/views/lighttable.c:288
 msgid "try to relax the filter settings in the top panel"
 msgstr "vous pouvez modifier le filtre de notation dans le panneau supérieur"
 
-#: ../src/views/lighttable.c:292
+#: ../src/views/lighttable.c:295
 msgid "or add images in the collection module in the left panel"
 msgstr "ou modifier les filtres de collection dans le menu de collection à gauche."
 
 #. Navigation keys
-#: ../src/views/lighttable.c:1402
+#: ../src/views/lighttable.c:1405
 msgctxt "accel"
 msgid "navigate up"
 msgstr "aller en haut"
 
-#: ../src/views/lighttable.c:1404
+#: ../src/views/lighttable.c:1407
 msgctxt "accel"
 msgid "navigate down"
 msgstr "aller en bas"
 
-#: ../src/views/lighttable.c:1406
+#: ../src/views/lighttable.c:1409
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "défiler par page vers le haut"
 
-#: ../src/views/lighttable.c:1408
+#: ../src/views/lighttable.c:1411
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "défiler par page vers le bas"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1419
+#: ../src/views/lighttable.c:1422
 msgctxt "accel"
 msgid "scroll up"
 msgstr "défiler en arrière"
 
-#: ../src/views/lighttable.c:1421
+#: ../src/views/lighttable.c:1424
 msgctxt "accel"
 msgid "scroll down"
 msgstr "défiler en avant"
 
-#: ../src/views/lighttable.c:1423
+#: ../src/views/lighttable.c:1426
 msgctxt "accel"
 msgid "scroll left"
 msgstr "défiler vers la gauche"
 
-#: ../src/views/lighttable.c:1425
+#: ../src/views/lighttable.c:1428
 msgctxt "accel"
 msgid "scroll right"
 msgstr "défiler vers la droite "
 
-#: ../src/views/lighttable.c:1427
+#: ../src/views/lighttable.c:1430
 msgctxt "accel"
 msgid "scroll center"
 msgstr "défiler vers le centre"
 
 #. Preview key
-#: ../src/views/lighttable.c:1431
+#: ../src/views/lighttable.c:1434
 msgctxt "accel"
 msgid "preview"
 msgstr "aperçu"
@@ -7563,34 +7562,47 @@ msgstr "carte"
 
 #~ msgid "adjust perspective for horizontal keystone distortion"
 #~ msgstr "ajuste la perspective pour la distorsion horizontale"
+
 #~ msgid "keystone v"
 #~ msgstr "vertical"
+
 #~ msgid "adjust perspective for vertical keystone distortion"
 #~ msgstr "ajuste la perspective pour la distorsion verticale"
 #~ msgctxt "accel"
+
 #~ msgid "keystone h"
 #~ msgstr "horizontal"
 #~ msgctxt "accel"
+
 #~ msgid "keystone v"
 #~ msgstr "vertical"
 #~ msgctxt "accel"
+
 #~ msgid "rotation"
 #~ msgstr "rotation"
 #~ msgctxt "accel"
+
 #~ msgid "split"
 #~ msgstr "décalage"
+
 #~ msgid "split"
 #~ msgstr "décalage"
+
 #~ msgid "offset of filter in angle of rotation"
 #~ msgstr "décalage du filtre"
+
 #~ msgid "show %s"
 #~ msgstr "afficher %s"
+
 #~ msgid "%s as favorite"
 #~ msgstr "%s comme favori"
+
 #~ msgid "hide %s"
 #~ msgstr "cacher %s"
+
 #~ msgid "database location"
 #~ msgstr "fichier de la base de données"
+
 #~ msgid ""
 #~ "filename relative to ~/.config/darktable or starting with a slash (needs "
 #~ "a restart)."
@@ -7598,51 +7610,69 @@ msgstr "carte"
 #~ "nom de fichier relatif à ~/.config/darktable, ou commençant par un "
 #~ "'/' (nécessite un redémarrage)"
 #~ msgctxt "accel"
+
 #~ msgid "pick color"
 #~ msgstr "pipette de couleur"
 #~ msgctxt "accel"
+
 #~ msgid "linear part"
 #~ msgstr "linéaire"
 #~ msgctxt "accel"
+
 #~ msgid "gamma exponential part"
 #~ msgstr "facteur exponentiel gamma"
+
 #~ msgid "colorblend"
 #~ msgstr "fusion des couleurs"
 #~ msgctxt "accel"
+
 #~ msgid "blend L"
 #~ msgstr "luminance"
 #~ msgctxt "accel"
+
 #~ msgid "blend C"
 #~ msgstr "chromaticité"
 #~ msgctxt "accel"
+
 #~ msgid "blend h"
 #~ msgstr "teinte (h)"
+
 #~ msgid "blend lightness (0 is same as clipping)"
 #~ msgstr ""
 #~ "mélange la luminance\n"
 #~ "(0 revient à tronquer)"
+
 #~ msgid "blend colorness (0 is same as clipping)"
 #~ msgstr ""
 #~ "mélange la chromaticité\n"
 #~ "(0 revient à tronquer)"
+
 #~ msgid "blend hue (0 is same as clipping)"
 #~ msgstr ""
 #~ "mélange la teinte\n"
 #~ "(0 revient à tronquer)"
+
 #~ msgid "blend L"
 #~ msgstr "luminance"
+
 #~ msgid "blend C"
 #~ msgstr "chromaticité"
+
 #~ msgid "blend h"
 #~ msgstr "teinte (h)"
+
 #~ msgid " green "
 #~ msgstr "vert"
+
 #~ msgid " hue "
 #~ msgstr "teinte"
+
 #~ msgid " chroma "
 #~ msgstr "saturation"
+
 #~ msgid " value "
 #~ msgstr "valeur"
+
 #~ msgid ""
 #~ "enter the path where to create the website gallery:\n"
 #~ "$(ROLL_NAME) - roll of the input image\n"
@@ -7691,10 +7721,13 @@ msgstr "carte"
 #~ "$(PICTURES_FOLDER) - dossier images\n"
 #~ "$(HOME) - dossier personnel\n"
 #~ "$(DESKTOP) - dossier bureau"
+
 #~ msgid "tca R"
 #~ msgstr "rouge"
+
 #~ msgid "tca B"
 #~ msgstr "bleu"
+
 #~ msgid ""
 #~ "override transversal chromatic aberration correction for red channel\n"
 #~ "leave at 1.0 for defaults"
@@ -7702,6 +7735,7 @@ msgstr "carte"
 #~ "surcharge la correction d'aberration chromatique transverse pour le canal "
 #~ "rouge\n"
 #~ "mettre 1.0 pour valeur par défaut"
+
 #~ msgid ""
 #~ "override transversal chromatic aberration correction for blue channel\n"
 #~ "leave at 1.0 for defaults"
@@ -7709,18 +7743,25 @@ msgstr "carte"
 #~ "surcharge la correction d'aberration chromatique transverse pour le canal "
 #~ "bleu\n"
 #~ "mettre 1.0 pour valeur par défaut"
+
 #~ msgid "advanced edit of style"
 #~ msgstr "réglages avancés"
+
 #~ msgid "this doesn't work for raw/hdr images."
 #~ msgstr "inactif pour les images RAW/HDR"
+
 #~ msgid "location"
 #~ msgstr "localisation"
+
 #~ msgid "reset from exif data"
 #~ msgstr "réinitialise à la valeur EXIF"
+
 #~ msgid "reverse"
 #~ msgstr "inverser"
+
 #~ msgid "apply distortions instead of correcting them"
 #~ msgstr "applique les distorsions au lieu de les corriger"
+
 #~ msgid ""
 #~ "enter the path where to put exported images:\n"
 #~ "$(ROLL_NAME) - roll of the input image\n"
@@ -7769,268 +7810,374 @@ msgstr "carte"
 #~ "$(PICTURES_FOLDER) - dossier images\n"
 #~ "$(HOME) - dossier personnel\n"
 #~ "$(DESKTOP) - dossier du bureau"
+
 #~ msgid "ppg"
 #~ msgstr "ppg"
+
 #~ msgid "AMaZE"
 #~ msgstr "AMaZE"
+
 #~ msgid "moving %d image"
+
 #~ msgid_plural "moving %d images"
 #~ msgstr[0] "déplacement de %d image"
 #~ msgstr[1] "déplacement de %d images"
+
 #~ msgid "could not attach xmp data to file `%s'!"
 #~ msgstr "impossible de sauver le fichier attaché xmp du fichier %s !"
+
 #~ msgid "black / white"
 #~ msgstr "noir / blanc"
 #~ msgctxt "accel"
+
 #~ msgid "pick gui color from image"
 #~ msgstr "choisir une couleur dans l'image"
+
 #~ msgid ""
 #~ "with this option, you can display guide lines to help compose your "
 #~ "photograph."
 #~ msgstr ""
 #~ "à l'aide de cette option, vous pouvez afficher des guides pour vous aider "
 #~ "à composer votre photo."
+
 #~ msgid "type"
 #~ msgstr "type"
+
 #~ msgid "flip guides vertically"
 #~ msgstr "retourne les guides verticalement"
+
 #~ msgid "enable this option to show golden sections."
 #~ msgstr "affiche les sections d'or"
+
 #~ msgid "spiral sections"
 #~ msgstr "sections de spirale"
+
 #~ msgid "enable this option to show golden spiral sections."
 #~ msgstr "affiche les sections de la spirale d'or"
+
 #~ msgid "enable this option to show a golden spiral guide."
 #~ msgstr "affiche un guide en spirale d'or"
+
 #~ msgid "golden triangles"
 #~ msgstr "triangles d'or"
+
 #~ msgid "enable this option to show golden triangles."
 #~ msgstr "affiche les triangles d'or"
+
 #~ msgid "1 star"
 #~ msgstr "1 étoile"
+
 #~ msgid "2 star"
 #~ msgstr "2 étoiles"
+
 #~ msgid "3 star"
 #~ msgstr "3 étoiles"
+
 #~ msgid "4 star"
 #~ msgstr "4 étoiles"
+
 #~ msgid "5 star"
 #~ msgstr "5 étoiles"
+
 #~ msgid "this collection is empty."
 #~ msgstr "cette collection est vide"
+
 #~ msgid "do that from the top left expander."
 #~ msgstr "utilisez le menu en haut à gauche"
+
 #~ msgid "lighten shadows"
 #~ msgstr "éclaircit les ombres"
+
 #~ msgid "flip image vertically"
 #~ msgstr "retourne l'image verticalement"
+
 #~ msgid ""
 #~ "set the aspect ratio (w:h)\n"
 #~ "press ctrl-x to swap sides"
 #~ msgstr ""
 #~ "ratio d'aspect (l:h)\n"
 #~ "utiliser ctrl-x pour inverser les côtés"
+
 #~ msgid "swap the aspect ratio (ctrl-x)"
 #~ msgstr "inverser les côtés (ctrl-x)"
 #~ msgctxt "accel"
+
 #~ msgid "swap the aspect ratio"
 #~ msgstr "inverse les côtés"
 #~ msgctxt "accel"
+
 #~ msgid "show plugin"
 #~ msgstr "afficher le module"
 #~ msgctxt "accel"
+
 #~ msgid "enable plugin"
 #~ msgstr "activer le module"
 #~ msgctxt "accel"
+
 #~ msgid "reset plugin parameters"
 #~ msgstr "réinitialiser le module"
 #~ msgctxt "accel"
+
 #~ msgid "plugins"
 #~ msgstr "table lumineuse"
+
 #~ msgid "more plugins"
 #~ msgstr "plus de modules"
+
 #~ msgid "draw a rectangle to give a tint"
 #~ msgstr "tracer un rectangle pour donner une teinte"
+
 #~ msgid "jpeg quality of on-disk thumbnails"
 #~ msgstr "qualité jpeg des miniatures sauvegardées sur le disque"
+
 #~ msgid "affects only the thumbnail cache used for quick startup."
 #~ msgstr "n'agit que sur le cache des aperçus pour un démarrage rapide"
 #~ msgctxt "accel"
+
 #~ msgid "swap aspect ratio"
 #~ msgstr "inverse les côtés"
+
 #~ msgid "denoise (subtle) 200"
 #~ msgstr "réduction du bruit 200"
+
 #~ msgid "denoise (subtle) 400"
 #~ msgstr "réduction du bruit 400"
+
 #~ msgid "output channel"
 #~ msgstr "canal de sortie"
+
 #~ msgid "source channels"
 #~ msgstr "canaux source"
+
 #~ msgid "filename of your custom theme in share/darktable/"
 #~ msgstr "nom du fichier du thème utilisateur dans share/darktable/"
+
 #~ msgid "local contrast 2"
 #~ msgstr "contraste local 2"
+
 #~ msgid "sensitivity of edge detection"
 #~ msgstr "sensibilité de la détection de bord"
+
 #~ msgid "sensitivity"
 #~ msgstr "sensibilité"
+
 #~ msgid "spatial extent of the effect around edges"
 #~ msgstr "extension spatiale de l'effet autour des bords"
+
 #~ msgid "strength of the local contrast"
 #~ msgstr "force du contraste local"
 #~ msgctxt "accel"
+
 #~ msgid "blend H"
 #~ msgstr "mélanger H"
+
 #~ msgid "shadow recovery (experimental)"
 #~ msgstr "récupération des ombres (BETA)"
 #~ msgctxt "accel"
+
 #~ msgid "mu"
 #~ msgstr "moyenne"
 #~ msgctxt "accel"
+
 #~ msgid "sigma"
 #~ msgstr "dispersion"
 #~ msgctxt "accel"
+
 #~ msgid "size_limit"
 #~ msgstr "limite de taille"
+
 #~ msgid "minimal pyramid limit"
 #~ msgstr "limite inférieure de la pyramide"
+
 #~ msgid "the strength of lighten"
 #~ msgstr "intensité de l'éclaircissement"
+
 #~ msgid "optimal exposedness"
 #~ msgstr "exposition idéale"
+
 #~ msgid "exposedness deviation"
 #~ msgstr "déviation de l'exposition"
+
 #~ msgid "minimal pyramid limit size"
 #~ msgstr "taille de la pyramide"
+
 #~ msgid "Gamma Value"
 #~ msgstr "valeur gamma"
+
 #~ msgid "gamma value"
 #~ msgstr "valeur de gamma"
+
 #~ msgid "Linear Value"
 #~ msgstr "valeur linéaire"
+
 #~ msgid "linear value"
 #~ msgstr "valeur linéaire"
+
 #~ msgid "Linear/Gamma conversion curve."
 #~ msgstr "courbe de correction linéaire/gamma"
+
 #~ msgid "Sample points"
 #~ msgstr "Points d'échantillonnage"
+
 #~ msgid "Number of curve sampling points.  0 for exact calculation."
 #~ msgstr ""
 #~ "Nombre de points d’échantillonnage de la courbe. 0 pour un calcul exact"
+
 #~ msgid "Curve"
 #~ msgstr "Courbe"
+
 #~ msgid "The contrast curve."
 #~ msgstr "courbe de contraste"
+
 #~ msgid ""
 #~ "Adjusts the contrast of the image according to a curve, for each RGB "
 #~ "channel separately."
 #~ msgstr ""
 #~ "Ajuste le contraste de l'image en se basant sur une courbe, pour chaque "
 #~ "canal RGB séparément"
+
 #~ msgid "image cache file backup"
 #~ msgstr "sauvegarde du fichier de cache des images"
+
 #~ msgid ""
 #~ "creates a backup of the cachefile to prevent loss of thumbnails generated "
 #~ "at crashes etc (needs a restart)."
 #~ msgstr ""
 #~ "créer une sauvegarde du fichier de cache afin d'éviter une perte des "
 #~ "miniatures lors d'un crash (nécessite un redémarrage)"
+
 #~ msgid ""
 #~ "abscissa: input, ordinate: output \n"
 #~ "works on L channel"
 #~ msgstr ""
 #~ "abscisse : entrée, ordonnée : sortie \n"
 #~ "fonctionne sur le canal L"
+
 #~ msgid "ask before deleting images"
 #~ msgstr "demander avant de supprimer des images"
+
 #~ msgid "how many threads to use in background"
 #~ msgstr "combien de fils utiliser en tâche de fond"
+
 #~ msgid "image cache file"
 #~ msgstr "fichier de cache image"
+
 #~ msgid ""
 #~ "filename relative to ~/.cache/darktable or starting with a slash (needs a "
 #~ "restart)."
 #~ msgstr ""
 #~ "nom de fichier relatif à ~/.cache/darktable, ou commençant par un "
 #~ "'/' (nécessite un redémarrage)"
+
 #~ msgid ""
 #~ "collection is currently viewing %d images where %d of them is selected."
 #~ msgstr "%d images sont affichées, dont %d sélectionnées."
+
 #~ msgid "system default"
 #~ msgstr "défaut (système)"
+
 #~ msgid "interface language"
 #~ msgstr "langue pour l'interface"
+
 #~ msgid "english"
 #~ msgstr "anglais"
+
 #~ msgid "double click to reset to the system language"
 #~ msgstr "double-cliquer pour réinitialiser à la langue du système"
+
 #~ msgid "set the language of the user interface (needs a restart)"
 #~ msgstr ""
 #~ "règle la langue pour l'interface utilisateur (nécessite un redémarrage)"
+
 #~ msgid "editable"
 #~ msgstr "modifiable"
+
 #~ msgid "make images public"
 #~ msgstr "rendre les images publiques"
+
 #~ msgid "unmodified"
 #~ msgstr "original"
+
 #~ msgid "colorlabel"
 #~ msgstr "labels de couleur"
 #~ msgctxt "accel"
+
 #~ msgid "load sidecar file"
 #~ msgstr "charger"
+
 #~ msgid "favorites"
 #~ msgstr "favoris"
+
 #~ msgid "active"
 #~ msgstr "actifs"
+
 #~ msgid "basic"
 #~ msgstr "basique"
+
 #~ msgid "effect"
 #~ msgstr "effets"
+
 #~ msgid "list"
 #~ msgstr "afficher"
+
 #~ msgid "images sorted by"
 #~ msgstr "trier les images par"
+
 #~ msgid "downsample the preview pixels"
 #~ msgstr "sous-échantillonner les pixels pour la prévisualisation"
+
 #~ msgid ""
 #~ "this value smaller than 1.0 downsamples the preview pixels in darkroom "
 #~ "mode for faster feedback."
 #~ msgstr ""
 #~ "si cette valeur est inférieure à 1.0, darktable sous-échantillonne les "
 #~ "pixels de pré-visualisation pour un rendu plus rapide"
+
 #~ msgid "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
 #~ msgstr "<span color=\"#7f7f7f\"><big><b>mode %s</b></big></span>"
+
 #~ msgid "loading image %s"
 #~ msgstr "chargement de l'image %s"
+
 #~ msgid " (deprecated)"
 #~ msgstr "(déprécié)"
+
 #~ msgid "<span color=\"#7f7f7f\"><big><b>light table mode</b></big></span>"
 #~ msgstr ""
 #~ "<span color=\"#7f7f7f\"><big><b>mode table lumineuse</b></big></span>"
+
 #~ msgid "f-length"
 #~ msgstr "focale"
+
 #~ msgid "-"
 #~ msgstr "-"
 #~ msgctxt "global import"
+
 #~ msgid "import"
 #~ msgstr "importation"
+
 #~ msgid "(---)"
 #~ msgstr "(---)"
 #~ msgctxt "accel"
+
 #~ msgid "linear"
 #~ msgstr "linéaire"
 #~ msgctxt "accel"
+
 #~ msgid "gamma"
 #~ msgstr "gamma"
 #~ msgctxt "gammaslider"
+
 #~ msgid "linear"
 #~ msgstr "linéaire"
 #~ msgctxt "gammaslider"
+
 #~ msgid "gamma"
 #~ msgstr "gamma"
+
 #~ msgid "capture"
 #~ msgstr "capture"
 #~ msgctxt "accel"
+
 #~ msgid "history copy"
 #~ msgstr "copier le développement"
-
