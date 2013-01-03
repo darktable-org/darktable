@@ -22,6 +22,7 @@
 #endif
 #include "common/darktable.h"
 #include "common/imageio_module.h"
+#include "common/imageio.h"
 #include "common/colorspaces.h"
 #include "control/conf.h"
 #include "dtgtk/slider.h"
@@ -608,6 +609,12 @@ int
 bpp(dt_imageio_module_data_t *p)
 {
   return 8;
+}
+
+int
+levels(dt_imageio_module_data_t *p)
+{
+  return IMAGEIO_RGB | IMAGEIO_INT8;
 }
 
 const char*

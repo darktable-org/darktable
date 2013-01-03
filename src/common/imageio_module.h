@@ -101,6 +101,8 @@ typedef struct dt_imageio_module_format_t
   int (*bpp)(dt_imageio_module_data_t *data);
   /* write to file, with exif if not NULL, and icc profile if supported. */
   int (*write_image)(dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif, int exif_len, int imgid);
+  /* flag that describes the available precision/levels of output format. mainly used for dithering. */
+  int (*levels)(dt_imageio_module_data_t *data);
 
   // sometimes we want to tell the world about what we can do
   int (*flags)(dt_imageio_module_data_t *data);

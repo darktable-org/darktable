@@ -57,6 +57,7 @@
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "common/imageio_module.h"
+#include "common/imageio.h"
 #include "control/conf.h"
 #include "dtgtk/slider.h"
 
@@ -511,6 +512,12 @@ set_params(dt_imageio_module_format_t *self, void *params, int size)
 int bpp(dt_imageio_j2k_t *p)
 {
   return 32;
+}
+
+int levels(dt_imageio_j2k_t *p)
+{
+  // TODO: adapt as soon as this module supports various bitdepths
+  return IMAGEIO_RGB|IMAGEIO_INT12;
 }
 
 const char*

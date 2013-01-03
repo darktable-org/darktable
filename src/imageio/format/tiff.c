@@ -22,6 +22,7 @@
 #include <tiffio.h>
 #include "common/darktable.h"
 #include "common/imageio_module.h"
+#include "common/imageio.h"
 #include "common/exif.h"
 #include "common/colorspaces.h"
 #include "control/conf.h"
@@ -209,6 +210,11 @@ set_params(dt_imageio_module_format_t *self, void *params, int size)
 int bpp(dt_imageio_tiff_t *p)
 {
   return p->bpp;
+}
+
+int levels(dt_imageio_tiff_t *p)
+{
+  return IMAGEIO_RGB | (p->bpp == 8 ? IMAGEIO_INT8 : IMAGEIO_INT16);
 }
 
 const char*

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012 Ulrich Pegelow
+    copyright (c) 2012--2013 Ulrich Pegelow
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "develop/tiling.h"
 #include "control/control.h"
 #include "common/opencl.h"
+#include "common/imageio.h"
 #include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -41,7 +42,7 @@
 
 DT_MODULE(1)
 
-typedef void (_find_nearest_color)(const float *inRGB, float *outRGB, float *err, int n);
+typedef void (_find_nearest_color)(const float *inRGB, float *outRGB, float *err, unsigned int n);
 
 typedef enum dt_iop_dither_type_t
 {
@@ -49,7 +50,8 @@ typedef enum dt_iop_dither_type_t
   DITHER_FS1BIT,
   DITHER_FS4BIT_GRAY,
   DITHER_FS8BIT,
-  DITHER_FS16BIT
+  DITHER_FS16BIT,
+  DITHER_FSAUTO
 } dt_iop_dither_type_t;
 
 
@@ -98,7 +100,7 @@ const char *name()
 int
 groups ()
 {
-  return IOP_GROUP_EFFECT;
+  return IOP_GROUP_CORRECT;
 }
 
 int
@@ -108,7 +110,18 @@ flags ()
 }
 
 
-void _find_nearest_color_n_levels_gray(const float *inRGB, float *outRGB, float *err, int n)
+void init_presets (dt_iop_module_so_t *self)
+{
+  dt_iop_dither_params_t tmp = (dt_iop_dither_params_t)
+    { DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f } };
+  // add the preset.
+  dt_gui_presets_add_generic(_("dithering"), self->op, self->version(), &tmp, sizeof(dt_iop_dither_params_t), 1);
+  // make it auto-apply for all images:
+  dt_gui_presets_update_autoapply(_("dithering"), self->op, self->version(), 1);
+}
+
+
+void _find_nearest_color_n_levels_gray(const float *inRGB, float *outRGB, float *err, unsigned int n)
 {
   const float in = 0.30f*inRGB[0] + 0.59f*inRGB[1] + 0.11f*inRGB[2];
 
@@ -125,7 +138,7 @@ void _find_nearest_color_n_levels_gray(const float *inRGB, float *outRGB, float 
 }
 
 
-void _find_nearest_color_n_levels_rgb(const float *inRGB, float *outRGB, float *err, int n)
+void _find_nearest_color_n_levels_rgb(const float *inRGB, float *outRGB, float *err, unsigned int n)
 {
   const int f = n-1;
 
@@ -153,7 +166,7 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   const int l1 = floorf(1.0f + dt_log2f(1.0f/scale));
 
   _find_nearest_color *nearest_color = NULL;
-  int levels = 1;
+  unsigned int levels = 1;
   int bds = (piece->pipe->type != DT_DEV_PIXELPIPE_EXPORT) ? l1*l1 : 1;
 
   switch(data->dither_type)
@@ -174,12 +187,60 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       nearest_color = _find_nearest_color_n_levels_rgb;
       levels = 65536;
       break;
+    case DITHER_FSAUTO:
+      switch(piece->pipe->levels & IMAGEIO_CHANNEL_MASK)
+      {
+        case IMAGEIO_RGB:
+          nearest_color = _find_nearest_color_n_levels_rgb;
+          break;
+        case IMAGEIO_GRAY:
+          nearest_color = _find_nearest_color_n_levels_gray;
+          break;
+      }
+
+      switch(piece->pipe->levels & IMAGEIO_PREC_MASK)
+      {
+        case IMAGEIO_INT8:
+          levels = 256;
+          break;
+        case IMAGEIO_INT12:
+          levels = 4096;
+          break;
+        case IMAGEIO_INT16:
+          levels = 65536;
+          break;
+        case IMAGEIO_BW:
+          levels = 2;
+          break;
+        case IMAGEIO_INT32:
+        case IMAGEIO_FLOAT:
+        default:
+          nearest_color = NULL;
+          break;
+      }
+      break;
   }
 
   memcpy(ovoid, ivoid, width*height*ch*sizeof(float));
 
   if(nearest_color == NULL) return;
-  if(width < 3 || height < 3) return;
+
+  // dither without error diffusion on very tiny images
+  if(width < 3 || height < 3)
+  {
+    for(int j=0; j<height; j++)
+    {
+      float *out = ((float *)ovoid) + ch*j*width;
+      float new[3], err[3];
+      for(int i=0; i<width; i++)
+      {
+        nearest_color(out+ch*i, new, err, levels);
+        for(int k = 0; k < 3; k++) out[ch*i+k] = new[k];
+      }
+    }
+    return;
+  }
+
 
   // first height-1 rows
   for(int j=0; j<height-1; j++)
@@ -438,7 +499,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_dither_params_t tmp = (dt_iop_dither_params_t)
   {
-    DITHER_FS8BIT, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f }
+    DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f }
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_dither_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_dither_params_t));
@@ -468,6 +529,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 4-bit gray"));
   dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 8-bit rgb"));
   dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 16-bit rgb"));
+  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg auto"));
   dt_bauhaus_widget_set_label(g->dither_type, _("method"));
 
 #if 0

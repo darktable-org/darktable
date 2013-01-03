@@ -19,6 +19,7 @@
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "common/colorspaces.h"
+#include "common/imageio.h"
 #include "common/imageio_module.h"
 #include "common/imageio_exr.h"
 #include "common/imageio_exr.hh"
@@ -125,6 +126,11 @@ extern "C"
   int bpp(dt_imageio_module_data_t *p)
   {
     return 32;
+  }
+
+  int levels(dt_imageio_module_data_t *p)
+  {
+    return IMAGEIO_RGB|IMAGEIO_FLOAT;
   }
 
   const char*
