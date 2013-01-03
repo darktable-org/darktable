@@ -61,6 +61,6 @@ set output 'gaussian.pdf'
 plot for [i=2:37] './gaussian_all.txt' u 1:(column(i)) w lp title column(i)
 EOF
 
-# rm -f noise_*.dat poissonian_all.txt gauissan_all.txt
+rm -f noise_*.dat poissonian_all.txt gauissan_all.txt
 
 
