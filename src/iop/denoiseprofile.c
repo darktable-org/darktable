@@ -23,6 +23,7 @@
 #include "bauhaus/bauhaus.h"
 #include "control/control.h"
 #include "common/noiseprofiles.h"
+#include "common/opencl.h"
 #include "gui/accelerators.h"
 #include "gui/presets.h"
 #include "gui/gtk.h"
@@ -31,26 +32,41 @@
 #include <stdlib.h>
 #include <xmmintrin.h>
 
+#define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
+
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
 DT_MODULE(1)
 
-typedef struct dt_iop_nlmeans_params_t
+typedef struct dt_iop_denoiseprofile_params_t
 {
   float radius;      // search radius
   float strength;    // noise level after equilization
   float a[3], b[3];  // fit for poissonian-gaussian noise per color channel.
 }
-dt_iop_nlmeans_params_t;
+dt_iop_denoiseprofile_params_t;
 
-typedef struct dt_iop_nlmeans_gui_data_t
+typedef struct dt_iop_denoiseprofile_gui_data_t
 {
   GtkWidget *radius;
   GtkWidget *strength;
 }
-dt_iop_nlmeans_gui_data_t;
+dt_iop_denoiseprofile_gui_data_t;
 
-typedef dt_iop_nlmeans_params_t dt_iop_nlmeans_data_t;
+typedef dt_iop_denoiseprofile_params_t dt_iop_denoiseprofile_data_t;
+
+typedef struct dt_iop_denoiseprofile_global_data_t
+{
+  int kernel_denoiseprofile_precondition;
+  int kernel_denoiseprofile_init;
+  int kernel_denoiseprofile_dist;
+  int kernel_denoiseprofile_horiz;
+  int kernel_denoiseprofile_vert;
+  int kernel_denoiseprofile_accu;
+  int kernel_denoiseprofile_finish;
+}
+dt_iop_denoiseprofile_global_data_t;
+
 
 const char *name()
 {
@@ -71,7 +87,7 @@ flags ()
 
 void init_presets (dt_iop_module_so_t *self)
 {
-  dt_iop_nlmeans_params_t p = (dt_iop_nlmeans_params_t){1.0f, 1.0f, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}};
+  dt_iop_denoiseprofile_params_t p = (dt_iop_denoiseprofile_params_t){1.0f, 1.0f, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}};
   for(int i=0;i<dt_noiseprofile_cnt;i++)
   {
     for(int k=0;k<3;k++)
@@ -79,7 +95,7 @@ void init_presets (dt_iop_module_so_t *self)
       p.a[k] = dt_noiseprofiles[i].a[k];
       p.b[k] = dt_noiseprofiles[i].b[k];
     }
-    dt_gui_presets_add_generic(_(dt_noiseprofiles[i].name), self->op, self->version(), &p, sizeof(dt_iop_nlmeans_params_t), 1);
+    dt_gui_presets_add_generic(_(dt_noiseprofiles[i].name), self->op, self->version(), &p, sizeof(dt_iop_denoiseprofile_params_t), 1);
     // show only for matching cameras.
     dt_gui_presets_update_mml(_(dt_noiseprofiles[i].name), self->op, self->version(), dt_noiseprofiles[i].maker, dt_noiseprofiles[i].model, "");
     // store iso with correct mean for interpolation, but have a really loose range, so filtering will still show them:
@@ -110,11 +126,11 @@ fast_mexp2f(const float x)
 
 void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
-  dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
+  dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
   const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
   const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
 
-  tiling->factor = 2.5f; // in + out + tmp
+  tiling->factor = 3.5f; // in + out + (1 + 2 * 0.25) * tmp
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = P+K;
@@ -458,7 +474,7 @@ void process(
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
-  dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
+  dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
 
   const int max_scale = 3;
 
@@ -557,7 +573,7 @@ void process(
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
-  dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
+  dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
 
   // TODO: fixed K to use adaptive size trading variance and bias!
   // adjust to zoom size:
@@ -754,7 +770,210 @@ void process(
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
+
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
+  dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->data;
+
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  cl_mem dev_tmp = NULL;
+  cl_mem dev_U4 = NULL;
+  cl_mem dev_U4_t = NULL;
+
+  cl_int err = -999;
+
+  const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
+  const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
+  const float norm = 0.015f/(2*P+1);
+
+#if 0
+  if(P < 1)
+  {
+    size_t origin[] = { 0, 0, 0};
+    size_t region[] = { width, height, 1};
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    if (err != CL_SUCCESS) goto error;
+    return TRUE;
+  }
 #endif
+
+  const float wb[4] = {
+    piece->pipe->processed_maximum[0]*d->strength,
+    piece->pipe->processed_maximum[1]*d->strength,
+    piece->pipe->processed_maximum[2]*d->strength,
+    0.0f};
+  const float aa[4] = {
+    d->a[1]*wb[0],
+    d->a[1]*wb[1],
+    d->a[1]*wb[2],
+    1.0f};
+  const float bb[4] = {
+    d->b[1]*wb[0],
+    d->b[1]*wb[1],
+    d->b[1]*wb[2],
+    1.0f};
+  const float sigma2[4] = {
+    (bb[0]/aa[0])*(bb[0]/aa[0]),
+    (bb[1]/aa[1])*(bb[1]/aa[1]),
+    (bb[2]/aa[1])*(bb[2]/aa[1]),
+    0.0f};
+
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4*sizeof(float));
+  if (dev_tmp == NULL) goto error;
+
+  dev_U4 = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  if (dev_U4 == NULL) goto error;
+
+  dev_U4_t = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  if (dev_U4_t == NULL) goto error;
+
+
+  // prepare local work group
+  size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
+  size_t workgroupsize = 0;          // the maximum number of items in a work group
+  unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
+  size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group of the kernel
+  // assuming this is the same for denoiseprofile_horiz and denoiseprofile_vert
+
+  // make sure blocksize is not too large
+  int blocksize = BLOCKSIZE;
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
+      dt_opencl_get_kernel_work_group_size(devid, gd->kernel_denoiseprofile_horiz, &kernelworkgroupsize) == CL_SUCCESS)
+  {
+    // reduce blocksize step by step until it fits to limits
+    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize > kernelworkgroupsize
+          || blocksize > workgroupsize || (blocksize+2*P)*sizeof(float) > localmemsize)
+    {
+      if(blocksize == 1) break;
+      blocksize >>= 1;
+    }
+  }
+  else
+  {
+    blocksize = 1;   // slow but safe
+  }
+
+  const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1)*blocksize;
+  const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1)*blocksize;
+
+  const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
+  size_t sizesl[3];
+  size_t local[3];
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 1, sizeof(cl_mem), (void *)&dev_tmp);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 4, 4*sizeof(float), (void *)&aa);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 5, 4*sizeof(float), (void *)&sigma2);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_precondition, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_init, 0, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_init, 1, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_init, 2, sizeof(int), (void *)&height);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_init, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+
+  for(int j = -K; j <= 0; j++)
+    for(int i = -K; i <= K; i++)
+    {
+      int q[2] = { i, j};
+
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_dist, 0, sizeof(cl_mem), (void *)&dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_dist, 1, sizeof(cl_mem), (void *)&dev_U4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_dist, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_dist, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_dist, 4, 2*sizeof(int), (void *)&q);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_dist, sizes);
+      if(err != CL_SUCCESS) goto error;
+
+      sizesl[0] = bwidth;
+      sizesl[1] = ROUNDUPHT(height);
+      sizesl[2] = 1;
+      local[0] = blocksize;
+      local[1] = 1;
+      local[2] = 1;
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 0, sizeof(cl_mem), (void *)&dev_U4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 1, sizeof(cl_mem), (void *)&dev_U4_t);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 4, 2*sizeof(int), (void *)&q);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 5, sizeof(int), (void *)&P);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 6, (blocksize+2*P)*sizeof(float), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_denoiseprofile_horiz, sizesl, local);
+      if(err != CL_SUCCESS) goto error;
+
+
+      sizesl[0] = ROUNDUPWD(width);
+      sizesl[1] = bheight;
+      sizesl[2] = 1;
+      local[0] = 1;
+      local[1] = blocksize;
+      local[2] = 1;
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 0, sizeof(cl_mem), (void *)&dev_U4_t);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 1, sizeof(cl_mem), (void *)&dev_U4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 4, 2*sizeof(int), (void *)&q);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 5, sizeof(int), (void *)&P);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 6, sizeof(float), (void *)&norm);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 7, (blocksize+2*P)*sizeof(float), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_denoiseprofile_vert, sizesl, local);
+      if(err != CL_SUCCESS) goto error;
+
+
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 0, sizeof(cl_mem), (void *)&dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 1, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 2, sizeof(cl_mem), (void *)&dev_U4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 3, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 4, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 5, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 6, 2*sizeof(int), (void *)&q);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_accu, sizes);
+      if(err != CL_SUCCESS) goto error;
+
+      dt_opencl_finish(devid);
+
+      // indirectly give gpu some air to breathe (and to do display related stuff)
+      if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW) dt_iop_nap(1000);
+    }
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 2, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 3, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 4, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 5, 4*sizeof(float), (void *)&aa);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 6, 4*sizeof(float), (void *)&sigma2);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_finish, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  if (dev_U4 != NULL) dt_opencl_release_mem_object(dev_U4);
+  if (dev_U4_t != NULL) dt_opencl_release_mem_object(dev_U4_t);
+  if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  return TRUE;
+
+error:
+  if(dev_U4 != NULL) dt_opencl_release_mem_object(dev_U4);
+  if (dev_U4_t != NULL) dt_opencl_release_mem_object(dev_U4_t);
+  if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif  // HAVE_OPENCL
+#endif  // USE_NLMEANS
+
+
 
 /** this will be called to init new defaults if a new image is loaded from film strip mode. */
 void reload_defaults(dt_iop_module_t *module)
@@ -765,12 +984,12 @@ void reload_defaults(dt_iop_module_t *module)
   float iso1, iso2;
   if(dt_iop_load_preset_interpolated_iso(module, &module->dev->image_storage, module->default_params, &iso1, &iso2))
   {
-    ((dt_iop_nlmeans_params_t *)module->default_params)->radius = 1.0f;
-    ((dt_iop_nlmeans_params_t *)module->default_params)->strength = 1.0f;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = 1.0f;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
     for(int k=0;k<3;k++)
     {
-      ((dt_iop_nlmeans_params_t *)module->default_params)->a[k] = dt_noiseprofiles[0].a[k];
-      ((dt_iop_nlmeans_params_t *)module->default_params)->b[k] = dt_noiseprofiles[0].b[k];
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->a[k] = dt_noiseprofiles[0].a[k];
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->b[k] = dt_noiseprofiles[0].b[k];
     }
     // fprintf(stderr, "couldn't find a matching preset :(\n");
   }
@@ -779,19 +998,19 @@ void reload_defaults(dt_iop_module_t *module)
   // {
   //   fprintf(stderr, "interpolated from iso %f %f\n", iso1, iso2);
   //   fprintf(stderr, "values a, b = %f %f\n",
-  //       ((dt_iop_nlmeans_params_t *)module->default_params)->a[1],
-  //       ((dt_iop_nlmeans_params_t *)module->default_params)->b[1]);
+  //       ((dt_iop_denoiseprofile_params_t *)module->default_params)->a[1],
+  //       ((dt_iop_denoiseprofile_params_t *)module->default_params)->b[1]);
   // }
-  memcpy(module->params, module->default_params, sizeof(dt_iop_nlmeans_params_t));
+  memcpy(module->params, module->default_params, sizeof(dt_iop_denoiseprofile_params_t));
 }
 
 /** init, cleanup, commit to pipeline */
 void init(dt_iop_module_t *module)
 {
-  module->params = malloc(sizeof(dt_iop_nlmeans_params_t));
-  module->default_params = malloc(sizeof(dt_iop_nlmeans_params_t));
+  module->params = malloc(sizeof(dt_iop_denoiseprofile_params_t));
+  module->default_params = malloc(sizeof(dt_iop_denoiseprofile_params_t));
   module->priority = 145; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_nlmeans_params_t);
+  module->params_size = sizeof(dt_iop_denoiseprofile_params_t);
   module->gui_data = NULL;
   module->data = NULL;
 }
@@ -804,17 +1023,46 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 11; // denoiseprofile.cl, from programs.conf
+  dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)malloc(sizeof(dt_iop_denoiseprofile_global_data_t));
+  module->data = gd;
+  gd->kernel_denoiseprofile_precondition = dt_opencl_create_kernel(program, "denoiseprofile_precondition");
+  gd->kernel_denoiseprofile_init         = dt_opencl_create_kernel(program, "denoiseprofile_init");
+  gd->kernel_denoiseprofile_dist         = dt_opencl_create_kernel(program, "denoiseprofile_dist");
+  gd->kernel_denoiseprofile_horiz        = dt_opencl_create_kernel(program, "denoiseprofile_horiz");
+  gd->kernel_denoiseprofile_vert         = dt_opencl_create_kernel(program, "denoiseprofile_vert");
+  gd->kernel_denoiseprofile_accu         = dt_opencl_create_kernel(program, "denoiseprofile_accu");
+  gd->kernel_denoiseprofile_finish       = dt_opencl_create_kernel(program, "denoiseprofile_finish");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_denoiseprofile_precondition);
+  dt_opencl_free_kernel(gd->kernel_denoiseprofile_init);
+  dt_opencl_free_kernel(gd->kernel_denoiseprofile_dist);
+  dt_opencl_free_kernel(gd->kernel_denoiseprofile_horiz);
+  dt_opencl_free_kernel(gd->kernel_denoiseprofile_vert);
+  dt_opencl_free_kernel(gd->kernel_denoiseprofile_accu);
+  dt_opencl_free_kernel(gd->kernel_denoiseprofile_finish);
+  free(module->data);
+  module->data = NULL;
+}
+
+
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)params;
-  dt_iop_nlmeans_data_t *d = (dt_iop_nlmeans_data_t *)piece->data;
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)params;
+  dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
   memcpy(d, p, sizeof(*d));
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_nlmeans_data_t));
+  piece->data = malloc(sizeof(dt_iop_denoiseprofile_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -828,7 +1076,7 @@ radius_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   // this is important to avoid cycles!
   if(darktable.gui->reset) return;
-  dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   p->radius = (int)dt_bauhaus_slider_get(w);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -838,7 +1086,7 @@ strength_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   // this is important to avoid cycles!
   if(darktable.gui->reset) return;
-  dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   p->strength = dt_bauhaus_slider_get(w);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -846,8 +1094,8 @@ strength_callback(GtkWidget *w, dt_iop_module_t *self)
 void gui_update(dt_iop_module_t *self)
 {
   // let gui slider match current parameters:
-  dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
-  dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
+  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   dt_bauhaus_slider_set(g->radius,   p->radius);
   dt_bauhaus_slider_set(g->strength, p->strength);
 }
@@ -855,8 +1103,8 @@ void gui_update(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
-  self->gui_data = malloc(sizeof(dt_iop_nlmeans_gui_data_t));
-  dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
+  self->gui_data = malloc(sizeof(dt_iop_denoiseprofile_gui_data_t));
+  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
   g->radius   = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1., 2.f, 0);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 2.0f, .05, 1.f, 3);
