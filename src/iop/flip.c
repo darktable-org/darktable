@@ -125,6 +125,59 @@ backtransform(const int32_t *x, int32_t *o, const int32_t orientation, int32_t i
   }
 }
 
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+{
+  if (!self->enabled) return 2;
+  dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
+
+  float x,y;
+
+  for (int i=0; i<points_count*2; i+=2)
+  {  
+    x = points[i];
+    y = points[i+1];
+    if(d->orientation & 2) y = piece->buf_in.height - points[i+1];
+    if(d->orientation & 1) x = piece->buf_in.width - points[i];
+    if(d->orientation & 4)
+    {
+      float yy = y;
+      y = x;
+      x = yy;
+    }    
+    points[i] = x;
+    points[i+1] = y;
+  }
+  
+  return 1;
+}
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+{
+  if (!self->enabled) return 2;
+  dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
+
+  float x,y;
+
+  for (int i=0; i<points_count*2; i+=2)
+  {  
+    if(d->orientation & 4)
+    {
+      y = points[i];
+      x = points[i+1];
+    }
+    else
+    {
+      x = points[i];
+      y = points[i+1];
+    }
+    if(d->orientation & 2) y = piece->buf_in.height - y;
+    if(d->orientation & 1) x = piece->buf_in.width - x;
+    points[i] = x;
+    points[i+1] = y;
+  }
+  
+  return 1;
+}
+
 // 1st pass: how large would the output be, given this input roi?
 // this is always called with the full buffer before processing.
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)

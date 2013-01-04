@@ -166,7 +166,10 @@ typedef struct dt_iop_clipping_gui_data_t
   float old_clip_x, old_clip_y, old_clip_w, old_clip_h;
   /* last box before change */
   float prev_clip_x, prev_clip_y, prev_clip_w, prev_clip_h;
-
+  /* maximum clip box */
+  float clip_max_x, clip_max_y, clip_max_w, clip_max_h;
+  uint64_t clip_max_pipe_hash;
+  
   int k_selected, k_show, k_selected_segment;
   gboolean k_drag;
   
@@ -318,6 +321,127 @@ transform(float *x, float *o, const float *m, const float t_h, const float t_v)
   mul_mat_vec_2(rt, x, o);
   o[1] *= (1.0f + o[0]*t_h);
   o[0] *= (1.0f + o[1]*t_v);
+}
+
+
+
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+{
+  if (!self->enabled) return 2;
+  dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
+  
+  const float rx = piece->buf_in.width;
+  const float ry = piece->buf_in.height;
+  float k_space[4] = {d->k_space[0]*rx,d->k_space[1]*ry,d->k_space[2]*rx,d->k_space[3]*ry};
+  const float kxa = d->kxa*rx, kxb = d->kxb*rx, kxc = d->kxc*rx, kxd = d->kxd*rx;
+  const float kya = d->kya*ry, kyb = d->kyb*ry, kyc = d->kyc*ry, kyd = d->kyd*ry;
+  float ma,mb,md,me,mg,mh;
+  keystone_get_matrix(k_space,kxa,kxb,kxc,kxd,kya,kyb,kyc,kyd,&ma,&mb,&md,&me,&mg,&mh);  
+  
+  for (int i=0; i<points_count*2; i+=2)
+  {
+    float pi[2], po[2];
+    pi[0] = points[i] + .5; // - d->tx + .5;
+    pi[1] = points[i+1] + .5; // - d->ty + .5;
+    
+    if (d->k_apply==1) keystone_transform(pi,k_space,ma,mb,md,me,mg,mh,kxa,kya);
+    
+    pi[0] -= d->tx;
+    pi[1] -= d->ty;
+    // transform this point using matrix m
+    transform(pi, po, d->m, d->k_h, d->k_v);
+    
+    if(d->flip)
+    {
+      po[1] += d->tx;
+      po[0] += d->ty;
+    }
+    else
+    {
+      po[0] += d->tx;
+      po[1] += d->ty;
+    }
+
+    points[i] = po[0] - d->cix + d->enlarge_x;
+    points[i+1] = po[1] - d->ciy + d->enlarge_y;
+  }
+  
+  return 1;
+}
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+{
+  if (!self->enabled) return 2;
+  dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
+
+  const float rx = piece->buf_in.width;
+  const float ry = piece->buf_in.height;
+  
+  float k_space[4] = {d->k_space[0]*rx,d->k_space[1]*ry,d->k_space[2]*rx,d->k_space[3]*ry};
+  const float kxa = d->kxa*rx, kxb = d->kxb*rx, kxc = d->kxc*rx, kxd = d->kxd*rx;
+  const float kya = d->kya*ry, kyb = d->kyb*ry, kyc = d->kyc*ry, kyd = d->kyd*ry;
+  float ma,mb,md,me,mg,mh;
+  keystone_get_matrix(k_space,kxa,kxb,kxc,kxd,kya,kyb,kyc,kyd,&ma,&mb,&md,&me,&mg,&mh);
+
+  for (int i=0; i<points_count*2; i+=2)
+  {
+    float pi[2], po[2];
+    pi[0] = -d->enlarge_x + d->cix + points[i] + .5;
+    pi[1] = -d->enlarge_y + d->ciy + points[i+1] + .5;
+    // transform this point using matrix m
+    if(d->flip)
+    {
+      pi[1] -= d->tx;
+      pi[0] -= d->ty;
+    }
+    else
+    {
+      pi[0] -= d->tx;
+      pi[1] -= d->ty;
+    }
+
+    backtransform(pi, po, d->m, d->k_h, d->k_v);
+    po[0] += d->tx;
+    po[1] += d->ty;
+    if (d->k_apply==1) keystone_backtransform(po,k_space,ma,mb,md,me,mg,mh,kxa,kya);
+        
+    points[i] = po[0];
+    points[i+1] = po[1];
+  }
+  
+  return 1;
+}
+
+static int _iop_clipping_set_max_clip (struct dt_iop_module_t *self)
+{
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+      
+  if (g->clip_max_pipe_hash == self->dev->preview_pipe->backbuf_hash) return 1;
+  
+  //we want to know the size of the actual buffer
+  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev,self->dev->preview_pipe,self);
+  if (!piece) return 0;
+  
+  float wp = piece->buf_out.width, hp = piece->buf_out.height;
+  float points[8] = {0.0,0.0,wp,hp,p->cx*wp,p->cy*hp,fabsf(p->cw)*wp,fabsf(p->ch)*hp};
+  if (!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority+1, 999999, points, 4)) return 0;
+  
+  g->clip_max_x = points[0]/self->dev->preview_pipe->backbuf_width;
+  g->clip_max_y = points[1]/self->dev->preview_pipe->backbuf_height;
+  g->clip_max_w = (points[2]-points[0])/self->dev->preview_pipe->backbuf_width;
+  g->clip_max_h = (points[3]-points[1])/self->dev->preview_pipe->backbuf_height;
+  
+  //if clipping values are not null, this is undistorted values...
+  g->clip_x = points[4]/self->dev->preview_pipe->backbuf_width;
+  g->clip_y = points[5]/self->dev->preview_pipe->backbuf_height;
+  g->clip_w = (points[6]-points[4])/self->dev->preview_pipe->backbuf_width;
+  g->clip_h = (points[7]-points[5])/self->dev->preview_pipe->backbuf_height;
+  g->clip_x = fmaxf(g->clip_x,g->clip_max_x);
+  g->clip_y = fmaxf(g->clip_y,g->clip_max_y);
+  g->clip_w = fminf(g->clip_w,g->clip_max_w);
+  g->clip_h = fminf(g->clip_h,g->clip_max_h);
+  g->clip_max_pipe_hash = self->dev->preview_pipe->backbuf_hash;
+  return 1;
 }
 
 // 1st pass: how large would the output be, given this input roi?
@@ -954,8 +1078,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->all_off = 1;
     d->k_apply = 0;
     //we are setting the keystone points, so we disable flip and rotate
-    d->angle = 0.0f;
-    d->flags = 0;
+    //d->angle = 0.0f;
+    //d->flags = 0;
   }
   
   
@@ -1006,6 +1130,7 @@ void gui_focus (struct dt_iop_module_t *self, gboolean in)
         keystone_type_populate(self,FALSE,0);
       }      
       commit_box (self, g, p);
+      g->clip_max_pipe_hash = 0;
     }
   }
 }
@@ -1089,34 +1214,34 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
     }
 
     // now fix outside boxes:
-    if(clip_x < 0)
+    if(clip_x < g->clip_max_x)
     {
       double prev_clip_h = clip_h;
-      clip_h *= (clip_w + clip_x)/clip_w;
-      clip_w  =  clip_w + clip_x;
-      clip_x  = 0;
+      clip_h *= (clip_w + clip_x - g->clip_max_x)/clip_w;
+      clip_w  =  clip_w + clip_x - g->clip_max_x;
+      clip_x  = g->clip_max_x;
       if (grab & 2) clip_y += prev_clip_h - clip_h;
     }
-    if(clip_y < 0)
+    if(clip_y < g->clip_max_y)
     {
       double prev_clip_w = clip_w;
-      clip_w *= (clip_h + clip_y)/clip_h;
-      clip_h  =  clip_h + clip_y;
-      clip_y  =  0;
+      clip_w *= (clip_h + clip_y - g->clip_max_y)/clip_h;
+      clip_h  =  clip_h + clip_y - g->clip_max_y;
+      clip_y  =  g->clip_max_y;
       if (grab & 1) clip_x += prev_clip_w - clip_w;
     }
-    if(clip_x + clip_w > 1.0)
+    if(clip_x + clip_w > g->clip_max_x + g->clip_max_w)
     {
       double prev_clip_h = clip_h;
-      clip_h *= (1.0 - clip_x)/clip_w;
-      clip_w  =  1.0 - clip_x;
+      clip_h *= (g->clip_max_x + g->clip_max_w - clip_x)/clip_w;
+      clip_w  =  g->clip_max_x + g->clip_max_w - clip_x;
       if (grab & 2) clip_y += prev_clip_h - clip_h;
     }
-    if(clip_y + clip_h > 1.0)
+    if(clip_y + clip_h > g->clip_max_y + g->clip_max_h)
     {
       double prev_clip_w = clip_w;
-      clip_w *= (1.0 - clip_y)/clip_h;
-      clip_h  =  1.0 - clip_y;
+      clip_w *= (g->clip_max_y + g->clip_max_h - clip_y)/clip_h;
+      clip_h  =  g->clip_max_y + g->clip_max_h - clip_y;
       if (grab & 1) clip_x += prev_clip_w - clip_w;
     }
     g->clip_x = clip_x;
@@ -1217,8 +1342,8 @@ keystone_type_changed (GtkWidget *combo, dt_iop_module_t *self)
      //if the keystone is applied,autocrop must be disabled !
      gtk_widget_set_sensitive(g->crop_auto,FALSE);
      //and we can enable flip and rotate
-     gtk_widget_set_sensitive(g->hvflip, TRUE);
-     gtk_widget_set_sensitive(g->angle, TRUE);
+     //gtk_widget_set_sensitive(g->hvflip, TRUE);
+     //gtk_widget_set_sensitive(g->angle, TRUE);
      gtk_widget_set_sensitive(g->aspect_presets, TRUE);
      return; 
   }
@@ -1240,8 +1365,8 @@ keystone_type_changed (GtkWidget *combo, dt_iop_module_t *self)
   gtk_widget_set_sensitive(g->crop_auto,(g->k_show == 0));
   
   //if we are not setting keystone, we can enable flip and rotate
-  gtk_widget_set_sensitive(g->hvflip, (g->k_show == 0));
-  gtk_widget_set_sensitive(g->angle, (g->k_show == 0));
+  //gtk_widget_set_sensitive(g->hvflip, (g->k_show == 0));
+  //gtk_widget_set_sensitive(g->angle, (g->k_show == 0));
   gtk_widget_set_sensitive(g->aspect_presets, (g->k_show == 0));
      
   commit_box(self,g,p);
@@ -1451,6 +1576,9 @@ void gui_init(struct dt_iop_module_t *self)
   g->clip_w = g->clip_h = 1.0;
   g->old_clip_x = g->old_clip_y = 0.0;
   g->old_clip_w = g->old_clip_h = 1.0;
+  g->clip_max_x = g->clip_max_y = 0.0;
+  g->clip_max_w = g->clip_max_h = 1.0;
+  g->clip_max_pipe_hash = 0;
   g->cropping = 0;
   g->straightening = 0;
   g->applied = 1;
@@ -1673,13 +1801,15 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
-  cairo_set_dash (cr, &dashes, 0, 0);
-  cairo_set_source_rgba(cr, .2, .2, .2, .8);
-  cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-  cairo_rectangle (cr, -1, -1, wd+2, ht+2);
-  cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, g->clip_h*ht);
-  cairo_fill (cr);
-
+  if (_iop_clipping_set_max_clip(self))
+  {
+    cairo_set_dash (cr, &dashes, 0, 0);
+    cairo_set_source_rgba(cr, .2, .2, .2, .8);
+    cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+    cairo_rectangle (cr, g->clip_max_x*wd-1.0f, g->clip_max_y*ht-1.0f, g->clip_max_w*wd+1.0f, g->clip_max_h*ht+1.0f);
+    cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, g->clip_h*ht);
+    cairo_fill (cr);
+  }
   if(g->clip_x > .0f || g->clip_y > .0f || g->clip_w < 1.0f || g->clip_h < 1.0f)
   {
     cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, g->clip_h*ht);
@@ -1879,199 +2009,200 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if (g->k_show == 1 && p->k_type > 0)
   {
     //points in screen space
-    float p1[2] = {p->kxa*wd,p->kya*ht};
-    float p2[2] = {p->kxb*wd,p->kyb*ht};
-    float p3[2] = {p->kxc*wd,p->kyc*ht};
-    float p4[2] = {p->kxd*wd,p->kyd*ht};
-
-    if (p->k_type == 3)
+    float iwd = dev->preview_pipe->iwidth;
+    float iht = dev->preview_pipe->iheight;
+    float pts[8] = {p->kxa*iwd, p->kya*iht, p->kxb*iwd, p->kyb*iht, p->kxc*iwd, p->kyc*iht, p->kxd*iwd, p->kyd*iht};
+    if (dt_dev_distort_transform(self->dev,pts,4))
     {
-      //determine extremity of the lines
-      int v1t = p1[0] - (p4[0]-p1[0]) * p1[1] / (float)(p4[1]-p1[1]);
-      int v1b = (p4[0]-p1[0]) * ht / (float)(p4[1]-p1[1]) + v1t;
-      int v2t = p2[0] - (p3[0]-p2[0]) * p2[1] / (float)(p3[1]-p2[1]);
-      int v2b = (p3[0]-p2[0]) * ht / (float)(p3[1]-p2[1]) + v2t;
-      int h1l = p1[1] - (p2[1]-p1[1]) * p1[0] / (float)(p2[0]-p1[0]);
-      int h1r = (p2[1]-p1[1]) * wd / (float)(p2[0]-p1[0]) + h1l;
-      int h2l = p4[1] - (p3[1]-p4[1]) * p4[0] / (float)(p3[0]-p4[0]);
-      int h2r = (p3[1]-p4[1]) * wd / (float)(p3[0]-p4[0]) + h2l;
+      if (p->k_type == 3)
+      {
+        //determine extremity of the lines
+        int v1t = pts[0] - (pts[6]-pts[0]) * pts[1] / (float)(pts[7]-pts[1]);
+        int v1b = (pts[6]-pts[0]) * ht / (float)(pts[7]-pts[1]) + v1t;
+        int v2t = pts[2] - (pts[4]-pts[2]) * pts[3] / (float)(pts[5]-pts[3]);
+        int v2b = (pts[4]-pts[2]) * ht / (float)(pts[5]-pts[3]) + v2t;
+        int h1l = pts[1] - (pts[3]-pts[1]) * pts[0] / (float)(pts[2]-pts[0]);
+        int h1r = (pts[3]-pts[1]) * wd / (float)(pts[2]-pts[0]) + h1l;
+        int h2l = pts[7] - (pts[5]-pts[7]) * pts[6] / (float)(pts[4]-pts[6]);
+        int h2r = (pts[5]-pts[7]) * wd / (float)(pts[4]-pts[6]) + h2l;
+        
+        //draw the lines
+        cairo_move_to(cr,v1t,0);
+        cairo_line_to(cr,v1b,ht);
+        cairo_stroke(cr);
+        cairo_move_to(cr,v2t,0);
+        cairo_line_to(cr,v2b,ht);
+        cairo_stroke(cr);
+        cairo_move_to(cr,0,h1l);
+        cairo_line_to(cr,wd,h1r);
+        cairo_stroke(cr);
+        cairo_move_to(cr,0,h2l);
+        cairo_line_to(cr,wd,h2r);
+        cairo_stroke(cr);
+        //redraw selected one
+        cairo_set_line_width(cr, 4.0/zoom_scale);
+        if (g->k_selected_segment == 0)
+        {
+          cairo_move_to(cr,pts[0],pts[1]);
+          cairo_line_to(cr,pts[2],pts[3]);
+          cairo_stroke(cr);
+        }
+        else if (g->k_selected_segment == 1)
+        {
+          cairo_move_to(cr,pts[4],pts[5]);
+          cairo_line_to(cr,pts[2],pts[3]);
+          cairo_stroke(cr);
+        }
+        else if (g->k_selected_segment == 2)
+        {
+          cairo_move_to(cr,pts[4],pts[5]);
+          cairo_line_to(cr,pts[6],pts[7]);
+          cairo_stroke(cr);
+        }
+        else if (g->k_selected_segment == 3)
+        {
+          cairo_move_to(cr,pts[0],pts[1]);
+          cairo_line_to(cr,pts[6],pts[7]);
+          cairo_stroke(cr);
+        }
+      }
+      else if (p->k_type == 2)
+      {
+        //determine extremity of the lines
+        int h1l = pts[1] - (pts[3]-pts[1]) * pts[0] / (float)(pts[2]-pts[0]);
+        int h1r = (pts[3]-pts[1]) * wd / (float)(pts[2]-pts[0]) + h1l;
+        int h2l = pts[7] - (pts[5]-pts[7]) * pts[6] / (float)(pts[4]-pts[6]);
+        int h2r = (pts[5]-pts[7]) * wd / (float)(pts[4]-pts[6]) + h2l;
+        
+        //draw the lines
+        cairo_move_to(cr,0,h1l);
+        cairo_line_to(cr,wd,h1r);
+        cairo_stroke(cr);
+        cairo_move_to(cr,0,h2l);
+        cairo_line_to(cr,wd,h2r);
+        cairo_stroke(cr);
+        //redraw selected one
+        cairo_set_line_width(cr, 4.0/zoom_scale);
+        if (g->k_selected_segment == 1)
+        {
+          cairo_move_to(cr,pts[4],pts[5]);
+          cairo_line_to(cr,pts[2],pts[3]);
+          cairo_stroke(cr);
+        }
+        else if (g->k_selected_segment == 3)
+        {
+          cairo_move_to(cr,pts[0],pts[1]);
+          cairo_line_to(cr,pts[6],pts[7]);
+          cairo_stroke(cr);
+        }
+      }
+      else if (p->k_type == 1)
+      {
+        //determine extremity of the lines
+        int v1t = pts[0] - (pts[6]-pts[0]) * pts[1] / (float)(pts[7]-pts[1]);
+        int v1b = (pts[6]-pts[0]) * ht / (float)(pts[7]-pts[1]) + v1t;
+        int v2t = pts[2] - (pts[4]-pts[2]) * pts[3] / (float)(pts[5]-pts[3]);
+        int v2b = (pts[4]-pts[2]) * ht / (float)(pts[5]-pts[3]) + v2t;
+        
+        //draw the lines
+        cairo_move_to(cr,v1t,0);
+        cairo_line_to(cr,v1b,ht);
+        cairo_stroke(cr);
+        cairo_move_to(cr,v2t,0);
+        cairo_line_to(cr,v2b,ht);
+        cairo_stroke(cr);
+        //redraw selected one
+        cairo_set_line_width(cr, 4.0/zoom_scale);
+        if (g->k_selected_segment == 0)
+        {
+          cairo_move_to(cr,pts[0],pts[1]);
+          cairo_line_to(cr,pts[2],pts[3]);
+          cairo_stroke(cr);
+        }
+        else if (g->k_selected_segment == 2)
+        {
+          cairo_move_to(cr,pts[4],pts[5]);
+          cairo_line_to(cr,pts[6],pts[7]);
+          cairo_stroke(cr);
+        }
+      }
+        
+      //draw the points
+      if (g->k_selected == 0) //point 1
+      {
+        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_source_rgba(cr, 1.0, 0, 0, .8);
+      }
+      else
+      {
+        cairo_set_line_width(cr, 2.0/zoom_scale);
+        cairo_set_source_rgba(cr, 1.0, 0, 0, .5);
+      }
+      cairo_arc (cr, pts[0], pts[1], 5.0/zoom_scale, 0, 2.0*M_PI);
+      cairo_stroke (cr);
+      if (g->k_selected == 1) //point 2
+      {
+        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_source_rgba(cr, 1.0, 0, 0, .8);
+      }
+      else
+      {
+        cairo_set_line_width(cr, 2.0/zoom_scale);
+        cairo_set_source_rgba(cr, 1.0, 0, 0, .5);
+      }
+      cairo_arc (cr, pts[2], pts[3], 5.0/zoom_scale, 0, 2.0*M_PI);
+      cairo_stroke (cr);
+      if (g->k_selected == 2) //point 3
+      {
+        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_source_rgba(cr, 1.0, 0, 0, .8);
+      }
+      else
+      {
+        cairo_set_line_width(cr, 2.0/zoom_scale);
+        cairo_set_source_rgba(cr, 1.0, 0, 0, .5);
+      }
+      cairo_arc (cr, pts[4], pts[5], 5.0/zoom_scale, 0, 2.0*M_PI);
+      cairo_stroke (cr);
+      if (g->k_selected == 3) //point 4
+      {
+        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_source_rgba(cr, 1.0, 0, 0, .8);
+      }
+      else
+      {
+        cairo_set_line_width(cr, 2.0/zoom_scale);
+        cairo_set_source_rgba(cr, 1.0, 0, 0, .5);
+      }
+      cairo_arc (cr, pts[6], pts[7], 5.0/zoom_scale, 0, 2.0*M_PI);
+      cairo_stroke (cr);
       
-      //draw the lines
-      cairo_move_to(cr,v1t,0);
-      cairo_line_to(cr,v1b,ht);
-      cairo_stroke(cr);
-      cairo_move_to(cr,v2t,0);
-      cairo_line_to(cr,v2b,ht);
-      cairo_stroke(cr);
-      cairo_move_to(cr,0,h1l);
-      cairo_line_to(cr,wd,h1r);
-      cairo_stroke(cr);
-      cairo_move_to(cr,0,h2l);
-      cairo_line_to(cr,wd,h2r);
-      cairo_stroke(cr);
-      //redraw selected one
-      cairo_set_line_width(cr, 4.0/zoom_scale);
-      if (g->k_selected_segment == 0)
-      {
-        cairo_move_to(cr,p->kxa*wd,p->kya*ht);
-        cairo_line_to(cr,p->kxb*wd,p->kyb*ht);
-        cairo_stroke(cr);
-      }
-      else if (g->k_selected_segment == 1)
-      {
-        cairo_move_to(cr,p->kxc*wd,p->kyc*ht);
-        cairo_line_to(cr,p->kxb*wd,p->kyb*ht);
-        cairo_stroke(cr);
-      }
-      else if (g->k_selected_segment == 2)
-      {
-        cairo_move_to(cr,p->kxc*wd,p->kyc*ht);
-        cairo_line_to(cr,p->kxd*wd,p->kyd*ht);
-        cairo_stroke(cr);
-      }
-      else if (g->k_selected_segment == 3)
-      {
-        cairo_move_to(cr,p->kxa*wd,p->kya*ht);
-        cairo_line_to(cr,p->kxd*wd,p->kyd*ht);
-        cairo_stroke(cr);
-      }
-    }
-    else if (p->k_type == 2)
-    {
-      //determine extremity of the lines
-      int h1l = p1[1] - (p2[1]-p1[1]) * p1[0] / (float)(p2[0]-p1[0]);
-      int h1r = (p2[1]-p1[1]) * wd / (float)(p2[0]-p1[0]) + h1l;
-      int h2l = p4[1] - (p3[1]-p4[1]) * p4[0] / (float)(p3[0]-p4[0]);
-      int h2r = (p3[1]-p4[1]) * wd / (float)(p3[0]-p4[0]) + h2l;
+      //draw the apply "button"
+      cairo_text_extents_t extents;
+      cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+      cairo_set_font_size(cr, 16);
+      cairo_text_extents (cr, "ok", &extents);
+      int c[2] = {(MIN(pts[4],pts[2])+MAX(pts[0],pts[6]))/2.0f, (MIN(pts[5],pts[7])+MAX(pts[1],pts[3]))/2.0f};
+      cairo_set_source_rgba(cr, .5,.5,.5, .9);
+      gui_draw_rounded_rectangle(cr,extents.width+8,extents.height+12,c[0]-extents.width/2.0f-4,c[1]-extents.height/2.0f-6);
+      cairo_move_to(cr,c[0]-extents.width/2.0f,c[1]+extents.height/2.0f);
+      cairo_set_source_rgba(cr, .2,.2,.2, .9);
+      cairo_show_text(cr, "ok");
       
-      //draw the lines
-      cairo_move_to(cr,0,h1l);
-      cairo_line_to(cr,wd,h1r);
-      cairo_stroke(cr);
-      cairo_move_to(cr,0,h2l);
-      cairo_line_to(cr,wd,h2r);
-      cairo_stroke(cr);
-      //redraw selected one
-      cairo_set_line_width(cr, 4.0/zoom_scale);
-      if (g->k_selected_segment == 1)
+      //draw the symetry buttons
+      gboolean sym = FALSE;
+      if (p->k_type == 1 || p->k_type == 3)
       {
-        cairo_move_to(cr,p->kxc*wd,p->kyc*ht);
-        cairo_line_to(cr,p->kxb*wd,p->kyb*ht);
-        cairo_stroke(cr);
+        if (p->k_sym == 1 || p->k_sym == 3) sym = TRUE;
+        gui_draw_sym(cr,(pts[0]+pts[6])/2.0f,(pts[1]+pts[7])/2.0f,sym);
+        gui_draw_sym(cr,(pts[2]+pts[4])/2.0f,(pts[3]+pts[5])/2.0f,sym);
       }
-      else if (g->k_selected_segment == 3)
+      if (p->k_type == 2 || p->k_type == 3)
       {
-        cairo_move_to(cr,p->kxa*wd,p->kya*ht);
-        cairo_line_to(cr,p->kxd*wd,p->kyd*ht);
-        cairo_stroke(cr);
+        sym = (p->k_sym >=2);
+        gui_draw_sym(cr,(pts[0]+pts[2])/2.0f,(pts[1]+pts[3])/2.0f,sym);
+        gui_draw_sym(cr,(pts[6]+pts[4])/2.0f,(pts[7]+pts[5])/2.0f,sym);
       }
-    }
-    else if (p->k_type == 1)
-    {
-      //determine extremity of the lines
-      int v1t = p1[0] - (p4[0]-p1[0]) * p1[1] / (float)(p4[1]-p1[1]);
-      int v1b = (p4[0]-p1[0]) * ht / (float)(p4[1]-p1[1]) + v1t;
-      int v2t = p2[0] - (p3[0]-p2[0]) * p2[1] / (float)(p3[1]-p2[1]);
-      int v2b = (p3[0]-p2[0]) * ht / (float)(p3[1]-p2[1]) + v2t;
-      
-      //draw the lines
-      cairo_move_to(cr,v1t,0);
-      cairo_line_to(cr,v1b,ht);
-      cairo_stroke(cr);
-      cairo_move_to(cr,v2t,0);
-      cairo_line_to(cr,v2b,ht);
-      cairo_stroke(cr);
-      //redraw selected one
-      cairo_set_line_width(cr, 4.0/zoom_scale);
-      if (g->k_selected_segment == 0)
-      {
-        cairo_move_to(cr,p->kxa*wd,p->kya*ht);
-        cairo_line_to(cr,p->kxb*wd,p->kyb*ht);
-        cairo_stroke(cr);
-      }
-      else if (g->k_selected_segment == 2)
-      {
-        cairo_move_to(cr,p->kxc*wd,p->kyc*ht);
-        cairo_line_to(cr,p->kxd*wd,p->kyd*ht);
-        cairo_stroke(cr);
-      }
-    }
-      
-    //draw the points
-    if (g->k_selected == 0) //point 1
-    {
-      cairo_set_line_width(cr, 4.0/zoom_scale);
-      cairo_set_source_rgba(cr, 1.0, 0, 0, .8);
-    }
-    else
-    {
-      cairo_set_line_width(cr, 2.0/zoom_scale);
-      cairo_set_source_rgba(cr, 1.0, 0, 0, .5);
-    }
-    cairo_arc (cr, p1[0], p1[1], 5.0/zoom_scale, 0, 2.0*M_PI);
-    cairo_stroke (cr);
-    if (g->k_selected == 1) //point 2
-    {
-      cairo_set_line_width(cr, 4.0/zoom_scale);
-      cairo_set_source_rgba(cr, 1.0, 0, 0, .8);
-    }
-    else
-    {
-      cairo_set_line_width(cr, 2.0/zoom_scale);
-      cairo_set_source_rgba(cr, 1.0, 0, 0, .5);
-    }
-    cairo_arc (cr, p2[0], p2[1], 5.0/zoom_scale, 0, 2.0*M_PI);
-    cairo_stroke (cr);
-    if (g->k_selected == 2) //point 3
-    {
-      cairo_set_line_width(cr, 4.0/zoom_scale);
-      cairo_set_source_rgba(cr, 1.0, 0, 0, .8);
-    }
-    else
-    {
-      cairo_set_line_width(cr, 2.0/zoom_scale);
-      cairo_set_source_rgba(cr, 1.0, 0, 0, .5);
-    }
-    cairo_arc (cr, p3[0], p3[1], 5.0/zoom_scale, 0, 2.0*M_PI);
-    cairo_stroke (cr);
-    if (g->k_selected == 3) //point 4
-    {
-      cairo_set_line_width(cr, 4.0/zoom_scale);
-      cairo_set_source_rgba(cr, 1.0, 0, 0, .8);
-    }
-    else
-    {
-      cairo_set_line_width(cr, 2.0/zoom_scale);
-      cairo_set_source_rgba(cr, 1.0, 0, 0, .5);
-    }
-    cairo_arc (cr, p4[0], p4[1], 5.0/zoom_scale, 0, 2.0*M_PI);
-    cairo_stroke (cr);
-    
-    //draw the apply "button"
-    cairo_text_extents_t extents;
-    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cr, 16);
-    cairo_text_extents (cr, "ok", &extents);
-    int c[2] = {(MIN(p3[0],p2[0])+MAX(p1[0],p4[0]))/2.0f, (MIN(p3[1],p4[1])+MAX(p1[1],p2[1]))/2.0f};
-    cairo_set_source_rgba(cr, .5,.5,.5, .9);
-    gui_draw_rounded_rectangle(cr,extents.width+8,extents.height+12,c[0]-extents.width/2.0f-4,c[1]-extents.height/2.0f-6);
-    cairo_move_to(cr,c[0]-extents.width/2.0f,c[1]+extents.height/2.0f);
-    cairo_set_source_rgba(cr, .2,.2,.2, .9);
-    cairo_show_text(cr, "ok");
-    
-    //draw the symetry buttons
-    gboolean sym = FALSE;
-    if (p->k_type == 1 || p->k_type == 3)
-    {
-      if (p->k_sym == 1 || p->k_sym == 3) sym = TRUE;
-      gui_draw_sym(cr,(p1[0]+p4[0])/2.0f,(p1[1]+p4[1])/2.0f,sym);
-      gui_draw_sym(cr,(p2[0]+p3[0])/2.0f,(p2[1]+p3[1])/2.0f,sym);
-    }
-    if (p->k_type == 2 || p->k_type == 3)
-    {
-      sym = (p->k_sym >=2);
-      gui_draw_sym(cr,(p1[0]+p2[0])/2.0f,(p1[1]+p2[1])/2.0f,sym);
-      gui_draw_sym(cr,(p4[0]+p3[0])/2.0f,(p4[1]+p3[1])/2.0f,sym);
     }
   }
 }
@@ -2114,6 +2245,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
   pzx += 0.5f;
   pzy += 0.5f;
   static int old_grab = -1;
+  _iop_clipping_set_max_clip(self);
   int grab = get_grab (pzx, pzy, g, 30.0/zoom_scale, wd, ht);
 
   if(darktable.control->button_down && darktable.control->button_down_which == 3 && g->k_show != 1)
@@ -2128,7 +2260,9 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     //case when we drag a point for keystone
     if (g->k_drag == TRUE && g->k_selected >= 0)
     {
-      float xx=pzx, yy=pzy;
+      float pts[2] = {pzx*wd,pzy*ht};
+      dt_dev_distort_backtransform(self->dev,pts,1);
+      float xx=pts[0]/self->dev->preview_pipe->iwidth, yy=pts[1]/self->dev->preview_pipe->iheight;
       if (g->k_selected == 0)
       {
         if (p->k_sym == 1 || p->k_sym == 3) p->kxa = fminf(xx,(p->kxc+p->kxd-0.01f)/2.0f), p->kxb = p->kxc-p->kxa+p->kxd;
@@ -2232,8 +2366,8 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
       if(grab == 15)
       {
         /* moving the crop window */
-        g->clip_x = fminf(1.0 - g->clip_w, fmaxf(0.0, g->handle_x + pzx - bzx));
-        g->clip_y = fminf(1.0 - g->clip_h, fmaxf(0.0, g->handle_y + pzy - bzy));
+        g->clip_x = fminf(g->clip_max_w + g->clip_max_x - g->clip_w, fmaxf(g->clip_max_x, g->handle_x + pzx - bzx));
+        g->clip_y = fminf(g->clip_max_h + g->clip_max_y - g->clip_h, fmaxf(g->clip_max_y, g->handle_y + pzy - bzy));
       }
       else
       {
@@ -2269,21 +2403,21 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
           if(grab & 1)
           {
             const float old_clip_x = g->clip_x;
-            g->clip_x = fmaxf(0.0, pzx - g->handle_x);
+            g->clip_x = fmaxf(g->clip_max_x, pzx - g->handle_x);
             g->clip_w = fmaxf(0.1, old_clip_x + g->clip_w - g->clip_x);
           }
           if(grab & 2)
           {
             const float old_clip_y = g->clip_y;
-            g->clip_y = fmaxf(0.0, pzy - g->handle_y);
+            g->clip_y = fmaxf(g->clip_max_y, pzy - g->handle_y);
             g->clip_h = fmaxf(0.1, old_clip_y + g->clip_h - g->clip_y);
           }
-          if(grab & 4) g->clip_w = fmaxf(0.1, fminf(1.0, pzx - g->clip_x - g->handle_x));
-          if(grab & 8) g->clip_h = fmaxf(0.1, fminf(1.0, pzy - g->clip_y - g->handle_y));
+          if(grab & 4) g->clip_w = fmaxf(0.1, fminf(g->clip_max_w + g->clip_max_x, pzx - g->clip_x - g->handle_x));
+          if(grab & 8) g->clip_h = fmaxf(0.1, fminf(g->clip_max_h + g->clip_max_y, pzy - g->clip_y - g->handle_y));
         }
 
-        if(g->clip_x + g->clip_w > 1.0) g->clip_w = 1.0 - g->clip_x;
-        if(g->clip_y + g->clip_h > 1.0) g->clip_h = 1.0 - g->clip_y;
+        if(g->clip_x + g->clip_w > g->clip_max_w + g->clip_max_x) g->clip_w = g->clip_max_w + g->clip_max_x - g->clip_x;
+        if(g->clip_y + g->clip_h > g->clip_max_h + g->clip_max_y) g->clip_h = g->clip_max_h + g->clip_max_y - g->clip_y;
       }
       apply_box_aspect(self, grab);
     }
@@ -2316,7 +2450,9 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     float ext = 0.005f / zoom_scale;
     if (g->k_show == 1 && g->k_drag == FALSE)
     {
-      float xx=pzx, yy=pzy;
+      float pts[2] = {pzx*wd,pzy*ht};
+      dt_dev_distort_backtransform(self->dev,pts,1);
+      float xx=pts[0]/self->dev->preview_pipe->iwidth, yy=pts[1]/self->dev->preview_pipe->iheight;
       //are we near a keystone point ?
       g->k_selected = -1;
       g->k_selected_segment = -1;
@@ -2329,13 +2465,13 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
       {
         if (p->k_type == 1 || p->k_type == 3)
         {
-          if (dist_seg(p->kxa,p->kya,p->kxb,p->kyb,pzx,pzy) < ext*ext) g->k_selected_segment = 0;
-          else if (dist_seg(p->kxd,p->kyd,p->kxc,p->kyc,pzx,pzy) < ext*ext) g->k_selected_segment = 2;
+          if (dist_seg(p->kxa,p->kya,p->kxb,p->kyb,xx,yy) < ext*ext) g->k_selected_segment = 0;
+          else if (dist_seg(p->kxd,p->kyd,p->kxc,p->kyc,xx,yy) < ext*ext) g->k_selected_segment = 2;
         }
         if (p->k_type == 1 || p->k_type == 3)
         {
-          if (dist_seg(p->kxb,p->kyb,p->kxc,p->kyc,pzx,pzy) < ext*ext) g->k_selected_segment = 1;
-          else if (dist_seg(p->kxd,p->kyd,p->kxa,p->kya,pzx,pzy) < ext*ext) g->k_selected_segment = 3;
+          if (dist_seg(p->kxb,p->kyb,p->kxc,p->kyc,xx,yy) < ext*ext) g->k_selected_segment = 1;
+          else if (dist_seg(p->kxd,p->kyd,p->kxa,p->kya,xx,yy) < ext*ext) g->k_selected_segment = 3;
         }
       }
       if (g->k_selected >=0) dt_control_change_cursor(GDK_CROSS);
@@ -2362,11 +2498,21 @@ commit_box (dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clippin
     p->cx = p->cy = 0.0f;
     p->cw = p->ch = 1.0f;
   }
-  p->cx = g->clip_x;
-  p->cy = g->clip_y;
-  p->cw = copysignf(p->cx + g->clip_w, p->cw);
-  p->ch = copysignf(p->cy + g->clip_h, p->ch);
-  
+  //we want value in iop space
+  float wd = self->dev->preview_pipe->backbuf_width;
+  float ht = self->dev->preview_pipe->backbuf_height;
+  float points[4] = {g->clip_x*wd,g->clip_y*ht,(g->clip_x+g->clip_w)*wd,(g->clip_y+g->clip_h)*ht};
+  if (dt_dev_distort_backtransform_plus(self->dev,self->dev->preview_pipe,self->priority+1,9999999,points,2))
+  {
+    dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev,self->dev->preview_pipe,self);
+    if (piece)
+    {
+      p->cx = points[0]/(float)piece->buf_out.width;
+      p->cy = points[1]/(float)piece->buf_out.height;
+      p->cw = copysignf(points[2]/(float)piece->buf_out.width, p->cw);
+      p->ch = copysignf(points[3]/(float)piece->buf_out.height, p->ch);
+    }
+  }
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   g->applied = 1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -2424,7 +2570,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
       else//if we click to the apply button
       {
         int32_t zoom, closeup;
-        float wd = self->dev->preview_pipe->backbuf_width;
+        //float wd = self->dev->preview_pipe->backbuf_width;
         //float ht = self->dev->preview_pipe->backbuf_height;
         DT_CTL_GET_GLOBAL(zoom, dev_zoom);
         DT_CTL_GET_GLOBAL(closeup, dev_closeup);
@@ -2433,11 +2579,20 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
         dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
         pzx += 0.5f;
         pzy += 0.5f;
-        float c[2] = {(MIN(p->kxc,p->kxb)+MAX(p->kxa,p->kxd))/2.0f, (MIN(p->kyc,p->kyd)+MAX(p->kya,p->kyb))/2.0f};
-        float ext = 10.0/(wd*zoom_scale);
-        float xx=pzx, yy=pzy;
+        
+        
+        //float pts[2] = {pzx*self->dev->preview_pipe->backbuf_width,pzy*self->dev->preview_pipe->backbuf_height};
+        //dt_dev_distort_backtransform(self->dev,pts,1);
+        //float xx=pts[0]/self->dev->preview_pipe->iwidth, yy=pts[1]/self->dev->preview_pipe->iheight;
+        float iwd = self->dev->preview_pipe->iwidth;
+        float iht = self->dev->preview_pipe->iheight;
+        float pts[8] = {p->kxa*iwd, p->kya*iht, p->kxb*iwd, p->kyb*iht, p->kxc*iwd, p->kyc*iht, p->kxd*iwd, p->kyd*iht};
+        dt_dev_distort_transform(self->dev,pts,4);
+        float xx=pzx*self->dev->preview_pipe->backbuf_width, yy=pzy*self->dev->preview_pipe->backbuf_height;
+        float c[2] = {(MIN(pts[4],pts[2])+MAX(pts[0],pts[6]))/2.0f, (MIN(pts[5],pts[7])+MAX(pts[1],pts[3]))/2.0f};
+        float ext = 10.0/(zoom_scale);
         //Apply button
-        if (pzx>c[0]-ext && pzx<c[0]+ext && pzy>c[1]-ext && pzy<c[1]+ext)
+        if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext)
         {
           //add an entry to the combo box and select it
           keystone_type_populate(self,TRUE,99);
@@ -2452,7 +2607,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
         else
         {
           //Horizontal symetry button (1)
-          c[0] = (p->kxa+p->kxd)/2.0f, c[1] = (p->kya+p->kyd)/2.0f;
+          c[0] = (pts[0]+pts[6])/2.0f, c[1] = (pts[1]+pts[7])/2.0f;
           if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext && (p->k_type==1 || p->k_type==3))
           {
             if (p->k_sym == 0) p->k_sym = 1;
@@ -2463,7 +2618,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
           else
           {
             //Horizontal symetry button (2)
-            c[0] = (p->kxb+p->kxc)/2.0f, c[1] = (p->kyb+p->kyc)/2.0f;
+            c[0] = (pts[2]+pts[4])/2.0f, c[1] = (pts[3]+pts[5])/2.0f;
             if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext && (p->k_type==1 || p->k_type==3))
             {
               if (p->k_sym == 0) p->k_sym = 1;
@@ -2474,7 +2629,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
             else
             {
               //vertical symetry button (1)
-              c[0] = (p->kxb+p->kxa)/2.0f, c[1] = (p->kyb+p->kya)/2.0f;
+              c[0] = (pts[2]+pts[0])/2.0f, c[1] = (pts[3]+pts[1])/2.0f;
               if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext && (p->k_type==2 || p->k_type==3))
               {
                 if (p->k_sym == 0) p->k_sym = 2;
@@ -2485,7 +2640,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
               else
               {
                 //vertical symetry button (2)
-                c[0] = (p->kxc+p->kxd)/2.0f, c[1] = (p->kyc+p->kyd)/2.0f;
+                c[0] = (pts[4]+pts[6])/2.0f, c[1] = (pts[5]+pts[7])/2.0f;
                 if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext && (p->k_type==2 || p->k_type==3))
                 {
                   if (p->k_sym == 0) p->k_sym = 2;
