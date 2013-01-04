@@ -1146,7 +1146,30 @@ void mouse_leave(dt_view_t *self)
   }
 }
 
-
+/* This function allows the file manager view to zoom "around" the image
+ * currently under the mouse cursor */
+void set_zoom_anchor(dt_library_t *lib, double pointerx, double pointery, int width, int height, int oldImagesInRow, int newImagesInRow)
+{
+  /* calculate which image number (relative to total collection)
+   * is currently under the cursor, i.e. which image is the zoom anchor */
+  float wd = width/(float)oldImagesInRow;
+  float ht = width/(float)oldImagesInRow;
+  int pi = pointerx / (float)wd;
+  int pj = pointery / (float)ht;  
+  
+  int zoom_anchor_image = lib->offset + pi + (pj * oldImagesInRow);
+  
+  /* calculate which image number (relative to offset) will be
+   * under the cursor after zooming. Then subtract that value 
+   * from the zoom anchor image number to see what the new offset should be */
+  wd = width/(float)newImagesInRow;
+  ht = width/(float)newImagesInRow;
+  pi = pointerx / (float)wd;
+  pj = pointery / (float)ht;  
+  
+  lib->offset = zoom_anchor_image - pi - (pj * newImagesInRow);
+  lib->first_visible_filemanager = lib->offset;
+}
 
 int scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
@@ -1165,12 +1188,16 @@ int scrolled(dt_view_t *self, double x, double y, int up, int state)
       zoom--;
       if(zoom < 1)
         zoom = 1;
+      else
+       set_zoom_anchor(lib, x, y, self->width, self->height, zoom+1, zoom);
     }
     else
     {
       zoom++;
       if(zoom > 2*DT_LIBRARY_MAX_ZOOM)
         zoom = 2*DT_LIBRARY_MAX_ZOOM;
+      else
+        set_zoom_anchor(lib, x, y, self->width, self->height, zoom-1, zoom);
     }
     dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
   }
