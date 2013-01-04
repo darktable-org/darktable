@@ -4,6 +4,8 @@
 orig_image=$1
 jpeg_image=$2
 
+exit 0
+
 over=$(convert "$jpeg_image" -channel RGB -threshold 99% -separate -append -format "%[mean]" info: | cut -f1 -d.)
 if [ "$over" -a "$over" -lt 80 ]; then
 	# Image not over-exposed.
