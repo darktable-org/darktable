@@ -1502,6 +1502,19 @@ static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
 
 }
 
+void dt_ellipsize_combo(GtkComboBox *cbox)
+{
+  GList *renderers = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(cbox));
+  GList *it = renderers;
+  while(it)
+  {
+    GtkCellRendererText *tr = GTK_CELL_RENDERER_TEXT(it->data);
+    g_object_set(G_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (char *)NULL);
+    it = g_list_next(it);
+  }
+  g_list_free(renderers);
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
