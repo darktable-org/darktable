@@ -36,13 +36,14 @@
 #include "dtgtk/gradientslider.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <xmmintrin.h>
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 #define TEA_ROUNDS 8
 
 DT_MODULE(1)
 
-typedef void (_find_nearest_color)(const float *inRGB, float *outRGB, float *err, unsigned int n);
+typedef __m128 (_find_nearest_color)(float *val, const float f, const float rf);
 
 typedef enum dt_iop_dither_type_t
 {
@@ -122,37 +123,43 @@ void init_presets (dt_iop_module_so_t *self)
 }
 
 
-void _find_nearest_color_n_levels_gray(const float *inRGB, float *outRGB, float *err, unsigned int n)
+static __m128
+_find_nearest_color_n_levels_gray(float *val, const float f, const float rf)
 {
-  const float in = 0.30f*inRGB[0] + 0.59f*inRGB[1] + 0.11f*inRGB[2];
+  __m128 err;
+  __m128 new;
 
-  const int f = n-1;
+  const float in = 0.30f*val[0] + 0.59f*val[1] + 0.11f*val[2];
 
   float tmp = in * f;
   int itmp  = floorf(tmp);
 
-  outRGB[0] = outRGB[1] = outRGB[2] = (tmp - itmp > 0.5f ? (float)(itmp + 1) / f : (float)itmp / f);
+  new = _mm_set1_ps(tmp - itmp > 0.5f ? (float)(itmp + 1) * rf : (float)itmp * rf);
+  err = _mm_sub_ps(_mm_load_ps(val), new);
+  _mm_store_ps(val, new);
 
-  err[0] = inRGB[0] - outRGB[0];
-  err[1] = inRGB[1] - outRGB[1];
-  err[2] = inRGB[2] - outRGB[2];
+  return err;
 }
 
 
-void _find_nearest_color_n_levels_rgb(const float *inRGB, float *outRGB, float *err, unsigned int n)
+static __m128
+_find_nearest_color_n_levels_rgb(float *val, const float f, const float rf)
 {
-  const int f = n-1;
+  __m128 old  = _mm_load_ps(val);
+  __m128 tmp  = _mm_mul_ps(old, _mm_set1_ps(f));
+  __m128 itmp = _mm_cvtepi32_ps(_mm_cvtps_epi32(tmp));
+  __m128 new  = _mm_mul_ps(_mm_add_ps(itmp, _mm_and_ps(_mm_cmpgt_ps(_mm_sub_ps(tmp, itmp), _mm_set1_ps(0.5f)), _mm_set1_ps(1.0f))), _mm_set1_ps(rf));
 
-  float tmp[3] = { inRGB[0] * f, inRGB[1] * f, inRGB[2] * f };
-  int itmp[3]  = { floorf(tmp[0]), floorf(tmp[1]), floorf(tmp[2]) };
+  _mm_store_ps(val, new);
 
-  outRGB[0] = tmp[0] - itmp[0] > 0.5f ? (float)(itmp[0] + 1) / f : (float)itmp[0] / f;
-  outRGB[1] = tmp[1] - itmp[1] > 0.5f ? (float)(itmp[1] + 1) / f : (float)itmp[1] / f;
-  outRGB[2] = tmp[2] - itmp[2] > 0.5f ? (float)(itmp[2] + 1) / f : (float)itmp[2] / f;
+  return _mm_sub_ps(old, new);
+}
 
-  err[0] = inRGB[0] - outRGB[0];
-  err[1] = inRGB[1] - outRGB[1];
-  err[2] = inRGB[2] - outRGB[2];
+
+static inline void
+_diffuse_error(float *val, const __m128 err, const float factor)
+{
+  _mm_store_ps(val, _mm_add_ps(_mm_load_ps(val), _mm_mul_ps(err, _mm_set1_ps(factor))));
 }
 
 
@@ -231,93 +238,75 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   if(nearest_color == NULL) return;
 
+  const float f = levels - 1;
+  const float rf = 1.0/f;
+  __m128 err;
+
   // dither without error diffusion on very tiny images
   if(width < 3 || height < 3)
   {
     for(int j=0; j<height; j++)
     {
       float *out = ((float *)ovoid) + ch*j*width;
-      float new[3], err[3];
       for(int i=0; i<width; i++)
-      {
-        nearest_color(out+ch*i, new, err, levels);
-        for(int k = 0; k < 3; k++) out[ch*i+k] = new[k];
-      }
+        (void)nearest_color(out+ch*i, f, rf);
     }
+
+    if(piece->pipe->mask_display)
+      dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
     return;
   }
-
 
   // first height-1 rows
   for(int j=0; j<height-1; j++)
   {
     float *out = ((float *)ovoid) + ch*j*width;
-    float new[3], err[3];
 
     // first column
-    nearest_color(out, new, err, levels);
-    for(int k = 0; k < 3; k++)
-    {
-      out[k] = new[k];
-      out[ch+k] += err[k] * 7.0f/16.0f;
-      out[ch*width+k] += err[k] * 5.0f/16.0f;
-      out[(ch+1)*width+k] += err[k] * 1.0f/16.0f;
-    }
+    err = nearest_color(out, f, rf);
+    _diffuse_error(out+ch, err, 7.0f/16.0f);
+    _diffuse_error(out+ch*width, err, 5.0f/16.0f);
+    _diffuse_error(out+ch*(width+1), err, 1.0f/16.0f);
     
+
     // main part of image
     for(int i=1; i<width-1; i++)
     {
-      nearest_color(out+ch*i, new, err, levels);
-      for(int k = 0; k < 3; k++)
-      {
-        out[ch*i+k] = new[k];
-        out[ch*(i+1)+k] += err[k] * 7.0f/16.0f;
-        out[ch*(i-1)+ch*width+k] += err[k] * 3.0f/16.0f;
-        out[ch*i+ch*width+k] += err[k] * 5.0f/16.0f;
-        out[ch*(i+1)+ch*width+k] += err[k] * 1.0f/16.0f;
-      }
+      err = nearest_color(out+ch*i, f, rf);
+      _diffuse_error(out+ch*(i+1), err, 7.0f/16.0f);
+      _diffuse_error(out+ch*(i-1)+ch*width, err, 3.0f/16.0f);
+      _diffuse_error(out+ch*i+ch*width, err, 5.0f/16.0f);
+      _diffuse_error(out+ch*(i+1)+ch*width, err, 1.0f/16.0f);
     }
 
     // last column
-    nearest_color(out+ch*(width-1), new, err, levels);
-    for(int k = 0; k < 3; k++)
-    {
-      out[ch*(width-1)+k] = new[k];
-      out[ch*(width-2)+ch*width+k] += err[k] * 3.0f/16.0f;
-      out[ch*(width-1)+ch*width+k] += err[k] * 5.0f/16.0f;
-    }
+    err = nearest_color(out+ch*(width-1), f, rf);
+    _diffuse_error(out+ch*(width-2)+ch*width, err, 3.0f/16.0f);
+    _diffuse_error(out+ch*(width-1)+ch*width, err, 5.0f/16.0f);
   }
 
   // last row
+  do
   {
     float *out = ((float *)ovoid) + ch*(height-1)*width;
-    float new[3], err[3];
 
     // lower left pixel
-    nearest_color(out, new, err, levels);
-    for(int k = 0; k < 3; k++)
-    {
-      out[k] = new[k];
-      out[ch+k] += err[k] * 7.0f/16.0f;
-    }
+    err = nearest_color(out, f, rf);
+    _diffuse_error(out+ch, err, 7.0f/16.0f);
     
     for(int i=1; i<width-1; i++)
     {
-      nearest_color(out+ch*i, new, err, levels);
-      for(int k = 0; k < 3; k++)
-      {
-        out[ch*i+k] = new[k];
-        out[ch*(i+1)+k] += err[k] * 7.0f/16.0f;
-      }
+      err = nearest_color(out+ch*i, f, rf);
+      _diffuse_error(out+ch*(i+1), err, 7.0f/16.0f);
     }
 
     // lower right pixel
-    nearest_color(out+ch*(width-1), new, err, levels);
-    for(int k = 0; k < 3; k++)
-    {
-      out[ch*(width-1)+k] = new[k];
-    }
-  }
+    (void)nearest_color(out+ch*(width-1), f, rf);
+
+  } while(0);
+
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 
