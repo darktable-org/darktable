@@ -4,7 +4,7 @@
 # cat src/iop/denoiseprofile.c | grep '{"'  | sed 's/\s*,\s*/,/g' | tr " " "_" | tr -d "{}()\"" | tr "/" "_" > trim.txt
 
 # filter out panasonic and powershot
-cat src/iop/denoiseprofile.c | grep '{"'  | sed 's/\s*,\s*/,/g' | tr " " "_" | tr -d "{}()\"" | tr "/" "_" | grep -v "PowerShot" | grep -v "Panasonic" | grep -v "DYNAX" | grep -v "NEX-C3" | grep -v "pentax_k-x" > trim.txt
+cat src/common/noiseprofiles.h | grep '{"'  | sed 's/\s*,\s*/,/g' | tr " " "_" | tr -d "{}()\"" | tr "/" "_" | grep -v "PowerShot" | grep -v "Panasonic" | grep -v "DYNAX" | grep -v "NEX-C3" | grep -v "pentax_k-x" > trim.txt
 
 # get all:
 # filter="cat"
@@ -40,8 +40,8 @@ do
   echo "collecting iso $iso .."
   for cam in $cams
   do
-    # collect green poissonian value for this camera and iso ($8)
-    a=$(cat trim.txt | awk -F, "{if (\$1 ~ /$cam/ && \$4 == $iso) { print \$8; } }" | tr -d "\n")
+    # collect green poissonian value for this camera and iso ($6)
+    a=$(cat trim.txt | awk -F, "{if (\$1 ~ /$cam/ && \$4 == $iso) { print \$6; } }" | tr -d "\n")
     if [ "$a" == "" ]
     then
       # echo "no value found for $cam iso $iso"
