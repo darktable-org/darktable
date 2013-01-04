@@ -19,8 +19,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-01-01 07:51+0100\n"
-"PO-Revision-Date: 2013-01-01 08:04+0100\n"
+"POT-Creation-Date: 2013-01-04 03:00+0100\n"
+"PO-Revision-Date: 2013-01-04 03:02+0100\n"
 "Last-Translator: Henrik Andersson <hean01@users.sourceforge.net>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -522,36 +522,36 @@ msgstr ""
 "\n"
 "%s "
 
-#: ../src/common/darktable.c:331
+#: ../src/common/darktable.c:336
 #, c-format
 msgid "found strange path `%s'"
 msgstr "hittade en konstigt sökväg `%s'"
 
-#: ../src/common/darktable.c:355
+#: ../src/common/darktable.c:360
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "fel uppstod vid läsning av katalog '%s'"
 
-#: ../src/common/darktable.c:375
+#: ../src/common/darktable.c:380
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "`%s' är av okänt format!"
 
-#: ../src/common/darktable.c:389 ../src/libs/import.c:711
+#: ../src/common/darktable.c:394 ../src/libs/import.c:711
 #, c-format
 msgid "error loading file `%s'"
 msgstr "fel uppstod vid läsning av fil '%s'"
 
-#: ../src/common/darktable.c:528
+#: ../src/common/darktable.c:533
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "FEL : ogiltig temporär katalog : %s\n"
 
-#: ../src/common/film.c:426
+#: ../src/common/film.c:429
 msgid "no supported images were found to be imported"
 msgstr "inga bilder som stöds hittades för import"
 
-#: ../src/common/film.c:438
+#: ../src/common/film.c:441
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
@@ -560,7 +560,8 @@ msgstr[1] "importerar %d bilder..."
 
 #: ../src/common/history.c:119
 msgid "you need to copy history from an image before you paste it onto another"
-msgstr "du måste kopiera historik från en bild innan du klistrar in på en annan"
+msgstr ""
+"du måste kopiera historik från en bild innan du klistrar in på en annan"
 
 #: ../src/common/history.c:209 ../src/common/history.c:222
 #: ../src/common/styles.c:444 ../src/develop/develop.c:1064
@@ -1730,45 +1731,45 @@ msgid "name"
 msgstr "namn"
 
 #. exif
-#: ../src/gui/preferences.c:432 ../src/gui/preferences.c:1335
+#: ../src/gui/preferences.c:432 ../src/gui/preferences.c:1338
 #: ../src/gui/presets.c:412 ../src/libs/metadata_view.c:82
 msgid "model"
 msgstr "modell"
 
-#: ../src/gui/preferences.c:439 ../src/gui/preferences.c:1342
+#: ../src/gui/preferences.c:439 ../src/gui/preferences.c:1345
 #: ../src/gui/presets.c:419 ../src/libs/metadata_view.c:83
 msgid "maker"
 msgstr "tillverkare"
 
-#: ../src/gui/preferences.c:446 ../src/gui/preferences.c:1349
+#: ../src/gui/preferences.c:446 ../src/gui/preferences.c:1352
 #: ../src/gui/presets.c:426 ../src/libs/collect.h:42
 #: ../src/libs/metadata_view.c:84
 msgid "lens"
 msgstr "objektiv"
 
 #. iso
-#: ../src/gui/preferences.c:453 ../src/gui/preferences.c:1356
+#: ../src/gui/preferences.c:453 ../src/gui/preferences.c:1359
 #: ../src/gui/presets.c:433 ../src/libs/camera.c:592 ../src/libs/collect.h:43
 #: ../src/libs/metadata_view.c:89
 msgid "iso"
 msgstr "iso"
 
 #. exposure
-#: ../src/gui/preferences.c:460 ../src/gui/preferences.c:1369
+#: ../src/gui/preferences.c:460 ../src/gui/preferences.c:1372
 #: ../src/gui/presets.c:446 ../src/iop/exposure.c:42 ../src/iop/exposure.c:390
 #: ../src/iop/relight.c:376 ../src/libs/metadata_view.c:86
 msgid "exposure"
 msgstr "exponering"
 
 #. aperture
-#: ../src/gui/preferences.c:467 ../src/gui/preferences.c:1384
+#: ../src/gui/preferences.c:467 ../src/gui/preferences.c:1387
 #: ../src/gui/presets.c:461 ../src/libs/camera.c:544 ../src/libs/camera.c:553
 #: ../src/libs/collect.h:44 ../src/libs/metadata_view.c:85
 msgid "aperture"
 msgstr "bländare"
 
 #. focal length
-#: ../src/gui/preferences.c:474 ../src/gui/preferences.c:1399
+#: ../src/gui/preferences.c:474 ../src/gui/preferences.c:1402
 #: ../src/gui/presets.c:476 ../src/libs/camera.c:563
 #: ../src/libs/metadata_view.c:87
 msgid "focal length"
@@ -1839,25 +1840,25 @@ msgid ""
 msgstr ""
 "är du säker på om du vill återställa standard bindningar för snabbtangenter?"
 
-#: ../src/gui/preferences.c:1285 ../src/gui/presets.c:360
+#: ../src/gui/preferences.c:1288 ../src/gui/presets.c:360
 #, c-format
 msgid "edit `%s' for module `%s'"
 msgstr "editera `%s' för modul `%s'"
 
-#: ../src/gui/preferences.c:1314 ../src/gui/presets.c:391
+#: ../src/gui/preferences.c:1317 ../src/gui/presets.c:391
 #: ../src/libs/lib.c:227
 msgid "description or further information"
 msgstr "beskrivning eller annan information"
 
-#: ../src/gui/preferences.c:1316 ../src/gui/presets.c:393
+#: ../src/gui/preferences.c:1319 ../src/gui/presets.c:393
 msgid "auto apply this preset to matching images"
 msgstr "automatisk applicering av denna förinställning för matchande bilder"
 
-#: ../src/gui/preferences.c:1318 ../src/gui/presets.c:395
+#: ../src/gui/preferences.c:1321 ../src/gui/presets.c:395
 msgid "only show this preset for matching images"
 msgstr "visa endast denna förinställning för matchande bilder"
 
-#: ../src/gui/preferences.c:1319 ../src/gui/presets.c:396
+#: ../src/gui/preferences.c:1322 ../src/gui/presets.c:396
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
@@ -1865,50 +1866,50 @@ msgstr ""
 "var försiktig med detta val. det kan bli den sista gången du ser din "
 "förinställning."
 
-#: ../src/gui/preferences.c:1334 ../src/gui/presets.c:411
+#: ../src/gui/preferences.c:1337 ../src/gui/presets.c:411
 #, c-format
 msgid "string to match model (use % as wildcard)"
 msgstr "text att matcha med modell (% används som wildcard)"
 
-#: ../src/gui/preferences.c:1341 ../src/gui/presets.c:418
+#: ../src/gui/preferences.c:1344 ../src/gui/presets.c:418
 #, c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr "text att matcha med tillverkare (% används som wildcard)"
 
-#: ../src/gui/preferences.c:1348 ../src/gui/presets.c:425
+#: ../src/gui/preferences.c:1351 ../src/gui/presets.c:425
 #, c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr "text att matcha med objektiv (% används som wildcard)"
 
-#: ../src/gui/preferences.c:1360 ../src/gui/presets.c:437
+#: ../src/gui/preferences.c:1363 ../src/gui/presets.c:437
 msgid "minimum iso value"
 msgstr "minsta iso värde"
 
-#: ../src/gui/preferences.c:1364 ../src/gui/presets.c:441
+#: ../src/gui/preferences.c:1367 ../src/gui/presets.c:441
 msgid "maximum iso value"
 msgstr "högsta iso värde"
 
-#: ../src/gui/preferences.c:1374 ../src/gui/presets.c:451
+#: ../src/gui/preferences.c:1377 ../src/gui/presets.c:451
 msgid "minimum exposure time"
 msgstr "minsta exponeringstid"
 
-#: ../src/gui/preferences.c:1375 ../src/gui/presets.c:452
+#: ../src/gui/preferences.c:1378 ../src/gui/presets.c:452
 msgid "maximum exposure time"
 msgstr "högsta exponering tid"
 
-#: ../src/gui/preferences.c:1389 ../src/gui/presets.c:466
+#: ../src/gui/preferences.c:1392 ../src/gui/presets.c:466
 msgid "minimum aperture value"
 msgstr "minsta bländarsteg"
 
-#: ../src/gui/preferences.c:1390 ../src/gui/presets.c:467
+#: ../src/gui/preferences.c:1393 ../src/gui/presets.c:467
 msgid "maximum aperture value"
 msgstr "högsta bländarsteg"
 
-#: ../src/gui/preferences.c:1406 ../src/gui/presets.c:483
+#: ../src/gui/preferences.c:1409 ../src/gui/presets.c:483
 msgid "minimum focal length"
 msgstr "minimal brännvidd (mm)"
 
-#: ../src/gui/preferences.c:1407 ../src/gui/presets.c:484
+#: ../src/gui/preferences.c:1410 ../src/gui/presets.c:484
 msgid "maximum focal length"
 msgstr "maximal brännvidd (mm)"
 
@@ -1998,11 +1999,11 @@ msgstr "ange ett namn för stilen"
 msgid "enter a description for the new style, this description is searchable"
 msgstr "ange en beskrivning av den nya stilen, denna beskrivning är sökbar"
 
-#: ../src/gui/styles_dialog.c:246
+#: ../src/gui/styles_dialog.c:246 ../src/gui/hist_dialog.c:160
 msgid "include"
 msgstr "inkludera"
 
-#: ../src/gui/styles_dialog.c:257
+#: ../src/gui/styles_dialog.c:257 ../src/gui/hist_dialog.c:171
 msgid "item"
 msgstr "post"
 
@@ -2010,7 +2011,15 @@ msgstr "post"
 msgid "can't create style out of unaltered image"
 msgstr "kan inte skapa en stil utifrån en orörd bild"
 
-#: ../src/imageio/format/copy.c:143 ../src/libs/copy_history.c:230
+#: ../src/gui/hist_dialog.c:129
+msgid "select parts"
+msgstr "välj delar"
+
+#: ../src/gui/hist_dialog.c:207
+msgid "can't copy history out of unaltered image"
+msgstr "kan inte kopiera historik från en orörd bild"
+
+#: ../src/imageio/format/copy.c:143 ../src/libs/copy_history.c:253
 #: ../src/libs/image.c:158
 msgid "copy"
 msgstr "kopiera"
@@ -5575,7 +5584,7 @@ msgstr "alla filer"
 msgid "error loading file '%s'"
 msgstr "fel uppstod vid läsning av fil '%s'"
 
-#: ../src/libs/copy_history.c:232
+#: ../src/libs/copy_history.c:255
 msgid ""
 "copy part history stack of\n"
 "first selected image (ctrl-shift-c)"
@@ -5583,11 +5592,11 @@ msgstr ""
 "kopiera delar av historiken från\n"
 "den första valda bild (ctrl-shift-c)."
 
-#: ../src/libs/copy_history.c:235
+#: ../src/libs/copy_history.c:258
 msgid "copy all"
 msgstr "kopiera allt"
 
-#: ../src/libs/copy_history.c:237
+#: ../src/libs/copy_history.c:260
 msgid ""
 "copy history stack of\n"
 "first selected image (ctrl-c)"
@@ -5595,11 +5604,11 @@ msgstr ""
 "kopiera historiken från\n"
 "den första valda bild (ctrl-c)."
 
-#: ../src/libs/copy_history.c:240
+#: ../src/libs/copy_history.c:263
 msgid "discard"
 msgstr "förkasta"
 
-#: ../src/libs/copy_history.c:242
+#: ../src/libs/copy_history.c:265
 msgid ""
 "discard history stack of\n"
 "all selected images"
@@ -5607,11 +5616,11 @@ msgstr ""
 "förkasta historiken på\n"
 "alla valda bilder"
 
-#: ../src/libs/copy_history.c:248
+#: ../src/libs/copy_history.c:271
 msgid "paste"
 msgstr "klistra in"
 
-#: ../src/libs/copy_history.c:249
+#: ../src/libs/copy_history.c:272
 msgid ""
 "paste part history stack to\n"
 "all selected images (ctrl-shift-v)"
@@ -5619,11 +5628,11 @@ msgstr ""
 "klistra in delar av historiken på\n"
 "alla valda bilder (ctrl-shift-v)."
 
-#: ../src/libs/copy_history.c:254
+#: ../src/libs/copy_history.c:277
 msgid "paste all"
 msgstr "klistra in allt"
 
-#: ../src/libs/copy_history.c:255
+#: ../src/libs/copy_history.c:278
 msgid ""
 "paste history stack to\n"
 "all selected images (ctrl-v)"
@@ -5631,23 +5640,23 @@ msgstr ""
 "klistra in historiken på\n"
 "alla valda bilder (ctrl-v)."
 
-#: ../src/libs/copy_history.c:260
+#: ../src/libs/copy_history.c:283
 msgid "append"
 msgstr "lägg till"
 
-#: ../src/libs/copy_history.c:261
+#: ../src/libs/copy_history.c:284
 msgid "overwrite"
 msgstr "skriv över"
 
-#: ../src/libs/copy_history.c:262
+#: ../src/libs/copy_history.c:285
 msgid "how to handle existing history"
 msgstr "hur nuvarande historik ska hanteras"
 
-#: ../src/libs/copy_history.c:269
+#: ../src/libs/copy_history.c:292
 msgid "load sidecar file"
 msgstr "läs in inställningsfil"
 
-#: ../src/libs/copy_history.c:271
+#: ../src/libs/copy_history.c:294
 msgid ""
 "open an xmp sidecar file\n"
 "and apply it to selected images"
@@ -5655,45 +5664,45 @@ msgstr ""
 "öppna en xmp inställningsfil\n"
 "och tillämpa på valda bilder."
 
-#: ../src/libs/copy_history.c:274
+#: ../src/libs/copy_history.c:297
 msgid "write sidecar files"
 msgstr "skapa sidofiler med inställningar"
 
-#: ../src/libs/copy_history.c:276
+#: ../src/libs/copy_history.c:299
 msgid "write history stack and tags to xmp sidecar files"
 msgstr "skriv historik och taggar till xmp sidofil"
 
-#: ../src/libs/copy_history.c:314
+#: ../src/libs/copy_history.c:337
 msgctxt "accel"
 msgid "copy"
 msgstr "kopiera"
 
-#: ../src/libs/copy_history.c:315
+#: ../src/libs/copy_history.c:338
 msgctxt "accel"
 msgid "copy parts"
 msgstr "kopiera delar"
 
-#: ../src/libs/copy_history.c:316
+#: ../src/libs/copy_history.c:339
 msgctxt "accel"
 msgid "discard"
 msgstr "förkasta"
 
-#: ../src/libs/copy_history.c:317
+#: ../src/libs/copy_history.c:340
 msgctxt "accel"
 msgid "paste"
 msgstr "klistra in"
 
-#: ../src/libs/copy_history.c:318
+#: ../src/libs/copy_history.c:341
 msgctxt "accel"
 msgid "paste parts"
 msgstr "klistra in delar"
 
-#: ../src/libs/copy_history.c:319
+#: ../src/libs/copy_history.c:342
 msgctxt "accel"
 msgid "load sidecar files"
 msgstr "läs in inställningsfil"
 
-#: ../src/libs/copy_history.c:320
+#: ../src/libs/copy_history.c:343
 msgctxt "accel"
 msgid "write sidecar files"
 msgstr "skapa sidofiler med inställningar"
@@ -6942,37 +6951,37 @@ msgstr "filmrulle"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:157 ../src/views/lighttable.c:1393
+#: ../src/libs/tools/filmstrip.c:157 ../src/views/lighttable.c:1396
 msgctxt "accel"
 msgid "rate desert"
 msgstr "ingen rang"
 
-#: ../src/libs/tools/filmstrip.c:158 ../src/views/lighttable.c:1394
+#: ../src/libs/tools/filmstrip.c:158 ../src/views/lighttable.c:1397
 msgctxt "accel"
 msgid "rate 1"
 msgstr "rang 1"
 
-#: ../src/libs/tools/filmstrip.c:159 ../src/views/lighttable.c:1395
+#: ../src/libs/tools/filmstrip.c:159 ../src/views/lighttable.c:1398
 msgctxt "accel"
 msgid "rate 2"
 msgstr "rang 2"
 
-#: ../src/libs/tools/filmstrip.c:160 ../src/views/lighttable.c:1396
+#: ../src/libs/tools/filmstrip.c:160 ../src/views/lighttable.c:1399
 msgctxt "accel"
 msgid "rate 3"
 msgstr "rang 3"
 
-#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1397
+#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1400
 msgctxt "accel"
 msgid "rate 4"
 msgstr "rang 4"
 
-#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1398
+#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1401
 msgctxt "accel"
 msgid "rate 5"
 msgstr "rang 5"
 
-#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1399
+#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1402
 msgctxt "accel"
 msgid "rate reject"
 msgstr "avvisad"
@@ -7010,27 +7019,27 @@ msgstr "duplicerar bild"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:1412
+#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:1415
 msgctxt "accel"
 msgid "color red"
 msgstr "röd färg"
 
-#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:1413
+#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:1416
 msgctxt "accel"
 msgid "color yellow"
 msgstr "gul färg"
 
-#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:1414
+#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:1417
 msgctxt "accel"
 msgid "color green"
 msgstr "grön färg"
 
-#: ../src/libs/tools/filmstrip.c:186 ../src/views/lighttable.c:1415
+#: ../src/libs/tools/filmstrip.c:186 ../src/views/lighttable.c:1418
 msgctxt "accel"
 msgid "color blue"
 msgstr "blå färg"
 
-#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1416
+#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1419
 msgctxt "accel"
 msgid "color purple"
 msgstr "lila färg"
@@ -7229,75 +7238,75 @@ msgctxt "accel"
 msgid "image back"
 msgstr "föregående bild"
 
-#: ../src/views/lighttable.c:274
+#: ../src/views/lighttable.c:277
 msgid "there are no images in this collection"
 msgstr "det finns inga bilder i den här samlingen"
 
-#: ../src/views/lighttable.c:276
+#: ../src/views/lighttable.c:279
 msgid "if you have not imported any images yet"
 msgstr "om du inte har importerat några bilder ännu"
 
-#: ../src/views/lighttable.c:278
+#: ../src/views/lighttable.c:281
 msgid "you can do so in the import module"
 msgstr "kan du göra det i importmodulen"
 
-#: ../src/views/lighttable.c:285
+#: ../src/views/lighttable.c:288
 msgid "try to relax the filter settings in the top panel"
 msgstr "försök att lätta på filter-inställningarna i den övre panelen"
 
-#: ../src/views/lighttable.c:292
+#: ../src/views/lighttable.c:295
 msgid "or add images in the collection module in the left panel"
 msgstr "eller lägg till bilder i samlingsmodulen i den vänstra panelen"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:1402
+#: ../src/views/lighttable.c:1405
 msgctxt "accel"
 msgid "navigate up"
 msgstr "navigera upp"
 
-#: ../src/views/lighttable.c:1404
+#: ../src/views/lighttable.c:1407
 msgctxt "accel"
 msgid "navigate down"
 msgstr "navigera ner"
 
-#: ../src/views/lighttable.c:1406
+#: ../src/views/lighttable.c:1409
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "navigera sida upp"
 
-#: ../src/views/lighttable.c:1408
+#: ../src/views/lighttable.c:1411
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "navigera sida ned"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1419
+#: ../src/views/lighttable.c:1422
 msgctxt "accel"
 msgid "scroll up"
 msgstr "skrolla upp"
 
-#: ../src/views/lighttable.c:1421
+#: ../src/views/lighttable.c:1424
 msgctxt "accel"
 msgid "scroll down"
 msgstr "skrolla ner"
 
-#: ../src/views/lighttable.c:1423
+#: ../src/views/lighttable.c:1426
 msgctxt "accel"
 msgid "scroll left"
 msgstr "skrolla bakåt"
 
-#: ../src/views/lighttable.c:1425
+#: ../src/views/lighttable.c:1428
 msgctxt "accel"
 msgid "scroll right"
 msgstr "skrolla frammåt"
 
-#: ../src/views/lighttable.c:1427
+#: ../src/views/lighttable.c:1430
 msgctxt "accel"
 msgid "scroll center"
 msgstr "centrera"
 
 #. Preview key
-#: ../src/views/lighttable.c:1431
+#: ../src/views/lighttable.c:1434
 msgctxt "accel"
 msgid "preview"
 msgstr "förhandsvisning"
