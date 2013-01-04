@@ -20,7 +20,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-01-04 03:00+0100\n"
-"PO-Revision-Date: 2013-01-04 03:02+0100\n"
+"PO-Revision-Date: 2013-01-04 16:04+0100\n"
 "Last-Translator: Henrik Andersson <hean01@users.sourceforge.net>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -1823,11 +1823,11 @@ msgstr "vill du verkligen ta bort förinställning `%s'?"
 #: ../src/gui/preferences.c:1071 ../src/gui/presets.c:187
 #: ../src/libs/lib.c:292
 msgid "delete preset?"
-msgstr "ta förinställning?"
+msgstr "ta bort förinställning?"
 
 #: ../src/gui/preferences.c:1107
 msgid "select file to export"
-msgstr "välj fil för att exportera"
+msgstr "välj fil att exportera"
 
 #: ../src/gui/preferences.c:1134
 msgid "select file to import"
@@ -1837,8 +1837,7 @@ msgstr "välj fil att importera"
 msgid ""
 "Are you sure you want to restore the default keybindings?  This will erase "
 "any modifications you have made."
-msgstr ""
-"är du säker på om du vill återställa standard bindningar för snabbtangenter?"
+msgstr "är du säker på om du vill återställa standardbindningar för snabbtangenter?  Detta kommer att ta bort alla ändringar du har gjort."
 
 #: ../src/gui/preferences.c:1288 ../src/gui/presets.c:360
 #, c-format
@@ -1848,11 +1847,11 @@ msgstr "editera `%s' för modul `%s'"
 #: ../src/gui/preferences.c:1317 ../src/gui/presets.c:391
 #: ../src/libs/lib.c:227
 msgid "description or further information"
-msgstr "beskrivning eller annan information"
+msgstr "beskrivning eller vidare information"
 
 #: ../src/gui/preferences.c:1319 ../src/gui/presets.c:393
 msgid "auto apply this preset to matching images"
-msgstr "automatisk applicering av denna förinställning för matchande bilder"
+msgstr "automatisk applicering av denna förinställning på matchande bilder"
 
 #: ../src/gui/preferences.c:1321 ../src/gui/presets.c:395
 msgid "only show this preset for matching images"
