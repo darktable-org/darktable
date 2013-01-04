@@ -553,6 +553,7 @@ gui_init (dt_lib_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   d->profile = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  dt_ellipsize_combo(d->profile);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_SHRINK|GTK_EXPAND|GTK_FILL, 0, 0, 0);
   // gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_combo_box_append_text(d->profile, _("image settings"));
@@ -566,20 +567,6 @@ gui_init (dt_lib_module_t *self)
     l = g_list_next(l);
   }
 
-#if 0
-  // set ellipsisation:
-  GList *renderers = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(d->profile));
-  it = renderers;
-  while(it)
-  {
-    GtkCellRendererText *tr = GTK_CELL_RENDERER_TEXT(it->data);
-    g_object_set(G_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (char *)NULL);
-    it = g_list_next(it);
-  }
-  g_list_free(renderers);
-#endif
-  gtk_widget_set_size_request(GTK_WIDGET(d->profile), 200, -1);
-
   gtk_combo_box_set_active(d->profile, 0);
   char tooltip[1024];
   snprintf(tooltip, 1024, _("output icc profiles in %s/color/out or %s/color/out"), confdir, datadir);
@@ -592,6 +579,9 @@ gui_init (dt_lib_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   d->style = GTK_COMBO_BOX(gtk_combo_box_new_text());
+
+  dt_ellipsize_combo(d->style);
+
   gtk_combo_box_append_text(d->style, _("none"));
 
   GList *styles = dt_styles_get_list("");

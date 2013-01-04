@@ -182,6 +182,10 @@ GtkWidget *dt_ui_center(struct dt_ui_t *ui);
 GtkWidget *dt_ui_main_window(struct dt_ui_t *ui);
 
 GtkBox *dt_ui_get_container(struct dt_ui_t *ui, const dt_ui_container_t c);
+
+/*  activate ellipsization of the combox entries */
+void dt_ellipsize_combo(GtkComboBox *cbox);
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
