@@ -4,7 +4,7 @@
 # cat src/iop/denoiseprofile.c | grep '{"'  | sed 's/\s*,\s*/,/g' | tr " " "_" | tr -d "{}()\"" | tr "/" "_" > trim.txt
 
 # filter out panasonic and powershot
-cat src/iop/denoiseprofile.c | grep '{"'  | sed 's/\s*,\s*/,/g' | tr " " "_" | tr -d "{}()\"" | tr "/" "_" | grep -v "PowerShot" | grep -v "Panasonic" | grep -v "DYNAX" | grep -v "NEX-C3" | grep -v "pentax_k-x" > trim.txt
+cat src/common/noiseprofiles.h | grep '{"'  | sed 's/\s*,\s*/,/g' | tr " " "_" | tr -d "{}()\"" | tr "/" "_" | grep -v "PowerShot" | grep -v "Panasonic" | grep -v "DYNAX" | grep -v "NEX-C3" | grep -v "pentax_k-x" > trim.txt
 
 # get all:
 # filter="cat"
@@ -33,23 +33,34 @@ isos=$(cat trim.txt | $filter | awk -F, "{ print \$4; }" | sort -g | uniq)
 #
 # so we first output the header:
 echo "iso ${cams}" > data.txt
+echo "iso ${cams}" > data2.txt
 
 for iso in $isos
 do
   echo -n "$iso " >> data.txt
+  echo -n "$iso " >> data2.txt
   echo "collecting iso $iso .."
   for cam in $cams
   do
-    # collect green poissonian value for this camera and iso ($8)
-    a=$(cat trim.txt | awk -F, "{if (\$1 ~ /$cam/ && \$4 == $iso) { print \$8; } }" | tr -d "\n")
+    # collect green poissonian value for this camera and iso ($6)
+    a=$(cat trim.txt | awk -F, "{if (\$1 ~ /$cam/ && \$4 == $iso) { print \$6; } }" | tr -d "\n")
+    # same for gaussian one
+    b=$(cat trim.txt | awk -F, "{if (\$1 ~ /$cam/ && \$4 == $iso) { print \$9; } }" | tr -d "\n")
     if [ "$a" == "" ]
     then
       # echo "no value found for $cam iso $iso"
       a="?"
     fi
     echo -n "$a " >> data.txt
+    if [ "$b" == "" ]
+    then
+      # echo "no value found for $cam iso $iso"
+      b="?"
+    fi
+    echo -n "$b " >> data2.txt
   done
   echo "" >> data.txt
+  echo "" >> data2.txt
 done
 
 # now for some plotting pleasure:
@@ -63,5 +74,9 @@ set logscale xy
 set datafile missing "?"
 set key autotitle columnhead
 plot for [i=2:${num_cams}] './data.txt' u 1:(column(i)) w lp title column(i)
+
+set output 'gaussian.pdf'
+plot for [i=2:${num_cams}] './data2.txt' u 1:(column(i)) w lp title column(i)
 EOF
 
+rm -f trim.txt data.txt data2.txt

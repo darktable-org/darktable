@@ -46,7 +46,7 @@ float fast_mexp2f(const float x)
 float gh(const float f, const float sharpness)
 {
   // make sharpness bigger: less smoothing
-  return fast_mexp2f(f*f*sharpness);
+  return fast_mexp2f(f*sharpness);
 }
 
 float ddirac(const int2 q)

@@ -906,6 +906,8 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int imgid, const int
          != exifData.end() )
       exifData.erase(pos);
 
+#if EXIV2_MINOR_VERSION>=23
+    // Exiv2 versions older than 0.23 drop all EXIF if the code below is executed
     // Samsung makernote cleanup, the entries below have no relevance for exported images
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.SensorAreas")))
          != exifData.end() )
@@ -952,6 +954,7 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int imgid, const int
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.ToneCurve4")))
          != exifData.end() )
       exifData.erase(pos);
+#endif
 
     /* Write appropriate color space tag if using sRGB output */
     if (sRGB)

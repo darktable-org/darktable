@@ -114,7 +114,7 @@ EOF
 	b1=$(cat $fit | cut -f5 -d' ')
 	b2=$(cat $fit | cut -f6 -d' ')
 
-	echo "{\"$model iso $iso\",       \"$maker\",      \"$model\",              $iso,         {1.0f, 1.0f, {$a0, $a1, $a2}, {$b0, $b1, $b2}}}," >> "$presets"
+	echo "{\"$model iso $iso\",       \"$maker\",      \"$model\",              $iso,         {$a0, $a1, $a2}, {$b0, $b1, $b2}}," >> "$presets"
 
 	# Clean unused files.
 	rm -f $dat $flat_dat $curves_dat $fit
