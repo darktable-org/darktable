@@ -23,6 +23,7 @@
 #include "control/control.h"
 #include "control/signal.h"
 #include "common/opencl.h"
+#include "common/imageio.h"
 #include "libs/lib.h"
 #include "libs/colorpicker.h"
 #include "iop/colorout.h"
@@ -62,10 +63,11 @@ static char *_pipe_type_to_str(int pipe_type)
   return r;
 }
 
-int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
+int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels)
 {
   int res = dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*width*height, 2);
   pipe->type = DT_DEV_PIXELPIPE_EXPORT;
+  pipe->levels = levels;
   return res;
 }
 
@@ -108,6 +110,7 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t
   pipe->tiling = 0;
   pipe->mask_display = 0;
   pipe->input_timestamp = 0;
+  pipe->levels = IMAGEIO_RGB | IMAGEIO_INT8;
   dt_pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
   dt_pthread_mutex_init(&(pipe->busy_mutex), NULL);
   return 1;
