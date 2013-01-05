@@ -87,6 +87,8 @@ typedef struct dt_library_t
   int full_preview;
   int32_t full_preview_id;
   gboolean offset_changed;
+  int32_t x_zoom_offset, y_zoom_offset;
+  gboolean apply_zoom_offset;
 
   int32_t collection_count;
 
@@ -182,6 +184,9 @@ void zoom_around_image(dt_library_t *lib, double pointerx, double pointery, int 
   int pi = pointerx / (float)wd;
   int pj = pointery / (float)ht;  
   
+  int center_x_old = pi * wd + wd/2 +lib->x_zoom_offset;
+  int center_y_old = pj * ht + ht/2 +lib->y_zoom_offset;
+  
   int zoom_anchor_image = lib->offset + pi + (pj * old_images_in_row);
   
   if (zoom_anchor_image > lib->collection_count)
@@ -194,6 +199,13 @@ void zoom_around_image(dt_library_t *lib, double pointerx, double pointery, int 
   ht = width/(float)new_images_in_row;
   pi = pointerx / (float)wd;
   pj = pointery / (float)ht;  
+  
+  int center_x_new = pi * wd + wd/2;
+  int center_y_new = pj * ht + ht/2; 
+  
+  lib->x_zoom_offset = -(center_x_new - center_x_old);
+  lib->y_zoom_offset = -(center_y_new - center_y_old);
+  lib->apply_zoom_offset = TRUE;
   
   lib->offset = zoom_anchor_image - pi - (pj * new_images_in_row);
   lib->first_visible_filemanager = lib->offset;
@@ -322,7 +334,10 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
 
   const int max_rows = 1 + (int)((height)/ht + .5);
   const int max_cols = iir;
-
+  
+  const int32_t x_offset = lib->x_zoom_offset;
+  const int32_t y_offset = lib->y_zoom_offset;
+  
   int id;
   int clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
 
@@ -425,6 +440,12 @@ end_query_cache:
 
   cairo_save(cr);
   int current_image =0;
+  printf("\nx offset: %d y offset: %d", lib->x_zoom_offset, lib->y_zoom_offset);
+  if (lib->apply_zoom_offset)
+  {
+    cairo_translate(cr, x_offset, y_offset);
+    lib->apply_zoom_offset = FALSE;
+  }
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
@@ -494,7 +515,6 @@ escape_image_loop:
   {
     for(int col = 0; col < max_cols; col++)
     {
-      
       /* skip drawing images until we reach a non-negative offset. 
        * This is needed for zooming, so that the image under the 
        * mouse cursor can be stay there. */
