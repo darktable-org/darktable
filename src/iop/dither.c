@@ -122,14 +122,14 @@ void init_presets (dt_iop_module_so_t *self)
   dt_gui_presets_update_autoapply(_("dithering"), self->op, self->version(), 1);
 }
 
-
+// dither pixel into gray, with f=levels-1 and rf=1/f, return err=old-new
 static __m128
 _find_nearest_color_n_levels_gray(float *val, const float f, const float rf)
 {
   __m128 err;
   __m128 new;
 
-  const float in = 0.30f*val[0] + 0.59f*val[1] + 0.11f*val[2];
+  const float in = 0.30f*val[0] + 0.59f*val[1] + 0.11f*val[2];                                // RGB -> GRAY
 
   float tmp = in * f;
   int itmp  = floorf(tmp);
@@ -141,15 +141,16 @@ _find_nearest_color_n_levels_gray(float *val, const float f, const float rf)
   return err;
 }
 
-
+// dither pixel into RGB, with f=levels-1 and rf=1/f, return err=old-new
 static __m128
 _find_nearest_color_n_levels_rgb(float *val, const float f, const float rf)
 {
   __m128 old  = _mm_load_ps(val);
-  __m128 tmp  = _mm_mul_ps(old, _mm_set1_ps(f));
-  __m128 itmp = _mm_cvtepi32_ps(_mm_cvtps_epi32(tmp));
-  __m128 new  = _mm_mul_ps(_mm_add_ps(itmp, _mm_and_ps(_mm_cmpgt_ps(_mm_sub_ps(tmp, itmp), _mm_set1_ps(0.5f)), _mm_set1_ps(1.0f))), _mm_set1_ps(rf));
-
+  __m128 tmp  = _mm_mul_ps(old, _mm_set1_ps(f));                                               // old * f
+  __m128 itmp = _mm_cvtepi32_ps(_mm_cvtps_epi32(tmp));                                         // floor(tmp)
+  __m128 new  = _mm_mul_ps(_mm_add_ps(itmp, _mm_and_ps(_mm_cmpgt_ps(_mm_sub_ps(tmp, itmp),     // (tmp - itmp > 0.5f ? itmp + 1 : itmp) * rf
+                                   _mm_set1_ps(0.5f)), _mm_set1_ps(1.0f))), _mm_set1_ps(rf));
+                                      
   _mm_store_ps(val, new);
 
   return _mm_sub_ps(old, new);
@@ -159,7 +160,7 @@ _find_nearest_color_n_levels_rgb(float *val, const float f, const float rf)
 static inline void
 _diffuse_error(float *val, const __m128 err, const float factor)
 {
-  _mm_store_ps(val, _mm_add_ps(_mm_load_ps(val), _mm_mul_ps(err, _mm_set1_ps(factor))));
+  _mm_store_ps(val, _mm_add_ps(_mm_load_ps(val), _mm_mul_ps(err, _mm_set1_ps(factor))));       // *val += err * factor
 }
 
 
@@ -257,6 +258,8 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     return;
   }
 
+  // floyd-steinberg dithering follows here
+
   // first height-1 rows
   for(int j=0; j<height-1; j++)
   {
@@ -294,6 +297,7 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     err = nearest_color(out, f, rf);
     _diffuse_error(out+ch, err, 7.0f/16.0f);
     
+    // main part of last row
     for(int i=1; i<width-1; i++)
     {
       err = nearest_color(out+ch*i, f, rf);
@@ -305,6 +309,7 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   } while(0);
 
+  // copy alpha channel if needed
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
