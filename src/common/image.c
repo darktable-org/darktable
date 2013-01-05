@@ -478,7 +478,8 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   gchar *sql_pattern = g_strconcat(basename, ".%", NULL);
   int group_id;
   // in case we are not a jpg check if we need to change group representative
-  if (strcmp(ext, "jpg") != 0 && strcmp(ext, "jpeg") != 0) {
+  if (strcmp(ext, "jpg") != 0 && strcmp(ext, "jpeg") != 0)
+  {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select group_id from images where film_id = ?1 and filename like ?2 and id = group_id", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, sql_pattern, -1, SQLITE_TRANSIENT);
@@ -487,37 +488,36 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
     {
       int other_id = sqlite3_column_int(stmt, 0);
       const dt_image_t *cother_img = dt_image_cache_read_get(darktable.image_cache, other_id);
-      //dt_image_t *other_img = dt_image_cache_write_get(darktable.image_cache, cother_img);
-      gchar *other_basename = strdup(cother_img->filename);
+      gchar *other_basename = g_strdup(cother_img->filename);
       gchar *cc3 = other_basename + strlen(cother_img->filename);
       for (; *cc3!='.'&&cc3>other_basename; cc3--);
       ++cc3;
       g_ascii_strdown(cc3, -1);
       // if the group representative is a jpg, change group representative to this new imported image
-      if (!strcmp(cc3, "jpg") || !strcmp(cc3, "jpeg")) {
-	dt_image_t *other_img = dt_image_cache_write_get(darktable.image_cache, cother_img);
-	other_img->group_id = id;
-	dt_image_cache_write_release(darktable.image_cache, other_img, DT_IMAGE_CACHE_SAFE);
-	dt_image_cache_read_release(darktable.image_cache, cother_img);
-	sqlite3_finalize(stmt);
-	DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select group_id from images where film_id = ?1 and filename like ?2 and id != ?3 and group_id != id", -1, &stmt, NULL);
-	DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
-	DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, sql_pattern, -1, SQLITE_TRANSIENT);
-	DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, id);
-	while(sqlite3_step(stmt) == SQLITE_ROW)
-	{
-	  other_id = sqlite3_column_int(stmt, 0);
-	  const dt_image_t *cgroup_img = dt_image_cache_read_get(darktable.image_cache, other_id);
-	  dt_image_t *group_img = dt_image_cache_write_get(darktable.image_cache, cgroup_img);
-	  group_img->group_id = id;
-	  dt_image_cache_write_release(darktable.image_cache, group_img, DT_IMAGE_CACHE_SAFE);
-	  dt_image_cache_read_release(darktable.image_cache, cgroup_img);
-	}
-	group_id = id;
+      if (!strcmp(cc3, "jpg") || !strcmp(cc3, "jpeg"))
+      {
+        dt_image_t *other_img = dt_image_cache_write_get(darktable.image_cache, cother_img);
+        other_img->group_id = id;
+        dt_image_cache_write_release(darktable.image_cache, other_img, DT_IMAGE_CACHE_SAFE);
+        dt_image_cache_read_release(darktable.image_cache, cother_img);
+        sqlite3_finalize(stmt);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select group_id from images where film_id = ?1 and filename like ?2 and id != ?3 and group_id != id", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, sql_pattern, -1, SQLITE_TRANSIENT);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, id);
+        while(sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          other_id = sqlite3_column_int(stmt, 0);
+          const dt_image_t *cgroup_img = dt_image_cache_read_get(darktable.image_cache, other_id);
+          dt_image_t *group_img = dt_image_cache_write_get(darktable.image_cache, cgroup_img);
+          group_img->group_id = id;
+          dt_image_cache_write_release(darktable.image_cache, group_img, DT_IMAGE_CACHE_SAFE);
+          dt_image_cache_read_release(darktable.image_cache, cgroup_img);
+        }
+        group_id = id;
       } else {
-	//dt_image_cache_write_release(darktable.image_cache, other_img, DT_IMAGE_CACHE_SAFE);
-	dt_image_cache_read_release(darktable.image_cache, cother_img);
-	group_id = other_id;
+        dt_image_cache_read_release(darktable.image_cache, cother_img);
+        group_id = other_id;
       }
       g_free(other_basename);
     } else {
