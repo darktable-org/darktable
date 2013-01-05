@@ -338,6 +338,17 @@ default_simple_togglebutton_callback(GtkWidget *w, dt_iop_gui_simple_callback_t 
   dt_dev_add_history_item(darktable.develop, data->self, TRUE);
 }
 
+static int
+default_distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+{
+  return 1;
+}
+static int
+default_distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+{
+  return 1;
+}
+
 static void
 gui_init_simple_wrapper(dt_iop_module_t *self)
 {
@@ -713,6 +724,9 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!darktable.opencl->inited ||
       !g_module_symbol(module->module, "process_cl",            (gpointer)&(module->process_cl)))             module->process_cl = NULL;
   if(!g_module_symbol(module->module, "process_tiling_cl",      (gpointer)&(module->process_tiling_cl)))      module->process_tiling_cl = darktable.opencl->inited ? default_process_tiling_cl : NULL;
+  if(!g_module_symbol(module->module, "distort_transform",      (gpointer)&(module->distort_transform)))      module->distort_transform = default_distort_transform;
+  if(!g_module_symbol(module->module, "distort_backtransform",  (gpointer)&(module->distort_backtransform)))  module->distort_backtransform = default_distort_backtransform;
+  
   if(!g_module_symbol(module->module, "modify_roi_in",          (gpointer)&(module->modify_roi_in)))          module->modify_roi_in = dt_iop_modify_roi_in;
   if(!g_module_symbol(module->module, "modify_roi_out",         (gpointer)&(module->modify_roi_out)))         module->modify_roi_out = dt_iop_modify_roi_out;
   if(!g_module_symbol(module->module, "legacy_params",          (gpointer)&(module->legacy_params)))          module->legacy_params = NULL;
@@ -787,6 +801,8 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->process_tiling  = so->process_tiling;
   module->process_cl      = so->process_cl;
   module->process_tiling_cl = so->process_tiling_cl;
+  module->distort_transform = so->distort_transform;
+  module->distort_backtransform = so->distort_backtransform;
   module->modify_roi_in   = so->modify_roi_in;
   module->modify_roi_out  = so->modify_roi_out;
   module->legacy_params   = so->legacy_params;

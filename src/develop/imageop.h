@@ -151,6 +151,9 @@ typedef struct dt_iop_module_so_t
   void (*process_tiling)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
   int  (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
   int  (*process_tiling_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
+
+  int (*distort_transform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, int points_count);
+  int (*distort_backtransform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, int points_count);
 }
 dt_iop_module_so_t;
 
@@ -302,6 +305,14 @@ typedef struct dt_iop_module_t
   /** a tiling variant of process_cl(). */
   int (*process_tiling_cl)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
 
+  /** this functions are used for distrot iop
+   * points is an array of float {x1,y1,x2,y2,...}
+   * size is 2*points_count */
+  /** points before the iop is applied => point after processed */
+  int (*distort_transform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, int points_count);
+  /** reverse points after the iop is applied => point before process */
+  int (*distort_backtransform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, int points_count);
+  
   /** Key accelerator registration callbacks */
   void (*connect_key_accels)(struct dt_iop_module_t *self);
   void (*original_connect_key_accels)(struct dt_iop_module_t *self);
