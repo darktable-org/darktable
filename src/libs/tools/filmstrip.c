@@ -792,11 +792,12 @@ static gboolean _lib_filmstrip_copy_history_parts_key_accel_callback(GtkAccelGro
   if(mouse_over_id <= 0) return FALSE;
   strip->history_copy_imgid = mouse_over_id;
 
-  dt_gui_hist_dialog_new (&(strip->dg), strip->history_copy_imgid, TRUE);
-
   /* check if images is currently loaded in darkroom */
   if (dt_dev_is_current_image(darktable.develop, mouse_over_id))
     dt_dev_write_history(darktable.develop);
+
+  dt_gui_hist_dialog_new (&(strip->dg), strip->history_copy_imgid, TRUE);
+
   return TRUE;
 }
 
