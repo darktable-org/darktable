@@ -545,7 +545,7 @@ dt_styles_save_to_file(const char *style_name,const char *filedir,gboolean overw
   sqlite3_finalize(stmt);
   xmlTextWriterEndDocument(writer);
   xmlFreeTextWriter(writer);
-  dt_control_log(_("style %s was sucessfully saved"),style_name);
+  dt_control_log(_("style %s was successfully saved"),style_name);
 }
 
 static StyleData *
@@ -726,7 +726,7 @@ dt_style_save(StyleData *style)
   if ((id=dt_styles_get_id_by_name(style->info->name->str)) != 0)
   {
     g_list_foreach(style->plugins,(GFunc)dt_style_plugin_save,GINT_TO_POINTER(id));
-    dt_control_log(_("style %s was sucessfully imported"),style->info->name->str);
+    dt_control_log(_("style %s was successfully imported"),style->info->name->str);
   }
 }
 

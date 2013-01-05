@@ -19,8 +19,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 1.1.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-01-05 08:36+0100\n"
-"PO-Revision-Date: 2013-01-05 09:33+0100\n"
+"POT-Creation-Date: 2013-01-05 10:37+0100\n"
+"PO-Revision-Date: 2013-01-05 10:38+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -560,7 +560,8 @@ msgstr[1] "importerar %d bilder..."
 
 #: ../src/common/history.c:119
 msgid "you need to copy history from an image before you paste it onto another"
-msgstr "du måste kopiera historik från en bild innan du klistrar in på en annan"
+msgstr ""
+"du måste kopiera historik från en bild innan du klistrar in på en annan"
 
 #: ../src/common/history.c:176 ../src/common/history.c:188
 #: ../src/common/styles.c:418 ../src/develop/develop.c:971
@@ -631,12 +632,12 @@ msgstr "stil fil med namn '%s' existerar redan"
 
 #: ../src/common/styles.c:548
 #, c-format
-msgid "style %s was sucessfully saved"
+msgid "style %s was successfully saved"
 msgstr "exporterade stilen '%s'"
 
 #: ../src/common/styles.c:729
 #, c-format
-msgid "style %s was sucessfully imported"
+msgid "style %s was successfully imported"
 msgstr "importerade stilen '%s'"
 
 #: ../src/common/variables.c:217 ../src/iop/clipping.c:1028
@@ -1383,9 +1384,12 @@ msgstr "lagringsstruktur"
 #: ../src/gui/camera_import_dialog.c:356
 msgid ""
 "the following three settings describe the directory structure and file "
-"renaming for import storage and images; if you dont know how to use this, "
+"renaming for import storage and images; if you don't know how to use this, "
 "keep the default settings."
-msgstr "följande tre inställningar beskriver katalogstrukturen och namnändring av filnamn för importlagring och bilder; om du är osäker på hur detta fungerar så använd standardinställningarna."
+msgstr ""
+"följande tre inställningar beskriver katalogstrukturen och namnändring av "
+"filnamn för importlagring och bilder; om du är osäker på hur detta fungerar "
+"så använd standardinställningarna."
 
 #: ../src/gui/camera_import_dialog.c:362
 msgid "storage directory"
@@ -1787,7 +1791,9 @@ msgstr "välj fil att importera"
 msgid ""
 "Are you sure you want to restore the default keybindings?  This will erase "
 "any modifications you have made."
-msgstr "är du säker på om du vill återställa standardbindningar för snabbtangenter?  Detta kommer att ta bort alla ändringar du har gjort."
+msgstr ""
+"är du säker på om du vill återställa standardbindningar för snabbtangenter?  "
+"Detta kommer att ta bort alla ändringar du har gjort."
 
 #: ../src/gui/preferences.c:1213 ../src/gui/presets.c:338
 #, c-format
@@ -2832,7 +2838,7 @@ msgid "frame line offset"
 msgstr "ramlinjens avstånd"
 
 #: ../src/iop/borders.c:1011
-msgid "offset of the frame line begining on picture side"
+msgid "offset of the frame line beginning on picture side"
 msgstr "ramlinjens avstånd från bildens kant"
 
 #: ../src/iop/borders.c:1017
@@ -5240,7 +5246,7 @@ msgstr "antal sekunders fördröjning innan bilden tas"
 #: ../src/libs/camera.c:495
 msgid ""
 "the amount of images to capture in a sequence,\n"
-"you can use this in conjuction with delayed mode to create stop-motion "
+"you can use this in conjunction with delayed mode to create stop-motion "
 "sequences."
 msgstr ""
 "antalet bilder att fånga i en sekvens\n"
