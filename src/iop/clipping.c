@@ -17,26 +17,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*NOTE
- * 
- * old keystone values (version 2 and 3):
- *  to avoid too many slider, these values are not settable anymore
- *  but if some have been set, a entry "old keystone" is added to the keystone type combobox
- *  so you can always revert back to those values
- *  unfortunately, there is no possibility to "translate" old values in the new mechanism (it would mean drawing points outside the image)
- * 
- * 
- * Corrected bug from old version
- *  croping is not correct if the image is flipped
- */
- 
- /*TODO
-  * 
-  * Verifications needed :
-  *   - in "gui_draw_sym"
-  * 
-  */
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -1054,14 +1034,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->k_space[1]=fabsf((d->kya+d->kyb)/2.0f);
     d->k_space[2]=fabsf((d->kxb+d->kxc)/2.0f)-d->k_space[0];
     d->k_space[3]=fabsf((d->kyc+d->kyd)/2.0f)-d->k_space[1];
-    //d->kxa = d->kxa -d->kxa; //- d->k_space[0];
-    d->kxb = d->kxb -d->kxa; //- d->k_space[0];
-    d->kxc = d->kxc -d->kxa; //- d->k_space[0];
-    d->kxd = d->kxd -d->kxa; //- d->k_space[0];
-    //d->kya = d->kya -d->kya; //- d->k_space[1];
-    d->kyb = d->kyb -d->kya; //- d->k_space[1];
-    d->kyc = d->kyc -d->kya; //- d->k_space[1];
-    d->kyd = d->kyd -d->kya; //- d->k_space[1]; 
+    d->kxb = d->kxb -d->kxa;
+    d->kxc = d->kxc -d->kxa;
+    d->kxd = d->kxd -d->kxa;
+    d->kyb = d->kyb -d->kya;
+    d->kyc = d->kyc -d->kya;
+    d->kyd = d->kyd -d->kya;
     keystone_get_matrix(d->k_space,d->kxa,d->kxb,d->kxc,d->kxd,d->kya,d->kyb,d->kyc,d->kyd,&d->a,&d->b,&d->d,&d->e,&d->g,&d->h);
     
     d->k_apply = 1;
@@ -1077,9 +1055,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     d->all_off = 1;
     d->k_apply = 0;
-    //we are setting the keystone points, so we disable flip and rotate
-    //d->angle = 0.0f;
-    //d->flags = 0;
   }
   
   
@@ -1157,8 +1132,7 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
   float wd = iwd, ht = iht;
   // enforce aspect ratio.
   const float aspect = g->current_aspect;
-  // const float aspect = gtk_spin_button_get_value(g->aspect);
-  // if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->aspect_on)))
+
   if(aspect > 0)
   {
     // if only one side changed, force aspect by two adjacent in equal parts
@@ -1341,9 +1315,6 @@ keystone_type_changed (GtkWidget *combo, dt_iop_module_t *self)
   {
      //if the keystone is applied,autocrop must be disabled !
      gtk_widget_set_sensitive(g->crop_auto,FALSE);
-     //and we can enable flip and rotate
-     //gtk_widget_set_sensitive(g->hvflip, TRUE);
-     //gtk_widget_set_sensitive(g->angle, TRUE);
      gtk_widget_set_sensitive(g->aspect_presets, TRUE);
      return; 
   }
@@ -1363,10 +1334,6 @@ keystone_type_changed (GtkWidget *combo, dt_iop_module_t *self)
   
   //we can enable autocrop
   gtk_widget_set_sensitive(g->crop_auto,(g->k_show == 0));
-  
-  //if we are not setting keystone, we can enable flip and rotate
-  //gtk_widget_set_sensitive(g->hvflip, (g->k_show == 0));
-  //gtk_widget_set_sensitive(g->angle, (g->k_show == 0));
   gtk_widget_set_sensitive(g->aspect_presets, (g->k_show == 0));
      
   commit_box(self,g,p);
@@ -1789,7 +1756,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   DT_CTL_GET_GLOBAL(closeup, dev_closeup);
   float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
 
-  //printf("expose %f,%f %f,%f %f\n",wd,ht,zoom_x,zoom_y,zoom_scale);
   cairo_translate(cr, width/2.0, height/2.0f);
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
@@ -2570,8 +2536,6 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
       else//if we click to the apply button
       {
         int32_t zoom, closeup;
-        //float wd = self->dev->preview_pipe->backbuf_width;
-        //float ht = self->dev->preview_pipe->backbuf_height;
         DT_CTL_GET_GLOBAL(zoom, dev_zoom);
         DT_CTL_GET_GLOBAL(closeup, dev_closeup);
         float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2 : 1, 1);
@@ -2580,10 +2544,6 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
         pzx += 0.5f;
         pzy += 0.5f;
         
-        
-        //float pts[2] = {pzx*self->dev->preview_pipe->backbuf_width,pzy*self->dev->preview_pipe->backbuf_height};
-        //dt_dev_distort_backtransform(self->dev,pts,1);
-        //float xx=pts[0]/self->dev->preview_pipe->iwidth, yy=pts[1]/self->dev->preview_pipe->iheight;
         float iwd = self->dev->preview_pipe->iwidth;
         float iht = self->dev->preview_pipe->iheight;
         float pts[8] = {p->kxa*iwd, p->kya*iht, p->kxb*iwd, p->kyb*iht, p->kxc*iwd, p->kyc*iht, p->kxd*iwd, p->kyd*iht};
@@ -2693,8 +2653,6 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_iop(self, TRUE, NC_("accel", "commit"),
                         GDK_Return, 0);
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "angle"));
-  //dt_accel_register_slider_iop(self, FALSE, NC_("accel", "keystone h"));
-  //dt_accel_register_slider_iop(self, FALSE, NC_("accel", "keystone v"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -2707,8 +2665,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_iop(self, "commit", closure);
 
   dt_accel_connect_slider_iop(self, "angle", GTK_WIDGET(g->angle));
-  //dt_accel_connect_slider_iop(self, "keystone h", GTK_WIDGET(g->keystone_h));
-  //dt_accel_connect_slider_iop(self, "keystone v", GTK_WIDGET(g->keystone_v));
 }
 
 #undef PHI

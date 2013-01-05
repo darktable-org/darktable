@@ -88,12 +88,6 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
-/*int
-operation_tags_filter ()
-{
-  return IOP_TAG_DISTORT;
-}*/
-
 static void gui_spot_add(dt_iop_module_t *self, spot_draw_t *gspt, int spot_index)
 {
   dt_develop_t *dev = self->dev;
@@ -374,7 +368,6 @@ void gui_update    (dt_iop_module_t *self)
 void gui_init     (dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_spots_gui_data_t));
-  //dt_iop_spots_params_t *p = (dt_iop_spots_params_t *)self->params;
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
   g->dragging = -1;
   g->selected = -1;
@@ -409,17 +402,6 @@ void gui_cleanup  (dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
-
-/*static void draw_overlay(cairo_t *cr, float rad, float x, float y, float xc, float yc, float xr, float yr)
-{
-  cairo_arc (cr, x, y, rad, 0, 2.0*M_PI);
-  cairo_stroke (cr);
-  cairo_arc (cr, xc, yc, rad, 0, 2.0*M_PI);
-  cairo_stroke (cr);
-  cairo_move_to (cr, xr, yr);
-  cairo_line_to (cr, xc, yc);
-  cairo_stroke (cr);
-}*/
 
 void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
@@ -471,7 +453,13 @@ void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t 
     {
       src_x = p->spot[i].xc*wd;
       src_y = p->spot[i].yc*ht;
-      cairo_arc (cr, src_x, src_y, 10.0, 0, 2.0*M_PI);
+      float dx = src_x - gspt.source[0], dy = src_y - gspt.source[1];
+      cairo_move_to(cr,gspt.source[2]+dx,gspt.source[3]+dy);
+      for (int i=2; i<gspt.pts_count; i++)
+      {
+        cairo_line_to(cr,gspt.source[i*2]+dx,gspt.source[i*2+1]+dy);
+      }
+      cairo_line_to(cr,gspt.source[2]+dx,gspt.source[3]+dy);
     }
     else
     {
@@ -499,7 +487,13 @@ void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t 
     {
       spt_x = p->spot[i].x*wd;
       spt_y = p->spot[i].y*ht;
-      cairo_arc (cr, spt_x, spt_y, 10.0, 0, 2.0*M_PI);
+      float dx = spt_x - gspt.spot[0], dy = spt_y - gspt.spot[1];
+      cairo_move_to(cr,gspt.spot[2]+dx,gspt.spot[3]+dy);
+      for (int i=2; i<gspt.pts_count; i++)
+      {
+        cairo_line_to(cr,gspt.spot[i*2]+dx,gspt.spot[i*2+1]+dy);
+      }
+      cairo_line_to(cr,gspt.spot[2]+dx,gspt.spot[3]+dy);
     }
     else
     {
@@ -530,29 +524,6 @@ void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t 
     else                                     cairo_set_line_width(cr, 1.0/zoom_scale);
     cairo_set_source_rgba(cr, .8, .8, .8, .8);
     cairo_stroke(cr);
-    
-    /*const float rad = MIN(wd, ht)*p->spot[i].radius;
-    const float dx = p->spot[i].xc - p->spot[i].x;
-    float dy = p->spot[i].yc - p->spot[i].y;
-    if(dx == 0.0 && dy == 0.0) dy = EPSILON; // otherwise we'll have ol = 1.0/0.0 ==> xr = yr = -nan
-    const float ol = 1.0f/sqrtf(dx*dx*wd*wd + dy*dy*ht*ht);
-    const float d  = rad * ol;
-
-    const float x = p->spot[i].x*wd, y = p->spot[i].y*ht;
-    const float xc = p->spot[i].xc*wd, yc = p->spot[i].yc*ht;
-    const float xr = (p->spot[i].x + d*dx)*wd, yr = (p->spot[i].y + d*dy)*ht;
-
-    cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
-    if(i == g->selected || i == g->dragging) cairo_set_line_width(cr, 5.0/zoom_scale);
-    else                                     cairo_set_line_width(cr, 3.0/zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
-    draw_overlay(cr, rad, x, y, xc, yc, xr, yr);
-
-    if(i == g->selected || i == g->dragging) cairo_set_line_width(cr, 2.0/zoom_scale);
-    else                                     cairo_set_line_width(cr, 1.0/zoom_scale);
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
-    draw_overlay(cr, rad, x, y, xc, yc, xr, yr);*/
-
   }
 }
 
