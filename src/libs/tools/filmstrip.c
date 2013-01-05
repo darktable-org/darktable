@@ -786,18 +786,15 @@ static gboolean _lib_filmstrip_copy_history_parts_key_accel_callback(GtkAccelGro
     GObject *aceeleratable, guint keyval,
     GdkModifierType modifier, gpointer data)
 {
-  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
-  int32_t mouse_over_id;
-  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  if(mouse_over_id <= 0) return FALSE;
-  strip->history_copy_imgid = mouse_over_id;
-
-  dt_gui_hist_dialog_new (&(strip->dg), strip->history_copy_imgid, TRUE);
-
-  /* check if images is currently loaded in darkroom */
-  if (dt_dev_is_current_image(darktable.develop, mouse_over_id))
-    dt_dev_write_history(darktable.develop);
-  return TRUE;
+  if (_lib_filmstrip_copy_history_key_accel_callback
+      (accel_group,aceeleratable, keyval, modifier, data))
+  {
+    dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
+    dt_gui_hist_dialog_new (&(strip->dg), strip->history_copy_imgid, TRUE);
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
 static gboolean _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *accel_group,
