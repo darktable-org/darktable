@@ -2617,7 +2617,7 @@
       <Color x="1" y="1">BLUE</Color>
     </CFA>
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="545" white="16596"/>
+    <Sensor black="520" white="16596"/>
   </Camera>   
   <Camera make="SONY" model="NEX-F3" supported="yes">
     <CFA width="2" height="2">
