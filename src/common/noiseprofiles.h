@@ -16,6 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/image.h"
+#include <string.h>
+
 typedef struct dt_noiseprofile_t
 {
   const char *name;
@@ -27,6 +30,7 @@ typedef struct dt_noiseprofile_t
 }
 dt_noiseprofile_t;
 
+// these should be sorted by same maker/model and increasing iso
 const dt_noiseprofile_t dt_noiseprofiles[] = {
 // preset name                   maker    model            iso    a a a                                 b b b
 {N_("generic poissonian"),       "",      "",              0,    {0.0001f, 0.0001f, 0.0001},           {0.0f, 0.0f, 0.0f}},
@@ -694,4 +698,48 @@ const dt_noiseprofile_t dt_noiseprofiles[] = {
 
 };
 const int dt_noiseprofile_cnt = sizeof(dt_noiseprofiles)/sizeof(dt_noiseprofile_t);
+
+/*
+ * fill the given buffer buf of pointers
+ * to the noiseprofile array, if they are
+ * found to match the given image's exif data.
+ * don't exceed the bufsize, and return the count.
+ */
+int dt_noiseprofile_get_matching(
+    const dt_image_t *cimg,
+    const dt_noiseprofile_t **buf,
+    const int bufsize)
+{
+  int cnt = 0;
+  if(bufsize < 1) return cnt;
+  // collect all matching entries (skip generic [0])
+  for(int i=1;i<dt_noiseprofile_cnt;i++)
+  {
+    if(strstr(cimg->exif_maker, dt_noiseprofiles[i].maker) &&
+       strstr(cimg->exif_model, dt_noiseprofiles[i].model))
+    {
+      buf[cnt++] = dt_noiseprofiles + i;
+    }
+    if(cnt >= bufsize) break;
+  }
+  return cnt;
+}
+
+/*
+ * interpolate values from p1 and p2 into out.
+ */
+void dt_noiseprofile_interpolate(
+    const dt_noiseprofile_t *const p1,  // the smaller iso
+    const dt_noiseprofile_t *const p2,  // the larger iso (can't be == iso1)
+    dt_noiseprofile_t *out)             // has iso initialized
+{
+  // stupid linear interpolation.
+  // to be confirmed for gaussian part.
+  const float t = CLAMP((out->iso - p1->iso)/(p2->iso - p1->iso), 0.0f, 1.0f);
+  for(int k=0;k<3;k++)
+  {
+    out->a[k] = (1.0f-t)*p1->a[k] + t*p2->a[k];
+    out->b[k] = (1.0f-t)*p1->b[k] + t*p2->b[k];
+  }
+}
 

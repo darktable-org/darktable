@@ -33,6 +33,7 @@
 #include <xmmintrin.h>
 
 #define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
+#define MAX_PROFILES 30
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
@@ -48,8 +49,12 @@ dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
 {
+  GtkWidget *profile;
   GtkWidget *radius;
   GtkWidget *strength;
+  dt_noiseprofile_t interpolated;
+  const dt_noiseprofile_t *profiles[MAX_PROFILES];
+  int profile_cnt;
 }
 dt_iop_denoiseprofile_gui_data_t;
 
@@ -83,26 +88,6 @@ int
 flags ()
 {
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
-}
-
-void init_presets (dt_iop_module_so_t *self)
-{
-  dt_iop_denoiseprofile_params_t p = (dt_iop_denoiseprofile_params_t){1.0f, 1.0f, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}};
-  for(int i=0;i<dt_noiseprofile_cnt;i++)
-  {
-    for(int k=0;k<3;k++)
-    {
-      p.a[k] = dt_noiseprofiles[i].a[k];
-      p.b[k] = dt_noiseprofiles[i].b[k];
-    }
-    dt_gui_presets_add_generic(_(dt_noiseprofiles[i].name), self->op, self->version(), &p, sizeof(dt_iop_denoiseprofile_params_t), 1);
-    // show only for matching cameras.
-    dt_gui_presets_update_mml(_(dt_noiseprofiles[i].name), self->op, self->version(), dt_noiseprofiles[i].maker, dt_noiseprofiles[i].model, "");
-    // store iso with correct mean for interpolation, but have a really loose range, so filtering will still show them:
-    dt_gui_presets_update_iso(_(dt_noiseprofiles[i].name), self->op, self->version(), dt_noiseprofiles[i].iso-100000, dt_noiseprofiles[i].iso+100000);
-    dt_gui_presets_update_filter(_(dt_noiseprofiles[i].name), self->op, self->version(), 1);
-    // TODO: maybe use iso setting as well.
-  }
 }
 
 typedef union floatint_t
@@ -980,28 +965,55 @@ void reload_defaults(dt_iop_module_t *module)
 {
   // our module is disabled by default
   module->default_enabled = 0;
-  // load presets and interpolate iso if we must/can:
-  float iso1, iso2;
-  if(dt_iop_load_preset_interpolated_iso(module, &module->dev->image_storage, module->default_params, &iso1, &iso2))
+  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)module->gui_data;
+  if(g)
   {
+    dt_bauhaus_combobox_clear(g->profile);
+
+    // get matching profiles:
+    char name[512];
+    g->profile_cnt = dt_noiseprofile_get_matching(&module->dev->image_storage, g->profiles, MAX_PROFILES);
+    g->interpolated = dt_noiseprofiles[0]; // default to generic poissonian
+    strncpy(name, g->interpolated.name, 512);
+
+    const int iso = module->dev->image_storage.exif_iso;
+    for(int i=1;i<g->profile_cnt;i++)
+    {
+      if(g->profiles[i-1]->iso == iso)
+      {
+        g->interpolated = *(g->profiles[i-1]);
+        strncpy(name, g->interpolated.name, 512);
+        break;
+      }
+      if(g->profiles[i]->iso == iso)
+      {
+        g->interpolated = *(g->profiles[i]);
+        snprintf(name, 512, N_("found match for iso %d"), g->profiles[i]->iso);
+        break;
+      }
+      if(g->profiles[i-1]->iso < iso &&
+         g->profiles[i]->iso > iso)
+      {
+        dt_noiseprofile_interpolate(g->profiles[i-1], g->profiles[i], &g->interpolated);
+        snprintf(name, 512, N_("interpolated from iso %d and %d"), g->profiles[i-1]->iso, g->profiles[i]->iso);
+        break;
+      }
+    }
+    dt_bauhaus_combobox_add(g->profile, name);
+    for(int i=0;i<g->profile_cnt;i++)
+    {
+      dt_bauhaus_combobox_add(g->profile, g->profiles[i]->name);
+    }
+
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = 1.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
     for(int k=0;k<3;k++)
     {
-      ((dt_iop_denoiseprofile_params_t *)module->default_params)->a[k] = dt_noiseprofiles[0].a[k];
-      ((dt_iop_denoiseprofile_params_t *)module->default_params)->b[k] = dt_noiseprofiles[0].b[k];
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->a[k] = g->interpolated.a[k];
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->b[k] = g->interpolated.b[k];
     }
-    // fprintf(stderr, "couldn't find a matching preset :(\n");
+    memcpy(module->params, module->default_params, sizeof(dt_iop_denoiseprofile_params_t));
   }
-  // TODO: some gui feedback maybe?
-  // else
-  // {
-  //   fprintf(stderr, "interpolated from iso %f %f\n", iso1, iso2);
-  //   fprintf(stderr, "values a, b = %f %f\n",
-  //       ((dt_iop_denoiseprofile_params_t *)module->default_params)->a[1],
-  //       ((dt_iop_denoiseprofile_params_t *)module->default_params)->b[1]);
-  // }
-  memcpy(module->params, module->default_params, sizeof(dt_iop_denoiseprofile_params_t));
 }
 
 /** init, cleanup, commit to pipeline */
@@ -1072,10 +1084,24 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 }
 
 static void
+profile_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  int i = dt_bauhaus_combobox_get(w);
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  const dt_noiseprofile_t *profile = &(g->interpolated);
+  if(i > 0) profile = g->profiles[i-1];
+  for(int k=0;k<3;k++)
+  {
+    p->a[k] = profile->a[k];
+    p->b[k] = profile->b[k];
+  }
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void
 radius_callback(GtkWidget *w, dt_iop_module_t *self)
 {
-  // this is important to avoid cycles!
-  if(darktable.gui->reset) return;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   p->radius = (int)dt_bauhaus_slider_get(w);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1084,8 +1110,6 @@ radius_callback(GtkWidget *w, dt_iop_module_t *self)
 static void
 strength_callback(GtkWidget *w, dt_iop_module_t *self)
 {
-  // this is important to avoid cycles!
-  if(darktable.gui->reset) return;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   p->strength = dt_bauhaus_slider_get(w);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1098,6 +1122,22 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   dt_bauhaus_slider_set(g->radius,   p->radius);
   dt_bauhaus_slider_set(g->strength, p->strength);
+  if(!memcmp(g->interpolated.a, p->a, sizeof(float)*3) && !memcmp(g->interpolated.b, p->b, sizeof(float)*3))
+  {
+    dt_bauhaus_combobox_set(g->profile, 0);
+  }
+  else
+  {
+    for(int i=0;i<g->profile_cnt;i++)
+    {
+      if(!memcmp(g->profiles[i]->a, p->a, sizeof(float)*3) &&
+         !memcmp(g->profiles[i]->b, p->b, sizeof(float)*3))
+      {
+        dt_bauhaus_combobox_set(g->profile, i+1);
+        break;
+      }
+    }
+  }
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -1106,17 +1146,24 @@ void gui_init(dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_denoiseprofile_gui_data_t));
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
+  g->profile  = dt_bauhaus_combobox_new(self);
   g->radius   = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1., 2.f, 0);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 2.0f, .05, 1.f, 3);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(g->profile , _("profile"));
   dt_bauhaus_widget_set_label(g->radius, _("patch size"));
   dt_bauhaus_slider_set_format(g->radius, "%.0f");
   dt_bauhaus_widget_set_label(g->strength, _("strength"));
+  g_object_set (GTK_OBJECT(g->profile),   "tooltip-text", _("profile used for variance stabilization"), (char *)NULL);
   g_object_set (GTK_OBJECT(g->radius),   "tooltip-text", _("radius of the patches to match. increase for more sharpness"), (char *)NULL);
   g_object_set (GTK_OBJECT(g->strength), "tooltip-text", _("finetune denoising strength"), (char *)NULL);
+  g_signal_connect (G_OBJECT (g->profile),   "value-changed", G_CALLBACK (profile_callback),   self);
   g_signal_connect (G_OBJECT (g->radius),   "value-changed", G_CALLBACK (radius_callback),   self);
   g_signal_connect (G_OBJECT (g->strength), "value-changed", G_CALLBACK (strength_callback), self);
+  // unfortunately this is only called before gui_init, we want it:
+  self->reload_defaults(self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
