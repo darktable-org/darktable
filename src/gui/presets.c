@@ -584,7 +584,7 @@ menuitem_pick_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
   gchar *name = get_preset_name(menuitem);
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, blendop_params, blendop_version from presets where operation = ?1 and op_version = ?2 and name = ?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, blendop_params, blendop_version, writeprotect from presets where operation = ?1 and op_version = ?2 and name = ?3", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, name, strlen(name), SQLITE_TRANSIENT);
@@ -597,6 +597,7 @@ menuitem_pick_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
     const void *blendop_params = sqlite3_column_blob(stmt, 2);
     int bl_length = sqlite3_column_bytes(stmt, 2);
     int blendop_version = sqlite3_column_int(stmt, 3);
+    int writeprotect = sqlite3_column_int(stmt, 4);
     if(op_params && (op_length == module->params_size))
     {
       memcpy(module->params, op_params, op_length);
@@ -613,6 +614,13 @@ menuitem_pick_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
     else
     {
       memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+    }
+
+    if (!writeprotect)
+    {
+      if (darktable.gui->last_preset)
+        g_free(darktable.gui->last_preset);
+      darktable.gui->last_preset = g_strdup(name);
     }
   }
   sqlite3_finalize(stmt);

@@ -312,7 +312,7 @@ pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
   // apply preset via set_params
   gchar *pn = get_preset_name(menuitem);
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params from presets where operation = ?1 and op_version = ?2 and name = ?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, writeprotect from presets where operation = ?1 and op_version = ?2 and name = ?3", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, minfo->plugin_name, strlen(minfo->plugin_name), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minfo->version);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, pn, strlen(pn), SQLITE_TRANSIENT);
@@ -322,6 +322,7 @@ pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
   {
     const void *blob = sqlite3_column_blob(stmt, 0);
     int length  = sqlite3_column_bytes(stmt, 0);
+    int writeprotect = sqlite3_column_int(stmt, 1);
     if(blob)
     {
       GList *it = darktable.lib->plugins;
@@ -335,6 +336,13 @@ pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
         }
         it = g_list_next(it);
       }
+    }
+
+    if (!writeprotect)
+    {
+      if (darktable.gui->last_preset)
+        g_free(darktable.gui->last_preset);
+      darktable.gui->last_preset = g_strdup(pn);
     }
   }
   sqlite3_finalize(stmt);
