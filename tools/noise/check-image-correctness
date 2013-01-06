@@ -1,19 +1,41 @@
 #!/bin/sh
-# See: http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=19805
+
+set -e
+
+scriptname=$(basename $0)
+scriptdir=$(cd $(dirname $0) && pwd)
+
+. "$scriptdir/subr.sh"
+
+# --------------------------------------------------------------------
+# Read command line arguments.
+# --------------------------------------------------------------------
+
+usage() {
+	cat <<EOF
+$scriptname <original RAW image> [<jpeg version>]
+EOF
+}
 
 orig_image=$1
 jpeg_image=$2
 
-over=$(convert "$jpeg_image" -channel RGB -threshold 99% -separate -append -format "%[mean]" info: | cut -f1 -d.)
-if [ "$over" -a "$over" -lt 80 ]; then
-	# Image not over-exposed.
-	echo "\"$orig_image\" not over-exposed ($over)"
+# Check for required tools.
+echo "===> Check for required tools"
+missing_tool=0
+
+if ! image_export_tools_installed; then
+	missing_tool=1
+fi
+
+if [ "$missing_tool" = "1" ]; then
 	exit 1
 fi
 
-under=$(convert "$jpeg_image" -negate -channel RGB -threshold 99% -separate -append -format "%[mean]" info: | cut -f1 -d.)
-if [ "$under" -a "$under" -lt 80 ]; then
-	# Image not under-exposed.
-	echo "\"$orig_image\" not under-exposed ($under)"
-	exit 2
+# Check if jpeg export exists.
+if [ -z "$jpeg_image" ]; then
+	jpeg_image="${image%.*}-large.jpg"
+	export_large_jpeg "$orig_image" "$jpeg_image"
 fi
+
+check_exposition "$orig_image" "$jpeg_image"

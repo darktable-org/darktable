@@ -8,10 +8,108 @@ scriptdir=$(cd $(dirname $0) && pwd)
 . "$scriptdir/subr.sh"
 
 # --------------------------------------------------------------------
+# Read command line arguments.
+# --------------------------------------------------------------------
+
+usage() {
+	cat <<EOF
+$scriptname [OPTION]...
+
+Available options:
+    -C         Skip input images correctness checks.
+    -d DIR     Use DIR to read and write profiling input images.
+    -h         Display this usage.
+    -i ISO     Limit capture to ISO sensitivity; can be specified multiple
+               times for multiple ISO settings.
+    -K         Keep PFM exported files (caution: takes a lot of disc space).
+    -P         Re-do tethered input images capture.
+    -p SEC     Wait SEC seconds between each shot; useful if using a flash
+               for instance.
+EOF
+}
+
+while getopts ":Cd:hi:KPp:" opt; do
+	case $opt in
+	C)
+		skip_correctness_check=1
+		;;
+	d)
+		profiling_dir=$OPTARG
+		;;
+	h)
+		usage
+		exit 0
+		;;
+	i)
+		if [ -z "$iso_settings" ]; then
+			iso_settings=$OPTARG
+		else
+			iso_settings="$iso_settings $OPTARG"
+		fi
+		;;
+	K)
+		keep_pfms=1
+		;;
+	P)
+		force_profiling_shots=1
+		;;
+	p)
+		pause_between_shots=$OPTARG
+		;;
+	esac
+done
+shift $((OPTIND-1))
+
+# Sort user-specified ISO settings.
+if [ "$iso_settings" ]; then
+	iso_settings=$(sort_iso_list $iso_settings)
+fi
+
+# Check for required tools.
+echo "===> Check for required tools"
+missing_tool=0
+
+if ! image_info_tools_installed; then
+	missing_tool=1
+fi
+if ! image_export_tools_installed; then
+	missing_tool=1
+fi
+if ! database_tools_installed; then
+	missing_tool=1
+fi
+if ! internal_tools_available; then
+	missing_tool=1
+fi
+if ! tethering_tools_installed; then
+	tethering_enabled=1
+	cat <<EOF
+
+NOTE: Tethering tools are missing; you'll need to provide input images
+yourself.
+EOF
+fi
+
+if [ "$missing_tool" = "1" ]; then
+	exit 1
+fi
+
+# --------------------------------------------------------------------
 # Internal functions.
 # --------------------------------------------------------------------
 
+# CAUTION: This function uses the following global variables:
+#     o  scriptdir
+#     o  keep_pfms
+
 profile_image() {
+	local image preset files_list maker model iso xmp		\
+	 noiseprofile floatdump pfm dat title fit pdf			\
+	 flat_dat curves_dat flat_pdf a0 a1 a2 b0 b1 b2
+
+	tool_installed darktable-cli
+	tool_installed gnuplot
+
 	image="$1"
 	presets="$2"
 	files_list="$3"
@@ -127,103 +225,6 @@ EOF
 }
 
 # --------------------------------------------------------------------
-# Read command line arguments.
-# --------------------------------------------------------------------
-
-while getopts ":Cd:i:KPp:" opt; do
-	case $opt in
-	C)
-		skip_correctness_check=1
-		;;
-	d)
-		profiling_dir=$OPTARG
-		;;
-	i)
-		if [ -z "$iso_settings" ]; then
-			iso_settings=$OPTARG
-		else
-			iso_settings="$iso_settings $OPTARG"
-		fi
-		;;
-	K)
-		keep_pfms=1
-		;;
-	P)
-		force_profiling_shots=1
-		;;
-	p)
-		pause_between_shots=$OPTARG
-		;;
-	esac
-done
-shift $((OPTIND-1))
-
-# Sort user-specified ISO settings.
-if [ "$iso_settings" ]; then
-	iso_settings=$(for iso in $iso_settings; do echo $iso; done | sort -n)
-fi
-
-# Check for required tools.
-missing_tool=0
-if ! tool_installed gphoto2; then
-	cat 1>&2 <<EOF
-(optional) gphoto2 is needed if you want this script to automatically
-take the required pictures.
-
-EOF
-fi
-
-if ! tool_installed darktable-cli; then
-	cat 1>&2 <<EOF
-darktable-cli (shipped with darktable 1.1 and later) is required to
-export RAW images to jpeg and PFM files. Please install this package and
-re-run this script.
-
-EOF
-	missing_tool=1
-fi
-
-if ! tool_installed convert; then
-	cat 1>&2 <<EOF
-ImageMagick is required to check input images correctness. Please
-install this package and re-run this script.
-
-EOF
-	missing_tool=1
-fi
-
-if ! tool_installed exiv2; then
-	cat 1>&2 <<EOF
-exiv2 is required to read Exif from images. Please install this package
-and re-run this script.
-
-EOF
-	missing_tool=1
-fi
-
-if ! tool_installed gnuplot; then
-	cat 1>&2 <<EOF
-gnuplot is required to generate the graphs used to estimate the quality
-of the presets. Please install this command and re-run this script.
-
-EOF
-	missing_tool=1
-fi
-
-if ! tool_installed sqlite3; then
-	cat 1>&2 <<EOF
-sqlite3 is required to prepare a database allowing you to test the
-generated presets. Please install this command and re-run this script.
-
-EOF
-	missing_tool=1
-fi
-
-if [ "$missing_tool" = "1" ]; then
-	exit 1
-fi
-
-# --------------------------------------------------------------------
 # Part #1: Get profiling shots.
 # --------------------------------------------------------------------
 
@@ -232,217 +233,20 @@ fi
 #
 # Defaults to /var/tmp/darktable-noise-profiling/$camera/profiling.
 
-if [ -z "$profiling_dir" ]; then
-	if camera_is_plugged; then
-		camera=$(get_camera_name)
-		subdir=$(echo $camera | sed -r 's/[^a-zA-Z0-9]/-/g')
-		profiling_dir="/var/tmp/darktable-noise-profiling/$subdir/profiling"
-		test -d "$profiling_dir" || mkdir -p "$profiling_dir"
-	else
-		cat <<EOF
-ERROR: Please specify a directory to read or write profiling shots
-(using the "-d" flag) or plug your camera and turn it on.
-EOF
-		exit 1
-	fi
-fi
-
-files_list="$profiling_dir/output-files-list.txt"
-rm -f "$files_list"
+auto_set_profiling_dir "-d"
 
 # Check the profiling shots to see if there's at least one shot for
 # each ISO settings, either specified by the user, or supported by the
 # camera.
+list_input_images
 
-echo "===> Checking existing profiling RAW images"
-for image in "$profiling_dir"/*; do
-	if [ "$image" = "$profiling_dir/*" ]; then
-		# Directory empty.
-		break
-	fi
-
-	case "$image" in
-	*.jpg)
-		# Skip jpeg files, if any.
-		continue
-		;;
-	esac
-
-	iso=$(get_image_iso "$image")
-	if [ -z "$iso" ]; then
-		# Not an image.
-		continue
-	fi
-
-	echo "--> Found ISO $iso image: $image"
-
-	# Record filename for this ISO setting.
-	images=$(get_var "images_$iso")
-	if [ -z "$image" ]; then
-		images=$image
-	else
-		images="$images $image"
-	fi
-	set_var "images_$iso" "$images"
-
-	# Add ISO setting to a list.
-	case "$shots_for_iso_settings" in
-	$iso|$iso\ *|*\ $iso\ *|*\ $iso)
-		;;
-	*)
-		if [ -z "$shots_for_iso_settings" ]; then
-			shots_for_iso_settings=$iso
-		else
-			shots_for_iso_settings="$shots_for_iso_settings $iso"
-		fi
-		;;
-	esac
-done
-
-do_profiling_shots=0
-if [ -z "$shots_for_iso_settings" -o "$force_profiling_shots" = "1" ]; then
-	do_profiling_shots=1
-fi
-if [ "$iso_settings" ]; then
-	for iso in $iso_settings; do
-		images=$(get_var "images_$iso")
-		if [ -z "$images" ]; then
-			do_profiling_shots=1
-		fi
-	done
-else
-	iso_settings=$shots_for_iso_settings
+# Take the required shots.
+if [ "$tethering_enabled" ]; then
+	auto_capture_images
 fi
 
-if [ "$do_profiling_shots" = "1" ]; then
-	# The profiling shots directory is empty. Check for the camera
-	# presence, and if no camera is found, ask the user to plug in
-	# his camera or point to an appropriate directory.
-
-	profiling_note_displayed=0
-	profiling_note="Important note about the required images:
-
-    o  The subject must contain both under-exposed AND over-exposed
-       areas. A possible subject could be a sunny window (or an in-door
-       light) on half of the picture and a dark/shadowed in-door object on
-       the other half.
-
-    o  Disable auto-focus and put everything out of focus."
-
-	if ! camera_is_plugged; then
-		profiling_note_displayed=1
-		cat <<EOF
-
-Noise profiling requires at least a RAW image per supported ISO setting.
-
-Either:
-
-    o  Plug your camera to this computer and, when detected, hit Return.
-       This script will query the camera for supported ISO settings and
-       take the appropriate images.
-
-    o  Type Ctrl+C, take at least one image per supported ISO setting and
-       put them in a dedicated directory. Then, re-run this script and be
-       sure to indicate this directory by using the "-d" flag.
-
-$profiling_note
-EOF
-		read answer
-	fi
-	while ! camera_is_plugged; do
-		cat <<EOF
-ERROR: No camera found by gphoto2(1)!
-
-Retry or check gphoto2 documentation.
-EOF
-		read answer
-	done
-
-	# If we reach this part, a camera is plugged in and the user
-	# wants us to take the pictures for him.
-
-	# If he didn't specify any ISO settings, query the camera.
-	if [ -z "$iso_settings" ]; then
-		iso_settings=$(get_camera_iso_settings)
-	fi
-	iso_settings=$(for iso in $iso_settings; do echo $iso; done | sort -n)
-
-	camera=$(get_camera_name)
-
-	# We are now ready to take pictures for each supported/wanted
-	# ISO settings.
-
-	# TODO: For now, we take one image per ISO setting. When
-	# benchmark is automated, this value can be raised to 3 for
-	# instance, and the benchmark script will choose the best
-	# preset.
-	shots_per_iso=1
-	case $(uname -s) in
-	Linux) shots_seq=$(seq $shots_per_iso) ;;
-	*BSD)  shots_seq=$(jot $shots_per_iso) ;;
-	esac
-
-	cd "$profiling_dir"
-	for iso in $iso_settings; do
-		if [ "$force_profiling_shots" = 1 ]; then
-			# Remove existing shots for this ISO setting.
-			echo "--> (remove ISO $iso existing shots)"
-			files=$(get_var "images_$iso")
-			for file in $files; do
-				rm -v $file
-			done
-			set_var "images_$iso" ""
-		fi
-
-		images=$(get_var "images_$iso")
-		if [ "$images" ]; then
-			# We already have images for this ISO setting,
-			# continue with the next one.
-			continue
-		fi
-
-		echo
-		echo "===> Taking $shots_per_iso profiling shot(s) for \"$camera - ISO $iso\""
-		if [ "$profiling_note_displayed" = "0" ]; then
-			profiling_note_displayed=1
-			cat <<EOF
-
-$profiling_note
-EOF
-			read answer
-		fi
-
-		if [ -z "$raw_id" ]; then
-			raw_id=$(get_camera_raw_setting)
-		fi
-
-		# This script will do $shots_seq shots for each ISO setting.
-		for i in $shots_seq; do
-			if [ "$pause_between_shots" -a "$not_first_round" ]; then
-				echo "(waiting $pause_between_shots seconds before shooting)"
-				sleep "$pause_between_shots"
-			fi
-			not_first_round=1
-
-			gphoto2						\
-			 --set-config /main/imgsettings/imageformat=$raw_id\
-			 --set-config /main/imgsettings/iso=$iso	\
-			 --filename="$iso-$i.%C"			\
-			 --capture-image-and-download
-
-			image=$(ls -t "$profiling_dir/$iso-$i".* | head -n 1)
-
-			images=$(get_var "images_$iso")
-			if [ -z "$image" ]; then
-				images=$image
-			else
-				images="$images $image"
-			fi
-			set_var "images_$iso" "$images"
-		done
-	done
-	cd -
-fi
+files_list="$profiling_dir/output-files-list.txt"
+rm -f "$files_list"
 
 echo
 if [ "$skip_correctness_check" = "1" ]; then
@@ -450,7 +254,6 @@ if [ "$skip_correctness_check" = "1" ]; then
 else
 	echo "===> Checking profiling RAW images correctness + Jpeg export"
 fi
-check_correctness="$scriptdir"/check-image-correctness
 for iso in $iso_settings; do
 	echo "--> ISO $iso:"
 	images=$(get_var "images_$iso")
@@ -465,16 +268,13 @@ for iso in $iso_settings; do
 		jpeg_export="${image%.*}-large.jpg"
 		jpeg_thumb="${image%.*}-thumb.jpg"
 		if [ ! -f "$jpeg_export" -o "$image" -nt "$jpeg_export" -o "$0" -nt "$jpeg_export" ]; then
-			rm -f "$jpeg_export"
-			darktable-cli "$image" "$jpeg_export" 1>/dev/null 2>&1
-			rm -f "$image.xmp"
-
-			convert "$jpeg_export" -resize 1024x1024 "$jpeg_thumb"
+			export_large_jpeg "$image" "$jpeg_export"
+			export_thumbnail "$jpeg_export" "$jpeg_thumb"
 		fi
 		echo "$(basename "$jpeg_thumb")" >> $files_list
 
 		if [ "$skip_correctness_check" != "1" ]; then
-			if ! "$check_correctness" "$image" "$jpeg_export"; then
+			if ! check_exposition "$image" "$jpeg_export"; then
 				if [ "$incorrect_isos" ]; then
 					incorrect_isos="$iso"
 				else
@@ -515,9 +315,6 @@ echo "===> Prepare profiling job"
 
 presets="$profiling_dir/presets.txt"
 
-echo "--> Build profiling tools"
-make -C "$scriptdir"
-
 echo "--> Copy darktable library for testing purpose"
 database="$profiling_dir/library.db"
 database_orig="$HOME/.config/darktable/library.db"
@@ -557,8 +354,8 @@ done
 
 # Insert presets in the copied database.
 echo
-echo "===> Record preset in library for testing purpose"
-"$scriptdir"/add-profile -d "$database" -P "[test] " "$presets"
+echo "===> Record presets in library for testing purpose"
+"$scriptdir"/add-profile -l "$database" -P "[test] " "$presets"
 
 # Prepare a tarball ready to be sent to the darktable team.
 echo
