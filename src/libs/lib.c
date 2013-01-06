@@ -248,6 +248,23 @@ edit_preset (const char *name_in, dt_lib_module_info_t *minfo)
 }
 
 static void
+menuitem_update_preset (GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
+{
+  gchar *name = get_preset_name(menuitem);
+
+  // commit all the module fields
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set operation=?1, op_version=?2, op_params=?3 where name=?4", -1, &stmt, NULL);
+
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, minfo->plugin_name, strlen(minfo->plugin_name), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minfo->version);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, minfo->params, minfo->params_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, name, strlen(name), SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+static void
 menuitem_new_preset (GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
 {
   // add new preset
@@ -382,10 +399,17 @@ dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minfo->version);
 
   // collect all presets for op from db
+  int found = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     void *op_params = (void *)sqlite3_column_blob(stmt, 1);
     int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
+    const char *name = (char *)sqlite3_column_text(stmt, 0);
+
+    if (darktable.gui->last_preset
+        && strcmp(darktable.gui->last_preset, name)==0)
+      found = 1;
+
     // selected in bold:
     // printf("comparing %d bytes to %d\n", op_params_size, minfo->params_size);
     // for(int k=0;k<op_params_size && !memcmp(minfo->params, op_params, k);k++) printf("compare [%c %c] %d: %d\n",
@@ -398,13 +422,13 @@ dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
       writeprotect = sqlite3_column_int(stmt, 2);
       char *markup;
       mi = gtk_menu_item_new_with_label("");
-      markup = g_markup_printf_escaped ("<span weight=\"bold\">%s</span>", sqlite3_column_text(stmt, 0));
+      markup = g_markup_printf_escaped ("<span weight=\"bold\">%s</span>", name);
       gtk_label_set_markup (GTK_LABEL (gtk_bin_get_child(GTK_BIN(mi))), markup);
       g_free (markup);
     }
     else
     {
-      mi = gtk_menu_item_new_with_label((const char *)sqlite3_column_text(stmt, 0));
+      mi = gtk_menu_item_new_with_label((const char *)name);
     }
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(pick_callback), minfo);
     g_object_set(G_OBJECT(mi), "tooltip-text", sqlite3_column_text(stmt, 3), (char *)NULL);
@@ -433,6 +457,19 @@ dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
     mi = gtk_menu_item_new_with_label(_("store new preset.."));
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_new_preset), minfo);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+
+    if (darktable.gui->last_preset && found)
+    {
+      char label[60];
+      strcpy (label, _("update preset"));
+      strcat (label, " <span weight=\"bold\">%s</span>");
+      char *markup = g_markup_printf_escaped (label, darktable.gui->last_preset);
+      mi = gtk_menu_item_new_with_label("");
+      gtk_label_set_markup (GTK_LABEL (gtk_bin_get_child(GTK_BIN(mi))), markup);
+      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_update_preset), minfo);
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+      g_free (markup);
+    }
   }
 }
 
