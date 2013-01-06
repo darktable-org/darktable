@@ -8,71 +8,27 @@ scriptdir=$(cd $(dirname $0) && pwd)
 . "$scriptdir/subr.sh"
 
 # --------------------------------------------------------------------
-# Internal functions.
-# --------------------------------------------------------------------
-
-add_profile() {
-	iso=$1; shift
-	a0=$1; shift
-	a1=$1; shift
-	a2=$1; shift
-	b0=$1; shift
-	b1=$1; shift
-	b2=$1; shift
-	label="$@"
-
-	floatdump="$scriptdir/floatdump"
-
-	bin1=$(echo 1.0f | $floatdump)
-	bina0=$(echo $a0 | $floatdump)
-	bina1=$(echo $a1 | $floatdump)
-	bina2=$(echo $a2 | $floatdump)
-	binb0=$(echo $b0 | $floatdump)
-	binb1=$(echo $b1 | $floatdump)
-	binb2=$(echo $b2 | $floatdump)
-
-	echo "--> Adding \"$label_prefix$label\" to database"
-
-	echo "insert into presets ("					\
-	 "name,"							\
-	 "description,"							\
-	 "operation,"							\
-	 "op_version,"							\
-	 "op_params,"							\
-	 "enabled,"							\
-	 "blendop_params,"						\
-	 "model,"							\
-	 "maker,"							\
-	 "lens,"							\
-	 "iso_min,"							\
-	 "iso_max,"							\
-	 "exposure_min,"						\
-	 "exposure_max,"						\
-	 "aperture_min,"						\
-	 "aperture_max,"						\
-	 "focal_length_min,"						\
-	 "focal_length_max,"						\
-	 "writeprotect,"						\
-	 "autoapply,"							\
-	 "filter,"							\
-	 "def,"								\
-	 "isldr,"							\
-	 "blendop_version"						\
-	 ") "								\
-	 "values ("							\
-	 "'$label_prefix$label', '', 'denoiseprofile', 1, "		\
-	 "X'${bin1}${bin1}${bina0}${bina1}${bina2}${binb0}${binb1}${binb2}', "\
-	 "1, X'00', '', '', '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4);" | \
-	sqlite3 $database
-}
-
-# --------------------------------------------------------------------
 # Read command line arguments.
 # --------------------------------------------------------------------
 
-while getopts ":d:P:" opt; do
+usage() {
+	cat <<EOF
+$scriptname [OPTION]... <presets file>
+
+Available options:
+    -h         Display this usage.
+    -l DB      Use DB as the library.db database.
+    -P PREFIX  Prepend PREFIX to presets' name.
+EOF
+}
+
+while getopts ":hl:P:" opt; do
 	case $opt in
-	d)
+	h)
+		usage
+		exit 0
+		;;
+	l)
 		database=$OPTARG
 		;;
 	P)
@@ -84,17 +40,14 @@ shift $((OPTIND-1))
 
 profile=$1
 
-if [ -z "$database" ]; then
-	database="$HOME/.config/darktable/library.db"
-fi
-
+# Check for required tools.
+echo "===> Check for required tools"
 missing_tool=0
-if ! tool_installed sqlite3; then
-	cat 1>&2 <<EOF
-sqlite3 is required to prepare a database allowing you to test the
-generated presets. Please install this command and re-run this script.
 
-EOF
+if ! database_tools_installed; then
+	missing_tool=1
+fi
+if ! internal_tools_available; then
 	missing_tool=1
 fi
 
@@ -102,17 +55,16 @@ if [ "$missing_tool" = "1" ]; then
 	exit 1
 fi
 
-# --------------------------------------------------------------------
-# Part #1: Compile floatdump.
-# --------------------------------------------------------------------
+# Use main database by default.
+if [ -z "$database" ]; then
+	database="$HOME/.config/darktable/library.db"
+fi
 
-make -C "$scriptdir"
-
 # --------------------------------------------------------------------
-# Part #2: Parse profile(s).
+# Main code.
 # --------------------------------------------------------------------
 
 awk -f "$scriptdir/extract-values-from-presets.awk" < "$profile" | while read line; do
 	set -- $line
-	add_profile "$@"
+	add_profile "$database" "$label_prefix" "$@"
 done
