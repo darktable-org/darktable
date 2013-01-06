@@ -163,6 +163,18 @@ _diffuse_error(float *val, const __m128 err, const float factor)
   _mm_store_ps(val, _mm_add_ps(_mm_load_ps(val), _mm_mul_ps(err, _mm_set1_ps(factor))));       // *val += err * factor
 }
 
+static inline float
+clipnan(const float x)
+{
+  float r;
+
+  if(isnan(x))
+    r = 0.5f;
+  else // normal number
+    r = (isless(x, 0.0f) ? 0.0f : (isgreater(x, 1.0f) ? 1.0f : x));
+
+  return r;
+}
 
 void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -235,7 +247,20 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       break;
   }
 
-  memcpy(ovoid, ivoid, width*height*ch*sizeof(float));
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(ivoid, ovoid) schedule(static)
+#endif
+  for(int j=0; j<height; j++)
+  {
+    const float *in = (const float *)ivoid + ch*width*j;
+    float *out = (float *)ovoid + ch*width*j;
+    for(int i=0; i<width; i++, in+=ch, out+=ch)
+    {
+      out[0] = clipnan(in[0]);
+      out[1] = clipnan(in[1]);
+      out[2] = clipnan(in[2]);
+    }
+  }
 
   if(nearest_color == NULL) return;
 
