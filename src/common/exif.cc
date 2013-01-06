@@ -415,7 +415,19 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       img->exif_focal_length = pos->toFloat ();
     }
 
-    if ( (pos=Exiv2::subjectDistance(exifData))
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.NikonLd2.FocusDistance")))
+         != exifData.end() && pos->size())
+    {
+      float value = pos->toFloat();
+      img->exif_focus_distance = (0.01 * pow(10, value/40));
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.NikonLd3.FocusDistance")))
+         != exifData.end() && pos->size())
+    {
+      float value = pos->toFloat();
+      img->exif_focus_distance = (0.01 * pow(10, value/40));
+    }
+    else if ( (pos=Exiv2::subjectDistance(exifData))
          != exifData.end() && pos->size())
     {
       img->exif_focus_distance = pos->toFloat ();
