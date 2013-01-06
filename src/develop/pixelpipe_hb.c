@@ -798,7 +798,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             {
               /* success: cache line is valid now, so we will not need to invalidate it later */
               valid_input_on_gpu_only = FALSE;
-          
+
               // TODO: check if we need to wait for finished opencl pipe before we release cl_mem_input
               // dt_dev_finish(pipe->devid);
             }
@@ -810,7 +810,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
             return 1;
           }
- 
+
           /* we can now release cl_mem_input */
           if(cl_mem_input != NULL) dt_opencl_release_mem_object(cl_mem_input);
           cl_mem_input = NULL;
@@ -1043,23 +1043,26 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       // the user is likely to change that one soon, so keep it in cache.
       dt_dev_pixelpipe_cache_reweight(&(pipe->cache), input);
     }
-#ifdef _DEBUG
-    dt_pthread_mutex_lock(&pipe->busy_mutex);
-    if(pipe->shutdown)
-    {
-      dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      return 1;
-    }
-    if(strcmp(module->op, "gamma") && bpp == sizeof(float)*4) for(int k=0; k<4*roi_out->width*roi_out->height; k++)
-      {
-        if((k&3)<3 && !isfinite(((float*)(*output))[k]))
-        {
-          fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats!\n", module->name());
-          break;
-        }
-      }
-    dt_pthread_mutex_unlock(&pipe->busy_mutex);
+#ifndef _DEBUG
+    if(darktable.unmuted & DT_DEBUG_NAN)
 #endif
+    {
+      dt_pthread_mutex_lock(&pipe->busy_mutex);
+      if(pipe->shutdown)
+      {
+        dt_pthread_mutex_unlock(&pipe->busy_mutex);
+        return 1;
+      }
+      if(strcmp(module->op, "gamma") && bpp == sizeof(float)*4) for(int k=0; k<4*roi_out->width*roi_out->height; k++)
+        {
+          if((k&3)<3 && !isfinite(((float*)(*output))[k]))
+          {
+            fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats!\n", module->name());
+            break;
+          }
+        }
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+    }
 
 post_process_collect_info:
 

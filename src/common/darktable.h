@@ -142,13 +142,14 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_OPENCL = 128,
   DT_DEBUG_SQL = 256,
   DT_DEBUG_MEMORY = 512,
-  DT_DEBUG_LIGHTTABLE = 1024
+  DT_DEBUG_LIGHTTABLE = 1024,
+  DT_DEBUG_NAN = 2048
 }
 dt_debug_thread_t;
 
-#define DT_CPU_FLAG_SSE		1
-#define DT_CPU_FLAG_SSE2		2
-#define DT_CPU_FLAG_SSE3		4
+#define DT_CPU_FLAG_SSE    1
+#define DT_CPU_FLAG_SSE2   2
+#define DT_CPU_FLAG_SSE3   4
 
 typedef struct darktable_t
 {
