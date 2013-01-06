@@ -446,6 +446,15 @@ end_query_cache:
     cairo_translate(cr, x_offset, y_offset);
     lib->apply_zoom_offset = FALSE;
   }
+  else
+  {
+    // after we let the view snap back into grid mode, we need to clean the 
+    // old offset values, or the next zoom operation will think they are
+    // still valid.
+    lib->x_zoom_offset = 0;
+    lib->y_zoom_offset = 0;
+    // TODO: this really should not be done here, breaks MVC.
+  }
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
