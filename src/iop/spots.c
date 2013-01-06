@@ -233,37 +233,121 @@ static int gui_spot_test_create(dt_iop_module_t *self)
   return 1;
 }
 
-// FIXME: doesn't work if source is outside of ROI
+void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
+{
+  *roi_out = *roi_in;
+}
+
+void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
+{
+  *roi_in = *roi_out;
+  
+  int roir = roi_in->width+roi_in->x;
+  int roib = roi_in->height+roi_in->y;
+  int roix = roi_in->x;
+  int roiy = roi_in->y;
+  
+  dt_iop_spots_params_t *d = (dt_iop_spots_params_t *)piece->data;
+  
+  //We calcul full image width and height at scale of ROI
+  const int imw = CLAMP(piece->pipe->iwidth*roi_in->scale, 1, piece->pipe->iwidth);
+  const int imh = CLAMP(piece->pipe->iheight*roi_in->scale, 1, piece->pipe->iheight);
+  
+  // We iterate throught all spots or polygons
+  for(int i=0; i<d->num_spots; i++)
+  {
+    // convert in full image space (at scale of ROI)
+    const int x = d->spot[i].x*imw, y = d->spot[i].y*imh;
+    const int xc = d->spot[i].xc*imw, yc = d->spot[i].yc*imh;
+    const int rad = d->spot[i].radius * MIN(imw, imh);
+    
+    int w,h,l,t;
+    l = x-rad;
+    t = y-rad;
+    w = h = 2*rad;
+    
+    //If the destination is outside the ROI, we skip this form !
+    if (t>=roi_out->y+roi_out->height || t+h<=roi_out->y || l>=roi_out->x+roi_out->width || l+w<=roi_out->x) continue;
+    
+    //we only process the visible part of the destination
+    if (t<=roi_out->y) h -= roi_out->y-t, t = roi_out->y;
+    if (t+h>=roi_out->height+roi_out->y) h = roi_out->y+roi_out->height-1-t;
+    if (l<=roi_out->x) w -= roi_out->x-l, l = roi_out->x;
+    if (l+w>=roi_out->width+roi_out->x) w = roi_out->x+roi_out->width-1-l;
+    
+    //we don't process part of the source outside the image
+    roiy = fminf(t+yc-y,roiy);
+    roix = fminf(l+xc-x,roix);
+    roir = fmaxf(l+w+xc-x,roir);
+    roib = fmaxf(t+h+yc-y,roib);
+  }
+  
+  //now we set the values
+  roi_in->x = CLAMP(roix, 0, piece->pipe->iwidth-1);
+  roi_in->y = CLAMP(roiy, 0, piece->pipe->iheight-1);
+  roi_in->width = CLAMP(roir-roi_in->x, 1, piece->pipe->iwidth-roi_in->x);
+  roi_in->height = CLAMP(roib-roi_in->y, 1, piece->pipe->iheight-roi_in->y);
+}
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_spots_params_t *d = (dt_iop_spots_params_t *)piece->data;
   // const float scale = piece->iscale/roi_in->scale;
   const float scale = 1.0f/roi_in->scale;
   const int ch = piece->colors;
-  // we don't modify most of the image:
-  memcpy(o, i, sizeof(float)*roi_in->width*roi_in->height*ch);
-
   const float *in = (float *)i;
   float *out = (float *)o;
+  
+  //We calcul full image width and height at scale of ROI
+  const int imw = CLAMP(piece->pipe->iwidth*roi_in->scale, 1, piece->pipe->iwidth);
+  const int imh = CLAMP(piece->pipe->iheight*roi_in->scale, 1, piece->pipe->iheight);
+  
+  // we don't modify most of the image:
+#ifdef _OPENMP
+    #pragma omp parallel for schedule(static) default(none) shared(d,out,in,roi_in,roi_out)
+#endif
+  for (int k=0; k<roi_out->height; k++)
+  {
+    float *outb = out + ch*k*roi_out->width;
+    const float *inb =  in + ch*roi_in->width*(k+roi_out->y-roi_in->y) + ch*(roi_out->x-roi_in->x);
+    memcpy(outb, inb, sizeof(float)*roi_out->width*ch);
+  }
+
   // .. just a few spots:
   for(int i=0; i<d->num_spots; i++)
   {
-    // convert from world space:
-    const int x  = (d->spot[i].x *piece->buf_in.width)/scale - roi_in->x;
-    const int y  = (d->spot[i].y *piece->buf_in.height)/scale - roi_in->y;
-    const int xc = (d->spot[i].xc*piece->buf_in.width)/scale - roi_in->x;
-    const int yc = (d->spot[i].yc*piece->buf_in.height)/scale - roi_in->y;
+    //we first need to know if we copy the entire form or not
+    // convert in full image space (at scale of ROI)
+    const int x = d->spot[i].x*imw, y = d->spot[i].y*imh;
+    const int xc = d->spot[i].xc*imw, yc = d->spot[i].yc*imh;
     const int rad = d->spot[i].radius * MIN(piece->buf_in.width, piece->buf_in.height)/scale;
-    const int um = MIN(rad, MIN(x, xc));
-    const int uM = MIN(rad, MIN(roi_in->width-1-xc, roi_in->width-1-x));
-    const int vm = MIN(rad, MIN(y, yc));
-    const int vM = MIN(rad, MIN(roi_in->height-1-yc, roi_in->height-1-y));
+    
+    int w,h,l,t;
+    l = x-rad;
+    t = y-rad;
+    w = h = 2*rad;
+    
+    //If the destination is outside the ROI, we skip this form !
+    if (t>=roi_out->y+roi_out->height || t+h<=roi_out->y || l>=roi_out->x+roi_out->width || l+w<=roi_out->x) continue;
+    
+    //we only process the visible part of the destination
+    if (t<=roi_out->y) h -= roi_out->y+1-t, t = roi_out->y+1;
+    if (t+h>=roi_out->height+roi_out->y) h = roi_out->y+roi_out->height-1-t;
+    if (l<=roi_out->x) w -= roi_out->x+1-l, l = roi_out->x+1;
+    if (l+w>=roi_out->width+roi_out->x) w = roi_out->x+roi_out->width-1-l;
+    
+    //we don't process part of the source outside the roi_in
+    if (t+yc-y<=roi_in->y) h -= roi_in->y-yc+y+1-t ,t = roi_in->y-yc+y+1;      
+    if (t+h+yc-y>=roi_in->y+roi_in->height) h = roi_in->y+roi_in->height-yc+y-t-1;      
+    if (l+xc-x<=roi_in->x) w -= roi_in->x-xc+x+1-l ,l = roi_in->x-xc+x+1;
+    if (l+w+xc-x>=roi_in->width+roi_in->x) w = roi_in->x+roi_in->width-xc+x-l-1;
+    
+    // convert from world space:     
     float filter[2*rad + 1];
-    // for(int k=-rad; k<=rad; k++) filter[rad + k] = expf(-k*k*2.f/(rad*rad));
     if(rad > 0)
     {
       for(int k=-rad; k<=rad; k++)
-      {
+      {git branch
         const float kk = 1.0f - fabsf(k/(float)rad);
         filter[rad + k] = kk*kk*(3.0f - 2.0f*kk);
       }
@@ -272,13 +356,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       filter[0] = 1.0f;
     }
-    for(int u=-um; u<=uM; u++) for(int v=-vm; v<=vM; v++)
+    for (int yy=t ; yy<t+h; yy++)
+      for (int xx=l ; xx<l+w; xx++)
       {
-        const float f = filter[rad+u]*filter[rad+v];
+        const float f = filter[xx-x+rad+1]*filter[yy-y+rad+1];          
         for(int c=0; c<ch; c++)
-          out[4*(roi_out->width*(y+v) + x+u) + c] =
-            out[4*(roi_out->width*(y+v) + x+u) + c] * (1.0f-f) +
-            in[4*(roi_in->width*(yc+v) + xc+u) + c] * f;
+          out[4*(roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] =
+            out[4*(roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] * (1.0f-f) +
+            in[4*(roi_in->width*(yy-y+yc-roi_in->y) + xx-x+xc-roi_in->x) + c] * f;
       }
   }
 }
