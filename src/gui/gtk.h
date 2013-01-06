@@ -53,6 +53,7 @@ typedef struct dt_gui_gtk_t
 
   GdkPixmap *pixmap;
   GtkMenu *presets_popup_menu;
+  char *last_preset;
 
   int32_t reset;
   float bgcolor[3];

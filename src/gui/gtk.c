@@ -728,6 +728,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gui->grouping = dt_conf_get_bool("ui_last/grouping");
   gui->expanded_group_id = -1;
   gui->presets_popup_menu = NULL;
+  gui->last_preset = NULL;
 
   if(g_file_test(gtkrc, G_FILE_TEST_EXISTS))
     gtk_rc_parse (gtkrc);
