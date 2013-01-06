@@ -54,6 +54,11 @@ get_preset_name(GtkMenuItem *menuitem)
 {
   const gchar *name = gtk_label_get_label(GTK_LABEL(gtk_bin_get_child(GTK_BIN(menuitem))));
   const gchar *c = name;
+
+  // move to marker < if it exists
+  while (*c && *c != '<') c++;
+  if (!*c) c = name;
+
   // remove <-> markup tag at beginning.
   if(*c == '<')
   {
