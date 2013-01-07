@@ -179,6 +179,8 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_lib_presets_edit_di
     DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, g->params, g->params_size, SQLITE_TRANSIENT);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+
+    dt_gui_store_last_preset (gtk_entry_get_text(g->name));
   }
   gtk_widget_destroy(GTK_WIDGET(dialog));
   g_free(g->original_name);
