@@ -326,6 +326,8 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 21, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->filter)));
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+
+    dt_gui_store_last_preset(gtk_entry_get_text(g->name));
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
@@ -643,11 +645,7 @@ menuitem_pick_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
     }
 
     if (!writeprotect)
-    {
-      if (darktable.gui->last_preset)
-        g_free(darktable.gui->last_preset);
-      darktable.gui->last_preset = g_strdup(name);
-    }
+      dt_gui_store_last_preset (name);
   }
   sqlite3_finalize(stmt);
   g_free(name);
