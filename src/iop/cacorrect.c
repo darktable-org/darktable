@@ -65,6 +65,11 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
+int flags ()
+{
+  return IOP_FLAGS_ONE_INSTANCE;
+}
+
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
