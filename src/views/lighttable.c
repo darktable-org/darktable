@@ -137,7 +137,8 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &lib->statements.main_query, NULL);
 
   /* set the centerview scroll to top */
-  lib->offset=0;
+  if(instance != NULL)
+    lib->offset=0;
 
   dt_control_queue_redraw_center();
 }
