@@ -1,22 +1,32 @@
 #!/bin/bash
 
-# remove whitespace and braces:
-# cat src/iop/denoiseprofile.c | grep '{"'  | sed 's/\s*,\s*/,/g' | tr " " "_" | tr -d "{}()\"" | tr "/" "_" > trim.txt
-
-# filter out panasonic and powershot
-cat src/common/noiseprofiles.h | grep '{"'  | sed 's/\s*,\s*/,/g' | tr " " "_" | tr -d "{}()\"" | tr "/" "_" | grep -v "PowerShot" | grep -v "Panasonic" | grep -v "DYNAX" | grep -v "NEX-C3" | grep -v "pentax_k-x" > trim.txt
+# remove whitespace and braces,
+# filter out panasonic and powershot etc because they usually blow up the plot ranges
+# also only choose nikon d800 and canon 5d mark 2 for comparison
+cat src/common/noiseprofiles.h | grep '{"'  | sed 's/\s*,\s*/,/g' | tr " " "_" | tr -d "{}()\"" | tr "/" "_" | \
+  grep -v "PowerShot" | \
+  grep -v "Panasonic" | \
+  grep -v "DYNAX" | \
+  grep -v "NEX-C3" | \
+  grep -v "pentax_k-x" | \
+  grep -v "D5100" | \
+  awk -F, "{if (\$3 == \"D800\" || \$3 == \"Canon_EOS_5D_Mark_II\") { print \$0; }}" \
+  > trim.txt
 
 # get all:
-# filter="cat"
-
+filter="cat"
 # only canon:
-filter="grep Canon"
+# filter="grep Canon"
+# only canon mark 2+3
+# filter="grep Mark"
+# only Nikon
+# filter="grep NIKON"
 
 # get list of cameras (use exif model only):
-# cams=$(cat trim.txt | awk -F, "{ print \$3; }" | sort | uniq | tr "\n" " ") # could print \$2,\$3 to get maker and model
+cams=$(cat trim.txt | $filter | awk -F, "{ print \$3; }" | sort | uniq | tr "\n" " ") # could print \$2,\$3 to get maker and model
 # cams=$(cat trim.txt | awk -F, "{ print \$1; }" | sed 's/_iso_.*$//' | sort | uniq | tr "/" "_" | tr "\n" " ") # use first field to get commented double measurements as separate data points
 # filtered:
-cams=$(cat trim.txt | $filter | awk -F, "{ print \$1; }" | sed 's/_iso_.*$//' | sort | uniq | tr "/" "_" | tr "\n" " ")
+# cams=$(cat trim.txt | $filter | awk -F, "{ print \$1; }" | sed 's/_iso_.*$//' | sort | uniq | tr "/" "_" | tr "\n" " ")
 
 # is actually num cams + 1, because the first column is iso
 num_cams=$[ $(echo $cams | wc -w) + 1]
@@ -42,10 +52,11 @@ do
   echo "collecting iso $iso .."
   for cam in $cams
   do
+    # echo "looking for cam $cam"
     # collect green poissonian value for this camera and iso ($6)
-    a=$(cat trim.txt | awk -F, "{if (\$1 ~ /$cam/ && \$4 == $iso) { print \$6; } }" | tr -d "\n")
+    a=$(cat trim.txt | awk -F, "{if ((\$3 == \"$cam\") && (\$4 == $iso)) { print \$6; } }" | tr -d "\n")
     # same for gaussian one
-    b=$(cat trim.txt | awk -F, "{if (\$1 ~ /$cam/ && \$4 == $iso) { print \$9; } }" | tr -d "\n")
+    b=$(cat trim.txt | awk -F, "{if ((\$3 == \"$cam\") && (\$4 == $iso)) { print \$9; } }" | tr -d "\n")
     if [ "$a" == "" ]
     then
       # echo "no value found for $cam iso $iso"
@@ -76,6 +87,9 @@ set key autotitle columnhead
 plot for [i=2:${num_cams}] './data.txt' u 1:(column(i)) w lp title column(i)
 
 set output 'gaussian.pdf'
+unset logscale
+set logscale x
+set yrange [-1e-6:1e-5]
 plot for [i=2:${num_cams}] './data2.txt' u 1:(column(i)) w lp title column(i)
 EOF
 
