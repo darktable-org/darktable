@@ -106,7 +106,7 @@ int groups()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
 int
