@@ -127,6 +127,11 @@ get_preset_name(GtkMenuItem *menuitem)
 {
   const gchar *name = gtk_label_get_label(GTK_LABEL(gtk_bin_get_child(GTK_BIN(menuitem))));
   const gchar *c = name;
+
+  // move to marker < if it exists
+  while (*c && *c != '<') c++;
+  if (!*c) c = name;
+
   // remove <-> markup tag at beginning.
   if(*c == '<')
   {
@@ -560,6 +565,27 @@ menuitem_edit_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
 }
 
 static void
+menuitem_update_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
+{
+  gchar *name = get_preset_name(menuitem);
+
+  // commit all the module fields
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set operation=?1, op_version=?2, op_params=?3, enabled=?4, "
+     "blendop_params=?5, blendop_version=?6 where name=?7", -1, &stmt, NULL);
+
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, module->params, module->params_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, module->enabled);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, module->blend_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, dt_develop_blend_version());
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 7, name, strlen(name), SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+static void
 menuitem_new_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
   // add new preset
@@ -584,7 +610,7 @@ menuitem_pick_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
   gchar *name = get_preset_name(menuitem);
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, blendop_params, blendop_version from presets where operation = ?1 and op_version = ?2 and name = ?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, blendop_params, blendop_version, writeprotect from presets where operation = ?1 and op_version = ?2 and name = ?3", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, name, strlen(name), SQLITE_TRANSIENT);
@@ -597,6 +623,7 @@ menuitem_pick_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
     const void *blendop_params = sqlite3_column_blob(stmt, 2);
     int bl_length = sqlite3_column_bytes(stmt, 2);
     int blendop_version = sqlite3_column_int(stmt, 3);
+    int writeprotect = sqlite3_column_int(stmt, 4);
     if(op_params && (op_length == module->params_size))
     {
       memcpy(module->params, op_params, op_length);
@@ -613,6 +640,13 @@ menuitem_pick_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
     else
     {
       memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+    }
+
+    if (!writeprotect)
+    {
+      if (darktable.gui->last_preset)
+        g_free(darktable.gui->last_preset);
+      darktable.gui->last_preset = g_strdup(name);
     }
   }
   sqlite3_finalize(stmt);
@@ -759,6 +793,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, op, strlen(op), SQLITE_TRANSIENT);
   }
   // collect all presets for op from db
+  int found = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     void *op_params = (void *)sqlite3_column_blob(stmt, 1);
@@ -769,6 +804,12 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
     int32_t enabled = sqlite3_column_int(stmt, 6);
     int32_t isdefault = 0;
     int32_t isdisabled = (preset_version == version ? 0 : 1);
+    const char *name = (char *)sqlite3_column_text(stmt, 0);
+
+    if (darktable.gui->last_preset
+        && strcmp(darktable.gui->last_preset, name)==0)
+      found = 1;
+
     if(module && !memcmp(module->default_params, op_params, MIN(op_params_size, module->params_size)) &&
         !memcmp(module->default_blendop_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))) isdefault = 1;
     if(!memcmp(params, op_params, MIN(op_params_size, params_size)) &&
@@ -782,10 +823,10 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
       if(isdefault)
       {
         // selected_default = 1;
-        markup = g_markup_printf_escaped ("<span weight=\"bold\">%s %s</span>", sqlite3_column_text(stmt, 0), _("(default)"));
+        markup = g_markup_printf_escaped ("<span weight=\"bold\">%s %s</span>", name, _("(default)"));
       }
       else
-        markup = g_markup_printf_escaped ("<span weight=\"bold\">%s</span>", sqlite3_column_text(stmt, 0));
+        markup = g_markup_printf_escaped ("<span weight=\"bold\">%s</span>", name);
       gtk_label_set_markup (GTK_LABEL (gtk_bin_get_child(GTK_BIN(mi))), markup);
       g_free (markup);
     }
@@ -795,11 +836,11 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
       {
         char *markup;
         mi = gtk_menu_item_new_with_label("");
-        markup = g_markup_printf_escaped ("%s %s", sqlite3_column_text(stmt, 0), _("(default)"));
+        markup = g_markup_printf_escaped ("%s %s", name, _("(default)"));
         gtk_label_set_markup (GTK_LABEL (gtk_bin_get_child(GTK_BIN(mi))), markup);
         g_free (markup);
       }
-      else mi = gtk_menu_item_new_with_label((const char *)sqlite3_column_text(stmt, 0));
+      else mi = gtk_menu_item_new_with_label((const char *)name);
     }
 
     if(isdisabled)
@@ -848,6 +889,19 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
       mi = gtk_menu_item_new_with_label(_("store new preset.."));
       g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_new_preset), module);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+
+      if (darktable.gui->last_preset && found)
+      {
+        char label[60];
+        strcpy (label, _("update preset"));
+        strcat (label, " <span weight=\"bold\">%s</span>");
+        char *markup = g_markup_printf_escaped (label, darktable.gui->last_preset);
+        mi = gtk_menu_item_new_with_label("");
+        gtk_label_set_markup (GTK_LABEL (gtk_bin_get_child(GTK_BIN(mi))), markup);
+        g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_update_preset), module);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+        g_free (markup);
+      }
     }
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from presets where operation = ?1 and op_version = ?2 and def=1", -1, &stmt, NULL);
