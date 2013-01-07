@@ -347,7 +347,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     if(rad > 0)
     {
       for(int k=-rad; k<=rad; k++)
-      {git branch
+      {
         const float kk = 1.0f - fabsf(k/(float)rad);
         filter[rad + k] = kk*kk*(3.0f - 2.0f*kk);
       }
