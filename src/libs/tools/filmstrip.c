@@ -17,6 +17,7 @@
 */
 
 #include "views/view.h"
+#include "views/darkroom.h"
 #include "common/collection.h"
 #include "common/colorlabels.h"
 #include "common/darktable.h"
@@ -531,10 +532,16 @@ static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButto
         case DT_VIEW_STAR_4:
         case DT_VIEW_STAR_5:
         {
+        // CHECK!
           const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
           dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
           if(strip->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
-          else if(strip->image_over == DT_VIEW_REJECT && ((image->flags & 0x7) == 6)) image->flags &= ~0x7;
+//          else if(strip->image_over == DT_VIEW_REJECT && ((image->flags & 0x7) == 6))
+          else if(strip->image_over == DT_VIEW_REJECT)
+          {
+            image->flags &= ~0x7;
+            dt_dev_jump_image(darktable.develop, 1);
+          }
           else
           {
             image->flags &= ~0x7;
@@ -899,6 +906,11 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
         image->flags &= ~0xf;
       else if (num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1))
         image->flags &= ~0x7;
+      else if (num == DT_VIEW_REJECT && ((image->flags & 0x7) == 6))
+      {
+        image->flags &= ~0x7;
+        dt_dev_jump_image(darktable.develop, 1);
+      }
       else
       {
         image->flags &= ~0x7;
