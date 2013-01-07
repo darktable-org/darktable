@@ -361,11 +361,7 @@ pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
     }
 
     if (!writeprotect)
-    {
-      if (darktable.gui->last_preset)
-        g_free(darktable.gui->last_preset);
-      darktable.gui->last_preset = g_strdup(pn);
-    }
+      dt_gui_store_last_preset (pn);
   }
   sqlite3_finalize(stmt);
   if(res)
