@@ -516,6 +516,15 @@ void quit()
   dt_control_quit();
 }
 
+void dt_gui_store_last_preset(const char *name)
+{
+  if (darktable.gui->last_preset)
+    g_free(darktable.gui->last_preset);
+  if (name)
+    darktable.gui->last_preset = g_strdup(name);
+  else
+    darktable.gui->last_preset = NULL;
+}
 
 static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
     GObject *acceleratable,

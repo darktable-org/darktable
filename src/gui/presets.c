@@ -643,11 +643,7 @@ menuitem_pick_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
     }
 
     if (!writeprotect)
-    {
-      if (darktable.gui->last_preset)
-        g_free(darktable.gui->last_preset);
-      darktable.gui->last_preset = g_strdup(name);
-    }
+      dt_gui_store_last_preset (name);
   }
   sqlite3_finalize(stmt);
   g_free(name);
