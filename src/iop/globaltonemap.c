@@ -200,7 +200,7 @@ static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe
     float *inp = in + ch*k;
     float *outp = out + ch*k;
     float l = inp[0]/100.0;
-    float x = MAX(0.0f, l-0.004f);
+    float x = fmaxf(0.0f, l-0.004f);
     outp[0] = 100.0 * ((x*(6.2*x+.5))/(x*(6.2*x+1.7)+0.06));
     outp[1] = inp[1];
     outp[2] = inp[2];
