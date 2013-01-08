@@ -389,7 +389,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     // embedded color profile
     const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, pipe->image.id);
-    if(cimg->profile == NULL) sprintf(p->iccprofile, "ematrix");
+    if(cimg == NULL || cimg->profile == NULL) sprintf(p->iccprofile, "ematrix");
     else d->input = cmsOpenProfileFromMem(cimg->profile, cimg->profile_size);
     dt_image_cache_read_release(darktable.image_cache, cimg);
   }
