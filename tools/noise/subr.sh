@@ -216,10 +216,19 @@ get_image_iso() {
 
 	# Then try some brand specific values if still not found.
 
+	# TODO: try to use exiv2's "fixiso" option for reading only, possibly talk with exiv2
+	# developers to get an option that only displays the correct iso
+
 	if [ "$iso" = "" ]; then
 		case "$(get_image_camera_maker "$1")" in
 		NIKON*)
 			iso=$(exiv2 -g Exif.NikonIi.ISO -Pt "$1" 2>/dev/null || :)
+			if [ "$iso" = "" ]; then
+				iso=$(exiv2 -g Exif.Nikon3.ISOSpeed -Pt "$1" 2>/dev/null || :)
+			fi
+			if [ "$iso" = "" ]; then
+				iso=$(exiv2 -g Exif.Nikon3.ISOSettings -Pt "$1" 2>/dev/null || :)
+			fi
 			;;
 		esac
 	fi
