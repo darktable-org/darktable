@@ -203,15 +203,24 @@ noise profiling. Please install this command and re-run this script."; then
 # Input image file handling.
 # --------------------------------------------------------------------
 
+get_exif_key() {
+	local file key
+	file=$1
+	key=$2
+
+	exiv2 -g "$key" -Pt "$file" 2>/dev/null || :
+}
+
 get_image_iso() {
-	local iso
+	local file iso
+	file=$1
 
 	tool_installed exiv2
 
-	iso=$(exiv2 -g Exif.Photo.ISOSpeedRatings -Pt "$1" 2>/dev/null || :)
+	iso=$(get_exif_key "$file" Exif.Photo.ISOSpeedRatings)
 
 	if [ -z "$iso" -o "$iso" = "65535" ]; then
-		iso=$(exiv2 -g Exif.Photo.RecommendedExposureIndex -Pt "$1" 2>/dev/null || :)
+		iso=$(get_exif_key "$file" Exif.Photo.RecommendedExposureIndex)
 	fi
 
 	# Then try some brand specific values if still not found.
@@ -229,12 +238,12 @@ get_image_iso() {
 			#        keys.
 			#     2. That looks like versionned nodes:
 			#        "Nikon2" vs. "Nikon3".
-			iso=$(exiv2 -g Exif.Nikon3.ISOSpeed -Pt "$1" 2>/dev/null || :)
+			iso=$(get_exif_key "$file" Exif.Nikon3.ISOSpeed)
 			if [ -z "$iso" ]; then
-				iso=$(exiv2 -g Exif.Nikon3.ISOSettings -Pt "$1" 2>/dev/null || :)
+				iso=$(get_exif_key "$file" Exif.Nikon3.ISOSettings)
 			fi
 			if [ -z "$iso" ]; then
-				iso=$(exiv2 -g Exif.NikonIi.ISO -Pt "$1" 2>/dev/null || :)
+				iso=$(get_exif_key "$file" Exif.NikonIi.ISO)
 			fi
 			;;
 		esac
@@ -244,20 +253,22 @@ get_image_iso() {
 }
 
 get_image_camera_maker() {
-	local maker
+	local file maker
+	file=$1
 
 	tool_installed exiv2
 
-	maker=$(exiv2 -g Exif.Image.Make -Pt "$1" 2>/dev/null || :)
+	maker=$(get_exif_key "$file" Exif.Image.Make)
 	echo $maker
 }
 
 get_image_camera_model() {
-	local model
+	local file model
+	file=$1
 
 	tool_installed exiv2
 
-	model=$(exiv2 -g Exif.Image.Model -Pt "$1" 2>/dev/null || :)
+	model=$(get_exif_key "$file" Exif.Image.Model)
 	echo $model
 }
 
