@@ -243,6 +243,8 @@ list_input_images
 # Take the required shots.
 if [ "$tethering_enabled" ]; then
 	auto_capture_images
+else
+	iso_settings=$images_for_iso_settings
 fi
 
 files_list="$profiling_dir/output-files-list.txt"

@@ -420,7 +420,7 @@ get_camera_raw_setting() {
 }
 
 get_camera_iso_settings() {
-	local iso_setting
+	local iso_settings
 	iso_settings=$(gphoto2 --get-config /main/imgsettings/iso | awk '
 /^Choice: [0-9]+ [0-9]+$/ {
 	iso = $0;
