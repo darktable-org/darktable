@@ -706,7 +706,7 @@ lowlight_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_da
   {
     // reset current curve
     dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
-    dt_iop_lowlight_params_t *d = (dt_iop_lowlight_params_t *)self->factory_params;
+    dt_iop_lowlight_params_t *d = (dt_iop_lowlight_params_t *)self->default_params;
     /*   dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data; */
     for(int k=0; k<DT_IOP_LOWLIGHT_BANDS; k++)
     {

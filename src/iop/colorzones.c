@@ -797,7 +797,7 @@ colorzones_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_
   {
     // reset current curve
     dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
-    dt_iop_colorzones_params_t *d = (dt_iop_colorzones_params_t *)self->factory_params;
+    dt_iop_colorzones_params_t *d = (dt_iop_colorzones_params_t *)self->default_params;
     dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
     for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
     {

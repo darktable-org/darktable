@@ -442,7 +442,7 @@ dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventButton *event, gp
         break;
       default: // reset everything
       {
-        dt_iop_colorcorrection_params_t *d = (dt_iop_colorcorrection_params_t *)self->factory_params;
+        dt_iop_colorcorrection_params_t *d = (dt_iop_colorcorrection_params_t *)self->default_params;
         memcpy(p, d, sizeof(*p));
         dt_dev_add_history_item(darktable.develop, self, TRUE);
       }

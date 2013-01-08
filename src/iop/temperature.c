@@ -389,7 +389,7 @@ void gui_update (struct dt_iop_module_t *self)
   self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p  = (dt_iop_temperature_params_t *)module->params;
-  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)module->factory_params;
+  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)module->default_params;
   float temp, tint, mul[3];
   for(int k=0; k<3; k++) mul[k] = p->coeffs[k]/fp->coeffs[k];
   convert_rgb_to_k(mul, p->temp_out, &temp, &tint);
@@ -522,7 +522,7 @@ gui_update_from_coeffs (dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p  = (dt_iop_temperature_params_t *)self->params;
-  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->factory_params;
+  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->default_params;
   // now get temp/tint from rgb. leave temp_out as it was:
   float temp, tint, mul[3];
 
@@ -568,7 +568,7 @@ temp_changed(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p  = (dt_iop_temperature_params_t *)self->params;
-  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->factory_params;
+  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->default_params;
 
   const float temp_out = dt_bauhaus_slider_get(g->scale_k_out);
   const float temp_in  = dt_bauhaus_slider_get(g->scale_k);
@@ -649,7 +649,7 @@ apply_preset(dt_iop_module_t *self)
   if(self->dt->gui->reset) return;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p  = (dt_iop_temperature_params_t *)self->params;
-  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->factory_params;
+  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->default_params;
   const int tune = dt_bauhaus_slider_get(g->finetune);
   const int pos = dt_bauhaus_combobox_get(g->presets);
   switch(pos)

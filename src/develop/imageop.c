@@ -150,71 +150,9 @@ int dt_iop_load_preset_interpolated_iso(
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
-  memcpy(module->default_params, module->factory_params, module->params_size);
-  module->default_enabled = module->factory_enabled;
-
   memset(module->default_blendop_params, 0, sizeof(dt_develop_blend_params_t));
   memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
   memcpy(module->blend_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
-
-#if 0 // custom defaults are now disabled, because of confusion with auto-apply presets
-      // as well as non-xmp safety.
-
-  const void *op_params = NULL;
-  const void *bl_params = NULL;
-
-  // global default only allowed if the module is not enabled (pure gui convenience)
-  // if these user settings would change the history stack secretly, the xmp files
-  // would not carry all information and thus not be future proof.
-  if(!module->default_enabled)
-  {
-    sqlite3_stmt *stmt;
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, blendop_params, blendop_version from presets where operation = ?1 and op_version = ?2 and def=1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      op_params  = sqlite3_column_blob(stmt, 0);
-      int op_length  = sqlite3_column_bytes(stmt, 0);
-      // int enabled = sqlite3_column_int(stmt, 1);
-      bl_params = sqlite3_column_blob(stmt, 2);
-      int bl_length = sqlite3_column_bytes(stmt, 2);
-      int bl_version = sqlite3_column_int(stmt, 3);
-      if(op_params && (op_length == module->params_size))
-      {
-        memcpy(module->default_params, op_params, op_length);
-        // module->default_enabled = enabled;
-        if(bl_params &&  (bl_version == dt_develop_blend_version()) && (bl_length == sizeof(dt_develop_blend_params_t)))
-        {
-          memcpy(module->default_blendop_params, bl_params, sizeof(dt_develop_blend_params_t));
-        }
-        else if (bl_params)
-        {
-          bl_params = dt_develop_blend_legacy_params(module, bl_params, bl_version, module->default_blendop_params, dt_develop_blend_version(), bl_length) == 0 ? bl_params : (void *)1;
-        }
-        else
-        {
-          bl_params = (void *)1;
-        }
-      }
-      else
-        op_params = (void *)1;
-    }
-    sqlite3_finalize(stmt);
-
-    if(op_params == (void *)1 || bl_params == (void *)1)
-    {
-      printf("[iop_load_defaults]: module param sizes have changed! removing default :(\n");
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where operation = ?1 and op_version = ?2 and def=1", -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-    }
-  }
-#endif
 }
 
 static void
@@ -1131,6 +1069,7 @@ dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
   if (!dt_iop_is_hidden(module))
   {
     module->gui_init(module);
+    dt_iop_reload_defaults(module);
 
     /* add module to right panel */
     GtkWidget *expander = dt_iop_gui_get_expander(module);
@@ -1262,12 +1201,7 @@ static void _iop_gui_update_header(dt_iop_module_t *module)
 void dt_iop_reload_defaults(dt_iop_module_t *module)
 {
   if(module->reload_defaults)
-  {
     module->reload_defaults(module);
-    // factory defaults can only be overwritten if reload_defaults actually exists:
-    memcpy(module->factory_params, module->params, module->params_size);
-    module->factory_enabled = module->default_enabled;
-  }
   dt_iop_load_default_params(module);
 
   if(module->header)
@@ -1512,12 +1446,6 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, d
       return 1;
     }
     module->data = module_so->data;
-    module->factory_params = malloc(module->params_size);
-    // copy factory params first time. reload_defaults will only overwrite
-    // if module->reload_defaults exists (else the here copied values
-    // stay constant for all images).
-    memcpy(module->factory_params, module->params, module->params_size);
-    module->factory_enabled = module->default_enabled;
     module->so = module_so;
     dt_iop_reload_defaults(module);
     return 0;
@@ -1542,12 +1470,6 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
     }
     res = g_list_insert_sorted(res, module, sort_plugins);
     module->data = module_so->data;
-    module->factory_params = malloc(module->params_size);
-    // copy factory params first time. reload_defaults will only overwrite
-    // if module->reload_defaults exists (else the here copied values
-    // stay constant for all images).
-    memcpy(module->factory_params, module->params, module->params_size);
-    module->factory_enabled = module->default_enabled;
     module->so = module_so;
     dt_iop_reload_defaults(module);
     iop = g_list_next(iop);
@@ -1566,8 +1488,6 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
 
 void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
-  free(module->factory_params);
-  module->factory_params = NULL ;
   module->cleanup(module);
 
   free(module->default_params);

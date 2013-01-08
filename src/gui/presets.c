@@ -654,41 +654,6 @@ menuitem_pick_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
   gtk_widget_queue_draw(module->widget);
 }
 
-#if 0 // customizable defaults removed, see below.
-static void
-menuitem_store_default (GtkMenuItem *menuitem, dt_iop_module_t *module)
-{
-  gchar *name = get_active_preset_name(module);
-  if(name == NULL) return;
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set def=0 where operation=?1 and op_version=?2", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set def=1 where operation=?1 and op_version=?2 and name=?3", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, name, strlen(name), SQLITE_TRANSIENT);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  dt_iop_load_default_params(module);
-}
-#endif
-
-static void
-menuitem_factory_default (GtkMenuItem *menuitem, dt_iop_module_t *module)
-{
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set def=0 where operation=?1 and op_version=?2", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  dt_iop_load_default_params(module);
-}
-
-
 void dt_gui_favorite_presets_menu_show()
 {
   sqlite3_stmt *stmt;
@@ -820,7 +785,6 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
       mi = gtk_menu_item_new_with_label("");
       if(isdefault)
       {
-        // selected_default = 1;
         markup = g_markup_printf_escaped ("<span weight=\"bold\">%s %s</span>", name, _("(default)"));
       }
       else
@@ -844,7 +808,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
     if(isdisabled)
     {
       gtk_widget_set_sensitive(mi, 0);
-      g_object_set(G_OBJECT(mi), "tooltip-text", "Disabled: Wrong module version.", (char *)NULL);
+      g_object_set(G_OBJECT(mi), "tooltip-text", _("disabled: wrong module version"), (char *)NULL);
     }
     else
     {
@@ -869,18 +833,6 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
       mi = gtk_menu_item_new_with_label(_("delete this preset"));
       g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_delete_preset), module);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-
-#if 0 // we found these confusing, so the gui for it is removed.
-      // for consistency between machines via xmp, it would at least need to be
-      // if(!module->enabled) or module->default_enabled and always leave it off.
-      if(!selected_default)
-      {
-        // only show if it is not the default already
-        mi = gtk_menu_item_new_with_label(_("use preset as default"));
-        g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_store_default), module);
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-      }
-#endif
     }
     else
     {
@@ -901,18 +853,6 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
         g_free (markup);
       }
     }
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from presets where operation = ?1 and op_version = ?2 and def=1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      // only show this if presets already contains a default
-      mi = gtk_menu_item_new_with_label(_("remove default"));
-      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_factory_default), module);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    }
-    sqlite3_finalize(stmt);
   }
 }
 

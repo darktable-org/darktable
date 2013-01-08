@@ -188,9 +188,9 @@ typedef struct dt_iop_module_t
   /** the module is used in this develop module. */
   struct dt_develop_t *dev;
   /** non zero if this node should be processed. */
-  int32_t enabled, default_enabled, factory_enabled;
+  int32_t enabled, default_enabled;
   /** parameters for the operation. will be replaced by history revert. */
-  dt_iop_params_t *params, *default_params, *factory_params;
+  dt_iop_params_t *params, *default_params;
   /** size of individual params struct. */
   int32_t params_size;
   /** parameters needed if a gui is attached. will be NULL if in export/batch mode. */

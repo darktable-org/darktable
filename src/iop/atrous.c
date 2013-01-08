@@ -1312,7 +1312,7 @@ area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
   {
     // reset current curve
     dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
-    dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->factory_params;
+    dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->default_params;
     dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
     reset_mix(self);
     for(int k=0; k<BANDS; k++)
@@ -1379,7 +1379,7 @@ mix_callback (GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
-  dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->factory_params;
+  dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->default_params;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   const float mix = dt_bauhaus_slider_get(slider);
   for(int ch=0; ch<atrous_none; ch++) for(int k=0; k<BANDS; k++)

@@ -1163,7 +1163,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->radius),   "value-changed", G_CALLBACK (radius_callback),   self);
   g_signal_connect (G_OBJECT (g->strength), "value-changed", G_CALLBACK (strength_callback), self);
   // unfortunately this is only called before gui_init, we want it:
-  self->reload_defaults(self);
+  // self->reload_defaults(self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)

@@ -604,14 +604,10 @@ dt_lib_load_modules ()
     g_free(libname);
     res = g_list_insert_sorted(res, module, dt_lib_sort_plugins);
 
-//     module->factory_params = malloc(module->params_size);
-//     memcpy(module->factory_params, module->default_params, module->params_size);
-//     module->factory_enabled = module->default_enabled;
     init_presets(module);
     // Calling the keyboard shortcut initialization callback if present
     if(module->init_key_accels)
       module->init_key_accels(module);
-//     dt_iop_load_default_params(module);
 
   }
   g_dir_close(dir);
