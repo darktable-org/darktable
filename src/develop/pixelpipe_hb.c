@@ -56,9 +56,10 @@ static char *_pipe_type_to_str(int pipe_type)
       r = "thumbnail";
       break;
     case DT_DEV_PIXELPIPE_EXPORT:
-    default:
       r = "export";
       break;
+    default:
+      r = "unknown";
   }
   return r;
 }
@@ -1053,14 +1054,23 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         dt_pthread_mutex_unlock(&pipe->busy_mutex);
         return 1;
       }
-      if(strcmp(module->op, "gamma") && bpp == sizeof(float)*4) for(int k=0; k<4*roi_out->width*roi_out->height; k++)
+
+      if(strcmp(module->op, "gamma") && bpp == sizeof(float)*4)
+      {
+#ifdef HAVE_OPENCL
+        if(*cl_mem_output != NULL)
+          dt_opencl_copy_device_to_host(pipe->devid, *output, *cl_mem_output, roi_out->width, roi_out->height, bpp);
+#endif
+
+        for(int k=0; k<4*roi_out->width*roi_out->height; k++)
         {
           if((k&3)<3 && !isfinite(((float*)(*output))[k]))
           {
-            fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats!\n", module->name());
+            fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats! [%s]\n", module->name(), _pipe_type_to_str(pipe->type));
             break;
           }
         }
+      }
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
     }
 
