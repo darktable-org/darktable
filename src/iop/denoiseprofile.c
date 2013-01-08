@@ -35,21 +35,26 @@
 #define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 #define MAX_PROFILES 30
 
+#define MODE_NLMEANS 0
+#define MODE_WAVELETS 1
+
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE(1)
+DT_MODULE(2)
 
 typedef struct dt_iop_denoiseprofile_params_t
 {
   float radius;      // search radius
   float strength;    // noise level after equilization
   float a[3], b[3];  // fit for poissonian-gaussian noise per color channel.
+  uint32_t mode;     // switch between nlmeans and wavelets
 }
 dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
 {
   GtkWidget *profile;
+  GtkWidget *mode;
   GtkWidget *radius;
   GtkWidget *strength;
   dt_noiseprofile_t interpolated;
@@ -72,6 +77,20 @@ typedef struct dt_iop_denoiseprofile_global_data_t
 }
 dt_iop_denoiseprofile_global_data_t;
 
+int
+legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    dt_iop_denoiseprofile_params_t *o = (dt_iop_denoiseprofile_params_t *)old_params;
+    dt_iop_denoiseprofile_params_t *n = (dt_iop_denoiseprofile_params_t *)new_params;
+    // same old but one more parameter
+    memcpy(n, o, sizeof(dt_iop_denoiseprofile_params_t) - sizeof(uint32_t));
+    n->mode = MODE_NLMEANS;
+    return 0;
+  }
+  return 1;
+}
 
 const char *name()
 {
@@ -196,9 +215,6 @@ backtransform(
   }
 }
 
-#define USE_NLMEANS 1
-// #define USE_WAVELETS 1
-#if USE_WAVELETS == 1
 // =====================================================================================
 // begin wavelet code:
 // =====================================================================================
@@ -449,7 +465,7 @@ eaw_synthesize (float *const out, const float *const in, const float *const deta
 }
 // =====================================================================================
 
-void process(
+void process_wavelets(
     struct dt_iop_module_t *self,
     dt_dev_pixelpipe_iop_t *piece,
     void *ivoid,
@@ -461,7 +477,7 @@ void process(
   // get our data struct:
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
 
-  const int max_scale = 3;
+  const int max_scale = 5;
 
   float *buf[max_scale+2];
   for(int k=0;k<=max_scale;k++)
@@ -486,8 +502,7 @@ void process(
   precondition((float *)ivoid, buf[max_scale], width, height, aa, bb);
 
   // variance stabilizing transform maps sigma to unity:
-  // TODO: adjust to scale?
-  const float sigma_n = 1.0f;
+  const float sigma = 1.0f;
 
   float *cur = buf[max_scale];
 
@@ -506,7 +521,6 @@ void process(
 
   for(int scale=max_scale-1; scale>=0; scale--)
   {
-    const float sigma = sigma_n/pow(sqrtf(2.0), scale);
     // determine thrs as bayesshrink
     // TODO: parallelize!
     float sum_y[3] = {0.0f}, sum_y2[3] = {0.0f};
@@ -528,11 +542,7 @@ void process(
       sqrtf(MAX(0, var_y[0] - sigma*sigma)),
       sqrtf(MAX(0, var_y[1] - sigma*sigma)),
       sqrtf(MAX(0, var_y[2] - sigma*sigma))};
-    // fprintf(stderr, "============level %d\n", scale);
-    // fprintf(stderr, "mean y: %f %f %f\n", mean_y[0], mean_y[1], mean_y[2]);
-    // fprintf(stderr, "stddev: %f %f %f\n", std_x[0], std_x[1], std_x[2]);
     const float thrs[4] = { sigma*sigma/std_x[0], sigma*sigma/std_x[1], sigma*sigma/std_x[2], 0.0f};
-    // fprintf(stderr, "thrs  : %f %f %f\n", thrs[0], thrs[1], thrs[2]);
     const float boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
     eaw_synthesize (buf[max_scale+1], buf[max_scale+1], buf[scale], thrs, boost, width, height);
   }
@@ -545,10 +555,8 @@ void process(
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(ivoid, ovoid, width, height);
 }
-#endif
 
-#if USE_NLMEANS == 1
-void process(
+void process_nlmeans(
     struct dt_iop_module_t *self,
     dt_dev_pixelpipe_iop_t *piece,
     void *ivoid,
@@ -956,7 +964,22 @@ error:
   return FALSE;
 }
 #endif  // HAVE_OPENCL
-#endif  // USE_NLMEANS
+
+void process(
+    struct dt_iop_module_t *self,
+    dt_dev_pixelpipe_iop_t *piece,
+    void *ivoid,
+    void *ovoid,
+    const dt_iop_roi_t *roi_in,
+    const dt_iop_roi_t *roi_out)
+{
+  dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
+  if(d->mode == MODE_NLMEANS)
+    process_nlmeans(self, piece, ivoid, ovoid, roi_in, roi_out);
+  else
+    process_wavelets(self, piece, ivoid, ovoid, roi_in, roi_out);
+}
+
 
 
 
@@ -1007,6 +1030,7 @@ void reload_defaults(dt_iop_module_t *module)
 
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = 1.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
     for(int k=0;k<3;k++)
     {
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->a[k] = g->interpolated.a[k];
@@ -1100,6 +1124,19 @@ profile_callback(GtkWidget *w, dt_iop_module_t *self)
 }
 
 static void
+mode_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  p->mode = dt_bauhaus_combobox_get(w);
+  if(p->mode == MODE_WAVELETS)
+    gtk_widget_set_visible(g->radius, FALSE);
+  else
+    gtk_widget_set_visible(g->radius, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void
 radius_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
@@ -1122,6 +1159,11 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   dt_bauhaus_slider_set(g->radius,   p->radius);
   dt_bauhaus_slider_set(g->strength, p->strength);
+  dt_bauhaus_combobox_set(g->mode,   p->mode);
+  if(p->mode == MODE_WAVELETS)
+    gtk_widget_set_visible(g->radius, FALSE);
+  else
+    gtk_widget_set_visible(g->radius, TRUE);
   if(!memcmp(g->interpolated.a, p->a, sizeof(float)*3) && !memcmp(g->interpolated.b, p->b, sizeof(float)*3))
   {
     dt_bauhaus_combobox_set(g->profile, 0);
@@ -1147,19 +1189,26 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
   g->profile  = dt_bauhaus_combobox_new(self);
+  g->mode     = dt_bauhaus_combobox_new(self);
   g->radius   = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1., 2.f, 0);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 2.0f, .05, 1.f, 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->profile , _("profile"));
+  dt_bauhaus_widget_set_label(g->mode, _("mode"));
   dt_bauhaus_widget_set_label(g->radius, _("patch size"));
   dt_bauhaus_slider_set_format(g->radius, "%.0f");
   dt_bauhaus_widget_set_label(g->strength, _("strength"));
-  g_object_set (GTK_OBJECT(g->profile),   "tooltip-text", _("profile used for variance stabilization"), (char *)NULL);
+  dt_bauhaus_combobox_add(g->mode, _("non-local means"));
+  dt_bauhaus_combobox_add(g->mode, _("wavelets"));
+  g_object_set (GTK_OBJECT(g->profile),  "tooltip-text", _("profile used for variance stabilization"), (char *)NULL);
+  g_object_set (GTK_OBJECT(g->mode),     "tooltip-text", _("method used in the denoising core. non-local means works best for `lightness' blending, wavelets work best for `color' blending"), (char *)NULL);
   g_object_set (GTK_OBJECT(g->radius),   "tooltip-text", _("radius of the patches to match. increase for more sharpness"), (char *)NULL);
   g_object_set (GTK_OBJECT(g->strength), "tooltip-text", _("finetune denoising strength"), (char *)NULL);
-  g_signal_connect (G_OBJECT (g->profile),   "value-changed", G_CALLBACK (profile_callback),   self);
+  g_signal_connect (G_OBJECT (g->profile),  "value-changed", G_CALLBACK (profile_callback),  self);
+  g_signal_connect (G_OBJECT (g->mode),     "value-changed", G_CALLBACK (mode_callback),     self);
   g_signal_connect (G_OBJECT (g->radius),   "value-changed", G_CALLBACK (radius_callback),   self);
   g_signal_connect (G_OBJECT (g->strength), "value-changed", G_CALLBACK (strength_callback), self);
 }
