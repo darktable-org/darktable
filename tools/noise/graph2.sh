@@ -84,12 +84,15 @@ set logscale xy
 # set yrange [0:1e-5]
 set datafile missing "?"
 set key autotitle columnhead
+set xlabel 'iso speed'
+set ylabel 'photon noise'
 plot for [i=2:${num_cams}] './data.txt' u 1:(column(i)) w lp title column(i)
 
 set output 'gaussian.pdf'
 unset logscale
 set logscale x
 set yrange [-1e-6:1e-5]
+set ylabel 'sensor noise'
 plot for [i=2:${num_cams}] './data2.txt' u 1:(column(i)) w lp title column(i)
 EOF
 
