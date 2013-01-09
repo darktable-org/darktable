@@ -339,6 +339,20 @@ dt_styles_create_from_selection()
 }
 
 void
+dt_styles_create_from_selection()
+{
+  /* for each selected image apply style */
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int imgid = sqlite3_column_int (stmt, 0);
+    dt_gui_styles_dialog_new (imgid);
+  }
+  sqlite3_finalize(stmt);
+}
+
+void
 dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
 {
   int id=0;
