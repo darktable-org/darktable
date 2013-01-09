@@ -218,14 +218,16 @@ backtransform(
 // =====================================================================================
 // begin wavelet code:
 // =====================================================================================
+#if 0
 #define ALIGNED(a) __attribute__((aligned(a)))
 #define VEC4(a) {(a), (a), (a), (a)}
 
 static const __m128 fone ALIGNED(16) = VEC4(0x3f800000u);
-static const __m128 femo ALIGNED(16) = VEC4(0x00adf880u);
+static const __m128 femo ALIGNED(16) = VEC4(0x00800000u);//VEC4(0x00adf880u);
 static const __m128 ooo1 ALIGNED(16) = {0.f, 0.f, 0.f, 1.f};
 
 /* SSE intrinsics version of dt_fast_expf defined in darktable.h */
+// computes exp2f(x) for x <= 0
 static __m128  inline
 dt_fast_expf_sse(const __m128 x)
 {
@@ -235,35 +237,35 @@ dt_fast_expf_sse(const __m128 x)
   i = _mm_andnot_si128(mask, i);                     // i(n) = 0 if i(n) < 0
   return _mm_castsi128_ps(i);                        // return *(float*)&i
 }
+#endif
 
-// FIXME: needs adjusting for this color space!
-/* Computes the vector
- * (wl, wc, wc, 1)
- *
- * where:
- * wl = exp(-sharpen*SQR(c1[0] - c2[0]))
- *    = exp(-s*d1) (as noted in code comments below)
- * wc = exp(-sharpen*(SQR(c1[1] - c2[1]) + SQR(c1[2] - c2[2]))
- *    = exp(-s*(d2+d3)) (as noted in code comments below)
- */
 static __m128  inline
 weight_sse(const __m128 *c1, const __m128 *c2, const float sharpen)
 {
-  return _mm_set1_ps(1.0f);
-  // TODO: expf falloff, variance aware, for [0, 1] rgb images
-#if 0
-  const __m128 vsharpen = _mm_set1_ps(-sharpen);  // (-s, -s, -s, -s)
+  // return _mm_set1_ps(1.0f);
+#if 1
+  // 3d distance based on color
   __m128 diff = _mm_sub_ps(*c1, *c2);
-  __m128 square = _mm_mul_ps(diff, diff);         // (?, d3, d2, d1)
-  __m128 square2 = _mm_shuffle_ps(square, square, _MM_SHUFFLE(3, 1, 2, 0)); // (?, d2, d3, d1)
-  __m128 added = _mm_add_ps(square, square2);     // (?, d2+d3, d2+d3, 2*d1)
-  added = _mm_sub_ss(added, square);              // (?, d2+d3, d2+d3, d1)
-  __m128 sharpened = _mm_mul_ps(added, vsharpen); // (?, -s*(d2+d3), -s*(d2+d3), -s*d1)
-  __m128 exp = dt_fast_expf_sse(sharpened);       // (?, wc, wc, wl)
-  exp = _mm_castsi128_ps(_mm_slli_si128(_mm_castps_si128(exp), 4)); // (wc, wc, wl, 0)
-  exp = _mm_castsi128_ps(_mm_srli_si128(_mm_castps_si128(exp), 4)); // (0, wc, wc, wl)
-  exp = _mm_or_ps(exp, ooo1); // (1, wc, wc, wl)
-  return exp;
+  __m128 sqr  = _mm_mul_ps(diff, diff);
+  float *fsqr = (float *)&sqr;
+  const float dot = fsqr[0] + fsqr[1] + fsqr[2];
+  const float var = 0.5f;
+  // const float off2 = 144.0f; // (2*sigma * 2 * 3)^2
+  const float off2 = 324.0f; // (3*sigma * 2 * 3)^2
+  return _mm_set1_ps(fast_mexp2f(MAX(0, dot*var - off2)));
+#endif
+#if 0
+  // 3x 1d distance (results in funny color casts)
+  __m128 diff = _mm_sub_ps(*c1, *c2);
+  __m128 sqr  = _mm_mul_ps(diff, diff);
+  __m128 var  = _mm_set1_ps(0.5f);  // greater value here will give more harsh edges
+  // __m128 off2 = _mm_set1_ps(36.0f); // noise sigma2, cut off at (2 * 3*sigma)^2 == 36
+  __m128 off2 = _mm_set1_ps(16.0f); // noise sigma2, cut off at (2 * 2*sigma)^2 == 16
+  // this leaves salt and pepper noise because it's classified as edges:
+  // __m128 off2 = _mm_set1_ps(4.0f); // noise sigma2, cut off at (2 * sigma)^2 == 4
+  // expf(- max(0.0, var*sqr - off^2))
+  // =      min(0.0, - var*sqr + off^2) = min(0, off^2 - var*sqr)
+  return  dt_fast_expf_sse(_mm_min_ps(_mm_setzero_ps(), _mm_sub_ps(off2, _mm_mul_ps(sqr, var))));
 #endif
 }
 
@@ -479,10 +481,12 @@ void process_wavelets(
 
   const int max_scale = 5;
 
-  float *buf[max_scale+2];
-  for(int k=0;k<=max_scale;k++)
+  float *buf[max_scale];
+  float *tmp = NULL;
+  float *buf1 = NULL, *buf2 = NULL;
+  for(int k=0;k<max_scale;k++)
     buf[k] = dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
-  buf[max_scale+1] = (float *)ovoid;
+  tmp = dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
 
   const float wb[3] = {
     piece->pipe->processed_maximum[0]*d->strength,
@@ -499,28 +503,60 @@ void process_wavelets(
     d->b[1]*wb[2]};
 
   const int width = roi_in->width, height = roi_in->height;
-  precondition((float *)ivoid, buf[max_scale], width, height, aa, bb);
+  precondition((float *)ivoid, (float *)ovoid, width, height, aa, bb);
+# if 0 // DEBUG: see what variance we have after transform
+    if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
+    {
+      const int n = width*height;
+      FILE *f = fopen("/tmp/transformed.pfm", "wb");
+      fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
+      for(int k=0;k<n;k++)
+        fwrite(((float*)ovoid)+4*k, sizeof(float), 3, f);
+      fclose(f);
+    }
+#endif
 
-  // variance stabilizing transform maps sigma to unity:
-  const float sigma = 1.0f;
-
-  float *cur = buf[max_scale];
-
-  // buf3=in -> buf0, buf2
-  // buf2    -> buf1, buf3
-  // buf3    -> buf2, out
-
-  // syn:
-  // out += buf2 + buf1 + buf0
+  buf1 = (float *)ovoid;
+  buf2 = tmp;
 
   for(int scale=0; scale<max_scale; scale++)
   {
-    eaw_decompose (buf[scale+2], cur, buf[scale], scale, 0.0f, width, height);
-    cur = buf[scale+2];
+    eaw_decompose (buf2, buf1, buf[scale], scale, 0.0f, width, height);
+    // DEBUG: clean out temporary memory:
+    // memset(buf1, 0, sizeof(float)*4*width*height);
+# if 0 // DEBUG: print wavelet scales:
+    if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
+    {
+      const int n = width*height;
+      char filename[512];
+      snprintf(filename, 512, "/tmp/coarse_%d.pfm", scale);
+      FILE *f = fopen(filename, "wb");
+      fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
+      for(int k=0;k<n;k++)
+        fwrite(buf2+4*k, sizeof(float), 3, f);
+      fclose(f);
+      snprintf(filename, 512, "/tmp/detail_%d.pfm", scale);
+      f = fopen(filename, "wb");
+      fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
+      for(int k=0;k<n;k++)
+        fwrite(buf[scale]+4*k, sizeof(float), 3, f);
+      fclose(f);
+    }
+#endif
+    float *buf3 = buf2;
+    buf2 = buf1;
+    buf1 = buf3;
   }
 
+  // now do everything backwards, so the result will end up in *ovoid
   for(int scale=max_scale-1; scale>=0; scale--)
   {
+#if 1
+    // variance stabilizing transform maps sigma to unity.
+    const float sigma = 1.0f;
+    // it is then transformed by wavelet scales via the 5 tap a-trous filter:
+    const float varf = sqrtf(2.0f + 2.0f * 4.0f*4.0f + 6.0f*6.0f)/16.0f; // about 0.5
+    const float sigma_band = powf(varf, scale) *sigma;
     // determine thrs as bayesshrink
     // TODO: parallelize!
     float sum_y[3] = {0.0f}, sum_y2[3] = {0.0f};
@@ -539,18 +575,31 @@ void process_wavelets(
       sum_y2[1]/(n-1.0f) - mean_y[1]*mean_y[1],
       sum_y2[2]/(n-1.0f) - mean_y[2]*mean_y[2]};
     const float std_x[3] = {
-      sqrtf(MAX(0, var_y[0] - sigma*sigma)),
-      sqrtf(MAX(0, var_y[1] - sigma*sigma)),
-      sqrtf(MAX(0, var_y[2] - sigma*sigma))};
-    const float thrs[4] = { sigma*sigma/std_x[0], sigma*sigma/std_x[1], sigma*sigma/std_x[2], 0.0f};
+      sqrtf(MAX(1e-6f, var_y[0] - sigma_band*sigma_band)),
+      sqrtf(MAX(1e-6f, var_y[1] - sigma_band*sigma_band)),
+      sqrtf(MAX(1e-6f, var_y[2] - sigma_band*sigma_band))};
+    // add 2.0 here because it seemed a little weak
+    const float adjt = 2.0f * powf(.5f, scale);
+    const float thrs[4] = { adjt * sigma*sigma/std_x[0], adjt * sigma*sigma/std_x[1], adjt * sigma*sigma/std_x[2], 0.0f};
+    // const float std = (std_x[0] + std_x[1] + std_x[2])/3.0f;
+    // const float thrs[4] = { adjt*sigma*sigma/std, adjt*sigma*sigma/std, adjt*sigma*sigma/std, 0.0f};
+    // fprintf(stderr, "scale %d thrs %f %f %f\n", scale, thrs[0], thrs[1], thrs[2]);
+#endif
     const float boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    eaw_synthesize (buf[max_scale+1], buf[max_scale+1], buf[scale], thrs, boost, width, height);
+    // const float thrs[4] = { 0.0, 0.0, 0.0, 0.0 };
+    eaw_synthesize (buf2, buf1, buf[scale], thrs, boost, width, height);
+    // DEBUG: clean out temporary memory:
+    // memset(buf1, 0, sizeof(float)*4*width*height);
+    float *buf3 = buf2;
+    buf2 = buf1;
+    buf1 = buf3;
   }
 
   backtransform((float *)ovoid, width, height, aa, bb);
 
-  for(int k=0;k<=max_scale;k++)
+  for(int k=0;k<max_scale;k++)
     free(buf[k]);
+  free(tmp);
 
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(ivoid, ovoid, width, height);
