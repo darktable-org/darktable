@@ -22,11 +22,17 @@
 #include "develop/develop.h"
 #include "develop/blend.h"
 #include "iop/clipping.h"
+#include "iop/exposure.h"
 #include "control/control.h"
 
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <sys/stat.h>
+
+typedef struct lr2dt
+{
+  float lr, dt;
+} lr2dt_t;
 
 char *dt_get_lightroom_xmp(int imgid)
 {
@@ -48,6 +54,26 @@ char *dt_get_lightroom_xmp(int imgid)
     return pathname;
   else
     return NULL;
+}
+
+static float get_interpolate (lr2dt_t lr2dt_table[], float value)
+{
+  int k=0;
+
+  while (lr2dt_table[k+1].lr < value) k++;
+
+  return lr2dt_table[k].dt +
+    ((value - lr2dt_table[k].lr)
+     / (lr2dt_table[k+1].lr - lr2dt_table[k].lr))
+    * (lr2dt_table[k+1].dt - lr2dt_table[k].dt);
+}
+
+static float lr2dt_exposure(float value)
+{
+  lr2dt_t lr2dt_exposure_table[] =
+    {{-100, 0.020}, {-50, 0.005}, {0, 0}, {50, -0.005}, {100, -0.010}};
+
+  return get_interpolate (lr2dt_exposure_table, value);
 }
 
 static dt_dev_history_item_t *_new_hist_for (dt_develop_t *dev, char *opname)
@@ -178,10 +204,15 @@ void dt_lightroom_import (dt_develop_t *dev)
 
   dt_iop_clipping_params_t pc;
   memset(&pc, 0, sizeof(pc));
+  gboolean has_crop = FALSE;
+
+  dt_iop_exposure_params_t pe;
+  memset(&pe, 0, sizeof(pe));
+  gboolean has_exposure = FALSE;
+
+  int n_import = 0;
 
   xmlAttr* attribute = entryNode->properties;
-  gboolean has_crop = FALSE;
-  int n_import = 0;
 
   while(attribute && attribute->name && attribute->children)
   {
@@ -201,6 +232,16 @@ void dt_lightroom_import (dt_develop_t *dev)
       if (!xmlStrcmp(value, (const xmlChar *)"True"))
       {
         has_crop = TRUE;
+        n_import++;
+      }
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Blacks2012"))
+    {
+      int v = atoi((char *)value);
+      if (v != 0)
+      {
+        has_exposure = TRUE;
+        pe.black = lr2dt_exposure((float)v);
         n_import++;
       }
     }
@@ -249,6 +290,18 @@ void dt_lightroom_import (dt_develop_t *dev)
 
     dt_add_hist (dev, hist, imported);
     refresh_needed=TRUE;
+  }
+
+  if (has_exposure)
+  {
+    dt_dev_history_item_t *hist = _new_hist_for (dev, "exposure");
+    dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)hist->params;
+
+    p->black = pe.black;
+
+    dt_add_hist (dev, hist, imported);
+    refresh_needed=TRUE;
+
   }
 
   if(refresh_needed && dev->gui_attached)
