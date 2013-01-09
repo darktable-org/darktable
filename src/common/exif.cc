@@ -405,10 +405,21 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if ( (pos=Exiv2::isoSpeed(exifData) )
          != exifData.end() && pos->size())
     {
-      std::ostringstream os;
-      pos->write(os, &exifData);
-      const char * exifstr = os.str().c_str();
-      img->exif_iso = (float) std::atof( exifstr );
+      // if standard exif iso tag, use the old way of interpreting the return value to be more regression-save
+      if (strcmp(pos->key().c_str(), "Exif.Photo.ISOSpeedRatings") == 0)
+      {
+        int isofield = pos->count () > 1  ? 1 : 0;
+        img->exif_iso = pos->toFloat (isofield);
+      }
+      else
+      {
+        std::ostringstream os;
+        pos->write(os, &exifData);
+        const char * exifstr = os.str().c_str();
+        img->exif_iso = (float) std::atof( exifstr );
+        // beware the following does not result in the same!:
+        //img->exif_iso = (float) std::atof( pos->toString().c_str() );
+      }
     }
 #if EXIV2_MINOR_VERSION>19
     /* Read focal length  */
