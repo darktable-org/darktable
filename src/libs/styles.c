@@ -176,6 +176,14 @@ _styles_row_activated_callback (GtkTreeView *view, GtkTreePath *path, GtkTreeVie
 
 }
 
+static void create_clicked(GtkWidget *w,gpointer user_data)
+{
+  dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
+
+  dt_styles_create_from_selection();
+  _gui_styles_update_view(d);
+}
+
 static void edit_clicked(GtkWidget *w,gpointer user_data)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
@@ -352,7 +360,7 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (d->entry, "activate", G_CALLBACK(entry_activated),d);
 
   dt_gui_key_accel_block_on_focus ( GTK_WIDGET (d->entry));
-  
+
   scrolled = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
@@ -365,13 +373,19 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (d->duplicate, "toggled", G_CALLBACK(duplicate_callback),d);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (d->duplicate), dt_conf_get_bool("ui_last/styles_create_duplicate"));
   g_object_set (d->duplicate, "tooltip-text", _("creates a duplicate of the image before applying style"), (char *)NULL);
-  
+
   GtkWidget *hbox  = gtk_hbox_new(TRUE, 5);
   GtkWidget *vbox1 = gtk_vbox_new(TRUE, 5);
   GtkWidget *vbox2 = gtk_vbox_new(TRUE, 5);
   gtk_box_pack_start(GTK_BOX (hbox), vbox1, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX (hbox), vbox2, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX (self->widget),hbox,TRUE,FALSE,0);
+
+  // create
+  GtkWidget *cbutton = gtk_button_new_with_label(_("create"));
+  g_signal_connect (G_OBJECT (cbutton), "clicked", G_CALLBACK (create_clicked),d);
+  g_object_set (G_OBJECT (cbutton), "tooltip-text", _("create styles from history stack of selected images"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX (vbox1),cbutton,TRUE,TRUE,0);
 
   // edit
   GtkWidget *widget = gtk_button_new_with_label(_("edit"));
@@ -386,7 +400,7 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (widget, "clicked", G_CALLBACK(delete_clicked),d);
   g_object_set (widget, "tooltip-text", _("deletes the selected style in list above"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX (vbox2),widget,TRUE,TRUE,0);
-  
+
   // import button
   GtkWidget *importButton = gtk_button_new_with_label(C_("styles", "import"));
   d->import_button = importButton;
