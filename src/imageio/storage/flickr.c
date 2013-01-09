@@ -34,8 +34,6 @@
 #include <unistd.h>
 #include <curl/curl.h>
 #include <flickcurl.h>
-#include <libxml/parser.h>
-#include <libxml/xpath.h>
 
 DT_MODULE(1)
 
@@ -249,14 +247,11 @@ _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_dat
         dt_print(DT_DEBUG_PWSTORAGE,"[flickr] user cancelled the login process\n");
         return NULL;
     }
-
-
   }
 
   if (perms)
-  {
     free(perms);
-  }
+
   return NULL;
 }
 
