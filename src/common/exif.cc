@@ -45,6 +45,7 @@ extern "C"
 #include <sstream>
 #include <cassert>
 #include <glib.h>
+#include <string>
 
 #define DT_XMP_KEYS_NUM 15 // the number of XmpBag XmpSeq keys that dt uses
 
@@ -404,8 +405,10 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if ( (pos=Exiv2::isoSpeed(exifData) )
          != exifData.end() && pos->size())
     {
-      int isofield = pos->count () > 1  ? 1 : 0;
-      img->exif_iso = pos->toFloat (isofield);
+      std::ostringstream os;
+      pos->write(os, &exifData);
+      const char * exifstr = os.str().c_str();
+      img->exif_iso = (float) std::atof( exifstr );
     }
 #if EXIV2_MINOR_VERSION>19
     /* Read focal length  */
