@@ -303,6 +303,7 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
 void
 dt_styles_apply_to_selection(const char *name,gboolean duplicate)
 {
+  gboolean selected = FALSE;
   /* for each selected image apply style */
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt, NULL);
@@ -310,8 +311,12 @@ dt_styles_apply_to_selection(const char *name,gboolean duplicate)
   {
     int imgid = sqlite3_column_int (stmt, 0);
     dt_styles_apply_to_image (name,duplicate,imgid);
+    selected = TRUE;
   }
   sqlite3_finalize(stmt);
+
+  if (!selected)
+    dt_control_log(_("no image selected!"));
 }
 
 void
