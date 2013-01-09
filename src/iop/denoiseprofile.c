@@ -772,6 +772,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
   dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->data;
 
+  // TODO: implement that in opencl, too (mostly copy/paste atrous.c).
+  if(d->mode == MODE_WAVELETS)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] wavelets are currently unimplemented in opencl\n");
+    return FALSE;
+  }
+
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
