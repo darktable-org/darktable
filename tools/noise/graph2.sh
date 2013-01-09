@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 
 # remove whitespace and braces,
 # filter out panasonic and powershot etc because they usually blow up the plot ranges
 # also only choose nikon d800 and canon 5d mark 2 for comparison
-cat src/common/noiseprofiles.h | grep '{"'  | sed 's/\s*,\s*/,/g' | tr " " "_" | tr -d "{}()\"" | tr "/" "_" | \
+cat src/common/noiseprofiles.h | grep '^{"'  | sed 's/\s*,\s*/,/g' | tr " " "_" | tr -d "{}()\"" | tr "/" "_" | \
   grep -v "PowerShot" | \
   grep -v "Panasonic" | \
   grep -v "DYNAX" | \
@@ -29,7 +29,7 @@ cams=$(cat trim.txt | $filter | awk -F, "{ print \$3; }" | sort | uniq | tr "\n"
 # cams=$(cat trim.txt | $filter | awk -F, "{ print \$1; }" | sed 's/_iso_.*$//' | sort | uniq | tr "/" "_" | tr "\n" " ")
 
 # is actually num cams + 1, because the first column is iso
-num_cams=$[ $(echo $cams | wc -w) + 1]
+num_cams=$(( $(echo $cams | wc -w) + 1))
 
 # get sorted list of iso values:
 isos=$(cat trim.txt | $filter | awk -F, "{ print \$4; }" | sort -g | uniq)
@@ -57,13 +57,13 @@ do
     a=$(cat trim.txt | awk -F, "{if ((\$3 == \"$cam\") && (\$4 == $iso)) { print \$6; } }" | tr -d "\n")
     # same for gaussian one
     b=$(cat trim.txt | awk -F, "{if ((\$3 == \"$cam\") && (\$4 == $iso)) { print \$9; } }" | tr -d "\n")
-    if [ "$a" == "" ]
+    if [ "$a" = "" ]
     then
       # echo "no value found for $cam iso $iso"
       a="?"
     fi
     echo -n "$a " >> data.txt
-    if [ "$b" == "" ]
+    if [ "$b" = "" ]
     then
       # echo "no value found for $cam iso $iso"
       b="?"
