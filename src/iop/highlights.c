@@ -112,7 +112,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
   const float clip = d->clip * fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
   const int filters = dt_image_flipped_filter(&piece->pipe->image);
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || !filters)
+  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) || !filters)
   {
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -148,7 +148,7 @@ error:
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && (pipe->image.flags & DT_IMAGE_RAW)) return sizeof(float);
+  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW)) return sizeof(float);
   else return 4*sizeof(float);
 }
 
@@ -166,7 +166,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   const float clip = data->clip * fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
   // const int ch = piece->colors;
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || !filters)
+  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) || !filters)
   {
     const __m128 clipm = _mm_set1_ps(clip);
 #ifdef _OPENMP

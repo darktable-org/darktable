@@ -519,7 +519,10 @@ int dt_imageio_export_with_flags(
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
+  if(thumbnail_export)
+    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_F, DT_MIPMAP_BLOCKING);
+  else
+    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
   dt_dev_load_image(&dev, imgid);
   const dt_image_t *img = &dev.image_storage;
   const int wd = img->width;

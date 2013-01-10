@@ -187,6 +187,14 @@ void dt_dev_pixelpipe_add_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *de
 // TODO: remove n-th module from gegl pipeline
 void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int n);
 
+// signifies that this pipeline uses the MIP_F buffer instead of MIP_FULL
+// i.e. four floats per pixel already demosaiced/downsampled
+static inline int dt_dev_pixelpipe_uses_downsampled_input(dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type == DT_DEV_PIXELPIPE_PREVIEW  ) ||
+         (pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
+}
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
