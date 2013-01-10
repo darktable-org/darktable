@@ -93,7 +93,7 @@ image_export_tools_installed() {
 	local missing_tool
 	missing_tool=0
 
-	echo "--> Check for images handling tools availability"
+	echo "--> Check for images export tools availability"
 
 	if ! tool_installed darktable-cli "
 darktable-cli (shipped with darktable 1.1 and later) is required to
