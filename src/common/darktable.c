@@ -887,6 +887,7 @@ void dt_configure_defaults()
     dt_conf_set_int("cache_memory", 1u<<30);
     dt_conf_set_int("plugins/lighttable/thumbnail_width", 1300);
     dt_conf_set_int("plugins/lighttable/thumbnail_height", 1000);
+    dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
   }
   if(mem < (1u<<20) || threads <= 2 || bits < 64 || atom_cores > 0)
   {
@@ -898,6 +899,7 @@ void dt_configure_defaults()
     dt_conf_set_int("plugins/lighttable/thumbnail_width", 800);
     dt_conf_set_int("plugins/lighttable/thumbnail_height", 500);
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");
+    dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", TRUE);
   }
 }
 

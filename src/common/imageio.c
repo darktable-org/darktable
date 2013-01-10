@@ -519,7 +519,7 @@ int dt_imageio_export_with_flags(
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
   dt_mipmap_buffer_t buf;
-  if(thumbnail_export)
+  if(thumbnail_export && dt_conf_get_bool("plugins/lighttable/low_quality_thumbnails"))
     dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_F, DT_MIPMAP_BLOCKING);
   else
     dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
