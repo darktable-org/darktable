@@ -242,7 +242,7 @@ list_input_images
 # Take the required shots.
 if [ "$tethering_enabled" ]; then
 	auto_capture_images
-else
+elif [ -z "$iso_settings" ]; then
 	iso_settings=$images_for_iso_settings
 fi
 
