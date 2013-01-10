@@ -71,6 +71,9 @@ fi
 if ! image_export_tools_installed; then
 	missing_tool=1
 fi
+if ! profiling_tools_installed; then
+	missing_tool=1
+fi
 if ! database_tools_installed; then
 	missing_tool=1
 fi
