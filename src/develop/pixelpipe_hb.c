@@ -279,7 +279,7 @@ get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
   {
     // first input.
     // mipf and non-raw images have 4 floats per pixel
-    if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW || !(pipe->image.flags & DT_IMAGE_RAW)) return 4*sizeof(float);
+    if(dt_dev_pixelpipe_uses_downsampled_input(pipe) || !(pipe->image.flags & DT_IMAGE_RAW)) return 4*sizeof(float);
     else return pipe->image.bpp;
   }
   return module->output_bpp(module, pipe, piece);
@@ -408,9 +408,10 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     }
     dt_times_t start;
     dt_get_times(&start);
-    if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
+    if(!dt_dev_pixelpipe_uses_downsampled_input(pipe)) // we're looking for the full buffer
     {
-      if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height)
+      if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 &&
+         pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height)
       {
         *output = pipe->input;
       }
@@ -447,7 +448,9 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       // else found in cache.
     }
     // optimized branch (for mipf-preview):
-    else if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW && roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height) *output = pipe->input;
+    else if(dt_dev_pixelpipe_uses_downsampled_input(pipe) &&
+        roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 &&
+        pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height) *output = pipe->input;
     else
     {
       // reserve new cache line: output
@@ -1462,7 +1465,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   pipe->opencl_enabled = dt_opencl_update_enabled(); // update enabled flag from preferences
   pipe->devid = (pipe->opencl_enabled && (pipe->type != DT_DEV_PIXELPIPE_PREVIEW)) ? dt_opencl_lock_device(-1) : -1;  // try to get/lock opencl resource but not for preview pipe
 
-  dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] using device %d\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"), pipe->devid);
+  dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] using device %d\n", _pipe_type_to_str(pipe->type), pipe->devid);
 
   if(darktable.unmuted & DT_DEBUG_MEMORY)
   {
