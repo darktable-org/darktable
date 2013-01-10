@@ -19,6 +19,8 @@
 #define DT_DEV_PIXELPIPE
 
 #include "common/image.h"
+#include "common/imageio.h"
+#include "control/conf.h"
 #include "develop/imageop.h"
 #include "develop/develop.h"
 #include "develop/pixelpipe_cache.h"
@@ -183,8 +185,11 @@ void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t 
 // i.e. four floats per pixel already demosaiced/downsampled
 static inline int dt_dev_pixelpipe_uses_downsampled_input(dt_dev_pixelpipe_t *pipe)
 {
-  return (pipe->type == DT_DEV_PIXELPIPE_PREVIEW  ) ||
-         (pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
+  if(!dt_conf_get_bool("plugins/lighttable/low_quality_thumbnails"))
+    return pipe->type == DT_DEV_PIXELPIPE_PREVIEW;
+  else
+    return (pipe->type == DT_DEV_PIXELPIPE_PREVIEW  ) ||
+           (pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
 }
 
 #endif
