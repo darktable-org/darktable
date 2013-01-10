@@ -41,11 +41,7 @@ while getopts ":Cd:hi:KPp:" opt; do
 		exit 0
 		;;
 	i)
-		if [ -z "$iso_settings" ]; then
-			iso_settings=$OPTARG
-		else
-			iso_settings="$iso_settings $OPTARG"
-		fi
+		iso_settings=$(add_to_list "$iso_settings" $OPTARG)
 		;;
 	K)
 		keep_pfms=1
