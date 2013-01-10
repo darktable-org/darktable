@@ -191,7 +191,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     case DT_IOP_HIGHLIGHTS_LCH:
 #ifdef _OPENMP
-      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
+  #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
 #endif
       for(int j=0; j<roi_out->height; j++)
       {
@@ -239,21 +239,21 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       break;
     default:
     case DT_IOP_HIGHLIGHTS_CLIP:
+    {
+      const __m128 clipm = _mm_set1_ps(clip);
+      const int n = roi_out->height*roi_out->width;
+      float *const out = (float *)ovoid;
+      float *const in  = (float *)ivoid;
 #ifdef _OPENMP
-      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out)
+  #pragma omp parallel for schedule(static) default(none)
 #endif
-      for(int j=0; j<roi_out->height; j++)
-      {
-        float *out = (float *)ovoid + roi_out->width*j;
-        float *in  = (float *)ivoid + roi_out->width*j;
-        for(int i=0; i<roi_out->width; i++)
-        {
-          out[0] = MIN(clip, in[0]);
-          out ++;
-          in ++;
-        }
-      }
+      for(int j=0; j<n; j+=4)
+        _mm_stream_ps(out+j, _mm_min_ps(clipm, _mm_load_ps(in+j)));
+      _mm_sfence();
+      // lets see if there's a non-multiple of four rest to process:
+      if(n & 3) for(int j=n&~3u;j<n;j++) out[j] = MIN(clip, in[j]);
       break;
+    }
   }
 
   if(piece->pipe->mask_display)
