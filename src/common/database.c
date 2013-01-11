@@ -99,6 +99,7 @@ dt_database_t *dt_database_init(char *alternative)
     fprintf(stderr, "[init] maybe your %s/darktablerc is corrupt?\n",datadir);
     dt_loc_get_datadir(dbfilename, 512);
     fprintf(stderr, "[init] try `cp %s/darktablerc %s/darktablerc'\n", dbfilename,datadir);
+    sqlite3_close(db->handle);
     g_free(dbname);
     g_free(db);
     return NULL;

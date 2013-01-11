@@ -711,7 +711,7 @@ void dt_control_init(dt_control_t *s)
       sqlite3_exec(dt_database_get(darktable.db), "alter table legacy_presets add column multi_name varchar(256)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db), "update legacy_presets set multi_priority = 0 where multi_priority is NULL", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db), "update legacy_presets set multi_name = ' ' where multi_name is NULL", NULL, NULL, NULL);
-      
+
       // and the color matrix
       sqlite3_exec(dt_database_get(darktable.db), "alter table images add column color_matrix blob", NULL, NULL, NULL);
       // and the colorspace as specified in some image types
@@ -822,6 +822,11 @@ void dt_control_shutdown(dt_control_t *s)
   // gdk_threads_enter();
 }
 
+static void _free_element(gpointer data, gpointer user_data)
+{
+  g_free(data);
+}
+
 void dt_control_cleanup(dt_control_t *s)
 {
   // vacuum TODO: optional?
@@ -832,6 +837,12 @@ void dt_control_cleanup(dt_control_t *s)
   dt_pthread_mutex_destroy(&s->log_mutex);
   dt_pthread_mutex_destroy(&s->run_mutex);
   pthread_rwlock_destroy(&s->xprofile_lock);
+//   g_slist_free_full(s->accelerator_list, g_free); // FIXME: requires glib >= 2.28
+  if (s->accelerator_list)
+  {
+    g_slist_foreach(s->accelerator_list, _free_element, NULL);
+    g_slist_free(s->accelerator_list);
+  }
 }
 
 void dt_control_job_init(dt_job_t *j, const char *msg, ...)

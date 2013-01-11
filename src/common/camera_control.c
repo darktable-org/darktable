@@ -463,11 +463,26 @@ dt_camctl_t *dt_camctl_new()
   return camctl;
 }
 
-void dt_camctl_destroy(const dt_camctl_t *c)
+void dt_camctl_destroy(const dt_camctl_t *camctl)
 {
-  // TODO: Go thru all c->cameras and release them..
-  // gp_camera_exit(cam,camctl);
-  // gp_camera_free(cam);
+  gp_abilities_list_free(camctl->gpcams);
+  gp_port_info_list_free(camctl->gpports);
+  // Go thru all c->cameras and release them..
+  for(GList * it = g_list_first(camctl->cameras); it != NULL; it = g_list_delete_link(it, it))
+  {
+    dt_camera_t * c = (dt_camera_t*) it->data;
+    gp_camera_exit(c->gpcam, c->gpcontext);
+    gp_camera_unref(c->gpcam);
+    gp_context_unref(c->gpcontext);
+    gp_widget_unref(c->configuration);
+    if(c->live_view_pixbuf != NULL)
+    {
+      g_object_unref(c->live_view_pixbuf);
+      c->live_view_pixbuf = NULL; // just in case someone else is using this
+    }
+    // TODO: c->jobqueue
+    g_free(c);
+  }
 }
 
 
@@ -526,7 +541,7 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
 
   CameraList *available_cameras=NULL;
   gp_list_new( &available_cameras );
-  gp_abilities_list_detect (c->gpcams,c->gpports, available_cameras, c->gpcontext );
+  gp_abilities_list_detect (c->gpcams, c->gpports, available_cameras, c->gpcontext );
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] %d cameras connected\n",gp_list_count( available_cameras )>0?gp_list_count( available_cameras ):0);
 
 
@@ -600,6 +615,8 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
     }
     while ( citem && (citem=g_list_next(citem))!=NULL);
   }
+
+  gp_list_unref(available_cameras);
 
   dt_pthread_mutex_unlock(&camctl->lock);
 }
@@ -799,7 +816,7 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_
               if(!image || ret) goto libraw_thumb_fail;
               char *img = (char *) malloc(image->data_size);
               if (!img) goto libraw_thumb_fail;
-              memcpy(img, image->data, image->data_size); 
+              memcpy(img, image->data, image->data_size);
               gp_file_set_data_and_size(preview, img,(unsigned long int) image->data_size);
               free(image);
 libraw_thumb_fail:
