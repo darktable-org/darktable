@@ -204,7 +204,7 @@ static inline void dt_conf_cleanup(dt_conf_t *cf)
 static inline int dt_conf_key_exists (const char *key)
 {
   dt_pthread_mutex_lock (&darktable.conf->mutex);
-  const int res = g_hash_table_contains(darktable.conf->table, key);
+  const int res = g_hash_table_lookup(darktable.conf->table, key) != NULL;
   dt_pthread_mutex_unlock (&darktable.conf->mutex);
   return res;
 }
