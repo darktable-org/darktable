@@ -576,7 +576,14 @@ static gboolean quit_callback(GtkAccelGroup *accel_group,
 #ifdef MAC_INTEGRATION
 static gboolean osx_quit_callback(GtkOSXApplication* OSXapp, gpointer user_data)
 {
-  dt_control_quit();
+  GList *windows, *window;
+  windows = gtk_window_list_toplevels();
+  for(window = g_list_first(windows); window != NULL; window = g_list_next(window))
+    if(gtk_window_get_modal(GTK_WINDOW(window->data)) && gtk_widget_get_visible(GTK_WIDGET(window->data)))
+      break;
+  if(window == NULL)
+    dt_control_quit();
+  g_list_free(windows);
   return TRUE;
 }
 
