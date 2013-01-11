@@ -19,8 +19,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-01-08 11:12+0100\n"
-"PO-Revision-Date: 2013-01-08 11:13+0100\n"
+"POT-Creation-Date: 2013-01-11 01:36+0100\n"
+"PO-Revision-Date: 2013-01-11 01:37+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -564,13 +564,13 @@ msgstr ""
 "du måste kopiera historik från en bild innan du klistrar in på en annan"
 
 #: ../src/common/history.c:209 ../src/common/history.c:222
-#: ../src/common/styles.c:444 ../src/develop/develop.c:1064
+#: ../src/common/styles.c:469 ../src/develop/develop.c:1064
 #: ../src/libs/history.c:151 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "på"
 
 #: ../src/common/history.c:209 ../src/common/history.c:222
-#: ../src/common/styles.c:444 ../src/develop/blend_gui.c:984
+#: ../src/common/styles.c:469 ../src/develop/blend_gui.c:984
 #: ../src/develop/develop.c:1064 ../src/imageio/format/j2k.c:602
 #: ../src/iop/demosaic.c:1329 ../src/iop/vignette.c:1120
 #: ../src/libs/history.c:151 ../src/libs/live_view.c:405
@@ -581,7 +581,7 @@ msgstr "av"
 msgid "orphaned image"
 msgstr "anonyma bilder"
 
-#: ../src/common/imageio.c:536
+#: ../src/common/imageio.c:539
 msgid ""
 "failed to allocate memory for export, please lower the threads used for "
 "export or buy more memory."
@@ -589,13 +589,13 @@ msgstr ""
 "fallerade att allokera minne för export, var god och minska antalet trådar "
 "som används för export ellerköp mer minne."
 
-#: ../src/common/imageio.c:544 ../src/common/mipmap_cache.c:1099
+#: ../src/common/imageio.c:547 ../src/common/mipmap_cache.c:1099
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "bild `%s' är inte tillgänglig"
 
 #. If a style is to be applied during export, add the iop params into the history
-#: ../src/common/imageio.c:551 ../src/common/variables.c:220
+#: ../src/common/imageio.c:554 ../src/common/variables.c:220
 #: ../src/iop/clipping.c:1349 ../src/iop/clipping.c:1560
 #: ../src/iop/clipping.c:1578 ../src/iop/clipping.c:1622
 #: ../src/iop/clipping.c:1634 ../src/iop/lens.c:1670 ../src/libs/export.c:585
@@ -605,7 +605,7 @@ msgstr "bild `%s' är inte tillgänglig"
 msgid "none"
 msgstr "ingen"
 
-#: ../src/common/imageio.c:560
+#: ../src/common/imageio.c:563
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "kan inte finna stilen '%s' att applicera under export."
@@ -626,32 +626,38 @@ msgstr "inga bilder valda för applicering av betyg"
 msgid "this image has not been indexed yet."
 msgstr "den här bilden är inte ännu indexerad."
 
-#: ../src/common/styles.c:92
+#: ../src/common/styles.c:93
 #, c-format
 msgid "style with name '%s' already exists"
 msgstr "stil med namn '%s' existerar redan"
 
-#: ../src/common/styles.c:239 ../src/common/styles.c:298
+#: ../src/common/styles.c:240 ../src/common/styles.c:299
 #, c-format
 msgid "style named '%s' successfully created"
 msgstr "skapade stilen '%s'"
 
-#: ../src/common/styles.c:526
+#. fail :(
+#: ../src/common/styles.c:319 ../src/common/styles.c:338
+#: ../src/views/darkroom.c:436
+msgid "no image selected!"
+msgstr "inga bilder valda!"
+
+#: ../src/common/styles.c:551
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "kunde inte skriva över stilfilen för %s"
 
-#: ../src/common/styles.c:532
+#: ../src/common/styles.c:557
 #, c-format
 msgid "style file for %s exists"
 msgstr "stil fil med namn '%s' existerar redan"
 
-#: ../src/common/styles.c:579
+#: ../src/common/styles.c:604
 #, c-format
 msgid "style %s was successfully saved"
 msgstr "exporterade stilen '%s'"
 
-#: ../src/common/styles.c:772
+#: ../src/common/styles.c:797
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "importerade stilen '%s'"
@@ -822,7 +828,7 @@ msgstr ""
 #: ../src/control/jobs/control_jobs.c:1128 ../src/imageio/storage/disk.c:67
 #: ../src/imageio/storage/disk.c:120 ../src/imageio/storage/gallery.c:78
 #: ../src/imageio/storage/gallery.c:161 ../src/imageio/storage/latex.c:78
-#: ../src/imageio/storage/latex.c:161 ../src/libs/styles.c:233
+#: ../src/imageio/storage/latex.c:161 ../src/libs/styles.c:241
 msgid "select directory"
 msgstr "välj katalog"
 
@@ -1198,7 +1204,7 @@ msgstr "flytta ner"
 
 #. delete
 #: ../src/develop/imageop.c:1141 ../src/libs/image.c:143
-#: ../src/libs/styles.c:384 ../src/libs/tagging.c:476
+#: ../src/libs/styles.c:398 ../src/libs/tagging.c:476
 msgid "delete"
 msgstr "radera"
 
@@ -1806,7 +1812,7 @@ msgstr "importera"
 #. Export button
 #. export button
 #: ../src/gui/preferences.c:608 ../src/libs/export.c:611
-#: ../src/libs/styles.c:398
+#: ../src/libs/styles.c:412
 msgid "export"
 msgstr "exportera"
 
@@ -2124,7 +2130,7 @@ msgid "could not write to directory `%s'!"
 msgstr "kunde inte skriva till katalog `%s'!"
 
 #: ../src/imageio/storage/disk.c:236 ../src/imageio/storage/email.c:106
-#: ../src/imageio/storage/facebook.c:1183 ../src/imageio/storage/flickr.c:670
+#: ../src/imageio/storage/facebook.c:1183 ../src/imageio/storage/flickr.c:665
 #: ../src/imageio/storage/gallery.c:376 ../src/imageio/storage/gallery.c:395
 #: ../src/imageio/storage/picasa.c:945
 #, c-format
@@ -2197,8 +2203,8 @@ msgid "unable to retreive the album list"
 msgstr "kunde inte hämta listan på album"
 
 #. Add standard action
-#: ../src/imageio/storage/facebook.c:792 ../src/imageio/storage/flickr.c:392
-#: ../src/imageio/storage/flickr.c:420 ../src/imageio/storage/picasa.c:661
+#: ../src/imageio/storage/facebook.c:792 ../src/imageio/storage/flickr.c:387
+#: ../src/imageio/storage/flickr.c:415 ../src/imageio/storage/picasa.c:661
 #: ../src/imageio/storage/picasa.c:702
 msgid "create new album"
 msgstr "skapa nytt album"
@@ -2210,7 +2216,7 @@ msgstr "logga ut"
 #. Set default permission to private
 #: ../src/imageio/storage/facebook.c:918 ../src/imageio/storage/facebook.c:931
 #: ../src/imageio/storage/facebook.c:958
-#: ../src/imageio/storage/facebook.c:1065 ../src/imageio/storage/flickr.c:530
+#: ../src/imageio/storage/facebook.c:1065 ../src/imageio/storage/flickr.c:525
 msgid "login"
 msgstr "logga in"
 
@@ -2228,14 +2234,14 @@ msgid "album"
 msgstr "album"
 
 #. xmp
-#: ../src/imageio/storage/facebook.c:1010 ../src/imageio/storage/flickr.c:484
+#: ../src/imageio/storage/facebook.c:1010 ../src/imageio/storage/flickr.c:479
 #: ../src/imageio/storage/gallery.c:167 ../src/imageio/storage/latex.c:167
 #: ../src/imageio/storage/picasa.c:762 ../src/libs/collect.h:37
 #: ../src/libs/metadata.c:298 ../src/libs/metadata_view.c:95
 msgid "title"
 msgstr "titel"
 
-#: ../src/imageio/storage/facebook.c:1011 ../src/imageio/storage/flickr.c:485
+#: ../src/imageio/storage/facebook.c:1011 ../src/imageio/storage/flickr.c:480
 #: ../src/imageio/storage/picasa.c:763
 msgid "summary"
 msgstr "sammanfattning"
@@ -2278,12 +2284,12 @@ msgstr "kunde inte exportera bild till webbalbum"
 msgid "%d/%d exported to facebook webalbum"
 msgstr "%d/%d exporterad till facebook-album"
 
-#: ../src/imageio/storage/flickr.c:117
+#: ../src/imageio/storage/flickr.c:115
 #, c-format
 msgid "flickr authentication: %s"
 msgstr "flickr-autentisering: %s"
 
-#: ../src/imageio/storage/flickr.c:192
+#: ../src/imageio/storage/flickr.c:190
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your flickr account there and authorize darktable to "
@@ -2293,96 +2299,96 @@ msgstr ""
 "måste logga in med ditt flickr-konto där och bekräfta att darktable får "
 "ladda upp bilder."
 
-#: ../src/imageio/storage/flickr.c:193
+#: ../src/imageio/storage/flickr.c:191
 msgid "step 2: click the ok button once you are done."
 msgstr "steg 2: klicka på ok knappen när du är klar "
 
-#: ../src/imageio/storage/flickr.c:200
+#: ../src/imageio/storage/flickr.c:198
 msgid "flickr authentication"
 msgstr "flickr-konto är inte autentiserat"
 
-#: ../src/imageio/storage/flickr.c:312
+#: ../src/imageio/storage/flickr.c:307
 msgid "flickr webalbum"
 msgstr "flickr-album"
 
-#: ../src/imageio/storage/flickr.c:336 ../src/imageio/storage/flickr.c:376
-#: ../src/imageio/storage/flickr.c:841 ../src/imageio/storage/flickr.c:847
+#: ../src/imageio/storage/flickr.c:331 ../src/imageio/storage/flickr.c:371
+#: ../src/imageio/storage/flickr.c:836 ../src/imageio/storage/flickr.c:842
 msgid "not authenticated"
 msgstr "inte autentiserad"
 
-#: ../src/imageio/storage/flickr.c:372 ../src/imageio/storage/flickr.c:837
+#: ../src/imageio/storage/flickr.c:367 ../src/imageio/storage/flickr.c:832
 #: ../src/imageio/storage/picasa.c:638
 msgid "authenticated"
 msgstr "autentiserad"
 
 #. Add standard action
-#: ../src/imageio/storage/flickr.c:391
+#: ../src/imageio/storage/flickr.c:386
 msgid "without album"
 msgstr "utan album"
 
-#: ../src/imageio/storage/flickr.c:477
+#: ../src/imageio/storage/flickr.c:472
 msgid "flickr user"
 msgstr "flickr-användare"
 
-#: ../src/imageio/storage/flickr.c:478
+#: ../src/imageio/storage/flickr.c:473
 msgid "photosets"
 msgstr "bildsamling"
 
-#: ../src/imageio/storage/flickr.c:479
+#: ../src/imageio/storage/flickr.c:474
 msgid "visible to"
 msgstr "visas för"
 
-#: ../src/imageio/storage/flickr.c:482
+#: ../src/imageio/storage/flickr.c:477
 msgid "click login button to start"
 msgstr "tryck login-knapp för att starta"
 
-#: ../src/imageio/storage/flickr.c:519
+#: ../src/imageio/storage/flickr.c:514
 msgid "my new photoset"
 msgstr "min nya bildsamling"
 
-#: ../src/imageio/storage/flickr.c:520 ../src/imageio/storage/picasa.c:804
+#: ../src/imageio/storage/flickr.c:515 ../src/imageio/storage/picasa.c:804
 msgid "exported from darktable"
 msgstr "exporterat från darktable"
 
-#: ../src/imageio/storage/flickr.c:528 ../src/imageio/storage/picasa.c:814
+#: ../src/imageio/storage/flickr.c:523 ../src/imageio/storage/picasa.c:814
 msgid "refresh album list"
 msgstr "uppdatera listan av album"
 
-#: ../src/imageio/storage/flickr.c:531
+#: ../src/imageio/storage/flickr.c:526
 msgid "Flickr login"
 msgstr "Flickr-inloggning"
 
-#: ../src/imageio/storage/flickr.c:538 ../src/imageio/storage/picasa.c:821
+#: ../src/imageio/storage/flickr.c:533 ../src/imageio/storage/picasa.c:821
 msgid "export tags"
 msgstr "exportera taggar"
 
-#: ../src/imageio/storage/flickr.c:542
+#: ../src/imageio/storage/flickr.c:537
 msgid "you"
 msgstr "du"
 
-#: ../src/imageio/storage/flickr.c:543
+#: ../src/imageio/storage/flickr.c:538
 msgid "friends"
 msgstr "vänner"
 
-#: ../src/imageio/storage/flickr.c:544
+#: ../src/imageio/storage/flickr.c:539
 msgid "family"
 msgstr "familj"
 
-#: ../src/imageio/storage/flickr.c:545
+#: ../src/imageio/storage/flickr.c:540
 msgid "friends + family"
 msgstr "vänner och familj"
 
-#: ../src/imageio/storage/flickr.c:546
+#: ../src/imageio/storage/flickr.c:541
 msgid "everyone"
 msgstr "alla"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/flickr.c:744
+#: ../src/imageio/storage/flickr.c:739
 #, c-format
 msgid "%d/%d exported to flickr webalbum"
 msgstr "%d/%d exporterad till flickr-album"
 
-#: ../src/imageio/storage/flickr.c:849
+#: ../src/imageio/storage/flickr.c:844
 msgid "Flickr account not authenticated"
 msgstr "flickr-konto är inte autentiserat"
 
@@ -5437,7 +5443,8 @@ msgstr "lägg till användarinställning"
 msgid "session"
 msgstr "session"
 
-#: ../src/libs/capture.c:117
+#. create
+#: ../src/libs/capture.c:117 ../src/libs/styles.c:385
 msgid "create"
 msgstr "skapa"
 
@@ -5621,7 +5628,7 @@ msgid "xmp sidecar files"
 msgstr "XMP inställningsfil"
 
 #: ../src/libs/copy_history.c:88 ../src/libs/geotagging.c:446
-#: ../src/libs/import.c:680 ../src/libs/styles.c:273
+#: ../src/libs/import.c:680 ../src/libs/styles.c:281
 msgid "all files"
 msgstr "alla filer"
 
@@ -6756,15 +6763,15 @@ msgctxt "accel"
 msgid "import"
 msgstr "importera"
 
-#: ../src/libs/styles.c:255
+#: ../src/libs/styles.c:263
 msgid "select style"
 msgstr "välj stil"
 
-#: ../src/libs/styles.c:268
+#: ../src/libs/styles.c:276
 msgid "darktable style files"
 msgstr "darktable stil filer"
 
-#: ../src/libs/styles.c:344
+#: ../src/libs/styles.c:352
 msgid ""
 "available styles,\n"
 "doubleclick to apply"
@@ -6772,42 +6779,46 @@ msgstr ""
 "tillgängliga stilar,\n"
 "dubbelklicka för att applicera"
 
-#: ../src/libs/styles.c:350
+#: ../src/libs/styles.c:358
 msgid "enter style name"
 msgstr "ange namn för stil"
 
-#: ../src/libs/styles.c:363
+#: ../src/libs/styles.c:371
 msgid "create duplicate"
 msgstr "skapa kopia"
 
-#: ../src/libs/styles.c:367
+#: ../src/libs/styles.c:375
 msgid "creates a duplicate of the image before applying style"
 msgstr "skapa en kopia av bilden innan applicering av stil"
 
+#: ../src/libs/styles.c:387
+msgid "create styles from history stack of selected images"
+msgstr "skapa stilar utifrån historiken för valda bilder"
+
 #. edit
-#: ../src/libs/styles.c:377
+#: ../src/libs/styles.c:391
 msgid "edit"
 msgstr "redigera"
 
-#: ../src/libs/styles.c:380
+#: ../src/libs/styles.c:394
 msgid "edit the selected style in list above"
 msgstr "redigera den markerade stilen i listan ovan"
 
-#: ../src/libs/styles.c:387
+#: ../src/libs/styles.c:401
 msgid "deletes the selected style in list above"
 msgstr "tar bort den markerade stilen i listan ovan"
 
 #. import button
-#: ../src/libs/styles.c:391
+#: ../src/libs/styles.c:405
 msgctxt "styles"
 msgid "import"
 msgstr "importera"
 
-#: ../src/libs/styles.c:393
+#: ../src/libs/styles.c:407
 msgid "import style from a style file"
 msgstr "importera stil från en fil"
 
-#: ../src/libs/styles.c:400
+#: ../src/libs/styles.c:414
 msgid "export the selected style into a style file"
 msgstr "exportera den valda stilen till en fil"
 
@@ -7230,11 +7241,6 @@ msgstr "växla visning av filmrulle"
 #: ../src/views/darkroom.c:76
 msgid "darkroom"
 msgstr "mörkerrum"
-
-#. fail :(
-#: ../src/views/darkroom.c:436
-msgid "no image selected!"
-msgstr "inga bilder valda!"
 
 #: ../src/views/darkroom.c:811
 msgid "no userdefined presets for favorite modules were found"
