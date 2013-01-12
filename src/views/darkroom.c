@@ -663,7 +663,7 @@ static void _view_darkroom_filmstrip_activate_callback(gpointer instance,gpointe
     film_strip_activated(imgid,user_data);
 }
 
-void
+static void
 dt_dev_jump_image(dt_develop_t *dev, int diff)
 {
   const gchar *qin = dt_collection_get_query (darktable.collection);

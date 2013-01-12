@@ -17,7 +17,6 @@
 */
 
 #include "views/view.h"
-#include "views/darkroom.h"
 #include "common/collection.h"
 #include "common/colorlabels.h"
 #include "common/darktable.h"
@@ -540,7 +539,7 @@ static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButto
           else if(strip->image_over == DT_VIEW_REJECT)
           {
             image->flags &= ~0x7;
-            dt_dev_jump_image(darktable.develop, 1);
+            dt_view_filmstrip_scroll_relative(1);
           }
           else
           {
@@ -745,6 +744,7 @@ static void _lib_filmstrip_collection_changed_callback(gpointer instance, gpoint
 
 static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gboolean activate)
 {
+  if (darktable.develop->image_loading) return;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
   /* if no imgid just bail out */
@@ -909,7 +909,7 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
       else if (num == DT_VIEW_REJECT && ((image->flags & 0x7) == 6))
       {
         image->flags &= ~0x7;
-        dt_dev_jump_image(darktable.develop, 1);
+        dt_view_filmstrip_scroll_relative(1);
       }
       else
       {

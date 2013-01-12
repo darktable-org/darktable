@@ -1135,6 +1135,46 @@ void dt_view_filter_reset_to_show_all(const dt_view_manager_t *vm)
     vm->proxy.filter.reset_filter(vm->proxy.filter.module);
 }
 
+void dt_view_filmstrip_scroll_relative(const int diff)
+{
+  const gchar *qin = dt_collection_get_query (darktable.collection);
+  int offset = 0;
+  if(qin)
+  {
+    int orig_imgid = -1, imgid = -1;
+    sqlite3_stmt *stmt;
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      orig_imgid = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+
+    offset = dt_collection_image_offset (orig_imgid);
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset + diff);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, 1);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      imgid = sqlite3_column_int(stmt, 0);
+
+      if (orig_imgid == imgid)
+      {
+        //nothing to do
+        sqlite3_finalize(stmt);
+        return;
+      }
+
+      if (!darktable.develop->image_loading)
+      {
+        dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, TRUE);
+      }
+    }
+    sqlite3_finalize(stmt);
+  }
+
+}
+
 void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate )
 {
   //g_return_if_fail(vm->proxy.filmstrip.module!=NULL); // This can happend here for debugging

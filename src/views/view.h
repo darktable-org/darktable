@@ -310,6 +310,8 @@ void dt_view_filter_reset_to_show_all(const dt_view_manager_t *vm);
 /*
  * NEW filmstrip api
  */
+/*** scrolls filmstrip to the image in position 'diff' from the current one */
+void dt_view_filmstrip_scroll_relative(const int diff);
 /** scrolls filmstrip to the specified image */
 void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate);
 /** get the imageid from last filmstrip activate request */
