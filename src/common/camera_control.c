@@ -45,7 +45,9 @@ typedef enum _camctl_camera_job_type_t
   /** Writes changed properties in cache to camera */
   _JOB_TYPE_WRITE_CONFIG,
   /** Set's a property in config cache. \todo This shouldn't be a job in jobqueue !? */
-  _JOB_TYPE_SET_PROPERTY,
+  _JOB_TYPE_SET_PROPERTY_STRING,
+  /** For some reason stopping live view needs to pass an int, not a string. */
+  _JOB_TYPE_SET_PROPERTY_INT,
   /** get's a property from config cache. \todo This shouldn't be a job in jobqueue !?  */
   _JOB_TYPE_GET_PROPERTY
 }
@@ -56,12 +58,19 @@ typedef struct _camctl_camera_job_t
   _camctl_camera_job_type_t type;
 } _camctl_camera_job_t;
 
-typedef struct _camctl_camera_set_property_job_t
+typedef struct _camctl_camera_set_property_string_job_t
 {
   _camctl_camera_job_type_t type;
   char *name;
   char *value;
-} _camctl_camera_set_property_job_t;
+} _camctl_camera_set_property_string_job_t;
+
+typedef struct _camctl_camera_set_property_int_job_t
+{
+  _camctl_camera_job_type_t type;
+  char *name;
+  int value;
+} _camctl_camera_set_property_int_job_t;
 
 /** Initializes camera */
 gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam);
@@ -99,7 +108,7 @@ void _dispatch_camera_property_value_changed(const dt_camctl_t *c,const dt_camer
 void _dispatch_camera_property_accessibility_changed(const dt_camctl_t *c,const dt_camera_t *camera,const char *name,gboolean read_only);
 
 /** Helper function to destroy a dt_camera_t object */
-static void dt_camctl_camera_destroy(dt_camera_t * cam);
+static void dt_camctl_camera_destroy(dt_camera_t *cam);
 
 
 static int logid=0;
@@ -296,9 +305,9 @@ static void _camera_process_job(const dt_camctl_t *c,const dt_camera_t *camera, 
     }
     break;
 
-    case _JOB_TYPE_SET_PROPERTY:
+    case _JOB_TYPE_SET_PROPERTY_STRING:
     {
-      _camctl_camera_set_property_job_t *spj=(_camctl_camera_set_property_job_t *)job;
+      _camctl_camera_set_property_string_job_t *spj=(_camctl_camera_set_property_string_job_t *)job;
       dt_print(DT_DEBUG_CAMCTL,"[camera_control] executing set camera config job %s=%s\n",spj->name,spj->value);
 
       CameraWidget *config; // Copy of camera configuration
@@ -318,6 +327,35 @@ static void _camera_process_job(const dt_camctl_t *c,const dt_camera_t *camera, 
        }
 
        dt_pthread_mutex_unlock( &cam->config_lock);*/
+      g_free(spj->name);
+      g_free(spj->value);
+    }
+    break;
+
+    case _JOB_TYPE_SET_PROPERTY_INT:
+    {
+      _camctl_camera_set_property_int_job_t *spj=(_camctl_camera_set_property_int_job_t *)job;
+      dt_print(DT_DEBUG_CAMCTL,"[camera_control] executing set camera config job %s=%d\n",spj->name,spj->value);
+
+      CameraWidget *config; // Copy of camera configuration
+      CameraWidget *widget;
+      gp_camera_get_config( cam->gpcam, &config, c->gpcontext );
+      if(  gp_widget_get_child_by_name ( config, spj->name, &widget) == GP_OK)
+      {
+        int value = spj->value;
+        gp_widget_set_value ( widget , &value);
+        gp_camera_set_config( cam->gpcam, config, c->gpcontext );
+      }
+      /* dt_pthread_mutex_lock( &cam->config_lock );
+       CameraWidget *widget;
+       if(  gp_widget_get_child_by_name ( camera->configuration, spj->name, &widget) == GP_OK) {
+         gp_widget_set_value ( widget , spj->value);
+         //gp_widget_set_changed( widget, 1 );
+         cam->config_changed=TRUE;
+       }
+
+       dt_pthread_mutex_unlock( &cam->config_lock);*/
+      g_free(spj->name);
     }
     break;
 
@@ -388,7 +426,7 @@ gboolean dt_camctl_camera_start_live_view(const dt_camctl_t *c)
     return FALSE;
   }
   cam->is_live_viewing = TRUE;
-  dt_camctl_camera_set_property(darktable.camctl, NULL, "eosviewfinder", "1");
+  dt_camctl_camera_set_property_int(camctl, NULL, "eosviewfinder", 1);
   pthread_create(&cam->live_view_thread, NULL, &dt_camctl_camera_get_live_view, (void*)camctl);
   return TRUE;
 }
@@ -401,19 +439,7 @@ void dt_camctl_camera_stop_live_view(const dt_camctl_t *c)
   cam->is_live_viewing = FALSE;
   pthread_join(cam->live_view_thread, NULL);
   //tell camera to get back to normal state (close mirror)
-  // this should work like this:
-//   dt_camctl_camera_set_property(darktable.camctl, NULL, "eosviewfinder", "0");
-  // but it doesn't, passing a string isn't ok in this case. I guess that's a TODO.
-  // for the time being I'll do it manually (not nice, I know).
-  CameraWidget *config;
-  CameraWidget *widget;
-  gp_camera_get_config( cam->gpcam, &config, camctl->gpcontext );
-  if(  gp_widget_get_child_by_name ( config, "eosviewfinder", &widget) == GP_OK)
-  {
-    int zero=0;
-    gp_widget_set_value ( widget , &zero);
-    gp_camera_set_config( cam->gpcam, config, camctl->gpcontext );
-  }
+  dt_camctl_camera_set_property_int(camctl, NULL, "eosviewfinder", 0);
 }
 
 void _camctl_lock(const dt_camctl_t *c,const dt_camera_t *cam)
@@ -468,7 +494,6 @@ static void dt_camctl_camera_destroy(dt_camera_t * cam)
 {
   gp_camera_exit(cam->gpcam, cam->gpcontext);
   gp_camera_unref(cam->gpcam);
-  gp_context_unref(cam->gpcontext);
   gp_widget_unref(cam->configuration);
   if(cam->live_view_pixbuf != NULL)
   {
@@ -483,13 +508,14 @@ static void dt_camctl_camera_destroy(dt_camera_t * cam)
 
 void dt_camctl_destroy(const dt_camctl_t *camctl)
 {
-  gp_abilities_list_free(camctl->gpcams);
-  gp_port_info_list_free(camctl->gpports);
   // Go thru all c->cameras and release them..
   for(GList * it = g_list_first(camctl->cameras); it != NULL; it = g_list_delete_link(it, it))
   {
     dt_camctl_camera_destroy((dt_camera_t*)it->data);
   }
+  gp_context_unref(camctl->gpcontext);
+  gp_abilities_list_free(camctl->gpcams);
+  gp_port_info_list_free(camctl->gpports);
 }
 
 
@@ -947,6 +973,7 @@ void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam,gboolean
     }
     else
     {
+      camera->is_live_viewing = FALSE;
       camera->is_tethering=FALSE;
       dt_print(DT_DEBUG_CAMCTL,"[camera_control] disabling tether mode\n");
       _camctl_unlock(c);
@@ -1042,7 +1069,7 @@ void dt_camctl_camera_build_property_menu (const dt_camctl_t *c,const dt_camera_
 
 
 
-void dt_camctl_camera_set_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name, const char *value)
+void dt_camctl_camera_set_property_string(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name, const char *value)
 {
   dt_camctl_t *camctl=(dt_camctl_t *)c;
   if( !cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL )
@@ -1052,10 +1079,29 @@ void dt_camctl_camera_set_property(const dt_camctl_t *c,const dt_camera_t *cam,c
   }
   dt_camera_t *camera=(dt_camera_t *)cam;
 
-  _camctl_camera_set_property_job_t *job=g_malloc(sizeof(_camctl_camera_set_property_job_t));
-  job->type=_JOB_TYPE_SET_PROPERTY;
+  _camctl_camera_set_property_string_job_t *job=g_malloc(sizeof(_camctl_camera_set_property_string_job_t));
+  job->type=_JOB_TYPE_SET_PROPERTY_STRING;
   job->name=g_strdup(property_name);
   job->value=g_strdup(value);
+
+  // Push the job on the jobqueue
+  _camera_add_job( camctl, camera, job);
+}
+
+void dt_camctl_camera_set_property_int(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name, const int value)
+{
+  dt_camctl_t *camctl=(dt_camctl_t *)c;
+  if( !cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL )
+  {
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to set property from camera, camera==NULL\n");
+    return;
+  }
+  dt_camera_t *camera=(dt_camera_t *)cam;
+
+  _camctl_camera_set_property_int_job_t *job=g_malloc(sizeof(_camctl_camera_set_property_int_job_t));
+  job->type=_JOB_TYPE_SET_PROPERTY_INT;
+  job->name=g_strdup(property_name);
+  job->value=value;
 
   // Push the job on the jobqueue
   _camera_add_job( camctl, camera, job);

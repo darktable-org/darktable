@@ -217,9 +217,9 @@ static void _zoom_live_view_clicked(GtkWidget *widget, gpointer user_data)
   {
     cam->live_view_zoom = !cam->live_view_zoom;
     if(cam->live_view_zoom == TRUE)
-      dt_camctl_camera_set_property(darktable.camctl, NULL, "eoszoom", "5");
+      dt_camctl_camera_set_property_string(darktable.camctl, NULL, "eoszoom", "5");
     else
-      dt_camctl_camera_set_property(darktable.camctl, NULL, "eoszoom", "1");
+      dt_camctl_camera_set_property_string(darktable.camctl, NULL, "eoszoom", "1");
   }
 }
 
@@ -228,7 +228,7 @@ static void _focus_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   long int focus = (long int) user_data;
   if(focus >= 0 && focus <= 5)
-    dt_camctl_camera_set_property(darktable.camctl, NULL, "manualfocusdrive", g_dgettext("libgphoto2-2", focus_array[focus]));
+    dt_camctl_camera_set_property_string(darktable.camctl, NULL, "manualfocusdrive", g_dgettext("libgphoto2-2", focus_array[focus]));
 }
 
 static void _toggle_flip_clicked(GtkWidget *widget, gpointer user_data)

@@ -135,7 +135,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
 
       // set the time property for bracked capture
       if (t->brackets && current_value)
-        dt_camctl_camera_set_property(darktable.camctl, NULL, "shutterspeed", current_value->data);
+        dt_camctl_camera_set_property_string(darktable.camctl, NULL, "shutterspeed", current_value->data);
 
       // Capture image
       dt_camctl_camera_capture(darktable.camctl,NULL);
@@ -148,7 +148,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
     if (t->brackets)
     {
       current_value = g_list_find(values,orginal_value);
-      dt_camctl_camera_set_property(darktable.camctl, NULL, "shutterspeed", current_value->data);
+      dt_camctl_camera_set_property_string(darktable.camctl, NULL, "shutterspeed", current_value->data);
     }
   }
 
