@@ -312,59 +312,21 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     if(c <= relthumbfilename) c = relthumbfilename + strlen(relthumbfilename);
     sprintf(c, "-thumb.%s", ext);
 
-    char subfilename[DT_MAX_PATH_LEN], relsubfilename[256];
-    snprintf(subfilename, DT_MAX_PATH_LEN, "%s", d->cached_dirname);
-    char* sc = subfilename + strlen(subfilename);
-    sprintf(sc, "/img_%d.html", num);
-    sprintf(relsubfilename, "img_%d.html", num);
-
     snprintf(pair->line, 4096,
-             "\n"
-             "      <div><a class=\"dia\" rel=\"lightbox[viewer]\" title=\"%s - %s\" href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
-             "      <h1>%s</h1>\n"
-             "      %s<br/><span class=\"tags\">%s</span></div>\n", title?title:relfilename, description?description:"&nbsp;", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
+             "            {image : \'%s\', title : \'%s\', thumb : \'%s\', url : \'%s\'},\n"
+             , relfilename, title?title:relfilename, relthumbfilename, relfilename);
 
-    char next[256];
-    sprintf(next, "img_%d.html", (num)%total+1);
-
-    char prev[256];
-    sprintf(prev, "img_%d.html", (num==1)?total:num-1);
-
-    /* Becomes unecessary with the Lightbox image viewer overlay
-
-        FILE* subfile = fopen(subfilename, "wb");
-        fprintf(subfile,
-              "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
-              "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
-              "  <head>\n"
-              "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n"
-              "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\" />\n"
-              "    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\" />\n"
-              "    <title>%s</title>\n"
-              "  </head>\n"
-              "  <body>\n"
-              "    <div class=\"title\"><a href=\"index.html\">%s</a></div>\n"
-              "    <div class=\"page\">\n"
-              "      <div style=\"width: 692px; max-width: 692px; height: 10px;\">\n"
-              "        <a style=\"float: left;\" href=\"%s\"><h1>prev</h1></a>\n"
-              "        <a style=\"float: right;\"href=\"%s\"><h1>next</h1></a>\n"
-              "      </div>\n"
-              "      <a href=\"%s\"><img src=\"%s\" width=\"692\" class=\"img\"/></a>\n"
-              "      %s<br/><span class=\"tags\">%s</span></div>\n"
-              "      <p style=\"clear:both;\"></p>\n"
-              "    </div>\n"
-              "    <div class=\"footer\">\n"
-              "      created with darktable "PACKAGE_VERSION"\n"
-              "    </div>\n"
-              "  </body>\n"
-              "</html>\n",
-              relfilename, title?title:relfilename, prev, next, relfilename, relfilename, description?description:"&nbsp;", tags?tags:"&nbsp;");
-        fclose(subfile);
-    */
     pair->pos = num;
-    g_free(title);
-    g_free(description);
-    g_free(tags);
+
+    if(title)
+      g_free(title);
+
+    if(description)
+      g_free(description);
+
+    if(tags)
+      g_free(tags);
+
     d->l = g_list_insert_sorted(d->l, pair, (GCompareFunc)sort_pos);
   } // end of critical block
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
@@ -377,8 +339,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     return 1;
   }
 
-  /* also export thumbnail: */
-  // write with reduced resolution:
+  /* also export thumbnail - write with reduced resolution */
   const int max_width  = fdata->max_width;
   const int max_height = fdata->max_height;
   fdata->max_width  = 200;
@@ -448,51 +409,59 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   snprintf(filename, DT_MAX_PATH_LEN, "%s", d->cached_dirname);
   char *c = filename + strlen(filename);
 
-  // also create style/ subdir:
+  // create subdir style/ for CSS and related images
   sprintf(c, "/style");
   g_mkdir_with_parents(filename, 0755);
-  sprintf(c, "/style/style.css");
-  copy_res("/style/style.css", filename);
+
+  sprintf(c, "/style/back.png");
+  copy_res("/style/back.png", filename);
+  sprintf(c, "/style/bg-black.png");
+  copy_res("/style/bg-black.png", filename);
+  sprintf(c, "/style/bg-hover.png");
+  copy_res("/style/bg-hover.png", filename);
+  sprintf(c, "/style/button-tray-down.png");
+  copy_res("/style/button-tray-down.png", filename);
+  sprintf(c, "/style/button-tray-up.png");
+  copy_res("/style/button-tray-up.png", filename);
   sprintf(c, "/style/favicon.ico");
   copy_res("/style/favicon.ico", filename);
-  sprintf(c, "/style/bullet.gif");
-  copy_res("/style/bullet.gif", filename);
-  sprintf(c, "/style/close.gif");
-  copy_res("/style/close.gif", filename);
-  sprintf(c, "/style/closelabel.gif");
-  copy_res("/style/closelabel.gif", filename);
-  sprintf(c, "/style/donate-button.gif");
-  copy_res("/style/donate-button.gif", filename);
-  sprintf(c, "/style/download-icon.gif");
-  copy_res("/style/download-icon.gif", filename);
-  sprintf(c, "/style/image-1.jpg");
-  copy_res("/style/image-1.jpg", filename);
-  sprintf(c, "/style/lightbox.css");
-  copy_res("/style/lightbox.css", filename);
-  sprintf(c, "/style/loading.gif");
-  copy_res("/style/loading.gif", filename);
-  sprintf(c, "/style/nextlabel.gif");
-  copy_res("/style/nextlabel.gif", filename);
-  sprintf(c, "/style/prevlabel.gif");
-  copy_res("/style/prevlabel.gif", filename);
-  sprintf(c, "/style/thumb-1.jpg");
-  copy_res("/style/thumb-1.jpg", filename);
+  sprintf(c, "/style/forward.png");
+  copy_res("/style/forward.png", filename);
+  sprintf(c, "/style/nav-bg.png");
+  copy_res("/style/nav-bg.png", filename);
+  sprintf(c, "/style/nav-dot.png");
+  copy_res("/style/nav-dot.png", filename);
+  sprintf(c, "/style/pause.png");
+  copy_res("/style/pause.png", filename);
+  sprintf(c, "/style/play.png");
+  copy_res("/style/play.png", filename);
+  sprintf(c, "/style/progress-back.png");
+  copy_res("/style/progress-back.png", filename);
+  sprintf(c, "/style/progress-bar.png");
+  copy_res("/style/progress-bar.png", filename);
+  sprintf(c, "/style/progress.gif");
+  copy_res("/style/progress.gif", filename);
+  sprintf(c, "/style/supersized.css");
+  copy_res("/style/supersized.css", filename);
+  sprintf(c, "/style/supersized.shutter.css");
+  copy_res("/style/supersized.shutter.css", filename);
+  sprintf(c, "/style/thumb-back.png");
+  copy_res("/style/thumb-back.png", filename);
+  sprintf(c, "/style/thumb-forward.png");
+  copy_res("/style/thumb-forward.png", filename);
 
-  // create subdir   js for lightbox2 viewer scripts
+  // create subdir js for Java scripts
   sprintf(c, "/js");
   g_mkdir_with_parents(filename, 0755);
-  sprintf(c, "/js/builder.js");
-  copy_res("/js/builder.js", filename);
-  sprintf(c, "/js/effects.js");
-  copy_res("/js/effects.js", filename);
-  sprintf(c, "/js/lightbox.js");
-  copy_res("/js/lightbox.js", filename);
-  sprintf(c, "/js/lightbox-web.js");
-  copy_res("/js/lightbox-web.js", filename);
-  sprintf(c, "/js/prototype.js");
-  copy_res("/js/prototype.js", filename);
-  sprintf(c, "/js/scriptaculous.js");
-  copy_res("/js/scriptaculous.js", filename);
+
+  sprintf(c, "/js/jquery.easing.min.js");
+  copy_res("/js/jquery.easing.min.js", filename);
+  sprintf(c, "/js/jquery.js");
+  copy_res("/js/jquery.js", filename);
+  sprintf(c, "/js/supersized.js");
+  copy_res("/js/supersized.js", filename);
+  sprintf(c, "/js/supersized.shutter.js");
+  copy_res("/js/supersized.shutter.js", filename);
 
   sprintf(c, "/index.html");
 
@@ -502,21 +471,50 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   if(!f) return;
   fprintf(f,
           "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
-          "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
+          "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n"
           "  <head>\n"
-          "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n"
-          "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\" />\n"
-          "    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\" />\n"
-          "    <link rel=\"stylesheet\" href=\"style/lightbox.css\" type=\"text/css\" media=\"screen\" />"
-          "    <script type=\"text/javascript\" src=\"js/prototype.js\"></script>\n"
-          "    <script type=\"text/javascript\" src=\"js/scriptaculous.js?load=effects,builder\"></script>\n"
-          "    <script type=\"text/javascript\" src=\"js/lightbox.js\"></script>\n"
           "    <title>%s</title>\n"
-          "  </head>\n"
-          "  <body>\n"
-          "    <div class=\"title\">%s</div>\n"
-          "    <div class=\"page\">\n",
-          title, title);
+          "    <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n"
+          "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\"/>\n"
+          "    <link rel=\"stylesheet\" href=\"style/supersized.css\" type=\"text/css\" media=\"screen\" />\n"
+          "    <link rel=\"stylesheet\" href=\"style/supersized.shutter.css\" type=\"text/css\" media=\"screen\" />\n"
+          "    <script type=\"text/javascript\" src=\"js/jquery.js\"></script>\n"
+          "    <script type=\"text/javascript\" src=\"js/jquery.easing.min.js\"></script>\n"
+          "    <script type=\"text/javascript\" src=\"js/supersized.js\"></script>\n"
+          "    <script type=\"text/javascript\" src=\"js/supersized.shutter.js\"></script>\n"
+          "    <script type=\"text/javascript\">\n"
+          "      jQuery(function($){\n"
+          "        $.supersized({\n"
+          "          // Functionality\n"
+          "          slideshow    : 1, // Slideshow on/off\n"
+          "          autoplay     : 0, // Slideshow starts playing automatically\n"
+          "          start_slide  : 1, // Start slide (0 is random)\n"
+          "          stop_loop    : 0, // Pauses slideshow on last slide\n"
+          "          random       : 0, // Randomize slide order (Ignores start slide)\n"
+          "          slide_interval : 5000, // Length between transitions\n"
+          "          transition     : 0, // 0-None, 1-Fade, 2-Slide Top, 3-Slide Right, 4-Slide Bottom, 5-Slide Left, 6-Carousel Right, 7-Carousel Left\n"
+          "          transition_speed : 300, // Speed of transition\n"
+          "          new_window  : 1, // Image links open in new window/tab\n"
+          "          pause_hover : 0, // Pause slideshow on hover\n"
+          "          keyboard_nav : 1, // Keyboard navigation on/off\n"
+          "          performance  : 1, // 0-Normal, 1-Hybrid speed/quality, 2-Optimizes image quality, 3-Optimizes transition speed // (Only works for Firefox/IE, not Webkit)\n"
+          "          image_protect : 1, // Disables image dragging and right click with Javascript\n"
+          "\n"      
+          "          // Size & Position\n"
+          "          min_width         : 0, // Min width allowed (in pixels)\n"
+          "          min_height        : 0, // Min height allowed (in pixels)\n"
+          "          vertical_center   : 1, // Vertically center background\n"
+          "          horizontal_center : 1, // Horizontally center background\n"
+          "          fit_always        : 1, // Image will never exceed browser width or height (Ignores min. dimensions)\n"
+          "          fit_portrait      : 1, // Portrait images will not exceed browser height\n"
+          "          fit_landscape     : 1, // Landscape images will not exceed browser width\n"
+          "\n"
+          "          // Components\n"
+          "          slide_links          : \'blank\', // Individual links for each slide (Options: false, \'num\', \'name\', \'blank\')\n"
+          "          thumb_links          : 1, // Individual thumb links for each slide\n"
+          "          thumbnail_navigation : 0, // Thumbnail navigation\n"
+          "          slides : [ // Slideshow Images\n"
+          , title?title:"");
 
   while(d->l)
   {
@@ -527,15 +525,50 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   }
 
   fprintf(f,
-          "        <p style=\"clear:both;\"></p>\n"
+          "          ],\n"
+          "\n"
+          "          // Theme Options\n"
+          "          progress_bar : 0, // Timer for each slide\n"
+          "          mouse_scrub  : 0\n"
+          "        });\n"
+          "      });\n"
+          "    </script>\n"
+          "  </head>\n"
+          "  <body>\n"
+          "    <!--Thumbnail Navigation-->\n"
+          "    <div id=\"prevthumb\"></div>\n"
+          "    <div id=\"nextthumb\"></div>\n"
+          "\n"
+          "    <!--Arrow Navigation-->\n"
+          "    <a id=\"prevslide\" class=\"load-item\"></a>\n"
+          "    <a id=\"nextslide\" class=\"load-item\"></a>\n"
+          "\n"
+          "    <div id=\"thumb-tray\" class=\"load-item\">\n"
+          "      <div id=\"thumb-back\"></div>\n"
+          "      <div id=\"thumb-forward\"></div>\n"
           "    </div>\n"
-          "    <div class=\"footer\">\n"
-          "      <script language=\"JavaScript\" type=\"text/javascript\">\n"
-          "      document.write(\"download all: <em>wget -r -np -nc -k \" + document.documentURI + \"</em>\")\n"
-          "      </script><br />\n"
-          "      created with darktable "PACKAGE_VERSION"\n"
+          "\n"
+          "    <!--Time Bar\n"
+          "    <div id=\"progress-back\" class=\"load-item\">\n"
+          "      <div id=\"progress-bar\"></div>\n"
           "    </div>\n"
-          "  </body>\n"
+          "    -->\n"
+          "\n"
+          "    <!--Control Bar-->\n"
+          "    <div id=\"controls-wrapper\" class=\"load-item\">\n"
+          "      <div id=\"controls\">\n"
+          "        <a id=\"play-button\"><img id=\"pauseplay\" src=\"style/pause.png\"/></a>\n"
+          "\n"
+          "        <div id=\"slidecounter\">\n"
+          "          <span class=\"slidenumber\"></span> / <span class=\"totalslides\"></span>\n"
+          "        </div>\n"
+          "\n"        
+          "        <div id=\"slidecaption\"></div>\n"
+          "          <a id=\"tray-button\"><img id=\"tray-arrow\" src=\"style/button-tray-up.png\"/></a>\n"
+          "          <ul id=\"slide-list\"></ul>\n"
+          "        </div>\n"
+          "      </div>\n"
+          "   </body>\n"
           "</html>\n"
          );
   fclose(f);
