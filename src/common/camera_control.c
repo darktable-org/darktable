@@ -98,7 +98,8 @@ int _dispatch_camera_storage_image_filename(const dt_camctl_t *c,const dt_camera
 void _dispatch_camera_property_value_changed(const dt_camctl_t *c,const dt_camera_t *camera,const char *name,const char *value);
 void _dispatch_camera_property_accessibility_changed(const dt_camctl_t *c,const dt_camera_t *camera,const char *name,gboolean read_only);
 
-
+/** Helper function to destroy a dt_camera_t object */
+static void dt_camctl_camera_destroy(dt_camera_t * cam);
 
 
 static int logid=0;
@@ -463,6 +464,23 @@ dt_camctl_t *dt_camctl_new()
   return camctl;
 }
 
+static void dt_camctl_camera_destroy(dt_camera_t * cam)
+{
+  gp_camera_exit(cam->gpcam, cam->gpcontext);
+  gp_camera_unref(cam->gpcam);
+  gp_context_unref(cam->gpcontext);
+  gp_widget_unref(cam->configuration);
+  if(cam->live_view_pixbuf != NULL)
+  {
+    g_object_unref(cam->live_view_pixbuf);
+    cam->live_view_pixbuf = NULL; // just in case someone else is using this
+  }
+  g_free(cam->model);
+  g_free(cam->port);
+  // TODO: cam->jobqueue
+  g_free(cam);
+}
+
 void dt_camctl_destroy(const dt_camctl_t *camctl)
 {
   gp_abilities_list_free(camctl->gpcams);
@@ -470,18 +488,7 @@ void dt_camctl_destroy(const dt_camctl_t *camctl)
   // Go thru all c->cameras and release them..
   for(GList * it = g_list_first(camctl->cameras); it != NULL; it = g_list_delete_link(it, it))
   {
-    dt_camera_t * c = (dt_camera_t*) it->data;
-    gp_camera_exit(c->gpcam, c->gpcontext);
-    gp_camera_unref(c->gpcam);
-    gp_context_unref(c->gpcontext);
-    gp_widget_unref(c->configuration);
-    if(c->live_view_pixbuf != NULL)
-    {
-      g_object_unref(c->live_view_pixbuf);
-      c->live_view_pixbuf = NULL; // just in case someone else is using this
-    }
-    // TODO: c->jobqueue
-    g_free(c);
+    dt_camctl_camera_destroy((dt_camera_t*)it->data);
   }
 }
 
@@ -525,7 +532,6 @@ gint _compare_camera_by_port(gconstpointer a,gconstpointer b)
 
 void dt_camctl_detect_cameras(const dt_camctl_t *c)
 {
-
   dt_camctl_t *camctl=(dt_camctl_t *)c;
   dt_pthread_mutex_lock(&camctl->lock);
 
@@ -549,8 +555,11 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
   {
     dt_camera_t *camera=g_malloc(sizeof(dt_camera_t));
     memset( camera,0,sizeof(dt_camera_t));
-    gp_list_get_name (available_cameras, i, &camera->model);
-    gp_list_get_value (available_cameras, i, &camera->port);
+    const gchar *s;
+    gp_list_get_name (available_cameras, i, &s);
+    camera->model = g_strdup(s);
+    gp_list_get_value (available_cameras, i, &s);
+    camera->port = g_strdup(s);
     dt_pthread_mutex_init(&camera->config_lock, NULL);
     dt_pthread_mutex_init(&camera->live_view_pixbuf_mutex, NULL);
     dt_pthread_mutex_init(&camera->live_view_synch, NULL);
@@ -565,7 +574,7 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
         if(_camera_initialize(c,camera)==FALSE)
         {
           dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to initialize device %s on port %s, probably causes are: locked by another application, no access to udev etc.\n", camera->model,camera->port);
-          g_free(camera);
+          dt_camctl_camera_destroy(camera);
           continue;
         }
 
@@ -573,7 +582,7 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
         if( camera->can_import==FALSE && camera->can_tether==FALSE )
         {
           dt_print(DT_DEBUG_CAMCTL,"[camera_control] device %s on port %s doesn't support import or tether, skipping device.\n", camera->model,camera->port);
-          g_free(camera);
+          dt_camctl_camera_destroy(camera);
           continue;
         }
 
@@ -593,7 +602,7 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
       }
     }
     else
-      g_free(camera);
+      dt_camctl_camera_destroy(camera);
   }
 
   /* check c->cameras in available_cameras */
@@ -610,7 +619,7 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
         dt_camctl_t *camctl=(dt_camctl_t *)c;
         dt_camera_t *oldcam = (dt_camera_t *)citem->data;
         camctl->cameras=citem= g_list_delete_link (c->cameras,citem);
-        g_free(oldcam);
+        dt_camctl_camera_destroy(oldcam);
       }
     }
     while ( citem && (citem=g_list_next(citem))!=NULL);

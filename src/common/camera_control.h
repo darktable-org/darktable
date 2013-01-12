@@ -30,9 +30,9 @@
 typedef struct dt_camera_t
 {
   /** A pointer to the model string of camera. */
-  const char *model;
+  char *model;
   /** A pointer to the port string of camera. */
-  const char *port;
+  char *port;
   /** Camera summary text */
   CameraText summary;
 
