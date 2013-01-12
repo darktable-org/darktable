@@ -1635,6 +1635,12 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop
       piece->buf_out = roi_out;
       roi_in = roi_out;
     }
+    else
+    {
+      // pass through regions of interest for gui post expose events
+      piece->buf_in = roi_in;
+      piece->buf_out = roi_in;
+    }
     modules = g_list_next(modules);
     pieces = g_list_next(pieces);
   }
