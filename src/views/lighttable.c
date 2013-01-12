@@ -87,8 +87,6 @@ typedef struct dt_library_t
   int full_preview;
   int32_t full_preview_id;
   gboolean offset_changed;
-  int32_t x_zoom_offset, y_zoom_offset;
-  gboolean apply_zoom_offset;
 
   int32_t collection_count;
 
@@ -159,11 +157,15 @@ static void move_view(dt_library_t *lib, direction dir)
   switch (dir)
   {
     case UP:
-      if (lib->offset >= 0)
+      if (lib->offset >= 1)
         lib->offset = lib->offset - iir;
       break;
     case DOWN:
-      lib->offset = lib->offset + iir;
+      {
+        lib->offset = lib->offset + iir;
+        while(lib->offset >= lib->collection_count)
+          lib->offset -= iir;
+      }
       break;
     default:
       break;
@@ -183,12 +185,10 @@ void zoom_around_image(dt_library_t *lib, double pointerx, double pointery, int 
   float ht = width/(float)old_images_in_row;
   int pi = pointerx / (float)wd;
   int pj = pointery / (float)ht;  
-  
-  int center_x_old = pi * wd + wd/2 +lib->x_zoom_offset;
-  int center_y_old = pj * ht + ht/2 +lib->y_zoom_offset;
-  
+    
   int zoom_anchor_image = lib->offset + pi + (pj * old_images_in_row);
   
+  // make sure that the don't try to zoom around an image that doesn't exist
   if (zoom_anchor_image > lib->collection_count)
     zoom_anchor_image = lib->collection_count;
   
@@ -198,14 +198,7 @@ void zoom_around_image(dt_library_t *lib, double pointerx, double pointery, int 
   wd = width/(float)new_images_in_row;
   ht = width/(float)new_images_in_row;
   pi = pointerx / (float)wd;
-  pj = pointery / (float)ht;  
-  
-  int center_x_new = pi * wd + wd/2;
-  int center_y_new = pj * ht + ht/2; 
-  
-  lib->x_zoom_offset = -(center_x_new - center_x_old);
-  lib->y_zoom_offset = -(center_y_new - center_y_old);
-  lib->apply_zoom_offset = TRUE;
+  pj = pointery / (float)ht;
   
   lib->offset = zoom_anchor_image - pi - (pj * new_images_in_row);
   lib->first_visible_filemanager = lib->offset;
@@ -335,9 +328,6 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   const int max_rows = 1 + (int)((height)/ht + .5);
   const int max_cols = iir;
   
-  const int32_t x_offset = lib->x_zoom_offset;
-  const int32_t y_offset = lib->y_zoom_offset;
-  
   int id;
   int clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
 
@@ -385,7 +375,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   if(!lib->statements.main_query)
     return;
   
-  int32_t offset = lib->offset;
+  int32_t offset = lib->offset = lib->first_visible_filemanager;
 
   int32_t drawing_offset = 0;
   if(offset < 0)
@@ -393,9 +383,6 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
     drawing_offset = offset;
     offset = 0;
   }
-  
-  while(offset >= lib->collection_count)
-    lib->offset = (offset -= iir);
   
   /* update scroll borders */
   dt_view_set_scrollbar(self, 0, 1, 1, offset, lib->collection_count, max_rows*iir);
@@ -435,36 +422,19 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   }
 
 end_query_cache:
-
   mouse_over_id = -1;
-
   cairo_save(cr);
   int current_image =0;
-  printf("\nx offset: %d y offset: %d", lib->x_zoom_offset, lib->y_zoom_offset);
-  if (lib->apply_zoom_offset)
-  {
-    cairo_translate(cr, x_offset, y_offset);
-    lib->apply_zoom_offset = FALSE;
-  }
-  else
-  {
-    // after we let the view snap back into grid mode, we need to clean the 
-    // old offset values, or the next zoom operation will think they are
-    // still valid.
-    lib->x_zoom_offset = 0;
-    lib->y_zoom_offset = 0;
-    // TODO: this really should not be done here, breaks MVC.
-  }
+  
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
     {
       //curidx = grid_to_index(row, col, iir, offset);
 
-      
       /* skip drawing images until we reach a non-negative offset. 
        * This is needed for zooming, so that the image under the 
-       * mouse cursor can be stay there. */
+       * mouse cursor can stay there. */
       if (drawing_offset < 0)
       {
         drawing_offset++;
@@ -520,6 +490,11 @@ escape_image_loop:
   // and now the group borders
   cairo_save(cr);
   current_image = 0;
+  if(lib->offset < 0)
+  {
+    drawing_offset = lib->offset;
+    offset = 0;
+  }
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
@@ -535,7 +510,7 @@ escape_image_loop:
       }
 
       id = query_ids[current_image];
-      current_image ++;
+     
       
       if(id > 0)
       {
@@ -642,6 +617,7 @@ escape_image_loop:
         }
 
         cairo_restore(cr);
+        current_image ++;
       }
       else
         goto escape_border_loop;
