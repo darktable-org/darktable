@@ -23,6 +23,7 @@
 #include "develop/blend.h"
 #include "iop/clipping.h"
 #include "iop/exposure.h"
+#include "iop/vignette.h"
 #include "control/control.h"
 
 #include <libxml/parser.h>
@@ -74,6 +75,31 @@ static float lr2dt_exposure(float value)
     {{-100, 0.020}, {-50, 0.005}, {0, 0}, {50, -0.005}, {100, -0.010}};
 
   return get_interpolate (lr2dt_exposure_table, value);
+}
+
+static float lr2dt_vignette_gain(float value)
+{
+  lr2dt_t lr2dt_vignette_table[] =
+    {{-100, -0.900}, {-50, -0.650}, {-25, -0.400}, {0, 0},
+     {25, 0.250}, {50, 0.500}, {100, 0.900}};
+
+  return get_interpolate (lr2dt_vignette_table, value);
+}
+
+static float  lr2dt_vignette_scale(float value)
+{
+  lr2dt_t lr2dt_vignette_table[] =
+    {{0, 100.0}, {50, 90.0}, {100, 50.0}};
+
+  return get_interpolate (lr2dt_vignette_table, value);
+}
+
+static float  lr2dt_vignette_falloff_scale(float value)
+{
+  lr2dt_t lr2dt_vignette_table[] =
+    {{0, 0.0}, {50, 70.0}, {100, 85.0}};
+
+  return get_interpolate (lr2dt_vignette_table, value);
 }
 
 static dt_dev_history_item_t *_new_hist_for (dt_develop_t *dev, char *opname)
@@ -210,6 +236,10 @@ void dt_lightroom_import (dt_develop_t *dev)
   memset(&pe, 0, sizeof(pe));
   gboolean has_exposure = FALSE;
 
+  dt_iop_vignette_params_t pv;
+  memset(&pv, 0, sizeof(pv));
+  gboolean has_vignette = FALSE;
+
   int n_import = 0;
 
   xmlAttr* attribute = entryNode->properties;
@@ -243,6 +273,33 @@ void dt_lightroom_import (dt_develop_t *dev)
         has_exposure = TRUE;
         pe.black = lr2dt_exposure((float)v);
         n_import++;
+      }
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteAmount"))
+    {
+      int v = atoi((char *)value);
+      if (v != 0)
+      {
+        has_vignette = TRUE;
+        pv.brightness = lr2dt_vignette_gain((float)v);
+        n_import++;
+      }
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteStyle"))
+    {
+      int v = atoi((char *)value);
+      if (v == 1) // Highlight Priority
+        pv.saturation = -0.800;
+      else // Color Priority & Paint Overlay
+        pv.saturation = -0.300;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteFeather"))
+    {
+      int v = atoi((char *)value);
+      if (v != 0)
+      {
+        pv.scale = lr2dt_vignette_scale((float)v);
+        pv.falloff_scale = lr2dt_vignette_falloff_scale((float)v);
       }
     }
 
@@ -301,7 +358,23 @@ void dt_lightroom_import (dt_develop_t *dev)
 
     dt_add_hist (dev, hist, imported);
     refresh_needed=TRUE;
+  }
 
+  if (has_vignette)
+  {
+    dt_dev_history_item_t *hist = _new_hist_for (dev, "vignette");
+    dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)hist->params;
+
+    p->brightness = pv.brightness;
+    p->scale = pv.scale;
+    p->falloff_scale = pv.falloff_scale;
+    p->whratio = 1.350;
+    p->autoratio = FALSE;
+    p->saturation = pv.saturation;
+    p->dithering = DITHER_8BIT;
+
+    dt_add_hist (dev, hist, imported);
+    refresh_needed=TRUE;
   }
 
   if(refresh_needed && dev->gui_attached)
