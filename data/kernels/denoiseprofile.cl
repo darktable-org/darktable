@@ -31,7 +31,7 @@ float fast_mexp2f(const float x)
   const float i1 = (float)0x3f800000u; // 2^0
   const float i2 = (float)0x3f000000u; // 2^-1
   const float k0 = i1 + x * (i2 - i1);
-  union { float f; unsigned int i } k;
+  union { float f; unsigned int i; } k;
   k.i = (k0 >= (float)0x800000u) ? k0 : 0;
   return k.f;
 }
