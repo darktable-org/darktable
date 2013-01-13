@@ -168,7 +168,7 @@ gboolean dt_tag_exists(const char *name,guint *tagid)
   int rt;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id, name FROM tags WHERE name = '?1'", -1, &stmt, NULL);
+                              "SELECT id FROM tags WHERE name = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
   rt = sqlite3_step(stmt);
 
@@ -180,6 +180,7 @@ gboolean dt_tag_exists(const char *name,guint *tagid)
     return  TRUE;
   }
 
+  *tagid = -1;
   sqlite3_finalize(stmt);
   return FALSE;
 }
