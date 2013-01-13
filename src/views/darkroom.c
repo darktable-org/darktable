@@ -28,6 +28,7 @@
 #include "dtgtk/tristatebutton.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
+#include "develop/lightroom.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"
@@ -874,6 +875,12 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
   else dt_control_log(_("no styles have been created yet"));
 }
 
+static void _darkroom_ui_apply_LR_style(GtkWidget *w, gpointer user_data)
+{
+  dt_develop_t *dev = (dt_develop_t *)user_data;
+  dt_lightroom_import (dev);
+}
+
 void enter(dt_view_t *self)
 {
   /* connect to ui pipe finished signal for redraw */
@@ -921,6 +928,18 @@ void enter(dt_view_t *self)
   g_object_set (G_OBJECT (styles), "tooltip-text", _("quick access for applying any of your styles"),
                 (char *)NULL);
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles);
+
+  /* create LR import button (only if LR .xmp found) */
+  if (dt_get_lightroom_xmp(dev->image_storage.id))
+  {
+    GtkWidget *LRimp = dtgtk_button_new (dtgtk_cairo_paint_LR,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+    g_signal_connect (G_OBJECT (LRimp), "clicked",
+                      G_CALLBACK (_darkroom_ui_apply_LR_style),
+                      dev);
+    g_object_set (G_OBJECT (LRimp), "tooltip-text", _("LR import"),
+                  (char *)NULL);
+    dt_view_manager_view_toolbox_add(darktable.view_manager, LRimp);
+  }
 
   /*
    * add IOP modules to plugin list
