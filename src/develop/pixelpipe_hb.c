@@ -785,34 +785,40 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         {
           /* Nice, everything went fine */
 
-          /* write back input into cache for faster re-usal (not for export or thumbnails) */
-          if (cl_mem_input != NULL && pipe->type != DT_DEV_PIXELPIPE_EXPORT && pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL)
+          /* this is reasonable on slow GPUs only, where it's more expensive to reprocess the whole pixelpipe than
+             regularly copying device buffers back to host. This would slow down fast GPUs considerably. */
+          if(darktable.opencl->synch_cache)
           {
-            cl_int err;
-
-            /* copy input to host memory, so we can find it in cache */
-            err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height, in_bpp);
-            if (err != CL_SUCCESS)
+            /* write back input into cache for faster re-usal (not for export or thumbnails) */
+            if (cl_mem_input != NULL && pipe->type != DT_DEV_PIXELPIPE_EXPORT && pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL)
             {
-              /* late opencl error, not likely to happen here */
-              dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (e)] late opencl error detected while copying back to cpu buffer: %d\n", err);
-              /* that's all we do here, we later make sure to invalidate cache line */
+              cl_int err;
+
+              /* copy input to host memory, so we can find it in cache */
+              err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height, in_bpp);
+              if (err != CL_SUCCESS)
+              {
+                /* late opencl error, not likely to happen here */
+                dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (e)] late opencl error detected while copying back to cpu buffer: %d\n", err);
+                /* that's all we do here, we later make sure to invalidate cache line */
+              }
+              else
+              {
+                /* success: cache line is valid now, so we will not need to invalidate it later */
+                valid_input_on_gpu_only = FALSE;
+
+                // TODO: check if we need to wait for finished opencl pipe before we release cl_mem_input
+                // dt_dev_finish(pipe->devid);
+              }
+
             }
-            else
+
+            if(pipe->shutdown)
             {
-              /* success: cache line is valid now, so we will not need to invalidate it later */
-              valid_input_on_gpu_only = FALSE;
-
-              // TODO: check if we need to wait for finished opencl pipe before we release cl_mem_input
-              // dt_dev_finish(pipe->devid);
+              if(cl_mem_input != NULL) dt_opencl_release_mem_object(cl_mem_input);
+              dt_pthread_mutex_unlock(&pipe->busy_mutex);
+              return 1;
             }
-          }
-
-          if(pipe->shutdown)
-          {
-            if(cl_mem_input != NULL) dt_opencl_release_mem_object(cl_mem_input);
-            dt_pthread_mutex_unlock(&pipe->busy_mutex);
-            return 1;
           }
 
           /* we can now release cl_mem_input */
