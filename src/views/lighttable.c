@@ -347,6 +347,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
 
 end_query_cache:
 
+  mouse_over_id = -1;
+
   cairo_save(cr);
   for(int row = 0; row < max_rows; row++)
   {
@@ -364,7 +366,6 @@ end_query_cache:
         if(pi == col && pj == row)
         {
           mouse_over_id = id;
-          DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
         }
 
         /* handle mouse click on current row / col
@@ -395,6 +396,8 @@ end_query_cache:
   }
 escape_image_loop:
   cairo_restore(cr);
+
+  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
 
   // and now the group borders
   cairo_save(cr);
