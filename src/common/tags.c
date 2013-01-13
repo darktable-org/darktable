@@ -76,7 +76,7 @@ gboolean dt_tag_new(const char *name,guint *tagid)
 
   /* raise signal of tags change to refresh keywords module */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-  
+
   return TRUE;
 }
 
@@ -111,7 +111,7 @@ guint dt_tag_remove(const guint tagid, gboolean final)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    
+
     /* raise signal of tags change to refresh keywords module */
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
@@ -158,7 +158,7 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest)
              source, dest, tag, source);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
-  
+
   /* raise signal of tags change to refresh keywords module */
   //dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
