@@ -1271,7 +1271,7 @@ int scrolled(dt_view_t *self, double x, double y, int up, int state)
       zoom--;
       if(zoom < 1)
         zoom = 1;
-      else
+      else if (layout == 1)
        zoom_around_image(lib, x, y, self->width, self->height, zoom+1, zoom);
     }
     else
@@ -1279,7 +1279,7 @@ int scrolled(dt_view_t *self, double x, double y, int up, int state)
       zoom++;
       if(zoom > 2*DT_LIBRARY_MAX_ZOOM)
         zoom = 2*DT_LIBRARY_MAX_ZOOM;
-      else
+      else if (layout == 1)
         zoom_around_image(lib, x, y, self->width, self->height, zoom-1, zoom);
     }
     dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
