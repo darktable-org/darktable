@@ -18,6 +18,7 @@
 */
 
 #include "common/darktable.h"
+#include "common/tags.h"
 #include "develop/lightroom.h"
 #include "develop/develop.h"
 #include "develop/blend.h"
@@ -240,6 +241,8 @@ void dt_lightroom_import (dt_develop_t *dev)
   memset(&pv, 0, sizeof(pv));
   gboolean has_vignette = FALSE;
 
+  gboolean has_tags = FALSE;
+
   int n_import = 0;
 
   xmlAttr* attribute = entryNode->properties;
@@ -305,6 +308,41 @@ void dt_lightroom_import (dt_develop_t *dev)
 
     xmlFree(value);
     attribute = attribute->next;
+  }
+
+  //  Look for tags (subject/Bag/*)
+
+  entryNode = entryNode->xmlChildrenNode;
+  entryNode = entryNode->next;
+
+  while (entryNode)
+  {
+    if (!xmlStrcmp(entryNode->name, (const xmlChar *) "subject"))
+    {
+      xmlNodePtr tagNode = entryNode;
+
+      tagNode = tagNode->xmlChildrenNode;
+      tagNode = tagNode->next;
+      tagNode = tagNode->xmlChildrenNode;
+      tagNode = tagNode->next;
+
+      while (tagNode)
+      {
+        if (!xmlStrcmp(tagNode->name, (const xmlChar *) "li"))
+        {
+          xmlChar *value= xmlNodeListGetString(doc, tagNode->xmlChildrenNode, 1);
+          guint tagid = 0;
+
+          if (!dt_tag_exists((char *)value, &tagid))
+            dt_tag_new((char *)value, &tagid);
+
+          dt_tag_attach(tagid, dev->image_storage.id);
+          has_tags = TRUE;
+        }
+        tagNode = tagNode->next;
+      }
+    }
+    entryNode = entryNode->next;
   }
 
   xmlFreeDoc(doc);
@@ -375,6 +413,13 @@ void dt_lightroom_import (dt_develop_t *dev)
 
     dt_add_hist (dev, hist, imported);
     refresh_needed=TRUE;
+  }
+
+  if (has_tags)
+  {
+    if (imported[0]) strcat(imported, ", ");
+    strcat(imported, _("tags"));
+    n_import++;
   }
 
   if(refresh_needed && dev->gui_attached)
