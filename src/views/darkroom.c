@@ -936,7 +936,7 @@ void enter(dt_view_t *self)
     g_signal_connect (G_OBJECT (LRimp), "clicked",
                       G_CALLBACK (_darkroom_ui_apply_LR_style),
                       dev);
-    g_object_set (G_OBJECT (LRimp), "tooltip-text", _("LR import"),
+    g_object_set (G_OBJECT (LRimp), "tooltip-text", _("import from Lightroom"),
                   (char *)NULL);
     dt_view_manager_view_toolbox_add(darktable.view_manager, LRimp);
   }
