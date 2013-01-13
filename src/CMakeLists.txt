@@ -59,6 +59,7 @@ FILE(GLOB SOURCE_FILES
   "control/signal.c"
   "develop/develop.c"
   "develop/imageop.c"
+  "develop/lightroom.c"
   "develop/pixelpipe.c"
   "develop/blend.c"
   "develop/blend_gui.c"

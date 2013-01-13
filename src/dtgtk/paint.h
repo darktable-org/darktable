@@ -93,6 +93,8 @@ void dtgtk_cairo_paint_showmask(cairo_t *cr,gint x,gint y,gint w,gint h,gint fla
 void dtgtk_cairo_paint_alignment(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint styles icon */
 void dtgtk_cairo_paint_styles(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** paint LR import icon */
+void dtgtk_cairo_paint_LR(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint the grouping icon. */
 void dtgtk_cairo_paint_grouping(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint the preferences wheel. */
