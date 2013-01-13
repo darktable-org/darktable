@@ -2034,8 +2034,10 @@ int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
   return 0;
 }
 
-void dt_iop_nap(uint32_t usec)
+void dt_iop_nap(int32_t usec)
 {
+  if(usec <= 0) return;
+
   // relinquish processor
   sched_yield();
 

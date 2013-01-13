@@ -674,7 +674,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           // fprintf(stderr, "[opencl_pixelpipe 2] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
 
           // indirectly give gpu some air to breathe (and to do display related stuff)
-          dt_iop_nap(1000);
+          dt_iop_nap(darktable.opencl->micro_nap);
 
           /* now call process_cl of module; module should emit meaningful messages in case of error */
           if (success_opencl)
@@ -738,7 +738,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           }
 
           // indirectly give gpu some air to breathe (and to do display related stuff)
-          dt_iop_nap(1000);
+          dt_iop_nap(darktable.opencl->micro_nap);
 
           /* now call process_tiling_cl of module; module should emit meaningful messages in case of error */
           if (success_opencl)

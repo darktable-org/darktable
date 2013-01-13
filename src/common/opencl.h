@@ -105,6 +105,7 @@ typedef struct dt_opencl_t
   int avoid_atomics;
   int use_events;
   int synch_cache;
+  int micro_nap;
   int enabled;
   int num_devs;
   dt_opencl_device_t *dev;

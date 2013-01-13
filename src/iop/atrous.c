@@ -588,7 +588,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(1000);
+    dt_iop_nap(darktable.opencl->micro_nap);
   }
 
   /* now synthesize again */
@@ -621,7 +621,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(1000);
+    dt_iop_nap(darktable.opencl->micro_nap);
   }
 
   dt_opencl_finish(devid);

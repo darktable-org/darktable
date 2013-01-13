@@ -991,10 +991,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_accu, sizes);
       if(err != CL_SUCCESS) goto error;
 
-      dt_opencl_finish(devid);
+      //dt_opencl_finish(devid);
 
       // indirectly give gpu some air to breathe (and to do display related stuff)
-      if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW) dt_iop_nap(1000);
+      dt_iop_nap(darktable.opencl->micro_nap);
     }
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 0, sizeof(cl_mem), (void *)&dev_in);

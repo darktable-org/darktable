@@ -85,6 +85,13 @@
     <shortdescription>copy back opencl buffers into pixelpipe cache after each module</shortdescription>
     <longdescription>this brings pixelpipe cache and opencl buffers in synch after each module. on slow GPUs this might improve speed as it avoids reprocessing the whole pixelpipe on every parameter change. on fast GPUs the additional memory transfer overhead will slow down opencl considerably.</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>opencl_micro_nap</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>pause opencl processing for this number of microseconds from time to time</shortdescription>
+    <longdescription>for slow GPUs this gives your graphics driver some time to breathe to do needed screen updates. try 1000 as a starting point. can be left at zero for fast devices.</longdescription>
+  </dtconfig>
   <dtconfig prefs="gui">
     <name>never_use_embedded_thumb</name>
     <type>bool</type>

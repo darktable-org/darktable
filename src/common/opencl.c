@@ -47,6 +47,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   cl->use_events = dt_conf_get_bool("opencl_use_events");
   cl->avoid_atomics = dt_conf_get_bool("opencl_avoid_atomics");
   cl->synch_cache = dt_conf_get_bool("opencl_synch_cache");
+  cl->micro_nap = dt_conf_get_int("opencl_micro_nap");
   cl->dlocl = NULL;
   int exclude_opencl = 0;
 
