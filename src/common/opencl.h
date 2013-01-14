@@ -104,6 +104,7 @@ typedef struct dt_opencl_t
   int inited;
   int avoid_atomics;
   int use_events;
+  int number_event_handles;
   int synch_cache;
   int micro_nap;
   int enabled;

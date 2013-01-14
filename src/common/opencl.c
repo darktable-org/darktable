@@ -44,7 +44,12 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   dt_pthread_mutex_init(&cl->lock, NULL);
   cl->inited = 0;
   cl->enabled = 0;
-  cl->use_events = dt_conf_get_bool("opencl_use_events");
+
+  int handles = dt_conf_get_int("opencl_number_event_handles");
+  handles = (handles == 0 ? 0x7fffffff : handles);
+  cl->number_event_handles = handles;
+  cl->use_events = (handles > 0);
+
   cl->avoid_atomics = dt_conf_get_bool("opencl_avoid_atomics");
   cl->synch_cache = dt_conf_get_bool("opencl_synch_cache");
   cl->micro_nap = dt_conf_get_int("opencl_micro_nap");
@@ -1239,6 +1244,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
   dt_opencl_eventtag_t **eventtags = &(cl->dev[devid].eventtags);
   int *numevents = &(cl->dev[devid].numevents);
   int *maxevents = &(cl->dev[devid].maxevents);
+  int *eventsconsolidated = &(cl->dev[devid].eventsconsolidated);
   int *lostevents = &(cl->dev[devid].lostevents);
   int *totalevents = &(cl->dev[devid].totalevents);
   int *totallost = &(cl->dev[devid].totallost);
@@ -1278,6 +1284,11 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
     (*totalevents)++;
     return (*eventlist)+*numevents-1;
   }
+
+  // check if we would exceed the number of available event handles. In that case first flush existing handles
+  if(*numevents - *eventsconsolidated + 1 > darktable.opencl->number_event_handles)
+    (void)dt_opencl_events_flush(devid, FALSE);
+
 
   // if no more space left in eventlist: grow buffer
   if (*numevents == *maxevents)
