@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 henrik andersson.
+    copyright (c) 2012 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,24 +16,20 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DATABASE_H
-#define DATABASE_H
+#ifndef __DBUS_H__
+#define __DBUS_H__
 
-#include <glib.h>
+/** allocates and initializes dbus */
+struct dt_dbus_t *dt_dbus_init();
 
-/** allocates and initializes database */
-struct dt_database_t *dt_database_init(char *alternative);
 /** closes down database and frees memory */
-void dt_database_destroy(const struct dt_database_t *);
-/** get handle */
-struct sqlite3 *dt_database_get(const struct dt_database_t *);
-/** test if database is new */
-gboolean dt_database_is_new(const struct dt_database_t *db);
-/** Returns database path */
-const gchar *dt_database_get_path(const struct dt_database_t *db);
-/** test if database was already locked by another instance */
-gboolean dt_database_get_already_locked(const struct dt_database_t *db);
-#endif
+void dt_dbus_destroy(const struct dt_dbus_t *);
+
+/** have we managed to get the dbus name? when not, then there is already another instance of darktable running */
+gboolean dt_dbus_connected(const struct dt_dbus_t *);
+
+#endif // __DBUS_H__
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

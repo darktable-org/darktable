@@ -16,6 +16,7 @@ FILE(GLOB SOURCE_FILES
   "common/curve_tools.c"
   "common/darktable.c"
   "common/database.c"
+  "common/dbus.c"
   "common/exif.cc"
   "common/film.c"
   "common/file_location.c"

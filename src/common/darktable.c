@@ -2,6 +2,7 @@
     This file is part of darktable,
     copyright (c) 2009--2012 johannes hanika.
     copyright (c) 2010--2012 henrik andersson.
+    copyright (c) 2010--2012 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -59,6 +60,7 @@
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
 #endif
+#include "dbus.h"
 
 #if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__DragonFly__)
 #include <malloc.h>
@@ -310,13 +312,10 @@ static void strip_semicolons_from_keymap(const char* path)
   g_object_unref(gpathtmp);
 }
 
-int dt_load_from_string(const gchar* input, gboolean open_image_in_dr)
+static gchar * dt_make_path_absolute(const gchar * input)
 {
-  int id = 0;
-  if(input == NULL || input[0] == '\0')
-    return 0;
+  gchar *filename = NULL;
 
-  char* filename;
   if(g_str_has_prefix(input, "file://")) // in this case we should take care of %XX encodings in the string (for example %20 = ' ')
   {
     input += strlen("file://");
@@ -333,14 +332,30 @@ int dt_load_from_string(const gchar* input, gboolean open_image_in_dr)
     filename = (char*)g_malloc(sizeof(char)*MAXPATHLEN);
     if(realpath(tmp_filename, filename) == NULL)
     {
-      dt_control_log(_("found strange path `%s'"), tmp_filename);
       g_free(current_dir);
       g_free(tmp_filename);
       g_free(filename);
-      return 0;
+      return NULL;
     }
     g_free(current_dir);
     g_free(tmp_filename);
+  }
+
+  return filename;
+}
+
+int dt_load_from_string(const gchar* input, gboolean open_image_in_dr)
+{
+  int id = 0;
+  if(input == NULL || input[0] == '\0')
+    return 0;
+
+  char* filename = dt_make_path_absolute(input);
+
+  if(filename == NULL)
+  {
+    dt_control_log(_("found strange path `%s'"), input);
+    return 0;
   }
 
   if(g_file_test(filename, G_FILE_TEST_IS_DIR))
@@ -581,6 +596,43 @@ int dt_init(int argc, char *argv[], const int init_gui)
     printf("ERROR : cannot open database\n");
     return 1;
   }
+  else if(dt_database_get_already_locked(darktable.db))
+  {
+    // send the images to the other instance via dbus
+    if(images_to_load)
+    {
+      GSList *p = images_to_load;
+
+      // get a connection!
+      GDBusConnection *connection = g_bus_get_sync(G_BUS_TYPE_SESSION,NULL, NULL);
+
+      while (p != NULL)
+      {
+        // make the filename absolute ...
+        gchar *filename = dt_make_path_absolute((gchar*)p->data);
+        if(filename == NULL) continue;
+        // ... and send it to the running instance of darktable
+        g_dbus_connection_call_sync(connection,
+                                    "org.darktable.service",
+                                    "/darktable",
+                                    "org.darktable.service.Remote",
+                                    "Open",
+                                    g_variant_new ("(s)", filename),
+                                    NULL,
+                                    G_DBUS_CALL_FLAGS_NONE,
+                                    -1,
+                                    NULL,
+                                    NULL);
+        p = g_slist_next(p);
+        g_free(filename);
+      }
+
+      g_slist_free(images_to_load);
+      g_object_unref(connection);
+    }
+
+    return 1;
+  }
 
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
@@ -717,8 +769,12 @@ int dt_init(int argc, char *argv[], const int init_gui)
     else
       gtk_accel_map_save(keyfile); // Save the default keymap if none is present
 
+    // I doubt that connecting to dbus for darktable-cli makes sense
+    darktable.dbus = dt_dbus_init();
+
     // load image(s) specified on cmdline
-    if (images_to_load)
+    int id = 0;
+    if(images_to_load)
     {
       // If only one image is listed, attempt to load it in darkroom
       gboolean load_in_dr = (g_slist_next(images_to_load) == NULL);
@@ -726,12 +782,12 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
       while (p != NULL)
       {
-	dt_load_from_string((gchar*)p->data, load_in_dr);
-	p = g_slist_next(p);
+        id = MAX(id, dt_load_from_string((gchar*)p->data, load_in_dr));
+        p = g_slist_next(p);
       }
 
-      if (!load_in_dr)
-	dt_ctl_switch_mode_to(DT_LIBRARY);
+      if (!load_in_dr || id == 0)
+        dt_ctl_switch_mode_to(DT_LIBRARY);
 
       g_slist_free(images_to_load);
     }
@@ -758,6 +814,8 @@ void dt_cleanup()
 
   if(init_gui)
   {
+    dt_dbus_destroy(darktable.dbus);
+
     dt_control_write_config(darktable.control);
     dt_control_shutdown(darktable.control);
 
