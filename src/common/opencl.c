@@ -51,6 +51,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   cl->use_events = (handles > 0);
 
   cl->avoid_atomics = dt_conf_get_bool("opencl_avoid_atomics");
+  cl->async_pixelpipe = dt_conf_get_bool("opencl_async_pixelpipe");
   cl->synch_cache = dt_conf_get_bool("opencl_synch_cache");
   cl->micro_nap = dt_conf_get_int("opencl_micro_nap");
   cl->dlocl = NULL;

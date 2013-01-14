@@ -79,6 +79,13 @@
     <longdescription>a positive non-zero integer defines the number of event handles that darktable may have opened on a device. a value of zero does not pose any restrictions, bearing the risk of hitting the device's resource limits. a value of -1 completely prevents the use of event handles.</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>opencl_async_pixelpipe</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>run opencl pixelpipe asynchronously</shortdescription>
+    <longdescription>if set to TRUE opencl pixelpipe will not be synchronized on a per-module basis. this can improve pixelpipe latency. however, potential opencl errors would be detected late; in such a case the complete pixelpipe needs to be reprocessed instead of only a single module.</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>opencl_synch_cache</name>
     <type>bool</type>
     <default>false</default>
