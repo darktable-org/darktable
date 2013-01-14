@@ -72,7 +72,8 @@ typedef struct dt_iop_denoiseprofile_global_data_t
   int kernel_denoiseprofile_dist;
   int kernel_denoiseprofile_horiz;
   int kernel_denoiseprofile_vert;
-  int kernel_denoiseprofile_accu;
+  int kernel_denoiseprofile_accu_pq;
+  int kernel_denoiseprofile_accu_mq;
   int kernel_denoiseprofile_finish;
 }
 dt_iop_denoiseprofile_global_data_t;
@@ -981,17 +982,28 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       if(err != CL_SUCCESS) goto error;
 
 
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 0, sizeof(cl_mem), (void *)&dev_tmp);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 1, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 2, sizeof(cl_mem), (void *)&dev_U4);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 3, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 4, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 5, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 6, 2*sizeof(int), (void *)&q);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_accu, sizes);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu_pq, 0, sizeof(cl_mem), (void *)&dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu_pq, 1, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu_pq, 2, sizeof(cl_mem), (void *)&dev_U4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu_pq, 3, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu_pq, 4, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu_pq, 5, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu_pq, 6, 2*sizeof(int), (void *)&q);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_accu_pq, sizes);
       if(err != CL_SUCCESS) goto error;
 
-      //dt_opencl_finish(devid);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu_mq, 0, sizeof(cl_mem), (void *)&dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu_mq, 1, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu_mq, 2, sizeof(cl_mem), (void *)&dev_U4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu_mq, 3, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu_mq, 4, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu_mq, 5, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu_mq, 6, 2*sizeof(int), (void *)&q);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_accu_mq, sizes);
+      if(err != CL_SUCCESS) goto error;
+
+
+      dt_opencl_finish(devid);
 
       // indirectly give gpu some air to breathe (and to do display related stuff)
       dt_iop_nap(darktable.opencl->micro_nap);
@@ -1125,7 +1137,8 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_denoiseprofile_dist         = dt_opencl_create_kernel(program, "denoiseprofile_dist");
   gd->kernel_denoiseprofile_horiz        = dt_opencl_create_kernel(program, "denoiseprofile_horiz");
   gd->kernel_denoiseprofile_vert         = dt_opencl_create_kernel(program, "denoiseprofile_vert");
-  gd->kernel_denoiseprofile_accu         = dt_opencl_create_kernel(program, "denoiseprofile_accu");
+  gd->kernel_denoiseprofile_accu_pq      = dt_opencl_create_kernel(program, "denoiseprofile_accu_pq");
+  gd->kernel_denoiseprofile_accu_mq      = dt_opencl_create_kernel(program, "denoiseprofile_accu_mq");
   gd->kernel_denoiseprofile_finish       = dt_opencl_create_kernel(program, "denoiseprofile_finish");
 }
 
@@ -1137,7 +1150,8 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_dist);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_horiz);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_vert);
-  dt_opencl_free_kernel(gd->kernel_denoiseprofile_accu);
+  dt_opencl_free_kernel(gd->kernel_denoiseprofile_accu_pq);
+  dt_opencl_free_kernel(gd->kernel_denoiseprofile_accu_mq);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_finish);
   free(module->data);
   module->data = NULL;

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 johannes hanika.
+    copyright (c) 2011--2013 johannes hanika.
     copyright (c) 2012--2013 Ulrich Pegelow.
 
     darktable is free software: you can redistribute it and/or modify
@@ -186,7 +186,7 @@ denoiseprofile_vert(read_only image2d_t U4_in, write_only image2d_t U4_out, cons
 
 
 kernel void
-denoiseprofile_accu(read_only image2d_t in, read_only image2d_t U2_in, read_only image2d_t U4_in,
+denoiseprofile_accu_pq(read_only image2d_t in, read_only image2d_t U2_in, read_only image2d_t U4_in,
              write_only image2d_t U2_out, const int width, const int height, 
              const int2 q)
 {
@@ -196,21 +196,39 @@ denoiseprofile_accu(read_only image2d_t in, read_only image2d_t U2_in, read_only
   if(x >= width || y >= height) return;
 
   float4 u1_pq = read_imagef(in, sampleri, (int2)(x, y) + q);
-  float4 u1_mq = read_imagef(in, sampleri, (int2)(x, y) - q);
 
   float4 u2    = read_imagef(U2_in, sampleri, (int2)(x, y));
 
   float  u4    = read_imagef(U4_in, sampleri, (int2)(x, y)).x;
+
+  u2.xyz += (u4 * u1_pq).xyz;
+  u2.w += u4;
+
+  write_imagef(U2_out, (int2)(x, y), u2);
+}
+
+
+kernel void
+denoiseprofile_accu_mq(read_only image2d_t in, read_only image2d_t U2_in, read_only image2d_t U4_in,
+             write_only image2d_t U2_out, const int width, const int height, 
+             const int2 q)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 u1_mq = read_imagef(in, sampleri, (int2)(x, y) - q);
+
+  float4 u2    = read_imagef(U2_in, sampleri, (int2)(x, y));
+
   float  u4_mq = read_imagef(U4_in, sampleri, (int2)(x, y) - q).x;
 
-  float u3 = u2.w;
   float u4_mq_dd = u4_mq * ddirac(q);
 
-  u2 += (u4 * u1_pq) + (u4_mq_dd * u1_mq);
-  u3 += (u4 + u4_mq_dd);
+  u2.xyz += (u4_mq_dd * u1_mq).xyz;
+  u2.w += u4_mq_dd;
 
-  u2.w = u3;
-  
   write_imagef(U2_out, (int2)(x, y), u2);
 }
 
