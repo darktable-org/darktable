@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2012 johannes hanika.
+    copyright (c) 2010--2012 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -172,7 +173,7 @@ typedef struct darktable_t
   struct dt_image_cache_t        *image_cache;
   struct dt_bauhaus_t            *bauhaus;
   const struct dt_database_t     *db;
-  const struct dt_fswatch_t	     *fswatch;
+  const struct dt_fswatch_t      *fswatch;
   const struct dt_pwstorage_t    *pwstorage;
   const struct dt_camctl_t       *camctl;
   const struct dt_collection_t   *collection;
@@ -181,6 +182,7 @@ typedef struct darktable_t
   struct dt_imageio_t            *imageio;
   struct dt_opencl_t             *opencl;
   struct dt_blendop_t            *blendop;
+  struct dt_dbus_t               *dbus;
   dt_pthread_mutex_t db_insert;
   dt_pthread_mutex_t plugin_threadsafe;
   dt_pthread_mutex_t capabilities_threadsafe;

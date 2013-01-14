@@ -874,6 +874,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
     snprintf(hist->multi_name,128,"%s",multi_name);
     hist->multi_priority = multi_priority;
+
     if(hist->module->version() != modversion || hist->module->params_size != sqlite3_column_bytes(stmt, 4) ||
         strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op))
     {
@@ -1325,7 +1326,7 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, i
     if ( module->priority <= pmax && module->priority >= pmin)
     {
       dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *) (pieces->data);
-  
+
       module->distort_transform(module,piece,points,points_count);
     }
     modules = g_list_next(modules);
@@ -1345,7 +1346,7 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
     if ( module->priority <= pmax && module->priority >= pmin)
     {
       dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *) (pieces->data);
-      
+
       module->distort_backtransform(module,piece,points,points_count);
     }
     modules = g_list_previous(modules);

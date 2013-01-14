@@ -26,6 +26,7 @@ src/control/jobs/image_jobs.c
 src/develop/blend_gui.c
 src/develop/develop.c
 src/develop/imageop.c
+src/develop/lightroom.c
 src/develop/tiling.c
 src/dtgtk/resetlabel.c
 src/dtgtk/slider.c
