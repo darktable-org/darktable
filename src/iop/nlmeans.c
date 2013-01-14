@@ -70,8 +70,7 @@ typedef struct dt_iop_nlmeans_global_data_t
   int kernel_nlmeans_dist;
   int kernel_nlmeans_horiz;
   int kernel_nlmeans_vert;
-  int kernel_nlmeans_accu_pq;
-  int kernel_nlmeans_accu_mq;
+  int kernel_nlmeans_accu;
   int kernel_nlmeans_finish;
 }
 dt_iop_nlmeans_global_data_t;
@@ -290,28 +289,17 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       if(err != CL_SUCCESS) goto error;
 
 
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu_pq, 0, sizeof(cl_mem), (void *)&dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu_pq, 1, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu_pq, 2, sizeof(cl_mem), (void *)&dev_U4);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu_pq, 3, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu_pq, 4, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu_pq, 5, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu_pq, 6, 2*sizeof(int), (void *)&q);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_accu_pq, sizes);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 0, sizeof(cl_mem), (void *)&dev_in);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 1, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 2, sizeof(cl_mem), (void *)&dev_U4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 3, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 4, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 5, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 6, 2*sizeof(int), (void *)&q);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_accu, sizes);
       if(err != CL_SUCCESS) goto error;
 
-
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu_mq, 0, sizeof(cl_mem), (void *)&dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu_mq, 1, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu_mq, 2, sizeof(cl_mem), (void *)&dev_U4);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu_mq, 3, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu_mq, 4, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu_mq, 5, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu_mq, 6, 2*sizeof(int), (void *)&q);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_accu_mq, sizes);
-      if(err != CL_SUCCESS) goto error;
-
-      dt_opencl_finish(devid);
+      //dt_opencl_finish(devid);
 
       // indirectly give gpu some air to breathe (and to do display related stuff)
       dt_iop_nap(darktable.opencl->micro_nap);
@@ -588,13 +576,12 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 5; // nlmeans.cl, from programs.conf
   dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)malloc(sizeof(dt_iop_nlmeans_global_data_t));
   module->data = gd;
-  gd->kernel_nlmeans_init    = dt_opencl_create_kernel(program, "nlmeans_init");
-  gd->kernel_nlmeans_dist    = dt_opencl_create_kernel(program, "nlmeans_dist");
-  gd->kernel_nlmeans_horiz   = dt_opencl_create_kernel(program, "nlmeans_horiz");
-  gd->kernel_nlmeans_vert    = dt_opencl_create_kernel(program, "nlmeans_vert");
-  gd->kernel_nlmeans_accu_pq = dt_opencl_create_kernel(program, "nlmeans_accu_pq");
-  gd->kernel_nlmeans_accu_mq = dt_opencl_create_kernel(program, "nlmeans_accu_mq");
-  gd->kernel_nlmeans_finish  = dt_opencl_create_kernel(program, "nlmeans_finish");
+  gd->kernel_nlmeans_init   = dt_opencl_create_kernel(program, "nlmeans_init");
+  gd->kernel_nlmeans_dist   = dt_opencl_create_kernel(program, "nlmeans_dist");
+  gd->kernel_nlmeans_horiz  = dt_opencl_create_kernel(program, "nlmeans_horiz");
+  gd->kernel_nlmeans_vert   = dt_opencl_create_kernel(program, "nlmeans_vert");
+  gd->kernel_nlmeans_accu   = dt_opencl_create_kernel(program, "nlmeans_accu");
+  gd->kernel_nlmeans_finish = dt_opencl_create_kernel(program, "nlmeans_finish");
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -604,8 +591,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_nlmeans_dist);
   dt_opencl_free_kernel(gd->kernel_nlmeans_horiz);
   dt_opencl_free_kernel(gd->kernel_nlmeans_vert);
-  dt_opencl_free_kernel(gd->kernel_nlmeans_accu_pq);
-  dt_opencl_free_kernel(gd->kernel_nlmeans_accu_mq);
+  dt_opencl_free_kernel(gd->kernel_nlmeans_accu);
   dt_opencl_free_kernel(gd->kernel_nlmeans_finish);
   free(module->data);
   module->data = NULL;
