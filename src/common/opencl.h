@@ -187,11 +187,19 @@ int dt_opencl_read_host_from_device(const int devid, void *host, void *device, c
 
 int dt_opencl_read_host_from_device_rowpitch(const int devid, void *host, void *device, const int width, const int height, const int rowpitch);
 
+int dt_opencl_read_host_from_device_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int bpp);
+
+int dt_opencl_read_host_from_device_rowpitch_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int rowpitch);
+
 int dt_opencl_read_host_from_device_raw(const int devid, void *host, void *device, const size_t *origin, const size_t *region, const int rowpitch, const int blocking);
 
 int dt_opencl_write_host_to_device(const int devid, void *host, void *device, const int width, const int height, const int bpp);
 
 int dt_opencl_write_host_to_device_rowpitch(const int devid, void *host, void *device, const int width, const int height, const int rowpitch);
+
+int dt_opencl_write_host_to_device_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int bpp);
+
+int dt_opencl_write_host_to_device_rowpitch_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int rowpitch);
 
 int dt_opencl_write_host_to_device_raw(const int devid, void *host, void *device, const size_t *origin, const size_t *region, const int rowpitch, const int blocking);
 

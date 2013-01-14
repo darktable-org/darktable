@@ -645,12 +645,23 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           /* input is not on gpu memory -> copy it there */
           if (cl_mem_input == NULL)
           {
-            cl_mem_input = dt_opencl_copy_host_to_device(pipe->devid, input, roi_in.width, roi_in.height, in_bpp);
+            cl_mem_input = dt_opencl_alloc_device(pipe->devid, roi_in.width, roi_in.height, in_bpp);
             if (cl_mem_input == NULL)
             {
               dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't generate input buffer for module %s\n", module->op);
               success_opencl = FALSE;
             }
+
+            if (success_opencl)
+            {
+              cl_int err = dt_opencl_write_host_to_device_non_blocking(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height, in_bpp);
+              if(err != CL_SUCCESS)
+              {
+                dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't copy image to opencl device for module %s\n", module->op);
+                success_opencl = FALSE;
+              }
+            }
+            
           }
 
           if(pipe->shutdown)

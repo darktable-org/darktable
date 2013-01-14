@@ -867,6 +867,21 @@ int dt_opencl_read_host_from_device_rowpitch(const int devid, void *host, void *
   return dt_opencl_read_host_from_device_raw(devid, host, device, origin, region, rowpitch, CL_TRUE);
 }
 
+int dt_opencl_read_host_from_device_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int bpp)
+{
+  return dt_opencl_read_host_from_device_rowpitch_non_blocking(devid, host, device, width, height, bpp*width);
+}
+
+int dt_opencl_read_host_from_device_rowpitch_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int rowpitch)
+{
+  if(!darktable.opencl->inited || devid < 0) return -1;
+  const size_t origin[] = {0, 0, 0};
+  const size_t region[] = {width, height, 1};
+  // non-blocking.
+  return dt_opencl_read_host_from_device_raw(devid, host, device, origin, region, rowpitch, CL_FALSE);
+}
+
+
 int dt_opencl_read_host_from_device_raw(const int devid, void *host, void *device, const size_t *origin, const size_t *region, const int rowpitch, const int blocking)
 {
   if(!darktable.opencl->inited) return -1;
@@ -888,6 +903,20 @@ int dt_opencl_write_host_to_device_rowpitch(const int devid, void *host, void *d
   const size_t region[] = {width, height, 1};
   // blocking.
   return dt_opencl_write_host_to_device_raw(devid, host, device, origin, region, rowpitch, CL_TRUE);
+}
+
+int dt_opencl_write_host_to_device_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int bpp)
+{
+  return dt_opencl_write_host_to_device_rowpitch_non_blocking(devid, host, device, width, height, width*bpp);
+}
+
+int dt_opencl_write_host_to_device_rowpitch_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int rowpitch)
+{
+  if(!darktable.opencl->inited || devid < 0) return -1;
+  const size_t origin[] = {0, 0, 0};
+  const size_t region[] = {width, height, 1};
+  // non-blocking.
+  return dt_opencl_write_host_to_device_raw(devid, host, device, origin, region, rowpitch, CL_FALSE);
 }
 
 int dt_opencl_write_host_to_device_raw(const int devid, void *host, void *device, const size_t *origin, const size_t *region, const int rowpitch, const int blocking)
