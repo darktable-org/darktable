@@ -81,24 +81,15 @@ static float lr2dt_exposure(float value)
 static float lr2dt_vignette_gain(float value)
 {
   lr2dt_t lr2dt_vignette_table[] =
-    {{-100, -0.900}, {-50, -0.650}, {-25, -0.400}, {0, 0},
-     {25, 0.250}, {50, 0.500}, {100, 0.900}};
+    {{-100, -1}, {-50, -0.7}, {0, 0}, {50, 0.5}, {100, 1}};
 
   return get_interpolate (lr2dt_vignette_table, value);
 }
 
-static float  lr2dt_vignette_scale(float value)
+static float lr2dt_vignette_midpoint(float value)
 {
   lr2dt_t lr2dt_vignette_table[] =
-    {{0, 100.0}, {50, 90.0}, {100, 50.0}};
-
-  return get_interpolate (lr2dt_vignette_table, value);
-}
-
-static float  lr2dt_vignette_falloff_scale(float value)
-{
-  lr2dt_t lr2dt_vignette_table[] =
-    {{0, 0.0}, {50, 70.0}, {100, 85.0}};
+    {{0, 74}, {4, 75}, {25, 85}, {50, 100}, {100, 100}};
 
   return get_interpolate (lr2dt_vignette_table, value);
 }
@@ -243,7 +234,9 @@ void dt_lightroom_import (dt_develop_t *dev)
 
   gboolean has_tags = FALSE;
 
-  int n_import = 0;
+  float fratio = 0;         // factor ratio image
+  float crop_roundness = 0; // from lightroom
+  int n_import = 0;         // number of iop imported
 
   xmlAttr* attribute = entryNode->properties;
 
@@ -288,22 +281,29 @@ void dt_lightroom_import (dt_develop_t *dev)
         n_import++;
       }
     }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteMidpoint"))
+    {
+      int v = atoi((char *)value);
+      pv.scale = lr2dt_vignette_midpoint((float)v);
+    }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteStyle"))
     {
       int v = atoi((char *)value);
       if (v == 1) // Highlight Priority
-        pv.saturation = -0.800;
-      else // Color Priority & Paint Overlay
         pv.saturation = -0.300;
+      else // Color Priority & Paint Overlay
+        pv.saturation = -0.200;
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteFeather"))
     {
       int v = atoi((char *)value);
       if (v != 0)
-      {
-        pv.scale = lr2dt_vignette_scale((float)v);
-        pv.falloff_scale = lr2dt_vignette_falloff_scale((float)v);
-      }
+        pv.falloff_scale = (float)v;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteRoundness"))
+    {
+      int v = atoi((char *)value);
+      crop_roundness = (float)v;
     }
 
     xmlFree(value);
@@ -383,6 +383,8 @@ void dt_lightroom_import (dt_develop_t *dev)
       p->ch = 0.5 - (x * sin(rangle) + y * cos(rangle));
     }
 
+    fratio = (float)(p->cw - p->cx) / (float)(p->ch - p->cy);
+
     dt_add_hist (dev, hist, imported);
     refresh_needed=TRUE;
   }
@@ -402,14 +404,29 @@ void dt_lightroom_import (dt_develop_t *dev)
   {
     dt_dev_history_item_t *hist = _new_hist_for (dev, "vignette");
     dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)hist->params;
+    const float base_ratio = 1.325 / 1.5;
 
     p->brightness = pv.brightness;
     p->scale = pv.scale;
     p->falloff_scale = pv.falloff_scale;
-    p->whratio = 1.350;
+    p->whratio = base_ratio * ((float)dev->pipe->iwidth / (float)dev->pipe->iheight);
+    if (has_crop)
+      p->whratio = p->whratio * fratio;
     p->autoratio = FALSE;
     p->saturation = pv.saturation;
     p->dithering = DITHER_8BIT;
+
+    //  Adjust scale and ratio based on the roundness. On Lightroom changing
+    //  the roundness change the width and the height of the vignette.
+
+    if (crop_roundness > 0)
+    {
+      float newratio = p->whratio - (p->whratio - 1) * (crop_roundness / 100.0);
+      float dscale = (1 - (newratio / p->whratio)) / 2.0;
+
+      p->scale = p->scale - dscale * 100.0;
+      p->whratio = newratio;
+    }
 
     dt_add_hist (dev, hist, imported);
     refresh_needed=TRUE;
