@@ -13,6 +13,12 @@
 NOTIFICATION_LINE='// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh'
 VIM_MODELINE='// vim: shiftwidth=2 expandtab tabstop=2 cindent'
 KATE_MODELINE='// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;'
+EMACS_MODELINE='// Local Variables:\
+// mode: C++\
+// c-file-style: "bsd"\
+// c-basic-offset: 2\
+// indent-tabs-mode: nil\
+// End:'
 
 # thank you for collecting these files in tools/beautify_style.sh
 SOURCES=$(find src/ -name "*.c" -or -name "*.cc" -or -name "*.h" | grep -v src/external | grep -v gegl-operations)
@@ -25,12 +31,17 @@ do
 
   TEMPFILE=`tempfile`
   # Check for lines beginning with a comment and a modeline keyword
-  grep -v "^// vim:\|^// kate:\|^// modelines:" "$f" > "$TEMPFILE"
-
+  cat "$f" | \
+    grep -v "^// vim:\|^// kate:\|^// modelines:" | \
+    awk 'BEGIN { f = 1; }\
+      /^\/\/ Local Variables:/ { f = 0; print "FOO";}\
+      { if (f) print; }\
+      /^\/\/ End:/ { f = 1; print "BAR"; }' \
+    > "$TEMPFILE"
   #
   # echo "vim_modeline is: $VIM_MODELINE"
   # echo "kate_modeline is: $KATE_MODELINE"
-  for m in "$NOTIFICATION_LINE" "$VIM_MODELINE" "$KATE_MODELINE";  do
+  for m in "$NOTIFICATION_LINE" "$EMACS_MODELINE" "$VIM_MODELINE" "$KATE_MODELINE";  do
     # debug
     # echo "  appending $m"
     echo "$m" >> "$TEMPFILE"
