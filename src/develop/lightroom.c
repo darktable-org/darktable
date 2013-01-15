@@ -24,6 +24,7 @@
 #include "develop/blend.h"
 #include "iop/clipping.h"
 #include "iop/exposure.h"
+#include "iop/grain.h"
 #include "iop/vignette.h"
 #include "control/control.h"
 
@@ -92,6 +93,22 @@ static float lr2dt_vignette_midpoint(float value)
     {{0, 74}, {4, 75}, {25, 85}, {50, 100}, {100, 100}};
 
   return get_interpolate (lr2dt_vignette_table, value);
+}
+
+static float lr2dt_grain_amount(float value)
+{
+  lr2dt_t lr2dt_grain_table[] =
+    {{0, 0}, {25, 20}, {50, 40}, {100, 80}};
+
+  return get_interpolate (lr2dt_grain_table, value);
+}
+
+static float lr2dt_grain_frequency(float value)
+{
+  lr2dt_t lr2dt_grain_table[] =
+    {{0, 100}, {50, 100}, {75, 400}, {100, 800}};
+
+  return get_interpolate (lr2dt_grain_table, value) / 53.3;
 }
 
 static dt_dev_history_item_t *_new_hist_for (dt_develop_t *dev, char *opname)
@@ -232,6 +249,10 @@ void dt_lightroom_import (dt_develop_t *dev)
   memset(&pv, 0, sizeof(pv));
   gboolean has_vignette = FALSE;
 
+  dt_iop_grain_params_t pg;
+  memset(&pv, 0, sizeof(pg));
+  gboolean has_grain = FALSE;
+
   gboolean has_tags = FALSE;
 
   float fratio = 0;         // factor ratio image
@@ -304,6 +325,22 @@ void dt_lightroom_import (dt_develop_t *dev)
     {
       int v = atoi((char *)value);
       crop_roundness = (float)v;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "GrainAmount"))
+    {
+      int v = atoi((char *)value);
+      if (v != 0)
+      {
+        has_grain = TRUE;
+        pg.strength = lr2dt_grain_amount((float)v);
+        n_import++;
+      }
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "GrainFrequency"))
+    {
+      int v = atoi((char *)value);
+      if (v != 0)
+        pg.scale = lr2dt_grain_frequency((float)v);
     }
 
     xmlFree(value);
@@ -395,6 +432,18 @@ void dt_lightroom_import (dt_develop_t *dev)
     dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)hist->params;
 
     p->black = pe.black;
+
+    dt_add_hist (dev, hist, imported);
+    refresh_needed=TRUE;
+  }
+
+  if (has_grain)
+  {
+    dt_dev_history_item_t *hist = _new_hist_for (dev, "grain");
+    dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)hist->params;
+
+    p->scale = pg.scale;
+    p->strength = pg.strength;
 
     dt_add_hist (dev, hist, imported);
     refresh_needed=TRUE;
