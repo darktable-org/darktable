@@ -1862,8 +1862,8 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/clipping/custom_aspect</name>
-    <type>float</type>
-    <default>1.5</default>
+    <type>string</type>
+    <default>3:2</default>
     <shortdescription>last chosen custom aspect ratio</shortdescription>
     <longdescription/>
   </dtconfig>
@@ -1872,6 +1872,13 @@
     <type>int</type>
     <default>1</default>
     <shortdescription>last chosen aspect ratio preset</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/clipping/aspect_flipped</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription>indicate if last aspect ratio preset is flipped</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
