@@ -1390,13 +1390,17 @@ void gui_update(struct dt_iop_module_t *self)
     else
     {
       float whratio = ((float)self->dev->image_storage.width / (float)self->dev->image_storage.height) * (fabsf(p->cw) - p-> cx) / (fabsf(p->ch) - p->cy);
+      float closest = 1000.0;
 
       for (int k=1; k<NUM_RATIOS; k++)
-        if (fabsf(g->aspect_ratios[k] - whratio) < 0.01)
+        if (fabsf(g->aspect_ratios[k] - whratio) < closest)
         {
+          closest = fabsf(g->aspect_ratios[k] - whratio);
           act = k;
-          break;
         }
+
+      if (closest > 0.004)
+        act = 0;
     }
   }
   if (act < -1 || act >= NUM_RATIOS)
