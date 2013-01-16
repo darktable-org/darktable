@@ -240,6 +240,7 @@ void dt_lightroom_import (dt_develop_t *dev)
   dt_iop_clipping_params_t pc;
   memset(&pc, 0, sizeof(pc));
   gboolean has_crop = FALSE;
+  gboolean has_flip = FALSE;
 
   dt_iop_exposure_params_t pe;
   memset(&pe, 0, sizeof(pe));
@@ -256,6 +257,7 @@ void dt_lightroom_import (dt_develop_t *dev)
   gboolean has_tags = FALSE;
 
   float fratio = 0;         // factor ratio image
+  int flip = 0;             // flip value
   float crop_roundness = 0; // from lightroom
   int n_import = 0;         // number of iop imported
 
@@ -274,6 +276,15 @@ void dt_lightroom_import (dt_develop_t *dev)
       pc.ch = atof((char *)value);
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "CropAngle"))
       pc.angle = -atof((char *)value);
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Orientation"))
+    {
+      int v = atoi((char *)value);
+      if (v == 1) flip = 0;
+      else if (v == 2) flip = 1;
+      else if (v == 3) flip = 3;
+      else if (v == 4) flip = 2;
+      if (flip) has_flip = TRUE;
+    }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HasCrop"))
     {
       if (!xmlStrcmp(value, (const xmlChar *)"True"))
@@ -386,41 +397,69 @@ void dt_lightroom_import (dt_develop_t *dev)
 
   //  Integrates into the history all the imported iop
 
-  if (has_crop)
+  if (has_crop || has_flip)
   {
     dt_dev_history_item_t *hist = _new_hist_for (dev, "clipping");
     dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)hist->params;
 
-    p->angle = pc.angle;
-    p->crop_auto = 0;
-
-    if (p->angle == 0)
+    if (has_crop)
     {
-      p->cx = pc.cx;
-      p->cy = pc.cy;
-      p->cw = pc.cw;
-      p->ch = pc.ch;
+      p->angle = pc.angle;
+      p->crop_auto = 0;
+
+      if (p->angle == 0)
+      {
+        p->cx = pc.cx;
+        p->cy = pc.cy;
+        p->cw = pc.cw;
+        p->ch = pc.ch;
+      }
+      else
+      {
+        const float rangle = -pc.angle * (3.141592 / 180);
+        float x, y;
+
+        // do the rotation (rangle) using center of image (0.5, 0.5)
+
+        x = pc.cx - 0.5;
+        y = 0.5 - pc.cy;
+        p->cx = 0.5 + x * cos(rangle) - y * sin(rangle);
+        p->cy = 0.5 - (x * sin(rangle) + y * cos(rangle));
+
+        x = pc.cw - 0.5;
+        y = 0.5 - pc.ch;
+
+        p->cw = 0.5 + x * cos(rangle) - y * sin(rangle);
+        p->ch = 0.5 - (x * sin(rangle) + y * cos(rangle));
+      }
     }
     else
     {
-      const float rangle = -pc.angle * (3.141592 / 180);
-      float x, y;
-
-      // do the rotation (rangle) using center of image (0.5, 0.5)
-
-      x = pc.cx - 0.5;
-      y = 0.5 - pc.cy;
-      p->cx = 0.5 + x * cos(rangle) - y * sin(rangle);
-      p->cy = 0.5 - (x * sin(rangle) + y * cos(rangle));
-
-      x = pc.cw - 0.5;
-      y = 0.5 - pc.ch;
-
-      p->cw = 0.5 + x * cos(rangle) - y * sin(rangle);
-      p->ch = 0.5 - (x * sin(rangle) + y * cos(rangle));
+      p->angle = 0;
+      p->crop_auto = 0;
+      p->cx = 0;
+      p->cy = 0;
+      p->cw = 1;
+      p->ch = 1;
     }
 
     fratio = (float)(p->cw - p->cx) / (float)(p->ch - p->cy);
+
+    if (has_flip)
+    {
+      if (flip & 1)
+      {
+        float cx = p->cx;
+        p->cx = 1.0 - p->cw;
+        p->cw = (1.0 - cx) * -1.0;
+      }
+      if (flip & 2)
+      {
+        float cy = p->cy;
+        p->cy = 1.0 - p->ch;
+        p->ch = (1.0 - cy) * -1.0;
+      }
+    }
 
     dt_add_hist (dev, hist, imported);
     refresh_needed=TRUE;
