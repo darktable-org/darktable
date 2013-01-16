@@ -443,7 +443,7 @@ void dt_lightroom_import (dt_develop_t *dev)
       p->ch = 1;
     }
 
-    fratio = (float)(p->cw - p->cx) / (float)(p->ch - p->cy);
+    fratio = (p->cw - p->cx) / (p->ch - p->cy);
 
     if (has_flip)
     {
