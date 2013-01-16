@@ -1379,7 +1379,30 @@ void gui_update(struct dt_iop_module_t *self)
   }
   dt_bauhaus_combobox_set(g->hvflip, hvflip);
 
-  int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
+  //  set aspect ratio based on the current image, if not found let's default
+  //  to free aspect.
+
+  int act = 0;
+  {
+    //  if no clipping yet, use default aspect ratio
+    if (fabsf(p->cw) == 1.0 && p->cx == 0.0 && fabsf(p->ch) == 1.0 && p->cy == 0.0)
+      act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
+    else
+    {
+      float whratio = ((float)self->dev->image_storage.width * (fabsf(p->cw) - p-> cx)) / ((float)self->dev->image_storage.height * (fabsf(p->ch) - p->cy));
+      float closest = 1000.0;
+
+      for (int k=1; k<NUM_RATIOS; k++)
+        if (fabsf(g->aspect_ratios[k] - whratio) < closest)
+        {
+          closest = fabsf(g->aspect_ratios[k] - whratio);
+          act = k;
+        }
+
+      if (closest > 0.003)
+        act = 0;
+    }
+  }
   if (act < -1 || act >= NUM_RATIOS)
     act = 0;
 

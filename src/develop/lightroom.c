@@ -24,6 +24,7 @@
 #include "develop/blend.h"
 #include "iop/clipping.h"
 #include "iop/exposure.h"
+#include "iop/grain.h"
 #include "iop/vignette.h"
 #include "control/control.h"
 
@@ -81,26 +82,33 @@ static float lr2dt_exposure(float value)
 static float lr2dt_vignette_gain(float value)
 {
   lr2dt_t lr2dt_vignette_table[] =
-    {{-100, -0.900}, {-50, -0.650}, {-25, -0.400}, {0, 0},
-     {25, 0.250}, {50, 0.500}, {100, 0.900}};
+    {{-100, -1}, {-50, -0.7}, {0, 0}, {50, 0.5}, {100, 1}};
 
   return get_interpolate (lr2dt_vignette_table, value);
 }
 
-static float  lr2dt_vignette_scale(float value)
+static float lr2dt_vignette_midpoint(float value)
 {
   lr2dt_t lr2dt_vignette_table[] =
-    {{0, 100.0}, {50, 90.0}, {100, 50.0}};
+    {{0, 74}, {4, 75}, {25, 85}, {50, 100}, {100, 100}};
 
   return get_interpolate (lr2dt_vignette_table, value);
 }
 
-static float  lr2dt_vignette_falloff_scale(float value)
+static float lr2dt_grain_amount(float value)
 {
-  lr2dt_t lr2dt_vignette_table[] =
-    {{0, 0.0}, {50, 70.0}, {100, 85.0}};
+  lr2dt_t lr2dt_grain_table[] =
+    {{0, 0}, {25, 20}, {50, 40}, {100, 80}};
 
-  return get_interpolate (lr2dt_vignette_table, value);
+  return get_interpolate (lr2dt_grain_table, value);
+}
+
+static float lr2dt_grain_frequency(float value)
+{
+  lr2dt_t lr2dt_grain_table[] =
+    {{0, 100}, {50, 100}, {75, 400}, {100, 800}};
+
+  return get_interpolate (lr2dt_grain_table, value) / 53.3;
 }
 
 static dt_dev_history_item_t *_new_hist_for (dt_develop_t *dev, char *opname)
@@ -232,6 +240,7 @@ void dt_lightroom_import (dt_develop_t *dev)
   dt_iop_clipping_params_t pc;
   memset(&pc, 0, sizeof(pc));
   gboolean has_crop = FALSE;
+  gboolean has_flip = FALSE;
 
   dt_iop_exposure_params_t pe;
   memset(&pe, 0, sizeof(pe));
@@ -241,9 +250,16 @@ void dt_lightroom_import (dt_develop_t *dev)
   memset(&pv, 0, sizeof(pv));
   gboolean has_vignette = FALSE;
 
+  dt_iop_grain_params_t pg;
+  memset(&pv, 0, sizeof(pg));
+  gboolean has_grain = FALSE;
+
   gboolean has_tags = FALSE;
 
-  int n_import = 0;
+  float fratio = 0;         // factor ratio image
+  int flip = 0;             // flip value
+  float crop_roundness = 0; // from lightroom
+  int n_import = 0;         // number of iop imported
 
   xmlAttr* attribute = entryNode->properties;
 
@@ -260,6 +276,15 @@ void dt_lightroom_import (dt_develop_t *dev)
       pc.ch = atof((char *)value);
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "CropAngle"))
       pc.angle = -atof((char *)value);
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Orientation"))
+    {
+      int v = atoi((char *)value);
+      if (v == 1) flip = 0;
+      else if (v == 2) flip = 1;
+      else if (v == 3) flip = 3;
+      else if (v == 4) flip = 2;
+      if (flip) has_flip = TRUE;
+    }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HasCrop"))
     {
       if (!xmlStrcmp(value, (const xmlChar *)"True"))
@@ -288,22 +313,45 @@ void dt_lightroom_import (dt_develop_t *dev)
         n_import++;
       }
     }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteMidpoint"))
+    {
+      int v = atoi((char *)value);
+      pv.scale = lr2dt_vignette_midpoint((float)v);
+    }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteStyle"))
     {
       int v = atoi((char *)value);
       if (v == 1) // Highlight Priority
-        pv.saturation = -0.800;
-      else // Color Priority & Paint Overlay
         pv.saturation = -0.300;
+      else // Color Priority & Paint Overlay
+        pv.saturation = -0.200;
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteFeather"))
     {
       int v = atoi((char *)value);
       if (v != 0)
+        pv.falloff_scale = (float)v;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteRoundness"))
+    {
+      int v = atoi((char *)value);
+      crop_roundness = (float)v;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "GrainAmount"))
+    {
+      int v = atoi((char *)value);
+      if (v != 0)
       {
-        pv.scale = lr2dt_vignette_scale((float)v);
-        pv.falloff_scale = lr2dt_vignette_falloff_scale((float)v);
+        has_grain = TRUE;
+        pg.strength = lr2dt_grain_amount((float)v);
+        n_import++;
       }
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "GrainFrequency"))
+    {
+      int v = atoi((char *)value);
+      if (v != 0)
+        pg.scale = lr2dt_grain_frequency((float)v);
     }
 
     xmlFree(value);
@@ -349,38 +397,68 @@ void dt_lightroom_import (dt_develop_t *dev)
 
   //  Integrates into the history all the imported iop
 
-  if (has_crop)
+  if (has_crop || has_flip)
   {
     dt_dev_history_item_t *hist = _new_hist_for (dev, "clipping");
     dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)hist->params;
 
-    p->angle = pc.angle;
-    p->crop_auto = 0;
-
-    if (p->angle == 0)
+    if (has_crop)
     {
-      p->cx = pc.cx;
-      p->cy = pc.cy;
-      p->cw = pc.cw;
-      p->ch = pc.ch;
+      p->angle = pc.angle;
+      p->crop_auto = 0;
+
+      if (p->angle == 0)
+      {
+        p->cx = pc.cx;
+        p->cy = pc.cy;
+        p->cw = pc.cw;
+        p->ch = pc.ch;
+      }
+      else
+      {
+        const float rangle = -pc.angle * (3.141592 / 180);
+        float x, y;
+
+        // do the rotation (rangle) using center of image (0.5, 0.5)
+
+        x = pc.cx - 0.5;
+        y = 0.5 - pc.cy;
+        p->cx = 0.5 + x * cos(rangle) - y * sin(rangle);
+        p->cy = 0.5 - (x * sin(rangle) + y * cos(rangle));
+
+        x = pc.cw - 0.5;
+        y = 0.5 - pc.ch;
+
+        p->cw = 0.5 + x * cos(rangle) - y * sin(rangle);
+        p->ch = 0.5 - (x * sin(rangle) + y * cos(rangle));
+      }
     }
     else
     {
-      const float rangle = -pc.angle * (3.141592 / 180);
-      float x, y;
+      p->angle = 0;
+      p->crop_auto = 0;
+      p->cx = 0;
+      p->cy = 0;
+      p->cw = 1;
+      p->ch = 1;
+    }
 
-      // do the rotation (rangle) using center of image (0.5, 0.5)
+    fratio = (p->cw - p->cx) / (p->ch - p->cy);
 
-      x = pc.cx - 0.5;
-      y = 0.5 - pc.cy;
-      p->cx = 0.5 + x * cos(rangle) - y * sin(rangle);
-      p->cy = 0.5 - (x * sin(rangle) + y * cos(rangle));
-
-      x = pc.cw - 0.5;
-      y = 0.5 - pc.ch;
-
-      p->cw = 0.5 + x * cos(rangle) - y * sin(rangle);
-      p->ch = 0.5 - (x * sin(rangle) + y * cos(rangle));
+    if (has_flip)
+    {
+      if (flip & 1)
+      {
+        float cx = p->cx;
+        p->cx = 1.0 - p->cw;
+        p->cw = (1.0 - cx) * -1.0;
+      }
+      if (flip & 2)
+      {
+        float cy = p->cy;
+        p->cy = 1.0 - p->ch;
+        p->ch = (1.0 - cy) * -1.0;
+      }
     }
 
     dt_add_hist (dev, hist, imported);
@@ -398,18 +476,45 @@ void dt_lightroom_import (dt_develop_t *dev)
     refresh_needed=TRUE;
   }
 
+  if (has_grain)
+  {
+    dt_dev_history_item_t *hist = _new_hist_for (dev, "grain");
+    dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)hist->params;
+
+    p->scale = pg.scale;
+    p->strength = pg.strength;
+
+    dt_add_hist (dev, hist, imported);
+    refresh_needed=TRUE;
+  }
+
   if (has_vignette)
   {
     dt_dev_history_item_t *hist = _new_hist_for (dev, "vignette");
     dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)hist->params;
+    const float base_ratio = 1.325 / 1.5;
 
     p->brightness = pv.brightness;
     p->scale = pv.scale;
     p->falloff_scale = pv.falloff_scale;
-    p->whratio = 1.350;
+    p->whratio = base_ratio * ((float)dev->pipe->iwidth / (float)dev->pipe->iheight);
+    if (has_crop)
+      p->whratio = p->whratio * fratio;
     p->autoratio = FALSE;
     p->saturation = pv.saturation;
     p->dithering = DITHER_8BIT;
+
+    //  Adjust scale and ratio based on the roundness. On Lightroom changing
+    //  the roundness change the width and the height of the vignette.
+
+    if (crop_roundness > 0)
+    {
+      float newratio = p->whratio - (p->whratio - 1) * (crop_roundness / 100.0);
+      float dscale = (1 - (newratio / p->whratio)) / 2.0;
+
+      p->scale = p->scale - dscale * 100.0;
+      p->whratio = newratio;
+    }
 
     dt_add_hist (dev, hist, imported);
     refresh_needed=TRUE;
