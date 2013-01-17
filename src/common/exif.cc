@@ -1344,7 +1344,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           /* check if we got blendop from xmp */
           unsigned char *blendop_params = NULL;
           unsigned int blendop_size = 0;
-          if(blendop != xmpData.end() && blendop->size() > 0 && blendop->toString(i).c_str() != NULL)
+          if(blendop != xmpData.end() && blendop->size() > 0 && blendop->count () > i && blendop->toString(i).c_str() != NULL)
           {
             blendop_size = strlen(blendop->toString(i).c_str())/2;
             blendop_params = (unsigned char *)malloc(blendop_size);
