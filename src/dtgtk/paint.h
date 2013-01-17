@@ -83,6 +83,16 @@ void dtgtk_cairo_paint_refresh(cairo_t *cr,gint x,gint y,gint w,gint h,gint flag
 void dtgtk_cairo_paint_cancel(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint two boxes indicating portrait/landscape flip */
 void dtgtk_cairo_paint_aspectflip(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a toggle labels background icon */
+void dtgtk_cairo_paint_toggle_labels_tint(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a toggle rejects icon */
+void dtgtk_cairo_paint_toggle_reject(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a toggle altered icon */
+void dtgtk_cairo_paint_toggle_altered(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a toggle labels icon */
+void dtgtk_cairo_paint_toggle_labels(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a toggle stars icon */
+void dtgtk_cairo_paint_toggle_stars(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a color label icon */
 void dtgtk_cairo_paint_label(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint a color picker icon - a pipette for bigger buttons */
@@ -123,6 +133,11 @@ void dtgtk_cairo_paint_rect_portrait(cairo_t *cr,gint x,gint y,gint w,gint h,gin
 void dtgtk_cairo_paint_zoom(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
 /** paint a duplicate/multi instance indicator */
 void dtgtk_cairo_paint_multiinstance(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+
+/** paint a star (as used for ratings) */
+void dtgtk_cairo_paint_star(cairo_t *cr, float x, float y, float r1, float r2);
+/** paint a history label */
+void dtgtk_cairo_paint_altered(cairo_t *cr, const float x, const float y, const float r);
 
 /** paint active modulgroup icon */
 void dtgtk_cairo_paint_modulegroup_active(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);

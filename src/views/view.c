@@ -31,6 +31,7 @@
 #include "views/view.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "dtgtk/paint.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -597,35 +598,35 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwins
   gtk_widget_queue_draw(widget);
 }
 
-static inline void
-dt_view_draw_altered(cairo_t *cr, const float x, const float y, const float r)
-{
-  cairo_new_sub_path(cr);
-  cairo_arc(cr, x, y, r, 0, 2.0f*M_PI);
-  const float dx = r*cosf(M_PI/8.0f), dy = r*sinf(M_PI/8.0f);
-  cairo_move_to(cr, x-dx, y-dy);
-  cairo_curve_to(cr, x, y-2*dy, x, y+2*dy, x+dx, y+dy);
-  cairo_move_to(cr, x-.20*dx, y+.8*dy);
-  cairo_line_to(cr, x-.80*dx, y+.8*dy);
-  cairo_move_to(cr, x+.20*dx, y-.8*dy);
-  cairo_line_to(cr, x+.80*dx, y-.8*dy);
-  cairo_move_to(cr, x+.50*dx, y-.8*dy-0.3*dx);
-  cairo_line_to(cr, x+.50*dx, y-.8*dy+0.3*dx);
-  cairo_stroke(cr);
-}
+//static inline void
+//dt_view_draw_altered(cairo_t *cr, const float x, const float y, const float r)
+//{
+//  cairo_new_sub_path(cr);
+//  cairo_arc(cr, x, y, r, 0, 2.0f*M_PI);
+//  const float dx = r*cosf(M_PI/8.0f), dy = r*sinf(M_PI/8.0f);
+//  cairo_move_to(cr, x-dx, y-dy);
+//  cairo_curve_to(cr, x, y-2*dy, x, y+2*dy, x+dx, y+dy);
+//  cairo_move_to(cr, x-.20*dx, y+.8*dy);
+//  cairo_line_to(cr, x-.80*dx, y+.8*dy);
+//  cairo_move_to(cr, x+.20*dx, y-.8*dy);
+//  cairo_line_to(cr, x+.80*dx, y-.8*dy);
+//  cairo_move_to(cr, x+.50*dx, y-.8*dy-0.3*dx);
+//  cairo_line_to(cr, x+.50*dx, y-.8*dy+0.3*dx);
+//  cairo_stroke(cr);
+//}
 
-static inline void
-dt_view_star(cairo_t *cr, float x, float y, float r1, float r2)
-{
-  const float d = 2.0*M_PI*0.1f;
-  const float dx[10] = {sinf(0.0), sinf(d), sinf(2*d), sinf(3*d), sinf(4*d), sinf(5*d), sinf(6*d), sinf(7*d), sinf(8*d), sinf(9*d)};
-  const float dy[10] = {cosf(0.0), cosf(d), cosf(2*d), cosf(3*d), cosf(4*d), cosf(5*d), cosf(6*d), cosf(7*d), cosf(8*d), cosf(9*d)};
-  cairo_move_to(cr, x+r1*dx[0], y-r1*dy[0]);
-  for(int k=1; k<10; k++)
-    if(k&1) cairo_line_to(cr, x+r2*dx[k], y-r2*dy[k]);
-    else    cairo_line_to(cr, x+r1*dx[k], y-r1*dy[k]);
-  cairo_close_path(cr);
-}
+//static inline void
+//dt_view_star(cairo_t *cr, float x, float y, float r1, float r2)
+//{
+//  const float d = 2.0*M_PI*0.1f;
+//  const float dx[10] = {sinf(0.0), sinf(d), sinf(2*d), sinf(3*d), sinf(4*d), sinf(5*d), sinf(6*d), sinf(7*d), sinf(8*d), sinf(9*d)};
+//  const float dy[10] = {cosf(0.0), cosf(d), cosf(2*d), cosf(3*d), cosf(4*d), cosf(5*d), cosf(6*d), cosf(7*d), cosf(8*d), cosf(9*d)};
+//  cairo_move_to(cr, x+r1*dx[0], y-r1*dy[0]);
+//  for(int k=1; k<10; k++)
+//    if(k&1) cairo_line_to(cr, x+r2*dx[k], y-r2*dy[k]);
+//    else    cairo_line_to(cr, x+r1*dx[k], y-r1*dy[k]);
+//  cairo_close_path(cr);
+//}
 
 
 void
@@ -639,7 +640,7 @@ dt_view_image_expose(
   int32_t px,
   int32_t py,
   gboolean full_preview)
-{
+{ 
   const double start = dt_get_wtime();
   // some performance tuning stuff, for your pleasure.
   // on my machine with 7 image per row it seems grouping has the largest
@@ -664,7 +665,7 @@ dt_view_image_expose(
 #endif
 
   cairo_save (cr);
-  float bgcol = 0.4, fontcol = 0.425, bordercol = 0.1, outlinecol = 0.2;
+  float bgcol = 0.25, fontcol = 0.425, bordercol = 0.1, outlinecol = 0.15;
   int selected = 0, altered = 0, imgsel = -1, is_grouped = 0;
   // this is a gui thread only thing. no mutex required:
   imgsel = darktable.control->global_settings.lib_image_mouse_over_id;
@@ -707,15 +708,15 @@ dt_view_image_expose(
 
   if(selected == 1)
   {
-    outlinecol = 0.4;
-    bgcol = 0.6;
-    fontcol = 0.5;
+    bgcol = 0.4;
+    fontcol = 0.3;
+    outlinecol = 0.2;
   }
   if(imgsel == imgid)
   {
-    bgcol = 0.8;  // mouse over
-    fontcol = 0.7;
-    outlinecol = 0.6;
+    bgcol = 0.6;  // mouse over
+    fontcol = 0.5;
+    outlinecol = 0.4;
     // if the user points at this image, we really want it:
     if(!img)
       img = dt_image_cache_read_get(darktable.image_cache, imgid);
@@ -776,6 +777,82 @@ dt_view_image_expose(
     imgid,
     mip,
     0);
+  
+  #if DRAW_COLORLABELS == 1
+  // TODO: cache in image struct!
+  if (dt_conf_get_bool("ui_last/show_colorlabel_background")){
+    /* clear and reset prepared statement */
+    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_color);
+    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_color);
+
+    /* setup statement and iterate rows */
+    DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_color, 1, imgid);
+    int numlabels = 0; 
+    int8_t colorlabels =0;
+    while(sqlite3_step(darktable.view_manager->statements.get_color) == SQLITE_ROW)
+    {
+      int col = sqlite3_column_int(darktable.view_manager->statements.get_color, 0);
+      colorlabels |= 1 << col;
+      numlabels ++;
+    }
+    
+    float stripwidth = (float)width/(float)numlabels;
+    float xstart = 0;
+
+    if (colorlabels & 0x1)
+    {
+       cairo_save(cr);
+       cairo_set_source_rgba (cr,1,0.0,0.0,0.125);
+       cairo_rectangle (cr, xstart, 0, stripwidth, height);
+       cairo_fill (cr);
+       cairo_restore(cr);
+
+       xstart += stripwidth;
+    }
+    if (colorlabels & 0x2)
+    {
+       cairo_save(cr);
+        cairo_set_source_rgba (cr,1,1.0,0.0,0.125);
+       cairo_rectangle (cr, xstart, 0, stripwidth, height);
+       cairo_fill (cr);
+       cairo_restore(cr);
+       
+       xstart += stripwidth;
+    }
+    if (colorlabels & 0x4)
+    {
+       cairo_save(cr);
+       cairo_set_source_rgba (cr,0.0,1,0.0,0.125);
+       cairo_rectangle (cr, xstart, 0, stripwidth, height);
+       cairo_fill (cr);
+       cairo_restore(cr);
+       
+       xstart += stripwidth;
+    }
+    if (colorlabels & 0x8)
+    {
+       cairo_save(cr);
+       cairo_set_source_rgba (cr,0.0,0.0,1,0.125);
+       cairo_rectangle (cr, xstart, 0, stripwidth, height);
+       cairo_fill (cr);
+       cairo_restore(cr);
+       
+       xstart += stripwidth;
+    }
+    if (colorlabels & 0x16)
+    {
+       cairo_save(cr);
+       cairo_set_source_rgba (cr,1,0.0,1.0,0.125);
+       cairo_rectangle (cr, xstart, 0, stripwidth, height);
+       cairo_fill (cr);
+       cairo_restore(cr);
+       
+       xstart += stripwidth;
+    }
+  }
+    
+#endif
+  
 #if DRAW_THUMB == 1
   float scale = 1.0;
   // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
@@ -860,10 +937,29 @@ dt_view_image_expose(
   }
   cairo_restore(cr);
 #endif
+  
   if(buf.buf)
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 
   const float fscale = fminf(width, height);
+  float r1, r2;
+  if(zoom != 1)
+  {
+    r1 = 0.038*width;
+    r2 = 0.018*width;
+  }
+  else
+  {
+    r1 = 0.015*fscale;
+    r2 = 0.007*fscale;
+  }
+
+  float x, y;
+   if(zoom != 1) y = 0.92*height;
+  else y = .12*fscale;
+
+  gboolean image_is_rejected = (img && ((img->flags & 0x7) == 6));
+  
   if(imgsel == imgid || full_preview)
   {
     // draw mouseover hover effects, set event hook for mouse button down!
@@ -871,75 +967,10 @@ dt_view_image_expose(
     cairo_set_line_width(cr, 1.5);
     cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
     cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
-    float r1, r2;
-    if(zoom != 1)
-    {
-      r1 = 0.05*width;
-      r2 = 0.022*width;
-    }
-    else
-    {
-      r1 = 0.015*fscale;
-      r2 = 0.007*fscale;
-    }
-
-    float x, y;
-    if(zoom != 1) y = 0.90*height;
-    else y = .12*fscale;
-    gboolean image_is_rejected = (img && ((img->flags & 0x7) == 6));
-
-    if(img) for(int k=0; k<5; k++)
-      {
-        if(zoom != 1) x = (0.41+k*0.12)*width;
-        else x = (.08+k*0.04)*fscale;
-
-        if(!image_is_rejected) //if rejected: draw no stars
-        {
-          dt_view_star(cr, x, y, r1, r2);
-          if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
-          {
-            *image_over = DT_VIEW_STAR_1 + k;
-            cairo_fill(cr);
-          }
-          else if((img->flags & 0x7) > k)
-          {
-            cairo_fill_preserve(cr);
-            cairo_set_source_rgb(cr, 1.0-bordercol, 1.0-bordercol, 1.0-bordercol);
-            cairo_stroke(cr);
-            cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
-          }
-          else cairo_stroke(cr);
-        }
-      }
 
     //Image rejected?
     if(zoom !=1) x = 0.11*width;
     else x = .04*fscale;
-
-    if (image_is_rejected)
-      cairo_set_source_rgb(cr, 1., 0., 0.);
-
-    if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
-    {
-      *image_over = DT_VIEW_REJECT; //mouse sensitive
-      cairo_new_sub_path(cr);
-      cairo_arc(cr, x, y, (r1+r2)*.5, 0, 2.0f*M_PI);
-      cairo_stroke(cr);
-    }
-
-    if (image_is_rejected)
-      cairo_set_line_width(cr, 2.5);
-
-    //reject cross:
-    cairo_move_to(cr, x-r2, y-r2);
-    cairo_line_to(cr, x+r2, y+r2);
-    cairo_move_to(cr, x+r2, y-r2);
-    cairo_line_to(cr, x-r2, y+r2);
-    cairo_close_path(cr);
-    cairo_stroke(cr);
-    cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
-    cairo_set_line_width(cr, 1.5);
-
 
     // image part of a group?
     if(is_grouped && darktable.gui && darktable.gui->grouping)
@@ -967,34 +998,148 @@ dt_view_image_expose(
       if(img && abs(px-_x-.5*s) <= .8*s && abs(py-_y-.5*s) <= .8*s)
         *image_over = DT_VIEW_GROUP;
     }
+  }
+  
+  // reject cross
 
-    // image altered?
-    if(altered)
+  if (imgsel == imgid || full_preview || (image_is_rejected && dt_conf_get_bool("ui_last/show_rejects")))
+  {
+    cairo_save(cr);
+
+    float reject_width = (r1+r2)/1.5;
+
+    float x1, y1;
+    if(zoom !=1) x1 = 0.11*width - reject_width /2 ;
+      else x1 = .04*fscale  - reject_width /2;
+    if(zoom != 1) y1 = x1;
+    else y1 = .12*fscale  - reject_width /2;
+    
+    if (image_is_rejected)
     {
-      // align to right
-      float s = (r1+r2)*.5;
-      if(zoom != 1)
+      cairo_set_source_rgb(cr, 1., 0., 0.);
+      cairo_set_line_width(cr, 2.5);
+    }
+
+    if ((imgsel == imgid || full_preview))
+    {    
+      float x2 = x1 + reject_width;
+      float y2 = y1 + reject_width;
+      
+      int hover_effect = (px > x1 && px < x2 && py > y1 && py < y2) ? 1 : 0;
+
+      if (hover_effect)
       {
-        x = width*0.9;
-        y = height*0.1;
-      }
-      else x = (.04+7*0.04)*fscale;
-      dt_view_draw_altered(cr, x, y, s);
-      //g_print("px = %d, x = %.4f, py = %d, y = %.4f\n", px, x, py, y);
-      if(img && abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
-      {
-        darktable.gui->center_tooltip = 1;
+        *image_over = DT_VIEW_REJECT; //mouse sensitive
+        cairo_new_sub_path(cr);
+        cairo_arc(cr, x1 + reject_width/2, y1 + reject_width/2, (r1+r2)*.5, 0, 2.0f*M_PI);
+        cairo_stroke(cr);
       }
     }
+        
+    cairo_move_to(cr, x1, y1);
+    cairo_line_to(cr, x1+reject_width, y1+reject_width);
+    cairo_move_to(cr, x1+reject_width, y1);
+    cairo_line_to(cr, x1, y1+reject_width);
+    cairo_close_path(cr);
+    cairo_stroke(cr);
+    cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+    cairo_set_line_width(cr, 1.5);
+    cairo_restore(cr);
   }
+  
+  // rating stars
+  if(img )
+  {
+    cairo_save(cr);
+    float star_width = r1 * 2.5;
+    float rectx1;
+    if(zoom != 1) rectx1 = 0.1*width;
+      else rectx1 = .08*fscale;
+    float rectx2 = rectx1+ 5*star_width;
+    float recty1 = y -r1;
+    float recty2 = y + r1 * 2;
+    float x = rectx1;
+    cairo_set_line_width(cr, r1*0.2);
+    
+    if ((imgsel == imgid || full_preview))
+    {
+      int star_under_mouse =  (px > rectx1 && px < rectx2 && py > recty1 && py < recty2) ? (px - rectx1 +r1)/ star_width : -1;
 
+      if (star_under_mouse >= 0)
+        *image_over = DT_VIEW_STAR_1 + star_under_mouse;
+
+      for(int k=0; k<5; k++)
+      {
+        dtgtk_cairo_paint_star(cr, x, y, r1, r2);
+        if(star_under_mouse >= k)
+        {
+            cairo_set_source_rgb(cr, darktable.gui->star_color_fill[0], darktable.gui->star_color_fill[1], darktable.gui->star_color_fill[2]);
+            cairo_fill_preserve(cr);
+            cairo_set_source_rgb(cr, darktable.gui->star_color_outline[0], darktable.gui->star_color_outline[1], darktable.gui->star_color_outline[2]);
+            cairo_stroke(cr);
+        }
+        else if((img->flags & 0x7) > k && star_under_mouse < 0 && !image_is_rejected)
+        {
+            dtgtk_cairo_paint_star(cr, x, y, r1, r2);
+            cairo_set_source_rgb(cr, darktable.gui->star_color_fill[0], darktable.gui->star_color_fill[1], darktable.gui->star_color_fill[2]);
+            cairo_fill_preserve(cr);
+            cairo_set_source_rgb(cr, darktable.gui->star_color_outline[0], darktable.gui->star_color_outline[1], darktable.gui->star_color_outline[2]);
+            cairo_stroke(cr);
+        }
+        else
+        {
+          cairo_set_source_rgb(cr, 0.75, 0.75, 0.75);
+          cairo_fill_preserve(cr);
+          cairo_set_source_rgb(cr, 0.85, 0.85, 0.85);
+          cairo_stroke(cr);
+        }
+        x += star_width;
+      }
+    }
+    else if (!image_is_rejected && dt_conf_get_bool("ui_last/show_ratings_on_all_images")) 
+    {
+      for(int k=0; k<5; k++)
+      {
+        if((img->flags & 0x7) > k)
+        {
+            dtgtk_cairo_paint_star(cr, x, y, r1, r2);
+            cairo_set_source_rgb(cr, darktable.gui->star_color_fill[0], darktable.gui->star_color_fill[1], darktable.gui->star_color_fill[2]);
+            cairo_fill_preserve(cr);
+            cairo_set_source_rgb(cr, darktable.gui->star_color_outline[0], darktable.gui->star_color_outline[1], darktable.gui->star_color_outline[2]);
+            cairo_stroke(cr);
+        }
+        x += star_width;
+      }
+    }
+    cairo_restore(cr);
+  }
+  
+  // image altered?
+  if(altered && ((imgsel == imgid || full_preview) || dt_conf_get_bool("ui_last/show_history_labels")))
+  {
+    // align to right
+    float s = (r1+r2)*.5;
+    if(zoom != 1)
+    {
+      x = width*0.9;
+      y = height*0.1;
+    }
+    else x = (.04+7*0.04)*fscale;
+    dtgtk_cairo_paint_altered(cr, x, y, s);
+    //g_print("px = %d, x = %.4f, py = %d, y = %.4f\n", px, x, py, y);
+    if(img && abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
+    {
+      darktable.gui->center_tooltip = 1;
+    }
+  }
+  
   // kill all paths, in case img was not loaded yet, or is blocked:
   cairo_new_path(cr);
 
-#if DRAW_COLORLABELS == 1
+
   // TODO: make mouse sensitive, just as stars!
   // TODO: cache in image struct!
-  {
+  if (dt_conf_get_bool("ui_last/show_colorlabel_dots")){
     // color labels:
     const float x = zoom == 1 ? (0.07)*fscale : .21*width;
     const float y = zoom == 1 ? 0.17*fscale: 0.1*height;
@@ -1015,7 +1160,7 @@ dt_view_image_expose(
       cairo_restore(cr);
     }
   }
-#endif
+
 
   if(img && (zoom == 1))
   {
