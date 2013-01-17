@@ -39,7 +39,7 @@ typedef struct lr2dt
 
 char *dt_get_lightroom_xmp(int imgid)
 {
-  static char pathname[DT_MAX_FILENAME_LEN];
+  char *pathname = malloc(DT_MAX_FILENAME_LEN);
   struct stat buf;
 
   // Get full pathname
@@ -48,7 +48,7 @@ char *dt_get_lightroom_xmp(int imgid)
   // Look for extension
   char *pos = strrchr(pathname, '.');
 
-  if (pos==NULL) { return NULL; }
+  if (pos==NULL) { free(pathname); return NULL; }
 
   // If found, replace extension with xmp
   strncpy(pos+1, "xmp", 4);
@@ -56,7 +56,10 @@ char *dt_get_lightroom_xmp(int imgid)
   if (!stat(pathname, &buf))
     return pathname;
   else
+  {
+    free(pathname);
     return NULL;
+  }
 }
 
 static float get_interpolate (lr2dt_t lr2dt_table[], float value)
@@ -173,22 +176,33 @@ static dt_dev_history_item_t *_new_hist_for (dt_develop_t *dev, char *opname)
   return hist;
 }
 
-static void dt_add_hist (dt_develop_t *dev, dt_dev_history_item_t *hist, char *imported)
+static void dt_add_hist (dt_develop_t *dev, dt_dev_history_item_t *hist, char *imported, char *error, int version, int *import_count)
 {
-  //  Add clipping history to this dev
-  hist->module->enabled = hist->enabled;
+  if (hist->module->version() == version)
+  {
+    //  Add clipping history to this dev
+    hist->module->enabled = hist->enabled;
 
-  dev->history = g_list_append(dev->history, hist);
-  dev->history_end ++;
+    dev->history = g_list_append(dev->history, hist);
+    dev->history_end ++;
 
-  if (imported[0]) strcat(imported, ", ");
-  strcat(imported, hist->module->name());
+    if (imported[0]) strcat(imported, ", ");
+    strcat(imported, hist->module->name());
+    (*import_count)++;
+  }
+  else
+  {
+    if (error[0]) strcat(error, ", ");
+    strcat(error, hist->module->name());
+    free (hist);
+  }
 }
 
 void dt_lightroom_import (dt_develop_t *dev)
 {
   gboolean refresh_needed = FALSE;
   char imported[256] = {0};
+  char error[256] = {0};
 
   // Get full pathname
   char *pathname = dt_get_lightroom_xmp(dev->image_storage.id);
@@ -288,10 +302,7 @@ void dt_lightroom_import (dt_develop_t *dev)
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HasCrop"))
     {
       if (!xmlStrcmp(value, (const xmlChar *)"True"))
-      {
         has_crop = TRUE;
-        n_import++;
-      }
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Blacks2012"))
     {
@@ -300,7 +311,6 @@ void dt_lightroom_import (dt_develop_t *dev)
       {
         has_exposure = TRUE;
         pe.black = lr2dt_exposure((float)v);
-        n_import++;
       }
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteAmount"))
@@ -310,7 +320,6 @@ void dt_lightroom_import (dt_develop_t *dev)
       {
         has_vignette = TRUE;
         pv.brightness = lr2dt_vignette_gain((float)v);
-        n_import++;
       }
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteMidpoint"))
@@ -344,7 +353,6 @@ void dt_lightroom_import (dt_develop_t *dev)
       {
         has_grain = TRUE;
         pg.strength = lr2dt_grain_amount((float)v);
-        n_import++;
       }
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "GrainFrequency"))
@@ -461,7 +469,7 @@ void dt_lightroom_import (dt_develop_t *dev)
       }
     }
 
-    dt_add_hist (dev, hist, imported);
+    dt_add_hist (dev, hist, imported, error, 4, &n_import);
     refresh_needed=TRUE;
   }
 
@@ -472,7 +480,7 @@ void dt_lightroom_import (dt_develop_t *dev)
 
     p->black = pe.black;
 
-    dt_add_hist (dev, hist, imported);
+    dt_add_hist (dev, hist, imported, error, 2, &n_import);
     refresh_needed=TRUE;
   }
 
@@ -484,7 +492,7 @@ void dt_lightroom_import (dt_develop_t *dev)
     p->scale = pg.scale;
     p->strength = pg.strength;
 
-    dt_add_hist (dev, hist, imported);
+    dt_add_hist (dev, hist, imported, error, 1, &n_import);
     refresh_needed=TRUE;
   }
 
@@ -516,7 +524,7 @@ void dt_lightroom_import (dt_develop_t *dev)
       p->whratio = newratio;
     }
 
-    dt_add_hist (dev, hist, imported);
+    dt_add_hist (dev, hist, imported, error, 3, &n_import);
     refresh_needed=TRUE;
   }
 
@@ -529,13 +537,25 @@ void dt_lightroom_import (dt_develop_t *dev)
 
   if(refresh_needed && dev->gui_attached)
   {
+    char message[512];
+
+    strcpy(message, imported);
+
     // some hist have been created, display them
-    strcat(imported, " ");
+    strcat(message, " ");
     if (n_import==1)
-      strcat(imported, _("has been imported"));
+      strcat(message, _("has been imported"));
     else
-      strcat(imported, _("have been imported"));
-    dt_control_log(imported);
+      strcat(message, _("have been imported"));
+
+    if (error[0] != '\0')
+    {
+      strcat (message, "; ");
+      strcat(message, _("version mismatch"));
+      strcat (message, ": ");
+      strcat (message, error);
+    }
+    dt_control_log(message);
 
     /* signal history changed */
     dt_control_signal_raise(darktable.signals,DT_SIGNAL_DEVELOP_HISTORY_CHANGE);

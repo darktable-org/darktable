@@ -1112,10 +1112,13 @@ static void import_export(GtkButton *button, gpointer data)
                 NULL);
     gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(chooser),
         TRUE);
-    if(dt_conf_get_string("ui_last/export_path"))
+    gchar* exported_path = dt_conf_get_string("ui_last/exported_path");
+    if(exported_path != NULL) {
       gtk_file_chooser_set_current_folder(
         GTK_FILE_CHOOSER(chooser),
-        dt_conf_get_string("ui_last/export_path"));
+        exported_path);
+      g_free(exported_path);
+    }
     gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(chooser), "keyboardrc");
     if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
     {
@@ -1138,10 +1141,13 @@ static void import_export(GtkButton *button, gpointer data)
                 GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
                 NULL);
 
-    if(dt_conf_get_string("ui_last/import_path"))
+    gchar* import_path = dt_conf_get_string("ui_last/import_path");
+    if(import_path != NULL) {
       gtk_file_chooser_set_current_folder(
         GTK_FILE_CHOOSER(chooser),
-        dt_conf_get_string("ui_last/import_path"));
+        import_path);
+      g_free(import_path);
+    }
     if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
     {
       if(g_file_test(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)),
