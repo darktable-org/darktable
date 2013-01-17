@@ -507,7 +507,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   uint8_t exif[65535];
   char pathname[DT_MAX_PATH_LEN];
   dt_image_full_path(first_imgid, pathname, DT_MAX_PATH_LEN);
-  const int exif_len = dt_exif_read_blob(exif, pathname, first_imgid, 0, 0, 0);
+  // last param is dng mode
+  const int exif_len = dt_exif_read_blob(exif, pathname, first_imgid, 0, wd, ht, 1);
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname)-(c-pathname));
