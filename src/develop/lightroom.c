@@ -26,6 +26,7 @@
 #include "iop/exposure.h"
 #include "iop/grain.h"
 #include "iop/vignette.h"
+#include "iop/spots.h"
 #include "control/control.h"
 
 #include <libxml/parser.h>
@@ -269,6 +270,10 @@ void dt_lightroom_import (dt_develop_t *dev)
   memset(&pg, 0, sizeof(pg));
   gboolean has_grain = FALSE;
 
+  dt_iop_spots_params_t ps;
+  memset(&ps, 0, sizeof(ps));
+  gboolean has_spots = FALSE;
+
   gboolean has_tags = FALSE;
 
   float fratio = 0;         // factor ratio image
@@ -367,7 +372,7 @@ void dt_lightroom_import (dt_develop_t *dev)
     attribute = attribute->next;
   }
 
-  //  Look for tags (subject/Bag/*)
+  //  Look for tags (subject/Bag/* and RetouchInfo/seq/*)
 
   entryNode = entryNode->xmlChildrenNode;
   entryNode = entryNode->next;
@@ -395,8 +400,35 @@ void dt_lightroom_import (dt_develop_t *dev)
 
           dt_tag_attach(tagid, dev->image_storage.id);
           has_tags = TRUE;
+          xmlFree(value);
         }
         tagNode = tagNode->next;
+      }
+    }
+    else if (!xmlStrcmp(entryNode->name, (const xmlChar *) "RetouchInfo"))
+    {
+      xmlNodePtr riNode = entryNode;
+
+      riNode = riNode->xmlChildrenNode;
+      riNode = riNode->next;
+      riNode = riNode->xmlChildrenNode;
+      riNode = riNode->next;
+
+      while (riNode)
+      {
+        if (!xmlStrcmp(riNode->name, (const xmlChar *) "li"))
+        {
+          xmlChar *value= xmlNodeListGetString(doc, riNode->xmlChildrenNode, 1);
+          spot_t *p = &ps.spot[ps.num_spots];
+          if (sscanf((const char *)value, "centerX = %f, centerY = %f, radius = %f, sourceState = %*[a-zA-Z], sourceX = %f, sourceY = %f", &(p->x), &(p->y), &(p->radius), &(p->xc), &(p->yc)))
+          {
+            ps.num_spots++;
+            has_spots = TRUE;
+          }
+          xmlFree(value);
+        }
+        if (ps.num_spots == 32) break;
+        riNode = riNode->next;
       }
     }
     entryNode = entryNode->next;
@@ -526,6 +558,20 @@ void dt_lightroom_import (dt_develop_t *dev)
     }
 
     dt_add_hist (dev, hist, imported, error, 3, &n_import);
+    refresh_needed=TRUE;
+  }
+
+  if (has_spots)
+  {
+    dt_dev_history_item_t *hist = _new_hist_for (dev, "spots");
+    dt_iop_spots_params_t *p = (dt_iop_spots_params_t *)hist->params;
+
+    for (int k=0; k<ps.num_spots; k++)
+      p->spot[k] = ps.spot[k];
+
+    p->num_spots = ps.num_spots;
+
+    dt_add_hist (dev, hist, imported, error, 1, &n_import);
     refresh_needed=TRUE;
   }
 
