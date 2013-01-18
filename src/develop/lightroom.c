@@ -206,7 +206,7 @@ void dt_lightroom_import (dt_develop_t *dev)
 
   if (!pathname)
   {
-    dt_control_log(_("cannot find Lightroom XMP!"));
+    dt_control_log(_("cannot find lightroom xmp!"));
     g_free(pathname);
     return;
   }
@@ -226,7 +226,7 @@ void dt_lightroom_import (dt_develop_t *dev)
 
   if (xmlStrcmp(entryNode->name, (const xmlChar *)"xmpmeta"))
   {
-    dt_control_log(_("(%s) not a Lightroom XMP!"), pathname);
+    dt_control_log(_("`%s' not a lightroom xmp!"), pathname);
     g_free(pathname);
     return;
   }
@@ -244,7 +244,7 @@ void dt_lightroom_import (dt_develop_t *dev)
 
   if (!entryNode || xmlStrcmp(entryNode->name, (const xmlChar *)"Description"))
   {
-    dt_control_log(_("(%s) not a Lightroom XMP!"), pathname);
+    dt_control_log(_("`%s' not a lightroom xmp!"), pathname);
     g_free(pathname);
     return;
   }
