@@ -719,11 +719,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   /* lets zero mem */
   memset(gui,0,sizeof(dt_gui_gtk_t));
 
-#if GLIB_MAJOR_VERSION <= 2
-#if GLIB_MINOR_VERSION < 31
+#if !GLIB_CHECK_VERSION(2, 32, 0)
   if (!g_thread_supported ()) g_thread_init(NULL);
 #endif
-#endif
+
   gdk_threads_init();
 
   gdk_threads_enter();

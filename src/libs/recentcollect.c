@@ -67,67 +67,6 @@ position ()
   return 350;
 }
 
-static int
-serialize(char *buf, int bufsize)
-{
-  char confname[200];
-  int c;
-  const int num_rules = dt_conf_get_int("plugins/lighttable/collect/num_rules");
-  c = snprintf(buf, bufsize, "%d:", num_rules);
-  buf += c;
-  bufsize -= c;
-  for(int k=0; k<num_rules; k++)
-  {
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", k);
-    const int mode = dt_conf_get_int(confname);
-    c = snprintf(buf, bufsize, "%d:", mode);
-    buf += c;
-    bufsize -= c;
-    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", k);
-    const int item = dt_conf_get_int(confname);
-    c = snprintf(buf, bufsize, "%d:", item);
-    buf += c;
-    bufsize -= c;
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
-    gchar *str = dt_conf_get_string(confname);
-    if(str && (str[0] != '\0'))
-      c = snprintf(buf, bufsize, "%s$", str);
-    else
-      c = snprintf(buf, bufsize, "%%$");
-    buf += c;
-    bufsize -= c;
-    g_free(str);
-  }
-  return 0;
-}
-
-static void
-deserialize(char *buf)
-{
-  int num_rules = 0;
-  char str[400], confname[200];
-  sprintf(str, "%%");
-  int mode = 0, item = 0;
-  sscanf(buf, "%d", &num_rules);
-  if(num_rules == 0) num_rules = 1;
-  dt_conf_set_int("plugins/lighttable/collect/num_rules", num_rules);
-  while(buf[0] != ':') buf++;
-  buf++;
-  for(int k=0; k<num_rules; k++)
-  {
-    sscanf(buf, "%d:%d:%[^$]", &mode, &item, str);
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", k);
-    dt_conf_set_int(confname, mode);
-    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", k);
-    dt_conf_set_int(confname, item);
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
-    dt_conf_set_string(confname, str);
-    while(buf[0] != '$' && buf[0] != '\0') buf++;
-    buf++;
-  }
-  dt_collection_update_query(darktable.collection);
-}
-
 static void
 pretty_print(char *buf, char *out)
 {
@@ -187,7 +126,7 @@ button_pressed (GtkButton *button, gpointer user_data)
   gchar *line = dt_conf_get_string(confname);
   if(line)
   {
-    deserialize(line);
+    dt_collection_deserialize(line);
     g_free(line);
   }
 }
@@ -200,7 +139,7 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
   char confname[200];
   const int bufsize = 4096;
   char buf[bufsize];
-  if(serialize(buf, bufsize)) return;
+  if(dt_collection_serialize(buf, bufsize)) return;
 
   int n = -1;
   for(int k=0; k<CLAMPS(dt_conf_get_int("plugins/lighttable/recentcollect/num_items"), 0, NUM_LINES); k++)

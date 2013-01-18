@@ -552,7 +552,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
   dt_loc_init_user_config_dir(configdirFromCommand);
   dt_loc_init_user_cache_dir(cachedirFromCommand);
 
+#if !GLIB_CHECK_VERSION(2, 36, 0)
   g_type_init();
+#endif
 
   // does not work, as gtk is not inited yet.
   // even if it were, it's a super bad idea to invoke gtk stuff from

@@ -930,8 +930,10 @@ void enter(dt_view_t *self)
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles);
 
   /* create LR import button (only if LR .xmp found) */
-  if (dt_get_lightroom_xmp(dev->image_storage.id))
+  char *lr_xmp_pathname = dt_get_lightroom_xmp(dev->image_storage.id);
+  if(lr_xmp_pathname)
   {
+    g_free(lr_xmp_pathname);
     GtkWidget *LRimp = dtgtk_button_new (dtgtk_cairo_paint_LR,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
     g_signal_connect (G_OBJECT (LRimp), "clicked",
                       G_CALLBACK (_darkroom_ui_apply_LR_style),

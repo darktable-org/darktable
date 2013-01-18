@@ -26,6 +26,7 @@
 #include "iop/exposure.h"
 #include "iop/grain.h"
 #include "iop/vignette.h"
+#include "iop/spots.h"
 #include "control/control.h"
 
 #include <libxml/parser.h>
@@ -39,7 +40,7 @@ typedef struct lr2dt
 
 char *dt_get_lightroom_xmp(int imgid)
 {
-  char *pathname = malloc(DT_MAX_FILENAME_LEN);
+  char pathname[DT_MAX_FILENAME_LEN];
   struct stat buf;
 
   // Get full pathname
@@ -48,18 +49,15 @@ char *dt_get_lightroom_xmp(int imgid)
   // Look for extension
   char *pos = strrchr(pathname, '.');
 
-  if (pos==NULL) { free(pathname); return NULL; }
+  if (pos==NULL) { return NULL; }
 
   // If found, replace extension with xmp
   strncpy(pos+1, "xmp", 4);
 
   if (!stat(pathname, &buf))
-    return pathname;
+    return g_strdup(pathname);
   else
-  {
-    free(pathname);
     return NULL;
-  }
 }
 
 static float get_interpolate (lr2dt_t lr2dt_table[], float value)
@@ -209,7 +207,8 @@ void dt_lightroom_import (dt_develop_t *dev)
 
   if (!pathname)
   {
-    dt_control_log(_("cannot find Lightroom XMP!"));
+    dt_control_log(_("cannot find lightroom xmp!"));
+    g_free(pathname);
     return;
   }
 
@@ -228,7 +227,8 @@ void dt_lightroom_import (dt_develop_t *dev)
 
   if (xmlStrcmp(entryNode->name, (const xmlChar *)"xmpmeta"))
   {
-    dt_control_log(_("(%s) not a Lightroom XMP!"), pathname);
+    dt_control_log(_("`%s' not a lightroom xmp!"), pathname);
+    g_free(pathname);
     return;
   }
 
@@ -245,9 +245,11 @@ void dt_lightroom_import (dt_develop_t *dev)
 
   if (!entryNode || xmlStrcmp(entryNode->name, (const xmlChar *)"Description"))
   {
-    dt_control_log(_("(%s) not a Lightroom XMP!"), pathname);
+    dt_control_log(_("`%s' not a lightroom xmp!"), pathname);
+    g_free(pathname);
     return;
   }
+  g_free(pathname);
 
   //  Look for attributes in the Description
 
@@ -265,8 +267,12 @@ void dt_lightroom_import (dt_develop_t *dev)
   gboolean has_vignette = FALSE;
 
   dt_iop_grain_params_t pg;
-  memset(&pv, 0, sizeof(pg));
+  memset(&pg, 0, sizeof(pg));
   gboolean has_grain = FALSE;
+
+  dt_iop_spots_params_t ps;
+  memset(&ps, 0, sizeof(ps));
+  gboolean has_spots = FALSE;
 
   gboolean has_tags = FALSE;
 
@@ -366,7 +372,7 @@ void dt_lightroom_import (dt_develop_t *dev)
     attribute = attribute->next;
   }
 
-  //  Look for tags (subject/Bag/*)
+  //  Look for tags (subject/Bag/* and RetouchInfo/seq/*)
 
   entryNode = entryNode->xmlChildrenNode;
   entryNode = entryNode->next;
@@ -394,8 +400,35 @@ void dt_lightroom_import (dt_develop_t *dev)
 
           dt_tag_attach(tagid, dev->image_storage.id);
           has_tags = TRUE;
+          xmlFree(value);
         }
         tagNode = tagNode->next;
+      }
+    }
+    else if (!xmlStrcmp(entryNode->name, (const xmlChar *) "RetouchInfo"))
+    {
+      xmlNodePtr riNode = entryNode;
+
+      riNode = riNode->xmlChildrenNode;
+      riNode = riNode->next;
+      riNode = riNode->xmlChildrenNode;
+      riNode = riNode->next;
+
+      while (riNode)
+      {
+        if (!xmlStrcmp(riNode->name, (const xmlChar *) "li"))
+        {
+          xmlChar *value= xmlNodeListGetString(doc, riNode->xmlChildrenNode, 1);
+          spot_t *p = &ps.spot[ps.num_spots];
+          if (sscanf((const char *)value, "centerX = %f, centerY = %f, radius = %f, sourceState = %*[a-zA-Z], sourceX = %f, sourceY = %f", &(p->x), &(p->y), &(p->radius), &(p->xc), &(p->yc)))
+          {
+            ps.num_spots++;
+            has_spots = TRUE;
+          }
+          xmlFree(value);
+        }
+        if (ps.num_spots == 32) break;
+        riNode = riNode->next;
       }
     }
     entryNode = entryNode->next;
@@ -525,6 +558,20 @@ void dt_lightroom_import (dt_develop_t *dev)
     }
 
     dt_add_hist (dev, hist, imported, error, 3, &n_import);
+    refresh_needed=TRUE;
+  }
+
+  if (has_spots)
+  {
+    dt_dev_history_item_t *hist = _new_hist_for (dev, "spots");
+    dt_iop_spots_params_t *p = (dt_iop_spots_params_t *)hist->params;
+
+    for (int k=0; k<ps.num_spots; k++)
+      p->spot[k] = ps.spot[k];
+
+    p->num_spots = ps.num_spots;
+
+    dt_add_hist (dev, hist, imported, error, 1, &n_import);
     refresh_needed=TRUE;
   }
 

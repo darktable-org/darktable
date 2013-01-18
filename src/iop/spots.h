@@ -17,19 +17,24 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_LIGHTROOM_H
-#define DT_LIGHTROOM_H
+#ifndef DT_SPOTS_H
+#define DT_SPOTS_H
 
-#include "develop/imageop.h"
+typedef struct spot_t
+{
+  // position of the spot
+  float x, y;
+  // position to clone from
+  float xc, yc;
+  float radius;
+}
+spot_t;
 
-/* Import some lightroom develop options */
-void dt_lightroom_import (dt_develop_t *dev);
-
-/* returns NULL if not found, or g_strdup'ed pathname, the caller should g_free it. */
-char *dt_get_lightroom_xmp (int imgid);
+typedef struct dt_iop_spots_params_t
+{
+  int num_spots;
+  spot_t spot[32];
+}
+dt_iop_spots_params_t;
 
 #endif
-
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

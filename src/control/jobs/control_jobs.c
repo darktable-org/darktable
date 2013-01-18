@@ -1052,7 +1052,9 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
 
-  dt_collection_update(darktable.collection);
+  char collect[1024];
+  snprintf(collect, 1024, "1:0:0:%s$", new_film.dirname);
+  dt_collection_deserialize(collect);
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
   dt_control_queue_redraw_center();
