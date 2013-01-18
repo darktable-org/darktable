@@ -39,7 +39,7 @@ typedef struct lr2dt
 
 char *dt_get_lightroom_xmp(int imgid)
 {
-  char *pathname = malloc(DT_MAX_FILENAME_LEN);
+  char pathname[DT_MAX_FILENAME_LEN];
   struct stat buf;
 
   // Get full pathname
@@ -48,18 +48,15 @@ char *dt_get_lightroom_xmp(int imgid)
   // Look for extension
   char *pos = strrchr(pathname, '.');
 
-  if (pos==NULL) { free(pathname); return NULL; }
+  if (pos==NULL) { return NULL; }
 
   // If found, replace extension with xmp
   strncpy(pos+1, "xmp", 4);
 
   if (!stat(pathname, &buf))
-    return pathname;
+    return g_strdup(pathname);
   else
-  {
-    free(pathname);
     return NULL;
-  }
 }
 
 static float get_interpolate (lr2dt_t lr2dt_table[], float value)
@@ -210,6 +207,7 @@ void dt_lightroom_import (dt_develop_t *dev)
   if (!pathname)
   {
     dt_control_log(_("cannot find Lightroom XMP!"));
+    g_free(pathname);
     return;
   }
 
@@ -229,6 +227,7 @@ void dt_lightroom_import (dt_develop_t *dev)
   if (xmlStrcmp(entryNode->name, (const xmlChar *)"xmpmeta"))
   {
     dt_control_log(_("(%s) not a Lightroom XMP!"), pathname);
+    g_free(pathname);
     return;
   }
 
@@ -246,8 +245,10 @@ void dt_lightroom_import (dt_develop_t *dev)
   if (!entryNode || xmlStrcmp(entryNode->name, (const xmlChar *)"Description"))
   {
     dt_control_log(_("(%s) not a Lightroom XMP!"), pathname);
+    g_free(pathname);
     return;
   }
+  g_free(pathname);
 
   //  Look for attributes in the Description
 

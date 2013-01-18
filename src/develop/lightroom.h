@@ -25,6 +25,7 @@
 /* Import some lightroom develop options */
 void dt_lightroom_import (dt_develop_t *dev);
 
+/* returns NULL if not found, or g_strdup'ed pathname, the caller should g_free it. */
 char *dt_get_lightroom_xmp (int imgid);
 
 #endif
