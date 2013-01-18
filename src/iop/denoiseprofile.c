@@ -34,6 +34,7 @@
 
 #define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 #define MAX_PROFILES 30
+#define NUM_BUCKETS 4
 
 #define MODE_NLMEANS 0
 #define MODE_WAVELETS 1
@@ -134,7 +135,7 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
   const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
 
-  tiling->factor = 3.5f; // in + out + (1 + 2 * 0.25) * tmp
+  tiling->factor = 3.0f + 0.25f*NUM_BUCKETS; // in + out + (1 + NUM_BUCKETS * 0.25) tmp
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = P+K;
@@ -813,6 +814,15 @@ void process_nlmeans(
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
+static int bucket_next(unsigned int *state, unsigned int max)
+{
+  unsigned int current = *state;
+  unsigned int next = (current >= max - 1 ? 0 : current + 1);
+
+  *state = next;
+
+  return next;
+}
 
 #ifdef HAVE_OPENCL
 int
@@ -835,6 +845,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   cl_mem dev_tmp = NULL;
   cl_mem dev_U4 = NULL;
   cl_mem dev_U4_t = NULL;
+  cl_mem dev_U4_tt = NULL;
+
+  unsigned int state = 0;
+  cl_mem buckets[NUM_BUCKETS] = { NULL };
+
 
   cl_int err = -999;
 
@@ -877,12 +892,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4*sizeof(float));
   if (dev_tmp == NULL) goto error;
 
-  dev_U4 = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-  if (dev_U4 == NULL) goto error;
-
-  dev_U4_t = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-  if (dev_U4_t == NULL) goto error;
-
+  for(int k=0; k<NUM_BUCKETS; k++)
+  {
+    buckets[k] = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, sizeof(float));
+    if(buckets[k] == NULL) goto error;
+  }
 
   // prepare local work group
   size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
@@ -938,6 +952,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     {
       int q[2] = { i, j};
 
+      dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_dist, 0, sizeof(cl_mem), (void *)&dev_tmp);
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_dist, 1, sizeof(cl_mem), (void *)&dev_U4);
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_dist, 2, sizeof(int), (void *)&width);
@@ -952,6 +967,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       local[0] = blocksize;
       local[1] = 1;
       local[2] = 1;
+      dev_U4_t = buckets[bucket_next(&state, NUM_BUCKETS)];
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 0, sizeof(cl_mem), (void *)&dev_U4);
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 1, sizeof(cl_mem), (void *)&dev_U4_t);
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 2, sizeof(int), (void *)&width);
@@ -969,8 +985,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       local[0] = 1;
       local[1] = blocksize;
       local[2] = 1;
+      dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 0, sizeof(cl_mem), (void *)&dev_U4_t);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 1, sizeof(cl_mem), (void *)&dev_U4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 1, sizeof(cl_mem), (void *)&dev_U4_tt);
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 2, sizeof(int), (void *)&width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 3, sizeof(int), (void *)&height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 4, 2*sizeof(int), (void *)&q);
@@ -983,7 +1000,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 0, sizeof(cl_mem), (void *)&dev_tmp);
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 1, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 2, sizeof(cl_mem), (void *)&dev_U4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 2, sizeof(cl_mem), (void *)&dev_U4_tt);
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 3, sizeof(cl_mem), (void *)&dev_out);
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 4, sizeof(int), (void *)&width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 5, sizeof(int), (void *)&height);
@@ -991,7 +1008,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_accu, sizes);
       if(err != CL_SUCCESS) goto error;
 
-      dt_opencl_finish(devid);
+      if (!darktable.opencl->async_pixelpipe)
+        dt_opencl_finish(devid);
 
       // indirectly give gpu some air to breathe (and to do display related stuff)
       dt_iop_nap(darktable.opencl->micro_nap);
@@ -1007,14 +1025,18 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_finish, sizes);
   if(err != CL_SUCCESS) goto error;
 
-  if (dev_U4 != NULL) dt_opencl_release_mem_object(dev_U4);
-  if (dev_U4_t != NULL) dt_opencl_release_mem_object(dev_U4_t);
+  for(int k=0; k<NUM_BUCKETS; k++)
+  {
+    if(buckets[k] != NULL) dt_opencl_release_mem_object(buckets[k]);
+  }
   if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
 
 error:
-  if(dev_U4 != NULL) dt_opencl_release_mem_object(dev_U4);
-  if (dev_U4_t != NULL) dt_opencl_release_mem_object(dev_U4_t);
+  for(int k=0; k<NUM_BUCKETS; k++)
+  {
+    if(buckets[k] != NULL) dt_opencl_release_mem_object(buckets[k]);
+  }
   if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d\n", err);
   return FALSE;
