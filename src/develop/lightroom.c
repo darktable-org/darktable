@@ -266,7 +266,7 @@ void dt_lightroom_import (dt_develop_t *dev)
   gboolean has_vignette = FALSE;
 
   dt_iop_grain_params_t pg;
-  memset(&pv, 0, sizeof(pg));
+  memset(&pg, 0, sizeof(pg));
   gboolean has_grain = FALSE;
 
   gboolean has_tags = FALSE;
