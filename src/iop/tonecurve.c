@@ -819,6 +819,7 @@ finally:
   cairo_paint(cr_pixmap);
   cairo_destroy(cr_pixmap);
   cairo_surface_destroy(cst);
+  dt_control_queue_redraw();
   return TRUE;
 }
 
