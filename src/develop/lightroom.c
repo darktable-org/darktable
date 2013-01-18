@@ -400,6 +400,7 @@ void dt_lightroom_import (dt_develop_t *dev)
 
           dt_tag_attach(tagid, dev->image_storage.id);
           has_tags = TRUE;
+          xmlFree(value);
         }
         tagNode = tagNode->next;
       }
