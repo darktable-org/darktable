@@ -201,13 +201,11 @@ const backend_kwallet_context_t* dt_pwstorage_kwallet_new()
   // NULL the context
   memset(_context, 0, sizeof(backend_kwallet_context_t));
 
-#if GLIB_MAJOR_VERSION <= 2
-#if GLIB_MINOR_VERSION < 31
+#if !GLIB_CHECK_VERSION(2, 32, 0)
   // Initialize threading in dbus-glib - it should be fine for
   // dbus_g_thread_init to be called multiple times.
   if (!g_thread_supported())
     g_thread_init(NULL);
-#endif
 #endif
   dbus_g_thread_init();
 
