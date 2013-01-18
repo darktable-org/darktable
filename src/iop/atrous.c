@@ -624,7 +624,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     dt_iop_nap(darktable.opencl->micro_nap);
   }
 
-  dt_opencl_finish(devid);
+  if(!darktable.opencl->async_pixelpipe || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)
+    dt_opencl_finish(devid);
 
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   for(int k=0; k<max_scale; k++)

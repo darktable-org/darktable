@@ -83,7 +83,7 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>run opencl pixelpipe asynchronously</shortdescription>
-    <longdescription>if set to TRUE opencl pixelpipe will not be synchronized on a per-module basis. this can improve pixelpipe latency. however, potential opencl errors would be detected late; in such a case the complete pixelpipe needs to be reprocessed instead of only a single module.</longdescription>
+    <longdescription>if set to TRUE opencl pixelpipe will not be synchronized on a per-module basis. this can improve pixelpipe latency. however, potential opencl errors would be detected late; in such a case the complete pixelpipe needs to be reprocessed instead of only a single module. export pixelpipe will always be run synchronously.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_synch_cache</name>

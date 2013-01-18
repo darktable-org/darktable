@@ -703,7 +703,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
 
           /* synchronization point for opencl pipe */
-          if (success_opencl && !darktable.opencl->async_pixelpipe)
+          if (success_opencl && (!darktable.opencl->async_pixelpipe || pipe->type == DT_DEV_PIXELPIPE_EXPORT))
             success_opencl = dt_opencl_finish(pipe->devid);
 
 
@@ -766,7 +766,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
 
           /* synchronization point for opencl pipe */
-          if (success_opencl && !darktable.opencl->async_pixelpipe)
+          if (success_opencl && (!darktable.opencl->async_pixelpipe || pipe->type == DT_DEV_PIXELPIPE_EXPORT))
             success_opencl = dt_opencl_finish(pipe->devid);
 
           if(pipe->shutdown)
