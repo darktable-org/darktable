@@ -430,6 +430,8 @@ pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
   /* set the area sample size*/
   if (self->request_color_pick)
     dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+  else
+    dt_control_queue_redraw();
 
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
@@ -819,7 +821,6 @@ finally:
   cairo_paint(cr_pixmap);
   cairo_destroy(cr_pixmap);
   cairo_surface_destroy(cst);
-  dt_control_queue_redraw();
   return TRUE;
 }
 
