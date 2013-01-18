@@ -399,7 +399,10 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   char *ext = g_ascii_strdown(cc+1, -1);
   if(override_ignore_jpegs == FALSE && (!strcmp(ext, "jpg") ||
                                         !strcmp(ext, "jpeg")) && dt_conf_get_bool("ui_last/import_ignore_jpegs"))
+  {
+    g_free(ext);
     return 0;
+  }
   int supported = 0;
   char **extensions = g_strsplit(dt_supported_extensions, ",", 100);
   for(char **i=extensions; *i!=NULL; i++)
