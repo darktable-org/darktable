@@ -19,6 +19,7 @@
 
 #include "common/darktable.h"
 #include "common/tags.h"
+#include "common/curve_tools.h"
 #include "develop/lightroom.h"
 #include "develop/develop.h"
 #include "develop/blend.h"
@@ -27,6 +28,7 @@
 #include "iop/grain.h"
 #include "iop/vignette.h"
 #include "iop/spots.h"
+#include "iop/tonecurve.h"
 #include "control/control.h"
 
 #include <libxml/parser.h>
@@ -274,6 +276,23 @@ void dt_lightroom_import (dt_develop_t *dev)
   memset(&ps, 0, sizeof(ps));
   gboolean has_spots = FALSE;
 
+  typedef enum lr_curve_kind_t
+  {
+    linear = 0,
+    medium_contrast = 1,
+    string_contrast = 2,
+    custom = 3
+  } lr_curve_kind_t;
+
+  #define MAX_PTS 20
+  dt_iop_tonecurve_params_t ptc;
+  memset(&ptc, 0, sizeof(ptc));
+  int ptc_value[4] = {0, 0, 0, 0};
+  float ptc_split[3] = {0.0, 0.0, 0.0};
+  lr_curve_kind_t curve_kind = linear;
+  int curve_pts[MAX_PTS][2];
+  int n_pts = 0;
+
   gboolean has_tags = FALSE;
 
   float fratio = 0;         // factor ratio image
@@ -367,6 +386,45 @@ void dt_lightroom_import (dt_develop_t *dev)
       if (v != 0)
         pg.scale = lr2dt_grain_frequency((float)v);
     }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricShadows"))
+    {
+      ptc_value[0] = atoi((char *)value);
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricDarks"))
+    {
+      ptc_value[1] = atoi((char *)value);
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricLights"))
+    {
+      ptc_value[2] = atoi((char *)value);
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricHighlights"))
+    {
+      ptc_value[3] = atoi((char *)value);
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricShadowSplit"))
+    {
+      ptc_split[0] = atof((char *)value) / 100.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricMidtoneSplit"))
+    {
+      ptc_split[1] = atof((char *)value) / 100.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricHighlightSplit"))
+    {
+      ptc_split[2] = atof((char *)value) / 100.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ToneCurveName2012"))
+    {
+      if (!xmlStrcmp(value, (const xmlChar *)"Linear"))
+        curve_kind = linear;
+      else if (!xmlStrcmp(value, (const xmlChar *)"Medium Contrast"))
+        curve_kind = medium_contrast;
+      else if (!xmlStrcmp(value, (const xmlChar *)"Strong Contrast"))
+        curve_kind = medium_contrast;
+      else if (!xmlStrcmp(value, (const xmlChar *)"Custom"))
+        curve_kind = custom;
+    }
 
     xmlFree(value);
     attribute = attribute->next;
@@ -429,6 +487,29 @@ void dt_lightroom_import (dt_develop_t *dev)
         }
         if (ps.num_spots == MAX_SPOTS) break;
         riNode = riNode->next;
+      }
+    }
+    else if (!xmlStrcmp(entryNode->name, (const xmlChar *) "ToneCurvePV2012"))
+    {
+      xmlNodePtr tcNode = entryNode;
+
+      tcNode = tcNode->xmlChildrenNode;
+      tcNode = tcNode->next;
+      tcNode = tcNode->xmlChildrenNode;
+      tcNode = tcNode->next;
+
+      while (tcNode)
+      {
+        if (!xmlStrcmp(tcNode->name, (const xmlChar *) "li"))
+        {
+          xmlChar *value= xmlNodeListGetString(doc, tcNode->xmlChildrenNode, 1);
+
+          if (sscanf((const char *)value, "%d, %d", &(curve_pts[n_pts][0]), &(curve_pts[n_pts][1])))
+            n_pts++;
+          xmlFree(value);
+        }
+        if (n_pts == MAX_PTS) break;
+        tcNode = tcNode->next;
       }
     }
     entryNode = entryNode->next;
@@ -572,6 +653,75 @@ void dt_lightroom_import (dt_develop_t *dev)
     p->num_spots = ps.num_spots;
 
     dt_add_hist (dev, hist, imported, error, 1, &n_import);
+    refresh_needed=TRUE;
+  }
+
+  if (curve_kind != linear || ptc_value[0] != 0 || ptc_value[1] != 0 || ptc_value[2] != 0 || ptc_value[3] != 0)
+  {
+    dt_dev_history_item_t *hist = _new_hist_for (dev, "tonecurve");
+    dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)hist->params;
+
+    memset(p, 0, sizeof(dt_iop_tonecurve_params_t));
+
+    p->tonecurve_nodes[ch_L] = 6;
+    p->tonecurve_nodes[ch_a] = 7;
+    p->tonecurve_nodes[ch_b] = 7;
+    p->tonecurve_type[ch_L] = CUBIC_SPLINE;
+    p->tonecurve_type[ch_a] = CUBIC_SPLINE;
+    p->tonecurve_type[ch_b] = CUBIC_SPLINE;
+    p->tonecurve_autoscale_ab = 1;
+    p->tonecurve_preset = 0;
+
+    float linear_ab[7] = {0.0, 0.08, 0.3, 0.5, 0.7, 0.92, 1.0};
+
+    // linear a, b curves
+    for(int k=0; k<7; k++) p->tonecurve[ch_a][k].x = linear_ab[k];
+    for(int k=0; k<7; k++) p->tonecurve[ch_a][k].y = linear_ab[k];
+    for(int k=0; k<7; k++) p->tonecurve[ch_b][k].x = linear_ab[k];
+    for(int k=0; k<7; k++) p->tonecurve[ch_b][k].y = linear_ab[k];
+
+    // Set the base tonecurve
+
+    if (curve_kind == linear)
+    {
+      p->tonecurve[ch_L][0].x = 0.0;
+      p->tonecurve[ch_L][0].y = 0.0;
+      p->tonecurve[ch_L][1].x = ptc_split[0] / 2.0;
+      p->tonecurve[ch_L][1].y = ptc_split[0] / 2.0;
+      p->tonecurve[ch_L][2].x = ptc_split[1] - (ptc_split[1] - ptc_split[0]) / 2.0;
+      p->tonecurve[ch_L][2].y = ptc_split[1] - (ptc_split[1] - ptc_split[0]) / 2.0;
+      p->tonecurve[ch_L][3].x = ptc_split[1] + (ptc_split[2] - ptc_split[1]) / 2.0;
+      p->tonecurve[ch_L][3].y = ptc_split[1] + (ptc_split[2] - ptc_split[1]) / 2.0;
+      p->tonecurve[ch_L][4].x = ptc_split[2] + (1.0 - ptc_split[2]) / 2.0;
+      p->tonecurve[ch_L][4].y = ptc_split[2] + (1.0 - ptc_split[2]) / 2.0;
+      p->tonecurve[ch_L][5].x = 1.0;
+      p->tonecurve[ch_L][5].y = 1.0;
+    }
+    else
+    {
+      for (int k=0; k<6; k++)
+      {
+        p->tonecurve[ch_L][k].x = curve_pts[k][0] / 255.0;
+        p->tonecurve[ch_L][k].y = curve_pts[k][1] / 255.0;
+      }
+    }
+
+    if (curve_kind != custom)
+    {
+      // set shadows/darks/lights/highlight adjustments
+
+      p->tonecurve[ch_L][1].y += p->tonecurve[ch_L][1].y * ((float)ptc_value[0] / 100.0);
+      p->tonecurve[ch_L][2].y += p->tonecurve[ch_L][1].y * ((float)ptc_value[1] / 100.0);
+      p->tonecurve[ch_L][3].y += p->tonecurve[ch_L][1].y * ((float)ptc_value[2] / 100.0);
+      p->tonecurve[ch_L][4].y += p->tonecurve[ch_L][1].y * ((float)ptc_value[3] / 100.0);
+
+      if (p->tonecurve[ch_L][1].y > p->tonecurve[ch_L][2].y)
+        p->tonecurve[ch_L][1].y = p->tonecurve[ch_L][2].y;
+      if (p->tonecurve[ch_L][3].y > p->tonecurve[ch_L][4].y)
+        p->tonecurve[ch_L][4].y = p->tonecurve[ch_L][3].y;
+    }
+
+    dt_add_hist (dev, hist, imported, error, 3, &n_import);
     refresh_needed=TRUE;
   }
 
