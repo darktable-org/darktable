@@ -427,7 +427,7 @@ void dt_lightroom_import (dt_develop_t *dev)
           }
           xmlFree(value);
         }
-        if (ps.num_spots == 32) break;
+        if (ps.num_spots == MAX_SPOTS) break;
         riNode = riNode->next;
       }
     }

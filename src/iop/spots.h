@@ -20,6 +20,8 @@
 #ifndef DT_SPOTS_H
 #define DT_SPOTS_H
 
+#define MAX_SPOTS 32
+
 typedef struct spot_t
 {
   // position of the spot
@@ -33,7 +35,7 @@ spot_t;
 typedef struct dt_iop_spots_params_t
 {
   int num_spots;
-  spot_t spot[32];
+  spot_t spot[MAX_SPOTS];
 }
 dt_iop_spots_params_t;
 
