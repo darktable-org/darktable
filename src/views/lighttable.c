@@ -123,12 +123,16 @@ uint32_t view(dt_view_t *self)
 
 typedef enum direction
 {
-  LEFT = 2,
-  RIGHT = 3,
   UP = 0,
   DOWN = 1,
+  LEFT = 2,
+  RIGHT = 3,
   ZOOM_IN = 4,
-  ZOOM_OUT = 5
+  ZOOM_OUT = 5,
+  TOP = 6,
+  BOTTOM = 7,
+  PGUP = 8,
+  PGDOWN = 9
 }direction;
 
 void switch_layout_to(dt_library_t *lib, int new_layout)
@@ -141,7 +145,7 @@ void switch_layout_to(dt_library_t *lib, int new_layout)
     {
       lib->offset = lib->first_visible_zoomable;
     }
-    lib->first_visible_zoomable = -1;
+    lib->first_visible_zoomable = 0;
     
     if(lib->center) lib->offset = 0;
     lib->center = 0;
@@ -157,14 +161,42 @@ static void move_view(dt_library_t *lib, direction dir)
   switch (dir)
   {
     case UP:
-      if (lib->offset >= 1)
-        lib->offset = lib->offset - iir;
+      {
+        if (lib->offset >= 1)
+          lib->offset = lib->offset - iir;
+      }
       break;
     case DOWN:
       {
         lib->offset = lib->offset + iir;
-        while(lib->offset >= lib->collection_count)
+        while(lib->offset > lib->collection_count)
           lib->offset -= iir;
+      }
+      break;
+    case PGUP:
+      {
+          //TODO: this behavior has not been changed, but it really ought to be fixed so it scrolls a full page up or down.
+          lib->offset -= 4*iir;
+          while(lib->offset < 0)
+            lib->offset += iir;
+      }
+      break;
+    case PGDOWN:
+      {
+        //TODO: this behavior has not been changed, but it really ought to be fixed so it scrolls a full page up or down.
+        lib->offset += 4*iir;
+        while(lib->offset > lib->collection_count)
+          lib->offset -= iir;
+      }
+      break;
+    case TOP:
+      {
+        lib->offset = 0;
+      }
+      break;
+    case BOTTOM:
+      {
+        lib->offset = lib->collection_count - iir;
       }
       break;
     default:
@@ -188,7 +220,7 @@ void zoom_around_image(dt_library_t *lib, double pointerx, double pointery, int 
     
   int zoom_anchor_image = lib->offset + pi + (pj * old_images_in_row);
   
-  // make sure that the don't try to zoom around an image that doesn't exist
+  // make sure that we don't try to zoom around an image that doesn't exist
   if (zoom_anchor_image > lib->collection_count)
     zoom_anchor_image = lib->collection_count;
   
@@ -238,7 +270,7 @@ void init(dt_view_t *self)
   lib->select_offset_x = lib->select_offset_y = 0.5f;
   lib->last_selected_idx = -1;
   lib->selection_origin_idx = -1;
-  lib->first_visible_zoomable = lib->first_visible_filemanager = -1;
+  lib->first_visible_zoomable = lib->first_visible_filemanager = 0;
   lib->button = 0;
   lib->modifiers = 0;
   lib->center = lib->pan = lib->track = 0;
@@ -1053,9 +1085,14 @@ static gboolean
 go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                          guint keyval, GdkModifierType modifier, gpointer data)
 {
+  const int layout = dt_conf_get_int("plugins/lighttable/layout");
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
-  lib->offset = 0;
+
+  if (layout == 1)
+    move_view(lib, TOP);
+  else
+    lib->offset = 0;
   dt_control_queue_redraw_center();
   return TRUE;
 }
@@ -1064,9 +1101,14 @@ static gboolean
 go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                            guint keyval, GdkModifierType modifier, gpointer data)
 {
+  const int layout = dt_conf_get_int("plugins/lighttable/layout");
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
-  lib->offset = 0x1fffffff;
+  
+  if (layout == 1)
+    move_view(lib, BOTTOM);
+  else
+     lib->offset = 0x1fffffff;
   dt_control_queue_redraw_center();
   return TRUE;
 }
@@ -1076,12 +1118,18 @@ go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                            guint keyval, GdkModifierType modifier,
                            gpointer data)
 {
-  const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
-  const int scroll_by_rows = 4; /* This should be the number of visible rows. */
-  const int offset_delta = scroll_by_rows * iir;
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
-  lib->offset = MAX(lib->offset - offset_delta, 0);
+  const int layout = dt_conf_get_int("plugins/lighttable/layout");
+  if (layout == 1)
+    move_view(lib, PGUP);
+  else
+  {
+    const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
+    const int scroll_by_rows = 4; /* This should be the number of visible rows. */
+    const int offset_delta = scroll_by_rows * iir;
+    lib->offset = MAX(lib->offset - offset_delta, 0);
+  }
   dt_control_queue_redraw_center();
   return TRUE;
 }
@@ -1091,12 +1139,20 @@ go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                              guint keyval, GdkModifierType modifier,
                              gpointer data)
 {
-  const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
-  const int scroll_by_rows = 4; /* This should be the number of visible rows. */
-  const int offset_delta = scroll_by_rows * iir;
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
-  lib->offset = MIN(lib->offset + offset_delta, lib->collection_count);
+  const int layout = dt_conf_get_int("plugins/lighttable/layout");
+  if (layout == 1)
+  {
+    move_view(lib, PGDOWN);
+  }
+  else
+  {
+    const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
+    const int scroll_by_rows = 4; /* This should be the number of visible rows. */
+    const int offset_delta = scroll_by_rows * iir;
+    lib->offset = MIN(lib->offset + offset_delta, lib->collection_count);
+  }
   dt_control_queue_redraw_center();
   return TRUE;
 }
@@ -1233,7 +1289,7 @@ void reset(dt_view_t *self)
   lib->track = lib->pan = 0;
   lib->offset = 0x7fffffff;
   lib->first_visible_zoomable    = -1;
-  lib->first_visible_filemanager = -1;
+  lib->first_visible_filemanager = 0;
   DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
 }
 
