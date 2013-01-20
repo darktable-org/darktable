@@ -744,7 +744,6 @@ static void _lib_filmstrip_collection_changed_callback(gpointer instance, gpoint
 
 static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gboolean activate)
 {
-  if (darktable.develop->image_loading) return;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
   /* if no imgid just bail out */
