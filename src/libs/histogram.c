@@ -28,16 +28,15 @@
 
 DT_MODULE(1)
 
-#define DT_HIST_INSET 5
-
 typedef struct dt_lib_histogram_t
 {
   float white, black;
   int32_t dragging;
   int32_t button_down_x, button_down_y;
   int32_t highlight;
+  gboolean expand;
   gboolean red, green, blue;
-  float mode_x, mode_w, red_x, green_x, blue_x;
+  float expand_x, expand_w, mode_x, mode_w, red_x, green_x, blue_x;
   float color_w, button_h, button_y, button_spacing;
 }
 dt_lib_histogram_t;
@@ -89,6 +88,8 @@ void gui_init(dt_lib_module_t *self)
   memset(d,0,sizeof(dt_lib_histogram_t));
   self->data = (void *)d;
 
+  d->expand = dt_conf_get_bool("plugins/darkroom/histogram/expand");
+
   d->red = dt_conf_get_bool("plugins/darkroom/histogram/show_red");
   d->green = dt_conf_get_bool("plugins/darkroom/histogram/show_green");
   d->blue = dt_conf_get_bool("plugins/darkroom/histogram/show_blue");
@@ -124,12 +125,10 @@ void gui_init(dt_lib_module_t *self)
 
   /* set size of navigation draw area */
   int panel_width = dt_conf_get_int("panel_width");
-  gtk_widget_set_size_request(self->widget, -1, panel_width*.5);
+  gtk_widget_set_size_request(self->widget, -1, d->expand?4*panel_width*.5:panel_width*.5);
 
   /* connect to preview pipe finished  signal */
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, G_CALLBACK(_lib_histogram_change_callback), self);
-
-
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -172,6 +171,64 @@ static void _draw_mode_toggle(cairo_t *cr, float x, float y, float width, float 
   cairo_stroke(cr);
 }
 
+static void _draw_expand_toggle(cairo_t *cr, float x, float y, float width, float height, gboolean state)
+{
+  float border = MIN(width*.1, height*.1);
+  cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.4);
+  cairo_rectangle(cr, x+border, y+border, width-2.0*border, height-2.0*border);
+  cairo_fill_preserve(cr);
+  cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.5);
+  cairo_set_line_width(cr, border);
+  cairo_stroke(cr);
+
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
+
+  cairo_move_to(cr, x + (width / 2.0), y + height - 2.0 * border);
+  cairo_line_to(cr, x + (width / 2.0), y + 2.0 * border);
+
+  if(state)
+  {
+    cairo_move_to(cr, x + 2 * border, y + (height / 2.0));
+    cairo_line_to(cr, x + (width / 2.0), y + 2.0 * border);
+
+    cairo_move_to(cr, x + width - 2 * border, y + (height / 2.0));
+    cairo_line_to(cr, x + (width / 2.0), y + 2.0 * border);
+  }
+  else
+  {
+    cairo_move_to(cr, x + 2 * border, y + (height / 2.0));
+    cairo_line_to(cr, x + (width / 2.0), y + height - 2.0 * border);
+
+    cairo_move_to(cr, x + width - 2 * border, y + (height / 2.0));
+    cairo_line_to(cr, x + (width / 2.0), y + + height - 2.0 * border);
+  }
+
+  cairo_stroke(cr);
+}
+
+static void _draw_histogram_box(cairo_t *cr, int x, int y, int width, int height)
+{
+  cairo_save(cr);
+  cairo_set_line_width(cr, 1.0);
+
+  cairo_rectangle(cr, x, y, width, height);
+  cairo_clip(cr);
+
+  cairo_set_source_rgb (cr, .2, .2, .2);
+  cairo_rectangle(cr, x, y, width, height);
+  cairo_fill(cr);
+  cairo_restore(cr);
+}
+
+static void _draw_histogram_grid(cairo_t *cr, int left, int top, int right, int bottom)
+{
+  cairo_save(cr);
+  cairo_set_line_width(cr, .4);
+  cairo_set_source_rgb (cr, .1, .1, .1);
+  dt_draw_grid(cr, 4, left, top, right, bottom);
+  cairo_restore(cr);
+}
+
 static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -180,18 +237,19 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
   dt_develop_t *dev = darktable.develop;
   float *hist = dev->histogram;
   float hist_max = dev->histogram_linear?dev->histogram_max:logf(1.0 + dev->histogram_max);
-  const int inset = DT_HIST_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+
+  /* set size of navigation draw area */
+  int panel_width = dt_conf_get_int("panel_width");
+  gtk_widget_set_size_request(widget, -1, d->expand?4*panel_width*.5:panel_width*.5);
+
+  int width = widget->allocation.width, height = d->expand?widget->allocation.height/4:widget->allocation.height;
+
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, widget->allocation.height);
   cairo_t *cr = cairo_create(cst);
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
   if(!style) style = gtk_rc_get_style(widget);
   cairo_set_source_rgb(cr, style->bg[0].red/65535.0, style->bg[0].green/65535.0, style->bg[0].blue/65535.0);
   cairo_paint(cr);
-
-  cairo_translate(cr, 4*inset, inset);
-  width -= 2*4*inset;
-  height -= 2*inset;
 
   if(d->mode_x == 0)
   {
@@ -199,6 +257,8 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
     d->button_spacing = 0.01*width;
     d->button_h = 0.06*width;
     d->button_y = d->button_spacing;
+    d->expand_w = d->color_w;
+    d->expand_x = width - 4*(d->color_w+d->button_spacing) - (d->expand_w+d->button_spacing);
     d->mode_w = d->color_w;
     d->mode_x = width - 3*(d->color_w+d->button_spacing) - (d->mode_w+d->button_spacing);
     d->red_x = width - 3*(d->color_w+d->button_spacing);
@@ -206,31 +266,15 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
     d->blue_x = width - (d->color_w+d->button_spacing);
   }
 
-#if 1
-  // draw shadow around
-  float alpha = 1.0f;
-  cairo_set_line_width(cr, 0.2);
-  for(int k=0; k<inset; k++)
+  _draw_histogram_box(cr, 0, 0, width, height);
+
+  if(d->expand)
   {
-    cairo_rectangle(cr, -k, -k, width + 2*k, height + 2*k);
-    cairo_set_source_rgba(cr, 0, 0, 0, alpha);
-    alpha *= 0.5f;
-    cairo_fill(cr);
+    _draw_histogram_box(cr, 0, height, width, height);
+    _draw_histogram_box(cr, 0, 2*height, width, height);
+    _draw_histogram_box(cr, 0, 3*height, width, height);
   }
-  cairo_set_line_width(cr, 1.0);
-#else
-  cairo_set_line_width(cr, 1.0);
-  cairo_set_source_rgb (cr, .1, .1, .1);
-  cairo_rectangle(cr, 0, 0, width, height);
-  cairo_stroke(cr);
-#endif
 
-  cairo_rectangle(cr, 0, 0, width, height);
-  cairo_clip(cr);
-
-  cairo_set_source_rgb (cr, .3, .3, .3);
-  cairo_rectangle(cr, 0, 0, width, height);
-  cairo_fill(cr);
   if(d->highlight == 1)
   {
     cairo_set_source_rgb (cr, .5, .5, .5);
@@ -245,37 +289,77 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
   }
 
   // draw grid
-  cairo_set_line_width(cr, .4);
-  cairo_set_source_rgb (cr, .1, .1, .1);
-  dt_draw_grid(cr, 4, 0, 0, width, height);
+  _draw_histogram_grid(cr, 0, 0, width, height);
+
+  if(d->expand)
+  {
+    _draw_histogram_grid(cr, 0, height, width, 2*height);
+    _draw_histogram_grid(cr, 0, 2*height, width, 3*height);
+    _draw_histogram_grid(cr, 0, 3*height, width, 4*height);
+  }
 
   if(hist_max > 0)
   {
     cairo_save(cr);
-    // cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
-    cairo_translate(cr, 0, height);
-    cairo_scale(cr, width/63.0, -(height-10)/hist_max);
     cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-    // cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
     cairo_set_line_width(cr, 1.);
     if(d->red)
     {
-      cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
-      dt_draw_histogram_8(cr, hist, 0);
+      cairo_set_source_rgba(cr, 1., 0., 0., 0.4);
+      dt_draw_histogram_8(cr, 0, width, height, hist_max, hist, 0, dev->histogram_linear);
     }
     if(d->green)
     {
-      cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
-      dt_draw_histogram_8(cr, hist, 1);
+      cairo_set_source_rgba(cr, 0., 1., 0., 0.4);
+      dt_draw_histogram_8(cr, 0, width, height, hist_max, hist, 1, dev->histogram_linear);
     }
     if(d->blue)
     {
-      cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
-      dt_draw_histogram_8(cr, hist, 2);
+      cairo_set_source_rgba(cr, 0., 0., 1., 0.4);
+      dt_draw_histogram_8(cr, 0, width, height, hist_max, hist, 2, dev->histogram_linear);
     }
     cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-    // cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
     cairo_restore(cr);
+
+    if(d->expand)
+    {
+      if(d->red)
+      {
+        cairo_save(cr);
+        cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+        cairo_set_line_width(cr, 1.);
+
+        cairo_set_source_rgba(cr, 1., 0., 0., 0.4);
+        dt_draw_histogram_8(cr, height, width, height, hist_max, hist, 0, dev->histogram_linear);
+
+        cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+        cairo_restore(cr);
+      }
+      if(d->green)
+      {
+        cairo_save(cr);
+        cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+        cairo_set_line_width(cr, 1.);
+
+        cairo_set_source_rgba(cr, 0., 1., 0., 0.4);
+        dt_draw_histogram_8(cr, 2*height, width, height, hist_max, hist, 1, dev->histogram_linear);
+
+        cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+        cairo_restore(cr);
+      }
+      if(d->blue)
+      {
+        cairo_save(cr);
+        cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+        cairo_set_line_width(cr, 1.);
+
+        cairo_set_source_rgba(cr, 0., 0., 1., 0.4);
+        dt_draw_histogram_8(cr, 3*height, width, height, hist_max, hist, 2, dev->histogram_linear);
+
+        cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+        cairo_restore(cr);
+      }
+    }
   }
 
   cairo_set_source_rgb(cr, .25, .25, .25);
@@ -286,15 +370,11 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
   cairo_move_to (cr, .02*width, .98*height);
   dt_image_print_exif(&dev->image_storage, exifline, 50);
   cairo_show_text(cr, exifline);
-  /*cairo_text_path(cr, exifline);
-  cairo_fill_preserve(cr);
-  cairo_set_line_width(cr, 1.0);
-  cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
-  cairo_stroke(cr);*/
 
-  // buttons to control the display of the histogram: linear/log, r, g, b
+  // buttons to control the display of the histogram: expand, linear/log, r, g, b
   if(d->highlight != 0)
   {
+    _draw_expand_toggle(cr, d->expand_x, d->button_y, d->expand_w, d->button_h, d->expand);
     _draw_mode_toggle(cr, d->mode_x, d->button_y, d->mode_w, d->button_h, darktable.develop->histogram_linear);
     cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.4);
     _draw_color_toggle(cr, d->red_x, d->button_y, d->color_w, d->button_h, d->red);
@@ -338,13 +418,17 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
   }
   else
   {
-    const float offs = 4*DT_HIST_INSET;
-    const float x = event->x - offs;
-    const float y = event->y - DT_HIST_INSET;
-    const float pos = x / (float)(widget->allocation.width - 2*offs);
+    const float x = event->x;
+    const float y = event->y - 5;
+    const float pos = x / (float)(widget->allocation.width);
 
 
     if(pos < 0 || pos > 1.0);
+    else if(x > d->expand_x && x < d->expand_x+d->expand_w && y > d->button_y && y < d->button_y + d->button_h)
+    {
+      d->highlight = 7;
+      g_object_set(G_OBJECT(widget), "tooltip-text", d->expand?_("collapse channels"):_("expand channels"), (char *)NULL);
+    }
     else if(x > d->mode_x && x < d->mode_x+d->mode_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = 3;
@@ -399,7 +483,12 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
   }
   else
   {
-    if(d->highlight == 3) // mode button
+    if(d->highlight == 7) // expand button
+    {
+      d->expand = !d->expand;
+      dt_conf_set_bool("plugins/darkroom/histogram/expand", d->expand);
+    }
+    else if(d->highlight == 3) // mode button
     {
       darktable.develop->histogram_linear = !darktable.develop->histogram_linear;
       dt_conf_set_string("plugins/darkroom/histogram/mode", darktable.develop->histogram_linear?"linear":"logarithmic");
