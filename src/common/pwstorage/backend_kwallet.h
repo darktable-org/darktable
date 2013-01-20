@@ -19,7 +19,6 @@
 
 #include "pwstorage.h"
 #include <glib.h>
-#include <dbus/dbus-glib.h>
 
 /** kwallet backend context */
 typedef struct backend_kwallet_context_t
