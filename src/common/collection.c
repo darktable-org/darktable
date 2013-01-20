@@ -454,6 +454,7 @@ get_query_string(const dt_collection_properties_t property, const gchar *escaped
       else if(strcmp(escaped_text,_("blue")  )==0) color=3;
       else if(strcmp(escaped_text,_("purple"))==0) color=4;
       snprintf(query, 1024, "(id in (select imgid from color_labels where color=%d))", color);
+      if     (strcmp(escaped_text,"%"     )==0) snprintf(query, 1024, "(id in (select imgid from color_labels where color IS NOT NULL))");
     }
     break;
 
