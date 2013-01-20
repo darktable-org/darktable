@@ -24,6 +24,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
+#include "iop/bilat.h"
 #include "gui/gtk.h"
 
 #include <gtk/gtk.h>
@@ -32,14 +33,6 @@
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
 DT_MODULE(1)
-
-typedef struct dt_iop_bilat_params_t
-{
-  float sigma_r;
-  float sigma_s;
-  float detail;
-}
-dt_iop_bilat_params_t;
 
 typedef struct dt_iop_bilat_data_t
 {
