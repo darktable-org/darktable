@@ -47,6 +47,7 @@ FILE(GLOB SOURCE_FILES
   "common/tags.c"
   "common/utility.c"
   "common/variables.c"
+  "common/pwstorage/backend_kwallet.c"
   "common/pwstorage/pwstorage.c"
   "common/opencl.c"
   "common/dynload.c"
@@ -203,16 +204,6 @@ endif(USE_OPENJPEG)
 #
 # Detect compile of optional pwstorage backends
 #
-if(USE_KWALLET)
-find_package(DBUSGLIB)
-  if(DBUSGLIB_FOUND)
-    list(APPEND SOURCES "common/pwstorage/backend_kwallet.c")
-    include_directories(${DBUSGLIB_INCLUDE_DIRS})
-    list(APPEND LIBS ${DBUSGLIB_LIBRARIES})
-    add_definitions("-DHAVE_KWALLET")
-  endif(DBUSGLIB_FOUND)
-endif(USE_KWALLET)
-
 if(USE_GNOME_KEYRING)
   find_package(GnomeKeyring)
   if(GNOMEKEYRING_FOUND)

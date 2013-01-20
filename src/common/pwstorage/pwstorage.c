@@ -24,9 +24,7 @@
 #include "backend_gkeyring.h"
 #endif
 
-#ifdef HAVE_KWALLET
 #include "backend_kwallet.h"
-#endif
 
 #include "control/conf.h"
 
@@ -64,7 +62,6 @@ const dt_pwstorage_t* dt_pwstorage_new()
       dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] no storage backend. not storing username/password. please change in preferences, core tab.\n");
       break;
     case PW_STORAGE_BACKEND_KWALLET:
-#ifdef HAVE_KWALLET
       dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] using kwallet backend for username/password storage");
       pwstorage->backend_context = (void*)dt_pwstorage_kwallet_new();
       if(pwstorage->backend_context == NULL)
@@ -78,11 +75,6 @@ const dt_pwstorage_t* dt_pwstorage_new()
         pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_KWALLET;
       }
       dt_print(DT_DEBUG_PWSTORAGE,"  done.\n");
-#else
-      dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] kwallet storage not available. using no storage backend.\n");
-      pwstorage->backend_context = NULL;
-      pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_NONE;
-#endif
       break;
 #ifdef HAVE_GKEYRING
     case PW_STORAGE_BACKEND_GNOME_KEYRING:
@@ -128,10 +120,9 @@ void dt_pwstorage_destroy(const dt_pwstorage_t *pwstorage)
   {
     case PW_STORAGE_BACKEND_NONE:
       // nothing to be done
+      break;
     case PW_STORAGE_BACKEND_KWALLET:
-#ifdef HAVE_KWALLET
-      g_free(pwstorage->backend_context);
-#endif
+      dt_pwstorage_kwallet_destroy(pwstorage->backend_context);
       break;
     case PW_STORAGE_BACKEND_GNOME_KEYRING:
 #ifdef HAVE_GKEYRING
@@ -150,12 +141,7 @@ gboolean dt_pwstorage_set(const gchar* slot, GHashTable* table)
       dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_set] no backend. not storing anything.\n");
       break;
     case PW_STORAGE_BACKEND_KWALLET:
-#ifdef HAVE_KWALLET
-      return dt_pwstorage_kwallet_set(slot, table);
-#else
-      dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_set] no kwallet backend support on this system. not storing anything.\n");
-#endif
-      break;
+      return dt_pwstorage_kwallet_set((backend_kwallet_context_t*)darktable.pwstorage->backend_context, slot, table);
     case PW_STORAGE_BACKEND_GNOME_KEYRING:
 #ifdef HAVE_GKEYRING
       return dt_pwstorage_gkeyring_set(slot, table);
@@ -176,12 +162,7 @@ GHashTable* dt_pwstorage_get(const gchar* slot)
       dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_get] no backend. not reading anything.\n");
       break;
     case PW_STORAGE_BACKEND_KWALLET:
-#ifdef HAVE_KWALLET
-      return dt_pwstorage_kwallet_get(slot);
-#else
-      dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_get] no kwallet backend support on this system. not reading anything.\n");
-#endif
-      break;
+      return dt_pwstorage_kwallet_get((backend_kwallet_context_t*)darktable.pwstorage->backend_context, slot);
     case PW_STORAGE_BACKEND_GNOME_KEYRING:
 #ifdef HAVE_GKEYRING
       return dt_pwstorage_gkeyring_get(slot);
