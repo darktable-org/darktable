@@ -596,7 +596,7 @@ static gchar *facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
                "&response_type=token", gtk_get_current_event_time(), &error);
 
   ////////////// build & show the validation dialog
-  gchar *text1 = _("step 1: a new window or tab of your browser should have been"
+  gchar *text1 = _("step 1: a new window or tab of your browser should have been "
                    "loaded. you have to login into your facebook account there "
                    "and authorize darktable to upload photos before continuing.");
   gchar *text2 = _("step 2: paste your browser url and click the ok button once "
