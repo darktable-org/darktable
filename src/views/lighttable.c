@@ -87,6 +87,7 @@ typedef struct dt_library_t
   int full_preview;
   int32_t full_preview_id;
   gboolean offset_changed;
+  GdkColor star_color;
 
   int32_t collection_count;
 
@@ -224,6 +225,10 @@ void zoom_around_image(dt_library_t *lib, double pointerx, double pointery, int 
   if (zoom_anchor_image > lib->collection_count)
     zoom_anchor_image = lib->collection_count;
   
+    // make sure that we don't try to zoom around an image that doesn't exist
+  if (zoom_anchor_image < 0)
+    zoom_anchor_image = 0;
+  
   /* calculate which image number (relative to offset) will be
    * under the cursor after zooming. Then subtract that value 
    * from the zoom anchor image number to see what the new offset should be */
@@ -278,6 +283,12 @@ void init(dt_view_t *self)
   lib->zoom_y = 0.0f;
   lib->full_preview=0;
   lib->full_preview_id=-1;
+    
+  GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), "dt-stars", NULL, GTK_TYPE_NONE);
+
+  lib->star_color.red = (255/ 65535) * style->fg[GTK_STATE_NORMAL].red;
+  lib->star_color.blue = (255/ 65535) * style->fg[GTK_STATE_NORMAL].blue;
+  lib->star_color.green = (255/ 65535) * style->fg[GTK_STATE_NORMAL].green;
 
   /* setup collection listener and initialize main_query statement */
   dt_control_signal_connect(darktable.signals,
