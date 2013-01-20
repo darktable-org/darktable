@@ -326,6 +326,7 @@ void dt_lightroom_import (dt_develop_t *dev)
   float crop_roundness = 0;        // from lightroom
   int n_import = 0;                // number of iop imported
   const float hfactor = 3.0 / 9.0; // hue factor adjustment (use 3 out of 9 boxes in colorzones)
+  const float lfactor = 4.0 / 9.0; // lightness factor adjustment (use 4 out of 9 boxes in colorzones)
 
   xmlAttr* attribute = entryNode->properties;
 
@@ -522,56 +523,56 @@ void dt_lightroom_import (dt_develop_t *dev)
       int v = atoi((char *)value);
       if (v!=0)
         has_colorzones = TRUE;
-      pcz.equalizer_y[0][0] = 0.5 + (float)v / 200.0;
+      pcz.equalizer_y[0][0] = 0.5 + lfactor * (float)v / 200.0;
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentOrange"))
     {
       int v = atoi((char *)value);
       if (v!=0)
         has_colorzones = TRUE;
-      pcz.equalizer_y[0][1] = 0.5 + (float)v / 200.0;
+      pcz.equalizer_y[0][1] = 0.5 + lfactor * (float)v / 200.0;
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentYellow"))
     {
       int v = atoi((char *)value);
       if (v!=0)
         has_colorzones = TRUE;
-      pcz.equalizer_y[0][2] = 0.5 + (float)v / 200.0;
+      pcz.equalizer_y[0][2] = 0.5 + lfactor * (float)v / 200.0;
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentGreen"))
     {
       int v = atoi((char *)value);
       if (v!=0)
         has_colorzones = TRUE;
-      pcz.equalizer_y[0][3] = 0.5 + (float)v / 200.0;
+      pcz.equalizer_y[0][3] = 0.5 + lfactor * (float)v / 200.0;
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentAqua"))
     {
       int v = atoi((char *)value);
       if (v!=0)
         has_colorzones = TRUE;
-      pcz.equalizer_y[0][4] = 0.5 + (float)v / 200.0;
+      pcz.equalizer_y[0][4] = 0.5 + lfactor * (float)v / 200.0;
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentBlue"))
     {
       int v = atoi((char *)value);
       if (v!=0)
         has_colorzones = TRUE;
-      pcz.equalizer_y[0][5] = 0.5 + (float)v / 200.0;
+      pcz.equalizer_y[0][5] = 0.5 + lfactor * (float)v / 200.0;
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentPurple"))
     {
       int v = atoi((char *)value);
       if (v!=0)
         has_colorzones = TRUE;
-      pcz.equalizer_y[0][6] = 0.5 + (float)v / 200.0;
+      pcz.equalizer_y[0][6] = 0.5 + lfactor * (float)v / 200.0;
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentMagenta"))
     {
       int v = atoi((char *)value);
       if (v!=0)
         has_colorzones = TRUE;
-      pcz.equalizer_y[0][7] = 0.5 + (float)v / 200.0;
+      pcz.equalizer_y[0][7] = 0.5 + lfactor * (float)v / 200.0;
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HueAdjustmentRed"))
     {
