@@ -30,6 +30,7 @@
 #include "iop/spots.h"
 #include "iop/tonecurve.h"
 #include "iop/colorzones.h"
+#include "iop/splittoning.h"
 #include "control/control.h"
 
 #include <libxml/parser.h>
@@ -121,6 +122,14 @@ static float lr2dt_grain_frequency(float value)
     {{0, 100}, {50, 100}, {75, 400}, {100, 800}};
 
   return get_interpolate (lr2dt_grain_table, value) / 53.3;
+}
+
+static float lr2dt_splittoning_balance(float value)
+{
+  lr2dt_t lr2dt_splittoning_table[] =
+    {{-100, 100}, {0, 0}, {100, 0}};
+
+  return get_interpolate (lr2dt_splittoning_table, value);
 }
 
 static dt_dev_history_item_t *_new_hist_for (dt_develop_t *dev, char *opname)
@@ -305,6 +314,10 @@ void dt_lightroom_import (dt_develop_t *dev)
   dt_iop_colorzones_params_t pcz;
   memset(&pcz, 0, sizeof(pcz));
   gboolean has_colorzones = FALSE;
+
+  dt_iop_splittoning_params_t pst;
+  memset(&pst, 0, sizeof(pst));
+  gboolean has_splittoning = FALSE;
 
   gboolean has_tags = FALSE;
 
@@ -614,6 +627,39 @@ void dt_lightroom_import (dt_develop_t *dev)
       if (v!=0)
         has_colorzones = TRUE;
       pcz.equalizer_y[2][7] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SplitToningShawowHue"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_splittoning = TRUE;
+      pst.shadow_hue = (float)v / 255.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SplitToningShawowSaturation"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_splittoning = TRUE;
+      pst.shadow_saturation = (float)v / 100.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SplitToningHighlightHue"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_splittoning = TRUE;
+      pst.highlight_hue = (float)v / 255.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SplitToningHighlightSaturation"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_splittoning = TRUE;
+      pst.highlight_saturation = (float)v / 100.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SplitToningBalance"))
+    {
+      float v = atof((char *)value);
+      pst.balance = lr2dt_splittoning_balance(v);
     }
 
     xmlFree(value);
@@ -929,6 +975,22 @@ void dt_lightroom_import (dt_develop_t *dev)
       }
 
     dt_add_hist (dev, hist, imported, error, 2, &n_import);
+    refresh_needed=TRUE;
+  }
+
+  if (has_splittoning)
+  {
+    dt_dev_history_item_t *hist = _new_hist_for (dev, "splittoning");
+    dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)hist->params;
+
+    p->shadow_hue           = pst.shadow_hue;
+    p->shadow_saturation    = pst.shadow_saturation;
+    p->highlight_hue        = pst.highlight_hue;
+    p->highlight_saturation = pst.highlight_saturation;
+    p->balance              = pst.balance;
+    p->compress             = 50.0;
+
+    dt_add_hist (dev, hist, imported, error, 1, &n_import);
     refresh_needed=TRUE;
   }
 
