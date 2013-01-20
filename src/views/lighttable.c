@@ -88,6 +88,7 @@ typedef struct dt_library_t
   int32_t full_preview_id;
   gboolean offset_changed;
   GdkColor star_color;
+  int images_in_row;
 
   int32_t collection_count;
 
@@ -171,7 +172,7 @@ static void move_view(dt_library_t *lib, direction dir)
     case DOWN:
       {
         lib->offset = lib->offset + iir;
-        while(lib->offset > lib->collection_count)
+        while(lib->offset >= lib->collection_count)
           lib->offset -= iir;
       }
       break;
@@ -187,7 +188,7 @@ static void move_view(dt_library_t *lib, direction dir)
       {
         //TODO: this behavior has not been changed, but it really ought to be fixed so it scrolls a full page up or down.
         lib->offset += 4*iir;
-        while(lib->offset > lib->collection_count)
+        while(lib->offset >= lib->collection_count)
           lib->offset -= iir;
       }
       break;
@@ -246,6 +247,7 @@ void zoom_around_image(dt_library_t *lib, double pointerx, double pointery, int 
   lib->offset = zoom_anchor_image - pi - (pj * new_images_in_row);
   lib->first_visible_filemanager = lib->offset;
   lib->offset_changed = TRUE;
+  lib->images_in_row = new_images_in_row;
 }
 
 static void _view_lighttable_collection_listener_callback(gpointer instance, gpointer user_data)
@@ -419,6 +421,12 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   /* do we have a main query collection statement */
   if(!lib->statements.main_query)
     return;
+  
+   /* safety check added to be able to work with zoom slider. The 
+   * communication between zoom slider and lighttable should be handled
+   * differently (i.e. this is a clumsy workaround) */
+  if (lib->images_in_row != iir && lib->first_visible_filemanager < 0)
+    lib->offset = lib->first_visible_filemanager = 0;
   
   int32_t offset = lib->offset = lib->first_visible_filemanager;
 
