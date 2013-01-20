@@ -19,6 +19,7 @@
 
 #include "common/darktable.h"
 #include "common/tags.h"
+#include "common/curve_tools.h"
 #include "develop/lightroom.h"
 #include "develop/develop.h"
 #include "develop/blend.h"
@@ -27,6 +28,9 @@
 #include "iop/grain.h"
 #include "iop/vignette.h"
 #include "iop/spots.h"
+#include "iop/tonecurve.h"
+#include "iop/colorzones.h"
+#include "iop/splittoning.h"
 #include "control/control.h"
 
 #include <libxml/parser.h>
@@ -72,10 +76,18 @@ static float get_interpolate (lr2dt_t lr2dt_table[], float value)
     * (lr2dt_table[k+1].dt - lr2dt_table[k].dt);
 }
 
+static float lr2dt_blacks(float value)
+{
+  lr2dt_t lr2dt_blacks_table[] =
+    {{-100, 0.020}, {-50, 0.005}, {0, 0}, {50, -0.005}, {100, -0.010}};
+
+  return get_interpolate (lr2dt_blacks_table, value);
+}
+
 static float lr2dt_exposure(float value)
 {
   lr2dt_t lr2dt_exposure_table[] =
-    {{-100, 0.020}, {-50, 0.005}, {0, 0}, {50, -0.005}, {100, -0.010}};
+    {{-5, -4.5}, {0, 0}, {5, 4.5}};
 
   return get_interpolate (lr2dt_exposure_table, value);
 }
@@ -110,6 +122,14 @@ static float lr2dt_grain_frequency(float value)
     {{0, 100}, {50, 100}, {75, 400}, {100, 800}};
 
   return get_interpolate (lr2dt_grain_table, value) / 53.3;
+}
+
+static float lr2dt_splittoning_balance(float value)
+{
+  lr2dt_t lr2dt_splittoning_table[] =
+    {{-100, 100}, {0, 0}, {100, 0}};
+
+  return get_interpolate (lr2dt_splittoning_table, value);
 }
 
 static dt_dev_history_item_t *_new_hist_for (dt_develop_t *dev, char *opname)
@@ -274,6 +294,31 @@ void dt_lightroom_import (dt_develop_t *dev)
   memset(&ps, 0, sizeof(ps));
   gboolean has_spots = FALSE;
 
+  typedef enum lr_curve_kind_t
+  {
+    linear = 0,
+    medium_contrast = 1,
+    string_contrast = 2,
+    custom = 3
+  } lr_curve_kind_t;
+
+  #define MAX_PTS 20
+  dt_iop_tonecurve_params_t ptc;
+  memset(&ptc, 0, sizeof(ptc));
+  int ptc_value[4] = {0, 0, 0, 0};
+  float ptc_split[3] = {0.0, 0.0, 0.0};
+  lr_curve_kind_t curve_kind = linear;
+  int curve_pts[MAX_PTS][2];
+  int n_pts = 0;
+
+  dt_iop_colorzones_params_t pcz;
+  memset(&pcz, 0, sizeof(pcz));
+  gboolean has_colorzones = FALSE;
+
+  dt_iop_splittoning_params_t pst;
+  memset(&pst, 0, sizeof(pst));
+  gboolean has_splittoning = FALSE;
+
   gboolean has_tags = FALSE;
 
   float fratio = 0;         // factor ratio image
@@ -316,7 +361,16 @@ void dt_lightroom_import (dt_develop_t *dev)
       if (v != 0)
       {
         has_exposure = TRUE;
-        pe.black = lr2dt_exposure((float)v);
+        pe.black = lr2dt_blacks((float)v);
+      }
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Exposure2012"))
+    {
+      float v = atof((char *)value);
+      if (v != 0.0)
+      {
+        has_exposure = TRUE;
+        pe.exposure = lr2dt_exposure(v);
       }
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteAmount"))
@@ -366,6 +420,246 @@ void dt_lightroom_import (dt_develop_t *dev)
       int v = atoi((char *)value);
       if (v != 0)
         pg.scale = lr2dt_grain_frequency((float)v);
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricShadows"))
+    {
+      ptc_value[0] = atoi((char *)value);
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricDarks"))
+    {
+      ptc_value[1] = atoi((char *)value);
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricLights"))
+    {
+      ptc_value[2] = atoi((char *)value);
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricHighlights"))
+    {
+      ptc_value[3] = atoi((char *)value);
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricShadowSplit"))
+    {
+      ptc_split[0] = atof((char *)value) / 100.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricMidtoneSplit"))
+    {
+      ptc_split[1] = atof((char *)value) / 100.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricHighlightSplit"))
+    {
+      ptc_split[2] = atof((char *)value) / 100.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ToneCurveName2012"))
+    {
+      if (!xmlStrcmp(value, (const xmlChar *)"Linear"))
+        curve_kind = linear;
+      else if (!xmlStrcmp(value, (const xmlChar *)"Medium Contrast"))
+        curve_kind = medium_contrast;
+      else if (!xmlStrcmp(value, (const xmlChar *)"Strong Contrast"))
+        curve_kind = medium_contrast;
+      else if (!xmlStrcmp(value, (const xmlChar *)"Custom"))
+        curve_kind = custom;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SaturationAdjustmentRed"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[1][0] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SaturationAdjustmentOrange"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[1][1] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SaturationAdjustmentYellow"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[1][2] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SaturationAdjustmentGreen"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[1][3] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SaturationAdjustmentAqua"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[1][4] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SaturationAdjustmentBlue"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[1][5] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SaturationAdjustmentPurple"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[1][6] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SaturationAdjustmentMagenta"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[1][7] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentRed"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[0][0] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentOrange"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[0][1] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentYellow"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[0][2] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentGreen"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[0][3] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentAqua"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[0][4] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentBlue"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[0][5] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentPurple"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[0][6] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentMagenta"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[0][7] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HueAdjustmentRed"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[2][0] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HueAdjustmentOrange"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[2][1] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HueAdjustmentYellow"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[2][2] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HueAdjustmentGreen"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[2][3] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HueAdjustmentAqua"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[2][4] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HueAdjustmentBlue"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[2][5] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HueAdjustmentPurple"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[2][6] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HueAdjustmentMagenta"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_colorzones = TRUE;
+      pcz.equalizer_y[2][7] = 0.5 + (float)v / 200.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SplitToningShawowHue"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_splittoning = TRUE;
+      pst.shadow_hue = (float)v / 255.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SplitToningShawowSaturation"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_splittoning = TRUE;
+      pst.shadow_saturation = (float)v / 100.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SplitToningHighlightHue"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_splittoning = TRUE;
+      pst.highlight_hue = (float)v / 255.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SplitToningHighlightSaturation"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+        has_splittoning = TRUE;
+      pst.highlight_saturation = (float)v / 100.0;
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SplitToningBalance"))
+    {
+      float v = atof((char *)value);
+      pst.balance = lr2dt_splittoning_balance(v);
     }
 
     xmlFree(value);
@@ -429,6 +723,29 @@ void dt_lightroom_import (dt_develop_t *dev)
         }
         if (ps.num_spots == MAX_SPOTS) break;
         riNode = riNode->next;
+      }
+    }
+    else if (!xmlStrcmp(entryNode->name, (const xmlChar *) "ToneCurvePV2012"))
+    {
+      xmlNodePtr tcNode = entryNode;
+
+      tcNode = tcNode->xmlChildrenNode;
+      tcNode = tcNode->next;
+      tcNode = tcNode->xmlChildrenNode;
+      tcNode = tcNode->next;
+
+      while (tcNode)
+      {
+        if (!xmlStrcmp(tcNode->name, (const xmlChar *) "li"))
+        {
+          xmlChar *value= xmlNodeListGetString(doc, tcNode->xmlChildrenNode, 1);
+
+          if (sscanf((const char *)value, "%d, %d", &(curve_pts[n_pts][0]), &(curve_pts[n_pts][1])))
+            n_pts++;
+          xmlFree(value);
+        }
+        if (n_pts == MAX_PTS) break;
+        tcNode = tcNode->next;
       }
     }
     entryNode = entryNode->next;
@@ -512,6 +829,7 @@ void dt_lightroom_import (dt_develop_t *dev)
     dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)hist->params;
 
     p->black = pe.black;
+    p->exposure = pe.exposure;
 
     dt_add_hist (dev, hist, imported, error, 2, &n_import);
     refresh_needed=TRUE;
@@ -570,6 +888,107 @@ void dt_lightroom_import (dt_develop_t *dev)
       p->spot[k] = ps.spot[k];
 
     p->num_spots = ps.num_spots;
+
+    dt_add_hist (dev, hist, imported, error, 1, &n_import);
+    refresh_needed=TRUE;
+  }
+
+  if (curve_kind != linear || ptc_value[0] != 0 || ptc_value[1] != 0 || ptc_value[2] != 0 || ptc_value[3] != 0)
+  {
+    dt_dev_history_item_t *hist = _new_hist_for (dev, "tonecurve");
+    dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)hist->params;
+
+    memset(p, 0, sizeof(dt_iop_tonecurve_params_t));
+
+    p->tonecurve_nodes[ch_L] = 6;
+    p->tonecurve_nodes[ch_a] = 7;
+    p->tonecurve_nodes[ch_b] = 7;
+    p->tonecurve_type[ch_L] = CUBIC_SPLINE;
+    p->tonecurve_type[ch_a] = CUBIC_SPLINE;
+    p->tonecurve_type[ch_b] = CUBIC_SPLINE;
+    p->tonecurve_autoscale_ab = 1;
+    p->tonecurve_preset = 0;
+
+    float linear_ab[7] = {0.0, 0.08, 0.3, 0.5, 0.7, 0.92, 1.0};
+
+    // linear a, b curves
+    for(int k=0; k<7; k++) p->tonecurve[ch_a][k].x = linear_ab[k];
+    for(int k=0; k<7; k++) p->tonecurve[ch_a][k].y = linear_ab[k];
+    for(int k=0; k<7; k++) p->tonecurve[ch_b][k].x = linear_ab[k];
+    for(int k=0; k<7; k++) p->tonecurve[ch_b][k].y = linear_ab[k];
+
+    // Set the base tonecurve
+
+    if (curve_kind == linear)
+    {
+      p->tonecurve[ch_L][0].x = 0.0;
+      p->tonecurve[ch_L][0].y = 0.0;
+      p->tonecurve[ch_L][1].x = ptc_split[0] / 2.0;
+      p->tonecurve[ch_L][1].y = ptc_split[0] / 2.0;
+      p->tonecurve[ch_L][2].x = ptc_split[1] - (ptc_split[1] - ptc_split[0]) / 2.0;
+      p->tonecurve[ch_L][2].y = ptc_split[1] - (ptc_split[1] - ptc_split[0]) / 2.0;
+      p->tonecurve[ch_L][3].x = ptc_split[1] + (ptc_split[2] - ptc_split[1]) / 2.0;
+      p->tonecurve[ch_L][3].y = ptc_split[1] + (ptc_split[2] - ptc_split[1]) / 2.0;
+      p->tonecurve[ch_L][4].x = ptc_split[2] + (1.0 - ptc_split[2]) / 2.0;
+      p->tonecurve[ch_L][4].y = ptc_split[2] + (1.0 - ptc_split[2]) / 2.0;
+      p->tonecurve[ch_L][5].x = 1.0;
+      p->tonecurve[ch_L][5].y = 1.0;
+    }
+    else
+    {
+      for (int k=0; k<6; k++)
+      {
+        p->tonecurve[ch_L][k].x = curve_pts[k][0] / 255.0;
+        p->tonecurve[ch_L][k].y = curve_pts[k][1] / 255.0;
+      }
+    }
+
+    if (curve_kind != custom)
+    {
+      // set shadows/darks/lights/highlight adjustments
+
+      p->tonecurve[ch_L][1].y += p->tonecurve[ch_L][1].y * ((float)ptc_value[0] / 100.0);
+      p->tonecurve[ch_L][2].y += p->tonecurve[ch_L][1].y * ((float)ptc_value[1] / 100.0);
+      p->tonecurve[ch_L][3].y += p->tonecurve[ch_L][1].y * ((float)ptc_value[2] / 100.0);
+      p->tonecurve[ch_L][4].y += p->tonecurve[ch_L][1].y * ((float)ptc_value[3] / 100.0);
+
+      if (p->tonecurve[ch_L][1].y > p->tonecurve[ch_L][2].y)
+        p->tonecurve[ch_L][1].y = p->tonecurve[ch_L][2].y;
+      if (p->tonecurve[ch_L][3].y > p->tonecurve[ch_L][4].y)
+        p->tonecurve[ch_L][4].y = p->tonecurve[ch_L][3].y;
+    }
+
+    dt_add_hist (dev, hist, imported, error, 3, &n_import);
+    refresh_needed=TRUE;
+  }
+
+  if (has_colorzones)
+  {
+    dt_dev_history_item_t *hist = _new_hist_for (dev, "colorzones");
+    dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)hist->params;
+
+    for (int i=0; i<3; i++)
+      for (int k=0; k<8; k++)
+      {
+        p->equalizer_x[i][k] = k/(DT_IOP_COLORZONES_BANDS-1.0);
+        p->equalizer_y[i][k] = pcz.equalizer_y[i][k];
+      }
+
+    dt_add_hist (dev, hist, imported, error, 2, &n_import);
+    refresh_needed=TRUE;
+  }
+
+  if (has_splittoning)
+  {
+    dt_dev_history_item_t *hist = _new_hist_for (dev, "splittoning");
+    dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)hist->params;
+
+    p->shadow_hue           = pst.shadow_hue;
+    p->shadow_saturation    = pst.shadow_saturation;
+    p->highlight_hue        = pst.highlight_hue;
+    p->highlight_saturation = pst.highlight_saturation;
+    p->balance              = pst.balance;
+    p->compress             = 50.0;
 
     dt_add_hist (dev, hist, imported, error, 1, &n_import);
     refresh_needed=TRUE;
