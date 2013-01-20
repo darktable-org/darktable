@@ -753,6 +753,8 @@ static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gb
 
   strip->offset = dt_collection_image_offset(imgid);
 
+  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, strip->activated_image);  
+
   /* activate the image if requested */
   if (activate)
   {
