@@ -133,7 +133,8 @@ typedef enum direction
   TOP = 6,
   BOTTOM = 7,
   PGUP = 8,
-  PGDOWN = 9
+  PGDOWN = 9,
+  CENTER = 10
 }direction;
 
 void switch_layout_to(dt_library_t *lib, int new_layout)
@@ -198,6 +199,11 @@ static void move_view(dt_library_t *lib, direction dir)
     case BOTTOM:
       {
         lib->offset = lib->collection_count - iir;
+      }
+      break;
+    case CENTER:
+      {
+        lib->offset -= lib->offset % iir;
       }
       break;
     default:
@@ -1511,7 +1517,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   if(key == accels->lighttable_left.accel_key
       && state == accels->lighttable_left.accel_mods)
   {
-    if(layout == 1 && zoom == 1) move_view(lib, UP);
+    if (lib->full_preview_id > -1) lib->track = -DT_LIBRARY_MAX_ZOOM;
+    else if(layout == 1 && zoom == 1) move_view(lib, UP);
     else lib->track = -1;
     return 1;
   }
@@ -1519,7 +1526,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   if(key == accels->lighttable_right.accel_key
       && state == accels->lighttable_right.accel_mods)
   {
-    if(layout == 1 && zoom == 1) move_view(lib, DOWN);
+    if (lib->full_preview_id > -1) lib->track = +DT_LIBRARY_MAX_ZOOM;
+    else if(layout == 1 && zoom == 1) move_view(lib, DOWN);
     else lib->track = 1;
     return 1;
   }
@@ -1527,7 +1535,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   if(key == accels->lighttable_up.accel_key
       && state == accels->lighttable_up.accel_mods)
   {
-    if(layout == 1) move_view(lib, UP);
+    if (lib->full_preview_id > -1) lib->track = -DT_LIBRARY_MAX_ZOOM;
+    else if(layout == 1) move_view(lib, UP);
     else lib->track = -DT_LIBRARY_MAX_ZOOM;
     return 1;
   }
@@ -1535,7 +1544,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   if(key == accels->lighttable_down.accel_key
       && state == accels->lighttable_down.accel_mods)
   {
-    if(layout == 1) move_view(lib, DOWN);
+    if (lib->full_preview_id > -1) lib->track = +DT_LIBRARY_MAX_ZOOM;
+    else if(layout == 1) move_view(lib, DOWN);
     else lib->track = DT_LIBRARY_MAX_ZOOM;
     return 1;
   }
@@ -1543,7 +1553,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   if(key == accels->lighttable_center.accel_key
       && state == accels->lighttable_center.accel_mods)
   {
-    lib->center = 1;
+    if(layout == 1) move_view(lib, CENTER);
+    else lib->center = 1;
     return 1;
   }
 
