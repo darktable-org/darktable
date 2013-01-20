@@ -83,6 +83,14 @@ static float lr2dt_blacks(float value)
   return get_interpolate (lr2dt_blacks_table, value);
 }
 
+static float lr2dt_exposure(float value)
+{
+  lr2dt_t lr2dt_exposure_table[] =
+    {{-5, -4.5}, {0, 0}, {5, 4.5}};
+
+  return get_interpolate (lr2dt_exposure_table, value);
+}
+
 static float lr2dt_vignette_gain(float value)
 {
   lr2dt_t lr2dt_vignette_table[] =
@@ -341,6 +349,15 @@ void dt_lightroom_import (dt_develop_t *dev)
       {
         has_exposure = TRUE;
         pe.black = lr2dt_blacks((float)v);
+      }
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Exposure2012"))
+    {
+      float v = atof((char *)value);
+      if (v != 0.0)
+      {
+        has_exposure = TRUE;
+        pe.exposure = lr2dt_exposure(v);
       }
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteAmount"))
@@ -766,6 +783,7 @@ void dt_lightroom_import (dt_develop_t *dev)
     dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)hist->params;
 
     p->black = pe.black;
+    p->exposure = pe.exposure;
 
     dt_add_hist (dev, hist, imported, error, 2, &n_import);
     refresh_needed=TRUE;
