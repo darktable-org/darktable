@@ -31,6 +31,7 @@
 #include "iop/tonecurve.h"
 #include "iop/colorzones.h"
 #include "iop/splittoning.h"
+#include "iop/bilat.h"
 #include "control/control.h"
 
 #include <libxml/parser.h>
@@ -130,6 +131,14 @@ static float lr2dt_splittoning_balance(float value)
     {{-100, 100}, {0, 0}, {100, 0}};
 
   return get_interpolate (lr2dt_splittoning_table, value);
+}
+
+static float lr2dt_clarity(float value)
+{
+  lr2dt_t lr2dt_clarity_table[] =
+    {{-100, -.650}, {0, 0}, {100, .650}};
+
+  return get_interpolate (lr2dt_clarity_table, value);
 }
 
 static dt_dev_history_item_t *_new_hist_for (dt_develop_t *dev, char *opname)
@@ -318,6 +327,10 @@ void dt_lightroom_import (dt_develop_t *dev)
   dt_iop_splittoning_params_t pst;
   memset(&pst, 0, sizeof(pst));
   gboolean has_splittoning = FALSE;
+
+  dt_iop_bilat_params_t pbl;
+  memset(&pbl, 0, sizeof(pbl));
+  gboolean has_bilat = FALSE;
 
   gboolean has_tags = FALSE;
 
@@ -663,6 +676,15 @@ void dt_lightroom_import (dt_develop_t *dev)
       float v = atof((char *)value);
       pst.balance = lr2dt_splittoning_balance(v);
     }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Clarity2012"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+      {
+        has_bilat = TRUE;
+        pbl.detail = lr2dt_clarity((float)v);
+      }
+    }
 
     xmlFree(value);
     attribute = attribute->next;
@@ -991,6 +1013,19 @@ void dt_lightroom_import (dt_develop_t *dev)
     p->highlight_saturation = pst.highlight_saturation;
     p->balance              = pst.balance;
     p->compress             = 50.0;
+
+    dt_add_hist (dev, hist, imported, error, 1, &n_import);
+    refresh_needed=TRUE;
+  }
+
+  if (has_bilat)
+  {
+    dt_dev_history_item_t *hist = _new_hist_for (dev, "bilat");
+    dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)hist->params;
+
+    p->sigma_r = 100.0;
+    p->sigma_s = 100.0;
+    p->detail  = pbl.detail;
 
     dt_add_hist (dev, hist, imported, error, 1, &n_import);
     refresh_needed=TRUE;

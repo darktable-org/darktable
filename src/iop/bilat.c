@@ -24,6 +24,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
+#include "iop/bilat.h"
 #include "gui/gtk.h"
 
 #include <gtk/gtk.h>
@@ -32,14 +33,6 @@
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
 DT_MODULE(1)
-
-typedef struct dt_iop_bilat_params_t
-{
-  float sigma_r;
-  float sigma_s;
-  float detail;
-}
-dt_iop_bilat_params_t;
 
 typedef struct dt_iop_bilat_data_t
 {
@@ -128,7 +121,7 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
 
   const size_t basebuffer = width*height*channels*sizeof(float);
 
-  tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width,height,sigma_s,sigma_r)/basebuffer;    
+  tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width,height,sigma_s,sigma_r)/basebuffer;
   tiling->maxbuf = fmax(1.0f, (float)dt_bilateral_singlebuffer_size(width,height,sigma_s,sigma_r)/basebuffer);
   tiling->overhead = 0;
   tiling->overlap = ceilf(4*sigma_s);
