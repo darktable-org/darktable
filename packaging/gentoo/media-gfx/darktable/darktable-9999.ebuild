@@ -29,10 +29,7 @@ RDEPEND="
 	gphoto2? ( media-libs/libgphoto2 )
 	graphicsmagick? ( media-gfx/graphicsmagick )
 	jpeg2k? ( media-libs/openjpeg )
-	kde? (
-		dev-libs/dbus-glib
-		kde-base/kwalletd
-	)
+	kde? ( kde-base/kwalletd )
 	media-gfx/exiv2[xmp]
 	media-libs/lcms:2
 	>=media-libs/lensfun-0.2.3
@@ -78,7 +75,6 @@ src_configure() {
 		$(cmake-utils_use_use gphoto2 CAMERA_SUPPORT)
 		$(cmake-utils_use_use graphicsmagick GRAPHICSMAGICK)
 		$(cmake-utils_use_use jpeg2k OPENJPEG)
-		$(cmake-utils_use_use kde KWALLET)
 		$(cmake-utils_use_use nls NLS)
 		$(cmake-utils_use_use opencl OPENCL)
 		$(cmake-utils_use_use openmp OPENMP)
