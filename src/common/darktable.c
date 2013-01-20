@@ -552,7 +552,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   dt_loc_init_user_config_dir(configdirFromCommand);
   dt_loc_init_user_cache_dir(cachedirFromCommand);
 
-#if !GLIB_CHECK_VERSION(2, 36, 0)
+#if !GLIB_CHECK_VERSION(2, 35, 0)
   g_type_init();
 #endif
 
