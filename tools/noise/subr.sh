@@ -220,6 +220,42 @@ noise profiling. Please install this command and re-run this script."; then
 	make -C "$scriptdir"
 }
 
+get_darktable_version() {
+	local version
+
+	version=$(darktable --version | head -n 1 | cut -d' ' -f 4)
+
+	echo "$version"
+}
+
+normalize_darktable_version() {
+	local version
+	version=$1
+
+	case "$version" in
+	*.*.*) ;;
+	*)     version="$version.0" ;;
+	esac
+
+	IFS='.'
+	for i in $version; do
+		normalized="${normalized}$(printf "%03d" $i)"
+	done
+
+	echo "$normalized"
+}
+cmp_darktable_version() {
+	local v1 v2 cmp
+	v1=$1
+	cmp=$2
+	v2=$3
+
+	v1=$(normalize_darktable_version "$v1")
+	v2=$(normalize_darktable_version "$v2")
+
+	test "$v1" "$cmp" "$v2"
+}
+
 # --------------------------------------------------------------------
 # Input image file handling.
 # --------------------------------------------------------------------
