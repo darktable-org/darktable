@@ -28,7 +28,6 @@
 #include "common/opencl.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "iop/splittoning.h"
 #include "control/control.h"
 #include "dtgtk/label.h"
 #include "dtgtk/resetlabel.h"
@@ -43,6 +42,17 @@
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE(1)
+
+typedef struct dt_iop_splittoning_params_t
+{
+  float shadow_hue;
+  float shadow_saturation;
+  float highlight_hue;
+  float highlight_saturation;
+  float balance;						// center luminance of gradient
+  float compress;						// Compress range
+}
+dt_iop_splittoning_params_t;
 
 typedef struct dt_iop_splittoning_gui_data_t
 {

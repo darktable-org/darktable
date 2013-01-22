@@ -34,7 +34,6 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
-#include "iop/clipping.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -56,6 +55,15 @@ typedef enum dt_iop_clipping_flags_t
   FLAG_FLIP_VERTICAL = 2
 }
 dt_iop_clipping_flags_t;
+
+typedef struct dt_iop_clipping_params_t
+{
+  float angle, cx, cy, cw, ch, k_h, k_v;
+  float kxa, kya, kxb, kyb, kxc, kyc, kxd, kyd;
+  int k_type, k_sym;
+  int k_apply, crop_auto;
+}
+dt_iop_clipping_params_t;
 
 /* calculate the aspect ratios for current image */
 static void _iop_clipping_update_ratios(dt_iop_module_t *self);
