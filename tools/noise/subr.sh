@@ -231,7 +231,7 @@ get_image_iso() {
 
 	if [ -z "$iso" ]; then
 		case "$(get_image_camera_maker "$1")" in
-		NIKON*)
+		[Nn][Ii][Kk][Oo][Nn]*)
 			# Read "Exif.Nikon3.*" before "Exif.NikonIi.*":
 			#     1. "Exif.NikonIi.*" are bytes, not even
 			#        shorts, so they're smaller than other
@@ -333,7 +333,7 @@ list_input_images() {
 		fi
 
 		case "$image" in
-		*.[jJ][pP][gG])
+		*.[Jj][Pp][Gg])
 			# Skip jpeg files, if any. Other files don't
 			# have Exif and will be skept automatically.
 			continue
