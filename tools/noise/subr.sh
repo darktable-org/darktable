@@ -587,10 +587,7 @@ EOF
 	# instance, and the benchmark script will choose the best
 	# preset.
 	shots_per_iso=1
-	case $(uname -s) in
-	Linux) shots_seq=$(seq $shots_per_iso) ;;
-	*BSD)  shots_seq=$(jot $shots_per_iso) ;;
-	esac
+	shots_seq="$shots_per_iso"
 
 	# gphoto2(1) writes images to the current directory, so cd to
 	# the profiling directory.
