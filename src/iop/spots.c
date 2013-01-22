@@ -22,7 +22,6 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
-#include "iop/spots.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
@@ -31,6 +30,23 @@
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
 DT_MODULE(1)
+
+typedef struct spot_t
+{
+  // position of the spot
+  float x, y;
+  // position to clone from
+  float xc, yc;
+  float radius;
+}
+spot_t;
+
+typedef struct dt_iop_spots_params_t
+{
+  int num_spots;
+  spot_t spot[32];
+}
+dt_iop_spots_params_t;
 
 typedef struct spot_draw_t
 {

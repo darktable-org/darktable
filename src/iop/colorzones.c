@@ -35,14 +35,15 @@
 #include <string.h>
 #include <inttypes.h>
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 #define DT_IOP_COLORZONES_INSET 5
 #define DT_IOP_COLORZONES_CURVE_INFL .3f
 #define DT_IOP_COLORZONES_RES 64
-#define DT_IOP_COLORZONES_BANDS 6
 #define DT_IOP_COLORZONES_LUT_RES 0x10000
 
+#define DT_IOP_COLORZONES_BANDS 8
+#define DT_IOP_COLORZONES1_BANDS 6
 
 typedef enum dt_iop_colorzones_channel_t
 {
@@ -58,6 +59,13 @@ typedef struct dt_iop_colorzones_params_t
   float equalizer_x[3][DT_IOP_COLORZONES_BANDS], equalizer_y[3][DT_IOP_COLORZONES_BANDS];
 }
 dt_iop_colorzones_params_t;
+
+typedef struct dt_iop_colorzones_params1_t
+{
+  int32_t channel;
+  float equalizer_x[3][DT_IOP_COLORZONES1_BANDS], equalizer_y[3][DT_IOP_COLORZONES1_BANDS];
+}
+dt_iop_colorzones_params1_t;
 
 typedef struct dt_iop_colorzones_gui_data_t
 {
@@ -114,6 +122,48 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
+int
+legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
+{
+  if (old_version == 1 && new_version == 2)
+  {
+    const dt_iop_colorzones_params1_t *old = old_params;
+    dt_iop_colorzones_params_t *new = new_params;
+
+    new->channel = old->channel;
+
+    // keep first point
+
+    for (int i=0; i<3; i++)
+    {
+      new->equalizer_x[i][0] = old->equalizer_x[i][0];
+      new->equalizer_y[i][0] = old->equalizer_y[i][0];
+    }
+
+    for (int i=0; i<3; i++)
+      for (int k=0; k<6; k++)
+      {
+        //  first+1 and last-1 are set to just after and before the first and last point
+        if (k==0)
+          new->equalizer_x[i][k+1] = old->equalizer_x[i][k]+0.001;
+        else if (k==5)
+          new->equalizer_x[i][k+1] = old->equalizer_x[i][k]-0.001;
+        else
+          new->equalizer_x[i][k+1] = old->equalizer_x[i][k];
+        new->equalizer_y[i][k+1] = old->equalizer_y[i][k];
+      }
+
+    // keep last point
+
+    for (int i=0; i<3; i++)
+    {
+      new->equalizer_x[i][7] = old->equalizer_x[i][5];
+      new->equalizer_y[i][7] = old->equalizer_y[i][5];
+    }
+    return 0;
+  }
+  return 1;
+}
 
 static float
 lookup(const float *lut, const float i)

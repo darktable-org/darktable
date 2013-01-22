@@ -35,7 +35,6 @@
 #include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "iop/vignette.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -44,11 +43,24 @@ DT_MODULE(3)
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 #define TEA_ROUNDS 8
 
+typedef enum dt_iop_dither_t
+{
+  DITHER_OFF = 0,
+  DITHER_8BIT = 1,
+  DITHER_16BIT = 2
+} dt_iop_dither_t;
+
 typedef struct dt_iop_dvector_2d_t
 {
   double x;
   double y;
 } dt_iop_dvector_2d_t;
+
+typedef struct dt_iop_fvector_2d_t
+{
+  float x;
+  float y;
+} dt_iop_vector_2d_t;
 
 typedef struct dt_iop_vignette_params1_t
 {
@@ -75,6 +87,20 @@ typedef struct dt_iop_vignette_params2_t
   float shape;
 }
 dt_iop_vignette_params2_t;
+
+typedef struct dt_iop_vignette_params_t
+{
+  float scale;			// 0 - 100 Inner radius, percent of largest image dimension
+  float falloff_scale;		// 0 - 100 Radius for falloff -- outer radius = inner radius + falloff_scale
+  float brightness;		// -1 - 1 Strength of brightness reduction
+  float saturation;		// -1 - 1 Strength of saturation reduction
+  dt_iop_vector_2d_t center;	// Center of vignette
+  gboolean autoratio;		//
+  float whratio;		// 0-1 = width/height ratio, 1-2 = height/width ratio + 1
+  float shape;
+  int dithering;                // if and how to perform dithering
+}
+dt_iop_vignette_params_t;
 
 typedef struct dt_iop_vignette_gui_data_t
 {

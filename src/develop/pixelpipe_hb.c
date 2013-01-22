@@ -184,6 +184,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
       piece->pipe    = pipe;
       piece->data = NULL;
       piece->hash = 0;
+      piece->process_cl_ready = 0;
       dt_iop_init_pipe(piece->module, pipe,piece);
       pipe->nodes = g_list_append(pipe->nodes, piece);
     }
