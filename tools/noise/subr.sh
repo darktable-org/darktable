@@ -38,6 +38,27 @@ add_to_list() {
 	echo "$list"
 }
 
+# Handle various flavors of sed(1). This function is called at the end
+# of this file.
+
+set_sed_cmd() {
+	case "$(uname -s)" in
+	Linux)
+		sed="sed -r"
+		;;
+	*)
+		# For non-Linux systems, try with gsed(1) (common name
+		# for GNU sed), otherwise, try "sed -E" which may not
+		# exist everywhere.
+		if which gsed >/dev/null 2>&1; then
+			sed="gsed -r"
+		else
+			sed="sed -E"
+		fi
+		;;
+	esac
+}
+
 # Helper function to checkif a given command is available.
 #
 # Below this function, higher-level helpers which check for sets of
@@ -51,7 +72,7 @@ tool_installed() {
 
 	# If we already checked for this tool, return. This way, we
 	# don't display the message again.
-	var="tool_$(echo "$tool" | sed -r 's/[^a-zA-Z0-9_]+/_/g')"
+	var="tool_$(echo "$tool" | $sed 's/[^a-zA-Z0-9_]+/_/g')"
 	checked=$(get_var $var)
 	if [ "$checked" = "found" ]; then
 		return 0
@@ -311,7 +332,7 @@ EOF
 	fi
 
 	camera=$(get_camera_name)
-	subdir=$(echo $camera | sed -r 's/[^a-zA-Z0-9_]+/-/g')
+	subdir=$(echo $camera | $sed 's/[^a-zA-Z0-9_]+/-/g')
 	profiling_dir="/var/tmp/darktable-noise-profiling/$subdir/profiling"
 	test -d "$profiling_dir" || mkdir -p "$profiling_dir"
 }
@@ -426,7 +447,7 @@ camera_is_plugged() {
 get_camera_name() {
 	local camera
 	if camera_is_plugged; then
-		camera=$(gphoto2 -a | head -n 1 | sed -r s'/^[^:]+: //')
+		camera=$(gphoto2 -a | head -n 1 | $sed 's/^[^:]+: //')
 		echo $camera
 	fi
 }
@@ -716,3 +737,5 @@ add_profile() {
 	 "1, X'00', '', '', '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4);" | \
 	sqlite3 $database
 }
+
+set_sed_cmd
