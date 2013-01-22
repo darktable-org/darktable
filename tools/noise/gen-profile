@@ -212,6 +212,67 @@ EOF
 	b1=$(cat $fit | cut -f5 -d' ')
 	b2=$(cat $fit | cut -f6 -d' ')
 
+	case "$a1" in
+	-*)
+		cat <<EOF
+
+${color_error}ERROR: Incorrect green channel.
+
+Possible reason:
+    o  The input RAW image is bad regarding lighting or exposition.
+    o  You may have set a default output profile in darktable which is
+       unsuitable for noise profiling.
+
+If the latter reason applies to you, change it back to "image settings"
+and re-run this script.${color_reset}
+EOF
+		rm -f $dat $flat_dat $curves_dat $fit "$pfm"
+		return 1
+		;;
+	esac
+
+	case "$a0" in
+	-*)
+		cat <<EOF
+
+${color_warning}WARNING: Incorrect red channel.
+
+Possible reason:
+    o  The input RAW image is bad regarding lighting or exposition.
+    o  You may have set a default output profile in darktable which is
+       unsuitable for noise profiling.
+
+If the latter reason applies to you, change it back to "image settings"
+and re-run this script.
+
+Meanwhile, this channel will be ignored.${color_reset}
+EOF
+		a0="0.0"
+		b0="0.0"
+		;;
+	esac
+
+	case "$a2" in
+	-*)
+		cat <<EOF
+
+${color_warning}WARNING: Incorrect blue channel.
+
+Possible reason:
+    o  The input RAW image is bad regarding lighting or exposition.
+    o  You may have set a default output profile in darktable which is
+       unsuitable for noise profiling.
+
+If the latter reason applies to you, change it back to "image settings"
+and re-run this script.
+
+Meanwhile, this channel will be ignored.${color_reset}
+EOF
+		a2="0.0"
+		b2="0.0"
+		;;
+	esac
+
 	echo "{\"$model iso $iso\",       \"$maker\",      \"$model\",              $iso,         {$a0, $a1, $a2}, {$b0, $b1, $b2}}," >> "$presets"
 
 	# Clean unused files.
@@ -369,10 +430,6 @@ cd -
 
 echo "--> Cleanup"
 rm -f "$files_list"
-
-color_ok=$'\033[32m'
-color_warning=$'\033[33m'
-color_reset=$'\033[0m'
 
 echo ""
 echo "${color_ok}== Noise profiling done! ==${color_reset}"

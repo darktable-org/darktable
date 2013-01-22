@@ -2,6 +2,11 @@
 # General purpose functions.
 # --------------------------------------------------------------------
 
+color_ok=$'\033[32m'
+color_warning=$'\033[33m'
+color_error=$'\033[31m'
+color_reset=$'\033[0m'
+
 # The functions below can be used to set/get a variable with a variable
 # name. This can be useful to have something similar to a hash map.
 #
