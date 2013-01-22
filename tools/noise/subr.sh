@@ -325,7 +325,7 @@ EOF
 
 	if ! camera_is_plugged; then
 		cat <<EOF
-ERROR: Please specify a directory to read or write profiling images
+ERROR: Please specify a directory to read or write profiling RAW images
 (using the "$flag" flag) or plug your camera and turn it on.
 EOF
 		return 1
@@ -346,7 +346,7 @@ list_input_images() {
 	local iso image images
 
 	echo
-	echo "===> List profiling input images"
+	echo "===> List profiling input RAW images"
 	for image in "$profiling_dir"/*; do
 		if [ "$image" = "$profiling_dir/*" ]; then
 			# Directory empty.
@@ -535,7 +535,7 @@ auto_capture_images() {
 	if [ "$do_profiling_shots" = "0" ]; then
 		cat <<EOF
 
-The script will use existing input images for the profiling. No more
+The script will use existing input RAW images for the profiling. No more
 shot will be taken.
 EOF
 		return 0

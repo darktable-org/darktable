@@ -17,7 +17,7 @@ $scriptname [OPTION]...
 
 Available options:
     -C         Skip input images correctness checks.
-    -d DIR     Use DIR to read and write profiling input images.
+    -d DIR     Use DIR to read and write profiling input RAW images.
     -h         Display this usage.
     -i ISO     Limit capture to ISO sensitivity; can be specified multiple
                times for multiple ISO settings.
