@@ -83,8 +83,8 @@ fi
 if ! tethering_tools_installed; then
 	cat <<EOF
 
-NOTE: Tethering tools are missing; you'll need to provide input images
-yourself.
+${color_warning}NOTE: Tethering tools are missing; you'll need to provide input images
+yourself.${color_reset}
 EOF
 else
 	tethering_enabled=1
@@ -383,10 +383,10 @@ database="$profiling_dir/library.db"
 database_orig="$HOME/.config/darktable/library.db"
 if [ ! -f "$database_orig" ]; then
 	cat <<EOF
-ERROR: Please run darktable at least once to create an initial library
+${color_error}ERROR: Please run darktable at least once to create an initial library
 or copy some valid library to $database manually before running this
 script. This is needed to setup a testing environment for your new
-presets.
+presets.${color_reset}
 EOF
 	exit 1
 fi

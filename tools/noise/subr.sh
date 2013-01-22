@@ -88,7 +88,7 @@ tool_installed() {
 
 	if ! which $tool >/dev/null 2>&1; then
 		if [ "$message" ]; then
-			echo "ERROR: $tool not found" 1>&2
+			echo "${color_error}ERROR: $tool not found${color_reset}" 1>&2
 			printf "%s\n\n" "$message" 1>&2
 		fi
 
@@ -369,8 +369,8 @@ auto_set_profiling_dir() {
 			return 0
 		else
 			cat <<EOF
-ERROR: Profiling directory doesn't exist:
-$profiling_dir
+${color_error}ERROR: Profiling directory doesn't exist:
+$profiling_dir${color_reset}
 EOF
 			return 1
 		fi
@@ -378,8 +378,8 @@ EOF
 
 	if ! camera_is_plugged; then
 		cat <<EOF
-ERROR: Please specify a directory to read or write profiling RAW images
-(using the "$flag" flag) or plug your camera and turn it on.
+${color_error}ERROR: Please specify a directory to read or write profiling RAW images
+(using the "$flag" flag) or plug your camera and turn it on.${color_reset}
 EOF
 		return 1
 	fi
@@ -475,14 +475,14 @@ check_exposition() {
 	over=$(convert "$input" $convert_flags -format "%[mean]" info: | cut -f1 -d.)
 	if [ "$over" -a "$over" -lt 80 ]; then
 		# Image not over-exposed.
-		echo "\"$orig\" not over-exposed ($over)"
+		echo "${color_error}\"$orig\" not over-exposed ($over)${color_reset}"
 		ret=1
 	fi
 
 	under=$(convert "$input" -negate $convert_flags -format "%[mean]" info: | cut -f1 -d.)
 	if [ "$under" -a "$under" -lt 80 ]; then
 		# Image not under-exposed.
-		echo "\"$orig\" not under-exposed ($under)"
+		echo "${color_error}\"$orig\" not under-exposed ($under)${color_reset}"
 		ret=1
 	fi
 
@@ -631,9 +631,9 @@ EOF
 	fi
 	while ! camera_is_plugged; do
 		cat <<EOF
-ERROR: No camera found by gphoto2(1)!
+${color_error}ERROR: No camera found by gphoto2(1)!
 
-Retry or check gphoto2 documentation.
+Retry or check gphoto2 documentation.${color_reset}
 EOF
 		read answer
 	done
