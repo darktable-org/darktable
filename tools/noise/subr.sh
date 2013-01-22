@@ -594,6 +594,8 @@ EOF
 			cat <<EOF
 
 $profiling_note
+
+Press Enter when ready.
 EOF
 			read answer
 		fi
