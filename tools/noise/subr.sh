@@ -129,6 +129,16 @@ install this package and re-run this script."; then
 		missing_tool=1
 	fi
 
+	if ! convert --version >/dev/null 2>&1; then
+		cat 1>&2 <<EOF
+ImageMagick is required to check input images correctness. Please
+install this package and re-run this script.
+
+NOTE: You may have to remove GraphicsMagick-related packages before.
+EOF
+		missing_tool=1
+	fi
+
 	return $missing_tool
 }
 
