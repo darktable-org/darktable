@@ -370,16 +370,35 @@ cd -
 echo "--> Cleanup"
 rm -f "$files_list"
 
-color_green=$'\033[32m'
+color_ok=$'\033[32m'
+color_warning=$'\033[33m'
 color_reset=$'\033[0m'
 
 echo ""
-echo "${color_green}== Noise profiling done! ==${color_reset}"
+echo "${color_ok}== Noise profiling done! ==${color_reset}"
 cat <<EOF
 
 Presets were inserted into $database. to test them locally, run:
 
+EOF
+
+dt_version=$(get_darktable_version)
+if cmp_darktable_version "$dt_version" "-lt" "1.2"; then
+	cat <<EOF
+  /path/to/darktable-1.2-or-later/darktable --library $database
+
+${color_warning}CAUTION: The "darktable" executable available from your system's \$PATH
+has version $dt_version. However, version 1.2 or later is required to
+test the profile. The command line shown above must be changed to point
+to your darktable 1.2+ binary.${color_reset}
+EOF
+else
+	cat <<EOF
   darktable --library $database
+EOF
+fi
+
+cat <<EOF
 
 If you're happy with the results, post the following file to us:
 

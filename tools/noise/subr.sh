@@ -232,6 +232,8 @@ normalize_darktable_version() {
 	local version
 	version=$1
 
+	version=${version%+*}
+
 	case "$version" in
 	*.*.*) ;;
 	*)     version="$version.0" ;;
