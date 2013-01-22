@@ -29,7 +29,6 @@
 #include "gui/draw.h"
 #include "gui/presets.h"
 #include "bauhaus/bauhaus.h"
-#include "iop/colorzones.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -42,6 +41,31 @@ DT_MODULE(2)
 #define DT_IOP_COLORZONES_CURVE_INFL .3f
 #define DT_IOP_COLORZONES_RES 64
 #define DT_IOP_COLORZONES_LUT_RES 0x10000
+
+#define DT_IOP_COLORZONES_BANDS 8
+#define DT_IOP_COLORZONES1_BANDS 6
+
+typedef enum dt_iop_colorzones_channel_t
+{
+  DT_IOP_COLORZONES_L = 0,
+  DT_IOP_COLORZONES_C = 1,
+  DT_IOP_COLORZONES_h = 2
+}
+dt_iop_colorzones_channel_t;
+
+typedef struct dt_iop_colorzones_params_t
+{
+  int32_t channel;
+  float equalizer_x[3][DT_IOP_COLORZONES_BANDS], equalizer_y[3][DT_IOP_COLORZONES_BANDS];
+}
+dt_iop_colorzones_params_t;
+
+typedef struct dt_iop_colorzones_params1_t
+{
+  int32_t channel;
+  float equalizer_x[3][DT_IOP_COLORZONES1_BANDS], equalizer_y[3][DT_IOP_COLORZONES1_BANDS];
+}
+dt_iop_colorzones_params1_t;
 
 typedef struct dt_iop_colorzones_gui_data_t
 {
