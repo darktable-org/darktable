@@ -432,18 +432,40 @@ get_camera_name() {
 }
 
 get_camera_raw_setting() {
-	local raw_setting
-	raw_setting=$(gphoto2 --get-config /main/imgsettings/imageformat | awk '
+	local key raw_setting
+
+	# Try know configuration keys one after another, because cameras
+	# don't support the same keys.
+
+	# This one seems supported by most cameras.
+	key="/main/imgsettings/imageformat"
+	raw_setting=$(gphoto2 --get-config "$key" | awk "
 /^Choice: [0-9]+ RAW$/ {
-	id = $0;
-	sub(/^Choice: /, "", id);
-	sub(/ RAW$/, "", id);
-	print id;
+	id = \$0;
+	sub(/^Choice: /, \"\", id);
+	sub(/ RAW$/, \"\", id);
+	print \"$key=\" id;
 	exit;
 }
-')
+")
+	if [ "$raw_setting" ]; then
+		echo "$raw_setting"
+	fi
 
-	echo $raw_setting
+	# This one is used by Nikon cameras (at least, some).
+	key="/main/capturesettings/imagequality"
+	raw_setting=$(gphoto2 --get-config "$key" | awk "
+/^Choice: [0-9]+ NEF \(Raw\)$/ {
+	id = \$0;
+	sub(/^Choice: /, \"\", id);
+	sub(/ NEF \(Raw\)$/, \"\", id);
+	print \"$key=\" id;
+	exit;
+}
+")
+	if [ "$raw_setting" ]; then
+		echo "$raw_setting"
+	fi
 }
 
 get_camera_iso_settings() {
@@ -545,6 +567,10 @@ EOF
 	# If we reach this part, a camera is plugged in and the user
 	# wants us to take the pictures for him.
 
+	if [ -z "$raw_config" ]; then
+		raw_config=$(get_camera_raw_setting)
+	fi
+
 	# If he didn't specify any ISO settings, query the camera.
 	if [ -z "$iso_settings" ]; then
 		iso_settings=$(get_camera_iso_settings)
@@ -600,10 +626,6 @@ EOF
 			read answer
 		fi
 
-		if [ -z "$raw_id" ]; then
-			raw_id=$(get_camera_raw_setting)
-		fi
-
 		# This script will do $shots_seq shots for each ISO setting.
 		for i in $shots_seq; do
 			if [ "$pause_between_shots" -a "$not_first_round" ]; then
@@ -613,7 +635,7 @@ EOF
 			not_first_round=1
 
 			gphoto2						\
-			 --set-config /main/imgsettings/imageformat=$raw_id\
+			 --set-config "$raw_config"			\
 			 --set-config /main/imgsettings/iso=$iso	\
 			 --filename="$iso-$i.%C"			\
 			 --capture-image-and-download
