@@ -64,6 +64,12 @@ fi
 # Main code.
 # --------------------------------------------------------------------
 
+if [ ! -f "$profile" ]; then
+	echo 1>&2
+	echo "Cannot open presets file: $profile" 1>&2
+	exit 1
+fi
+
 awk -f "$scriptdir/extract-values-from-presets.awk" < "$profile" | while read line; do
 	set -- $line
 	add_profile "$database" "$label_prefix" "$@"
