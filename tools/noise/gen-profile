@@ -81,12 +81,13 @@ if ! internal_tools_available; then
 	missing_tool=1
 fi
 if ! tethering_tools_installed; then
-	tethering_enabled=1
 	cat <<EOF
 
 NOTE: Tethering tools are missing; you'll need to provide input images
 yourself.
 EOF
+else
+	tethering_enabled=1
 fi
 
 if [ "$missing_tool" = "1" ]; then
