@@ -179,6 +179,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int width = roi_in->width;
   const int height = roi_in->height;
 
+  cl_mem dev_U2 = NULL;
   cl_mem dev_U4 = NULL;
   cl_mem dev_U4_t = NULL;
   cl_mem dev_U4_tt = NULL;
@@ -207,9 +208,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   //float weight[4] = { powf(d->luma, 0.6), powf(d->chroma, 0.6), powf(d->chroma, 0.6), 1.0f };
   float weight[4] = { d->luma, d->chroma, d->chroma, 1.0f };
 
+  dev_U2 = dt_opencl_alloc_device_buffer(devid, width*height*4*sizeof(float));
+  if(dev_U2 == NULL) goto error;
+
   for(int k=0; k<NUM_BUCKETS; k++)
   {
-    buckets[k] = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, sizeof(float));
+    buckets[k] = dt_opencl_alloc_device_buffer(devid, width*height*sizeof(float));
     if(buckets[k] == NULL) goto error;
   }
  
@@ -245,7 +249,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t local[3];
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
 
-  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_init, 0, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_init, 0, sizeof(cl_mem), (void *)&dev_U2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_init, 1, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_init, 2, sizeof(int), (void *)&height);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_init, sizes);
@@ -307,12 +311,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
 
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 0, sizeof(cl_mem), (void *)&dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 1, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 1, sizeof(cl_mem), (void *)&dev_U2);
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 2, sizeof(cl_mem), (void *)&dev_U4_tt);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 3, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 4, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 5, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 6, 2*sizeof(int), (void *)&q);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 3, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 4, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_accu, 5, 2*sizeof(int), (void *)&q);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_accu, sizes);
       if(err != CL_SUCCESS) goto error;
 
@@ -324,7 +327,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     }
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 1, sizeof(cl_mem), (void *)&dev_U2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 2, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 3, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 4, sizeof(int), (void *)&height);
@@ -332,7 +335,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_finish, sizes);
   if(err != CL_SUCCESS) goto error;
 
-
+  if(dev_U2 != NULL) dt_opencl_release_mem_object(dev_U2);
   for(int k=0; k<NUM_BUCKETS; k++)
   {
     if(buckets[k] != NULL) dt_opencl_release_mem_object(buckets[k]);
@@ -340,6 +343,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   return TRUE;
 
 error:
+  if(dev_U2 != NULL) dt_opencl_release_mem_object(dev_U2);
+  for(int k=0; k<NUM_BUCKETS; k++)
+  {
+    if(buckets[k] != NULL) dt_opencl_release_mem_object(buckets[k]);
+  }
+
   dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -352,7 +361,7 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
   const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
 
-  tiling->factor = 2.0f + 0.25*NUM_BUCKETS; // in + out + tmp
+  tiling->factor = 2.0f + 1.0f + 0.25*NUM_BUCKETS; // in + out + tmp
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = P+K;
