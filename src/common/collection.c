@@ -448,13 +448,16 @@ get_query_string(const dt_collection_properties_t property, const gchar *escaped
     case DT_COLLECTION_PROP_COLORLABEL: // colorlabel
     {
       int color = 0;
-      if     (strcmp(escaped_text,_("red")   )==0) color=0;
-      else if(strcmp(escaped_text,_("yellow"))==0) color=1;
-      else if(strcmp(escaped_text,_("green") )==0) color=2;
-      else if(strcmp(escaped_text,_("blue")  )==0) color=3;
-      else if(strcmp(escaped_text,_("purple"))==0) color=4;
-      snprintf(query, 1024, "(id in (select imgid from color_labels where color=%d))", color);
-      if     (strcmp(escaped_text,"%"     )==0) snprintf(query, 1024, "(id in (select imgid from color_labels where color IS NOT NULL))");
+      if(strcmp(escaped_text, "%")==0) snprintf(query, 1024, "(id in (select imgid from color_labels where color IS NOT NULL))");
+      else
+      {
+        if     (strcmp(escaped_text,_("red")   )==0) color=0;
+        else if(strcmp(escaped_text,_("yellow"))==0) color=1;
+        else if(strcmp(escaped_text,_("green") )==0) color=2;
+        else if(strcmp(escaped_text,_("blue")  )==0) color=3;
+        else if(strcmp(escaped_text,_("purple"))==0) color=4;
+        snprintf(query, 1024, "(id in (select imgid from color_labels where color=%d))", color);
+      }
     }
     break;
 
