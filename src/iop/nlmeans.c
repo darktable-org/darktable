@@ -156,7 +156,7 @@ static float gh(const float f, const float sharpness)
   // return 1.0f/(1.0f + fabsf(f)*spread);
 }
 
-
+#ifdef HAVE_OPENCL
 static int bucket_next(unsigned int *state, unsigned int max)
 {
   unsigned int current = *state;
@@ -167,7 +167,6 @@ static int bucket_next(unsigned int *state, unsigned int max)
   return next;
 }
 
-#ifdef HAVE_OPENCL
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
