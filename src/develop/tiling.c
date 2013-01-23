@@ -1320,9 +1320,9 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
       dt_opencl_release_mem_object(output);
       output = NULL;
 
-      /* block until opencl queue has finished to free all used event handlers. needed here as with
-         some OpenCL implementations we would otherwise run out of them */
-      dt_opencl_finish(devid);
+      /* block until opencl queue has finished to free all used event handlers */
+      if(!darktable.opencl->async_pixelpipe || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)
+        dt_opencl_finish(devid);
     }
 
   /* copy back final processed_maximum */
@@ -1601,10 +1601,9 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
       dt_opencl_release_mem_object(output);
       output = NULL;
 
-      /* block until opencl queue has finished to free all used event handlers. needed here as with
-         some OpenCL implementations we would otherwise run out of them */
-      dt_opencl_finish(devid);
-
+      /* block until opencl queue has finished to free all used event handlers */
+      if(!darktable.opencl->async_pixelpipe || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)
+        dt_opencl_finish(devid);
     }
 
   /* copy back final processed_maximum */

@@ -107,7 +107,7 @@ blendif_factor_Lab(const float4 input, const float4 output, const unsigned int b
   float result = 1.0f;
   float scaled[DEVELOP_BLENDIF_SIZE];
 
-  if((blendif & (1<<DEVELOP_BLENDIF_active)) == 0) return 1.0f;
+  if((blendif & (1u<<DEVELOP_BLENDIF_active)) == 0) return 1.0f;
 
   scaled[DEVELOP_BLENDIF_L_in] = clamp(input.x / 100.0f, 0.0f, 1.0f);			// L scaled to 0..1
   scaled[DEVELOP_BLENDIF_A_in] = clamp((input.y + 128.0f)/256.0f, 0.0f, 1.0f);		// a scaled to 0..1
@@ -171,7 +171,7 @@ blendif_factor_rgb(const float4 input, const float4 output, const unsigned int b
   float result = 1.0f;
   float scaled[DEVELOP_BLENDIF_SIZE];
 
-  if((blendif & (1<<DEVELOP_BLENDIF_active)) == 0) return 1.0f;
+  if((blendif & (1u<<DEVELOP_BLENDIF_active)) == 0) return 1.0f;
 
   scaled[DEVELOP_BLENDIF_GRAY_in]  = clamp(0.3f*input.x + 0.59f*input.y + 0.11f*input.z, 0.0f, 1.0f);	// Gray scaled to 0..1
   scaled[DEVELOP_BLENDIF_RED_in]   = clamp(input.x, 0.0f, 1.0f);						// Red

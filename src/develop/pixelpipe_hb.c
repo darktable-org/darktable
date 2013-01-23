@@ -646,12 +646,23 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           /* input is not on gpu memory -> copy it there */
           if (cl_mem_input == NULL)
           {
-            cl_mem_input = dt_opencl_copy_host_to_device(pipe->devid, input, roi_in.width, roi_in.height, in_bpp);
+            cl_mem_input = dt_opencl_alloc_device(pipe->devid, roi_in.width, roi_in.height, in_bpp);
             if (cl_mem_input == NULL)
             {
               dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't generate input buffer for module %s\n", module->op);
               success_opencl = FALSE;
             }
+
+            if (success_opencl)
+            {
+              cl_int err = dt_opencl_write_host_to_device_non_blocking(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height, in_bpp);
+              if(err != CL_SUCCESS)
+              {
+                dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't copy image to opencl device for module %s\n", module->op);
+                success_opencl = FALSE;
+              }
+            }
+            
           }
 
           if(pipe->shutdown)
@@ -675,7 +686,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           // fprintf(stderr, "[opencl_pixelpipe 2] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
 
           // indirectly give gpu some air to breathe (and to do display related stuff)
-          dt_iop_nap(1000);
+          dt_iop_nap(darktable.opencl->micro_nap);
 
           /* now call process_cl of module; module should emit meaningful messages in case of error */
           if (success_opencl)
@@ -693,7 +704,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
 
           /* synchronization point for opencl pipe */
-          if (success_opencl)
+          if (success_opencl && (!darktable.opencl->async_pixelpipe || pipe->type == DT_DEV_PIXELPIPE_EXPORT))
             success_opencl = dt_opencl_finish(pipe->devid);
 
 
@@ -739,7 +750,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           }
 
           // indirectly give gpu some air to breathe (and to do display related stuff)
-          dt_iop_nap(1000);
+          dt_iop_nap(darktable.opencl->micro_nap);
 
           /* now call process_tiling_cl of module; module should emit meaningful messages in case of error */
           if (success_opencl)
@@ -756,7 +767,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
 
           /* synchronization point for opencl pipe */
-          if (success_opencl)
+          if (success_opencl && (!darktable.opencl->async_pixelpipe || pipe->type == DT_DEV_PIXELPIPE_EXPORT))
             success_opencl = dt_opencl_finish(pipe->devid);
 
           if(pipe->shutdown)
@@ -786,34 +797,40 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         {
           /* Nice, everything went fine */
 
-          /* write back input into cache for faster re-usal (not for export or thumbnails) */
-          if (cl_mem_input != NULL && pipe->type != DT_DEV_PIXELPIPE_EXPORT && pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL)
+          /* this is reasonable on slow GPUs only, where it's more expensive to reprocess the whole pixelpipe than
+             regularly copying device buffers back to host. This would slow down fast GPUs considerably. */
+          if(darktable.opencl->synch_cache)
           {
-            cl_int err;
-
-            /* copy input to host memory, so we can find it in cache */
-            err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height, in_bpp);
-            if (err != CL_SUCCESS)
+            /* write back input into cache for faster re-usal (not for export or thumbnails) */
+            if (cl_mem_input != NULL && pipe->type != DT_DEV_PIXELPIPE_EXPORT && pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL)
             {
-              /* late opencl error, not likely to happen here */
-              dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (e)] late opencl error detected while copying back to cpu buffer: %d\n", err);
-              /* that's all we do here, we later make sure to invalidate cache line */
+              cl_int err;
+
+              /* copy input to host memory, so we can find it in cache */
+              err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height, in_bpp);
+              if (err != CL_SUCCESS)
+              {
+                /* late opencl error, not likely to happen here */
+                dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (e)] late opencl error detected while copying back to cpu buffer: %d\n", err);
+                /* that's all we do here, we later make sure to invalidate cache line */
+              }
+              else
+              {
+                /* success: cache line is valid now, so we will not need to invalidate it later */
+                valid_input_on_gpu_only = FALSE;
+
+                // TODO: check if we need to wait for finished opencl pipe before we release cl_mem_input
+                // dt_dev_finish(pipe->devid);
+              }
+
             }
-            else
+
+            if(pipe->shutdown)
             {
-              /* success: cache line is valid now, so we will not need to invalidate it later */
-              valid_input_on_gpu_only = FALSE;
-
-              // TODO: check if we need to wait for finished opencl pipe before we release cl_mem_input
-              // dt_dev_finish(pipe->devid);
+              if(cl_mem_input != NULL) dt_opencl_release_mem_object(cl_mem_input);
+              dt_pthread_mutex_unlock(&pipe->busy_mutex);
+              return 1;
             }
-          }
-
-          if(pipe->shutdown)
-          {
-            if(cl_mem_input != NULL) dt_opencl_release_mem_object(cl_mem_input);
-            dt_pthread_mutex_unlock(&pipe->busy_mutex);
-            return 1;
           }
 
           /* we can now release cl_mem_input */
@@ -854,6 +871,9 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
               dt_pthread_mutex_unlock(&pipe->busy_mutex);
               return 1;
             }
+
+            /* this is a good place to release event handles as we anyhow need to move from gpu to cpu here */
+            (void)dt_opencl_finish(pipe->devid);
             dt_opencl_release_mem_object(cl_mem_input);
             valid_input_on_gpu_only = FALSE;
           }
@@ -913,6 +933,9 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
             return 1;
           }
+
+          /* this is a good place to release event handles as we anyhow need to move from gpu to cpu here */
+          (void)dt_opencl_finish(pipe->devid);
           dt_opencl_release_mem_object(cl_mem_input);
           valid_input_on_gpu_only = FALSE;
         }

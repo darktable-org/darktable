@@ -202,7 +202,7 @@ colorin (read_only image2d_t in, write_only image2d_t out, const int width, cons
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  float cam[3], XYZ[3], Lab[3];
+  float cam[3], XYZ[3];
   cam[0] = lookup_unbounded(lutr, pixel.x, a);
   cam[1] = lookup_unbounded(lutg, pixel.y, a+3);
   cam[2] = lookup_unbounded(lutb, pixel.z, a+6);

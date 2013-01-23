@@ -72,11 +72,32 @@
     <longdescription>if set to TRUE darktable will not use opencl kernels which contain atomic operations (example bilateral). pixelpipe processing will be done on cpu for the affected modules. useful if your opencl implementation freezes/crashes on atomics or if they are processed with a bad performance.</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>opencl_use_events</name>
+    <name>opencl_number_event_handles</name>
+    <type>int</type>
+    <default>100</default>
+    <shortdescription>the number of opencl event handles darktable can use</shortdescription>
+    <longdescription>a positive non-zero integer defines the number of event handles that darktable may have opened on a device. a value of zero does not pose any restrictions, bearing the risk of hitting the device's resource limits. a value of -1 completely prevents the use of event handles.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>opencl_async_pixelpipe</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>use opencl events for error detection and profiling</shortdescription>
-    <longdescription>this defines if opencl events should be used. if this option is deactivated, opencl errors could pass by unnoticed and image output may be garbled. don't change this from its default TRUE, unless you know what you are doing.</longdescription>
+    <shortdescription>run opencl pixelpipe asynchronously</shortdescription>
+    <longdescription>if set to TRUE opencl pixelpipe will not be synchronized on a per-module basis. this can improve pixelpipe latency. however, potential opencl errors would be detected late; in such a case the complete pixelpipe needs to be reprocessed instead of only a single module. export pixelpipe will always be run synchronously.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>opencl_synch_cache</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>copy back opencl buffers into pixelpipe cache after each module</shortdescription>
+    <longdescription>this brings pixelpipe cache and opencl buffers in synch after each module. on slow GPUs this might improve speed as it avoids reprocessing the whole pixelpipe on every parameter change. on fast GPUs the additional memory transfer overhead will slow down opencl considerably.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>opencl_micro_nap</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>pause opencl processing for this number of microseconds from time to time</shortdescription>
+    <longdescription>for slow GPUs this gives your graphics driver some time to breathe to do needed screen updates. try 1000 as a starting point. can be left at zero for fast devices.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>never_use_embedded_thumb</name>

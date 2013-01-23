@@ -104,6 +104,10 @@ typedef struct dt_opencl_t
   int inited;
   int avoid_atomics;
   int use_events;
+  int async_pixelpipe;
+  int number_event_handles;
+  int synch_cache;
+  int micro_nap;
   int enabled;
   int num_devs;
   dt_opencl_device_t *dev;
@@ -185,11 +189,19 @@ int dt_opencl_read_host_from_device(const int devid, void *host, void *device, c
 
 int dt_opencl_read_host_from_device_rowpitch(const int devid, void *host, void *device, const int width, const int height, const int rowpitch);
 
+int dt_opencl_read_host_from_device_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int bpp);
+
+int dt_opencl_read_host_from_device_rowpitch_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int rowpitch);
+
 int dt_opencl_read_host_from_device_raw(const int devid, void *host, void *device, const size_t *origin, const size_t *region, const int rowpitch, const int blocking);
 
 int dt_opencl_write_host_to_device(const int devid, void *host, void *device, const int width, const int height, const int bpp);
 
 int dt_opencl_write_host_to_device_rowpitch(const int devid, void *host, void *device, const int width, const int height, const int rowpitch);
+
+int dt_opencl_write_host_to_device_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int bpp);
+
+int dt_opencl_write_host_to_device_rowpitch_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int rowpitch);
 
 int dt_opencl_write_host_to_device_raw(const int devid, void *host, void *device, const size_t *origin, const size_t *region, const int rowpitch, const int blocking);
 

@@ -657,6 +657,7 @@ int dt_imageio_export_with_flags(
   // downsampling done last, if high quality processing was requested:
   uint8_t *outbuf = pipe.backbuf;
   uint8_t *moutbuf = NULL; // keep track of alloc'ed memory
+  dt_get_times(&start);
   if(high_quality_processing)
   {
     dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
@@ -687,6 +688,7 @@ int dt_imageio_export_with_flags(
       dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
     outbuf = pipe.backbuf;
   }
+  dt_show_times(&start, thumbnail_export ? "[dev_process_thumbnail] pixel pipeline processing" : "[dev_process_export] pixel pipeline processing", NULL);
 
   // downconversion to low-precision formats:
   if(bpp == 8 && !display_byteorder)

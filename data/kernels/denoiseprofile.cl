@@ -31,7 +31,7 @@ float fast_mexp2f(const float x)
   const float i1 = (float)0x3f800000u; // 2^0
   const float i2 = (float)0x3f000000u; // 2^-1
   const float k0 = i1 + x * (i2 - i1);
-  union { float f; unsigned int i } k;
+  union { float f; unsigned int i; } k;
   k.i = (k0 >= (float)0x800000u) ? k0 : 0;
   return k.f;
 }
@@ -63,23 +63,25 @@ denoiseprofile_precondition(read_only image2d_t in, write_only image2d_t out, co
              
 
 kernel void
-denoiseprofile_init(write_only image2d_t out, const int width, const int height)
+denoiseprofile_init(global float4* out, const int width, const int height)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+  const int gidx = mad24(y, width, x);
 
   if(x >= width || y >= height) return;
 
-  write_imagef (out, (int2)(x, y), (float4)0.0f);
+  out[gidx] = (float4)0.0f;
 }
               
 
 kernel void
-denoiseprofile_dist(read_only image2d_t in, write_only image2d_t U4, const int width, const int height, 
+denoiseprofile_dist(read_only image2d_t in, global float* U4, const int width, const int height, 
              const int2 q)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+  const int gidx = mad24(y, width, x);
 
   if(x >= width || y >= height) return;
 
@@ -88,28 +90,31 @@ denoiseprofile_dist(read_only image2d_t in, write_only image2d_t U4, const int w
   float4 tmp = (p1 - p2)*(p1 - p2);
   float dist = tmp.x + tmp.y + tmp.z;
   
-  write_imagef (U4, (int2)(x, y), dist);
+  U4[gidx] = dist;
 }
 
 kernel void
-denoiseprofile_horiz(read_only image2d_t U4_in, write_only image2d_t U4_out, const int width, const int height, 
+denoiseprofile_horiz(global float* U4_in, global float* U4_out, const int width, const int height, 
               const int2 q, const int P, local float *buffer)
 {
   const int lid = get_local_id(0);
   const int lsz = get_local_size(0);
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+  const int gidx = mad24(min(y, height-1), width, min(x, width-1));
+
 
   /* fill center part of buffer */
-  buffer[P + lid] = read_imagef(U4_in, samplerc, (int2)(x, y)).x;
+  buffer[P + lid] = U4_in[gidx];
 
   /* left wing of buffer */
   for(int n=0; n <= P/lsz; n++)
   {
     const int l = mad24(n, lsz, lid + 1);
     if(l > P) continue;
-    const int xx = mad24((int)get_group_id(0), lsz, -l);
-    buffer[P - l] = read_imagef(U4_in, samplerc, (int2)(xx, y)).x;
+    int xx = mad24((int)get_group_id(0), lsz, -l);
+    xx = max(xx, 0);
+    buffer[P - l] = U4_in[mad24(y, width, xx)];
   }
     
   /* right wing of buffer */
@@ -117,8 +122,9 @@ denoiseprofile_horiz(read_only image2d_t U4_in, write_only image2d_t U4_out, con
   {
     const int r = mad24(n, lsz, lsz - lid);
     if(r > P) continue;
-    const int xx = mad24((int)get_group_id(0), lsz, lsz - 1 + r);
-    buffer[P + lsz - 1 + r] = read_imagef(U4_in, samplerc, (int2)(xx, y)).x;
+    int xx = mad24((int)get_group_id(0), lsz, lsz - 1 + r);
+    xx = min(xx, width-1);
+    buffer[P + lsz - 1 + r] = U4_in[mad24(y, width, xx)];
   }
 
   barrier(CLK_LOCAL_MEM_FENCE);
@@ -133,29 +139,32 @@ denoiseprofile_horiz(read_only image2d_t U4_in, write_only image2d_t U4_out, con
     distacc += buffer[pi];
   }
 
-  write_imagef (U4_out, (int2)(x, y), distacc);
+  U4_out[gidx] = distacc;
 }
 
 
 kernel void
-denoiseprofile_vert(read_only image2d_t U4_in, write_only image2d_t U4_out, const int width, const int height, 
+denoiseprofile_vert(global float* U4_in, global float* U4_out, const int width, const int height, 
               const int2 q, const int P, const float norm, local float *buffer)
 {
   const int lid = get_local_id(1);
   const int lsz = get_local_size(1);
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+  const int gidx = mad24(min(y, height-1), width, min(x, width-1));
+
 
   /* fill center part of buffer */
-  buffer[P + lid] = read_imagef(U4_in, samplerc, (int2)(x, y)).x;
+  buffer[P + lid] = U4_in[gidx];
 
   /* left wing of buffer */
   for(int n=0; n <= P/lsz; n++)
   {
     const int l = mad24(n, lsz, lid + 1);
     if(l > P) continue;
-    const int yy = mad24((int)get_group_id(1), lsz, -l);
-    buffer[P - l] = read_imagef(U4_in, samplerc, (int2)(x, yy)).x;
+    int yy = mad24((int)get_group_id(1), lsz, -l);
+    yy = max(yy, 0);
+    buffer[P - l] = U4_in[mad24(yy, width, x)];
   }
 
   /* right wing of buffer */
@@ -163,8 +172,9 @@ denoiseprofile_vert(read_only image2d_t U4_in, write_only image2d_t U4_out, cons
   {
     const int r = mad24(n, lsz, lsz - lid);
     if(r > P) continue;
-    const int yy = mad24((int)get_group_id(1), lsz, lsz - 1 + r);
-    buffer[P + lsz - 1 + r] = read_imagef(U4_in, samplerc, (int2)(x, yy)).x;
+    int yy = mad24((int)get_group_id(1), lsz, lsz - 1 + r);
+    yy = min(yy, height-1);
+    buffer[P + lsz - 1 + r] = U4_in[mad24(yy, width, x)];
   }
 
   barrier(CLK_LOCAL_MEM_FENCE);
@@ -181,50 +191,46 @@ denoiseprofile_vert(read_only image2d_t U4_in, write_only image2d_t U4_out, cons
 
   distacc = fast_mexp2f(fmax(0.0f, distacc*norm - 2.0f));
 
-  write_imagef (U4_out, (int2)(x, y), distacc);
+  U4_out[gidx] = distacc;
 }
 
 
 kernel void
-denoiseprofile_accu(read_only image2d_t in, read_only image2d_t U2_in, read_only image2d_t U4_in,
-             write_only image2d_t U2_out, const int width, const int height, 
-             const int2 q)
+denoiseprofile_accu(read_only image2d_t in, global float4* U2, global float* U4,
+             const int width, const int height, const int2 q)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+  const int gidx = mad24(y, width, x);
 
   if(x >= width || y >= height) return;
 
   float4 u1_pq = read_imagef(in, sampleri, (int2)(x, y) + q);
   float4 u1_mq = read_imagef(in, sampleri, (int2)(x, y) - q);
 
-  float4 u2    = read_imagef(U2_in, sampleri, (int2)(x, y));
+  float  u4    = U4[gidx];
+  float  u4_mq = U4[mad24(clamp(y-q.y, 0, height-1), width, clamp(x-q.x, 0, width-1))];
 
-  float  u4    = read_imagef(U4_in, sampleri, (int2)(x, y)).x;
-  float  u4_mq = read_imagef(U4_in, sampleri, (int2)(x, y) - q).x;
-
-  float u3 = u2.w;
   float u4_mq_dd = u4_mq * ddirac(q);
 
-  u2 += (u4 * u1_pq) + (u4_mq_dd * u1_mq);
-  u3 += (u4 + u4_mq_dd);
+  float4 accu = (u4 * u1_pq) + (u4_mq_dd * u1_mq);
+  accu.w = (u4 + u4_mq_dd);
 
-  u2.w = u3;
-  
-  write_imagef(U2_out, (int2)(x, y), u2);
+  U2[gidx] += accu;
 }
 
 
 kernel void
-denoiseprofile_finish(read_only image2d_t in, read_only image2d_t U2, write_only image2d_t out, const int width, const int height,
+denoiseprofile_finish(read_only image2d_t in, global float4* U2, write_only image2d_t out, const int width, const int height,
                              const float4 a, const float4 sigma2)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+  const int gidx = mad24(y, width, x);
 
   if(x >= width || y >= height) return;
 
-  float4 u2   = read_imagef(U2, sampleri, (int2)(x, y));
+  float4 u2   = U2[gidx];
   float alpha = read_imagef(in, sampleri, (int2)(x, y)).w;
 
   float4 px = ((float4)u2.w > (float4)0.0f ? u2/u2.w : (float4)0.0f);
