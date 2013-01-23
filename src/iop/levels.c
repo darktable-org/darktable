@@ -27,8 +27,10 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+#include "dtgtk/button.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "libs/colorpicker.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET 5
 #define DT_GUI_CURVE_INFL .3f
@@ -216,7 +218,8 @@ void init(dt_iop_module_t *module)
   dt_iop_levels_params_t tmp = (dt_iop_levels_params_t)
   {
     {0, 0.5, 1},
-    0
+    0,
+    {{0.5, 0.5}, {0.5, 0.5}, {0.5, 0.5}}
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_levels_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_levels_params_t));
@@ -253,6 +256,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->mouse_x = c->mouse_y = -1.0;
   c->dragging = 0;
+  c->activeToggleButton = NULL;
+  c->current_pick = NONE;
+  c->last_picked_color = -1;
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
@@ -274,6 +280,54 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_levels_leave_notify), self);
   g_signal_connect (G_OBJECT (c->area), "scroll-event",
                     G_CALLBACK (dt_iop_levels_scroll), self);
+
+  GtkWidget *autobutton = dtgtk_button_new_with_label(_("auto"), NULL, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  g_object_set(G_OBJECT(autobutton), "tooltip-text", _("apply auto levels"), (char *)NULL);
+  gtk_widget_set_size_request(autobutton, 70, 24);
+
+  GtkWidget *blackpick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
+  g_object_set(G_OBJECT(blackpick), "tooltip-text", _("pick blackpoint from image"), (char *)NULL);
+  gtk_widget_set_size_request(blackpick, 24, 24);
+
+  GtkWidget *greypick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
+  g_object_set(G_OBJECT(greypick), "tooltip-text", _("pick medium greypoint from image"), (char *)NULL);
+  gtk_widget_set_size_request(greypick, 24, 24);
+
+  GtkWidget *whitepick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
+  g_object_set(G_OBJECT(whitepick), "tooltip-text", _("pick whitepoint from image"), (char *)NULL);
+  gtk_widget_set_size_request(whitepick, 24, 24);
+
+  GdkColor col;
+  col.red = col.green = col.blue = 0;
+  gtk_widget_modify_fg(GTK_WIDGET(blackpick), GTK_STATE_NORMAL, &col);
+  gtk_widget_modify_fg(GTK_WIDGET(blackpick), GTK_STATE_SELECTED, &col);
+  col.red = col.green = col.blue = 32767;
+  gtk_widget_modify_fg(GTK_WIDGET(greypick), GTK_STATE_NORMAL, &col);
+  gtk_widget_modify_fg(GTK_WIDGET(greypick), GTK_STATE_SELECTED, &col);
+  col.red = col.green = col.blue = 65535;
+  gtk_widget_modify_fg(GTK_WIDGET(whitepick), GTK_STATE_NORMAL, &col);
+  gtk_widget_modify_fg(GTK_WIDGET(whitepick), GTK_STATE_SELECTED, &col);
+  col.red = col.green = col.blue = 4096;
+  gtk_widget_modify_bg(GTK_WIDGET(blackpick), GTK_STATE_ACTIVE, &col);
+  gtk_widget_modify_bg(GTK_WIDGET(greypick), GTK_STATE_ACTIVE, &col);
+  gtk_widget_modify_bg(GTK_WIDGET(whitepick), GTK_STATE_ACTIVE, &col);
+
+  GtkWidget *box = gtk_hbox_new(TRUE,0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(autobutton), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(blackpick), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(greypick), FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(box), GTK_WIDGET(whitepick), FALSE, FALSE, 0);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
+
+  g_signal_connect (G_OBJECT(autobutton), "clicked",
+		    G_CALLBACK(dt_iop_levels_autoadjust_callback), (gpointer)self);
+  g_signal_connect (G_OBJECT(blackpick), "toggled",
+                    G_CALLBACK (dt_iop_levels_pick_black_callback), self);
+  g_signal_connect (G_OBJECT(greypick), "toggled",
+                    G_CALLBACK (dt_iop_levels_pick_grey_callback), self);
+  g_signal_connect (G_OBJECT(whitepick), "toggled",
+                    G_CALLBACK (dt_iop_levels_pick_white_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -301,6 +355,69 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
+
+  float mean_picked_color = *self->picked_color / 100.0;
+
+  /* we need to save the last picked color to prevent flickering when
+   * changing from one picker to another, as the picked_color value does not
+   * update as rapidly */
+  if(self->request_color_pick && mean_picked_color != c->last_picked_color)
+  {
+    float previous_color[3];
+    previous_color[0] = p->levels[0];
+    previous_color[1] = p->levels[1];
+    previous_color[2] = p->levels[2];
+
+    c->last_picked_color = mean_picked_color;
+
+    if (BLACK == c->current_pick)
+    {
+      if (mean_picked_color > p->levels[1])
+      {
+        p->levels[0] = p->levels[1]-FLT_EPSILON;
+      }
+      else
+      {
+        p->levels[0] = mean_picked_color;
+      }
+      p->pick_xy_positions[0][0] = self->color_picker_point[0];
+      p->pick_xy_positions[0][1] = self->color_picker_point[1];
+    }
+    else if (GREY == c->current_pick)
+    {
+      if (mean_picked_color < p->levels[0] || mean_picked_color > p->levels[2])
+      {
+        p->levels[1] = p->levels[1];
+      }
+      else
+      {
+        p->levels[1] = mean_picked_color;
+      }
+      p->pick_xy_positions[1][0] = self->color_picker_point[0];
+      p->pick_xy_positions[1][1] = self->color_picker_point[1];
+    }
+    else if (WHITE == c->current_pick)
+    {
+      if (mean_picked_color < p->levels[1])
+      {
+        p->levels[2] = p->levels[1]+FLT_EPSILON;
+      }
+      else
+      {
+        p->levels[2] = mean_picked_color;
+      }
+      p->pick_xy_positions[2][0] = self->color_picker_point[0];
+      p->pick_xy_positions[2][1] = self->color_picker_point[1];
+    }
+
+    if (   previous_color[0] != p->levels[0]
+        || previous_color[1] != p->levels[1]
+        || previous_color[2] != p->levels[2] )
+    {
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+    }
+  }
+
   // clear bg
   cairo_set_source_rgb (cr, .2, .2, .2);
   cairo_paint(cr);
@@ -404,6 +521,7 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
  * while keeping new_pos within a valid range
  * and preserving the ratio between the three handles.
  *
+ * @param self Pointer to this module to be able to access gui_data
  * @param handle_move Handle to move
  * @param new_pow New position (0..1)
  * @param levels Pointer to dt_iop_levels_params->levels.
@@ -411,8 +529,9 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
  *
  * @return TRUE if the marker were given a new position. FALSE otherwise.
  */
-static void dt_iop_levels_move_handle(int handle_move, float new_pos, float *levels, float drag_start_percentage)
+static void dt_iop_levels_move_handle(dt_iop_module_t *self, int handle_move, float new_pos, float *levels, float drag_start_percentage)
 {
+  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   float min_x = 0;
   float max_x = 1;
 
@@ -454,6 +573,8 @@ static void dt_iop_levels_move_handle(int handle_move, float new_pos, float *lev
     levels[1] = levels[0] + (drag_start_percentage
                              * (levels[2] - levels[0]));
 
+  if (c->activeToggleButton != NULL) gtk_toggle_button_set_active(c->activeToggleButton, FALSE);
+  c->last_picked_color = -1;
 }
 
 
@@ -478,7 +599,7 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
     {
       const float mx = (CLAMP(event->x - inset, 0, width)) / (float)width;
 
-      dt_iop_levels_move_handle(c->handle_move, mx, p->levels, c->drag_start_percentage);
+      dt_iop_levels_move_handle(self, c->handle_move, mx, p->levels, c->drag_start_percentage);
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
@@ -520,7 +641,6 @@ static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *ev
       // Needed in case the user scrolls or drags immediately after a reset,
       // as drag_start_percentage is only updated when the mouse is moved.
       c->drag_start_percentage = 0.5;
-
       dt_dev_add_history_item(darktable.develop, self, TRUE);
       gtk_widget_queue_draw(self->widget);
     }
@@ -574,13 +694,102 @@ static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, g
 
   if (updated)
   {
-    dt_iop_levels_move_handle(c->handle_move, new_position,
+    dt_iop_levels_move_handle(self, c->handle_move, new_position,
                               p->levels, c->drag_start_percentage);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;
   }
 
   return FALSE;
+}
+
+static void dt_iop_levels_pick_general_handler(GtkToggleButton *togglebutton, dt_iop_module_t *self, double xpick, double ypick, dt_iop_levels_pick_t picklevel)
+{
+  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
+
+  darktable.gui->reset = 1;
+  // we do not require the callback if we deactivate it here
+  if (c->activeToggleButton != NULL) gtk_toggle_button_set_active(c->activeToggleButton, FALSE);
+  darktable.gui->reset = 0;
+
+  gboolean toggle = gtk_toggle_button_get_active(togglebutton);
+  if(darktable.gui->reset) return;
+
+  if (TRUE == toggle)
+  {
+    self->request_color_pick = TRUE;
+    dt_lib_colorpicker_set_point(darktable.lib, xpick, ypick);
+    dt_iop_request_focus(self);
+    c->activeToggleButton = togglebutton;
+    c->current_pick = picklevel;
+  }
+  else
+  {
+    self->request_color_pick = FALSE;
+    dt_iop_request_focus(self);
+    c->activeToggleButton = NULL;
+    c->current_pick = NONE;
+    gtk_widget_queue_draw(self->widget);
+  }
+
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
+
+  dt_control_queue_redraw();
+}
+
+static void dt_iop_levels_pick_black_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+{
+  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
+  double xpick = p->pick_xy_positions[0][0];
+  double ypick = p->pick_xy_positions[0][1];
+  dt_iop_levels_pick_general_handler(togglebutton, self, xpick, ypick, BLACK);
+}
+
+static void dt_iop_levels_pick_grey_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+{
+  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
+  double xpick = p->pick_xy_positions[1][0];
+  double ypick = p->pick_xy_positions[1][1];
+  dt_iop_levels_pick_general_handler(togglebutton, self, xpick, ypick, GREY);
+}
+
+static void dt_iop_levels_pick_white_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+{
+  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
+  double xpick = p->pick_xy_positions[2][0];
+  double ypick = p->pick_xy_positions[2][1];
+  dt_iop_levels_pick_general_handler(togglebutton, self, xpick, ypick, WHITE);
+}
+
+static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
+  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;  
+  dt_develop_t *dev = darktable.develop;
+
+  // search histogram for min (search from bottom)
+  for(int k=3; k<4*64; k+=4)
+  {
+    if (dev->histogram_pre_levels[k] > 1)
+    {
+      p->levels[0] = ((float)(k-3.0)/4.0)/64.0;
+      break;
+    }
+  }
+  // then for max (search from top)
+  for(int k=4*64-1; k>3; k-=4)
+  {
+    if (dev->histogram_pre_levels[k] > 1)
+    {
+      p->levels[2] = ((float)(k-3.0)/4.0)/64.0;
+      break;
+    }
+  }
+  p->levels[1] = p->levels[0]/2 + p->levels[2]/2;
+  if (c->activeToggleButton != NULL) gtk_toggle_button_set_active(c->activeToggleButton, FALSE);
+  c->last_picked_color = -1;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
