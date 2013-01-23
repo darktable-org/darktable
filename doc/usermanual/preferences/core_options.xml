@@ -58,6 +58,13 @@
 		</para>
         </sect4>
 
+        <sect4><title>dithering for darkroom mode</title>
+                <para>in darkroom mode the image in center view will be dithered by default; this adds to the latency of darktable. for some users it can
+                      be sufficient to apply dithering only when exporting images. switch this parameter to FALSE if you prefer to have a slightly faster processing speed and can accept banding 
+                      artifacts on display.
+                </para>
+        </sect4>
+
 	<sect4><title>demosaicing for zoomed out darkroom mode</title>
 		<para>interpolation when not viewing 1:1 in darkroom mode: "always bilinear (fast)" is fastest, but not as sharp. "at most ppg (reasonable)" is using ppg + interpolation modes specified below, 
                       "full (possibly slow)" will use exactly the settings for full-size export (default "at most ppg (reasonable)").
