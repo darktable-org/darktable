@@ -1,0 +1,205 @@
+/*
+    This file is part of darktable,
+    copyright (c) 2013 johannes hanika.
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+#include "views/view.h"
+
+DT_MODULE(1)
+
+
+typedef struct dt_slideshow_t
+{
+  //
+}
+dt_slideshow_t;
+
+// callbacks for in-memory export
+static int
+bpp (dt_imageio_module_data_t *data)
+{
+  return 8;
+}
+
+static const char*
+mime(dt_imageio_module_data_t *data)
+{
+  return "memory";
+}
+
+static int
+write_image (dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif, int exif_len, int imgid)
+{
+  // TODO: data->width data->height and in is the rgba buffer.
+  // TODO: copy it to something that goes into cairo in expose()
+  return 0;
+}
+
+static uint32_t
+next_random()
+{
+  uint32_t i = random_state ++;
+  // van der corput for 32 bits. this guarantees every number will appear exactly once
+  i = ((i & 0x0000ffff) << 16) | ( i >> 16);
+  i = ((i & 0x00ff00ff) <<  8) | ((i & 0xff00ff00) >> 8);
+  i = ((i & 0x0f0f0f0f) <<  4) | ((i & 0xf0f0f0f0) >> 4);
+  i = ((i & 0x33333333) <<  2) | ((i & 0xcccccccc) >> 2);
+  i = ((i & 0x55555555) <<  1) | ((i & 0xaaaaaaaa) >> 1);
+  return i ^ scramble;
+}
+
+// TODO: put this in a thread/job
+static int
+process_next_image()
+{
+  static int counter = 0;
+  dt_imageio_module_format_t buf;
+  dt_imageio_module_data_t dat;
+  buf.mime = mime;
+  buf.bpp = bpp;
+  buf.write_image = write_image;
+  dat.max_width  = width;
+  dat.max_height = height;
+  strcpy(dat.style, "none");
+
+  // get random image id from sql
+  int32_t id = 0;
+  const uint32_t cnt = dt_collection_get_count (darktable.collection);
+  // enumerated all images?
+  if(++counter >= cnt) return 1;
+  uint32_t ran = counter - 1;
+  if(use_random)
+  {
+    // get random number up to next power of two greater than cnt:
+    const uint32_t zeros = __builtin_clz(cnt);
+    // pull radical inverses only in our desired range:
+    do ran = next_random() >> zeros;
+    while(ran >= cnt);
+  }
+  const int32_t rand = ran % cnt;
+  const gchar *query = dt_collection_get_query (darktable.collection);
+  if(!query) return 1;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rand);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, rand+1);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    id = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  if(id)
+  {
+    dt_imageio_export(id, "unused", &buf, &dat, TRUE);
+  }
+  return 0;
+}
+
+
+// callbacks for a view module:
+
+const char *name(dt_view_t *self)
+{
+  return _("slideshow");
+}
+
+uint32_t view(dt_view_t *self)
+{
+  return DT_VIEW_SLIDESHOW;
+}
+
+void init(dt_view_t *self)
+{
+  self->data = malloc(sizeof(dt_slideshow_t));
+  dt_slideshow__t *lib = (dt_slideshow_t*)self->data;
+  memset(self->data, 0, sizeof(dt_slideshow_t));
+}
+
+
+void cleanup(dt_view_t *self)
+{
+  free(self->data);
+}
+
+void enter(dt_view_t *self)
+{
+}
+
+void leave(dt_view_t *self)
+{
+}
+
+void reset(dt_view_t *self)
+{
+  // dt_slideshow_t *lib = (dt_slideshow_t *)self->data;
+}
+
+
+void mouse_enter(dt_view_t *self)
+{
+}
+
+void mouse_leave(dt_view_t *self)
+{
+}
+
+void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+{
+}
+
+int scrolled(dt_view_t *self, double x, double y, int up, int state)
+{
+  return 0;
+}
+
+
+void mouse_moved(dt_view_t *self, double x, double y, int which)
+{
+}
+
+
+int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
+{
+}
+
+
+int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
+{
+  return 0;
+}
+
+int key_released(dt_view_t *self, guint key, guint state)
+{
+  return 0;
+}
+
+int key_pressed(dt_view_t *self, guint key, guint state)
+{
+  return 0;
+}
+
+void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
+{
+}
+
+void init_key_accels(dt_view_t *self)
+{
+}
+
+void connect_key_accels(dt_view_t *self)
+{
+}
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
