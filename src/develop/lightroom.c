@@ -368,7 +368,6 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev)
   if (!pathname)
   {
     dt_control_log(_("cannot find lightroom xmp!"));
-    g_free(pathname);
     return;
   }
 
