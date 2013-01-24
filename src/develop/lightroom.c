@@ -357,7 +357,7 @@ static void dt_add_hist (int imgid, char *operation, dt_iop_params_t *params, in
   (*import_count)++;
 }
 
-void dt_lightroom_import (int imgid, dt_develop_t *dev)
+void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 {
   gboolean refresh_needed = FALSE;
   char imported[256] = {0};
@@ -367,7 +367,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev)
 
   if (!pathname)
   {
-    dt_control_log(_("cannot find lightroom xmp!"));
+    if (!iauto) dt_control_log(_("cannot find lightroom xmp!"));
     return;
   }
 
@@ -404,7 +404,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev)
 
   if (!entryNode || xmlStrcmp(entryNode->name, (const xmlChar *)"Description"))
   {
-    dt_control_log(_("`%s' not a lightroom xmp!"), pathname);
+    if (!iauto) dt_control_log(_("`%s' not a lightroom xmp!"), pathname);
     g_free(pathname);
     return;
   }
@@ -1146,11 +1146,14 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev)
       strcat(message, _("have been imported"));
     dt_control_log(message);
 
-    /* signal history changed */
-    dt_dev_reload_history_items(dev);
-    dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
-    /* update xmp file */
-    dt_image_synch_xmp(dev->image_storage.id);
-    dt_control_signal_raise(darktable.signals,DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    if (!iauto)
+    {
+      /* signal history changed */
+      dt_dev_reload_history_items(dev);
+      dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
+      /* update xmp file */
+      dt_image_synch_xmp(imgid);
+      dt_control_signal_raise(darktable.signals,DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    }
   }
 }
