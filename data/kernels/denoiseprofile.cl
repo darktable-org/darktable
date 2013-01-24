@@ -104,27 +104,30 @@ denoiseprofile_horiz(global float* U4_in, global float* U4_out, const int width,
   const int gidx = mad24(min(y, height-1), width, min(x, width-1));
 
 
-  /* fill center part of buffer */
-  buffer[P + lid] = U4_in[gidx];
+  if(y < height)
+  {
+    /* fill center part of buffer */
+    buffer[P + lid] = U4_in[gidx];
 
-  /* left wing of buffer */
-  for(int n=0; n <= P/lsz; n++)
-  {
-    const int l = mad24(n, lsz, lid + 1);
-    if(l > P) continue;
-    int xx = mad24((int)get_group_id(0), lsz, -l);
-    xx = max(xx, 0);
-    buffer[P - l] = U4_in[mad24(y, width, xx)];
-  }
+    /* left wing of buffer */
+    for(int n=0; n <= P/lsz; n++)
+    {
+      const int l = mad24(n, lsz, lid + 1);
+      if(l > P) continue;
+      int xx = mad24((int)get_group_id(0), lsz, -l);
+      xx = max(xx, 0);
+      buffer[P - l] = U4_in[mad24(y, width, xx)];
+    }
     
-  /* right wing of buffer */
-  for(int n=0; n <= P/lsz; n++)
-  {
-    const int r = mad24(n, lsz, lsz - lid);
-    if(r > P) continue;
-    int xx = mad24((int)get_group_id(0), lsz, lsz - 1 + r);
-    xx = min(xx, width-1);
-    buffer[P + lsz - 1 + r] = U4_in[mad24(y, width, xx)];
+    /* right wing of buffer */
+    for(int n=0; n <= P/lsz; n++)
+    {
+      const int r = mad24(n, lsz, lsz - lid);
+      if(r > P) continue;
+      int xx = mad24((int)get_group_id(0), lsz, lsz - 1 + r);
+      xx = min(xx, width-1);
+      buffer[P + lsz - 1 + r] = U4_in[mad24(y, width, xx)];
+    }
   }
 
   barrier(CLK_LOCAL_MEM_FENCE);
@@ -153,28 +156,30 @@ denoiseprofile_vert(global float* U4_in, global float* U4_out, const int width, 
   const int y = get_global_id(1);
   const int gidx = mad24(min(y, height-1), width, min(x, width-1));
 
-
-  /* fill center part of buffer */
-  buffer[P + lid] = U4_in[gidx];
-
-  /* left wing of buffer */
-  for(int n=0; n <= P/lsz; n++)
+  if(x < width)
   {
-    const int l = mad24(n, lsz, lid + 1);
-    if(l > P) continue;
-    int yy = mad24((int)get_group_id(1), lsz, -l);
-    yy = max(yy, 0);
-    buffer[P - l] = U4_in[mad24(yy, width, x)];
-  }
+    /* fill center part of buffer */
+    buffer[P + lid] = U4_in[gidx];
 
-  /* right wing of buffer */
-  for(int n=0; n <= P/lsz; n++)
-  {
-    const int r = mad24(n, lsz, lsz - lid);
-    if(r > P) continue;
-    int yy = mad24((int)get_group_id(1), lsz, lsz - 1 + r);
-    yy = min(yy, height-1);
-    buffer[P + lsz - 1 + r] = U4_in[mad24(yy, width, x)];
+    /* left wing of buffer */
+    for(int n=0; n <= P/lsz; n++)
+    {
+      const int l = mad24(n, lsz, lid + 1);
+      if(l > P) continue;
+      int yy = mad24((int)get_group_id(1), lsz, -l);
+      yy = max(yy, 0);
+      buffer[P - l] = U4_in[mad24(yy, width, x)];
+    }
+
+    /* right wing of buffer */
+    for(int n=0; n <= P/lsz; n++)
+    {
+      const int r = mad24(n, lsz, lsz - lid);
+      if(r > P) continue;
+      int yy = mad24((int)get_group_id(1), lsz, lsz - 1 + r);
+      yy = min(yy, height-1);
+      buffer[P + lsz - 1 + r] = U4_in[mad24(yy, width, x)];
+    }
   }
 
   barrier(CLK_LOCAL_MEM_FENCE);
