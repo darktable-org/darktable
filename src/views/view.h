@@ -211,6 +211,8 @@ typedef struct dt_view_manager_t
       const char *(*get_job_code)(const dt_view_t *view);
       void (*set_job_code)(const dt_view_t *view, const char *name);
       uint32_t (*get_selected_imgid)(const dt_view_t *view);
+      void (*set_session_namepattern)(const dt_view_t *view, const char *namepattern);
+      gboolean (*check_namepattern)(const dt_view_t *view);
     } tethering;
 
     /* more module window proxy */
@@ -293,6 +295,9 @@ const char *dt_view_tethering_get_session_filename(const dt_view_manager_t *vm, 
 void dt_view_tethering_set_job_code(const dt_view_manager_t *vm, const char *name);
 /** get the current jobcode for tethering session */
 const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm);
+
+void dt_view_tethering_set_session_namepattern(const dt_view_manager_t *vm, const char *namepattern);
+gboolean dt_view_tethering_check_namepattern(const dt_view_manager_t *vm);
 
 /** update the collection module */
 void dt_view_collection_update(const dt_view_manager_t *vm);

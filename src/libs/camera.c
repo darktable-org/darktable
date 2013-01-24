@@ -253,6 +253,11 @@ static void _camera_tethered_downloaded_callback(const dt_camera_t *camera,const
 static void
 _capture_button_clicked(GtkWidget *widget, gpointer user_data)
 {
+  if (!dt_view_tethering_check_namepattern(darktable.view_manager) )
+  {
+    dt_control_log("The filename needs to contain $(SEQUENCE), shot aborted");
+    return;
+  }
   dt_lib_camera_t *lib=(dt_lib_camera_t *)user_data;
   uint32_t delay = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb1))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb1)):0;
   uint32_t count = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb2))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb2)):1;

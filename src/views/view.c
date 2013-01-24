@@ -1271,6 +1271,19 @@ const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm)
   return NULL;
 }
 
+void dt_view_tethering_set_session_namepattern(const dt_view_manager_t *vm, const char *namepattern)
+{
+  if (vm->proxy.tethering.view)
+    return vm->proxy.tethering.set_session_namepattern(vm->proxy.tethering.view, namepattern);
+}
+
+gboolean dt_view_tethering_check_namepattern(const dt_view_manager_t *vm)
+{
+  if (vm->proxy.tethering.view)
+    return vm->proxy.tethering.check_namepattern(vm->proxy.tethering.view);
+  return FALSE;
+}
+
 #ifdef HAVE_MAP
 void dt_view_map_center_on_location(const dt_view_manager_t *vm, gdouble lon, gdouble lat, gdouble zoom)
 {
