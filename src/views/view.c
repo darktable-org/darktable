@@ -273,7 +273,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     while (plugins)
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
-      if( plugin->views() & nv->view(v) )
+      if( plugin->views() & nv->view(nv) )
       {
         /* module should be in this view, lets initialize */
         plugin->gui_init(plugin);
@@ -304,7 +304,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     while (plugins)
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
-      if(plugin->views() & nv->view(v))
+      if(plugin->views() & nv->view(nv))
       {
         /* set expanded if last mode was that */
         char var[1024];
