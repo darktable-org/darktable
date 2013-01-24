@@ -19,6 +19,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
+#include "develop/lightroom.h"
 #include "control/jobs.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -700,8 +701,10 @@ void dt_dev_write_history(dt_develop_t *dev)
 }
 
 static void
-auto_apply_presets(const int imgid)
+auto_apply_presets(dt_develop_t *dev)
 {
+  const int imgid = dev->image_storage.id;
+
   if(imgid <= 0) return;
   int run = 0;
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
@@ -787,6 +790,9 @@ auto_apply_presets(const int imgid)
   }
   sqlite3_finalize(stmt);
 
+  //  first time we are loading the image, try to import lightroom .xmp if any
+  dt_lightroom_import(dev->image_storage.id, dev, TRUE);
+
   image->flags |= DT_IMAGE_AUTO_PRESETS_APPLIED | DT_IMAGE_NO_LEGACY_PRESETS;
   dt_pthread_mutex_unlock(&darktable.db_insert);
 
@@ -800,7 +806,7 @@ void dt_dev_read_history(dt_develop_t *dev)
   if(dev->image_storage.id <= 0) return;
 
   // maybe prepend auto-presets to history before loading it:
-  auto_apply_presets(dev->image_storage.id);
+  auto_apply_presets(dev);
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
