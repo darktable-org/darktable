@@ -17,7 +17,7 @@ KEYWORDS=""
 IUSE="colord facebook flickr geo gnome-keyring gphoto2 graphicsmagick jpeg2k kde
 nls opencl openmp pax_kernel +rawspeed +slideshow"
 
-RDEPEND="
+CDEPEND="
 	dev-db/sqlite:3
 	dev-libs/libxml2:2
 	colord? ( x11-misc/colord )
@@ -29,7 +29,6 @@ RDEPEND="
 	gphoto2? ( media-libs/libgphoto2 )
 	graphicsmagick? ( media-gfx/graphicsmagick )
 	jpeg2k? ( media-libs/openjpeg )
-	kde? ( kde-base/kwalletd )
 	media-gfx/exiv2[xmp]
 	media-libs/lcms:2
 	>=media-libs/lensfun-0.2.3
@@ -47,7 +46,9 @@ RDEPEND="
 	x11-libs/cairo
 	x11-libs/gdk-pixbuf:2
 	x11-libs/gtk+:2"
-DEPEND="${RDEPEND}
+RDEPEND="${CDEPEND}
+	kde? ( kde-base/kwalletd )"
+DEPEND="${CDEPEND}
 	virtual/pkgconfig
 	nls? ( sys-devel/gettext )"
 
