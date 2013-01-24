@@ -267,7 +267,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->spatial, _("coarseness"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->spatial, TRUE, TRUE, 0);
 
-  g->range = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 8, 0);
+  g->range = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 20, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->range, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->range, _("contrast"));
 
