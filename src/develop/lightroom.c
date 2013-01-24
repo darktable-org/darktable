@@ -471,6 +471,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev)
   int n_import = 0;                // number of iop imported
   const float hfactor = 3.0 / 9.0; // hue factor adjustment (use 3 out of 9 boxes in colorzones)
   const float lfactor = 4.0 / 9.0; // lightness factor adjustment (use 4 out of 9 boxes in colorzones)
+  int iwidth, iheight;             // image width / height
 
   if (dev != NULL)
   {
@@ -489,6 +490,10 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev)
         pc.ch = atof((char *)value);
       else if (!xmlStrcmp(attribute->name, (const xmlChar *) "CropAngle"))
         pc.angle = -atof((char *)value);
+      else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ImageWidth"))
+        iwidth = -atoi((char *)value);
+      else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ImageLength"))
+        iheight = -atoi((char *)value);
       else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Orientation"))
       {
         int v = atoi((char *)value);
@@ -1001,7 +1006,8 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev)
     pv.center.y = 0.0;
     pv.shape = 1.0;
 
-    pv.whratio = base_ratio * ((float)dev->pipe->iwidth / (float)dev->pipe->iheight);
+    pv.whratio = base_ratio * ((float)iwidth / (float)iheight);
+
     if (has_crop)
       pv.whratio = pv.whratio * fratio;
 
