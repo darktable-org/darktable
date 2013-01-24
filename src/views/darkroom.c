@@ -878,7 +878,7 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 static void _darkroom_ui_apply_LR_style(GtkWidget *w, gpointer user_data)
 {
   dt_develop_t *dev = (dt_develop_t *)user_data;
-  dt_lightroom_import (dev);
+  dt_lightroom_import (dev->image_storage.id, dev);
 }
 
 void enter(dt_view_t *self)
