@@ -1166,6 +1166,21 @@ go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
 }
 
 static gboolean
+realign_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                             guint keyval, GdkModifierType modifier,
+                             gpointer data)
+{
+  dt_view_t *self = (dt_view_t *)data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+  const int layout = dt_conf_get_int("plugins/lighttable/layout");
+  if(layout == 1) move_view(lib, CENTER);
+  dt_control_queue_redraw_center();
+  return TRUE;
+}
+
+
+
+static gboolean
 star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                         guint keyval, GdkModifierType modifier, gpointer data)
 {
@@ -1561,11 +1576,9 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   if(key == accels->lighttable_center.accel_key
       && state == accels->lighttable_center.accel_mods)
   {
-    if(layout == 1) move_view(lib, CENTER);
-    else lib->center = 1;
+    lib->center = 1;
     return 1;
   }
-
   return 0;
 }
 
@@ -1635,6 +1648,8 @@ void init_key_accels(dt_view_t *self)
                          GDK_Right, 0);
   dt_accel_register_view(self, NC_("accel", "scroll center"),
                          GDK_apostrophe, 0);
+  dt_accel_register_view(self, NC_("accel", "realign images to grid"),
+                         GDK_l, 0);
 
   // Preview key
   dt_accel_register_view(self, NC_("accel", "preview"), GDK_z, 0);
@@ -1674,6 +1689,7 @@ void connect_key_accels(dt_view_t *self)
               (gpointer)DT_VIEW_REJECT, NULL);
   dt_accel_connect_view(self, "rate reject", closure);
 
+
   // Navigation keys
   closure = g_cclosure_new(
               G_CALLBACK(go_up_key_accel_callback),
@@ -1691,7 +1707,10 @@ void connect_key_accels(dt_view_t *self)
               G_CALLBACK(go_pgdown_key_accel_callback),
               (gpointer)self, NULL);
   dt_accel_connect_view(self, "navigate page down", closure);
-
+  closure = g_cclosure_new(
+              G_CALLBACK(realign_key_accel_callback),
+              (gpointer)self, NULL);
+  dt_accel_connect_view(self, "realign images to grid", closure);
   // Color keys
   closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
                            (gpointer)0, NULL);
