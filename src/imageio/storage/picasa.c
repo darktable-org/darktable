@@ -34,7 +34,6 @@
 #include <unistd.h>
 #include <curl/curl.h>
 #include <libxml/parser.h>
-#include <libxml/xpath.h>
 
 DT_MODULE(1)
 
