@@ -25,7 +25,10 @@
 #include "control/control.h"
 
 #include <libxml/parser.h>
+#include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
 #include <sys/stat.h>
+#include <string.h>
 
 // copy here the iop params struct with the actual version. This is so to
 // be as independant as possible of any iop evolutions. Indeed, we create
@@ -380,16 +383,69 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
   doc = xmlParseEntity(pathname);
 
+  if (doc == NULL)
+  {
+    g_free(pathname);
+    return;
+  }
+
   // Enter first node, xmpmeta
 
   entryNode = xmlDocGetRootElement(doc);
 
   if (xmlStrcmp(entryNode->name, (const xmlChar *)"xmpmeta"))
   {
-    dt_control_log(_("`%s' not a lightroom xmp!"), pathname);
+    if (!iauto) dt_control_log(_("`%s' not a lightroom xmp!"), pathname);
     g_free(pathname);
     return;
   }
+
+  // Check that this is really a Lightroom document
+
+  xmlXPathContextPtr xpathCtx = xmlXPathNewContext(doc);
+
+  if (xpathCtx == NULL)
+  {
+    g_free(pathname);
+    xmlFreeDoc(doc);
+    return;
+  }
+
+  xmlXPathRegisterNs(xpathCtx, BAD_CAST "stEvt", BAD_CAST "http://ns.adobe.com/xap/1.0/sType/ResourceEvent#");
+
+  xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((const xmlChar *)"//@stEvt:softwareAgent", xpathCtx);
+
+  if (xpathObj == NULL)
+  {
+    if (!iauto) dt_control_log(_("`%s' not a lightroom xmp!"), pathname);
+    xmlXPathFreeContext(xpathCtx);
+    g_free(pathname);
+    xmlFreeDoc(doc);
+    return;
+  }
+
+  xmlNodeSetPtr xnodes = xpathObj->nodesetval;
+
+  if (xnodes != NULL && xnodes->nodeNr > 0)
+  {
+    xmlNodePtr xnode = xnodes->nodeTab[0];
+    xmlChar *value = xmlNodeListGetString(doc, xnode->xmlChildrenNode, 1);
+
+    if (!strstr((char *)value,"Lightroom"))
+    {
+      xmlXPathFreeContext(xpathCtx);
+      xmlXPathFreeObject(xpathObj);
+      xmlFreeDoc(doc);
+      xmlFree(value);
+      if (!iauto) dt_control_log(_("`%s' not a lightroom xmp!"), pathname);
+      g_free(pathname);
+      return;
+    }
+    xmlFree(value);
+  }
+
+  xmlXPathFreeObject(xpathObj);
+  xmlXPathFreeContext(xpathCtx);
 
   // Go safely to Description node
 
