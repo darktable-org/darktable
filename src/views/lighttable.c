@@ -354,9 +354,6 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
 
   offset_changed = lib->offset_changed;
 
-  static int oldpan = 0;
-  const int pan = lib->pan;
-
   const float wd = width/(float)iir;
   const float ht = width/(float)iir;
 
@@ -372,7 +369,6 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   const int max_cols = iir;
   
   int id;
-  int clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
 
   /* get the count of current collection */
 
@@ -497,19 +493,6 @@ end_query_cache:
         if(pi == col && pj == row)
         {
           mouse_over_id = id;
-        }
-
-        /* handle mouse click on current row / col
-           this could easily and preferable be moved to button_pressed()
-         */
-        if (clicked1 && (pi == col && pj == row))
-        {
-          if ((lib->modifiers & (GDK_SHIFT_MASK|GDK_CONTROL_MASK)) == 0)
-            dt_selection_select_single(darktable.selection, id);
-          else if ((lib->modifiers & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
-            dt_selection_toggle(darktable.selection, id);
-          else if ((lib->modifiers & (GDK_SHIFT_MASK)) == GDK_SHIFT_MASK)
-            dt_selection_select_range(darktable.selection, id);
         }
 
         cairo_save(cr);
@@ -709,7 +692,7 @@ after_drawing:
 
   if(query_ids)
     free(query_ids);
-  oldpan = pan;
+  //oldpan = pan;
   if(darktable.unmuted & DT_DEBUG_CACHE)
     dt_mipmap_cache_print(darktable.mipmap_cache);
 
@@ -1388,7 +1371,19 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
     switch(lib->image_over)
     {
       case DT_VIEW_DESERT:
+      {
+        int32_t id;
+        DT_CTL_GET_GLOBAL(id, lib_image_mouse_over_id);
+
+        if ((lib->modifiers & (GDK_SHIFT_MASK|GDK_CONTROL_MASK)) == 0)
+          dt_selection_select_single(darktable.selection, id);
+        else if ((lib->modifiers & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
+          dt_selection_toggle(darktable.selection, id);
+        else if ((lib->modifiers & (GDK_SHIFT_MASK)) == GDK_SHIFT_MASK)
+          dt_selection_select_range(darktable.selection, id);
+
         break;
+      }
       case DT_VIEW_REJECT:
       case DT_VIEW_STAR_1:
       case DT_VIEW_STAR_2:
