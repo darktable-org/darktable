@@ -397,7 +397,6 @@ pixelmax_first (read_only image2d_t in, const int width, const int height, globa
   const int xgid = get_group_id(0);
   const int ygid = get_group_id(1);
   const int xgsz = get_num_groups(0);
-  const int ygsz = get_num_groups(1);  
 
   const int m = ygid * xgsz + xgid;
   accu[m] = buffer[0];
@@ -415,7 +414,7 @@ pixelmax_second(global float* input, global float *result, const int length, loc
   {
     float element = input[x];
     accu = (accu > element) ? accu : element;
-    x += get_global_size(0);
+    x += get_local_size(0);
   }
   
   int lid = get_local_id(0);

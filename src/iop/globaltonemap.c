@@ -343,7 +343,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if(err != CL_SUCCESS) goto error;
 
 
-    sizes[0] = reducesize;
+    sizes[0] = ROUNDUP(bufsize, reducesize);;
     sizes[1] = 1;
     sizes[2] = 1;
     local[0] = reducesize;
@@ -362,6 +362,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     dt_opencl_release_mem_object(dev_r);
     dt_opencl_release_mem_object(dev_m);
+
+    for(int k = 1; k < reducesize; k++)
+    {
+      float mine = maximum[0];
+      float other = maximum[k];
+      maximum[0] = (other > mine) ? other : mine;
+    }
 
     const float eps = 0.0001f;
     const float lwmax = MAX(eps, (maximum[0]*0.01f));
