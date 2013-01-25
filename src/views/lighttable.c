@@ -88,6 +88,7 @@ typedef struct dt_library_t
   int32_t full_preview_id;
   gboolean offset_changed;
   GdkColor star_color;
+  int images_in_row;
 
   int32_t collection_count;
 
@@ -133,7 +134,8 @@ typedef enum direction
   TOP = 6,
   BOTTOM = 7,
   PGUP = 8,
-  PGDOWN = 9
+  PGDOWN = 9,
+  CENTER = 10
 }direction;
 
 void switch_layout_to(dt_library_t *lib, int new_layout)
@@ -170,7 +172,7 @@ static void move_view(dt_library_t *lib, direction dir)
     case DOWN:
       {
         lib->offset = lib->offset + iir;
-        while(lib->offset > lib->collection_count)
+        while(lib->offset >= lib->collection_count)
           lib->offset -= iir;
       }
       break;
@@ -186,7 +188,7 @@ static void move_view(dt_library_t *lib, direction dir)
       {
         //TODO: this behavior has not been changed, but it really ought to be fixed so it scrolls a full page up or down.
         lib->offset += 4*iir;
-        while(lib->offset > lib->collection_count)
+        while(lib->offset >= lib->collection_count)
           lib->offset -= iir;
       }
       break;
@@ -198,6 +200,11 @@ static void move_view(dt_library_t *lib, direction dir)
     case BOTTOM:
       {
         lib->offset = lib->collection_count - iir;
+      }
+      break;
+    case CENTER:
+      {
+        lib->offset -= lib->offset % iir;
       }
       break;
     default:
@@ -240,6 +247,7 @@ void zoom_around_image(dt_library_t *lib, double pointerx, double pointery, int 
   lib->offset = zoom_anchor_image - pi - (pj * new_images_in_row);
   lib->first_visible_filemanager = lib->offset;
   lib->offset_changed = TRUE;
+  lib->images_in_row = new_images_in_row;
 }
 
 static void _view_lighttable_collection_listener_callback(gpointer instance, gpointer user_data)
@@ -413,6 +421,12 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   /* do we have a main query collection statement */
   if(!lib->statements.main_query)
     return;
+  
+   /* safety check added to be able to work with zoom slider. The 
+   * communication between zoom slider and lighttable should be handled
+   * differently (i.e. this is a clumsy workaround) */
+  if (lib->images_in_row != iir && lib->first_visible_filemanager < 0)
+    lib->offset = lib->first_visible_filemanager = 0;
   
   int32_t offset = lib->offset = lib->first_visible_filemanager;
 
@@ -1152,6 +1166,21 @@ go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
 }
 
 static gboolean
+realign_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                             guint keyval, GdkModifierType modifier,
+                             gpointer data)
+{
+  dt_view_t *self = (dt_view_t *)data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+  const int layout = dt_conf_get_int("plugins/lighttable/layout");
+  if(layout == 1) move_view(lib, CENTER);
+  dt_control_queue_redraw_center();
+  return TRUE;
+}
+
+
+
+static gboolean
 star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                         guint keyval, GdkModifierType modifier, gpointer data)
 {
@@ -1511,7 +1540,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   if(key == accels->lighttable_left.accel_key
       && state == accels->lighttable_left.accel_mods)
   {
-    if(layout == 1 && zoom == 1) move_view(lib, UP);
+    if (lib->full_preview_id > -1) lib->track = -DT_LIBRARY_MAX_ZOOM;
+    else if(layout == 1 && zoom == 1) move_view(lib, UP);
     else lib->track = -1;
     return 1;
   }
@@ -1519,7 +1549,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   if(key == accels->lighttable_right.accel_key
       && state == accels->lighttable_right.accel_mods)
   {
-    if(layout == 1 && zoom == 1) move_view(lib, DOWN);
+    if (lib->full_preview_id > -1) lib->track = +DT_LIBRARY_MAX_ZOOM;
+    else if(layout == 1 && zoom == 1) move_view(lib, DOWN);
     else lib->track = 1;
     return 1;
   }
@@ -1527,7 +1558,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   if(key == accels->lighttable_up.accel_key
       && state == accels->lighttable_up.accel_mods)
   {
-    if(layout == 1) move_view(lib, UP);
+    if (lib->full_preview_id > -1) lib->track = -DT_LIBRARY_MAX_ZOOM;
+    else if(layout == 1) move_view(lib, UP);
     else lib->track = -DT_LIBRARY_MAX_ZOOM;
     return 1;
   }
@@ -1535,7 +1567,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   if(key == accels->lighttable_down.accel_key
       && state == accels->lighttable_down.accel_mods)
   {
-    if(layout == 1) move_view(lib, DOWN);
+    if (lib->full_preview_id > -1) lib->track = +DT_LIBRARY_MAX_ZOOM;
+    else if(layout == 1) move_view(lib, DOWN);
     else lib->track = DT_LIBRARY_MAX_ZOOM;
     return 1;
   }
@@ -1546,7 +1579,6 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     lib->center = 1;
     return 1;
   }
-
   return 0;
 }
 
@@ -1616,6 +1648,8 @@ void init_key_accels(dt_view_t *self)
                          GDK_Right, 0);
   dt_accel_register_view(self, NC_("accel", "scroll center"),
                          GDK_apostrophe, 0);
+  dt_accel_register_view(self, NC_("accel", "realign images to grid"),
+                         GDK_l, 0);
 
   // Preview key
   dt_accel_register_view(self, NC_("accel", "preview"), GDK_z, 0);
@@ -1655,6 +1689,7 @@ void connect_key_accels(dt_view_t *self)
               (gpointer)DT_VIEW_REJECT, NULL);
   dt_accel_connect_view(self, "rate reject", closure);
 
+
   // Navigation keys
   closure = g_cclosure_new(
               G_CALLBACK(go_up_key_accel_callback),
@@ -1672,7 +1707,10 @@ void connect_key_accels(dt_view_t *self)
               G_CALLBACK(go_pgdown_key_accel_callback),
               (gpointer)self, NULL);
   dt_accel_connect_view(self, "navigate page down", closure);
-
+  closure = g_cclosure_new(
+              G_CALLBACK(realign_key_accel_callback),
+              (gpointer)self, NULL);
+  dt_accel_connect_view(self, "realign images to grid", closure);
   // Color keys
   closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
                            (gpointer)0, NULL);
