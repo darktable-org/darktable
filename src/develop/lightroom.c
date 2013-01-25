@@ -22,11 +22,9 @@
 #include "common/curve_tools.h"
 #include "common/debug.h"
 #include "develop/lightroom.h"
-#include "develop/develop.h"
 #include "control/control.h"
 
 #include <libxml/parser.h>
-#include <libxml/xpath.h>
 #include <sys/stat.h>
 
 // copy here the iop params struct with the actual version. This is so to

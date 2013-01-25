@@ -239,6 +239,7 @@ static const char *nvidia_gpus[] = {
 "GeForce 9100M G","1.1",
 "GeForce 8400M GT","1.1",
 "GeForce G105M","1.1",
+"GeForce G 103M","1.1",
 "ION","1.0",
 NULL, NULL};
 
