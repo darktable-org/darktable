@@ -349,10 +349,14 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   free(devices);
   if(dev > 0)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] successfully initialized.\n");
     cl->num_devs = dev;
     cl->inited = 1;
     cl->enabled = dt_conf_get_bool("opencl");
+
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] successfully initialized.\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] here are the internal numbers and names of OpenCL devices available to darktable:\n");
+    for(int i=0; i<dev; i++)
+      dt_print(DT_DEBUG_OPENCL,"[opencl_init]\t\t%d\t'%s'\n", i, cl->dev[i].name);
   }
   else
   {
