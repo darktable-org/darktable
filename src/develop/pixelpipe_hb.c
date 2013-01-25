@@ -629,7 +629,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
          are treated in the same manner. */
 
       /* try to enter opencl path after checking some module specific pre-requisites */
-      if(module->process_cl && piece->process_cl_ready)
+      if(module->process_cl && piece->process_cl_ready && !((pipe->type == DT_DEV_PIXELPIPE_PREVIEW) && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL)))
       {
 
         // fprintf(stderr, "[opencl_pixelpipe 0] factor %f, overhead %d, width %d, height %d, bpp %d\n", (double)tiling.factor, tiling.overhead, roi_in.width, roi_in.height, bpp);

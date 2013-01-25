@@ -61,6 +61,7 @@ struct dt_develop_tiling_t;
 #define IOP_FLAGS_HIDDEN               32                       // Hide the iop from userinterface
 #define IOP_FLAGS_TILING_FULL_ROI      64                       // Tiling code has to expect arbitrary roi's for this module (incl. flipping, mirroring etc.)
 #define IOP_FLAGS_ONE_INSTANCE        128     // The module doesn't support multiple instances
+#define IOP_FLAGS_PREVIEW_NON_OPENCL  256     // Preview pixelpipe of this module must not run on GPU but always on CPU
 /** status of a module*/
 typedef enum dt_iop_module_state_t
 {

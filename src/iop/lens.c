@@ -300,6 +300,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
   dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+
   cl_mem dev_tmpbuf = NULL;
   cl_mem dev_tmp = NULL;
   cl_int err = -999;
@@ -527,6 +529,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       if(err != CL_SUCCESS) goto error;
     }
 
+  }
+
+  if(g != NULL && self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  {
+    g->corrections_done = (modflags & LENSFUN_MODFLAG_MASK);
   }
 
   dt_opencl_release_mem_object(dev_tmpbuf);
