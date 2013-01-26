@@ -366,12 +366,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     // only check successful malloc in debug mode; darktable will crash anyhow sooner or later if mallocs that small would fail
     assert(cl->dev_priority_image != NULL && cl->dev_priority_preview != NULL && cl->dev_priority_export != NULL && cl->dev_priority_thumbnail != NULL);
 
-    // current default settings: priority is just the order in which the devices are detected
-    for(int i=0; i<dev; i++)
-      cl->dev_priority_image[i] = cl->dev_priority_preview[i] = cl->dev_priority_export[i] = cl->dev_priority_thumbnail[i] = i;
-
-    // priority lists are -1 terminated
-    cl->dev_priority_image[dev] = cl->dev_priority_preview[dev] = cl->dev_priority_export[dev] = cl->dev_priority_thumbnail[dev] = -1;
+    // apply config settings for device priority
+    dt_opencl_priorities_parse(dt_conf_get_string("opencl_device_priority"));
 
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] successfully initialized.\n");
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] here are the internal numbers and names of OpenCL devices available to darktable:\n");
@@ -483,6 +479,164 @@ int dt_opencl_enqueue_barrier(const int devid)
   if(!cl->inited || devid < 0) return -1;
   return (cl->dlocl->symbols->dt_clEnqueueBarrier)(cl->dev[devid].cmd_queue);
 }
+
+static int _take_from_list(int *list, int value)
+{
+  int result = -1;
+
+  while(*list != -1 && *list != value) list++;
+  result = *list;
+
+  while(*list != -1) { *list = *(list+1); list++; }
+
+  return result;
+}
+
+static char *_strsep(char **stringp, const char *delim)
+{
+  char *begin, *end;
+
+  begin = *stringp;
+  if(begin == NULL)
+    return NULL;
+
+  if(delim[0] == '\0' || delim[1] == '\0')
+  {
+    char ch = delim[0];
+
+    if(ch == '\0')
+      end = NULL;
+    else
+    {
+      if(*begin == ch)
+        end = begin;
+      else if(*begin == '\0')
+        end = NULL;
+      else
+        end = strchr(begin + 1, ch);
+    }
+  }
+  else
+    end = strpbrk(begin, delim);
+
+  if(end)
+  {
+    *end++ = '\0';
+    *stringp = end;
+  }
+  else
+    *stringp = NULL;
+
+  return begin;
+}
+
+
+// parse a single token of priority string and store priorities in priority_list
+void dt_opencl_priority_parse(char *configstr, int *priority_list)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  int devs = cl->num_devs;
+  int count = 0;
+  int full[devs+1];
+  char *saveptr;
+
+  // first start with a full list of devices to take from
+  for(int i = 0; i < devs; i++)
+    full[i] = i;
+  full[devs] = -1;
+
+  char *str = strtok_r(configstr, ",", &saveptr);
+
+  while(str != NULL && full[0] != -1)
+  {
+    int not = 0;
+    int all = 0;
+
+    switch(*str)
+    {
+      case '*':
+        all = 1;
+        break;
+      case '!':
+        not = 1;
+        str += strcspn(str, "0123456789");
+        break;
+    }
+
+    if(all)
+    {
+      // copy all remaining device numbers from full to priority list
+      for(int i = 0; i < devs && full[i] != -1; i++)
+      {
+        priority_list[count] = full[i];
+        count++;
+      }
+      full[0] = -1;   // mark full list as empty
+    }
+    else if(*str != '\0')
+    {
+      // convert string to number and see if it is still in remaining device list
+      int dev_number = _take_from_list(full, atoi(str));
+
+      if(!not && dev_number != -1)
+      {
+        priority_list[count] = dev_number;
+        count++;
+      }
+    }
+
+    str = strtok_r(NULL, ",", &saveptr);
+  }
+
+  // terminate priority list with -1
+  priority_list[count] = -1;
+}
+
+// parse a complete priority string
+void dt_opencl_priorities_parse(const char *configstr)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  char tmp[2048];
+  int len = 0;
+
+  int devs = cl->num_devs;
+
+  // first get rid of all invalid characters
+  while(*configstr != '\0' && len < 2048)
+  {
+    int n = strcspn(configstr, "/!,*0123456789");
+    configstr += n;
+    tmp[len] = *configstr;
+    len++;
+    configstr++;
+  }
+  tmp[len] = '\0';
+
+  char *str = tmp;
+
+  // now split config string into tokens, separated by '/' and parse them one after the other
+  char *prio = _strsep(&str, "/");
+  dt_opencl_priority_parse(prio, cl->dev_priority_image);
+
+  prio = _strsep(&str, "/");
+  if(prio)
+    dt_opencl_priority_parse(prio, cl->dev_priority_preview);
+  else
+    memcpy(cl->dev_priority_preview, cl->dev_priority_image, sizeof(int)*(devs+1));
+
+  prio = _strsep(&str, "/");
+  if(prio)
+    dt_opencl_priority_parse(prio, cl->dev_priority_export);
+  else
+    memcpy(cl->dev_priority_export, cl->dev_priority_preview, sizeof(int)*(devs+1));
+
+  prio = _strsep(&str, "/");
+  if(prio)
+    dt_opencl_priority_parse(prio, cl->dev_priority_thumbnail);
+  else
+    memcpy(cl->dev_priority_thumbnail, cl->dev_priority_export, sizeof(int)*(devs+1));
+}
+
 
 int dt_opencl_lock_device(const int pipetype)
 {
