@@ -24,6 +24,7 @@
 #include "common/gaussian.h"
 #include "common/dlopencl.h"
 #include "common/nvidia_gpus.h"
+#include "develop/pixelpipe.h"
 #include "control/conf.h"
 
 #include <string.h>
@@ -55,6 +56,11 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   cl->synch_cache = dt_conf_get_bool("opencl_synch_cache");
   cl->micro_nap = dt_conf_get_int("opencl_micro_nap");
   cl->dlocl = NULL;
+  cl->dev_priority_image = NULL;
+  cl->dev_priority_preview = NULL;
+  cl->dev_priority_export = NULL;
+  cl->dev_priority_thumbnail = NULL;
+
   int exclude_opencl = 0;
 
   // user selectable parameter defines minimum requirement on GPU memory
@@ -352,6 +358,20 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     cl->num_devs = dev;
     cl->inited = 1;
     cl->enabled = dt_conf_get_bool("opencl");
+    cl->dev_priority_image = (int *)malloc(sizeof(int)*(dev+1));
+    cl->dev_priority_preview = (int *)malloc(sizeof(int)*(dev+1));
+    cl->dev_priority_export = (int *)malloc(sizeof(int)*(dev+1));
+    cl->dev_priority_thumbnail = (int *)malloc(sizeof(int)*(dev+1));
+
+    // only check successful malloc in debug mode; darktable will crash anyhow sooner or later if mallocs that small would fail
+    assert(cl->dev_priority_image != NULL && cl->dev_priority_preview != NULL && cl->dev_priority_export != NULL && cl->dev_priority_thumbnail != NULL);
+
+    // current default settings: priority is just the order in which the devices are detected
+    for(int i=0; i<dev; i++)
+      cl->dev_priority_image[i] = cl->dev_priority_preview[i] = cl->dev_priority_export[i] = cl->dev_priority_thumbnail[i] = i;
+
+    // priority lists are -1 terminated
+    cl->dev_priority_image[dev] = cl->dev_priority_preview[dev] = cl->dev_priority_export[dev] = cl->dev_priority_thumbnail[dev] = -1;
 
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] successfully initialized.\n");
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] here are the internal numbers and names of OpenCL devices available to darktable:\n");
@@ -405,6 +425,10 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         if(cl->dev[i].eventtags) free(cl->dev[i].eventtags);
       }
     }
+    free(cl->dev_priority_image);
+    free(cl->dev_priority_preview);
+    free(cl->dev_priority_export);
+    free(cl->dev_priority_thumbnail);
   }
 
   if(cl->dlocl)
@@ -413,6 +437,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
     free(cl->dlocl);
   }
 
+  free(cl->dev);
   dt_pthread_mutex_destroy(&cl->lock);
 }
 
@@ -459,21 +484,51 @@ int dt_opencl_enqueue_barrier(const int devid)
   return (cl->dlocl->symbols->dt_clEnqueueBarrier)(cl->dev[devid].cmd_queue);
 }
 
-int dt_opencl_lock_device(const int _dev)
+int dt_opencl_lock_device(const int pipetype)
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited) return -1;
-  int dev = _dev;
-  if(dev < 0 || dev >= cl->num_devs) dev = 0;
-  for(int i=0; i<cl->num_devs; i++)
+
+  const int *priority;
+
+  switch(pipetype)
   {
-    // start at argument and get first currently unused processor
-    const int try_dev = (dev + i) % cl->num_devs;
-    if(!dt_pthread_mutex_trylock(&cl->dev[try_dev].lock)) return try_dev;
+    case DT_DEV_PIXELPIPE_FULL:
+      priority = cl->dev_priority_image;
+      break;
+    case DT_DEV_PIXELPIPE_PREVIEW:
+      priority = cl->dev_priority_preview;
+      break;
+    case DT_DEV_PIXELPIPE_EXPORT:
+      priority = cl->dev_priority_export;
+      break;
+    case DT_DEV_PIXELPIPE_THUMBNAIL:
+      priority = cl->dev_priority_thumbnail;
+      break;
+    default:
+      priority = NULL;
   }
+
+  if(priority)
+  {
+    while(*priority != -1)
+    {
+      if(!dt_pthread_mutex_trylock(&cl->dev[*priority].lock)) return *priority; 
+      priority++;
+    }
+  }
+  else
+  {
+    // only a fallback if a new pipe type would be added and we forget to take care of it in opencl.c
+    for(int try_dev=0; try_dev < cl->num_devs; try_dev++)
+    {
+      // get first currently unused processor
+      if(!dt_pthread_mutex_trylock(&cl->dev[try_dev].lock)) return try_dev;
+    }
+  }
+
   // no free GPU :(
   // use CPU processing, if no free device:
-  if(!dt_pthread_mutex_trylock(&cl->dev[dev].lock)) return dev;
   return -1;
 }
 

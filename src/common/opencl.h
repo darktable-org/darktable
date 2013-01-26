@@ -110,6 +110,10 @@ typedef struct dt_opencl_t
   int micro_nap;
   int enabled;
   int num_devs;
+  int *dev_priority_image;
+  int *dev_priority_preview;
+  int *dev_priority_export;
+  int *dev_priority_thumbnail;
   dt_opencl_device_t *dev;
   dt_dlopencl_t *dlocl;
 
@@ -135,7 +139,7 @@ int dt_opencl_enqueue_barrier(const int devid);
 
 /** locks a device for your thread's exclusive use. blocks if it's busy. pass -1 to let dt chose a device.
  *  always use the devid returned, in case you didn't get your request! */
-int dt_opencl_lock_device(const int dev);
+int dt_opencl_lock_device(const int pipetype);
 
 /** done with your command queue. */
 void dt_opencl_unlock_device(const int dev);
