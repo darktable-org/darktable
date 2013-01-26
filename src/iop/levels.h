@@ -27,7 +27,6 @@ typedef struct dt_iop_levels_params_t
 {
   float levels[3];
   int levels_preset;
-  double pick_xy_positions[3][2];
 }
 dt_iop_levels_params_t;
 
@@ -51,6 +50,7 @@ typedef struct dt_iop_levels_gui_data_t
   dt_iop_levels_pick_t current_pick;
   GtkToggleButton *activeToggleButton;
   float last_picked_color;
+  double pick_xy_positions[3][2];
 }
 dt_iop_levels_gui_data_t;
 

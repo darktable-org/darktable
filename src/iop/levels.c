@@ -218,8 +218,7 @@ void init(dt_iop_module_t *module)
   dt_iop_levels_params_t tmp = (dt_iop_levels_params_t)
   {
     {0, 0.5, 1},
-    0,
-    {{0.5, 0.5}, {0.5, 0.5}, {0.5, 0.5}}
+    0
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_levels_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_levels_params_t));
@@ -259,6 +258,8 @@ void gui_init(struct dt_iop_module_t *self)
   c->activeToggleButton = NULL;
   c->current_pick = NONE;
   c->last_picked_color = -1;
+  for (int i=0; i<3; i++)
+    for (int j=0; j<2; j++) c->pick_xy_positions[i][j] = 0.5;
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
@@ -380,8 +381,8 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
       {
         p->levels[0] = mean_picked_color;
       }
-      p->pick_xy_positions[0][0] = self->color_picker_point[0];
-      p->pick_xy_positions[0][1] = self->color_picker_point[1];
+      c->pick_xy_positions[0][0] = self->color_picker_point[0];
+      c->pick_xy_positions[0][1] = self->color_picker_point[1];
     }
     else if (GREY == c->current_pick)
     {
@@ -393,8 +394,8 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
       {
         p->levels[1] = mean_picked_color;
       }
-      p->pick_xy_positions[1][0] = self->color_picker_point[0];
-      p->pick_xy_positions[1][1] = self->color_picker_point[1];
+      c->pick_xy_positions[1][0] = self->color_picker_point[0];
+      c->pick_xy_positions[1][1] = self->color_picker_point[1];
     }
     else if (WHITE == c->current_pick)
     {
@@ -406,8 +407,8 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
       {
         p->levels[2] = mean_picked_color;
       }
-      p->pick_xy_positions[2][0] = self->color_picker_point[0];
-      p->pick_xy_positions[2][1] = self->color_picker_point[1];
+      c->pick_xy_positions[2][0] = self->color_picker_point[0];
+      c->pick_xy_positions[2][1] = self->color_picker_point[1];
     }
 
     if (   previous_color[0] != p->levels[0]
@@ -739,25 +740,25 @@ static void dt_iop_levels_pick_general_handler(GtkToggleButton *togglebutton, dt
 
 static void dt_iop_levels_pick_black_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
-  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
-  double xpick = p->pick_xy_positions[0][0];
-  double ypick = p->pick_xy_positions[0][1];
+  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
+  double xpick = c->pick_xy_positions[0][0];
+  double ypick = c->pick_xy_positions[0][1];
   dt_iop_levels_pick_general_handler(togglebutton, self, xpick, ypick, BLACK);
 }
 
 static void dt_iop_levels_pick_grey_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
-  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
-  double xpick = p->pick_xy_positions[1][0];
-  double ypick = p->pick_xy_positions[1][1];
+  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
+  double xpick = c->pick_xy_positions[1][0];
+  double ypick = c->pick_xy_positions[1][1];
   dt_iop_levels_pick_general_handler(togglebutton, self, xpick, ypick, GREY);
 }
 
 static void dt_iop_levels_pick_white_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
-  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
-  double xpick = p->pick_xy_positions[2][0];
-  double ypick = p->pick_xy_positions[2][1];
+  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
+  double xpick = c->pick_xy_positions[2][0];
+  double ypick = c->pick_xy_positions[2][1];
   dt_iop_levels_pick_general_handler(togglebutton, self, xpick, ypick, WHITE);
 }
 
