@@ -31,7 +31,7 @@ class ByteStream
 public:
   ByteStream(const uchar8* _buffer, uint32 _size);
   ByteStream(const ByteStream* b);
-  ~ByteStream(void);
+  virtual ~ByteStream(void);
   uint32 peekByte();
   uint32 getOffset() {return off;}
   void skipBytes(uint32 nbytes);
