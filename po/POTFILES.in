@@ -74,6 +74,7 @@ src/iop/colorout.c
 src/iop/colortransfer.c
 src/iop/colorzones.c
 src/iop/demosaic.c
+src/iop/denoiseprofile.c
 src/iop/dither.c
 src/iop/equalizer.c
 src/iop/exposure.c
