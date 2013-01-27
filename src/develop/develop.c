@@ -791,7 +791,8 @@ auto_apply_presets(dt_develop_t *dev)
   sqlite3_finalize(stmt);
 
   //  first time we are loading the image, try to import lightroom .xmp if any
-  dt_lightroom_import(dev->image_storage.id, dev, TRUE);
+  if (dev->image_loading)
+    dt_lightroom_import(dev->image_storage.id, dev, TRUE);
 
   image->flags |= DT_IMAGE_AUTO_PRESETS_APPLIED | DT_IMAGE_NO_LEGACY_PRESETS;
   dt_pthread_mutex_unlock(&darktable.db_insert);
