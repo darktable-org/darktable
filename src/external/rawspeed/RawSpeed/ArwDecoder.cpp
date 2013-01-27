@@ -64,9 +64,14 @@ RawImage ArwDecoder::decodeRawInternal() {
   // This camera has however another MAKER entry, so we MAY be able
   // to detect it this way in the future.
   data = mRootIFD->getIFDsWithTag(MAKE);
-  string make = data[0]->getEntry(MAKE)->getString();
-  if (!make.compare("SONY"))
-    bitPerPixel = 8;
+  if (data.size() > 1) {
+    for (uint32 i = 0; i < data.size(); i++) {
+      string make = data[i]->getEntry(MAKE)->getString();
+      /* Check for maker "SONY" without spaces */
+      if (!make.compare("SONY"))
+        bitPerPixel = 8;
+    }
+  }
 
   bool arw1 = counts->getInt() * 8 != width * height * bitPerPixel;
   if (arw1)

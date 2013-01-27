@@ -30,9 +30,9 @@
 typedef struct dt_camera_t
 {
   /** A pointer to the model string of camera. */
-  const char *model;
+  char *model;
   /** A pointer to the port string of camera. */
-  const char *port;
+  char *port;
   /** Camera summary text */
   CameraText summary;
 
@@ -231,7 +231,8 @@ void dt_camctl_camera_stop_live_view(const dt_camctl_t *c);
 const char *dt_camctl_camera_get_model(const dt_camctl_t *c,const dt_camera_t *cam);
 
 /** Set a property value \param cam Pointer to dt_camera_t if NULL the camctl->active_camera is used. */
-void dt_camctl_camera_set_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name, const char *value);
+void dt_camctl_camera_set_property_string(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name, const char *value);
+void dt_camctl_camera_set_property_int(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name, const int value);
 /** Get a property value from chached configuration. \param cam Pointer to dt_camera_t if NULL the camctl->active_camera is used. */
 const char*dt_camctl_camera_get_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
 /** Check if property exists. */

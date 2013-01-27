@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2011 henrik andersson.
+    copyright (c) 2012 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +30,7 @@
 typedef struct dt_database_t
 {
   gboolean is_new_database;
+  gboolean already_locked;
 
   /* database filename */
   gchar *dbfilename;
@@ -74,7 +76,10 @@ dt_database_t *dt_database_init(char *alternative)
   else
   {
     snprintf(dbfilename, DT_MAX_PATH_LEN, "%s", alternative);
-    dbname = g_file_get_basename (g_file_new_for_path(alternative));
+
+    GFile *galternative = g_file_new_for_path(alternative);
+    dbname = g_file_get_basename (galternative);
+    g_object_unref(galternative);
   }
 
   /* create database */
@@ -96,6 +101,7 @@ dt_database_t *dt_database_init(char *alternative)
     fprintf(stderr, "[init] maybe your %s/darktablerc is corrupt?\n",datadir);
     dt_loc_get_datadir(dbfilename, 512);
     fprintf(stderr, "[init] try `cp %s/darktablerc %s/darktablerc'\n", dbfilename,datadir);
+    sqlite3_close(db->handle);
     g_free(dbname);
     g_free(db);
     return NULL;
@@ -107,8 +113,8 @@ dt_database_t *dt_database_init(char *alternative)
     fprintf(stderr, "[init] database is locked, probably another process is already using it\n");
     sqlite3_close(db->handle);
     g_free(dbname);
-    g_free(db);
-    return NULL;
+    db->already_locked = TRUE;
+    return db;
   }
 
   /* attach a memory database to db connection for use with temporary tables
@@ -189,6 +195,11 @@ static void _database_delete_mipmaps_files()
     if(access(mipmapfilename, F_OK) != -1)
       unlink(mipmapfilename);
   }
+}
+
+gboolean dt_database_get_already_locked(const dt_database_t *db)
+{
+  return db->already_locked;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/imageio_module.h"
+#include "common/imageio.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include <stdlib.h>
@@ -50,6 +51,12 @@ _default_format_flags(dt_imageio_module_data_t *data)
 {
   return 0;
 }
+/** Default implementation of levels, used if format module does not implement levels() */
+static int
+_default_format_levels(dt_imageio_module_data_t *data)
+{
+  return IMAGEIO_RGB | IMAGEIO_INT8;
+}
 
 static int
 dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *libname, const char *plugin_name)
@@ -81,6 +88,7 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
   if(!g_module_symbol(module->module, "write_image",                  (gpointer)&(module->write_image)))                  goto error;
   if(!g_module_symbol(module->module, "bpp",                          (gpointer)&(module->bpp)))                          goto error;
   if(!g_module_symbol(module->module, "flags",                        (gpointer)&(module->flags)))                        module->flags = _default_format_flags;
+  if(!g_module_symbol(module->module, "levels",                       (gpointer)&(module->levels)))                       module->levels = _default_format_levels;
 
   if(!g_module_symbol(module->module, "decompress_header",            (gpointer)&(module->decompress_header)))            module->decompress_header = NULL;
   if(!g_module_symbol(module->module, "decompress",                   (gpointer)&(module->decompress)))                   module->decompress = NULL;

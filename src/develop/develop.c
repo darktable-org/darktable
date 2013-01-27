@@ -874,6 +874,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
     snprintf(hist->multi_name,128,"%s",multi_name);
     hist->multi_priority = multi_priority;
+
     if(hist->module->version() != modversion || hist->module->params_size != sqlite3_column_bytes(stmt, 4) ||
         strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op))
     {
@@ -1303,6 +1304,70 @@ void dt_dev_modules_update_multishow(dt_develop_t *dev)
     dt_dev_module_update_multishow(dev,mod);
     modules = g_list_next(modules);
   }
+}
+
+int dt_dev_distort_transform(dt_develop_t *dev, float *points, int points_count)
+{
+  return dt_dev_distort_transform_plus(dev,dev->preview_pipe,0,99999,points,points_count);
+}
+int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, int points_count)
+{
+  return dt_dev_distort_backtransform_plus(dev,dev->preview_pipe,0,99999,points,points_count);
+}
+
+int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, int pmin, int pmax, float *points, int points_count)
+{
+  GList *modules = g_list_first(dev->iop);
+  GList *pieces = g_list_first(pipe->nodes);
+  while (modules)
+  {
+    if (!pieces) return 0;
+    dt_iop_module_t *module = (dt_iop_module_t *) (modules->data);
+    if ( module->priority <= pmax && module->priority >= pmin)
+    {
+      dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *) (pieces->data);
+
+      module->distort_transform(module,piece,points,points_count);
+    }
+    modules = g_list_next(modules);
+    pieces = g_list_next(pieces);
+  }
+  return 1;
+}
+
+int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, int pmin, int pmax, float *points, int points_count)
+{
+  GList *modules = g_list_last(dev->iop);
+  GList *pieces = g_list_last(pipe->nodes);
+  while (modules)
+  {
+    if (!pieces) return 0;
+    dt_iop_module_t *module = (dt_iop_module_t *) (modules->data);
+    if ( module->priority <= pmax && module->priority >= pmin)
+    {
+      dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *) (pieces->data);
+
+      module->distort_backtransform(module,piece,points,points_count);
+    }
+    modules = g_list_previous(modules);
+    pieces = g_list_previous(pieces);
+  }
+  return 1;
+}
+
+dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, struct dt_iop_module_t *module)
+{
+  GList *pieces = g_list_last(pipe->nodes);
+  while (pieces)
+  {
+    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *) (pieces->data);
+    if ( piece->module == module)
+    {
+      return piece;
+    }
+    pieces = g_list_previous(pieces);
+  }
+  return NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

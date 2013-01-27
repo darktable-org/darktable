@@ -28,6 +28,7 @@
 #include "dtgtk/tristatebutton.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
+#include "develop/lightroom.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"
@@ -569,6 +570,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       if (!dt_iop_is_hidden(module))
       {
         module->gui_init(module);
+        dt_iop_reload_defaults(module);
         //we search the base iop corresponding
         GList *mods = g_list_first(dev->iop);
         dt_iop_module_t *base = NULL;
@@ -873,6 +875,12 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
   else dt_control_log(_("no styles have been created yet"));
 }
 
+static void _darkroom_ui_apply_LR_style(GtkWidget *w, gpointer user_data)
+{
+  dt_develop_t *dev = (dt_develop_t *)user_data;
+  dt_lightroom_import (dev);
+}
+
 void enter(dt_view_t *self)
 {
   /* connect to ui pipe finished signal for redraw */
@@ -921,6 +929,20 @@ void enter(dt_view_t *self)
                 (char *)NULL);
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles);
 
+  /* create LR import button (only if LR .xmp found) */
+  char *lr_xmp_pathname = dt_get_lightroom_xmp(dev->image_storage.id);
+  if(lr_xmp_pathname)
+  {
+    g_free(lr_xmp_pathname);
+    GtkWidget *LRimp = dtgtk_button_new (dtgtk_cairo_paint_LR,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+    g_signal_connect (G_OBJECT (LRimp), "clicked",
+                      G_CALLBACK (_darkroom_ui_apply_LR_style),
+                      dev);
+    g_object_set (G_OBJECT (LRimp), "tooltip-text", _("import from Lightroom"),
+                  (char *)NULL);
+    dt_view_manager_view_toolbox_add(darktable.view_manager, LRimp);
+  }
+
   /*
    * add IOP modules to plugin list
    */
@@ -936,6 +958,7 @@ void enter(dt_view_t *self)
     if (!dt_iop_is_hidden(module))
     {
       module->gui_init(module);
+      dt_iop_reload_defaults(module);
 
       /* add module to right panel */
       GtkWidget *expander = dt_iop_gui_get_expander(module);

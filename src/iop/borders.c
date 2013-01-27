@@ -174,6 +174,43 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "frame line size", GTK_WIDGET(g->frame_size));
 }
 
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+{
+  if (!self->enabled) return 2;
+  dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
+
+  const int border_tot_width  = (piece->buf_out.width  - piece->buf_in.width );
+  const int border_tot_height = (piece->buf_out.height - piece->buf_in.height);
+  const int border_size_t = border_tot_height*d->pos_v;
+  const int border_size_l = border_tot_width*d->pos_h;
+  
+  for (int i=0; i<points_count*2; i+=2)
+  {
+    points[i] += border_size_l;
+    points[i+1] += border_size_t;
+  }
+  
+  return 1;
+}
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+{
+  if (!self->enabled) return 2;
+  dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
+
+  const int border_tot_width  = (piece->buf_out.width  - piece->buf_in.width );
+  const int border_tot_height = (piece->buf_out.height - piece->buf_in.height);
+  const int border_size_t = border_tot_height*d->pos_v;
+  const int border_size_l = border_tot_width*d->pos_h;
+  
+  for (int i=0; i<points_count*2; i+=2)
+  {
+    points[i] -= border_size_l;
+    points[i+1] -= border_size_t;
+  }
+  
+  return 1;
+}
+
 // 1st pass: how large would the output be, given this input roi?
 // this is always called with the full buffer before processing.
 void
@@ -245,6 +282,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
+  
   const int ch = piece->colors;
   const int in_stride  = ch*roi_in->width;
   const int out_stride = ch*roi_out->width;
@@ -877,7 +915,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_borders_params_t);
   module->gui_data = NULL;
-  module->priority = 962; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 945; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)

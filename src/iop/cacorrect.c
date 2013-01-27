@@ -65,6 +65,11 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
+int flags ()
+{
+  return IOP_FLAGS_ONE_INSTANCE;
+}
+
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1165,7 +1170,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
 
   // we come just before demosaicing.
-  module->priority = 74; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 72; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_cacorrect_params_t);
   module->gui_data = NULL;
 }
@@ -1186,7 +1191,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   // dt_iop_cacorrect_params_t *p = (dt_iop_cacorrect_params_t *)params;
   // dt_iop_cacorrect_data_t *d = (dt_iop_cacorrect_data_t *)piece->data;
   // preview pipe doesn't have mosaiced data either:
-  if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->enabled = 0;
+  if(dt_dev_pixelpipe_uses_downsampled_input(pipe)) piece->enabled = 0;
 }
 
 void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

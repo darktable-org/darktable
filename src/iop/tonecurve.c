@@ -36,6 +36,12 @@
 
 DT_MODULE(3)
 
+static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
+static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
+static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
+static gboolean dt_iop_tonecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
+
 const char *name()
 {
   return _("tone curve");
@@ -339,7 +345,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_tonecurve_params_t));
   module->default_params = malloc(sizeof(dt_iop_tonecurve_params_t));
   module->default_enabled = 0;
-  module->priority = 611; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 618; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_tonecurve_params_t);
   module->gui_data = NULL;
   dt_iop_tonecurve_params_t tmp = (dt_iop_tonecurve_params_t)
@@ -430,6 +436,8 @@ pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
   /* set the area sample size*/
   if (self->request_color_pick)
     dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+  else
+    dt_control_queue_redraw();
 
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
@@ -920,7 +928,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  dt_iop_tonecurve_params_t *d = (dt_iop_tonecurve_params_t *)self->factory_params;
+  dt_iop_tonecurve_params_t *d = (dt_iop_tonecurve_params_t *)self->default_params;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
 
   int ch = c->channel;

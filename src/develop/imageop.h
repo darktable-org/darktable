@@ -151,6 +151,9 @@ typedef struct dt_iop_module_so_t
   void (*process_tiling)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
   int  (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
   int  (*process_tiling_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
+
+  int (*distort_transform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, int points_count);
+  int (*distort_backtransform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, int points_count);
 }
 dt_iop_module_so_t;
 
@@ -185,9 +188,9 @@ typedef struct dt_iop_module_t
   /** the module is used in this develop module. */
   struct dt_develop_t *dev;
   /** non zero if this node should be processed. */
-  int32_t enabled, default_enabled, factory_enabled;
+  int32_t enabled, default_enabled;
   /** parameters for the operation. will be replaced by history revert. */
-  dt_iop_params_t *params, *default_params, *factory_params;
+  dt_iop_params_t *params, *default_params;
   /** size of individual params struct. */
   int32_t params_size;
   /** parameters needed if a gui is attached. will be NULL if in export/batch mode. */
@@ -302,6 +305,14 @@ typedef struct dt_iop_module_t
   /** a tiling variant of process_cl(). */
   int (*process_tiling_cl)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
 
+  /** this functions are used for distrot iop
+   * points is an array of float {x1,y1,x2,y2,...}
+   * size is 2*points_count */
+  /** points before the iop is applied => point after processed */
+  int (*distort_transform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, int points_count);
+  /** reverse points after the iop is applied => point before process */
+  int (*distort_backtransform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, int points_count);
+  
   /** Key accelerator registration callbacks */
   void (*connect_key_accels)(struct dt_iop_module_t *self);
   void (*original_connect_key_accels)(struct dt_iop_module_t *self);
@@ -358,7 +369,7 @@ int  dt_iop_load_preset_interpolated_iso(dt_iop_module_t *module, const dt_image
 int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe);
 
 /** allow plugins to relinquish CPU and go to sleep for some time */
-void dt_iop_nap(uint32_t usec);
+void dt_iop_nap(int32_t usec);
 
 /** colorspace enums */
 typedef enum dt_iop_colorspace_type_t

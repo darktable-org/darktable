@@ -168,6 +168,11 @@ void dt_collection_hint_message(const dt_collection_t *collection);
 
 /** returns the image offset in the collection */
 int dt_collection_image_offset(int imgid);
+
+/* serialize and deserialize into a string. */
+void dt_collection_deserialize(char *buf);
+int dt_collection_serialize(char *buf, int bufsize);
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -53,6 +53,7 @@ typedef struct dt_gui_gtk_t
 
   GdkPixmap *pixmap;
   GtkMenu *presets_popup_menu;
+  char *last_preset;
 
   int32_t reset;
   float bgcolor[3];
@@ -70,7 +71,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[]);
 void dt_gui_gtk_run(dt_gui_gtk_t *gui);
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui);
 void dt_gui_gtk_quit();
-
+void dt_gui_store_last_preset(const char *name);
 
 /** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
 void dt_gui_key_accel_block_on_focus (GtkWidget *w);
@@ -182,6 +183,10 @@ GtkWidget *dt_ui_center(struct dt_ui_t *ui);
 GtkWidget *dt_ui_main_window(struct dt_ui_t *ui);
 
 GtkBox *dt_ui_get_container(struct dt_ui_t *ui, const dt_ui_container_t c);
+
+/*  activate ellipsization of the combox entries */
+void dt_ellipsize_combo(GtkComboBox *cbox);
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

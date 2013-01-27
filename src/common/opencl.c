@@ -44,8 +44,16 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   dt_pthread_mutex_init(&cl->lock, NULL);
   cl->inited = 0;
   cl->enabled = 0;
-  cl->use_events = dt_conf_get_bool("opencl_use_events");
+
+  int handles = dt_conf_get_int("opencl_number_event_handles");
+  handles = (handles == 0 ? 0x7fffffff : handles);
+  cl->number_event_handles = handles;
+  cl->use_events = (handles > 0);
+
   cl->avoid_atomics = dt_conf_get_bool("opencl_avoid_atomics");
+  cl->async_pixelpipe = dt_conf_get_bool("opencl_async_pixelpipe");
+  cl->synch_cache = dt_conf_get_bool("opencl_synch_cache");
+  cl->micro_nap = dt_conf_get_int("opencl_micro_nap");
   cl->dlocl = NULL;
   int exclude_opencl = 0;
 
@@ -865,6 +873,21 @@ int dt_opencl_read_host_from_device_rowpitch(const int devid, void *host, void *
   return dt_opencl_read_host_from_device_raw(devid, host, device, origin, region, rowpitch, CL_TRUE);
 }
 
+int dt_opencl_read_host_from_device_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int bpp)
+{
+  return dt_opencl_read_host_from_device_rowpitch_non_blocking(devid, host, device, width, height, bpp*width);
+}
+
+int dt_opencl_read_host_from_device_rowpitch_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int rowpitch)
+{
+  if(!darktable.opencl->inited || devid < 0) return -1;
+  const size_t origin[] = {0, 0, 0};
+  const size_t region[] = {width, height, 1};
+  // non-blocking.
+  return dt_opencl_read_host_from_device_raw(devid, host, device, origin, region, rowpitch, CL_FALSE);
+}
+
+
 int dt_opencl_read_host_from_device_raw(const int devid, void *host, void *device, const size_t *origin, const size_t *region, const int rowpitch, const int blocking)
 {
   if(!darktable.opencl->inited) return -1;
@@ -886,6 +909,20 @@ int dt_opencl_write_host_to_device_rowpitch(const int devid, void *host, void *d
   const size_t region[] = {width, height, 1};
   // blocking.
   return dt_opencl_write_host_to_device_raw(devid, host, device, origin, region, rowpitch, CL_TRUE);
+}
+
+int dt_opencl_write_host_to_device_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int bpp)
+{
+  return dt_opencl_write_host_to_device_rowpitch_non_blocking(devid, host, device, width, height, width*bpp);
+}
+
+int dt_opencl_write_host_to_device_rowpitch_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int rowpitch)
+{
+  if(!darktable.opencl->inited || devid < 0) return -1;
+  const size_t origin[] = {0, 0, 0};
+  const size_t region[] = {width, height, 1};
+  // non-blocking.
+  return dt_opencl_write_host_to_device_raw(devid, host, device, origin, region, rowpitch, CL_FALSE);
 }
 
 int dt_opencl_write_host_to_device_raw(const int devid, void *host, void *device, const size_t *origin, const size_t *region, const int rowpitch, const int blocking)
@@ -1208,6 +1245,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
   dt_opencl_eventtag_t **eventtags = &(cl->dev[devid].eventtags);
   int *numevents = &(cl->dev[devid].numevents);
   int *maxevents = &(cl->dev[devid].maxevents);
+  int *eventsconsolidated = &(cl->dev[devid].eventsconsolidated);
   int *lostevents = &(cl->dev[devid].lostevents);
   int *totalevents = &(cl->dev[devid].totalevents);
   int *totallost = &(cl->dev[devid].totallost);
@@ -1247,6 +1285,11 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
     (*totalevents)++;
     return (*eventlist)+*numevents-1;
   }
+
+  // check if we would exceed the number of available event handles. In that case first flush existing handles
+  if(*numevents - *eventsconsolidated + 1 > darktable.opencl->number_event_handles)
+    (void)dt_opencl_events_flush(devid, FALSE);
+
 
   // if no more space left in eventlist: grow buffer
   if (*numevents == *maxevents)

@@ -128,7 +128,7 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
 
   const size_t basebuffer = width*height*channels*sizeof(float);
 
-  tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width,height,sigma_s,sigma_r)/basebuffer;    
+  tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width,height,sigma_s,sigma_r)/basebuffer;
   tiling->maxbuf = fmax(1.0f, (float)dt_bilateral_singlebuffer_size(width,height,sigma_s,sigma_r)/basebuffer);
   tiling->overhead = 0;
   tiling->overlap = ceilf(4*sigma_s);
@@ -198,7 +198,7 @@ void init(dt_iop_module_t *module)
   // by default:
   module->default_enabled = 0;
   // order has to be changed by editing the dependencies in tools/iop_dependencies.py
-  module->priority = 518; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 527; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_bilat_params_t);
   module->gui_data = NULL;
   // init defaults:
@@ -267,7 +267,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->spatial, _("coarseness"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->spatial, TRUE, TRUE, 0);
 
-  g->range = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 8, 0);
+  g->range = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 20, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->range, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->range, _("contrast"));
 

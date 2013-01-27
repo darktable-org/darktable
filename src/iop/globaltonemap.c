@@ -161,13 +161,14 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   /* precalcs */
   const float eps = 0.0001f;
   float lwmax = eps;
+
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
     float *inp = in + ch*k;
-    lwmax = MAX(lwmax, (inp[0]*0.01f));
+    lwmax = fmaxf(lwmax, (inp[0]*0.01f));
   }
   const float ldc = data->drago.max_light * 0.01 / log10f(lwmax+1);
-  const float bl = logf(MAX(eps, data->drago.bias)) / logf(0.5);
+  const float bl = logf(fmaxf(eps, data->drago.bias)) / logf(0.5);
 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, lwmax) schedule(static)
@@ -177,7 +178,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
     float *inp = in + ch*k;
     float *outp = out + ch*k;
     float lw = inp[0]*0.01f;
-    outp[0] = 100.0f * (ldc * logf(MAX(eps, lw + 1.0f)) / logf(MAX(eps, 2.0f + (powf(lw/lwmax,bl)) * 8.0f)));
+    outp[0] = 100.0f * (ldc * logf(fmaxf(eps, lw + 1.0f)) / logf(fmaxf(eps, 2.0f + (powf(lw/lwmax,bl)) * 8.0f)));
     outp[1] = inp[1];
     outp[2] = inp[2];
   }
@@ -199,7 +200,7 @@ static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe
     float *inp = in + ch*k;
     float *outp = out + ch*k;
     float l = inp[0]/100.0;
-    float x = MAX(0.0f, l-0.004f);
+    float x = fmaxf(0.0f, l-0.004f);
     outp[0] = 100.0 * ((x*(6.2*x+.5))/(x*(6.2*x+1.7)+0.06));
     outp[1] = inp[1];
     outp[2] = inp[2];
@@ -574,7 +575,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_global_tonemap_params_t));
   module->default_params = malloc(sizeof(dt_iop_global_tonemap_params_t));
   module->default_enabled = 0;
-  module->priority = 833; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 472; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_global_tonemap_params_t);
   module->gui_data = NULL;
   dt_iop_global_tonemap_params_t tmp = (dt_iop_global_tonemap_params_t)

@@ -74,6 +74,11 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
+int flags ()
+{
+  return IOP_FLAGS_ONE_INSTANCE;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "threshold"));
@@ -172,7 +177,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_hotpixels_params_t));
   module->default_params = malloc(sizeof(dt_iop_hotpixels_params_t));
   module->default_enabled = 0;
-  module->priority = 92; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 90; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_hotpixels_params_t);
   module->gui_data = NULL;
   const dt_iop_hotpixels_params_t tmp =
@@ -203,7 +208,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   d->threshold = p->threshold;
   d->permissive = p->permissive;
   d->markfixed = p->markfixed && (pipe->type != DT_DEV_PIXELPIPE_EXPORT) && (pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL);
-  if (!(pipe->image.flags & DT_IMAGE_RAW)|| pipe->type == DT_DEV_PIXELPIPE_PREVIEW || p->strength == 0.0)
+  if (!(pipe->image.flags & DT_IMAGE_RAW)|| dt_dev_pixelpipe_uses_downsampled_input(pipe) || p->strength == 0.0)
     piece->enabled = 0;
 }
 

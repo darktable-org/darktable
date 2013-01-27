@@ -62,7 +62,7 @@ operation_tags ()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
 }
 
 
@@ -556,6 +556,66 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
   return;
 }
 
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+{
+  if (!self->enabled) return 2;
+  dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
+  
+    if(!d->lens->Maker || d->crop <= 0.0f) return 0;
+
+  const float orig_w = piece->iwidth, orig_h = piece->iheight;
+  lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
+
+  int modflags = lf_modifier_initialize(
+                   modifier, d->lens, LF_PF_F32,
+                   d->focal, d->aperture,
+                   d->distance, d->scale,
+                   d->target_geom, d->modify_flags, !d->inverse);  
+  float *buf = malloc(2*3*sizeof(float));
+  
+  for (int i=0; i<points_count*2; i+=2)
+  {  
+    if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
+    {
+      lf_modifier_apply_subpixel_geometry_distortion (modifier, points[i], points[i+1], 1, 1, buf);
+      points[i] = buf[0];
+      points[i+1] = buf[3];
+    }
+  }
+  free(buf);
+  lf_modifier_destroy(modifier);
+  
+  return 1;
+}
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+{
+  if (!self->enabled) return 2;
+  dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
+    if(!d->lens->Maker || d->crop <= 0.0f) return 0;
+
+  const float orig_w = piece->iwidth, orig_h = piece->iheight;
+  lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
+
+  int modflags = lf_modifier_initialize(
+                   modifier, d->lens, LF_PF_F32,
+                   d->focal, d->aperture,
+                   d->distance, d->scale,
+                   d->target_geom, d->modify_flags, d->inverse);  
+  float *buf = malloc(2*3*sizeof(float));
+  
+  for (int i=0; i<points_count*2; i+=2)
+  {  
+    if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
+    {
+      lf_modifier_apply_subpixel_geometry_distortion (modifier, points[i], points[i+1], 1, 1, buf);
+      points[i] = buf[0];
+      points[i+1] = buf[3];
+    }
+  }
+  free(buf);
+  lf_modifier_destroy(modifier);
+  return 1;
+}
 
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
 {
@@ -796,7 +856,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_lensfun_params_t);
   module->gui_data = NULL;
-  module->priority = 222; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 218; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)

@@ -531,7 +531,7 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
     lib->live_view_zoom_cursor_y = y;
     gchar str[20];
     sprintf(str, "%u,%u", cam->live_view_zoom_x, cam->live_view_zoom_y);
-    dt_camctl_camera_set_property(darktable.camctl, NULL, "eoszoomposition", str);
+    dt_camctl_camera_set_property_string(darktable.camctl, NULL, "eoszoomposition", str);
   }
   dt_control_queue_redraw_center();
 }
@@ -567,9 +567,9 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   {
     cam->live_view_zoom = !cam->live_view_zoom;
     if(cam->live_view_zoom == TRUE)
-      dt_camctl_camera_set_property(darktable.camctl, NULL, "eoszoom", "5");
+      dt_camctl_camera_set_property_string(darktable.camctl, NULL, "eoszoom", "5");
     else
-      dt_camctl_camera_set_property(darktable.camctl, NULL, "eoszoom", "1");
+      dt_camctl_camera_set_property_string(darktable.camctl, NULL, "eoszoom", "1");
     return 1;
   }
   return 0;

@@ -81,7 +81,7 @@ groups ()
 int
 flags ()
 {
-  return IOP_FLAGS_ALLOW_TILING;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
 int
@@ -112,7 +112,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
   const float clip = d->clip * fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
   const int filters = dt_image_flipped_filter(&piece->pipe->image);
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || !filters)
+  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) || !filters)
   {
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -148,7 +148,7 @@ error:
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && (pipe->image.flags & DT_IMAGE_RAW)) return sizeof(float);
+  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW)) return sizeof(float);
   else return 4*sizeof(float);
 }
 
@@ -166,7 +166,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   const float clip = data->clip * fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
   // const int ch = piece->colors;
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || !filters)
+  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) || !filters)
   {
     const __m128 clipm = _mm_set1_ps(clip);
 #ifdef _OPENMP
@@ -191,7 +191,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     case DT_IOP_HIGHLIGHTS_LCH:
 #ifdef _OPENMP
-      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
+  #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
 #endif
       for(int j=0; j<roi_out->height; j++)
       {
@@ -239,21 +239,21 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       break;
     default:
     case DT_IOP_HIGHLIGHTS_CLIP:
+    {
+      const __m128 clipm = _mm_set1_ps(clip);
+      const int n = roi_out->height*roi_out->width;
+      float *const out = (float *)ovoid;
+      float *const in  = (float *)ivoid;
 #ifdef _OPENMP
-      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out)
+  #pragma omp parallel for schedule(static) default(none)
 #endif
-      for(int j=0; j<roi_out->height; j++)
-      {
-        float *out = (float *)ovoid + roi_out->width*j;
-        float *in  = (float *)ivoid + roi_out->width*j;
-        for(int i=0; i<roi_out->width; i++)
-        {
-          out[0] = MIN(clip, in[0]);
-          out ++;
-          in ++;
-        }
-      }
+      for(int j=0; j<n; j+=4)
+        _mm_stream_ps(out+j, _mm_min_ps(clipm, _mm_load_ps(in+j)));
+      _mm_sfence();
+      // lets see if there's a non-multiple of four rest to process:
+      if(n & 3) for(int j=n&~3u;j<n;j++) out[j] = MIN(clip, in[j]);
       break;
+    }
   }
 
   if(piece->pipe->mask_display)
@@ -354,7 +354,7 @@ void init(dt_iop_module_t *module)
   // module->data = malloc(sizeof(dt_iop_highlights_data_t));
   module->params = malloc(sizeof(dt_iop_highlights_params_t));
   module->default_params = malloc(sizeof(dt_iop_highlights_params_t));
-  module->priority = 55; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 54; // module order created by iop_dependencies.py, do not edit!
   module->default_enabled = 1;
   module->params_size = sizeof(dt_iop_highlights_params_t);
   module->gui_data = NULL;

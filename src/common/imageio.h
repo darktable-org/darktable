@@ -25,6 +25,22 @@
 
 #include <inttypes.h>
 
+typedef enum dt_imageio_levels_t
+{
+  IMAGEIO_INT8         = 0x0,
+  IMAGEIO_INT12        = 0x1,
+  IMAGEIO_INT16        = 0x2,
+  IMAGEIO_INT32        = 0x3,
+  IMAGEIO_FLOAT        = 0x4,
+  IMAGEIO_BW           = 0x5,
+  IMAGEIO_PREC_MASK    = 0xFF,
+
+  IMAGEIO_RGB          = 0x100,
+  IMAGEIO_GRAY         = 0x200,
+  IMAGEIO_CHANNEL_MASK = 0xFF00
+} dt_imageio_levels_t;
+
+
 // opens the file using pfm, hdr, exr.
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
 // opens the file using libraw, doing interpolation and stuff

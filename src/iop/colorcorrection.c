@@ -221,7 +221,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colorcorrection_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorcorrection_params_t));
   module->default_enabled = 0;
-  module->priority = 666; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 672; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorcorrection_params_t);
   module->gui_data = NULL;
   dt_iop_colorcorrection_params_t tmp = (dt_iop_colorcorrection_params_t)
@@ -442,7 +442,7 @@ dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventButton *event, gp
         break;
       default: // reset everything
       {
-        dt_iop_colorcorrection_params_t *d = (dt_iop_colorcorrection_params_t *)self->factory_params;
+        dt_iop_colorcorrection_params_t *d = (dt_iop_colorcorrection_params_t *)self->default_params;
         memcpy(p, d, sizeof(*p));
         dt_dev_add_history_item(darktable.develop, self, TRUE);
       }

@@ -5,8 +5,10 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module eliminates some of the typical banding artifacts that can occur when darktable's
-                                                       internal 32-bit float data are transfered into a discrete 8-bit or 16-bit output format (display or export).
+						<entry>This module eliminates some of the typical banding artifacts which can occur when darktable's
+                                                       internal 32-bit floating point data are transfered into a discrete 8-bit or 16-bit integer output format for
+                                                       display or file export.
+                                                       The module is active by default and - in its default settings - will automatically adapt to the output format.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/dithering.png" scalefit="1" width="80%" align="center" />
@@ -17,21 +19,27 @@
 		</informaltable>
 	</sect4>
 
-	<sect4><title>Usage</title>
-		<para>Dithering comes as one of the last steps in pixelpipe. In most cases Floyd-Steinberg will give best results. You need to take into account the desired output format in order to get
-                      best effects.</para>
-
-                <para>If you want to use dithering for exported images with a reduced width/height, please make sure that you de-activate option "do high quality resampling during export", else the
+        <sect4>
+                <para>If you use dithering to export images with a reduced width/height, please make sure that you de-activate option "do high quality resampling during export", else the
                       final scaling step will counteract dithering.</para>
 
-                <para>Watching an image dithered into a low bit depth from a distance (e.g. "floyd-steinberg 1-bit b&amp;w") will give the impression of a homogeneous grayscale image.
-                      In order to mimic this impression darktable dithers zoomed-out images in center view, navigation window and thumbnails into a higher number of grayscale levels. Please note that as 
-                      a consequence the histogram - which is derived from the navigation window - will no longer be a full match of the output image.</para>
+                <para>Some users might want to avoid the additional processing overhead of this module while doing interactive work - knowing that the final results in file output is good
+                      anyhow :) In that case there is a config parameter "dithering for darkroom mode" in core options. Dithering of center view in darkroom mode will only be done
+                      if this is parameter is checked. Quite logically this only affects monitor display, not file exports.</para>
 
+                <para>Watching from some distance an image dithered into a very low bit depth (like "floyd-steinberg 1-bit b&amp;w"), it will give the impression of 
+                      a homogeneous grayscale image. We try to mimic this impression in darktable when you look at zoomed-out images in center 
+                      view, in navigation window and for thumbnails. This is accomplished by dithering those images into a higher number of grayscale levels. Please 
+                      note that as a consequence the histogram - which is derived from the navigation window - will show this increased number a levels and is no longer
+                      a full match of the output image.</para>
+        </sect4>
+
+	<sect4><title>Usage</title>
 		<sect5><title>method</title>
 			<para>This combobox sets the dithering method. Floyd-Steinberg error diffusion dithering with some typical output bit depths and random noise 
                         dithering are supported. Floyd-Steinberg systematically distributes quantization errors over neighboring pixels, whereas random dithering just adds some
-                        level of randomness to "break" sharp tonal value bands. To eliminate banding on a typical 8-bit display, chose "floyd-steinberg 8-bit rgb".</para>
+                        level of randomness to "break" sharp tonal value bands. The default setting is "floyd-steinberg auto", which automatically adapts
+                        to the desired output format.</para>
 		</sect5>
 
 		<sect5><title>damping</title>
@@ -39,4 +47,5 @@
                               of -80dB is a good fit for 8-bit output formats.</para>
 		</sect5>
   	</sect4>
+
 </sect3>

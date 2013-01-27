@@ -508,7 +508,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   uint8_t exif[65535];
   char pathname[DT_MAX_PATH_LEN];
   dt_image_full_path(first_imgid, pathname, DT_MAX_PATH_LEN);
-  const int exif_len = dt_exif_read_blob(exif, pathname, first_imgid, 0, 0, 0);
+  // last param is dng mode
+  const int exif_len = dt_exif_read_blob(exif, pathname, first_imgid, 0, wd, ht, 1);
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname)-(c-pathname));
@@ -1051,7 +1052,9 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
 
-  dt_collection_update(darktable.collection);
+  char collect[1024];
+  snprintf(collect, 1024, "1:0:0:%s$", new_film.dirname);
+  dt_collection_deserialize(collect);
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
   dt_control_queue_redraw_center();

@@ -158,8 +158,6 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.filter.module = self;
   darktable.view_manager->proxy.filter.reset_filter = _lib_filter_reset_to_show_all;
 
-  /* lets update query */
-  _lib_filter_update_query(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

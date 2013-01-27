@@ -128,7 +128,7 @@ groups ()
 int
 flags ()
 {
-  return IOP_FLAGS_ALLOW_TILING;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -158,7 +158,7 @@ void connect_key_accels(dt_iop_module_t *self)
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && (pipe->image.flags & DT_IMAGE_RAW)) return sizeof(float);
+  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW)) return sizeof(float);
   else return 4*sizeof(float);
 }
 
@@ -228,7 +228,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   const int filters = dt_image_flipped_filter(&piece->pipe->image);
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && piece->pipe->image.bpp != 4)
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp != 4)
   {
     const float coeffsi[3] = {d->coeffs[0]/65535.0f, d->coeffs[1]/65535.0f, d->coeffs[2]/65535.0f};
 #ifdef _OPENMP
@@ -261,7 +261,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
     _mm_sfence();
   }
-  else if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && piece->pipe->image.bpp == 4)
+  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp == 4)
   {
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
@@ -306,12 +306,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   cl_int err = -999;
   int kernel = -1;
 
-  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && piece->pipe->image.bpp != 4)
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp != 4)
   {
     kernel = gd->kernel_whitebalance_1ui;
     for(int k=0; k<3; k++) coeffs[k] /= 65535.0f;
   }
-  else if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && piece->pipe->image.bpp == 4)
+  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp == 4)
   {
     kernel = gd->kernel_whitebalance_1f;
   }
@@ -389,7 +389,7 @@ void gui_update (struct dt_iop_module_t *self)
   self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p  = (dt_iop_temperature_params_t *)module->params;
-  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)module->factory_params;
+  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)module->default_params;
   float temp, tint, mul[3];
   for(int k=0; k<3; k++) mul[k] = p->coeffs[k]/fp->coeffs[k];
   convert_rgb_to_k(mul, p->temp_out, &temp, &tint);
@@ -494,7 +494,7 @@ void init (dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_temperature_params_t));
   module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
-  module->priority = 37; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 36; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
 }
@@ -522,7 +522,7 @@ gui_update_from_coeffs (dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p  = (dt_iop_temperature_params_t *)self->params;
-  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->factory_params;
+  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->default_params;
   // now get temp/tint from rgb. leave temp_out as it was:
   float temp, tint, mul[3];
 
@@ -568,7 +568,7 @@ temp_changed(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p  = (dt_iop_temperature_params_t *)self->params;
-  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->factory_params;
+  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->default_params;
 
   const float temp_out = dt_bauhaus_slider_get(g->scale_k_out);
   const float temp_in  = dt_bauhaus_slider_get(g->scale_k);
@@ -649,7 +649,7 @@ apply_preset(dt_iop_module_t *self)
   if(self->dt->gui->reset) return;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p  = (dt_iop_temperature_params_t *)self->params;
-  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->factory_params;
+  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->default_params;
   const int tune = dt_bauhaus_slider_get(g->finetune);
   const int pos = dt_bauhaus_combobox_get(g->presets);
   switch(pos)

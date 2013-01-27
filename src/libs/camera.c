@@ -119,7 +119,7 @@ void connect_key_accels(dt_lib_module_t *self)
 void property_changed_callback(GtkComboBox *cb,gpointer data)
 {
   dt_lib_camera_property_t *prop=(dt_lib_camera_property_t *)data;
-  dt_camctl_camera_set_property(darktable.camctl,NULL,prop->property_name,gtk_combo_box_get_active_text(prop->values));
+  dt_camctl_camera_set_property_string(darktable.camctl,NULL,prop->property_name,gtk_combo_box_get_active_text(prop->values));
 }
 
 /** Add  a new property of camera to the gui */

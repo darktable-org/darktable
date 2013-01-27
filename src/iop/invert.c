@@ -60,6 +60,11 @@ groups ()
   return IOP_GROUP_BASIC;
 }
 
+int flags ()
+{
+  return IOP_FLAGS_ONE_INSTANCE;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_iop(self, FALSE,
@@ -79,8 +84,8 @@ int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // this is bytes per pixel, so it has to be 4*sizeof(float) or sizeof(float) for raw images.
-  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && piece->pipe->image.filters && piece->pipe->image.bpp != 4) return sizeof(uint16_t);
-  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && piece->pipe->image.filters && piece->pipe->image.bpp == 4) return sizeof(float);
+  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && piece->pipe->image.filters && piece->pipe->image.bpp != 4) return sizeof(uint16_t);
+  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && piece->pipe->image.filters && piece->pipe->image.bpp == 4) return sizeof(float);
   return 4*sizeof(float);
 }
 
@@ -182,7 +187,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   const int filters = dt_image_flipped_filter(&piece->pipe->image);
 
-  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && piece->pipe->image.bpp != 4)
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp != 4)
   {
     const float *const m = piece->pipe->processed_maximum;
     const int32_t film_rgb_i[3] = {m[0]*film_rgb[0]*65535, m[1]*film_rgb[1]*65535, m[2]*film_rgb[2]*65535};
@@ -202,7 +207,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int k=0; k<3; k++)
       piece->pipe->processed_maximum[k] = 1.0f;
   }
-  else if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && piece->pipe->image.bpp == 4)
+  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp == 4)
   {
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)

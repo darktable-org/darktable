@@ -108,6 +108,7 @@ void init_presets (dt_iop_module_so_t *self)
 
   p.a = 32.0f;
   p.b = 64.0f;
+  p.highlights = 0.0f;
   dt_gui_presets_add_generic(_("red filter"), self->op, self->version(), &p, sizeof(p), 1);
 
   // p.a = 64.0f;
@@ -336,7 +337,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_monochrome_params_t));
   module->default_params = malloc(sizeof(dt_iop_monochrome_params_t));
   module->default_enabled = 0;
-  module->priority = 574; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 581; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_monochrome_params_t);
   module->gui_data = NULL;
   dt_iop_monochrome_params_t tmp = (dt_iop_monochrome_params_t)

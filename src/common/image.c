@@ -399,7 +399,10 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   char *ext = g_ascii_strdown(cc+1, -1);
   if(override_ignore_jpegs == FALSE && (!strcmp(ext, "jpg") ||
                                         !strcmp(ext, "jpeg")) && dt_conf_get_bool("ui_last/import_ignore_jpegs"))
+  {
+    g_free(ext);
     return 0;
+  }
   int supported = 0;
   char **extensions = g_strsplit(dt_supported_extensions, ",", 100);
   for(char **i=extensions; *i!=NULL; i++)
@@ -476,13 +479,61 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   for(; *cc2!='.'&&cc2>basename; cc2--);
   *cc2='\0';
   gchar *sql_pattern = g_strconcat(basename, ".%", NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select group_id from images where film_id = ?1 and filename like ?2 and id != ?3", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, sql_pattern, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, id);
   int group_id;
-  if(sqlite3_step(stmt) == SQLITE_ROW) group_id = sqlite3_column_int(stmt, 0);
-  else                                 group_id = id;
+  // in case we are not a jpg check if we need to change group representative
+  if (strcmp(ext, "jpg") != 0 && strcmp(ext, "jpeg") != 0)
+  {
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select group_id from images where film_id = ?1 and filename like ?2 and id = group_id", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, sql_pattern, -1, SQLITE_TRANSIENT);
+    // if we have a group already
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      int other_id = sqlite3_column_int(stmt, 0);
+      const dt_image_t *cother_img = dt_image_cache_read_get(darktable.image_cache, other_id);
+      gchar *other_basename = g_strdup(cother_img->filename);
+      gchar *cc3 = other_basename + strlen(cother_img->filename);
+      for (; *cc3!='.'&&cc3>other_basename; cc3--);
+      ++cc3;
+      g_ascii_strdown(cc3, -1);
+      // if the group representative is a jpg, change group representative to this new imported image
+      if (!strcmp(cc3, "jpg") || !strcmp(cc3, "jpeg"))
+      {
+        dt_image_t *other_img = dt_image_cache_write_get(darktable.image_cache, cother_img);
+        other_img->group_id = id;
+        dt_image_cache_write_release(darktable.image_cache, other_img, DT_IMAGE_CACHE_SAFE);
+        dt_image_cache_read_release(darktable.image_cache, cother_img);
+        sqlite3_finalize(stmt);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select group_id from images where film_id = ?1 and filename like ?2 and id != ?3 and group_id != id", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, sql_pattern, -1, SQLITE_TRANSIENT);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, id);
+        while(sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          other_id = sqlite3_column_int(stmt, 0);
+          const dt_image_t *cgroup_img = dt_image_cache_read_get(darktable.image_cache, other_id);
+          dt_image_t *group_img = dt_image_cache_write_get(darktable.image_cache, cgroup_img);
+          group_img->group_id = id;
+          dt_image_cache_write_release(darktable.image_cache, group_img, DT_IMAGE_CACHE_SAFE);
+          dt_image_cache_read_release(darktable.image_cache, cgroup_img);
+        }
+        group_id = id;
+      } else {
+        dt_image_cache_read_release(darktable.image_cache, cother_img);
+        group_id = other_id;
+      }
+      g_free(other_basename);
+    } else {
+      group_id = id;
+    }
+  } else {
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select group_id from images where film_id = ?1 and filename like ?2 and id != ?3", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, sql_pattern, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, id);
+    if(sqlite3_step(stmt) == SQLITE_ROW) group_id = sqlite3_column_int(stmt, 0);
+    else                                 group_id = id;
+  }
   sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set group_id = ?1 where id = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
@@ -627,9 +678,11 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
                                 -1, &duplicates_stmt, NULL);
 
     // move image
-    // TODO: Use gio's' g_file_move instead of g_rename?
+    GFile *old, *new;
+    old = g_file_new_for_path(oldimg);
+    new = g_file_new_for_path(newimg);
     if (!g_file_test(newimg, G_FILE_TEST_EXISTS)
-        && (g_rename(oldimg, newimg) == 0))
+        && (g_file_move(old, new, 0, NULL, NULL, NULL, NULL) == TRUE))
     {
       // first move xmp files of image and duplicates
       GList *dup_list = NULL;
@@ -638,15 +691,22 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
       {
         int32_t id = sqlite3_column_int(duplicates_stmt, 0);
         dup_list = g_list_append(dup_list, GINT_TO_POINTER(id));
-        gchar oldxmp[512], newxmp[512];
-        g_strlcpy(oldxmp, oldimg, 512);
-        g_strlcpy(newxmp, newimg, 512);
-        dt_image_path_append_version(id, oldxmp, 512);
-        dt_image_path_append_version(id, newxmp, 512);
-        g_strlcat(oldxmp, ".xmp", 512);
-        g_strlcat(newxmp, ".xmp", 512);
+        gchar oldxmp[DT_MAX_PATH_LEN], newxmp[DT_MAX_PATH_LEN];
+        g_strlcpy(oldxmp, oldimg, DT_MAX_PATH_LEN);
+        g_strlcpy(newxmp, newimg, DT_MAX_PATH_LEN);
+        dt_image_path_append_version(id, oldxmp, DT_MAX_PATH_LEN);
+        dt_image_path_append_version(id, newxmp, DT_MAX_PATH_LEN);
+        g_strlcat(oldxmp, ".xmp", DT_MAX_PATH_LEN);
+        g_strlcat(newxmp, ".xmp", DT_MAX_PATH_LEN);
+
+        GFile *goldxmp = g_file_new_for_path(oldxmp);
+        GFile *gnewxmp = g_file_new_for_path(newxmp);
+
         if (g_file_test(oldxmp, G_FILE_TEST_EXISTS))
-          (void)g_rename(oldxmp, newxmp);
+          (void)g_file_move(goldxmp, gnewxmp, 0, NULL, NULL, NULL, NULL);
+
+        g_object_unref(goldxmp);
+        g_object_unref(gnewxmp);
       }
       sqlite3_reset(duplicates_stmt);
       sqlite3_clear_bindings(duplicates_stmt);
@@ -672,6 +732,10 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
     {
       fprintf(stderr, "[dt_image_move] error moving `%s' -> `%s'\n", oldimg, newimg);
     }
+
+    g_object_unref(old);
+    g_object_unref(new);
+
   }
 
   return result;

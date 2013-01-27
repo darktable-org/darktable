@@ -389,7 +389,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     // embedded color profile
     const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, pipe->image.id);
-    if(cimg->profile == NULL) sprintf(p->iccprofile, "ematrix");
+    if(cimg == NULL || cimg->profile == NULL) sprintf(p->iccprofile, "ematrix");
     else d->input = cmsOpenProfileFromMem(cimg->profile, cimg->profile_size);
     dt_image_cache_read_release(darktable.image_cache, cimg);
   }
@@ -596,7 +596,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorin_params_t));
   module->params_size = sizeof(dt_iop_colorin_params_t);
   module->gui_data = NULL;
-  module->priority = 351; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 345; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->default_enabled = 1;
 }

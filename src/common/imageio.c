@@ -520,7 +520,10 @@ int dt_imageio_export_with_flags(
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
+  if(thumbnail_export && dt_conf_get_bool("plugins/lighttable/low_quality_thumbnails"))
+    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_F, DT_MIPMAP_BLOCKING);
+  else
+    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
   dt_dev_load_image(&dev, imgid);
   const dt_image_t *img = &dev.image_storage;
   const int wd = img->width;
@@ -531,7 +534,7 @@ int dt_imageio_export_with_flags(
   dt_times_t start;
   dt_get_times(&start);
   dt_dev_pixelpipe_t pipe;
-  res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht) : dt_dev_pixelpipe_init_export(&pipe, wd, ht);
+  res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht) : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params));
   if(!res)
   {
     dt_control_log(_("failed to allocate memory for export, please lower the threads used for export or buy more memory."));
@@ -655,6 +658,7 @@ int dt_imageio_export_with_flags(
   // downsampling done last, if high quality processing was requested:
   uint8_t *outbuf = pipe.backbuf;
   uint8_t *moutbuf = NULL; // keep track of alloc'ed memory
+  dt_get_times(&start);
   if(high_quality_processing)
   {
     dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
@@ -685,6 +689,7 @@ int dt_imageio_export_with_flags(
       dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
     outbuf = pipe.backbuf;
   }
+  dt_show_times(&start, thumbnail_export ? "[dev_process_thumbnail] pixel pipeline processing" : "[dev_process_export] pixel pipeline processing", NULL);
 
   // downconversion to low-precision formats:
   if(bpp == 8 && !display_byteorder)
@@ -742,7 +747,8 @@ int dt_imageio_export_with_flags(
     uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
     char pathname[1024];
     dt_image_full_path(imgid, pathname, 1024);
-    length = dt_exif_read_blob(exif_profile, pathname, imgid, sRGB, processed_width, processed_height);
+    // last param is dng mode, it's false here
+    length = dt_exif_read_blob(exif_profile, pathname, imgid, sRGB, processed_width, processed_height, 0);
 
     res = format->write_image (format_params, filename, outbuf, exif_profile, length, imgid);
   }

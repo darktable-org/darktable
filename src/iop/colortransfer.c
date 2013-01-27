@@ -111,6 +111,11 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
+int flags ()
+{
+  return IOP_FLAGS_ONE_INSTANCE;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_iop(self, FALSE, NC_("accel", "acquire"), 0, 0);
@@ -549,7 +554,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colortransfer_params_t));
   module->default_params = malloc(sizeof(dt_iop_colortransfer_params_t));
   module->default_enabled = 0;
-  module->priority = 425; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 418; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colortransfer_params_t);
   module->gui_data = NULL;
   dt_iop_colortransfer_params_t tmp;

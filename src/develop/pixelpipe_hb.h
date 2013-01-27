@@ -19,6 +19,8 @@
 #define DT_DEV_PIXELPIPE
 
 #include "common/image.h"
+#include "common/imageio.h"
+#include "control/conf.h"
 #include "develop/imageop.h"
 #include "develop/develop.h"
 #include "develop/pixelpipe_cache.h"
@@ -125,6 +127,8 @@ typedef struct dt_dev_pixelpipe_t
   // input data based on this timestamp:
   int input_timestamp;
   dt_dev_pixelpipe_type_t type;
+  // the final output pixel format this pixelpipe will be converted to
+  dt_imageio_levels_t levels;
   // opencl device that has been locked for this pipe.
   int devid;
   // image struct as it was when the pixelpipe was initialized. copied to avoid race conditions.
@@ -139,7 +143,7 @@ int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
 // inits the preview pixelpipe with plain passthrough input/output and empty input and default caching settings.
 int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe);
 // inits the pixelpipe with settings optimized for full-image export (no history stack cache)
-int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
+int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels);
 // inits the pixelpipe with settings optimized for thumbnail export (no history stack cache)
 int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
 // inits the pixelpipe with given cacheline size and number of entries.
@@ -183,6 +187,17 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
 void dt_dev_pixelpipe_add_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int n);
 // TODO: remove n-th module from gegl pipeline
 void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int n);
+
+// signifies that this pipeline uses the MIP_F buffer instead of MIP_FULL
+// i.e. four floats per pixel already demosaiced/downsampled
+static inline int dt_dev_pixelpipe_uses_downsampled_input(dt_dev_pixelpipe_t *pipe)
+{
+  if(!dt_conf_get_bool("plugins/lighttable/low_quality_thumbnails"))
+    return pipe->type == DT_DEV_PIXELPIPE_PREVIEW;
+  else
+    return (pipe->type == DT_DEV_PIXELPIPE_PREVIEW  ) ||
+           (pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
+}
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

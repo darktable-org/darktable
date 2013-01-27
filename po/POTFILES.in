@@ -26,6 +26,7 @@ src/control/jobs/image_jobs.c
 src/develop/blend_gui.c
 src/develop/develop.c
 src/develop/imageop.c
+src/develop/lightroom.c
 src/develop/tiling.c
 src/dtgtk/resetlabel.c
 src/dtgtk/slider.c
@@ -36,6 +37,7 @@ src/gui/gtkentry.c
 src/gui/preferences.c
 src/gui/presets.c
 src/gui/styles_dialog.c
+src/gui/hist_dialog.c
 src/imageio/format/copy.c
 src/imageio/format/exr.cc
 src/imageio/format/j2k.c
@@ -72,6 +74,8 @@ src/iop/colorout.c
 src/iop/colortransfer.c
 src/iop/colorzones.c
 src/iop/demosaic.c
+src/iop/denoiseprofile.c
+src/iop/dither.c
 src/iop/equalizer.c
 src/iop/exposure.c
 src/iop/flip.c

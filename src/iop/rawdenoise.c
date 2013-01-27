@@ -296,7 +296,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
 
   // raw denoise must come just before demosaicing.
-  module->priority = 111; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 109; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_rawdenoise_params_t);
   module->gui_data = NULL;
 }
@@ -315,7 +315,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 {
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)params;
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)piece->data;
-  if (!(pipe->image.flags & DT_IMAGE_RAW) || pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if (!(pipe->image.flags & DT_IMAGE_RAW) || dt_dev_pixelpipe_uses_downsampled_input(pipe))
     piece->enabled = 0;
   d->threshold = p->threshold;
 }

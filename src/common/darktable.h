@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2012 johannes hanika.
+    copyright (c) 2010--2012 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -154,13 +155,14 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_SQL = 256,
   DT_DEBUG_MEMORY = 512,
   DT_DEBUG_LIGHTTABLE = 1024,
-  DT_DEBUG_LUA = 2048
+  DT_DEBUG_NAN = 2048,
+  DT_DEBUG_LUA = 4096
 }
 dt_debug_thread_t;
 
-#define DT_CPU_FLAG_SSE		1
-#define DT_CPU_FLAG_SSE2		2
-#define DT_CPU_FLAG_SSE3		4
+#define DT_CPU_FLAG_SSE    1
+#define DT_CPU_FLAG_SSE2   2
+#define DT_CPU_FLAG_SSE3   4
 
 typedef struct darktable_t
 {
@@ -183,7 +185,7 @@ typedef struct darktable_t
   struct dt_image_cache_t        *image_cache;
   struct dt_bauhaus_t            *bauhaus;
   const struct dt_database_t     *db;
-  const struct dt_fswatch_t	     *fswatch;
+  const struct dt_fswatch_t      *fswatch;
   const struct dt_pwstorage_t    *pwstorage;
   const struct dt_camctl_t       *camctl;
   const struct dt_collection_t   *collection;
@@ -192,6 +194,7 @@ typedef struct darktable_t
   struct dt_imageio_t            *imageio;
   struct dt_opencl_t             *opencl;
   struct dt_blendop_t            *blendop;
+  struct dt_dbus_t               *dbus;
   dt_pthread_mutex_t db_insert;
   dt_pthread_mutex_t plugin_threadsafe;
   dt_pthread_mutex_t capabilities_threadsafe;

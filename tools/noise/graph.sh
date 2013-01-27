@@ -1,12 +1,12 @@
 #!/bin/bash
 
-isolist="100 800 1600 3200"
+isolist="200 400 800 1600"
 
 for iso in $isolist
 do
-  cat src/iop/denoiseprofile.c | grep -E '{"' | grep "iso ${iso}\"" | tr -d "{}()\"" | cut -d '_' -f2 | cut -d ',' -f1 | tr " " "_" | sed -e "s/_iso_${iso}//" | nl > cams.txt 
-  cat src/iop/denoiseprofile.c | grep -E '{"' | grep "iso ${iso}\"" | tr -d "{}()\"" | cut -d '_' -f2 | cut -d ',' -f8 | nl > poissonian.txt
-  cat src/iop/denoiseprofile.c | grep -E '{"' | grep "iso ${iso}\"" | tr -d "{}()\"" | cut -d '_' -f2 | cut -d ',' -f11 | nl > gaussian.txt
+  cat src/common/noiseprofiles.h | grep -E '{"' | grep "iso ${iso}\"" | tr -d "{}()\"" | cut -d '_' -f2 | cut -d ',' -f1 | tr " " "_" | sed -e "s/_iso_${iso}//" | nl > cams.txt 
+  cat src/common/noiseprofiles.h | grep -E '{"' | grep "iso ${iso}\"" | tr -d "{}()\"" | cut -d '_' -f2 | cut -d ',' -f6 | nl > poissonian.txt
+  cat src/common/noiseprofiles.h | grep -E '{"' | grep "iso ${iso}\"" | tr -d "{}()\"" | cut -d '_' -f2 | cut -d ',' -f9 | nl > gaussian.txt
 
   join cams.txt poissonian.txt > tmp.txt
   join tmp.txt gaussian.txt > noise_${iso}.dat

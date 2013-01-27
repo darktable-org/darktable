@@ -16,6 +16,7 @@ FILE(GLOB SOURCE_FILES
   "common/curve_tools.c"
   "common/darktable.c"
   "common/database.c"
+  "common/dbus.c"
   "common/exif.cc"
   "common/film.c"
   "common/file_location.c"
@@ -46,6 +47,7 @@ FILE(GLOB SOURCE_FILES
   "common/tags.c"
   "common/utility.c"
   "common/variables.c"
+  "common/pwstorage/backend_kwallet.c"
   "common/pwstorage/pwstorage.c"
   "common/opencl.c"
   "common/dynload.c"
@@ -59,6 +61,7 @@ FILE(GLOB SOURCE_FILES
   "control/signal.c"
   "develop/develop.c"
   "develop/imageop.c"
+  "develop/lightroom.c"
   "develop/pixelpipe.c"
   "develop/blend.c"
   "develop/blend_gui.c"
@@ -127,7 +130,7 @@ endif()
 #
 # Find all other required libraries for building
 #
-find_package(Glib 2.24 REQUIRED)
+find_package(Glib 2.28 REQUIRED)
 include_directories(${Glib_INCLUDE_DIRS})
 list(APPEND LIBS ${Glib_LIBRARIES})
 add_definitions(${Glib_DEFINITIONS})
@@ -223,16 +226,6 @@ endif(USE_OPENJPEG)
 #
 # Detect compile of optional pwstorage backends
 #
-if(USE_KWALLET)
-find_package(DBUSGLIB)
-  if(DBUSGLIB_FOUND)
-    list(APPEND SOURCES "common/pwstorage/backend_kwallet.c")
-    include_directories(${DBUSGLIB_INCLUDE_DIRS})
-    list(APPEND LIBS ${DBUSGLIB_LIBRARIES})
-    add_definitions("-DHAVE_KWALLET")
-  endif(DBUSGLIB_FOUND)
-endif(USE_KWALLET)
-
 if(USE_GNOME_KEYRING)
   find_package(GnomeKeyring)
   if(GNOMEKEYRING_FOUND)

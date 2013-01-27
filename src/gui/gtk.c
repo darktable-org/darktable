@@ -516,6 +516,15 @@ void quit()
   dt_control_quit();
 }
 
+void dt_gui_store_last_preset(const char *name)
+{
+  if (darktable.gui->last_preset)
+    g_free(darktable.gui->last_preset);
+  if (name)
+    darktable.gui->last_preset = g_strdup(name);
+  else
+    darktable.gui->last_preset = NULL;
+}
 
 static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
     GObject *acceleratable,
@@ -567,7 +576,14 @@ static gboolean quit_callback(GtkAccelGroup *accel_group,
 #ifdef MAC_INTEGRATION
 static gboolean osx_quit_callback(GtkOSXApplication* OSXapp, gpointer user_data)
 {
-  dt_control_quit();
+  GList *windows, *window;
+  windows = gtk_window_list_toplevels();
+  for(window = g_list_first(windows); window != NULL; window = g_list_next(window))
+    if(gtk_window_get_modal(GTK_WINDOW(window->data)) && gtk_widget_get_visible(GTK_WIDGET(window->data)))
+      break;
+  if(window == NULL)
+    dt_control_quit();
+  g_list_free(windows);
   return TRUE;
 }
 
@@ -703,11 +719,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   /* lets zero mem */
   memset(gui,0,sizeof(dt_gui_gtk_t));
 
-#if GLIB_MAJOR_VERSION <= 2
-#if GLIB_MINOR_VERSION < 31
+#if !GLIB_CHECK_VERSION(2, 32, 0)
   if (!g_thread_supported ()) g_thread_init(NULL);
 #endif
-#endif
+
   gdk_threads_init();
 
   gdk_threads_enter();
@@ -728,6 +743,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gui->grouping = dt_conf_get_bool("ui_last/grouping");
   gui->expanded_group_id = -1;
   gui->presets_popup_menu = NULL;
+  gui->last_preset = NULL;
 
   if(g_file_test(gtkrc, G_FILE_TEST_EXISTS))
     gtk_rc_parse (gtkrc);
@@ -1500,6 +1516,19 @@ static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
   gtk_widget_queue_draw(widget);
   if(i_own_lock) dt_control_gdk_unlock();
 
+}
+
+void dt_ellipsize_combo(GtkComboBox *cbox)
+{
+  GList *renderers = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(cbox));
+  GList *it = renderers;
+  while(it)
+  {
+    GtkCellRendererText *tr = GTK_CELL_RENDERER_TEXT(it->data);
+    g_object_set(G_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (char *)NULL);
+    it = g_list_next(it);
+  }
+  g_list_free(renderers);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

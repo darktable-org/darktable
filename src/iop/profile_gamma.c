@@ -42,6 +42,11 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
+int flags ()
+{
+  return IOP_FLAGS_ONE_INSTANCE;
+}
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   float *d = (float *)piece->data;
@@ -100,7 +105,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
 void init(dt_iop_module_t *module)
 {
-  module->priority = 333; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 327; // module order created by iop_dependencies.py, do not edit!
 }
 
 dt_gui_simple_t* gui_init_simple(dt_iop_module_so_t *self)

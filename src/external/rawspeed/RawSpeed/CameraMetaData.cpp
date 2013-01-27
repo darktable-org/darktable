@@ -27,7 +27,7 @@ namespace RawSpeed {
 CameraMetaData::CameraMetaData() {
 }
 
-CameraMetaData::CameraMetaData(char *docname) {
+CameraMetaData::CameraMetaData(const char *docname) {
   ctxt = xmlNewParserCtxt();
   if (ctxt == NULL) {
     ThrowCME("CameraMetaData:Could not initialize context.");

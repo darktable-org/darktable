@@ -134,6 +134,7 @@ static const char *nvidia_gpus[] = {
 "GeForce GT 430*","2.1",
 "GeForce GT 420*","1.0",
 "GeForce GT 240","1.2",
+"GeForce GTS 240","1.2",
 "GeForce GT 220*","1.2",
 "GeForce GT 220","1.2",
 "GeForce 210","1.2",
@@ -238,6 +239,7 @@ static const char *nvidia_gpus[] = {
 "GeForce 9100M G","1.1",
 "GeForce 8400M GT","1.1",
 "GeForce G105M","1.1",
+"GeForce G 103M","1.1",
 "ION","1.0",
 NULL, NULL};
 

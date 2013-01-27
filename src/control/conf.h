@@ -30,100 +30,74 @@
 #include <glib.h>
 #include <glib/gprintf.h>
 
-// silly gconf replacement for all of us now. (: very sucky altogether.
-
-#define DT_CONF_MAX_VARS 512
-#define DT_CONF_MAX_VAR_BUF 512
-
 typedef struct dt_conf_t
 {
   dt_pthread_mutex_t mutex;
   char filename[DT_MAX_PATH_LEN];
-  int  num;
-  char varname[DT_CONF_MAX_VARS][DT_CONF_MAX_VAR_BUF];
-  char varval [DT_CONF_MAX_VARS][DT_CONF_MAX_VAR_BUF];
+  GHashTable *table;
+  GHashTable *defaults;
 }
 dt_conf_t;
 
 /** return slot for this variable or newly allocated slot. */
-static inline int dt_conf_get_var_pos(const char *name)
+static inline char *dt_conf_get_var(const char *name)
 {
-  for(int i=0; i<darktable.conf->num; i++)
-  {
-    if(!strncmp(name, darktable.conf->varname[i], DT_CONF_MAX_VAR_BUF)) return i;
-  }
-  // not found, give it a new slot:
-  int num = darktable.conf->num++;
-  snprintf(darktable.conf->varname[num], DT_CONF_MAX_VAR_BUF, "%s", name);
-  memset(darktable.conf->varval[num], 0, DT_CONF_MAX_VAR_BUF);
+  char *str = (char *)g_hash_table_lookup(darktable.conf->table, name);
+  if(str) return str;
 
-  // and get the default value from default darktablerc:
-  char buf[DT_MAX_PATH_LEN], defaultrc[DT_MAX_PATH_LEN];
-  dt_loc_get_datadir(buf, DT_MAX_PATH_LEN);
-  snprintf(defaultrc, DT_MAX_PATH_LEN, "%s/darktablerc", buf);
-  FILE *f = fopen(defaultrc, "rb");
-  char line[1024];
-  int read = 0;
-  if(!f) return num;
-  while(!feof(f))
+  // not found, try defaults
+  str = (char *)g_hash_table_lookup(darktable.conf->defaults, name);
+  if(str)
   {
-    read = fscanf(f, "%[^\n]\n", line);
-    if(read > 0)
-    {
-      char *c = line;
-      while(*c != '=' && c < line + strlen(line)) c++;
-      if(*c == '=')
-      {
-        *c = '\0';
-        if(!strncmp(line, name, DT_CONF_MAX_VAR_BUF))
-        {
-          strncpy(darktable.conf->varval[num], c+1, DT_CONF_MAX_VAR_BUF);
-          break;
-        }
-      }
-    }
+    g_hash_table_insert(darktable.conf->table, g_strdup(name), g_strdup(str));
+    // and try again:
+    return dt_conf_get_var(name);
   }
-  fclose(f);
-  return num;
+
+  // still no luck? insert garbage:
+  char *garbage = (char *)g_malloc(sizeof(int32_t));
+  memset(garbage, 0, sizeof(int32_t));
+  g_hash_table_insert(darktable.conf->table, g_strdup(name), garbage);
+  return garbage;
 }
 
 static inline void dt_conf_set_int(const char *name, int val)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
-  const int num = dt_conf_get_var_pos(name);
-  snprintf(darktable.conf->varval[num], DT_CONF_MAX_VAR_BUF, "%d", val);
+  char *str = g_strdup_printf("%d", val);
+  g_hash_table_insert(darktable.conf->table, g_strdup(name), str);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
 }
 
 static inline void dt_conf_set_float(const char *name, float val)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
-  const int num = dt_conf_get_var_pos(name);
-  g_ascii_dtostr(darktable.conf->varval[num], DT_CONF_MAX_VAR_BUF, val);
+  char *str = (char *)g_malloc(G_ASCII_DTOSTR_BUF_SIZE);
+  g_ascii_dtostr(str, G_ASCII_DTOSTR_BUF_SIZE, val);
+  g_hash_table_insert(darktable.conf->table, g_strdup(name), str);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
 }
 
 static inline void dt_conf_set_bool(const char *name, int val)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
-  const int num = dt_conf_get_var_pos(name);
-  snprintf(darktable.conf->varval[num], DT_CONF_MAX_VAR_BUF, "%s", val ? "TRUE" : "FALSE");
+  char *str = g_strdup_printf("%s", val ? "TRUE" : "FALSE");
+  g_hash_table_insert(darktable.conf->table, g_strdup(name), str);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
 }
 
 static inline void dt_conf_set_string(const char *name, const char *val)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
-  const int num = dt_conf_get_var_pos(name);
-  snprintf(darktable.conf->varval[num], DT_CONF_MAX_VAR_BUF, "%s", val);
+  g_hash_table_insert(darktable.conf->table, g_strdup(name), g_strdup(val));
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
 }
 
 static inline int dt_conf_get_int(const char *name)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
-  const int num = dt_conf_get_var_pos(name);
-  const int val = atol(darktable.conf->varval[num]);
+  const char *str = dt_conf_get_var(name);
+  const int val = atol(str);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 }
@@ -131,8 +105,8 @@ static inline int dt_conf_get_int(const char *name)
 static inline float dt_conf_get_float(const char *name)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
-  const int num = dt_conf_get_var_pos(name);
-  const float val = g_ascii_strtod(darktable.conf->varval[num], NULL);
+  const char *str = dt_conf_get_var(name);
+  const float val = g_ascii_strtod(str, NULL);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 }
@@ -140,8 +114,8 @@ static inline float dt_conf_get_float(const char *name)
 static inline int dt_conf_get_bool(const char *name)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
-  const int num = dt_conf_get_var_pos(name);
-  const int val = (darktable.conf->varval[num][0] == 'T') || (darktable.conf->varval[num][0] == 't');
+  const char *str = dt_conf_get_var(name);
+  const int val = (str[0] == 'T') || (str[0] == 't');
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 }
@@ -149,94 +123,80 @@ static inline int dt_conf_get_bool(const char *name)
 static inline gchar *dt_conf_get_string(const char *name)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
-  const int num = dt_conf_get_var_pos(name);
+  const char *str = dt_conf_get_var(name);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
-  return g_strdup(darktable.conf->varval[num]);
-}
-
-typedef struct dt_conf_string_entry_t
-{
-  char *key;
-  char *value;
-} dt_conf_string_entry_t;
-
-/** get all strings in */
-static inline GSList *dt_conf_all_string_entries (const char *dir)
-{
-  GSList *result = NULL;
-
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
-  for (int i=0; i<DT_CONF_MAX_VARS; i++)
-  {
-    if (strcmp(darktable.conf->varname[i],dir)==0)
-    {
-      dt_conf_string_entry_t *nv = (dt_conf_string_entry_t*)g_malloc (sizeof(dt_conf_string_entry_t));
-      gchar *key = g_strdup (darktable.conf->varname[i]);
-
-      /* get the key name from path/key */
-      gchar *p = key+strlen (key);
-      while (*--p!='/');
-      nv->key = g_strdup (++p);
-
-      /* get the value */
-      nv->value = g_strdup(darktable.conf->varval[i]);
-
-      result = g_slist_append (result,nv);
-    }
-  }
-
-  dt_pthread_mutex_unlock(&darktable.conf->mutex);
-  return result;
+  return g_strdup(str);
 }
 
 static inline void dt_conf_init(dt_conf_t *cf, const char *filename)
 {
+  cf->table    = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+  cf->defaults = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
-  memset(cf->varname,0, DT_CONF_MAX_VARS*DT_CONF_MAX_VAR_BUF);
-  memset(cf->varval, 0, DT_CONF_MAX_VARS*DT_CONF_MAX_VAR_BUF);
-  snprintf(darktable.conf->filename, DT_MAX_PATH_LEN, "%s", filename);
-  darktable.conf->num = 0;
-  FILE *f = fopen(filename, "rb");
+  FILE *f = 0;
   char line[1024];
   int read = 0;
   int defaults = 0;
-  if(!f)
+  for(int i=0;i<2;i++)
   {
-    char buf[DT_MAX_PATH_LEN], defaultrc[DT_MAX_PATH_LEN];
-    dt_loc_get_datadir(buf, DT_MAX_PATH_LEN);
-    snprintf(defaultrc, DT_MAX_PATH_LEN, "%s/darktablerc", buf);
-    f = fopen(defaultrc, "rb");
-    defaults = 1;
-  }
-  if(!f) return;
-  while(!feof(f))
-  {
-    read = fscanf(f, "%[^\n]\n", line);
-    if(read > 0)
+    // TODO: read default darktablerc into ->defaults and other into ->table!
+    if(!i)
     {
-      char *c = line;
-      while(*c != '=' && c < line + strlen(line)) c++;
-      if(*c == '=')
+      snprintf(darktable.conf->filename, DT_MAX_PATH_LEN, "%s", filename);
+      f = fopen(filename, "rb");
+      if(!f)
       {
-        *c = '\0';
-        dt_conf_set_string(line, c+1);
+        // remember we init to default rc and try again
+        defaults = 1;
+        continue;
       }
     }
+    if(i)
+    {
+      char buf[DT_MAX_PATH_LEN], defaultrc[DT_MAX_PATH_LEN];
+      dt_loc_get_datadir(buf, DT_MAX_PATH_LEN);
+      snprintf(defaultrc, DT_MAX_PATH_LEN, "%s/darktablerc", buf);
+      f = fopen(defaultrc, "rb");
+    }
+    if(!f) return;
+    while(!feof(f))
+    {
+      read = fscanf(f, "%[^\n]\n", line);
+      if(read > 0)
+      {
+        char *c = line;
+        while(*c != '=' && c < line + strlen(line)) c++;
+        if(*c == '=')
+        {
+          *c = '\0';
+          if(i)
+            g_hash_table_insert(darktable.conf->defaults, g_strdup(line), g_strdup(c+1));
+          if(!i || defaults)
+            g_hash_table_insert(darktable.conf->table, g_strdup(line), g_strdup(c+1));
+        }
+      }
+    }
+    fclose(f);
   }
-  fclose(f);
   if(defaults) dt_configure_defaults();
   return;
+}
+
+static void _conf_print(char *key, char *val, FILE *f)
+{
+  fprintf(f, "%s=%s\n", key, val);
 }
 
 static inline void dt_conf_cleanup(dt_conf_t *cf)
 {
   FILE *f = fopen(cf->filename, "wb");
-  if(!f) return;
-  for(int i=0; i<cf->num; i++)
+  if(f)
   {
-    fprintf(f, "%s=%s\n", cf->varname[i], cf->varval[i]);
+    g_hash_table_foreach(cf->table, (GHFunc)_conf_print, f);
+    fclose(f);
   }
-  fclose(f);
+  g_hash_table_unref(cf->table);
+  g_hash_table_unref(cf->defaults);
   dt_pthread_mutex_destroy(&darktable.conf->mutex);
 }
 
@@ -244,19 +204,49 @@ static inline void dt_conf_cleanup(dt_conf_t *cf)
 static inline int dt_conf_key_exists (const char *key)
 {
   dt_pthread_mutex_lock (&darktable.conf->mutex);
-  int res = 0;
-  /* lookup in stringtable for match of key name */
-  for (int i=0; i<darktable.conf->num; i++)
-  {
-    if (!strncmp (key, darktable.conf->varname[i], DT_CONF_MAX_VAR_BUF))
-    {
-      res=1;
-      break;
-    }
-  }
+  const int res = g_hash_table_lookup(darktable.conf->table, key) != NULL;
   dt_pthread_mutex_unlock (&darktable.conf->mutex);
   return res;
 }
+
+typedef struct dt_conf_string_entry_t
+{
+  char *key;
+  char *value;
+}
+dt_conf_string_entry_t;
+
+typedef struct dt_conf_dreggn_t
+{
+  GSList *result;
+  const char *match;
+}
+dt_conf_dreggn_t;
+
+static void _conf_add(char *key, char *val, dt_conf_dreggn_t *d)
+{
+  if(!strcmp(key, d->match))
+  {
+    dt_conf_string_entry_t *nv = (dt_conf_string_entry_t*)g_malloc (sizeof(dt_conf_string_entry_t));
+    nv->key = g_strdup(key);
+    nv->value = g_strdup(val);
+    d->result = g_slist_append(d->result, nv);
+  }
+}
+
+/** get all strings in */
+static inline GSList *dt_conf_all_string_entries (const char *dir)
+{
+  dt_pthread_mutex_lock (&darktable.conf->mutex);
+  GSList *result = NULL;
+  dt_conf_dreggn_t d;
+  d.result = result;
+  d.match = dir;
+  g_hash_table_foreach(darktable.conf->table, (GHFunc)_conf_add, &d);
+  dt_pthread_mutex_unlock (&darktable.conf->mutex);
+  return result;
+}
+
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -588,7 +588,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(1000);
+    dt_iop_nap(darktable.opencl->micro_nap);
   }
 
   /* now synthesize again */
@@ -621,10 +621,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(1000);
+    dt_iop_nap(darktable.opencl->micro_nap);
   }
 
-  dt_opencl_finish(devid);
+  if(!darktable.opencl->async_pixelpipe || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)
+    dt_opencl_finish(devid);
 
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   for(int k=0; k<max_scale; k++)
@@ -663,7 +664,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_enabled = 0;
-  module->priority = 500; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 509; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_atrous_params_t);
   module->gui_data = NULL;
   dt_iop_atrous_params_t tmp;
@@ -1312,7 +1313,7 @@ area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
   {
     // reset current curve
     dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
-    dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->factory_params;
+    dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->default_params;
     dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
     reset_mix(self);
     for(int k=0; k<BANDS; k++)
@@ -1379,7 +1380,7 @@ mix_callback (GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
-  dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->factory_params;
+  dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->default_params;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   const float mix = dt_bauhaus_slider_get(slider);
   for(int ch=0; ch<atrous_none; ch++) for(int k=0; k<BANDS; k++)

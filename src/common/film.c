@@ -277,8 +277,11 @@ dt_film_import_internal(const char *dirname, const int blocking)
       GMount *filmroll_mount;
       GError *error = NULL;
       gchar *filmroll_path;
+      GFile *gdirname = g_file_new_for_path(dirname);
 
-      filmroll_mount = g_file_find_enclosing_mount(g_file_new_for_path(dirname), NULL, &error);
+      filmroll_mount = g_file_find_enclosing_mount(gdirname, NULL, &error);
+      g_object_unref(gdirname);
+
       if (!error)
       /* We are considering that the only error is that there is no mount
        * because the filmroll added is in a local drive */
@@ -546,9 +549,9 @@ void dt_film_remove_empty()
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
     gint id = sqlite3_column_int(stmt, 0);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), 
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "delete from film_rolls where id=?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id); 
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step(stmt);
     dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_REMOVED);
   }

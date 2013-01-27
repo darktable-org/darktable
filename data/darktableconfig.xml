@@ -72,11 +72,32 @@
     <longdescription>if set to TRUE darktable will not use opencl kernels which contain atomic operations (example bilateral). pixelpipe processing will be done on cpu for the affected modules. useful if your opencl implementation freezes/crashes on atomics or if they are processed with a bad performance.</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>opencl_use_events</name>
+    <name>opencl_number_event_handles</name>
+    <type>int</type>
+    <default>25</default>
+    <shortdescription>the number of opencl event handles darktable can use</shortdescription>
+    <longdescription>a positive non-zero integer defines the number of event handles that darktable may have opened on a device. a value of zero does not pose any restrictions, bearing the risk of hitting the device's resource limits. a value of -1 completely prevents the use of event handles.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>opencl_async_pixelpipe</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>use opencl events for error detection and profiling</shortdescription>
-    <longdescription>this defines if opencl events should be used. if this option is deactivated, opencl errors could pass by unnoticed and image output may be garbled. don't change this from its default TRUE, unless you know what you are doing.</longdescription>
+    <shortdescription>run opencl pixelpipe asynchronously</shortdescription>
+    <longdescription>if set to TRUE opencl pixelpipe will not be synchronized on a per-module basis. this can improve pixelpipe latency. however, potential opencl errors would be detected late; in such a case the complete pixelpipe needs to be reprocessed instead of only a single module. export pixelpipe will always be run synchronously.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>opencl_synch_cache</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>copy back opencl buffers into pixelpipe cache after each module</shortdescription>
+    <longdescription>this brings pixelpipe cache and opencl buffers in synch after each module. on slow GPUs this might improve speed as it avoids reprocessing the whole pixelpipe on every parameter change. on fast GPUs the additional memory transfer overhead will slow down opencl considerably.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>opencl_micro_nap</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>pause opencl processing for this number of microseconds from time to time</shortdescription>
+    <longdescription>for slow GPUs this gives your graphics driver some time to breathe to do needed screen updates. try 1000 as a starting point. can be left at zero for fast devices.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>never_use_embedded_thumb</name>
@@ -420,6 +441,13 @@
     <default>TRUE</default>
     <shortdescription>height of filmstrip</shortdescription>
     <longdescription>height of the filmstrip in pixels</longdescription>
+  </dtconfig>
+  <dtconfig> <!-- this option is not exposed in the gui because there might be crashy synchronisation issues when it's updated on the fly -->
+    <name>plugins/lighttable/low_quality_thumbnails</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription>low quality thumbnails</shortdescription>
+    <longdescription>if set to true, thumbnails will be processed by first downscaling rather than demosaicing the full image. this can result in much faster processing times and blurrier images, especially when you cropped a lot.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>plugins/lighttable/thumbnail_width</name>
@@ -923,6 +951,13 @@
     <default>FALSE</default>
     <shortdescription>do high quality resampling during export</shortdescription>
     <longdescription>the image will first be processed in full resolution, and downscaled at the very end. this can result in better quality sometimes, but will always be slower.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="core">
+    <name>plugins/darkroom/dithering/dither_center_view</name>
+    <type>bool</type>
+    <default>TRUE</default>
+    <shortdescription>dithering for darkroom mode</shortdescription>
+    <longdescription>center view will be dithered if this option is on and module dithering is activated (default for new images). switch this to off if you can accept display banding and prefer to have a slightly faster processing speed.</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
     <name>plugins/darkroom/demosaic/quality</name>

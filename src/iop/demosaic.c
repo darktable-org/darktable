@@ -1144,7 +1144,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_enabled = 1;
-  module->priority = 129; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 127; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;
@@ -1201,7 +1201,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)params;
   dt_iop_demosaic_data_t *d = (dt_iop_demosaic_data_t *)piece->data;
   d->filters = dt_image_flipped_filter(&pipe->image);
-  if(!(pipe->image.flags & DT_IMAGE_RAW) || pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->enabled = 0;
+  if(!(pipe->image.flags & DT_IMAGE_RAW) || dt_dev_pixelpipe_uses_downsampled_input(pipe)) piece->enabled = 0;
   d->green_eq = p->green_eq;
   d->color_smoothing = p->color_smoothing;
   d->median_thrs = p->median_thrs;
