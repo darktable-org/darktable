@@ -1205,7 +1205,11 @@ list_view (dt_lib_collect_rule_t *dr)
     // We shouldn't ever be here
       break;
 
-    default: // case 3: // day
+    case DT_COLLECTION_PROP_DAY:
+      snprintf(query, 1024, "SELECT DISTINCT substr(datetime_taken, 1, 10), 1 FROM images WHERE datetime_taken LIKE '%%%s%%' ORDER BY datetime_taken DESC", escaped_text);
+      break;
+
+    default: // time
       snprintf(query, 1024, "SELECT DISTINCT datetime_taken, 1 FROM images WHERE datetime_taken LIKE '%%%s%%' ORDER BY datetime_taken DESC", escaped_text);
       break;
   }
