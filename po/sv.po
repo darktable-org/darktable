@@ -19,8 +19,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-01-23 11:44+0100\n"
-"PO-Revision-Date: 2013-01-25 21:33+0100\n"
+"POT-Creation-Date: 2013-01-27 12:24+0100\n"
+"PO-Revision-Date: 2013-01-27 12:59+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -585,7 +585,9 @@ msgstr "anonyma bilder"
 msgid ""
 "failed to allocate memory for export, please lower the threads used for "
 "export or buy more memory."
-msgstr "fallerade att allokera minne för export, var god och minska antalet trådar som används för export eller köp mer minne."
+msgstr ""
+"fallerade att allokera minne för export, var god och minska antalet trådar "
+"som används för export eller köp mer minne."
 
 #: ../src/common/imageio.c:547 ../src/common/mipmap_cache.c:1099
 #, c-format
@@ -1130,8 +1132,8 @@ msgstr "snävt ljus"
 msgid "lightness"
 msgstr "ljushet"
 
-#: ../src/develop/blend_gui.c:1020 ../src/iop/atrous.c:1418
-#: ../src/iop/equalizer.c:343 ../src/iop/nlmeans.c:691
+#: ../src/develop/blend_gui.c:1020 ../src/iop/atrous.c:1419
+#: ../src/iop/equalizer.c:343 ../src/iop/nlmeans.c:718
 msgid "chroma"
 msgstr "chroma"
 
@@ -1264,24 +1266,24 @@ msgstr "återställ parametrar"
 msgid "presets"
 msgstr "fördefinierade"
 
-#: ../src/develop/lightroom.c:372
+#: ../src/develop/lightroom.c:370
 msgid "cannot find lightroom xmp!"
 msgstr "kan inte finna någon XMP från Lightroom!"
 
-#: ../src/develop/lightroom.c:392 ../src/develop/lightroom.c:410
+#: ../src/develop/lightroom.c:390 ../src/develop/lightroom.c:408
 #, c-format
 msgid "`%s' not a lightroom xmp!"
 msgstr "`%s' inte en XMP från Lightroom!"
 
-#: ../src/develop/lightroom.c:1125 ../src/libs/import.c:511
+#: ../src/develop/lightroom.c:1123 ../src/libs/import.c:511
 msgid "tags"
 msgstr "taggar"
 
-#: ../src/develop/lightroom.c:1138
+#: ../src/develop/lightroom.c:1136
 msgid "has been imported"
 msgstr "har importerats"
 
-#: ../src/develop/lightroom.c:1140
+#: ../src/develop/lightroom.c:1138
 msgid "have been imported"
 msgstr "har importerats"
 
@@ -1801,7 +1803,8 @@ msgid "focal length"
 msgstr "brännvidd"
 
 #: ../src/gui/preferences.c:481 ../src/iop/borders.c:1017
-#: ../src/iop/exposure.c:395 ../src/iop/tonecurve.c:549
+#: ../src/iop/exposure.c:395 ../src/iop/levels.c:285
+#: ../src/iop/tonecurve.c:549
 msgid "auto"
 msgstr "automatisk"
 
@@ -2151,7 +2154,7 @@ msgstr "kunde inte skriva till katalog `%s'!"
 #: ../src/imageio/storage/disk.c:236 ../src/imageio/storage/email.c:106
 #: ../src/imageio/storage/facebook.c:1183 ../src/imageio/storage/flickr.c:665
 #: ../src/imageio/storage/gallery.c:376 ../src/imageio/storage/gallery.c:395
-#: ../src/imageio/storage/picasa.c:948
+#: ../src/imageio/storage/picasa.c:947
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "kunde inte exportera till fil `%s'!"
@@ -2223,8 +2226,8 @@ msgstr "kunde inte hämta listan på album"
 
 #. Add standard action
 #: ../src/imageio/storage/facebook.c:792 ../src/imageio/storage/flickr.c:387
-#: ../src/imageio/storage/flickr.c:415 ../src/imageio/storage/picasa.c:664
-#: ../src/imageio/storage/picasa.c:705
+#: ../src/imageio/storage/flickr.c:415 ../src/imageio/storage/picasa.c:663
+#: ../src/imageio/storage/picasa.c:704
 msgid "create new album"
 msgstr "skapa nytt album"
 
@@ -2244,7 +2247,7 @@ msgid "facebook webalbum"
 msgstr "facebook-album"
 
 #. create labels
-#: ../src/imageio/storage/facebook.c:1008 ../src/imageio/storage/picasa.c:761
+#: ../src/imageio/storage/facebook.c:1008 ../src/imageio/storage/picasa.c:760
 msgid "user"
 msgstr "användare"
 
@@ -2255,13 +2258,13 @@ msgstr "album"
 #. xmp
 #: ../src/imageio/storage/facebook.c:1010 ../src/imageio/storage/flickr.c:479
 #: ../src/imageio/storage/gallery.c:167 ../src/imageio/storage/latex.c:167
-#: ../src/imageio/storage/picasa.c:765 ../src/libs/collect.h:37
+#: ../src/imageio/storage/picasa.c:764 ../src/libs/collect.h:37
 #: ../src/libs/metadata.c:298 ../src/libs/metadata_view.c:95
 msgid "title"
 msgstr "titel"
 
 #: ../src/imageio/storage/facebook.c:1011 ../src/imageio/storage/flickr.c:480
-#: ../src/imageio/storage/picasa.c:766
+#: ../src/imageio/storage/picasa.c:765
 msgid "summary"
 msgstr "sammanfattning"
 
@@ -2336,7 +2339,7 @@ msgid "not authenticated"
 msgstr "inte autentiserad"
 
 #: ../src/imageio/storage/flickr.c:367 ../src/imageio/storage/flickr.c:832
-#: ../src/imageio/storage/picasa.c:641
+#: ../src/imageio/storage/picasa.c:640
 msgid "authenticated"
 msgstr "autentiserad"
 
@@ -2365,11 +2368,11 @@ msgstr "tryck login-knapp för att starta"
 msgid "my new photoset"
 msgstr "min nya bildsamling"
 
-#: ../src/imageio/storage/flickr.c:515 ../src/imageio/storage/picasa.c:807
+#: ../src/imageio/storage/flickr.c:515 ../src/imageio/storage/picasa.c:806
 msgid "exported from darktable"
 msgstr "exporterat från darktable"
 
-#: ../src/imageio/storage/flickr.c:523 ../src/imageio/storage/picasa.c:817
+#: ../src/imageio/storage/flickr.c:523 ../src/imageio/storage/picasa.c:816
 msgid "refresh album list"
 msgstr "uppdatera listan av album"
 
@@ -2377,7 +2380,7 @@ msgstr "uppdatera listan av album"
 msgid "Flickr login"
 msgstr "Flickr-inloggning"
 
-#: ../src/imageio/storage/flickr.c:533 ../src/imageio/storage/picasa.c:824
+#: ../src/imageio/storage/flickr.c:533 ../src/imageio/storage/picasa.c:823
 msgid "export tags"
 msgstr "exportera taggar"
 
@@ -2428,37 +2431,37 @@ msgstr "bokmall i LaTeX"
 msgid "enter the title of the book"
 msgstr "ange en titel för boken"
 
-#: ../src/imageio/storage/picasa.c:602
+#: ../src/imageio/storage/picasa.c:601
 msgid "picasa webalbum"
 msgstr "picasa webbalbum"
 
 #. Failed to authenticated, let's notify somehow...
-#: ../src/imageio/storage/picasa.c:694
+#: ../src/imageio/storage/picasa.c:693
 msgid "authentication failed"
 msgstr "autentisering misslyckades"
 
-#: ../src/imageio/storage/picasa.c:762
+#: ../src/imageio/storage/picasa.c:761
 msgid "password"
 msgstr "lösenord"
 
-#: ../src/imageio/storage/picasa.c:763
+#: ../src/imageio/storage/picasa.c:762
 msgid "albums"
 msgstr "album"
 
-#: ../src/imageio/storage/picasa.c:767 ../src/libs/collect.h:41
+#: ../src/imageio/storage/picasa.c:766 ../src/libs/collect.h:41
 #: ../src/libs/import.c:505 ../src/libs/metadata.c:350
 msgid "rights"
 msgstr "rättigheter"
 
-#: ../src/imageio/storage/picasa.c:806
+#: ../src/imageio/storage/picasa.c:805
 msgid "my new album"
 msgstr "mitt nya album"
 
-#: ../src/imageio/storage/picasa.c:823
+#: ../src/imageio/storage/picasa.c:822
 msgid "public album"
 msgstr "publikt album"
 
-#: ../src/imageio/storage/picasa.c:987
+#: ../src/imageio/storage/picasa.c:986
 #, c-format
 msgid "%d/%d exported to picasa webalbum"
 msgstr "%d/%d exporterad till picasa webbalbum"
@@ -2472,110 +2475,110 @@ msgctxt "accel"
 msgid "mix"
 msgstr "blanda"
 
-#: ../src/iop/atrous.c:772
+#: ../src/iop/atrous.c:773
 msgid "enhance coarse"
 msgstr "förbättra ojämnheter"
 
-#: ../src/iop/atrous.c:786
+#: ../src/iop/atrous.c:787
 msgid "sharpen and denoise (strong)"
 msgstr "skärpning och brusreducering  (mycket)"
 
-#: ../src/iop/atrous.c:800
+#: ../src/iop/atrous.c:801
 msgid "sharpen and denoise"
 msgstr "skärpa och brusreducering"
 
-#: ../src/iop/atrous.c:814 ../src/iop/equalizer.c:259
+#: ../src/iop/atrous.c:815 ../src/iop/equalizer.c:259
 msgid "sharpen (strong)"
 msgstr "skärpa (mycket)"
 
-#: ../src/iop/atrous.c:828
+#: ../src/iop/atrous.c:829
 msgctxt "atrous"
 msgid "sharpen"
 msgstr "skärpa"
 
-#: ../src/iop/atrous.c:842
+#: ../src/iop/atrous.c:843
 msgid "chroma denoise"
 msgstr "chroma brusreducering"
 
-#: ../src/iop/atrous.c:856
+#: ../src/iop/atrous.c:857
 msgid "denoise (subtle)"
 msgstr "reducera brus (svagt)"
 
-#: ../src/iop/atrous.c:870 ../src/iop/equalizer.c:285
+#: ../src/iop/atrous.c:871 ../src/iop/equalizer.c:285
 msgid "denoise"
 msgstr "reducera brus"
 
-#: ../src/iop/atrous.c:886 ../src/iop/equalizer.c:295
+#: ../src/iop/atrous.c:887 ../src/iop/equalizer.c:295
 msgid "denoise (strong)"
 msgstr "reducera brus (mycket)"
 
-#: ../src/iop/atrous.c:901 ../src/iop/bloom.c:64
+#: ../src/iop/atrous.c:902 ../src/iop/bloom.c:64
 msgid "bloom"
 msgstr "överstrålning"
 
-#: ../src/iop/atrous.c:915
+#: ../src/iop/atrous.c:916
 msgid "clarity (subtle)"
 msgstr "klarhet (svag)"
 
-#: ../src/iop/atrous.c:929
+#: ../src/iop/atrous.c:930
 msgid "clarity"
 msgstr "klarhet"
 
-#: ../src/iop/atrous.c:1193 ../src/iop/atrous.c:1197
+#: ../src/iop/atrous.c:1194 ../src/iop/atrous.c:1198
 msgid "coarse"
 msgstr "ojämnheter"
 
-#: ../src/iop/atrous.c:1199 ../src/iop/atrous.c:1203
+#: ../src/iop/atrous.c:1200 ../src/iop/atrous.c:1204
 msgid "fine"
 msgstr "fin"
 
-#: ../src/iop/atrous.c:1210
+#: ../src/iop/atrous.c:1211
 msgid "contrasty"
 msgstr "kontrast"
 
-#: ../src/iop/atrous.c:1211 ../src/iop/atrous.c:1215
+#: ../src/iop/atrous.c:1212 ../src/iop/atrous.c:1216
 msgid "smooth"
 msgstr "mjuk"
 
-#: ../src/iop/atrous.c:1216
+#: ../src/iop/atrous.c:1217
 msgid "noisy"
 msgstr "brusig"
 
 #. case atrous_s:
-#: ../src/iop/atrous.c:1219
+#: ../src/iop/atrous.c:1220
 msgid "bold"
 msgstr "kraftig"
 
-#: ../src/iop/atrous.c:1220
+#: ../src/iop/atrous.c:1221
 msgid "dull"
 msgstr "mörk"
 
-#: ../src/iop/atrous.c:1416 ../src/iop/equalizer.c:342
-#: ../src/iop/nlmeans.c:689
+#: ../src/iop/atrous.c:1417 ../src/iop/equalizer.c:342
+#: ../src/iop/nlmeans.c:716
 msgid "luma"
 msgstr "luma"
 
-#: ../src/iop/atrous.c:1417
+#: ../src/iop/atrous.c:1418
 msgid "change lightness at each feature size"
 msgstr "ändra ljushet på vardera detaljstorlek"
 
-#: ../src/iop/atrous.c:1419
+#: ../src/iop/atrous.c:1420
 msgid "change color saturation at each feature size"
 msgstr "ändra färgmättnad på vardera detaljstorlek"
 
-#: ../src/iop/atrous.c:1420 ../src/iop/highpass.c:509
+#: ../src/iop/atrous.c:1421 ../src/iop/highpass.c:509
 msgid "sharpness"
 msgstr "skärpa"
 
-#: ../src/iop/atrous.c:1421
+#: ../src/iop/atrous.c:1422
 msgid "sharpness of edges at each feature size"
 msgstr "skärpa av kanter på vardera detaljstorlek"
 
-#: ../src/iop/atrous.c:1456 ../src/iop/soften.c:601
+#: ../src/iop/atrous.c:1457 ../src/iop/soften.c:601
 msgid "mix"
 msgstr "blanda"
 
-#: ../src/iop/atrous.c:1457
+#: ../src/iop/atrous.c:1458
 msgid "make effect stronger or weaker"
 msgstr "gör effekten starkare eller svagare"
 
@@ -2755,8 +2758,9 @@ msgstr "tröskel"
 msgid "the threshold of light"
 msgstr "tröskelnivå av ljushet"
 
-#: ../src/iop/bloom.c:347 ../src/iop/grain.c:510 ../src/iop/hotpixels.c:318
-#: ../src/iop/nlmeans.c:687 ../src/iop/velvia.c:346
+#: ../src/iop/bloom.c:347 ../src/iop/denoiseprofile.c:1286
+#: ../src/iop/grain.c:510 ../src/iop/hotpixels.c:318 ../src/iop/nlmeans.c:714
+#: ../src/iop/velvia.c:346
 msgid "strength"
 msgstr "styrka"
 
@@ -3057,7 +3061,7 @@ msgstr "mängd"
 msgid "size of features to preserve"
 msgstr "storlek av detaljer att bevara"
 
-#: ../src/iop/clahe.c:354 ../src/iop/nlmeans.c:694
+#: ../src/iop/clahe.c:354 ../src/iop/nlmeans.c:721
 msgid "strength of the effect"
 msgstr "sluttningen påverkar effektens styrka"
 
@@ -3305,7 +3309,8 @@ msgstr "ingående färgprofil"
 msgid "unsupported input profile has been replaced by linear rgb!"
 msgstr "ej stödd ingående färgprofil har ersatts med linjär rgb!"
 
-#: ../src/iop/colorin.c:782 ../src/libs/export.c:552
+#: ../src/iop/colorin.c:782 ../src/iop/denoiseprofile.c:1282
+#: ../src/libs/export.c:552
 msgid "profile"
 msgstr "profil"
 
@@ -3658,6 +3663,56 @@ msgstr "fullständig och lokalt medel"
 #: ../src/iop/demosaic.c:1344
 msgid "green channels matching method"
 msgstr "metod för matchning av grön färgkanal"
+
+#: ../src/iop/denoiseprofile.c:98
+msgid "denoise (profiled)"
+msgstr "reducera brus (enligt mall)"
+
+#: ../src/iop/denoiseprofile.c:1097
+#, c-format
+msgid "found match for iso %d"
+msgstr "fann motsvarighet till iso %d"
+
+#: ../src/iop/denoiseprofile.c:1104
+#, c-format
+msgid "interpolated from iso %d and %d"
+msgstr "interpolerat från iso %d och %d"
+
+#: ../src/iop/denoiseprofile.c:1283 ../src/iop/lens.c:1821
+msgid "mode"
+msgstr "läge"
+
+#: ../src/iop/denoiseprofile.c:1284 ../src/iop/nlmeans.c:712
+msgid "patch size"
+msgstr "storlek"
+
+# TODO: NEEDS BETTER TRANSLATION
+#: ../src/iop/denoiseprofile.c:1287
+msgid "non-local means"
+msgstr "'non-local means'"
+
+# TODO: NEEDS BETTER TRANSLATION
+#: ../src/iop/denoiseprofile.c:1288
+msgid "wavelets"
+msgstr "'wavelets'"
+
+#: ../src/iop/denoiseprofile.c:1289
+msgid "profile used for variance stabilization"
+msgstr "profil som används för att stabilisera varians"
+
+#: ../src/iop/denoiseprofile.c:1290
+msgid ""
+"method used in the denoising core. non-local means works best for "
+"`lightness' blending, wavelets work best for `color' blending"
+msgstr "metod som används i brusreduceringens kärna. 'non-local means' fungerar bäst med blandningsläget 'ljushet', 'wavelets' fungerar bäst med blandningsläget 'färg'"
+
+#: ../src/iop/denoiseprofile.c:1291
+msgid "radius of the patches to match. increase for more sharpness"
+msgstr "radien på bildområdena att identifiera. öka för att få bättre skärpa"
+
+#: ../src/iop/denoiseprofile.c:1292
+msgid "finetune denoising strength"
+msgstr "finjustera brusreduceringens styrka"
 
 #. add the preset.
 #. make it auto-apply for all images:
@@ -4244,10 +4299,6 @@ msgstr "autoskalning"
 msgid "scale"
 msgstr "skala"
 
-#: ../src/iop/lens.c:1821
-msgid "mode"
-msgstr "läge"
-
 #: ../src/iop/lens.c:1823
 msgid "correct distortions or apply them"
 msgstr "korrigera eller applicera förvridningar"
@@ -4284,14 +4335,30 @@ msgstr "gjorda korrigeringar: "
 msgid "which corrections have actually been done"
 msgstr "vilka korrigeringar som faktiskt har gjorts"
 
-#: ../src/iop/levels.c:40
+#: ../src/iop/levels.c:42
 msgid "levels"
 msgstr "nivåer"
 
-#: ../src/iop/levels.c:262
+#: ../src/iop/levels.c:269
 msgid ""
 "drag handles to set black, grey, and white points.  operates on L channel."
 msgstr "dra hantag för att sätta svärta, grå och vitpunkt, arbetar på L kanal"
+
+#: ../src/iop/levels.c:286
+msgid "apply auto levels"
+msgstr "applicera automatisk nivåjustering"
+
+#: ../src/iop/levels.c:290
+msgid "pick blackpoint from image"
+msgstr "välj svartpunkt från bild"
+
+#: ../src/iop/levels.c:294
+msgid "pick medium greypoint from image"
+msgstr "välj gråpunkt från bild"
+
+#: ../src/iop/levels.c:298
+msgid "pick whitepoint from image"
+msgstr "välj vitpunkt från bild"
 
 #: ../src/iop/lowlight.c:87
 msgid "lowlight vision"
@@ -4445,33 +4512,29 @@ msgstr "hur mycket ska högdagrar behållas"
 msgid "highlights"
 msgstr "högdagrar"
 
-#: ../src/iop/nlmeans.c:80
+#: ../src/iop/nlmeans.c:81
 msgid "denoise (non-local means)"
 msgstr "brusreducering (non-local means)"
 
-#: ../src/iop/nlmeans.c:113
+#: ../src/iop/nlmeans.c:114
 msgctxt "accel"
 msgid "luma"
 msgstr "luma"
 
-#: ../src/iop/nlmeans.c:114
+#: ../src/iop/nlmeans.c:115
 msgctxt "accel"
 msgid "chroma"
 msgstr "chroma"
 
-#: ../src/iop/nlmeans.c:685
-msgid "patch size"
-msgstr "storlek"
-
-#: ../src/iop/nlmeans.c:693
+#: ../src/iop/nlmeans.c:720
 msgid "radius of the patches to match"
 msgstr "radien på elementen att identifiera"
 
-#: ../src/iop/nlmeans.c:695
+#: ../src/iop/nlmeans.c:722
 msgid "how much to smooth brightness"
 msgstr "mängd att mjuka upp ljushet"
 
-#: ../src/iop/nlmeans.c:696
+#: ../src/iop/nlmeans.c:723
 msgid "how much to smooth colors"
 msgstr "mängd att mjuka upp färger"
 
@@ -7023,37 +7086,37 @@ msgstr "filmrulle"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:157 ../src/views/lighttable.c:1588
+#: ../src/libs/tools/filmstrip.c:157 ../src/views/lighttable.c:1615
 msgctxt "accel"
 msgid "rate desert"
 msgstr "ingen rang"
 
-#: ../src/libs/tools/filmstrip.c:158 ../src/views/lighttable.c:1589
+#: ../src/libs/tools/filmstrip.c:158 ../src/views/lighttable.c:1616
 msgctxt "accel"
 msgid "rate 1"
 msgstr "rang 1"
 
-#: ../src/libs/tools/filmstrip.c:159 ../src/views/lighttable.c:1590
+#: ../src/libs/tools/filmstrip.c:159 ../src/views/lighttable.c:1617
 msgctxt "accel"
 msgid "rate 2"
 msgstr "rang 2"
 
-#: ../src/libs/tools/filmstrip.c:160 ../src/views/lighttable.c:1591
+#: ../src/libs/tools/filmstrip.c:160 ../src/views/lighttable.c:1618
 msgctxt "accel"
 msgid "rate 3"
 msgstr "rang 3"
 
-#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1592
+#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1619
 msgctxt "accel"
 msgid "rate 4"
 msgstr "rang 4"
 
-#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1593
+#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1620
 msgctxt "accel"
 msgid "rate 5"
 msgstr "rang 5"
 
-#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1594
+#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1621
 msgctxt "accel"
 msgid "rate reject"
 msgstr "avvisad"
@@ -7091,27 +7154,27 @@ msgstr "duplicerar bild"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:1607
+#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:1634
 msgctxt "accel"
 msgid "color red"
 msgstr "röd färg"
 
-#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:1608
+#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:1635
 msgctxt "accel"
 msgid "color yellow"
 msgstr "gul färg"
 
-#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:1609
+#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:1636
 msgctxt "accel"
 msgid "color green"
 msgstr "grön färg"
 
-#: ../src/libs/tools/filmstrip.c:186 ../src/views/lighttable.c:1610
+#: ../src/libs/tools/filmstrip.c:186 ../src/views/lighttable.c:1637
 msgctxt "accel"
 msgid "color blue"
 msgstr "blå färg"
 
-#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1611
+#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1638
 msgctxt "accel"
 msgid "color purple"
 msgstr "lila färg"
@@ -7182,7 +7245,7 @@ msgstr "inställningar"
 msgid "hinter"
 msgstr "tipsare"
 
-#: ../src/libs/tools/lighttable.c:58 ../src/views/lighttable.c:116
+#: ../src/libs/tools/lighttable.c:58 ../src/views/lighttable.c:117
 msgid "lighttable"
 msgstr "ljusbord"
 
@@ -7309,75 +7372,81 @@ msgctxt "accel"
 msgid "image back"
 msgstr "föregående bild"
 
-#: ../src/views/lighttable.c:390
+#: ../src/views/lighttable.c:394
 msgid "there are no images in this collection"
 msgstr "det finns inga bilder i den här samlingen"
 
-#: ../src/views/lighttable.c:392
+#: ../src/views/lighttable.c:396
 msgid "if you have not imported any images yet"
 msgstr "om du inte har importerat några bilder ännu"
 
-#: ../src/views/lighttable.c:394
+#: ../src/views/lighttable.c:398
 msgid "you can do so in the import module"
 msgstr "kan du göra det i importmodulen"
 
-#: ../src/views/lighttable.c:401
+#: ../src/views/lighttable.c:405
 msgid "try to relax the filter settings in the top panel"
 msgstr "försök att lätta på filter-inställningarna i den övre panelen"
 
-#: ../src/views/lighttable.c:408
+#: ../src/views/lighttable.c:412
 msgid "or add images in the collection module in the left panel"
 msgstr "eller lägg till bilder i samlingsmodulen i den vänstra panelen"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:1597
+#: ../src/views/lighttable.c:1624
 msgctxt "accel"
 msgid "navigate up"
 msgstr "navigera upp"
 
-#: ../src/views/lighttable.c:1599
+#: ../src/views/lighttable.c:1626
 msgctxt "accel"
 msgid "navigate down"
 msgstr "navigera ner"
 
-#: ../src/views/lighttable.c:1601
+#: ../src/views/lighttable.c:1628
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "navigera sida upp"
 
-#: ../src/views/lighttable.c:1603
+#: ../src/views/lighttable.c:1630
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "navigera sida ned"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1614
+#: ../src/views/lighttable.c:1641
 msgctxt "accel"
 msgid "scroll up"
 msgstr "skrolla upp"
 
-#: ../src/views/lighttable.c:1616
+#: ../src/views/lighttable.c:1643
 msgctxt "accel"
 msgid "scroll down"
 msgstr "skrolla ner"
 
-#: ../src/views/lighttable.c:1618
+#: ../src/views/lighttable.c:1645
 msgctxt "accel"
 msgid "scroll left"
 msgstr "skrolla bakåt"
 
-#: ../src/views/lighttable.c:1620
+#: ../src/views/lighttable.c:1647
 msgctxt "accel"
 msgid "scroll right"
 msgstr "skrolla frammåt"
 
-#: ../src/views/lighttable.c:1622
+#: ../src/views/lighttable.c:1649
 msgctxt "accel"
 msgid "scroll center"
 msgstr "centrera"
 
+# TODO: could use better translation
+#: ../src/views/lighttable.c:1651
+msgctxt "accel"
+msgid "realign images to grid"
+msgstr "räta upp bilder efter rutnätet"
+
 #. Preview key
-#: ../src/views/lighttable.c:1626
+#: ../src/views/lighttable.c:1655
 msgctxt "accel"
 msgid "preview"
 msgstr "förhandsvisning"
