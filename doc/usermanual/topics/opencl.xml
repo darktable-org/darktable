@@ -174,11 +174,12 @@
                 <sect4><title>opencl_number_event_handles</title>
                       <para>Event handles are used so we can monitor success/failure of kernels and profiling info even if the pixelpipe is run asynchronously. The number of event 
                       handles is a limited resource of your OpenCL driver. For sure we can recycle them, but there is a limited number that we can use at the same time. Unfortunately, 
-                      there is no way to find out what the resource limits are; so we need to guess. A value of 100 (default) is probably a good choice in most cases. If your driver 
-                      runs out of free handles you will experience failing OpenCL kernels with error code -5 (CL_OUT_OF_RESOURCES); reduce the number in that case. You can also set 
-                      this parameter to 0, which means that darktable assumes no restriction in the number of event handles; this is normally not a good choice. A value of -1 will 
-                      block darktable from using any event handles. This will prevent darktable from properly monitoring the success of your OpenCL kernels but saves some driver
-                      overhead. The consequence is that any failures will likely lead to garbled output without darktable taking notice.</para>
+                      there is no way to find out what the resource limits are; so we need to guess. Our default value of 25 is quite conservative. You might want to try if higher values
+                      like 100 give better OpenCL performance. If your driver runs out of free handles you would experience failing OpenCL kernels with error code -5 (CL_OUT_OF_RESOURCES)
+                      or even crashes or system freezes; reduce the number again in that case. You can also set this parameter to 0, which means that darktable assumes no restriction in 
+                      the number of event handles; this is not recommended. A value of -1 will block darktable from using any event handles. This will prevent darktable from properly 
+                      monitoring the success of your OpenCL kernels but saves some driver overhead. The consequence is that any failures will likely lead to garbled output without darktable 
+                      taking notice; only recommended if you know for sure that your system runs rock-solid.</para>
                 </sect4>
 
                 <sect4><title>opencl_synch_cache</title>

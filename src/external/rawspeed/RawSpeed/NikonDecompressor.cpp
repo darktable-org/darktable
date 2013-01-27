@@ -122,12 +122,12 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
     pUp2[y&1] += HuffDecodeNikon();
     pLeft1 = pUp1[y&1];
     pLeft2 = pUp2[y&1];
-    dest[0] = curve[pLeft1&0x7fff] | ((uint32)curve[pLeft2&0x7fff] << 16);
+    dest[0] = curve[clampbits(pLeft1,15)] | ((uint32)curve[clampbits(pLeft2,15)] << 16);
     for (x = 1; x < cw; x++) {
       bits->checkPos();
       pLeft1 += HuffDecodeNikon();
       pLeft2 += HuffDecodeNikon();
-      dest[x] = curve[pLeft1&0x7fff] | ((uint32)curve[pLeft2&0x7fff] << 16);
+      dest[x] = curve[clampbits(pLeft1,15)] | ((uint32)curve[clampbits(pLeft2,15)] << 16);
     }
   }
 }
