@@ -198,6 +198,69 @@
                 </sect4>
         </sect2>
 
+        <sect2><title>Multiple OpenCL devices</title>
+               <para>While most systems will only have one OpenCL capable GPU installed, darktable is also able to make use of multiple devices in parallel. There is a configuration
+                     parameter which helps to optimize GPU priorities in that case.</para>
+
+               <para>It is important to understand how darktable uses OpenCL devices. Each processing sequence of an image to convert an input to the final output using a certain history stack
+                     is run in a so called pixelpipe. There are four different types of pixelpipe defined by darktable. One type is responsible to process the center image view (or full view)
+                     in darkroom mode, another pixelpipe processes the preview image (navigation window) top left in darkroom mode. Of each of these two pixelpipe there can be one
+                     at a time - with the full and the preview pixelpipe running in parallel. In addition there can be multiple parallel pixelpipes doing file exports and there can be 
+                     multiple parallel pixelpipes generating thumbnails. If an OpenCL device is available darktable can dynamically allocate it to one specific pixelpipe for one run.</para>
+
+               <para>The computational demands depend a lot on the pixelpipe type. Preview image and thumbnails have a low resolution and can be processed quickly; center image view
+                     is much more demanding, let alone the a pixelpipe doing a file export. If you have a reasonably fast GPU and want to get a low latency during interactive work, it is
+                     therefore important that your GPU is allocated to do the more demanding center image (full) pixelpipe, while the small preview image can be processed easily even
+                     by a slower CPU. Older versions of darktable would therefore not allow our preview pixelpipe to grab an OpenCL device.</para>
+
+               <para>Starting with darktable 1.2 there is a more flexible scheme to allocate and prioritize your OpenCL device(s). Configuration parameter opencl_device_priority
+                     holds a string with the following structure:
+		    <programlisting>
+                      a,b,c.../k,l,m.../o,p,q.../x,y,z...
+		    </programlisting></para>
+                    
+               <para>Each letter represents the number of one OpenCL device. darktable has an internal numbering system, where the first detected OpenCL device will receive number "0",
+                     and all further devices are numbered consecutively. There are four fields in the parameter string, each representing one type of pixelpipe. "a,b,c..." defines the
+                     devices that are allowed to process the center image (full) pixelpipe. Likewise devices "k,l,m..." can process the preview pixelpipe, "o,p,q..." the export pixelpipes and
+                     finally "x,y,z..." the thumbnail pixelpipes.</para>
+
+               <para>A number can be preceded by an exclamation mark "!" in which case the following device number is excluded from processing
+                     this pixelpipe. You can also give an asterisk "*" as a wildcard, representing all devices not mentioned explicitely before.</para>
+
+               <para>Sequence order within a group matters. darktable will read the list from left to right and whenever it tries to allocate an OpenCL device to a pixelpipe it will scan
+                     the devices in that order, taking the first free device it finds.</para>
+
+               <para>darktable's default setting for opencl_device_priority is:
+		    <programlisting>
+                      */!0,*/*/*
+		    </programlisting>
+                     Any detected OpenCL device is allowed to process our center view image. The first OpenCL device (0) is not allowed to process the preview pixelpipe.
+                     As a consequence, ff there is only one device on your system, preview pixelpipe will always be processed on CPU, keeping your GPU exclusively for the more 
+                     demanding center image view. This is reasonable and identical to the old behavior. No restrictions apply to export and thumbnail pixelpipes.</para>
+                    
+               <para>This works well if you have only one device. If you have more than one devices it is only a starting point. Your devices might have different processing power and so
+                     it makes sense to put in a few thoughts on their priority.</para>
+
+               <para>Let's take an example. On my system I have two devices, a fast Radeon HD7950 and an older and slower
+                     GeForce GTS450. darktable will report the following if started with option '-d opencl':
+		    <programlisting>
+			[opencl_init] successfully initialized.
+			[opencl_init] here are the internal numbers and names of 
+                        OpenCL devices available to darktable:
+			[opencl_init]           0       'GeForce GTS 450'
+			[opencl_init]           1       'Tahiti'
+			[opencl_init] FINALLY: opencl is AVAILABLE on this system.
+		    </programlisting>
+                    So my GTS450 is detected as the first device; my HD7950 ('Tahiti') as the second one. This order will normally not change unless you modify your hardware configuration.</para>
+
+              <para>As the GTS450 is slower than the HD7950, I modified opencl_device_priority accordingly:
+		    <programlisting>
+                      !0,*/!1,*/1,*/1,*
+		    </programlisting>
+                    My GTS450 is explicitely excluded from doing the center image pixelpipe; this is reserved to "all" other devices (i.e. my HD7950). Completely the opposite for our preview
+                    pixelpipe. Here my HD7950 is blocked, so that only the GTS450 is allowed to do the work. For file exports and thumbnail generation I want all hands on deck. However, darktable
+                    should first look if number 1 (HD7950) is free, because it's faster. If that's not the case, all other devices - in fact only the GTS450 - are checked.</para>
+        </sect2>
 
         <sect2><title>OpenCL still does not run for me!</title>
 		<para>As has been said before OpenCL systems come with a huge variety of setups: different gpu manufacturers, different gpu models, varying amounts of gpu memory, different drivers,
