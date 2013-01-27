@@ -30,6 +30,15 @@ typedef struct dt_iop_levels_params_t
 }
 dt_iop_levels_params_t;
 
+typedef enum dt_iop_levels_pick_t
+{
+  NONE,
+  BLACK,
+  GREY,
+  WHITE
+}
+dt_iop_levels_pick_t;
+
 typedef struct dt_iop_levels_gui_data_t
 {
   GtkHBox *hbox;
@@ -38,6 +47,10 @@ typedef struct dt_iop_levels_gui_data_t
   double mouse_x, mouse_y;
   int dragging, handle_move;
   float drag_start_percentage;
+  dt_iop_levels_pick_t current_pick;
+  GtkToggleButton *activeToggleButton;
+  float last_picked_color;
+  double pick_xy_positions[3][2];
 }
 dt_iop_levels_gui_data_t;
 
@@ -75,6 +88,10 @@ static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *ev
 static gboolean dt_iop_levels_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
+static void dt_iop_levels_pick_black_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self);
+static void dt_iop_levels_pick_grey_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self);
+static void dt_iop_levels_pick_white_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self);
+static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *self);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
