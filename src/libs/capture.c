@@ -23,6 +23,7 @@
 #include "control/conf.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
+#include "gui/gtkentry.h"
 #include "dtgtk/label.h"
 #include <gdk/gdkkeysyms.h>
 
@@ -160,6 +161,12 @@ gui_init (dt_lib_module_t *self)
   gtk_entry_set_text(lib->gui.entry1, dt_conf_get_string("plugins/capture/jobcode") );
   gtk_entry_set_text(lib->gui.entry_namepattern, dt_conf_get_string("plugins/capture/storage/namepattern") );
 
+  char *tooltip_text = dt_gtkentry_build_completion_tooltip_text (
+                         _("enter the pattern for retrieved images\n⚠\t$(SEQUENCE) is mandatory\nrecognized variables:"),
+                         dt_gtkentry_get_default_path_compl_list());
+  g_object_set(G_OBJECT(lib->gui.entry_namepattern), "tooltip-text", tooltip_text, (char *)NULL);
+
+  g_free(tooltip_text);
 }
 
 void
