@@ -33,7 +33,7 @@ class CameraMetaData
 {
 public:
   CameraMetaData();
-  CameraMetaData(char *docname);
+  CameraMetaData(const char *docname);
   virtual ~CameraMetaData(void);
   xmlDocPtr doc;
   xmlParserCtxtPtr ctxt; /* the parser context */
