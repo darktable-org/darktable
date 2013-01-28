@@ -89,6 +89,7 @@ typedef struct dt_opencl_device_t
   int nvidia_sm_20;
   const char *vendor;
   const char *name;
+  const char *cname;
   cl_int summary;
 }
 dt_opencl_device_t;

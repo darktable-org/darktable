@@ -12,9 +12,9 @@
 </keywordset>
 </chapterinfo>
 <title>Special Topics</title>
-<para>darktable's home page at www.darktable.org has an extensive blog section. It covers many technical details, background
-      information as well as tips and tricks. We replicate a few of our blog articles here as they might be helpful to get
-      things running.</para>
+<para>This chapter touches several technical topics which might help you to get darktable running on specific hardware or optimize 
+      its performance. A lot of additional technical background information and many tipps and tricks are also covered in an extensive blog 
+      section that you can find on our homepage at www.darktable.org.</para>
 <screenshot>
 	<screeninfo>The darktable blog</screeninfo>
 	<graphic fileref="images/darktable_blog.png" scalefit="1" width="80%"></graphic>

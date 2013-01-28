@@ -39,6 +39,7 @@
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
 static const char *dt_opencl_get_vendor_by_id(unsigned int id);
+static char *_ascii_str_canonical(const char *in, char *out, int maxlen);
 
 void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 {
@@ -167,6 +168,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     cl->dev[dev].nvidia_sm_20 = 0;
     cl->dev[dev].vendor = "";
     cl->dev[dev].name = "";
+    cl->dev[dev].cname = "";
     cl_device_id devid = cl->dev[dev].devid = devices[k];
 
     char infostr[1024];
@@ -225,6 +227,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
     cl->dev[dev].vendor = dt_opencl_get_vendor_by_id(vendor_id);
     cl->dev[dev].name = strdup(infostr);
+    cl->dev[dev].cname = _ascii_str_canonical(infostr, NULL, 0);
 
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' supports image sizes of %zd x %zd\n", k, infostr, cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' allows GPU memory allocations of up to %luMB\n", k, infostr, cl->dev[dev].max_mem_alloc/1024/1024);
@@ -492,6 +495,55 @@ static int _take_from_list(int *list, int value)
   return result;
 }
 
+
+static int _device_by_cname(const char *name)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  int devs = cl->num_devs;
+  char tmp[2048] = { 0 };
+  int result = -1;
+
+  _ascii_str_canonical(name, tmp, 2048);
+
+  for(int i=0; i < devs; i++)
+  {
+    if(!strcmp(tmp, cl->dev[i].cname))
+    {
+      result = i;
+      break;
+    }
+  }
+
+  return result;
+}
+
+
+static char *_ascii_str_canonical(const char *in, char *out, int maxlen)
+{
+  if(out == NULL)
+  {
+    maxlen = strlen(in);
+    out = malloc(maxlen);
+    if(out == NULL) return NULL;
+  }
+
+  int len = 0;
+
+  while(*in != '\0' && len < maxlen-1)
+  {
+    int n = strcspn(in, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    in += n;
+    if(n != 0) continue;
+    out[len] = tolower(*in);
+    len++;
+    in++;
+  }
+  out[len] = '\0';
+
+  return out;
+}
+
+
 static char *_strsep(char **stringp, const char *delim)
 {
   char *begin, *end;
@@ -540,6 +592,13 @@ void dt_opencl_priority_parse(char *configstr, int *priority_list)
   int full[devs+1];
   char *saveptr;
 
+  // NULL or empty configstring?
+  if(configstr == NULL || *configstr == '\0')
+  {
+    priority_list[0] = -1;
+    return;
+  }
+
   // first start with a full list of devices to take from
   for(int i = 0; i < devs; i++)
     full[i] = i;
@@ -559,7 +618,7 @@ void dt_opencl_priority_parse(char *configstr, int *priority_list)
         break;
       case '!':
         not = 1;
-        str += strcspn(str, "0123456789");
+        while(*str == '!') str++;
         break;
     }
 
@@ -575,8 +634,19 @@ void dt_opencl_priority_parse(char *configstr, int *priority_list)
     }
     else if(*str != '\0')
     {
-      // convert string to number and see if it is still in remaining device list
-      int dev_number = _take_from_list(full, atoi(str));
+      char *endptr;
+
+      // first check if str corresponds to an existing canonical device name
+      long number = _device_by_cname(str);
+
+      // if not try to convert string into decimal device number
+      if(number < 0) number = strtol(str, &endptr, 10);
+
+      // still not found or negative number given? set number to -1
+      if(number < 0 || (number == 0 && endptr == str)) number = -1;
+
+      // try to take number out of remaining device list
+      int dev_number = _take_from_list(full, number);
 
       if(!not && dev_number != -1)
       {
@@ -599,13 +669,12 @@ void dt_opencl_priorities_parse(const char *configstr)
   char tmp[2048];
   int len = 0;
 
-  int devs = cl->num_devs;
-
   // first get rid of all invalid characters
   while(*configstr != '\0' && len < 2048)
   {
-    int n = strcspn(configstr, "/!,*0123456789");
+    int n = strcspn(configstr, "/!,*0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
     configstr += n;
+    if(n != 0) continue;
     tmp[len] = *configstr;
     len++;
     configstr++;
@@ -619,22 +688,13 @@ void dt_opencl_priorities_parse(const char *configstr)
   dt_opencl_priority_parse(prio, cl->dev_priority_image);
 
   prio = _strsep(&str, "/");
-  if(prio)
-    dt_opencl_priority_parse(prio, cl->dev_priority_preview);
-  else
-    memcpy(cl->dev_priority_preview, cl->dev_priority_image, sizeof(int)*(devs+1));
+  dt_opencl_priority_parse(prio, cl->dev_priority_preview);
 
   prio = _strsep(&str, "/");
-  if(prio)
-    dt_opencl_priority_parse(prio, cl->dev_priority_export);
-  else
-    memcpy(cl->dev_priority_export, cl->dev_priority_preview, sizeof(int)*(devs+1));
+  dt_opencl_priority_parse(prio, cl->dev_priority_export);
 
   prio = _strsep(&str, "/");
-  if(prio)
-    dt_opencl_priority_parse(prio, cl->dev_priority_thumbnail);
-  else
-    memcpy(cl->dev_priority_thumbnail, cl->dev_priority_export, sizeof(int)*(devs+1));
+  dt_opencl_priority_parse(prio, cl->dev_priority_thumbnail);
 }
 
 
