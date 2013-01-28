@@ -99,6 +99,10 @@ request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
     if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
     dt_iop_request_focus(self);
   }
+  else
+  {
+    dt_control_queue_redraw();
+  }
 }
 
 static gboolean
