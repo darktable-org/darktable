@@ -527,6 +527,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   const float hfactor = 3.0 / 9.0; // hue factor adjustment (use 3 out of 9 boxes in colorzones)
   const float lfactor = 4.0 / 9.0; // lightness factor adjustment (use 4 out of 9 boxes in colorzones)
   int iwidth, iheight;             // image width / height
+  int orientation = 1;
 
   if (dev != NULL)
   {
@@ -551,12 +552,12 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
         iheight = -atoi((char *)value);
       else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Orientation"))
       {
-        int v = atoi((char *)value);
-        if (v == 1) flip = 0;
-        else if (v == 2) flip = 1;
-        else if (v == 3) flip = 3;
-        else if (v == 4) flip = 2;
-        if (flip) has_flip = TRUE;
+        orientation = atoi((char *)value);
+        if (orientation == 1 || orientation == 8) flip = 0;
+        else if (orientation == 2 || orientation == 7) flip = 1;
+        else if (orientation == 3 || orientation == 6) flip = 3;
+        else if (orientation == 4 || orientation == 5) flip = 2;
+        if (orientation != 1) has_flip = TRUE;
       }
       else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HasCrop"))
       {
@@ -1019,6 +1020,17 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
     if (has_flip)
     {
+      // orientation > 4 means that the picture is in portrait mode
+      if (orientation > 4)
+      {
+        float tmp = pc.cx;
+        pc.cx = pc.cy;
+        pc.cy = 1.0 - pc.cw;
+        pc.cw = pc.ch;
+        pc.ch = 1.0 - tmp;
+      }
+
+      // then flip image if needed
       if (flip & 1)
       {
         float cx = pc.cx;
