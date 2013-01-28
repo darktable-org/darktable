@@ -223,6 +223,8 @@ picker_callback (GtkDarktableToggleButton *button, gpointer user_data)
   /* set the area sample size*/
   if (self->request_color_pick)
     dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+  else
+    dt_control_queue_redraw();
 
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
