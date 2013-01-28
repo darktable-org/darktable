@@ -522,7 +522,7 @@ static char *_ascii_str_canonical(const char *in, char *out, int maxlen)
 {
   if(out == NULL)
   {
-    maxlen = strlen(in);
+    maxlen = strlen(in)+1;
     out = malloc(maxlen);
     if(out == NULL) return NULL;
   }
