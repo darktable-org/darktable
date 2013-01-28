@@ -461,6 +461,8 @@ _blendop_blendif_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *mo
   /* set the area sample size*/
   if (module->request_color_pick)
     dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+  else
+    dt_control_queue_redraw();
 
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
