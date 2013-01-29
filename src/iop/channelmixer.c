@@ -150,7 +150,7 @@ void connect_key_accels(dt_iop_module_t *self)
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   const dt_iop_channelmixer_data_t *data = (dt_iop_channelmixer_data_t *)piece->data;
-  const gboolean gray_mix_mode = ( data->red[CHANNEL_GRAY] !=0.0 &&  data->green[CHANNEL_GRAY] !=0.0 &&  data->blue[CHANNEL_GRAY] !=0.0)?TRUE:FALSE;
+  const gboolean gray_mix_mode = ( data->red[CHANNEL_GRAY] !=0.0 ||  data->green[CHANNEL_GRAY] !=0.0 ||  data->blue[CHANNEL_GRAY] !=0.0)?TRUE:FALSE;
   const int ch = piece->colors;
 
 #ifdef _OPENMP
@@ -243,7 +243,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  const int gray_mix_mode = (data->red[CHANNEL_GRAY] != 0.0f && data->green[CHANNEL_GRAY] != 0.0f &&  data->blue[CHANNEL_GRAY] != 0.0f) ? TRUE : FALSE;
+  const int gray_mix_mode = (data->red[CHANNEL_GRAY] != 0.0f || data->green[CHANNEL_GRAY] != 0.0f ||  data->blue[CHANNEL_GRAY] != 0.0f) ? TRUE : FALSE;
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
 
