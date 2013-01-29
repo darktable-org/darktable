@@ -79,6 +79,24 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
   if(exclude_opencl) goto finally;
 
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl related configuration options:\n");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] \n");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl: %d\n", dt_conf_get_bool("opencl"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_library: '%s'\n", dt_conf_get_string("opencl_library"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_memory_requirement: %d\n", dt_conf_get_int("opencl_memory_requirement"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_memory_headroom: %d\n", dt_conf_get_int("opencl_memory_headroom"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_device_priority: '%s'\n", dt_conf_get_string("opencl_device_priority"));
+
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_size_roundup: %d\n", dt_conf_get_int("opencl_size_roundup"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_async_pixelpipe: %d\n", dt_conf_get_bool("opencl_async_pixelpipe"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_synch_cache: %d\n", dt_conf_get_bool("opencl_synch_cache"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_number_event_handles: %d\n", dt_conf_get_int("opencl_number_event_handles"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_micro_nap: %d\n", dt_conf_get_int("opencl_micro_nap"));
+
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_avoid_atomics: %d\n", dt_conf_get_bool("opencl_avoid_atomics"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_omit_whitebalance: %d\n", dt_conf_get_bool("opencl_omit_whitebalance"));
+
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] \n");
 
   // look for explicit definition of opencl_runtime library in preferences
   const char *library = dt_conf_get_string("opencl_library");
