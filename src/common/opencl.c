@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2012 johannes hanika.
+    copyright (c) 2011--2013 Ulrich Pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -191,6 +192,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
     char infostr[1024];
     char vendor[256];
+    char driverversion[256];
+    char deviceversion[256];
     size_t infoint;
     size_t infointtab[1024];
     cl_device_type type;
@@ -203,6 +206,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VENDOR, sizeof(vendor), &vendor, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VENDOR_ID, sizeof(cl_uint), &vendor_id, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_NAME, sizeof(infostr), &infostr, NULL);
+    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DRIVER_VERSION, sizeof(driverversion), &driverversion, NULL);
+    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VERSION, sizeof(deviceversion), &deviceversion, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_TYPE, sizeof(cl_device_type), &type,  NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE_SUPPORT, sizeof(cl_bool), &image_support, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(size_t), &(cl->dev[dev].max_image_height), NULL);
@@ -262,6 +267,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(infointtab), infointtab, NULL);
       for (int i=0; i<infoint; i++) printf("%zd ", infointtab[i]);
       printf("]\n");
+      printf("     DRIVER_VERSION:           %s\n", driverversion);
+      printf("     DEVICE_VERSION:           %s\n", deviceversion);
     }
     dt_pthread_mutex_init(&cl->dev[dev].lock, NULL);
 
@@ -390,10 +397,17 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     // apply config settings for device priority
     dt_opencl_priorities_parse(dt_conf_get_string("opencl_device_priority"));
 
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] successfully initialized.\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] OpenCL successfully initialized.\n");
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] here are the internal numbers and names of OpenCL devices available to darktable:\n");
     for(int i=0; i<dev; i++)
       dt_print(DT_DEBUG_OPENCL,"[opencl_init]\t\t%d\t'%s'\n", i, cl->dev[i].name);
+
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] these are your device priorities:\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] \t\timage\tpreview\texport\tthumbnail\n");
+    for(int i=0; i<dev; i++)
+      dt_print(DT_DEBUG_OPENCL,"[opencl_init]\t\t%d\t%d\t%d\t%d\n", cl->dev_priority_image[i], cl->dev_priority_preview[i],
+                                                                    cl->dev_priority_export[i], cl->dev_priority_thumbnail[i]);
+
   }
   else
   {
@@ -624,7 +638,7 @@ void dt_opencl_priority_parse(char *configstr, int *priority_list)
 
   char *str = strtok_r(configstr, ",", &saveptr);
 
-  while(str != NULL && full[0] != -1)
+  while(str != NULL && count < devs+1 && full[0] != -1)
   {
     int not = 0;
     int all = 0;
@@ -677,7 +691,7 @@ void dt_opencl_priority_parse(char *configstr, int *priority_list)
   }
 
   // terminate priority list with -1
-  priority_list[count] = -1;
+  while(count < devs+1) priority_list[count++] = -1;
 }
 
 // parse a complete priority string
