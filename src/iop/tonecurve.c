@@ -951,6 +951,17 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       dt_dev_add_history_item(darktable.develop, self, TRUE);
       gtk_widget_queue_draw(self->widget);
     }
+    else
+    {
+      if (ch != ch_L)
+      {
+        p->tonecurve_autoscale_ab = 0;
+        c->selected = -2; // avoid motion notify re-inserting immediately.
+        dt_bauhaus_combobox_set(c->autoscale_ab, 1-p->tonecurve_autoscale_ab);
+        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        gtk_widget_queue_draw(self->widget);
+      }
+    }
     return TRUE;
   }
   return FALSE;
