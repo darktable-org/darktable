@@ -757,7 +757,6 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   const float wd = width/zoom;
   const float ht = width/zoom;
 
-  static int oldpan = 0;
   static float oldzoom = -1;
   if(oldzoom < 0) oldzoom = zoom;
 
@@ -883,8 +882,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   }
   else lib->offset = offset;
 
-  int id, clicked1, last_seli = 1<<30, last_selj = 1<<30;
-  clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
+  int id;
 
   dt_view_set_scrollbar(self, MAX(0, offset_i), DT_LIBRARY_MAX_ZOOM, zoom, DT_LIBRARY_MAX_ZOOM*offset_j,
                         lib->collection_count, DT_LIBRARY_MAX_ZOOM*max_cols);
@@ -919,40 +917,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
           mouse_over_id = id;
           DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
         }
-        // add clicked image to selected table
-        if(clicked1)
-        {
-          if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0 && seli == col && selj == row)
-          {
-            /* clear selection except id */
-
-            /* clear and resest statement */
-            DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.delete_except_arg);
-            DT_DEBUG_SQLITE3_RESET(lib->statements.delete_except_arg);
-
-            /* reuse statment */
-            DT_DEBUG_SQLITE3_BIND_INT(lib->statements.delete_except_arg, 1, id);
-            sqlite3_step(lib->statements.delete_except_arg);
-          }
-          // FIXME: whatever comes first assumption is broken!
-          // if((lib->modifiers & GDK_SHIFT_MASK) && (last_seli == (1<<30)) &&
-          //    (image->id == lib->last_selected_id || image->id == mouse_over_id)) { last_seli = col; last_selj = row; }
-          // if(last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= MIN(last_seli,seli) && row >= MIN(last_selj,selj) &&
-          //         col <= MAX(last_seli,seli) && row <= MAX(last_selj,selj)) && (col != last_seli || row != last_selj)) ||
-          if((lib->modifiers & GDK_SHIFT_MASK) && id == lib->last_selected_idx)
-          {
-            last_seli = col;
-            last_selj = row;
-          }
-          if((last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= last_seli && row >= last_selj &&
-                                      col <= seli && row <= selj) && (col != last_seli || row != last_selj))) ||
-              (seli == col && selj == row))
-          {
-            // insert all in range if shift, or only the one the mouse is over for ctrl or plain click.
-            dt_view_toggle_selection(id);
-            lib->last_selected_idx = id;
-          }
-        }
+        
         cairo_save(cr);
         // if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
         dt_view_image_expose(&(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom, img_pointerx, img_pointery, FALSE);
@@ -966,7 +931,6 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   }
 failure:
 
-  oldpan = pan;
   lib->zoom_x = zoom_x;
   lib->zoom_y = zoom_y;
   lib->track  = 0;
