@@ -1532,7 +1532,7 @@ void dt_control_log_busy_leave()
 }
 
 static GList *_control_gdk_lock_threads = NULL;
-static GStaticMutex _control_gdk_lock_threads_mutex = G_STATIC_MUTEX_INIT;
+static GMutex _control_gdk_lock_threads_mutex;
 gboolean dt_control_gdk_lock()
 {
   /* if current thread equals gui thread do nothing */
@@ -1540,7 +1540,7 @@ gboolean dt_control_gdk_lock()
     return FALSE;
 
   /* if we dont have any managed locks just lock and return */
-  g_static_mutex_lock(&_control_gdk_lock_threads_mutex);
+  g_mutex_lock(&_control_gdk_lock_threads_mutex);
   if(!_control_gdk_lock_threads)
     goto lock_and_return;
 
@@ -1548,7 +1548,7 @@ gboolean dt_control_gdk_lock()
   if(g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self()))
   {
     /* current thread has a lock just do nothing */
-    g_static_mutex_unlock(&_control_gdk_lock_threads_mutex);
+    g_mutex_unlock(&_control_gdk_lock_threads_mutex);
     return FALSE;
   }
 
@@ -1556,7 +1556,7 @@ lock_and_return:
   /* lets add current thread to managed locks */
   _control_gdk_lock_threads = g_list_append(_control_gdk_lock_threads,
                               (gpointer)pthread_self());
-  g_static_mutex_unlock(&_control_gdk_lock_threads_mutex);
+  g_mutex_unlock(&_control_gdk_lock_threads_mutex);
 
   /* enter gdk critical section */
   gdk_threads_enter();
@@ -1567,7 +1567,7 @@ lock_and_return:
 void dt_control_gdk_unlock()
 {
   /* check if current thread has a lock and remove if exists */
-  g_static_mutex_lock(&_control_gdk_lock_threads_mutex);
+  g_mutex_lock(&_control_gdk_lock_threads_mutex);
   if(g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self()))
   {
     /* remove lock */
@@ -1577,7 +1577,7 @@ void dt_control_gdk_unlock()
     /* leave critical section */
     gdk_threads_leave();
   }
-  g_static_mutex_unlock(&_control_gdk_lock_threads_mutex);
+  g_mutex_unlock(&_control_gdk_lock_threads_mutex);
 }
 
 /* redraw mutex to synchronize redraws */
