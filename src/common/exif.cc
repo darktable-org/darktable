@@ -1352,7 +1352,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
 
           /* check if we got blendop_version from xmp; if not assume 1 as default */
           int blversion = 1;
-          if(blendop_version != xmpData.end())
+          if(blendop_version != xmpData.end() && blendop_version->count() > i)
           {
             blversion = blendop_version->toLong(i);
           }
