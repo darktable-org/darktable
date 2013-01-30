@@ -98,6 +98,8 @@ static uint32_t _capture_view_get_film_id(const dt_view_t *view);
 static void _capture_view_set_jobcode(const dt_view_t *view, const char *name);
 static const char *_capture_view_get_jobcode(const dt_view_t *view);
 static uint32_t _capture_view_get_selected_imgid(const dt_view_t *view);
+static void _capture_view_set_session_namepattern(const dt_view_t *view, const char *namepattern);
+static gboolean _capture_view_check_namepattern(const dt_view_t *view);
 
 const char *name(dt_view_t *self)
 {
@@ -166,6 +168,8 @@ void init(dt_view_t *self)
   darktable.view_manager->proxy.tethering.get_job_code = _capture_view_get_jobcode;
   darktable.view_manager->proxy.tethering.set_job_code = _capture_view_set_jobcode;
   darktable.view_manager->proxy.tethering.get_selected_imgid = _capture_view_get_selected_imgid;
+  darktable.view_manager->proxy.tethering.set_session_namepattern = _capture_view_set_session_namepattern;
+  darktable.view_manager->proxy.tethering.check_namepattern = _capture_view_check_namepattern;
 
 }
 
@@ -326,6 +330,24 @@ const char *_capture_view_get_jobcode(const dt_view_t *view)
   dt_capture_t *cv=(dt_capture_t *)view->data;
 
   return cv->jobcode;
+}
+
+void _capture_view_set_session_namepattern(const dt_view_t *view, const char *namepattern)
+{
+  g_assert( view != NULL );
+  dt_capture_t *cv=(dt_capture_t *)view->data;
+
+  g_free(cv->filenamepattern);
+
+  cv->filenamepattern = g_strdup(namepattern);
+}
+
+gboolean _capture_view_check_namepattern(const dt_view_t *view)
+{
+  g_assert( view != NULL );
+  dt_capture_t *cv=(dt_capture_t *)view->data;
+
+  return (strstr(cv->filenamepattern, "$(SEQUENCE)") != NULL);
 }
 
 void configure(dt_view_t *self, int wd, int ht)
