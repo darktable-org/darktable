@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2010--2011 henrik andersson.
+    copyright (c) 2010--2013 henrik andersson.
     Copyright (c) 2012 James C. McPherson
 
     darktable is free software: you can redistribute it and/or modify
@@ -61,6 +61,11 @@
     on timed interval.
 */
 static void * _control_worker_kicker(void *ptr);
+
+/* redraw mutex to synchronize redraws */
+G_LOCK_DEFINE(counter);
+static GMutex _control_redraw_mutex;
+static GMutex _control_gdk_lock_threads_mutex;
 
 void dt_ctl_settings_default(dt_control_t *c)
 {
@@ -436,6 +441,10 @@ void dt_control_init(dt_control_t *s)
 
   memset(s->vimkey, 0, sizeof(s->vimkey));
   s->vimkey_cnt = 0;
+
+  // intialize static mutex's
+  g_mutex_init(&_control_redraw_mutex);
+  g_mutex_init(&_control_gdk_lock_threads_mutex);
 
   // s->last_expose_time = dt_get_wtime();
   s->key_accelerators_on = 1;
@@ -1532,7 +1541,6 @@ void dt_control_log_busy_leave()
 }
 
 static GList *_control_gdk_lock_threads = NULL;
-static GMutex _control_gdk_lock_threads_mutex;
 gboolean dt_control_gdk_lock()
 {
   /* if current thread equals gui thread do nothing */
@@ -1580,10 +1588,6 @@ void dt_control_gdk_unlock()
   g_mutex_unlock(&_control_gdk_lock_threads_mutex);
 }
 
-/* redraw mutex to synchronize redraws */
-G_LOCK_DEFINE(counter);
-GStaticMutex _control_redraw_mutex = G_STATIC_MUTEX_INIT;
-
 void _control_queue_redraw_wrapper(dt_signal_t signal)
 {
   static uint32_t counter = 0;
@@ -1593,7 +1597,7 @@ void _control_queue_redraw_wrapper(dt_signal_t signal)
     return;
 
   /* if we cant carry out an redraw, lets increment counter and bail out */
-  if (!g_static_mutex_trylock(&_control_redraw_mutex))
+  if (!g_mutex_trylock(&_control_redraw_mutex))
   {
     G_LOCK(counter);
     counter++;
@@ -1621,7 +1625,7 @@ void _control_queue_redraw_wrapper(dt_signal_t signal)
   if (i_own_lock)
     dt_control_gdk_unlock();
 
-  g_static_mutex_unlock(&_control_redraw_mutex);
+  g_mutex_unlock(&_control_redraw_mutex);
 
 }
 
