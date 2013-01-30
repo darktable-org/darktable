@@ -1369,7 +1369,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
 
           /* check if we got blendop_version from xmp; if not assume 1 as default */
           int blversion = 1;
-          if(blendop_version != xmpData.end())
+          if(blendop_version != xmpData.end() && blendop_version->count() > i)
           {
             blversion = blendop_version->toLong(i);
           }
@@ -1377,7 +1377,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
 
           /* multi instances */
           int mprio = 0;
-          if (multi_priority != xmpData.end())  mprio = multi_priority->toLong(i);
+          if (multi_priority != xmpData.end() && multi_priority->count() > i)  mprio = multi_priority->toLong(i);
           DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 9, mprio);
           if(multi_name != xmpData.end() && multi_name->size() > 0 &&
              multi_name->count() > i && multi_name->toString(i).c_str() != NULL)
