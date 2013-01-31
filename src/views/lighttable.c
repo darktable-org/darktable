@@ -292,12 +292,6 @@ void init(dt_view_t *self)
   lib->full_preview=0;
   lib->full_preview_id=-1;
 
-  GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), "dt-stars", NULL, GTK_TYPE_NONE);
-
-  lib->star_color.red = (255/ 65535) * style->fg[GTK_STATE_NORMAL].red;
-  lib->star_color.blue = (255/ 65535) * style->fg[GTK_STATE_NORMAL].blue;
-  lib->star_color.green = (255/ 65535) * style->fg[GTK_STATE_NORMAL].green;
-
   /* setup collection listener and initialize main_query statement */
   dt_control_signal_connect(darktable.signals,
                             DT_SIGNAL_COLLECTION_CHANGED,

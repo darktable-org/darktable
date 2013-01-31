@@ -1,4 +1,5 @@
 # from art.gnome.org: marble-look, adjusted
+
 style "clearlooks-default"
 {
 
@@ -69,6 +70,11 @@ style "clearlooks-default"
     contrast = 1.0
 # sunkenmenubar = 1
   }
+
+  color["dt-stars-fill"] = "#e69926" # yellow stars
+  color["dt-stars-outline"] = "#FFe64c" # yellow stars
+#  color["dt-stars-fill"] = "#222222" # gray stars
+#  color["dt-stars-outline"] = "#050505" # gray stars
 }
 
 style "clearlooks-wide" = "clearlooks-default"

@@ -57,10 +57,18 @@ typedef struct dt_gui_gtk_t
 
   int32_t reset;
   float bgcolor[3];
-
+  float star_color_outline[3];
+  float star_color_fill[3];
+  
   int32_t center_tooltip; // 0 = no tooltip, 1 = new tooltip, 2 = old tooltip
 
   gboolean grouping;
+  gboolean show_ratings_on_all_images;  
+  gboolean show_colorlabel_dots;
+  gboolean show_colorlabel_tint;
+  gboolean show_history_labels;
+  gboolean show_rejects;
+  
   int32_t expanded_group_id;
 
   double dpi;
