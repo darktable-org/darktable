@@ -49,9 +49,9 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   cl->enabled = 0;
 
   int handles = dt_conf_get_int("opencl_number_event_handles");
-  handles = (handles == 0 ? 0x7fffffff : handles);
+  handles = (handles < 0 ? 0x7fffffff : handles);
   cl->number_event_handles = handles;
-  cl->use_events = (handles > 0);
+  cl->use_events = (handles != 0);
 
   cl->avoid_atomics = dt_conf_get_bool("opencl_avoid_atomics");
   cl->async_pixelpipe = dt_conf_get_bool("opencl_async_pixelpipe");
