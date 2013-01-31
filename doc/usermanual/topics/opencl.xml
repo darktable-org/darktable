@@ -194,7 +194,7 @@ darktable -d opencl -d perf
                       GUI updates. It might happen that there is no sufficient time left for this task. Consequence would by a jerky reaction of your GUI on panning, zooming or 
                       when moving sliders. darktable can add small naps into its pixelpipe processing to have the GPU catch some breath and do GUI related stuff. Parameter 
                       opencl_micro_nap controls the duration of these naps in microseconds. You need to experiment in order to find an optimum value for your system. Values of 
-                      0, 100, 500 and 1000 are good starting points to try. Defaults to zero.</para>
+                      0, 100, 500 and 1000 are good starting points to try. Defaults to 1000.</para>
                 </sect4>
         </sect2>
 
