@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2009--2010 johannes hanika.
+   copyright (c) 2009--2013 johannes hanika.
    copyright (c) 2011 henrik andersson.
    copyright (c) 2012 tobias ellinghaus.
 
@@ -1594,6 +1594,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     xmpData.add(Exiv2::XmpKey(key), &tv);
 
     const char *op = (const char *)sqlite3_column_text(stmt, 3);
+    if(!op) continue; // no op is fatal.
     tv.read(op);
     snprintf(key, 1024, "Xmp.darktable.history_operation[%d]", num);
     xmpData.add(Exiv2::XmpKey(key), &tv);
@@ -1608,9 +1609,11 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     free(vparams);
 
     /* read and add blendop params */
+    const void *blob = sqlite3_column_blob(stmt, 6);
+    if(!blob) continue; // no params, no history item.
     len = sqlite3_column_bytes(stmt, 6);
     vparams = (char *)malloc(2*len + 1);
-    dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, 6), vparams, len);
+    dt_exif_xmp_encode ((const unsigned char *)blob, vparams, len);
     tv.read(vparams);
     snprintf(key, 1024, "Xmp.darktable.blendop_params[%d]", num);
     xmpData.add(Exiv2::XmpKey(key), &tv);
