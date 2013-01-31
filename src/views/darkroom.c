@@ -615,8 +615,8 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
       if (!dev->image_loading)
       {
         dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
+        dt_dev_change_image(dev, imgid);
       }
-      dt_dev_change_image(dev, imgid);
 
     }
     sqlite3_finalize(stmt);
