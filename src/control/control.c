@@ -64,8 +64,8 @@ static void * _control_worker_kicker(void *ptr);
 
 /* redraw mutex to synchronize redraws */
 G_LOCK_DEFINE(counter);
-static GMutex _control_redraw_mutex;
-static GMutex _control_gdk_lock_threads_mutex;
+static dt_pthread_mutex_t _control_redraw_mutex;
+static dt_pthread_mutex_t _control_gdk_lock_threads_mutex;
 
 void dt_ctl_settings_default(dt_control_t *c)
 {
@@ -443,8 +443,8 @@ void dt_control_init(dt_control_t *s)
   s->vimkey_cnt = 0;
 
   // intialize static mutex's
-  g_mutex_init(&_control_redraw_mutex);
-  g_mutex_init(&_control_gdk_lock_threads_mutex);
+  dt_pthread_mutex_init(&_control_redraw_mutex, NULL);
+  dt_pthread_mutex_init(&_control_gdk_lock_threads_mutex, NULL);
 
   // s->last_expose_time = dt_get_wtime();
   s->key_accelerators_on = 1;
@@ -1548,7 +1548,7 @@ gboolean dt_control_gdk_lock()
     return FALSE;
 
   /* if we dont have any managed locks just lock and return */
-  g_mutex_lock(&_control_gdk_lock_threads_mutex);
+  dt_pthread_mutex_lock(&_control_gdk_lock_threads_mutex);
   if(!_control_gdk_lock_threads)
     goto lock_and_return;
 
@@ -1556,7 +1556,7 @@ gboolean dt_control_gdk_lock()
   if(g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self()))
   {
     /* current thread has a lock just do nothing */
-    g_mutex_unlock(&_control_gdk_lock_threads_mutex);
+    dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
     return FALSE;
   }
 
@@ -1564,7 +1564,7 @@ lock_and_return:
   /* lets add current thread to managed locks */
   _control_gdk_lock_threads = g_list_append(_control_gdk_lock_threads,
                               (gpointer)pthread_self());
-  g_mutex_unlock(&_control_gdk_lock_threads_mutex);
+  dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
 
   /* enter gdk critical section */
   gdk_threads_enter();
@@ -1575,7 +1575,7 @@ lock_and_return:
 void dt_control_gdk_unlock()
 {
   /* check if current thread has a lock and remove if exists */
-  g_mutex_lock(&_control_gdk_lock_threads_mutex);
+  dt_pthread_mutex_lock(&_control_gdk_lock_threads_mutex);
   if(g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self()))
   {
     /* remove lock */
@@ -1585,7 +1585,7 @@ void dt_control_gdk_unlock()
     /* leave critical section */
     gdk_threads_leave();
   }
-  g_mutex_unlock(&_control_gdk_lock_threads_mutex);
+  dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
 }
 
 void _control_queue_redraw_wrapper(dt_signal_t signal)
@@ -1597,7 +1597,7 @@ void _control_queue_redraw_wrapper(dt_signal_t signal)
     return;
 
   /* if we cant carry out an redraw, lets increment counter and bail out */
-  if (!g_mutex_trylock(&_control_redraw_mutex))
+  if (!dt_pthread_mutex_trylock(&_control_redraw_mutex))
   {
     G_LOCK(counter);
     counter++;
@@ -1625,7 +1625,7 @@ void _control_queue_redraw_wrapper(dt_signal_t signal)
   if (i_own_lock)
     dt_control_gdk_unlock();
 
-  g_mutex_unlock(&_control_redraw_mutex);
+  dt_pthread_mutex_unlock(&_control_redraw_mutex);
 
 }
 
