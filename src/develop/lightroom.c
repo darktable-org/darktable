@@ -1096,6 +1096,18 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
   if (has_spots)
   {
+    // Check for orientation, rotate when in portrait mode
+    if (orientation > 4)
+      for (int k=0; k<ps.num_spots; k++)
+      {
+        float tmp = ps.spot[k].y;
+        ps.spot[k].y  = 1.0 - ps.spot[k].x;
+        ps.spot[k].x = tmp;
+        tmp = ps.spot[k].yc;
+        ps.spot[k].yc  = 1.0 - ps.spot[k].xc;
+        ps.spot[k].xc = tmp;
+      }
+
     dt_add_hist (imgid, "spots", (dt_iop_params_t *)&ps, sizeof(dt_iop_spots_params_t), imported, LRDT_SPOTS_VERSION, &n_import);
     refresh_needed=TRUE;
   }
