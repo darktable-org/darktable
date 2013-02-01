@@ -554,31 +554,6 @@ void dtgtk_cairo_paint_styles(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags
 
 }
 
-void dtgtk_cairo_paint_LR(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
-{
-  gint s=w<h?w:h;
-  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
-  cairo_scale(cr,s,s);
-
-  // L
-  cairo_set_line_width(cr, 0.1);
-  cairo_move_to(cr,0.2,0.1);
-  cairo_line_to(cr,0.2,0.9);
-  cairo_line_to(cr,0.8,0.9);
-  cairo_stroke(cr);
-
-  // R
-  cairo_move_to(cr,0.4,0.2);
-  cairo_line_to(cr,0.4,0.8);
-  cairo_stroke(cr);
-  cairo_move_to(cr,0.4,0.5);
-  cairo_line_to(cr,0.75,0.8);
-  cairo_stroke(cr);
-
-  cairo_arc (cr, 0.4, 0.35, 0.15, -M_PI/2.0, M_PI/2.0);
-  cairo_stroke(cr);
-}
-
 void dtgtk_cairo_paint_label (cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
 {
   gboolean def = FALSE;

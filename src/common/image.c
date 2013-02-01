@@ -29,6 +29,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs.h"
+#include "develop/lightroom.h"
 #include <math.h>
 #include <sqlite3.h>
 #include <string.h>
@@ -597,6 +598,11 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
       dt_image_cache_read_release(darktable.image_cache, img);
     }
     globfree(globbuf);
+  }
+  else
+  {
+    // Search for Lightroom sidecar file, import tags if found
+    dt_lightroom_import(id, NULL, TRUE);
   }
 
   g_free(imgfname);
