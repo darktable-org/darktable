@@ -63,8 +63,6 @@
 static void * _control_worker_kicker(void *ptr);
 
 /* redraw mutex to synchronize redraws */
-G_LOCK_DEFINE(counter);
-static dt_pthread_mutex_t _control_redraw_mutex;
 static dt_pthread_mutex_t _control_gdk_lock_threads_mutex;
 
 void dt_ctl_settings_default(dt_control_t *c)
@@ -442,8 +440,7 @@ void dt_control_init(dt_control_t *s)
   memset(s->vimkey, 0, sizeof(s->vimkey));
   s->vimkey_cnt = 0;
 
-  // intialize static mutex's
-  dt_pthread_mutex_init(&_control_redraw_mutex, NULL);
+  // intialize static mutex
   dt_pthread_mutex_init(&_control_gdk_lock_threads_mutex, NULL);
 
   // s->last_expose_time = dt_get_wtime();
@@ -1588,55 +1585,14 @@ void dt_control_gdk_unlock()
   dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
 }
 
-void _control_queue_redraw_wrapper(dt_signal_t signal)
-{
-  static uint32_t counter = 0;
-
-  /* dont continue if control is not running */
-  if (!dt_control_running())
-    return;
-
-  /* if we cant carry out an redraw, lets increment counter and bail out */
-  if (!dt_pthread_mutex_trylock(&_control_redraw_mutex))
-  {
-    G_LOCK(counter);
-    counter++;
-    G_UNLOCK(counter);
-    return;
-  }
-
-  /* lock the gdk thread and carry out the redraw function */
-  gboolean i_own_lock = dt_control_gdk_lock();
-  dt_control_signal_raise(darktable.signals, signal);
-
-  /* lets check if we got missing redraws from other threads */
-  G_LOCK(counter);
-  if (counter)
-  {
-    /* carry out an redraw due to missed redraws */
-    counter = 0;
-    G_UNLOCK(counter);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_ALL);
-  }
-  else
-    G_UNLOCK(counter);
-
-  /* unlock our locks */
-  if (i_own_lock)
-    dt_control_gdk_unlock();
-
-  dt_pthread_mutex_unlock(&_control_redraw_mutex);
-
-}
-
 void dt_control_queue_redraw()
 {
-  _control_queue_redraw_wrapper(DT_SIGNAL_CONTROL_REDRAW_ALL);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_ALL);
 }
 
 void dt_control_queue_redraw_center()
 {
-  _control_queue_redraw_wrapper(DT_SIGNAL_CONTROL_REDRAW_CENTER);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_CENTER);
 }
 
 void dt_control_queue_redraw_widget(GtkWidget *widget)

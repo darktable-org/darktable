@@ -1508,14 +1508,14 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
 
 }
 
-/* this is always called on gui thread !!! */
+/* this is called as a signal handler, the signal raising logic asserts the gdk lock. */
 static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
 {
-  //  g_return_if_fail(GTK_IS_WIDGET(widget) && gtk_widget_is_drawable(widget));
-  gboolean i_own_lock = dt_control_gdk_lock();
+  static double floodstop = 0.0;
+  const double now = dt_get_wtime();
+  if(now-floodstop < 0.1) return; // redraw no more than every 1/10th of a second.
   gtk_widget_queue_draw(widget);
-  if(i_own_lock) dt_control_gdk_unlock();
-
+  floodstop = now;
 }
 
 void dt_ellipsize_combo(GtkComboBox *cbox)
