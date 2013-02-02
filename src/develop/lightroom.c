@@ -1073,7 +1073,12 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
     pv.center.y = 0.0;
     pv.shape = 1.0;
 
-    pv.whratio = base_ratio * ((float)iwidth / (float)iheight);
+    // defensive code, should not happen, but just in case future Lr version
+    // has not ImageWidth/ImageLength XML tag.
+    if (iwidth == 0 || iheight == 0)
+      pv.whratio = base_ratio;
+    else
+      pv.whratio = base_ratio * ((float)iwidth / (float)iheight);
 
     if (has_crop)
       pv.whratio = pv.whratio * fratio;
