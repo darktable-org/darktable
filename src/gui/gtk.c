@@ -1513,7 +1513,7 @@ static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
 {
   static double floodstop = 0.0;
   const double now = dt_get_wtime();
-  if(now-floodstop < 0.1) return; // redraw no more than every 1/10th of a second.
+  if(now-floodstop < 0.01) return; // redraw no more than every 1/100th of a second.
   gtk_widget_queue_draw(widget);
   floodstop = now;
 }
