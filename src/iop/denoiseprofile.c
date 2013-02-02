@@ -570,18 +570,19 @@ void process_wavelets(
         sum_y2[c] += buf[scale][4*k+c]*buf[scale][4*k+c];
       }
     }
+    const float sb2 = sigma_band*sigma_band;
     const float mean_y[3] = { sum_y[0]/n, sum_y[1]/n, sum_y[2]/n };
     const float var_y[3] = {
       sum_y2[0]/(n-1.0f) - mean_y[0]*mean_y[0],
       sum_y2[1]/(n-1.0f) - mean_y[1]*mean_y[1],
       sum_y2[2]/(n-1.0f) - mean_y[2]*mean_y[2]};
     const float std_x[3] = {
-      sqrtf(MAX(1e-6f, var_y[0] - sigma_band*sigma_band)),
-      sqrtf(MAX(1e-6f, var_y[1] - sigma_band*sigma_band)),
-      sqrtf(MAX(1e-6f, var_y[2] - sigma_band*sigma_band))};
-    // add 2.0 here because it seemed a little weak
-    const float adjt = 2.0f * powf(.5f, scale);
-    const float thrs[4] = { adjt * sigma*sigma/std_x[0], adjt * sigma*sigma/std_x[1], adjt * sigma*sigma/std_x[2], 0.0f};
+      sqrtf(MAX(1e-6f, var_y[0] - sb2)),
+      sqrtf(MAX(1e-6f, var_y[1] - sb2)),
+      sqrtf(MAX(1e-6f, var_y[2] - sb2))};
+    // add 8.0 here because it seemed a little weak
+    const float adjt = 8.0f;
+    const float thrs[4] = { adjt * sb2/std_x[0], adjt * sb2/std_x[1], adjt * sb2/std_x[2], 0.0f};
     // const float std = (std_x[0] + std_x[1] + std_x[2])/3.0f;
     // const float thrs[4] = { adjt*sigma*sigma/std, adjt*sigma*sigma/std, adjt*sigma*sigma/std, 0.0f};
     // fprintf(stderr, "scale %d thrs %f %f %f\n", scale, thrs[0], thrs[1], thrs[2]);
@@ -1274,7 +1275,7 @@ void gui_init(dt_iop_module_t *self)
   g->profile  = dt_bauhaus_combobox_new(self);
   g->mode     = dt_bauhaus_combobox_new(self);
   g->radius   = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1., 2.f, 0);
-  g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 2.0f, .05, 1.f, 3);
+  g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
