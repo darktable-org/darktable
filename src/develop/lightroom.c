@@ -526,7 +526,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   int n_import = 0;                // number of iop imported
   const float hfactor = 3.0 / 9.0; // hue factor adjustment (use 3 out of 9 boxes in colorzones)
   const float lfactor = 4.0 / 9.0; // lightness factor adjustment (use 4 out of 9 boxes in colorzones)
-  int iwidth, iheight;             // image width / height
+  int iwidth, iheight = 0;         // image width / height
   int orientation = 1;
 
   if (dev != NULL)
