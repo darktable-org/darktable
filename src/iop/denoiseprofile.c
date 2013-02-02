@@ -480,9 +480,25 @@ void process_wavelets(
   // get our data struct:
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
 
-  const int max_scale = 5;
+  const int max_max_scale = 5; // hard limit
+  int max_scale = 0;
+  const float scale = roi_in->scale/piece->iscale;
+  // largest desired filter on input buffer (20% of input dim)
+  const float supp0 = MIN(2*(2<<(max_max_scale-1)) + 1, MAX(piece->buf_in.height*piece->iscale, piece->buf_in.width*piece->iscale) * 0.2f);
+  const float i0 = dt_log2f((supp0 - 1.0f)*.5f);
+  for(; max_scale<max_max_scale; max_scale++)
+  {
+    // actual filter support on scaled buffer
+    const float supp  = 2*(2<<max_scale) + 1;
+    // approximates this filter size on unscaled input image:
+    const float supp_in = supp * (1.0f/scale);
+    const float i_in = dt_log2f((supp_in - 1)*.5f) - 1.0f;
+    // i_in = max_scale .. .. .. 0
+    const float t = 1.0f - (i_in+.5f)/i0;
+    if(t < 0.0f) break;
+  }
 
-  float *buf[max_scale];
+  float *buf[max_max_scale];
   float *tmp = NULL;
   float *buf1 = NULL, *buf2 = NULL;
   for(int k=0;k<max_scale;k++)
@@ -490,9 +506,9 @@ void process_wavelets(
   tmp = dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
 
   const float wb[3] = {
-    piece->pipe->processed_maximum[0]*d->strength,
-    piece->pipe->processed_maximum[1]*d->strength,
-    piece->pipe->processed_maximum[2]*d->strength};
+    piece->pipe->processed_maximum[0]*d->strength*(scale*scale),
+    piece->pipe->processed_maximum[1]*d->strength*(scale*scale),
+    piece->pipe->processed_maximum[2]*d->strength*(scale*scale)};
   // only use green channel + wb for now:
   const float aa[3] = {
     d->a[1]*wb[0],
@@ -621,8 +637,9 @@ void process_nlmeans(
 
   // TODO: fixed K to use adaptive size trading variance and bias!
   // adjust to zoom size:
-  const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
-  const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood XXX see above comment
+  const float scale = roi_in->scale / piece->iscale;
+  const int P = ceilf(d->radius * scale); // pixel filter size
+  const int K = ceilf(7 * scale);
 
   // P == 0 : this will degenerate to a (fast) bilateral filter.
 
@@ -632,9 +649,9 @@ void process_nlmeans(
   float *in = dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
 
   const float wb[3] = {
-    piece->pipe->processed_maximum[0]*d->strength,
-    piece->pipe->processed_maximum[1]*d->strength,
-    piece->pipe->processed_maximum[2]*d->strength};
+    piece->pipe->processed_maximum[0]*d->strength*(scale*scale),
+    piece->pipe->processed_maximum[1]*d->strength*(scale*scale),
+    piece->pipe->processed_maximum[2]*d->strength*(scale*scale)};
   const float aa[3] = {
     d->a[1]*wb[0],
     d->a[1]*wb[1],
