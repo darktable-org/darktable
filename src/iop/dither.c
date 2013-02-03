@@ -114,13 +114,18 @@ flags ()
 
 void init_presets (dt_iop_module_so_t *self)
 {
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
+
   dt_iop_dither_params_t tmp = (dt_iop_dither_params_t)
     { DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f } };
   // add the preset.
-  dt_gui_presets_add_generic(_("dithering"), self->op, self->version(), &tmp, sizeof(dt_iop_dither_params_t), 1);
+  dt_gui_presets_add_generic(_("dither"), self->op, self->version(), &tmp, sizeof(dt_iop_dither_params_t), 1);
   // make it auto-apply for all images:
-  dt_gui_presets_update_autoapply(_("dithering"), self->op, self->version(), 1);
+  //dt_gui_presets_update_autoapply(_("dither"), self->op, self->version(), 1);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
+
 
 // dither pixel into gray, with f=levels-1 and rf=1/f, return err=old-new
 static __m128
