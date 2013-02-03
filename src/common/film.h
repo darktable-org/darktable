@@ -61,8 +61,6 @@ void dt_film_remove(const int id);
 int dt_film_is_empty(const int id);
 /** Createing a new filmroll */
 int dt_film_new(dt_film_t *film,const char *directory);
-/** Imports an image into filmroll */
-void dt_film_image_import(dt_film_t *film,const char *filename, gboolean override_ignore_jpegs);
 /** removes all empty film rolls. */
 void dt_film_remove_empty();
 

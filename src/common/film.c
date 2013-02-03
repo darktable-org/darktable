@@ -227,13 +227,6 @@ int dt_film_new(dt_film_t *film, const char *directory)
   return film->id;
 }
 
-void dt_film_image_import(dt_film_t *film,const char *filename, gboolean override_ignore_jpegs)
-{
-  // import an image into filmroll
-  if(dt_image_import(film->id, filename, override_ignore_jpegs))
-    dt_control_queue_redraw_center();
-}
-
 static int
 dt_film_import_blocking(const char *dirname, const int blocking)
 {
