@@ -736,6 +736,7 @@ auto_apply_presets(const int imgid)
 void dt_dev_read_history(dt_develop_t *dev)
 {
   if(dev->image_storage.id <= 0) return;
+  if(!dev->iop) return;
 
   // maybe prepend auto-presets to history before loading it:
   auto_apply_presets(dev->image_storage.id);
