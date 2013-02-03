@@ -1511,11 +1511,7 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
 /* this is called as a signal handler, the signal raising logic asserts the gdk lock. */
 static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
 {
-  static double floodstop = 0.0;
-  const double now = dt_get_wtime();
-  if(now-floodstop < 0.01) return; // redraw no more than every 1/100th of a second.
   gtk_widget_queue_draw(widget);
-  floodstop = now;
 }
 
 void dt_ellipsize_combo(GtkComboBox *cbox)
