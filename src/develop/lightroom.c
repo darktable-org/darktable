@@ -21,6 +21,7 @@
 #include "common/tags.h"
 #include "common/curve_tools.h"
 #include "common/ratings.h"
+#include "common/colorlabels.h"
 #include "common/debug.h"
 #include "develop/lightroom.h"
 #include "control/control.h"
@@ -30,6 +31,7 @@
 #include <libxml/xpathInternals.h>
 #include <sys/stat.h>
 #include <string.h>
+#include <ctype.h>
 
 // copy here the iop params struct with the actual version. This is so to
 // be as independant as possible of any iop evolutions. Indeed, we create
@@ -527,6 +529,9 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   gdouble lat = 0, lon = 0;
   gboolean has_gps = FALSE;
 
+  int color = 0;
+  gboolean has_colorlabel = FALSE;
+
   float fratio = 0;                // factor ratio image
   int flip = 0;                    // flip value
   float crop_roundness = 0;        // from lightroom
@@ -919,6 +924,27 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
         has_gps = TRUE;
       }
     }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Label"))
+    {
+      for(int i=0; value[i]; i++)
+        value[i] = tolower(value[i]);
+
+      if (!strcmp((char *)value, _("red")))
+        color = 0;
+      else if (!strcmp((char *)value, _("yellow")))
+        color = 1;
+      else if (!strcmp((char *)value, _("green")))
+        color = 2;
+      else if (!strcmp((char *)value, _("blue")))
+        color = 3;
+      else
+        // just an else here to catch all other cases as on lightroom one can
+        // change the names of labels. So purple and the user's defined labels
+        // will be mapped to purple on darktable.
+        color = 4;
+
+      has_colorlabel = TRUE;
+    }
 
     xmlFree(value);
     attribute = attribute->next;
@@ -1271,6 +1297,15 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
     if (imported[0]) strcat(imported, ", ");
     strcat(imported, _("geotagging"));
+    n_import++;
+  }
+
+  if (dev == NULL && has_colorlabel)
+  {
+    dt_colorlabels_set_label(imgid, color);
+
+    if (imported[0]) strcat(imported, ", ");
+    strcat(imported, _("color label"));
     n_import++;
   }
 
