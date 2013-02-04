@@ -425,6 +425,8 @@ void dt_control_create_database_schema()
                         "create table color_labels (imgid integer, color integer)",
                         NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "create unique index color_labels_idx ON color_labels(imgid,color)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create table meta_data (id integer,key integer,value varchar)",
                         NULL, NULL, NULL);
   // quick hack to detect if the db is already used by another process
@@ -579,6 +581,8 @@ void dt_control_init(dt_control_t *s)
       sqlite3_exec(dt_database_get(darktable.db),
                    "create table color_labels (imgid integer, color integer)",
                    NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "create unique index color_labels_idx ON color_labels(imgid,color)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
                    "drop table mipmaps", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
