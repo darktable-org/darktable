@@ -189,6 +189,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // David Meier, Wolf Faust IT8, direct sunlight, well lit
   { "SONY SLT-A55V",                { 969696, 407043,  40268}, { 218201, 1182556, -285400}, { 21042, -342819, 1260223}, {762085, 793961, 670151}},
 
+  // Wolfgang Kuehnel, Wolf Faust IT8, strobe, well lit
+  { "SONY NEX-3",                   {1157837, 503723,  40894}, { 194550, 1279465, -297058}, {-80719, -471252, 1316238}, {669724, 694839, 586731}},
+
   // Denis Cheremisov, CMP Digital Target 4, strobe, well lit
   { "SONY NEX-5N",                  { 913406, 394043,   3237}, { 206253, 1085022,  -19917}, {-69138, -377472, 1038483}, {800079, 824112, 674850}},
 
