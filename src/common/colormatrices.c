@@ -171,6 +171,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Alexander Rabtchevich, Wolf Faust IT8, direct sunlight, well lit
   { "SONY DSLR-A200",               { 846786, 366302, -22858}, { 311584, 1046249, -107056}, { 54596, -192993, 1191406}, {708405, 744507, 596771}},
 
+  // Wolfgang Kuehnel, Wolf Faust IT8, strobe, well lit
+  { "SONY DSLR-A230",               { 890442, 398560,  24979}, { 376419, 1215424,  -86807}, {  7294, -299591, 1116592}, {578903, 597946, 494522}},
+
   // Stephane Chauveau, Wolf Faust IT8, direct sunlight, well lit
   { "SONY DSLR-A550",               {1031235, 405899,   1572}, { 185623, 1122162, -272659}, {-25528, -329514, 1249969}, {729797, 753586, 633530}},
 
