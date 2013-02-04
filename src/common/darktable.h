@@ -65,7 +65,7 @@ typedef	unsigned int	u_int;
 #define omp_get_thread_num() 0
 #endif
 
-#define DT_MODULE_VERSION 7   // version of dt's module interface
+#define DT_MODULE_VERSION 8   // version of dt's module interface
 #define DT_VERSION 36         // version of dt's database tables
 #define DT_CONFIG_VERSION 34  // dt conf var version
 
