@@ -736,12 +736,11 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
 
     hist = dev->histogram_pre_tonecurve;
     hist_max = dev->histogram_linear?dev->histogram_pre_tonecurve_max:logf(1.0 + dev->histogram_pre_tonecurve_max);
-    if(hist_max > 0 && ch == ch_L)
+    if(ch == ch_L)
     {
       cairo_save(cr);
-      cairo_scale(cr, width/63.0, -(height-5)/(float)hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-      dt_draw_histogram_8(cr, hist, 3);
+      dt_draw_histogram_8(cr, 0, width, height - 5, hist_max, hist, 3, dev->histogram_linear);
       cairo_restore(cr);
     }
 

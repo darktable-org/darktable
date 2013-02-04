@@ -497,14 +497,11 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
     float *hist, hist_max;
     hist = dev->histogram_pre_levels;
     hist_max = dev->histogram_linear?dev->histogram_pre_levels_max:logf(1.0 + dev->histogram_pre_levels_max);
-    if(hist_max > 0)
-    {
-      cairo_save(cr);
-      cairo_scale(cr, width/63.0, -(height-5)/(float)hist_max);
-      cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-      dt_draw_histogram_8(cr, hist, 3);
-      cairo_restore(cr);
-    }
+
+    cairo_save(cr);
+    cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
+    dt_draw_histogram_8(cr, 0, width, height, hist_max, hist, 3, dev->histogram_linear);
+    cairo_restore(cr);
   }
 
   // Cleaning up

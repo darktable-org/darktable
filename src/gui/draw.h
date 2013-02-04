@@ -178,32 +178,77 @@ static inline int dt_draw_curve_add_point(dt_draw_curve_t *c, const            f
   return 0;
 }
 
-static inline void dt_draw_histogram_8_linear(cairo_t *cr, float *hist, int32_t channel)
+static inline void dt_draw_histogram_8_linear(cairo_t *cr, gint offset, gint width, gint height, float hist_max, float *hist, int32_t channel)
 {
-  cairo_move_to(cr, 0, 0);
-  for(int k=0; k<64; k++)
-    cairo_line_to(cr, k, hist[4*k+channel]);
-  cairo_line_to(cr, 63, 0);
+  double min_y = offset;
+  double max_y = offset + height;
+
+  float factor_x = width / 63.0;
+  float factor_y = height / hist_max;
+
+  cairo_move_to(cr, 0, max_y);
+
+  for(int k = 0; k < 64; k++)
+  {
+    float val = hist[4*k+channel];
+
+    double pos_x = k * factor_x;
+    double pos_y = max_y - (factor_y * val);
+
+    if(pos_y > max_y)
+      pos_y = max_y;
+
+    if(pos_y < min_y)
+      pos_y = min_y;
+
+    cairo_line_to(cr, pos_x, pos_y);
+  }
+
+  cairo_line_to(cr, width, max_y);
   cairo_close_path(cr);
   cairo_fill(cr);
 }
 
-static inline void dt_draw_histogram_8_log(cairo_t *cr, float *hist, int32_t channel)
+static inline void dt_draw_histogram_8_log(cairo_t *cr, gint offset, gint width, gint height, float hist_max, float *hist, int32_t channel)
 {
-  cairo_move_to(cr, 0, 0);
-  for(int k=0; k<64; k++)
-    cairo_line_to(cr, k, logf(1.0 + hist[4*k+channel]));
-  cairo_line_to(cr, 63, 0);
+  double min_y = offset;
+  double max_y = offset + height;
+
+  float factor_x = width / 63.0;
+  float factor_y = height / hist_max;
+
+  cairo_move_to(cr, 0, max_y);
+
+  for(int k = 0; k < 64; k++)
+  {
+    double val = logf(1.0 + hist[4*k+channel]);
+
+    double pos_x = k * factor_x;
+    double pos_y = max_y - (factor_y * val);
+
+    if(pos_y > max_y)
+      pos_y = max_y;
+
+    if(pos_y < min_y)
+      pos_y = min_y;
+
+    cairo_line_to(cr, pos_x, pos_y);
+  }
+
+  cairo_line_to(cr, width, max_y);
   cairo_close_path(cr);
   cairo_fill(cr);
 }
 
-static inline void dt_draw_histogram_8(cairo_t *cr, float *hist, int32_t channel)
+static inline void dt_draw_histogram_8(cairo_t *cr, gint offset, gint width, gint height, float hist_max, float *hist, int32_t channel, gboolean linear)
 {
-  if(darktable.develop->histogram_linear == TRUE)
-    dt_draw_histogram_8_linear(cr, hist, channel);
-  else
-    dt_draw_histogram_8_log(cr, hist, channel);
+  if(hist_max > 0)
+  {
+    if(linear)
+      dt_draw_histogram_8_linear(cr, offset, width, height, hist_max, hist, channel);
+    else
+      dt_draw_histogram_8_log(cr, offset, width, height, hist_max, hist, channel);
+  }
 }
 
 /** transform a data blob from cairo's premultiplied rgba/bgra to GdkPixbuf's un-premultiplied bgra/rgba */
