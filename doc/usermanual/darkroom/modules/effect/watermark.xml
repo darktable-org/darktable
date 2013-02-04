@@ -35,7 +35,28 @@
 		    <row> <entry>$(IMAGE.ID)</entry><entry><para>The uniq image id within current library</para></entry></row>
 		    <row> <entry>$(IMAGE.FILENAME)</entry><entry><para>The iamge filename</para></entry></row>
 		    <row> <entry>$(IMAGE.EXIF)</entry><entry><para>The image exif string</para></entry></row>
-		    <row> <entry>$(EXIF.DATE)</entry><entry><para>The image date</para></entry></row>								    
+		    <row> <entry>$(EXIF.DATE)</entry><entry><para>The image date</para></entry></row>								
+		    <row> <entry>$(EXIF.DATE.SECOND)</entry><entry><para> Seconds from the image EXIF data</para></entry></row>
+		    <row> <entry>$(EXIF.DATE.MINUTE)</entry><entry><para> Minutes from the image EXIF data</para></entry></row>
+		    <row> <entry>$(EXIF.DATE.HOUR)</entry><entry><para> Hours from the image EXIF data (24h)</para></entry></row>
+		    <row> <entry>$(EXIF.DATE.HOUR_AMPM)</entry><entry><para> Hours from the image EXIF data (12h, AM/PM)</para></entry></row>
+		    <row> <entry>$(EXIF.DATE.DAY)</entry><entry><para> Day from the image EXIF data</para></entry></row>
+		    <row> <entry>$(EXIF.DATE.MONTH)</entry><entry><para> </para></entry></row>
+		    <row> <entry>$(EXIF.DATE.SHORT_MONTH)</entry><entry><para> </para></entry></row>
+		    <row> <entry>$(EXIF.DATE.LONG_MONTH)</entry><entry><para> </para></entry></row>
+		    <row> <entry>$(EXIF.DATE.SHORT_YEAR)</entry><entry><para> Abbreviated year from the image EXIF data (2013 is "13")</para></entry></row>
+		    <row> <entry>$(EXIF.DATE.LONG_YEAR)</entry><entry><para> Full year from the image EXIF data</para></entry></row>
+		    <row> <entry>$(DATE)</entry><entry><para> Current system date</para></entry></row>
+		    <row> <entry>$(DATE.SECOND)</entry><entry><para> Current system time seconds</para></entry></row>
+		    <row> <entry>$(DATE.MINUTE)</entry><entry><para> Current system time minutes</para></entry></row>
+		    <row> <entry>$(DATE.HOUR)</entry><entry><para> Current system time hours (24h)</para></entry></row>
+		    <row> <entry>$(DATE.HOUR_AMPM)</entry><entry><para> Current system time hours (12, AP/PM)</para></entry></row>
+		    <row> <entry>$(DATE.DAY)</entry><entry><para> Current system time day</para></entry></row>
+		    <row> <entry>$(DATE.MONTH)</entry><entry><para> Current system time month</para></entry></row>
+		    <row> <entry>$(DATE.SHORT_MONTH)</entry><entry><para> </para></entry></row>
+		    <row> <entry>$(DATE.LONG_MONTH)</entry><entry><para> </para></entry></row>
+		    <row> <entry>$(DATE.SHORT_YEAR)</entry><entry><para> Current system time yaer (abbreviated)</para></entry></row>
+		    <row> <entry>$(DATE.LONG_YEAR)</entry><entry><para> Current system time year</para></entry></row>
 		    <row> <entry>$(EXIF.MAKER)</entry><entry><para>The maker of camera model</para></entry></row>
 		    <row> <entry>$(EXIF.MODEL)</entry><entry><para>The camera model</para></entry></row>
 		    <row> <entry>$(EXIF.LENS)</entry><entry><para>The specific lens used</para></entry></row>
