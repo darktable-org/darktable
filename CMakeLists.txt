@@ -34,7 +34,7 @@ endif(APPLE)
 # Generate multi arch triplet
 EXECUTE_PROCESS(COMMAND dpkg-architecture -qDEB_HOST_MULTIARCH OUTPUT_VARIABLE CMAKE_ARCH_TRIPLET OUTPUT_STRIP_TRAILING_WHITESPACE)
 if(CMAKE_ARCH_TRIPLET)
-	message("-- mutliarch triplet detected: " ${CMAKE_ARCH_TRIPLET})
+	message("-- multiarch triplet detected: " ${CMAKE_ARCH_TRIPLET})
 	LIST(INSERT CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES 0 /lib/${CMAKE_ARCH_TRIPLET}
 		/usr/lib/${CMAKE_ARCH_TRIPLET})
 endif()
