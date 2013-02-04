@@ -52,7 +52,7 @@ groups ()
 int
 flags ()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_PREVIEW_NON_OPENCL;
+  return IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -212,6 +212,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_levels_params_t));
   module->default_params = malloc(sizeof(dt_iop_levels_params_t));
   module->default_enabled = 0;
+  module->request_histogram = 1;
   module->priority = 636; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_levels_params_t);
   module->gui_data = NULL;
@@ -495,14 +496,14 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   {
     dt_develop_t *dev = darktable.develop;
     float *hist, hist_max;
-    hist = dev->histogram_pre_levels;
-    hist_max = dev->histogram_linear?dev->histogram_pre_levels_max:logf(1.0 + dev->histogram_pre_levels_max);
-    if(hist_max > 0)
+    hist = self->histogram;
+    hist_max = dev->histogram_linear?self->histogram_max[0]:logf(1.0 + self->histogram_max[0]);
+    if(hist && hist_max > 0)
     {
       cairo_save(cr);
       cairo_scale(cr, width/63.0, -(height-5)/(float)hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-      dt_draw_histogram_8(cr, hist, 3);
+      dt_draw_histogram_8(cr, hist, 0);
       cairo_restore(cr);
     }
   }
