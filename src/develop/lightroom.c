@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/tags.h"
 #include "common/curve_tools.h"
+#include "common/ratings.h"
 #include "common/debug.h"
 #include "develop/lightroom.h"
 #include "control/control.h"
@@ -520,6 +521,9 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
   gboolean has_tags = FALSE;
 
+  int rating = 0;
+  gboolean has_rating = FALSE;
+
   float fratio = 0;                // factor ratio image
   int flip = 0;                    // flip value
   float crop_roundness = 0;        // from lightroom
@@ -877,6 +881,15 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
         pbl.detail = lr2dt_clarity((float)v);
       }
     }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Rating"))
+    {
+      int v = atoi((char *)value);
+      if (v!=0)
+      {
+        rating = v;
+        has_rating = TRUE;
+      }
+    }
 
     xmlFree(value);
     attribute = attribute->next;
@@ -1211,6 +1224,15 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   {
     if (imported[0]) strcat(imported, ", ");
     strcat(imported, _("tags"));
+    n_import++;
+  }
+
+  if (dev == NULL && has_rating)
+  {
+    dt_ratings_apply_to_image(imgid, rating);
+
+    if (imported[0]) strcat(imported, ", ");
+    strcat(imported, _("rating"));
     n_import++;
   }
 
