@@ -162,6 +162,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "NIKON COOLPIX P7000",          { 804947, 229630,  97717}, { 178146, 1138763, -395233}, { 88699, -282013, 1234650}, {809998, 842819, 682144}},
 
+  // Wolfgang Kuehnel, Wolf Faust IT8, strobe, well lit
+  { "MINOLTA DYNAX 5D",             { 910599, 389618,  20218}, { 330353, 1223724, -116943}, { 24384, -307190, 1156891}, {604309, 629196, 525848}},
+
   // Karl Mikaelsson, Homebrew ColorChecker, strobe, well lit
   { "SONY DSLR-A100",               { 823853, 374588,  28259}, { 220200,  934509, -108643}, { 48141, -226440, 1062881}, {689651, 715225, 602127}},
 
