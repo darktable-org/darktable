@@ -524,6 +524,9 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   int rating = 0;
   gboolean has_rating = FALSE;
 
+  gdouble lat = 0, lon = 0;
+  gboolean has_gps = FALSE;
+
   float fratio = 0;                // factor ratio image
   int flip = 0;                    // flip value
   float crop_roundness = 0;        // from lightroom
@@ -890,6 +893,32 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
         has_rating = TRUE;
       }
     }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "GPSLatitude"))
+    {
+      int deg;
+      double msec;
+      char d;
+
+      if (sscanf((const char *)value, "%d,%lf%c", &deg, &msec, &d))
+      {
+        lat = deg + msec / 60.0;
+        if (d == 'S') lat = -lat;
+        has_gps = TRUE;
+      }
+    }
+    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "GPSLongitude"))
+    {
+      int deg;
+      double msec;
+      char d;
+
+      if (sscanf((const char *)value, "%d,%lf%c", &deg, &msec, &d))
+      {
+        lon = deg + msec / 60.0;
+        if (d == 'W') lon = -lon;
+        has_gps = TRUE;
+      }
+    }
 
     xmlFree(value);
     attribute = attribute->next;
@@ -1233,6 +1262,15 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
     if (imported[0]) strcat(imported, ", ");
     strcat(imported, _("rating"));
+    n_import++;
+  }
+
+  if (dev == NULL && has_gps)
+  {
+    dt_image_set_location(imgid, lon, lat);
+
+    if (imported[0]) strcat(imported, ", ");
+    strcat(imported, _("geotagging"));
     n_import++;
   }
 
