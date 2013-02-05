@@ -565,13 +565,21 @@ static gboolean quit_callback(GtkAccelGroup *accel_group,
 }
 
 #ifdef MAC_INTEGRATION
+#ifdef GTK_TYPE_OSX_APPLICATION
 static gboolean osx_quit_callback(GtkOSXApplication* OSXapp, gpointer user_data)
+#else
+static gboolean osx_quit_callback(GtkosxApplication* OSXapp, gpointer user_data)
+#endif
 {
   dt_control_quit();
   return TRUE;
 }
 
+#ifdef GTK_TYPE_OSX_APPLICATION
 static gboolean osx_openfile_callback(GtkOSXApplication* OSXapp, gchar* path, gpointer user_data)
+#else
+static gboolean osx_openfile_callback(GtkosxApplication* OSXapp, gchar* path, gpointer user_data)
+#endif
 {
   return dt_load_from_string(path, FALSE) == 0 ? FALSE : TRUE;
 }
@@ -715,8 +723,13 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_init (&argc, &argv);
 
 #ifdef MAC_INTEGRATION
+#ifdef GTK_TYPE_OSX_APPLICATION
   GtkOSXApplication *OSXApp = g_object_new(GTK_TYPE_OSX_APPLICATION, NULL);
   gtk_osxapplication_set_menu_bar(OSXApp, GTK_MENU_SHELL(gtk_menu_bar_new())); //needed for default entries to show up
+#else
+  GtkosxApplication *OSXApp = g_object_new(GTKOSX_TYPE_APPLICATION, NULL);
+  gtkosx_application_set_menu_bar(OSXApp, GTK_MENU_SHELL(gtk_menu_bar_new())); //needed for default entries to show up
+#endif
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationBlockTermination", G_CALLBACK(osx_quit_callback), NULL);
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationOpenFile", G_CALLBACK(osx_openfile_callback), NULL);
 #endif
@@ -945,7 +958,11 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   int tb = darktable.control->tabborder;
   dt_view_manager_configure(darktable.view_manager, widget->allocation.width - 2*tb, widget->allocation.height - 2*tb);
 #ifdef MAC_INTEGRATION
+#ifdef GTK_TYPE_OSX_APPLICATION
   gtk_osxapplication_ready(g_object_new(GTK_TYPE_OSX_APPLICATION, NULL));
+#else
+  gtkosx_application_ready(g_object_new(GTKOSX_TYPE_APPLICATION, NULL));
+#endif
 #endif
   /* start the event loop */
   gtk_main ();

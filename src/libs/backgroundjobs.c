@@ -255,7 +255,11 @@ static void _lib_backgroundjobs_progress(dt_lib_module_t *self, const guint *key
       unity_launcher_entry_set_progress_visible( j->darktable_launcher, FALSE );
 #endif
 #ifdef MAC_INTEGRATION
+#ifdef GTK_TYPE_OSX_APPLICATION
       gtk_osxapplication_attention_request(g_object_new(GTK_TYPE_OSX_APPLICATION, NULL), INFO_REQUEST);
+#else
+      gtkosx_application_attention_request(g_object_new(GTKOSX_TYPE_APPLICATION, NULL), INFO_REQUEST);
+#endif
 #endif
 
       /* hide jobbox if theres no jobs left */
