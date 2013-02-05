@@ -438,9 +438,12 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
-    /* sony has its own rotation */
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.MinoltaCs7D.Rotation")))
-         != exifData.end() && pos->size())
+
+    /* minolta and sony have their own rotation */
+    if ( ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.MinoltaCs5D.Rotation")))
+           != exifData.end() && pos->size()) ||
+         ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.MinoltaCs7D.Rotation")))
+           != exifData.end() && pos->size()) )
     {
       switch(pos->toLong())
       {
