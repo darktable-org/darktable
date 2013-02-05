@@ -314,6 +314,9 @@ void gui_init(dt_lib_module_t *self)
                       target_list_all,
                       n_targets_all,
                       GDK_ACTION_COPY);
+#ifdef HAVE_MAP
+  gtk_drag_dest_set(d->filmstrip, GTK_DEST_DEFAULT_ALL, target_list_internal, n_targets_internal, GDK_ACTION_COPY);
+#endif
 
   g_signal_connect_after(d->filmstrip, "drag-begin", G_CALLBACK(_lib_filmstrip_dnd_begin_callback), self);
   g_signal_connect(d->filmstrip, "drag-data-get", G_CALLBACK(_lib_filmstrip_dnd_get_callback), self);
