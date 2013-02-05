@@ -594,7 +594,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
        step is anyhow done on cpu. we assume that blending itself will never require tiling in cpu path,
        because memory requirements will still be low enough. */
 
-    assert(tiling.factor > 0.0f && tiling.factor < 100.0f);
+    assert(tiling.factor > 0.0f);
 
     if(pipe->shutdown)
     {
