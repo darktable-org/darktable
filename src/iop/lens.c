@@ -717,7 +717,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     const lfLens **lens = lf_db_find_lenses_hd(dt_iop_lensfun_db, camera, NULL,
-                          p->lens, 0);
+                          p->lens, LF_SEARCH_LOOSE);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     if(lens)
     {
