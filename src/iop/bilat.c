@@ -204,7 +204,7 @@ void init(dt_iop_module_t *module)
   // init defaults:
   dt_iop_bilat_params_t tmp = (dt_iop_bilat_params_t)
   {
-    8, 50, 0.2
+    20, 50, 0.2
   };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_bilat_params_t));
