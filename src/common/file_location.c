@@ -79,21 +79,13 @@ gchar* dt_loc_get_home_dir(const gchar* user)
 #endif
 }
 
-static gchar * dt_loc_init_generic (const char *value,const char*default_value)
+static gchar * dt_loc_init_generic (const char *value, const char*default_value)
 {
-  if(value)
-  {
-    if (g_file_test (value,G_FILE_TEST_EXISTS)==FALSE)
-      return NULL;
-    return dt_util_fix_path(value);
-  }
-  else
-  {
-    gchar* result = dt_util_fix_path(default_value);
-    if (g_file_test (result,G_FILE_TEST_EXISTS)==FALSE)
-      g_mkdir_with_parents (result,0700);
-    return result;
-  }
+  const gchar *path = value?value:default_value;
+  gchar* result = dt_util_fix_path(path);
+  if(g_file_test(result,G_FILE_TEST_EXISTS)==FALSE)
+    g_mkdir_with_parents(result,0700);
+  return result;
 }
 
 void dt_loc_init_user_config_dir (const char *configdir)
