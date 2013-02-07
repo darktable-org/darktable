@@ -462,8 +462,10 @@ pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *
 
   for(int k=0; k<3; k++) picked_color_min[k] =  666.0f;
   for(int k=0; k<3; k++) picked_color_max[k] = -666.0f;
+  for(int k=0; k<3; k++) Lab[k] = picked_color[k] = 0.0f;
 
-  for(int k=0; k<3; k++) Lab[k] = 0.0f;
+  // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined position
+  if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return;
 
   // Initializing bounds of colorpicker box
   for(int k=0; k<4; k+=2) box[k] = MIN(roi->width -1, MAX(0, module->color_picker_box[k]*roi->width));
@@ -521,6 +523,9 @@ pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop
   for(int k=0; k<3; k++) picked_color_min[k] =  666.0f;
   for(int k=0; k<3; k++) picked_color_max[k] = -666.0f;
   for(int k=0; k<3; k++) Lab[k] = picked_color[k] = 0.0f;
+
+  // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined position
+  if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return;
 
   if(darktable.lib->proxy.colorpicker.size)
   {

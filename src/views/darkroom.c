@@ -371,7 +371,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
                       (box[3] - box[1])*ht - 2./zoom_scale);
       cairo_stroke(cri);
     }
-    else
+    else if(point[0] >= 0.0f && point[0] <= 1.0f && point[1] >= 0.0f && point[1] <= 1.0f)
     {
       cairo_rectangle(cri, point[0] * wd - .01 * wd, point[1] * ht - .01 * wd,
                       .02 * wd, .02 * wd);

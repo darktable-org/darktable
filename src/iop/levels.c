@@ -260,7 +260,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->current_pick = NONE;
   c->last_picked_color = -1;
   for (int i=0; i<3; i++)
-    for (int j=0; j<2; j++) c->pick_xy_positions[i][j] = 0.5;
+    for (int j=0; j<2; j++) c->pick_xy_positions[i][j] = -1;
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
@@ -363,7 +363,9 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   /* we need to save the last picked color to prevent flickering when
    * changing from one picker to another, as the picked_color value does not
    * update as rapidly */
-  if(self->request_color_pick && mean_picked_color != c->last_picked_color)
+  if(self->request_color_pick && 
+     self->color_picker_point[0] >= 0.0f && self->color_picker_point[1] >= 0.0f &&
+     mean_picked_color != c->last_picked_color)
   {
     float previous_color[3];
     previous_color[0] = p->levels[0];
