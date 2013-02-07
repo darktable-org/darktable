@@ -463,24 +463,30 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
          != exifData.end() && pos->size())
     {
       Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitudeRef"));
-      const char *sign = ref->toString().c_str();
-      double latitude = 0.0;
-      if(_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
-                                  pos->toRational(1).first, pos->toRational(1).second,
-                                  pos->toRational(2).first, pos->toRational(2).second, sign[0], &latitude))
-        img->latitude = latitude;
+      if(ref != exifData.end() && ref->size())
+      {
+        const char *sign = ref->toString().c_str();
+        double latitude = 0.0;
+        if(_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
+                                    pos->toRational(1).first, pos->toRational(1).second,
+                                    pos->toRational(2).first, pos->toRational(2).second, sign[0], &latitude))
+          img->latitude = latitude;
+      }
     }
 
     if ( (pos = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitude")))
          != exifData.end() && pos->size())
     {
       Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitudeRef"));
-      const char *sign = ref->toString().c_str();
-      double longitude = 0.0;
-      if(_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
-                                  pos->toRational(1).first, pos->toRational(1).second,
-                                  pos->toRational(2).first, pos->toRational(2).second, sign[0], &longitude))
-        img->longitude = longitude;
+      if(ref != exifData.end() && ref->size())
+      {
+        const char *sign = ref->toString().c_str();
+        double longitude = 0.0;
+        if(_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
+                                    pos->toRational(1).first, pos->toRational(1).second,
+                                    pos->toRational(2).first, pos->toRational(2).second, sign[0], &longitude))
+          img->longitude = longitude;
+      }
     }
 
     /* Read lens name */
