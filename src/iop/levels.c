@@ -770,23 +770,26 @@ static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *
   if(darktable.gui->reset) return;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;  
-  dt_develop_t *dev = darktable.develop;
+
+  float *hist = self->histogram;
+
+  if(!hist) return;
 
   // search histogram for min (search from bottom)
-  for(int k=3; k<4*64; k+=4)
+  for(int k=0; k<=4*63; k+=4)
   {
-    if (dev->histogram_pre_levels[k] > 1)
+    if (hist[k] > 1)
     {
-      p->levels[0] = ((float)(k-3.0)/4.0)/64.0;
+      p->levels[0] = ((float)(k)/(4*64));
       break;
     }
   }
   // then for max (search from top)
-  for(int k=4*64-1; k>3; k-=4)
+  for(int k=4*63; k>=0; k-=4)
   {
-    if (dev->histogram_pre_levels[k] > 1)
+    if (hist[k] > 1)
     {
-      p->levels[2] = ((float)(k-3.0)/4.0)/64.0;
+      p->levels[2] = ((float)(k)/(4*64));
       break;
     }
   }
