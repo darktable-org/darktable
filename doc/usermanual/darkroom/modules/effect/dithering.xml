@@ -8,7 +8,6 @@
 						<entry>This module eliminates some of the typical banding artifacts which can occur when darktable's
                                                        internal 32-bit floating point data are transfered into a discrete 8-bit or 16-bit integer output format for
                                                        display or file export.
-                                                       The module is active by default and - in its default settings - will automatically adapt to the output format.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/dithering.png" scalefit="1" width="80%" align="center" />
