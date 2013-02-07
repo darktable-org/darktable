@@ -81,6 +81,8 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
 static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, dt_view_t *self);
 static gboolean _view_map_dnd_failed_callback(GtkWidget *widget, GdkDragContext *drag_context, GtkDragResult result, dt_view_t *self);
 
+static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, gboolean record_undo);
+
 const char *name(dt_view_t *self)
 {
   return _("map");
@@ -611,6 +613,29 @@ static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer us
   }
 }
 
+static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, gboolean record_undo)
+{
+  dt_map_t *lib = (dt_map_t*)self->data;
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+  dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+
+  if (record_undo)
+  {
+    // store old position into undo buffer
+    lib->undo_data[lib->undo_pos].imgid = imgid;
+    lib->undo_data[lib->undo_pos].longitude = img->longitude;
+    lib->undo_data[lib->undo_pos].latitude = img->latitude;
+    if (lib->undo_count < N_UNDO) lib->undo_count++;
+    lib->undo_pos++;
+    if (lib->undo_pos == N_UNDO) lib->undo_pos = 0;
+  }
+
+  img->longitude = longitude;
+  img->latitude = latitude;
+  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_read_release(darktable.image_cache, cimg);
+}
+
 static void
 _view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint y)
 {
@@ -621,12 +646,7 @@ _view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint y)
   osm_gps_map_point_get_degrees(pt, &latitude, &longitude);
   osm_gps_map_point_free(pt);
 
-  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-  dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
-  img->longitude = longitude;
-  img->latitude = latitude;
-  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
-  dt_image_cache_read_release(darktable.image_cache, cimg);
+  _set_image_location(self, imgid, longitude, latitude, TRUE);
 }
 
 static void
