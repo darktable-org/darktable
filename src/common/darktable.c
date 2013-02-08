@@ -443,11 +443,11 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
   // database
   gchar *dbfilename_from_command = NULL;
-  char *datadirFromCommand = NULL;
-  char *moduledirFromCommand = NULL;
-  char *tmpdirFromCommand = NULL;
-  char *configdirFromCommand = NULL;
-  char *cachedirFromCommand = NULL;
+  char *datadir_from_command = NULL;
+  char *moduledir_from_command = NULL;
+  char *tmpdir_from_command = NULL;
+  char *configdir_from_command = NULL;
+  char *cachedir_from_command = NULL;
 
   darktable.num_openmp_threads = 1;
 #ifdef _OPENMP
@@ -478,23 +478,23 @@ int dt_init(int argc, char *argv[], const int init_gui)
       }
       else if(!strcmp(argv[k], "--datadir"))
       {
-        datadirFromCommand = argv[++k];
+        datadir_from_command = argv[++k];
       }
       else if(!strcmp(argv[k], "--moduledir"))
       {
-        moduledirFromCommand = argv[++k];
+        moduledir_from_command = argv[++k];
       }
       else if(!strcmp(argv[k], "--tmpdir"))
       {
-        tmpdirFromCommand = argv[++k];
+        tmpdir_from_command = argv[++k];
       }
       else if(!strcmp(argv[k], "--configdir"))
       {
-        configdirFromCommand = argv[++k];
+        configdir_from_command = argv[++k];
       }
       else if(!strcmp(argv[k], "--cachedir"))
       {
-        cachedirFromCommand = argv[++k];
+        cachedir_from_command = argv[++k];
       }
       else if(!strcmp(argv[k], "--localedir"))
       {
@@ -542,15 +542,15 @@ int dt_init(int argc, char *argv[], const int init_gui)
 #ifdef _OPENMP
   omp_set_num_threads(darktable.num_openmp_threads);
 #endif
-  dt_loc_init_datadir(datadirFromCommand);
-  dt_loc_init_plugindir(moduledirFromCommand);
-  if(dt_loc_init_tmp_dir(tmpdirFromCommand))
+  dt_loc_init_datadir(datadir_from_command);
+  dt_loc_init_plugindir(moduledir_from_command);
+  if(dt_loc_init_tmp_dir(tmpdir_from_command))
   {
     printf(_("ERROR : invalid temporary directory : %s\n"),darktable.tmpdir);
     return usage(argv[0]);
   }
-  dt_loc_init_user_config_dir(configdirFromCommand);
-  dt_loc_init_user_cache_dir(cachedirFromCommand);
+  dt_loc_init_user_config_dir(configdir_from_command);
+  dt_loc_init_user_cache_dir(cachedir_from_command);
 
 #if !GLIB_CHECK_VERSION(2, 35, 0)
   g_type_init();
