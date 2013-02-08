@@ -252,81 +252,20 @@ dt_film_import_blocking(const char *dirname, const int blocking)
   {
     char datetime[20];
     dt_gettime(datetime);
-#if 0
-    /* Should we use one for the whole app? */
-    GVolumeMonitor *gv_monitor;
-    gv_monitor = g_volume_monitor_get ();
-
-    GList *mounts;
-    mounts = g_volume_monitor_get_mounts(gv_monitor);
-
-    gchar *mount_name = NULL;
-    if (mounts != NULL)
-    {
-      GFile *mount_gfile;
-      GMount *filmroll_mount;
-      GError *error = NULL;
-      gchar *filmroll_path;
-      GFile *gdirname = g_file_new_for_path(dirname);
-
-      filmroll_mount = g_file_find_enclosing_mount(gdirname, NULL, &error);
-      g_object_unref(gdirname);
-
-      if (!error)
-      /* We are considering that the only error is that there is no mount
-       * because the filmroll added is in a local drive */
-      {
-        filmroll_path = g_file_get_path((g_mount_get_default_location(filmroll_mount)));
-
-        for (int i=0; i < g_list_length (mounts); i++)
-        {
-          gchar *p;
-
-          mount_gfile = g_mount_get_default_location((GMount *)g_list_nth_data(mounts, i));
-          p = g_file_get_path(mount_gfile);
-
-          if (g_strcmp0(p, filmroll_path))
-          {
-            mount_name = g_mount_get_name(g_list_nth_data(mounts, i));
-            break;
-          }
-
-          g_free(p);
-          g_object_unref (mount_gfile);
-        }
-
-        g_free (filmroll_path);
-      }
-
-      if (filmroll_mount != NULL) g_object_unref (filmroll_mount);
-
-      /* We haven't found the device in the list of connected devices. Let's suppose it is local */
-      if (mount_name == NULL)
-        mount_name = g_strdup("Local");
-    }
-    else
-      mount_name = g_strdup("Local");
-#endif
     /* insert a new film roll into database */
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-//                                "insert into film_rolls (id, datetime_accessed, folder, external_drive) values "
-//                                "(null, ?1, ?2, ?3)", -1, &stmt, NULL);
                                 "insert into film_rolls (id, datetime_accessed, folder) values "
                                 "(null, ?1, ?2)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, strlen(datetime),
                                SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, dirname, strlen(dirname),
                                SQLITE_STATIC);
-//    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, mount_name, strlen(mount_name),
-//                               SQLITE_STATIC);
 
     rc = sqlite3_step(stmt);
     if(rc != SQLITE_DONE)
       fprintf(stderr, "[film_import] failed to insert film roll! %s\n",
               sqlite3_errmsg(dt_database_get(darktable.db)));
     sqlite3_finalize(stmt);
-
-//    if (mount_name != NULL) g_free (mount_name);
 
     /* requery for filmroll and fetch new id */
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
