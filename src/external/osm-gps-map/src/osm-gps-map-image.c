@@ -236,7 +236,7 @@ osm_gps_map_image_get_point(OsmGpsMapImage *object)
     return object->priv->pt;
 }
 
-const gint
+gint
 osm_gps_map_image_get_zorder(OsmGpsMapImage *object)
 {
     g_return_val_if_fail (OSM_IS_GPS_MAP_IMAGE (object), 0);
