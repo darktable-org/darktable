@@ -4,7 +4,7 @@
 		%darktable_dtd;
 		]>
 
-<chapter>
+<chapter id="preferences chapter">
 <chapterinfo>
 <keywordset>
   <keyword>preferences</keyword>

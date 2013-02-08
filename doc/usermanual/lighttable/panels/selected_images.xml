@@ -1,64 +1,62 @@
-		<sect2 status="draft"><title>Selected image(s)</title>
-			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth="6*"/>
-					<colspec colwidth="4*"/>
-					<tbody>
-						<row>						
-							<entry>This panel allows to perform some actions on selected images.
-							</entry>
-							<entry>
-								<graphic fileref="lighttable/images/panel_selectedimages.png" scalefit="1" width="80%" align="center" />
-							</entry>
-						</row>
-					</tbody>
-				</tgroup>
-			</informaltable>
-				<sect4><title>remove</title>
-					<para>Remove the selected images from the darktable database. Those images will not be shown
-					in lighttable anymore, but remain on filesystem. As darktable stores XMP files with your development
-                                        parameters on disk, you can later fully reconstruct your work by just re-importing the images. When
-                                        backing up your RAWs make sure to also save the XMP files!
-					</para>
-				</sect4>
-				<sect4><title>delete</title>
-					<para>Physically delete selected images from filesystem. See also preference option 'ask before erasing images from disk'; if
-                                              this option is not active, darktable will delete the file(s) without further question! This is not reversible and will
-                                              also erase your development work an these images.
-					</para>
-				</sect4>
-				<sect4><title>move</title>
-					<para>Physically move selected images (parent file plus accompanying .xmp sidecar file) to another filesystem folder.
-					</para>
-				</sect4>
-				<sect4><title>copy</title>
-					<para>Physically copy selected images (parent file plus accompanying .xmp sidecar file) to another filesystem folder.
-					</para>
-				</sect4>
-				<sect4><title>create hdr</title>
-					<para>Create a high dynamic range image from the selected images and store it as a new source file in DNG format. Images
-                                              need to be properly aligned.
-					</para>
-				</sect4>
-				<sect4><title>duplicate</title>
-					<para>Create a virtual copy of selected images within darktable but not physically on
-					your filesystem. It allows to test and try different developments for the same image for example. Duplicate images will
-                                        share the same parent input file but each have their own .xmp sidecar file.
-					</para>
-				</sect4>
-				<sect4><title>rotation</title>
-					<para>Perform a counter-clock wise/clockwise rotation on selected images. The third button
-					allows to reset rotation to EXIF value.
-					</para>
-				</sect4>
-				<sect4><title>group</title>
-					<para>Create a new group from selected images.
-					</para>
-				</sect4>
-				<sect4><title>ungroup</title>
-					<para>Remove selected images from the group.
-					</para>
-				</sect4>
-
-
-		</sect2>
+<sect2 status="draft" id="selected images"><title>Selected image(s)</title>
+	<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+			<colspec colwidth="6*"/>
+			<colspec colwidth="4*"/>
+			<tbody>
+				<row>						
+					<entry>This panel allows to perform some actions on selected images.
+					</entry>
+					<entry>
+						<graphic fileref="lighttable/images/panel_selectedimages.png" scalefit="1" width="80%" align="center" />
+					</entry>
+				</row>
+			</tbody>
+		</tgroup>
+	</informaltable>
+		<sect4><title>remove</title>
+			<para>Remove the selected images from the darktable database. Those images will not be shown
+			in lighttable anymore, but remain on filesystem. As darktable stores XMP files with your development
+                                      parameters on disk, you can later fully reconstruct your work by just re-importing the images. When
+                                      backing up your RAWs make sure to also save the XMP files!
+			</para>
+		</sect4>
+		<sect4><title>delete</title>
+			<para>Physically delete selected images from filesystem. See also preference option 'ask before erasing images from disk'; if
+                                            this option is not active, darktable will delete the file(s) without further question! This is not reversible and will
+                                            also erase your development work an these images.
+			</para>
+		</sect4>
+		<sect4><title>move</title>
+			<para>Physically move selected images (parent file plus accompanying .xmp sidecar file) to another filesystem folder.
+			</para>
+		</sect4>
+		<sect4><title>copy</title>
+			<para>Physically copy selected images (parent file plus accompanying .xmp sidecar file) to another filesystem folder.
+			</para>
+		</sect4>
+		<sect4><title>create hdr</title>
+			<para>Create a high dynamic range image from the selected images and store it as a new source file in DNG format. Images
+                                            need to be properly aligned.
+			</para>
+		</sect4>
+		<sect4><title>duplicate</title>
+			<para>Create a virtual copy of selected images within darktable but not physically on
+			your filesystem. It allows to test and try different developments for the same image for example. Duplicate images will
+                                      share the same parent input file but each have their own .xmp sidecar file.
+			</para>
+		</sect4>
+		<sect4><title>rotation</title>
+			<para>Perform a counter-clock wise/clockwise rotation on selected images. The third button
+			allows to reset rotation to EXIF value.
+			</para>
+		</sect4>
+		<sect4><title>group</title>
+			<para>Create a new group from selected images.
+			</para>
+		</sect4>
+		<sect4><title>ungroup</title>
+			<para>Remove selected images from the group.
+			</para>
+		</sect4>
+</sect2>
 

@@ -1,4 +1,4 @@
-<sect1 status="draft"><title>Shortcuts</title>
+<sect1 status="draft" id="shortcuts"><title>Shortcuts</title>
   <para>darktable has a big set of keyaccelerators that with the work of Robert Bieber
         now is user configurable through the preference pane.
   </para>

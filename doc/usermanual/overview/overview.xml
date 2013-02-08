@@ -5,7 +5,7 @@
 		%darktable_dtd;
 		]>
 
-<chapter>
+<chapter id="overview chapter">
 	<chapterinfo>
 		<keywordset>
 			<keyword>darktable</keyword>
@@ -77,7 +77,7 @@
 	</itemizedlist>
 		
 		
-	<sect1 status="final"><title>User interface</title>
+	<sect1 status="final" id="user interface"><title>User interface</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='6*'/>
 					<colspec colwidth='4*'/>
@@ -94,7 +94,7 @@
 				</tgroup>
 			</informaltable>
 
-		<sect2 status="final"><title>Views</title>
+		<sect2 status="final" id="views"><title>Views</title>
 			<para>darktable consists of several views also mentioned as modes. For the time being, there are four available views as described
 				in this section. The current view is identified by the label at the top of the right panel.
 				Some key accelerators, allowing to access the different views, are described in the table below:
@@ -119,27 +119,24 @@
 			</para>
 			<sect3 status="final"><title>Lighttable</title>
 				<para>The lighttable view is where you manage your images and filmrolls; it's in that view that you rate, add tags, add colorlabels, export images among other
-					actions.
+					actions (see <xref linkend="lighttable chapter"/>).
 				</para>
-
-				<para>You can perform some actions on the image under the mouse pointer using key accelerators; see "Lighttable" chapter.
-				</para>
-
 			</sect3>
 			<sect3 status="final"><title>Darkroom</title>
-				<para>In the darkroom view you develop a specific image using the available modules.
+				<para>In the darkroom view you develop a specific image using the available modules (see <xref linkend="darkroom chapter"/>).
 				</para>
 			</sect3>
 			<sect3 status="final"><title>Tethering</title>
-				<para>This view is where you do camera tethering, ie. connecting your camera to the computer and remotely capturing images that will be downloaded and shown on your computer screen.
+				<para>This view is where you do camera tethering, ie. connecting your camera to the computer and remotely capturing images that will be downloaded and shown on 
+                                      your computer screen (see <xref linkend="tethering chapter"/>).
 				</para>
 			</sect3>
 			<sect3 status="final"><title>Map</title>
-				<para>This view shows images that are geo-tagged on a map and allows you to manually geo-tag new images.
+				<para>This view shows images that are geo-tagged on a map and allows you to manually geo-tag new images (see <xref linkend="map chapter"/>).
 				</para>
 			</sect3>
                </sect2>
-               <sect2 status="final"><title>Filmstrip</title>
+               <sect2 status="final" id="filmstrip overview"><title>Filmstrip</title>
 			<para>The filmstrip shows the same images as lighttable with respect to filters and sort order; it is turned on/off with key accelerator <emphasis>ctrl-f</emphasis>.
 		  	You can navigate along the filmstrip by wheel scrolling.
 			The filmstrip allows you to interact with images when you are not in lighttable mode. For example you can, while being in darkroom mode and developing an image,
@@ -148,17 +145,17 @@
 			<graphic fileref="overview/images/filmstrip.png" scalefit="1" width="80%" align="center" />
         	</sect2>
 
-		<sect2 status="draft"><title>Preferences</title>
+		<sect2 status="draft" id="preferences"><title>Preferences</title>
 			<para>A button <inlinegraphic fileref="&icon_preferences;" scalefit="1" width="2%" align="center" /> located at the upper panel allows you to define various parameters.
 			</para>
-			<para>The options are quite self-explaining. In case you need more information, just let your mouse hover a text label and/or entry box to display more information. Furthermore all
-	                      configuration parameters are explained in a later chapter of this manual.
+			<para>The options are quite self-explaining. In case you need more information, just let your mouse hover a text label and/or entry box to display more information. 
+                              Furthermore all configuration parameters are explained in a later chapter of this manual (<xref linkend="preferences chapter"/>).
 			</para>
 		</sect2>
 	</sect1>
 
 
-	<sect1 status="final"><title>darktable basic workflow</title>
+	<sect1 status="final" id="darktable basic workflow"><title>darktable basic workflow</title>
 		<sect2 status ="draft"><title>Importing Images</title>
 			<para>To begin with darktable, you first need to import images. You can either import
 				from your filesystem or from your camera if supported.</para>
@@ -177,7 +174,7 @@
 			</sect3>
 		</sect2>
 
-		<sect2 status="draft"><title>Basic development steps</title>
+		<sect2 status="draft" id="basic development steps"><title>Basic development steps</title>
 			<sect3><title>Introduction</title>
 				<para>This section will guide you through the basics about developing your image in darkroom view.
 				</para>
@@ -305,14 +302,17 @@
 
 		</sect2>
 
-		<sect2 status="draft"><title>Exporting images</title>
-			<para>Your changes to an image are not saved as in a regular image editor. darktable is a non destructive editor which means all your changes are stored in a database and the original image is untouched      			and therefore you need to export your images to get an <quote>image</quote> file to distribute with your special processing.</para>
+		<sect2 status="draft" id="exporting images"><title>Exporting images</title>
+			<para>Your changes to an image are not saved as in a regular image editor. darktable is a non destructive editor which means all your changes are stored 
+                              in a database and the original image is untouched and therefore you need to export your images to get an <quote>image</quote> file to distribute with 
+                              your special processing.</para>
 			<para>Images are exported from lighttable using the export module in the right panel. In general, export means: save my developed RAW image as a JPEG.</para>
 			<para>The export is modularized into storage and format. darktable is shipping several storage modules such as save on disk, picasa and flickr webalbum and more.
-				Format modules are the actual image formats such as JPEG, PNG, TIFF, OpenEXR and more.
+			      Format modules are the actual image formats such as JPEG, PNG, TIFF, OpenEXR and more.
 			</para>
-			<para>Select images on your lighttable that you want to export, then choose your target storage and format to use and set the maximum width and height image restraint. This means that 
-                              none of the images will be bigger than any of the width/height restraint. Leave the width and height restraint as zero if you want the original resolution and hit the export button.
+			<para>Select images on your lighttable that you want to export, then choose your target storage and format to use and set the maximum width and height image restraint. 
+                              This means that none of the images will be bigger than any of the width/height restraint. Leave the width and height restraint as zero if you want the original 
+                              resolution and hit the export button.
 			</para>
 
 		</sect2>

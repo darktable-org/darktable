@@ -1,4 +1,4 @@
-	<sect2 status="draft"><title>Navigation</title>
+	<sect2 status="draft" id="navigation"><title>Navigation</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
 				<colspec colwidth="4*"/>

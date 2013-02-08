@@ -1,18 +1,18 @@
-		<sect2><title>Keywords</title>
-			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth="6*"/>
-					<colspec colwidth="4*"/>
-					<tbody>
-						<row>						
-							<entry>Keywords modules shows a hierarchial tree of your tags. You can arrange tags within this tree
-								using drag'n'drop a tag onto another.
-							</entry>
-							<entry>
-								<graphic fileref="lighttable/images/panel_keywords.png" scalefit="1" width="80%" align="center" />
-							</entry>
-						</row>
-					</tbody>
-				</tgroup>
-			</informaltable>
-		</sect2>
+<sect2 id="keywords"><title>Keywords</title>
+	<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+			<colspec colwidth="6*"/>
+			<colspec colwidth="4*"/>
+			<tbody>
+				<row>						
+					<entry>Keywords modules shows a hierarchial tree of your tags. You can arrange tags within this tree
+						using drag'n'drop a tag onto another.
+					</entry>
+					<entry>
+						<graphic fileref="lighttable/images/panel_keywords.png" scalefit="1" width="80%" align="center" />
+					</entry>
+				</row>
+			</tbody>
+		</tgroup>
+	</informaltable>
+</sect2>
 		

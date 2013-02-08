@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect1 status="final"><title>Modules</title>
+<sect1 status="final" id="modules"><title>Modules</title>
 	<para>Each correction, enhancement or effect is implemented a module.
         </para>
         <para>

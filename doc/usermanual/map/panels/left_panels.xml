@@ -1,4 +1,4 @@
-<sect2 status="draft">
+<sect2 status="draft" id="left panels">
   <title>Left panels</title>
   <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="6*"/>
@@ -6,7 +6,7 @@
     <tbody>
       <row>						
 	<entry>
-	  <para>The panels on the left side we already know from lighttable mode.</para>
+	  <para>The panels on the left side we already know from lighttable mode (<xref linkend="lighttable panels"/>).</para>
 	  <para>You can define image collections with the "collect images" panel where you can
                 define sets of selection rules. Recently used collections can be reached
                 with their respective names in separate panel. You can also get an overview

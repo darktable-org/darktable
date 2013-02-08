@@ -1,8 +1,10 @@
-<sect1 status="draft"><title>Presets</title>
-	<para>This menu gives you an overview of the presets that are defined for darktable's modules. darktable already
-	        comes with a set of pre-defined presets for several modules. In addition you can define your own presets
-	        from within each module in darkroom mode. In this dialog you can select whether 
-	        a certain user defined preset shall be auto-applied to matching images.
+<sect1 status="draft" id="presets"><title>Presets</title>
+	<para>This menu gives you an overview of the presets that are defined for darktable's modules. In this dialog you can 
+              select whether a certain user defined preset shall be auto-applied to matching images.
+        </para>
+
+        <para>darktable already comes with a set of pre-defined presets for several modules. In addition you can define your own presets
+	        from within each module in darkroom mode (see <xref linkend="module presets"/>). 
 	</para>
 
         <para>Pre-defined presets are shown with a lock symbol. Their auto-apply properties can not be changed.

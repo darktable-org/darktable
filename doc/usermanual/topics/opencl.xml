@@ -1,4 +1,4 @@
-<sect1 status="draft"><title>darktable and OpenCL</title>
+<sect1 status="draft" id="darktable and opencl"><title>darktable and OpenCL</title>
 	<para>darktable can use GPU acceleration via OpenCL to improve performance.</para>
 
 	<sect2><title>The Background</title>

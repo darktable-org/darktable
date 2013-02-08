@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-	<sect2 status="draft"><title>Conditional blending</title>
+	<sect2 status="draft" id="conditional blending"><title>Conditional blending</title>
 		<para>Conditional blending offers a fine-grained control as to what extent blending is applied to different pixels of an image. 
         	      It does so by generating an intermediate blend mask, constructed with user defined parameters. These parameters act in color 
         	      coordinates, not in geometrical coordinates. 

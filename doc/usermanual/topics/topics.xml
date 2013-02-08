@@ -4,7 +4,7 @@
 		%darktable_dtd;
 		]>
 
-<chapter>
+<chapter id="special topics chapter">
 <chapterinfo>
 <keywordset>
   <keyword>topics</keyword>

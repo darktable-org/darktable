@@ -1,19 +1,19 @@
-		<sect2><title>Metadata</title>
-			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth="6*"/>
-					<colspec colwidth="4*"/>
-					<tbody>
-						<row>						
-							<entry>This panel shows embedded metadata of an image, read from EXIF data stored in your pictures files.
-                                                               When hovering with your mouse over the thumbnails, darktable will update its view and display metadata
-                                                               of the image currently under your mouse cursor. This panel is also available in darkroom, tethering and map view.
-							</entry>
-							<entry>
-								<graphic fileref="lighttable/images/panel_metadata.png" scalefit="1" width="80%" align="center" />
-							</entry>
-						</row>
-					</tbody>
-				</tgroup>
-			</informaltable>
-		</sect2>
+<sect2 id="metadata"><title>Metadata</title>
+	<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+			<colspec colwidth="6*"/>
+			<colspec colwidth="4*"/>
+			<tbody>
+				<row>						
+					<entry>This panel shows embedded metadata of an image, read from EXIF data stored in your pictures files.
+                                               When hovering with your mouse over the thumbnails, darktable will update its view and display metadata
+                                               of the image currently under your mouse cursor. This panel is also available in darkroom, tethering and map view.
+					</entry>
+					<entry>
+						<graphic fileref="lighttable/images/panel_metadata.png" scalefit="1" width="80%" align="center" />
+					</entry>
+				</row>
+			</tbody>
+		</tgroup>
+	</informaltable>
+</sect2>
 		

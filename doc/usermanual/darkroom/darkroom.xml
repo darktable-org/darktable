@@ -1,4 +1,4 @@
-<chapter>
+<chapter id="darkroom chapter">
 <chapterinfo>
 <keywordset>
   <keyword>darkroom</keyword>
@@ -36,7 +36,7 @@
 	<para>You can export directly from the darkroom by using <emphasis>ctrl-e</emphasis> shortcut. Export parameters are those currently selected in lighttable.</para>
 
 </sect1>
-<sect1 status="draft"><title>Filmstrip</title>
+<sect1 status="draft" id="filmstrip"><title>Filmstrip</title>
 	<para>The filmstrip is used to quickly switch between images to develop in darkroom view, the images viewed are the same
 		as the ones in the lighttable view.
 	</para>
