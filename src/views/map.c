@@ -25,9 +25,12 @@
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "views/view.h"
+#include "views/undo.h"
 #include "libs/lib.h"
 #include "gui/drag_and_drop.h"
 #include "gui/draw.h"
+#include "gui/accelerators.h"
+#include <gdk/gdkkeysyms.h>
 
 #include "osm-gps-map.h"
 
@@ -535,20 +538,22 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 
 void init_key_accels(dt_view_t *self)
 {
-#if 0
-  // Setup key accelerators in capture view...
-  dt_accel_register_view(self, NC_("accel", "toggle film strip"),
-                         GDK_f, GDK_CONTROL_MASK);
-#endif
+  dt_accel_register_view(self, NC_("accel", "undo"), GDK_z, GDK_CONTROL_MASK);
+}
+
+static gboolean _view_map_undo_callback(GtkAccelGroup *accel_group,
+    GObject *acceleratable, guint keyval,
+    GdkModifierType modifier, gpointer data)
+{
+  do_undo(DT_UNDO_GEOTAG);
+  return TRUE;
 }
 
 void connect_key_accels(dt_view_t *self)
 {
-#if 0
-  GClosure *closure = g_cclosure_new(G_CALLBACK(film_strip_key_accel),
+  GClosure *closure = g_cclosure_new(G_CALLBACK(_view_map_undo_callback),
                                      (gpointer)self, NULL);
-  dt_accel_connect_view(self, "toggle film strip", closure);
-#endif
+  dt_accel_connect_view(self, "undo", closure);
 }
 
 
@@ -613,22 +618,37 @@ static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer us
   }
 }
 
-static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, gboolean record_undo)
+static void pop_undo (dt_view_t *self, dt_undo_type_t type, dt_undo_data_t *data)
 {
   dt_map_t *lib = (dt_map_t*)self->data;
+
+  if (type == DT_UNDO_GEOTAG)
+  {
+    dt_undo_geotag_t *geotag = (dt_undo_geotag_t *)data;
+
+    _set_image_location (self, geotag->imgid, geotag->longitude, geotag->latitude, FALSE);
+    g_signal_emit_by_name(lib->map, "changed");
+  }
+}
+
+static void _push_position(dt_view_t *self, int imgid, float longitude, float latitude)
+{
+  dt_undo_geotag_t *geotag = malloc (sizeof(dt_undo_geotag_t));
+
+  geotag->imgid = imgid;
+  geotag->longitude = longitude;
+  geotag->latitude = latitude;
+
+  record_undo(self, DT_UNDO_GEOTAG, (dt_undo_data_t *)geotag, &pop_undo);
+}
+
+static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, gboolean record_undo)
+{
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
   dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
 
   if (record_undo)
-  {
-    // store old position into undo buffer
-    lib->undo_data[lib->undo_pos].imgid = imgid;
-    lib->undo_data[lib->undo_pos].longitude = img->longitude;
-    lib->undo_data[lib->undo_pos].latitude = img->latitude;
-    if (lib->undo_count < N_UNDO) lib->undo_count++;
-    lib->undo_pos++;
-    if (lib->undo_pos == N_UNDO) lib->undo_pos = 0;
-  }
+    _push_position(self, imgid, img->longitude, img->latitude);
 
   img->longitude = longitude;
   img->latitude = latitude;
