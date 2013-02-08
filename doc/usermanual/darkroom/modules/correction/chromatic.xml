@@ -17,6 +17,10 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>This module has no option. On activation it will automatically try what it can in order to reduce visible CA's.</para>
+		<para>The module has no parameters. On activation it will automatically try to optimize away visible CA's. The underlying
+                      model assumes as input a typical photographic image with radially increasing chromatic aberrations - that's what the
+                      module gets during file exports. The module is likely to fail in darkroom view when applied to a zoomed-in 
+                      fraction of your image. As an exception to most other modules of darktable this one does not always let you see what 
+                      you will get.</para>
 	</sect4>
 </sect3>
