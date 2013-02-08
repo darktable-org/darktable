@@ -712,7 +712,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
       while (p != NULL)
       {
-        id = MAX(id, dt_load_from_string((gchar*)p->data, load_in_dr));
+        // don't put these function calls into MAX(), the macro will evaluate
+        // it twice (and happily deadlock, in this particular case)
+        int newid = dt_load_from_string((gchar*)p->data, load_in_dr);
+        id = MAX(id, newid);
         p = g_slist_next(p);
       }
 
