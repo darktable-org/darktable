@@ -362,6 +362,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     dt_opencl_release_mem_object(dev_r);
     dt_opencl_release_mem_object(dev_m);
+    dev_r = dev_m = NULL;
 
     const float eps = 0.0001f;
     const float lwmax = MAX(eps, (maximum[0]*0.01f));
