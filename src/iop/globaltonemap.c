@@ -362,6 +362,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     dt_opencl_release_mem_object(dev_r);
     dt_opencl_release_mem_object(dev_m);
+    dev_r = dev_m = NULL;
 
     for(int k = 1; k < reducesize; k++)
     {
