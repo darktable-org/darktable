@@ -537,7 +537,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
 
   if (!glob(pattern, 0, NULL, globbuf))
   {
-    for (int i=0; i < globbuf->gl_pathc; i++)
+    for (size_t i=0; i < globbuf->gl_pathc; i++)
     {
       int newid = -1;
       newid = dt_image_duplicate(id);
@@ -847,7 +847,7 @@ void dt_image_synch_all_xmp(const gchar *pathname)
 
     if (!glob(pattern, 0, NULL, globbuf))
     {
-      for (int i=0; i < globbuf->gl_pathc; i++)
+      for (size_t i=0; i < globbuf->gl_pathc; i++)
       {
         (void)g_unlink(globbuf->gl_pathv[i]);
       }

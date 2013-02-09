@@ -178,7 +178,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   dt_lib_collect_params_t *p = (dt_lib_collect_params_t *)params;
   char confname[200];
 
-  for (int i=0; i<p->rules; i++)
+  for (uint32_t i=0; i<p->rules; i++)
   {
     /* set item */
     snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
@@ -1136,7 +1136,7 @@ folders:
          
     if (d->trees != NULL)
     {
-      for (int i=0; i<d->trees->len; i++)
+      for (guint i=0; i<d->trees->len; i++)
       {
         tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
         g_ptr_array_free(d->trees, TRUE);

@@ -223,7 +223,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       printf("     MAX_WORK_ITEM_DIMENSIONS: %zd\n", infoint);
       printf("     MAX_WORK_ITEM_SIZES:      [ ");
       (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(infointtab), infointtab, NULL);
-      for (int i=0; i<infoint; i++) printf("%zd ", infointtab[i]);
+      for (size_t i=0; i<infoint; i++) printf("%zd ", infointtab[i]);
       printf("]\n");
     }
     dt_pthread_mutex_init(&cl->dev[dev].lock, NULL);
@@ -279,7 +279,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
         int rd = fscanf(f, "%[^\n]\n", programname);
         if(rd != 1) continue;
         // remove comments:
-        for(int pos=0; pos<strlen(programname); pos++)
+        for(size_t pos=0; pos<strlen(programname); pos++)
           if(programname[pos] == '#')
           {
             programname[pos] = '\0';

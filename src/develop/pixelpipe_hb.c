@@ -338,7 +338,6 @@ pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *
   }
 }
 
-
 // recursive helper for process:
 static int
 dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output, void **cl_mem_output, int *out_bpp,
