@@ -581,7 +581,8 @@ dt_collection_update_query(const dt_collection_t *collection)
   char query[1024], confname[200];
   gchar *complete_query = NULL;
 
-  const int num_rules = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules"), 1, 10);
+  const int _n_r = dt_conf_get_int("plugins/lighttable/collect/num_rules");
+  const int num_rules = CLAMP(_n_r, 1, 10);
   char *conj[] = {"and", "or", "and not"};
 
   complete_query = dt_util_dstrcat(complete_query, "(");

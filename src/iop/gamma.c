@@ -121,7 +121,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     int32_t tmp;
     if (k<0x10000*p->linear) tmp = MIN(c*k, 0xFFFF);
-    else tmp = MIN(powf(a*k/0x10000+b, g)*0x10000, 0xFFFF);
+    else
+    {
+      const float _t = powf(a*k/0x10000+b, g)*0x10000;
+      tmp = MIN(_t, 0xFFFF);
+    }
     d->table[k] = tmp>>8;
   }
 #endif
