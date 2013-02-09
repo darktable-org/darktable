@@ -45,6 +45,8 @@ void record_undo(dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data, voi
 //  a set of dt_undo_type_t.
 void do_undo(uint32_t filter);
 
+void do_redo(uint32_t filter);
+
 //  removes all items which correspond to filter
 void clear_undo(uint32_t filter);
 

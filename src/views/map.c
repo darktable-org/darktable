@@ -85,6 +85,7 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e
 static gboolean _view_map_dnd_failed_callback(GtkWidget *widget, GdkDragContext *drag_context, GtkDragResult result, dt_view_t *self);
 
 static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, gboolean record_undo);
+static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude);
 
 const char *name(dt_view_t *self)
 {
@@ -539,13 +540,17 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 void init_key_accels(dt_view_t *self)
 {
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_z, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "redo"), GDK_r, GDK_CONTROL_MASK);
 }
 
 static gboolean _view_map_undo_callback(GtkAccelGroup *accel_group,
     GObject *acceleratable, guint keyval,
     GdkModifierType modifier, gpointer data)
 {
-  do_undo(DT_UNDO_GEOTAG);
+  if (keyval == GDK_z)
+    do_undo(DT_UNDO_GEOTAG);
+  else
+    do_redo(DT_UNDO_GEOTAG);
   return TRUE;
 }
 
@@ -554,6 +559,7 @@ void connect_key_accels(dt_view_t *self)
   GClosure *closure = g_cclosure_new(G_CALLBACK(_view_map_undo_callback),
                                      (gpointer)self, NULL);
   dt_accel_connect_view(self, "undo", closure);
+  dt_accel_connect_view(self, "redo", closure);
 }
 
 
@@ -625,21 +631,36 @@ static void pop_undo (dt_view_t *self, dt_undo_type_t type, dt_undo_data_t *data
   if (type == DT_UNDO_GEOTAG)
   {
     dt_undo_geotag_t *geotag = (dt_undo_geotag_t *)data;
+    float longitude, latitude;
 
-    _set_image_location (self, geotag->imgid, geotag->longitude, geotag->latitude, FALSE);
+    _get_image_location(self, geotag->imgid, &longitude, &latitude);
+    _set_image_location(self, geotag->imgid, geotag->longitude, geotag->latitude, FALSE);
+
+    // give back out previous location
+    geotag->longitude = longitude;
+    geotag->latitude = latitude;
+
     g_signal_emit_by_name(lib->map, "changed");
   }
 }
 
 static void _push_position(dt_view_t *self, int imgid, float longitude, float latitude)
 {
-  dt_undo_geotag_t *geotag = malloc (sizeof(dt_undo_geotag_t));
+  dt_undo_geotag_t *geotag = g_malloc (sizeof(dt_undo_geotag_t));
 
   geotag->imgid = imgid;
   geotag->longitude = longitude;
   geotag->latitude = latitude;
 
   record_undo(self, DT_UNDO_GEOTAG, (dt_undo_data_t *)geotag, &pop_undo);
+}
+
+static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude)
+{
+  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+  *longitude = img->longitude;
+  *latitude = img->latitude;
+  dt_image_cache_read_release(darktable.image_cache, img);
 }
 
 static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, gboolean record_undo)
