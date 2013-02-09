@@ -131,7 +131,8 @@ static char* find_install_dir(const char*suffix)
     g_free(curr);
     return NULL;
   }
-  size_t len = MIN(strlen(tmp), 4096);
+  size_t len = strlen(tmp);
+  len = MIN(len, 4096);
   char *t = tmp + len; // strip off bin/darktable
   for(; t>tmp && *t!='/'; t--);
   t--;

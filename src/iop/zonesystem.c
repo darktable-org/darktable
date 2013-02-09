@@ -176,7 +176,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     /* setup gaussian kernel */
     const int radius = 8;
-    const int rad = MIN(radius, ceilf(radius * roi_in->scale / piece->iscale));
+    const float _r = ceilf(radius * roi_in->scale / piece->iscale);
+    const int rad = MIN(radius, _r);
     const int wd = 2*rad+1;
     float mat[wd*wd];
     float *m;
@@ -443,7 +444,8 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new (FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
   /* create the zone preview widget */
-  const int panel_width = MAX(-1, MIN(500, dt_conf_get_int("panel_width")));
+  const int _p_w = dt_conf_get_int("panel_width");
+  const int panel_width = MAX(-1, MIN(500, _p_w));
 
   g->preview = gtk_drawing_area_new();
   g_signal_connect (G_OBJECT (g->preview), "expose-event", G_CALLBACK (dt_iop_zonesystem_preview_expose), self);

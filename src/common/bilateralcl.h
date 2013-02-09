@@ -77,9 +77,12 @@ dt_bilateral_memory_use(
   const float sigma_s,   // spatial sigma (blur pixel coords)
   const float sigma_r)   // range sigma (blur luma values)
 {
-  size_t size_x = CLAMPS((int)roundf(width/sigma_s), 4, 900) + 1;
-  size_t size_y = CLAMPS((int)roundf(height/sigma_s), 4, 900) + 1;
-  size_t size_z = CLAMPS((int)roundf(100.0f/sigma_r), 4, 50) + 1;
+  float _x = roundf(width/sigma_s);
+  float _y = roundf(height/sigma_s);
+  float _z = roundf(100.0f/sigma_r);
+  size_t size_x = CLAMPS((int)_x, 4, 900) + 1;
+  size_t size_y = CLAMPS((int)_y, 4, 900) + 1;
+  size_t size_z = CLAMPS((int)_z, 4, 50) + 1;
 
   return size_x*size_y*size_z*sizeof(float)*2;
 }
@@ -92,9 +95,12 @@ dt_bilateral_singlebuffer_size(
   const float sigma_s,   // spatial sigma (blur pixel coords)
   const float sigma_r)   // range sigma (blur luma values)
 {
-  size_t size_x = CLAMPS((int)roundf(width/sigma_s), 4, 900) + 1;
-  size_t size_y = CLAMPS((int)roundf(height/sigma_s), 4, 900) + 1;
-  size_t size_z = CLAMPS((int)roundf(100.0f/sigma_r), 4, 50) + 1;
+  float _x = roundf(width/sigma_s);
+  float _y = roundf(height/sigma_s);
+  float _z = roundf(100.0f/sigma_r);
+  size_t size_x = CLAMPS((int)_x, 4, 900) + 1;
+  size_t size_y = CLAMPS((int)_y, 4, 900) + 1;
+  size_t size_z = CLAMPS((int)_z, 4, 50) + 1;
 
   return size_x*size_y*size_z*sizeof(float);
 }
@@ -117,7 +123,7 @@ dt_bilateral_init_cl(
 
   int blocksizex = 64;
   int blocksizey = 64;
-   
+
   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
      dt_opencl_get_kernel_work_group_size(devid, darktable.opencl->bilateral->kernel_splat, &kernelworkgroupsize) == CL_SUCCESS)
   {
@@ -147,9 +153,12 @@ dt_bilateral_init_cl(
   if(!b) return NULL;
 
   b->global = darktable.opencl->bilateral;
-  b->size_x = CLAMPS((int)roundf(width/sigma_s), 4, 900) + 1;
-  b->size_y = CLAMPS((int)roundf(height/sigma_s), 4, 900) + 1;
-  b->size_z = CLAMPS((int)roundf(100.0f/sigma_r), 4, 50) + 1;
+  float _x = roundf(width/sigma_s);
+  float _y = roundf(height/sigma_s);
+  float _z = roundf(100.0f/sigma_r);
+  b->size_x = CLAMPS((int)_x, 4, 900) + 1;
+  b->size_y = CLAMPS((int)_y, 4, 900) + 1;
+  b->size_z = CLAMPS((int)_z, 4, 50) + 1;
   b->width = width;
   b->height = height;
   b->blocksizex = blocksizex;

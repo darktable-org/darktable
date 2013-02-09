@@ -30,9 +30,12 @@ dt_bilateral_memory_use(
   const float sigma_s,   // spatial sigma (blur pixel coords)
   const float sigma_r)   // range sigma (blur luma values)
 {
-  size_t size_x = CLAMPS((int)roundf(width/sigma_s), 4, 900) + 1;
-  size_t size_y = CLAMPS((int)roundf(height/sigma_s), 4, 900) + 1;
-  size_t size_z = CLAMPS((int)roundf(100.0f/sigma_r), 4, 50) + 1;
+  float _x = roundf(width/sigma_s);
+  float _y = roundf(height/sigma_s);
+  float _z = roundf(100.0f/sigma_r);
+  size_t size_x = CLAMPS((int)_x, 4, 900) + 1;
+  size_t size_y = CLAMPS((int)_y, 4, 900) + 1;
+  size_t size_z = CLAMPS((int)_z, 4, 50) + 1;
 
   return size_x*size_y*size_z*sizeof(float);
 }
@@ -45,9 +48,12 @@ dt_bilateral_singlebuffer_size(
   const float sigma_s,   // spatial sigma (blur pixel coords)
   const float sigma_r)   // range sigma (blur luma values)
 {
-  size_t size_x = CLAMPS((int)roundf(width/sigma_s), 4, 900) + 1;
-  size_t size_y = CLAMPS((int)roundf(height/sigma_s), 4, 900) + 1;
-  size_t size_z = CLAMPS((int)roundf(100.0f/sigma_r), 4, 50) + 1;
+  float _x = roundf(width/sigma_s);
+  float _y = roundf(height/sigma_s);
+  float _z = roundf(100.0f/sigma_r);
+  size_t size_x = CLAMPS((int)_x, 4, 900) + 1;
+  size_t size_y = CLAMPS((int)_y, 4, 900) + 1;
+  size_t size_z = CLAMPS((int)_z, 4, 50) + 1;
 
   return size_x*size_y*size_z*sizeof(float);
 }
@@ -90,9 +96,12 @@ dt_bilateral_init(
   // if(width/sigma_s < 4 || width/sigma_s > 1000) fprintf(stderr, "[bilateral] need to clamp sigma_s!\n");
   // if(height/sigma_s < 4 || height/sigma_s > 1000) fprintf(stderr, "[bilateral] need to clamp sigma_s!\n");
   // if(100.0/sigma_r < 4 || 100.0/sigma_r > 100) fprintf(stderr, "[bilateral] need to clamp sigma_r!\n");
-  b->size_x = CLAMPS((int)roundf(width/sigma_s), 4, 900) + 1;
-  b->size_y = CLAMPS((int)roundf(height/sigma_s), 4, 900) + 1;
-  b->size_z = CLAMPS((int)roundf(100.0f/sigma_r), 4, 50) + 1;
+  float _x = roundf(width/sigma_s);
+  float _y = roundf(height/sigma_s);
+  float _z = roundf(100.0f/sigma_r);
+  b->size_x = CLAMPS((int)_x, 4, 900) + 1;
+  b->size_y = CLAMPS((int)_y, 4, 900) + 1;
+  b->size_z = CLAMPS((int)_z, 4, 50) + 1;
   b->width = width;
   b->height = height;
   b->sigma_s = MAX(height/(b->size_y-1.0f), width/(b->size_x-1.0f));

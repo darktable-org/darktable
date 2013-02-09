@@ -195,7 +195,8 @@ _write_buffer(const uint32_t key, const void *data, void *user_data)
     // skip to next 8-byte alignment, for sse buffers.
     buf.buf    = (uint8_t *)(dsc+1);
 
-    const int32_t length = dt_imageio_jpeg_compress(buf.buf, d->blob, buf.width, buf.height, MIN(100, MAX(10, dt_conf_get_int("database_cache_quality"))));
+    const int cache_quality = dt_conf_get_int("database_cache_quality");
+    const int32_t length = dt_imageio_jpeg_compress(buf.buf, d->blob, buf.width, buf.height, MIN(100, MAX(10, cache_quality)));
     written = fwrite(&length, sizeof(int32_t), 1, d->f);
     if(written != 1) return 1;
     written = fwrite(d->blob, sizeof(uint8_t), length, d->f);
