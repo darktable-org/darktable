@@ -54,7 +54,7 @@
 			<para>With this combobox you can activate random noise dithering to overcome banding artifacts caused by vignette gradients. 
                               Select "8-bit output" to prevent banding on monitor display and for JPEGs. When set to "16-bit output", only a little dithering 
                               will be applied, just strong enough to compensate for banding on the fine grained 16-bit level. This feature is mostly obsoleted by 
-                              new module "dithering".</para>
+                              our new module "dithering" (see <xref linkend="dithering"/>).</para>
 		</sect5>			
 
 

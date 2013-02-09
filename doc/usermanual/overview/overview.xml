@@ -166,7 +166,7 @@
 				from your filesystem or from your camera if supported.</para>
 
 			<sect3 status="draft"><title>Importing images from filesystem</title>
-				<para>In the left panel of lighttable view you will find the import module (<xref linkend="import"/>, here you have the choice to import either a single 
+				<para>In the left panel of lighttable view you will find the import module (<xref linkend="import"/>). Here you have the choice to import either a single 
                                       image or a folder, darktable will analyse its content, detect images that are already imported and only import new images.
 				</para>
 			</sect3>
@@ -205,8 +205,8 @@
 					darktable ships with a bunch of modules and each of them is arranged into groups named module groups, these module groups are accessed
 					via toggle buttons in the right panel just under the histogram.
 					There are also two special module groups named active and favorites, where active will only show modules enabled in the history for the current image and
-					favorites will only show modules selected as a favorite by you. This is done in the <quote>more modules</quote> at the bottom of the right panel, just click your favorite module
-					until it gets a star displayed in front of the icon and you have chosen your favorite.
+					favorites will only show modules selected as a favorite by you. This is done in the <quote>more modules</quote> (<xref linkend="more modules"/>) at the 
+                                        bottom of the right panel, just click your favorite module until it gets a star displayed in front of the icon and you have chosen your favorite.
 				</para>
 			</sect3>
 

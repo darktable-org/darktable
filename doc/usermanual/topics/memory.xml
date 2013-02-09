@@ -51,8 +51,8 @@
                       might be darktable aborting due to allocation failures or – very typically – darktable not being able to properly import a new film roll. As a frequent symptom you get 
                       skulls displayed instead of thumbs for many of your pictures.</para>
 
-		<para>Take a minute to optimize the preference settings in this case. You will find them under “core options” in darktable’s preference dialog. You might also find these 
-                      parameters as configuration variables in $HOME/.config/darktable/darktablerc and edit them there.</para>
+		<para>Take a minute to optimize the preference settings in this case. You will find them under “core options” (<xref linkend="core options"/>) in darktable’s preference dialog. 
+                      You might also find these parameters as configuration variables in $HOME/.config/darktable/darktablerc and edit them there.</para>
 
 		<para>Here is a short explanation of the relevant parameters and their proposed settings.</para>
 

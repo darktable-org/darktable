@@ -48,7 +48,8 @@
                       is finished.</para>
 
 		<para>Per default OpenCL support is activated in darktable if all the above steps were successful. If you want to de-activate it you can do so in "core options" 
-                      by unchecking "activate opencl support". This configuration parameter also tells you if OpenCL initialization failed: it is grayed out in that case.</para>
+                      (<xref linkend="core options"/>) by unchecking "activate opencl support". This configuration parameter also tells you if OpenCL initialization failed: it is 
+                      grayed out in that case.</para>
 
 		<para>You can at any time switch OpenCL support off and on; this will take immediate action. Depending on the type of modules you are using, you will notice 
                       the effect as a general speed-up during interactive work and during export. Most modules in darktable can take advantage of OpenCL but not all modules 
