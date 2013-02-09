@@ -169,7 +169,7 @@ int RGBE_ReadHeader(FILE *fp, int *width, int *height, rgbe_header_info *info)
 {
   char buf[128];
   float tempf;
-  int i;
+  size_t i;
 
   if (info)
   {

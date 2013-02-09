@@ -2099,12 +2099,12 @@ dt_iop_flip_and_zoom_8(
 #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) shared(in, out, jj, ii, sj, si, iw, ih)
 #endif
-  for(int j=0; j<ht; j++)
+  for(uint32_t j=0; j<ht; j++)
   {
     uint8_t *out2 = out + bpp*wd*j;
     const uint8_t *in2 = in + bpp*(iw*jj + ii + sj*(int32_t)(scale*j));
     float stepi = 0.0f;
-    for(int i=0; i<wd; i++)
+    for(uint32_t i=0; i<wd; i++)
     {
       const uint8_t *in3 = in2 + ((int32_t)stepi)*si*bpp;
       // this should always be within the bounds of in[], due to the way

@@ -379,12 +379,12 @@ dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threa
   cache->cleanup = NULL;
   cache->cleanup_data = NULL;
 
-  for(int k=0; k<=cache->segment_mask; k++)
+  for(uint32_t k=0; k<=cache->segment_mask; k++)
   {
     cache->segments[k].timestamp = 0;
     cache->segments[k].lock = 0;
   }
-  for(int k=0; k<num_buckets; k++)
+  for(uint32_t k=0; k<num_buckets; k++)
   {
     cache->table[k].first_delta = DT_CACHE_NULL_DELTA;
     cache->table[k].next_delta  = DT_CACHE_NULL_DELTA;
@@ -459,7 +459,7 @@ dt_cache_size(const dt_cache_t *const cache)
 {
   uint32_t cnt = 0;
   const uint32_t num = cache->bucket_mask + 1;
-  for(int k=0; k<num; k++)
+  for(uint32_t k=0; k<num; k++)
   {
     if(cache->table[k].hash != DT_CACHE_EMPTY_HASH) cnt++;
   }
@@ -1156,7 +1156,7 @@ dt_cache_write_release(dt_cache_t *cache, const uint32_t key)
 void dt_cache_print(dt_cache_t *cache)
 {
   fprintf(stderr, "[cache] full entries:\n");
-  for(int k=0; k<=cache->bucket_mask; k++)
+  for(uint32_t k=0; k<=cache->bucket_mask; k++)
   {
     if(cache->table[k].key != DT_CACHE_EMPTY_KEY)
       fprintf(stderr, "[cache] bucket %d holds key %u with locks r %d w %d\n",
