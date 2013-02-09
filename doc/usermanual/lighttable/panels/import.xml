@@ -63,18 +63,30 @@
 			</sect3>
 
                         <sect3><title>Supported file formats</title>
-                               <para>darktable has its main focus on managing and developing camera RAW files. Therefore a huge number of different file formats from various camera manufacturers is supported. In addition
-                                     darktable can read specific <emphasis>low dynamic range</emphasis> and <emphasis>high dynamic range</emphasis> images - mainly for data exchange between darktable
-                                     and other software.
-                               </para>
+                               <para>darktable has its main focus on managing and developing camera RAW files. Therefore a huge number of different file formats from various camera manufacturers
+                                     is supported. In addition darktable can read specific <emphasis>low dynamic range</emphasis> and <emphasis>high dynamic range</emphasis> images - mainly for 
+                                     data exchange between darktable and other software.</para>
+
+                               <para>In order for darktable to consider a file for import it has to come with one of the following extensions (case independent): 3FR, ARW, BAY, BMQ, CAP, CINE, CR2, 
+                                     CRW, CS1, DC2, DCR, DNG, ERF, FFF, EXR, IA, IIQ, JPEG, JPG, K25, KC2, KDC, MDC, MEF, MOS, MRW, NEF, NRW, ORF, PEF, PFM, PNG, PXN, QTK, RAW, RAW, RDC,
+                                     RW1, RW2, SR2, SRF, SRW, STI, TIF, TIFF, X3F.</para>
+
+                               <para>If darktable was compiled with JPEG2000 support, these extensions come in addition: J2C, J2K, JP2, JPC.</para>
+
+                               <para>If darktable was compiled with GraphicsMagick support the following extensions are added to the standard ones: BMP, DCM, GIF, JNG, JPC, JP2, MIFF, MNG, 
+                                     PBM, PGM, PNM, PPM.</para>
+
 				<sect4><title>Camera RAW files</title>
-					<para>darktable reads RAW files using two open source libraries: RawSpeed (developed by Klaus Post) and - failing that - with LibRaw. The number of supported cameras and file
-                                              formats is constantly increasing. It would be beyond the scope of this manual to give an exhaustive list. Most modern camera models are supported and new
-                                              ones tend to get in very quickly. darktable does not decode images from cameras with non-Bayer sensors (e.g. Fuji X-Pro1 or Sigmas with Foveon X3 sensor).
+					<para>darktable reads RAW files using two open source libraries: RawSpeed (developed by Klaus Post) and - failing that - with LibRaw. The number of supported 
+                                              cameras and file formats is constantly increasing. It would be beyond the scope of this manual to give an exhaustive list. Most modern camera models 
+                                              are supported and new ones tend to get in very quickly. darktable does not decode images from cameras with non-Bayer sensors (e.g. Fuji X-Pro1 or 
+                                              Sigmas with Foveon X3 sensor).
 					</para>
 				</sect4>
 				<sect4><title>LDR image files</title>
-					<para>darktable reads "ordinary" images in JPEG, 8-bit/16-bit PNG and 8-bit/16-bit TIFF format.
+					<para>darktable natively reads "ordinary" images in JPEG, 8-bit/16-bit PNG and 8-bit/16-bit TIFF format. JPEG2000 comes in addition if the required libraries
+                                              are built into darktable at compile time. If darktable was compiled with GraphicsMagick support there are further import formats like GIF, Dicom DCM, 
+                                              additional exotic TIFF formats, and some of Sun's "portable xyz-map" family.
 					</para>
 				</sect4>
 				<sect4><title>HDR image files</title>
