@@ -4,9 +4,10 @@
 			<colspec colwidth="4*"/>
 			<tbody>
 				<row>						
-					<entry>This panel lets you use a powerful functionality of darktable: to store and apply a history stack.
-					Styles are created in darkroom mode thanks to a button placed below the history stack.
-					Then they are managed within this panel, that allows you to apply and delete a style.
+					<entry>This panel lets you use a powerful functionality of darktable: to store a history stack
+                                        as a style and apply it to other images.
+					Styles are created in darkroom mode thanks to a button placed below the history panel (see <xref linkend="history"/>).
+					Then they are managed within this lighttable panel, that allows you to apply and delete a style.
 					</entry>
 					<entry>
 						<graphic fileref="lighttable/images/panel_styles.png" scalefit="1" width="80%" align="center" />
@@ -16,12 +17,12 @@
 		</tgroup>
 	</informaltable>
 		<sect4><title>create duplicate</title>
-			<para>When applying a style on selected images, activating this box lets you create a duplicate before applying the styles. 
+			<para>When applying a style on selected images, activating this box lets you create a duplicate of the image before applying the styles. 
 			      De-activate this option if you want to try various styles; this will avoid that you create multiple duplicates.
 			</para>
 		</sect4>
 		<sect4><title>edit</title>
-			<para>Styles are a collection of history stack items. After pressing edit you are prompted with a dialog in which you can deselect
+			<para>Styles are a collection of history stack items. After pressing "edit" you are prompted with a dialog in which you can deselect
                                             specific items. Check option "duplicate" if you want to create a new style instead of overwriting the existing
                                             one; you need to give a new style name in this case.
 			</para>
@@ -31,7 +32,7 @@
 			</para>
 		</sect4>
 		<sect4><title>import</title>
-			<para>You can import a style which has been previously saved by darktable. darktable stores its files in xml files with the extension .dtstyle.
+			<para>You can import a style which has been previously saved by darktable. darktable stores its files as xml files with the extension .dtstyle.
 			</para>
 		</sect4>
 		<sect4><title>export</title>

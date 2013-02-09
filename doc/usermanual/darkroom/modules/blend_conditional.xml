@@ -18,7 +18,7 @@
 	        	      a blending factor between 0 and 1. 
 		        </para>
 		        <para>Each pixel of an image thus has different blending factors for each of its data channels (real and virtual). All blending 
-	        	      factors are finally pixel-wise multiplied together with the value of the global opacity slider (see chapter "Blend Modes") to form a 
+	        	      factors are finally pixel-wise multiplied together with the value of the global opacity slider (see <xref linkend="blending operators"/>) to form a 
 	        	      blend mask for the image.
 		        </para>
 		        <para>If for a given pixel the blend mask has a value of 0, the input of the module is left unchanged. If for a pixel the
@@ -49,8 +49,8 @@
 	        <sect4><title>Notebook tabs</title>
 		        <para>Each notebook tab represents a data channel - real or virtual. Modules acting in Lab color space have data channels for
 		              L, a, b, C (chroma of LCh) and h (hue of LCh). Modules acting in RGB color space have data channels for g (grey), R, G, B,
-		              H (hue of HSL), S (saturation of HSL), and L (lightness of HSL). Consult http://en.wikipedia.org/wiki/Color_space for a deeper
-		              look into different color spaces.
+		              H (hue of HSL), S (saturation of HSL), and L (lightness of HSL). Consult for example <ulink url="http://en.wikipedia.org/wiki/Color_space">
+                              Wikipedia's article on color spaces</ulink> for a deeper look.
 		        </para>
 		        <para>
 		              Within each notebook tab two color channel sliders are given; one for the input data that the module receives; and one for
