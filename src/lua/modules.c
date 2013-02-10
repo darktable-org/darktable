@@ -35,7 +35,7 @@ static const char *format_fields_name[] = {
 };
 
 static int format_index(lua_State*L) {
-      uint32_t width,height;
+  uint32_t width,height;
   int index = lua_tonumber(L,-1);
   luaL_getmetafield(L,-2,"__format_object");
   dt_imageio_module_format_t * format = lua_touserdata(L,-1);
@@ -67,6 +67,7 @@ luaA_Type dt_lua_init_format_internal(lua_State* L, dt_imageio_module_format_t* 
   luaA_type_add(type_name,size);
   luaA_Type my_type = dt_lua_init_type_internal(L,type_name,format_fields_name,format_index,NULL,size);
   luaA_struct_typeid(L,my_type);
+  luaA_struct_member_typeid(L,my_type,"style",luaA_type_id(const char*),offsetof(dt_imageio_module_data_t,style));
   lua_pushlightuserdata(L,module);
 	lua_setfield(L,-2,"__format_object");
   return my_type;

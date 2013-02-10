@@ -102,6 +102,15 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
   if(!g_module_symbol(module->module, "read_image",                   (gpointer)&(module->read_image)))                   module->read_image = NULL;
 
   module->init(module);
+#ifdef USE_LUA
+  if(module->parameter_lua_type == LUAA_INVALID_TYPE) {
+    char tmp[1024];
+    snprintf(tmp,1024,"dt_imageio_module_data_pseudo_%s",module->plugin_name);
+    module->parameter_lua_type = dt_lua_init_format_internal(darktable.lua_state,module,tmp,sizeof(dt_imageio_module_data_t));
+    printf("registered %s as %d\n",tmp,module->parameter_lua_type);
+    lua_pop(darktable.lua_state,1); // done setting our metatable
+  }
+#endif
 
   return 0;
 error:
