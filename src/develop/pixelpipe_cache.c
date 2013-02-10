@@ -97,12 +97,12 @@ uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const dt_iop_roi_t *roi, dt_dev_
         if(darktable.lib->proxy.colorpicker.size)
         {
           const char *str = (const char *)piece->module->color_picker_box;
-          for(int i=0; i<sizeof(float)*4; i++) hash = ((hash << 5) + hash) ^ str[i];
+          for(size_t i=0; i<sizeof(float)*4; i++) hash = ((hash << 5) + hash) ^ str[i];
         }
         else
         {
           const char *str = (const char *)piece->module->color_picker_point;
-          for(int i=0; i<sizeof(float)*2; i++) hash = ((hash << 5) + hash) ^ str[i];
+          for(size_t i=0; i<sizeof(float)*2; i++) hash = ((hash << 5) + hash) ^ str[i];
         }
       }
     }
@@ -110,14 +110,14 @@ uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const dt_iop_roi_t *roi, dt_dev_
   }
   // also add scale, x and y:
   const char *str = (const char *)roi;
-  for(int i=0; i<sizeof(dt_iop_roi_t); i++) hash = ((hash << 5) + hash) ^ str[i];
+  for(size_t i=0; i<sizeof(dt_iop_roi_t); i++) hash = ((hash << 5) + hash) ^ str[i];
   return hash;
 }
 
 int dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash)
 {
   // search for hash in cache
-  for(int k=0; k<cache->entries; k++) if(cache->hash[k] == hash) return 1;
+  for(int32_t k=0; k<cache->entries; k++) if(cache->hash[k] == hash) return 1;
   return 0;
 }
 

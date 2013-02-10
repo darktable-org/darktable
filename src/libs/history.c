@@ -232,7 +232,7 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
 
   /* inactivate all toggle buttons */
   GList *children = gtk_container_get_children (GTK_CONTAINER (d->history_box));
-  for(int i=0; i<g_list_length (children); i++)
+  for(guint i=0; i<g_list_length (children); i++)
   {
     GtkToggleButton *b = GTK_TOGGLE_BUTTON( g_list_nth_data (children,i));
     if(b != GTK_TOGGLE_BUTTON(widget))

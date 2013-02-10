@@ -43,6 +43,9 @@ dt_imageio_sort_modules_format (gconstpointer a, gconstpointer b)
 static int
 _default_format_dimension(dt_imageio_module_format_t *module, uint32_t *width, uint32_t *height)
 {
+  // assume no limits
+  *width=0;
+  *height=0;
   return 0;
 }
 /** Default implementation of flags, used if format module does not implement flags() */

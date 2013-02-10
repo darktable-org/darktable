@@ -1376,7 +1376,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   g_object_set(G_OBJECT(w), "tooltip-text", _("f-number (aperture)"), (char *)NULL);
   snprintf(txt, sizeof (txt), "%.*f", precision(p->aperture, 10.0), p->aperture);
   dt_bauhaus_combobox_add(w, txt);
-  for(int k=0;k<sizeof(aperture_values)/sizeof(gdouble)-ffi;k++)
+  for(size_t k=0;k<sizeof(aperture_values)/sizeof(gdouble)-ffi;k++)
   {
     snprintf(txt, sizeof (txt), "%.*f", precision(aperture_values[ffi+k], 10.0), aperture_values[ffi+k]);
     dt_bauhaus_combobox_add(w, txt);
