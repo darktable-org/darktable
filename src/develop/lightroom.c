@@ -1067,7 +1067,6 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
         x = pc.cw - 0.5;
         y = 0.5 - pc.ch;
-
         pc.cw = 0.5 + x * cos(rangle) - y * sin(rangle);
         pc.ch = 0.5 - (x * sin(rangle) + y * cos(rangle));
       }
