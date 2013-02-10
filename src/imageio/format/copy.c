@@ -145,7 +145,7 @@ name ()
 
 void init(dt_imageio_module_format_t *self) {
 #ifdef USE_LUA
-  self->parameter_lua_type = dt_lua_init_format(darktable.lua_state,dt_imageio_module_data_t);
+  self->parameter_lua_type = dt_lua_init_format(darktable.lua_state,self,dt_imageio_module_data_t);
   lua_pop(darktable.lua_state,1); // done setting our metatable
 #endif
 }

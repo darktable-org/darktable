@@ -21,14 +21,15 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <lautoc.h>
+#include "common/imageio_module.h"
 
 
 
    
-#define dt_lua_init_format(L,type_name) \
-  dt_lua_init_format_internal(L,#type_name,sizeof(type_name)) 
+#define dt_lua_init_format(L,format,type_name) \
+  dt_lua_init_format_internal(L,format,#type_name,sizeof(type_name)) 
 
-luaA_Type dt_lua_init_format_internal(lua_State* L, char*type_name,size_t size);
+luaA_Type dt_lua_init_format_internal(lua_State* L, dt_imageio_module_format_t* module,char*type_name,size_t size);
 
 
 #endif

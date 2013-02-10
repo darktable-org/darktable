@@ -18,17 +18,57 @@
 #include "lua/modules.h"
 #include "lua/types.h"
 typedef enum {
+  GET_NAME,
   GET_EXTENSION,
+  GET_MIME,
+  GET_MAX_WIDTH,
+  GET_MAX_HEIGHT,
   LAST_FORMAT_FIELD
-} style_fields;
-const char *style_fields_name[] = {
+} format_fields;
+static const char *format_fields_name[] = {
+  "name",
   "extension",
+  "mime",
+  "max_width",
+  "max_height",
   NULL
 };
-luaA_Type dt_lua_init_format_internal(lua_State* L, char*type_name,size_t size){
+
+static int format_index(lua_State*L) {
+      uint32_t width,height;
+  int index = lua_tonumber(L,-1);
+  luaL_getmetafield(L,-2,"__format_object");
+  dt_imageio_module_format_t * format = lua_touserdata(L,-1);
+  lua_pop(L,2);
+  dt_imageio_module_data_t * data = lua_touserdata(L,-2);
+  switch(index) {
+    case GET_NAME:
+      lua_pushstring(L,format->name());
+      return 1;
+    case GET_EXTENSION:
+      lua_pushstring(L,format->extension(data));
+      return 1;
+    case GET_MIME:
+      lua_pushstring(L,format->mime(data));
+      return 1;
+    case GET_MAX_WIDTH:
+      format->dimension(format,&width,&height);
+      lua_pushinteger(L,width);
+      return 1;
+    case GET_MAX_HEIGHT:
+      format->dimension(format,&width,&height);
+      lua_pushinteger(L,height);
+      return 1;
+    default:
+      return luaL_error(L,"should never happen %d",index);
+  }
+}
+luaA_Type dt_lua_init_format_internal(lua_State* L, dt_imageio_module_format_t* module, char*type_name,size_t size){
   luaA_type_add(type_name,size);
-  luaA_Type my_type = dt_lua_init_type_internal(L,type_name,NULL,NULL,NULL,size);
+  luaA_Type my_type = dt_lua_init_type_internal(L,type_name,format_fields_name,format_index,NULL,size);
   luaA_struct_typeid(L,my_type);
+  lua_pushlightuserdata(L,module);
+	lua_setfield(L,-2,"__format_object");
   return my_type;
 };
 
