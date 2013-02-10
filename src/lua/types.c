@@ -101,7 +101,6 @@ static int type_index(lua_State *L){
   luaL_getmetafield(L,-2,"__luaA_Type");
   const luaA_Type my_type =lua_tointeger(L,-1);
   lua_pop(L,1);
-
   if(luaA_struct_registered_typeid(L,my_type) && luaA_struct_has_member_name_typeid(L,my_type,membername)) {
       const int result = luaA_struct_push_member_name_typeid(L, my_type, object, membername);
       return result;
@@ -123,7 +122,7 @@ static int type_newindex(lua_State *L){
 
   const char* membername = lua_tostring(L, -2);
   void* object = lua_touserdata(L, -3);
-  luaL_getmetafield(L,-2,"__luaA_Type");
+  luaL_getmetafield(L,-3,"__luaA_Type");
   const luaA_Type my_type =lua_tointeger(L,-1);
   lua_pop(L,1);
 
@@ -142,7 +141,7 @@ static int type_newindex(lua_State *L){
     lua_insert(L,-2);
     return newindex_function(L);
   }
-  return luaL_error(L,"field %s not found for type %s\n",membername,luaA_type_name(my_type));
+  return luaL_error(L,"field %s not found for type %s(%d)\n",membername,luaA_type_name(my_type),my_type);
 }
 
 
@@ -163,14 +162,9 @@ static void autotype_tofunc(lua_State*L, luaA_Type type_id, void* cout, int inde
 
 
 luaA_Type dt_lua_init_type_internal(lua_State* L, char*type_name,const char ** list,lua_CFunction index,lua_CFunction newindex,size_t size){
-  luaA_type_add(type_name,size); \
+  luaA_Type my_type = luaA_type_add(type_name,size); 
   luaL_newmetatable(L,type_name);
 
-  luaA_Type my_type =  luaA_type_find(type_name);
-  if(my_type == LUAA_INVALID_TYPE) {
-    // can only happen if someone calls the function without the wrapper, and does it incorrectly
-    printf("program error : type %s is not registered to luaAutoC\n",type_name);
-  }
   lua_pushnumber(L,my_type);
 	lua_setfield(L,-2,"__luaA_Type");
 

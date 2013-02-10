@@ -264,7 +264,8 @@ static int trigger_chained_event(lua_State * L,const char* evt_name, int nargs,i
 
     // add all fixed args at their final place
     for(int i = 0; i < nargs - nresults ; i++) {
-      lua_pushvalue(L,arg_top -nargs+i+1); // copy all invariant args over the table
+      lua_pushvalue(L,arg_top -nargs+i+1); // copy all invariant args at the top
+      lua_insert(L,-(nresults+1));// move them at their final place
     }
     /* uses 'key' (at index -2) and 'value' (at index -1) */
     // prepare the call
@@ -348,6 +349,8 @@ static void on_export_selection(gpointer instance,dt_control_image_enumerator_t 
   dt_lua_trigger_event("pre-export",2,1);
   if(lua_isnoneornil(darktable.lua_state,-1)) {return; }// everything already has been removed
   export_descriptor->index = dt_lua_image_glist_get(darktable.lua_state,-1);
+  mformat->set_params(mformat,fdata,size);
+  mformat->free_params(mformat,fdata);
 }
 
 static void on_export_image_tmpfile(gpointer instance,
