@@ -20,6 +20,7 @@
 #define DT_UNDO_H
 
 #include "views/view.h"
+#include <glib.h>
 
 //  types that are known by the undo module
 typedef enum dt_undo_type_t
@@ -39,18 +40,26 @@ typedef struct dt_undo_geotag_t
 
 typedef void* dt_undo_data_t;
 
+typedef struct dt_undo_t
+{
+  GList *undo_list, *redo_list;
+} dt_undo_t;
+
+dt_undo_t *dt_undo_init(void);
+void dt_undo_cleanup(dt_undo_t *self);
+
 // record a change that will be insered into the undo list
-void dt_undo_record(dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data, void (*undo) (dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data));
+void dt_undo_record(dt_undo_t *self, dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data, void (*undo) (dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *item));
 
 //  undo an element which correspond to filter. filter here is expected to be
 //  a set of dt_undo_type_t.
-void dt_undo_do_undo(uint32_t filter);
+void dt_undo_do_undo(dt_undo_t *self, uint32_t filter);
 
 //  redo a previously undone action, does nothing if the redo list is empty
-void dt_undo_do_redo(uint32_t filter);
+void dt_undo_do_redo(dt_undo_t *self, uint32_t filter);
 
 //  removes all items which correspond to filter in the undo/redo lists
-void dt_undo_clear(uint32_t filter);
+void dt_undo_clear(dt_undo_t *self, uint32_t filter);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -129,6 +129,7 @@ struct dt_conf_t;
 struct dt_points_t;
 struct dt_imageio_t;
 struct dt_bauhaus_t;
+struct dt_undo_t;
 
 typedef enum dt_debug_thread_t
 {
@@ -183,6 +184,7 @@ typedef struct darktable_t
   struct dt_opencl_t             *opencl;
   struct dt_blendop_t            *blendop;
   struct dt_dbus_t               *dbus;
+  struct dt_undo_t               *undo;
   dt_pthread_mutex_t db_insert;
   dt_pthread_mutex_t plugin_threadsafe;
   dt_pthread_mutex_t capabilities_threadsafe;

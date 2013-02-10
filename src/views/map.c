@@ -548,9 +548,9 @@ static gboolean _view_map_undo_callback(GtkAccelGroup *accel_group,
     GdkModifierType modifier, gpointer data)
 {
   if (keyval == GDK_z)
-    dt_undo_do_undo(DT_UNDO_GEOTAG);
+    dt_undo_do_undo(darktable.undo, DT_UNDO_GEOTAG);
   else
-    dt_undo_do_redo(DT_UNDO_GEOTAG);
+    dt_undo_do_redo(darktable.undo, DT_UNDO_GEOTAG);
   return TRUE;
 }
 
@@ -652,7 +652,7 @@ static void _push_position(dt_view_t *self, int imgid, float longitude, float la
   geotag->longitude = longitude;
   geotag->latitude = latitude;
 
-  dt_undo_record(self, DT_UNDO_GEOTAG, (dt_undo_data_t *)geotag, &pop_undo);
+  dt_undo_record(darktable.undo, self, DT_UNDO_GEOTAG, (dt_undo_data_t *)geotag, &pop_undo);
 }
 
 static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude)

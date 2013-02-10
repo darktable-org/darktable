@@ -20,100 +20,119 @@
 #include "views/undo.h"
 #include <glib.h>
 
-static GList *_undo_list = NULL;
-static GList *_redo_list = NULL;
-
-typedef struct dt_undo_t
+typedef struct dt_undo_item_t
 {
   dt_view_t *view;
   dt_undo_type_t type;
   dt_undo_data_t *data;
   void (*undo) (dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data);
-} dt_undo_t;
+} dt_undo_item_t;
 
-void dt_undo_record(dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data, void (*undo) (dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data))
+dt_undo_t *dt_undo_init(void)
 {
-  dt_undo_t *udata = g_malloc(sizeof (dt_undo_t));
-
-  udata->view = view;
-  udata->type = type;
-  udata->data = data;
-  udata->undo = undo;
-
-  _undo_list = g_list_prepend(_undo_list, (gpointer)udata);
-
-  // recording an undo data invalidate all the redo
-  g_list_free_full(_redo_list,&g_free);
+  dt_undo_t * udata = malloc(sizeof (dt_undo_t));
+  udata->undo_list = NULL;
+  udata->redo_list = NULL;
+  return udata;
 }
 
-void dt_undo_do_redo(uint32_t filter)
+void dt_undo_cleanup(dt_undo_t *self)
 {
-  GList *l = g_list_first(_redo_list);
+  dt_undo_clear(self, DT_UNDO_ALL);
+}
+
+void dt_undo_record(dt_undo_t *self, dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data, void (*undo) (dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *item))
+{
+  dt_undo_item_t *item = g_malloc(sizeof (dt_undo_item_t));
+
+  item->view = view;
+  item->type = type;
+  item->data = data;
+  item->undo = undo;
+
+  self->undo_list = g_list_prepend(self->undo_list, (gpointer)item);
+
+  // recording an undo data invalidate all the redo
+  g_list_free_full(self->redo_list,&g_free);
+  self->redo_list = NULL;
+}
+
+void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
+{
+  GList *l = g_list_first(self->redo_list);
 
   // check for first item that is matching the given pattern
 
   while (l)
   {
-    dt_undo_t *redo = (dt_undo_t*)l->data;
-    if (redo->type & filter)
+    dt_undo_item_t *item = (dt_undo_item_t*)l->data;
+    if (item->type & filter)
     {
       //  first remove element from _redo_list
-      _redo_list = g_list_remove(_redo_list, redo);
+      self->redo_list = g_list_remove(self->redo_list, item);
 
       //  callback with redo data
-      redo->undo(redo->view, redo->type, redo->data);
+      item->undo(item->view, item->type, item->data);
 
       //  add old position back into the undo list
-      _undo_list = g_list_prepend(_undo_list, redo);
+      self->undo_list = g_list_prepend(self->undo_list, item);
       break;
     }
     l=g_list_next(l);
   };
 }
 
-void dt_undo_do_undo(uint32_t filter)
+void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
 {
-  GList *l = g_list_first(_undo_list);
+  GList *l = g_list_first(self->undo_list);
 
   // check for first item that is matching the given pattern
 
   while (l)
   {
-    dt_undo_t *undo = (dt_undo_t*)l->data;
-    if (undo->type & filter)
+    dt_undo_item_t *item = (dt_undo_item_t*)l->data;
+    if (item->type & filter)
     {
       //  first remove element from _undo_list
-      _undo_list = g_list_remove(_undo_list, undo);
+      self->undo_list = g_list_remove(self->undo_list, item);
 
       //  callback with undo data
-      undo->undo(undo->view, undo->type, undo->data);
+      item->undo(item->view, item->type, item->data);
 
       //  add element into the redo list as filed with our previous position (before undo)
 
-      _redo_list = g_list_prepend(_redo_list, undo);
+      self->redo_list = g_list_prepend(self->redo_list, item);
       break;
     }
     l=g_list_next(l);
   };
 }
 
-void dt_undo_clear(uint32_t filter)
+static void dt_undo_clear_list(GList **list, uint32_t filter)
 {
-  GList *l = g_list_first(_undo_list);
+  GList *l = g_list_first(*list);
 
   // check for first item that is matching the given pattern
 
   while (l)
   {
-    dt_undo_t *undo = (dt_undo_t*)l->data;
-    if (undo->type & filter)
+    dt_undo_item_t *item = (dt_undo_item_t*)l->data;
+    if (item->type & filter)
     {
       //  remove this element
-      g_free(undo->data);
-      _undo_list = g_list_remove(_undo_list, undo);
+      g_free(item->data);
+      *list = g_list_remove(*list, item);
     }
     l=g_list_next(l);
   };
+}
+
+void dt_undo_clear(dt_undo_t *self, uint32_t filter)
+{
+  dt_undo_clear_list(&self->undo_list, filter);
+  dt_undo_clear_list(&self->redo_list, filter);
+  self->undo_list = NULL;
+  self->redo_list = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
