@@ -19,7 +19,8 @@
 
 	<sect4><title>Usage</title>
                 <para>Higher values increase color contrast, lower values decrease it. The effect of this module
-                      is similar to a steepened or flattened a- or b-curve in module tonecurve.
+                      is similar to a steepened or flattened a- or b-curve in module <emphasis>tonecurve</emphasis>
+                      (see <xref linkend="tonecurve"/>).
                 </para>
 		<sect5><title>green vs. magenta</title>
 			<para>Changes color contrast for green versus magenta.</para>

@@ -122,15 +122,16 @@
 				</sect4>
 
 				<sect4><title>intent</title>
-					<para>This option lets you define the intent, i.e. the way darktable will deal with out-of-gamut colors. See module "output color profile" 
+					<para>This option lets you define the intent, i.e. the way darktable will deal with out-of-gamut colors. See module <emphasis>output color profile</emphasis>
                                               (<xref linkend="output color profile"/>) for a more detailed description of the
-                                              available options. Select "image settings" if you want the settings in module "output color profile" of the individual images to take precedence.
+                                              available options. Select <quote>image settings</quote> if you want the settings in module <emphasis>output color profile</emphasis> of the 
+                                              individual images to take precedence.
 					</para>
 				</sect4>
 
 				<sect4><title>profile</title>
-					<para>This defines the output color profile. Select "image settings" if you want the settings in module "output color profile" of the individual 
-                                              images to take precedence.
+					<para>This defines the output color profile. Select <quote>image settings</quote> if you want the settings in module <emphasis>output color profile</emphasis>
+                                              of the individual images to take precedence.
 					</para>
 				</sect4>
 				<sect4><title>export</title>

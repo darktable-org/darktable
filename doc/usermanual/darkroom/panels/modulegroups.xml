@@ -63,11 +63,12 @@
 		</para>
 
                 <para>Clicking on one of the group symbols will show the modules in that group. If you once again click on the symbol grouping will be de-activated.
-                      Now you see all non-hidden modules in one long list. This list shows the sequence in which modules are applied from bottom to top. As a general principle darktable applies modules in a 
-                      pre-defined sequence.
+                      Now you see all non-hidden modules in one long list. This list shows the sequence in which modules are applied from bottom to top. As a general 
+                      principle darktable applies modules in a pre-defined sequence.
                 </para>
                 <para>The long list also helps you to figure out in which color space a specific module acts. In fact there are only three modules which cause a switch from one colorspaces to another:
-                      <emphasis>demosaic</emphasis>, <emphasis>input color profile</emphasis> and <emphasis>output color profile</emphasis>. Here is an overview:
+                      <link linkend="demosaic"><emphasis>demosaic</emphasis></link>, <link linkend="input color profile"><emphasis>input color profile</emphasis></link> and
+                      <link linkend="output color profile"><emphasis>output color profile</emphasis></link>. Here is an overview:
                 </para>
 
 		<para>

@@ -1,6 +1,6 @@
 <sect2 status="draft" id="import"><title>Import</title>
 		 	 <para>In this panel you import your filmrolls. You can either import a complete folder
-      				by pressing 'import filmroll' or a single image 'import single image'. You can also import directly from a connected camera.
+      				by pressing <quote>import filmroll</quote> or a single image <quote>import single image</quote>. You can also import directly from a connected camera.
 		  	</para>
 
 
@@ -12,23 +12,23 @@
 			<sect3><title>Import from filesystem</title>
 				<para>A filmroll is the same as a folder in the filesystem. You can import a single image or a folder. If a folder is imported the images
 	                                in that folder will show up in a filmroll whose name becomes the name of the imported folder. If single images are imported they
-	                                will show up in filmroll 'single images'.
+	                                will show up in filmroll <emphasis>single images</emphasis>.
 				</para>
 		
 				<graphic fileref="lighttable/images/panel_import.png" scalefit="1" width="60%" align="center"></graphic>
 
-				<para>When you click on 'import single image' or 'import filmroll' a file selector dialog will pop up. Navigate through your filesystem
+				<para>When you click on <quote>import single image</quote> or <quote>import filmroll</quote> a file selector dialog will pop up. Navigate through your filesystem
                                       and select the item you want to import. On the lower part of the dialog you can define some further import options. 
                                 </para>
                                 <para>
-                                      As the name implies checking 'import directories recursively' will recurse from the currently selected directory through all 
+                                      As the name implies checking <quote>import directories recursively</quote> will recurse from the currently selected directory through all 
                                       subdirectories and import all images found.
                                       It is not recommended and wasting resources to this on an exhaustive list of images. darktable would generate thumbnails for all of them
                                       but in the end keep the recent ones in its cache. Better import images part by part as separate filmrolls.
                                 </para>
-                                <para>Checking 'ignore jpeg files' is a good choice if there are jpeg images in the same folder that you do not want to process with
+                                <para>Checking <quote>ignore jpeg files</quote> is a good choice if there are jpeg images in the same folder that you do not want to process with
                                       darktable; eg. if your camera stores RAW+JPEG you often will only want to work further on your raws and let the jpegs alone. You can
-                                      also apply some metadata already on import; see the section on 'Metadata editor' later in this manual for more details.
+                                      also apply some metadata already on import; see the section on <emphasis>metadata editor</emphasis> (<xref linkend="metadata editor"/>) for more details.
 				</para>
 
 				<para status="draft">Importing a folder does not mean that darktable copies your images in another folder.
@@ -84,9 +84,10 @@
 					</para>
 				</sect4>
 				<sect4><title>LDR image files</title>
-					<para>darktable natively reads "ordinary" images in JPEG, 8-bit/16-bit PNG and 8-bit/16-bit TIFF format. JPEG2000 comes in addition if the required libraries
+					<para>darktable natively reads <quote>ordinary</quote> images in JPEG, 8-bit/16-bit PNG and 8-bit/16-bit TIFF format. JPEG2000 comes in addition if the 
+                                              required libraries
                                               are built into darktable at compile time. If darktable was compiled with GraphicsMagick support there are further import formats like GIF, Dicom DCM, 
-                                              additional exotic TIFF formats, and some of Sun's "portable xyz-map" family.
+                                              additional exotic TIFF formats, and some of Sun's <quote>portable xyz-map</quote> family.
 					</para>
 				</sect4>
 				<sect4><title>HDR image files</title>

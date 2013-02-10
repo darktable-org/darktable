@@ -8,8 +8,8 @@
 						<entry>A lowpass filter (eg. gaussian blur) with additional control
 						of outcome as contrast and saturation.
 						The primary usage for lowpass filter is in combination with a
-						blending operator, try out the preset named "local contrast mask"
-						with a overlay blending operation.
+						<emphasis>blending operator</emphasis> (see <xref linkend="blending operators"/>).
+                                                Try out the preset named <quote>local contrast mask</quote> with an <quote>overlay</quote> blending operation.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/lowpass.png" scalefit="1" width="80%" align="center" />

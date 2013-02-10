@@ -18,12 +18,12 @@
 		<sect4><title>blend mode</title>
 			<para>There are several modes implemented and more can be added. For now all the common ones are there and
 			      you will recognize a few of them from other imaging software. A good introduction on many
-        	              common blend modes is given in The Gimp Manual (Chapter 8.2, "Layer Modes"). Therefore we
-        	              only discuss a few blend modes here in more detail.
+        	              common blend modes is given in <ulink url="http://docs.gimp.org/2.8/en/gimp-concepts-layer-modes.html">
+                              The Gimp Manual (Chapter 8.2, <quote>Layer Modes</quote>)</ulink>. Therefore we only discuss a few blend modes here in more detail.
 			</para>
 
 			<sect5><title>off</title>
-				<para>If set to "off" no blending will be done and blending related controls are hidden.
+				<para>If set to <quote>off</quote> no blending will be done and blending related controls are hidden.
 			        </para>			
 			</sect5>
 
@@ -35,18 +35,18 @@
 			</sect5>
 
 		        <sect5><title>inverse</title>
-				<para>This blend mode acts similar to blend mode "normal", only that the role of input and output of the
+				<para>This blend mode acts similar to blend mode <quote>normal</quote>, only that the role of input and output of the
         	                      current module are reversed. Can be used together with conditional blending (<xref linkend="conditional blending"/>) to
         	                      get the effect of an inversed blend mask.
         	                </para>			
 			</sect5>
 
 			<sect5><title>unbounded</title>
-				<para>This blend mode acts similar to blend mode "normal", only that input and output data are not
+				<para>This blend mode acts similar to blend mode <quote>normal</quote>, only that input and output data are not
         	                      clamped to a certain min/max value range. This already tells you that all other blend modes
         	                      clamp their input and output. In some cases (e.g. highly color saturated extreme highlights) it is 
         	                      important to  let unbound values travel through the pixelpipe in order to properly deal with them at 
-        	                      the right place (e.g. in module "output color profile").
+        	                      the right place (e.g. in module <link linkend="output color profile"><emphasis>output color profile</emphasis></link>).
 	                        </para>			
 	                </sect5>
 
@@ -79,7 +79,8 @@
 
 			<sect5><title>coloradjustment</title>
 				<para>Some modules act predominantly on the tonal values of an image but involve some adjustment of color saturation
-                                      as well, e.g. module <emphasis>levels</emphasis> and <emphasis>tonecurve</emphasis>. This blend mode takes the 
+                                      as well, e.g. module <link linkend="levels"><emphasis>levels</emphasis></link> and <link linkend="tonecurve">
+                                      <emphasis>tonecurve</emphasis></link>. This blend mode takes the 
                                       lightness only from output data and mixes colors from input and output. This way you can control the module's automatic 
                                       color adjustment.
 	                        </para>			
@@ -98,7 +99,7 @@
 
 	        <sect4><title>blend</title>
         	        <para>Most modules offer additional control on blending by a user-defined blend mask. In order to activate these
-        	              controls you need to switch from "blend uniformily" to "blend only, if..". More details on conditional blending
+        	              controls you need to switch from <quote>blend uniformily</quote> to <quote>blend only, if..</quote>. More details on conditional blending
         	              are given in a separate chapter (<xref linkend="conditional blending"/>).
         	        </para>
 	        </sect4>
@@ -117,8 +118,9 @@
 						<colspec colwidth="4*"/>
 						<tbody>
 							<row>						
-								<entry>When blending operators were introduced into darktable, a new module named highpass was added. It produces
-										a highpass filter of the image to be implicitly used with blending. It allows to produce a gritty detailed image and
+								<entry>When blending operators were introduced into darktable, a new module named <emphasis>highpass</emphasis>
+                                                                       (see <xref linkend="highpass"/>) was added. It produces a highpass filter of the image to be implicitly 
+                                                                        used with blending. It allows to produce a gritty detailed image and
 										is a widely used workflow with other imaging softwares.				
 								</entry>
 								<entry>
@@ -139,7 +141,9 @@
 										<graphic fileref="darkroom/modules/images/blendop_highpass_ex1_1.png" scalefit="1" width="90%" align="center" />
 									</entry>						
 									<entry>
-										<para>This is the original image, pretty heavy processed: first black and white, then some blue splittoning but as you see
+										<para>This is the original image, pretty heavy processed: first <link linkend="monochrome">
+                                                                                      <emphasis>monochrome</emphasis></link>, then some blue <link linkend="splittoning">
+                                                                                      <emphasis>splittoning</emphasis></link> but as you see
 											it lacks pop in details and is a bit out of focus...
 										</para>
 									</entry>

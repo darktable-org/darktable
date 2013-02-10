@@ -16,7 +16,8 @@
 		</informaltable>
 		<para>Each modules is shown as a small icon and the module name.
 		Left-click with your mouse to toggle a module's status: visible, hidden or favorite. Favorite modules are indicated by 
-                a star in front of the icon and will additionally to their normal module group show up in module group "favorites".
+                a star in front of the icon and will additionally to their normal module group show up in module group 
+                <link linkend="modulegroups"><emphasis>favorites</emphasis></link>.
                 This is a good way to get fast access to modules that you use very frequently. Visible modules are indicated in the list
                 by a light grey background. Hidden modules have a dark grey background; they will not display any controls whatsoever.
 		</para>

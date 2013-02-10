@@ -108,9 +108,9 @@
                         <para>With button <inlinegraphic  fileref="images/lighttable_icon_group.png" scalefit="1" width="2%"/> 
                               in the top panel of lightroom mode you toggle grouping mode on and off.
                         </para>
-                        <para>If grouping is <emphasis>off</emphasis> each image is displayed as an individual thumb.
+                        <para>If grouping is off, each image is displayed as an individual thumb.
                         </para>
-                        <para>If grouping is <emphasis>on</emphasis> images of a group are by default collapsed, which means they are 
+                        <para>If grouping is on, images of a group are by default collapsed, which means they are 
                               represented by one thumbnail.
                               The image you see is called the group head. If you press symbol "G" in the thumbnail of a group, only this
                               group gets expanded; if another group was expanded at that time it gets collapsed. To collapse an expanded 

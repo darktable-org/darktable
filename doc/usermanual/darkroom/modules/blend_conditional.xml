@@ -34,7 +34,7 @@
 			<colspec colwidth="4*"/>
 			<tbody>
 				<row>						
-					<entry>When conditional blending is activated with option "blend only, if.." an additional set of controls consisting
+					<entry>When conditional blending is activated with option <quote>blend only, if..</quote> an additional set of controls consisting
 		                               of several notebook tabs is shown.
 					</entry>
 					<entry>
@@ -147,8 +147,8 @@
 					<row>						
 						<entry>
 							<para>
-							To make a colorkey effect for this red poppy blossom, we need to apply module monochrome to
-                                             	               all parts of the image except of the saturated red petals.			
+							To make a colorkey effect for this red poppy blossom, we need to apply module <link linkend="monochrome">
+                                                        <emphasis>monochrome</emphasis></link> to all parts of the image except of the saturated red petals.			
 							</para>
 						</entry>
 						<entry>
@@ -178,7 +178,7 @@
 					</row>
 					<row>						
 						<entry>
-							<para>The final image after module monochrome is applied.
+							<para>The final image after module <emphasis>monochrome</emphasis> is applied.
                                           		</para>
 						</entry>
 						<entry>

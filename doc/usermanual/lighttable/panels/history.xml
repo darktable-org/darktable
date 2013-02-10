@@ -30,7 +30,7 @@
 				</sect4>
 				<sect4><title>overwrite/append</title>
 					<para>Describes how a new history stack must behave if pasted on an image having already an
-					history stack. 'Overwrite' will delete previous history stack whereas 'append' will add the
+					history stack. <quote>Overwrite</quote> will delete previous history stack whereas <quote>append</quote> will add the
 					two history stacks.
 					</para>
 				</sect4>

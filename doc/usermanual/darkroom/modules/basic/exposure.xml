@@ -6,7 +6,8 @@
 				<tbody>
 					<row>						
 						<entry>This module is used to tweak the exposure.
-							It is directly linked to the histogram panel. Indeed, if you correct exposure graphically, using the histogram,
+							It is directly linked to the histogram panel. Indeed, if you correct exposure graphically, using the <emphasis>histogram
+                                                        </emphasis> (see <xref linkend="histogram"/>),
 							you automatically activate the exposure module. The histogram simply acts as a view for the exposure module.
 						</entry>
 						<entry>
@@ -26,7 +27,7 @@
                       camera and the iso value of your image, positive exposure compensations with up to 1EV or 2EV still give reasonable results.
 		</para>
 		<para>Negative exposure corrections will make the image darker. Given the nature of digital images this can not correct for blown out highlights (see
-                      also module "highlight reconstruction").
+                      also <xref linkend="highlight reconstruction"/>).
 		</para>
 		<para>A black level adjustment is a basic tool to increase contrast and pop of an image. The value defines at what threshold dark gray values will
                       be cut off to pure black. Use with care as these dark gray values can not be recovered in other modules further down the pixelpipe.

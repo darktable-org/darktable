@@ -28,18 +28,18 @@
 			<listitem>
 				<para>Image preparation</para>
 				<para>Prepare the image for the cross process steps by adjusting the base settings such as
-					exposure,whitebalance etc. for a correctly looking image.
+					exposure, whitebalance etc. for a correctly looking image.
 				</para>
 			</listitem>
 			<listitem><para>Boost contrast</para>
-				<para>Select the medium contrast curve preset for tonecurve module to boost the overall contrast
-					in the image.
-					You later might get back here to tune the curve for better result.
+				<para>Select the medium contrast curve preset for <emphasis>tonecurve</emphasis> module (<xref linkend="tonecurve"/>) to boost the overall contrast
+					in the image. You later might get back here to tune the curve for better result.
 				</para>
 			</listitem>
 			
 			<listitem><para>Color cast</para>
-				<para>This step does change the colorcast as the base for the effect using the channel mixer.
+				<para>This step does change the colorcast as the base for the effect using the <emphasis>channel mixer</emphasis> module
+                                      (<xref linkend="channel mixer"/>).
 						You might later get back to this and finetune the colorcast of the final result.
 				</para>
 				<orderedlist>
@@ -51,7 +51,7 @@
 			</listitem>
 			
 			<listitem><para>Splittoning</para>
-				<para>We use splittoning to add some more coloring to the result for cyan/blue shadows
+				<para>We use <emphasis>splittoning</emphasis> (<xref linkend="splittoning"/>) to add some more coloring to the result for cyan/blue shadows
 					and yellow highlight.
 				</para>
 				<orderedlist>

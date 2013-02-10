@@ -23,13 +23,13 @@
 
 	<sect4><title>Usage</title>
 		<para>The levels tool shows the histogram of the image and displays three bars with handles for you to drag and correct
-		the tone in the image. Those bars represent black, middle gray and white. The button "auto" will autoadjust the black-
+		the tone in the image. Those bars represent black, middle gray and white. The button <quote>auto</quote> will autoadjust the black-
 		and whitepoint and put the greypoint exactly in the mean between them. There are three color pickers in black, grey, and white,
 		available by pressing the respectively colored <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />.
 		</para>
 		<para>
 		This module is especially useful if the histogram of your image does not span the whole horizontal range from pure black
-		to pure white. You can either take a chance and press "auto" or define the black and white level yourself. That can be done
+		to pure white. You can either take a chance and press <quote>auto</quote> or define the black and white level yourself. That can be done
 		by either using the colorpickers to pick out one of the three levels directly from the image, or by adjusting the left and right bar
 		to match the left and right border of the histogram, which will make the output image span the full available tonal range. A previously
 		flat looking image will get more contrast and pop.

@@ -82,7 +82,8 @@
 					</entry>						
 					<entry>
 						<para>Shadows get lightened; highlights are untouched; overall effect
-                                                      toned down a bit by blend mode "normal" and an opacity of 65%.</para>
+                                                      toned down a bit by <link linkend="blending operators"><emphasis>blend mode</emphasis></link> 
+                                                      <quote>normal</quote> and an opacity of 65%.</para>
 					</entry>
 				</row>
 				<row>

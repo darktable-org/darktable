@@ -37,23 +37,23 @@
                       remaining artifacts in special cases.</para>
 
 		<para>Demosaic is always applied when exporting images. Demosaic is done on monitor display only when zoom is greater than 50% or 
-                      when the according preference setting "demosaicing for zoomed out darkroom mode" is set accordingly. Else color channels are
-                      taken from neighboring pixels without an expensive interpolation.</para>
+                      when the according preference setting <quote>demosaicing for zoomed out darkroom mode</quote> (see <xref linkend="core options"/>) 
+                      is set accordingly. Else color channels are taken from neighboring pixels without an expensive interpolation.</para>
 
                 <sect5><title>method</title>
 			<para>Set the demosaic method. darktable currently supports PPG and AMAZE.</para>
 		</sect5>
 
                 <sect5><title>edge threshold</title>
-			<para>Set the threshold for an additional median pass. Defaults to 0 which disables median filtering.</para>
+			<para>Set the threshold for an additional median pass. Defaults to <quote>0</quote> which disables median filtering.</para>
 		</sect5>	
 		<sect5><title>color smoothing</title>
-			<para>Activates a number of additional color smoothing passes. Defaults to off.</para>
+			<para>Activates a number of additional color smoothing passes. Defaults to <quote>off</quote>.</para>
 		</sect5>
 		<sect5><title>match greens</title>
 			<para>In some cameras the green filters have slightly varying properties. This parameter adds an 
                               aditional equilibration step, which suppresses artifacts that otherwise could result. Available options
-                              are "diabled", "local average", "full average" and "full and local average".</para>
+                              are <quote>disabled</quote>, <quote>local average</quote>, <quote>full average</quote> and <quote>full and local average</quote>.</para>
 		</sect5>
 
 	</sect4>

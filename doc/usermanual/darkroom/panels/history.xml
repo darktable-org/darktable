@@ -29,13 +29,14 @@
                 to lose all development work on an image this way.</emphasis>
 		</para>
 		<para>
-            	Hitting "compress history stack" generates the shortest historystack that produces the
+            	Hitting <quote>compress history stack</quote> generates the shortest historystack that produces the
             	current image, i.e. suppressing all de-activated modules. This will also discard all modules above
                 the currently selected one.
 		</para>
 		<para>The button to the right <inlinegraphic fileref="&icon_styles;" scalefit="1" width="2%" align="center" /> 
                 lets you create a new style by popping up a dialog window. Use the first line to name your style, the second to add a 
-                searchable description. The "advanced presets" allows you chose which modules are to be taken into account for the styles. 
-                Go to panel "styles" (<xref linkend="styles"/>) in lighttable mode in order to manage your styles or apply them to other images.
-		</para>
+                searchable description. The following list allows you chose which modules are to be taken into account for the style.</para> 
+
+                <para>Go to panel <emphasis>styles</emphasis> (<xref linkend="styles"/>) in lighttable mode in order to manage your styles or 
+                apply them to other images.</para>
 	</sect2>

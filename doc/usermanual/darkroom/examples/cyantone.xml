@@ -28,13 +28,13 @@
 				</para>
 			</listitem>
 			<listitem><para>Black and white</para>
-				<para>Enable the monochrome module to make the image black and white.
+				<para>Enable the <emphasis>monochrome</emphasis> module (<xref linkend="monochrome"/>)to make the image black and white.
 				</para>
 			</listitem>
 			
 			<listitem><para>Add color tone</para>
-				<para>This step selects the basetone of the image using channel mixer, we are going for cyan tone but
-					you can choose the tone of your like here.
+				<para>This step selects the basetone of the image using <emphasis>channel mixer</emphasis> (<xref linkend="channel mixer"/>), 
+                                       we are going for cyan tone but you can choose the tone of your like here.
 				</para>
 				<orderedlist>
 					<listitem><para>Enable the channel mixer module</para></listitem>
@@ -49,8 +49,8 @@
 			
 			<listitem><para>Splittoning</para>
 				<para>The result of previous step does also add a colorcast on highlight that we actually want to have 
-					white for a prettier result.
-					We also wants to add some blue color cast to the shadows to emphasis them.
+					white for a prettier result. We also want to add some blue color cast to the shadows in order to emphasis them.
+                                       Module <emphasis>splittoning</emphasis> (<xref linkend="splittoning"/>) can accomplish this.
 				</para>
 				<orderedlist>
 					<listitem><para>Enable the splittoning module</para></listitem>

@@ -22,8 +22,8 @@
 			</para>
 		</sect4>
 		<sect4><title>edit</title>
-			<para>Styles are a collection of history stack items. After pressing "edit" you are prompted with a dialog in which you can deselect
-                                            specific items. Check option "duplicate" if you want to create a new style instead of overwriting the existing
+			<para>Styles are a collection of history stack items. After pressing <quote>edit</quote> you are prompted with a dialog in which you can deselect
+                                            specific items. Check option <quote>duplicate</quote> if you want to create a new style instead of overwriting the existing
                                             one; you need to give a new style name in this case.
 			</para>
 		</sect4>
@@ -32,7 +32,7 @@
 			</para>
 		</sect4>
 		<sect4><title>import</title>
-			<para>You can import a style which has been previously saved by darktable. darktable stores its files as xml files with the extension .dtstyle.
+			<para>You can import a style which has been previously saved by darktable. darktable stores its files as xml files with the extension <quote>.dtstyle</quote>.
 			</para>
 		</sect4>
 		<sect4><title>export</title>

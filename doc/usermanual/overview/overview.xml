@@ -205,8 +205,8 @@
 					darktable ships with a bunch of modules and each of them is arranged into groups named module groups, these module groups are accessed
 					via toggle buttons in the right panel just under the histogram.
 					There are also two special module groups named active and favorites, where active will only show modules enabled in the history for the current image and
-					favorites will only show modules selected as a favorite by you. This is done in the <quote>more modules</quote> (<xref linkend="more modules"/>) at the 
-                                        bottom of the right panel, just click your favorite module until it gets a star displayed in front of the icon and you have chosen your favorite.
+					favorites will only show modules selected as a favorite by you. This is done in the <emphasis>more modules</emphasis> dialog (<xref linkend="more modules"/>) 
+                                        at the bottom of the right panel. Just click your favorite module until it gets a star displayed in front of the icon and you have chosen your favorite.
 				</para>
 			</sect3>
 
@@ -312,11 +312,11 @@
 		</sect2>
 
 		<sect2 status="draft" id="exporting images"><title>Exporting images</title>
-			<para>Your changes to an image are not saved as in a regular image editor. darktable is a non destructive editor which means all your changes are stored 
+			<para>Your changes to an image are not saved as in a regular image editor. darktable is a non destructive editor, which means all your changes are stored 
                               in a database and the original image is untouched and therefore you need to export your images to get an <quote>image</quote> file to distribute with 
                               your special processing.</para>
-			<para>Images are exported from lighttable using the export module in the right panel (<xref linkend="export selected"/>). In general, export means: save my developed 
-                              RAW image as a JPEG.</para>
+			<para>Images are exported from lighttable using the <emphasis>export selected</emphasis> dialog in the right panel (<xref linkend="export selected"/>). In general, 
+                              export means: save my developed RAW image as a JPEG.</para>
 			<para>The export is modularized into storage and format. darktable is shipping several storage modules such as save on disk, picasa and flickr webalbum and more.
 			      Format modules are the actual image formats such as JPEG, PNG, TIFF, OpenEXR and more.
 			</para>

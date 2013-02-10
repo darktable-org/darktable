@@ -31,24 +31,24 @@
 			<para>With this combobox you can choose between different aspect ratios for the final output of this module, i.e. underlying image plus frame.</para>
 		</sect5>
 		<sect5><title>orientation</title>
-			<para>If you select a non-square aspect ratio this combobox defines the orientation - portrait or landscape. Set to "auto" if you want darktable to
+			<para>If you select a non-square aspect ratio this combobox defines the orientation - portrait or landscape. Set to <quote>auto</quote> if you want darktable to
                               select the most reasonable orientation based on the underlying image.
                         </para>
 		</sect5>
 		<sect5><title>horizontal position</title>
 			<para>Select from a set of pre-defined ratios where you want your underlying image be positioned on the horizontal axis. You can also right click and enter
-                              your own ratio as "x/y".
+                              your own ratio as <quote>x/y</quote>.
                         </para>
 		</sect5>
 		<sect5><title>vertical position</title>
 			<para>Select from a set of pre-defined ratios where you want your underlying image be positioned on the vertical axis. You can also right click and enter
-                              your own ratio as "x/y".</para>
+                              your own ratio as <quote>x/y</quote>.</para>
 		</sect5>
 		<sect5><title>frame line size</title>
 			<para>The percentage of the frame line size relative to the border size at its smallest part.</para>
 		</sect5>
 		<sect5><title>frame line offset</title>
-			<para>Where the frame line is positioned relative to the underlying image. Select 0 for a frame line touching the image, 100% for a frame line touching the
+			<para>Where the frame line is positioned relative to the underlying image. Select a value of 0 for a frame line touching the image, 100% for a frame line touching the
                               outer border limits.</para>
 		</sect5>
 		<sect5><title>border color</title>

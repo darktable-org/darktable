@@ -49,7 +49,7 @@
 		</sect5>
 		<sect5><title>corrections</title>
 			<para>This combobox gives you a choice about which corrections (out of distortion, TCA and vignetting) darktable 
-                              shall apply. Change this from its default "all", if your camera has already done some internal
+                              shall apply. Change this from its default <quote>all</quote>, if your camera has already done some internal
                               corrections (e.g. of vignetting), or if you plan to do certain corrections with a separate program.
                         </para>
 		</sect5>	
@@ -64,7 +64,7 @@
                         </para>
 		</sect5>	
 		<sect5><title>mode</title>
-			<para>The default behavior of this module is to correct lens flaws. Switch this togglebutton to "distort" in
+			<para>The default behavior of this module is to correct lens flaws. Switch this togglebutton to <quote>distort</quote> in
                               order to simulate the behavior of a specific lens (inverted effect).
                         </para>
                 </sect5>

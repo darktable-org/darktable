@@ -24,7 +24,8 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
-                <para>Besides the global color picker, which we describe here, there are local color pickers in various modules (eg. tonecurve).
+                <para>Besides the global color picker, which we describe here, there are local color pickers in various modules (eg. <link linkend="tonecurve">
+                      <emphasis>tonecurve</emphasis></link>).
                       Global and local color pickers are different. The global color picker works in monitor color space; it takes samples after
                       the complete pixelpipe has been processed and colors are transfered into RGB suited for your monitor. The local color pickers
                       run in the color space of the individual module, which is most often Lab; they only see input and/or output colors of that
@@ -41,11 +42,11 @@
                       color picker works in monitor RGB color space. You can also let darktable translate these numerical values into Lab
                       color space. Beware that Lab values are approximated here; darktable does not take your specific monitor profile into account.
                 </para>
-		<para>On activation of checkbox "restrict histogram to selection" only the values of your selected area or point are taken into account
+		<para>On activation of checkbox <quote>restrict histogram to selection</quote> only the values of your selected area or point are taken into account
                       by the histogram on top of right panel (see <xref linkend="histogram"/>). This is a useful tool if you want to know which tonal 
                       values are present in a specific area.
 		</para>
-		<para>Picked colors in area or point mode can be "stored" as live samples by pressing the "Add" button. darktable shows a color swatch
+		<para>Picked colors in area or point mode can be <quote>stored</quote> as live samples by pressing the <quote>add</quote> button. darktable shows a color swatch
                       and numerical values for each stored sample. You can once again select which numerical value (mean, min, max) is to be displayed and
                       if this is to be done in RGB or Lab color space.
 		</para>
@@ -55,6 +56,6 @@
                       this live sample any longer. You can for example take two live samples from the same location and have one of them locked. This way
                       you can keep the locked one as a reference sample for comparison.
                 </para>
-                <para>Live sample locations are indicated in your image if you check option "display sample areas on image".
+                <para>Live sample locations are indicated in your image if you check option <quote>display sample areas on image</quote>.
 		</para>
 	</sect2>
