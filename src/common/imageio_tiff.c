@@ -106,9 +106,9 @@ dt_imageio_open_tiff(
     for (row = 0; row < imagelength; row++)
     {
       TIFFReadScanline(image, buf, row, 0);
-      if(bpp == 8) for(int i=0; i<width; i++)
+      if(bpp == 8) for(uint32_t i=0; i<width; i++)
           for(int k=0; k<3; k++) mipbuf[4*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf8[spp*i + k]*(1.0/255.0);
-      else for(int i=0; i<width; i++)
+      else for(uint32_t i=0; i<width; i++)
           for(int k=0; k<3; k++) mipbuf[4*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf16[spp*i + k]*(1.0/65535.0);
       // for(int k=0;k<3;k++) mipbuf[3*(width*row + i) + k] = ((buf16[mul*i + k]>>8)|((buf16[mul*i + k]<<8)&0xff00))*(1.0/65535.0);
     }

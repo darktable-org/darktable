@@ -749,7 +749,7 @@ _default_process_tiling_ptp (struct dt_iop_module_t *self, struct dt_dev_pixelpi
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(input,width,ivoid,ioffs,wd,ht) schedule(static)
 #endif
-      for(int j=0; j<ht; j++)
+      for(size_t j=0; j<ht; j++)
         memcpy((char *)input+j*wd*in_bpp, (char *)ivoid+ioffs+j*ipitch, wd*in_bpp);
 
       /* take original processed_maximum as starting point */
@@ -788,7 +788,7 @@ _default_process_tiling_ptp (struct dt_iop_module_t *self, struct dt_dev_pixelpi
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(ovoid,ooffs,output,width,origin,region,wd) schedule(static)
 #endif
-      for(int j=0; j<region[1]; j++)
+      for(size_t j=0; j<region[1]; j++)
         memcpy((char *)ovoid+ooffs+j*opitch, (char *)output+((j+origin[1])*wd+origin[0])*out_bpp, region[0]*out_bpp);
     }
 

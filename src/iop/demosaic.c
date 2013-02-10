@@ -1074,7 +1074,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     cl_mem dev_t1 = dev_out;
     cl_mem dev_t2 = dev_tmp;
 
-    for(int pass = 0; pass < data->color_smoothing; pass++)
+    for(uint32_t pass = 0; pass < data->color_smoothing; pass++)
     {
 
       dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 0, sizeof(cl_mem), &dev_t1);

@@ -106,13 +106,13 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   const guint *jid  = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   GList *current_value = g_list_find(values,orginal_value);
-  for(int i=0; i<t->count; i++)
+  for(uint32_t i=0; i<t->count; i++)
   {
     // Delay if active
     if(t->delay)
       g_usleep(t->delay*G_USEC_PER_SEC);
 
-    for(int b=0; b<(t->brackets*2)+1; b++)
+    for(uint32_t b=0; b<(t->brackets*2)+1; b++)
     {
       // If bracket capture, lets set change shutterspeed
       if (t->brackets)
@@ -120,14 +120,14 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
         if (b == 0)
         {
           // First bracket, step down time with (steps*brackets), also check so we never set the longest shuttertime which would be bulb mode
-          for(int s=0; s<(t->steps*t->brackets); s++)
+          for(uint32_t s=0; s<(t->steps*t->brackets); s++)
             if (g_list_next(current_value) && g_list_next(g_list_next(current_value)))
               current_value = g_list_next(current_value);
         }
         else
         {
           // Step up with (steps)
-          for(int s=0; s<t->steps; s++)
+          for(uint32_t s=0; s<t->steps; s++)
             if(g_list_previous(current_value))
               current_value = g_list_previous(current_value);
         }
@@ -158,7 +158,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   // free values
   if(values)
   {
-    for(int i=0; i<g_list_length(values); i++)
+    for(guint i=0; i<g_list_length(values); i++)
       g_free(g_list_nth_data(values,i));
 
     g_list_free(values);
