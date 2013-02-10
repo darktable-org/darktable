@@ -7,11 +7,11 @@
       <row>						
 	<entry>
 	  <para>The panels on the left side we already know from lighttable mode (<xref linkend="lighttable panels"/>).</para>
-	  <para>You can define image collections with the "collect images" panel where you can
-                define sets of selection rules. Recently used collections can be reached
+	  <para>You can define image collections with the <link linkend="collect images"><emphasis>collect images</emphasis></link> 
+                panel where you can define sets of selection rules. Recently used collections can be reached
                 with their respective names in separate panel. You can also get an overview
-                of the metadata of the image under your mouse cursor in panel "image
-                information".</para>
+                of the metadata of the image under your mouse cursor in panel <link linkend="metadata">
+                <emphasis>metadata</emphasis></link>.</para>
 	</entry>
 	<entry>
 	  <graphic fileref="map/images/left_panels.png" scalefit="1" width="80%" align="center" />

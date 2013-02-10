@@ -19,8 +19,8 @@
 	  </listitem>
 
 	  <listitem><para>Verify camera driver abillities</para>
-	    <para>Execute the following command and verify that the "Capture choices" ability supports <emphasis>Image</emphasis> and 
-	    "Configuration support" is <emphasis>yes</emphasis>. darktable will check these two abilities and decide if "tethered shoot" button 
+	    <para>Execute the following command and verify that the <emphasis>capture choices</emphasis> ability supports <quote>Image</quote> and 
+	    <emphasis>configuration support</emphasis> is <quote>yes</quote>. darktable will check these two abilities and decide if <quote>tethered shoot</quote> button 
 	    should be shown or not.
 	    <programlisting>
 	      env LANG=C gphoto2 --port usb: --abilities
@@ -60,8 +60,8 @@
     </para>
 
     <para>If you successfully went through all the tests above, your camera will likely be supported by darktable. 
-    If you anyway stumble into a problem in darktable please file a bug at http://www.darktable.org/redmine. Please attach outputs of 
-    the steps above and the log file output while running darktable with the following command.
+    If you anyway stumble into a problem in darktable please file a bug at <ulink url="http://www.darktable.org/redmine">redmine</ulink>. 
+    Please attach outputs of the steps above and the log file output while running darktable with the following command.
     <programlisting>
       darktable -d camctl 2&gt;1 &gt;camctl.log
     </programlisting>
