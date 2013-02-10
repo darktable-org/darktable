@@ -1205,7 +1205,7 @@
       <Color x="1" y="1">BLUE</Color>
     </CFA>
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="0" white="4095"/>
+    <Sensor black="255" white="4095"/>
   <Hints>
     <Hint name="coolpixmangled" value=""/>
   </Hints>
