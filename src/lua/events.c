@@ -226,35 +226,54 @@ static int register_chained_event(lua_State* L) {
 }
 
 static int trigger_chained_event(lua_State * L,const char* evt_name, int nargs,int nresults) {
-  // nresults is unused
   // -1..-n a
+  if(nargs<nresults)
+        dt_print(DT_DEBUG_LUA,"error chained parameters must have less results than args (args %d results %d\n",nargs,nresults);
+  int arg_top=lua_gettop(L);
   lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
   lua_getfield(L,-1,evt_name);
   if(lua_isnil(L,-1)) {
     lua_pop(L,2+nargs);
-    for(int i = 0 ; i < nargs ; i++) lua_pushnil(L);
-    return nargs;
+    for(int i = 0 ; i < nresults ; i++) lua_pushnil(L);
+    return nresults;
   }
   lua_remove(L,-2);
 
-  for(int i = 0 ; i< nargs; i++) {
-    lua_pushvalue(L,-(nargs+1)); // copy all args over the table
+  // copy variable args on the top of the stack
+  for(int i = 0 ; i< nresults; i++) {
+    lua_pushvalue(L,arg_top -nresults +i+1);
   }
 
   lua_pushnil(L);  /* first key */
-  while (lua_next(L, -(nargs+2)) != 0) {
+  while (lua_next(L, -(nresults+2)) != 0) {
+    /* stack at this point
+       - all args from the function entry
+       - table with all the functions to chain
+       - variable args at this point
+       - "key" the index we just looked into
+       - "value" function to call
+       */
+    // remove the loop index
     const int loop_index=luaL_checkint(L,-2);
     lua_remove(L,-2);
+    // move the function below the variable args
+    lua_insert(L,-(nresults+1)); // move fn call below args
+    //move the evt name just above the function
+    lua_pushstring(L,evt_name);// param 1 is the event
+    lua_insert(L,-(nresults+1)); // move evt name below params
+
+    // add all fixed args at their final place
+    for(int i = 0; i < nargs - nresults ; i++) {
+      lua_pushvalue(L,arg_top -nargs+i+1); // copy all invariant args over the table
+    }
     /* uses 'key' (at index -2) and 'value' (at index -1) */
     // prepare the call
-    lua_insert(L,-(nargs+1)); // move fn call below args
-    lua_pushstring(L,evt_name);// param 1 is the event
-    lua_insert(L,-(nargs+1)); // move evt name below params
-    dt_lua_do_chunk(L,0,nargs+1,nargs);
+    dt_lua_do_chunk(L,0,nargs+1,nresults);
     lua_pushinteger(L,loop_index);
   }
-  lua_remove(L,-(nargs+1));
-  return nargs;
+  for(int i=0; i< nargs+1 ; i++) 
+    lua_remove(L,-nresults -1); //remove all args that are below the results and the fn table
+  return nresults;
 }
 
 
@@ -314,11 +333,19 @@ static int dt_lua_trigger_event(const char*event,int nargs,int nresults) {
 
 static void on_export_selection(gpointer instance,dt_control_image_enumerator_t * export_descriptor,
      gpointer user_data){
-  //dt_control_export_t *export_data= (dt_control_export_t*)export_descriptor->data;
+  dt_control_export_t *export_data= (dt_control_export_t*)export_descriptor->data;
+
+  dt_imageio_module_format_t  *mformat  = dt_imageio_get_format_by_index(export_data->format_index);
+  g_assert(mformat);
+  int size;
+  dt_imageio_module_data_t *fdata = mformat->get_params(mformat, &size);
+  luaA_push_typeid(darktable.lua_state,mformat->parameter_lua_type,fdata);
+
   dt_lua_image_glist_push(darktable.lua_state,export_descriptor->index);
   g_list_free(export_descriptor->index);
   export_descriptor->index =NULL;
-  dt_lua_trigger_event("pre-export",1,1);
+
+  dt_lua_trigger_event("pre-export",2,1);
   if(lua_isnoneornil(darktable.lua_state,-1)) {return; }// everything already has been removed
   export_descriptor->index = dt_lua_image_glist_get(darktable.lua_state,-1);
 }
@@ -338,7 +365,6 @@ static void on_image_imported(gpointer instance,uint8_t id, gpointer user_data){
 }
 
 void dt_lua_init_events(lua_State *L) {
-  printf("%s %d\n",__FUNCTION__,__LINE__);
   lua_newtable(L);
   lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
   lua_newtable(L);

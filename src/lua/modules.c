@@ -28,6 +28,7 @@ const char *style_fields_name[] = {
 luaA_Type dt_lua_init_format_internal(lua_State* L, char*type_name,size_t size){
   luaA_type_add(type_name,size);
   luaA_Type my_type = dt_lua_init_type_internal(L,type_name,NULL,NULL,NULL,size);
+  luaA_struct_typeid(L,my_type);
   return my_type;
 };
 
