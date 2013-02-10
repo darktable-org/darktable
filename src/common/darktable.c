@@ -499,6 +499,9 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
   (void)setenv("GEGL_PATH", geglpath, 1);
   gegl_init(&argc, &argv);
 #endif
+#ifdef USE_LUA
+  dt_lua_init_early(L);
+#endif
 
   // thread-safe init:
   dt_exif_init();

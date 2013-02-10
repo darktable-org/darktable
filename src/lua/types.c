@@ -18,7 +18,6 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "control/control.h"
-#include "lautoc.h"
 #include "lua/types.h"
 #include <string.h>
 
@@ -163,7 +162,8 @@ static void autotype_tofunc(lua_State*L, luaA_Type type_id, void* cout, int inde
 }
 
 
-void dt_lua_init_type_internal(lua_State* L, const char*type_name,const char ** list,lua_CFunction index,lua_CFunction newindex){
+luaA_Type dt_lua_init_type_internal(lua_State* L, char*type_name,const char ** list,lua_CFunction index,lua_CFunction newindex,size_t size){
+  luaA_type_add(type_name,size); \
   luaL_newmetatable(L,type_name);
 
   luaA_Type my_type =  luaA_type_find(type_name);
@@ -191,6 +191,7 @@ void dt_lua_init_type_internal(lua_State* L, const char*type_name,const char ** 
 	lua_pushcclosure(L,type_newindex,2);
 	lua_setfield(L,-2,"__newindex");
 
+  return my_type;
 }
 
 void dt_lua_initialize_types(lua_State *L)

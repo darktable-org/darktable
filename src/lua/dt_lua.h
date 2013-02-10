@@ -23,6 +23,7 @@
 
 /** initialize lua stuff at DT start time */
 void dt_lua_init(lua_State*L,const int init_gui);
+void dt_lua_init_early(lua_State*L);
 /** runs a command in the DT lua environement, command in any valid lua string */
 void dt_lua_dostring(const char* command);
 /** executes the chunk on the top of the stack with nargs and nresult

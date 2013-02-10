@@ -53,10 +53,14 @@
 #ifdef USE_LUA
 #include <lua.h>
 #include <lauxlib.h>
+#include <lautoc.h>
 #include "lua/dt_lua.h"
+#include "lua/modules.h"
 #else
 typedef int lua_State ;
 typedef int (*lua_CFunction)(lua_State *L);
+typedef int luaA_Type;
+#define LUAA_INVALID_TYPE -1
 #endif
 
 #if defined(__DragonFly__) || defined(__FreeBSD__)

@@ -113,6 +113,24 @@ static lua_CFunction init_funcs[] = {
   NULL
 };
 static int load_darktable_lib(lua_State *L) {
+
+  lua_CFunction* cur_type = init_funcs;
+  while(*cur_type) {
+    dt_lua_protect_call(L,*cur_type);
+    cur_type++;
+  }
+  return 1;
+}
+
+
+
+
+void dt_lua_init_early(lua_State*L){
+  if(!L)
+    L= luaL_newstate();
+  darktable.lua_state= L;
+  luaA_open();
+  luaL_openlibs(darktable.lua_state);
   dt_lua_push_darktable_lib(L);
   // set the metatable
   lua_newtable(L);
@@ -129,31 +147,13 @@ static int load_darktable_lib(lua_State *L) {
   lua_pushstring(L,"version");
   lua_pushstring(darktable.lua_state,PACKAGE_VERSION);
   lua_settable(L,-3);
-
-  lua_CFunction* cur_type = init_funcs;
-  while(*cur_type) {
-    dt_lua_protect_call(L,*cur_type);
-    cur_type++;
-  }
-
-  return 1;
 }
 
-
-
-
-
 void dt_lua_init(lua_State*L,const int init_gui){
-  if(L)
-    darktable.lua_state= L;
-  else
-    darktable.lua_state= luaL_newstate();
-  luaA_open();
 
   // init the lua environment
+  load_darktable_lib(darktable.lua_state);
   if(init_gui) {
-    luaL_openlibs(darktable.lua_state);
-    load_darktable_lib(darktable.lua_state);
     lua_setglobal(darktable.lua_state, "darktable");  /* remove _PRELOAD table */
     dt_lua_init_events(darktable.lua_state);
     dt_lua_init_gui(darktable.lua_state);
@@ -222,7 +222,6 @@ int luaopen_darktable(lua_State *L) {
   char *m_arg[] = {"lua", "--library", ":memory:", NULL};
   // init dt without gui:
   if(dt_init(3, m_arg, 0,L)) exit(1);
-  load_darktable_lib(L);
   return 1;
 }
 

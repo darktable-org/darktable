@@ -18,6 +18,7 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "control/control.h"
+#include "control/jobs/control_jobs.h"
 #include "lua/dt_lua.h"
 #include "lua/events.h"
 #include "lua/image.h"
@@ -311,14 +312,15 @@ static int dt_lua_trigger_event(const char*event,int nargs,int nresults) {
   return res;
 }
 
-static void on_export_selection(gpointer instance,GList **list,
+static void on_export_selection(gpointer instance,dt_control_image_enumerator_t * export_descriptor,
      gpointer user_data){
-  dt_lua_image_glist_push(darktable.lua_state,*list);
-  g_list_free(*list);
-  *list =NULL;
+  //dt_control_export_t *export_data= (dt_control_export_t*)export_descriptor->data;
+  dt_lua_image_glist_push(darktable.lua_state,export_descriptor->index);
+  g_list_free(export_descriptor->index);
+  export_descriptor->index =NULL;
   dt_lua_trigger_event("pre-export",1,1);
   if(lua_isnoneornil(darktable.lua_state,-1)) {return; }// everything already has been removed
-  *list = dt_lua_image_glist_get(darktable.lua_state,-1);
+  export_descriptor->index = dt_lua_image_glist_get(darktable.lua_state,-1);
 }
 
 static void on_export_image_tmpfile(gpointer instance,
@@ -336,6 +338,7 @@ static void on_image_imported(gpointer instance,uint8_t id, gpointer user_data){
 }
 
 void dt_lua_init_events(lua_State *L) {
+  printf("%s %d\n",__FUNCTION__,__LINE__);
   lua_newtable(L);
   lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
   lua_newtable(L);

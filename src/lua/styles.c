@@ -36,7 +36,7 @@ typedef enum {
   DELETE,
   LAST_STYLE_FIELD
 } style_fields;
-const char *style_fields_name[] = {
+static const char *style_fields_name[] = {
   "get_items",
   "update",
   "duplicate",

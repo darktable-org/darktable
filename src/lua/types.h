@@ -21,6 +21,7 @@
 #include <lualib.h>
 #include <lua.h>
 #include <lauxlib.h>
+#include <lautoc.h>
 
 /**
   these defines can be used with luaA_struct_member to have checks on read added
@@ -48,12 +49,10 @@ typedef char* char_path_length;
 
    */
    
-#define dt_lua_init_type(L,type_name, list,index,newindex) do {\
-  luaA_type_add(#type_name,sizeof(type_name)); \
-  dt_lua_init_type_internal(L,#type_name,list,index,newindex); \
-}while(0)
+#define dt_lua_init_type(L,type_name, list,index,newindex) \
+  dt_lua_init_type_internal(L,#type_name,list,index,newindex,sizeof(type_name)) 
 
-void dt_lua_init_type_internal(lua_State* L, const char*type_name,const char ** list,lua_CFunction index,lua_CFunction newindex);
+luaA_Type dt_lua_init_type_internal(lua_State* L, char*type_name,const char ** list,lua_CFunction index,lua_CFunction newindex,size_t size);
 
 /**
   (-1,+3)

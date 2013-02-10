@@ -21,6 +21,7 @@
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <common/darktable.h>
 
 /** Flag for the format modules */
 #define FORMAT_FLAGS_SUPPORT_XMP   1
@@ -112,6 +113,7 @@ typedef struct dt_imageio_module_format_t
   int (*read_header)(const char *filename, dt_imageio_module_data_t *data);
   /* reads the image to the (sufficiently allocated) buffer, closes file. */
   int (*read_image)(dt_imageio_module_data_t *data, uint8_t *out);
+  luaA_Type parameter_lua_type;
 
 }
 dt_imageio_module_format_t;

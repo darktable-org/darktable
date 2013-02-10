@@ -1,3 +1,7 @@
+if(USE_LUA)
+	# liblautoc for lua automated interface generation
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../external/LuaAutoC/include)
+endif(USE_LUA)
 
 include_directories(${SDL_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)

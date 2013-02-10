@@ -98,6 +98,7 @@ if(USE_LUA)
 		"lua/glist.c"
 		"lua/gui.c"
 		"lua/image.c"
+		"lua/modules.c"
 		"lua/stmt.c"
 		"lua/styles.c"
 		"lua/types.c"
