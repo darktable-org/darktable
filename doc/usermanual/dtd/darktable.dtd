@@ -6,6 +6,7 @@
 <!ENTITY icon_module_presets "images/darkroom_module_icon_presets.png">
 <!ENTITY icon_module_enable "images/darkroom_module_icon_enable.png">
 <!ENTITY icon_module_reset "images/darkroom_module_icon_reset.png">
+<!ENTITY icon_module_instances "images/darkroom_module_icon_instances.png">
 <!ENTITY icon_module_eye "images/darkroom_module_icon_eye.png">
 <!ENTITY icon_module_mask "images/darkroom_module_icon_mask.png">
 <!ENTITY icon_module_picker "images/darkroom_module_icon_picker.png">

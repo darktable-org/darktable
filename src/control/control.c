@@ -243,6 +243,7 @@ dt_ctl_get_display_profile_colord_callback(GObject *source, GAsyncResult *res, g
 {
   pthread_rwlock_wrlock(&darktable.control->xprofile_lock);
 
+  int profile_changed = 0;
   CdWindow *window = CD_WINDOW(source);
   GError *error = NULL;
   CdProfile *profile = cd_window_get_profile_finish(window, res, &error);
@@ -261,11 +262,13 @@ dt_ctl_get_display_profile_colord_callback(GObject *source, GAsyncResult *res, g
         guchar *tmp_data = NULL;
         gsize size;
         g_file_get_contents(filename, (gchar**)&tmp_data, &size, NULL);
-        if(size != 0)
+        profile_changed = size > 0 && (darktable.control->xprofile_size != size || memcmp(darktable.control->xprofile_data, tmp_data, size) != 0);
+        if(profile_changed)
         {
           g_free(darktable.control->xprofile_data);
           darktable.control->xprofile_data = tmp_data;
           darktable.control->xprofile_size = size;
+          dt_print(DT_DEBUG_CONTROL, "[color profile] colord gave us a new screen profile: '%s' (size: %ld)\n", filename, size);
         }
       }
     }
@@ -275,7 +278,8 @@ dt_ctl_get_display_profile_colord_callback(GObject *source, GAsyncResult *res, g
   g_object_unref(window);
 
   pthread_rwlock_unlock(&darktable.control->xprofile_lock);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  if(profile_changed)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
 }
 #endif
 
@@ -294,6 +298,7 @@ void dt_ctl_set_display_profile()
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   guint8 *buffer = NULL;
   gint buffer_size = 0;
+  gchar *profile_source = NULL;
 
 #if defined GDK_WINDOWING_X11
   /* let's have a look at the xatom, just in case ... */
@@ -306,6 +311,8 @@ void dt_ctl_set_display_profile()
     atom_name = g_strdup_printf("_ICC_PROFILE_%d", monitor);
   else
     atom_name = g_strdup("_ICC_PROFILE");
+
+  profile_source = g_strdup(atom_name);
 
   GdkAtom type = GDK_NONE;
   gint format = 0;
@@ -330,7 +337,7 @@ void dt_ctl_set_display_profile()
 
   CMProfileRef prof = NULL;
   CMGetProfileByAVID(monitor, &prof);
-  if ( prof==NULL )
+  if ( prof!=NULL )
   {
     CFDataRef data;
     data = CMProfileCopyICCData(NULL, prof);
@@ -344,6 +351,7 @@ void dt_ctl_set_display_profile()
 
     CFRelease(data);
   }
+  profile_source = g_strdup("osx color profile api");
 #elif defined G_OS_WIN32
   (void)widget;
   HDC hdc = GetDC (NULL);
@@ -362,17 +370,23 @@ void dt_ctl_set_display_profile()
     g_free (path);
     ReleaseDC (NULL, hdc);
   }
+  profile_source = g_strdup("windows color profile api");
 #endif
 
-  if(buffer)
+  int profile_changed = buffer_size > 0 &&
+                        (darktable.control->xprofile_size != buffer_size || memcmp(darktable.control->xprofile_data, buffer, buffer_size) != 0);
+  if(profile_changed)
   {
     // thanks to ufraw for this!
     g_free(darktable.control->xprofile_data);
     darktable.control->xprofile_data = buffer;
     darktable.control->xprofile_size = buffer_size;
+    dt_print(DT_DEBUG_CONTROL, "[color profile] we got a new screen profile from the %s (size: %d)\n", profile_source, buffer_size);
   }
   pthread_rwlock_unlock(&darktable.control->xprofile_lock);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  if(profile_changed)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  g_free(profile_source);
 }
 
 void dt_control_create_database_schema()

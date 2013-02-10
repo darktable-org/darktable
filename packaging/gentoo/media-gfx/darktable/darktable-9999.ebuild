@@ -19,6 +19,7 @@ nls opencl openmp pax_kernel +rawspeed +slideshow"
 
 CDEPEND="
 	dev-db/sqlite:3
+	>=dev-libs/glib-2.28:2
 	dev-libs/libxml2:2
 	colord? ( x11-misc/colord )
 	facebook? ( dev-libs/json-glib )
@@ -32,9 +33,9 @@ CDEPEND="
 	media-gfx/exiv2[xmp]
 	media-libs/lcms:2
 	>=media-libs/lensfun-0.2.3
-	media-libs/libpng
+	media-libs/libpng:0
 	media-libs/openexr
-	media-libs/tiff
+	media-libs/tiff:0
 	net-misc/curl
 	opencl? ( virtual/opencl )
 	slideshow? (
@@ -45,7 +46,8 @@ CDEPEND="
 	virtual/jpeg
 	x11-libs/cairo
 	x11-libs/gdk-pixbuf:2
-	x11-libs/gtk+:2"
+	x11-libs/gtk+:2
+	x11-libs/pango"
 RDEPEND="${CDEPEND}
 	kde? ( kde-base/kwalletd )"
 DEPEND="${CDEPEND}

@@ -97,7 +97,7 @@
                               displayed in lighttable view.
 			</para>
                         <para>You can combine images into a group by selecting them and then 
-                              clicking button "group" in panel <emphasis>selected image(s)</emphasis> or by typing 
+                              clicking button "group" in panel <emphasis>selected image(s)</emphasis> (<xref linkend="selected images"/>) or by typing 
                               <emphasis>ctrl-g</emphasis>. Likewise you can remove images from a group by clicking
                               button "ungroup" or typing <emphasis>shift-ctrl-g</emphasis>. Images that you generate by 
                               duplicating an existing one, will automatically constitute an image group. If you import 
