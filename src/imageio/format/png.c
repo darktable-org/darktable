@@ -392,7 +392,13 @@ radiobutton_changed (GtkRadioButton *radiobutton, gpointer user_data)
     dt_conf_set_int("plugins/imageio/format/png/bpp", bpp);
 }
 
-void init(dt_imageio_module_format_t *self) {}
+void init(dt_imageio_module_format_t *self) {
+#ifdef USE_LUA
+  self->parameter_lua_type = dt_lua_init_format(darktable.lua_state,self,dt_imageio_png_t);
+  luaA_struct_member(darktable.lua_state,dt_imageio_png_t,bpp,int);
+  lua_pop(darktable.lua_state,1); // done setting our metatable
+#endif
+}
 void cleanup(dt_imageio_module_format_t *self) {}
 
 // TODO: some quality/compression stuff?

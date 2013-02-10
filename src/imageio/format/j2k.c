@@ -99,7 +99,16 @@ typedef struct dt_imageio_j2k_gui_t
 }
 dt_imageio_j2k_gui_t;
 
-void init(dt_imageio_module_format_t *self) {}
+void init(dt_imageio_module_format_t *self) {
+#ifdef USE_LUA
+  self->parameter_lua_type = dt_lua_init_format(darktable.lua_state,self,dt_imageio_j2k_t);
+  luaA_struct_member(darktable.lua_state,dt_imageio_j2k_t,bpp,int);
+  luaA_struct_member(darktable.lua_state,dt_imageio_j2k_t,format,int);
+  luaA_struct_member(darktable.lua_state,dt_imageio_j2k_t,quality,int);
+  // todo, export the prese parameter
+  lua_pop(darktable.lua_state,1); // done setting our metatable
+#endif
+}
 void cleanup(dt_imageio_module_format_t *self) {}
 
 /**
