@@ -557,9 +557,9 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "CropAngle"))
       pc.angle = -atof((char *)value);
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ImageWidth"))
-      iwidth = -atoi((char *)value);
+      iwidth = atoi((char *)value);
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ImageLength"))
-      iheight = -atoi((char *)value);
+      iheight = atoi((char *)value);
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Orientation"))
     {
       orientation = atoi((char *)value);
@@ -1067,7 +1067,6 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
         x = pc.cw - 0.5;
         y = 0.5 - pc.ch;
-
         pc.cw = 0.5 + x * cos(rangle) - y * sin(rangle);
         pc.ch = 0.5 - (x * sin(rangle) + y * cos(rangle));
       }
