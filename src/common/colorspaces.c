@@ -112,6 +112,12 @@ dt_colorspaces_get_matrix_from_profile (cmsHPROFILE prof, float *matrix, float *
   matrix[7] = green_color->Z;
   matrix[8] = blue_color->Z;
 
+  // some camera ICC profiles claim to have color locations for red, green and blue base colors defined, 
+  // but in fact these are all set to zero. we catch this case here.
+  float sum = 0.0f;
+  for(int k=0; k<9; k++) sum += matrix[k];
+  if(sum == 0.0f) return 3;
+
   if(input)
   {
     // mark as linear, if they are:
