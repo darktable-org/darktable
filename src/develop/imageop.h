@@ -61,6 +61,7 @@ struct dt_develop_tiling_t;
 #define IOP_FLAGS_HIDDEN               32                       // Hide the iop from userinterface
 #define IOP_FLAGS_TILING_FULL_ROI      64                       // Tiling code has to expect arbitrary roi's for this module (incl. flipping, mirroring etc.)
 #define IOP_FLAGS_ONE_INSTANCE        128     // The module doesn't support multiple instances
+#define IOP_FLAGS_PREVIEW_NON_OPENCL  256     // Preview pixelpipe of this module must not run on GPU but always on CPU
 /** status of a module*/
 typedef enum dt_iop_module_state_t
 {
@@ -171,6 +172,8 @@ typedef struct dt_iop_module_t
   int32_t hide_enable_button;
   /** set to 1 if you want an input color picked during next eval. gui mode only. */
   int32_t request_color_pick;
+  /** set to 1 if you want an input histogram generated during next eval. gui mode only. */
+  int32_t request_histogram;
   /** set to 1 if you want the mask to be transfered into alpha channel during next eval. gui mode only. */
   int32_t request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the module in focus. gui mode only. */
@@ -183,6 +186,10 @@ typedef struct dt_iop_module_t
   float picked_color[3], picked_color_min[3], picked_color_max[3];
   /** place to store the picked color of module output (before blending). */
   float picked_output_color[3], picked_output_color_min[3], picked_output_color_max[3];
+  /** pointer to pre-module histogram data; if available: 64 bins with 4 channels each */
+  float *histogram;
+  /** maximum levels in histogram, one per channel */
+  float histogram_max[4];
   /** reference for dlopened libs. */
   darktable_t *dt;
   /** the module is used in this develop module. */

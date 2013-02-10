@@ -1,6 +1,6 @@
 #!/bin/sh
 
-git log ^release-1.0.5 HEAD| grep ^Author: | sed 's/ <.*//; s/^Author: //' | sort | uniq -c | sort -nr
+git log ^release-1.1.2 HEAD| grep ^Author: | sed 's/ <.*//; s/^Author: //' | sort | uniq -c | sort -nr
 
 echo "are you sure these guys received proper credit in the about dialog?"
 read answer
@@ -22,8 +22,10 @@ cp darktable-$dt_decoration/doc/usermanual/CMakeLists.txt dreggn.txt
 rm -rf darktable-$dt_decoration/doc/usermanual/*
 mv dreggn.txt darktable-$dt_decoration/doc/usermanual/CMakeLists.tx
 tar cvzf darktable-$dt_decoration.tar.gz darktable-$dt_decoration/
+tar cvJf darktable-$dt_decoration.tar.xz darktable-$dt_decoration/
 rm ../darktable-$dt_decoration.tar
 mv darktable-$dt_decoration.tar.gz ..
+mv darktable-$dt_decoration.tar.xz ..
 
 # now test the build:
 rm -rf darktable-*

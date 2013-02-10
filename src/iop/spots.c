@@ -456,7 +456,8 @@ void gui_init     (dt_iop_module_t *self)
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
   g->dragging = -1;
   g->selected = -1;
-  g->last_radius = MAX(0.01f, dt_conf_get_float("plugins/darkroom/spots/size"));
+  const float spots_size = dt_conf_get_float("plugins/darkroom/spots/size");
+  g->last_radius = MAX(0.01f, spots_size);
 
   for (int i=0; i<32; i++)
   {

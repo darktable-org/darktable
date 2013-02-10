@@ -1,4 +1,4 @@
-<sect1 status="draft"><title>Core options</title>
+<sect1 status="draft" id="core options"><title>Core options</title>
 	<para>These options control some of the internals of darktable.
 	</para>
 

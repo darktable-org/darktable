@@ -1,4 +1,4 @@
-<sect2 status="final">
+<sect2 status="final" id="color group">
   <title>Color group</title>
   <para>This group contains the modules to work with colors of your image.
   </para>

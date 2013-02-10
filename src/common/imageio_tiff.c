@@ -57,7 +57,6 @@ dt_imageio_open_tiff(
   // we only support 8-bit and 16-bit here. in case of other formats let's hope for GraphicsMagick to deal them
   if(bpp != 8 && bpp != 16)
   {
-    fprintf(stderr, "[tiff_open] could not handle image with %d bit depth `%s'\n", bpp, img->filename);
     TIFFClose(image);
     return DT_IMAGEIO_FILE_CORRUPTED;
   }

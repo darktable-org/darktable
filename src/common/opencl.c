@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2012 johannes hanika.
+    copyright (c) 2011--2013 Ulrich Pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,6 +25,7 @@
 #include "common/gaussian.h"
 #include "common/dlopencl.h"
 #include "common/nvidia_gpus.h"
+#include "develop/pixelpipe.h"
 #include "control/conf.h"
 
 #include <string.h>
@@ -38,6 +40,7 @@
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
 static const char *dt_opencl_get_vendor_by_id(unsigned int id);
+static char *_ascii_str_canonical(const char *in, char *out, int maxlen);
 
 void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 {
@@ -46,15 +49,20 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   cl->enabled = 0;
 
   int handles = dt_conf_get_int("opencl_number_event_handles");
-  handles = (handles == 0 ? 0x7fffffff : handles);
+  handles = (handles < 0 ? 0x7fffffff : handles);
   cl->number_event_handles = handles;
-  cl->use_events = (handles > 0);
+  cl->use_events = (handles != 0);
 
   cl->avoid_atomics = dt_conf_get_bool("opencl_avoid_atomics");
   cl->async_pixelpipe = dt_conf_get_bool("opencl_async_pixelpipe");
   cl->synch_cache = dt_conf_get_bool("opencl_synch_cache");
   cl->micro_nap = dt_conf_get_int("opencl_micro_nap");
   cl->dlocl = NULL;
+  cl->dev_priority_image = NULL;
+  cl->dev_priority_preview = NULL;
+  cl->dev_priority_export = NULL;
+  cl->dev_priority_thumbnail = NULL;
+
   int exclude_opencl = 0;
 
   // user selectable parameter defines minimum requirement on GPU memory
@@ -72,6 +80,24 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
   if(exclude_opencl) goto finally;
 
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl related configuration options:\n");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] \n");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl: %d\n", dt_conf_get_bool("opencl"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_library: '%s'\n", dt_conf_get_string("opencl_library"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_memory_requirement: %d\n", dt_conf_get_int("opencl_memory_requirement"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_memory_headroom: %d\n", dt_conf_get_int("opencl_memory_headroom"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_device_priority: '%s'\n", dt_conf_get_string("opencl_device_priority"));
+
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_size_roundup: %d\n", dt_conf_get_int("opencl_size_roundup"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_async_pixelpipe: %d\n", dt_conf_get_bool("opencl_async_pixelpipe"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_synch_cache: %d\n", dt_conf_get_bool("opencl_synch_cache"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_number_event_handles: %d\n", dt_conf_get_int("opencl_number_event_handles"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_micro_nap: %d\n", dt_conf_get_int("opencl_micro_nap"));
+
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_avoid_atomics: %d\n", dt_conf_get_bool("opencl_avoid_atomics"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_omit_whitebalance: %d\n", dt_conf_get_bool("opencl_omit_whitebalance"));
+
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] \n");
 
   // look for explicit definition of opencl_runtime library in preferences
   const char *library = dt_conf_get_string("opencl_library");
@@ -161,10 +187,13 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     cl->dev[dev].nvidia_sm_20 = 0;
     cl->dev[dev].vendor = "";
     cl->dev[dev].name = "";
+    cl->dev[dev].cname = "";
     cl_device_id devid = cl->dev[dev].devid = devices[k];
 
     char infostr[1024];
     char vendor[256];
+    char driverversion[256];
+    char deviceversion[256];
     size_t infoint;
     size_t infointtab[1024];
     cl_device_type type;
@@ -177,6 +206,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VENDOR, sizeof(vendor), &vendor, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VENDOR_ID, sizeof(cl_uint), &vendor_id, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_NAME, sizeof(infostr), &infostr, NULL);
+    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DRIVER_VERSION, sizeof(driverversion), &driverversion, NULL);
+    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VERSION, sizeof(deviceversion), &deviceversion, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_TYPE, sizeof(cl_device_type), &type,  NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE_SUPPORT, sizeof(cl_bool), &image_support, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(size_t), &(cl->dev[dev].max_image_height), NULL);
@@ -219,6 +250,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
     cl->dev[dev].vendor = dt_opencl_get_vendor_by_id(vendor_id);
     cl->dev[dev].name = strdup(infostr);
+    cl->dev[dev].cname = _ascii_str_canonical(infostr, NULL, 0);
 
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' supports image sizes of %zd x %zd\n", k, infostr, cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' allows GPU memory allocations of up to %luMB\n", k, infostr, cl->dev[dev].max_mem_alloc/1024/1024);
@@ -235,6 +267,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(infointtab), infointtab, NULL);
       for (int i=0; i<infoint; i++) printf("%zd ", infointtab[i]);
       printf("]\n");
+      printf("     DRIVER_VERSION:           %s\n", driverversion);
+      printf("     DEVICE_VERSION:           %s\n", deviceversion);
     }
     dt_pthread_mutex_init(&cl->dev[dev].lock, NULL);
 
@@ -349,10 +383,31 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   free(devices);
   if(dev > 0)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] successfully initialized.\n");
     cl->num_devs = dev;
     cl->inited = 1;
     cl->enabled = dt_conf_get_bool("opencl");
+    cl->dev_priority_image = (int *)malloc(sizeof(int)*(dev+1));
+    cl->dev_priority_preview = (int *)malloc(sizeof(int)*(dev+1));
+    cl->dev_priority_export = (int *)malloc(sizeof(int)*(dev+1));
+    cl->dev_priority_thumbnail = (int *)malloc(sizeof(int)*(dev+1));
+
+    // only check successful malloc in debug mode; darktable will crash anyhow sooner or later if mallocs that small would fail
+    assert(cl->dev_priority_image != NULL && cl->dev_priority_preview != NULL && cl->dev_priority_export != NULL && cl->dev_priority_thumbnail != NULL);
+
+    // apply config settings for device priority
+    dt_opencl_priorities_parse(dt_conf_get_string("opencl_device_priority"));
+
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] OpenCL successfully initialized.\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] here are the internal numbers and names of OpenCL devices available to darktable:\n");
+    for(int i=0; i<dev; i++)
+      dt_print(DT_DEBUG_OPENCL,"[opencl_init]\t\t%d\t'%s'\n", i, cl->dev[i].name);
+
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] these are your device priorities:\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] \t\timage\tpreview\texport\tthumbnail\n");
+    for(int i=0; i<dev; i++)
+      dt_print(DT_DEBUG_OPENCL,"[opencl_init]\t\t%d\t%d\t%d\t%d\n", cl->dev_priority_image[i], cl->dev_priority_preview[i],
+                                                                    cl->dev_priority_export[i], cl->dev_priority_thumbnail[i]);
+
   }
   else
   {
@@ -401,6 +456,10 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         if(cl->dev[i].eventtags) free(cl->dev[i].eventtags);
       }
     }
+    free(cl->dev_priority_image);
+    free(cl->dev_priority_preview);
+    free(cl->dev_priority_export);
+    free(cl->dev_priority_thumbnail);
   }
 
   if(cl->dlocl)
@@ -409,6 +468,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
     free(cl->dlocl);
   }
 
+  free(cl->dev);
   dt_pthread_mutex_destroy(&cl->lock);
 }
 
@@ -455,21 +515,266 @@ int dt_opencl_enqueue_barrier(const int devid)
   return (cl->dlocl->symbols->dt_clEnqueueBarrier)(cl->dev[devid].cmd_queue);
 }
 
-int dt_opencl_lock_device(const int _dev)
+static int _take_from_list(int *list, int value)
+{
+  int result = -1;
+
+  while(*list != -1 && *list != value) list++;
+  result = *list;
+
+  while(*list != -1) { *list = *(list+1); list++; }
+
+  return result;
+}
+
+
+static int _device_by_cname(const char *name)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  int devs = cl->num_devs;
+  char tmp[2048] = { 0 };
+  int result = -1;
+
+  _ascii_str_canonical(name, tmp, 2048);
+
+  for(int i=0; i < devs; i++)
+  {
+    if(!strcmp(tmp, cl->dev[i].cname))
+    {
+      result = i;
+      break;
+    }
+  }
+
+  return result;
+}
+
+
+static char *_ascii_str_canonical(const char *in, char *out, int maxlen)
+{
+  if(out == NULL)
+  {
+    maxlen = strlen(in)+1;
+    out = malloc(maxlen);
+    if(out == NULL) return NULL;
+  }
+
+  int len = 0;
+
+  while(*in != '\0' && len < maxlen-1)
+  {
+    int n = strcspn(in, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    in += n;
+    if(n != 0) continue;
+    out[len] = tolower(*in);
+    len++;
+    in++;
+  }
+  out[len] = '\0';
+
+  return out;
+}
+
+
+static char *_strsep(char **stringp, const char *delim)
+{
+  char *begin, *end;
+
+  begin = *stringp;
+  if(begin == NULL)
+    return NULL;
+
+  if(delim[0] == '\0' || delim[1] == '\0')
+  {
+    char ch = delim[0];
+
+    if(ch == '\0')
+      end = NULL;
+    else
+    {
+      if(*begin == ch)
+        end = begin;
+      else if(*begin == '\0')
+        end = NULL;
+      else
+        end = strchr(begin + 1, ch);
+    }
+  }
+  else
+    end = strpbrk(begin, delim);
+
+  if(end)
+  {
+    *end++ = '\0';
+    *stringp = end;
+  }
+  else
+    *stringp = NULL;
+
+  return begin;
+}
+
+
+// parse a single token of priority string and store priorities in priority_list
+void dt_opencl_priority_parse(char *configstr, int *priority_list)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  int devs = cl->num_devs;
+  int count = 0;
+  int full[devs+1];
+  char *saveptr;
+
+  // NULL or empty configstring?
+  if(configstr == NULL || *configstr == '\0')
+  {
+    priority_list[0] = -1;
+    return;
+  }
+
+  // first start with a full list of devices to take from
+  for(int i = 0; i < devs; i++)
+    full[i] = i;
+  full[devs] = -1;
+
+  char *str = strtok_r(configstr, ",", &saveptr);
+
+  while(str != NULL && count < devs+1 && full[0] != -1)
+  {
+    int not = 0;
+    int all = 0;
+
+    switch(*str)
+    {
+      case '*':
+        all = 1;
+        break;
+      case '!':
+        not = 1;
+        while(*str == '!') str++;
+        break;
+    }
+
+    if(all)
+    {
+      // copy all remaining device numbers from full to priority list
+      for(int i = 0; i < devs && full[i] != -1; i++)
+      {
+        priority_list[count] = full[i];
+        count++;
+      }
+      full[0] = -1;   // mark full list as empty
+    }
+    else if(*str != '\0')
+    {
+      char *endptr;
+
+      // first check if str corresponds to an existing canonical device name
+      long number = _device_by_cname(str);
+
+      // if not try to convert string into decimal device number
+      if(number < 0) number = strtol(str, &endptr, 10);
+
+      // still not found or negative number given? set number to -1
+      if(number < 0 || (number == 0 && endptr == str)) number = -1;
+
+      // try to take number out of remaining device list
+      int dev_number = _take_from_list(full, number);
+
+      if(!not && dev_number != -1)
+      {
+        priority_list[count] = dev_number;
+        count++;
+      }
+    }
+
+    str = strtok_r(NULL, ",", &saveptr);
+  }
+
+  // terminate priority list with -1
+  while(count < devs+1) priority_list[count++] = -1;
+}
+
+// parse a complete priority string
+void dt_opencl_priorities_parse(const char *configstr)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  char tmp[2048];
+  int len = 0;
+
+  // first get rid of all invalid characters
+  while(*configstr != '\0' && len < 2048)
+  {
+    int n = strcspn(configstr, "/!,*0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    configstr += n;
+    if(n != 0) continue;
+    tmp[len] = *configstr;
+    len++;
+    configstr++;
+  }
+  tmp[len] = '\0';
+
+  char *str = tmp;
+
+  // now split config string into tokens, separated by '/' and parse them one after the other
+  char *prio = _strsep(&str, "/");
+  dt_opencl_priority_parse(prio, cl->dev_priority_image);
+
+  prio = _strsep(&str, "/");
+  dt_opencl_priority_parse(prio, cl->dev_priority_preview);
+
+  prio = _strsep(&str, "/");
+  dt_opencl_priority_parse(prio, cl->dev_priority_export);
+
+  prio = _strsep(&str, "/");
+  dt_opencl_priority_parse(prio, cl->dev_priority_thumbnail);
+}
+
+
+int dt_opencl_lock_device(const int pipetype)
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited) return -1;
-  int dev = _dev;
-  if(dev < 0 || dev >= cl->num_devs) dev = 0;
-  for(int i=0; i<cl->num_devs; i++)
+
+  const int *priority;
+
+  switch(pipetype)
   {
-    // start at argument and get first currently unused processor
-    const int try_dev = (dev + i) % cl->num_devs;
-    if(!dt_pthread_mutex_trylock(&cl->dev[try_dev].lock)) return try_dev;
+    case DT_DEV_PIXELPIPE_FULL:
+      priority = cl->dev_priority_image;
+      break;
+    case DT_DEV_PIXELPIPE_PREVIEW:
+      priority = cl->dev_priority_preview;
+      break;
+    case DT_DEV_PIXELPIPE_EXPORT:
+      priority = cl->dev_priority_export;
+      break;
+    case DT_DEV_PIXELPIPE_THUMBNAIL:
+      priority = cl->dev_priority_thumbnail;
+      break;
+    default:
+      priority = NULL;
   }
+
+  if(priority)
+  {
+    while(*priority != -1)
+    {
+      if(!dt_pthread_mutex_trylock(&cl->dev[*priority].lock)) return *priority; 
+      priority++;
+    }
+  }
+  else
+  {
+    // only a fallback if a new pipe type would be added and we forget to take care of it in opencl.c
+    for(int try_dev=0; try_dev < cl->num_devs; try_dev++)
+    {
+      // get first currently unused processor
+      if(!dt_pthread_mutex_trylock(&cl->dev[try_dev].lock)) return try_dev;
+    }
+  }
+
   // no free GPU :(
   // use CPU processing, if no free device:
-  if(!dt_pthread_mutex_trylock(&cl->dev[dev].lock)) return dev;
   return -1;
 }
 

@@ -345,6 +345,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_tonecurve_params_t));
   module->default_params = malloc(sizeof(dt_iop_tonecurve_params_t));
   module->default_enabled = 0;
+  module->request_histogram = 1;
   module->priority = 618; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_tonecurve_params_t);
   module->gui_data = NULL;
@@ -718,7 +719,7 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   // draw selected cursor
   cairo_set_line_width(cr, 1.);
 
-  // draw lum h istogram in background
+  // draw histogram in background
   // only if module is enabled
   if (self->enabled)
   {
@@ -734,14 +735,14 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
     raw_max = self->picked_color_max;
     raw_mean_output = self->picked_output_color;
 
-    hist = dev->histogram_pre_tonecurve;
-    hist_max = dev->histogram_linear?dev->histogram_pre_tonecurve_max:logf(1.0 + dev->histogram_pre_tonecurve_max);
-    if(hist_max > 0 && ch == ch_L)
+    hist = self->histogram;
+    hist_max = dev->histogram_linear?self->histogram_max[ch]:logf(1.0 + self->histogram_max[ch]);
+    if(hist && hist_max > 0)
     {
       cairo_save(cr);
       cairo_scale(cr, width/63.0, -(height-5)/(float)hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-      dt_draw_histogram_8(cr, hist, 3);
+      dt_draw_histogram_8(cr, hist, ch);
       cairo_restore(cr);
     }
 
@@ -950,6 +951,17 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       c->selected = -2; // avoid motion notify re-inserting immediately.
       dt_dev_add_history_item(darktable.develop, self, TRUE);
       gtk_widget_queue_draw(self->widget);
+    }
+    else
+    {
+      if (ch != ch_L)
+      {
+        p->tonecurve_autoscale_ab = 0;
+        c->selected = -2; // avoid motion notify re-inserting immediately.
+        dt_bauhaus_combobox_set(c->autoscale_ab, 1-p->tonecurve_autoscale_ab);
+        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        gtk_widget_queue_draw(self->widget);
+      }
     }
     return TRUE;
   }

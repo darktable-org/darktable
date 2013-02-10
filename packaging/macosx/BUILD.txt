@@ -10,7 +10,8 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      default configure.ldflags   {-L${prefix}/lib}
     to
      default configure.ldflags   {"-L${prefix}/lib -Wl,-headerpad_max_install_names"}
-    Be aware that this change will probably be lost after "port selfupdate".
+    Be aware that this change will be lost after upgrading to new macports version,
+    so pay attention to "sudo port selfupdate" command output and re-edit this file when it happens.
     Also some versions of OS X have a bug making PTHREAD_RECURSIVE_MUTEX_INITIALIZER invalid, so gettext needs to be patched:
      $ mkdir -p ~/ports/devel
      $ cp -R /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/devel/gettext ~/ports/devel/

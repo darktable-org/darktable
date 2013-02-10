@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-	<sect2 status="draft"><title>Modulegroups</title>
+	<sect2 status="draft" id="modulegroups"><title>Modulegroups</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
 				<colspec colwidth="4*"/>
@@ -38,23 +38,24 @@
                       </row>
 		      <row><entry><graphic fileref="darkroom/images/darkroom_group_basic.png" scalefit="1" width="20%" align="center" /></entry>
                            <entry>Basic</entry>
-                           <entry>The basic group of modules that is frequently used when processing raw, such as exposure, temperature etc.</entry>
+                           <entry>The basic group of modules that is frequently used when processing raw, such as exposure, temperature etc.
+                                  (see <xref linkend="basic group"/>)</entry>
                       </row>
 		      <row><entry><graphic fileref="darkroom/images/darkroom_group_tone.png" scalefit="1" width="20%" align="center" /></entry>
                            <entry>Tone</entry>
-                           <entry>These modules does only work with the image tone, like levels, tonemap etc.</entry>
+                           <entry>These modules does only work with the image tone, like levels, tonemap etc. (see <xref linkend="tone group"/>)</entry>
                       </row>
 		      <row><entry><graphic fileref="darkroom/images/darkroom_group_color.png" scalefit="1" width="20%" align="center" /></entry>
                            <entry>Color</entry>
-                           <entry>Modules that just affects colors, such as color correction, vibrance etc.</entry>
+                           <entry>Modules that just affects colors, such as color correction, vibrance etc. (see <xref linkend="color group"/>)</entry>
                       </row>
 		      <row><entry><graphic fileref="darkroom/images/darkroom_group_correction.png" scalefit="1" width="20%" align="center" /></entry>
                            <entry>Correction</entry>
-                           <entry>Modules that makes corrections to the image, denoise, ca correction etc. </entry>
+                           <entry>Modules that makes corrections to the image, denoise, ca correction etc. (see <xref linkend="correction group"/>)</entry>
                       </row>
 		      <row><entry><graphic fileref="darkroom/images/darkroom_group_effect.png" scalefit="1" width="20%" align="center" /></entry>
                            <entry>Effect</entry>
-                           <entry>Modules with a more artistic output, vignetting, softening etc.</entry>
+                           <entry>Modules with a more artistic output, vignetting, softening etc. (see <xref linkend="effect group"/>)</entry>
                       </row>
 		    </tbody>
 		  </tgroup>

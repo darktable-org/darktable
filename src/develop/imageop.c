@@ -687,6 +687,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->priority = 0;
   module->hide_enable_button = 0;
   module->request_color_pick = 0;
+  module->request_histogram = 0;
   module->multi_priority = 0;
   for(int k=0; k<3; k++)
   {
@@ -697,6 +698,8 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->color_picker_box[0] = module->color_picker_box[1] = .25f;
   module->color_picker_box[2] = module->color_picker_box[3] = .75f;
   module->color_picker_point[0] = module->color_picker_point[1] = 0.5f;
+  module->histogram = NULL;
+  module->histogram_max[0] = module->histogram_max[1] = module->histogram_max[2] = module->histogram_max[3] = 0;
   module->request_mask_display = 0;
   module->suppress_mask = 0;
   module->enabled = module->default_enabled = 0; // all modules disabled by default.
@@ -1491,16 +1494,21 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
   module->cleanup(module);
 
   free(module->default_params);
-  module->default_params = NULL ;
+  module->default_params = NULL;
   if (module->blend_params != NULL)
   {
-    free(module->blend_params) ;
-    module->blend_params = NULL ;
+    free(module->blend_params);
+    module->blend_params = NULL;
   }
   if (module->default_blendop_params != NULL)
   {
-    free(module->default_blendop_params) ;
-    module->default_blendop_params = NULL ;
+    free(module->default_blendop_params);
+    module->default_blendop_params = NULL;
+  }
+  if (module->histogram != NULL)
+  {
+    free(module->histogram);
+    module->histogram = NULL;
   }
 }
 

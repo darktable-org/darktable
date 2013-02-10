@@ -1135,6 +1135,31 @@ void dt_view_filter_reset_to_show_all(const dt_view_manager_t *vm)
     vm->proxy.filter.reset_filter(vm->proxy.filter.module);
 }
 
+void dt_view_filmstrip_scroll_relative(const int diff, int offset)
+{
+  const gchar *qin = dt_collection_get_query (darktable.collection);
+  if(qin)
+  {
+    int imgid = -1;
+    sqlite3_stmt *stmt;
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset + diff);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, 1);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      imgid = sqlite3_column_int(stmt, 0);
+
+      if (!darktable.develop->image_loading)
+      {
+        dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, TRUE);
+      }
+    }
+    sqlite3_finalize(stmt);
+  }
+
+}
+
 void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate )
 {
   //g_return_if_fail(vm->proxy.filmstrip.module!=NULL); // This can happend here for debugging
@@ -1269,6 +1294,19 @@ const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm)
   if (vm->proxy.tethering.view)
     return vm->proxy.tethering.get_job_code(vm->proxy.tethering.view);
   return NULL;
+}
+
+void dt_view_tethering_set_session_namepattern(const dt_view_manager_t *vm, const char *namepattern)
+{
+  if (vm->proxy.tethering.view)
+    vm->proxy.tethering.set_session_namepattern(vm->proxy.tethering.view, namepattern);
+}
+
+gboolean dt_view_tethering_check_namepattern(const dt_view_manager_t *vm)
+{
+  if (vm->proxy.tethering.view)
+    return vm->proxy.tethering.check_namepattern(vm->proxy.tethering.view);
+  return FALSE;
 }
 
 #ifdef HAVE_MAP

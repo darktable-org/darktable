@@ -212,6 +212,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_levels_params_t));
   module->default_params = malloc(sizeof(dt_iop_levels_params_t));
   module->default_enabled = 0;
+  module->request_histogram = 1;
   module->priority = 636; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_levels_params_t);
   module->gui_data = NULL;
@@ -259,7 +260,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->current_pick = NONE;
   c->last_picked_color = -1;
   for (int i=0; i<3; i++)
-    for (int j=0; j<2; j++) c->pick_xy_positions[i][j] = 0.5;
+    for (int j=0; j<2; j++) c->pick_xy_positions[i][j] = -1;
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
@@ -362,7 +363,9 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   /* we need to save the last picked color to prevent flickering when
    * changing from one picker to another, as the picked_color value does not
    * update as rapidly */
-  if(self->request_color_pick && mean_picked_color != c->last_picked_color)
+  if(self->request_color_pick && 
+     self->color_picker_point[0] >= 0.0f && self->color_picker_point[1] >= 0.0f &&
+     mean_picked_color != c->last_picked_color)
   {
     float previous_color[3];
     previous_color[0] = p->levels[0];
@@ -495,14 +498,14 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   {
     dt_develop_t *dev = darktable.develop;
     float *hist, hist_max;
-    hist = dev->histogram_pre_levels;
-    hist_max = dev->histogram_linear?dev->histogram_pre_levels_max:logf(1.0 + dev->histogram_pre_levels_max);
-    if(hist_max > 0)
+    hist = self->histogram;
+    hist_max = dev->histogram_linear?self->histogram_max[0]:logf(1.0 + self->histogram_max[0]);
+    if(hist && hist_max > 0)
     {
       cairo_save(cr);
       cairo_scale(cr, width/63.0, -(height-5)/(float)hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-      dt_draw_histogram_8(cr, hist, 3);
+      dt_draw_histogram_8(cr, hist, 0);
       cairo_restore(cr);
     }
   }
@@ -767,23 +770,26 @@ static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *
   if(darktable.gui->reset) return;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;  
-  dt_develop_t *dev = darktable.develop;
+
+  float *hist = self->histogram;
+
+  if(!hist) return;
 
   // search histogram for min (search from bottom)
-  for(int k=3; k<4*64; k+=4)
+  for(int k=0; k<=4*63; k+=4)
   {
-    if (dev->histogram_pre_levels[k] > 1)
+    if (hist[k] > 1)
     {
-      p->levels[0] = ((float)(k-3.0)/4.0)/64.0;
+      p->levels[0] = ((float)(k)/(4*64));
       break;
     }
   }
   // then for max (search from top)
-  for(int k=4*64-1; k>3; k-=4)
+  for(int k=4*63; k>=0; k-=4)
   {
-    if (dev->histogram_pre_levels[k] > 1)
+    if (hist[k] > 1)
     {
-      p->levels[2] = ((float)(k-3.0)/4.0)/64.0;
+      p->levels[2] = ((float)(k)/(4*64));
       break;
     }
   }

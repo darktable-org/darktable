@@ -1,36 +1,36 @@
-		<sect2 status="draft"><title>Select</title>
-			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth="6*"/>
-					<colspec colwidth="4*"/>
-					<tbody>
-						<row>						
-							<entry>This panel allows to quickly select images, according to various criteria.
-							</entry>
-							<entry>
-								<graphic fileref="lighttable/images/panel_select.png" scalefit="1" width="80%" align="center" />
-							</entry>
-						</row>
-					</tbody>
-				</tgroup>
-			</informaltable>
-				<sect4><title>select all</title>
-					<para>Select all images in the current view (collection), with respect to filters.
-					</para>
-				</sect4>
-				<sect4><title>select none</title>
-					<para>Select no image.
-					</para>
-				</sect4>
-				<sect4><title>invert selection</title>
-					<para>Select all images that are not currently selected.
-					</para>
-				</sect4>
-				<sect4><title>select film roll</title>
-					<para>Select all images that are in the same filmroll as the currently selected images.
-					</para>
-				</sect4>
-				<sect4><title>select untouched</title>
-					<para>Select all images that have not been developed yet.
-					</para>
-				</sect4>
-		</sect2>
+<sect2 status="draft" id="select"><title>Select</title>
+	<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+			<colspec colwidth="6*"/>
+			<colspec colwidth="4*"/>
+			<tbody>
+				<row>						
+					<entry>This panel allows to quickly select images, according to various criteria.
+					</entry>
+					<entry>
+						<graphic fileref="lighttable/images/panel_select.png" scalefit="1" width="80%" align="center" />
+					</entry>
+				</row>
+			</tbody>
+		</tgroup>
+	</informaltable>
+		<sect4><title>select all</title>
+			<para>Select all images in the current view (collection), with respect to filters.
+			</para>
+		</sect4>
+		<sect4><title>select none</title>
+			<para>Select no image.
+			</para>
+		</sect4>
+		<sect4><title>invert selection</title>
+			<para>Select all images that are not currently selected.
+			</para>
+		</sect4>
+		<sect4><title>select film roll</title>
+			<para>Select all images that are in the same filmroll as the currently selected images.
+			</para>
+		</sect4>
+		<sect4><title>select untouched</title>
+			<para>Select all images that have not been developed yet.
+			</para>
+		</sect4>
+</sect2>

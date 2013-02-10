@@ -292,6 +292,165 @@ get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
 }
 
 
+// helper to get per module histogram
+static void
+histogram_collect(dt_iop_module_t *module, const float *pixel, const dt_iop_roi_t *roi,
+                 float **histogram, float *histogram_max)
+{
+  if(*histogram == NULL) *histogram = malloc(64*4*sizeof(float));
+
+  if(*histogram == NULL) return;
+
+  const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(module);
+
+  float *hist = *histogram;
+
+  histogram_max[0] = histogram_max[1] = histogram_max[2] = histogram_max[3] = 0;
+  memset (hist, 0, 64*4*sizeof(float));
+
+  switch(cst)
+  {
+    case iop_cs_RAW:
+      for(int j=0; j<roi->height; j+=3) for(int i=0; i<roi->width; i+=3)  // sample one out of 9 pixels, un-locked with bayer pattern
+        {
+          uint8_t V = CLAMP(64.0f*pixel[4*(j*roi->width+i)], 0, 63);
+          hist[4*V] ++;
+        }
+      for(int k=0; k<4*64; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
+      break;
+
+    case iop_cs_rgb:
+      for(int j=0; j<roi->height; j+=4) for(int i=0; i<roi->width; i+=4)  // sample one out of 16 pixels
+        {
+          float Rv = pixel[4*(j*roi->width+i)];
+          float Gv = pixel[4*(j*roi->width+i)+1];
+          float Bv = pixel[4*(j*roi->width+i)+2];
+          float gv = fmaxf(Rv, fmaxf(Gv, Bv));
+          uint8_t R = CLAMP(64.0f*Rv, 0, 63);
+          uint8_t G = CLAMP(64.0f*Gv, 0, 63);
+          uint8_t B = CLAMP(64.0f*Bv, 0, 63);
+          uint8_t g = CLAMP(64.0f*gv, 0, 63);
+          hist[4*R] ++;
+          hist[4*G + 1] ++;
+          hist[4*B + 2] ++;
+          hist[4*g + 3] ++;
+        }
+      // don't count <= 0 pixels
+      for(int k=4; k<4*64; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
+      for(int k=5; k<4*64; k+=4) histogram_max[1] = histogram_max[1] > hist[k] ? histogram_max[1] : hist[k];
+      for(int k=6; k<4*64; k+=4) histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
+      for(int k=7; k<4*64; k+=4) histogram_max[3] = histogram_max[3] > hist[k] ? histogram_max[3] : hist[k];
+      break;
+
+    case iop_cs_Lab:
+    default:
+      for(int j=0; j<roi->height; j+=4) for(int i=0; i<roi->width; i+=4)   // sample one out of 16 pixels
+        {
+          uint8_t L = CLAMP(64.0f/100.0f*(pixel[4*(j*roi->width+i)]), 0, 63);
+          uint8_t a = CLAMP(64.0f/256.0f*(pixel[4*(j*roi->width+i)+1]+128.0f), 0, 63);
+          uint8_t b = CLAMP(64.0f/256.0f*(pixel[4*(j*roi->width+i)+2]+128.0f), 0, 63);
+          hist[4*L] ++;
+          hist[4*a + 1] ++;
+          hist[4*b + 2] ++;
+        }
+      // don't count <= 0 pixels in L
+      for(int k=4; k<4*64; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
+
+      // don't count <= -128 and >= +128 pixels in a and b
+      for(int k=5; k<4*63; k+=4) histogram_max[1] = histogram_max[1] > hist[k] ? histogram_max[1] : hist[k];
+      for(int k=6; k<4*63; k+=4) histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
+      break;
+  }
+}
+
+#ifdef HAVE_OPENCL
+// helper to get per module histogram for OpenCL
+//
+// this algorithm is inefficient as hell when it comes to larger images. it's only acceptable
+// as long as we work on small image sizes like in image preview
+static void
+histogram_collect_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop_roi_t *roi,
+                 float **histogram, float *histogram_max)
+{
+  if(*histogram == NULL) *histogram = malloc(64*4*sizeof(float));
+  if(*histogram == NULL) return;
+
+  float *pixel = dt_alloc_align(64, roi->width*roi->height*4*sizeof(float));
+  if(pixel == NULL) return;
+
+  cl_int err = dt_opencl_copy_device_to_host(devid, pixel, img, roi->width, roi->height, 4*sizeof(float));
+  if(err != CL_SUCCESS)
+  {
+    free(pixel);
+    return;
+  }
+
+  const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(module);
+
+  float *hist = *histogram;
+
+  histogram_max[0] = histogram_max[1] = histogram_max[2] = histogram_max[3] = 0;
+  memset (hist, 0, 64*4*sizeof(float));
+
+
+  switch(cst)
+  {
+    case iop_cs_RAW:
+      for(int j=0; j<roi->height; j+=3) for(int i=0; i<roi->width; i+=3)  // sample one out of 9 pixels, un-locked with bayer pattern
+        {
+          uint8_t V = CLAMP(64.0f*pixel[4*(j*roi->width+i)], 0, 63);
+          hist[4*V] ++;
+        }
+      for(int k=0; k<4*64; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
+      break;
+
+    case iop_cs_rgb:
+      for(int j=0; j<roi->height; j+=4) for(int i=0; i<roi->width; i+=4)  // sample one out of 16 pixels
+        {
+          float Rv = pixel[4*(j*roi->width+i)];
+          float Gv = pixel[4*(j*roi->width+i)+1];
+          float Bv = pixel[4*(j*roi->width+i)+2];
+          float gv = fmaxf(Rv, fmaxf(Gv, Bv));
+          uint8_t R = CLAMP(64.0f*Rv, 0, 63);
+          uint8_t G = CLAMP(64.0f*Gv, 0, 63);
+          uint8_t B = CLAMP(64.0f*Bv, 0, 63);
+          uint8_t g = CLAMP(64.0f*gv, 0, 63);
+          hist[4*R] ++;
+          hist[4*G + 1] ++;
+          hist[4*B + 2] ++;
+          hist[4*g + 3] ++;
+        }
+      // don't count <= 0 pixels
+      for(int k=4; k<4*64; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
+      for(int k=5; k<4*64; k+=4) histogram_max[1] = histogram_max[1] > hist[k] ? histogram_max[1] : hist[k];
+      for(int k=6; k<4*64; k+=4) histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
+      for(int k=7; k<4*64; k+=4) histogram_max[3] = histogram_max[3] > hist[k] ? histogram_max[3] : hist[k];
+      break;
+
+    case iop_cs_Lab:
+    default:
+      for(int j=0; j<roi->height; j+=4) for(int i=0; i<roi->width; i+=4)   // sample one out of 16 pixels
+        {
+          uint8_t L = CLAMP(64.0f/100.0f*(pixel[4*(j*roi->width+i)]), 0, 63);
+          uint8_t a = CLAMP(64.0f/256.0f*(pixel[4*(j*roi->width+i)+1]+128.0f), 0, 63);
+          uint8_t b = CLAMP(64.0f/256.0f*(pixel[4*(j*roi->width+i)+2]+128.0f), 0, 63);
+          hist[4*L] ++;
+          hist[4*a + 1] ++;
+          hist[4*b + 2] ++;
+        }
+      // don't count <= 0 pixels in L
+      for(int k=4; k<4*64; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
+
+      // don't count <= -128 and >= +128 pixels in a and b
+      for(int k=5; k<4*63; k+=4) histogram_max[1] = histogram_max[1] > hist[k] ? histogram_max[1] : hist[k];
+      for(int k=6; k<4*63; k+=4) histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
+      break;
+  }
+
+  free(pixel);
+}
+#endif
+
 // helper for color picking
 static void
 pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *roi,
@@ -303,8 +462,10 @@ pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *
 
   for(int k=0; k<3; k++) picked_color_min[k] =  666.0f;
   for(int k=0; k<3; k++) picked_color_max[k] = -666.0f;
+  for(int k=0; k<3; k++) Lab[k] = picked_color[k] = 0.0f;
 
-  for(int k=0; k<3; k++) Lab[k] = 0.0f;
+  // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined position
+  if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return;
 
   // Initializing bounds of colorpicker box
   for(int k=0; k<4; k+=2) box[k] = MIN(roi->width -1, MAX(0, module->color_picker_box[k]*roi->width));
@@ -343,6 +504,79 @@ pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *
           = img[4*(roi->width*point[1] + point[0]) + i];
   }
 }
+
+
+#ifdef HAVE_OPENCL
+// helper for OpenCL color picking
+//
+// this algorithm is inefficient as hell when it comes to larger images. it's only acceptable
+// as long as we work on small image sizes like in image preview
+static void
+pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop_roi_t *roi,
+                 float *picked_color, float *picked_color_min, float *picked_color_max)
+{
+  int box[4];
+  size_t origin[3];
+  size_t region[3];
+  float Lab[3];
+
+  for(int k=0; k<3; k++) picked_color_min[k] =  666.0f;
+  for(int k=0; k<3; k++) picked_color_max[k] = -666.0f;
+  for(int k=0; k<3; k++) Lab[k] = picked_color[k] = 0.0f;
+
+  // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined position
+  if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return;
+
+  if(darktable.lib->proxy.colorpicker.size)
+  {
+    for(int k=0; k<4; k+=2) box[k] = MIN(roi->width -1, MAX(0, module->color_picker_box[k]*roi->width));
+    for(int k=1; k<4; k+=2) box[k] = MIN(roi->height-1, MAX(0, module->color_picker_box[k]*roi->height));
+  }
+  else
+  {
+    box[0] = box[2] = MIN(roi->width - 1, MAX(0, module->color_picker_point[0] * roi->width));
+    box[1] = box[3] = MIN(roi->height - 1, MAX(0, module->color_picker_point[1] * roi->height));
+  }
+
+  // Initializing bounds of colorpicker box
+  origin[0] = box[0];
+  origin[1] = box[1];
+  origin[2] = 0;
+
+  region[0] = box[2] - box[0] + 1;
+  region[1] = box[3] - box[1] + 1;
+  region[2] = 1;
+
+  size_t bufsize = region[0] * region[1];
+  float *buffer = dt_alloc_align(64, bufsize*4*sizeof(float));
+  if(buffer == NULL) return;
+
+  cl_int err = dt_opencl_read_host_from_device_raw(devid, buffer, img, origin, region, region[0]*4*sizeof(float), CL_TRUE);
+
+  if(err == CL_SUCCESS)
+  {
+    const float w = 1.0f/(region[0] * region[1]);
+    for(int k = 0; k < 4*bufsize; k += 4)
+    {
+      const float L = buffer[k];
+      const float a = buffer[k + 1];
+      const float b = buffer[k + 2];
+      Lab[0] += w*L;
+      Lab[1] += w*a;
+      Lab[2] += w*b;
+      picked_color_min[0] = fminf(picked_color_min[0], L);
+      picked_color_min[1] = fminf(picked_color_min[1], a);
+      picked_color_min[2] = fminf(picked_color_min[2], b);
+      picked_color_max[0] = fmaxf(picked_color_max[0], L);
+      picked_color_max[1] = fmaxf(picked_color_max[1], a);
+      picked_color_max[2] = fmaxf(picked_color_max[2], b);
+      for(int k=0; k<3; k++) picked_color[k] = Lab[k];
+    }
+  }
+
+  free(buffer);
+}
+#endif
 
 
 // recursive helper for process:
@@ -507,6 +741,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
     // if(module) printf("reserving new buf in cache for module %s %s: %ld buf %lX\n", module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash, (long int)*output);
 
+#if 0
     // tonecurve/levels histogram (collect luminance only):
     dt_pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown)
@@ -544,37 +779,10 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       if(module->widget) dt_control_queue_redraw_widget(module->widget);
     }
     else dt_pthread_mutex_unlock(&pipe->busy_mutex);
-
-    // if module requested color statistics, get mean in box from preview pipe
-    dt_pthread_mutex_lock(&pipe->busy_mutex);
-    if(pipe->shutdown)
-    {
-      dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      return 1;
-    }
-
-#if 0
-    // Lab color picking for module
-    if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
-        (module == dev->gui_module || !strcmp(module->op, "colorout")) && // only modules with focus or colorout for bottom panel can pick
-        module->request_color_pick) // and they need to want to pick ;)
-    {
-      pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
-
-      dt_pthread_mutex_unlock(&pipe->busy_mutex);
-
-      gboolean i_own_lock = dt_control_gdk_lock();
-      if(module->widget) gtk_widget_queue_draw(module->widget);
-      if (i_own_lock) dt_control_gdk_unlock();
-    }
-    else dt_pthread_mutex_unlock(&pipe->busy_mutex);
-#else
-    dt_pthread_mutex_unlock(&pipe->busy_mutex);
 #endif
 
-    // actual pixel processing done by module
-    dt_pthread_mutex_lock(&pipe->busy_mutex);
 
+    dt_pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown)
     {
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
@@ -603,7 +811,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
        step is anyhow done on cpu. we assume that blending itself will never require tiling in cpu path,
        because memory requirements will still be low enough. */
 
-    assert(tiling.factor > 0.0f && tiling.factor < 100.0f);
+    assert(tiling.factor > 0.0f);
 
     if(pipe->shutdown)
     {
@@ -629,7 +837,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
          are treated in the same manner. */
 
       /* try to enter opencl path after checking some module specific pre-requisites */
-      if(module->process_cl && piece->process_cl_ready)
+      if(module->process_cl && piece->process_cl_ready && !((pipe->type == DT_DEV_PIXELPIPE_PREVIEW) && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL)))
       {
 
         // fprintf(stderr, "[opencl_pixelpipe 0] factor %f, overhead %d, width %d, height %d, bpp %d\n", (double)tiling.factor, tiling.overhead, roi_in.width, roi_in.height, bpp);
@@ -699,6 +907,46 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             return 1;
           }
 
+          // Lab color picking for module
+          if(success_opencl && dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
+              module == dev->gui_module && // only modules with focus can pick
+              module->request_color_pick) // and they want to pick ;)
+          {
+            pixelpipe_picker_cl(pipe->devid, module, cl_mem_input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
+            pixelpipe_picker_cl(pipe->devid, module, (*cl_mem_output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
+
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+            if(module->widget) dt_control_queue_redraw_widget(module->widget);
+
+            dt_pthread_mutex_lock(&pipe->busy_mutex);
+          }
+
+          if(pipe->shutdown)
+          {
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
+
+          // histogram collection for module
+          if(success_opencl && dev->gui_attached && pipe == dev->preview_pipe && // collect from preview pipe to get full histogram
+              module->request_histogram)
+          {
+            histogram_collect_cl(pipe->devid, module, cl_mem_input, &roi_in, &(module->histogram), module->histogram_max);
+
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+            if(module->widget) dt_control_queue_redraw_widget(module->widget);
+
+            dt_pthread_mutex_lock(&pipe->busy_mutex);
+          }
+
+          if(pipe->shutdown)
+          {
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
+
           /* process blending */
           if (success_opencl)
             success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
@@ -755,6 +1003,46 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           /* now call process_tiling_cl of module; module should emit meaningful messages in case of error */
           if (success_opencl)
             success_opencl = module->process_tiling_cl(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+
+          if(pipe->shutdown)
+          {
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
+
+          // Lab color picking for module
+          if(success_opencl && dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
+              module == dev->gui_module && // only modules with focus can pick
+              module->request_color_pick) // and they want to pick ;)
+          {
+            pixelpipe_picker(module, (float*)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
+            pixelpipe_picker(module, (float*)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
+
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+            if(module->widget) dt_control_queue_redraw_widget(module->widget);
+
+            dt_pthread_mutex_lock(&pipe->busy_mutex);
+          }
+
+          if(pipe->shutdown)
+          {
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
+
+          // histogram collection for module
+          if(success_opencl && dev->gui_attached && pipe == dev->preview_pipe && // collect from preview pipe to get full histogram
+              module->request_histogram)
+          {
+            histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
+
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+            if(module->widget) dt_control_queue_redraw_widget(module->widget);
+
+            dt_pthread_mutex_lock(&pipe->busy_mutex);
+          }
 
           if(pipe->shutdown)
           {
@@ -898,6 +1186,48 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             return 1;
           }
 
+          // Lab color picking for module
+          if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
+              module == dev->gui_module && // only modules with focus can pick
+              module->request_color_pick) // and they want to pick ;)
+          {
+            pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
+            pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
+
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+            if(module->widget) dt_control_queue_redraw_widget(module->widget);
+
+            dt_pthread_mutex_lock(&pipe->busy_mutex);
+          }
+
+          if(pipe->shutdown)
+          {
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
+
+
+          // histogram collection for module
+          if(dev->gui_attached && pipe == dev->preview_pipe && // collect from preview pipe to get full histogram
+              module->request_histogram)
+          {
+            histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
+
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+            if(module->widget) dt_control_queue_redraw_widget(module->widget);
+
+            dt_pthread_mutex_lock(&pipe->busy_mutex);
+          }
+
+          if(pipe->shutdown)
+          {
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
+
+
           /* process blending on cpu */
           dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
         }
@@ -960,6 +1290,46 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           return 1;
         }
 
+        // Lab color picking for module
+        if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
+            module == dev->gui_module && // only modules with focus can pick
+            module->request_color_pick) // and they want to pick ;)
+        {
+          pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
+          pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
+
+          dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+          if(module->widget) dt_control_queue_redraw_widget(module->widget);
+
+          dt_pthread_mutex_lock(&pipe->busy_mutex);
+        }
+
+        if(pipe->shutdown)
+        {
+          dt_pthread_mutex_unlock(&pipe->busy_mutex);
+          return 1;
+        }
+
+        // histogram collection for module
+        if(dev->gui_attached && pipe == dev->preview_pipe && // collect from preview pipe to get full histogram
+            module->request_histogram)
+        {
+          histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
+
+          dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+          if(module->widget) dt_control_queue_redraw_widget(module->widget);
+
+          dt_pthread_mutex_lock(&pipe->busy_mutex);
+        }
+
+        if(pipe->shutdown)
+        {
+          dt_pthread_mutex_unlock(&pipe->busy_mutex);
+          return 1;
+        }
+
         /* process blending */
         dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
 
@@ -995,16 +1365,33 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       // Lab color picking for module
       if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
           module == dev->gui_module && // only modules with focus can pick
-          module->request_color_pick) // and they need to want to pick ;)
+          module->request_color_pick) // and they want to pick ;)
       {
         pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
         pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
 
         dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-        gboolean i_own_lock = dt_control_gdk_lock();
-        gtk_widget_queue_draw(module->widget);
-        if (i_own_lock) dt_control_gdk_unlock();
+        if(module->widget) dt_control_queue_redraw_widget(module->widget);
+
+        dt_pthread_mutex_lock(&pipe->busy_mutex);
+      }
+
+      if(pipe->shutdown)
+      {
+        dt_pthread_mutex_unlock(&pipe->busy_mutex);
+        return 1;
+      }
+
+      // histogram collection for module
+      if(dev->gui_attached && pipe == dev->preview_pipe && // collect from preview pipe to get full histogram
+          module->request_histogram)
+      {
+        histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
+
+        dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+        if(module->widget) dt_control_queue_redraw_widget(module->widget);
 
         dt_pthread_mutex_lock(&pipe->busy_mutex);
       }
@@ -1036,16 +1423,33 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     // Lab color picking for module
     if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
         module == dev->gui_module && // only modules with focus can pick
-        module->request_color_pick) // and they need to want to pick ;)
+        module->request_color_pick) // and they want to pick ;)
     {
       pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
       pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-      gboolean i_own_lock = dt_control_gdk_lock();
-      gtk_widget_queue_draw(module->widget);
-      if (i_own_lock) dt_control_gdk_unlock();
+      if(module->widget) dt_control_queue_redraw_widget(module->widget);
+
+      dt_pthread_mutex_lock(&pipe->busy_mutex);
+    }
+
+    if(pipe->shutdown)
+    {
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      return 1;
+    }
+
+    // histogram collection for module
+    if(dev->gui_attached && pipe == dev->preview_pipe && // collect from preview pipe to get full histogram
+        module->request_histogram)
+    {
+      histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
+
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+      if(module->widget) dt_control_queue_redraw_widget(module->widget);
 
       dt_pthread_mutex_lock(&pipe->busy_mutex);
     }
@@ -1539,7 +1943,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
 {
   pipe->processing = 1;
   pipe->opencl_enabled = dt_opencl_update_enabled(); // update enabled flag from preferences
-  pipe->devid = (pipe->opencl_enabled && (pipe->type != DT_DEV_PIXELPIPE_PREVIEW)) ? dt_opencl_lock_device(-1) : -1;  // try to get/lock opencl resource but not for preview pipe
+  pipe->devid = (pipe->opencl_enabled) ? dt_opencl_lock_device(pipe->type) : -1;  // try to get/lock opencl resource
 
   dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] using device %d\n", _pipe_type_to_str(pipe->type), pipe->devid);
 

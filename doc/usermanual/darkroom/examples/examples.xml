@@ -1,4 +1,4 @@
-<sect1><title>Examples</title>
+<sect1 id="examples"><title>Examples</title>
 <xi:include href="blackandwhite.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 <xi:include href="crossprocessing.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 <xi:include href="cyantone.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>

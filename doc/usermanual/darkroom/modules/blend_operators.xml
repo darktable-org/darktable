@@ -4,7 +4,7 @@
 		%darktable_dtd;
 		]>
 
-	<sect2 status="draft"><title>Blending operators</title>
+	<sect2 status="draft" id="blending operators"><title>Blending operators</title>
 		<para>Blending operators are a functionality that works on the incoming image information and 
 				the output of the current module. Not all modules support blending because it would not work
 				and break the use of the module.
@@ -36,7 +36,7 @@
 
 		        <sect5><title>inverse</title>
 				<para>This blend mode acts similar to blend mode "normal", only that the role of input and output of the
-        	                      current module are reversed. Can be used together with conditional blending (next chapter) to
+        	                      current module are reversed. Can be used together with conditional blending (<xref linkend="conditional blending"/>) to
         	                      get the effect of an inversed blend mask.
         	                </para>			
 			</sect5>
@@ -99,7 +99,7 @@
 	        <sect4><title>blend</title>
         	        <para>Most modules offer additional control on blending by a user-defined blend mask. In order to activate these
         	              controls you need to switch from "blend uniformily" to "blend only, if..". More details on conditional blending
-        	              are given in a separate chapter.
+        	              are given in a separate chapter (<xref linkend="conditional blending"/>).
         	        </para>
 	        </sect4>
                 </sect3>

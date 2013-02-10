@@ -1,4 +1,4 @@
-<sect3 status="draft"><title>Vignetting</title>
+<sect3 status="draft" id="vignetting"><title>Vignetting</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
@@ -51,10 +51,10 @@
 			<para>Manually adjust the width/height ratio of the vignetting area.</para>
 		</sect5>			
 		<sect5><title>dithering</title>
-			<para>With this combobox you can activate dithering which prevents banding artifacts. Those artifacts are generated
-                              when darktable's continuous 32-bit float data are quantized into an 8-bit or 16-bit output format. Select "8-bit output" to
-                              prevent banding on monitor display and for JPEGs. When set to "16-bit output", only a little dithering will be applied, just
-                              strong enough to compensate for banding on the fine grained 16-bit level.</para>
+			<para>With this combobox you can activate random noise dithering to overcome banding artifacts caused by vignette gradients. 
+                              Select "8-bit output" to prevent banding on monitor display and for JPEGs. When set to "16-bit output", only a little dithering 
+                              will be applied, just strong enough to compensate for banding on the fine grained 16-bit level. This feature is mostly obsoleted by 
+                              our new module "dithering" (see <xref linkend="dithering"/>).</para>
 		</sect5>			
 
 

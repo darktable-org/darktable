@@ -56,7 +56,7 @@ static int import_images(lua_State *L){
       return luaL_error(L,"error while importing");
     }
 
-    result =dt_film_image_import(&new_film,full_name,TRUE);
+    result =dt_image_import(new_film.id,full_name,TRUE);
     free(dirname);
     dt_film_cleanup(&new_film);
     if(result == 0) {

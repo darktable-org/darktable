@@ -113,7 +113,7 @@ groups ()
 
 int flags ()
 {
-  return IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_PREVIEW_NON_OPENCL;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)

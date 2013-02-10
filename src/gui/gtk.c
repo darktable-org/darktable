@@ -574,7 +574,11 @@ static gboolean quit_callback(GtkAccelGroup *accel_group,
 }
 
 #ifdef MAC_INTEGRATION
+#ifdef GTK_TYPE_OSX_APPLICATION
 static gboolean osx_quit_callback(GtkOSXApplication* OSXapp, gpointer user_data)
+#else
+static gboolean osx_quit_callback(GtkosxApplication* OSXapp, gpointer user_data)
+#endif
 {
   GList *windows, *window;
   windows = gtk_window_list_toplevels();
@@ -587,7 +591,11 @@ static gboolean osx_quit_callback(GtkOSXApplication* OSXapp, gpointer user_data)
   return TRUE;
 }
 
+#ifdef GTK_TYPE_OSX_APPLICATION
 static gboolean osx_openfile_callback(GtkOSXApplication* OSXapp, gchar* path, gpointer user_data)
+#else
+static gboolean osx_openfile_callback(GtkosxApplication* OSXapp, gchar* path, gpointer user_data)
+#endif
 {
   return dt_load_from_string(path, FALSE) == 0 ? FALSE : TRUE;
 }
@@ -730,8 +738,13 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_init (&argc, &argv);
 
 #ifdef MAC_INTEGRATION
+#ifdef GTK_TYPE_OSX_APPLICATION
   GtkOSXApplication *OSXApp = g_object_new(GTK_TYPE_OSX_APPLICATION, NULL);
   gtk_osxapplication_set_menu_bar(OSXApp, GTK_MENU_SHELL(gtk_menu_bar_new())); //needed for default entries to show up
+#else
+  GtkosxApplication *OSXApp = g_object_new(GTKOSX_TYPE_APPLICATION, NULL);
+  gtkosx_application_set_menu_bar(OSXApp, GTK_MENU_SHELL(gtk_menu_bar_new())); //needed for default entries to show up
+#endif
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationBlockTermination", G_CALLBACK(osx_quit_callback), NULL);
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationOpenFile", G_CALLBACK(osx_openfile_callback), NULL);
 #endif
@@ -961,7 +974,11 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   int tb = darktable.control->tabborder;
   dt_view_manager_configure(darktable.view_manager, widget->allocation.width - 2*tb, widget->allocation.height - 2*tb);
 #ifdef MAC_INTEGRATION
+#ifdef GTK_TYPE_OSX_APPLICATION
   gtk_osxapplication_ready(g_object_new(GTK_TYPE_OSX_APPLICATION, NULL));
+#else
+  gtkosx_application_ready(g_object_new(GTKOSX_TYPE_APPLICATION, NULL));
+#endif
 #endif
   /* start the event loop */
   gtk_main ();
@@ -1508,14 +1525,10 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
 
 }
 
-/* this is always called on gui thread !!! */
+/* this is called as a signal handler, the signal raising logic asserts the gdk lock. */
 static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
 {
-  //  g_return_if_fail(GTK_IS_WIDGET(widget) && gtk_widget_is_drawable(widget));
-  gboolean i_own_lock = dt_control_gdk_lock();
   gtk_widget_queue_draw(widget);
-  if(i_own_lock) dt_control_gdk_unlock();
-
 }
 
 void dt_ellipsize_combo(GtkComboBox *cbox)

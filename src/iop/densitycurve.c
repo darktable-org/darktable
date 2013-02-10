@@ -378,6 +378,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_densitycurve_params_t));
   module->default_params = malloc(sizeof(dt_iop_densitycurve_params_t));
   module->default_enabled = 0;
+  module->request_histogram = 1;
   module->priority = 699;
   module->params_size = sizeof(dt_iop_densitycurve_params_t);
   module->gui_data = NULL;
@@ -1000,16 +1001,15 @@ static gboolean dt_iop_densitycurve_expose(GtkWidget *widget, GdkEventExpose *ev
   cairo_translate(cr, 0, height);
 
   // draw lum h istogram in background
-  dt_develop_t *dev = darktable.develop;
   float *hist, hist_max;
-  hist = dev->histogram_pre;
-  hist_max = dev->histogram_pre_max;
-  if(hist_max > 0)
+  hist = self->histogram;
+  hist_max = self->histogram_max[0];
+  if(hist && hist_max > 0)
   {
     cairo_save(cr);
     cairo_scale(cr, width/63.0, -(height-5)/(float)hist_max);
     cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-    dt_gui_histogram_draw_8(cr, hist, 3);
+    dt_gui_histogram_draw_8(cr, hist, 0);
     cairo_restore(cr);
   }
 

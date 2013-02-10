@@ -162,11 +162,17 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "NIKON COOLPIX P7000",          { 804947, 229630,  97717}, { 178146, 1138763, -395233}, { 88699, -282013, 1234650}, {809998, 842819, 682144}},
 
+  // Wolfgang Kuehnel, Wolf Faust IT8, strobe, well lit
+  { "MINOLTA DYNAX 5D",             { 910599, 389618,  20218}, { 330353, 1223724, -116943}, { 24384, -307190, 1156891}, {604309, 629196, 525848}},
+
   // Karl Mikaelsson, Homebrew ColorChecker, strobe, well lit
   { "SONY DSLR-A100",               { 823853, 374588,  28259}, { 220200,  934509, -108643}, { 48141, -226440, 1062881}, {689651, 715225, 602127}},
 
   // Alexander Rabtchevich, Wolf Faust IT8, direct sunlight, well lit
   { "SONY DSLR-A200",               { 846786, 366302, -22858}, { 311584, 1046249, -107056}, { 54596, -192993, 1191406}, {708405, 744507, 596771}},
+
+  // Wolfgang Kuehnel, Wolf Faust IT8, strobe, well lit
+  { "SONY DSLR-A230",               { 890442, 398560,  24979}, { 376419, 1215424,  -86807}, {  7294, -299591, 1116592}, {578903, 597946, 494522}},
 
   // Stephane Chauveau, Wolf Faust IT8, direct sunlight, well lit
   { "SONY DSLR-A550",               {1031235, 405899,   1572}, { 185623, 1122162, -272659}, {-25528, -329514, 1249969}, {729797, 753586, 633530}},
@@ -183,8 +189,14 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // David Meier, Wolf Faust IT8, direct sunlight, well lit
   { "SONY SLT-A55V",                { 969696, 407043,  40268}, { 218201, 1182556, -285400}, { 21042, -342819, 1260223}, {762085, 793961, 670151}},
 
+  // Wolfgang Kuehnel, Wolf Faust IT8, strobe, well lit
+  { "SONY NEX-3",                   {1157837, 503723,  40894}, { 194550, 1279465, -297058}, {-80719, -471252, 1316238}, {669724, 694839, 586731}},
+
   // Denis Cheremisov, CMP Digital Target 4, strobe, well lit
   { "SONY NEX-5N",                  { 913406, 394043,   3237}, { 206253, 1085022,  -19917}, {-69138, -377472, 1038483}, {800079, 824112, 674850}},
+
+  // Josef Wells, Wolf Faust IT8, strobe, well lit
+  { "SONY DSC-RX100",               { 862366, 283417,  42526}, { 302124, 1254868, -333084}, { 84610, -236816, 1327515}, {681137, 699600, 590942}},
 
   // Mark Haun, Wolf Faust IT8, direct sunlight, well lit
   { "OLYMPUS E-PL1",                { 824387, 288086,  -7355}, { 299500, 1148865, -308929}, { 91858, -198425, 1346603}, {720139, 750717, 619751}},

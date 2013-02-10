@@ -89,6 +89,7 @@ typedef struct dt_opencl_device_t
   int nvidia_sm_20;
   const char *vendor;
   const char *name;
+  const char *cname;
   cl_int summary;
 }
 dt_opencl_device_t;
@@ -110,6 +111,10 @@ typedef struct dt_opencl_t
   int micro_nap;
   int enabled;
   int num_devs;
+  int *dev_priority_image;
+  int *dev_priority_preview;
+  int *dev_priority_export;
+  int *dev_priority_thumbnail;
   dt_opencl_device_t *dev;
   dt_dlopencl_t *dlocl;
 
@@ -133,9 +138,14 @@ int dt_opencl_finish(const int devid);
 /** enqueues a synchronization point. */
 int dt_opencl_enqueue_barrier(const int devid);
 
-/** locks a device for your thread's exclusive use. blocks if it's busy. pass -1 to let dt chose a device.
- *  always use the devid returned, in case you didn't get your request! */
-int dt_opencl_lock_device(const int dev);
+/** parse a single token of priority string and store priorities in priority_list */
+void dt_opencl_priority_parse(char *configstr, int *priority_list);
+
+/** parse a complete priority string */
+void dt_opencl_priorities_parse(const char *configstr);
+
+/** locks a device for your thread's exclusive use */
+int dt_opencl_lock_device(const int pipetype);
 
 /** done with your command queue. */
 void dt_opencl_unlock_device(const int dev);

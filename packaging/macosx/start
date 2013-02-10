@@ -33,6 +33,7 @@ export GTK_IM_MODULE_FILE="$bundle_etc/gtk-2.0/gtk.immodules"
 export GDK_PIXBUF_MODULE_FILE="$bundle_etc/gtk-2.0/gdk-pixbuf.loaders"
 export PANGO_RC_FILE="$bundle_etc/pango/pangorc"
 export PANGO_SYSCONFDIR="$bundle_etc"
+export PANGO_LIBDIR="$bundle_lib"
 
 export IOLIBS="$(echo "$bundle_lib/libgphoto2_port/"*/)"
 export CAMLIBS="$(echo "$bundle_lib/libgphoto2/"*/)"

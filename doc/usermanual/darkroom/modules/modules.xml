@@ -3,16 +3,18 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect1 status="final"><title>Modules</title>
-	<para>Each correction, enhancement or effect is implemented a module.
+<sect1 status="final" id="modules"><title>Modules</title>
+	<para>Each correction, enhancement or effect is implemented as a module.
         </para>
         <para>
                This section includes documentation of each module and its specific parameters.
                A module consists of an expander bar <inlinegraphic fileref="&img_module_expander;" scalefit="1" width="30%" align="center"/>  
                where the <inlinegraphic fileref="&icon_module_enable;" scalefit="1" width="2%"  align="center"/> icon is used to turn the module
-               on or off. Then there is the name of the module; press this to expand the module to see the parameters user interface.
+               on or off. Then there is the name of the module; press this to expand the module to see the user interface with all parameters.
                Icon <inlinegraphic fileref="&icon_module_presets;" scalefit="1" width="2%" align="center" /> is the preset icon to access the available presets stored for the module or to create new ones. 
-               The <inlinegraphic fileref="&icon_module_reset;" scalefit="1" width="2%" align="center"/>  icon is used to reset the module parameters to their default values.
+               The <inlinegraphic fileref="&icon_module_reset;" scalefit="1" width="2%" align="center"/> icon is used to reset the module parameters to their default values. Many of darktable's
+               modules can have multiple instances; click on icon <inlinegraphic fileref="&icon_module_instances;" scalefit="1" width="2%" align="center"/> to generate new instances and control
+               existing ones.
 	</para>
 	<sect2 status="draft"><title>Interacting with modules</title>
            <para>The most frequently used control elements are sliders, comboboxes and curves.
@@ -77,6 +79,9 @@
 
 	<!-- Presets -->
 	<xi:include href="presets.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+	<!-- Multiple instances -->
+	<xi:include href="instances.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 	
 	<!-- Modules groups -->
 	<xi:include href="basic/group_basic.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>

@@ -1,4 +1,4 @@
-<sect2 status="final">
+<sect2 status="final" id="tone group">
   <title>Tone group</title>
   <para>This group contains the modules to work with the tone in the image, this means only changin the lightness
   and leaving the color intact.

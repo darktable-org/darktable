@@ -179,78 +179,6 @@ void _dt_sigsegv_handler(int param)
 }
 #endif
 
-#if 0
-static
-void _dt_sigill_handler(int param)
-{
-  fprintf(stderr, "[this doesn't seem to work]\n");
-  GtkWidget *dlg = gtk_message_dialog_new(NULL,GTK_DIALOG_MODAL,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_(
-      "darktable has trapped an illegal instruction which probably means that \
-an invalid processor optimized codepath is used for your cpu, please try reproduce the crash running 'gdb darktable' from \
-the console and post the backtrace log to mailing list with information about your CPU and where you got the package from."));
-  gtk_dialog_run(GTK_DIALOG(dlg));
-
-  /* pass it further to the old handler*/
-  _dt_sigill_old_handler(param);
-}
-
-#if defined(__i386__) && defined(__PIC__)
-#define cpuid(level, a, b, c, d) \
-  __asm__ ("xchgl %%ebx, %1\n" \
-        "cpuid\n" \
-        "xchgl  %%ebx, %1\n" \
-        : "=a" (a), "=r" (b), "=c" (c), "=d" (d)	\
-        : "0" (level) \
-      )
-#else
-#define cpuid(level, a, b, c, d) \
-  __asm__ ("cpuid"	\
-    : "=a" (a), "=b" (b), "=c" (c), "=d" (d) \
-    : "0" (level) \
-    )
-#endif
-
-
-static
-void dt_check_cpu(int argc,char **argv)
-{
-  /* hook up SIGILL handler */
-  _dt_sigill_old_handler = signal(SIGILL,&_dt_sigill_handler);
-
-  /* call cpuid for  SSE level */
-  int ax,bx,cx,dx;
-  cpuid(0x1,ax,bx,cx,dx);
-
-  ax = bx = 0;
-  char message[512]= {0};
-  strcat(message,_("SIMD extensions found: "));
-  if((cx & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE3))
-    strcat(message,"SSE3 ");
-  if( ((dx >> 26) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE2))
-    strcat(message,"SSE2 ");
-  if (((dx >> 25) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE))
-    strcat(message,"SSE ");
-  if (!darktable.cpu_flags)
-    strcat(message,"none");
-
-  /* for now, bail out if SSE2 is not availble */
-  if(!(darktable.cpu_flags & DT_CPU_FLAG_SSE2))
-  {
-    gtk_init (&argc, &argv);
-
-    GtkWidget *dlg = gtk_message_dialog_new(NULL,GTK_DIALOG_MODAL,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_(
-        "darktable is very cpu intensive and uses SSE2 SIMD instructions \
-for heavy calculations. This gives a better user experience but also defines a minimum \
-processor requirement.\n\nThe processor in YOUR system does NOT support SSE2. \
-darktable will now close down.\n\n%s"),message);
-
-    gtk_dialog_run(GTK_DIALOG(dlg));
-
-    exit(11);
-  }
-}
-#endif
-
 gboolean dt_supported_image(const gchar *filename)
 {
   gboolean supported = FALSE;
@@ -443,11 +371,11 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
 
   // database
   gchar *dbfilename_from_command = NULL;
-  char *datadirFromCommand = NULL;
-  char *moduledirFromCommand = NULL;
-  char *tmpdirFromCommand = NULL;
-  char *configdirFromCommand = NULL;
-  char *cachedirFromCommand = NULL;
+  char *datadir_from_command = NULL;
+  char *moduledir_from_command = NULL;
+  char *tmpdir_from_command = NULL;
+  char *configdir_from_command = NULL;
+  char *cachedir_from_command = NULL;
 
   darktable.num_openmp_threads = 1;
 #ifdef _OPENMP
@@ -478,23 +406,23 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
       }
       else if(!strcmp(argv[k], "--datadir"))
       {
-        datadirFromCommand = argv[++k];
+        datadir_from_command = argv[++k];
       }
       else if(!strcmp(argv[k], "--moduledir"))
       {
-        moduledirFromCommand = argv[++k];
+        moduledir_from_command = argv[++k];
       }
       else if(!strcmp(argv[k], "--tmpdir"))
       {
-        tmpdirFromCommand = argv[++k];
+        tmpdir_from_command = argv[++k];
       }
       else if(!strcmp(argv[k], "--configdir"))
       {
-        configdirFromCommand = argv[++k];
+        configdir_from_command = argv[++k];
       }
       else if(!strcmp(argv[k], "--cachedir"))
       {
-        cachedirFromCommand = argv[++k];
+        cachedir_from_command = argv[++k];
       }
       else if(!strcmp(argv[k], "--localedir"))
       {
@@ -543,15 +471,15 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
 #ifdef _OPENMP
   omp_set_num_threads(darktable.num_openmp_threads);
 #endif
-  dt_loc_init_datadir(datadirFromCommand);
-  dt_loc_init_plugindir(moduledirFromCommand);
-  if(dt_loc_init_tmp_dir(tmpdirFromCommand))
+  dt_loc_init_datadir(datadir_from_command);
+  dt_loc_init_plugindir(moduledir_from_command);
+  if(dt_loc_init_tmp_dir(tmpdir_from_command))
   {
     printf(_("ERROR : invalid temporary directory : %s\n"),darktable.tmpdir);
     return usage(argv[0]);
   }
-  dt_loc_init_user_config_dir(configdirFromCommand);
-  dt_loc_init_user_cache_dir(cachedirFromCommand);
+  dt_loc_init_user_config_dir(configdir_from_command);
+  dt_loc_init_user_cache_dir(cachedir_from_command);
 
 #if !GLIB_CHECK_VERSION(2, 35, 0)
   g_type_init();
@@ -786,7 +714,10 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
 
       while (p != NULL)
       {
-        id = MAX(id, dt_load_from_string((gchar*)p->data, load_in_dr));
+        // don't put these function calls into MAX(), the macro will evaluate
+        // it twice (and happily deadlock, in this particular case)
+        int newid = dt_load_from_string((gchar*)p->data, load_in_dr);
+        id = MAX(id, newid);
         p = g_slist_next(p);
       }
 

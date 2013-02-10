@@ -28,7 +28,6 @@
 #include "dtgtk/tristatebutton.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
-#include "develop/lightroom.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"
@@ -372,7 +371,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
                       (box[3] - box[1])*ht - 2./zoom_scale);
       cairo_stroke(cri);
     }
-    else
+    else if(point[0] >= 0.0f && point[0] <= 1.0f && point[1] >= 0.0f && point[1] <= 1.0f)
     {
       cairo_rectangle(cri, point[0] * wd - .01 * wd, point[1] * ht - .01 * wd,
                       .02 * wd, .02 * wd);
@@ -697,8 +696,8 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
       if (!dev->image_loading)
       {
         dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
+        dt_dev_change_image(dev, imgid);
       }
-      dt_dev_change_image(dev, imgid);
 
     }
     sqlite3_finalize(stmt);
@@ -875,12 +874,6 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
   else dt_control_log(_("no styles have been created yet"));
 }
 
-static void _darkroom_ui_apply_LR_style(GtkWidget *w, gpointer user_data)
-{
-  dt_develop_t *dev = (dt_develop_t *)user_data;
-  dt_lightroom_import (dev);
-}
-
 void enter(dt_view_t *self)
 {
   /* connect to ui pipe finished signal for redraw */
@@ -928,20 +921,6 @@ void enter(dt_view_t *self)
   g_object_set (G_OBJECT (styles), "tooltip-text", _("quick access for applying any of your styles"),
                 (char *)NULL);
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles);
-
-  /* create LR import button (only if LR .xmp found) */
-  char *lr_xmp_pathname = dt_get_lightroom_xmp(dev->image_storage.id);
-  if(lr_xmp_pathname)
-  {
-    g_free(lr_xmp_pathname);
-    GtkWidget *LRimp = dtgtk_button_new (dtgtk_cairo_paint_LR,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
-    g_signal_connect (G_OBJECT (LRimp), "clicked",
-                      G_CALLBACK (_darkroom_ui_apply_LR_style),
-                      dev);
-    g_object_set (G_OBJECT (LRimp), "tooltip-text", _("import from Lightroom"),
-                  (char *)NULL);
-    dt_view_manager_view_toolbox_add(darktable.view_manager, LRimp);
-  }
 
   /*
    * add IOP modules to plugin list

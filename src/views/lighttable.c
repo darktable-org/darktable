@@ -141,7 +141,7 @@ typedef enum direction
 void switch_layout_to(dt_library_t *lib, int new_layout)
 {
   lib->layout = new_layout;
-  
+
   if (new_layout == 1) // filemanager
   {
     if(lib->first_visible_zoomable >= 0)
@@ -149,10 +149,10 @@ void switch_layout_to(dt_library_t *lib, int new_layout)
       lib->offset = lib->first_visible_zoomable;
     }
     lib->first_visible_zoomable = 0;
-    
+
     if(lib->center) lib->offset = 0;
     lib->center = 0;
-    
+
     lib->offset_changed = TRUE;
   }
 }
@@ -160,7 +160,7 @@ void switch_layout_to(dt_library_t *lib, int new_layout)
 static void move_view(dt_library_t *lib, direction dir)
 {
   const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
- 
+
   switch (dir)
   {
     case UP:
@@ -224,26 +224,26 @@ void zoom_around_image(dt_library_t *lib, double pointerx, double pointery, int 
   float wd = width/(float)old_images_in_row;
   float ht = width/(float)old_images_in_row;
   int pi = pointerx / (float)wd;
-  int pj = pointery / (float)ht;  
-    
+  int pj = pointery / (float)ht;
+
   int zoom_anchor_image = lib->offset + pi + (pj * old_images_in_row);
-  
+
   // make sure that we don't try to zoom around an image that doesn't exist
   if (zoom_anchor_image > lib->collection_count)
     zoom_anchor_image = lib->collection_count;
-  
+
     // make sure that we don't try to zoom around an image that doesn't exist
   if (zoom_anchor_image < 0)
     zoom_anchor_image = 0;
-  
+
   /* calculate which image number (relative to offset) will be
-   * under the cursor after zooming. Then subtract that value 
+   * under the cursor after zooming. Then subtract that value
    * from the zoom anchor image number to see what the new offset should be */
   wd = width/(float)new_images_in_row;
   ht = width/(float)new_images_in_row;
   pi = pointerx / (float)wd;
   pj = pointery / (float)ht;
-  
+
   lib->offset = zoom_anchor_image - pi - (pj * new_images_in_row);
   lib->first_visible_filemanager = lib->offset;
   lib->offset_changed = TRUE;
@@ -291,7 +291,7 @@ void init(dt_view_t *self)
   lib->zoom_y = 0.0f;
   lib->full_preview=0;
   lib->full_preview_id=-1;
-    
+
   GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), "dt-stars", NULL, GTK_TYPE_NONE);
 
   lib->star_color.red = (255/ 65535) * style->fg[GTK_STATE_NORMAL].red;
@@ -375,7 +375,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
 
   const int max_rows = 1 + (int)((height)/ht + .5);
   const int max_cols = iir;
-  
+
   int id;
 
   /* get the count of current collection */
@@ -421,13 +421,13 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   /* do we have a main query collection statement */
   if(!lib->statements.main_query)
     return;
-  
-   /* safety check added to be able to work with zoom slider. The 
+
+   /* safety check added to be able to work with zoom slider. The
    * communication between zoom slider and lighttable should be handled
    * differently (i.e. this is a clumsy workaround) */
   if (lib->images_in_row != iir && lib->first_visible_filemanager < 0)
     lib->offset = lib->first_visible_filemanager = 0;
-  
+
   int32_t offset = lib->offset = lib->first_visible_filemanager;
 
   int32_t drawing_offset = 0;
@@ -436,7 +436,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
     drawing_offset = offset;
     offset = 0;
   }
-  
+
   /* update scroll borders */
   dt_view_set_scrollbar(self, 0, 1, 1, offset, lib->collection_count, max_rows*iir);
 
@@ -478,26 +478,26 @@ end_query_cache:
   mouse_over_id = -1;
   cairo_save(cr);
   int current_image =0;
-  
+
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
     {
       //curidx = grid_to_index(row, col, iir, offset);
 
-      /* skip drawing images until we reach a non-negative offset. 
-       * This is needed for zooming, so that the image under the 
+      /* skip drawing images until we reach a non-negative offset.
+       * This is needed for zooming, so that the image under the
        * mouse cursor can stay there. */
       if (drawing_offset < 0)
       {
         drawing_offset++;
         cairo_translate(cr, wd, 0.0f);
-        continue; 
+        continue;
       }
 
       id = query_ids[current_image];
       current_image++;
-      
+
       if(id > 0)
       {
         if (iir == 1 && row)
@@ -539,8 +539,8 @@ escape_image_loop:
   {
     for(int col = 0; col < max_cols; col++)
     {
-      /* skip drawing images until we reach a non-negative offset. 
-       * This is needed for zooming, so that the image under the 
+      /* skip drawing images until we reach a non-negative offset.
+       * This is needed for zooming, so that the image under the
        * mouse cursor can be stay there. */
       if (drawing_offset < 0)
       {
@@ -550,8 +550,8 @@ escape_image_loop:
       }
 
       id = query_ids[current_image];
-     
-      
+
+
       if(id > 0)
       {
         const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, id);
@@ -757,7 +757,6 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   const float wd = width/zoom;
   const float ht = width/zoom;
 
-  static int oldpan = 0;
   static float oldzoom = -1;
   if(oldzoom < 0) oldzoom = zoom;
 
@@ -883,8 +882,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   }
   else lib->offset = offset;
 
-  int id, clicked1, last_seli = 1<<30, last_selj = 1<<30;
-  clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
+  int id;
 
   dt_view_set_scrollbar(self, MAX(0, offset_i), DT_LIBRARY_MAX_ZOOM, zoom, DT_LIBRARY_MAX_ZOOM*offset_j,
                         lib->collection_count, DT_LIBRARY_MAX_ZOOM*max_cols);
@@ -919,40 +917,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
           mouse_over_id = id;
           DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
         }
-        // add clicked image to selected table
-        if(clicked1)
-        {
-          if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0 && seli == col && selj == row)
-          {
-            /* clear selection except id */
 
-            /* clear and resest statement */
-            DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.delete_except_arg);
-            DT_DEBUG_SQLITE3_RESET(lib->statements.delete_except_arg);
-
-            /* reuse statment */
-            DT_DEBUG_SQLITE3_BIND_INT(lib->statements.delete_except_arg, 1, id);
-            sqlite3_step(lib->statements.delete_except_arg);
-          }
-          // FIXME: whatever comes first assumption is broken!
-          // if((lib->modifiers & GDK_SHIFT_MASK) && (last_seli == (1<<30)) &&
-          //    (image->id == lib->last_selected_id || image->id == mouse_over_id)) { last_seli = col; last_selj = row; }
-          // if(last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= MIN(last_seli,seli) && row >= MIN(last_selj,selj) &&
-          //         col <= MAX(last_seli,seli) && row <= MAX(last_selj,selj)) && (col != last_seli || row != last_selj)) ||
-          if((lib->modifiers & GDK_SHIFT_MASK) && id == lib->last_selected_idx)
-          {
-            last_seli = col;
-            last_selj = row;
-          }
-          if((last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= last_seli && row >= last_selj &&
-                                      col <= seli && row <= selj) && (col != last_seli || row != last_selj))) ||
-              (seli == col && selj == row))
-          {
-            // insert all in range if shift, or only the one the mouse is over for ctrl or plain click.
-            dt_view_toggle_selection(id);
-            lib->last_selected_idx = id;
-          }
-        }
         cairo_save(cr);
         // if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
         dt_view_image_expose(&(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom, img_pointerx, img_pointery, FALSE);
@@ -966,7 +931,6 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   }
 failure:
 
-  oldpan = pan;
   lib->zoom_x = zoom_x;
   lib->zoom_y = zoom_y;
   lib->track  = 0;
@@ -1062,12 +1026,12 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 
   // Let's show full preview if in that state...
   dt_library_t *lib = (dt_library_t *)self->data;
-  
+
   /* TODO: instead of doing a check here, the call to switch_layout_to
      should be done in the place where the layout was actually changed. */
   const int new_layout = dt_conf_get_int("plugins/lighttable/layout");
   if (lib->layout != new_layout) switch_layout_to(lib, new_layout);
-    
+
   if( lib->full_preview_id!=-1 )
   {
     expose_full_preview(self, cr, width, height, pointerx, pointery);
@@ -1112,7 +1076,7 @@ go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
-  
+
   if (layout == 1)
     move_view(lib, BOTTOM);
   else
@@ -1603,7 +1567,7 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
       else   lib->track =  1;
     }
   }
-  
+
   dt_control_queue_redraw();
 }
 

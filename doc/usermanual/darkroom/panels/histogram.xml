@@ -1,12 +1,13 @@
-	<sect2 status="draft"><title>Histogram</title>
+	<sect2 status="draft" id="histogram"><title>Histogram</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>Show a histogram of the developed image; you can change exposure by left mouse click in the right side of histogram and drag 
-							right for increase or left to decrease the exposure. The same goes for the black level but you left click in the left part of histogram.
-                                                       You can switch between linear and logarithmic histogram view by toggling a corresponding button. In its default state curves for all three
+						<entry>Show a histogram of the developed image. The histogram is directly linked to module "exposure" (<xref linkend="exposure"/>); you can change 
+                                                       exposure by left mouse click in the right side of histogram and drag right for increase or left to decrease the exposure. The same goes for 
+                                                       the black level but you left click in the left part of histogram.
+                                                       You can switch between linear and logarithmic view by toggling a corresponding button. In its default state, curves for all three
                                                        color channels RGB are displayed; toggle one of the colored squares to enable/disable a specific color channel.
 						</entry>
 						<entry>

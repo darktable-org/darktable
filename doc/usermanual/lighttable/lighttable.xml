@@ -4,7 +4,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<chapter>
+<chapter id="lighttable chapter">
 	<chapterinfo>
 		<keywordset>
 			<keyword>lighttable</keyword>
@@ -20,7 +20,7 @@
 
 	<sect1><title>Overview</title>
 		<para></para>
-		<sect2 status="final"><title>Lighttable</title>
+		<sect2 status="final" id="lighttable"><title>Lighttable</title>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth="6*"/>
 					<colspec colwidth="4*"/>
@@ -86,18 +86,18 @@
 				Pressing <emphasis>g</emphasis> goes to the top, <emphasis>shift-g</emphasis> to the bottom.
 			</para>
 		</sect2>
-		<sect2 status="draft"><title>Filtering and sort order</title>
+		<sect2 status="draft" id="filtering and sort order"><title>Filtering and sort order</title>
 			<para>The filtering and sort order of images on lighttable are accessed and changed in the top bar
 				where you can select among a few predefined filters and ordering like date, color labels or rating.
 			</para>
 		</sect2>
 
-		<sect2 status="draft"><title>Image grouping</title>
+		<sect2 status="draft" id="image grouping"><title>Image grouping</title>
 			<para>Image grouping helps you to improve structure and clearness of your image collection as 
                               displayed in lighttable view.
 			</para>
                         <para>You can combine images into a group by selecting them and then 
-                              clicking button "group" in panel <emphasis>selected image(s)</emphasis> or by typing 
+                              clicking button "group" in panel <emphasis>selected image(s)</emphasis> (<xref linkend="selected images"/>) or by typing 
                               <emphasis>ctrl-g</emphasis>. Likewise you can remove images from a group by clicking
                               button "ungroup" or typing <emphasis>shift-ctrl-g</emphasis>. Images that you generate by 
                               duplicating an existing one, will automatically constitute an image group. If you import 

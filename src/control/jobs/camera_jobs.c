@@ -287,7 +287,8 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
 {
   // Import downloaded image to import filmroll
   dt_camera_import_t *t = (dt_camera_import_t *)data;
-  dt_film_image_import(t->film,filename, FALSE);
+  dt_image_import(t->film->id, filename, FALSE);
+  dt_control_queue_redraw_center();
   dt_control_log(_("%d/%d imported to %s"), t->import_count+1,g_list_length(t->images), g_path_get_basename(filename));
 
   t->fraction+=1.0/g_list_length(t->images);

@@ -5,7 +5,7 @@
 		]>
 
 
-		<sect2 status="draft"><title>Export selected</title>
+		<sect2 status="draft" id="export selected"><title>Export selected</title>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth="6*"/>
 					<colspec colwidth="4*"/>
@@ -104,7 +104,8 @@
                                 </informaltable>
 				</sect4>
 				<sect4><title>output directory</title>
-					<para>Pressing button <inlinegraphic fileref="&icon_directory;" scalefit="1" width="2%" align="center" /> will open a dialog to select the parent directory for export.
+					<para>Pressing button <inlinegraphic fileref="&icon_directory;" scalefit="1" width="2%" align="center" /> will open a dialog to select the parent directory 
+                                              for export.
 					</para>
 				</sect4>
 
@@ -115,24 +116,26 @@
 				</sect4>
 
 				<sect4><title>max size</title>
-					<para>Set the maximum width and height of your output images in pixels. Set both to a value of "0" to export with full resolution. darktable currently can only do down-scaling; the maximum
-                                              output resolution is defined by the parent image.
+					<para>Set the maximum width and height of your output images in pixels. Set both to a value of "0" to export with full resolution. darktable currently 
+                                              can only do down-scaling; the maximum output resolution is defined by the parent image.
 					</para>
 				</sect4>
 
 				<sect4><title>intent</title>
-					<para>This option lets you define the intent, i.e. the way darktable will deal with out-of-gamut colors. See module "output color profile" for a more detailed description of the
+					<para>This option lets you define the intent, i.e. the way darktable will deal with out-of-gamut colors. See module "output color profile" 
+                                              (<xref linkend="output color profile"/>) for a more detailed description of the
                                               available options. Select "image settings" if you want the settings in module "output color profile" of the individual images to take precedence.
 					</para>
 				</sect4>
 
 				<sect4><title>profile</title>
-					<para>This defines the output color profile. Select "image settings" if you want the settings in module "output color profile" of the individual images to take precedence.
+					<para>This defines the output color profile. Select "image settings" if you want the settings in module "output color profile" of the individual 
+                                              images to take precedence.
 					</para>
 				</sect4>
 				<sect4><title>export</title>
-					<para>Pressing this button will start a background job to export all selected images. A bar at the bottom of the left side panel will display the progress. Whenever a file
-                                              is successfully exported a notification message will pop up. You may press on the pop-up to make it disappear.
+					<para>Pressing this button will start a background job to export all selected images. A bar at the bottom of the left side panel will display the 
+                                              progress. Whenever a file is successfully exported a notification message will pop up. You may press on the pop-up to make it disappear.
 					</para>
 				</sect4>
 

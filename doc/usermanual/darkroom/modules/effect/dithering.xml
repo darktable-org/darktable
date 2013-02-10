@@ -1,4 +1,4 @@
-<sect3 status="draft"><title>Dithering</title>
+<sect3 status="draft" id="dithering"><title>Dithering</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
@@ -8,7 +8,6 @@
 						<entry>This module eliminates some of the typical banding artifacts which can occur when darktable's
                                                        internal 32-bit floating point data are transfered into a discrete 8-bit or 16-bit integer output format for
                                                        display or file export.
-                                                       The module is active by default and - in its default settings - will automatically adapt to the output format.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/dithering.png" scalefit="1" width="80%" align="center" />
@@ -24,8 +23,8 @@
                       final scaling step will counteract dithering.</para>
 
                 <para>Some users might want to avoid the additional processing overhead of this module while doing interactive work - knowing that the final results in file output is good
-                      anyhow :) In that case there is a config parameter "dithering for darkroom mode" in core options. Dithering of center view in darkroom mode will only be done
-                      if this is parameter is checked. Quite logically this only affects monitor display, not file exports.</para>
+                      anyhow :) In that case there is a config parameter "dithering for darkroom mode" in core options (see <xref linkend="core options"/>). Dithering of center view in 
+                      darkroom mode is skipped if this config parameter is de-activated. That is a speed-up option only affecting monitor display, not file exports.</para>
 
                 <para>Watching from some distance an image dithered into a very low bit depth (like "floyd-steinberg 1-bit b&amp;w"), it will give the impression of 
                       a homogeneous grayscale image. We try to mimic this impression in darktable when you look at zoomed-out images in center 
@@ -36,7 +35,7 @@
 
 	<sect4><title>Usage</title>
 		<sect5><title>method</title>
-			<para>This combobox sets the dithering method. Floyd-Steinberg error diffusion dithering with some typical output bit depths and random noise 
+			<para>This combobox sets the dithering method. Floyd-Steinberg error diffusion - with some typical output bit depths - and random noise 
                         dithering are supported. Floyd-Steinberg systematically distributes quantization errors over neighboring pixels, whereas random dithering just adds some
                         level of randomness to "break" sharp tonal value bands. The default setting is "floyd-steinberg auto", which automatically adapts
                         to the desired output format.</para>

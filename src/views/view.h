@@ -211,6 +211,8 @@ typedef struct dt_view_manager_t
       const char *(*get_job_code)(const dt_view_t *view);
       void (*set_job_code)(const dt_view_t *view, const char *name);
       uint32_t (*get_selected_imgid)(const dt_view_t *view);
+      void (*set_session_namepattern)(const dt_view_t *view, const char *namepattern);
+      gboolean (*check_namepattern)(const dt_view_t *view);
     } tethering;
 
     /* more module window proxy */
@@ -294,6 +296,9 @@ void dt_view_tethering_set_job_code(const dt_view_manager_t *vm, const char *nam
 /** get the current jobcode for tethering session */
 const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm);
 
+void dt_view_tethering_set_session_namepattern(const dt_view_manager_t *vm, const char *namepattern);
+gboolean dt_view_tethering_check_namepattern(const dt_view_manager_t *vm);
+
 /** update the collection module */
 void dt_view_collection_update(const dt_view_manager_t *vm);
 
@@ -305,6 +310,11 @@ void dt_view_filter_reset_to_show_all(const dt_view_manager_t *vm);
 /*
  * NEW filmstrip api
  */
+/*** scrolls filmstrip to the image in position 'diff' from the current one
+ *** offset to be provided is the offset of the current image, as given by
+ *** dt_collection_image_offset. Getting this data before changing flags allows
+ *** for using this function with images disappearing from the current collection  */
+void dt_view_filmstrip_scroll_relative(const int diff, int offset);
 /** scrolls filmstrip to the specified image */
 void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate);
 /** get the imageid from last filmstrip activate request */

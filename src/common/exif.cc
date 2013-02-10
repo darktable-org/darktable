@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2009--2010 johannes hanika.
+   copyright (c) 2009--2013 johannes hanika.
    copyright (c) 2011 henrik andersson.
    copyright (c) 2012 tobias ellinghaus.
 
@@ -453,9 +453,12 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
-    /* sony has its own rotation */
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.MinoltaCs7D.Rotation")))
-         != exifData.end() && pos->size())
+
+    /* minolta and sony have their own rotation */
+    if ( ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.MinoltaCs5D.Rotation")))
+           != exifData.end() && pos->size()) ||
+         ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.MinoltaCs7D.Rotation")))
+           != exifData.end() && pos->size()) )
     {
       switch(pos->toLong())
       {
@@ -475,24 +478,30 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
          != exifData.end() && pos->size())
     {
       Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitudeRef"));
-      const char *sign = ref->toString().c_str();
-      double latitude = 0.0;
-      if(_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
-                                  pos->toRational(1).first, pos->toRational(1).second,
-                                  pos->toRational(2).first, pos->toRational(2).second, sign[0], &latitude))
-        img->latitude = latitude;
+      if(ref != exifData.end() && ref->size())
+      {
+        const char *sign = ref->toString().c_str();
+        double latitude = 0.0;
+        if(_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
+                                    pos->toRational(1).first, pos->toRational(1).second,
+                                    pos->toRational(2).first, pos->toRational(2).second, sign[0], &latitude))
+          img->latitude = latitude;
+      }
     }
 
     if ( (pos = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitude")))
          != exifData.end() && pos->size())
     {
       Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitudeRef"));
-      const char *sign = ref->toString().c_str();
-      double longitude = 0.0;
-      if(_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
-                                  pos->toRational(1).first, pos->toRational(1).second,
-                                  pos->toRational(2).first, pos->toRational(2).second, sign[0], &longitude))
-        img->longitude = longitude;
+      if(ref != exifData.end() && ref->size())
+      {
+        const char *sign = ref->toString().c_str();
+        double longitude = 0.0;
+        if(_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
+                                    pos->toRational(1).first, pos->toRational(1).second,
+                                    pos->toRational(2).first, pos->toRational(2).second, sign[0], &longitude))
+          img->longitude = longitude;
+      }
     }
 
     /* Read lens name */
@@ -1369,7 +1378,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
 
           /* check if we got blendop_version from xmp; if not assume 1 as default */
           int blversion = 1;
-          if(blendop_version != xmpData.end())
+          if(blendop_version != xmpData.end() && blendop_version->count() > i)
           {
             blversion = blendop_version->toLong(i);
           }
@@ -1377,7 +1386,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
 
           /* multi instances */
           int mprio = 0;
-          if (multi_priority != xmpData.end())  mprio = multi_priority->toLong(i);
+          if (multi_priority != xmpData.end() && multi_priority->count() > i)  mprio = multi_priority->toLong(i);
           DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 9, mprio);
           if(multi_name != xmpData.end() && multi_name->size() > 0 &&
              multi_name->count() > i && multi_name->toString(i).c_str() != NULL)
@@ -1594,6 +1603,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     xmpData.add(Exiv2::XmpKey(key), &tv);
 
     const char *op = (const char *)sqlite3_column_text(stmt, 3);
+    if(!op) continue; // no op is fatal.
     tv.read(op);
     snprintf(key, 1024, "Xmp.darktable.history_operation[%d]", num);
     xmpData.add(Exiv2::XmpKey(key), &tv);
@@ -1608,9 +1618,11 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     free(vparams);
 
     /* read and add blendop params */
+    const void *blob = sqlite3_column_blob(stmt, 6);
+    if(!blob) continue; // no params, no history item.
     len = sqlite3_column_bytes(stmt, 6);
     vparams = (char *)malloc(2*len + 1);
-    dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, 6), vparams, len);
+    dt_exif_xmp_encode ((const unsigned char *)blob, vparams, len);
     tv.read(vparams);
     snprintf(key, 1024, "Xmp.darktable.blendop_params[%d]", num);
     xmpData.add(Exiv2::XmpKey(key), &tv);

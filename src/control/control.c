@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2010--2011 henrik andersson.
+    copyright (c) 2010--2013 henrik andersson.
     Copyright (c) 2012 James C. McPherson
 
     darktable is free software: you can redistribute it and/or modify
@@ -65,6 +65,9 @@
     on timed interval.
 */
 static void * _control_worker_kicker(void *ptr);
+
+/* redraw mutex to synchronize redraws */
+static dt_pthread_mutex_t _control_gdk_lock_threads_mutex;
 
 void dt_ctl_settings_default(dt_control_t *c)
 {
@@ -426,6 +429,8 @@ void dt_control_create_database_schema()
                         "create table color_labels (imgid integer, color integer)",
                         NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "create unique index color_labels_idx ON color_labels(imgid,color)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create table meta_data (id integer,key integer,value varchar)",
                         NULL, NULL, NULL);
   // quick hack to detect if the db is already used by another process
@@ -440,6 +445,9 @@ void dt_control_init(dt_control_t *s)
 
   memset(s->vimkey, 0, sizeof(s->vimkey));
   s->vimkey_cnt = 0;
+
+  // intialize static mutex
+  dt_pthread_mutex_init(&_control_gdk_lock_threads_mutex, NULL);
 
   // s->last_expose_time = dt_get_wtime();
   s->key_accelerators_on = 1;
@@ -577,6 +585,8 @@ void dt_control_init(dt_control_t *s)
       sqlite3_exec(dt_database_get(darktable.db),
                    "create table color_labels (imgid integer, color integer)",
                    NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "create unique index color_labels_idx ON color_labels(imgid,color)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
                    "drop table mipmaps", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
@@ -1542,7 +1552,6 @@ void dt_control_log_busy_leave()
 }
 
 static GList *_control_gdk_lock_threads = NULL;
-static GStaticMutex _control_gdk_lock_threads_mutex = G_STATIC_MUTEX_INIT;
 gboolean dt_control_gdk_lock()
 {
   /* if current thread equals gui thread do nothing */
@@ -1550,7 +1559,7 @@ gboolean dt_control_gdk_lock()
     return FALSE;
 
   /* if we dont have any managed locks just lock and return */
-  g_static_mutex_lock(&_control_gdk_lock_threads_mutex);
+  dt_pthread_mutex_lock(&_control_gdk_lock_threads_mutex);
   if(!_control_gdk_lock_threads)
     goto lock_and_return;
 
@@ -1558,7 +1567,7 @@ gboolean dt_control_gdk_lock()
   if(g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self()))
   {
     /* current thread has a lock just do nothing */
-    g_static_mutex_unlock(&_control_gdk_lock_threads_mutex);
+    dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
     return FALSE;
   }
 
@@ -1566,7 +1575,7 @@ lock_and_return:
   /* lets add current thread to managed locks */
   _control_gdk_lock_threads = g_list_append(_control_gdk_lock_threads,
                               (gpointer)pthread_self());
-  g_static_mutex_unlock(&_control_gdk_lock_threads_mutex);
+  dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
 
   /* enter gdk critical section */
   gdk_threads_enter();
@@ -1577,7 +1586,7 @@ lock_and_return:
 void dt_control_gdk_unlock()
 {
   /* check if current thread has a lock and remove if exists */
-  g_static_mutex_lock(&_control_gdk_lock_threads_mutex);
+  dt_pthread_mutex_lock(&_control_gdk_lock_threads_mutex);
   if(g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self()))
   {
     /* remove lock */
@@ -1587,62 +1596,17 @@ void dt_control_gdk_unlock()
     /* leave critical section */
     gdk_threads_leave();
   }
-  g_static_mutex_unlock(&_control_gdk_lock_threads_mutex);
-}
-
-/* redraw mutex to synchronize redraws */
-G_LOCK_DEFINE(counter);
-GStaticMutex _control_redraw_mutex = G_STATIC_MUTEX_INIT;
-
-void _control_queue_redraw_wrapper(dt_signal_t signal)
-{
-  static uint32_t counter = 0;
-
-  /* dont continue if control is not running */
-  if (!dt_control_running())
-    return;
-
-  /* if we cant carry out an redraw, lets increment counter and bail out */
-  if (!g_static_mutex_trylock(&_control_redraw_mutex))
-  {
-    G_LOCK(counter);
-    counter++;
-    G_UNLOCK(counter);
-    return;
-  }
-
-  /* lock the gdk thread and carry out the redraw function */
-  gboolean i_own_lock = dt_control_gdk_lock();
-  dt_control_signal_raise(darktable.signals, signal);
-
-  /* lets check if we got missing redraws from other threads */
-  G_LOCK(counter);
-  if (counter)
-  {
-    /* carry out an redraw due to missed redraws */
-    counter = 0;
-    G_UNLOCK(counter);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_ALL);
-  }
-  else
-    G_UNLOCK(counter);
-
-  /* unlock our locks */
-  if (i_own_lock)
-    dt_control_gdk_unlock();
-
-  g_static_mutex_unlock(&_control_redraw_mutex);
-
+  dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
 }
 
 void dt_control_queue_redraw()
 {
-  _control_queue_redraw_wrapper(DT_SIGNAL_CONTROL_REDRAW_ALL);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_ALL);
 }
 
 void dt_control_queue_redraw_center()
 {
-  _control_queue_redraw_wrapper(DT_SIGNAL_CONTROL_REDRAW_CENTER);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_CENTER);
 }
 
 void dt_control_queue_redraw_widget(GtkWidget *widget)

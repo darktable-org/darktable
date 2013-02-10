@@ -89,6 +89,8 @@ void DngDecoderSlices::startDecoding() {
 }
 
 #if JPEG_LIB_VERSION < 80
+
+#define JPEG_MEMSRC(A,B,C) jpeg_mem_src_int(A,B,C)
 /* Read JPEG image from a memory segment */
 
 static void init_source (j_decompress_ptr cinfo) {}
@@ -109,7 +111,7 @@ static void skip_input_data (j_decompress_ptr cinfo, long num_bytes)
   }
 }
 static void term_source (j_decompress_ptr cinfo) {}
-static void jpeg_mem_src (j_decompress_ptr cinfo, unsigned char* buffer, long nbytes)
+static void jpeg_mem_src_int (j_decompress_ptr cinfo, unsigned char* buffer, long nbytes)
 {
   struct jpeg_source_mgr* src;
 
@@ -128,6 +130,8 @@ static void jpeg_mem_src (j_decompress_ptr cinfo, unsigned char* buffer, long nb
   src->bytes_in_buffer = nbytes;
   src->next_input_byte = (JOCTET*)buffer;
 }
+#else
+#define JPEG_MEMSRC(A,B,C) jpeg_mem_src(A,B,C)
 #endif
 
 METHODDEF(void)
@@ -171,7 +175,7 @@ void DngDecoderSlices::decodeSlice(DngDecoderThread* t) {
         jerr.error_exit = my_error_throw;
         CHECKSIZE(e.byteOffset);
         CHECKSIZE(e.byteOffset+e.byteCount);
-        jpeg_mem_src(&dinfo, (unsigned char*)mFile->getData(e.byteOffset), e.byteCount);
+        JPEG_MEMSRC(&dinfo, (unsigned char*)mFile->getData(e.byteOffset), e.byteCount);
 
         if (JPEG_HEADER_OK != jpeg_read_header(&dinfo, TRUE))
           ThrowRDE("DngDecoderSlices: Unable to read JPEG header");

@@ -4,7 +4,7 @@
 		%darktable_dtd;
 		]>
 
-	<sect2 status="draft"><title>Color picker</title>
+	<sect2 status="draft" id="color picker"><title>Color picker</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
 				<colspec colwidth="4*"/>
@@ -42,7 +42,8 @@
                       color space. Beware that Lab values are approximated here; darktable does not take your specific monitor profile into account.
                 </para>
 		<para>On activation of checkbox "restrict histogram to selection" only the values of your selected area or point are taken into account
-                      by the histogram on top of right panel. This is a useful tool if you want to know which tonal values are present in a specific area.
+                      by the histogram on top of right panel (see <xref linkend="histogram"/>). This is a useful tool if you want to know which tonal 
+                      values are present in a specific area.
 		</para>
 		<para>Picked colors in area or point mode can be "stored" as live samples by pressing the "Add" button. darktable shows a color swatch
                       and numerical values for each stored sample. You can once again select which numerical value (mean, min, max) is to be displayed and

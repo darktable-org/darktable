@@ -29,6 +29,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs.h"
+#include "develop/lightroom.h"
 #include <math.h>
 #include <sqlite3.h>
 #include <string.h>
@@ -73,7 +74,8 @@ const char *
 dt_image_film_roll_name(const char *path)
 {
   const char *folder = path + strlen(path);
-  int numparts = CLAMPS(dt_conf_get_int("show_folder_levels"), 1, 5);
+  int numparts = dt_conf_get_int("show_folder_levels");
+  numparts = CLAMPS(numparts, 1, 5);
   int count = 0;
   if (numparts < 1)
     numparts = 1;
@@ -597,6 +599,11 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
       dt_image_cache_read_release(darktable.image_cache, img);
     }
     globfree(globbuf);
+  }
+  else
+  {
+    // Search for Lightroom sidecar file, import tags if found
+    dt_lightroom_import(id, NULL, TRUE);
   }
 
   g_free(imgfname);
