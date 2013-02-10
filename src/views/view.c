@@ -185,7 +185,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 
   /*  clear the undo list, for now we do this inconditionally. At some point we will probably want to clear only part
       of the undo list. This should probably done with a view proxy routine returning the type of undo to remove. */
-  clear_undo(DT_UNDO_ALL);
+  dt_undo_clear(DT_UNDO_ALL);
 
   /* Special case when entering nothing (just before leaving dt) */
   if ( k==DT_MODE_NONE )

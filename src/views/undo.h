@@ -39,16 +39,18 @@ typedef struct dt_undo_geotag_t
 
 typedef void* dt_undo_data_t;
 
-void record_undo(dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data, void (*undo) (dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data));
+// record a change that will be insered into the undo list
+void dt_undo_record(dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data, void (*undo) (dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data));
 
 //  undo an element which correspond to filter. filter here is expected to be
 //  a set of dt_undo_type_t.
-void do_undo(uint32_t filter);
+void dt_undo_do_undo(uint32_t filter);
 
-void do_redo(uint32_t filter);
+//  redo a previously undone action, does nothing if the redo list is empty
+void dt_undo_do_redo(uint32_t filter);
 
-//  removes all items which correspond to filter
-void clear_undo(uint32_t filter);
+//  removes all items which correspond to filter in the undo/redo lists
+void dt_undo_clear(uint32_t filter);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

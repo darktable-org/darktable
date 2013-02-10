@@ -31,7 +31,7 @@ typedef struct dt_undo_t
   void (*undo) (dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data);
 } dt_undo_t;
 
-void record_undo(dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data, void (*undo) (dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data))
+void dt_undo_record(dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data, void (*undo) (dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data))
 {
   dt_undo_t *udata = g_malloc(sizeof (dt_undo_t));
 
@@ -46,7 +46,7 @@ void record_undo(dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data, voi
   g_list_free_full(_redo_list,&g_free);
 }
 
-void do_redo(uint32_t filter)
+void dt_undo_do_redo(uint32_t filter)
 {
   GList *l = g_list_first(_redo_list);
 
@@ -71,7 +71,7 @@ void do_redo(uint32_t filter)
   };
 }
 
-void do_undo(uint32_t filter)
+void dt_undo_do_undo(uint32_t filter)
 {
   GList *l = g_list_first(_undo_list);
 
@@ -97,7 +97,7 @@ void do_undo(uint32_t filter)
   };
 }
 
-void clear_undo(uint32_t filter)
+void dt_undo_clear(uint32_t filter)
 {
   GList *l = g_list_first(_undo_list);
 
