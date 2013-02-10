@@ -204,6 +204,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Eugene Kraf, Wolf Faust IT8, direct sunlight, well lit
   { "OLYMPUS E-PL2",                { 785522, 280624,  28503}, { 322266, 1211975, -305984}, { 82550, -246841, 1278198}, {731506, 752808, 645309}},
 
+  // Frederic Crozat, Wolf Faust IT8, direct sunlight, well lit
+  { "OLYMPUS E-M5",                 { 937775, 279129,  75378}, { 232697, 1345169, -493317}, { 62012, -354202, 1458389}, {722229, 755142, 623749}},
+
   // Karl Mikaelsson, Homebrew ColorChecker, strobe, well lit
   { "OLYMPUS E-500",                { 925171, 247681,  26367}, { 257187, 1270187, -455826}, {-87784, -426529, 1383041}, {790421, 812775, 708054}},
 

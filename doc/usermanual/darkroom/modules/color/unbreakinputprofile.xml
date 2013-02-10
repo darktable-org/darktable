@@ -5,7 +5,8 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module allows to correct an input profile.
+						<entry>This module adds a correction curve to image data, which is required if you have selected certain input profiles
+                                                       in module <link linkend="input color profile"><emphasis>input color profile</emphasis></link>.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/unbreakinputprofile.png" scalefit="1" width="80%" align="center" />
@@ -17,11 +18,17 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
+                <para>If you decide to use in module <link linkend="input color profile"><emphasis>input color profile</emphasis></link> an ICC profile supplied 
+                      by the camera manufacturer, very frequently
+                      a correction curve needs to be pre-applied to image data - else the final output looks much too dark. That's not required if you go for darktable's
+                      standard or enhanded color matrices. The correction curve is typically step-wise defined with a
+                      linear part extending from the shadows to some upper limit and a gamma curve covering mid-tones and highlights. For further reading please
+                      also have a look at darktable's neighbouring project <ulink url="http://ufraw.sourceforge.net">UFRaw</ulink>.</para>
 		<sect5><title>linear</title>
-			<para>Set the linear value.</para>
+			<para>Set the upper limit for the linear part of correction curve. Typically values between 0.0 and 0.1 are required by the profile.</para>
 		</sect5>
 		<sect5><title>gamma</title>
-			<para>Set the gamma value to correct your input profile.</para>
+			<para>Set the gamma value to correct your input profile. Most often the required value is 0.45 (the reciprocal of 2.2).</para>
 		</sect5>
 	</sect4>
 </sect3>

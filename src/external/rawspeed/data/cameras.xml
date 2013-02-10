@@ -1206,6 +1206,9 @@
     </CFA>
     <Crop x="0" y="0" width="0" height="0"/>
     <Sensor black="0" white="4095"/>
+    <Sensor black="250" white="4095" iso_min="400" iso_max="0"/>
+    <!-- In usual Nikon style, ISO 6400 is marked as ISO 0 -->
+    <Sensor black="260" white="4095" iso_min="0" iso_max="1"/>
   <Hints>
     <Hint name="coolpixmangled" value=""/>
   </Hints>
@@ -1408,6 +1411,7 @@
     <Sensor black="80" white="4095"/>
   </Camera>
   <Camera make="OLYMPUS OPTICAL CO.,LTD" model="E-10">
+
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
       <Color x="1" y="0">GREEN</Color>

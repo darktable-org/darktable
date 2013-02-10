@@ -4,7 +4,7 @@
 					<colspec colwidth="4*"/>
 					<tbody>
 						<row>						
-							<entry>This panel allows to manipulate development.
+							<entry>This panel allows to manipulate history stack (development) of images.
 							For each image, development is written in a sidecar file (.xmp) and is fully 
               						non-destructive.
 							</entry>
@@ -16,11 +16,15 @@
 				</tgroup>
 			</informaltable>
 				<sect4><title>copy</title>
-					<para>Copy the history stack (development) of the first selected image.
+					<para>Copy the history stack of the first selected image. You will be prompted for the items to include.
+					</para>
+				</sect4>
+				<sect4><title>copy all</title>
+					<para>Copy the complete history stack of the first selected image; all items will be included.
 					</para>
 				</sect4>
 				<sect4><title>discard</title>
-					<para>Physically delete the history stack (development) of the selected images.
+					<para>Physically delete the history stack of the selected images.
 					Beware, this action can not be undone!
 					</para>
 				</sect4>
@@ -31,19 +35,24 @@
 					</para>
 				</sect4>
 				<sect4><title>paste</title>
-					<para>Paste a previously copied history stack on another image. This button is greyed out until
-                                              a history stack is copied from another image.
+					<para>Paste a previously copied history stack on all selected images. You will be prompted for the items to include.
+                                              This button is greyed out until a history stack is copied from another image.
+					</para>
+				</sect4>
+				<sect4><title>paste all</title>
+					<para>Paste all previously copied items of a history history stack on all selected images. 
+                                              This button is greyed out until a history stack is copied from another image.
 					</para>
 				</sect4>
 				<sect4><title>load sidecar file</title>
 					<para>Prompt a dialog box to allow you to select a .xmp file, thus loading 
-					an history stack that you will paste (thanks to 'paste' button) on images.
+					an history stack that you can paste on images.
 					</para>
 				</sect4>
 				<sect4><title>write sidecar files</title>
 					<para>Write .xmp sidecar files for all selected images. By default darktable will
                                               do this automatically for you whenever you work on an image and change history stack. You
-                                              can deactivate automatic sidecar file generation in the preferences dialog; this is not
+                                              can deactivate automatic sidecar file generation in the preferences dialog, which is not
                                               recommended.
 					</para>
 				</sect4>
