@@ -403,6 +403,7 @@ int write_image (dt_imageio_j2k_t *j2k, const char *filename, const float *in, v
   {
     cinema_setup_encoder(&parameters,image,rates);
   }
+  free(rates);
 
   /* encode the destination image */
   /* ---------------------------- */
