@@ -19,6 +19,7 @@
 #ifndef DT_UNDO_H
 #define DT_UNDO_H
 
+#include "common/dtpthread.h"
 #include "views/view.h"
 #include <glib.h>
 
@@ -43,6 +44,7 @@ typedef void* dt_undo_data_t;
 typedef struct dt_undo_t
 {
   GList *undo_list, *redo_list;
+  dt_pthread_mutex_t mutex;
 } dt_undo_t;
 
 dt_undo_t *dt_undo_init(void);
