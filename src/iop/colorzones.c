@@ -379,134 +379,120 @@ void cleanup(dt_iop_module_t *module)
 
 void init_presets (dt_iop_module_so_t *self)
 {
-  dt_iop_colorzones_params1_t p;
+  dt_iop_colorzones_params_t p;
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
-  p.channel = DT_IOP_COLORZONES_h;
-  for(int k=0; k<DT_IOP_COLORZONES1_BANDS; k++)
-  {
-    p.equalizer_y[DT_IOP_COLORZONES_L][k] = .5f;
-    p.equalizer_y[DT_IOP_COLORZONES_C][k] = .0f;
-    p.equalizer_y[DT_IOP_COLORZONES_h][k] = .5f;
-    p.equalizer_x[DT_IOP_COLORZONES_L][k] = k/(DT_IOP_COLORZONES1_BANDS-1.);
-    p.equalizer_x[DT_IOP_COLORZONES_C][k] = k/(DT_IOP_COLORZONES1_BANDS-1.);
-    p.equalizer_x[DT_IOP_COLORZONES_h][k] = k/(DT_IOP_COLORZONES1_BANDS-1.);
-  }
-  p.equalizer_y[DT_IOP_COLORZONES_C][0] = p.equalizer_y[DT_IOP_COLORZONES_C][DT_IOP_COLORZONES1_BANDS-1] = 0.65;
-  p.equalizer_x[DT_IOP_COLORZONES_C][1] = 3./16.;
-  p.equalizer_x[DT_IOP_COLORZONES_C][2] = 0.50;
-  p.equalizer_x[DT_IOP_COLORZONES_C][3] = 0.51;
-  p.equalizer_x[DT_IOP_COLORZONES_C][4] = 15./16.;
-  dt_gui_presets_add_generic(_("red black white"), self->op, 1, &p, sizeof(p), 1);
+
+  // red black white
 
   p.channel = DT_IOP_COLORZONES_h;
-  for(int k=0; k<DT_IOP_COLORZONES1_BANDS; k++)
+  for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
   {
     p.equalizer_y[DT_IOP_COLORZONES_L][k] = .5f;
     p.equalizer_y[DT_IOP_COLORZONES_C][k] = .0f;
     p.equalizer_y[DT_IOP_COLORZONES_h][k] = .5f;
-    p.equalizer_x[DT_IOP_COLORZONES_L][k] = k/(DT_IOP_COLORZONES1_BANDS-1.);
-    p.equalizer_x[DT_IOP_COLORZONES_C][k] = k/(DT_IOP_COLORZONES1_BANDS-1.);
-    p.equalizer_x[DT_IOP_COLORZONES_h][k] = k/(DT_IOP_COLORZONES1_BANDS-1.);
+    p.equalizer_x[DT_IOP_COLORZONES_L][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+    p.equalizer_x[DT_IOP_COLORZONES_C][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+    p.equalizer_x[DT_IOP_COLORZONES_h][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
   }
-  p.equalizer_y[DT_IOP_COLORZONES_C][0] = p.equalizer_y[DT_IOP_COLORZONES_C][DT_IOP_COLORZONES1_BANDS-1] = 0.5;
+  p.equalizer_y[DT_IOP_COLORZONES_C][0] = p.equalizer_y[DT_IOP_COLORZONES_C][DT_IOP_COLORZONES_BANDS-1] = 0.65;
+  p.equalizer_x[DT_IOP_COLORZONES_C][1] = 3./16.;
+  p.equalizer_x[DT_IOP_COLORZONES_C][3] = 0.50;
+  p.equalizer_x[DT_IOP_COLORZONES_C][4] = 0.51;
+  p.equalizer_x[DT_IOP_COLORZONES_C][6] = 15./16.;
+  dt_gui_presets_add_generic(_("red black white"), self->op, 2, &p, sizeof(p), 1);
+
+  // black white and skin tones
+
+  p.channel = DT_IOP_COLORZONES_h;
+  for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
+  {
+    p.equalizer_y[DT_IOP_COLORZONES_L][k] = .5f;
+    p.equalizer_y[DT_IOP_COLORZONES_C][k] = .0f;
+    p.equalizer_y[DT_IOP_COLORZONES_h][k] = .5f;
+    p.equalizer_x[DT_IOP_COLORZONES_L][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+    p.equalizer_x[DT_IOP_COLORZONES_C][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+    p.equalizer_x[DT_IOP_COLORZONES_h][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+  }
+  p.equalizer_y[DT_IOP_COLORZONES_C][0] = p.equalizer_y[DT_IOP_COLORZONES_C][DT_IOP_COLORZONES_BANDS-1] = 0.5;
   p.equalizer_x[DT_IOP_COLORZONES_C][2] = 0.25f;
+  p.equalizer_x[DT_IOP_COLORZONES_C][1] = 0.16f;
   p.equalizer_y[DT_IOP_COLORZONES_C][1] = 0.3f;
-  dt_gui_presets_add_generic(_("black white and skin tones"), self->op, 1, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("black white and skin tones"), self->op, 2, &p, sizeof(p), 1);
+
+  // polarizing filter
 
   p.channel = DT_IOP_COLORZONES_C;
-  for(int k=0; k<DT_IOP_COLORZONES1_BANDS; k++)
+  for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
   {
     p.equalizer_y[DT_IOP_COLORZONES_L][k] = .5f;
     p.equalizer_y[DT_IOP_COLORZONES_C][k] = .5f;
     p.equalizer_y[DT_IOP_COLORZONES_h][k] = .5f;
-    p.equalizer_x[DT_IOP_COLORZONES_L][k] = k/(DT_IOP_COLORZONES1_BANDS-1.);
-    p.equalizer_x[DT_IOP_COLORZONES_C][k] = k/(DT_IOP_COLORZONES1_BANDS-1.);
-    p.equalizer_x[DT_IOP_COLORZONES_h][k] = k/(DT_IOP_COLORZONES1_BANDS-1.);
+    p.equalizer_x[DT_IOP_COLORZONES_L][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+    p.equalizer_x[DT_IOP_COLORZONES_C][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+    p.equalizer_x[DT_IOP_COLORZONES_h][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
   }
-  for(int k=2; k<DT_IOP_COLORZONES1_BANDS; k++)
-    p.equalizer_y[DT_IOP_COLORZONES_C][k] += (k-1.5)/(DT_IOP_COLORZONES1_BANDS-2.0) * 0.25;
-  for(int k=3; k<DT_IOP_COLORZONES1_BANDS; k++)
-    p.equalizer_y[DT_IOP_COLORZONES_L][k] -= (k-2.5)/(DT_IOP_COLORZONES1_BANDS-3.0) * 0.35;
-  dt_gui_presets_add_generic(_("polarizing filter"), self->op, 1, &p, sizeof(p), 1);
+  for(int k=3; k<DT_IOP_COLORZONES_BANDS; k++)
+    p.equalizer_y[DT_IOP_COLORZONES_C][k] += (k-2.5)/(DT_IOP_COLORZONES_BANDS-2.0) * 0.25;
+  for(int k=4; k<DT_IOP_COLORZONES_BANDS; k++)
+    p.equalizer_y[DT_IOP_COLORZONES_L][k] -= (k-3.5)/(DT_IOP_COLORZONES_BANDS-3.0) * 0.35;
+  dt_gui_presets_add_generic(_("polarizing filter"), self->op, 2, &p, sizeof(p), 1);
 
-  p.channel = 2;
-  p.equalizer_x[0][0] = 0.000000;
-  p.equalizer_y[0][0] = 0.500000;
-  p.equalizer_x[0][1] = 0.200000;
-  p.equalizer_y[0][1] = 0.500000;
-  p.equalizer_x[0][2] = 0.400000;
-  p.equalizer_y[0][2] = 0.500000;
-  p.equalizer_x[0][3] = 0.600000;
-  p.equalizer_y[0][3] = 0.500000;
-  p.equalizer_x[0][4] = 0.800000;
-  p.equalizer_y[0][4] = 0.500000;
-  p.equalizer_x[0][5] = 1.000000;
-  p.equalizer_y[0][5] = 0.500000;
-  p.equalizer_x[1][0] = 0.000000;
-  p.equalizer_y[1][0] = 0.468932;
-  p.equalizer_x[1][1] = 0.120155;
-  p.equalizer_y[1][1] = 0.445975;
-  p.equalizer_x[1][2] = 0.248062;
-  p.equalizer_y[1][2] = 0.468932;
-  p.equalizer_x[1][3] = 0.500000;
-  p.equalizer_y[1][3] = 0.499667;
-  p.equalizer_x[1][4] = 0.748062;
-  p.equalizer_y[1][4] = 0.500000;
-  p.equalizer_x[1][5] = 1.000000;
-  p.equalizer_y[1][5] = 0.468932;
-  p.equalizer_x[2][0] = 0.000000;
-  p.equalizer_y[2][0] = 0.500000;
-  p.equalizer_x[2][1] = 0.200000;
-  p.equalizer_y[2][1] = 0.500000;
-  p.equalizer_x[2][2] = 0.400000;
-  p.equalizer_y[2][2] = 0.500000;
-  p.equalizer_x[2][3] = 0.600000;
-  p.equalizer_y[2][3] = 0.500000;
-  p.equalizer_x[2][4] = 0.800000;
-  p.equalizer_y[2][4] = 0.500000;
-  p.equalizer_x[2][5] = 1.000000;
-  p.equalizer_y[2][5] = 0.500000;
-  dt_gui_presets_add_generic(_("natural skin tones"), self->op, 1, &p, sizeof(p), 1);
+  // natural skin tone
 
-  p.channel = 2;
-  p.equalizer_x[0][0] = 0.000000;
-  p.equalizer_y[0][0] = 0.613040;
-  p.equalizer_x[0][1] = 0.245283;
-  p.equalizer_y[0][1] = 0.447962;
-  p.equalizer_x[0][2] = 0.498113;
-  p.equalizer_y[0][2] = 0.529201;
-  p.equalizer_x[0][3] = 0.641509;
-  p.equalizer_y[0][3] = 0.664967;
-  p.equalizer_x[0][4] = 0.879245;
-  p.equalizer_y[0][4] = 0.777294;
-  p.equalizer_x[0][5] = 1.000000;
-  p.equalizer_y[0][5] = 0.613040;
-  p.equalizer_x[1][0] = 0.000000;
-  p.equalizer_y[1][0] = 0.000000;
-  p.equalizer_x[1][1] = 0.200000;
-  p.equalizer_y[1][1] = 0.000000;
-  p.equalizer_x[1][2] = 0.400000;
-  p.equalizer_y[1][2] = 0.000000;
-  p.equalizer_x[1][3] = 0.600000;
-  p.equalizer_y[1][3] = 0.000000;
-  p.equalizer_x[1][4] = 0.800000;
-  p.equalizer_y[1][4] = 0.000000;
-  p.equalizer_x[1][5] = 1.000000;
-  p.equalizer_y[1][5] = 0.000000;
-  p.equalizer_x[2][0] = 0.000000;
-  p.equalizer_y[2][0] = 0.500000;
-  p.equalizer_x[2][1] = 0.200000;
-  p.equalizer_y[2][1] = 0.500000;
-  p.equalizer_x[2][2] = 0.400000;
-  p.equalizer_y[2][2] = 0.500000;
-  p.equalizer_x[2][3] = 0.600000;
-  p.equalizer_y[2][3] = 0.500000;
-  p.equalizer_x[2][4] = 0.800000;
-  p.equalizer_y[2][4] = 0.500000;
-  p.equalizer_x[2][5] = 1.000000;
-  p.equalizer_y[2][5] = 0.500000;
-  dt_gui_presets_add_generic(_("black & white film"), self->op, 1, &p, sizeof(p), 1);
+  p.channel = DT_IOP_COLORZONES_h;
+  for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
+  {
+    p.equalizer_y[DT_IOP_COLORZONES_L][k] = .5f;
+    p.equalizer_y[DT_IOP_COLORZONES_h][k] = .5f;
+    p.equalizer_x[DT_IOP_COLORZONES_L][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+    p.equalizer_x[DT_IOP_COLORZONES_h][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+  }
+  p.equalizer_x[DT_IOP_COLORZONES_C][0] = 0.000000;
+  p.equalizer_y[DT_IOP_COLORZONES_C][0] = 0.468932;
+  p.equalizer_x[DT_IOP_COLORZONES_C][1] = 0.010000;
+  p.equalizer_y[DT_IOP_COLORZONES_C][1] = 0.468932;
+  p.equalizer_x[DT_IOP_COLORZONES_C][2] = 0.120155;
+  p.equalizer_y[DT_IOP_COLORZONES_C][2] = 0.445975;
+  p.equalizer_x[DT_IOP_COLORZONES_C][3] = 0.248062;
+  p.equalizer_y[DT_IOP_COLORZONES_C][3] = 0.468932;
+  p.equalizer_x[DT_IOP_COLORZONES_C][4] = 0.500000;
+  p.equalizer_y[DT_IOP_COLORZONES_C][4] = 0.499667;
+  p.equalizer_x[DT_IOP_COLORZONES_C][5] = 0.748062;
+  p.equalizer_y[DT_IOP_COLORZONES_C][5] = 0.500000;
+  p.equalizer_x[DT_IOP_COLORZONES_C][6] = 0.990000;
+  p.equalizer_y[DT_IOP_COLORZONES_C][6] = 0.468932;
+  p.equalizer_x[DT_IOP_COLORZONES_C][7] = 1.000000;
+  p.equalizer_y[DT_IOP_COLORZONES_C][7] = 0.468932;
+  dt_gui_presets_add_generic(_("natural skin tones"), self->op, 2, &p, sizeof(p), 1);
+
+  // black and white film
+
+  p.channel = DT_IOP_COLORZONES_h;
+  for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
+  {
+    p.equalizer_y[DT_IOP_COLORZONES_C][k] = .0f;
+    p.equalizer_y[DT_IOP_COLORZONES_h][k] = .5f;
+    p.equalizer_x[DT_IOP_COLORZONES_C][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+    p.equalizer_x[DT_IOP_COLORZONES_h][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+  }
+  p.equalizer_x[DT_IOP_COLORZONES_L][0] = 0.000000;
+  p.equalizer_y[DT_IOP_COLORZONES_L][0] = 0.613040;
+  p.equalizer_x[DT_IOP_COLORZONES_L][1] = 0.010000;
+  p.equalizer_y[DT_IOP_COLORZONES_L][1] = 0.613040;
+  p.equalizer_x[DT_IOP_COLORZONES_L][2] = 0.245283;
+  p.equalizer_y[DT_IOP_COLORZONES_L][2] = 0.447962;
+  p.equalizer_x[DT_IOP_COLORZONES_L][3] = 0.498113;
+  p.equalizer_y[DT_IOP_COLORZONES_L][3] = 0.529201;
+  p.equalizer_x[DT_IOP_COLORZONES_L][4] = 0.641509;
+  p.equalizer_y[DT_IOP_COLORZONES_L][4] = 0.664967;
+  p.equalizer_x[DT_IOP_COLORZONES_L][5] = 0.879245;
+  p.equalizer_y[DT_IOP_COLORZONES_L][5] = 0.777294;
+  p.equalizer_x[DT_IOP_COLORZONES_L][6] = 0.990000;
+  p.equalizer_y[DT_IOP_COLORZONES_L][6] = 0.613040;
+  p.equalizer_x[DT_IOP_COLORZONES_L][7] = 1.000000;
+  p.equalizer_y[DT_IOP_COLORZONES_L][7] = 0.613040;
+  dt_gui_presets_add_generic(_("black & white film"), self->op, 2, &p, sizeof(p), 1);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
