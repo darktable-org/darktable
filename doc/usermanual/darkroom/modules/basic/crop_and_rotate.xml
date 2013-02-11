@@ -28,19 +28,65 @@
                       your crop area by just giving back focus to this module.
 		</para>
 
-		<sect5><title>angle</title>
+		<sect5><title>flip</title>
+			<para>This tool is used to flip the image on the horizontal,vertical or both axis.
+			</para>
+		</sect5>
+    <sect5><title>angle</title>
 			<para>This is the rotation angle to correct, for example, a non-leveled horizon.
 			You can either set a numerical value or use your mouse directly on the image.
 			To use your mouse, right-click, hold it down and draw a line along the horizon; as soon as you release the
                         mouse button the image is rotated so the line you drew matches the horizontal axis.
 			</para>
 		</sect5>
-		<sect5><title>keystone h and v</title>
+		<sect5><title>keystone</title>
 			<para>This tool is used to correct any perspective distortions in your image. Useful when you shoot 
 			      an high building from ground, aiming upwards with camera with short focal length for example.
+            To set the correction, select the type of correction you want to use :
+			</para>
+      <para>
+				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='3cm'/>
+					<tbody>
+						<row>
+							<entry><emphasis>vertical</emphasis></entry><entry>if you want to limit the correction to vertical lines</entry>
+						</row>
+						<row>
+							<entry><emphasis>horizontal</emphasis></entry><entry>limit the correction to horizontal lines</entry>
+						</row>
+						<row>
+							<entry><emphasis>free</emphasis></entry><entry>if you want to correct horizontal and vertical lines</entry>
+						</row>
+					</tbody>
+				</tgroup></informaltable>
+			</para>
+      <para>
+      <informaltable frame="none"><tgroup cols="3" colsep="0" rowsep="0">
+				<colspec colwidth="6*"/>
+				<colspec colwidth="2*"/>
+        <colspec colwidth="2*"/>
+				<tbody>
+					<row>						
+						<entry>then drag the 4 red circles to 4 angles of the building
+            and apply the correction.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/crop_and_rotate_k_set.png" scalefit="1" width="80%" align="center" />
+						</entry>
+            <entry>
+							<graphic fileref="darkroom/modules/images/crop_and_rotate_k_applied.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+    </para>
+		</sect5>
+		<sect5><title>automatic cropping</title>
+			<para>Use this options to avoid black edges on the image borders.
+      Useful when you rotate the image.
 			</para>
 		</sect5>
-		
 		<sect5><title>aspect</title>
 			<para>Here you can change what aspect ratio you want to have on the result, thus constraining the ability to drag and crop 
 			      rectangle out of the aspect ratio of your choice. Many common numerical ratios are pre-defined. You also select any
