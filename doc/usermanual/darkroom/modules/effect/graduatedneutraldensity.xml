@@ -63,17 +63,30 @@
 		<sect5><title>compression</title>
 			<para>Set progressiveness of the gradient. A low value creates a smooth transition, whereas a high value makes the transition abrupt.</para>
 		</sect5>
-		<sect5><title>split</title>
-			<para>Set split to offset the filter, i.e. to move the transition zone above or below the centerline. Expressed as a percentage, values above 50% set the transition zone above the centerline.</para>
-		</sect5>
-		<sect5><title>rotation</title>
-			<para>Set the rotation so the gradient acts along an axis different from the vertical one. Expressed in degrees, negative values turn clockwise.</para>
-		</sect5>
 		<sect5><title>hue</title>
 			<para>Set the hue to add a colorcast to the gradient.</para>
 		</sect5>
 		<sect5><title>saturation</title>
 			<para>Set the saturation to add a colorcast to the gradient.</para>
+		</sect5>		
+    <sect5><title>position</title>
+			<para>
+        <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
+				<tbody>
+					<row>						
+						<entry>You can set the position of the gradient directly on the image by moving the white line.
+            For fine tuning, you can also use the rotation slider. Negative values turn clockwise.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/graduatedneutraldensity_canvas.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+    </para>
 		</sect5>
 		<para> TIP: If you know you intend to use the GND filter before actually making a shot with your camera you might want to underexpose by one or two
 			thirds of an f-stop to make sure detail remains in the highlights. When all detail has truly been blown out the GND filter cannot produce
