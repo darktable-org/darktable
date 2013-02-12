@@ -854,6 +854,7 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_
               memcpy(img, image->data, image->data_size);
               gp_file_set_data_and_size(preview, img,(unsigned long int) image->data_size);
               free(image);
+              free(img);
 libraw_thumb_fail:
               libraw_close(raw);
             }
