@@ -1176,6 +1176,7 @@
       <Color x="0" y="0">RED</Color>
       <Color x="1" y="0">GREEN</Color>
       <Color x="0" y="1">GREEN</Color>
+
       <Color x="1" y="1">BLUE</Color>
     </CFA>
     <Crop x="0" y="0" width="0" height="0"/>
@@ -1837,6 +1838,14 @@
     <Sensor black="150" white="4096"/>
   </Camera>
   <Camera make="Panasonic" model = "DMC-G5" mode="4:3">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">BLUE</Color><Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color><Color x="1" y="1">RED</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-194" height="0"/>
+    <Sensor black="150" white="4096"/>
+  </Camera>
+  <Camera make="Panasonic" model = "DMC-G5" mode="3:2">
     <CFA width="2" height="2">
       <Color x="0" y="0">BLUE</Color><Color x="1" y="0">GREEN</Color>
       <Color x="0" y="1">GREEN</Color><Color x="1" y="1">RED</Color>
