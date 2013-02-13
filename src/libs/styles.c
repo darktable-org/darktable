@@ -162,7 +162,6 @@ _styles_row_activated_callback (GtkTreeView *view, GtkTreePath *path, GtkTreeVie
 
   GtkTreeModel *model;
   GtkTreeIter   iter;
-  gtk_widget_set_size_request (GTK_WIDGET (d->list), -1, -1);
   model = gtk_tree_view_get_model (d->list);
 
   if (!gtk_tree_model_get_iter (model, &iter, path))
