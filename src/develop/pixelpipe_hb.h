@@ -19,7 +19,6 @@
 #define DT_DEV_PIXELPIPE
 
 #include "common/image.h"
-#include "common/imageio.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 #include "develop/develop.h"
