@@ -47,16 +47,18 @@
                       read and compiled and the included routines (called OpenCL kernels) need to be prepared for darktablele’s modules. If all that is done, the preparation 
                       is finished.</para>
 
-		<para>Per default OpenCL support is activated in darktable if all the above steps were successful. If you want to de-activate it you can do so in "core options" 
-                      (<xref linkend="core options"/>) by unchecking "activate opencl support". This configuration parameter also tells you if OpenCL initialization failed: it is 
+		<para>Per default OpenCL support is activated in darktable if all the above steps were successful. If you want to de-activate it you can do so in <quote>core options</quote> 
+                      (<xref linkend="core options"/>) by unchecking <quote>activate opencl support</quote>. This configuration parameter also tells you if OpenCL initialization failed: it is 
                       grayed out in that case.</para>
 
 		<para>You can at any time switch OpenCL support off and on; this will take immediate action. Depending on the type of modules you are using, you will notice 
                       the effect as a general speed-up during interactive work and during export. Most modules in darktable can take advantage of OpenCL but not all modules 
-                      are demanding enough to make a noticeable difference. In order to feel a real difference, take modules like "shadows and highlights", "sharpen", "lowpass", 
-                      "highpass" or as an extreme case "equalizer".</para>
+                      are demanding enough to make a noticeable difference. In order to feel a real difference, take modules like 
+                      <link linkend="shadows and highlights"><emphasis>shadows and highlights</emphasis></link>, 
+                      <link linkend="sharpen"><emphasis>sharpen</emphasis></link>, <link linkend="lowpass"><emphasis>lowpass</emphasis></link>, 
+                      <link linkend="lowpass"><emphasis>highpass</emphasis></link> or as an extreme case <link linkend="equalizer"><emphasis>equalizer</emphasis></link>.</para>
 
-		<para>If you are interested in profiling figures, you can call darktable with command line parameters -d opencl -d perf. After each run of the pixelpipe you 
+		<para>If you are interested in profiling figures, you can call darktable with command line parameters <quote>-d opencl -d perf</quote>. After each run of the pixelpipe you 
                       will get a detailed allocation of processing time to each module plus an even more fine grained profile for all used OpenCL kernels.</para>
 
 		<para>Besides the speed-up you should not see any difference in the results between CPU and GPU processing. Except of rounding errors, the results are designed 
@@ -76,9 +78,9 @@
 		    <programlisting>
 darktable –d opencl
 		    </programlisting>
-		      This will give additional debugging output about the initialization and use of OpenCL. First see if you find a line that starts with "[opencl_init] FINALLY …" 
+		      This will give additional debugging output about the initialization and use of OpenCL. First see if you find a line that starts with <quote>[opencl_init] FINALLY …</quote> 
                       This should tell you, if OpenCL support is available for you or not. If initialization failed, look at the messages above for anything 
-                      that reads like "could not be detected" or "could not be created". Check if there is a hint about where it failed.</para>
+                      that reads like <quote>could not be detected</quote> or <quote>could not be created</quote>. Check if there is a hint about where it failed.</para>
 
 		<para>Here are a few cases observed in the past:</para>
 
@@ -96,7 +98,7 @@ darktable –d opencl
                       graphics driver. Sometimes, immediately after a driver update, the loaded kernel driver does not match the newly installed libraries: reboot your system in that case.</para>
 
 		<para>darktable might crash in very rare cases directly during startup. This can happen if your OpenCL setup is completely broken or if driver/library contains a 
-                      severe bug. If you can’t fix it, you can still use darktable with option --disable-opencl, which will skip the entire OpenCL initialization step.</para>
+                      severe bug. If you can’t fix it, you can still use darktable with option <quote>--disable-opencl</quote>, which will skip the entire OpenCL initialization step.</para>
 
 		<para>darktable might on some systems fail to compile its OpenCL source files at run-time. In that case you will get a number of error messages looking like typical 
                       compiler errors. This could indicate an incompatibility between your OpenCL implementation and our interpretation of the standard. In that case visit us at 
@@ -112,7 +114,7 @@ darktable –d opencl
                       only report to darktable half of the total GPU memory. For a 1GB device this amounts to 512MB, a value which darktable in its standard configuration will refuse 
                       as not being sufficient for its tasks. Consequence: the device will not be used.</para>
 
-                <para>On the net you might find as a tip to set environment variable GPU_MAX_HEAP_SIZE=100 in this case. Indeed this will cause the AMD/ATI driver to report the full 
+                <para>On the net you might find as a tip to set environment variable GPU_MAX_HEAP_SIZE to a value of 100 in this case. Indeed this will cause the AMD/ATI driver to report the full 
                       installed memory to darktable. However, there is a problem. On many (most?) cards this will cause buffers not to be allocated on your device but on host! In 
                       this case all memory transfers will need to go through the slow PCIe bus. This will cost you a factor of 10 or more in performance and will render OpenCL useless 
                       for you, especially when exporting files.</para>
@@ -136,8 +138,9 @@ darktable –d opencl
 		<sect4><title>opencl_avoid_atomics</title>
                       <para>Atomic operations in OpenCL are a special way of data synchronization. They are only used in few kernels. Unfortunately some (most?) AMD/ATI devices 
                       are extremely slow in processing atomics. It's better to process the affected modules on CPU rather than accepting an ultra-slow GPU codepath. Set this 
-                      parameter to TRUE if you experience slow processing of modules like shadows&amp;highlights, monochrome, local contrast or global tonemap or if you even get 
-                      intermittent system freezes.</para>
+                      parameter to TRUE if you experience slow processing of modules like <link linkend="shadows and highlights"><emphasis>shadows and highlights</emphasis></link>, 
+                      <link linkend="monochrome"><emphasis>monochrome</emphasis></link>, <link linkend="local contrast"><emphasis>local contrast</emphasis></link>,
+                      or <link linkend="global tonemap"><emphasis>global tonemap</emphasis></link> or if you even get intermittent system freezes.</para>
                 </sect4>
         </sect2>
 
@@ -152,8 +155,8 @@ darktable –d opencl
 darktable -d opencl -d perf
 		    </programlisting>
                  After each reprocessing of pixelpipe - caused by module parameter change, zooming, panning, etc. - you will get the total time and the time spent in each of our OpenCL 
-                 kernels. The most reliable value is the total time spent in pixelpipe. [Please note that the timings given for each indiviual module are unreliable when running the OpenCL 
-                 pixelpipe asynchronously. (see opencl_async_pixelpipe below).]</para>
+                 kernels. The most reliable value is the total time spent in pixelpipe. Please note that the timings given for each indiviual module are unreliable when running the OpenCL 
+                 pixelpipe asynchronously (see opencl_async_pixelpipe below).</para>
 
                 <para>To allow for a fast pixelpipe processing with OpenCL it is essential that we keep the GPU busy. Any interrupts or a stalled data flow will strongly add to the total 
                  processing time. This is especially important for the small image buffers we need to handle during interactive work. They can be processed quickly by a fast GPU. However, 
@@ -176,7 +179,7 @@ darktable -d opencl -d perf
                       <para>Event handles are used so we can monitor success/failure of kernels and profiling info even if the pixelpipe is run asynchronously. The number of event 
                       handles is a limited resource of your OpenCL driver. For sure we can recycle them, but there is a limited number that we can use at the same time. Unfortunately, 
                       there is no way to find out what the resource limits are; so we need to guess. Our default value of 25 is quite conservative. You might want to try if higher values
-                      like 100 give better OpenCL performance. If your driver runs out of free handles you would experience failing OpenCL kernels with error code -5 (CL_OUT_OF_RESOURCES)
+                      like 100 give better OpenCL performance. If your driver runs out of free handles you would experience failing OpenCL kernels with error code <quote>-5 (CL_OUT_OF_RESOURCES)</quote>
                       or even crashes or system freezes; reduce the number again in that case. A value of 0 will block darktable from using any event handles. This will prevent darktable from 
                       properly monitoring the success of your OpenCL kernels but saves some driver overhead. The consequence is that any failures will likely lead to garbled output without 
                       darktable taking notice; only recommended if you know for sure that your system runs rock-solid. You can also set this parameter to -1, which means that darktable assumes 
@@ -214,24 +217,24 @@ darktable -d opencl -d perf
                      therefore important that your GPU is allocated to do the more demanding center image (full) pixelpipe, while the small preview image can be processed in parallel even
                      by a slower CPU. Older versions of darktable would therefore not allow preview pixelpipe to grab any OpenCL device.</para>
 
-               <para>Starting with darktable 1.2 there is a more flexible scheme to allocate and prioritize your OpenCL device(s). Configuration parameter opencl_device_priority
+               <para>Starting with darktable 1.2 there is a more flexible scheme to allocate and prioritize your OpenCL device(s). Configuration parameter <quote>opencl_device_priority</quote>
                      holds a string with the following structure:
 		    <programlisting>
 a,b,c.../k,l,m.../o,p,q.../x,y,z...
 		    </programlisting></para>
                     
                <para>Each letter represents one specific OpenCL device. There are four fields in the parameter string separated by a slash, each representing one type of pixelpipe.
-                     "a,b,c..." defines the devices that are allowed to process the center image (full) pixelpipe. Likewise devices "k,l,m..." can process the preview pixelpipe, 
-                     "o,p,q..." the export pixelpipes and finally "x,y,z..." the thumbnail pixelpipes. An empty field means that no OpenCL device may serve
+                     <quote>a,b,c...</quote> defines the devices that are allowed to process the center image (full) pixelpipe. Likewise devices <quote>k,l,m...</quote> can process the preview pixelpipe, 
+                     <quote>o,p,q...</quote> the export pixelpipes and finally <quote>x,y,z...</quote> the thumbnail pixelpipes. An empty field means that no OpenCL device may serve
                      this type of pixelpipe.</para>
 
-               <para>darktable has an internal numbering system, where the first detected OpenCL device will receive number "0". All further devices are numbered consecutively.
-                     This number together with the device name is displayed when you start darktable with '-d opencl'. You can specify a device
+               <para>darktable has an internal numbering system, where the first available OpenCL device will receive number <quote>0</quote>. All further devices are numbered consecutively.
+                     This number together with the device name is displayed when you start darktable with <quote>-d opencl</quote>. You can specify a device
                      either by number or by name (upper/lower case and whitespace do not matter). If you have more than one device - all with the same
                      name - you need to use the device numbers in order to differentiate them.</para>
 
-               <para>A device specifier can be preceeded by an exclamation mark "!", in which case the following device is excluded from processing
-                     this pixelpipe. You can also give an asterisk "*" as a wildcard, representing all devices not mentioned explicitely before in that group.</para>
+               <para>A device specifier can be preceeded by an exclamation mark <quote>!</quote>, in which case the following device is excluded from processing
+                     this pixelpipe. You can also give an asterisk <quote>*</quote> as a wildcard, representing all devices not mentioned explicitely before in that group.</para>
 
                <para>Sequence order within a group matters. darktable will read the list from left to right and whenever it tries to allocate an OpenCL device to a pixelpipe it will scan
                      the devices in that order, taking the first free device it finds.</para>
@@ -248,7 +251,7 @@ a,b,c.../k,l,m.../o,p,q.../x,y,z...
                      have quite different levels of processing power, it makes sense to invest a few thoughts and optimize your priority list.</para>
 
                <para>Here is an example. Let's assume we have a system with two devices, a fast Radeon HD7950 and an older and slower
-                     GeForce GTS450. darktable (started with '-d opencl') will report the following devices:
+                     GeForce GTS450. darktable (started with <quote>-d opencl</quote>) will report the following devices:
 		    <programlisting>
 [opencl_init] successfully initialized.
 [opencl_init] here are the internal numbers and names of 
@@ -264,7 +267,8 @@ a,b,c.../k,l,m.../o,p,q.../x,y,z...
 		    <programlisting>
 !GeForce GTS450,*/!Tahiti,*/Tahiti,*/Tahiti,*
 		    </programlisting>
-                    The GTS450 is explicitely excluded from doing the center image pixelpipe; this is reserved to "all" other devices (i.e. the HD7950/Tahiti). Completely the opposite for our preview
+                    The GTS450 is explicitely excluded from doing the center image pixelpipe; this is reserved to <quote>all</quote> other devices (i.e. the HD7950/Tahiti). 
+                    Completely the opposite for our preview
                     pixelpipe. Here the Tahiti is excluded, so that only the GTS450 will be allowed to do the work.</para>
 
               <para>For file export and thumbnail generation we want all hands on deck. However, darktable should first look if device Tahiti 
@@ -272,7 +276,7 @@ a,b,c.../k,l,m.../o,p,q.../x,y,z...
         </sect2>
 
         <sect2><title>OpenCL still does not run for me!</title>
-		<para>As has been said before OpenCL systems come with a huge variety of setups: different gpu manufacturers, different gpu models, varying amounts of gpu memory, different drivers,
+		<para>As has been said before OpenCL systems come with a huge variety of setups: different GPU manufacturers, different GPU models, varying amounts of GPU memory, different drivers,
 		different distributions etc. Many of the potential problems will only appear with a very specific combination of those factors.</para>
 
 		<para>As we developers of darktable on our computers only have access to a small fraction of those variations, please understand that we might not be able to fix your specific problem.
@@ -282,7 +286,7 @@ a,b,c.../k,l,m.../o,p,q.../x,y,z...
 			<programlisting>
 darktable --disable-opencl
 			</programlisting>
-		In the end there is nothing in darktable which only runs on gpu. Don't let OpenCL discourage you; also darktable's cpu code is highly optimized and performant!</para>
+		In the end there is nothing in darktable which only runs on GPU. Don't let OpenCL discourage you; also darktable's cpu code is highly optimized and performant!</para>
 	</sect2>
 
 </sect1>

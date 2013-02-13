@@ -87,7 +87,7 @@
 		<para>There's not much to be said here. Of course also 64-bit systems require a sufficient amount of main memory. So the 4GB plus swap recommendation holds true. On the other 
                       hand, 64-bit architectures do not suffer from the specific 32-bit limitations like small address space and fragmentation madness.</para>
 
-		<para>Most modern Intel or AMD 64-bit CPUs will have an available address space in the range of several Terabytes. The word "modern" is relative in this context: all AMD and 
+		<para>Most modern Intel or AMD 64-bit CPUs will have an available address space in the range of several Terabytes. The word <quote>modern</quote> is relative in this context: all AMD and 
                       Intel CPUs introduced since 2003 and 2004, respectively, offer a 64-bit mode. Linux 64-bit has been available since many years.</para>
 
 		<para>All relevant Linux distributions give you the free choice to install a 32-bit or a 64-bit version with no added costs. You can even run old 32-bit binaries on a 64-bit
