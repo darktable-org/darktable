@@ -5,8 +5,9 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module is used to crop, rotate and correct perspective of your image. 
-							It also includes many helpful guidelines that assist you using the tools.
+						<entry>This module is used to crop, rotate and correct perspective distortions of your image. 
+						       You can overlay your image with various helpful guidelines that assist you 
+                                                       using the tools.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/crop_and_rotate.png" scalefit="1" width="80%" align="center" />
@@ -16,6 +17,14 @@
 			</tgroup>
 		</informaltable>
 	</sect4>
+
+        <sect4>
+               <para>Some of the tools of this module, namely adjustment of angle and corrections of perspective distortion, will require the 
+                     original image data to be interpolated. For best sharpness results set <quote>lanczos3</quote> as pixel interpolator 
+                     in <emphasis>core options</emphasis> (see <xref linkend="core options"/>).
+               </para>
+
+        </sect4>
 
 	<sect4 status="draft"><title>Usage</title>
                 <para>Whenever the user interface of this module is in focus, you will see the full uncropped image overlayed with
@@ -40,11 +49,11 @@
 			</para>
 		</sect5>
 		<sect5><title>keystone</title>
-			<para>This tool is used to correct any perspective distortions in your image. Useful when you shoot 
-			      an high building from ground, aiming upwards with camera with short focal length for example.
-            To set the correction, select the type of correction you want to use :
+			<para>This tool is used to correct perspective distortions in your image. Useful for example when you shoot 
+			      a high building from ground with a short focal length, aiming upwards with your camera.
+                              The combobox lets you select the type of correction you want to use :
 			</para>
-      <para>
+                        <para>
 				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='3cm'/>
 					<tbody>
@@ -67,8 +76,19 @@
         <colspec colwidth="2*"/>
 				<tbody>
 					<row>						
-						<entry>then drag the 4 red circles to 4 angles of the building
-            and apply the correction.
+						<entry>
+                                                   <para>Depending on the selected correction type you will see two or four straight adjustment lines 
+                                                       overlaid to your image. Two red circles on every line let you modify the line positions with 
+                                                       your mouse. Each line additionally carries a <quote>symmetry</quote> button. If activated (and
+                                                       highlighted in red) all movements of the affected line will be mirrored by the opposite line.
+                                                   </para>
+
+                                                   <para>
+                                                       In order to correct perspective distortions, you need to find suited horizontal and/or vertical 
+                                                       features in your image and align the adjustment lines with them. When done, press the <quote>OK</quote> button, which is
+                                                       located close to the center of your image. The image will be corrected immeditely. You can at any time come 
+                                                       back and refine your corrections by selecting <quote>correction applied</quote> in combobox keystone.
+                                                   </para>
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/crop_and_rotate_k_set.png" scalefit="1" width="80%" align="center" />
@@ -83,14 +103,13 @@
     </para>
 		</sect5>
 		<sect5><title>automatic cropping</title>
-			<para>Use this options to avoid black edges on the image borders.
-      Useful when you rotate the image.
+			<para>Use this options to avoid black edges on the image borders. Useful when you rotate the image.
 			</para>
 		</sect5>
 		<sect5><title>aspect</title>
 			<para>Here you can change what aspect ratio you want to have on the result, thus constraining the ability to drag and crop 
 			      rectangle out of the aspect ratio of your choice. Many common numerical ratios are pre-defined. You also select any
-                              other ratio after opening the combobox and typing it in the form of "x:y". A few special aspect ratios deserve explanation:
+                              other ratio after opening the combobox and typing it in the form of <quote>x:y</quote>. A few special aspect ratios deserve explanation:
                         </para>
 			<para>
 				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">

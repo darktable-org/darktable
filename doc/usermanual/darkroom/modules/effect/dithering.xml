@@ -5,7 +5,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module eliminates some of the typical banding artifacts which can occur when darktable's
+						<entry>This module eliminates some of the typical banding artifacts which can occur, when darktable's
                                                        internal 32-bit floating point data are transfered into a discrete 8-bit or 16-bit integer output format for
                                                        display or file export.
 						</entry>
@@ -19,12 +19,17 @@
 	</sect4>
 
         <sect4>
-                <para>If you use dithering to export images with a reduced width/height, please make sure that you de-activate option <quote>do high quality resampling during export</quote>
-                      in <emphasis>core options</emphasis> (see <xref linkend="core options"/>), else the final scaling step will counteract dithering.</para>
+                <para>Banding is a problem which can arise, when an image is downsampled into a lower bit-depth. Downsampling happens regularly,
+                      when darktable displays or exports the results of a pixelpipe. In order to avoid banding, you may activate this modules.</para>  
+
+                <para>If you export images with a reduced width/height and want best dithering results, please make sure that you de-activate option <quote>do high 
+                      quality resampling during export</quote> in <emphasis>core options</emphasis> (see <xref linkend="core options"/>), else the final scaling step will 
+                      counteract dithering.</para>
 
                 <para>Some users might want to avoid the additional processing overhead of this module while doing interactive work - knowing that the final results in file output is good
-                      anyhow :) In that case there is a config parameter <quote>dithering for darkroom mode</quote> in <emphasis>core options</emphasis> (see <xref linkend="core options"/>). 
-                      Dithering of center view in darkroom mode is skipped if this config parameter is de-activated. That is a speed-up option only affecting monitor display, not file exports.</para>
+                      anyhow :) In that case there is a configuration parameter <quote>dithering for darkroom mode</quote> in <emphasis>core options</emphasis> (see <xref linkend="core options"/>). 
+                      Dithering of center view in darkroom mode is skipped if this config parameter is de-activated. This is a speed-up option, which only affects monitor display, not file 
+                      exports.</para>
 
                 <para>Watching from some distance an image dithered into a very low bit depth (like <quote>floyd-steinberg 1-bit b&amp;w</quote>), it will give the impression of 
                       a homogeneous grayscale image. We try to mimic this impression in darktable when you look at zoomed-out images in center 
