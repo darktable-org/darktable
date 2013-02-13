@@ -1,0 +1,47 @@
+<sect3 status="draft" id="denoise profiled"><title>Denoise - profiled</title>
+	<sect4><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
+				<tbody>
+					<row>						
+						<entry>This module offers an easy to use and at the same time highly efficient denoise operation. Under the hood
+                                                       it applies a non-local means or edge-aware wavelet denoise algorithm with parameters, specifically profiled for certain
+                                                       camera models and ISO settings.                                                       
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/denoise_profiled.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect4>
+
+	<sect4><title>Usage</title>
+                <para>The darktable team with the help of many users has measured noise profiles for various cameras. Differentiated by ISO settings
+                      we evaluated how the signal-to-noise ratio develops with exposure for the three color channels. Our set of profiles already covers over 60 popular 
+                      camera models from different manufacturers.</para>
+		<sect5><title>profile</title>
+			<para>Based on EXIF data of your RAW file, darktable will automatically determine the camera model and ISO setting. If found in its database,
+                              the corresponding noise profile will be used. This combobox gives you some option to override the found ISO value, as your image might
+                              have an intermediate ISO value not present in the database yet. In that case select the best fitting profile from the available ones for your camera model.
+                              The choice <quote>found match for iso ...</quote> brings you back to the profile darktable deems most suited.</para>
+		</sect5>
+		<sect5><title>mode</title>
+			<para>This module can eliminate noise with two different core algorithms. <quote>non-local means</quote> is a bit better suited to tackle luma (lightness) noise, <quote>
+                              wavelet</quote> has its strength in eliminating chroma (color) noise. If needed you can apply two instances of this module (see <xref linkend="multiple instances"/>).
+                              The <quote>non-local means</quote> instance should be combined with blend mode <quote>lightness</quote>, the <quote>wavelet</quote> instance with
+                              blend mode <quote>color</quote>. For more information on blend modes have a look at <xref linkend="blending operators"/>.</para>
+		</sect5>
+		<sect5><title>patch size</title>
+			<para>This slider is only available if mode <quote>non-local means</quote> is selected. It controls how big the surrounding is, that darktable takes into account,
+                              when deciding about pixel averaging (see also <xref linkend="denoise non local means"/>). Setting this to higher values can give more sharpness but
+                              costs processing time.</para>
+		</sect5>
+		<sect5><title>strength</title>
+			<para>This parameter is here to finetune the strength of the denoise effect. It's mostly a matter of taste, if you prefer a rather low noise level at the costs of
+                              a higher loss of detail, or if you accept some more remaining noise in order to have fine structures better preserved in your image.</para>
+		</sect5>
+	</sect4>
+</sect3>

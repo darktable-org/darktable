@@ -15,9 +15,10 @@
                                  Take for example module <emphasis>fill light</emphasis> (<xref linkend="fill light"/>) which allows a local modification of lightness based on pixel values. You might
                                  want to do two lightness corrections in your image at the same time - one for dark tones and another one for lighter tones.</para>
 
-                           <para>You might want to apply a denoising module like <emphasis>denoise (profile)</emphasis> (xref still missing) with two different parameter sets. One to do luma denoising
-                                 and another set of parameters to do chroma denoising. You could do so by generating two instances and let the first one only act on luma by activating
-                                 blend mode <quote>lightness</quote> and the second one only act on chroma by activating blend mode <quote>color</quote> (see <xref linkend="blending operators"/>).</para>
+                           <para>You might want to apply a denoising module like <emphasis>denoise (profile)</emphasis> (<xref linkend="denoise profiled"/>) with two different parameter sets. 
+                                 One to do luma denoising and another set of parameters to do chroma denoising. You could do so by generating two instances and let the first one only act on luma 
+                                 by activating blend mode <quote>lightness</quote> and the second one only act on chroma by activating blend mode <quote>color</quote> 
+                                 (see <xref linkend="blending operators"/>).</para>
 
                            <para>In an even more elaborate case you could have a module act on different parts of your image. As an example you might want to apply a certain gradation
                                  curve with module <emphasis>tonecurve</emphasis> (<xref linkend="tonecurve"/>) to your complete image and have a second curve being applied specifically to skin tones. 

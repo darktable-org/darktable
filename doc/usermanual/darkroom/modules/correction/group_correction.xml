@@ -6,6 +6,7 @@ spot removal, noise, lens correction among others.
 
   <xi:include href="sharpen.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="equalizer.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="denoise_profiled.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="denoise_nlm.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="denoise_bilateral.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="lenscorrection.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
