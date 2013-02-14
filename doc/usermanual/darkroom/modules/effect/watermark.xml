@@ -4,7 +4,7 @@
 				<colspec colwidth="6*"/>
 				<colspec colwidth="4*"/>
 				<tbody>
-					<row>						
+					<row>
 						<entry><para>The watermark module provides a way to render a vector-based overlay onto your image.
                                                              Watermarks are standard SVG documents and can be designed using Inkscape.</para>
 						</entry>
@@ -17,12 +17,12 @@
 		</informaltable>
 
                 <para>The SVG processor of darktable also substitutes strings within the SVG document, which gives
-                the oppurtunity to include image dependent information in the watermark such as aperture, 
+                the oppurtunity to include image dependent information in the watermark such as aperture,
                 exposure time and other metadata.
                 </para>
 
 		<para>User-designed watermarks are placed into the directory $HOME/.config/darktable/watermarks.
-		Once in place, use the reload button at the right of the watermark file name to update the list 
+		Once in place, use the reload button at the right of the watermark file name to update the list
 		of available watermarks to use.
 		</para>
 
@@ -35,7 +35,7 @@
 		    <row> <entry>$(IMAGE.ID)</entry><entry><para>The uniq image id within current library</para></entry></row>
 		    <row> <entry>$(IMAGE.FILENAME)</entry><entry><para>The iamge filename</para></entry></row>
 		    <row> <entry>$(IMAGE.EXIF)</entry><entry><para>The image exif string</para></entry></row>
-		    <row> <entry>$(EXIF.DATE)</entry><entry><para>The image date</para></entry></row>								
+		    <row> <entry>$(EXIF.DATE)</entry><entry><para>The image date</para></entry></row>
 		    <row> <entry>$(EXIF.DATE.SECOND)</entry><entry><para> Seconds from the image EXIF data</para></entry></row>
 		    <row> <entry>$(EXIF.DATE.MINUTE)</entry><entry><para> Minutes from the image EXIF data</para></entry></row>
 		    <row> <entry>$(EXIF.DATE.HOUR)</entry><entry><para> Hours from the image EXIF data (24h)</para></entry></row>
@@ -60,14 +60,14 @@
 		    <row> <entry>$(EXIF.MAKER)</entry><entry><para>The maker of camera model</para></entry></row>
 		    <row> <entry>$(EXIF.MODEL)</entry><entry><para>The camera model</para></entry></row>
 		    <row> <entry>$(EXIF.LENS)</entry><entry><para>The specific lens used</para></entry></row>
-		    <row> <entry>$(XMP.DC.CREATOR)</entry><entry><para>The creator string</para></entry></row>
-		    <row> <entry>$(XMP.DC.PUBLISHER)</entry><entry><para>The publisher string</para></entry></row>
-		    <row> <entry>$(XMP.DC.TITLE)</entry><entry><para>The title of the image</para></entry></row>
-		    <row> <entry>$(XMP.DC.DESCRIPTION)</entry><entry><para>The description of the image</para></entry></row>
-		    <row> <entry>$(XMP.DC.RIGHTS)</entry><entry><para>The rights assigned to the image</para></entry></row>
-		  </tbody></tgroup></informaltable>  
+		    <row> <entry>$(Xmp.dc.creator)</entry><entry><para>The creator string</para></entry></row>
+		    <row> <entry>$(Xmp.dc.publisher)</entry><entry><para>The publisher string</para></entry></row>
+		    <row> <entry>$(Xmp.dc.title)</entry><entry><para>The title of the image</para></entry></row>
+		    <row> <entry>$(Xmp.dc.description)</entry><entry><para>The description of the image</para></entry></row>
+		    <row> <entry>$(Xmp.dc.rights)</entry><entry><para>The rights assigned to the image</para></entry></row>
+		  </tbody></tgroup></informaltable>
 		</para>
-		
+
 	</sect4>
 
 	<sect4><title>Usage</title>
