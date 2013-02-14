@@ -98,9 +98,6 @@ _gui_styles_get_active_items (dt_gui_styles_dialog_t *sd, GList **enabled, GList
     }
     while (gtk_tree_model_iter_next (model,&iter));
   }
-
-  //gtk_tree_model_get_iter (model, &iter, path);
-// gtk_tree_model_get (model, &iter, DT_STYLE_ITEMS_COL_ENABLED, &toggle_item, -1);
 }
 
 static void
