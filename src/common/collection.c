@@ -508,7 +508,7 @@ get_query_string(const dt_collection_properties_t property, const gchar *escaped
       snprintf(query, 1024, "(filename like '%%%s%%')", escaped_text);
       break;
 
-    default: // case 3: // day
+    default: // day or time
       snprintf(query, 1024, "(datetime_taken like '%%%s%%')", escaped_text);
       break;
   }
