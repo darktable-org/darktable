@@ -1755,11 +1755,13 @@ int dt_exif_thumbnail(
     Exiv2::ExifThumbC thumb(exifData);
     Exiv2::DataBuf buf = thumb.copy();
     int res = 1;
+    if(!buf.pData_) return 1;
 
     dt_imageio_jpeg_t jpg;
     if(!dt_imageio_jpeg_decompress_header(buf.pData_, buf.size_, &jpg))
     {
       uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
+      if(!tmp) return 1;
       if(!dt_imageio_jpeg_decompress(&jpg, tmp))
       {
         dt_iop_flip_and_zoom_8(tmp, jpg.width, jpg.height, out, width, height, orientation, wd, ht);
