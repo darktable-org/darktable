@@ -27,12 +27,14 @@ extern "C"
 #include "common/exif.h"
 #include "common/darktable.h"
 #include "common/colorlabels.h"
+#include "common/imageio_jpeg.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/metadata.h"
 #include "common/tags.h"
 #include "common/debug.h"
 #include "control/conf.h"
+#include "develop/imageop.h"
 }
 #include <exiv2/easyaccess.hpp>
 #include <exiv2/xmp.hpp>
@@ -1729,6 +1731,50 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
   {
     std::cerr << "[xmp_write] caught exiv2 exception '" << e << "'\n";
     return -1;
+  }
+}
+
+int dt_exif_thumbnail(
+    const char *filename,
+    uint8_t    *out,
+    uint32_t    width,
+    uint32_t    height,
+    int         orientation,
+    uint32_t   *wd,
+    uint32_t   *ht)
+{
+  // fprintf(stderr, "[exif] trying to load thumbnail `%s'!\n", filename);
+  try
+  {
+    Exiv2::Image::AutoPtr image;
+    image = Exiv2::ImageFactory::open(filename);
+    assert(image.get() != 0);
+    image->readMetadata();
+
+    Exiv2::ExifData &exifData = image->exifData();
+    Exiv2::ExifThumbC thumb(exifData);
+    Exiv2::DataBuf buf = thumb.copy();
+    int res = 1;
+
+    dt_imageio_jpeg_t jpg;
+    if(!dt_imageio_jpeg_decompress_header(buf.pData_, buf.size_, &jpg))
+    {
+      uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
+      if(!dt_imageio_jpeg_decompress(&jpg, tmp))
+      {
+        dt_iop_flip_and_zoom_8(tmp, jpg.width, jpg.height, out, width, height, orientation, wd, ht);
+        res = 0;
+      }
+      free(tmp);
+    }
+
+    // fprintf(stderr, "[exif] loaded thumbnail %d x %d `%s'!\n", jpg.width, jpg.height, filename);
+
+    return res;
+  }
+  catch (Exiv2::AnyError& e)
+  {
+    return 1;
   }
 }
 
