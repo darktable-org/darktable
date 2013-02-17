@@ -1757,14 +1757,31 @@ int dt_exif_thumbnail(
     int res = 1;
     if(!buf.pData_) return 1;
 
+    // canon crops that thumbnail:
+    int y_beg = 0, y_end = 0;
+    Exiv2::ExifData::const_iterator pos;
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Canon.ThumbnailImageValidArea")))
+        != exifData.end() && pos->size() && pos->count() == 4)
+    {
+      // pos->toLong(0); // x bounds. we ignore those because canon doesn't seem
+      // to set them.
+      y_beg = pos->toLong(2);
+      y_end = pos->toLong(3);
+    }
+
     dt_imageio_jpeg_t jpg;
     if(!dt_imageio_jpeg_decompress_header(buf.pData_, buf.size_, &jpg))
     {
+      if(!y_beg && !y_end)
+      { // if those weren't set, do it now:
+        y_beg = 0;
+        y_end = jpg.height - 1;
+      }
       uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
       if(!tmp) return 1;
       if(!dt_imageio_jpeg_decompress(&jpg, tmp))
       {
-        dt_iop_flip_and_zoom_8(tmp, jpg.width, jpg.height, out, width, height, orientation, wd, ht);
+        dt_iop_flip_and_zoom_8(tmp + 4*jpg.width*y_beg, jpg.width, y_end - y_beg + 1, out, width, height, orientation, wd, ht);
         res = 0;
       }
       free(tmp);
