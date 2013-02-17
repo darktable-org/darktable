@@ -167,6 +167,11 @@ dt_imageio_open_rawspeed(
      specific ones, consider the file as corrupted */
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
+  catch (...)
+  {
+    printf("Unhandled exception in imageio_rawspeed\n");
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
 
   return DT_IMAGEIO_OK;
 }
