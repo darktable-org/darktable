@@ -115,6 +115,9 @@ void dt_ctl_settings_default(dt_control_t *c)
   // reasonable thumbnail res:
   dt_conf_set_int  ("plugins/lighttable/thumbnail_width", 1300);
   dt_conf_set_int  ("plugins/lighttable/thumbnail_height", 1000);
+
+  // set export style to "none" by default
+  dt_conf_set_string ("plugins/lighttable/export/style", _("none"));
 }
 
 void dt_ctl_settings_init(dt_control_t *s)

@@ -148,8 +148,15 @@ gui_reset (dt_lib_module_t *self)
     g_free(iccprofile);
   }
   // style
+  // set it to none if the var is not set or the style doesn't exist anymore
+  gboolean rc = FALSE;
   gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
-  _combo_box_set_active_text(d->style, style);
+  if (style != NULL)
+    rc = _combo_box_set_active_text(d->style, style);
+    if (rc == FALSE)
+      _combo_box_set_active_text(d->style, _("none"));
+  else 
+    _combo_box_set_active_text(d->style, _("none"));
   g_free(style);
 
   if(!iccfound) gtk_combo_box_set_active(d->profile, 0);

@@ -159,10 +159,17 @@ dt_imageio_open_rawspeed(
 
     dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, orientation);
   }
-  catch (...)
+  catch (const std::exception &exc)
   {
+    printf("[rawspeed] %s\n", exc.what());
+
     /* if an exception is rasied lets not retry or handle the
      specific ones, consider the file as corrupted */
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
+  catch (...)
+  {
+    printf("Unhandled exception in imageio_rawspeed\n");
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
