@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 johannes hanika.
+    copyright (c) 2011--2013 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include <xmmintrin.h>
 
 #define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
+#define REDUCESIZE 64
 #define MAX_PROFILES 30
 #define NUM_BUCKETS 4
 
@@ -75,6 +76,11 @@ typedef struct dt_iop_denoiseprofile_global_data_t
   int kernel_denoiseprofile_vert;
   int kernel_denoiseprofile_accu;
   int kernel_denoiseprofile_finish;
+  int kernel_denoiseprofile_backtransform;
+  int kernel_denoiseprofile_decompose;
+  int kernel_denoiseprofile_synthesize;
+  int kernel_denoiseprofile_reduce_first;
+  int kernel_denoiseprofile_reduce_second;
 }
 dt_iop_denoiseprofile_global_data_t;
 
@@ -132,15 +138,49 @@ fast_mexp2f(const float x)
 void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
-  const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
-  const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
 
-  tiling->factor = 4.0f + 0.25f*NUM_BUCKETS; // in + out + (2 + NUM_BUCKETS * 0.25) tmp
-  tiling->maxbuf = 1.0f;
-  tiling->overhead = 0;
-  tiling->overlap = P+K;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
+  if(d->mode == MODE_NLMEANS)
+  {
+    const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
+    const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
+
+    tiling->factor = 4.0f + 0.25f*NUM_BUCKETS; // in + out + (2 + NUM_BUCKETS * 0.25) tmp
+    tiling->maxbuf = 1.0f;
+    tiling->overhead = 0;
+    tiling->overlap = P+K;
+    tiling->xalign = 1;
+    tiling->yalign = 1;
+  }
+  else
+  {
+    const int max_max_scale = 5; // hard limit
+    int max_scale = 0;
+    const float scale = roi_in->scale/piece->iscale;
+    // largest desired filter on input buffer (20% of input dim)
+    const float supp0 = MIN(2*(2<<(max_max_scale-1)) + 1, MAX(piece->buf_in.height*piece->iscale, piece->buf_in.width*piece->iscale) * 0.2f);
+    const float i0 = dt_log2f((supp0 - 1.0f)*.5f);
+    for(; max_scale<max_max_scale; max_scale++)
+    {
+      // actual filter support on scaled buffer
+      const float supp  = 2*(2<<max_scale) + 1;
+      // approximates this filter size on unscaled input image:
+      const float supp_in = supp * (1.0f/scale);
+      const float i_in = dt_log2f((supp_in - 1)*.5f) - 1.0f;
+      // i_in = max_scale .. .. .. 0
+      const float t = 1.0f - (i_in+.5f)/i0;
+      if(t < 0.0f) break;
+    }
+
+    const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
+
+    tiling->factor = 3.5f + max_scale;  // in + out + tmp + reducebuffer + scale buffers
+    tiling->maxbuf = 1.0f;
+    tiling->overhead = 0;
+    tiling->overlap = max_filter_radius;
+    tiling->xalign = 1;
+    tiling->yalign = 1;
+  }
+
   return;
 }
 
@@ -308,7 +348,7 @@ weight_sse(const __m128 *c1, const __m128 *c2, const float sharpen)
   __m128 wgt = _mm_setzero_ps();
 
 #define SUM_PIXEL_EPILOGUE \
-  sum = _mm_mul_ps(sum, _mm_rcp_ps(wgt)); \
+  sum = _mm_div_ps(sum, wgt); \
   \
   _mm_stream_ps(pdetail, _mm_sub_ps(*px, sum)); \
   _mm_stream_ps(pcoarse, sum); \
@@ -532,7 +572,6 @@ void process_wavelets(
       fclose(f);
     }
 #endif
-
   buf1 = (float *)ovoid;
   buf2 = tmp;
 
@@ -586,6 +625,7 @@ void process_wavelets(
         sum_y2[c] += buf[scale][4*k+c]*buf[scale][4*k+c];
       }
     }
+
     const float sb2 = sigma_band*sigma_band;
     const float mean_y[3] = { sum_y[0]/n, sum_y[1]/n, sum_y[2]/n };
     const float var_y[3] = {
@@ -608,6 +648,7 @@ void process_wavelets(
     eaw_synthesize (buf2, buf1, buf[scale], thrs, boost, width, height);
     // DEBUG: clean out temporary memory:
     // memset(buf1, 0, sizeof(float)*4*width*height);
+
     float *buf3 = buf2;
     buf2 = buf1;
     buf1 = buf3;
@@ -843,18 +884,10 @@ static int bucket_next(unsigned int *state, unsigned int max)
   return next;
 }
 
-int
-process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+int process_nlmeans_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
   dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->data;
-
-  // TODO: implement that in opencl, too (mostly copy/paste atrous.c).
-  if(d->mode == MODE_WAVELETS)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] wavelets are currently unimplemented in opencl\n");
-    return FALSE;
-  }
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -876,16 +909,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
   const float norm = 0.015f/(2*P+1);
 
-#if 0
-  if(P < 1)
-  {
-    size_t origin[] = { 0, 0, 0};
-    size_t region[] = { width, height, 1};
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
-    if (err != CL_SUCCESS) goto error;
-    return TRUE;
-  }
-#endif
 
   const float wb[4] = {
     piece->pipe->processed_maximum[0]*d->strength,
@@ -1064,6 +1087,303 @@ error:
   dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
+
+
+int process_wavelets_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
+  dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->data;
+
+  const int max_max_scale = 5; // hard limit
+  int max_scale = 0;
+  const float scale = roi_in->scale/piece->iscale;
+  // largest desired filter on input buffer (20% of input dim)
+  const float supp0 = MIN(2*(2<<(max_max_scale-1)) + 1, MAX(piece->buf_in.height*piece->iscale, piece->buf_in.width*piece->iscale) * 0.2f);
+  const float i0 = dt_log2f((supp0 - 1.0f)*.5f);
+  for(; max_scale<max_max_scale; max_scale++)
+  {
+    // actual filter support on scaled buffer
+    const float supp  = 2*(2<<max_scale) + 1;
+    // approximates this filter size on unscaled input image:
+    const float supp_in = supp * (1.0f/scale);
+    const float i_in = dt_log2f((supp_in - 1)*.5f) - 1.0f;
+    // i_in = max_scale .. .. .. 0
+    const float t = 1.0f - (i_in+.5f)/i0;
+    if(t < 0.0f) break;
+  }
+
+  const int devid = piece->pipe->devid;
+  cl_int err = -999;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  cl_mem dev_tmp = NULL;
+  cl_mem dev_buf1 = NULL;
+  cl_mem dev_buf2 = NULL;
+  cl_mem dev_m = NULL;
+  cl_mem dev_r = NULL;
+  cl_mem dev_detail[max_max_scale];
+  for(int k=0;k<max_scale;k++) dev_detail[k] = NULL;
+
+  // prepare local work group
+  size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
+  size_t workgroupsize = 0;          // the maximum number of items in a work group
+  unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
+  size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
+
+  // make sure blocksize is not too large
+  int blocksize = BLOCKSIZE;
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
+      dt_opencl_get_kernel_work_group_size(devid, gd->kernel_denoiseprofile_reduce_first, &kernelworkgroupsize) == CL_SUCCESS)
+  {
+    // reduce blocksize step by step until it fits to limits
+    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize*blocksize > kernelworkgroupsize
+          || blocksize*blocksize > workgroupsize || blocksize*blocksize*2*4*sizeof(float) > localmemsize)
+    {
+      if(blocksize == 1) break;
+      blocksize >>= 1;
+    }
+  }
+  else
+  {
+    blocksize = 1;
+  }
+
+  if(blocksize < 2)
+  {
+    // very small blocksize. this is really unlikely to happen, but let's be prepared: give up on opencl in that case
+    return FALSE;
+  }
+
+  const size_t bwidth = ROUNDUP(width, blocksize);
+  const size_t bheight = ROUNDUP(height, blocksize);
+
+  const int bufsize = (bwidth / blocksize) * (bheight / blocksize);
+  const int lsize = maxsizes[0];
+  const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, lsize) / lsize);
+
+  dev_m = dt_opencl_alloc_device_buffer(devid, bufsize*2*4*sizeof(float));
+  if(dev_m == NULL) goto error;
+
+  dev_r = dt_opencl_alloc_device_buffer(devid, reducesize*2*4*sizeof(float));
+  if(dev_r == NULL) goto error;
+
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4*sizeof(float));
+  if(dev_tmp == NULL) goto error;
+
+  for(int k=0; k<max_scale; k++)
+  {
+    dev_detail[k] = dt_opencl_alloc_device(devid, width, height, 4*sizeof(float));
+    if(dev_detail[k] == NULL) goto error;
+  }
+
+  const float wb[4] = {
+    piece->pipe->processed_maximum[0]*d->strength*(scale*scale),
+    piece->pipe->processed_maximum[1]*d->strength*(scale*scale),
+    piece->pipe->processed_maximum[2]*d->strength*(scale*scale),
+    0.0f};
+  const float aa[4] = {
+    d->a[1]*wb[0],
+    d->a[1]*wb[1],
+    d->a[1]*wb[2],
+    1.0f};
+  const float bb[4] = {
+    d->b[1]*wb[0],
+    d->b[1]*wb[1],
+    d->b[1]*wb[2],
+    1.0f};
+  const float sigma2[4] = {
+    (bb[0]/aa[0])*(bb[0]/aa[0]),
+    (bb[1]/aa[1])*(bb[1]/aa[1]),
+    (bb[2]/aa[1])*(bb[2]/aa[1]),
+    0.0f};
+
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 4, 4*sizeof(float), (void *)&aa);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 5, 4*sizeof(float), (void *)&sigma2);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_precondition, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  dev_buf1 = dev_out;
+  dev_buf2 = dev_tmp;
+
+  /* decompose image into detail scales and coarse */
+  for(int s=0; s<max_scale; s++)
+  {
+    const unsigned int scale = s;
+    const float zero = 0.0f;
+
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 0, sizeof(cl_mem), (void *)&dev_buf1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 1, sizeof(cl_mem), (void *)&dev_buf2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 2, sizeof(cl_mem), (void *)&dev_detail[s]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 4, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 5, sizeof(unsigned int), (void *)&scale);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 6, sizeof(float), (void *)&zero);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_decompose, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+    // indirectly give gpu some air to breathe (and to do display related stuff)
+    dt_iop_nap(darktable.opencl->micro_nap);
+
+    cl_mem dev_buf3 = dev_buf2;
+    dev_buf2 = dev_buf1;
+    dev_buf1 = dev_buf3;
+  }
+
+  /* now synthesize again */
+  for(int scale=max_scale-1; scale>=0; scale--)
+  {
+    // variance stabilizing transform maps sigma to unity.
+    const float sigma = 1.0f;
+    // it is then transformed by wavelet scales via the 5 tap a-trous filter:
+    const float varf = sqrtf(2.0f + 2.0f * 4.0f*4.0f + 6.0f*6.0f)/16.0f; // about 0.5
+    const float sigma_band = powf(varf, scale) *sigma;
+
+    // determine thrs as bayesshrink
+    float sum_y[3] = {0.0f};
+    float sum_y2[3] = {0.0f};
+
+    size_t lsizes[3];
+    size_t llocal[3];
+
+    lsizes[0] = bwidth;
+    lsizes[1] = bheight;
+    lsizes[2] = 1;
+    llocal[0] = blocksize;
+    llocal[1] = blocksize;
+    llocal[2] = 1;
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 0, sizeof(cl_mem), &(dev_detail[scale]));
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 1, sizeof(int), &width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 2, sizeof(int), &height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 3, sizeof(cl_mem), &dev_m);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 4, blocksize*blocksize*2*4*sizeof(float), NULL);
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_denoiseprofile_reduce_first, lsizes, llocal);
+    if(err != CL_SUCCESS) goto error;
+
+
+    lsizes[0] = reducesize*lsize;
+    lsizes[1] = 1;
+    lsizes[2] = 1;
+    llocal[0] = lsize;
+    llocal[1] = 1;
+    llocal[2] = 1;
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 0, sizeof(cl_mem), &dev_m);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 1, sizeof(cl_mem), &dev_r);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 2, sizeof(int), &bufsize);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 3, lsize*2*4*sizeof(float), NULL);
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_denoiseprofile_reduce_second, lsizes, llocal);
+    if(err != CL_SUCCESS) goto error;
+
+
+    float sumsum[2*4*reducesize];
+    err = dt_opencl_read_buffer_from_device(devid, (void*)sumsum, dev_r, 0, reducesize*2*4*sizeof(float), CL_TRUE);
+    if(err != CL_SUCCESS) goto error;
+
+    for(int k = 0; k < reducesize; k++)
+    {
+      for(int c=0;c<3;c++)
+      {
+        sum_y [c] += sumsum[4*(2*k)+c];
+        sum_y2[c] += sumsum[4*(2*k+1)+c];
+      }
+    }
+
+    const float sb2 = sigma_band*sigma_band;
+
+    const int n = width*height;
+    const float mean_y[3] = { sum_y[0]/n, sum_y[1]/n, sum_y[2]/n };
+
+    const float var_y[3] = {
+      sum_y2[0]/(n-1.0f) - mean_y[0]*mean_y[0],
+      sum_y2[1]/(n-1.0f) - mean_y[1]*mean_y[1],
+      sum_y2[2]/(n-1.0f) - mean_y[2]*mean_y[2]};
+    const float std_x[3] = {
+      sqrtf(MAX(1e-6f, var_y[0] - sb2)),
+      sqrtf(MAX(1e-6f, var_y[1] - sb2)),
+      sqrtf(MAX(1e-6f, var_y[2] - sb2))};
+    // add 8.0 here because it seemed a little weak
+    const float adjt = 8.0f;
+
+    const float thrs[4] = { adjt * sb2/std_x[0], adjt * sb2/std_x[1], adjt * sb2/std_x[2], 0.0f};
+    // fprintf(stderr, "scale %d thrs %f %f %f\n", scale, thrs[0], thrs[1], thrs[2]);
+
+    const float boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize,  0, sizeof(cl_mem), (void *)&dev_buf2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize,  1, sizeof(cl_mem), (void *)&dev_buf1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize,  2, sizeof(cl_mem), (void *)&dev_detail[scale]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize,  3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize,  4, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize,  5, sizeof(float), (void *)&thrs[0]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize,  6, sizeof(float), (void *)&thrs[1]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize,  7, sizeof(float), (void *)&thrs[2]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize,  8, sizeof(float), (void *)&thrs[3]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize,  9, sizeof(float), (void *)&boost[0]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 10, sizeof(float), (void *)&boost[1]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 11, sizeof(float), (void *)&boost[2]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 12, sizeof(float), (void *)&boost[3]);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_synthesize, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+    // indirectly give gpu some air to breathe (and to do display related stuff)
+    dt_iop_nap(darktable.opencl->micro_nap);
+
+    cl_mem dev_buf3 = dev_buf2;
+    dev_buf2 = dev_buf1;
+    dev_buf1 = dev_buf3;
+  }
+
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 0, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 4, 4*sizeof(float), (void *)&aa);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 5, 4*sizeof(float), (void *)&sigma2);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_backtransform, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  if(!darktable.opencl->async_pixelpipe || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)
+    dt_opencl_finish(devid);
+
+
+  if(dev_r != NULL) dt_opencl_release_mem_object(dev_r);
+  if(dev_m != NULL)  dt_opencl_release_mem_object(dev_m);
+  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  for(int k=0; k<max_scale; k++)
+    if (dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
+  return TRUE;
+
+error:
+  if(dev_r != NULL) dt_opencl_release_mem_object(dev_r);
+  if(dev_m != NULL)  dt_opencl_release_mem_object(dev_m);
+  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  for(int k=0; k<max_scale; k++)
+    if (dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d, devid %d\n", err, devid);
+  return FALSE;
+}
+
+
+int process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
+
+  if(d->mode == MODE_NLMEANS)
+  {
+    return process_nlmeans_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
+  }
+  else
+  {
+    return process_wavelets_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
+  }
+}
 #endif  // HAVE_OPENCL
 
 void process(
@@ -1080,8 +1400,6 @@ void process(
   else
     process_wavelets(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
-
-
 
 
 /** this will be called to init new defaults if a new image is loaded from film strip mode. */
@@ -1165,13 +1483,18 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 11; // denoiseprofile.cl, from programs.conf
   dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)malloc(sizeof(dt_iop_denoiseprofile_global_data_t));
   module->data = gd;
-  gd->kernel_denoiseprofile_precondition = dt_opencl_create_kernel(program, "denoiseprofile_precondition");
-  gd->kernel_denoiseprofile_init         = dt_opencl_create_kernel(program, "denoiseprofile_init");
-  gd->kernel_denoiseprofile_dist         = dt_opencl_create_kernel(program, "denoiseprofile_dist");
-  gd->kernel_denoiseprofile_horiz        = dt_opencl_create_kernel(program, "denoiseprofile_horiz");
-  gd->kernel_denoiseprofile_vert         = dt_opencl_create_kernel(program, "denoiseprofile_vert");
-  gd->kernel_denoiseprofile_accu         = dt_opencl_create_kernel(program, "denoiseprofile_accu");
-  gd->kernel_denoiseprofile_finish       = dt_opencl_create_kernel(program, "denoiseprofile_finish");
+  gd->kernel_denoiseprofile_precondition  = dt_opencl_create_kernel(program, "denoiseprofile_precondition");
+  gd->kernel_denoiseprofile_init          = dt_opencl_create_kernel(program, "denoiseprofile_init");
+  gd->kernel_denoiseprofile_dist          = dt_opencl_create_kernel(program, "denoiseprofile_dist");
+  gd->kernel_denoiseprofile_horiz         = dt_opencl_create_kernel(program, "denoiseprofile_horiz");
+  gd->kernel_denoiseprofile_vert          = dt_opencl_create_kernel(program, "denoiseprofile_vert");
+  gd->kernel_denoiseprofile_accu          = dt_opencl_create_kernel(program, "denoiseprofile_accu");
+  gd->kernel_denoiseprofile_finish        = dt_opencl_create_kernel(program, "denoiseprofile_finish");
+  gd->kernel_denoiseprofile_backtransform = dt_opencl_create_kernel(program, "denoiseprofile_backtransform");
+  gd->kernel_denoiseprofile_decompose     = dt_opencl_create_kernel(program, "denoiseprofile_decompose");
+  gd->kernel_denoiseprofile_synthesize    = dt_opencl_create_kernel(program, "denoiseprofile_synthesize");
+  gd->kernel_denoiseprofile_reduce_first  = dt_opencl_create_kernel(program, "denoiseprofile_reduce_first");
+  gd->kernel_denoiseprofile_reduce_second = dt_opencl_create_kernel(program, "denoiseprofile_reduce_second");
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -1184,6 +1507,11 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_vert);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_accu);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_finish);
+  dt_opencl_free_kernel(gd->kernel_denoiseprofile_backtransform);
+  dt_opencl_free_kernel(gd->kernel_denoiseprofile_decompose);
+  dt_opencl_free_kernel(gd->kernel_denoiseprofile_synthesize);
+  dt_opencl_free_kernel(gd->kernel_denoiseprofile_reduce_first);
+  dt_opencl_free_kernel(gd->kernel_denoiseprofile_reduce_second);
   free(module->data);
   module->data = NULL;
 }

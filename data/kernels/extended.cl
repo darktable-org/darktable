@@ -381,7 +381,7 @@ pixelmax_first (read_only image2d_t in, const int width, const int height, globa
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  const int lsz = xlsz * ylsz;
+  const int lsz = mul24(xlsz, ylsz);
 
   for(int offset = lsz / 2; offset > 0; offset = offset / 2)
   {
@@ -398,7 +398,7 @@ pixelmax_first (read_only image2d_t in, const int width, const int height, globa
   const int ygid = get_group_id(1);
   const int xgsz = get_num_groups(0);
 
-  const int m = ygid * xgsz + xgid;
+  const int m = mad24(ygid, xgsz, xgid);
   accu[m] = buffer[0];
 }
 
@@ -414,7 +414,7 @@ pixelmax_second(global float* input, global float *result, const int length, loc
   {
     float element = input[x];
     accu = (accu > element) ? accu : element;
-    x += get_local_size(0);
+    x += get_global_size(0);
   }
   
   int lid = get_local_id(0);
