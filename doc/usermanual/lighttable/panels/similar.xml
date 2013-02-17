@@ -4,7 +4,7 @@
 			<colspec colwidth="4*"/>
 			<tbody>
 				<row>						
-					<entry>Similar images will match and collect images with similar characteristics to the selected one and show them on lighttable.
+					<entry>This module will match and collect images with similar characteristics to the selected one and show them on lighttable.
 					</entry>
 					<entry>
 						<graphic fileref="lighttable/images/panel_similar.png" scalefit="1" width="80%" align="center" />

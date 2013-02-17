@@ -55,7 +55,8 @@
 		</sect5>	
 		<sect5><title>geometry</title>
 			<para>In addition to correction of lens flaws, this module can change the projection type of your image. Set this
-                              combobox to the aimed projection type. 
+                              combobox to the aimed projection type, like <quote>rectilinear</quote>, <quote>fish-eye</quote>, <quote>panoramic</quote>,
+                              <quote>equirectangular</quote>. 
                         </para>
 		</sect5>	
 		<sect5><title>scale</title>

@@ -9,14 +9,13 @@
 				the output of the current module. Not all modules support blending because it would not work
 				and break the use of the module.
 		</para>
-		<para>Modules that do support blending, inherit additional controls at the bottom of module user interface to control
-			parameters of the blending.
+		<para>Modules that do support blending, inherit additional controls at the bottom of module's user interface.
 		</para>
 
                 <sect3><title>Usage</title>	
 
 		<sect4><title>blend mode</title>
-			<para>There are several modes implemented and more can be added. For now all the common ones are there and
+			<para>There are several blend modes implemented and more might be added in future. For now all the common ones are there and
 			      you will recognize a few of them from other imaging software. A good introduction on many
         	              common blend modes is given in <ulink url="http://docs.gimp.org/2.8/en/gimp-concepts-layer-modes.html">
                               The Gimp Manual (Chapter 8.2, <quote>Layer Modes</quote>)</ulink>. Therefore we only discuss a few blend modes here in more detail.
@@ -91,7 +90,7 @@
 		
 		<sect4><title>opacity</title>
 			<para>This slider controls the amount of blending. A value of 100% gives the module's full effect into the
-        	              pixelpipe; a value of 0% means no effect of this module. With blend mode Normal and a proper selection
+        	              pixelpipe; a value of 0% means no effect of this module. With blend mode <quote>normal</quote> and a proper selection
         	              of opacity you can therefore control the strength of a module's effect.
 			</para>
 
@@ -107,7 +106,7 @@
 
 		<sect3><title>Examples</title>
 			<sect4 status="draft"><title>Texturing an image</title>
-				<para>The watermark module supports svg files with embedded images and thanks to it we can easily texture an 
+				<para>The watermark module supports SVG files with embedded images and thanks to it we can easily texture an 
 						image using the watermark module in conjunction with a blending operator.
 				</para>
 			</sect4>

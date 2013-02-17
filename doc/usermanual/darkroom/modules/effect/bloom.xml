@@ -5,8 +5,8 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module boost highlights and softly blooms them over the image hence the name of the effect,
-								there are numeros ways to use this module dependent on the image actual scenary lightning.
+						<entry>This module boost highlights and softly blooms them over the image hence the name of the effect.
+						       There are numerous ways to use this module dependent on the image's actual scenery lighting.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/bloom.png" scalefit="1" width="80%" align="center" />
@@ -18,14 +18,14 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>Keep the default values, and start off by changing the strength value for a pleasent value for your image, 
+		<para>Starting from the default settings change the strength value for a pleasent look, 
 				then change the size to control the spread of light.
 		</para>
 		<sect5><title>size</title>
 			<para>Represents the spatial extent of the bloom effect.</para>
 		</sect5>
 		<sect5><title>threshold</title>
-			<para>Set the threshold turning on the increase in brightness.</para>
+			<para>Set the threshold for the increase in brightness.</para>
 		</sect5>	
 		<sect5><title>strength</title>
 			<para>Set the strength of overlightning for the effect.</para>
@@ -49,8 +49,8 @@
 								<graphic fileref="darkroom/modules/images/bloom_ex2.png" scalefit="1" width="90%" align="center" />
 							</entry>						
 							<entry>
-								<para>Here I have choosen to use the size 10% which is a rather small radius for the soft light spread, 
-									and I also boosted up the strength to 50% for a more exaggerated effect.
+								<para>Here we have choosen to use a size of 10%, which is a rather small radius for the soft light spread. 
+								      We boosted up the strength to 50% for a more exaggerated effect.
 								</para>
 							</entry>
 						</row>

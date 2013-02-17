@@ -28,7 +28,7 @@
 		</sect5>	
 		  <sect5><title>spatial extent</title>
 			<para>Sets the spatial extent of the bilateral filter. Lower values will cause contrast compression to have stronger
-                             (often adverse) effects also on image details.</para>
+                             effects also on image details.</para>
 		</sect5>
 
 	</sect4>

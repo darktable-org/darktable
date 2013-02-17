@@ -12,6 +12,7 @@ spot removal, noise, lens correction among others.
   <xi:include href="lenscorrection.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="spotremoval.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="rawdenoise.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="dithering.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="hotpixels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="chromatic.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 

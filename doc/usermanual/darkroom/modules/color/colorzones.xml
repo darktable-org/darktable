@@ -29,8 +29,8 @@
                       <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" /> and will show the picked values in
                       the diagram.
                 </para>
-                <para>You can click on any of the six nodes on the curve and drag to adjust it vertically. A circle indicates how strong adjacent nodes
-                      will be affected. Use the scroll wheel of your mouse to change the circle diameter. You can also use the six controlpoints 
+                <para>You can click on any of the eight nodes on the curve and drag to adjust it vertically. A circle indicates how strong adjacent nodes
+                      will be affected. Use the scroll wheel of your mouse to change the circle diameter. You can also use the eight controlpoints 
                       (triangles which define the vertical value of the nodes) at bottom to adjust the curve.
                 </para>			
 	</sect4>

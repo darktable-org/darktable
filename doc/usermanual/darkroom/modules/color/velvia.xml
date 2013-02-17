@@ -23,8 +23,8 @@
 		</sect5>
 		<sect5><title>mid-tones bias</title>
 			<para>This slider controls saturation preservation in mid-tones. It is expressed
-			as the lightness repartition between mid-tones and shadows/highlights. The greater the first
-			number, the stronger the effect.
+			as the lightness repartition between mid-tones and shadows/highlights. The lower the 
+			value, the stronger is the velvia effect.
 			</para>
 		</sect5>
 	</sect4>

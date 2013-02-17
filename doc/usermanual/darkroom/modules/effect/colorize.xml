@@ -17,10 +17,11 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-                <para>Several parameters control the effect of this module. Much more versatility can be reached if you apply blending or even conditional blending.
+                <para>Several parameters control the effect of this module. Much more versatility can be reached if you apply blending or even conditional blending
+                      (see <xref linkend="blending operators"/> and <xref linkend="conditional blending"/>).
                 </para>
 		<sect5><title>hue</title>
-			<para>Select the hue tone of the color layer.</para>
+			<para>Select the hue of the color layer.</para>
 		</sect5>
 		<sect5><title>saturation</title>
 			<para>Select the color saturation of shadow tones.</para>

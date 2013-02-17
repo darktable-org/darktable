@@ -23,6 +23,7 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
+                <para>This module comes with several presets. Give them a try to get a better feeling how it works.</para>
 		<sect5><title>curve</title>
 		<para>The horizontal axis is about pixel lightness from dark (left) to bright (right). The vertical axis represents the kind of vision from night vision (bottom) to day vision (top)</para>	
 		</sect5>

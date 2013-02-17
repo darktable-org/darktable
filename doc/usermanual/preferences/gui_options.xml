@@ -3,102 +3,102 @@
 	</para>
 
 	<sect4><title>width of the side panels in pixels</title>
-		<para>this controls the size of size panels in pixels; side panels are found left and right to the center view (default 300).
+		<para>This controls the size of size panels in pixels. Side panels are found left and right to the center view (default 300).
 		</para>
         </sect4>
 
 	<sect4><title>don't use embedded preview jpeg but half-size raw</title>
-		<para>check this option to not use the embedded jpeg from the raw file but process the raw data; this is slower but gives you color managed thumbnails (default off).
+		<para>Check this option to not use the embedded jpeg from the raw file but process the raw data. This is slower but gives you color managed thumbnails (default off).
 		</para>
         </sect4>
 
 	<sect4><title>ask before removing images from database</title>
-		<para>always ask the user before any image is removed from db (default on).
+		<para>Always ask the user before any image is removed from db (default on).
 		</para>
         </sect4>
 
 	<sect4><title>ask before erasing images from disk</title>
-		<para>always ask the user before any image file is deleted (default on).
+		<para>Always ask the user before any image file is deleted (default on).
 		</para>
         </sect4>
 
 	<sect4><title>ask before moving images from film roll folder</title>
-		<para>always ask the user before any image file is moved (default on).
+		<para>Always ask the user before any image file is moved (default on).
 		</para>
         </sect4>
 
 	<sect4><title>ask before copying images to new film roll folder</title>
-		<para>always ask the user before any image file is copied (default on).
+		<para>Always ask the user before any image file is copied (default on).
 		</para>
         </sect4>
 
 	<sect4><title>number of folder levels to show in lists</title>
-		<para>the number of folder levels to show in film roll names, starting from the right (default 1).
+		<para>The number of folder levels to show in film roll names, starting from the right (default 1).
 		</para>
         </sect4>
 
 	<sect4><title>ignore jpeg images when importing film rolls</title>
-		<para>when having raw+jpeg images together in one directory it makes no sense to import both; with this flag one can ignore all jpegs found (default off).
+		<para>When having RAW+JPEG images together in one directory it makes no sense to import both. With this flag one can ignore all jpegs found (default off).
 		</para>
         </sect4>
 
 	<sect4><title>recursive directory traversal when importing filmrolls</title>
-		<para>not only import images from the directory selected but recursively go through all subdirectories as well (default off).
+		<para>Not only import images from the directory selected but recursively go through all subdirectories as well (default off).
 		</para>
         </sect4>
 
 	<sect4><title>creator to be applied when importing</title>
-		<para>if given automatically add this string as a creator tag when importing images (default none).
+		<para>If given automatically add this string as a creator tag when importing images (default none).
 		</para>
         </sect4>
 
 	<sect4><title>publisher to be applied when importing</title>
-		<para>if given automatically add this string as a publisher tag when importing images (default none).
+		<para>If given automatically add this string as a publisher tag when importing images (default none).
 		</para>
         </sect4>
 
 	<sect4><title>rights to be applied when importing</title>
-		<para>if given automatically add this string as a copyrights tag when importing images (default none).
+		<para>If given automatically add this string as a copyrights tag when importing images (default none).
 		</para>
         </sect4>
 
 	<sect4><title>initial import rating</title>
-		<para>initial star rating (from 0 to 5) for all images when importing a filmroll (default 1).
+		<para>Initial star rating (from 0 to 5) for all images when importing a filmroll (default 1).
 		</para>
         </sect4>
 
 	<sect4><title>enable filmstrip</title>
-		<para>enable the filmstrip in darkroom, tethering and geomapping modes (default on).
+		<para>Enable the filmstrip in darkroom, tethering and geomapping modes (default on).
 		</para>
         </sect4>
 
 	<sect4><title>maximum width of image drawing area</title>
-		<para>maximum width of the image drawing area in darkroom mode. adjust to your screen; needs a restart and will invalidate current thumbnail caches (default 1300).
+		<para>Maximum width of the image drawing area in darkroom mode - adjust to your screen. Needs a restart and will invalidate current thumbnail caches (default 1300).
 		</para>
         </sect4>
 
 	<sect4><title>maximum height of image drawing area</title>
-		<para>maximum height of the image drawing area in darkroom mode. adjust to your screen; needs a restart and will invalidate current thumbnail caches (default 1000).
+		<para>Maximum height of the image drawing area in darkroom mode - adjust to your screen. Needs a restart and will invalidate current thumbnail caches (default 1000).
 		</para>
         </sect4>
 
 	<sect4><title>compression of thumbnail images</title>
-		<para>controls the compression of thumbnail images in memory and on disk; options: "off", "low quality (fast)", "high quality (slow)"; (default off).
+		<para>Controls the compression of thumbnail images in memory and on disk. Options: "off", "low quality (fast)", "high quality (slow)"; (default off).
 		</para>
         </sect4>
 
 	<sect4><title>ask before deleting a tag</title>
-		<para>always ask user before deleting a tag from an image (default on).
+		<para>Always ask user before deleting a tag from an image (default on).
 		</para>
         </sect4>
 
 	<sect4><title>maximum number of images drawn on map</title>
-		<para>the maximum number of geotagged images drawn on the map. increasing this number can slow drawing of the map down; needs a restart if changed (default 100).
+		<para>The maximum number of geotagged images drawn on the map. Increasing this number can slow drawing of the map down. Needs a restart if changed (default 100).
 		</para>
         </sect4>
 
 	<sect4><title>pretty print the image location</title>
-		<para>show a more readable representation of the geo location in the image information module (default on).
+		<para>Show a more readable representation of the geo location in the image information module (default on).
 		</para>
         </sect4>
 

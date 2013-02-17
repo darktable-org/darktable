@@ -25,7 +25,7 @@
 		<para>Overexposed is used to visualize pixels that are above and/or below a user-defined threshold. You can activate this module
                       the usual way by pressing the activate button <inlinegraphic fileref="&icon_module_enable;" scalefit="1" width="2%"  align="center"/>.
                       You can also press icon <inlinegraphic fileref="&icon_module_overexposed;" scalefit="1" width="2%" align="center" /> 
-                      in the lower panel as a shortcut or activate it with keyboard accelerator <emphasis>o</emphasis>.</para>
+                      in the lower panel as a shortcut or activate it with keyboard accelerator <quote>o</quote>.</para>
 		<sect5><title>color scheme</title>
 			<para>In its default color scheme this module will display deep shadows in blue and highlights in red. These
                               colors will be easy to identify in most cases. In some cases you might want to change that to

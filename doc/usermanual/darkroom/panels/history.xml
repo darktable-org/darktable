@@ -24,13 +24,13 @@
 			</tgroup>
 		</informaltable>
                 <para><emphasis>Be cautious: also activating any action by key accelerators will discard all modules above 
-                the current one, e.g. if you press "o" to see over/under exposed areas. The same happens if you press the according
+                the currently selected one, e.g. if you press <quote>o</quote> to see over/under exposed areas. The same happens if you press the according
                 toggle button <inlinegraphic fileref="&icon_module_overexposed;" scalefit="1" width="2%" align="center" />. It is easy
-                to lose all development work on an image this way.</emphasis>
+                to lose all development work on an image this way!</emphasis>
 		</para>
 		<para>
-            	Hitting <quote>compress history stack</quote> generates the shortest historystack that produces the
-            	current image, i.e. suppressing all de-activated modules. This will also discard all modules above
+            	Hitting <quote>compress history stack</quote> generates the shortest history stack that produces the
+            	current image, i.e. suppressing all de-activated modules. This also will discard all modules above
                 the currently selected one.
 		</para>
 		<para>The button to the right <inlinegraphic fileref="&icon_styles;" scalefit="1" width="2%" align="center" /> 

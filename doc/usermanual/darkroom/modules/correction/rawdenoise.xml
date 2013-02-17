@@ -18,7 +18,7 @@
 
 	<sect4><title>Usage</title>
 		<sect5><title>noise threshold</title>
-			<para>Set the threshold for noise detection.</para>
+			<para>Set the threshold for noise detection. Higher values lead to stronger noise removal and higher loss of image detail.</para>
 		</sect5>			
 	</sect4>
 </sect3>

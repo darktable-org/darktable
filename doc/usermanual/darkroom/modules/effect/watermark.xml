@@ -6,7 +6,8 @@
 				<tbody>
 					<row>
 						<entry><para>The watermark module provides a way to render a vector-based overlay onto your image.
-                                                             Watermarks are standard SVG documents and can be designed using Inkscape.</para>
+                                                             Watermarks are standard SVG documents and can be designed using <ulink url="http://www.inkscape.org">
+                                                             <emphasis>Inkscape</emphasis></ulink>.</para>
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/watermark.png" scalefit="1" width="80%" align="center" />
@@ -32,8 +33,8 @@
 		  <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0"><tbody>
 		    <row> <entry>$(DARKTABLE.NAME)</entry><entry><para>The application name</para></entry></row>
 		    <row> <entry>$(DARKTABLE.VERSION)</entry><entry><para>The version of darktable</para></entry></row>
-		    <row> <entry>$(IMAGE.ID)</entry><entry><para>The uniq image id within current library</para></entry></row>
-		    <row> <entry>$(IMAGE.FILENAME)</entry><entry><para>The iamge filename</para></entry></row>
+		    <row> <entry>$(IMAGE.ID)</entry><entry><para>The unique image id within current library</para></entry></row>
+		    <row> <entry>$(IMAGE.FILENAME)</entry><entry><para>The image filename</para></entry></row>
 		    <row> <entry>$(IMAGE.EXIF)</entry><entry><para>The image exif string</para></entry></row>
 		    <row> <entry>$(EXIF.DATE)</entry><entry><para>The image date</para></entry></row>
 		    <row> <entry>$(EXIF.DATE.SECOND)</entry><entry><para> Seconds from the image EXIF data</para></entry></row>
@@ -55,7 +56,7 @@
 		    <row> <entry>$(DATE.MONTH)</entry><entry><para> Current system time month</para></entry></row>
 		    <row> <entry>$(DATE.SHORT_MONTH)</entry><entry><para> </para></entry></row>
 		    <row> <entry>$(DATE.LONG_MONTH)</entry><entry><para> </para></entry></row>
-		    <row> <entry>$(DATE.SHORT_YEAR)</entry><entry><para> Current system time yaer (abbreviated)</para></entry></row>
+		    <row> <entry>$(DATE.SHORT_YEAR)</entry><entry><para> Current system time year (abbreviated)</para></entry></row>
 		    <row> <entry>$(DATE.LONG_YEAR)</entry><entry><para> Current system time year</para></entry></row>
 		    <row> <entry>$(EXIF.MAKER)</entry><entry><para>The maker of camera model</para></entry></row>
 		    <row> <entry>$(EXIF.MODEL)</entry><entry><para>The camera model</para></entry></row>
@@ -80,7 +81,7 @@
 			<para>Set the opacity of the render of watermark.</para>
 		</sect5>
 		<sect5><title>scale</title>
-			<para>Scale the watermark pixelindependent.</para>
+			<para>Scale the watermark pixel-independently.</para>
 		</sect5>
 		<sect5><title>alignment</title>
 			<para>Use these controls to align the watermark to any edge or center of the image.</para>

@@ -26,9 +26,9 @@
 			<para>Set the radius of the blur.</para>
 		</sect5>
 		<sect5><title>soften with</title>
-			<para>This combobox defines the blur algorithm; you can chose between Gaussian blur (default)
-                              and bilateral filter. The latter leads to an edge preserving blur. Gaussian will blur all image 
-                              channels: L, a and b. Bilateral will only blur L channel.</para>
+			<para>This combobox defines the blur algorithm; you can chose between <quote>gaussian</quote> blur (default)
+                              and <quote>bilateral</quote> filter. The latter leads to an edge preserving blur. <quote>gaussian</quote> will blur all image 
+                              channels: L, a and b. <quote>bilateral</quote> will only blur L channel.</para>
 		</sect5>
 		<sect5><title>contrast</title>
 			<para>Changes the contrast. Negative values result in an inverted negative image. Higher

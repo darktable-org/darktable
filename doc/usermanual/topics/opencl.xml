@@ -76,7 +76,7 @@
 
 		<para>In that case, the best thing to do is start darktable from a console with
 		    <programlisting>
-darktable –d opencl
+darktable -d opencl
 		    </programlisting>
 		      This will give additional debugging output about the initialization and use of OpenCL. First see if you find a line that starts with <quote>[opencl_init] FINALLY …</quote> 
                       This should tell you, if OpenCL support is available for you or not. If initialization failed, look at the messages above for anything 

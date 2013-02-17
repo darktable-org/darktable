@@ -40,7 +40,7 @@
                 </para>
                 <para>A color swatch representing the sampled point or area is displayed. Numerical values are shown as well. As said before global 
                       color picker works in monitor RGB color space. You can also let darktable translate these numerical values into Lab
-                      color space. Beware that Lab values are approximated here; darktable does not take your specific monitor profile into account.
+                      color space. Beware that Lab values are approximated here; depending on monitor color profile there can be some deviations from the real values.
                 </para>
 		<para>On activation of checkbox <quote>restrict histogram to selection</quote> only the values of your selected area or point are taken into account
                       by the histogram on top of right panel (see <xref linkend="histogram"/>). This is a useful tool if you want to know which tonal 
@@ -51,7 +51,7 @@
                       if this is to be done in RGB or Lab color space.
 		</para>
 		<para>Newly created live samples are not locked. If you change the parameters of your image these changes will be reflected in your stored
-                      samples. Use this if you want to get an overview how changing a parameters has effect to different parts of an image. If you click
+                      samples. Use this if you want to get a direct response how changing parameters takes effect to different parts of an image. If you click
                       on the color swatch of a stored live sample it gets locked - a lock symbol is displayed. Further changes of parameters will not affect
                       this live sample any longer. You can for example take two live samples from the same location and have one of them locked. This way
                       you can keep the locked one as a reference sample for comparison.

@@ -60,18 +60,17 @@
           		<para>Sets the color profile for softproof. Profiles to be used are picked up from $DARKTABLE/share/darktable/color/out and 
                         $HOME/.config/darktable/color/out.</para>
 
-          		<para><quote>softproof</quote> is toggled on/off by pressing <emphasis>s</emphasis>; this function allows you to preview the image rendered using a 
+          		<para><emphasis>softproof</emphasis> is toggled on/off by pressing <quote>s</quote>; this function allows you to preview the image rendered using a 
 	        	printer profile, to see how colors will end up on the final print.</para>
 
-        		<para>Likewise <quote>gamut check</quote> is toggled on/off by pressing <emphasis>g</emphasis>; this function marks all pixels, which are out of gamut
-                        with respect to the selected softproof profile, by showing them in cyan. Softproof and Gamut Check are mutually exclusive 
+        		<para>Likewise <emphasis>gamut check</emphasis> is toggled on/off by pressing <quote>g</quote>; this function marks all pixels, which are out of gamut
+                        with respect to the selected softproof profile, by showing them in cyan. <emphasis>softproof</emphasis> and <emphasis>gamut check</emphasis> are mutually exclusive 
                         modes.</para>
 
-                        <para>Softproof and Gamut Check can be activated at any place in darkroom mode. Only if module this module is in
-                        focus, you will get the status displayed left below the center image. Especially for mode Softproof this may raise doubts,
-                        if it is still active or not. If in doubt press <emphasis>g</emphasis>, which will switch to Gamut Check and will be 
-                        clearly discernible by cyan marked pixels. Press <emphasis>g</emphasis> again and you are back to normal display without Softproof 
-                        or Gamut Check.
+                        <para><emphasis>softproof</emphasis> and <emphasis>gamut check</emphasis> can be activated at any place in darkroom mode. Only if this module is in
+                        focus, you will get the status displayed left below the center image. Especially for mode <quote>softproof</quote> this may raise doubts,
+                        if it is still active or not. If in doubt press <quote>g</quote>, which will switch to <emphasis>gamut check</emphasis> and will be 
+                        clearly discernible by cyan marked pixels. Press <quote>g</quote> again and you are back to normal display mode.
                         </para>  
                 </sect5>
                 <sect5><title>display profile</title>

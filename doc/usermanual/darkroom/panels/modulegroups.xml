@@ -34,7 +34,7 @@
                       </row>
 		      <row><entry><graphic fileref="darkroom/images/darkroom_group_favorites.png" scalefit="1" width="20%" align="center" /></entry>
                            <entry>Favorites</entry>
-                           <entry>Modules you have marked as favorites using "more modules" will show up here</entry>
+                           <entry>Modules you have marked as favorites using <emphasis>more modules</emphasis> will show up here (see <xref linkend="more modules"/>)</entry>
                       </row>
 		      <row><entry><graphic fileref="darkroom/images/darkroom_group_basic.png" scalefit="1" width="20%" align="center" /></entry>
                            <entry>Basic</entry>
@@ -66,7 +66,7 @@
                       Now you see all non-hidden modules in one long list. This list shows the sequence in which modules are applied from bottom to top. As a general 
                       principle darktable applies modules in a pre-defined sequence.
                 </para>
-                <para>The long list also helps you to figure out in which color space a specific module acts. In fact there are only three modules which cause a switch from one colorspaces to another:
+                <para>The long list also helps you to figure out in which color space a specific module acts. In fact there are only three modules which cause a switch from one color space to another:
                       <link linkend="demosaic"><emphasis>demosaic</emphasis></link>, <link linkend="input color profile"><emphasis>input color profile</emphasis></link> and
                       <link linkend="output color profile"><emphasis>output color profile</emphasis></link>. Here is an overview:
                 </para>
@@ -79,8 +79,8 @@
 		    <tbody>
 		      <row><entry>up to <emphasis>demosaic</emphasis></entry>
                            <entry></entry>
-                           <entry>Image is in raw data format with only latent colors. Each pixel carries lightness and color information for only one base color. Some of the modules in this part can also act on
-                                  non-RAW input images in RGB format.</entry>
+                           <entry>Image is in raw data format with only latent colors. Each pixel carries lightness and color information for only one base color. Please mind that
+                                  some of the modules in this part can also act on non-RAW input images in RGB format.</entry>
                       </row>
 		      <row><entry>between <emphasis>demosaic</emphasis> and <emphasis>input color profile</emphasis></entry>
                            <entry></entry>

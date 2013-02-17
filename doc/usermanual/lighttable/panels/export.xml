@@ -12,7 +12,7 @@
 					<tbody>
 						<row>						
 							<entry>Each workflow has to end by this panel: the exportation of your developed images.
-							Currently, you can export either to a file on your disk, or to various on-line storages.
+							Currently, you can export either to a file on your disk, or to various on-line storages places.
 							<emphasis>TIP</emphasis>: you can use <emphasis>ctrl-alt-e</emphasis> from within darkroom mode to export.
                                                         </entry>
 							<entry>
@@ -136,7 +136,7 @@
 				</sect4>
 				<sect4><title>export</title>
 					<para>Pressing this button will start a background job to export all selected images. A bar at the bottom of the left side panel will display the 
-                                              progress. Whenever a file is successfully exported a notification message will pop up. You may press on the pop-up to make it disappear.
+                                              progress. Whenever a file is successfully exported a notification message will pop up. You may click on the pop-up to make it disappear.
 					</para>
 				</sect4>
 

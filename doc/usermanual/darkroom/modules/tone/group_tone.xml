@@ -1,6 +1,6 @@
 <sect2 status="final" id="tone group">
   <title>Tone group</title>
-  <para>This group contains the modules to work with the tone in the image, this means only changin the lightness
+  <para>This group contains the modules to work with the tone in the image, which means only changing the lightness
   and leaving the color intact.
   </para>
   <xi:include href="filllight.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>

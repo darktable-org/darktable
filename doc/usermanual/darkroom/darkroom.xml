@@ -20,12 +20,14 @@
 	In the right panel you can see the histogram and then a list of available modules to use when working with your image. 
 	At the bottom of the right panel you can enable/disable view of individual modules.
 	</para>
-	<para>Since darktable 0.6.1, modules are grouped into four groups: basic, color, correct, effect.
-	However, you can view all modules by selecting no group.
+	<para>Modules are organized into five functional groups: basic, tone, color, correction, effect (for more information see
+        <xref linkend="modulegroups"/>).
+	If you click on one of the groups, you only see the respective modules. However, you can also view all modules in one
+        long list by not selecting any group.
 	</para>
 	<para>For those interested in how it works, modules are applied on images following a bottom-to-top order.
 	That means, that if you activated the view of all modules (by selecting no groups), the first module to be applied
-	will frequently be <link linkend="whitebalance"><emphasis>whitebalance</emphasis></link> quite at the bottom of the right panel, whereas the last 
+	will frequently be <link linkend="invert"><emphasis>invert</emphasis></link> at the bottom of the right panel, whereas the last 
         one will be <link linkend="dithering"><emphasis>dithering</emphasis></link> at the top of the right panel.
 	That order can not be changed by user, so modules are always applied following the same order.
 	</para>

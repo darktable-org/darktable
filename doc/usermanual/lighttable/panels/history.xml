@@ -52,7 +52,7 @@
 				<sect4><title>write sidecar files</title>
 					<para>Write .xmp sidecar files for all selected images. By default darktable will
                                               do this automatically for you whenever you work on an image and change history stack. You
-                                              can deactivate automatic sidecar file generation in the preferences dialog, which is not
+                                              can deactivate automatic sidecar file generation in the preferences dialog (see <xref linkend="core options"/>), which is not
                                               recommended.
 					</para>
 				</sect4>

@@ -8,7 +8,7 @@
 							<entry>darktable's splittoning method creates a two color linear toning effect where the 
 								shadows and highlights are represented by two different colors.
 								In the example image below you can see an original black and white image and one where
-								a splittoning effect are applied with blue in shadows and yellow-ish color in highlights.
+								a splittoning effect is applied with blue in shadows and a yellow-ish color in highlights.
 							</entry>
 							<entry>
 								<graphic fileref="darkroom/modules/images/splittoning.png" scalefit="1" width="80%" align="center" />

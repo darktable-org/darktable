@@ -1,6 +1,6 @@
 <sect2 status="final" id="basic group">
   <title>Basic group</title>
-  <para>The basic group of modules contains the modules for basic develeopment. These are ones you probably will use most often, such as exposure, temperature etc.
+  <para>The basic group of modules contains the modules for basic development. These are ones you probably will use most often, such as exposure, temperature etc.
   </para>
 
   <xi:include href="crop_and_rotate.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>

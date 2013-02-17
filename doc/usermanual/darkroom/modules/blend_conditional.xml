@@ -53,7 +53,7 @@
                               Wikipedia's article on color spaces</ulink> for a deeper look.
 		        </para>
 		        <para>
-		              Within each notebook tab two color channel sliders are given; one for the input data that the module receives; and one for
+		              Within each notebook tab two color channel sliders are given: one for the input data that the module receives and one for
 		              the output data that the module produces prior to blending.
 		        </para>
 	        </sect4>

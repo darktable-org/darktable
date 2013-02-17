@@ -7,7 +7,7 @@
 					<entry>This panel lets you use a powerful functionality of darktable: to store a history stack
                                         as a style and apply it to other images.
 					Styles are created in darkroom mode thanks to a button placed below the history panel (see <xref linkend="history"/>).
-					Then they are managed within this lighttable panel, that allows you to apply and delete a style.
+					Then they are managed within this lighttable panel, which allows you to apply and delete a style.
 					</entry>
 					<entry>
 						<graphic fileref="lighttable/images/panel_styles.png" scalefit="1" width="80%" align="center" />

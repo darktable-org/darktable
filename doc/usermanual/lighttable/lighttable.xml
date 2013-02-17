@@ -87,8 +87,9 @@
 			</para>
 		</sect2>
 		<sect2 status="draft" id="filtering and sort order"><title>Filtering and sort order</title>
-			<para>The filtering and sort order of images on lighttable are accessed and changed in the top bar
-				where you can select among a few predefined filters and ordering like date, color labels or rating.
+			<para>The filtering and sort order of images on lighttable are accessed and changed in the top bar.
+				You can select among a few predefined filters and ordering like <quote>date</quote>, <quote>color labels</quote>
+                                or <quote>rating</quote>.
 			</para>
 		</sect2>
 
@@ -116,13 +117,13 @@
                               group gets expanded; if another group was expanded at that time it gets collapsed. To collapse an expanded 
                               group again, just click on symbol "G" of its group head.
                         </para>
-                        <para>You can define which image constitutes the group head. When you are in expanded view of a group, 
+                        <para>You can define which image constitutes the group head: when you are in expanded view of a group, 
                               just go to the thumbnail of the desired image and click on the symbol "G" within that thumb.
                         </para>
                         <para>If you are in collapsed view and enter darkroom mode with an image group (eg. by 
                               double-clicking on the thumbnail) only the group head will be opened.
                         </para>
-                        <para>his is a convenient way to protect an existing history stack against unintentional changes. Suppose you have 
+                        <para>This is a convenient way to protect an existing history stack against unintentional changes. Suppose you have 
                               just finalized an image; all you need to do now is generate a duplicate and make sure grouping is
                               switched on and the group is collapsed. Whenever you open the image group again in darkroom and do 
                               further changes, only the group head will be altered. The underlying duplicate remains unchanged. 
