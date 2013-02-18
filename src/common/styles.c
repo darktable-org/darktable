@@ -537,6 +537,35 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
   }
 }
 
+
+void
+dt_styles_remove_from_image(const char *name, int32_t imgid)
+{
+
+  int id=0;
+  sqlite3_stmt *stmt;
+
+  if ((id=dt_styles_get_id_by_name(name)) != 0)
+  {
+    /* copy history items from styles onto image */
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid=?1 and operation in (select operation from style_items where styleid=?2)", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, id);
+    sqlite3_step (stmt);
+    sqlite3_finalize (stmt);
+
+    /* update xmp file 
+    dt_image_synch_xmp(imgid);
+    */
+
+    /* remove old obsolete thumbnails */
+    dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+
+    /* redraw center view to update visible mipmaps */
+    dt_control_queue_redraw_center();
+  }
+}
+
 void
 dt_styles_delete_by_name(const char *name)
 {

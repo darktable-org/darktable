@@ -64,6 +64,9 @@ void dt_styles_apply_to_selection (const char *name,gboolean duplicate);
 /** applies the style to image by imgid*/
 void dt_styles_apply_to_image (const char *name,gboolean dulpicate,int32_t imgid);
 
+/** removes the style from image by imgid*/
+void dt_styles_remove_from_image (const char *name,int32_t imgid);
+
 /** delete a style by name */
 void dt_styles_delete_by_name (const char *name);
 

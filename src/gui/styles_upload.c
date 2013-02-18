@@ -20,16 +20,18 @@
 #endif
 #include "common/darktable.h"
 #include "common/styles.h"
-//#include "common/history.h"
-//#include "develop/imageop.h"
-//#include "control/control.h"
+#include "common/history.h"
+#include "common/file_location.h"
+#include "control/control.h"
 #include "gui/styles.h"
 #include "gui/gtk.h"
 #include "dtgtk/label.h"
+#include "views/view.h"
+#include <gdk/gdk.h>
 
 typedef struct dt_gui_styles_upload_dialog_t
 {
-  int32_t imgid, duplicateid;
+  int32_t beforeid, afterid;
   gchar *nameorig;
   GtkWidget *name, *username, *password, *agreement;
   GtkTextBuffer *description;
@@ -39,7 +41,7 @@ static void _gui_styles_upload_response(GtkDialog *dialog, gint response_id, dt_
 {
   if (response_id == GTK_RESPONSE_ACCEPT)
   {
-    /* check if all required settings are set */
+    /* return if not all required settings are set */
     if (strlen(gtk_entry_get_text ( GTK_ENTRY (sd->name))) == 0
       || strlen(gtk_entry_get_text ( GTK_ENTRY (sd->username))) == 0
       || strlen(gtk_entry_get_text ( GTK_ENTRY (sd->password))) == 0
@@ -52,20 +54,48 @@ static void _gui_styles_upload_response(GtkDialog *dialog, gint response_id, dt_
     gtk_text_buffer_get_bounds(sd->description, &start, &end);
     description = gtk_text_buffer_get_text (sd->description, &start, &end, FALSE);
     // save changes
+    //char* tmp;
+    //dt_loc_init_tmp_dir(tmp);
+
+/*    int max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
+    int max_height = dt_conf_get_int ("plugins/lighttable/export/height");
+    int format_index = dt_conf_get_int ("plugins/lighttable/export/format"); //sRGB
+    int storage_index = dt_conf_get_int ("plugins/lighttable/export/storage"); //file on disk
+    dt_imageio_module_format_t *format = dt_imageio_get_format_by_name("file on disk");
+    gboolean high_quality = FALSE;
+    dt_imageio_export(sd->beforeid, filename, struct dt_imageio_module_format_t *format,
+  struct dt_imageio_module_data_t *format_params, high_quality);
+  */
     // export style
     // export images
     // _curl_upload_style(sd);
     // delete exported images
+    // delete exported style
     puts (description);
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
+  dt_image_remove(sd->beforeid);
+  dt_image_remove(sd->afterid);
   g_free(sd->nameorig);
   g_free(sd);
 }
 
-void
-_gui_init (dt_gui_styles_upload_dialog_t *sd)
+static void _expose_thumbnail(GtkWidget *widget, cairo_t *cr,
+    gpointer user_data)
+{
+  int32_t imgid = *(int32_t*)user_data;
+  GdkWindow *window = gtk_widget_get_window(widget);
+  int size = 150;
+  gtk_widget_set_size_request (widget, size, size);
+  cr = gdk_cairo_create(window);
+  dt_view_image_over_t * image_over = (dt_view_image_over_t *)DT_VIEW_REJECT;
+  dt_view_image_expose(image_over, imgid, cr, size, size, 6, 0, 0, FALSE);
+  cairo_destroy(cr);
+  dt_control_queue_redraw_widget(widget);
+}
+
+void _gui_init (dt_gui_styles_upload_dialog_t *sd)
 {
   /* create the dialog */
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
@@ -87,9 +117,9 @@ _gui_init (dt_gui_styles_upload_dialog_t *sd)
   gtk_container_add (GTK_CONTAINER(alignment), GTK_WIDGET(hbox));
   GtkWidget *settings = gtk_table_new(8, 2, FALSE);
   gtk_table_set_row_spacings(GTK_TABLE(settings), 5);
-  GtkBox *previews = GTK_BOX(gtk_vbox_new(FALSE, 5));
+  GtkBox *thumbnails = GTK_BOX(gtk_vbox_new(FALSE, 5));
   gtk_box_pack_start (hbox,GTK_WIDGET(settings),TRUE,TRUE,0);
-  gtk_box_pack_start (hbox,GTK_WIDGET(previews),TRUE,TRUE,0);
+  gtk_box_pack_start (hbox,GTK_WIDGET(thumbnails),FALSE,FALSE,0);
 
   /* add fields to settings */
   GtkWidget *label;
@@ -109,7 +139,7 @@ _gui_init (dt_gui_styles_upload_dialog_t *sd)
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(label), 0, 1, 2, 3, 0, 0, 0, 0);
   sd->username = gtk_entry_new();
-  g_object_set (sd->username, "tooltip-text", _("your username at darktable.org/redmine"), (char *)NULL);
+  g_object_set (sd->username, "tooltip-text", _("your username at www.darktable.org/redmine"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(sd->username), 1, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   label = gtk_label_new("password");
@@ -141,32 +171,47 @@ _gui_init (dt_gui_styles_upload_dialog_t *sd)
   gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(sd->agreement), 0, 2, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
 
-  /* fill previews 
+  /* set thumbnails */
 
   label = dtgtk_label_new(_("before"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
-  gtk_box_pack_start (previews,GTK_WIDGET(label),FALSE,FALSE,0);
-  * 
+  gtk_box_pack_start (thumbnails,GTK_WIDGET(label),FALSE,FALSE,0);
+  GtkWidget *before = gtk_drawing_area_new();
+  g_signal_connect(G_OBJECT(before), "expose-event",
+      G_CALLBACK(_expose_thumbnail), (gpointer)&sd->beforeid);
+  gtk_box_pack_start (thumbnails,GTK_WIDGET(before),FALSE,FALSE,0);
+   
   label = dtgtk_label_new(_("after"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
-  gtk_box_pack_start (previews,GTK_WIDGET(label),FALSE,FALSE,0);
-*/
+  gtk_box_pack_start (thumbnails,GTK_WIDGET(label),FALSE,FALSE,0);
+  GtkWidget *after = gtk_drawing_area_new();
+  g_signal_connect(G_OBJECT(after), "expose-event",
+      G_CALLBACK(_expose_thumbnail), (gpointer)&sd->afterid);
+  gtk_box_pack_start (thumbnails,GTK_WIDGET(after),FALSE,FALSE,0);
 
+  /* set response and draw dialog */
   g_signal_connect (dialog, "response", G_CALLBACK (_gui_styles_upload_response), sd);
   gtk_widget_show_all (GTK_WIDGET (dialog));
   gtk_dialog_run(GTK_DIALOG(dialog));
 
 }
 
-void
-dt_gui_styles_upload (const char *name,int imgid)
+void dt_gui_styles_upload (const char *name,int imgid)
 {
   dt_gui_styles_upload_dialog_t *sd=(dt_gui_styles_upload_dialog_t *)g_malloc (sizeof (dt_gui_styles_upload_dialog_t));
   sd->nameorig = g_strdup(name);
-  sd->imgid = imgid;
-  // duplicate image
-  // apply style to duplicate
-  // set sd->imgafterid
+
+  /* create beforeimage */
+  int duplicateid = dt_image_duplicate (imgid);
+  if(duplicateid != -1) dt_history_copy_and_paste_on_image(imgid, duplicateid, FALSE,NULL);
+  dt_styles_remove_from_image(name, duplicateid);
+  sd->beforeid = duplicateid;
+
+  /* create afterimage */
+  duplicateid = dt_image_duplicate (imgid);
+  if(duplicateid != -1) dt_history_copy_and_paste_on_image(imgid, duplicateid, FALSE,NULL);
+  dt_styles_apply_to_image(name, FALSE, duplicateid);
+  sd->afterid = duplicateid;
+
   _gui_init(sd);
-  // delete duplicate
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
