@@ -21,7 +21,7 @@
                       controls in center view if the module is in focus. Give it a try to get a feeling how it works. On-screen controls 
                       and parameter sliders will stay in sync.</para>
 		<sect5><title>scale</title>
-			<para>Set radius of the vignetting area.</para>
+			<para>Set the radius of the vignetting area.</para>
 		</sect5>
 		<sect5><title>fall-off strength</title>
 			<para>Set the progressiveness of the fall-off. Higher values will cause a steeper transition.</para>

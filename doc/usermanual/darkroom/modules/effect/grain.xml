@@ -17,7 +17,7 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>The grain is processed on the L* channel from CIELAB.</para>
+		<para>The grain is processed on the L channel from CIELAB.</para>
 		<sect5><title>coarseness</title>
 			<para>Set the grain size, which has been scaled to simulate an ISO number.</para>
 		</sect5>

@@ -31,7 +31,7 @@
                       Dithering of center view in darkroom mode is skipped if this config parameter is de-activated. This is a speed-up option, which only affects monitor display, not file 
                       exports.</para>
 
-                <para>Watching from some distance an image dithered into a very low bit depth (like <quote>floyd-steinberg 1-bit b&amp;w</quote>), it will give the impression of 
+                <para>Watching from some distance an image dithered into a very low bit depth (like <quote>floyd-steinberg 1-bit b&amp;w</quote>) will give the impression of 
                       a homogeneous grayscale image. We try to mimic this impression in darktable when you look at zoomed-out images in center 
                       view, in navigation window and for thumbnails. This is accomplished by dithering those images into a higher number of grayscale levels. Please 
                       note that as a consequence the histogram - which is derived from the navigation window - will show this increased number a levels and is no longer
@@ -47,7 +47,7 @@
 		</sect5>
 
 		<sect5><title>damping</title>
-			<para>This slider is only displayed if you chose method <quote>random</quote>. It controls the level of added random noise expressed as a damping factor in dB. A value
+			<para>This slider is only displayed if you choose method <quote>random</quote>. It controls the level of added random noise expressed as a damping factor in dB. A value
                               of -80dB is a good fit for 8-bit output formats.</para>
 		</sect5>
   	</sect4>

@@ -68,7 +68,7 @@
                         modes.</para>
 
                         <para><emphasis>softproof</emphasis> and <emphasis>gamut check</emphasis> can be activated at any place in darkroom mode. Only if this module is in
-                        focus, you will get the status displayed left below the center image. Especially for mode <quote>softproof</quote> this may raise doubts,
+                        focus, you will get the status displayed left below the center image. Especially for mode <emphasis>softproof</emphasis> this may raise doubts,
                         if it is still active or not. If in doubt press <quote>g</quote>, which will switch to <emphasis>gamut check</emphasis> and will be 
                         clearly discernible by cyan marked pixels. Press <quote>g</quote> again and you are back to normal display mode.
                         </para>  

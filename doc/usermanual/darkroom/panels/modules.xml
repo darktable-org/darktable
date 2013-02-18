@@ -21,4 +21,7 @@
                 This is a good way to get fast access to modules that you use very frequently. Visible modules are indicated in the list
                 by a light grey background. Hidden modules have a dark grey background; they will not display any controls whatsoever.
 		</para>
+
+                <para>Hiding or un-hiding modules is not meant to be part of your daily workflow. You should normally only once decide on the 
+                modules you typically use, and only come back here later if you miss anything.</para>
 	</sect2>

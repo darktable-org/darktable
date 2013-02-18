@@ -26,10 +26,11 @@
 					<colspec colwidth="4*"/>
 					<tbody>
 						<row>
-							<entry>In the central view, your images are shown as thumbs; each thumb has a frame and while the mouse is over
+							<entry>In the central view, your images are shown as thumbs surrounded by a frame. While the mouse is over
 								an image, the information of rating, color labels and if image has already been altered in darkroom
 								<inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/> is shown.
-								Also when the mouse hovers over an image frame the specific image metadata is shown in the metadata panel.
+								Also when the mouse hovers over an image frame the specific image metadata is shown in the 
+                                                                <link linkend="metadata"><emphasis>metadata</emphasis></link> panel.
 							</entry>
 							<entry>
 								<graphic fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" />

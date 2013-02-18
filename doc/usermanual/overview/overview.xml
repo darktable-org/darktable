@@ -123,7 +123,7 @@
 					</tgroup></informaltable>
 			</para>
 			<sect3 status="final"><title>Lighttable</title>
-				<para>The lighttable view is where you manage your images and filmrolls. It's in that view that where you rate your images, add tags, add 
+				<para>The lighttable view is where you manage your images and filmrolls. It's in that view where you rate your images, add tags, add 
                                       colorlabels, export images among other actions (see <xref linkend="lighttable chapter"/>).
 				</para>
 			</sect3>
@@ -190,15 +190,17 @@
 					reach your goal.
 				</para>
 
-				<para>Each change you make on a module when developing your image is turned into a history stack item, the history is stored in a database
+				<para>Each change you make on a module when developing your image is turned into a history stack item, the 
+                                      history is stored in a database
 				      and in an XMP sidecar file for the specific image. Changes are stored automatically without the need to press a "save" button. 
                                       Therefore you can safely leave darkroom mode and darktable and come back later to continue your work.
 				</para>
 
 				<para>
-					On the left panel in darkroom mode you have the history stack showing changes starting from bottom and building up with each change
+					On the left panel in darkroom mode you have the <link linkend="history"><emphasis>history stack</emphasis></link> showing changes 
+                                        starting from bottom and building up with each change
 					you have made to the image. You can select a point in this history to show how the image looked in that point for comparison of changes.
-					The stack can be compressed and will discard changes done during the development but will make it optimized. When you think you are done
+					The stack can be compressed: it will be optimized and redundant changes will be discarded. When you think you are done
 					and have a good feeling of what you have done, just compress the history stack.
 				</para>
 
@@ -215,16 +217,16 @@
 			<sect3 status="draft"><title>White balance</title>
 				<para>Module <link linkend="whitebalance"><emphasis>white balance</emphasis></link> controls the white balance or color temperature of the image. It's always 
                                       enabled and reads 
-                                      its default values from metadata embedded in the image which will be set by your camera. The most common change here will be fine-tuning the 
-                                      white balance and this is done using the <quote>temperature in</quote> slider. Taking it down will make the color balance cooler and steering it up will
-                                      make it warmer.
+                                      its default values from camera metadata embedded in the image. The most common change here will be fine-tuning the 
+                                      white balance and this is done using the <quote>temperature in</quote> slider. Taking this slider down will make the color balance cooler and steering 
+                                      it up will make it warmer.
 				</para>
 			</sect3>
 
 			<sect3 status="draft"><title>Exposure correction</title>
 				<para>Module <link linkend="exposure"><emphasis>exposure</emphasis></link> is probably the most basic module of them all. You  fine-tune your exposure either by
                                       using the slider or directly by dragging with your mouse in the <link linkend="histogram"><emphasis>histogram</emphasis></link>. In this module you can 
-                                      also boost the black level to enhance contrast; but be careful: use small amount like 0.005 steps. You may also use an auto correction feature.
+                                      also boost the black level to enhance contrast; but be careful: use small amounts like 0.005 steps. You may also use an auto correction feature.
 				</para>
 			</sect3>
 
@@ -247,7 +249,7 @@
 			<sect3 status="draft"><title>Geometrical corrections</title>
 				<para>Quite frequently you want to only show part of the captured scene in your image, e.g. to 
                                       take away some disturbing features close to the frame. In other cases the horizon in your image 
-                                      maybe leveled or you observe some perspective distortions. All this can be corrected in 
+                                      may need levelling or you observe some perspective distortions. All this can be corrected in 
                                       module <link linkend="crop and rotate"><emphasis>crop and rotate</emphasis></link>. If you need to correct typical flaws of a camera lens 
                                       like cushion distortion, transversal chromatic aberrations or vignetting there is a separate module in darktable called 
                                       <link linkend="lens correction"><emphasis>lens correction</emphasis></link>.
@@ -314,7 +316,7 @@
 
 		<sect2 status="draft" id="exporting images"><title>Exporting images</title>
 			<para>Your changes to an image are not saved as in a regular image editor. darktable is a non destructive editor, which means all your changes are stored 
-                              in a database and the original image is untouched and therefore you need to export your images to get an <quote>image</quote> file to distribute with 
+                              in a database and the original image is untouched and therefore you need to export your images to get an output file to distribute with 
                               your special processing.</para>
 			<para>Images are exported from lighttable using the <emphasis>export selected</emphasis> dialog in the right panel (<xref linkend="export selected"/>). In general, 
                               export means: save my developed RAW image as a JPEG.</para>
@@ -324,7 +326,9 @@
 			<para>Select images on your lighttable that you want to export, then choose your target storage and format to use and set the maximum width and height image restraint. 
                               This means that none of the images will be bigger than any of the width/height restraint. Leave the width and height restraint at zero if you want the original 
                               resolution and hit the export button.
-			</para>
+                              Pay attention: it's a frequent pitfall to accidentally put low values like 1 or 2 in these fields, so that darktable only produces miniature output files. You might think 
+                              darktable's output is broken, but in fact it only generated what you asked for.
+                        </para>
 
 		</sect2>
 	</sect1>

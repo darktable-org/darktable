@@ -19,7 +19,7 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>The lightness is processed on the L* channel from CIELAB. </para>
+		<para>The lightness is processed on the L channel from CIELAB. </para>
 		<para>The center view shows the image broken down in zones. </para>
 		<para>When hovering above a zone on the lightness scale, the current zone is highligthed on the preview.
 			The number of zones can be changed by mouse-scrolling on the lightness scale.</para>
