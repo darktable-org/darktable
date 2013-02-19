@@ -2,13 +2,13 @@ cmake_minimum_required(VERSION 2.6)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
-set(MODULES tonecurve gamma temperature colorcorrection exposure 
+set(MODULES tonecurve gamma temperature colorcorrection exposure
 	colorin colorout clipping sharpen monochrome basecurve colorzones
 	basecurve highlights velvia vignette splittoning grain bilateral
-	profile_gamma colorcontrast lowpass vibrance 
-	channelmixer graduatednd relight zonesystem demosaic atrous tonemap 
+	profile_gamma colorcontrast lowpass vibrance
+	channelmixer graduatednd relight zonesystem demosaic atrous tonemap
   colortransfer colorize invert shadhi
-  cacorrect overexposed bloom soften clahe equalizer highpass
+  cacorrect bloom soften clahe equalizer highpass
   hotpixels lowlight spots rawdenoise borders nlmeans levels
   flip globaltonemap bilat denoiseprofile dither)
 
@@ -50,7 +50,6 @@ add_library(zonesystem MODULE "zonesystem.c")
 add_library(demosaic MODULE "demosaic.c")
 add_library(atrous MODULE "atrous.c")
 add_library(cacorrect MODULE "cacorrect.c")
-add_library(overexposed MODULE "overexposed.c")
 add_library(hotpixels MODULE "hotpixels.c")
 add_library(lowlight MODULE "lowlight.c")
 add_library(spots MODULE "spots.c")
