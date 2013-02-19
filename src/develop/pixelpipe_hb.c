@@ -40,6 +40,22 @@
 
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
+static const float dt_dev_overexposed_colors[][2][4] =
+{
+  {
+    { 0.0f, 0.0f, 0.0f, 1.0f },    // black
+    { 1.0f, 1.0f, 1.0f, 1.0f }     // white
+  },
+  {
+    { 1.0f, 0.0f, 0.0f, 1.0f },    // red
+    { 0.0f, 0.0f, 1.0f, 1.0f }     // blue
+  },
+  {
+    { 0.371f, 0.434f, 0.934f, 1.0f }, // purple (#5f6fef)
+    { 0.512f, 0.934f, 0.371f, 1.0f }  // green  (#83ef5f)
+  }
+};
+
 static char *_pipe_type_to_str(int pipe_type)
 {
   char *r;
@@ -819,6 +835,53 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       return 1;
     }
 
+    // overexposure indication -- this will only ever be enabled in the gui
+    // TODO: reintroduce an opencl codepath
+    if(dev->overexposed.enabled && dev->gui_attached /*&& pipe == dev->pipe*/)
+    {
+      // FIXME: maybe we need a better place?
+      if(!strcmp(module->op, "gamma"))
+      {
+#ifdef HAVE_OPENCL
+        if(*cl_mem_output != NULL)
+          dt_opencl_copy_device_to_host(pipe->devid, *output, *cl_mem_output, roi_out->width, roi_out->height, bpp);
+#endif
+        const float lower  = dev->overexposed.lower / 100.0;
+        const float upper  = dev->overexposed.upper / 100.0;
+        const int colorscheme = dev->overexposed.colorscheme;
+
+        const float *upper_color  = dt_dev_overexposed_colors[colorscheme][0];
+        const float *lower_color = dt_dev_overexposed_colors[colorscheme][1];
+
+        const int ch = piece->colors;
+        float *in = (float*)input;
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, in, upper_color, lower_color) schedule(static)
+#endif
+        for(int k=0; k<roi_out->width*roi_out->height; k++)
+        {
+          float *pixel = in + ch*k;
+          if(pixel[0] >= upper || pixel[1] >= upper || pixel[2] >= upper)
+          {
+            pixel[0] = upper_color[0];
+            pixel[1] = upper_color[1];
+            pixel[2] = upper_color[2];
+          }
+          else if(pixel[0] <= lower && pixel[1] <= lower && pixel[2] <= lower)
+          {
+            pixel[0] = lower_color[0];
+            pixel[1] = lower_color[1];
+            pixel[2] = lower_color[2];
+          }
+        }
+      }
+      if(pipe->shutdown)
+      {
+        dt_pthread_mutex_unlock(&pipe->busy_mutex);
+        return 1;
+      }
+    }
 
 #ifdef HAVE_OPENCL
     /* do we have opencl at all? did user tell us to use it? did we get a resource? */
@@ -870,7 +933,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
                 success_opencl = FALSE;
               }
             }
-            
+
           }
 
           if(pipe->shutdown)

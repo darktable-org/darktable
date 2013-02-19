@@ -37,6 +37,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "libs/colorpicker.h"
+#include "bauhaus/bauhaus.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -874,6 +875,103 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
   else dt_control_log(_("no styles have been created yet"));
 }
 
+static void _overexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  d->overexposed.enabled = !d->overexposed.enabled;
+//   dt_dev_reprocess_center(d);
+  dt_dev_reprocess_all(d);
+}
+
+static gboolean _overexposed_close_popup(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t*)user_data;
+  g_signal_handler_disconnect(widget, d->overexposed.destroy_signal_handler);
+  d->overexposed.destroy_signal_handler = 0;
+  gtk_widget_hide_all(d->overexposed.floating_window);
+  return FALSE;
+}
+
+static gboolean _overexposed_show_popup(gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t*)user_data;
+  /** finally move the window next to the button */
+  gint x, y, wx, wy;
+  gint px, py, window_w, window_h;
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+  gtk_widget_show_all(d->overexposed.floating_window);
+  gdk_window_get_origin(gtk_widget_get_window(d->overexposed.button), &px, &py);
+  gdk_window_get_size(gtk_widget_get_window(d->overexposed.floating_window), &window_w, &window_h);
+  gtk_widget_translate_coordinates(d->overexposed.button, window, 0, 0, &wx, &wy);
+  x = px + wx;
+  y = py + wy - window_h - 5;
+  gtk_window_move(GTK_WINDOW(d->overexposed.floating_window), x, y);
+
+  gtk_window_present(GTK_WINDOW(d->overexposed.floating_window));
+
+  // when the mouse moves back over the main window we close the popup.
+  d->overexposed.destroy_signal_handler = g_signal_connect(window, "focus-in-event", G_CALLBACK(_overexposed_close_popup), user_data);
+
+  return FALSE;
+}
+
+static gboolean _overexposed_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t*)user_data;
+  GdkEventButton *e = (GdkEventButton*)event;
+  if(e->button == 3)
+  {
+    _overexposed_show_popup(user_data);
+    return TRUE;
+  }
+  else
+  {
+    d->overexposed.timeout = g_timeout_add_seconds(1, _overexposed_show_popup, user_data);
+    return FALSE;
+  }
+}
+
+static gboolean _overexposed_quickbutton_released(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t*)user_data;
+  if(d->overexposed.timeout > 0) g_source_remove(d->overexposed.timeout);
+  d->overexposed.timeout = 0;
+  return FALSE;
+}
+
+static void colorscheme_callback(GtkWidget *combo, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t*)user_data;
+  d->overexposed.colorscheme = dt_bauhaus_combobox_get(combo);
+  if(d->overexposed.enabled == FALSE)
+    gtk_button_clicked(GTK_BUTTON(d->overexposed.button));
+  else
+//     dt_dev_reprocess_center(d);
+    dt_dev_reprocess_all(d);
+}
+
+static void lower_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t*)user_data;
+  d->overexposed.lower = dt_bauhaus_slider_get(slider);
+  if(d->overexposed.enabled == FALSE)
+    gtk_button_clicked(GTK_BUTTON(d->overexposed.button));
+  else
+//     dt_dev_reprocess_center(d);
+    dt_dev_reprocess_all(d);
+}
+
+static void upper_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t*)user_data;
+  d->overexposed.upper = dt_bauhaus_slider_get(slider);
+  if(d->overexposed.enabled == FALSE)
+    gtk_button_clicked(GTK_BUTTON(d->overexposed.button));
+  else
+//     dt_dev_reprocess_center(d);
+    dt_dev_reprocess_all(d);
+}
+
 void enter(dt_view_t *self)
 {
   /* connect to ui pipe finished signal for redraw */
@@ -911,8 +1009,6 @@ void enter(dt_view_t *self)
                     NULL);
   dt_view_manager_view_toolbox_add(darktable.view_manager, favorite_presets);
 
-  /* add IOP modules to plugin list */
-
   /* create quick styles popup menu tool */
   GtkWidget *styles = dtgtk_button_new (dtgtk_cairo_paint_styles,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_signal_connect (G_OBJECT (styles), "clicked",
@@ -921,6 +1017,88 @@ void enter(dt_view_t *self)
   g_object_set (G_OBJECT (styles), "tooltip-text", _("quick access for applying any of your styles"),
                 (char *)NULL);
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles);
+
+  /* create overexposed popup tool */
+  {
+    // the button
+    dev->overexposed.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+    g_object_set(G_OBJECT(dev->overexposed.button), "tooltip-text", _("toggle over/under exposed indication\nright click for options"),
+                (char *)NULL);
+    g_signal_connect(G_OBJECT (dev->overexposed.button), "clicked",
+                      G_CALLBACK (_overexposed_quickbutton_clicked),
+                      dev);
+    g_signal_connect(G_OBJECT (dev->overexposed.button), "button-press-event",
+                      G_CALLBACK (_overexposed_quickbutton_pressed),
+                      dev);
+    g_signal_connect(G_OBJECT (dev->overexposed.button), "button-release-event",
+                      G_CALLBACK (_overexposed_quickbutton_released),
+                      dev);
+    dt_view_manager_view_toolbox_add(darktable.view_manager, dev->overexposed.button);
+
+    // and the popup window
+//     int panel_width = dt_conf_get_int("panel_width");
+
+    GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+
+    dev->overexposed.floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    GtkWidget *frame = gtk_frame_new(NULL);
+    GtkWidget *event_box = gtk_event_box_new();
+    GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1, 1);
+    GtkWidget *vbox = gtk_vbox_new(TRUE, 5);
+
+    GTK_WIDGET_SET_FLAGS(dev->overexposed.floating_window, GTK_CAN_FOCUS);
+    gtk_window_set_decorated(GTK_WINDOW(dev->overexposed.floating_window), FALSE);
+    gtk_window_set_has_frame(GTK_WINDOW(dev->overexposed.floating_window), FALSE);
+    gtk_window_set_type_hint(GTK_WINDOW(dev->overexposed.floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
+    gtk_window_set_transient_for(GTK_WINDOW(dev->overexposed.floating_window), GTK_WINDOW(window));
+    gtk_window_set_opacity(GTK_WINDOW(dev->overexposed.floating_window), 0.9);
+
+//     gtk_widget_set_size_request(frame, panel_width, -1);
+    gtk_widget_set_state(frame, GTK_STATE_SELECTED);
+    gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_OUT);
+
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 8, 8, 8, 8);
+
+    gtk_container_add(GTK_CONTAINER(dev->overexposed.floating_window), frame);
+    gtk_container_add(GTK_CONTAINER(frame), event_box);
+    gtk_container_add(GTK_CONTAINER(event_box),alignment);
+    gtk_container_add(GTK_CONTAINER(alignment), vbox);
+
+    /** let's fill the encapsulating widgets */
+    /* color scheme */
+    GtkWidget *colorscheme = dt_bauhaus_combobox_new(NULL);
+    dt_bauhaus_widget_set_label(colorscheme, _("color scheme"));
+    dt_bauhaus_combobox_add(colorscheme, _("black & white"));
+    dt_bauhaus_combobox_add(colorscheme, _("red & blue"));
+    dt_bauhaus_combobox_add(colorscheme, _("purple & green"));
+    dt_bauhaus_combobox_set(colorscheme, dev->overexposed.colorscheme);
+    g_object_set(G_OBJECT(colorscheme), "tooltip-text", _("select colors to indicate over/under exposure"), (char *)NULL);
+    g_signal_connect (G_OBJECT (colorscheme), "value-changed",
+                      G_CALLBACK (colorscheme_callback), dev);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(colorscheme), TRUE, TRUE, 0);
+    gtk_widget_set_state(colorscheme, GTK_STATE_SELECTED);
+
+    /* lower */
+    GtkWidget *lower = dt_bauhaus_slider_new_with_range(NULL,0.0, 100.0, 0.1, 2.0, 2);
+    dt_bauhaus_slider_set(lower, dev->overexposed.lower);
+    dt_bauhaus_slider_set_format(lower,"%.0f%%");
+    dt_bauhaus_widget_set_label(lower,_("lower threshold"));
+    g_object_set(G_OBJECT(lower), "tooltip-text", _("threshold of what shall be considered underexposed"), (char *)NULL);
+    g_signal_connect (G_OBJECT (lower), "value-changed",
+                      G_CALLBACK (lower_callback), dev);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(lower), TRUE, TRUE, 0);
+
+    /* upper */
+    GtkWidget *upper = dt_bauhaus_slider_new_with_range(NULL, 0.0, 100.0, 0.1, 98.0, 2);
+    dt_bauhaus_slider_set(upper, dev->overexposed.upper);
+    dt_bauhaus_slider_set_format(upper,"%.0f%%");
+    dt_bauhaus_widget_set_label(upper,_("upper threshold"));
+    g_object_set(G_OBJECT(upper), "tooltip-text", _("threshold of what shall be considered overexposed"), (char *)NULL);
+    g_signal_connect (G_OBJECT (upper), "value-changed",
+                      G_CALLBACK (upper_callback), dev);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(upper), TRUE, TRUE, 0);
+
+  }
 
   /*
    * add IOP modules to plugin list
@@ -1074,6 +1252,13 @@ void leave(dt_view_t *self)
   }
 
   dt_pthread_mutex_unlock(&dev->history_mutex);
+
+  // take care of the overexposed window
+  if(dev->overexposed.timeout > 0)
+    g_source_remove(dev->overexposed.timeout);
+  if(dev->overexposed.destroy_signal_handler > 0)
+    g_signal_handler_disconnect(dt_ui_main_window(darktable.gui->ui), dev->overexposed.destroy_signal_handler);
+  gtk_widget_destroy(dev->overexposed.floating_window);
 
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }

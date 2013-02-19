@@ -959,6 +959,27 @@
     <shortdescription>do high quality resampling during export</shortdescription>
     <longdescription>the image will first be processed in full resolution, and downscaled at the very end. this can result in better quality sometimes, but will always be slower.</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>darkroom/ui/overexposed/colorscheme</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>darkroom/ui/overexposed/lower</name>
+    <type>float</type>
+    <default>2.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>darkroom/ui/overexposed/upper</name>
+    <type>float</type>
+    <default>98.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
   <dtconfig prefs="core">
     <name>plugins/darkroom/dithering/dither_center_view</name>
     <type>bool</type>

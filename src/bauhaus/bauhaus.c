@@ -1032,10 +1032,21 @@ dt_bauhaus_clear(dt_bauhaus_widget_t *w, cairo_t *cr)
 {
   // clear bg with background color
   cairo_save(cr);
-  if(w->module && darktable.develop->gui_module == w->module)
-    set_bg_focus(cr);
+  if(w->module)
+  {
+    if(darktable.develop->gui_module == w->module)
+      set_bg_focus(cr);
+    else
+      set_bg_normal(cr);
+  }
   else
-    set_bg_normal(cr);
+  {
+    if(gtk_widget_get_state(GTK_WIDGET(w)) == GTK_STATE_SELECTED)
+      set_bg_focus(cr);
+    else
+      set_bg_normal(cr);
+  }
+
 #if 0
   GtkWidget *topwidget = dt_iop_gui_get_pluginui(w->module);
   GtkStyle *style = gtk_widget_get_style(topwidget);
