@@ -40,6 +40,7 @@
 #include "develop/blend.h"
 #include "libs/lib.h"
 #include "views/view.h"
+#include "views/undo.h"
 #include "control/control.h"
 #include "control/jobs/control_jobs.h"
 #include "control/signal.h"
@@ -702,6 +703,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
     // I doubt that connecting to dbus for darktable-cli makes sense
     darktable.dbus = dt_dbus_init();
 
+    // initialize undo struct
+    darktable.undo = dt_undo_init();
+
     // load image(s) specified on cmdline
     int id = 0;
     if(images_to_load)
@@ -791,6 +795,8 @@ void dt_cleanup()
 #endif
 
   dt_database_destroy(darktable.db);
+
+  dt_undo_cleanup(darktable.undo);
 
   dt_bauhaus_cleanup();
 
