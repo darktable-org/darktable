@@ -1772,6 +1772,8 @@ int dt_exif_thumbnail(
     dt_imageio_jpeg_t jpg;
     if(!dt_imageio_jpeg_decompress_header(buf.pData_, buf.size_, &jpg))
     {
+      // don't upsample those:
+      if(jpg.width < width || jpg.height < height) return 1;
       if(!y_beg && !y_end)
       { // if those weren't set, do it now:
         y_beg = 0;
