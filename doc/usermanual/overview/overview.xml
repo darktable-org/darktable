@@ -77,6 +77,11 @@
 			<para>Most modules can exist as multiple instances. Together with our blend mask feature you can let an operation have 
                               different effects on different parts of the image.</para>
 		</listitem>
+                <listitem><para>darktable introduces a highly efficient, yet simple <quote>single-click</quote> denoiser that always just works (tm). Designed as a module where the 
+                          denoising performance only depends on camera and ISO setting. A database of profiles contains presets for more than
+                          60 popular camera models.</para>
+                </listitem>
+
 
 
 	</itemizedlist>
@@ -231,10 +236,15 @@
 			</sect3>
 
   	         	<sect3 status="draft"><title>Noise reduction</title>
-           			<para>You have several options in darktable to reduce noise. You'll find them in the correct group. There is <link linkend="raw denoise"><emphasis>raw denoise</emphasis> 
+           			<para>The best starting point for noise reduction is <link linkend="denoise profiled"><emphasis>profiled denoise</emphasis></link>. This modules offers 
+                                      an almost <quote>single-click</quote> solution to fight noise. From a user perspective the effect only depends on camera type and ISO value, both 
+                                      derived from EXIF data. All other settings are taken from
+                                      a database of noise profiles that the darktable team has collected - now covering already over 60 popular camera models.
+                                      In addition you have several other options in darktable to reduce noise. There is <link linkend="raw denoise"><emphasis>raw denoise</emphasis> 
                                       </link>, <link linkend="denoise bilateral"><emphasis>denoising based on bilateral filter</emphasis></link>, <link linkend="denoise non local means">
                                       <emphasis>non-local means</emphasis></link>, and <link linkend="equalizer"><emphasis>equalizer</emphasis></link> based on wavelets. 
-                                      Most convenient to use is probably denoising based on non-local means, as it allows you to treat color and luminance noise separately.
+                                      If your camera is not yet supported by <link linkend="denoise profiled"><emphasis>profiled denoise</emphasis></link>, the most convenient method to use is probably 
+                                      <link linkend="denoise non local means"><emphasis>non-local means</emphasis></link>, as it allows you to treat color and luminance noise separately.
                                 </para>
 			</sect3>
 
