@@ -26,7 +26,7 @@
 			<para>Set the radius of the blur.</para>
 		</sect5>
 		<sect5><title>soften with</title>
-			<para>This combobox defines the blur algorithm; you can chose between <quote>gaussian</quote> blur (default)
+			<para>This combobox defines the blur algorithm; you can choose between <quote>gaussian</quote> blur (default)
                               and <quote>bilateral</quote> filter. The latter leads to an edge preserving blur. <quote>gaussian</quote> will blur all image 
                               channels: L, a and b. <quote>bilateral</quote> will only blur L channel.</para>
 		</sect5>

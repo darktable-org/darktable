@@ -5,7 +5,7 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>            
-            <entry>This module offers an easy to use and at the same time highly efficient denoise operation. Under the hood
+            <entry>This module offers an easy to use and - at the same time - highly efficient denoise operation. Under the hood
             it applies (at your choice) a non-local means or edge-aware wavelet denoise algorithm with parameters specifically profiled for certain
             camera models and ISO settings.
             </entry>

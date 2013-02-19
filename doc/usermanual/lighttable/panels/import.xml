@@ -1,6 +1,6 @@
 <sect2 status="draft" id="import"><title>Import</title>
 		 	 <para>In this panel you import your filmrolls. You can either import a complete folder
-      				by pressing <quote>import filmroll</quote> or a single image <quote>import single image</quote>. You can also import directly from a connected camera.
+      				by pressing <quote>import filmroll</quote> or a single image with <quote>import single image</quote>. You can also import directly from a connected camera.
 		  	</para>
 
 
@@ -42,7 +42,7 @@
 
 			</sect3>
 
-			<sect3><title>Import from cameras</title>
+			<sect3><title>Import from camera</title>
 				<para>When a camera is detected, it will show up in the device panel. If you hover your mouse over the camera tab label, a tooltip
 					will pop up with some information about the camera such as model, firmware version and a lot more...
 				</para>

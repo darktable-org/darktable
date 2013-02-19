@@ -86,6 +86,7 @@ FILE(GLOB SOURCE_FILES
   "gui/styles_dialog.c"
   "libs/lib.c"
   "views/view.c"
+  "views/undo.c"
   )
 FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
 

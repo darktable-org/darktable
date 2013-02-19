@@ -35,7 +35,7 @@
 		</para>
 		<para>The button to the right <inlinegraphic fileref="&icon_styles;" scalefit="1" width="2%" align="center" /> 
                 lets you create a new style by popping up a dialog window. Use the first line to name your style, the second to add a 
-                searchable description. The following list allows you chose which modules are to be taken into account for the style.</para> 
+                searchable description. The following list allows you choose which modules are to be taken into account for the style.</para> 
 
                 <para>Go to panel <emphasis>styles</emphasis> (<xref linkend="styles"/>) in lighttable mode in order to manage your styles or 
                 apply them to other images.</para>

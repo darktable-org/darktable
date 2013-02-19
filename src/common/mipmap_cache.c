@@ -1194,7 +1194,7 @@ _init_8(
 
   // first try exif thumbnail, that's smaller and thus faster to load:
   if(!altered && !dt_conf_get_bool("never_use_embedded_thumb") &&
-      wd < 200 && !dt_exif_thumbnail(filename, buf, wd, ht, orientation, width, height))
+     !dt_exif_thumbnail(filename, buf, wd, ht, orientation, width, height))
   {
     res = 0;
   }

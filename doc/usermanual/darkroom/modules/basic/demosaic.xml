@@ -17,7 +17,7 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-                <para>Demosaic is an essential step for any raw image development process.</para>
+                <para>Demosaic is an essential step of any raw image development process.</para>
 
 		<para>A detailed description would be beyond the scope of this manual. In a nutshell, the sensor 
 		      cells of a digital camera are only able to record different levels of lightness, not different color. In order 
@@ -30,7 +30,7 @@
 		<para>As all this is prone to produce artifacts, various different demosaic algorithms have
                       been developed in the past. Artifacts would typically be visible as Moiree-like patterns when you strongly zoom into
                       your image. Currently darktable supports PPG and AMAZE. Both algorithms produce high quality output with a low
-                      tendency for artifacts. AMAZE is reported to sometimes give slightly better results. However, as AMAZE is significantly
+                      tendency to artifacts. AMAZE is reported to sometimes give slightly better results. However, as AMAZE is significantly
                       slower, darktable uses PPG as a default.</para>
 
 		<para>Some further parameters of this module can activate additional averaging and smoothing steps. They might help to reduce

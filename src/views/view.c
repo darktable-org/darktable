@@ -29,6 +29,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "views/view.h"
+#include "views/undo.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 
@@ -181,6 +182,10 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
   // destroy old module list
   int error = 0;
   dt_view_t *v = vm->view + vm->current_view;
+
+  /*  clear the undo list, for now we do this inconditionally. At some point we will probably want to clear only part
+      of the undo list. This should probably done with a view proxy routine returning the type of undo to remove. */
+  dt_undo_clear(darktable.undo, DT_UNDO_ALL);
 
   /* Special case when entering nothing (just before leaving dt) */
   if ( k==DT_MODE_NONE )
