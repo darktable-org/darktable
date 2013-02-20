@@ -167,6 +167,15 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const float *upper_color  = dt_iop_overexposed_colors[colorscheme][0];
   const float *lower_color = dt_iop_overexposed_colors[colorscheme][1];
 
+  if(!dev->overexposed.enabled || !dev->gui_attached)
+  {
+    size_t origin[] = { 0, 0, 0};
+    size_t region[] = { width, height, 1};
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    if (err != CL_SUCCESS) goto error;
+    return TRUE;
+  }
+
   size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 0, sizeof(cl_mem), &dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 1, sizeof(cl_mem), &dev_out);
