@@ -76,6 +76,14 @@ int flags()
 }
 
 
+int
+legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
+{
+  // we do no longer have module params in here and just ignore any legacy entries
+  return 0;
+}
+
+
 // void init_key_accels(dt_iop_module_so_t *self)
 // {
 //   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lower threshold"));
