@@ -67,6 +67,10 @@ static gboolean skip_b_key_accel_callback(GtkAccelGroup *accel_group,
     GObject *acceleratable,
     guint keyval, GdkModifierType modifier,
     gpointer data);
+static gboolean _overexposed_toggle_callback(GtkAccelGroup *accel_group,
+    GObject *acceleratable,
+    guint keyval, GdkModifierType modifier,
+    gpointer data);
 
 /* signal handler for filmstrip image switching */
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance,gpointer user_data);
@@ -903,7 +907,7 @@ static gboolean _overexposed_show_popup(gpointer user_data)
   gdk_window_get_origin(gtk_widget_get_window(d->overexposed.button), &px, &py);
   gdk_window_get_size(gtk_widget_get_window(d->overexposed.floating_window), &window_w, &window_h);
   gtk_widget_translate_coordinates(d->overexposed.button, window, 0, 0, &wx, &wy);
-  x = px + wx;
+  x = px + wx - window_w + 5;
   y = py + wy - window_h - 5;
   gtk_window_move(GTK_WINDOW(d->overexposed.floating_window), x, y);
 
@@ -972,6 +976,15 @@ static void upper_callback(GtkWidget *slider, gpointer user_data)
     dt_dev_reprocess_all(d);
 }
 
+static gboolean _overexposed_toggle_callback(GtkAccelGroup *accel_group,
+    GObject *acceleratable,
+    guint keyval, GdkModifierType modifier,
+    gpointer data)
+{
+  gtk_button_clicked(GTK_BUTTON(((dt_develop_t*)data)->overexposed.button));
+  return TRUE;
+}
+
 void enter(dt_view_t *self)
 {
   /* connect to ui pipe finished signal for redraw */
@@ -1033,7 +1046,7 @@ void enter(dt_view_t *self)
     g_signal_connect(G_OBJECT (dev->overexposed.button), "button-release-event",
                       G_CALLBACK (_overexposed_quickbutton_released),
                       dev);
-    dt_view_manager_view_toolbox_add(darktable.view_manager, dev->overexposed.button);
+    dt_view_manager_module_toolbox_add(darktable.view_manager, dev->overexposed.button);
 
     // and the popup window
 //     int panel_width = dt_conf_get_int("panel_width");
@@ -1575,6 +1588,9 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "image back"),
                          GDK_BackSpace, 0);
 
+  // toggle overexposure indication
+  dt_accel_register_view(self, NC_("accel", "overexposed"),
+                         GDK_o, 0);
 }
 
 void connect_key_accels(dt_view_t *self)
@@ -1610,6 +1626,10 @@ void connect_key_accels(dt_view_t *self)
                            (gpointer)self->data, NULL);
   dt_accel_connect_view(self, "image back", closure);
 
+  // toggle overexposure indication
+  closure = g_cclosure_new(G_CALLBACK(_overexposed_toggle_callback),
+                           (gpointer)self->data, NULL);
+  dt_accel_connect_view(self, "overexposed", closure);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
