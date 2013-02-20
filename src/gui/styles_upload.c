@@ -22,12 +22,15 @@
 #include "common/styles.h"
 #include "common/history.h"
 #include "common/file_location.h"
+#include "common/imageio.h"
+#include "common/imageio_module.h"
 #include "control/control.h"
 #include "gui/styles.h"
 #include "gui/gtk.h"
 #include "dtgtk/label.h"
 #include "views/view.h"
 #include <gdk/gdk.h>
+#include <curl/curl.h>
 
 typedef struct dt_gui_styles_upload_dialog_t
 {
@@ -36,6 +39,142 @@ typedef struct dt_gui_styles_upload_dialog_t
   GtkWidget *name, *username, *password, *agreement;
   GtkTextBuffer *description;
 } dt_gui_styles_upload_dialog_t;
+
+void _temp_export(int32_t id, const char* dir, const char* filename, int width, int height)
+{
+  /* this function is more or less copied from src/cli/main.c, some adjustments may be needed */
+  int size = 0, dat_size = 0;
+  dt_imageio_module_format_t *format;
+  dt_imageio_module_storage_t *storage;
+  dt_imageio_module_data_t *sdata, *fdata;
+  char *path;
+  path = g_strconcat(dir, "/", filename, NULL);
+
+  storage = dt_imageio_get_storage_by_name("disk"); // only exporting to disk makes sense
+  if(storage == NULL)
+  {
+    fprintf(stderr, "%s\n", _("cannot find disk storage module. please check your installation, something seems to be broken."));
+    return;
+  }
+
+  sdata = storage->get_params(storage, &size);
+  if(sdata == NULL)
+  {
+    fprintf(stderr, "%s\n", _("failed to get parameters from storage module, aborting export ..."));
+    return;
+  }
+
+  // and now for the really ugly hacks. don't tell your children about this one or they won't sleep at night any longer ...
+  g_strlcpy((char*)sdata, path, DT_MAX_PATH_LEN);
+  // all is good now, the last line didn't happen.
+
+  format = dt_imageio_get_format_by_name("jpeg");
+  if(format == NULL)
+  {
+    fprintf(stderr, _("failed to get format jpeg"));
+    fprintf(stderr, "\n");
+    return;
+  }
+
+  fdata = format->get_params(format, &dat_size);
+  if(fdata == NULL)
+  {
+    fprintf(stderr, "%s\n", _("failed to get parameters from format module, aborting export ..."));
+    return;
+  }
+
+  uint32_t w,h,fw,fh,sw,sh;
+  fw=fh=sw=sh=0;
+  storage->dimension(storage, &sw, &sh);
+  format->dimension(format, &fw, &fh);
+
+  if( sw==0 || fw==0) w=sw>fw?sw:fw;
+  else w=sw<fw?sw:fw;
+
+  if( sh==0 || fh==0) h=sh>fh?sh:fh;
+  else h=sh<fh?sh:fh;
+
+  fdata->max_width  = width;
+  fdata->max_height = height;
+  fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
+  fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
+  fdata->style[0] = '\0';
+
+  //TODO: add a callback to set the bpp without going through the config
+
+  storage->store(sdata, id, format, fdata, 1, 1, FALSE);
+
+  // cleanup time
+  if(storage->finalize_store) storage->finalize_store(storage, sdata);
+  storage->free_params(storage, sdata);
+  format->free_params(format, fdata);
+
+}
+
+void _curl_upload_style(const char* dir, dt_gui_styles_upload_dialog_t *sd)
+{
+
+  /* All the values to be used */
+  const char *upload_url, *name, *style, *image_sb, *image_sa, *image_bb, *image_ba, *username, *password;
+  upload_url = "http://darktablestyles.sourceforge.net/upload.php";
+  name       = gtk_entry_get_text ( GTK_ENTRY (sd->name));
+  style      = g_strconcat(dir, "/", name, ".dtstyle", NULL);
+  image_sb   = g_strconcat(dir, "/small-before.jpg", NULL);
+  image_sa   = g_strconcat(dir, "/small-after.jpg", NULL);
+  image_bb   = g_strconcat(dir, "/big-before.jpg", NULL);
+  image_ba   = g_strconcat(dir, "/big-after.jpg", NULL);
+  username   = gtk_entry_get_text ( GTK_ENTRY (sd->username));
+  password   = gtk_entry_get_text ( GTK_ENTRY (sd->password));
+
+  CURL *curl;
+  CURLcode res;
+
+  struct curl_httppost *formpost = NULL;
+  struct curl_httppost *lastptr = NULL;
+  struct curl_slist *headerlist = NULL;
+  static const char buf[] = "Expect:";
+
+  curl_global_init(CURL_GLOBAL_ALL);
+
+  /* Set all files to send */
+  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "file_data",
+               CURLFORM_FILE, style, CURLFORM_END);
+
+  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "small_before",
+               CURLFORM_FILE, image_sb, CURLFORM_END);
+
+  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "small_after",
+               CURLFORM_FILE, image_sa, CURLFORM_END);
+
+  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "big_before",
+               CURLFORM_FILE, image_bb, CURLFORM_END);
+
+  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "big_after",
+               CURLFORM_FILE, image_ba, CURLFORM_END);
+
+  /* Set credentials */
+  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "username",
+               CURLFORM_COPYCONTENTS, username, CURLFORM_END);
+
+  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "p",
+               CURLFORM_COPYCONTENTS, password, CURLFORM_END);
+		
+  curl = curl_easy_init();
+  headerlist = curl_slist_append(headerlist, buf);
+  if(curl) {
+    curl_easy_setopt(curl, CURLOPT_URL, upload_url);      
+    curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+    res = curl_easy_perform(curl);
+    /* Check for errors */
+    if(res != CURLE_OK)
+      fprintf(stderr, "curl_easy_perform() failed: %s\n",
+              curl_easy_strerror(res));
+
+    curl_easy_cleanup(curl);
+    curl_formfree(formpost);
+    curl_slist_free_all (headerlist);
+  }
+}
 
 static void _gui_styles_upload_response(GtkDialog *dialog, gint response_id, dt_gui_styles_upload_dialog_t *sd)
 {
@@ -49,29 +188,27 @@ static void _gui_styles_upload_response(GtkDialog *dialog, gint response_id, dt_
     {
       return;
     }
-    char* description;
+    char *name, *description, *dir = "/tmp";
+    const char *newname;
     GtkTextIter start, end;
     gtk_text_buffer_get_bounds(sd->description, &start, &end);
     description = gtk_text_buffer_get_text (sd->description, &start, &end, FALSE);
-    // save changes
-    //char* tmp;
-    //dt_loc_init_tmp_dir(tmp);
-
-/*    int max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
-    int max_height = dt_conf_get_int ("plugins/lighttable/export/height");
-    int format_index = dt_conf_get_int ("plugins/lighttable/export/format"); //sRGB
-    int storage_index = dt_conf_get_int ("plugins/lighttable/export/storage"); //file on disk
-    dt_imageio_module_format_t *format = dt_imageio_get_format_by_name("file on disk");
-    gboolean high_quality = FALSE;
-    dt_imageio_export(sd->beforeid, filename, struct dt_imageio_module_format_t *format,
-  struct dt_imageio_module_data_t *format_params, high_quality);
-  */
-    // export style
-    // export images
-    // _curl_upload_style(sd);
-    // delete exported images
-    // delete exported style
-    puts (description);
+    newname = gtk_entry_get_text ( GTK_ENTRY (sd->name));
+    name = sd->nameorig;
+    // not sure how to get platform specific tmp dir...
+    //dt_loc_init_tmp_dir(dir);
+    dt_styles_update (name, newname, description, NULL);
+    dt_styles_save_to_file(newname, dir, TRUE);
+    _temp_export(sd->beforeid, dir, "small-before", 200, 150);
+    _temp_export(sd->afterid, dir, "small-after", 200, 150);
+    _temp_export(sd->beforeid, dir, "big-before", 800, 600);
+    _temp_export(sd->afterid, dir, "big-after", 800, 600);
+    _curl_upload_style(dir, sd);
+    unlink(g_strconcat(dir, "/small-before.jpg", NULL));
+    unlink(g_strconcat(dir, "/small-after.jpg", NULL));
+    unlink(g_strconcat(dir, "/big-before.jpg", NULL));
+    unlink(g_strconcat(dir, "/big-after.jpg", NULL));
+    unlink(g_strconcat(dir, "/", newname , ".dtstyle", NULL));
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
@@ -92,7 +229,11 @@ static void _expose_thumbnail(GtkWidget *widget, cairo_t *cr,
   dt_view_image_over_t * image_over = (dt_view_image_over_t *)DT_VIEW_REJECT;
   dt_view_image_expose(image_over, imgid, cr, size, size, 6, 0, 0, FALSE);
   cairo_destroy(cr);
+  /* well the images aren't really exposed for me, unless I add the following
+   * command, but that would create an infinite loop of redrawing the thumbnails,
+   * so I'm not really sure how to solve it, but I'm sure we'll figure out :)
   dt_control_queue_redraw_widget(widget);
+  */
 }
 
 void _gui_init (dt_gui_styles_upload_dialog_t *sd)
