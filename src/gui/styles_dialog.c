@@ -82,17 +82,17 @@ _gui_styles_get_active_items (dt_gui_styles_dialog_t *sd, GList **enabled, GList
     do
     {
       gboolean active, uactive;
-      long int num=0, update_num=0;
+      glong num=0, update_num=0;
       gtk_tree_model_get (model, &iter, DT_STYLE_ITEMS_COL_ENABLED, &active, DT_STYLE_ITEMS_COL_UPDATE, &uactive, DT_STYLE_ITEMS_COL_NUM, &num, DT_STYLE_ITEMS_COL_UPDATE_NUM, &update_num, -1);
       if (active || uactive)
       {
-        *enabled = g_list_append (*enabled, (gpointer)(long int) num);
+        *enabled = g_list_append (*enabled, (gpointer)(glong) num);
         if (update != NULL)
         {
           if (uactive || num==-1)
-            *update = g_list_append (*update, (gpointer)(long int) update_num);
+            *update = g_list_append (*update, (gpointer)(glong) update_num);
           else
-            *update = g_list_append (*update, (gpointer)(long int) -1);
+            *update = g_list_append (*update, (gpointer)(glong) -1);
         }
       }
     }
@@ -165,7 +165,7 @@ _gui_styles_item_toggled (GtkCellRendererToggle *cell,
   GtkTreePath *path = gtk_tree_path_new_from_string (path_str);
   GtkTreeIter iter;
   gboolean toggle_item;
-  long int num, update_num;
+  glong num, update_num;
 
   gtk_tree_model_get_iter (model, &iter, path);
   gtk_tree_model_get (model, &iter, DT_STYLE_ITEMS_COL_ENABLED, &toggle_item, DT_STYLE_ITEMS_COL_NUM, &num, DT_STYLE_ITEMS_COL_UPDATE_NUM, &update_num, -1);
@@ -190,7 +190,7 @@ _gui_styles_update_toggled (GtkCellRendererToggle *cell,
   GtkTreePath *path = gtk_tree_path_new_from_string (path_str);
   GtkTreeIter iter;
   gboolean toggle_item;
-  long int num, update_num;
+  glong num, update_num;
 
   gtk_tree_model_get_iter (model, &iter, path);
   gtk_tree_model_get (model, &iter, DT_STYLE_ITEMS_COL_UPDATE, &toggle_item, DT_STYLE_ITEMS_COL_NUM, &num, DT_STYLE_ITEMS_COL_UPDATE_NUM, &update_num, -1);
@@ -363,11 +363,11 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
 
         gtk_list_store_append (GTK_LIST_STORE(liststore), &iter);
         gtk_list_store_set (GTK_LIST_STORE(liststore), &iter,
-                            DT_STYLE_ITEMS_COL_ENABLED, (long int)item->num==-1?FALSE:TRUE,
+                            DT_STYLE_ITEMS_COL_ENABLED, (glong)item->num==-1?FALSE:TRUE,
                             DT_STYLE_ITEMS_COL_UPDATE, FALSE,
                             DT_STYLE_ITEMS_COL_NAME, item->name,
-                            DT_STYLE_ITEMS_COL_NUM, (long int)item->num,
-                            DT_STYLE_ITEMS_COL_UPDATE_NUM, (long int)item->selimg_num,
+                            DT_STYLE_ITEMS_COL_NUM, (glong)item->num,
+                            DT_STYLE_ITEMS_COL_UPDATE_NUM, (glong)item->selimg_num,
                             -1);
 
         g_free(item->name);
@@ -406,7 +406,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
         gtk_list_store_set (GTK_LIST_STORE(liststore), &iter,
                             DT_STYLE_ITEMS_COL_ENABLED, enabled,
                             DT_STYLE_ITEMS_COL_NAME, name,
-                            DT_STYLE_ITEMS_COL_NUM, (long int)item->num,
+                            DT_STYLE_ITEMS_COL_NUM, (glong)item->num,
                             -1);
 
         g_free(item->op);

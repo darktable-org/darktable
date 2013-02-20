@@ -116,7 +116,7 @@ static void _dt_style_update_from_image(int id, int imgid, GList *filter, GList 
       query[0] = '\0';
 
       // included and update set, we then need to update the corresponding style item
-      if ((long int)upd->data!=-1 && (long int)list->data!=-1)
+      if ((glong)upd->data!=-1 && (glong)list->data!=-1)
       {
         strcpy(query, "update style_items set ");
 
@@ -126,12 +126,12 @@ static void _dt_style_update_from_image(int id, int imgid, GList *filter, GList 
           sprintf(tmp, "%s=(select %s from history where imgid=%d and operation=style_items.operation order by num desc limit 1)", fields[k], fields[k], imgid);
           strcat(query, tmp);
         }
-        sprintf(tmp, " where styleid=%d and style_items.num=%ld", id, (long int)list->data);
+        sprintf(tmp, " where styleid=%d and style_items.num=%ld", id, (glong)list->data);
         strcat(query, tmp);
       }
       // update only, so we want to insert the new style item
-      else if ((long int)upd->data!=-1)
-        sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select %d,(select num+1 from style_items where styleid=%d order by num desc limit 1),module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from history where imgid=%d and num=%ld",id,id,imgid,(long int)upd->data);
+      else if ((glong)upd->data!=-1)
+        sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select %d,(select num+1 from style_items where styleid=%d order by num desc limit 1),module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from history where imgid=%d and num=%ld",id,id,imgid,(glong)upd->data);
 
       if (*query)
         DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
@@ -175,7 +175,7 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
     {
       if(list!=g_list_first(list))
         g_strlcat(include, ",", 2048);
-      sprintf(tmp, "%ld", (long int)list->data);
+      sprintf(tmp, "%ld", (glong)list->data);
       g_strlcat(include, tmp, 2048);
     }
     while ((list=g_list_next(list)));
@@ -246,7 +246,7 @@ dt_styles_create_from_style (const char *name, const char *newname, const char *
       {
         if(list!=g_list_first(list))
           g_strlcat(include,",", 2048);
-        sprintf(tmp,"%ld",(long int)list->data);
+        sprintf(tmp,"%ld",(glong)list->data);
         g_strlcat(include,tmp, 2048);
       }
       while ((list=g_list_next(list)));
@@ -310,7 +310,7 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
       {
         if(list!=g_list_first(list))
           g_strlcat(include,",", 2048);
-        sprintf(tmp,"%ld",(long int)list->data);
+        sprintf(tmp,"%ld",(glong)list->data);
         g_strlcat(include,tmp, 2048);
       }
       while ((list=g_list_next(list)));
