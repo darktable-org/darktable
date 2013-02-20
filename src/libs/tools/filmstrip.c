@@ -75,6 +75,7 @@ dt_lib_filmstrip_t;
 static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gboolean activate);
 /* proxy function for retrieving last activate request image id */
 static int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self);
+static GtkWidget * _lib_filmstrip_get_widget(dt_lib_module_t *self);
 
 static gboolean _lib_filmstrip_size_handle_button_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data);
 static gboolean _lib_filmstrip_size_handle_motion_notify_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data);
@@ -313,6 +314,9 @@ void gui_init(dt_lib_module_t *self)
                       target_list_all,
                       n_targets_all,
                       GDK_ACTION_COPY);
+#ifdef HAVE_MAP
+  gtk_drag_dest_set(d->filmstrip, GTK_DEST_DEFAULT_ALL, target_list_internal, n_targets_internal, GDK_ACTION_COPY);
+#endif
 
   g_signal_connect_after(d->filmstrip, "drag-begin", G_CALLBACK(_lib_filmstrip_dnd_begin_callback), self);
   g_signal_connect(d->filmstrip, "drag-data-get", G_CALLBACK(_lib_filmstrip_dnd_get_callback), self);
@@ -376,6 +380,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.filmstrip.module = self;
   darktable.view_manager->proxy.filmstrip.scroll_to_image = _lib_filmstrip_scroll_to_image;
   darktable.view_manager->proxy.filmstrip.activated_image = _lib_filmstrip_get_activated_imgid;
+  darktable.view_manager->proxy.filmstrip.widget          = _lib_filmstrip_get_widget;
 
   /* connect signal handler */
   dt_control_signal_connect(darktable.signals,
@@ -812,6 +817,12 @@ int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self)
 {
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
   return strip->activated_image;
+}
+
+static GtkWidget * _lib_filmstrip_get_widget(dt_lib_module_t *self)
+{
+  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
+  return strip->filmstrip;
 }
 
 static gboolean _lib_filmstrip_copy_history_key_accel_callback(GtkAccelGroup *accel_group,

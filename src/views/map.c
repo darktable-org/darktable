@@ -50,6 +50,7 @@ typedef struct dt_map_t
   {
     sqlite3_stmt *main_query;
   } statements;
+  gboolean drop_filmstrip_activated;
 } dt_map_t;
 
 typedef struct dt_map_image_t
@@ -83,6 +84,8 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
 /* callback when the mouse is moved */
 static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, dt_view_t *self);
 static gboolean _view_map_dnd_failed_callback(GtkWidget *widget, GdkDragContext *drag_context, GtkDragResult result, dt_view_t *self);
+static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data,
+                       guint target_type, guint time, gpointer data);
 
 static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, gboolean record_undo);
 static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude);
@@ -125,6 +128,7 @@ void init(dt_view_t *self)
   if(darktable.gui)
   {
     lib->pin = init_pin();
+    lib->drop_filmstrip_activated = FALSE;
 
     OsmGpsMapSource_t map_source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
     const gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
@@ -345,6 +349,13 @@ map_changed_failure:
     timeout_event_source = g_timeout_add_seconds(1, _view_map_redraw, self); // try again in a second, maybe some pictures have loaded by then
   else
     timeout_event_source = 0;
+
+  // activate this callback late in the process as we need the filmstrip proxy to be setup. This is not the case in the initialization phase.
+  if (!lib->drop_filmstrip_activated && darktable.view_manager->proxy.filmstrip.module)
+  {
+    g_signal_connect(darktable.view_manager->proxy.filmstrip.widget(darktable.view_manager->proxy.filmstrip.module), "drag-data-received", G_CALLBACK(_view_map_dnd_remove_callback), self);
+    lib->drop_filmstrip_activated=TRUE;
+  }
 }
 
 static int _view_map_get_img_at_pos(dt_view_t *self, double x, double y)
@@ -748,6 +759,29 @@ _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *context, GtkSelect
       break;
     }
   }
+}
+
+static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data,
+                       guint target_type, guint time, gpointer data)
+{
+  dt_view_t *self = (dt_view_t*)data;
+  dt_map_t *lib = (dt_map_t*)self->data;
+
+  gboolean success = FALSE;
+
+  if((selection_data != NULL) && (selection_data->length >= 0) && target_type == DND_TARGET_IMGID)
+  {
+    int *imgid = (int*)selection_data->data;
+    if(*imgid > 0)
+    {
+      //  the image was dropped into the filmstrip, let's remove it in this case
+      _set_image_location(self, *imgid, NAN, NAN, TRUE);
+      success = TRUE;
+    }
+  }
+  gtk_drag_finish(context, success, FALSE, time);
+  if(success)
+    g_signal_emit_by_name(lib->map, "changed");
 }
 
 static gboolean _view_map_dnd_failed_callback(GtkWidget *widget, GdkDragContext *drag_context, GtkDragResult result, dt_view_t *self)
