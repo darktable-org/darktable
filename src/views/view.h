@@ -192,6 +192,7 @@ typedef struct dt_view_manager_t
       struct dt_lib_module_t *module;
       void (*scroll_to_image)(struct dt_lib_module_t *, gint imgid, gboolean activate);
       int32_t (*activated_image)(struct dt_lib_module_t *);
+      GtkWidget *(*widget)(struct dt_lib_module_t *);
     } filmstrip;
 
     /* lighttable view proxy object */
