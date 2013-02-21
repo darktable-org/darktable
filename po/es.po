@@ -2597,7 +2597,7 @@ msgstr "similar a canon eos"
 
 #: ../src/iop/basecurve.c:100
 msgid "canon eos like alternate"
-msgstr "similar a canon eos"
+msgstr "similar a canon eos (alternativo)"
 
 #: ../src/iop/basecurve.c:101
 msgid "nikon like"
