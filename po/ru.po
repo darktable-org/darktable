@@ -2488,9 +2488,8 @@ msgid "nikon like"
 msgstr "Как в Nikon"
 
 #: ../src/iop/basecurve.c:102
-#, fuzzy
 msgid "nikon like alternate"
-msgstr "Как в Nikon"
+msgstr "Как в Nikon  (альтернативная)"
 
 #: ../src/iop/basecurve.c:103
 msgid "sony alpha like"
@@ -2501,18 +2500,16 @@ msgid "pentax like"
 msgstr "Как в Pentax"
 
 #: ../src/iop/basecurve.c:105
-#, fuzzy
 msgid "ricoh like"
-msgstr "Как в Nikon"
+msgstr "Как в Ricoh"
 
 #: ../src/iop/basecurve.c:106
 msgid "olympus like"
 msgstr "Как в Olympus"
 
 #: ../src/iop/basecurve.c:107
-#, fuzzy
 msgid "olympus like alternate"
-msgstr "Как в Olympus"
+msgstr "Как в Olympus (альтернативная)"
 
 #: ../src/iop/basecurve.c:108
 msgid "panasonic like"
