@@ -1240,7 +1240,12 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     sqlite3_finalize(stmt);
 
     if(!history_only)
-      dt_exif_read_xmp_data(img, xmpData, true, false);
+    {
+      // otherwise we ignore title, description, ... from non-dt xmp files :(
+      size_t pos = image->xmpPacket().find("xmlns:darktable=\"http://darktable.sf.net/\"");
+      bool is_a_dt_xmp = (pos != std::string::npos);
+      dt_exif_read_xmp_data(img, xmpData, is_a_dt_xmp, false);
+    }
 
     Exiv2::XmpData::iterator pos;
 
