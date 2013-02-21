@@ -2480,9 +2480,8 @@ msgid "canon eos like"
 msgstr "Как в Canon EOS"
 
 #: ../src/iop/basecurve.c:100
-#, fuzzy
 msgid "canon eos like alternate"
-msgstr "Как в Canon EOS"
+msgstr "Как в Canon EOS (альтернативная)"
 
 #: ../src/iop/basecurve.c:101
 msgid "nikon like"
@@ -3215,11 +3214,11 @@ msgstr "Профиль"
 
 #: ../src/iop/colorin.c:778
 msgid "embedded icc profile"
-msgstr ""
+msgstr "Встроенный ICC профиль"
 
 #: ../src/iop/colorin.c:780
 msgid "dng embedded matrix"
-msgstr ""
+msgstr "Встроенная в DNG цветовая матрица"
 
 #: ../src/iop/colorin.c:782
 msgid "standard color matrix"
@@ -3230,14 +3229,12 @@ msgid "enhanced color matrix"
 msgstr "Улучшенная цветовая матрица"
 
 #: ../src/iop/colorin.c:786
-#, fuzzy
 msgid "vendor color matrix"
-msgstr "Стандартная цветовая матрица"
+msgstr "Цветовая матрица как у производителя"
 
 #: ../src/iop/colorin.c:788
-#, fuzzy
 msgid "alternate color matrix"
-msgstr "Улучшенная цветовая матрица"
+msgstr "Альтернативная цветовая матрица"
 
 #: ../src/iop/colorin.c:790
 msgid "sRGB (e.g. jpg)"
