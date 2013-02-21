@@ -2499,7 +2499,7 @@ msgstr "similar a nikon"
 
 #: ../src/iop/basecurve.c:102
 msgid "nikon like alternate"
-msgstr "similar a nikon"
+msgstr "similar a nikon (alternativo)"
 
 #: ../src/iop/basecurve.c:103
 msgid "sony alpha like"
@@ -2519,7 +2519,7 @@ msgstr "similar a olympus"
 
 #: ../src/iop/basecurve.c:107
 msgid "olympus like alternate"
-msgstr "similar a olympus"
+msgstr "similar a olympus (alternativo)"
 
 #: ../src/iop/basecurve.c:108
 msgid "panasonic like"
