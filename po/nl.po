@@ -3404,11 +3404,11 @@ msgstr "verbeterde kleuren matrix"
 
 #: ../src/iop/colorin.c:797
 msgid "vendor color matrix"
-msgstr "leverancier kleurenmatrix"
+msgstr "leverancier kleuren matrix"
 
 #: ../src/iop/colorin.c:799
 msgid "alternate color matrix"
-msgstr "alternatieve kleurenmatrix"
+msgstr "alternatieve kleuren matrix"
 
 #: ../src/iop/colorin.c:801
 msgid "sRGB (e.g. jpg)"
