@@ -40,10 +40,10 @@ typedef struct dt_gui_styles_upload_dialog_t
   GtkTextBuffer *description;
 } dt_gui_styles_upload_dialog_t;
 
-void _temp_export(int32_t id, const char* dir, const char* filename, int width, int height)
+void _temp_export(int32_t id, const char* dir, const char* filename)
 {
   /* this function is more or less copied from src/cli/main.c, some adjustments may be needed */
-  int size = 0, dat_size = 0;
+  int size = 0, dat_size = 0, width = 800, height = 600;
   dt_imageio_module_format_t *format;
   dt_imageio_module_storage_t *storage;
   dt_imageio_module_data_t *sdata, *fdata;
@@ -115,14 +115,12 @@ void _curl_upload_style(const char* dir, dt_gui_styles_upload_dialog_t *sd)
 {
 
   /* All the values to be used */
-  const char *upload_url, *name, *style, *image_sb, *image_sa, *image_bb, *image_ba, *username, *password;
+  const char *upload_url, *name, *style, *img_before, *img_after, *username, *password;
   upload_url = "http://darktablestyles.sourceforge.net/upload.php";
   name       = gtk_entry_get_text ( GTK_ENTRY (sd->name));
   style      = g_strconcat(dir, "/", name, ".dtstyle", NULL);
-  image_sb   = g_strconcat(dir, "/small-before.jpg", NULL);
-  image_sa   = g_strconcat(dir, "/small-after.jpg", NULL);
-  image_bb   = g_strconcat(dir, "/big-before.jpg", NULL);
-  image_ba   = g_strconcat(dir, "/big-after.jpg", NULL);
+  img_before   = g_strconcat(dir, "/before.jpg", NULL);
+  img_after   = g_strconcat(dir, "/after.jpg", NULL);
   username   = gtk_entry_get_text ( GTK_ENTRY (sd->username));
   password   = gtk_entry_get_text ( GTK_ENTRY (sd->password));
 
@@ -140,17 +138,11 @@ void _curl_upload_style(const char* dir, dt_gui_styles_upload_dialog_t *sd)
   curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "file_data",
                CURLFORM_FILE, style, CURLFORM_END);
 
-  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "small_before",
-               CURLFORM_FILE, image_sb, CURLFORM_END);
+  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "img_before",
+               CURLFORM_FILE, img_before, CURLFORM_END);
 
-  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "small_after",
-               CURLFORM_FILE, image_sa, CURLFORM_END);
-
-  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "big_before",
-               CURLFORM_FILE, image_bb, CURLFORM_END);
-
-  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "big_after",
-               CURLFORM_FILE, image_ba, CURLFORM_END);
+  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "img_after",
+               CURLFORM_FILE, img_after, CURLFORM_END);
 
   /* Set credentials */
   curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "username",
@@ -199,15 +191,11 @@ static void _gui_styles_upload_response(GtkDialog *dialog, gint response_id, dt_
     //dt_loc_init_tmp_dir(dir);
     dt_styles_update (name, newname, description, NULL);
     dt_styles_save_to_file(newname, dir, TRUE);
-    _temp_export(sd->beforeid, dir, "small-before", 200, 150);
-    _temp_export(sd->afterid, dir, "small-after", 200, 150);
-    _temp_export(sd->beforeid, dir, "big-before", 800, 600);
-    _temp_export(sd->afterid, dir, "big-after", 800, 600);
+    _temp_export(sd->beforeid, dir, "before");
+    _temp_export(sd->afterid, dir, "after");
     _curl_upload_style(dir, sd);
-    unlink(g_strconcat(dir, "/small-before.jpg", NULL));
-    unlink(g_strconcat(dir, "/small-after.jpg", NULL));
-    unlink(g_strconcat(dir, "/big-before.jpg", NULL));
-    unlink(g_strconcat(dir, "/big-after.jpg", NULL));
+    unlink(g_strconcat(dir, "/before.jpg", NULL));
+    unlink(g_strconcat(dir, "/after.jpg", NULL));
     unlink(g_strconcat(dir, "/", newname , ".dtstyle", NULL));
   }
 
@@ -217,7 +205,7 @@ static void _gui_styles_upload_response(GtkDialog *dialog, gint response_id, dt_
   g_free(sd->nameorig);
   g_free(sd);
 }
-
+/*
 static void _expose_thumbnail(GtkWidget *widget, cairo_t *cr,
     gpointer user_data)
 {
@@ -229,13 +217,13 @@ static void _expose_thumbnail(GtkWidget *widget, cairo_t *cr,
   dt_view_image_over_t * image_over = (dt_view_image_over_t *)DT_VIEW_REJECT;
   dt_view_image_expose(image_over, imgid, cr, size, size, 6, 0, 0, FALSE);
   cairo_destroy(cr);
-  /* well the images aren't really exposed for me, unless I add the following
+  * well the images aren't really exposed for me, unless I add the following
    * command, but that would create an infinite loop of redrawing the thumbnails,
    * so I'm not really sure how to solve it, but I'm sure we'll figure out :)
   dt_control_queue_redraw_widget(widget);
-  */
+  
 }
-
+*/
 void _gui_init (dt_gui_styles_upload_dialog_t *sd)
 {
   /* create the dialog */
@@ -317,15 +305,15 @@ void _gui_init (dt_gui_styles_upload_dialog_t *sd)
   label = dtgtk_label_new(_("before"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
   gtk_box_pack_start (thumbnails,GTK_WIDGET(label),FALSE,FALSE,0);
   GtkWidget *before = gtk_drawing_area_new();
-  g_signal_connect(G_OBJECT(before), "expose-event",
-      G_CALLBACK(_expose_thumbnail), (gpointer)&sd->beforeid);
+//  g_signal_connect(G_OBJECT(before), "expose-event",
+//      G_CALLBACK(_expose_thumbnail), (gpointer)&sd->beforeid);
   gtk_box_pack_start (thumbnails,GTK_WIDGET(before),FALSE,FALSE,0);
    
   label = dtgtk_label_new(_("after"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
   gtk_box_pack_start (thumbnails,GTK_WIDGET(label),FALSE,FALSE,0);
   GtkWidget *after = gtk_drawing_area_new();
-  g_signal_connect(G_OBJECT(after), "expose-event",
-      G_CALLBACK(_expose_thumbnail), (gpointer)&sd->afterid);
+//  g_signal_connect(G_OBJECT(after), "expose-event",
+//      G_CALLBACK(_expose_thumbnail), (gpointer)&sd->afterid);
   gtk_box_pack_start (thumbnails,GTK_WIDGET(after),FALSE,FALSE,0);
 
   /* set response and draw dialog */
