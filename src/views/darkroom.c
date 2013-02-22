@@ -156,6 +156,9 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   DT_CTL_GET_GLOBAL(closeup, dev_closeup);
   static cairo_surface_t *image_surface = NULL;
   static int image_surface_width = 0, image_surface_height = 0, image_surface_imgid = -1;
+  static float roi_hash_old = -1.0f;
+  // compute patented dreggn hash so we don't need to check all values:
+  const float roi_hash = width + 7.0f*height + 23.0f*zoom + 42.0f*zoom_x + 91.0f*zoom_y + 666.0f*zoom;
 
   if(image_surface_width != width || image_surface_height != height || image_surface == NULL)
   {
@@ -179,6 +182,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   if(!dev->image_dirty && dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp)
   {
     // draw image
+    roi_hash_old = roi_hash;
     mutex = &dev->pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
     wd = dev->pipe->backbuf_width;
@@ -210,9 +214,10 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     dt_pthread_mutex_unlock(mutex);
     image_surface_imgid = dev->image_storage.id;
   }
-  else if(!dev->preview_dirty)
+  else if(!dev->preview_dirty && (roi_hash != roi_hash_old))
   {
     // draw preview
+    roi_hash_old = roi_hash;
     mutex = &dev->preview_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
 
