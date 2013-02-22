@@ -1079,8 +1079,11 @@ int dt_exif_read_blob(
     const int length = blob.size();
     memcpy(buf, "Exif\000\000", 6);
     if(length > 0 && length < 65534)
+    {
       memcpy(buf+6, &(blob[0]), length);
-    return length;
+      return length + 6;
+    }
+    return 6;
   }
   catch (Exiv2::AnyError& e)
   {
