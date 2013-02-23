@@ -20,7 +20,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-02-21 08:49+0100\n"
-"PO-Revision-Date: 2013-02-21 08:57+0100\n"
+"PO-Revision-Date: 2013-02-23 11:05+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -75,10 +75,7 @@ msgstr ""
 msgid ""
 "check this option to not use the embedded jpeg from the raw file but process "
 "the raw data. this is slower but gives you color managed thumbnails."
-msgstr ""
-"aktivera detta om du INTE vill använda inbäddade jpeg miniatyrbild från "
-"råbildsfil, detta alternativ är långsammare men ger dig färgrymdshanterade "
-"bilder på ljusbordet."
+msgstr "aktivera detta om du INTE vill använda inbäddade jpeg miniatyrbild från råbildsfil, detta alternativ är långsammare men ger dig bilder på ljusbordet i enlighet med din färgrymd."
 
 #: ../build/src/preferences_gen.h:976
 msgid "ask before removing images from database"
@@ -277,7 +274,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1446
 msgid "host memory limit (in MB) for tiling"
-msgstr "host minnesbegränsning i MB för tiling"
+msgstr "minnesbegränsning i MB för tiling"
 
 #: ../build/src/preferences_gen.h:1462
 msgid ""
@@ -357,7 +354,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1572
 msgid "dithering for darkroom mode"
-msgstr "rastrering i mörkerrumsläge"
+msgstr "rastrering i mörkrumsläge"
 
 #: ../build/src/preferences_gen.h:1584
 msgid ""
@@ -1014,7 +1011,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:822 ../src/develop/blend_gui.c:825
 msgid "toggle polarity. best seen by enabling 'display mask'"
-msgstr "växla polraitet. syns bäst genom att slå på 'visningsmask'"
+msgstr "växla polaritet. syns bäst genom att slå på 'visningsmask'"
 
 #: ../src/develop/blend_gui.c:834
 msgid "output"
@@ -1155,7 +1152,7 @@ msgstr "välj blandningstyp"
 #: ../src/develop/develop.c:908
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
-msgstr "%s: modul `%s' skilljer i version: %d != %d"
+msgstr "%s: modul `%s' skiljer i version: %d != %d"
 
 #: ../src/develop/imageop.c:295 ../src/develop/imageop.c:303
 msgid "error creating gui, see stderr"
@@ -1540,7 +1537,7 @@ msgstr "ange ett filnamns-mönster innan du försöker att importera bilder"
 
 #: ../src/gui/camera_import_dialog.c:656
 msgid "please use YYYY-MM-DD format for date override"
-msgstr "använd YYYY-MM-DD datum format för datumöverskridelse"
+msgstr "använd datumformatet YYYY-MM-DD för egna datum"
 
 #. register keys for view switching
 #: ../src/gui/gtk.c:864
@@ -1556,7 +1553,7 @@ msgstr "ljusbord"
 #: ../src/gui/gtk.c:866
 msgctxt "accel"
 msgid "darkroom view"
-msgstr "mörkerrum"
+msgstr "mörkrum"
 
 #: ../src/gui/gtk.c:867
 msgctxt "accel"
@@ -2354,7 +2351,7 @@ msgstr "visas för"
 
 #: ../src/imageio/storage/flickr.c:477
 msgid "click login button to start"
-msgstr "tryck login-knapp för att starta"
+msgstr "tryck inloggningsknapp för att starta"
 
 #: ../src/imageio/storage/flickr.c:514
 msgid "my new photoset"
@@ -4600,7 +4597,7 @@ msgstr "bredd"
 #: ../src/iop/relight.c:387
 #, no-c-format
 msgid "width of fill-light area defined in zones"
-msgstr "bredden på fyllnadsljusets område definerat i zoner"
+msgstr "bredden på fyllnadsljusets område givet i zoner"
 
 #: ../src/iop/relight.c:401
 msgid "select the center of fill-light"
@@ -4795,7 +4792,7 @@ msgstr "autentisk platinotype"
 #. compress : 0
 #: ../src/iop/splittoning.c:162
 msgid "chocolate brown"
-msgstr "chockladbrun"
+msgstr "chokladbrun"
 
 #: ../src/iop/splittoning.c:582
 msgid "select the hue tone for shadows"
@@ -4827,7 +4824,7 @@ msgstr ""
 
 #: ../src/iop/spots.c:82
 msgid "spot removal"
-msgstr "fläckbortagning"
+msgstr "fläckborttagning"
 
 #: ../src/iop/spots.c:469
 msgid ""
@@ -4845,7 +4842,7 @@ msgstr "antal borttagningar:"
 
 #: ../src/iop/spots.c:707
 msgid "spot removal only supports up to 32 spots"
-msgstr "fläckbortagningen stöder bara 32 fläckar."
+msgstr "fläckborttagningen stöder bara 32 fläckar."
 
 #: ../src/iop/temperature.c:118
 msgctxt "modulename"
@@ -7256,7 +7253,7 @@ msgstr "växla visning av filmrulle"
 
 #: ../src/views/darkroom.c:81
 msgid "darkroom"
-msgstr "mörkerrum"
+msgstr "mörkrum"
 
 #: ../src/views/darkroom.c:816
 msgid "no userdefined presets for favorite modules were found"
@@ -7411,12 +7408,12 @@ msgstr "skrolla ner"
 #: ../src/views/lighttable.c:1609
 msgctxt "accel"
 msgid "scroll left"
-msgstr "skrolla bakåt"
+msgstr "skrolla vänster"
 
 #: ../src/views/lighttable.c:1611
 msgctxt "accel"
 msgid "scroll right"
-msgstr "skrolla frammåt"
+msgstr "skrolla höger"
 
 #: ../src/views/lighttable.c:1613
 msgctxt "accel"
