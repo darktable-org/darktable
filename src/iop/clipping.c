@@ -1400,7 +1400,9 @@ void gui_update(struct dt_iop_module_t *self)
       act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
     else
     {
-      float whratio = ((float)self->dev->image_storage.width * (fabsf(p->cw) - p-> cx)) / ((float)self->dev->image_storage.height * (fabsf(p->ch) - p->cy));
+      const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+      float whratio = ((float)(self->dev->image_storage.width - 2 * interpolation->width) * (fabsf(p->cw) - p-> cx)) /
+        ((float)(self->dev->image_storage.height - 2 * interpolation->width) * (fabsf(p->ch) - p->cy));
       float closest = 1000.0;
 
       for (int k=1; k<NUM_RATIOS; k++)
