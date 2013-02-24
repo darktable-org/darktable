@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2011-2013 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -114,7 +114,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_alignment(GTK_ENTRY(d->zoom_entry), 1.0);
   gtk_entry_set_max_length(GTK_ENTRY(d->zoom_entry), 2);
   g_object_set(G_OBJECT(d->zoom_entry), "width-chars", 3, (char *)NULL);
-  dt_gui_key_accel_block_on_focus(d->zoom_entry);
+  dt_gui_key_accel_block_on_focus(d->zoom_entry, TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), d->zoom_entry, TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT(d->zoom), "value-changed",
@@ -168,6 +168,8 @@ void connect_key_accels(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t*)self->data;
+  dt_gui_key_accel_block_on_focus(d->zoom_entry, FALSE);
   g_free(self->data);
   self->data = NULL;
 }

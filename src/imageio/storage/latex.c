@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2013 henrik andersson
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -119,7 +120,7 @@ gui_init (dt_imageio_module_storage_t *self)
     g_free(dir);
   }
   d->entry = GTK_ENTRY(widget);
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry));
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry), TRUE);
 
   dt_gtkentry_completion_spec compl_list[] =
   {
@@ -169,7 +170,7 @@ gui_init (dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   d->title_entry = GTK_ENTRY(gtk_entry_new());
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->title_entry));
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->title_entry), TRUE);
   // TODO: support title, author, subject, keywords (collect tags?)
   g_object_set(G_OBJECT(d->title_entry), "tooltip-text", _("enter the title of the book"), (char *)NULL);
   dir = dt_conf_get_string("plugins/imageio/storage/latex/title");
@@ -183,6 +184,10 @@ gui_init (dt_imageio_module_storage_t *self)
 void
 gui_cleanup (dt_imageio_module_storage_t *self)
 {
+  latex_t *d = (latex_t *)self->gui_data;
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry), FALSE);
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->title_entry), FALSE);
+
   free(self->gui_data);
 }
 

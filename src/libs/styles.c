@@ -1,7 +1,8 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-
+    copyright (c) 2010-2013 henrik andersson.
+    copyright (c) 2011-2012 johannes hanika.
+    
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -358,7 +359,7 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (d->entry, "changed", G_CALLBACK(entry_callback),d);
   g_signal_connect (d->entry, "activate", G_CALLBACK(entry_activated),d);
 
-  dt_gui_key_accel_block_on_focus ( GTK_WIDGET (d->entry));
+  dt_gui_key_accel_block_on_focus ( GTK_WIDGET (d->entry), TRUE);
 
   scrolled = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -429,6 +430,8 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
+  dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
+  dt_gui_key_accel_block_on_focus ( GTK_WIDGET (d->entry), FALSE);
   free(self->data);
   self->data = NULL;
 }

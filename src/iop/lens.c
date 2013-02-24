@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2012 johannes hanika.
+    copyright (c) 2010--2013 henrik andersson
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1745,7 +1746,7 @@ void gui_init(struct dt_iop_module_t *self)
   // camera selector
   GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
   g->camera_model = GTK_BUTTON(dtgtk_button_new(NULL, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->camera_model));
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->camera_model), TRUE);
   gtk_button_set_label(g->camera_model, self->dev->image_storage.exif_model);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
   g_signal_connect (G_OBJECT (g->camera_model), "clicked",
@@ -1762,7 +1763,7 @@ void gui_init(struct dt_iop_module_t *self)
   // lens selector
   hbox = gtk_hbox_new(FALSE, 0);
   g->lens_model = GTK_BUTTON(dtgtk_button_new(NULL, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->lens_model));
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->lens_model), TRUE);
   gtk_button_set_label(g->lens_model, self->dev->image_storage.exif_lens);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
   g_signal_connect (G_OBJECT (g->lens_model), "clicked",
@@ -1938,6 +1939,10 @@ void gui_update(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->camera_model), FALSE);
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->lens_model), FALSE);
+
   while(g->modifiers)
   {
     g_free(g->modifiers->data);

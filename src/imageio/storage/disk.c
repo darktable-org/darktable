@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2012 johannes hanika.
+    copyritgh (c) 2010--2013 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -113,7 +114,7 @@ gui_init (dt_imageio_module_storage_t *self)
                          dt_gtkentry_get_default_path_compl_list());
 
   d->entry = GTK_ENTRY(widget);
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry));
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry), TRUE);
   g_object_set(G_OBJECT(widget), "tooltip-text", tooltip_text, (char *)NULL);
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, 18, 18);
@@ -127,6 +128,8 @@ gui_init (dt_imageio_module_storage_t *self)
 void
 gui_cleanup (dt_imageio_module_storage_t *self)
 {
+  disk_t *d = (disk_t *)self->gui_data;
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry), FALSE);
   free(self->gui_data);
 }
 

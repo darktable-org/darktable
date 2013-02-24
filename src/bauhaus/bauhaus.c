@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2012 johannes hanika.
+    copyright (c) 2013 henrik andersson
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -618,7 +619,7 @@ dt_bauhaus_init()
   // this is needed for popup, not for toplevel.
   // since popup_area gets the focus if we show the window, this is all
   // we need.
-  dt_gui_key_accel_block_on_focus(darktable.bauhaus->popup_area);
+  dt_gui_key_accel_block_on_focus(darktable.bauhaus->popup_area, TRUE);
 
   gtk_widget_set_size_request(darktable.bauhaus->popup_area, 300, 300);
   gtk_window_set_resizable(GTK_WINDOW(darktable.bauhaus->popup_window), FALSE);

@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2011--2013 Henrik Andersson
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -74,7 +75,7 @@ void dt_gui_gtk_quit();
 void dt_gui_store_last_preset(const char *name);
 
 /** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
-void dt_gui_key_accel_block_on_focus (GtkWidget *w);
+void dt_gui_key_accel_block_on_focus (GtkWidget *w, gboolean enable);
 
 /*
  * new ui api
