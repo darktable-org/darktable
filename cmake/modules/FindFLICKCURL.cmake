@@ -23,7 +23,7 @@ FIND_PATH(FLICKCURL_INCLUDE_DIR flickcurl.h
 )
 
 FIND_LIBRARY(FLICKCURL_LIBRARY
-  NAMES ${FLICKCURL_NAMES} libflickcurl.so libflickcurl.dylib
+  NAMES ${FLICKCURL_NAMES} flickcurl libflickcurl.so libflickcurl.dylib
   PATHS /usr/lib /usr/local/lib /opt/local/lib
   HINTS ENV FLICKCURL_LIBRARY
 )
