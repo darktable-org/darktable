@@ -279,7 +279,7 @@ void gui_reset(dt_lib_module_t *self)
   d->num_snapshots = 0;
   d->snapshot_image = NULL;
 
-  for(int k=0; k<d->size; k++)
+  for(uint32_t k=0; k<d->size; k++)
     gtk_widget_hide(d->snapshot[k].button);
 
   dt_control_queue_redraw_center();
@@ -404,7 +404,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
     d->num_snapshots++;
 
   /* show active snapshot slots */
-  for (int k=0; k < d->num_snapshots; k++)
+  for (uint32_t k=0; k < d->num_snapshots; k++)
     gtk_widget_show(d->snapshot[k].button);
 
   /* request a new snapshot for top slot */
@@ -430,7 +430,7 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
   if (gtk_toggle_button_get_active(widget))
   {
     /* lets inactivate all togglebuttons except for self */
-    for(int k=0; k<d->size; k++)
+    for(uint32_t k=0; k<d->size; k++)
       if(GTK_WIDGET(widget) != d->snapshot[k].button)
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button), FALSE);
 

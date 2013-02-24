@@ -556,7 +556,7 @@ pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop
   if(err == CL_SUCCESS)
   {
     const float w = 1.0f/(region[0] * region[1]);
-    for(int k = 0; k < 4*bufsize; k += 4)
+    for(size_t k = 0; k < 4*bufsize; k += 4)
     {
       const float L = buffer[k];
       const float a = buffer[k + 1];

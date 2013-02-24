@@ -374,7 +374,7 @@ static void _lib_keywords_string_from_path(char *dest,size_t ds,
 
   if(g_list_length(components) == 0) dcs += g_snprintf(dest+dcs, ds-dcs," ");
 
-  for(int i=0; i<g_list_length(components); i++)
+  for(guint i=0; i<g_list_length(components); i++)
   {
     dcs += g_snprintf(dest+dcs, ds-dcs,
                       "%s%s",

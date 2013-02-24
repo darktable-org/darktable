@@ -369,7 +369,6 @@ gchar* dt_tag_get_list(gint imgid, const gchar *separator)
   GList *tags = NULL;
   dt_tag_t *t;
   gchar *value = NULL;
-  int i, j;
   gchar **pch;
 
   int count = dt_tag_get_attached (imgid, &taglist);
@@ -377,14 +376,14 @@ gchar* dt_tag_get_list(gint imgid, const gchar *separator)
   if (count < 1)
     return NULL;
 
-  for (i = 0; i < g_list_length(taglist); i++)
+  for (guint i = 0; i < g_list_length(taglist); i++)
   {
 
     t = g_list_nth_data (taglist, i);
     value = g_strdup(t->tag);
     if (g_strrstr(value, "|") && !g_str_has_prefix(value, "darktable|"))
     {
-      j = 0;
+      size_t j = 0;
       pch = g_strsplit(value, "|", -1);
 
       if (pch != NULL)
@@ -420,7 +419,7 @@ gchar *dt_tag_get_hierarchical(gint imgid, const gchar *separator)
   if (count < 1)
     return NULL;
 
-  for (int i=0; i<g_list_length(taglist); i++)
+  for (guint i=0; i<g_list_length(taglist); i++)
   {
     dt_tag_t *t;
     gchar *value = NULL;

@@ -667,7 +667,7 @@ static void refresh_albums(dt_storage_picasa_gui_data_t *ui)
       GList *album=g_list_first(ui->picasa_api->albums);
       if( album != NULL )
       {
-        for(int i=0; i<g_list_length(ui->picasa_api->albums); i++)
+        for(guint i=0; i<g_list_length(ui->picasa_api->albums); i++)
         {
           char data[512]= {0};
           sprintf(data,"%s (%s)", ((_picasa_album_t*)g_list_nth_data(ui->picasa_api->albums,i))->title, ((_picasa_album_t*)g_list_nth_data(ui->picasa_api->albums,i))->photoCount );

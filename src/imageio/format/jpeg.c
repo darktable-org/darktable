@@ -159,7 +159,7 @@ int decompress(dt_imageio_jpeg_t *jpg, uint8_t *out)
   while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
   {
     if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1) return 1;
-    for(int i=0; i<jpg->dinfo.image_width; i++) for(int k=0; k<3; k++)
+    for(JDIMENSION i=0; i<jpg->dinfo.image_width; i++) for(int k=0; k<3; k++)
         tmp[4*i+k] = row_pointer[0][3*i+k];
     tmp += 4*jpg->width;
   }
@@ -564,10 +564,10 @@ int read_image (dt_imageio_jpeg_t *jpg, uint8_t *out)
   {
     if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1) return 1;
     if(jpg->dinfo.num_components < 3)
-      for(int i=0; i<jpg->dinfo.image_width; i++) for(int k=0; k<3; k++)
+      for(JDIMENSION i=0; i<jpg->dinfo.image_width; i++) for(int k=0; k<3; k++)
           tmp[4*i+k] = row_pointer[0][jpg->dinfo.num_components*i+0];
     else
-      for(int i=0; i<jpg->dinfo.image_width; i++) for(int k=0; k<3; k++)
+      for(JDIMENSION i=0; i<jpg->dinfo.image_width; i++) for(int k=0; k<3; k++)
           tmp[4*i+k] = row_pointer[0][3*i+k];
     tmp += 4*jpg->width;
   }

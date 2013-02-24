@@ -292,7 +292,7 @@ static double _simplex_2d_noise(double x,double y,uint32_t octaves,double persis
 {
   double f=1,a=1,total=0;
 
-  for(int o=0; o<octaves; o++)
+  for(uint32_t o=0; o<octaves; o++)
   {
     total+= (_simplex_noise(x*f/z,y*f/z,o)*a);
     f=2*o;

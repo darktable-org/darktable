@@ -95,7 +95,7 @@ dt_imageio_open_gm(
   const int ht2 = orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
   const int wd2 = orientation & 4 ? img->height : img->width;
 
-  for (int row = 0; row < height; row++)
+  for (uint32_t row = 0; row < height; row++)
   {
     int ret = DispatchImage(image, 0, row, width, 1, "RGBP", FloatPixel, (void *)buf, &exception);
     if (exception.severity != UndefinedException)
@@ -107,7 +107,7 @@ dt_imageio_open_gm(
       goto error;
     }
 
-    for(int i=0; i<width; i++)
+    for(uint32_t i=0; i<width; i++)
       for(int k=0; k<4; k++) mipbuf[4*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf[4*i + k];
   }
 

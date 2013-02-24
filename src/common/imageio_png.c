@@ -205,11 +205,11 @@ dt_imageio_open_png(
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
-  for (int j = 0; j < height; j++)
+  for (uint32_t j = 0; j < height; j++)
   {
-    if(bpp < 16) for(int i=0; i<width; i++)
+    if(bpp < 16) for(uint32_t i=0; i<width; i++)
       for(int k=0; k<3; k++) mipbuf[4*(j * width + i) + k] = buf[3*(j * width + i) + k]*(1.0f/255.0f);
-    else for(int i=0; i<width; i++)
+    else for(uint32_t i=0; i<width; i++)
       for(int k=0; k<3; k++) mipbuf[4*(j * width + i) + k] = (256.0f*buf[2*(3*(j * width + i) + k)] + buf[2*(3*(j * width + i) + k) + 1])*(1.0f/65535.0f);
   }
 
