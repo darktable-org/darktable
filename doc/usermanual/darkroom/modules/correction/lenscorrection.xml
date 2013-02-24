@@ -37,7 +37,10 @@
 			<para>Corrections additionally depend on certain photometric parameters that are read from EXIF-data: focal 
                               length (needed for distortion, TCA, vignetting), aperture (needed for TCA, vignetting) and focal distance 
                               (needed for vignetting). Many cameras do not record focal distance in their EXIF data; most likely you need 
-                              to set this manually. You can override all automatically selected values.
+                              to set this manually.
+                        </para>
+                        <para>You can manually override all automatically selected parameters. Either take one of the predefined
+                              values from the pull-down menu; or - with the pull-down menu still open - just type in your own value.
                         </para>
                         <para>
                               If no controls for the three photometric parameters are displayed, this means that no correction profile could

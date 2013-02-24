@@ -1257,16 +1257,16 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   gchar *fm;
   const char *maker, *model;
   unsigned i;
-  static gdouble focal_values [] =
+  gdouble focal_values [] =
   {
-    4.5, 8, 10, 12, 14, 15, 16, 17, 18, 20, 24, 28, 30, 31, 35, 38, 40, 43,
+    -INFINITY, 4.5, 8, 10, 12, 14, 15, 16, 17, 18, 20, 24, 28, 30, 31, 35, 38, 40, 43,
     45, 50, 55, 60, 70, 75, 77, 80, 85, 90, 100, 105, 110, 120, 135,
-    150, 200, 210, 240, 250, 300, 400, 500, 600, 800, 1000
+    150, 200, 210, 240, 250, 300, 400, 500, 600, 800, 1000, INFINITY
   };
-  static gdouble aperture_values [] =
+  gdouble aperture_values [] =
   {
-    1, 1.2, 1.4, 1.7, 2, 2.4, 2.8, 3.4, 4, 4.8, 5.6, 6.7,
-    8, 9.5, 11, 13, 16, 19, 22, 27, 32, 38
+    -INFINITY, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.4, 1.8, 2, 2.2, 2.5, 2.8, 3.2, 3.4, 4, 4.5, 5.0, 5.6, 6.3,
+    7.1, 8, 9, 10, 11, 13, 14, 16, 18, 20, 22, 25, 29, 32, 38, INFINITY
   };
 
   if (!lens)
@@ -1330,16 +1330,26 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   gtk_container_foreach (
     GTK_CONTAINER (g->lens_param_box), delete_children, NULL);
 
-  int ffi = 0, fli = -1;
-  for (i = 0; i < sizeof (focal_values) / sizeof (gdouble); i++)
+  int ffi = 1, fli = -1;
+  for (i = 1; i < sizeof (focal_values) / sizeof (gdouble) - 1; i++)
   {
     if (focal_values [i] < lens->MinFocal)
       ffi = i + 1;
     if (focal_values [i] > lens->MaxFocal && fli == -1)
       fli = i;
   }
+  if (focal_values [ffi] > lens->MinFocal)
+  {
+    focal_values [ffi - 1] = lens->MinFocal;
+    ffi--;
+  }
   if (lens->MaxFocal == 0 || fli < 0)
-    fli = sizeof (focal_values) / sizeof (gdouble);
+    fli = sizeof (focal_values) / sizeof (gdouble) - 1;
+  if (focal_values [fli+1] < lens->MaxFocal)
+  {
+    focal_values [fli + 1] = lens->MaxFocal;
+    ffi++;
+  }
   if (fli < ffi)
     fli = ffi + 1;
 
@@ -1366,17 +1376,22 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
 
 
   // f-stop
-  ffi = 0;
-  for (i = 0; i < sizeof (aperture_values) / sizeof (gdouble); i++)
+  ffi = 1, fli = sizeof (aperture_values) / sizeof (gdouble) - 1;
+  for (i = 1; i < sizeof (aperture_values) / sizeof (gdouble) - 1; i++)
     if (aperture_values [i] < lens->MinAperture)
       ffi = i + 1;
+  if (aperture_values [ffi] > lens->MinAperture)
+  {
+    aperture_values [ffi - 1] = lens->MinAperture;
+    ffi--;
+  }
 
   w = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(w, _("f/"));
   g_object_set(G_OBJECT(w), "tooltip-text", _("f-number (aperture)"), (char *)NULL);
   snprintf(txt, sizeof (txt), "%.*f", precision(p->aperture, 10.0), p->aperture);
   dt_bauhaus_combobox_add(w, txt);
-  for(size_t k=0;k<sizeof(aperture_values)/sizeof(gdouble)-ffi;k++)
+  for(size_t k=0;k<fli-ffi;k++)
   {
     snprintf(txt, sizeof (txt), "%.*f", precision(aperture_values[ffi+k], 10.0), aperture_values[ffi+k]);
     dt_bauhaus_combobox_add(w, txt);
