@@ -744,7 +744,7 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
 
   /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
-  dt_lua_init(L,init_gui);
+  dt_lua_init(darktable.lua_state,init_gui);
 #endif
   return 0;
 }
