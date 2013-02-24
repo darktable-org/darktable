@@ -1862,7 +1862,6 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   const float radius = fabs(d->radius);
 
 
-
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
 
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*4*DEVELOP_BLENDIF_SIZE, d->blendif_parameters);
@@ -1870,6 +1869,12 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
   dev_mask = dt_opencl_alloc_device(devid, width, height, sizeof(float));
   if (dev_mask == NULL) goto error;
+
+  /* The following call to clFinish() works around a bug in some OpenCL drivers (namely AMD).
+     Without this synchronization point, reads to dev_in would often not return the correct value.
+     This depends on the module after which blending is called. One of the affected ones is sharpen.
+  */
+  dt_opencl_finish(devid);
 
   dt_opencl_set_kernel_arg(devid, kernel_mask, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, kernel_mask, 1, sizeof(cl_mem), (void *)&dev_out);
