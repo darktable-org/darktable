@@ -138,52 +138,78 @@ void dt_lua_init_early(lua_State*L){
   lua_setfield(L,-2,"__gc");
   lua_setmetatable(L,-2);
 
-  dt_lua_initialize_types(L);
-
   lua_pushstring(L,"print");
   lua_pushcfunction(L,&lua_print);
+  lua_settable(L,-3);
+
+  lua_pop(L,1);
+
+  dt_lua_initialize_types(L);
+
+}
+
+
+void dt_lua_init(lua_State*L,const int init_gui){
+  char tmp_path[PATH_MAX];
+
+  // init the lua environment
+  load_darktable_lib(darktable.lua_state);
+  dt_lua_push_darktable_lib(L);
+  // build the table containing the configuration info 
+  lua_pushstring(L,"configuration");
+  lua_newtable(L);
+
+  lua_pushstring(L,"tmp_dir");
+  dt_loc_get_tmp_dir(tmp_path, PATH_MAX);
+  lua_pushstring(L,tmp_path);
+  lua_settable(L,-3);
+
+  lua_pushstring(L,"config_dir");
+  dt_loc_get_user_config_dir(tmp_path, PATH_MAX);
+  lua_pushstring(L,tmp_path);
+  lua_settable(L,-3);
+
+  lua_pushstring(L,"cache_dir");
+  dt_loc_get_user_cache_dir(tmp_path, PATH_MAX);
+  lua_pushstring(L,tmp_path);
   lua_settable(L,-3);
 
   lua_pushstring(L,"version");
   lua_pushstring(darktable.lua_state,PACKAGE_VERSION);
   lua_settable(L,-3);
-}
 
-void dt_lua_init(lua_State*L,const int init_gui){
+  lua_settable(L,-3);//add the table to the darktable data
+  lua_pop(L,-1); //remove the global dt module from the stack
+  
+  lua_getglobal(L,"package");
+  dt_lua_goto_subtable(L,"loaded");
+  lua_pushstring(L,"darktable");
+  dt_lua_push_darktable_lib(L);
+  lua_settable(L,-3);
+  lua_pop(L,1);
 
-  // init the lua environment
-  load_darktable_lib(darktable.lua_state);
+  lua_getglobal(L,"package");
+  lua_getfield(L,-1,"path");
+  lua_pushstring(L,";");
+  dt_loc_get_user_config_dir(tmp_path, PATH_MAX);
+  lua_pushstring(L,tmp_path);
+  lua_pushstring(L,"/lua");
+  lua_concat(L,4);
+  lua_setfield(L,-2,"path");
+  lua_pop(L,1);
+
   if(init_gui) {
-    lua_setglobal(darktable.lua_state, "darktable");  /* remove _PRELOAD table */
     dt_lua_init_events(darktable.lua_state);
     dt_lua_init_gui(darktable.lua_state);
   }
 
 
+
   // if we have a UI, we need to load the modules
   if(init_gui) {
-    char configdir[PATH_MAX];
-    dt_loc_get_user_config_dir(configdir, PATH_MAX);
-    g_strlcat(configdir,"/lua_init",PATH_MAX);
-    if (g_file_test(configdir, G_FILE_TEST_IS_DIR)) {
-      GError * error;
-      GDir * lua_dir = g_dir_open(configdir,0,&error);
-      if(!lua_dir) {
-        dt_print(DT_DEBUG_LUA,"error opening %s : %s\n",configdir,error->message);
-      } else {
-        gchar *tmp;
-        const gchar * filename = g_dir_read_name(lua_dir);
-        while(filename) {
-          tmp = g_strconcat(configdir,"/",filename,NULL);
-          if (g_file_test(tmp, G_FILE_TEST_IS_REGULAR) && filename[0] != '.') {
-            dt_lua_do_chunk(darktable.lua_state,luaL_loadfile(darktable.lua_state,tmp),0,0);
-          }
-          g_free(tmp);
-          filename = g_dir_read_name(lua_dir);
-        }
-      }
-      g_dir_close(lua_dir);
-    }
+    dt_loc_get_user_config_dir(tmp_path, PATH_MAX);
+    g_strlcat(tmp_path,"/rc.lua",PATH_MAX);
+    dt_lua_do_chunk(darktable.lua_state,luaL_loadfile(darktable.lua_state,tmp_path),0,0);
   }
 
 }
