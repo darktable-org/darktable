@@ -24,6 +24,8 @@
 #include "common/file_location.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/mipmap_cache.h"
+#include "common/pwstorage/pwstorage.h"
 #include "control/control.h"
 #include "gui/styles.h"
 #include "gui/gtk.h"
@@ -108,6 +110,7 @@ void _temp_export(int32_t id, const char* dir, const char* filename)
   if(storage->finalize_store) storage->finalize_store(storage, sdata);
   storage->free_params(storage, sdata);
   format->free_params(format, fdata);
+  g_free(path);
 
 }
 
@@ -115,12 +118,13 @@ void _curl_upload_style(const char* dir, dt_gui_styles_upload_dialog_t *sd)
 {
 
   /* All the values to be used */
-  const char *upload_url, *name, *style, *img_before, *img_after, *username, *password;
+  const char *upload_url, *name, *username, *password;
+  char *style, *img_before, *img_after;
   upload_url = "http://darktablestyles.sourceforge.net/upload.php";
   name       = gtk_entry_get_text ( GTK_ENTRY (sd->name));
   style      = g_strconcat(dir, "/", name, ".dtstyle", NULL);
-  img_before   = g_strconcat(dir, "/before.jpg", NULL);
-  img_after   = g_strconcat(dir, "/after.jpg", NULL);
+  img_before = g_strconcat(dir, "/before.jpg", NULL);
+  img_after  = g_strconcat(dir, "/after.jpg", NULL);
   username   = gtk_entry_get_text ( GTK_ENTRY (sd->username));
   password   = gtk_entry_get_text ( GTK_ENTRY (sd->password));
 
@@ -150,7 +154,7 @@ void _curl_upload_style(const char* dir, dt_gui_styles_upload_dialog_t *sd)
 
   curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "p",
                CURLFORM_COPYCONTENTS, password, CURLFORM_END);
-		
+
   curl = curl_easy_init();
   headerlist = curl_slist_append(headerlist, buf);
   if(curl) {
@@ -166,6 +170,9 @@ void _curl_upload_style(const char* dir, dt_gui_styles_upload_dialog_t *sd)
     curl_formfree(formpost);
     curl_slist_free_all (headerlist);
   }
+  g_free(style);
+  g_free(img_before);
+  g_free(img_after);
 }
 
 static void _gui_styles_upload_response(GtkDialog *dialog, gint response_id, dt_gui_styles_upload_dialog_t *sd)
@@ -180,23 +187,27 @@ static void _gui_styles_upload_response(GtkDialog *dialog, gint response_id, dt_
     {
       return;
     }
-    char *name, *description, *dir = "/tmp";
+    char *name, *description, *dir = "/tmp"; // TODO: change to (char*)DARKTABLE_TMPDIR ? 
     const char *newname;
     GtkTextIter start, end;
     gtk_text_buffer_get_bounds(sd->description, &start, &end);
     description = gtk_text_buffer_get_text (sd->description, &start, &end, FALSE);
     newname = gtk_entry_get_text ( GTK_ENTRY (sd->name));
     name = sd->nameorig;
-    // not sure how to get platform specific tmp dir...
-    //dt_loc_init_tmp_dir(dir);
     dt_styles_update (name, newname, description, NULL);
     dt_styles_save_to_file(newname, dir, TRUE);
     _temp_export(sd->beforeid, dir, "before");
     _temp_export(sd->afterid, dir, "after");
     _curl_upload_style(dir, sd);
-    unlink(g_strconcat(dir, "/before.jpg", NULL));
-    unlink(g_strconcat(dir, "/after.jpg", NULL));
-    unlink(g_strconcat(dir, "/", newname , ".dtstyle", NULL));
+    char *file1 = g_strconcat(dir, "/before.jpg", NULL);
+    char *file2 = g_strconcat(dir, "/after.jpg", NULL);
+    char *file3 = g_strconcat(dir, "/", newname , ".dtstyle", NULL);
+    unlink(file1);
+    unlink(file2);
+    unlink(file3);
+    g_free(file1);
+    g_free(file2);
+    g_free(file3);
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
@@ -205,7 +216,14 @@ static void _gui_styles_upload_response(GtkDialog *dialog, gint response_id, dt_
   g_free(sd->nameorig);
   g_free(sd);
 }
-/*
+
+static gboolean _redraw_thumbnail(gpointer user_data)
+{
+  GtkWidget *widget = (GtkWidget*)user_data;
+  dt_control_queue_redraw_widget(widget);
+  return FALSE;
+}
+
 static void _expose_thumbnail(GtkWidget *widget, cairo_t *cr,
     gpointer user_data)
 {
@@ -214,16 +232,25 @@ static void _expose_thumbnail(GtkWidget *widget, cairo_t *cr,
   int size = 150;
   gtk_widget_set_size_request (widget, size, size);
   cr = gdk_cairo_create(window);
-  dt_view_image_over_t * image_over = (dt_view_image_over_t *)DT_VIEW_REJECT;
-  dt_view_image_expose(image_over, imgid, cr, size, size, 6, 0, 0, FALSE);
-  cairo_destroy(cr);
-  * well the images aren't really exposed for me, unless I add the following
-   * command, but that would create an infinite loop of redrawing the thumbnails,
-   * so I'm not really sure how to solve it, but I'm sure we'll figure out :)
-  dt_control_queue_redraw_widget(widget);
   
+  // make sure the mipmap exists
+  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, size, size);
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT);
+  if (buf.buf)
+  {
+    dt_view_image_over_t * image_over = (dt_view_image_over_t *)DT_VIEW_REJECT;
+    dt_view_image_expose(image_over, imgid, cr, size, size, 6, 0, 0, FALSE);
+  }
+  else
+  {
+    // try to redraw thumbnail after 500ms if mipmap isn't present
+    g_timeout_add(500, _redraw_thumbnail, widget);
+  }
+  dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+  cairo_destroy(cr);
 }
-*/
+
 void _gui_init (dt_gui_styles_upload_dialog_t *sd)
 {
   /* create the dialog */
@@ -264,19 +291,26 @@ void _gui_init (dt_gui_styles_upload_dialog_t *sd)
   g_object_set (sd->name, "tooltip-text", _("enter a name for the style"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(sd->name), 1, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  label = gtk_label_new("username");
+  GHashTable* table = dt_pwstorage_get("style_upload");
+  gchar* _username = g_strdup( g_hash_table_lookup(table, "username"));
+  gchar* _password = g_strdup( g_hash_table_lookup(table, "password"));
+  g_hash_table_destroy(table);
+  
+  label = gtk_label_new(_("user"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(label), 0, 1, 2, 3, 0, 0, 0, 0);
   sd->username = gtk_entry_new();
   g_object_set (sd->username, "tooltip-text", _("your username at www.darktable.org/redmine"), (char *)NULL);
+  gtk_entry_set_text(GTK_ENTRY(sd->username),  _username == NULL?"":_username);
   gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(sd->username), 1, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  label = gtk_label_new("password");
+  label = gtk_label_new(_("password"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(label), 0, 1, 3, 4, 0, 0, 0, 0);
   sd->password = gtk_entry_new();
   g_object_set (sd->password, "tooltip-text", _("your password"), (char *)NULL);
   gtk_entry_set_visibility (GTK_ENTRY(sd->password), FALSE);
+  gtk_entry_set_text(GTK_ENTRY(sd->password),  _password == NULL?"":_password);
   gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(sd->password), 1, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   label = dtgtk_label_new(_("description"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
@@ -305,15 +339,15 @@ void _gui_init (dt_gui_styles_upload_dialog_t *sd)
   label = dtgtk_label_new(_("before"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
   gtk_box_pack_start (thumbnails,GTK_WIDGET(label),FALSE,FALSE,0);
   GtkWidget *before = gtk_drawing_area_new();
-//  g_signal_connect(G_OBJECT(before), "expose-event",
-//      G_CALLBACK(_expose_thumbnail), (gpointer)&sd->beforeid);
+  g_signal_connect(G_OBJECT(before), "expose-event",
+      G_CALLBACK(_expose_thumbnail), (gpointer)&sd->beforeid);
   gtk_box_pack_start (thumbnails,GTK_WIDGET(before),FALSE,FALSE,0);
    
   label = dtgtk_label_new(_("after"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
   gtk_box_pack_start (thumbnails,GTK_WIDGET(label),FALSE,FALSE,0);
   GtkWidget *after = gtk_drawing_area_new();
-//  g_signal_connect(G_OBJECT(after), "expose-event",
-//      G_CALLBACK(_expose_thumbnail), (gpointer)&sd->afterid);
+  g_signal_connect(G_OBJECT(after), "expose-event",
+      G_CALLBACK(_expose_thumbnail), (gpointer)&sd->afterid);
   gtk_box_pack_start (thumbnails,GTK_WIDGET(after),FALSE,FALSE,0);
 
   /* set response and draw dialog */
