@@ -34,6 +34,9 @@
 #include <gdk/gdk.h>
 #include <curl/curl.h>
 
+#define _THUMBNAIL_WIDTH 150
+#define _THUMBNAIL_HEIGHT 150
+
 typedef struct dt_gui_styles_upload_dialog_t
 {
   int32_t beforeid, afterid;
@@ -229,18 +232,16 @@ static void _expose_thumbnail(GtkWidget *widget, cairo_t *cr,
 {
   int32_t imgid = *(int32_t*)user_data;
   GdkWindow *window = gtk_widget_get_window(widget);
-  int size = 150;
-  gtk_widget_set_size_request (widget, size, size);
   cr = gdk_cairo_create(window);
   
   // make sure the mipmap exists
-  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, size, size);
+  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, _THUMBNAIL_WIDTH, _THUMBNAIL_HEIGHT);
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT);
   if (buf.buf)
   {
     dt_view_image_over_t * image_over = (dt_view_image_over_t *)DT_VIEW_REJECT;
-    dt_view_image_expose(image_over, imgid, cr, size, size, 6, 0, 0, FALSE);
+    dt_view_image_expose(image_over, imgid, cr, _THUMBNAIL_WIDTH, _THUMBNAIL_HEIGHT, 6, 0, 0, FALSE);
   }
   else
   {
@@ -258,12 +259,11 @@ void _gui_init (dt_gui_styles_upload_dialog_t *sd)
   GtkDialog *dialog = GTK_DIALOG (gtk_dialog_new_with_buttons(_("upload style"),
                                   GTK_WINDOW(window),
                                   GTK_DIALOG_DESTROY_WITH_PARENT,
-                                  _("cancel"),
-                                  GTK_RESPONSE_REJECT,
-                                  _("upload"),
-                                  GTK_RESPONSE_ACCEPT,
+                                  _("cancel"), GTK_RESPONSE_REJECT,
+                                  _("upload"), GTK_RESPONSE_ACCEPT,
                                   NULL));
-
+  gtk_widget_set_name(GTK_WIDGET(dialog), "style-upload-dialog");
+  
   /* create layout */
   GtkContainer *content_area = GTK_CONTAINER (gtk_dialog_get_content_area (GTK_DIALOG (dialog)));
   GtkWidget *alignment = gtk_alignment_new (0.5, 0.5, 1.0, 1.0);
@@ -323,7 +323,7 @@ void _gui_init (dt_gui_styles_upload_dialog_t *sd)
   sd->description = gtk_text_view_get_buffer (GTK_TEXT_VIEW (description));
   gchar *olddesc = dt_styles_get_description (sd->nameorig);
   gtk_text_buffer_set_text (sd->description, olddesc, -1);
-  gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW(description), GTK_WRAP_CHAR);
+  gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW(description), GTK_WRAP_WORD);
   GtkWidget* scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW(scrolledwindow), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
   gtk_container_add(GTK_CONTAINER(scrolledwindow), description);
@@ -339,6 +339,7 @@ void _gui_init (dt_gui_styles_upload_dialog_t *sd)
   label = dtgtk_label_new(_("before"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
   gtk_box_pack_start (thumbnails,GTK_WIDGET(label),FALSE,FALSE,0);
   GtkWidget *before = gtk_drawing_area_new();
+  gtk_widget_set_size_request (before, _THUMBNAIL_WIDTH, _THUMBNAIL_HEIGHT);
   g_signal_connect(G_OBJECT(before), "expose-event",
       G_CALLBACK(_expose_thumbnail), (gpointer)&sd->beforeid);
   gtk_box_pack_start (thumbnails,GTK_WIDGET(before),FALSE,FALSE,0);
@@ -346,6 +347,7 @@ void _gui_init (dt_gui_styles_upload_dialog_t *sd)
   label = dtgtk_label_new(_("after"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
   gtk_box_pack_start (thumbnails,GTK_WIDGET(label),FALSE,FALSE,0);
   GtkWidget *after = gtk_drawing_area_new();
+  gtk_widget_set_size_request (after, _THUMBNAIL_WIDTH, _THUMBNAIL_HEIGHT);
   g_signal_connect(G_OBJECT(after), "expose-event",
       G_CALLBACK(_expose_thumbnail), (gpointer)&sd->afterid);
   gtk_box_pack_start (thumbnails,GTK_WIDGET(after),FALSE,FALSE,0);

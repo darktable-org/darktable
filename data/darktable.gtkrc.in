@@ -291,6 +291,7 @@ widget "*.left.GtkEventBox" style "clearlooks-brightbg"
 
 widget_class "*.GtkFrame.GtkEventBox" style "clearlooks-plugin"
 widget "*.dt-plugin-ui" style "clearlooks-plugin"
+widget "style-upload-dialog" style "clearlooks-plugin"
 
 widget "*.background_job_eventbox" style "clearlooks-brightbg"
 #widget_class "*.GtkMenuItem.*" style "clearlooks-menu-item"
