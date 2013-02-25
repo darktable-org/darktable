@@ -1924,6 +1924,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/clipping/guide</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>last chosen guide style</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/histogram/mode</name>
     <type>
       <enum>
