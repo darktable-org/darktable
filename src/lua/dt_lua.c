@@ -27,6 +27,7 @@
 #include "lua/gui.h"
 #include "lua/glist.h"
 #include "lua/styles.h"
+#include "lua/preferences.h"
 #include "common/imageio_module.h"
 #include "config.h"
 
@@ -110,6 +111,7 @@ static lua_CFunction init_funcs[] = {
   dt_lua_init_styles,
   dt_lua_init_image,
   dt_lua_init_database,
+  dt_lua_init_preferences,
   NULL
 };
 static int load_darktable_lib(lua_State *L) {
