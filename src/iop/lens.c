@@ -1929,7 +1929,7 @@ void gui_update(struct dt_iop_module_t *self)
     const lfLens **lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,
                               make [0] ? make : NULL,
                               model [0] ? model : NULL, 0);
-    if(lenslist && !lenslist[1]) lens_set (self, lenslist[0]);
+    if(lenslist) lens_set (self, lenslist[0]);
     lf_free (lenslist);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   }
