@@ -785,8 +785,8 @@ add_profile() {
 	 "blendop_version"						\
 	 ") "								\
 	 "values ("							\
-	 "'$label', '', 'denoiseprofile', 1, "				\
-	 "X'${bin1}${bin1}${bina0}${bina1}${bina2}${binb0}${binb1}${binb2}', "\
+	 "'$label', '', 'denoiseprofile', 2, "				\
+	 "X'${bin1}${bin1}${bina0}${bina1}${bina2}${binb0}${binb1}${binb2}00000000', "\
 	 "1, X'00', '', '', '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4);" | \
 	sqlite3 $database
 }
