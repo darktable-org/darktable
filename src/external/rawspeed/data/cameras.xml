@@ -1092,6 +1092,16 @@
     <Crop x="0" y="0" width="4310" height="2868"/>
     <Sensor black="0" white="3767"/>
   </Camera>
+  <Camera make="NIKON CORPORATION" model="NIKON 1 S1" decoder_version="4">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="0" height="-2"/>
+    <Sensor black="0" white="0"/>
+  </Camera>
   <Camera make="NIKON CORPORATION" model="NIKON 1 J1" decoder_version="4">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
