@@ -776,6 +776,7 @@ void dt_cleanup()
   {
     dt_control_cleanup(darktable.control);
     free(darktable.control);
+    dt_undo_cleanup(darktable.undo);
   }
   dt_conf_cleanup(darktable.conf);
   free(darktable.conf);
@@ -795,8 +796,6 @@ void dt_cleanup()
 #endif
 
   dt_database_destroy(darktable.db);
-
-  dt_undo_cleanup(darktable.undo);
 
   dt_bauhaus_cleanup();
 
