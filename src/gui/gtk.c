@@ -305,7 +305,14 @@ _widget_focus_out_unblock_key_accelerators (GtkWidget *widget,GdkEventFocus *eve
 }
 
 void
-dt_gui_key_accel_block_on_focus (GtkWidget *w)
+dt_gui_key_accel_block_on_focus_disconnect(GtkWidget *w)
+{
+  g_signal_handlers_disconnect_by_func(G_OBJECT(w), _widget_focus_in_block_key_accelerators, (gpointer)w);
+  g_signal_handlers_disconnect_by_func(G_OBJECT(w), _widget_focus_out_unblock_key_accelerators, (gpointer)w);
+}
+
+void
+dt_gui_key_accel_block_on_focus_connect(GtkWidget *w)
 {
   /* first off add focus change event mask */
   gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);

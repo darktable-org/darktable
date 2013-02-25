@@ -460,8 +460,8 @@ gui_init (dt_lib_module_t *self)
   d->height = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
   g_object_set(G_OBJECT(d->height), "tooltip-text", _("maximum output height\nset to 0 for no scaling"), (char *)NULL);
 
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->width));
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->height));
+  dt_gui_key_accel_block_on_focus_connect (GTK_WIDGET (d->width));
+  dt_gui_key_accel_block_on_focus_connect (GTK_WIDGET (d->height));
   /*
     gtk_widget_add_events(GTK_WIDGET(d->width), GDK_FOCUS_CHANGE_MASK);
     g_signal_connect (G_OBJECT (d->width), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
@@ -637,6 +637,8 @@ void
 gui_cleanup (dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
+  dt_gui_key_accel_block_on_focus_disconnect (GTK_WIDGET (d->width));
+  dt_gui_key_accel_block_on_focus_disconnect (GTK_WIDGET (d->height));
   GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
   if(old) gtk_container_remove(d->format_box, old);
   old = gtk_bin_get_child(GTK_BIN(d->storage_box));

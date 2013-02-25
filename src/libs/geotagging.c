@@ -575,7 +575,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(hbox, label, TRUE, TRUE, 0);
 
   d->offset_entry = gtk_entry_new();
-  dt_gui_key_accel_block_on_focus(d->offset_entry);
+  dt_gui_key_accel_block_on_focus_connect(d->offset_entry);
   gtk_entry_set_max_length(GTK_ENTRY(d->offset_entry), 9);
   gtk_box_pack_start(hbox, d->offset_entry, TRUE, TRUE, 0);
   g_signal_connect(d->offset_entry, "key-press-event", G_CALLBACK(_lib_geotagging_offset_key_press), self);
@@ -614,6 +614,7 @@ void
 gui_cleanup (dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t*)self->data;
+  dt_gui_key_accel_block_on_focus_disconnect(d->offset_entry);
   g_list_free_full(d->timezones, &g_free);
   d->timezones = NULL;
   g_free(self->data);

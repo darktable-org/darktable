@@ -776,10 +776,10 @@ gui_init (dt_imageio_module_storage_t *self)
   ui->entry3 = GTK_ENTRY( gtk_entry_new() );  // Album title
   ui->entry4 = GTK_ENTRY( gtk_entry_new() );  // Album summary
 
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET (ui->entry1));
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET (ui->entry2));
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET (ui->entry3));
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET (ui->entry4));
+  dt_gui_key_accel_block_on_focus_connect (GTK_WIDGET (ui->entry1));
+  dt_gui_key_accel_block_on_focus_connect (GTK_WIDGET (ui->entry2));
+  dt_gui_key_accel_block_on_focus_connect (GTK_WIDGET (ui->entry3));
+  dt_gui_key_accel_block_on_focus_connect (GTK_WIDGET (ui->entry4));
 
   /*
     gtk_widget_add_events(GTK_WIDGET(ui->entry1), GDK_FOCUS_CHANGE_MASK);
@@ -878,6 +878,12 @@ gui_init (dt_imageio_module_storage_t *self)
 void
 gui_cleanup (dt_imageio_module_storage_t *self)
 {
+  dt_storage_picasa_gui_data_t *ui =(dt_storage_picasa_gui_data_t *)self->gui_data;
+  dt_gui_key_accel_block_on_focus_disconnect (GTK_WIDGET (ui->entry1));
+  dt_gui_key_accel_block_on_focus_disconnect (GTK_WIDGET (ui->entry2));
+  dt_gui_key_accel_block_on_focus_disconnect (GTK_WIDGET (ui->entry3));
+  dt_gui_key_accel_block_on_focus_disconnect (GTK_WIDGET (ui->entry4));
+  free(ui);
 }
 
 void

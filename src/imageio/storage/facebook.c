@@ -1028,9 +1028,9 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   ui->entry_album_title = GTK_ENTRY(gtk_entry_new());
   ui->entry_album_summary = GTK_ENTRY(gtk_entry_new());
 
-  dt_gui_key_accel_block_on_focus(GTK_WIDGET(ui->comboBox_username));
-  dt_gui_key_accel_block_on_focus(GTK_WIDGET(ui->entry_album_title));
-  dt_gui_key_accel_block_on_focus(GTK_WIDGET(ui->entry_album_summary));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->comboBox_username));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->entry_album_title));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->entry_album_summary));
 
   //retreive saved accounts
   ui_refresh_users(ui);
@@ -1111,6 +1111,9 @@ void gui_init(struct dt_imageio_module_storage_t *self)
 void gui_cleanup(struct dt_imageio_module_storage_t *self)
 {
   dt_storage_facebook_gui_data_t *ui = self->gui_data;
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->comboBox_username));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->entry_album_title));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->entry_album_summary));
   if (ui->facebook_api != NULL)
     fb_api_destroy(ui->facebook_api);
   g_free(self->gui_data);

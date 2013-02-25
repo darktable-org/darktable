@@ -79,7 +79,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->terminal = VTE_TERMINAL(vte_terminal_new());
   self->widget = GTK_WIDGET(d->terminal);
-  dt_gui_key_accel_block_on_focus(GTK_WIDGET(d->terminal));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->terminal));
 #if defined(__MACH__) || defined(__APPLE__)
   vte_terminal_set_font_from_string(d->terminal, "Monospace 11");
 #else
@@ -107,6 +107,7 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   darktable.gui->redraw_widgets = g_list_remove(darktable.gui->redraw_widgets, self->widget);
   dt_lib_file_manager_t *d = (dt_lib_file_manager_t*) self->data;
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->terminal));
   kill(d->pid, SIGKILL);
   g_free(self->data);
   self->data = NULL;

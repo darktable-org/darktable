@@ -618,7 +618,7 @@ dt_bauhaus_init()
   // this is needed for popup, not for toplevel.
   // since popup_area gets the focus if we show the window, this is all
   // we need.
-  dt_gui_key_accel_block_on_focus(darktable.bauhaus->popup_area);
+  dt_gui_key_accel_block_on_focus_connect(darktable.bauhaus->popup_area);
 
   gtk_widget_set_size_request(darktable.bauhaus->popup_area, 300, 300);
   gtk_window_set_resizable(GTK_WINDOW(darktable.bauhaus->popup_window), FALSE);
