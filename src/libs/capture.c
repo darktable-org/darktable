@@ -175,6 +175,9 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
+  // Setup lib data
+  dt_lib_capture_t *lib=self->data;
+
   dt_gui_key_accel_block_on_focus_disconnect (GTK_WIDGET (lib->gui.entry1));
   dt_gui_key_accel_block_on_focus_disconnect (GTK_WIDGET (lib->gui.entry_namepattern));
   g_free(self->data);
