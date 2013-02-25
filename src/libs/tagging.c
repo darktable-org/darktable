@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011--2013 henrik andersson.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -431,7 +431,7 @@ gui_init (dt_lib_module_t *self)
 
   // text entry and new button
   w = gtk_entry_new();
-  dt_gui_key_accel_block_on_focus (w, TRUE);
+  dt_gui_key_accel_block_on_focus (w);
   g_object_set(G_OBJECT(w), "tooltip-text", _("enter tag name"), (char *)NULL);
   gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
@@ -498,8 +498,6 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
-  dt_lib_tagging_t *d = (dt_lib_tagging_t*)self->data;
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET(d->entry), TRUE);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_tagging_redraw_callback), self);
   free(self->data);
   self->data = NULL;

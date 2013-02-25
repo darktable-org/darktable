@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika
-    copyright (c) 2011--2013 henrik andersson.
+    copyright (c) 2009--2011 johannes hanika, henrik andersson.
     copyright (c) 2012 Jose Carlos Garcia Sogo
 
     darktable is free software: you can redistribute it and/or modify
@@ -1875,7 +1874,7 @@ gui_init (dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d->rule + i);
     gtk_box_pack_start(box, w, FALSE, FALSE, 0);
     w = gtk_entry_new();
-    dt_gui_key_accel_block_on_focus(w, TRUE);
+    dt_gui_key_accel_block_on_focus(w);
     d->rule[i].text = w;
     gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);
     g_signal_connect(G_OBJECT(w), "focus-in-event", G_CALLBACK(entry_focus_in_callback), d->rule + i);
@@ -1972,10 +1971,6 @@ void
 gui_cleanup (dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
-
-  for (int i=0;i<MAX_RULES;i++) {
-      dt_gui_key_accel_block_on_focus(d->rule[i].text, FALSE);
-  }
 
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_updated), self);

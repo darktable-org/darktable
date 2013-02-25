@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011-2013 henrik andersson.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -117,7 +117,7 @@ gui_init (dt_lib_module_t *self)
 
   /* add search box */
   lib->search = GTK_ENTRY(gtk_entry_new());
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET (lib->search), TRUE);
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (lib->search));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->search), FALSE, FALSE, 0);
 
   g_signal_connect(G_OBJECT (lib->search), "activate",
@@ -132,10 +132,6 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
-  dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET (lib->search), FALSE);
-
-  free(self->data);
 }
 
 static GtkWidget *_lib_location_place_widget_new(_lib_location_result_t *place)

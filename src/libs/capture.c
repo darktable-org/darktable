@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010-2013 henrik andersson.
+    copyright (c) 2010-2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -132,7 +132,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label1), TRUE, TRUE, 0);
 
   lib->gui.entry1 = GTK_ENTRY(gtk_entry_new());
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET (lib->gui.entry1), TRUE);
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (lib->gui.entry1));
   gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.entry1), TRUE, TRUE, 0);
 
   lib->gui.label_namepattern = GTK_LABEL(gtk_label_new(_("filename")));
@@ -140,7 +140,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(vbox1_namepattern, GTK_WIDGET(lib->gui.label_namepattern), TRUE, TRUE, 0);
 
   lib->gui.entry_namepattern = GTK_ENTRY(gtk_entry_new());
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET (lib->gui.entry_namepattern), TRUE);
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (lib->gui.entry_namepattern));
   gtk_box_pack_start(vbox2_namepattern, GTK_WIDGET(lib->gui.entry_namepattern), TRUE, TRUE, 0);
 
   lib->gui.button1 = GTK_BUTTON(gtk_button_new_with_label( _("create") ));
@@ -175,10 +175,7 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
-  dt_lib_capture_t *lib = self->data;
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET (lib->gui.entry1), FALSE);
   g_free(self->data);
-
   self->data = NULL;
 }
 

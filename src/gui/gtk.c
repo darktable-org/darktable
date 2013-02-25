@@ -305,22 +305,14 @@ _widget_focus_out_unblock_key_accelerators (GtkWidget *widget,GdkEventFocus *eve
 }
 
 void
-dt_gui_key_accel_block_on_focus (GtkWidget *w, gboolean enable)
+dt_gui_key_accel_block_on_focus (GtkWidget *w)
 {
   /* first off add focus change event mask */
   gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);
 
-  /* connect/disconnect the signals */
-  if (enable)
-  {
-    g_signal_connect (G_OBJECT (w), "focus-in-event", G_CALLBACK(_widget_focus_in_block_key_accelerators), (gpointer)w);
-    g_signal_connect (G_OBJECT (w), "focus-out-event", G_CALLBACK(_widget_focus_out_unblock_key_accelerators), (gpointer)w);
-  }
-  else
-  {
-    g_signal_handlers_disconnect_by_func(G_OBJECT(w), _widget_focus_in_block_key_accelerators, (gpointer)w);
-    g_signal_handlers_disconnect_by_func(G_OBJECT(w), _widget_focus_out_unblock_key_accelerators, (gpointer)w);
-  }
+  /* conenct the signals */
+  g_signal_connect (G_OBJECT (w), "focus-in-event", G_CALLBACK(_widget_focus_in_block_key_accelerators), (gpointer)w);
+  g_signal_connect (G_OBJECT (w), "focus-out-event", G_CALLBACK(_widget_focus_out_unblock_key_accelerators), (gpointer)w);
 }
 
 static gboolean

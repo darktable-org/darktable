@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 - 2013 henrik andersson.
+    copyright (c) 2010 - 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -679,7 +679,7 @@ gui_init (dt_lib_module_t *self)
 
   gtk_box_pack_start (vbox1, GTK_WIDGET ( gtk_label_new (_("label"))), TRUE, TRUE, 0);
   lib->gui.plabel = gtk_entry_new ();
-  dt_gui_key_accel_block_on_focus (lib->gui.plabel, TRUE);
+  dt_gui_key_accel_block_on_focus (lib->gui.plabel);
   gtk_box_pack_start (vbox2, GTK_WIDGET ( lib->gui.plabel ), TRUE, TRUE, 0);
 
   hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
@@ -687,7 +687,7 @@ gui_init (dt_lib_module_t *self)
   GtkWidget *widget = gtk_button_new_with_label("O");
   g_signal_connect (G_OBJECT (widget), "clicked", G_CALLBACK (_show_property_popupmenu_clicked), lib);
   lib->gui.pname = gtk_entry_new ();
-  dt_gui_key_accel_block_on_focus (lib->gui.pname, TRUE);
+  dt_gui_key_accel_block_on_focus (lib->gui.pname);
   gtk_box_pack_start (hbox, GTK_WIDGET ( lib->gui.pname ), TRUE, TRUE, 0);
   gtk_box_pack_start (hbox, GTK_WIDGET ( widget ), FALSE, FALSE, 0);
   gtk_box_pack_start (vbox2, GTK_WIDGET ( hbox ), TRUE, TRUE, 0);
