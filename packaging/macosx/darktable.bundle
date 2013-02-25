@@ -26,4 +26,6 @@
   <data>${prefix:dt}/share/icons</data>
   <data>${prefix}/share/mime</data>
   <data dest="${bundle}/Contents/Resources">${project}/Icons.icns</data>
+  <data dest="${bundle}/Contents/Resources/share/applications/defaults.list">${project}/defaults.list</data>
+  <data dest="${bundle}/Contents/Resources/share/applications/open.desktop">${project}/open.desktop</data>
 </app-bundle>

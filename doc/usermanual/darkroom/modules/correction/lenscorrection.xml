@@ -37,7 +37,10 @@
 			<para>Corrections additionally depend on certain photometric parameters that are read from EXIF-data: focal 
                               length (needed for distortion, TCA, vignetting), aperture (needed for TCA, vignetting) and focal distance 
                               (needed for vignetting). Many cameras do not record focal distance in their EXIF data; most likely you need 
-                              to set this manually. You can override all automatically selected values.
+                              to set this manually.
+                        </para>
+                        <para>You can manually override all automatically selected parameters. Either take one of the predefined
+                              values from the pull-down menu; or - with the pull-down menu still open - just type in your own value.
                         </para>
                         <para>
                               If no controls for the three photometric parameters are displayed, this means that no correction profile could
@@ -49,13 +52,14 @@
 		</sect5>
 		<sect5><title>corrections</title>
 			<para>This combobox gives you a choice about which corrections (out of distortion, TCA and vignetting) darktable 
-                              shall apply. Change this from its default "all", if your camera has already done some internal
+                              shall apply. Change this from its default <quote>all</quote>, if your camera has already done some internal
                               corrections (e.g. of vignetting), or if you plan to do certain corrections with a separate program.
                         </para>
 		</sect5>	
 		<sect5><title>geometry</title>
 			<para>In addition to correction of lens flaws, this module can change the projection type of your image. Set this
-                              combobox to the aimed projection type. 
+                              combobox to the aimed projection type, like <quote>rectilinear</quote>, <quote>fish-eye</quote>, <quote>panoramic</quote>,
+                              <quote>equirectangular</quote>. 
                         </para>
 		</sect5>	
 		<sect5><title>scale</title>
@@ -64,7 +68,7 @@
                         </para>
 		</sect5>	
 		<sect5><title>mode</title>
-			<para>The default behavior of this module is to correct lens flaws. Switch this togglebutton to "distort" in
+			<para>The default behavior of this module is to correct lens flaws. Switch this togglebutton to <quote>distort</quote> in
                               order to simulate the behavior of a specific lens (inverted effect).
                         </para>
                 </sect5>

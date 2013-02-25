@@ -1206,7 +1206,11 @@ list_view (dt_lib_collect_rule_t *dr)
     // We shouldn't ever be here
       break;
 
-    default: // case 3: // day
+    case DT_COLLECTION_PROP_DAY:
+      snprintf(query, 1024, "SELECT DISTINCT substr(datetime_taken, 1, 10), 1 FROM images WHERE datetime_taken LIKE '%%%s%%' ORDER BY datetime_taken DESC", escaped_text);
+      break;
+
+    default: // time
       snprintf(query, 1024, "SELECT DISTINCT datetime_taken, 1 FROM images WHERE datetime_taken LIKE '%%%s%%' ORDER BY datetime_taken DESC", escaped_text);
       break;
   }
@@ -1870,8 +1874,8 @@ gui_init (dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d->rule + i);
     gtk_box_pack_start(box, w, FALSE, FALSE, 0);
     w = gtk_entry_new();
-    dt_gui_key_accel_block_on_focus(w);
     d->rule[i].text = w;
+    dt_gui_key_accel_block_on_focus_connect(d->rule[i].text);
     gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);
     g_signal_connect(G_OBJECT(w), "focus-in-event", G_CALLBACK(entry_focus_in_callback), d->rule + i);
 
@@ -1967,6 +1971,9 @@ void
 gui_cleanup (dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+
+  for(int i=0; i<MAX_RULES; i++)
+    dt_gui_key_accel_block_on_focus_disconnect(d->rule[i].text);
 
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_updated), self);

@@ -27,12 +27,14 @@ extern "C"
 #include "common/exif.h"
 #include "common/darktable.h"
 #include "common/colorlabels.h"
+#include "common/imageio_jpeg.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/metadata.h"
 #include "common/tags.h"
 #include "common/debug.h"
 #include "control/conf.h"
+#include "develop/imageop.h"
 }
 #include <exiv2/easyaccess.hpp>
 #include <exiv2/xmp.hpp>
@@ -1077,8 +1079,11 @@ int dt_exif_read_blob(
     const int length = blob.size();
     memcpy(buf, "Exif\000\000", 6);
     if(length > 0 && length < 65534)
+    {
       memcpy(buf+6, &(blob[0]), length);
-    return length;
+      return length + 6;
+    }
+    return 6;
   }
   catch (Exiv2::AnyError& e)
   {
@@ -1255,7 +1260,12 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     sqlite3_finalize(stmt);
 
     if(!history_only)
-      dt_exif_read_xmp_data(img, xmpData, true, false);
+    {
+      // otherwise we ignore title, description, ... from non-dt xmp files :(
+      size_t pos = image->xmpPacket().find("xmlns:darktable=\"http://darktable.sf.net/\"");
+      bool is_a_dt_xmp = (pos != std::string::npos);
+      dt_exif_read_xmp_data(img, xmpData, is_a_dt_xmp, false);
+    }
 
     Exiv2::XmpData::iterator pos;
 
@@ -1729,6 +1739,71 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
   {
     std::cerr << "[xmp_write] caught exiv2 exception '" << e << "'\n";
     return -1;
+  }
+}
+
+int dt_exif_thumbnail(
+    const char *filename,
+    uint8_t    *out,
+    uint32_t    width,
+    uint32_t    height,
+    int         orientation,
+    uint32_t   *wd,
+    uint32_t   *ht)
+{
+  // fprintf(stderr, "[exif] trying to load thumbnail `%s'!\n", filename);
+  try
+  {
+    Exiv2::Image::AutoPtr image;
+    image = Exiv2::ImageFactory::open(filename);
+    assert(image.get() != 0);
+    image->readMetadata();
+
+    Exiv2::ExifData &exifData = image->exifData();
+    Exiv2::ExifThumbC thumb(exifData);
+    Exiv2::DataBuf buf = thumb.copy();
+    int res = 1;
+    if(!buf.pData_) return 1;
+
+    // canon crops that thumbnail:
+    int y_beg = 0, y_end = 0;
+    Exiv2::ExifData::const_iterator pos;
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Canon.ThumbnailImageValidArea")))
+        != exifData.end() && pos->size() && pos->count() == 4)
+    {
+      // pos->toLong(0); // x bounds. we ignore those because canon doesn't seem
+      // to set them.
+      y_beg = pos->toLong(2);
+      y_end = pos->toLong(3);
+    }
+
+    dt_imageio_jpeg_t jpg;
+    if(!dt_imageio_jpeg_decompress_header(buf.pData_, buf.size_, &jpg))
+    {
+      // don't upsample those:
+      if((uint32_t)jpg.width < width || (uint32_t)jpg.height < height) return 1;
+      if(!y_beg && !y_end)
+      { // if those weren't set, do it now:
+        y_beg = 0;
+        y_end = jpg.height - 1;
+      }
+      uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
+      if(!tmp) return 1;
+      if(!dt_imageio_jpeg_decompress(&jpg, tmp))
+      {
+        dt_iop_flip_and_zoom_8(tmp + 4*jpg.width*y_beg, jpg.width, y_end - y_beg + 1, out, width, height, orientation, wd, ht);
+        res = 0;
+      }
+      free(tmp);
+    }
+
+    // fprintf(stderr, "[exif] loaded thumbnail %d x %d `%s'!\n", jpg.width, jpg.height, filename);
+
+    return res;
+  }
+  catch (Exiv2::AnyError& e)
+  {
+    return 1;
   }
 }
 

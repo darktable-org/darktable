@@ -1,0 +1,2 @@
+[Default Applications]
+x-scheme-handler/http=open.desktop;

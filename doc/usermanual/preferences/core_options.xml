@@ -3,86 +3,86 @@
 	</para>
 
 	<sect4><title>memory in bytes to use for mipmap cache</title>
-		<para>in order to speed-up display of filmrolls, darktable stores thumbnails in a cache on disk and loads it into memory at startup; this controls the cache 
-		      size in bytes; needs a restart if changed (default 536870912).
+		<para>On order to speed-up display of filmrolls, darktable stores thumbnails in a cache on disk and loads it into memory at startup. This value controls the cache 
+		      size in bytes. It needs a restart if changed (default 536870912).
 		</para>
         </sect4>
 
 	<sect4><title>number of background threads</title>
-		<para>this controls how many parallel threads are used to create thumbnails during import; on 32bit systems it is strongly recommended to set this to 1; 
-                      needs a restart if changed (default 2).
+		<para>This controls how many parallel threads are used to create thumbnails during import. On 32bit systems it is strongly recommended to set this to 1. 
+                      Needs a restart if changed (default 2).
 		</para>
         </sect4>
 
 	<sect4><title>export multiple images in parallel</title>
-		<para>set this variable to the desired number of threads if you want multithreaded export to process multiple images at a time; be warned: every thread will need about 
-                      1GB of memory; setting this to 1 switches on per-image parallelization, which darktable does very efficiently and which normally obsoletes parallel exports;
+		<para>Set this variable to the desired number of threads if you want multithreaded export to process multiple images at a time. Be warned: every thread will need about 
+                      1GB of memory. Setting this to 1 switches on per-image parallelization, which darktable does very efficiently and which normally obsoletes parallel exports.
                       32bit systems need to set this to 1 (default 1).
 		</para>
         </sect4>
 
 	<sect4><title>host memory limit (in MB) for tiling</title>
-		<para>in order to manage large images on systems with limited memory darktable does a tile-wise processing; this variable controls the maximum amount of 
-                      memory (in MB) a module may use during image processing; lower values will force memory hungry modules to process image with
-                      increasing number of tiles; setting this to 0 will omit any limits; values below 500 will be treated as 500; on a 32bit system you should set this to 500; needs a 
+		<para>In order to manage large images on systems with limited memory darktable does a tile-wise processing. This variable controls the maximum amount of 
+                      memory (in MB) a module may use during image processing. Lower values will force memory hungry modules to process image with
+                      increasing number of tiles. Setting this to 0 will omit any limits. Values below 500 will be treated as 500. On a 32bit system you should set this to 500. Needs a 
                       restart if changed (default 1500).
 		</para>
         </sect4>
 
 	<sect4><title>minimum amount of memory (in MB) for a single buffer in tiling</title>
-		<para>if set to a positive, non-zero value this variable defines the minimum amount of memory (in MB) that darktable should take for a single tile; on a 32bit system you should set
-                      this to 8; 64bit systems can live with higher values; needs a restart if changed (default 16).
+		<para>If set to a positive, non-zero value this variable defines the minimum amount of memory (in MB) that darktable should take for a single tile. On a 32bit system you should set
+                      this to 8. 64bit systems can live with higher values. Needs a restart if changed (default 16).
 		</para>
         </sect4>
 
 	<sect4><title>write sidecar file for each image</title>
-		<para>these redundant XMP files can later be re-imported into a different database, preserving your changes to the image; it's strongly recommended to have this option activated so
-                      you don't lose data in case of a database corruption; backing up your RAW file plus the accompanying XMP file will allow you to fully restore your work (default on).
+		<para>These redundant XMP files can later be re-imported into a different database, preserving your changes to the image. It's strongly recommended to have this option activated so
+                      you don't lose data in case of a database corruption. Backing up your RAW file plus the accompanying XMP file will allow you to fully restore your work (default on).
 		</para>
         </sect4>
 
 	<sect4><title>activate opencl support</title>
-		<para>darktable can use your GPU to speed up processing significantly; interface OpenCL requires a suited hardware and matching OpenCL drivers on your system; if one of those is not found
-                      the option is greyed out; can be switched on and off at any time and takes immediate effect (default on).
+		<para>darktable can use your GPU to speed up processing significantly. Interface OpenCL requires a suited hardware and matching OpenCL drivers on your system. If one of those is not found
+                      the option is greyed out. Can be switched on and off at any time and takes immediate effect (default on).
 		</para>
         </sect4>
 
 	<sect4><title>always use littlecms2 during export</title>
-		<para>if this option is activated, darktable will use system library littlecms2 instead of its own routines; this is about 28x as slow as the default but might give more accurate results
+		<para>If this option is activated, darktable will use system library littlecms2 instead of its own routines. This is about 28x as slow as the default but might give more accurate results
                       in some cases (default off).
 		</para>
         </sect4>
 
 	<sect4><title>do high quality resampling during export</title>
-		<para>the image will first be processed in full resolution, and downscaled at the very end. this can result in better quality sometimes, but will always be slower (default off).
+		<para>The image will first be processed in full resolution, and downscaled at the very end. This can result in better quality sometimes, but will always be slower (default off).
 		</para>
         </sect4>
 
         <sect4><title>dithering for darkroom mode</title>
-                <para>in darkroom mode the image in center view will be dithered by default; this adds to the latency of darktable. for some users it can
-                      be sufficient to apply dithering only when exporting images. switch this parameter to FALSE if you prefer to have a slightly faster processing speed and can accept banding 
+                <para>In darkroom mode the image in center view will be dithered by default. This adds to the latency of darktable. Sometimes it can
+                      be sufficient to apply dithering only when exporting images. Switch this parameter to FALSE if you prefer to have a slightly faster processing speed and can accept banding 
                       artifacts on display.
                 </para>
         </sect4>
 
 	<sect4><title>demosaicing for zoomed out darkroom mode</title>
-		<para>interpolation when not viewing 1:1 in darkroom mode: "always bilinear (fast)" is fastest, but not as sharp. "at most ppg (reasonable)" is using ppg + interpolation modes specified below, 
+		<para>Interpolation when not viewing 1:1 in darkroom mode: "always bilinear (fast)" is fastest, but not as sharp. "at most ppg (reasonable)" is using ppg + interpolation modes specified below, 
                       "full (possibly slow)" will use exactly the settings for full-size export (default "at most ppg (reasonable)").
 		</para>
         </sect4>
 
 	<sect4><title>pixel interpolator</title>
-		<para>pixel interpolator used in rotation, lens correction, up- and downscaling; options are "bilinear", "bicubic", "lanczos2", "lanczos3" (default "lanczos3").
+		<para>Pixel interpolator used in rotation, lens correction, up- and downscaling; options are "bilinear", "bicubic", "lanczos2", "lanczos3" (default "lanczos3").
 		</para>
         </sect4>
 
 	<sect4><title>password storage backend to use</title>
-		<para>the storage backend for password storage; options: "none", "kwallet", "gnome keyring" (default none).
+		<para>The storage backend for password storage. Options: "none", "kwallet", "gnome keyring" (default none).
 		</para>
         </sect4>
 
 	<sect4><title>run indexer</title>
-		<para>this will index images in background, so you can search them by similarity (default off).
+		<para>This will index images in background, so you can search them by similarity (default off).
 		</para>
         </sect4>
 

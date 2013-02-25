@@ -305,7 +305,14 @@ _widget_focus_out_unblock_key_accelerators (GtkWidget *widget,GdkEventFocus *eve
 }
 
 void
-dt_gui_key_accel_block_on_focus (GtkWidget *w)
+dt_gui_key_accel_block_on_focus_disconnect(GtkWidget *w)
+{
+  g_signal_handlers_disconnect_by_func(G_OBJECT(w), _widget_focus_in_block_key_accelerators, (gpointer)w);
+  g_signal_handlers_disconnect_by_func(G_OBJECT(w), _widget_focus_out_unblock_key_accelerators, (gpointer)w);
+}
+
+void
+dt_gui_key_accel_block_on_focus_connect(GtkWidget *w)
 {
   /* first off add focus change event mask */
   gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);
@@ -454,7 +461,8 @@ static gboolean
 expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
 {
   dt_control_expose(NULL);
-  gdk_draw_drawable(da->window,
+  if(darktable.gui->pixmap)
+    gdk_draw_drawable(da->window,
                     da->style->fg_gc[GTK_WIDGET_STATE(da)], darktable.gui->pixmap,
                     // Only copy the area that was exposed.
                     event->area.x, event->area.y,

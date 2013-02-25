@@ -162,7 +162,6 @@ _styles_row_activated_callback (GtkTreeView *view, GtkTreePath *path, GtkTreeVie
 
   GtkTreeModel *model;
   GtkTreeIter   iter;
-  gtk_widget_set_size_request (GTK_WIDGET (d->list), -1, -1);
   model = gtk_tree_view_get_model (d->list);
 
   if (!gtk_tree_model_get_iter (model, &iter, path))
@@ -359,7 +358,7 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (d->entry, "changed", G_CALLBACK(entry_callback),d);
   g_signal_connect (d->entry, "activate", G_CALLBACK(entry_activated),d);
 
-  dt_gui_key_accel_block_on_focus ( GTK_WIDGET (d->entry));
+  dt_gui_key_accel_block_on_focus_connect( GTK_WIDGET (d->entry));
 
   scrolled = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -430,6 +429,8 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
+  dt_lib_styles_t *d = (dt_lib_styles_t*)self->data;
+  dt_gui_key_accel_block_on_focus_disconnect( GTK_WIDGET (d->entry));
   free(self->data);
   self->data = NULL;
 }

@@ -295,11 +295,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     blocksize = 1;   // slow but safe
   }
 
-
-
-  // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
-  const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1)*blocksize;
-  const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1)*blocksize;
+  if(blocksize < 2)
+  {
+    // very small blocksize. this is really unlikely to happen, but let's be prepared: give up on opencl in that case
+    return FALSE;
+  }
 
   switch(d->operator)
   {
@@ -319,8 +319,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     size_t sizes[3];
     size_t local[3];
 
-    int bufsize = (bwidth / blocksize) * (bheight / blocksize);
-    int reducesize = maxsizes[0] < REDUCESIZE ? maxsizes[0] : REDUCESIZE;
+    const int bwidth = ROUNDUP(width, blocksize);
+    const int bheight = ROUNDUP(height, blocksize);
+
+    const int bufsize = (bwidth / blocksize) * (bheight / blocksize);
+    const int groupsize = maxsizes[0];
+    const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, groupsize) / groupsize);
 
     dev_m = dt_opencl_alloc_device_buffer(devid, bufsize*sizeof(float));
     if(dev_m == NULL) goto error;
@@ -342,17 +346,16 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_first, sizes, local);
     if(err != CL_SUCCESS) goto error;
 
-
-    sizes[0] = ROUNDUP(bufsize, reducesize);;
+    sizes[0] = reducesize*groupsize;
     sizes[1] = 1;
     sizes[2] = 1;
-    local[0] = reducesize;
+    local[0] = groupsize;
     local[1] = 1;
     local[2] = 1;
     dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 0, sizeof(cl_mem), &dev_m);
     dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 1, sizeof(cl_mem), &dev_r);
     dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 2, sizeof(int), &bufsize);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 3, reducesize*sizeof(float), NULL);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 3, groupsize*sizeof(float), NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_second, sizes, local);
     if(err != CL_SUCCESS) goto error;
 

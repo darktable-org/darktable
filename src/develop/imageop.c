@@ -1073,7 +1073,9 @@ dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
   {
     module->gui_init(module);
     dt_iop_reload_defaults(module);
-
+    
+    /* update ui to default params*/
+    dt_iop_gui_update(module);
     /* add module to right panel */
     GtkWidget *expander = dt_iop_gui_get_expander(module);
     dt_ui_container_add_widget(darktable.gui->ui,
@@ -1084,6 +1086,7 @@ dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
     gtk_box_reorder_child (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),expander,g_value_get_int(&gv)+pos_base-pos_module);
     dt_iop_gui_set_expanded(module, TRUE);
     dt_iop_gui_update_blending(module);
+    
   }
 
   /* setup key accelerators */
@@ -1098,6 +1101,7 @@ dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
 
   //and we refresh the pipe
   dt_iop_request_focus(module);
+  
   if(module->dev->gui_attached)
   {
     module->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
@@ -2781,7 +2785,7 @@ void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state)
   dt_view_manager_t * vm = darktable.view_manager;
   if (vm->proxy.more_module.module)
     vm->proxy.more_module.update(vm->proxy.more_module.module);
-  dt_view_manager_reset(vm);
+  //dt_view_manager_reset(vm);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

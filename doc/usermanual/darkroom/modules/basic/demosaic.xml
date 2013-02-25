@@ -17,7 +17,7 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-                <para>Demosaic is an essential step for any raw image development process.</para>
+                <para>Demosaic is an essential step of any raw image development process.</para>
 
 		<para>A detailed description would be beyond the scope of this manual. In a nutshell, the sensor 
 		      cells of a digital camera are only able to record different levels of lightness, not different color. In order 
@@ -30,30 +30,30 @@
 		<para>As all this is prone to produce artifacts, various different demosaic algorithms have
                       been developed in the past. Artifacts would typically be visible as Moiree-like patterns when you strongly zoom into
                       your image. Currently darktable supports PPG and AMAZE. Both algorithms produce high quality output with a low
-                      tendency for artifacts. AMAZE is reported to sometimes give slightly better results. However, as AMAZE is significantly
+                      tendency to artifacts. AMAZE is reported to sometimes give slightly better results. However, as AMAZE is significantly
                       slower, darktable uses PPG as a default.</para>
 
 		<para>Some further parameters of this module can activate additional averaging and smoothing steps. They might help to reduce
                       remaining artifacts in special cases.</para>
 
 		<para>Demosaic is always applied when exporting images. Demosaic is done on monitor display only when zoom is greater than 50% or 
-                      when the according preference setting "demosaicing for zoomed out darkroom mode" is set accordingly. Else color channels are
-                      taken from neighboring pixels without an expensive interpolation.</para>
+                      when the according preference setting <quote>demosaicing for zoomed out darkroom mode</quote> (see <xref linkend="core options"/>) 
+                      is set accordingly. Else color channels are taken from neighboring pixels without an expensive interpolation.</para>
 
                 <sect5><title>method</title>
 			<para>Set the demosaic method. darktable currently supports PPG and AMAZE.</para>
 		</sect5>
 
                 <sect5><title>edge threshold</title>
-			<para>Set the threshold for an additional median pass. Defaults to 0 which disables median filtering.</para>
+			<para>Set the threshold for an additional median pass. Defaults to <quote>0</quote> which disables median filtering.</para>
 		</sect5>	
 		<sect5><title>color smoothing</title>
-			<para>Activates a number of additional color smoothing passes. Defaults to off.</para>
+			<para>Activates a number of additional color smoothing passes. Defaults to <quote>off</quote>.</para>
 		</sect5>
 		<sect5><title>match greens</title>
 			<para>In some cameras the green filters have slightly varying properties. This parameter adds an 
                               aditional equilibration step, which suppresses artifacts that otherwise could result. Available options
-                              are "diabled", "local average", "full average" and "full and local average".</para>
+                              are <quote>disabled</quote>, <quote>local average</quote>, <quote>full average</quote> and <quote>full and local average</quote>.</para>
 		</sect5>
 
 	</sect4>

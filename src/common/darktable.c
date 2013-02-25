@@ -40,6 +40,7 @@
 #include "develop/blend.h"
 #include "libs/lib.h"
 #include "views/view.h"
+#include "views/undo.h"
 #include "control/control.h"
 #include "control/jobs/control_jobs.h"
 #include "control/signal.h"
@@ -62,7 +63,7 @@
 #endif
 #include "dbus.h"
 
-#if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__DragonFly__)
+#if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
 #include <malloc.h>
 #endif
 #ifdef __APPLE__
@@ -110,7 +111,7 @@ static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
 #endif
 
 #if (defined(__FreeBSD_version) && (__FreeBSD_version < 800071)) || \
-  defined(__SUNOS__)
+  defined(__OpenBSD__) || defined(__SUNOS__)
 static int dprintf(int fd,const char *fmt, ...)
 {
   va_list ap;
@@ -707,6 +708,9 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
     // I doubt that connecting to dbus for darktable-cli makes sense
     darktable.dbus = dt_dbus_init();
 
+    // initialize undo struct
+    darktable.undo = dt_undo_init();
+
     // load image(s) specified on cmdline
     int id = 0;
     if(images_to_load)
@@ -781,6 +785,7 @@ void dt_cleanup()
   {
     dt_control_cleanup(darktable.control);
     free(darktable.control);
+    dt_undo_cleanup(darktable.undo);
   }
   dt_conf_cleanup(darktable.conf);
   free(darktable.conf);

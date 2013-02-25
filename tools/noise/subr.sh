@@ -303,7 +303,7 @@ get_image_iso() {
 	# possibly talk with exiv2 developers to get an option that only
 	# displays the correct iso
 
-	if [ -z "$iso" ]; then
+	if [ -z "$iso" -o "$iso" = "0" ]; then
 		case "$(get_image_camera_maker "$1")" in
 		[Nn][Ii][Kk][Oo][Nn]*)
 			# Read "Exif.Nikon3.*" before "Exif.NikonIi.*":
@@ -313,10 +313,10 @@ get_image_iso() {
 			#     2. That looks like versionned nodes:
 			#        "Nikon2" vs. "Nikon3".
 			iso=$(get_exif_key "$file" Exif.Nikon3.ISOSpeed)
-			if [ -z "$iso" ]; then
+			if [ -z "$iso" -o "$iso" = "0" ]; then
 				iso=$(get_exif_key "$file" Exif.Nikon3.ISOSettings)
 			fi
-			if [ -z "$iso" ]; then
+			if [ -z "$iso" -o "$iso" = "0" ]; then
 				iso=$(get_exif_key "$file" Exif.NikonIi.ISO)
 			fi
 			;;
@@ -785,8 +785,8 @@ add_profile() {
 	 "blendop_version"						\
 	 ") "								\
 	 "values ("							\
-	 "'$label', '', 'denoiseprofile', 1, "				\
-	 "X'${bin1}${bin1}${bina0}${bina1}${bina2}${binb0}${binb1}${binb2}', "\
+	 "'$label', '', 'denoiseprofile', 2, "				\
+	 "X'${bin1}${bin1}${bina0}${bina1}${bina2}${binb0}${binb1}${binb2}00000000', "\
 	 "1, X'00', '', '', '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4);" | \
 	sqlite3 $database
 }

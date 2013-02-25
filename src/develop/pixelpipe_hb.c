@@ -819,7 +819,6 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       return 1;
     }
 
-
 #ifdef HAVE_OPENCL
     /* do we have opencl at all? did user tell us to use it? did we get a resource? */
     if (dt_opencl_is_inited() && pipe->opencl_enabled && pipe->devid >= 0)
@@ -870,7 +869,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
                 success_opencl = FALSE;
               }
             }
-            
+
           }
 
           if(pipe->shutdown)

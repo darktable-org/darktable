@@ -43,8 +43,8 @@
                        </para>
 		</sect5>
 		<sect5><title>a/b-channel curves</title>
-			<para>The curves in a-channel and b-channel work on color values. They are only displayed and active if combobox "scale chroma"
-                              is set to "manual".
+			<para>The curves in a-channel and b-channel work on color values. They are only displayed and active if combobox 
+                              <emphasis>scale chroma</emphasis> is set to <quote>manual</quote>.
                               On the horizontal line is represented the color channel value of the input image pixels. The vertiacal line
                               represents the color channel value of the output image pixels. Positive a-values correspond to more magenta colors;
                               negative a-values correspond to more greenish colors. Positve b-values correspond to more yellowish colors; negative
@@ -61,11 +61,11 @@
                         </para>
 		</sect5>	
 		<sect5><title>scale chroma</title>
-			<para>darktable does an automatic adjustment of color saturation if this combobox is set to "auto". The level of this
+			<para>darktable does an automatic adjustment of color saturation if this combobox is set to <quote>auto</quote>. The level of this
                               adjustment is dependent on the pixel's color values and its L-value modification by the L-channel tonecurve. It is
                               designed to give an overall boost in color saturation if the L-curve gives a contrast boost. Look at blend mode
-                              "coloradjustment" to adjust the strength of this effect. Only if this combobox is set to "manual", you can do your
-                              own modification of color saturation by the curves in channels a and b.
+                              <quote>coloradjustment</quote> to adjust the strength of this effect (see <xref linkend="blending operators"/>). Only if this 
+                              combobox is set to <quote>manual</quote>, you can do your own modification of color saturation by the curves in channels a and b.
                         </para>
 		</sect5>	
 	</sect4>

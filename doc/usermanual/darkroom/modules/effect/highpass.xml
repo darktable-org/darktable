@@ -6,9 +6,9 @@
 				<tbody>
 					<row>						
 						<entry>Highpass acts as a high pass filter. The primary usage for this filter is in combination with a
-						blending operator. Try out blend mode "soft light" to get highpass sharpening. Use the opacity slider
-                                                to adjust the strength of the effect or even conditional blending to limit the effect to only parts of
-                                                your image.			
+						blending operator. Try out blend mode <quote>soft light</quote> to get highpass sharpening. Use the opacity slider
+                                                to adjust the strength of the effect or even <emphasis>conditional blending</emphasis> (see <xref linkend="conditional blending"/>)
+                                                to limit the effect to only parts of your image.			
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/highpass.png" scalefit="1" width="80%" align="center" />

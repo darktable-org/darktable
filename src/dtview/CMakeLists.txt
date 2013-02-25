@@ -4,6 +4,7 @@ if(USE_LUA)
 endif(USE_LUA)
 
 include_directories(${SDL_INCLUDE_DIR})
+include_directories(${OPENGL_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
 add_executable(darktable-viewer main.c)

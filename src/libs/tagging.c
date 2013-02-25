@@ -431,7 +431,6 @@ gui_init (dt_lib_module_t *self)
 
   // text entry and new button
   w = gtk_entry_new();
-  dt_gui_key_accel_block_on_focus (w);
   g_object_set(G_OBJECT(w), "tooltip-text", _("enter tag name"), (char *)NULL);
   gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
@@ -441,6 +440,7 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect(G_OBJECT (w), "activate",
                    G_CALLBACK (entry_activated), (gpointer)self);
   d->entry = GTK_ENTRY(w);
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->entry));
 
   // related tree view
   w = gtk_scrolled_window_new(NULL, NULL);
@@ -498,6 +498,8 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
+  dt_lib_tagging_t *d = (dt_lib_tagging_t*)self->data;
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_tagging_redraw_callback), self);
   free(self->data);
   self->data = NULL;

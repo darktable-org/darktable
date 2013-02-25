@@ -29,7 +29,7 @@
 // #define DT_BAUHAUS_OLD
 
 // new type dt_bauhaus_widget_t, gtk functions start with dt_bh (so they don't collide with ours), we inherit from drawing area
-G_DEFINE_TYPE (DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA);
+G_DEFINE_TYPE (DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA)
 
 // fwd declare
 static void dt_bauhaus_hide_popup();
@@ -618,7 +618,7 @@ dt_bauhaus_init()
   // this is needed for popup, not for toplevel.
   // since popup_area gets the focus if we show the window, this is all
   // we need.
-  dt_gui_key_accel_block_on_focus(darktable.bauhaus->popup_area);
+  dt_gui_key_accel_block_on_focus_connect(darktable.bauhaus->popup_area);
 
   gtk_widget_set_size_request(darktable.bauhaus->popup_area, 300, 300);
   gtk_window_set_resizable(GTK_WINDOW(darktable.bauhaus->popup_window), FALSE);
@@ -1032,10 +1032,21 @@ dt_bauhaus_clear(dt_bauhaus_widget_t *w, cairo_t *cr)
 {
   // clear bg with background color
   cairo_save(cr);
-  if(w->module && darktable.develop->gui_module == w->module)
-    set_bg_focus(cr);
+  if(w->module)
+  {
+    if(darktable.develop->gui_module == w->module)
+      set_bg_focus(cr);
+    else
+      set_bg_normal(cr);
+  }
   else
-    set_bg_normal(cr);
+  {
+    if(gtk_widget_get_state(GTK_WIDGET(w)) == GTK_STATE_SELECTED)
+      set_bg_focus(cr);
+    else
+      set_bg_normal(cr);
+  }
+
 #if 0
   GtkWidget *topwidget = dt_iop_gui_get_pluginui(w->module);
   GtkStyle *style = gtk_widget_get_style(topwidget);

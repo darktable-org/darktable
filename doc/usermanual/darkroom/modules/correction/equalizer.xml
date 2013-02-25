@@ -112,8 +112,11 @@
     <para>Note that the sharpness parameter only affects the wavelet basis, not the image directly. So you have to change some
     denoise/contrast boost parameters to see an effect if fiddling with the sharpness parameter.</para>
 
+    <para>This module additionally has a <quote>mix</quote> slider below the spline GUI. Adjusting the slider will upscale or downscale the splines
+    on the y-axis. The slider was added as a convenience tool to help you modify the strength of the effect. It is not a module parameter in itself; when you
+    leave darkroom mode all changes will be consolidated into the spline curves.</para>
 
-    <para>Also have a look at the presets. All parameters are changed in there, so these might be a good starting point
+    <para>Also have a look at the presets. There is a broad variety of parameters in there, so these might be good starting points
     to gain an intuitive understanding about them. Note that the sharpness of the wavelet basis has been set to zero to
     achieve the bloom effect.</para>
 	</sect4>

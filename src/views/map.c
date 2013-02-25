@@ -25,9 +25,12 @@
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "views/view.h"
+#include "views/undo.h"
 #include "libs/lib.h"
 #include "gui/drag_and_drop.h"
 #include "gui/draw.h"
+#include "gui/accelerators.h"
+#include <gdk/gdkkeysyms.h>
 
 #include "osm-gps-map.h"
 
@@ -47,6 +50,7 @@ typedef struct dt_map_t
   {
     sqlite3_stmt *main_query;
   } statements;
+  gboolean drop_filmstrip_activated;
 } dt_map_t;
 
 typedef struct dt_map_image_t
@@ -80,6 +84,11 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
 /* callback when the mouse is moved */
 static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, dt_view_t *self);
 static gboolean _view_map_dnd_failed_callback(GtkWidget *widget, GdkDragContext *drag_context, GtkDragResult result, dt_view_t *self);
+static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data,
+                       guint target_type, guint time, gpointer data);
+
+static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, gboolean record_undo);
+static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude);
 
 const char *name(dt_view_t *self)
 {
@@ -119,6 +128,7 @@ void init(dt_view_t *self)
   if(darktable.gui)
   {
     lib->pin = init_pin();
+    lib->drop_filmstrip_activated = FALSE;
 
     OsmGpsMapSource_t map_source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
     const gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
@@ -339,6 +349,13 @@ map_changed_failure:
     timeout_event_source = g_timeout_add_seconds(1, _view_map_redraw, self); // try again in a second, maybe some pictures have loaded by then
   else
     timeout_event_source = 0;
+
+  // activate this callback late in the process as we need the filmstrip proxy to be setup. This is not the case in the initialization phase.
+  if (!lib->drop_filmstrip_activated && darktable.view_manager->proxy.filmstrip.module)
+  {
+    g_signal_connect(darktable.view_manager->proxy.filmstrip.widget(darktable.view_manager->proxy.filmstrip.module), "drag-data-received", G_CALLBACK(_view_map_dnd_remove_callback), self);
+    lib->drop_filmstrip_activated=TRUE;
+  }
 }
 
 static int _view_map_get_img_at_pos(dt_view_t *self, double x, double y)
@@ -533,20 +550,27 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 
 void init_key_accels(dt_view_t *self)
 {
-#if 0
-  // Setup key accelerators in capture view...
-  dt_accel_register_view(self, NC_("accel", "toggle film strip"),
-                         GDK_f, GDK_CONTROL_MASK);
-#endif
+  dt_accel_register_view(self, NC_("accel", "undo"), GDK_z, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "redo"), GDK_r, GDK_CONTROL_MASK);
+}
+
+static gboolean _view_map_undo_callback(GtkAccelGroup *accel_group,
+    GObject *acceleratable, guint keyval,
+    GdkModifierType modifier, gpointer data)
+{
+  if (keyval == GDK_z)
+    dt_undo_do_undo(darktable.undo, DT_UNDO_GEOTAG);
+  else
+    dt_undo_do_redo(darktable.undo, DT_UNDO_GEOTAG);
+  return TRUE;
 }
 
 void connect_key_accels(dt_view_t *self)
 {
-#if 0
-  GClosure *closure = g_cclosure_new(G_CALLBACK(film_strip_key_accel),
+  GClosure *closure = g_cclosure_new(G_CALLBACK(_view_map_undo_callback),
                                      (gpointer)self, NULL);
-  dt_accel_connect_view(self, "toggle film strip", closure);
-#endif
+  dt_accel_connect_view(self, "undo", closure);
+  dt_accel_connect_view(self, "redo", closure);
 }
 
 
@@ -611,6 +635,59 @@ static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer us
   }
 }
 
+static void pop_undo (dt_view_t *self, dt_undo_type_t type, dt_undo_data_t *data)
+{
+  dt_map_t *lib = (dt_map_t*)self->data;
+
+  if (type == DT_UNDO_GEOTAG)
+  {
+    dt_undo_geotag_t *geotag = (dt_undo_geotag_t *)data;
+    float longitude, latitude;
+
+    _get_image_location(self, geotag->imgid, &longitude, &latitude);
+    _set_image_location(self, geotag->imgid, geotag->longitude, geotag->latitude, FALSE);
+
+    // give back out previous location
+    geotag->longitude = longitude;
+    geotag->latitude = latitude;
+
+    g_signal_emit_by_name(lib->map, "changed");
+  }
+}
+
+static void _push_position(dt_view_t *self, int imgid, float longitude, float latitude)
+{
+  dt_undo_geotag_t *geotag = g_malloc (sizeof(dt_undo_geotag_t));
+
+  geotag->imgid = imgid;
+  geotag->longitude = longitude;
+  geotag->latitude = latitude;
+
+  dt_undo_record(darktable.undo, self, DT_UNDO_GEOTAG, (dt_undo_data_t *)geotag, &pop_undo);
+}
+
+static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude)
+{
+  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+  *longitude = img->longitude;
+  *latitude = img->latitude;
+  dt_image_cache_read_release(darktable.image_cache, img);
+}
+
+static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, gboolean record_undo)
+{
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+  dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+
+  if (record_undo)
+    _push_position(self, imgid, img->longitude, img->latitude);
+
+  img->longitude = longitude;
+  img->latitude = latitude;
+  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_read_release(darktable.image_cache, cimg);
+}
+
 static void
 _view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint y)
 {
@@ -621,12 +698,7 @@ _view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint y)
   osm_gps_map_point_get_degrees(pt, &latitude, &longitude);
   osm_gps_map_point_free(pt);
 
-  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-  dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
-  img->longitude = longitude;
-  img->latitude = latitude;
-  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
-  dt_image_cache_read_release(darktable.image_cache, cimg);
+  _set_image_location(self, imgid, longitude, latitude, TRUE);
 }
 
 static void
@@ -687,6 +759,29 @@ _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *context, GtkSelect
       break;
     }
   }
+}
+
+static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data,
+                       guint target_type, guint time, gpointer data)
+{
+  dt_view_t *self = (dt_view_t*)data;
+  dt_map_t *lib = (dt_map_t*)self->data;
+
+  gboolean success = FALSE;
+
+  if((selection_data != NULL) && (selection_data->length >= 0) && target_type == DND_TARGET_IMGID)
+  {
+    int *imgid = (int*)selection_data->data;
+    if(*imgid > 0)
+    {
+      //  the image was dropped into the filmstrip, let's remove it in this case
+      _set_image_location(self, *imgid, NAN, NAN, TRUE);
+      success = TRUE;
+    }
+  }
+  gtk_drag_finish(context, success, FALSE, time);
+  if(success)
+    g_signal_emit_by_name(lib->map, "changed");
 }
 
 static gboolean _view_map_dnd_failed_callback(GtkWidget *widget, GdkDragContext *drag_context, GtkDragResult result, dt_view_t *self)

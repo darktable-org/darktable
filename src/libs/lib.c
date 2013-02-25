@@ -485,7 +485,7 @@ dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
 static int _lib_default_expandable()
 {
   return 1;
-};
+}
 
 static int
 dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *plugin_name)

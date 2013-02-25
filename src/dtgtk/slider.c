@@ -138,7 +138,7 @@ static void _slider_init (GtkDarktableSlider *slider)
   gtk_entry_set_has_frame (GTK_ENTRY(slider->entry), FALSE);
   gtk_entry_set_alignment (GTK_ENTRY(slider->entry), 1.0);
   g_signal_connect (G_OBJECT (slider->entry), "key-press-event", G_CALLBACK(_slider_entry_key_event), (gpointer)slider);
-  dt_gui_key_accel_block_on_focus (slider->entry);
+  dt_gui_key_accel_block_on_focus_connect (slider->entry);
 }
 
 #if 0 // Deprecated the delayed value thingy

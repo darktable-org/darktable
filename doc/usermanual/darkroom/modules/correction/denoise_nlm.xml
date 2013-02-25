@@ -22,16 +22,16 @@
                       As denoising is a resource hungry process, it slows down pixelpipe processing significantly; consider to activate this module late in your workflow.
 		</para>
 		<sect5><title>patch size</title>
-			<para>The radius of the patch.</para>
+			<para>The radius of the patch for similarity evaluation.</para>
 		</sect5>
 		<sect5><title>strength</title>
 			<para>The strength of the denoise. Higher values lead to a stronger effect.</para>
 		</sect5>	
 		<sect5><title>luma</title>
-			<para>Amount of denoise to apply on luma. Select carefully in order not to lose too much structure.</para>
+			<para>Amount of denoise to apply to luma. Select carefully in order not to lose too much structure.</para>
 		</sect5>	
 		<sect5><title>chroma</title>
-			<para>Amount of denoise to apply on chroma. You can be much more aggressive with this parameter compared to luma.</para>
+			<para>Amount of denoise to apply to chroma. You can be much more aggressive with this parameter compared to luma.</para>
 		</sect5>	
 	</sect4>
 <!--

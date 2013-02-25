@@ -21,9 +21,9 @@
 			</para>
 		</sect4>
 		<sect4><title>delete</title>
-			<para>Physically delete selected images from filesystem. See also preference option 'ask before erasing images from disk'; if
-                                            this option is not active, darktable will delete the file(s) without further question! This is not reversible and will
-                                            also erase your development work an these images.
+			<para>Physically delete selected images from filesystem. See also preference option <quote>ask before erasing images from disk</quote>
+                              (<xref linkend="gui options"/>). If this option is not active, darktable will delete the file(s) without further question! This is not 
+                               reversible and will also erase your development work of these images.
 			</para>
 		</sect4>
 		<sect4><title>move</title>
@@ -36,7 +36,9 @@
 		</sect4>
 		<sect4><title>create hdr</title>
 			<para>Create a high dynamic range image from the selected images and store it as a new source file in DNG format. Images
-                                            need to be properly aligned.
+                              need to be properly aligned, which implies that they have been taken from a sturdy tripod. You can also 
+                              generate HDRs with  programs like <ulink url="http://qtpfsgui.sourceforge.net/"><emphasis>Luminance HDR</emphasis></ulink> and 
+                              later import them into darktable for further processing (see <xref linkend="supported file formats"/>).
 			</para>
 		</sect4>
 		<sect4><title>duplicate</title>

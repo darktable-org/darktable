@@ -117,7 +117,7 @@ gui_init (dt_lib_module_t *self)
 
   /* add search box */
   lib->search = GTK_ENTRY(gtk_entry_new());
-  dt_gui_key_accel_block_on_focus (GTK_WIDGET (lib->search));
+  dt_gui_key_accel_block_on_focus_connect (GTK_WIDGET (lib->search));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->search), FALSE, FALSE, 0);
 
   g_signal_connect(G_OBJECT (lib->search), "activate",
@@ -126,12 +126,14 @@ gui_init (dt_lib_module_t *self)
   /* add result vbox */
   lib->result = gtk_vbox_new(FALSE,2);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->result), TRUE, FALSE, 2);
-
 }
 
 void
 gui_cleanup (dt_lib_module_t *self)
 {
+  dt_lib_location_t *lib = self->data;
+  dt_gui_key_accel_block_on_focus_disconnect (GTK_WIDGET (lib->search));
+  free(lib);
 }
 
 static GtkWidget *_lib_location_place_widget_new(_lib_location_result_t *place)

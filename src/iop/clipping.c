@@ -48,6 +48,9 @@ DT_MODULE(4)
 // number of gui ratios in combo box
 #define NUM_RATIOS 13
 
+// number of gui guides in combo box
+#define NUM_GUIDES 6
+
 /** flip H/V, rotate an image, then clip the buffer. */
 typedef enum dt_iop_clipping_flags_t
 {
@@ -1397,7 +1400,9 @@ void gui_update(struct dt_iop_module_t *self)
       act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
     else
     {
-      float whratio = ((float)self->dev->image_storage.width * (fabsf(p->cw) - p-> cx)) / ((float)self->dev->image_storage.height * (fabsf(p->ch) - p->cy));
+      const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+      float whratio = ((float)(self->dev->image_storage.width - 2 * interpolation->width) * (fabsf(p->cw) - p-> cx)) /
+        ((float)(self->dev->image_storage.height - 2 * interpolation->width) * (fabsf(p->ch) - p->cy));
       float closest = 1000.0;
 
       for (int k=1; k<NUM_RATIOS; k++)
@@ -1531,6 +1536,9 @@ guides_presets_changed (GtkWidget *combo, dt_iop_module_t *self)
   else
     gtk_widget_set_visible(g->golden_extras, FALSE);
 
+  // remember setting
+  dt_conf_set_int("plugins/darkroom/clipping/guide", which);
+
   dt_iop_request_focus(self);
   dt_control_queue_redraw_center();
 }
@@ -1648,6 +1656,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->guide_lines, _("diagonal method"));
   dt_bauhaus_combobox_add(g->guide_lines, _("harmonious triangles"));
   dt_bauhaus_combobox_add(g->guide_lines, _("golden mean"));
+
+  int guide = dt_conf_get_int("plugins/darkroom/clipping/guide");
+  if(guide < 0 || guide >= NUM_GUIDES) guide = 0;
+  dt_bauhaus_combobox_set(g->guide_lines, guide);
+
   g_object_set(G_OBJECT(g->guide_lines), "tooltip-text", _("display guide lines to help compose your photograph"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->guide_lines), "value-changed", G_CALLBACK (guides_presets_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);

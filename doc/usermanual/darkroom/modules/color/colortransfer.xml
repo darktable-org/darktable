@@ -5,7 +5,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module allows to transfer on an image the colors found on another.
+						<entry>This module allows to transfer to an image the colors found on another.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/colortransfer.png" scalefit="1" width="80%" align="center" />
@@ -24,7 +24,7 @@
 			<para>Acquire the colors of the current image.</para>
 		</sect5>
 		<sect5><title>apply</title>
-			<para>Apply the colors (shown above) previously acquire on another image, on the current image.</para>
+			<para>Apply the colors (shown above) previously acquired on another image, to the current image.</para>
 		</sect5>
 	</sect4>
 </sect3>

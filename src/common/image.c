@@ -378,10 +378,22 @@ int dt_image_altered(const uint32_t imgid)
   int altered = 0;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select num from history where imgid = ?1", -1, &stmt, NULL);
+                              "select operation from history where imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *op = (const char *)sqlite3_column_text(stmt, 0);
+    // FIXME: this is clearly a terrible way to determine which modules
+    // are okay to still load the thumbnail and which aren't.
+    // (that's currently the only use of this function)
+    if(!strcmp(op, "basecurve")) continue;
+    if(!strcmp(op, "sharpen")) continue;
+    if(!strcmp(op, "dither")) continue;
+    if(!strcmp(op, "tonecurve")) continue;
+    if(!strcmp(op, "highlights")) continue;
     altered = 1;
+    break;
+  }
   sqlite3_finalize(stmt);
   if(altered) return 1;
 

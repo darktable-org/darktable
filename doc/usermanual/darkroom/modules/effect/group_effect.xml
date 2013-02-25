@@ -3,7 +3,6 @@
   <para>In the effect group you will find modules with a more artistic touch.
   </para>
 
-  <xi:include href="dithering.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="watermark.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="framing.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="splittoning.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>

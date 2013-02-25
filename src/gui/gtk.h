@@ -74,7 +74,9 @@ void dt_gui_gtk_quit();
 void dt_gui_store_last_preset(const char *name);
 
 /** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
-void dt_gui_key_accel_block_on_focus (GtkWidget *w);
+void dt_gui_key_accel_block_on_focus_connect(GtkWidget *w);
+/** clean up connected signal handlers before destroying your widget: */
+void dt_gui_key_accel_block_on_focus_disconnect(GtkWidget *w);
 
 /*
  * new ui api

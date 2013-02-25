@@ -9,7 +9,7 @@
 <xsl:param name="section.label.includes.component.label" select="1"></xsl:param>
 <xsl:param name="draft.mode" select="1"></xsl:param>
 
-<xsl:param name="use.id.as.filename" select="'1'"/>
+<xsl:param name="use.id.as.filename" select="0"></xsl:param>
 <xsl:param name="chunk.section.depth" select="2"></xsl:param>
 
 </xsl:stylesheet>

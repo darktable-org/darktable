@@ -133,8 +133,8 @@ if(can_build_usermanual)
 	    add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
                 COMMAND ${XSLT_SAXON_COMMAND} ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml xsl/darktable_html_single_ext.xsl chunker.output.encoding=UTF-8 base.dir=${CMAKE_CURRENT_BINARY_DIR}/html/
-		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/html -name *.html -exec sed -i s/${binary_path}\\/media\\///g {} \;
-		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/html -name *.html -exec sed -i "s/<body[^>]*>/<body class='usermanual' onLoad='parent.onContentLoad(this);'>/g" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/html -name *.html -exec sed -n -i "1h;1!H;\${;g;s/${binary_path}\\/media\\///g;p;}" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/html -name *.html -exec sed -n -i "1h;1!H;\${;g;s/<body[^>]*>/<body class='usermanual' onLoad='parent.onContentLoad(this);'>/g;p;}" {} \;
 		COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/html/
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml ${CMAKE_CURRENT_BINARY_DIR}/html/usermanual.css
@@ -164,13 +164,13 @@ if(can_build_usermanual)
             add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wp/index.html.php
                 COMMAND ${XSLT_SAXON_COMMAND} ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml xsl/darktable_html_ext.xsl chunker.output.encoding=UTF-8 base.dir=${CMAKE_CURRENT_BINARY_DIR}/wp/
-		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i s/${binary_path}\\/media\\///g {} \;
-		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/<html>.*<title>/<?php define('WP_USE_THEMES', false);require('\\.\\.\\/wp-config\\.php'); add_filter('wp_title', 'set_title_page'); function set_title_page(){echo '/g" {} \;
-		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/<\\/title>.*<\\/head>/ | user manual | ';}?>/g" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -n -i "1h;1!H;\${;g;s/${binary_path}\\/media\\///g;p;}" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -n -i "1h;1!H;\${;g;s/<html>.*<title>/<?php define('WP_USE_THEMES', false);require('\\.\\.\\/wp-config\\.php'); add_filter('wp_title', 'set_title_page'); function set_title_page(){echo '/g;p;}" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -n -i "1h;1!H;\${;g;s/<\\/title>.*<\\/head>/ | user manual | ';}?>/g;p;}" {} \;
 
-		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/<body[^>]*>/<?php get_header(); ?><div id=\"primary\"><div id=\"content\" role=\"main\"><div class=\"usermanual\">/g" {} \;
-		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/<\\/body><\\/html>/<\\/div><\\/div><\\/div><?php get_footer(); ?>/g" {} \;
-		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/\\.html/\\.html\\.php/g" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -n -i "1h;1!H;\${;g;s/<body[^>]*>/<?php get_header(); ?><div id=\"primary\"><div id=\"content\" role=\"main\"><div class=\"usermanual\">/g;p;}" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -n -i "1h;1!H;\${;g;s/<\\/body><\\/html>/<\\/div><\\/div><\\/div><?php get_footer(); ?>/g;p;}" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -n -i "1h;1!H;\${;g;s/\\.html/\\.html\\.php/g;p;}" {} \;
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec mv {} {}.php \;
 		COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/wp/
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -247,4 +247,5 @@ else(can_build_usermanual)
 endif(can_build_usermanual)
 
 add_subdirectory(po)
+
 

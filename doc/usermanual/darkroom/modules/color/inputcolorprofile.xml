@@ -24,11 +24,13 @@
 			<para>
 			      You can also supply your own input ICC profiles and put them into $DARKTABLE/share/darktable/color/in or
                               $HOME/.config/darktable/color/in. $DARKTABLE is used here as a placeholder for darktable's installation directory and $HOME is your home directory.
-                              One common source of ICC profiles is the software that is shipped with your camera; it often contains profiles specific to your camera model.
+                              One common source of ICC profiles is the software that is shipped with your camera; it often contains profiles specific to your camera model. Most likely
+                              you need to activate module <emphasis>unbreak input profile</emphasis> in this case (see <xref linkend="unbreak input profile"/>).
 			</para>
 
 			<para>If your input image is a low dynamic range file like JPEG it might already contain an embedded ICC profile. darktable will use this as a default on 
-                              those images. If you know what you are doing, you can overrule darktable and select a different one. Select 'embedded icc profile' to restore the default.
+                              those images. If you know what you are doing, you can overrule darktable and select a different one. Select <quote>embedded icc profile</quote> to restore 
+                              the default.
 			</para>
 		</sect5>
 	</sect4>

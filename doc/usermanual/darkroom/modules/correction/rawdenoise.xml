@@ -5,7 +5,8 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>Raw denoise allows you to perfom denoising on pre-demosaic data. It is ported from dcraw.		
+						<entry>Raw denoise allows you to perfom denoising on pre-demosaic data. It is ported from 
+                                                       <ulink url="http://www.cybercom.net/~dcoffin/dcraw/"><emphasis>dcraw</emphasis></ulink>.		
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/rawdenoise.png" scalefit="1" width="80%" align="center" />
@@ -18,7 +19,7 @@
 
 	<sect4><title>Usage</title>
 		<sect5><title>noise threshold</title>
-			<para>Set the threshold for noise detection.</para>
+			<para>Set the threshold for noise detection. Higher values lead to stronger noise removal and higher loss of image detail.</para>
 		</sect5>			
 	</sect4>
 </sect3>

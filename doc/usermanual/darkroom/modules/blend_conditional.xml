@@ -34,7 +34,7 @@
 			<colspec colwidth="4*"/>
 			<tbody>
 				<row>						
-					<entry>When conditional blending is activated with option "blend only, if.." an additional set of controls consisting
+					<entry>When conditional blending is activated with option <quote>blend only, if..</quote> an additional set of controls consisting
 		                               of several notebook tabs is shown.
 					</entry>
 					<entry>
@@ -48,12 +48,12 @@
 
 	        <sect4><title>Notebook tabs</title>
 		        <para>Each notebook tab represents a data channel - real or virtual. Modules acting in Lab color space have data channels for
-		              L, a, b, C (chroma of LCh) and h (hue of LCh). Modules acting in RGB color space have data channels for g (grey), R, G, B,
+		              L, a, b, C (chroma of LCh) and h (hue of LCh). Modules acting in RGB color space have data channels for g (gray), R, G, B,
 		              H (hue of HSL), S (saturation of HSL), and L (lightness of HSL). Consult for example <ulink url="http://en.wikipedia.org/wiki/Color_space">
                               Wikipedia's article on color spaces</ulink> for a deeper look.
 		        </para>
 		        <para>
-		              Within each notebook tab two color channel sliders are given; one for the input data that the module receives; and one for
+		              Within each notebook tab two color channel sliders are given: one for the input data that the module receives and one for
 		              the output data that the module produces prior to blending.
 		        </para>
 	        </sect4>
@@ -147,8 +147,8 @@
 					<row>						
 						<entry>
 							<para>
-							To make a colorkey effect for this red poppy blossom, we need to apply module monochrome to
-                                             	               all parts of the image except of the saturated red petals.			
+							To make a colorkey effect for this red poppy blossom, we need to apply module <link linkend="monochrome">
+                                                        <emphasis>monochrome</emphasis></link> to all parts of the image except of the saturated red petals.			
 							</para>
 						</entry>
 						<entry>
@@ -178,7 +178,7 @@
 					</row>
 					<row>						
 						<entry>
-							<para>The final image after module monochrome is applied.
+							<para>The final image after module <emphasis>monochrome</emphasis> is applied.
                                           		</para>
 						</entry>
 						<entry>

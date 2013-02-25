@@ -41,6 +41,14 @@ typedef struct dt_dev_history_item_t
 }
 dt_dev_history_item_t;
 
+typedef enum dt_dev_overexposed_colorscheme_t
+{
+  DT_DEV_OVEREXPOSED_BLACKWHITE = 0,
+  DT_DEV_OVEREXPOSED_REDBLUE = 1,
+  DT_DEV_OVEREXPOSED_PURPLEGREEN = 2
+}
+dt_dev_overexposed_colorscheme_t;
+
 struct dt_dev_pixelpipe_t;
 typedef struct dt_develop_t
 {
@@ -126,6 +134,20 @@ typedef struct dt_develop_t
 
   }
   proxy;
+
+  // for the overexposure indicator
+  struct
+  {
+    guint timeout;
+    gulong destroy_signal_handler;
+    GtkWidget *floating_window, *button; // yes, having gtk stuff in here is ugly. live with it.
+
+    gboolean enabled;
+    dt_dev_overexposed_colorscheme_t colorscheme;
+    float lower;
+    float upper;
+  }
+  overexposed;
 }
 dt_develop_t;
 

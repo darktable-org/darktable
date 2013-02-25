@@ -17,14 +17,14 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>Local contrast boosts the details of your image much like the equalizer does, but in only one frequency band.
+		<para>Local contrast boosts the details of your image much like the <emphasis>equalizer</emphasis> does (see <xref linkend="equalizer"/>), but in only one frequency band.
     </para>
 		<sect5><title>coarseness</title>
-			<para>Make the details you want to adjust finer or coarser (this maps to sigma_s in the algorithm).
+			<para>Make the details you want to adjust finer or coarser.
 			</para>
 		</sect5>
 		<sect5><title>contrast</title>
-			<para>How strongly the algorithm distinguishes between brightness levels (maps to sigma_r in the algorithm).
+			<para>How strongly the algorithm distinguishes between brightness levels.
       Increasing the value will result in a more contrasty look.
 			</para>
 		</sect5>
@@ -39,7 +39,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>before
+						<entry>Before
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/localcontrast_before.png" scalefit="1" width="80%" align="center" />

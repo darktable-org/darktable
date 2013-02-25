@@ -24,7 +24,7 @@
   on a walk and you either have a GPS tracker recording your movements or you use the right app on your smartphone 
   with GPS functionality you can record a GPX track. When you are taking images with your camera on your walk,
   the timestamps of images are stored in EXIF data. They can later be matched with the GPX track data and therefore a location 
-  can be estimated. Matching image timestamps with GPX track data can be done from within lightable mode.
+  can be estimated. Matching image timestamps with GPX track data can be done from within lightable mode (see <xref linkend="geotagging"/>).
   </para>
 
 
