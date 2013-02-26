@@ -316,7 +316,10 @@ static void upload_clicked(GtkWidget *w,gpointer user_data)
   else if (selected > 1)
     dt_control_log(_("select only one image!"));
   else if (name)
+  {
     dt_gui_styles_upload(name, imgid);
+    _gui_styles_update_view(d);
+  }
 
 }
 

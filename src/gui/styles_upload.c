@@ -42,7 +42,7 @@ typedef struct dt_gui_styles_upload_dialog_t
 {
   int32_t beforeid, afterid;
   gchar *nameorig;
-  GtkWidget *name, *username, *password, *auth_label, *agreement;
+  GtkWidget *name, *username, *password, *auth_label, *save_local, *agreement;
   GtkTextBuffer *description;
 } dt_gui_styles_upload_dialog_t;
 
@@ -289,16 +289,8 @@ static void _gui_styles_upload_response(GtkDialog *dialog, gint response_id, dt_
     {
       return;
     }
+    
     char *dir = "/tmp";
-    /*   make it optional to save changes locally 
-    char *name, *description, *dir = "/tmp"; // TODO: change to (char*)DARKTABLE_TMPDIR ? 
-    const char *newname;
-    GtkTextIter start, end;
-    gtk_text_buffer_get_bounds(sd->description, &start, &end);
-    description = gtk_text_buffer_get_text (sd->description, &start, &end, FALSE);
-    newname = gtk_entry_get_text ( GTK_ENTRY (sd->name));
-    dt_styles_update (name, newname, description, NULL);
- */
     dt_styles_save_to_file(sd->nameorig, dir, TRUE);
     _temp_export(sd->beforeid, dir, "before");
     _temp_export(sd->afterid, dir, "after");
@@ -312,6 +304,18 @@ static void _gui_styles_upload_response(GtkDialog *dialog, gint response_id, dt_
     g_free(file1);
     g_free(file2);
     g_free(file3);
+
+    
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sd->save_local)))
+    {
+      char *description;
+      const char *newname;
+      newname = gtk_entry_get_text ( GTK_ENTRY (sd->name));
+      GtkTextIter start, end;
+      gtk_text_buffer_get_bounds(sd->description, &start, &end);
+      description = gtk_text_buffer_get_text (sd->description, &start, &end, FALSE);
+      dt_styles_update (sd->nameorig, newname, description, NULL);
+    }
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
@@ -372,7 +376,7 @@ void _gui_init (dt_gui_styles_upload_dialog_t *sd)
   gtk_container_add (content_area, alignment);
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
   gtk_container_add (GTK_CONTAINER(alignment), GTK_WIDGET(hbox));
-  GtkWidget *settings = gtk_table_new(9, 2, FALSE);
+  GtkWidget *settings = gtk_table_new(10, 2, FALSE);
   gtk_table_set_row_spacings(GTK_TABLE(settings), 5);
   GtkBox *thumbnails = GTK_BOX(gtk_vbox_new(FALSE, 5));
   gtk_box_pack_start (hbox,GTK_WIDGET(settings),TRUE,TRUE,0);
@@ -433,9 +437,13 @@ void _gui_init (dt_gui_styles_upload_dialog_t *sd)
   gtk_container_add(GTK_CONTAINER(scrolledwindow), description);
   gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(scrolledwindow), 0, 2, 7, 8, GTK_EXPAND|GTK_FILL, GTK_EXPAND|GTK_FILL, 0, 0);
 
+  sd->save_local = gtk_check_button_new_with_label(_("save changes locally"));
+  g_object_set (sd->save_local, "tooltip-text", _("do you want to save changes in name and description locally too?"), (char *)NULL);
+  gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(sd->save_local), 0, 2, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+
   sd->agreement = gtk_check_button_new_with_label(_("I accept the user agreement"));
   g_object_set (sd->agreement, "tooltip-text", _("you must accept the user agreement to upload style"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(sd->agreement), 0, 2, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(sd->agreement), 0, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
 
   /* set thumbnails */
