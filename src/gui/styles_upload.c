@@ -36,12 +36,13 @@
 
 #define _THUMBNAIL_WIDTH 150
 #define _THUMBNAIL_HEIGHT 150
+#define _STYLES_SERVER "http://darktablestyles.sourceforge.net/"
 
 typedef struct dt_gui_styles_upload_dialog_t
 {
   int32_t beforeid, afterid;
   gchar *nameorig;
-  GtkWidget *name, *username, *password, *agreement;
+  GtkWidget *name, *username, *password, *auth_label, *agreement;
   GtkTextBuffer *description;
 } dt_gui_styles_upload_dialog_t;
 
@@ -117,13 +118,112 @@ void _temp_export(int32_t id, const char* dir, const char* filename)
 
 }
 
+size_t static _curl_parse_response(void *buffer, size_t size, size_t nmemb, void *userp)
+{
+    char **response_ptr =  (char**)userp;
+    *response_ptr = strndup(buffer, (size_t)(size *nmemb));
+    return nmemb * size;
+}
+
+
+gchar* _curl_send(const char* url, struct curl_httppost *formpost)
+{
+
+  CURL *curl;
+  CURLcode res;
+  gchar *response;
+  
+  struct curl_slist *headerlist = NULL;
+  static const char buf[] = "Expect:";
+
+  curl_global_init(CURL_GLOBAL_ALL);
+
+  curl = curl_easy_init();
+  headerlist = curl_slist_append(headerlist, buf);
+  if(curl) {
+    curl_easy_setopt(curl, CURLOPT_URL, url);      
+    curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _curl_parse_response);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+    res = curl_easy_perform(curl);
+    /* Check for errors */
+    if(res != CURLE_OK)
+      return "curlcode_error";
+
+    curl_easy_cleanup(curl);
+    curl_formfree(formpost);
+    curl_slist_free_all (headerlist);
+    return response;
+  }
+  return "nocurl_error";
+}
+
+gboolean _curl_authenticate(dt_gui_styles_upload_dialog_t *sd)
+{
+
+  /* All the values to be used */
+  const char *url, *name, *username, *password;
+  
+  url      = _STYLES_SERVER "authenticate.php";
+  name     = gtk_entry_get_text ( GTK_ENTRY (sd->name));
+  username = gtk_entry_get_text ( GTK_ENTRY (sd->username));
+  password = gtk_entry_get_text ( GTK_ENTRY (sd->password));
+
+  struct curl_httppost *formpost = NULL;
+  struct curl_httppost *lastptr = NULL;
+
+  /* Set credentials */
+  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "name",
+               CURLFORM_COPYCONTENTS, name, CURLFORM_END);
+               
+  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "username",
+               CURLFORM_COPYCONTENTS, username, CURLFORM_END);
+
+  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "p",
+               CURLFORM_COPYCONTENTS, password, CURLFORM_END);
+  
+  gchar *response = g_strdup(_curl_send(url, formpost));
+
+  if (g_strcmp0(response, "success") == 0)
+  {
+    /* Add creds to pwstorage */
+    GHashTable *table = g_hash_table_new(g_str_hash, g_str_equal);
+    gchar* g_u = g_strdup(username);
+    gchar* g_p = g_strdup(password);
+    
+    g_hash_table_insert(table, "username", g_u);
+    g_hash_table_insert(table, "password", g_p);
+
+    if( !dt_pwstorage_set("redmine", table) )
+    {
+      dt_print(DT_DEBUG_PWSTORAGE,"[redmine] cannot store username/password\n");
+    }
+
+    g_free(g_u);
+    g_free(g_p);
+    g_hash_table_destroy(table);
+
+    g_free(response);
+    return TRUE;
+  }
+  else
+  {
+    fprintf(stderr, "%s%s\n", _("redmine authentication failed: "), response);
+    gchar mup[512]= {0};
+    sprintf( mup,"<span foreground=\"#e07f7f\" ><small>%s</small></span>",_("authentication failed"));
+    gtk_label_set_markup(GTK_LABEL(sd->auth_label), mup);
+    g_free(response);
+    return FALSE;
+  }
+}
+
 void _curl_upload_style(const char* dir, dt_gui_styles_upload_dialog_t *sd)
 {
 
   /* All the values to be used */
-  const char *upload_url, *name, *username, *password;
+  const char *url, *name, *username, *password;
   char *style, *img_before, *img_after;
-  upload_url = "http://darktablestyles.sourceforge.net/upload.php";
+  url        = _STYLES_SERVER "upload.php";
   name       = gtk_entry_get_text ( GTK_ENTRY (sd->name));
   style      = g_strconcat(dir, "/", name, ".dtstyle", NULL);
   img_before = g_strconcat(dir, "/before.jpg", NULL);
@@ -131,15 +231,8 @@ void _curl_upload_style(const char* dir, dt_gui_styles_upload_dialog_t *sd)
   username   = gtk_entry_get_text ( GTK_ENTRY (sd->username));
   password   = gtk_entry_get_text ( GTK_ENTRY (sd->password));
 
-  CURL *curl;
-  CURLcode res;
-
   struct curl_httppost *formpost = NULL;
   struct curl_httppost *lastptr = NULL;
-  struct curl_slist *headerlist = NULL;
-  static const char buf[] = "Expect:";
-
-  curl_global_init(CURL_GLOBAL_ALL);
 
   /* Set all files to send */
   curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "file_data",
@@ -157,22 +250,9 @@ void _curl_upload_style(const char* dir, dt_gui_styles_upload_dialog_t *sd)
 
   curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "p",
                CURLFORM_COPYCONTENTS, password, CURLFORM_END);
+  
+  _curl_send(url, formpost);
 
-  curl = curl_easy_init();
-  headerlist = curl_slist_append(headerlist, buf);
-  if(curl) {
-    curl_easy_setopt(curl, CURLOPT_URL, upload_url);      
-    curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
-    res = curl_easy_perform(curl);
-    /* Check for errors */
-    if(res != CURLE_OK)
-      fprintf(stderr, "curl_easy_perform() failed: %s\n",
-              curl_easy_strerror(res));
-
-    curl_easy_cleanup(curl);
-    curl_formfree(formpost);
-    curl_slist_free_all (headerlist);
-  }
   g_free(style);
   g_free(img_before);
   g_free(img_after);
@@ -186,7 +266,8 @@ static void _gui_styles_upload_response(GtkDialog *dialog, gint response_id, dt_
     if (strlen(gtk_entry_get_text ( GTK_ENTRY (sd->name))) == 0
       || strlen(gtk_entry_get_text ( GTK_ENTRY (sd->username))) == 0
       || strlen(gtk_entry_get_text ( GTK_ENTRY (sd->password))) == 0
-      || !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sd->agreement)) )
+      || !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sd->agreement))
+      || !_curl_authenticate(sd) )
     {
       return;
     }
@@ -271,7 +352,7 @@ void _gui_init (dt_gui_styles_upload_dialog_t *sd)
   gtk_container_add (content_area, alignment);
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
   gtk_container_add (GTK_CONTAINER(alignment), GTK_WIDGET(hbox));
-  GtkWidget *settings = gtk_table_new(8, 2, FALSE);
+  GtkWidget *settings = gtk_table_new(9, 2, FALSE);
   gtk_table_set_row_spacings(GTK_TABLE(settings), 5);
   GtkBox *thumbnails = GTK_BOX(gtk_vbox_new(FALSE, 5));
   gtk_box_pack_start (hbox,GTK_WIDGET(settings),TRUE,TRUE,0);
@@ -291,7 +372,7 @@ void _gui_init (dt_gui_styles_upload_dialog_t *sd)
   g_object_set (sd->name, "tooltip-text", _("enter a name for the style"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(sd->name), 1, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  GHashTable* table = dt_pwstorage_get("style_upload");
+  GHashTable* table = dt_pwstorage_get("redmine");
   gchar* _username = g_strdup( g_hash_table_lookup(table, "username"));
   gchar* _password = g_strdup( g_hash_table_lookup(table, "password"));
   g_hash_table_destroy(table);
@@ -313,9 +394,12 @@ void _gui_init (dt_gui_styles_upload_dialog_t *sd)
   gtk_entry_set_text(GTK_ENTRY(sd->password),  _password == NULL?"":_password);
   gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(sd->password), 1, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
+  sd->auth_label = gtk_label_new(NULL);
+  gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(sd->auth_label), 1, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+
   label = dtgtk_label_new(_("description"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
-  gtk_table_set_row_spacing(GTK_TABLE(settings), 4, 20);
-  gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(label), 0, 2, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_set_row_spacing(GTK_TABLE(settings), 5, 20);
+  gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(label), 0, 2, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   GtkWidget* description;
   description = gtk_text_view_new();
@@ -327,11 +411,11 @@ void _gui_init (dt_gui_styles_upload_dialog_t *sd)
   GtkWidget* scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW(scrolledwindow), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
   gtk_container_add(GTK_CONTAINER(scrolledwindow), description);
-  gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(scrolledwindow), 0, 2, 6, 7, GTK_EXPAND|GTK_FILL, GTK_EXPAND|GTK_FILL, 0, 0);
+  gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(scrolledwindow), 0, 2, 7, 8, GTK_EXPAND|GTK_FILL, GTK_EXPAND|GTK_FILL, 0, 0);
 
   sd->agreement = gtk_check_button_new_with_label(_("I accept the user agreement"));
   g_object_set (sd->agreement, "tooltip-text", _("you must accept the user agreement to upload style"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(sd->agreement), 0, 2, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(sd->agreement), 0, 2, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
 
   /* set thumbnails */
@@ -357,6 +441,8 @@ void _gui_init (dt_gui_styles_upload_dialog_t *sd)
   gtk_widget_show_all (GTK_WIDGET (dialog));
   gtk_dialog_run(GTK_DIALOG(dialog));
 
+  g_free(_username);
+  g_free(_password);
 }
 
 void dt_gui_styles_upload (const char *name,int imgid)
