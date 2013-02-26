@@ -835,7 +835,7 @@ dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
   gboolean is_zero = (module->multi_priority == 0);
 
   //we set the focus to the other instance
-  dt_iop_request_focus(next);
+  dt_iop_gui_set_expanded(next, TRUE);
   gtk_widget_grab_focus(next->expander);
 
   //we remove the plugin effectively
