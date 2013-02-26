@@ -838,7 +838,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     for(int k=0; k < 4 ; k++)
     {
       bd->upper_label[k] = GTK_LABEL(gtk_label_new(NULL));
-      gtk_label_set_width_chars(bd->upper_label[k], 6);
+      gtk_label_set_width_chars(bd->upper_label[k], 5);
       gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(bd->upper_label[k]), FALSE, FALSE, 0);
     }
 
@@ -849,7 +849,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     for(int k=0; k < 4 ; k++)
     {
       bd->lower_label[k] = GTK_LABEL(gtk_label_new(NULL));
-      gtk_label_set_width_chars(bd->lower_label[k], 6);
+      gtk_label_set_width_chars(bd->lower_label[k], 5);
       gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_label[k]), FALSE, FALSE, 0);
     }
 
