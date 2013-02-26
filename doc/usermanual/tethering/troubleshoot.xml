@@ -50,7 +50,7 @@
   </sect2>
 
   <sect2>
-    <title>Soo now what?</title>
+    <title>So, now what?</title>
     <para>If any of the steps above failed, there are problems with your specific camera and driver. Please report the issues to 
     gphoto2 mailing list for further help. Add the following flags to the command above that failed for better support and attach the
     log output to your mail:
