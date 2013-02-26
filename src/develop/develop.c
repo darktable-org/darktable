@@ -400,7 +400,6 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
   dev->image_dirty = dev->preview_dirty = 1;
 
   dev->iop = dt_iop_load_modules(dev);
-  dt_view_manager_reset(darktable.view_manager);
   
   dt_dev_read_history(dev);
 
