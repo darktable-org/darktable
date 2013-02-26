@@ -123,7 +123,7 @@ static void _dt_style_update_from_image(int id, int imgid, GList *filter, GList 
         for (int k=0; fields[k]; k++)
         {
           if (k!=0) strcat(query, ",");
-          sprintf(tmp, "%s=(select %s from history where imgid=%d and operation=style_items.operation order by num desc limit 1)", fields[k], fields[k], imgid);
+          sprintf(tmp, "%s=(select %s from history where imgid=%d and num=%ld)", fields[k], fields[k], imgid, (glong)upd->data);
           strcat(query, tmp);
         }
         sprintf(tmp, " where styleid=%d and style_items.num=%ld", id, (glong)list->data);
@@ -500,7 +500,12 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
     {
       char name[512]= {0};
       dt_style_item_t *item=g_malloc (sizeof (dt_style_item_t));
-      item->num = sqlite3_column_int (stmt, 0);
+
+      if (sqlite3_column_type(stmt,0)==SQLITE_NULL)
+        item->num = -1;
+      else
+        item->num = sqlite3_column_int (stmt, 0);
+
       item->selimg_num = -1;
 
       if (params)
@@ -525,7 +530,7 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
         g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
         item->params = NULL;
         item->blendop_params = NULL;
-        if (imgid != -1)
+        if (imgid != -1 && sqlite3_column_type(stmt,3)!=SQLITE_NULL)
           item->selimg_num = sqlite3_column_int (stmt, 3);
       }
       item->name = g_strdup (name);
