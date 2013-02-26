@@ -210,14 +210,11 @@ static int gui_spot_test_create(dt_iop_module_t *self)
   dt_iop_spots_gui_data_t   *g = (dt_iop_spots_gui_data_t   *)self->gui_data;
 
   //we test if the image has changed
-  if (g->pipe_hash >= 0)
+  if (g->pipe_hash != self->dev->preview_pipe->backbuf_hash)
   {
-    if (g->pipe_hash != self->dev->preview_pipe->backbuf_hash)
-    {
-      for (int i=0; i<32; i++)
-        if (g->spot[i].ok) gui_spot_remove(self,&g->spot[i],i);
-      g->pipe_hash = 0;
-    }
+    for (int i=0; i<32; i++)
+      if (g->spot[i].ok) gui_spot_remove(self,&g->spot[i],i);
+    g->pipe_hash = 0;
   }
 
   //we create the spots if needed
@@ -462,6 +459,8 @@ void gui_init     (dt_iop_module_t *self)
   for (int i=0; i<32; i++)
   {
     g->spot[i].ok = 0;
+    g->spot[i].source = NULL;
+    g->spot[i].spot = NULL;
   }
   g->pipe_hash = 0;
 
@@ -790,6 +789,8 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
       memcpy(p->spot + g->selected, p->spot + i, sizeof(spot_t));
       gui_spot_remove(self,&g->spot[g->selected],g->selected);
       memcpy(g->spot + g->selected, g->spot + i, sizeof(spot_draw_t));
+      g->spot[i].source = g->spot[i].spot = NULL;
+      g->spot[i].ok = g->spot[i].pts_count = 0;
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     g->selected = -1;
