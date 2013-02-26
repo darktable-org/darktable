@@ -221,15 +221,19 @@ void _curl_upload_style(const char* dir, dt_gui_styles_upload_dialog_t *sd)
 {
 
   /* All the values to be used */
-  const char *url, *name, *username, *password;
+  const char *url, *name, *username, *password, *description;
   char *style, *img_before, *img_after;
   url        = _STYLES_SERVER "upload.php";
   name       = gtk_entry_get_text ( GTK_ENTRY (sd->name));
-  style      = g_strconcat(dir, "/", name, ".dtstyle", NULL);
+  style      = g_strconcat(dir, "/", sd->nameorig, ".dtstyle", NULL);
   img_before = g_strconcat(dir, "/before.jpg", NULL);
   img_after  = g_strconcat(dir, "/after.jpg", NULL);
   username   = gtk_entry_get_text ( GTK_ENTRY (sd->username));
   password   = gtk_entry_get_text ( GTK_ENTRY (sd->password));
+
+  GtkTextIter start, end;
+  gtk_text_buffer_get_bounds(sd->description, &start, &end);
+  description = gtk_text_buffer_get_text (sd->description, &start, &end, FALSE);
 
   struct curl_httppost *formpost = NULL;
   struct curl_httppost *lastptr = NULL;
@@ -250,12 +254,26 @@ void _curl_upload_style(const char* dir, dt_gui_styles_upload_dialog_t *sd)
 
   curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "p",
                CURLFORM_COPYCONTENTS, password, CURLFORM_END);
+
+  /* Set style values */
+  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "name",
+               CURLFORM_COPYCONTENTS, name, CURLFORM_END);
+
+  curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "description",
+               CURLFORM_COPYCONTENTS, description, CURLFORM_END);
   
-  _curl_send(url, formpost);
+  gchar *response = g_strdup(_curl_send(url, formpost));
+  
+  if (g_strcmp0(response, "success") != 0)
+  {
+    fprintf(stderr, "%s%s\n", _("uploading style failed: "), response);
+    // Handle
+  }
 
   g_free(style);
   g_free(img_before);
   g_free(img_after);
+  g_free(response);
 }
 
 static void _gui_styles_upload_response(GtkDialog *dialog, gint response_id, dt_gui_styles_upload_dialog_t *sd)
@@ -271,21 +289,23 @@ static void _gui_styles_upload_response(GtkDialog *dialog, gint response_id, dt_
     {
       return;
     }
+    char *dir = "/tmp";
+    /*   make it optional to save changes locally 
     char *name, *description, *dir = "/tmp"; // TODO: change to (char*)DARKTABLE_TMPDIR ? 
     const char *newname;
     GtkTextIter start, end;
     gtk_text_buffer_get_bounds(sd->description, &start, &end);
     description = gtk_text_buffer_get_text (sd->description, &start, &end, FALSE);
     newname = gtk_entry_get_text ( GTK_ENTRY (sd->name));
-    name = sd->nameorig;
     dt_styles_update (name, newname, description, NULL);
-    dt_styles_save_to_file(newname, dir, TRUE);
+ */
+    dt_styles_save_to_file(sd->nameorig, dir, TRUE);
     _temp_export(sd->beforeid, dir, "before");
     _temp_export(sd->afterid, dir, "after");
     _curl_upload_style(dir, sd);
     char *file1 = g_strconcat(dir, "/before.jpg", NULL);
     char *file2 = g_strconcat(dir, "/after.jpg", NULL);
-    char *file3 = g_strconcat(dir, "/", newname , ".dtstyle", NULL);
+    char *file3 = g_strconcat(dir, "/", sd->nameorig , ".dtstyle", NULL);
     unlink(file1);
     unlink(file2);
     unlink(file3);
