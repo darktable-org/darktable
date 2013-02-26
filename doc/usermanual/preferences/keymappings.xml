@@ -4,23 +4,23 @@
 <tbody>
 <row><entry>&lt;darktable&gt;/global/lighttable view</entry> <entry>l</entry></row>
 <row><entry>&lt;darktable&gt;/global/darkroom view</entry> <entry>d</entry></row>
-<row><entry>&lt;darktable&gt;/global/map view</entry> <entry>m</entry></row>
 <row><entry>&lt;darktable&gt;/global/capture view</entry> <entry>t</entry></row>
-<row><entry>&lt;darktable&gt;/global/decrease brightness</entry> <entry>F9</entry></row>
-<row><entry>&lt;darktable&gt;/global/decrease contrast</entry> <entry>F7</entry></row>
+<row><entry>&lt;darktable&gt;/global/map view</entry> <entry>m</entry></row>
 <row><entry>&lt;darktable&gt;/global/increase brightness</entry> <entry>F10</entry></row>
+<row><entry>&lt;darktable&gt;/global/decrease brightness</entry> <entry>F9</entry></row>
 <row><entry>&lt;darktable&gt;/global/increase contrast</entry> <entry>F8</entry></row>
+<row><entry>&lt;darktable&gt;/global/decrease contrast</entry> <entry>F7</entry></row>
 <row><entry>&lt;darktable&gt;/global/leave fullscreen</entry> <entry>Escape</entry></row>
 <row><entry>&lt;darktable&gt;/global/quit</entry> <entry>&lt;Primary&gt;q</entry></row>
 <row><entry>&lt;darktable&gt;/global/switch view</entry> <entry>period</entry></row>
 <row><entry>&lt;darktable&gt;/global/toggle fullscreen</entry> <entry>F11</entry></row>
 <row><entry>&lt;darktable&gt;/global/toggle header</entry> <entry>&lt;Primary&gt;h</entry></row>
 <row><entry>&lt;darktable&gt;/global/toggle side borders</entry> <entry>Tab</entry></row>
-<row><entry>&lt;darktable&gt;/views/lighttable/color blue</entry> <entry>F4</entry></row>
-<row><entry>&lt;darktable&gt;/views/lighttable/color green</entry> <entry>F3</entry></row>
-<row><entry>&lt;darktable&gt;/views/lighttable/color purple</entry> <entry>F5</entry></row>
 <row><entry>&lt;darktable&gt;/views/lighttable/color red</entry> <entry>F1</entry></row>
 <row><entry>&lt;darktable&gt;/views/lighttable/color yellow</entry> <entry>F2</entry></row>
+<row><entry>&lt;darktable&gt;/views/lighttable/color green</entry> <entry>F3</entry></row>
+<row><entry>&lt;darktable&gt;/views/lighttable/color blue</entry> <entry>F4</entry></row>
+<row><entry>&lt;darktable&gt;/views/lighttable/color purple</entry> <entry>F5</entry></row>
 <row><entry>&lt;darktable&gt;/views/lighttable/navigate down</entry> <entry>&lt;Shift&gt;g</entry></row>
 <row><entry>&lt;darktable&gt;/views/lighttable/navigate page down</entry> <entry>Page_Down</entry></row>
 <row><entry>&lt;darktable&gt;/views/lighttable/navigate page up</entry> <entry>Page_Up</entry></row>
@@ -40,8 +40,8 @@
 <row><entry>&lt;darktable&gt;/views/lighttable/scroll right</entry> <entry>Right</entry></row>
 <row><entry>&lt;darktable&gt;/views/lighttable/scroll up</entry> <entry>Up</entry></row>
 <row><entry>&lt;darktable&gt;/views/darkroom/export</entry> <entry>&lt;Primary&gt;e</entry></row>
-<row><entry>&lt;darktable&gt;/views/darkroom/image back</entry> <entry>BackSpace</entry></row>
 <row><entry>&lt;darktable&gt;/views/darkroom/image forward</entry> <entry>space</entry></row>
+<row><entry>&lt;darktable&gt;/views/darkroom/image back</entry> <entry>BackSpace</entry></row>
 <row><entry>&lt;darktable&gt;/views/darkroom/overexposed</entry> <entry>o</entry></row>
 <row><entry>&lt;darktable&gt;/views/darkroom/toggle film strip</entry> <entry>&lt;Primary&gt;f</entry></row>
 <row><entry>&lt;darktable&gt;/views/darkroom/zoom close-up</entry> <entry>&lt;Alt&gt;1</entry></row>
@@ -55,14 +55,14 @@
 <row><entry>&lt;darktable&gt;/modules/copy_history/paste all</entry> <entry>&lt;Primary&gt;v</entry></row>
 <row><entry>&lt;darktable&gt;/modules/copy_history/paste</entry> <entry>&lt;Primary&gt;&lt;Shift&gt;v</entry></row>
 <row><entry>&lt;darktable&gt;/modules/export/export</entry> <entry>&lt;Primary&gt;e</entry></row>
-<row><entry>&lt;darktable&gt;/modules/filmstrip/color blue</entry> <entry>F4</entry></row>
-<row><entry>&lt;darktable&gt;/modules/filmstrip/color green</entry> <entry>F3</entry></row>
-<row><entry>&lt;darktable&gt;/modules/filmstrip/color purple</entry> <entry>F5</entry></row>
 <row><entry>&lt;darktable&gt;/modules/filmstrip/color red</entry> <entry>F1</entry></row>
 <row><entry>&lt;darktable&gt;/modules/filmstrip/color yellow</entry> <entry>F2</entry></row>
+<row><entry>&lt;darktable&gt;/modules/filmstrip/color green</entry> <entry>F3</entry></row>
+<row><entry>&lt;darktable&gt;/modules/filmstrip/color blue</entry> <entry>F4</entry></row>
+<row><entry>&lt;darktable&gt;/modules/filmstrip/color purple</entry> <entry>F5</entry></row>
+<row><entry>&lt;darktable&gt;/modules/filmstrip/duplicate image</entry> <entry>&lt;Primary&gt;d</entry></row>
 <row><entry>&lt;darktable&gt;/modules/filmstrip/copy history parts</entry> <entry>&lt;Primary&gt;&lt;Shift&gt;c</entry></row>
 <row><entry>&lt;darktable&gt;/modules/filmstrip/copy history</entry> <entry>&lt;Primary&gt;c</entry></row>
-<row><entry>&lt;darktable&gt;/modules/filmstrip/duplicate image</entry> <entry>&lt;Primary&gt;d</entry></row>
 <row><entry>&lt;darktable&gt;/modules/filmstrip/paste history parts</entry> <entry>&lt;Primary&gt;&lt;Shift&gt;v</entry></row>
 <row><entry>&lt;darktable&gt;/modules/filmstrip/paste history</entry> <entry>&lt;Primary&gt;v</entry></row>
 <row><entry>&lt;darktable&gt;/modules/filmstrip/rate 1</entry> <entry>1</entry></row>
@@ -73,15 +73,15 @@
 <row><entry>&lt;darktable&gt;/modules/filmstrip/rate desert</entry> <entry>0</entry></row>
 <row><entry>&lt;darktable&gt;/modules/filmstrip/rate reject</entry> <entry>r</entry></row>
 <row><entry>&lt;darktable&gt;/modules/image/group</entry> <entry>&lt;Primary&gt;g</entry></row>
-<row><entry>&lt;darktable&gt;/modules/image/remove from collection</entry> <entry>Delete</entry></row>
 <row><entry>&lt;darktable&gt;/modules/image/ungroup</entry> <entry>&lt;Primary&gt;&lt;Shift&gt;g</entry></row>
-<row><entry>&lt;darktable&gt;/modules/lighttable_mode/zoom in</entry> <entry>&lt;Alt&gt;2</entry></row>
+<row><entry>&lt;darktable&gt;/modules/image/remove from collection</entry> <entry>Delete</entry></row>
 <row><entry>&lt;darktable&gt;/modules/lighttable_mode/zoom max</entry> <entry>&lt;Alt&gt;1</entry></row>
-<row><entry>&lt;darktable&gt;/modules/lighttable_mode/zoom min</entry> <entry>&lt;Alt&gt;4</entry></row>
+<row><entry>&lt;darktable&gt;/modules/lighttable_mode/zoom in</entry> <entry>&lt;Alt&gt;2</entry></row>
 <row><entry>&lt;darktable&gt;/modules/lighttable_mode/zoom out</entry> <entry>&lt;Alt&gt;3</entry></row>
+<row><entry>&lt;darktable&gt;/modules/lighttable_mode/zoom min</entry> <entry>&lt;Alt&gt;4</entry></row>
 <row><entry>&lt;darktable&gt;/modules/live_view/toggle live view</entry> <entry>v</entry></row>
-<row><entry>&lt;darktable&gt;/modules/select/invert selection</entry> <entry>&lt;Primary&gt;i</entry></row>
 <row><entry>&lt;darktable&gt;/modules/select/select all</entry> <entry>&lt;Primary&gt;a</entry></row>
+<row><entry>&lt;darktable&gt;/modules/select/invert selection</entry> <entry>&lt;Primary&gt;i</entry></row>
 <row><entry>&lt;darktable&gt;/modules/select/select none</entry> <entry>&lt;Primary&gt;&lt;Shift&gt;a</entry></row>
 <row><entry>&lt;darktable&gt;/modules/tagging/tag</entry> <entry>&lt;Primary&gt;t</entry></row>
 <row><entry>&lt;darktable&gt;/image operations/clipping/commit</entry> <entry>Return</entry></row>
