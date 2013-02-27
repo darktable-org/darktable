@@ -97,6 +97,8 @@
 	</sect4>
 	
 	<sect4><title>Examples</title>
+                <para>Here is an example that shows various options of darktable's neutral density filter:
+                </para>
 		<para>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth="4*"/>
@@ -106,7 +108,9 @@
 							<entry>
 								<graphic fileref="darkroom/modules/images/graduatedneutraldensity_ex1.png" scalefit="1" width="90%" align="center" />
 							</entry>						
-							<entry><para>This is the original image with a pretty overexposed sky, use it as reference for the changes below...</para></entry>
+							<entry><para>This is the original image with a pretty overexposed sky, use it as reference for the changes below...
+                                                               </para>
+                                                        </entry>
 						</row>
 						<row>
 							<entry>
@@ -130,5 +134,59 @@
 				</tgroup>
 			</informaltable>
 		</para>	
+
+                <para>darktable's neutral density filter is a powerful tool. Nevertheless, hardware neutral density filters 
+                      have some advantages over a pure software solution. With a physical GND filter you can in fact reduce the dynamic range 
+                      of your scene to make it better fit the limits of your camera sensor.
+                </para>
+                <para>In the following example a hardware GND filter (Hitech ND0.6, soft edge) helped 
+                      me to prevent over-exposure in the sky and tree tops, while at the same time getting a well exposed 
+                      image of the ground. A rather disturbing element is the decay of lightness in the tree trunks from bottom to top.
+                </para>
+
+		<para>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth="6*"/>
+					<colspec colwidth="4*"/>
+					<tbody>
+						<row>
+							<entry>
+                                                               <para>Here darktable's neutral density filter together with the conditional 
+                                                                     blending feature (see <xref linkend="conditional blending"/>) comes in handy. We can add a lightness 
+                                                                     gradient that is just inverted in relation to the hardware filter. As we only want to compensate the unnatural
+                                                                     decay of lightness in the tree trunks, we combine the module with a suited blend mask.
+                                                               </para>
+                                                        </entry>
+							<entry>
+								<graphic fileref="darkroom/modules/images/graduatedneutraldensity_ex4.png" scalefit="1" width="90%" align="center" />
+                                                        </entry>
+						</row>
+						<row>
+							<entry>
+								<para>The blend mask is constructed by using the gray, hue and saturation channels, and some added gaussian blur.
+								</para>
+							</entry>
+
+							<entry>
+								<graphic fileref="darkroom/modules/images/graduatedneutraldensity_ex5.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+						</row>
+						<row>
+							<entry>
+								<para>The resulting image.
+								</para>
+							</entry>
+
+
+							<entry>
+								<graphic fileref="darkroom/modules/images/graduatedneutraldensity_ex6.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</para>	
+
+
 	</sect4>
 </sect3>

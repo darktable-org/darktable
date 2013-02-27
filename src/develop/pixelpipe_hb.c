@@ -1494,10 +1494,19 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
         for(int k=0; k<4*roi_out->width*roi_out->height; k++)
         {
-          if((k&3)<3 && !isfinite(((float*)(*output))[k]))
+          if((k&3)<3)
           {
-            fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats! [%s]\n", module->name(), _pipe_type_to_str(pipe->type));
-            break;
+            float f = ((float*)(*output))[k];
+            if(!isfinite(f))
+            {
+              fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats! [%s]\n", module->name(), _pipe_type_to_str(pipe->type));
+              break;
+            }
+            if(f < 0)
+            {
+              fprintf(stderr, "[dev_pixelpipe] module `%s' outputs negative floats! [%s]\n", module->name(), _pipe_type_to_str(pipe->type));
+              break;
+            }
           }
         }
       }

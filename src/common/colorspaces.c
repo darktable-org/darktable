@@ -200,18 +200,22 @@ dt_colorspaces_create_srgb_profile()
   cmsSetProfileVersion(hsRGB, 2.1);
 
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu0, "en", "US", "sRGB");
+  cmsMLUsetASCII(mlu0, "en", "US", "Public Domain");
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu1, "en", "US", "Darktable");
+  cmsMLUsetASCII(mlu1, "en", "US", "sRGB");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu2, "en", "US", "sRGB");
+  cmsMLUsetASCII(mlu2, "en", "US", "Darktable");
+  cmsMLU *mlu3 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu3, "en", "US", "sRGB");
   // this will only be displayed when the embedded profile is read by for example GIMP
-  cmsWriteTag(hsRGB, cmsSigProfileDescriptionTag, mlu0);
-  cmsWriteTag(hsRGB, cmsSigDeviceMfgDescTag,      mlu1);
-  cmsWriteTag(hsRGB, cmsSigDeviceModelDescTag,    mlu2);
+  cmsWriteTag(hsRGB, cmsSigCopyrightTag,          mlu0);
+  cmsWriteTag(hsRGB, cmsSigProfileDescriptionTag, mlu1);
+  cmsWriteTag(hsRGB, cmsSigDeviceMfgDescTag,      mlu2);
+  cmsWriteTag(hsRGB, cmsSigDeviceModelDescTag,    mlu3);
   cmsMLUfree(mlu0);
   cmsMLUfree(mlu1);
   cmsMLUfree(mlu2);
+  cmsMLUfree(mlu3);
 
   cmsSetDeviceClass(hsRGB, cmsSigDisplayClass);
   cmsSetColorSpace(hsRGB, cmsSigRgbData);
@@ -255,18 +259,22 @@ dt_colorspaces_create_adobergb_profile(void)
   cmsSetProfileVersion(hAdobeRGB, 2.1);
 
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu0, "en", "US", "AdobeRGB");
+  cmsMLUsetASCII(mlu0, "en", "US", "Public Domain");
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu1, "en", "US", "Darktable");
+  cmsMLUsetASCII(mlu1, "en", "US", "AdobeRGB");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu2, "en", "US", "AdobeRGB");
+  cmsMLUsetASCII(mlu2, "en", "US", "Darktable");
+  cmsMLU *mlu3 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu3, "en", "US", "AdobeRGB");
   // this will only be displayed when the embedded profile is read by for example GIMP
-  cmsWriteTag(hAdobeRGB, cmsSigProfileDescriptionTag, mlu0);
-  cmsWriteTag(hAdobeRGB, cmsSigDeviceMfgDescTag,      mlu1);
-  cmsWriteTag(hAdobeRGB, cmsSigDeviceModelDescTag,    mlu2);
+  cmsWriteTag(hAdobeRGB, cmsSigCopyrightTag,          mlu0);
+  cmsWriteTag(hAdobeRGB, cmsSigProfileDescriptionTag, mlu1);
+  cmsWriteTag(hAdobeRGB, cmsSigDeviceMfgDescTag,      mlu2);
+  cmsWriteTag(hAdobeRGB, cmsSigDeviceModelDescTag,    mlu3);
   cmsMLUfree(mlu0);
   cmsMLUfree(mlu1);
   cmsMLUfree(mlu2);
+  cmsMLUfree(mlu3);
 
   cmsSetDeviceClass(hAdobeRGB, cmsSigDisplayClass);
   cmsSetColorSpace(hAdobeRGB, cmsSigRgbData);
