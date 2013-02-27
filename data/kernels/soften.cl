@@ -35,7 +35,7 @@ float4 RGB_2_HSL(const float4 RGB)
 
   L = (var_Max + var_Min) / 2.0f;
 
-  if (del_Max == 0.0f)
+  if (del_Max < 1e-6f)
   {
     H = 0.0f;
     S = 0.0f;
@@ -82,7 +82,7 @@ float4 HSL_2_RGB(const float4 HSL)
 
   float var_1, var_2;
 
-  if (S == 0.0f)
+  if (S < 1e-6f)
   {
     R = B = G = L;
   }
