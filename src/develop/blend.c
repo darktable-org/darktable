@@ -39,7 +39,7 @@ static inline void _RGB_2_HSL(const float *RGB, float *HSL)
 
   L = (var_Max + var_Min) / 2.0f;
 
-  if (del_Max == 0.0f)
+  if (del_Max < 1e-6f)
   {
     H = 0.0f;
     S = 0.0f;
@@ -87,7 +87,7 @@ static inline void _HSL_2_RGB(const float *HSL, float *RGB)
 
   float var_1, var_2;
 
-  if (S == 0.0f)
+  if (S < 1e-6f)
   {
     RGB[0] = RGB[1] = RGB[2] = L;
   }
