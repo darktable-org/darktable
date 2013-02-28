@@ -133,7 +133,7 @@
 					</tgroup></informaltable>
 			</para>
 			<sect3 status="final"><title>Lighttable</title>
-				<para>The lighttable view is where you manage your images and filmrolls. It's also where you rate images, add tags and  
+				<para>The lighttable view is where images and filmrolls are managed. It's also where you rate images, add tags and  
                                       colorlabels, and export images among other actions (see <xref linkend="lighttable chapter"/>).
 				</para>
 			</sect3>
@@ -186,7 +186,7 @@
 			<sect3 status="draft"><title>Importing from camera</title>
 				<para>Connect your camera to your system. If your distribution tries to automount it, select the option to abort the mount operation.
 					Otherwise the camera will be locked and not accessible from within darktable. If you don't see your camera in the import
-                                        pane, hit the <quote>scan for devices</quote> button. Your camera will then appear in the same pane with additional actions: 
+                                        pane, hit the <quote>scan for devices</quote> button. Your camera will then appear in the same pane with additional choices: 
                                         <emphasis>import</emphasis> and <emphasis>tethering</emphasis>.</para>
 			</sect3>
 		</sect2>
@@ -243,7 +243,7 @@
 			</sect3>
 
   	         	<sect3 status="draft"><title>Noise reduction</title>
-           			<para>The best starting point for noise reduction is <link linkend="denoise profiled"><emphasis>profiled denoise</emphasis></link>. This modules offers 
+           			<para>The best starting point for noise reduction is <link linkend="denoise profiled"><emphasis>profiled denoise</emphasis></link>. This module offers 
                                       an almost <quote>single-click</quote> solution to fight noise. From a user perspective the effect only depends on camera type and ISO value, both 
                                       derived from EXIF data. All other settings are taken from
                                       a database of noise profiles that the darktable team has collected - now covering already over 60 popular camera models.
@@ -277,8 +277,7 @@
 			<sect3 status="draft"><title>Bringing back detail</title>
 				<para>Digital RAW images often contain more information than you can see at first sight. Especially 
                                       in the shadows of an image, there are lots of hidden details. The <link linkend="shadows and highlights"><emphasis>shadows and highlights</emphasis></link>
-                                      module helps bring these shades back into tonal values, where they contribute to the visual 
-                                      impression. Structural details in fully blown-out highlights, by nature of the digital sensor, can not 
+                                      module helps bring these details back into visible tonal values. Structural details in fully blown-out highlights, by nature of the digital sensor, can not 
                                       be recovered. However, you can correct unfavorable color casts in these areas with the 
                                       <link linkend="highlight reconstruction"><emphasis>highlight reconstruction</emphasis></link> module.
 				</para>
