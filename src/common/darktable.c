@@ -97,7 +97,7 @@ static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
 #endif
 
 #if (defined(__FreeBSD_version) && (__FreeBSD_version < 800071)) || \
-  defined(__OpenBSD__) || defined(__SUNOS__)
+  (defined(OpenBSD) && (OpenBSD < 201305)) || defined(__SUNOS__)
 static int dprintf(int fd,const char *fmt, ...)
 {
   va_list ap;
