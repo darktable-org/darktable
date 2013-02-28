@@ -558,7 +558,7 @@ int dt_imageio_export_with_flags(
     GList *modules = dev.iop;
     dt_iop_module_t *m = NULL;
 
-    if ((stls=dt_styles_get_item_list(format_params->style, TRUE)) == 0)
+    if ((stls=dt_styles_get_item_list(format_params->style, TRUE, -1)) == 0)
     {
       dt_control_log(_("cannot find the style '%s' to apply during export."), format_params->style);
       dt_dev_cleanup(&dev);
