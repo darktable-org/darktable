@@ -508,7 +508,9 @@ static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *
 
   sprintf(uri,"https://picasaweb.google.com/data/feed/api/user/default");
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, uri);
+#ifdef picasa_EXTRA_VERBOSE
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
+#endif
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_HTTPHEADER, headers);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST,1);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_FOLLOWLOCATION, 1);
@@ -522,8 +524,9 @@ static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *
 
   long result;
   curl_easy_getinfo(ctx->curl_ctx, CURLINFO_RESPONSE_CODE, &result);
-
-  printf("Buffer: %s\n", buffer.data);
+#ifdef picasa_EXTRA_VERBOSE
+  printf("Create album buffer response: %s\n", buffer.data);
+#endif
   
   if (result == 201)
   {
@@ -609,7 +612,9 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
 
   sprintf(uri,"https://picasaweb.google.com/data/feed/api/user/default/albumid/%s", albumid);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, uri);
+#ifdef picasa_EXTRA_VERBOSE
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
+#endif
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_HTTPHEADER, headers);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_UPLOAD,0);   // A post request !
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST,1);
@@ -711,9 +716,10 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
       writebuffer.size = datasize;
       writebuffer.offset=0;
 
-     // updateUri = dt_util_dstrcat(updateUri, "?access_token=%s", ctx->token);
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, updateUri);
+#ifdef picasa_EXTRA_VERBOSE
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
+#endif
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_HTTPHEADER, headers);
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_UPLOAD,1);   // A put request
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_READDATA,&writebuffer);
@@ -779,7 +785,6 @@ static gchar *picasa_get_user_refresh_token(PicasaContext *ctx)
   gchar *params = NULL;
   
   params = dt_util_dstrcat(params, "refresh_token=%s&client_id="GOOGLE_API_KEY"&client_secret="GOOGLE_API_SECRET"&grant_type=refresh_token", ctx->refresh_token);
-  printf ("URL: %s", params);
   
   reply = picasa_query_post_auth(ctx, "o/oauth2/token", params);
  
@@ -865,7 +870,6 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
 
   gchar *params = NULL;
   params = dt_util_dstrcat(params, "code=%s&client_id="GOOGLE_API_KEY"&client_secret="GOOGLE_API_SECRET"&redirect_uri="GOOGLE_URI"&grant_type=authorization_code", token);
-  printf ("URL: %s", params);
   
   reply = picasa_query_post_auth(ui->picasa_api, "o/oauth2/token", params);
  
@@ -1056,7 +1060,6 @@ static void ui_reset_albums_creation(struct dt_storage_picasa_gui_data_t *ui)
 
 static void ui_combo_username_changed(GtkComboBox *combo, struct dt_storage_picasa_gui_data_t *ui)
 {
-  printf("Combo username changed called\n");
   GtkTreeIter iter;
   gchar *token = NULL;
   gchar *refresh_token = NULL;
@@ -1214,7 +1217,6 @@ static gboolean ui_authenticate(dt_storage_picasa_gui_data_t *ui)
                                          COMBO_USER_MODEL_REFRESH_TOKEN_COL, accountinfo->refresh_token,
                                          COMBO_USER_MODEL_ID_COL, accountinfo->id, -1);
       }
-      printf("Authenticate\n");
       g_signal_handlers_block_matched (ui->comboBox_username, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, ui_combo_username_changed, NULL);
       gtk_combo_box_set_active_iter(ui->comboBox_username, &iter);
       g_signal_handlers_unblock_matched (ui->comboBox_username, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, ui_combo_username_changed, NULL);
