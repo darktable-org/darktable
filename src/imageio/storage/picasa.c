@@ -358,85 +358,15 @@ typedef struct {
   struct curl_httppost *lastptr;
 } HttppostFormList;
 
-static void picasa_query_post_add_file_arguments(const gchar *key, const gchar *value, HttppostFormList *formlist)
-{
-  curl_formadd(&(formlist->formpost),
-    &(formlist->lastptr),
-    CURLFORM_COPYNAME, key,
-    CURLFORM_COPYCONTENTS, value,
-    CURLFORM_END);
-
-  curl_formadd(&(formlist->formpost),
-    &(formlist->lastptr),
-    CURLFORM_COPYNAME, key,
-    CURLFORM_FILE, value,
-    CURLFORM_END);
-}
 
 /**
- * perform a POST request on picasa/google api
- *
- * @note use this one to create object (album, photos, ...)
+ * perform a POST request on google api to get the auth token
  *
  * @param ctx picasa context (token field must be set)
  * @param method the method to call on the google API, the methods should not start with '/' example: "me/albums"
  * @param args hashtable of the aguments to be added to the requests, might be null if none
- * @param files hashtable of the files to be send with the requests, might be null if none
- * @param alt_url indicates if the picasa base URL has to be used instead of the google accounts one
  * @returns NULL if the request fails, or a JsonObject of the reply
  */
-
-static JsonObject *picasa_query_post(PicasaContext *ctx, const gchar *method, GHashTable *args, GHashTable *files, gboolean alt_url)
-{
-  g_return_val_if_fail(ctx != NULL, NULL);
-
-  GString *url = NULL;
-
-  if (alt_url == TRUE)
-    url = g_string_new(GOOGLE_WS_BASE_URL);
-  else
-    url =g_string_new(GOOGLE_API_BASE_URL);
-  g_string_append(url, method);
-
-  HttppostFormList formlist;
-  formlist.formpost = NULL;
-  formlist.lastptr = NULL;
-
-  if (ctx->token != NULL)
-    curl_formadd(&(formlist.formpost),
-      &(formlist.lastptr),
-      CURLFORM_COPYNAME, "access_token",
-      CURLFORM_COPYCONTENTS, ctx->token,
-      CURLFORM_END);
-
-  if (args != NULL)
-    g_hash_table_foreach(args, (GHFunc)picasa_query_post_add_form_arguments, &formlist);
-
-  if (files != NULL)
-    g_hash_table_foreach(files, (GHFunc)picasa_query_post_add_file_arguments, &formlist);
-
-  //send the requests
-  GString *response = g_string_new("");
-  curl_easy_reset(ctx->curl_ctx);
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, url->str);
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST, 1);
-#ifdef picasa_EXTRA_VERBOSE
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
-#endif
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_SSL_VERIFYPEER, FALSE);
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
-
-  int res = curl_easy_perform(ctx->curl_ctx);
-  curl_formfree(formlist.formpost);
-  g_string_free(url, TRUE);
-  if (res != CURLE_OK) return NULL;
-  //parse the response
-  JsonObject *respobj = picasa_parse_response(ctx, response);
-  g_string_free(response, TRUE);
-  return respobj;
-}
-#endif
 
 static JsonObject *picasa_query_post_auth(PicasaContext *ctx, const gchar *method, gchar *args)
 {
@@ -1374,9 +1304,9 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   ui->entry_album_title = GTK_ENTRY(gtk_entry_new());
   ui->entry_album_summary = GTK_ENTRY(gtk_entry_new());
 
-  dt_gui_key_accel_block_on_focus(GTK_WIDGET(ui->comboBox_username));
-  dt_gui_key_accel_block_on_focus(GTK_WIDGET(ui->entry_album_title));
-  dt_gui_key_accel_block_on_focus(GTK_WIDGET(ui->entry_album_summary));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->comboBox_username));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->entry_album_title));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->entry_album_summary));
 
   //retreive saved accounts
   ui_refresh_users(ui);
@@ -1453,6 +1383,9 @@ void gui_init(struct dt_imageio_module_storage_t *self)
 void gui_cleanup(struct dt_imageio_module_storage_t *self)
 {
   dt_storage_picasa_gui_data_t *ui = self->gui_data;
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->comboBox_username));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->entry_album_title));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->entry_album_summary));
   if (ui->picasa_api != NULL)
     picasa_api_destroy(ui->picasa_api);
   g_free(self->gui_data);
