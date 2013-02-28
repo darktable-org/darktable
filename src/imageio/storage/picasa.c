@@ -1300,6 +1300,7 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   GtkListStore *model_username  = gtk_list_store_new (COMBO_USER_MODEL_NB_COL, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING); //text, token, refresh_token, id
   ui->comboBox_username = GTK_COMBO_BOX(gtk_combo_box_new_with_model(GTK_TREE_MODEL(model_username)));
   GtkCellRenderer *p_cell = gtk_cell_renderer_text_new ();
+  g_object_set (G_OBJECT(p_cell), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, "ellipsize-set", TRUE, "width-chars", 30, NULL);
   gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (ui->comboBox_username), p_cell, FALSE);
   gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (ui->comboBox_username), p_cell, "text", 0, NULL);
 
@@ -1318,6 +1319,7 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   GtkListStore *model_album = gtk_list_store_new (COMBO_ALBUM_MODEL_NB_COL, G_TYPE_STRING, G_TYPE_STRING); //name, id
   ui->comboBox_album = GTK_COMBO_BOX(gtk_combo_box_new_with_model(GTK_TREE_MODEL(model_album)));
   p_cell = gtk_cell_renderer_text_new ();
+  g_object_set (G_OBJECT(p_cell), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, "ellipsize-set", TRUE, "width-chars", 30, NULL);
   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT (ui->comboBox_album), p_cell, FALSE);
   gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (ui->comboBox_album), p_cell, "text", 0, NULL);
 
