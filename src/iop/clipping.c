@@ -1272,7 +1272,9 @@ aspect_presets_changed (GtkWidget *combo, dt_iop_module_t *self)
       {
         // *c = '\0'; // not needed, atof will stop there.
         c++;
-        g->current_aspect = atof(text) / atof(c);
+        float n = atof(c);
+        if (n==0.0f) dt_control_log(_("invalid ratio format. it should be \"number:number\""));
+        g->current_aspect = atof(text) / n;
         if(self->dt->gui->reset) return;
         apply_box_aspect(self, 5);
         dt_control_queue_redraw_center();
