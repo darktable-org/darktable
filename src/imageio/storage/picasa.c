@@ -894,12 +894,18 @@ static void load_account_info_fill(gchar *key, gchar *value, GSList **accountlis
   JsonParser *parser = json_parser_new();
   json_parser_load_from_data(parser, value, strlen(value), NULL);
   JsonNode *root = json_parser_get_root(parser);
-  JsonObject *obj = json_node_get_object(root);
-  info->token = g_strdup(json_object_get_string_member(obj, "token"));
-  info->username = g_strdup(json_object_get_string_member(obj, "username"));
-  info->id = g_strdup(json_object_get_string_member(obj, "userid"));
-  info->refresh_token = g_strdup(json_object_get_string_member(obj, "refresh_token"));
-  *accountlist =  g_slist_prepend(*accountlist, info);
+  JsonObject *obj;
+
+  // defensive check, root can be null while parsing the acount info
+  if (root)
+  {
+    obj = json_node_get_object(root);
+    info->token = g_strdup(json_object_get_string_member(obj, "token"));
+    info->username = g_strdup(json_object_get_string_member(obj, "username"));
+    info->id = g_strdup(json_object_get_string_member(obj, "userid"));
+    info->refresh_token = g_strdup(json_object_get_string_member(obj, "refresh_token"));
+    *accountlist =  g_slist_prepend(*accountlist, info);
+  }
   g_object_unref(parser);
 }
 
