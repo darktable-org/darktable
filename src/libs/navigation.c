@@ -216,6 +216,18 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
       cairo_set_source_rgb(cr, 1., 1., 1.);
       cairo_rectangle(cr, -boxw/2, -boxh/2, boxw, boxh);
       cairo_stroke(cr);
+
+      /* Zoom % */
+      cairo_identity_matrix(cr);
+      cairo_translate(cr, 0, height);
+      cairo_set_source_rgb(cr, 1., 1., 1.);
+      char zoomline[5];
+      snprintf(zoomline, 5, "%.0f%%", cur_scale*100);
+      cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
+                              CAIRO_FONT_WEIGHT_BOLD);
+      cairo_set_font_size (cr, 12);
+      cairo_show_text(cr, zoomline);
+      cairo_stroke(cr);
     }
   }
 
