@@ -511,12 +511,16 @@ void init_presets (dt_iop_module_so_t *self)
 static void
 request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
-  self->request_color_pick = gtk_toggle_button_get_active(togglebutton);
   if(darktable.gui->reset) return;
+
+  self->request_color_pick = (gtk_toggle_button_get_active(togglebutton) ? 1 : 0);
 
   /* use point sample */
   if (self->request_color_pick)
+  {
     dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+    dt_dev_reprocess_all(self->dev);
+  }
   else
     dt_control_queue_redraw();
 

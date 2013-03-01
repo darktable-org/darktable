@@ -721,24 +721,23 @@ static void dt_iop_levels_pick_general_handler(GtkToggleButton *togglebutton, dt
 
   if (TRUE == toggle)
   {
-    self->request_color_pick = TRUE;
+    self->request_color_pick = 1;
     dt_lib_colorpicker_set_point(darktable.lib, xpick, ypick);
-    dt_iop_request_focus(self);
     c->activeToggleButton = togglebutton;
     c->current_pick = picklevel;
+    dt_dev_reprocess_all(self->dev);
   }
   else
   {
-    self->request_color_pick = FALSE;
-    dt_iop_request_focus(self);
+    self->request_color_pick = 0;
     c->activeToggleButton = NULL;
     c->current_pick = NONE;
-    gtk_widget_queue_draw(self->widget);
+    //gtk_widget_queue_draw(self->widget);
+    dt_control_queue_redraw();
   }
 
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
-
-  dt_control_queue_redraw();
+  dt_iop_request_focus(self);
 }
 
 static void dt_iop_levels_pick_black_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)

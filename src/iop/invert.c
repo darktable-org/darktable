@@ -92,17 +92,20 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
 static void
 request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
-  self->request_color_pick = gtk_toggle_button_get_active(togglebutton);
   if(darktable.gui->reset) return;
+
+  self->request_color_pick = (gtk_toggle_button_get_active(togglebutton) ? 1 : 0);
+
   if(self->request_color_pick)
   {
-    if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-    dt_iop_request_focus(self);
+    dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+    dt_dev_reprocess_all(self->dev);
   }
   else
-  {
     dt_control_queue_redraw();
-  }
+
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  dt_iop_request_focus(self);
 }
 
 static gboolean

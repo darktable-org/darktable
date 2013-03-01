@@ -291,7 +291,7 @@ autoexp_callback (GtkToggleButton *button, dt_iop_module_t *self)
   if(darktable.gui->reset)
     return;
 
-  self->request_color_pick = gtk_toggle_button_get_active(button);
+  self->request_color_pick = (gtk_toggle_button_get_active(button) ? 1 : 0);
 
   dt_iop_request_focus(self);
 
@@ -301,9 +301,7 @@ autoexp_callback (GtkToggleButton *button, dt_iop_module_t *self)
     dt_dev_reprocess_all(self->dev);
   }
   else
-  {
     dt_control_queue_redraw();
-  }
 
   gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), gtk_toggle_button_get_active(button));
 
