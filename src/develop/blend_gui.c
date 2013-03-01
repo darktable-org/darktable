@@ -316,6 +316,19 @@ _blendop_mode_callback (GtkWidget *combo, dt_iop_gui_blend_data_t *data)
     gtk_widget_hide(data->opacity_slider);
     if(data->blendif_support)
     {
+      /* switch off color picker if it was requested by blendif */
+      if(data->module->request_color_pick < 0)
+      {
+        data->module->request_color_pick = 0;
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->colorpicker), 0);
+      }
+
+      data->module->request_mask_display = 0;
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->showmask), 0);
+      data->module->suppress_mask = 0;
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->suppress), 0);
+
+
       gtk_widget_hide(GTK_WIDGET(data->blendif_enable));
       gtk_widget_hide(GTK_WIDGET(data->blendif_box));
     }
@@ -347,6 +360,18 @@ _blendop_blendif_callback(GtkWidget *b, dt_iop_gui_blend_data_t *data)
   }
   else
   {
+    /* switch off color picker if it was requested by blendif */
+    if(data->module->request_color_pick < 0)
+    {
+      data->module->request_color_pick = 0;
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->colorpicker), 0);
+    }
+
+    data->module->request_mask_display = 0;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->showmask), 0);
+    data->module->suppress_mask = 0;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->suppress), 0);
+
     gtk_widget_hide(GTK_WIDGET(data->blendif_box));
     data->module->blend_params->blendif &= ~(1<<DEVELOP_BLENDIF_active);
   }
@@ -454,13 +479,27 @@ _blendop_blendif_tab_switch(GtkNotebook *notebook, GtkNotebookPage *notebook_pag
 static void
 _blendop_blendif_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *module)
 {
-  module->request_color_pick = gtk_toggle_button_get_active(togglebutton);
   if(darktable.gui->reset) return;
 
+  /* if module itself already requested color pick (positive value in request_color_pick),
+     don't tamper with it. A module color picker takes precedence. */
+  if(module->request_color_pick > 0)
+  {
+    gtk_toggle_button_set_active(togglebutton, 0);
+    return;
+  }
 
-  /* set the area sample size*/
+  /* we put a negative value into request_color_pick to later see if color picker was
+     requested by blendif. A module color picker may overwrite this. This is fine, blendif
+     will use the color picker data, but not deactivate it. */
+  module->request_color_pick = (gtk_toggle_button_get_active(togglebutton) ? -1 : 0);
+
+  /* set the area sample size */
   if (module->request_color_pick)
+  {
     dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+    dt_dev_reprocess_all(module->dev);
+  }
   else
     dt_control_queue_redraw();
 
@@ -554,6 +593,9 @@ _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
     dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(widget), -1.0f);
     gtk_label_set_text(label, "");
   }
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->colorpicker), (module->request_color_pick < 0 ? 1 : 0));
+
   darktable.gui->reset = 0;
 
   return FALSE;
@@ -797,23 +839,23 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
 
     gtk_box_pack_start(GTK_BOX(notebook), GTK_WIDGET(bd->channel_tabs), FALSE, FALSE, 0);
 
-    GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-    g_object_set(G_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
+    bd->colorpicker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
+    g_object_set(G_OBJECT(bd->colorpicker), "tooltip-text", _("pick gui color from image"), (char *)NULL);
 
-    GtkWidget *sm = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT);
-    g_object_set(G_OBJECT(sm), "tooltip-text", _("display mask"), (char *)NULL);
+    bd->showmask = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT);
+    g_object_set(G_OBJECT(bd->showmask), "tooltip-text", _("display mask"), (char *)NULL);
 
     GtkWidget *res = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT);
     g_object_set(G_OBJECT(res), "tooltip-text", _("reset blend mask settings"), (char *)NULL);
 
-    GtkWidget *sup = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT);
-    g_object_set(G_OBJECT(sup), "tooltip-text", _("temporarily switch off blend mask. only for module in focus."), (char *)NULL);
+    bd->suppress = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT);
+    g_object_set(G_OBJECT(bd->suppress), "tooltip-text", _("temporarily switch off blend mask. only for module in focus."), (char *)NULL);
 
     gtk_box_pack_start(GTK_BOX(header), GTK_WIDGET(notebook), TRUE, TRUE, 0);
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(res), FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(tb), FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(sm), FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(sup), FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(bd->colorpicker), FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(bd->showmask), FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(bd->suppress), FALSE, FALSE, 0);
 
     bd->lower_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
     bd->upper_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
@@ -886,16 +928,16 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     g_signal_connect (G_OBJECT (bd->lower_slider), "value-changed",
                       G_CALLBACK (_blendop_blendif_lower_callback), bd);
 
-    g_signal_connect (G_OBJECT(tb), "toggled",
+    g_signal_connect (G_OBJECT(bd->colorpicker), "toggled",
                       G_CALLBACK (_blendop_blendif_pick_toggled), module);
 
-    g_signal_connect (G_OBJECT(sm), "toggled",
+    g_signal_connect (G_OBJECT(bd->showmask), "toggled",
                       G_CALLBACK (_blendop_blendif_showmask_toggled), module);
 
     g_signal_connect (G_OBJECT(res), "clicked",
                       G_CALLBACK (_blendop_blendif_reset), module);
 
-    g_signal_connect (G_OBJECT(sup), "toggled",
+    g_signal_connect (G_OBJECT(bd->suppress), "toggled",
                       G_CALLBACK (_blendop_blendif_suppress_toggled), module);
 
     g_signal_connect (G_OBJECT(bd->lower_polarity), "toggled",
