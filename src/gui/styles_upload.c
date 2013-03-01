@@ -46,39 +46,17 @@ typedef struct dt_gui_styles_upload_dialog_t
   GtkTextBuffer *description;
 } dt_gui_styles_upload_dialog_t;
 
-void _temp_export(int32_t id, const char* dir, const char* filename)
+void _temp_export(int32_t id, const char* filename)
 {
   /* this function is more or less copied from src/cli/main.c, some adjustments may be needed */
-  int size = 0, dat_size = 0, width = 800, height = 600;
+  int dat_size = 0, width = 800, height = 600;
   dt_imageio_module_format_t *format;
-  dt_imageio_module_storage_t *storage;
-  dt_imageio_module_data_t *sdata, *fdata;
-  char *path;
-  path = g_strconcat(dir, "/", filename, NULL);
-
-  storage = dt_imageio_get_storage_by_name("disk"); // only exporting to disk makes sense
-  if(storage == NULL)
-  {
-    fprintf(stderr, "%s\n", _("cannot find disk storage module. please check your installation, something seems to be broken."));
-    return;
-  }
-
-  sdata = storage->get_params(storage, &size);
-  if(sdata == NULL)
-  {
-    fprintf(stderr, "%s\n", _("failed to get parameters from storage module, aborting export ..."));
-    return;
-  }
-
-  // and now for the really ugly hacks. don't tell your children about this one or they won't sleep at night any longer ...
-  g_strlcpy((char*)sdata, path, DT_MAX_PATH_LEN);
-  // all is good now, the last line didn't happen.
+  dt_imageio_module_data_t *fdata;
 
   format = dt_imageio_get_format_by_name("jpeg");
   if(format == NULL)
   {
-    fprintf(stderr, _("failed to get format jpeg"));
-    fprintf(stderr, "\n");
+    fprintf(stderr, "%s\n", _("failed to get format jpeg"));
     return;
   }
 
@@ -89,32 +67,15 @@ void _temp_export(int32_t id, const char* dir, const char* filename)
     return;
   }
 
-  uint32_t w,h,fw,fh,sw,sh;
-  fw=fh=sw=sh=0;
-  storage->dimension(storage, &sw, &sh);
-  format->dimension(format, &fw, &fh);
-
-  if( sw==0 || fw==0) w=sw>fw?sw:fw;
-  else w=sw<fw?sw:fw;
-
-  if( sh==0 || fh==0) h=sh>fh?sh:fh;
-  else h=sh<fh?sh:fh;
-
   fdata->max_width  = width;
   fdata->max_height = height;
-  fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
-  fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
   fdata->style[0] = '\0';
 
-  //TODO: add a callback to set the bpp without going through the config
-
-  storage->store(sdata, id, format, fdata, 1, 1, FALSE);
+  if (dt_imageio_export(id, filename, format, fdata, FALSE) != 0)
+    fprintf(stderr, "%s %s\n", _("failed to export"), filename);
 
   // cleanup time
-  if(storage->finalize_store) storage->finalize_store(storage, sdata);
-  storage->free_params(storage, sdata);
   format->free_params(format, fdata);
-  g_free(path);
 
 }
 
@@ -217,24 +178,12 @@ gboolean _curl_authenticate(dt_gui_styles_upload_dialog_t *sd)
   }
 }
 
-void _curl_upload_style(const char* dir, dt_gui_styles_upload_dialog_t *sd)
+void _curl_upload_style(const char* img_before, const char* img_after, const char* style, const char* name, 
+              const char* username, const char* password, const char* description)
 {
 
-  /* All the values to be used */
-  const char *url, *name, *username, *password, *description;
-  char *style, *img_before, *img_after;
-  url        = _STYLES_SERVER "upload.php";
-  name       = gtk_entry_get_text ( GTK_ENTRY (sd->name));
-  style      = g_strconcat(dir, "/", sd->nameorig, ".dtstyle", NULL);
-  img_before = g_strconcat(dir, "/before.jpg", NULL);
-  img_after  = g_strconcat(dir, "/after.jpg", NULL);
-  username   = gtk_entry_get_text ( GTK_ENTRY (sd->username));
-  password   = gtk_entry_get_text ( GTK_ENTRY (sd->password));
-
-  GtkTextIter start, end;
-  gtk_text_buffer_get_bounds(sd->description, &start, &end);
-  description = gtk_text_buffer_get_text (sd->description, &start, &end, FALSE);
-
+  const char *url = _STYLES_SERVER "upload.php";
+  
   struct curl_httppost *formpost = NULL;
   struct curl_httppost *lastptr = NULL;
 
@@ -262,21 +211,21 @@ void _curl_upload_style(const char* dir, dt_gui_styles_upload_dialog_t *sd)
   curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "description",
                CURLFORM_COPYCONTENTS, description, CURLFORM_END);
   
+  dt_control_log(_("uploading style"));
   gchar *response = g_strdup(_curl_send(url, formpost));
   
   if (g_strcmp0(response, "success") != 0)
   {
     fprintf(stderr, "%s%s\n", _("uploading style failed: "), response);
-    // Handle
+    dt_control_log(_("uploading style failed"));
   }
+  else
+    dt_control_log(_("uploaded style successfully"));
 
-  g_free(style);
-  g_free(img_before);
-  g_free(img_after);
   g_free(response);
 }
 
-static void _gui_styles_upload_response(GtkDialog *dialog, gint response_id, dt_gui_styles_upload_dialog_t *sd)
+static gboolean _gui_styles_upload_response(GtkDialog *dialog, gint response_id, dt_gui_styles_upload_dialog_t *sd)
 {
   if (response_id == GTK_RESPONSE_ACCEPT)
   {
@@ -287,42 +236,58 @@ static void _gui_styles_upload_response(GtkDialog *dialog, gint response_id, dt_
       || !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sd->agreement))
       || !_curl_authenticate(sd) )
     {
-      return;
+      return FALSE;
     }
-    
-    char *dir = "/tmp";
-    dt_styles_save_to_file(sd->nameorig, dir, TRUE);
-    _temp_export(sd->beforeid, dir, "before");
-    _temp_export(sd->afterid, dir, "after");
-    _curl_upload_style(dir, sd);
-    char *file1 = g_strconcat(dir, "/before.jpg", NULL);
-    char *file2 = g_strconcat(dir, "/after.jpg", NULL);
-    char *file3 = g_strconcat(dir, "/", sd->nameorig , ".dtstyle", NULL);
-    unlink(file1);
-    unlink(file2);
-    unlink(file3);
-    g_free(file1);
-    g_free(file2);
-    g_free(file3);
 
+    /* extract values from dialog and destroy it */
+    gchar *nameorig, *name, *username, *password, *description;
+    GtkTextIter start, end;
+    int beforeid, afterid;
+    gboolean save_local;
+    nameorig = sd->nameorig;
+    name     = g_strdup(gtk_entry_get_text ( GTK_ENTRY (sd->name)));
+    username = g_strdup(gtk_entry_get_text ( GTK_ENTRY (sd->username)));
+    password = g_strdup(gtk_entry_get_text ( GTK_ENTRY (sd->password)));
+    gtk_text_buffer_get_bounds(sd->description, &start, &end);
+    description = gtk_text_buffer_get_text (sd->description, &start, &end, FALSE);
+    beforeid    = sd->beforeid;
+    afterid     = sd->afterid;
+    save_local  = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sd->save_local));
+    gtk_widget_destroy(GTK_WIDGET(dialog));
     
-    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sd->save_local)))
-    {
-      char *description;
-      const char *newname;
-      newname = gtk_entry_get_text ( GTK_ENTRY (sd->name));
-      GtkTextIter start, end;
-      gtk_text_buffer_get_bounds(sd->description, &start, &end);
-      description = gtk_text_buffer_get_text (sd->description, &start, &end, FALSE);
-      dt_styles_update (sd->nameorig, newname, description, NULL);
-    }
+    char *style_path, *img_b, *img_a;
+    char dir[4096]= {0};
+    dt_loc_get_tmp_dir (dir,4096);
+    style_path = g_strconcat(dir, "/", nameorig, ".dtstyle", NULL);
+    img_b      = g_strconcat(dir, "/before.jpg", NULL);
+    img_a      = g_strconcat(dir, "/after.jpg", NULL);
+    dt_control_log(_("exporting %d images.."), 2);
+    dt_styles_save_to_file(nameorig, dir, TRUE);
+    _temp_export(beforeid, img_b);
+    _temp_export(afterid, img_a);
+    _curl_upload_style(img_b, img_a, style_path, name, username, password, description);
+    unlink(img_b);
+    unlink(img_a);
+    unlink(style_path);
+    
+    if (save_local)
+      dt_styles_update (nameorig, name, description, NULL);
+    
+    g_free(img_b);
+    g_free(img_a);
+    g_free(style_path);
+    g_free(name);
+    g_free(username);
+    g_free(password);
   }
+  else
+    gtk_widget_destroy(GTK_WIDGET(dialog));  
 
-  gtk_widget_destroy(GTK_WIDGET(dialog));
   dt_image_remove(sd->beforeid);
   dt_image_remove(sd->afterid);
   g_free(sd->nameorig);
   g_free(sd);
+  return TRUE;
 }
 
 static gboolean _redraw_thumbnail(gpointer user_data)
@@ -464,13 +429,13 @@ void _gui_init (dt_gui_styles_upload_dialog_t *sd)
       G_CALLBACK(_expose_thumbnail), (gpointer)&sd->afterid);
   gtk_box_pack_start (thumbnails,GTK_WIDGET(after),FALSE,FALSE,0);
 
+  g_free(_username);
+  g_free(_password);
+
   /* set response and draw dialog */
   g_signal_connect (dialog, "response", G_CALLBACK (_gui_styles_upload_response), sd);
   gtk_widget_show_all (GTK_WIDGET (dialog));
   gtk_dialog_run(GTK_DIALOG(dialog));
-
-  g_free(_username);
-  g_free(_password);
 }
 
 void dt_gui_styles_upload (const char *name,int imgid)
