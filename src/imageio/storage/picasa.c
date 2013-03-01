@@ -750,16 +750,24 @@ static PicasaAccountInfo *picasa_get_account_info(PicasaContext *ctx)
 {
   JsonObject *obj = picasa_query_get(ctx, "oauth2/v1/userinfo", NULL, FALSE);
   g_return_val_if_fail((obj != NULL), NULL);
-  const gchar *user_name = json_object_get_string_member(obj, "name");
+  /* Using the email instead of the username as it is unique */
+  /* To change it to use the username, change "email" by "name" */
+  const gchar *user_name = json_object_get_string_member(obj, "given_name");
+  const gchar *email = json_object_get_string_member(obj, "email");
   const gchar *user_id = json_object_get_string_member(obj, "id");
   g_return_val_if_fail(user_name != NULL && user_id != NULL, NULL);
+
+  gchar *name = NULL;
+  name = dt_util_dstrcat(name, "%s - %s", user_name, email);
+
   PicasaAccountInfo *accountinfo = picasa_account_info_init();
   accountinfo->id = g_strdup(user_id);
-  accountinfo->username = g_strdup(user_name);
+  accountinfo->username = g_strdup(name);
   accountinfo->token = g_strdup(ctx->token);
   accountinfo->refresh_token = g_strdup(ctx->refresh_token);
 
   g_snprintf(ctx->userid, 1024, "%s", user_id);
+  g_free(name);
   return accountinfo;
 }
 
@@ -808,6 +816,7 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
                "client_id=" GOOGLE_API_KEY
                "&redirect_uri=urn:ietf:wg:oauth:2.0:oob"
                "&scope=https://picasaweb.google.com/data/ https://www.googleapis.com/auth/userinfo.profile"
+               " https://www.googleapis.com/auth/userinfo.email"
                "&response_type=code", gtk_get_current_event_time(), &error);
 
   ////////////// build & show the validation dialog
@@ -1306,7 +1315,7 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   GtkListStore *model_username  = gtk_list_store_new (COMBO_USER_MODEL_NB_COL, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING); //text, token, refresh_token, id
   ui->comboBox_username = GTK_COMBO_BOX(gtk_combo_box_new_with_model(GTK_TREE_MODEL(model_username)));
   GtkCellRenderer *p_cell = gtk_cell_renderer_text_new ();
-  g_object_set (G_OBJECT(p_cell), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, "ellipsize-set", TRUE, "width-chars", 30, NULL);
+  g_object_set (G_OBJECT(p_cell), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, "ellipsize-set", TRUE, "width-chars", 35, NULL);
   gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (ui->comboBox_username), p_cell, FALSE);
   gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (ui->comboBox_username), p_cell, "text", 0, NULL);
 
@@ -1325,7 +1334,7 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   GtkListStore *model_album = gtk_list_store_new (COMBO_ALBUM_MODEL_NB_COL, G_TYPE_STRING, G_TYPE_STRING); //name, id
   ui->comboBox_album = GTK_COMBO_BOX(gtk_combo_box_new_with_model(GTK_TREE_MODEL(model_album)));
   p_cell = gtk_cell_renderer_text_new ();
-  g_object_set (G_OBJECT(p_cell), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, "ellipsize-set", TRUE, "width-chars", 30, NULL);
+  g_object_set (G_OBJECT(p_cell), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, "ellipsize-set", TRUE, "width-chars", 35, NULL);
   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT (ui->comboBox_album), p_cell, FALSE);
   gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (ui->comboBox_album), p_cell, "text", 0, NULL);
 
