@@ -141,11 +141,11 @@ typedef struct PicasaContext
 {
   gchar album_id[1024];
   gchar userid[1024];
-  
+
   gchar *album_title;
   gchar *album_summary;
   int album_permission;
-  
+
   /// curl context
   CURL *curl_ctx;
   /// Json parser context
@@ -315,7 +315,7 @@ static JsonObject *picasa_query_get(PicasaContext *ctx, const gchar *method, GHa
     url = g_string_new(GOOGLE_PICASA);
   else
     url = g_string_new(GOOGLE_API_BASE_URL);
-  
+
   g_string_append(url, method);
 
   if (picasa == TRUE)
@@ -408,7 +408,7 @@ static gboolean picasa_test_auth_token(PicasaContext *ctx)
 {
   gchar *access_token = NULL;
   access_token = picasa_get_user_refresh_token(ctx);
-  
+
   if (access_token != NULL)
     ctx->token = access_token;
 
@@ -473,12 +473,12 @@ static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *
 {
   _buffer_t buffer;
   memset(&buffer,0,sizeof(_buffer_t));
-  
+
   gchar *photo_id=NULL;
   gchar *private = NULL;
   char uri[4096]= {0};
   struct curl_slist *headers = NULL;
-  
+
   if ( privacy == PICASA_ALBUM_PRIVACY_PUBLIC)
     private = g_strdup ("public");
   else
@@ -496,7 +496,7 @@ static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *
                     "</media:group>\n"
                     "<category scheme='http://schemas.google.com/g/2005#kind'\n"
                     "  term='http://schemas.google.com/photos/2007#album'></category>\n"
-                    "</entry>\n", 
+                    "</entry>\n",
                     name, summary, private);
 
   gchar *authHeader = NULL;
@@ -517,7 +517,7 @@ static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_POSTFIELDS, entry);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, &buffer);
-  
+
   curl_easy_perform( ctx->curl_ctx );
 
   curl_slist_free_all(headers);
@@ -527,7 +527,7 @@ static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *
 #ifdef picasa_EXTRA_VERBOSE
   printf("Create album buffer response: %s\n", buffer.data);
 #endif
-  
+
   if (result == 201)
   {
     xmlDocPtr doc;
@@ -570,7 +570,7 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
   _buffer_t buffer;
   memset(&buffer,0,sizeof(_buffer_t));
   gchar *photo_id=NULL;
-  
+
   char uri[4096]= {0};
 
   // Open the temp file and read image to memory
@@ -783,11 +783,11 @@ static gchar *picasa_get_user_refresh_token(PicasaContext *ctx)
   gchar *refresh_token = NULL;
   JsonObject *reply;
   gchar *params = NULL;
-  
+
   params = dt_util_dstrcat(params, "refresh_token=%s&client_id="GOOGLE_API_KEY"&client_secret="GOOGLE_API_SECRET"&grant_type=refresh_token", ctx->refresh_token);
-  
+
   reply = picasa_query_post_auth(ctx, "o/oauth2/token", params);
- 
+
   refresh_token = g_strdup(json_object_get_string_member(reply, "access_token"));
 
   g_free (params);
@@ -870,9 +870,9 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
 
   gchar *params = NULL;
   params = dt_util_dstrcat(params, "code=%s&client_id="GOOGLE_API_KEY"&client_secret="GOOGLE_API_SECRET"&redirect_uri="GOOGLE_URI"&grant_type=authorization_code", token);
-  
+
   reply = picasa_query_post_auth(ui->picasa_api, "o/oauth2/token", params);
- 
+
   gchar *access_token = g_strdup(json_object_get_string_member(reply, "access_token"));
 
   gchar *refresh_token = g_strdup(json_object_get_string_member(reply, "refresh_token"));
@@ -890,7 +890,7 @@ static void load_account_info_fill(gchar *key, gchar *value, GSList **accountlis
 {
   PicasaAccountInfo *info = picasa_account_info_init();
   info->id = g_strdup(key);
-  
+
   JsonParser *parser = json_parser_new();
   json_parser_load_from_data(parser, value, strlen(value), NULL);
   JsonNode *root = json_parser_get_root(parser);
@@ -1445,13 +1445,13 @@ int store(struct dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_mo
     caption = g_path_get_basename( img->filename );
     (g_strrstr(caption,"."))[0]='\0'; // Chop extension...
   }
-    
+
   desc = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
   if (desc != NULL)
   {
     description = desc->data;
   }
-     
+
   dt_image_cache_read_release(darktable.image_cache, img);
 
   if(dt_imageio_export(imgid, fname, format, fdata, high_quality) != 0)
@@ -1623,7 +1623,7 @@ int set_params(struct dt_imageio_module_storage_t *self, const void *params, con
     }
   }
   g_free(albumid);
-  
+
   return 0;
 }
 
