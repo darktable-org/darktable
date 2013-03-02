@@ -110,7 +110,7 @@ static void _dt_style_update_from_image(int id, int imgid, GList *filter, GList 
     GList *upd=update;
     char query[4096] = {0};
     char tmp[500];
-    char *fields[] = {"op_params", "enabled", "blendop_params", "blendop_version", "multi_priority", "multi_name", 0};
+    char *fields[] = {"op_params", "module", "enabled", "blendop_params", "blendop_version", "multi_priority", "multi_name", 0};
     do
     {
       query[0] = '\0';
