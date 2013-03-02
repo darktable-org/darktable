@@ -24,11 +24,15 @@
 
 static const char *pref_type_name[] = {
 "string",
+"bool",
+"integer",
   NULL
 };
 
 typedef enum {
   pref_string,
+  pref_bool,
+  pref_int,
 } pref_type;
 
 
@@ -42,6 +46,14 @@ typedef struct pref_element{
     struct {
       char *default_value;
     } string_data;
+    struct {
+      bool default_value;
+    } bool_data;
+    struct {
+      int min;
+      int max;
+      int default_value;
+    } int_data;
   } ;
   struct pref_element* next;
   // ugly hack, written every time the dialog is displayed and unused when not displayed 
@@ -60,6 +72,8 @@ static void destroy_pref_element(pref_element*elt) {
     case pref_string:
       free(elt->string_data.default_value);
       break;
+    case pref_bool:
+    case pref_int:
     default:
       break;
   }
@@ -97,9 +111,7 @@ static int register_pref(lua_State*L){
 
   int i;
   const char* type_name = lua_tostring(L,cur_param);
-  printf("aaa %s\n",type_name);
   if(!type_name) goto error;
-  printf("aaa %s\n",type_name);
   for (i=0; pref_type_name[i]; i++)
     if (strcmp(pref_type_name[i], type_name) == 0){
       built_elt->type =i;
@@ -118,8 +130,27 @@ static int register_pref(lua_State*L){
 
       if(!dt_conf_key_exists(pref_name)) dt_conf_set_string(pref_name,built_elt->string_data.default_value);
       break;
-    default:
-      // can't happen, checkoption would have raised an error
+    case pref_bool:
+      if(!lua_isboolean(L,cur_param)) goto error;
+      built_elt->bool_data.default_value = lua_toboolean(L,cur_param);
+      cur_param++;
+
+      if(!dt_conf_key_exists(pref_name)) dt_conf_set_bool(pref_name,built_elt->bool_data.default_value);
+      break;
+    case pref_int:
+      if(!lua_isnumber(L,cur_param)) goto error;
+      built_elt->int_data.default_value = lua_tointeger(L,cur_param);
+      cur_param++;
+
+      if(!lua_isnumber(L,cur_param)) goto error;
+      built_elt->int_data.min = lua_tointeger(L,cur_param);
+      cur_param++;
+
+      if(!lua_isnumber(L,cur_param)) goto error;
+      built_elt->int_data.max = lua_tointeger(L,cur_param);
+      cur_param++;
+
+      if(!dt_conf_key_exists(pref_name)) dt_conf_set_int(pref_name,built_elt->int_data.default_value);
       break;
   }
 
@@ -138,6 +169,16 @@ static void callback_string(GtkWidget *widget, pref_element*cur_elt ) {
   get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
   dt_conf_set_string(pref_name,gtk_entry_get_text(GTK_ENTRY(widget)));
 }
+static void callback_bool(GtkWidget *widget, pref_element*cur_elt ) {
+  char pref_name[1024];
+  get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
+  dt_conf_set_bool(pref_name,gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+}
+static void callback_int(GtkWidget *widget, pref_element*cur_elt ) {
+  char pref_name[1024];
+  get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
+  dt_conf_set_int(pref_name, gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
+}
   
 static void response_callback_string(GtkDialog *dialog, gint response_id, pref_element* cur_elt)
 {
@@ -146,6 +187,24 @@ static void response_callback_string(GtkDialog *dialog, gint response_id, pref_e
     char pref_name[1024];
     get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
     dt_conf_set_string(pref_name,gtk_entry_get_text(GTK_ENTRY(cur_elt->widget)));
+  }
+}
+static void response_callback_bool(GtkDialog *dialog, gint response_id, pref_element* cur_elt)
+{
+  if(response_id == GTK_RESPONSE_ACCEPT)
+  {
+    char pref_name[1024];
+    get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
+    dt_conf_set_bool(pref_name, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cur_elt->widget)));
+  }
+}
+static void response_callback_int(GtkDialog *dialog, gint response_id, pref_element* cur_elt)
+{
+  if(response_id == GTK_RESPONSE_ACCEPT)
+  {
+    char pref_name[1024];
+    get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
+    dt_conf_set_int(pref_name, gtk_spin_button_get_value(GTK_SPIN_BUTTON(cur_elt->widget)));
   }
 }
 
@@ -160,9 +219,33 @@ static gboolean reset_widget_string (GtkWidget *label, GdkEventButton *event, pr
   }
   return FALSE;
 }
+static gboolean reset_widget_bool (GtkWidget *label, GdkEventButton *event, pref_element*cur_elt)
+{
+  if(event->type == GDK_2BUTTON_PRESS)
+  {
+    char pref_name[1024];
+    get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
+    gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), cur_elt->string_data.default_value);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cur_elt->widget), cur_elt->bool_data.default_value);
+    return TRUE;
+  }
+  return FALSE;
+}
+static gboolean reset_widget_int (GtkWidget *label, GdkEventButton *event, pref_element*cur_elt)
+{
+  if(event->type == GDK_2BUTTON_PRESS)
+  {
+    char pref_name[1024];
+    get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), cur_elt->int_data.default_value);
+    return TRUE;
+  }
+  return FALSE;
+}
 void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
 {
   if(!pref_list) return; // no option registered => don't create the tab
+  char tooltip[1024];
   GtkWidget  *label, *labelev;
   GtkWidget *hbox = gtk_hbox_new(5, FALSE);
   GtkWidget *vbox1 = gtk_vbox_new(5, TRUE);
@@ -183,443 +266,40 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
     labelev = gtk_event_box_new();
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
     gtk_container_add(GTK_CONTAINER(labelev), label);
-    cur_elt->widget = gtk_entry_new();
-    gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), dt_conf_get_string(pref_name));
-    g_signal_connect(G_OBJECT(cur_elt->widget), "activate", G_CALLBACK(callback_string), cur_elt);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_string), cur_elt);
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", cur_elt->tooltip, (char *)NULL);
+    switch(cur_elt->type) {
+      case pref_string:
+        cur_elt->widget = gtk_entry_new();
+        gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), dt_conf_get_string(pref_name));
+        g_signal_connect(G_OBJECT(cur_elt->widget), "activate", G_CALLBACK(callback_string), cur_elt);
+        snprintf(tooltip, 1024, _("double click to reset to `%s'"), cur_elt->string_data.default_value);
+        g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_string), cur_elt);
+        g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_string), cur_elt);
+        break;
+      case pref_bool:
+        cur_elt->widget = gtk_check_button_new();
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cur_elt->widget), dt_conf_get_bool(pref_name));
+        g_signal_connect(G_OBJECT(cur_elt->widget), "toggled", G_CALLBACK(callback_bool), cur_elt);
+        snprintf(tooltip, 1024, _("double click to reset to `%s'"), cur_elt->bool_data.default_value?"true":"false");
+        g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_bool), cur_elt);
+        g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_bool), cur_elt);
+        break;
+      case pref_int:
+        cur_elt->widget = gtk_spin_button_new_with_range(cur_elt->int_data.min, cur_elt->int_data.max, 1);
+        gtk_spin_button_set_digits(GTK_SPIN_BUTTON(cur_elt->widget), 0);
+        gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), dt_conf_get_int(pref_name));
+        g_signal_connect(G_OBJECT(cur_elt->widget), "value-changed", G_CALLBACK(callback_int), cur_elt);
+        snprintf(tooltip, 1024, _("double click to reset to `%d'"), cur_elt->int_data.default_value);
+        g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_int), cur_elt);
+        g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_int), cur_elt);
+        break;
+    }
+    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
+    gtk_object_set(GTK_OBJECT(cur_elt->widget), "tooltip-text", cur_elt->tooltip, (char *)NULL);
     gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox2), cur_elt->widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_string), cur_elt);
     cur_elt = cur_elt->next;
   }
-/*
-  {
-    label = gtk_label_new(cur_elt->label);
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    gint min = 0;
-    gint max = G_MAXINT;
-    widget = gtk_spin_button_new_with_range(min, max, 1);
-    gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("panel_width"));
-    g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_idp328384), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp328384), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "300");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _(" (needs a restart)"), (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp328384), (gpointer)widget);
-  }
-  {
-    label = gtk_label_new(_("don't use embedded preview jpeg but half-size raw"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    widget = gtk_check_button_new();
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool("never_use_embedded_thumb"));
-    g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_callback_idp388384), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp388384), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "FALSE");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("check this option to not use the embedded jpeg from the raw file but process the raw data. this is slower but gives you color managed thumbnails."), (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp388384), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("ask before removing images from database"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    widget = gtk_check_button_new();
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool("ask_before_remove"));
-    g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_callback_idp404720), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp404720), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "TRUE");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("always ask the user before any image is removed from db."), (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp404720), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("ask before erasing images from disk"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    widget = gtk_check_button_new();
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool("ask_before_delete"));
-    g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_callback_idp407504), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp407504), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "TRUE");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("always ask the user before any image file is deleted."), (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp407504), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("ask before moving images from film roll folder"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    widget = gtk_check_button_new();
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool("ask_before_move"));
-    g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_callback_idp410256), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp410256), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "TRUE");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("always ask the user before any image file is moved."), (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp410256), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("ask before copying images to new film roll folder"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    widget = gtk_check_button_new();
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool("ask_before_copy"));
-    g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_callback_idp413024), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp413024), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "TRUE");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("always ask the user before any image file is copied."), (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp413024), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("number of folder levels to show in lists"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    gint min = 0;
-    gint max = G_MAXINT;
-    widget = gtk_spin_button_new_with_range(min, max, 1);
-    gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("show_folder_levels"));
-    g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_idp415792), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp415792), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "1");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("the number of folder levels to show in film roll names, starting from the right"), (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp415792), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("ignore jpeg images when importing film rolls"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    widget = gtk_check_button_new();
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool("ui_last/import_ignore_jpegs"));
-    g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_callback_idp478400), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp478400), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "FALSE");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("when having raw+jpeg images together in one directory it makes no sense to import both. with this flag one can ignore all jpegs found."), (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp478400), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("recursive directory traversal when importing filmrolls"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    widget = gtk_check_button_new();
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool("ui_last/import_recursive"));
-    g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_callback_idp481264), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp481264), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "FALSE");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp481264), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("creator to be applied when importing"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    widget = gtk_entry_new();
-    gtk_entry_set_text(GTK_ENTRY(widget), dt_conf_get_string("ui_last/import_last_creator"));
-    g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(preferences_callback_idp483856), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp483856), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp483856), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("publisher to be applied when importing"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    widget = gtk_entry_new();
-    gtk_entry_set_text(GTK_ENTRY(widget), dt_conf_get_string("ui_last/import_last_publisher"));
-    g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(preferences_callback_idp486272), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp486272), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp486272), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("rights to be applied when importing"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    widget = gtk_entry_new();
-    gtk_entry_set_text(GTK_ENTRY(widget), dt_conf_get_string("ui_last/import_last_rights"));
-    g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(preferences_callback_idp488688), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp488688), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp488688), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("comma separated tags to be applied when importing"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    widget = gtk_entry_new();
-    gtk_entry_set_text(GTK_ENTRY(widget), dt_conf_get_string("ui_last/import_last_tags"));
-    g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(preferences_callback_idp491104), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp491104), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp491104), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("initial import rating"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    gint min = 0;
-    gint max = G_MAXINT;
-    min = 0;
-    max = 5;
-    widget = gtk_spin_button_new_with_range(min, max, 1);
-    gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("ui_last/import_initial_rating"));
-    g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_idp495696), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp495696), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "1");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("initial star rating for all images when importing a filmroll"), (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp495696), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("enable filmstrip"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    widget = gtk_check_button_new();
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool("plugins/lighttable/filmstrip/visible"));
-    g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_callback_idp501168), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp501168), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "TRUE");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("enable the filmstrip in darkroom and tethering modes."), (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp501168), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("maximum width of image drawing area"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    gint min = 0;
-    gint max = G_MAXINT;
-    widget = gtk_spin_button_new_with_range(min, max, 1);
-    gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("plugins/lighttable/thumbnail_width"));
-    g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_idp509520), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp509520), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "1300");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("maximum width of the image drawing area in darkroom mode. adjust to your screen\n(needs a restart and will invalidate current thumbnail caches)."), (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp509520), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("maximum height of image drawing area"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    gint min = 0;
-    gint max = G_MAXINT;
-    widget = gtk_spin_button_new_with_range(min, max, 1);
-    gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("plugins/lighttable/thumbnail_height"));
-    g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_idp512352), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp512352), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "1000");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("maximum height of the image drawing area in dakroom mode. adjust to your screen\n(needs a restart and will invalidate current thumbnail caches)."), (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp512352), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("compression of thumbnail images"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    widget = gtk_combo_box_new_text();
-    {
-      gchar *str = dt_conf_get_string("cache_compression");
-      gint pos = -1;
-      gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "off");
-      if(pos == -1 && strcmp(str, "off") == 0)
-        pos = 0;
-      gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "low quality (fast)");
-      if(pos == -1 && strcmp(str, "low quality (fast)") == 0)
-        pos = 1;
-      gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "high quality (slow)");
-      if(pos == -1 && strcmp(str, "high quality (slow)") == 0)
-        pos = 2;
-      gtk_combo_box_set_active(GTK_COMBO_BOX(widget), pos);
-    }
-    g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(preferences_callback_idp515184), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp515184), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "off");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("off - no compression in memory, jpg on disk. low quality - dxt1 (fast). high quality - dxt1, same memory as low quality variant but slower."), (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp515184), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("ask before deleting a tag"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    widget = gtk_check_button_new();
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool("plugins/lighttable/tagging/ask_before_delete_tag"));
-    g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_callback_idp639856), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp639856), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "TRUE");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp639856), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("maximum number of images drawn on map"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    gint min = 0;
-    gint max = G_MAXINT;
-    widget = gtk_spin_button_new_with_range(min, max, 1);
-    gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("plugins/map/max_images_drawn"));
-    g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_idp644608), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp644608), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "100");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("the maximum number of geotagged images drawn on the map. increasing this number can slow drawing of the map down (needs a restart)."), (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp644608), (gpointer)widget);
-  }
-
-  {
-    label = gtk_label_new(_("pretty print the image location"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    widget = gtk_check_button_new();
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"));
-    g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_callback_idp647440), NULL);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_idp647440), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "TRUE");
-    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("show a more readable representation of the location in the image information module"), (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_idp647440), (gpointer)widget);
-  }
-*/
 }
 
 int dt_lua_init_preferences(lua_State * L) {
