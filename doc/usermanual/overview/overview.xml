@@ -150,11 +150,16 @@
                </sect2>
                <sect2 status="draft" id="screen layout"><title>Screen layout</title>
                         <para>The general screen layout of all views is similar. There is a center view which contains most of the relevant information of that view. Then there are panels left,
-                        right, top and bottom to the center view. The left panel typically has an informational purpose. The right panel offers functions to modify data or the image. The top 
-                        and bottom panel give access to several settings and shortcuts. Each of the panels can be collapsed or expaned by pressing a triangle similar to
+                        right, top and bottom to the center view. The left panel typically has an informational purpose. The right panel offers functions to modify data or an image. The top 
+                        and bottom panel give access to several settings and shortcuts. Each of the panels can be collapsed or expaned by pressing a triangle like
                         <inlinegraphic fileref="&icon_general_collapse;" scalefit="1" width="2%"/>, located close to the panel.
                         </para>
-                        <para>Fullscreen view can be toggled by pressing <emphasis>F11</emphasis>. darktable's contrast can be changed by using <emphasis>F7</emphasis> and <emphasis>F8</emphasis>
+                        <para>By pressing the <emphasis>TAB</emphasis> key all panels get collapsed, allowing the center view to occupy all available space. Pressing <emphasis>TAB</emphasis>
+                        again brings you back to the previous view.
+                        </para>
+                        <para>Fullscreen view can be toggled by pressing <emphasis>F11</emphasis>.
+                        </para>
+                        <para>darktable's contrast can be changed by using <emphasis>F7</emphasis> and <emphasis>F8</emphasis>
                         and darktable's lightness by using <emphasis>F9</emphasis> and <emphasis>F10</emphasis>.
                         </para>
                </sect2>
