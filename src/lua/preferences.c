@@ -101,14 +101,6 @@ static int register_pref(lua_State*L){
   built_elt->name = strdup(lua_tostring(L,cur_param));
   cur_param++;
 
-  if(!lua_isstring(L,cur_param)) goto error;
-  built_elt->label = strdup(lua_tostring(L,cur_param));
-  cur_param++;
-
-  if(!lua_isstring(L,cur_param)) goto error;
-  built_elt->tooltip = strdup(lua_tostring(L,cur_param));
-  cur_param++;
-
   int i;
   const char* type_name = lua_tostring(L,cur_param);
   if(!type_name) goto error;
@@ -118,6 +110,14 @@ static int register_pref(lua_State*L){
       break;
     }
   if(!pref_type_name[i]) goto error;
+  cur_param++;
+
+  if(!lua_isstring(L,cur_param)) goto error;
+  built_elt->label = strdup(lua_tostring(L,cur_param));
+  cur_param++;
+
+  if(!lua_isstring(L,cur_param)) goto error;
+  built_elt->tooltip = strdup(lua_tostring(L,cur_param));
   cur_param++;
 
   char pref_name[1024];
@@ -184,6 +184,34 @@ static int read_pref(lua_State*L){
       break;
     case pref_int:
       lua_pushnumber(L,dt_conf_get_int(pref_name));
+      break;
+  }
+  return 1;
+}
+
+static int write_pref(lua_State*L){
+  const char *script = luaL_checkstring(L,1);
+  const char *name = luaL_checkstring(L,2);
+  const char* type_name = luaL_checkstring(L,3);
+  int i;
+  for (i=0; pref_type_name[i]; i++)
+    if (strcmp(pref_type_name[i], type_name) == 0){
+      break;
+    }
+  if(!pref_type_name[i]) luaL_argerror(L,3,NULL);
+
+  char pref_name[1024];
+  get_pref_name(pref_name,1024,script,name);
+  switch(i) {
+    case pref_string:
+      dt_conf_set_string(pref_name,luaL_checkstring(L,4));
+      break;
+    case pref_bool:
+      luaL_checktype(L,4,LUA_TBOOLEAN);
+      dt_conf_set_bool(pref_name,lua_toboolean(L,4));
+      break;
+    case pref_int:
+      dt_conf_set_int(pref_name,luaL_checkinteger(L,4));
       break;
   }
   return 1;
@@ -338,6 +366,9 @@ int dt_lua_init_preferences(lua_State * L) {
 
   lua_pushcfunction(L,read_pref);
   lua_setfield(L,-2,"read_preference");
+
+  lua_pushcfunction(L,write_pref);
+  lua_setfield(L,-2,"write_preference");
 
   lua_pop(L,-1);
   return 0;
