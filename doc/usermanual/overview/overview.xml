@@ -97,9 +97,6 @@
 							<entry>
                                                                <para>This section describes the layout of the user interface.
                                                                </para>
-                                                               <para>TIP: You can change darktable's contrast by using <emphasis>F7</emphasis> and <emphasis>F8</emphasis>
-                                                               and darktable's lightness by using <emphasis>F9</emphasis> and <emphasis>F10</emphasis>.
-                                                               </para>
 							</entry>
 							<entry>
 								<graphic fileref="images/lighttable_view.png" scalefit="1" width="80%" align="center" />
@@ -150,6 +147,16 @@
 				<para>This view shows images with geo-tag data on a map and allows manually geo-tagging new images (see <xref linkend="map chapter"/>).
 				</para>
 			</sect3>
+               </sect2>
+               <sect2 status="draft" id="screen layout"><title>Screen layout</title>
+                        <para>The general screen layout of all views is similar. There is a center view which contains most of the relevant information of that view. Then there are panels left,
+                        right, top and bottom to the center view. The left panel typically has an informational purpose. The right panel offers functions to modify data or the image. The top 
+                        and bottom panel give access to several settings and shortcuts. Each of the panels can be collapsed or expaned by pressing a triangle similar to
+                        <inlinegraphic fileref="&icon_general_collapse;" scalefit="1" width="2%"/>, located close to the panel.
+                        </para>
+                        <para>Fullscreen view can be toggled by pressing <emphasis>F11</emphasis>. darktable's contrast can be changed by using <emphasis>F7</emphasis> and <emphasis>F8</emphasis>
+                        and darktable's lightness by using <emphasis>F9</emphasis> and <emphasis>F10</emphasis>.
+                        </para>
                </sect2>
                <sect2 status="final" id="filmstrip overview"><title>Filmstrip</title>
 			<para>The filmstrip along the bottom shows the same images as lighttable, with respect to filters and sort order. It is turned on/off with key accelerator <emphasis>ctrl-f</emphasis>.
