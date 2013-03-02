@@ -29,8 +29,8 @@
 							<entry>In the central view, your images are shown as thumbs surrounded by a frame. While the mouse is over
 								an image, the information of rating, color labels and if image has already been altered in darkroom
 								<inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/> is shown.
-								Also when the mouse hovers over an image frame the specific image metadata is shown in the 
-                                                                <link linkend="metadata"><emphasis>metadata</emphasis></link> panel.
+								Also when the mouse hovers over an image frame the specific image information (EXIF data, metadata) is shown in the 
+                                                                <link linkend="image information"><emphasis>image information</emphasis></link> panel.
 							</entry>
 							<entry>
 								<graphic fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" />
@@ -68,7 +68,7 @@
 							<entry><emphasis>d</emphasis></entry><entry>open the image in darkroom view for developing</entry>
 						</row>
 						<row>
-							<entry><emphasis>z</emphasis></entry><entry>show a fullscreen view of the image</entry>
+							<entry><emphasis>z</emphasis></entry><entry>fully zoom into the image while the key is pressed</entry>
 						</row>
 					</tbody>
 				</tgroup></informaltable>
@@ -100,7 +100,7 @@
 			</para>
                         <para>You can combine images into a group by selecting them and then 
                               clicking button "group" in panel <emphasis>selected image(s)</emphasis> (<xref linkend="selected images"/>) or by typing 
-                              <emphasis>ctrl-g</emphasis>. Likewise you can remove images from a group by clicking
+                              <emphasis>ctrl-g</emphasis>. Likewise you can remove selected images from a group by clicking
                               button "ungroup" or typing <emphasis>shift-ctrl-g</emphasis>. Images that you generate by 
                               duplicating an existing one, will automatically constitute an image group. If you import 
                               images from file system or camera, images which have the same base name but different 
