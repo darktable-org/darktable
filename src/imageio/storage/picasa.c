@@ -1469,7 +1469,7 @@ int store(struct dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_mo
     goto cleanup;
   }
 
-  if (ctx->album_id == NULL)
+  if (strlen(ctx->album_id) == 0)
   {
     if (ctx->album_title == NULL)
     {
