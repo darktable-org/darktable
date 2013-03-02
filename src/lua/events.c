@@ -349,6 +349,7 @@ static void on_export_selection(gpointer instance,dt_control_image_enumerator_t 
   dt_lua_trigger_event("pre-export",2,1);
   if(lua_isnoneornil(darktable.lua_state,-1)) {return; }// everything already has been removed
   export_descriptor->index = dt_lua_image_glist_get(darktable.lua_state,-1);
+  /* TBSL see what we do with the params, the are read-only at this point  */
   mformat->set_params(mformat,fdata,size);
   mformat->free_params(mformat,fdata);
 }

@@ -107,7 +107,6 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
     char tmp[1024];
     snprintf(tmp,1024,"dt_imageio_module_data_pseudo_%s",module->plugin_name);
     module->parameter_lua_type = dt_lua_init_format_internal(darktable.lua_state,module,tmp,sizeof(dt_imageio_module_data_t));
-    lua_pop(darktable.lua_state,1); // done setting our metatable
   }
 #endif
 

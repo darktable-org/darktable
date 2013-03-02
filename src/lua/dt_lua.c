@@ -26,11 +26,28 @@
 #include "lua/database.h"
 #include "lua/gui.h"
 #include "lua/glist.h"
+#include "lua/modules.h"
 #include "lua/styles.h"
 #include "lua/preferences.h"
 #include "common/imageio_module.h"
 #include "config.h"
 
+#if 0
+printf("%s %d\n",__FUNCTION__,__LINE__);
+for(int i=1 ;i<=lua_gettop(L);i++) {printf("\t%d:%s %s\n",i,lua_typename(L,lua_type(L,i)),luaL_tolstring(L,i,NULL));lua_pop(L,1);}
+static void debug_table(lua_State * L,int t) {
+  /* table is in the stack at index 't' */
+  lua_pushnil(L);  /* first key */
+  while (lua_next(L, t-1) != 0) {
+    /* uses 'key' (at index -2) and 'value' (at index -1) */
+    printf("%s - %s\n",
+        luaL_checkstring(L,-2),
+        lua_typename(L, lua_type(L, -1)));
+    /* removes 'value'; keeps 'key' for next iteration */
+    lua_pop(L, 1);
+  }
+}
+#endif
 
 int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
   int result;
@@ -84,22 +101,6 @@ static int lua_print(lua_State *L) {
 }
 
 
-#if 0
-printf("%s %d\n",__FUNCTION__,__LINE__);
-for(int i=1 ;i<=lua_gettop(L);i++) {printf("\t%d:%s %s\n",i,lua_typename(L,lua_type(L,i)),luaL_tolstring(L,i,NULL));lua_pop(L,1);}
-static void debug_table(lua_State * L,int t) {
-  /* table is in the stack at index 't' */
-  lua_pushnil(L);  /* first key */
-  while (lua_next(L, t-1) != 0) {
-    /* uses 'key' (at index -2) and 'value' (at index -1) */
-    printf("%s - %s\n",
-        luaL_checkstring(L,-2),
-        lua_typename(L, lua_type(L, -1)));
-    /* removes 'value'; keeps 'key' for next iteration */
-    lua_pop(L, 1);
-  }
-}
-#endif
 
 /**
   hardcoded list of types to register
@@ -112,6 +113,7 @@ static lua_CFunction init_funcs[] = {
   dt_lua_init_image,
   dt_lua_init_database,
   dt_lua_init_preferences,
+  dt_lua_init_modules,
   NULL
 };
 static int load_darktable_lib(lua_State *L) {

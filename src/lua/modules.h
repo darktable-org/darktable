@@ -31,6 +31,7 @@
 
 luaA_Type dt_lua_init_format_internal(lua_State* L, dt_imageio_module_format_t* module,char*type_name,size_t size);
 
+int dt_lua_init_modules(lua_State *L);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
