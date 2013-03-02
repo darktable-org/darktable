@@ -162,6 +162,32 @@ error:
   destroy_pref_element(built_elt);
   return luaL_argerror(L,cur_param,NULL);
 }
+static int read_pref(lua_State*L){
+  const char *script = luaL_checkstring(L,1);
+  const char *name = luaL_checkstring(L,2);
+  const char* type_name = luaL_checkstring(L,3);
+  int i;
+  for (i=0; pref_type_name[i]; i++)
+    if (strcmp(pref_type_name[i], type_name) == 0){
+      break;
+    }
+  if(!pref_type_name[i]) luaL_argerror(L,3,NULL);
+
+  char pref_name[1024];
+  get_pref_name(pref_name,1024,script,name);
+  switch(i) {
+    case pref_string:
+      lua_pushstring(L,dt_conf_get_string(pref_name));
+      break;
+    case pref_bool:
+      lua_pushboolean(L,dt_conf_get_bool(pref_name));
+      break;
+    case pref_int:
+      lua_pushnumber(L,dt_conf_get_int(pref_name));
+      break;
+  }
+  return 1;
+}
 
 
 static void callback_string(GtkWidget *widget, pref_element*cur_elt ) {
@@ -306,8 +332,13 @@ int dt_lua_init_preferences(lua_State * L) {
 	
   dt_lua_push_darktable_lib(L);
   dt_lua_goto_subtable(L,"preferences");
+
   lua_pushcfunction(L,register_pref);
   lua_setfield(L,-2,"register_preference");
+
+  lua_pushcfunction(L,read_pref);
+  lua_setfield(L,-2,"read_preference");
+
   lua_pop(L,-1);
   return 0;
 }
