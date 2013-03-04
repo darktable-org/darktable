@@ -59,7 +59,7 @@ static int style_tostring(lua_State*L) {
 
 static int style_get_items(lua_State*L) {
   dt_style_t * style =luaL_checkudata(L,-1,"dt_style_t");
-  GList * items = dt_styles_get_item_list(style->name,true);
+  GList * items = dt_styles_get_item_list(style->name,true,-1);
   dt_lua_push_glist(L,items,dt_style_item_t,true);
   while(items) {
     g_free(items->data);
@@ -79,7 +79,7 @@ static int style_update(lua_State*L) {
   const char * newname =lua_isnoneornil(L,2)?style->name:luaL_checkstring(L,2);
 	const char * description =lua_isnoneornil(L,3)?style->description:luaL_checkstring(L,3);
   GList* filter= style_item_table_to_id_list(L, 4);
-  dt_styles_update(style->name,newname,description,filter,TRUE);
+  dt_styles_update(style->name,newname,description,filter,-1,NULL,TRUE);
   g_list_free(filter);
   return 0;
 }
@@ -89,7 +89,7 @@ static int style_duplicate(lua_State*L) {
   const char * newname =luaL_checkstring(L,2);
 	const char * description =lua_isnoneornil(L,3)?style->description:luaL_checkstring(L,3);
   GList* filter= style_item_table_to_id_list(L, 4);
-  dt_styles_create_from_style(style->name,newname,description,filter,TRUE);
+  dt_styles_create_from_style(style->name,newname,description,filter,-1,NULL,TRUE);
   g_list_free(filter);
   return 0;
 }

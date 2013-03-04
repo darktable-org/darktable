@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 Henrik Andersson.
+    copyright (c) 2012 Pierre Lamot
+    copyright (c) 2013 Jose Carlos Garcia Sogo
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,32 +34,22 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <curl/curl.h>
+#include <json-glib/json-glib.h>
 #include <libxml/parser.h>
 
-DT_MODULE(1)
+DT_MODULE(2)
 
-typedef struct dt_storage_picasa_gui_data_t
-{
+#define GOOGLE_WS_BASE_URL "https://accounts.google.com/"
+#define GOOGLE_API_BASE_URL "https://www.googleapis.com/"
+#define GOOGLE_API_KEY "428088086479.apps.googleusercontent.com"
+#define GOOGLE_API_SECRET "tIIL4FUs46Nc9nQWKeg3H_Hy"
+#define GOOGLE_URI "urn:ietf:wg:oauth:2.0:oob"
+#define GOOGLE_PICASA "https://picasaweb.google.com/"
 
-  GtkLabel *label1,*label2,*label3, *label4,*label5,*label6,*label7;                           // username, password, albums, status, albumtitle, albumsummary, albumrights
-  GtkEntry *entry1,*entry2,*entry3,*entry4;                          // username, password, albumtitle,albumsummary
-  GtkComboBox *comboBox1;                                 // album box
-  GtkCheckButton *checkButton1,*checkButton2;                         // public album, export tags
-  GtkDarktableButton *dtbutton1;                        // refresh albums
-  GtkBox *hbox1;                                                    // Create album options...
+#define GOOGLE_IMAGE_MAX_SIZE 960
 
-  /** Current picasa context for the gui */
-  struct _picasa_api_context_t *picasa_api;
-
-} dt_storage_picasa_gui_data_t;
-
-
-typedef struct dt_storage_picasa_params_t
-{
-  int64_t hash;
-  struct _picasa_api_context_t *picasa_api;
-  gboolean export_tags;
-} dt_storage_picasa_params_t;
+#define MSGCOLOR_RED "#e07f7f"
+#define MSGCOLOR_GREEN "#7fe07f"
 
 /** Authenticate against google picasa service*/
 typedef struct _buffer_t
@@ -68,43 +59,168 @@ typedef struct _buffer_t
   size_t offset;
 } _buffer_t;
 
-typedef struct _picasa_api_context_t
+typedef enum ComboUserModel
 {
-  /** Handle to initialized curl context. */
-  CURL *curl_handle;
-  /** Headers to pass on to HTTP requests. */
-  struct curl_slist *curl_headers;
-  gboolean needsReauthentication;
-  gchar *authHeader;  // Google Auth HTTP header string
+  COMBO_USER_MODEL_NAME_COL = 0,
+  COMBO_USER_MODEL_TOKEN_COL,
+  COMBO_USER_MODEL_REFRESH_TOKEN_COL,
+  COMBO_USER_MODEL_ID_COL,
+  COMBO_USER_MODEL_NB_COL
+} ComboUserModel;
 
-  /** A list with _picasa_album_t objects from parsed XML */
-  GList *albums;
-
-  /** Current album used when posting images... */
-  struct _picasa_album_t  *current_album;
-
-  char *album_title;
-  char *album_summary;
-  int album_public;
-
-} _picasa_api_context_t;
-
-/** Info representing an album */
-typedef struct _picasa_album_t
+typedef enum ComboAlbumModel
 {
-  char *id;
-  char *title;
-  char *summary;
-  char *rights;
-  char *photoCount;
-} _picasa_album_t;
+  COMBO_ALBUM_MODEL_NAME_COL = 0,
+  COMBO_ALBUM_MODEL_ID_COL,
+  COMBO_ALBUM_MODEL_NB_COL
+} ComboAlbumModel;
 
-/** Authenticates and retreives an initialized picasa api object */
-static _picasa_api_context_t *_picasa_api_authenticate(const char *username,const char *password);
+typedef enum ComboPrivacyModel
+{
+  COMBO_PRIVACY_MODEL_NAME_COL = 0,
+  COMBO_PRIVACY_MODEL_VAL_COL,
+  COMBO_PRIVACY_MODEL_NB_COL
+} ComboPrivacyModel;
 
-static int _picasa_api_get_feed(_picasa_api_context_t *ctx);
-static int _picasa_api_create_album(_picasa_api_context_t *ctx);
-static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *data, int size , char *caption, char *description, gint imgid );
+
+typedef enum PicasaAlbumPrivacyPolicy
+{
+  PICASA_ALBUM_PRIVACY_PUBLIC,
+  PICASA_ALBUM_PRIVACY_PRIVATE,
+} PicasaAlbumPrivacyPolicy;
+
+
+/**
+ * Represents informations about an album
+ */
+typedef struct PicasaAlbum {
+  gchar *id;
+  gchar *name;
+  PicasaAlbumPrivacyPolicy privacy;
+} PicasaAlbum;
+
+PicasaAlbum *picasa_album_init()
+{
+  return  (PicasaAlbum*) g_malloc0(sizeof(PicasaAlbum));
+}
+
+void picasa_album_destroy(PicasaAlbum *album)
+{
+  if (album == NULL)
+    return;
+  g_free(album->id);
+  g_free(album->name);
+  g_free(album);
+}
+
+/**
+ * Represents informations about an account
+ */
+typedef struct PicasaAccountInfo {
+  gchar *id;
+  gchar *username;
+  gchar *token;
+  gchar *refresh_token;
+} PicasaAccountInfo;
+
+PicasaAccountInfo *picasa_account_info_init()
+{
+  return (PicasaAccountInfo*) g_malloc0(sizeof(PicasaAccountInfo));
+}
+
+void picasa_account_info_destroy(PicasaAccountInfo *account)
+{
+  if (account == NULL)
+    return;
+  g_free(account->id);
+  g_free(account->username);
+  g_free(account);
+}
+
+typedef struct PicasaContext
+{
+  gchar album_id[1024];
+  gchar userid[1024];
+
+  gchar *album_title;
+  gchar *album_summary;
+  int album_permission;
+
+  /// curl context
+  CURL *curl_ctx;
+  /// Json parser context
+  JsonParser *json_parser;
+
+  GString *errmsg;
+
+  /// authorization token
+  gchar *token;
+  gchar *refresh_token;
+} PicasaContext;
+
+typedef struct dt_storage_picasa_gui_data_t
+{
+  // == ui elements ==
+  GtkLabel *label_status;
+
+  GtkComboBox *comboBox_username;
+  GtkButton *button_login;
+
+  GtkDarktableButton *dtbutton_refresh_album;
+  GtkComboBox *comboBox_album;
+
+  //  === album creation section ===
+  GtkLabel *label_album_title;
+  GtkLabel *label_album_summary;
+  GtkLabel *label_album_privacy;
+
+  GtkEntry *entry_album_title;
+  GtkEntry *entry_album_summary;
+  GtkComboBox *comboBox_privacy;
+
+  GtkBox *hbox_album;
+
+  // == context ==
+  gboolean connected;
+  PicasaContext *picasa_api;
+} dt_storage_picasa_gui_data_t;
+
+
+static PicasaContext *picasa_api_init()
+{
+  PicasaContext *ctx = (PicasaContext*)g_malloc0(sizeof(PicasaContext));
+  ctx->curl_ctx = curl_easy_init();
+  ctx->errmsg = g_string_new("");
+  ctx->json_parser = json_parser_new();
+  return ctx;
+}
+
+static void picasa_api_destroy(PicasaContext *ctx)
+{
+  if (ctx == NULL)
+    return;
+  //FIXME: This is causing a segfault. Probably trying to dereference twice something already freed.
+  //curl_easy_cleanup(ctx->curl_ctx);
+  g_free(ctx->token);
+  g_free(ctx->refresh_token);
+  g_free(ctx->album_title);
+  g_free(ctx->album_summary);
+  g_object_unref(ctx->json_parser);
+  g_string_free(ctx->errmsg, TRUE);
+  g_free(ctx);
+}
+
+
+typedef struct dt_storage_picasa_param_t
+{
+  gint64 hash;
+  PicasaContext *picasa_ctx;
+} dt_storage_picasa_param_t;
+
+
+static gchar *picasa_get_user_refresh_token(PicasaContext *ctx);
+
+//////////////////////////// curl requests related functions
 
 /** Grow and fill _buffer_t with recieved data... */
 static size_t _picasa_api_buffer_write_func(void *ptr, size_t size, size_t nmemb, void *stream)
@@ -134,93 +250,349 @@ static size_t _picasa_api_buffer_read_func( void *ptr, size_t size, size_t nmemb
   return dsize;
 }
 
-static void _picasa_api_free( _picasa_api_context_t *ctx )
+static size_t curl_write_data_cb(void *ptr, size_t size, size_t nmemb, void *data)
 {
+  GString *string = (GString*) data;
+  g_string_append_len(string, ptr, size * nmemb);
+#ifdef picasa_EXTRA_VERBOSE
+  g_printf("server reply: %s\n", string->str);
+#endif
+  return size * nmemb;
+}
 
-  g_free( ctx->album_title );
-  g_free( ctx->album_summary );
+static JsonObject *picasa_parse_response(PicasaContext *ctx, GString *response)
+{
+  GError *error = NULL;
+  gboolean ret = json_parser_load_from_data(ctx->json_parser, response->str, response->len, &error);
+  g_return_val_if_fail((ret), NULL);
 
-  /// \todo free list of albums...
-  g_free( ctx );
+  JsonNode *root = json_parser_get_root(ctx->json_parser);
+  //we should always have a dict
+  g_return_val_if_fail((json_node_get_node_type(root) == JSON_NODE_OBJECT), NULL);
+
+  JsonObject *rootdict = json_node_get_object(root);
+  if (json_object_has_member(rootdict, "error"))
+  {
+    JsonObject *errorstruct = json_object_get_object_member(rootdict, "error");
+    g_return_val_if_fail((errorstruct != NULL), NULL);
+    const gchar *errormessage = json_object_get_string_member(errorstruct, "message");
+    g_return_val_if_fail((errormessage != NULL), NULL);
+    g_string_assign(ctx->errmsg, errormessage);
+    return NULL;
+  }
+
+  return rootdict;
 }
 
 
-static _picasa_api_context_t *_picasa_api_authenticate(const char *username,const char *password)
+static void picasa_query_get_add_url_arguments(GString *key, GString *value, GString *url)
 {
-  if(username[0] == '\0' || password[0] == '\0') return NULL;
-  _picasa_api_context_t *ctx = (_picasa_api_context_t *)g_malloc(sizeof(_picasa_api_context_t));
-  memset(ctx,0,sizeof(_picasa_api_context_t));
-  ctx->curl_handle = curl_easy_init();
+  g_string_append(url, "&");
+  g_string_append(url, key->str);
+  g_string_append(url, "=");
+  g_string_append(url, value->str);
+}
 
-  // Setup the auth curl request
-  _buffer_t buffer;
-  memset(&buffer,0,sizeof(_buffer_t));
-  char data[4096]= {0};
-  g_strlcat(data,"accountType=HOSTED_OR_GOOGLE&Email=",4096);
-  g_strlcat(data,username,4096);
-  g_strlcat(data,"&Passwd=",4096);
-  g_strlcat(data,password,4096);
-  g_strlcat(data,"&service=lh2&source="PACKAGE_NAME"-"PACKAGE_VERSION,4096);
+/**
+ * perform a GET request on picasa/google api
+ *
+ * @note use this one to read information (user info, existing albums, ...)
+ *
+ * @param ctx picasa context (token field must be set)
+ * @param method the method to call on the google API, the methods should not start with '/' example: "me/albums"
+ * @param args hashtable of the aguments to be added to the requests, must be in the form key (string) = value (string)
+ * @returns NULL if the request fails, or a JsonObject of the reply
+ */
+static JsonObject *picasa_query_get(PicasaContext *ctx, const gchar *method, GHashTable *args, gboolean picasa)
+{
+  g_return_val_if_fail(ctx != NULL, NULL);
+  g_return_val_if_fail(ctx->token != NULL, NULL);
+  //build the query
+  GString *url;
+  if (picasa == TRUE)
+    url = g_string_new(GOOGLE_PICASA);
+  else
+    url = g_string_new(GOOGLE_API_BASE_URL);
 
-#ifdef _DEBUG
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 1);
-#else
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
-#endif
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_FOLLOWLOCATION, 1);
+  g_string_append(url, method);
 
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, "https://www.google.com/accounts/ClientLogin");
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_POST, 1);
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_POSTFIELDS, data);
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEDATA, &buffer);
-  curl_easy_perform( ctx->curl_handle );
-
-  long result=1;
-  curl_easy_getinfo(ctx->curl_handle,CURLINFO_RESPONSE_CODE,&result );
-  if( result == 200 )   // All good lets get auth key from response buffer...
+  if (picasa == TRUE)
   {
-    char *pa=strstr(buffer.data,"Auth=");
-    pa+=5;
-
-    // Add auth to curl context header
-    gchar *end=g_strrstr(pa,"\n");
-    end[0]='\0';
-    char auth[4096]= {0};
-    g_strlcat(auth,"Authorization: GoogleLogin auth=",4096);
-    g_strlcat(auth,pa,4096);
-    ctx->authHeader=g_strdup(auth);
-    ctx->curl_headers = curl_slist_append(ctx->curl_headers,auth);
-    curl_easy_setopt(ctx->curl_handle,CURLOPT_HTTPHEADER, ctx->curl_headers);
-    g_free(buffer.data);
-    return ctx;
+    g_string_append(url, "?alt=json&access_token=");
+    g_string_append(url, ctx->token);
   }
-  g_free(buffer.data);
-  g_free(ctx);
+  else
+  {
+    g_string_append(url, "?alt=json&access_token=");
+    g_string_append(url, ctx->token);
+  }
+  if (args != NULL)
+    g_hash_table_foreach(args, (GHFunc)picasa_query_get_add_url_arguments, url);
+
+  //send the request
+  GString *response = g_string_new("");
+  curl_easy_reset(ctx->curl_ctx);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, url->str);
+#ifdef picasa_EXTRA_VERBOSE
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
+#endif
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_SSL_VERIFYPEER, FALSE);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
+  int res = curl_easy_perform(ctx->curl_ctx);
+
+  if (res != CURLE_OK) return NULL;
+
+  //parse the response
+  JsonObject *respobj = picasa_parse_response(ctx, response);
+
+  g_string_free(response, TRUE);
+  g_string_free(url, TRUE);
+  return respobj;
+}
+
+typedef struct {
+  struct curl_httppost *formpost;
+  struct curl_httppost *lastptr;
+} HttppostFormList;
+
+
+/**
+ * perform a POST request on google api to get the auth token
+ *
+ * @param ctx picasa context (token field must be set)
+ * @param method the method to call on the google API, the methods should not start with '/' example: "me/albums"
+ * @param args hashtable of the aguments to be added to the requests, might be null if none
+ * @returns NULL if the request fails, or a JsonObject of the reply
+ */
+
+static JsonObject *picasa_query_post_auth(PicasaContext *ctx, const gchar *method, gchar *args)
+{
+  g_return_val_if_fail(ctx != NULL, NULL);
+
+  GString *url = NULL;
+
+  url = g_string_new(GOOGLE_WS_BASE_URL);
+  g_string_append(url, method);
+
+  //send the requests
+  GString *response = g_string_new("");
+  curl_easy_reset(ctx->curl_ctx);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, url->str);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST, 1);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_COPYPOSTFIELDS, args);
+#ifdef picasa_EXTRA_VERBOSE
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
+#endif
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_SSL_VERIFYPEER, FALSE);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
+
+  int res = curl_easy_perform(ctx->curl_ctx);
+  g_string_free(url, TRUE);
+  if (res != CURLE_OK) return NULL;
+  //parse the response
+  JsonObject *respobj = picasa_parse_response(ctx, response);
+  g_string_free(response, TRUE);
+  return respobj;
+}
+
+//////////////////////////// picasa api functions
+
+/**
+ * @returns TRUE if the current token is valid
+ */
+static gboolean picasa_test_auth_token(PicasaContext *ctx)
+{
+  gchar *access_token = NULL;
+  access_token = picasa_get_user_refresh_token(ctx);
+
+  if (access_token != NULL)
+    ctx->token = access_token;
+
+  return access_token != NULL;
+}
+
+/**
+ * @return a GList of PicasaAlbums associated to the user
+ */
+static GList *picasa_get_album_list(PicasaContext *ctx, gboolean* ok)
+{
+  if (ok) *ok = TRUE;
+  GList *album_list = NULL;
+
+  JsonObject *reply = picasa_query_get(ctx, "data/feed/api/user/default", NULL, TRUE);
+  if (reply == NULL)
+    goto error;
+
+  JsonObject *feed = json_object_get_object_member(reply, "feed");
+  if (feed == NULL)
+    goto error;
+
+  JsonArray *jsalbums = json_object_get_array_member(feed, "entry");
+
+  guint i;
+  for (i = 0; i < json_array_get_length(jsalbums); i++)
+  {
+    JsonObject *obj = json_array_get_object_element(jsalbums, i);
+    if (obj == NULL)
+      continue;
+
+    PicasaAlbum *album = picasa_album_init();
+    if (album == NULL)
+      goto error;
+
+    JsonObject *jsid = json_object_get_object_member(obj, "gphoto$id");
+    JsonObject *jstitle = json_object_get_object_member(obj, "title");
+
+    const char* id = json_object_get_string_member(jsid, "$t");
+    const char* name = json_object_get_string_member(jstitle, "$t");
+    if (id == NULL || name == NULL) {
+      picasa_album_destroy(album);
+      goto error;
+    }
+    album->id = g_strdup(id);
+    album->name = g_strdup(name);
+    album_list = g_list_append(album_list, album);
+  }
+  return album_list;
+
+error:
+  *ok = FALSE;
+  g_list_free_full(album_list, (GDestroyNotify)picasa_album_destroy);
   return NULL;
 }
 
-
-static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *data, int size , char *caption, char *description, gint imgid )
+/**
+ * @see https://developers.google.com/picasa-web/docs/2.0/developers_guide_protocol#AddAlbums
+ * @return the id of the newly reacted
+ */
+static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *summary, PicasaAlbumPrivacyPolicy privacy)
 {
   _buffer_t buffer;
   memset(&buffer,0,sizeof(_buffer_t));
+
+  gchar *photo_id=NULL;
+  gchar *private = NULL;
   char uri[4096]= {0};
+  struct curl_slist *headers = NULL;
+
+  if ( privacy == PICASA_ALBUM_PRIVACY_PUBLIC)
+    private = g_strdup ("public");
+  else
+    private = g_strdup ("private");
 
   gchar *entry = g_markup_printf_escaped (
-                   "<entry xmlns='http://www.w3.org/2005/Atom'>"
-                   "<title>%s</title>"
-                   "<summary>%s</summary>"
-                   "<category scheme=\"http://schemas.google.com/g/2005#kind\""
+                 "<entry xmlns='http://www.w3.org/2005/Atom'\n"
+                      "xmlns:media='http://search.yahoo.com/mrss/'\n"
+                      "xmlns:gphoto='http://schemas.google.com/photos/2007'>\n"
+                    "<title type='text'>%s</title>\n"
+                    "<summary type='text'>%s</summary>\n"
+                    "<gphoto:access>%s</gphoto:access>\n"
+                    "<media:group>\n"
+                    "  <media:keywords></media:keywords>\n"
+                    "</media:group>\n"
+                    "<category scheme='http://schemas.google.com/g/2005#kind'\n"
+                    "  term='http://schemas.google.com/photos/2007#album'></category>\n"
+                    "</entry>\n",
+                    name, summary, private);
+
+  gchar *authHeader = NULL;
+  authHeader = dt_util_dstrcat(authHeader, "Authorization: OAuth %s", ctx->token);
+
+  headers = curl_slist_append(headers,"GData-Version: 2");
+  headers = curl_slist_append(headers,"Content-Type: application/atom+xml");
+  headers = curl_slist_append(headers, authHeader);
+
+  sprintf(uri,"https://picasaweb.google.com/data/feed/api/user/default");
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, uri);
+#ifdef picasa_EXTRA_VERBOSE
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
+#endif
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_HTTPHEADER, headers);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST,1);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_FOLLOWLOCATION, 1);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_POSTFIELDS, entry);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, &buffer);
+
+  curl_easy_perform( ctx->curl_ctx );
+
+  curl_slist_free_all(headers);
+
+  long result;
+  curl_easy_getinfo(ctx->curl_ctx, CURLINFO_RESPONSE_CODE, &result);
+#ifdef picasa_EXTRA_VERBOSE
+  printf("Create album buffer response: %s\n", buffer.data);
+#endif
+
+  if (result == 201)
+  {
+    xmlDocPtr doc;
+    xmlNodePtr entryNode;
+    // Parse xml document
+    if( ( doc = xmlParseDoc( (xmlChar *)buffer.data ))==NULL) return 0;
+    entryNode = xmlDocGetRootElement(doc);
+    if(  !xmlStrcmp(entryNode->name, (const xmlChar *) "entry") )
+    {
+      xmlNodePtr entryChilds = entryNode->xmlChildrenNode;
+      if( entryChilds != NULL )
+      {
+        do
+        {
+          if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"id")) )
+          {
+            // Get the album id
+            xmlChar *id= xmlNodeListGetString(doc, entryChilds->xmlChildrenNode, 1);
+            if( xmlStrncmp( id, (const xmlChar *)"http://",7) )
+              photo_id = g_strdup((const char *)id);
+            xmlFree(id);
+          }
+        }
+        while( (entryChilds = entryChilds->next)!=NULL );
+      }
+    }
+
+  return photo_id;
+  }
+
+  return NULL;
+}
+
+/**
+ * @see https://developers.google.com/picasa-web/docs/2.0/developers_guide_protocol#PostPhotos
+ * @return the id of the uploaded photo
+ */
+static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albumid, gchar *fname, gchar *caption, gchar *description, const int imgid)
+{
+  _buffer_t buffer;
+  memset(&buffer,0,sizeof(_buffer_t));
+  gchar *photo_id=NULL;
+
+  char uri[4096]= {0};
+
+  // Open the temp file and read image to memory
+  GMappedFile *imgfile = g_mapped_file_new(fname,FALSE,NULL);
+  int size = g_mapped_file_get_length( imgfile );
+  gchar *data =g_mapped_file_get_contents( imgfile );
+
+
+  gchar *entry = g_markup_printf_escaped (
+                   "<entry xmlns='http://www.w3.org/2005/Atom'>\n"
+                   "<title>%s</title>\n"
+                   "<summary>%s</summary>\n"
+                   "<category scheme=\"http://schemas.google.com/g/2005#kind\"\n"
                    " term=\"http://schemas.google.com/photos/2007#photo\"/>"
                    "</entry>",
-                   caption,description);
+                   caption, description);
 
+  gchar *authHeader = NULL;
+  authHeader = dt_util_dstrcat(authHeader, "Authorization: OAuth %s", ctx->token);
 
   // Hack for nonform multipart post...
   gchar mpart1[4096]= {0};
-  gchar *mpart_format="Media multipart posting\n--END_OF_PART\nContent-Type: application/atom+xml\n\n%s\n--END_OF_PART\nContent-Type: %s\n\n";
-  sprintf(mpart1,mpart_format,entry,mime);
+  gchar *mpart_format="\nMedia multipart posting\n--END_OF_PART\nContent-Type: application/atom+xml\n\n%s\n--END_OF_PART\nContent-Type: image/jpeg\n\n";
+  sprintf(mpart1,mpart_format,entry);
 
   int mpart1size=strlen(mpart1);
   int postdata_length=mpart1size+size+strlen("\n--END_OF_PART--");
@@ -230,33 +602,32 @@ static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , ch
   memcpy( postdata+mpart1size+size, "\n--END_OF_PART--",strlen("\n--END_OF_PART--") );
 
   struct curl_slist *headers = NULL;
-  headers = curl_slist_append(headers,ctx->authHeader);
   headers = curl_slist_append(headers,"Content-Type: multipart/related; boundary=\"END_OF_PART\"");
   headers = curl_slist_append(headers,"MIME-version: 1.0");
   headers = curl_slist_append(headers,"Expect:");
   headers = curl_slist_append(headers,"GData-Version: 2");
+  headers = curl_slist_append(headers, authHeader);
 
-  sprintf(uri,"http://picasaweb.google.com/data/feed/api/user/default/albumid/%s", ctx->current_album->id);
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, uri);
-#ifdef _DEBUG
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 1);
-#else
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
+  sprintf(uri,"https://picasaweb.google.com/data/feed/api/user/default/albumid/%s", albumid);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, uri);
+#ifdef picasa_EXTRA_VERBOSE
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
 #endif
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_HTTPHEADER, headers);
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_UPLOAD,0);   // A post request !
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_POST,1);
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_POSTFIELDS, postdata);
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_POSTFIELDSIZE, postdata_length);
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEDATA, &buffer);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_HTTPHEADER, headers);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_UPLOAD,0);   // A post request !
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST,1);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_FOLLOWLOCATION, 1);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_POSTFIELDS, postdata);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_POSTFIELDSIZE, postdata_length);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, &buffer);
 
-  curl_easy_perform( ctx->curl_handle );
+  curl_easy_perform( ctx->curl_ctx );
 
   curl_slist_free_all(headers);
 
   long result;
-  curl_easy_getinfo(ctx->curl_handle,CURLINFO_RESPONSE_CODE,&result );
+  curl_easy_getinfo(ctx->curl_ctx,CURLINFO_RESPONSE_CODE,&result );
 
   // If we want to add tags let's do...
   if( result == 201 && imgid > 0 )
@@ -283,7 +654,6 @@ static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , ch
         xmlChar *etag = xmlGetProp(entryNode,(const xmlChar*)"gd:etag");
       */
 
-      gchar *photo_id=NULL;
       gchar *updateUri=NULL;
       xmlNodePtr entryChilds = entryNode->xmlChildrenNode;
       if( entryChilds != NULL )
@@ -328,11 +698,11 @@ static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , ch
 
       // Let's update the photo
       struct curl_slist *headers = NULL;
-      headers = curl_slist_append(headers,ctx->authHeader);
       headers = curl_slist_append(headers,"Content-Type: application/atom+xml");
       headers = curl_slist_append(headers,"If-Match: *");
       headers = curl_slist_append(headers,"Expect:");
       headers = curl_slist_append(headers,"GData-Version: 2");
+      headers = curl_slist_append(headers, authHeader);
 
       _buffer_t response;
       memset(&response,0,sizeof(_buffer_t));
@@ -344,371 +714,63 @@ static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , ch
       writebuffer.size = datasize;
       writebuffer.offset=0;
 
-      curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, updateUri);
-#ifdef _DEBUG
-      curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 1);
-#else
-      curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
+      curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, updateUri);
+#ifdef picasa_EXTRA_VERBOSE
+      curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
 #endif
-      curl_easy_setopt(ctx->curl_handle, CURLOPT_HTTPHEADER, headers);
-      curl_easy_setopt(ctx->curl_handle, CURLOPT_UPLOAD,1);   // A put request
-      curl_easy_setopt(ctx->curl_handle, CURLOPT_READDATA,&writebuffer);
-      curl_easy_setopt(ctx->curl_handle, CURLOPT_INFILESIZE,writebuffer.size);
-      curl_easy_setopt(ctx->curl_handle, CURLOPT_READFUNCTION,_picasa_api_buffer_read_func);
-      curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
-      curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEDATA, &response);
-      curl_easy_perform( ctx->curl_handle );
+      curl_easy_setopt(ctx->curl_ctx, CURLOPT_HTTPHEADER, headers);
+      curl_easy_setopt(ctx->curl_ctx, CURLOPT_UPLOAD,1);   // A put request
+      curl_easy_setopt(ctx->curl_ctx, CURLOPT_READDATA,&writebuffer);
+      curl_easy_setopt(ctx->curl_ctx, CURLOPT_INFILESIZE,writebuffer.size);
+      curl_easy_setopt(ctx->curl_ctx, CURLOPT_READFUNCTION,_picasa_api_buffer_read_func);
+      curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
+      curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, &response);
+      curl_easy_perform( ctx->curl_ctx );
 
       xmlFree( updateUri );
       xmlFree( writebuffer.data );
       if (response.data != NULL)
         g_free(response.data);
-      if (photo_id != NULL)
-        g_free(photo_id); // FIXME: never used!
 
       curl_slist_free_all( headers );
     }
 
     xmlFreeDoc(doc);
   }
-  return result;
+  return photo_id;
 }
 
-
-static int _picasa_api_create_album(_picasa_api_context_t *ctx )
+/**
+ * @see https://developers.google.com/accounts/docs/OAuth2InstalledApp#callinganapi
+ * @return basic informations about the account
+ */
+static PicasaAccountInfo *picasa_get_account_info(PicasaContext *ctx)
 {
-  _buffer_t buffer;
-  memset(&buffer,0,sizeof(_buffer_t));
+  JsonObject *obj = picasa_query_get(ctx, "oauth2/v1/userinfo", NULL, FALSE);
+  g_return_val_if_fail((obj != NULL), NULL);
+  /* Using the email instead of the username as it is unique */
+  /* To change it to use the username, change "email" by "name" */
+  const gchar *user_name = json_object_get_string_member(obj, "given_name");
+  const gchar *email = json_object_get_string_member(obj, "email");
+  const gchar *user_id = json_object_get_string_member(obj, "id");
+  g_return_val_if_fail(user_name != NULL && user_id != NULL, NULL);
 
-  gchar *data = g_markup_printf_escaped ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                                         "<entry xmlns='http://www.w3.org/2005/Atom'"
-                                         " xmlns:media='http://search.yahoo.com/mrss/'"
-                                         " xmlns:gphoto='http://schemas.google.com/photos/2007'>"
-                                         "<title type='text'>%s</title>"
-                                         "<summary type='text'>%s</summary>"
-                                         "<gphoto:access>%s</gphoto:access>" // public
-                                         "<gphoto:timestamp>%d000</gphoto:timestamp>"
-                                         "<media:group>"
-                                         "<media:keywords></media:keywords>"
-                                         "</media:group>"
-                                         "<category scheme='http://schemas.google.com/g/2005#kind'"
-                                         "  term='http://schemas.google.com/photos/2007#album'></category>"
-                                         "</entry>",ctx->album_title, (ctx->album_summary)?ctx->album_summary:"", (ctx->album_public)?"public":"private", ((int)time(NULL)) );
+  gchar *name = NULL;
+  name = dt_util_dstrcat(name, "%s - %s", user_name, email);
 
-  ctx->curl_headers = curl_slist_append(ctx->curl_headers,"Content-Type: application/atom+xml");
-  curl_easy_setopt(ctx->curl_handle,CURLOPT_HTTPHEADER, ctx->curl_headers);
+  PicasaAccountInfo *accountinfo = picasa_account_info_init();
+  accountinfo->id = g_strdup(user_id);
+  accountinfo->username = g_strdup(name);
+  accountinfo->token = g_strdup(ctx->token);
+  accountinfo->refresh_token = g_strdup(ctx->refresh_token);
 
-#ifdef _DEBUG
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 1);
-#else
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
-#endif
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_HEADER , 0);
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, "http://picasaweb.google.com/data/feed/api/user/default");
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_POST, 1);
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_POSTFIELDS, data);
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEDATA, &buffer);
-  curl_easy_perform( ctx->curl_handle );
-
-  long result;
-  curl_easy_getinfo(ctx->curl_handle,CURLINFO_RESPONSE_CODE,&result );
-  if( result == 201 )
-  {
-    xmlDocPtr doc;
-    xmlNodePtr entryNode;
-
-    // Parse xml document
-    if( ( doc = xmlParseDoc( (xmlChar *)buffer.data ))==NULL) return 0;
-    // Let's parse album entry response and construct a _picasa_album_t and assign to current album...
-    entryNode = xmlDocGetRootElement(doc);
-    if(  xmlStrcmp(entryNode->name, (const xmlChar *) "entry")==0 )
-    {
-      xmlNodePtr entryChilds = entryNode->xmlChildrenNode;
-      if( entryChilds != NULL )
-      {
-        // Allocate current_album...
-        ctx->current_album =  g_malloc(sizeof(_picasa_album_t));
-        memset( ctx->current_album,0,sizeof(_picasa_album_t));
-        // Parse xml
-        do
-        {
-          if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"id")) )
-          {
-            xmlChar *id= xmlNodeListGetString(doc, entryChilds->xmlChildrenNode, 1);
-            if( xmlStrncmp( id, (const xmlChar *)"http://",7) )
-              ctx->current_album->id = g_strdup((const char *)id);
-            xmlFree(id);
-          }
-          else if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"title")) )
-          {
-            xmlChar *title= xmlNodeListGetString(doc, entryChilds->xmlChildrenNode, 1);
-            ctx->current_album->title = g_strdup((const char *)title);
-            xmlFree(title);
-          }
-          else if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"summary")) )
-          {
-            xmlChar *summary= xmlNodeListGetString(doc, entryChilds->xmlChildrenNode, 1);
-            if( summary )
-              ctx->current_album->summary = g_strdup((const char *)summary);
-            xmlFree(summary);
-          }
-          else if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"rights")) )
-          {
-            xmlChar *rights= xmlNodeListGetString(doc, entryChilds->xmlChildrenNode, 1);
-            ctx->current_album->rights= g_strdup((const char *)rights);
-            xmlFree(rights);
-          }
-          else if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"numphotos")) )
-          {
-            xmlChar *photos= xmlNodeListGetString(doc, entryChilds->xmlChildrenNode, 1);
-            ctx->current_album->photoCount = g_strdup((const char *)photos);
-            xmlFree(photos);
-          }
-        }
-        while( (entryChilds = entryChilds->next)!=NULL );
-      }
-      xmlFreeDoc(doc);
-    }
-    else
-      return 0;
-
-    return 201;
-  }
-  return 0;
-}
-
-static int _picasa_api_get_feed(_picasa_api_context_t *ctx)
-{
-  _buffer_t buffer;
-  memset(&buffer,0,sizeof(_buffer_t));
-#ifdef _DEBUG
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 1);
-#else
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
-#endif
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, "http://picasaweb.google.com/data/feed/api/user/default");
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_POST, 0);
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEDATA, &buffer);
-  curl_easy_perform( ctx->curl_handle );
-
-  long result;
-  curl_easy_getinfo(ctx->curl_handle,CURLINFO_RESPONSE_CODE,&result );
-  if( result == 200 )
-  {
-    // setup xml parsing of result...
-    xmlInitParser();
-    xmlDocPtr doc;
-    xmlNodePtr feedNode;
-
-    // Parse xml document
-    if( ( doc = xmlParseDoc( (xmlChar *)buffer.data ))==NULL)
-    {
-      return 0;
-    }
-    // Remove old album objects from list..
-    if( ctx->albums != NULL )
-    {
-      while( g_list_length(ctx->albums) > 0 )
-      {
-        gpointer data=g_list_nth_data(ctx->albums, 0);
-        ctx->albums = g_list_remove( ctx->albums,data);
-        g_free( data );
-      }
-    }
-
-    // Let's parse atom feed of albums...
-    feedNode = xmlDocGetRootElement(doc);
-    if(  xmlStrcmp(feedNode->name, (const xmlChar *) "feed")==0 )
-    {
-      xmlNodePtr children = feedNode->xmlChildrenNode;
-      if( children != NULL)
-      {
-        do
-        {
-          // Let's take care of entry node
-          if ((!xmlStrcmp(children->name, (const xmlChar *)"entry")) )
-          {
-            // we want <id/> <title/> <summary/> <rights/> nodes from entry
-            xmlNodePtr entryChilds = children->xmlChildrenNode;
-            if( entryChilds != NULL )
-            {
-              // Got an album entry let's create new _picasa_album_t object and parse node info into object
-              // then add it to the list of albums available...
-              _picasa_album_t *album = g_malloc(sizeof(_picasa_album_t));
-              memset(album,0,sizeof(_picasa_album_t));
-              do
-              {
-
-                if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"id")) )
-                {
-                  xmlChar *id= xmlNodeListGetString(doc, entryChilds->xmlChildrenNode, 1);
-                  if( xmlStrncmp( id, (const xmlChar *)"http://",7) )
-                  {
-                    album->id = g_strdup((const char *)id);
-                  }
-                  xmlFree(id);
-
-                }
-                else if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"title")) )
-                {
-                  xmlChar *title= xmlNodeListGetString(doc, entryChilds->xmlChildrenNode, 1);
-                  album->title = g_strdup((const char *)title);
-                  xmlFree(title);
-                }
-                else if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"summary")) )
-                {
-                  xmlChar *summary= xmlNodeListGetString(doc, entryChilds->xmlChildrenNode, 1);
-                  if( summary )
-                    album->summary = g_strdup((const char *)summary);
-                  xmlFree(summary);
-                }
-                else if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"rights")) )
-                {
-                  xmlChar *rights= xmlNodeListGetString(doc, entryChilds->xmlChildrenNode, 1);
-                  album->rights= g_strdup((const char *)rights);
-                  xmlFree(rights);
-                }
-                else if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"numphotos")) )
-                {
-                  xmlChar *photos= xmlNodeListGetString(doc, entryChilds->xmlChildrenNode, 1);
-                  album->photoCount = g_strdup((const char *)photos);
-                  xmlFree(photos);
-                }
-              }
-              while( ( entryChilds = entryChilds->next ) != NULL);
-
-              // Entry node parsed add album to list
-              ctx->albums = g_list_append(ctx->albums,album);
-            }
-          }
-        }
-        while( (children = children->next)!=NULL );
-      }
-      xmlFreeDoc(doc);
-    }
-
-    return result;
-  }
-  return 0;
+  g_snprintf(ctx->userid, 1024, "%s", user_id);
+  g_free(name);
+  return accountinfo;
 }
 
 
-const char*
-name ()
-{
-  return _("picasa webalbum");
-}
-
-
-static void entry_changed(GtkEntry *entry, gpointer data)
-{
-  dt_storage_picasa_gui_data_t *ui=(dt_storage_picasa_gui_data_t *)data;
-
-  if( ui->picasa_api != NULL)
-    ui->picasa_api->needsReauthentication=TRUE;
-}
-
-
-/** Set status connection text */
-static void set_status(dt_storage_picasa_gui_data_t *ui, gchar *message,gchar *color)
-{
-  if( !color ) color="#ffffff";
-  gchar mup[512]= {0};
-  sprintf( mup,"<span foreground=\"%s\" ><small>%s</small></span>",color,message);
-  gtk_label_set_markup(ui->label4, mup);
-}
-
-/** Refresh albums */
-static void refresh_albums(dt_storage_picasa_gui_data_t *ui)
-{
-  gtk_widget_set_sensitive( GTK_WIDGET(ui->comboBox1), FALSE);
-
-  if( ui->picasa_api == NULL || ui->picasa_api->needsReauthentication == TRUE )
-  {
-    if( ui->picasa_api ) _picasa_api_free( ui->picasa_api);
-    ui->picasa_api = _picasa_api_authenticate(gtk_entry_get_text(ui->entry1),gtk_entry_get_text(ui->entry2));
-  }
-
-  // First clear the model of data except first item (Create new album)
-  GtkTreeModel *model=gtk_combo_box_get_model(ui->comboBox1);
-  gtk_list_store_clear (GTK_LIST_STORE(model));
-
-  if( ui->picasa_api )
-  {
-    set_status(ui,_("authenticated"), "#7fe07f");
-
-    /* Add creds to pwstorage */
-    GHashTable *table = g_hash_table_new(g_str_hash, g_str_equal);
-    gchar* username = g_strdup(gtk_entry_get_text(ui->entry1));
-    gchar* password = g_strdup(gtk_entry_get_text(ui->entry2));
-
-    g_hash_table_insert(table, "username", username);
-    g_hash_table_insert(table, "password", password);
-
-    if( !dt_pwstorage_set("picasa", table) )
-    {
-      dt_print(DT_DEBUG_PWSTORAGE,"[picasa] cannot store username/password\n");
-    }
-
-    g_free(username);
-    g_free(password);
-    g_hash_table_destroy(table);
-
-    if( _picasa_api_get_feed(ui->picasa_api) == 200)
-    {
-
-      // Add standard action
-      gtk_combo_box_append_text( ui->comboBox1, _("create new album") );
-      gtk_combo_box_append_text( ui->comboBox1, "" );// Separator
-
-      // Then add albums from list...
-      GList *album=g_list_first(ui->picasa_api->albums);
-      if( album != NULL )
-      {
-        for(guint i=0; i<g_list_length(ui->picasa_api->albums); i++)
-        {
-          char data[512]= {0};
-          sprintf(data,"%s (%s)", ((_picasa_album_t*)g_list_nth_data(ui->picasa_api->albums,i))->title, ((_picasa_album_t*)g_list_nth_data(ui->picasa_api->albums,i))->photoCount );
-          gtk_combo_box_append_text( ui->comboBox1, g_strdup(data));
-        }
-        gtk_combo_box_set_active( ui->comboBox1, 2);
-        gtk_widget_hide( GTK_WIDGET(ui->hbox1) ); // Hide create album box...
-
-      }
-      else
-        gtk_combo_box_set_active( ui->comboBox1, 0);
-    }
-    else
-    {
-      // Failed to parse feed of album...
-      // Lets notify somehow...
-    }
-    gtk_widget_set_sensitive( GTK_WIDGET(ui->comboBox1), TRUE);
-  }
-  else
-  {
-    // Failed to authenticated, let's notify somehow...
-    set_status(ui,_("authentication failed"),"#e07f7f");
-    gtk_widget_set_sensitive(GTK_WIDGET( ui->comboBox1 ) ,FALSE);
-  }
-
-
-}
-
-static void album_changed(GtkComboBox *cb,gpointer data)
-{
-  dt_storage_picasa_gui_data_t * ui=(dt_storage_picasa_gui_data_t *)data;
-  gchar *value=gtk_combo_box_get_active_text(ui->comboBox1);
-  if( value!=NULL && strcmp( value, _("create new album") ) == 0 )
-  {
-    gtk_widget_set_no_show_all(GTK_WIDGET(ui->hbox1), FALSE);
-    gtk_widget_show_all(GTK_WIDGET(ui->hbox1));
-  }
-  else
-    gtk_widget_hide(GTK_WIDGET(ui->hbox1));
-}
+///////////////////////////////// UI functions
 
 static gboolean combobox_separator(GtkTreeModel *model,GtkTreeIter *iter,gpointer data)
 {
@@ -722,360 +784,854 @@ static gboolean combobox_separator(GtkTreeModel *model,GtkTreeIter *iter,gpointe
   return FALSE;
 }
 
-// Refresh button pressed...
-static void button1_clicked(GtkButton *button,gpointer data)
+static gchar *picasa_get_user_refresh_token(PicasaContext *ctx)
 {
-  dt_storage_picasa_gui_data_t * ui=(dt_storage_picasa_gui_data_t *)data;
-  refresh_albums(ui);
+  gchar *refresh_token = NULL;
+  JsonObject *reply;
+  gchar *params = NULL;
+
+  params = dt_util_dstrcat(params, "refresh_token=%s&client_id="GOOGLE_API_KEY"&client_secret="GOOGLE_API_SECRET"&grant_type=refresh_token", ctx->refresh_token);
+
+  reply = picasa_query_post_auth(ctx, "o/oauth2/token", params);
+
+  refresh_token = g_strdup(json_object_get_string_member(reply, "access_token"));
+
+  g_free (params);
+
+  return refresh_token;
 }
 
-/*
-static gboolean
-focus_in(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+/**
+ * @see https://developers.google.com/accounts/docs/OAuth2InstalledApp
+ * @returs NULL if the user cancel the operation or a valid token
+ */
+static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
 {
-  dt_control_tab_shortcut_off(darktable.control);
-  return FALSE;
-}
+  ///////////// open the authentication url in a browser
+  GError *error = NULL;
+  gtk_show_uri(gdk_screen_get_default(),
+               GOOGLE_WS_BASE_URL"o/oauth2/auth?"
+               "client_id=" GOOGLE_API_KEY
+               "&redirect_uri=urn:ietf:wg:oauth:2.0:oob"
+               "&scope=https://picasaweb.google.com/data/ https://www.googleapis.com/auth/userinfo.profile"
+               " https://www.googleapis.com/auth/userinfo.email"
+               "&response_type=code", gtk_get_current_event_time(), &error);
 
-static gboolean
-focus_out(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
-{
-  dt_control_tab_shortcut_on(darktable.control);
-  return FALSE;
-}
-*/
+  ////////////// build & show the validation dialog
+  gchar *text1 = _("step 1: a new window or tab of your browser should have been "
+                   "loaded. you have to login into your picasa account there "
+                   "and authorize darktable to upload photos before continuing.");
+  gchar *text2 = _("step 2: paste your browser url and click the ok button once "
+                   "you are done.");
 
-void
-gui_init (dt_imageio_module_storage_t *self)
-{
-  self->gui_data = (dt_storage_picasa_gui_data_t *)malloc(sizeof(dt_storage_picasa_gui_data_t));
-  memset(self->gui_data,0,sizeof(dt_storage_picasa_gui_data_t));
-  dt_storage_picasa_gui_data_t *ui= self->gui_data;
-  self->widget = gtk_vbox_new(TRUE, 0);
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+  GtkDialog *picasa_auth_dialog = GTK_DIALOG(gtk_message_dialog_new (GTK_WINDOW (window),
+                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                  GTK_MESSAGE_QUESTION,
+                                  GTK_BUTTONS_OK_CANCEL,
+                                  _("picasa authentication")));
+  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (picasa_auth_dialog),
+      "%s\n\n%s", text1, text2);
 
-  GtkWidget *hbox1=gtk_hbox_new(FALSE,5);
-  GtkWidget *vbox1=gtk_vbox_new(FALSE,0);
-  GtkWidget *vbox2=gtk_vbox_new(FALSE,0);
+  GtkWidget *entry = gtk_entry_new();
+  GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(gtk_label_new(_("url:"))), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(entry), TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(picasa_auth_dialog->vbox), hbox, TRUE, TRUE, 0);
 
-  ui->label1 = GTK_LABEL(  gtk_label_new( _("user") ) );
-  ui->label2 = GTK_LABEL(  gtk_label_new( _("password") ) );
-  ui->label3 = GTK_LABEL(  gtk_label_new( _("albums") ) );
-  ui->label4 = GTK_LABEL(  gtk_label_new( NULL ) );
-  ui->label5 = GTK_LABEL(  gtk_label_new( _("title") ) );
-  ui->label6 = GTK_LABEL(  gtk_label_new( _("summary") ) );
-  ui->label7 = GTK_LABEL(  gtk_label_new( _("rights") ) );
-  gtk_misc_set_alignment(GTK_MISC(ui->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->label2), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->label3), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->label5), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->label6), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->label7), 0.0, 0.5);
+  gtk_widget_show_all(GTK_WIDGET(picasa_auth_dialog));
 
-  ui->entry1 = GTK_ENTRY( gtk_entry_new() );
-  ui->entry2 = GTK_ENTRY( gtk_entry_new() );
-  ui->entry3 = GTK_ENTRY( gtk_entry_new() );  // Album title
-  ui->entry4 = GTK_ENTRY( gtk_entry_new() );  // Album summary
-
-  dt_gui_key_accel_block_on_focus_connect (GTK_WIDGET (ui->entry1));
-  dt_gui_key_accel_block_on_focus_connect (GTK_WIDGET (ui->entry2));
-  dt_gui_key_accel_block_on_focus_connect (GTK_WIDGET (ui->entry3));
-  dt_gui_key_accel_block_on_focus_connect (GTK_WIDGET (ui->entry4));
-
-  /*
-    gtk_widget_add_events(GTK_WIDGET(ui->entry1), GDK_FOCUS_CHANGE_MASK);
-    g_signal_connect (G_OBJECT (ui->entry1), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
-    g_signal_connect (G_OBJECT (ui->entry1), "focus-out-event", G_CALLBACK(focus_out), NULL);
-
-    gtk_widget_add_events(GTK_WIDGET(ui->entry2), GDK_FOCUS_CHANGE_MASK);
-    g_signal_connect (G_OBJECT (ui->entry2), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
-    g_signal_connect (G_OBJECT (ui->entry2), "focus-out-event", G_CALLBACK(focus_out), NULL);
-    gtk_widget_add_events(GTK_WIDGET(ui->entry3), GDK_FOCUS_CHANGE_MASK);
-    g_signal_connect (G_OBJECT (ui->entry3), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
-    g_signal_connect (G_OBJECT (ui->entry3), "focus-out-event", G_CALLBACK(focus_out), NULL);
-    gtk_widget_add_events(GTK_WIDGET(ui->entry4), GDK_FOCUS_CHANGE_MASK);
-    g_signal_connect (G_OBJECT (ui->entry4), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
-    g_signal_connect (G_OBJECT (ui->entry4), "focus-out-event", G_CALLBACK(focus_out), NULL);
-  */
-  GHashTable* table = dt_pwstorage_get("picasa");
-  gchar* _username = g_strdup( g_hash_table_lookup(table, "username"));
-  gchar* _password = g_strdup( g_hash_table_lookup(table, "password"));
-  g_hash_table_destroy(table);
-  gtk_entry_set_text( ui->entry1,  _username == NULL?"":_username );
-  gtk_entry_set_text( ui->entry2,  _password == NULL?"":_password );
-  gtk_entry_set_text( ui->entry3, _("my new album") );
-  gtk_entry_set_text( ui->entry4, _("exported from darktable") );
-
-  gtk_entry_set_visibility(ui->entry2, FALSE);
-
-  GtkWidget *albumlist=gtk_hbox_new(FALSE,0);
-  ui->comboBox1=GTK_COMBO_BOX( gtk_combo_box_new_text()); // Available albums
-
-  dt_ellipsize_combo(ui->comboBox1);
-
-  ui->dtbutton1 = DTGTK_BUTTON( dtgtk_button_new(dtgtk_cairo_paint_refresh,0) );
-  g_object_set(G_OBJECT(ui->dtbutton1), "tooltip-text", _("refresh album list"), (char *)NULL);
-  gtk_widget_set_sensitive( GTK_WIDGET(ui->comboBox1), FALSE);
-  gtk_combo_box_set_row_separator_func(ui->comboBox1,combobox_separator,ui->comboBox1,NULL);
-  gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->comboBox1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->dtbutton1), FALSE, FALSE, 0);
-
-  ui->checkButton1 = GTK_CHECK_BUTTON( gtk_check_button_new_with_label(_("public album")) );
-  ui->checkButton2 = GTK_CHECK_BUTTON( gtk_check_button_new_with_label(_("export tags")) );
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON( ui->checkButton2 ),TRUE);
-  // Auth
-  gtk_box_pack_start(GTK_BOX(hbox1), vbox1, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox1), vbox2, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox1, TRUE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->label1 ), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->label2 ), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( gtk_label_new("")), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( gtk_label_new("")), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->label3 ), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->entry1 ), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->entry2 ), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->label4 ), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->checkButton2 ), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( albumlist ), TRUE, FALSE, 0);
-
-
-  // Create Album
-  ui->hbox1=GTK_BOX(gtk_hbox_new(FALSE,5));
-  gtk_widget_set_no_show_all(GTK_WIDGET(ui->hbox1), TRUE);
-  vbox1=gtk_vbox_new(FALSE,0);
-  vbox2=gtk_vbox_new(FALSE,0);
-
-  gtk_box_pack_start(GTK_BOX(ui->hbox1), vbox1, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(ui->hbox1), vbox2, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(ui->hbox1), TRUE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->label5 ), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->label6 ), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->label7 ), TRUE, TRUE, 0);
-
-  gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->entry3 ), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->entry4 ), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->checkButton1 ), TRUE, FALSE, 0);
-
-
-  // Setup signals
-  // add signal on realize and hide gtk_widget_hide(GTK_WIDGET(ui->hbox1));
-
-  g_signal_connect(G_OBJECT(ui->dtbutton1), "clicked", G_CALLBACK(button1_clicked), (gpointer)ui);
-  g_signal_connect(G_OBJECT(ui->entry1), "changed", G_CALLBACK(entry_changed), (gpointer)ui);
-  g_signal_connect(G_OBJECT(ui->entry2), "changed", G_CALLBACK(entry_changed), (gpointer)ui);
-  g_signal_connect(G_OBJECT(ui->comboBox1), "changed", G_CALLBACK(album_changed), (gpointer)ui);
-
-  // If username and password is stored, let's populate the combo
-//   if( _username && _password )
-//     refresh_albums(ui);
-  if( _username )
-    g_free( _username );
-  if( _password )
-    g_free( _password );
-
-  gtk_combo_box_set_active( ui->comboBox1, 0);
-}
-
-void
-gui_cleanup (dt_imageio_module_storage_t *self)
-{
-  dt_storage_picasa_gui_data_t *ui =(dt_storage_picasa_gui_data_t *)self->gui_data;
-  dt_gui_key_accel_block_on_focus_disconnect (GTK_WIDGET (ui->entry1));
-  dt_gui_key_accel_block_on_focus_disconnect (GTK_WIDGET (ui->entry2));
-  dt_gui_key_accel_block_on_focus_disconnect (GTK_WIDGET (ui->entry3));
-  dt_gui_key_accel_block_on_focus_disconnect (GTK_WIDGET (ui->entry4));
-  free(ui);
-}
-
-void
-gui_reset (dt_imageio_module_storage_t *self)
-{
-}
-
-int
-store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
-       const int num, const int total, const gboolean high_quality)
-{
-  gint tags = 0;
-  int result=1;
-  dt_storage_picasa_params_t *p=(dt_storage_picasa_params_t *)sdata;
-
-  int fail = 0;
-#ifdef _OPENMP // synch parallel store
-  #pragma omp critical
-#endif
-  if( p->picasa_api->current_album == NULL )
-    if( _picasa_api_create_album( p->picasa_api ) != 201 )
+  ////////////// wait for the user to entrer the validation URL
+  gint result;
+  gchar *token = NULL;
+  const char *replyurl;
+  while (TRUE)
+  {
+    result = gtk_dialog_run (GTK_DIALOG (picasa_auth_dialog));
+    if (result == GTK_RESPONSE_CANCEL)
+      break;
+    replyurl = gtk_entry_get_text(GTK_ENTRY(entry));
+    if (replyurl == NULL || g_strcmp0(replyurl, "") == 0)
     {
-      dt_control_log("failed to create picasa album");
-      fail = 1;
+      gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(picasa_auth_dialog),
+                                                 "%s\n\n%s\n\n<span foreground=\"" MSGCOLOR_RED "\" ><small>%s</small></span>",
+                                                 text1, text2, _("please enter the validation url"));
+      continue;
     }
+    //token = picasa_extract_token_from_url(replyurl);
+    token = g_strdup(replyurl);
+    if (token != NULL)//we have a valid token
+      break;
+    else
+      gtk_message_dialog_format_secondary_markup(
+            GTK_MESSAGE_DIALOG(picasa_auth_dialog),
+            "%s\n\n%s%s\n\n<span foreground=\"" MSGCOLOR_RED "\"><small>%s</small></span>",
+            text1, text2,
+            _("the given url is not valid, it should look like: "),
+              GOOGLE_WS_BASE_URL"connect/login_success.html?...");
+  }
+  gtk_widget_destroy(GTK_WIDGET(picasa_auth_dialog));
 
-  if(fail) return 1;
+  // Interchange now the authorization_code for an access_token and refresh_token
+  JsonObject *reply;
+
+  gchar *params = NULL;
+  params = dt_util_dstrcat(params, "code=%s&client_id="GOOGLE_API_KEY"&client_secret="GOOGLE_API_SECRET"&redirect_uri="GOOGLE_URI"&grant_type=authorization_code", token);
+
+  reply = picasa_query_post_auth(ui->picasa_api, "o/oauth2/token", params);
+
+  gchar *access_token = g_strdup(json_object_get_string_member(reply, "access_token"));
+
+  gchar *refresh_token = g_strdup(json_object_get_string_member(reply, "refresh_token"));
+
+  ui->picasa_api->token = access_token;
+  ui->picasa_api->refresh_token = refresh_token;
+
+  g_free (params);
+
+  return 0; //FIXME
+}
+
+
+static void load_account_info_fill(gchar *key, gchar *value, GSList **accountlist)
+{
+  PicasaAccountInfo *info = picasa_account_info_init();
+  info->id = g_strdup(key);
+
+  JsonParser *parser = json_parser_new();
+  json_parser_load_from_data(parser, value, strlen(value), NULL);
+  JsonNode *root = json_parser_get_root(parser);
+  JsonObject *obj;
+
+  // defensive check, root can be null while parsing the acount info
+  if (root)
+  {
+    obj = json_node_get_object(root);
+    info->token = g_strdup(json_object_get_string_member(obj, "token"));
+    info->username = g_strdup(json_object_get_string_member(obj, "username"));
+    info->id = g_strdup(json_object_get_string_member(obj, "userid"));
+    info->refresh_token = g_strdup(json_object_get_string_member(obj, "refresh_token"));
+    *accountlist =  g_slist_prepend(*accountlist, info);
+  }
+  g_object_unref(parser);
+}
+
+/**
+ * @return a GSList of saved PicasaAccountInfo
+ */
+static GSList *load_account_info()
+{
+  GSList *accountlist = NULL;
+
+  GHashTable *table = dt_pwstorage_get("picasa2");
+  g_hash_table_foreach(table, (GHFunc) load_account_info_fill, &accountlist);
+  return accountlist;
+}
+
+static void save_account_info(dt_storage_picasa_gui_data_t *ui, PicasaAccountInfo *accountinfo)
+{
+  PicasaContext *ctx = ui->picasa_api;
+  g_return_if_fail(ctx != NULL);
+
+  ///serialize data;
+  JsonBuilder *builder = json_builder_new();
+  json_builder_begin_object(builder);
+  json_builder_set_member_name(builder, "username");
+  json_builder_add_string_value(builder, accountinfo->username);
+  json_builder_set_member_name(builder, "userid");
+  json_builder_add_string_value(builder, accountinfo->id);
+  json_builder_set_member_name(builder, "token");
+  json_builder_add_string_value(builder, accountinfo->token);
+  json_builder_set_member_name(builder, "refresh_token");
+  json_builder_add_string_value(builder, accountinfo->refresh_token);
+
+  json_builder_end_object(builder);
+
+  JsonNode *node = json_builder_get_root(builder);
+  JsonGenerator *generator = json_generator_new();
+  json_generator_set_root(generator, node);
+#if JSON_CHECK_VERSION(0, 14, 0)
+  json_generator_set_pretty(generator, FALSE);
+#endif
+  gchar *data = json_generator_to_data(generator, NULL);
+
+  json_node_free(node);
+  g_object_unref(generator);
+  g_object_unref(builder);
+
+  GHashTable *table = dt_pwstorage_get("picasa2");
+  g_hash_table_insert(table, accountinfo->id, data);
+  dt_pwstorage_set("picasa2", table);
+
+  g_hash_table_destroy(table);
+}
+
+static void remove_account_info(const gchar *accountid)
+{
+  GHashTable *table = dt_pwstorage_get("picasa2");
+  g_hash_table_remove(table, accountid);
+  dt_pwstorage_set("picasa2", table);
+  g_hash_table_destroy(table);
+}
+
+static void ui_refresh_users_fill(PicasaAccountInfo *value, gpointer dataptr)
+{
+  GtkListStore *liststore = GTK_LIST_STORE(dataptr);
+  GtkTreeIter iter;
+  gtk_list_store_append(liststore, &iter);
+  gtk_list_store_set(liststore, &iter,
+                     COMBO_USER_MODEL_NAME_COL, value->username,
+                     COMBO_USER_MODEL_TOKEN_COL, value->token,
+                     COMBO_USER_MODEL_REFRESH_TOKEN_COL, value->refresh_token,
+                     COMBO_USER_MODEL_ID_COL, value->id, -1);
+}
+
+static void ui_refresh_users(dt_storage_picasa_gui_data_t *ui)
+{
+  GSList *accountlist= load_account_info();
+  GtkListStore *list_store = GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_username));
+  GtkTreeIter iter;
+
+  gtk_list_store_clear(list_store);
+  gtk_list_store_append(list_store, &iter);
+
+  if (g_slist_length(accountlist) == 0)
+  {
+    gtk_list_store_set(list_store, &iter,
+                       COMBO_USER_MODEL_NAME_COL, _("new account"),
+                       COMBO_USER_MODEL_TOKEN_COL, NULL,
+                       COMBO_USER_MODEL_ID_COL, NULL, -1);
+  }
+  else
+  {
+    gtk_list_store_set(list_store, &iter,
+                       COMBO_USER_MODEL_NAME_COL, _("other account"),
+                       COMBO_USER_MODEL_TOKEN_COL, NULL,
+                       COMBO_USER_MODEL_ID_COL, NULL,-1);
+    gtk_list_store_append(list_store, &iter);
+    gtk_list_store_set(list_store, &iter,
+                       COMBO_USER_MODEL_NAME_COL, "",
+                       COMBO_USER_MODEL_TOKEN_COL, NULL,
+                       COMBO_USER_MODEL_ID_COL, NULL,-1);//separator
+  }
+
+  g_slist_foreach(accountlist, (GFunc)ui_refresh_users_fill, list_store);
+  gtk_combo_box_set_active(ui->comboBox_username, 0);
+
+  g_slist_free_full(accountlist, (GDestroyNotify)picasa_account_info_destroy);
+  gtk_combo_box_set_row_separator_func(ui->comboBox_username,combobox_separator,ui->comboBox_username,NULL);
+}
+
+static void ui_refresh_albums_fill(PicasaAlbum *album, GtkListStore *list_store)
+{
+  GtkTreeIter iter;
+  gtk_list_store_append(list_store, &iter);
+  gtk_list_store_set(list_store, &iter, COMBO_ALBUM_MODEL_NAME_COL, album->name, COMBO_ALBUM_MODEL_ID_COL, album->id, -1);
+}
+
+static void ui_refresh_albums(dt_storage_picasa_gui_data_t *ui)
+{
+  gboolean getlistok;
+  GList *albumList = picasa_get_album_list(ui->picasa_api, &getlistok);
+  if (! getlistok)
+  {
+    dt_control_log(_("unable to retreive the album list"));
+    goto cleanup;
+  }
+
+  GtkListStore *model_album = GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_album));
+  GtkTreeIter iter;
+  gtk_list_store_clear(model_album);
+  gtk_list_store_append(model_album, &iter);
+  gtk_list_store_set(model_album, &iter, COMBO_ALBUM_MODEL_NAME_COL, _("create new album"), COMBO_ALBUM_MODEL_ID_COL, NULL, -1);
+  if (albumList != NULL)
+  {
+    gtk_list_store_append(model_album, &iter);
+    gtk_list_store_set(model_album, &iter, COMBO_ALBUM_MODEL_NAME_COL, "", COMBO_ALBUM_MODEL_ID_COL, NULL, -1); //separator
+  }
+  g_list_foreach(albumList, (GFunc)ui_refresh_albums_fill, model_album);
+
+  if (albumList != NULL)
+    gtk_combo_box_set_active(ui->comboBox_album, 2);
+    // FIXME: get the albumid and set it in the PicasaCtx
+  else
+    gtk_combo_box_set_active(ui->comboBox_album, 0);
+
+  gtk_widget_show_all(GTK_WIDGET(ui->comboBox_album));
+  g_list_free_full(albumList, (GDestroyNotify)picasa_album_destroy);
+
+cleanup:
+  return;
+}
+
+static void ui_reset_albums_creation(struct dt_storage_picasa_gui_data_t *ui)
+{
+  gtk_entry_set_text(ui->entry_album_summary, "");
+  gtk_entry_set_text(ui->entry_album_title, "");
+  gtk_widget_hide_all(GTK_WIDGET(ui->hbox_album));
+}
+
+static void ui_combo_username_changed(GtkComboBox *combo, struct dt_storage_picasa_gui_data_t *ui)
+{
+  GtkTreeIter iter;
+  gchar *token = NULL;
+  gchar *refresh_token = NULL;
+  gchar *userid = NULL;
+  if (!gtk_combo_box_get_active_iter(combo, &iter))
+    return; //ie: list is empty while clearing the combo
+  GtkTreeModel *model = gtk_combo_box_get_model(combo);
+  gtk_tree_model_get( model, &iter, COMBO_USER_MODEL_TOKEN_COL, &token, -1);//get the selected token
+  gtk_tree_model_get( model, &iter, COMBO_USER_MODEL_REFRESH_TOKEN_COL, &refresh_token, -1);
+  gtk_tree_model_get( model, &iter, COMBO_USER_MODEL_ID_COL, &userid, -1);
+
+  ui->picasa_api->token = g_strdup(token);
+  ui->picasa_api->refresh_token = g_strdup(refresh_token);
+  g_snprintf(ui->picasa_api->userid, 1024, "%s", userid);
+
+  if (ui->picasa_api->token != NULL && picasa_test_auth_token(ui->picasa_api))
+  {
+    ui->connected = TRUE;
+    gtk_button_set_label(ui->button_login, _("logout"));
+    ui_refresh_albums(ui);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), TRUE);
+  }
+  else
+  {
+    gtk_button_set_label(ui->button_login, _("login"));
+    g_free(ui->picasa_api->token);
+    g_free(ui->picasa_api->refresh_token);
+    ui->picasa_api->token = ui->picasa_api->refresh_token = NULL;
+    gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), FALSE);
+    GtkListStore *model_album = GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_album));
+    gtk_list_store_clear(model_album);
+  }
+  ui_reset_albums_creation(ui);
+}
+
+static void ui_combo_album_changed(GtkComboBox *combo, gpointer data)
+{
+  dt_storage_picasa_gui_data_t *ui = (dt_storage_picasa_gui_data_t*)data;
+
+  GtkTreeIter iter;
+  gchar *albumid = NULL;
+  if (gtk_combo_box_get_active_iter(combo, &iter))
+  {
+    GtkTreeModel  *model = gtk_combo_box_get_model( combo );
+    gtk_tree_model_get( model, &iter, COMBO_ALBUM_MODEL_ID_COL, &albumid, -1);//get the album id
+  }
+
+  if (albumid == NULL)
+  {
+    gtk_widget_set_no_show_all(GTK_WIDGET(ui->hbox_album), FALSE);
+    gtk_widget_show_all(GTK_WIDGET(ui->hbox_album));
+  }
+  else
+  {
+    gtk_widget_set_no_show_all(GTK_WIDGET(ui->hbox_album), TRUE);
+    gtk_widget_hide(GTK_WIDGET(ui->hbox_album));
+  }
+
+}
+
+
+static gboolean ui_authenticate(dt_storage_picasa_gui_data_t *ui)
+{
+  if (ui->picasa_api == NULL)
+  {
+    ui->picasa_api = picasa_api_init();
+  }
+
+  PicasaContext *ctx = ui->picasa_api;
+  gboolean mustsaveaccount = FALSE;
+
+  gchar *uiselectedaccounttoken = NULL;
+  gchar *uiselectedaccountrefreshtoken = NULL;
+  gchar *uiselecteduserid = NULL;
+  GtkTreeIter iter;
+  gtk_combo_box_get_active_iter(ui->comboBox_username, &iter);
+  GtkTreeModel *accountModel = gtk_combo_box_get_model(ui->comboBox_username);
+  gtk_tree_model_get(accountModel, &iter, COMBO_USER_MODEL_TOKEN_COL, &uiselectedaccounttoken, -1);
+  gtk_tree_model_get(accountModel, &iter, COMBO_USER_MODEL_REFRESH_TOKEN_COL, &uiselectedaccountrefreshtoken, -1);
+  gtk_tree_model_get(accountModel, &iter, COMBO_USER_MODEL_ID_COL, &uiselecteduserid, -1);
+
+  if (ctx->token != NULL)
+  {
+    g_free(ctx->token);
+    g_free(ctx->refresh_token);
+    ctx->userid[0] = 0;
+    ctx->token = ctx->refresh_token = NULL;
+  }
+
+  if (uiselectedaccounttoken != NULL)
+  {
+    ctx->token = g_strdup(uiselectedaccounttoken);
+    ctx->refresh_token = g_strdup(uiselectedaccountrefreshtoken);
+    g_snprintf(ctx->userid, 1024, "%s", uiselecteduserid);
+  }
+  //check selected token if we already have one
+  if (ctx->token != NULL && !picasa_test_auth_token(ctx))
+  {
+      g_free(ctx->token);
+      g_free(ctx->refresh_token);
+      ctx->userid[0] = 0;
+      ctx->token = ctx->refresh_token = NULL;
+  }
+
+  int ret;
+  if(ctx->token == NULL)
+  {
+    mustsaveaccount = TRUE;
+    ret = picasa_get_user_auth_token(ui);//ask user to log in
+  }
+
+  if (ctx->token == NULL || ctx->refresh_token == NULL || ret != 0)
+  {
+    return FALSE;
+  }
+  else
+  {
+    if (mustsaveaccount)
+    {
+      // Get first the refresh token
+      PicasaAccountInfo *accountinfo = picasa_get_account_info(ui->picasa_api);
+      g_return_val_if_fail(accountinfo != NULL, FALSE);
+      save_account_info(ui, accountinfo);
+
+      //add account to user list and select it
+      GtkListStore *model =  GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_username));
+      GtkTreeIter iter;
+      gboolean r;
+      gchar *uid;
+
+      gboolean updated = FALSE;
+
+      for (r = gtk_tree_model_get_iter_first (GTK_TREE_MODEL(model), &iter);
+           r == TRUE;
+           r = gtk_tree_model_iter_next (GTK_TREE_MODEL(model), &iter))
+      {
+        gtk_tree_model_get (GTK_TREE_MODEL(model), &iter, COMBO_USER_MODEL_ID_COL, &uid, -1);
+
+        if (g_strcmp0(uid, accountinfo->id) == 0)
+        {
+          gtk_list_store_set(model, &iter, COMBO_USER_MODEL_NAME_COL, accountinfo->username,
+                                           COMBO_USER_MODEL_TOKEN_COL, accountinfo->token,
+                                           COMBO_USER_MODEL_REFRESH_TOKEN_COL, accountinfo->refresh_token,
+                                           -1);
+          updated = TRUE;
+          break;
+        }
+      }
+
+      if (!updated)
+      {
+        gtk_list_store_append(model, &iter);
+        gtk_list_store_set(model, &iter, COMBO_USER_MODEL_NAME_COL, accountinfo->username,
+                                         COMBO_USER_MODEL_TOKEN_COL, accountinfo->token,
+                                         COMBO_USER_MODEL_REFRESH_TOKEN_COL, accountinfo->refresh_token,
+                                         COMBO_USER_MODEL_ID_COL, accountinfo->id, -1);
+      }
+      g_signal_handlers_block_matched (ui->comboBox_username, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, ui_combo_username_changed, NULL);
+      gtk_combo_box_set_active_iter(ui->comboBox_username, &iter);
+      g_signal_handlers_unblock_matched (ui->comboBox_username, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, ui_combo_username_changed, NULL);
+
+      picasa_account_info_destroy(accountinfo);
+    }
+    return TRUE;
+  }
+}
+
+
+static void ui_login_clicked(GtkButton *button, gpointer data)
+{
+  dt_storage_picasa_gui_data_t *ui=(dt_storage_picasa_gui_data_t*)data;
+  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), FALSE);
+  if (ui->connected == FALSE)
+  {
+    if (ui_authenticate(ui))
+    {
+      ui_refresh_albums(ui);
+      ui->connected = TRUE;
+      gtk_button_set_label(ui->button_login, _("logout"));
+    }
+    else
+    {
+      gtk_button_set_label(ui->button_login, _("login"));
+    }
+  }
+  else //disconnect user
+  {
+    if (ui->connected == TRUE && ui->picasa_api->token != NULL)
+    {
+      GtkTreeModel *model = gtk_combo_box_get_model(ui->comboBox_username);
+      GtkTreeIter iter;
+      gtk_combo_box_get_active_iter(ui->comboBox_username, &iter);
+      gchar *userid;
+      gtk_tree_model_get(model, &iter, COMBO_USER_MODEL_ID_COL, &userid, -1);
+      remove_account_info(userid);
+      gtk_button_set_label(ui->button_login, _("login"));
+      ui_refresh_users(ui);
+      ui->connected = FALSE;
+    }
+  }
+  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), TRUE);
+}
+
+
+
+////////////////////////// darktable library interface
+
+/* plugin name */
+const char *name()
+{
+  return _("picasa webalbum");
+}
+
+/* construct widget above */
+void gui_init(struct dt_imageio_module_storage_t *self)
+{
+  self->gui_data = g_malloc0(sizeof(dt_storage_picasa_gui_data_t));
+  dt_storage_picasa_gui_data_t *ui = self->gui_data;
+  ui->picasa_api = picasa_api_init();
+
+  self->widget = gtk_vbox_new(FALSE, 0);
+
+  //create labels
+  ui->label_album_title = GTK_LABEL(  gtk_label_new( _("title") ) );
+  ui->label_album_summary = GTK_LABEL(  gtk_label_new( _("summary") ) );
+  ui->label_album_privacy = GTK_LABEL(gtk_label_new(_("privacy")));
+  ui->label_status = GTK_LABEL(gtk_label_new(NULL));
+
+  gtk_misc_set_alignment(GTK_MISC(ui->label_album_title), 0.0, 0.5);
+  gtk_misc_set_alignment(GTK_MISC(ui->label_album_summary), 0.0, 0.5);
+  gtk_misc_set_alignment(GTK_MISC(ui->label_album_privacy), 0.0, 0.5);
+
+  //create entries
+  GtkListStore *model_username  = gtk_list_store_new (COMBO_USER_MODEL_NB_COL, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING); //text, token, refresh_token, id
+  ui->comboBox_username = GTK_COMBO_BOX(gtk_combo_box_new_with_model(GTK_TREE_MODEL(model_username)));
+  GtkCellRenderer *p_cell = gtk_cell_renderer_text_new ();
+  g_object_set (G_OBJECT(p_cell), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, "ellipsize-set", TRUE, "width-chars", 35, NULL);
+  gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (ui->comboBox_username), p_cell, FALSE);
+  gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (ui->comboBox_username), p_cell, "text", 0, NULL);
+
+  ui->entry_album_title = GTK_ENTRY(gtk_entry_new());
+  ui->entry_album_summary = GTK_ENTRY(gtk_entry_new());
+
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->comboBox_username));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->entry_album_title));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->entry_album_summary));
+
+  //retreive saved accounts
+  ui_refresh_users(ui);
+
+  //////// album list /////////
+  GtkWidget *albumlist = gtk_hbox_new(FALSE, 0);
+  GtkListStore *model_album = gtk_list_store_new (COMBO_ALBUM_MODEL_NB_COL, G_TYPE_STRING, G_TYPE_STRING); //name, id
+  ui->comboBox_album = GTK_COMBO_BOX(gtk_combo_box_new_with_model(GTK_TREE_MODEL(model_album)));
+  p_cell = gtk_cell_renderer_text_new ();
+  g_object_set (G_OBJECT(p_cell), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, "ellipsize-set", TRUE, "width-chars", 35, NULL);
+  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT (ui->comboBox_album), p_cell, FALSE);
+  gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (ui->comboBox_album), p_cell, "text", 0, NULL);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), FALSE);
+  gtk_combo_box_set_row_separator_func(ui->comboBox_album,combobox_separator,ui->comboBox_album,NULL);
+  gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->comboBox_album), TRUE, TRUE, 0);
+
+  ui->comboBox_privacy= GTK_COMBO_BOX(gtk_combo_box_new_text());
+  GtkListStore *list_store = gtk_list_store_new (COMBO_ALBUM_MODEL_NB_COL, G_TYPE_STRING, G_TYPE_INT);
+  GtkTreeIter iter;
+  gtk_list_store_append(list_store, &iter);
+  gtk_list_store_set(list_store, &iter, COMBO_PRIVACY_MODEL_NAME_COL, _("private"), COMBO_PRIVACY_MODEL_VAL_COL, PICASA_ALBUM_PRIVACY_PRIVATE, -1);
+  gtk_list_store_append(list_store, &iter);
+  gtk_list_store_set(list_store, &iter, COMBO_PRIVACY_MODEL_NAME_COL, _("public"), COMBO_PRIVACY_MODEL_VAL_COL, PICASA_ALBUM_PRIVACY_PRIVATE, -1);
+
+  gtk_combo_box_set_model(ui->comboBox_privacy, GTK_TREE_MODEL(list_store));
+
+  gtk_combo_box_set_active(GTK_COMBO_BOX(ui->comboBox_privacy), 1); // Set default permission to private
+  ui->button_login = GTK_BUTTON(gtk_button_new_with_label(_("login")));
+  ui->connected = FALSE;
+
+  //pack the ui
+  ////the auth box
+  GtkWidget *hbox_auth = gtk_hbox_new(FALSE,5);
+  GtkWidget *vbox_auth_labels=gtk_vbox_new(FALSE,0);
+  GtkWidget *vbox_auth_fields=gtk_vbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(hbox_auth), vbox_auth_labels, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_auth), vbox_auth_fields, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox_auth), TRUE, FALSE, 2);
+  gtk_box_pack_start(GTK_BOX(vbox_auth_fields), GTK_WIDGET(ui->comboBox_username), TRUE, FALSE, 2);
+
+  gtk_box_pack_start(GTK_BOX(vbox_auth_labels), GTK_WIDGET(gtk_label_new("")), TRUE, TRUE, 2);
+  gtk_box_pack_start(GTK_BOX(vbox_auth_fields), GTK_WIDGET(ui->button_login), TRUE, FALSE, 2);
+
+  gtk_box_pack_start(GTK_BOX(vbox_auth_fields), GTK_WIDGET(albumlist), TRUE, FALSE, 2);
+
+  ////the album creation box
+  ui->hbox_album = GTK_BOX(gtk_hbox_new(FALSE,5));
+  gtk_widget_set_no_show_all(GTK_WIDGET(ui->hbox_album), TRUE); //hide it by default
+  GtkWidget *vbox_album_labels=gtk_vbox_new(FALSE,0);
+  GtkWidget *vbox_album_fields=gtk_vbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(ui->hbox_album), TRUE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(ui->hbox_album), vbox_album_labels, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(ui->hbox_album), vbox_album_fields, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox_album_labels), GTK_WIDGET(ui->label_album_title), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox_album_fields), GTK_WIDGET(ui->entry_album_title), TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox_album_labels), GTK_WIDGET(ui->label_album_summary), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox_album_fields), GTK_WIDGET(ui->entry_album_summary), TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox_album_labels), GTK_WIDGET(ui->label_album_privacy), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox_album_fields), GTK_WIDGET(ui->comboBox_privacy), TRUE, FALSE, 0);
+
+  //connect buttons to signals
+  g_signal_connect(G_OBJECT(ui->button_login), "clicked", G_CALLBACK(ui_login_clicked), (gpointer)ui);
+  g_signal_connect(G_OBJECT(ui->comboBox_username), "changed", G_CALLBACK(ui_combo_username_changed), (gpointer)ui);
+  g_signal_connect(G_OBJECT(ui->comboBox_album), "changed", G_CALLBACK(ui_combo_album_changed), (gpointer)ui);
+
+  g_object_unref(model_username);
+  g_object_unref(model_album);
+  g_object_unref(list_store);
+}
+
+/* destroy resources */
+void gui_cleanup(struct dt_imageio_module_storage_t *self)
+{
+  dt_storage_picasa_gui_data_t *ui = self->gui_data;
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->comboBox_username));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->entry_album_title));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->entry_album_summary));
+  if (ui->picasa_api != NULL)
+    picasa_api_destroy(ui->picasa_api);
+  g_free(self->gui_data);
+}
+
+/* reset options to defaults */
+void gui_reset(struct dt_imageio_module_storage_t *self)
+{
+  //TODO?
+}
+
+/* try and see if this format is supported? */
+int supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format)
+{
+  if( strcmp(format->mime(NULL) ,"image/jpeg") ==  0 ) return 1;
+  return 0;
+}
+
+/* this actually does the work */
+int store(struct dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total, const gboolean high_quality)
+{
+  gint result = 1;
+  PicasaContext *ctx = (PicasaContext*)sdata;
 
   const char *ext = format->extension(fdata);
-
-  // Let's upload image...
-
-  /* construct a temporary file name */
   char fname[4096]= {0};
-  dt_loc_get_tmp_dir (fname,4096);
+  dt_loc_get_tmp_dir(fname,4096);
   g_strlcat (fname,"/darktable.XXXXXX.",4096);
   g_strlcat(fname,ext,4096);
 
-  char *caption="a image";
-  char *description="";
-  char *mime="image/jpeg";
-
-  // Ok, maybe a dt_imageio_export_to_buffer would suit here !?
   gint fd=g_mkstemp(fname);
-  fprintf(stderr,"tempfile: %s\n",fname);
   if(fd==-1)
   {
     dt_control_log("failed to create temporary image for picasa export");
     return 1;
   }
   close(fd);
+
+  //get metadata
   const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
-  caption = g_path_get_basename( img->filename );
+  char *caption = NULL;
+  char *description = NULL;
+  GList *title = NULL;
+  GList *desc = NULL;
 
-  (g_strrstr(caption,"."))[0]='\0'; // Shop extension...
+  title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
+  if(title != NULL)
+  {
+    caption = title->data;
+  }
+  if (caption == NULL)
+  {
+    caption = g_path_get_basename( img->filename );
+    (g_strrstr(caption,"."))[0]='\0'; // Chop extension...
+  }
 
-  GList *desc = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
-  if(desc != NULL)
+  desc = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
+  if (desc != NULL)
   {
     description = desc->data;
   }
+
   dt_image_cache_read_release(darktable.image_cache, img);
 
   if(dt_imageio_export(imgid, fname, format, fdata, high_quality) != 0)
   {
-    fprintf(stderr, "[imageio_storage_picasa] could not export to file: `%s'!\n", fname);
+    g_printerr("[picasa] could not export to file: `%s'!\n", fname);
     dt_control_log(_("could not export to file `%s'!"), fname);
-    result = 1;
+    result = 0;
     goto cleanup;
   }
 
-  // Open the temp file and read image to memory
-  GMappedFile *imgfile = g_mapped_file_new(fname,FALSE,NULL);
-  int size = g_mapped_file_get_length( imgfile );
-  gchar *data =g_mapped_file_get_contents( imgfile );
-
-#ifdef _OPENMP
-  #pragma omp critical
-#endif
+  if (strlen(ctx->album_id) == 0)
   {
-  // Fetch the attached tags of image id if exported..
-  if( p->export_tags == TRUE )
-    tags = imgid;
-
-  // Upload image to picasa
-    if( _picasa_api_upload_photo( p->picasa_api, mime , data, size , caption, description, tags ) == 201 )
-      result=0;
+    if (ctx->album_title == NULL)
+    {
+      dt_control_log(_("unable to create album, no title provided"));
+      result = 0;
+      goto cleanup;
+    }
+    const gchar *album_id = picasa_create_album(ctx, ctx->album_title, ctx->album_summary, ctx->album_permission);
+    if (album_id == NULL)
+    {
+      dt_control_log(_("unable to create album"));
+      result = 0;
+      goto cleanup;
+    }
+    g_snprintf (ctx->album_id, 1024, "%s", album_id);
   }
 
-  // Unreference the memorymapped file...
-  g_mapped_file_unref( imgfile );
-
-  // And remove from filesystem..
-  unlink( fname );
+  const char *photoid = picasa_upload_photo_to_album(ctx, ctx->album_id, fname, caption, description, imgid);
+  if (photoid == NULL)
+  {
+    dt_control_log(_("unable to export photo to webalbum"));
+    result = 0;
+    goto cleanup;
+  }
 
 cleanup:
-
+  unlink( fname );
   g_free( caption );
+  g_free( description );
   if(desc)
   {
-    g_free(desc->data);
+    //no need to free desc->data as caption points to it
     g_list_free(desc);
   }
 
-  if(!result)
+  if (result)
+  {
+    //this makes sense only if the export was successful
     dt_control_log(_("%d/%d exported to picasa webalbum"), num, total );
-  return result;
+  }
+  return 0;
 }
 
-void*
-get_params(dt_imageio_module_storage_t *self, int *size)
+
+int finalize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
 {
-  // have to return the size of the struct to store (i.e. without all the variable pointers at the end)
-  // TODO: if a hash to encrypted data is stored here, return only this size and store it at the beginning of the struct!
-  *size = sizeof(int64_t);
-  dt_storage_picasa_gui_data_t *ui =(dt_storage_picasa_gui_data_t *)self->gui_data;
-  dt_storage_picasa_params_t *d = (dt_storage_picasa_params_t *)g_malloc(sizeof(dt_storage_picasa_params_t));
-  memset(d,0,sizeof(dt_storage_picasa_params_t));
-  d->hash = 1;
+  gdk_threads_enter();
+  dt_storage_picasa_gui_data_t *ui = (dt_storage_picasa_gui_data_t*)self->gui_data;
+  ui_reset_albums_creation(ui);
+  ui_refresh_albums(ui);
+  gdk_threads_leave();
+  return 1;
+}
 
-  // fill d from controls in ui
-  if( ui->picasa_api )
+
+void *get_params(struct dt_imageio_module_storage_t *self, int *size)
+{
+  dt_storage_picasa_gui_data_t *ui = (dt_storage_picasa_gui_data_t*)self->gui_data;
+  if(ui->picasa_api == NULL || ui->picasa_api->token == NULL)
   {
-    // We are authenticated and off to actually export images..
-    d->picasa_api = ui->picasa_api;
-    int index = gtk_combo_box_get_active(ui->comboBox1);
-    if( index >= 0 )
-    {
-      if( index == 0 )   // Create new album
-      {
-        d->picasa_api->current_album = NULL;
-        d->picasa_api->album_title = g_strdup( gtk_entry_get_text( ui->entry3 ) );
-        d->picasa_api->album_summary = g_strdup( gtk_entry_get_text( ui->entry4) );
-        d->picasa_api->album_public = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( ui->checkButton1 ) );
-      }
-      else
-      {
-        // use existing album
-        if( (d->picasa_api->current_album = g_list_nth_data(d->picasa_api->albums,(index-2)))==NULL )
-        {
-          // Something went wrong...
-          fprintf(stderr,"Something went wrong.. album index %d = NULL\n",index-2 );
-          g_free(d);
-          return NULL;
-        }
-      }
-    }
-    else
-    {
-      g_free(d);
-      return NULL;
-    }
+    return NULL;
+  }
+  PicasaContext *p = (PicasaContext*)g_malloc0(sizeof(PicasaContext));
+  *size = sizeof(PicasaContext) - 8*sizeof(void *);
 
-    d->export_tags = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ui->checkButton2));
+  p->curl_ctx = ui->picasa_api->curl_ctx;
+  p->json_parser = ui->picasa_api->json_parser;
+  p->errmsg = ui->picasa_api->errmsg;
+  p->token = g_strdup(ui->picasa_api->token);
+  p->refresh_token = g_strdup(ui->picasa_api->refresh_token);
 
-    // Let UI forget about this api context and recreate a new one for further usage...
-    ui->picasa_api = _picasa_api_authenticate(gtk_entry_get_text(ui->entry1), gtk_entry_get_text(ui->entry2));
+  int index = gtk_combo_box_get_active(ui->comboBox_album);
+  if (index < 0)
+  {
+    picasa_api_destroy(p);
+    return NULL;
+  }
+  else if (index == 0)
+  {
+    p->album_id[0] = 0;
+    p->album_title = g_strdup(gtk_entry_get_text(ui->entry_album_title));
+    p->album_summary = g_strdup(gtk_entry_get_text(ui->entry_album_summary));
+    GtkTreeModel *model = gtk_combo_box_get_model(ui->comboBox_privacy);
+    GtkTreeIter iter;
+    int permission = -1;
+    gtk_combo_box_get_active_iter(ui->comboBox_privacy, &iter);
+    gtk_tree_model_get(model, &iter, COMBO_PRIVACY_MODEL_VAL_COL, &permission, -1);
+    p->album_permission = permission;
   }
   else
   {
-    g_free(d);
-    return NULL;
+    GtkTreeModel *model = gtk_combo_box_get_model(ui->comboBox_album);
+    GtkTreeIter iter;
+    gchar *albumid = NULL;
+    gtk_combo_box_get_active_iter(ui->comboBox_album, &iter);
+    gtk_tree_model_get(model, &iter, COMBO_ALBUM_MODEL_ID_COL, &albumid, -1);
+    g_snprintf(p->album_id, 1024, "%s", albumid);
   }
 
-  return d;
+  g_snprintf(p->userid, 1024, "%s", ui->picasa_api->userid);
+
+  //recreate a new context for further usages
+  ui->picasa_api = picasa_api_init();
+  ui->picasa_api->token = g_strdup(p->token);
+  ui->picasa_api->refresh_token = g_strdup(p->refresh_token);
+  g_snprintf(ui->picasa_api->userid, 1024, "%s", p->userid);
+
+  return p;
 }
 
-int
-set_params(dt_imageio_module_format_t *self, void *params, int size)
+
+void free_params(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
 {
-  if(size != sizeof(int64_t)) return 1;
-  // gui stuff not updated, as sensitive user data is not stored in the preset.
-  // TODO: store name/hash in kwallet/etc module and get encrypted stuff from there!
+  PicasaContext *ctx = (PicasaContext*)data;
+  picasa_api_destroy(ctx);
+}
+
+int set_params(struct dt_imageio_module_storage_t *self, const void *params, const int size)
+{
+  if(size != sizeof(PicasaContext) - 8*sizeof(void *))
+    return 1;
+
+  PicasaContext *d = (PicasaContext *) params;
+  dt_storage_picasa_gui_data_t *g = (dt_storage_picasa_gui_data_t *)self->gui_data;
+
+  g_snprintf(g->picasa_api->album_id, 1024, "%s", d->album_id);
+  g_snprintf(g->picasa_api->userid, 1024, "%s", d->userid);
+
+  GtkListStore *model =  GTK_LIST_STORE(gtk_combo_box_get_model(g->comboBox_username));
+  GtkTreeIter iter;
+  gboolean r;
+  gchar *uid = NULL;
+  gchar *albumid = NULL;
+
+  for (r = gtk_tree_model_get_iter_first (GTK_TREE_MODEL(model), &iter);
+       r == TRUE;
+       r = gtk_tree_model_iter_next (GTK_TREE_MODEL(model), &iter))
+  {
+    gtk_tree_model_get (GTK_TREE_MODEL(model), &iter, COMBO_USER_MODEL_ID_COL, &uid, -1);
+    if (g_strcmp0(uid, g->picasa_api->userid) == 0)
+    {
+      gtk_combo_box_set_active_iter(g->comboBox_username, &iter);
+      break;
+    }
+  }
+  g_free(uid);
+
+  model =  GTK_LIST_STORE(gtk_combo_box_get_model(g->comboBox_album));
+  for (r = gtk_tree_model_get_iter_first (GTK_TREE_MODEL(model), &iter);
+       r == TRUE;
+       r = gtk_tree_model_iter_next (GTK_TREE_MODEL(model), &iter))
+  {
+    gtk_tree_model_get (GTK_TREE_MODEL(model), &iter, COMBO_ALBUM_MODEL_ID_COL, &albumid, -1);
+    if (g_strcmp0(albumid, g->picasa_api->album_id) == 0)
+    {
+      gtk_combo_box_set_active_iter(g->comboBox_album, &iter);
+      break;
+    }
+  }
+  g_free(albumid);
+
   return 0;
-}
-
-int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_module_format_t *format)
-{
-  if( strcmp(format->mime(NULL) ,"image/jpeg") ==  0 ) return 1;
-  else if( strcmp(format->mime(NULL) ,"image/png") ==  0 ) return 1;
-
-  return 0;
-}
-
-void
-free_params(dt_imageio_module_storage_t *self, void *params)
-{
-  dt_storage_picasa_params_t *d = (dt_storage_picasa_params_t *)params;
-
-  _picasa_api_free(  d->picasa_api );
-
-  free(params);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

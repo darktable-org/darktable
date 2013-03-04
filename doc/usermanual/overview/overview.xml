@@ -97,9 +97,6 @@
 							<entry>
                                                                <para>This section describes the layout of the user interface.
                                                                </para>
-                                                               <para>TIP: You can change darktable's contrast by using <emphasis>F7</emphasis> and <emphasis>F8</emphasis>
-                                                               and darktable's lightness by using <emphasis>F9</emphasis> and <emphasis>F10</emphasis>.
-                                                               </para>
 							</entry>
 							<entry>
 								<graphic fileref="images/lighttable_view.png" scalefit="1" width="80%" align="center" />
@@ -133,7 +130,7 @@
 					</tgroup></informaltable>
 			</para>
 			<sect3 status="final"><title>Lighttable</title>
-				<para>The lighttable view is where you manage your images and filmrolls. It's also where you rate images, add tags and  
+				<para>The lighttable view is where images and filmrolls are managed. It's also where you rate images, add tags and  
                                       colorlabels, and export images among other actions (see <xref linkend="lighttable chapter"/>).
 				</para>
 			</sect3>
@@ -150,6 +147,21 @@
 				<para>This view shows images with geo-tag data on a map and allows manually geo-tagging new images (see <xref linkend="map chapter"/>).
 				</para>
 			</sect3>
+               </sect2>
+               <sect2 status="draft" id="screen layout"><title>Screen layout</title>
+                        <para>The general screen layout of all views is similar. There is a center view which contains most of the relevant information of that view. Then there are panels left,
+                        right, top and bottom to the center view. The left panel typically has an informational purpose. The right panel offers functions to modify data or an image. The top 
+                        and bottom panel give access to several settings and shortcuts. Each of the panels can be collapsed or expaned by pressing a triangle like
+                        <inlinegraphic fileref="&icon_general_collapse;" scalefit="1" width="2%"/>, located close to the panel.
+                        </para>
+                        <para>By pressing the <emphasis>TAB</emphasis> key all panels get collapsed, allowing the center view to occupy all available space. Pressing <emphasis>TAB</emphasis>
+                        again brings you back to the previous view.
+                        </para>
+                        <para>Fullscreen view can be toggled by pressing <emphasis>F11</emphasis>.
+                        </para>
+                        <para>darktable's contrast can be changed by using <emphasis>F7</emphasis> and <emphasis>F8</emphasis>
+                        and darktable's lightness by using <emphasis>F9</emphasis> and <emphasis>F10</emphasis>.
+                        </para>
                </sect2>
                <sect2 status="final" id="filmstrip overview"><title>Filmstrip</title>
 			<para>The filmstrip along the bottom shows the same images as lighttable, with respect to filters and sort order. It is turned on/off with key accelerator <emphasis>ctrl-f</emphasis>.
@@ -186,7 +198,7 @@
 			<sect3 status="draft"><title>Importing from camera</title>
 				<para>Connect your camera to your system. If your distribution tries to automount it, select the option to abort the mount operation.
 					Otherwise the camera will be locked and not accessible from within darktable. If you don't see your camera in the import
-                                        pane, hit the <quote>scan for devices</quote> button. Your camera will then appear in the same pane with additional actions: 
+                                        pane, hit the <quote>scan for devices</quote> button. Your camera will then appear in the same pane with additional choices: 
                                         <emphasis>import</emphasis> and <emphasis>tethering</emphasis>.</para>
 			</sect3>
 		</sect2>
@@ -243,7 +255,7 @@
 			</sect3>
 
   	         	<sect3 status="draft"><title>Noise reduction</title>
-           			<para>The best starting point for noise reduction is <link linkend="denoise profiled"><emphasis>profiled denoise</emphasis></link>. This modules offers 
+           			<para>The best starting point for noise reduction is <link linkend="denoise profiled"><emphasis>profiled denoise</emphasis></link>. This module offers 
                                       an almost <quote>single-click</quote> solution to fight noise. From a user perspective the effect only depends on camera type and ISO value, both 
                                       derived from EXIF data. All other settings are taken from
                                       a database of noise profiles that the darktable team has collected - now covering already over 60 popular camera models.
@@ -277,8 +289,7 @@
 			<sect3 status="draft"><title>Bringing back detail</title>
 				<para>Digital RAW images often contain more information than you can see at first sight. Especially 
                                       in the shadows of an image, there are lots of hidden details. The <link linkend="shadows and highlights"><emphasis>shadows and highlights</emphasis></link>
-                                      module helps bring these shades back into tonal values, where they contribute to the visual 
-                                      impression. Structural details in fully blown-out highlights, by nature of the digital sensor, can not 
+                                      module helps bring these details back into visible tonal values. Structural details in fully blown-out highlights, by nature of the digital sensor, can not 
                                       be recovered. However, you can correct unfavorable color casts in these areas with the 
                                       <link linkend="highlight reconstruction"><emphasis>highlight reconstruction</emphasis></link> module.
 				</para>

@@ -217,12 +217,16 @@ static void
 picker_callback (GtkDarktableToggleButton *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  self->request_color_pick = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button));
   if(darktable.gui->reset) return;
+
+  self->request_color_pick = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button)) ? 1 : 0);
 
   /* set the area sample size*/
   if (self->request_color_pick)
+  {
     dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+    dt_dev_reprocess_all(self->dev);
+  }
   else
     dt_control_queue_redraw();
 
@@ -358,6 +362,8 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   dtgtk_gradient_slider_set_picker_meanminmax(DTGTK_GRADIENT_SLIDER(g->gslider1), mean, min, max);
+
+  gtk_widget_queue_draw(GTK_WIDGET(g->gslider1));
 
   return FALSE;
 }

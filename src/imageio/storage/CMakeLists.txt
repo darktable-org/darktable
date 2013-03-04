@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 2.6)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../" "${CMAKE_CURRENT_SOURCE_DIR}")
-set(MODULES disk picasa email gallery latex)
+set(MODULES disk email gallery latex)
 
 if(FLICKCURL_FOUND)
 	list(APPEND MODULES flickr)
 endif(FLICKCURL_FOUND)
 
 if (JsonGlib_FOUND)
-	list(APPEND MODULES facebook)
+	list(APPEND MODULES facebook picasa)
 endif(JsonGlib_FOUND)
 
 foreach(module ${MODULES} ${MODULES_EXPERIMENTAL})

@@ -139,10 +139,6 @@
                       have some advantages over a pure software solution. With a physical GND filter you can in fact reduce the dynamic range 
                       of your scene to make it better fit the limits of your camera sensor.
                 </para>
-                <para>In the following example a hardware GND filter (Hitech ND0.6, soft edge) helped 
-                      me to prevent over-exposure in the sky and tree tops, while at the same time getting a well exposed 
-                      image of the ground. A rather disturbing element is the decay of lightness in the tree trunks from bottom to top.
-                </para>
 
 		<para>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
@@ -151,10 +147,9 @@
 					<tbody>
 						<row>
 							<entry>
-                                                               <para>Here darktable's neutral density filter together with the conditional 
-                                                                     blending feature (see <xref linkend="conditional blending"/>) comes in handy. We can add a lightness 
-                                                                     gradient that is just inverted in relation to the hardware filter. As we only want to compensate the unnatural
-                                                                     decay of lightness in the tree trunks, we combine the module with a suited blend mask.
+                                                               <para>In this example a hardware GND filter (Hitech ND0.6, soft edge) helped 
+                                                                     me to prevent over-exposure in the sky and tree tops, while at the same time getting a well exposed 
+                                                                     image of the ground. A rather disturbing element is the decay of lightness in the tree trunks from bottom to top.
                                                                </para>
                                                         </entry>
 							<entry>
@@ -163,8 +158,11 @@
 						</row>
 						<row>
 							<entry>
-								<para>The blend mask is constructed by using the gray, hue and saturation channels, and some added gaussian blur.
-								</para>
+                                                               <para>darktable's neutral density filter together with the conditional 
+                                                                     blending feature (see <xref linkend="conditional blending"/>) comes in handy. We can add a lightness 
+                                                                     gradient that is just inverted in relation to the hardware filter. As we only want to compensate the unnatural
+                                                                     decay of lightness in the tree trunks, we combine the module with a suited blend mask.
+                                                               </para>
 							</entry>
 
 							<entry>

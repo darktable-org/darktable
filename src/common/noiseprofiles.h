@@ -1287,16 +1287,13 @@ int dt_noiseprofile_get_matching(
     const int bufsize)
 {
   int cnt = 0;
-  char *match;
   if(bufsize < 1) return cnt;
   // collect all matching entries (skip generic [0])
   for(int i=1;i<dt_noiseprofile_cnt;i++)
   {
     if(strstr(cimg->exif_maker, dt_noiseprofiles[i].maker) &&
-       (match=strstr(cimg->exif_model, dt_noiseprofiles[i].model)) &&
-       //  we want this to be an exact match (space or \0 after the model name)
-       (*(match+strlen(dt_noiseprofiles[i].model)) == ' '
-        || *(match+strlen(dt_noiseprofiles[i].model)) == '\0'))
+    // we want this to be an exact match
+       !strcmp(cimg->exif_model, dt_noiseprofiles[i].model))
     {
       buf[cnt++] = dt_noiseprofiles + i;
     }

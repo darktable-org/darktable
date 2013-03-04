@@ -259,29 +259,9 @@ backtransform(
 // =====================================================================================
 // begin wavelet code:
 // =====================================================================================
-#if 0
-#define ALIGNED(a) __attribute__((aligned(a)))
-#define VEC4(a) {(a), (a), (a), (a)}
-
-static const __m128 fone ALIGNED(16) = VEC4(0x3f800000u);
-static const __m128 femo ALIGNED(16) = VEC4(0x00800000u);//VEC4(0x00adf880u);
-static const __m128 ooo1 ALIGNED(16) = {0.f, 0.f, 0.f, 1.f};
-
-/* SSE intrinsics version of dt_fast_expf defined in darktable.h */
-// computes exp2f(x) for x <= 0
-static __m128  inline
-dt_fast_expf_sse(const __m128 x)
-{
-  __m128  f = _mm_add_ps(fone, _mm_mul_ps(x, femo)); // f(n) = i1 + x(n)*(i2-i1)
-  __m128i i = _mm_cvtps_epi32(f);                    // i(n) = int(f(n))
-  __m128i mask = _mm_srai_epi32(i, 31);              // mask(n) = 0xffffffff if i(n) < 0
-  i = _mm_andnot_si128(mask, i);                     // i(n) = 0 if i(n) < 0
-  return _mm_castsi128_ps(i);                        // return *(float*)&i
-}
-#endif
 
 static __m128  inline
-weight_sse(const __m128 *c1, const __m128 *c2, const float sharpen)
+weight_sse(const __m128 *c1, const __m128 *c2, const float inv_sigma2)
 {
   // return _mm_set1_ps(1.0f);
 #if 1
@@ -289,31 +269,17 @@ weight_sse(const __m128 *c1, const __m128 *c2, const float sharpen)
   __m128 diff = _mm_sub_ps(*c1, *c2);
   __m128 sqr  = _mm_mul_ps(diff, diff);
   float *fsqr = (float *)&sqr;
-  const float dot = fsqr[0] + fsqr[1] + fsqr[2];
-  const float var = 0.5f;
-  // const float off2 = 144.0f; // (2*sigma * 2 * 3)^2
-  const float off2 = 324.0f; // (3*sigma * 2 * 3)^2
+  const float dot = (fsqr[0] + fsqr[1] + fsqr[2])*inv_sigma2;
+  const float var = 0.02f; // FIXME: this should ideally depend on the image before noise stabilizing transforms!
+  const float off2 = 9.0f;// (3 sigma)^2
   return _mm_set1_ps(fast_mexp2f(MAX(0, dot*var - off2)));
-#endif
-#if 0
-  // 3x 1d distance (results in funny color casts)
-  __m128 diff = _mm_sub_ps(*c1, *c2);
-  __m128 sqr  = _mm_mul_ps(diff, diff);
-  __m128 var  = _mm_set1_ps(0.5f);  // greater value here will give more harsh edges
-  // __m128 off2 = _mm_set1_ps(36.0f); // noise sigma2, cut off at (2 * 3*sigma)^2 == 36
-  __m128 off2 = _mm_set1_ps(16.0f); // noise sigma2, cut off at (2 * 2*sigma)^2 == 16
-  // this leaves salt and pepper noise because it's classified as edges:
-  // __m128 off2 = _mm_set1_ps(4.0f); // noise sigma2, cut off at (2 * sigma)^2 == 4
-  // expf(- max(0.0, var*sqr - off^2))
-  // =      min(0.0, - var*sqr + off^2) = min(0, off^2 - var*sqr)
-  return  dt_fast_expf_sse(_mm_min_ps(_mm_setzero_ps(), _mm_sub_ps(off2, _mm_mul_ps(sqr, var))));
 #endif
 }
 
 #define SUM_PIXEL_CONTRIBUTION_COMMON(ii, jj) \
   do { \
     const __m128 f = _mm_set1_ps(filter[(ii)]*filter[(jj)]); \
-    const __m128 wp = weight_sse(px, px2, sharpen); \
+    const __m128 wp = weight_sse(px, px2, inv_sigma2); \
     const __m128 w = _mm_mul_ps(f, wp); \
     const __m128 pd = _mm_mul_ps(w, *px2); \
     sum = _mm_add_ps(sum, pd); \
@@ -358,7 +324,7 @@ weight_sse(const __m128 *c1, const __m128 *c2, const float sharpen)
 
 static void
 eaw_decompose (float *const out, const float *const in, float *const detail, const int scale,
-               const float sharpen, const int32_t width, const int32_t height)
+               const float inv_sigma2, const int32_t width, const int32_t height)
 {
   const int mult = 1<<scale;
   static const float filter[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
@@ -546,9 +512,10 @@ void process_wavelets(
   tmp = dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
 
   const float wb[3] = {
-    piece->pipe->processed_maximum[0]*d->strength*(scale*scale),
+    // twice as many samples in green channel:
+    2.0f*piece->pipe->processed_maximum[0]*d->strength*(scale*scale),
     piece->pipe->processed_maximum[1]*d->strength*(scale*scale),
-    piece->pipe->processed_maximum[2]*d->strength*(scale*scale)};
+    2.0f*piece->pipe->processed_maximum[2]*d->strength*(scale*scale)};
   // only use green channel + wb for now:
   const float aa[3] = {
     d->a[1]*wb[0],
@@ -577,7 +544,10 @@ void process_wavelets(
 
   for(int scale=0; scale<max_scale; scale++)
   {
-    eaw_decompose (buf2, buf1, buf[scale], scale, 0.0f, width, height);
+    const float sigma = 1.0f;
+    const float varf = sqrtf(2.0f + 2.0f * 4.0f*4.0f + 6.0f*6.0f)/16.0f; // about 0.5
+    const float sigma_band = powf(varf, scale) *sigma;
+    eaw_decompose (buf2, buf1, buf[scale], scale, 1.0f/(sigma_band*sigma_band), width, height);
     // DEBUG: clean out temporary memory:
     // memset(buf1, 0, sizeof(float)*4*width*height);
 # if 0 // DEBUG: print wavelet scales:
@@ -615,23 +585,17 @@ void process_wavelets(
     const float sigma_band = powf(varf, scale) *sigma;
     // determine thrs as bayesshrink
     // TODO: parallelize!
-    float sum_y[3] = {0.0f}, sum_y2[3] = {0.0f};
+    float sum_y2[3] = {0.0f};
     const int n = width*height;
     for(int k=0;k<n;k++)
-    {
       for(int c=0;c<3;c++)
-      {
-        sum_y [c] += buf[scale][4*k+c];
         sum_y2[c] += buf[scale][4*k+c]*buf[scale][4*k+c];
-      }
-    }
 
     const float sb2 = sigma_band*sigma_band;
-    const float mean_y[3] = { sum_y[0]/n, sum_y[1]/n, sum_y[2]/n };
     const float var_y[3] = {
-      sum_y2[0]/(n-1.0f) - mean_y[0]*mean_y[0],
-      sum_y2[1]/(n-1.0f) - mean_y[1]*mean_y[1],
-      sum_y2[2]/(n-1.0f) - mean_y[2]*mean_y[2]};
+      sum_y2[0]/(n-1.0f),
+      sum_y2[1]/(n-1.0f),
+      sum_y2[2]/(n-1.0f)};
     const float std_x[3] = {
       sqrtf(MAX(1e-6f, var_y[0] - sb2)),
       sqrtf(MAX(1e-6f, var_y[1] - sb2)),
@@ -641,7 +605,7 @@ void process_wavelets(
     const float thrs[4] = { adjt * sb2/std_x[0], adjt * sb2/std_x[1], adjt * sb2/std_x[2], 0.0f};
     // const float std = (std_x[0] + std_x[1] + std_x[2])/3.0f;
     // const float thrs[4] = { adjt*sigma*sigma/std, adjt*sigma*sigma/std, adjt*sigma*sigma/std, 0.0f};
-    // fprintf(stderr, "scale %d thrs %f %f %f\n", scale, thrs[0], thrs[1], thrs[2]);
+    // fprintf(stderr, "scale %d thrs %f %f %f = %f / %f %f %f \n", scale, thrs[0], thrs[1], thrs[2], sb2, std_x[0], std_x[1], std_x[2]);
 #endif
     const float boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
     // const float thrs[4] = { 0.0, 0.0, 0.0, 0.0 };
@@ -1178,9 +1142,9 @@ int process_wavelets_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
   }
 
   const float wb[4] = {
-    piece->pipe->processed_maximum[0]*d->strength*(scale*scale),
+    2.0f*piece->pipe->processed_maximum[0]*d->strength*(scale*scale),
     piece->pipe->processed_maximum[1]*d->strength*(scale*scale),
-    piece->pipe->processed_maximum[2]*d->strength*(scale*scale),
+    2.0f*piece->pipe->processed_maximum[2]*d->strength*(scale*scale),
     0.0f};
   const float aa[4] = {
     d->a[1]*wb[0],
@@ -1216,7 +1180,10 @@ int process_wavelets_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
   for(int s=0; s<max_scale; s++)
   {
     const unsigned int scale = s;
-    const float zero = 0.0f;
+    const float sigma = 1.0f;
+    const float varf = sqrtf(2.0f + 2.0f * 4.0f*4.0f + 6.0f*6.0f)/16.0f; // about 0.5
+    const float sigma_band = powf(varf, s) * sigma;
+    const float inv_sigma2 = 1.0f/(sigma_band*sigma_band);
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 0, sizeof(cl_mem), (void *)&dev_buf1);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 1, sizeof(cl_mem), (void *)&dev_buf2);
@@ -1224,7 +1191,7 @@ int process_wavelets_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 3, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 4, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 5, sizeof(unsigned int), (void *)&scale);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 6, sizeof(float), (void *)&zero);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 6, sizeof(float), (void *)&inv_sigma2);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_decompose, sizes);
     if(err != CL_SUCCESS) goto error;
 

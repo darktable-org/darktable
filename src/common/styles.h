@@ -40,7 +40,7 @@ typedef struct dt_style_t
 
 typedef struct dt_style_item_t
 {
-  int num;
+  int num, selimg_num;
   gchar *name;
   dt_iop_params_t *params;
   dt_develop_blend_params_t *blendop_params;
@@ -53,10 +53,10 @@ void dt_styles_create_from_image (const char *name,const char *description,int32
 void dt_styles_create_from_selection(void);
 
 /** creates a new style from specified style, items are the style number of items to include in style */
-void dt_styles_create_from_style (const char *name, const char *newname, const char *description, GList *filter,gboolean silent);
+void dt_styles_create_from_style (const char *name, const char *newname, const char *description, GList *filter, int imgid, GList *update,gboolean silent);
 
 /** update a style */
-void dt_styles_update (const char *name, const char *newname, const char *newdescription, GList *filter,gboolean silent);
+void dt_styles_update (const char *name, const char *newname, const char *description, GList *filter, int imgid, GList *update,gboolean silent);
 
 /** applies the style to selection of images */
 void dt_styles_apply_to_selection (const char *name,gboolean duplicate);
@@ -73,8 +73,10 @@ gboolean dt_styles_exists (const char *name);
 /** get a list of styles based on filter string */
 GList *dt_styles_get_list (const char *filter);
 
-/** get a list of items for a named style */
-GList *dt_styles_get_item_list (const char *name, gboolean params);
+/** get a list of items for a named style
+    if imgid != -1, then styles from the corresponding image are also reported if they are not already part of the style
+*/
+GList *dt_styles_get_item_list (const char *name, gboolean params, int imgid);
 
 /** get list of items for a named style as a nice string */
 char *dt_styles_get_item_list_as_string(const char *name);

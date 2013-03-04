@@ -2223,7 +2223,23 @@
       <Color x="0" y="0">GREEN</Color><Color x="1" y="0">RED</Color>
       <Color x="0" y="1">BLUE</Color><Color x="1" y="1">GREEN</Color>
     </CFA>
-    <Crop x="0" y="0" width="-126" height="0"/>
+    <Crop x="0" y="0" width="-128" height="0"/>
+    <Sensor black="150" white="4095"/>
+  </Camera>
+  <Camera make="Panasonic" model = "DMC-LX7" mode="16:9">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">RED</Color>
+      <Color x="0" y="1">BLUE</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-160" height="0"/>
+    <Sensor black="150" white="4095"/>
+  </Camera>
+  <Camera make="Panasonic" model = "DMC-LX7" mode="1:1">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">RED</Color>
+      <Color x="0" y="1">BLUE</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-48" height="0"/>
     <Sensor black="150" white="4095"/>
   </Camera>
   <Camera make="PENTAX Corporation" model="PENTAX K100D">
