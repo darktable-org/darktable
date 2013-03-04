@@ -216,8 +216,8 @@ paste_parts_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
   // launch dialog to select the ops to paste
-  dt_gui_hist_dialog_new (&(d->dg), d->dg.copied_imageid, FALSE);
-  paste_button_clicked (widget, user_data);
+  if(dt_gui_hist_dialog_new (&(d->dg), d->dg.copied_imageid, FALSE) == GTK_RESPONSE_OK)
+    paste_button_clicked (widget, user_data);
 }
 
 static void

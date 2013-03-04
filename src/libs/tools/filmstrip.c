@@ -849,7 +849,8 @@ static gboolean _lib_filmstrip_copy_history_parts_key_accel_callback(GtkAccelGro
       (accel_group,aceeleratable, keyval, modifier, data))
   {
     dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
-    dt_gui_hist_dialog_new (&(strip->dg), strip->history_copy_imgid, TRUE);
+    if(dt_gui_hist_dialog_new (&(strip->dg), strip->history_copy_imgid, TRUE) == GTK_RESPONSE_CANCEL)
+      return FALSE;
     return TRUE;
   }
   else
@@ -887,7 +888,8 @@ static gboolean _lib_filmstrip_paste_history_parts_key_accel_callback(GtkAccelGr
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
 
-  dt_gui_hist_dialog_new (&(strip->dg), strip->history_copy_imgid, FALSE);
+  int res = dt_gui_hist_dialog_new (&(strip->dg), strip->history_copy_imgid, FALSE);
+  if(res == GTK_RESPONSE_CANCEL) return FALSE;
 
   if (dt_history_copy_and_paste_on_selection (strip->history_copy_imgid, (mode==0)?TRUE:FALSE, strip->dg.selops)!=0)
   {
