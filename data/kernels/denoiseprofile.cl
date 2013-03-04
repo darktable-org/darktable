@@ -277,12 +277,12 @@ denoiseprofile_backtransform(read_only image2d_t in, write_only image2d_t out, c
 
 
 float4
-weight(const float4 c1, const float4 c2, const float sharpen)
+weight(const float4 c1, const float4 c2, const float inv_sigma2)
 {
   const float4 sqr = (c1 - c2)*(c1 - c2);
-  const float dt = sqr.x + sqr.y + sqr.z;
-  const float var = 0.5f;
-  const float off2 = 324.0f;
+  const float dt = (sqr.x + sqr.y + sqr.z)*inv_sigma2;
+  const float var = 0.02f;
+  const float off2 = 9.0f;
   const float r = fast_mexp2f(fmax(0.0f, dt*var - off2));
 
   return (float4)r;
@@ -291,7 +291,7 @@ weight(const float4 c1, const float4 c2, const float sharpen)
 
 kernel void
 denoiseprofile_decompose(read_only image2d_t in, write_only image2d_t coarse, write_only image2d_t detail,
-     const int width, const int height, const unsigned int scale, const float sharpen)
+     const int width, const int height, const unsigned int scale, const float inv_sigma2)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -310,7 +310,7 @@ denoiseprofile_decompose(read_only image2d_t in, write_only image2d_t coarse, wr
     int yy = mad24(mult, j - 2, y);
 
     float4 px = read_imagef(in, sampleri, (int2)(xx, yy));
-    float4 w = filter[i]*filter[j]*weight(pixel, px, sharpen);
+    float4 w = filter[i]*filter[j]*weight(pixel, px, inv_sigma2);
 
     sum += w*px;
     wgt += w;

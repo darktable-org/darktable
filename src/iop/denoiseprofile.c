@@ -1142,9 +1142,9 @@ int process_wavelets_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
   }
 
   const float wb[4] = {
-    piece->pipe->processed_maximum[0]*d->strength*(scale*scale),
+    2.0f*piece->pipe->processed_maximum[0]*d->strength*(scale*scale),
     piece->pipe->processed_maximum[1]*d->strength*(scale*scale),
-    piece->pipe->processed_maximum[2]*d->strength*(scale*scale),
+    2.0f*piece->pipe->processed_maximum[2]*d->strength*(scale*scale),
     0.0f};
   const float aa[4] = {
     d->a[1]*wb[0],
@@ -1180,7 +1180,10 @@ int process_wavelets_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
   for(int s=0; s<max_scale; s++)
   {
     const unsigned int scale = s;
-    const float zero = 0.0f;
+    const float sigma = 1.0f;
+    const float varf = sqrtf(2.0f + 2.0f * 4.0f*4.0f + 6.0f*6.0f)/16.0f; // about 0.5
+    const float sigma_band = powf(varf, s) * sigma;
+    const float inv_sigma2 = 1.0f/(sigma_band*sigma_band);
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 0, sizeof(cl_mem), (void *)&dev_buf1);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 1, sizeof(cl_mem), (void *)&dev_buf2);
@@ -1188,7 +1191,7 @@ int process_wavelets_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 3, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 4, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 5, sizeof(unsigned int), (void *)&scale);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 6, sizeof(float), (void *)&zero);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 6, sizeof(float), (void *)&inv_sigma2);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_decompose, sizes);
     if(err != CL_SUCCESS) goto error;
 
