@@ -31,6 +31,7 @@
 #include "common/tags.h"
 #include "common/debug.h"
 #include "common/gpx.h"
+#include "common/styles.h"
 #include "control/conf.h"
 #include "control/jobs/control_jobs.h"
 
@@ -41,6 +42,7 @@
 #ifndef __WIN32__
   #include <glob.h>
 #endif
+#include <curl/curl.h>
 
 #if GLIB_CHECK_VERSION (2, 26, 0)
 typedef struct dt_control_time_offset_t
@@ -54,6 +56,11 @@ typedef struct dt_control_gpx_apply_t
   gchar *tz;
 } dt_control_gpx_apply_t;
 #endif
+
+typedef struct dt_control_upload_style_t
+{
+  gchar *nameorig, *name, *username, *password, *description, *url;
+} dt_control_upload_style_t;
 
 void dt_control_write_sidecar_files()
 {
@@ -1288,6 +1295,232 @@ void dt_control_export(GList *imgid_list,int max_width, int max_height, int form
   dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,t);
   dt_control_add_job(darktable.control, &job);
 }
+
+size_t static _curl_parse_response(void *buffer, size_t size, size_t nmemb, void *userp)
+{
+    char **response_ptr =  (char**)userp;
+    *response_ptr = strndup(buffer, (size_t)(size *nmemb));
+    return nmemb * size;
+}
+
+int32_t dt_control_upload_style_job_run(dt_job_t *job)
+{
+  long int beforeid, afterid;
+  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
+  dt_control_upload_style_t *settings = (dt_control_upload_style_t*)t1->data;
+  GList *t = t1->index;
+  const int total = g_list_length(t);
+  
+  gchar *style_path, *img_b, *img_a;
+  char dir[4096]= {0};
+  dt_loc_get_tmp_dir (dir,4096);
+  style_path = g_strconcat(dir, "/", settings->nameorig, ".dtstyle", NULL);
+  img_b      = g_strconcat(dir, "/before.jpg", NULL);
+  img_a      = g_strconcat(dir, "/after.jpg", NULL);
+
+  dt_styles_save_to_file(settings->nameorig, dir, TRUE);
+
+  dt_control_log(ngettext ("exporting %d image..", "exporting %d images..", total), total);
+  char message[512]= {0};
+  snprintf(message, 512, ngettext ("exporting %d image", "exporting %d images", total), total );
+
+  int size = 0, width = 800, height = 600;
+  dt_imageio_module_format_t *format = dt_imageio_get_format_by_name("jpeg");
+  g_assert(format);
+
+  if (t) beforeid = (long int)t->data;
+  t = g_list_delete_link(t, t);
+  if (t) afterid = (long int)t->data;
+
+  char imgfilename[DT_MAX_PATH_LEN];
+  const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, (int32_t)beforeid);
+  if(image)
+  {
+    dt_image_full_path(image->id, imgfilename, DT_MAX_PATH_LEN);
+    if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
+    {
+      dt_control_log(_("image `%s' is currently unavailable"), image->filename);
+      fprintf(stderr, _("image `%s' is currently unavailable"), imgfilename);
+      
+    }
+  }
+  dt_image_cache_read_release(darktable.image_cache, image);
+
+  dt_imageio_module_data_t *fdata;
+  fdata = format->get_params(format, &size);
+  if(fdata == NULL)
+    fprintf(stderr, "%s\n", _("failed to get parameters from format module, aborting export ..."));
+
+  fdata->max_width  = width;
+  fdata->max_height = height;
+  fdata->style[0] = '\0';
+
+  /* create a cancellable bgjob ui template */
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
+  dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
+  const dt_control_t *control = darktable.control;
+
+  double fraction=0;
+#ifdef _OPENMP
+  // limit this to num threads = num full buffers - 1 (keep one for darkroom mode)
+  // use min of user request and mipmap cache entries
+  const int full_entries = dt_conf_get_int ("parallel_export");
+  // GCC won't accept that this variable is used in a macro, considers
+  // it set but not used, which makes for instance Fedora break.
+  const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, 8));
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+  #pragma omp parallel default(none) shared(control, fraction, stderr, format, fdata, job, jid, darktable, settings, style_path, beforeid, afterid, img_a, img_b) num_threads(num_threads) if(num_threads > 1)
+#else
+  #pragma omp parallel shared(control, fraction, format, fdata, job, jid, darktable, settings, style_path, beforeid, afterid, img_a, img_b) num_threads(num_threads) if(num_threads > 1)
+#endif
+  {
+#endif
+
+    // export before and after images
+    {
+      if (dt_imageio_export(beforeid, img_b, format, fdata, FALSE) != 0)
+      {
+        dt_control_log(_("failed to export %s"), img_b);
+        fprintf(stderr, _("failed to export %s"), img_b);
+      }
+      
+  #ifdef _OPENMP
+      #pragma omp critical
+  #endif
+      {
+        fraction+=1.0/total;
+        dt_control_backgroundjobs_progress(control, jid, fraction);
+      }
+    }
+    
+    {
+      if (dt_imageio_export(afterid, img_a, format, fdata, FALSE) != 0)
+      {
+        dt_control_log(_("failed to export %s"), img_a);
+        fprintf(stderr, _("failed to export %s"), img_a);
+      }
+
+  #ifdef _OPENMP
+      #pragma omp critical
+  #endif
+      {
+        fraction+=1.0/total;
+        dt_control_backgroundjobs_progress(control, jid, fraction);
+      }
+    }
+  #ifdef _OPENMP
+    #pragma omp barrier
+    #pragma omp master
+  #endif
+    {
+      dt_image_remove((int32_t)beforeid);
+      dt_image_remove((int32_t)afterid);
+
+      // now upload the style to server
+      dt_control_log(_("uploading style"));
+
+      CURL *curl;
+      CURLcode res;
+      gchar *response;
+      
+      struct curl_httppost *formpost = NULL;
+      struct curl_httppost *lastptr = NULL;
+
+      struct curl_slist *headerlist = NULL;
+      static const char buf[] = "Expect:";
+
+      curl_global_init(CURL_GLOBAL_ALL);
+
+      /* Set all files to send */
+      curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "file_data",
+                   CURLFORM_FILE, style_path, CURLFORM_END);
+
+      curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "img_before",
+                   CURLFORM_FILE, img_b, CURLFORM_END);
+
+      curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "img_after",
+                   CURLFORM_FILE, img_a, CURLFORM_END);
+
+      /* Set credentials */
+      curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "username",
+                   CURLFORM_COPYCONTENTS, settings->username, CURLFORM_END);
+
+      curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "p",
+                   CURLFORM_COPYCONTENTS, settings->password, CURLFORM_END);
+
+      /* Set style values */
+      curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "name",
+                   CURLFORM_COPYCONTENTS, settings->name, CURLFORM_END);
+
+      curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "description",
+                   CURLFORM_COPYCONTENTS, settings->description, CURLFORM_END);
+
+      curl = curl_easy_init();
+      headerlist = curl_slist_append(headerlist, buf);
+      if(curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, settings->url);
+        curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _curl_parse_response);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        res = curl_easy_perform(curl);
+        /* Check for errors */
+        if(res == CURLE_OK && g_strcmp0(response, "success") == 0)
+          dt_control_log(_("uploaded style successfully"));
+        else
+        {
+          fprintf(stderr, "%s%s\n", _("uploading style failed: "), response);
+          dt_control_log(_("uploading style failed"));
+        }
+
+        curl_easy_cleanup(curl);
+        curl_formfree(formpost);
+        curl_slist_free_all (headerlist);
+      }
+
+    }
+#ifdef _OPENMP
+  }
+#endif
+  dt_control_backgroundjobs_destroy(control, jid);
+  format->free_params(format, fdata);
+  
+  unlink(img_b);
+  unlink(img_a);
+  unlink(style_path);
+
+  g_free(img_b);
+  g_free(img_a);
+  g_free(style_path);
+  g_free(t1->data);
+  return 0;
+}
+
+void dt_control_upload_style_job_init(dt_job_t *job, long int beforeid, long int afterid, gchar *nameorig, gchar *name, gchar *username, gchar *password, gchar *description, gchar *url)
+{
+  dt_control_job_init(job, "upload style");
+  job->execute = &dt_control_upload_style_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
+  GList *imgs = NULL;
+  imgs = g_list_append(imgs, (gpointer)beforeid);
+  imgs = g_list_append(imgs, (gpointer)afterid);
+  t->index = imgs;
+  dt_control_upload_style_t *data = (dt_control_upload_style_t*)malloc(sizeof(dt_control_upload_style_t));
+  data->nameorig = g_strdup(nameorig);
+  data->name = g_strdup(name);
+  data->username = g_strdup(username);
+  data->password = g_strdup(password);
+  data->description = g_strdup(description);
+  data->url = g_strdup(url);
+  t->data = data;
+}
+
+void dt_control_upload_style(long int beforeid, long int afterid, gchar *nameorig, gchar *name, gchar *username, gchar *password, gchar *description, gchar *url)
+{
+  dt_job_t j;
+  dt_control_upload_style_job_init(&j, beforeid, afterid, nameorig, name, username, password, description, url);
+  dt_control_add_job(darktable.control, &j);
+}
+
 
 #if GLIB_CHECK_VERSION (2, 26, 0)
 int32_t dt_control_time_offset_job_run(dt_job_t *job)
