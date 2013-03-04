@@ -815,7 +815,7 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
 
   /* add module label */
   char label[128];
-  g_snprintf(label,128,"<span size=\"larger\">%s</span>",module->name());
+  g_snprintf(label,128,"<span foreground=\"#8E9FC3\" size=\"larger\">%s</span>",module->name());
   hw[idx] = gtk_label_new("");
   gtk_label_set_markup(GTK_LABEL(hw[idx++]),label);
 
