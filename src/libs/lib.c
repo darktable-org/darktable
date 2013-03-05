@@ -817,6 +817,7 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
   char label[128];
   g_snprintf(label,128,"<span size=\"larger\">%s</span>",module->name());
   hw[idx] = gtk_label_new("");
+  gtk_widget_set_name(hw[idx], "panel_label");
   gtk_label_set_markup(GTK_LABEL(hw[idx++]),label);
 
   /* add reset button if module has implementation */

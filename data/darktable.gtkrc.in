@@ -230,6 +230,11 @@ style "clearlooks-scrollbar" = "clearlooks-defaults"
 	GtkScrollbar::focus-padding     = 0
 }
 
+style "clearlooks-header-panel-label"
+{
+        fg[NORMAL]      = "white"
+}
+
 style "metacity-frame"
 {
   # Normal base color
@@ -269,6 +274,7 @@ widget "*.plugins_vbox_left.GtkEventBox" style "clearlooks-brightbg"
 #widget "*.GtkEventBox.GtkVBox.GtkHBox.GtkButton" style "clearlooks-vbrightbg"
 
 widget "*.header_label" style "clearlooks-header"
+widget "*.panel_label" style "clearlooks-header-panel-label"
 
 widget "*.right.GtkEventBox" style "clearlooks-brightbg"
 widget "*.left.GtkEventBox" style "clearlooks-brightbg"
