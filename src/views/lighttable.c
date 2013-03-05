@@ -428,7 +428,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   if (lib->images_in_row != iir && lib->first_visible_filemanager < 0)
     lib->offset = lib->first_visible_filemanager = 0;
 
-  int32_t offset = lib->offset = lib->first_visible_filemanager;
+  int32_t offset = lib->offset = CLAMP(lib->first_visible_filemanager, 0, (lib->collection_count / iir) * iir);
 
   int32_t drawing_offset = 0;
   if(offset < 0)
